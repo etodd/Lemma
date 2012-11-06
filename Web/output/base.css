@@ -1,0 +1,130 @@
+html, body
+{
+	padding: 0px;
+	margin: 0px;
+}
+
+body
+{
+	background-color: #000;
+	color: #fff;
+	font-family: Tahoma, Verdana, Helvetica, sans-serif;
+	font-size: small;
+}
+
+a
+{
+	color: #5bafcd;
+	text-decoration: none;
+}
+
+a img
+{
+	border: 0px;
+}
+
+#container
+{
+	max-width: 980px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+header
+{
+	width: 100%;
+	background-image: url(graphics/header.svg);
+	background-size: 50%;
+	background-position: center center;
+	background-repeat: no-repeat;
+	height: 80px;
+}
+
+header.svg-fallback
+{
+	background-image: url(graphics/header.png);
+}
+
+a:hover
+{
+	color: #ff0000;
+}
+
+h1, h2, h3, h4, h5
+{
+	margin-top: 0px;
+}
+
+#menu
+{
+	width: 100%;
+	padding-left: 5%;
+	padding-right: 5%;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	background-color: black;
+}
+
+tr td
+{
+	display: block;
+}
+
+#menu tr td a
+{
+	text-transform: uppercase;
+	font-size: medium;
+	font-weight: normal;
+	color: #fff;
+}
+
+#menu tr td a:hover
+{
+	color: #ff0000;
+}
+
+#menu tr td
+{
+	text-align: center;
+}
+
+td
+{
+	vertical-align: top;
+}
+
+table
+{
+	width: 100%;
+}
+
+article
+{
+	background-color: rgb(30, 30, 30);
+	padding: 10px;
+}
+
+article #news img
+{
+	max-width: 100%;
+	height: auto !important;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#twitter-feed, #sidebar
+{
+	margin-bottom: 20px;
+}
+
+#sidebar
+{
+	padding: 20px;
+	background-color: black;
+}
+
+.twtr-doc
+{
+	width: 100% !important;
+}

@@ -1,0 +1,209 @@
+==========================================
+
+Most of this stuff by Evan Todd.
+http://et1337.wordpress.com
+http://twitter.com/et1337
+http://facebook.com/et1337
+http://youtube.com/user/StainlessIndieGame
+http://www.moddb.com/members/et1337
+
+==========================================
+
+Music and some sounds by Jack Menhorn. http://jackmenhorn.com
+
+==========================================
+
+Audio source material pulled from FreeSound. http://freesound.org
+
+Downloaded on October 23rd, 2012
+     S: salt 3.wav by melack -- http://www.freesound.org/people/melack/sounds/9193/
+     S: salt 2.wav by melack -- http://www.freesound.org/people/melack/sounds/9192/
+     S: salt 1.wav by melack -- http://www.freesound.org/people/melack/sounds/9191/
+     S: Splash.wav by daveincamas -- http://www.freesound.org/people/daveincamas/sounds/59104/
+Downloaded on October 22nd, 2012
+     S: zap 2.wav by fons -- http://www.freesound.org/people/fons/sounds/62363/
+     S: word.wav by patchen -- http://www.freesound.org/people/patchen/sounds/3414/
+Downloaded on October 17th, 2012
+     S: BreathOfDeath.aif by gabemiller74 -- http://www.freesound.org/people/gabemiller74/sounds/60571/
+     S: Gasp.aif by lsprice -- http://www.freesound.org/people/lsprice/sounds/27897/
+Downloaded on September 27th, 2012
+     S: A flag flapping in the wind, at the small village of Assem Souk, in the High Atlas (Morocco). by felix.blume -- http://www.freesound.org/people/felix.blume/sounds/154794/
+Downloaded on September 26th, 2012
+     S: Footsteps On Pipe.mp3 by nickb1608 -- http://www.freesound.org/people/nickb1608/sounds/90916/
+Downloaded on September 10th, 2012
+     S: gunreload.wav by Robkinsons -- http://www.freesound.org/people/Robkinsons/sounds/100240/
+     S: Grass Falls by Project_Trident -- http://www.freesound.org/people/Project_Trident/sounds/140316/
+     S: Frightened Breathing.aiff by nickrave -- http://www.freesound.org/people/nickrave/sounds/112557/
+Downloaded on September 8th, 2012
+     S: layeredgunshot.wav by steveygos93 -- http://www.freesound.org/people/steveygos93/sounds/91572/
+Downloaded on September 6th, 2012
+     S: Splash 1.wav by FreqMan -- http://www.freesound.org/people/FreqMan/sounds/25819/
+Downloaded on September 3rd, 2012
+     S: flobert1_20070728.wav by Nonoo -- http://www.freesound.org/people/Nonoo/sounds/40161/
+     S: flobert2_20070728.wav by Nonoo -- http://www.freesound.org/people/Nonoo/sounds/40162/
+Downloaded on August 5th, 2012
+     S: pno thump.aif by tomcat9uk -- http://www.freesound.org/people/tomcat9uk/sounds/4847/
+     S: Kick 01.wav by oscillator -- http://www.freesound.org/people/oscillator/sounds/14571/
+Downloaded on May 28th, 2012
+     S: Clank Car Crash Collision by qubodup -- http://www.freesound.org/people/qubodup/sounds/151624/
+     S: bip.wav by Slanesh -- http://www.freesound.org/people/Slanesh/sounds/31780/
+     S: FlightNoise.flac by acclivity -- http://www.freesound.org/people/acclivity/sounds/21737/
+Downloaded on May 24th, 2012
+     S: pulsar.wav by ERH -- http://www.freesound.org/people/ERH/sounds/30617/
+Downloaded on May 23rd, 2012
+     S: NZP BMW 1150GS Fuel pump.wav by Noizemaker -- http://www.freesound.org/people/Noizemaker/sounds/23216/
+     S: Page_Turn_29.wav by Koops -- http://www.freesound.org/people/Koops/sounds/20263/
+     S: btn121.wav by junggle -- http://www.freesound.org/people/junggle/sounds/29301/
+     S: camera click.mp3 by LS -- http://www.freesound.org/people/LS/sounds/13658/
+     S: RBH_Household_drawer 02.wav by RHumphries -- http://www.freesound.org/people/RHumphries/sounds/1009/
+Downloaded on May 21st, 2012
+     S: click 1 d.wav by TicTacShutUp -- http://www.freesound.org/people/TicTacShutUp/sounds/406/
+Downloaded on May 19th, 2012
+     S: buttonchime02up.wav by JustinBW -- http://www.freesound.org/people/JustinBW/sounds/80921/
+Downloaded on May 18th, 2012
+     S: bush11.wav by schademans -- http://www.freesound.org/people/schademans/sounds/2590/
+     S: BUBBLES POPPING.wav by Ch0cchi -- http://www.freesound.org/people/Ch0cchi/sounds/15349/
+     S: Ambi08.wav by Ty Ford -- http://www.freesound.org/people/Ty%20Ford/sounds/116660/
+Downloaded on February 26th, 2012
+     S: earthquakes.wav by hans -- http://www.freesound.org/people/hans/sounds/62825/
+Downloaded on February 25th, 2012
+     S: deepsoundrocksubmergeRSF.wav by bsumusictech -- http://www.freesound.org/people/bsumusictech/sounds/83740/
+Downloaded on February 24th, 2012
+     S: Stupid Falls by qubodup -- http://www.freesound.org/people/qubodup/sounds/50941/
+Downloaded on February 23rd, 2012
+     S: gruntsound.wav by snaginneb -- http://www.freesound.org/people/snaginneb/sounds/90164/
+     S: burning-towels.aif by alienistcog -- http://www.freesound.org/people/alienistcog/sounds/124579/
+     S: lava.wav by ATG142 -- http://www.freesound.org/people/ATG142/sounds/145036/
+Downloaded on February 16th, 2012
+     S: Phone vibrate-GAIN_02.wav by Handfan -- http://www.freesound.org/people/Handfan/sounds/71234/
+     S: Impact3.wav by ezwider -- http://www.freesound.org/people/ezwider/sounds/134730/
+     S: Snap-a-neck01.wav by CGEffex -- http://www.freesound.org/people/CGEffex/sounds/97783/
+     S: wind1.wav by Anton -- http://www.freesound.org/people/Anton/sounds/2690/
+Downloaded on January 29th, 2012
+     S: Digging.wav by prozaciswack -- http://www.freesound.org/people/prozaciswack/sounds/82722/
+     S: FL_Scream 1.wav by Lithe-Fider -- http://www.freesound.org/people/Lithe-Fider/sounds/9703/
+     S: Jared Helm.wav by oldedgar -- http://www.freesound.org/people/oldedgar/sounds/131709/
+Downloaded on January 29th, 2012
+     S: FL_Scream 2.wav by Lithe-Fider -- http://www.freesound.org/people/Lithe-Fider/sounds/9704/
+     S: Splattt.mp3 by SlykMrByches -- http://www.freesound.org/people/SlykMrByches/sounds/55234/
+     S: onion_break_hit_flesh_vegetable_blood_07.wav by m_O_m -- http://www.freesound.org/people/m_O_m/sounds/107772/
+     S: Blood Hitting Window.wav by Rock Savage -- http://www.freesound.org/people/Rock%20Savage/sounds/81042/
+     S: open and close wooden door by fresco.wav by fresco -- http://www.freesound.org/people/fresco/sounds/35617/
+     S: BIG DOOR SHUT DOWN.aif by loofa -- http://www.freesound.org/people/loofa/sounds/23579/
+     S: dorm door opening.wav by pagancow -- http://www.freesound.org/people/pagancow/sounds/15419/
+Downloaded on December 20th, 2011
+     S: Melt down 1.wav by club sound -- http://www.freesound.org/people/club%20sound/sounds/103687/
+     S: XplorerRandomizer.mp3 by Greg Baumont -- http://www.freesound.org/people/Greg%20Baumont/sounds/119456/
+     S: 3 phase blower motor.wav by FreqMan -- http://www.freesound.org/people/FreqMan/sounds/19893/
+Downloaded on December 13th, 2011
+     S: crash_treefall_SE.mp3 by alexrigg -- http://www.freesound.org/people/alexrigg/sounds/69521/
+     S: compactor2.ogg by PhreaKsAccount -- http://www.freesound.org/people/PhreaKsAccount/sounds/46487/
+     S: hidaulic1.wav by suzenako -- http://www.freesound.org/people/suzenako/sounds/48670/
+     S: Foot Stomp A.wav by patchen -- http://www.freesound.org/people/patchen/sounds/20183/
+     S: Foot Stomp D.wav by patchen -- http://www.freesound.org/people/patchen/sounds/20186/
+     S: Foot Stomp C.wav by patchen -- http://www.freesound.org/people/patchen/sounds/20185/
+     S: Foot Stomp B.wav by patchen -- http://www.freesound.org/people/patchen/sounds/20184/
+Downloaded on December 9th, 2011
+     S: 41_STEAM.wav by ReWired -- http://www.freesound.org/people/ReWired/sounds/48693/
+Downloaded on November 23rd, 2011
+     S: brickwall_collapse_reverb.wav by m_O_m -- http://www.freesound.org/people/m_O_m/sounds/124444/
+     S: USAT BOMB.wav by sandyrb -- http://www.freesound.org/people/sandyrb/sounds/35643/
+     S: wvs103 upd107 power up.wav by ERH -- http://www.freesound.org/people/ERH/sounds/47474/
+     S: wvs103upd 97 power up b.wav by ERH -- http://www.freesound.org/people/ERH/sounds/47476/
+     S: Rubble 003.wav by DJ Chronos -- http://www.freesound.org/people/DJ%20Chronos/sounds/123540/
+     S: Rubble 007.wav by DJ Chronos -- http://www.freesound.org/people/DJ%20Chronos/sounds/123544/
+     S: Rubble 002.wav by DJ Chronos -- http://www.freesound.org/people/DJ%20Chronos/sounds/123539/
+     S: Rubble 010.wav by DJ Chronos -- http://www.freesound.org/people/DJ%20Chronos/sounds/123547/
+     S: Rubble 005.wav by DJ Chronos -- http://www.freesound.org/people/DJ%20Chronos/sounds/123542/
+     S: Rubble 019.wav by DJ Chronos -- http://www.freesound.org/people/DJ%20Chronos/sounds/123556/
+     S: Rubble 014.wav by DJ Chronos -- http://www.freesound.org/people/DJ%20Chronos/sounds/123551/
+     S: Rubble 017.wav by DJ Chronos -- http://www.freesound.org/people/DJ%20Chronos/sounds/123554/
+     S: Concrete block hitting the ground.flac by CGEffex -- http://www.freesound.org/people/CGEffex/sounds/93959/
+Downloaded on November 14th, 2011
+     S: suonho_ScaryScape_01.wav by suonho -- http://www.freesound.org/people/suonho/sounds/9695/
+Downloaded on September 24th, 2011
+     S: launcher.wav by RunnerPack -- http://www.freesound.org/people/RunnerPack/sounds/87031/
+     S: sparkler_spark_fuse_close_multiple_01.wav by m_O_m -- http://www.freesound.org/people/m_O_m/sounds/106548/
+     S: Sharp Explosion, Lots of Debris.wav by Superex1110 -- http://www.freesound.org/people/Superex1110/sounds/77535/
+     S: systemrestore_iLLCommunications_suonho.wav by suonho -- http://www.freesound.org/people/suonho/sounds/4014/
+Downloaded on September 8th, 2011
+     S: crash.wav by sagetyrtle -- http://www.freesound.org/people/sagetyrtle/sounds/40158/
+     S: Mechanical1.wav by BMacZero -- http://www.freesound.org/people/BMacZero/sounds/94120/
+     S: moretube.wav by NoiseCollector -- http://www.freesound.org/people/NoiseCollector/sounds/65325/
+     S: TRAMPulse.aiff by hanstimm -- http://www.freesound.org/people/hanstimm/sounds/6899/
+Downloaded on September 8th, 2011
+     S: switch on.wav by megamart -- http://www.freesound.org/people/megamart/sounds/20734/
+     S: K183.wav by doubletrigger -- http://www.freesound.org/people/doubletrigger/sounds/112379/
+Downloaded on August 23rd, 2011
+     S: tack- 05.wav by schluppipuppie -- http://www.freesound.org/people/schluppipuppie/sounds/12883/
+     S: 4.wav by adcbicycle -- http://www.freesound.org/people/adcbicycle/sounds/14199/
+     S: 52.wav by adcbicycle -- http://www.freesound.org/people/adcbicycle/sounds/14052/
+     S: light_crate_smash1.wav by Srehpog -- http://www.freesound.org/people/Srehpog/sounds/31622/
+     S: Wood004.wav by HardPCM -- http://www.freesound.org/people/HardPCM/sounds/32428/
+     S: 7.wav by adcbicycle -- http://www.freesound.org/people/adcbicycle/sounds/13959/
+     S: wood_hit.wav by 110110010 -- http://www.freesound.org/people/110110010/sounds/66396/
+     S: 00504 brass fanfare 4.wav by Robinhood76 -- http://www.freesound.org/people/Robinhood76/sounds/62176/
+Downloaded on August 12th, 2011
+     S: Bomb Whistle long.wav by club sound -- http://www.freesound.org/people/club%20sound/sounds/104551/
+     S: Bomb.wav by jobro -- http://www.freesound.org/people/jobro/sounds/76151/
+     S: Parachute.wav by Benboncan -- http://www.freesound.org/people/Benboncan/sounds/72853/
+     S: Clank1.wav by BMacZero -- http://www.freesound.org/people/BMacZero/sounds/94127/
+     S: 2.wav by adcbicycle -- http://www.freesound.org/people/adcbicycle/sounds/14089/
+     S: 00764 explode 7 bomb close.wav by Robinhood76 -- http://www.freesound.org/people/Robinhood76/sounds/66098/
+     S: sas_fermeture.WAV by Velvorn -- http://www.freesound.org/people/Velvorn/sounds/95772/
+     S: steam_burst.wav by pengo_au -- http://www.freesound.org/people/pengo_au/sounds/90143/
+Downloaded on August 10th, 2011
+     S: impact_metal_movie.wav by m_O_m -- http://www.freesound.org/people/m_O_m/sounds/103360/
+Downloaded on August 5th, 2011
+     S: Page_Turn_28.wav by Koops -- http://www.freesound.org/people/Koops/sounds/20262/
+     S: Page_Turn_17.wav by Koops -- http://www.freesound.org/people/Koops/sounds/20251/
+     S: Page_Turn_24.wav by Koops -- http://www.freesound.org/people/Koops/sounds/20258/
+     S: Page4.wav by stijn -- http://www.freesound.org/people/stijn/sounds/43670/
+Downloaded on August 3rd, 2011
+     S: fall.ogg by silversatyr -- http://www.freesound.org/people/silversatyr/sounds/113365/
+     S: Approx 800 Cheer and Clapping 2.wav by lonemonk -- http://www.freesound.org/people/lonemonk/sounds/72836/
+Downloaded on July 27th, 2011
+     S: Thud3.wav by BMacZero -- http://www.freesound.org/people/BMacZero/sounds/96138/
+     S: 38.wav by adcbicycle -- http://www.freesound.org/people/adcbicycle/sounds/13890/
+Downloaded on July 26th, 2011
+     S: Jigsaw Rev 01.wav by JustinBW -- http://www.freesound.org/people/JustinBW/sounds/79284/
+     S: drill 3.wav by THE_bizniss -- http://www.freesound.org/people/THE_bizniss/sounds/39532/
+     S: ShipsBell.wav by acclivity -- http://www.freesound.org/people/acclivity/sounds/32304/
+     S: glass shatter.wav by datasoundsample -- http://www.freesound.org/people/datasoundsample/sounds/41348/
+     S: Ice Break_1.mp3 by CGEffex -- http://www.freesound.org/people/CGEffex/sounds/89771/
+     S: stone_on_stone_impact_loud5.aif by thanvannispen -- http://www.freesound.org/people/thanvannispen/sounds/30012/
+     S: light_crate_smash3.wav by Srehpog -- http://www.freesound.org/people/Srehpog/sounds/31624/
+     S: Clock Ticking.aif by jackstrebor -- http://www.freesound.org/people/jackstrebor/sounds/34855/
+     S: 21GunSalute.wav by daveincamas -- http://www.freesound.org/people/daveincamas/sounds/43783/
+     S: hydraul2.wav by swelk -- http://www.freesound.org/people/swelk/sounds/12907/
+     S: light 1.wav by TicTacShutUp -- http://www.freesound.org/people/TicTacShutUp/sounds/408/
+Downloaded on January 23rd, 2011
+     S: wind.wav by ERH -- http://www.freesound.org/people/ERH/sounds/34338/
+Downloaded on January 21st, 2011
+     S: foley_cable_whoosh_air_001.wav by soundscalpel.com -- http://www.freesound.org/people/soundscalpel.com/sounds/110615/
+Downloaded on January 21st, 2011
+     S: swoop_hissy_01.aif by willc2_45220 -- http://www.freesound.org/people/willc2_45220/sounds/73599/
+Downloaded on January 7th, 2011
+     S: bologna_asinelli_tower_collapse.aif by gleeman -- http://www.freesound.org/people/gleeman/sounds/86322/
+     S: Whisk_Reload_02.wav by S_Dij -- http://www.freesound.org/people/S_Dij/sounds/88288/
+     S: GBC_Reload_02.wav by S_Dij -- http://www.freesound.org/people/S_Dij/sounds/88271/
+     S: ClipLoad2.wav by BMacZero -- http://www.freesound.org/people/BMacZero/sounds/94119/
+     S: Rifle_QuickReload by Vosvoy -- http://www.freesound.org/people/Vosvoy/sounds/64441/
+     S: Glock19_reload.wav by Fr3yr -- http://www.freesound.org/people/Fr3yr/sounds/100804/
+Downloaded on December 30th, 2010
+     S: running gravel or dry leaves loop.wav by bevangoldswain -- http://www.freesound.org/people/bevangoldswain/sounds/54778/
+     S: Footsteps.aif by makemebad -- http://www.freesound.org/people/makemebad/sounds/95733/
+Downloaded on December 28th, 2010
+     S: zoup.wav by themfish -- http://www.freesound.org/people/themfish/sounds/34205/
+Downloaded on November 17th, 2010
+     S: Grunts.wav by bennychico11 -- http://www.freesound.org/people/bennychico11/sounds/80438/
+Downloaded on October 13th, 2010
+     S: Kung Fu punch 03.aif by nextmaking -- http://www.freesound.org/people/nextmaking/sounds/86008/
+     S: kung fu punch.aif by nextmaking -- http://www.freesound.org/people/nextmaking/sounds/86019/
+     S: 01903 air swoosh.wav by Robinhood76 -- http://www.freesound.org/people/Robinhood76/sounds/101386/
+     S: Kung Fu Yell.aif by oldedgar -- http://www.freesound.org/people/oldedgar/sounds/97977/
+Downloaded on June 1st, 2010
+     S: 39.wav by adcbicycle -- http://www.freesound.org/people/adcbicycle/sounds/13891/
+     S: 36.wav by adcbicycle -- http://www.freesound.org/people/adcbicycle/sounds/13888/
+     S: kick2-low-vol.wav by ltibbits -- http://www.freesound.org/people/ltibbits/sounds/16291/
+     S: 48.wav by adcbicycle -- http://www.freesound.org/people/adcbicycle/sounds/13900/

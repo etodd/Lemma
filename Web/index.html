@@ -1,0 +1,52 @@
+{% extends "_base.html" %}
+
+{% block extrahead %}
+	<script src="https://www.google.com/jsapi"></script>
+	<script charset="utf-8" src="http://widgets.twimg.com/j/2/widget.js"></script>
+	<script src="feed.js"></script>
+{% endblock %}
+
+{% block content %}
+	<h1><a href="http://et1337.wordpress.com/category/lemma">Blog</a></h1>
+	<div id="twitter-feed">
+	</div>
+	<script>
+		new TWTR.Widget(
+		{
+			version: 2,
+			type: 'profile',
+			rpp: 6,
+			interval: 30000,
+			height: 420,
+			id: 'twitter-feed',
+			theme:
+			{
+				shell:
+				{
+					background: '#333333',
+					color: '#ffffff'
+				},
+				tweets:
+				{
+					background: '#000000',
+					color: '#ffffff',
+					links: '#5bafcd'
+				}
+			},
+			features:
+			{
+				scrollbar: false,
+				loop: false,
+				live: true,
+				behavior: 'all'
+			}
+		}).render().setUser('et1337').start();
+	</script>
+	<div id="news">
+	</div>
+	<br />
+	<a href="http://et1337.wordpress.com/category/lemma">More posts...</a>
+	<script type="text/javascript">
+		populateFeed('#news', 'http://et1337.wordpress.com/category/lemma/feed/');
+	</script>
+{% endblock %}

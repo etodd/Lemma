@@ -1,0 +1,8 @@
+*.suo
+/Installer/Content
+*bin
+*obj
+*Debug
+/MonoGame/ThirdParty/Libs
+*.opensdf
+*.sdf

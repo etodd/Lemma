@@ -1,0 +1,431 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+
+namespace Lemma.Components
+{
+	public class Water : Component, IDrawableAlphaComponent, IDrawablePreFrameComponent, IUpdateableComponent
+	{
+		/// <summary>
+		/// A struct that represents a single vertex in the
+		/// vertex buffer.
+		/// </summary>
+		private struct QuadVertex : IVertexType
+		{
+			public Vector3 Position;
+			public Vector2 TexCoord;
+			public Vector3 Normal;
+			public VertexDeclaration VertexDeclaration
+			{
+				get
+				{
+					return Water.VertexDeclaration;
+				}
+			}
+		}
+
+		public Property<int> DrawOrder { get; set; }
+
+		private VertexBuffer surfaceVertexBuffer;
+		private VertexBuffer underwaterVertexBuffer;
+
+		private List<Entity> submergedEntities = new List<Entity>();
+
+		private List<Entity> detectedSubmergedEntities = new List<Entity>();
+
+		private static VertexDeclaration vertexDeclaration;
+		public static VertexDeclaration VertexDeclaration
+		{
+			get
+			{
+				if (Water.vertexDeclaration == null)
+				{
+					Microsoft.Xna.Framework.Graphics.VertexElement[] declElements = new VertexElement[3];
+					declElements[0].Offset = 0;
+					declElements[0].UsageIndex = 0;
+					declElements[0].VertexElementFormat = VertexElementFormat.Vector3;
+					declElements[0].VertexElementUsage = VertexElementUsage.Position;
+					declElements[1].Offset = sizeof(float) * 3;
+					declElements[1].UsageIndex = 0;
+					declElements[1].VertexElementFormat = VertexElementFormat.Vector2;
+					declElements[1].VertexElementUsage = VertexElementUsage.TextureCoordinate;
+					declElements[2].Offset = sizeof(float) * 5;
+					declElements[2].UsageIndex = 0;
+					declElements[2].VertexElementFormat = VertexElementFormat.Vector3;
+					declElements[2].VertexElementUsage = VertexElementUsage.Normal;
+					Water.vertexDeclaration = new VertexDeclaration(declElements);
+				}
+				return Water.vertexDeclaration;
+			}
+		}
+
+		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
+		public Property<Vector3> Color = new Property<Vector3> { Value = new Vector3(0.7f, 0.9f, 1.0f), Editable = true };
+		public Property<Vector3> UnderwaterColor = new Property<Vector3> { Value = new Vector3(0.0f, 0.07f, 0.13f), Editable = true };
+		public Property<float> Fresnel = new Property<float> { Value = 0.6f, Editable = true };
+		public Property<float> Speed = new Property<float> { Value = 0.075f, Editable = true };
+		public Property<float> RippleDensity = new Property<float> { Value = 1.0f, Editable = true };
+		public Property<bool> EnableReflection = new Property<bool> { Value = true, Editable = false };
+		public Property<float> Distortion = new Property<float> { Value = 0.25f, Editable = true };
+		public Property<float> Brightness = new Property<float> { Value = 0.1f, Editable = true };
+		public Property<float> Clearness = new Property<float> { Value = 0.25f, Editable = true };
+
+		private Renderer renderer;
+		private RenderTarget2D buffer;
+		private Effect effect;
+		private RenderParameters parameters;
+		private Camera camera;
+
+		private Util.CustomFluidVolume fluid;
+
+		private bool needResize = false;
+		private bool renderedLastFrame = false;
+
+		private float time;
+
+		private void resize()
+		{
+			Point size = this.main.ScreenSize;
+			size.X = (int)((float)size.X * 0.5f);
+			size.Y = (int)((float)size.Y * 0.5f);
+			if (this.renderer == null)
+			{
+				this.renderer = new Renderer(this.main, size, false, false);
+				this.renderer.LightRampTexture.Value = "Images\\default-ramp";
+				this.main.AddComponent(this.renderer);
+			}
+			else
+				this.renderer.ReallocateBuffers(size);
+
+			if (this.buffer != null)
+				this.buffer.Dispose();
+			this.buffer = new RenderTarget2D(this.main.GraphicsDevice, size.X, size.Y);
+
+			this.needResize = false;
+		}
+
+		public override void LoadContent(bool reload)
+		{
+			this.effect = this.main.Content.Load<Effect>("Effects\\Water").Clone();
+			this.effect.Parameters["NormalMapSampler"].SetValue(this.main.Content.Load<Texture2D>("Images\\water-normal"));
+
+			this.Color.Reset();
+			this.Fresnel.Reset();
+			this.Speed.Reset();
+			this.RippleDensity.Reset();
+			this.Distortion.Reset();
+			this.Brightness.Reset();
+			this.Clearness.Reset();
+			this.UnderwaterColor.Reset();
+
+			// Surface
+			this.surfaceVertexBuffer = new VertexBuffer(this.main.GraphicsDevice, typeof(QuadVertex), Water.VertexDeclaration.VertexStride * 4, BufferUsage.None);
+			QuadVertex[] surfaceData = new QuadVertex[4];
+
+			// Upper right
+			const float scale = 2000.0f;
+			surfaceData[0].Position = new Vector3(scale, 0, scale);
+			surfaceData[0].TexCoord = new Vector2(1, 0);
+
+			// Upper left
+			surfaceData[1].Position = new Vector3(-scale, 0, scale);
+			surfaceData[1].TexCoord = new Vector2(0, 0);
+
+			// Lower right
+			surfaceData[2].Position = new Vector3(scale, 0, -scale);
+			surfaceData[2].TexCoord = new Vector2(1, 1);
+
+			// Lower left
+			surfaceData[3].Position = new Vector3(-scale, 0, -scale);
+			surfaceData[3].TexCoord = new Vector2(0, 1);
+
+			surfaceData[0].Normal = surfaceData[1].Normal = surfaceData[2].Normal = surfaceData[3].Normal = new Vector3(0, 1, 0);
+
+			this.surfaceVertexBuffer.SetData(surfaceData);
+
+			// Underwater
+			this.underwaterVertexBuffer = new VertexBuffer(this.main.GraphicsDevice, typeof(QuadVertex), Water.VertexDeclaration.VertexStride * 4, BufferUsage.None);
+
+			QuadVertex[] underwaterData = new QuadVertex[4];
+
+			// Upper right
+			underwaterData[0].Position = new Vector3(1, 1, 1);
+			underwaterData[0].TexCoord = new Vector2(1, 0);
+
+			// Lower right
+			underwaterData[1].Position = new Vector3(1, -1, 1);
+			underwaterData[1].TexCoord = new Vector2(1, 1);
+
+			// Upper left
+			underwaterData[2].Position = new Vector3(-1, 1, 1);
+			underwaterData[2].TexCoord = new Vector2(0, 0);
+
+			// Lower left
+			underwaterData[3].Position = new Vector3(-1, -1, 1);
+			underwaterData[3].TexCoord = new Vector2(0, 1);
+
+			underwaterData[0].Normal = underwaterData[1].Normal = underwaterData[2].Normal = underwaterData[3].Normal = new Vector3(0, 0, -1);
+
+			this.underwaterVertexBuffer.SetData(underwaterData);
+
+			this.resize();
+		}
+
+		public override void InitializeProperties()
+		{
+			this.EnabledWhenPaused.Value = false;
+
+			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.main.ScreenSize));
+			this.Add(new Binding<bool>(this.EnableReflection, ((GameMain)this.main).Settings.EnableReflections));
+
+			Action removeFluid = delegate()
+			{
+				if (this.fluid.Space != null)
+					this.main.Space.Remove(this.fluid);
+			};
+
+			Action addFluid = delegate()
+			{
+				if (this.fluid.Space == null && this.Enabled && !this.Suspended)
+					this.main.Space.Add(this.fluid);
+			};
+
+			this.Add(new CommandBinding(this.OnSuspended, removeFluid));
+			this.Add(new CommandBinding(this.OnDisabled, removeFluid));
+			this.Add(new CommandBinding(this.OnResumed, addFluid));
+			this.Add(new CommandBinding(this.OnEnabled, addFluid));
+
+			this.DrawOrder = new Property<int> { Editable = false, Value = 10 };
+
+			this.camera = new Camera();
+			this.main.AddComponent(this.camera);
+			this.parameters = new RenderParameters
+			{
+				Camera = this.camera,
+				Technique = Technique.Clip,
+				ReverseCullOrder = true,
+			};
+
+			this.Color.Set = delegate(Vector3 value)
+			{
+				this.Color.InternalValue = value;
+				this.effect.Parameters["Color"].SetValue(value);
+			};
+
+			this.UnderwaterColor.Set = delegate(Vector3 value)
+			{
+				this.UnderwaterColor.InternalValue = value;
+				this.effect.Parameters["UnderwaterColor"].SetValue(value);
+			};
+
+			this.Fresnel.Set = delegate(float value)
+			{
+				this.Fresnel.InternalValue = value;
+				this.effect.Parameters["Fresnel"].SetValue(value);
+			};
+
+			this.Speed.Set = delegate(float value)
+			{
+				this.Speed.InternalValue = value;
+				this.effect.Parameters["Speed"].SetValue(value);
+			};
+
+			this.RippleDensity.Set = delegate(float value)
+			{
+				this.RippleDensity.InternalValue = value;
+				this.effect.Parameters["RippleDensity"].SetValue(value);
+			};
+
+			this.Distortion.Set = delegate(float value)
+			{
+				this.Distortion.InternalValue = value;
+				this.effect.Parameters["Distortion"].SetValue(value);
+			};
+
+			this.Brightness.Set = delegate(float value)
+			{
+				this.Brightness.InternalValue = value;
+				this.effect.Parameters["Brightness"].SetValue(value);
+			};
+
+			this.Clearness.Set = delegate(float value)
+			{
+				this.Clearness.InternalValue = value;
+				this.effect.Parameters["Clearness"].SetValue(value);
+			};
+
+			List<Vector3[]> tris = new List<Vector3[]>();
+			const float basinWidth = 2500.0f;
+			const float basinLength = 2500.0f;
+			float waterHeight = this.Position.Value.Y;
+
+			tris.Add(new[]
+			{
+				new Vector3(-basinWidth / 2, waterHeight, -basinLength / 2), new Vector3(basinWidth / 2, waterHeight, -basinLength / 2),
+				new Vector3(-basinWidth / 2, waterHeight, basinLength / 2)
+			});
+			tris.Add(new[]
+			{
+				new Vector3(-basinWidth / 2, waterHeight, basinLength / 2), new Vector3(basinWidth / 2, waterHeight, -basinLength / 2),
+				new Vector3(basinWidth / 2, waterHeight, basinLength / 2)
+			});
+
+			this.fluid = new Util.CustomFluidVolume(Vector3.Up, this.main.Space.ForceUpdater.Gravity.Y, tris, 1000.0f, 1.0f, 0.995f, 0.2f, this.main.Space.BroadPhase.QueryAccelerator, this.main.Space.ThreadManager);
+			this.Add(new CommandBinding<Entity, BEPUphysics.Collidables.MobileCollidables.EntityCollidable>(this.fluid.EntityIntersected, delegate(Entity entity, BEPUphysics.Collidables.MobileCollidables.EntityCollidable collidable)
+			{
+				this.detectedSubmergedEntities.Add(entity);
+
+				float speed = collidable.Entity.LinearVelocity.Length();
+
+				if (speed > 9.0f && !this.submergedEntities.Contains(entity))
+				{
+					float volume = Math.Min(speed * collidable.Entity.Mass / 50.0f, 1.0f);
+					if (volume > 0.25f)
+					{
+						Sound splash = Sound.PlayCue(this.main, collidable.Entity.LinearVelocity.Y > 0.0f ? "Splash Out" : "Splash", collidable.Entity.Position, volume);
+						if (splash != null)
+							splash.GetProperty("Pitch").Value = Math.Max(0, 1.0f - (collidable.Entity.Mass / 4.0f));
+					}
+				}
+
+				if (speed < 5.0f)
+					return;
+				Random random = new Random();
+				collidable.UpdateBoundingBox();
+				BoundingBox boundingBox = collidable.BoundingBox;
+				Vector3[] particlePositions = new Vector3[30];
+
+				for (int i = 0; i < particlePositions.Length; i++)
+					particlePositions[i] = new Vector3(boundingBox.Min.X + ((float)random.NextDouble() * (boundingBox.Max.X - boundingBox.Min.X)),
+						waterHeight,
+						boundingBox.Min.Z + ((float)random.NextDouble() * (boundingBox.Max.Z - boundingBox.Min.Z)));
+
+				ParticleEmitter.Emit(this.main, "Splash", particlePositions);
+			}));
+			this.main.Space.Add(this.fluid);
+		}
+
+		void IDrawableAlphaComponent.DrawAlpha(Microsoft.Xna.Framework.GameTime time, RenderParameters p)
+		{
+			if (!p.IsMainRender)
+				return;
+
+			RasterizerState originalState = this.main.GraphicsDevice.RasterizerState;
+			this.main.GraphicsDevice.RasterizerState = new RasterizerState { CullMode = CullMode.None };
+
+			float oldFarPlane = p.Camera.FarPlaneDistance;
+			p.Camera.FarPlaneDistance.Value = 1000.0f;
+
+			p.Camera.SetParameters(this.effect);
+			this.effect.Parameters["ActualFarPlaneDistance"].SetValue(oldFarPlane);
+			this.effect.Parameters["ReflectionSampler"].SetValue(this.buffer);
+			this.effect.Parameters["Position"].SetValue(this.Position);
+			this.effect.Parameters["Time"].SetValue(this.time);
+			this.effect.Parameters["DepthSampler"].SetValue(p.DepthBuffer);
+			this.effect.Parameters["FrameSampler"].SetValue(p.FrameBuffer);
+
+			bool underwater = p.Camera.Position.Value.Y < this.Position.Value.Y;
+
+			// Draw surface
+			this.effect.CurrentTechnique = this.effect.Techniques[underwater || !this.EnableReflection ? "Surface" : "SurfaceReflection"];
+			this.effect.CurrentTechnique.Passes[0].Apply();
+			this.main.GraphicsDevice.SetVertexBuffer(this.surfaceVertexBuffer);
+			this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+
+			this.main.GraphicsDevice.RasterizerState = originalState;
+
+			p.Camera.FarPlaneDistance.Value = oldFarPlane;
+
+			if (underwater)
+			{
+				// Draw underwater stuff
+				this.effect.CurrentTechnique = this.effect.Techniques["Underwater"];
+				this.effect.CurrentTechnique.Passes[0].Apply();
+				this.main.GraphicsDevice.SetVertexBuffer(this.underwaterVertexBuffer);
+				this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+			}
+		}
+
+		void IDrawablePreFrameComponent.DrawPreFrame(GameTime time, RenderParameters p)
+		{
+			if (!this.EnableReflection)
+				return;
+
+			if (this.needResize)
+				this.resize();
+
+			float waterHeight = this.Position.Value.Y;
+			if (p.Camera.Position.Value.Y > waterHeight && !this.renderedLastFrame)
+			{
+				this.parameters.ClipPlanes = new[] { new Plane(Vector3.Up, -waterHeight) };
+				this.renderer.SetRenderTargets(this.parameters);
+				this.camera.Position.Value = p.Camera.Position;
+				Matrix reflect = Matrix.CreateTranslation(0.0f, -waterHeight, 0.0f) * Matrix.CreateScale(1.0f, -1.0f, 1.0f) * Matrix.CreateTranslation(0.0f, waterHeight, 0.0f);
+				this.camera.Position.Value = Vector3.Transform(this.camera.Position, reflect);
+				this.camera.View.Value = reflect * p.Camera.View;
+				this.camera.SetPerspectiveProjection(p.Camera.FieldOfView, new Point(this.buffer.Width, this.buffer.Height), p.Camera.NearPlaneDistance, p.Camera.FarPlaneDistance);
+
+				this.main.DrawScene(this.parameters);
+
+				this.renderer.PostProcess(this.buffer, this.parameters, this.main.DrawAlphaComponents);
+				this.renderedLastFrame = true;
+			}
+			else
+				this.renderedLastFrame = false;
+		}
+
+		void IUpdateableComponent.Update(float dt)
+		{
+			this.time += dt;
+			List<Entity> removals = new List<Entity>();
+			foreach (Entity entity in this.submergedEntities)
+			{
+				int index = this.detectedSubmergedEntities.IndexOf(entity);
+				if (index == -1)
+				{
+					Transform transform = entity.Get<Transform>();
+					if (transform == null || transform.Position.Value.Y > this.Position.Value.Y)
+					{
+						Property<bool> submergedProperty = entity.GetProperty<bool>("Submerged");
+						if (submergedProperty != null)
+							submergedProperty.Value = false;
+						removals.Add(entity);
+					}
+				}
+				else
+					this.detectedSubmergedEntities.RemoveAt(index);
+			}
+
+			foreach (Entity entity in removals)
+				this.submergedEntities.Remove(entity);
+
+			foreach (Entity entity in this.detectedSubmergedEntities)
+			{
+				Property<bool> submergedProperty = entity.GetProperty<bool>("Submerged");
+				if (submergedProperty != null && !this.submergedEntities.Contains(entity))
+				{
+					submergedProperty.Value = true;
+					this.submergedEntities.Add(entity);
+				}
+			}
+			this.detectedSubmergedEntities.Clear();
+		}
+
+		protected override void delete()
+		{
+			this.camera.Delete.Execute();
+			this.effect.Dispose();
+			this.renderer.Delete.Execute();
+			this.buffer.Dispose();
+			this.surfaceVertexBuffer.Dispose();
+			this.underwaterVertexBuffer.Dispose();
+			if (this.fluid.Space != null)
+				this.main.Space.Remove(this.fluid);
+			this.submergedEntities.Clear();
+			base.delete();
+		}
+	}
+}

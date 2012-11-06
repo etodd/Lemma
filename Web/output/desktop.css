@@ -1,0 +1,16 @@
+article
+{
+	padding: 30px;
+}
+
+#twitter-feed, #sidebar
+{
+	float: right;
+	margin-left: 10px;
+	width: 250px;
+}
+
+.twtr-doc
+{
+	width: 250px !important;
+}

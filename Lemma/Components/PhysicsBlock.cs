@@ -1,0 +1,126 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using BEPUphysics.Entities.Prefabs;
+using BEPUphysics;
+using Microsoft.Xna.Framework;
+using BEPUphysics.Collidables;
+using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.CollisionTests;
+using System.Xml.Serialization;
+using BEPUphysics.NarrowPhaseSystems.Pairs;
+
+namespace Lemma.Components
+{
+	public class PhysicsBlock : Component, IUpdateableComponent
+	{
+		public Property<Matrix> Transform = new Property<Matrix> { Editable = false };
+		public Property<float> Mass = new Property<float> { Editable = true, Value = 0.25f };
+		public Property<Vector3> Size = new Property<Vector3> { Editable = true, Value = new Vector3(0.5f) };
+		public Property<Vector3> LinearVelocity = new Property<Vector3> { Editable = false };
+		public Property<Vector3> AngularVelocity = new Property<Vector3> { Editable = false };
+
+		[XmlIgnore]
+		public Command<Collidable, ContactCollection> Collided = new Command<Collidable, ContactCollection>();
+		[XmlIgnore]
+		public Box Box;
+
+		public override void InitializeProperties()
+		{
+			if (this.Mass == 0.0f)
+				this.Box = new Box(Vector3.Zero, this.Size.Value.X, this.Size.Value.Y, this.Size.Value.Z);
+			else
+				this.Box = new Box(Vector3.Zero, this.Size.Value.X, this.Size.Value.Y, this.Size.Value.Z, this.Mass);
+			this.Box.CollisionInformation.Events.ContactCreated += new BEPUphysics.Collidables.Events.ContactCreatedEventHandler<EntityCollidable>(Events_ContactCreated);
+			this.Box.CollisionInformation.CollisionRules.Group = Util.Character.NoCollideGroup;
+			this.Transform.Set = delegate(Matrix matrix)
+			{
+				this.Box.WorldTransform = matrix;
+			};
+
+			this.Transform.Get = delegate()
+			{
+				return this.Box.BufferedStates.InterpolatedStates.WorldTransform;
+			};
+
+			this.Mass.Set = delegate(float m)
+			{
+				this.Box.Mass = m;
+			};
+
+			this.Mass.Get = delegate()
+			{
+				return this.Box.Mass;
+			};
+
+			this.LinearVelocity.Get = delegate()
+			{
+				return this.Box.LinearVelocity;
+			};
+
+			this.LinearVelocity.Set = delegate(Vector3 value)
+			{
+				this.Box.LinearVelocity = value;
+			};
+
+			this.AngularVelocity.Get = delegate()
+			{
+				return this.Box.AngularVelocity;
+			};
+
+			this.AngularVelocity.Set = delegate(Vector3 value)
+			{
+				this.Box.AngularVelocity = value;
+			};
+
+			this.Size.Set = delegate(Vector3 s)
+			{
+				this.Box.Width = s.X;
+				this.Box.Height = s.Y;
+				this.Box.Length = s.Z;
+			};
+
+			this.Size.Get = delegate()
+			{
+				return new Vector3(this.Box.Width, this.Box.Height, this.Box.Length);
+			};
+
+			Action remove = delegate()
+			{
+				if (this.Box.Space != null)
+					this.main.Space.Remove(this.Box);
+			};
+			this.Add(new CommandBinding(this.OnDisabled, remove));
+			this.Add(new CommandBinding(this.OnSuspended, remove));
+
+			Action add = delegate()
+			{
+				this.Box.LinearVelocity = Vector3.Zero;
+				if (this.Box.Space == null && this.Enabled && !this.Suspended)
+					this.main.Space.Add(this.Box);
+			};
+			this.Add(new CommandBinding(this.OnEnabled, add));
+			this.Add(new CommandBinding(this.OnResumed, add));
+
+			this.main.Space.Add(this.Box);
+		}
+
+		void Events_ContactCreated(EntityCollidable sender, Collidable other, BEPUphysics.NarrowPhaseSystems.Pairs.CollidablePairHandler pair, ContactData contact)
+		{
+			this.Collided.Execute(other, pair.Contacts);
+		}
+
+		void IUpdateableComponent.Update(float dt)
+		{
+			this.Transform.Changed();
+		}
+
+		protected override void delete()
+		{
+			base.delete();
+			if (this.Box.Space != null)
+				this.main.Space.Remove(this.Box);
+		}
+	}
+}

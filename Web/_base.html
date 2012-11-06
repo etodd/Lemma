@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<title>LEMMA</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width" />
+	<meta name="description" content="Lemma is a first-person PC game about parkour! The goal is to release a short and sweet single-player game on Desura and Steam." />
+	<link href="base.css" type="text/css" rel="stylesheet"/>
+	<link href="tablet.css" type="text/css" rel="stylesheet" media="screen and (min-width: 590px)"  />
+	<link href="desktop.css" type="text/css" rel="stylesheet" media="screen and (min-width: 960px)"  />
+	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+	<script src="jquery-1.7.1.min.js"></script>
+	<script src="jquery.fitvids.js"></script>
+	<script src="base.js"></script>
+	{% block extrahead %}{% endblock %}
+</head>
+<body>
+	<div id="fb-root"></div>
+	<div id="container">
+		<header>
+			<h1 style="visibility: hidden;">Lemma</h1>
+		</header>
+		<table id="menu">
+			<tr>
+				<td><a href="./">Blog</a></td>
+				<td><a href="about.html">About</a></td>
+				<td><a href="downloads.html">Downloads</a></td>
+				<td><a href="http://moddb.com/games/lemma" target="new">ModDB</a></td>
+				<td><a href="http://twitter.com/et1337" target="new">Twitter</a></td>
+				<td><a href="http://facebook.com/lemmagame" target="new">Facebook</a></td>
+				<td>
+					<div class="fb-like" data-href="http://www.facebook.com/lemmagame" data-send="false" data-layout="button_count" data-width="100" data-show-faces="false" data-font="tahoma"></div>
+				</td>
+			</tr>
+		</table>
+		<article>
+			{% block content %}{% endblock %}
+		</article>
+	</div>
+</body>
+</html>
