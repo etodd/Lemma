@@ -544,12 +544,25 @@ namespace Lemma
 		public virtual void ResizeViewport(int width, int height, bool fullscreen, bool applyChanges = true)
 		{
 			this.ScreenSize.Value = new Point(width, height);
-			this.graphics.IsFullScreen = fullscreen;
-			this.graphics.PreferredBackBufferWidth = width;
-			this.graphics.PreferredBackBufferHeight = height;
-			if (applyChanges)
+			bool needApply = false;
+			if (this.graphics.IsFullScreen != fullscreen)
+			{
+				this.graphics.IsFullScreen = fullscreen;
+				needApply = true;
+			}
+			if (this.graphics.IsFullScreen != fullscreen)
+			{
+				this.graphics.PreferredBackBufferWidth = width;
+				needApply = true;
+			}
+			if (this.graphics.IsFullScreen != fullscreen)
+			{
+				this.graphics.PreferredBackBufferHeight = height;
+				needApply = true;
+			}
+			if (applyChanges && needApply)
 				this.graphics.ApplyChanges();
-			if (this.Renderer != null)
+			if (this.Renderer != null && needApply)
 				this.Renderer.ReallocateBuffers(this.ScreenSize);
 		}
 	}
