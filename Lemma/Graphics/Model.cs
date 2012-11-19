@@ -112,7 +112,7 @@ namespace Lemma.Components
 				this.diffuseTexture = string.IsNullOrEmpty(value) ? null : this.main.Content.Load<Texture2D>(value);
 				if (this.effect != null && this.diffuseTexture != null)
 				{
-					EffectParameter param = this.effect.Parameters["Diffuse" + Model.SamplerPostfix + "0"];
+					EffectParameter param = this.effect.Parameters["Diffuse" + Model.SamplerPostfix];
 					if (param != null)
 						param.SetValue(this.diffuseTexture);
 				}
@@ -158,6 +158,7 @@ namespace Lemma.Components
 			{
 				if (value == this.Filename.InternalValue && this.model != null)
 					return;
+				this.boundingBoxValid = false;
 				this.loadModel(value, false);
 				this.Filename.InternalValue = value;
 				if (this.model != null)

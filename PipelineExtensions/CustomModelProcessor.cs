@@ -99,6 +99,7 @@ namespace PipelineExtensions
 
 		String directory;
 
+		private bool validBoundingBox = false;
 		private BoundingBox boundingBox = new BoundingBox(new Vector3(float.MaxValue), new Vector3(float.MinValue));
 
 		public override ModelContent Process(NodeContent input,	ContentProcessorContext context)
@@ -115,7 +116,8 @@ namespace PipelineExtensions
 
 			ModelContent modelContent = base.Process(input, context);
 
-			modelContent.Tag = this.boundingBox;
+			if (this.validBoundingBox)
+				modelContent.Tag = this.boundingBox;
 
 			return modelContent;
 		}
@@ -127,6 +129,8 @@ namespace PipelineExtensions
 				if (nodeContent is MeshContent)
 				{
 					MeshContent meshContent = (MeshContent)nodeContent;
+					if (meshContent.Positions.Count > 0)
+						this.validBoundingBox = true;
 					foreach (Vector3 vector in meshContent.Positions)
 					{
 						if (vector.X < this.boundingBox.Min.X)
@@ -148,8 +152,7 @@ namespace PipelineExtensions
 							this.boundingBox.Max.Z = vector.Z;
 					}
 				}
-				else
-					parseChildren(nodeContent.Children);
+				this.parseChildren(nodeContent.Children);
 			}
 		}
 

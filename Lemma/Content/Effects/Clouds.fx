@@ -47,7 +47,7 @@ void CloudPS(in RenderPSInput input,
 	uv.y = 1.0f - uv.y;
 	uv = (round(uv * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
 	clip(tex2D(DepthSampler, uv).r - FarPlaneDistance);
-	float4 texColor = tex2D(DiffuseSampler0, tex.uvCoordinates + Velocity * Time);
+	float4 texColor = tex2D(DiffuseSampler, tex.uvCoordinates + Velocity * Time);
 	output.xyz = EncodeColor(DiffuseColor.xyz * texColor.xyz);
 	output.w = Alpha * texColor.w * (1.0f - 2.0f * length(tex.uvCoordinates - float2(0.5f, 0.5f)));
 }

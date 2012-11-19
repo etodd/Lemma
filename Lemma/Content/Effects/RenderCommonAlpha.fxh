@@ -3,10 +3,10 @@
 float Alpha = 1.0f;
 float2 DestinationDimensions;
 
-texture2D DepthBuffer;
+texture2D DepthTexture;
 sampler2D DepthSampler = sampler_state
 {
-	Texture = <DepthBuffer>;
+	Texture = <DepthTexture>;
 	MinFilter = point;
 	MagFilter = point;
 	MipFilter = point;
@@ -23,7 +23,7 @@ void RenderTextureAlphaPS(in RenderPSInput input,
 	uv.y = 1.0f - uv.y;
 	uv = (round(uv * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
 	clip(tex2D(DepthSampler, uv).r - length(input.viewSpacePosition));
-	float4 color = tex2D(DiffuseSampler0, tex.uvCoordinates);
+	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates);
 	
 	output.xyz = EncodeColor(DiffuseColor.xyz * color.xyz);
 	output.w = Alpha * color.w;

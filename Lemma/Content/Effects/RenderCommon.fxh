@@ -10,10 +10,10 @@ float3 PointLightPosition;
 float PointLightRadius;
 
 // Diffuse texture (optional)
-texture2D DiffuseTexture0;
-sampler2D DiffuseSampler0 = sampler_state
+texture2D DiffuseTexture;
+sampler2D DiffuseSampler = sampler_state
 {
-	Texture = <DiffuseTexture0>;
+	Texture = <DiffuseTexture>;
 	MinFilter = linear;
 	MagFilter = linear;
 	MipFilter = linear;
@@ -22,10 +22,10 @@ sampler2D DiffuseSampler0 = sampler_state
 };
 
 // Normal map (optional)
-texture2D NormalMap;
+texture2D NormalMapTexture;
 sampler2D NormalMapSampler = sampler_state
 {
-	Texture = <NormalMap>;
+	Texture = <NormalMapTexture>;
 	MinFilter = linear;
 	MagFilter = linear;
 	MipFilter = linear;
@@ -72,7 +72,7 @@ void ShadowAlphaPS (	in ShadowPSInput input,
 				in TexturePSInput tex,
 				out float4 out_Depth : COLOR0)
 {
-	clip(tex2D(DiffuseSampler0, tex.uvCoordinates).a - 0.5f);
+	clip(tex2D(DiffuseSampler, tex.uvCoordinates).a - 0.5f);
 	out_Depth = float4(1.0f - (input.clipSpacePosition.z / input.clipSpacePosition.w), 1.0f, 1.0f, 1.0f);
 }
 
@@ -81,7 +81,7 @@ void PointLightShadowAlphaPS (	in ShadowPSInput input,
 							in TexturePSInput tex,
 							out float4 out_Depth : COLOR0)
 {
-	clip(tex2D(DiffuseSampler0, tex.uvCoordinates).a - 0.5f);
+	clip(tex2D(DiffuseSampler, tex.uvCoordinates).a - 0.5f);
 	out_Depth = float4(1.0f - (length(input.worldPosition - PointLightPosition) / PointLightRadius), 1.0f, 1.0f, 1.0f);
 }
 
@@ -94,7 +94,7 @@ void RenderTextureFlatPS(in RenderPSInput input,
 						uniform bool clipAlpha,
 						uniform bool glow)
 {
-	float4 color = tex2D(DiffuseSampler0, tex.uvCoordinates);
+	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates);
 
 	if (clipAlpha)
 		clip(color.a - 0.5f);
@@ -224,7 +224,7 @@ void RenderTextureNormalMapPS(	in RenderPSInput input,
 								uniform bool clipAlpha,
 								uniform bool glow)
 {
-	float4 color = tex2D(DiffuseSampler0, tex.uvCoordinates);
+	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates);
 	if (clipAlpha)
 		clip(color.a - 0.5f);
 	float3 normal = mul(DecodeNormalMap(tex2D(NormalMapSampler, tex.uvCoordinates).xyz), normalMap.tangentToWorld);
@@ -381,7 +381,7 @@ void RenderTexturePS(	in RenderPSInput input,
 						out RenderPSOutput output,
 						uniform bool clipAlpha)
 {
-	float4 color = tex2D(DiffuseSampler0, tex.uvCoordinates);
+	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates);
 	if (clipAlpha)
 		clip(color.a - 0.5f);
 	output.color.xyz = EncodeColor(DiffuseColor.xyz * color.xyz);
@@ -464,7 +464,7 @@ void RenderTextureNoDepthPS(	in RenderPSInput input,
 						out RenderPSOutput output,
 						uniform bool clipAlpha)
 {
-	float4 color = tex2D(DiffuseSampler0, tex.uvCoordinates);
+	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates);
 	if (clipAlpha)
 		clip(color.a - 0.5f);
 	output.color.xyz = EncodeColor(DiffuseColor.xyz * color.xyz);
