@@ -11,6 +11,12 @@ namespace Lemma.Components
 {
 	public class Model : Component, IDrawableComponent
 	{
+#if MONOGAME
+		public const string SamplerPostfix = "Sampler";
+#else
+		public const string SamplerPostfix = "Texture";
+#endif
+
 		protected struct InstanceVertex
 		{
 			public Matrix Transform;
@@ -96,7 +102,7 @@ namespace Lemma.Components
 				this.normalMap = string.IsNullOrEmpty(value) ? null : this.main.Content.Load<Texture2D>(value);
 				if (this.effect != null && this.normalMap != null)
 				{
-					EffectParameter param = this.effect.Parameters["NormalMapSampler"];
+					EffectParameter param = this.effect.Parameters["NormalMap" + Model.SamplerPostfix];
 					if (param != null)
 						param.SetValue(this.normalMap);
 				}
@@ -107,7 +113,7 @@ namespace Lemma.Components
 				this.diffuseTexture = string.IsNullOrEmpty(value) ? null : this.main.Content.Load<Texture2D>(value);
 				if (this.effect != null && this.diffuseTexture != null)
 				{
-					EffectParameter param = this.effect.Parameters["DiffuseSampler0"];
+					EffectParameter param = this.effect.Parameters["Diffuse" + Model.SamplerPostfix + "0"];
 					if (param != null)
 						param.SetValue(this.diffuseTexture);
 				}
@@ -838,7 +844,7 @@ namespace Lemma.Components
 		{
 			bool result = base.setParameters(transform, parameters);
 			if (result)
-				this.effect.Parameters["DepthSampler"].SetValue(parameters.DepthBuffer);
+				this.effect.Parameters["Depth" + Model.SamplerPostfix].SetValue(parameters.DepthBuffer);
 			return result;
 		}
 	}

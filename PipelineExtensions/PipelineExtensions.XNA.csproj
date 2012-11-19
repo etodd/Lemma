@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PipelineExtensions</RootNamespace>
-    <AssemblyName>PipelineExtensions</AssemblyName>
+    <AssemblyName>SkinnedModelPipeline</AssemblyName>
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
@@ -16,7 +16,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\x86\Debug</OutputPath>
-    <DefineConstants>TRACE;DEBUG;MONOGAME</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
@@ -53,10 +53,6 @@
     <Compile Include="TextImporter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MonoGame\MonoGame.ContentPipeline\ContentProcessors\MonoGameContentProcessors.csproj">
-      <Project>{2C23E01D-DE2D-4671-85B0-1085857C6D25}</Project>
-      <Name>MonoGameContentProcessors</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SkinnedModel\SkinnedModelContent.csproj">
       <Project>{882A32E7-CB48-4E63-8180-0D1859575723}</Project>
       <Name>SkinnedModelContent</Name>

@@ -7,7 +7,6 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Storage;
 using System.Linq;
 
 using Lemma.Components;
@@ -123,23 +122,11 @@ namespace Lemma
 				this.Settings = new Config();
 			}
 
-			/*
 			// Restore window state
 			if (this.Settings.Fullscreen)
 				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true);
 			else
-			{
-				window.ClientSize = new System.Drawing.Size(this.Settings.Size.Value.X, this.Settings.Size.Value.Y);
-				if (this.Settings.Maximized)
-				{
-					window.WindowState = System.Windows.Forms.FormWindowState.Maximized;
-					System.Drawing.Rectangle workingArea = System.Windows.Forms.Screen.GetWorkingArea(window);
-					this.ResizeViewport(workingArea.Width, workingArea.Height, false, false);
-				}
-				else
-					this.ResizeViewport(this.Settings.Size.Value.X, this.Settings.Size.Value.Y, false, false);
-			}
-			*/
+				this.ResizeViewport(this.Settings.Size.Value.X, this.Settings.Size.Value.Y, false, false);
 		}
 
 		private void copySave(string src, string dst)

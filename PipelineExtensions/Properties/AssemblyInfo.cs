@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SkinnedModelPipeline")]
-[assembly: AssemblyProduct("SkinnedModelPipeline")]
-[assembly: AssemblyDescription("Content Pipeline extension used by the Skinned Model sample.")]
+[assembly: AssemblyTitle("PipelineExtensions")]
+[assembly: AssemblyProduct("PipelineExtensions")]
+[assembly: AssemblyDescription("Content Pipeline extension based on the XNA Skinned Model sample.")]
 [assembly: AssemblyCompany("Microsoft")]
 [assembly: AssemblyCopyright("Copyright © Microsoft 2009")]
 [assembly: AssemblyTrademark("")]

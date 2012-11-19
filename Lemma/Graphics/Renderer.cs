@@ -153,7 +153,7 @@ namespace Lemma.Components
 		private void loadLightRampTexture(string file)
 		{
 			this.lightRampTexture = file == null ? (Texture2D)null : this.main.Content.Load<Texture2D>(file);
-			this.toneMapEffect.Parameters["RampSampler"].SetValue(this.lightRampTexture);
+			this.toneMapEffect.Parameters["Ramp" + Model.SamplerPostfix].SetValue(this.lightRampTexture);
 		}
 
 		public override void LoadContent(bool reload)
@@ -542,7 +542,7 @@ namespace Lemma.Components
 			EffectParameter param;
 			for (int i = 0; i < sources.Length; i++)
 			{
-				param = effect.Parameters["PointSampler" + i.ToString()];
+				param = effect.Parameters["Point" + Model.SamplerPostfix + i.ToString()];
 				if (param == null)
 					break;
 				param.SetValue(sources[i]);

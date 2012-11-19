@@ -19,7 +19,9 @@ using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using System.IO;
 using System.ComponentModel;
+#if MONOGAME
 using MonoGameContentProcessors.Processors;
+#endif
 
 namespace PipelineExtensions
 {
@@ -242,7 +244,11 @@ namespace PipelineExtensions
 
 			// and convert the material using the NormalMappingMaterialProcessor,
 			// who has something special in store for the normal map.
+#if MONOGAME
 			return context.Convert<MaterialContent, MaterialContent>(normalMappingMaterial, typeof(MGMaterialProcessor).Name, processorParameters);
+#else
+			return context.Convert<MaterialContent, MaterialContent>(normalMappingMaterial, typeof(MaterialProcessor).Name, processorParameters);
+#endif
 		}
 	}
 }

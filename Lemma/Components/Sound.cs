@@ -200,7 +200,11 @@ namespace Lemma.Components
 				{
 					Get = delegate()
 					{
+#if MONOGAME
 						return this.cue != null ? this.cue.GetVariable(name, 0.0f) : 0.0f;
+#else
+						return this.cue != null ? this.cue.GetVariable(name) : 0.0f;
+#endif
 					},
 					Set = delegate(float value)
 					{

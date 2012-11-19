@@ -49,7 +49,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\x86\Debug</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS;MONOGAME</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -71,6 +71,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
@@ -197,25 +201,17 @@
     </NestedContentProject>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BEPUphysics\BEPUphysics.csproj">
+    <ProjectReference Include="..\BEPUphysics\BEPUphysics.XNA.csproj">
       <Project>{2A9D2227-78D7-4804-B6D1-560BB43AE911}</Project>
-      <Name>BEPUphysics</Name>
+      <Name>BEPUphysics.XNA</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MonoGame\MonoGame.ContentPipeline\ContentProcessors\MonoGameContentProcessors.csproj">
-      <Project>{2C23E01D-DE2D-4671-85B0-1085857C6D25}</Project>
-      <Name>MonoGameContentProcessors</Name>
+    <ProjectReference Include="..\SkinnedModel\SkinnedModelContent.csproj">
+      <Project>{882A32E7-CB48-4E63-8180-0D1859575723}</Project>
+      <Name>SkinnedModelContent</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MonoGame\MonoGame.Framework\MonoGame.Framework.Windows.csproj">
-      <Project>{7DE47032-A904-4C29-BD22-2D235E8D91BA}</Project>
-      <Name>MonoGame.Framework.Windows</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SkinnedModel\SkinnedModel.csproj">
-      <Project>{B5B20CD6-137B-4E04-9DDC-3A25F8EE1955}</Project>
-      <Name>SkinnedModel</Name>
-    </ProjectReference>
-    <ProjectReference Include="Content\LemmaContent.contentproj">
+    <ProjectReference Include="Content\LemmaContent.XNA.contentproj">
       <Project>{6D5DBC4B-1DE9-47B2-92AF-546C5D1E4268}</Project>
-      <Name>LemmaContent %28Content%29</Name>
+      <Name>LemmaContent.XNA %28Content%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>

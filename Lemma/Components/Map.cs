@@ -5,7 +5,6 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.IO;
-using Microsoft.Xna.Framework.Storage;
 
 using Lemma.Util;
 using System.Xml.Serialization;

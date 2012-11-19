@@ -70,7 +70,7 @@ namespace Lemma.Components
 			{
 				this.effect.CurrentTechnique.Passes[0].Apply();
 				p.Camera.SetParameters(this.effect);
-				this.effect.Parameters["DepthSampler"].SetValue(p.DepthBuffer);
+				this.effect.Parameters["Depth" + Model.SamplerPostfix].SetValue(p.DepthBuffer);
 				base.DrawAlpha(time, p);
 			}
 		}

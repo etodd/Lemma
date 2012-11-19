@@ -6,10 +6,10 @@ float EndDistance;
 float VerticalSize;
 float VerticalCenter;
 
-texture2D DepthBuffer;
+texture2D DepthTexture;
 sampler2D DepthSampler = sampler_state
 {
-	Texture = <DepthBuffer>;
+	Texture = <DepthTexture>;
 	MinFilter = point;
 	MagFilter = point;
 	MipFilter = point;

@@ -542,8 +542,8 @@ namespace Lemma.Components
 			this.effectProjectionParameter = parameters["Projection"];
 			this.effectViewportScaleParameter = parameters["ViewportScale"];
 			this.effectTimeParameter = parameters["CurrentTime"];
-			this.effectDepthBufferParameter = parameters["DepthSampler"];
-			this.effectFrameBufferParameter = parameters["FrameSampler"];
+			this.effectDepthBufferParameter = parameters["Depth" + Model.SamplerPostfix];
+			this.effectFrameBufferParameter = parameters["Frame" + Model.SamplerPostfix];
 
 			// Set the values of parameters that do not change.
 			parameters["DurationRandomness"].SetValue(this.settings.DurationRandomness);
@@ -567,7 +567,7 @@ namespace Lemma.Components
 			// Load the particle texture, and set it onto the effect.
 			Texture2D texture = this.main.Content.Load<Texture2D>(this.settings.TextureName);
 
-			param = parameters["Sampler"];
+			param = parameters[Model.SamplerPostfix];
 			if (param != null)
 				param.SetValue(texture);
 

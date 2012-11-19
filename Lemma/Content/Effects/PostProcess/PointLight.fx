@@ -1,9 +1,9 @@
 #include "LightingCommon.fxh"
 
-TextureCube ShadowMap;
+TextureCube ShadowMapTexture;
 samplerCUBE ShadowMapSampler = sampler_state
 {
-	Texture = <ShadowMap>;
+	Texture = <ShadowMapTexture>;
 	MinFilter = point;
 	MagFilter = point;
 	MipFilter = point;

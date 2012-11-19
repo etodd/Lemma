@@ -1,8 +1,8 @@
 // Shadow map
-texture2D ShadowMap;
+texture2D ShadowMapTexture;
 sampler2D ShadowMapSampler = sampler_state
 {
-	Texture = <ShadowMap>;
+	Texture = <ShadowMapTexture>;
 	MinFilter = point;
 	MagFilter = point;
 	MipFilter = point;

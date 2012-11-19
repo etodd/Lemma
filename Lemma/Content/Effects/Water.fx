@@ -33,10 +33,10 @@ struct SurfacePSInput
 	float4 viewSpacePosition : TEXCOORD8;
 };
 
-texture2D DepthBuffer;
+texture2D DepthTexture;
 sampler2D DepthSampler = sampler_state
 {
-	Texture = <DepthBuffer>;
+	Texture = <DepthTexture>;
 	MinFilter = point;
 	MagFilter = point;
 	MipFilter = point;
@@ -44,10 +44,10 @@ sampler2D DepthSampler = sampler_state
 	AddressV = CLAMP;
 };
 
-texture2D NormalMap;
+texture2D NormalMapTexture;
 sampler2D NormalMapSampler = sampler_state
 {
-	Texture = <NormalMap>;
+	Texture = <NormalMapTexture>;
 	MinFilter = linear;
 	MagFilter = linear;
 	MipFilter = linear;
@@ -55,10 +55,10 @@ sampler2D NormalMapSampler = sampler_state
 	AddressV = WRAP;
 };
 
-texture2D FrameBuffer;
+texture2D FrameTexture;
 sampler2D FrameSampler = sampler_state
 {
-	Texture = <FrameBuffer>;
+	Texture = <FrameTexture>;
 	MinFilter = point;
 	MagFilter = point;
 	MipFilter = point;
@@ -66,10 +66,10 @@ sampler2D FrameSampler = sampler_state
 	AddressV = CLAMP;
 };
 
-texture2D ReflectionBuffer;
+texture2D ReflectionTexture;
 sampler2D ReflectionSampler = sampler_state
 {
-	Texture = <ReflectionBuffer>;
+	Texture = <ReflectionTexture>;
 	MinFilter = linear;
 	MagFilter = linear;
 	MipFilter = linear;

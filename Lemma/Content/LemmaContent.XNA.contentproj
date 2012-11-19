@@ -76,87 +76,87 @@
     <Compile Include="Effects\PostProcess\SpotLight.fx">
       <Name>SpotLight</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\Water.fx">
       <Name>Water</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\PostProcess\Clear.fx">
       <Name>Clear</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <None Include="Effects\ClipCommon.fxh">
       <Name>ClipCommon</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </None>
     <Compile Include="Effects\PostProcess\Fog.fx">
       <Name>Fog</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\DefaultAlpha.fx">
       <Name>DefaultAlpha</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\DefaultSolidColorAlpha.fx">
       <Name>DefaultSolidColorAlpha</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\Lines.fx">
       <Name>Lines</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\Environment.fx">
       <Name>Environment</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\AnimationNormalMap.fx">
       <Name>AnimationNormalMap</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\ParticleFrameBufferDistortion.fx">
       <Name>ParticleFrameBufferDistortion</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\Clouds.fx">
       <Name>Clouds</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\ParticleRain.fx">
       <Name>ParticleRain</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <None Include="Effects\ParticleCommon.fxh">
       <Name>ParticleCommon</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </None>
     <None Include="Effects\PostProcess\Shadow2D.fxh">
       <Name>Shadow2D</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </None>
     <Compile Include="Effects\PostProcess\ToneMap.fx">
       <Name>ToneMap</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <None Include="Effects\RenderCommonAlpha.fxh">
       <Name>RenderCommonAlpha</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </None>
     <None Include="Maps\materials.cs">
       <Name>materials</Name>
@@ -262,18 +262,8 @@
     <Compile Include="Effects\Animation.fx">
       <Name>Animation</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\MonoGame\MonoGame.ContentPipeline\ContentProcessors\MonoGameContentProcessors.csproj">
-      <Project>{2C23E01D-DE2D-4671-85B0-1085857C6D25}</Project>
-      <Name>MonoGameContentProcessors</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\PipelineExtensions\PipelineExtensions.csproj">
-      <Project>{4636C7E1-B845-4B83-B96D-64A11B8A4515}</Project>
-      <Name>PipelineExtensions</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Xna.Framework.Content.Pipeline, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
@@ -288,103 +278,103 @@
     <Compile Include="Font.spritefont">
       <Name>Font</Name>
       <Importer>FontDescriptionImporter</Importer>
-      <Processor>MGSpriteFontDescriptionProcessor</Processor>
+      <Processor>FontDescriptionProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Effects\Default.fx">
       <Name>Default</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Effects\DefaultNormalMap.fx">
       <Name>DefaultNormalMap</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Effects\InstancedNormalMap.fx">
       <Name>InstancedNormalMap</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\Unlit.fx">
       <Name>Unlit</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\Particle.fx">
       <Name>Particle</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\PostProcess\GlobalLight.fx">
       <Name>GlobalLight</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <None Include="Effects\Common.fxh">
       <Name>Common</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </None>
     <Compile Include="Effects\PostProcess\Composite.fx">
       <Name>Composite</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\EnvironmentBlock.fx">
       <Name>EnvironmentBlock</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\UnlitSolidColor.fx">
       <Name>UnlitSolidColor</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\Skybox.fx">
       <Name>Skybox</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\PostProcess\Blur.fx">
       <Name>Blur</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <None Include="Effects\PostProcess\EffectCommon.fxh">
       <Name>EffectCommon</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </None>
     <Compile Include="Effects\PostProcess\MotionBlur.fx">
       <Name>MotionBlur</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\PostProcess\Bloom.fx">
       <Name>Bloom</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <Compile Include="Effects\PostProcess\PointLight.fx">
       <Name>PointLight</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
     <None Include="Effects\PostProcess\LightingCommon.fxh">
       <Name>LightingCommon</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </None>
     <None Include="Effects\RenderCommon.fxh">
       <Name>RenderCommon</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </None>
     <Compile Include="Models\selector.fbx">
       <Name>selector</Name>
@@ -440,360 +430,366 @@
     <Compile Include="Effects\DefaultSolidColor.fx">
       <Name>DefaultSolidColor</Name>
       <Importer>EffectImporter</Importer>
-      <Processor>MGEffectProcessor</Processor>
+      <Processor>EffectProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\concrete-normal.jpg">
       <Name>concrete-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\concrete.jpg">
       <Name>concrete</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\gravel.jpg">
       <Name>gravel</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\plain-normal.jpg">
       <Name>plain-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\gravel-normal.jpg">
       <Name>gravel-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Particles\spark.png">
       <Name>spark</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\metal-normal.png">
       <Name>metal-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\metal.jpg">
       <Name>metal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Images\damage.png">
       <Name>damage</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\danger-normal.jpg">
       <Name>danger-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\danger.jpg">
       <Name>danger</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Images\default-cookie.png">
       <Name>default-cookie</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\dirt-normal.jpg">
       <Name>dirt-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\dirt.jpg">
       <Name>dirt</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Images\bright-ramp.jpg">
       <Name>bright-ramp</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="Images\default-ramp.jpg">
       <Name>default-ramp</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Images\water-normal.jpg">
       <Name>water-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\foliage.png">
       <Name>foliage</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\wood-normal.jpg">
       <Name>wood-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\wood.jpg">
       <Name>wood</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Particles\splash.png">
       <Name>splash</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\ice-normal.jpg">
       <Name>ice-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\ice.jpg">
       <Name>ice</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\quartz-normal.jpg">
       <Name>quartz-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\quartz.jpg">
       <Name>quartz</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Images\phone.png">
       <Name>phone</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Images\phone-light.png">
       <Name>phone-light</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Images\logo.png">
       <Name>logo</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\lava-normal.jpg">
       <Name>lava-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\lava.png">
       <Name>lava</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\fragile-dirt-normal.jpg">
       <Name>fragile-dirt-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\fragile-dirt.jpg">
       <Name>fragile-dirt</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Particles\smoke.png">
       <Name>smoke</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Particles\debug.png">
       <Name>debug</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\marble-normal.jpg">
       <Name>marble-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\marble.jpg">
       <Name>marble</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\temporary.png">
       <Name>temporary</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\temporary-normal.jpg">
       <Name>temporary-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Images\ui-bullet.png">
       <Name>ui-bullet</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="Images\ui-mag.png">
       <Name>ui-mag</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\infected.png">
       <Name>infected</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\grass-normal.jpg">
       <Name>grass-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\grass.jpg">
       <Name>grass</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\brick-normal.jpg">
       <Name>brick-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\brick.jpg">
       <Name>brick</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\tile-normal.jpg">
       <Name>tile-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\tile.jpg">
       <Name>tile</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\windows-normal.jpg">
       <Name>windows-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\windows.jpg">
       <Name>windows</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\bulkhead1-normal.jpg">
       <Name>bulkhead1-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\bulkhead1.jpg">
       <Name>bulkhead1</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnvironmentTextures\bulkhead2-normal.jpg">
       <Name>bulkhead2-normal</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
     <Compile Include="EnvironmentTextures\bulkhead2.jpg">
       <Name>bulkhead2</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Particles\distortion.png">
       <Name>distortion</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Particles\default.png">
       <Name>default</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Images\crosshair.png">
       <Name>crosshair</Name>
       <Importer>TextureImporter</Importer>
-      <Processor>MGTextureProcessor</Processor>
+      <Processor>TextureProcessor</Processor>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\PipelineExtensions\PipelineExtensions.XNA.csproj">
+      <Project>{4636C7E1-B845-4B83-B96D-64A11B8A4515}</Project>
+      <Name>PipelineExtensions.XNA</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

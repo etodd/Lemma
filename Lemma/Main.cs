@@ -8,7 +8,6 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Storage;
 
 using Lemma.Components;
 using Lemma.Factories;
@@ -549,12 +548,12 @@ namespace Lemma
 				this.graphics.IsFullScreen = fullscreen;
 				needApply = true;
 			}
-			if (this.graphics.IsFullScreen != fullscreen)
+			if (this.graphics.PreferredBackBufferWidth != width)
 			{
 				this.graphics.PreferredBackBufferWidth = width;
 				needApply = true;
 			}
-			if (this.graphics.IsFullScreen != fullscreen)
+			if (this.graphics.PreferredBackBufferHeight != height)
 			{
 				this.graphics.PreferredBackBufferHeight = height;
 				needApply = true;
@@ -562,11 +561,9 @@ namespace Lemma
 			if (applyChanges && needApply)
 				this.graphics.ApplyChanges();
 
+			this.ScreenSize.Value = new Point(width, height);
 			if (this.Renderer != null)
-			{
-				this.ScreenSize.Value = new Point(width, height);
 				this.Renderer.ReallocateBuffers(this.ScreenSize);
-			}
 		}
 	}
 }

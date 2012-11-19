@@ -110,7 +110,7 @@ namespace Lemma.Components
 		public override void LoadContent(bool reload)
 		{
 			this.effect = this.main.Content.Load<Effect>("Effects\\Water").Clone();
-			this.effect.Parameters["NormalMapSampler"].SetValue(this.main.Content.Load<Texture2D>("Images\\water-normal"));
+			this.effect.Parameters["NormalMap" + Model.SamplerPostfix].SetValue(this.main.Content.Load<Texture2D>("Images\\water-normal"));
 
 			this.Color.Reset();
 			this.Fresnel.Reset();
@@ -321,11 +321,11 @@ namespace Lemma.Components
 
 			p.Camera.SetParameters(this.effect);
 			this.effect.Parameters["ActualFarPlaneDistance"].SetValue(oldFarPlane);
-			this.effect.Parameters["ReflectionSampler"].SetValue(this.buffer);
+			this.effect.Parameters["Reflection" + Model.SamplerPostfix].SetValue(this.buffer);
 			this.effect.Parameters["Position"].SetValue(this.Position);
 			this.effect.Parameters["Time"].SetValue(this.time);
-			this.effect.Parameters["DepthSampler"].SetValue(p.DepthBuffer);
-			this.effect.Parameters["FrameSampler"].SetValue(p.FrameBuffer);
+			this.effect.Parameters["Depth" + Model.SamplerPostfix].SetValue(p.DepthBuffer);
+			this.effect.Parameters["Frame" + Model.SamplerPostfix].SetValue(p.FrameBuffer);
 
 			bool underwater = p.Camera.Position.Value.Y < this.Position.Value.Y;
 

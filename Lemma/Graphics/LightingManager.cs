@@ -296,7 +296,7 @@ namespace Lemma.Components
 			{
 				effect.Parameters["ShadowViewProjectionMatrix"].SetValue(this.globalShadowViewProjection);
 				effect.Parameters["ShadowMapSize"].SetValue(this.globalShadowMapSize);
-				effect.Parameters["ShadowMapSampler"].SetValue(this.globalShadowMap);
+				effect.Parameters["ShadowMap" + Model.SamplerPostfix].SetValue(this.globalShadowMap);
 			}
 		}
 
@@ -306,7 +306,7 @@ namespace Lemma.Components
 			effect.CurrentTechnique = effect.Techniques[shadowed ? "SpotLightShadowed" : "SpotLight"];
 			if (shadowed)
 			{
-				effect.Parameters["ShadowMapSampler"].SetValue(this.spotShadowMaps[this.shadowMapIndices[light]]);
+				effect.Parameters["ShadowMap" + Model.SamplerPostfix].SetValue(this.spotShadowMaps[this.shadowMapIndices[light]]);
 				effect.Parameters["ShadowMapSize"].SetValue(this.spotShadowMapSize);
 			}
 
@@ -320,7 +320,7 @@ namespace Lemma.Components
 			effect.Parameters["WorldMatrix"].SetValue(Matrix.CreateScale(horizontalScale, horizontalScale, depthScale) * rotation * Matrix.CreateTranslation(light.Position));
 			effect.Parameters["SpotLightRadius"].SetValue(depthScale);
 			effect.Parameters["SpotLightColor"].SetValue(light.Color);
-			effect.Parameters["CookieTexture"].SetValue(light.CookieTexture);
+			effect.Parameters["Cookie" + Model.SamplerPostfix].SetValue(light.CookieTexture);
 		}
 
 		public void SetPointLightParameters(PointLight light, Microsoft.Xna.Framework.Graphics.Effect effect)
@@ -330,7 +330,7 @@ namespace Lemma.Components
 			if (shadowed)
 			{
 				// TODO: point light shadow maps
-				//effect.Parameters["ShadowMapSampler"].SetValue(this.pointShadowMaps[this.shadowMapIndices[light]]);
+				//effect.Parameters["ShadowMap" + Model.SamplerPostfix].SetValue(this.pointShadowMaps[this.shadowMapIndices[light]]);
 				effect.Parameters["ShadowMapSize"].SetValue(new Vector3(this.pointShadowMapSize));
 			}
 
