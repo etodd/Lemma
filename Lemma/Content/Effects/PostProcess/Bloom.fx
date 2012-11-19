@@ -12,7 +12,7 @@ void BlurHorizontalPS(	in PostProcessPSInput input,
 	float3 sum = 0;
 	[unroll]
 	for (int x = -8; x < 8; x++)
-		sum += saturate((DecodeColor(tex2D(PointSampler0, float2(input.texCoord.x + (x * xInterval), input.texCoord.y)).xyz) - BloomThreshold) / (1.0f - BloomThreshold)) * GaussianKernel[x + 8];
+		sum += saturate((DecodeColor(tex2D(SourceSampler0, float2(input.texCoord.x + (x * xInterval), input.texCoord.y)).xyz) - BloomThreshold) / (1.0f - BloomThreshold)) * GaussianKernel[x + 8];
 	
 	// Return the average color of all the samples
 	out_Color.xyz = sum;
@@ -27,9 +27,9 @@ void CompositePS(	in PostProcessPSInput input,
 	float3 sum = 0;
 	[unroll]
 	for (int y = -8; y < 8; y++)
-		sum += tex2D(LinearSampler1, float2(input.texCoord.x, input.texCoord.y + (y * yInterval))).xyz * GaussianKernel[y + 8];
+		sum += tex2D(SourceSampler1, float2(input.texCoord.x, input.texCoord.y + (y * yInterval))).xyz * GaussianKernel[y + 8];
 	
-	out_Color.xyz = (DecodeColor(tex2D(PointSampler0, input.texCoord).xyz) * (1.0f - saturate(sum))) + sum;
+	out_Color.xyz = (DecodeColor(tex2D(SourceSampler0, input.texCoord).xyz) * (1.0f - saturate(sum))) + sum;
 	out_Color.w = 1.0f;
 }
 

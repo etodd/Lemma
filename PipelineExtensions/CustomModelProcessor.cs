@@ -99,20 +99,59 @@ namespace PipelineExtensions
 
 		String directory;
 
-		public override ModelContent Process(NodeContent input,
-			ContentProcessorContext context)
+		private BoundingBox boundingBox = new BoundingBox(new Vector3(float.MaxValue), new Vector3(float.MinValue));
+
+		public override ModelContent Process(NodeContent input,	ContentProcessorContext context)
 		{
 			if (input == null)
-			{
 				throw new ArgumentNullException("input");
-			}
+
 			directory = Path.GetDirectoryName(input.Identity.SourceFilename);
 
-			LookUpNormalMapAndAddToTextures(input);
-			return base.Process(input, context);
+			this.LookUpNormalMapAndAddToTextures(input);
+
+			//This is a recursive function in case the input's children have children.
+			this.parseChildren(input.Children);
+
+			ModelContent modelContent = base.Process(input, context);
+
+			modelContent.Tag = this.boundingBox;
+
+			return modelContent;
 		}
 
+		private void parseChildren(NodeContentCollection nodeContentCollection)
+		{
+			foreach (NodeContent nodeContent in nodeContentCollection)
+			{
+				if (nodeContent is MeshContent)
+				{
+					MeshContent meshContent = (MeshContent)nodeContent;
+					foreach (Vector3 vector in meshContent.Positions)
+					{
+						if (vector.X < this.boundingBox.Min.X)
+							this.boundingBox.Min.X = vector.X;
 
+						if (vector.Y < this.boundingBox.Min.Y)
+							this.boundingBox.Min.Y = vector.Y;
+
+						if (vector.Z < this.boundingBox.Min.Z)
+							this.boundingBox.Min.Z = vector.Z;
+
+						if (vector.X > this.boundingBox.Max.X)
+							this.boundingBox.Max.X = vector.X;
+
+						if (vector.Y > this.boundingBox.Max.Y)
+							this.boundingBox.Max.Y = vector.Y;
+
+						if (vector.Z > this.boundingBox.Max.Z)
+							this.boundingBox.Max.Z = vector.Z;
+					}
+				}
+				else
+					parseChildren(nodeContent.Children);
+			}
+		}
 
 		/// <summary>
 		/// Looks into the OpaqueData property on the "mesh" object, and looks for a
@@ -129,31 +168,22 @@ namespace PipelineExtensions
 				// if NormalMapTexture hasn't been set in the UI, we'll try to look up
 				// the normal map using the opaque data.
 				if (String.IsNullOrEmpty(NormalMapTexture))
-				{
-					pathToNormalMap =
-						mesh.OpaqueData.GetValue<string>(NormalMapKey, null);
-				}
+					pathToNormalMap = mesh.OpaqueData.GetValue<string>(NormalMapKey, null);
 				// However, if the NormalMapTexture is set, we'll use that value for
 				// ever mesh in the scene.
 				else
-				{
 					pathToNormalMap = NormalMapTexture;
-				}
 
 				if (pathToNormalMap != null)
 				{
 					pathToNormalMap = Path.Combine(directory, pathToNormalMap);
 					foreach (GeometryContent geometry in mesh.Geometry)
-					{
 						geometry.Material.Textures.Add(NormalMapKey, new ExternalReference<TextureContent>(pathToNormalMap));
-					}
 				}
 			}
 
 			foreach (NodeContent child in node.Children)
-			{
-				LookUpNormalMapAndAddToTextures(child);
-			}
+				this.LookUpNormalMapAndAddToTextures(child);
 		}
 
 
@@ -161,15 +191,14 @@ namespace PipelineExtensions
 		// expects.  The NormalMappingModelProcessor overrides ProcessVertexChannel
 		// to remove all vertex channels which don't have one of these four
 		// names.
-		static IList<string> acceptableVertexChannelNames =
-			new string[]
-			{
-				VertexChannelNames.TextureCoordinate(0),
-				VertexChannelNames.Normal(0),
-				VertexChannelNames.Binormal(0),
-				VertexChannelNames.Tangent(0),
-				VertexChannelNames.Weights(0)
-			};
+		static IList<string> acceptableVertexChannelNames = new string[]
+		{
+			VertexChannelNames.TextureCoordinate(0),
+			VertexChannelNames.Normal(0),
+			VertexChannelNames.Binormal(0),
+			VertexChannelNames.Tangent(0),
+			VertexChannelNames.Weights(0)
+		};
 
 
 		/// <summary>
@@ -183,29 +212,23 @@ namespace PipelineExtensions
 		/// <param name="context">the context that the processor is operating
 		/// under.  in most cases, this parameter isn't necessary; but could
 		/// be used to log a warning that a channel had been removed.</param>
-		protected override void ProcessVertexChannel(GeometryContent geometry,
-			int vertexChannelIndex, ContentProcessorContext context)
+		protected override void ProcessVertexChannel(GeometryContent geometry, int vertexChannelIndex, ContentProcessorContext context)
 		{
-			String vertexChannelName =
-				geometry.Vertices.Channels[vertexChannelIndex].Name;
+			String vertexChannelName = geometry.Vertices.Channels[vertexChannelIndex].Name;
 			
 			// if this vertex channel has an acceptable names, process it as normal.
 			if (acceptableVertexChannelNames.Contains(vertexChannelName))
-			{
 				base.ProcessVertexChannel(geometry, vertexChannelIndex, context);
-			}
 			// otherwise, remove it from the vertex channels; it's just extra data
 			// we don't need.
 			else
-			{
 				geometry.Vertices.Channels.Remove(vertexChannelName);
-			}
 		}
 
 		protected override MaterialContent ConvertMaterial(MaterialContent material, ContentProcessorContext context)
 		{
 			string effectFile = this.effectFileName;
-			if(string.IsNullOrEmpty(effectFile))
+			if (string.IsNullOrEmpty(effectFile))
 			{
 				if (string.IsNullOrEmpty(this.normalMapTexture))
 				{
@@ -233,14 +256,10 @@ namespace PipelineExtensions
 			// PreprocessSceneHierarchy function has already added the normal map
 			// texture to the Textures collection, so that will be copied as well.
 			foreach (KeyValuePair<String, ExternalReference<TextureContent>> texture in material.Textures)
-			{
 				normalMappingMaterial.Textures.Add(texture.Key, texture.Value);
-			}
 
 			if (!string.IsNullOrEmpty(diffuseTexture))
-			{
 				normalMappingMaterial.Textures.Add("DiffuseTexture0", new ExternalReference<TextureContent>(Path.Combine(directory, diffuseTexture)));
-			}
 
 			// and convert the material using the NormalMappingMaterialProcessor,
 			// who has something special in store for the normal map.

@@ -26,14 +26,14 @@ float3 toneMap(float3 color)
 
 float4 ToneMapPS(in PostProcessPSInput input)	: COLOR0
 {
-	float3 color = DecodeColor(tex2D(PointSampler0, input.texCoord).xyz);
+	float3 color = DecodeColor(tex2D(SourceSampler0, input.texCoord).xyz);
 
 	return float4(EncodeColor(toneMap(color)), 1.0f);
 }
 
 float4 ToneMapDecodePS(in PostProcessPSInput input)	: COLOR0
 {
-	float3 color = DecodeColor(tex2D(PointSampler0, input.texCoord).xyz);
+	float3 color = DecodeColor(tex2D(SourceSampler0, input.texCoord).xyz);
 
 	return float4(toneMap(color), 1.0f);
 }

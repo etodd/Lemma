@@ -123,11 +123,11 @@ void PointLightPS(	in PointLightPSInput input,
 	float2 texCoord = (0.5f * input.projectedPosition.xy / input.projectedPosition.w) + float2(0.5f, 0.5f);
 	texCoord.y = 1.0f - texCoord.y;
 	texCoord = (round(texCoord * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
-	float4 normalValue = tex2D(PointSampler1, texCoord);
+	float4 normalValue = tex2D(SourceSampler1, texCoord);
 	float3 normal = DecodeNormal(normalValue);
 	float3 viewRay = normalize(input.worldPosition - CameraPosition);
-	float3 position = PositionFromDepthSampler(PointSampler0, texCoord, viewRay);
-	LightingOutput data = CalcPointLighting(PointLightColor, PointLightRadius, normal, PointLightPosition, position, viewRay, tex2D(PointSampler1, texCoord).w * 255.0f, normalValue.w);
+	float3 position = PositionFromDepthSampler(SourceSampler0, texCoord, viewRay);
+	LightingOutput data = CalcPointLighting(PointLightColor, PointLightRadius, normal, PointLightPosition, position, viewRay, tex2D(SourceSampler1, texCoord).w * 255.0f, normalValue.w);
 	lighting.xyz = EncodeColor(data.lighting);
 	lighting.w = 1.0f;
 	specular.xyz = EncodeColor(data.specular);
@@ -141,11 +141,11 @@ void PointLightShadowedPS(	in PointLightPSInput input,
 	float2 texCoord = (0.5f * input.projectedPosition.xy / input.projectedPosition.w) + float2(0.5f, 0.5f);
 	texCoord.y = 1.0f - texCoord.y;
 	texCoord = (round(texCoord * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
-	float4 normalValue = tex2D(PointSampler1, texCoord);
+	float4 normalValue = tex2D(SourceSampler1, texCoord);
 	float3 normal = DecodeNormal(normalValue);
 	float3 viewRay = normalize(input.worldPosition - CameraPosition);
-	float3 position = PositionFromDepthSampler(PointSampler0, texCoord, viewRay);
-	LightingOutput data = CalcPointLighting(PointLightColor, PointLightRadius, normal, PointLightPosition, position, viewRay, tex2D(PointSampler1, texCoord).w * 255.0f, normalValue.w);
+	float3 position = PositionFromDepthSampler(SourceSampler0, texCoord, viewRay);
+	LightingOutput data = CalcPointLighting(PointLightColor, PointLightRadius, normal, PointLightPosition, position, viewRay, tex2D(SourceSampler1, texCoord).w * 255.0f, normalValue.w);
 
 	float3 fromLight = position - PointLightPosition;
 	float depth = length(fromLight);

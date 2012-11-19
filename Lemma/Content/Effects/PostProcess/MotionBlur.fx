@@ -16,7 +16,7 @@ float4 SampleMotionBlur(float2 texCoord, float2 pixelVelocity)
 	float4 sum = 0;
 	[unroll]
 	for (int i = 0; i < numSamples; i++)
-		sum += tex2D(PointSampler0, texCoord + (pixelVelocity * ((float)i  / (float)numSamples)));
+		sum += tex2D(SourceSampler0, texCoord + (pixelVelocity * ((float)i  / (float)numSamples)));
 	
 	// Return the average color of all the samples
 	return sum / (float)numSamples;
@@ -25,8 +25,8 @@ float4 SampleMotionBlur(float2 texCoord, float2 pixelVelocity)
 float4 MotionBlurPS(in PostProcessPSInput input)	: COLOR0
 {
 	// Sample velocity from our velocity buffers
-	float2 currentFramePixelVelocity = tex2D(PointSampler1, input.texCoord).xy - float2(0.5f, 0.5f);
-	float2 lastFramePixelVelocity = tex2D(PointSampler2, input.texCoord).xy - float2(0.5f, 0.5f);
+	float2 currentFramePixelVelocity = tex2D(SourceSampler1, input.texCoord).xy - float2(0.5f, 0.5f);
+	float2 lastFramePixelVelocity = tex2D(SourceSampler2, input.texCoord).xy - float2(0.5f, 0.5f);
 
 	// We'll compare the magnitude of the velocity from the current frame and from
 	// the previous frame, and then use whichever is larger
@@ -50,7 +50,7 @@ float4 MotionBlurPS(in PostProcessPSInput input)	: COLOR0
 		velocitySquared = currentVelocitySquared;
 	}
 	if (velocitySquared < (1.0f / 127.0f) * (1.0f / 127.0f))
-		return tex2D(PointSampler0, input.texCoord);
+		return tex2D(SourceSampler0, input.texCoord);
 	return SampleMotionBlur(input.texCoord, pixelVelocity);
 }
 

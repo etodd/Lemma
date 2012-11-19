@@ -57,7 +57,7 @@ void GlobalLightShadowPS(	in PostProcessPSInput input,
 					out float4 lighting : COLOR0,
 					out float4 specular : COLOR1)
 {
-	float4 normalValue = tex2D(PointSampler1, input.texCoord);
+	float4 normalValue = tex2D(SourceSampler1, input.texCoord);
 	float3 normal = DecodeNormal(normalValue);
 	if (normal.x * normal.y * normal.z == 0.0f)
 	{
@@ -67,8 +67,8 @@ void GlobalLightShadowPS(	in PostProcessPSInput input,
 	else
 	{
 		float3 viewRay = normalize(input.viewRay);
-		float3 worldPos = PositionFromDepthSampler(PointSampler0, input.texCoord, viewRay);
-		float specularPower = tex2D(PointSampler2, input.texCoord).w * 255.0f;
+		float3 worldPos = PositionFromDepthSampler(SourceSampler0, input.texCoord, viewRay);
+		float specularPower = tex2D(SourceSampler2, input.texCoord).w * 255.0f;
 		float specularIntensity = normalValue.w;
 		LightingOutput data = GetGlobalLighting(1, normal, specularPower, specularIntensity, viewRay);
 
@@ -95,7 +95,7 @@ void GlobalLightPS(	in PostProcessPSInput input,
 					out float4 lighting : COLOR0,
 					out float4 specular : COLOR1)
 {
-	float4 normalValue = tex2D(PointSampler1, input.texCoord);
+	float4 normalValue = tex2D(SourceSampler1, input.texCoord);
 	float3 normal = DecodeNormal(normalValue);
 	if (normal.x * normal.y * normal.z == 0.0f)
 	{
@@ -105,8 +105,8 @@ void GlobalLightPS(	in PostProcessPSInput input,
 	else
 	{
 		float3 viewRay = normalize(input.viewRay);
-		float3 worldPos = PositionFromDepthSampler(PointSampler0, input.texCoord, viewRay);
-		LightingOutput data = GetGlobalLighting(0, normal, tex2D(PointSampler2, input.texCoord).w * 255.0f, normalValue.w, viewRay);
+		float3 worldPos = PositionFromDepthSampler(SourceSampler0, input.texCoord, viewRay);
+		LightingOutput data = GetGlobalLighting(0, normal, tex2D(SourceSampler2, input.texCoord).w * 255.0f, normalValue.w, viewRay);
 		lighting.xyz = EncodeColor(data.lighting);
 		lighting.w = 1.0f;
 		specular.xyz = EncodeColor(data.specular);

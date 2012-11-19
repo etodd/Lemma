@@ -155,7 +155,6 @@ namespace PipelineExtensions
 					{
 						if (newChannel.Count == 0 || !newChannel[newChannel.Count - 1].Transform.Equals(keyframe.Transform))
 							newChannel.Add(new Keyframe(new TimeSpan(keyframe.Time.Ticks), keyframe.Transform));
-						Keyframe k = null;
 					}
 					newChannel.Sort(CompareKeyframeTimes);
 				}

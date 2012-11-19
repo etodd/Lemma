@@ -542,7 +542,7 @@ namespace Lemma.Components
 			EffectParameter param;
 			for (int i = 0; i < sources.Length; i++)
 			{
-				param = effect.Parameters["Point" + Model.SamplerPostfix + i.ToString()];
+				param = effect.Parameters["Source" + Model.SamplerPostfix + i.ToString()];
 				if (param == null)
 					break;
 				param.SetValue(sources[i]);
