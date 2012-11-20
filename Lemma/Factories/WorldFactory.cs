@@ -466,10 +466,6 @@ namespace Lemma.Factories
 		{
 			result.CannotSuspend = true;
 
-			Model skybox = result.Get<Model>("Skybox");
-			if (skybox != null)
-				skybox.DrawOrder.Value = -10;
-
 			result.Add(new TwoWayBinding<string>(result.GetProperty<string>("LightRampTexture"), main.Renderer.LightRampTexture));
 			result.Add(new TwoWayBinding<Color>(result.GetProperty<Color>("BackgroundColor"), main.Renderer.BackgroundColor));
 			result.Add(new TwoWayBinding<float>(result.GetProperty<float>("FarPlaneDistance"), main.Camera.FarPlaneDistance));

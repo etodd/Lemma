@@ -33,9 +33,16 @@ namespace PipelineExtensions
 	[ContentProcessor(DisplayName="Lemma Model Processor")]
 	public class CustomModelProcessor : ModelProcessor
 	{
+
+#if MONOGAME
+		public const string SamplerPostfix = "Sampler";
+#else
+		public const string SamplerPostfix = "Texture";
+#endif
+
 		// this constant determines where we will look for the normal map in the opaque
 		// data dictionary.
-		public const string NormalMapKey = "NormalMap";
+		public const string NormalMapKey = "NormalMap" + SamplerPostfix;
 
 		/// <summary>
 		/// We override this property from the base processor and force it to always
@@ -262,7 +269,7 @@ namespace PipelineExtensions
 				normalMappingMaterial.Textures.Add(texture.Key, texture.Value);
 
 			if (!string.IsNullOrEmpty(diffuseTexture))
-				normalMappingMaterial.Textures.Add("DiffuseTexture0", new ExternalReference<TextureContent>(Path.Combine(directory, diffuseTexture)));
+				normalMappingMaterial.Textures.Add("DiffuseTexture", new ExternalReference<TextureContent>(Path.Combine(directory, diffuseTexture)));
 
 			// and convert the material using the NormalMappingMaterialProcessor,
 			// who has something special in store for the normal map.

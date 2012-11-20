@@ -24,6 +24,7 @@ namespace Lemma.Components
 		/// Gets or sets camera projection matrix.
 		/// </summary>
 		public Property<Matrix> Projection = new Property<Matrix> { Value = Matrix.Identity };
+		public Property<Matrix> LastProjection = new Property<Matrix> { Value = Matrix.Identity };
 		/// <summary>
 		/// Gets the inverse of the camera projection matrix.
 		/// </summary>
@@ -177,6 +178,7 @@ namespace Lemma.Components
 		{
 			this.LastView.Value = this.View;
 			this.LastViewProjection.Value = this.ViewProjection;
+			this.LastProjection.Value = this.Projection;
 		}
 
 		public void SetParameters(Effect effect)
@@ -184,6 +186,13 @@ namespace Lemma.Components
 			EffectParameter param = effect.Parameters["ViewMatrix"];
 			if (param != null)
 				param.SetValue(this.View);
+			param = effect.Parameters["ViewMatrixRotationOnly"];
+			if (param != null)
+			{
+				Matrix m = this.View;
+				m.Translation = Vector3.Zero;
+				param.SetValue(m);
+			}
 			param = effect.Parameters["ProjectionMatrix"];
 			if (param != null)
 				param.SetValue(this.Projection);
@@ -205,6 +214,13 @@ namespace Lemma.Components
 			param = effect.Parameters["LastFrameViewProjectionMatrix"];
 			if (param != null)
 				param.SetValue(this.LastViewProjection);
+			param = effect.Parameters["LastFrameViewProjectionMatrixRotationOnly"];
+			if (param != null)
+			{
+				Matrix m = this.LastView;
+				m.Translation = Vector3.Zero;
+				param.SetValue(m * this.LastProjection);
+			}
 			param = effect.Parameters["LastFrameViewMatrix"];
 			if (param != null)
 				param.SetValue(this.LastView);

@@ -20,7 +20,7 @@ LightingOutput CalcDirectionalLighting(
 {
 	LightingOutput output;
 	// Modulate the lighting terms based on the material colors, and the attenuation factor
-	if (length(normal) < 0.01f)
+	if (dot(normal, normal) < 0.01f)
 		output.lighting = lightColor;
 	else
 	{

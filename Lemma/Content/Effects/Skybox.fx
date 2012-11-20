@@ -1,5 +1,8 @@
 #include "RenderCommon.fxh"
 
+float4x4 ViewMatrixRotationOnly;
+float4x4 LastFrameViewProjectionMatrixRotationOnly;
+
 struct RenderVSInput
 {
 	float4 position : POSITION0;
@@ -12,8 +15,9 @@ void RenderVS(	in RenderVSInput input,
 				out TexturePSInput tex)
 {
 	output.position = input.position;
-	vs.position = mul(input.position, ViewProjectionMatrix);
-	output.viewSpacePosition = mul(input.position, ViewMatrix);
+	float4 viewSpacePosition = mul(input.position, ViewMatrixRotationOnly);
+	vs.position = mul(viewSpacePosition, ProjectionMatrix);
+	output.viewSpacePosition = viewSpacePosition;
 	tex.uvCoordinates = input.uvCoordinates;
 }
 
@@ -42,7 +46,7 @@ void MotionBlurVS(	in RenderVSInput input,
 
 	// TODO: fix skybox motion blur
 
-	motionBlur.previousPosition = mul(input.position, LastFrameWorldViewProjectionMatrix);
+	motionBlur.previousPosition = mul(input.position, LastFrameViewProjectionMatrixRotationOnly);
 }
 
 // No shadow technique. We don't want the skybox casting shadows.

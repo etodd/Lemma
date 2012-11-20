@@ -3,7 +3,6 @@
 
 // Transform matrices
 float4x4 WorldMatrix;
-float4x4 LastFrameWorldMatrix;
 float4x4 LastFrameWorldViewProjectionMatrix;
 
 float3 PointLightPosition;
