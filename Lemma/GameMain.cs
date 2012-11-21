@@ -71,6 +71,8 @@ namespace Lemma
 
 		public Property<string> StartSpawnPoint = new Property<string>();
 
+		public Command<Entity> PlayerSpawned = new Command<Entity>();
+
 		private bool spawnedAtStartPoint = false;
 
 		const float respawnInterval = 3.0f;
@@ -1078,6 +1080,8 @@ namespace Lemma
 					this.spawnedAtStartPoint = false;
 					this.respawnTimer = GameMain.respawnInterval - 1.0f;
 					this.player = this.Get("Player").FirstOrDefault();
+					if (this.player != null)
+						this.PlayerSpawned.Execute(this.player);
 				});
 			}
 		}
@@ -1236,6 +1240,7 @@ namespace Lemma
 
 						if (spawnEntity != null)
 							this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = spawnEntity.Get<Transform>().Position;
+						
 						if (spawn != null)
 						{
 							spawn.IsActivated.Value = true;
@@ -1246,6 +1251,8 @@ namespace Lemma
 						
 						this.AddComponent(new Animation(new Animation.Vector3MoveTo(this.Renderer.Tint, Vector3.One, 1.0f)));
 						this.respawnTimer = 0;
+
+						this.PlayerSpawned.Execute(this.player);
 					}
 					else
 						this.respawnTimer += this.ElapsedTime;

@@ -41,24 +41,13 @@ namespace Lemma.Factories
 			result.Add(new Binding<float>(clouds.GetFloatParameter("Height"), height));
 
 			Property<Vector2> velocity = result.GetOrMakeProperty<Vector2>("Velocity", true, Vector2.One);
-			result.Add(new Binding<Vector2>(clouds.GetVector2Parameter("Velocity"), velocity));
-
-			Property<float> time = clouds.GetFloatParameter("Time");
+			result.Add(new Binding<Vector2>(clouds.GetVector2Parameter("Velocity"), x => x * (1.0f / 60.0f), velocity));
 
 			result.Add(new CommandBinding(main.ReloadedContent, delegate()
 			{
 				height.Reset();
 				velocity.Reset();
-				time.Value = 0;
 			}));
-
-			result.Add(new Updater
-			{
-				delegate(float dt)
-				{
-					time.Value += dt * (1.0f / 60.0f);
-				}
-			});
 		}
 	}
 }

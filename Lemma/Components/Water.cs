@@ -82,9 +82,6 @@ namespace Lemma.Components
 		private Util.CustomFluidVolume fluid;
 
 		private bool needResize = false;
-		private bool renderedLastFrame = false;
-
-		private float time;
 
 		private void resize()
 		{
@@ -323,7 +320,7 @@ namespace Lemma.Components
 			this.effect.Parameters["ActualFarPlaneDistance"].SetValue(oldFarPlane);
 			this.effect.Parameters["Reflection" + Model.SamplerPostfix].SetValue(this.buffer);
 			this.effect.Parameters["Position"].SetValue(this.Position);
-			this.effect.Parameters["Time"].SetValue(this.time);
+			this.effect.Parameters["Time"].SetValue(this.main.TotalTime);
 			this.effect.Parameters["Depth" + Model.SamplerPostfix].SetValue(p.DepthBuffer);
 			this.effect.Parameters["Frame" + Model.SamplerPostfix].SetValue(p.FrameBuffer);
 
@@ -358,7 +355,7 @@ namespace Lemma.Components
 				this.resize();
 
 			float waterHeight = this.Position.Value.Y;
-			if (p.Camera.Position.Value.Y > waterHeight && !this.renderedLastFrame)
+			if (p.Camera.Position.Value.Y > waterHeight)
 			{
 				this.parameters.ClipPlanes = new[] { new Plane(Vector3.Up, -waterHeight) };
 				this.renderer.SetRenderTargets(this.parameters);
@@ -371,15 +368,11 @@ namespace Lemma.Components
 				this.main.DrawScene(this.parameters);
 
 				this.renderer.PostProcess(this.buffer, this.parameters, this.main.DrawAlphaComponents);
-				this.renderedLastFrame = true;
 			}
-			else
-				this.renderedLastFrame = false;
 		}
 
 		void IUpdateableComponent.Update(float dt)
 		{
-			this.time += dt;
 			List<Entity> removals = new List<Entity>();
 			foreach (Entity entity in this.submergedEntities)
 			{

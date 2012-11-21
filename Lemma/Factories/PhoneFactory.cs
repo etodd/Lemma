@@ -24,7 +24,7 @@ namespace Lemma.Factories
 			result.Add("Attached", new Property<bool> { Value = false });
 
 			PhysicsBlock physics = new PhysicsBlock();
-			physics.Size.Value = new Vector3(0.4f, 0.2f, 0.25f);
+			physics.Size.Value = new Vector3(0.4f, 0.25f, 0.25f);
 			physics.Mass.Value = 0.025f;
 			result.Add("Physics", physics);
 

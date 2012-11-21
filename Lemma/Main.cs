@@ -15,6 +15,7 @@ using Lemma.Util;
 using System.Linq;
 using BEPUphysics;
 using System.Xml.Serialization;
+using System.Reflection;
 
 namespace Lemma
 {
@@ -250,6 +251,21 @@ namespace Lemma
 			this.ScreenSize.Value = new Point(this.Window.ClientBounds.Width, this.Window.ClientBounds.Height);
 
 			this.MapLoaded = new Command();
+
+			new CommandBinding(this.MapLoaded, delegate()
+			{
+				if (!this.EditorEnabled)
+				{
+					foreach (string script in Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.GetFileName(x)).OrderBy(x => x))
+					{
+						Entity scriptEntity = Factory.Get<ScriptFactory>().CreateAndBind(this);
+						scriptEntity.Serialize = false;
+						this.Add(scriptEntity);
+						scriptEntity.Get<Script>().Name.Value = Path.Combine("GlobalScripts", Path.GetFileNameWithoutExtension(script));
+						scriptEntity.Get<Script>().Execute.Execute();
+					}
+				}
+			});
 
 			// Give the space some threads to work with.
 			// Just throw a thread at every processor. The thread scheduler will take care of where to put them.

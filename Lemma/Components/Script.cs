@@ -52,6 +52,74 @@ namespace Lemma.Scripts
 
 		private MethodInfo scriptMethod;
 
+		public static MethodInfo GetScriptRunMethod(Main main, string name, Entity scriptEntity, out string errors)
+		{
+			Assembly assembly = null;
+
+			errors = null;
+
+			string scriptPath = Path.Combine(main.Content.RootDirectory, name + "." + Script.ScriptExtension);
+			string binaryPath = Path.Combine(main.Content.RootDirectory, name + "." + Script.BinaryExtension);
+
+			DateTime scriptTime = File.GetLastWriteTime(scriptPath);
+			DateTime binaryTime = File.GetLastWriteTime(binaryPath);
+			if (!File.Exists(binaryPath) || scriptTime > binaryTime)
+			{
+				// Recompile the script
+				using (Stream stream = TitleContainer.OpenStream(scriptPath))
+				using (TextReader reader = new StreamReader(stream))
+				{
+					CodeDomProvider provider = CodeDomProvider.CreateProvider("CSharp");
+
+					CompilerParameters cp = new CompilerParameters
+					{
+						GenerateExecutable = false,
+						GenerateInMemory = false,
+						TreatWarningsAsErrors = false,
+					};
+
+					// Add references to all the assemblies we might need.
+					Assembly executingAssembly = Assembly.GetExecutingAssembly();
+					cp.ReferencedAssemblies.Add(executingAssembly.Location);
+					foreach (AssemblyName assemblyName in executingAssembly.GetReferencedAssemblies())
+						cp.ReferencedAssemblies.Add(Assembly.Load(assemblyName).Location);
+
+					// Invoke compilation of the source file.
+					CompilerResults cr = provider.CompileAssemblyFromSource(cp, Script.scriptPrefix + reader.ReadToEnd() + Script.scriptPostfix);
+
+					if (cr.Errors.Count > 0)
+					{
+						// Display compilation errors.
+						StringBuilder builder = new StringBuilder();
+						foreach (CompilerError ce in cr.Errors)
+						{
+							builder.Append(ce.ToString());
+							builder.Append("\n");
+						}
+						errors = builder.ToString();
+					}
+					else
+					{
+						assembly = cr.CompiledAssembly;
+						// TODO: Hack for the alpha
+						//File.Copy(cp.OutputAssembly, binaryPath, true);
+					}
+				}
+			}
+			else // Load the precompiled script binary
+				assembly = Assembly.LoadFrom(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), binaryPath));
+
+			if (assembly != null)
+			{
+				Type t = assembly.GetType("Lemma.Scripts.Script");
+				t.GetField("main", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).SetValue(null, main);
+				t.GetField("renderer", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).SetValue(null, main.Renderer);
+				t.GetField("script", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).SetValue(null, scriptEntity);
+				return t.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
+			}
+			return null;
+		}
+
 		public override void InitializeProperties()
 		{
 			this.Errors.Value = null;
@@ -60,70 +128,11 @@ namespace Lemma.Scripts
 				this.Name.InternalValue = value;
 				this.scriptMethod = null;
 				this.Errors.Value = null;
-
-				string scriptPath = Path.Combine(main.Content.RootDirectory, this.Name + "." + Script.ScriptExtension);
-				string binaryPath = Path.Combine(main.Content.RootDirectory, this.Name + "." + Script.BinaryExtension);
-
-				Assembly assembly = null;
-
 				try
 				{
-					DateTime scriptTime = File.GetLastWriteTime(scriptPath);
-					DateTime binaryTime = File.GetLastWriteTime(binaryPath);
-					if (!File.Exists(binaryPath) || scriptTime > binaryTime)
-					{
-						// Recompile the script
-						using (Stream stream = TitleContainer.OpenStream(scriptPath))
-						using (TextReader reader = new StreamReader(stream))
-						{
-							CodeDomProvider provider = CodeDomProvider.CreateProvider("CSharp");
-
-							CompilerParameters cp = new CompilerParameters
-							{
-								GenerateExecutable = false,
-								GenerateInMemory = false,
-								TreatWarningsAsErrors = false,
-							};
-
-							// Add references to all the assemblies we might need.
-							Assembly executingAssembly = Assembly.GetExecutingAssembly();
-							cp.ReferencedAssemblies.Add(executingAssembly.Location);
-							foreach (AssemblyName assemblyName in executingAssembly.GetReferencedAssemblies())
-								cp.ReferencedAssemblies.Add(Assembly.Load(assemblyName).Location);
-
-							// Invoke compilation of the source file.
-							CompilerResults cr = provider.CompileAssemblyFromSource(cp, Script.scriptPrefix + reader.ReadToEnd() + Script.scriptPostfix);
-
-							if (cr.Errors.Count > 0)
-							{
-								// Display compilation errors.
-								StringBuilder builder = new StringBuilder();
-								foreach (CompilerError ce in cr.Errors)
-								{
-									builder.Append(ce.ToString());
-									builder.Append("\n");
-								}
-								this.Errors.Value = builder.ToString();
-							}
-							else
-							{
-								assembly = cr.CompiledAssembly;
-								// TODO: Hack for the alpha
-								//File.Copy(cp.OutputAssembly, binaryPath, true);
-							}
-						}
-					}
-					else // Load the precompiled script binary
-						assembly = Assembly.LoadFrom(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), binaryPath));
-
-					if (assembly != null)
-					{
-						Type t = assembly.GetType("Lemma.Scripts.Script");
-						t.GetField("main", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).SetValue(null, this.main);
-						t.GetField("renderer", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).SetValue(null, this.main.Renderer);
-						t.GetField("script", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).SetValue(null, this.Entity);
-						this.scriptMethod = t.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
-					}
+					string errors;
+					this.scriptMethod = GetScriptRunMethod(this.main, this.Name, this.Entity, out errors);
+					this.Errors.Value = errors;
 				}
 				catch (Exception e)
 				{

@@ -43,5 +43,13 @@ namespace Lemma.Factories
 			}
 			this.SetMain(result, main);
 		}
+
+		public override void AttachEditorComponents(Entity result, Main main)
+		{
+			base.AttachEditorComponents(result, main);
+
+			Model model = result.Get<Model>("EditorModel");
+			model.Add(new Binding<Vector3, string>(model.Color, x => string.IsNullOrEmpty(x) ? Vector3.One : new Vector3(1.0f, 0.0f, 0.0f), result.Get<Script>().Errors));
+		}
 	}
 }

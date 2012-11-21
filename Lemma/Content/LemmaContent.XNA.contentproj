@@ -138,6 +138,11 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>
+    <Compile Include="Effects\Electricity.fx">
+      <Name>Electricity</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </Compile>
     <None Include="Effects\ParticleCommon.fxh">
       <Name>ParticleCommon</Name>
       <Importer>EffectImporter</Importer>
@@ -158,10 +163,6 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </None>
-    <None Include="Maps\materials.cs">
-      <Name>materials</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Maps\start.map">
       <Name>start</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -174,7 +175,15 @@
       <Name>test2</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Maps\tutorials.cs">
+    <None Include="Maps\start.cs">
+      <Name>start</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="GlobalScripts\materials.cs">
+      <Name>materials</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="GlobalScripts\tutorials.cs">
       <Name>tutorials</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -256,6 +265,14 @@
       <Processor>SkinnedModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\Animation.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_DiffuseTexture>skin.jpg</ProcessorParameters_DiffuseTexture>
+    </Compile>
+    <Compile Include="Models\electricity.fbx">
+      <Name>electricity</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_EffectFileName>..\Effects\Electricity.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_DiffuseTexture>electricity.png</ProcessorParameters_DiffuseTexture>
+      <ProcessorParameters_NormalMapTexture>..\Images\water-normal.jpg</ProcessorParameters_NormalMapTexture>
     </Compile>
   </ItemGroup>
   <ItemGroup>
