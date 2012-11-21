@@ -94,6 +94,7 @@
     <Compile Include="Components\Zone.cs" />
     <Compile Include="Factories\AnimatedPropFactory.cs" />
     <Compile Include="Factories\CloudFactory.cs" />
+    <Compile Include="Factories\MapBoundaryFactory.cs" />
     <Compile Include="Factories\SkyboxFactory.cs" />
     <Compile Include="Factories\MapAttachable.cs" />
     <Compile Include="Factories\RainFactory.cs" />

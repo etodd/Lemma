@@ -74,6 +74,7 @@ namespace Lemma.Factories
 			));
 
 			this.SetMain(result, main);
+			PhysicsBlock.CancelPlayerCollisions(physics);
 		}
 	}
 }

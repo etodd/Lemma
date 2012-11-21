@@ -26,6 +26,11 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Box Box;
 
+		public static void CancelPlayerCollisions(PhysicsBlock block)
+		{
+			block.Box.CollisionInformation.CollisionRules.Group = Util.Character.NoCollideGroup;
+		}
+
 		public override void InitializeProperties()
 		{
 			if (this.Mass == 0.0f)
@@ -33,7 +38,6 @@ namespace Lemma.Components
 			else
 				this.Box = new Box(Vector3.Zero, this.Size.Value.X, this.Size.Value.Y, this.Size.Value.Z, this.Mass);
 			this.Box.CollisionInformation.Events.ContactCreated += new BEPUphysics.Collidables.Events.ContactCreatedEventHandler<EntityCollidable>(Events_ContactCreated);
-			this.Box.CollisionInformation.CollisionRules.Group = Util.Character.NoCollideGroup;
 			this.Transform.Set = delegate(Matrix matrix)
 			{
 				this.Box.WorldTransform = matrix;

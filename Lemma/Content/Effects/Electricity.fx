@@ -1,6 +1,9 @@
 #include "RenderCommonAlpha.fxh"
 
 float Time;
+float2 Scale;
+
+const float BorderFadeSize = 2.0f;
 
 struct RenderVSInput
 {
@@ -44,11 +47,39 @@ void RenderPS(in RenderPSInput input,
 	float2 uv = 0.5f * alpha.clipSpacePosition.xy / alpha.clipSpacePosition.w + float2(0.5f, 0.5f);
 	uv.y = 1.0f - uv.y;
 	uv = (round(uv * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
-	clip(tex2D(DepthSampler, uv).r - length(input.viewSpacePosition));
-	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates + float2(Time, -Time) * 0.01f + tex2D(NormalMapSampler, tex.uvCoordinates * 0.15f + float2(Time, Time) * 0.02f).xy * 0.75f);
+	float depth = length(input.viewSpacePosition);
+	clip(tex2D(DepthSampler, uv).r - depth);
+	uv = tex.uvCoordinates * Scale * 0.15f;
+	float4 color = tex2D(DiffuseSampler, uv + float2(Time, -Time) * 0.01f + tex2D(NormalMapSampler, uv * 0.15f + float2(Time, Time) * 0.02f).xy * 0.75f);
 	
 	output.xyz = EncodeColor(DiffuseColor.xyz * color.xyz);
-	output.w = Alpha * color.w;
+
+	float2 borderSize = float2(BorderFadeSize / Scale.x, BorderFadeSize / Scale.y);
+	float borderFadeX;
+	if (tex.uvCoordinates.x < borderSize.x)
+		borderFadeX = tex.uvCoordinates.x / borderSize.x;
+	else
+	{
+		float x = tex.uvCoordinates.x - (1.0f - borderSize.x);
+		if (x > 0)
+			borderFadeX = 1.0f - (x / borderSize.x);
+		else
+			borderFadeX = 1;
+	}
+
+	float borderFadeY;
+	if (tex.uvCoordinates.y < borderSize.y)
+		borderFadeY = tex.uvCoordinates.y / borderSize.y;
+	else
+	{
+		float y = tex.uvCoordinates.y - (1.0f - borderSize.y);
+		if (y > 0)
+			borderFadeY = 1.0f - (y / borderSize.y);
+		else
+			borderFadeY = 1;
+	}
+
+	output.w = Alpha * color.w * (0.8f - (depth / 50.0f)) * borderFadeX * borderFadeY;
 }
 
 void ClipPS(in RenderPSInput input,
