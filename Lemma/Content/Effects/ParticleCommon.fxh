@@ -40,10 +40,10 @@ sampler2D Sampler = sampler_state
 };
 
 // Depth texture sampler
-texture2D DepthBuffer;
+texture2D DepthTexture;
 sampler2D DepthSampler = sampler_state
 {
-	Texture = <DepthBuffer>;
+	Texture = <DepthTexture>;
 	MinFilter = point;
 	MagFilter = point;
 	MipFilter = point;
@@ -52,10 +52,10 @@ sampler2D DepthSampler = sampler_state
 };
 
 // Frame buffer sampler
-texture2D FrameBuffer;
+texture2D FrameTexture;
 sampler2D FrameSampler = sampler_state
 {
-	Texture = <FrameBuffer>;
+	Texture = <FrameTexture>;
 	MinFilter = point;
 	MagFilter = point;
 	MipFilter = point;

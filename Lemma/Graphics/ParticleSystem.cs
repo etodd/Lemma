@@ -719,8 +719,6 @@ namespace Lemma.Components
 				else
 					this.particleEffect.CurrentTechnique = techniqueInstance;
 
-				this.particleEffect.CurrentTechnique = techniqueInstance;
-
 				device.DepthStencilState = DepthStencilState.DepthRead;
 
 				// Set an effect parameter describing the viewport size. This is

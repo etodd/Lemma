@@ -720,7 +720,8 @@ namespace Lemma.Components
 				this.lastInstancesChanged = this.instancesChanged;
 				this.instancesChanged = false;
 			}
-
+			
+#if !MONOGAME // TODO: enable hardware instancing for MonoGame
 			// Set up the instance rendering effect.
 			if (this.setParameters(transform, parameters))
 			{
@@ -739,22 +740,22 @@ namespace Lemma.Components
 					foreach (ModelMeshPart meshPart in mesh.MeshParts)
 					{
 						// Tell the GPU to read from both the model vertex buffer plus our instanceVertexBuffer.
-						// TODO: Model instancing
-						/*
+
+						// TODO: Monogame support for GraphicsDevice.SetVertexBuffers()
 						this.main.GraphicsDevice.SetVertexBuffers
 						(
 							new VertexBufferBinding(meshPart.VertexBuffer, meshPart.VertexOffset, 0),
 							new VertexBufferBinding(instanceVertexBuffer, 0, 1)
 						);
-						*/
+						
 						this.main.GraphicsDevice.Indices = meshPart.IndexBuffer;
 
 						// Draw all the instance copies in a single call.
 						foreach (EffectPass pass in this.effect.CurrentTechnique.Passes)
 						{
 							pass.Apply();
-							// TODO: Model instancing
-							/*this.main.GraphicsDevice.DrawInstancedPrimitives
+							// TODO: Monogame support for GraphicsDevice.DrawInstancedPrimitives()
+							this.main.GraphicsDevice.DrawInstancedPrimitives
 							(
 								PrimitiveType.TriangleList,
 								0,
@@ -763,7 +764,7 @@ namespace Lemma.Components
 								meshPart.StartIndex,
 								meshPart.PrimitiveCount,
 								this.Instances.Count
-							);*/
+							);
 						}
 					}
 				}
@@ -771,6 +772,7 @@ namespace Lemma.Components
 				if (noCullState != null)
 					this.main.GraphicsDevice.RasterizerState = originalState;
 			}
+#endif
 
 			if (parameters.IsMainRender)
 			{

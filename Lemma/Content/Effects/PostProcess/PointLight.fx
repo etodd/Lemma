@@ -39,7 +39,7 @@ LightingOutput CalcPointLighting(float3 lightColor,
 	// Modulate the lighting terms based on the material colors, and the attenuation factor
 	float attenuation = saturate(1.0f - max(0.01f, distance) / lightAttenuation);
 	float3 totalLightColor = lightColor * attenuation;
-	if (length(normal) < 0.01f)
+	if (dot(normal, normal) < 0.01f)
 		output.lighting = totalLightColor;
 	else
 	{

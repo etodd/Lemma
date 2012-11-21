@@ -220,8 +220,6 @@ namespace Lemma
 
 						this.MapLoaded.Execute();
 					}
-
-					this.spawnedAtStartPoint = false;
 				};
 
 				this.Renderer.LightRampTexture.Value = "Images\\default-ramp";
@@ -238,6 +236,15 @@ namespace Lemma
 					Microsoft.Xna.Framework.Graphics.DisplayMode display = Microsoft.Xna.Framework.Graphics.GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
 					this.Settings.FullscreenResolution.Value = new Point(display.Width, display.Height);
 				}
+
+				// Message list
+				ListContainer messages = new ListContainer();
+				messages.Alignment.Value = ListContainer.ListAlignment.Max;
+				messages.AnchorPoint.Value = new Vector2(1.0f, 1.0f);
+				messages.Reversed.Value = true;
+				messages.Name.Value = "Messages";
+				messages.Add(new Binding<Vector2, Point>(messages.Position, x => new Vector2(x.X * 0.9f, x.Y * 0.9f), this.ScreenSize));
+				this.UI.Root.Children.Add(messages);
 
 				// Toggle fullscreen
 				this.input.Add(new CommandBinding(input.GetKeyDown(Keys.F11), delegate()
@@ -1068,6 +1075,7 @@ namespace Lemma
 
 				new CommandBinding(this.MapLoaded, delegate()
 				{
+					this.spawnedAtStartPoint = false;
 					this.respawnTimer = GameMain.respawnInterval - 1.0f;
 					this.player = this.Get("Player").FirstOrDefault();
 				});
