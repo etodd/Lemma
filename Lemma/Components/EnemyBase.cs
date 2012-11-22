@@ -153,7 +153,8 @@ namespace Lemma.Components
 						direction *= enemyBase.Offset;
 						direction.Y = (float)r.NextDouble() * enemyBase.Offset;
 
-						bool isAmmo = r.NextDouble() < chanceOfAmmo;
+						bool playerHasPistol = Factory.Get<PlayerDataFactory>().Instance(main).GetProperty<Entity.Handle>("Pistol").Value.Target != null;
+						bool isAmmo = playerHasPistol && (r.NextDouble() < chanceOfAmmo);
 
 						Entity pickup = isAmmo ? magazineFactory.CreateAndBind(main) : energyPickupFactory.CreateAndBind(main);
 						pickup.Get<Transform>().Position.Value = pos + direction;

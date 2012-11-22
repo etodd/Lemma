@@ -3581,6 +3581,8 @@ namespace Lemma.Components
 		private const float floatingLinearDamping = .4f;
 		private const float floatingAngularDamping = .5f;
 
+		private bool addedToSpace = false;
+
 		[XmlIgnore]
 		public MorphableEntity PhysicsEntity { get; protected set; }
 
@@ -3664,8 +3666,11 @@ namespace Lemma.Components
 
 			this.Add(new CommandBinding(this.OnSuspended, delegate()
 			{
-				if (this.PhysicsEntity.Space != null)
+				if (this.addedToSpace)
+				{
 					this.main.Space.SpaceObjectBuffer.Remove(this.PhysicsEntity);
+					this.addedToSpace = false;
+				}
 				foreach (Chunk chunk in this.Chunks)
 					chunk.Deactivate();
 			}));
@@ -3673,8 +3678,11 @@ namespace Lemma.Components
 			this.Add(new CommandBinding(this.OnResumed, delegate()
 			{
 				this.PhysicsEntity.LinearVelocity = Vector3.Zero;
-				if (this.PhysicsEntity.Volume > 0.0f && !this.main.EditorEnabled)
+				if (!this.addedToSpace && this.PhysicsEntity.Volume > 0.0f && !this.main.EditorEnabled)
+				{
 					this.main.Space.SpaceObjectBuffer.Add(this.PhysicsEntity);
+					this.addedToSpace = true;
+				}
 				foreach (Chunk chunk in this.Chunks)
 					chunk.Activate();
 			}));
@@ -3719,10 +3727,16 @@ namespace Lemma.Components
 					this.PhysicsEntity.ActivityInformation.Activate();
 				}
 			}
-			if (this.PhysicsEntity.Space == null && hasVolume && !this.Suspended && !this.main.EditorEnabled)
+			if (!this.addedToSpace && hasVolume && !this.Suspended && !this.main.EditorEnabled)
+			{
 				this.main.Space.SpaceObjectBuffer.Add(this.PhysicsEntity);
-			else if (this.PhysicsEntity.Space != null && !hasVolume)
+				this.addedToSpace = true;
+			}
+			else if (this.addedToSpace && this.PhysicsEntity.Space != null && !hasVolume)
+			{
 				this.main.Space.SpaceObjectBuffer.Remove(this.PhysicsEntity);
+				this.addedToSpace = false;
+			}
 		}
 
 		void IUpdateableComponent.Update(float dt)
@@ -3733,8 +3747,11 @@ namespace Lemma.Components
 		protected override void delete()
 		{
 			base.delete();
-			if (this.PhysicsEntity.Space != null)
+			if (this.addedToSpace)
+			{
 				this.main.Space.SpaceObjectBuffer.Remove(this.PhysicsEntity);
+				this.addedToSpace = false;
+			}
 		}
 	}
 }

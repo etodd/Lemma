@@ -364,6 +364,13 @@ namespace Lemma
 				addLabel("Raw render", this.rawRenderTime);
 				addLabel("Shadow render", this.shadowRenderTime);
 				addLabel("Post-process", this.postProcessTime);
+
+				PCInput input = new PCInput();
+				input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.P }), delegate()
+				{
+					performanceMonitor.Visible.Value = !performanceMonitor.Visible;
+				}));
+				this.AddComponent(input);
 #endif
 			}
 			else

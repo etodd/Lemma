@@ -1073,12 +1073,12 @@ namespace Lemma
 				new CommandBinding(this.MapLoaded, header.Delete);
 #endif
 
-				new CommandBinding(this.MapLoaded, logo.Delete);
+				logo.Add(new CommandBinding(this.MapLoaded, logo.Delete));
 
 				new CommandBinding(this.MapLoaded, delegate()
 				{
 					this.spawnedAtStartPoint = false;
-					this.respawnTimer = GameMain.respawnInterval - 1.0f;
+					this.respawnTimer = -1.0f;
 					this.player = this.Get("Player").FirstOrDefault();
 					if (this.player != null)
 						this.PlayerSpawned.Execute(this.player);

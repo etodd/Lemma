@@ -61,38 +61,12 @@ namespace Lemma.Factories
 
 			trigger.Add(new Binding<Matrix>(trigger.Transform, () => Matrix.CreateTranslation(0.0f, 0.0f, enemy.Offset) * transform.Matrix, transform.Matrix, enemy.Offset));
 
-			Func<bool> isValid = delegate()
-			{
-				if (enemy.Map.Value.Target == null || !enemy.Map.Value.Target.Active)
-					return false;
-
-				Map m = enemy.Map.Value.Target.Get<Map>();
-
-				bool found = false;
-				foreach (Map.Box box in enemy.BaseBoxes)
-				{
-					foreach (Map.Coordinate coord in box.GetCoords())
-					{
-						if (m[coord].Name == "Infected")
-						{
-							found = true;
-							break;
-						}
-					}
-				}
-
-				if (!found)
-					return false;
-
-				return true;
-			};
-
 			Action<Entity> fall = delegate(Entity player)
 			{
 				if (timeUntilRebuild.Value > 0 || timeUntilRebuildComplete.Value > 0)
 					return;
 
-				if (!isValid())
+				if (!enemy.IsValid)
 				{
 					result.Delete.Execute();
 					return;
@@ -106,8 +80,6 @@ namespace Lemma.Factories
 				Map m = enemy.Map.Value.Target.Get<Map>();
 
 				m.Empty(enemy.BaseBoxes.SelectMany(x => x.GetCoords()));
-
-				enemy.EnableCellEmptyBinding = !main.EditorEnabled;
 
 				m.Regenerate(delegate(List<DynamicMap> spawnedMaps)
 				{
@@ -221,10 +193,21 @@ namespace Lemma.Factories
 					}
 					else if (timeUntilRebuildComplete > 0)
 					{
+						// Rebuilding
 						float newValue = Math.Max(0.0f, timeUntilRebuildComplete.Value - dt);
 						timeUntilRebuildComplete.Value = newValue;
-						if (newValue == 0.0f && trigger.IsTriggered)
-							fall(trigger.Player.Value.Target);
+						if (newValue == 0.0f)
+						{
+							// Done rebuilding
+							if (!enemy.IsValid)
+								result.Delete.Execute();
+							else
+							{
+								enemy.EnableCellEmptyBinding = !main.EditorEnabled;
+								if (trigger.IsTriggered)
+									fall(trigger.Player.Value.Target);
+							}
+						}
 					}
 				}
 			});

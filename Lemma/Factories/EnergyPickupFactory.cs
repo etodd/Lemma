@@ -144,20 +144,20 @@ namespace Lemma.Factories
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 			light.Add(new Binding<Vector3>(light.Color, model.Color));
 
-			light.Add(new Binding<float, int>(light.Attenuation, x => x < 10 ? 5.0f : 15.0f, energy));
+			light.Attenuation.Value = 5.0f;
 
-			model.Add(new Binding<Vector3, int>(model.Scale, x => x < 10 ? new Vector3(0.15f) : new Vector3(0.25f), energy));
+			model.Scale.Value = new Vector3(0.15f);
 
 			model.Add(new Binding<Vector3, int>(model.Color, delegate(int x)
 			{
 				if (x < 10)
 					return new Vector3(1.0f, 1.0f, 1.0f);
 				if (x < 30)
-					return new Vector3(0.5f, 1.5f, 0.5f);
-				if (x < 50)
-					return new Vector3(1.5f, 0.5f, 0.5f);
-				if (x < 80)
 					return new Vector3(0.5f, 0.5f, 1.5f);
+				if (x < 50)
+					return new Vector3(0.5f, 1.5f, 0.5f);
+				if (x < 80)
+					return new Vector3(1.5f, 0.5f, 0.5f);
 				return new Vector3(1.5f, 0.5f, 1.5f);
 			}, energy));
 
