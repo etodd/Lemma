@@ -1876,6 +1876,131 @@ namespace Lemma.Components
 			}
 		}
 
+		protected IEnumerable<Box> getAdjacentBoxes(Box box)
+		{
+			Dictionary<Box, bool> relationships = new Dictionary<Box, bool>();
+
+			// Front face
+			for (int x = box.X; x < box.X + box.Width; x++)
+			{
+				for (int y = box.Y; y < box.Y + box.Height; )
+				{
+					Box adjacent = this.GetBox(x, y, box.Z + box.Depth);
+					if (adjacent != null)
+					{
+						if (!relationships.ContainsKey(adjacent))
+						{
+							relationships[adjacent] = true;
+							yield return adjacent;
+						}
+						y = adjacent.Y + adjacent.Height;
+					}
+					else
+						y++;
+				}
+			}
+
+			// Back face
+			for (int x = box.X; x < box.X + box.Width; x++)
+			{
+				for (int y = box.Y; y < box.Y + box.Height; )
+				{
+					Box adjacent = this.GetBox(x, y, box.Z - 1);
+					if (adjacent != null)
+					{
+						if (!relationships.ContainsKey(adjacent))
+						{
+							relationships[adjacent] = true;
+							yield return adjacent;
+						}
+						y = adjacent.Y + adjacent.Height;
+					}
+					else
+						y++;
+				}
+			}
+
+			// Right face
+			for (int z = box.Z; z < box.Z + box.Depth; z++)
+			{
+				for (int y = box.Y; y < box.Y + box.Height; )
+				{
+					Box adjacent = this.GetBox(box.X + box.Width, y, z);
+					if (adjacent != null)
+					{
+						if (!relationships.ContainsKey(adjacent))
+						{
+							relationships[adjacent] = true;
+							yield return adjacent;
+						}
+						y = adjacent.Y + adjacent.Height;
+					}
+					else
+						y++;
+				}
+			}
+
+			// Left face
+			for (int z = box.Z; z < box.Z + box.Depth; z++)
+			{
+				for (int y = box.Y; y < box.Y + box.Height; )
+				{
+					Box adjacent = this.GetBox(box.X - 1, y, z);
+					if (adjacent != null)
+					{
+						if (!relationships.ContainsKey(adjacent))
+						{
+							relationships[adjacent] = true;
+							yield return adjacent;
+						}
+						y = adjacent.Y + adjacent.Height;
+					}
+					else
+						y++;
+				}
+			}
+
+			// Top face
+			for (int x = box.X; x < box.X + box.Width; x++)
+			{
+				for (int z = box.Z; z < box.Z + box.Depth; )
+				{
+					Box adjacent = this.GetBox(x, box.Y + box.Height, z);
+					if (adjacent != null)
+					{
+						if (!relationships.ContainsKey(adjacent))
+						{
+							relationships[adjacent] = true;
+							yield return adjacent;
+						}
+						z = adjacent.Z + adjacent.Depth;
+					}
+					else
+						z++;
+				}
+			}
+
+			// Bottom face
+			for (int x = box.X; x < box.X + box.Width; x++)
+			{
+				for (int z = box.Z; z < box.Z + box.Depth; )
+				{
+					Box adjacent = this.GetBox(x, box.Y - 1, z);
+					if (adjacent != null)
+					{
+						if (!relationships.ContainsKey(adjacent))
+						{
+							relationships[adjacent] = true;
+							yield return adjacent;
+						}
+						z = adjacent.Z + adjacent.Depth;
+					}
+					else
+						z++;
+				}
+			}
+		}
+
 		protected void calculateAdjacency(IEnumerable<Box> boxes)
 		{
 			foreach (Box box in boxes)
@@ -2271,7 +2396,13 @@ namespace Lemma.Components
 					if (box.Active && !regenerated.ContainsKey(box))
 						regenerated[box] = this.regenerateSurfaces(box);
 
-					foreach (Box adjacent in box.Adjacent)
+					IEnumerable<Box> adjacentBoxes;
+
+					if (box.Type.Permanent) // We probably don't have any adjacency info for it.
+						adjacentBoxes = this.getAdjacentBoxes(box);
+					else
+						adjacentBoxes = box.Adjacent;
+					foreach (Box adjacent in adjacentBoxes)
 					{
 						if (adjacent.Active && !regenerated.ContainsKey(adjacent))
 							regenerated[adjacent] = this.regenerateSurfaces(adjacent);

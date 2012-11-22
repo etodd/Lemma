@@ -1082,6 +1082,8 @@ namespace Lemma
 					this.player = this.Get("Player").FirstOrDefault();
 					if (this.player != null)
 						this.PlayerSpawned.Execute(this.player);
+					this.mapJustLoaded = true;
+					this.Renderer.Tint.Value = Vector3.Zero;
 				});
 			}
 		}
@@ -1166,28 +1168,28 @@ namespace Lemma
 		protected void saveSettings()
 		{
 			// Save settings
-
-			/*
-			if (!this.Settings.Fullscreen)
-			{
-				System.Windows.Forms.Form window = (System.Windows.Forms.Form)System.Windows.Forms.Form.FromHandle(this.Window.Handle);
-				this.Settings.Maximized.Value = window.WindowState == System.Windows.Forms.FormWindowState.Maximized;
-				this.Settings.Size.Value = this.ScreenSize;
-			}
-			*/
-
 			using (Stream stream = new FileStream(this.settingsFile, FileMode.Create, FileAccess.Write, FileShare.None))
 				new XmlSerializer(typeof(Config)).Serialize(stream, this.Settings);
 		}
+
+		private bool mapJustLoaded = false;
 
 		protected override void Update(GameTime gameTime)
 		{
 			base.Update(gameTime);
 
+			if (this.mapJustLoaded)
+			{
+				// If we JUST loaded a map, wait one frame for any scripts to execute before we spawn a player
+				this.mapJustLoaded = false;
+				return;
+			}
+
 			// Spawn an editor or a player if needed
 			if (this.EditorEnabled)
 			{
 				this.player = null;
+				this.Renderer.Tint.Value = Vector3.One;
 				if (this.editor == null)
 				{
 					this.editor = Factory.Get("Editor").CreateAndBind(this);
