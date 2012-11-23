@@ -10,7 +10,7 @@ script.Add(new CommandBinding<Entity>(((GameMain)main).PlayerSpawned, delegate(E
 {
 	if (!phoneMessageShown)
 	{
-		script.Add
+		player.Add
 		(
 			new NotifyBinding(delegate()
 			{
@@ -31,9 +31,14 @@ script.Add(new CommandBinding<Entity>(((GameMain)main).PlayerSpawned, delegate(E
 		);
 	}
 	
+	player.Add(new CommandBinding(player.Get<Player>().StaminaDepleted, delegate()
+	{
+		hideMessage(showMessage("You died from lack of stamina. Don't let your stamina meter drop too low. Find energy pickups to recharge it."), 9.0f);
+	}));
+	
 	Property<Entity.Handle> pistol = player.GetProperty<Entity.Handle>("Pistol");
 	NotifyBinding ammoChanged = null;
-	script.Add
+	player.Add
 	(
 		new NotifyBinding(delegate()
 		{
@@ -41,7 +46,7 @@ script.Add(new CommandBinding<Entity>(((GameMain)main).PlayerSpawned, delegate(E
 				return;
 			
 			if (ammoChanged != null)
-				script.Remove(ammoChanged);
+				player.Remove(ammoChanged);
 			
 			Property<int> mags = pistol.Value.Target.GetProperty<int>("Magazines");
 			
@@ -63,7 +68,7 @@ script.Add(new CommandBinding<Entity>(((GameMain)main).PlayerSpawned, delegate(E
 						ammoMessageShown.Value = true;
 					}
 				}, mags);
-				script.Add(ammoChanged);
+				player.Add(ammoChanged);
 			}
 			
 			if (!pistolMessageShown)

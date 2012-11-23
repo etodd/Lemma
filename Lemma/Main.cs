@@ -261,6 +261,7 @@ namespace Lemma
 						Entity scriptEntity = Factory.Get<ScriptFactory>().CreateAndBind(this);
 						scriptEntity.Serialize = false;
 						this.Add(scriptEntity);
+						scriptEntity.GetProperty<bool>("ExecuteOnLoad").Value = false;
 						scriptEntity.Get<Script>().Name.Value = Path.Combine("GlobalScripts", Path.GetFileNameWithoutExtension(script));
 						scriptEntity.Get<Script>().Execute.Execute();
 					}

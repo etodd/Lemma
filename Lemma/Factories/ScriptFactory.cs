@@ -30,14 +30,16 @@ namespace Lemma.Factories
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
 			result.CannotSuspend = true;
-			if (result.GetProperty<bool>("ExecuteOnLoad") && !main.EditorEnabled)
+			Property<bool> executeOnLoad = result.GetProperty<bool>("ExecuteOnLoad");
+			if (executeOnLoad && !main.EditorEnabled)
 			{
 				Script script = result.Get<Script>();
 				result.Add("Executor", new PostInitialization
 				{
 					delegate()
 					{
-						script.Execute.Execute();
+						if (executeOnLoad)
+							script.Execute.Execute();
 					}
 				});
 			}

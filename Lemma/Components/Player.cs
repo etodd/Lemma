@@ -69,6 +69,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command<Collidable, ContactCollection> Collided = new Command<Collidable, ContactCollection>();
 
+		[XmlIgnore]
+		public Command StaminaDepleted = new Command();
+
 		private float damageTimer = 0.0f;
 		public Property<float> Health = new Property<float> { Value = 1.0f, Editable = false };
 
@@ -137,7 +140,7 @@ namespace Lemma.Components
 			{
 				this.Stamina.InternalValue = Math.Max(0, Math.Min(100, value));
 				if (this.Stamina.InternalValue == 0)
-					this.Entity.Delete.Execute();
+					this.StaminaDepleted.Execute();
 			};
 
 			this.Add(new TwoWayBinding<Vector2>(this.MovementDirection, this.character.MovementDirection));

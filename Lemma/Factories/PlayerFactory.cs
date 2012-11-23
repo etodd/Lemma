@@ -280,6 +280,12 @@ namespace Lemma.Factories
 				}
 			});
 
+			// Die if stamina is depleted
+			result.Add(new CommandBinding(player.StaminaDepleted, delegate()
+			{
+				result.Add(new Animation(new Animation.Delay(0.01f), new Animation.Execute(result.Delete)));
+			}));
+
 			result.Add(new CommandBinding(result.Delete, delegate()
 			{
 				Entity p = phone.Value.Target;
@@ -1440,8 +1446,7 @@ namespace Lemma.Factories
 					Vector2 wallNormal2 = new Vector2(absoluteWallNormal.X, absoluteWallNormal.Z);
 					wallNormal2.Normalize();
 
-					if (jumpDirection.LengthSquared() == 0.0f)
-						jumpDirection = new Vector2((float)Math.Sin(rotation), (float)Math.Cos(rotation));
+					jumpDirection = new Vector2(-matrix.Forward.X, -matrix.Forward.Z);
 
 					float dot = Vector2.Dot(wallNormal2, jumpDirection);
 					if (dot < 0)
@@ -1460,17 +1465,25 @@ namespace Lemma.Factories
 					// See if we can wall-jump
 					float r = rotation;
 					Vector3 playerPos = transform.Position;
+					float closestWall = wallJumpDistance;
+					Map.GlobalRaycastResult? wallRaycastHit = null;
+					Vector3 wallRaycastDirection = Vector3.Zero;
 					for (int i = 0; i < 4; i++)
 					{
 						float r2 = r + (i * (float)Math.PI * 0.5f);
 						Vector3 dir = new Vector3((float)Math.Cos(r2), 0, (float)Math.Sin(r2));
-						Map.GlobalRaycastResult hit = Map.GlobalRaycast(playerPos, dir, wallJumpDistance);
+						Map.GlobalRaycastResult hit = Map.GlobalRaycast(playerPos, dir, closestWall);
 						if (hit.Map != null)
 						{
-							wallJumping = true;
-							wallJump(hit.Map, hit.Map.GetAbsoluteVector(hit.Map.GetRelativeDirection(dir).GetReverse().GetVector()));
-							break;
+							wallRaycastDirection = dir;
+							wallRaycastHit = hit;
 						}
+					}
+					if (wallRaycastHit != null)
+					{
+						wallJumping = true;
+						Map m = wallRaycastHit.Value.Map;
+						wallJump(m, m.GetAbsoluteVector(m.GetRelativeDirection(wallRaycastDirection).GetReverse().GetVector()));
 					}
 				}
 

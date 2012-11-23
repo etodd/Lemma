@@ -249,7 +249,7 @@ namespace Lemma.Components
 
 					if (!this.Map.main.EditorEnabled && !this.Map.EnablePhysics)
 					{
-						this.Data = null;
+						this.freeData();
 						foreach (Box box in this.Boxes)
 						{
 							box.Adjacent.Clear();
@@ -272,9 +272,8 @@ namespace Lemma.Components
 				this.Active = false;
 			}
 
-			public virtual void Delete()
+			private void freeData()
 			{
-				this.Active = false;
 				for (int u = 0; u < this.Map.chunkSize; u++)
 				{
 					for (int v = 0; v < this.Map.chunkSize; v++)
@@ -288,6 +287,12 @@ namespace Lemma.Components
 					queue = Map.freeDataChunks[this.Map.chunkSize] = new Queue<Box[, ,]>();
 				queue.Enqueue(this.Data);
 				this.Data = null;
+			}
+
+			public virtual void Delete()
+			{
+				this.Active = false;
+				this.freeData();
 				foreach (Box box in this.Boxes)
 				{
 					if (box.Adjacent != null)
@@ -1048,14 +1053,7 @@ namespace Lemma.Components
 									DynamicMap newMapComponent = newMap.Get<DynamicMap>();
 									newMapComponent.Offset.Value = spawn.Source.Offset;
 									newMapComponent.BuildFromBoxes(island);
-									foreach (Box box in island)
-									{
-										foreach (Coordinate coord in box.GetCoords())
-										{
-											spawn.Source.CellEmptied.Execute(coord, newMapComponent);
-											Map.GlobalCellEmptied.Execute(spawn.Source, coord, newMapComponent);
-										}
-									}
+									spawn.Source.notifyEmptied(island.SelectMany(x => x.GetCoords()), newMapComponent);
 									newMapComponent.Transform.Reset();
 									if (spawn.Source is DynamicMap)
 										newMapComponent.IsAffectedByGravity.Value = ((DynamicMap)spawn.Source).IsAffectedByGravity;
@@ -1076,56 +1074,59 @@ namespace Lemma.Components
 
 			this.Data.Get = delegate()
 			{
-				List<Box> boxes = this.Chunks.SelectMany(x => x.Boxes).ToList();
-				bool[] modifications = this.simplify(boxes);
-				this.simplify(boxes, modifications, true);
-				this.updatePhysics();
-
-				boxes = this.Chunks.SelectMany(x => x.Boxes).ToList();
-				foreach (Chunk chunk in this.Chunks)
-				{
-					if (chunk.DataBoxes != null) // Include any boxes that have not yet been instantiated
-						boxes.AddRange(chunk.DataBoxes);
-				}
-
 				List<int> result = new List<int>();
-				result.Add(boxes.Count);
-
-				Dictionary<Box, int> indexLookup = new Dictionary<Box, int>();
-
-				int index = 0;
-				foreach (Box box in boxes)
+				lock (this.mutationLock)
 				{
-					result.Add(box.X);
-					result.Add(box.Y);
-					result.Add(box.Z);
-					result.Add(box.Width);
-					result.Add(box.Height);
-					result.Add(box.Depth);
-					result.Add(box.Type.ID);
-					indexLookup.Add(box, index);
-					index++;
-				}
+					List<Box> boxes = this.Chunks.SelectMany(x => x.Boxes).ToList();
+					bool[] modifications = this.simplify(boxes);
+					this.simplify(boxes, modifications);
+					this.applyChanges(boxes, modifications);
 
-				Dictionary<BoxRelationship, bool> relationships = new Dictionary<BoxRelationship, bool>();
-				index = 0;
-				foreach (Box box in boxes)
-				{
-					foreach (Box adjacent in box.Adjacent)
+					boxes = this.Chunks.SelectMany(x => x.Boxes).ToList();
+					foreach (Chunk chunk in this.Chunks)
 					{
-						if (box.Type.Permanent && adjacent.Type.Permanent)
-							continue;
-
-						BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
-						BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
-						if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
-						{
-							relationships[relationship1] = true;
-							result.Add(index);
-							result.Add(indexLookup[adjacent]);
-						}
+						if (chunk.DataBoxes != null) // Include any boxes that have not yet been instantiated
+							boxes.AddRange(chunk.DataBoxes);
 					}
-					index++;
+
+					result.Add(boxes.Count);
+
+					Dictionary<Box, int> indexLookup = new Dictionary<Box, int>();
+
+					int index = 0;
+					foreach (Box box in boxes)
+					{
+						result.Add(box.X);
+						result.Add(box.Y);
+						result.Add(box.Z);
+						result.Add(box.Width);
+						result.Add(box.Height);
+						result.Add(box.Depth);
+						result.Add(box.Type.ID);
+						indexLookup.Add(box, index);
+						index++;
+					}
+
+					Dictionary<BoxRelationship, bool> relationships = new Dictionary<BoxRelationship, bool>();
+					index = 0;
+					foreach (Box box in boxes)
+					{
+						foreach (Box adjacent in box.Adjacent)
+						{
+							if (box.Type.Permanent && adjacent.Type.Permanent)
+								continue;
+
+							BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
+							BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
+							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
+							{
+								relationships[relationship1] = true;
+								result.Add(index);
+								result.Add(indexLookup[adjacent]);
+							}
+						}
+						index++;
+					}
 				}
 
 				return Map.serializeData(result.ToArray());
@@ -1424,6 +1425,38 @@ namespace Lemma.Components
 				return changed;
 			}
 		}
+		
+		private void notifyEmptied(IEnumerable<Coordinate> coords, Map transferringToNewMap)
+		{
+			foreach (Coordinate coord in coords)
+			{
+				this.CellEmptied.Execute(coord, transferringToNewMap);
+				Map.GlobalCellEmptied.Execute(this, coord, transferringToNewMap);
+			}
+
+			bool completelyEmptied = true;
+			foreach (Chunk chunk in this.Chunks)
+			{
+				if (chunk.DataBoxes != null && chunk.DataBoxes.Count > 0)
+				{
+					completelyEmptied = false;
+					break;
+				}
+				foreach (Box box in chunk.Boxes)
+				{
+					if (box.Active)
+					{
+						completelyEmptied = false;
+						break;
+					}
+				}
+				if (!completelyEmptied)
+					break;
+			}
+
+			if (completelyEmptied)
+				this.CompletelyEmptied.Execute();
+		}
 
 		public bool Empty(IEnumerable<Coordinate> coords, Map transferringToNewMap = null)
 		{
@@ -1556,34 +1589,9 @@ namespace Lemma.Components
 				}
 				this.calculateAdjacency(boxAdditions.Where(x => x.Active));
 			}
-			foreach (Coordinate coord in removed)
-			{
-				this.CellEmptied.Execute(coord, transferringToNewMap);
-				Map.GlobalCellEmptied.Execute(this, coord, transferringToNewMap);
-			}
 
-			bool completelyEmptied = true;
-			foreach (Chunk chunk in this.Chunks)
-			{
-				if (chunk.DataBoxes != null && chunk.DataBoxes.Count > 0)
-				{
-					completelyEmptied = false;
-					break;
-				}
-				foreach (Box box in chunk.Boxes)
-				{
-					if (box.Active)
-					{
-						completelyEmptied = false;
-						break;
-					}
-				}
-				if (!completelyEmptied)
-					break;
-			}
-
-			if (completelyEmptied)
-				this.CompletelyEmptied.Execute();
+			if (modified)
+				this.notifyEmptied(removed, transferringToNewMap);
 
 			return modified;
 		}
@@ -1609,116 +1617,120 @@ namespace Lemma.Components
 				Box box = chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];
 				if (box != null && (!box.Type.Permanent || this.main.EditorEnabled))
 				{
+					List<Box> boxAdditions = new List<Box>();
 					coord.Data = box.Type;
 					this.removalCoords.Add(coord);
-					if (box != null)
+					this.removeBox(box);
+
+					// Left
+					if (coord.X > box.X)
 					{
-						this.removeBox(box);
-
-						// Left
-						if (coord.X > box.X)
+						Box newBox = new Box
 						{
-							Box newBox = new Box
-							{
-								X = box.X,
-								Y = box.Y,
-								Z = box.Z,
-								Width = coord.X - box.X,
-								Height = box.Height,
-								Depth = box.Depth,
-								Type = box.Type,
-							};
-							this.addBox(newBox);
-						}
-
-						// Right
-						if (box.X + box.Width > coord.X + 1)
-						{
-							Box newBox = new Box
-							{
-								X = coord.X + 1,
-								Y = box.Y,
-								Z = box.Z,
-								Width = box.X + box.Width - (coord.X + 1),
-								Height = box.Height,
-								Depth = box.Depth,
-								Type = box.Type,
-							};
-							this.addBox(newBox);
-						}
-
-						// Bottom
-						if (coord.Y > box.Y)
-						{
-							Box newBox = new Box
-							{
-								X = coord.X,
-								Y = box.Y,
-								Z = box.Z,
-								Width = 1,
-								Height = coord.Y - box.Y,
-								Depth = box.Depth,
-								Type = box.Type,
-							};
-							this.addBox(newBox);
-						}
-
-						// Top
-						if (box.Y + box.Height > coord.Y + 1)
-						{
-							Box newBox = new Box
-							{
-								X = coord.X,
-								Y = coord.Y + 1,
-								Z = box.Z,
-								Width = 1,
-								Height = box.Y + box.Height - (coord.Y + 1),
-								Depth = box.Depth,
-								Type = box.Type,
-							};
-							this.addBox(newBox);
-						}
-
-						// Back
-						if (coord.Z > box.Z)
-						{
-							Box newBox = new Box
-							{
-								X = coord.X,
-								Y = coord.Y,
-								Z = box.Z,
-								Width = 1,
-								Height = 1,
-								Depth = coord.Z - box.Z,
-								Type = box.Type,
-							};
-							this.addBox(newBox);
-						}
-
-						// Front
-						if (box.Z + box.Depth > coord.Z + 1)
-						{
-							Box newBox = new Box
-							{
-								X = coord.X,
-								Y = coord.Y,
-								Z = coord.Z + 1,
-								Width = 1,
-								Height = 1,
-								Depth = box.Z + box.Depth - (coord.Z + 1),
-								Type = box.Type,
-							};
-							this.addBox(newBox);
-						}
-						modified = true;
+							X = box.X,
+							Y = box.Y,
+							Z = box.Z,
+							Width = coord.X - box.X,
+							Height = box.Height,
+							Depth = box.Depth,
+							Type = box.Type,
+						};
+						this.addBoxWithoutAdjacency(newBox);
+						boxAdditions.Add(newBox);
 					}
+
+					// Right
+					if (box.X + box.Width > coord.X + 1)
+					{
+						Box newBox = new Box
+						{
+							X = coord.X + 1,
+							Y = box.Y,
+							Z = box.Z,
+							Width = box.X + box.Width - (coord.X + 1),
+							Height = box.Height,
+							Depth = box.Depth,
+							Type = box.Type,
+						};
+						this.addBoxWithoutAdjacency(newBox);
+						boxAdditions.Add(newBox);
+					}
+
+					// Bottom
+					if (coord.Y > box.Y)
+					{
+						Box newBox = new Box
+						{
+							X = coord.X,
+							Y = box.Y,
+							Z = box.Z,
+							Width = 1,
+							Height = coord.Y - box.Y,
+							Depth = box.Depth,
+							Type = box.Type,
+						};
+						this.addBoxWithoutAdjacency(newBox);
+						boxAdditions.Add(newBox);
+					}
+
+					// Top
+					if (box.Y + box.Height > coord.Y + 1)
+					{
+						Box newBox = new Box
+						{
+							X = coord.X,
+							Y = coord.Y + 1,
+							Z = box.Z,
+							Width = 1,
+							Height = box.Y + box.Height - (coord.Y + 1),
+							Depth = box.Depth,
+							Type = box.Type,
+						};
+						this.addBoxWithoutAdjacency(newBox);
+						boxAdditions.Add(newBox);
+					}
+
+					// Back
+					if (coord.Z > box.Z)
+					{
+						Box newBox = new Box
+						{
+							X = coord.X,
+							Y = coord.Y,
+							Z = box.Z,
+							Width = 1,
+							Height = 1,
+							Depth = coord.Z - box.Z,
+							Type = box.Type,
+						};
+						this.addBoxWithoutAdjacency(newBox);
+						boxAdditions.Add(newBox);
+					}
+
+					// Front
+					if (box.Z + box.Depth > coord.Z + 1)
+					{
+						Box newBox = new Box
+						{
+							X = coord.X,
+							Y = coord.Y,
+							Z = coord.Z + 1,
+							Width = 1,
+							Height = 1,
+							Depth = box.Z + box.Depth - (coord.Z + 1),
+							Type = box.Type,
+						};
+						this.addBoxWithoutAdjacency(newBox);
+						boxAdditions.Add(newBox);
+					}
+					modified = true;
+					this.calculateAdjacency(boxAdditions.Where(a => a.Active));
 				}
 			}
+
 			if (modified)
-			{
-				this.CellEmptied.Execute(coord, transferringToNewMap);
-				Map.GlobalCellEmptied.Execute(this, coord, transferringToNewMap);
-			}
+				this.notifyEmptied(new Coordinate[] { coord }, transferringToNewMap);
+
 			return modified;
 		}
 
@@ -2414,43 +2426,48 @@ namespace Lemma.Components
 				bool[] modifications = regenerated.Values.ToArray();
 				this.simplify(boxes, modifications);
 				this.simplify(boxes, modifications);
-				
-				lock (this.Lock)
+
+				this.applyChanges(boxes, modifications);
+			}
+		}
+
+		private void applyChanges(List<Box> boxes, bool[] modifications)
+		{
+			lock (this.Lock)
+			{
+				foreach (Box box in this.removals)
 				{
-					foreach (Box box in this.removals)
-					{
-						if (box.Added)
-							box.Chunk.Boxes.RemoveAt(box.ChunkIndex);
-					}
-
-					int i = 0;
-					foreach (Box box in boxes)
-					{
-						if (box.Added)
-						{
-							if (box.Active)
-							{
-								if (modifications[i])
-									box.Chunk.Boxes.Changed(box.ChunkIndex, box);
-							}
-							else
-								box.Chunk.Boxes.RemoveAt(box.ChunkIndex);
-						}
-						i++;
-					}
-
-					foreach (Box box in this.additions)
-					{
-						if (box.Active && !box.Added)
-							box.Chunk.Boxes.Add(box);
-					}
+					if (box.Added)
+						box.Chunk.Boxes.RemoveAt(box.ChunkIndex);
 				}
 
-				this.removals.Clear();
-				this.additions.Clear();
+				int i = 0;
+				foreach (Box box in boxes)
+				{
+					if (box.Added)
+					{
+						if (box.Active)
+						{
+							if (modifications[i])
+								box.Chunk.Boxes.Changed(box.ChunkIndex, box);
+						}
+						else
+							box.Chunk.Boxes.RemoveAt(box.ChunkIndex);
+					}
+					i++;
+				}
 
-				this.updatePhysics();
+				foreach (Box box in this.additions)
+				{
+					if (box.Active && !box.Added)
+						box.Chunk.Boxes.Add(box);
+				}
 			}
+
+			this.removals.Clear();
+			this.additions.Clear();
+
+			this.updatePhysics();
 		}
 
 		public void BuildFromBoxes(IEnumerable<Box> boxes)
@@ -2913,7 +2930,7 @@ namespace Lemma.Components
 			return false;
 		}
 
-		private bool[] simplify(List<Box> list, bool[] modified = null, bool commitModifications = false)
+		private bool[] simplify(List<Box> list, bool[] modified = null)
 		{
 			if (modified == null)
 				modified = new bool[list.Count];
@@ -3154,9 +3171,6 @@ namespace Lemma.Components
 					else
 						break;
 				}
-
-				if (commitModifications && modified[i] && baseBox.Added)
-					baseBox.Chunk.Boxes.Changed(baseBox.ChunkIndex, baseBox);
 
 				i++;
 			}

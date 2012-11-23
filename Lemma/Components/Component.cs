@@ -56,6 +56,7 @@ namespace Lemma.Components
 
 		public Property<bool> Enabled { get; set; }
 
+		[XmlIgnore]
 		public Property<bool> Suspended { get; set; }
 
 		[XmlIgnore]
@@ -82,7 +83,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command Delete = new Command();
 
+		[XmlIgnore]
 		public Property<bool> EnabledInEditMode { get; set; }
+		[XmlIgnore]
 		public Property<bool> EnabledWhenPaused { get; set; }
 
 		private List<IBinding> bindings = new List<IBinding>();

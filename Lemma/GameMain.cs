@@ -1079,9 +1079,6 @@ namespace Lemma
 				{
 					this.spawnedAtStartPoint = false;
 					this.respawnTimer = -1.0f;
-					this.player = this.Get("Player").FirstOrDefault();
-					if (this.player != null)
-						this.PlayerSpawned.Execute(this.player);
 					this.mapJustLoaded = true;
 					this.Renderer.Tint.Value = Vector3.Zero;
 				});
