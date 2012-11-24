@@ -423,7 +423,7 @@
       <Name>skybox</Name>
       <Importer>FbxImporter</Importer>
       <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_DiffuseTexture>skybox.jpg</ProcessorParameters_DiffuseTexture>
+      <ProcessorParameters_DiffuseTexture>skybox-night.jpg</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_EffectFileName>..\Effects\Skybox.fx</ProcessorParameters_EffectFileName>
     </Compile>
     <Compile Include="Sounds\Lemma.xap">
@@ -815,6 +815,77 @@
       <Project>{4636C7E1-B845-4B83-B96D-64A11B8A4515}</Project>
       <Name>PipelineExtensions.XNA</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="EnvironmentTextures\metal-channels-normal.jpg">
+      <Name>metal-channels-normal</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="EnvironmentTextures\metal-channels.jpg">
+      <Name>metal-channels</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="EnvironmentTextures\rock-chunky-normal.jpg">
+      <Name>rock-chunky-normal</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="EnvironmentTextures\rock-chunky.jpg">
+      <Name>rock-chunky</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="EnvironmentTextures\rock-grass-normal.jpg">
+      <Name>rock-grass-normal</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="EnvironmentTextures\rock-grass.jpg">
+      <Name>rock-grass</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="EnvironmentTextures\rock-red-normal.jpg">
+      <Name>rock-red-normal</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="EnvironmentTextures\rock-red.jpg">
+      <Name>rock-red</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="EnvironmentTextures\rough-rock-normal.jpg">
+      <Name>rough-rock-normal</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="EnvironmentTextures\rough-rock.jpg">
+      <Name>rough-rock</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Models\skybox-sunset.jpg">
+      <Name>skybox-sunset</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Models\skybox1.jpg">
+      <Name>skybox1</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="Models\skybox2.jpg">
+      <Name>skybox2</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

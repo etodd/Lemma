@@ -31,7 +31,13 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
-			this.Add(new CommandBinding(this.OnDisabled, delegate() { this.IsTriggered.Value = false; }));
+			Action clear = delegate()
+			{
+				this.IsTriggered.Value = false;
+				this.Player.Value = null;
+			};
+			this.Add(new CommandBinding(this.OnSuspended, clear));
+			this.Add(new CommandBinding(this.OnDisabled, clear));
 		}
 
 		public void Update(float elapsedTime)

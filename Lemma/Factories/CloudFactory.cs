@@ -24,6 +24,7 @@ namespace Lemma.Factories
 			ModelAlpha clouds = new ModelAlpha();
 			clouds.Filename.Value = "Models\\clouds";
 			clouds.CullBoundingBox.Value = false;
+			clouds.DrawOrder.Value = -9;
 			result.Add("Clouds", clouds);
 
 			return result;
@@ -35,7 +36,6 @@ namespace Lemma.Factories
 			result.CannotSuspendByDistance = true;
 
 			ModelAlpha clouds = result.Get<ModelAlpha>("Clouds");
-			clouds.DrawOrder.Value = -9;
 
 			Property<float> height = result.GetOrMakeProperty<float>("Height", true, 1.0f);
 			result.Add(new Binding<float>(clouds.GetFloatParameter("Height"), height));

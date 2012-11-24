@@ -69,7 +69,7 @@ namespace Lemma.Components
 			}
 
 			p.Camera.SetParameters(this.effect);
-			this.effect.Parameters["DepthBuffer"].SetValue(p.DepthBuffer);
+			this.effect.Parameters["Depth" + Model.SamplerPostfix].SetValue(p.DepthBuffer);
 
 			// Draw lines
 			try

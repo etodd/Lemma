@@ -312,6 +312,72 @@ namespace Lemma.Factories
 					SpecularPower = 100.0f,
 					SpecularIntensity = 0.1f,
 					Tiling = 2.0f,
+				},
+				new Map.CellState
+				{
+					ID = 21,
+					Name = "RockRough",
+					Permanent = true,
+					Density = 2,
+					DiffuseMap = "EnvironmentTextures\\rough-rock",
+					NormalMap = "EnvironmentTextures\\rough-rock-normal",
+					FootstepCue = "RockRoughFootsteps",
+					RubbleCue = "RockRoughRubble",
+					SpecularPower = 1.0f,
+					SpecularIntensity = 0.0f
+				},
+				new Map.CellState
+				{
+					ID = 22,
+					Name = "RockGrass",
+					Permanent = true,
+					Density = 2,
+					DiffuseMap = "EnvironmentTextures\\rock-grass",
+					NormalMap = "EnvironmentTextures\\rock-grass-normal",
+					FootstepCue = "RockGrassFootsteps",
+					RubbleCue = "RockGrassRubble",
+					SpecularPower = 1.0f,
+					SpecularIntensity = 0.0f
+				},
+				new Map.CellState
+				{
+					ID = 23,
+					Name = "RockChunky",
+					Permanent = true,
+					Density = 2,
+					DiffuseMap = "EnvironmentTextures\\rock-chunky",
+					NormalMap = "EnvironmentTextures\\rock-chunky-normal",
+					FootstepCue = "RockChunkyFootsteps",
+					RubbleCue = "RockChunkyRubble",
+					SpecularPower = 1.0f,
+					SpecularIntensity = 0.0f
+				},
+				new Map.CellState
+				{
+					ID = 24,
+					Name = "RockRed",
+					Permanent = true,
+					Density = 2,
+					DiffuseMap = "EnvironmentTextures\\rock-red",
+					NormalMap = "EnvironmentTextures\\rock-red-normal",
+					FootstepCue = "RockRedFootsteps",
+					RubbleCue = "RockRedRubble",
+					SpecularPower = 1.0f,
+					SpecularIntensity = 0.0f
+				},
+				new Map.CellState
+				{
+					ID = 25,
+					Name = "MetalChannels",
+					Permanent = true,
+					Density = 1,
+					DiffuseMap = "EnvironmentTextures\\metal-channels",
+					NormalMap = "EnvironmentTextures\\metal-channels-normal",
+					FootstepCue = "MetalChannelsFootsteps",
+					RubbleCue = "MetalChannelsRubble",
+					SpecularPower = 200.0f,
+					SpecularIntensity = 0.5f,
+					Tiling = 2.0f,
 				}
 			);
 		}

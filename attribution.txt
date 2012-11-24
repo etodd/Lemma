@@ -9,12 +9,22 @@ http://www.moddb.com/members/et1337
 
 ==========================================
 
+skybox-night.jpg generated with Spacescape. http://alexcpeterson.com/spacescape
+skybox-sunset.jpg, skybox1.jpg, skybox2.jpg by Tim Heldna. http://www.garagegames.com/community/blogs/view/12655
+
+==========================================
+
 Music and some sounds by Jack Menhorn. http://jackmenhorn.com
 
 ==========================================
 
 Audio source material pulled from FreeSound. http://freesound.org
 
+Downloaded on October 30th, 2012
+     S: rbh rain 01.wav by RHumphries -- http://www.freesound.org/people/RHumphries/sounds/2519/
+     S: rbh rain 04.wav by RHumphries -- http://www.freesound.org/people/RHumphries/sounds/2522/
+     S: mega-thunder.wav by Erdie -- http://www.freesound.org/people/Erdie/sounds/24003/
+     S: rbh thunder storm.wav by RHumphries -- http://www.freesound.org/people/RHumphries/sounds/2523/
 Downloaded on October 23rd, 2012
      S: salt 3.wav by melack -- http://www.freesound.org/people/melack/sounds/9193/
      S: salt 2.wav by melack -- http://www.freesound.org/people/melack/sounds/9192/

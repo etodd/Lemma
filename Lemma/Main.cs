@@ -175,7 +175,7 @@ namespace Lemma
 
 		public IEnumerable<Entity> Get(string type)
 		{
-			return this.Entities.Where(x => x.Type == type);
+			return this.Entities.Where(x => x.Type == type && x.Active);
 		}
 
 		public Entity GetByID(string id)
