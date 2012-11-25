@@ -2,3 +2,4 @@
 *.cachefile
 bin
 obj
+*.user
