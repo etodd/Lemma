@@ -431,17 +431,17 @@ namespace Lemma.Factories
 			return result;
 		}
 
-		private bool boxesContain(IEnumerable<BoundingBox> boxes, Vector3 position)
+		private bool boxesContain(IEnumerable<NonAxisAlignedBoundingBox> boxes, Vector3 position)
 		{
-			foreach (BoundingBox box in boxes)
+			foreach (NonAxisAlignedBoundingBox box in boxes)
 			{
-				if (box.Contains(position) != ContainmentType.Disjoint)
+				if (box.BoundingBox.Contains(Vector3.Transform(position, box.Transform)) != ContainmentType.Disjoint)
 					return true;
 			}
 			return false;
 		}
 
-		private void processEntity(Entity entity, Zone currentZone, IEnumerable<BoundingBox> boxes)
+		private void processEntity(Entity entity, Zone currentZone, IEnumerable<NonAxisAlignedBoundingBox> boxes)
 		{
 			if (!entity.CannotSuspend)
 			{
@@ -452,9 +452,9 @@ namespace Lemma.Factories
 					{
 						BoundingBox absoluteChunkBoundingBox = chunk.RelativeBoundingBox.Transform(map.Transform);
 						bool active = false;
-						foreach (BoundingBox box in boxes)
+						foreach (NonAxisAlignedBoundingBox box in boxes)
 						{
-							if (absoluteChunkBoundingBox.Intersects(box))
+							if (box.BoundingBox.Intersects(absoluteChunkBoundingBox.Transform(box.Transform)))
 							{
 								active = true;
 								break;
@@ -497,7 +497,7 @@ namespace Lemma.Factories
 							{
 								foreach (Zone z in Zone.Zones)
 								{
-									if (z != currentZone && z.AbsoluteBoundingBox.Value.Contains(pos) != ContainmentType.Disjoint)
+									if (z != currentZone && z.BoundingBox.Value.Contains(Vector3.Transform(pos, Matrix.Invert(z.Transform))) != ContainmentType.Disjoint)
 									{
 										suspended = true;
 										break;
@@ -516,16 +516,22 @@ namespace Lemma.Factories
 			}
 		}
 
-		private IEnumerable<BoundingBox> getActiveBoundingBoxes(Camera camera, Zone currentZone)
+		private class NonAxisAlignedBoundingBox
+		{
+			public BoundingBox BoundingBox;
+			public Matrix Transform;
+		}
+
+		private IEnumerable<NonAxisAlignedBoundingBox> getActiveBoundingBoxes(Camera camera, Zone currentZone)
 		{
 			if (currentZone == null)
 			{
 				Vector3 pos = camera.Position;
 				float radius = camera.FarPlaneDistance;
-				return new[] { new BoundingBox(pos - new Vector3(radius), pos + new Vector3(radius)) };
+				return new[] { new NonAxisAlignedBoundingBox { BoundingBox = new BoundingBox(pos - new Vector3(radius), pos + new Vector3(radius)), Transform = Matrix.Identity } };
 			}
 			else
-				return Zone.GetConnectedBoundingBoxes(currentZone);
+				return Zone.GetConnectedZones(currentZone).Select(x => new NonAxisAlignedBoundingBox { BoundingBox = x.BoundingBox, Transform = Matrix.Invert(x.Transform) }).ToList();
 		}
 
 		public override void Bind(Entity result, Main main, bool creating = false)
@@ -550,7 +556,7 @@ namespace Lemma.Factories
 				this.processEntity(e, currentZone, this.getActiveBoundingBoxes(main.Camera, currentZone));
 			}));
 
-			IEnumerable<BoundingBox> boxes = this.getActiveBoundingBoxes(main.Camera, currentZone);
+			IEnumerable<NonAxisAlignedBoundingBox> boxes = this.getActiveBoundingBoxes(main.Camera, currentZone);
 			foreach (Entity e in main.Entities)
 				this.processEntity(e, currentZone, boxes);
 

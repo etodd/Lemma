@@ -270,6 +270,7 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<int>(stamina, player.Stamina));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableAim"), player.EnableAim));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableRoll"), player.EnableRoll));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableKick"), player.EnableKick));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableBlockBuild"), player.EnableBlockBuild));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableLevitation"), player.EnableLevitation));
@@ -1799,7 +1800,7 @@ namespace Lemma.Factories
 
 					bool kicking = false;
 
-					if (!instantiatedBlockPossibility && canKick && !player.IsSupported && player.LinearVelocity.Value.Y > -5.0f)
+					if (!instantiatedBlockPossibility && canKick && !player.IsSupported && player.EnableKick && player.LinearVelocity.Value.Y > -5.0f)
 					{
 						// Try to kick
 						Map.GlobalRaycastResult forwardRaycast = Map.GlobalRaycast(transform.Position, forward, 7.0f);

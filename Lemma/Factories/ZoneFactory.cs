@@ -30,7 +30,7 @@ namespace Lemma.Factories
 			result.CannotSuspendByDistance = true;
 			Zone zone = result.Get<Zone>();
 			Transform transform = result.Get<Transform>();
-			zone.Add(new Binding<Vector3>(zone.Position, transform.Position));
+			zone.Add(new Binding<Matrix>(zone.Transform, transform.Matrix));
 			this.SetMain(result, main);
 		}
 
@@ -133,22 +133,22 @@ namespace Lemma.Factories
 			cornerTransform1.Add(new TwoWayBinding<Vector3, Vector3>
 			(
 				corner1,
-				x => x - transform.Position,
-				new[] { transform.Position },
+				x => Vector3.Transform(x, Matrix.Invert(transform.Matrix)),
+				new[] { transform.Matrix },
 				cornerTransform1.Position,
-				x => x + transform.Position,
-				new[] { transform.Position }
+				x => Vector3.Transform(x, transform.Matrix),
+				new[] { transform.Matrix }
 			));
 
 			Transform cornerTransform2 = this.addCornerModel(result, selected);
 			cornerTransform2.Add(new TwoWayBinding<Vector3, Vector3>
 			(
 				corner2,
-				x => x - transform.Position,
-				new[] { transform.Position },
+				x => Vector3.Transform(x, Matrix.Invert(transform.Matrix)),
+				new[] { transform.Matrix },
 				cornerTransform2.Position,
-				x => x + transform.Position,
-				new[] { transform.Position }
+				x => Vector3.Transform(x, transform.Matrix),
+				new[] { transform.Matrix }
 			));
 
 			ModelAlpha box = new ModelAlpha();
@@ -161,10 +161,11 @@ namespace Lemma.Factories
 			box.DrawOrder.Value = 11; // In front of water
 			box.DisableCulling.Value = true;
 			result.Add(box);
-			box.Add(new Binding<Matrix, BoundingBox>(box.Transform, delegate(BoundingBox x)
+			box.Add(new Binding<Matrix>(box.Transform, delegate()
 			{
-				return Matrix.CreateScale(x.Max - x.Min) * Matrix.CreateTranslation((x.Min + x.Max) * 0.5f);
-			}, zone.AbsoluteBoundingBox));
+				BoundingBox b = zone.BoundingBox;
+				return Matrix.CreateScale(b.Max - b.Min) * Matrix.CreateTranslation((b.Min + b.Max) * 0.5f) * transform.Matrix;
+			}, zone.BoundingBox, transform.Matrix));
 			box.Add(new Binding<bool>(box.Enabled, selected));
 			box.Add(new Binding<BoundingBox>(box.BoundingBox, zone.BoundingBox));
 			box.CullBoundingBox.Value = false;

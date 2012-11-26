@@ -15,11 +15,7 @@ namespace Lemma.Components
 
 		public Property<Entity.Handle> Parent = new Property<Entity.Handle> { Editable = false, Serialize = true };
 
-		[XmlIgnore]
-		public Property<Vector3> Position = new Property<Vector3>();
-
-		[XmlIgnore]
-		public Property<BoundingBox> AbsoluteBoundingBox = new Property<BoundingBox> { Editable = false, Value = new BoundingBox(new Vector3(-5.0f), new Vector3(5.0f)) };
+		public Property<Matrix> Transform = new Property<Matrix> { Editable = false };
 
 		public Property<BoundingBox> BoundingBox = new Property<BoundingBox> { Editable = false, Value = new BoundingBox(new Vector3(-5.0f), new Vector3(5.0f)) };
 
@@ -29,26 +25,20 @@ namespace Lemma.Components
 
 		public Property<bool> Exclusive = new Property<bool> { Value = true, Editable = true };
 
-		public static IEnumerable<BoundingBox> GetConnectedBoundingBoxes(Zone zone)
+		public static IEnumerable<Zone> GetConnectedZones(Zone zone)
 		{
-			IEnumerable<BoundingBox> result = new BoundingBox[] { zone.AbsoluteBoundingBox };
+			IEnumerable<Zone> result = new Zone[] { zone };
 			foreach (Entity e in zone.ConnectedEntities)
 			{
 				Zone z;
 				if (e != null && (z = e.Get<Zone>()) != null)
-					result = result.Concat(Zone.GetConnectedBoundingBoxes(z));
+					result = result.Concat(Zone.GetConnectedZones(z));
 			}
 			return result;
 		}
 
 		public override void InitializeProperties()
 		{
-			this.Add(new Binding<BoundingBox>(this.AbsoluteBoundingBox, delegate()
-			{
-				BoundingBox box = this.BoundingBox;
-				Vector3 pos = this.Position;
-				return new BoundingBox(box.Min + pos, box.Max + pos);
-			}, this.BoundingBox, this.Position));
 			Zone.Zones.Add(this);
 			this.Add(new CommandBinding(this.Delete, delegate() { Zone.Zones.Remove(this); }));
 
@@ -93,7 +83,7 @@ namespace Lemma.Components
 		{
 			foreach (Zone z in Zone.Zones)
 			{
-				if (z.AbsoluteBoundingBox.Value.Contains(x) == ContainmentType.Contains)
+				if (z.BoundingBox.Value.Contains(Vector3.Transform(x, Matrix.Invert(z.Transform))) == ContainmentType.Contains)
 				{
 					Zone zone = z;
 					while (zone.Parent.Value.Target != null)

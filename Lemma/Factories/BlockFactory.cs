@@ -41,6 +41,8 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
+			result.CannotSuspend = true;
+
 			Transform transform = result.Get<Transform>();
 			PhysicsBlock physics = result.Get<PhysicsBlock>();
 			ModelInstance model = result.Get<ModelInstance>();

@@ -27,6 +27,7 @@ namespace Lemma.Factories
 			result.Add("EnableBlockBuild", new Property<bool> { Value = true });
 			result.Add("EnableAim", new Property<bool> { Value = true });
 			result.Add("EnableRoll", new Property<bool> { Value = true });
+			result.Add("EnableKick", new Property<bool> { Value = true });
 			result.Add("EnableWallRun", new Property<bool> { Value = true });
 			result.Add("EnableLevitation", new Property<bool> { Value = true });
 			result.Add("EnableSprint", new Property<bool> { Value = true });
@@ -36,6 +37,7 @@ namespace Lemma.Factories
 			result.Add("EnableBlockBuild", new Property<bool> { Value = false });
 			result.Add("EnableAim", new Property<bool> { Value = false });
 			result.Add("EnableRoll", new Property<bool> { Value = false });
+			result.Add("EnableKick", new Property<bool> { Value = false });
 			result.Add("EnableWallRun", new Property<bool> { Value = false });
 			result.Add("EnableLevitation", new Property<bool> { Value = false });
 			result.Add("EnableSprint", new Property<bool> { Value = false });
