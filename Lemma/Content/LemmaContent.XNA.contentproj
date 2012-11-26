@@ -195,6 +195,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Name>cave1</Name>
     </None>
+    <None Include="Maps\valley.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Name>valley</Name>
+    </None>
     <Compile Include="Models\spotlight.fbx">
       <Name>spotlight</Name>
       <Importer>FbxImporter</Importer>
@@ -841,6 +845,13 @@
     </Compile>
     <Compile Include="Maps\Textures\wood.jpg">
       <Name>wood</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Models\skybox-sunrise.jpg">
+      <Name>skybox-sunrise</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
