@@ -90,29 +90,29 @@ namespace Lemma.Factories
 			phoneLight.Visible.Value = false;
 			ui.Root.Children.Add(phoneLight);
 
-			Container composeBackground = new Container();
-			composeBackground.Tint.Value = new Color(0.1f, 0.1f, 0.1f);
-			composeBackground.Name.Value = "compose-button";
-			composeBackground.AnchorPoint.Value = new Vector2(1, 0);
-			phoneSprite.Children.Add(composeBackground);
+			Container composeButton = new Container();
+			composeButton.Tint.Value = new Color(0.1f, 0.1f, 0.1f);
+			composeButton.Name.Value = "compose-button";
+			composeButton.AnchorPoint.Value = new Vector2(0, 0);
+			phoneSprite.Children.Add(composeButton);
 
 			TextElement composeMessage = new TextElement();
 			composeMessage.FontFile.Value = "Font";
 			composeMessage.Text.Value = "Compose";
-			composeBackground.Children.Add(composeMessage);
+			composeButton.Children.Add(composeMessage);
 
-			Container responseBackground = new Container();
-			responseBackground.Tint.Value = new Color(0.1f, 0.1f, 0.1f);
-			responseBackground.Opacity.Value = 1.0f;
-			responseBackground.Name.Value = "response-menu";
-			responseBackground.AnchorPoint.Value = new Vector2(1, 1);
-			responseBackground.Visible.Value = false;
-			phoneSprite.Children.Add(responseBackground);
+			Container responseMenu = new Container();
+			responseMenu.Tint.Value = new Color(0.1f, 0.1f, 0.1f);
+			responseMenu.Opacity.Value = 1.0f;
+			responseMenu.Name.Value = "response-menu";
+			responseMenu.AnchorPoint.Value = new Vector2(0, 1);
+			responseMenu.Visible.Value = false;
+			phoneSprite.Children.Add(responseMenu);
 
 			ListContainer responseList = new ListContainer();
 			responseList.Orientation.Value = ListContainer.ListOrientation.Vertical;
 			responseList.Name.Value = "responses";
-			responseBackground.Children.Add(responseList);
+			responseMenu.Children.Add(responseList);
 
 			Property<bool> active = result.GetProperty<bool>("Active");
 
@@ -167,19 +167,16 @@ namespace Lemma.Factories
 
 			const float padding = 20.0f;
 			phoneScroller.Add(new Binding<Vector2>(phoneScroller.Position, x => new Vector2(x.X * 0.5f, 61 + padding), phoneSprite.Size));
-			phoneScroller.Add(new Binding<Vector2>(phoneScroller.Size, x => new Vector2(x.X - 64 - (padding * 2.0f), x.Y - (61 + 145 + (padding * 2.0f))), phoneSprite.Size));
+			phoneScroller.Add(new Binding<Vector2>(phoneScroller.Size, x => new Vector2(x.X - 64 - (padding * 2.0f), x.Y - (61 + 145 + (padding * 3.0f))), phoneSprite.Size));
 
-			Container composeButton = (Container)phoneSprite.GetChildByName("compose-button");
-			composeButton.Add(new Binding<Vector2>(composeButton.Position, () => phoneScroller.Position + (phoneScroller.InverseAnchorPoint.Value * phoneScroller.ScaledSize), phoneScroller.Position, phoneScroller.AnchorPoint, phoneScroller.ScaledSize));
-			composeButton.Add(new Binding<Color>(composeButton.Tint, () => composeButton.Highlighted ? new Color(0.3f, 0.3f, 0.3f) : (phone.Responses.Size > 0 ? new Color(0.4f, 0.1f, 0.1f) : new Color(0.1f, 0.1f, 0.1f)), composeButton.Highlighted, phone.Responses.Size));
+			composeButton.Add(new Binding<Vector2>(composeButton.Position, () => phoneScroller.Position + (new Vector2(-phoneScroller.AnchorPoint.Value.X, phoneScroller.InverseAnchorPoint.Value.Y) * phoneScroller.ScaledSize) + new Vector2(0, padding), phoneScroller.Position, phoneScroller.AnchorPoint, phoneScroller.InverseAnchorPoint, phoneScroller.ScaledSize));
+			composeButton.Add(new Binding<Color>(composeButton.Tint, () => composeButton.Highlighted ? new Color(0.4f, 0.1f, 0.1f) : (phone.Responses.Size > 0 ? new Color(0.25f, 0.05f, 0.05f) : new Color(0.1f, 0.1f, 0.1f)), composeButton.Highlighted, phone.Responses.Size));
 
-			Container responseMenu = (Container)phoneSprite.GetChildByName("response-menu");
-			responseMenu.Add(new Binding<Vector2>(responseMenu.Position, () => composeButton.Position - new Vector2(0, composeButton.AnchorPoint.Value.Y * composeButton.ScaledSize.Value.Y), composeButton.Position, composeButton.AnchorPoint, composeButton.ScaledSize));
+			responseMenu.Add(new Binding<Vector2>(responseMenu.Position, () => composeButton.Position + (composeButton.AnchorPoint.Value * composeButton.ScaledSize.Value), composeButton.Position, composeButton.AnchorPoint, composeButton.ScaledSize));
 
-			ListContainer responses = (ListContainer)responseMenu.GetChildByName("responses");
-			responses.Add(new ListBinding<UIComponent, Phone.Response>
+			responseList.Add(new ListBinding<UIComponent, Phone.Response>
 			(
-				responses.Children,
+				responseList.Children,
 				phone.Responses,
 				delegate(Phone.Response response)
 				{
@@ -207,7 +204,7 @@ namespace Lemma.Factories
 
 			composeButton.Add(new CommandBinding<Point>(composeButton.MouseLeftDown, delegate(Point mouse)
 			{
-				if (responses.Children.Count > 0 || responseMenu.Visible)
+				if (responseList.Children.Count > 0 || responseMenu.Visible)
 					responseMenu.Visible.Value = !responseMenu.Visible;
 			}));
 
@@ -218,13 +215,12 @@ namespace Lemma.Factories
 				delegate(Phone.Message msg)
 				{
 					Container field = new Container();
-					field.Tint.Value = new Color(0.0f, 0.6f, 1.0f);
-					field.Opacity.Value = msg.Incoming ? 0.3f : 0.15f;
+					field.Tint.Value = msg.Incoming ? new Color(0.0f, 0.2f, 0.4f) : new Color(0.1f, 0.1f, 0.1f);
 
 					TextElement textField = new TextElement();
 					textField.FontFile.Value = "Font";
-					textField.Opacity.Value = msg.Incoming ? 1.0f : 0.75f;
 					textField.Text.Value = msg.Text;
+					textField.Tint.Value = msg.Incoming ? new Color(1.0f, 1.0f, 1.0f) : new Color(0.7f, 0.7f, 0.7f);
 					textField.Add(new Binding<float, Vector2>(textField.WrapWidth, x => x.X - 32.0f, phoneScroller.Size));
 					field.Children.Add(textField);
 					return new[] { field };

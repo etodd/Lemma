@@ -248,6 +248,13 @@ namespace Lemma
 				messages.Add(new Binding<Vector2, Point>(messages.Position, x => new Vector2(x.X * 0.9f, x.Y * 0.9f), this.ScreenSize));
 				this.UI.Root.Children.Add(messages);
 
+				ListContainer notifications = new ListContainer();
+				notifications.Alignment.Value = ListContainer.ListAlignment.Max;
+				notifications.AnchorPoint.Value = new Vector2(1.0f, 0.0f);
+				notifications.Name.Value = "Notifications";
+				notifications.Add(new Binding<Vector2, Point>(notifications.Position, x => new Vector2(x.X * 0.9f, x.Y * 0.1f), this.ScreenSize));
+				this.UI.Root.Children.Add(notifications);
+
 				// Toggle fullscreen
 				this.input.Add(new CommandBinding(input.GetKeyDown(Keys.F11), delegate()
 				{

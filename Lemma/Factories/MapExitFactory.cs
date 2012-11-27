@@ -64,9 +64,20 @@ namespace Lemma.Factories
 			{
 				XmlSerializer serializer = new XmlSerializer(typeof(List<Entity>));
 
+				Container notification = new Container();
+				notification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+				notification.Opacity.Value = 0.5f;
+				TextElement notificationText = new TextElement();
+				notificationText.Name.Value = "Text";
+				notificationText.FontFile.Value = "Font";
+				notificationText.Text.Value = "Loading...";
+				notification.Children.Add(notificationText);
+				((GameMain)main).UI.Root.GetChildByName("Notifications").Children.Add(notification);
+
 				Stream stream = new MemoryStream();
 				main.AddComponent(new Animation
 				(
+					new Animation.Delay(0.01f),
 					new Animation.Execute(delegate()
 					{
 						// We are exiting the map; just save the state of the map without the player.
@@ -84,6 +95,7 @@ namespace Lemma.Factories
 					new Animation.Set<string>(main.MapFile, nextMap),
 					new Animation.Execute(delegate()
 					{
+						notification.Visible.Value = false;
 						stream.Seek(0, SeekOrigin.Begin);
 						List<Entity> entities = (List<Entity>)serializer.Deserialize(stream);
 						foreach (Entity entity in entities)
@@ -95,7 +107,17 @@ namespace Lemma.Factories
 						stream.Dispose();
 					}),
 					new Animation.Delay(1.1f),
-					new Animation.Execute(((GameMain)main).Save)
+					new Animation.Set<string>(notificationText.Text, "Saving..."),
+					new Animation.Set<bool>(notification.Visible, true),
+					new Animation.Delay(0.01f),
+					new Animation.Execute(((GameMain)main).Save),
+					new Animation.Set<string>(notificationText.Text, "Saved"),
+					new Animation.Parallel
+					(
+						new Animation.FloatMoveTo(notification.Opacity, 0.0f, 1.0f),
+						new Animation.FloatMoveTo(notificationText.Opacity, 0.0f, 1.0f)
+					),
+					new Animation.Execute(notification.Delete)
 				));
 			}));
 		}
