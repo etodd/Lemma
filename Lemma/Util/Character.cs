@@ -59,6 +59,8 @@ namespace Lemma.Util
 		/// </summary>
 		public Property<float> JumpSpeed = new Property<float> { Value = 9.0f };
 
+		public Property<Player.WallRun> WallRunState = new Property<Player.WallRun> { Value = Player.WallRun.None };
+
 		/// <summary>
 		/// The maximum slope under which walking forces can be applied.
 		/// </summary>
@@ -331,8 +333,16 @@ namespace Lemma.Util
 				}
 			}
 
+			bool isSupported = supportDistance < float.MaxValue;
+
+			if (!isSupported && this.WallRunState.Value == Player.WallRun.None)
+			{
+				foreach (Contact contact in this.Body.CollisionInformation.Pairs.SelectMany(x => x.Contacts.Select(y => y.Contact)))
+					this.Body.LinearVelocity += -0.1f * Vector3.Normalize((contact.Position - this.Body.Position).SetComponent(Direction.PositiveY, 0));
+			}
+
 			supportNormal.Normalize();
-			return supportDistance < float.MaxValue;
+			return isSupported;
 		}
 
 		/// <summary>

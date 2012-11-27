@@ -19,8 +19,6 @@ namespace Lemma.Factories
 			this.Color = new Vector3(0.4f, 0.4f, 0.4f);
 		}
 
-		enum WallRun { None, Left, Right }
-
 		struct AnimatingBlock
 		{
 			public Map Map;
@@ -392,7 +390,6 @@ namespace Lemma.Factories
 				}
 			});
 
-			Property<WallRun> wallRunState = new Property<WallRun> { Value = WallRun.None };
 			Map wallRunMap = null;
 			Direction wallDirection = Direction.None;
 
@@ -430,7 +427,7 @@ namespace Lemma.Factories
 
 			footstepTimer.Add(new CommandBinding(footstepTimer.Command, delegate()
 			{
-				if (wallRunState.Value == WallRun.None)
+				if (player.WallRunState.Value == Player.WallRun.None)
 				{
 					if (groundRaycast.Map != null)
 					{
@@ -448,7 +445,7 @@ namespace Lemma.Factories
 					}
 				}
 			}));
-			footstepTimer.Add(new Binding<bool>(footstepTimer.Enabled, () => wallRunState.Value != WallRun.None || (player.MovementDirection.Value.LengthSquared() > 0.0f && player.IsSupported && player.EnableWalking), player.MovementDirection, player.IsSupported, player.EnableWalking, wallRunState));
+			footstepTimer.Add(new Binding<bool>(footstepTimer.Enabled, () => player.WallRunState.Value != Player.WallRun.None || (player.MovementDirection.Value.LengthSquared() > 0.0f && player.IsSupported && player.EnableWalking), player.MovementDirection, player.IsSupported, player.EnableWalking, player.WallRunState));
 			footsteps.Add(new Binding<Vector3>(footsteps.Position, x => x - new Vector3(0, player.Height * 0.5f, 0), transform.Position));
 			footsteps.Add(new Binding<Vector3>(footsteps.Velocity, player.LinearVelocity));
 
@@ -628,7 +625,7 @@ namespace Lemma.Factories
 			{
 				delegate(float dt)
 				{
-					if ((!player.EnableWalking && !player.Sprint) || wallRunState.Value != WallRun.None)
+					if ((!player.EnableWalking && !player.Sprint) || player.WallRunState.Value != Player.WallRun.None)
 						return;
 
 					model.Stop("WallWalkLeft", "WallWalkRight");
@@ -822,13 +819,13 @@ namespace Lemma.Factories
 
 			// Wall run
 
-			footstepTimer.Add(new Binding<float>(footstepTimer.Interval, () => wallRunState == WallRun.None ? (player.Crouched ? 0.5f : 0.35f) : 0.23f, wallRunState, player.Crouched));
+			footstepTimer.Add(new Binding<float>(footstepTimer.Interval, () => player.WallRunState == Player.WallRun.None ? (player.Crouched ? 0.5f : 0.35f) : 0.23f, player.WallRunState, player.Crouched));
 
 			Action<Map, Direction, bool, Vector3> setUpWallRun = delegate(Map map, Direction dir, bool right, Vector3 forwardVector)
 			{
 				wallRunMap = map;
 				wallDirection = dir;
-				wallRunState.Value = right ? WallRun.Right : WallRun.Left;
+				player.WallRunState.Value = right ? Player.WallRun.Right : Player.WallRun.Left;
 
 				string animation = right ? "WallWalkRight" : "WallWalkLeft";
 				if (!model.IsPlaying(animation))
@@ -913,10 +910,10 @@ namespace Lemma.Factories
 
 			Action deactivateWallRun = delegate()
 			{
-				if (wallRunState.Value != WallRun.None)
+				if (player.WallRunState.Value != Player.WallRun.None)
 				{
 					wallRunMap = null;
-					wallRunState.Value = WallRun.None;
+					player.WallRunState.Value = Player.WallRun.None;
 					rotationLocked.Value = false;
 					model.Stop("WallWalkLeft", "WallWalkRight");
 				}
@@ -971,7 +968,7 @@ namespace Lemma.Factories
 			// Keep the player glued to the wall while we wall walk
 			update.Add(delegate(float dt)
 			{
-				if (wallRunState.Value != WallRun.None)
+				if (player.WallRunState.Value != Player.WallRun.None)
 				{
 					if (player.IsSupported || player.LinearVelocity.Value.Length() < 5.0f)
 					{
@@ -1460,7 +1457,7 @@ namespace Lemma.Factories
 					}
 				};
 
-				if (!vaulting && !supported && wallRunState.Value == WallRun.None)
+				if (!vaulting && !supported && player.WallRunState.Value == Player.WallRun.None)
 				{
 					// We're not vaulting, not doing our normal jump, and not wall-walking
 					// See if we can wall-jump
@@ -1489,14 +1486,14 @@ namespace Lemma.Factories
 				}
 
 				// If we're wall-running, add some velocity so we jump away from the wall a bit
-				if (wallRunState.Value != WallRun.None)
+				if (player.WallRunState.Value != Player.WallRun.None)
 				{
 					lastWallRunJump = main.TotalTime; // Prevent the player from repeatedly wall-running and wall-jumping ad infinitum.
 					Matrix r = Matrix.CreateRotationY(rotation);
-					jumpDirection += wallJumpHorizontalVelocityAmount * 0.75f * (wallRunState.Value == WallRun.Left ? new Vector2(r.Left.X, r.Left.Z) : new Vector2(r.Right.X, r.Right.Z));
+					jumpDirection += wallJumpHorizontalVelocityAmount * 0.75f * (player.WallRunState.Value == Player.WallRun.Left ? new Vector2(r.Left.X, r.Left.Z) : new Vector2(r.Right.X, r.Right.Z));
 				}
 
-				bool go = supported || wallRunState.Value != WallRun.None || vaulting || wallJumping;
+				bool go = supported || player.WallRunState.Value != Player.WallRun.None || vaulting || wallJumping;
 
 				if (!go)
 				{

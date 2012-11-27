@@ -17,6 +17,8 @@ namespace Lemma.Components
 {
 	public class Player : Component, IUpdateableComponent
 	{
+		public enum WallRun { None, Left, Right }
+
 		protected Character character;
 		[XmlIgnore]
 		public Property<Vector2> MovementDirection = new Property<Vector2> { Editable = false };
@@ -69,7 +71,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<float> SupportHeight = new Property<float> { Editable = false, Value = 1.05f };
 		[XmlIgnore]
-		public Property<bool> SlowMotion = new Property<bool>();
+		public Property<bool> SlowMotion = new Property<bool> { Editable = false };
+		[XmlIgnore]
+		public Property<WallRun> WallRunState = new Property<WallRun> { Editable = false, Value = WallRun.None };
 
 		[XmlIgnore]
 		public Command<Collidable, ContactCollection> Collided = new Command<Collidable, ContactCollection>();
@@ -155,6 +159,7 @@ namespace Lemma.Components
 			this.Add(new TwoWayBinding<bool>(this.HasTraction, this.character.HasTraction));
 			this.Add(new TwoWayBinding<bool>(this.IsSupported, this.character.IsSupported));
 			this.Add(new TwoWayBinding<bool>(this.IsSwimming, this.character.IsSwimming));
+			this.Add(new TwoWayBinding<WallRun>(this.WallRunState, this.character.WallRunState));
 			this.Add(new TwoWayBinding<bool>(this.EnableWalking, this.character.EnableWalking));
 			this.Add(new TwoWayBinding<Vector3>(this.character.SupportLocation, this.SupportLocation));
 			this.Add(new TwoWayBinding<object>(this.character.SupportEntityTag, this.SupportEntityTag));

@@ -69,11 +69,11 @@ namespace Lemma
 		private string initialMapFile;
 		private bool allowEditing;
 
+		private bool loadingSavedGame;
+
 		public Property<string> StartSpawnPoint = new Property<string>();
 
 		public Command<Entity> PlayerSpawned = new Command<Entity>();
-
-		private bool spawnedAtStartPoint = false;
 
 		const float respawnInterval = 3.0f;
 
@@ -574,6 +574,7 @@ namespace Lemma
 						}
 						else
 						{
+							this.loadingSavedGame = true;
 							hideLoadSave();
 							this.Paused.Value = false;
 							restorePausedSettings();
@@ -1084,7 +1085,6 @@ namespace Lemma
 
 				new CommandBinding(this.MapLoaded, delegate()
 				{
-					this.spawnedAtStartPoint = false;
 					this.respawnTimer = -1.0f;
 					this.mapJustLoaded = true;
 					this.Renderer.Tint.Value = Vector3.Zero;
@@ -1214,54 +1214,62 @@ namespace Lemma
 
 				bool createPlayer = this.player == null || !this.player.Active;
 
-				if (setupSpawn || createPlayer)
+				if (createPlayer || setupSpawn)
 				{
-					this.Renderer.Tint.Value = Vector3.Zero;
-					this.Camera.Position.Value = new Vector3(0, -10000, 0);
-					if (this.respawnTimer > GameMain.respawnInterval || this.respawnTimer < 0)
+					if (this.loadingSavedGame)
 					{
-						if (createPlayer)
-						{
-							this.player = Factory.CreateAndBind(this, "Player");
-							this.Add(this.player);
-						}
-
-						PlayerSpawn spawn = null;
-						Entity spawnEntity = null;
-						if (!string.IsNullOrEmpty(this.StartSpawnPoint.Value) && !this.spawnedAtStartPoint)
-						{
-							spawnEntity = this.GetByID(this.StartSpawnPoint);
-							if (spawnEntity != null)
-							{
-								spawn = spawnEntity.Get<PlayerSpawn>();
-								this.spawnedAtStartPoint = true;
-							}
-						}
-
-						if (spawnEntity == null)
-						{
-							spawn = this.Get("PlayerSpawn").Select(x => x.Get<PlayerSpawn>()).FirstOrDefault(x => x.IsActivated);
-							spawnEntity = spawn == null ? null : spawn.Entity;
-						}
-
-						if (spawnEntity != null)
-							this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = spawnEntity.Get<Transform>().Position;
-						
-						if (spawn != null)
-						{
-							spawn.IsActivated.Value = true;
-							FPSInput.RecenterMouse();
-							Property<Vector2> mouse = this.player.Get<FPSInput>().Mouse;
-							mouse.Value = new Vector2(spawn.Rotation, 0.0f);
-						}
-						
-						this.AddComponent(new Animation(new Animation.Vector3MoveTo(this.Renderer.Tint, Vector3.One, 1.0f)));
-						this.respawnTimer = 0;
-
+						this.Renderer.Tint.Value = Vector3.One;
 						this.PlayerSpawned.Execute(this.player);
+						this.loadingSavedGame = false;
+						this.respawnTimer = 0;
 					}
 					else
-						this.respawnTimer += this.ElapsedTime;
+					{
+						this.Renderer.Tint.Value = Vector3.Zero;
+						this.Camera.Position.Value = new Vector3(0, -10000, 0);
+						if (this.respawnTimer > GameMain.respawnInterval || this.respawnTimer < 0)
+						{
+							if (createPlayer)
+							{
+								this.player = Factory.CreateAndBind(this, "Player");
+								this.Add(this.player);
+							}
+
+							PlayerSpawn spawn = null;
+							Entity spawnEntity = null;
+							if (!string.IsNullOrEmpty(this.StartSpawnPoint.Value))
+							{
+								this.StartSpawnPoint.Value = null;
+								spawnEntity = this.GetByID(this.StartSpawnPoint);
+								if (spawnEntity != null)
+									spawn = spawnEntity.Get<PlayerSpawn>();
+							}
+
+							if (spawnEntity == null)
+							{
+								spawn = this.Get("PlayerSpawn").Select(x => x.Get<PlayerSpawn>()).FirstOrDefault(x => x.IsActivated);
+								spawnEntity = spawn == null ? null : spawn.Entity;
+							}
+
+							if (spawnEntity != null)
+								this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = spawnEntity.Get<Transform>().Position;
+
+							if (spawn != null)
+							{
+								spawn.IsActivated.Value = true;
+								FPSInput.RecenterMouse();
+								Property<Vector2> mouse = this.player.Get<FPSInput>().Mouse;
+								mouse.Value = new Vector2(spawn.Rotation, 0.0f);
+							}
+
+							this.AddComponent(new Animation(new Animation.Vector3MoveTo(this.Renderer.Tint, Vector3.One, 1.0f)));
+							this.respawnTimer = 0;
+
+							this.PlayerSpawned.Execute(this.player);
+						}
+						else
+							this.respawnTimer += this.ElapsedTime;
+					}
 				}
 			}
 		}
