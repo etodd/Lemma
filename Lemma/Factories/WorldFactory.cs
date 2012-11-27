@@ -378,6 +378,20 @@ namespace Lemma.Factories
 					SpecularPower = 200.0f,
 					SpecularIntensity = 0.5f,
 					Tiling = 2.0f,
+				},
+				new Map.CellState
+				{
+					ID = 26,
+					Name = "InfectedPermanent",
+					Permanent = true,
+					Density = 3,
+					DiffuseMap = "Maps\\Textures\\infected",
+					NormalMap = "Maps\\Textures\\lava-normal",
+					FootstepCue = "InfectedFootsteps",
+					RubbleCue = "InfectedRubble",
+					SpecularPower = 1.0f,
+					SpecularIntensity = 0.0f,
+					Glow = true,
 				}
 			);
 		}

@@ -2563,7 +2563,12 @@ namespace Lemma.Components
 				if (b.Type == state)
 				{
 					result.Add(b);
-					foreach (Box adjacent in b.Adjacent)
+					IEnumerable<Box> adjacentBoxes;
+					if (b.Type.Permanent) // We probably don't have any adjacency info for it.
+						adjacentBoxes = this.getAdjacentBoxes(b);
+					else
+						adjacentBoxes = b.Adjacent;
+					foreach (Box adjacent in adjacentBoxes)
 					{
 						if (!alreadyVisited.ContainsKey(adjacent))
 						{

@@ -25,7 +25,7 @@ namespace Lemma.Components
 		public Property<float> MaxSpeed = new Property<float> { Value = 8, Editable = false };
 		public Property<float> NormalMaxSpeed = new Property<float> { Value = 8, Editable = false };
 		[XmlIgnore]
-		public Property<float> JumpSpeed = new Property<float> { Value = 9, Editable = false };
+		public Property<float> JumpSpeed = new Property<float> { Value = 10, Editable = false };
 		[XmlIgnore]
 		public Property<bool> IsLevitating = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
@@ -61,9 +61,12 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<object> SupportEntityTag = new Property<object> { Editable = false };
 		public Property<Vector3> LinearVelocity = new Property<Vector3> { Editable = false };
-		public Property<bool> AllowUncrouch = new Property<bool> { Editable = false };
+		[XmlIgnore]
+		public Property<bool> AllowUncrouch = new Property<bool> { Editable = false, Value = true };
 		public Property<bool> Crouched = new Property<bool> { Editable = false };
+		[XmlIgnore]
 		public Property<float> Height = new Property<float> { Editable = false };
+		[XmlIgnore]
 		public Property<float> SupportHeight = new Property<float> { Editable = false, Value = 1.05f };
 		[XmlIgnore]
 		public Property<bool> SlowMotion = new Property<bool>();

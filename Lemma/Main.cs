@@ -256,14 +256,20 @@ namespace Lemma
 			{
 				if (!this.EditorEnabled)
 				{
-					foreach (string script in Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.GetFileName(x)).OrderBy(x => x))
+					IEnumerable<string> globalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("GlobalScripts", Path.GetFileNameWithoutExtension(x)));
+					IEnumerable<string> mapGlobalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "Maps", "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("Maps", "GlobalScripts", Path.GetFileNameWithoutExtension(x)));
+					foreach (string scriptName in globalScripts.Concat(mapGlobalScripts))
 					{
 						Entity scriptEntity = Factory.Get<ScriptFactory>().CreateAndBind(this);
 						scriptEntity.Serialize = false;
 						this.Add(scriptEntity);
 						scriptEntity.GetProperty<bool>("ExecuteOnLoad").Value = false;
-						scriptEntity.Get<Script>().Name.Value = Path.Combine("GlobalScripts", Path.GetFileNameWithoutExtension(script));
-						scriptEntity.Get<Script>().Execute.Execute();
+						Script script = scriptEntity.Get<Script>();
+						script.Name.Value = scriptName;
+						if (!string.IsNullOrEmpty(script.Errors))
+							throw new Exception(script.Errors);
+						else
+							script.Execute.Execute();
 					}
 				}
 			});

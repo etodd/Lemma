@@ -303,7 +303,7 @@ namespace Lemma.Factories
 			{
 				changeBrush(-1);
 			}));
-			result.Add(new CommandBinding(input.GetKeyDown(Keys.E), () => editor.MapEditMode, delegate()
+			result.Add(new CommandBinding(input.GetKeyDown(Keys.E), () => editor.MapEditMode && !input.GetKey(Keys.LeftShift), delegate()
 			{
 				changeBrush(1);
 			}));
@@ -311,6 +311,8 @@ namespace Lemma.Factories
 			{
 				editor.BrushSize.Value = Math.Max(1, editor.BrushSize.Value + delta);
 			}));
+
+			addCommand("Propagate current material", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.E }, () => editor.MapEditMode, editor.PropagateMaterial);
 
 			editor.Add(new Binding<Vector2>(editor.Mouse, input.Mouse, () => !input.EnableLook));
 

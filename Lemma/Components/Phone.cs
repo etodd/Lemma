@@ -19,7 +19,6 @@ namespace Lemma.Components
 		public class Message
 		{
 			public bool Incoming { get; set; }
-			public string Sender { get; set; }
 			public string Text { get; set; }
 		}
 
@@ -105,7 +104,7 @@ namespace Lemma.Components
 
 		public Property<bool> HasUnreadMessages = new Property<bool>();
 
-		public void QueueMessage(string sender, string msg, float time, params Response[] responses)
+		public void QueueMessage(string msg, float time, params Response[] responses)
 		{
 			if (responses == null)
 				responses = new Response[] { };
@@ -114,7 +113,6 @@ namespace Lemma.Components
 				Message = new Message
 				{
 					Incoming = true,
-					Sender = sender,
 					Text = msg
 				},
 				TimeRemaining = time,
@@ -162,7 +160,6 @@ namespace Lemma.Components
 			this.Messages.Add(new Message
 			{
 				Incoming = false,
-				Sender = "Me",
 				Text = response.Text
 			});
 

@@ -661,16 +661,13 @@ namespace Lemma.Components
 		{
 			this.Serialize = false;
 			this.action = action;
+			this.action.Reset();
 		}
 
 		public Animation(params Interval[] intervals)
+			: this((Base)(intervals.Length == 1 ? intervals[0] : new Sequence(intervals)))
 		{
-			this.Serialize = false;
-			if (intervals.Length == 1)
-				this.action = intervals[0];
-			else
-				this.action = new Sequence(intervals);
-			this.action.Reset();
+
 		}
 
 		void IUpdateableComponent.Update(float dt)

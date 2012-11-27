@@ -58,6 +58,7 @@ namespace Lemma.Components
 		public Command StartRotation = new Command();
 		public Command CommitTransform = new Command();
 		public Command RevertTransform = new Command();
+		public Command PropagateMaterial = new Command();
 
 		private Map.Coordinate originalSelectionStart;
 		private Map.Coordinate originalSelectionEnd;
@@ -237,6 +238,23 @@ namespace Lemma.Components
 			{
 				this.StartVoxelTranslation.Execute();
 				this.voxelDuplicate = true;
+			};
+
+			this.PropagateMaterial.Action = delegate()
+			{
+				if (!this.MapEditMode)
+					return;
+
+				Map m = this.SelectedEntities[0].Get<Map>();
+				Map.Box selectedBox = m.GetBox(this.coord);
+				if (selectedBox == null)
+					return;
+
+				List<Map.Coordinate> coords = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords()).ToList();
+				m.Empty(coords);
+				foreach (Map.Coordinate c in coords)
+					m.Fill(c, WorldFactory.StatesByName[this.Brush]);
+				m.Regenerate();
 			};
 
 			Action<TransformModes> startTransform = delegate(TransformModes mode)

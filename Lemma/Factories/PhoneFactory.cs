@@ -224,7 +224,7 @@ namespace Lemma.Factories
 					TextElement textField = new TextElement();
 					textField.FontFile.Value = "Font";
 					textField.Opacity.Value = msg.Incoming ? 1.0f : 0.75f;
-					textField.Text.Value = msg.Sender + ": " + msg.Text;
+					textField.Text.Value = msg.Text;
 					textField.Add(new Binding<float, Vector2>(textField.WrapWidth, x => x.X - 32.0f, phoneScroller.Size));
 					field.Children.Add(textField);
 					return new[] { field };

@@ -301,9 +301,9 @@ namespace Lemma.Util
 				//The 'glue' effect should only occur if the character has a solid hold on the ground though.
 				//Otherwise, the character is falling or sliding around uncontrollably.
 				if (this.HasTraction && !this.IsSwimming)
-					maximumDistance = (SupportHeight * 2.0f);
+					maximumDistance = (this.SupportHeight * 2.0f);
 				else
-					maximumDistance = SupportHeight;
+					maximumDistance = this.SupportHeight;
 
 				foreach (Vector3 rayStart in this.rayOffsets.Select(x => x + rayOrigin))
 				{
@@ -331,11 +331,6 @@ namespace Lemma.Util
 				}
 			}
 
-			if (supportDistance == float.MaxValue)
-			{
-				foreach (Contact contact in this.Body.CollisionInformation.Pairs.SelectMany(x => x.Contacts.Select(y => y.Contact)))
-					this.Body.LinearVelocity += -0.1f * Vector3.Normalize((contact.Position - this.Body.Position).SetComponent(Direction.PositiveY, 0));
-			}
 			supportNormal.Normalize();
 			return supportDistance < float.MaxValue;
 		}

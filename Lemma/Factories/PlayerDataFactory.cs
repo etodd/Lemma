@@ -23,7 +23,6 @@ namespace Lemma.Factories
 			Entity result = new Entity(main, "PlayerData");
 
 #if DEBUG
-			result.Add("JumpSpeed", new Property<float> { Value = 10.0f });
 			result.Add("EnableBlockBuild", new Property<bool> { Value = true });
 			result.Add("EnableAim", new Property<bool> { Value = true });
 			result.Add("EnableRoll", new Property<bool> { Value = true });
@@ -33,7 +32,6 @@ namespace Lemma.Factories
 			result.Add("EnableSprint", new Property<bool> { Value = true });
 			result.Add("EnableSlowMotion", new Property<bool> { Value = true });
 #else
-			result.Add("JumpSpeed", new Property<float> { Value = 9.0f });
 			result.Add("EnableBlockBuild", new Property<bool> { Value = false });
 			result.Add("EnableAim", new Property<bool> { Value = false });
 			result.Add("EnableRoll", new Property<bool> { Value = false });
@@ -43,6 +41,7 @@ namespace Lemma.Factories
 			result.Add("EnableSprint", new Property<bool> { Value = false });
 			result.Add("EnableSlowMotion", new Property<bool> { Value = false });
 #endif
+			result.Add("JumpSpeed", new Property<float> { Value = 10.0f });
 			result.Add("Stamina", new Property<int> { Value = 100 });
 			result.Add("Pistol", new Property<Entity.Handle> { Editable = false });
 			result.Add("Phone", new Property<Entity.Handle> { Editable = false });
