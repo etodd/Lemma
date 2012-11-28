@@ -1239,10 +1239,10 @@ namespace Lemma
 							Entity spawnEntity = null;
 							if (!string.IsNullOrEmpty(this.StartSpawnPoint.Value))
 							{
-								this.StartSpawnPoint.Value = null;
 								spawnEntity = this.GetByID(this.StartSpawnPoint);
 								if (spawnEntity != null)
 									spawn = spawnEntity.Get<PlayerSpawn>();
+								this.StartSpawnPoint.Value = null;
 							}
 
 							if (spawnEntity == null)

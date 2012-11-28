@@ -122,7 +122,9 @@ namespace Lemma.Factories
 			Dictionary<string, IProperty> destProperties = dest.PropertyDictionary;
 			foreach (KeyValuePair<string, IProperty> pair in source.PropertyDictionary.Where(x => x.Key != "ID"))
 			{
-				IProperty destProperty = destProperties[pair.Key];
+				IProperty destProperty;
+				if (!destProperties.TryGetValue(pair.Key, out destProperty))
+					continue;
 				if (typeof(IListProperty).IsAssignableFrom(destProperty.GetType()))
 					((IListProperty)pair.Value).CopyTo((IListProperty)destProperty);
 				else

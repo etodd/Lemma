@@ -215,7 +215,7 @@ namespace Lemma.Factories
 				delegate(Phone.Message msg)
 				{
 					Container field = new Container();
-					field.Tint.Value = msg.Incoming ? new Color(0.0f, 0.2f, 0.4f) : new Color(0.1f, 0.1f, 0.1f);
+					field.Tint.Value = msg.Incoming ? new Color(0.0f, 0.2f, 0.4f) : new Color(0.02f, 0.02f, 0.02f);
 
 					TextElement textField = new TextElement();
 					textField.FontFile.Value = "Font";
@@ -253,7 +253,8 @@ namespace Lemma.Factories
 				if (!msg.Incoming) // Only for incoming messages
 					return;
 
-				Sound.PlayCue(main, "Phone Vibrate");
+				if (attached)
+					Sound.PlayCue(main, "Phone Vibrate");
 
 				if (!active)
 					phone.HasUnreadMessages.Value = true;

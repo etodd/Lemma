@@ -31,9 +31,15 @@ namespace Lemma
 				{
 					Program.run();
 				}
-				catch (Exception)
+				catch (Exception e)
 				{
-					// TODO: Error popup
+#if MONOGAME
+					// TODO: MonoGame popup
+#else
+					System.Windows.Forms.Application.EnableVisualStyles();
+					ErrorForm errorForm = new ErrorForm(e.ToString());
+					System.Windows.Forms.Application.Run(errorForm);
+#endif
 				}
 			}
 		}

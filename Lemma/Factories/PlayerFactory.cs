@@ -1263,19 +1263,22 @@ namespace Lemma.Factories
 			// Wall-run
 			addInput(settings.WallRun, InputState.Down, delegate()
 			{
-				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || !player.EnableWallRun)
+				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload"))
 					return;
 
-				// Try to wall-run
 				bool wallRan = false;
-				if (!(wallRan = activateWallRun(false))) // Left side
-					wallRan = activateWallRun(true); // Right side
+				if (player.EnableWallRun)
+				{
+					// Try to wall-run
+					if (!(wallRan = activateWallRun(false))) // Left side
+						wallRan = activateWallRun(true); // Right side
+				}
 
 				if (!wallRan)
 				{
 					if (player.IsSupported && player.EnableSprint)
 						player.Sprint.Value = true; // Start sprinting
-					else if (!player.IsSupported)
+					else if (!player.IsSupported && player.EnableSlowMotion)
 					{
 						// Go into slow-mo and show block possibilities
 						player.SlowMotion.Value = true;
@@ -1343,12 +1346,17 @@ namespace Lemma.Factories
 
 			Action<Map, Map.Coordinate, Vector3> vault = delegate(Map map, Map.Coordinate coord, Vector3 forward)
 			{
+				const float vaultVerticalSpeed = 8.0f;
+				const float maxVaultTime = 1.25f;
+
+				player.LinearVelocity.Value = new Vector3(0, vaultVerticalSpeed, 0);
+				player.IsSupported.Value = false;
+				player.HasTraction.Value = false;
 				rotationLocked.Value = true;
 				player.EnableWalking.Value = false;
 				player.Crouched.Value = true;
 				player.AllowUncrouch.Value = false;
-				const float vaultVerticalSpeed = 8.0f;
-				const float maxVaultTime = 1.5f;
+
 				float vaultTime = 0.0f;
 				if (vaultMover != null)
 					vaultMover.Delete.Execute(); // If we're already vaulting, start a new vault
@@ -1360,7 +1368,7 @@ namespace Lemma.Factories
 
 						bool delete = false;
 
-						if (player.IsSupported || vaultTime > maxVaultTime) // Max vault time ensures we never get stuck
+						if (player.IsSupported || vaultTime > maxVaultTime || player.LinearVelocity.Value.Y < 0.0f) // Max vault time ensures we never get stuck
 							delete = true;
 						else if (transform.Position.Value.Y + (player.Height * -0.5f) - player.SupportHeight > map.GetAbsolutePosition(coord).Y + 0.5f) // Move forward
 						{
@@ -1390,9 +1398,6 @@ namespace Lemma.Factories
 				};
 				result.RemoveComponent("VaultMover");
 				result.Add("VaultMover", vaultMover);
-				player.LinearVelocity.Value = new Vector3(0, vaultVerticalSpeed, 0);
-				player.IsSupported.Value = false;
-				player.HasTraction.Value = false;
 			};
 
 			Func<bool, bool> jump = delegate(bool allowVault)
