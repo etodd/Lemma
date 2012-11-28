@@ -162,6 +162,16 @@ namespace Lemma.Factories
 				showPhone.Execute();
 			}));
 
+			result.Add(new NotifyBinding(delegate()
+			{
+				result.CannotSuspend = attached;
+				foreach (Component c in result.ComponentList.ToList())
+				{
+					if (c.Suspended)
+						c.Suspended.Value = false;
+				}
+			}, attached));
+
 			phoneSprite.Add(new Binding<Vector2, Point>(phoneSprite.Position, x => new Vector2(x.X * 0.5f, x.Y), main.ScreenSize));
 			phoneLight.Add(new Binding<Vector2, Point>(phoneLight.Position, x => new Vector2(x.X - 20, x.Y - 20), main.ScreenSize));
 
@@ -327,6 +337,8 @@ namespace Lemma.Factories
 			input.Add(new CommandBinding(input.GetKeyDown(Keys.Tab), hidePhone));
 
 			this.SetMain(result, main);
+
+			PhysicsBlock.CancelPlayerCollisions(physics);
 		}
 
 		public override void AttachEditorComponents(Entity result, Main main)

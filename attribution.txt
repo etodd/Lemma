@@ -9,6 +9,10 @@ http://www.moddb.com/members/et1337
 
 ==========================================
 
+Texture source material from CGTextures. http://cgtextures.com
+
+==========================================
+
 skybox-night.jpg generated with Spacescape. http://alexcpeterson.com/spacescape
 skybox-sunset.jpg, skybox1.jpg, skybox2.jpg by Tim Heldna. http://www.garagegames.com/community/blogs/view/12655
 

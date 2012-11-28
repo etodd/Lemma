@@ -98,6 +98,9 @@ namespace Lemma.Components
 			this.Add(new CommandBinding(this.OnDisabled, remove));
 			this.Add(new CommandBinding(this.OnSuspended, remove));
 
+			if (!this.Enabled)
+				remove();
+
 			Action add = delegate()
 			{
 				this.Box.LinearVelocity = Vector3.Zero;

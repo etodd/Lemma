@@ -55,6 +55,8 @@ namespace Lemma.Factories
 			base.Bind(result, main, creating);
 			this.instance = result;
 
+			result.CannotSuspend = true;
+
 			Property<float> gameTime = result.GetOrMakeProperty<float>("GameTime", false);
 			result.Add(new Updater
 			{

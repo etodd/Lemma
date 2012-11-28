@@ -17,6 +17,7 @@ namespace Lemma.Factories
 		public override Entity Create(Main main)
 		{
 			Entity result = new Entity(main, "AmbientLight");
+			result.CannotSuspendByDistance = true;
 
 			result.Add("Transform", new Transform());
 			AmbientLight ambientLight = new AmbientLight();
