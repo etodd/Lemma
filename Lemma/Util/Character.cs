@@ -338,7 +338,12 @@ namespace Lemma.Util
 			if (!isSupported && this.WallRunState.Value == Player.WallRun.None)
 			{
 				foreach (Contact contact in this.Body.CollisionInformation.Pairs.SelectMany(x => x.Contacts.Select(y => y.Contact)))
-					this.Body.LinearVelocity += -0.1f * Vector3.Normalize((contact.Position - this.Body.Position).SetComponent(Direction.PositiveY, 0));
+				{
+					Vector3 normal = (contact.Position - this.Body.Position).SetComponent(Direction.PositiveY, 0);
+					float length = normal.Length();
+					if (length > 0.0f)
+						this.Body.LinearVelocity += -0.1f * (normal / length);
+				}
 			}
 
 			supportNormal.Normalize();

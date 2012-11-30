@@ -203,14 +203,6 @@
       <Name>dialog</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Maps\procedural.cs">
-      <Name>procedural</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Maps\procedural-misc.cs">
-      <Name>procedural-misc</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <Compile Include="Models\spotlight.fbx">
       <Name>spotlight</Name>
       <Importer>FbxImporter</Importer>
@@ -298,6 +290,10 @@
       <ProcessorParameters_DiffuseTexture>electricity.png</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_NormalMapTexture>..\Images\water-normal.jpg</ProcessorParameters_NormalMapTexture>
     </Compile>
+    <None Include="Maps\valley.map">
+      <Name>valley</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Effects\Animation.fx">

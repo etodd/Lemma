@@ -78,12 +78,23 @@ namespace Lemma.Components
 			this.Responses.Clear();
 		}
 
-		public void ClearResponses()
+		public void ClearResponses(string question = null)
 		{
-			foreach (Response r in this.Responses.ToList())
+			if (question == null)
 			{
-				if (!r.Permanent)
-					this.Responses.Remove(r);
+				foreach (Response r in this.Responses.ToList())
+				{
+					if (!r.Permanent)
+						this.Responses.Remove(r);
+				}
+			}
+			else
+			{
+				foreach (Response r in this.Responses.ToList())
+				{
+					if (r.Question == question)
+						this.Responses.Remove(r);
+				}
 			}
 		}
 

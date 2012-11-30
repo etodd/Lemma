@@ -1022,7 +1022,7 @@ namespace Lemma
 
 				TextElement header = new TextElement();
 				header.FontFile.Value = "Font";
-				header.Text.Value = "Alpha 2";
+				header.Text.Value = "Alpha 3";
 				header.AnchorPoint.Value = new Vector2(0.5f, 0);
 				header.Add(new Binding<Vector2>(header.Position, () => logo.Position + new Vector2(0, 30 + (logo.InverseAnchorPoint.Value.Y * logo.ScaledSize.Value.Y)), logo.Position, logo.InverseAnchorPoint, logo.ScaledSize));
 				this.UI.Root.Children.Add(header);
@@ -1075,13 +1075,9 @@ namespace Lemma
 
 				this.AddComponent(fadeAnimation);
 
-				Sound.PlayCue(this, "Music1 Stinger2");
-
 				new CommandBinding(this.MapLoaded, buttons.Delete);
 				new CommandBinding(this.MapLoaded, header.Delete);
 #endif
-
-				logo.Add(new CommandBinding(this.MapLoaded, logo.Delete));
 
 				new CommandBinding(this.MapLoaded, delegate()
 				{
@@ -1089,6 +1085,8 @@ namespace Lemma
 					this.mapJustLoaded = true;
 					this.Renderer.Tint.Value = Vector3.Zero;
 				});
+
+				new CommandBinding(this.MapLoaded, logo.Delete);
 			}
 		}
 

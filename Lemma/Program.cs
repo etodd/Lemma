@@ -13,7 +13,7 @@ namespace Lemma
 #if DEBUG
 			using (Main main = new GameMain(true, null)) // Editor binary
 #else
-			using (Main main = new GameMain(false, "test")) // Game binary
+			using (Main main = new GameMain(false, "start")) // Game binary
 #endif
 				main.Run();
 		}
