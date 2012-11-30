@@ -48,7 +48,7 @@ namespace Lemma.Scripts
 		public Property<string> Name = new Property<string> { Editable = true };
 
 		[XmlIgnore]
-		public Command Execute = new Command();
+		public Command Execute = new Command { ShowInEditor = true };
 
 		private MethodInfo scriptMethod;
 

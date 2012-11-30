@@ -265,7 +265,9 @@ namespace Lemma.Components
 						.Select(z => new DictionaryEntry(z.Name, z.GetValue(entry.Value, null))));
 				else
 					properties = (IEnumerable<DictionaryEntry>)entry.Value;
-				properties = properties.Where(x => x.Value != null && typeof(IProperty).IsAssignableFrom(x.Value.GetType()) && !typeof(IListProperty).IsAssignableFrom(x.Value.GetType()) && (bool)x.Value.GetType().GetProperty("Editable").GetValue(x.Value, null));
+				properties = properties.Where(x => x.Value != null
+					&& (x.Value.GetType() == typeof(Command) && ((Command)x.Value).ShowInEditor)
+					|| (typeof(IProperty).IsAssignableFrom(x.Value.GetType()) && !typeof(IListProperty).IsAssignableFrom(x.Value.GetType()) && (bool)x.Value.GetType().GetProperty("Editable").GetValue(x.Value, null)));
 
 				if (properties.FirstOrDefault().Value == null)
 					continue;
@@ -306,35 +308,59 @@ namespace Lemma.Components
 					keyContainer.Children.Add(keyText);
 					row.Children.Add(keyContainer);
 
-					PropertyInfo info = property.Value.GetType().GetProperty("Value");
-					if (info.PropertyType.Equals(typeof(Vector2)))
+					if (property.Value.GetType() == typeof(Command))
 					{
-						ListContainer elementList = new ListContainer();
-						elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
-						row.Children.Add(elementList);
-						foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y })
-							elementList.Children.Add(this.buildValueMemberField(info.PropertyType, (IProperty)property.Value, field));
-					}
-					else if (info.PropertyType.Equals(typeof(Vector3)))
-					{
-						ListContainer elementList = new ListContainer();
-						elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
-						row.Children.Add(elementList);
-						foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z })
-							elementList.Children.Add(this.buildValueMemberField(info.PropertyType, (IProperty)property.Value, field));
-					}
-					else if (info.PropertyType.Equals(typeof(Vector4)) || info.PropertyType.Equals(typeof(Quaternion)) || info.PropertyType.Equals(typeof(Color)))
-					{
-						ListContainer elementList = new ListContainer();
-						elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
-						row.Children.Add(elementList);
-						foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z, VectorElement.W })
-							elementList.Children.Add(this.buildValueMemberField(info.PropertyType, (IProperty)property.Value, field));
+						// It's a command
+						Container field = new Container();
+						field.Tint.Value = Color.Black;
+
+						field.Add(new Binding<float, bool>(field.Opacity, x => x ? 1.0f : 0.5f, field.Highlighted));
+
+						TextElement textField = new TextElement();
+						textField.FontFile.Value = "Font";
+						textField.Text.Value = "[Execute]";
+						field.Children.Add(textField);
+
+						field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point p)
+						{
+							((Command)property.Value).Execute();
+						}));
+
+						row.Children.Add(field);
 					}
 					else
 					{
-						UIComponent field = this.buildValueField((IProperty)property.Value, info);
-						row.Children.Add(field);
+						// It's a property
+						PropertyInfo info = property.Value.GetType().GetProperty("Value");
+						if (info.PropertyType.Equals(typeof(Vector2)))
+						{
+							ListContainer elementList = new ListContainer();
+							elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
+							row.Children.Add(elementList);
+							foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y })
+								elementList.Children.Add(this.buildValueMemberField(info.PropertyType, (IProperty)property.Value, field));
+						}
+						else if (info.PropertyType.Equals(typeof(Vector3)))
+						{
+							ListContainer elementList = new ListContainer();
+							elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
+							row.Children.Add(elementList);
+							foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z })
+								elementList.Children.Add(this.buildValueMemberField(info.PropertyType, (IProperty)property.Value, field));
+						}
+						else if (info.PropertyType.Equals(typeof(Vector4)) || info.PropertyType.Equals(typeof(Quaternion)) || info.PropertyType.Equals(typeof(Color)))
+						{
+							ListContainer elementList = new ListContainer();
+							elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
+							row.Children.Add(elementList);
+							foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z, VectorElement.W })
+								elementList.Children.Add(this.buildValueMemberField(info.PropertyType, (IProperty)property.Value, field));
+						}
+						else
+						{
+							UIComponent field = this.buildValueField((IProperty)property.Value, info);
+							row.Children.Add(field);
+						}
 					}
 						
 					propertyList.Children.Add(row);

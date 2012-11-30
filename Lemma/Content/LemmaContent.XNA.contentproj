@@ -203,6 +203,14 @@
       <Name>dialog</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Maps\procedural.cs">
+      <Name>procedural</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Maps\procedural-misc.cs">
+      <Name>procedural-misc</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Compile Include="Models\spotlight.fbx">
       <Name>spotlight</Name>
       <Importer>FbxImporter</Importer>

@@ -10,6 +10,8 @@ namespace Lemma.Components
 		public Action Action;
 		protected List<BaseCommandBinding> bindings = new List<BaseCommandBinding>();
 
+		public bool ShowInEditor = false;
+
 		public void AddBinding(BaseCommandBinding binding)
 		{
 			this.bindings.Add(binding);

@@ -58,11 +58,11 @@ namespace Lemma.Factories
 			Transform transform = result.Get<Transform>();
 
 			PlayerSpawn spawn = result.Get<PlayerSpawn>();
-			spawn.Add(new Binding<Vector3>(spawn.Position, transform.Position));
+			spawn.Add(new TwoWayBinding<Vector3>(transform.Position, spawn.Position));
 			spawn.Add(new Binding<float, Vector3>(spawn.Rotation, x => ((float)Math.PI * -0.5f) - (float)Math.Atan2(x.Z, x.X), transform.Forward));
 
 			PlayerTrigger trigger = result.Get<PlayerTrigger>();
-			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
+			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity player) { spawn.Activate.Execute(); }));
 
 			PointLight light = result.Get<PointLight>();
