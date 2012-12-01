@@ -30,11 +30,11 @@ namespace Lemma.Components
 		// Backlink to the bind pose and skeleton hierarchy data.
 		private SkinnedModel.SkinningData skinningData;
 
-		public bool IsPlaying(string clipName = null)
+		public bool IsPlaying(params string[] clipNames)
 		{
-			if (clipName == null)
+			if (clipNames.Length == 0)
 				return this.CurrentClips.Count > 0;
-			return this.CurrentClips.FirstOrDefault(x => x.Name == clipName) != null;
+			return this.CurrentClips.Select(x => x.Name).Intersect(clipNames).FirstOrDefault() != null;
 		}
 
 		public void Bind(AnimatedModel target)
@@ -43,6 +43,14 @@ namespace Lemma.Components
 			this.worldTransforms = target.worldTransforms;
 			this.skinTransforms = target.skinTransforms;
 			this.bound = true;
+		}
+
+		public SkinnedModel.Clip this[string name]
+		{
+			get
+			{
+				return this.skinningData.Clips[name];
+			}
 		}
 
 		public void Stop(params string[] clips)
@@ -110,7 +118,7 @@ namespace Lemma.Components
 
 			foreach (SkinnedModel.Clip clip in this.CurrentClips)
 			{
-				TimeSpan newTime = clip.CurrentTime + deltaTime;
+				TimeSpan newTime = clip.CurrentTime + new TimeSpan((long)((float)deltaTime.Ticks * clip.Speed));
 
 				if (!clip.Stopping && clip.Duration.TotalSeconds > 0)
 				{
@@ -181,12 +189,10 @@ namespace Lemma.Components
 		private Dictionary<int, Property<Matrix>> relativeBoneTransformProperties = new Dictionary<int, Property<Matrix>>();
 
 		public Property<float> Speed = new Property<float> { Editable = true, Value = 1.0f };
-
-		public Property<float> RemainingBlendTime = new Property<float> { Editable = false };
 		
 		public AnimatedModel()
 		{
-			this.EnabledWhenPaused.Value = false;
+			this.EnabledWhenPaused.Value = true;
 		}
 
 		public Property<Matrix> GetRelativeBoneTransform(string bone)
@@ -271,7 +277,7 @@ namespace Lemma.Components
 
 		public void Update(float elapsedTime)
 		{
-			if (this.skinningData != null && !this.bound)
+			if (this.skinningData != null && !this.bound && !this.main.Paused)
 			{
 				this.UpdateBoneTransforms(new TimeSpan((long)(elapsedTime * TimeSpan.TicksPerSecond)));
 				this.UpdateWorldTransforms();

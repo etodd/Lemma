@@ -129,7 +129,7 @@ namespace Lemma.Factories
 			firstPersonModel.UnsupportedTechniques.Add(Technique.PointLightShadow);
 
 			FPSInput input = new FPSInput();
-			input.Add(new Binding<bool>(input.Enabled, x => !x, main.Paused));
+			input.EnabledWhenPaused.Value = false;
 			result.Add("Input", input);
 
 			Model buildReticle = new Model();
@@ -152,7 +152,7 @@ namespace Lemma.Factories
 
 			UIRenderer ui = new UIRenderer();
 			ui.DrawOrder.Value = -1;
-			ui.Add(new Binding<bool>(ui.Enabled, x => !x, main.Paused));
+			ui.EnabledWhenPaused.Value = false;
 			result.Add("UI", ui);
 			Sprite damageOverlay = new Sprite();
 			damageOverlay.Image.Value = "Images\\damage";
@@ -393,6 +393,7 @@ namespace Lemma.Factories
 
 			Map wallRunMap = null;
 			Direction wallDirection = Direction.None;
+			Direction wallRunDirection = Direction.None;
 
 			player.Add(new TwoWayBinding<Matrix>(transform.Matrix, player.Transform));
 			model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateTranslation(0, (player.Height * -0.5f) - player.SupportHeight, 0) * Matrix.CreateRotationY(rotation) * transform.Matrix, transform.Matrix, rotation, player.Height, player.SupportHeight));
@@ -437,14 +438,7 @@ namespace Lemma.Factories
 					}
 				}
 				else
-				{
-					Map.RaycastResult hit = wallRunMap.Raycast(wallRunMap.GetCoordinate(transform.Position - new Vector3(0, player.Height * 0.5f - player.SupportHeight, 0)), wallDirection, 3);
-					if (hit.Coordinate != null)
-					{
-						footsteps.Cue.Value = wallRunMap[hit.Coordinate.Value].FootstepCue;
-						footsteps.Play.Execute();
-					}
-				}
+					footsteps.Play.Execute();
 			}));
 			footstepTimer.Add(new Binding<bool>(footstepTimer.Enabled, () => player.WallRunState.Value != Player.WallRun.None || (player.MovementDirection.Value.LengthSquared() > 0.0f && player.IsSupported && player.EnableWalking), player.MovementDirection, player.IsSupported, player.EnableWalking, player.WallRunState));
 			footsteps.Add(new Binding<Vector3>(footsteps.Position, x => x - new Vector3(0, player.Height * 0.5f, 0), transform.Position));
@@ -626,6 +620,10 @@ namespace Lemma.Factories
 			{
 				delegate(float dt)
 				{
+					// Update footstep sound interval when wall-running
+					if (player.WallRunState != Player.WallRun.None)
+						footstepTimer.Interval.Value = 0.25f / model[player.WallRunState == Player.WallRun.Left ? "WallWalkLeft" : "WallWalkRight"].Speed;
+
 					if ((!player.EnableWalking && !player.Sprint) || player.WallRunState.Value != Player.WallRun.None)
 						return;
 
@@ -656,6 +654,10 @@ namespace Lemma.Factories
 							movementAnimation = "Crouch" + movementAnimation;
 							animationPriority = 2;
 						}
+
+						model[movementAnimation].Speed = player.Sprint ? 1.5f : 1.0f;
+
+						footstepTimer.Interval.Value = player.Crouched ? 0.5f : (player.Sprint ? 0.37f / 1.5f : 0.37f);
 
 						if (!model.IsPlaying(movementAnimation))
 						{
@@ -820,8 +822,6 @@ namespace Lemma.Factories
 
 			// Wall run
 
-			footstepTimer.Add(new Binding<float>(footstepTimer.Interval, () => player.WallRunState == Player.WallRun.None ? (player.Crouched ? 0.5f : 0.35f) : 0.23f, player.WallRunState, player.Crouched));
-
 			Action<Map, Direction, bool, Vector3> setUpWallRun = delegate(Map map, Direction dir, bool right, Vector3 forwardVector)
 			{
 				wallRunMap = map;
@@ -832,10 +832,13 @@ namespace Lemma.Factories
 				if (!model.IsPlaying(animation))
 					model.StartClip(animation, 5, true);
 
-				Direction walkDirection = dir.Cross(map.GetRelativeDirection(Vector3.Up));
-				Vector3 velocity = map.GetAbsoluteVector(walkDirection.GetVector());
+				wallRunDirection = dir.Cross(map.GetRelativeDirection(Vector3.Up));
+				Vector3 velocity = map.GetAbsoluteVector(wallRunDirection.GetVector());
 				if (Vector3.Dot(velocity, forwardVector) < 0.0f)
+				{
 					velocity = -velocity;
+					wallRunDirection = wallRunDirection.GetReverse();
+				}
 				rotation.Value = (float)Math.Atan2(velocity.X, velocity.Z);
 				rotationLocked.Value = true;
 				velocity.Y = 0.0f;
@@ -843,7 +846,7 @@ namespace Lemma.Factories
 
 				Vector3 currentHorizontalVelocity = player.LinearVelocity;
 				currentHorizontalVelocity.Y = 0.0f;
-				velocity *= Math.Min(player.MaxSpeed * 2.0f, currentHorizontalVelocity.Length() * 1.25f);
+				velocity *= Math.Min(player.MaxSpeed * 2.0f, Math.Max(currentHorizontalVelocity.Length() * 1.25f, 6.0f));
 				velocity.Y = player.LinearVelocity.Value.Y + 3.0f;
 				player.LinearVelocity.Value = velocity;
 			};
@@ -971,20 +974,25 @@ namespace Lemma.Factories
 			{
 				if (player.WallRunState.Value != Player.WallRun.None)
 				{
-					if (player.IsSupported || player.LinearVelocity.Value.Length() < 5.0f)
+					float wallRunSpeed = Vector3.Dot(player.LinearVelocity.Value, wallRunMap.GetAbsoluteVector(wallRunDirection.GetVector()));
+					if (player.IsSupported || wallRunSpeed < 5.0f)
 					{
 						// We landed on the ground or we're going too slow to continue wall-running
 						deactivateWallRun();
 						return;
 					}
 
+					model[player.WallRunState.Value == Player.WallRun.Left ? "WallWalkLeft" : "WallWalkRight"].Speed = Math.Min(1.0f, wallRunSpeed / 9.0f);
+
 					Vector3 pos = transform.Position + new Vector3(0, (player.Height * -0.5f) - 0.5f, 0);
 					Map.Coordinate coord = wallRunMap.GetCoordinate(pos);
-					if (wallRunMap[coord.Move(wallDirection, 2)].ID == 0) // We ran out of wall to walk on
+					Map.CellState wallType = wallRunMap[coord.Move(wallDirection, 2)];
+					if (wallType.ID == 0) // We ran out of wall to walk on
 					{
 						deactivateWallRun();
 						return;
 					}
+					footsteps.Cue.Value = wallType.FootstepCue;
 					Vector3 coordPos = wallRunMap.GetAbsolutePosition(coord);
 
 					Vector3 normal = wallRunMap.GetAbsoluteVector(wallDirection.GetVector());

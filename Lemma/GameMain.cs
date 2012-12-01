@@ -390,10 +390,15 @@ namespace Lemma
 						pauseAnimation.Delete.Execute();
 
 					// Restore mouse
-					Microsoft.Xna.Framework.Input.Mouse.SetPosition(originalMousePosition.X, originalMousePosition.Y);
-					MouseState m = new MouseState(originalMousePosition.X, originalMousePosition.Y, this.MouseState.Value.ScrollWheelValue, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
-					this.LastMouseState.Value = m;
-					this.MouseState.Value = m;
+					if (!originalMouseVisible)
+					{
+						// Only restore mouse position if the cursor was not visible
+						// i.e., we're in first-person camera mode
+						Microsoft.Xna.Framework.Input.Mouse.SetPosition(originalMousePosition.X, originalMousePosition.Y);
+						MouseState m = new MouseState(originalMousePosition.X, originalMousePosition.Y, this.MouseState.Value.ScrollWheelValue, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+						this.LastMouseState.Value = m;
+						this.MouseState.Value = m;
+					}
 					this.IsMouseVisible.Value = originalMouseVisible;
 
 					this.saveSettings();

@@ -373,6 +373,11 @@ namespace Lemma
 			}
 		}
 
+		private bool componentEnabled(Component c)
+		{
+			return c.Active && c.Enabled && !c.Suspended && (!this.EditorEnabled || c.EnabledInEditMode) && (!this.Paused || c.EnabledWhenPaused);
+		}
+
 		protected override void Update(GameTime gameTime)
 		{
 			if (!this.EditorEnabled && this.mapLoaded)
@@ -418,7 +423,7 @@ namespace Lemma
 			this.componentsModified = false;
 			foreach (IUpdateableComponent c in this.updateables)
 			{
-				if (((Component)c).Active && c.Enabled && !c.Suspended && (!this.EditorEnabled || c.EnabledInEditMode) && (!this.Paused || c.EnabledWhenPaused))
+				if (this.componentEnabled((Component)c))
 				{
 					c.Update(this.ElapsedTime);
 					if (this.componentsModified)
@@ -514,7 +519,7 @@ namespace Lemma
 
 			foreach (IDrawablePreFrameComponent c in this.preframeDrawables)
 			{
-				if (c.Enabled && !c.Suspended)
+				if (this.componentEnabled((Component)c))
 					c.DrawPreFrame(gameTime, this.renderParameters);
 			}
 			timer.Stop();
@@ -538,7 +543,7 @@ namespace Lemma
 
 			foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
 			{
-				if (c.Enabled && !c.Suspended && (!this.EditorEnabled || c.EnabledInEditMode))
+				if (this.componentEnabled((Component)c))
 					c.DrawNonPostProcessed(gameTime, this.renderParameters);
 			}
 			timer.Stop();
@@ -558,7 +563,7 @@ namespace Lemma
 
 			foreach (IDrawableComponent c in this.drawables)
 			{
-				if (c.Enabled && !c.Suspended && (!this.EditorEnabled || c.EnabledInEditMode))
+				if (this.componentEnabled((Component)c))
 					c.Draw(this.GameTime, parameters);
 			}
 
@@ -570,7 +575,7 @@ namespace Lemma
 		{
 			foreach (IDrawableAlphaComponent c in this.alphaDrawables)
 			{
-				if (c.Enabled && !c.Suspended && (!this.EditorEnabled || c.EnabledInEditMode))
+				if (this.componentEnabled((Component)c))
 					c.DrawAlpha(this.GameTime, parameters);
 			}
 		}

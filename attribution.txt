@@ -13,12 +13,20 @@ Texture source material from CGTextures. http://cgtextures.com
 
 ==========================================
 
+Player model and rig adapted from MakeHuman. http://www.makehuman.org/
+
+==========================================
+
 skybox-night.jpg generated with Spacescape. http://alexcpeterson.com/spacescape
 skybox-sunset.jpg, skybox1.jpg, skybox2.jpg by Tim Heldna. http://www.garagegames.com/community/blogs/view/12655
 
 ==========================================
 
 Music and some sounds by Jack Menhorn. http://jackmenhorn.com
+
+==========================================
+
+Opening track by Daniel Haaser. http://soundcloud.com/prelinger
 
 ==========================================
 

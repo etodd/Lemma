@@ -108,7 +108,7 @@ namespace Lemma.Components
 		{
 			this.Editable = false;
 			this.EnabledWhenPaused.Value = false;
-			this.character = new Character(this.main, Vector3.Zero, 4.0f, 1.5f, this.SupportHeight, 2.0f);
+			this.character = new Character(this.main, Vector3.Zero, 4.0f, 1.75f, this.SupportHeight, 2.0f);
 			this.character.IsUpdating = false;
 			this.character.Body.Tag = this;
 			this.main.Space.Add(this.character);

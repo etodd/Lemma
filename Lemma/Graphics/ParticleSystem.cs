@@ -462,7 +462,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
-			this.EnabledWhenPaused.Value = false;
+			this.EnabledWhenPaused.Value = true;
 			this.DrawOrder = new Property<int> { Editable = true, Value = 11 };
 			this.Settings.Get = delegate()
 			{
@@ -585,6 +585,9 @@ namespace Lemma.Components
 		/// </summary>
 		public void Update(float elapsedTime)
 		{
+			if (this.main.Paused)
+				return;
+
 			this.currentTime += elapsedTime;
 
 			this.retireActiveParticles();

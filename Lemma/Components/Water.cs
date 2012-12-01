@@ -173,8 +173,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
-			this.EnabledWhenPaused.Value = false;
-
+			this.EnabledWhenPaused.Value = true;
 			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.main.ScreenSize));
 			this.Add(new Binding<bool>(this.EnableReflection, ((GameMain)this.main).Settings.EnableReflections));
 
@@ -373,6 +372,9 @@ namespace Lemma.Components
 
 		void IUpdateableComponent.Update(float dt)
 		{
+			if (this.main.Paused)
+				return;
+
 			List<Entity> removals = new List<Entity>();
 			foreach (Entity entity in this.submergedEntities)
 			{

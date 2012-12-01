@@ -43,10 +43,10 @@ namespace SkinnedModel
 		/// Gets the total length of the animation.
 		/// </summary>
 		[ContentSerializer]
-		public TimeSpan Duration { get; set; }
+		public TimeSpan Duration;
 
 		[ContentSerializer]
-		public string Name { get; set; }
+		public string Name;
 
 		[ContentSerializerIgnore]
 		public int Priority;
@@ -57,6 +57,9 @@ namespace SkinnedModel
 		public float BlendTotalTime;
 
 		[ContentSerializerIgnore]
+		public float Speed = 1.0f;
+
+		[ContentSerializerIgnore]
 		public bool Loop;
 
 		/// <summary>
@@ -64,7 +67,7 @@ namespace SkinnedModel
 		/// sorted by time.
 		/// </summary>
 		[ContentSerializer]
-		public List<Channel> Channels { get; set; }
+		public List<Channel> Channels;
 
 		[ContentSerializerIgnore]
 		public bool Stopping;
