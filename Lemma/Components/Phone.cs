@@ -98,6 +98,18 @@ namespace Lemma.Components
 			}
 		}
 
+		public void ClearResponse(string question, string id)
+		{
+			foreach (Response r in this.Responses)
+			{
+				if (r.Question == question && r.ID == id)
+				{
+					this.Responses.Remove(r);
+					break;
+				}
+			}
+		}
+
 		public void ClearPermanentResponses()
 		{
 			foreach (Response r in this.Responses.ToList())
@@ -126,7 +138,11 @@ namespace Lemma.Components
 					Incoming = true,
 					Text = msg
 				},
+#if DEBUG
+				TimeRemaining = 0.0f,
+#else
 				TimeRemaining = time,
+#endif
 				Responses = responses
 			});
 		}
@@ -205,7 +221,20 @@ namespace Lemma.Components
 				{
 					this.Messages.Add(qm.Message);
 					foreach (Response r in qm.Responses)
-						this.Responses.Add(r);
+					{
+						// Check for duplicates
+						bool add = true;
+						foreach (Response r2 in this.Responses)
+						{
+							if (r2.Question == r.Question && r2.ID == r.ID)
+							{
+								add = false;
+								break;
+							}
+						}
+						if (add)
+							this.Responses.Add(r);
+					}
 					removals.Add(qm);
 				}
 			}

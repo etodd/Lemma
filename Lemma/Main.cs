@@ -75,6 +75,8 @@ namespace Lemma
 		private WaveBank musicBank;
 		public SoundBank SoundBank;
 
+		private bool mapLoaded;
+
 		public Space Space;
 
 		public List<Entity> Entities;
@@ -252,28 +254,6 @@ namespace Lemma
 
 			this.MapLoaded = new Command();
 
-			new CommandBinding(this.MapLoaded, delegate()
-			{
-				if (!this.EditorEnabled)
-				{
-					IEnumerable<string> globalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("GlobalScripts", Path.GetFileNameWithoutExtension(x)));
-					IEnumerable<string> mapGlobalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "Maps", "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("Maps", "GlobalScripts", Path.GetFileNameWithoutExtension(x)));
-					foreach (string scriptName in globalScripts.Concat(mapGlobalScripts))
-					{
-						Entity scriptEntity = Factory.Get<ScriptFactory>().CreateAndBind(this);
-						scriptEntity.Serialize = false;
-						this.Add(scriptEntity);
-						scriptEntity.GetProperty<bool>("ExecuteOnLoad").Value = false;
-						Script script = scriptEntity.Get<Script>();
-						script.Name.Value = scriptName;
-						if (!string.IsNullOrEmpty(script.Errors))
-							throw new Exception(script.Errors);
-						else
-							script.Execute.Execute();
-					}
-				}
-			});
-
 			// Give the space some threads to work with.
 			// Just throw a thread at every processor. The thread scheduler will take care of where to put them.
 			for (int i = 0; i < Environment.ProcessorCount; i++)
@@ -327,6 +307,11 @@ namespace Lemma
 				this.TimeMultiplier.InternalValue = value;
 				this.AudioEngine.SetGlobalVariable("TimeShift", (value - 1.0f) * 12.0f);
 			};
+
+			new CommandBinding(this.MapLoaded, delegate()
+			{
+				this.mapLoaded = true;
+			});
 		}
 
 		protected bool firstLoadContentCall = true;
@@ -390,6 +375,26 @@ namespace Lemma
 
 		protected override void Update(GameTime gameTime)
 		{
+			if (!this.EditorEnabled && this.mapLoaded)
+			{
+				IEnumerable<string> globalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("GlobalScripts", Path.GetFileNameWithoutExtension(x)));
+				IEnumerable<string> mapGlobalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "Maps", "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("Maps", "GlobalScripts", Path.GetFileNameWithoutExtension(x)));
+				foreach (string scriptName in globalScripts.Concat(mapGlobalScripts))
+				{
+					Entity scriptEntity = Factory.Get<ScriptFactory>().CreateAndBind(this);
+					scriptEntity.Serialize = false;
+					this.Add(scriptEntity);
+					scriptEntity.GetProperty<bool>("ExecuteOnLoad").Value = false;
+					Script script = scriptEntity.Get<Script>();
+					script.Name.Value = scriptName;
+					if (!string.IsNullOrEmpty(script.Errors))
+						throw new Exception(script.Errors);
+					else
+						script.Execute.Execute();
+				}
+			}
+			this.mapLoaded = false;
+
 			if (gameTime.ElapsedGameTime.TotalSeconds > 0.1f)
 				gameTime = new GameTime(gameTime.TotalGameTime, new TimeSpan((long)(0.1f * (float)TimeSpan.TicksPerSecond)), true);
 			this.GameTime = gameTime;

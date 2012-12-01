@@ -239,6 +239,7 @@ namespace Lemma.Factories
 			{
 				if (phoneActiveBinding != null)
 					result.Remove(phoneActiveBinding);
+				phoneActiveBinding = null;
 				Entity p = phone.Value.Target;
 				if (p != null)
 				{
@@ -1658,6 +1659,7 @@ namespace Lemma.Factories
 			{
 				if (pistolActiveBinding != null)
 					result.Remove(pistolActiveBinding);
+				pistolActiveBinding = null;
 				Entity pistolEntity = pistol.InternalValue.Target;
 
 				if (pistolEntity != null && pistolEntity != value.Target)

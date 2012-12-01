@@ -200,7 +200,9 @@ namespace Lemma.Factories
 						responseMenu.Visible.Value = false;
 						phoneScroller.CheckLayout();
 						phoneScroller.ScrollToBottom();
-						result.Add(new Animation(new Animation.Delay(0.1f), new Animation.Execute(hidePhone.Execute)));
+#if !DEBUG
+						result.Add(new Animation(new Animation.Delay(0.25f), new Animation.Execute(hidePhone.Execute)));
+#endif
 					}));
 
 					TextElement textField = new TextElement();
@@ -236,6 +238,11 @@ namespace Lemma.Factories
 					return new[] { field };
 				}
 			));
+
+			messageList.Children.ItemAdded += delegate(int index, UIComponent msg)
+			{
+				phoneScroller.ScrollToBottom();
+			};
 
 			phoneScroller.ScrollToBottom();
 

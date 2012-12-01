@@ -167,6 +167,10 @@
       <Name>cave1</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Maps\phone-test.map">
+      <Name>phone-test</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Maps\start.map">
       <Name>start</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
