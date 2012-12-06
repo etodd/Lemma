@@ -634,7 +634,7 @@ namespace Lemma.Factories
 						model.Stop("Jump", "Fall", "JumpFall");
 						footstepTimer.Command.Execute();
 						Sound.PlayCue(main, "Land", transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0));
-						model.StartClip("Land");
+						model.StartClip("Land", 1, false, 0.1f);
 					}
 					else if (player.IsSupported)
 					{
@@ -1417,27 +1417,34 @@ namespace Lemma.Factories
 				bool supported = player.IsSupported;
 
 				// Check if we're vaulting
-				Matrix matrix = Matrix.CreateRotationY(rotation);
+				Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
 				bool vaulting = false;
 				if (allowVault)
 				{
 					foreach (Map map in Map.ActiveMaps)
 					{
 						Direction up = map.GetRelativeDirection(Direction.PositiveY);
-						Vector3 pos = transform.Position + matrix.Forward * -1.75f;
-						Map.Coordinate coord = map.GetCoordinate(pos).Move(up, 1);
-						for (int i = 0; i < 4; i++)
+						Direction right = map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
+						Vector3 pos = transform.Position + rotationMatrix.Forward * -1.75f;
+						Map.Coordinate baseCoord = map.GetCoordinate(pos);
+						for (int x = -1; x < 2; x++)
 						{
-							Map.Coordinate downCoord = coord.Move(up.GetReverse());
-
-							if (map[coord].ID == 0 && map[downCoord].ID != 0)
+							Map.Coordinate coord = baseCoord.Move(right, x).Move(up, 1);
+							for (int i = 0; i < 4; i++)
 							{
-								// Vault
-								vault(map, coord, -matrix.Forward);
-								vaulting = true;
-								break;
+								Map.Coordinate downCoord = coord.Move(up.GetReverse());
+
+								if (map[coord].ID == 0 && map[downCoord].ID != 0)
+								{
+									// Vault
+									vault(map, coord, -rotationMatrix.Forward);
+									vaulting = true;
+									break;
+								}
+								coord = coord.Move(up.GetReverse());
 							}
-							coord = coord.Move(up.GetReverse());
+							if (vaulting)
+								break;
 						}
 						if (vaulting)
 							break;
@@ -1461,7 +1468,7 @@ namespace Lemma.Factories
 					Vector2 wallNormal2 = new Vector2(absoluteWallNormal.X, absoluteWallNormal.Z);
 					wallNormal2.Normalize();
 
-					jumpDirection = new Vector2(-matrix.Forward.X, -matrix.Forward.Z);
+					jumpDirection = new Vector2(-rotationMatrix.Forward.X, -rotationMatrix.Forward.Z);
 
 					float dot = Vector2.Dot(wallNormal2, jumpDirection);
 					if (dot < 0)
@@ -1502,12 +1509,13 @@ namespace Lemma.Factories
 					}
 				}
 
-				// If we're wall-running, add some velocity so we jump away from the wall a bit
+				// If we're wall-running, we can wall-jump
+				// Add some velocity so we jump away from the wall a bit
 				if (player.WallRunState.Value != Player.WallRun.None)
 				{
+					wallJumping = true;
 					lastWallRunJump = main.TotalTime; // Prevent the player from repeatedly wall-running and wall-jumping ad infinitum.
-					Matrix r = Matrix.CreateRotationY(rotation);
-					jumpDirection += wallJumpHorizontalVelocityAmount * 0.75f * (player.WallRunState.Value == Player.WallRun.Left ? new Vector2(r.Left.X, r.Left.Z) : new Vector2(r.Right.X, r.Right.Z));
+					jumpDirection += wallJumpHorizontalVelocityAmount * 0.75f * (player.WallRunState.Value == Player.WallRun.Left ? new Vector2(rotationMatrix.Left.X, rotationMatrix.Left.Z) : new Vector2(rotationMatrix.Right.X, rotationMatrix.Right.Z));
 				}
 
 				bool go = supported || player.WallRunState.Value != Player.WallRun.None || vaulting || wallJumping;
@@ -1534,7 +1542,7 @@ namespace Lemma.Factories
 					foreach (BlockPossibility possibility in blockPossibilities.Values.SelectMany(x => x))
 					{
 						Direction up = possibility.Map.GetRelativeDirection(Direction.PositiveY);
-						Vector3 pos = transform.Position + matrix.Forward * -1.75f;
+						Vector3 pos = transform.Position + rotationMatrix.Forward * -1.75f;
 						Map.Coordinate coord = possibility.Map.GetCoordinate(pos).Move(up, 1);
 						for (int i = 0; i < 4; i++)
 						{
@@ -1542,7 +1550,7 @@ namespace Lemma.Factories
 							if (!coord.Between(possibility.StartCoord, possibility.EndCoord) && downCoord.Between(possibility.StartCoord, possibility.EndCoord))
 							{
 								instantiateBlockPossibility(possibility);
-								vault(possibility.Map, coord, -matrix.Forward);
+								vault(possibility.Map, coord, -rotationMatrix.Forward);
 								vaulting = true;
 								go = true;
 								break;
@@ -1629,13 +1637,43 @@ namespace Lemma.Factories
 						player.HasTraction.Value = false;
 					}
 
-					// Deactivate any wall walking we're doing
-					deactivateWallRun();
-
 					Sound.PlayCue(main, vaulting ? "Vault" : "Jump", transform.Position);
 
-					model.Stop("Vault", "Jump");
-					model.StartClip(vaulting ? "Vault" : "Jump", 4);
+					model.Stop("Vault", "Jump", "JumpLeft", "JumpRight");
+					if (vaulting)
+						model.StartClip("Vault", 4, false, 0.1f);
+					else
+					{
+						Vector3 velocity = -Vector3.TransformNormal(player.LinearVelocity, Matrix.CreateRotationY(-rotation));
+						velocity.Y = 0.0f;
+						if (player.WallRunState.Value != Player.WallRun.None)
+							velocity.Z = 0.0f;
+						else if (wallJumping)
+							velocity.Z *= 0.5f;
+						else
+							velocity.X = 0.0f;
+						Direction direction = DirectionExtensions.GetDirectionFromVector(velocity);
+						string animation;
+						switch (direction)
+						{
+							case Direction.NegativeX:
+								animation = "JumpLeft";
+								break;
+							case Direction.PositiveX:
+								animation = "JumpRight";
+								break;
+							case Direction.PositiveZ:
+								animation = "JumpBackward";
+								break;
+							default:
+								animation = "Jump";
+								break;
+						}
+						model.StartClip(animation, 4, false, 0.1f);
+					}
+
+					// Deactivate any wall walking we're doing
+					deactivateWallRun();
 
 					// Play a footstep sound since we're jumping off the ground
 					footsteps.Play.Execute();

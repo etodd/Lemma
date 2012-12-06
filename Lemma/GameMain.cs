@@ -713,11 +713,21 @@ namespace Lemma
 				settingsMenu.Children.Add(settingsBack);
 
 				UIComponent fullscreenResolution = this.createMenuButton<Point>("Fullscreen Resolution", this.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString());
-				fullscreenResolution.Add(new CommandBinding<Point, int>(fullscreenResolution.MouseScrolled, delegate(Point mouse, int scroll)
+				
+				Action<int> changeFullscreenResolution = delegate(int scroll)
 				{
 					displayModeIndex = (displayModeIndex + scroll) % this.supportedDisplayModes.Count();
 					DisplayMode mode = this.supportedDisplayModes.ElementAt(displayModeIndex);
 					this.Settings.FullscreenResolution.Value = new Point(mode.Width, mode.Height);
+				};
+
+				fullscreenResolution.Add(new CommandBinding<Point>(fullscreenResolution.MouseLeftUp, delegate(Point mouse)
+				{
+					changeFullscreenResolution(1);
+				}));
+				fullscreenResolution.Add(new CommandBinding<Point, int>(fullscreenResolution.MouseScrolled, delegate(Point mouse, int scroll)
+				{
+					changeFullscreenResolution(scroll);
 				}));
 				settingsMenu.Children.Add(fullscreenResolution);
 

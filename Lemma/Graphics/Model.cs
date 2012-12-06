@@ -242,7 +242,8 @@ namespace Lemma.Components
 
 		protected virtual void loadModel(string file, bool reload)
 		{
-			this.UnsupportedTechniques.Clear();
+			if (!reload)
+				this.UnsupportedTechniques.Clear();
 			try
 			{
 				this.model = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>(file);
