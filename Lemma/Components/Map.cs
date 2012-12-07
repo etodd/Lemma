@@ -1269,6 +1269,7 @@ namespace Lemma.Components
 			{
 				foreach (Chunk chunk in this.Chunks)
 					chunk.Delete();
+				this.Chunks.Clear();
 			}
 			Map.Maps.Remove(this);
 		}

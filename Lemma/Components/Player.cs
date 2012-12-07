@@ -90,7 +90,7 @@ namespace Lemma.Components
 		private const float staminaDecayTime = 10.0f * 60.0f; // Time in seconds to drain all 100 stamina points
 		private const float staminaDecayInterval = staminaDecayTime / 100.0f;
 
-		private const float sprintStaminaDecayTime = 0.25f * 60.0f; // Time in seconds to drain all 100 stamina points while sprinting
+		private const float sprintStaminaDecayTime = 30.0f; // Time in seconds to drain all 100 stamina points while sprinting
 		private const float sprintStaminaDecayInterval = sprintStaminaDecayTime / 100.0f;
 
 		private float timeUntilNextStaminaDecay = staminaDecayInterval;

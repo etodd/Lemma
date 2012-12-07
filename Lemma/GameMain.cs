@@ -428,9 +428,12 @@ namespace Lemma
 					);
 					this.AddComponent(pauseAnimation);
 
-					screenshot.Dispose();
-					screenshot = null;
-					screenshotSize = Point.Zero;
+					if (screenshot != null)
+					{
+						screenshot.Dispose();
+						screenshot = null;
+						screenshotSize = Point.Zero;
+					}
 				};
 
 				// Load / save menu
@@ -658,23 +661,28 @@ namespace Lemma
 						setupScreenshot(true);
 					else
 					{
+						// Delete the old save thumbnail.
+						string oldSave = this.currentSave;
+						if (oldSave != null)
+						{
+							UIComponent container = loadSaveList.Children.FirstOrDefault(x => ((string)x.UserData.Value) == this.currentSave);
+							if (container != null)
+								container.Delete.Execute();
+						}
+
 						// Create the new save.
-						string s = this.currentSave;
 						save();
+
+						// Delete the old save files.
+						// We have to do this AFTER creating the new save
+						// because it copies the old save to create the new one
+						if (oldSave != null)
+							Directory.Delete(Path.Combine(this.saveDirectory, oldSave), true);
 
 						this.saveAfterTakingScreenshot = false;
 						screenshot.Dispose();
 						screenshot = null;
 						screenshotSize = Point.Zero;
-
-						// Delete the old save.
-						if (s != null && s != this.currentSave)
-						{
-							Directory.Delete(Path.Combine(this.saveDirectory, s), true);
-							UIComponent container = loadSaveList.Children.FirstOrDefault(x => ((string)x.UserData.Value) == s);
-							if (container != null)
-								container.Delete.Execute();
-						}
 					}
 				};
 
@@ -700,15 +708,24 @@ namespace Lemma
 				this.UI.Root.Children.Add(settingsMenu);
 				settingsMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
 
-				Container settingsLabelContainer = new Container();
-				settingsLabelContainer.Opacity.Value = 0.0f;
+				Container settingsLabelPadding = new Container();
+				settingsLabelPadding.PaddingLeft.Value = 8.0f;
+				settingsLabelPadding.Opacity.Value = 0.0f;
+				settingsMenu.Children.Add(settingsLabelPadding);
+
+				ListContainer settingsLabelContainer = new ListContainer();
+				settingsLabelContainer.Orientation.Value = ListContainer.ListOrientation.Vertical;
+				settingsLabelPadding.Children.Add(settingsLabelContainer);
 
 				TextElement settingsLabel = new TextElement();
 				settingsLabel.FontFile.Value = "Font";
 				settingsLabel.Text.Value = "O P T I O N S";
 				settingsLabelContainer.Children.Add(settingsLabel);
 
-				settingsMenu.Children.Add(settingsLabelContainer);
+				TextElement settingsScrollLabel = new TextElement();
+				settingsScrollLabel.FontFile.Value = "Font";
+				settingsScrollLabel.Text.Value = "Scroll or click to modify";
+				settingsLabelContainer.Children.Add(settingsScrollLabel);
 
 				Action hideSettings = delegate()
 				{
@@ -767,6 +784,10 @@ namespace Lemma
 				settingsMenu.Children.Add(motionBlurAmount);
 
 				UIComponent reflectionsEnabled = this.createMenuButton<bool>("Reflections Enabled", this.Settings.EnableReflections);
+				reflectionsEnabled.Add(new CommandBinding<Point, int>(reflectionsEnabled.MouseScrolled, delegate(Point mouse, int scroll)
+				{
+					this.Settings.EnableReflections.Value = !this.Settings.EnableReflections;
+				}));
 				reflectionsEnabled.Add(new CommandBinding<Point>(reflectionsEnabled.MouseLeftUp, delegate(Point mouse)
 				{
 					this.Settings.EnableReflections.Value = !this.Settings.EnableReflections;
@@ -774,6 +795,10 @@ namespace Lemma
 				settingsMenu.Children.Add(reflectionsEnabled);
 
 				UIComponent bloomEnabled = this.createMenuButton<bool>("Bloom Enabled", this.Renderer.EnableBloom);
+				bloomEnabled.Add(new CommandBinding<Point, int>(bloomEnabled.MouseScrolled, delegate(Point mouse, int scroll)
+				{
+					this.Renderer.EnableBloom.Value = !this.Renderer.EnableBloom;
+				}));
 				bloomEnabled.Add(new CommandBinding<Point>(bloomEnabled.MouseLeftUp, delegate(Point mouse)
 				{
 					this.Renderer.EnableBloom.Value = !this.Renderer.EnableBloom;
@@ -782,6 +807,10 @@ namespace Lemma
 
 				UIComponent dynamicShadows = this.createMenuButton<LightingManager.DynamicShadowSetting>("Dynamic Shadows", this.LightingManager.DynamicShadows);
 				int numDynamicShadowSettings = typeof(LightingManager.DynamicShadowSetting).GetFields(BindingFlags.Static | BindingFlags.Public).Length;
+				dynamicShadows.Add(new CommandBinding<Point, int>(dynamicShadows.MouseScrolled, delegate(Point mouse, int scroll)
+				{
+					this.LightingManager.DynamicShadows.Value = (LightingManager.DynamicShadowSetting)Enum.ToObject(typeof(LightingManager.DynamicShadowSetting), (((int)this.LightingManager.DynamicShadows.Value) + scroll) % numDynamicShadowSettings);
+				}));
 				dynamicShadows.Add(new CommandBinding<Point>(dynamicShadows.MouseLeftUp, delegate(Point mouse)
 				{
 					this.LightingManager.DynamicShadows.Value = (LightingManager.DynamicShadowSetting)Enum.ToObject(typeof(LightingManager.DynamicShadowSetting), (((int)this.LightingManager.DynamicShadows.Value) + 1) % numDynamicShadowSettings);
@@ -799,15 +828,24 @@ namespace Lemma
 				this.UI.Root.Children.Add(controlsMenu);
 				controlsMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
 
-				Container controlsLabelContainer = new Container();
-				controlsLabelContainer.Opacity.Value = 0.0f;
+				Container controlsLabelPadding = new Container();
+				controlsLabelPadding.PaddingLeft.Value = 8.0f;
+				controlsLabelPadding.Opacity.Value = 0.0f;
+				controlsMenu.Children.Add(controlsLabelPadding);
+
+				ListContainer controlsLabelContainer = new ListContainer();
+				controlsLabelContainer.Orientation.Value = ListContainer.ListOrientation.Vertical;
+				controlsLabelPadding.Children.Add(controlsLabelContainer);
 
 				TextElement controlsLabel = new TextElement();
 				controlsLabel.FontFile.Value = "Font";
 				controlsLabel.Text.Value = "C O N T R O L S";
 				controlsLabelContainer.Children.Add(controlsLabel);
 
-				controlsMenu.Children.Add(controlsLabelContainer);
+				TextElement controlsScrollLabel = new TextElement();
+				controlsScrollLabel.FontFile.Value = "Font";
+				controlsScrollLabel.Text.Value = "Scroll for more";
+				controlsLabelContainer.Children.Add(controlsScrollLabel);
 
 				Action hideControls = delegate()
 				{
@@ -832,26 +870,42 @@ namespace Lemma
 				}));
 				controlsMenu.Children.Add(controlsBack);
 
+				ListContainer controlsList = new ListContainer();
+				controlsList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+				Scroller controlsScroller = new Scroller();
+				controlsScroller.Add(new Binding<Vector2>(controlsScroller.Size, () => new Vector2(controlsList.Size.Value.X, this.ScreenSize.Value.Y * 0.5f), controlsList.Size, this.ScreenSize));
+				controlsScroller.Children.Add(controlsList);
+				controlsMenu.Children.Add(controlsScroller);
+
 				UIComponent invertMouseX = this.createMenuButton<bool>("Invert Mouse X", this.Settings.InvertMouseX);
+				invertMouseX.Add(new CommandBinding<Point, int>(invertMouseX.MouseScrolled, delegate(Point mouse, int scroll)
+				{
+					this.Settings.InvertMouseX.Value = !this.Settings.InvertMouseX;
+				}));
 				invertMouseX.Add(new CommandBinding<Point>(invertMouseX.MouseLeftUp, delegate(Point mouse)
 				{
 					this.Settings.InvertMouseX.Value = !this.Settings.InvertMouseX;
 				}));
-				controlsMenu.Children.Add(invertMouseX);
+				controlsList.Children.Add(invertMouseX);
 
 				UIComponent invertMouseY = this.createMenuButton<bool>("Invert Mouse Y", this.Settings.InvertMouseY);
+				invertMouseY.Add(new CommandBinding<Point, int>(invertMouseY.MouseScrolled, delegate(Point mouse, int scroll)
+				{
+					this.Settings.InvertMouseY.Value = !this.Settings.InvertMouseY;
+				}));
 				invertMouseY.Add(new CommandBinding<Point>(invertMouseY.MouseLeftUp, delegate(Point mouse)
 				{
 					this.Settings.InvertMouseY.Value = !this.Settings.InvertMouseY;
 				}));
-				controlsMenu.Children.Add(invertMouseY);
+				controlsList.Children.Add(invertMouseY);
 
 				UIComponent mouseSensitivity = this.createMenuButton<float>("Mouse Sensitivity", this.Settings.MouseSensitivity, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
 				mouseSensitivity.Add(new CommandBinding<Point, int>(mouseSensitivity.MouseScrolled, delegate(Point mouse, int scroll)
 				{
 					this.Settings.MouseSensitivity.Value = Math.Max(0, Math.Min(5, this.Settings.MouseSensitivity + (scroll * 0.1f)));
 				}));
-				controlsMenu.Children.Add(mouseSensitivity);
+				controlsList.Children.Add(mouseSensitivity);
 
 				Action<Property<PCInput.PCInputBinding>, string> addInputSetting = delegate(Property<PCInput.PCInputBinding> setting, string display)
 				{
@@ -870,7 +924,7 @@ namespace Lemma
 							this.UI.EnableMouse.Value = true;
 						});
 					}));
-					controlsMenu.Children.Add(button);
+					controlsList.Children.Add(button);
 				};
 
 				addInputSetting(this.Settings.Forward, "Move Forward");

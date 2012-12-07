@@ -372,8 +372,8 @@ namespace Lemma.Factories
 			// When rotation is locked, we want to make sure the player can't turn their head
 			// 180 degrees from the direction they're facing
 
-			input.Add(new Binding<float>(input.MinX, () => rotationLocked ? rotation + ((float)Math.PI * -0.49f) : 0.0f, rotation, rotationLocked));
-			input.Add(new Binding<float>(input.MaxX, () => rotationLocked ? rotation + ((float)Math.PI * 0.49f) : 0.0f, rotation, rotationLocked));
+			input.Add(new Binding<float>(input.MinX, () => rotationLocked ? rotation + ((float)Math.PI * -0.45f) : 0.0f, rotation, rotationLocked));
+			input.Add(new Binding<float>(input.MaxX, () => rotationLocked ? rotation + ((float)Math.PI * 0.45f) : 0.0f, rotation, rotationLocked));
 			input.Add(new NotifyBinding(delegate() { input.Mouse.Changed(); }, rotationLocked)); // Make sure the rotation locking takes effect even if the player doesn't move the mouse
 
 			update.Add(delegate(float dt)
@@ -1033,6 +1033,12 @@ namespace Lemma.Factories
 				Player.WallRun wallRunState = player.WallRunState;
 				if (wallRunState != Player.WallRun.None)
 				{
+					if (!wallRunMap.Active)
+					{
+						deactivateWallRun();
+						return;
+					}
+
 					float wallRunSpeed = Vector3.Dot(player.LinearVelocity.Value, wallRunMap.GetAbsoluteVector(wallRunDirection.GetVector()));
 
 					if (wallRunState == Player.WallRun.Straight)
@@ -1104,10 +1110,13 @@ namespace Lemma.Factories
 
 					player.LinearVelocity.Value = velocity;
 
-					Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
-					Vector3 forward = -rotationMatrix.Forward;
-					Vector3 right = rotationMatrix.Right;
-					breakWalls(forward, right, true);
+					if (wallRunState != Player.WallRun.Down && wallRunState != Player.WallRun.Straight)
+					{
+						Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
+						Vector3 forward = -rotationMatrix.Forward;
+						Vector3 right = rotationMatrix.Right;
+						breakWalls(forward, right, true);
+					}
 				}
 			});
 
@@ -1302,7 +1311,7 @@ namespace Lemma.Factories
 				{
 					float force = contacts[contacts.Count - 1].NormalImpulse;
 					const float threshold = 16.0f;
-					float playerLastSpeed = Vector3.Dot(playerLastVelocity, Vector3.Normalize(((other.BoundingBox.Max + other.BoundingBox.Min) * 0.5f) - transform.Position)) * 2.0f;
+					float playerLastSpeed = Vector3.Dot(playerLastVelocity, Vector3.Normalize(-contacts[contacts.Count - 1].Contact.Normal)) * 2.0f;
 					if (force > threshold + playerLastSpeed + 4.0f)
 						player.Health.Value -= (force - threshold - playerLastSpeed) * 0.04f;
 				}
@@ -1486,15 +1495,17 @@ namespace Lemma.Factories
 						Direction up = map.GetRelativeDirection(Direction.PositiveY);
 						Direction right = map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
 						Vector3 pos = transform.Position + rotationMatrix.Forward * -1.75f;
-						Map.Coordinate baseCoord = map.GetCoordinate(pos);
+						Map.Coordinate baseCoord = map.GetCoordinate(pos).Move(up, 1);
 						for (int x = -1; x < 2; x++)
 						{
-							Map.Coordinate coord = baseCoord.Move(right, x).Move(up, 1);
-							for (int i = 0; i < 4; i++)
+							Map.Coordinate coord = baseCoord.Move(right, x);
+							for (int i = 0; i < 3; i++)
 							{
 								Map.Coordinate downCoord = coord.Move(up.GetReverse());
 
-								if (map[coord].ID == 0 && map[downCoord].ID != 0)
+								if (map[coord].ID != 0)
+									break;
+								else if (map[downCoord].ID != 0)
 								{
 									// Vault
 									vault(map, coord, -rotationMatrix.Forward);
@@ -1996,9 +2007,10 @@ namespace Lemma.Factories
 				}
 			});
 
+			bool rolling = false;
 			addInput(settings.Roll, InputState.Down, delegate()
 			{
-				if (!aimMode && !input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableRoll)
+				if (!aimMode && !input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !rolling && player.EnableRoll)
 				{
 					// Try to roll
 					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
@@ -2094,6 +2106,7 @@ namespace Lemma.Factories
 										player.AllowUncrouch.Value = true;
 									rotationLocked.Value = false;
 									kickOrRollEnded = main.TotalTime;
+									rolling = false;
 
 									if (stop) // Stop from rolling off the edge
 										player.LinearVelocity.Value = new Vector3(0, player.LinearVelocity.Value.Y, 0);
@@ -2113,7 +2126,7 @@ namespace Lemma.Factories
 
 			addInput(settings.Roll, InputState.Up, delegate()
 			{
-				if (!model.IsPlaying("Roll"))
+				if (!rolling)
 					player.AllowUncrouch.Value = true;
 			});
 
