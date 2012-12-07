@@ -17,7 +17,7 @@ namespace Lemma.Components
 {
 	public class Player : Component, IUpdateableComponent
 	{
-		public enum WallRun { None, Left, Right }
+		public enum WallRun { None, Left, Right, Straight, Down }
 
 		protected Character character;
 		[XmlIgnore]
@@ -108,7 +108,7 @@ namespace Lemma.Components
 		{
 			this.Editable = false;
 			this.EnabledWhenPaused.Value = false;
-			this.character = new Character(this.main, Vector3.Zero, 4.0f, 1.75f, this.SupportHeight, 2.0f);
+			this.character = new Character(this.main, Vector3.Zero, 4.0f, 1.75f, this.SupportHeight, 4.0f);
 			this.character.IsUpdating = false;
 			this.character.Body.Tag = this;
 			this.main.Space.Add(this.character);
@@ -142,7 +142,6 @@ namespace Lemma.Components
 				}
 				else
 					this.SlowMotion.InternalValue = false;
-				this.main.TimeMultiplier.Value = this.SlowMotion.InternalValue ? 0.4f : 1.0f;
 			};
 
 			this.Stamina.Set = delegate(int value)
@@ -152,6 +151,7 @@ namespace Lemma.Components
 					this.StaminaDepleted.Execute();
 			};
 
+			this.Add(new Binding<float>(this.main.TimeMultiplier, () => this.SlowMotion && !this.main.Paused ? 0.4f : 1.0f, this.SlowMotion, this.main.Paused));
 			this.Add(new TwoWayBinding<Vector2>(this.MovementDirection, this.character.MovementDirection));
 			this.Add(new TwoWayBinding<float>(this.MaxSpeed, this.character.MaxSpeed));
 			this.Add(new Binding<float>(this.MaxSpeed, () => this.NormalMaxSpeed * (this.Sprint ? 1.5f : 1.0f), this.NormalMaxSpeed, this.Sprint));

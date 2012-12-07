@@ -21,6 +21,8 @@ namespace Lemma
 {
 	public class GameMain : Main
 	{
+		public const int Version = 1;
+
 		public class Config
 		{
 			public Property<bool> Fullscreen = new Property<bool> { Value = false };
@@ -36,14 +38,16 @@ namespace Lemma
 			public Property<bool> InvertMouseX = new Property<bool> { Value = false };
 			public Property<bool> InvertMouseY = new Property<bool> { Value = false };
 			public Property<float> MouseSensitivity = new Property<float> { Value = 1.0f };
+			public int Version;
 			public Property<PCInput.PCInputBinding> Forward = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.W } };
 			public Property<PCInput.PCInputBinding> Left = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.A } };
 			public Property<PCInput.PCInputBinding> Right = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D } };
 			public Property<PCInput.PCInputBinding> Backward = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.S } };
 			public Property<PCInput.PCInputBinding> Jump = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Space } };
-			public Property<PCInput.PCInputBinding> WallRun = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.LeftShift } };
+			public Property<PCInput.PCInputBinding> Parkour = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.LeftShift } };
+			public Property<PCInput.PCInputBinding> Roll = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.LeftControl } };
 			public Property<PCInput.PCInputBinding> Aim = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.RightMouseButton } };
-			public Property<PCInput.PCInputBinding> FireBuildRoll = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton } };
+			public Property<PCInput.PCInputBinding> Fire = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton } };
 			public Property<PCInput.PCInputBinding> Reload = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.R } };
 			public Property<PCInput.PCInputBinding> TogglePistol = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D1 } };
 			public Property<PCInput.PCInputBinding> ToggleLevitate = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D2 } };
@@ -53,6 +57,7 @@ namespace Lemma
 		public class SaveInfo
 		{
 			public string MapFile;
+			public int Version;
 		}
 
 		public bool CanSpawn = true;
@@ -118,10 +123,12 @@ namespace Lemma
 				// Attempt to load previous window state
 				using (Stream stream = new FileStream(this.settingsFile, FileMode.Open, FileAccess.Read, FileShare.None))
 					this.Settings = (Config)new XmlSerializer(typeof(Config)).Deserialize(stream);
+				if (this.Settings.Version != GameMain.Version)
+					throw new Exception();
 			}
-			catch (Exception) // File doesn't exist or there was a deserialization error. Use default window settings
+			catch (Exception) // File doesn't exist, there was a deserialization error, or we are on a new version. Use default window settings
 			{
-				this.Settings = new Config();
+				this.Settings = new Config { Version = GameMain.Version };
 			}
 
 			// Restore window state
@@ -501,9 +508,23 @@ namespace Lemma
 					{
 						using (Stream stream = new FileStream(Path.Combine(this.saveDirectory, timestamp, "save.xml"), FileMode.Open, FileAccess.Read, FileShare.None))
 							info = (SaveInfo)new XmlSerializer(typeof(SaveInfo)).Deserialize(stream);
+						if (info.Version != GameMain.Version)
+							throw new Exception();
 					}
 					catch (Exception)
 					{
+						string savePath = Path.Combine(this.saveDirectory, timestamp);
+						if (Directory.Exists(savePath))
+						{
+							try
+							{
+								Directory.Delete(savePath, true);
+							}
+							catch (Exception)
+							{
+								// Whatever. We can't delete it, tough beans.
+							}
+						}
 						return;
 					}
 
@@ -621,7 +642,7 @@ namespace Lemma
 					try
 					{
 						using (Stream stream = new FileStream(Path.Combine(this.saveDirectory, this.currentSave, "save.xml"), FileMode.Create, FileAccess.Write, FileShare.None))
-							new XmlSerializer(typeof(SaveInfo)).Serialize(stream, new SaveInfo { MapFile = this.MapFile });
+							new XmlSerializer(typeof(SaveInfo)).Serialize(stream, new SaveInfo { MapFile = this.MapFile, Version = GameMain.Version });
 					}
 					catch (InvalidOperationException e)
 					{
@@ -857,8 +878,9 @@ namespace Lemma
 				addInputSetting(this.Settings.Backward, "Move Backward");
 				addInputSetting(this.Settings.Right, "Move Right");
 				addInputSetting(this.Settings.Jump, "Jump");
-				addInputSetting(this.Settings.WallRun, "Sprint / Wall Run");
-				addInputSetting(this.Settings.FireBuildRoll, "Roll / Fire weapon / Build");
+				addInputSetting(this.Settings.Parkour, "Parkour");
+				addInputSetting(this.Settings.Roll, "Roll / Crouch");
+				addInputSetting(this.Settings.Fire, "Kick / Primary Fire");
 				addInputSetting(this.Settings.Aim, "Aim");
 				addInputSetting(this.Settings.TogglePistol, "Toggle Pistol");
 				addInputSetting(this.Settings.ToggleLevitate, "Toggle Levitation");

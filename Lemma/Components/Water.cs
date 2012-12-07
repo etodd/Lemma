@@ -269,7 +269,7 @@ namespace Lemma.Components
 				new Vector3(basinWidth / 2, waterHeight, basinLength / 2)
 			});
 
-			this.fluid = new Util.CustomFluidVolume(Vector3.Up, this.main.Space.ForceUpdater.Gravity.Y, tris, 1000.0f, 1.0f, 0.995f, 0.2f, this.main.Space.BroadPhase.QueryAccelerator, this.main.Space.ThreadManager);
+			this.fluid = new Util.CustomFluidVolume(Vector3.Up, this.main.Space.ForceUpdater.Gravity.Y, tris, 1000.0f, 1.25f, 0.997f, 0.2f, this.main.Space.BroadPhase.QueryAccelerator, this.main.Space.ThreadManager);
 			this.Add(new CommandBinding<Entity, BEPUphysics.Collidables.MobileCollidables.EntityCollidable>(this.fluid.EntityIntersected, delegate(Entity entity, BEPUphysics.Collidables.MobileCollidables.EntityCollidable collidable)
 			{
 				this.detectedSubmergedEntities.Add(entity);
