@@ -204,4 +204,6 @@ script.Add(new CommandBinding<Map, Map.Coordinate, Map>(Map.GlobalCellEmptied, d
 			shatter.AddParticle(pos + offset, offset);
 		}
 	}
+	else if (coord.Data.Name == "Windows") // Windows. Shatter sound.
+		Sound.PlayCue(main, "WindowShatter", map.GetAbsolutePosition(coord), 1.0f, 0.05f);
 }));

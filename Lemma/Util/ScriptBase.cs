@@ -42,7 +42,7 @@ namespace Lemma.Scripts
 			TextElement msg = new TextElement();
 			msg.FontFile.Value = "Font";
 			msg.Opacity.Value = 0.0f;
-			msg.WrapWidth.Value = 200.0f;
+			msg.WrapWidth.Value = 250.0f;
 			msgBackground.Children.Add(msg);
 			script.Add(msgBackground);
 			return msgBackground;

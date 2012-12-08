@@ -83,12 +83,28 @@ namespace Lemma.Factories
 			messageList.Spacing.Value = 20.0f;
 			phoneScroller.Children.Add(messageList);
 
+			Container notificationContainer = new Container();
+			notificationContainer.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+			notificationContainer.Opacity.Value = 0.75f;
+			notificationContainer.AnchorPoint.Value = new Vector2(1, 1);
+			notificationContainer.Visible.Value = false;
+			notificationContainer.PaddingLeft.Value = 8.0f;
+			ui.Root.Children.Add(notificationContainer);
+
+			ListContainer notificationLayout = new ListContainer();
+			notificationLayout.Orientation.Value = ListContainer.ListOrientation.Horizontal;
+			notificationLayout.Alignment.Value = ListContainer.ListAlignment.Middle;
+			notificationContainer.Children.Add(notificationLayout);
+
+			TextElement notificationText = new TextElement();
+			notificationText.FontFile.Value = "Font";
+			notificationLayout.Children.Add(notificationText);
+
 			Sprite phoneLight = new Sprite();
 			phoneLight.Image.Value = "Images\\phone-light";
-			phoneLight.AnchorPoint.Value = new Vector2(1, 1);
 			phoneLight.Name.Value = "phone-light";
-			phoneLight.Visible.Value = false;
-			ui.Root.Children.Add(phoneLight);
+			phoneLight.Opacity.Value = 0.0f;
+			notificationLayout.Children.Add(phoneLight);
 
 			Container composeButton = new Container();
 			composeButton.Tint.Value = new Color(0.1f, 0.1f, 0.1f);
@@ -173,7 +189,9 @@ namespace Lemma.Factories
 			}, attached));
 
 			phoneSprite.Add(new Binding<Vector2, Point>(phoneSprite.Position, x => new Vector2(x.X * 0.5f, x.Y), main.ScreenSize));
-			phoneLight.Add(new Binding<Vector2, Point>(phoneLight.Position, x => new Vector2(x.X - 20, x.Y - 20), main.ScreenSize));
+			notificationContainer.Add(new Binding<Vector2, Point>(notificationContainer.Position, x => new Vector2(x.X - 20, x.Y - 20), main.ScreenSize));
+			notificationContainer.Add(new Binding<bool>(notificationContainer.Visible, phone.HasUnreadMessages));
+			notificationText.Add(new Binding<string, PCInput.PCInputBinding>(notificationText.Text, x => x.ToString(), ((GameMain)main).Settings.TogglePhone));
 
 			const float padding = 20.0f;
 			phoneScroller.Add(new Binding<Vector2>(phoneScroller.Position, x => new Vector2(x.X * 0.5f, 61 + padding), phoneSprite.Size));
@@ -255,10 +273,10 @@ namespace Lemma.Factories
 				(
 					new Animation.Sequence
 					(
-						new Animation.Set<bool>(phoneLight.Visible, true),
+						new Animation.Set<float>(phoneLight.Opacity, 1.0f),
 						new Animation.Delay(0.25f),
-						new Animation.Set<bool>(phoneLight.Visible, false),
-						new Animation.Delay(2.0f)
+						new Animation.Set<float>(phoneLight.Opacity, 0.0f),
+						new Animation.Delay(1.0f)
 					)
 				)
 			);
@@ -298,7 +316,7 @@ namespace Lemma.Factories
 							phoneScroller.ScrollToBottom();
 						phone.HasUnreadMessages.Value = false;
 
-						phoneLight.Visible.Value = false;
+						phoneLight.Opacity.Value = 0.0f;
 
 						phoneAnimation = new Animation
 						(

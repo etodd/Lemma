@@ -340,6 +340,7 @@ namespace Lemma
 				ListContainer performanceMonitor = new ListContainer();
 				performanceMonitor.Add(new Binding<Vector2, Point>(performanceMonitor.Position, x => new Vector2(0, x.Y), this.ScreenSize));
 				performanceMonitor.AnchorPoint.Value = new Vector2(0, 1);
+				performanceMonitor.Visible.Value = false;
 				this.UI.Root.Children.Add(performanceMonitor);
 
 				Action<string, Property<double>> addLabel = delegate(string label, Property<double> property)

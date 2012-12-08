@@ -314,7 +314,6 @@ namespace Lemma.Factories
 				});
 			}
 
-			input.EnabledInEditMode.Value = false;
 			player.EnabledInEditMode.Value = false;
 			ui.EnabledInEditMode.Value = false;
 
@@ -1773,7 +1772,7 @@ namespace Lemma.Factories
 			addInput(settings.Jump, InputState.Down, delegate()
 			{
 				// Don't allow vaulting
-				if (!jump(false, false))
+				if (!jump(false, false) && player.EnableSlowMotion)
 				{
 					// Go into slow-mo and show block possibilities
 					player.SlowMotion.Value = true;
@@ -2050,6 +2049,8 @@ namespace Lemma.Factories
 					if (nearGround)
 					{
 						// We're rolling.
+						rolling = true;
+
 						deactivateWallRun();
 
 						model.Stop
@@ -2098,7 +2099,7 @@ namespace Lemma.Factories
 								// Stop if we're about to roll off the edge of an instaniated block possibility.
 								bool stop = instantiatedBlockPossibility && rollTime > 0.1f && Map.GlobalRaycast(transform.Position + forward * 0.5f, Vector3.Down, player.Height * 0.5f + player.SupportHeight + 1.1f).Map != null;
 
-								if (stop || rollTime > 1.0f || player.LinearVelocity.Value.Length() < 0.1f)
+								if (stop || rollTime > 1.0f || Vector3.Dot(player.LinearVelocity, forward) < 0.1f)
 								{
 									rollUpdate.Delete.Execute();
 									player.EnableWalking.Value = true;
