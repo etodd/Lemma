@@ -93,6 +93,7 @@ namespace Lemma.Components
 			public bool Glow;
 			[DefaultValue(1.0f)]
 			public float Tiling = 1.0f;
+			public Vector3 Tint = Vector3.One;
 
 			public void ApplyTo(Model model)
 			{
@@ -101,6 +102,7 @@ namespace Lemma.Components
 				model.SpecularIntensity.Value = this.SpecularIntensity;
 				model.SpecularPower.Value = this.SpecularPower;
 				model.DisableCulling.Value = this.AllowAlpha;
+				model.Color.Value = this.Tint;
 				string postfix = "";
 				if (this.AllowAlpha)
 					postfix += "Alpha";

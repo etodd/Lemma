@@ -720,11 +720,6 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Maps\Textures\infected.png">
-      <Name>infected</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
     <Compile Include="Maps\Textures\lava-normal.jpg">
       <Name>lava-normal</Name>
       <Importer>TextureImporter</Importer>
@@ -883,6 +878,13 @@
   <ItemGroup>
     <Compile Include="Maps\Textures\metal-red.jpg">
       <Name>metal-red</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Maps\Textures\metal-grate.png">
+      <Name>metal-grate</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>

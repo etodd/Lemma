@@ -188,6 +188,7 @@ namespace Lemma.Factories
 					SpecularPower = 1.0f,
 					SpecularIntensity = 0.0f,
 					Glow = true,
+					Tint = new Vector3(1.5f, 0.5f, 0.5f),
 				},
 				new Map.CellState
 				{
@@ -221,13 +222,14 @@ namespace Lemma.Factories
 					Name = "Infected",
 					Permanent = false,
 					Density = 3,
-					DiffuseMap = "Maps\\Textures\\infected",
+					DiffuseMap = "Maps\\Textures\\lava",
 					NormalMap = "Maps\\Textures\\lava-normal",
 					FootstepCue = "InfectedFootsteps",
 					RubbleCue = "InfectedRubble",
 					SpecularPower = 1.0f,
 					SpecularIntensity = 0.0f,
 					Glow = true,
+					Tint = new Vector3(0.0f, 1.0f, 0.0f),
 				},
 				new Map.CellState
 				{
@@ -385,20 +387,21 @@ namespace Lemma.Factories
 					Name = "InfectedPermanent",
 					Permanent = true,
 					Density = 3,
-					DiffuseMap = "Maps\\Textures\\infected",
+					DiffuseMap = "Maps\\Textures\\lava",
 					NormalMap = "Maps\\Textures\\lava-normal",
 					FootstepCue = "InfectedFootsteps",
 					RubbleCue = "InfectedRubble",
 					SpecularPower = 1.0f,
 					SpecularIntensity = 0.0f,
 					Glow = true,
+					Tint = new Vector3(0.5f, 1.5f, 0.5f),
 				},
 				new Map.CellState
 				{
 					ID = 27,
 					Name = "MetalRibs",
 					Permanent = true,
-					Density = 3,
+					Density = 1,
 					DiffuseMap = "Maps\\Textures\\metal-ribs",
 					NormalMap = "Maps\\Textures\\metal-ribs-normal",
 					FootstepCue = "MetalFootsteps",
@@ -411,13 +414,28 @@ namespace Lemma.Factories
 					ID = 28,
 					Name = "MetalRed",
 					Permanent = true,
-					Density = 3,
+					Density = 1,
 					DiffuseMap = "Maps\\Textures\\metal-red",
 					NormalMap = "Maps\\Textures\\metal-normal",
 					FootstepCue = "MetalFootsteps",
 					RubbleCue = "MetalRubble",
 					SpecularPower = 200.0f,
 					SpecularIntensity = 0.5f,
+				},
+				new Map.CellState
+				{
+					ID = 29,
+					Name = "MetalGrate",
+					Permanent = true,
+					Density = 0.5f,
+					DiffuseMap = "Maps\\Textures\\metal-grate",
+					NormalMap = "Maps\\Textures\\plain-normal",
+					FootstepCue = "MetalFootsteps",
+					RubbleCue = "MetalRubble",
+					SpecularPower = 200.0f,
+					SpecularIntensity = 0.5f,
+					AllowAlpha = true,
+					Tiling = 2.0f,
 				}
 			);
 		}
