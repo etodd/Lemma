@@ -271,6 +271,7 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableRoll"), player.EnableRoll));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableKick"), player.EnableKick));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRunHorizontal"), player.EnableWallRunHorizontal));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableBlockBuild"), player.EnableBlockBuild));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableLevitation"), player.EnableLevitation));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSprint"), player.EnableSprint));
@@ -1103,9 +1104,11 @@ namespace Lemma.Factories
 
 					Vector3 velocity = player.LinearVelocity;
 
+					// Also fix the velocity so we don't jitter away from the wall
 					velocity -= Vector3.Dot(velocity, normal) * normal;
 
-					velocity += new Vector3(0, 10.0f * dt, 0);
+					// Slow our descent
+					velocity += new Vector3(0, (wallRunState == Player.WallRun.Straight ? 3.0f : 10.0f) * dt, 0);
 
 					player.LinearVelocity.Value = velocity;
 
@@ -1399,7 +1402,7 @@ namespace Lemma.Factories
 				if (!vaulted && player.EnableWallRun)
 				{
 					// Try to wall-run
-					if (!(wallRan = activateWallRun(Player.WallRun.Straight)))
+					if (!(wallRan = activateWallRun(Player.WallRun.Straight)) && player.EnableWallRunHorizontal)
 						if (!(wallRan = activateWallRun(Player.WallRun.Left)))
 							wallRan = activateWallRun(Player.WallRun.Right);
 				}

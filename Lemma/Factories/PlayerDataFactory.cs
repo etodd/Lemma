@@ -28,6 +28,7 @@ namespace Lemma.Factories
 			result.Add("EnableRoll", new Property<bool> { Value = true });
 			result.Add("EnableKick", new Property<bool> { Value = true });
 			result.Add("EnableWallRun", new Property<bool> { Value = true });
+			result.Add("EnableWallRunHorizontal", new Property<bool> { Value = true });
 			result.Add("EnableLevitation", new Property<bool> { Value = true });
 			result.Add("EnableSprint", new Property<bool> { Value = true });
 			result.Add("EnableSlowMotion", new Property<bool> { Value = true });
@@ -37,6 +38,7 @@ namespace Lemma.Factories
 			result.Add("EnableRoll", new Property<bool> { Value = false });
 			result.Add("EnableKick", new Property<bool> { Value = false });
 			result.Add("EnableWallRun", new Property<bool> { Value = false });
+			result.Add("EnableWallRunHorizontal", new Property<bool> { Value = false });
 			result.Add("EnableLevitation", new Property<bool> { Value = false });
 			result.Add("EnableSprint", new Property<bool> { Value = false });
 			result.Add("EnableSlowMotion", new Property<bool> { Value = false });

@@ -303,7 +303,7 @@ namespace Lemma.Factories
 				{
 					ID = 20,
 					Name = "Bulkhead2",
-					Permanent = false,
+					Permanent = true,
 					Density = 1,
 					DiffuseMap = "Maps\\Textures\\bulkhead2",
 					NormalMap = "Maps\\Textures\\bulkhead2-normal",
@@ -392,6 +392,32 @@ namespace Lemma.Factories
 					SpecularPower = 1.0f,
 					SpecularIntensity = 0.0f,
 					Glow = true,
+				},
+				new Map.CellState
+				{
+					ID = 27,
+					Name = "MetalRibs",
+					Permanent = true,
+					Density = 3,
+					DiffuseMap = "Maps\\Textures\\metal-ribs",
+					NormalMap = "Maps\\Textures\\metal-ribs-normal",
+					FootstepCue = "MetalFootsteps",
+					RubbleCue = "MetalRubble",
+					SpecularPower = 200.0f,
+					SpecularIntensity = 0.5f,
+				},
+				new Map.CellState
+				{
+					ID = 28,
+					Name = "MetalRed",
+					Permanent = true,
+					Density = 3,
+					DiffuseMap = "Maps\\Textures\\metal-red",
+					NormalMap = "Maps\\Textures\\metal-normal",
+					FootstepCue = "MetalFootsteps",
+					RubbleCue = "MetalRubble",
+					SpecularPower = 200.0f,
+					SpecularIntensity = 0.5f,
 				}
 			);
 		}
