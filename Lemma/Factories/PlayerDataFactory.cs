@@ -24,7 +24,6 @@ namespace Lemma.Factories
 
 #if DEBUG
 			result.Add("EnableBlockBuild", new Property<bool> { Value = true });
-			result.Add("EnableAim", new Property<bool> { Value = true });
 			result.Add("EnableRoll", new Property<bool> { Value = true });
 			result.Add("EnableKick", new Property<bool> { Value = true });
 			result.Add("EnableWallRun", new Property<bool> { Value = true });

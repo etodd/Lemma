@@ -254,12 +254,6 @@
       <ProcessorParameters_ResizeTexturesToPowerOfTwo>True</ProcessorParameters_ResizeTexturesToPowerOfTwo>
       <ProcessorParameters_DiffuseTexture>p220-diffuse-pattern.png</ProcessorParameters_DiffuseTexture>
     </Compile>
-    <Compile Include="Models\crosshair.fbx">
-      <Name>crosshair</Name>
-      <Importer>FbxImporter</Importer>
-      <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\UnlitSolidColor.fx</ProcessorParameters_EffectFileName>
-    </Compile>
     <Compile Include="Models\alpha-cylinder.fbx">
       <Name>alpha-cylinder</Name>
       <Importer>FbxImporter</Importer>

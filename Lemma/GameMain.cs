@@ -52,6 +52,7 @@ namespace Lemma
 			public Property<PCInput.PCInputBinding> TogglePistol = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D1 } };
 			public Property<PCInput.PCInputBinding> ToggleLevitate = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D2 } };
 			public Property<PCInput.PCInputBinding> TogglePhone = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Tab } };
+			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F5 } };
 		}
 
 		public class SaveInfo
@@ -314,7 +315,7 @@ namespace Lemma
 
 				TextElement pauseLabel = new TextElement();
 				pauseLabel.FontFile.Value = "Font";
-				pauseLabel.Text.Value = "P A U S E";
+				pauseLabel.Text.Value = "L E M M A";
 				pauseLabelContainer.Children.Add(pauseLabel);
 
 				pauseMenu.Children.Add(pauseLabelContainer);
@@ -451,6 +452,52 @@ namespace Lemma
 
 				Container dialog = null;
 
+				Action<string, string, Action> showDialog = delegate(string question, string action, Action callback)
+				{
+					if (dialog != null)
+						dialog.Delete.Execute();
+					dialog = new Container();
+					dialog.Tint.Value = Color.Black;
+					dialog.Opacity.Value = 0.2f;
+					dialog.AnchorPoint.Value = new Vector2(0.5f);
+					dialog.Add(new Binding<Vector2, Point>(dialog.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.ScreenSize));
+					dialog.Add(new CommandBinding(dialog.Delete, delegate()
+					{
+						loadSaveMenu.EnableInput.Value = true;
+					}));
+					this.UI.Root.Children.Add(dialog);
+
+					ListContainer dialogLayout = new ListContainer();
+					dialogLayout.Orientation.Value = ListContainer.ListOrientation.Vertical;
+					dialog.Children.Add(dialogLayout);
+
+					TextElement prompt = new TextElement();
+					prompt.FontFile.Value = "Font";
+					prompt.Text.Value = question;
+					dialogLayout.Children.Add(prompt);
+
+					ListContainer dialogButtons = new ListContainer();
+					dialogButtons.Orientation.Value = ListContainer.ListOrientation.Horizontal;
+					dialogLayout.Children.Add(dialogButtons);
+
+					UIComponent overwrite = this.createMenuButton(action);
+					dialogButtons.Children.Add(overwrite);
+					overwrite.Add(new CommandBinding<Point>(overwrite.MouseLeftUp, delegate(Point p2)
+					{
+						dialog.Delete.Execute();
+						dialog = null;
+						callback();
+					}));
+
+					UIComponent cancel = this.createMenuButton("Cancel");
+					dialogButtons.Children.Add(cancel);
+					cancel.Add(new CommandBinding<Point>(cancel.MouseLeftUp, delegate(Point p2)
+					{
+						dialog.Delete.Execute();
+						dialog = null;
+					}));
+				};
+
 				Action hideLoadSave = delegate()
 				{
 					showPauseMenu();
@@ -473,14 +520,30 @@ namespace Lemma
 					this.AddComponent(loadSaveAnimation);
 				};
 
-				Container loadSaveLabelContainer = new Container();
-				loadSaveLabelContainer.Opacity.Value = 0.0f;
-				loadSaveMenu.Children.Add(loadSaveLabelContainer);
+				Container loadSavePadding = new Container();
+				loadSavePadding.Opacity.Value = 0.0f;
+				loadSavePadding.PaddingLeft.Value = 8.0f;
+				loadSaveMenu.Children.Add(loadSavePadding);
+
+				ListContainer loadSaveLabelContainer = new ListContainer();
+				loadSaveLabelContainer.Orientation.Value = ListContainer.ListOrientation.Vertical;
+				loadSavePadding.Children.Add(loadSaveLabelContainer);
 
 				TextElement loadSaveLabel = new TextElement();
 				loadSaveLabel.FontFile.Value = "Font";
 				loadSaveLabel.Add(new Binding<string, bool>(loadSaveLabel.Text, x => x ? "S A V E" : "L O A D", saveMode));
 				loadSaveLabelContainer.Children.Add(loadSaveLabel);
+
+				TextElement loadSaveScrollLabel = new TextElement();
+				loadSaveScrollLabel.FontFile.Value = "Font";
+				loadSaveScrollLabel.Text.Value = "Scroll for more";
+				loadSaveLabelContainer.Children.Add(loadSaveScrollLabel);
+
+				TextElement quickSaveLabel = new TextElement();
+				quickSaveLabel.FontFile.Value = "Font";
+				quickSaveLabel.Add(new Binding<bool>(quickSaveLabel.Visible, saveMode));
+				quickSaveLabel.Add(new Binding<string>(quickSaveLabel.Text, () => this.Settings.QuickSave.Value.ToString() + " to quicksave", this.Settings.QuickSave));
+				loadSaveLabelContainer.Children.Add(quickSaveLabel);
 
 				UIComponent loadSaveBack = this.createMenuButton("Back");
 				loadSaveBack.Add(new CommandBinding<Point>(loadSaveBack.MouseLeftUp, delegate(Point p)
@@ -494,7 +557,7 @@ namespace Lemma
 				loadSaveMenu.Children.Add(saveNew);
 
 				Scroller loadSaveScroll = new Scroller();
-				loadSaveScroll.Size.Value = new Vector2(276.0f, 400.0f);
+				loadSaveScroll.Add(new Binding<Vector2, Point>(loadSaveScroll.Size, x => new Vector2(276.0f, x.Y * 0.5f), this.ScreenSize));
 				loadSaveMenu.Children.Add(loadSaveScroll);
 
 				ListContainer loadSaveList = new ListContainer();
@@ -555,51 +618,15 @@ namespace Lemma
 						if (saveMode)
 						{
 							loadSaveMenu.EnableInput.Value = false;
-							dialog = new Container();
-							dialog.Tint.Value = Color.Black;
-							dialog.Opacity.Value = 0.2f;
-							dialog.AnchorPoint.Value = new Vector2(0.5f);
-							dialog.Add(new Binding<Vector2, Point>(dialog.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.ScreenSize));
-							dialog.Add(new CommandBinding(dialog.Delete, delegate()
+							showDialog("Overwrite this save?", "Overwrite", delegate()
 							{
-								loadSaveMenu.EnableInput.Value = true;
-							}));
-							this.UI.Root.Children.Add(dialog);
-
-							ListContainer dialogLayout = new ListContainer();
-							dialogLayout.Orientation.Value = ListContainer.ListOrientation.Vertical;
-							dialog.Children.Add(dialogLayout);
-
-							TextElement prompt = new TextElement();
-							prompt.FontFile.Value = "Font";
-							prompt.Text.Value = "Overwrite this save?";
-							dialogLayout.Children.Add(prompt);
-
-							ListContainer dialogButtons = new ListContainer();
-							dialogButtons.Orientation.Value = ListContainer.ListOrientation.Horizontal;
-							dialogLayout.Children.Add(dialogButtons);
-
-							UIComponent overwrite = this.createMenuButton("Overwrite");
-							dialogButtons.Children.Add(overwrite);
-							overwrite.Add(new CommandBinding<Point>(overwrite.MouseLeftUp, delegate(Point p2)
-							{
-								dialog.Delete.Execute();
-								dialog = null;
 								container.Delete.Execute();
 								save();
 								Directory.Delete(Path.Combine(this.saveDirectory, timestamp), true);
 								hideLoadSave();
 								this.Paused.Value = false;
 								restorePausedSettings();
-							}));
-
-							UIComponent cancel = this.createMenuButton("Cancel");
-							dialogButtons.Children.Add(cancel);
-							cancel.Add(new CommandBinding<Point>(cancel.MouseLeftUp, delegate(Point p2)
-							{
-								dialog.Delete.Execute();
-								dialog = null;
-							}));
+							});
 						}
 						else
 						{
@@ -940,6 +967,7 @@ namespace Lemma
 				addInputSetting(this.Settings.ToggleLevitate, "Toggle Levitation");
 				addInputSetting(this.Settings.Reload, "Reload");
 				addInputSetting(this.Settings.TogglePhone, "Toggle Phone");
+				addInputSetting(this.Settings.QuickSave, "Quicksave");
 
 				// Resume button
 				UIComponent resume = this.createMenuButton("Resume");
@@ -1047,9 +1075,46 @@ namespace Lemma
 				UIComponent exit = this.createMenuButton("Exit");
 				exit.Add(new CommandBinding<Point>(exit.MouseLeftUp, delegate(Point mouse)
 				{
-					this.Exit();
+					if (this.MapFile.Value != null)
+						showDialog("Exiting will erase any unsaved progress. Are you sure?", "Exit", this.Exit);
+					else
+						this.Exit();
 				}));
 				pauseMenu.Children.Add(exit);
+
+				bool saving = false;
+				this.input.Bind(this.Settings.QuickSave, PCInput.InputState.Down, delegate()
+				{
+					if (!saving && !this.Paused)
+					{
+						saving = true;
+						Container notification = new Container();
+						notification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+						notification.Opacity.Value = 0.5f;
+						TextElement notificationText = new TextElement();
+						notificationText.Name.Value = "Text";
+						notificationText.FontFile.Value = "Font";
+						notificationText.Text.Value = "Saving...";
+						notification.Children.Add(notificationText);
+						this.UI.Root.GetChildByName("Notifications").Children.Add(notification);
+						this.AddComponent(new Animation
+						(
+							new Animation.Delay(0.01f),
+							new Animation.Execute(this.Save),
+							new Animation.Set<string>(notificationText.Text, "Saved"),
+							new Animation.Parallel
+							(
+								new Animation.FloatMoveTo(notification.Opacity, 0.0f, 1.0f),
+								new Animation.FloatMoveTo(notificationText.Opacity, 0.0f, 1.0f)
+							),
+							new Animation.Execute(notification.Delete),
+							new Animation.Execute(delegate()
+							{
+								saving = false;
+							})
+						));
+					}
+				});
 
 				// Escape key
 				// Make sure we can only pause when there is a player currently spawned

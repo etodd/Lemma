@@ -92,8 +92,6 @@ namespace Lemma.Factories
 			return result;
 		}
 
-		private enum InputState { Down, Up }
-
 		private class BlockPossibility
 		{
 			public Map Map;
@@ -138,13 +136,6 @@ namespace Lemma.Factories
 			buildReticle.Enabled.Value = false;
 			buildReticle.Serialize = false;
 			result.Add("BuildReticle", buildReticle);
-
-			Model jumpReticle = new Model();
-			jumpReticle.Filename.Value = "Models\\crosshair";
-			jumpReticle.Editable = false;
-			jumpReticle.Enabled.Value = false;
-			jumpReticle.Serialize = false;
-			result.Add("JumpReticle", jumpReticle);
 
 			AudioListener audioListener = result.Get<AudioListener>();
 			Sound footsteps = result.Get<Sound>("Footsteps");
@@ -200,27 +191,6 @@ namespace Lemma.Factories
 			input.Add(new Binding<PCInput.PCInputBinding>(input.BackwardKey, settings.Backward));
 			input.Add(new Binding<PCInput.PCInputBinding>(input.ForwardKey, settings.Forward));
 
-			Action<Property<PCInput.PCInputBinding>, InputState, Action> addInput = delegate(Property<PCInput.PCInputBinding> inputBinding, InputState state, Action action)
-			{
-				CommandBinding commandBinding = null;
-				Action rebindCommand = delegate()
-				{
-					if (commandBinding != null)
-						input.Remove(commandBinding);
-
-					PCInput.PCInputBinding ib = inputBinding;
-					if (ib.Key == Keys.None && ib.MouseButton == PCInput.MouseButton.None)
-						commandBinding = null;
-					else
-					{
-						commandBinding = new CommandBinding(state == InputState.Up ? input.GetInputUp(inputBinding) : input.GetInputDown(inputBinding), action);
-						input.Add(commandBinding);
-					}
-				};
-				input.Add(new NotifyBinding(rebindCommand, inputBinding));
-				rebindCommand();
-			};
-
 			model.StartClip("Idle", 0, true);
 
 			Updater update = new Updater();
@@ -267,7 +237,6 @@ namespace Lemma.Factories
 					if (creating && stamina < 25)
 						stamina.Value = 25;
 					result.Add(new TwoWayBinding<int>(stamina, player.Stamina));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableAim"), player.EnableAim));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableRoll"), player.EnableRoll));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableKick"), player.EnableKick));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
@@ -294,7 +263,7 @@ namespace Lemma.Factories
 					p.GetCommand("Detach").Execute();
 			}));
 
-			addInput(settings.TogglePhone, InputState.Down, delegate()
+			input.Bind(settings.TogglePhone, PCInput.InputState.Down, delegate()
 			{
 				Entity p = phone.Value.Target;
 				if (p != null)
@@ -1128,7 +1097,7 @@ namespace Lemma.Factories
 
 			Property<bool> aimMode = new Property<bool> { Value = false };
 
-			addInput(settings.Aim, InputState.Down, delegate()
+			input.Bind(settings.Aim, PCInput.InputState.Down, delegate()
 			{
 				Entity p = pistol.Value.Target;
 				if (p != null && p.GetProperty<bool>("Active"))
@@ -1193,11 +1162,15 @@ namespace Lemma.Factories
 			};
 
 			Map.GlobalRaycastResult aimRaycastResult = new Map.GlobalRaycastResult();
-			Property<bool> targetWithinPrecisionJumpRange = new Property<bool>();
-			Property<bool> targetWithinBuildJumpRange = new Property<bool>();
-			const int buildJumpLength = 6;
-			buildReticle.Add(new Binding<Vector3, bool>(buildReticle.Color, x => x ? new Vector3(2.0f) : new Vector3(2.0f, 0.0f, 0.0f), targetWithinBuildJumpRange));
-			jumpReticle.Add(new Binding<Vector3, bool>(jumpReticle.Color, x => x ? new Vector3(2.0f) : new Vector3(2.0f, 0.0f, 0.0f), targetWithinPrecisionJumpRange));
+			Map buildMap = null;
+			Map.Coordinate buildBaseCoordinate = new Map.Coordinate();
+			Property<bool> canJumpToBuildReticle = new Property<bool>();
+			Property<bool> targetWithinBuildRange = new Property<bool>();
+			Map.Coordinate buildCoordinate = new Map.Coordinate();
+			Direction buildDirection = Direction.None;
+			int builtSoFar = 0;
+			const int buildLength = 8;
+			const float buildRange = 20.0f, buildInterval = 3.0f;
 			update.Add(delegate(float dt)
 			{
 				if (aimMode || levitationMode)
@@ -1205,15 +1178,89 @@ namespace Lemma.Factories
 
 				if (aimMode)
 				{
-					if (aimRaycastResult.Map != null)
+					if (buildMap != null)
+					{
+						buildReticle.Enabled.Value = true;
+
+						Vector3 normal = buildMap.GetAbsoluteVector(buildDirection.GetVector());
+
+						Vector3 absolutePosition = buildMap.GetAbsolutePosition(buildCoordinate) + normal * 0.5f;
+
+						canJumpToBuildReticle.Value = canJump(getPrecisionJumpVelocity(absolutePosition));
+						buildReticle.Color.Value = canJumpToBuildReticle ? new Vector3(2.0f) : new Vector3(2.0f, 0.0f, 0.0f);
+
+						Matrix matrix = Matrix.Identity;
+						matrix.Translation = absolutePosition;
+						matrix.Forward = -normal;
+						if (normal.Equals(Vector3.Up))
+							matrix.Right = Vector3.Right;
+						else if (normal.Equals(Vector3.Down))
+							matrix.Right = Vector3.Left;
+						else
+							matrix.Right = Vector3.Normalize(Vector3.Cross(normal, Vector3.Up));
+						matrix.Up = Vector3.Cross(normal, matrix.Right);
+						buildReticle.Transform.Value = matrix;
+
+						if ((transform.Position - buildMap.GetAbsolutePosition(buildBaseCoordinate)).Length() < (buildLength - builtSoFar) * buildInterval)
+						{
+							builtSoFar++;
+							buildCoordinate = buildCoordinate.Move(buildDirection);
+
+							Direction yDir = buildDirection.IsParallel(Direction.PositiveY) ? Direction.PositiveX : Direction.PositiveY;
+							Direction zDir = buildDirection.Cross(yDir);
+
+							const int size = 3;
+
+							bool quit = false;
+
+							Map.CellState fillValue = WorldFactory.StatesByName["Temporary"];
+
+							List<AnimatingBlock> blockSpawnList = new List<AnimatingBlock>();
+
+							Map.Coordinate x = buildCoordinate;
+							int yi = 0;
+							Map.Coordinate y = buildCoordinate.Move(yDir, size / -2);
+							while (yi < size && !quit)
+							{
+								int zi = 0;
+								Map.Coordinate z = y.Move(zDir, size / -2);
+								while (zi < size)
+								{
+									Vector3 pos = buildMap.GetAbsolutePosition(z);
+
+									foreach (Map map in Map.ActiveMaps)
+									{
+										if (map != buildMap && map[pos].ID != 0)
+										{
+											quit = true;
+											break;
+										}
+									}
+									if (quit)
+										break;
+									else
+									{
+										blockSpawnList.Add(new AnimatingBlock { Map = aimRaycastResult.Map, Coord = z, State = fillValue });
+										zi++;
+										z = z.Move(zDir);
+									}
+								}
+								y = y.Move(yDir);
+								yi++;
+							}
+
+							buildBlocks(blockSpawnList, false);
+						}
+					}
+					else if (aimRaycastResult.Map != null && !player.IsLevitating && player.EnableBlockBuild)
 					{
 						Vector3 normal = aimRaycastResult.Map.GetAbsoluteVector(aimRaycastResult.Normal.GetVector());
+						
+						targetWithinBuildRange.Value = (aimRaycastResult.Position - transform.Position).Length() < buildRange;
 
-						targetWithinPrecisionJumpRange.Value = canJump(getPrecisionJumpVelocity(aimRaycastResult.Position));
-						targetWithinBuildJumpRange.Value = canJump(getPrecisionJumpVelocity(aimRaycastResult.Position + (normal * buildJumpLength)));
+						buildReticle.Color.Value = targetWithinBuildRange ? new Vector3(2.0f) : new Vector3(2.0f, 0.0f, 0.0f);
 
-						buildReticle.Enabled.Value = !player.IsLevitating && player.EnableBlockBuild;
-						jumpReticle.Enabled.Value = !player.IsLevitating && player.EnableAim;
+						buildReticle.Enabled.Value = true;
 
 						Matrix matrix = Matrix.Identity;
 						matrix.Translation = aimRaycastResult.Position;
@@ -1226,26 +1273,15 @@ namespace Lemma.Factories
 							matrix.Right = Vector3.Normalize(Vector3.Cross(normal, Vector3.Up));
 						matrix.Up = Vector3.Cross(normal, matrix.Right);
 						buildReticle.Transform.Value = matrix;
-						jumpReticle.Transform.Value = matrix;
 					}
 					else
-					{
 						buildReticle.Enabled.Value = false;
-						jumpReticle.Enabled.Value = false;
-						targetWithinPrecisionJumpRange.Value = false;
-						targetWithinBuildJumpRange.Value = false;
-					}
 				}
 				else
-				{
 					buildReticle.Enabled.Value = false;
-					jumpReticle.Enabled.Value = false;
-					targetWithinPrecisionJumpRange.Value = false;
-					targetWithinBuildJumpRange.Value = false;
-				}
 			});
 
-			addInput(settings.TogglePistol, InputState.Down, delegate()
+			input.Bind(settings.TogglePistol, PCInput.InputState.Down, delegate()
 			{
 				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload"))
 					return;
@@ -1260,7 +1296,7 @@ namespace Lemma.Factories
 				}
 			});
 
-			addInput(settings.ToggleLevitate, InputState.Down, delegate()
+			input.Bind(settings.ToggleLevitate, PCInput.InputState.Down, delegate()
 			{
 				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || !player.EnableLevitation)
 					return;
@@ -1271,7 +1307,7 @@ namespace Lemma.Factories
 			float levitateButtonPressStart = -1.0f;
 			DynamicMap levitatingMap = null;
 
-			addInput(settings.Aim, InputState.Up, delegate()
+			input.Bind(settings.Aim, PCInput.InputState.Up, delegate()
 			{
 				if (aimMode)
 					aimMode.Value = false;
@@ -1391,7 +1427,7 @@ namespace Lemma.Factories
 			};
 
 			// Wall-run
-			addInput(settings.Parkour, InputState.Down, delegate()
+			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
 			{
 				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || player.Crouched)
 					return;
@@ -1414,7 +1450,7 @@ namespace Lemma.Factories
 				}
 			});
 
-			addInput(settings.Parkour, InputState.Up, delegate()
+			input.Bind(settings.Parkour, PCInput.InputState.Up, delegate()
 			{
 				deactivateWallRun();
 				player.Sprint.Value = false;
@@ -1678,7 +1714,7 @@ namespace Lemma.Factories
 					}
 				}
 
-				bool precisionJumping = !onlyVault && aimMode && player.EnableAim && targetWithinPrecisionJumpRange;
+				bool precisionJumping = !onlyVault && aimMode && player.EnableBlockBuild && buildMap != null && canJumpToBuildReticle;
 
 				if (go || precisionJumping)
 				{
@@ -1694,7 +1730,7 @@ namespace Lemma.Factories
 						if (precisionJumping)
 						{
 							// Make the player jump exactly to the target.
-							Vector3 velocity = normalizeJumpVelocity(getPrecisionJumpVelocity(aimRaycastResult.Position));
+							Vector3 velocity = normalizeJumpVelocity(getPrecisionJumpVelocity(buildMap.GetAbsolutePosition(buildCoordinate)));
 							if (velocity.Y < 0.0f && supported)
 								return false; // Can't jump down through the floor
 							player.LinearVelocity.Value = velocity;
@@ -1772,7 +1808,7 @@ namespace Lemma.Factories
 			};
 
 			// Jumping
-			addInput(settings.Jump, InputState.Down, delegate()
+			input.Bind(settings.Jump, PCInput.InputState.Down, delegate()
 			{
 				// Don't allow vaulting
 				if (!jump(false, false) && player.EnableSlowMotion)
@@ -1817,7 +1853,7 @@ namespace Lemma.Factories
 				}
 			});
 
-			addInput(settings.Jump, InputState.Up, delegate()
+			input.Bind(settings.Jump, PCInput.InputState.Up, delegate()
 			{
 				player.SlowMotion.Value = false;
 			});
@@ -1872,7 +1908,7 @@ namespace Lemma.Factories
 
 			float lastFire = 0.0f;
 			const float fireInterval = 0.15f;
-			addInput(settings.Fire, InputState.Down, delegate()
+			input.Bind(settings.Fire, PCInput.InputState.Down, delegate()
 			{
 				if ((zoomAnimation == null || !zoomAnimation.Active) && main.TotalTime - lastFire > fireInterval && model.IsPlaying("Aim"))
 				{
@@ -1883,68 +1919,13 @@ namespace Lemma.Factories
 						fire = true;
 					}
 				}
-				else if (aimMode && aimRaycastResult.Map != null && targetWithinBuildJumpRange && player.EnableBlockBuild && jump(false, false))
+				else if (aimMode && aimRaycastResult.Map != null && targetWithinBuildRange && player.EnableBlockBuild)
 				{
-					// Do a build/jump move
-
-					Direction yDir = aimRaycastResult.Normal.IsParallel(Direction.PositiveY) ? Direction.PositiveX : Direction.PositiveY;
-					Direction zDir = aimRaycastResult.Normal.Cross(yDir);
-
-					const int size = 3;
-
-					bool quit = false;
-
-					Map.CellState fillValue = WorldFactory.StatesByName["Temporary"];
-
-					List<AnimatingBlock> blockSpawnList = new List<AnimatingBlock>();
-
-					Map.Coordinate x = aimRaycastResult.Coordinate.Value.Move(aimRaycastResult.Normal);
-					int xi = 0;
-					while (xi < buildJumpLength && !quit)
-					{
-						int yi = 0;
-						Map.Coordinate y = x.Move(yDir, size / -2);
-						while (yi < size && !quit)
-						{
-							int zi = 0;
-							Map.Coordinate z = y.Move(zDir, size / -2);
-							while (zi < size)
-							{
-								Vector3 pos = aimRaycastResult.Map.GetAbsolutePosition(z);
-
-								foreach (Map map in Map.ActiveMaps)
-								{
-									if (map != aimRaycastResult.Map && map[pos].ID != 0)
-									{
-										quit = true;
-										break;
-									}
-								}
-								if (quit)
-									break;
-								else
-								{
-									blockSpawnList.Add(new AnimatingBlock { Map = aimRaycastResult.Map, Coord = z, State = fillValue });
-									zi++;
-									z = z.Move(zDir);
-								}
-							}
-							y = y.Move(yDir);
-							yi++;
-						}
-						x = x.Move(aimRaycastResult.Normal);
-						xi++;
-					}
-
-					if (buildBlocks(blockSpawnList, false))
-					{
-						player.Stamina.Value -= blockInstantiationStaminaCost;
-						Map.Coordinate targetCoord = x;
-						if (aimRaycastResult.Map.GetAbsoluteDirection(aimRaycastResult.Normal) != Direction.PositiveY)
-							targetCoord = targetCoord.Move(aimRaycastResult.Normal.GetReverse(), 2);
-						x = x.Move(aimRaycastResult.Map.GetRelativeDirection(Direction.PositiveY));
-						player.LinearVelocity.Value = normalizeJumpVelocity(getPrecisionJumpVelocity(aimRaycastResult.Map.GetAbsolutePosition(targetCoord)));
-					}
+					// Enable build mode
+					buildMap = aimRaycastResult.Map;
+					buildCoordinate = buildBaseCoordinate = aimRaycastResult.Coordinate.Value;
+					buildDirection = aimRaycastResult.Normal;
+					builtSoFar = 0;
 				}
 				else if (!aimMode && !input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && !player.IsSupported)
 				{
@@ -2009,8 +1990,13 @@ namespace Lemma.Factories
 				}
 			});
 
+			input.Bind(settings.Fire, PCInput.InputState.Up, delegate()
+			{
+				buildMap = null;
+			});
+
 			bool rolling = false;
-			addInput(settings.Roll, InputState.Down, delegate()
+			input.Bind(settings.Roll, PCInput.InputState.Down, delegate()
 			{
 				if (!aimMode && !input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !rolling && player.EnableRoll)
 				{
@@ -2128,7 +2114,7 @@ namespace Lemma.Factories
 				}
 			});
 
-			addInput(settings.Roll, InputState.Up, delegate()
+			input.Bind(settings.Roll, PCInput.InputState.Up, delegate()
 			{
 				if (!rolling)
 					player.AllowUncrouch.Value = true;
@@ -2141,7 +2127,7 @@ namespace Lemma.Factories
 			}));
 
 			// Reload
-			addInput(settings.Reload, InputState.Down, delegate()
+			input.Bind(settings.Reload, PCInput.InputState.Down, delegate()
 			{
 				Entity p = pistol.Value.Target;
 				if (p != null && p.GetProperty<bool>("Active"))

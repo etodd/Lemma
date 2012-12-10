@@ -41,8 +41,6 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<bool> EnableWallRunHorizontal = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
-		public Property<bool> EnableAim = new Property<bool> { Value = false, Editable = false };
-		[XmlIgnore]
 		public Property<bool> EnableLevitation = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
 		public Property<bool> EnableSprint = new Property<bool> { Value = false, Editable = false };

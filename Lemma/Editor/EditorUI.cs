@@ -19,7 +19,9 @@ namespace Lemma.Components
 
 		private static Keys[] ignoredKeys = new Keys[]
 		{ 
-			Keys.Escape, Keys.LeftShift, Keys.RightShift, Keys.LeftControl, Keys.RightControl, Keys.LeftAlt, Keys.RightAlt, Keys.Tab, Keys.Back, Keys.Left, Keys.Right, Keys.Up, Keys.Down
+			Keys.Escape, Keys.LeftShift, Keys.RightShift, Keys.LeftControl, Keys.RightControl, Keys.LeftAlt, Keys.RightAlt, Keys.Tab, Keys.Back, Keys.Left, Keys.Right, Keys.Up, Keys.Down,
+			Keys.F1, Keys.F2, Keys.F3, Keys.F4, Keys.F5, Keys.F6, Keys.F7, Keys.F8, Keys.F9, Keys.F10, Keys.F11, Keys.F12,
+			Keys.Delete, Keys.CapsLock,
 		};
 
 		private struct Chord
@@ -89,6 +91,16 @@ namespace Lemma.Components
 			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.D7 }, "7");
 			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.D8 }, "8");
 			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.D9 }, "9");
+			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad0 }, "0");
+			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad1 }, "1");
+			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad2 }, "2");
+			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad3 }, "3");
+			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad4 }, "4");
+			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad5 }, "5");
+			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad6 }, "6");
+			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad7 }, "7");
+			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad8 }, "8");
+			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad9 }, "9");
 			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.D0, Shift = true }, ")");
 			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.D1, Shift = true }, "!");
 			EditorUI.inputKeyMappings.Add(new Chord { Keys = Keys.D2, Shift = true }, "@");
@@ -392,11 +404,17 @@ namespace Lemma.Components
 					if (unfilteredKeys.Contains(Keys.Back))
 					{
 						this.selectedStringNavigateInterval = 0.0f;
-						if (this.selectedStringValue.Length > 0)
+						if (this.selectedStringValue.Length > 0 && this.selectedStringIndex > 0)
 						{
 							this.selectedStringValue = this.selectedStringValue.Remove(this.selectedStringIndex - 1, 1);
 							this.selectedStringIndex--;
 						}
+					}
+					else if (unfilteredKeys.Contains(Keys.Delete))
+					{
+						this.selectedStringNavigateInterval = 0.0f;
+						if (this.selectedStringIndex < this.selectedStringValue.Length)
+							this.selectedStringValue = this.selectedStringValue.Remove(this.selectedStringIndex, 1);
 					}
 					else if (unfilteredKeys.Contains(Keys.Down))
 					{

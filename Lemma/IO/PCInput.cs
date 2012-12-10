@@ -11,6 +11,8 @@ namespace Lemma.Components
 	{
 		public enum MouseButton { None, LeftMouseButton, MiddleMouseButton, RightMouseButton }
 
+		public enum InputState { Down, Up }
+
 		public struct PCInputBinding
 		{
 			public Keys Key;
@@ -65,6 +67,27 @@ namespace Lemma.Components
 		public Command MiddleMouseButtonUp = new Command();
 		public Command RightMouseButtonUp = new Command();
 		public Command<int> MouseScrolled = new Command<int>();
+
+		public void Bind(Property<PCInput.PCInputBinding> inputBinding, InputState state, Action action)
+		{
+			CommandBinding commandBinding = null;
+			Action rebindCommand = delegate()
+			{
+				if (commandBinding != null)
+					this.Remove(commandBinding);
+
+				PCInput.PCInputBinding ib = inputBinding;
+				if (ib.Key == Keys.None && ib.MouseButton == PCInput.MouseButton.None)
+					commandBinding = null;
+				else
+				{
+					commandBinding = new CommandBinding(state == InputState.Up ? this.GetInputUp(inputBinding) : this.GetInputDown(inputBinding), action);
+					this.Add(commandBinding);
+				}
+			};
+			this.Add(new NotifyBinding(rebindCommand, inputBinding));
+			rebindCommand();
+		}
 
 		protected Dictionary<Keys, Property<bool>> keyProperties = new Dictionary<Keys, Property<bool>>();
 
