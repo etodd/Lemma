@@ -59,6 +59,7 @@ namespace Lemma.Components
 		private Texture2D lightRampTexture;
 		public Property<string> LightRampTexture = new Property<string>();
 		public Property<bool> EnableBloom = new Property<bool> { Value = true };
+		public Property<bool> EnableSSAO = new Property<bool> { Value = true };
 		public Property<float> BloomThreshold = new Property<float> { Value = 0.9f };
 
 		private static readonly Color defaultBackgroundColor = new Color(8.0f / 255.0f, 13.0f / 255.0f, 19.0f / 255.0f, 0.0f);
@@ -76,6 +77,8 @@ namespace Lemma.Components
 		private Effect bloomEffect;
 		private Effect blurEffect;
 		private Effect clearEffect;
+		private Effect depthDownsampleEffect;
+		private Effect ssaoEffect;
 
 		// Render targets
 		private RenderTarget2D lightingBuffer;
@@ -84,10 +87,15 @@ namespace Lemma.Components
 		private RenderTarget2D normalBuffer;
 		private RenderTarget2D colorBuffer1;
 		private RenderTarget2D colorBuffer2;
-		private bool enableMotionBlur;
+		private RenderTarget2D halfBuffer1;
+		private RenderTarget2D halfBuffer2;
+		private RenderTarget2D halfDepthBuffer;
+		private Texture2D ssaoRandomTexture;
+		private bool allowMotionBlur;
+		private bool allowSSAO;
 		private RenderTarget2D velocityBuffer;
 		private RenderTarget2D velocityBufferLastFrame;
-		private bool enableBloom;
+		private bool allowBloom;
 		private RenderTarget2D bloomBuffer;
 		private SpriteBatch spriteBatch;
 
@@ -96,10 +104,11 @@ namespace Lemma.Components
 		/// </summary>
 		/// <param name="graphicsDevice">The GraphicsDevice to use for rendering</param>
 		/// <param name="contentManager">The ContentManager from which to load Effects</param>
-		public Renderer(Main main, Point size, bool allowMotionBlur, bool allowBloom)
+		public Renderer(Main main, Point size, bool allowMotionBlur, bool allowBloom, bool allowSSAO)
 		{
-			this.enableMotionBlur = allowMotionBlur;
-			this.enableBloom = allowBloom;
+			this.allowMotionBlur = allowMotionBlur;
+			this.allowBloom = allowBloom;
+			this.allowSSAO = allowSSAO;
 			this.lightingManager = main.LightingManager;
 			this.screenSize = size;
 		}
@@ -131,7 +140,7 @@ namespace Lemma.Components
 				this.toneMapEffect.Parameters["Gamma"].SetValue(value);
 			};
 
-			if (this.enableMotionBlur)
+			if (this.allowMotionBlur)
 			{
 				this.MotionBlurAmount.Set = delegate(float value)
 				{
@@ -140,7 +149,7 @@ namespace Lemma.Components
 				};
 			}
 
-			if (this.enableBloom)
+			if (this.allowBloom)
 			{
 				this.BloomThreshold.Set = delegate(float value)
 				{
@@ -187,15 +196,20 @@ namespace Lemma.Components
 			this.compositeEffect.CurrentTechnique = this.compositeEffect.Techniques["Composite"];
 			this.blurEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Blur").Clone();
 
+			this.depthDownsampleEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\DepthDownsample").Clone();
+			this.ssaoEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\SSAO").Clone();
+			this.ssaoRandomTexture = this.main.Content.Load<Texture2D>("Images\\random");
+			this.ssaoEffect.Parameters["Random" + Model.SamplerPostfix].SetValue(this.ssaoRandomTexture);
+
 			this.toneMapEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\ToneMap").Clone();
 			this.loadLightRampTexture(this.LightRampTexture);
 
 			this.clearEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Clear").Clone();
 
-			if (this.enableMotionBlur)
+			if (this.allowMotionBlur)
 				this.motionBlurEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\MotionBlur").Clone();
 
-			if (this.enableBloom)
+			if (this.allowBloom)
 				this.bloomEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Bloom").Clone();
 
 			// Initialize our buffers
@@ -213,7 +227,7 @@ namespace Lemma.Components
 												size.Y,
 												false,
 												SurfaceFormat.Color,
-												DepthFormat.Depth24,
+												DepthFormat.None,
 												0,
 												RenderTargetUsage.DiscardContents);
 
@@ -273,7 +287,7 @@ namespace Lemma.Components
 												size.Y,
 												false,
 												SurfaceFormat.Color,
-												DepthFormat.Depth24,
+												DepthFormat.None,
 												0,
 												RenderTargetUsage.DiscardContents);
 
@@ -289,7 +303,7 @@ namespace Lemma.Components
 					this.velocityBufferLastFrame.Dispose();
 				this.velocityBufferLastFrame = null;
 			}
-			if (this.enableMotionBlur)
+			if (this.allowMotionBlur)
 			{
 				// Velocity for motion blur
 				this.velocityBuffer = new RenderTarget2D(this.main.GraphicsDevice,
@@ -312,13 +326,59 @@ namespace Lemma.Components
 													RenderTargetUsage.DiscardContents);
 			}
 
+			if (this.halfBuffer1 != null)
+			{
+				if (!this.halfBuffer1.IsDisposed)
+					this.halfBuffer1.Dispose();
+				this.halfBuffer1 = null;
+			}
+			if (this.halfBuffer2 != null)
+			{
+				if (!this.halfBuffer2.IsDisposed)
+					this.halfBuffer2.Dispose();
+				this.halfBuffer2 = null;
+			}
+			if (this.halfDepthBuffer != null)
+			{
+				if (!this.halfDepthBuffer.IsDisposed)
+					this.halfDepthBuffer.Dispose();
+				this.halfDepthBuffer = null;
+			}
+			if (this.allowSSAO)
+			{
+				this.halfDepthBuffer = new RenderTarget2D(this.main.GraphicsDevice,
+					size.X / 2,
+					size.Y / 2,
+					false,
+					SurfaceFormat.Single,
+					DepthFormat.None,
+					0,
+					RenderTargetUsage.DiscardContents);
+				this.halfBuffer1 = new RenderTarget2D(this.main.GraphicsDevice,
+					size.X / 2,
+					size.Y / 2,
+					false,
+					SurfaceFormat.Color,
+					DepthFormat.None,
+					0,
+					RenderTargetUsage.DiscardContents);
+				this.halfBuffer2 = new RenderTarget2D(this.main.GraphicsDevice,
+					size.X / 2,
+					size.Y / 2,
+					false,
+					SurfaceFormat.Color,
+					DepthFormat.None,
+					0,
+					RenderTargetUsage.DiscardContents);
+			}
+
 			if (this.bloomBuffer != null)
 			{
 				if (!this.bloomBuffer.IsDisposed)
 					this.bloomBuffer.Dispose();
 				this.bloomBuffer = null;
 			}
-			if (this.enableBloom)
+			if (this.allowBloom)
 			{
 				// Bloom buffer
 				this.bloomBuffer = new RenderTarget2D(this.main.GraphicsDevice,
@@ -334,7 +394,7 @@ namespace Lemma.Components
 
 		public void SetRenderTargets(RenderParameters p)
 		{
-			bool motionBlur = this.enableMotionBlur && !this.main.Paused;
+			bool motionBlur = this.allowMotionBlur && !this.main.Paused;
 			if (motionBlur)
 				this.main.GraphicsDevice.SetRenderTargets(this.colorBuffer1, this.depthBuffer, this.normalBuffer, this.velocityBuffer);
 			else
@@ -353,6 +413,15 @@ namespace Lemma.Components
 		{
 			RasterizerState originalState = this.main.GraphicsDevice.RasterizerState;
 			RasterizerState reverseCullState = new RasterizerState { CullMode = CullMode.CullClockwiseFace };
+
+			bool enableSSAO = this.allowSSAO && this.EnableSSAO;
+
+			if (enableSSAO)
+			{
+				// Down-sample depth buffer
+				this.preparePostProcess(new[] { this.depthBuffer }, new[] { this.halfDepthBuffer }, this.depthDownsampleEffect);
+				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
+			}
 
 			// Global lighting
 			this.setTargets(this.lightingBuffer, this.specularBuffer);
@@ -382,6 +451,8 @@ namespace Lemma.Components
 			}
 
 			// Spot lights
+
+			// HACK
 			parameters.Camera.FarPlaneDistance.Value *= 1.5f;
 			parameters.Camera.SetParameters(Renderer.spotLightEffect);
 			parameters.Camera.FarPlaneDistance.Value /= 1.5f;
@@ -399,14 +470,41 @@ namespace Lemma.Components
 			if (!parameters.ReverseCullOrder)
 				this.main.GraphicsDevice.RasterizerState = originalState;
 
+			// SSAO
+			if (enableSSAO)
+			{
+				// Compute SSAO
+				parameters.Camera.SetParameters(this.ssaoEffect);
+				this.preparePostProcess(new[] { this.halfDepthBuffer, this.normalBuffer }, new[] { this.halfBuffer1 }, this.ssaoEffect);
+				this.main.GraphicsDevice.Clear(Color.Black);
+				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
+
+				// Blur
+				/*this.blurEffect.CurrentTechnique = this.blurEffect.Techniques["BlurHorizontal"];
+				parameters.Camera.SetParameters(this.blurEffect);
+				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer1 }, new RenderTarget2D[] { this.halfBuffer2 }, this.blurEffect);
+				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
+				this.blurEffect.CurrentTechnique = this.blurEffect.Techniques["Composite"];
+
+				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer2 }, new RenderTarget2D[] { this.halfBuffer1 }, this.blurEffect);
+				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);*/
+			}
+
 			RenderTarget2D colorSource = this.colorBuffer1;
 			RenderTarget2D colorDestination = this.colorBuffer2;
 			RenderTarget2D colorTemp = null;
 
 			// Compositing
-			this.compositeEffect.CurrentTechnique = this.compositeEffect.Techniques["Composite"];
+			this.compositeEffect.CurrentTechnique = this.compositeEffect.Techniques["Composite" + (enableSSAO ? "SSAO" : "")];
 			parameters.Camera.SetParameters(this.compositeEffect);
-			this.preparePostProcess(new RenderTarget2D[] { colorSource, this.lightingBuffer, this.specularBuffer }, new RenderTarget2D[] { colorDestination }, this.compositeEffect);
+			this.preparePostProcess
+			(
+				enableSSAO
+				? new RenderTarget2D[] { colorSource, this.lightingBuffer, this.specularBuffer, this.halfBuffer1 }
+				: new RenderTarget2D[] { colorSource, this.lightingBuffer, this.specularBuffer },
+				new RenderTarget2D[] { colorDestination },
+				this.compositeEffect
+			);
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 			// Swap the color buffers
@@ -436,7 +534,7 @@ namespace Lemma.Components
 			colorSource = colorTemp;
 
 			// Motion blur
-			if (this.enableMotionBlur && this.MotionBlurAmount > 0.0f)
+			if (this.allowMotionBlur && this.MotionBlurAmount > 0.0f)
 			{
 				this.motionBlurEffect.CurrentTechnique = this.motionBlurEffect.Techniques["MotionBlur"];
 				parameters.Camera.SetParameters(this.motionBlurEffect);
@@ -454,7 +552,7 @@ namespace Lemma.Components
 				colorSource = colorTemp;
 			}
 
-			bool enableBloom = this.enableBloom && this.EnableBloom && this.BloomThreshold < 1.0f;
+			bool enableBloom = this.allowBloom && this.EnableBloom && this.BloomThreshold < 1.0f;
 			bool enableBlur = this.BlurAmount > 0.0f;
 
 			// Tone mapping
@@ -586,6 +684,13 @@ namespace Lemma.Components
 				this.velocityBufferLastFrame.Dispose();
 			if (this.motionBlurEffect != null)
 				this.motionBlurEffect.Dispose();
+
+			if (this.halfDepthBuffer != null)
+				this.halfDepthBuffer.Dispose();
+			if (this.halfBuffer1 != null)
+				this.halfBuffer1.Dispose();
+			if (this.halfBuffer2 != null)
+				this.halfBuffer2.Dispose();
 
 			if (this.bloomBuffer != null)
 				this.bloomBuffer.Dispose();

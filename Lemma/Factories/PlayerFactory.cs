@@ -461,7 +461,7 @@ namespace Lemma.Factories
 
 					if (zoomAnimation != null)
 						zoomAnimation.Delete.Execute();
-					zoomAnimation = new Animation(new Animation.FloatMoveToSpeed(main.Camera.FieldOfView, MathHelper.ToRadians(80.0f), 2.0f));
+					zoomAnimation = new Animation(new Animation.FloatMoveToSpeed(main.Camera.FieldOfView, MathHelper.ToRadians(80.0f), 3.0f));
 					result.Add(zoomAnimation);
 				}
 			};
@@ -560,7 +560,8 @@ namespace Lemma.Factories
 				{
 					// Necessary because the fire command must be executed *after* the pistol has been correctly positioned each frame.
 					fire = false;
-					model.StartClip("PlayerFire", 4, false, 0.0f);
+					model.Stop("PlayerFire", "PlayerUnaimedFire");
+					model.StartClip(model.IsPlaying("Aim") ? "PlayerFire" : "PlayerUnaimedFire", 4, false, 0.0f);
 					pistol.Value.Target.GetCommand("Fire").Execute();
 					if (pistol.Value.Target.GetProperty<int>("Ammo") == 0)
 						scopeOutPistol();
@@ -1102,14 +1103,15 @@ namespace Lemma.Factories
 				Entity p = pistol.Value.Target;
 				if (p != null && p.GetProperty<bool>("Active"))
 				{
-					if (!model.IsPlaying("Aim") && !player.Crouched && !model.IsPlaying("PlayerReload") && (player.IsSupported || player.IsSwimming) && p.GetProperty<int>("Ammo") > 0)
+					if (!player.Crouched && !model.IsPlaying("PlayerReload") && (player.IsSupported || player.IsSwimming) && p.GetProperty<int>("Ammo") > 0)
 					{
-						model.StartClip("Aim", 2, true);
+						model.Stop("Aim");
+						model.StartClip("Aim", 2, true, 0.15f);
 						Sound.PlayCue(main, "Pistol Scope In");
 
 						if (zoomAnimation != null)
 							zoomAnimation.Delete.Execute();
-						zoomAnimation = new Animation(new Animation.FloatMoveToSpeed(main.Camera.FieldOfView, MathHelper.ToRadians(50.0f), 2.0f));
+						zoomAnimation = new Animation(new Animation.FloatMoveToSpeed(main.Camera.FieldOfView, MathHelper.ToRadians(50.0f), 3.0f));
 						result.Add(zoomAnimation);
 					}
 				}
@@ -1910,14 +1912,12 @@ namespace Lemma.Factories
 			const float fireInterval = 0.15f;
 			input.Bind(settings.Fire, PCInput.InputState.Down, delegate()
 			{
-				if ((zoomAnimation == null || !zoomAnimation.Active) && main.TotalTime - lastFire > fireInterval && model.IsPlaying("Aim"))
+				Entity p = pistol.Value.Target;
+				if (p != null && player.IsSupported && p.GetProperty<bool>("Active") && main.TotalTime - lastFire > fireInterval && p.GetProperty<int>("Ammo") > 0)
 				{
-					if (pistol.Value.Target.GetProperty<int>("Ammo") > 0)
-					{
-						// Fire pistol
-						lastFire = main.TotalTime;
-						fire = true;
-					}
+					// Fire pistol
+					lastFire = main.TotalTime;
+					fire = true;
 				}
 				else if (aimMode && aimRaycastResult.Map != null && targetWithinBuildRange && player.EnableBlockBuild)
 				{

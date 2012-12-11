@@ -25,7 +25,7 @@ void FogPS(	in PostProcessPSInput input,
 
 	float blend = clamp(lerp(0, 1, (depth - StartDistance) / (EndDistance - StartDistance)), 0, 1);
 
-	float3 worldPosition = PositionFromDepth(depth, input.texCoord, normalize(input.viewRay));
+	float3 worldPosition = PositionFromDepth(depth, normalize(input.viewRay));
 
 	float verticalBlend = 1.0f - clamp(abs((worldPosition.y - VerticalCenter) / VerticalSize), 0, 1);
 

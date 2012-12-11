@@ -85,6 +85,10 @@ namespace Lemma.Components
 			new VertexElement(128, VertexElementFormat.Byte4, VertexElementUsage.BlendIndices, 0)
 		);
 
+#if !MONOGAME
+		static Dictionary<Microsoft.Xna.Framework.Graphics.Model, BoundingBox> boundingBoxCache = new Dictionary<Microsoft.Xna.Framework.Graphics.Model, BoundingBox>();
+#endif
+
 		public Model()
 		{
 			this.DrawOrder = new Property<int> { Editable = true };
@@ -161,11 +165,58 @@ namespace Lemma.Components
 				this.boundingBoxValid = false;
 				this.loadModel(value, false);
 				this.Filename.InternalValue = value;
+#if !MONOGAME
 				if (this.model != null)
 				{
-					if (this.model.Tag is BoundingBox)
-						this.BoundingBox.Value = (BoundingBox)this.model.Tag;
+					// TODO: Fix bounding box calculation
+					/*BoundingBox boundingBox = new BoundingBox();
+					if (!Model.boundingBoxCache.TryGetValue(this.model, out boundingBox))
+					{
+						// Create variables to hold min and max xyz values for the model. Initialise them to extremes
+						Vector3 modelMax = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+						Vector3 modelMin = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+
+						foreach (ModelMesh mesh in this.model.Meshes)
+						{
+							//Create variables to hold min and max xyz values for the mesh. Initialise them to extremes
+							Vector3 meshMax = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+							Vector3 meshMin = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+
+							// There may be multiple parts in a mesh (different materials etc.) so loop through each
+							foreach (ModelMeshPart part in mesh.MeshParts)
+							{
+								// The stride is how big, in bytes, one vertex is in the vertex buffer
+								// We have to use this as we do not know the make up of the vertex
+								int stride = part.VertexBuffer.VertexDeclaration.VertexStride;
+
+								byte[] vertexData = new byte[stride * part.NumVertices];
+								part.VertexBuffer.GetData(part.VertexOffset * stride, vertexData, 0, part.NumVertices, stride);
+
+								// Find minimum and maximum xyz values for this mesh part
+								// We know the position will always be the first 3 float values of the vertex data
+								Vector3 vertPosition = new Vector3();
+								for (int ndx = 0; ndx < vertexData.Length; ndx += stride)
+								{
+									vertPosition.X = BitConverter.ToSingle(vertexData, ndx);
+									vertPosition.Y = BitConverter.ToSingle(vertexData, ndx + sizeof(float));
+									vertPosition.Z = BitConverter.ToSingle(vertexData, ndx + sizeof(float) * 2);
+
+									// update our running values from this vertex
+									meshMin = Vector3.Min(meshMin, vertPosition);
+									meshMax = Vector3.Max(meshMax, vertPosition);
+								}
+							}
+
+							// Expand model extents by the ones from this mesh
+							modelMin = Vector3.Min(modelMin, meshMin);
+							modelMax = Vector3.Max(modelMax, meshMax);
+						}
+						boundingBox = new BoundingBox(modelMin, modelMax);
+						Model.boundingBoxCache[this.model] = boundingBox;
+					}
+					this.BoundingBox.Value = boundingBox;*/
 				}
+#endif
 			};
 
 			this.EffectFile.Set = delegate(string value)
@@ -649,10 +700,9 @@ namespace Lemma.Components
 								foreach (EffectPass pass in this.effect.CurrentTechnique.Passes)
 								{
 									pass.Apply();
-
-									this.main.GraphicsDevice.SetVertexBuffer(part.VertexBuffer);
+									this.main.GraphicsDevice.SetVertexBuffer(part.VertexBuffer, part.VertexOffset);
 									this.main.GraphicsDevice.Indices = part.IndexBuffer;
-									
+
 									this.main.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, part.NumVertices, part.StartIndex, part.PrimitiveCount);
 								}
 							}

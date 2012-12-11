@@ -148,6 +148,16 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </None>
+    <Compile Include="Effects\PostProcess\DepthDownsample.fx">
+      <Name>DepthDownsample</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </Compile>
+    <Compile Include="Effects\PostProcess\SSAO.fx">
+      <Name>SSAO</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </Compile>
     <None Include="Effects\PostProcess\Shadow2D.fxh">
       <Name>Shadow2D</Name>
       <Importer>EffectImporter</Importer>
@@ -584,12 +594,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\PipelineExtensions\PipelineExtensions.XNA.csproj">
-      <Project>{4636C7E1-B845-4B83-B96D-64A11B8A4515}</Project>
-      <Name>PipelineExtensions.XNA</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Models\skybox-sunset.jpg">
       <Name>skybox-sunset</Name>
       <Importer>TextureImporter</Importer>
@@ -882,6 +886,19 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Images\random.jpg">
+      <Name>random</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\PipelineExtensions\PipelineExtensions.XNA.csproj">
+      <Project>{4636C7E1-B845-4B83-B96D-64A11B8A4515}</Project>
+      <Name>PipelineExtensions.XNA</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

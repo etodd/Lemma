@@ -323,7 +323,7 @@ namespace Lemma
 				// First time loading content. Create the renderer.
 				this.LightingManager = new LightingManager();
 				this.AddComponent(this.LightingManager);
-				this.Renderer = new Renderer(this, this.ScreenSize, true, true);
+				this.Renderer = new Renderer(this, this.ScreenSize, true, true, false);
 
 				this.AddComponent(this.Renderer);
 				this.renderParameters = new RenderParameters

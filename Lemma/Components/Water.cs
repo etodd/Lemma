@@ -90,7 +90,7 @@ namespace Lemma.Components
 			size.Y = (int)((float)size.Y * 0.5f);
 			if (this.renderer == null)
 			{
-				this.renderer = new Renderer(this.main, size, false, false);
+				this.renderer = new Renderer(this.main, size, false, false, false);
 				this.renderer.LightRampTexture.Value = "Images\\default-ramp";
 				this.main.AddComponent(this.renderer);
 			}

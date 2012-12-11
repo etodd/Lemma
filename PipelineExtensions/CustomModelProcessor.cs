@@ -106,9 +106,6 @@ namespace PipelineExtensions
 
 		String directory;
 
-		private bool validBoundingBox = false;
-		private BoundingBox boundingBox = new BoundingBox(new Vector3(float.MaxValue), new Vector3(float.MinValue));
-
 		public override ModelContent Process(NodeContent input,	ContentProcessorContext context)
 		{
 			if (input == null)
@@ -118,49 +115,7 @@ namespace PipelineExtensions
 
 			this.LookUpNormalMapAndAddToTextures(input);
 
-			//This is a recursive function in case the input's children have children.
-			this.parseChildren(input.Children);
-
-			ModelContent modelContent = base.Process(input, context);
-
-			if (this.validBoundingBox)
-				modelContent.Tag = this.boundingBox;
-
-			return modelContent;
-		}
-
-		private void parseChildren(NodeContentCollection nodeContentCollection)
-		{
-			foreach (NodeContent nodeContent in nodeContentCollection)
-			{
-				if (nodeContent is MeshContent)
-				{
-					MeshContent meshContent = (MeshContent)nodeContent;
-					if (meshContent.Positions.Count > 0)
-						this.validBoundingBox = true;
-					foreach (Vector3 vector in meshContent.Positions)
-					{
-						if (vector.X < this.boundingBox.Min.X)
-							this.boundingBox.Min.X = vector.X;
-
-						if (vector.Y < this.boundingBox.Min.Y)
-							this.boundingBox.Min.Y = vector.Y;
-
-						if (vector.Z < this.boundingBox.Min.Z)
-							this.boundingBox.Min.Z = vector.Z;
-
-						if (vector.X > this.boundingBox.Max.X)
-							this.boundingBox.Max.X = vector.X;
-
-						if (vector.Y > this.boundingBox.Max.Y)
-							this.boundingBox.Max.Y = vector.Y;
-
-						if (vector.Z > this.boundingBox.Max.Z)
-							this.boundingBox.Max.Z = vector.Z;
-					}
-				}
-				this.parseChildren(nodeContent.Children);
-			}
+			return base.Process(input, context);
 		}
 
 		/// <summary>
