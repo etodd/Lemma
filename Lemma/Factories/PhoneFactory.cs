@@ -134,6 +134,8 @@ namespace Lemma.Factories
 
 			Property<bool> attached = result.GetProperty<bool>("Attached");
 
+			phone.Add(new TwoWayBinding<bool>(attached, phone.Attached));
+
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));

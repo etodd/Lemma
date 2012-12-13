@@ -11,15 +11,15 @@ namespace Lemma.Components
 	{
 		public class QueuedMessage
 		{
-			public Message Message { get; set; }
-			public float TimeRemaining { get; set; }
-			public Response[] Responses { get; set; }
+			public Message Message;
+			public float TimeRemaining;
+			public Response[] Responses;
 		}
 
 		public class Message
 		{
-			public bool Incoming { get; set; }
-			public string Text { get; set; }
+			public bool Incoming;
+			public string Text;
 		}
 
 		public class Response
@@ -29,10 +29,10 @@ namespace Lemma.Components
 				this.Question = "";
 				this.ID = "";
 			}
-			public string Question { get; set; }
-			public string ID { get; set; }
-			public string Text { get; set; }
-			public bool Permanent { get; set; }
+			public string Question;
+			public string ID;
+			public string Text;
+			public bool Permanent;
 		}
 
 		public override void InitializeProperties()
@@ -119,6 +119,8 @@ namespace Lemma.Components
 			}
 		}
 
+		public Property<bool> Attached = new Property<bool>();
+
 		public ListProperty<QueuedMessage> QueuedMessages = new ListProperty<QueuedMessage>();
 
 		public ListProperty<Message> Messages = new ListProperty<Message>();
@@ -126,6 +128,43 @@ namespace Lemma.Components
 		public ListProperty<Response> Responses = new ListProperty<Response>();
 
 		public Property<bool> HasUnreadMessages = new Property<bool>();
+
+		public Property<float> TimeSinceLastIncomingMessage = new Property<float>();
+
+		private static readonly string[][] idleMessages = new string[][]
+		{
+			new[]
+			{
+				"Hello?",
+				"You there?",
+				"Did you get my message?",
+				"Hey, you okay?",
+			},
+			new[]
+			{
+				"Hey!",
+				"Come on, let me know you're alright.",
+				"Don't leave me hanging here!",
+				"Silent treatment, I get it.",
+				"Was it something I said?",
+			},
+			new[]
+			{
+				"Okay cool. Just let me know if you haven't died horribly. Otherwise I'll just assume you got murdered.",
+				"Fine, clearly you hate me for some reason. I'll just shut up then. Good luck with your life.",
+			}
+		};
+
+		private static readonly float[] idleMessageDelays = new float[]
+		{
+			300.0f,
+			300.0f,
+			600.0f,
+		};
+
+		// A count that keeps track of how many "are you still there" messages we've sent.
+		// -1 means the user has responded and we just haven't sent an answer back
+		public Property<int> IdleMessageIndex = new Property<int>();
 
 		public void QueueMessage(string msg, float time, params Response[] responses)
 		{
@@ -183,6 +222,8 @@ namespace Lemma.Components
 
 		public void Respond(Response response)
 		{
+			this.IdleMessageIndex.Value = -1;
+
 			// Add the response to the message list
 			this.Messages.Add(new Message
 			{
@@ -213,6 +254,18 @@ namespace Lemma.Components
 
 		void IUpdateableComponent.Update(float dt)
 		{
+			if (!this.HasUnreadMessages && this.Attached && this.IdleMessageIndex > -1)
+			{
+				// We are waiting for a response from the player
+				this.TimeSinceLastIncomingMessage.Value += dt;
+				int index = this.IdleMessageIndex;
+				if (index < idleMessageDelays.Length && this.TimeSinceLastIncomingMessage > idleMessageDelays[index])
+				{
+					this.QueueMessage(idleMessages[index][new Random().Next(idleMessages[index].Length)], 0.0f);
+					this.IdleMessageIndex.Value++;
+				}
+			}
+
 			List<QueuedMessage> removals = new List<QueuedMessage>();
 			foreach (QueuedMessage qm in this.QueuedMessages)
 			{
@@ -220,6 +273,8 @@ namespace Lemma.Components
 				if (qm.TimeRemaining < 0.0f)
 				{
 					this.Messages.Add(qm.Message);
+					this.TimeSinceLastIncomingMessage.Value = 0.0f;
+					this.IdleMessageIndex.Value = 0;
 					foreach (Response r in qm.Responses)
 					{
 						// Check for duplicates
