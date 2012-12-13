@@ -48,6 +48,7 @@ namespace Lemma
 		private float performanceInterval;
 
 		private int frameSum;
+		private Property<float> frameRate = new Property<float>();
 		private double physicsSum;
 		private Property<double> physicsTime = new Property<double>();
 		private double updateSum;
@@ -351,6 +352,11 @@ namespace Lemma
 					performanceMonitor.Children.Add(text);
 				};
 
+				TextElement frameRateText = new TextElement();
+				frameRateText.FontFile.Value = "Font";
+				frameRateText.Add(new Binding<string, float>(frameRateText.Text, x => "FPS: " + x.ToString("0"), this.frameRate));
+				performanceMonitor.Children.Add(frameRateText);
+
 				addLabel("Physics", this.physicsTime);
 				addLabel("Update", this.updateTime);
 				addLabel("Pre-frame", this.preframeTime);
@@ -487,7 +493,7 @@ namespace Lemma
 			this.performanceInterval += this.ElapsedTime;
 			if (this.performanceInterval > Main.performanceUpdateTime)
 			{
-				double frames = this.frameSum;
+				this.frameRate.Value = this.frameSum / this.performanceInterval;
 				this.physicsTime.Value = this.physicsSum;
 				this.updateTime.Value = this.updateSum;
 				this.preframeTime.Value = this.preframeSum;

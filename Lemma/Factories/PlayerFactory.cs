@@ -681,6 +681,10 @@ namespace Lemma.Factories
 
 			// Block possibilities
 			const int blockInstantiationStaminaCost = 3;
+			const float blockPossibilityTotalLifetime = 2.0f;
+			const float blockPossibilityInitialAlpha = 0.125f;
+
+			float blockPossibilityLifetime = 0.0f;
 
 			Dictionary<Map, List<BlockPossibility>> blockPossibilities = new Dictionary<Map, List<BlockPossibility>>();
 
@@ -702,7 +706,7 @@ namespace Lemma.Factories
 					ModelAlpha box = new ModelAlpha();
 					box.Filename.Value = "Models\\alpha-box";
 					box.Color.Value = new Vector3(0.5f, 0.7f, 0.9f);
-					box.Alpha.Value = 0.125f;
+					box.Alpha.Value = blockPossibilityInitialAlpha;
 					box.IsInstanced.Value = false;
 					box.Editable = false;
 					box.Serialize = false;
@@ -721,7 +725,24 @@ namespace Lemma.Factories
 					blockPossibilities[block.Map] = mapList;
 				}
 				mapList.Add(block);
+				blockPossibilityLifetime = 0.0f;
 			};
+
+			update.Add(delegate(float dt)
+			{
+				if (blockPossibilities.Count > 0)
+				{
+					blockPossibilityLifetime += dt;
+					if (blockPossibilityLifetime > blockPossibilityTotalLifetime)
+						clearBlockPossibilities();
+					else
+					{
+						float alpha = blockPossibilityInitialAlpha * (1.0f - (blockPossibilityLifetime / blockPossibilityTotalLifetime));
+						foreach (BlockPossibility block in blockPossibilities.Values.SelectMany(x => x))
+							block.Model.Alpha.Value = alpha;
+					}
+				}
+			});
 
 			Dictionary<AnimatingBlock, bool> animatingBlocks = new Dictionary<AnimatingBlock, bool>();
 
@@ -1115,11 +1136,6 @@ namespace Lemma.Factories
 						result.Add(zoomAnimation);
 					}
 				}
-				else if (levitationMode)
-				{
-					if (player.IsSupported)
-						tryLevitate();
-				}
 				else
 					aimMode.Value = true;
 			});
@@ -1313,18 +1329,6 @@ namespace Lemma.Factories
 			{
 				if (aimMode)
 					aimMode.Value = false;
-				else if (player.IsLevitating)
-				{
-					if (main.TotalTime - levitateButtonPressStart < 0.25f)
-					{
-						// De-levitate the map
-						levitateButtonPressStart = -1.0f;
-						delevitateMap();
-					}
-
-					// Whether the map is still floating or not, we are not controlling it anymore.
-					stopLevitate();
-				}
 				else
 					scopeOutPistol();
 			});
@@ -1813,7 +1817,8 @@ namespace Lemma.Factories
 			input.Bind(settings.Jump, PCInput.InputState.Down, delegate()
 			{
 				// Don't allow vaulting
-				if (!jump(false, false) && player.EnableSlowMotion)
+				// Also don't try anything if we're in the middle of vaulting
+				if (vaultMover == null && !jump(false, false) && player.EnableSlowMotion)
 				{
 					// Go into slow-mo and show block possibilities
 					player.SlowMotion.Value = true;
@@ -1927,8 +1932,15 @@ namespace Lemma.Factories
 					buildDirection = aimRaycastResult.Normal;
 					builtSoFar = 0;
 				}
+				else if (levitationMode)
+				{
+					// Levitate
+					if (player.IsSupported)
+						tryLevitate();
+				}
 				else if (!aimMode && !input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && !player.IsSupported)
 				{
+					// Kick
 					Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
 					Vector3 forward = -rotationMatrix.Forward;
 					Vector3 right = rotationMatrix.Right;
@@ -1993,6 +2005,18 @@ namespace Lemma.Factories
 			input.Bind(settings.Fire, PCInput.InputState.Up, delegate()
 			{
 				buildMap = null;
+				if (player.IsLevitating)
+				{
+					if (main.TotalTime - levitateButtonPressStart < 0.25f)
+					{
+						// De-levitate the map
+						levitateButtonPressStart = -1.0f;
+						delevitateMap();
+					}
+
+					// Whether the map is still floating or not, we are not controlling it anymore.
+					stopLevitate();
+				}
 			});
 
 			bool rolling = false;
@@ -2330,6 +2354,12 @@ namespace Lemma.Factories
 				}
 			};
 
+			input.Add(new CommandBinding<int>(input.MouseScrolled, delegate(int scroll)
+			{
+				if (player.IsLevitating)
+					levitatingDistance = Math.Max(2, Math.Min(levitationMaxDistance, levitatingDistance + scroll));
+			}));
+
 			update.Add(delegate(float dt)
 			{
 				if (levitatingMap != null)
@@ -2345,7 +2375,7 @@ namespace Lemma.Factories
 					Vector3 diff = (target - grabPoint) * 0.25f * (float)Math.Sqrt(levitatingMap.PhysicsEntity.Mass) * (1.25f - Math.Min(1.0f, ((grabPoint - transform.Position).Length() / levitationMaxDistance)));
 					levitatingMap.PhysicsEntity.ApplyImpulse(ref grabPoint, ref diff);
 				}
-				else if (levitationMode && !player.IsLevitating)
+				else if (levitationMode)
 				{
 					bool canLevitate = aimRaycastResult.Map != null
 						&& (aimRaycastResult.Position - transform.Position).Length() < levitationMaxDistance
