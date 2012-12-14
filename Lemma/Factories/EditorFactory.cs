@@ -73,6 +73,7 @@ namespace Lemma.Factories
 			result.Add("Input", input);
 			result.Add("AudioListener", audioListener);
 			result.Add("StartSpawnPoint", new Property<string>());
+			result.Add("ProceduralGenerator", new ProceduralGenerator());
 
 			return result;
 		}
@@ -229,7 +230,7 @@ namespace Lemma.Factories
 			editor.Add(new Binding<bool>(editor.Fill, input.LeftMouseButton));
 			editor.Add(new Binding<bool>(editor.EditSelection, () => input.MiddleMouseButton && editor.MapEditMode, input.MiddleMouseButton, editor.MapEditMode));
 
-			addCommand("Delete", new PCInput.Chord { Key = Keys.X }, () => editor.VoxelSelectionActive || (!editor.MapEditMode && editor.TransformMode.Value == Editor.TransformModes.None && editor.SelectedEntities.Count > 0), editor.DeleteSelected);
+			addCommand("Delete", new PCInput.Chord { Key = Keys.X }, () => !editor.MapEditMode && editor.TransformMode.Value == Editor.TransformModes.None && editor.SelectedEntities.Count > 0, editor.DeleteSelected);
 			addCommand("Duplicate", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.D }, () => !editor.MovementEnabled && editor.SelectedEntities.Count > 0, editor.Duplicate);
 
 			// Start playing
@@ -294,10 +295,17 @@ namespace Lemma.Factories
 			int brush = 1;
 			Action<int> changeBrush = delegate(int delta)
 			{
-				brush = 1 + ((brush - 1 + delta) % (WorldFactory.States.Count - 1));
+				int foundIndex = WorldFactory.StateList.FindIndex(x => x.Name == editor.Brush);
+				if (foundIndex != -1)
+					brush = foundIndex;
+				int stateCount = WorldFactory.States.Count + 1;
+				brush = 1 + ((brush - 1 + delta) % (stateCount - 1));
 				if (brush < 1)
-					brush = WorldFactory.States.Count + ((brush - 1) % WorldFactory.States.Count);
-				editor.Brush.Value = WorldFactory.StateList[brush].Name;
+					brush = stateCount + ((brush - 1) % stateCount);
+				if (brush == stateCount - 1)
+					editor.Brush.Value = "[Procedural]";
+				else
+					editor.Brush.Value = WorldFactory.StateList[brush].Name;
 			};
 			result.Add(new CommandBinding(input.GetKeyDown(Keys.Q), () => editor.MapEditMode, delegate()
 			{

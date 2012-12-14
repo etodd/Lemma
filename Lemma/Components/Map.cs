@@ -276,6 +276,9 @@ namespace Lemma.Components
 
 			private void freeData()
 			{
+				if (this.Data == null)
+					return; // Already freed
+
 				for (int u = 0; u < this.Map.chunkSize; u++)
 				{
 					for (int v = 0; v < this.Map.chunkSize; v++)
@@ -3585,16 +3588,16 @@ namespace Lemma.Components
 			get
 			{
 				if (!this.main.EditorEnabled && !this.EnablePhysics)
-					return WorldFactory.States[0];
+					return new Map.CellState();
 
 				Chunk chunk = this.GetChunk(x, y, z, false);
 				if (chunk == null)
-					return WorldFactory.States[0];
+					return new Map.CellState();
 				else
 				{
 					Box box = chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];
 					if (box == null)
-						return WorldFactory.States[0];
+						return new Map.CellState();
 					else
 						return box.Type;
 				}
@@ -3719,7 +3722,7 @@ namespace Lemma.Components
 		public Box GetBox(int x, int y, int z)
 		{
 			Chunk chunk = this.GetChunk(x, y, z, false);
-			if (chunk == null)
+			if (chunk == null || chunk.Data == null)
 				return null;
 			else
 				return chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];

@@ -250,11 +250,15 @@ namespace Lemma.Components
 				if (selectedBox == null)
 					return;
 
-				List<Map.Coordinate> coords = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords()).ToList();
-				m.Empty(coords);
-				foreach (Map.Coordinate c in coords)
-					m.Fill(c, WorldFactory.StatesByName[this.Brush]);
-				m.Regenerate();
+				Map.CellState material;
+				if (WorldFactory.StatesByName.TryGetValue(this.Brush, out material))
+				{
+					List<Map.Coordinate> coords = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords()).ToList();
+					m.Empty(coords);
+					foreach (Map.Coordinate c in coords)
+						m.Fill(c, material);
+					m.Regenerate();
+				}
 			};
 
 			Action<TransformModes> startTransform = delegate(TransformModes mode)
@@ -341,22 +345,12 @@ namespace Lemma.Components
 			this.DeleteSelected.Action = delegate()
 			{
 				this.NeedsSave.Value = true;
-				if (this.MapEditMode)
-				{
-					Map map = this.SelectedEntities[0].Get<Map>();
-					map.Empty(this.VoxelSelectionStart, this.VoxelSelectionEnd);
-					map.Regenerate();
-					this.VoxelSelectionEnd.Value = this.VoxelSelectionStart;
-				}
-				else
-				{
-					this.TransformMode.Value = TransformModes.None;
-					this.TransformAxis.Value = TransformAxes.All;
-					this.offsetTransforms.Clear();
-					foreach (Entity entity in this.SelectedEntities)
-						entity.Delete.Execute();
-					this.SelectedEntities.Clear();
-				}
+				this.TransformMode.Value = TransformModes.None;
+				this.TransformAxis.Value = TransformAxes.All;
+				this.offsetTransforms.Clear();
+				foreach (Entity entity in this.SelectedEntities)
+					entity.Delete.Execute();
+				this.SelectedEntities.Clear();
 			};
 
 			this.Add(new Binding<bool>(this.VoxelSelectionActive, delegate()
@@ -438,10 +432,48 @@ namespace Lemma.Components
 				if (this.TransformMode.Value == TransformModes.None && (this.Fill || this.Empty || this.Extend))
 				{
 					this.NeedsSave.Value = true;
-					if (this.Fill)
-						this.brushStroke(map, coord, this.BrushSize, WorldFactory.StatesByName[this.Brush]);
-					else if (this.Empty)
-						this.brushStroke(map, coord, this.BrushSize, WorldFactory.States[0]);
+					if (this.Brush == "[Procedural]")
+					{
+						ProceduralGenerator generator = this.Entity.Get<ProceduralGenerator>();
+						if (this.Fill)
+						{
+							if (this.VoxelSelectionActive)
+							{
+								foreach (Map.Coordinate c in this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd))
+									map.Fill(c, generator[c]);
+							}
+							else
+								this.brushStroke(map, coord, this.BrushSize, x => generator[x], true, false);
+						}
+						else if (this.Empty)
+						{
+							if (this.VoxelSelectionActive)
+								map.Empty(this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd).Where(x => generator[x].ID == 0));
+							else
+								this.brushStroke(map, coord, this.BrushSize, x => generator[x], false, true);
+						}
+					}
+					else
+					{
+						if (this.Fill)
+						{
+							Map.CellState material;
+							if (WorldFactory.StatesByName.TryGetValue(this.Brush, out material))
+							{
+								if (this.VoxelSelectionActive)
+									map.Fill(this.VoxelSelectionStart, this.VoxelSelectionEnd, material);
+								else
+									this.brushStroke(map, coord, this.BrushSize, material);
+							}
+						}
+						else if (this.Empty)
+						{
+							if (this.VoxelSelectionActive)
+								map.Empty(this.VoxelSelectionStart, this.VoxelSelectionEnd);
+							else
+								this.brushStroke(map, coord, this.BrushSize, new Map.CellState());
+						}
+					}
 
 					if (this.Extend && !this.coord.Equivalent(this.lastCoord))
 					{
@@ -580,6 +612,32 @@ namespace Lemma.Components
 						}
 					}
 				}
+			}
+		}
+
+		protected void brushStroke(Map map, Map.Coordinate center, int brushSize, Func<Map.Coordinate, Map.CellState> function, bool fill = true, bool empty = true)
+		{
+			Vector3 pos = map.GetRelativePosition(center);
+			List<Map.Coordinate> coords = new List<Map.Coordinate>();
+			for (Map.Coordinate x = center.Move(Direction.NegativeX, this.BrushSize - 1); x.X < center.X + this.BrushSize; x.X++)
+			{
+				for (Map.Coordinate y = x.Move(Direction.NegativeY, this.BrushSize - 1); y.Y < center.Y + this.BrushSize; y.Y++)
+				{
+					for (Map.Coordinate z = y.Move(Direction.NegativeZ, this.BrushSize - 1); z.Z < center.Z + this.BrushSize; z.Z++)
+					{
+						if ((pos - map.GetRelativePosition(z)).Length() <= this.BrushSize)
+							coords.Add(new Map.Coordinate { X = z.X, Y = z.Y, Z = z.Z, Data = function(z) });
+					}
+				}
+			}
+
+			if (empty)
+				map.Empty(coords.Where(x => x.Data.ID == 0));
+
+			if (fill)
+			{
+				foreach (Map.Coordinate coord in coords)
+					map.Fill(coord, coord.Data);
 			}
 		}
 

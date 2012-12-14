@@ -79,7 +79,7 @@ void RenderPS(in RenderPSInput input,
 			borderFadeY = 1;
 	}
 
-	output.w = Alpha * color.w * (0.8f - (depth / 50.0f)) * borderFadeX * borderFadeY;
+	output.w = Alpha * color.w * (0.8f - (depth / 30.0f)) * borderFadeX * borderFadeY;
 }
 
 void ClipPS(in RenderPSInput input,
