@@ -74,9 +74,9 @@ namespace Lemma.Factories
 
 			Entity player = null;
 
-			const float movementInterval = 0.06f;
-			const float cageMovementInterval = 0.01f;
-			const float damageTime = 2.0f;
+			const float movementInterval = 0.075f;
+			const float cageMovementInterval = 0.015f;
+			const float damageTime = 3.0f;
 
 			float lastMovement = -1.0f;
 			float lastPathCalculation = -1.0f;

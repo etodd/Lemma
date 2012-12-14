@@ -8,6 +8,8 @@ float SpotLightRadius;
 float3 SpotLightColor;
 float4x4 SpotLightViewProjectionMatrix;
 
+const float ShadowBias = 0.0f;
+
 texture2D CookieTexture;
 sampler2D CookieSampler = sampler_state
 {
@@ -115,7 +117,7 @@ void SpotLightShadowedPS(	in SpotLightPSInput input,
 	
 	LightingOutput data = CalcSpotLighting(SpotLightColor, SpotLightRadius, normal, SpotLightPosition, SpotLightDirection, position, viewRay, tex2D(SourceSampler1, texCoord).w * 255.0f, normalValue.w, cookieColor);
 
-	float shadow = GetShadowValueFromClip(spotClipPosition, 1.0f - (spotProjectedPosition.z / spotProjectedPosition.w));
+	float shadow = GetShadowValueFromClip(spotClipPosition, 1.0f - (spotProjectedPosition.z / spotProjectedPosition.w), ShadowBias);
 	lighting.xyz = EncodeColor(data.lighting * shadow);
 	lighting.w = 1.0f;
 	specular.xyz = EncodeColor(data.specular * shadow);

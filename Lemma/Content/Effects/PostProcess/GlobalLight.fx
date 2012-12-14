@@ -53,6 +53,8 @@ LightingOutput GetGlobalLighting(uniform int start, float3 normal, float specula
 	return output;
 }
 
+const float ShadowBias = 0.00002f;
+
 void GlobalLightShadowPS(	in PostProcessPSInput input,
 					out float4 lighting : COLOR0,
 					out float4 specular : COLOR1)
@@ -80,7 +82,7 @@ void GlobalLightShadowPS(	in PostProcessPSInput input,
 								viewRay,
 								normalize(-DirectionalLightDirections[0]));
 		float4 shadowPos = mul(float4(worldPos, 1.0f), ShadowViewProjectionMatrix);
-		float shadowValue = GetShadowValue(shadowPos);
+		float shadowValue = GetShadowValue(shadowPos, ShadowBias);
 		data.lighting += shadowLight.lighting * shadowValue;
 		data.specular += shadowLight.specular * shadowValue;
 

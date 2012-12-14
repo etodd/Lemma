@@ -466,6 +466,22 @@ namespace Lemma.Factories
 				}
 			};
 
+			Action scopeInPistol = delegate()
+			{
+				Entity p = pistol.Value.Target;
+				if (p != null && p.GetProperty<bool>("Active") && !player.Crouched && !model.IsPlaying("PlayerReload") && (player.IsSupported || player.IsSwimming) && p.GetProperty<int>("Ammo") > 0)
+				{
+					model.Stop("Aim");
+					model.StartClip("Aim", 2, true, 0.15f);
+					Sound.PlayCue(main, "Pistol Scope In");
+
+					if (zoomAnimation != null)
+						zoomAnimation.Delete.Execute();
+					zoomAnimation = new Animation(new Animation.FloatMoveToSpeed(main.Camera.FieldOfView, MathHelper.ToRadians(50.0f), 3.0f));
+					result.Add(zoomAnimation);
+				}
+			};
+
 			Property<bool> levitationMode = result.GetOrMakeProperty<bool>("LevitationMode");
 
 			Property<Vector3> handPosition = new Property<Vector3>();
@@ -564,7 +580,13 @@ namespace Lemma.Factories
 					model.StartClip(model.IsPlaying("Aim") ? "PlayerFire" : "PlayerUnaimedFire", 4, false, 0.0f);
 					pistol.Value.Target.GetCommand("Fire").Execute();
 					if (pistol.Value.Target.GetProperty<int>("Ammo") == 0)
-						scopeOutPistol();
+					{
+						result.Add(new Animation
+						(
+							new Animation.Delay(0.2f),
+							new Animation.Execute(scopeOutPistol)
+						));
+					}
 				}
 			});
 
@@ -597,6 +619,9 @@ namespace Lemma.Factories
 
 					if ((!player.EnableWalking && !player.Sprint) || player.WallRunState.Value != Player.WallRun.None)
 						return;
+
+					if (input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload"))
+						scopeInPistol();
 
 					model.Stop("WallWalkLeft", "WallWalkRight", "WallWalkStraight", "WallSlideDown");
 					if (player.IsSupported && !lastSupported)
@@ -1102,14 +1127,6 @@ namespace Lemma.Factories
 					velocity += new Vector3(0, (wallRunState == Player.WallRun.Straight ? 3.0f : 10.0f) * dt, 0);
 
 					player.LinearVelocity.Value = velocity;
-
-					if (wallRunState != Player.WallRun.Down && wallRunState != Player.WallRun.Straight)
-					{
-						Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
-						Vector3 forward = -rotationMatrix.Forward;
-						Vector3 right = rotationMatrix.Right;
-						breakWalls(forward, right, true);
-					}
 				}
 			});
 
@@ -1123,25 +1140,14 @@ namespace Lemma.Factories
 			{
 				Entity p = pistol.Value.Target;
 				if (p != null && p.GetProperty<bool>("Active"))
-				{
-					if (!player.Crouched && !model.IsPlaying("PlayerReload") && (player.IsSupported || player.IsSwimming) && p.GetProperty<int>("Ammo") > 0)
-					{
-						model.Stop("Aim");
-						model.StartClip("Aim", 2, true, 0.15f);
-						Sound.PlayCue(main, "Pistol Scope In");
-
-						if (zoomAnimation != null)
-							zoomAnimation.Delete.Execute();
-						zoomAnimation = new Animation(new Animation.FloatMoveToSpeed(main.Camera.FieldOfView, MathHelper.ToRadians(50.0f), 3.0f));
-						result.Add(zoomAnimation);
-					}
-				}
+					scopeInPistol();
 				else
 					aimMode.Value = true;
 			});
 
 			Func<Vector3, Vector3> getPrecisionJumpVelocity = delegate(Vector3 target)
 			{
+				target.Y += 2.0f;
 				Vector3 horizontalVelocity = target - transform.Position;
 				float verticalDistance = horizontalVelocity.Y + 1.5f;
 				horizontalVelocity.Y = 0.0f;
@@ -1165,7 +1171,7 @@ namespace Lemma.Factories
 
 			Func<Vector3, bool> canJump = delegate(Vector3 v)
 			{
-				return v.Y < (player.IsSupported ? player.JumpSpeed * 1.5f : player.LinearVelocity.Value.Y + player.JumpSpeed * 0.25f);
+				return v.Y < (player.IsSupported ? player.JumpSpeed * 1.75f : player.LinearVelocity.Value.Y + player.JumpSpeed * 0.25f);
 			};
 
 			Func<Vector3, Vector3> normalizeJumpVelocity = delegate(Vector3 v)
@@ -1173,8 +1179,8 @@ namespace Lemma.Factories
 				float vertical = Math.Min(v.Y, player.JumpSpeed * 1.75f);
 				v.Y = 0.0f;
 				float horizontal = v.Length();
-				if (horizontal > player.JumpSpeed)
-					v *= player.JumpSpeed / horizontal;
+				if (horizontal > player.JumpSpeed * 1.5f)
+					v *= player.JumpSpeed * 1.5f / horizontal;
 				v.Y = vertical;
 				return v;
 			};
@@ -1187,8 +1193,8 @@ namespace Lemma.Factories
 			Map.Coordinate buildCoordinate = new Map.Coordinate();
 			Direction buildDirection = Direction.None;
 			int builtSoFar = 0;
-			const int buildLength = 8;
-			const float buildRange = 20.0f, buildInterval = 3.0f;
+			const int buildLength = 6;
+			const float buildRange = 30.0f, buildInterval = 1.5f;
 			update.Add(delegate(float dt)
 			{
 				if (aimMode || levitationMode)
@@ -1205,7 +1211,7 @@ namespace Lemma.Factories
 						Vector3 absolutePosition = buildMap.GetAbsolutePosition(buildCoordinate) + normal * 0.5f;
 
 						canJumpToBuildReticle.Value = canJump(getPrecisionJumpVelocity(absolutePosition));
-						buildReticle.Color.Value = canJumpToBuildReticle ? new Vector3(2.0f) : new Vector3(2.0f, 0.0f, 0.0f);
+						buildReticle.Color.Value = canJumpToBuildReticle || !player.IsSupported ? new Vector3(2.0f) : new Vector3(2.0f, 0.0f, 0.0f);
 
 						Matrix matrix = Matrix.Identity;
 						matrix.Translation = absolutePosition;
@@ -1258,7 +1264,7 @@ namespace Lemma.Factories
 										break;
 									else
 									{
-										blockSpawnList.Add(new AnimatingBlock { Map = aimRaycastResult.Map, Coord = z, State = fillValue });
+										blockSpawnList.Add(new AnimatingBlock { Map = buildMap, Coord = z, State = fillValue });
 										zi++;
 										z = z.Move(zDir);
 									}
@@ -1268,6 +1274,9 @@ namespace Lemma.Factories
 							}
 
 							buildBlocks(blockSpawnList, false);
+
+							if (builtSoFar == buildLength)
+								buildMap = null;
 						}
 					}
 					else if (aimRaycastResult.Map != null && !player.IsLevitating && player.EnableBlockBuild)
@@ -1464,7 +1473,7 @@ namespace Lemma.Factories
 
 			Updater vaultMover = null;
 
-			float kickOrRollEnded = -1.0f;
+			float rollEnded = -1.0f;
 
 			Action<Map, Map.Coordinate, Vector3> vault = delegate(Map map, Map.Coordinate coord, Vector3 forward)
 			{
@@ -1720,11 +1729,13 @@ namespace Lemma.Factories
 					}
 				}
 
-				bool precisionJumping = !onlyVault && aimMode && player.EnableBlockBuild && buildMap != null && canJumpToBuildReticle;
+				bool precisionJumping = !onlyVault && aimMode && player.EnableBlockBuild && buildMap != null;
 
-				if (go || precisionJumping)
+				go |= precisionJumping;
+
+				if (go)
 				{
-					if (!supported && !precisionJumping)
+					if (!supported)
 					{
 						// We haven't hit the ground, so fall damage will not be handled by the physics system.
 						// Need to do it manually here.
@@ -1736,7 +1747,7 @@ namespace Lemma.Factories
 						if (precisionJumping)
 						{
 							// Make the player jump exactly to the target.
-							Vector3 velocity = normalizeJumpVelocity(getPrecisionJumpVelocity(buildMap.GetAbsolutePosition(buildCoordinate)));
+							Vector3 velocity = normalizeJumpVelocity(getPrecisionJumpVelocity(buildMap.GetAbsolutePosition(buildCoordinate.Move(buildDirection, (buildLength - builtSoFar) / 2))));
 							if (velocity.Y < 0.0f && supported)
 								return false; // Can't jump down through the floor
 							player.LinearVelocity.Value = velocity;
@@ -1753,7 +1764,7 @@ namespace Lemma.Factories
 							float totalMultiplier = 1.0f;
 							float verticalMultiplier = 1.0f;
 
-							if (main.TotalTime - kickOrRollEnded < 0.3f)
+							if (main.TotalTime - rollEnded < 0.3f)
 								totalMultiplier *= 1.5f;
 
 							if (player.Sprint)
@@ -1917,6 +1928,9 @@ namespace Lemma.Factories
 			const float fireInterval = 0.15f;
 			input.Bind(settings.Fire, PCInput.InputState.Down, delegate()
 			{
+				Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
+				Vector3 forward = -rotationMatrix.Forward;
+				Vector3 right = rotationMatrix.Right;
 				Entity p = pistol.Value.Target;
 				if (p != null && player.IsSupported && p.GetProperty<bool>("Active") && main.TotalTime - lastFire > fireInterval && p.GetProperty<int>("Ammo") > 0)
 				{
@@ -1930,7 +1944,7 @@ namespace Lemma.Factories
 					buildMap = aimRaycastResult.Map;
 					buildCoordinate = buildBaseCoordinate = aimRaycastResult.Coordinate.Value;
 					buildDirection = aimRaycastResult.Normal;
-					builtSoFar = 0;
+					builtSoFar = buildLength - (int)Math.Floor((transform.Position - aimRaycastResult.Position).Length() / buildInterval);
 				}
 				else if (levitationMode)
 				{
@@ -1938,13 +1952,9 @@ namespace Lemma.Factories
 					if (player.IsSupported)
 						tryLevitate();
 				}
-				else if (!aimMode && !input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && !player.IsSupported)
+				else if (!aimMode && !input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && !player.IsSupported && Vector3.Dot(player.LinearVelocity, forward) > 0.0f)
 				{
 					// Kick
-					Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
-					Vector3 forward = -rotationMatrix.Forward;
-					Vector3 right = rotationMatrix.Right;
-
 					canKick = false;
 
 					deactivateWallRun();
@@ -1992,7 +2002,6 @@ namespace Lemma.Factories
 								model.Stop("Kick");
 								player.EnableWalking.Value = true;
 								rotationLocked.Value = false;
-								kickOrRollEnded = main.TotalTime;
 							}
 							else
 								breakWalls(forward, right, true);
@@ -2119,7 +2128,7 @@ namespace Lemma.Factories
 									if (!input.GetInput(settings.Roll))
 										player.AllowUncrouch.Value = true;
 									rotationLocked.Value = false;
-									kickOrRollEnded = main.TotalTime;
+									rollEnded = main.TotalTime;
 									rolling = false;
 
 									if (stop) // Stop from rolling off the edge

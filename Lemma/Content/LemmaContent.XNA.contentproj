@@ -287,8 +287,9 @@
       <Name>player-firstperson</Name>
       <Importer>FbxImporter</Importer>
       <Processor>SkinnedModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\Animation.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_EffectFileName>..\Effects\AnimationNormalMap.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_DiffuseTexture>skin.jpg</ProcessorParameters_DiffuseTexture>
+      <ProcessorParameters_NormalMapTexture>skin-normal.jpg</ProcessorParameters_NormalMapTexture>
     </Compile>
     <Compile Include="Models\electricity.fbx">
       <Name>electricity</Name>

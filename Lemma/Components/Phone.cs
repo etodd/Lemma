@@ -254,7 +254,7 @@ namespace Lemma.Components
 
 		void IUpdateableComponent.Update(float dt)
 		{
-			if (!this.HasUnreadMessages && this.Attached && this.IdleMessageIndex > -1)
+			if (!this.HasUnreadMessages && this.Attached && this.Responses.Count > 0 && this.IdleMessageIndex > -1)
 			{
 				// We are waiting for a response from the player
 				this.TimeSinceLastIncomingMessage.Value += dt;
