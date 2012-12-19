@@ -87,6 +87,7 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Components\AI.cs" />
     <Compile Include="Components\ProceduralGenerator.cs" />
     <Compile Include="Components\EnemyBase.cs" />
     <Compile Include="Components\PhysicsSphere.cs" />

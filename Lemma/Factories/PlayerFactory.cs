@@ -1176,7 +1176,7 @@ namespace Lemma.Factories
 
 			Func<Vector3, Vector3> normalizeJumpVelocity = delegate(Vector3 v)
 			{
-				float vertical = Math.Min(v.Y, player.JumpSpeed * 1.75f);
+				float vertical = Math.Min(v.Y, player.JumpSpeed * 1.25f);
 				v.Y = 0.0f;
 				float horizontal = v.Length();
 				if (horizontal > player.JumpSpeed * 1.5f)
@@ -1730,8 +1730,6 @@ namespace Lemma.Factories
 				}
 
 				bool precisionJumping = !onlyVault && aimMode && player.EnableBlockBuild && buildMap != null;
-
-				go |= precisionJumping;
 
 				if (go)
 				{

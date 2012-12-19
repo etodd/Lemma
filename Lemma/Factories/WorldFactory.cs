@@ -489,7 +489,7 @@ namespace Lemma.Factories
 			return result;
 		}
 
-		private bool boxesContain(IEnumerable<NonAxisAlignedBoundingBox> boxes, Vector3 position)
+		private static bool boxesContain(IEnumerable<NonAxisAlignedBoundingBox> boxes, Vector3 position)
 		{
 			foreach (NonAxisAlignedBoundingBox box in boxes)
 			{
@@ -499,31 +499,34 @@ namespace Lemma.Factories
 			return false;
 		}
 
-		private void processEntity(Entity entity, Zone currentZone, IEnumerable<NonAxisAlignedBoundingBox> boxes)
+		private static void processMap(Map map, IEnumerable<NonAxisAlignedBoundingBox> boxes)
+		{
+			foreach (Map.Chunk chunk in map.Chunks)
+			{
+				BoundingBox absoluteChunkBoundingBox = chunk.RelativeBoundingBox.Transform(map.Transform);
+				bool active = false;
+				foreach (NonAxisAlignedBoundingBox box in boxes)
+				{
+					if (box.BoundingBox.Intersects(absoluteChunkBoundingBox.Transform(box.Transform)))
+					{
+						active = true;
+						break;
+					}
+				}
+				if (chunk.Active && !active)
+					chunk.Deactivate();
+				else if (!chunk.Active && active)
+					chunk.Activate();
+			}
+		}
+
+		private static void processEntity(Entity entity, Zone currentZone, IEnumerable<NonAxisAlignedBoundingBox> boxes)
 		{
 			if (!entity.CannotSuspend)
 			{
 				Map map = entity.Get<Map>();
 				if (map != null && !typeof(DynamicMap).IsAssignableFrom(map.GetType()))
-				{
-					foreach (Map.Chunk chunk in map.Chunks)
-					{
-						BoundingBox absoluteChunkBoundingBox = chunk.RelativeBoundingBox.Transform(map.Transform);
-						bool active = false;
-						foreach (NonAxisAlignedBoundingBox box in boxes)
-						{
-							if (box.BoundingBox.Intersects(absoluteChunkBoundingBox.Transform(box.Transform)))
-							{
-								active = true;
-								break;
-							}
-						}
-						if (chunk.Active && !active)
-							chunk.Deactivate();
-						else if (!chunk.Active && active)
-							chunk.Activate();
-					}
-				}
+					processMap(map, boxes);
 				else
 				{
 					Transform transform = entity.Get<Transform>();
@@ -542,14 +545,14 @@ namespace Lemma.Factories
 
 					bool suspended;
 					if (currentZone != null && currentZone.Exclusive) // Suspend everything outside the current zone, unless it's connected
-						suspended = !currentZone.ConnectedEntities.Contains(entity) && hasPosition && !this.boxesContain(boxes, pos);
+						suspended = !currentZone.ConnectedEntities.Contains(entity) && hasPosition && !boxesContain(boxes, pos);
 					else
 					{
 						// Only suspend things that are connected or that are in other zones, or that are just too far away
 						suspended = (currentZone != null && currentZone.ConnectedEntities.Contains(entity));
 						if (!suspended && hasPosition)
 						{
-							if (!entity.CannotSuspendByDistance && !this.boxesContain(boxes, pos))
+							if (!entity.CannotSuspendByDistance && !boxesContain(boxes, pos))
 								suspended = true;
 							else
 							{
@@ -580,7 +583,7 @@ namespace Lemma.Factories
 			public Matrix Transform;
 		}
 
-		private IEnumerable<NonAxisAlignedBoundingBox> getActiveBoundingBoxes(Camera camera, Zone currentZone)
+		private static IEnumerable<NonAxisAlignedBoundingBox> getActiveBoundingBoxes(Camera camera, Zone currentZone)
 		{
 			if (currentZone == null)
 			{
@@ -611,12 +614,20 @@ namespace Lemma.Factories
 
 			result.Add(new CommandBinding<Entity>(main.EntityAdded, delegate(Entity e)
 			{
-				this.processEntity(e, currentZone, this.getActiveBoundingBoxes(main.Camera, currentZone));
+				processEntity(e, currentZone, getActiveBoundingBoxes(main.Camera, currentZone));
 			}));
 
-			IEnumerable<NonAxisAlignedBoundingBox> boxes = this.getActiveBoundingBoxes(main.Camera, currentZone);
+			IEnumerable<NonAxisAlignedBoundingBox> boxes = getActiveBoundingBoxes(main.Camera, currentZone);
 			foreach (Entity e in main.Entities)
-				this.processEntity(e, currentZone, boxes);
+				processEntity(e, currentZone, boxes);
+
+			result.Add("ProcessMap", new Command<Map>
+			{
+				Action = delegate(Map map)
+				{
+					processMap(map, boxes);
+				}
+			});
 
 			Property<float> reverbAmount = result.GetProperty<float>("ReverbAmount");
 			Property<float> reverbSize = result.GetProperty<float>("ReverbSize");
@@ -646,9 +657,9 @@ namespace Lemma.Factories
 						else
 							Sound.ReverbSettings(main, reverbAmount, reverbSize);
 
-						boxes = this.getActiveBoundingBoxes(main.Camera, newZone);
+						boxes = getActiveBoundingBoxes(main.Camera, newZone);
 						foreach (Entity e in main.Entities)
-							this.processEntity(e, newZone, boxes);
+							processEntity(e, newZone, boxes);
 
 						lastUpdatedCameraPosition = main.Camera.Position;
 					}
