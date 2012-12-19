@@ -27,10 +27,15 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public object Lock = new object();
 
-		public static Command<Map, Map.Coordinate, Map> GlobalCellEmptied = new Command<Map, Coordinate, Map>();
+		public static Command<Map, IEnumerable<Coordinate>, Map> GlobalCellsEmptied = new Command<Map, IEnumerable<Coordinate>, Map>();
+
+		public static Command<Map, IEnumerable<Coordinate>, Map> GlobalCellsFilled = new Command<Map, IEnumerable<Coordinate>, Map>();
 
 		[XmlIgnore]
-		public Command<Map.Coordinate, Map> CellEmptied = new Command<Coordinate, Map>();
+		public Command<IEnumerable<Coordinate>, Map> CellsEmptied = new Command<IEnumerable<Coordinate>, Map>();
+
+		[XmlIgnore]
+		public Command<IEnumerable<Coordinate>, Map> CellsFilled = new Command<IEnumerable<Coordinate>, Map>();
 
 		public struct MapVertex
 		{
@@ -242,7 +247,8 @@ namespace Lemma.Components
 
 					foreach (Box box in this.DataBoxes)
 					{
-						this.Map.regenerateSurfaces(box, true);
+						for (int i = 0; i < 6; i++)
+							box.Surfaces[i].RefreshTransform(box, (Direction)i);
 						this.Boxes.Add(box);
 					}
 
@@ -1059,6 +1065,7 @@ namespace Lemma.Components
 									newMapComponent.Offset.Value = spawn.Source.Offset;
 									newMapComponent.BuildFromBoxes(island);
 									spawn.Source.notifyEmptied(island.SelectMany(x => x.GetCoords()), newMapComponent);
+									newMapComponent.notifyFilled(island.SelectMany(x => x.GetCoords()), spawn.Source);
 									newMapComponent.Transform.Reset();
 									if (spawn.Source is DynamicMap)
 										newMapComponent.IsAffectedByGravity.Value = ((DynamicMap)spawn.Source).IsAffectedByGravity;
@@ -1108,6 +1115,14 @@ namespace Lemma.Components
 						result.Add(box.Height);
 						result.Add(box.Depth);
 						result.Add(box.Type.ID);
+						for (int i = 0; i < 6; i++)
+						{
+							Surface surface = box.Surfaces[i];
+							result.Add(surface.MinU);
+							result.Add(surface.MinV);
+							result.Add(surface.MaxU);
+							result.Add(surface.MaxV);
+						}
 						indexLookup.Add(box, index);
 						index++;
 					}
@@ -1141,16 +1156,28 @@ namespace Lemma.Components
 			{
 				int[] data = Map.deserializeData(value);
 
-				List<Box> boxes = new List<Box>();
-
 				int boxCount = data[0];
 
-				for (int i = 1; i < 1 + (boxCount * 7); i += 7)
+				Box[] boxes = new Box[boxCount];
+
+				const int boxDataSize = 31;
+
+				for (int i = 0; i < boxCount; i++)
 				{
-					if (data[i + 6] != 0)
+					// Format:
+					// x
+					// y
+					// z
+					// width
+					// height
+					// depth
+					// type
+					// MinU, MinV, MaxU, MaxV for each of six surfaces
+					int index = 1 + (i * boxDataSize);
+					if (data[index + 6] != 0)
 					{
-						CellState state = WorldFactory.States[data[i + 6]];
-						int x = data[i], y = data[i + 1], z = data[i + 2], w = data[i + 3], h = data[i + 4], d = data[i + 5];
+						CellState state = WorldFactory.States[data[index + 6]];
+						int x = data[index], y = data[index + 1], z = data[index + 2], w = data[index + 3], h = data[index + 4], d = data[index + 5];
 						int chunkX = this.minX + ((x - this.minX) / this.chunkSize) * this.chunkSize, chunkY = this.minY + ((y - this.minY) / this.chunkSize) * this.chunkSize, chunkZ = this.minZ + ((z - this.minZ) / this.chunkSize) * this.chunkSize;
 						int nextChunkX = this.minX + ((x + w - this.minX) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ) / this.chunkSize) * this.chunkSize;
 						for (int ix = chunkX; ix <= nextChunkX; ix += this.chunkSize)
@@ -1173,7 +1200,7 @@ namespace Lemma.Components
 									};
 									if (box.Width > 0 && box.Height > 0 && box.Depth > 0)
 									{
-										boxes.Add(box);
+										boxes[i] = box;
 										Chunk chunk = this.GetChunk(bx, by, bz);
 										if (chunk.DataBoxes == null)
 											chunk.DataBoxes = new List<Box>();
@@ -1183,10 +1210,23 @@ namespace Lemma.Components
 											for (int y1 = box.Y - chunk.Y; y1 < box.Y + box.Height - chunk.Y; y1++)
 											{
 												for (int z1 = box.Z - chunk.Z; z1 < box.Z + box.Depth - chunk.Z; z1++)
-												{
 													chunk.Data[x1, y1, z1] = box;
-												}
 											}
+										}
+										box.Surfaces[(int)Direction.NegativeX].W = box.X;
+										box.Surfaces[(int)Direction.PositiveX].W = box.X + box.Width;
+										box.Surfaces[(int)Direction.NegativeY].W = box.Y;
+										box.Surfaces[(int)Direction.PositiveY].W = box.Y + box.Height;
+										box.Surfaces[(int)Direction.NegativeZ].W = box.Z;
+										box.Surfaces[(int)Direction.PositiveZ].W = box.Z + box.Depth;
+										for (int j = 0; j < 6; j++)
+										{
+											int baseIndex = index + (j * 4) + 7;
+											Surface surface = box.Surfaces[j];
+											surface.MinU = data[baseIndex + 0];
+											surface.MinV = data[baseIndex + 1];
+											surface.MaxU = data[baseIndex + 2];
+											surface.MaxV = data[baseIndex + 3];
 										}
 									}
 								}
@@ -1195,11 +1235,14 @@ namespace Lemma.Components
 					}
 				}
 
-				for (int i = 1 + (boxCount * 7); i < data.Length; i += 2)
+				for (int i = 1 + (boxCount * boxDataSize); i < data.Length; i += 2)
 				{
 					Box box1 = boxes[data[i]], box2 = boxes[data[i + 1]];
-					box1.Adjacent.Add(box2);
-					box2.Adjacent.Add(box1);
+					if (box1 != null && box2 != null)
+					{
+						box1.Adjacent.Add(box2);
+						box2.Adjacent.Add(box1);
+					}
 				}
 
 				this.postDeserialization();
@@ -1422,23 +1465,26 @@ namespace Lemma.Components
 			lock (this.mutationLock)
 			{
 				Chunk chunk = this.GetChunk(x, y, z);
-				bool changed = false;
 				if (chunk != null && chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z] == null)
 				{
-					changed = true;
 					this.addBox(new Box { Type = state, X = x, Y = y, Z = z, Depth = 1, Height = 1, Width = 1 });
+					this.notifyFilled(new Coordinate[] { new Coordinate { X = x, Y = y, Z = z, Data = state } }, null);
+					return true;
 				}
-				return changed;
+				return false;
 			}
+		}
+
+		private void notifyFilled(IEnumerable<Coordinate> coords, Map transferredFromMap)
+		{
+			this.CellsFilled.Execute(coords, transferredFromMap);
+			Map.GlobalCellsFilled.Execute(this, coords, transferredFromMap);
 		}
 		
 		private void notifyEmptied(IEnumerable<Coordinate> coords, Map transferringToNewMap)
 		{
-			foreach (Coordinate coord in coords)
-			{
-				this.CellEmptied.Execute(coord, transferringToNewMap);
-				Map.GlobalCellEmptied.Execute(this, coord, transferringToNewMap);
-			}
+			this.CellsEmptied.Execute(coords, transferringToNewMap);
+			Map.GlobalCellsEmptied.Execute(this, coords, transferringToNewMap);
 
 			bool completelyEmptied = true;
 			foreach (Chunk chunk in this.Chunks)

@@ -15,7 +15,7 @@ namespace Lemma.Components
 		public Property<Entity.Handle> Map = new Property<Entity.Handle> { Editable = false };
 		public ListProperty<Map.Box> BaseBoxes = new ListProperty<Map.Box> { Editable = false };
 
-		private CommandBinding<Map.Coordinate, Map> cellEmptiedBinding;
+		private CommandBinding<IEnumerable<Map.Coordinate>, Map> cellEmptiedBinding;
 
 		public bool EnableCellEmptyBinding
 		{
@@ -93,9 +93,18 @@ namespace Lemma.Components
 					{
 						if (this.cellEmptiedBinding != null)
 							this.Remove(this.cellEmptiedBinding);
-						this.cellEmptiedBinding = new CommandBinding<Map.Coordinate, Map>(entity.Get<Map>().CellEmptied, delegate(Map.Coordinate coord, Map newMap)
+						this.cellEmptiedBinding = new CommandBinding<IEnumerable<Map.Coordinate>, Map>(entity.Get<Map>().CellsEmptied, delegate(IEnumerable<Map.Coordinate> coords, Map newMap)
 						{
-							if (coord.Data.Name == "Infected" && !this.IsValid)
+							bool check = false;
+							foreach (Map.Coordinate coord in coords)
+							{
+								if (coord.Data.Name == "Infected")
+								{
+									check = true;
+									break;
+								}
+							}
+							if (check && !this.IsValid)
 								this.Delete.Execute();
 						});
 						this.Add(this.cellEmptiedBinding);

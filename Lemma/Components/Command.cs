@@ -7,6 +7,14 @@ namespace Lemma.Components
 {
 	public class Command
 	{
+		public bool HasBindings
+		{
+			get
+			{
+				return this.bindings.Count > 0;
+			}
+		}
+
 		public Action Action;
 		protected List<BaseCommandBinding> bindings = new List<BaseCommandBinding>();
 

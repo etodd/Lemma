@@ -20,7 +20,7 @@ namespace Lemma.Factories
 
 			Binding<Matrix> attachmentBinding = null;
 			CommandBinding deleteBinding = null;
-			CommandBinding<Map.Coordinate, Map> cellEmptiedBinding = null;
+			CommandBinding<IEnumerable<Map.Coordinate>, Map> cellEmptiedBinding = null;
 
 			entity.Add(new NotifyBinding(delegate()
 			{
@@ -42,14 +42,18 @@ namespace Lemma.Factories
 				deleteBinding = new CommandBinding(m.Delete, entity.Delete);
 				entity.Add(deleteBinding);
 
-				cellEmptiedBinding = new CommandBinding<Map.Coordinate, Map>(m.CellEmptied, delegate(Map.Coordinate c, Map newMap)
+				cellEmptiedBinding = new CommandBinding<IEnumerable<Map.Coordinate>, Map>(m.CellsEmptied, delegate(IEnumerable<Map.Coordinate> coords, Map newMap)
 				{
-					if (c.Equivalent(coord))
+					foreach (Map.Coordinate c in coords)
 					{
-						if (newMap == null)
-							entity.Delete.Execute();
-						else
-							map.Value = newMap.Entity;
+						if (c.Equivalent(coord))
+						{
+							if (newMap == null)
+								entity.Delete.Execute();
+							else
+								map.Value = newMap.Entity;
+							break;
+						}
 					}
 				});
 				entity.Add(cellEmptiedBinding);

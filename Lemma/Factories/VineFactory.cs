@@ -74,7 +74,8 @@ namespace Lemma.Factories
 
 			Entity player = null;
 
-			const float movementInterval = 0.075f;
+			const float normalMovementInterval = 0.125f;
+			const float chaseMovementInterval = 0.075f;
 			const float cageMovementInterval = 0.015f;
 			const float damageTime = 3.0f;
 
@@ -87,6 +88,8 @@ namespace Lemma.Factories
 
 			List<Map.Coordinate> cageCoordinates = new List<Map.Coordinate>();
 
+			bool chasing = false;
+
 			result.Add(new Updater
 			{
 				delegate(float dt)
@@ -94,22 +97,31 @@ namespace Lemma.Factories
 					if (player == null || !player.Active)
 					{
 						player = main.Get("Player").FirstOrDefault();
-						if (player == null || !player.Active)
-							return;
+						if (player != null && !player.Active)
+							player = null;
 					}
 
-					if (path == null || path.Count == 0 || main.TotalTime - lastPathCalculation > 2.0f)
+					if (player == null)
+						chasing = false;
+
+					if (path == null || path.Count == 0 || (player != null && main.TotalTime - lastPathCalculation > 2.0f))
 					{
 						lastMovement = main.TotalTime;
-
-						Vector3 target = player.Get<Transform>().Position;
 
 						if (enemy.Map.Value.Target != null && enemy.Map.Value.Target.Active)
 						{
 							Map m = enemy.Map.Value.Target.Get<Map>();
-							if ((m.GetAbsolutePosition(coordinate) - target).Length() > operationalRadius && (m.GetAbsolutePosition(enemy.BaseBoxes.First().GetCoords().First()) - target).Length() > operationalRadius)
-								return;
-							path = m.CustomAStar(coordinate, m.GetCoordinate(target));
+							if (player != null)
+							{
+								Vector3 target = player.Get<Transform>().Position;
+								if ((m.GetAbsolutePosition(coordinate) - target).Length() > operationalRadius && (m.GetAbsolutePosition(enemy.BaseBoxes.First().GetCoords().First()) - target).Length() > operationalRadius)
+									return;
+								path = m.CustomAStar(coordinate, m.GetCoordinate(target));
+							}
+							else
+							{
+
+							}
 							lastPathCalculation = main.TotalTime;
 						}
 						else
@@ -119,12 +131,12 @@ namespace Lemma.Factories
 						}
 					}
 
-					float interval = movementInterval;
+					float interval = chaseMovementInterval;
 					Map m2 = enemy.Map.Value.Target.Get<Map>();
 
 					Vector3 currentPosition = m2.GetAbsolutePosition(coordinate);
 
-					bool closingIn = (currentPosition - player.Get<Transform>().Position).Length() < 5.0f;
+					bool closingIn = player != null && (currentPosition - player.Get<Transform>().Position).Length() < 5.0f;
 
 					if (closingIn)
 						interval = cageMovementInterval;
