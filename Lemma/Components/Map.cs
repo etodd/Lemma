@@ -239,8 +239,7 @@ namespace Lemma.Components
 
 			public void Instantiate()
 			{
-				this.Instantiated = true;
-				if (this.DataBoxes != null)
+				if (!this.Instantiated && this.DataBoxes != null)
 				{
 					foreach (Box b in this.DataBoxes)
 						this.Map.addBoxWithoutAdjacency(b);
@@ -265,14 +264,15 @@ namespace Lemma.Components
 						}
 					}
 				}
+				this.Instantiated = true;
 				this.Refresh();
 			}
 
 			public virtual void Activate()
 			{
+				this.Active = true;
 				if (!this.Instantiated)
 					this.Instantiate();
-				this.Active = true;
 			}
 
 			public virtual void Deactivate()
@@ -376,6 +376,11 @@ namespace Lemma.Components
 			}
 
 			public override void Refresh()
+			{
+				Map.workQueue.Enqueue(new WorkItem { StaticChunk = this, StaticChunkAction = StaticChunkAction.Refresh });
+			}
+
+			public void RefreshImmediately()
 			{
 				if (this.Map.main.EditorEnabled || !this.Map.EnablePhysics)
 					return;
@@ -531,21 +536,26 @@ namespace Lemma.Components
 				if (!this.Active)
 				{
 					base.Activate();
-					foreach (MeshEntry entry in this.meshes.Values)
+					Map.workQueue.Enqueue(new WorkItem { StaticChunk = this, StaticChunkAction = StaticChunkAction.Activate });
+				}
+			}
+
+			public void ActivateImmediately()
+			{
+				foreach (MeshEntry entry in this.meshes.Values)
+				{
+					if (entry.Mesh != null && !entry.Added)
 					{
-						if (entry.Mesh != null && !entry.Added)
-						{
-							entry.Added = true;
-							this.Map.main.Space.SpaceObjectBuffer.Add(entry.Mesh);
-						}
+						entry.Added = true;
+						this.Map.main.Space.SpaceObjectBuffer.Add(entry.Mesh);
 					}
-					foreach (BoxEntry entry in this.boxes.Values)
+				}
+				foreach (BoxEntry entry in this.boxes.Values)
+				{
+					if (!entry.Added)
 					{
-						if (!entry.Added)
-						{
-							entry.Added = true;
-							this.Map.main.Space.SpaceObjectBuffer.Add(entry.PhysicsObject);
-						}
+						entry.Added = true;
+						this.Map.main.Space.SpaceObjectBuffer.Add(entry.PhysicsObject);
 					}
 				}
 			}
@@ -555,21 +565,26 @@ namespace Lemma.Components
 				if (this.Active)
 				{
 					base.Deactivate();
-					foreach (MeshEntry entry in this.meshes.Values)
+					Map.workQueue.Enqueue(new WorkItem { StaticChunk = this, StaticChunkAction = StaticChunkAction.Deactivate });
+				}
+			}
+
+			public void DeactivateImmediately()
+			{
+				foreach (MeshEntry entry in this.meshes.Values)
+				{
+					if (entry.Mesh != null && entry.Added)
 					{
-						if (entry.Mesh != null && entry.Added)
-						{
-							entry.Added = false;
-							this.Map.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
-						}
+						entry.Added = false;
+						this.Map.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
 					}
-					foreach (BoxEntry entry in this.boxes.Values)
+				}
+				foreach (BoxEntry entry in this.boxes.Values)
+				{
+					if (entry.Added)
 					{
-						if (entry.Added)
-						{
-							entry.Added = false;
-							this.Map.main.Space.SpaceObjectBuffer.Remove(entry.PhysicsObject);
-						}
+						entry.Added = false;
+						this.Map.main.Space.SpaceObjectBuffer.Remove(entry.PhysicsObject);
 					}
 				}
 			}
@@ -1002,7 +1017,13 @@ namespace Lemma.Components
 			if (!main.EditorEnabled && this.EnablePhysics)
 			{
 				foreach (Chunk chunk in this.Chunks)
-					chunk.Refresh();
+				{
+					StaticChunk staticChunk = chunk as StaticChunk;
+					if (staticChunk != null)
+						staticChunk.RefreshImmediately();
+					else
+						chunk.Refresh();
+				}
 			}
 		}
 
@@ -1351,9 +1372,7 @@ namespace Lemma.Components
 					this.updateBounds();
 				}
 				else
-				{
 					return null;
-				}
 			}
 
 			int ix = (x - this.minX) / this.chunkSize, iy = (y - this.minY) / this.chunkSize, iz = (z - this.minZ) / this.chunkSize;
@@ -2364,9 +2383,13 @@ namespace Lemma.Components
 			workQueue.Enqueue(new WorkItem { Map = this, Callback = callback });
 		}
 
+		private enum StaticChunkAction { Refresh, Activate, Deactivate }
+
 		private class WorkItem
 		{
 			public Map Map;
+			public StaticChunk StaticChunk;
+			public StaticChunkAction StaticChunkAction;
 			public Action<List<DynamicMap>> Callback;
 		}
 
@@ -2377,7 +2400,23 @@ namespace Lemma.Components
 			while (true)
 			{
 				WorkItem item = Map.workQueue.Dequeue();
-				item.Map.RegenerateImmediately(item.Callback);
+				if (item.Map != null)
+					item.Map.RegenerateImmediately(item.Callback);
+				else
+				{
+					switch (item.StaticChunkAction)
+					{
+						case StaticChunkAction.Refresh:
+							item.StaticChunk.RefreshImmediately();
+							break;
+						case StaticChunkAction.Activate:
+							item.StaticChunk.ActivateImmediately();
+							break;
+						case StaticChunkAction.Deactivate:
+							item.StaticChunk.DeactivateImmediately();
+							break;
+					}
+				}
 			}
 		}
 

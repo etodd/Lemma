@@ -911,7 +911,7 @@ namespace Lemma.Factories
 				}
 			};
 
-			float lastWallRunEnded = -1.0f, lastWallRunJump = -1.0f;
+			float lastWallRunEnded = -1.0f, lastWallJump = -1.0f;
 			const float wallRunDelay = 0.5f;
 
 			Func<Player.WallRun, bool> activateWallRun = delegate(Player.WallRun state)
@@ -920,7 +920,7 @@ namespace Lemma.Factories
 				if ((!player.IsSupported || state == Player.WallRun.Straight))
 				{
 					bool wallRunDelayPassed = main.TotalTime - lastWallRunEnded > wallRunDelay;
-					bool wallRunJumpDelayPassed = main.TotalTime - lastWallRunJump > wallRunDelay;
+					bool wallRunJumpDelayPassed = main.TotalTime - lastWallJump > wallRunDelay;
 
 					Matrix matrix = Matrix.CreateRotationY(rotation);
 					Vector3 forwardVector = -matrix.Forward;
@@ -1582,13 +1582,21 @@ namespace Lemma.Factories
 				const float wallJumpHorizontalVelocityAmount = 0.75f;
 				const float wallJumpDistance = 2.0f;
 
-				Action<Map, Vector3, Map.CellState> wallJump = delegate(Map wallJumpMap, Vector3 absoluteWallNormal, Map.CellState wallType)
+				Action<Map, Direction, Map.Coordinate> wallJump = delegate(Map wallJumpMap, Direction wallNormalDirection, Map.Coordinate wallCoordinate)
 				{
+					lastWallRunMap = wallJumpMap;
+					lastWallDirection = wallNormalDirection.GetReverse();
+					lastWallJump = main.TotalTime;
+
+					Map.CellState wallType = wallJumpMap[wallCoordinate];
+					if (wallType.ID == 0) // Empty. Must be a block possibility that hasn't been instantiated yet
+						wallType = WorldFactory.StatesByName["Temporary"];
 					footsteps.Cue.Value = wallType.FootstepCue;
 					footsteps.Play.Execute();
 
 					wallJumping = true;
 					// Set up wall jump velocity
+					Vector3 absoluteWallNormal = wallJumpMap.GetAbsoluteVector(wallNormalDirection.GetVector());
 					Vector2 wallNormal2 = new Vector2(absoluteWallNormal.X, absoluteWallNormal.Z);
 					wallNormal2.Normalize();
 
@@ -1628,7 +1636,7 @@ namespace Lemma.Factories
 					if (wallRaycastHit != null)
 					{
 						Map m = wallRaycastHit.Value.Map;
-						wallJump(m, m.GetAbsoluteVector(m.GetRelativeDirection(wallRaycastDirection).GetReverse().GetVector()), m[wallRaycastHit.Value.Coordinate.Value]);
+						wallJump(m, wallRaycastHit.Value.Normal, wallRaycastHit.Value.Coordinate.Value);
 					}
 				}
 
@@ -1636,10 +1644,10 @@ namespace Lemma.Factories
 				// Add some velocity so we jump away from the wall a bit
 				if (!onlyVault && player.WallRunState.Value != Player.WallRun.None)
 				{
-					lastWallRunJump = main.TotalTime;
 					if (player.WallRunState.Value == Player.WallRun.Straight || player.WallRunState.Value == Player.WallRun.Down)
 					{
 						wallJumping = true;
+						lastWallJump = main.TotalTime;
 						Vector3 wallNormal = wallRunMap.GetAbsoluteVector(wallDirection.GetReverse().GetVector());
 						Vector2 wallNormal2 = Vector2.Normalize(new Vector2(wallNormal.X, wallNormal.Z));
 						jumpDirection = Vector2.Normalize(new Vector2(main.Camera.Forward.Value.X, main.Camera.Forward.Value.Z));
@@ -1651,8 +1659,7 @@ namespace Lemma.Factories
 					{
 						Vector3 pos = transform.Position + new Vector3(0, (player.Height * -0.5f) - 0.5f, 0);
 						Map.Coordinate coord = wallRunMap.GetCoordinate(pos);
-						Map.CellState wallType = wallRunMap[coord.Move(wallDirection, 2)];
-						wallJump(wallRunMap, wallRunMap.GetAbsoluteVector(wallDirection.GetReverse().GetVector()), wallType);
+						wallJump(wallRunMap, wallDirection.GetReverse(), coord.Move(wallDirection, 2));
 					}
 				}
 
@@ -1716,7 +1723,7 @@ namespace Lemma.Factories
 								if (coord.Between(possibility.StartCoord, possibility.EndCoord))
 								{
 									instantiateBlockPossibility(possibility);
-									wallJump(possibility.Map, possibility.Map.GetAbsoluteVector(possibility.Map.GetRelativeDirection(dir).GetReverse().GetVector()), WorldFactory.StatesByName["Temporary"]);
+									wallJump(possibility.Map, possibility.Map.GetRelativeDirection(dir).GetReverse(), coord);
 									wallJumping = true;
 									break;
 								}
