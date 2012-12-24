@@ -265,7 +265,7 @@ namespace Lemma.Components
 
 		private void show(Entity entity)
 		{
-			foreach (DictionaryEntry entry in new DictionaryEntry[] { new DictionaryEntry("[" + entity.Type.ToString() + " entity]", entity.Properties) }
+			foreach (DictionaryEntry entry in new DictionaryEntry[] { new DictionaryEntry("[" + entity.Type.ToString() + " entity]", entity.Properties.Concat(entity.Commands)) }
 				.Union(entity.Components.Where(x => ((Component)x.Value).Editable)))
 			{
 				IEnumerable<DictionaryEntry> properties = null;

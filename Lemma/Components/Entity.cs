@@ -55,6 +55,8 @@ namespace Lemma.Components
 	[XmlInclude(typeof(PhysicsSphere))]
 	[XmlInclude(typeof(ModelAlpha))]
 	[XmlInclude(typeof(EnemyBase))]
+	[XmlInclude(typeof(Agent))]
+	[XmlInclude(typeof(AI))]
 	public class Entity
 	{
 		public struct Handle
@@ -300,6 +302,15 @@ namespace Lemma.Components
 		}
 
 		[XmlIgnore]
+		public DictionaryEntry[] Commands
+		{
+			get
+			{
+				return this.commands.Select(x => new DictionaryEntry(x.Key, x.Value)).ToArray();
+			}
+		}
+
+		[XmlIgnore]
 		public Dictionary<string, IProperty> PropertyDictionary
 		{
 			get
@@ -477,6 +488,17 @@ namespace Lemma.Components
 				this.Add(name, result);
 			}
 			return (Property<T>)result;
+		}
+
+		public ListProperty<T> GetOrMakeListProperty<T>(string name)
+		{
+			IProperty result = null;
+			if (!this.properties.TryGetValue(name, out result))
+			{
+				result = new ListProperty<T>();
+				this.Add(name, result);
+			}
+			return (ListProperty<T>)result;
 		}
 
 		public ListProperty<T> GetListProperty<T>()

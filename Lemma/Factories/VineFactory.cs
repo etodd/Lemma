@@ -58,170 +58,278 @@ namespace Lemma.Factories
 				}, enemy.Map));
 			}
 
+			light.Add(new Binding<Vector3>(light.Position, enemy.Position));
+
+			ListProperty<Map.Coordinate> path = result.GetOrMakeListProperty<Map.Coordinate>("PathCoordinates");
+
+			Property<Entity.Handle> targetAgent = result.GetOrMakeProperty<Entity.Handle>("TargetAgent");
+
+			AI ai = result.GetOrCreate<AI>("AI");
+
+			PointLight positionLight = null;
 			if (!main.EditorEnabled)
 			{
-				PointLight positionLight = new PointLight();
+				positionLight = new PointLight();
 				positionLight.Serialize = false;
 				positionLight.Color.Value = new Vector3(1.5f, 0.5f, 0.5f);
 				positionLight.Attenuation.Value = 20.0f;
 				positionLight.Shadowed.Value = false;
+				positionLight.Add(new Binding<Vector3, string>(positionLight.Color, delegate(string state)
+				{
+					switch (state)
+					{
+						case "Chase":
+						case "Crush":
+							return new Vector3(1.5f, 0.5f, 0.5f);
+						case "Alert":
+							return new Vector3(1.5f, 1.5f, 0.5f);
+						default:
+							return new Vector3(0.5f, 1.3f, 0.5f);
+					}
+				}, ai.CurrentState));
 				result.Add("PositionLight", positionLight);
-
-				positionLight.Add(new Binding<Vector3>(positionLight.Position, () => enemy.Map.Value.Target != null && enemy.Map.Value.Target.Active ? enemy.Map.Value.Target.Get<Map>().GetAbsolutePosition(coordinate) : Vector3.Zero, enemy.Map, coordinate));
 			}
 
-			light.Add(new Binding<Vector3>(light.Position, enemy.Position));
+			Vector3 currentPosition = Vector3.Zero;
 
-			Entity player = null;
-
-			const float normalMovementInterval = 0.125f;
-			const float chaseMovementInterval = 0.075f;
-			const float cageMovementInterval = 0.015f;
-			const float damageTime = 3.0f;
-
-			float lastMovement = -1.0f;
-			float lastPathCalculation = -1.0f;
-
-			List<Map.Coordinate> path = new List<Map.Coordinate>();
-
-			bool lastClosingInValue = false;
-
-			List<Map.Coordinate> cageCoordinates = new List<Map.Coordinate>();
-
-			bool chasing = false;
-
-			result.Add(new Updater
+			AI.Task checkMap = new AI.Task
 			{
-				delegate(float dt)
+				Action = delegate()
 				{
-					if (player == null || !player.Active)
+					if (enemy.Map.Value.Target == null || !enemy.Map.Value.Target.Active)
+						result.Delete.Execute();
+					else
+						currentPosition = positionLight.Position.Value = enemy.Map.Value.Target.Get<Map>().GetAbsolutePosition(coordinate);
+				},
+			};
+
+			AI.Task checkOperationalRadius = new AI.Task
+			{
+				Interval = 2.0f,
+				Action = delegate()
+				{
+					bool shouldBeActive = (currentPosition - main.Camera.Position).Length() < operationalRadius || (enemy.Map.Value.Target.Get<Map>().GetAbsolutePosition(enemy.BaseBoxes.First().GetCoords().First()) - main.Camera.Position).Length() < operationalRadius;
+					if (shouldBeActive && ai.CurrentState == "Suspended")
+						ai.CurrentState.Value = "Idle";
+					else if (!shouldBeActive && ai.CurrentState != "Suspended")
+						ai.CurrentState.Value = "Suspended";
+				},
+			};
+
+			AI.Task checkTargetAgent = new AI.Task
+			{
+				Action = delegate()
+				{
+					Entity target = targetAgent.Value.Target;
+					if (target == null || !target.Active)
 					{
-						player = main.Get("Player").FirstOrDefault();
-						if (player != null && !player.Active)
-							player = null;
+						targetAgent.Value = null;
+						ai.CurrentState.Value = "Idle";
 					}
+				},
+			};
 
-					if (player == null)
-						chasing = false;
+			Action<Vector3> updatePath = delegate(Vector3 target)
+			{
+				Map m = enemy.Map.Value.Target.Get<Map>();
+				path.Clear();
+				foreach (Map.Coordinate c in m.CustomAStar(coordinate, m.GetCoordinate(target)))
+					path.Add(c);
+			};
 
-					if (path == null || path.Count == 0 || (player != null && main.TotalTime - lastPathCalculation > 2.0f))
+			Action advancePath = delegate()
+			{
+				if (path.Count > 0)
+				{
+					coordinate.Value = path[0];
+					path.RemoveAt(0);
+					if (enemy.BaseBoxes.FirstOrDefault(x => x.Contains(coordinate)) == null)
 					{
-						lastMovement = main.TotalTime;
-
-						if (enemy.Map.Value.Target != null && enemy.Map.Value.Target.Active)
-						{
-							Map m = enemy.Map.Value.Target.Get<Map>();
-							if (player != null)
-							{
-								Vector3 target = player.Get<Transform>().Position;
-								if ((m.GetAbsolutePosition(coordinate) - target).Length() > operationalRadius && (m.GetAbsolutePosition(enemy.BaseBoxes.First().GetCoords().First()) - target).Length() > operationalRadius)
-									return;
-								path = m.CustomAStar(coordinate, m.GetCoordinate(target));
-							}
-							else
-							{
-
-							}
-							lastPathCalculation = main.TotalTime;
-						}
-						else
-						{
-							result.Delete.Execute();
-							return;
-						}
+						Map m = enemy.Map.Value.Target.Get<Map>();
+						bool regenerate = m.Empty(coordinate);
+						regenerate |= m.Fill(coordinate, WorldFactory.StatesByName["Gravel"]);
+						if (regenerate)
+							m.Regenerate();
 					}
+					Sound.PlayCue(main, "VineMove", currentPosition);
+				}
+			};
 
-					float interval = chaseMovementInterval;
-					Map m2 = enemy.Map.Value.Target.Get<Map>();
+			Action randomPath = delegate()
+			{
+				Random random = new Random();
+				updatePath(currentPosition + new Vector3(((float)random.NextDouble() * 2.0f) - 1.0f, ((float)random.NextDouble() * 2.0f) - 1.0f, ((float)random.NextDouble() * 2.0f) - 1.0f) * 15.0f);
+			};
 
-					Vector3 currentPosition = m2.GetAbsolutePosition(coordinate);
-
-					bool closingIn = player != null && (currentPosition - player.Get<Transform>().Position).Length() < 5.0f;
-
-					if (closingIn)
-						interval = cageMovementInterval;
-
-					if (closingIn && !lastClosingInValue)
+			ai.Setup
+			(
+				new AI.State
+				{
+					Name = "Suspended",
+					Tasks = new[] { checkOperationalRadius },
+				},
+				new AI.State
+				{
+					Name = "Idle",
+					Enter = delegate(AI.State oldState)
+					{
+						randomPath();
+					},
+					Tasks = new[]
+					{
+						checkMap,
+						checkOperationalRadius,
+						new AI.Task
+						{
+							Interval = 1.0f,
+							Action = delegate()
+							{
+								Agent agent = Agent.Query(currentPosition, 20.0f, 8.0f);
+								if (agent != null)
+									ai.CurrentState.Value = "Alert";
+							},
+						},
+						new AI.Task
+						{
+							Interval = 3.0f,
+							Action = randomPath,
+						},
+						new AI.Task
+						{
+							Interval = 0.15f,
+							Action = advancePath,
+						},
+					},
+				},
+				new AI.State
+				{
+					Name = "Alert",
+					Tasks = new[]
+					{ 
+						checkMap,
+						checkOperationalRadius,
+						new AI.Task
+						{
+							Interval = 1.0f,
+							Action = delegate()
+							{
+								if (ai.TimeInCurrentState > 4.0f)
+									ai.CurrentState.Value = "Idle";
+								else
+								{
+									Agent agent = Agent.Query(currentPosition, 20.0f, 8.0f);
+									if (agent != null)
+									{
+										targetAgent.Value = agent.Entity;
+										ai.CurrentState.Value = "Chase";
+									}
+								}
+							},
+						},
+					},
+				},
+				new AI.State
+				{
+					Name = "Chase",
+					Enter = delegate(AI.State lastState)
+					{
+						updatePath(targetAgent.Value.Target.Get<Agent>().Position);
+					},
+					Tasks = new[]
+					{
+						checkMap,
+						checkOperationalRadius,
+						checkTargetAgent,
+						new AI.Task
+						{
+							Interval = 1.0f,
+							Action = delegate()
+							{
+								updatePath(targetAgent.Value.Target.Get<Agent>().Position);
+							},
+						},
+						new AI.Task
+						{
+							Interval = 0.075f,
+							Action = delegate()
+							{
+								Vector3 targetPosition = targetAgent.Value.Target.Get<Agent>().Position;
+								float targetDistance = (targetPosition - currentPosition).Length();
+								if (targetDistance > 30.0f || ai.TimeInCurrentState > 20.0f) // He got away
+									ai.CurrentState.Value = "Idle";
+								else if (targetDistance < 5.0f) // We got 'im
+									ai.CurrentState.Value = "Crush";
+								else
+									advancePath();
+							},
+						},
+					},
+				},
+				new AI.State
+				{
+					Name = "Crush",
+					Enter = delegate(AI.State lastState)
 					{
 						// Set up cage
-						cageCoordinates.Clear();
-						Map.Coordinate center = m2.GetCoordinate(player.Get<Transform>().Position);
-
-						// Coordinates are built in backwards order.
+						Map.Coordinate center = enemy.Map.Value.Target.Get<Map>().GetCoordinate(targetAgent.Value.Target.Get<Agent>().Position);
 
 						int radius = 1;
-
-						// Top
-						for (int x = center.X - radius; x <= center.X + radius; x++)
-						{
-							for (int z = center.Z - radius; z <= center.Z + radius; z++)
-								cageCoordinates.Add(new Map.Coordinate { X = x, Y = center.Y + 3, Z = z });
-						}
-
-						// Outer shell
-						radius = 2;
-						for (int y = center.Y + 3; y >= center.Y - 3; y--)
-						{
-							// Left
-							for (int z = center.Z - radius; z <= center.Z + radius; z++)
-								cageCoordinates.Add(new Map.Coordinate { X = center.X - radius, Y = y, Z = z });
-
-							// Right
-							for (int z = center.Z - radius; z <= center.Z + radius; z++)
-								cageCoordinates.Add(new Map.Coordinate { X = center.X + radius, Y = y, Z = z });
-
-							// Backward
-							for (int x = center.X - radius; x <= center.X + radius; x++)
-								cageCoordinates.Add(new Map.Coordinate { X = x, Y = y, Z = center.Z - radius });
-
-							// Forward
-							for (int x = center.X - radius; x <= center.X + radius; x++)
-								cageCoordinates.Add(new Map.Coordinate { X = x, Y = y, Z = center.Z + radius });
-						}
 
 						// Bottom
 						for (int x = center.X - radius; x <= center.X + radius; x++)
 						{
 							for (int z = center.Z - radius; z <= center.Z + radius; z++)
-								cageCoordinates.Add(new Map.Coordinate { X = x, Y = center.Y - 4, Z = z });
+								path.Add(new Map.Coordinate { X = x, Y = center.Y - 4, Z = z });
 						}
-					}
-					lastClosingInValue = closingIn;
 
-					bool regenerate = false;
-					while (main.TotalTime - lastMovement > interval)
-					{
-						if (closingIn)
+						// Outer shell
+						radius = 2;
+						for (int y = center.Y - 3; y <= center.Y + 3; y++)
 						{
-							player.Get<Player>().Health.Value -= interval / damageTime;
-							if (!player.Active)
-								break; // We killed her
-							if (cageCoordinates.Count > 0)
+							// Left
+							for (int z = center.Z - radius; z <= center.Z + radius; z++)
+								path.Add(new Map.Coordinate { X = center.X - radius, Y = y, Z = z });
+
+							// Right
+							for (int z = center.Z - radius; z <= center.Z + radius; z++)
+								path.Add(new Map.Coordinate { X = center.X + radius, Y = y, Z = z });
+
+							// Backward
+							for (int x = center.X - radius; x <= center.X + radius; x++)
+								path.Add(new Map.Coordinate { X = x, Y = y, Z = center.Z - radius });
+
+							// Forward
+							for (int x = center.X - radius; x <= center.X + radius; x++)
+								path.Add(new Map.Coordinate { X = x, Y = y, Z = center.Z + radius });
+						}
+
+						// Top
+						for (int x = center.X - radius; x <= center.X + radius; x++)
+						{
+							for (int z = center.Z - radius; z <= center.Z + radius; z++)
+								path.Add(new Map.Coordinate { X = x, Y = center.Y + 3, Z = z });
+						}
+					},
+					Tasks = new[]
+					{
+						checkMap,
+						checkOperationalRadius,
+						checkTargetAgent,
+						new AI.Task
+						{
+							Interval = 0.01f,
+							Action = delegate()
 							{
-								coordinate.Value = cageCoordinates[cageCoordinates.Count - 1];
-								cageCoordinates.RemoveAt(cageCoordinates.Count - 1);
+								Agent agent = targetAgent.Value.Target.Get<Agent>();
+								agent.Health.Value -= 0.01f / 1.5f; // seconds to kill
+								if ((agent.Position - currentPosition).Length() > 5.0f) // They're getting away
+									ai.CurrentState.Value = "Chase";
+								advancePath(); 
 							}
 						}
-						else if (path != null && path.Count > 0)
-						{
-							coordinate.Value = path[0];
-							path.RemoveAt(0);
-						}
-						else
-							break;
-						
-						if (enemy.BaseBoxes.FirstOrDefault(x => x.Contains(coordinate)) == null)
-						{
-							regenerate |= m2.Empty(coordinate);
-							regenerate |= m2.Fill(coordinate, WorldFactory.StatesByName["Gravel"]);
-						}
-						Sound.PlayCue(main, "VineMove", currentPosition);
-						lastMovement += interval;
-					}
-					if (regenerate)
-						m2.Regenerate();
+					},
 				}
-			});
+			);
 
 			EnemyBase.SpawnPickupsOnDeath(main, result);
 

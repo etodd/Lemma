@@ -141,6 +141,8 @@ namespace Lemma.Factories
 			Sound footsteps = result.Get<Sound>("Footsteps");
 			Timer footstepTimer = result.Get<Timer>("FootstepTimer");
 
+			// Build UI
+
 			UIRenderer ui = new UIRenderer();
 			ui.DrawOrder.Value = -1;
 			ui.EnabledWhenPaused.Value = false;
@@ -196,6 +198,13 @@ namespace Lemma.Factories
 			Updater update = new Updater();
 			update.EnabledInEditMode.Value = false;
 			result.Add(update);
+
+			// Set up AI agent
+			Agent agent = result.GetOrCreate<Agent>();
+			agent.Add(new TwoWayBinding<float>(player.Health, agent.Health));
+			agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
+			agent.Add(new Binding<float, Vector3>(agent.Speed, x => x.Length(), player.LinearVelocity));
+			agent.Add(new CommandBinding(agent.Delete, result.Delete));
 
 			Property<bool> thirdPerson = new Property<bool> { Value = false };
 #if DEBUG

@@ -1484,11 +1484,16 @@ namespace Lemma.Components
 			lock (this.mutationLock)
 			{
 				Chunk chunk = this.GetChunk(x, y, z);
-				if (chunk != null && chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z] == null)
+				if (chunk != null)
 				{
-					this.addBox(new Box { Type = state, X = x, Y = y, Z = z, Depth = 1, Height = 1, Width = 1 });
-					this.notifyFilled(new Coordinate[] { new Coordinate { X = x, Y = y, Z = z, Data = state } }, null);
-					return true;
+					if (!chunk.Instantiated)
+						chunk.Instantiate();
+					if (chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z] == null)
+					{
+						this.addBox(new Box { Type = state, X = x, Y = y, Z = z, Depth = 1, Height = 1, Width = 1 });
+						this.notifyFilled(new Coordinate[] { new Coordinate { X = x, Y = y, Z = z, Data = state } }, null);
+						return true;
+					}
 				}
 				return false;
 			}
@@ -1542,6 +1547,9 @@ namespace Lemma.Components
 
 					if (chunk == null || (!this.main.EditorEnabled && !this.EnablePhysics))
 						continue;
+
+					if (!chunk.Instantiated)
+						chunk.Instantiate();
 
 					Box box = chunk.Data[coord.X - chunk.X, coord.Y - chunk.Y, coord.Z - chunk.Z];
 					if (box != null && (!box.Type.Permanent || this.main.EditorEnabled))
@@ -1684,6 +1692,9 @@ namespace Lemma.Components
 
 				if (chunk == null || (!this.main.EditorEnabled && !this.EnablePhysics))
 					return false;
+
+				if (!chunk.Instantiated)
+					chunk.Instantiate();
 
 				Box box = chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];
 				if (box != null && (!box.Type.Permanent || this.main.EditorEnabled))

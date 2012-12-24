@@ -55,6 +55,23 @@ namespace Lemma.Factories
 		{
 			this.SetMain(result, main);
 
+			if (main.EditorEnabled)
+			{
+				result.Add("Spawn Here", new Command
+				{
+					Action = delegate()
+					{
+						((GameMain)main).StartSpawnPoint.Value = result.ID;
+						Editor editor = main.Get("Editor").First().Get<Editor>();
+						if (editor.NeedsSave)
+							editor.Save.Execute();
+						main.EditorEnabled.Value = false;
+						IO.MapLoader.Load(main, null, main.MapFile);
+					},
+					ShowInEditor = true,
+				});
+			}
+
 			Transform transform = result.Get<Transform>();
 
 			PlayerSpawn spawn = result.Get<PlayerSpawn>();
