@@ -14,6 +14,9 @@ namespace Lemma.Components
 
 		const float speedThreshold = 4.0f;
 
+		[XmlIgnore]
+		public Command Die = new Command();
+
 		public static Agent Query(Vector3 pos, float visionRadius, float soundRadius)
 		{
 			visionRadius *= visionRadius;
@@ -49,7 +52,7 @@ namespace Lemma.Components
 			this.Add(new NotifyBinding(delegate()
 			{
 				if (this.Health <= 0.0f)
-					this.Delete.Execute();
+					this.Die.Execute();
 			}, this.Health));
 		}
 

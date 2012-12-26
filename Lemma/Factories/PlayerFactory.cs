@@ -204,7 +204,7 @@ namespace Lemma.Factories
 			agent.Add(new TwoWayBinding<float>(player.Health, agent.Health));
 			agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
 			agent.Add(new Binding<float, Vector3>(agent.Speed, x => x.Length(), player.LinearVelocity));
-			agent.Add(new CommandBinding(agent.Delete, result.Delete));
+			agent.Add(new CommandBinding(agent.Die, result.Delete));
 
 			Property<bool> thirdPerson = new Property<bool> { Value = false };
 #if DEBUG
@@ -935,7 +935,7 @@ namespace Lemma.Factories
 					Vector3 forwardVector = -matrix.Forward;
 					Vector3 wallVector = state == Player.WallRun.Straight ? forwardVector : -(state == Player.WallRun.Left ? matrix.Left : matrix.Right);
 
-					Vector3 pos = transform.Position + new Vector3(0, (player.Height * -0.5f) - 0.5f, 0);
+					Vector3 pos = transform.Position + new Vector3(0, player.Height * -0.5f, 0);
 
 					// Attempt to wall-walk on an existing map
 					bool activate = false, addInitialVelocity = false;
@@ -974,7 +974,7 @@ namespace Lemma.Factories
 							if (activate)
 							{
 								// Move so the player is exactly two coordinates away from the wall
-								transform.Position.Value = map.GetAbsolutePosition(coord.Move(dir, i - 2)) + new Vector3(0, (player.Height * 0.5f) + 0.5f, 0);
+								transform.Position.Value = map.GetAbsolutePosition(coord.Move(dir, i - 2)) + new Vector3(0, player.Height * 0.5f, 0);
 								break;
 							}
 						}
@@ -1058,6 +1058,9 @@ namespace Lemma.Factories
 				Player.WallRun wallRunState = player.WallRunState;
 				if (wallRunState != Player.WallRun.None)
 				{
+					if (jump(true, true)) // Try to vault up
+						return;
+
 					if (!wallRunMap.Active)
 					{
 						deactivateWallRun();
@@ -1100,9 +1103,6 @@ namespace Lemma.Factories
 							return;
 						}
 					}
-
-					if (jump(true, true)) // Try to vault up
-						return;
 
 					model[wallRunState == Player.WallRun.Down ? "WallSlideDown" : (wallRunState == Player.WallRun.Straight ? "WallWalkStraight" : (wallRunState == Player.WallRun.Left ? "WallWalkLeft" : "WallWalkRight"))].Speed = Math.Min(1.0f, wallRunSpeed / 9.0f);
 
@@ -1785,6 +1785,12 @@ namespace Lemma.Factories
 								verticalMultiplier *= 1.2f;
 
 							player.LinearVelocity.Value = new Vector3(jumpDirection.X, player.JumpSpeed * verticalMultiplier, jumpDirection.Y) * totalMultiplier;
+						}
+						if (supported && player.SupportEntity.Value != null)
+						{
+							Vector3 impulsePosition = transform.Position + new Vector3(0, player.Height * -0.5f - player.SupportHeight, 0);
+							Vector3 impulse = player.LinearVelocity.Value * player.Body.Mass * -1.0f;
+							player.SupportEntity.Value.ApplyImpulse(ref impulsePosition, ref impulse);
 						}
 
 						player.IsSupported.Value = false;

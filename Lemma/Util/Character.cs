@@ -97,7 +97,7 @@ namespace Lemma.Util
 		/// The physics entity the player is currently standing on.
 		/// </summary>
 		[XmlIgnore]
-		public Property<object> SupportEntityTag = new Property<object>();
+		public Property<BEPUphysics.Entities.Entity> SupportEntity = new Property<BEPUphysics.Entities.Entity>();
 
 		[XmlIgnore]
 		public Command<Collidable, ContactCollection> Collided = new Command<Collidable, ContactCollection>();
@@ -204,7 +204,7 @@ namespace Lemma.Util
 
 			if (this.findSupport(out supportEntityTag, out supportEntity, out supportLocation, out supportNormal, out supportDistance))
 			{
-				this.SupportEntityTag.Value = supportEntityTag;
+				this.SupportEntity.Value = supportEntity;
 				this.SupportLocation.Value = supportLocation;
 				this.IsSupported.Value = true;
 				// Support location only has velocity if we're actually sitting on an entity, as opposed to some static geometry.
@@ -225,7 +225,7 @@ namespace Lemma.Util
 			}
 			else
 			{
-				this.SupportEntityTag.Value = null;
+				this.SupportEntity.Value = null;
 				this.IsSupported.Value = false;
 				this.HasTraction.Value = false;
 				if (this.EnableWalking)

@@ -156,8 +156,8 @@ namespace Lemma.Factories
 					MinEndSize = 0.3f,
 					MaxEndSize = 0.3f,
 					BlendState = BlendState.Opaque,
-					MinColor = new Color(0.5f, 0.6f, 0.7f),
-					MaxColor = new Color(0.5f, 0.6f, 0.7f),
+					MinColor = new Vector4(0.5f, 0.6f, 0.7f, 1.0f),
+					MaxColor = new Vector4(0.5f, 0.6f, 0.7f, 1.0f),
 				});
 				emitter.ParticleType.Reset();
 			}

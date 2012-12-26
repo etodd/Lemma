@@ -9,6 +9,44 @@ namespace Lemma.Factories
 {
 	public class MapBoundaryFactory : Factory
 	{
+		private List<Entity> boundaries = new List<Entity>();
+
+		const float fudgeFactor = 3.0f;
+		public bool IsInsideMap(Vector3 pos)
+		{
+			if (this.boundaries.Count == 0)
+				return true;
+			int intersections = 0;
+			bool enableFudgeFactor = false;
+			foreach (Entity boundary in this.boundaries)
+			{
+				if (!boundary.GetProperty<bool>("IsMapEdge"))
+					continue;
+
+				PhysicsBlock block = boundary.Get<PhysicsBlock>();
+				Matrix transform = block.Transform;
+				Vector3 normal = Vector3.TransformNormal(Vector3.Forward, transform);
+				float distanceToIntersection = Vector3.Dot((transform.Translation - pos), normal) / Vector3.Dot(Vector3.Forward, normal);
+				if (distanceToIntersection > 0.0f)
+				{
+					Vector3 absoluteIntersection = pos + (Vector3.Forward * distanceToIntersection);
+					Vector3 intersection = Vector3.Transform(absoluteIntersection, Matrix.Invert(transform));
+					Vector3 size = block.Size;
+					float distanceToEdge = (size.X * 0.5f) - (float)Math.Abs(intersection.X);
+					if (distanceToEdge > 0.0f)
+					{
+						if (distanceToEdge < fudgeFactor && distanceToIntersection > fudgeFactor)
+							enableFudgeFactor = true;
+						intersections++;
+					}
+				}
+			}
+			bool inside = intersections % 2 != 0;
+			if (!inside && enableFudgeFactor)
+				inside = true;
+			return inside;
+		}
+
 		public MapBoundaryFactory()
 		{
 			this.Color = new Vector3(1.0f, 1.0f, 0.7f);
@@ -40,8 +78,12 @@ namespace Lemma.Factories
 			model.DrawOrder.Value = 11;
 			result.Add("Model", model);
 
+			result.GetOrMakeProperty<bool>("IsMapEdge", true, true);
+
 			PhysicsBlock block = result.Get<PhysicsBlock>();
 			block.Box.BecomeKinematic();
+			this.boundaries.Add(result);
+			result.Add(new CommandBinding(result.Delete, delegate() { this.boundaries.Remove(result); }));
 			block.Add(new TwoWayBinding<Matrix>(transform.Matrix, block.Transform));
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 			model.Add(new Binding<Vector3>(model.Scale, x => new Vector3(x.X * 0.5f, x.Y * 0.5f, 1.0f), block.Size));

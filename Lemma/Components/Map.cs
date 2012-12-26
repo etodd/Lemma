@@ -909,6 +909,7 @@ namespace Lemma.Components
 			public Map.Coordinate? Coordinate;
 			public Vector3 Position;
 			public Direction Normal;
+			public float Distance;
 		}
 
 		public struct RaycastResult
@@ -916,27 +917,46 @@ namespace Lemma.Components
 			public Map.Coordinate? Coordinate;
 			public Vector3 Position;
 			public Direction Normal;
+			public float Distance;
 		}
 
 		public static GlobalRaycastResult GlobalRaycast(Vector3 start, Vector3 ray, float length)
 		{
 			// Voxel raycasting
 			GlobalRaycastResult result = new GlobalRaycastResult();
-			float closestDistance = length;
+			result.Distance = length;
 			foreach (Map map in Map.ActiveMaps)
 			{
-				RaycastResult hit = map.Raycast(start, ray, closestDistance);
-				if (hit.Coordinate != null)
+				RaycastResult hit = map.Raycast(start, ray, result.Distance);
+				if (hit.Coordinate != null && hit.Distance < result.Distance)
 				{
-					float distance = (hit.Position - start).Length();
-					if (distance < closestDistance)
-					{
-						closestDistance = distance;
-						result.Map = map;
-						result.Coordinate = hit.Coordinate;
-						result.Normal = hit.Normal;
-						result.Position = hit.Position;
-					}
+					result.Map = map;
+					result.Coordinate = hit.Coordinate;
+					result.Normal = hit.Normal;
+					result.Position = hit.Position;
+					result.Distance = hit.Distance;
+				}
+			}
+			return result;
+		}
+
+		public static GlobalRaycastResult GlobalRaycast(Vector3 start, Vector3 ray, float length, Func<Map, bool> filter)
+		{
+			// Voxel raycasting
+			GlobalRaycastResult result = new GlobalRaycastResult();
+			result.Distance = length;
+			foreach (Map map in Map.ActiveMaps)
+			{
+				if (!filter(map))
+					continue;
+				RaycastResult hit = map.Raycast(start, ray, result.Distance);
+				if (hit.Coordinate != null && hit.Distance < result.Distance)
+				{
+					result.Map = map;
+					result.Coordinate = hit.Coordinate;
+					result.Normal = hit.Normal;
+					result.Position = hit.Position;
+					result.Distance = hit.Distance;
 				}
 			}
 			return result;
@@ -1110,7 +1130,7 @@ namespace Lemma.Components
 				List<int> result = new List<int>();
 				lock (this.mutationLock)
 				{
-					List<Box> boxes = this.Chunks.SelectMany(x => x.Boxes).ToList();
+					List<Box> boxes = this.Chunks.Where(x => x.Data != null).SelectMany(x => x.Boxes).ToList();
 					bool[] modifications = this.simplify(boxes);
 					this.simplify(boxes, modifications);
 					this.applyChanges(boxes, modifications);
@@ -1152,6 +1172,8 @@ namespace Lemma.Components
 					index = 0;
 					foreach (Box box in boxes)
 					{
+						if (box.Adjacent == null)
+							continue;
 						foreach (Box adjacent in box.Adjacent)
 						{
 							if (box.Type.Permanent && adjacent.Type.Permanent)
@@ -1511,23 +1533,28 @@ namespace Lemma.Components
 			Map.GlobalCellsEmptied.Execute(this, coords, transferringToNewMap);
 
 			bool completelyEmptied = true;
-			foreach (Chunk chunk in this.Chunks)
+			if (this.additions.FirstOrDefault(x => x.Active) != null)
+				completelyEmptied = false;
+			else
 			{
-				if (chunk.DataBoxes != null && chunk.DataBoxes.Count > 0)
+				foreach (Chunk chunk in this.Chunks)
 				{
-					completelyEmptied = false;
-					break;
-				}
-				foreach (Box box in chunk.Boxes)
-				{
-					if (box.Active)
+					if (chunk.DataBoxes != null && chunk.DataBoxes.Count > 0)
 					{
 						completelyEmptied = false;
 						break;
 					}
+					foreach (Box box in chunk.Boxes)
+					{
+						if (box.Active)
+						{
+							completelyEmptied = false;
+							break;
+						}
+					}
+					if (!completelyEmptied)
+						break;
 				}
-				if (!completelyEmptied)
-					break;
 			}
 
 			if (completelyEmptied)
@@ -3436,6 +3463,7 @@ namespace Lemma.Components
 			// Adapted from PolyVox
 			// http://www.volumesoffun.com/polyvox/documentation/library/doc/html/_raycast_8inl_source.html
 
+			Vector3 absoluteStart = start;
 			start = this.GetRelativePosition(start);
 			end = this.GetRelativePosition(end);
 
@@ -3578,7 +3606,10 @@ namespace Lemma.Components
 
 					RaycastResult result = this.raycastChunk(intersections[0], intersections[1], c);
 					if (result.Coordinate != null)
+					{
+						result.Distance = (result.Position - absoluteStart).Length();
 						return result;
+					}
 				}
 			}
 
@@ -3994,6 +4025,7 @@ namespace Lemma.Components
 		void IUpdateableComponent.Update(float dt)
 		{
 			this.Transform.Changed();
+			this.LinearVelocity.Changed();
 		}
 
 		protected override void delete()

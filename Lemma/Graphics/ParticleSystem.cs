@@ -118,8 +118,8 @@ namespace Lemma.Components
 
 			// Range of values controlling the particle color and alpha. Values for
 			// individual particles are randomly chosen from somewhere between these limits.
-			public Color MinColor = Color.White;
-			public Color MaxColor = Color.White;
+			public Vector4 MinColor = Vector4.One;
+			public Vector4 MaxColor = Vector4.One;
 
 
 			// Range of values controlling how fast the particles rotate. Values for
@@ -154,7 +154,7 @@ namespace Lemma.Components
 		}
 		#endregion
 
-		public static void Add(Main main, string type, ParticleSystem.ParticleSettings settings)
+		public static ParticleSystem Add(Main main, string type, ParticleSystem.ParticleSettings settings)
 		{
 			ParticleSystem system = new ParticleSystem();
 			system.Type.Value = type;
@@ -165,33 +165,11 @@ namespace Lemma.Components
 			ParticleSystem.systems.Add(system.Type, system);
 
 			main.AddComponent(system);
+			return system;
 		}
 
 		private static void initialize(Main main)
 		{
-			ParticleSystem.Add(main, "Sparks",
-			new ParticleSystem.ParticleSettings
-			{
-				TextureName = "Particles\\spark",
-				MaxParticles = 1000,
-				Duration = TimeSpan.FromSeconds(1.0f),
-				MinHorizontalVelocity = 0.0f,
-				MaxHorizontalVelocity = 0.0f,
-				MinVerticalVelocity = 0.0f,
-				MaxVerticalVelocity = 0.0f,
-				Gravity = new Vector3(0.0f, 0.0f, 0.0f),
-				EndVelocity = 0.0f,
-				MinRotateSpeed = -20.0f,
-				MaxRotateSpeed = 20.0f,
-				MinStartSize = 0.5f,
-				MaxStartSize = 0.4f,
-				MinEndSize = 0.2f,
-				MaxEndSize = 0.1f,
-				BlendState = BlendState.Additive,
-				MinColor = new Color(0.75f, 2.0f, 0.75f),
-				MaxColor = new Color(0.75f, 2.0f, 0.75f),
-			});
-
 			ParticleSystem.Add(main, "Splash",
 			new ParticleSystem.ParticleSettings
 			{
@@ -210,38 +188,17 @@ namespace Lemma.Components
 				MinEndSize = 0.0f,
 				MaxEndSize = 0.0f,
 				BlendState = BlendState.AlphaBlend,
-				MinColor = new Color(0.8f, 0.8f, 0.8f),
-				MaxColor = new Color(0.8f, 0.8f, 0.8f),
+				MinColor = new Vector4(0.7f, 0.75f, 0.8f, 1.0f),
+				MaxColor = new Vector4(0.7f, 0.75f, 0.8f, 1.0f),
 			});
 
-			ParticleSystem.Add(main, "Smoke",
-			new ParticleSystem.ParticleSettings
-			{
-				TextureName = "Particles\\smoke",
-				MaxParticles = 1000,
-				Duration = TimeSpan.FromSeconds(2.0f),
-				MinHorizontalVelocity = -1.0f,
-				MaxHorizontalVelocity = 1.0f,
-				MinVerticalVelocity = 1.0f,
-				MaxVerticalVelocity = 3.0f,
-				Gravity = new Vector3(0.0f, -2.0f, 0.0f),
-				MinRotateSpeed = 0.0f,
-				MaxRotateSpeed = 0.0f,
-				MinStartSize = 0.5f,
-				MaxStartSize = 1.0f,
-				MinEndSize = 2.0f,
-				MaxEndSize = 4.0f,
-				BlendState = BlendState.AlphaBlend,
-				MinColor = new Color(1.0f, 1.0f, 1.0f),
-				MaxColor = new Color(1.0f, 1.0f, 1.0f),
-			});
-
+#if DEBUG
 			ParticleSystem.Add(main, "Debug",
 			new ParticleSystem.ParticleSettings
 			{
 				TextureName = "Particles\\debug",
-				MaxParticles = 1000,
-				Duration = TimeSpan.FromSeconds(5.0f),
+				MaxParticles = 10000,
+				Duration = TimeSpan.FromSeconds(1.0f),
 				MinHorizontalVelocity = 0.0f,
 				MaxHorizontalVelocity = 0.0f,
 				MinVerticalVelocity = 0.0f,
@@ -254,9 +211,10 @@ namespace Lemma.Components
 				MinEndSize = 0.5f,
 				MaxEndSize = 0.5f,
 				BlendState = BlendState.AlphaBlend,
-				MinColor = Color.White,
-				MaxColor = Color.White,
+				MinColor = Vector4.One,
+				MaxColor = Vector4.One,
 			});
+#endif
 
 			ParticleSystem.Add(main, "Distortion",
 			new ParticleSystem.ParticleSettings
@@ -278,8 +236,8 @@ namespace Lemma.Components
 				MinEndSize = 2.0f,
 				MaxEndSize = 4.0f,
 				BlendState = BlendState.AlphaBlend,
-				MinColor = new Color(1.0f, 1.0f, 1.0f),
-				MaxColor = new Color(1.0f, 1.0f, 1.0f),
+				MinColor = Vector4.One,
+				MaxColor = Vector4.One,
 			});
 
 			ParticleSystem.Add(main, "DistortionSmall",
@@ -302,30 +260,8 @@ namespace Lemma.Components
 				MinEndSize = 0.3f,
 				MaxEndSize = 0.4f,
 				BlendState = BlendState.AlphaBlend,
-				MinColor = new Color(0.8f, 0.9f, 1.0f),
-				MaxColor = new Color(0.8f, 0.9f, 1.0f),
-			});
-
-			ParticleSystem.Add(main, "Purple",
-			new ParticleSystem.ParticleSettings
-			{
-				TextureName = "Particles\\default",
-				MaxParticles = 1000,
-				Duration = TimeSpan.FromSeconds(6.0f),
-				MinHorizontalVelocity = -0.5f,
-				MaxHorizontalVelocity = 0.5f,
-				MinVerticalVelocity = -0.5f,
-				MaxVerticalVelocity = 0.5f,
-				Gravity = new Vector3(0.0f, 0.0f, 0.0f),
-				MinRotateSpeed = 0.0f,
-				MaxRotateSpeed = 0.0f,
-				MinStartSize = 0.2f,
-				MaxStartSize = 0.2f,
-				MinEndSize = 0.2f,
-				MaxEndSize = 0.2f,
-				BlendState = BlendState.Additive,
-				MinColor = new Color(0.8f, 0.3f, 1.5f),
-				MaxColor = new Color(1.0f, 0.5f, 2.0f),
+				MinColor = new Vector4(0.8f, 0.9f, 1.0f, 1.0f),
+				MaxColor = new Vector4(0.8f, 0.9f, 1.0f, 1.0f),
 			});
 		}
 
@@ -549,8 +485,8 @@ namespace Lemma.Components
 			parameters["DurationRandomness"].SetValue(this.settings.DurationRandomness);
 			parameters["Gravity"].SetValue(this.settings.Gravity);
 			parameters["EndVelocity"].SetValue(this.settings.EndVelocity);
-			parameters["MinColor"].SetValue(this.settings.MinColor.ToVector4());
-			parameters["MaxColor"].SetValue(this.settings.MaxColor.ToVector4());
+			parameters["MinColor"].SetValue(this.settings.MinColor);
+			parameters["MaxColor"].SetValue(this.settings.MaxColor);
 
 			EffectParameter param = parameters["RotateSpeed"];
 			if (param != null)

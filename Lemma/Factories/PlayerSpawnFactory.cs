@@ -53,6 +53,31 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
+			if (ParticleSystem.Get(main, "Purple") == null)
+			{
+				ParticleSystem.Add(main, "Purple",
+				new ParticleSystem.ParticleSettings
+				{
+					TextureName = "Particles\\default",
+					MaxParticles = 1000,
+					Duration = TimeSpan.FromSeconds(6.0f),
+					MinHorizontalVelocity = -0.5f,
+					MaxHorizontalVelocity = 0.5f,
+					MinVerticalVelocity = -0.5f,
+					MaxVerticalVelocity = 0.5f,
+					Gravity = new Vector3(0.0f, 0.0f, 0.0f),
+					MinRotateSpeed = 0.0f,
+					MaxRotateSpeed = 0.0f,
+					MinStartSize = 0.2f,
+					MaxStartSize = 0.2f,
+					MinEndSize = 0.2f,
+					MaxEndSize = 0.2f,
+					BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Additive,
+					MinColor = new Vector4(0.8f, 0.3f, 1.5f, 1.0f),
+					MaxColor = new Vector4(1.0f, 0.5f, 2.0f, 1.0f),
+				});
+			}
+
 			this.SetMain(result, main);
 
 			if (main.EditorEnabled)

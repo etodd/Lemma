@@ -40,6 +40,32 @@ namespace Lemma.Factories
 			light.Attenuation.Value = 10.0f;
 			result.Add("Light", light);
 
+			if (ParticleSystem.Get(main, "Sparks") == null)
+			{
+				ParticleSystem.Add(main, "Sparks",
+				new ParticleSystem.ParticleSettings
+				{
+					TextureName = "Particles\\spark",
+					MaxParticles = 1000,
+					Duration = TimeSpan.FromSeconds(1.0f),
+					MinHorizontalVelocity = 0.0f,
+					MaxHorizontalVelocity = 0.0f,
+					MinVerticalVelocity = 0.0f,
+					MaxVerticalVelocity = 0.0f,
+					Gravity = new Vector3(0.0f, 0.0f, 0.0f),
+					EndVelocity = 0.0f,
+					MinRotateSpeed = -20.0f,
+					MaxRotateSpeed = 20.0f,
+					MinStartSize = 0.5f,
+					MaxStartSize = 0.4f,
+					MinEndSize = 0.2f,
+					MaxEndSize = 0.1f,
+					BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Additive,
+					MinColor = new Vector4(0.75f, 2.0f, 0.75f, 1.0f),
+					MaxColor = new Vector4(0.75f, 2.0f, 0.75f, 1.0f),
+				});
+			}
+
 			ParticleEmitter emitter = new ParticleEmitter();
 			emitter.ParticleType.Value = "Sparks";
 			emitter.ParticlesPerSecond.Value = 200;

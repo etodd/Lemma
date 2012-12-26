@@ -61,7 +61,7 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Vector3> SupportLocation = new Property<Vector3> { Editable = false };
 		[XmlIgnore]
-		public Property<object> SupportEntityTag = new Property<object> { Editable = false };
+		public Property<BEPUphysics.Entities.Entity> SupportEntity = new Property<BEPUphysics.Entities.Entity> { Editable = false };
 		public Property<Vector3> LinearVelocity = new Property<Vector3> { Editable = false };
 		[XmlIgnore]
 		public Property<bool> AllowUncrouch = new Property<bool> { Editable = false, Value = true };
@@ -162,7 +162,7 @@ namespace Lemma.Components
 			this.Add(new TwoWayBinding<WallRun>(this.WallRunState, this.character.WallRunState));
 			this.Add(new TwoWayBinding<bool>(this.EnableWalking, this.character.EnableWalking));
 			this.Add(new TwoWayBinding<Vector3>(this.character.SupportLocation, this.SupportLocation));
-			this.Add(new TwoWayBinding<object>(this.character.SupportEntityTag, this.SupportEntityTag));
+			this.Add(new TwoWayBinding<BEPUphysics.Entities.Entity>(this.character.SupportEntity, this.SupportEntity));
 			this.Add(new TwoWayBinding<bool>(this.Crouched, this.character.Crouched));
 			this.Add(new TwoWayBinding<bool>(this.AllowUncrouch, this.character.AllowUncrouch));
 			this.Add(new TwoWayBinding<float>(this.SupportHeight, this.character.SupportHeight));

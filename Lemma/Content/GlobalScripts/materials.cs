@@ -20,8 +20,33 @@ if (ParticleSystem.Get(main, "Shatter") == null)
 		MinEndSize = 0.0f,
 		MaxEndSize = 0.0f,
 		BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Additive,
-		MinColor = new Color(0.75f, 2.0f, 0.75f),
-		MaxColor = new Color(0.75f, 2.0f, 0.75f),
+		MinColor = new Vector4(0.75f, 2.0f, 0.75f, 1.0f),
+		MaxColor = new Vector4(0.75f, 2.0f, 0.75f, 1.0f),
+	});
+}
+
+if (ParticleSystem.Get(main, "Smoke") == null)
+{
+	ParticleSystem.Add(main, "Smoke",
+	new ParticleSystem.ParticleSettings
+	{
+		TextureName = "Particles\\smoke",
+		MaxParticles = 1000,
+		Duration = TimeSpan.FromSeconds(2.0f),
+		MinHorizontalVelocity = -1.0f,
+		MaxHorizontalVelocity = 1.0f,
+		MinVerticalVelocity = 1.0f,
+		MaxVerticalVelocity = 3.0f,
+		Gravity = new Vector3(0.0f, -2.0f, 0.0f),
+		MinRotateSpeed = 0.0f,
+		MaxRotateSpeed = 0.0f,
+		MinStartSize = 0.5f,
+		MaxStartSize = 1.0f,
+		MinEndSize = 2.0f,
+		MaxEndSize = 4.0f,
+		BlendState = Microsoft.Xna.Framework.Graphics.BlendState.AlphaBlend,
+		MinColor = new Vector4(1.0f, 1.0f, 1.0f, 1.0f),
+		MaxColor = new Vector4(1.0f, 1.0f, 1.0f, 1.0f),
 	});
 }
 

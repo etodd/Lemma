@@ -57,6 +57,8 @@ namespace Lemma.Components
 	[XmlInclude(typeof(EnemyBase))]
 	[XmlInclude(typeof(Agent))]
 	[XmlInclude(typeof(AI))]
+	[XmlInclude(typeof(PID))]
+	[XmlInclude(typeof(PID3))]
 	public class Entity
 	{
 		public struct Handle

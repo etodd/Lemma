@@ -269,8 +269,11 @@ namespace Lemma.Factories
 
 					physicsBinding.Enabled = true;
 
-					result.Remove(attachBinding);
-					attachBinding = null;
+					if (attachBinding != null)
+					{
+						result.Remove(attachBinding);
+						attachBinding = null;
+					}
 				}
 			});
 

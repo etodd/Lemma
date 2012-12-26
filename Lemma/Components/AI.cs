@@ -9,7 +9,7 @@ namespace Lemma.Components
 {
 	[XmlInclude(typeof(AI.Task))]
 	[XmlInclude(typeof(AI.State))]
-	public class AI : Component, IEnumerable<AI.State>, IUpdateableComponent
+	public class AI : Component, IUpdateableComponent
 	{
 		public class Task
 		{
@@ -28,16 +28,6 @@ namespace Lemma.Components
 			[XmlIgnore]
 			public Action<State> Exit;
 			public Task[] Tasks;
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return this.states.Values.GetEnumerator();
-		}
-
-		IEnumerator<State> IEnumerable<State>.GetEnumerator()
-		{
-			return this.states.Values.GetEnumerator();
 		}
 
 		[XmlArray("States")]
@@ -80,7 +70,7 @@ namespace Lemma.Components
 
 		public void Add(State state)
 		{
-			if (this.currentState == null)
+			if (this.currentState == null && this.CurrentState.InternalValue == null)
 			{
 				this.currentState = state;
 				this.CurrentState.InternalValue = state.Name;
@@ -96,6 +86,8 @@ namespace Lemma.Components
 					task._leftOverIntervalTime = existingTask._leftOverIntervalTime;
 				}
 				existingState.Tasks = state.Tasks;
+				if (existingState == this.currentState && this.TimeInCurrentState == 0.0f && existingState.Enter != null)
+					existingState.Enter(null);
 			}
 			else
 				this.states[state.Name] = state;
@@ -110,18 +102,18 @@ namespace Lemma.Components
 			{
 				if (this.switching)
 					throw new Exception("Cannot switch states from inside a state exit function.");
-				if (value == this.CurrentState.InternalValue || value == null)
+				if ((value == this.CurrentState.InternalValue && !this.CurrentState.IsInitializing) || value == null || main.EditorEnabled)
 					return;
 				this.CurrentState.InternalValue = value;
 				State oldState = this.currentState;
 				this.currentState = this.states[value];
-				if (!this.CurrentState.IsInitializing)
+				if (!this.CurrentState.IsInitializing || this.TimeInCurrentState == 0.0f)
 				{
 					this.TimeInCurrentState.Value = 0.0f;
 					this.switching = true;
 					foreach (Task t in this.currentState.Tasks)
 						t._leftOverIntervalTime = 0.0f;
-					if (oldState.Exit != null)
+					if (oldState != null && oldState.Exit != null)
 						oldState.Exit(this.currentState);
 					this.switching = false;
 					if (this.currentState.Enter != null)
