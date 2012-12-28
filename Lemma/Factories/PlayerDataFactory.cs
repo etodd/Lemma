@@ -46,6 +46,7 @@ namespace Lemma.Factories
 			result.Add("Stamina", new Property<int> { Value = 100 });
 			result.Add("Pistol", new Property<Entity.Handle> { Editable = false });
 			result.Add("Phone", new Property<Entity.Handle> { Editable = false });
+			result.Add("Headlamp", new Property<Entity.Handle> { Editable = false });
 			result.Add("GameTime", new Property<float> { Editable = false });
 
 			return result;

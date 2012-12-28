@@ -78,6 +78,7 @@ namespace Lemma.Factories
 			result.Add("Submerged", new Property<bool> { Editable = false });
 
 			result.Add("Pistol", new Property<Entity.Handle> { Editable = false });
+			result.Add("Headlamp", new Property<Entity.Handle> { Editable = false });
 			result.Add("Phone", new Property<Entity.Handle> { Editable = false });
 			result.Add("Rotation", new Property<float> { Editable = false });
 			result.Add("Data", new Property<Entity.Handle> { Editable = false });
@@ -163,7 +164,7 @@ namespace Lemma.Factories
 
 			Container healthContainer = new Container();
 			healthContainer.PaddingBottom.Value = healthContainer.PaddingLeft.Value = healthContainer.PaddingRight.Value = healthContainer.PaddingTop.Value = 1;
-			healthContainer.Add(new Binding<Microsoft.Xna.Framework.Color>(healthContainer.Tint, () => player.Sprint || player.SlowMotion ? Microsoft.Xna.Framework.Color.Red : Microsoft.Xna.Framework.Color.White, player.Sprint, player.SlowMotion));
+			healthContainer.Add(new Binding<Microsoft.Xna.Framework.Color>(healthContainer.Tint, () => player.Sprint || player.SlowMotion || player.SlowBurnStamina ? Microsoft.Xna.Framework.Color.Red : Microsoft.Xna.Framework.Color.White, player.Sprint, player.SlowMotion, player.SlowBurnStamina));
 			healthContainer.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
 			healthContainer.Add(new Binding<Vector2, Point>(healthContainer.Position, x => new Vector2(x.X * 0.5f, x.Y - healthBarHeight), main.ScreenSize));
 			ui.Root.Children.Add(healthContainer);
@@ -212,6 +213,7 @@ namespace Lemma.Factories
 #endif
 
 			Property<Entity.Handle> pistol = result.GetProperty<Entity.Handle>("Pistol");
+			Property<Entity.Handle> headlamp = result.GetProperty<Entity.Handle>("Headlamp");
 			Property<Entity.Handle> phone = result.GetProperty<Entity.Handle>("Phone");
 			Binding<bool> phoneActiveBinding = null;
 			Action setupPhone = delegate()
@@ -256,6 +258,7 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
 					result.Add(new TwoWayBinding<Entity.Handle>(data.Value.Target.GetProperty<Entity.Handle>("Pistol"), pistol));
 					result.Add(new TwoWayBinding<Entity.Handle>(data.Value.Target.GetProperty<Entity.Handle>("Phone"), phone));
+					result.Add(new TwoWayBinding<Entity.Handle>(data.Value.Target.GetProperty<Entity.Handle>("Headlamp"), headlamp));
 				}
 			});
 
@@ -268,6 +271,14 @@ namespace Lemma.Factories
 			result.Add(new CommandBinding(result.Delete, delegate()
 			{
 				Entity p = phone.Value.Target;
+				if (p != null)
+					p.GetCommand("Detach").Execute();
+
+				p = headlamp.Value.Target;
+				if (p != null)
+					p.GetCommand("Detach").Execute();
+
+				p = pistol.Value.Target;
 				if (p != null)
 					p.GetCommand("Detach").Execute();
 			}));
@@ -1317,7 +1328,7 @@ namespace Lemma.Factories
 					buildReticle.Enabled.Value = false;
 			});
 
-			input.Bind(settings.TogglePistol, PCInput.InputState.Down, delegate()
+			input.Bind(settings.ToggleItem1, PCInput.InputState.Down, delegate()
 			{
 				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload"))
 					return;
@@ -1332,7 +1343,17 @@ namespace Lemma.Factories
 				}
 			});
 
-			input.Bind(settings.ToggleLevitate, PCInput.InputState.Down, delegate()
+			input.Bind(settings.ToggleItem2, PCInput.InputState.Down, delegate()
+			{
+				Entity h = headlamp.Value.Target;
+				if (h != null)
+				{
+					Property<bool> headlampActive = h.GetProperty<bool>("Active");
+					headlampActive.Value = !headlampActive;
+				}
+			});
+
+			input.Bind(settings.ToggleItem3, PCInput.InputState.Down, delegate()
 			{
 				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || !player.EnableLevitation)
 					return;
@@ -1896,6 +1917,8 @@ namespace Lemma.Factories
 				player.SlowMotion.Value = false;
 			});
 
+			// Pistol
+
 			NotifyBinding pistolActiveBinding = null;
 
 			if (pistol.Value.Target == null)
@@ -1905,8 +1928,7 @@ namespace Lemma.Factories
 					(Action)pistol.Reset
 				});
 			}
-
-			// Pistol
+			
 			pistol.Set = delegate(Entity.Handle value)
 			{
 				if (pistolActiveBinding != null)
@@ -1941,6 +1963,41 @@ namespace Lemma.Factories
 					updatePistolAnimation();
 					pistolActiveBinding = new NotifyBinding(updatePistolAnimation, pistolActive);
 					result.Add(pistolActiveBinding);
+				}
+			};
+
+			// Headlamp
+
+			IBinding headlampActiveBinding = null;
+
+			if (headlamp.Value.Target == null)
+			{
+				result.Add(new PostInitialization
+				{
+					(Action)headlamp.Reset
+				});
+			}
+
+			headlamp.Set = delegate(Entity.Handle value)
+			{
+				if (headlampActiveBinding != null)
+					result.Remove(headlampActiveBinding);
+				headlampActiveBinding = null;
+				Entity headlampEntity = headlamp.InternalValue.Target;
+
+				if (headlampEntity != null && headlampEntity != value.Target)
+					headlampEntity.GetCommand("Detach").Execute();
+
+				headlamp.InternalValue = value;
+				headlampEntity = value.Target;
+				if (headlampEntity != null)
+				{
+					headlampEntity.GetCommand<Property<Matrix>>("Attach").Execute(model.GetWorldBoneTransform("Head"));
+
+					Property<bool> headlampActive = headlampEntity.GetProperty<bool>("Active");
+
+					headlampActiveBinding = new Binding<bool>(player.SlowBurnStamina, headlampActive);
+					result.Add(headlampActiveBinding);
 				}
 			};
 
@@ -2172,12 +2229,6 @@ namespace Lemma.Factories
 				if (!rolling)
 					player.AllowUncrouch.Value = true;
 			});
-
-			result.Add(new CommandBinding(result.Delete, delegate()
-			{
-				if (pistol.Value.Target != null)
-					pistol.Value.Target.GetCommand("Detach").Execute();
-			}));
 
 			// Reload
 			input.Bind(settings.Reload, PCInput.InputState.Down, delegate()

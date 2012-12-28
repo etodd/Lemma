@@ -49,8 +49,9 @@ namespace Lemma
 			public Property<PCInput.PCInputBinding> Aim = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.RightMouseButton } };
 			public Property<PCInput.PCInputBinding> Fire = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton } };
 			public Property<PCInput.PCInputBinding> Reload = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.R } };
-			public Property<PCInput.PCInputBinding> TogglePistol = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D1 } };
-			public Property<PCInput.PCInputBinding> ToggleLevitate = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D2 } };
+			public Property<PCInput.PCInputBinding> ToggleItem1 = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D1 } };
+			public Property<PCInput.PCInputBinding> ToggleItem2 = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D2 } };
+			public Property<PCInput.PCInputBinding> ToggleItem3 = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D3 } };
 			public Property<PCInput.PCInputBinding> TogglePhone = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Tab } };
 			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F5 } };
 		}
@@ -963,8 +964,9 @@ namespace Lemma
 				addInputSetting(this.Settings.Roll, "Roll / Crouch");
 				addInputSetting(this.Settings.Fire, "Kick / Primary Fire");
 				addInputSetting(this.Settings.Aim, "Aim");
-				addInputSetting(this.Settings.TogglePistol, "Toggle Pistol");
-				addInputSetting(this.Settings.ToggleLevitate, "Toggle Levitation");
+				addInputSetting(this.Settings.ToggleItem1, "Toggle Item 1");
+				addInputSetting(this.Settings.ToggleItem2, "Toggle Item 2");
+				addInputSetting(this.Settings.ToggleItem3, "Toggle Item 3");
 				addInputSetting(this.Settings.Reload, "Reload");
 				addInputSetting(this.Settings.TogglePhone, "Toggle Phone");
 				addInputSetting(this.Settings.QuickSave, "Quicksave");

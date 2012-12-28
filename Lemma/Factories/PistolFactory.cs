@@ -13,12 +13,7 @@ namespace Lemma.Factories
 {
 	public class PistolFactory : Factory
 	{
-		private const int maxAmmo = 10;
-
-		public PistolFactory()
-		{
-			
-		}
+		private const int maxAmmo = 7;
 
 		public override Entity Create(Main main)
 		{

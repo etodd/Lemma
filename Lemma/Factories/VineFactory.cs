@@ -92,14 +92,18 @@ namespace Lemma.Factories
 
 			AI ai = result.GetOrCreate<AI>("AI");
 
+			Agent agent = result.GetOrCreate<Agent>("Agent");
+
 			PointLight positionLight = null;
+			Property<float> positionLightRadius = result.GetOrMakeProperty<float>("PositionLightRadius", true, 20.0f);
 			if (!main.EditorEnabled)
 			{
 				positionLight = new PointLight();
 				positionLight.Serialize = false;
 				positionLight.Color.Value = new Vector3(1.5f, 0.5f, 0.5f);
-				positionLight.Attenuation.Value = 20.0f;
+				positionLight.Add(new Binding<float>(positionLight.Attenuation, positionLightRadius));
 				positionLight.Shadowed.Value = false;
+				positionLight.Add(new Binding<bool, string>(positionLight.Enabled, x => x != "Suspended", ai.CurrentState));
 				positionLight.Add(new Binding<Vector3, string>(positionLight.Color, delegate(string state)
 				{
 					switch (state)
@@ -121,7 +125,7 @@ namespace Lemma.Factories
 				emitter.ParticleType.Value = "VineSparks";
 				emitter.Add(new Binding<Vector3>(emitter.Position, positionLight.Position));
 				emitter.Add(new Binding<bool, string>(emitter.Enabled, x => x != "Suspended", ai.CurrentState));
-				Agent agent = result.GetOrCreate<Agent>("Agent");
+
 				agent.Add(new Binding<Vector3>(agent.Position, positionLight.Position));
 				agent.Add(new Binding<float, string>(agent.Speed, delegate(string state)
 				{
@@ -136,8 +140,9 @@ namespace Lemma.Factories
 							return 5.0f;
 					}
 				}, ai.CurrentState));
-			}
 
+			}
+			
 			Vector3 currentPosition = Vector3.Zero;
 
 			AI.Task checkMap = new AI.Task
@@ -257,8 +262,8 @@ namespace Lemma.Factories
 							Interval = 1.0f,
 							Action = delegate()
 							{
-								Agent agent = Agent.Query(currentPosition, 30.0f, 10.0f);
-								if (agent != null)
+								Agent a = Agent.Query(currentPosition, 30.0f, 10.0f, agent);
+								if (a != null)
 									ai.CurrentState.Value = "Alert";
 							},
 						},
@@ -290,10 +295,10 @@ namespace Lemma.Factories
 									ai.CurrentState.Value = "Idle";
 								else
 								{
-									Agent agent = Agent.Query(currentPosition, 30.0f, 10.0f);
-									if (agent != null)
+									Agent a = Agent.Query(currentPosition, 30.0f, 10.0f, agent);
+									if (a != null)
 									{
-										targetAgent.Value = agent.Entity;
+										targetAgent.Value = a.Entity;
 										ai.CurrentState.Value = "Chase";
 									}
 								}
@@ -393,13 +398,13 @@ namespace Lemma.Factories
 							Interval = 0.01f,
 							Action = delegate()
 							{
-								Agent agent = targetAgent.Value.Target.Get<Agent>();
-								agent.Health.Value -= 0.01f / 1.5f; // seconds to kill
-								if (!agent.Active)
+								Agent a = targetAgent.Value.Target.Get<Agent>();
+								a.Health.Value -= 0.01f / 1.5f; // seconds to kill
+								if (!a.Active)
 									ai.CurrentState.Value = "Alert";
 								else
 								{
-									if ((agent.Position - currentPosition).Length() > 5.0f) // They're getting away
+									if ((a.Position - currentPosition).Length() > 5.0f) // They're getting away
 										ai.CurrentState.Value = "Chase";
 									advancePath();
 								}

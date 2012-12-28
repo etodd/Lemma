@@ -247,6 +247,7 @@ namespace Lemma.Factories
 
 			result.Add(new CommandBinding(main.MapLoaded, delegate()
 			{
+				editor.Position.Value = Vector3.Zero;
 				editor.NeedsSave.Value = false;
 			}));
 
@@ -332,6 +333,22 @@ namespace Lemma.Factories
 			input.Add(new Binding<Vector3, Vector2>(camera.Angles, x => new Vector3(-x.Y, x.X, 0.0f), input.Mouse, () => input.EnableLook));
 			input.Add(new Binding<bool>(main.IsMouseVisible, x => !x, input.EnableLook));
 			editor.Add(new Binding<Vector3>(camera.Position, () => editor.Position.Value - (camera.Forward.Value * cameraDistance), editor.Position, input.Mouse, cameraDistance));
+
+			PointLight editorLight = result.GetOrCreate<PointLight>("EditorLight");
+			editorLight.Serialize = false;
+			editorLight.Editable = false;
+			editorLight.Shadowed.Value = false;
+			editorLight.Add(new Binding<float>(editorLight.Attenuation, x => x * 2.0f, cameraDistance));
+			editorLight.Color.Value = Vector3.One;
+			editorLight.Add(new Binding<Vector3>(editorLight.Position, main.Camera.Position));
+			editorLight.Enabled.Value = false;
+
+			ui.PopupCommands.Add(new EditorUI.PopupCommand
+			{
+				Description = "Toggle editor light",
+				Enabled = () => editor.SelectedEntities.Count == 0 && !editor.MapEditMode,
+				Action = new Command { Action = () => editorLight.Enabled.Value = !editorLight.Enabled },
+			});
 
 			editor.Add(new CommandBinding(input.RightMouseButtonDown, () => !ui.PopupVisible && !editor.MapEditMode && !input.EnableLook && editor.TransformMode.Value == Editor.TransformModes.None, delegate()
 			{

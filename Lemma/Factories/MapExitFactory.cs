@@ -35,7 +35,7 @@ namespace Lemma.Factories
 		}
 
 		private static string[] persistentTypes = new[] { "Player", "PlayerData", };
-		private static string[] attachedTypes = new[] { "Phone", "Pistol", };
+		private static string[] attachedTypes = new[] { "Phone", "Pistol", "Headlamp", };
 
 		private static bool isPersistent(Entity entity)
 		{

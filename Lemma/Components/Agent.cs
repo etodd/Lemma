@@ -17,13 +17,13 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command Die = new Command();
 
-		public static Agent Query(Vector3 pos, float visionRadius, float soundRadius)
+		public static Agent Query(Vector3 pos, float visionRadius, float soundRadius, Agent ignore = null)
 		{
 			visionRadius *= visionRadius;
 			soundRadius *= soundRadius;
 			foreach (Agent agent in Agent.agents)
 			{
-				if (agent.Active && agent.Enabled && !agent.Suspended && agent.Speed > speedThreshold)
+				if (agent != ignore && agent.Active && agent.Enabled && !agent.Suspended && agent.Speed > speedThreshold)
 				{
 					Vector3 toAgent = agent.Position - pos;
 					float distance = toAgent.LengthSquared();

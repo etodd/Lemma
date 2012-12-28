@@ -31,7 +31,6 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Matrix> Projection = new Property<Matrix> { Editable = false };
 
-		[XmlIgnore]
 		public Property<string> CookieTextureFile = new Property<string> { Editable = true, Value = "Images\\default-cookie" };
 
 		[XmlIgnore]

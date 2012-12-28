@@ -1372,7 +1372,7 @@ namespace Lemma.Components
 
 		public Chunk GetChunk(int x, int y, int z, bool createIfNonExistent = true)
 		{
-			if (x < this.minX || x >= this.maxX || y < this.minY || y >= this.maxY || z < this.minZ || z >= this.maxZ)
+			while (x < this.minX || x >= this.maxX || y < this.minY || y >= this.maxY || z < this.minZ || z >= this.maxZ)
 			{
 				if (createIfNonExistent)
 				{

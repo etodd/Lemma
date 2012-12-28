@@ -73,6 +73,8 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<bool> SlowMotion = new Property<bool> { Editable = false };
 		[XmlIgnore]
+		public Property<bool> SlowBurnStamina = new Property<bool> { Editable = false };
+		[XmlIgnore]
 		public Property<WallRun> WallRunState = new Property<WallRun> { Editable = false, Value = WallRun.None };
 
 		[XmlIgnore]
@@ -92,6 +94,9 @@ namespace Lemma.Components
 
 		private const float sprintStaminaDecayTime = 30.0f; // Time in seconds to drain all 100 stamina points while sprinting
 		private const float sprintStaminaDecayInterval = sprintStaminaDecayTime / 100.0f;
+
+		private const float slowBurnStaminaDecayTime = 5.0f * 60.0f; // Time in seconds to slow-burn all 100 stamina points
+		private const float slowBurnStaminaDecayInterval = slowBurnStaminaDecayTime / 100.0f;
 
 		private float timeUntilNextStaminaDecay = staminaDecayInterval;
 
@@ -206,6 +211,15 @@ namespace Lemma.Components
 					this.Sprint.InternalValue = false;
 			};
 
+			this.SlowBurnStamina.Set = delegate(bool value)
+			{
+				if (value && !this.SlowBurnStamina.InternalValue)
+					this.timeUntilNextStaminaDecay = 0.0f;
+				else if (!value && this.SlowBurnStamina.InternalValue)
+					this.timeUntilNextStaminaDecay = staminaDecayInterval;
+				this.SlowBurnStamina.InternalValue = value;
+			};
+
 			this.EnableSprint.Set = delegate(bool value)
 			{
 				this.EnableSprint.InternalValue = value;
@@ -235,7 +249,8 @@ namespace Lemma.Components
 			while (this.timeUntilNextStaminaDecay < 0.0f)
 			{
 				this.Stamina.Value--;
-				this.timeUntilNextStaminaDecay += this.Sprint || this.SlowMotion ? sprintStaminaDecayInterval : staminaDecayInterval;
+				float interval = this.Sprint || this.SlowMotion ? sprintStaminaDecayInterval : (this.SlowBurnStamina ? slowBurnStaminaDecayInterval : staminaDecayInterval);
+				this.timeUntilNextStaminaDecay += interval;
 			}
 			this.Transform.Changed();
 			this.LinearVelocity.Changed();

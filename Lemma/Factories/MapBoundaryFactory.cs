@@ -14,14 +14,15 @@ namespace Lemma.Factories
 		const float fudgeFactor = 3.0f;
 		public bool IsInsideMap(Vector3 pos)
 		{
-			if (this.boundaries.Count == 0)
-				return true;
+			int boundaryCount = 0;
 			int intersections = 0;
 			bool enableFudgeFactor = false;
 			foreach (Entity boundary in this.boundaries)
 			{
 				if (!boundary.GetProperty<bool>("IsMapEdge"))
 					continue;
+
+				boundaryCount++;
 
 				PhysicsBlock block = boundary.Get<PhysicsBlock>();
 				Matrix transform = block.Transform;
@@ -42,7 +43,7 @@ namespace Lemma.Factories
 				}
 			}
 			bool inside = intersections % 2 != 0;
-			if (!inside && enableFudgeFactor)
+			if (enableFudgeFactor || boundaryCount == 0)
 				inside = true;
 			return inside;
 		}

@@ -105,6 +105,7 @@
     </Compile>
     <Compile Include="Factories\AnimatedPropFactory.cs" />
     <Compile Include="Factories\CloudFactory.cs" />
+    <Compile Include="Factories\HeadlampFactory.cs" />
     <Compile Include="Factories\FloaterFactory.cs" />
     <Compile Include="Factories\MapBoundaryFactory.cs" />
     <Compile Include="Factories\SkyboxFactory.cs" />
