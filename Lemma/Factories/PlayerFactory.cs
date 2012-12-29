@@ -2248,7 +2248,7 @@ namespace Lemma.Factories
 			const float levitationMaxDistance = 25.0f;
 			const int levitateStaminaCost = 8;
 			const int levitateRipStaminaCost = 6; // In addition to the regular levitate cost
-			const int levitateRipRadius = 5;
+			const int levitateRipRadius = 4;
 			Vector3 levitationRelativeGrabPoint = Vector3.Zero;
 			float levitatingDistance = 0.0f;
 			PointLight levitatingLight = null;
@@ -2333,14 +2333,15 @@ namespace Lemma.Factories
 						Map.Coordinate ripStart = center.Move(-levitateRipRadius, -levitateRipRadius, -levitateRipRadius);
 						Map.Coordinate ripEnd = center.Move(levitateRipRadius, levitateRipRadius, levitateRipRadius);
 
-						List<Map.Box> permanentBoxes = aimRaycastResult.Map.GetContiguousPermanentWithin
-						(
-							aimRaycastResult.Map.GetBox(center),
-							ripStart,
-							ripEnd
-						);
+						Dictionary<Map.Box, bool> permanentBoxes = new Dictionary<Map.Box, bool>();
+						foreach (Map.Coordinate c in ripStart.CoordinatesBetween(ripEnd))
+						{
+							Map.Box box = aimRaycastResult.Map.GetBox(c);
+							if (box != null && box.Type.Permanent)
+								permanentBoxes[box] = true;
+						}
 
-						foreach (Map.Box b in permanentBoxes)
+						foreach (Map.Box b in permanentBoxes.Keys)
 						{
 							// Top and bottom
 							for (int x = b.X - 1; x <= b.X + b.Width; x++)

@@ -38,6 +38,7 @@ namespace Lemma.Factories
 			light.Attenuation.Value = 20.0f;
 			light.CookieTextureFile.Value = "Images\\headlamp-cookie";
 			light.Shadowed.Value = true;
+			light.ShadowBias.Value = 0.01f;
 			result.Add("Light", light);
 
 			result.Add("Attached", new Property<bool> { Value = false, Editable = false });

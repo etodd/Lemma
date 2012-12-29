@@ -2642,40 +2642,6 @@ namespace Lemma.Components
 			this.RegenerateImmediately(null);
 		}
 
-		public List<Box> GetContiguousPermanentWithin(Box input, Map.Coordinate a, Map.Coordinate b)
-		{
-			Queue<Box> boxes = new Queue<Box>();
-
-			boxes.Enqueue(input);
-
-			List<Box> result = new List<Box>();
-			Dictionary<Box, bool> alreadyVisited = new Dictionary<Box, bool>();
-
-			while (boxes.Count > 0)
-			{
-				Box box = boxes.Dequeue();
-
-				if (box.X > b.X && box.X + box.Width < a.X
-					&& box.Y > b.Y && box.Y + box.Height < a.X
-					&& box.Z > b.Z && box.Z + box.Depth < a.Z) // Outside desired range
-					continue;
-
-				if (box.Type.Permanent)
-					result.Add(box);
-
-				foreach (Box adjacent in box.Adjacent)
-				{
-					if (!alreadyVisited.ContainsKey(adjacent))
-					{
-						boxes.Enqueue(adjacent);
-						alreadyVisited.Add(adjacent, true);
-					}
-				}
-			}
-
-			return result;
-		}
-
 		public List<Box> GetContiguousByType(IEnumerable<Box> input)
 		{
 			CellState state = input.First().Type;
