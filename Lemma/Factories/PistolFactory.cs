@@ -13,7 +13,7 @@ namespace Lemma.Factories
 {
 	public class PistolFactory : Factory
 	{
-		private const int maxAmmo = 7;
+		public const int MaxAmmo = 7;
 
 		public override Entity Create(Main main)
 		{
@@ -172,6 +172,8 @@ namespace Lemma.Factories
 					if (!active || ammo < 1 || model.IsPlaying("Reload") || model.IsPlaying("ReloadWithChamberedRound"))
 						return;
 
+					Session.Recorder.Event(main, "Fire");
+
 					ammo.Value--;
 
 					if (ammo == 0)
@@ -224,6 +226,8 @@ namespace Lemma.Factories
 					if (!active || mags < 1)
 						return;
 
+					Session.Recorder.Event(main, "Reload");
+
 					model.Stop("Dry");
 					model.StartClip(ammo == 0 ? "Reload" : "ReloadWithChamberedRound", 0, false, 0.0f);
 
@@ -234,7 +238,7 @@ namespace Lemma.Factories
 
 					mags.Value--;
 
-					ammo.Value = PistolFactory.maxAmmo;
+					ammo.Value = PistolFactory.MaxAmmo;
 				}
 			});
 

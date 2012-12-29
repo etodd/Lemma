@@ -8,14 +8,13 @@ namespace Lemma
 {
 	public static class Program
 	{
-		private static void run()
+		private static GameMain create()
 		{
 #if DEBUG
-			using (Main main = new GameMain(true, null)) // Editor binary
+			return new GameMain(true, null); // Editor binary
 #else
-			using (Main main = new GameMain(false, "start")) // Game binary
+			return new GameMain(false, "start"); // Game binary
 #endif
-				main.Run();
 		}
 
 		/// <summary>
@@ -23,16 +22,29 @@ namespace Lemma
 		/// </summary>
 		public static void Main(string[] args)
 		{
+			GameMain main = null;
 			if (Debugger.IsAttached)
-				Program.run();
+			{
+				main = create();
+				main.Run();
+			}
 			else
 			{
 				try
 				{
-					Program.run();
+					main = create();
+					main.Run();
 				}
 				catch (Exception e)
 				{
+
+#if ANALYTICS
+					if (main.MapFile.Value == null || main.EditorEnabled)
+						main.SessionRecorder.Reset();
+					main.SessionRecorder.RecordEvent("Crash", e.ToString());
+					main.SaveAnalytics();
+#endif
+
 #if MONOGAME
 					// TODO: MonoGame popup
 #else

@@ -265,8 +265,17 @@ namespace Lemma.Factories
 			// Die if stamina is depleted
 			result.Add(new CommandBinding(player.StaminaDepleted, delegate()
 			{
+				Session.Recorder.Event(main, "DieFromStamina");
 				result.Add(new Animation(new Animation.Delay(0.01f), new Animation.Execute(result.Delete)));
 			}));
+
+			result.Add(new CommandBinding(player.HealthDepleted, delegate()
+			{
+				Session.Recorder.Event(main, "Die");
+				Sound.PlayCue(main, "Death");
+			}));
+
+			result.Add(new CommandBinding(player.HealthDepleted, result.Delete));
 
 			result.Add(new CommandBinding(result.Delete, delegate()
 			{
@@ -890,6 +899,8 @@ namespace Lemma.Factories
 				}
 				if (!model.IsPlaying(animation))
 					model.StartClip(animation, 5, true, 0.1f);
+
+				Session.Recorder.Event(main, "WallRun", animation);
 
 				wallRunDirection = state == Player.WallRun.Straight ? map.GetRelativeDirection(Vector3.Up) : (state == Player.WallRun.Down ? map.GetRelativeDirection(Vector3.Down) : dir.Cross(map.GetRelativeDirection(Vector3.Up)));
 
@@ -1807,12 +1818,15 @@ namespace Lemma.Factories
 
 							player.LinearVelocity.Value = new Vector3(jumpDirection.X, player.JumpSpeed * verticalMultiplier, jumpDirection.Y) * totalMultiplier;
 						}
+
 						if (supported && player.SupportEntity.Value != null)
 						{
 							Vector3 impulsePosition = transform.Position + new Vector3(0, player.Height * -0.5f - player.SupportHeight, 0);
 							Vector3 impulse = player.LinearVelocity.Value * player.Body.Mass * -1.0f;
 							player.SupportEntity.Value.ApplyImpulse(ref impulsePosition, ref impulse);
 						}
+
+						Session.Recorder.Event(main, "Jump");
 
 						player.IsSupported.Value = false;
 						player.HasTraction.Value = false;
@@ -1822,7 +1836,10 @@ namespace Lemma.Factories
 
 					model.Stop("Vault", "Jump", "JumpLeft", "JumpRight", "JumpBackward");
 					if (vaulting)
+					{
+						Session.Recorder.Event(main, "Vault");
 						model.StartClip("Vault", 4, false, 0.1f);
+					}
 					else
 					{
 						Vector3 velocity = -Vector3.TransformNormal(player.LinearVelocity, Matrix.CreateRotationY(-rotation));
@@ -2034,6 +2051,8 @@ namespace Lemma.Factories
 					// Kick
 					canKick = false;
 
+					Session.Recorder.Event(main, "Kick");
+
 					deactivateWallRun();
 
 					model.Stop
@@ -2149,6 +2168,8 @@ namespace Lemma.Factories
 					{
 						// We're rolling.
 						rolling = true;
+
+						Session.Recorder.Event(main, "Roll");
 
 						deactivateWallRun();
 

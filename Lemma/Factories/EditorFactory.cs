@@ -259,6 +259,57 @@ namespace Lemma.Factories
 				}
 			});
 
+			Property<bool> analyticsEnable = new Property<bool>();
+			List<Session> analyticsSessions = null;
+
+			Scroller timelineScroller = new Scroller();
+			timelineScroller.DefaultScrollHorizontal.Value = true;
+			timelineScroller.AnchorPoint.Value = new Vector2(0, 1);
+			timelineScroller.Add(new Binding<Vector2, Point>(timelineScroller.Position, x => new Vector2(0, x.Y), main.ScreenSize));
+			timelineScroller.Add(new Binding<Vector2, Point>(timelineScroller.Size, x => new Vector2(x.X, 64.0f), main.ScreenSize));
+			timelineScroller.Add(new Binding<bool>(timelineScroller.Visible, analyticsEnable));
+			uiRenderer.Root.Children.Add(timelineScroller);
+
+			Container timeline = new Container();
+			timeline.Size.Value = new Vector2(0, timelineScroller.Size.Value.Y);
+			timeline.Opacity.Value = 0.5f;
+			timeline.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+			timeline.ResizeHorizontal.Value = false;
+			timeline.ResizeVertical.Value = false;
+			timelineScroller.Children.Add(timeline);
+
+			ui.PopupCommands.Add(new EditorUI.PopupCommand
+			{
+				Description = "Load analytics data",
+				Enabled = () => editor.SelectedEntities.Count == 0 && !editor.MapEditMode,
+				Action = new Command
+				{
+					Action = delegate()
+					{
+						analyticsEnable.Value = true;
+						analyticsSessions = ((GameMain)main).LoadAnalytics(main.MapFile);
+						timeline.Size.Value = new Vector2(analyticsSessions.Max(x => x.TotalTime), timelineScroller.Size.Value.Y);
+						timeline.Scale.Value = new Vector2(timelineScroller.Size.Value.X / timeline.Size.Value.X, 1.0f);
+
+						foreach (Session s in analyticsSessions)
+						{
+							foreach (Session.EventList el in s.Events)
+							{
+								foreach (Session.Event e in el.Events)
+								{
+									Container c = new Container();
+									c.Tint.Value = Microsoft.Xna.Framework.Color.Red;
+									c.ResizeHorizontal.Value = c.ResizeVertical.Value = false;
+									c.Size.Value = new Vector2(1.0f, timeline.Size.Value.Y);
+									c.Position.Value = new Vector2(e.Time, 0);
+									timeline.Children.Add(c);
+								}
+							}
+						}
+					}
+				},
+			});
+
 			// Save
 			addCommand("Save", new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.S }, () => !editor.MovementEnabled, editor.Save);
 			editor.Add(new CommandBinding(editor.Save, delegate()

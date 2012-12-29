@@ -83,6 +83,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command StaminaDepleted = new Command();
 
+		[XmlIgnore]
+		public Command HealthDepleted = new Command();
+
 		private float damageTimer = 0.0f;
 		public Property<float> Health = new Property<float> { Value = 1.0f, Editable = false };
 
@@ -129,10 +132,7 @@ namespace Lemma.Components
 				}
 				this.Health.InternalValue = Math.Min(1.0f, Math.Max(0.0f, value));
 				if (this.Health.InternalValue == 0.0f)
-				{
-					Sound.PlayCue(this.main, "Death");
-					this.Entity.Delete.Execute();
-				}
+					this.HealthDepleted.Execute();
 			};
 
 			this.SlowMotion.Set = delegate(bool value)

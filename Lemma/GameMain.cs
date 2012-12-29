@@ -67,6 +67,7 @@ namespace Lemma
 		public Config Settings;
 		private string settingsDirectory;
 		private string saveDirectory;
+		private string analyticsDirectory;
 		private string settingsFile;
 
 		private Entity player;
@@ -119,6 +120,9 @@ namespace Lemma
 			this.saveDirectory = Path.Combine(this.settingsDirectory, "saves");
 			if (!Directory.Exists(this.saveDirectory))
 				Directory.CreateDirectory(this.saveDirectory);
+			this.analyticsDirectory = Path.Combine(this.settingsDirectory, "analytics");
+			if (!Directory.Exists(this.analyticsDirectory))
+				Directory.CreateDirectory(this.analyticsDirectory);
 
 			try
 			{
@@ -185,6 +189,28 @@ namespace Lemma
 			return result;
 		}
 
+#if ANALYTICS
+		public Session.Recorder SessionRecorder;
+
+		public void SaveAnalytics()
+		{
+			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, this.MapFile.Value + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 16) + ".xml"));
+		}
+#endif
+
+		public List<Session> LoadAnalytics(string map)
+		{
+			List<Session> result = new List<Session>();
+			foreach (string file in Directory.GetFiles(this.analyticsDirectory, "*", SearchOption.TopDirectoryOnly))
+			{
+				string name = Path.GetFileNameWithoutExtension(file);
+				name = name.Substring(0, name.LastIndexOf('-'));
+				if (name == map)
+					result.Add(Session.Load(file));
+			}
+			return result;
+		}
+
 		public Command Save = new Command();
 
 		public Command SaveCurrentMap = new Command();
@@ -200,8 +226,102 @@ namespace Lemma
 			{
 				this.IsMouseVisible.Value = true;
 
+#if ANALYTICS
+				this.SessionRecorder = new Session.Recorder();
+				this.AddComponent(this.SessionRecorder);
+
+				this.SessionRecorder.Add("Position", delegate()
+				{
+					if (this.player != null && this.player.Active)
+						return this.player.Get<Transform>().Position;
+					else
+						return Vector3.Zero;
+				});
+
+				this.SessionRecorder.Add("Health", delegate()
+				{
+					if (this.player != null && this.player.Active)
+						return this.player.Get<Player>().Health;
+					else
+						return 0.0f;
+				});
+
+				this.SessionRecorder.Add("Stamina", delegate()
+				{
+					if (this.player != null && this.player.Active)
+						return this.player.Get<Player>().Stamina;
+					else
+						return 0;
+				});
+
+				this.SessionRecorder.Add("Ammo", delegate()
+				{
+					if (this.player != null && this.player.Active)
+					{
+						Entity pistol = player.GetProperty<Entity.Handle>("Pistol").Value.Target;
+						if (pistol != null)
+							return pistol.GetProperty<int>("Ammo") + (pistol.GetProperty<int>("Magazines") * PistolFactory.MaxAmmo);
+						return 0;
+					}
+					else
+						return 0;
+				});
+
+				this.SessionRecorder.Add("PistolDrawn", delegate()
+				{
+					if (this.player != null && this.player.Active)
+					{
+						Entity pistol = player.GetProperty<Entity.Handle>("Pistol").Value.Target;
+						if (pistol != null)
+							return pistol.GetProperty<bool>("Active") ? 1 : 0;
+						return 0;
+					}
+					else
+						return 0;
+				});
+
+				this.SessionRecorder.Add("HeadlampOn", delegate()
+				{
+					if (this.player != null && this.player.Active)
+					{
+						Entity headlamp = player.GetProperty<Entity.Handle>("Headlamp").Value.Target;
+						if (headlamp != null)
+							return headlamp.GetProperty<bool>("Active") ? 1 : 0;
+						return 0;
+					}
+					else
+						return 0;
+				});
+
+				this.SessionRecorder.Add("LevitationMode", delegate()
+				{
+					if (this.player != null && this.player.Active)
+						return player.Get<Player>().IsLevitating ? 1 : 0;
+					else
+						return 0;
+				});
+
+				this.Exiting += delegate(object sender, EventArgs e)
+				{
+					if (this.MapFile.Value != null && !this.EditorEnabled)
+					{
+						this.SessionRecorder.RecordEvent("Exit");
+						this.SaveAnalytics();
+					}
+				};
+#endif
+
 				this.MapFile.Set = delegate(string value)
 				{
+#if ANALYTICS
+					if (this.MapFile.Value != null && !this.EditorEnabled)
+					{
+						this.SessionRecorder.RecordEvent("ChangedMap", value);
+						this.SaveAnalytics();
+					}
+					this.SessionRecorder.Reset();
+#endif
+
 					this.MapFile.InternalValue = value;
 
 					this.ClearEntities(false);

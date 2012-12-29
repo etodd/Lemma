@@ -216,6 +216,7 @@ namespace Lemma.Factories
 					field.Add(new Binding<float, bool>(field.Opacity, x => x ? 0.4f : 0.2f, field.Highlighted));
 					field.Add(new CommandBinding<Point>(field.MouseLeftDown, delegate(Point mouse)
 					{
+						Session.Recorder.Event(main, "PhoneSentMessage");
 						phone.Respond(response);
 						responseMenu.Visible.Value = false;
 						phoneScroller.CheckLayout();
@@ -309,6 +310,8 @@ namespace Lemma.Factories
 					if (phoneAnimation == null || !phoneAnimation.Active)
 					{
 						// Show the phone
+						Session.Recorder.Event(main, "PhoneOpen");
+
 						mouseState = main.MouseState;
 
 						active.Value = true;

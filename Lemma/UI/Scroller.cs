@@ -12,6 +12,8 @@ namespace Lemma.Components
 	{
 		public Property<float> ScrollAmount = new Property<float> { Editable = false, Value = 30.0f };
 
+		public Property<bool> DefaultScrollHorizontal = new Property<bool> { Editable = false, Value = false };
+
 		private NotifyBinding binding = null;
 
 		public Scroller()
@@ -28,6 +30,8 @@ namespace Lemma.Components
 				{
 					UIComponent child = this.Children.First();
 					bool horizontalScroll = this.main.KeyboardState.Value.IsKeyDown(Keys.LeftShift);
+					if (this.DefaultScrollHorizontal)
+						horizontalScroll = !horizontalScroll;
 					Vector2 newPosition = child.Position + (horizontalScroll ? new Vector2(delta * this.ScrollAmount, 0) : new Vector2(0, delta * this.ScrollAmount));
 
 					newPosition.X = Math.Max(newPosition.X, this.Size.Value.X - child.ScaledSize.Value.X);

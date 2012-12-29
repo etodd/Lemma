@@ -272,6 +272,7 @@ namespace Lemma.Components
 				qm.TimeRemaining -= dt;
 				if (qm.TimeRemaining < 0.0f)
 				{
+					Session.Recorder.Event(main, "PhoneReceivedMessage");
 					this.Messages.Add(qm.Message);
 					this.TimeSinceLastIncomingMessage.Value = 0.0f;
 					this.IdleMessageIndex.Value = 0;
