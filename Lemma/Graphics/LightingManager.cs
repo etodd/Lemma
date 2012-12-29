@@ -308,6 +308,7 @@ namespace Lemma.Components
 			{
 				effect.Parameters["ShadowMap" + Model.SamplerPostfix].SetValue(this.spotShadowMaps[this.shadowMapIndices[light]]);
 				effect.Parameters["ShadowMapSize"].SetValue(this.spotShadowMapSize);
+				effect.Parameters["ShadowBias"].SetValue(light.ShadowBias);
 			}
 
 			float horizontalScale = (float)Math.Sin(light.FieldOfView * 0.5f) * light.Attenuation;

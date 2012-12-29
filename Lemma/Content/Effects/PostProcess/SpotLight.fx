@@ -8,7 +8,7 @@ float SpotLightRadius;
 float3 SpotLightColor;
 float4x4 SpotLightViewProjectionMatrix;
 
-const float ShadowBias = 0.0f;
+float ShadowBias = 0.0f;
 
 texture2D CookieTexture;
 sampler2D CookieSampler = sampler_state

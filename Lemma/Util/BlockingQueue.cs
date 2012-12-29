@@ -10,6 +10,14 @@ namespace Lemma.Util
 	{
 		private readonly Queue<T> queue = new Queue<T>();
 
+		public int Count
+		{
+			get
+			{
+				return this.queue.Count;
+			}
+		}
+
 		private readonly int maxSize;
 		public BlockingQueue(int maxSize)
 		{

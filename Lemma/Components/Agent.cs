@@ -56,7 +56,7 @@ namespace Lemma.Components
 			}, this.Health));
 		}
 
-		public Property<Vector3> Position = new Property<Vector3>();
+		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
 
 		public Property<float> Speed = new Property<float>();
 

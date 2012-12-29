@@ -1092,31 +1092,33 @@ namespace Lemma.Components
 					delegate(float dt)
 					{
 						DynamicMapFactory factory = Factory.Get<DynamicMapFactory>();
+						List<SpawnGroup> spawns = null;
 						lock (Map.spawns)
 						{
-							foreach (SpawnGroup spawn in Map.spawns)
-							{
-								List<DynamicMap> spawnedMaps = new List<DynamicMap>();
-								foreach (List<Box> island in spawn.Islands)
-								{
-									Box firstBox = island.First();
-									Entity newMap = factory.CreateAndBind(spawn.Source.main, firstBox.X, firstBox.Y, firstBox.Z);
-									newMap.Get<Transform>().Matrix.Value = spawn.Source.Transform;
-									DynamicMap newMapComponent = newMap.Get<DynamicMap>();
-									newMapComponent.Offset.Value = spawn.Source.Offset;
-									newMapComponent.BuildFromBoxes(island);
-									spawn.Source.notifyEmptied(island.SelectMany(x => x.GetCoords()), newMapComponent);
-									newMapComponent.notifyFilled(island.SelectMany(x => x.GetCoords()), spawn.Source);
-									newMapComponent.Transform.Reset();
-									if (spawn.Source is DynamicMap)
-										newMapComponent.IsAffectedByGravity.Value = ((DynamicMap)spawn.Source).IsAffectedByGravity;
-									spawn.Source.main.Add(newMap);
-									spawnedMaps.Add(newMapComponent);
-								}
-								if (spawn.Callback != null)
-									spawn.Callback(spawnedMaps);
-							}
+							spawns = Map.spawns.ToList();
 							Map.spawns.Clear();
+						}
+						foreach (SpawnGroup spawn in spawns)
+						{
+							List<DynamicMap> spawnedMaps = new List<DynamicMap>();
+							foreach (List<Box> island in spawn.Islands)
+							{
+								Box firstBox = island.First();
+								Entity newMap = factory.CreateAndBind(spawn.Source.main, firstBox.X, firstBox.Y, firstBox.Z);
+								newMap.Get<Transform>().Matrix.Value = spawn.Source.Transform;
+								DynamicMap newMapComponent = newMap.Get<DynamicMap>();
+								newMapComponent.Offset.Value = spawn.Source.Offset;
+								newMapComponent.BuildFromBoxes(island);
+								spawn.Source.notifyEmptied(island.SelectMany(x => x.GetCoords()), newMapComponent);
+								newMapComponent.notifyFilled(island.SelectMany(x => x.GetCoords()), spawn.Source);
+								newMapComponent.Transform.Reset();
+								if (spawn.Source is DynamicMap)
+									newMapComponent.IsAffectedByGravity.Value = ((DynamicMap)spawn.Source).IsAffectedByGravity;
+								spawn.Source.main.Add(newMap);
+								spawnedMaps.Add(newMapComponent);
+							}
+							if (spawn.Callback != null)
+								spawn.Callback(spawnedMaps);
 						}
 					}
 				};
