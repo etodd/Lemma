@@ -263,16 +263,17 @@ namespace Lemma.Factories
 			List<Session> analyticsSessions = null;
 
 			Scroller timelineScroller = new Scroller();
+			timelineScroller.ScrollAmount.Value = 60.0f;
 			timelineScroller.DefaultScrollHorizontal.Value = true;
 			timelineScroller.AnchorPoint.Value = new Vector2(0, 1);
 			timelineScroller.Add(new Binding<Vector2, Point>(timelineScroller.Position, x => new Vector2(0, x.Y), main.ScreenSize));
-			timelineScroller.Add(new Binding<Vector2, Point>(timelineScroller.Size, x => new Vector2(x.X, 64.0f), main.ScreenSize));
+			timelineScroller.Add(new Binding<Vector2, Point>(timelineScroller.Size, x => new Vector2(x.X, 32.0f), main.ScreenSize));
 			timelineScroller.Add(new Binding<bool>(timelineScroller.Visible, analyticsEnable));
+			timelineScroller.Add(new Binding<bool>(timelineScroller.EnableScroll, x => !x, input.GetKey(Keys.LeftAlt)));
 			uiRenderer.Root.Children.Add(timelineScroller);
 
 			Container timeline = new Container();
 			timeline.Size.Value = new Vector2(0, timelineScroller.Size.Value.Y);
-			timeline.Opacity.Value = 0.5f;
 			timeline.Tint.Value = Microsoft.Xna.Framework.Color.Black;
 			timeline.ResizeHorizontal.Value = false;
 			timeline.ResizeVertical.Value = false;
@@ -295,14 +296,21 @@ namespace Lemma.Factories
 						{
 							foreach (Session.EventList el in s.Events)
 							{
+								LineDrawer2D line = new LineDrawer2D();
+
+								byte[] hash = System.Security.Cryptography.MD5.Create().ComputeHash(ASCIIEncoding.UTF8.GetBytes(el.Name));
+								Vector3 color = new Vector3(hash[0] / 255.0f, hash[1] / 255.0f, hash[2] / 255.0f);
+								color.Normalize();
+								line.Color.Value = new Vector4(color, 1.0f);
+
+								timeline.Children.Add(line);
 								foreach (Session.Event e in el.Events)
 								{
-									Container c = new Container();
-									c.Tint.Value = Microsoft.Xna.Framework.Color.Red;
-									c.ResizeHorizontal.Value = c.ResizeVertical.Value = false;
-									c.Size.Value = new Vector2(1.0f, timeline.Size.Value.Y);
-									c.Position.Value = new Vector2(e.Time, 0);
-									timeline.Children.Add(c);
+									line.Lines.Add(new LineDrawer2D.Line
+									{
+										A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(new Vector3(e.Time, 0.0f, 0.0f), Microsoft.Xna.Framework.Color.White),
+										B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(new Vector3(e.Time, timeline.Size.Value.Y, 0.0f), Microsoft.Xna.Framework.Color.White),
+									});
 								}
 							}
 						}
@@ -379,7 +387,19 @@ namespace Lemma.Factories
 			Camera camera = main.Camera;
 
 			Property<float> cameraDistance = new Property<float> { Value = 10.0f };
-			input.Add(new CommandBinding<int>(input.MouseScrolled, () => input.GetKey(Keys.LeftAlt), x => cameraDistance.Value = Math.Max(5, cameraDistance.Value + x * -2.0f)));
+			input.Add(new CommandBinding<int>(input.MouseScrolled, () => input.GetKey(Keys.LeftAlt), delegate(int delta)
+			{
+				if (timelineScroller.Highlighted && !editor.MapEditMode)
+				{
+					float newScale = Math.Max(timeline.Scale.Value.X + delta * 4.0f, timelineScroller.Size.Value.X / timeline.Size.Value.X);
+					Matrix absoluteTransform = timeline.GetAbsoluteTransform();
+					float x = input.Mouse.Value.X + ((absoluteTransform.Translation.X - input.Mouse.Value.X) * (newScale / timeline.Scale.Value.X));
+					timeline.Position.Value = new Vector2(x, 0.0f);
+					timeline.Scale.Value = new Vector2(newScale, 1.0f);
+				}
+				else
+					cameraDistance.Value = Math.Max(5, cameraDistance.Value + delta * -2.0f);
+			}));
 			input.Add(new Binding<bool>(input.EnableLook, () => editor.MapEditMode || (input.MiddleMouseButton && editor.TransformMode.Value == Editor.TransformModes.None), input.MiddleMouseButton, editor.MapEditMode, editor.TransformMode));
 			input.Add(new Binding<Vector3, Vector2>(camera.Angles, x => new Vector3(-x.Y, x.X, 0.0f), input.Mouse, () => input.EnableLook));
 			input.Add(new Binding<bool>(main.IsMouseVisible, x => !x, input.EnableLook));

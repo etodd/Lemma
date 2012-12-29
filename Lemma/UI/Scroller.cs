@@ -12,6 +12,8 @@ namespace Lemma.Components
 	{
 		public Property<float> ScrollAmount = new Property<float> { Editable = false, Value = 30.0f };
 
+		public Property<bool> EnableScroll = new Property<bool> { Editable = false, Value = true };
+
 		public Property<bool> DefaultScrollHorizontal = new Property<bool> { Editable = false, Value = false };
 
 		private NotifyBinding binding = null;

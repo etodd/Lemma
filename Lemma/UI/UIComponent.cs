@@ -42,6 +42,8 @@ namespace Lemma.Components
 		public Property<int> DrawOrder = new Property<int> { Value = 0, Editable = false };
 		public Property<bool> EnableInput = new Property<bool> { Value = true };
 
+		protected bool requiresNewBatch = false;
+
 		[XmlIgnore]
 		public Property<Vector2> ScaledSize = new Property<Vector2> { Editable = false };
 		[XmlIgnore]
@@ -297,7 +299,7 @@ namespace Lemma.Components
 				{
 					if (child.Visible)
 					{
-						if (this.main.GraphicsDevice.ScissorRectangle != newScissor)
+						if (this.main.GraphicsDevice.ScissorRectangle != newScissor || child.requiresNewBatch)
 						{
 							this.renderer.Batch.End();
 							this.renderer.Batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, this.renderer.RasterizerState, null, Matrix.Identity);

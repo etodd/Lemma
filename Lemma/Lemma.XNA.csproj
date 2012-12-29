@@ -158,6 +158,7 @@
     <Compile Include="Factories\WorldFactory.cs" />
     <Compile Include="Components\Water.cs" />
     <Compile Include="UI\Container.cs" />
+    <Compile Include="UI\LineDrawer2D.cs" />
     <Compile Include="UI\ListContainer.cs" />
     <Compile Include="UI\Scroller.cs" />
     <Compile Include="UI\Sprite.cs" />
