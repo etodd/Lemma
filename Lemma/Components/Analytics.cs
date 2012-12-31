@@ -21,7 +21,15 @@ namespace Lemma.Components
 			{
 				get
 				{
-					return this.data[index];
+					return this.data.Count == 0 ? 0.0f : this.data[Math.Min(index, this.data.Count - 1)];
+				}
+			}
+
+			public int Count
+			{
+				get
+				{
+					return this.data.Count;
 				}
 			}
 
@@ -86,8 +94,11 @@ namespace Lemma.Components
 
 			public string Name;
 
+			private float interval;
+
 			public void Initialize(Session session)
 			{
+				this.interval = session.Interval;
 				if (!session.continuousProperties.ContainsKey(this.Name + "X"))
 				{
 					this.coordinates = new ContinuousProperty[3];
@@ -115,6 +126,16 @@ namespace Lemma.Components
 						session.continuousProperties[this.Name + "Y"],
 						session.continuousProperties[this.Name + "Z"],
 					};
+				}
+			}
+
+			public Vector3 this[float time]
+			{
+				get
+				{
+					int index = (int)Math.Floor(time / this.interval);
+					float blend = (time - (index * this.interval)) / this.interval;
+					return Vector3.Lerp(this[index], this[index + 1], blend);
 				}
 			}
 
@@ -228,7 +249,7 @@ namespace Lemma.Components
 #endif
 			}
 
-			public const float Interval = 0.5f;
+			public const float Interval = 0.25f;
 
 			private float intervalTime = 0.0f;
 

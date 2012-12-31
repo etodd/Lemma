@@ -284,6 +284,11 @@ namespace Lemma.Factories
 			ListProperty<SessionEntry> analyticsActiveSessions = new ListProperty<SessionEntry>();
 			ListProperty<EventEntry> analyticsEvents = new ListProperty<EventEntry>();
 			ListProperty<EventEntry> analyticsActiveEvents = new ListProperty<EventEntry>();
+			Dictionary<Session, ModelInstance> sessionPositionModels = new Dictionary<Session, ModelInstance>();
+			Dictionary<Session.EventList, List<ModelInstance>> eventPositionModels = new Dictionary<Session.EventList, List<ModelInstance>>();
+			Property<bool> analyticsPlaying = new Property<bool>();
+			Property<float> playbackSpeed = new Property<float> { Value = 1.0f };
+			Property<float> playbackLocation = new Property<float>();
 
 			Scroller timelineScroller = new Scroller();
 			timelineScroller.ScrollAmount.Value = 60.0f;
@@ -510,34 +515,107 @@ namespace Lemma.Factories
 				return line;
 			};
 
-			analyticsActiveEvents.ItemAdded += delegate(int index, EventEntry e)
+			analyticsActiveEvents.ItemAdded += delegate(int index, EventEntry ee)
 			{
-				e.Active.Value = true;
+				ee.Active.Value = true;
 				foreach (SessionEntry s in analyticsActiveSessions)
-					timeline.Children.Add(s.Session.Events.Where(x => x.Name == e.Name).Select(createEventLines));
+				{
+					Session.PositionProperty positionProperty = s.Session.PositionProperties[0];
+					foreach (Session.EventList el in s.Session.Events)
+					{
+						if (el.Name == ee.Name)
+						{
+							List<ModelInstance> models = new List<ModelInstance>();
+							Vector4 color = this.colorHash(el.Name);
+							int hash = (int)(new Color(color).PackedValue);
+							foreach (Session.Event e in el.Events)
+							{
+								ModelInstance i = new ModelInstance();
+								i.Setup("Models\\position-model", hash);
+								if (i.IsFirstInstance)
+									i.Model.Color.Value = new Vector3(color.X, color.Y, color.Z);
+								i.Scale.Value = new Vector3(0.25f);
+								i.Transform.Value = Matrix.CreateTranslation(positionProperty[e.Time]);
+								models.Add(i);
+								result.Add(i);
+							}
+							eventPositionModels[el] = models;
+						}
+					}
+
+					timeline.Children.Add(s.Session.Events.Where(x => x.Name == ee.Name).Select(createEventLines));
+				}
 			};
 
 			analyticsActiveEvents.ItemRemoved += delegate(int index, EventEntry e)
 			{
 				e.Active.Value = false;
+				foreach (KeyValuePair<Session.EventList, List<ModelInstance>> pair in eventPositionModels.ToList())
+				{
+					if (pair.Key.Name == e.Name)
+					{
+						foreach (ModelInstance instance in pair.Value)
+							instance.Delete.Execute();
+						eventPositionModels.Remove(pair.Key);
+					}
+				}
 				timeline.Children.Remove(timeline.Children.Where(x => x.UserData.Value != null && ((Session.EventList)x.UserData.Value).Name == e.Name).ToList());
 			};
 
 			analyticsActiveSessions.ItemAdded += delegate(int index, SessionEntry s)
 			{
+				Session.PositionProperty positionProperty = s.Session.PositionProperties[0];
+				foreach (Session.EventList el in s.Session.Events)
+				{
+					if (analyticsActiveEvents.FirstOrDefault(x => x.Name == el.Name) != null)
+					{
+						List<ModelInstance> models = new List<ModelInstance>();
+						Vector4 color = this.colorHash(el.Name);
+						int hash = (int)(new Color(color).PackedValue);
+						foreach (Session.Event e in el.Events)
+						{
+							ModelInstance i = new ModelInstance();
+							i.Setup("Models\\position-model", hash);
+							if (i.IsFirstInstance)
+								i.Model.Color.Value = new Vector3(color.X, color.Y, color.Z);
+							i.Scale.Value = new Vector3(0.25f);
+							i.Transform.Value = Matrix.CreateTranslation(positionProperty[e.Time]);
+							result.Add(i);
+							models.Add(i);
+						}
+						eventPositionModels[el] = models;
+					}
+				}
+
+				ModelInstance instance = new ModelInstance();
+				instance.Setup("Models\\position-model", 0);
+				instance.Scale.Value = new Vector3(0.25f);
+				result.Add(instance);
+				sessionPositionModels.Add(s.Session, instance);
 				s.Active.Value = true;
 				timeline.Children.Add(s.Session.Events.Where(x => analyticsActiveEvents.FirstOrDefault(y => y.Name == x.Name) != null).Select(createEventLines));
+				playbackLocation.Reset();
 			};
 
 			analyticsActiveSessions.ItemRemoved += delegate(int index, SessionEntry s)
 			{
+				ModelInstance instance = sessionPositionModels[s.Session];
+				instance.Delete.Execute();
+
+				foreach (KeyValuePair<Session.EventList, List<ModelInstance>> pair in eventPositionModels.ToList())
+				{
+					if (pair.Key.Session == s.Session)
+					{
+						foreach (ModelInstance i in pair.Value)
+							i.Delete.Execute();
+						eventPositionModels.Remove(pair.Key);
+					}
+				}
+
+				sessionPositionModels.Remove(s.Session);
 				s.Active.Value = false;
 				timeline.Children.Remove(timeline.Children.Where(x => x.UserData.Value != null && ((Session.EventList)x.UserData.Value).Session == s.Session).ToList());
 			};
-
-			Property<bool> analyticsPlaying = new Property<bool>();
-			Property<float> playbackSpeed = new Property<float> { Value = 1.0f };
-			Property<float> playbackLocation = new Property<float>();
 
 			playbackLocation.Set = delegate(float value)
 			{
@@ -553,6 +631,9 @@ namespace Lemma.Factories
 				}
 				else
 					playbackLocation.InternalValue = value;
+
+				foreach (KeyValuePair<Session, ModelInstance> pair in sessionPositionModels)
+					pair.Value.Transform.Value = Matrix.CreateTranslation(pair.Key.PositionProperties[0][playbackLocation]);
 			};
 
 			LineDrawer2D playbackLine = new LineDrawer2D();
@@ -581,6 +662,14 @@ namespace Lemma.Factories
 				analyticsEvents.Clear();
 				eventList.Children.Add(allEventsButton);
 				sessionList.Children.Add(allSessionsButton);
+
+				foreach (ModelInstance instance in sessionPositionModels.Values)
+					instance.Delete.Execute();
+				sessionPositionModels.Clear();
+
+				foreach (ModelInstance instance in eventPositionModels.Values.SelectMany(x => x))
+					instance.Delete.Execute();
+				eventPositionModels.Clear();
 
 				allEvents.Value = false;
 				allSessions.Value = false;
@@ -638,7 +727,7 @@ namespace Lemma.Factories
 				{
 					bool setTimelinePosition = false;
 
-					if (timeline.Highlighted)
+					if (timeline.Highlighted || descriptionContainer != null)
 					{
 						if (input.LeftMouseButton)
 						{
@@ -651,14 +740,14 @@ namespace Lemma.Factories
 
 						if (descriptionContainer != null)
 						{
-							if ((float)Math.Abs(descriptionContainer.Position.Value.X - mouseRelative) > threshold)
+							if (!timeline.Highlighted || (float)Math.Abs(descriptionContainer.Position.Value.X - mouseRelative) > threshold)
 							{
 								descriptionContainer.Delete.Execute();
 								descriptionContainer = null;
 							}
 						}
 
-						if (descriptionContainer == null)
+						if (descriptionContainer == null && timeline.Highlighted)
 						{
 							bool stop = false;
 							foreach (LineDrawer2D lines in timeline.Children)
@@ -695,7 +784,7 @@ namespace Lemma.Factories
 						if (analyticsActiveSessions.Count == 0)
 							analyticsPlaying.Value = false;
 						else
-							playbackLocation.Value += dt;
+							playbackLocation.Value += dt * playbackSpeed;
 					}
 				}
 			};
