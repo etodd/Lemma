@@ -16,6 +16,14 @@ namespace Lemma.Components
 
 		public Property<bool> DefaultScrollHorizontal = new Property<bool> { Editable = false, Value = false };
 
+		public Property<bool> ResizeHorizontal = new Property<bool> { Editable = false, Value = false };
+
+		public Property<float> MaxHorizontalSize = new Property<float> { Editable = false, Value = 0 };
+
+		public Property<bool> ResizeVertical = new Property<bool> { Editable = false, Value = false };
+
+		public Property<float> MaxVerticalSize = new Property<float> { Editable = false, Value = 0 };
+
 		private NotifyBinding binding = null;
 
 		public Scroller()
@@ -28,7 +36,7 @@ namespace Lemma.Components
 			base.InitializeProperties();
 			new CommandBinding<Point, int>(this.MouseScrolled, delegate(Point mouse, int delta)
 			{
-				if (this.Children.Count == 1)
+				if (this.Children.Count == 1 && this.EnableScroll)
 				{
 					UIComponent child = this.Children.First();
 					bool horizontalScroll = this.main.KeyboardState.Value.IsKeyDown(Keys.LeftShift);
@@ -73,9 +81,23 @@ namespace Lemma.Components
 				UIComponent child = this.Children.First();
 				Vector2 newPosition = child.Position;
 
+				if (this.ResizeHorizontal)
+				{
+					float size = child.ScaledSize.Value.X;
+					if (size > this.MaxHorizontalSize && this.MaxHorizontalSize != 0.0f)
+						size = this.MaxHorizontalSize;
+					this.Size.Value = new Vector2(size, this.Size.Value.Y);
+				}
 				newPosition.X = Math.Max(newPosition.X, this.Size.Value.X - child.ScaledSize.Value.X);
 				newPosition.X = Math.Min(newPosition.X, 0);
 
+				if (this.ResizeVertical)
+				{
+					float size = child.ScaledSize.Value.Y;
+					if (size > this.MaxVerticalSize && this.MaxVerticalSize != 0.0f)
+						size = this.MaxVerticalSize;
+					this.Size.Value = new Vector2(this.Size.Value.X, size);
+				}
 				newPosition.Y = Math.Max(newPosition.Y, this.Size.Value.Y - child.ScaledSize.Value.Y);
 				newPosition.Y = Math.Min(newPosition.Y, 0);
 				child.Position.Value = newPosition;

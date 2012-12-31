@@ -47,6 +47,7 @@ namespace Lemma
 		private const float performanceUpdateTime = 0.5f;
 		private float performanceInterval;
 
+#if PERFORMANCE_MONITOR
 		private int frameSum;
 		private Property<float> frameRate = new Property<float>();
 		private double physicsSum;
@@ -61,6 +62,7 @@ namespace Lemma
 		private Property<double> shadowRenderTime = new Property<double>();
 		private double postProcessSum;
 		private Property<double> postProcessTime = new Property<double>();
+#endif
 
 		public Property<Point> ScreenSize = new Property<Point>();
 
@@ -337,11 +339,12 @@ namespace Lemma
 				this.UI = new UIRenderer();
 				this.AddComponent(this.UI);
 
-#if DEBUG
+#if PERFORMANCE_MONITOR
 				ListContainer performanceMonitor = new ListContainer();
 				performanceMonitor.Add(new Binding<Vector2, Point>(performanceMonitor.Position, x => new Vector2(0, x.Y), this.ScreenSize));
 				performanceMonitor.AnchorPoint.Value = new Vector2(0, 1);
 				performanceMonitor.Visible.Value = false;
+				performanceMonitor.Name.Value = "PerformanceMonitor";
 				this.UI.Root.Children.Add(performanceMonitor);
 
 				Action<string, Property<double>> addLabel = delegate(string label, Property<double> property)
@@ -419,14 +422,20 @@ namespace Lemma
 			this.LastMouseState.Value = this.MouseState;
 			this.MouseState.Value = Microsoft.Xna.Framework.Input.Mouse.GetState();
 
+#if PERFORMANCE_MONITOR
 			Stopwatch timer = new Stopwatch();
 			timer.Start();
+#endif
 			if (!this.Paused && !this.EditorEnabled)
 				this.Space.Update(this.ElapsedTime);
+#if PERFORMANCE_MONITOR
 			timer.Stop();
 			this.physicsSum = Math.Max(this.physicsSum, timer.Elapsed.TotalSeconds);
+#endif
 
+#if PERFORMANCE_MONITOR
 			timer.Restart();
+#endif
 			this.componentsModified = false;
 			foreach (IUpdateableComponent c in this.updateables)
 			{
@@ -487,6 +496,7 @@ namespace Lemma
 				this.resize = null;
 			}
 
+#if PERFORMANCE_MONITOR
 			timer.Stop();
 			this.updateSum = Math.Max(this.updateSum, timer.Elapsed.TotalSeconds);
 			this.frameSum++;
@@ -509,6 +519,7 @@ namespace Lemma
 				this.frameSum = 0;
 				this.performanceInterval = 0;
 			}
+#endif
 		}
 
 		protected override void Draw(GameTime gameTime)
@@ -516,8 +527,10 @@ namespace Lemma
 			if (this.GraphicsDevice == null || this.GraphicsDevice.IsDisposed || this.GraphicsDevice.GraphicsDeviceStatus != GraphicsDeviceStatus.Normal)
 				return;
 
+#if PERFORMANCE_MONITOR
 			Stopwatch timer = new Stopwatch();
 			timer.Start();
+#endif
 			this.renderParameters.Technique = this.Renderer.MotionBlurAmount.Value > 0.0f && !this.Paused ? Technique.MotionBlur : Technique.Render;
 
 			// This line prevents the game from crashing when resizing the window.
@@ -529,23 +542,31 @@ namespace Lemma
 				if (this.componentEnabled((Component)c))
 					c.DrawPreFrame(gameTime, this.renderParameters);
 			}
+#if PERFORMANCE_MONITOR
 			timer.Stop();
 			this.preframeSum = Math.Max(timer.Elapsed.TotalSeconds, this.preframeSum);
+#endif
 
 			this.Renderer.SetRenderTargets(this.renderParameters);
-				
+			
+#if PERFORMANCE_MONITOR
 			timer.Restart();
+#endif
 			this.DrawScene(this.renderParameters);
+#if PERFORMANCE_MONITOR
 			timer.Stop();
 			this.rawRenderSum = Math.Max(this.rawRenderSum, timer.Elapsed.TotalSeconds);
 
 			timer.Restart();
+#endif
 			this.LightingManager.UpdateGlobalLights();
 			this.LightingManager.RenderShadowMaps(this.Camera);
+#if PERFORMANCE_MONITOR
 			timer.Stop();
 			this.shadowRenderSum = Math.Max(this.shadowRenderSum, timer.Elapsed.TotalSeconds);
 
 			timer.Restart();
+#endif
 			this.Renderer.PostProcess(this.renderTarget, this.renderParameters, this.DrawAlphaComponents);
 
 			foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
@@ -553,8 +574,10 @@ namespace Lemma
 				if (this.componentEnabled((Component)c))
 					c.DrawNonPostProcessed(gameTime, this.renderParameters);
 			}
+#if PERFORMANCE_MONITOR
 			timer.Stop();
 			this.postProcessSum = Math.Max(this.postProcessSum, timer.Elapsed.TotalSeconds);
+#endif
 		}
 
 		public void DrawScene(RenderParameters parameters)

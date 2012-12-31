@@ -34,6 +34,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.requiresNewBatch = true;
 			this.Add(new ListNotifyBinding<Line>(delegate() { this.changed = true; }, this.Lines));
 		}

@@ -141,6 +141,8 @@ namespace Lemma.Components
 
 		public class EventList
 		{
+			[XmlIgnore]
+			public Session Session;
 			public string Name;
 			public List<Event> Events = new List<Event>();
 		}
@@ -204,6 +206,8 @@ namespace Lemma.Components
 				s = (Session)new XmlSerializer(typeof(Session)).Deserialize(stream);
 			foreach (PositionProperty prop in s.positionProperties.Values)
 				prop.Initialize(s);
+			foreach (EventList el in s.events.Values)
+				el.Session = s;
 			return s;
 		}
 
@@ -212,6 +216,8 @@ namespace Lemma.Components
 		private Dictionary<string, PositionProperty> positionProperties = new Dictionary<string, PositionProperty>();
 
 		private Dictionary<string, EventList> events = new Dictionary<string, EventList>();
+
+		public DateTime Date;
 
 		public class Recorder : Component, IUpdateableComponent
 		{
@@ -228,10 +234,15 @@ namespace Lemma.Components
 
 			private Session data = new Session();
 
+			public Recorder()
+			{
+				this.data.Date = DateTime.Now;
+				this.data.Interval = Interval;
+			}
+
 			public void Save(string path)
 			{
 				this.data.TotalTime = this.main.TotalTime;
-				this.data.Interval = Interval;
 				using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
 					new XmlSerializer(typeof(Session)).Serialize(stream, this.data);
 			}
@@ -241,6 +252,7 @@ namespace Lemma.Components
 				foreach (ContinuousProperty prop in this.data.continuousProperties.Values)
 					prop.Clear();
 				this.data.events.Clear();
+				this.data.Date = DateTime.Now;
 			}
 
 			private List<Action> recordActions = new List<Action>();
@@ -286,6 +298,7 @@ namespace Lemma.Components
 					eventList = this.data.events[name] = new EventList
 					{
 						Name = name,
+						Session = this.data,
 					};
 				}
 				eventList.Events.Add(new Session.Event

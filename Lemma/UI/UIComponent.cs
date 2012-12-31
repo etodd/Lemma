@@ -182,6 +182,12 @@ namespace Lemma.Components
 			});
 		}
 
+		public void Detach()
+		{
+			this.Parent.Value.Children.RemoveWithoutNotifying(this);
+			this.Parent.Value = null;
+		}
+
 		public override void InitializeProperties()
 		{
 			this.Add(new TwoWayBinding<Vector2, Vector2>(

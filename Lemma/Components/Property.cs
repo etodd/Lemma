@@ -301,6 +301,12 @@ namespace Lemma.Components
 				this.ItemAdded(this.InternalList.Count - 1, t);
 		}
 
+		public void Add(IEnumerable<Type> items)
+		{
+			foreach (Type t in items)
+				this.Add(t);
+		}
+
 		public void Insert(int index, Type t)
 		{
 			this.InternalList.Insert(index, t);
@@ -353,6 +359,29 @@ namespace Lemma.Components
 				// Bindings were modified while we were enumerating
 			}
 			return true;
+		}
+
+		public bool RemoveWithoutNotifying(Type t)
+		{
+			int index = this.InternalList.IndexOf(t);
+			this.InternalList.RemoveAt(index);
+			this.Size.Value = this.InternalList.Count;
+			try
+			{
+				foreach (IListBinding<Type> b in this.bindings)
+					b.Remove(t, this);
+			}
+			catch (InvalidOperationException)
+			{
+				// Bindings were modified while we were enumerating
+			}
+			return true;
+		}
+
+		public void Remove(IEnumerable<Type> items)
+		{
+			foreach (Type t in items)
+				this.Remove(t);
 		}
 
 		public void Changed(Type from, Type to)
