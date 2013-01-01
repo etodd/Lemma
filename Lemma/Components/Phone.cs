@@ -231,6 +231,8 @@ namespace Lemma.Components
 				Text = response.Text
 			});
 
+			Session.Recorder.Event(main, "PhoneSentMessage", response.Question + "." + response.ID);
+
 			// Remove the response from the user's response choices
 			this.Responses.Remove(response);
 

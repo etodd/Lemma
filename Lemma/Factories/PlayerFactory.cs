@@ -131,12 +131,12 @@ namespace Lemma.Factories
 			input.EnabledWhenPaused.Value = false;
 			result.Add("Input", input);
 
-			Model buildReticle = new Model();
-			buildReticle.Filename.Value = "Models\\arrow";
-			buildReticle.Editable = false;
-			buildReticle.Enabled.Value = false;
-			buildReticle.Serialize = false;
-			result.Add("BuildReticle", buildReticle);
+			Model reticle = new Model();
+			reticle.Filename.Value = "Models\\arrow";
+			reticle.Editable = false;
+			reticle.Enabled.Value = false;
+			reticle.Serialize = false;
+			result.Add("Reticle", reticle);
 
 			AudioListener audioListener = result.Get<AudioListener>();
 			Sound footsteps = result.Get<Sound>("Footsteps");
@@ -252,7 +252,7 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableKick"), player.EnableKick));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRunHorizontal"), player.EnableWallRunHorizontal));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableBlockBuild"), player.EnableBlockBuild));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnablePrecisionJump"), player.EnablePrecisionJump));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableLevitation"), player.EnableLevitation));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSprint"), player.EnableSprint));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
@@ -1202,7 +1202,7 @@ namespace Lemma.Factories
 
 			Func<Vector3, bool> canJump = delegate(Vector3 v)
 			{
-				return v.Y < (player.IsSupported ? player.JumpSpeed * 1.75f : player.LinearVelocity.Value.Y + player.JumpSpeed * 0.25f);
+				return v.Y < (player.IsSupported ? player.JumpSpeed * 1.25f : player.LinearVelocity.Value.Y + player.JumpSpeed * 0.25f);
 			};
 
 			Func<Vector3, Vector3> normalizeJumpVelocity = delegate(Vector3 v)
@@ -1210,133 +1210,42 @@ namespace Lemma.Factories
 				float vertical = Math.Min(v.Y, player.JumpSpeed * 1.25f);
 				v.Y = 0.0f;
 				float horizontal = v.Length();
-				if (horizontal > player.JumpSpeed * 1.5f)
-					v *= player.JumpSpeed * 1.5f / horizontal;
+				if (horizontal > player.JumpSpeed * 1.25f)
+					v *= player.JumpSpeed * 1.25f / horizontal;
 				v.Y = vertical;
 				return v;
 			};
 
 			Map.GlobalRaycastResult aimRaycastResult = new Map.GlobalRaycastResult();
-			Map buildMap = null;
-			Map.Coordinate buildBaseCoordinate = new Map.Coordinate();
-			Property<bool> canJumpToBuildReticle = new Property<bool>();
-			Property<bool> targetWithinBuildRange = new Property<bool>();
-			Map.Coordinate buildCoordinate = new Map.Coordinate();
-			Direction buildDirection = Direction.None;
-			int builtSoFar = 0;
-			const int buildLength = 6;
-			const float buildRange = 30.0f, buildInterval = 1.5f;
+			Property<bool> canJumpToReticle = new Property<bool>();
 			update.Add(delegate(float dt)
 			{
 				if (aimMode || levitationMode)
 					aimRaycastResult = Map.GlobalRaycast(main.Camera.Position.Value, main.Camera.Forward, main.Camera.FarPlaneDistance);
 
-				if (aimMode)
+				if (aimMode && aimRaycastResult.Map != null && !player.IsLevitating && player.EnablePrecisionJump)
 				{
-					if (buildMap != null)
-					{
-						buildReticle.Enabled.Value = true;
+					Vector3 normal = aimRaycastResult.Map.GetAbsoluteVector(aimRaycastResult.Normal.GetVector());
 
-						Vector3 normal = buildMap.GetAbsoluteVector(buildDirection.GetVector());
+					canJumpToReticle.Value = canJump(getPrecisionJumpVelocity(aimRaycastResult.Position));
+					reticle.Color.Value = canJumpToReticle || !player.IsSupported ? new Vector3(2.0f) : new Vector3(2.0f, 0.0f, 0.0f);
 
-						Vector3 absolutePosition = buildMap.GetAbsolutePosition(buildCoordinate) + normal * 0.5f;
+					reticle.Enabled.Value = true;
 
-						canJumpToBuildReticle.Value = canJump(getPrecisionJumpVelocity(absolutePosition));
-						buildReticle.Color.Value = canJumpToBuildReticle || !player.IsSupported ? new Vector3(2.0f) : new Vector3(2.0f, 0.0f, 0.0f);
-
-						Matrix matrix = Matrix.Identity;
-						matrix.Translation = absolutePosition;
-						matrix.Forward = -normal;
-						if (normal.Equals(Vector3.Up))
-							matrix.Right = Vector3.Right;
-						else if (normal.Equals(Vector3.Down))
-							matrix.Right = Vector3.Left;
-						else
-							matrix.Right = Vector3.Normalize(Vector3.Cross(normal, Vector3.Up));
-						matrix.Up = Vector3.Cross(normal, matrix.Right);
-						buildReticle.Transform.Value = matrix;
-
-						if ((transform.Position - buildMap.GetAbsolutePosition(buildBaseCoordinate)).Length() < (buildLength - builtSoFar) * buildInterval)
-						{
-							builtSoFar++;
-							buildCoordinate = buildCoordinate.Move(buildDirection);
-
-							Direction yDir = buildDirection.IsParallel(Direction.PositiveY) ? Direction.PositiveX : Direction.PositiveY;
-							Direction zDir = buildDirection.Cross(yDir);
-
-							const int size = 3;
-
-							bool quit = false;
-
-							Map.CellState fillValue = WorldFactory.StatesByName["Temporary"];
-
-							List<AnimatingBlock> blockSpawnList = new List<AnimatingBlock>();
-
-							Map.Coordinate x = buildCoordinate;
-							int yi = 0;
-							Map.Coordinate y = buildCoordinate.Move(yDir, size / -2);
-							while (yi < size && !quit)
-							{
-								int zi = 0;
-								Map.Coordinate z = y.Move(zDir, size / -2);
-								while (zi < size)
-								{
-									Vector3 pos = buildMap.GetAbsolutePosition(z);
-
-									foreach (Map map in Map.ActiveMaps)
-									{
-										if (map != buildMap && map[pos].ID != 0)
-										{
-											quit = true;
-											break;
-										}
-									}
-									if (quit)
-										break;
-									else
-									{
-										blockSpawnList.Add(new AnimatingBlock { Map = buildMap, Coord = z, State = fillValue });
-										zi++;
-										z = z.Move(zDir);
-									}
-								}
-								y = y.Move(yDir);
-								yi++;
-							}
-
-							buildBlocks(blockSpawnList, false);
-
-							if (builtSoFar == buildLength)
-								buildMap = null;
-						}
-					}
-					else if (aimRaycastResult.Map != null && !player.IsLevitating && player.EnableBlockBuild)
-					{
-						Vector3 normal = aimRaycastResult.Map.GetAbsoluteVector(aimRaycastResult.Normal.GetVector());
-						
-						targetWithinBuildRange.Value = (aimRaycastResult.Position - transform.Position).Length() < buildRange;
-
-						buildReticle.Color.Value = targetWithinBuildRange ? new Vector3(2.0f) : new Vector3(2.0f, 0.0f, 0.0f);
-
-						buildReticle.Enabled.Value = true;
-
-						Matrix matrix = Matrix.Identity;
-						matrix.Translation = aimRaycastResult.Position;
-						matrix.Forward = -normal;
-						if (normal.Equals(Vector3.Up))
-							matrix.Right = Vector3.Right;
-						else if (normal.Equals(Vector3.Down))
-							matrix.Right = Vector3.Left;
-						else
-							matrix.Right = Vector3.Normalize(Vector3.Cross(normal, Vector3.Up));
-						matrix.Up = Vector3.Cross(normal, matrix.Right);
-						buildReticle.Transform.Value = matrix;
-					}
+					Matrix matrix = Matrix.Identity;
+					matrix.Translation = aimRaycastResult.Position;
+					matrix.Forward = -normal;
+					if (normal.Equals(Vector3.Up))
+						matrix.Right = Vector3.Right;
+					else if (normal.Equals(Vector3.Down))
+						matrix.Right = Vector3.Left;
 					else
-						buildReticle.Enabled.Value = false;
+						matrix.Right = Vector3.Normalize(Vector3.Cross(normal, Vector3.Up));
+					matrix.Up = Vector3.Cross(normal, matrix.Right);
+					reticle.Transform.Value = matrix;
 				}
 				else
-					buildReticle.Enabled.Value = false;
+					reticle.Enabled.Value = false;
 			});
 
 			input.Bind(settings.ToggleItem1, PCInput.InputState.Down, delegate()
@@ -1777,7 +1686,19 @@ namespace Lemma.Factories
 					}
 				}
 
-				bool precisionJumping = !onlyVault && aimMode && player.EnableBlockBuild && buildMap != null;
+				bool precisionJumping = !vaulting && !onlyVault && aimMode && player.EnablePrecisionJump && aimRaycastResult.Map != null;
+
+				// Prevent the player from spamming precision jumping and wall-running to run along the same wall infinitely
+				if (precisionJumping)
+				{
+					if (player.WallRunState != Player.WallRun.None && aimRaycastResult.Map == wallRunMap && aimRaycastResult.Normal == wallDirection.GetReverse())
+					{
+						Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - 0.5f, 0);
+						Map.Coordinate wallCoord = wallRunMap.GetCoordinate(playerPos).Move(wallDirection, 2);
+						if (aimRaycastResult.Coordinate.Value.GetComponent(wallDirection) == wallCoord.GetComponent(wallDirection))
+							precisionJumping = false;
+					}
+				}
 
 				if (go)
 				{
@@ -1793,10 +1714,11 @@ namespace Lemma.Factories
 						if (precisionJumping)
 						{
 							// Make the player jump exactly to the target.
-							Vector3 velocity = normalizeJumpVelocity(getPrecisionJumpVelocity(buildMap.GetAbsolutePosition(buildCoordinate.Move(buildDirection, (buildLength - builtSoFar) / 2))));
+							Vector3 velocity = normalizeJumpVelocity(getPrecisionJumpVelocity(aimRaycastResult.Position + (aimRaycastResult.Map.GetAbsoluteVector(aimRaycastResult.Normal.GetVector()) * 2.0f)));
 							if (velocity.Y < 0.0f && supported)
 								return false; // Can't jump down through the floor
 							player.LinearVelocity.Value = velocity;
+							aimMode.Value = false;
 						}
 						else
 						{
@@ -2032,14 +1954,6 @@ namespace Lemma.Factories
 					lastFire = main.TotalTime;
 					fire = true;
 				}
-				else if (aimMode && aimRaycastResult.Map != null && targetWithinBuildRange && player.EnableBlockBuild)
-				{
-					// Enable build mode
-					buildMap = aimRaycastResult.Map;
-					buildCoordinate = buildBaseCoordinate = aimRaycastResult.Coordinate.Value;
-					buildDirection = aimRaycastResult.Normal;
-					builtSoFar = buildLength - (int)Math.Floor((transform.Position - aimRaycastResult.Position).Length() / buildInterval);
-				}
 				else if (levitationMode)
 				{
 					// Levitate
@@ -2109,7 +2023,6 @@ namespace Lemma.Factories
 
 			input.Bind(settings.Fire, PCInput.InputState.Up, delegate()
 			{
-				buildMap = null;
 				if (player.IsLevitating)
 				{
 					if (main.TotalTime - levitateButtonPressStart < 0.25f)

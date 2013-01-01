@@ -23,21 +23,23 @@ namespace Lemma.Factories
 			Entity result = new Entity(main, "PlayerData");
 
 #if DEBUG
-			result.Add("EnableBlockBuild", new Property<bool> { Value = true });
+			result.Add("EnablePrecisionJump", new Property<bool> { Value = true });
 			result.Add("EnableRoll", new Property<bool> { Value = true });
 			result.Add("EnableKick", new Property<bool> { Value = true });
 			result.Add("EnableWallRun", new Property<bool> { Value = true });
 			result.Add("EnableWallRunHorizontal", new Property<bool> { Value = true });
+			result.Add("EnableEnhancedWallRun", new Property<bool> { Value = true });
 			result.Add("EnableLevitation", new Property<bool> { Value = true });
 			result.Add("EnableSprint", new Property<bool> { Value = true });
 			result.Add("EnableSlowMotion", new Property<bool> { Value = true });
 #else
-			result.Add("EnableBlockBuild", new Property<bool> { Value = false });
+			result.Add("EnablePrecisionJump", new Property<bool> { Value = false });
 			result.Add("EnableAim", new Property<bool> { Value = false });
 			result.Add("EnableRoll", new Property<bool> { Value = false });
 			result.Add("EnableKick", new Property<bool> { Value = false });
 			result.Add("EnableWallRun", new Property<bool> { Value = false });
 			result.Add("EnableWallRunHorizontal", new Property<bool> { Value = false });
+			result.Add("EnableEnhancedWallRun", new Property<bool> { Value = false });
 			result.Add("EnableLevitation", new Property<bool> { Value = false });
 			result.Add("EnableSprint", new Property<bool> { Value = false });
 			result.Add("EnableSlowMotion", new Property<bool> { Value = false });

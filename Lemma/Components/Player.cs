@@ -35,7 +35,7 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<bool> EnableKick = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
-		public Property<bool> EnableBlockBuild = new Property<bool> { Value = false, Editable = false };
+		public Property<bool> EnablePrecisionJump = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
 		public Property<bool> EnableWallRun = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
