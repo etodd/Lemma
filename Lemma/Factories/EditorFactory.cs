@@ -889,6 +889,7 @@ namespace Lemma.Factories
 
 				allEvents.Value = false;
 				allSessions.Value = false;
+				allProperties.Value = false;
 				analyticsEnable.Value = false;
 				
 				analyticsActiveEvents.Clear();
