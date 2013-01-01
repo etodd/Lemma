@@ -93,7 +93,7 @@ namespace Lemma.Components
 					if (child.Visible)
 						pos.X += child.ScaledSize.Value.X + spacing;
 				}
-				this.Size.Value = new Vector2(pos.X - spacing, maxSize.Y);
+				this.Size.Value = new Vector2(Math.Max(0, pos.X - spacing), maxSize.Y);
 			}
 			else
 			{
@@ -121,7 +121,7 @@ namespace Lemma.Components
 					if (child.Visible)
 						pos.Y += child.ScaledSize.Value.Y + spacing;
 				}
-				this.Size.Value = new Vector2(maxSize.X, pos.Y - spacing);
+				this.Size.Value = new Vector2(maxSize.X, Math.Max(0, pos.Y - spacing));
 			}
 		}
 	}

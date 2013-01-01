@@ -114,7 +114,9 @@ namespace Lemma
 			}
 		}
 
-		public Command MapLoaded;
+		public Command<string> LoadingMap = new Command<string>();
+
+		public Command MapLoaded = new Command();
 
 		public Property<bool> Paused = new Property<bool>();
 
@@ -254,8 +256,6 @@ namespace Lemma
 		{
 			this.Space = new Space();
 			this.ScreenSize.Value = new Point(this.Window.ClientBounds.Width, this.Window.ClientBounds.Height);
-
-			this.MapLoaded = new Command();
 
 			// Give the space some threads to work with.
 			// Just throw a thread at every processor. The thread scheduler will take care of where to put them.

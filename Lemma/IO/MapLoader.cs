@@ -19,6 +19,8 @@ namespace Lemma.IO
 
 		public static void Load(Main main, string directory, string filename, bool deleteEditor = true)
 		{
+			main.LoadingMap.Execute(filename);
+
 			bool inAppPackage = false;
 
 			if (directory == null)
@@ -35,7 +37,7 @@ namespace Lemma.IO
 				MapLoader.Load(main, stream, deleteEditor);
 		}
 
-		public static void Load(Main main, Stream stream, bool deleteEditor = true)
+		private static void Load(Main main, Stream stream, bool deleteEditor = true)
 		{
 			main.ClearEntities(deleteEditor);
 
@@ -86,6 +88,7 @@ namespace Lemma.IO
 
 		public static void Reload(Main main, bool deleteEditor = true)
 		{
+			main.LoadingMap.Execute(main.MapFile);
 			using (Stream stream = new MemoryStream())
 			{
 				XmlSerializer serializer = new XmlSerializer(typeof(List<Entity>));
@@ -104,6 +107,7 @@ namespace Lemma.IO
 					main.Add(entity);
 				}
 			}
+			main.MapLoaded.Execute();
 		}
 	}
 }

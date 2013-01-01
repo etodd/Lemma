@@ -194,7 +194,7 @@ namespace Lemma
 
 		public void SaveAnalytics()
 		{
-			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, this.MapFile.Value + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 16) + ".xml"));
+			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, this.MapFile.Value + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml"));
 		}
 #endif
 
@@ -211,8 +211,10 @@ namespace Lemma
 			return result;
 		}
 
+		// Takes a screenshot and saves a directory with a copy of all the map files
 		public Command Save = new Command();
 
+		// Just saves the current map file
 		public Command SaveCurrentMap = new Command();
 
 		protected string currentSave;
@@ -313,17 +315,6 @@ namespace Lemma
 
 				this.MapFile.Set = delegate(string value)
 				{
-#if ANALYTICS
-					if (this.MapFile.Value != null && !this.EditorEnabled)
-					{
-						this.SessionRecorder.RecordEvent("ChangedMap", value);
-						this.SaveAnalytics();
-					}
-					this.SessionRecorder.Reset();
-#endif
-
-					this.MapFile.InternalValue = value;
-
 					this.ClearEntities(false);
 
 					if (value == null || value.Length == 0)
@@ -332,9 +323,11 @@ namespace Lemma
 					try
 					{
 						IO.MapLoader.Load(this, this.currentSave == null ? null : Path.Combine(this.saveDirectory, this.currentSave), value, false);
+						this.MapFile.InternalValue = value;
 					}
 					catch (FileNotFoundException)
 					{
+						this.MapFile.InternalValue = value;
 						// Create a new map
 						Entity world = Factory.CreateAndBind(this, "World");
 						world.Get<Transform>().Position.Value = new Vector3(0, 3, 0);
@@ -1355,6 +1348,20 @@ namespace Lemma
 
 				new CommandBinding(this.MapLoaded, buttons.Delete);
 				new CommandBinding(this.MapLoaded, header.Delete);
+#endif
+
+#if ANALYTICS
+				bool editorLastEnabled = this.EditorEnabled;
+				new CommandBinding<string>(this.LoadingMap, delegate(string newMap)
+				{
+					if (this.MapFile.Value != null && !editorLastEnabled)
+					{
+						this.SessionRecorder.RecordEvent("ChangedMap", newMap);
+						this.SaveAnalytics();
+					}
+					this.SessionRecorder.Reset();
+					editorLastEnabled = this.EditorEnabled;
+				});
 #endif
 
 				new CommandBinding(this.MapLoaded, delegate()

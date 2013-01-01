@@ -28,6 +28,12 @@ namespace Lemma.Factories
 			public Property<bool> Active = new Property<bool>();
 		}
 
+		private class PropertyEntry
+		{
+			public string Name;
+			public Property<bool> Active = new Property<bool>();
+		}
+
 		public override Entity Create(Main main)
 		{
 			Entity result = new Entity(main, "Editor");
@@ -284,31 +290,42 @@ namespace Lemma.Factories
 			ListProperty<SessionEntry> analyticsActiveSessions = new ListProperty<SessionEntry>();
 			ListProperty<EventEntry> analyticsEvents = new ListProperty<EventEntry>();
 			ListProperty<EventEntry> analyticsActiveEvents = new ListProperty<EventEntry>();
+			ListProperty<PropertyEntry> analyticsProperties = new ListProperty<PropertyEntry>();
+			ListProperty<PropertyEntry> analyticsActiveProperties = new ListProperty<PropertyEntry>();
 			Dictionary<Session, ModelInstance> sessionPositionModels = new Dictionary<Session, ModelInstance>();
 			Dictionary<Session.EventList, List<ModelInstance>> eventPositionModels = new Dictionary<Session.EventList, List<ModelInstance>>();
 			Property<bool> analyticsPlaying = new Property<bool>();
 			Property<float> playbackSpeed = new Property<float> { Value = 1.0f };
 			Property<float> playbackLocation = new Property<float>();
 
+			const float timelineHeight = 32.0f;
+			
 			Scroller timelineScroller = new Scroller();
 			timelineScroller.ScrollAmount.Value = 60.0f;
 			timelineScroller.EnableScissor.Value = false;
 			timelineScroller.DefaultScrollHorizontal.Value = true;
 			timelineScroller.AnchorPoint.Value = new Vector2(0, 1);
+			timelineScroller.ResizeVertical.Value = true;
 			timelineScroller.Add(new Binding<Vector2, Point>(timelineScroller.Position, x => new Vector2(0, x.Y), main.ScreenSize));
-			timelineScroller.Add(new Binding<Vector2, Point>(timelineScroller.Size, x => new Vector2(x.X, 32.0f), main.ScreenSize));
+			timelineScroller.Add(new Binding<Vector2, Point>(timelineScroller.Size, x => new Vector2(x.X, timelineHeight), main.ScreenSize));
 			timelineScroller.Add(new Binding<bool>(timelineScroller.Visible, analyticsEnable));
 			timelineScroller.Add(new Binding<bool>(timelineScroller.EnableScroll, x => !x, input.GetKey(Keys.LeftAlt)));
 			uiRenderer.Root.Children.Add(timelineScroller);
 
-			scroller.Add(new Binding<Vector2, Point>(scroller.Size, x => new Vector2(scroller.Size.Value.X, x.Y - 20 - timelineScroller.ScaledSize.Value.Y), main.ScreenSize));
+			scroller.Add(new Binding<Vector2>(scroller.Size, () => new Vector2(scroller.Size.Value.X, main.ScreenSize.Value.Y - 20 - timelineScroller.ScaledSize.Value.Y), main.ScreenSize, timelineScroller.ScaledSize));
+
+			ListContainer timelines = new ListContainer();
+			timelines.Alignment.Value = ListContainer.ListAlignment.Min;
+			timelines.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			timelines.Reversed.Value = true;
+			timelineScroller.Children.Add(timelines);
 
 			Container timeline = new Container();
-			timeline.Size.Value = new Vector2(0, timelineScroller.Size.Value.Y);
+			timeline.Size.Value = new Vector2(0, timelineHeight);
 			timeline.Tint.Value = Microsoft.Xna.Framework.Color.Black;
 			timeline.ResizeHorizontal.Value = false;
 			timeline.ResizeVertical.Value = false;
-			timelineScroller.Children.Add(timeline);
+			timelines.Children.Add(timeline);
 
 			ui.PopupCommands.Add(new EditorUI.PopupCommand
 			{
@@ -320,18 +337,28 @@ namespace Lemma.Factories
 					{
 						if (main.MapFile.Value != null)
 						{
-							analyticsEnable.Value = true;
 							List<Session> sessions = ((GameMain)main).LoadAnalytics(main.MapFile);
-							Dictionary<string, bool> distinctEventNames = new Dictionary<string, bool>();
-							foreach (Session s in sessions)
+							if (sessions.Count > 0)
 							{
-								foreach (Session.EventList el in s.Events)
-									distinctEventNames[el.Name] = true;
-								analyticsSessions.Add(new SessionEntry { Session = s });
+								analyticsEnable.Value = true;
+								Dictionary<string, bool> distinctEventNames = new Dictionary<string, bool>();
+								Dictionary<string, bool> distinctPropertyNames = new Dictionary<string, bool>();
+								foreach (Session s in sessions)
+								{
+									foreach (Session.EventList el in s.Events)
+										distinctEventNames[el.Name] = true;
+									foreach (Session.ContinuousProperty p in s.ContinuousProperties)
+									{
+										if (p.Independent)
+											distinctPropertyNames[p.Name] = true;
+									}
+									analyticsSessions.Add(new SessionEntry { Session = s });
+								}
+								analyticsEvents.Add(distinctEventNames.Keys.Select(x => new EventEntry { Name = x }));
+								analyticsProperties.Add(distinctPropertyNames.Keys.Select(x => new PropertyEntry { Name = x }));
+								timeline.Size.Value = new Vector2(analyticsSessions.Max(x => x.Session.TotalTime), timelineScroller.Size.Value.Y);
+								timelines.Scale.Value = new Vector2(timelineScroller.Size.Value.X / timeline.Size.Value.X, 1.0f);
 							}
-							analyticsEvents.Add(distinctEventNames.Keys.Select(x => new EventEntry { Name = x }));
-							timeline.Size.Value = new Vector2(analyticsSessions.Max(x => x.Session.TotalTime), timelineScroller.Size.Value.Y);
-							timeline.Scale.Value = new Vector2(timelineScroller.Size.Value.X / timeline.Size.Value.X, 1.0f);
 						}
 					}
 				},
@@ -344,18 +371,6 @@ namespace Lemma.Factories
 			sessionsSidebar.Alignment.Value = ListContainer.ListAlignment.Max;
 			sessionsSidebar.Reversed.Value = true;
 			uiRenderer.Root.Children.Add(sessionsSidebar);
-
-			Container sessionsContainer = new Container();
-			sessionsContainer.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-			sessionsContainer.Opacity.Value = 0.5f;
-			sessionsContainer.AnchorPoint.Value = new Vector2(1, 1);
-			sessionsSidebar.Children.Add(sessionsContainer);
-
-			Scroller sessionsScroller = new Scroller();
-			sessionsScroller.ResizeHorizontal.Value = true;
-			sessionsScroller.ResizeVertical.Value = true;
-			sessionsScroller.MaxVerticalSize.Value = 256;
-			sessionsContainer.Children.Add(sessionsScroller);
 
 			Func<string, ListContainer> createCheckboxListItem = delegate(string text)
 			{
@@ -379,6 +394,18 @@ namespace Lemma.Factories
 				checkboxContainer.Children.Add(checkbox);
 				return layout;
 			};
+
+			Container sessionsContainer = new Container();
+			sessionsContainer.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+			sessionsContainer.Opacity.Value = 0.5f;
+			sessionsContainer.AnchorPoint.Value = new Vector2(1, 1);
+			sessionsSidebar.Children.Add(sessionsContainer);
+
+			Scroller sessionsScroller = new Scroller();
+			sessionsScroller.ResizeHorizontal.Value = true;
+			sessionsScroller.ResizeVertical.Value = true;
+			sessionsScroller.MaxVerticalSize.Value = 256;
+			sessionsContainer.Children.Add(sessionsScroller);
 
 			ListContainer sessionList = new ListContainer();
 			sessionList.Orientation.Value = ListContainer.ListOrientation.Vertical;
@@ -498,6 +525,72 @@ namespace Lemma.Factories
 			allEventsCheckbox.Add(new Binding<Microsoft.Xna.Framework.Color, bool>(allEventsCheckbox.Tint, x => x ? Microsoft.Xna.Framework.Color.White : Microsoft.Xna.Framework.Color.Black, allEvents));
 			eventList.Children.Add(allEventsButton);
 
+			Container propertiesContainer = new Container();
+			propertiesContainer.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+			propertiesContainer.Opacity.Value = 0.5f;
+			propertiesContainer.AnchorPoint.Value = new Vector2(1, 1);
+			sessionsSidebar.Children.Add(propertiesContainer);
+
+			Scroller propertiesScroller = new Scroller();
+			propertiesScroller.ResizeHorizontal.Value = true;
+			propertiesScroller.ResizeVertical.Value = true;
+			propertiesScroller.MaxVerticalSize.Value = 256;
+			propertiesContainer.Children.Add(propertiesScroller);
+
+			ListContainer propertiesList = new ListContainer();
+			propertiesList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			propertiesList.Alignment.Value = ListContainer.ListAlignment.Max;
+			propertiesScroller.Children.Add(propertiesList);
+
+			Property<bool> allProperties = new Property<bool>();
+
+			propertiesList.Add(new ListBinding<UIComponent, PropertyEntry>(propertiesList.Children, analyticsProperties, delegate(PropertyEntry e)
+			{
+				ListContainer item = createCheckboxListItem(e.Name);
+
+				Container checkbox = (Container)item.GetChildByName("Checkbox");
+				checkbox.Add(new Binding<Microsoft.Xna.Framework.Color, bool>(checkbox.Tint, x => x ? Microsoft.Xna.Framework.Color.White : Microsoft.Xna.Framework.Color.Black, e.Active));
+
+				TextElement label = (TextElement)item.GetChildByName("Label");
+				label.Tint.Value = new Microsoft.Xna.Framework.Color(this.colorHash(e.Name));
+
+				item.Add(new CommandBinding<Point>(item.MouseLeftDown, delegate(Point p)
+				{
+					if (e.Active)
+					{
+						allProperties.Value = false;
+						analyticsActiveProperties.Remove(e);
+					}
+					else
+						analyticsActiveProperties.Add(e);
+				}));
+
+				return new[] { item };
+			}));
+
+			ListContainer allPropertiesButton = createCheckboxListItem("[All]");
+			allPropertiesButton.Add(new CommandBinding<Point>(allPropertiesButton.MouseLeftDown, delegate(Point p)
+			{
+				if (allProperties)
+				{
+					allProperties.Value = false;
+					foreach (PropertyEntry e in analyticsActiveProperties.ToList())
+						analyticsActiveProperties.Remove(e);
+				}
+				else
+				{
+					allProperties.Value = true;
+					foreach (PropertyEntry e in analyticsProperties)
+					{
+						if (!e.Active)
+							analyticsActiveProperties.Add(e);
+					}
+				}
+			}));
+			Container allPropertiesCheckbox = (Container)allPropertiesButton.GetChildByName("Checkbox");
+			allPropertiesCheckbox.Add(new Binding<Microsoft.Xna.Framework.Color, bool>(allPropertiesCheckbox.Tint, x => x ? Microsoft.Xna.Framework.Color.White : Microsoft.Xna.Framework.Color.Black, allProperties));
+			propertiesList.Children.Add(allPropertiesButton);
+
 			Func<Session.EventList, LineDrawer2D> createEventLines = delegate(Session.EventList el)
 			{
 				LineDrawer2D line = new LineDrawer2D();
@@ -562,6 +655,122 @@ namespace Lemma.Factories
 				timeline.Children.Remove(timeline.Children.Where(x => x.UserData.Value != null && ((Session.EventList)x.UserData.Value).Name == e.Name).ToList());
 			};
 
+			analyticsActiveProperties.ItemAdded += delegate(int index, PropertyEntry e)
+			{
+				e.Active.Value = true;
+			};
+
+			analyticsActiveProperties.ItemRemoved += delegate(int index, PropertyEntry e)
+			{
+				e.Active.Value = false;
+			};
+
+			ListContainer propertyTimelines = new ListContainer();
+			propertyTimelines.Alignment.Value = ListContainer.ListAlignment.Min;
+			propertyTimelines.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			timelines.Children.Add(propertyTimelines);
+
+			Action<LineDrawer2D> refreshPropertyGraph = delegate(LineDrawer2D lines)
+			{
+				string propertyName = ((PropertyEntry)lines.UserData.Value).Name;
+				lines.Lines.Clear();
+				float time = 0.0f, lastTime = 0.0f;
+				float lastValue = 0.0f;
+				bool firstLine = true;
+				float max = float.MinValue, min = float.MaxValue;
+				while (true)
+				{
+					bool stop = true;
+
+					// Calculate average
+					int count = 0;
+					float sum = 0.0f;
+					foreach (SessionEntry s in analyticsActiveSessions)
+					{
+						if (time < s.Session.TotalTime)
+						{
+							Session.ContinuousProperty prop = s.Session.GetContinuousProperty(propertyName);
+							if (prop != null)
+							{
+								stop = false;
+								sum += prop[time];
+								count++;
+							}
+						}
+					}
+
+					if (stop)
+						break;
+					else
+					{
+						float value = sum / (float)count;
+						if (firstLine)
+							firstLine = false;
+						else
+						{
+							lines.Lines.Add(new LineDrawer2D.Line
+							{
+								A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor
+								{
+									Color = Microsoft.Xna.Framework.Color.White,
+									Position = new Vector3(lastTime, lastValue, 0.0f),
+								},
+								B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor
+								{
+									Color = Microsoft.Xna.Framework.Color.White,
+									Position = new Vector3(time, value, 0.0f),
+								},
+							});
+						}
+						min = Math.Min(min, value);
+						max = Math.Max(max, value);
+						lastValue = value;
+						lastTime = time;
+						time += Session.Recorder.Interval;
+					}
+
+					if (min < max)
+					{
+						float scale = -timelineHeight / (max - min);
+						lines.Scale.Value = new Vector2(1, scale);
+						lines.Position.Value = new Vector2(0, max * -scale);
+					}
+					else
+					{
+						lines.AnchorPoint.Value = Vector2.Zero;
+						if (min <= 0.0f)
+							lines.Position.Value = new Vector2(0, timelineHeight);
+						else
+							lines.Position.Value = new Vector2(0, timelineHeight * 0.5f);
+					}
+				}
+			};
+
+			Action refreshPropertyGraphs = delegate()
+			{
+				foreach (LineDrawer2D line in propertyTimelines.Children.Select(x => x.Children.First()))
+					refreshPropertyGraph(line);
+			};
+
+			propertyTimelines.Add(new ListBinding<UIComponent, PropertyEntry>(propertyTimelines.Children, analyticsActiveProperties, delegate(PropertyEntry e)
+			{
+				Container propertyTimeline = new Container();
+				propertyTimeline.Add(new Binding<Vector2>(propertyTimeline.Size, timeline.Size));
+				propertyTimeline.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+				propertyTimeline.Opacity.Value = 0.5f;
+				propertyTimeline.ResizeHorizontal.Value = false;
+				propertyTimeline.ResizeVertical.Value = false;
+
+				LineDrawer2D line = new LineDrawer2D();
+				line.Color.Value = this.colorHash(e.Name);
+				line.UserData.Value = e;
+				propertyTimeline.Children.Add(line);
+
+				refreshPropertyGraph(line);
+
+				return new[] { propertyTimeline };
+			}));
+
 			analyticsActiveSessions.ItemAdded += delegate(int index, SessionEntry s)
 			{
 				Session.PositionProperty positionProperty = s.Session.PositionProperties[0];
@@ -595,6 +804,8 @@ namespace Lemma.Factories
 				s.Active.Value = true;
 				timeline.Children.Add(s.Session.Events.Where(x => analyticsActiveEvents.FirstOrDefault(y => y.Name == x.Name) != null).Select(createEventLines));
 				playbackLocation.Reset();
+
+				refreshPropertyGraphs();
 			};
 
 			analyticsActiveSessions.ItemRemoved += delegate(int index, SessionEntry s)
@@ -615,6 +826,8 @@ namespace Lemma.Factories
 				sessionPositionModels.Remove(s.Session);
 				s.Active.Value = false;
 				timeline.Children.Remove(timeline.Children.Where(x => x.UserData.Value != null && ((Session.EventList)x.UserData.Value).Session == s.Session).ToList());
+
+				refreshPropertyGraphs();
 			};
 
 			playbackLocation.Set = delegate(float value)
@@ -658,10 +871,13 @@ namespace Lemma.Factories
 			{
 				allEventsButton.Detach();
 				allSessionsButton.Detach();
+				allPropertiesButton.Detach();
 				analyticsSessions.Clear();
 				analyticsEvents.Clear();
+				analyticsProperties.Clear();
 				eventList.Children.Add(allEventsButton);
 				sessionList.Children.Add(allSessionsButton);
+				propertiesList.Children.Add(allPropertiesButton);
 
 				foreach (ModelInstance instance in sessionPositionModels.Values)
 					instance.Delete.Execute();
@@ -677,6 +893,9 @@ namespace Lemma.Factories
 				
 				analyticsActiveEvents.Clear();
 				analyticsActiveSessions.Clear();
+				analyticsActiveProperties.Clear();
+
+				propertyTimelines.Children.Clear();
 
 				playbackLine.Detach();
 				timeline.Children.Clear();
@@ -727,7 +946,7 @@ namespace Lemma.Factories
 				{
 					bool setTimelinePosition = false;
 
-					if (timeline.Highlighted || descriptionContainer != null)
+					if (timelines.Highlighted || descriptionContainer != null)
 					{
 						if (input.LeftMouseButton)
 						{
@@ -735,12 +954,12 @@ namespace Lemma.Factories
 							playbackLocation.Value = Vector3.Transform(new Vector3(input.Mouse.Value.X, 0.0f, 0.0f), Matrix.Invert(timeline.GetAbsoluteTransform())).X;
 						}
 
-						float threshold = 3.0f / timeline.Scale.Value.X;
-						float mouseRelative = Vector3.Transform(new Vector3(input.Mouse, 0.0f), Matrix.Invert(timeline.GetAbsoluteTransform())).X;
+						float threshold = 3.0f / timelines.Scale.Value.X;
+						float mouseRelative = Vector3.Transform(new Vector3(input.Mouse, 0.0f), Matrix.Invert(timelines.GetAbsoluteTransform())).X;
 
 						if (descriptionContainer != null)
 						{
-							if (!timeline.Highlighted || (float)Math.Abs(descriptionContainer.Position.Value.X - mouseRelative) > threshold)
+							if (!timelines.Highlighted || (float)Math.Abs(descriptionContainer.Position.Value.X - mouseRelative) > threshold)
 							{
 								descriptionContainer.Delete.Execute();
 								descriptionContainer = null;
@@ -750,8 +969,13 @@ namespace Lemma.Factories
 						if (descriptionContainer == null && timeline.Highlighted)
 						{
 							bool stop = false;
-							foreach (LineDrawer2D lines in timeline.Children)
+							foreach (UIComponent component in timeline.Children)
 							{
+								LineDrawer2D lines = component as LineDrawer2D;
+
+								if (lines == null)
+									continue;
+
 								foreach (LineDrawer2D.Line line in lines.Lines)
 								{
 									Session.EventList el = lines.UserData.Value as Session.EventList;
@@ -762,7 +986,7 @@ namespace Lemma.Factories
 										descriptionContainer.Position.Value = new Vector2(line.A.Position.X, 0.0f);
 										descriptionContainer.Opacity.Value = 1.0f;
 										descriptionContainer.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-										descriptionContainer.Add(new Binding<Vector2>(descriptionContainer.Scale, x => new Vector2(1.0f / x.X, 1.0f / x.Y), timeline.Scale));
+										descriptionContainer.Add(new Binding<Vector2>(descriptionContainer.Scale, x => new Vector2(1.0f / x.X, 1.0f / x.Y), timelines.Scale));
 										timeline.Children.Add(descriptionContainer);
 										TextElement description = new TextElement();
 										description.WrapWidth.Value = 256;
@@ -865,11 +1089,11 @@ namespace Lemma.Factories
 			{
 				if (timelineScroller.Highlighted && !editor.MapEditMode)
 				{
-					float newScale = Math.Max(timeline.Scale.Value.X + delta * 6.0f, timelineScroller.Size.Value.X / timeline.Size.Value.X);
-					Matrix absoluteTransform = timeline.GetAbsoluteTransform();
-					float x = input.Mouse.Value.X + ((absoluteTransform.Translation.X - input.Mouse.Value.X) * (newScale / timeline.Scale.Value.X));
-					timeline.Position.Value = new Vector2(x, 0.0f);
-					timeline.Scale.Value = new Vector2(newScale, 1.0f);
+					float newScale = Math.Max(timelines.Scale.Value.X + delta * 6.0f, timelineScroller.Size.Value.X / timelines.Size.Value.X);
+					Matrix absoluteTransform = timelines.GetAbsoluteTransform();
+					float x = input.Mouse.Value.X + ((absoluteTransform.Translation.X - input.Mouse.Value.X) * (newScale / timelines.Scale.Value.X));
+					timelines.Position.Value = new Vector2(x, 0.0f);
+					timelines.Scale.Value = new Vector2(newScale, 1.0f);
 				}
 				else
 					cameraDistance.Value = Math.Max(5, cameraDistance.Value + delta * -2.0f);

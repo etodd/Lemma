@@ -17,11 +17,28 @@ namespace Lemma.Components
 
 			private List<float> data = new List<float>();
 
+			private float interval;
+
+			public void Initialize(Session session)
+			{
+				this.interval = session.Interval;
+			}
+
 			public float this[int index]
 			{
 				get
 				{
 					return this.data.Count == 0 ? 0.0f : this.data[Math.Min(index, this.data.Count - 1)];
+				}
+			}
+
+			public float this[float time]
+			{
+				get
+				{
+					int index = (int)Math.Floor(time / this.interval);
+					float blend = (time - (index * this.interval)) / this.interval;
+					return (this[index] * (1.0f - blend)) + (this[index + 1] * blend);
 				}
 			}
 
@@ -174,6 +191,13 @@ namespace Lemma.Components
 			public string Data;
 		}
 
+		public ContinuousProperty GetContinuousProperty(string name)
+		{
+			ContinuousProperty result = null;
+			this.continuousProperties.TryGetValue(name, out result);
+			return result;
+		}
+
 		public ContinuousProperty[] ContinuousProperties
 		{
 			get
@@ -225,6 +249,8 @@ namespace Lemma.Components
 			Session s;
 			using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None))
 				s = (Session)new XmlSerializer(typeof(Session)).Deserialize(stream);
+			foreach (ContinuousProperty prop in s.continuousProperties.Values)
+				prop.Initialize(s);
 			foreach (PositionProperty prop in s.positionProperties.Values)
 				prop.Initialize(s);
 			foreach (EventList el in s.events.Values)
@@ -287,6 +313,7 @@ namespace Lemma.Components
 					{
 						Name = name,
 					};
+					prop.Initialize(this.data);
 				}
 				this.recordActions.Add(delegate()
 				{
