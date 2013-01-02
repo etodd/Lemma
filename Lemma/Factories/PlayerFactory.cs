@@ -885,6 +885,7 @@ namespace Lemma.Factories
 				if (mapList.Count == 0)
 					blockPossibilities.Remove(block.Map);
 				player.Stamina.Value -= blockInstantiationStaminaCost;
+				Vector3 position = 0.5f * (block.Map.GetAbsolutePosition(block.StartCoord) + block.Map.GetAbsolutePosition(block.EndCoord));
 				main.AddComponent(new Animation
 				(
 					new Animation.Repeat
@@ -893,7 +894,7 @@ namespace Lemma.Factories
 						(
 							new Animation.Execute(delegate()
 							{
-								Sound.PlayCue(main, "BuildBlock", 1.0f, 0.03f);
+								Sound.PlayCue(main, "BuildBlock", position, 1.0f, 0.03f);
 							}),
 							new Animation.Delay(0.06f)
 						),
@@ -2120,9 +2121,13 @@ namespace Lemma.Factories
 					bool instantiatedBlockPossibility = false;
 
 					Map.Coordinate floorCoordinate = new Map.Coordinate();
+					Map floorMap = null;
 
 					if (nearGround)
+					{
+						floorMap = floorRaycast.Map;
 						floorCoordinate = floorRaycast.Coordinate.Value;
+					}
 					else
 					{
 						// Check for block possibilities
@@ -2137,6 +2142,7 @@ namespace Lemma.Factories
 										break; // If the top coord is intersecting the possible block, we're too far down into the block. Need to be at the top.
 									instantiateBlockPossibility(block);
 									instantiatedBlockPossibility = true;
+									floorMap = block.Map;
 									floorCoordinate = coord;
 									nearGround = true;
 									break;
@@ -2197,8 +2203,8 @@ namespace Lemma.Factories
 						player.Crouched.Value = true;
 						player.AllowUncrouch.Value = false;
 
-						Direction rightDir = floorRaycast.Map.GetRelativeDirection(right);
-						Direction forwardDir = floorRaycast.Map.GetRelativeDirection(forward);
+						Direction rightDir = floorMap.GetRelativeDirection(right);
+						Direction forwardDir = floorMap.GetRelativeDirection(forward);
 
 						Updater rollUpdate = null;
 						float rollTime = 0.0f;
@@ -2232,7 +2238,7 @@ namespace Lemma.Factories
 									{
 										List<AnimatingBlock> buildCoords = new List<AnimatingBlock>();
 
-										Map.Coordinate newFloorCoordinate = floorRaycast.Map.GetCoordinate(transform.Position);
+										Map.Coordinate newFloorCoordinate = floorMap.GetCoordinate(transform.Position);
 
 										floorCoordinate.SetComponent(rightDir, newFloorCoordinate.GetComponent(rightDir));
 										floorCoordinate.SetComponent(forwardDir, newFloorCoordinate.GetComponent(forwardDir));
@@ -2246,11 +2252,11 @@ namespace Lemma.Factories
 											for (Map.Coordinate y = x.Move(forwardDir, -radius); y.GetComponent(forwardDir) < floorCoordinate.GetComponent(forwardDir) + radius; y = y.Move(forwardDir))
 											{
 												int dy = y.GetComponent(forwardDir) - floorCoordinate.GetComponent(forwardDir);
-												if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && floorRaycast.Map[y].ID == 0)
+												if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && floorMap[y].ID == 0)
 												{
 													buildCoords.Add(new AnimatingBlock
 													{
-														Map = floorRaycast.Map,
+														Map = floorMap,
 														Coord = y,
 														State = fillState,
 													});

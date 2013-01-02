@@ -57,6 +57,11 @@ namespace Lemma.Factories
 			Property<bool> attached = result.GetProperty<bool>("Attached");
 			Property<bool> active = result.GetProperty<bool>("Active");
 
+			result.Add(new NotifyBinding(delegate()
+			{
+				Sound.PlayCue(main, "Headlamp");
+			}, active));
+
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 			light.Add(new Binding<Quaternion>(light.Orientation, transform.Quaternion));
 			light.Add(new Binding<bool>(light.Enabled, () => (!attached) || active, attached, active));
@@ -108,8 +113,8 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					active.Value = false;
 					attached.Value = false;
+					active.Value = false;
 
 					physicsBinding.Enabled = true;
 

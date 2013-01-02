@@ -632,6 +632,8 @@ namespace Lemma.Factories
 			Property<float> reverbAmount = result.GetProperty<float>("ReverbAmount");
 			Property<float> reverbSize = result.GetProperty<float>("ReverbSize");
 
+			Sound.ReverbSettings(main, reverbAmount, reverbSize);
+
 			Vector3 lastUpdatedCameraPosition = main.Camera.Position;
 			bool lastFrameUpdated = true;
 			Updater update = new Updater

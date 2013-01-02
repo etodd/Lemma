@@ -97,7 +97,7 @@ namespace Lemma.Factories
 							m.Fill(coord, WorldFactory.States[stateId]);
 							m.Regenerate();
 						}
-						Sound.PlayCue(main, "BuildBlock", 1.0f, 0.06f);
+						Sound.PlayCue(main, "BuildBlock", transform.Position, 1.0f, 0.06f);
 					}
 					else
 					{
