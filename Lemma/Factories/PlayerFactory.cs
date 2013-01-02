@@ -833,7 +833,7 @@ namespace Lemma.Factories
 
 			Dictionary<AnimatingBlock, bool> animatingBlocks = new Dictionary<AnimatingBlock, bool>();
 
-			Func<IEnumerable<AnimatingBlock>, bool, bool> buildBlocks = delegate(IEnumerable<AnimatingBlock> blocks, bool fake)
+			Action<IEnumerable<AnimatingBlock>, bool> buildBlocks = delegate(IEnumerable<AnimatingBlock> blocks, bool fake)
 			{
 				int index = 0;
 				EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
@@ -850,9 +850,10 @@ namespace Lemma.Factories
 					Entity block = factory.CreateAndBind(main);
 					spawn.State.ApplyToEffectBlock(block.Get<ModelInstance>());
 					block.GetProperty<Vector3>("Offset").Value = spawn.Map.GetRelativePosition(spawn.Coord);
-					block.GetProperty<Vector3>("StartPosition").Value = spawn.AbsolutePosition + new Vector3(0.05f, 0.1f, 0.05f) * index;
-					block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
-					block.GetProperty<float>("TotalLifetime").Value = 0.05f + (index * 0.015f);
+					float distance = (spawn.AbsolutePosition - transform.Position).Length();
+					block.GetProperty<Vector3>("StartPosition").Value = spawn.AbsolutePosition + new Vector3(0.05f, 0.1f, 0.05f) * distance;
+					block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * (distance + index)) * Matrix.CreateRotationY(0.15f * (distance + index));
+					block.GetProperty<float>("TotalLifetime").Value = Math.Max(0.05f, distance * 0.05f);
 					block.GetProperty<Entity.Handle>("TargetMap").Value = spawn.Map.Entity;
 					block.GetProperty<int>("TargetCellStateID").Value = fake ? 0 : spawn.State.ID;
 					block.GetProperty<Map.Coordinate>("TargetCoord").Value = spawn.Coord;
@@ -871,7 +872,6 @@ namespace Lemma.Factories
 					main.Add(block);
 					index++;
 				}
-				return true;
 			};
 
 			Action<BlockPossibility> instantiateBlockPossibility = delegate(BlockPossibility block)
@@ -1163,13 +1163,44 @@ namespace Lemma.Factories
 
 					Vector3 pos = transform.Position + new Vector3(0, (player.Height * -0.5f) - 0.5f, 0);
 					Map.Coordinate coord = wallRunMap.GetCoordinate(pos);
-					Map.CellState wallType = wallRunMap[coord.Move(wallDirection, 2)];
-					if (wallType.ID == 0) // We ran out of wall to walk on
+					Map.Coordinate wallCoord = coord.Move(wallDirection, 2);
+					Map.CellState wallType = wallRunMap[wallCoord];
+					footsteps.Cue.Value = wallType.FootstepCue;
+					if (player.EnableEnhancedWallRun && player.WallRunState.Value != Player.WallRun.Straight)
+					{
+						Direction up = wallRunMap.GetRelativeDirection(Direction.PositiveY);
+						Direction right = wallDirection.Cross(up);
+
+						List<AnimatingBlock> buildCoords = new List<AnimatingBlock>();
+
+						Map.CellState fillState = WorldFactory.StatesByName["Temporary"];
+
+						const int radius = 5;
+						for (Map.Coordinate x = wallCoord.Move(right, -radius); x.GetComponent(right) < wallCoord.GetComponent(right) + radius; x = x.Move(right))
+						{
+							int dx = x.GetComponent(right) - wallCoord.GetComponent(right);
+							for (Map.Coordinate y = x.Move(up, -radius); y.GetComponent(up) < wallCoord.GetComponent(up) + radius; y = y.Move(up))
+							{
+								int dy = y.GetComponent(up) - wallCoord.GetComponent(up);
+								if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && wallRunMap[y].ID == 0)
+								{
+									buildCoords.Add(new AnimatingBlock
+									{
+										Map = wallRunMap,
+										Coord = y,
+										State = fillState,
+									});
+								}
+							}
+						}
+						buildBlocks(buildCoords, false);
+					}
+					else if (wallType.ID == 0) // We ran out of wall to walk on
 					{
 						deactivateWallRun();
 						return;
 					}
-					footsteps.Cue.Value = wallType.FootstepCue;
+					
 					Vector3 coordPos = wallRunMap.GetAbsolutePosition(coord);
 
 					Vector3 normal = wallRunMap.GetAbsoluteVector(wallDirection.GetVector());
@@ -1213,7 +1244,7 @@ namespace Lemma.Factories
 			{
 				target.Y += 2.0f;
 				Vector3 horizontalVelocity = target - transform.Position;
-				float verticalDistance = horizontalVelocity.Y + 1.5f;
+				float verticalDistance = horizontalVelocity.Y + (player.Height * 0.5f) + player.SupportHeight;
 				horizontalVelocity.Y = 0.0f;
 
 				float horizontalDistance = horizontalVelocity.Length();
@@ -1747,7 +1778,7 @@ namespace Lemma.Factories
 						if (precisionJumping)
 						{
 							// Make the player jump exactly to the target.
-							Vector3 velocity = normalizeJumpVelocity(getPrecisionJumpVelocity(aimRaycastResult.Position + (aimRaycastResult.Map.GetAbsoluteVector(aimRaycastResult.Normal.GetVector()) * 2.0f)));
+							Vector3 velocity = normalizeJumpVelocity(getPrecisionJumpVelocity(aimRaycastResult.Position));
 							if (velocity.Y < 0.0f && supported)
 								return false; // Can't jump down through the floor
 							player.LinearVelocity.Value = velocity;
@@ -2082,11 +2113,17 @@ namespace Lemma.Factories
 					Vector3 forward = -rotationMatrix.Forward;
 					Vector3 right = rotationMatrix.Right;
 
-					bool nearGround = player.IsSupported || (player.LinearVelocity.Value.Y < 0.0f && Map.GlobalRaycast(playerPos, Vector3.Down, player.Height).Map != null);
+					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height);
+
+					bool nearGround = player.IsSupported || (player.LinearVelocity.Value.Y < 0.0f && floorRaycast.Map != null);
 
 					bool instantiatedBlockPossibility = false;
 
-					if (!nearGround)
+					Map.Coordinate floorCoordinate = new Map.Coordinate();
+
+					if (nearGround)
+						floorCoordinate = floorRaycast.Coordinate.Value;
+					else
 					{
 						// Check for block possibilities
 						foreach (BlockPossibility block in blockPossibilities.Values.SelectMany(x => x))
@@ -2100,6 +2137,7 @@ namespace Lemma.Factories
 										break; // If the top coord is intersecting the possible block, we're too far down into the block. Need to be at the top.
 									instantiateBlockPossibility(block);
 									instantiatedBlockPossibility = true;
+									floorCoordinate = coord;
 									nearGround = true;
 									break;
 								}
@@ -2149,12 +2187,18 @@ namespace Lemma.Factories
 
 						// If the player is not yet supported, that means they're just about to land.
 						// So give them a little speed boost for having such good timing.
+
+						bool buildFloor = !player.IsSupported && player.EnableEnhancedWallRun;
+
 						Vector3 velocity = forward * player.MaxSpeed * (player.IsSupported ? 0.75f : 1.25f);
 						player.LinearVelocity.Value = new Vector3(velocity.X, 0.0f, velocity.Z);
 
 						// Crouch
 						player.Crouched.Value = true;
 						player.AllowUncrouch.Value = false;
+
+						Direction rightDir = floorRaycast.Map.GetRelativeDirection(right);
+						Direction forwardDir = floorRaycast.Map.GetRelativeDirection(forward);
 
 						Updater rollUpdate = null;
 						float rollTime = 0.0f;
@@ -2165,7 +2209,7 @@ namespace Lemma.Factories
 								rollTime += dt;
 
 								// Stop if we're about to roll off the edge of an instaniated block possibility.
-								bool stop = instantiatedBlockPossibility && rollTime > 0.1f && Map.GlobalRaycast(transform.Position + forward * 0.5f, Vector3.Down, player.Height * 0.5f + player.SupportHeight + 1.1f).Map != null;
+								bool stop = instantiatedBlockPossibility && !buildFloor && rollTime > 0.1f && Map.GlobalRaycast(transform.Position + forward * 0.5f, Vector3.Down, player.Height * 0.5f + player.SupportHeight + 1.1f).Map != null;
 
 								if (stop || rollTime > 1.0f || Vector3.Dot(player.LinearVelocity, forward) < 0.1f)
 								{
@@ -2184,6 +2228,37 @@ namespace Lemma.Factories
 								{
 									player.LinearVelocity.Value = new Vector3(velocity.X, player.LinearVelocity.Value.Y, velocity.Z);
 									breakWalls(forward, right, false);
+									if (buildFloor)
+									{
+										List<AnimatingBlock> buildCoords = new List<AnimatingBlock>();
+
+										Map.Coordinate newFloorCoordinate = floorRaycast.Map.GetCoordinate(transform.Position);
+
+										floorCoordinate.SetComponent(rightDir, newFloorCoordinate.GetComponent(rightDir));
+										floorCoordinate.SetComponent(forwardDir, newFloorCoordinate.GetComponent(forwardDir));
+
+										Map.CellState fillState = WorldFactory.StatesByName["Temporary"];
+
+										const int radius = 3;
+										for (Map.Coordinate x = floorCoordinate.Move(rightDir, -radius); x.GetComponent(rightDir) < floorCoordinate.GetComponent(rightDir) + radius; x = x.Move(rightDir))
+										{
+											int dx = x.GetComponent(rightDir) - floorCoordinate.GetComponent(rightDir);
+											for (Map.Coordinate y = x.Move(forwardDir, -radius); y.GetComponent(forwardDir) < floorCoordinate.GetComponent(forwardDir) + radius; y = y.Move(forwardDir))
+											{
+												int dy = y.GetComponent(forwardDir) - floorCoordinate.GetComponent(forwardDir);
+												if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && floorRaycast.Map[y].ID == 0)
+												{
+													buildCoords.Add(new AnimatingBlock
+													{
+														Map = floorRaycast.Map,
+														Coord = y,
+														State = fillState,
+													});
+												}
+											}
+										}
+										buildBlocks(buildCoords, false);
+									}
 								}
 							}
 						};
