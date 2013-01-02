@@ -105,6 +105,9 @@ namespace Lemma.Util
 		private float defaultCharacterHeight;
 		private float defaultSupportHeight;
 
+		private float crouchedCharacterHeight;
+		private float crouchedSupportHeight;
+
 		public Property<bool> Crouched = new Property<bool>();
 		public Property<bool> AllowUncrouch = new Property<bool>();
 
@@ -128,7 +131,7 @@ namespace Lemma.Util
 		/// <param name="characterWidth">The diameter of the character.</param>
 		/// <param name="supportHeight">The distance above the ground that the bottom of the character's body floats.</param>
 		/// <param name="mass">Total mass of the character.</param>
-		public Character(Main main, Vector3 position, float characterHeight, float characterWidth, float supportHeight, float mass)
+		public Character(Main main, Vector3 position, float characterHeight, float crouchedHeight, float characterWidth, float supportHeight, float crouchedSupportHeight, float mass)
 		{
 			this.main = main;
 			this.Body = new Cylinder(position, characterHeight, characterWidth / 2, mass);
@@ -136,6 +139,7 @@ namespace Lemma.Util
 			this.Body.LinearDamping = 0.0f;
 			this.Body.CollisionInformation.CollisionRules.Group = Character.CharacterGroup;
 			this.defaultCharacterHeight = characterHeight;
+			this.crouchedCharacterHeight = crouchedHeight;
 			this.Body.CollisionInformation.Events.ContactCreated += new BEPUphysics.Collidables.Events.ContactCreatedEventHandler<EntityCollidable>(Events_ContactCreated);
 			this.collisionPairCollector = new Box(position + new Vector3(0, (characterHeight * -0.5f) - supportHeight, 0), characterWidth, supportHeight * 2, characterWidth, 1);
 			this.collisionPairCollector.CollisionInformation.CollisionRules.Personal = CollisionRule.NoNarrowPhaseUpdate; //Prevents collision detection/contact generation from being run.
@@ -144,6 +148,7 @@ namespace Lemma.Util
 			CollisionRules.AddRule(this.collisionPairCollector, this.Body, CollisionRule.NoBroadPhase); //Prevents the creation of any collision pairs between the body and the collector.
 			this.SupportHeight.Value = supportHeight;
 			this.defaultSupportHeight = supportHeight;
+			this.crouchedSupportHeight = crouchedSupportHeight;
 
 			this.Body.LocalInertiaTensorInverse = new Matrix3X3();
 			this.collisionPairCollector.LocalInertiaTensorInverse = new Matrix3X3();
@@ -161,18 +166,17 @@ namespace Lemma.Util
 				bool oldValue = this.Crouched.InternalValue;
 				if (value && !oldValue)
 				{
-					this.Body.Position += new Vector3(0, (this.defaultSupportHeight * -0.5f) + (this.defaultCharacterHeight * -0.25f), 0);
-					this.Body.Height = this.defaultCharacterHeight * 0.5f;
-					this.SupportHeight.Value = this.defaultSupportHeight * 0.5f;
-					this.collisionPairCollector.Height = this.SupportHeight * 2;
+					this.Body.Position += new Vector3(0, (this.crouchedSupportHeight - this.defaultSupportHeight) + 0.5f * (this.crouchedCharacterHeight - this.defaultCharacterHeight), 0);
+					this.Body.Height = this.crouchedCharacterHeight;
+					this.SupportHeight.Value = this.crouchedSupportHeight;
 				}
 				else if (!value && oldValue)
 				{
 					this.Body.Height = this.defaultCharacterHeight;
-					this.Body.Position += new Vector3(0, (this.defaultSupportHeight * 0.5f) + (this.defaultCharacterHeight * 0.25f), 0);
+					this.Body.Position += new Vector3(0, (this.defaultSupportHeight - this.crouchedSupportHeight) + 0.5f * (this.defaultCharacterHeight - this.crouchedCharacterHeight), 0);
 					this.SupportHeight.Value = this.defaultSupportHeight;
-					this.collisionPairCollector.Height = this.SupportHeight * 2;
 				}
+				this.collisionPairCollector.Height = this.SupportHeight * 2;
 				this.Crouched.InternalValue = value;
 			};
 
@@ -314,7 +318,7 @@ namespace Lemma.Util
 					if (candidate.RayCast(new Ray(rayStart, Vector3.Down), maximumDistance, out rayHit))
 					{
 						//We want to find the closest support, so compare it against the last closest support.
-						if (rayHit.T < supportDistance)
+						if (rayHit.T < supportDistance && Vector3.Dot(rayHit.Normal, Vector3.Up) > 0.25f)
 						{
 							supportDistance = rayHit.T;
 							supportLocation = rayHit.Location;
@@ -396,7 +400,9 @@ namespace Lemma.Util
 				Vector3 horizontal = new Vector3(this.MovementDirection.Value.X, 0, this.MovementDirection.Value.Y);
 				horizontal.Normalize();
 				Vector3 x = Vector3.Cross(horizontal, supportNormal);
+				x.Normalize();
 				Vector3 z = Vector3.Cross(supportNormal, x);
+				z.Normalize();
 
 				// Remove from the character a portion of velocity which pushes it horizontally off the desired movement track defined by the movementDirection.
 				float bodyXVelocity = Vector3.Dot(this.Body.LinearVelocity, x);
@@ -404,7 +410,7 @@ namespace Lemma.Util
 				float velocityChange = MathHelper.Clamp(bodyXVelocity - supportEntityXVelocity, -dt * this.TractionDeceleration, dt * this.TractionDeceleration);
 				this.Body.LinearVelocity -= velocityChange * x;
 
-				float bodyZVelocity = Vector3.Dot(Body.LinearVelocity, z);
+				float bodyZVelocity = Vector3.Dot(this.Body.LinearVelocity, z);
 				float supportEntityZVelocity = Vector3.Dot(supportLocationVelocity, z);
 				float netZVelocity = bodyZVelocity - supportEntityZVelocity;
 				// The velocity difference along the Z axis should accelerate/decelerate to match the goal velocity (max speed).

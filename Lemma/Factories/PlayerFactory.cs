@@ -207,9 +207,40 @@ namespace Lemma.Factories
 			agent.Add(new Binding<float, Vector3>(agent.Speed, x => x.Length(), player.LinearVelocity));
 			agent.Add(new CommandBinding(agent.Die, result.Delete));
 
-			Property<bool> thirdPerson = new Property<bool> { Value = false };
 #if DEBUG
+			Property<bool> thirdPerson = new Property<bool> { Value = false };
 			input.Add(new CommandBinding(input.GetKeyDown(Keys.C), delegate() { thirdPerson.Value = !thirdPerson; }));
+
+			firstPersonModel.Add(new Binding<bool>(firstPersonModel.Enabled, x => !x, thirdPerson));
+
+			model.Add(new NotifyBinding(delegate()
+			{
+				if (thirdPerson)
+				{
+					model.UnsupportedTechniques.Remove(Technique.Clip);
+					model.UnsupportedTechniques.Remove(Technique.MotionBlur);
+					model.UnsupportedTechniques.Remove(Technique.Render);
+				}
+				else
+				{
+					model.UnsupportedTechniques.Add(Technique.Clip);
+					model.UnsupportedTechniques.Add(Technique.MotionBlur);
+					model.UnsupportedTechniques.Add(Technique.Render);
+				}
+			}, thirdPerson));
+
+			ModelAlpha debugCylinder = new ModelAlpha();
+			debugCylinder.Filename.Value = "Models\\alpha-cylinder";
+			debugCylinder.Add(new Binding<Matrix>(debugCylinder.Transform, transform.Matrix));
+			debugCylinder.Serialize = false;
+			debugCylinder.Editable = false;
+			debugCylinder.Alpha.Value = 0.25f;
+			debugCylinder.Add(new Binding<bool>(debugCylinder.Enabled, thirdPerson));
+			debugCylinder.Add(new Binding<Vector3>(debugCylinder.Scale, delegate()
+			{
+				return new Vector3(Player.CharacterRadius, player.Height, Player.CharacterRadius);
+			}, player.Height));
+			result.Add(debugCylinder);
 #endif
 
 			Property<Entity.Handle> pistol = result.GetProperty<Entity.Handle>("Pistol");
@@ -252,6 +283,7 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableKick"), player.EnableKick));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRunHorizontal"), player.EnableWallRunHorizontal));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnablePrecisionJump"), player.EnablePrecisionJump));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableLevitation"), player.EnableLevitation));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSprint"), player.EnableSprint));
@@ -316,7 +348,7 @@ namespace Lemma.Factories
 			player.EnabledInEditMode.Value = false;
 			ui.EnabledInEditMode.Value = false;
 
-			input.MaxY.Value = (float)Math.PI * 0.4f;
+			input.MaxY.Value = (float)Math.PI * 0.35f;
 
 			/*TextElement debug = (TextElement)ui.Root.GetChildByName("Debug");
 			debug.Add(new Binding<string, float>(debug.Text, x => x.ToString("F"), speedSound.GetProperty("Volume")));*/
@@ -370,8 +402,9 @@ namespace Lemma.Factories
 			// When rotation is locked, we want to make sure the player can't turn their head
 			// 180 degrees from the direction they're facing
 
-			input.Add(new Binding<float>(input.MinX, () => rotationLocked ? rotation + ((float)Math.PI * -0.45f) : 0.0f, rotation, rotationLocked));
-			input.Add(new Binding<float>(input.MaxX, () => rotationLocked ? rotation + ((float)Math.PI * 0.45f) : 0.0f, rotation, rotationLocked));
+			input.Add(new Binding<float>(input.MaxY, () => rotationLocked ? (float)Math.PI * 0.3f : (float)Math.PI * 0.4f, rotationLocked));
+			input.Add(new Binding<float>(input.MinX, () => rotationLocked ? rotation + ((float)Math.PI * -0.4f) : 0.0f, rotation, rotationLocked));
+			input.Add(new Binding<float>(input.MaxX, () => rotationLocked ? rotation + ((float)Math.PI * 0.4f) : 0.0f, rotation, rotationLocked));
 			input.Add(new NotifyBinding(delegate() { input.Mouse.Changed(); }, rotationLocked)); // Make sure the rotation locking takes effect even if the player doesn't move the mouse
 
 			update.Add(delegate(float dt)
@@ -1032,7 +1065,7 @@ namespace Lemma.Factories
 				foreach (Map map in Map.ActiveMaps.ToList())
 				{
 					List<Map.Coordinate> removals = new List<Map.Coordinate>();
-					Vector3 pos = transform.Position + new Vector3(0, 0.1f + player.Height * -0.5f - player.SupportHeight, 0);
+					Vector3 pos = transform.Position + new Vector3(0, 0.1f + (player.Height * -0.5f) - player.SupportHeight, 0);
 					for (int i = 0; i < 5; i++)
 					{
 						pos += forward * 0.5f;
@@ -1275,7 +1308,7 @@ namespace Lemma.Factories
 
 			input.Bind(settings.ToggleItem3, PCInput.InputState.Down, delegate()
 			{
-				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || !player.EnableLevitation)
+				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || !player.EnableLevitation || player.Crouched)
 					return;
 
 				levitationMode.Value = !levitationMode;
@@ -1948,7 +1981,7 @@ namespace Lemma.Factories
 				Vector3 forward = -rotationMatrix.Forward;
 				Vector3 right = rotationMatrix.Right;
 				Entity p = pistol.Value.Target;
-				if (p != null && player.IsSupported && p.GetProperty<bool>("Active") && main.TotalTime - lastFire > fireInterval && p.GetProperty<int>("Ammo") > 0)
+				if (p != null && player.IsSupported && !player.Crouched && p.GetProperty<bool>("Active") && main.TotalTime - lastFire > fireInterval && p.GetProperty<int>("Ammo") > 0)
 				{
 					// Fire pistol
 					lastFire = main.TotalTime;
@@ -1957,7 +1990,7 @@ namespace Lemma.Factories
 				else if (levitationMode)
 				{
 					// Levitate
-					if (player.IsSupported)
+					if (player.IsSupported && !player.Crouched)
 						tryLevitate();
 				}
 				else if (!aimMode && !input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && !player.IsSupported && Vector3.Dot(player.LinearVelocity, forward) > 0.0f)
@@ -2081,6 +2114,8 @@ namespace Lemma.Factories
 					{
 						// We're rolling.
 						rolling = true;
+
+						stopLevitate();
 
 						Session.Recorder.Event(main, "Roll");
 

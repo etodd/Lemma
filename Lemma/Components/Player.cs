@@ -41,6 +41,8 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<bool> EnableWallRunHorizontal = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
+		public Property<bool> EnableEnhancedWallRun = new Property<bool> { Value = false, Editable = false };
+		[XmlIgnore]
 		public Property<bool> EnableLevitation = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
 		public Property<bool> EnableSprint = new Property<bool> { Value = false, Editable = false };
@@ -69,7 +71,7 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<float> Height = new Property<float> { Editable = false };
 		[XmlIgnore]
-		public Property<float> SupportHeight = new Property<float> { Editable = false, Value = 1.05f };
+		public Property<float> SupportHeight = new Property<float> { Editable = false, Value = 1.5f };
 		[XmlIgnore]
 		public Property<bool> SlowMotion = new Property<bool> { Editable = false };
 		[XmlIgnore]
@@ -112,11 +114,17 @@ namespace Lemma.Components
 			}
 		}
 
+		public const float CharacterRadius = 1.75f;
+
+		public const float DefaultCharacterHeight = 3.0f;
+
+		public const float CrouchedCharacterHeight = 2.0f;
+
 		public override void InitializeProperties()
 		{
 			this.Editable = false;
 			this.EnabledWhenPaused.Value = false;
-			this.character = new Character(this.main, Vector3.Zero, 4.0f, 1.75f, this.SupportHeight, 4.0f);
+			this.character = new Character(this.main, Vector3.Zero, DefaultCharacterHeight, CrouchedCharacterHeight, CharacterRadius, 1.25f, 0.5f, 4.0f);
 			this.character.IsUpdating = false;
 			this.character.Body.Tag = this;
 			this.main.Space.Add(this.character);
@@ -172,7 +180,7 @@ namespace Lemma.Components
 			this.Add(new TwoWayBinding<bool>(this.AllowUncrouch, this.character.AllowUncrouch));
 			this.Add(new TwoWayBinding<float>(this.SupportHeight, this.character.SupportHeight));
 			this.Add(new CommandBinding<Collidable, ContactCollection>(this.character.Collided, this.Collided));
-			this.Add(new Binding<float, bool>(this.Height, x => x ? 2.0f : 4.0f, this.Crouched));
+			this.Add(new Binding<float, bool>(this.Height, x => x ? CrouchedCharacterHeight : DefaultCharacterHeight, this.Crouched));
 
 			this.Add(new NotifyBinding(delegate()
 			{
