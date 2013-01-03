@@ -54,6 +54,7 @@ namespace Lemma
 			public Property<PCInput.PCInputBinding> ToggleItem3 = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D3 } };
 			public Property<PCInput.PCInputBinding> TogglePhone = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Tab } };
 			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F5 } };
+			public Property<PCInput.PCInputBinding> ToggleFullscreen = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F11 } };
 		}
 
 		public class SaveInfo
@@ -377,14 +378,16 @@ namespace Lemma
 				notifications.Add(new Binding<Vector2, Point>(notifications.Position, x => new Vector2(x.X * 0.9f, x.Y * 0.1f), this.ScreenSize));
 				this.UI.Root.Children.Add(notifications);
 
+				bool controlsShown = false;
+
 				// Toggle fullscreen
-				this.input.Add(new CommandBinding(input.GetKeyDown(Keys.F11), delegate()
+				this.input.Bind(this.Settings.ToggleFullscreen, PCInput.InputState.Down, delegate()
 				{
 					if (this.graphics.IsFullScreen) // Already fullscreen. Go to windowed mode.
 						this.ExitFullscreen();
 					else // In windowed mode. Go to fullscreen.
 						this.EnterFullscreen();
-				}));
+				});
 
 				// Fullscreen message
 				Container msgBackground = new Container();
@@ -395,7 +398,7 @@ namespace Lemma
 				msgBackground.Add(new Binding<Vector2, Point>(msgBackground.Position, x => new Vector2(x.X * 0.5f, x.Y - 30.0f), this.ScreenSize));
 				TextElement msg = new TextElement();
 				msg.FontFile.Value = "Font";
-				msg.Text.Value = "F11 - Toggle Fullscreen";
+				msg.Add(new Binding<string, PCInput.PCInputBinding>(msg.Text, x => x.ToString() + " - Toggle Fullscreen", this.Settings.ToggleFullscreen));
 				msgBackground.Children.Add(msg);
 				this.AddComponent(new Animation
 				(
@@ -959,7 +962,6 @@ namespace Lemma
 				settingsMenu.Children.Add(dynamicShadows);
 
 				// Controls menu
-				bool controlsShown = false;
 				Animation controlsAnimation = null;
 
 				ListContainer controlsMenu = new ListContainer();
@@ -1083,9 +1085,11 @@ namespace Lemma
 				addInputSetting(this.Settings.Reload, "Reload");
 				addInputSetting(this.Settings.TogglePhone, "Toggle Phone");
 				addInputSetting(this.Settings.QuickSave, "Quicksave");
+				addInputSetting(this.Settings.ToggleFullscreen, "Toggle Fullscreen");
 
 				// Resume button
 				UIComponent resume = this.createMenuButton("Resume");
+				resume.Visible.Value = false;
 				resume.Add(new CommandBinding<Point>(resume.MouseLeftUp, delegate(Point p)
 				{
 					this.Paused.Value = false;
@@ -1109,6 +1113,7 @@ namespace Lemma
 
 					loadSaveShown = true;
 				}));
+				saveButton.Visible.Value = false;
 				pauseMenu.Children.Add(saveButton);
 
 				Action showLoad = delegate()
@@ -1258,12 +1263,15 @@ namespace Lemma
 						return;
 					}
 
-					this.Paused.Value = !this.Paused;
+					if (this.MapFile.Value != null)
+					{
+						this.Paused.Value = !this.Paused;
 
-					if (this.Paused)
-						savePausedSettings();
-					else
-						restorePausedSettings();
+						if (this.Paused)
+							savePausedSettings();
+						else
+							restorePausedSettings();
+					}
 				}));
 
 #if DEBUG
@@ -1291,6 +1299,9 @@ namespace Lemma
 #else
 				// "Press space to start" screen
 
+				this.Paused.Value = true;
+				savePausedSettings();
+
 				TextElement header = new TextElement();
 				header.FontFile.Value = "Font";
 				header.Text.Value = "Alpha 3";
@@ -1298,55 +1309,36 @@ namespace Lemma
 				header.Add(new Binding<Vector2>(header.Position, () => logo.Position + new Vector2(0, 30 + (logo.InverseAnchorPoint.Value.Y * logo.ScaledSize.Value.Y)), logo.Position, logo.InverseAnchorPoint, logo.ScaledSize));
 				this.UI.Root.Children.Add(header);
 
-				ListContainer buttons = new ListContainer();
-				buttons.AnchorPoint.Value = new Vector2(0.5f, 0);
-				buttons.Add(new Binding<Vector2>(buttons.Position, () => logo.Position + new Vector2(0, 80 + (logo.InverseAnchorPoint.Value.Y * logo.ScaledSize.Value.Y)), logo.Position, logo.InverseAnchorPoint, logo.ScaledSize));
-				this.UI.Root.Children.Add(buttons);
-
-				TextElement instructions = new TextElement();
-				instructions.FontFile.Value = "Font";
-				instructions.Text.Value = "Esc: Menu";
-
 				UIComponent startNew = this.createMenuButton("Start New");
 				startNew.Add(new CommandBinding<Point>(startNew.MouseLeftUp, delegate(Point p)
 				{
-					instructions.Text.Value = "Loading...";
-					instructions.Opacity.Value = 1.0f;
+					this.Paused.Value = false;
+					restorePausedSettings();
 					logo.Opacity.Value = 1.0f;
+					header.Opacity.Value = 1.0f;
+					header.Text.Value = "Loading...";
 					this.AddComponent(new Animation
 					(
-						new Animation.Delay(0.1f),
+						new Animation.Delay(0.2f),
 						new Animation.Set<string>(this.MapFile, this.initialMapFile)
 					));
 				}));
-				buttons.Children.Add(startNew);
-
-				UIComponent load2 = this.createMenuButton("Load");
-				load2.Add(new CommandBinding<Point>(load2.MouseLeftUp, delegate(Point p)
-				{
-					this.Paused.Value = true;
-					savePausedSettings();
-					showLoad();
-				}));
-				buttons.Children.Add(load2);
-
-				buttons.Children.Add(instructions);
+				pauseMenu.Children.Insert(1, startNew);
 
 				logo.Opacity.Value = 0.0f;
-				instructions.Opacity.Value = 0.0f;
+				header.Opacity.Value = 0.0f;
 
 				Animation fadeAnimation = new Animation
 				(
 					new Animation.Parallel
 					(
 						new Animation.FloatMoveTo(logo.Opacity, 1.0f, 1.0f),
-						new Animation.FloatMoveTo(instructions.Opacity, 1.0f, 1.0f)
+						new Animation.FloatMoveTo(header.Opacity, 1.0f, 1.0f)
 					)
 				);
 
 				this.AddComponent(fadeAnimation);
 
-				new CommandBinding(this.MapLoaded, buttons.Delete);
 				new CommandBinding(this.MapLoaded, header.Delete);
 #endif
 
@@ -1371,7 +1363,11 @@ namespace Lemma
 					this.Renderer.Tint.Value = Vector3.Zero;
 				});
 
-				new CommandBinding(this.MapLoaded, logo.Delete);
+				logo.Add(new CommandBinding(this.MapLoaded, delegate() { resume.Visible.Value = saveButton.Visible.Value = true; }));
+				logo.Add(new CommandBinding(this.MapLoaded, logo.Delete));
+#if !DEBUG
+				startNew.Add(new CommandBinding(this.MapLoaded, startNew.Delete));
+#endif
 			}
 		}
 

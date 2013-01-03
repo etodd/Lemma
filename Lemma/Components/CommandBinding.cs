@@ -20,6 +20,7 @@ namespace Lemma.Components
 
 		public void Delete()
 		{
+			this.Enabled = false;
 			this.source.RemoveBinding(this);
 			this.source = null;
 			this.destinations = null;
@@ -60,7 +61,11 @@ namespace Lemma.Components
 			if (this.Enabled && this.enabled())
 			{
 				foreach (Command cmd in this.destinations)
+				{
 					cmd.Execute();
+					if (this.destinations == null)
+						break;
+				}
 			}
 		}
 	}
@@ -95,7 +100,11 @@ namespace Lemma.Components
 			if (this.Enabled && this.enabled())
 			{
 				foreach (Command<Type> cmd in this.destinations)
+				{
 					cmd.Execute(parameter1);
+					if (this.destinations == null)
+						break;
+				}
 			}
 		}
 	}
@@ -130,7 +139,11 @@ namespace Lemma.Components
 			if (this.Enabled && this.enabled())
 			{
 				foreach (Command<Type, Type2> cmd in this.destinations)
+				{
 					cmd.Execute(parameter1, parameter2);
+					if (this.destinations == null)
+						break;
+				}
 			}
 		}
 	}
@@ -165,7 +178,11 @@ namespace Lemma.Components
 			if (this.Enabled && this.enabled())
 			{
 				foreach (Command<Type, Type2, Type3> cmd in this.destinations)
+				{
 					cmd.Execute(parameter1, parameter2, parameter3);
+					if (this.destinations == null)
+						break;
+				}
 			}
 		}
 	}

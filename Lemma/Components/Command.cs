@@ -18,29 +18,54 @@ namespace Lemma.Components
 		public Action Action;
 		protected List<BaseCommandBinding> bindings = new List<BaseCommandBinding>();
 
+		private List<BaseCommandBinding> bindingRemovals = new List<BaseCommandBinding>();
+		private List<BaseCommandBinding> bindingAdditions = new List<BaseCommandBinding>();
+
+		protected int executeLevel;
+		protected bool applyChanges;
+
+		protected void preNotification()
+		{
+			this.executeLevel++;
+		}
+
+		protected void postNotification()
+		{
+			this.executeLevel--;
+			if (this.executeLevel == 0)
+			{
+				this.bindings.AddRange(this.bindingAdditions);
+				this.bindingAdditions.Clear();
+				foreach (BaseCommandBinding binding in this.bindingRemovals)
+					this.bindings.Remove(binding);
+				this.bindingRemovals.Clear();
+			}
+		}
+
 		public bool ShowInEditor = false;
 
 		public void AddBinding(BaseCommandBinding binding)
 		{
-			this.bindings.Add(binding);
+			if (this.executeLevel == 0)
+				this.bindings.Add(binding);
+			else
+				this.bindingAdditions.Add(binding);
 		}
 
 		public void RemoveBinding(BaseCommandBinding binding)
 		{
-			this.bindings.Remove(binding);
+			if (this.executeLevel == 0)
+				this.bindings.Remove(binding);
+			else
+				this.bindingRemovals.Add(binding);
 		}
 
 		public virtual void Execute()
 		{
-			try
-			{
-				foreach (CommandBinding binding in this.bindings)
-					binding.Execute();
-			}
-			catch (InvalidOperationException)
-			{
-				// Bindings were modified while we were enumerating
-			}
+			this.preNotification();
+			foreach (CommandBinding binding in this.bindings)
+				binding.Execute();
+			this.postNotification();
 			if (this.Action != null)
 				this.Action();
 		}
@@ -57,15 +82,10 @@ namespace Lemma.Components
 
 		public void Execute(Type parameter)
 		{
-			try
-			{
-				foreach (CommandBinding<Type> binding in this.bindings)
-					binding.Execute(parameter);
-			}
-			catch (InvalidOperationException)
-			{
-				// Bindings were modified while we were enumerating
-			}
+			this.preNotification();
+			foreach (CommandBinding<Type> binding in this.bindings)
+				binding.Execute(parameter);
+			this.postNotification();
 			if (this.Action != null)
 				this.Action(parameter);
 		}
@@ -82,15 +102,10 @@ namespace Lemma.Components
 
 		public void Execute(Type parameter1, Type2 parameter2)
 		{
-			try
-			{
-				foreach (CommandBinding<Type, Type2> binding in this.bindings)
-					binding.Execute(parameter1, parameter2);
-			}
-			catch (InvalidOperationException)
-			{
-				// Bindings were modified while we were enumerating
-			}
+			this.preNotification();
+			foreach (CommandBinding<Type, Type2> binding in this.bindings)
+				binding.Execute(parameter1, parameter2);
+			this.postNotification();
 			if (this.Action != null)
 				this.Action(parameter1, parameter2);
 		}
@@ -107,15 +122,10 @@ namespace Lemma.Components
 
 		public void Execute(Type parameter1, Type2 parameter2, Type3 parameter3)
 		{
-			try
-			{
-				foreach (CommandBinding<Type, Type2, Type3> binding in this.bindings)
-					binding.Execute(parameter1, parameter2, parameter3);
-			}
-			catch (InvalidOperationException)
-			{
-				// Bindings were modified while we were enumerating
-			}
+			this.preNotification();
+			foreach (CommandBinding<Type, Type2, Type3> binding in this.bindings)
+				binding.Execute(parameter1, parameter2, parameter3);
+			this.postNotification();
 			if (this.Action != null)
 				this.Action(parameter1, parameter2, parameter3);
 		}

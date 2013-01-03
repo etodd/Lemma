@@ -603,6 +603,7 @@ namespace Lemma.Factories
 				else
 					cameraShakeAmount.Value = 0.0f;
 
+#if DEBUG
 				if (thirdPerson)
 				{
 					Vector3 cameraPosition = Vector3.Transform(new Vector3(0.0f, 3.0f, 0.0f), model.Transform);
@@ -617,6 +618,7 @@ namespace Lemma.Factories
 					main.Camera.Position.Value = cameraPosition + (main.Camera.Right.Value * cameraDistance * -0.25f) + (main.Camera.Forward.Value * -cameraDistance);
 				}
 				else
+#endif
 				{
 					Vector3 cameraPosition = Vector3.Transform(cameraOffset, headBone.Value * model.Transform);
 
@@ -1167,7 +1169,7 @@ namespace Lemma.Factories
 					Map.Coordinate wallCoord = coord.Move(wallDirection, 2);
 					Map.CellState wallType = wallRunMap[wallCoord];
 					footsteps.Cue.Value = wallType.FootstepCue;
-					if (player.EnableEnhancedWallRun && player.WallRunState.Value != Player.WallRun.Straight)
+					if (player.EnableEnhancedWallRun && wallRunState != Player.WallRun.Straight)
 					{
 						Direction up = wallRunMap.GetRelativeDirection(Direction.PositiveY);
 						Direction right = wallDirection.Cross(up);
@@ -1177,10 +1179,11 @@ namespace Lemma.Factories
 						Map.CellState fillState = WorldFactory.StatesByName["Temporary"];
 
 						const int radius = 5;
+						int upwardRadius = wallRunState == Player.WallRun.Down ? 0 : radius;
 						for (Map.Coordinate x = wallCoord.Move(right, -radius); x.GetComponent(right) < wallCoord.GetComponent(right) + radius; x = x.Move(right))
 						{
 							int dx = x.GetComponent(right) - wallCoord.GetComponent(right);
-							for (Map.Coordinate y = x.Move(up, -radius); y.GetComponent(up) < wallCoord.GetComponent(up) + radius; y = y.Move(up))
+							for (Map.Coordinate y = x.Move(up, -radius); y.GetComponent(up) < wallCoord.GetComponent(up) + upwardRadius; y = y.Move(up))
 							{
 								int dy = y.GetComponent(up) - wallCoord.GetComponent(up);
 								if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && wallRunMap[y].ID == 0)

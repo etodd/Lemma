@@ -291,6 +291,7 @@ namespace Lemma.Components
 			foreach (Action<PCInput.PCInputBinding> listener in this.nextInputListeners)
 				listener(input);
 			this.nextInputListeners.Clear();
+			this.preventKeyDownEvents = true;
 		}
 
 		public virtual void Update(float elapsedTime)

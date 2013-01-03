@@ -199,9 +199,12 @@ namespace Lemma
 
 		public Command ReloadedContent = new Command();
 
-		protected bool componentsModified;
+		private bool updating;
 		public void FlushComponents()
 		{
+			if (this.updating)
+				return;
+
 			foreach (Component c in this.componentsToAdd)
 			{
 				this.components.Add(c);
@@ -249,7 +252,6 @@ namespace Lemma
 				this.components.Remove(c);
 			}
 			this.componentsToRemove.Clear();
-			this.componentsModified = true;
 		}
 
 		public Main()
@@ -436,16 +438,13 @@ namespace Lemma
 #if PERFORMANCE_MONITOR
 			timer.Restart();
 #endif
-			this.componentsModified = false;
+			this.updating = true;
 			foreach (IUpdateableComponent c in this.updateables)
 			{
 				if (this.componentEnabled((Component)c))
-				{
 					c.Update(this.ElapsedTime);
-					if (this.componentsModified)
-						break;
-				}
 			}
+			this.updating = false;
 			this.FlushComponents();
 
 			if (this.drawableBinding == null)
