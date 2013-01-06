@@ -10,7 +10,7 @@ namespace Lemma
 	{
 		private static GameMain create()
 		{
-#if DEBUG
+#if DEVELOPMENT
 			return new GameMain(true, null); // Editor binary
 #else
 			return new GameMain(false, "start"); // Game binary
@@ -30,6 +30,7 @@ namespace Lemma
 			}
 			else
 			{
+				string error = null;
 				try
 				{
 					main = create();
@@ -37,22 +38,37 @@ namespace Lemma
 				}
 				catch (Exception e)
 				{
-
+					if (!(e is GameMain.ExitException))
+						error = e.ToString();
+				}
 #if ANALYTICS
-					if (main.MapFile.Value == null || main.EditorEnabled)
-						main.SessionRecorder.Reset();
-					main.SessionRecorder.RecordEvent("Crash", e.ToString());
-					main.SaveAnalytics();
-#endif
+				if (main.MapFile.Value == null || main.EditorEnabled)
+					main.SessionRecorder.Reset();
+				if (error == null)
+					main.SessionRecorder.RecordEvent("Exit");
+				else
+					main.SessionRecorder.RecordEvent("Crash", error);
+				main.SaveAnalytics();
 
 #if MONOGAME
-					// TODO: MonoGame popup
+				// TODO: MonoGame analytics form
 #else
-					System.Windows.Forms.Application.EnableVisualStyles();
-					ErrorForm errorForm = new ErrorForm(e.ToString());
-					System.Windows.Forms.Application.Run(errorForm);
+				System.Windows.Forms.Application.EnableVisualStyles();
+				AnalyticsForm analyticsForm = new AnalyticsForm(error);
+				System.Windows.Forms.Application.Run(analyticsForm);
 #endif
+#else
+#if MONOGAME
+				// TODO: MonoGame error form
+#else
+				if (error != null)
+				{
+					System.Windows.Forms.Application.EnableVisualStyles();
+					ErrorForm errorForm = new ErrorForm(error);
+					System.Windows.Forms.Application.Run(errorForm);
 				}
+#endif
+#endif
 			}
 		}
 	}

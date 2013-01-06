@@ -34,7 +34,12 @@ namespace Lemma.Components
 		{
 			if (clipNames.Length == 0)
 				return this.CurrentClips.Count > 0;
-			return this.CurrentClips.Select(x => x.Name).Intersect(clipNames).FirstOrDefault() != null;
+			foreach (SkinnedModel.Clip clip in this.CurrentClips)
+			{
+				if (clipNames.Contains(clip.Name))
+					return !clip.Stopping;
+			}
+			return false;
 		}
 
 		public void Bind(AnimatedModel target)

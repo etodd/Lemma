@@ -48,6 +48,7 @@ namespace Lemma.Factories
 			ModelInstance model = result.Get<ModelInstance>();
 
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
+			model.Scale.Value = Vector3.Zero;
 
 			Property<bool> scale = result.GetProperty<bool>("Scale");
 			Property<Vector3> start = result.GetProperty<Vector3>("StartPosition");
@@ -90,14 +91,13 @@ namespace Lemma.Factories
 
 					if (blend > 1.0f)
 					{
-						result.Delete.Execute();
-
 						if (stateId != 0)
 						{
 							m.Fill(coord, WorldFactory.States[stateId]);
 							m.Regenerate();
 						}
 						Sound.PlayCue(main, "BuildBlock", transform.Position, 1.0f, 0.06f);
+						result.Delete.Execute();
 					}
 					else
 					{

@@ -49,7 +49,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\x86\Debug</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS;PERFORMANCE_MONITOR</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS;PERFORMANCE_MONITOR;DEVELOPMENT</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -87,6 +87,12 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnalyticsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AnalyticsForm.designer.cs">
+      <DependentUpon>AnalyticsForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Analytics.cs" />
@@ -278,6 +284,9 @@
     <Content Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="AnalyticsForm.resx">
+      <DependentUpon>AnalyticsForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ErrorForm.resx">
       <DependentUpon>ErrorForm.cs</DependentUpon>
     </EmbeddedResource>

@@ -101,12 +101,30 @@ namespace Lemma.Factories
 
 							newMap.PhysicsEntity.ApplyLinearImpulse(ref toPlayer);
 						}
+						newMap.PhysicsEntity.Material.KineticFriction = 1.0f;
+						newMap.PhysicsEntity.Material.StaticFriction = 1.0f;
 						dynamicMaps.Add(newMap.Entity);
 					}
 				});
 
 				timeUntilRebuild.Value = rebuildDelay;
 			};
+
+			result.Add(new PostInitialization
+			{
+				delegate()
+				{
+					foreach (Entity.Handle map in dynamicMaps)
+					{
+						if (map.Target != null)
+						{
+							BEPUphysics.Entities.MorphableEntity e = map.Target.Get<DynamicMap>().PhysicsEntity;
+							e.Material.KineticFriction = 1.0f;
+							e.Material.StaticFriction = 1.0f;
+						}
+					}
+				}
+			});
 
 			result.Add(new CommandBinding<Entity>(trigger.PlayerEntered, fall));
 

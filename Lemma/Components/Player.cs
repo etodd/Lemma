@@ -159,8 +159,9 @@ namespace Lemma.Components
 
 			this.Stamina.Set = delegate(int value)
 			{
+				int oldValue = this.Stamina.InternalValue;
 				this.Stamina.InternalValue = Math.Max(0, Math.Min(100, value));
-				if (this.Stamina.InternalValue == 0)
+				if (oldValue > 0 && this.Stamina.InternalValue == 0)
 					this.StaminaDepleted.Execute();
 			};
 

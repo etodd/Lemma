@@ -158,7 +158,7 @@ namespace Lemma.Util
 			//the friction coefficient between a pair of objects is based
 			//on a blending of the two objects' materials.
 			this.Body.Material.KineticFriction = 0.0f;
-			this.Body.Material.StaticFriction = 1.0f;
+			this.Body.Material.StaticFriction = 0.0f;
 			this.Body.Material.Bounciness = 0.0f;
 
 			this.Crouched.Set = delegate(bool value)

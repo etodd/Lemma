@@ -221,7 +221,7 @@ namespace Lemma.Factories
 						responseMenu.Visible.Value = false;
 						phoneScroller.CheckLayout();
 						phoneScroller.ScrollToBottom();
-#if !DEBUG
+#if !DEVELOPMENT
 						result.Add(new Animation(new Animation.Delay(0.25f), new Animation.Execute(hidePhone.Execute)));
 #endif
 					}));

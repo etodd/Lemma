@@ -24,20 +24,6 @@ namespace Lemma.Factories
 			public Map Map;
 			public Map.Coordinate Coord;
 			public Map.CellState State;
-			private Vector3 pos;
-			private bool validPos;
-			public Vector3 AbsolutePosition
-			{
-				get
-				{
-					if (!this.validPos)
-					{
-						this.pos = this.Map.GetAbsolutePosition(this.Coord);
-						this.validPos = true;
-					}
-					return this.pos;
-				}
-			}
 		}
 
 		public override Entity Create(Main main)
@@ -207,7 +193,7 @@ namespace Lemma.Factories
 			agent.Add(new Binding<float, Vector3>(agent.Speed, x => x.Length(), player.LinearVelocity));
 			agent.Add(new CommandBinding(agent.Die, result.Delete));
 
-#if DEBUG
+#if DEVELOPMENT
 			Property<bool> thirdPerson = new Property<bool> { Value = false };
 			input.Add(new CommandBinding(input.GetKeyDown(Keys.C), delegate() { thirdPerson.Value = !thirdPerson; }));
 
@@ -566,6 +552,34 @@ namespace Lemma.Factories
 
 				bool pistolDrawn = pistol.Value.Target != null && pistol.Value.Target.GetProperty<bool>("Active");
 
+				if (pistolDrawn)
+				{
+					const float defaultMaxAngle = (float)Math.PI * 0.2f;
+					const float aimedMaxAngle = (float)Math.PI * 0.5f;
+					const float reloadingMaxAngle = (float)Math.PI * 0.0f;
+
+					SkinnedModel.Clip aimClip = model["Aim"], reloadClip = model["PlayerReload"];
+
+					float maxAngle;
+					
+					if (model.IsPlaying("Aim"))
+						maxAngle = MathHelper.Lerp(defaultMaxAngle, aimedMaxAngle, aimClip.BlendTime / aimClip.BlendTotalTime);
+					else
+					{
+						if (aimClip.BlendTotalTime > 0)
+							maxAngle = MathHelper.Lerp(aimedMaxAngle, defaultMaxAngle, aimClip.BlendTime / aimClip.BlendTotalTime);
+						else
+							maxAngle = defaultMaxAngle;
+					}
+
+					if (model.IsPlaying("PlayerReload"))
+						maxAngle = MathHelper.Lerp(maxAngle, reloadingMaxAngle, reloadClip.BlendTime / reloadClip.BlendTotalTime);
+					else if (reloadClip.BlendTotalTime > 0)
+						maxAngle = MathHelper.Lerp(reloadingMaxAngle, maxAngle, reloadClip.BlendTime / reloadClip.BlendTotalTime);
+
+					angle = Math.Min(angle, maxAngle);
+				}
+
 				bool aimAnimationActive = pistolDrawn || levitationMode;
 
 				aimAnimationBlend = Math.Max(0.0f, aimAnimationBlend - dt);
@@ -603,7 +617,7 @@ namespace Lemma.Factories
 				else
 					cameraShakeAmount.Value = 0.0f;
 
-#if DEBUG
+#if DEVELOPMENT
 				if (thirdPerson)
 				{
 					Vector3 cameraPosition = Vector3.Transform(new Vector3(0.0f, 3.0f, 0.0f), model.Transform);
@@ -769,7 +783,7 @@ namespace Lemma.Factories
 			});
 
 			// Block possibilities
-			const int blockInstantiationStaminaCost = 3;
+			const float blockInstantiationStaminaCostPerCell = 0.1f;
 			const float blockPossibilityTotalLifetime = 2.0f;
 			const float blockPossibilityInitialAlpha = 0.125f;
 
@@ -835,15 +849,15 @@ namespace Lemma.Factories
 
 			Dictionary<AnimatingBlock, bool> animatingBlocks = new Dictionary<AnimatingBlock, bool>();
 
+			const float enhancedWallRunStaminaCostPerCell = 0.15f;
+
 			Action<IEnumerable<AnimatingBlock>, bool> buildBlocks = delegate(IEnumerable<AnimatingBlock> blocks, bool fake)
 			{
 				int index = 0;
 				EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
 				foreach (AnimatingBlock entry in blocks)
 				{
-					bool animating = false;
-					animatingBlocks.TryGetValue(entry, out animating);
-					if (animating)
+					if (animatingBlocks.ContainsKey(entry))
 						continue;
 
 					AnimatingBlock spawn = entry;
@@ -852,28 +866,28 @@ namespace Lemma.Factories
 					Entity block = factory.CreateAndBind(main);
 					spawn.State.ApplyToEffectBlock(block.Get<ModelInstance>());
 					block.GetProperty<Vector3>("Offset").Value = spawn.Map.GetRelativePosition(spawn.Coord);
-					float distance = (spawn.AbsolutePosition - transform.Position).Length();
-					block.GetProperty<Vector3>("StartPosition").Value = spawn.AbsolutePosition + new Vector3(0.05f, 0.1f, 0.05f) * distance;
+
+					Vector3 absolutePos = spawn.Map.GetAbsolutePosition(spawn.Coord);
+
+					float distance = (absolutePos - transform.Position).Length();
+					block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f) * distance;
 					block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * (distance + index)) * Matrix.CreateRotationY(0.15f * (distance + index));
 					block.GetProperty<float>("TotalLifetime").Value = Math.Max(0.05f, distance * 0.05f);
 					block.GetProperty<Entity.Handle>("TargetMap").Value = spawn.Map.Entity;
 					block.GetProperty<int>("TargetCellStateID").Value = fake ? 0 : spawn.State.ID;
 					block.GetProperty<Map.Coordinate>("TargetCoord").Value = spawn.Coord;
-					block.Add(new CommandBinding(block.Delete, delegate()
+					CommandBinding blockBinding = null;
+					blockBinding = new CommandBinding(block.Delete, delegate()
 					{
-						try
-						{
-							animatingBlocks.Remove(spawn);
-						}
-						catch (KeyNotFoundException)
-						{
-
-						}
-					}));
+						animatingBlocks.Remove(spawn);
+						result.Remove(blockBinding);
+					});
+					result.Add(blockBinding);
 
 					main.Add(block);
 					index++;
 				}
+				player.Stamina.Value -= (int)(enhancedWallRunStaminaCostPerCell * index);
 			};
 
 			Action<BlockPossibility> instantiateBlockPossibility = delegate(BlockPossibility block)
@@ -886,7 +900,10 @@ namespace Lemma.Factories
 				mapList.Remove(block);
 				if (mapList.Count == 0)
 					blockPossibilities.Remove(block.Map);
-				player.Stamina.Value -= blockInstantiationStaminaCost;
+				player.Stamina.Value -= (int)Math.Round(blockInstantiationStaminaCostPerCell
+					* (block.EndCoord.X - block.StartCoord.X)
+					* (block.EndCoord.Y - block.StartCoord.Y)
+					* (block.EndCoord.Z - block.StartCoord.Z));
 				Vector3 position = 0.5f * (block.Map.GetAbsolutePosition(block.StartCoord) + block.Map.GetAbsolutePosition(block.EndCoord));
 				main.AddComponent(new Animation
 				(
@@ -981,8 +998,15 @@ namespace Lemma.Factories
 			float lastWallRunEnded = -1.0f, lastWallJump = -1.0f;
 			const float wallRunDelay = 0.5f;
 
+			// Since block possibilities are instantiated on another thread,
+			// we have to give that thread some time to do it before checking if there is actually a wall to run on.
+			// Otherwise, we will immediately stop wall-running since the wall hasn't been instantiated yet.
+			float wallInstantiationTimer = 0.0f;
+
 			Func<Player.WallRun, bool> activateWallRun = delegate(Player.WallRun state)
 			{
+				wallInstantiationTimer = 0.0f;
+
 				// Prevent the player from repeatedly wall-running and wall-jumping ad infinitum.
 				if ((!player.IsSupported || state == Player.WallRun.Straight))
 				{
@@ -1001,6 +1025,8 @@ namespace Lemma.Factories
 					{
 						Map.Coordinate coord = map.GetCoordinate(pos);
 						Direction dir = map.GetRelativeDirection(wallVector);
+						List<BlockPossibility> mapBlockPossibilities;
+						bool hasBlockPossibilities = blockPossibilities.TryGetValue(map, out mapBlockPossibilities);
 						for (int i = 1; i < 4; i++)
 						{
 							Map.Coordinate wallCoord = coord.Move(dir, i);
@@ -1013,8 +1039,7 @@ namespace Lemma.Factories
 							else
 							{
 								// Check block possibilities
-								List<BlockPossibility> mapBlockPossibilities;
-								if (blockPossibilities.TryGetValue(map, out mapBlockPossibilities))
+								if (hasBlockPossibilities)
 								{
 									foreach (BlockPossibility block in mapBlockPossibilities)
 									{
@@ -1023,6 +1048,7 @@ namespace Lemma.Factories
 											instantiateBlockPossibility(block);
 											activate = true;
 											addInitialVelocity = true;
+											wallInstantiationTimer = 0.25f;
 											break;
 										}
 									}
@@ -1199,11 +1225,13 @@ namespace Lemma.Factories
 						}
 						buildBlocks(buildCoords, false);
 					}
-					else if (wallType.ID == 0) // We ran out of wall to walk on
+					else if (wallType.ID == 0 && wallInstantiationTimer == 0.0f) // We ran out of wall to walk on
 					{
 						deactivateWallRun();
 						return;
 					}
+
+					wallInstantiationTimer = Math.Max(0.0f, wallInstantiationTimer - dt);
 					
 					Vector3 coordPos = wallRunMap.GetAbsolutePosition(coord);
 
@@ -1367,21 +1395,24 @@ namespace Lemma.Factories
 
 			// Fall damage
 			Vector3 playerLastVelocity = Vector3.Zero;
-			const float damageVelocity = 20.0f; // Vertical velocity above which damage occurs
+			const float damageVelocity = -18.0f; // Vertical velocity above which damage occurs
+			const float rollingDamageVelocity = -22.0f; // Damage velocity when rolling
 
 			Action<float> fallDamage = delegate(float verticalVelocity)
 			{
-				if (!model.IsPlaying("Roll") && verticalVelocity < -damageVelocity)
-					player.Health.Value += (verticalVelocity + damageVelocity) * 0.2f;
+				float v = model.IsPlaying("Roll") ? rollingDamageVelocity : damageVelocity;
+				if (verticalVelocity < v)
+					player.Health.Value += (verticalVelocity - v) * 0.2f;
 			};
 
 			// Damage the player if they hit something too hard
 			result.Add(new CommandBinding<BEPUphysics.Collidables.Collidable, ContactCollection>(player.Collided, delegate(BEPUphysics.Collidables.Collidable other, ContactCollection contacts)
 			{
-				if (other.Tag is DynamicMap)
+				DynamicMap map = other.Tag as DynamicMap;
+				if (map != null)
 				{
 					float force = contacts[contacts.Count - 1].NormalImpulse;
-					const float threshold = 16.0f;
+					float threshold = map.Entity.Type == "FallingTower" ? 14.0f : 20.0f;
 					float playerLastSpeed = Vector3.Dot(playerLastVelocity, Vector3.Normalize(-contacts[contacts.Count - 1].Contact.Normal)) * 2.0f;
 					if (force > threshold + playerLastSpeed + 4.0f)
 						player.Health.Value -= (force - threshold - playerLastSpeed) * 0.04f;
@@ -1398,8 +1429,9 @@ namespace Lemma.Factories
 				playerLastVelocity = player.LinearVelocity;
 			});
 
+			Direction[] platformBuildableDirections = DirectionExtensions.HorizontalDirections.Union(new[] { Direction.NegativeY }).ToArray();
+
 			// Function for finding a platform to build for the player
-			Direction[] buildableDirections = DirectionExtensions.HorizontalDirections.Union(new[] { Direction.NegativeY }).ToArray();
 			Func<Vector3, BlockPossibility> findPlatform = delegate(Vector3 position)
 			{
 				const int searchDistance = 20;
@@ -1416,7 +1448,7 @@ namespace Lemma.Factories
 					Map.CellState fillValue = WorldFactory.StatesByName["Temporary"];
 					Map.Coordinate absolutePlayerCoord = map.GetCoordinate(position);
 					bool inMap = map.GetChunk(absolutePlayerCoord, false) != null;
-					foreach (Direction absoluteDir in buildableDirections)
+					foreach (Direction absoluteDir in platformBuildableDirections)
 					{
 						Map.Coordinate playerCoord = absoluteDir == Direction.NegativeY ? absolutePlayerCoord : map.GetCoordinate(position + new Vector3(0, platformSize / -2.0f, 0));
 						Direction relativeDir = map.GetRelativeDirection(absoluteDir);
@@ -1459,35 +1491,63 @@ namespace Lemma.Factories
 				return null;
 			};
 
-			// Wall-run
-			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
+			// Function for finding a wall to build for the player
+			Func<Vector3, Vector2, BlockPossibility> findWall = delegate(Vector3 position, Vector2 direction)
 			{
-				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || player.Crouched)
-					return;
+				const int searchDistance = 20;
+				const int additionalDistance = 6;
 
-				bool vaulted = jump(true, true); // Try vaulting first
+				Map shortestMap = null;
+				Map.Coordinate shortestPlayerCoord = new Map.Coordinate();
+				Direction shortestWallDirection = Direction.None;
+				Direction shortestBuildDirection = Direction.None;
+				int shortestDistance = searchDistance;
 
-				bool wallRan = false;
-				if (!vaulted && player.EnableWallRun)
+				foreach (Map map in Map.ActiveMaps)
 				{
-					// Try to wall-run
-					if (!(wallRan = activateWallRun(Player.WallRun.Straight)) && player.EnableWallRunHorizontal)
-						if (!(wallRan = activateWallRun(Player.WallRun.Left)))
-							wallRan = activateWallRun(Player.WallRun.Right);
+					foreach (Direction absoluteWallDir in DirectionExtensions.HorizontalDirections)
+					{
+						Direction relativeWallDir = map.GetRelativeDirection(absoluteWallDir);
+						Vector3 wallVector = map.GetAbsoluteVector(relativeWallDir.GetVector());
+						if (Vector2.Dot(direction, new Vector2(wallVector.X, wallVector.Z)) > -0.25f)
+						{
+							Map.Coordinate coord = map.GetCoordinate(position).Move(relativeWallDir, 2);
+							foreach (Direction dir in DirectionExtensions.Directions.Where(x => x.IsPerpendicular(relativeWallDir)))
+							{
+								for (int i = 0; i < shortestDistance; i++)
+								{
+									Map.Coordinate c = coord.Move(dir, i);
+									if (map[c].ID != 0)
+									{
+										shortestMap = map;
+										shortestBuildDirection = dir;
+										shortestWallDirection = relativeWallDir;
+										shortestDistance = i;
+										shortestPlayerCoord = coord;
+									}
+								}
+							}
+						}
+					}
 				}
 
-				if (!vaulted && !wallRan)
+				if (shortestMap != null)
 				{
-					if (player.IsSupported && player.EnableSprint)
-						player.Sprint.Value = true; // Start sprinting
+					// Found something to build a wall on.
+					Direction dirU = shortestBuildDirection;
+					Direction dirV = dirU.Cross(shortestWallDirection);
+					Map.Coordinate startCoord = shortestPlayerCoord.Move(dirU, shortestDistance).Move(dirV, additionalDistance);
+					Map.Coordinate endCoord = shortestPlayerCoord.Move(dirU, -additionalDistance).Move(dirV, -additionalDistance).Move(shortestWallDirection);
+					return new BlockPossibility
+					{
+						Map = shortestMap,
+						StartCoord = new Map.Coordinate { X = Math.Min(startCoord.X, endCoord.X), Y = Math.Min(startCoord.Y, endCoord.Y), Z = Math.Min(startCoord.Z, endCoord.Z) },
+						EndCoord = new Map.Coordinate { X = Math.Max(startCoord.X, endCoord.X), Y = Math.Max(startCoord.Y, endCoord.Y), Z = Math.Max(startCoord.Z, endCoord.Z) },
+					};
 				}
-			});
-
-			input.Bind(settings.Parkour, PCInput.InputState.Up, delegate()
-			{
-				deactivateWallRun();
-				player.Sprint.Value = false;
-			});
+				
+				return null;
+			};
 
 			Updater vaultMover = null;
 
@@ -1872,6 +1932,35 @@ namespace Lemma.Factories
 				return false;
 			};
 
+			Action<Queue<Prediction>, Vector3, Vector3, int> predictJump = delegate(Queue<Prediction> predictions, Vector3 start, Vector3 v, int level)
+			{
+				for (float time = 0.6f; time < (level == 0 ? 1.5f : 1.0f); time += 0.6f)
+					predictions.Enqueue(new Prediction { Position = start + (v * time) + (time * time * 0.5f * main.Space.ForceUpdater.Gravity), Level = level });
+			};
+
+			Func<Queue<Prediction>, Vector3> startSlowMo = delegate(Queue<Prediction> predictions)
+			{
+				// Go into slow-mo and show block possibilities
+				player.SlowMotion.Value = true;
+
+				clearBlockPossibilities();
+
+				Vector3 startPosition = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
+
+				Vector3 straightAhead = Matrix.CreateRotationY(rotation).Forward * -player.MaxSpeed;
+
+				Vector3 velocity = player.LinearVelocity;
+				if (velocity.Length() < player.MaxSpeed * 0.25f)
+					velocity += straightAhead * 0.5f;
+
+				predictJump(predictions, startPosition, velocity, 0);
+
+				Vector3 jumpVelocity = velocity;
+				jumpVelocity.Y = player.JumpSpeed;
+
+				return jumpVelocity;
+			};
+
 			// Jumping
 			input.Bind(settings.Jump, PCInput.InputState.Down, delegate()
 			{
@@ -1879,31 +1968,8 @@ namespace Lemma.Factories
 				// Also don't try anything if we're in the middle of vaulting
 				if (vaultMover == null && !jump(false, false) && player.EnableSlowMotion)
 				{
-					// Go into slow-mo and show block possibilities
-					player.SlowMotion.Value = true;
-
-					clearBlockPossibilities();
-
-					Vector3 startPosition = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
-
-					Vector3 straightAhead = Matrix.CreateRotationY(rotation).Forward * -player.MaxSpeed;
-
-					Vector3 velocity = player.LinearVelocity;
-					if (velocity.Length() < player.MaxSpeed * 0.25f)
-						velocity += straightAhead * 0.5f;
-
 					Queue<Prediction> predictions = new Queue<Prediction>();
-
-					Action<Vector3, Vector3, int> addJump = delegate(Vector3 start, Vector3 v, int level)
-					{
-						for (float time = 0.6f; time < (level == 0 ? 1.5f : 1.0f); time += 0.6f)
-							predictions.Enqueue(new Prediction { Position = start + (v * time) + (time * time * 0.5f * main.Space.ForceUpdater.Gravity), Level = level });
-					};
-
-					Vector3 jumpVelocity = velocity;
-					jumpVelocity.Y = player.JumpSpeed;
-
-					addJump(startPosition, velocity, 0);
+					Vector3 jumpVelocity = startSlowMo(predictions);
 
 					while (predictions.Count > 0)
 					{
@@ -1913,7 +1979,7 @@ namespace Lemma.Factories
 						{
 							addBlockPossibility(possibility);
 							if (prediction.Level == 0)
-								addJump(prediction.Position, jumpVelocity, prediction.Level + 1);
+								predictJump(predictions, prediction.Position, jumpVelocity, prediction.Level + 1);
 						}
 					}
 				}
@@ -1921,6 +1987,51 @@ namespace Lemma.Factories
 
 			input.Bind(settings.Jump, PCInput.InputState.Up, delegate()
 			{
+				player.SlowMotion.Value = false;
+			});
+
+			// Wall-run, vault, sprint, predictive
+			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
+			{
+				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || player.Crouched)
+					return;
+
+				bool vaulted = jump(true, true); // Try vaulting first
+
+				bool wallRan = false;
+				if (!vaulted && player.EnableWallRun)
+				{
+					// Try to wall-run
+					if (!(wallRan = activateWallRun(Player.WallRun.Straight)) && player.EnableWallRunHorizontal)
+						if (!(wallRan = activateWallRun(Player.WallRun.Left)))
+							wallRan = activateWallRun(Player.WallRun.Right);
+				}
+
+				if (!vaulted && !wallRan)
+				{
+					if (player.IsSupported)
+					{
+						if (player.EnableSprint)
+							player.Sprint.Value = true;
+					}
+					else
+					{
+						// Predict block possibilities
+						Queue<Prediction> predictions = new Queue<Prediction>();
+						Vector3 jumpVelocity = startSlowMo(predictions);
+						Vector2 direction = new Vector2(jumpVelocity.X, jumpVelocity.Z);
+
+						Prediction prediction = predictions.Dequeue();
+						BlockPossibility possibility = findWall(prediction.Position, direction);
+						addBlockPossibility(possibility);
+					}
+				}
+			});
+
+			input.Bind(settings.Parkour, PCInput.InputState.Up, delegate()
+			{
+				deactivateWallRun();
+				player.Sprint.Value = false;
 				player.SlowMotion.Value = false;
 			});
 
@@ -2108,7 +2219,7 @@ namespace Lemma.Factories
 			bool rolling = false;
 			input.Bind(settings.Roll, PCInput.InputState.Down, delegate()
 			{
-				if (!aimMode && !input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !rolling && player.EnableRoll)
+				if (!aimMode && !input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !rolling && player.EnableRoll && !player.IsSwimming)
 				{
 					// Try to roll
 					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
@@ -2119,7 +2230,7 @@ namespace Lemma.Factories
 
 					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height);
 
-					bool nearGround = player.IsSupported || (player.LinearVelocity.Value.Y < 0.0f && floorRaycast.Map != null);
+					bool nearGround = player.LinearVelocity.Value.Y <= 0.0f && floorRaycast.Map != null;
 
 					bool instantiatedBlockPossibility = false;
 

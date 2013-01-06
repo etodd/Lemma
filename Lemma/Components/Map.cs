@@ -213,6 +213,11 @@ namespace Lemma.Components
 			{
 				this.Boxes.ItemAdded += delegate(int index, Box t)
 				{
+					int chunkHalfSize = this.Map.chunkHalfSize;
+					t.ChunkHash = t.Type.ID + (255 * (1
+						+ (((int)((t.X - this.X) / chunkHalfSize) * 4)
+						+ ((int)((t.Y - this.Y) / chunkHalfSize) * 2)
+						+ (int)((t.Z - this.Z) / chunkHalfSize))));
 					this.MarkDirty(t);
 					t.Added = true;
 					t.ChunkIndex = index;
@@ -344,35 +349,20 @@ namespace Lemma.Components
 				public bool Added;
 			}
 
-			private class BoxEntry
-			{
-				public BEPUphysics.Entities.Prefabs.Box PhysicsObject;
-				public bool Added;
-			}
-
 			private Dictionary<int, MeshEntry> meshes = new Dictionary<int, MeshEntry>();
-
-			private Dictionary<Box, BoxEntry> boxes = new Dictionary<Box, BoxEntry>();
-
-			private Dictionary<Box, bool> dirtyBoxes = new Dictionary<Box, bool>();
 
 			public override void MarkDirty(Box box)
 			{
 				if (this.Map.main.EditorEnabled || !this.Map.EnablePhysics)
 					return;
 
-				if (box.Type.Permanent)
+				MeshEntry entry = null;
+				if (!this.meshes.TryGetValue(box.ChunkHash, out entry))
 				{
-					MeshEntry entry = null;
-					if (!this.meshes.TryGetValue(box.Type.ID, out entry))
-					{
-						entry = new MeshEntry();
-						this.meshes[box.Type.ID] = entry;
-					}
-					entry.Dirty = true;
+					entry = new MeshEntry();
+					this.meshes[box.ChunkHash] = entry;
 				}
-				else
-					dirtyBoxes[box] = true;
+				entry.Dirty = true;
 			}
 
 			public override void Refresh()
@@ -397,7 +387,7 @@ namespace Lemma.Components
 						this.Map.main.Space.SpaceObjectBuffer.Remove(pair.Value.Mesh);
 					}
 
-					List<Box> boxes = this.Boxes.Where(x => x.Type.ID == pair.Key).ToList();
+					List<Box> boxes = this.Boxes.Where(x => x.ChunkHash == pair.Key).ToList();
 					Vector3[] vertices = new Vector3[boxes.Count * 8];
 					int[] indices = new int[boxes.SelectMany(x => x.Surfaces).Count(x => x.HasArea) * 6];
 					int vertexIndex = 0;
@@ -481,54 +471,6 @@ namespace Lemma.Components
 						this.Map.main.Space.SpaceObjectBuffer.Add(pair.Value.Mesh);
 					}
 				}
-
-				foreach (Box box in this.dirtyBoxes.Keys)
-				{
-					if (box.Active)
-					{
-						Vector3 pos = this.Map.GetAbsolutePosition(new Vector3(box.X, box.Y, box.Z) + new Vector3(box.Width * 0.5f, box.Height * 0.5f, box.Depth * 0.5f));
-
-						BoxEntry entry = null;
-						if (!this.boxes.TryGetValue(box, out entry))
-						{
-							entry = new BoxEntry();
-							entry.PhysicsObject = new BEPUphysics.Entities.Prefabs.Box(pos, box.Width, box.Height, box.Depth);
-							entry.PhysicsObject.CollisionInformation.Tag = this.Map;
-							entry.PhysicsObject.Tag = this.Map;
-							this.boxes.Add(box, entry);
-						}
-						else
-						{
-							entry.PhysicsObject.Width = box.Width;
-							entry.PhysicsObject.Height = box.Height;
-							entry.PhysicsObject.Length = box.Depth;
-						}
-						Vector3 scale, translation;
-						Quaternion quat;
-						this.Map.Transform.Value.Decompose(out scale, out quat, out translation);
-						entry.PhysicsObject.Position = pos;
-						entry.PhysicsObject.Orientation = quat;
-						if (this.Active && !entry.Added)
-						{
-							entry.Added = true;
-							this.Map.main.Space.SpaceObjectBuffer.Add(entry.PhysicsObject);
-						}
-					}
-					else
-					{
-						BoxEntry entry = null;
-						if (this.boxes.TryGetValue(box, out entry))
-						{
-							this.boxes.Remove(box);
-							if (entry.Added)
-							{
-								this.Map.main.Space.SpaceObjectBuffer.Remove(entry.PhysicsObject);
-								entry.Added = false;
-							}
-						}
-					}
-				}
-				this.dirtyBoxes.Clear();
 			}
 
 			public override void Activate()
@@ -548,14 +490,6 @@ namespace Lemma.Components
 					{
 						entry.Added = true;
 						this.Map.main.Space.SpaceObjectBuffer.Add(entry.Mesh);
-					}
-				}
-				foreach (BoxEntry entry in this.boxes.Values)
-				{
-					if (!entry.Added)
-					{
-						entry.Added = true;
-						this.Map.main.Space.SpaceObjectBuffer.Add(entry.PhysicsObject);
 					}
 				}
 			}
@@ -579,14 +513,6 @@ namespace Lemma.Components
 						this.Map.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
 					}
 				}
-				foreach (BoxEntry entry in this.boxes.Values)
-				{
-					if (entry.Added)
-					{
-						entry.Added = false;
-						this.Map.main.Space.SpaceObjectBuffer.Remove(entry.PhysicsObject);
-					}
-				}
 			}
 
 			public override void Delete()
@@ -601,17 +527,7 @@ namespace Lemma.Components
 							this.Map.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
 						}
 					}
-					foreach (BoxEntry entry in this.boxes.Values)
-					{
-						if (entry.Added)
-						{
-							entry.Added = false;
-							this.Map.main.Space.SpaceObjectBuffer.Remove(entry.PhysicsObject);
-						}
-					}
 					this.meshes.Clear();
-					this.boxes.Clear();
-					this.dirtyBoxes.Clear();
 				}
 				base.Delete();
 			}
@@ -654,9 +570,9 @@ namespace Lemma.Components
 			// Expects every dimension of A to be smaller than every dimension of B.
 			public bool Between(Coordinate a, Coordinate b)
 			{
-				return this.X >= a.X && this.X <= b.X
-					&& this.Y >= a.Y && this.Y <= b.Y
-					&& this.Z >= a.Z && this.Z <= b.Z;
+				return this.X >= a.X && this.X < b.X
+					&& this.Y >= a.Y && this.Y < b.Y
+					&& this.Z >= a.Z && this.Z < b.Z;
 			}
 
 			public IEnumerable<Coordinate> CoordinatesBetween(Coordinate b)
@@ -758,6 +674,8 @@ namespace Lemma.Components
 			public bool Added;
 			[XmlIgnore]
 			public int ChunkIndex;
+			[XmlIgnore]
+			public int ChunkHash;
 			[XmlIgnore]
 			public Chunk Chunk;
 			[XmlIgnore]
@@ -1505,6 +1423,7 @@ namespace Lemma.Components
 			if (state.ID == 0 || (!this.main.EditorEnabled && !this.EnablePhysics)) // 0 = empty
 				return false;
 
+			bool filled = false;
 			lock (this.mutationLock)
 			{
 				Chunk chunk = this.GetChunk(x, y, z);
@@ -1515,12 +1434,13 @@ namespace Lemma.Components
 					if (chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z] == null)
 					{
 						this.addBox(new Box { Type = state, X = x, Y = y, Z = z, Depth = 1, Height = 1, Width = 1 });
-						this.notifyFilled(new Coordinate[] { new Coordinate { X = x, Y = y, Z = z, Data = state } }, null);
-						return true;
+						filled = true;
 					}
 				}
-				return false;
 			}
+			if (filled)
+				this.notifyFilled(new Coordinate[] { new Coordinate { X = x, Y = y, Z = z, Data = state } }, null);
+			return filled;
 		}
 
 		private void notifyFilled(IEnumerable<Coordinate> coords, Map transferredFromMap)
@@ -2759,6 +2679,158 @@ namespace Lemma.Components
 				islands = new Box[][] { };
 		}
 
+		private bool adjacentToFilledCell(Coordinate coord)
+		{
+			return this[coord.Move(0, 0, 1)].ID != 0
+			|| this[coord.Move(0, 1, 0)].ID != 0
+			|| this[coord.Move(0, 1, 1)].ID != 0
+			|| this[coord.Move(1, 0, 0)].ID != 0
+			|| this[coord.Move(1, 0, 1)].ID != 0
+			|| this[coord.Move(1, 1, 0)].ID != 0
+			|| this[coord.Move(1, 1, 1)].ID != 0
+			|| this[coord.Move(0, 0, -1)].ID != 0
+			|| this[coord.Move(0, -1, 0)].ID != 0
+			|| this[coord.Move(0, -1, -1)].ID != 0
+			|| this[coord.Move(-1, 0, 0)].ID != 0
+			|| this[coord.Move(-1, 0, 1)].ID != 0
+			|| this[coord.Move(-1, -1, 0)].ID != 0
+			|| this[coord.Move(-1, -1, -1)].ID != 0;
+		}
+
+		public Coordinate? FindClosestAStarCell(Coordinate coord, int maxDistance = 20)
+		{
+			Map.CellState s = this[coord];
+			if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
+				return coord;
+
+			Vector3 pos = this.GetRelativePosition(coord);
+
+			Coordinate? closestCoord = null;
+
+			for (int radius = 1; radius < maxDistance; radius++)
+			{
+				float closestDistance = float.MaxValue;
+
+				// Left
+				for (int y = -radius; y <= radius; y++)
+				{
+					for (int z = -radius; z <= radius; z++)
+					{
+						Coordinate c = coord.Move(-radius, y, z);
+						s = this[c];
+						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
+						{
+							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
+							if (distance < closestDistance)
+							{
+								closestDistance = distance;
+								closestCoord = c;
+							}
+						}
+					}
+				}
+
+				// Right
+				for (int y = -radius; y <= radius; y++)
+				{
+					for (int z = -radius; z <= radius; z++)
+					{
+						Coordinate c = coord.Move(radius, y, z);
+						s = this[c];
+						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
+						{
+							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
+							if (distance < closestDistance)
+							{
+								closestDistance = distance;
+								closestCoord = c;
+							}
+						}
+					}
+				}
+
+				// Bottom
+				for (int x = -radius + 1; x < radius; x++)
+				{
+					for (int z = -radius + 1; z < radius; z++)
+					{
+						Coordinate c = coord.Move(x, -radius, z);
+						s = this[c];
+						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
+						{
+							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
+							if (distance < closestDistance)
+							{
+								closestDistance = distance;
+								closestCoord = c;
+							}
+						}
+					}
+				}
+
+				// Top
+				for (int x = -radius + 1; x < radius; x++)
+				{
+					for (int z = -radius + 1; z < radius; z++)
+					{
+						Coordinate c = coord.Move(x, radius, z);
+						s = this[c];
+						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
+						{
+							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
+							if (distance < closestDistance)
+							{
+								closestDistance = distance;
+								closestCoord = c;
+							}
+						}
+					}
+				}
+
+				// Backward
+				for (int x = -radius + 1; x < radius; x++)
+				{
+					for (int y = -radius; y <= radius; y++)
+					{
+						Coordinate c = coord.Move(x, y, -radius);
+						s = this[c];
+						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
+						{
+							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
+							if (distance < closestDistance)
+							{
+								closestDistance = distance;
+								closestCoord = c;
+							}
+						}
+					}
+				}
+
+				// Forward
+				for (int x = -radius + 1; x < radius; x++)
+				{
+					for (int y = -radius; y <= radius; y++)
+					{
+						Coordinate c = coord.Move(x, y, radius);
+						s = this[c];
+						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
+						{
+							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
+							if (distance < closestDistance)
+							{
+								closestDistance = distance;
+								closestCoord = c;
+							}
+						}
+					}
+				}
+
+				if (closestCoord.HasValue)
+					break;
+			}
+			return closestCoord;
+		}
+
 		public Coordinate? FindClosestFilledCell(Coordinate coord, int maxDistance = 20)
 		{
 			if (this[coord].ID != 0)
@@ -2912,7 +2984,7 @@ namespace Lemma.Components
 			Dictionary<Coordinate, bool> closed = new Dictionary<Coordinate, bool>();
 			Dictionary<Coordinate, AStarEntry> queueReverseLookup = new Dictionary<Coordinate, AStarEntry>();
 
-			Coordinate? closestStart = this.FindClosestFilledCell(start);
+			Coordinate? closestStart = this.FindClosestAStarCell(start, 10);
 			Coordinate? closestEnd = this.FindClosestFilledCell(end);
 
 			if (!closestStart.HasValue || !closestEnd.HasValue)

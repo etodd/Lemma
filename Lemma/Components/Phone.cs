@@ -177,7 +177,7 @@ namespace Lemma.Components
 					Incoming = true,
 					Text = msg
 				},
-#if DEBUG
+#if DEVELOPMENT
 				TimeRemaining = 0.0f,
 #else
 				TimeRemaining = time,

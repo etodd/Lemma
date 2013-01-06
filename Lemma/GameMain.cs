@@ -21,6 +21,11 @@ namespace Lemma
 {
 	public class GameMain : Main
 	{
+		public class ExitException : Exception
+		{
+
+		}
+
 		public const int Version = 1;
 
 		public class Config
@@ -303,15 +308,6 @@ namespace Lemma
 					else
 						return 0;
 				});
-
-				this.Exiting += delegate(object sender, EventArgs e)
-				{
-					if (this.MapFile.Value != null && !this.EditorEnabled)
-					{
-						this.SessionRecorder.RecordEvent("Exit");
-						this.SaveAnalytics();
-					}
-				};
 #endif
 
 				this.MapFile.Set = delegate(string value)
@@ -1196,9 +1192,16 @@ namespace Lemma
 				exit.Add(new CommandBinding<Point>(exit.MouseLeftUp, delegate(Point mouse)
 				{
 					if (this.MapFile.Value != null)
-						showDialog("Exiting will erase any unsaved progress. Are you sure?", "Exit", this.Exit);
+						showDialog
+						(
+							"Exiting will erase any unsaved progress. Are you sure?", "Exit",
+							delegate()
+							{
+								throw new ExitException();
+							}
+						);
 					else
-						this.Exit();
+						throw new ExitException();
 				}));
 				pauseMenu.Children.Add(exit);
 
@@ -1274,73 +1277,78 @@ namespace Lemma
 					}
 				}));
 
-#if DEBUG
-				// Editor instructions
-				Container editorMsgBackground = new Container();
-				this.UI.Root.Children.Add(editorMsgBackground);
-				editorMsgBackground.Tint.Value = Color.Black;
-				editorMsgBackground.Opacity.Value = 0.2f;
-				editorMsgBackground.AnchorPoint.Value = new Vector2(0.5f, 0.0f);
-				editorMsgBackground.Add(new Binding<Vector2, Point>(editorMsgBackground.Position, x => new Vector2(x.X * 0.5f, 30.0f), this.ScreenSize));
-				TextElement editorMsg = new TextElement();
-				editorMsg.FontFile.Value = "Font";
-				editorMsg.Text.Value = "Space - Show menu";
-				editorMsgBackground.Children.Add(editorMsg);
-				this.AddComponent(new Animation
-				(
-					new Animation.Delay(4.0f),
-					new Animation.Parallel
-					(
-						new Animation.FloatMoveTo(editorMsgBackground.Opacity, 0.0f, 2.0f),
-						new Animation.FloatMoveTo(editorMsg.Opacity, 0.0f, 2.0f)
-					),
-					new Animation.Execute(delegate() { this.UI.Root.Children.Remove(editorMsgBackground); })
-				));
-#else
-				// "Press space to start" screen
-
-				this.Paused.Value = true;
-				savePausedSettings();
-
-				TextElement header = new TextElement();
-				header.FontFile.Value = "Font";
-				header.Text.Value = "Alpha 3";
-				header.AnchorPoint.Value = new Vector2(0.5f, 0);
-				header.Add(new Binding<Vector2>(header.Position, () => logo.Position + new Vector2(0, 30 + (logo.InverseAnchorPoint.Value.Y * logo.ScaledSize.Value.Y)), logo.Position, logo.InverseAnchorPoint, logo.ScaledSize));
-				this.UI.Root.Children.Add(header);
-
-				UIComponent startNew = this.createMenuButton("Start New");
-				startNew.Add(new CommandBinding<Point>(startNew.MouseLeftUp, delegate(Point p)
+				if (allowEditing)
 				{
-					this.Paused.Value = false;
-					restorePausedSettings();
-					logo.Opacity.Value = 1.0f;
-					header.Opacity.Value = 1.0f;
-					header.Text.Value = "Loading...";
+					// Editor instructions
+					Container editorMsgBackground = new Container();
+					this.UI.Root.Children.Add(editorMsgBackground);
+					editorMsgBackground.Tint.Value = Color.Black;
+					editorMsgBackground.Opacity.Value = 0.2f;
+					editorMsgBackground.AnchorPoint.Value = new Vector2(0.5f, 0.0f);
+					editorMsgBackground.Add(new Binding<Vector2, Point>(editorMsgBackground.Position, x => new Vector2(x.X * 0.5f, 30.0f), this.ScreenSize));
+					TextElement editorMsg = new TextElement();
+					editorMsg.FontFile.Value = "Font";
+					editorMsg.Text.Value = "Space - Show menu";
+					editorMsgBackground.Children.Add(editorMsg);
 					this.AddComponent(new Animation
 					(
-						new Animation.Delay(0.2f),
-						new Animation.Set<string>(this.MapFile, this.initialMapFile)
+						new Animation.Delay(4.0f),
+						new Animation.Parallel
+						(
+							new Animation.FloatMoveTo(editorMsgBackground.Opacity, 0.0f, 2.0f),
+							new Animation.FloatMoveTo(editorMsg.Opacity, 0.0f, 2.0f)
+						),
+						new Animation.Execute(delegate() { this.UI.Root.Children.Remove(editorMsgBackground); })
 					));
-				}));
-				pauseMenu.Children.Insert(1, startNew);
+				}
+				else
+				{
+					// "Press space to start" screen
 
-				logo.Opacity.Value = 0.0f;
-				header.Opacity.Value = 0.0f;
+					this.Paused.Value = true;
+					savePausedSettings();
 
-				Animation fadeAnimation = new Animation
-				(
-					new Animation.Parallel
+					TextElement header = new TextElement();
+					header.FontFile.Value = "Font";
+					header.Text.Value = "Alpha 3";
+					header.AnchorPoint.Value = new Vector2(0.5f, 0);
+					header.Add(new Binding<Vector2>(header.Position, () => logo.Position + new Vector2(0, 30 + (logo.InverseAnchorPoint.Value.Y * logo.ScaledSize.Value.Y)), logo.Position, logo.InverseAnchorPoint, logo.ScaledSize));
+					this.UI.Root.Children.Add(header);
+
+					UIComponent startNew = this.createMenuButton("Start New");
+					startNew.Add(new CommandBinding<Point>(startNew.MouseLeftUp, delegate(Point p)
+					{
+						this.Paused.Value = false;
+						restorePausedSettings();
+						logo.Opacity.Value = 1.0f;
+						header.Opacity.Value = 1.0f;
+						header.Text.Value = "Loading...";
+						this.AddComponent(new Animation
+						(
+							new Animation.Delay(0.2f),
+							new Animation.Set<string>(this.MapFile, this.initialMapFile)
+						));
+					}));
+					pauseMenu.Children.Insert(1, startNew);
+
+					logo.Opacity.Value = 0.0f;
+					header.Opacity.Value = 0.0f;
+
+					Animation fadeAnimation = new Animation
 					(
-						new Animation.FloatMoveTo(logo.Opacity, 1.0f, 1.0f),
-						new Animation.FloatMoveTo(header.Opacity, 1.0f, 1.0f)
-					)
-				);
+						new Animation.Parallel
+						(
+							new Animation.FloatMoveTo(logo.Opacity, 1.0f, 1.0f),
+							new Animation.FloatMoveTo(header.Opacity, 1.0f, 1.0f)
+						)
+					);
 
-				this.AddComponent(fadeAnimation);
+					this.AddComponent(fadeAnimation);
 
-				new CommandBinding(this.MapLoaded, header.Delete);
-#endif
+					new CommandBinding(this.MapLoaded, header.Delete);
+
+					startNew.Add(new CommandBinding(this.MapLoaded, startNew.Delete));
+				}
 
 #if ANALYTICS
 				bool editorLastEnabled = this.EditorEnabled;
@@ -1365,87 +1373,85 @@ namespace Lemma
 
 				logo.Add(new CommandBinding(this.MapLoaded, delegate() { resume.Visible.Value = saveButton.Visible.Value = true; }));
 				logo.Add(new CommandBinding(this.MapLoaded, logo.Delete));
-#if !DEBUG
-				startNew.Add(new CommandBinding(this.MapLoaded, startNew.Delete));
-#endif
 			}
 		}
 
 		public void EndGame()
 		{
-#if !DEBUG
-			this.MapFile.Value = null; // Clears all the entities too
-			this.Renderer.Tint.Value = Vector3.One;
-			this.Renderer.BackgroundColor.Value = Color.Black;
-			this.IsMouseVisible.Value = true;
-
-			ListContainer list = new ListContainer();
-			list.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
-			list.Spacing.Value = 40.0f;
-			list.Alignment.Value = ListContainer.ListAlignment.Middle;
-			list.Add(new Binding<Vector2, Point>(list.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.ScreenSize));
-			this.UI.Root.Children.Add(list);
-
-			Sprite logo = new Sprite();
-			logo.Image.Value = "Images\\logo";
-			logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((this.ScreenSize.Value.X * 0.75f) / logo.Size.Value.X), this.ScreenSize, logo.Size));
-			list.Children.Add(logo);
-
-			ListContainer texts = new ListContainer();
-			texts.Spacing.Value = 40.0f;
-			list.Children.Add(texts);
-
-			Action<string> addText = delegate(string text)
+			if (!this.allowEditing)
 			{
-				TextElement element = new TextElement();
-				element.FontFile.Value = "Font";
-				element.Text.Value = text;
-				element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X * 0.5f, logo.ScaledSize));
-				texts.Children.Add(element);
-			};
+				this.MapFile.Value = null; // Clears all the entities too
+				this.Renderer.Tint.Value = Vector3.One;
+				this.Renderer.BackgroundColor.Value = Color.Black;
+				this.IsMouseVisible.Value = true;
 
-			addText("Thanks for playing! That's it for now. If you like what you see, please spread the word! Click the links below to join the discussion.");
+				ListContainer list = new ListContainer();
+				list.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
+				list.Spacing.Value = 40.0f;
+				list.Alignment.Value = ListContainer.ListAlignment.Middle;
+				list.Add(new Binding<Vector2, Point>(list.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.ScreenSize));
+				this.UI.Root.Children.Add(list);
 
-			ListContainer links = new ListContainer();
-			links.Alignment.Value = ListContainer.ListAlignment.Middle;
-			links.ResizePerpendicular.Value = false;
-			links.Spacing.Value = 20.0f;
-			links.Add(new Binding<Vector2>(links.Size, x => new Vector2(x.X * 0.5f, links.Size.Value.Y), logo.ScaledSize));
-			texts.Children.Add(links);
+				Sprite logo = new Sprite();
+				logo.Image.Value = "Images\\logo";
+				logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((this.ScreenSize.Value.X * 0.75f) / logo.Size.Value.X), this.ScreenSize, logo.Size));
+				list.Children.Add(logo);
 
-			System.Windows.Forms.Form winForm = (System.Windows.Forms.Form)System.Windows.Forms.Form.FromHandle(this.Window.Handle);
+				ListContainer texts = new ListContainer();
+				texts.Spacing.Value = 40.0f;
+				list.Children.Add(texts);
 
-			Action<string, string> addLink = delegate(string text, string url)
-			{
-				TextElement element = new TextElement();
-				element.FontFile.Value = "Font";
-				element.Text.Value = text;
-				element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X * 0.5f, logo.ScaledSize));
-				element.Add(new Binding<Color, bool>(element.Tint, x => x ? new Color(1.0f, 0.0f, 0.0f) : new Color(1.0f, 1.0f, 1.0f), element.Highlighted));
-				element.Add(new CommandBinding<Point>(element.MouseLeftUp, delegate(Point mouse)
+				Action<string> addText = delegate(string text)
 				{
-					Process.Start(new ProcessStartInfo(url));
-					if (this.graphics.IsFullScreen)
-						this.ExitFullscreen();
-				}));
-				element.Add(new CommandBinding<Point>(element.MouseOver, delegate(Point mouse)
-				{
-					winForm.Cursor = System.Windows.Forms.Cursors.Hand;
-				}));
-				element.Add(new CommandBinding<Point>(element.MouseOut, delegate(Point mouse)
-				{
-					winForm.Cursor = System.Windows.Forms.Cursors.Default;
-				}));
-				links.Children.Add(element);
-			};
-			
-			addLink("lemmagame.com", "http://lemmagame.com");
-			addLink("moddb.com/games/lemma", "http://moddb.com/games/lemma");
-			addLink("facebook.com/lemmagame", "http://facebook.com/lemmagame");
-			addLink("twitter.com/et1337", "http://twitter.com/et1337");
+					TextElement element = new TextElement();
+					element.FontFile.Value = "Font";
+					element.Text.Value = text;
+					element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X * 0.5f, logo.ScaledSize));
+					texts.Children.Add(element);
+				};
 
-			addText("Writing, programming, and artwork by Evan Todd. Sound and music by Jack Menhorn, plus some sounds from freesound.org.");
-#endif
+				addText("Thanks for playing! That's it for now. If you like what you see, please spread the word! Click the links below to join the discussion.");
+
+				ListContainer links = new ListContainer();
+				links.Alignment.Value = ListContainer.ListAlignment.Middle;
+				links.ResizePerpendicular.Value = false;
+				links.Spacing.Value = 20.0f;
+				links.Add(new Binding<Vector2>(links.Size, x => new Vector2(x.X * 0.5f, links.Size.Value.Y), logo.ScaledSize));
+				texts.Children.Add(links);
+
+				System.Windows.Forms.Form winForm = (System.Windows.Forms.Form)System.Windows.Forms.Form.FromHandle(this.Window.Handle);
+
+				Action<string, string> addLink = delegate(string text, string url)
+				{
+					TextElement element = new TextElement();
+					element.FontFile.Value = "Font";
+					element.Text.Value = text;
+					element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X * 0.5f, logo.ScaledSize));
+					element.Add(new Binding<Color, bool>(element.Tint, x => x ? new Color(1.0f, 0.0f, 0.0f) : new Color(1.0f, 1.0f, 1.0f), element.Highlighted));
+					element.Add(new CommandBinding<Point>(element.MouseLeftUp, delegate(Point mouse)
+					{
+						Process.Start(new ProcessStartInfo(url));
+						if (this.graphics.IsFullScreen)
+							this.ExitFullscreen();
+					}));
+					element.Add(new CommandBinding<Point>(element.MouseOver, delegate(Point mouse)
+					{
+						winForm.Cursor = System.Windows.Forms.Cursors.Hand;
+					}));
+					element.Add(new CommandBinding<Point>(element.MouseOut, delegate(Point mouse)
+					{
+						winForm.Cursor = System.Windows.Forms.Cursors.Default;
+					}));
+					links.Children.Add(element);
+				};
+
+				addLink("lemmagame.com", "http://lemmagame.com");
+				addLink("moddb.com/games/lemma", "http://moddb.com/games/lemma");
+				addLink("facebook.com/lemmagame", "http://facebook.com/lemmagame");
+				addLink("twitter.com/et1337", "http://twitter.com/et1337");
+
+				addText("Writing, programming, and artwork by Evan Todd. Sound and music by Jack Menhorn, plus some sounds from freesound.org.");
+			}
 		}
 
 		protected void saveSettings()

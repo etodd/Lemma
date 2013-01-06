@@ -192,7 +192,7 @@ namespace Lemma.Components
 				MaxColor = new Vector4(0.7f, 0.75f, 0.8f, 1.0f),
 			});
 
-#if DEBUG
+#if DEVELOPMENT
 			ParticleSystem.Add(main, "Debug",
 			new ParticleSystem.ParticleSettings
 			{

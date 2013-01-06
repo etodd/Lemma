@@ -281,7 +281,7 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					main.Exit();
+					throw new GameMain.ExitException();
 				}
 			});
 
