@@ -52,7 +52,11 @@ namespace Lemma.Components
 		public void Update(float elapsedTime)
 		{
 			foreach (Action<float> action in this.actions)
+			{
 				action(elapsedTime);
+				if (!this.Active)
+					break;
+			}
 		}
 	}
 }

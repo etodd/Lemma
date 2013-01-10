@@ -120,6 +120,7 @@ namespace Lemma.Components
 			public void ApplyToBlock(Entity block)
 			{
 				block.GetProperty<string>("CollisionSoundCue").Value = this.RubbleCue;
+				block.Get<PhysicsBlock>().Box.Mass = this.Density;
 				this.ApplyToEffectBlock(block.Get<ModelInstance>());
 			}
 
@@ -1168,6 +1169,7 @@ namespace Lemma.Components
 										if (chunk.DataBoxes == null)
 											chunk.DataBoxes = new List<Box>();
 										chunk.DataBoxes.Add(box);
+										box.Chunk = chunk;
 										for (int x1 = box.X - chunk.X; x1 < box.X + box.Width - chunk.X; x1++)
 										{
 											for (int y1 = box.Y - chunk.Y; y1 < box.Y + box.Height - chunk.Y; y1++)

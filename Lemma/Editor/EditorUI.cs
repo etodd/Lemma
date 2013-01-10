@@ -278,8 +278,8 @@ namespace Lemma.Components
 				else
 					properties = (IEnumerable<DictionaryEntry>)entry.Value;
 				properties = properties.Where(x => x.Value != null
-					&& (x.Value.GetType() == typeof(Command) && ((Command)x.Value).ShowInEditor)
-					|| (typeof(IProperty).IsAssignableFrom(x.Value.GetType()) && !typeof(IListProperty).IsAssignableFrom(x.Value.GetType()) && (bool)x.Value.GetType().GetProperty("Editable").GetValue(x.Value, null)));
+					&& ((x.Value.GetType() == typeof(Command) && ((Command)x.Value).ShowInEditor)
+					|| (typeof(IProperty).IsAssignableFrom(x.Value.GetType()) && !typeof(IListProperty).IsAssignableFrom(x.Value.GetType()) && (bool)x.Value.GetType().GetProperty("Editable").GetValue(x.Value, null))));
 
 				if (properties.FirstOrDefault().Value == null)
 					continue;

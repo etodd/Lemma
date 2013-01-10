@@ -55,7 +55,7 @@ namespace Lemma.Factories
 
 			model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateScale(scale) * transform.Matrix, scale, transform.Matrix));
 
-			const float volumeMultiplier = 0.1f;
+			const float volumeMultiplier = 0.05f;
 
 			physics.Add(new CommandBinding<Collidable, ContactCollection>(physics.Collided, delegate(Collidable collidable, ContactCollection contacts)
 			{

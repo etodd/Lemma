@@ -348,6 +348,15 @@ namespace Lemma.Components
 			}
 		}
 
+		public void SetSuspended(bool suspended)
+		{
+			foreach (Component c in this.components.Values.ToList())
+			{
+				if (c.Suspended.Value != suspended)
+					c.Suspended.Value = suspended;
+			}
+		}
+
 		public void Add(string name, Command cmd)
 		{
 			this.commands.Add(name, cmd);

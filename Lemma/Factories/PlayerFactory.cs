@@ -241,6 +241,7 @@ namespace Lemma.Factories
 				Entity p = phone.Value.Target;
 				if (p != null)
 				{
+					p.SetSuspended(false);
 					phoneActiveBinding = new Binding<bool>(input.Enabled, x => !x, p.GetProperty<bool>("Active"));
 					result.Add(phoneActiveBinding);
 					p.GetCommand<Entity>("Attach").Execute(result);
@@ -1395,7 +1396,7 @@ namespace Lemma.Factories
 
 			// Fall damage
 			Vector3 playerLastVelocity = Vector3.Zero;
-			const float damageVelocity = -18.0f; // Vertical velocity above which damage occurs
+			const float damageVelocity = -19.0f; // Vertical velocity above which damage occurs
 			const float rollingDamageVelocity = -22.0f; // Damage velocity when rolling
 
 			Action<float> fallDamage = delegate(float verticalVelocity)
@@ -2063,6 +2064,7 @@ namespace Lemma.Factories
 				pistolEntity = value.Target;
 				if (pistolEntity != null)
 				{
+					pistolEntity.SetSuspended(false);
 					pistolEntity.GetCommand<Property<Matrix>>("Attach").Execute(model.GetWorldBoneTransform("Pistol"));
 
 					Property<bool> pistolActive = pistolEntity.GetProperty<bool>("Active");
@@ -2110,6 +2112,7 @@ namespace Lemma.Factories
 				headlampEntity = value.Target;
 				if (headlampEntity != null)
 				{
+					headlampEntity.SetSuspended(false);
 					headlampEntity.GetCommand<Property<Matrix>>("Attach").Execute(model.GetWorldBoneTransform("Head"));
 
 					Property<bool> headlampActive = headlampEntity.GetProperty<bool>("Active");

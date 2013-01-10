@@ -568,11 +568,7 @@ namespace Lemma.Factories
 						}
 					}
 
-					foreach (Component c in entity.ComponentList.ToList())
-					{
-						if (c.Suspended.Value != suspended)
-							c.Suspended.Value = suspended;
-					}
+					entity.SetSuspended(suspended);
 				}
 			}
 		}
