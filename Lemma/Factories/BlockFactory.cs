@@ -55,12 +55,12 @@ namespace Lemma.Factories
 
 			model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateScale(scale) * transform.Matrix, scale, transform.Matrix));
 
-			const float volumeMultiplier = 0.05f;
+			const float volumeMultiplier = 0.003f;
 
 			physics.Add(new CommandBinding<Collidable, ContactCollection>(physics.Collided, delegate(Collidable collidable, ContactCollection contacts)
 			{
 				float volume = contacts[contacts.Count - 1].NormalImpulse * volumeMultiplier;
-				if (volume > 0.1f && soundCue.Value != null)
+				if (volume > 0.2f && soundCue.Value != null)
 				{
 					Sound sound = Sound.PlayCue(main, soundCue, transform.Position, volume, 0.05f);
 					if (sound != null)

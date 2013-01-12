@@ -387,6 +387,9 @@ namespace Lemma.Components
 						Property<bool> submergedProperty = entity.GetProperty<bool>("Submerged");
 						if (submergedProperty != null)
 							submergedProperty.Value = false;
+						Property<Water> waterProperty = entity.GetProperty<Water>("SubmergedWater");
+						if (waterProperty != null)
+							waterProperty.Value = null;
 						removals.Add(entity);
 					}
 				}
@@ -400,9 +403,13 @@ namespace Lemma.Components
 			foreach (Entity entity in this.detectedSubmergedEntities)
 			{
 				Property<bool> submergedProperty = entity.GetProperty<bool>("Submerged");
-				if (submergedProperty != null && !this.submergedEntities.Contains(entity))
+				Property<Water> waterProperty = entity.GetProperty<Water>("SubmergedWater");
+				if ((submergedProperty != null || waterProperty != null) && !this.submergedEntities.Contains(entity))
 				{
-					submergedProperty.Value = true;
+					if (submergedProperty != null)
+						submergedProperty.Value = true;
+					if (waterProperty != null)
+						waterProperty.Value = this;
 					this.submergedEntities.Add(entity);
 				}
 			}

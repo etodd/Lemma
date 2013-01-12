@@ -59,7 +59,8 @@ namespace Lemma.Factories
 
 			result.Add(new NotifyBinding(delegate()
 			{
-				Sound.PlayCue(main, "Headlamp");
+				if (attached)
+					Sound.PlayCue(main, "Headlamp");
 			}, active));
 
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
@@ -83,6 +84,8 @@ namespace Lemma.Factories
 				Action = delegate(Property<Matrix> parent)
 				{
 					attached.Value = true;
+
+					result.CannotSuspend = true;
 
 					Matrix rotation = Matrix.CreateRotationX((float)Math.PI * 1.0f);
 
@@ -115,6 +118,8 @@ namespace Lemma.Factories
 				{
 					attached.Value = false;
 					active.Value = false;
+
+					result.CannotSuspend = false;
 
 					physicsBinding.Enabled = true;
 

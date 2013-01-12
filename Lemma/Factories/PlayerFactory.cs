@@ -1016,6 +1016,10 @@ namespace Lemma.Factories
 
 					Matrix matrix = Matrix.CreateRotationY(rotation);
 					Vector3 forwardVector = -matrix.Forward;
+
+					if (state != Player.WallRun.Straight && Vector3.Dot(player.LinearVelocity, forwardVector) < 0.0f)
+						return false;
+
 					Vector3 wallVector = state == Player.WallRun.Straight ? forwardVector : -(state == Player.WallRun.Left ? matrix.Left : matrix.Right);
 
 					Vector3 pos = transform.Position + new Vector3(0, player.Height * -0.5f, 0);
@@ -1396,7 +1400,7 @@ namespace Lemma.Factories
 
 			// Fall damage
 			Vector3 playerLastVelocity = Vector3.Zero;
-			const float damageVelocity = -19.0f; // Vertical velocity above which damage occurs
+			const float damageVelocity = -20.0f; // Vertical velocity above which damage occurs
 			const float rollingDamageVelocity = -22.0f; // Damage velocity when rolling
 
 			Action<float> fallDamage = delegate(float verticalVelocity)
