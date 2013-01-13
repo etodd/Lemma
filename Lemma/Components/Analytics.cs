@@ -5,6 +5,8 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
 using System.IO;
+using System.Collections.Specialized;
+using System.Net;
 
 namespace Lemma.Components
 {
@@ -273,6 +275,13 @@ namespace Lemma.Components
 #if ANALYTICS
 				((GameMain)main).SessionRecorder.RecordEvent(name, data);
 #endif
+			}
+
+			public static void UploadSession(string file)
+			{
+				string url = "http://powerful-dusk-6047.herokuapp.com/" + Path.GetFileName(file);
+				new WebClient().UploadData(url, "PUT", File.ReadAllBytes(file));
+				File.Delete(file);
 			}
 
 			public const float Interval = 0.25f;

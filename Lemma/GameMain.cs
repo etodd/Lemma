@@ -202,6 +202,14 @@ namespace Lemma
 		{
 			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, this.MapFile.Value + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml"));
 		}
+
+		public string[] AnalyticsSessionFiles
+		{
+			get
+			{
+				return Directory.GetFiles(this.analyticsDirectory, "*", SearchOption.TopDirectoryOnly);
+			}
+		}
 #endif
 
 		public List<Session> LoadAnalytics(string map)

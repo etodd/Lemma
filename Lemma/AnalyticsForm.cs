@@ -7,15 +7,20 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Diagnostics;
+using Lemma.Components;
 
 namespace Lemma
 {
 	public partial class AnalyticsForm : Form
 	{
 		private string error;
-		public AnalyticsForm(string error)
+		private GameMain main;
+		private bool success;
+		private bool cancelled;
+		public AnalyticsForm(GameMain main, string error)
 		{
-			InitializeComponent();
+			this.InitializeComponent();
+			this.main = main;
 			this.error = error;
 		}
 
@@ -28,12 +33,69 @@ namespace Lemma
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			// TODO: Analytics data upload
+			this.button1.Enabled = false;
+			this.button1.Text = "Uploading";
+			this.button2.Text = "Cancel";
+			this.label2.Text = "Uploading (0%)";
+			this.backgroundWorker1.RunWorkerAsync();
 		}
 
 		private void button2_Click(object sender, EventArgs e)
 		{
-			this.Close();
+			if (this.backgroundWorker1.IsBusy)
+			{
+				this.cancelled = true;
+				this.backgroundWorker1.CancelAsync();
+				this.button2.Enabled = false;
+				this.button2.Text = "Canceling";
+			}
+			else
+				this.Close();
+		}
+
+		private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+		{
+			BackgroundWorker worker = sender as BackgroundWorker;
+
+			string[] sessionFiles = this.main.AnalyticsSessionFiles;
+			int i = 0;
+			try
+			{
+				foreach (string file in sessionFiles)
+				{
+					if (worker.CancellationPending == true)
+					{
+						e.Cancel = true;
+						break;
+					}
+					else
+					{
+#if ANALYTICS // Just to prevent compile errors
+						Session.Recorder.UploadSession(file);
+#endif
+						i++;
+						worker.ReportProgress((int)(((float)i / (float)sessionFiles.Length) * 100.0f));
+					}
+				}
+				this.success = true;
+			}
+			catch (Exception)
+			{
+
+			}
+		}
+
+		private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
+		{
+			this.label2.Text = "Uploading (" + e.ProgressPercentage.ToString() + "%";
+		}
+
+		private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+		{
+			this.button2.Enabled = true;
+			this.label2.Text = this.cancelled ? "Upload cancelled." : (this.success ? "Upload complete. Thanks!" : "Upload failed. Please try again later.");
+			this.button1.Text = "Done";
+			this.button2.Text = "Close";
 		}
 	}
 }

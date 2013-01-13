@@ -4,3 +4,6 @@
 [submodule "Lemma/Content/Maps"]
 	path = Lemma/Content/Maps
 	url = https://et1337@bitbucket.org/et1337/lemma-game-assets.git
+[submodule "LemmaAnalytics"]
+	path = LemmaAnalytics
+	url = https://et1337@bitbucket.org/et1337/lemmaanalytics.git

@@ -54,7 +54,7 @@ namespace Lemma
 				// TODO: MonoGame analytics form
 #else
 				System.Windows.Forms.Application.EnableVisualStyles();
-				AnalyticsForm analyticsForm = new AnalyticsForm(error);
+				AnalyticsForm analyticsForm = new AnalyticsForm(main, error);
 				System.Windows.Forms.Application.Run(analyticsForm);
 #endif
 #else
