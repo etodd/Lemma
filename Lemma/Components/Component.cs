@@ -10,6 +10,10 @@ namespace Lemma.Components
 {
 	public interface IComponent
 	{
+		Entity Entity { get; }
+		bool NeedsAdded { get; }
+		bool Active { get; }
+		void SetMain(Main main);
 		Property<bool> Enabled { get; }
 		Property<bool> EnabledInEditMode { get; }
 		Property<bool> EnabledWhenPaused { get; }

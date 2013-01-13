@@ -18,15 +18,13 @@ namespace Lemma.Util
 	/// <summary>
 	/// Volume in which physically simulated objects have a buoyancy force applied to them based on their density and volume.
 	/// </summary>
-	public class CustomFluidVolume : Updateable, IDuringForcesUpdateable, IUpdateableComponent
+	public class CustomFluidVolume : Updateable, IDuringForcesUpdateable
 	{
 		//The current FluidVolume implementation is awfully awful.
 		//It only currently supports horizontal surface planes, since it uses
 		//entity bounding boxes directly rather than using an affinely transformed bounding box.
 		//The 'surfacetriangles' approach to fluid volumes is pretty goofy to begin with. 
 		//A mesh-based volume would be a lot better for content development.
-
-		public Command<Entity, EntityCollidable> EntityIntersected = new Command<Entity, EntityCollidable>();
 
 		float surfacePlaneHeight;
 		Vector3 upVector;
@@ -237,11 +235,6 @@ namespace Lemma.Util
 			ThreadManager = threadManager;
 
 			analyzeCollisionEntryDelegate = AnalyzeCollisionEntry;
-
-			this.Enabled = new Property<bool>();
-			this.Suspended = new Property<bool>();
-			this.EnabledInEditMode = new Property<bool>();
-			this.EnabledWhenPaused = new Property<bool>();
 		}
 
 		/// <summary>
@@ -293,34 +286,7 @@ namespace Lemma.Util
 			collisionEntries.Clear();
 		}
 
-		// Component stuff to implement IComponent. Ugh.
-		public Property<bool> Enabled { get; set; }
-
-		public Property<bool> Suspended { get; set; }
-
-		public void LoadContent(bool reload)
-		{
-
-		}
-
-		[XmlIgnore]
-		public Property<bool> EnabledInEditMode { get; set; }
-		[XmlIgnore]
-		public Property<bool> EnabledWhenPaused { get; set; }
-
-		private List<EntityCollidable> notifyEntries = new List<EntityCollidable>();
-		void IUpdateableComponent.Update(float dt)
-		{
-			lock (this.notifyEntries)
-			{
-				foreach (EntityCollidable e in this.notifyEntries)
-				{
-					Component tag = e.Tag as Component ?? e.Entity.Tag as Component;
-					this.EntityIntersected.Execute(tag.Entity, e);
-				}
-				this.notifyEntries.Clear();
-			}
-		}
+		public List<EntityCollidable> NotifyEntries = new List<EntityCollidable>();
 
 		float dt;
 		Action<int> analyzeCollisionEntryDelegate;
@@ -375,8 +341,8 @@ namespace Lemma.Util
 						Component tag = entityEntry.Tag as Component ?? entityEntry.Entity.Tag as Component;
 						if (tag != null)
 						{
-							lock (this.notifyEntries)
-								this.notifyEntries.Add(entityEntry);
+							lock (this.NotifyEntries)
+								this.NotifyEntries.Add(entityEntry);
 						}
 					}
 				}

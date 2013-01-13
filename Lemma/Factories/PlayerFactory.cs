@@ -61,8 +61,6 @@ namespace Lemma.Factories
 			footstepTimer.Repeat.Value = true;
 			footstepTimer.Interval.Value = 0.35f;
 
-			result.Add("Submerged", new Property<bool> { Editable = false });
-
 			result.Add("Pistol", new Property<Entity.Handle> { Editable = false });
 			result.Add("Headlamp", new Property<Entity.Handle> { Editable = false });
 			result.Add("Phone", new Property<Entity.Handle> { Editable = false });
@@ -353,7 +351,20 @@ namespace Lemma.Factories
 			speedSound.Play.Execute();
 			speedSound.GetProperty("Volume").Value = 0.0f;
 
-			player.Add(new TwoWayBinding<bool>(result.GetProperty<bool>("Submerged"), player.IsSwimming));
+			// Determine if the player is swimming
+			update.Add(delegate(float dt)
+			{
+				bool swimming = false;
+				foreach (Water w in Water.ActiveInstances)
+				{
+					if (transform.Position.Value.Y < w.Position.Value.Y + 1.0f)
+					{
+						swimming = true;
+						break;
+					}
+				}
+				player.IsSwimming.Value = swimming;
+			});
 
 			// Center the damage overlay and scale it to fit the screen
 			damageOverlay.Add(new Binding<Vector2, Point>(damageOverlay.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));

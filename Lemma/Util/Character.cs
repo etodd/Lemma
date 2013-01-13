@@ -206,7 +206,7 @@ namespace Lemma.Util
 			Vector3 supportLocation, supportNormal;
 			float supportDistance;
 
-			if (this.findSupport(out supportEntityTag, out supportEntity, out supportLocation, out supportNormal, out supportDistance))
+			if (!this.IsSwimming && this.findSupport(out supportEntityTag, out supportEntity, out supportLocation, out supportNormal, out supportDistance))
 			{
 				this.SupportEntity.Value = supportEntity;
 				this.SupportLocation.Value = supportLocation;
@@ -235,7 +235,7 @@ namespace Lemma.Util
 				if (this.EnableWalking)
 				{
 					if (this.IsSwimming)
-						this.handleNoTraction(dt, 1.0f, 1.0f, 1.0f);
+						this.handleNoTraction(dt, 0.5f, 0.5f, 0.5f);
 					else
 						this.handleNoTraction(dt, 0.0f, 0.1f, 2.0f);
 				}

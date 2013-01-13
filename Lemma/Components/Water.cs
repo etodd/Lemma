@@ -9,6 +9,16 @@ namespace Lemma.Components
 {
 	public class Water : Component, IDrawableAlphaComponent, IDrawablePreFrameComponent, IUpdateableComponent
 	{
+		private static List<Water> instances = new List<Water>();
+
+		public static IEnumerable<Water> ActiveInstances
+		{
+			get
+			{
+				return instances.Where(x => !x.Suspended);
+			}
+		}
+
 		/// <summary>
 		/// A struct that represents a single vertex in the
 		/// vertex buffer.
@@ -31,10 +41,6 @@ namespace Lemma.Components
 
 		private VertexBuffer surfaceVertexBuffer;
 		private VertexBuffer underwaterVertexBuffer;
-
-		private List<Entity> submergedEntities = new List<Entity>();
-
-		private List<Entity> detectedSubmergedEntities = new List<Entity>();
 
 		private static VertexDeclaration vertexDeclaration;
 		public static VertexDeclaration VertexDeclaration
@@ -270,38 +276,9 @@ namespace Lemma.Components
 			});
 
 			this.fluid = new Util.CustomFluidVolume(Vector3.Up, this.main.Space.ForceUpdater.Gravity.Y, tris, 1000.0f, 1.25f, 0.997f, 0.2f, this.main.Space.BroadPhase.QueryAccelerator, this.main.Space.ThreadManager);
-			this.Add(new CommandBinding<Entity, BEPUphysics.Collidables.MobileCollidables.EntityCollidable>(this.fluid.EntityIntersected, delegate(Entity entity, BEPUphysics.Collidables.MobileCollidables.EntityCollidable collidable)
-			{
-				this.detectedSubmergedEntities.Add(entity);
-
-				float speed = collidable.Entity.LinearVelocity.Length();
-
-				if (speed > 9.0f && !this.submergedEntities.Contains(entity))
-				{
-					float volume = Math.Min(speed * collidable.Entity.Mass / 50.0f, 1.0f);
-					if (volume > 0.25f)
-					{
-						Sound splash = Sound.PlayCue(this.main, collidable.Entity.LinearVelocity.Y > 0.0f ? "Splash Out" : "Splash", collidable.Entity.Position, volume);
-						if (splash != null)
-							splash.GetProperty("Pitch").Value = Math.Max(0, 1.0f - (collidable.Entity.Mass / 4.0f));
-					}
-				}
-
-				if (speed < 5.0f)
-					return;
-				Random random = new Random();
-				collidable.UpdateBoundingBox();
-				BoundingBox boundingBox = collidable.BoundingBox;
-				Vector3[] particlePositions = new Vector3[30];
-
-				for (int i = 0; i < particlePositions.Length; i++)
-					particlePositions[i] = new Vector3(boundingBox.Min.X + ((float)random.NextDouble() * (boundingBox.Max.X - boundingBox.Min.X)),
-						waterHeight,
-						boundingBox.Min.Z + ((float)random.NextDouble() * (boundingBox.Max.Z - boundingBox.Min.Z)));
-
-				ParticleEmitter.Emit(this.main, "Splash", particlePositions);
-			}));
 			this.main.Space.Add(this.fluid);
+
+			instances.Add(this);
 		}
 
 		void IDrawableAlphaComponent.DrawAlpha(Microsoft.Xna.Framework.GameTime time, RenderParameters p)
@@ -375,45 +352,43 @@ namespace Lemma.Components
 			if (this.main.Paused)
 				return;
 
-			List<Entity> removals = new List<Entity>();
-			foreach (Entity entity in this.submergedEntities)
+			float waterHeight = this.Position.Value.Y;
+
+			lock (this.fluid.NotifyEntries)
 			{
-				int index = this.detectedSubmergedEntities.IndexOf(entity);
-				if (index == -1)
+				foreach (BEPUphysics.Collidables.MobileCollidables.EntityCollidable collidable in this.fluid.NotifyEntries)
 				{
-					Transform transform = entity.Get<Transform>();
-					if (transform == null || transform.Position.Value.Y > this.Position.Value.Y)
+					Component component = collidable.Tag as Component ?? collidable.Entity.Tag as Component;
+
+					float speed = collidable.Entity.LinearVelocity.Length();
+
+					if (speed > 9.0f)
 					{
-						Property<bool> submergedProperty = entity.GetProperty<bool>("Submerged");
-						if (submergedProperty != null)
-							submergedProperty.Value = false;
-						Property<Water> waterProperty = entity.GetProperty<Water>("SubmergedWater");
-						if (waterProperty != null)
-							waterProperty.Value = null;
-						removals.Add(entity);
+						float volume = Math.Min(speed * collidable.Entity.Mass / 50.0f, 1.0f);
+						if (volume > 0.25f)
+						{
+							Sound splash = Sound.PlayCue(this.main, collidable.Entity.LinearVelocity.Y > 0.0f ? "Splash Out" : "Splash", collidable.Entity.Position, volume);
+							if (splash != null)
+								splash.GetProperty("Pitch").Value = Math.Max(0, 1.0f - (collidable.Entity.Mass / 4.0f));
+						}
 					}
-				}
-				else
-					this.detectedSubmergedEntities.RemoveAt(index);
-			}
 
-			foreach (Entity entity in removals)
-				this.submergedEntities.Remove(entity);
+					if (speed < 5.0f)
+						return;
+					Random random = new Random();
+					collidable.UpdateBoundingBox();
+					BoundingBox boundingBox = collidable.BoundingBox;
+					Vector3[] particlePositions = new Vector3[30];
 
-			foreach (Entity entity in this.detectedSubmergedEntities)
-			{
-				Property<bool> submergedProperty = entity.GetProperty<bool>("Submerged");
-				Property<Water> waterProperty = entity.GetProperty<Water>("SubmergedWater");
-				if ((submergedProperty != null || waterProperty != null) && !this.submergedEntities.Contains(entity))
-				{
-					if (submergedProperty != null)
-						submergedProperty.Value = true;
-					if (waterProperty != null)
-						waterProperty.Value = this;
-					this.submergedEntities.Add(entity);
+					for (int i = 0; i < particlePositions.Length; i++)
+						particlePositions[i] = new Vector3(boundingBox.Min.X + ((float)random.NextDouble() * (boundingBox.Max.X - boundingBox.Min.X)),
+							waterHeight,
+							boundingBox.Min.Z + ((float)random.NextDouble() * (boundingBox.Max.Z - boundingBox.Min.Z)));
+
+					ParticleEmitter.Emit(this.main, "Splash", particlePositions);
 				}
+				this.fluid.NotifyEntries.Clear();
 			}
-			this.detectedSubmergedEntities.Clear();
 		}
 
 		protected override void delete()
@@ -426,7 +401,7 @@ namespace Lemma.Components
 			this.underwaterVertexBuffer.Dispose();
 			if (this.fluid.Space != null)
 				this.main.Space.Remove(this.fluid);
-			this.submergedEntities.Clear();
+			instances.Remove(this);
 			base.delete();
 		}
 	}

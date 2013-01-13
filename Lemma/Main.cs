@@ -84,9 +84,9 @@ namespace Lemma
 
 		public List<Entity> Entities;
 
-		private List<Component> componentsToRemove = new List<Component>();
-		private List<Component> componentsToAdd = new List<Component>();
-		private List<Component> components = new List<Component>();
+		private List<IComponent> componentsToRemove = new List<IComponent>();
+		private List<IComponent> componentsToAdd = new List<IComponent>();
+		private List<IComponent> components = new List<IComponent>();
 		private List<IDrawableComponent> drawables = new List<IDrawableComponent>();
 		private List<IUpdateableComponent> updateables = new List<IUpdateableComponent>();
 		private List<IDrawablePreFrameComponent> preframeDrawables = new List<IDrawablePreFrameComponent>();
@@ -155,7 +155,7 @@ namespace Lemma
 			this.Camera.Angles.Value = Vector3.Zero;
 		}
 
-		public void AddComponent(Component component)
+		public void AddComponent(IComponent component)
 		{
 			if (this.EditorEnabled || component.Entity == null || component.Entity.CannotSuspend)
 				component.Suspended.Value = false;
@@ -166,7 +166,7 @@ namespace Lemma
 			}
 		}
 
-		public void RemoveComponent(Component component)
+		public void RemoveComponent(IComponent component)
 		{
 			this.componentsToRemove.Add(component);
 		}
@@ -205,7 +205,7 @@ namespace Lemma
 			if (this.updating)
 				return;
 
-			foreach (Component c in this.componentsToAdd)
+			foreach (IComponent c in this.componentsToAdd)
 			{
 				this.components.Add(c);
 				Type t = c.GetType();
@@ -236,7 +236,7 @@ namespace Lemma
 			}
 			this.componentsToAdd.Clear();
 
-			foreach (Component c in this.componentsToRemove)
+			foreach (IComponent c in this.componentsToRemove)
 			{
 				Type t = c.GetType();
 				if (typeof(IUpdateableComponent).IsAssignableFrom(t))
@@ -379,13 +379,13 @@ namespace Lemma
 			}
 			else
 			{
-				foreach (Component c in this.components)
+				foreach (IComponent c in this.components)
 					c.LoadContent(true);
 				this.ReloadedContent.Execute();
 			}
 		}
 
-		private bool componentEnabled(Component c)
+		private bool componentEnabled(IComponent c)
 		{
 			return c.Active && c.Enabled && !c.Suspended && (!this.EditorEnabled || c.EnabledInEditMode) && (!this.Paused || c.EnabledWhenPaused);
 		}
@@ -538,7 +538,7 @@ namespace Lemma
 
 			foreach (IDrawablePreFrameComponent c in this.preframeDrawables)
 			{
-				if (this.componentEnabled((Component)c))
+				if (this.componentEnabled(c))
 					c.DrawPreFrame(gameTime, this.renderParameters);
 			}
 #if PERFORMANCE_MONITOR
@@ -570,7 +570,7 @@ namespace Lemma
 
 			foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
 			{
-				if (this.componentEnabled((Component)c))
+				if (this.componentEnabled(c))
 					c.DrawNonPostProcessed(gameTime, this.renderParameters);
 			}
 #if PERFORMANCE_MONITOR
@@ -592,7 +592,7 @@ namespace Lemma
 
 			foreach (IDrawableComponent c in this.drawables)
 			{
-				if (this.componentEnabled((Component)c))
+				if (this.componentEnabled(c))
 					c.Draw(this.GameTime, parameters);
 			}
 
@@ -604,7 +604,7 @@ namespace Lemma
 		{
 			foreach (IDrawableAlphaComponent c in this.alphaDrawables)
 			{
-				if (this.componentEnabled((Component)c))
+				if (this.componentEnabled(c))
 					c.DrawAlpha(this.GameTime, parameters);
 			}
 		}
