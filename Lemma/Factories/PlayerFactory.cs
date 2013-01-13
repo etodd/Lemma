@@ -1922,6 +1922,7 @@ namespace Lemma.Factories
 								animation = "Jump";
 								break;
 						}
+						model.Stop("JumpLeft", "JumpRight", "JumpBackward", "Jump");
 						model.StartClip(animation, 4, false, 0.1f);
 					}
 

@@ -2558,9 +2558,6 @@ namespace Lemma.Components
 			}
 			this.calculateAdjacency(boxAdditions);
 
-			foreach (Chunk chunk in this.Chunks)
-				chunk.Activate();
-
 			this.RegenerateImmediately(null);
 		}
 
@@ -4030,10 +4027,9 @@ namespace Lemma.Components
 			foreach (Box box in this.Chunks.SelectMany(x => x.Boxes))
 			{
 				bodies.Add(box.GetCompoundShapeEntry());
-				float density = box.Type.Density;
 				float v = box.Width * box.Height * box.Depth;
 				volume += v;
-				mass += v * density;
+				mass += v * box.Type.Density;
 			}
 			if (bodies.Count > 0)
 			{

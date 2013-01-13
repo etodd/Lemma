@@ -55,12 +55,12 @@ namespace Lemma
 
 		private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
 		{
-			BackgroundWorker worker = sender as BackgroundWorker;
-
-			string[] sessionFiles = this.main.AnalyticsSessionFiles;
-			int i = 0;
 			try
 			{
+#if ANALYTICS // Just to prevent compile errors
+				BackgroundWorker worker = sender as BackgroundWorker;
+				string[] sessionFiles = this.main.AnalyticsSessionFiles;
+				int i = 0;
 				foreach (string file in sessionFiles)
 				{
 					if (worker.CancellationPending == true)
@@ -70,13 +70,13 @@ namespace Lemma
 					}
 					else
 					{
-#if ANALYTICS // Just to prevent compile errors
+
 						Session.Recorder.UploadSession(file);
-#endif
 						i++;
 						worker.ReportProgress((int)(((float)i / (float)sessionFiles.Length) * 100.0f));
 					}
 				}
+#endif
 				this.success = true;
 			}
 			catch (Exception)

@@ -62,10 +62,12 @@ namespace Lemma.Factories
 
 			map.Chunks.ItemAdded += delegate(int index, Map.Chunk chunk)
 			{
-				foreach (Map.CellState state in WorldFactory.States.Values)
+				Dictionary<int, bool> models = new Dictionary<int, bool>();
+
+				Action<Map.CellState> createModel = delegate(Map.CellState state)
 				{
 					if (state.ID == 0)
-						continue; // 0 = empty
+						return; // 0 = empty
 
 					DynamicModel<Map.MapVertex> model = new DynamicModel<Map.MapVertex>(Map.MapVertex.VertexDeclaration);
 					model.EffectFile.Value = "Effects\\Environment";
@@ -122,7 +124,21 @@ namespace Lemma.Factories
 					// We have to create this binding after adding the model to the entity
 					// Because when the model loads, it automatically calculates a bounding box for it.
 					model.Add(new Binding<BoundingBox, Vector3>(model.BoundingBox, x => new BoundingBox(min - x, max - x), map.Offset));
-				}
+
+					models[state.ID] = true;
+				};
+
+				chunk.Boxes.ItemAdded += delegate(int i, Map.Box box)
+				{
+					if (!models.ContainsKey(box.Type.ID))
+						createModel(box.Type);
+				};
+
+				chunk.Boxes.ItemChanged += delegate(int i, Map.Box oldBox, Map.Box newBox)
+				{
+					if (!models.ContainsKey(newBox.Type.ID))
+						createModel(newBox.Type);
+				};
 			};
 
 			this.SetMain(result, main);
