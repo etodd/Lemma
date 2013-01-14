@@ -255,7 +255,7 @@ namespace Lemma.Util
 				{
 					RayCastResult rayHit;
 					//Fire a ray at the candidate and determine some details! 
-					if (this.main.Space.RayCast(new Ray(rayStart, Vector3.Up), this.defaultCharacterHeight - this.Body.Height, out rayHit))
+					if (this.main.Space.RayCast(new Ray(rayStart, Vector3.Up), (this.defaultCharacterHeight - this.Body.Height) + (this.defaultSupportHeight - this.SupportHeight), out rayHit))
 					{
 						foundCeiling = true;
 						break;

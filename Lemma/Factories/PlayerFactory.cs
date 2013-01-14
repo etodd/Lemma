@@ -2031,7 +2031,7 @@ namespace Lemma.Factories
 						if (player.EnableSprint)
 							player.Sprint.Value = true;
 					}
-					else
+					else if (player.EnableSlowMotion)
 					{
 						// Predict block possibilities
 						Queue<Prediction> predictions = new Queue<Prediction>();
