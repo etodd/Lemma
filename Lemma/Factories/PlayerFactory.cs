@@ -2158,7 +2158,7 @@ namespace Lemma.Factories
 					if (player.IsSupported && !player.Crouched)
 						tryLevitate();
 				}
-				else if (!aimMode && !input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && !player.IsSupported && Vector3.Dot(player.LinearVelocity, forward) > 0.0f)
+				else if (!aimMode && !input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && Vector3.Dot(player.LinearVelocity, forward) > 0.0f)
 				{
 					// Kick
 					canKick = false;
@@ -2188,7 +2188,11 @@ namespace Lemma.Factories
 					player.EnableWalking.Value = false;
 					rotationLocked.Value = true;
 
+					player.Crouched.Value = true;
+					player.AllowUncrouch.Value = false;
 					player.LinearVelocity.Value += forward * player.LinearVelocity.Value.Length() * 0.5f + new Vector3(0, player.JumpSpeed * 0.25f, 0);
+
+					Vector3 kickVelocity = player.LinearVelocity;
 
 					result.Add(new Animation
 					(
@@ -2209,10 +2213,14 @@ namespace Lemma.Factories
 								kickUpdate.Delete.Execute();
 								model.Stop("Kick");
 								player.EnableWalking.Value = true;
+								player.AllowUncrouch.Value = true;
 								rotationLocked.Value = false;
 							}
 							else
-								breakWalls(forward, right, true);
+							{
+								player.LinearVelocity.Value = new Vector3(kickVelocity.X, player.LinearVelocity.Value.Y, kickVelocity.Z);
+								breakWalls(forward, right, false);
+							}
 						}
 					};
 					result.Add(kickUpdate);

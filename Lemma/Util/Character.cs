@@ -206,24 +206,28 @@ namespace Lemma.Util
 			Vector3 supportLocation, supportNormal;
 			float supportDistance;
 
-			if (!this.IsSwimming && this.findSupport(out supportEntityTag, out supportEntity, out supportLocation, out supportNormal, out supportDistance))
+			bool foundSupport = this.findSupport(out supportEntityTag, out supportEntity, out supportLocation, out supportNormal, out supportDistance);
+
+			// Support location only has velocity if we're actually sitting on an entity, as opposed to some static geometry.
+			// linear velocity of point on body relative to center
+			Vector3 supportLocationVelocity;
+			if (supportEntity != null)
+			{
+				supportLocationVelocity = supportEntity.LinearVelocity + //linear component
+											Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
+				supportEntity.ActivityInformation.Activate();
+			}
+			else
+				supportLocationVelocity = new Vector3();
+
+			if (!this.IsSwimming
+				&& foundSupport
+				&& this.Body.LinearVelocity.Y < supportLocationVelocity.Y + 2.0f)
 			{
 				this.SupportEntity.Value = supportEntity;
 				this.SupportLocation.Value = supportLocation;
 				this.IsSupported.Value = true;
-				// Support location only has velocity if we're actually sitting on an entity, as opposed to some static geometry.
-				Vector3 supportLocationVelocity;
-				if (supportEntity != null)
-				{
-					supportLocationVelocity = supportEntity.LinearVelocity + //linear component
-											  Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
-					supportEntity.ActivityInformation.Activate();
-				}
-				else
-					supportLocationVelocity = new Vector3();
-				// linear velocity of point on body relative to center
-
-				this.support(supportLocationVelocity, supportNormal, supportDistance);
+				this.support(supportLocationVelocity, supportNormal, supportDistance, dt);
 				this.HasTraction.Value = this.isSupportSlopeWalkable(supportNormal);
 				this.handleHorizontalMotion(supportLocationVelocity, supportNormal, dt);
 			}
@@ -239,7 +243,6 @@ namespace Lemma.Util
 					else
 						this.handleNoTraction(dt, 0.0f, 0.1f, 2.0f);
 				}
-				
 			}
 
 			if (this.Crouched && this.AllowUncrouch)
@@ -371,17 +374,22 @@ namespace Lemma.Util
 		/// <param name="supportLocationVelocity">Velocity of the support point connected to the supportEntity.</param>
 		/// <param name="supportNormal">The normal at the surface where the ray hit the entity.</param>
 		/// <param name="supportDistance">Distance from the character to the support location.</param>
-		private void support(Vector3 supportLocationVelocity, Vector3 supportNormal, float supportDistance)
+		private void support(Vector3 supportLocationVelocity, Vector3 supportNormal, float supportDistance, float dt)
 		{
 			//Put the character at the right distance from the ground.
 			float heightDifference = this.SupportHeight - supportDistance;
-			this.Body.Position += (new Vector3(0, heightDifference, 0));
+			if (heightDifference > 0.0f)
+			{
+				this.Body.Position += new Vector3(0, Math.Min(heightDifference, supportLocationVelocity.Y + (10.0f * dt)), 0);
 
-			//Remove from the character velocity which would push it toward or away from the surface.
-			//This is a relative velocity, so the velocity of the body and the velocity of a point on the support entity must be found.
-			float bodyNormalVelocity = Vector3.Dot(this.Body.LinearVelocity, supportNormal);
-			float supportEntityNormalVelocity = Vector3.Dot(supportLocationVelocity, supportNormal);
-			this.Body.LinearVelocity -= (bodyNormalVelocity - supportEntityNormalVelocity) * supportNormal;
+				//Remove from the character velocity which would push it toward or away from the surface.
+				//This is a relative velocity, so the velocity of the body and the velocity of a point on the support entity must be found.
+				float bodyNormalVelocity = Vector3.Dot(this.Body.LinearVelocity, supportNormal);
+				float supportEntityNormalVelocity = Vector3.Dot(supportLocationVelocity, supportNormal);
+				this.Body.LinearVelocity -= (bodyNormalVelocity - supportEntityNormalVelocity) * supportNormal;
+			}
+			else if (this.Body.LinearVelocity.Y < supportLocationVelocity.Y)
+				this.Body.LinearVelocity += new Vector3(0, heightDifference, 0);
 		}
 
 		/// <summary>
