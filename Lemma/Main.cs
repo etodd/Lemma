@@ -370,7 +370,7 @@ namespace Lemma
 				addLabel("Post-process", this.postProcessTime);
 
 				PCInput input = new PCInput();
-				input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.P }), delegate()
+				input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.P }), delegate()
 				{
 					performanceMonitor.Visible.Value = !performanceMonitor.Visible;
 				}));

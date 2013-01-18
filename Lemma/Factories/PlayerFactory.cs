@@ -1933,7 +1933,6 @@ namespace Lemma.Factories
 								animation = "Jump";
 								break;
 						}
-						model.Stop("JumpLeft", "JumpRight", "JumpBackward", "Jump");
 						model.StartClip(animation, 4, false, 0.1f);
 					}
 
@@ -2040,7 +2039,8 @@ namespace Lemma.Factories
 
 						Prediction prediction = predictions.Dequeue();
 						BlockPossibility possibility = findWall(prediction.Position, direction);
-						addBlockPossibility(possibility);
+						if (possibility != null)
+							addBlockPossibility(possibility);
 					}
 				}
 			});
