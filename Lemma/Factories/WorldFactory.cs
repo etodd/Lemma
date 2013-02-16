@@ -436,7 +436,20 @@ namespace Lemma.Factories
 					SpecularIntensity = 0.5f,
 					AllowAlpha = true,
 					Tiling = 2.0f,
-				}
+				},
+                new Map.CellState
+                {
+                    ID = 30,
+                    Name = "White",
+                    Permanent = false,
+                    Density = 0.5f,
+                    DiffuseMap = "Maps\\Textures\\white",
+                    NormalMap = "Maps\\Textures\\plain-normal",
+                    FootstepCue = "MetalFootsteps",
+                    RubbleCue = "MetalRubble",
+                    SpecularIntensity = 0.0f,
+                    Glow = true,
+                }
 			);
 		}
 

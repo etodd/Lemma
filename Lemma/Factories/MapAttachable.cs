@@ -12,6 +12,7 @@ namespace Lemma.Factories
 		public static void MakeAttachable(Entity entity, Main main)
 		{
 			Transform transform = entity.Get<Transform>();
+			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
 			Property<Entity.Handle> map = entity.GetOrMakeProperty<Entity.Handle>("AttachedMap");
 			Property<Map.Coordinate> coord = entity.GetOrMakeProperty<Map.Coordinate>("AttachedCoordinate");
 
@@ -32,7 +33,7 @@ namespace Lemma.Factories
 				}
 
 				Map m = map.Value.Target.Get<Map>();
-				coord.Value = m.GetCoordinate(transform.Position);
+				coord.Value = m.GetCoordinate(Vector3.Transform(new Vector3(0, 0, attachOffset), transform.Matrix));
 
 				Matrix offset = transform.Matrix * Matrix.Invert(Matrix.CreateTranslation(m.Offset) * m.Transform);
 
@@ -65,45 +66,50 @@ namespace Lemma.Factories
 				{
 					if (map.Value.Target == null)
 					{
-						bool found = false;
+						Map closestMap = null;
+						int closestDistance = 3;
+						float closestFloatDistance = 3.0f;
+						Vector3 target = Vector3.Transform(new Vector3(0, 0, attachOffset), transform.Matrix);
 						foreach (Map m in Map.Maps)
 						{
-							Map.Coordinate c = m.GetCoordinate(transform.Position);
-							Map.Chunk chunk = m.GetChunk(c, false);
-							if (chunk != null)
+							Map.Coordinate targetCoord = m.GetCoordinate(target);
+							Map.Coordinate? c = m.FindClosestFilledCell(targetCoord, closestDistance);
+							if (c.HasValue)
 							{
-								if (chunk.Instantiated)
+								float distance = (m.GetRelativePosition(c.Value) - m.GetRelativePosition(targetCoord)).Length();
+								if (distance < closestFloatDistance)
 								{
-									if (m[c].ID != 0)
-									{
-										map.Value = m.Entity;
-										found = true;
-										break;
-									}
-								}
-								else
-								{
-									foreach (Map.Box b in chunk.DataBoxes)
-									{
-										if (b.Contains(c))
-										{
-											map.Value = m.Entity;
-											found = true;
-											break;
-										}
-									}
-									if (found)
-										break;
+									closestFloatDistance = distance;
+									closestDistance = (int)Math.Floor(distance);
+									closestMap = m;
 								}
 							}
 						}
-						if (!found)
+						if (closestMap == null)
 							entity.Delete.Execute();
+						else
+							map.Value = closestMap.Entity;
 					}
 					else
 						map.Reset();
 				}
 			});
+		}
+
+		public static void AttachEditorComponents(Entity result, Main main, Property<Vector3> color = null)
+		{
+			Model model = new Model();
+			model.Filename.Value = "Models\\cone";
+			if (color != null)
+				model.Add(new Binding<Vector3>(model.Color, color));
+			model.IsInstanced.Value = false;
+			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(1.0f, 1.0f, x), result.GetOrMakeProperty<float>("AttachmentOffset", true)));
+			model.Editable = false;
+			model.Serialize = false;
+
+			result.Add("EditorModel2", model);
+
+			model.Add(new Binding<Matrix>(model.Transform, result.Get<Transform>().Matrix));
 		}
 	}
 }

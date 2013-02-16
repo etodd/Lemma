@@ -1981,8 +1981,8 @@ namespace Lemma.Factories
 			input.Bind(settings.Jump, PCInput.InputState.Down, delegate()
 			{
 				// Don't allow vaulting
-				// Also don't try anything if we're in the middle of vaulting
-				if (vaultMover == null && !jump(false, false) && player.EnableSlowMotion)
+				// Also don't try anything if we're crouched or in the middle of vaulting
+				if (vaultMover == null && !jump(false, false) && player.EnableSlowMotion && !player.Crouched)
 				{
 					Queue<Prediction> predictions = new Queue<Prediction>();
 					Vector3 jumpVelocity = startSlowMo(predictions);
@@ -2138,6 +2138,38 @@ namespace Lemma.Factories
 				}
 			};
 
+			Action<Map, Map.Coordinate, Direction, Direction> buildFloor = delegate(Map floorMap, Map.Coordinate floorCoordinate, Direction forwardDir, Direction rightDir)
+			{
+				List<AnimatingBlock> buildCoords = new List<AnimatingBlock>();
+
+				Map.Coordinate newFloorCoordinate = floorMap.GetCoordinate(transform.Position);
+
+				floorCoordinate.SetComponent(rightDir, newFloorCoordinate.GetComponent(rightDir));
+				floorCoordinate.SetComponent(forwardDir, newFloorCoordinate.GetComponent(forwardDir));
+
+				Map.CellState fillState = WorldFactory.StatesByName["Temporary"];
+
+				const int radius = 3;
+				for (Map.Coordinate x = floorCoordinate.Move(rightDir, -radius); x.GetComponent(rightDir) < floorCoordinate.GetComponent(rightDir) + radius; x = x.Move(rightDir))
+				{
+					int dx = x.GetComponent(rightDir) - floorCoordinate.GetComponent(rightDir);
+					for (Map.Coordinate y = x.Move(forwardDir, -radius); y.GetComponent(forwardDir) < floorCoordinate.GetComponent(forwardDir) + radius; y = y.Move(forwardDir))
+					{
+						int dy = y.GetComponent(forwardDir) - floorCoordinate.GetComponent(forwardDir);
+						if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && floorMap[y].ID == 0)
+						{
+							buildCoords.Add(new AnimatingBlock
+							{
+								Map = floorMap,
+								Coord = y,
+								State = fillState,
+							});
+						}
+					}
+				}
+				buildBlocks(buildCoords, false);
+			};
+
 			float lastFire = 0.0f;
 			const float fireInterval = 0.15f;
 			input.Bind(settings.Fire, PCInput.InputState.Down, delegate()
@@ -2146,11 +2178,14 @@ namespace Lemma.Factories
 				Vector3 forward = -rotationMatrix.Forward;
 				Vector3 right = rotationMatrix.Right;
 				Entity p = pistol.Value.Target;
-				if (p != null && player.IsSupported && !player.Crouched && p.GetProperty<bool>("Active") && main.TotalTime - lastFire > fireInterval && p.GetProperty<int>("Ammo") > 0)
+				if (p != null && player.IsSupported && !player.Crouched && p.GetProperty<bool>("Active"))
 				{
-					// Fire pistol
-					lastFire = main.TotalTime;
-					fire = true;
+					if (main.TotalTime - lastFire > fireInterval && p.GetProperty<int>("Ammo") > 0)
+					{
+						// Fire pistol
+						lastFire = main.TotalTime;
+						fire = true;
+					}
 				}
 				else if (levitationMode)
 				{
@@ -2201,6 +2236,21 @@ namespace Lemma.Factories
 					));
 					model.StartClip("Kick", 5, false);
 
+					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
+
+					Map.GlobalRaycastResult floorRaycast = new Map.GlobalRaycastResult();
+
+					bool shouldBuildFloor = !player.IsSupported && player.EnableEnhancedWallRun && player.LinearVelocity.Value.Y <= 0.0f && (floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height)).Map != null;
+
+					Direction forwardDir = Direction.None;
+					Direction rightDir = Direction.None;
+
+					if (shouldBuildFloor)
+					{
+						forwardDir = floorRaycast.Map.GetRelativeDirection(forward);
+						rightDir = floorRaycast.Map.GetRelativeDirection(right);
+					}
+
 					Updater kickUpdate = null;
 					float kickTime = 0.0f;
 					kickUpdate = new Updater
@@ -2220,6 +2270,8 @@ namespace Lemma.Factories
 							{
 								player.LinearVelocity.Value = new Vector3(kickVelocity.X, player.LinearVelocity.Value.Y, kickVelocity.Z);
 								breakWalls(forward, right, false);
+								if (shouldBuildFloor)
+									buildFloor(floorRaycast.Map, floorRaycast.Coordinate.Value, forwardDir, rightDir);
 							}
 						}
 					};
@@ -2257,7 +2309,7 @@ namespace Lemma.Factories
 
 					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height);
 
-					bool nearGround = player.LinearVelocity.Value.Y <= 0.0f && floorRaycast.Map != null;
+					bool nearGround = (player.IsSupported || player.LinearVelocity.Value.Y <= 0.0f) && floorRaycast.Map != null;
 
 					bool instantiatedBlockPossibility = false;
 
@@ -2335,7 +2387,7 @@ namespace Lemma.Factories
 						// If the player is not yet supported, that means they're just about to land.
 						// So give them a little speed boost for having such good timing.
 
-						bool buildFloor = !player.IsSupported && player.EnableEnhancedWallRun;
+						bool shouldBuildFloor = !player.IsSupported && player.EnableEnhancedWallRun;
 
 						Vector3 velocity = forward * player.MaxSpeed * (player.IsSupported ? 0.75f : 1.25f);
 						player.LinearVelocity.Value = new Vector3(velocity.X, 0.0f, velocity.Z);
@@ -2356,7 +2408,7 @@ namespace Lemma.Factories
 								rollTime += dt;
 
 								// Stop if we're about to roll off the edge of an instaniated block possibility.
-								bool stop = instantiatedBlockPossibility && !buildFloor && rollTime > 0.1f && Map.GlobalRaycast(transform.Position + forward * 0.5f, Vector3.Down, player.Height * 0.5f + player.SupportHeight + 1.1f).Map != null;
+								bool stop = instantiatedBlockPossibility && !shouldBuildFloor && rollTime > 0.1f && Map.GlobalRaycast(transform.Position + forward * 0.5f, Vector3.Down, player.Height * 0.5f + player.SupportHeight + 1.1f).Map != null;
 
 								if (stop || rollTime > 1.0f || Vector3.Dot(player.LinearVelocity, forward) < 0.1f)
 								{
@@ -2375,37 +2427,8 @@ namespace Lemma.Factories
 								{
 									player.LinearVelocity.Value = new Vector3(velocity.X, player.LinearVelocity.Value.Y, velocity.Z);
 									breakWalls(forward, right, false);
-									if (buildFloor)
-									{
-										List<AnimatingBlock> buildCoords = new List<AnimatingBlock>();
-
-										Map.Coordinate newFloorCoordinate = floorMap.GetCoordinate(transform.Position);
-
-										floorCoordinate.SetComponent(rightDir, newFloorCoordinate.GetComponent(rightDir));
-										floorCoordinate.SetComponent(forwardDir, newFloorCoordinate.GetComponent(forwardDir));
-
-										Map.CellState fillState = WorldFactory.StatesByName["Temporary"];
-
-										const int radius = 3;
-										for (Map.Coordinate x = floorCoordinate.Move(rightDir, -radius); x.GetComponent(rightDir) < floorCoordinate.GetComponent(rightDir) + radius; x = x.Move(rightDir))
-										{
-											int dx = x.GetComponent(rightDir) - floorCoordinate.GetComponent(rightDir);
-											for (Map.Coordinate y = x.Move(forwardDir, -radius); y.GetComponent(forwardDir) < floorCoordinate.GetComponent(forwardDir) + radius; y = y.Move(forwardDir))
-											{
-												int dy = y.GetComponent(forwardDir) - floorCoordinate.GetComponent(forwardDir);
-												if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && floorMap[y].ID == 0)
-												{
-													buildCoords.Add(new AnimatingBlock
-													{
-														Map = floorMap,
-														Coord = y,
-														State = fillState,
-													});
-												}
-											}
-										}
-										buildBlocks(buildCoords, false);
-									}
+									if (shouldBuildFloor)
+										buildFloor(floorMap, floorCoordinate, forwardDir, rightDir);
 								}
 							}
 						};

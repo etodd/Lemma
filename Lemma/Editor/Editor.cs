@@ -440,17 +440,17 @@ namespace Lemma.Components
 							if (this.VoxelSelectionActive)
 							{
 								foreach (Map.Coordinate c in this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd))
-									map.Fill(c, generator[c]);
+									map.Fill(c, generator.GetValue(map, c));
 							}
 							else
-								this.brushStroke(map, coord, this.BrushSize, x => generator[x], true, false);
+								this.brushStroke(map, coord, this.BrushSize, x => generator.GetValue(map, x), true, false);
 						}
 						else if (this.Empty)
 						{
 							if (this.VoxelSelectionActive)
-								map.Empty(this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd).Where(x => generator[x].ID == 0));
+								map.Empty(this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd).Where(x => generator.GetValue(map, x).ID == 0));
 							else
-								this.brushStroke(map, coord, this.BrushSize, x => generator[x], false, true);
+								this.brushStroke(map, coord, this.BrushSize, x => generator.GetValue(map, x), false, true);
 						}
 					}
 					else

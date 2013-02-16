@@ -149,15 +149,6 @@ namespace Lemma.Components
 			// Third octave
 			value += this.noise3d(sampleVector / this.PrimaryOctave3) * 0.4f;
 			
-			// Less dense toward the top
-			// Height attenuated by 2D noise function
-			float height = (0.5f + (this.noise2d(new Vector2(sample.X, sample.Y) / this.HeightOctave) * 0.5f)) * (this.Ceiling - this.Floor);
-			value -= ((sample.Y - this.Floor) / (this.Ceiling - this.Floor));
-			
-			// Solid at the bottom
-			if (sample.Y < this.Floor + this.FloorDepth)
-				value += (this.Floor + this.FloorDepth - sample.Y) / this.FloorDepth;
-			
 			return value;
 		}
 
@@ -187,16 +178,11 @@ namespace Lemma.Components
 
 		public Property<float> SecondaryFillThreshold = new Property<float> { Value = 0.2f };
 
-		public Map.CellState this[Map.Coordinate coord]
+		public Map.CellState GetValue(Map map, Map.Coordinate coord)
 		{
-			get
-			{
-				return this.GetValue(coord);
-			}
-		}
-
-		public Map.CellState GetValue(Map.Coordinate coord)
-		{
+			coord.X -= map.MinX;
+			coord.Y -= map.MinY;
+			coord.Z -= map.MinZ;
 			float value = this.density(coord);
 
 			if (value > this.PrimaryFillThreshold)

@@ -220,9 +220,7 @@ namespace Lemma.Util
 			else
 				supportLocationVelocity = new Vector3();
 
-			if (!this.IsSwimming
-				&& foundSupport
-				&& this.Body.LinearVelocity.Y < supportLocationVelocity.Y + 2.0f)
+			if (!this.IsSwimming && foundSupport)
 			{
 				this.SupportEntity.Value = supportEntity;
 				this.SupportLocation.Value = supportLocation;
@@ -317,15 +315,16 @@ namespace Lemma.Util
 				foreach (Vector3 rayStart in this.rayOffsets.Select(x => x + rayOrigin))
 				{
 					RayHit rayHit;
-					//Fire a ray at the candidate and determine some details! 
+					//Fire a ray at the candidate and determine some details!
 					if (candidate.RayCast(new Ray(rayStart, Vector3.Down), maximumDistance, out rayHit))
 					{
 						//We want to find the closest support, so compare it against the last closest support.
-						if (rayHit.T < supportDistance && Vector3.Dot(rayHit.Normal, Vector3.Up) > 0.25f)
+						Vector3 n = Vector3.Normalize(rayHit.Normal);
+						if (rayHit.T < supportDistance && Vector3.Dot(n, Vector3.Up) > 0.25f)
 						{
 							supportDistance = rayHit.T;
 							supportLocation = rayHit.Location;
-							supportNormal = rayHit.T > 0 ? rayHit.Normal : Vector3.Up;
+							supportNormal = rayHit.T > 0 ? n : Vector3.Up;
 
 							var entityInfo = candidate as EntityCollidable;
 							if (entityInfo != null)
@@ -348,12 +347,10 @@ namespace Lemma.Util
 				{
 					Vector3 normal = (contact.Position - this.Body.Position).SetComponent(Direction.PositiveY, 0);
 					float length = normal.Length();
-					if (length > 0.0f)
+					if (length > 0.5f)
 						this.Body.LinearVelocity += -0.1f * (normal / length);
 				}
 			}
-
-			supportNormal.Normalize();
 			return isSupported;
 		}
 
@@ -365,7 +362,7 @@ namespace Lemma.Util
 		private bool isSupportSlopeWalkable(Vector3 supportNormal)
 		{
 			//The following operation is equivalent to performing a dot product between the support normal and Vector3.Down and finding the angle it represents using Acos.
-			return Math.Acos(Math.Abs(Math.Min(supportNormal.Y, 1))) <= MaxSlope;
+			return Math.Acos(Math.Abs(Math.Min(supportNormal.Y, 1))) <= this.MaxSlope;
 		}
 
 		/// <summary>

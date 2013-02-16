@@ -207,7 +207,7 @@ namespace Lemma.Components
 			public ListProperty<Box> Boxes = new ListProperty<Box>();
 			public BoundingBox RelativeBoundingBox;
 			public int IndexX, IndexY, IndexZ;
-			public bool Instantiated;
+
 			public List<Box> DataBoxes;
 
 			public Chunk()
@@ -245,40 +245,33 @@ namespace Lemma.Components
 
 			public void Instantiate()
 			{
-				if (!this.Instantiated && this.DataBoxes != null)
+				foreach (Box b in this.DataBoxes)
+					this.Map.addBoxWithoutAdjacency(b);
+
+				foreach (Box box in this.DataBoxes)
 				{
-					foreach (Box b in this.DataBoxes)
-						this.Map.addBoxWithoutAdjacency(b);
+					for (int i = 0; i < 6; i++)
+						box.Surfaces[i].RefreshTransform(box, (Direction)i);
+					this.Boxes.Add(box);
+				}
 
-					foreach (Box box in this.DataBoxes)
+				this.DataBoxes.Clear();
+				this.DataBoxes = null;
+
+				if (!this.Map.main.EditorEnabled && !this.Map.EnablePhysics)
+				{
+					this.freeData();
+					foreach (Box box in this.Boxes)
 					{
-						for (int i = 0; i < 6; i++)
-							box.Surfaces[i].RefreshTransform(box, (Direction)i);
-						this.Boxes.Add(box);
-					}
-
-					this.DataBoxes.Clear();
-					this.DataBoxes = null;
-
-					if (!this.Map.main.EditorEnabled && !this.Map.EnablePhysics)
-					{
-						this.freeData();
-						foreach (Box box in this.Boxes)
-						{
-							box.Adjacent.Clear();
-							box.Adjacent = null;
-						}
+						box.Adjacent.Clear();
+						box.Adjacent = null;
 					}
 				}
-				this.Instantiated = true;
-				this.Refresh();
 			}
 
 			public virtual void Activate()
 			{
 				this.Active = true;
-				if (!this.Instantiated)
-					this.Instantiate();
 			}
 
 			public virtual void Deactivate()
@@ -320,19 +313,6 @@ namespace Lemma.Components
 				}
 				this.Boxes.Clear();
 				this.Boxes = null;
-				if (this.DataBoxes != null)
-				{
-					foreach (Box box in this.DataBoxes)
-					{
-						if (box.Adjacent != null)
-						{
-							box.Adjacent.Clear();
-							box.Adjacent = null;
-						}
-					}
-					this.DataBoxes.Clear();
-				}
-				this.DataBoxes = null;
 			}
 
 			public virtual void MarkDirty(Box box)
@@ -893,6 +873,60 @@ namespace Lemma.Components
 		protected int maxY;
 		protected int maxZ;
 
+		[XmlIgnore]
+		public int MinX
+		{
+			get
+			{
+				return this.minX;
+			}
+		}
+
+		[XmlIgnore]
+		public int MinY
+		{
+			get
+			{
+				return this.minY;
+			}
+		}
+
+		[XmlIgnore]
+		public int MinZ
+		{
+			get
+			{
+				return this.minZ;
+			}
+		}
+
+		[XmlIgnore]
+		public int MaxX
+		{
+			get
+			{
+				return this.minX;
+			}
+		}
+
+		[XmlIgnore]
+		public int MaxY
+		{
+			get
+			{
+				return this.minY;
+			}
+		}
+
+		[XmlIgnore]
+		public int MaxZ
+		{
+			get
+			{
+				return this.minZ;
+			}
+		}
+
 		protected int maxChunks;
 		protected int chunkHalfSize;
 		protected int chunkSize;
@@ -1057,11 +1091,6 @@ namespace Lemma.Components
 					this.applyChanges(boxes, modifications);
 
 					boxes = this.Chunks.SelectMany(x => x.Boxes).ToList();
-					foreach (Chunk chunk in this.Chunks)
-					{
-						if (chunk.DataBoxes != null) // Include any boxes that have not yet been instantiated
-							boxes.AddRange(chunk.DataBoxes);
-					}
 
 					result.Add(boxes.Count);
 
@@ -1215,9 +1244,11 @@ namespace Lemma.Components
 			Map.Maps.Add(this);
 		}
 
-		protected virtual void postDeserialization()
+		protected void postDeserialization()
 		{
-
+			foreach (Chunk c in this.Chunks)
+				c.Instantiate();
+			this.updatePhysics();
 		}
 
 		protected static string serializeData(int[] data)
@@ -1431,8 +1462,6 @@ namespace Lemma.Components
 				Chunk chunk = this.GetChunk(x, y, z);
 				if (chunk != null)
 				{
-					if (!chunk.Instantiated)
-						chunk.Instantiate();
 					if (chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z] == null)
 					{
 						this.addBox(new Box { Type = state, X = x, Y = y, Z = z, Depth = 1, Height = 1, Width = 1 });
@@ -1463,11 +1492,6 @@ namespace Lemma.Components
 			{
 				foreach (Chunk chunk in this.Chunks)
 				{
-					if (chunk.DataBoxes != null && chunk.DataBoxes.Count > 0)
-					{
-						completelyEmptied = false;
-						break;
-					}
 					foreach (Box box in chunk.Boxes)
 					{
 						if (box.Active)
@@ -1498,9 +1522,6 @@ namespace Lemma.Components
 
 					if (chunk == null || (!this.main.EditorEnabled && !this.EnablePhysics))
 						continue;
-
-					if (!chunk.Instantiated)
-						chunk.Instantiate();
 
 					Box box = chunk.Data[coord.X - chunk.X, coord.Y - chunk.Y, coord.Z - chunk.Z];
 					if (box != null && (!box.Type.Permanent || this.main.EditorEnabled))
@@ -1643,9 +1664,6 @@ namespace Lemma.Components
 
 				if (chunk == null || (!this.main.EditorEnabled && !this.EnablePhysics))
 					return false;
-
-				if (!chunk.Instantiated)
-					chunk.Instantiate();
 
 				Box box = chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];
 				if (box != null && (!box.Type.Permanent || this.main.EditorEnabled))
@@ -3510,7 +3528,7 @@ namespace Lemma.Components
 
 			foreach (Chunk c in this.rasterizeChunks(start, end))
 			{
-				if (c == null || !c.Active || !c.Instantiated)
+				if (c == null || !c.Active)
 					continue;
 
 				Vector3 min = new Vector3(c.X, c.Y, c.Z), max = new Vector3(c.X + this.chunkSize, c.Y + this.chunkSize, c.Z + this.chunkSize);
@@ -3754,19 +3772,21 @@ namespace Lemma.Components
 			get
 			{
 				if (!this.main.EditorEnabled && !this.EnablePhysics)
-					return new Map.CellState();
+					return new CellState();
 
 				Chunk chunk = this.GetChunk(x, y, z, false);
 				if (chunk == null)
-					return new Map.CellState();
-				else
+					return new CellState();
+				else if (chunk.Data != null)
 				{
 					Box box = chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];
 					if (box == null)
-						return new Map.CellState();
+						return new CellState();
 					else
 						return box.Type;
 				}
+				else
+					return new CellState();
 			}
 		}
 
@@ -3935,11 +3955,6 @@ namespace Lemma.Components
 			Chunk chunk = new Chunk();
 			chunk.Map = this;
 			return chunk;
-		}
-
-		protected override void postDeserialization()
-		{
-			this.updatePhysics();
 		}
 
 		public override void InitializeProperties()

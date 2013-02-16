@@ -116,15 +116,19 @@ namespace Lemma.Components
 
 		public const float CharacterRadius = 1.75f;
 
-		public const float DefaultCharacterHeight = 3.0f;
+		public const float DefaultCharacterHeight = 2.75f;
 
 		public const float CrouchedCharacterHeight = 2.0f;
+
+		public const float DefaultSupportHeight = 1.25f;
+
+		public const float CrouchedSupportHeight = 0.5f;
 
 		public override void InitializeProperties()
 		{
 			this.Editable = false;
 			this.EnabledWhenPaused.Value = false;
-			this.character = new Character(this.main, Vector3.Zero, DefaultCharacterHeight, CrouchedCharacterHeight, CharacterRadius, 1.25f, 0.5f, 4.0f);
+			this.character = new Character(this.main, Vector3.Zero, DefaultCharacterHeight, CrouchedCharacterHeight, CharacterRadius, DefaultSupportHeight, CrouchedSupportHeight, 4.0f);
 			this.character.IsUpdating = false;
 			this.character.Body.Tag = this;
 			this.main.Space.Add(this.character);

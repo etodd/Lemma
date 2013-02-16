@@ -44,7 +44,8 @@ namespace Lemma.Factories
 		{
 			Model model = new Model();
 			model.Filename.Value = "Models\\light";
-			model.Add(new Binding<Vector3>(model.Color, result.Get<SpotLight>().Color));
+			Property<Vector3> color = result.Get<SpotLight>().Color;
+			model.Add(new Binding<Vector3>(model.Color, color));
 			model.Add(new Binding<Matrix>(model.Transform, result.Get<Transform>().Matrix));
 			model.Editable = false;
 			model.Serialize = false;
@@ -52,10 +53,12 @@ namespace Lemma.Factories
 			result.Add("EditorModel", model);
 
 			model.Add(new Binding<Matrix>(model.Transform, delegate(Matrix x)
-				{
-					x.Forward *= -1.0f;
-					return x;
-				}, result.Get<Transform>().Matrix));
+			{
+				x.Forward *= -1.0f;
+				return x;
+			}, result.Get<Transform>().Matrix));
+
+			MapAttachable.AttachEditorComponents(result, main, color);
 		}
 	}
 }

@@ -1,8 +1,8 @@
 Entity player = main.Get("Player").FirstOrDefault();
 
-if (ParticleSystem.Get(main, "Shatter") == null)
+if (ParticleSystem.Get(main, "InfectedShatter") == null)
 {
-	ParticleSystem.Add(main, "Shatter",
+	ParticleSystem.Add(main, "InfectedShatter",
 	new ParticleSystem.ParticleSettings
 	{
 		TextureName = "Particles\\spark",
@@ -22,6 +22,31 @@ if (ParticleSystem.Get(main, "Shatter") == null)
 		BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Additive,
 		MinColor = new Vector4(0.75f, 2.0f, 0.75f, 1.0f),
 		MaxColor = new Vector4(0.75f, 2.0f, 0.75f, 1.0f),
+	});
+}
+
+if (ParticleSystem.Get(main, "WhiteShatter") == null)
+{
+	ParticleSystem.Add(main, "WhiteShatter",
+	new ParticleSystem.ParticleSettings
+	{
+		TextureName = "Particles\\spark",
+		MaxParticles = 1000,
+		Duration = TimeSpan.FromSeconds(1.0f),
+		MinHorizontalVelocity = -4.0f,
+		MaxHorizontalVelocity = 4.0f,
+		MinVerticalVelocity = 0.0f,
+		MaxVerticalVelocity = 5.0f,
+		Gravity = new Vector3(0.0f, -8.0f, 0.0f),
+		MinRotateSpeed = -2.0f,
+		MaxRotateSpeed = 2.0f,
+		MinStartSize = 0.1f,
+		MaxStartSize = 0.3f,
+		MinEndSize = 0.0f,
+		MaxEndSize = 0.0f,
+		BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Additive,
+		MinColor = new Vector4(1.5f, 1.25f, 1.0f, 1.0f),
+		MaxColor = new Vector4(1.5f, 1.25f, 1.0f, 1.0f),
 	});
 }
 
@@ -224,10 +249,22 @@ script.Add(new CommandBinding<Map, IEnumerable<Map.Coordinate>, Map>(Map.GlobalC
 		}
 		else if (coord.Data.Name == "Infected") // Infected. Shatter effects.
 		{
-			ParticleSystem shatter = ParticleSystem.Get(main, "Shatter");
+			ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
 			Vector3 pos = map.GetAbsolutePosition(coord);
 			Random random = new Random();
 			Sound.PlayCue(main, "InfectedShatter", pos, 1.0f, 0.05f);
+			for (int i = 0; i < 50; i++)
+			{
+				Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
+				shatter.AddParticle(pos + offset, offset);
+			}
+		}
+        else if (coord.Data.Name == "White") // White. Shatter effects.
+		{
+			ParticleSystem shatter = ParticleSystem.Get(main, "WhiteShatter");
+			Vector3 pos = map.GetAbsolutePosition(coord);
+			Random random = new Random();
+			Sound.PlayCue(main, "WhiteShatter", pos, 1.0f, 0.05f);
 			for (int i = 0; i < 50; i++)
 			{
 				Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
