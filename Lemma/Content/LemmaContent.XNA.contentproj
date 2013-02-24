@@ -183,52 +183,12 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </None>
-    <None Include="Maps\cave1.map">
-      <Name>cave1</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Maps\cave2.map">
-      <Name>cave2</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Maps\phone-test.map">
-      <Name>phone-test</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Maps\start.map">
-      <Name>start</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Maps\test.map">
-      <Name>test</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Maps\test2.map">
-      <Name>test2</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Maps\start.cs">
-      <Name>start</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="GlobalScripts\materials.cs">
       <Name>materials</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Maps\cave1.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Name>cave1</Name>
-    </None>
-    <None Include="Maps\valley.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Name>valley</Name>
-    </None>
     <None Include="Maps\GlobalScripts\tutorials.cs">
       <Name>tutorials</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Maps\GlobalScripts\dialog.cs">
-      <Name>dialog</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Compile Include="Models\spotlight.fbx">
@@ -262,12 +222,6 @@
       <Importer>FbxImporter</Importer>
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\UnlitSolidColor.fx</ProcessorParameters_EffectFileName>
-    </Compile>
-    <Compile Include="Models\phone.fbx">
-      <Name>phone</Name>
-      <Importer>FbxImporter</Importer>
-      <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColor.fx</ProcessorParameters_EffectFileName>
     </Compile>
     <Compile Include="Models\pistol-mag.fbx">
       <Name>pistol-mag</Name>
@@ -312,16 +266,6 @@
       <ProcessorParameters_EffectFileName>..\Effects\Electricity.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_DiffuseTexture>electricity.png</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_NormalMapTexture>..\Images\water-normal.jpg</ProcessorParameters_NormalMapTexture>
-    </Compile>
-    <None Include="Maps\valley.map">
-      <Name>valley</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <Compile Include="Models\headlamp.fbx">
-      <Name>headlamp</Name>
-      <Importer>FbxImporter</Importer>
-      <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColor.fx</ProcessorParameters_EffectFileName>
     </Compile>
     <Compile Include="Models\position-model.fbx">
       <Name>position-model</Name>
@@ -548,20 +492,6 @@
   <ItemGroup>
     <Compile Include="Particles\splash.png">
       <Name>splash</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Images\phone.png">
-      <Name>phone</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Images\phone-light.png">
-      <Name>phone-light</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
@@ -845,11 +775,6 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Maps\Textures\temporary.png">
-      <Name>temporary</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
     <Compile Include="Maps\Textures\tile-normal.jpg">
       <Name>tile-normal</Name>
       <Importer>TextureImporter</Importer>
@@ -928,15 +853,27 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Images\headlamp-cookie.png">
-      <Name>headlamp-cookie</Name>
+    <Compile Include="Maps\Textures\white.jpg">
+      <Name>white</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Maps\Textures\white.jpg">
-      <Name>white</Name>
+    <Compile Include="Maps\Textures\temporary.png">
+      <Name>temporary</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Maps\Textures\metal-channels2-normal.jpg">
+      <Name>metal-channels2-normal</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="Maps\Textures\metal-channels2.jpg">
+      <Name>metal-channels2</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>

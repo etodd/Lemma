@@ -24,8 +24,7 @@ namespace Lemma.Components
 		public Property<Vector2> MovementDirection = new Property<Vector2> { Editable = false };
 		public Property<Matrix> Transform = new Property<Matrix> { Editable = false };
 		[XmlIgnore]
-		public Property<float> MaxSpeed = new Property<float> { Value = 8, Editable = false };
-		public Property<float> NormalMaxSpeed = new Property<float> { Value = 8, Editable = false };
+		public Property<float> MaxSpeed = new Property<float> { Value = 10, Editable = false };
 		[XmlIgnore]
 		public Property<float> JumpSpeed = new Property<float> { Value = 10, Editable = false };
 		[XmlIgnore]
@@ -45,11 +44,7 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<bool> EnableLevitation = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
-		public Property<bool> EnableSprint = new Property<bool> { Value = false, Editable = false };
-		[XmlIgnore]
 		public Property<bool> EnableSlowMotion = new Property<bool> { Value = false, Editable = false };
-		[XmlIgnore]
-		public Property<bool> Sprint = new Property<bool> { Editable = false };
 		[XmlIgnore]
 		public Property<bool> IsSupported = new Property<bool> { Editable = false };
 		[XmlIgnore]
@@ -172,7 +167,6 @@ namespace Lemma.Components
 			this.Add(new Binding<float>(this.main.TimeMultiplier, () => this.SlowMotion && !this.main.Paused ? 0.4f : 1.0f, this.SlowMotion, this.main.Paused));
 			this.Add(new TwoWayBinding<Vector2>(this.MovementDirection, this.character.MovementDirection));
 			this.Add(new TwoWayBinding<float>(this.MaxSpeed, this.character.MaxSpeed));
-			this.Add(new Binding<float>(this.MaxSpeed, () => this.NormalMaxSpeed * (this.Sprint ? 1.5f : 1.0f), this.NormalMaxSpeed, this.Sprint));
 			this.Add(new TwoWayBinding<float>(this.JumpSpeed, this.character.JumpSpeed));
 			this.Add(new TwoWayBinding<bool>(this.HasTraction, this.character.HasTraction));
 			this.Add(new TwoWayBinding<bool>(this.IsSupported, this.character.IsSupported));
@@ -210,20 +204,6 @@ namespace Lemma.Components
 				return this.character.Body.LinearVelocity;
 			};
 
-			this.Sprint.Set = delegate(bool value)
-			{
-				if (this.EnableSprint)
-				{
-					if (value && !this.Sprint.InternalValue)
-						this.timeUntilNextStaminaDecay = 0.0f;
-					else if (!value && this.Sprint.InternalValue)
-						this.timeUntilNextStaminaDecay = staminaDecayInterval;
-					this.Sprint.InternalValue = value;
-				}
-				else
-					this.Sprint.InternalValue = false;
-			};
-
 			this.SlowBurnStamina.Set = delegate(bool value)
 			{
 				if (value && !this.SlowBurnStamina.InternalValue)
@@ -231,13 +211,6 @@ namespace Lemma.Components
 				else if (!value && this.SlowBurnStamina.InternalValue)
 					this.timeUntilNextStaminaDecay = staminaDecayInterval;
 				this.SlowBurnStamina.InternalValue = value;
-			};
-
-			this.EnableSprint.Set = delegate(bool value)
-			{
-				this.EnableSprint.InternalValue = value;
-				if (!value)
-					this.Sprint.Value = false;
 			};
 		}
 
@@ -262,7 +235,7 @@ namespace Lemma.Components
 			while (this.timeUntilNextStaminaDecay < 0.0f)
 			{
 				this.Stamina.Value--;
-				float interval = this.Sprint || this.SlowMotion ? sprintStaminaDecayInterval : (this.SlowBurnStamina ? slowBurnStaminaDecayInterval : staminaDecayInterval);
+				float interval = this.SlowMotion ? sprintStaminaDecayInterval : (this.SlowBurnStamina ? slowBurnStaminaDecayInterval : staminaDecayInterval);
 				this.timeUntilNextStaminaDecay += interval;
 			}
 			this.Transform.Changed();

@@ -62,8 +62,6 @@ namespace Lemma.Factories
 			footstepTimer.Interval.Value = 0.35f;
 
 			result.Add("Pistol", new Property<Entity.Handle> { Editable = false });
-			result.Add("Headlamp", new Property<Entity.Handle> { Editable = false });
-			result.Add("Phone", new Property<Entity.Handle> { Editable = false });
 			result.Add("Rotation", new Property<float> { Editable = false });
 			result.Add("Data", new Property<Entity.Handle> { Editable = false });
 
@@ -88,6 +86,7 @@ namespace Lemma.Factories
 		private class Prediction
 		{
 			public Vector3 Position;
+			public float Time;
 			public int Level;
 		}
 
@@ -148,7 +147,7 @@ namespace Lemma.Factories
 
 			Container healthContainer = new Container();
 			healthContainer.PaddingBottom.Value = healthContainer.PaddingLeft.Value = healthContainer.PaddingRight.Value = healthContainer.PaddingTop.Value = 1;
-			healthContainer.Add(new Binding<Microsoft.Xna.Framework.Color>(healthContainer.Tint, () => player.Sprint || player.SlowMotion || player.SlowBurnStamina ? Microsoft.Xna.Framework.Color.Red : Microsoft.Xna.Framework.Color.White, player.Sprint, player.SlowMotion, player.SlowBurnStamina));
+			healthContainer.Add(new Binding<Microsoft.Xna.Framework.Color>(healthContainer.Tint, () => player.SlowMotion || player.SlowBurnStamina ? Microsoft.Xna.Framework.Color.Red : Microsoft.Xna.Framework.Color.White, player.SlowMotion, player.SlowBurnStamina));
 			healthContainer.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
 			healthContainer.Add(new Binding<Vector2, Point>(healthContainer.Position, x => new Vector2(x.X * 0.5f, x.Y - healthBarHeight), main.ScreenSize));
 			ui.Root.Children.Add(healthContainer);
@@ -228,26 +227,6 @@ namespace Lemma.Factories
 #endif
 
 			Property<Entity.Handle> pistol = result.GetProperty<Entity.Handle>("Pistol");
-			Property<Entity.Handle> headlamp = result.GetProperty<Entity.Handle>("Headlamp");
-			Property<Entity.Handle> phone = result.GetProperty<Entity.Handle>("Phone");
-			Binding<bool> phoneActiveBinding = null;
-			Action setupPhone = delegate()
-			{
-				if (phoneActiveBinding != null)
-					result.Remove(phoneActiveBinding);
-				phoneActiveBinding = null;
-				Entity p = phone.Value.Target;
-				if (p != null)
-				{
-					p.SetSuspended(false);
-					phoneActiveBinding = new Binding<bool>(input.Enabled, x => !x, p.GetProperty<bool>("Active"));
-					result.Add(phoneActiveBinding);
-					p.GetCommand<Entity>("Attach").Execute(result);
-				}
-			};
-			result.Add(new NotifyBinding(setupPhone, phone));
-			if (phone.Value.Target != null)
-				setupPhone();
 
 			Property<Entity.Handle> data = result.GetProperty<Entity.Handle>("Data");
 
@@ -271,11 +250,8 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnablePrecisionJump"), player.EnablePrecisionJump));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableLevitation"), player.EnableLevitation));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSprint"), player.EnableSprint));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
 					result.Add(new TwoWayBinding<Entity.Handle>(data.Value.Target.GetProperty<Entity.Handle>("Pistol"), pistol));
-					result.Add(new TwoWayBinding<Entity.Handle>(data.Value.Target.GetProperty<Entity.Handle>("Phone"), phone));
-					result.Add(new TwoWayBinding<Entity.Handle>(data.Value.Target.GetProperty<Entity.Handle>("Headlamp"), headlamp));
 				}
 			});
 
@@ -296,39 +272,10 @@ namespace Lemma.Factories
 
 			result.Add(new CommandBinding(result.Delete, delegate()
 			{
-				Entity p = phone.Value.Target;
-				if (p != null)
-					p.GetCommand("Detach").Execute();
-
-				p = headlamp.Value.Target;
-				if (p != null)
-					p.GetCommand("Detach").Execute();
-
-				p = pistol.Value.Target;
+				Entity p = pistol.Value.Target;
 				if (p != null)
 					p.GetCommand("Detach").Execute();
 			}));
-
-			input.Bind(settings.TogglePhone, PCInput.InputState.Down, delegate()
-			{
-				Entity p = phone.Value.Target;
-				if (p != null)
-				{
-					if (!p.GetProperty<bool>("Active"))
-						p.GetCommand("Show").Execute();
-				}
-			});
-
-			if (phone.Value.Target == null)
-			{
-				result.Add(new PostInitialization
-				{
-					delegate ()
-					{
-						phone.Reset();
-					}
-				});
-			}
 
 			player.EnabledInEditMode.Value = false;
 			ui.EnabledInEditMode.Value = false;
@@ -684,9 +631,7 @@ namespace Lemma.Factories
 			player.Add(new Binding<Vector2>(player.MovementDirection, delegate()
 			{
 				Vector2 movement = input.Movement;
-				if (player.Sprint)
-					movement = Vector2.Normalize(new Vector2(movement.X, 1.0f));
-				else if (movement.LengthSquared() == 0.0f)
+				if (movement.LengthSquared() == 0.0f)
 					return Vector2.Zero;
 
 				Matrix matrix = Matrix.CreateRotationY(rotation);
@@ -694,11 +639,12 @@ namespace Lemma.Factories
 				Vector2 forwardDir = new Vector2(matrix.Forward.X, matrix.Forward.Z);
 				Vector2 rightDir = new Vector2(matrix.Right.X, matrix.Right.Z);
 				return -Vector2.Normalize((forwardDir * movement.Y) + (rightDir * movement.X));
-			}, input.Movement, rotation, player.Sprint));
+			}, input.Movement, rotation));
 			
 			// Update animation
 			bool lastSupported = false;
 			bool canKick = false;
+			float lastLandAnimationPlayed = 0.0f;
 			result.Add("AnimationUpdater", new Updater
 			{
 				delegate(float dt)
@@ -707,7 +653,7 @@ namespace Lemma.Factories
 					if (player.WallRunState != Player.WallRun.None)
 						footstepTimer.Interval.Value = 0.25f / model[player.WallRunState == Player.WallRun.Straight ? "WallWalkStraight" : (player.WallRunState == Player.WallRun.Left ? "WallWalkLeft" : "WallWalkRight")].Speed;
 
-					if ((!player.EnableWalking && !player.Sprint) || player.WallRunState.Value != Player.WallRun.None)
+					if (player.WallRunState.Value != Player.WallRun.None)
 						return;
 
 					if (input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload"))
@@ -718,9 +664,13 @@ namespace Lemma.Factories
 					{
 						canKick = true;
 						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "JumpFall", "Vault");
-						footstepTimer.Command.Execute();
-						Sound.PlayCue(main, "Land", transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0));
-						model.StartClip("Land", 1, false, 0.1f);
+						if (main.TotalTime > lastLandAnimationPlayed + 0.5f)
+						{
+							footstepTimer.Command.Execute();
+							Sound.PlayCue(main, "Land", transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0));
+							model.StartClip("Land", 1, false, 0.1f);
+						}
+						lastLandAnimationPlayed = main.TotalTime;
 					}
 					else if (player.IsSupported)
 					{
@@ -730,7 +680,7 @@ namespace Lemma.Factories
 
 						string movementAnimation;
 						int animationPriority = 0;
-						if (!player.Sprint && dir.LengthSquared() == 0.0f)
+						if (dir.LengthSquared() == 0.0f)
 							movementAnimation = "Idle";
 						else
 							movementAnimation = dir.Y < 0.0f ? "WalkBackwards" : (dir.X > 0.0f ? "StrafeRight" : (dir.X < 0.0f ? "StrafeLeft" : "Walk"));
@@ -741,9 +691,13 @@ namespace Lemma.Factories
 							animationPriority = 2;
 						}
 
-						model[movementAnimation].Speed = player.Sprint ? 1.5f : 1.0f;
+						Vector3 velocity = player.LinearVelocity;
+						velocity.Y = 0;
+						float speed = velocity.Length();
+						
+						model[movementAnimation].Speed = player.Crouched ? 1.0f : (speed / 8.0f);
 
-						footstepTimer.Interval.Value = player.Crouched ? 0.5f : (player.Sprint ? 0.37f / 1.5f : 0.37f);
+						footstepTimer.Interval.Value = player.Crouched ? 0.5f : 0.37f / (speed / 8.0f);
 
 						if (!model.IsPlaying(movementAnimation))
 						{
@@ -1377,16 +1331,6 @@ namespace Lemma.Factories
 
 			input.Bind(settings.ToggleItem2, PCInput.InputState.Down, delegate()
 			{
-				Entity h = headlamp.Value.Target;
-				if (h != null)
-				{
-					Property<bool> headlampActive = h.GetProperty<bool>("Active");
-					headlampActive.Value = !headlampActive;
-				}
-			});
-
-			input.Bind(settings.ToggleItem3, PCInput.InputState.Down, delegate()
-			{
 				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || !player.EnableLevitation || player.Crouched)
 					return;
 
@@ -1879,9 +1823,6 @@ namespace Lemma.Factories
 							if (main.TotalTime - rollEnded < 0.3f)
 								totalMultiplier *= 1.5f;
 
-							if (player.Sprint)
-								verticalMultiplier *= 1.2f;
-
 							player.LinearVelocity.Value = new Vector3(jumpDirection.X, player.JumpSpeed * verticalMultiplier, jumpDirection.Y) * totalMultiplier;
 						}
 
@@ -1948,13 +1889,13 @@ namespace Lemma.Factories
 				return false;
 			};
 
-			Action<Queue<Prediction>, Vector3, Vector3, int> predictJump = delegate(Queue<Prediction> predictions, Vector3 start, Vector3 v, int level)
+			Action<Queue<Prediction>, Vector3, Vector3, float, int> predictJump = delegate(Queue<Prediction> predictions, Vector3 start, Vector3 v, float interval, int level)
 			{
-				for (float time = 0.6f; time < (level == 0 ? 1.5f : 1.0f); time += 0.6f)
-					predictions.Enqueue(new Prediction { Position = start + (v * time) + (time * time * 0.5f * main.Space.ForceUpdater.Gravity), Level = level });
+				for (float time = interval; time < (level == 0 ? 1.5f : 1.0f); time += interval)
+					predictions.Enqueue(new Prediction { Position = start + (v * time) + (time * time * 0.5f * main.Space.ForceUpdater.Gravity), Time = time, Level = level });
 			};
 
-			Func<Queue<Prediction>, Vector3> startSlowMo = delegate(Queue<Prediction> predictions)
+			Func<Queue<Prediction>, float, Vector3> startSlowMo = delegate(Queue<Prediction> predictions, float interval)
 			{
 				// Go into slow-mo and show block possibilities
 				player.SlowMotion.Value = true;
@@ -1969,12 +1910,18 @@ namespace Lemma.Factories
 				if (velocity.Length() < player.MaxSpeed * 0.25f)
 					velocity += straightAhead * 0.5f;
 
-				predictJump(predictions, startPosition, velocity, 0);
+				predictJump(predictions, startPosition, velocity, interval, 0);
 
 				Vector3 jumpVelocity = velocity;
 				jumpVelocity.Y = player.JumpSpeed;
 
 				return jumpVelocity;
+			};
+
+			Func<float> getPredictionInterval = delegate()
+			{
+				// Interval is the time in seconds between locations where we will check for buildable platforms
+				return 0.3f * (8.0f / Math.Max(5.0f, player.LinearVelocity.Value.Length()));
 			};
 
 			// Jumping
@@ -1984,18 +1931,27 @@ namespace Lemma.Factories
 				// Also don't try anything if we're crouched or in the middle of vaulting
 				if (vaultMover == null && !jump(false, false) && player.EnableSlowMotion && !player.Crouched)
 				{
+					float interval = getPredictionInterval();
+
 					Queue<Prediction> predictions = new Queue<Prediction>();
-					Vector3 jumpVelocity = startSlowMo(predictions);
+					Vector3 jumpVelocity = startSlowMo(predictions, interval);
+
+					float[] lastPredictionHit = new float[] { 0.0f, 0.0f };
 
 					while (predictions.Count > 0)
 					{
 						Prediction prediction = predictions.Dequeue();
-						BlockPossibility possibility = findPlatform(prediction.Position);
-						if (possibility != null)
+
+						if (prediction.Time > lastPredictionHit[prediction.Level] + (interval * 1.5f))
 						{
-							addBlockPossibility(possibility);
-							if (prediction.Level == 0)
-								predictJump(predictions, prediction.Position, jumpVelocity, prediction.Level + 1);
+							BlockPossibility possibility = findPlatform(prediction.Position);
+							if (possibility != null)
+							{
+								lastPredictionHit[prediction.Level] = prediction.Time;
+								addBlockPossibility(possibility);
+								if (prediction.Level == 0)
+									predictJump(predictions, prediction.Position, jumpVelocity, interval, prediction.Level + 1);
+							}
 						}
 					}
 				}
@@ -2006,7 +1962,7 @@ namespace Lemma.Factories
 				player.SlowMotion.Value = false;
 			});
 
-			// Wall-run, vault, sprint, predictive
+			// Wall-run, vault, predictive
 			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
 			{
 				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || player.Crouched)
@@ -2023,32 +1979,23 @@ namespace Lemma.Factories
 							wallRan = activateWallRun(Player.WallRun.Right);
 				}
 
-				if (!vaulted && !wallRan)
+				if (!vaulted && !wallRan && !player.IsSupported && player.EnableSlowMotion)
 				{
-					if (player.IsSupported)
-					{
-						if (player.EnableSprint)
-							player.Sprint.Value = true;
-					}
-					else if (player.EnableSlowMotion)
-					{
-						// Predict block possibilities
-						Queue<Prediction> predictions = new Queue<Prediction>();
-						Vector3 jumpVelocity = startSlowMo(predictions);
-						Vector2 direction = new Vector2(jumpVelocity.X, jumpVelocity.Z);
+					// Predict block possibilities
+					Queue<Prediction> predictions = new Queue<Prediction>();
+					Vector3 jumpVelocity = startSlowMo(predictions, getPredictionInterval());
+					Vector2 direction = new Vector2(jumpVelocity.X, jumpVelocity.Z);
 
-						Prediction prediction = predictions.Dequeue();
-						BlockPossibility possibility = findWall(prediction.Position, direction);
-						if (possibility != null)
-							addBlockPossibility(possibility);
-					}
+					Prediction prediction = predictions.Dequeue();
+					BlockPossibility possibility = findWall(prediction.Position, direction);
+					if (possibility != null)
+						addBlockPossibility(possibility);
 				}
 			});
 
 			input.Bind(settings.Parkour, PCInput.InputState.Up, delegate()
 			{
 				deactivateWallRun();
-				player.Sprint.Value = false;
 				player.SlowMotion.Value = false;
 			});
 
@@ -2099,42 +2046,6 @@ namespace Lemma.Factories
 					updatePistolAnimation();
 					pistolActiveBinding = new NotifyBinding(updatePistolAnimation, pistolActive);
 					result.Add(pistolActiveBinding);
-				}
-			};
-
-			// Headlamp
-
-			IBinding headlampActiveBinding = null;
-
-			if (headlamp.Value.Target == null)
-			{
-				result.Add(new PostInitialization
-				{
-					(Action)headlamp.Reset
-				});
-			}
-
-			headlamp.Set = delegate(Entity.Handle value)
-			{
-				if (headlampActiveBinding != null)
-					result.Remove(headlampActiveBinding);
-				headlampActiveBinding = null;
-				Entity headlampEntity = headlamp.InternalValue.Target;
-
-				if (headlampEntity != null && headlampEntity != value.Target)
-					headlampEntity.GetCommand("Detach").Execute();
-
-				headlamp.InternalValue = value;
-				headlampEntity = value.Target;
-				if (headlampEntity != null)
-				{
-					headlampEntity.SetSuspended(false);
-					headlampEntity.GetCommand<Property<Matrix>>("Attach").Execute(model.GetWorldBoneTransform("Head"));
-
-					Property<bool> headlampActive = headlampEntity.GetProperty<bool>("Active");
-
-					headlampActiveBinding = new Binding<bool>(player.SlowBurnStamina, headlampActive);
-					result.Add(headlampActiveBinding);
 				}
 			};
 

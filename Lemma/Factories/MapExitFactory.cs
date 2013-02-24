@@ -35,7 +35,7 @@ namespace Lemma.Factories
 		}
 
 		private static string[] persistentTypes = new[] { "Player", "PlayerData", };
-		private static string[] attachedTypes = new[] { "Phone", "Pistol", "Headlamp", };
+		private static string[] attachedTypes = new[] { "Pistol", "Headlamp", };
 
 		private static bool isPersistent(Entity entity)
 		{
@@ -81,7 +81,7 @@ namespace Lemma.Factories
 					new Animation.Execute(delegate()
 					{
 						// We are exiting the map; just save the state of the map without the player.
-						// So save the player, phone, and pistol and then delete them.
+						// So save the player and pistol and then delete them.
 						List<Entity> persistentEntities = main.Entities.Where((Func<Entity, bool>)MapExitFactory.isPersistent).ToList();
 
 						serializer.Serialize(stream, persistentEntities);

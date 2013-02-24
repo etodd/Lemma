@@ -33,7 +33,7 @@ namespace Lemma.Util
 		/// <summary>
 		/// Rate of increase in the character's speed in the movementDirection.
 		/// </summary>
-		public Property<float> Acceleration = new Property<float> { Value = 20.0f };
+		public Property<float> Acceleration = new Property<float> { Value = 10.0f };
 
 		/// <summary>
 		/// The character's physical representation that handles iteractions with the environment.
@@ -220,6 +220,9 @@ namespace Lemma.Util
 			else
 				supportLocationVelocity = new Vector3();
 
+			if (supportLocationVelocity.Y < this.Body.LinearVelocity.Y - 5.0f)
+				foundSupport = false;
+
 			if (!this.IsSwimming && foundSupport)
 			{
 				this.SupportEntity.Value = supportEntity;
@@ -315,16 +318,21 @@ namespace Lemma.Util
 				foreach (Vector3 rayStart in this.rayOffsets.Select(x => x + rayOrigin))
 				{
 					RayHit rayHit;
-					//Fire a ray at the candidate and determine some details!
+					// Fire a ray at the candidate and determine some details!
 					if (candidate.RayCast(new Ray(rayStart, Vector3.Down), maximumDistance, out rayHit))
 					{
-						//We want to find the closest support, so compare it against the last closest support.
 						Vector3 n = Vector3.Normalize(rayHit.Normal);
-						if (rayHit.T < supportDistance && Vector3.Dot(n, Vector3.Up) > 0.25f)
+
+						if (n.Y > supportNormal.Y)
+							supportNormal = n;
+
+						// We want to find the closest support, so compare it against the last closest support.
+						if (rayHit.T < supportDistance && n.Y > 0.25f)
 						{
 							supportDistance = rayHit.T;
 							supportLocation = rayHit.Location;
-							supportNormal = rayHit.T > 0 ? n : Vector3.Up;
+							if (rayHit.T < 0.0f)
+								supportNormal = Vector3.Up;
 
 							var entityInfo = candidate as EntityCollidable;
 							if (entityInfo != null)
@@ -426,6 +434,8 @@ namespace Lemma.Util
 					// Accelerate
 					velocityChange = Math.Min(dt * this.Acceleration, speed - netZVelocity);
 					this.Body.LinearVelocity += velocityChange * z;
+					if (z.Y > 0.0f)
+						this.Body.LinearVelocity += new Vector3(0, z.Y * Math.Min(dt * this.Acceleration * 2.0f, speed - netZVelocity) * 2.0f, 0);
 				}
 			}
 			else

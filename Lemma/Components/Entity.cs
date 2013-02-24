@@ -41,7 +41,6 @@ namespace Lemma.Components
 	[XmlInclude(typeof(ModelInstance))]
 	[XmlInclude(typeof(ModelInstance.ModelInstanceSystem))]
 	[XmlInclude(typeof(Zone))]
-	[XmlInclude(typeof(Phone))]
 	[XmlInclude(typeof(Direction))]
 	[XmlInclude(typeof(Property<Direction>))]
 	[XmlInclude(typeof(ListProperty<Direction>))]

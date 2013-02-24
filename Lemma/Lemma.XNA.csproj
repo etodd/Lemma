@@ -102,7 +102,6 @@
     <Compile Include="Components\PhysicsSphere.cs" />
     <Compile Include="Components\PlayerCylinderTrigger.cs" />
     <Compile Include="Components\PostInitialization.cs" />
-    <Compile Include="Components\Phone.cs" />
     <Compile Include="Components\Zone.cs" />
     <Compile Include="ErrorForm.cs">
       <SubType>Form</SubType>
@@ -127,7 +126,6 @@
     <Compile Include="Factories\FallingTowerFactory.cs" />
     <Compile Include="Factories\MagazineFactory.cs" />
     <Compile Include="Factories\PistolFactory.cs" />
-    <Compile Include="Factories\PhoneFactory.cs" />
     <Compile Include="Factories\MapExitFactory.cs" />
     <Compile Include="Factories\PropFactory.cs" />
     <Compile Include="Factories\RandomAmbientSoundFactory.cs" />

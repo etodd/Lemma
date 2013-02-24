@@ -24,6 +24,7 @@ namespace Lemma.Factories
 			ModelAlpha clouds = new ModelAlpha();
 			clouds.Filename.Value = "Models\\clouds";
 			clouds.CullBoundingBox.Value = false;
+			clouds.DisableCulling.Value = true;
 			clouds.DrawOrder.Value = -9;
 			result.Add("Clouds", clouds);
 

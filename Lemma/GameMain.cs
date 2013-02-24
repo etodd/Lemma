@@ -56,8 +56,6 @@ namespace Lemma
 			public Property<PCInput.PCInputBinding> Reload = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.R } };
 			public Property<PCInput.PCInputBinding> ToggleItem1 = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D1 } };
 			public Property<PCInput.PCInputBinding> ToggleItem2 = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D2 } };
-			public Property<PCInput.PCInputBinding> ToggleItem3 = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D3 } };
-			public Property<PCInput.PCInputBinding> TogglePhone = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Tab } };
 			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F5 } };
 			public Property<PCInput.PCInputBinding> ToggleFullscreen = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F11 } };
 		}
@@ -89,7 +87,7 @@ namespace Lemma
 
 		public Command<Entity> PlayerSpawned = new Command<Entity>();
 
-		const float respawnInterval = 3.0f;
+		const float respawnInterval = 1.0f;
 
 		private float respawnTimer = -1.0f;
 
@@ -1085,9 +1083,7 @@ namespace Lemma
 				addInputSetting(this.Settings.Aim, "Aim");
 				addInputSetting(this.Settings.ToggleItem1, "Toggle Item 1");
 				addInputSetting(this.Settings.ToggleItem2, "Toggle Item 2");
-				addInputSetting(this.Settings.ToggleItem3, "Toggle Item 3");
 				addInputSetting(this.Settings.Reload, "Reload");
-				addInputSetting(this.Settings.TogglePhone, "Toggle Phone");
 				addInputSetting(this.Settings.QuickSave, "Quicksave");
 				addInputSetting(this.Settings.ToggleFullscreen, "Toggle Fullscreen");
 
