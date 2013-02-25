@@ -462,6 +462,19 @@ namespace Lemma.Factories
 					RubbleCue = "MetalChannelsRubble",
 					SpecularPower = 10.0f,
 					SpecularIntensity = 0.5f,
+				},
+				new Map.CellState
+				{
+					ID = 32,
+					Name = "MetalSwirl",
+					Permanent = true,
+					Density = 1,
+					DiffuseMap = "Maps\\Textures\\metal-swirl",
+					NormalMap = "Maps\\Textures\\metal-swirl-normal",
+					FootstepCue = "MetalChannelsFootsteps",
+					RubbleCue = "MetalChannelsRubble",
+					SpecularPower = 10.0f,
+					SpecularIntensity = 0.5f,
 				}
 			);
 		}
