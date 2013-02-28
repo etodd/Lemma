@@ -1,15 +1,22 @@
+@font-face
+{
+	font-family: Signika;
+	src: url('assets/Signika-Bold.otf') format('opentype');
+	font-weight: bold;
+}
+
 html, body
 {
 	padding: 0px;
 	margin: 0px;
+	font-family: Tahoma, Verdana, Helvetica, sans-serif;
+	font-size: small;
 }
 
 body
 {
 	background-color: #000;
 	color: #fff;
-	font-family: Tahoma, Verdana, Helvetica, sans-serif;
-	font-size: small;
 }
 
 a
@@ -34,7 +41,7 @@ header
 {
 	width: 100%;
 	background-image: url(graphics/header.svg);
-	background-size: 50%;
+	background-size: 60%;
 	background-position: center center;
 	background-repeat: no-repeat;
 	height: 80px;
@@ -50,9 +57,26 @@ a:hover
 	color: #ff0000;
 }
 
-h1, h2, h3, h4, h5
+h1, h2, h3
 {
 	margin-top: 0px;
+	font-family: Signika;
+	text-transform: uppercase;
+}
+
+h1
+{
+	font-size: 2.5em;
+}
+
+h2
+{
+	font-size: 2em;
+}
+
+h3
+{
+	font-size: 1.5em;
 }
 
 #menu
@@ -63,6 +87,7 @@ h1, h2, h3, h4, h5
 	padding-top: 10px;
 	padding-bottom: 10px;
 	background-color: black;
+	font-family: Signika;
 }
 
 tr td
@@ -104,6 +129,11 @@ article
 	padding: 10px;
 }
 
+article p
+{
+	line-height: 150%;
+}
+
 article #news img
 {
 	max-width: 100%;
@@ -127,4 +157,59 @@ article #news img
 .twtr-doc
 {
 	width: 100% !important;
+}
+
+@media screen and (min-width: 590px)
+{
+	tr td
+	{
+		display: table-cell;
+	}
+
+	header
+	{
+		height: 128px;
+	}
+
+	body
+	{
+		background-image: url(graphics/header-background.jpg);
+		background-repeat: no-repeat;
+		background-position: center top;
+	}
+
+	article
+	{
+		padding: 20px;
+		padding-left: 40px;
+		padding-right: 40px;
+		background-color: rgba(255, 255, 255, 0.1);
+	}
+
+	#sidebar
+	{
+		background-color: rgba(0, 0, 0, 0.6);
+	}
+}
+
+@media screen and (min-width: 960px)
+{
+	article
+	{
+		padding: 30px;
+		padding-left: 70px;
+		padding-right: 70px;
+	}
+
+	#twitter-feed, #sidebar
+	{
+		float: right;
+		margin-left: 10px;
+		width: 250px;
+	}
+
+	.twtr-doc
+	{
+		width: 250px !important;
+	}
 }
