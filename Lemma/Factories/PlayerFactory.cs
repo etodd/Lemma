@@ -114,13 +114,6 @@ namespace Lemma.Factories
 			input.EnabledWhenPaused.Value = false;
 			result.Add("Input", input);
 
-			Model reticle = new Model();
-			reticle.Filename.Value = "Models\\arrow";
-			reticle.Editable = false;
-			reticle.Enabled.Value = false;
-			reticle.Serialize = false;
-			result.Add("Reticle", reticle);
-
 			AudioListener audioListener = result.Get<AudioListener>();
 			Sound footsteps = result.Get<Sound>("Footsteps");
 			Timer footstepTimer = result.Get<Timer>("FootstepTimer");
@@ -248,7 +241,6 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRunHorizontal"), player.EnableWallRunHorizontal));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnablePrecisionJump"), player.EnablePrecisionJump));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableLevitation"), player.EnableLevitation));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
 					result.Add(new TwoWayBinding<Entity.Handle>(data.Value.Target.GetProperty<Entity.Handle>("Pistol"), pistol));
@@ -312,6 +304,8 @@ namespace Lemma.Factories
 				}
 				player.IsSwimming.Value = swimming;
 			});
+
+			Action stopKick = null;
 
 			// Center the damage overlay and scale it to fit the screen
 			damageOverlay.Add(new Binding<Vector2, Point>(damageOverlay.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
@@ -892,6 +886,8 @@ namespace Lemma.Factories
 
 			Action<Map, Direction, Player.WallRun, Vector3, bool> setUpWallRun = delegate(Map map, Direction dir, Player.WallRun state, Vector3 forwardVector, bool addInitialVelocity)
 			{
+				stopKick();
+				player.AllowUncrouch.Value = true;
 				wallRunMap = lastWallRunMap = map;
 				wallDirection = lastWallDirection = dir;
 
@@ -1231,87 +1227,18 @@ namespace Lemma.Factories
 
 			Action tryLevitate = null, stopLevitate = null, delevitateMap = null;
 
-			Property<bool> aimMode = new Property<bool> { Value = false };
-
 			input.Bind(settings.Aim, PCInput.InputState.Down, delegate()
 			{
 				Entity p = pistol.Value.Target;
 				if (p != null && p.GetProperty<bool>("Active"))
 					scopeInPistol();
-				else
-					aimMode.Value = true;
 			});
 
-			Func<Vector3, Vector3> getPrecisionJumpVelocity = delegate(Vector3 target)
-			{
-				target.Y += 2.0f;
-				Vector3 horizontalVelocity = target - transform.Position;
-				float verticalDistance = horizontalVelocity.Y + (player.Height * 0.5f) + player.SupportHeight;
-				horizontalVelocity.Y = 0.0f;
-
-				float horizontalDistance = horizontalVelocity.Length();
-
-				Vector3 currentVelocity = player.LinearVelocity;
-				currentVelocity.Y = 0.0f;
-
-				float speed = Vector3.Dot(currentVelocity, horizontalVelocity) > 0.0f ? currentVelocity.Length() * 1.25f : 0.0f;
-				if (speed == 0.0f)
-					speed = player.MaxSpeed * 0.75f;
-
-				horizontalVelocity *= speed / horizontalDistance;
-
-				float time = horizontalDistance / speed;
-
-				Vector3 velocity = new Vector3(horizontalVelocity.X, (verticalDistance / time) - (0.5f * main.Space.ForceUpdater.Gravity.Y * time), horizontalVelocity.Z);
-				return velocity;
-			};
-
-			Func<Vector3, bool> canJump = delegate(Vector3 v)
-			{
-				return v.Y < (player.IsSupported ? player.JumpSpeed * 1.25f : player.LinearVelocity.Value.Y + player.JumpSpeed * 0.25f);
-			};
-
-			Func<Vector3, Vector3> normalizeJumpVelocity = delegate(Vector3 v)
-			{
-				float vertical = Math.Min(v.Y, player.JumpSpeed * 1.25f);
-				v.Y = 0.0f;
-				float horizontal = v.Length();
-				if (horizontal > player.JumpSpeed * 1.25f)
-					v *= player.JumpSpeed * 1.25f / horizontal;
-				v.Y = vertical;
-				return v;
-			};
-
 			Map.GlobalRaycastResult aimRaycastResult = new Map.GlobalRaycastResult();
-			Property<bool> canJumpToReticle = new Property<bool>();
 			update.Add(delegate(float dt)
 			{
-				if (aimMode || levitationMode)
+				if (levitationMode)
 					aimRaycastResult = Map.GlobalRaycast(main.Camera.Position.Value, main.Camera.Forward, main.Camera.FarPlaneDistance);
-
-				if (aimMode && aimRaycastResult.Map != null && !player.IsLevitating && player.EnablePrecisionJump)
-				{
-					Vector3 normal = aimRaycastResult.Map.GetAbsoluteVector(aimRaycastResult.Normal.GetVector());
-
-					canJumpToReticle.Value = canJump(getPrecisionJumpVelocity(aimRaycastResult.Position));
-					reticle.Color.Value = canJumpToReticle || !player.IsSupported ? new Vector3(2.0f) : new Vector3(2.0f, 0.0f, 0.0f);
-
-					reticle.Enabled.Value = true;
-
-					Matrix matrix = Matrix.Identity;
-					matrix.Translation = aimRaycastResult.Position;
-					matrix.Forward = -normal;
-					if (normal.Equals(Vector3.Up))
-						matrix.Right = Vector3.Right;
-					else if (normal.Equals(Vector3.Down))
-						matrix.Right = Vector3.Left;
-					else
-						matrix.Right = Vector3.Normalize(Vector3.Cross(normal, Vector3.Up));
-					matrix.Up = Vector3.Cross(normal, matrix.Right);
-					reticle.Transform.Value = matrix;
-				}
-				else
-					reticle.Enabled.Value = false;
 			});
 
 			input.Bind(settings.ToggleItem1, PCInput.InputState.Down, delegate()
@@ -1324,8 +1251,6 @@ namespace Lemma.Factories
 				{
 					Property<bool> pistolActive = p.GetProperty<bool>("Active");
 					pistolActive.Value = !pistolActive;
-					if (pistolActive)
-						aimMode.Value = false;
 				}
 			});
 
@@ -1340,13 +1265,7 @@ namespace Lemma.Factories
 			float levitateButtonPressStart = -1.0f;
 			DynamicMap levitatingMap = null;
 
-			input.Bind(settings.Aim, PCInput.InputState.Up, delegate()
-			{
-				if (aimMode)
-					aimMode.Value = false;
-				else
-					scopeOutPistol();
-			});
+			input.Bind(settings.Aim, PCInput.InputState.Up, scopeOutPistol);
 
 			result.Add(new CommandBinding(result.Delete, delegate()
 			{
@@ -1774,20 +1693,6 @@ namespace Lemma.Factories
 					}
 				}
 
-				bool precisionJumping = !vaulting && !onlyVault && aimMode && player.EnablePrecisionJump && aimRaycastResult.Map != null;
-
-				// Prevent the player from spamming precision jumping and wall-running to run along the same wall infinitely
-				if (precisionJumping)
-				{
-					if (player.WallRunState != Player.WallRun.None && aimRaycastResult.Map == wallRunMap && aimRaycastResult.Normal == wallDirection.GetReverse())
-					{
-						Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - 0.5f, 0);
-						Map.Coordinate wallCoord = wallRunMap.GetCoordinate(playerPos).Move(wallDirection, 2);
-						if (aimRaycastResult.Coordinate.Value.GetComponent(wallDirection) == wallCoord.GetComponent(wallDirection))
-							precisionJumping = false;
-					}
-				}
-
 				if (go)
 				{
 					if (!supported)
@@ -1799,32 +1704,20 @@ namespace Lemma.Factories
 
 					if (!vaulting)
 					{
-						if (precisionJumping)
-						{
-							// Make the player jump exactly to the target.
-							Vector3 velocity = normalizeJumpVelocity(getPrecisionJumpVelocity(aimRaycastResult.Position));
-							if (velocity.Y < 0.0f && supported)
-								return false; // Can't jump down through the floor
-							player.LinearVelocity.Value = velocity;
-							aimMode.Value = false;
-						}
-						else
-						{
-							// Just a normal jump.
-							Vector3 velocity = player.LinearVelocity;
-							velocity.Y = 0.0f;
-							float jumpSpeed = jumpDirection.Length();
-							if (jumpSpeed > 0)
-								jumpDirection *= (wallJumping ? player.MaxSpeed : velocity.Length()) / jumpSpeed;
+						// Just a normal jump.
+						Vector3 velocity = player.LinearVelocity;
+						velocity.Y = 0.0f;
+						float jumpSpeed = jumpDirection.Length();
+						if (jumpSpeed > 0)
+							jumpDirection *= (wallJumping ? player.MaxSpeed : velocity.Length()) / jumpSpeed;
 
-							float totalMultiplier = 1.0f;
-							float verticalMultiplier = 1.0f;
+						float totalMultiplier = 1.0f;
+						float verticalMultiplier = 1.0f;
 
-							if (main.TotalTime - rollEnded < 0.3f)
-								totalMultiplier *= 1.5f;
+						if (main.TotalTime - rollEnded < 0.3f)
+							totalMultiplier *= 1.5f;
 
-							player.LinearVelocity.Value = new Vector3(jumpDirection.X, player.JumpSpeed * verticalMultiplier, jumpDirection.Y) * totalMultiplier;
-						}
+						player.LinearVelocity.Value = new Vector3(jumpDirection.X, player.JumpSpeed * verticalMultiplier, jumpDirection.Y) * totalMultiplier;
 
 						if (supported && player.SupportEntity.Value != null)
 						{
@@ -1965,7 +1858,7 @@ namespace Lemma.Factories
 			// Wall-run, vault, predictive
 			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
 			{
-				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || player.Crouched)
+				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || (player.Crouched && player.IsSupported))
 					return;
 
 				bool vaulted = jump(true, true); // Try vaulting first
@@ -2083,6 +1976,19 @@ namespace Lemma.Factories
 
 			float lastFire = 0.0f;
 			const float fireInterval = 0.15f;
+			Updater kickUpdate = null;
+			stopKick = delegate()
+			{
+				if (kickUpdate != null)
+				{
+					kickUpdate.Delete.Execute();
+					kickUpdate = null;
+					model.Stop("Kick");
+					player.EnableWalking.Value = true;
+					player.AllowUncrouch.Value = true;
+					rotationLocked.Value = false;
+				}
+			};
 			input.Bind(settings.Fire, PCInput.InputState.Down, delegate()
 			{
 				Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
@@ -2104,7 +2010,7 @@ namespace Lemma.Factories
 					if (player.IsSupported && !player.Crouched)
 						tryLevitate();
 				}
-				else if (!aimMode && !input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && Vector3.Dot(player.LinearVelocity, forward) > 0.0f)
+				else if (!input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && Vector3.Dot(player.LinearVelocity, forward) > 0.0f)
 				{
 					// Kick
 					canKick = false;
@@ -2162,7 +2068,7 @@ namespace Lemma.Factories
 						rightDir = floorRaycast.Map.GetRelativeDirection(right);
 					}
 
-					Updater kickUpdate = null;
+					
 					float kickTime = 0.0f;
 					kickUpdate = new Updater
 					{
@@ -2170,13 +2076,7 @@ namespace Lemma.Factories
 						{
 							kickTime += dt;
 							if (kickTime > 0.75f || player.LinearVelocity.Value.Length() < 0.1f)
-							{
-								kickUpdate.Delete.Execute();
-								model.Stop("Kick");
-								player.EnableWalking.Value = true;
-								player.AllowUncrouch.Value = true;
-								rotationLocked.Value = false;
-							}
+								stopKick();
 							else
 							{
 								player.LinearVelocity.Value = new Vector3(kickVelocity.X, player.LinearVelocity.Value.Y, kickVelocity.Z);
@@ -2209,7 +2109,7 @@ namespace Lemma.Factories
 			bool rolling = false;
 			input.Bind(settings.Roll, PCInput.InputState.Down, delegate()
 			{
-				if (!aimMode && !input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !rolling && player.EnableRoll && !player.IsSwimming)
+				if (!input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !rolling && player.EnableRoll && !player.IsSwimming)
 				{
 					// Try to roll
 					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
@@ -2429,7 +2329,7 @@ namespace Lemma.Factories
 			};
 			updateLevitateAnimation();
 			model.Add(new NotifyBinding(updateLevitateAnimation, levitationMode));
-			crosshair.Add(new Binding<bool>(crosshair.Visible, () => levitationMode && !player.IsLevitating && player.IsSupported, levitationMode, player.IsLevitating, player.IsSupported));
+			crosshair.Add(new Binding<bool>(crosshair.Visible, () => (levitationMode && !player.IsLevitating && player.IsSupported), levitationMode, player.IsLevitating, player.IsSupported));
 
 			result.Add(new NotifyBinding(delegate()
 			{

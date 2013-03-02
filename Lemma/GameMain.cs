@@ -95,6 +95,8 @@ namespace Lemma
 
 		private DisplayModeCollection supportedDisplayModes;
 
+		private const float startGamma = 30.0f;
+
 		private int displayModeIndex;
 
 		public GameMain(bool allowEditing, string mapFile)
@@ -1372,7 +1374,7 @@ namespace Lemma
 				{
 					this.respawnTimer = -1.0f;
 					this.mapJustLoaded = true;
-					this.Renderer.Tint.Value = Vector3.Zero;
+					this.Renderer.InternalGamma.Value = GameMain.startGamma;
 				});
 
 				logo.Add(new CommandBinding(this.MapLoaded, delegate() { resume.Visible.Value = saveButton.Visible.Value = true; }));
@@ -1385,7 +1387,7 @@ namespace Lemma
 			if (!this.allowEditing)
 			{
 				this.MapFile.Value = null; // Clears all the entities too
-				this.Renderer.Tint.Value = Vector3.One;
+				this.Renderer.InternalGamma.Value = 0.0f;
 				this.Renderer.BackgroundColor.Value = Color.Black;
 				this.IsMouseVisible.Value = true;
 
@@ -1482,7 +1484,7 @@ namespace Lemma
 			if (this.EditorEnabled)
 			{
 				this.player = null;
-				this.Renderer.Tint.Value = Vector3.One;
+				this.Renderer.InternalGamma.Value = 0.0f;
 				if (this.editor == null)
 				{
 					this.editor = Factory.Get("Editor").CreateAndBind(this);
@@ -1507,15 +1509,21 @@ namespace Lemma
 				{
 					if (this.loadingSavedGame)
 					{
-						this.Renderer.Tint.Value = Vector3.One;
+						this.Renderer.InternalGamma.Value = 0.0f;
 						this.PlayerSpawned.Execute(this.player);
 						this.loadingSavedGame = false;
 						this.respawnTimer = 0;
 					}
 					else
 					{
-						this.Renderer.Tint.Value = Vector3.Zero;
-						this.Camera.Position.Value = new Vector3(0, -10000, 0);
+						if (this.respawnTimer <= 0)
+						{
+							this.AddComponent(new Animation
+							(
+								new Animation.FloatMoveTo(this.Renderer.InternalGamma, GameMain.startGamma, 1.0f),
+								new Animation.Set<Vector3>(this.Camera.Position, new Vector3(0, -10000, 0))
+							));
+						}
 						if (this.respawnTimer > GameMain.respawnInterval || this.respawnTimer < 0)
 						{
 							if (createPlayer)
@@ -1551,7 +1559,7 @@ namespace Lemma
 								mouse.Value = new Vector2(spawn.Rotation, 0.0f);
 							}
 
-							this.AddComponent(new Animation(new Animation.Vector3MoveTo(this.Renderer.Tint, Vector3.One, 1.0f)));
+							this.AddComponent(new Animation(new Animation.FloatMoveTo(this.Renderer.InternalGamma, 0.0f, 1.0f)));
 							this.respawnTimer = 0;
 
 							this.PlayerSpawned.Execute(this.player);

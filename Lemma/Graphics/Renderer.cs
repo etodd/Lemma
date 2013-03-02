@@ -54,6 +54,7 @@ namespace Lemma.Components
 
 		public Property<float> BlurAmount = new Property<float>();
 		public Property<Vector3> Tint = new Property<Vector3> { Value = Vector3.One };
+		public Property<float> InternalGamma = new Property<float> { Value = 0.0f };
 		public Property<float> Gamma = new Property<float> { Value = 1.0f };
 		public Property<float> MotionBlurAmount = new Property<float> { Value = 1.0f };
 		private Texture2D lightRampTexture;
@@ -134,10 +135,16 @@ namespace Lemma.Components
 				}
 			};
 
+			this.InternalGamma.Set = delegate(float value)
+			{
+				this.InternalGamma.InternalValue = value;
+				this.Gamma.Reset();
+			};
+
 			this.Gamma.Set = delegate(float value)
 			{
 				this.Gamma.InternalValue = value;
-				this.toneMapEffect.Parameters["Gamma"].SetValue(value);
+				this.toneMapEffect.Parameters["Gamma"].SetValue(value + this.InternalGamma);
 			};
 
 			if (this.allowMotionBlur)

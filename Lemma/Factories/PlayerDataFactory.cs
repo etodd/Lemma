@@ -23,27 +23,18 @@ namespace Lemma.Factories
 			Entity result = new Entity(main, "PlayerData");
 
 #if DEVELOPMENT
-			result.Add("EnablePrecisionJump", new Property<bool> { Value = true });
-			result.Add("EnableRoll", new Property<bool> { Value = true });
-			result.Add("EnableKick", new Property<bool> { Value = true });
-			result.Add("EnableWallRun", new Property<bool> { Value = true });
-			result.Add("EnableWallRunHorizontal", new Property<bool> { Value = true });
-			result.Add("EnableEnhancedWallRun", new Property<bool> { Value = true });
-			result.Add("EnableLevitation", new Property<bool> { Value = true });
-			result.Add("EnableSprint", new Property<bool> { Value = true });
-			result.Add("EnableSlowMotion", new Property<bool> { Value = true });
+			const bool enabled = true;
 #else
-			result.Add("EnablePrecisionJump", new Property<bool> { Value = false });
-			result.Add("EnableAim", new Property<bool> { Value = false });
-			result.Add("EnableRoll", new Property<bool> { Value = false });
-			result.Add("EnableKick", new Property<bool> { Value = false });
-			result.Add("EnableWallRun", new Property<bool> { Value = false });
-			result.Add("EnableWallRunHorizontal", new Property<bool> { Value = false });
-			result.Add("EnableEnhancedWallRun", new Property<bool> { Value = false });
-			result.Add("EnableLevitation", new Property<bool> { Value = false });
-			result.Add("EnableSprint", new Property<bool> { Value = false });
-			result.Add("EnableSlowMotion", new Property<bool> { Value = false });
+			const bool enabled = false;
 #endif
+
+			result.Add("EnableRoll", new Property<bool> { Value = enabled });
+			result.Add("EnableKick", new Property<bool> { Value = enabled });
+			result.Add("EnableWallRun", new Property<bool> { Value = enabled });
+			result.Add("EnableWallRunHorizontal", new Property<bool> { Value = enabled });
+			result.Add("EnableEnhancedWallRun", new Property<bool> { Value = enabled });
+			result.Add("EnableLevitation", new Property<bool> { Value = enabled });
+			result.Add("EnableSlowMotion", new Property<bool> { Value = enabled });
 			result.Add("JumpSpeed", new Property<float> { Value = 10.0f });
 			result.Add("Stamina", new Property<int> { Value = 100 });
 			result.Add("Pistol", new Property<Entity.Handle> { Editable = false });

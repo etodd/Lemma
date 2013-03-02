@@ -82,16 +82,19 @@ namespace Lemma.Scripts
 
 		protected static void hideMessage(Container container, float delay = 0.0f)
 		{
-			script.Add(new Animation
-			(
-				new Animation.Delay(messageFadeTime + delay),
-				new Animation.Parallel
+			if (container != null && container.Active)
+			{
+				script.Add(new Animation
 				(
-					new Animation.FloatMoveTo(container.Opacity, 0.0f, messageFadeTime),
-					new Animation.FloatMoveTo(((TextElement)container.Children[0]).Opacity, 0.0f, messageFadeTime)
-				),
-				new Animation.Execute(container.Delete)
-			));
+					new Animation.Delay(messageFadeTime + delay),
+					new Animation.Parallel
+					(
+						new Animation.FloatMoveTo(container.Opacity, 0.0f, messageFadeTime),
+						new Animation.FloatMoveTo(((TextElement)container.Children[0]).Opacity, 0.0f, messageFadeTime)
+					),
+					new Animation.Execute(container.Delete)
+				));
+			}
 		}
 	}
 }

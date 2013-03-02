@@ -1054,21 +1054,37 @@ namespace Lemma.Components
 						foreach (SpawnGroup spawn in spawns)
 						{
 							List<DynamicMap> spawnedMaps = new List<DynamicMap>();
+							BlockFactory blockFactory = Factory.Get<BlockFactory>();
 							foreach (List<Box> island in spawn.Islands)
 							{
-								Box firstBox = island.First();
-								Entity newMap = factory.CreateAndBind(spawn.Source.main, firstBox.X, firstBox.Y, firstBox.Z);
-								newMap.Get<Transform>().Matrix.Value = spawn.Source.Transform;
-								DynamicMap newMapComponent = newMap.Get<DynamicMap>();
-								newMapComponent.Offset.Value = spawn.Source.Offset;
-								newMapComponent.BuildFromBoxes(island);
-								spawn.Source.notifyEmptied(island.SelectMany(x => x.GetCoords()), newMapComponent);
-								newMapComponent.notifyFilled(island.SelectMany(x => x.GetCoords()), spawn.Source);
-								newMapComponent.Transform.Reset();
-								if (spawn.Source is DynamicMap)
-									newMapComponent.IsAffectedByGravity.Value = ((DynamicMap)spawn.Source).IsAffectedByGravity;
-								spawn.Source.main.Add(newMap);
-								spawnedMaps.Add(newMapComponent);
+								if (island.Count == 1)
+								{
+									// Just create a temporary physics block instead of a full-blown map
+									Box b = island.First();
+									Coordinate coord = new Coordinate { X = b.X, Y = b.Y, Z = b.Z };
+									Entity block = blockFactory.CreateAndBind(main);
+									block.Get<Transform>().Matrix.Value = this.Transform;
+									block.Get<Transform>().Position.Value = this.GetAbsolutePosition(coord);
+									b.Type.ApplyToBlock(block);
+									block.Get<ModelInstance>().GetVector3Parameter("Offset").Value = this.GetRelativePosition(coord);
+									main.Add(block);
+								}
+								else
+								{
+									Box firstBox = island.First();
+									Entity newMap = factory.CreateAndBind(spawn.Source.main, firstBox.X, firstBox.Y, firstBox.Z);
+									newMap.Get<Transform>().Matrix.Value = spawn.Source.Transform;
+									DynamicMap newMapComponent = newMap.Get<DynamicMap>();
+									newMapComponent.Offset.Value = spawn.Source.Offset;
+									newMapComponent.BuildFromBoxes(island);
+									spawn.Source.notifyEmptied(island.SelectMany(x => x.GetCoords()), newMapComponent);
+									newMapComponent.notifyFilled(island.SelectMany(x => x.GetCoords()), spawn.Source);
+									newMapComponent.Transform.Reset();
+									if (spawn.Source is DynamicMap)
+										newMapComponent.IsAffectedByGravity.Value = ((DynamicMap)spawn.Source).IsAffectedByGravity;
+									spawn.Source.main.Add(newMap);
+									spawnedMaps.Add(newMapComponent);
+								}
 							}
 							if (spawn.Callback != null)
 								spawn.Callback(spawnedMaps);
@@ -2424,9 +2440,8 @@ namespace Lemma.Components
 					// Spawn new maps for portions that have been cut off
 
 					IEnumerable<IEnumerable<Box>> islands;
-					Dictionary<IEnumerable<Box>, int> sizes = new Dictionary<IEnumerable<Box>, int>();
 					bool foundPermanentBlock;
-					this.GetAdjacentIslands(this.removalCoords, out islands, out foundPermanentBlock, sizes, null);
+					this.GetAdjacentIslands(this.removalCoords, out islands, out foundPermanentBlock, null);
 
 					List<List<Box>> finalIslands = new List<List<Box>>();
 
@@ -2434,20 +2449,7 @@ namespace Lemma.Components
 
 					foreach (IEnumerable<Box> island in islands)
 					{
-						if (sizes[island] == 1)
-						{
-							// Just create a temporary physics block instead of a full-blown map
-							Box b = island.First();
-							Coordinate coord = new Coordinate { X = b.X, Y = b.Y, Z = b.Z };
-							Entity block = blockFactory.CreateAndBind(main);
-							block.Get<Transform>().Matrix.Value = this.Transform;
-							block.Get<Transform>().Position.Value = this.GetAbsolutePosition(coord);
-							b.Type.ApplyToBlock(block);
-							block.Get<ModelInstance>().GetVector3Parameter("Offset").Value = this.GetRelativePosition(coord);
-							main.Add(block);
-						}
-						else
-							finalIslands.Add(island.ToList());
+						finalIslands.Add(island.ToList());
 
 						// Remove these boxes from the map
 						foreach (Box adjacent in island)
@@ -2616,7 +2618,7 @@ namespace Lemma.Components
 			return result;
 		}
 
-		public void GetAdjacentIslands(IEnumerable<Coordinate> removals, out IEnumerable<IEnumerable<Box>> islands, out bool foundPermanentBlock, Dictionary<IEnumerable<Box>, int> sizes, IEnumerable<Box> ignore)
+		public void GetAdjacentIslands(IEnumerable<Coordinate> removals, out IEnumerable<IEnumerable<Box>> islands, out bool foundPermanentBlock, IEnumerable<Box> ignore)
 		{
 			List<Dictionary<Box, bool>> lists = new List<Dictionary<Box, bool>>();
 
@@ -2665,14 +2667,7 @@ namespace Lemma.Components
 
 			// Spawn the dynamic maps
 			if (foundPermanentBlock)
-			{
 				islands = lists.Select(x => x.Keys);
-				if (sizes != null)
-				{
-					foreach (IEnumerable<Box> list in lists.Select(x => x.Keys))
-						sizes[list] = list.Sum(x => x.Width * x.Height * x.Depth);
-				}
-			}
 			else if (lists.Count > 1)
 			{
 				IEnumerable<Box> biggestList = null;
@@ -2686,8 +2681,6 @@ namespace Lemma.Components
 						biggestList = list;
 						biggestSize = size;
 					}
-					if (sizes != null)
-						sizes[list] = size;
 				}
 
 				islands = lists.Select(x => x.Keys).Except(new[] { biggestList });
@@ -3721,7 +3714,7 @@ namespace Lemma.Components
 
 					Vector3 norm = normal == Direction.None ? -Vector3.Normalize(ray) : normal.GetVector();
 
-					Vector3 planePosition = this.GetRelativePosition(actualCoord) + norm * 0.5f;
+					Vector3 planePosition = new Vector3(actualCoord.X + 0.5f, actualCoord.Y + 0.5f, actualCoord.Z + 0.5f) + norm * 0.5f;
 
 					return new RaycastResult { Coordinate = actualCoord, Normal = normal, Position = this.GetAbsolutePosition(actualStart + (ray * Vector3.Dot((planePosition - actualStart), norm) / Vector3.Dot(ray, norm))) };
 				}
@@ -3865,7 +3858,7 @@ namespace Lemma.Components
 		/// <returns></returns>
 		public Vector3 GetRelativePosition(int x, int y, int z)
 		{
-			return new Vector3(x + 0.5f, y + 0.5f, z + 0.5f);
+			return new Vector3(x + 0.5f, y + 0.5f, z + 0.5f) - this.Offset;
 		}
 
 		public Vector3 GetAbsolutePosition(Coordinate coord)

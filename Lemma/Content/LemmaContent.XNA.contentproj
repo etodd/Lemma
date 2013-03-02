@@ -191,6 +191,10 @@
       <Name>tutorials</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Maps\start.cs">
+      <Name>start</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Compile Include="Models\spotlight.fbx">
       <Name>spotlight</Name>
       <Importer>FbxImporter</Importer>
@@ -238,12 +242,6 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
     </Compile>
-    <Compile Include="Models\arrow.fbx">
-      <Name>arrow</Name>
-      <Importer>FbxImporter</Importer>
-      <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\UnlitSolidColor.fx</ProcessorParameters_EffectFileName>
-    </Compile>
     <Compile Include="Models\clouds.fbx">
       <Name>clouds</Name>
       <Importer>FbxImporter</Importer>
@@ -273,6 +271,10 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\InstancedSolidColor.fx</ProcessorParameters_EffectFileName>
     </Compile>
+    <None Include="Maps\start.map">
+      <Name>start</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Effects\Animation.fx">

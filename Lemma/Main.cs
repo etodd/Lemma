@@ -105,6 +105,8 @@ namespace Lemma
 		public Property<MouseState> MouseState = new Property<MouseState>();
 		public new Property<bool> IsMouseVisible = new Property<bool> { };
 
+		public object ComponentFlushLock = new object();
+
 		public void Add(Entity entity)
 		{
 			if (entity.Active)
@@ -205,53 +207,56 @@ namespace Lemma
 			if (this.updating)
 				return;
 
-			foreach (IComponent c in this.componentsToAdd)
+			lock (this.ComponentFlushLock)
 			{
-				this.components.Add(c);
-				Type t = c.GetType();
-				if (typeof(IDrawableComponent).IsAssignableFrom(t))
+				foreach (IComponent c in this.componentsToAdd)
 				{
-					this.drawables.Add((IDrawableComponent)c);
-					if (this.drawableBinding != null)
+					this.components.Add(c);
+					Type t = c.GetType();
+					if (typeof(IDrawableComponent).IsAssignableFrom(t))
 					{
-						this.drawableBinding.Delete();
-						this.drawableBinding = null;
+						this.drawables.Add((IDrawableComponent)c);
+						if (this.drawableBinding != null)
+						{
+							this.drawableBinding.Delete();
+							this.drawableBinding = null;
+						}
+					}
+					if (typeof(IUpdateableComponent).IsAssignableFrom(t))
+						this.updateables.Add((IUpdateableComponent)c);
+					if (typeof(IDrawablePreFrameComponent).IsAssignableFrom(t))
+						this.preframeDrawables.Add((IDrawablePreFrameComponent)c);
+					if (typeof(INonPostProcessedDrawableComponent).IsAssignableFrom(t))
+						this.nonPostProcessedDrawables.Add((INonPostProcessedDrawableComponent)c);
+					if (typeof(IDrawableAlphaComponent).IsAssignableFrom(t))
+					{
+						this.alphaDrawables.Add((IDrawableAlphaComponent)c);
+						if (this.alphaDrawableBinding != null)
+						{
+							this.alphaDrawableBinding.Delete();
+							this.alphaDrawableBinding = null;
+						}
 					}
 				}
-				if (typeof(IUpdateableComponent).IsAssignableFrom(t))
-					this.updateables.Add((IUpdateableComponent)c);
-				if (typeof(IDrawablePreFrameComponent).IsAssignableFrom(t))
-					this.preframeDrawables.Add((IDrawablePreFrameComponent)c);
-				if (typeof(INonPostProcessedDrawableComponent).IsAssignableFrom(t))
-					this.nonPostProcessedDrawables.Add((INonPostProcessedDrawableComponent)c);
-				if (typeof(IDrawableAlphaComponent).IsAssignableFrom(t))
-				{
-					this.alphaDrawables.Add((IDrawableAlphaComponent)c);
-					if (this.alphaDrawableBinding != null)
-					{
-						this.alphaDrawableBinding.Delete();
-						this.alphaDrawableBinding = null;
-					}
-				}
-			}
-			this.componentsToAdd.Clear();
+				this.componentsToAdd.Clear();
 
-			foreach (IComponent c in this.componentsToRemove)
-			{
-				Type t = c.GetType();
-				if (typeof(IUpdateableComponent).IsAssignableFrom(t))
-					this.updateables.Remove((IUpdateableComponent)c);
-				if (typeof(IDrawableComponent).IsAssignableFrom(t))
-					this.drawables.Remove((IDrawableComponent)c);
-				if (typeof(IDrawablePreFrameComponent).IsAssignableFrom(t))
-					this.preframeDrawables.Remove((IDrawablePreFrameComponent)c);
-				if (typeof(INonPostProcessedDrawableComponent).IsAssignableFrom(t))
-					this.nonPostProcessedDrawables.Remove((INonPostProcessedDrawableComponent)c);
-				if (typeof(IDrawableAlphaComponent).IsAssignableFrom(t))
-					this.alphaDrawables.Remove((IDrawableAlphaComponent)c);
-				this.components.Remove(c);
+				foreach (IComponent c in this.componentsToRemove)
+				{
+					Type t = c.GetType();
+					if (typeof(IUpdateableComponent).IsAssignableFrom(t))
+						this.updateables.Remove((IUpdateableComponent)c);
+					if (typeof(IDrawableComponent).IsAssignableFrom(t))
+						this.drawables.Remove((IDrawableComponent)c);
+					if (typeof(IDrawablePreFrameComponent).IsAssignableFrom(t))
+						this.preframeDrawables.Remove((IDrawablePreFrameComponent)c);
+					if (typeof(INonPostProcessedDrawableComponent).IsAssignableFrom(t))
+						this.nonPostProcessedDrawables.Remove((INonPostProcessedDrawableComponent)c);
+					if (typeof(IDrawableAlphaComponent).IsAssignableFrom(t))
+						this.alphaDrawables.Remove((IDrawableAlphaComponent)c);
+					this.components.Remove(c);
+				}
+				this.componentsToRemove.Clear();
 			}
-			this.componentsToRemove.Clear();
 		}
 
 		public Main()
