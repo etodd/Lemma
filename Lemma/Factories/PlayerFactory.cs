@@ -133,6 +133,7 @@ namespace Lemma.Factories
 			crosshair.Image.Value = "Images\\crosshair";
 			crosshair.AnchorPoint.Value = new Vector2(0.5f);
 			crosshair.Add(new Binding<Vector2, Point>(crosshair.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
+			crosshair.Visible.Value = false;
 			ui.Root.Children.Add(crosshair);
 
 			const float healthBarWidth = 200.0f;
@@ -447,41 +448,8 @@ namespace Lemma.Factories
 				}
 			});
 
-			bool fire = false;
 			float aimAnimationBlend = 0.0f;
 			const float aimAnimationBlendTotal = AnimatedModel.DefaultBlendTime;
-
-			Animation zoomAnimation = null;
-
-			Action scopeOutPistol = delegate()
-			{
-				if (model.IsPlaying("Aim"))
-				{
-					model.Stop("Aim");
-					Sound.PlayCue(main, "Pistol Scope Out");
-
-					if (zoomAnimation != null)
-						zoomAnimation.Delete.Execute();
-					zoomAnimation = new Animation(new Animation.FloatMoveToSpeed(main.Camera.FieldOfView, MathHelper.ToRadians(80.0f), 3.0f));
-					result.Add(zoomAnimation);
-				}
-			};
-
-			Action scopeInPistol = delegate()
-			{
-				Entity p = pistol.Value.Target;
-				if (p != null && p.GetProperty<bool>("Active") && !player.Crouched && !model.IsPlaying("PlayerReload") && (player.IsSupported || player.IsSwimming) && p.GetProperty<int>("Ammo") > 0)
-				{
-					model.Stop("Aim");
-					model.StartClip("Aim", 2, true, 0.15f);
-					Sound.PlayCue(main, "Pistol Scope In");
-
-					if (zoomAnimation != null)
-						zoomAnimation.Delete.Execute();
-					zoomAnimation = new Animation(new Animation.FloatMoveToSpeed(main.Camera.FieldOfView, MathHelper.ToRadians(50.0f), 3.0f));
-					result.Add(zoomAnimation);
-				}
-			};
 
 			Property<bool> levitationMode = result.GetOrMakeProperty<bool>("LevitationMode");
 
@@ -505,25 +473,17 @@ namespace Lemma.Factories
 
 				bool pistolDrawn = pistol.Value.Target != null && pistol.Value.Target.GetProperty<bool>("Active");
 
+				crosshair.Visible.Value = pistolDrawn || (levitationMode && !player.IsLevitating);
+
 				if (pistolDrawn)
 				{
 					const float defaultMaxAngle = (float)Math.PI * 0.2f;
 					const float aimedMaxAngle = (float)Math.PI * 0.5f;
 					const float reloadingMaxAngle = (float)Math.PI * 0.0f;
 
-					SkinnedModel.Clip aimClip = model["Aim"], reloadClip = model["PlayerReload"];
+					SkinnedModel.Clip reloadClip = model["PlayerReload"];
 
-					float maxAngle;
-					
-					if (model.IsPlaying("Aim"))
-						maxAngle = MathHelper.Lerp(defaultMaxAngle, aimedMaxAngle, aimClip.BlendTime / aimClip.BlendTotalTime);
-					else
-					{
-						if (aimClip.BlendTotalTime > 0)
-							maxAngle = MathHelper.Lerp(aimedMaxAngle, defaultMaxAngle, aimClip.BlendTime / aimClip.BlendTotalTime);
-						else
-							maxAngle = defaultMaxAngle;
-					}
+					float maxAngle = defaultMaxAngle;
 
 					if (model.IsPlaying("PlayerReload"))
 						maxAngle = MathHelper.Lerp(maxAngle, reloadingMaxAngle, reloadClip.BlendTime / reloadClip.BlendTotalTime);
@@ -602,23 +562,6 @@ namespace Lemma.Factories
 
 					main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shakeAngle) * Matrix.CreateFromAxisAngle(right, -input.Mouse.Value.Y);
 				}
-
-				if (fire)
-				{
-					// Necessary because the fire command must be executed *after* the pistol has been correctly positioned each frame.
-					fire = false;
-					model.Stop("PlayerFire", "PlayerUnaimedFire");
-					model.StartClip(model.IsPlaying("Aim") ? "PlayerFire" : "PlayerUnaimedFire", 4, false, 0.0f);
-					pistol.Value.Target.GetCommand("Fire").Execute();
-					if (pistol.Value.Target.GetProperty<int>("Ammo") == 0)
-					{
-						result.Add(new Animation
-						(
-							new Animation.Delay(0.2f),
-							new Animation.Execute(scopeOutPistol)
-						));
-					}
-				}
 			});
 
 			// Movement binding
@@ -650,8 +593,9 @@ namespace Lemma.Factories
 					if (player.WallRunState.Value != Player.WallRun.None)
 						return;
 
-					if (input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload"))
-						scopeInPistol();
+					Entity p = pistol.Value.Target;
+					if (p != null && p.GetProperty<bool>("Active") && !input.GetInput(settings.Aim) && !model.IsPlaying("PlayerReload"))
+						p.GetProperty<bool>("Active").Value = false;
 
 					model.Stop("WallWalkLeft", "WallWalkRight", "WallWalkStraight", "WallSlideDown");
 					if (player.IsSupported && !lastSupported)
@@ -888,6 +832,9 @@ namespace Lemma.Factories
 			{
 				stopKick();
 				player.AllowUncrouch.Value = true;
+				if (pistol.Value.Target != null)
+					pistol.Value.Target.GetProperty<bool>("Active").Value = false;
+
 				wallRunMap = lastWallRunMap = map;
 				wallDirection = lastWallDirection = dir;
 
@@ -1230,8 +1177,15 @@ namespace Lemma.Factories
 			input.Bind(settings.Aim, PCInput.InputState.Down, delegate()
 			{
 				Entity p = pistol.Value.Target;
-				if (p != null && p.GetProperty<bool>("Active"))
-					scopeInPistol();
+				if (p != null && !player.Crouched && player.WallRunState.Value == Player.WallRun.None)
+					p.GetProperty<bool>("Active").Value = true;
+			});
+
+			input.Bind(settings.Aim, PCInput.InputState.Up, delegate()
+			{
+				Entity p = pistol.Value.Target;
+				if (!model.IsPlaying("PlayerReload") && p != null)
+					p.GetProperty<bool>("Active").Value = false;
 			});
 
 			Map.GlobalRaycastResult aimRaycastResult = new Map.GlobalRaycastResult();
@@ -1241,22 +1195,13 @@ namespace Lemma.Factories
 					aimRaycastResult = Map.GlobalRaycast(main.Camera.Position.Value, main.Camera.Forward, main.Camera.FarPlaneDistance);
 			});
 
-			input.Bind(settings.ToggleItem1, PCInput.InputState.Down, delegate()
+			input.Bind(settings.ToggleSpecialAbility, PCInput.InputState.Down, delegate()
 			{
-				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload"))
+				if (!player.EnableLevitation || player.Crouched)
 					return;
 
 				Entity p = pistol.Value.Target;
-				if (p != null)
-				{
-					Property<bool> pistolActive = p.GetProperty<bool>("Active");
-					pistolActive.Value = !pistolActive;
-				}
-			});
-
-			input.Bind(settings.ToggleItem2, PCInput.InputState.Down, delegate()
-			{
-				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || !player.EnableLevitation || player.Crouched)
+				if (p != null && p.GetProperty<bool>("Active"))
 					return;
 
 				levitationMode.Value = !levitationMode;
@@ -1264,8 +1209,6 @@ namespace Lemma.Factories
 
 			float levitateButtonPressStart = -1.0f;
 			DynamicMap levitatingMap = null;
-
-			input.Bind(settings.Aim, PCInput.InputState.Up, scopeOutPistol);
 
 			result.Add(new CommandBinding(result.Delete, delegate()
 			{
@@ -1444,6 +1387,8 @@ namespace Lemma.Factories
 				player.EnableWalking.Value = false;
 				player.Crouched.Value = true;
 				player.AllowUncrouch.Value = false;
+				if (pistol.Value.Target != null)
+					pistol.Value.Target.GetProperty<bool>("Active").Value = false;
 
 				float vaultTime = 0.0f;
 				if (vaultMover != null)
@@ -1490,7 +1435,7 @@ namespace Lemma.Factories
 
 			jump = delegate(bool allowVault, bool onlyVault)
 			{
-				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || player.Crouched)
+				if (player.Crouched)
 					return false;
 
 				bool supported = player.IsSupported;
@@ -1858,7 +1803,7 @@ namespace Lemma.Factories
 			// Wall-run, vault, predictive
 			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
 			{
-				if (model.IsPlaying("Aim") || model.IsPlaying("PlayerReload") || (player.Crouched && player.IsSupported))
+				if (player.Crouched && player.IsSupported)
 					return;
 
 				bool vaulted = jump(true, true); // Try vaulting first
@@ -1914,7 +1859,7 @@ namespace Lemma.Factories
 				if (pistolEntity != null && pistolEntity != value.Target)
 					pistolEntity.GetCommand("Detach").Execute();
 
-				model.Stop("Draw", "Aim");
+				model.Stop("Draw");
 
 				pistol.InternalValue = value;
 				pistolEntity = value.Target;
@@ -1929,7 +1874,7 @@ namespace Lemma.Factories
 					{
 						if (pistolActive)
 						{
-							model.StartClip("Draw", 1, true);
+							model.StartClip("Draw", 5, true);
 							levitationMode.Value = false;
 						}
 						else
@@ -1995,13 +1940,15 @@ namespace Lemma.Factories
 				Vector3 forward = -rotationMatrix.Forward;
 				Vector3 right = rotationMatrix.Right;
 				Entity p = pistol.Value.Target;
-				if (p != null && player.IsSupported && !player.Crouched && p.GetProperty<bool>("Active"))
+				if (p != null && !player.Crouched && p.GetProperty<bool>("Active"))
 				{
 					if (main.TotalTime - lastFire > fireInterval && p.GetProperty<int>("Ammo") > 0)
 					{
 						// Fire pistol
 						lastFire = main.TotalTime;
-						fire = true;
+						model.Stop("PlayerUnaimedFire");
+						model.StartClip("PlayerUnaimedFire", 6, false, 0.0f);
+						pistol.Value.Target.GetCommand<Vector3, Vector3>("FireRay").Execute(main.Camera.Position, main.Camera.Forward);
 					}
 				}
 				else if (levitationMode)
@@ -2010,7 +1957,7 @@ namespace Lemma.Factories
 					if (player.IsSupported && !player.Crouched)
 						tryLevitate();
 				}
-				else if (!input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && Vector3.Dot(player.LinearVelocity, forward) > 0.0f)
+				else if (!input.GetInput(settings.Aim) && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && Vector3.Dot(player.LinearVelocity, forward) > 0.0f)
 				{
 					// Kick
 					canKick = false;
@@ -2042,6 +1989,10 @@ namespace Lemma.Factories
 
 					player.Crouched.Value = true;
 					player.AllowUncrouch.Value = false;
+
+					if (pistol.Value.Target != null)
+						pistol.Value.Target.GetProperty<bool>("Active").Value = false;
+
 					player.LinearVelocity.Value += forward * player.LinearVelocity.Value.Length() * 0.5f + new Vector3(0, player.JumpSpeed * 0.25f, 0);
 
 					Vector3 kickVelocity = player.LinearVelocity;
@@ -2109,7 +2060,7 @@ namespace Lemma.Factories
 			bool rolling = false;
 			input.Bind(settings.Roll, PCInput.InputState.Down, delegate()
 			{
-				if (!input.GetInput(settings.Aim) && !model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && !rolling && player.EnableRoll && !player.IsSwimming)
+				if (!input.GetInput(settings.Aim) && !model.IsPlaying("PlayerReload") && !rolling && player.EnableRoll && !player.IsSwimming)
 				{
 					// Try to roll
 					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
@@ -2206,6 +2157,8 @@ namespace Lemma.Factories
 						// Crouch
 						player.Crouched.Value = true;
 						player.AllowUncrouch.Value = false;
+						if (pistol.Value.Target != null)
+							pistol.Value.Target.GetProperty<bool>("Active").Value = false;
 
 						Direction rightDir = floorMap.GetRelativeDirection(right);
 						Direction forwardDir = floorMap.GetRelativeDirection(forward);
@@ -2259,9 +2212,10 @@ namespace Lemma.Factories
 			input.Bind(settings.Reload, PCInput.InputState.Down, delegate()
 			{
 				Entity p = pistol.Value.Target;
-				if (p != null && p.GetProperty<bool>("Active"))
+				if (p != null && player.WallRunState.Value == Player.WallRun.None && !player.Crouched)
 				{
-					if (!model.IsPlaying("Aim") && !model.IsPlaying("PlayerReload") && (player.IsSupported || player.IsSwimming) && p.GetProperty<int>("Magazines") > 0)
+					p.GetProperty<bool>("Active").Value = true;
+					if (!model.IsPlaying("PlayerReload") && (player.IsSupported || player.IsSwimming) && p.GetProperty<int>("Magazines") > 0)
 					{
 						p.GetCommand("Reload").Execute();
 						model.StartClip("PlayerReload", 6);
@@ -2329,7 +2283,6 @@ namespace Lemma.Factories
 			};
 			updateLevitateAnimation();
 			model.Add(new NotifyBinding(updateLevitateAnimation, levitationMode));
-			crosshair.Add(new Binding<bool>(crosshair.Visible, () => (levitationMode && !player.IsLevitating && player.IsSupported), levitationMode, player.IsLevitating, player.IsSupported));
 
 			result.Add(new NotifyBinding(delegate()
 			{

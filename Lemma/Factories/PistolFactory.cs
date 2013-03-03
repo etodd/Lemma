@@ -68,6 +68,18 @@ namespace Lemma.Factories
 			fire.Add(new Binding<Vector3>(fire.Position, transform.Position));
 			fire.Serialize = false;
 			result.Add("FireSound", fire);
+			Sound scopeIn = new Sound();
+			scopeIn.Cue.Value = "Pistol Scope In";
+			scopeIn.Is3D.Value = true;
+			scopeIn.Add(new Binding<Vector3>(scopeIn.Position, transform.Position));
+			scopeIn.Serialize = false;
+			result.Add("ScopeInSound", scopeIn);
+			Sound scopeOut = new Sound();
+			scopeOut.Cue.Value = "Pistol Scope Out";
+			scopeOut.Is3D.Value = true;
+			scopeOut.Add(new Binding<Vector3>(scopeOut.Position, transform.Position));
+			scopeOut.Serialize = false;
+			result.Add("ScopeOutSound", scopeOut);
 			Sound reload = new Sound();
 			reload.Cue.Value = "Reload";
 			reload.Is3D.Value = true;
@@ -80,12 +92,15 @@ namespace Lemma.Factories
 			reloadWithChamberedRound.Add(new Binding<Vector3>(reloadWithChamberedRound.Position, transform.Position));
 			reloadWithChamberedRound.Serialize = false;
 			result.Add("ReloadWithChamberedRoundSound", reloadWithChamberedRound);
-			Sound drawSound = new Sound();
-			drawSound.Cue.Value = "Pistol Draw";
-			drawSound.Is3D.Value = true;
-			drawSound.Add(new Binding<Vector3>(drawSound.Position, transform.Position));
-			drawSound.Serialize = false;
-			result.Add("DrawSound", drawSound);
+
+			active.Set = delegate(bool value)
+			{
+				if (value && !active.InternalValue)
+					scopeIn.Play.Execute();
+				else if (!value && active.InternalValue)
+					scopeOut.Play.Execute();
+				active.InternalValue = value;
+			};
 
 			UIRenderer ui = new UIRenderer();
 			result.Add("UI", ui);
@@ -111,12 +126,6 @@ namespace Lemma.Factories
 			magLabel.FontFile.Value = "Font";
 			layout.Children.Add(magLabel);
 			magLabel.Add(new Binding<string, int>(magLabel.Text, x => "x" + x.ToString(), mags));
-
-			result.Add(new NotifyBinding(delegate()
-			{
-				if (active)
-					drawSound.Play.Execute();
-			}, active));
 
 			Action refreshAmmoIcons = delegate()
 			{
@@ -169,6 +178,14 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
+					result.GetCommand<Vector3, Vector3>("FireRay").Execute(Vector3.Transform(new Vector3(-0.15f, 0.17f, 0.0f), transform.Matrix), Vector3.TransformNormal(Vector3.Left, transform.Matrix));
+				},
+			});
+
+			result.Add("FireRay", new Command<Vector3, Vector3>
+			{
+				Action = delegate(Vector3 pos, Vector3 dir)
+				{
 					if (!active || ammo < 1 || model.IsPlaying("Reload") || model.IsPlaying("ReloadWithChamberedRound"))
 						return;
 
@@ -198,7 +215,7 @@ namespace Lemma.Factories
 
 					fire.Play.Execute();
 
-					Map.GlobalRaycastResult hit = Map.GlobalRaycast(Vector3.Transform(new Vector3(-0.15f, 0.17f, 0.0f), transform.Matrix), Vector3.TransformNormal(Vector3.Left, transform.Matrix), main.Camera.FarPlaneDistance);
+					Map.GlobalRaycastResult hit = Map.GlobalRaycast(pos, dir, main.Camera.FarPlaneDistance);
 					if (hit.Map != null)
 					{
 						PointLight hitLight = new PointLight();

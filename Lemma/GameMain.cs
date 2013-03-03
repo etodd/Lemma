@@ -54,8 +54,7 @@ namespace Lemma
 			public Property<PCInput.PCInputBinding> Aim = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.RightMouseButton } };
 			public Property<PCInput.PCInputBinding> Fire = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton } };
 			public Property<PCInput.PCInputBinding> Reload = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.R } };
-			public Property<PCInput.PCInputBinding> ToggleItem1 = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D1 } };
-			public Property<PCInput.PCInputBinding> ToggleItem2 = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D2 } };
+			public Property<PCInput.PCInputBinding> ToggleSpecialAbility = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D1 } };
 			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F5 } };
 			public Property<PCInput.PCInputBinding> ToggleFullscreen = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F11 } };
 		}
@@ -1083,8 +1082,7 @@ namespace Lemma
 				addInputSetting(this.Settings.Roll, "Roll / Crouch");
 				addInputSetting(this.Settings.Fire, "Kick / Primary Fire");
 				addInputSetting(this.Settings.Aim, "Aim");
-				addInputSetting(this.Settings.ToggleItem1, "Toggle Item 1");
-				addInputSetting(this.Settings.ToggleItem2, "Toggle Item 2");
+				addInputSetting(this.Settings.ToggleSpecialAbility, "Toggle Special Ability");
 				addInputSetting(this.Settings.Reload, "Reload");
 				addInputSetting(this.Settings.QuickSave, "Quicksave");
 				addInputSetting(this.Settings.ToggleFullscreen, "Toggle Fullscreen");

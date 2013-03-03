@@ -1260,6 +1260,30 @@ namespace Lemma.Components
 			Map.Maps.Add(this);
 		}
 
+		public IEnumerable<Chunk> GetChunksBetween(Map.Coordinate a, Map.Coordinate b)
+		{
+			a.X = Math.Max(this.minX, a.X);
+			b.X = Math.Min(this.maxX - 1, b.X);
+			a.Y = Math.Max(this.minY, a.Y);
+			b.Y = Math.Min(this.maxY - 1, b.Y);
+			a.Z = Math.Max(this.minX, a.Z);
+			b.Z = Math.Min(this.maxX - 1, b.Z);
+			if (b.X > a.X && b.Y > a.Y && b.Z > a.Z)
+			{
+				int chunkX = ((a.X - this.minX) / this.chunkSize), chunkY = ((a.Y - this.minY) / this.chunkSize), chunkZ = ((a.Z - this.minZ) / this.chunkSize);
+				int nextChunkX = ((b.X - this.minX) / this.chunkSize), nextChunkY = ((b.Y - this.minY) / this.chunkSize), nextChunkZ = ((b.Z - this.minZ) / this.chunkSize);
+				int numChunks = this.chunks.GetLength(0); // Same number of chunks in each dimension
+				for (int ix = chunkX; ix <= nextChunkX; ix++)
+				{
+					for (int iy = chunkY; iy <= nextChunkY; iy++)
+					{
+						for (int iz = chunkZ; iz <= nextChunkZ; iz++)
+							yield return this.chunks[ix, iy, iz];
+					}
+				}
+			}
+		}
+
 		protected void postDeserialization()
 		{
 			foreach (Chunk c in this.Chunks)

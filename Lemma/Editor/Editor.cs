@@ -70,6 +70,8 @@ namespace Lemma.Components
 		private Map.Coordinate coord;
 		private float movementInterval;
 
+		private bool justCommitedOrRevertedVoxelOperation;
+
 		public Editor()
 		{
 			this.BrushSize.Value = 1;
@@ -227,9 +229,10 @@ namespace Lemma.Components
 
 			this.StartVoxelTranslation.Action = delegate()
 			{
-				this.mapState = new Map.MapState(this.SelectedEntities[0].Get<Map>().Chunks.SelectMany(x => x.Boxes));
+				Map m = this.SelectedEntities[0].Get<Map>();
 				this.originalSelectionStart = this.VoxelSelectionStart;
 				this.originalSelectionEnd = this.VoxelSelectionEnd;
+				this.mapState = new Map.MapState(m.GetChunksBetween(this.originalSelectionStart, this.originalSelectionEnd).SelectMany(x => x.Boxes));
 				this.voxelDuplicate = false;
 				this.TransformMode.Value = TransformModes.Translate;
 			};
@@ -306,6 +309,8 @@ namespace Lemma.Components
 				this.mapState = null;
 				this.TransformMode.Value = TransformModes.None;
 				this.TransformAxis.Value = TransformAxes.All;
+				if (this.MapEditMode)
+					this.justCommitedOrRevertedVoxelOperation = true;
 				this.offsetTransforms.Clear();
 			};
 
@@ -319,6 +324,7 @@ namespace Lemma.Components
 					this.VoxelSelectionEnd.Value = this.originalSelectionEnd;
 					this.restoreMap(this.VoxelSelectionStart, this.VoxelSelectionEnd, false);
 					this.mapState = null;
+					this.justCommitedOrRevertedVoxelOperation = true;
 				}
 				else
 				{
@@ -427,9 +433,12 @@ namespace Lemma.Components
 
 			if (this.MapEditMode)
 			{
+				if (!this.Fill && !this.Empty)
+					this.justCommitedOrRevertedVoxelOperation = false;
+
 				Map map = this.SelectedEntities[0].Get<Map>();
 				Map.Coordinate coord = map.GetCoordinate(this.Position);
-				if (this.TransformMode.Value == TransformModes.None && (this.Fill || this.Empty || this.Extend))
+				if (this.TransformMode.Value == TransformModes.None && (this.Fill || this.Empty || this.Extend) && !this.justCommitedOrRevertedVoxelOperation)
 				{
 					this.NeedsSave.Value = true;
 					if (this.Brush == "[Procedural]")

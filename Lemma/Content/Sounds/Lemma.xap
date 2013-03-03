@@ -17,8 +17,8 @@ Global Settings
     Header File = Lemma.h;
     Exclude Category Names = 0;
     Exclude Variable Names = 0;
-    Last Modified Low = 1710408658;
-    Last Modified High = 30282299;
+    Last Modified Low = 3416901981;
+    Last Modified High = 30283846;
 
     Category
     {
@@ -333,7 +333,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::017d0c77-77e2-4b64-b004-59178ffb568e;
+            Name = Sound::454e7960-cae2-4add-a2c4-0e76338c5283;
             Property = 0;
             Sound = 1;
             Line Color = 4290413690;
@@ -366,7 +366,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::7d5ae850-ba15-4b56-ad9f-cd1ae7f68f8b;
+            Name = Sound::6df83483-7472-45c4-b557-98007b75376f;
             Property = 0;
             Sound = 1;
             Line Color = 4293962024;
@@ -399,7 +399,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::fdb3e2f9-9dca-46e7-834d-379b457940c6;
+            Name = Sound::e7337856-8c7b-4ccc-ae78-caac542f5c7f;
             Property = 1;
             Sound = 1;
             Line Color = 4285108677;
@@ -432,7 +432,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::70486a22-a30e-4562-ad50-2826ed7e8418;
+            Name = 1::66ade51b-353b-4abd-a24a-edc48024d12a;
             Property = 0;
             Sound = 0;
             Line Color = 4279752145;
@@ -460,7 +460,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::48a90535-3ae9-4405-bcf9-f4bc5caeb8ca;
+            Name = 1::c35fed3a-2f93-4d76-8061-59502622d8ba;
             Property = 0;
             Sound = 0;
             Line Color = 4284596858;
@@ -488,7 +488,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::f043be0a-573a-46e6-8ed3-b5dfd738d3ba;
+            Name = 1::a30fc915-bd89-4ed0-8a78-21d100612c95;
             Property = 1;
             Sound = 0;
             Line Color = 4281010387;
@@ -516,7 +516,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::a9cdab92-b131-4380-8ec4-6ce6d7d46358;
+            Name = 1::3d53c1c5-4004-4e72-baa4-f82d96d21334;
             Property = 1;
             Sound = 0;
             Line Color = 4292380630;
@@ -549,7 +549,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::757e2fe3-88ce-453f-b1ec-50fec32f33c4;
+            Name = 1::81d1ee48-0b1a-4f96-b1a0-803495e05876;
             Property = 0;
             Sound = 0;
             Line Color = 4286296165;
@@ -582,7 +582,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::691f8aba-26fd-4612-84f0-e3a67892ec58;
+            Name = Sound::93073bb7-80e0-4944-9a31-57dac768a944;
             Property = 0;
             Sound = 1;
             Line Color = 4286980210;
@@ -615,7 +615,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::ff36b5ae-67fc-483f-a7bc-979e883d5713;
+            Name = Sound::cd256fd1-f721-449d-b122-8351df969b7d;
             Property = 1;
             Sound = 1;
             Line Color = 4290600932;
@@ -648,7 +648,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::6fb664a6-ded5-49cf-b7a5-aa1ae38b8417;
+            Name = 1::70e416f2-3af7-427b-8919-af57e34b0bc7;
             Property = 0;
             Sound = 0;
             Line Color = 4290171999;
@@ -681,7 +681,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::e27b4c7c-73e8-45c7-8837-cff6fad684b2;
+            Name = 1::84cce3f7-4b02-4231-ab57-916274d680ba;
             Property = 0;
             Sound = 0;
             Line Color = 4281489917;
@@ -714,7 +714,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::0c6d9547-5eb1-4d98-a2ab-4852b438134e;
+            Name = 1::5d442a9d-e83c-4190-90c3-613cc85a598c;
             Property = 0;
             Sound = 0;
             Line Color = 4279931599;
@@ -747,7 +747,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Effect::1224df36-028b-40b6-906a-001cca7e632e;
+            Name = Effect::5ef8450c-0fb2-4edc-a0c4-285ae7ff7f2d;
             Property = 5;
             Sound = 0;
             Line Color = 4280672033;
@@ -781,7 +781,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Effect::62d23a45-2fa6-4adf-9f8f-929b1f6b6f0a;
+            Name = Effect::5c5fd25c-3ac9-4c31-a730-bff0cdc3c94c;
             Property = 5;
             Sound = 0;
             Line Color = 4280009593;
@@ -815,7 +815,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Effect::97cab089-7935-47e6-b7e3-6c6ba3eef548;
+            Name = Effect::c3f4be16-5b10-48a5-9d5a-169536468383;
             Property = 5;
             Sound = 0;
             Line Color = 4288044720;
@@ -859,7 +859,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::d7daf74e-b64e-4413-94fc-7639ac44b6ea;
+            Name = Sound::6cb5c09c-5b85-4700-9128-7d98ad55e718;
             Property = 0;
             Sound = 1;
             Line Color = 4290754937;
@@ -1110,12 +1110,10 @@ Wave Bank
     Compression Preset Name = <none>;
     Xbox Bank Last Modified Low = 0;
     Xbox Bank Last Modified High = 0;
-    PC Bank Last Modified Low = 1710488740;
-    PC Bank Last Modified High = 30282299;
-    Header Last Modified Low = 0;
-    Header Last Modified High = 0;
-    Bank Last Revised Low = 1514753461;
-    Bank Last Revised High = 30282299;
+    PC Bank Last Modified Low = 455532648;
+    PC Bank Last Modified High = 30283847;
+    Bank Last Revised Low = 455502622;
+    Bank Last Revised High = 30283847;
 
     Wave
     {
@@ -2867,29 +2865,6 @@ Wave Bank
 
     Wave
     {
-        Name = pistol-draw;
-        File = Player\pistol-draw.wav;
-        Build Settings Last Modified Low = 3538904466;
-        Build Settings Last Modified High = 30248854;
-
-        Cache
-        {
-            Format Tag = 0;
-            Channels = 1;
-            Sampling Rate = 44100;
-            Bits Per Sample = 1;
-            Play Region Offset = 44;
-            Play Region Length = 63314;
-            Loop Region Offset = 0;
-            Loop Region Length = 0;
-            File Type = 1;
-            Last Modified Low = 3397156358;
-            Last Modified High = 30248854;
-        }
-    }
-
-    Wave
-    {
         Name = reload-chambered-round;
         File = Player\reload-chambered-round.wav;
         Build Settings Last Modified Low = 2432131097;
@@ -3697,8 +3672,8 @@ Sound Bank
     Windows File = Sounds.xsb;
     Xbox Bank Path Edited = 0;
     Windows Bank Path Edited = 1;
-    Bank Last Modified Low = 1710889408;
-    Bank Last Modified High = 30282299;
+    Bank Last Modified Low = 455964288;
+    Bank Last Modified High = 30283847;
     Header Last Modified High = 0;
     Header Last Modified Low = 0;
 
@@ -3833,7 +3808,7 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::757e2fe3-88ce-453f-b1ec-50fec32f33c4;
+                RPC Curve Name = 1::81d1ee48-0b1a-4f96-b1a0-803495e05876;
             }
         }
     }
@@ -4021,25 +3996,25 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Pitch in / pitch out;
-                RPC Curve Name = 1::70486a22-a30e-4562-ad50-2826ed7e8418;
+                RPC Curve Name = 1::66ade51b-353b-4abd-a24a-edc48024d12a;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Pitch in / pitch out;
-                RPC Curve Name = 1::48a90535-3ae9-4405-bcf9-f4bc5caeb8ca;
+                RPC Curve Name = 1::c35fed3a-2f93-4d76-8061-59502622d8ba;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Pitch in / pitch out;
-                RPC Curve Name = 1::f043be0a-573a-46e6-8ed3-b5dfd738d3ba;
+                RPC Curve Name = 1::a30fc915-bd89-4ed0-8a78-21d100612c95;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Pitch in / pitch out;
-                RPC Curve Name = 1::a9cdab92-b131-4380-8ec4-6ce6d7d46358;
+                RPC Curve Name = 1::3d53c1c5-4004-4e72-baa4-f82d96d21334;
             }
         }
     }
@@ -4498,13 +4473,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in slow;
-                RPC Curve Name = 1::e27b4c7c-73e8-45c7-8837-cff6fad684b2;
+                RPC Curve Name = 1::84cce3f7-4b02-4231-ab57-916274d680ba;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out slow;
-                RPC Curve Name = 1::6fb664a6-ded5-49cf-b7a5-aa1ae38b8417;
+                RPC Curve Name = 1::70e416f2-3af7-427b-8919-af57e34b0bc7;
             }
         }
     }
@@ -4622,7 +4597,7 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::757e2fe3-88ce-453f-b1ec-50fec32f33c4;
+                RPC Curve Name = 1::81d1ee48-0b1a-4f96-b1a0-803495e05876;
             }
         }
     }
@@ -4737,7 +4712,7 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::0c6d9547-5eb1-4d98-a2ab-4852b438134e;
+                RPC Curve Name = 1::5d442a9d-e83c-4190-90c3-613cc85a598c;
             }
         }
     }
@@ -4806,13 +4781,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::0c6d9547-5eb1-4d98-a2ab-4852b438134e;
+                RPC Curve Name = 1::5d442a9d-e83c-4190-90c3-613cc85a598c;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::757e2fe3-88ce-453f-b1ec-50fec32f33c4;
+                RPC Curve Name = 1::81d1ee48-0b1a-4f96-b1a0-803495e05876;
             }
         }
     }
@@ -5327,13 +5302,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade out slow;
-                RPC Curve Name = 1::6fb664a6-ded5-49cf-b7a5-aa1ae38b8417;
+                RPC Curve Name = 1::70e416f2-3af7-427b-8919-af57e34b0bc7;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::0c6d9547-5eb1-4d98-a2ab-4852b438134e;
+                RPC Curve Name = 1::5d442a9d-e83c-4190-90c3-613cc85a598c;
             }
         }
     }
@@ -5626,7 +5601,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = grunt4;
-                    Entry Index = 91;
+                    Entry Index = 90;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -5924,7 +5899,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = splash2;
-                    Entry Index = 94;
+                    Entry Index = 93;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -6332,7 +6307,7 @@ Sound Bank
     Sound
     {
         Name = scope-in;
-        Volume = -1200;
+        Volume = -50;
         Pitch = 0;
         Priority = 0;
 
@@ -6389,7 +6364,7 @@ Sound Bank
     Sound
     {
         Name = scope-out;
-        Volume = -1200;
+        Volume = -520;
         Pitch = 0;
         Priority = 0;
 
@@ -6507,68 +6482,6 @@ Sound Bank
 
     Sound
     {
-        Name = pistol-draw;
-        Volume = -1200;
-        Pitch = 0;
-        Priority = 0;
-
-        Category Entry
-        {
-            Name = Default;
-        }
-
-        RPC Entry
-        {
-            RPC Name = Quiet distance attenuation;
-        }
-
-        RPC Entry
-        {
-            RPC Name = Time shift;
-        }
-
-        Effect Entry
-        {
-            Effect Name = Microsoft Reverb;
-        }
-
-        Track
-        {
-            Volume = 0;
-            Use Filter = 0;
-
-            Play Wave Event
-            {
-                Break Loop = 0;
-                Use Speaker Position = 0;
-                Use Center Speaker = 1;
-                New Speaker Position On Loop = 1;
-                Speaker Position Angle = 0.000000;
-                Speaker Position Arc = 0.000000;
-
-                Event Header
-                {
-                    Timestamp = 0;
-                    Relative = 0;
-                    Random Recurrence = 0;
-                    Random Offset = 0;
-                }
-
-                Wave Entry
-                {
-                    Bank Name = Sounds;
-                    Bank Index = 0;
-                    Entry Name = pistol-draw;
-                    Entry Index = 76;
-                    Weight = 255;
-                    Weight Min = 0;
-                }
-            }
-        }
-    }
-
-    Sound
-    {
         Name = reload-chambered-round;
         Volume = -1200;
         Pitch = 0;
@@ -6621,7 +6534,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = reload-chambered-round;
-                    Entry Index = 77;
+                    Entry Index = 76;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -6928,7 +6841,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = shatter1;
-                    Entry Index = 78;
+                    Entry Index = 77;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -6938,7 +6851,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = shatter2;
-                    Entry Index = 79;
+                    Entry Index = 78;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -6948,7 +6861,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = shatter3;
-                    Entry Index = 80;
+                    Entry Index = 79;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7010,7 +6923,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = levitate;
-                    Entry Index = 81;
+                    Entry Index = 80;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7072,7 +6985,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = levitate-stop;
-                    Entry Index = 82;
+                    Entry Index = 81;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7141,7 +7054,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = metal-footsteps1;
-                    Entry Index = 83;
+                    Entry Index = 82;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7151,7 +7064,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = metal-footsteps2;
-                    Entry Index = 84;
+                    Entry Index = 83;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7161,7 +7074,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = metal-footsteps3;
-                    Entry Index = 85;
+                    Entry Index = 84;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7171,7 +7084,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = metal-footsteps4;
-                    Entry Index = 86;
+                    Entry Index = 85;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7181,7 +7094,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = metal-footsteps5;
-                    Entry Index = 87;
+                    Entry Index = 86;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7191,7 +7104,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = metal-footsteps6;
-                    Entry Index = 88;
+                    Entry Index = 87;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7254,7 +7167,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = flag-flapping;
-                    Entry Index = 89;
+                    Entry Index = 88;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7316,7 +7229,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = spawn-activate;
-                    Entry Index = 90;
+                    Entry Index = 89;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7515,7 +7428,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = gain-health;
-                    Entry Index = 92;
+                    Entry Index = 91;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7577,7 +7490,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = gain-health-small;
-                    Entry Index = 93;
+                    Entry Index = 92;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7646,7 +7559,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = jump1;
-                    Entry Index = 95;
+                    Entry Index = 94;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7656,7 +7569,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = jump2;
-                    Entry Index = 96;
+                    Entry Index = 95;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7666,7 +7579,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = jump3;
-                    Entry Index = 97;
+                    Entry Index = 96;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7707,7 +7620,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = jump-swoosh1;
-                    Entry Index = 98;
+                    Entry Index = 97;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7717,7 +7630,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = jump-swoosh2;
-                    Entry Index = 99;
+                    Entry Index = 98;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7727,7 +7640,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = jump-swoosh3;
-                    Entry Index = 100;
+                    Entry Index = 99;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7796,7 +7709,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = jump2;
-                    Entry Index = 96;
+                    Entry Index = 95;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7806,7 +7719,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = jump3;
-                    Entry Index = 97;
+                    Entry Index = 96;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7922,7 +7835,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = thunder1;
-                    Entry Index = 102;
+                    Entry Index = 101;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7932,7 +7845,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = thunder2;
-                    Entry Index = 103;
+                    Entry Index = 102;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7942,7 +7855,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = thunder3;
-                    Entry Index = 104;
+                    Entry Index = 103;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7952,7 +7865,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = thunder4;
-                    Entry Index = 105;
+                    Entry Index = 104;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -7962,7 +7875,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = thunder5;
-                    Entry Index = 106;
+                    Entry Index = 105;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -8035,7 +7948,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = rain1;
-                    Entry Index = 101;
+                    Entry Index = 100;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -8044,13 +7957,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::0c6d9547-5eb1-4d98-a2ab-4852b438134e;
+                RPC Curve Name = 1::5d442a9d-e83c-4190-90c3-613cc85a598c;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::757e2fe3-88ce-453f-b1ec-50fec32f33c4;
+                RPC Curve Name = 1::81d1ee48-0b1a-4f96-b1a0-803495e05876;
             }
         }
     }
@@ -8113,7 +8026,7 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::757e2fe3-88ce-453f-b1ec-50fec32f33c4;
+                RPC Curve Name = 1::81d1ee48-0b1a-4f96-b1a0-803495e05876;
             }
         }
     }
@@ -8167,7 +8080,7 @@ Sound Bank
                     Bank Name = Sounds;
                     Bank Index = 0;
                     Entry Name = headlamp;
-                    Entry Index = 107;
+                    Entry Index = 106;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -8309,7 +8222,7 @@ Sound Bank
         Sound Entry
         {
             Name = DirtRubble;
-            Index = 35;
+            Index = 34;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -8389,7 +8302,7 @@ Sound Bank
         Sound Entry
         {
             Name = DirtRubble;
-            Index = 35;
+            Index = 34;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -8409,7 +8322,7 @@ Sound Bank
         Sound Entry
         {
             Name = WoodRubble;
-            Index = 36;
+            Index = 35;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -8609,7 +8522,7 @@ Sound Bank
         Sound Entry
         {
             Name = MetalFootsteps;
-            Index = 40;
+            Index = 39;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -8629,7 +8542,7 @@ Sound Bank
         Sound Entry
         {
             Name = MetalFootsteps;
-            Index = 40;
+            Index = 39;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -8669,7 +8582,7 @@ Sound Bank
         Sound Entry
         {
             Name = MetalFootsteps;
-            Index = 40;
+            Index = 39;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9129,26 +9042,6 @@ Sound Bank
 
     Cue
     {
-        Name = Pistol Draw;
-
-        Variation
-        {
-            Variation Type = 3;
-            Variation Table Type = 1;
-            New Variation on Loop = 0;
-        }
-
-        Sound Entry
-        {
-            Name = pistol-draw;
-            Index = 33;
-            Weight Min = 0;
-            Weight Max = 255;
-        }
-    }
-
-    Cue
-    {
         Name = Reload With Chambered Round;
 
         Variation
@@ -9161,7 +9054,7 @@ Sound Bank
         Sound Entry
         {
             Name = reload-chambered-round;
-            Index = 34;
+            Index = 33;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9221,7 +9114,7 @@ Sound Bank
         Sound Entry
         {
             Name = shatter;
-            Index = 37;
+            Index = 36;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9261,7 +9154,7 @@ Sound Bank
         Sound Entry
         {
             Name = DirtRubble;
-            Index = 35;
+            Index = 34;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9321,7 +9214,7 @@ Sound Bank
         Sound Entry
         {
             Name = MetalFootsteps;
-            Index = 40;
+            Index = 39;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9361,7 +9254,7 @@ Sound Bank
         Sound Entry
         {
             Name = MetalFootsteps;
-            Index = 40;
+            Index = 39;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9401,7 +9294,7 @@ Sound Bank
         Sound Entry
         {
             Name = MetalFootsteps;
-            Index = 40;
+            Index = 39;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9441,7 +9334,7 @@ Sound Bank
         Sound Entry
         {
             Name = MetalFootsteps;
-            Index = 40;
+            Index = 39;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9481,7 +9374,7 @@ Sound Bank
         Sound Entry
         {
             Name = Levitate;
-            Index = 38;
+            Index = 37;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9501,7 +9394,7 @@ Sound Bank
         Sound Entry
         {
             Name = LevitateStop;
-            Index = 39;
+            Index = 38;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9521,7 +9414,7 @@ Sound Bank
         Sound Entry
         {
             Name = FlagFlapping;
-            Index = 41;
+            Index = 40;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9541,7 +9434,7 @@ Sound Bank
         Sound Entry
         {
             Name = SpawnActivate;
-            Index = 42;
+            Index = 41;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9561,7 +9454,7 @@ Sound Bank
         Sound Entry
         {
             Name = VineMove;
-            Index = 43;
+            Index = 42;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9581,7 +9474,7 @@ Sound Bank
         Sound Entry
         {
             Name = gain-health;
-            Index = 44;
+            Index = 43;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9601,7 +9494,7 @@ Sound Bank
         Sound Entry
         {
             Name = gain-health-small;
-            Index = 45;
+            Index = 44;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9641,7 +9534,7 @@ Sound Bank
         Sound Entry
         {
             Name = jump;
-            Index = 46;
+            Index = 45;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9661,7 +9554,7 @@ Sound Bank
         Sound Entry
         {
             Name = land;
-            Index = 47;
+            Index = 46;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9681,7 +9574,7 @@ Sound Bank
         Sound Entry
         {
             Name = small-damage;
-            Index = 48;
+            Index = 47;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9701,7 +9594,7 @@ Sound Bank
         Sound Entry
         {
             Name = Thunder;
-            Index = 49;
+            Index = 48;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9721,7 +9614,7 @@ Sound Bank
         Sound Entry
         {
             Name = Rain;
-            Index = 50;
+            Index = 49;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9741,7 +9634,7 @@ Sound Bank
         Sound Entry
         {
             Name = lemma-prelinger;
-            Index = 51;
+            Index = 50;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9921,7 +9814,7 @@ Sound Bank
         Sound Entry
         {
             Name = MetalFootsteps;
-            Index = 40;
+            Index = 39;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9961,7 +9854,7 @@ Sound Bank
         Sound Entry
         {
             Name = shatter;
-            Index = 37;
+            Index = 36;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -9981,7 +9874,7 @@ Sound Bank
         Sound Entry
         {
             Name = headlamp;
-            Index = 52;
+            Index = 51;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -10001,7 +9894,7 @@ Sound Bank
         Sound Entry
         {
             Name = shatter;
-            Index = 37;
+            Index = 36;
             Weight Min = 0;
             Weight Max = 255;
         }
