@@ -28,7 +28,6 @@ import math  # math.pi
 import bpy
 from mathutils import Vector, Matrix
 
-
 # I guess FBX uses degrees instead of radians (Arystan).
 # Call this function just before writing to FBX.
 # 180 / math.pi == 57.295779513
@@ -158,10 +157,10 @@ def action_bone_names(obj, action):
 
 # ob must be OB_MESH
 def BPyMesh_meshWeight2List(ob, me):
-    ''' Takes a mesh and return its group names and a list of lists, one list per vertex.
+    """ Takes a mesh and return its group names and a list of lists, one list per vertex.
     aligning the each vert list with the group names, each list contains float value for the weight.
     These 2 lists can be modified and then used with list2MeshWeight to apply the changes.
-    '''
+    """
 
     # Clear the vert group.
     groupNames = [g.name for g in ob.vertex_groups]
@@ -216,6 +215,7 @@ def save_single(operator, scene, filepath="",
         object_types={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH'},
         use_mesh_modifiers=True,
         mesh_smooth_type='FACE',
+        use_armature_deform_only=False,
         use_anim=True,
         use_anim_optimize=True,
         anim_optimize_precision=6,
@@ -420,7 +420,7 @@ def save_single(operator, scene, filepath="",
     except:
         import traceback
         traceback.print_exc()
-        operator.report({'ERROR'}, "Could'nt open file %r" % filepath)
+        operator.report({'ERROR'}, "Couldn't open file %r" % filepath)
         return {'CANCELLED'}
 
     # convenience
@@ -463,9 +463,9 @@ def save_single(operator, scene, filepath="",
 
     # --------------- funcs for exporting
     def object_tx(ob, loc, matrix, matrix_mod=None):
-        '''
+        """
         Matrix mod is so armature objects can modify their bone matrices
-        '''
+        """
         if isinstance(ob, bpy.types.Bone):
 
             # we know we have a matrix
@@ -523,11 +523,11 @@ def save_single(operator, scene, filepath="",
         return loc, rot, scale, matrix, matrix_rot
 
     def write_object_tx(ob, loc, matrix, matrix_mod=None):
-        '''
+        """
         We have loc to set the location if non blender objects that have a location
 
         matrix_mod is only used for bones at the moment
-        '''
+        """
         loc, rot, scale, matrix, matrix_rot = object_tx(ob, loc, matrix, matrix_mod)
 
         fw('\n\t\t\tProperty: "Lcl Translation", "Lcl Translation", "A+",%.15f,%.15f,%.15f' % loc)
@@ -685,7 +685,11 @@ def save_single(operator, scene, filepath="",
 
         #~ poseMatrix = write_object_props(my_bone.blenBone, None, None, my_bone.fbxArm.parRelMatrix())[3]
         poseMatrix = write_object_props(my_bone.blenBone, pose_bone=my_bone.getPoseBone())[3]  # dont apply bone matrices anymore
-        pose_items.append((my_bone.fbxName, poseMatrix))
+
+        # Use the same calculation as in write_sub_deformer_skin to compute the global
+        # transform of the bone for the bind pose.
+        global_matrix_bone = (my_bone.fbxArm.matrixWorld * my_bone.restMatrix) * mtx4_z90
+        pose_items.append((my_bone.fbxName, global_matrix_bone))
 
         # fw('\n\t\t\tProperty: "Size", "double", "",%.6f' % ((my_bone.blenData.head['ARMATURESPACE'] - my_bone.blenData.tail['ARMATURESPACE']) * my_bone.fbxArm.parRelMatrix()).length)
         fw('\n\t\t\tProperty: "Size", "double", "",1')
@@ -845,9 +849,9 @@ def save_single(operator, scene, filepath="",
         write_camera_dummy('Producer Left', (-4000, 0, 0), 1, 30000, 1, (0, 1, 0))
 
     def write_camera(my_cam):
-        '''
+        """
         Write a blender camera
-        '''
+        """
         render = scene.render
         width = render.resolution_x
         height = render.resolution_y
@@ -892,14 +896,14 @@ def save_single(operator, scene, filepath="",
         fw('\n\t\t\tProperty: "AspectW", "double", "",%i' % width)
         fw('\n\t\t\tProperty: "AspectH", "double", "",%i' % height)
 
-        '''Camera aspect ratio modes.
+        """Camera aspect ratio modes.
             0 If the ratio mode is eWINDOW_SIZE, both width and height values aren't relevant.
             1 If the ratio mode is eFIXED_RATIO, the height value is set to 1.0 and the width value is relative to the height value.
             2 If the ratio mode is eFIXED_RESOLUTION, both width and height values are in pixels.
             3 If the ratio mode is eFIXED_WIDTH, the width value is in pixels and the height value is relative to the width value.
             4 If the ratio mode is eFIXED_HEIGHT, the height value is in pixels and the width value is relative to the height value.
 
-        Definition at line 234 of file kfbxcamera.h. '''
+        Definition at line 234 of file kfbxcamera.h. """
 
         fw('\n\t\t\tProperty: "PixelAspectRatio", "double", "",1'
            '\n\t\t\tProperty: "UseFrameColor", "bool", "",0'
@@ -1248,9 +1252,9 @@ def save_single(operator, scene, filepath="",
 	}''')
 
     def write_deformer_skin(obname):
-        '''
+        """
         Each mesh has its own deformer
-        '''
+        """
         fw('\n\tDeformer: "Deformer::Skin %s", "Skin" {' % obname)
         fw('''
 		Version: 100
@@ -1264,13 +1268,13 @@ def save_single(operator, scene, filepath="",
     # in the example was 'Bip01 L Thigh_2'
     def write_sub_deformer_skin(my_mesh, my_bone, weights):
 
-        '''
+        """
         Each subdeformer is specific to a mesh, but the bone it links to can be used by many sub-deformers
         So the SubDeformer needs the mesh-object name as a prefix to make it unique
 
         Its possible that there is no matching vgroup in this mesh, in that case no verts are in the subdeformer,
         a but silly but dosnt really matter
-        '''
+        """
         fw('\n\tDeformer: "SubDeformer::Cluster %s %s", "Cluster" {' % (my_mesh.fbxName, my_bone.fbxName))
 
         fw('''
@@ -1330,19 +1334,19 @@ def save_single(operator, scene, filepath="",
                 fw(',%.8f' % vg[1])
             i += 1
 
-        if my_mesh.fbxParent:
-            # TODO FIXME, this case is broken in some cases. skinned meshes just shouldnt have parents where possible!
-            m = (my_mesh.matrixWorld.inverted() * my_bone.fbxArm.matrixWorld.copy() * my_bone.restMatrix) * mtx4_z90
-        else:
-            # Yes! this is it...  - but dosnt work when the mesh is a.
-            m = (my_mesh.matrixWorld.inverted() * my_bone.fbxArm.matrixWorld.copy() * my_bone.restMatrix) * mtx4_z90
+        # Set TransformLink to the global transform of the bone and Transform
+        # equal to the mesh's transform in bone space.
+        # http://area.autodesk.com/forum/autodesk-fbx/fbx-sdk/why-the-values-return-by-fbxcluster-gettransformmatrix-x-not-same-with-the-value-in-ascii-fbx-file/
 
-        #m = mtx4_z90 * my_bone.restMatrix
-        matstr = mat4x4str(m)
-        matstr_i = mat4x4str(m.inverted())
+        global_bone_matrix = (my_bone.fbxArm.matrixWorld * my_bone.restMatrix) * mtx4_z90
+        global_mesh_matrix = my_mesh.matrixWorld
+        transform_matrix = (global_bone_matrix.inverted() * global_mesh_matrix)
 
-        fw('\n\t\tTransform: %s' % matstr_i)  # THIS IS __NOT__ THE GLOBAL MATRIX AS DOCUMENTED :/
-        fw('\n\t\tTransformLink: %s' % matstr)
+        global_bone_matrix_string = mat4x4str(global_bone_matrix )
+        transform_matrix_string = mat4x4str(transform_matrix )
+
+        fw('\n\t\tTransform: %s' % transform_matrix_string)
+        fw('\n\t\tTransformLink: %s' % global_bone_matrix_string)
         fw('\n\t}')
 
     def write_mesh(my_mesh):
@@ -1352,7 +1356,7 @@ def save_single(operator, scene, filepath="",
         # if there are non NULL materials on this mesh
         do_materials = bool(my_mesh.blenMaterials)
         do_textures = bool(my_mesh.blenTextures)
-        do_uvs = bool(me.uv_textures)
+        do_uvs = bool(me.tessface_uv_textures)
         do_shapekeys = (my_mesh.blenObject.type == 'MESH' and
                         my_mesh.blenObject.data.shape_keys and
                         len(my_mesh.blenObject.data.vertices) == len(me.vertices))
@@ -1363,10 +1367,14 @@ def save_single(operator, scene, filepath="",
         # convert into lists once.
         me_vertices = me.vertices[:]
         me_edges = me.edges[:] if use_mesh_edges else ()
-        me_faces = me.faces[:]
+        me_faces = me.tessfaces[:]
 
         poseMatrix = write_object_props(my_mesh.blenObject, None, my_mesh.parRelMatrix())[3]
-        pose_items.append((my_mesh.fbxName, poseMatrix))
+
+        # Calculate the global transform for the mesh in the bind pose the same way we do
+        # in write_sub_deformer_skin
+        globalMeshBindPose = my_mesh.matrixWorld * mtx4_z90
+        pose_items.append((my_mesh.fbxName, globalMeshBindPose))
 
         if do_shapekeys:
             for kb in my_mesh.blenObject.data.shape_keys.key_blocks[1:]:
@@ -1524,8 +1532,8 @@ def save_single(operator, scene, filepath="",
         # Write VertexColor Layers
         # note, no programs seem to use this info :/
         collayers = []
-        if len(me.vertex_colors):
-            collayers = me.vertex_colors
+        if len(me.tessface_vertex_colors):
+            collayers = me.tessface_vertex_colors
             for colindex, collayer in enumerate(collayers):
                 fw('\n\t\tLayerElementColor: %i {' % colindex)
                 fw('\n\t\t\tVersion: 101')
@@ -1538,7 +1546,7 @@ def save_single(operator, scene, filepath="",
 
                 i = -1
                 ii = 0  # Count how many Colors we write
-
+                print(len(me_faces), len(collayer.data))
                 for fi, cf in enumerate(collayer.data):
                     if len(me_faces[fi].vertices) == 4:
                         colors = cf.color1[:], cf.color2[:], cf.color3[:], cf.color4[:]
@@ -1575,8 +1583,8 @@ def save_single(operator, scene, filepath="",
         # Write UV and texture layers.
         uvlayers = []
         if do_uvs:
-            uvlayers = me.uv_textures
-            for uvindex, uvlayer in enumerate(me.uv_textures):
+            uvlayers = me.tessface_uv_textures
+            for uvindex, uvlayer in enumerate(me.tessface_uv_textures):
                 fw('\n\t\tLayerElementUV: %i {' % uvindex)
                 fw('\n\t\t\tVersion: 101')
                 fw('\n\t\t\tName: "%s"' % uvlayer.name)
@@ -1696,8 +1704,8 @@ def save_single(operator, scene, filepath="",
 
                 mats = my_mesh.blenMaterialList
 
-                if me.uv_textures.active:
-                    uv_faces = me.uv_textures.active.data
+                if me.tessface_uv_textures.active:
+                    uv_faces = me.tessface_uv_textures.active.data
                 else:
                     uv_faces = [None] * len(me_faces)
 
@@ -1757,7 +1765,7 @@ def save_single(operator, scene, filepath="",
 				TypedIndex: 0
 			}''')
 
-        if me.vertex_colors:
+        if me.tessface_vertex_colors:
             fw('''
 			LayerElement:  {
 				Type: "LayerElementColor"
@@ -1863,17 +1871,6 @@ def save_single(operator, scene, filepath="",
                         fw(",0,0,0")
                     i += 1
                 fw('\n\t\t}')
-
-        for v in me_vertices:
-            if i == -1:
-                fw('%.6f,%.6f,%.6f' % v.co[:])
-                i = 0
-            else:
-                if i == 7:
-                    fw('\n\t\t')
-                    i = 0
-                fw(',%.6f,%.6f,%.6f' % v.co[:])
-            i += 1
 
         fw('\n\t}')
 
@@ -1981,6 +1978,7 @@ def save_single(operator, scene, filepath="",
                         mats = me.materials
                     else:
                         me = ob.data
+                        me.update(calc_tessface=True)
                         mats = me.materials
 
 # 						# Support object colors
@@ -2002,9 +2000,9 @@ def save_single(operator, scene, filepath="",
 
                     texture_mapping_local = {}
                     material_mapping_local = {}
-                    if me.uv_textures:
-                        for uvlayer in me.uv_textures:
-                            for f, uf in zip(me.faces, uvlayer.data):
+                    if me.tessface_uv_textures:
+                        for uvlayer in me.tessface_uv_textures:
+                            for f, uf in zip(me.tessfaces, uvlayer.data):
                                 tex = uf.image
                                 textures[tex] = texture_mapping_local[tex] = None
 
@@ -2098,10 +2096,29 @@ def save_single(operator, scene, filepath="",
         # fbxName, blenderObject, my_bones, blenderActions
         #ob_arms[i] = fbxArmObName, ob, arm_my_bones, (ob.action, [])
 
+        if use_armature_deform_only:
+            # tag non deforming bones that have no deforming children
+            deform_map = dict.fromkeys(my_arm.blenData.bones, False)
+            for bone in my_arm.blenData.bones:
+                if bone.use_deform:
+                    deform_map[bone] = True
+                    # tag all parents, even ones that are not deform since their child _is_
+                    for parent in bone.parent_recursive:
+                        deform_map[parent] = True
+
         for bone in my_arm.blenData.bones:
+
+            if use_armature_deform_only:
+                # if this bone doesnt deform, and none of its children deform, skip it!
+                if not deform_map[bone]:
+                    continue
+
             my_bone = my_bone_class(bone, my_arm)
             my_arm.fbxBones.append(my_bone)
             ob_bones.append(my_bone)
+
+        if use_armature_deform_only:
+            del deform_map
 
     # add the meshes to the bones and replace the meshes armature with own armature class
     #for obname, ob, mtx, me, mats, arm, armname in ob_meshes:
@@ -2714,7 +2731,7 @@ Takes:  {''')
                         fw('\n\t\tModel: "Model::%s" {' % my_ob.fbxName)  # ??? - not sure why this is needed
                         fw('\n\t\t\tVersion: 1.1')
                         fw('\n\t\t\tChannel: "Transform" {')
-                        
+
                         context_bone_anim_mats = [(my_ob.getAnimParRelMatrix(frame), my_ob.getAnimParRelMatrixRot(frame)) for frame in range(act_start, act_end + 1)]
 
                         # ----------------
@@ -2879,7 +2896,7 @@ Takes:  {''')
     fw('\n\t\tAmbientLightColor: %.1f,%.1f,%.1f,0' % tuple(world_amb))
     fw('\n\t}')
     fw('\n\tFogOptions:  {')
-    fw('\n\t\tFlogEnable: %i' % has_mist)
+    fw('\n\t\tFogEnable: %i' % has_mist)
     fw('\n\t\tFogMode: 0')
     fw('\n\t\tFogDensity: %.3f' % mist_intense)
     fw('\n\t\tFogStart: %.3f' % mist_start)
@@ -2912,12 +2929,12 @@ Takes:  {''')
         mapping.clear()
     del mapping
 
-    ob_arms[:] = []
-    ob_bones[:] = []
-    ob_cameras[:] = []
-    ob_lights[:] = []
-    ob_meshes[:] = []
-    ob_null[:] = []
+    del ob_arms[:]
+    del ob_bones[:]
+    del ob_cameras[:]
+    del ob_lights[:]
+    del ob_meshes[:]
+    del ob_null[:]
 
     file.close()
 
@@ -2934,6 +2951,7 @@ def defaults_unity3d():
                 use_selection=False,
                 object_types={'ARMATURE', 'EMPTY', 'MESH'},
                 use_mesh_modifiers=True,
+                use_armature_deform_only=True,
                 use_anim=True,
                 use_anim_optimize=False,
                 use_anim_action_all=True,

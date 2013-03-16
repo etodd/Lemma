@@ -62,6 +62,9 @@ namespace SkinnedModel
 		[ContentSerializerIgnore]
 		public bool Loop;
 
+		[ContentSerializerIgnore]
+		public bool StopOnEnd = true;
+
 		/// <summary>
 		/// Gets a combined list containing all the keyframes for all bones,
 		/// sorted by time.
@@ -83,11 +86,16 @@ namespace SkinnedModel
 					return;
 
 				TimeSpan time = value;
-				if (this.Duration.TotalSeconds > 0)
+				if (this.Loop)
 				{
-					while (time > this.Duration)
-						time -= this.Duration;
+					if (this.Duration.TotalSeconds > 0)
+					{
+						while (time > this.Duration)
+							time -= this.Duration;
+					}
 				}
+				else
+					time = time > this.Duration ? this.Duration : time;
 
 				foreach (Channel channel in this.Channels)
 				{

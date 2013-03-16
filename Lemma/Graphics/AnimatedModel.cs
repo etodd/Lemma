@@ -88,7 +88,7 @@ namespace Lemma.Components
 		/// <summary>
 		/// Starts decoding the specified animation clip.
 		/// </summary>
-		public void StartClip(string clipName, int priority = 0, bool loop = false, float blendTime = AnimatedModel.DefaultBlendTime)
+		public void StartClip(string clipName, int priority = 0, bool loop = false, float blendTime = AnimatedModel.DefaultBlendTime, bool stopOnEnd = true)
 		{
 			SkinnedModel.Clip clip = this.skinningData.Clips[clipName];
 
@@ -97,6 +97,7 @@ namespace Lemma.Components
 			clip.BlendTime = 0.0f;
 			clip.BlendTotalTime = blendTime;
 			clip.Loop = loop;
+			clip.StopOnEnd = stopOnEnd;
 			clip.Stopping = false;
 
 			if (!this.CurrentClips.Contains(clip))
@@ -127,7 +128,7 @@ namespace Lemma.Components
 
 				if (!clip.Stopping && clip.Duration.TotalSeconds > 0)
 				{
-					if (newTime >= clip.Duration && !clip.Loop)
+					if (!clip.Loop && clip.StopOnEnd && newTime >= clip.Duration)
 					{
 						clip.Stopping = true;
 						clip.BlendTime = 0.0f;

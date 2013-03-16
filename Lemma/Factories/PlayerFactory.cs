@@ -828,12 +828,16 @@ namespace Lemma.Factories
 
 			// Wall run
 
+			Action stopLevitate = null;
+
 			Action<Map, Direction, Player.WallRun, Vector3, bool> setUpWallRun = delegate(Map map, Direction dir, Player.WallRun state, Vector3 forwardVector, bool addInitialVelocity)
 			{
 				stopKick();
 				player.AllowUncrouch.Value = true;
 				if (pistol.Value.Target != null)
 					pistol.Value.Target.GetProperty<bool>("Active").Value = false;
+				stopLevitate();
+				levitationMode.Value = false;
 
 				wallRunMap = lastWallRunMap = map;
 				wallDirection = lastWallDirection = dir;
@@ -1170,14 +1174,14 @@ namespace Lemma.Factories
 				}
 			});
 
-			// Aiming / selection
+			// Aiming / levitation
 
-			Action tryLevitate = null, stopLevitate = null, delevitateMap = null;
+			Action tryLevitate = null, delevitateMap = null;
 
 			input.Bind(settings.Aim, PCInput.InputState.Down, delegate()
 			{
 				Entity p = pistol.Value.Target;
-				if (p != null && !player.Crouched && player.WallRunState.Value == Player.WallRun.None)
+				if (p != null && !player.Crouched && player.EnableMoves && player.WallRunState.Value == Player.WallRun.None)
 					p.GetProperty<bool>("Active").Value = true;
 			});
 
@@ -1197,7 +1201,7 @@ namespace Lemma.Factories
 
 			input.Bind(settings.ToggleSpecialAbility, PCInput.InputState.Down, delegate()
 			{
-				if (!player.EnableLevitation || player.Crouched)
+				if (!player.EnableMoves || !player.EnableLevitation || player.Crouched || player.WallRunState != Player.WallRun.None)
 					return;
 
 				Entity p = pistol.Value.Target;
@@ -1331,7 +1335,8 @@ namespace Lemma.Factories
 					{
 						Direction relativeWallDir = map.GetRelativeDirection(absoluteWallDir);
 						Vector3 wallVector = map.GetAbsoluteVector(relativeWallDir.GetVector());
-						if (Vector2.Dot(direction, new Vector2(wallVector.X, wallVector.Z)) > -0.25f)
+						float dot = Vector2.Dot(direction, Vector2.Normalize(new Vector2(wallVector.X, wallVector.Z)));
+						if (dot > -0.25f && dot < 0.8f)
 						{
 							Map.Coordinate coord = map.GetCoordinate(position).Move(relativeWallDir, 2);
 							foreach (Direction dir in DirectionExtensions.Directions.Where(x => x.IsPerpendicular(relativeWallDir)))
@@ -1765,6 +1770,9 @@ namespace Lemma.Factories
 			// Jumping
 			input.Bind(settings.Jump, PCInput.InputState.Down, delegate()
 			{
+				if (!player.EnableMoves)
+					return;
+
 				// Don't allow vaulting
 				// Also don't try anything if we're crouched or in the middle of vaulting
 				if (vaultMover == null && !jump(false, false) && player.EnableSlowMotion && !player.Crouched)
@@ -1803,7 +1811,7 @@ namespace Lemma.Factories
 			// Wall-run, vault, predictive
 			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
 			{
-				if (player.Crouched && player.IsSupported)
+				if (!player.EnableMoves || (player.Crouched && player.IsSupported))
 					return;
 
 				bool vaulted = jump(true, true); // Try vaulting first
@@ -1822,12 +1830,18 @@ namespace Lemma.Factories
 					// Predict block possibilities
 					Queue<Prediction> predictions = new Queue<Prediction>();
 					Vector3 jumpVelocity = startSlowMo(predictions, getPredictionInterval());
-					Vector2 direction = new Vector2(jumpVelocity.X, jumpVelocity.Z);
+					Vector2 direction = Vector2.Normalize(new Vector2(jumpVelocity.X, jumpVelocity.Z));
 
-					Prediction prediction = predictions.Dequeue();
-					BlockPossibility possibility = findWall(prediction.Position, direction);
-					if (possibility != null)
-						addBlockPossibility(possibility);
+					while (predictions.Count > 0)
+					{
+						Prediction prediction = predictions.Dequeue();
+						BlockPossibility possibility = findWall(prediction.Position, direction);
+						if (possibility != null)
+						{
+							addBlockPossibility(possibility);
+							break;
+						}
+					}
 				}
 			});
 
@@ -1936,6 +1950,9 @@ namespace Lemma.Factories
 			};
 			input.Bind(settings.Fire, PCInput.InputState.Down, delegate()
 			{
+				if (!player.EnableMoves)
+					return;
+
 				Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
 				Vector3 forward = -rotationMatrix.Forward;
 				Vector3 right = rotationMatrix.Right;
@@ -1954,7 +1971,7 @@ namespace Lemma.Factories
 				else if (levitationMode)
 				{
 					// Levitate
-					if (player.IsSupported && !player.Crouched)
+					if (!player.Crouched)
 						tryLevitate();
 				}
 				else if (!input.GetInput(settings.Aim) && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && Vector3.Dot(player.LinearVelocity, forward) > 0.0f)
@@ -2060,6 +2077,9 @@ namespace Lemma.Factories
 			bool rolling = false;
 			input.Bind(settings.Roll, PCInput.InputState.Down, delegate()
 			{
+				if (!player.EnableMoves)
+					return;
+
 				if (!input.GetInput(settings.Aim) && !model.IsPlaying("PlayerReload") && !rolling && player.EnableRoll && !player.IsSwimming)
 				{
 					// Try to roll
@@ -2115,6 +2135,7 @@ namespace Lemma.Factories
 						rolling = true;
 
 						stopLevitate();
+						levitationMode.Value = false;
 
 						Session.Recorder.Event(main, "Roll");
 
@@ -2271,7 +2292,7 @@ namespace Lemma.Factories
 			{
 				if (levitationMode)
 				{
-					model.StartClip("LevitateMode", 1, true);
+					model.StartClip("LevitateMode", 5, true);
 
 					Entity p = pistol.Value.Target;
 					if (p != null)
@@ -2441,6 +2462,8 @@ namespace Lemma.Factories
 						&& (aimRaycastResult.Map is DynamicMap || !aimRaycastResult.Map[aimRaycastResult.Coordinate.Value].Permanent);
 					crosshair.Tint.Value = canLevitate ? Microsoft.Xna.Framework.Color.White : Microsoft.Xna.Framework.Color.Red;
 				}
+				else
+					crosshair.Tint.Value = Microsoft.Xna.Framework.Color.White;
 			});
 
 			delevitateMap = delegate()

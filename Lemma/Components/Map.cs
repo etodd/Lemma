@@ -1278,7 +1278,11 @@ namespace Lemma.Components
 					for (int iy = chunkY; iy <= nextChunkY; iy++)
 					{
 						for (int iz = chunkZ; iz <= nextChunkZ; iz++)
-							yield return this.chunks[ix, iy, iz];
+						{
+							Chunk chunk = this.chunks[ix, iy, iz];
+							if (chunk != null)
+								yield return chunk;
+						}
 					}
 				}
 			}

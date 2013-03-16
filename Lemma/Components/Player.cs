@@ -50,6 +50,8 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<bool> EnableWalking = new Property<bool> { Editable = false, Value = true };
 		[XmlIgnore]
+		public Property<bool> EnableMoves = new Property<bool> { Editable = false, Value = true };
+		[XmlIgnore]
 		public Property<bool> HasTraction = new Property<bool> { Editable = false };
 		[XmlIgnore]
 		public Property<int> Stamina = new Property<int> { Editable = false, Value = 100 };
