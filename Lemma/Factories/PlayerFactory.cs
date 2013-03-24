@@ -19,10 +19,10 @@ namespace Lemma.Factories
 			this.Color = new Vector3(0.4f, 0.4f, 0.4f);
 		}
 
-		struct AnimatingBlock
+		struct BlockBuildOrder
 		{
 			public Map Map;
-			public Map.Coordinate Coord;
+			public Map.Coordinate Coordinate;
 			public Map.CellState State;
 		}
 
@@ -801,42 +801,30 @@ namespace Lemma.Factories
 				}
 			});
 
-			Dictionary<AnimatingBlock, bool> animatingBlocks = new Dictionary<AnimatingBlock, bool>();
-
 			const float enhancedWallRunStaminaCostPerCell = 0.1f;
 
-			Action<IEnumerable<AnimatingBlock>, bool> buildBlocks = delegate(IEnumerable<AnimatingBlock> blocks, bool fake)
+			Action<IEnumerable<BlockBuildOrder>, bool> buildBlocks = delegate(IEnumerable<BlockBuildOrder> blocks, bool fake)
 			{
 				int index = 0;
 				EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
-				foreach (AnimatingBlock entry in blocks)
+				foreach (BlockBuildOrder entry in blocks)
 				{
-					if (animatingBlocks.ContainsKey(entry))
+					if (factory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = entry.Map, Coordinate = entry.Coordinate }))
 						continue;
 
-					AnimatingBlock spawn = entry;
-					animatingBlocks[spawn] = true;
-
 					Entity block = factory.CreateAndBind(main);
-					spawn.State.ApplyToEffectBlock(block.Get<ModelInstance>());
-					block.GetProperty<Vector3>("Offset").Value = spawn.Map.GetRelativePosition(spawn.Coord);
+					entry.State.ApplyToEffectBlock(block.Get<ModelInstance>());
+					block.GetProperty<Vector3>("Offset").Value = entry.Map.GetRelativePosition(entry.Coordinate);
 
-					Vector3 absolutePos = spawn.Map.GetAbsolutePosition(spawn.Coord);
+					Vector3 absolutePos = entry.Map.GetAbsolutePosition(entry.Coordinate);
 
 					float distance = (absolutePos - transform.Position).Length();
 					block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f) * distance;
 					block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * (distance + index)) * Matrix.CreateRotationY(0.15f * (distance + index));
 					block.GetProperty<float>("TotalLifetime").Value = Math.Max(0.05f, distance * 0.05f);
-					block.GetProperty<Entity.Handle>("TargetMap").Value = spawn.Map.Entity;
-					block.GetProperty<int>("TargetCellStateID").Value = fake ? 0 : spawn.State.ID;
-					block.GetProperty<Map.Coordinate>("TargetCoord").Value = spawn.Coord;
-					CommandBinding blockBinding = null;
-					blockBinding = new CommandBinding(block.Delete, delegate()
-					{
-						animatingBlocks.Remove(spawn);
-						result.Remove(blockBinding);
-					});
-					result.Add(blockBinding);
+					block.GetProperty<Entity.Handle>("TargetMap").Value = entry.Map.Entity;
+					block.GetProperty<int>("TargetCellStateID").Value = fake ? 0 : entry.State.ID;
+					block.GetProperty<Map.Coordinate>("TargetCoord").Value = entry.Coordinate;
 
 					main.Add(block);
 					index++;
@@ -1167,7 +1155,7 @@ namespace Lemma.Factories
 						Direction up = wallRunMap.GetRelativeDirection(Direction.PositiveY);
 						Direction right = wallDirection.Cross(up);
 
-						List<AnimatingBlock> buildCoords = new List<AnimatingBlock>();
+						List<BlockBuildOrder> buildCoords = new List<BlockBuildOrder>();
 
 						Map.CellState fillState = WorldFactory.StatesByName["Temporary"];
 
@@ -1181,10 +1169,10 @@ namespace Lemma.Factories
 								int dy = y.GetComponent(up) - wallCoord.GetComponent(up);
 								if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && wallRunMap[y].ID == 0)
 								{
-									buildCoords.Add(new AnimatingBlock
+									buildCoords.Add(new BlockBuildOrder
 									{
 										Map = wallRunMap,
-										Coord = y,
+										Coordinate = y,
 										State = fillState,
 									});
 								}
@@ -1330,6 +1318,7 @@ namespace Lemma.Factories
 				Map.Coordinate shortestCoordinate = new Map.Coordinate();
 				Map shortestMap = null;
 
+				EffectBlockFactory blockFactory = Factory.Get<EffectBlockFactory>();
 				foreach (Map map in Map.ActiveMaps)
 				{
 					List<Matrix> results = new List<Matrix>();
@@ -1347,7 +1336,7 @@ namespace Lemma.Factories
 						{
 							Map.Coordinate coord = playerCoord.Move(relativeDir, i);
 							Map.CellState state = map[coord];
-							if (state.ID != 0 || animatingBlocks.ContainsKey(new AnimatingBlock { Map = map, Coord = coord, State = fillValue }))
+							if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = map, Coordinate = coord, }))
 							{
 								shortestDistance = i;
 								relativeShortestDirection = relativeDir;
@@ -1965,7 +1954,7 @@ namespace Lemma.Factories
 
 			Action<Map, Map.Coordinate, Direction, Direction> buildFloor = delegate(Map floorMap, Map.Coordinate floorCoordinate, Direction forwardDir, Direction rightDir)
 			{
-				List<AnimatingBlock> buildCoords = new List<AnimatingBlock>();
+				List<BlockBuildOrder> buildCoords = new List<BlockBuildOrder>();
 
 				Map.Coordinate newFloorCoordinate = floorMap.GetCoordinate(transform.Position);
 
@@ -1983,10 +1972,10 @@ namespace Lemma.Factories
 						int dy = y.GetComponent(forwardDir) - floorCoordinate.GetComponent(forwardDir);
 						if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && floorMap[y].ID == 0)
 						{
-							buildCoords.Add(new AnimatingBlock
+							buildCoords.Add(new BlockBuildOrder
 							{
 								Map = floorMap,
-								Coord = y,
+								Coordinate = y,
 								State = fillState,
 							});
 						}
@@ -2322,7 +2311,7 @@ namespace Lemma.Factories
 				levitationRelativeGrabPoint = map.GetRelativePosition(grabPoint);
 				player.IsLevitating.Value = true;
 
-				model.StartClip("Levitating", 2, true);
+				model.StartClip("Levitating", 6, true);
 
 				levitatingLight = new PointLight();
 				levitatingLight.Serialize = false;
@@ -2581,7 +2570,7 @@ namespace Lemma.Factories
 						orientation.Translation = Vector3.Zero;
 
 						int index = 0;
-						foreach (Map.Coordinate c in levitatingMap.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()))
+						foreach (Map.Coordinate c in levitatingMap.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()).OrderBy(c2 => new Vector3(c2.X - offset.X, c2.Y - offset.Y, c2.Z - offset.Z).LengthSquared()))
 						{
 							Map.Coordinate offsetFromCenter = c.Move(-offset.X, -offset.Y, -offset.Z);
 							Map.Coordinate targetCoord = new Map.Coordinate();

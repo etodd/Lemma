@@ -3956,6 +3956,13 @@ namespace Lemma.Components
 
 		public Property<bool> IsAffectedByGravity = new Property<bool> { Editable = true, Value = true };
 
+		private bool firstPhysicsUpdate = true;
+		private object physicsLock = new object();
+		private bool physicsUpdated;
+
+		[XmlIgnore]
+		public Command PhysicsUpdated = new Command();
+
 		public DynamicMap()
 			: this(0, 0, 0)
 		{
@@ -4066,6 +4073,7 @@ namespace Lemma.Components
 				volume += v;
 				mass += v * box.Type.Density;
 			}
+
 			if (bodies.Count > 0)
 			{
 				Vector3 c;
@@ -4083,6 +4091,7 @@ namespace Lemma.Components
 					this.PhysicsEntity.ActivityInformation.Activate();
 				}
 			}
+
 			if (!this.addedToSpace && hasVolume && !this.Suspended && !this.main.EditorEnabled)
 			{
 				this.main.Space.SpaceObjectBuffer.Add(this.PhysicsEntity);
@@ -4093,12 +4102,26 @@ namespace Lemma.Components
 				this.main.Space.SpaceObjectBuffer.Remove(this.PhysicsEntity);
 				this.addedToSpace = false;
 			}
+
+			if (this.firstPhysicsUpdate)
+				this.firstPhysicsUpdate = false;
+			else
+			{
+				lock (this.physicsLock)
+					this.physicsUpdated = true;
+			}
 		}
 
 		void IUpdateableComponent.Update(float dt)
 		{
 			this.Transform.Changed();
 			this.LinearVelocity.Changed();
+			if (this.physicsUpdated)
+			{
+				lock (this.physicsLock)
+					this.physicsUpdated = false;
+				this.PhysicsUpdated.Execute();
+			}
 		}
 
 		protected override void delete()

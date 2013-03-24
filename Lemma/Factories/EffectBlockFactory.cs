@@ -13,6 +13,19 @@ namespace Lemma.Factories
 {
 	public class EffectBlockFactory : Factory
 	{
+		public struct BlockEntry
+		{
+			public Map Map;
+			public Map.Coordinate Coordinate;
+		}
+
+		private Dictionary<BlockEntry, bool> animatingBlocks = new Dictionary<BlockEntry, bool>();
+
+		public bool IsAnimating(BlockEntry block)
+		{
+			return this.animatingBlocks.ContainsKey(block);
+		}
+
 		public EffectBlockFactory()
 		{
 			this.Color = new Vector3(1.0f, 0.25f, 0.25f);
@@ -72,8 +85,9 @@ namespace Lemma.Factories
 
 			Property<float> totalLifetime = result.GetProperty<float>("TotalLifetime");
 			Property<float> lifetime = result.GetProperty<float>("Lifetime");
-			
-			result.Add(new Updater
+
+			Updater update = null;
+			update = new Updater
 			{
 				delegate(float dt)
 				{
@@ -98,7 +112,8 @@ namespace Lemma.Factories
 							bool foundAdjacentCell = false;
 							foreach (Direction dir in DirectionExtensions.Directions)
 							{
-								if (m[c.Move(dir)].ID != 0)
+								Map.Coordinate adjacent = c.Move(dir);
+								if (m[adjacent].ID != 0)
 								{
 									foundAdjacentCell = true;
 									break;
@@ -121,11 +136,21 @@ namespace Lemma.Factories
 								{
 									m.Fill(coord, WorldFactory.States[stateId]);
 									m.Regenerate();
+									Sound.PlayCue(main, "BuildBlock", transform.Position, 1.0f, 0.06f);
+									result.Delete.Execute();
+									return;
 								}
 							}
+
+							// For one reason or another, we can't fill the cell
+							// Animate nicely into oblivion
+							update.Delete.Execute();
+							result.Add(new Animation
+							(
+								new Animation.Vector3MoveTo(model.Scale, Vector3.Zero, 1.0f),
+								new Animation.Execute(result.Delete)
+							));
 						}
-						Sound.PlayCue(main, "BuildBlock", transform.Position, 1.0f, 0.06f);
-						result.Delete.Execute();
 					}
 					else
 					{
@@ -145,7 +170,31 @@ namespace Lemma.Factories
 						transform.Position.Value = Vector3.Lerp(start, finalPosition, blend) + new Vector3((float)Math.Sin(blend * Math.PI) * distance);
 					}
 				},
-			});
+			};
+
+			result.Add(update);
+
+			BlockEntry entry = new BlockEntry();
+			result.Add(new NotifyBinding(delegate()
+			{
+				if (entry.Map != null)
+					this.animatingBlocks.Remove(entry);
+
+				Entity m = map.Value.Target;
+				entry.Map = m != null ? m.Get<Map>() : null;
+				
+				if (entry.Map != null)
+				{
+					entry.Coordinate = coord;
+					this.animatingBlocks[entry] = true;
+				}
+			}, map, coord, stateId));
+			result.Add(new CommandBinding(result.Delete, delegate()
+			{
+				if (entry.Map != null)
+					this.animatingBlocks.Remove(entry);
+				entry.Map = null;
+			}));
 
 			this.SetMain(result, main);
 			IBinding offsetBinding = null;

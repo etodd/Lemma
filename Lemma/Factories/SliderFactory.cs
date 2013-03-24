@@ -37,8 +37,10 @@ namespace Lemma.Factories
 			Property<Entity.Handle> parentMap = result.GetOrMakeProperty<Entity.Handle>("Parent");
 			Property<Map.Coordinate> coord = result.GetOrMakeProperty<Map.Coordinate>("Coord");
 			Property<Direction> dir = result.GetOrMakeProperty<Direction>("Direction", true);
-
-			PrismaticJoint joint = null;
+			Property<int> minimum = result.GetOrMakeProperty<int>("Minimum", true);
+			Property<int> maximum = result.GetOrMakeProperty<int>("Maximum", true);
+			Property<bool> locked = result.GetOrMakeProperty<bool>("Locked", true);
+			Property<float> speed = result.GetOrMakeProperty<float>("Speed", true, 5);
 
 			Action refreshMapTransform = delegate()
 			{
@@ -61,15 +63,59 @@ namespace Lemma.Factories
 			if (main.EditorEnabled)
 				result.Add(new NotifyBinding(refreshMapTransform, transform.Matrix, map.Offset));
 
-			Action rebuildMotor = delegate()
+			PrismaticJoint joint = null;
+			CommandBinding jointDeleteBinding = null, physicsUpdateBinding = null;
+
+			Action setLimits = delegate()
 			{
 				if (joint != null)
+				{
+					int min = minimum, max = maximum;
+					if (max > min)
+					{
+						joint.Limit.IsActive = true;
+						joint.Limit.Minimum = minimum;
+						joint.Limit.Maximum = maximum;
+					}
+					else
+						joint.Limit.IsActive = false;
+				}
+			};
+			result.Add(new NotifyBinding(setLimits, minimum, maximum));
+
+			Action setSpeed = delegate()
+			{
+				if (joint != null)
+					joint.Motor.Settings.Servo.BaseCorrectiveSpeed = speed;
+			};
+			result.Add(new NotifyBinding(setSpeed, speed));
+
+			Action setLocked = delegate()
+			{
+				if (joint != null)
+					joint.Motor.IsActive = locked;
+			};
+			result.Add(new NotifyBinding(setLocked, locked));
+
+			Action rebuildJoint = null;
+			rebuildJoint = delegate()
+			{
+				if (joint != null)
+				{
 					main.Space.Remove(joint);
+					result.Remove(jointDeleteBinding);
+					if (physicsUpdateBinding != null)
+						result.Remove(physicsUpdateBinding);
+					physicsUpdateBinding = null;
+					joint = null;
+					jointDeleteBinding = null;
+				}
+
+				Entity parent = parentMap.Value.Target;
 
 				if (main.EditorEnabled)
 					refreshMapTransform();
 
-				Entity parent = parentMap.Value.Target;
 				if (parent != null)
 				{
 					if (!parent.Active)
@@ -83,18 +129,50 @@ namespace Lemma.Factories
 
 						if (dir != Direction.None && !main.EditorEnabled)
 						{
+							Vector3 relativeLineAnchor = staticMap.GetRelativePosition(coord) - new Vector3(0.5f) + staticMap.Offset + map.Offset;
+							Vector3 lineAnchor = staticMap.GetAbsolutePosition(relativeLineAnchor);
 							DynamicMap dynamicMap = parent.Get<DynamicMap>();
-							if (dynamicMap != null)
-								joint = new PrismaticJoint(map.PhysicsEntity, dynamicMap.PhysicsEntity, map.PhysicsEntity.Position, dynamicMap.GetAbsoluteVector(dir.Value.GetVector()), map.PhysicsEntity.Position);
-							else
-								joint = new PrismaticJoint(map.PhysicsEntity, null, map.PhysicsEntity.Position, staticMap.GetAbsoluteVector(dir.Value.GetVector()), map.PhysicsEntity.Position);
+							joint = new PrismaticJoint(map.PhysicsEntity, dynamicMap == null ? null : dynamicMap.PhysicsEntity, map.PhysicsEntity.Position, staticMap.GetAbsoluteVector(dir.Value.GetVector()), lineAnchor);
+							joint.Motor.Settings.Mode = MotorMode.Servomechanism;
 							main.Space.Add(joint);
+							setLimits();
+							setLocked();
+							setSpeed();
+
+							if (dynamicMap != null)
+							{
+								physicsUpdateBinding = new CommandBinding(dynamicMap.PhysicsUpdated, rebuildJoint);
+								result.Add(physicsUpdateBinding);
+							}
+
+							jointDeleteBinding = new CommandBinding(parent.Delete, delegate()
+							{
+								parentMap.Value = null;
+							});
+							result.Add(jointDeleteBinding);
 						}
 					}
 				}
 			};
-			result.Add(new NotifyBinding(rebuildMotor, parentMap));
-			rebuildMotor();
+			result.Add(new NotifyBinding(rebuildJoint, parentMap));
+			rebuildJoint();
+
+			result.Add("Forward", new Command
+			{
+				Action = delegate()
+				{
+					if (joint != null && locked)
+						joint.Motor.Settings.Servo.Goal = maximum;
+				},
+			});
+			result.Add("Backward", new Command
+			{
+				Action = delegate()
+				{
+					if (joint != null && locked)
+						joint.Motor.Settings.Servo.Goal = minimum;
+				},
+			});
 
 			if (main.EditorEnabled)
 				this.AttachEditorComponents(result, main);
@@ -154,16 +232,16 @@ namespace Lemma.Factories
 					m.Forward = m.Right = m.Up = Vector3.Zero;
 				else
 				{
-					Vector3 normal = Vector3.TransformNormal(dir.Value.GetVector(), transform.Matrix);
+					Vector3 normal = Vector3.TransformNormal(dir.Value.GetVector(), mapTransform.Matrix);
 
-					m.Forward = -normal;
+					m.Forward = normal;
 					if (normal.Equals(Vector3.Up))
-						m.Right = Vector3.Right;
-					else if (normal.Equals(Vector3.Down))
 						m.Right = Vector3.Left;
+					else if (normal.Equals(Vector3.Down))
+						m.Right = Vector3.Right;
 					else
-						m.Right = Vector3.Normalize(Vector3.Cross(normal, Vector3.Up));
-					m.Up = Vector3.Cross(normal, m.Right);
+						m.Right = Vector3.Normalize(Vector3.Cross(normal, Vector3.Down));
+					m.Up = Vector3.Cross(normal, m.Left);
 				}
 				return m;
 			}, transform.Matrix, mapTransform.Matrix));
