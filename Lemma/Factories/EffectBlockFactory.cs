@@ -93,8 +93,36 @@ namespace Lemma.Factories
 					{
 						if (stateId != 0)
 						{
-							m.Fill(coord, WorldFactory.States[stateId]);
-							m.Regenerate();
+							Map.Coordinate c = coord;
+
+							bool foundAdjacentCell = false;
+							foreach (Direction dir in DirectionExtensions.Directions)
+							{
+								if (m[c.Move(dir)].ID != 0)
+								{
+									foundAdjacentCell = true;
+									break;
+								}
+							}
+							if (foundAdjacentCell)
+							{
+								bool foundConflict = false;
+								Vector3 absolutePosition = m.GetAbsolutePosition(c);
+								foreach (Map m2 in Map.ActiveMaps)
+								{
+									if (m2[absolutePosition].ID != 0)
+									{
+										foundConflict = true;
+										break;
+									}
+								}
+
+								if (!foundConflict)
+								{
+									m.Fill(coord, WorldFactory.States[stateId]);
+									m.Regenerate();
+								}
+							}
 						}
 						Sound.PlayCue(main, "BuildBlock", transform.Position, 1.0f, 0.06f);
 						result.Delete.Execute();

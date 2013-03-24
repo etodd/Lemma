@@ -1057,21 +1057,20 @@ namespace Lemma.Components
 							BlockFactory blockFactory = Factory.Get<BlockFactory>();
 							foreach (List<Box> island in spawn.Islands)
 							{
-								if (island.Count == 1)
+								Box firstBox = island.First();
+								if (island.Count == 1 && firstBox.Width * firstBox.Height * firstBox.Depth == 1)
 								{
 									// Just create a temporary physics block instead of a full-blown map
-									Box b = island.First();
-									Coordinate coord = new Coordinate { X = b.X, Y = b.Y, Z = b.Z };
+									Coordinate coord = new Coordinate { X = firstBox.X, Y = firstBox.Y, Z = firstBox.Z };
 									Entity block = blockFactory.CreateAndBind(main);
 									block.Get<Transform>().Matrix.Value = this.Transform;
 									block.Get<Transform>().Position.Value = this.GetAbsolutePosition(coord);
-									b.Type.ApplyToBlock(block);
+									firstBox.Type.ApplyToBlock(block);
 									block.Get<ModelInstance>().GetVector3Parameter("Offset").Value = this.GetRelativePosition(coord);
 									main.Add(block);
 								}
 								else
 								{
-									Box firstBox = island.First();
 									Entity newMap = factory.CreateAndBind(spawn.Source.main, firstBox.X, firstBox.Y, firstBox.Z);
 									newMap.Get<Transform>().Matrix.Value = spawn.Source.Transform;
 									DynamicMap newMapComponent = newMap.Get<DynamicMap>();

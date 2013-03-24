@@ -18,15 +18,16 @@ namespace Lemma.Components
 	public class Player : Component, IUpdateableComponent
 	{
 		public enum WallRun { None, Left, Right, Straight, Down }
+		public const float DefaultMaxSpeed = 10;
 
 		protected Character character;
 		[XmlIgnore]
 		public Property<Vector2> MovementDirection = new Property<Vector2> { Editable = false };
 		public Property<Matrix> Transform = new Property<Matrix> { Editable = false };
 		[XmlIgnore]
-		public Property<float> MaxSpeed = new Property<float> { Value = 10, Editable = false };
+		public Property<float> MaxSpeed = new Property<float> { Value = Player.DefaultMaxSpeed, Editable = false };
 		[XmlIgnore]
-		public Property<float> JumpSpeed = new Property<float> { Value = 10, Editable = false };
+		public Property<float> JumpSpeed = new Property<float> { Value = Player.DefaultMaxSpeed, Editable = false };
 		[XmlIgnore]
 		public Property<bool> IsLevitating = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
@@ -43,6 +44,8 @@ namespace Lemma.Components
 		public Property<bool> EnableLevitation = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
 		public Property<bool> EnableSlowMotion = new Property<bool> { Value = false, Editable = false };
+		[XmlIgnore]
+		public Property<bool> EnableStamina = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
 		public Property<bool> IsSupported = new Property<bool> { Editable = false };
 		[XmlIgnore]
@@ -89,11 +92,11 @@ namespace Lemma.Components
 		private const float healthRegenerateDelay = 4.0f;
 		private const float healthRegenerateRate = 0.1f;
 
-		private const float staminaDecayTime = 10.0f * 60.0f; // Time in seconds to drain all 100 stamina points
+		private const float staminaDecayTime = 3.0f * 60.0f; // Time in seconds to drain all 100 stamina points
 		private const float staminaDecayInterval = staminaDecayTime / 100.0f;
 
-		private const float sprintStaminaDecayTime = 30.0f; // Time in seconds to drain all 100 stamina points while sprinting
-		private const float sprintStaminaDecayInterval = sprintStaminaDecayTime / 100.0f;
+		private const float slowmoStaminaDecayTime = 30.0f; // Time in seconds to drain all 100 stamina points while in slowmo
+		private const float slowmoStaminaDecayInterval = slowmoStaminaDecayTime / 100.0f;
 
 		private const float slowBurnStaminaDecayTime = 5.0f * 60.0f; // Time in seconds to slow-burn all 100 stamina points
 		private const float slowBurnStaminaDecayInterval = slowBurnStaminaDecayTime / 100.0f;
@@ -160,7 +163,7 @@ namespace Lemma.Components
 			{
 				int oldValue = this.Stamina.InternalValue;
 				this.Stamina.InternalValue = Math.Max(0, Math.Min(100, value));
-				if (oldValue > 0 && this.Stamina.InternalValue == 0)
+				if (oldValue > 0 && this.Stamina.InternalValue == 0 && this.EnableStamina)
 					this.StaminaDepleted.Execute();
 			};
 
@@ -235,7 +238,7 @@ namespace Lemma.Components
 			while (this.timeUntilNextStaminaDecay < 0.0f)
 			{
 				this.Stamina.Value--;
-				float interval = this.SlowMotion ? sprintStaminaDecayInterval : (this.SlowBurnStamina ? slowBurnStaminaDecayInterval : staminaDecayInterval);
+				float interval = this.SlowMotion ? slowmoStaminaDecayInterval : (this.SlowBurnStamina ? slowBurnStaminaDecayInterval : staminaDecayInterval);
 				this.timeUntilNextStaminaDecay += interval;
 			}
 			this.Transform.Changed();

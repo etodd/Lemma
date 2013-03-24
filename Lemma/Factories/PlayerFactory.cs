@@ -144,6 +144,7 @@ namespace Lemma.Factories
 			healthContainer.Add(new Binding<Microsoft.Xna.Framework.Color>(healthContainer.Tint, () => player.SlowMotion || player.SlowBurnStamina ? Microsoft.Xna.Framework.Color.Red : Microsoft.Xna.Framework.Color.White, player.SlowMotion, player.SlowBurnStamina));
 			healthContainer.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
 			healthContainer.Add(new Binding<Vector2, Point>(healthContainer.Position, x => new Vector2(x.X * 0.5f, x.Y - healthBarHeight), main.ScreenSize));
+			healthContainer.Add(new Binding<bool>(healthContainer.Visible, player.EnableStamina));
 			ui.Root.Children.Add(healthContainer);
 
 			Container healthBackground = new Container();
@@ -244,16 +245,66 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableLevitation"), player.EnableLevitation));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableStamina"), player.EnableStamina));
 					result.Add(new TwoWayBinding<Entity.Handle>(data.Value.Target.GetProperty<Entity.Handle>("Pistol"), pistol));
 				}
 			});
 
 			// Die if stamina is depleted
+			Sound faintSound = null;
+			Animation faintSequence = null;
 			result.Add(new CommandBinding(player.StaminaDepleted, delegate()
 			{
-				Session.Recorder.Event(main, "DieFromStamina");
-				result.Add(new Animation(new Animation.Delay(0.01f), new Animation.Execute(result.Delete)));
+				player.MaxSpeed.Value = 4.0f;
+				player.EnableMoves.Value = false;
+				model.StartClip("WobblyCam", 6, false);
+				faintSound = Sound.PlayCue(main, "FaintSequence");
+				faintSequence = new Animation
+				(
+					new Animation.Sequence
+					(
+						new Animation.FloatMoveTo(main.Renderer.BlurAmount, 0.5f, 2.0f),
+						new Animation.FloatMoveTo(main.Renderer.BlurAmount, 0.0f, 2.0f),
+						new Animation.FloatMoveTo(main.Renderer.BlurAmount, 1.0f, 3.0f)
+					),
+					new Animation.Execute(delegate()
+					{
+						player.EnableWalking.Value = false;
+						input.Enabled.Value = false;
+						model.Stop();
+						model.StartClip("Collapse", 6, false, AnimatedModel.DefaultBlendTime, false);
+						Session.Recorder.Event(main, "DieFromStamina");
+					}),
+					new Animation.Delay(1.5f),
+					new Animation.Execute(delegate()
+					{
+						Sound.PlayCue(main, "Collapse");
+					}),
+					new Animation.Delay(1.5f),
+					new Animation.Execute(result.Delete)
+				);
+				result.Add(faintSequence);
 			}));
+
+			result.Add(new NotifyBinding(delegate()
+			{
+				if (faintSequence != null && player.Stamina > 0)
+				{
+					if (model.IsPlaying("Collapse"))
+						return; // Too late
+
+					// Stop fainting, we picked up an energy orb
+					faintSound.Stop.Execute(Microsoft.Xna.Framework.Audio.AudioStopOptions.AsAuthored);
+					faintSound = null;
+					faintSequence.Delete.Execute();
+					faintSequence = null;
+					model.Stop("WobblyCam");
+					main.Renderer.BlurAmount.Value = 0.0f;
+					
+					player.EnableMoves.Value = true;
+					player.MaxSpeed.Value = Player.DefaultMaxSpeed;
+				}
+			}, player.Stamina));
 
 			result.Add(new CommandBinding(player.HealthDepleted, delegate()
 			{
@@ -478,7 +529,6 @@ namespace Lemma.Factories
 				if (pistolDrawn)
 				{
 					const float defaultMaxAngle = (float)Math.PI * 0.2f;
-					const float aimedMaxAngle = (float)Math.PI * 0.5f;
 					const float reloadingMaxAngle = (float)Math.PI * 0.0f;
 
 					SkinnedModel.Clip reloadClip = model["PlayerReload"];
@@ -687,7 +737,7 @@ namespace Lemma.Factories
 			});
 
 			// Block possibilities
-			const float blockInstantiationStaminaCostPerCell = 0.1f;
+			const float blockInstantiationStaminaCostPerCell = 0.05f;
 			const float blockPossibilityTotalLifetime = 2.0f;
 			const float blockPossibilityInitialAlpha = 0.125f;
 
@@ -753,7 +803,7 @@ namespace Lemma.Factories
 
 			Dictionary<AnimatingBlock, bool> animatingBlocks = new Dictionary<AnimatingBlock, bool>();
 
-			const float enhancedWallRunStaminaCostPerCell = 0.15f;
+			const float enhancedWallRunStaminaCostPerCell = 0.1f;
 
 			Action<IEnumerable<AnimatingBlock>, bool> buildBlocks = delegate(IEnumerable<AnimatingBlock> blocks, bool fake)
 			{
@@ -1218,6 +1268,18 @@ namespace Lemma.Factories
 			{
 				main.Camera.FieldOfView.Value = MathHelper.ToRadians(80.0f);
 			}));
+
+			player.Add(new NotifyBinding(delegate()
+			{
+				if (!player.EnableMoves)
+				{
+					deactivateWallRun();
+					stopLevitate();
+					stopKick();
+					levitationMode.Value = false;
+					player.SlowMotion.Value = false;
+				}
+			}, player.EnableMoves));
 
 			// Fall damage
 			Vector3 playerLastVelocity = Vector3.Zero;
@@ -2246,8 +2308,8 @@ namespace Lemma.Factories
 
 			// Levitate
 			const float levitationMaxDistance = 25.0f;
-			const int levitateStaminaCost = 8;
-			const int levitateRipStaminaCost = 6; // In addition to the regular levitate cost
+			const int levitateStaminaCost = 4;
+			const int levitateRipStaminaCost = 8; // In addition to the regular levitate cost
 			const int levitateRipRadius = 4;
 			Vector3 levitationRelativeGrabPoint = Vector3.Zero;
 			float levitatingDistance = 0.0f;

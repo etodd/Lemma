@@ -161,8 +161,8 @@ script.Add(new CommandBinding<Map, IEnumerable<Map.Coordinate>, Map>(Map.GlobalC
 		
 			Random random = new Random();
 		
-			const int radius = 6;
-			const float physicsRadius = 10.0f;
+			const int radius = 8;
+			const float physicsRadius = 12.0f;
 			const float physicsImpulse = 70.0f;
 			const float minPlayerDamage = 0.2f;
 			const float playerDamageMultiplier = 2.0f;

@@ -87,6 +87,7 @@ namespace Lemma
 		public Command<Entity> PlayerSpawned = new Command<Entity>();
 
 		const float respawnInterval = 1.0f;
+		const float staminaDepletedReloadInterval = 3.0f;
 
 		private float respawnTimer = -1.0f;
 
@@ -1522,45 +1523,53 @@ namespace Lemma
 								new Animation.Set<Vector3>(this.Camera.Position, new Vector3(0, -10000, 0))
 							));
 						}
-						if (this.respawnTimer > GameMain.respawnInterval || this.respawnTimer < 0)
+
+						bool staminaDepleted = Factory.Get<PlayerDataFactory>().Instance(this).GetProperty<int>("Stamina") <= 0;
+						float respawnInterval = staminaDepleted ? GameMain.staminaDepletedReloadInterval : GameMain.respawnInterval;
+						if (this.respawnTimer > respawnInterval || this.respawnTimer < 0)
 						{
-							if (createPlayer)
+							if (staminaDepleted)
+								this.MapFile.Reset();
+							else
 							{
-								this.player = Factory.CreateAndBind(this, "Player");
-								this.Add(this.player);
-							}
+								if (createPlayer)
+								{
+									this.player = Factory.CreateAndBind(this, "Player");
+									this.Add(this.player);
+								}
 
-							PlayerSpawn spawn = null;
-							Entity spawnEntity = null;
-							if (!string.IsNullOrEmpty(this.StartSpawnPoint.Value))
-							{
-								spawnEntity = this.GetByID(this.StartSpawnPoint);
+								PlayerSpawn spawn = null;
+								Entity spawnEntity = null;
+								if (!string.IsNullOrEmpty(this.StartSpawnPoint.Value))
+								{
+									spawnEntity = this.GetByID(this.StartSpawnPoint);
+									if (spawnEntity != null)
+										spawn = spawnEntity.Get<PlayerSpawn>();
+									this.StartSpawnPoint.Value = null;
+								}
+
+								if (spawnEntity == null)
+								{
+									spawn = this.Get("PlayerSpawn").Select(x => x.Get<PlayerSpawn>()).FirstOrDefault(x => x.IsActivated);
+									spawnEntity = spawn == null ? null : spawn.Entity;
+								}
+
 								if (spawnEntity != null)
-									spawn = spawnEntity.Get<PlayerSpawn>();
-								this.StartSpawnPoint.Value = null;
+									this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = spawnEntity.Get<Transform>().Position;
+
+								if (spawn != null)
+								{
+									spawn.IsActivated.Value = true;
+									FPSInput.RecenterMouse();
+									Property<Vector2> mouse = this.player.Get<FPSInput>().Mouse;
+									mouse.Value = new Vector2(spawn.Rotation, 0.0f);
+								}
+
+								this.AddComponent(new Animation(new Animation.FloatMoveTo(this.Renderer.InternalGamma, 0.0f, 1.0f)));
+								this.respawnTimer = 0;
+
+								this.PlayerSpawned.Execute(this.player);
 							}
-
-							if (spawnEntity == null)
-							{
-								spawn = this.Get("PlayerSpawn").Select(x => x.Get<PlayerSpawn>()).FirstOrDefault(x => x.IsActivated);
-								spawnEntity = spawn == null ? null : spawn.Entity;
-							}
-
-							if (spawnEntity != null)
-								this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = spawnEntity.Get<Transform>().Position;
-
-							if (spawn != null)
-							{
-								spawn.IsActivated.Value = true;
-								FPSInput.RecenterMouse();
-								Property<Vector2> mouse = this.player.Get<FPSInput>().Mouse;
-								mouse.Value = new Vector2(spawn.Rotation, 0.0f);
-							}
-
-							this.AddComponent(new Animation(new Animation.FloatMoveTo(this.Renderer.InternalGamma, 0.0f, 1.0f)));
-							this.respawnTimer = 0;
-
-							this.PlayerSpawned.Execute(this.player);
 						}
 						else
 							this.respawnTimer += this.ElapsedTime;

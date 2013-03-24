@@ -35,6 +35,7 @@ namespace Lemma.Factories
 			result.Add("EnableEnhancedWallRun", new Property<bool> { Value = enabled });
 			result.Add("EnableLevitation", new Property<bool> { Value = enabled });
 			result.Add("EnableSlowMotion", new Property<bool> { Value = enabled });
+			result.Add("EnableStamina", new Property<bool> { Value = enabled });
 			result.Add("JumpSpeed", new Property<float> { Value = 10.0f });
 			result.Add("Stamina", new Property<int> { Value = 100 });
 			result.Add("Pistol", new Property<Entity.Handle> { Editable = false });

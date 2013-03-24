@@ -113,11 +113,11 @@
     <Compile Include="Factories\CloudFactory.cs" />
     <Compile Include="Factories\SceneryBlockFactory.cs" />
     <Compile Include="Factories\HeadlampFactory.cs" />
-    <Compile Include="Factories\FloaterFactory.cs" />
     <Compile Include="Factories\MapBoundaryFactory.cs" />
     <Compile Include="Factories\SkyboxFactory.cs" />
     <Compile Include="Factories\MapAttachable.cs" />
     <Compile Include="Factories\RainFactory.cs" />
+    <Compile Include="Factories\SliderFactory.cs" />
     <Compile Include="Factories\VineFactory.cs" />
     <Compile Include="Factories\EnergyPickupFactory.cs" />
     <Compile Include="Factories\ParticleEmitterFactory.cs" />

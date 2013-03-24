@@ -29,9 +29,6 @@ namespace Lemma.Factories
 
 			// Components
 			Map map = this.newMapComponent(offsetX, offsetY, offsetZ);
-			Transform transform = new Transform();
-
-			result.Add("Transform", transform);
 			result.Add("Map", map);
 
 			return result;
@@ -40,13 +37,19 @@ namespace Lemma.Factories
 		public Entity CreateAndBind(Main main, int offsetX, int offsetY, int offsetZ)
 		{
 			Entity result = this.Create(main, offsetX, offsetY, offsetZ);
-			this.Bind(result, main, true);
+			this.InternalBind(result, main, true);
 			return result;
 		}
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
-			Transform transform = result.Get<Transform>();
+			this.InternalBind(result, main, creating);
+		}
+
+		public void InternalBind(Entity result, Main main, bool creating = false, Transform transform = null)
+		{
+			if (transform == null)
+				transform = result.GetOrCreate<Transform>("Transform");
 			Map map = result.Get<Map>();
 
 			// Apply the position and orientation components to the map

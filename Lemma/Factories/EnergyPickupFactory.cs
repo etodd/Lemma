@@ -121,7 +121,7 @@ namespace Lemma.Factories
 				{
 					delegate(float dt)
 					{
-						if (gameTime != null && gameTime > respawnTime)
+						if (respawnTime > 0 && gameTime > respawnTime)
 						{
 							model.Enabled.Value = true;
 							light.Enabled.Value = true;
