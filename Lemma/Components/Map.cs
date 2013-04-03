@@ -59,11 +59,24 @@ namespace Lemma.Components
 
 		public class MapState
 		{
-			public List<Box> Boxes;
+			public List<Box> Boxes = new List<Box>();
+			public List<Chunk> Chunks = new List<Chunk>();
 
-			public MapState(IEnumerable<Box> boxes)
+			public MapState(IEnumerable<Chunk> chunks)
 			{
-				this.Boxes = boxes.ToList();
+				this.Add(chunks);
+			}
+
+			public void Add(IEnumerable<Chunk> chunks)
+			{
+				foreach (Chunk chunk in chunks)
+				{
+					if (!this.Chunks.Contains(chunk))
+					{
+						this.Chunks.Add(chunk);
+						this.Boxes.AddRange(chunks.SelectMany(x => x.Boxes));
+					}
+				}
 			}
 
 			public CellState this[Coordinate coord]
@@ -546,6 +559,16 @@ namespace Lemma.Components
 						break;
 				}
 				return new Coordinate { X = x, Y = y, Z = z, Data = this.Data };
+			}
+
+			public Coordinate Plus(Coordinate other)
+			{
+				return new Coordinate { X = this.X + other.X, Y = this.Y + other.Y, Z = this.Z + other.Z };
+			}
+
+			public Coordinate Minus(Coordinate other)
+			{
+				return new Coordinate { X = this.X - other.X, Y = this.Y - other.Y, Z = this.Z - other.Z };
 			}
 
 			// Expects every dimension of A to be smaller than every dimension of B.

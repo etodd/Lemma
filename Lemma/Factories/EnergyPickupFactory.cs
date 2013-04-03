@@ -163,12 +163,16 @@ namespace Lemma.Factories
 
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 
+			if (result.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(result, main);
+
 			this.SetMain(result, main);
 		}
 
 		public override void AttachEditorComponents(Entity result, Main main)
 		{
 			PlayerTrigger.AttachEditorComponents(result, main, this.Color);
+			MapAttachable.AttachEditorComponents(result, main);
 		}
 	}
 }

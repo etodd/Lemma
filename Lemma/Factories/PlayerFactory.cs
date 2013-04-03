@@ -258,7 +258,13 @@ namespace Lemma.Factories
 				player.MaxSpeed.Value = 4.0f;
 				player.EnableMoves.Value = false;
 				model.StartClip("WobblyCam", 6, false);
-				faintSound = Sound.PlayCue(main, "FaintSequence");
+				faintSound = new Sound();
+				faintSound.Cue.Value = "FaintSequence";
+				faintSound.DeleteStopOption.Value = Microsoft.Xna.Framework.Audio.AudioStopOptions.AsAuthored;
+				faintSound.Serialize = false;
+				faintSound.Is3D.Value = false;
+				result.Add(faintSound);
+				faintSound.Play.Execute();
 				faintSequence = new Animation
 				(
 					new Animation.Sequence
@@ -294,7 +300,7 @@ namespace Lemma.Factories
 						return; // Too late
 
 					// Stop fainting, we picked up an energy orb
-					faintSound.Stop.Execute(Microsoft.Xna.Framework.Audio.AudioStopOptions.AsAuthored);
+					result.Remove(faintSound);
 					faintSound = null;
 					faintSequence.Delete.Execute();
 					faintSequence = null;

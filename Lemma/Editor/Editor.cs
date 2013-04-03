@@ -53,6 +53,8 @@ namespace Lemma.Components
 		protected List<Matrix> offsetTransforms = new List<Matrix>();
 
 		public Command VoxelDuplicate = new Command();
+		public Command VoxelCopy = new Command();
+		public Command VoxelPaste = new Command();
 		public Command StartVoxelTranslation = new Command();
 		public Command StartTranslation = new Command();
 		public Command StartRotation = new Command();
@@ -62,6 +64,7 @@ namespace Lemma.Components
 
 		private Map.Coordinate originalSelectionStart;
 		private Map.Coordinate originalSelectionEnd;
+		private Map.Coordinate originalSelectionCoord;
 		private bool voxelDuplicate;
 
 		private Map.MapState mapState;
@@ -227,20 +230,51 @@ namespace Lemma.Components
 				this.EditSelection.InternalValue = value;
 			};
 
+			this.VoxelCopy.Action = delegate()
+			{
+				if (this.MapEditMode && this.VoxelSelectionActive)
+				{
+					Map m = this.SelectedEntities[0].Get<Map>();
+					this.originalSelectionStart = this.VoxelSelectionStart;
+					this.originalSelectionEnd = this.VoxelSelectionEnd;
+					this.originalSelectionCoord = this.coord;
+					this.mapState = new Map.MapState(m.GetChunksBetween(this.originalSelectionStart, this.originalSelectionEnd));
+					this.voxelDuplicate = false;
+				}
+			};
+
+			this.VoxelPaste.Action = delegate()
+			{
+				if (this.MapEditMode && this.mapState != null)
+				{
+					Map m = this.SelectedEntities[0].Get<Map>();
+					Map.Coordinate newSelectionStart = this.coord.Plus(this.originalSelectionStart.Minus(this.originalSelectionCoord));
+					this.VoxelSelectionStart.Value = newSelectionStart;
+					this.VoxelSelectionEnd.Value = this.coord.Plus(this.originalSelectionEnd.Minus(this.originalSelectionCoord));
+
+					this.mapState.Add(m.GetChunksBetween(this.VoxelSelectionStart, this.VoxelSelectionEnd));
+
+					Map.Coordinate offset = this.originalSelectionStart.Minus(newSelectionStart);
+					this.restoreMap(newSelectionStart, this.VoxelSelectionEnd, false, offset.X, offset.Y, offset.Z);
+				}
+			};
+
 			this.StartVoxelTranslation.Action = delegate()
 			{
-				Map m = this.SelectedEntities[0].Get<Map>();
-				this.originalSelectionStart = this.VoxelSelectionStart;
-				this.originalSelectionEnd = this.VoxelSelectionEnd;
-				this.mapState = new Map.MapState(m.GetChunksBetween(this.originalSelectionStart, this.originalSelectionEnd).SelectMany(x => x.Boxes));
-				this.voxelDuplicate = false;
-				this.TransformMode.Value = TransformModes.Translate;
+				if (this.MapEditMode && this.VoxelSelectionActive)
+				{
+					this.VoxelCopy.Execute();
+					this.TransformMode.Value = TransformModes.Translate;
+				}
 			};
 
 			this.VoxelDuplicate.Action = delegate()
 			{
-				this.StartVoxelTranslation.Execute();
-				this.voxelDuplicate = true;
+				if (this.MapEditMode && this.VoxelSelectionActive)
+				{
+					this.StartVoxelTranslation.Execute();
+					this.voxelDuplicate = true;
+				}
 			};
 
 			this.PropagateMaterial.Action = delegate()
@@ -253,13 +287,23 @@ namespace Lemma.Components
 				if (selectedBox == null)
 					return;
 
+				Map.Coordinate startSelection = this.VoxelSelectionStart;
+				Map.Coordinate endSelection = this.VoxelSelectionEnd;
+				bool selectionActive = this.VoxelSelectionActive;
+
 				Map.CellState material;
 				if (WorldFactory.StatesByName.TryGetValue(this.Brush, out material))
 				{
-					List<Map.Coordinate> coords = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords()).ToList();
+					IEnumerable<Map.Coordinate> coordEnumerable;
+					if (selectionActive)
+						coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => y.Between(startSelection, endSelection)));
+					else
+						coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords());
+
+					List<Map.Coordinate> coords = coordEnumerable.ToList();
 					m.Empty(coords);
 					foreach (Map.Coordinate c in coords)
-						m.Fill(c, material);
+							m.Fill(c, material);
 					m.Regenerate();
 				}
 			};
@@ -306,7 +350,6 @@ namespace Lemma.Components
 			this.CommitTransform.Action = delegate()
 			{
 				this.NeedsSave.Value = true;
-				this.mapState = null;
 				this.TransformMode.Value = TransformModes.None;
 				this.TransformAxis.Value = TransformAxes.All;
 				if (this.MapEditMode)
@@ -323,7 +366,6 @@ namespace Lemma.Components
 					this.VoxelSelectionStart.Value = this.originalSelectionStart;
 					this.VoxelSelectionEnd.Value = this.originalSelectionEnd;
 					this.restoreMap(this.VoxelSelectionStart, this.VoxelSelectionEnd, false);
-					this.mapState = null;
 					this.justCommitedOrRevertedVoxelOperation = true;
 				}
 				else
@@ -416,11 +458,17 @@ namespace Lemma.Components
 							else if (this.TransformMode.Value == TransformModes.Translate)
 							{
 								this.NeedsSave.Value = true;
+
 								this.restoreMap(this.VoxelSelectionStart, this.VoxelSelectionEnd, !this.voxelDuplicate);
+
 								Map.Coordinate newSelectionStart = this.VoxelSelectionStart.Value.Move(relativeDir);
 								this.VoxelSelectionStart.Value = newSelectionStart;
 								this.VoxelSelectionEnd.Value = this.VoxelSelectionEnd.Value.Move(relativeDir);
-								this.restoreMap(newSelectionStart, this.VoxelSelectionEnd, false, this.originalSelectionStart.X - newSelectionStart.X, this.originalSelectionStart.Y - newSelectionStart.Y, this.originalSelectionStart.Z - newSelectionStart.Z);
+
+								this.mapState.Add(map.GetChunksBetween(this.VoxelSelectionStart, this.VoxelSelectionEnd));
+
+								Map.Coordinate offset = this.originalSelectionStart.Minus(newSelectionStart);
+								this.restoreMap(newSelectionStart, this.VoxelSelectionEnd, false, offset.X, offset.Y, offset.Z);
 							}
 							this.Position.Value = map.GetAbsolutePosition(this.coord);
 						}

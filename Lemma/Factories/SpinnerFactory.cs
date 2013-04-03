@@ -14,12 +14,13 @@ using BEPUphysics.Constraints.SolverGroups;
 
 namespace Lemma.Factories
 {
-	public class SliderFactory : Factory
+	public class SpinnerFactory : Factory
 	{
 		public override Entity Create(Main main)
 		{
-			Entity result = Factory.Get<DynamicMapFactory>().Create(main);
-			result.Type = "Slider";
+			Entity result = new Entity(main, "Spinner");
+
+			result.Add("Map", new DynamicMap(0, 0, 0));
 
 			return result;
 		}
@@ -27,23 +28,24 @@ namespace Lemma.Factories
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
 			Property<Direction> dir = result.GetOrMakeProperty<Direction>("Direction", true);
-			Property<int> minimum = result.GetOrMakeProperty<int>("Minimum", true);
-			Property<int> maximum = result.GetOrMakeProperty<int>("Maximum", true);
+			Property<float> minimum = result.GetOrMakeProperty<float>("Minimum", true);
+			Property<float> maximum = result.GetOrMakeProperty<float>("Maximum", true);
 			Property<bool> locked = result.GetOrMakeProperty<bool>("Locked", true);
+			Property<bool> servo = result.GetOrMakeProperty<bool>("Servo", true, true);
 			Property<float> speed = result.GetOrMakeProperty<float>("Speed", true, 5);
 
-			PrismaticJoint joint = null;
+			RevoluteJoint joint = null;
 
 			Action setLimits = delegate()
 			{
 				if (joint != null)
 				{
-					int min = minimum, max = maximum;
+					float min = minimum, max = maximum;
 					if (max > min)
 					{
 						joint.Limit.IsActive = true;
-						joint.Limit.Minimum = minimum;
-						joint.Limit.Maximum = maximum;
+						joint.Limit.MinimumAngle = minimum;
+						joint.Limit.MaximumAngle = maximum;
 					}
 					else
 						joint.Limit.IsActive = false;
@@ -54,7 +56,10 @@ namespace Lemma.Factories
 			Action setSpeed = delegate()
 			{
 				if (joint != null)
+				{
 					joint.Motor.Settings.Servo.BaseCorrectiveSpeed = speed;
+					joint.Motor.Settings.VelocityMotor.GoalVelocity = speed;
+				}
 			};
 			result.Add(new NotifyBinding(setSpeed, speed));
 
@@ -65,17 +70,45 @@ namespace Lemma.Factories
 			};
 			result.Add(new NotifyBinding(setLocked, locked));
 
+			DynamicMap map = result.Get<DynamicMap>();
+
+			Action setServo = delegate()
+			{
+				if (joint != null)
+					joint.Motor.Settings.Mode = servo ? MotorMode.Servomechanism : MotorMode.VelocityMotor;
+			};
+			result.Add(new NotifyBinding(setServo, servo));
+
 			Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint = delegate(BEPUphysics.Entities.Entity entity1, BEPUphysics.Entities.Entity entity2, Vector3 pos, Vector3 direction, Vector3 anchor)
 			{
-				joint = new PrismaticJoint(entity1, entity2, pos, direction, anchor);
+				joint = new RevoluteJoint(entity1, entity2, pos, direction);
 				joint.Motor.Settings.Mode = MotorMode.Servomechanism;
 				setLimits();
 				setLocked();
 				setSpeed();
+				setServo();
 				return joint;
 			};
 
 			JointFactory.Bind(result, main, createJoint, creating);
+
+			result.Add("On", new Command
+			{
+				Action = delegate()
+				{
+					if (joint != null && locked)
+						servo.Value = false;
+				},
+			});
+
+			result.Add("Off", new Command
+			{
+				Action = delegate()
+				{
+					if (joint != null && locked)
+						servo.Value = true;
+				},
+			});
 
 			result.Add("Forward", new Command
 			{
@@ -85,6 +118,7 @@ namespace Lemma.Factories
 						joint.Motor.Settings.Servo.Goal = maximum;
 				},
 			});
+
 			result.Add("Backward", new Command
 			{
 				Action = delegate()

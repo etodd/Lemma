@@ -185,6 +185,29 @@ namespace Lemma.Factories
 					input.Add(new CommandBinding(input.GetChord(chord), () => enabled() && !ui.StringPropertyLocked, action));
 				else
 					input.Add(new CommandBinding(input.GetKeyDown(chord.Key), () => enabled() && !ui.StringPropertyLocked, action));
+
+				ui.Add(new CommandBinding(action, delegate()
+				{
+					Container container = new Container();
+					container.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+					container.Opacity.Value = 0.2f;
+					container.AnchorPoint.Value = new Vector2(1.0f, 0.0f);
+					container.Add(new Binding<Vector2, Point>(container.Position, x => new Vector2(x.X - 10.0f, 10.0f), main.ScreenSize));
+					TextElement display = new TextElement();
+					display.FontFile.Value = "Font";
+					display.Text.Value = description;
+					container.Children.Add(display);
+					uiRenderer.Root.Children.Add(container);
+					main.AddComponent(new Animation
+					(
+						new Animation.Parallel
+						(
+							new Animation.FloatMoveTo(container.Opacity, 0.0f, 1.0f),
+							new Animation.FloatMoveTo(display.Opacity, 0.0f, 1.0f)
+						),
+						new Animation.Execute(delegate() { uiRenderer.Root.Children.Remove(container); })
+					));
+				}));
 			};
 
 			foreach (string key in Factory.factories.Keys)
@@ -1018,28 +1041,6 @@ namespace Lemma.Factories
 
 			// Save
 			addCommand("Save", new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.S }, () => !editor.MovementEnabled, editor.Save);
-			editor.Add(new CommandBinding(editor.Save, delegate()
-			{
-				Container container = new Container();
-				container.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-				container.Opacity.Value = 0.2f;
-				container.AnchorPoint.Value = new Vector2(1.0f, 0.0f);
-				container.Add(new Binding<Vector2, Point>(container.Position, x => new Vector2(x.X - 10.0f, 10.0f), main.ScreenSize));
-				TextElement display = new TextElement();
-				display.FontFile.Value = "Font";
-				display.Text.Value = "Saved";
-				container.Children.Add(display);
-				uiRenderer.Root.Children.Add(container);
-				main.AddComponent(new Animation
-				(
-					new Animation.Parallel
-					(
-						new Animation.FloatMoveTo(container.Opacity, 0.0f, 1.0f),
-						new Animation.FloatMoveTo(display.Opacity, 0.0f, 1.0f)
-					),
-					new Animation.Execute(delegate() { uiRenderer.Root.Children.Remove(container); })
-				));
-			}));
 
 			// Deselect all entities
 			addCommand("Deselect all", new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.A }, () => !editor.MovementEnabled, new Command
@@ -1213,10 +1214,24 @@ namespace Lemma.Factories
 			);
 			addCommand
 			(
-				"Duplicate",
+				"Voxel duplicate",
 				new PCInput.Chord { Key = Keys.C },
 				() => editor.MapEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
 				editor.VoxelDuplicate
+			);
+			addCommand
+			(
+				"Voxel yank",
+				new PCInput.Chord { Key = Keys.Y },
+				() => editor.MapEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
+				editor.VoxelCopy
+			);
+			addCommand
+			(
+				"Voxel paste",
+				new PCInput.Chord { Key = Keys.P },
+				() => editor.MapEditMode && editor.TransformMode.Value == Editor.TransformModes.None,
+				editor.VoxelPaste
 			);
 			addCommand
 			(

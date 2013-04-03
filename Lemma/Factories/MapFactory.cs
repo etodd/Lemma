@@ -27,7 +27,8 @@ namespace Lemma.Factories
 		{
 			Entity result = new Entity(main, "Map");
 
-			// Components
+			result.Add("Transform", new Transform());
+			
 			Map map = this.newMapComponent(offsetX, offsetY, offsetZ);
 			result.Add("Map", map);
 
@@ -50,6 +51,7 @@ namespace Lemma.Factories
 		{
 			if (transform == null)
 				transform = result.GetOrCreate<Transform>("Transform");
+
 			Map map = result.Get<Map>();
 
 			// Apply the position and orientation components to the map
