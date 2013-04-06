@@ -33,6 +33,7 @@ namespace Lemma.Factories
 			Property<bool> locked = result.GetOrMakeProperty<bool>("Locked", true);
 			Property<bool> servo = result.GetOrMakeProperty<bool>("Servo", true, true);
 			Property<float> speed = result.GetOrMakeProperty<float>("Speed", true, 5);
+			Property<float> goal = result.GetOrMakeProperty<float>("Goal", true);
 
 			RevoluteJoint joint = null;
 
@@ -57,11 +58,18 @@ namespace Lemma.Factories
 			{
 				if (joint != null)
 				{
-					joint.Motor.Settings.Servo.BaseCorrectiveSpeed = speed;
+					joint.Motor.Settings.Servo.BaseCorrectiveSpeed = joint.Motor.Settings.Servo.MaxCorrectiveVelocity = speed;
 					joint.Motor.Settings.VelocityMotor.GoalVelocity = speed;
 				}
 			};
 			result.Add(new NotifyBinding(setSpeed, speed));
+
+			Action setGoal = delegate()
+			{
+				if (joint != null)
+					joint.Motor.Settings.Servo.Goal = goal;
+			};
+			result.Add(new NotifyBinding(setGoal, goal));
 
 			Action setLocked = delegate()
 			{
@@ -82,11 +90,15 @@ namespace Lemma.Factories
 			Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint = delegate(BEPUphysics.Entities.Entity entity1, BEPUphysics.Entities.Entity entity2, Vector3 pos, Vector3 direction, Vector3 anchor)
 			{
 				joint = new RevoluteJoint(entity1, entity2, pos, direction);
+				float multiplier = Math.Max(1.0f, map.PhysicsEntity.Mass);
+				joint.AngularJoint.SpringSettings.StiffnessConstant *= multiplier;
+				joint.Limit.SpringSettings.StiffnessConstant *= multiplier;
 				joint.Motor.Settings.Mode = MotorMode.Servomechanism;
 				setLimits();
 				setLocked();
 				setSpeed();
 				setServo();
+				setGoal();
 				return joint;
 			};
 
@@ -106,7 +118,22 @@ namespace Lemma.Factories
 				Action = delegate()
 				{
 					if (joint != null && locked)
+					{
+						BEPUphysics.Constraints.JointBasis2D basis = joint.Motor.Basis;
+						basis.RotationMatrix = joint.Motor.ConnectionA.OrientationMatrix;
+
+						Vector3 localTestAxis = joint.Motor.LocalTestAxis;
+						Vector3 worldTestAxis;
+						BEPUphysics.MathExtensions.Matrix3X3 orientationMatrix = joint.Motor.ConnectionB.OrientationMatrix;
+						BEPUphysics.MathExtensions.Matrix3X3.Transform(ref localTestAxis, ref orientationMatrix, out worldTestAxis);
+
+						float y, x;
+						Vector3 yAxis = Vector3.Cross(basis.PrimaryAxis, basis.XAxis);
+						Vector3.Dot(ref worldTestAxis, ref yAxis, out y);
+						x = Vector3.Dot(worldTestAxis, basis.XAxis);
+						goal.Value = (float)Math.Atan2(y, x);
 						servo.Value = true;
+					}
 				},
 			});
 
@@ -126,6 +153,28 @@ namespace Lemma.Factories
 					if (joint != null && locked)
 						joint.Motor.Settings.Servo.Goal = minimum;
 				},
+			});
+
+			Command hitMax = new Command();
+			result.Add("HitMax", hitMax);
+			Command hitMin = new Command();
+			result.Add("HitMin", hitMin);
+
+			bool lastLimitExceeded = false;
+			result.Add(new Updater
+			{
+				delegate(float dt)
+				{
+					bool limitExceeded = joint.Limit.IsLimitExceeded;
+					if (joint != null && limitExceeded && !lastLimitExceeded)
+					{
+						if (joint.Limit.Error.X > 0)
+							hitMin.Execute();
+						else
+							hitMax.Execute();
+					}
+					lastLimitExceeded = limitExceeded;
+				}
 			});
 		}
 	}

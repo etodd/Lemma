@@ -108,6 +108,28 @@ namespace Lemma.Factories
 						joint.Motor.Settings.Servo.Goal = minimum;
 				},
 			});
+
+			Command hitMax = new Command();
+			result.Add("HitMax", hitMax);
+			Command hitMin = new Command();
+			result.Add("HitMin", hitMin);
+
+			bool lastLimitExceeded = false;
+			result.Add(new Updater
+			{
+				delegate(float dt)
+				{
+					bool limitExceeded = joint.Limit.IsLimitExceeded;
+					if (joint != null && limitExceeded && !lastLimitExceeded)
+					{
+						if (joint.Limit.Error < 0)
+							hitMin.Execute();
+						else
+							hitMax.Execute();
+					}
+					lastLimitExceeded = limitExceeded;
+				}
+			});
 		}
 	}
 }

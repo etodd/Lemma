@@ -41,6 +41,22 @@ namespace Lemma.Components
 			public abstract void UpdateInterval(float x);
 		}
 
+		public class Custom : Interval
+		{
+			private Action<float> action;
+
+			public Custom(Action<float> action, float duration)
+				: base(duration)
+			{
+				this.action = action;
+			}
+
+			public override void UpdateInterval(float x)
+			{
+				this.action(x);
+			}
+		}
+
 		public abstract class Move<T> : Interval
 		{
 			protected Property<T> property;
