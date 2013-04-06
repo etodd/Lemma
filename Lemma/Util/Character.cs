@@ -390,6 +390,14 @@ namespace Lemma.Util
 			float bodyNormalVelocity = Vector3.Dot(this.Body.LinearVelocity, supportNormal);
 			float supportEntityNormalVelocity = Vector3.Dot(supportLocationVelocity, supportNormal);
 			this.Body.LinearVelocity -= (bodyNormalVelocity - supportEntityNormalVelocity) * supportNormal;
+
+			BEPUphysics.Entities.Entity supportEntity = this.SupportEntity;
+			if (supportEntity != null && supportEntity.IsAffectedByGravity)
+			{
+				Vector3 supportLocation = this.SupportLocation;
+				Vector3 impulse = (this.Body.Mass * dt) * ((Space)this.Space).ForceUpdater.Gravity;
+				supportEntity.ApplyImpulse(ref supportLocation, ref impulse);
+			}
 		}
 
 		/// <summary>

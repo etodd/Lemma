@@ -78,6 +78,9 @@ namespace Lemma.Factories
 				});
 			}
 
+			if (result.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(result, main);
+
 			this.SetMain(result, main);
 
 			if (main.EditorEnabled)
@@ -140,6 +143,7 @@ namespace Lemma.Factories
 			model.Add(new Binding<Matrix>(model.Transform, result.Get<Transform>().Matrix));
 
 			PlayerTrigger.AttachEditorComponents(result, main, this.Color);
+			MapAttachable.AttachEditorComponents(result, main);
 		}
 	}
 }

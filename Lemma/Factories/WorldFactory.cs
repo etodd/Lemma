@@ -141,7 +141,7 @@ namespace Lemma.Factories
 					ID = 8,
 					Name = "Wood",
 					Permanent = false,
-					Density = 1,
+					Density = 0.1f,
 					DiffuseMap = "Maps\\Textures\\wood",
 					NormalMap = "Maps\\Textures\\wood-normal",
 					FootstepCue = "WoodFootsteps",

@@ -18,8 +18,9 @@ namespace Lemma.Factories
 	{
 		public override Entity Create(Main main)
 		{
-			Entity result = Factory.Get<DynamicMapFactory>().Create(main);
-			result.Type = "Slider";
+			Entity result = new Entity(main, "Slider");
+
+			result.Add("Map", new DynamicMap(0, 0, 0));
 
 			return result;
 		}
@@ -31,6 +32,7 @@ namespace Lemma.Factories
 			Property<int> maximum = result.GetOrMakeProperty<int>("Maximum", true);
 			Property<bool> locked = result.GetOrMakeProperty<bool>("Locked", true);
 			Property<float> speed = result.GetOrMakeProperty<float>("Speed", true, 5);
+			Property<float> maxForce = result.GetOrMakeProperty<float>("MaxForce", true);
 
 			PrismaticJoint joint = null;
 
@@ -51,6 +53,18 @@ namespace Lemma.Factories
 			};
 			result.Add(new NotifyBinding(setLimits, minimum, maximum));
 
+			Action setMaxForce = delegate()
+			{
+				if (joint != null)
+				{
+					if (maxForce > 0.001f)
+						joint.Motor.Settings.MaximumForce = maxForce;
+					else
+						joint.Motor.Settings.MaximumForce = float.MaxValue;
+				}
+			};
+			result.Add(new NotifyBinding(setMaxForce, maxForce));
+
 			Action setSpeed = delegate()
 			{
 				if (joint != null)
@@ -67,11 +81,12 @@ namespace Lemma.Factories
 
 			Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint = delegate(BEPUphysics.Entities.Entity entity1, BEPUphysics.Entities.Entity entity2, Vector3 pos, Vector3 direction, Vector3 anchor)
 			{
-				joint = new PrismaticJoint(entity1, entity2, pos, direction, anchor);
+				joint = new PrismaticJoint(entity1, entity2, pos, -direction, anchor);
 				joint.Motor.Settings.Mode = MotorMode.Servomechanism;
 				setLimits();
 				setLocked();
 				setSpeed();
+				setMaxForce();
 				return joint;
 			};
 

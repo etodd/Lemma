@@ -118,6 +118,9 @@ namespace Lemma.Factories
 				}
 			}));
 			rebuildJoint();
+			Command rebuildJointCommand = new Command();
+			result.Add(new CommandBinding(rebuildJointCommand, rebuildJoint));
+			result.Add("RebuildJoint", rebuildJointCommand);
 
 			if (main.EditorEnabled)
 				JointFactory.attachEditorComponents(result, main);
@@ -179,7 +182,7 @@ namespace Lemma.Factories
 				{
 					Vector3 normal = Vector3.TransformNormal(dir.Value.GetVector(), mapTransform.Matrix);
 
-					m.Forward = normal;
+					m.Forward = -normal;
 					if (normal.Equals(Vector3.Up))
 						m.Right = Vector3.Left;
 					else if (normal.Equals(Vector3.Down))
