@@ -35,6 +35,7 @@ namespace Lemma.Factories
 			result.CannotSuspendByDistance = true;
 
 			Model skybox = result.Get<Model>("Skybox");
+			skybox.Add(new Binding<Matrix>(skybox.Transform, result.Get<Transform>().Matrix));
 			skybox.DrawOrder.Value = -10;
 		}
 	}

@@ -106,7 +106,7 @@ namespace Lemma.Factories
 						}
 						stream.Dispose();
 					}),
-					new Animation.Delay(1.1f),
+					new Animation.Delay(1.5f),
 					new Animation.Set<string>(notificationText.Text, "Saving..."),
 					new Animation.Set<bool>(notification.Visible, true),
 					new Animation.Delay(0.01f),

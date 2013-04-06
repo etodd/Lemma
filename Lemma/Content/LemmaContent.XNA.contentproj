@@ -191,17 +191,21 @@
       <Name>tutorials</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Maps\level2.map">
-      <Name>level2</Name>
+    <None Include="Maps\spinner.map">
+      <Name>spinner</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Maps\start.cs">
       <Name>start</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Maps\level2.cs">
+    <None Include="Maps\valley.cs">
+      <Name>valley</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Name>level2</Name>
+    </None>
+    <None Include="Maps\spinner.cs">
+      <Name>spinner</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Compile Include="Models\spotlight.fbx">
       <Name>spotlight</Name>
@@ -285,6 +289,10 @@
     </None>
     <None Include="Maps\test.map">
       <Name>test</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Maps\valley.map">
+      <Name>valley</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

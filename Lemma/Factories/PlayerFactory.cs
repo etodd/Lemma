@@ -1294,7 +1294,7 @@ namespace Lemma.Factories
 				if (map != null)
 				{
 					float force = contacts[contacts.Count - 1].NormalImpulse;
-					float threshold = map.Entity.Type == "FallingTower" ? 14.0f : 20.0f;
+					float threshold = map.Entity.Type == "FallingTower" ? 14.0f : 24.0f;
 					float playerLastSpeed = Vector3.Dot(playerLastVelocity, Vector3.Normalize(-contacts[contacts.Count - 1].Contact.Normal)) * 2.0f;
 					if (force > threshold + playerLastSpeed + 4.0f)
 						player.Health.Value -= (force - threshold - playerLastSpeed) * 0.04f;
@@ -1702,7 +1702,7 @@ namespace Lemma.Factories
 
 				if (go)
 				{
-					if (!supported)
+					if (!supported && !wallJumping)
 					{
 						// We haven't hit the ground, so fall damage will not be handled by the physics system.
 						// Need to do it manually here.
@@ -1724,7 +1724,15 @@ namespace Lemma.Factories
 						if (main.TotalTime - rollEnded < 0.3f)
 							totalMultiplier *= 1.5f;
 
-						player.LinearVelocity.Value = new Vector3(jumpDirection.X, player.JumpSpeed * verticalMultiplier, jumpDirection.Y) * totalMultiplier;
+						float verticalJumpSpeed = player.JumpSpeed * verticalMultiplier;
+						if (wallJumping)
+						{
+							float currentVerticalSpeed = player.LinearVelocity.Value.Y;
+							if (currentVerticalSpeed < -verticalJumpSpeed)
+								verticalJumpSpeed += currentVerticalSpeed * 0.5f;
+						}
+
+						player.LinearVelocity.Value = new Vector3(jumpDirection.X, verticalJumpSpeed, jumpDirection.Y) * totalMultiplier;
 
 						if (supported && player.SupportEntity.Value != null)
 						{

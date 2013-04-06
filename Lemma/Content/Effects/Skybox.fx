@@ -2,6 +2,7 @@
 
 float4x4 ViewMatrixRotationOnly;
 float4x4 LastFrameViewProjectionMatrixRotationOnly;
+float4x4 LastFrameWorldMatrix;
 
 struct RenderVSInput
 {
@@ -14,8 +15,9 @@ void RenderVS(	in RenderVSInput input,
 				out RenderPSInput output,
 				out TexturePSInput tex)
 {
-	output.position = input.position;
-	float4 viewSpacePosition = mul(input.position, ViewMatrixRotationOnly);
+	float4 worldPosition = float4(mul(input.position.xyz, (float3x3)WorldMatrix), 1);
+	output.position = worldPosition;
+	float4 viewSpacePosition = mul(worldPosition, ViewMatrixRotationOnly);
 	vs.position = mul(viewSpacePosition, ProjectionMatrix);
 	output.viewSpacePosition = viewSpacePosition;
 	tex.uvCoordinates = input.uvCoordinates;
@@ -44,9 +46,7 @@ void MotionBlurVS(	in RenderVSInput input,
 	// as well as the previous vertex position in clip-space
 	motionBlur.currentPosition = vs.position;
 
-	// TODO: fix skybox motion blur
-
-	motionBlur.previousPosition = mul(input.position, LastFrameViewProjectionMatrixRotationOnly);
+	motionBlur.previousPosition = mul(float4(mul(input.position.xyz, (float3x3)LastFrameWorldMatrix), 1), LastFrameViewProjectionMatrixRotationOnly);
 }
 
 // No shadow technique. We don't want the skybox casting shadows.
