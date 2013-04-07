@@ -2039,7 +2039,7 @@ namespace Lemma.Factories
 					if (!player.Crouched)
 						tryLevitate();
 				}
-				else if (!input.GetInput(settings.Aim) && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && Vector3.Dot(player.LinearVelocity, forward) > 0.0f)
+				else if (!input.GetInput(settings.Aim) && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && Vector3.Dot(player.LinearVelocity, forward) > 0.0f && kickUpdate == null)
 				{
 					// Kick
 					canKick = false;

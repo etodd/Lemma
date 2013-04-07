@@ -587,9 +587,9 @@ namespace Lemma.Factories
 						suspended = !currentZone.ConnectedEntities.Contains(entity) && hasPosition && !boxesContain(boxes, pos);
 					else
 					{
-						// Only suspend things that are connected or that are in a different (exclusive) zone, or that are just too far away
-						suspended = (currentZone != null && currentZone.ConnectedEntities.Contains(entity));
-						if (!suspended && hasPosition)
+						// Only suspend things that are in a different (exclusive) zone, or that are just too far away
+						suspended = false;
+						if (hasPosition)
 						{
 							if (!entity.CannotSuspendByDistance && !boxesContain(boxes, pos) && (pos - cameraPosition).Length() > suspendDistance)
 								suspended = true;
@@ -605,6 +605,10 @@ namespace Lemma.Factories
 								}
 							}
 						}
+
+						// Allow the editor to reverse the decision
+						if (currentZone != null && currentZone.ConnectedEntities.Contains(entity))
+							suspended = !suspended;
 					}
 
 					entity.SetSuspended(suspended);
@@ -673,6 +677,30 @@ namespace Lemma.Factories
 
 			Vector3 lastUpdatedCameraPosition = main.Camera.Position;
 			bool lastFrameUpdated = true;
+
+			Action<Zone> updateZones = delegate(Zone newZone)
+			{
+				currentZone = newZone;
+
+				if (newZone != null)
+					Sound.ReverbSettings(main, newZone.ReverbAmount, newZone.ReverbSize);
+				else
+					Sound.ReverbSettings(main, reverbAmount, reverbSize);
+
+				boxes = getActiveBoundingBoxes(main.Camera, newZone);
+				cameraPosition = main.Camera.Position;
+				suspendDistance = main.Camera.FarPlaneDistance;
+				foreach (Entity e in main.Entities)
+					processEntity(e, newZone, boxes, cameraPosition, suspendDistance);
+
+				lastUpdatedCameraPosition = main.Camera.Position;
+			};
+
+			result.Add("UpdateZones", new Command
+			{
+				Action = delegate() { updateZones(Zone.Get(main.Camera.Position)); },
+			});
+
 			Updater update = new Updater
 			{
 				delegate(float dt)
@@ -688,22 +716,7 @@ namespace Lemma.Factories
 					Zone newZone = Zone.Get(main.Camera.Position);
 
 					if (newZone != currentZone || (newZone == null && (main.Camera.Position - lastUpdatedCameraPosition).Length() > 10.0f))
-					{
-						currentZone = newZone;
-
-						if (newZone != null)
-							Sound.ReverbSettings(main, newZone.ReverbAmount, newZone.ReverbSize);
-						else
-							Sound.ReverbSettings(main, reverbAmount, reverbSize);
-
-						boxes = getActiveBoundingBoxes(main.Camera, newZone);
-						cameraPosition = main.Camera.Position;
-						suspendDistance = main.Camera.FarPlaneDistance;
-						foreach (Entity e in main.Entities)
-							processEntity(e, newZone, boxes, cameraPosition, suspendDistance);
-
-						lastUpdatedCameraPosition = main.Camera.Position;
-					}
+						updateZones(newZone);
 				}
 			};
 			update.EnabledInEditMode.Value = true;

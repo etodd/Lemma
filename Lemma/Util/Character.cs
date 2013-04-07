@@ -251,7 +251,7 @@ namespace Lemma.Util
 				// Try to uncrouch
 
 				Vector3 rayOrigin = this.Body.Position;
-				rayOrigin.Y += this.Body.Height * 0.5f;
+				rayOrigin.Y += 0.01f + this.Body.Height * 0.5f;
 
 				bool foundCeiling = false;
 

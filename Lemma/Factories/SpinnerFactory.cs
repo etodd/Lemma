@@ -165,15 +165,18 @@ namespace Lemma.Factories
 			{
 				delegate(float dt)
 				{
-					bool limitExceeded = joint.Limit.IsLimitExceeded;
-					if (joint != null && limitExceeded && !lastLimitExceeded)
+					if (joint != null)
 					{
-						if (joint.Limit.Error.X > 0)
-							hitMin.Execute();
-						else
-							hitMax.Execute();
+						bool limitExceeded = joint.Limit.IsLimitExceeded;
+						if (limitExceeded && !lastLimitExceeded)
+						{
+							if (joint.Limit.Error.X > 0)
+								hitMin.Execute();
+							else
+								hitMax.Execute();
+						}
+						lastLimitExceeded = limitExceeded;
 					}
-					lastLimitExceeded = limitExceeded;
 				}
 			});
 		}

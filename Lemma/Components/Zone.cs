@@ -70,6 +70,11 @@ namespace Lemma.Components
 				}
 			}, this.Parent));
 
+			this.Add(new NotifyBinding(delegate()
+			{
+				Lemma.Factories.WorldFactory.Get().GetCommand("UpdateZones").Execute();
+			}, this.Parent, this.Exclusive, this.BoundingBox, this.Transform));
+
 			this.main.AddComponent(new PostInitialization
 			{
 				delegate()
