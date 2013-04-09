@@ -1295,7 +1295,7 @@ namespace Lemma.Factories
 				{
 					float force = contacts[contacts.Count - 1].NormalImpulse;
 					float threshold = map.Entity.Type == "FallingTower" ? 14.0f : 24.0f;
-					float playerLastSpeed = Vector3.Dot(playerLastVelocity, Vector3.Normalize(-contacts[contacts.Count - 1].Contact.Normal)) * 2.0f;
+					float playerLastSpeed = Vector3.Dot(playerLastVelocity, Vector3.Normalize(-contacts[contacts.Count - 1].Contact.Normal)) * 2.5f;
 					if (force > threshold + playerLastSpeed + 4.0f)
 						player.Health.Value -= (force - threshold - playerLastSpeed) * 0.04f;
 				}

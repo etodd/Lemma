@@ -61,6 +61,8 @@ namespace Lemma.Components
 		public Command CommitTransform = new Command();
 		public Command RevertTransform = new Command();
 		public Command PropagateMaterial = new Command();
+		public Command SampleMaterial = new Command();
+		public Command DeleteMaterial = new Command();
 
 		private Map.Coordinate originalSelectionStart;
 		private Map.Coordinate originalSelectionEnd;
@@ -304,6 +306,48 @@ namespace Lemma.Components
 					m.Empty(coords);
 					foreach (Map.Coordinate c in coords)
 							m.Fill(c, material);
+					m.Regenerate();
+				}
+			};
+
+			this.SampleMaterial.Action = delegate()
+			{
+				if (!this.MapEditMode)
+					return;
+
+				Map m = this.SelectedEntities[0].Get<Map>();
+				Map.Box selectedBox = m.GetBox(this.coord);
+				if (selectedBox == null)
+					return;
+
+				this.Brush.Value = selectedBox.Type.Name;
+			};
+
+			this.DeleteMaterial.Action = delegate()
+			{
+				if (!this.MapEditMode)
+					return;
+
+				Map m = this.SelectedEntities[0].Get<Map>();
+				Map.Box selectedBox = m.GetBox(this.coord);
+				if (selectedBox == null)
+					return;
+
+				Map.Coordinate startSelection = this.VoxelSelectionStart;
+				Map.Coordinate endSelection = this.VoxelSelectionEnd;
+				bool selectionActive = this.VoxelSelectionActive;
+
+				Map.CellState material;
+				if (WorldFactory.StatesByName.TryGetValue(this.Brush, out material))
+				{
+					IEnumerable<Map.Coordinate> coordEnumerable;
+					if (selectionActive)
+						coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => y.Between(startSelection, endSelection)));
+					else
+						coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords());
+
+					List<Map.Coordinate> coords = coordEnumerable.ToList();
+					m.Empty(coords);
 					m.Regenerate();
 				}
 			};
