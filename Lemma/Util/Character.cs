@@ -57,7 +57,7 @@ namespace Lemma.Util
 		/// <summary>
 		/// Initial vertical speed when jumping.
 		/// </summary>
-		public Property<float> JumpSpeed = new Property<float> { Value = 9.0f };
+		public Property<float> JumpSpeed = new Property<float>();
 
 		public Property<Player.WallRun> WallRunState = new Property<Player.WallRun> { Value = Player.WallRun.None };
 
@@ -87,6 +87,8 @@ namespace Lemma.Util
 		public Property<float> TractionDeceleration = new Property<float> { Value = 100.0f };
 
 		public Property<bool> EnableWalking = new Property<bool> { Value = true };
+
+		public Property<bool> Jumping = new Property<bool>();
 
 		/// <summary>
 		/// The location of the player's feet.
@@ -242,7 +244,7 @@ namespace Lemma.Util
 					if (this.IsSwimming)
 						this.handleNoTraction(dt, 0.5f, 0.5f, 0.5f);
 					else
-						this.handleNoTraction(dt, 0.0f, 0.1f, 2.0f);
+						this.handleNoTraction(dt, 0.0f, 0.35f, -1.0f); // -1.0 = Infinite max speed
 				}
 			}
 
@@ -472,6 +474,10 @@ namespace Lemma.Util
 			float tractionDeceleration = this.TractionDeceleration * tractionDecelerationRatio;
 			float acceleration = this.Acceleration * accelerationRatio;
 			float maxSpeed = this.MaxSpeed * speedRatio;
+
+			if (this.Jumping && !this.IsSwimming)
+				this.Body.LinearVelocity += new Vector3(0, dt * this.JumpSpeed * accelerationRatio * 0.7f, 0);
+			
 			if (this.MovementDirection != Vector2.Zero)
 			{
 				//Identify a coordinate system that uses the support normal as Y.
@@ -489,7 +495,7 @@ namespace Lemma.Util
 
 				float bodyZVelocity = Vector3.Dot(Body.LinearVelocity, z);
 				//The velocity difference along the Z axis should accelerate/decelerate to match the goal velocity (max speed).
-				if (bodyZVelocity > maxSpeed)
+				if (maxSpeed > 0 && bodyZVelocity > maxSpeed)
 				{
 					//Decelerate
 					velocityChange = Math.Min(dt * tractionDeceleration, bodyZVelocity - maxSpeed);
@@ -498,6 +504,8 @@ namespace Lemma.Util
 				else
 				{
 					//Accelerate
+					if (maxSpeed < -1.0f)
+						maxSpeed = this.MaxSpeed;
 					velocityChange = Math.Min(dt * acceleration, maxSpeed - bodyZVelocity);
 					this.Body.LinearVelocity += velocityChange * z;
 				}

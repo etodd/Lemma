@@ -89,6 +89,27 @@ namespace Lemma.Components
 			rebindCommand();
 		}
 
+		public void Bind(Property<PCInput.PCInputBinding> inputBinding, Property<bool> target)
+		{
+			Binding<bool> binding = null;
+			Action rebind = delegate()
+			{
+				if (binding != null)
+					this.Remove(binding);
+
+				PCInput.PCInputBinding ib = inputBinding;
+				if (ib.Key == Keys.None && ib.MouseButton == PCInput.MouseButton.None)
+					binding = null;
+				else
+				{
+					binding = new Binding<bool>(target, this.GetInput(ib));
+					this.Add(binding);
+				}
+			};
+			this.Add(new NotifyBinding(rebind, inputBinding));
+			rebind();
+		}
+
 		protected Dictionary<Keys, Property<bool>> keyProperties = new Dictionary<Keys, Property<bool>>();
 
 		protected Dictionary<Keys, Command> keyUpCommands = new Dictionary<Keys, Command>();

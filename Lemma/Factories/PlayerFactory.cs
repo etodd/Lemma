@@ -233,7 +233,6 @@ namespace Lemma.Factories
 						data.Value = Factory.Get<PlayerDataFactory>().Instance(main);
 					
 					// Bind player data properties
-					result.Add(new TwoWayBinding<float>(data.Value.Target.GetProperty<float>("JumpSpeed"), player.JumpSpeed));
 					Property<int> stamina = data.Value.Target.GetProperty<int>("Stamina");
 					if (creating && stamina < 25)
 						stamina.Value = 25;
@@ -1867,6 +1866,8 @@ namespace Lemma.Factories
 					}
 				}
 			});
+
+			input.Bind(settings.Jump, player.Jumping);
 
 			input.Bind(settings.Jump, PCInput.InputState.Up, delegate()
 			{
