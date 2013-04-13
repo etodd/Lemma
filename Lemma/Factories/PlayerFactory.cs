@@ -513,6 +513,9 @@ namespace Lemma.Factories
 
 			Property<Matrix> handTransform = model.GetWorldBoneTransform("Palm-2_R");
 
+			Property<bool> enableCameraControl = result.GetOrMakeProperty<bool>("EnableCameraControl", false, true);
+			enableCameraControl.Serialize = false;
+
 			update.Add(delegate(float dt)
 			{
 				relativeHeadBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.5f);
@@ -585,37 +588,40 @@ namespace Lemma.Factories
 				else
 					cameraShakeAmount.Value = 0.0f;
 
+				if (enableCameraControl)
+				{
 #if DEVELOPMENT
-				if (thirdPerson)
-				{
-					Vector3 cameraPosition = Vector3.Transform(new Vector3(0.0f, 3.0f, 0.0f), model.Transform);
+					if (thirdPerson)
+					{
+						Vector3 cameraPosition = Vector3.Transform(new Vector3(0.0f, 3.0f, 0.0f), model.Transform);
 
-					main.Camera.Angles.Value = new Vector3(-input.Mouse.Value.Y, input.Mouse.Value.X + (float)Math.PI * 1.0f, shakeAngle);
+						main.Camera.Angles.Value = new Vector3(-input.Mouse.Value.Y, input.Mouse.Value.X + (float)Math.PI * 1.0f, shakeAngle);
 
-					Map.GlobalRaycastResult hit = Map.GlobalRaycast(cameraPosition, -main.Camera.Forward.Value, 5.0f);
+						Map.GlobalRaycastResult hit = Map.GlobalRaycast(cameraPosition, -main.Camera.Forward.Value, 5.0f);
 
-					float cameraDistance = 4.0f;
-					if (hit.Map != null)
-						cameraDistance = (hit.Position - cameraPosition).Length() - 1.0f;
-					main.Camera.Position.Value = cameraPosition + (main.Camera.Right.Value * cameraDistance * -0.25f) + (main.Camera.Forward.Value * -cameraDistance);
-				}
-				else
+						float cameraDistance = 4.0f;
+						if (hit.Map != null)
+							cameraDistance = (hit.Position - cameraPosition).Length() - 1.0f;
+						main.Camera.Position.Value = cameraPosition + (main.Camera.Right.Value * cameraDistance * -0.25f) + (main.Camera.Forward.Value * -cameraDistance);
+					}
+					else
 #endif
-				{
-					Vector3 cameraPosition = Vector3.Transform(cameraOffset, headBone.Value * model.Transform);
+					{
+						Vector3 cameraPosition = Vector3.Transform(cameraOffset, headBone.Value * model.Transform);
 
-					main.Camera.Position.Value = cameraPosition;
+						main.Camera.Position.Value = cameraPosition;
 
-					Matrix camera = cameraBone.Value * Matrix.CreateRotationY(input.Mouse.Value.X);
+						Matrix camera = cameraBone.Value * Matrix.CreateRotationY(input.Mouse.Value.X);
 
-					Matrix rot = Matrix.Identity;
-					rot.Forward = Vector3.Normalize(Vector3.TransformNormal(new Vector3(0, 1.0f, 0), camera));
-					rot.Up = Vector3.Normalize(Vector3.TransformNormal(new Vector3(0.0f, 0, 1.0f), camera));
-					rot.Right = Vector3.Normalize(Vector3.Cross(rot.Forward, rot.Up));
+						Matrix rot = Matrix.Identity;
+						rot.Forward = Vector3.Normalize(Vector3.TransformNormal(new Vector3(0, 1.0f, 0), camera));
+						rot.Up = Vector3.Normalize(Vector3.TransformNormal(new Vector3(0.0f, 0, 1.0f), camera));
+						rot.Right = Vector3.Normalize(Vector3.Cross(rot.Forward, rot.Up));
 
-					Vector3 right = Vector3.Cross(rot.Forward, Vector3.Up);
+						Vector3 right = Vector3.Cross(rot.Forward, Vector3.Up);
 
-					main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shakeAngle) * Matrix.CreateFromAxisAngle(right, -input.Mouse.Value.Y);
+						main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shakeAngle) * Matrix.CreateFromAxisAngle(right, -input.Mouse.Value.Y);
+					}
 				}
 			});
 
@@ -1256,11 +1262,6 @@ namespace Lemma.Factories
 
 			float levitateButtonPressStart = -1.0f;
 			DynamicMap levitatingMap = null;
-
-			result.Add(new CommandBinding(result.Delete, delegate()
-			{
-				main.Camera.FieldOfView.Value = MathHelper.ToRadians(80.0f);
-			}));
 
 			player.Add(new NotifyBinding(delegate()
 			{

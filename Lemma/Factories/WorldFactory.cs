@@ -414,7 +414,7 @@ namespace Lemma.Factories
 					ID = 28,
 					Name = "MetalRed",
 					Permanent = true,
-					Density = 1,
+					Density = 0.1f,
 					DiffuseMap = "Maps\\Textures\\metal-red",
 					NormalMap = "Maps\\Textures\\metal-normal",
 					FootstepCue = "MetalFootsteps",
@@ -437,19 +437,19 @@ namespace Lemma.Factories
 					AllowAlpha = true,
 					Tiling = 2.0f,
 				},
-                new Map.CellState
-                {
-                    ID = 30,
-                    Name = "White",
-                    Permanent = false,
-                    Density = 0.5f,
-                    DiffuseMap = "Maps\\Textures\\white",
-                    NormalMap = "Maps\\Textures\\plain-normal",
-                    FootstepCue = "MetalFootsteps",
-                    RubbleCue = "MetalRubble",
-                    SpecularIntensity = 0.0f,
-                    Glow = true,
-                },
+				new Map.CellState
+				{
+					ID = 30,
+					Name = "White",
+					Permanent = false,
+					Density = 0.5f,
+					DiffuseMap = "Maps\\Textures\\white",
+					NormalMap = "Maps\\Textures\\plain-normal",
+					FootstepCue = "MetalFootsteps",
+					RubbleCue = "MetalRubble",
+					SpecularIntensity = 0.0f,
+					Glow = true,
+				},
 				new Map.CellState
 				{
 					ID = 31,

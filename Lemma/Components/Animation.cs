@@ -91,6 +91,25 @@ namespace Lemma.Components
 			}
 		}
 
+		public class MatrixMoveTo : Move<Matrix>
+		{
+			public MatrixMoveTo(Property<Matrix> p, Matrix t, float duration)
+				: base(p, t, duration)
+			{
+
+			}
+
+			public override void UpdateInterval(float x)
+			{
+				Matrix input = Matrix.Lerp(this.start, this.parameter, x);
+				Matrix result = input;
+				result.Forward = Vector3.Normalize(Vector3.TransformNormal(new Vector3(0, 0, -1.0f), input));
+				result.Up = Vector3.Normalize(Vector3.TransformNormal(new Vector3(0.0f, 1.0f, 0), input));
+				result.Right = Vector3.Normalize(Vector3.Cross(result.Forward, result.Up));
+				this.property.Value = result;
+			}
+		}
+
 		public class Vector2MoveToSpeed : Vector2MoveTo
 		{
 			private float speed;
