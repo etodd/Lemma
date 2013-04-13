@@ -50,6 +50,12 @@ namespace Lemma.Components
 			main.AudioEngine.SetGlobalVariable("ReverbSize", size);
 		}
 
+		public static void Reset(Main main)
+		{
+			Sound.lastSoundPlayedTimes.Clear();
+			Sound.ReverbSettings(main, 0, 0);
+		}
+
 		private static Dictionary<string, float> lastSoundPlayedTimes = new Dictionary<string, float>();
 
 		public static Sound PlayCue(Main main, string cue, float volume = 1.0f, float minimumTimeBetweenSounds = 0.25f)
@@ -239,8 +245,9 @@ namespace Lemma.Components
 			{
 				if (this.cue.IsPlaying)
 					this.cue.Stop(this.DeleteStopOption);
-				this.cue = null;
+				this.cue.Dispose();
 			}
+			this.cue = null;
 		}
 	}
 }

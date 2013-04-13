@@ -151,6 +151,7 @@ namespace Lemma
 			GC.Collect();
 
 			this.TotalTime.Value = 0.0f;
+			Sound.Reset(this);
 			this.Renderer.BlurAmount.Value = 0.0f;
 			this.Renderer.Tint.Value = Vector3.One;
 			this.TimeMultiplier.Value = 1.0f;
