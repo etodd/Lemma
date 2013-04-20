@@ -195,6 +195,10 @@
       <Name>lava-cave</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Maps\lava-cave2.map">
+      <Name>lava-cave2</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Maps\spinner.map">
       <Name>spinner</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -213,6 +217,10 @@
     </None>
     <None Include="Maps\lava-cave.cs">
       <Name>lava-cave</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Maps\lava-cave2.cs">
+      <Name>lava-cave2</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Compile Include="Models\spotlight.fbx">

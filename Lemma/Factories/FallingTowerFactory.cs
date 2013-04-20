@@ -148,23 +148,31 @@ namespace Lemma.Factories
 							Map m = enemy.Map.Value.Target.Get<Map>();
 
 							int index = 0;
+
+							Vector3 baseCenter = Vector3.Zero;
+
+							EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
+
+							Entity targetMap = enemy.Map.Value.Target;
+
 							foreach (Map.Coordinate c in enemy.BaseBoxes.SelectMany(x => x.GetCoords()))
 							{
 								if (m[c].ID == 0)
 								{
-									Entity block = Factory.Get<EffectBlockFactory>().CreateAndBind(main);
+									Entity block = factory.CreateAndBind(main);
 									c.Data.ApplyToEffectBlock(block.Get<ModelInstance>());
 									block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(c);
 									block.GetProperty<Vector3>("StartPosition").Value = m.GetAbsolutePosition(c) + new Vector3(0.25f, 0.5f, 0.25f) * index;
 									block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
 									block.GetProperty<float>("TotalLifetime").Value = 0.05f + (index * 0.035f);
-									block.GetProperty<Entity.Handle>("TargetMap").Value = enemy.Map.Value.Target;
-									block.GetProperty<int>("TargetCellStateID").Value = c.Data.ID;
-									block.GetProperty<Map.Coordinate>("TargetCoord").Value = c;
+									factory.Setup(block, targetMap, c, c.Data.ID);
 									main.Add(block);
 									index++;
+									baseCenter += new Vector3(c.X, c.Y, c.Z);
 								}
 							}
+
+							baseCenter /= index; // Get the average position of the base cells
 
 							foreach (Entity.Handle e in dynamicMaps)
 							{
@@ -177,31 +185,34 @@ namespace Lemma.Factories
 								Matrix orientation = dynamicMapComponent.Transform.Value;
 								orientation.Translation = Vector3.Zero;
 
+								List<Map.Coordinate> coords = new List<Map.Coordinate>();
+
 								foreach (Map.Coordinate c in dynamicMapComponent.Chunks.SelectMany(x => x.Boxes).SelectMany(x => x.GetCoords()))
 								{
 									if (m[c].ID == 0)
+										coords.Add(c);
+								}
+
+								foreach (Map.Coordinate c in coords.OrderBy(x => (new Vector3(x.X, x.Y, x.Z) - baseCenter).LengthSquared()))
+								{
+									Entity block = factory.CreateAndBind(main);
+									c.Data.ApplyToEffectBlock(block.Get<ModelInstance>());
+									block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(c);
+									block.GetProperty<bool>("Scale").Value = dynamicMapComponent == null;
+									if (dynamicMapComponent != null && dynamicMapComponent[c].ID == c.Data.ID)
 									{
-										Entity block = Factory.Get<EffectBlockFactory>().CreateAndBind(main);
-										c.Data.ApplyToEffectBlock(block.Get<ModelInstance>());
-										block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(c);
-										block.GetProperty<bool>("Scale").Value = dynamicMapComponent == null;
-										if (dynamicMapComponent != null && dynamicMapComponent[c].ID == c.Data.ID)
-										{
-											block.GetProperty<Vector3>("StartPosition").Value = dynamicMapComponent.GetAbsolutePosition(c);
-											block.GetProperty<Matrix>("StartOrientation").Value = orientation;
-										}
-										else
-										{
-											block.GetProperty<Vector3>("StartPosition").Value = m.GetAbsolutePosition(c) + new Vector3(0.25f, 0.5f, 0.25f) * index;
-											block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
-										}
-										block.GetProperty<float>("TotalLifetime").Value = 0.05f + (index * rebuildTimeMultiplier * rebuildTime);
-										block.GetProperty<Entity.Handle>("TargetMap").Value = enemy.Map.Value.Target;
-										block.GetProperty<int>("TargetCellStateID").Value = c.Data.ID;
-										block.GetProperty<Map.Coordinate>("TargetCoord").Value = c;
-										main.Add(block);
-										index++;
+										block.GetProperty<Vector3>("StartPosition").Value = dynamicMapComponent.GetAbsolutePosition(c);
+										block.GetProperty<Matrix>("StartOrientation").Value = orientation;
 									}
+									else
+									{
+										block.GetProperty<Vector3>("StartPosition").Value = m.GetAbsolutePosition(c) + new Vector3(0.25f, 0.5f, 0.25f) * index;
+										block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
+									}
+									block.GetProperty<float>("TotalLifetime").Value = 0.05f + (index * rebuildTimeMultiplier * rebuildTime);
+									factory.Setup(block, targetMap, c, c.Data.ID);
+									main.Add(block);
+									index++;
 								}
 								dynamicMap.Delete.Execute();
 							}

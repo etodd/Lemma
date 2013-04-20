@@ -189,6 +189,7 @@ namespace Lemma.Factories
 					this.animatingBlocks[entry] = true;
 				}
 			}, map, coord, stateId));
+
 			result.Add(new CommandBinding(result.Delete, delegate()
 			{
 				if (entry.Map != null)
@@ -205,6 +206,17 @@ namespace Lemma.Factories
 				offsetBinding = new Binding<Vector3>(model.GetVector3Parameter("Offset"), result.GetProperty<Vector3>("Offset"));
 				model.Add(offsetBinding);
 			}, model.FullInstanceKey));
+		}
+
+		public void Setup(Entity result, Entity m, Map.Coordinate c, int s)
+		{
+			Property<Entity.Handle> map = result.GetProperty<Entity.Handle>("TargetMap");
+			Property<Map.Coordinate> coord = result.GetProperty<Map.Coordinate>("TargetCoord");
+			Property<int> stateId = result.GetProperty<int>("TargetCellStateID");
+			map.InternalValue = m;
+			coord.InternalValue = c;
+			stateId.InternalValue = s;
+			stateId.Changed();
 		}
 	}
 }

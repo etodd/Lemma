@@ -833,10 +833,7 @@ namespace Lemma.Factories
 					block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f) * distance;
 					block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * (distance + index)) * Matrix.CreateRotationY(0.15f * (distance + index));
 					block.GetProperty<float>("TotalLifetime").Value = Math.Max(0.05f, distance * 0.05f);
-					block.GetProperty<Entity.Handle>("TargetMap").Value = entry.Map.Entity;
-					block.GetProperty<int>("TargetCellStateID").Value = fake ? 0 : entry.State.ID;
-					block.GetProperty<Map.Coordinate>("TargetCoord").Value = entry.Coordinate;
-
+					factory.Setup(block, entry.Map.Entity, entry.Coordinate, fake ? 0 : entry.State.ID);
 					main.Add(block);
 					index++;
 				}
@@ -1564,16 +1561,42 @@ namespace Lemma.Factories
 					Vector2 wallNormal2 = new Vector2(absoluteWallNormal.X, absoluteWallNormal.Z);
 					wallNormal2.Normalize();
 
-					jumpDirection = new Vector2(-rotationMatrix.Forward.X, -rotationMatrix.Forward.Z);
+					bool wallRunningStraight = player.WallRunState.Value == Player.WallRun.Straight || player.WallRunState.Value == Player.WallRun.Down;
+					if (wallRunningStraight)
+						jumpDirection = new Vector2(main.Camera.Forward.Value.X, main.Camera.Forward.Value.Z);
+					else
+						jumpDirection = new Vector2(-rotationMatrix.Forward.X, -rotationMatrix.Forward.Z);
+
+					jumpDirection.Normalize();
 
 					float dot = Vector2.Dot(wallNormal2, jumpDirection);
 					if (dot < 0)
 						jumpDirection = jumpDirection - (2.0f * dot * wallNormal2);
 					jumpDirection *= wallJumpHorizontalVelocityAmount;
-					if (Math.Abs(dot) < 0.5f)
+
+					if (!wallRunningStraight && Math.Abs(dot) < 0.5f)
 					{
 						// If we're jumping perpendicular to the wall, add some velocity so we jump away from the wall a bit
 						jumpDirection += wallJumpHorizontalVelocityAmount * 0.75f * wallNormal2;
+					}
+
+					if (dot < -0.8f)
+					{
+						// We're facing the wall and jumping backward away from it
+						// Do a quick spin move
+
+						const float spinDuration = 0.25f;
+
+						float spinAmount = (-(float)Math.Atan2(jumpDirection.Y, jumpDirection.X) + (float)Math.PI * 0.5f).ClosestAngle(input.Mouse.Value.X) - input.Mouse.Value.X;
+
+						result.Add(new Animation
+						(
+							new Animation.Custom(delegate(float x)
+							{
+								Vector2 oldMouse = input.Mouse;
+								input.Mouse.Value = new Vector2((oldMouse.X + (main.ElapsedTime / spinDuration) * spinAmount).ToAngleRange(), oldMouse.Y);
+							}, spinDuration)
+						));
 					}
 				};
 
@@ -1608,23 +1631,9 @@ namespace Lemma.Factories
 				// Add some velocity so we jump away from the wall a bit
 				if (!onlyVault && player.WallRunState.Value != Player.WallRun.None)
 				{
-					if (player.WallRunState.Value == Player.WallRun.Straight || player.WallRunState.Value == Player.WallRun.Down)
-					{
-						wallJumping = true;
-						lastWallJump = main.TotalTime;
-						Vector3 wallNormal = wallRunMap.GetAbsoluteVector(wallDirection.GetReverse().GetVector());
-						Vector2 wallNormal2 = Vector2.Normalize(new Vector2(wallNormal.X, wallNormal.Z));
-						jumpDirection = Vector2.Normalize(new Vector2(main.Camera.Forward.Value.X, main.Camera.Forward.Value.Z));
-						float dot = Vector2.Dot(wallNormal2, jumpDirection);
-						if (dot < 0)
-							jumpDirection = jumpDirection - (2.0f * dot * wallNormal2);
-					}
-					else
-					{
-						Vector3 pos = transform.Position + new Vector3(0, (player.Height * -0.5f) - 0.5f, 0);
-						Map.Coordinate coord = wallRunMap.GetCoordinate(pos);
-						wallJump(wallRunMap, wallDirection.GetReverse(), coord.Move(wallDirection, 2));
-					}
+					Vector3 pos = transform.Position + new Vector3(0, (player.Height * -0.5f) - 0.5f, 0);
+					Map.Coordinate coord = wallRunMap.GetCoordinate(pos);
+					wallJump(wallRunMap, wallDirection.GetReverse(), coord.Move(wallDirection, 2));
 				}
 
 				bool go = vaulting || (!onlyVault && (supported || wallJumping));
@@ -1776,7 +1785,7 @@ namespace Lemma.Factories
 								animation = "JumpRight";
 								break;
 							case Direction.PositiveZ:
-								animation = "JumpBackward";
+								animation = wallJumping ? "JumpBackward" : "Jump";
 								break;
 							default:
 								animation = "Jump";
@@ -1884,7 +1893,7 @@ namespace Lemma.Factories
 				bool vaulted = jump(true, true); // Try vaulting first
 
 				bool wallRan = false;
-				if (!vaulted && player.EnableWallRun)
+				if (!vaulted && player.EnableWallRun && vaultMover == null)
 				{
 					// Try to wall-run
 					if (!(wallRan = activateWallRun(Player.WallRun.Straight)) && player.EnableWallRunHorizontal)
@@ -2147,7 +2156,7 @@ namespace Lemma.Factories
 				if (!player.EnableMoves)
 					return;
 
-				if (!input.GetInput(settings.Aim) && !model.IsPlaying("PlayerReload") && !rolling && player.EnableRoll && !player.IsSwimming)
+				if (!input.GetInput(settings.Aim) && !model.IsPlaying("PlayerReload") && kickUpdate == null && !rolling && player.EnableRoll && !player.IsSwimming)
 				{
 					// Try to roll
 					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
@@ -2585,6 +2594,8 @@ namespace Lemma.Factories
 						Matrix orientation = levitatingMap.Transform.Value;
 						orientation.Translation = Vector3.Zero;
 
+						EffectBlockFactory blockFactory = Factory.Get<EffectBlockFactory>();
+
 						int index = 0;
 						foreach (Map.Coordinate c in levitatingMap.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()).OrderBy(c2 => new Vector3(c2.X - offset.X, c2.Y - offset.Y, c2.Z - offset.Z).LengthSquared()))
 						{
@@ -2596,16 +2607,14 @@ namespace Lemma.Factories
 							targetCoord = targetCoord.Move(closestCoord.X, closestCoord.Y, closestCoord.Z);
 							if (closestMap[targetCoord].ID == 0)
 							{
-								Entity block = Factory.Get<EffectBlockFactory>().CreateAndBind(main);
+								Entity block = blockFactory.CreateAndBind(main);
 								c.Data.ApplyToEffectBlock(block.Get<ModelInstance>());
 								block.GetProperty<Vector3>("Offset").Value = closestMap.GetRelativePosition(targetCoord);
 								block.GetProperty<bool>("Scale").Value = false;
 								block.GetProperty<Vector3>("StartPosition").Value = levitatingMap.GetAbsolutePosition(c);
 								block.GetProperty<Matrix>("StartOrientation").Value = orientation;
 								block.GetProperty<float>("TotalLifetime").Value = 0.05f + (index * 0.0075f);
-								block.GetProperty<Entity.Handle>("TargetMap").Value = closestMap.Entity;
-								block.GetProperty<int>("TargetCellStateID").Value = c.Data.ID;
-								block.GetProperty<Map.Coordinate>("TargetCoord").Value = targetCoord;
+								blockFactory.Setup(block, closestMap.Entity, targetCoord, c.Data.ID);
 								main.Add(block);
 								index++;
 							}
