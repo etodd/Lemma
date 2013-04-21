@@ -168,12 +168,16 @@ script.Add(new CommandBinding<Map, IEnumerable<Map.Coordinate>, Map>(Map.GlobalC
 			const float playerDamageMultiplier = 2.0f;
 		
 			// Remove the cells
+			BlockFactory blockFactory = Factory.Get<BlockFactory>();
+			
 			foreach (Map m in Map.ActiveMaps.ToList())
 			{
 				List<Map.Coordinate> removals = new List<Map.Coordinate>();
 			
 				Map.Coordinate c = m.GetCoordinate(pos);
 				Vector3 relativePos = m.GetRelativePosition(c);
+				
+				Quaternion quat = m.Entity.Get<Transform>().Quaternion;
 			
 				for (Map.Coordinate x = c.Move(Direction.NegativeX, radius - 1); x.X < c.X + radius; x.X++)
 				{
@@ -187,14 +191,15 @@ script.Add(new CommandBinding<Map, IEnumerable<Map.Coordinate>, Map>(Map.GlobalC
 							Map.CellState s = m[z];
 							if (s.ID == 0 || s.Permanent)
 								continue;
-						
+							
 							Vector3 cellPos = m.GetRelativePosition(z);
 							if ((cellPos - relativePos).Length() < radius - 1)
 							{
 								removals.Add(z);
-								Entity block = Factory.CreateAndBind(main, "Block");
-								block.Get<Transform>().Position.Value = m.GetAbsolutePosition(cellPos);
-								block.Get<Transform>().Quaternion.Value = m.Entity.Get<Transform>().Quaternion;
+								Entity block = blockFactory.CreateAndBind(main);
+								Transform blockTransform = block.Get<Transform>();
+								blockTransform.Position.Value = m.GetAbsolutePosition(cellPos);
+								blockTransform.Quaternion.Value = quat;
 								s.ApplyToBlock(block);
 								block.Get<ModelInstance>().GetVector3Parameter("Offset").Value = cellPos;
 								main.Add(block);
