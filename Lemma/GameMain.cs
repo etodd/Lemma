@@ -296,19 +296,6 @@ namespace Lemma
 						return 0;
 				});
 
-				this.SessionRecorder.Add("HeadlampOn", delegate()
-				{
-					if (this.player != null && this.player.Active)
-					{
-						Entity headlamp = player.GetProperty<Entity.Handle>("Headlamp").Value.Target;
-						if (headlamp != null)
-							return headlamp.GetProperty<bool>("Active") ? 1 : 0;
-						return 0;
-					}
-					else
-						return 0;
-				});
-
 				this.SessionRecorder.Add("LevitationMode", delegate()
 				{
 					if (this.player != null && this.player.Active)

@@ -2165,7 +2165,7 @@ namespace Lemma.Factories
 					Vector3 forward = -rotationMatrix.Forward;
 					Vector3 right = rotationMatrix.Right;
 
-					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height);
+					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height + 2.0f);
 
 					bool nearGround = (player.IsSupported || player.LinearVelocity.Value.Y <= 0.0f) && floorRaycast.Map != null;
 
@@ -2185,7 +2185,7 @@ namespace Lemma.Factories
 						foreach (BlockPossibility block in blockPossibilities.Values.SelectMany(x => x))
 						{
 							bool first = true;
-							foreach (Map.Coordinate coord in block.Map.Rasterize(playerPos + Vector3.Up * 2.0f, playerPos + (Vector3.Down * (player.Height + 1.0f))))
+							foreach (Map.Coordinate coord in block.Map.Rasterize(playerPos + Vector3.Up * 2.0f, playerPos + (Vector3.Down * (player.Height + 3.0f))))
 							{
 								if (coord.Between(block.StartCoord, block.EndCoord))
 								{
