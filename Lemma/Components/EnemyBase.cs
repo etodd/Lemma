@@ -17,6 +17,8 @@ namespace Lemma.Components
 
 		private CommandBinding<IEnumerable<Map.Coordinate>, Map> cellEmptiedBinding;
 
+		private int infectedID;
+
 		public bool EnableCellEmptyBinding
 		{
 			get
@@ -34,28 +36,39 @@ namespace Lemma.Components
 		{
 			get
 			{
-				if (this.Map.Value.Target == null || !this.Map.Value.Target.Active)
+				Entity mapEntity = this.Map.Value.Target;
+				if (mapEntity == null || !mapEntity.Active)
 					return false;
 
-				Map m = this.Map.Value.Target.Get<Map>();
+				Map m = mapEntity.Get<Map>();
 
 				bool found = false;
+				List<Map.Box> boxRemovals = null;
 				foreach (Map.Box box in this.BaseBoxes)
 				{
 					foreach (Map.Coordinate coord in box.GetCoords())
 					{
-						if (m[coord].Name == "Infected")
+						if (m[coord].ID == this.infectedID)
 						{
 							found = true;
 							break;
 						}
 					}
+					if (!found)
+					{
+						if (boxRemovals == null)
+							boxRemovals = new List<Map.Box>();
+						boxRemovals.Add(box);
+					}
 				}
 
-				if (!found)
-					return false;
+				if (boxRemovals != null)
+				{
+					foreach (Map.Box box in boxRemovals)
+						this.BaseBoxes.Remove(box);
+				}
 
-				return true;
+				return found;
 			}
 		}
 
@@ -95,16 +108,7 @@ namespace Lemma.Components
 							this.Remove(this.cellEmptiedBinding);
 						this.cellEmptiedBinding = new CommandBinding<IEnumerable<Map.Coordinate>, Map>(entity.Get<Map>().CellsEmptied, delegate(IEnumerable<Map.Coordinate> coords, Map newMap)
 						{
-							bool check = false;
-							foreach (Map.Coordinate coord in coords)
-							{
-								if (coord.Data.Name == "Infected")
-								{
-									check = true;
-									break;
-								}
-							}
-							if (check && !this.IsValid)
+							if (!this.IsValid)
 								this.Delete.Execute();
 						});
 						this.Add(this.cellEmptiedBinding);
@@ -113,6 +117,8 @@ namespace Lemma.Components
 				this.Add(new NotifyBinding(setupMap, this.Map));
 				if (this.Map.Value.Target != null)
 					setupMap();
+
+				this.infectedID = WorldFactory.StatesByName["Infected"].ID;
 
 				this.main.AddComponent(new PostInitialization
 				{
@@ -126,7 +132,7 @@ namespace Lemma.Components
 							foreach (Map m in Lemma.Components.Map.Maps)
 							{
 								Map.Box box = m.GetBox(this.Position);
-								if (box != null && box.Type.Name == "Infected")
+								if (box != null && box.Type.ID == this.infectedID)
 								{
 									foreach (Map.Box b in m.GetContiguousByType(new[] { box }))
 										this.BaseBoxes.Add(b);
@@ -143,7 +149,7 @@ namespace Lemma.Components
 			}
 		}
 
-		public static void SpawnPickupsOnDeath(Main main, Entity entity, int minCount = 3, int maxCount = 10, int minEnergy = 2, int maxEnergy = 10, float chanceOfAmmo = 0.05f)
+		public static void SpawnPickupsOnDeath(Main main, Entity entity, int minCount = 2, int maxCount = 5, int minEnergy = 2, int maxEnergy = 10, float chanceOfAmmo = 0.05f)
 		{
 			if (!main.EditorEnabled)
 			{
@@ -153,8 +159,9 @@ namespace Lemma.Components
 					Vector3 pos = enemyBase.Position;
 					Random r = new Random();
 					int count = r.Next(minCount, maxCount);
+
 					EnergyPickupFactory energyPickupFactory = Factory.Get<EnergyPickupFactory>();
-					MagazineFactory magazineFactory = Factory.Get<MagazineFactory>();
+
 					for (int i = 0; i < count; i++)
 					{
 						Vector3 direction = new Vector3((float)r.NextDouble() - 0.5f, 0.0f, (float)r.NextDouble() - 0.5f);
@@ -162,26 +169,24 @@ namespace Lemma.Components
 						direction *= enemyBase.Offset;
 						direction.Y = (float)r.NextDouble() * enemyBase.Offset;
 
-						bool playerHasPistol = Factory.Get<PlayerDataFactory>().Instance(main).GetProperty<Entity.Handle>("Pistol").Value.Target != null;
-						bool isAmmo = playerHasPistol && (r.NextDouble() < chanceOfAmmo);
+						Entity pickup = energyPickupFactory.CreateAndBind(main);
 
-						Entity pickup = isAmmo ? magazineFactory.CreateAndBind(main) : energyPickupFactory.CreateAndBind(main);
-						pickup.Get<Transform>().Position.Value = pos + direction;
+						Transform transform = pickup.Get<Transform>();
 
-						if (!isAmmo)
-						{
-							pickup.GetProperty<bool>("Respawn").Value = false;
-							pickup.GetProperty<int>("Energy").Value = r.Next(minEnergy, maxEnergy);
-							direction.Normalize();
-							pickup.Add(new Animation
+						transform.Position.Value = pos + direction;
+
+						pickup.GetProperty<bool>("Respawn").Value = false;
+						pickup.GetProperty<int>("Energy").Value = r.Next(minEnergy, maxEnergy);
+						direction.Normalize();
+						pickup.Add(new Animation
+						(
+							new Animation.Ease
 							(
-								new Animation.Ease
-								(
-									new Animation.Vector3MoveBySpeed(pickup.Get<Transform>().Position, Vector3.Normalize(direction) * enemyBase.Offset * (float)r.NextDouble(), 2.0f),
-									Animation.Ease.Type.OutQuadratic
-								)
-							));
-						}
+								new Animation.Vector3MoveBySpeed(transform.Position, Vector3.Normalize(direction) * enemyBase.Offset * (float)r.NextDouble(), 2.0f),
+								Animation.Ease.Type.OutQuadratic
+							)
+						));
+
 						main.Add(pickup);
 					}
 				}));

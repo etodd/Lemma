@@ -1077,10 +1077,12 @@ namespace Lemma.Factories
 			Action<Vector3, Vector3, bool> breakWalls = delegate(Vector3 forward, Vector3 right, bool breakFloor)
 			{
 				Random random = new Random();
+				BlockFactory blockFactory = Factory.Get<BlockFactory>();
 				foreach (Map map in Map.ActiveMaps.ToList())
 				{
 					List<Map.Coordinate> removals = new List<Map.Coordinate>();
 					Vector3 pos = transform.Position + new Vector3(0, 0.1f + (player.Height * -0.5f) - player.SupportHeight, 0);
+					Quaternion mapQuaternion = map.Entity.Get<Transform>().Quaternion;
 					for (int i = 0; i < 5; i++)
 					{
 						pos += forward * 0.5f;
@@ -1098,15 +1100,16 @@ namespace Lemma.Factories
 									removals.Add(z);
 									Vector3 cellPos = map.GetAbsolutePosition(z);
 									Vector3 toCell = cellPos - pos;
-									Entity block = Factory.CreateAndBind(main, "Block");
-									block.Get<Transform>().Position.Value = cellPos;
-									block.Get<Transform>().Quaternion.Value = map.Entity.Get<Transform>().Quaternion;
+									Entity block = blockFactory.CreateAndBind(main);
+									Transform blockTransform = block.Get<Transform>();
+									blockTransform.Position.Value = cellPos;
+									blockTransform.Quaternion.Value = mapQuaternion;
 									state.ApplyToBlock(block);
-									block.Get<ModelInstance>().GetVector3Parameter("Offset").Value = map.GetRelativePosition(z);
 									toCell += forward * 4.0f;
 									toCell.Normalize();
-									block.Get<PhysicsBlock>().LinearVelocity.Value = toCell * 15.0f;
-									block.Get<PhysicsBlock>().AngularVelocity.Value = new Vector3(((float)random.NextDouble() - 0.5f) * 2.0f, ((float)random.NextDouble() - 0.5f) * 2.0f, ((float)random.NextDouble() - 0.5f) * 2.0f);
+									PhysicsBlock physicsBlock = block.Get<PhysicsBlock>();
+									physicsBlock.LinearVelocity.Value = toCell * 15.0f;
+									physicsBlock.AngularVelocity.Value = new Vector3(((float)random.NextDouble() - 0.5f) * 2.0f, ((float)random.NextDouble() - 0.5f) * 2.0f, ((float)random.NextDouble() - 0.5f) * 2.0f);
 									main.Add(block);
 								}
 							}
@@ -1929,7 +1932,7 @@ namespace Lemma.Factories
 								walkedOffEdge = true;
 								player.LinearVelocity.Value = new Vector3(0, -vaultVerticalSpeed, 0);
 							}
-							if (!input.GetInput(settings.Parkour) || (transform.Position.Value.Y < originalPosition.Y - 2.0f && activateWallRun(Player.WallRun.Reverse)))
+							if (!input.GetInput(settings.Parkour) || (transform.Position.Value.Y < originalPosition.Y - 1.0f && activateWallRun(Player.WallRun.Reverse)))
 								delete = true;
 						}
 						else

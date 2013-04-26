@@ -132,6 +132,11 @@ script.Add(new CommandBinding<Entity>(main.EntityAdded, delegate(Entity e)
 		bindPlayer(e);
 }));
 
+int criticalID = WorldFactory.StatesByName["Critical"].ID,
+	infectedID = WorldFactory.StatesByName["Infected"].ID,
+	whiteID = WorldFactory.StatesByName["White"].ID,
+	windowsID = WorldFactory.StatesByName["Windows"].ID;
+
 script.Add(new CommandBinding<Map, IEnumerable<Map.Coordinate>, Map>(Map.GlobalCellsEmptied, delegate(Map map, IEnumerable<Map.Coordinate> coords, Map transferringToNewMap)
 {
 	if (transferringToNewMap != null)
@@ -139,7 +144,7 @@ script.Add(new CommandBinding<Map, IEnumerable<Map.Coordinate>, Map>(Map.GlobalC
 	
 	foreach (Map.Coordinate coord in coords)
 	{
-		if (coord.Data.Name == "Critical") // Critical. Explodes when destroyed.
+		if (coord.Data.ID == criticalID) // Critical. Explodes when destroyed.
 		{
 			// Kaboom
 			Vector3 pos = map.GetAbsolutePosition(coord);
@@ -196,13 +201,15 @@ script.Add(new CommandBinding<Map, IEnumerable<Map.Coordinate>, Map>(Map.GlobalC
 							if ((cellPos - relativePos).Length() < radius - 1)
 							{
 								removals.Add(z);
-								Entity block = blockFactory.CreateAndBind(main);
-								Transform blockTransform = block.Get<Transform>();
-								blockTransform.Position.Value = m.GetAbsolutePosition(cellPos);
-								blockTransform.Quaternion.Value = quat;
-								s.ApplyToBlock(block);
-								block.Get<ModelInstance>().GetVector3Parameter("Offset").Value = cellPos;
-								main.Add(block);
+								if (random.NextDouble() > 0.5)
+								{
+									Entity block = blockFactory.CreateAndBind(main);
+									Transform blockTransform = block.Get<Transform>();
+									blockTransform.Position.Value = m.GetAbsolutePosition(cellPos);
+									blockTransform.Quaternion.Value = quat;
+									s.ApplyToBlock(block);
+									main.Add(block);
+								}
 							}
 						}
 					}
@@ -252,7 +259,7 @@ script.Add(new CommandBinding<Map, IEnumerable<Map.Coordinate>, Map>(Map.GlobalC
 				}
 			}
 		}
-		else if (coord.Data.Name == "Infected") // Infected. Shatter effects.
+		else if (coord.Data.ID == infectedID) // Infected. Shatter effects.
 		{
 			ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
 			Vector3 pos = map.GetAbsolutePosition(coord);
@@ -264,7 +271,7 @@ script.Add(new CommandBinding<Map, IEnumerable<Map.Coordinate>, Map>(Map.GlobalC
 				shatter.AddParticle(pos + offset, offset);
 			}
 		}
-        else if (coord.Data.Name == "White") // White. Shatter effects.
+		else if (coord.Data.ID == whiteID) // White. Shatter effects.
 		{
 			ParticleSystem shatter = ParticleSystem.Get(main, "WhiteShatter");
 			Vector3 pos = map.GetAbsolutePosition(coord);
@@ -276,7 +283,7 @@ script.Add(new CommandBinding<Map, IEnumerable<Map.Coordinate>, Map>(Map.GlobalC
 				shatter.AddParticle(pos + offset, offset);
 			}
 		}
-		else if (coord.Data.Name == "Windows") // Windows. Shatter sound.
+		else if (coord.Data.ID == windowsID) // Windows. Shatter sound.
 			Sound.PlayCue(main, "WindowShatter", map.GetAbsolutePosition(coord), 1.0f, 0.05f);
 	}
 }));

@@ -108,6 +108,8 @@ namespace Lemma.Components
 			[DefaultValue(false)]
 			public bool AllowAlpha;
 			[DefaultValue(false)]
+			public bool Fake;
+			[DefaultValue(false)]
 			public bool Glow;
 			[DefaultValue(1.0f)]
 			public float Tiling = 1.0f;
@@ -347,7 +349,7 @@ namespace Lemma.Components
 
 			public override void MarkDirty(Box box)
 			{
-				if (this.Map.main.EditorEnabled || !this.Map.EnablePhysics)
+				if (this.Map.main.EditorEnabled || !this.Map.EnablePhysics || box.Type.Fake)
 					return;
 
 				MeshEntry entry = null;
@@ -821,7 +823,7 @@ namespace Lemma.Components
 		{
 			get
 			{
-				return Map.Maps.Where(x => !x.Suspended);
+				return Map.Maps.Where(x => !x.Suspended && x.EnablePhysics);
 			}
 		}
 
@@ -1068,6 +1070,7 @@ namespace Lemma.Components
 					delegate(float dt)
 					{
 						DynamicMapFactory factory = Factory.Get<DynamicMapFactory>();
+						BlockFactory blockFactory = Factory.Get<BlockFactory>();
 						List<SpawnGroup> spawns = null;
 						lock (Map.spawns)
 						{
@@ -1077,7 +1080,6 @@ namespace Lemma.Components
 						foreach (SpawnGroup spawn in spawns)
 						{
 							List<DynamicMap> spawnedMaps = new List<DynamicMap>();
-							BlockFactory blockFactory = Factory.Get<BlockFactory>();
 							foreach (List<Box> island in spawn.Islands)
 							{
 								Box firstBox = island.First();
@@ -2494,8 +2496,6 @@ namespace Lemma.Components
 					this.GetAdjacentIslands(this.removalCoords, out islands, out foundPermanentBlock, null);
 
 					List<List<Box>> finalIslands = new List<List<Box>>();
-
-					BlockFactory blockFactory = Factory.Get<BlockFactory>();
 
 					foreach (IEnumerable<Box> island in islands)
 					{
@@ -4091,10 +4091,13 @@ namespace Lemma.Components
 			float volume = 0.0f;
 			foreach (Box box in this.Chunks.SelectMany(x => x.Boxes))
 			{
-				bodies.Add(box.GetCompoundShapeEntry());
-				float v = box.Width * box.Height * box.Depth;
-				volume += v;
-				mass += v * box.Type.Density;
+				if (!box.Type.Fake)
+				{
+					bodies.Add(box.GetCompoundShapeEntry());
+					float v = box.Width * box.Height * box.Depth;
+					volume += v;
+					mass += v * box.Type.Density;
+				}
 			}
 
 			if (bodies.Count > 0)

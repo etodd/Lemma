@@ -14,6 +14,7 @@ namespace Lemma.Factories
 	public class PistolFactory : Factory
 	{
 		public const int MaxAmmo = 7;
+		public const float PhysicsForce = 40.0f;
 
 		public override Entity Create(Main main)
 		{
@@ -229,6 +230,13 @@ namespace Lemma.Factories
 							new Animation.FloatMoveTo(hitLight.Attenuation, 0.0f, 0.1f),
 							new Animation.Execute(delegate() { hitLight.Delete.Execute(); })
 						));
+
+						DynamicMap dynamicMap = hit.Map as DynamicMap;
+						if (dynamicMap != null)
+						{
+							Vector3 force = dir * PistolFactory.PhysicsForce;
+							dynamicMap.PhysicsEntity.ApplyImpulse(ref hit.Position, ref force);
+						}
 
 						if (hit.Map.Empty(hit.Coordinate.Value))
 							hit.Map.Regenerate();
