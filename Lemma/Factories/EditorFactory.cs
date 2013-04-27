@@ -127,7 +127,7 @@ namespace Lemma.Factories
 				}
 			}
 
-			Map.GlobalRaycastResult hit = Map.GlobalRaycast(rayStart, ray, closestEntityDistance);
+			Map.GlobalRaycastResult hit = Map.GlobalRaycast(rayStart, ray, closestEntityDistance, true);
 			if (hit.Coordinate != null)
 			{
 				closestEntity = hit.Map.Entity;

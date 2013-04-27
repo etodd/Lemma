@@ -1007,7 +1007,7 @@ namespace Lemma.Factories
 
 					// Attempt to wall-walk on an existing map
 					bool activate = false, addInitialVelocity = false;
-					foreach (Map map in Map.ActiveMaps)
+					foreach (Map map in Map.ActivePhysicsMaps)
 					{
 						Map.Coordinate coord = map.GetCoordinate(pos);
 						Direction dir = map.GetRelativeDirection(wallVector);
@@ -1078,7 +1078,7 @@ namespace Lemma.Factories
 			{
 				Random random = new Random();
 				BlockFactory blockFactory = Factory.Get<BlockFactory>();
-				foreach (Map map in Map.ActiveMaps.ToList())
+				foreach (Map map in Map.ActivePhysicsMaps.ToList())
 				{
 					List<Map.Coordinate> removals = new List<Map.Coordinate>();
 					Vector3 pos = transform.Position + new Vector3(0, 0.1f + (player.Height * -0.5f) - player.SupportHeight, 0);
@@ -1372,7 +1372,7 @@ namespace Lemma.Factories
 				Map shortestMap = null;
 
 				EffectBlockFactory blockFactory = Factory.Get<EffectBlockFactory>();
-				foreach (Map map in Map.ActiveMaps)
+				foreach (Map map in Map.ActivePhysicsMaps)
 				{
 					List<Matrix> results = new List<Matrix>();
 					Map.CellState fillValue = WorldFactory.StatesByName["Temporary"];
@@ -1433,7 +1433,7 @@ namespace Lemma.Factories
 				Direction shortestBuildDirection = Direction.None;
 				int shortestDistance = searchDistance;
 
-				foreach (Map map in Map.ActiveMaps)
+				foreach (Map map in Map.ActivePhysicsMaps)
 				{
 					foreach (Direction absoluteWallDir in DirectionExtensions.HorizontalDirections)
 					{
@@ -1502,6 +1502,7 @@ namespace Lemma.Factories
 				float vaultTime = 0.0f;
 				if (vaultMover != null)
 					vaultMover.Delete.Execute(); // If we're already vaulting, start a new vault
+
 				vaultMover = new Updater
 				{
 					delegate(float dt)
@@ -1512,7 +1513,7 @@ namespace Lemma.Factories
 
 						if (player.IsSupported || vaultTime > maxVaultTime || player.LinearVelocity.Value.Y < 0.0f) // Max vault time ensures we never get stuck
 							delete = true;
-						else if (transform.Position.Value.Y + (player.Height * -0.5f) - player.SupportHeight > map.GetAbsolutePosition(coord).Y + 0.5f) // Move forward
+						else if (transform.Position.Value.Y + (player.Height * -0.5f) - player.SupportHeight > map.GetAbsolutePosition(coord).Y + 0.1f) // Move forward
 						{
 							Vector3 velocity = player.Body.LinearVelocity; // Stop moving upward, start moving forward
 							velocity.Y = 0.0f;
@@ -1526,12 +1527,12 @@ namespace Lemma.Factories
 
 						if (delete)
 						{
-							player.AllowUncrouch.Value = true;
 							vaultMover.Delete.Execute(); // Make sure we get rid of this vault mover
 							vaultMover = null;
 							result.Add(new Animation
 							(
 								new Animation.Delay(0.25f),
+								new Animation.Set<bool>(player.AllowUncrouch, true),
 								new Animation.Set<bool>(rotationLocked, false),
 								new Animation.Set<bool>(player.EnableWalking, true)
 							));
@@ -1554,7 +1555,7 @@ namespace Lemma.Factories
 				bool vaulting = false;
 				if (allowVault)
 				{
-					foreach (Map map in Map.ActiveMaps)
+					foreach (Map map in Map.ActivePhysicsMaps)
 					{
 						Direction up = map.GetRelativeDirection(Direction.PositiveY);
 						Direction right = map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
@@ -1967,7 +1968,7 @@ namespace Lemma.Factories
 
 				Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
 				bool foundObstacle = false;
-				foreach (Map map in Map.ActiveMaps)
+				foreach (Map map in Map.ActivePhysicsMaps)
 				{
 					Direction down = map.GetRelativeDirection(Direction.NegativeY);
 					Vector3 pos = transform.Position + rotationMatrix.Forward * -1.75f;
@@ -2707,7 +2708,7 @@ namespace Lemma.Factories
 					int maxDistance = levitateRipRadius + 7;
 					Map closestMap = null;
 					Map.Coordinate closestCoord = new Map.Coordinate();
-					foreach (Map m in Map.ActiveMaps)
+					foreach (Map m in Map.ActivePhysicsMaps)
 					{
 						if (m == levitatingMap)
 							continue;

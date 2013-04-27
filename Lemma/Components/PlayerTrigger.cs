@@ -27,6 +27,7 @@ namespace Lemma.Components
 		{
 			this.EnabledInEditMode.Value = false;
 			this.EnabledWhenPaused.Value = false;
+			this.Enabled.Editable = true;
 		}
 
 		public override void InitializeProperties()

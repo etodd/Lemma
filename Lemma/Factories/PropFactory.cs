@@ -30,14 +30,6 @@ namespace Lemma.Factories
 			Model model = result.Get<Model>("Model");
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 		}
-
-		public override void AttachEditorComponents(Entity result, Main main)
-		{
-			base.AttachEditorComponents(result, main);
-			Model editorModel = result.Get<Model>("EditorModel");
-			Model model = result.Get<Model>("Model");
-			editorModel.Add(new Binding<bool>(editorModel.Enabled, x => !x, model.IsValid));
-		}
 	}
 
 	public class PropAlphaFactory : PropFactory

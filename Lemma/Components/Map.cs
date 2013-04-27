@@ -110,6 +110,8 @@ namespace Lemma.Components
 			[DefaultValue(false)]
 			public bool Fake;
 			[DefaultValue(false)]
+			public bool Invisible;
+			[DefaultValue(false)]
 			public bool Glow;
 			[DefaultValue(1.0f)]
 			public float Tiling = 1.0f;
@@ -819,11 +821,19 @@ namespace Lemma.Components
 
 		public static readonly List<Map> Maps = new List<Map>();
 
-		public static IEnumerable<Map> ActiveMaps
+		public static IEnumerable<Map> ActivePhysicsMaps
 		{
 			get
 			{
 				return Map.Maps.Where(x => !x.Suspended && x.EnablePhysics);
+			}
+		}
+
+		public static IEnumerable<Map> ActiveMaps
+		{
+			get
+			{
+				return Map.Maps.Where(x => !x.Suspended);
 			}
 		}
 
@@ -844,12 +854,15 @@ namespace Lemma.Components
 			public float Distance;
 		}
 
-		public static GlobalRaycastResult GlobalRaycast(Vector3 start, Vector3 ray, float length)
+		public static GlobalRaycastResult GlobalRaycast(Vector3 start, Vector3 ray, float length, bool includeScenery = false)
 		{
 			// Voxel raycasting
 			GlobalRaycastResult result = new GlobalRaycastResult();
 			result.Distance = length;
-			foreach (Map map in Map.ActiveMaps)
+
+			IEnumerable<Map> maps = includeScenery ? Map.ActiveMaps : Map.ActivePhysicsMaps;
+
+			foreach (Map map in maps)
 			{
 				RaycastResult hit = map.Raycast(start, ray, result.Distance);
 				if (hit.Coordinate != null && hit.Distance < result.Distance)
@@ -864,12 +877,15 @@ namespace Lemma.Components
 			return result;
 		}
 
-		public static GlobalRaycastResult GlobalRaycast(Vector3 start, Vector3 ray, float length, Func<Map, bool> filter)
+		public static GlobalRaycastResult GlobalRaycast(Vector3 start, Vector3 ray, float length, Func<Map, bool> filter, bool includeScenery = false)
 		{
 			// Voxel raycasting
 			GlobalRaycastResult result = new GlobalRaycastResult();
 			result.Distance = length;
-			foreach (Map map in Map.ActiveMaps)
+
+			IEnumerable<Map> maps = includeScenery ? Map.ActiveMaps : Map.ActivePhysicsMaps;
+
+			foreach (Map map in maps)
 			{
 				if (!filter(map))
 					continue;

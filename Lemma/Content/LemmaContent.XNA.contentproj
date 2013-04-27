@@ -199,6 +199,13 @@
       <Name>lava-cave2</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Compile Include="Maps\room.fbx">
+      <Name>room</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_DiffuseTexture>room-texture.jpg</ProcessorParameters_DiffuseTexture>
+      <ProcessorParameters_EffectFileName>..\Effects\Default.fx</ProcessorParameters_EffectFileName>
+    </Compile>
     <None Include="Maps\spinner.map">
       <Name>spinner</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -924,6 +931,20 @@
     </Compile>
     <Compile Include="Maps\Textures\metal-swirl.jpg">
       <Name>metal-swirl</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Maps\Textures\debug.jpg">
+      <Name>debug</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Maps\room-texture.jpg">
+      <Name>room-texture</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>

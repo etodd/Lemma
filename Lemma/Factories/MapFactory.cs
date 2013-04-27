@@ -135,13 +135,13 @@ namespace Lemma.Factories
 
 				chunk.Boxes.ItemAdded += delegate(int i, Map.Box box)
 				{
-					if (!models.ContainsKey(box.Type.ID))
+					if ((!box.Type.Invisible || main.EditorEnabled) && !models.ContainsKey(box.Type.ID))
 						createModel(box.Type);
 				};
 
 				chunk.Boxes.ItemChanged += delegate(int i, Map.Box oldBox, Map.Box newBox)
 				{
-					if (!models.ContainsKey(newBox.Type.ID))
+					if ((!newBox.Type.Invisible || main.EditorEnabled) && !models.ContainsKey(newBox.Type.ID))
 						createModel(newBox.Type);
 				};
 			};
