@@ -271,6 +271,28 @@ namespace Lemma.Util
 				if (!foundCeiling)
 					this.Crouched.Value = false;
 			}
+			else if (!this.Crouched && this.IsSupported)
+			{
+				Vector3 pos = this.Body.Position;
+				Vector2 offset = new Vector2(supportLocation.X - pos.X, supportLocation.Z - pos.Z);
+				if (offset.LengthSquared() > 0)
+				{
+					RayCastResult rayHit;
+					Vector3 rayStart = supportLocation;
+					rayStart.Y = pos.Y + (this.Body.Height * 0.5f) - 1.0f;
+					if (this.main.Space.RayCast(new Ray(rayStart, Vector3.Up), 1.0f, x => x.CollisionRules.Group != Character.CharacterGroup && x.CollisionRules.Group != Character.NoCollideGroup, out rayHit))
+					{
+						offset.Normalize();
+						Vector2 velocity = new Vector2(this.Body.LinearVelocity.X, this.Body.LinearVelocity.Z);
+						float speed = Vector2.Dot(velocity, offset);
+						if (speed > 0)
+						{
+							velocity -= offset * speed * 1.5f;
+							this.Body.LinearVelocity = new Vector3(velocity.X, this.Body.LinearVelocity.Y, velocity.Y);
+						}
+					}
+				}
+			}
 
 			this.collisionPairCollector.LinearVelocity = this.Body.LinearVelocity;
 			this.collisionPairCollector.Position = this.Body.Position + new Vector3(0, (this.Body.Height * -0.5f) - this.SupportHeight, 0);
