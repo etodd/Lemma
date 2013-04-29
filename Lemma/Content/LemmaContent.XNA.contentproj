@@ -187,6 +187,13 @@
       <Name>materials</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Compile Include="Maps\fan.fbx">
+      <Name>fan</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_DiffuseTexture>fan-texture.jpg</ProcessorParameters_DiffuseTexture>
+      <ProcessorParameters_EffectFileName>..\Effects\Default.fx</ProcessorParameters_EffectFileName>
+    </Compile>
     <None Include="Maps\GlobalScripts\tutorials.cs">
       <Name>tutorials</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

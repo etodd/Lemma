@@ -107,6 +107,8 @@ namespace Lemma.Components
 			public float Density;
 			[DefaultValue(false)]
 			public bool AllowAlpha;
+			[DefaultValue(true)]
+			public bool ShadowCast = true;
 			[DefaultValue(false)]
 			public bool Fake;
 			[DefaultValue(false)]

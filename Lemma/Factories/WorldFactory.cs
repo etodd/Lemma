@@ -442,6 +442,7 @@ namespace Lemma.Factories
 					ID = 30,
 					Name = "White",
 					Permanent = false,
+					ShadowCast = false,
 					Density = 0.5f,
 					DiffuseMap = "Maps\\Textures\\white",
 					NormalMap = "Maps\\Textures\\plain-normal",
@@ -501,6 +502,20 @@ namespace Lemma.Factories
 					RubbleCue = "WoodRubble",
 					DiffuseMap = "Maps\\Textures\\debug",
 					NormalMap = "Maps\\Textures\\plain-normal",
+				},
+				new Map.CellState
+				{
+					ID = 35,
+					Name = "WhitePermanent",
+					Permanent = true,
+					ShadowCast = false,
+					Density = 0.5f,
+					DiffuseMap = "Maps\\Textures\\white",
+					NormalMap = "Maps\\Textures\\plain-normal",
+					FootstepCue = "MetalFootsteps",
+					RubbleCue = "MetalRubble",
+					SpecularIntensity = 0.0f,
+					Glow = true,
 				}
 			);
 		}

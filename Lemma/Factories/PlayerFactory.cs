@@ -1078,16 +1078,18 @@ namespace Lemma.Factories
 			{
 				Random random = new Random();
 				BlockFactory blockFactory = Factory.Get<BlockFactory>();
+				Vector3 pos = transform.Position + new Vector3(0, 0.1f + (player.Height * -0.5f) - player.SupportHeight, 0);
+				Vector3 basePos = pos;
 				foreach (Map map in Map.ActivePhysicsMaps.ToList())
 				{
 					List<Map.Coordinate> removals = new List<Map.Coordinate>();
-					Vector3 pos = transform.Position + new Vector3(0, 0.1f + (player.Height * -0.5f) - player.SupportHeight, 0);
 					Quaternion mapQuaternion = map.Entity.Get<Transform>().Quaternion;
+					pos = basePos;
 					for (int i = 0; i < 5; i++)
 					{
 						pos += forward * 0.5f;
 						Map.Coordinate center = map.GetCoordinate(pos);
-						Map.Coordinate top = map.GetCoordinate(transform.Position + new Vector3(0.0f, player.Height * 0.5f + 0.1f, 0.0f));
+						Map.Coordinate top = map.GetCoordinate(basePos + new Vector3(0, Player.DefaultCharacterHeight + Player.DefaultSupportHeight + 0.5f, 0));
 						Direction upDir = map.GetRelativeDirection(Vector3.Up);
 						Direction rightDir = map.GetRelativeDirection(right);
 						for (Map.Coordinate y = center.Move(upDir.GetReverse(), breakFloor ? 2 : 0); y.GetComponent(upDir) <= top.GetComponent(upDir); y = y.Move(upDir))
@@ -2271,7 +2273,6 @@ namespace Lemma.Factories
 						rightDir = floorRaycast.Map.GetRelativeDirection(right);
 					}
 
-					
 					float kickTime = 0.0f;
 					kickUpdate = new Updater
 					{

@@ -103,6 +103,10 @@ namespace Lemma.Factories
 					model.Add(new Binding<Vector3>(model.GetVector3Parameter("Offset"), map.Offset));
 
 					Map.CellState s = state;
+
+					if (!s.ShadowCast)
+						model.UnsupportedTechniques.Add(new[] { Technique.Shadow, Technique.PointLightShadow });
+
 					model.Add(new ListBinding<Map.MapVertex, Map.Box>
 					(
 						model.Vertices,
