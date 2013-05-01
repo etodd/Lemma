@@ -174,27 +174,53 @@ namespace Lemma.Components
 			this.IsPlaying.Set =
 				delegate(bool value)
 				{
-					if (this.Suspended)
-						this.playWhenResumed = true;
 					this.IsPlaying.InternalValue = value;
 					if (value && !this.IsPlaying)
-						this.Play.Execute();
+					{
+						if (this.main.IsLoadingMap)
+							this.playWhenResumed = true;
+						else
+							this.Play.Execute();
+					}
 					else if (!value && this.IsPlaying)
 						this.Stop.Execute(AudioStopOptions.Immediate);
 				};
 			this.Add(new NotifyBinding(delegate()
 			{
-				if (this.cue != null)
+				if (this.Suspended)
 				{
-					if (this.Suspended)
-					{
-						this.playWhenResumed = this.IsPlaying;
+					this.playWhenResumed = this.main.IsLoadingMap || this.cue == null ? this.IsPlaying.InternalValue : this.IsPlaying;
+
+					// If we are currently loading a map, the sound won't actually be playing yet.
+					// So use the internal value to determine whether we should resume it later.
+					if (this.cue != null)
 						this.Stop.Execute(AudioStopOptions.AsAuthored);
-					}
+				}
+				else
+				{
+					if (this.main.IsLoadingMap)
+						this.Suspended.InternalValue = true;
 					else if (this.playWhenResumed)
 						this.Play.Execute();
 				}
 			}, this.Suspended));
+
+			if (this.Entity != null && this.main.IsLoadingMap)
+			{
+				this.Entity.Add(new PostInitialization
+				{
+					delegate()
+					{
+						this.resumeIfNecessary();
+					}
+				});
+			}
+		}
+
+		public void resumeIfNecessary()
+		{
+			if (this.playWhenResumed && (this.cue == null || !this.cue.IsPlaying))
+				this.Play.Execute();
 		}
 
 		public Property<float> GetProperty(string name)

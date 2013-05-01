@@ -38,6 +38,7 @@ namespace Lemma.Factories
 				result.CannotSuspendByDistance = !sound.Is3D;
 			}, sound.Is3D));
 
+
 			sound.Add(new Binding<Vector3>(sound.Position, transform.Position));
 		}
 	}

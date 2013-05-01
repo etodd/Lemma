@@ -602,58 +602,55 @@ namespace Lemma.Factories
 
 		private static void processEntity(Entity entity, Zone currentZone, IEnumerable<NonAxisAlignedBoundingBox> boxes, Vector3 cameraPosition, float suspendDistance)
 		{
-			if (!entity.CannotSuspend)
+			Map map = entity.Get<Map>();
+			if (map != null && !typeof(DynamicMap).IsAssignableFrom(map.GetType()))
+				processMap(map, boxes);
+			else
 			{
-				Map map = entity.Get<Map>();
-				if (map != null && !typeof(DynamicMap).IsAssignableFrom(map.GetType()))
-					processMap(map, boxes);
+				Transform transform = entity.Get<Transform>();
+				bool hasPosition = transform != null;
+
+				Vector3 pos = Vector3.Zero;
+
+				if (hasPosition)
+					pos = transform.Position;
+
+				if (map != null && typeof(DynamicMap).IsAssignableFrom(map.GetType()))
+				{
+					hasPosition = true;
+					pos = Vector3.Transform(Vector3.Zero, map.Transform);
+				}
+
+				bool suspended;
+				if (currentZone != null && currentZone.Exclusive) // Suspend everything outside the current zone, unless it's connected
+					suspended = !currentZone.ConnectedEntities.Contains(entity) && hasPosition && !boxesContain(boxes, pos);
 				else
 				{
-					Transform transform = entity.Get<Transform>();
-					bool hasPosition = transform != null;
-
-					Vector3 pos = Vector3.Zero;
-
+					// Only suspend things that are in a different (exclusive) zone, or that are just too far away
+					suspended = false;
 					if (hasPosition)
-						pos = transform.Position;
-
-					if (map != null && typeof(DynamicMap).IsAssignableFrom(map.GetType()))
 					{
-						hasPosition = true;
-						pos = Vector3.Transform(Vector3.Zero, map.Transform);
-					}
-
-					bool suspended;
-					if (currentZone != null && currentZone.Exclusive) // Suspend everything outside the current zone, unless it's connected
-						suspended = !currentZone.ConnectedEntities.Contains(entity) && hasPosition && !boxesContain(boxes, pos);
-					else
-					{
-						// Only suspend things that are in a different (exclusive) zone, or that are just too far away
-						suspended = false;
-						if (hasPosition)
+						if (!entity.CannotSuspendByDistance && !boxesContain(boxes, pos) && (pos - cameraPosition).Length() > suspendDistance)
+							suspended = true;
+						else
 						{
-							if (!entity.CannotSuspendByDistance && !boxesContain(boxes, pos) && (pos - cameraPosition).Length() > suspendDistance)
-								suspended = true;
-							else
+							foreach (Zone z in Zone.Zones)
 							{
-								foreach (Zone z in Zone.Zones)
+								if (z != currentZone && z.Exclusive && z.BoundingBox.Value.Contains(Vector3.Transform(pos, Matrix.Invert(z.Transform))) != ContainmentType.Disjoint)
 								{
-									if (z != currentZone && z.Exclusive && z.BoundingBox.Value.Contains(Vector3.Transform(pos, Matrix.Invert(z.Transform))) != ContainmentType.Disjoint)
-									{
-										suspended = true;
-										break;
-									}
+									suspended = true;
+									break;
 								}
 							}
 						}
-
-						// Allow the editor to reverse the decision
-						if (currentZone != null && currentZone.ConnectedEntities.Contains(entity))
-							suspended = !suspended;
 					}
 
-					entity.SetSuspended(suspended);
+					// Allow the editor to reverse the decision
+					if (currentZone != null && currentZone.ConnectedEntities.Contains(entity))
+						suspended = !suspended;
 				}
+
+				entity.SetSuspended(suspended);
 			}
 		}
 
@@ -694,14 +691,18 @@ namespace Lemma.Factories
 
 			result.Add(new CommandBinding<Entity>(main.EntityAdded, delegate(Entity e)
 			{
-				processEntity(e, currentZone, getActiveBoundingBoxes(main.Camera, currentZone), main.Camera.Position, main.Camera.FarPlaneDistance);
+				if (!e.CannotSuspend)
+					processEntity(e, currentZone, getActiveBoundingBoxes(main.Camera, currentZone), main.Camera.Position, main.Camera.FarPlaneDistance);
 			}));
 
 			IEnumerable<NonAxisAlignedBoundingBox> boxes = getActiveBoundingBoxes(main.Camera, currentZone);
 			Vector3 cameraPosition = main.Camera.Position;
 			float suspendDistance = main.Camera.FarPlaneDistance;
 			foreach (Entity e in main.Entities)
-				processEntity(e, currentZone, boxes, cameraPosition, suspendDistance);
+			{
+				if (!e.CannotSuspend)
+					processEntity(e, currentZone, boxes, cameraPosition, suspendDistance);
+			}
 
 			result.Add("ProcessMap", new Command<Map>
 			{
@@ -716,8 +717,8 @@ namespace Lemma.Factories
 
 			Sound.ReverbSettings(main, reverbAmount, reverbSize);
 
-			Vector3 lastUpdatedCameraPosition = main.Camera.Position;
-			bool lastFrameUpdated = true;
+			Vector3 lastUpdatedCameraPosition = new Vector3(float.MinValue);
+			bool lastFrameUpdated = false;
 
 			Action<Zone> updateZones = delegate(Zone newZone)
 			{
@@ -732,7 +733,10 @@ namespace Lemma.Factories
 				cameraPosition = main.Camera.Position;
 				suspendDistance = main.Camera.FarPlaneDistance;
 				foreach (Entity e in main.Entities)
-					processEntity(e, newZone, boxes, cameraPosition, suspendDistance);
+				{
+					if (!e.CannotSuspend)
+						processEntity(e, newZone, boxes, cameraPosition, suspendDistance);
+				}
 
 				lastUpdatedCameraPosition = main.Camera.Position;
 			};

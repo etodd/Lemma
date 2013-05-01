@@ -105,6 +105,8 @@ namespace Lemma
 		public Property<MouseState> MouseState = new Property<MouseState>();
 		public new Property<bool> IsMouseVisible = new Property<bool> { };
 
+		public bool IsLoadingMap = false;
+
 		public object ComponentFlushLock = new object();
 
 		public void Add(Entity entity)

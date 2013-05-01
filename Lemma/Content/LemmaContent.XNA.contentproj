@@ -194,6 +194,13 @@
       <ProcessorParameters_DiffuseTexture>fan-texture.jpg</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_EffectFileName>..\Effects\Default.fx</ProcessorParameters_EffectFileName>
     </Compile>
+    <Compile Include="Maps\door.fbx">
+      <Name>door</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_DiffuseTexture>door-texture.jpg</ProcessorParameters_DiffuseTexture>
+      <ProcessorParameters_EffectFileName>..\Effects\Default.fx</ProcessorParameters_EffectFileName>
+    </Compile>
     <None Include="Maps\GlobalScripts\tutorials.cs">
       <Name>tutorials</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -39,6 +39,8 @@ namespace Lemma.IO
 
 		private static void Load(Main main, Stream stream, bool deleteEditor = true)
 		{
+			main.Camera.Position.Value = new Vector3(0, -10000, 0);
+			main.IsLoadingMap = true;
 			main.ClearEntities(deleteEditor);
 
 			List<Entity> entities = null;
@@ -58,6 +60,7 @@ namespace Lemma.IO
 				main.Add(entity);
 			}
 
+			main.IsLoadingMap = false;
 			main.MapLoaded.Execute();
 		}
 

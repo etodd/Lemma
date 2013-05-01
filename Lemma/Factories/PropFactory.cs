@@ -34,10 +34,11 @@ namespace Lemma.Factories
 		public override void AttachEditorComponents(Entity result, Main main)
 		{
 			base.AttachEditorComponents(result, main);
+			Model model = result.Get<Model>("Model");
 			Model editorModel = result.Get<Model>("EditorModel");
 			Property<bool> editorSelected = result.GetOrMakeProperty<bool>("EditorSelected", false);
 			editorSelected.Serialize = false;
-			editorModel.Add(new Binding<bool>(editorModel.Enabled, x => !x, editorSelected));
+			editorModel.Add(new Binding<bool>(editorModel.Enabled, () => !editorSelected || !model.IsValid, editorSelected, model.IsValid));
 		}
 	}
 

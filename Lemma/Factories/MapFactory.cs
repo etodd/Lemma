@@ -52,6 +52,8 @@ namespace Lemma.Factories
 			if (transform == null)
 				transform = result.GetOrCreate<Transform>("Transform");
 
+			result.CannotSuspend = false;
+
 			Map map = result.Get<Map>();
 
 			// Apply the position and orientation components to the map

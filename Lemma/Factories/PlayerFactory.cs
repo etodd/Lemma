@@ -245,6 +245,7 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableLevitation"), player.EnableLevitation));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableStamina"), player.EnableStamina));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableMoves"), player.EnableMoves));
 					result.Add(new TwoWayBinding<Entity.Handle>(data.Value.Target.GetProperty<Entity.Handle>("Pistol"), pistol));
 				}
 			});
