@@ -15,7 +15,7 @@ html, body
 
 body
 {
-	background-color: #fff;
+	background-color: #000;
 	color: #fff;
 }
 
@@ -95,7 +95,6 @@ h3
 	padding-top: 10px;
 	padding-bottom: 10px;
 	font-family: Signika;
-	background-color: #fff;
 }
 
 tr td
@@ -108,7 +107,7 @@ tr td
 	text-transform: uppercase;
 	font-size: medium;
 	font-weight: normal;
-	color: #000;
+	color: #fff;
 }
 
 #menu tr td a:hover
@@ -182,6 +181,16 @@ article #news img
 	{
 		display: table-cell;
 	}
+	
+	#menu
+	{
+		background-color: #fff;
+	}
+	
+	#menu tr td a
+	{
+		color: #000;
+	}
 
 	header
 	{
@@ -193,7 +202,6 @@ article #news img
 		background-image: url(graphics/header-background.jpg);
 		background-repeat: no-repeat;
 		background-position: center top;
-		background-color: #000;
 	}
 
 	article
