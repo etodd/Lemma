@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Lemma.Components;
 using Microsoft.Xna.Framework;
+using Lemma.Factories;
 
 namespace Lemma.Scripts
 {
@@ -11,7 +12,6 @@ namespace Lemma.Scripts
 	{
 		public static Main main;
 		public static Renderer renderer;
-		public static Entity script;
 
 		protected static Entity get(string id)
 		{
@@ -44,7 +44,7 @@ namespace Lemma.Scripts
 			msg.Opacity.Value = 0.0f;
 			msg.WrapWidth.Value = 250.0f;
 			msgBackground.Children.Add(msg);
-			script.Add(msgBackground);
+			WorldFactory.Get().Add(msgBackground);
 			return msgBackground;
 		}
 
@@ -53,7 +53,7 @@ namespace Lemma.Scripts
 			Container container = buildMessage();
 			TextElement textElement = (TextElement)container.Children[0];
 			textElement.Add(new Binding<string>(textElement.Text, text, properties));
-			script.Add(new Animation
+			WorldFactory.Get().Add(new Animation
 			(
 				new Animation.Parallel
 				(
@@ -69,7 +69,7 @@ namespace Lemma.Scripts
 			Container container = buildMessage();
 			TextElement textElement = (TextElement)container.Children[0];
 			textElement.Text.Value = text;
-			script.Add(new Animation
+			WorldFactory.Get().Add(new Animation
 			(
 				new Animation.Parallel
 				(
@@ -84,7 +84,7 @@ namespace Lemma.Scripts
 		{
 			if (container != null && container.Active)
 			{
-				script.Add(new Animation
+				WorldFactory.Get().Add(new Animation
 				(
 					new Animation.Delay(messageFadeTime + delay),
 					new Animation.Parallel

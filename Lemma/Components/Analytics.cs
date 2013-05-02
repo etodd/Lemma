@@ -268,6 +268,10 @@ namespace Lemma.Components
 
 		public DateTime Date;
 
+		public int Build;
+
+		public string UUID;
+
 		public class Recorder : Component, IUpdateableComponent
 		{
 			public static void Event(Main main, string name, string data = null)
@@ -294,10 +298,12 @@ namespace Lemma.Components
 			{
 				this.data.Date = DateTime.Now;
 				this.data.Interval = Interval;
+				this.data.Build = GameMain.Build;
 			}
 
 			public void Save(string path)
 			{
+				this.data.UUID = ((GameMain)this.main).Settings.UUID;
 				this.data.TotalTime = this.main.TotalTime;
 				using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
 					new XmlSerializer(typeof(Session)).Serialize(stream, this.data);

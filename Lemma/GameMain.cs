@@ -26,7 +26,9 @@ namespace Lemma
 
 		}
 
-		public const int Version = 1;
+		public const int ConfigVersion = 3;
+		public const int MapVersion = 3;
+		public const int Build = 3;
 
 		public class Config
 		{
@@ -44,6 +46,7 @@ namespace Lemma
 			public Property<bool> InvertMouseY = new Property<bool> { Value = false };
 			public Property<float> MouseSensitivity = new Property<float> { Value = 1.0f };
 			public int Version;
+			public string UUID;
 			public Property<PCInput.PCInputBinding> Forward = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.W } };
 			public Property<PCInput.PCInputBinding> Left = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.A } };
 			public Property<PCInput.PCInputBinding> Right = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D } };
@@ -135,13 +138,16 @@ namespace Lemma
 				// Attempt to load previous window state
 				using (Stream stream = new FileStream(this.settingsFile, FileMode.Open, FileAccess.Read, FileShare.None))
 					this.Settings = (Config)new XmlSerializer(typeof(Config)).Deserialize(stream);
-				if (this.Settings.Version != GameMain.Version)
+				if (this.Settings.Version != GameMain.ConfigVersion)
 					throw new Exception();
 			}
 			catch (Exception) // File doesn't exist, there was a deserialization error, or we are on a new version. Use default window settings
 			{
-				this.Settings = new Config { Version = GameMain.Version };
+				this.Settings = new Config { Version = GameMain.ConfigVersion, };
 			}
+
+			if (this.Settings.UUID == null)
+				Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32);
 
 			// Restore window state
 			if (this.Settings.Fullscreen)
@@ -155,7 +161,7 @@ namespace Lemma
 			if (!Directory.Exists(dst))
 				Directory.CreateDirectory(dst);
 
-			string[] ignoredExtensions = new[] { ".cs", ".dll", };
+			string[] ignoredExtensions = new[] { ".cs", ".dll", ".xnb", };
 
 			foreach (string path in Directory.GetFiles(src))
 			{
@@ -310,7 +316,10 @@ namespace Lemma
 					this.ClearEntities(false);
 
 					if (value == null || value.Length == 0)
+					{
+						this.MapFile.InternalValue = null;
 						return;
+					}
 
 					try
 					{
@@ -682,7 +691,7 @@ namespace Lemma
 					{
 						using (Stream stream = new FileStream(Path.Combine(this.saveDirectory, timestamp, "save.xml"), FileMode.Open, FileAccess.Read, FileShare.None))
 							info = (SaveInfo)new XmlSerializer(typeof(SaveInfo)).Deserialize(stream);
-						if (info.Version != GameMain.Version)
+						if (info.Version != GameMain.MapVersion)
 							throw new Exception();
 					}
 					catch (Exception)
@@ -780,7 +789,7 @@ namespace Lemma
 					try
 					{
 						using (Stream stream = new FileStream(Path.Combine(this.saveDirectory, this.currentSave, "save.xml"), FileMode.Create, FileAccess.Write, FileShare.None))
-							new XmlSerializer(typeof(SaveInfo)).Serialize(stream, new SaveInfo { MapFile = this.MapFile, Version = GameMain.Version });
+							new XmlSerializer(typeof(SaveInfo)).Serialize(stream, new SaveInfo { MapFile = this.MapFile, Version = GameMain.MapVersion });
 					}
 					catch (InvalidOperationException e)
 					{
@@ -890,6 +899,8 @@ namespace Lemma
 				Action<int> changeFullscreenResolution = delegate(int scroll)
 				{
 					displayModeIndex = (displayModeIndex + scroll) % this.supportedDisplayModes.Count();
+					while (displayModeIndex < 0)
+						displayModeIndex += this.supportedDisplayModes.Count();
 					DisplayMode mode = this.supportedDisplayModes.ElementAt(displayModeIndex);
 					this.Settings.FullscreenResolution.Value = new Point(mode.Width, mode.Height);
 				};
@@ -1035,6 +1046,7 @@ namespace Lemma
 				controlsList.Children.Add(invertMouseY);
 
 				UIComponent mouseSensitivity = this.createMenuButton<float>("Mouse Sensitivity", this.Settings.MouseSensitivity, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
+				mouseSensitivity.SwallowMouseEvents.Value = true;
 				mouseSensitivity.Add(new CommandBinding<Point, int>(mouseSensitivity.MouseScrolled, delegate(Point mouse, int scroll)
 				{
 					this.Settings.MouseSensitivity.Value = Math.Max(0, Math.Min(5, this.Settings.MouseSensitivity + (scroll * 0.1f)));
@@ -1258,7 +1270,7 @@ namespace Lemma
 						return;
 					}
 
-					if (this.MapFile.Value != null)
+					if (this.MapFile.Value != null || !this.Paused)
 					{
 						this.Paused.Value = !this.Paused;
 
@@ -1302,7 +1314,7 @@ namespace Lemma
 
 					TextElement header = new TextElement();
 					header.FontFile.Value = "Font";
-					header.Text.Value = "Alpha 3";
+					header.Text.Value = "Alpha " + GameMain.Build.ToString();
 					header.AnchorPoint.Value = new Vector2(0.5f, 0);
 					header.Add(new Binding<Vector2>(header.Position, () => logo.Position + new Vector2(0, 30 + (logo.InverseAnchorPoint.Value.Y * logo.ScaledSize.Value.Y)), logo.Position, logo.InverseAnchorPoint, logo.ScaledSize));
 					this.UI.Root.Children.Add(header);
@@ -1370,80 +1382,78 @@ namespace Lemma
 
 		public void EndGame()
 		{
-			if (!this.allowEditing)
+			this.MapFile.Value = null; // Clears all the entities too
+			this.Renderer.InternalGamma.Value = 0.0f;
+			this.Renderer.BackgroundColor.Value = Color.Black;
+			this.IsMouseVisible.Value = true;
+
+			ListContainer list = new ListContainer();
+			list.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
+			list.Spacing.Value = 40.0f;
+			list.Alignment.Value = ListContainer.ListAlignment.Middle;
+			list.Add(new Binding<Vector2, Point>(list.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.ScreenSize));
+			this.UI.Root.Children.Add(list);
+
+			Sprite logo = new Sprite();
+			logo.Image.Value = "Images\\logo";
+			logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((this.ScreenSize.Value.X * 0.75f) / logo.Size.Value.X), this.ScreenSize, logo.Size));
+			list.Children.Add(logo);
+
+			ListContainer texts = new ListContainer();
+			texts.Spacing.Value = 40.0f;
+			list.Children.Add(texts);
+
+			Action<string> addText = delegate(string text)
 			{
-				this.MapFile.Value = null; // Clears all the entities too
-				this.Renderer.InternalGamma.Value = 0.0f;
-				this.Renderer.BackgroundColor.Value = Color.Black;
-				this.IsMouseVisible.Value = true;
+				TextElement element = new TextElement();
+				element.FontFile.Value = "Font";
+				element.Text.Value = text;
+				element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X * 0.5f, logo.ScaledSize));
+				texts.Children.Add(element);
+			};
 
-				ListContainer list = new ListContainer();
-				list.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
-				list.Spacing.Value = 40.0f;
-				list.Alignment.Value = ListContainer.ListAlignment.Middle;
-				list.Add(new Binding<Vector2, Point>(list.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.ScreenSize));
-				this.UI.Root.Children.Add(list);
+			addText("Thanks for playing! That's it for now. If you like what you see, please spread the word! Click the links below to join the discussion.");
 
-				Sprite logo = new Sprite();
-				logo.Image.Value = "Images\\logo";
-				logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((this.ScreenSize.Value.X * 0.75f) / logo.Size.Value.X), this.ScreenSize, logo.Size));
-				list.Children.Add(logo);
+			ListContainer links = new ListContainer();
+			links.Alignment.Value = ListContainer.ListAlignment.Middle;
+			links.ResizePerpendicular.Value = false;
+			links.Spacing.Value = 20.0f;
+			links.Add(new Binding<Vector2>(links.Size, x => new Vector2(x.X * 0.5f, links.Size.Value.Y), logo.ScaledSize));
+			texts.Children.Add(links);
 
-				ListContainer texts = new ListContainer();
-				texts.Spacing.Value = 40.0f;
-				list.Children.Add(texts);
+			System.Windows.Forms.Form winForm = (System.Windows.Forms.Form)System.Windows.Forms.Form.FromHandle(this.Window.Handle);
 
-				Action<string> addText = delegate(string text)
+			Action<string, string> addLink = delegate(string text, string url)
+			{
+				TextElement element = new TextElement();
+				element.FontFile.Value = "Font";
+				element.Text.Value = text;
+				element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X * 0.5f, logo.ScaledSize));
+				element.Add(new Binding<Color, bool>(element.Tint, x => x ? new Color(1.0f, 0.0f, 0.0f) : new Color(1.0f, 1.0f, 1.0f), element.Highlighted));
+				element.Add(new CommandBinding<Point>(element.MouseLeftUp, delegate(Point mouse)
 				{
-					TextElement element = new TextElement();
-					element.FontFile.Value = "Font";
-					element.Text.Value = text;
-					element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X * 0.5f, logo.ScaledSize));
-					texts.Children.Add(element);
-				};
-
-				addText("Thanks for playing! That's it for now. If you like what you see, please spread the word! Click the links below to join the discussion.");
-
-				ListContainer links = new ListContainer();
-				links.Alignment.Value = ListContainer.ListAlignment.Middle;
-				links.ResizePerpendicular.Value = false;
-				links.Spacing.Value = 20.0f;
-				links.Add(new Binding<Vector2>(links.Size, x => new Vector2(x.X * 0.5f, links.Size.Value.Y), logo.ScaledSize));
-				texts.Children.Add(links);
-
-				System.Windows.Forms.Form winForm = (System.Windows.Forms.Form)System.Windows.Forms.Form.FromHandle(this.Window.Handle);
-
-				Action<string, string> addLink = delegate(string text, string url)
+					Process.Start(new ProcessStartInfo(url));
+					if (this.graphics.IsFullScreen)
+						this.ExitFullscreen();
+				}));
+				element.Add(new CommandBinding<Point>(element.MouseOver, delegate(Point mouse)
 				{
-					TextElement element = new TextElement();
-					element.FontFile.Value = "Font";
-					element.Text.Value = text;
-					element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X * 0.5f, logo.ScaledSize));
-					element.Add(new Binding<Color, bool>(element.Tint, x => x ? new Color(1.0f, 0.0f, 0.0f) : new Color(1.0f, 1.0f, 1.0f), element.Highlighted));
-					element.Add(new CommandBinding<Point>(element.MouseLeftUp, delegate(Point mouse)
-					{
-						Process.Start(new ProcessStartInfo(url));
-						if (this.graphics.IsFullScreen)
-							this.ExitFullscreen();
-					}));
-					element.Add(new CommandBinding<Point>(element.MouseOver, delegate(Point mouse)
-					{
-						winForm.Cursor = System.Windows.Forms.Cursors.Hand;
-					}));
-					element.Add(new CommandBinding<Point>(element.MouseOut, delegate(Point mouse)
-					{
-						winForm.Cursor = System.Windows.Forms.Cursors.Default;
-					}));
-					links.Children.Add(element);
-				};
+					winForm.Cursor = System.Windows.Forms.Cursors.Hand;
+				}));
+				element.Add(new CommandBinding<Point>(element.MouseOut, delegate(Point mouse)
+				{
+					winForm.Cursor = System.Windows.Forms.Cursors.Default;
+				}));
+				links.Children.Add(element);
+			};
 
-				addLink("lemmagame.com", "http://lemmagame.com");
-				addLink("moddb.com/games/lemma", "http://moddb.com/games/lemma");
-				addLink("facebook.com/lemmagame", "http://facebook.com/lemmagame");
-				addLink("twitter.com/et1337", "http://twitter.com/et1337");
+			addLink("lemmagame.com", "http://lemmagame.com");
+			addLink("moddb.com/games/lemma", "http://moddb.com/games/lemma");
+			addLink("facebook.com/lemmagame", "http://facebook.com/lemmagame");
+			addLink("twitter.com/et1337", "http://twitter.com/et1337");
+			addLink("Steam Greenlight (Concept)", "http://steamcommunity.com/sharedfiles/filedetails/?id=105075009");
 
-				addText("Writing, programming, and artwork by Evan Todd. Sound and music by Jack Menhorn, plus some sounds from freesound.org.");
-			}
+			addText("Writing, programming, and artwork by Evan Todd. Music and some sounds by Jack Menhorn. Full attribution list available on the website.");
 		}
 
 		protected void saveSettings()

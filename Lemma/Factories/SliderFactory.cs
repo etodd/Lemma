@@ -33,6 +33,7 @@ namespace Lemma.Factories
 			Property<bool> locked = result.GetOrMakeProperty<bool>("Locked", true);
 			Property<float> speed = result.GetOrMakeProperty<float>("Speed", true, 5);
 			Property<float> maxForce = result.GetOrMakeProperty<float>("MaxForce", true);
+			Property<int> goal = result.GetOrMakeProperty<int>("Goal", true);
 
 			PrismaticJoint joint = null;
 
@@ -79,6 +80,13 @@ namespace Lemma.Factories
 			};
 			result.Add(new NotifyBinding(setLocked, locked));
 
+			Action setGoal = delegate()
+			{
+				if (joint != null)
+					joint.Motor.Settings.Servo.Goal = goal;
+			};
+			result.Add(new NotifyBinding(setGoal, goal));
+
 			Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint = delegate(BEPUphysics.Entities.Entity entity1, BEPUphysics.Entities.Entity entity2, Vector3 pos, Vector3 direction, Vector3 anchor)
 			{
 				joint = new PrismaticJoint(entity1, entity2, pos, -direction, anchor);
@@ -87,6 +95,7 @@ namespace Lemma.Factories
 				setLocked();
 				setSpeed();
 				setMaxForce();
+				setGoal();
 				return joint;
 			};
 
@@ -97,7 +106,7 @@ namespace Lemma.Factories
 				Action = delegate()
 				{
 					if (joint != null && locked)
-						joint.Motor.Settings.Servo.Goal = maximum;
+						goal.Value = maximum;
 				},
 			});
 			result.Add("Backward", new Command
@@ -105,7 +114,7 @@ namespace Lemma.Factories
 				Action = delegate()
 				{
 					if (joint != null && locked)
-						joint.Motor.Settings.Servo.Goal = minimum;
+						goal.Value = minimum;
 				},
 			});
 

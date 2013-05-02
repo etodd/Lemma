@@ -31,6 +31,7 @@ namespace Lemma.Scripts
 {
 	public class Script : ScriptBase
 	{
+		public static Entity script;
 		public static void Run()
 		{
 ";
@@ -111,10 +112,10 @@ namespace Lemma.Scripts
 
 			if (assembly != null)
 			{
+				Lemma.Scripts.ScriptBase.main = main;
+				Lemma.Scripts.ScriptBase.renderer = main.Renderer;
 				Type t = assembly.GetType("Lemma.Scripts.Script");
-				t.GetField("main", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).SetValue(null, main);
-				t.GetField("renderer", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).SetValue(null, main.Renderer);
-				t.GetField("script", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).SetValue(null, scriptEntity);
+				t.GetField("script", BindingFlags.Static | BindingFlags.Public).SetValue(null, scriptEntity);
 				return t.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
 			}
 			return null;

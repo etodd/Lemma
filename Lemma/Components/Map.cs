@@ -56,6 +56,7 @@ namespace Lemma.Components
 		}
 
 		private static Dictionary<int, Queue<Box[, ,]>> freeDataChunks = new Dictionary<int, Queue<Box[, ,]>>();
+		private static Dictionary<int, Queue<Chunk[, ,]>> freeChunkArrays = new Dictionary<int, Queue<Chunk[, ,]>>();
 
 		public class MapState
 		{
@@ -1400,6 +1401,23 @@ namespace Lemma.Components
 				foreach (Chunk chunk in this.Chunks)
 					chunk.Delete();
 				this.Chunks.Clear();
+
+				for (int i = 0; i < this.maxChunks; i++)
+				{
+					for (int j = 0; j < this.maxChunks; j++)
+					{
+						for (int k = 0; k < this.maxChunks; k++)
+							this.chunks[i, j, k] = null;
+					}
+				}
+
+				Queue<Chunk[, ,]> chunkQueue;
+				if (!Map.freeChunkArrays.TryGetValue(this.maxChunks, out chunkQueue))
+				{
+					chunkQueue = new Queue<Chunk[, ,]>();
+					Map.freeChunkArrays[this.maxChunks] = chunkQueue;
+				}
+				chunkQueue.Enqueue(this.chunks);
 			}
 			Map.Maps.Remove(this);
 		}
@@ -1415,20 +1433,40 @@ namespace Lemma.Components
 			{
 				if (createIfNonExistent)
 				{
+					int originalChunkArraySize = this.maxChunks;
 					int oldMin = this.maxChunks / -2, oldMax = this.maxChunks / 2;
 					this.maxChunks *= 2;
 					int newMin = this.maxChunks / -2;
-					Chunk[, ,] newChunks = new Chunk[this.maxChunks, this.maxChunks, this.maxChunks];
+
+					Queue<Chunk[, ,]> chunkQueue;
+					Map.freeChunkArrays.TryGetValue(this.maxChunks, out chunkQueue);
+
+					Chunk[, ,] newChunks;
+					if (chunkQueue != null && chunkQueue.Count > 0)
+						newChunks = chunkQueue.Dequeue();
+					else
+						newChunks = new Chunk[this.maxChunks, this.maxChunks, this.maxChunks];
+
 					for (int i = oldMin; i < oldMax; i++)
 					{
 						for (int j = oldMin; j < oldMax; j++)
 						{
 							for (int k = oldMin; k < oldMax; k++)
 							{
-								newChunks[i - newMin, j - newMin, k - newMin] = this.chunks[i - oldMin, j - oldMin, k - oldMin];
+								int i2 = i - oldMin, j2 = j - oldMin, k2 = k - oldMin;
+								newChunks[i - newMin, j - newMin, k - newMin] = this.chunks[i2, j2, k2];
+								this.chunks[i2, j2, k2] = null;
 							}
 						}
 					}
+
+					if (!Map.freeChunkArrays.TryGetValue(originalChunkArraySize, out chunkQueue))
+					{
+						chunkQueue = new Queue<Chunk[, ,]>();
+						Map.freeChunkArrays[originalChunkArraySize] = chunkQueue;
+					}
+					chunkQueue.Enqueue(this.chunks);
+
 					this.chunks = newChunks;
 					this.updateBounds();
 				}
