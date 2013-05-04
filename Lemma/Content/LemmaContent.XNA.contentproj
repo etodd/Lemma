@@ -481,12 +481,6 @@
       <Importer>XactImporter</Importer>
       <Processor>XactProcessor</Processor>
     </Compile>
-    <Compile Include="Models\blast.fbx">
-      <Name>blast</Name>
-      <Importer>FbxImporter</Importer>
-      <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\UnlitSolidColor.fx</ProcessorParameters_EffectFileName>
-    </Compile>
     <Compile Include="Models\player.fbx">
       <Name>player</Name>
       <Importer>SkinnedModelImporter</Importer>

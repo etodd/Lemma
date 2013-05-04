@@ -26,12 +26,29 @@ Music and some sounds by Jack Menhorn. http://jackmenhorn.com
 
 ==========================================
 
-Opening track by Daniel Haaser. http://soundcloud.com/prelinger
-
-==========================================
-
 Audio source material pulled from FreeSound. http://freesound.org
 
+Downloaded on April 30th, 2013
+     S: indoors room tone WC bahtroom ambient ambience distant bird.wav by bulbastre -- http://www.freesound.org/people/bulbastre/sounds/126940/ -- License: Attribution
+     S: Front Door open and close.wav by DJPhizz -- http://www.freesound.org/people/DJPhizz/sounds/52375/ -- License: Attribution
+Downloaded on April 6th, 2013
+     S: SS BOOM 01.wav by sandyrb -- http://www.freesound.org/people/sandyrb/sounds/84346/ -- License: Attribution
+     S: rotatingdome.flac by ignotus -- http://www.freesound.org/people/ignotus/sounds/20331/ -- License: Attribution
+Downloaded on March 24th, 2013
+     S: 02217 metal trap.wav by Robinhood76 -- http://www.freesound.org/people/Robinhood76/sounds/107561/ -- License: Attribution Noncommercial
+Downloaded on March 16th, 2013
+     S: heartbeats.aif by patobottos -- http://www.freesound.org/people/patobottos/sounds/160504/ -- License: Creative Commons 0
+     S: DeepTone by vartioh -- http://www.freesound.org/people/vartioh/sounds/131914/ -- License: Attribution
+     S: cinematic_deep_tremor.wav by swiftoid -- http://www.freesound.org/people/swiftoid/sounds/119782/ -- License: Creative Commons 0
+     S: heavy breathing off mic loop.wav by bevangoldswain -- http://www.freesound.org/people/bevangoldswain/sounds/54776/ -- License: Sampling+
+     S: Miniature 6.mp3 by genghis attenborough -- http://www.freesound.org/people/genghis%20attenborough/sounds/36226/ -- License: Attribution Noncommercial
+Downloaded on January 20th, 2013
+     S: M207b9_Screaming.wav by Experimental Illness -- http://www.freesound.org/people/Experimental%20Illness/sounds/31695/ -- License: Sampling+
+     S: malexmedia_man_scream.wav by malexmedia -- http://www.freesound.org/people/malexmedia/sounds/31818/ -- License: Attribution
+     S: psycho scream 1.wav by FreqMan -- http://www.freesound.org/people/FreqMan/sounds/42847/ -- License: Attribution
+     S: Male voice screaming loudly by Dinsfire -- http://www.freesound.org/people/Dinsfire/sounds/169628/ -- License: Creative Commons 0
+     S: scream by mitchelk -- http://www.freesound.org/people/mitchelk/sounds/136708/ -- License: Creative Commons 0
+     S: Male Being Impaled/Beaten AC.wav by oldedgar -- http://www.freesound.org/people/oldedgar/sounds/131710/ -- License: Creative Commons 0
 Downloaded on October 30th, 2012
      S: rbh rain 01.wav by RHumphries -- http://www.freesound.org/people/RHumphries/sounds/2519/
      S: rbh rain 04.wav by RHumphries -- http://www.freesound.org/people/RHumphries/sounds/2522/
