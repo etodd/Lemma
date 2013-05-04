@@ -43,6 +43,12 @@ namespace Lemma.Scripts
 }
 ";
 
+		private static int lineNumberOffset;
+		static Script()
+		{
+			lineNumberOffset = Script.scriptPrefix.Count(x => x == '\n');
+		}
+
 		[XmlIgnore]
 		public Property<string> Errors = new Property<string> { Editable = true };
 
@@ -94,7 +100,12 @@ namespace Lemma.Scripts
 						StringBuilder builder = new StringBuilder();
 						foreach (CompilerError ce in cr.Errors)
 						{
-							builder.Append(ce.ToString());
+							builder.Append("Line ");
+							builder.Append((ce.Line - Script.lineNumberOffset).ToString());
+							builder.Append(": ");
+							builder.Append(ce.ErrorNumber);
+							builder.Append(": ");
+							builder.Append(ce.ErrorText);
 							builder.Append("\n");
 						}
 						errors = builder.ToString();

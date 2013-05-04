@@ -21,6 +21,8 @@ namespace Lemma.Scripts
 		protected static void bindTrigger(string id, Action<Entity> callback, bool oneTimeOnly = true)
 		{
 			Entity triggerEntity = ScriptBase.get(id);
+			if (triggerEntity == null)
+				throw new Exception("Entity " + id + " not found!");
 			PlayerTrigger trigger = triggerEntity.Get<PlayerTrigger>();
 			Action<Entity>[] callbacks;
 			if (oneTimeOnly)
