@@ -279,7 +279,6 @@ namespace Lemma.Factories
 						input.Enabled.Value = false;
 						model.Stop();
 						model.StartClip("Collapse", 6, false, AnimatedModel.DefaultBlendTime, false);
-						Session.Recorder.Event(main, "DieFromStamina");
 					}),
 					new Animation.Delay(1.5f),
 					new Animation.Execute(delegate()
@@ -287,6 +286,10 @@ namespace Lemma.Factories
 						Sound.PlayCue(main, "Collapse");
 					}),
 					new Animation.Delay(1.5f),
+					new Animation.Execute(delegate()
+					{
+						Session.Recorder.Event(main, "DieFromStamina");
+					}),
 					new Animation.Execute(result.Delete)
 				);
 				result.Add(faintSequence);
@@ -314,7 +317,7 @@ namespace Lemma.Factories
 
 			result.Add(new CommandBinding(player.HealthDepleted, delegate()
 			{
-				Session.Recorder.Event(main, "Die");
+				Session.Recorder.Event(main, "DieFromHealth");
 				Sound.PlayCue(main, "Death");
 			}));
 
@@ -322,6 +325,7 @@ namespace Lemma.Factories
 
 			result.Add(new CommandBinding(result.Delete, delegate()
 			{
+				Session.Recorder.Event(main, "Die");
 				Entity p = pistol.Value.Target;
 				if (p != null)
 					p.GetCommand("Detach").Execute();
@@ -1088,7 +1092,6 @@ namespace Lemma.Factories
 					pos = basePos;
 					for (int i = 0; i < 5; i++)
 					{
-						pos += forward * 0.5f;
 						Map.Coordinate center = map.GetCoordinate(pos);
 						Map.Coordinate top = map.GetCoordinate(basePos + new Vector3(0, Player.DefaultCharacterHeight + Player.DefaultSupportHeight + 0.5f, 0));
 						Direction upDir = map.GetRelativeDirection(Vector3.Up);
@@ -1117,6 +1120,7 @@ namespace Lemma.Factories
 								}
 							}
 						}
+						pos += forward * 0.5f;
 					}
 					if (removals.Count > 0)
 					{
