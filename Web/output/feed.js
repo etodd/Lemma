@@ -11,6 +11,8 @@ function feedLoaded(result, selector)
 		var entry = result.feed.entries[0];
 		
 		container.html('<h3><a href="' + entry.link + '">' + entry.title + '</a></h3><small>' + entry.publishedDate + '</small><div>' + entry.content + '</div>');
+		
+		container.fitVids();
 	}
 }
 
