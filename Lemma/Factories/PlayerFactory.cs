@@ -672,7 +672,6 @@ namespace Lemma.Factories
 						{
 							footstepTimer.Command.Execute();
 							Sound.PlayCue(main, "Land", transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0));
-							model.StartClip("Land", 1, false, 0.1f);
 						}
 						lastLandAnimationPlayed = main.TotalTime;
 					}
@@ -881,6 +880,8 @@ namespace Lemma.Factories
 
 			Action stopLevitate = null;
 
+			const float minWallRunSpeed = 4.0f;
+
 			Action<Map, Direction, Player.WallRun, Vector3, bool> setUpWallRun = delegate(Map map, Direction dir, Player.WallRun state, Vector3 forwardVector, bool addInitialVelocity)
 			{
 				stopKick();
@@ -958,6 +959,10 @@ namespace Lemma.Factories
 						Vector3 currentHorizontalVelocity = player.LinearVelocity;
 						currentHorizontalVelocity.Y = 0.0f;
 						velocity *= Math.Min(player.MaxSpeed * 2.0f, Math.Max(currentHorizontalVelocity.Length() * 1.25f, 6.0f));
+
+						if (state != Player.WallRun.Straight && state != Player.WallRun.Reverse && Vector3.Dot(player.LinearVelocity, forwardVector) < 0.0f)
+							velocity = Vector3.Normalize(velocity) * (minWallRunSpeed + 1.0f);
+
 						velocity.Y = player.LinearVelocity.Value.Y + 3.0f;
 						player.LinearVelocity.Value = velocity;
 					}
@@ -984,9 +989,6 @@ namespace Lemma.Factories
 
 					Matrix matrix = Matrix.CreateRotationY(rotation);
 					Vector3 forwardVector = -matrix.Forward;
-
-					if (state != Player.WallRun.Straight && Vector3.Dot(player.LinearVelocity, forwardVector) < 0.0f)
-						return false;
 
 					Vector3 wallVector;
 					switch (state)
@@ -1176,7 +1178,7 @@ namespace Lemma.Factories
 					}
 					else
 					{
-						if (player.IsSupported || wallRunSpeed < 5.0f)
+						if (player.IsSupported || wallRunSpeed < minWallRunSpeed)
 						{
 							// We landed on the ground or we're going too slow to continue wall-running
 							deactivateWallRun();
@@ -1338,7 +1340,11 @@ namespace Lemma.Factories
 			{
 				float v = model.IsPlaying("Roll") ? rollingDamageVelocity : damageVelocity;
 				if (verticalVelocity < v)
+				{
 					player.Health.Value += (verticalVelocity - v) * 0.2f;
+					player.LinearVelocity.Value = new Vector3(0, player.LinearVelocity.Value.Y, 0);
+					model.StartClip("Land", 1, false, 0.1f);
+				}
 			};
 
 			// Damage the player if they hit something too hard

@@ -33,7 +33,11 @@ namespace Lemma.Util
 		/// <summary>
 		/// Rate of increase in the character's speed in the movementDirection.
 		/// </summary>
-		public Property<float> Acceleration = new Property<float> { Value = 10.0f };
+		public Property<float> Acceleration = new Property<float> { Value = 6.0f };
+
+		public Property<float> InitialAcceleration = new Property<float> { Value = 25.0f };
+
+		public const float InitialAccelerationSpeedThreshold = 4.0f;
 
 		/// <summary>
 		/// The character's physical representation that handles iteractions with the environment.
@@ -464,7 +468,8 @@ namespace Lemma.Util
 				else
 				{
 					// Accelerate
-					velocityChange = Math.Min(dt * this.Acceleration, speed - netZVelocity);
+					float accel = netZVelocity < Character.InitialAccelerationSpeedThreshold ? this.InitialAcceleration : this.Acceleration;
+					velocityChange = Math.Min(dt * accel, speed - netZVelocity);
 					this.Body.LinearVelocity += velocityChange * z;
 					if (z.Y > 0.0f)
 						this.Body.LinearVelocity += new Vector3(0, z.Y * Math.Min(dt * this.Acceleration * 2.0f, speed - netZVelocity) * 2.0f, 0);

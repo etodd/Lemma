@@ -369,7 +369,10 @@ namespace Lemma.Factories
 								foreach (Session s in sessions)
 								{
 									foreach (Session.EventList el in s.Events)
+									{
 										distinctEventNames[el.Name] = true;
+										s.TotalTime = Math.Max(s.TotalTime, el.Events[el.Events.Count - 1].Time);
+									}
 									foreach (Session.ContinuousProperty p in s.ContinuousProperties)
 									{
 										if (p.Independent)

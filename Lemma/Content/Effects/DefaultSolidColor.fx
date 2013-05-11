@@ -46,44 +46,6 @@ void MotionBlurVS ( in RenderVSInput input,
 	motionBlur.previousPosition = mul(input.position, LastFrameWorldViewProjectionMatrix);
 }
 
-// Shadow vertex shader
-void ShadowVS (	in float4 in_Position : POSITION,
-				out ShadowVSOutput vs,
-				out ShadowPSInput output)
-{
-	// Calculate shadow-space position
-	float4 worldPosition = mul(in_Position, WorldMatrix);
-	output.worldPosition = worldPosition.xyz;
-	vs.position = mul(worldPosition, ViewProjectionMatrix);
-	output.clipSpacePosition = vs.position;
-}
-
-technique Shadow
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 ShadowVS();
-		PixelShader = compile ps_3_0 ShadowPS();
-	}
-}
-
-technique PointLightShadow
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 ShadowVS();
-		PixelShader = compile ps_3_0 PointLightShadowPS();
-	}
-}
-
 technique Render
 {
 	pass p0
