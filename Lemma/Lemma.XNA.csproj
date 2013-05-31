@@ -125,8 +125,6 @@
     <Compile Include="Factories\PlayerDataFactory.cs" />
     <Compile Include="Factories\EffectBlockFactory.cs" />
     <Compile Include="Factories\FallingTowerFactory.cs" />
-    <Compile Include="Factories\MagazineFactory.cs" />
-    <Compile Include="Factories\PistolFactory.cs" />
     <Compile Include="Factories\MapExitFactory.cs" />
     <Compile Include="Factories\PropFactory.cs" />
     <Compile Include="Factories\RandomAmbientSoundFactory.cs" />

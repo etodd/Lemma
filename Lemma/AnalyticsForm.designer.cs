@@ -49,7 +49,7 @@
 			this.label1.Size = new System.Drawing.Size(254, 26);
 			this.label1.TabIndex = 0;
 			this.label1.Text = "A recording of your play session was saved to your hard drive. Help improve Lemma" +
-    " by hitting \"Upload\".";
+	" by hitting \"Upload\".";
 			// 
 			// button1
 			// 
@@ -119,7 +119,7 @@
 			this.label6.Name = "label6";
 			this.label6.Size = new System.Drawing.Size(201, 13);
 			this.label6.TabIndex = 12;
-			this.label6.Text = "- Stats like ammo, stamina, hit points, etc.";
+			this.label6.Text = "- Stats like stamina, hit points, etc.";
 			// 
 			// label7
 			// 

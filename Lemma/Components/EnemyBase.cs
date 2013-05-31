@@ -149,7 +149,7 @@ namespace Lemma.Components
 			}
 		}
 
-		public static void SpawnPickupsOnDeath(Main main, Entity entity, int minCount = 2, int maxCount = 5, int minEnergy = 2, int maxEnergy = 10, float chanceOfAmmo = 0.05f)
+		public static void SpawnPickupsOnDeath(Main main, Entity entity, int minCount = 2, int maxCount = 5, int minEnergy = 2, int maxEnergy = 10)
 		{
 			if (!main.EditorEnabled)
 			{

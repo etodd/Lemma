@@ -26,9 +26,9 @@ namespace Lemma
 
 		}
 
-		public const int ConfigVersion = 3;
-		public const int MapVersion = 3;
-		public const int Build = 3;
+		public const int ConfigVersion = 4;
+		public const int MapVersion = 4;
+		public const int Build = 4;
 
 		public class Config
 		{
@@ -37,7 +37,7 @@ namespace Lemma
 			public Property<Point> Origin = new Property<Point> { Value = new Point(50, 50) };
 			public Property<Point> Size = new Property<Point> { Value = new Point(1280, 720) };
 			public Property<Point> FullscreenResolution = new Property<Point> { Value = Point.Zero };
-			public Property<float> MotionBlurAmount = new Property<float> { Value = 0.5f };
+			public Property<float> MotionBlurAmount = new Property<float> { Value = 1.0f };
 			public Property<float> Gamma = new Property<float> { Value = 1.0f };
 			public Property<bool> EnableReflections = new Property<bool> { Value = true };
 			public Property<bool> EnableBloom = new Property<bool> { Value = true };
@@ -272,32 +272,6 @@ namespace Lemma
 				{
 					if (this.player != null && this.player.Active)
 						return this.player.Get<Player>().Stamina;
-					else
-						return 0;
-				});
-
-				this.SessionRecorder.Add("Ammo", delegate()
-				{
-					if (this.player != null && this.player.Active)
-					{
-						Entity pistol = player.GetProperty<Entity.Handle>("Pistol").Value.Target;
-						if (pistol != null)
-							return pistol.GetProperty<int>("Ammo") + (pistol.GetProperty<int>("Magazines") * PistolFactory.MaxAmmo);
-						return 0;
-					}
-					else
-						return 0;
-				});
-
-				this.SessionRecorder.Add("PistolDrawn", delegate()
-				{
-					if (this.player != null && this.player.Active)
-					{
-						Entity pistol = player.GetProperty<Entity.Handle>("Pistol").Value.Target;
-						if (pistol != null)
-							return pistol.GetProperty<bool>("Active") ? 1 : 0;
-						return 0;
-					}
 					else
 						return 0;
 				});

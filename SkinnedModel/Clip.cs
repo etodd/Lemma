@@ -28,8 +28,22 @@ namespace SkinnedModel
 		/// </summary>
 		public Clip(TimeSpan duration, IEnumerable<Channel> channels)
 		{
-			this.Duration = duration;
 			this.Channels = new List<Channel>(channels);
+			this.Duration = TimeSpan.Zero;
+			foreach (Channel channel in this.Channels)
+			{
+				TimeSpan offset = channel[0].Time;
+				if (offset.TotalSeconds < 0)
+				{
+					offset = offset.Negate();
+					foreach (Keyframe frame in channel)
+					{
+						frame.Time += offset;
+						if (this.Duration < frame.Time)
+							this.Duration = frame.Time;
+					}
+				}
+			}
 		}
 
 		/// <summary>
@@ -65,12 +79,30 @@ namespace SkinnedModel
 		[ContentSerializerIgnore]
 		public bool StopOnEnd = true;
 
+		private List<Channel> channels;
 		/// <summary>
 		/// Gets a combined list containing all the keyframes for all bones,
 		/// sorted by time.
 		/// </summary>
 		[ContentSerializer]
-		public List<Channel> Channels;
+		public List<Channel> Channels
+		{
+			get
+			{
+				return this.channels;
+			}
+			set
+			{
+				this.channels = value;
+				foreach (Channel channel in this.channels)
+				{
+					if (channel.Count > 1)
+						channel.CurrentKeyframeIndex = 1;
+					else
+						channel.CurrentMatrix = channel[0].Transform;
+				}
+			}
+		}
 
 		[ContentSerializerIgnore]
 		public bool Stopping;
@@ -90,6 +122,17 @@ namespace SkinnedModel
 				{
 					if (this.Duration.TotalSeconds > 0)
 					{
+						if (time > this.Duration)
+						{
+							foreach (Channel channel in this.Channels)
+							{
+								if (channel.Count > 1)
+								{
+									channel.LastKeyframeIndex = 0;
+									channel.CurrentKeyframeIndex = 1;
+								}
+							}
+						}
 						while (time > this.Duration)
 							time -= this.Duration;
 					}
@@ -99,21 +142,14 @@ namespace SkinnedModel
 
 				foreach (Channel channel in this.Channels)
 				{
-					if (channel == null || channel.Count == 1)
-						continue;
-					int index = time > this.currentTime ? channel.CurrentKeyframeIndex : Math.Min(channel.Count - 1, 1);
-					while (channel[index].Time < time)
+					if (channel.Count > 1)
 					{
-						index++;
-						if (index >= channel.Count)
-						{
-							index = channel.Count - 1;
-							break;
-						}
-					}
-					if (index != channel.CurrentKeyframeIndex)
-					{
-						channel.LastKeyframeIndex = channel.CurrentKeyframeIndex;
+						int index = time > this.currentTime ? channel.CurrentKeyframeIndex : 0;
+
+						while (index < channel.Count - 1 && channel[index].Time <= time)
+							index++;
+
+						channel.LastKeyframeIndex = Math.Max(0, index - 1);
 						channel.CurrentKeyframeIndex = index;
 					}
 				}
@@ -121,13 +157,11 @@ namespace SkinnedModel
 
 				foreach (Channel channel in this.Channels)
 				{
-					Keyframe lastKeyframe = channel.LastKeyframeIndex < channel.Count ? channel[channel.LastKeyframeIndex] : null;
-					Keyframe currentKeyframe = channel[channel.CurrentKeyframeIndex];
-					if (lastKeyframe == null)
-						channel.CurrentMatrix = currentKeyframe.Transform;
-					else
+					if (channel.Count > 1)
 					{
-						double lerp = (this.CurrentTime.TotalSeconds - lastKeyframe.Time.TotalSeconds) / (currentKeyframe.Time.TotalSeconds - lastKeyframe.Time.TotalSeconds);
+						Keyframe lastKeyframe = channel[channel.LastKeyframeIndex];
+						Keyframe currentKeyframe = channel[channel.CurrentKeyframeIndex];
+						double lerp = (this.currentTime.TotalSeconds - lastKeyframe.Time.TotalSeconds) / (currentKeyframe.Time.TotalSeconds - lastKeyframe.Time.TotalSeconds);
 						channel.CurrentMatrix = Matrix.Lerp(lastKeyframe.Transform, currentKeyframe.Transform, (float)Math.Min(lerp, 1.0));
 					}
 				}

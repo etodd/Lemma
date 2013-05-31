@@ -261,29 +261,11 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
     </Compile>
-    <Compile Include="Models\P220.fbx">
-      <Name>P220</Name>
-      <Importer>SkinnedModelImporter</Importer>
-      <Processor>SkinnedModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\AnimationNormalMap.fx</ProcessorParameters_EffectFileName>
-      <ProcessorParameters_DiffuseTexture>p220-diffuse-pattern.png</ProcessorParameters_DiffuseTexture>
-      <ProcessorParameters_NormalMapTexture>p220-normal-map.png</ProcessorParameters_NormalMapTexture>
-      <ProcessorParameters_ResizeTexturesToPowerOfTwo>True</ProcessorParameters_ResizeTexturesToPowerOfTwo>
-    </Compile>
     <Compile Include="Models\cone.fbx">
       <Name>cone</Name>
       <Importer>FbxImporter</Importer>
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\UnlitSolidColor.fx</ProcessorParameters_EffectFileName>
-    </Compile>
-    <Compile Include="Models\pistol-mag.fbx">
-      <Name>pistol-mag</Name>
-      <Importer>FbxImporter</Importer>
-      <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\DefaultNormalMap.fx</ProcessorParameters_EffectFileName>
-      <ProcessorParameters_NormalMapTexture>p220-normal-map.png</ProcessorParameters_NormalMapTexture>
-      <ProcessorParameters_ResizeTexturesToPowerOfTwo>True</ProcessorParameters_ResizeTexturesToPowerOfTwo>
-      <ProcessorParameters_DiffuseTexture>p220-diffuse-pattern.png</ProcessorParameters_DiffuseTexture>
     </Compile>
     <Compile Include="Models\alpha-cylinder.fbx">
       <Name>alpha-cylinder</Name>
