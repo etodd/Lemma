@@ -516,6 +516,32 @@ namespace Lemma.Factories
 					RubbleCue = "MetalRubble",
 					SpecularIntensity = 0.0f,
 					Glow = true,
+				},
+				new Map.CellState
+				{
+					ID = 36,
+					Name = "Debug",
+					Permanent = true,
+					Density = 1,
+					FootstepCue = "MetalFootsteps",
+					RubbleCue = "MetalRubble",
+					DiffuseMap = "Maps\\Textures\\debug",
+					NormalMap = "Maps\\Textures\\plain-normal",
+					SpecularPower = 1.0f,
+					SpecularIntensity = 0.0f
+				},
+				new Map.CellState
+				{
+					ID = 37,
+					Name = "DebugTemporary",
+					Permanent = false,
+					Density = 1,
+					FootstepCue = "WoodFootsteps",
+					RubbleCue = "WoodRubble",
+					DiffuseMap = "Maps\\Textures\\debug2",
+					NormalMap = "Maps\\Textures\\plain-normal",
+					SpecularPower = 1.0f,
+					SpecularIntensity = 0.0f
 				}
 			);
 		}

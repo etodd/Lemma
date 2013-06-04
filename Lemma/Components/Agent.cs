@@ -12,8 +12,6 @@ namespace Lemma.Components
 	{
 		private static List<Agent> agents = new List<Agent>();
 
-		const float speedThreshold = 4.0f;
-
 		[XmlIgnore]
 		public Command Die = new Command();
 
@@ -23,7 +21,7 @@ namespace Lemma.Components
 			soundRadius *= soundRadius;
 			foreach (Agent agent in Agent.agents)
 			{
-				if (agent != ignore && agent.Active && agent.Enabled && !agent.Suspended && agent.Speed > speedThreshold)
+				if (agent != ignore && agent.Active && agent.Enabled && !agent.Suspended)
 				{
 					Vector3 toAgent = agent.Position - pos;
 					float distance = toAgent.LengthSquared();
@@ -57,8 +55,6 @@ namespace Lemma.Components
 		}
 
 		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
-
-		public Property<float> Speed = new Property<float>();
 
 		public Property<float> Health = new Property<float> { Value = 1.0f };
 	}

@@ -181,7 +181,6 @@ namespace Lemma.Factories
 			Agent agent = result.GetOrCreate<Agent>();
 			agent.Add(new TwoWayBinding<float>(player.Health, agent.Health));
 			agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
-			agent.Add(new Binding<float, Vector3>(agent.Speed, x => x.Length(), player.LinearVelocity));
 			agent.Add(new CommandBinding(agent.Die, result.Delete));
 
 #if DEVELOPMENT
@@ -908,17 +907,21 @@ namespace Lemma.Factories
 					if (addInitialVelocity)
 					{
 						velocity.Y = 0.0f;
-						velocity.Normalize();
+						float length = velocity.Length();
+						if (length > 0)
+						{
+							velocity /= length;
 
-						Vector3 currentHorizontalVelocity = player.LinearVelocity;
-						currentHorizontalVelocity.Y = 0.0f;
-						velocity *= Math.Min(player.MaxSpeed * 2.0f, Math.Max(currentHorizontalVelocity.Length() * 1.25f, 6.0f));
+							Vector3 currentHorizontalVelocity = player.LinearVelocity;
+							currentHorizontalVelocity.Y = 0.0f;
+							velocity *= Math.Min(player.MaxSpeed * 2.0f, Math.Max(currentHorizontalVelocity.Length() * 1.25f, 6.0f));
 
-						if (state != Player.WallRun.Straight && state != Player.WallRun.Reverse && Vector3.Dot(player.LinearVelocity, forwardVector) < 0.0f)
-							velocity = Vector3.Normalize(velocity) * (minWallRunSpeed + 1.0f);
+							if (state != Player.WallRun.Straight && state != Player.WallRun.Reverse && Vector3.Dot(player.LinearVelocity, forwardVector) < 0.0f)
+								velocity = Vector3.Normalize(velocity) * (minWallRunSpeed + 1.0f);
 
-						velocity.Y = player.LinearVelocity.Value.Y + 3.0f;
-						player.LinearVelocity.Value = velocity;
+							velocity.Y = player.LinearVelocity.Value.Y + 3.0f;
+							player.LinearVelocity.Value = velocity;
+						}
 					}
 				}
 			};

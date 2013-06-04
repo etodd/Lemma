@@ -26,7 +26,7 @@ namespace Lemma
 
 		}
 
-		public const int ConfigVersion = 4;
+		public const int ConfigVersion = 3;
 		public const int MapVersion = 4;
 		public const int Build = 4;
 
@@ -37,7 +37,7 @@ namespace Lemma
 			public Property<Point> Origin = new Property<Point> { Value = new Point(50, 50) };
 			public Property<Point> Size = new Property<Point> { Value = new Point(1280, 720) };
 			public Property<Point> FullscreenResolution = new Property<Point> { Value = Point.Zero };
-			public Property<float> MotionBlurAmount = new Property<float> { Value = 1.0f };
+			public Property<float> MotionBlurAmount = new Property<float> { Value = 0.5f };
 			public Property<float> Gamma = new Property<float> { Value = 1.0f };
 			public Property<bool> EnableReflections = new Property<bool> { Value = true };
 			public Property<bool> EnableBloom = new Property<bool> { Value = true };

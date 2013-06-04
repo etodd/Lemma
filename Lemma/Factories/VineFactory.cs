@@ -127,19 +127,6 @@ namespace Lemma.Factories
 				emitter.Add(new Binding<bool, string>(emitter.Enabled, x => x != "Suspended", ai.CurrentState));
 
 				agent.Add(new Binding<Vector3>(agent.Position, positionLight.Position));
-				agent.Add(new Binding<float, string>(agent.Speed, delegate(string state)
-				{
-					switch (state)
-					{
-						case "Chase":
-						case "Crush":
-							return 10.0f;
-						case "Alert":
-							return 0.0f;
-						default:
-							return 5.0f;
-					}
-				}, ai.CurrentState));
 
 			}
 			
