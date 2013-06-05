@@ -75,6 +75,9 @@ if (ParticleSystem.Get(main, "Smoke") == null)
 	});
 }
 
+int fragileDirtID = WorldFactory.StatesByName["FragileDirt"].ID,
+	lavaID = WorldFactory.StatesByName["Lava"].ID;
+
 Action<Entity> bindPlayer = delegate(Entity p)
 {
 	player = p;
@@ -94,28 +97,42 @@ Action<Entity> bindPlayer = delegate(Entity p)
 	
 	player.Add(new CommandBinding<Map, Map.Coordinate?>(player.GetCommand<Map, Map.Coordinate?>("WalkedOn"), delegate(Map map, Map.Coordinate? coord)
 	{
-		string groundType = map == null ? null : map[coord.Value].Name;
+		int groundType = map == null ? 0 : map[coord.Value].ID;
 
 		// Lava. Damage the player character if it steps on lava.
-		bool isLava = groundType == "Lava";
+		bool isLava = groundType == lavaID;
 		if (isLava)
 			playerComponent.Health.Value -= 0.2f;
 		lavaDamager.Enabled.Value = isLava;
 
 		// Fragile dirt. Delete the block after a delay.
-		if (groundType == "FragileDirt")
+		if (groundType == fragileDirtID)
 		{
 			script.Add(new Animation
 			(
 				new Animation.Delay(1.0f),
 				new Animation.Execute(delegate()
 				{
-					if (map.Empty(coord.Value))
+					Vector3 start = map.GetAbsolutePosition(coord.Value);
+					Vector3 end = start - new Vector3(0, 5, 0);
+
+					bool regenerate = false;
+					foreach (Map.Coordinate c in map.Rasterize(start, end))
 					{
-						Vector3 pos = map.GetAbsolutePosition(coord.Value);
-						ParticleEmitter.Emit(main, "Smoke", pos, 1.0f, 10);
+						if (map[c].ID == fragileDirtID)
+						{
+							map.Empty(c);
+							regenerate = true;
+						}
+						else
+							break;
+					}
+
+					if (regenerate)
+					{
+						ParticleEmitter.Emit(main, "Smoke", start, 1.0f, 10);
+						Sound.PlayCue(main, "FragileDirt Crumble", start);
 						map.Regenerate();
-						Sound.PlayCue(main, "FragileDirt Crumble", pos);
 					}
 				})
 			));

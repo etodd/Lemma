@@ -76,7 +76,7 @@ namespace Lemma.Factories
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity player)
 			{
 				Animation animation;
-				if (energy < 10)
+				if (energy <= 30)
 				{
 					Sound.PlayCue(main, "GainHealthSmall", transform.Position, 1.0f, 0.05f);
 					animation = new Animation

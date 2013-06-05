@@ -3548,14 +3548,29 @@ namespace Lemma.Components
 
 		public IEnumerable<Coordinate> Rasterize(Vector3 start, Vector3 end)
 		{
-			// Adapted from PolyVox
-			// http://www.volumesoffun.com/polyvox/documentation/library/doc/html/_raycast_8inl_source.html
-
 			start = this.GetRelativePosition(start);
 			end = this.GetRelativePosition(end);
 
 			Coordinate startCoord = this.GetCoordinateFromRelative(start);
 			Coordinate endCoord = this.GetCoordinateFromRelative(end);
+
+			foreach (Coordinate coord in this.rasterize(start, end, startCoord, endCoord))
+				yield return coord;
+		}
+
+		public IEnumerable<Coordinate> Rasterize(Coordinate startCoord, Coordinate endCoord)
+		{
+			Vector3 start = this.GetRelativePosition(startCoord);
+			Vector3 end = this.GetRelativePosition(endCoord);
+
+			foreach (Coordinate coord in this.rasterize(start, end, startCoord, endCoord))
+				yield return coord;
+		}
+
+		private IEnumerable<Coordinate> rasterize(Vector3 start, Vector3 end, Coordinate startCoord, Coordinate endCoord)
+		{
+			// Adapted from PolyVox
+			// http://www.volumesoffun.com/polyvox/documentation/library/doc/html/_raycast_8inl_source.html
 
 			int dx = ((start.X < end.X) ? 1 : ((start.X > end.X) ? -1 : 0));
 			int dy = ((start.Y < end.Y) ? 1 : ((start.Y > end.Y) ? -1 : 0));
