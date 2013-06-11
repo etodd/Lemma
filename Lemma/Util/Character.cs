@@ -410,14 +410,17 @@ namespace Lemma.Util
 		private void support(Vector3 supportLocationVelocity, Vector3 supportNormal, float supportDistance, float dt)
 		{
 			//Put the character at the right distance from the ground.
-			float heightDifference = this.SupportHeight - supportDistance;
-			this.Body.Position += (new Vector3(0, MathHelper.Clamp(heightDifference, (supportLocationVelocity.Y - 10.0f) * dt, (supportLocationVelocity.Y + 10.0f) * dt), 0));
+			if (supportLocationVelocity.Y > -0.1f)
+			{
+				float heightDifference = this.SupportHeight - supportDistance;
+				this.Body.Position += (new Vector3(0, MathHelper.Clamp(heightDifference, (supportLocationVelocity.Y - 10.0f) * dt, (supportLocationVelocity.Y + 10.0f) * dt), 0));
 
-			//Remove from the character velocity which would push it toward or away from the surface.
-			//This is a relative velocity, so the velocity of the body and the velocity of a point on the support entity must be found.
-			float bodyNormalVelocity = Vector3.Dot(this.Body.LinearVelocity, supportNormal);
-			float supportEntityNormalVelocity = Vector3.Dot(supportLocationVelocity, supportNormal);
-			this.Body.LinearVelocity -= (bodyNormalVelocity - supportEntityNormalVelocity) * supportNormal;
+				//Remove from the character velocity which would push it toward or away from the surface.
+				//This is a relative velocity, so the velocity of the body and the velocity of a point on the support entity must be found.
+				float bodyNormalVelocity = Vector3.Dot(this.Body.LinearVelocity, supportNormal);
+				float supportEntityNormalVelocity = Vector3.Dot(supportLocationVelocity, supportNormal);
+				this.Body.LinearVelocity -= (bodyNormalVelocity - supportEntityNormalVelocity) * supportNormal;
+			}
 
 			BEPUphysics.Entities.Entity supportEntity = this.SupportEntity;
 			if (supportEntity != null && supportEntity.IsAffectedByGravity)

@@ -4050,6 +4050,8 @@ namespace Lemma.Components
 
 		public Property<bool> IsAffectedByGravity = new Property<bool> { Editable = true, Value = true };
 
+		public Property<bool> IsAlwaysActive = new Property<bool> { Editable = true, Value = false };
+
 		private bool firstPhysicsUpdate = true;
 		private object physicsLock = new object();
 		private bool physicsUpdated;
@@ -4101,6 +4103,13 @@ namespace Lemma.Components
 				}
 				this.IsAffectedByGravity.InternalValue = value;
 				this.PhysicsEntity.IsAffectedByGravity = value;
+				this.PhysicsEntity.ActivityInformation.Activate();
+			};
+
+			this.IsAlwaysActive.Set = delegate(bool value)
+			{
+				this.IsAlwaysActive.InternalValue = value;
+				this.PhysicsEntity.ActivityInformation.IsAlwaysActive = value;
 				this.PhysicsEntity.ActivityInformation.Activate();
 			};
 

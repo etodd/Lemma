@@ -26,6 +26,13 @@ namespace Lemma.Factories
 			public Map.CellState State;
 		}
 
+		public struct RespawnLocation
+		{
+			public Entity.Handle Map;
+			public Map.Coordinate Coordinate;
+			public float Rotation;
+		}
+
 		public override Entity Create(Main main)
 		{
 			Entity result = new Entity(main, "Player");
@@ -221,12 +228,16 @@ namespace Lemma.Factories
 
 			Property<Entity.Handle> data = result.GetProperty<Entity.Handle>("Data");
 
+			ListProperty<RespawnLocation> respawnLocations = null;
+
 			result.Add(new PostInitialization
 			{
 				delegate()
 				{
 					if (data.Value.Target == null)
 						data.Value = Factory.Get<PlayerDataFactory>().Instance(main);
+
+					respawnLocations = data.Value.Target.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
 					
 					// Bind player data properties
 					Property<int> stamina = data.Value.Target.GetProperty<int>("Stamina");
@@ -432,6 +443,8 @@ namespace Lemma.Factories
 			Command<Map, Map.Coordinate?> walkedOn = new Command<Map,Map.Coordinate?>();
 			result.Add("WalkedOn", walkedOn);
 
+			int walkedOnCount = 0;
+
 			update.Add(delegate(float dt)
 			{
 				if (player.IsSupported)
@@ -440,7 +453,27 @@ namespace Lemma.Factories
 					Map.Coordinate? oldCoord = groundRaycast.Coordinate;
 					groundRaycast = Map.GlobalRaycast(transform.Position, Vector3.Down, player.Height.Value * 0.5f + player.SupportHeight + 1.1f);
 					if (groundRaycast.Map != oldMap || (oldCoord != null && groundRaycast.Coordinate != null && !oldCoord.Value.Equivalent(groundRaycast.Coordinate.Value)))
+					{
 						walkedOn.Execute(groundRaycast.Map, groundRaycast.Coordinate);
+
+						if (groundRaycast.Map != null)
+						{
+							walkedOnCount++;
+							if (walkedOnCount >= 3)
+							{
+								// Every 3 tiles, save off the location for the auto-respawn system
+								respawnLocations.Add(new RespawnLocation
+								{
+									Coordinate = groundRaycast.Coordinate.Value,
+									Map = groundRaycast.Map.Entity,
+									Rotation = rotation,
+								});
+								while (respawnLocations.Count > 30)
+									respawnLocations.RemoveAt(0);
+								walkedOnCount = 0;
+							}
+						}
+					}
 				}
 				else
 				{
@@ -571,6 +604,10 @@ namespace Lemma.Factories
 					{
 						Vector3 adjustedCameraOffset = cameraOffset + (cameraBone.Value.Translation - originalCameraPosition);
 						Vector3 cameraPosition = Vector3.Transform(adjustedCameraOffset, headBone.Value * model.Transform);
+
+						if (model.IsPlaying("CrouchWalkBackwards", "CrouchWalk", "CrouchStrafeRight", "CrouchStrafeLeft")
+							&& !model.IsPlaying("Kick"))
+							cameraPosition.Y = Math.Min(cameraPosition.Y, transform.Position.Value.Y + player.Height.Value * 0.5f);
 
 						main.Camera.Position.Value = cameraPosition;
 
@@ -1613,22 +1650,21 @@ namespace Lemma.Factories
 				{
 					// We're not vaulting, not doing our normal jump, and not wall-walking
 					// See if we can wall-jump
-					float r = rotation;
 					Vector3 playerPos = transform.Position;
-					float closestWall = wallJumpDistance;
 					Map.GlobalRaycastResult? wallRaycastHit = null;
 					Vector3 wallRaycastDirection = Vector3.Zero;
-					for (int i = 0; i < 4; i++)
+
+					foreach (Vector3 dir in new[] { rotationMatrix.Left, rotationMatrix.Right, rotationMatrix.Backward, rotationMatrix.Forward })
 					{
-						float r2 = r + (i * (float)Math.PI * 0.5f);
-						Vector3 dir = new Vector3((float)Math.Cos(r2), 0, (float)Math.Sin(r2));
-						Map.GlobalRaycastResult hit = Map.GlobalRaycast(playerPos, dir, closestWall);
+						Map.GlobalRaycastResult hit = Map.GlobalRaycast(playerPos, dir, wallJumpDistance);
 						if (hit.Map != null)
 						{
 							wallRaycastDirection = dir;
 							wallRaycastHit = hit;
+							break;
 						}
 					}
+
 					if (wallRaycastHit != null)
 					{
 						Map m = wallRaycastHit.Value.Map;
@@ -1692,14 +1728,12 @@ namespace Lemma.Factories
 				if (!go && !onlyVault)
 				{
 					// Check block possibilities for wall jumping
-					float r = rotation;
 					Vector3 playerPos = transform.Position;
+					Vector3[] wallJumpDirections = new[] { rotationMatrix.Left, rotationMatrix.Right, rotationMatrix.Backward, rotationMatrix.Forward };
 					foreach (BlockPossibility possibility in blockPossibilities.Values.SelectMany(x => x))
 					{
-						for (int i = 0; i < 4; i++)
+						foreach (Vector3 dir in wallJumpDirections)
 						{
-							float r2 = r + (i * (float)Math.PI * 0.5f);
-							Vector3 dir = new Vector3((float)Math.Cos(r2), 0, (float)Math.Sin(r2));
 							foreach (Map.Coordinate coord in possibility.Map.Rasterize(playerPos, playerPos + (dir * wallJumpDistance)))
 							{
 								if (coord.Between(possibility.StartCoord, possibility.EndCoord))

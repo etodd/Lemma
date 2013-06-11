@@ -1509,31 +1509,60 @@ namespace Lemma
 									this.Add(this.player);
 								}
 
-								PlayerSpawn spawn = null;
-								Entity spawnEntity = null;
-								if (!string.IsNullOrEmpty(this.StartSpawnPoint.Value))
+								bool spawnFound = false;
+
+								ListProperty<PlayerFactory.RespawnLocation> respawnLocations = Factory.Get<PlayerDataFactory>().Instance(this).GetOrMakeListProperty<PlayerFactory.RespawnLocation>("RespawnLocations");
+								for (int i = respawnLocations.Count - 1; i >= 0; i--)
 								{
-									spawnEntity = this.GetByID(this.StartSpawnPoint);
+									PlayerFactory.RespawnLocation respawnLocation = respawnLocations[i];
+									Entity respawnMap = respawnLocation.Map.Target;
+									if (respawnMap.Active && respawnMap.Get<Map>()[respawnLocation.Coordinate].ID != 0)
+									{
+										Vector3 absolutePos = respawnMap.Get<Map>().GetAbsolutePosition(respawnLocation.Coordinate);
+										Map.GlobalRaycastResult hit = Map.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Up, 4);
+										if (hit.Map == null)
+										{
+											// We can spawn here
+											this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = absolutePos + new Vector3(0, 2, 0);
+
+											FPSInput.RecenterMouse();
+											Property<Vector2> mouse = this.player.Get<FPSInput>().Mouse;
+											mouse.Value = new Vector2(respawnLocation.Rotation, 0.0f);
+
+											spawnFound = true;
+											break;
+										}
+									}
+								}
+
+								if (!spawnFound)
+								{
+									PlayerSpawn spawn = null;
+									Entity spawnEntity = null;
+									if (!string.IsNullOrEmpty(this.StartSpawnPoint.Value))
+									{
+										spawnEntity = this.GetByID(this.StartSpawnPoint);
+										if (spawnEntity != null)
+											spawn = spawnEntity.Get<PlayerSpawn>();
+										this.StartSpawnPoint.Value = null;
+									}
+
+									if (spawnEntity == null)
+									{
+										spawn = this.Get("PlayerSpawn").Select(x => x.Get<PlayerSpawn>()).FirstOrDefault(x => x.IsActivated);
+										spawnEntity = spawn == null ? null : spawn.Entity;
+									}
+
 									if (spawnEntity != null)
-										spawn = spawnEntity.Get<PlayerSpawn>();
-									this.StartSpawnPoint.Value = null;
-								}
+										this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = spawnEntity.Get<Transform>().Position;
 
-								if (spawnEntity == null)
-								{
-									spawn = this.Get("PlayerSpawn").Select(x => x.Get<PlayerSpawn>()).FirstOrDefault(x => x.IsActivated);
-									spawnEntity = spawn == null ? null : spawn.Entity;
-								}
-
-								if (spawnEntity != null)
-									this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = spawnEntity.Get<Transform>().Position;
-
-								if (spawn != null)
-								{
-									spawn.IsActivated.Value = true;
-									FPSInput.RecenterMouse();
-									Property<Vector2> mouse = this.player.Get<FPSInput>().Mouse;
-									mouse.Value = new Vector2(spawn.Rotation, 0.0f);
+									if (spawn != null)
+									{
+										spawn.IsActivated.Value = true;
+										FPSInput.RecenterMouse();
+										Property<Vector2> mouse = this.player.Get<FPSInput>().Mouse;
+										mouse.Value = new Vector2(spawn.Rotation, 0.0f);
+									}
 								}
 
 								this.AddComponent(new Animation(new Animation.FloatMoveTo(this.Renderer.InternalGamma, 0.0f, 1.0f)));
