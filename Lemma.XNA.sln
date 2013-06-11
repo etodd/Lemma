@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lemma.XNA", "Lemma\Lemma.XNA.csproj", "{3D2D163E-393B-4AFD-997B-143E909AC653}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LemmaLauncher.XNA", "LemmaLauncher\LemmaLauncher.XNA.csproj", "{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BEPUphysics.XNA", "BEPUphysics\BEPUphysics.XNA.csproj", "{2A9D2227-78D7-4804-B6D1-560BB43AE911}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LemmaContent.XNA", "Lemma\Content\LemmaContent.XNA.contentproj", "{6D5DBC4B-1DE9-47B2-92AF-546C5D1E4268}"
@@ -41,20 +39,6 @@ Global
 		{3D2D163E-393B-4AFD-997B-143E909AC653}.Release|x86.ActiveCfg = Release|x86
 		{3D2D163E-393B-4AFD-997B-143E909AC653}.Release|x86.Build.0 = Release|x86
 		{3D2D163E-393B-4AFD-997B-143E909AC653}.Release|Xbox 360.ActiveCfg = Release|x86
-		{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}.Debug|Win32.ActiveCfg = Debug|x86
-		{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}.Debug|x86.ActiveCfg = Debug|x86
-		{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}.Debug|x86.Build.0 = Debug|x86
-		{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}.Debug|Xbox 360.ActiveCfg = Debug|x86
-		{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}.Release|Any CPU.ActiveCfg = Release|x86
-		{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}.Release|Mixed Platforms.Build.0 = Release|x86
-		{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}.Release|Win32.ActiveCfg = Release|x86
-		{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}.Release|x86.ActiveCfg = Release|x86
-		{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}.Release|x86.Build.0 = Release|x86
-		{935DE001-424D-42AF-8F9E-AE3A3DD7BFD0}.Release|Xbox 360.ActiveCfg = Release|x86
 		{2A9D2227-78D7-4804-B6D1-560BB43AE911}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{2A9D2227-78D7-4804-B6D1-560BB43AE911}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{2A9D2227-78D7-4804-B6D1-560BB43AE911}.Debug|Mixed Platforms.Build.0 = Debug|x86
