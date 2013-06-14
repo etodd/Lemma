@@ -33,6 +33,8 @@ namespace Lemma.Factories
 			Property<bool> locked = result.GetOrMakeProperty<bool>("Locked", true);
 			Property<float> speed = result.GetOrMakeProperty<float>("Speed", true, 5);
 			Property<float> maxForce = result.GetOrMakeProperty<float>("MaxForce", true);
+			Property<float> damping = result.GetOrMakeProperty<float>("Damping", true);
+			Property<float> stiffness = result.GetOrMakeProperty<float>("Stiffness", true);
 			Property<int> goal = result.GetOrMakeProperty<int>("Goal", true);
 
 			PrismaticJoint joint = null;
@@ -87,6 +89,20 @@ namespace Lemma.Factories
 			};
 			result.Add(new NotifyBinding(setGoal, goal));
 
+			Action setDamping = delegate()
+			{
+				if (joint != null && damping != 0)
+					joint.Motor.Settings.Servo.SpringSettings.DampingConstant = damping;
+			};
+			result.Add(new NotifyBinding(setDamping, damping));
+
+			Action setStiffness = delegate()
+			{
+				if (joint != null && stiffness != 0)
+					joint.Motor.Settings.Servo.SpringSettings.StiffnessConstant = stiffness;
+			};
+			result.Add(new NotifyBinding(setStiffness, stiffness));
+
 			Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint = delegate(BEPUphysics.Entities.Entity entity1, BEPUphysics.Entities.Entity entity2, Vector3 pos, Vector3 direction, Vector3 anchor)
 			{
 				joint = new PrismaticJoint(entity1, entity2, pos, -direction, anchor);
@@ -96,6 +112,8 @@ namespace Lemma.Factories
 				setSpeed();
 				setMaxForce();
 				setGoal();
+				setDamping();
+				setStiffness();
 				return joint;
 			};
 

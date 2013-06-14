@@ -18,8 +18,8 @@ namespace Lemma.Components
 	public class Player : Component, IUpdateableComponent
 	{
 		public enum WallRun { None, Left, Right, Straight, Down, Reverse }
-		public const float DefaultMaxSpeed = 10;
-		public const float DefaultJumpSpeed = 10f;
+		public const float DefaultMaxSpeed = 9.0f;
+		public const float DefaultJumpSpeed = 8.5f;
 
 		protected Character character;
 		[XmlIgnore]

@@ -21,6 +21,11 @@ namespace Lemma.Components
 
 		private static List<PlayerSpawn> spawns = new List<PlayerSpawn>();
 
+		public static PlayerSpawn FirstActive()
+		{
+			return PlayerSpawn.spawns.FirstOrDefault(x => x.IsActivated);
+		}
+
 		public PlayerSpawn()
 		{
 			this.EnabledInEditMode.Value = false;

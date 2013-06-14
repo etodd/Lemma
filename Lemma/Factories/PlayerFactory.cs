@@ -638,6 +638,9 @@ namespace Lemma.Factories
 				Vector2 rightDir = new Vector2(matrix.Right.X, matrix.Right.Z);
 				return -Vector2.Normalize((forwardDir * movement.Y) + (rightDir * movement.X));
 			}, input.Movement, rotation));
+
+			player.Crouched.Value = true;
+			player.AllowUncrouch.Value = true;
 			
 			// Update animation
 			bool lastSupported = false;
@@ -690,9 +693,9 @@ namespace Lemma.Factories
 						float speed = velocity.Length();
 						
 						if (movementAnimation != "Idle" && movementAnimation != "CrouchIdle")
-							model[movementAnimation].Speed = player.Crouched ? 1.0f : (speed / 8.0f);
+							model[movementAnimation].Speed = player.Crouched ? 1.0f : (speed / 7.0f);
 
-						footstepTimer.Interval.Value = player.Crouched ? 0.5f : 0.37f / (speed / 8.0f);
+						footstepTimer.Interval.Value = player.Crouched ? 0.5f : 0.37f / (speed / 7.0f);
 
 						if (!model.IsPlaying(movementAnimation))
 						{
@@ -956,7 +959,8 @@ namespace Lemma.Factories
 							if (state != Player.WallRun.Straight && state != Player.WallRun.Reverse && Vector3.Dot(player.LinearVelocity, forwardVector) < 0.0f)
 								velocity = Vector3.Normalize(velocity) * (minWallRunSpeed + 1.0f);
 
-							velocity.Y = player.LinearVelocity.Value.Y + 3.0f;
+							float currentVerticalSpeed = player.LinearVelocity.Value.Y;
+							velocity.Y = (currentVerticalSpeed > 0.0f ? currentVerticalSpeed * 0.7f : currentVerticalSpeed * 0.5f) + 4.5f;
 							player.LinearVelocity.Value = velocity;
 						}
 					}
@@ -1765,6 +1769,7 @@ namespace Lemma.Factories
 					{
 						// Just a normal jump.
 						Vector3 velocity = player.LinearVelocity;
+						float currentVerticalSpeed = velocity.Y;
 						velocity.Y = 0.0f;
 						float jumpSpeed = jumpDirection.Length();
 						if (jumpSpeed > 0)
@@ -1776,13 +1781,7 @@ namespace Lemma.Factories
 						if (main.TotalTime - rollEnded < 0.3f)
 							totalMultiplier *= 1.5f;
 
-						float verticalJumpSpeed = player.JumpSpeed * verticalMultiplier;
-						if (wallJumping)
-						{
-							float currentVerticalSpeed = player.LinearVelocity.Value.Y;
-							if (currentVerticalSpeed < -verticalJumpSpeed)
-								verticalJumpSpeed += currentVerticalSpeed * 0.5f;
-						}
+						float verticalJumpSpeed = (player.JumpSpeed * verticalMultiplier) + (currentVerticalSpeed * 0.5f);
 
 						player.LinearVelocity.Value = new Vector3(jumpDirection.X, verticalJumpSpeed, jumpDirection.Y) * totalMultiplier;
 
@@ -2247,7 +2246,7 @@ namespace Lemma.Factories
 					Vector3 forward = -rotationMatrix.Forward;
 					Vector3 right = rotationMatrix.Right;
 
-					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height + 2.0f);
+					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height + 1.0f);
 
 					bool nearGround = (player.IsSupported || player.LinearVelocity.Value.Y <= 0.0f) && floorRaycast.Map != null;
 

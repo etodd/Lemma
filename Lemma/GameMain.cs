@@ -98,7 +98,8 @@ namespace Lemma
 
 		private DisplayModeCollection supportedDisplayModes;
 
-		private const float startGamma = 30.0f;
+		private const float startGamma = 10.0f;
+		private static Vector3 startTint = new Vector3(2.0f);
 
 		private int displayModeIndex;
 
@@ -1439,6 +1440,10 @@ namespace Lemma
 
 		private bool mapJustLoaded = false;
 
+		private Vector3 lastEditorPosition;
+		private Vector2 lastEditorMouse;
+		private string lastEditorSpawnPoint;
+
 		protected override void Update(GameTime gameTime)
 		{
 			base.Update(gameTime);
@@ -1458,7 +1463,16 @@ namespace Lemma
 				if (this.editor == null)
 				{
 					this.editor = Factory.Get("Editor").CreateAndBind(this);
+					FPSInput.RecenterMouse();
+					this.editor.Get<Editor>().Position.Value = this.lastEditorPosition;
+					this.editor.Get<FPSInput>().Mouse.Value = this.lastEditorMouse;
+					this.StartSpawnPoint.Value = this.lastEditorSpawnPoint;
 					this.Add(this.editor);
+				}
+				else
+				{
+					this.lastEditorPosition = this.editor.Get<Editor>().Position;
+					this.lastEditorMouse = this.editor.Get<FPSInput>().Mouse;
 				}
 			}
 			else
@@ -1490,7 +1504,11 @@ namespace Lemma
 						{
 							this.AddComponent(new Animation
 							(
-								new Animation.FloatMoveTo(this.Renderer.InternalGamma, GameMain.startGamma, 1.0f),
+								new Animation.Parallel
+								(
+									new Animation.Vector3MoveTo(this.Renderer.Tint, GameMain.startTint, 0.5f),
+									new Animation.FloatMoveTo(this.Renderer.InternalGamma, GameMain.startGamma, 0.5f)
+								),
 								new Animation.Set<Vector3>(this.Camera.Position, new Vector3(0, -10000, 0))
 							));
 						}
@@ -1510,32 +1528,45 @@ namespace Lemma
 								}
 
 								bool spawnFound = false;
+								PlayerFactory.RespawnLocation foundSpawnLocation = default(PlayerFactory.RespawnLocation);
 
 								ListProperty<PlayerFactory.RespawnLocation> respawnLocations = Factory.Get<PlayerDataFactory>().Instance(this).GetOrMakeListProperty<PlayerFactory.RespawnLocation>("RespawnLocations");
+								int supportedLocations = 0;
 								for (int i = respawnLocations.Count - 1; i >= 0; i--)
 								{
 									PlayerFactory.RespawnLocation respawnLocation = respawnLocations[i];
-									Entity respawnMap = respawnLocation.Map.Target;
-									if (respawnMap.Active && respawnMap.Get<Map>()[respawnLocation.Coordinate].ID != 0)
+									Entity respawnMapEntity = respawnLocation.Map.Target;
+									Map respawnMap = respawnMapEntity.Get<Map>();
+									if (respawnMap.Active && respawnMap[respawnLocation.Coordinate].ID != 0)
 									{
-										Vector3 absolutePos = respawnMap.Get<Map>().GetAbsolutePosition(respawnLocation.Coordinate);
+										supportedLocations++;
+										Vector3 absolutePos = respawnMap.GetAbsolutePosition(respawnLocation.Coordinate);
 										Map.GlobalRaycastResult hit = Map.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Up, 4);
 										if (hit.Map == null)
 										{
-											// We can spawn here
-											this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = absolutePos + new Vector3(0, 2, 0);
-
-											FPSInput.RecenterMouse();
-											Property<Vector2> mouse = this.player.Get<FPSInput>().Mouse;
-											mouse.Value = new Vector2(respawnLocation.Rotation, 0.0f);
-
-											spawnFound = true;
-											break;
+											hit = Map.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Down, 4);
+											if (hit.Map == respawnMap && hit.Map.GetAbsoluteVector(hit.Normal.GetVector()).Y > 0.5f)
+											{
+												// We can spawn here
+												spawnFound = true;
+												foundSpawnLocation = respawnLocation;
+											}
 										}
 									}
+									if (supportedLocations > 2)
+										break;
 								}
 
-								if (!spawnFound)
+								if (spawnFound)
+								{
+									Vector3 absolutePos = foundSpawnLocation.Map.Target.Get<Map>().GetAbsolutePosition(foundSpawnLocation.Coordinate);
+									this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = absolutePos + new Vector3(0, 3, 0);
+
+									FPSInput.RecenterMouse();
+									Property<Vector2> mouse = this.player.Get<FPSInput>().Mouse;
+									mouse.Value = new Vector2(foundSpawnLocation.Rotation, 0.0f);
+								}
+								else
 								{
 									PlayerSpawn spawn = null;
 									Entity spawnEntity = null;
@@ -1544,12 +1575,13 @@ namespace Lemma
 										spawnEntity = this.GetByID(this.StartSpawnPoint);
 										if (spawnEntity != null)
 											spawn = spawnEntity.Get<PlayerSpawn>();
+										this.lastEditorSpawnPoint = this.StartSpawnPoint;
 										this.StartSpawnPoint.Value = null;
 									}
 
 									if (spawnEntity == null)
 									{
-										spawn = this.Get("PlayerSpawn").Select(x => x.Get<PlayerSpawn>()).FirstOrDefault(x => x.IsActivated);
+										spawn = PlayerSpawn.FirstActive();
 										spawnEntity = spawn == null ? null : spawn.Entity;
 									}
 
@@ -1565,7 +1597,14 @@ namespace Lemma
 									}
 								}
 
-								this.AddComponent(new Animation(new Animation.FloatMoveTo(this.Renderer.InternalGamma, 0.0f, 1.0f)));
+								this.AddComponent(new Animation
+								(
+									new Animation.Parallel
+									(
+										new Animation.Vector3MoveTo(this.Renderer.Tint, Vector3.One, 0.5f),
+										new Animation.FloatMoveTo(this.Renderer.InternalGamma, 0.0f, 0.5f)
+									)
+								));
 								this.respawnTimer = 0;
 
 								this.PlayerSpawned.Execute(this.player);

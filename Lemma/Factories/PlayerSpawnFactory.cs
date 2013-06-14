@@ -25,59 +25,11 @@ namespace Lemma.Factories
 
 			result.Add("Trigger", new PlayerTrigger());
 
-			ParticleEmitter emitter1 = new ParticleEmitter();
-			emitter1.ParticleType.Value = "Distortion";
-			emitter1.ParticlesPerSecond.Value = 5;
-			result.Add("ParticleEmitter1", emitter1);
-
-			ParticleEmitter emitter2 = new ParticleEmitter();
-			emitter2.ParticleType.Value = "Purple";
-			emitter2.ParticlesPerSecond.Value = 5;
-			result.Add("ParticleEmitter2", emitter2);
-
-			PointLight light = new PointLight();
-			light.Color.Value = new Vector3(0.8f, 0.4f, 1.5f);
-			light.Shadowed.Value = false;
-			light.Attenuation.Value = 5.0f;
-			result.Add("Light", light);
-
-			Sound sound = new Sound();
-			sound.Cue.Value = "SpawnLoop";
-			sound.Is3D.Value = true;
-			sound.IsPlaying.Value = true;
-			sound.Add(new Binding<Vector3>(sound.Position, transform.Position));
-			result.Add("Sound", sound);
-
 			return result;
 		}
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
-			if (ParticleSystem.Get(main, "Purple") == null)
-			{
-				ParticleSystem.Add(main, "Purple",
-				new ParticleSystem.ParticleSettings
-				{
-					TextureName = "Particles\\default",
-					MaxParticles = 1000,
-					Duration = TimeSpan.FromSeconds(6.0f),
-					MinHorizontalVelocity = -0.5f,
-					MaxHorizontalVelocity = 0.5f,
-					MinVerticalVelocity = -0.5f,
-					MaxVerticalVelocity = 0.5f,
-					Gravity = new Vector3(0.0f, 0.0f, 0.0f),
-					MinRotateSpeed = 0.0f,
-					MaxRotateSpeed = 0.0f,
-					MinStartSize = 0.2f,
-					MaxStartSize = 0.2f,
-					MinEndSize = 0.2f,
-					MaxEndSize = 0.2f,
-					BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Additive,
-					MinColor = new Vector4(0.8f, 0.3f, 1.5f, 1.0f),
-					MaxColor = new Vector4(1.0f, 0.5f, 2.0f, 1.0f),
-				});
-			}
-
 			if (result.GetOrMakeProperty<bool>("Attach", true))
 				MapAttachable.MakeAttachable(result, main);
 
@@ -110,25 +62,6 @@ namespace Lemma.Factories
 			trigger.Enabled.Editable = true;
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity player) { spawn.Activate.Execute(); }));
-
-			PointLight light = result.Get<PointLight>();
-			light.Add(new Binding<Vector3>(light.Position, transform.Position));
-
-			spawn.Add(new CommandBinding(spawn.Activate, delegate()
-			{
-				Sound.PlayCue(main, "SpawnActivate", transform.Position);
-				result.Add(new Animation
-				(
-					new Animation.FloatMoveTo(light.Attenuation, 30.0f, 0.4f),
-					new Animation.FloatMoveTo(light.Attenuation, 5.0f, 1.0f)
-				));
-			}));
-
-			ParticleEmitter emitter1 = result.Get<ParticleEmitter>("ParticleEmitter1");
-			emitter1.Add(new Binding<Vector3>(emitter1.Position, transform.Position));
-
-			ParticleEmitter emitter2 = result.Get<ParticleEmitter>("ParticleEmitter2");
-			emitter2.Add(new Binding<Vector3>(emitter2.Position, transform.Position));
 		}
 
 		public override void AttachEditorComponents(Entity result, Main main)
