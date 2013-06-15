@@ -1210,7 +1210,7 @@ namespace Lemma.Factories
 					if (wallRunAnimation != null)
 						model[wallRunAnimation].Speed = Math.Min(1.0f, wallRunSpeed / 9.0f);
 
-					Vector3 pos = transform.Position + new Vector3(0, (player.Height * -0.5f) - 0.5f, 0);
+					Vector3 pos = transform.Position + new Vector3(0, player.Height * -0.5f, 0);
 					Map.Coordinate coord = wallRunMap.GetCoordinate(pos);
 					Map.Coordinate wallCoord = coord.Move(wallDirection, 2);
 					Map.CellState wallType = wallRunMap[wallCoord];

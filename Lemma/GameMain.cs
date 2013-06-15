@@ -1537,20 +1537,16 @@ namespace Lemma
 									PlayerFactory.RespawnLocation respawnLocation = respawnLocations[i];
 									Entity respawnMapEntity = respawnLocation.Map.Target;
 									Map respawnMap = respawnMapEntity.Get<Map>();
-									if (respawnMap.Active && respawnMap[respawnLocation.Coordinate].ID != 0)
+									if (respawnMap.Active && respawnMap[respawnLocation.Coordinate].ID != 0 && respawnMap.GetAbsoluteVector(respawnMap.GetRelativeDirection(Direction.PositiveY).GetVector()).Y > 0.5f)
 									{
 										supportedLocations++;
 										Vector3 absolutePos = respawnMap.GetAbsolutePosition(respawnLocation.Coordinate);
-										Map.GlobalRaycastResult hit = Map.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Up, 4);
+										Map.GlobalRaycastResult hit = Map.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Up, 2);
 										if (hit.Map == null)
 										{
-											hit = Map.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Down, 4);
-											if (hit.Map == respawnMap && hit.Map.GetAbsoluteVector(hit.Normal.GetVector()).Y > 0.5f)
-											{
-												// We can spawn here
-												spawnFound = true;
-												foundSpawnLocation = respawnLocation;
-											}
+											// We can spawn here
+											spawnFound = true;
+											foundSpawnLocation = respawnLocation;
 										}
 									}
 									if (supportedLocations > 2)
