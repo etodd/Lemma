@@ -5,9 +5,9 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Lemma.Components;
 using Lemma.Util;
-using BEPUphysics.Collidables;
+using BEPUphysics.BroadPhaseEntries;
 using BEPUphysics.CollisionTests;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
 
 namespace Lemma.Factories

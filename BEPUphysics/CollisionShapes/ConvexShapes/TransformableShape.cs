@@ -1,7 +1,7 @@
 ﻿using System;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 
 namespace BEPUphysics.CollisionShapes.ConvexShapes
 {
@@ -28,11 +28,11 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             }
         }
 
-        protected Matrix3X3 transform;
+        protected Matrix3x3 transform;
         ///<summary>
         /// Gets or sets the linear transform used to transform the convex shape.
         ///</summary>
-        public Matrix3X3 Transform
+        public Matrix3x3 Transform
         {
             get
             {
@@ -50,7 +50,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         ///</summary>
         ///<param name="shape">Base shape to transform.</param>
         ///<param name="transform">Transform to use.</param>
-        public TransformableShape(ConvexShape shape, Matrix3X3 transform)
+        public TransformableShape(ConvexShape shape, Matrix3x3 transform)
         {
             this.shape = shape;
             Transform = transform;
@@ -66,9 +66,9 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         public override void GetLocalExtremePointWithoutMargin(ref Vector3 direction, out Vector3 extremePoint)
         {
             Vector3 d;
-            Matrix3X3.TransformTranspose(ref direction, ref transform, out d);
+            Matrix3x3.TransformTranspose(ref direction, ref transform, out d);
             shape.GetLocalExtremePoint(d, out extremePoint);
-            Matrix3X3.Transform(ref extremePoint, ref transform, out extremePoint);
+            Matrix3x3.Transform(ref extremePoint, ref transform, out extremePoint);
         }
 
 

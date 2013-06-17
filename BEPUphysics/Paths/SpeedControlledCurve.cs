@@ -4,6 +4,12 @@ using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.Paths
 {
+    internal struct SpeedControlledCurveSample
+    {
+        public double Wrapped;
+        public double SpeedControlled;
+    }
+
     /// <summary>
     /// Wrapper that controls the speed at which a curve is traversed.
     /// </summary>
@@ -21,7 +27,7 @@ namespace BEPUphysics.Paths
     /// </remarks>
     public abstract class SpeedControlledCurve<TValue> : Path<TValue>
     {
-        private readonly List<Vector2> samples = new List<Vector2>(); //  X is wrapped view, Y is associated curve view
+        private readonly List<SpeedControlledCurveSample> samples = new List<SpeedControlledCurveSample>(); //  X is wrapped view, Y is associated curve view
 
         private Curve<TValue> curve;
         private int samplesPerInterval;
@@ -99,7 +105,7 @@ namespace BEPUphysics.Paths
         /// </summary>
         /// <param name="time">Time to check for speed.</param>
         /// <returns>Speed at the given time.</returns>
-        public abstract float GetSpeedAtCurveTime(float time);
+        public abstract float GetSpeedAtCurveTime(double time);
 
         /// <summary>
         /// Gets the time at which the internal curve would be evaluated at the given time.
@@ -110,12 +116,20 @@ namespace BEPUphysics.Paths
         {
             if (Curve == null)
                 throw new InvalidOperationException("SpeedControlledCurve's internal curve is null; ensure that its curve property is set prior to evaluation.");
-            float firstTime, lastTime;
+            double firstTime, lastTime;
             GetPathBoundsInformation(out firstTime, out lastTime);
             time = Curve<TValue>.ModifyTime(time, firstTime, lastTime, Curve.PreLoop, Curve.PostLoop);
 
             int indexMin = 0;
             int indexMax = samples.Count;
+            if (indexMax == 1)
+            {
+                //1-length curve; asking the system to evaluate
+                //this will be a waste of time AND
+                //crash since +1 will be outside scope
+                return samples[0].SpeedControlled;
+            }
+
             if (indexMax == 0)
             {
                 return 0;
@@ -124,28 +138,19 @@ namespace BEPUphysics.Paths
             while (indexMax - indexMin > 1) //if time belongs to min
             {
                 int midIndex = (indexMin + indexMax) / 2;
-                if (time > samples[midIndex].X)
+                if (time > samples[midIndex].Wrapped)
                 {
-                    //Use midIndex as the minimum.
                     indexMin = midIndex;
-                }
-                else if (time < samples[midIndex].X)
-                {
-                    //Use midindex as the max.
-                    indexMax = midIndex;
                 }
                 else
                 {
-                    //Equal; use it.
-                    indexMin = midIndex;
-                    break;
+                    indexMax = midIndex;
                 }
             }
-            if (samples[indexMin].X > time)
-                indexMin -= 1;
 
-            double curveTime = (time - samples[indexMin].X) / (samples[indexMin + 1].X - samples[indexMin].X);
-            return (1 - curveTime) * samples[indexMin].Y + (curveTime) * samples[indexMin + 1].Y;
+
+            double curveTime = (time - samples[indexMin].Wrapped) / (samples[indexMin + 1].Wrapped - samples[indexMin].Wrapped);
+            return (1 - curveTime) * samples[indexMin].SpeedControlled + (curveTime) * samples[indexMin + 1].SpeedControlled;
         }
 
         /// <summary>
@@ -174,12 +179,12 @@ namespace BEPUphysics.Paths
         /// </summary>
         /// <param name="startingTime">Beginning time of the path.</param>
         /// <param name="endingTime">Ending time of the path.</param>
-        public override void GetPathBoundsInformation(out float startingTime, out float endingTime)
+        public override void GetPathBoundsInformation(out double startingTime, out double endingTime)
         {
             if (samples.Count > 0)
             {
                 startingTime = 0;
-                endingTime = samples[samples.Count - 1].X;
+                endingTime = samples[samples.Count - 1].Wrapped;
             }
             else
             {
@@ -198,7 +203,7 @@ namespace BEPUphysics.Paths
             //TODO: Call this from curve if add/remove/timechange/valuechange happens
             //Could hide it then.
             samples.Clear();
-            float firstTime, lastTime;
+            double firstTime, lastTime;
             int minIndex, maxIndex;
             curve.GetCurveBoundsInformation(out firstTime, out lastTime, out minIndex, out maxIndex);
 
@@ -225,11 +230,11 @@ namespace BEPUphysics.Paths
                 previousSpeed = speed;
                 speed = GetSpeedAtCurveTime(Curve.ControlPoints[i].Time);
 
-                samples.Add(new Vector2(timeElapsed, Curve.ControlPoints[i].Time));
+                samples.Add(new SpeedControlledCurveSample { Wrapped = timeElapsed, SpeedControlled = Curve.ControlPoints[i].Time });
 
-                float curveTime = Curve.ControlPoints[i].Time;
-                float intervalLength = Curve.ControlPoints[i + 1].Time - curveTime;
-                float curveTimePerSample = intervalLength / (SamplesPerInterval + 1);
+                var curveTime = Curve.ControlPoints[i].Time;
+                var intervalLength = Curve.ControlPoints[i + 1].Time - curveTime;
+                var curveTimePerSample = intervalLength / (SamplesPerInterval + 1);
                 for (int j = 1; j <= SamplesPerInterval; j++)
                 {
                     previousValue = currentValue;
@@ -242,11 +247,11 @@ namespace BEPUphysics.Paths
                     previousSpeed = speed;
                     speed = GetSpeedAtCurveTime(curveTime);
 
-                    samples.Add(new Vector2(timeElapsed, curveTime));
+                    samples.Add(new SpeedControlledCurveSample { Wrapped = timeElapsed, SpeedControlled = curveTime });
                 }
             }
             timeElapsed += GetDistance(previousValue, currentValue) / previousSpeed;
-            samples.Add(new Vector2(timeElapsed, Curve.ControlPoints[maxIndex].Time));
+            samples.Add(new SpeedControlledCurveSample { Wrapped = timeElapsed, SpeedControlled = Curve.ControlPoints[maxIndex].Time });
         }
 
         /// <summary>

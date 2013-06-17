@@ -356,7 +356,7 @@ namespace Lemma.Components
 
 			lock (this.fluid.NotifyEntries)
 			{
-				foreach (BEPUphysics.Collidables.MobileCollidables.EntityCollidable collidable in this.fluid.NotifyEntries)
+				foreach (BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable collidable in this.fluid.NotifyEntries)
 				{
 					Component component = collidable.Tag as Component ?? collidable.Entity.Tag as Component;
 

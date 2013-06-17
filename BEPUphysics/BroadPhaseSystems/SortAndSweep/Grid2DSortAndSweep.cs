@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using BEPUphysics.BroadPhaseEntries;
-using BEPUphysics.ResourceManagement;
-using BEPUphysics.DataStructures;
-using Microsoft.Xna.Framework;
-using System.Diagnostics;
 using BEPUphysics.Threading;
+using BEPUutilities.DataStructures;
+using BEPUutilities.ResourceManagement;
+using Microsoft.Xna.Framework;
+using BEPUutilities;
 
 namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
 {
@@ -110,7 +107,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
         public override void Remove(BroadPhaseEntry entry)
         {
             base.Remove(entry);
-            for (int i = 0; i < entries.count; i++)
+            for (int i = 0; i < entries.Count; i++)
             {
                 if (entries.Elements[i].item == entry)
                 {
@@ -138,7 +135,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
             {
                 Overlaps.Clear();
                 //Update the entries!
-                ThreadManager.ForLoop(0, entries.count, updateEntry);
+                ThreadManager.ForLoop(0, entries.Count, updateEntry);
                 //Update the cells!
                 ThreadManager.ForLoop(0, cellSet.count, updateCell);
             }
@@ -150,7 +147,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
             {
                 Overlaps.Clear();
                 //Update the placement of objects.
-                for (int i = 0; i < entries.count; i++)
+                for (int i = 0; i < entries.Count; i++)
                 {
                     //Compute the current cells occupied by the entry.
                     var entry = entries.Elements[i];

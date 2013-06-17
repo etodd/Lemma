@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using BEPUphysics.Entities;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.Constraints
@@ -38,7 +38,7 @@ namespace BEPUphysics.Constraints
 
 
         private Matrix velocityToImpulse;
-        private Matrix3X3 velocityToImpulse3X3;
+        private Matrix3x3 velocityToImpulse3X3;
 
         internal DirectEnumerationSolver(CollisionPair pair)
         {
@@ -110,7 +110,7 @@ namespace BEPUphysics.Constraints
                     lambda3.Z = -GetRelativeVelocity(contactIndicesUsed[2]);
 
                     //Transform to impulse
-                    Matrix3X3.Transform(ref lambda3, ref velocityToImpulse3X3, out lambda3);
+                    Matrix3x3.Transform(ref lambda3, ref velocityToImpulse3X3, out lambda3);
 
 
                     //if the solution is acceptable, apply and return
@@ -200,7 +200,7 @@ namespace BEPUphysics.Constraints
 
                     else
                     {
-                        Matrix3X3 inverse3X3;
+                        Matrix3x3 inverse3X3;
                         if (Get3X3InverseMassMatrix(1, 2, 3, out inverse3X3, out velocityToImpulse3X3))
                         {
                             contactIndicesUsed.Add(1);
@@ -246,7 +246,7 @@ namespace BEPUphysics.Constraints
             return ComputeNorm(ref massMatrix) < ConditionNumberLimit;
         }
 
-        private bool Get3X3InverseMassMatrix(int indexA, int indexB, int indexC, out Matrix3X3 inverseMassMatrix, out Matrix3X3 massMatrix)
+        private bool Get3X3InverseMassMatrix(int indexA, int indexB, int indexC, out Matrix3x3 inverseMassMatrix, out Matrix3x3 massMatrix)
         {
             inverseMassMatrix.M11 = GetMassMatrixEntry(indexA, indexA);
             inverseMassMatrix.M12 = GetMassMatrixEntry(indexA, indexB);
@@ -260,7 +260,7 @@ namespace BEPUphysics.Constraints
             inverseMassMatrix.M32 = inverseMassMatrix.M23; // getMassMatrixEntry(indexC, indexB);
             inverseMassMatrix.M33 = GetMassMatrixEntry(indexC, indexC);
 
-            Matrix3X3.Invert(ref inverseMassMatrix, out massMatrix);
+            Matrix3x3.Invert(ref inverseMassMatrix, out massMatrix);
 
             return ComputeNorm(ref inverseMassMatrix) * ComputeNorm(ref massMatrix) < ConditionNumberLimit;
         }
@@ -324,7 +324,7 @@ namespace BEPUphysics.Constraints
             Vector3 transform;
             if (parentA.isDynamic)
             {
-                Matrix3X3.Transform(ref angularA[i], ref parentA.inertiaTensorInverse, out transform);
+                Matrix3x3.Transform(ref angularA[i], ref parentA.inertiaTensorInverse, out transform);
                 Vector3.Dot(ref angularA[j], ref transform, out entryA);
                 entryA += 1 / parentA.mass;
             }
@@ -333,7 +333,7 @@ namespace BEPUphysics.Constraints
 
             if (parentB.isDynamic)
             {
-                Matrix3X3.Transform(ref angularB[i], ref parentB.inertiaTensorInverse, out transform);
+                Matrix3x3.Transform(ref angularB[i], ref parentB.inertiaTensorInverse, out transform);
                 Vector3.Dot(ref angularB[j], ref transform, out entryB);
                 entryB += 1 / parentB.mass;
             }
@@ -395,7 +395,7 @@ namespace BEPUphysics.Constraints
             return norm;
         }
 
-        private static float ComputeNorm(ref Matrix3X3 m)
+        private static float ComputeNorm(ref Matrix3x3 m)
         {
             //Would a square-based norm be faster and sufficient ?
             //Huge number of branches in this

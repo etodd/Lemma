@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using BEPUphysics.CollisionShapes;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using BEPUphysics.Entities;
 using BEPUphysics.CollisionShapes.ConvexShapes;
 
-namespace BEPUphysics.Collidables.MobileCollidables
+namespace BEPUphysics.BroadPhaseEntries.MobileCollidables
 {
     /// <summary>
     /// Contains methods to help with splitting compound objects into multiple pieces.
@@ -72,16 +72,16 @@ namespace BEPUphysics.Collidables.MobileCollidables
             {
                 //Reconfigure the entities using the data computed in the split.
                 float originalMass = a.mass;
-                if (a.CollisionInformation.children.count > 0)
+                if (a.CollisionInformation.children.Count > 0)
                 {
                     float newMassA = (weightA / (weightA + weightB)) * originalMass;
-                    Matrix3X3.Multiply(ref distributionInfoA.VolumeDistribution, newMassA * InertiaHelper.InertiaTensorScale, out distributionInfoA.VolumeDistribution);
+                    Matrix3x3.Multiply(ref distributionInfoA.VolumeDistribution, newMassA * InertiaHelper.InertiaTensorScale, out distributionInfoA.VolumeDistribution);
                     a.Initialize(a.CollisionInformation, newMassA, distributionInfoA.VolumeDistribution, distributionInfoA.Volume);
                 }
-                if (bCollidable.children.count > 0)
+                if (bCollidable.children.Count > 0)
                 {
                     float newMassB = (weightB / (weightA + weightB)) * originalMass;
-                    Matrix3X3.Multiply(ref distributionInfoB.VolumeDistribution, newMassB * InertiaHelper.InertiaTensorScale, out distributionInfoB.VolumeDistribution);
+                    Matrix3x3.Multiply(ref distributionInfoB.VolumeDistribution, newMassB * InertiaHelper.InertiaTensorScale, out distributionInfoB.VolumeDistribution);
                     b = new Entity<CompoundCollidable>();
                     b.Initialize(bCollidable, newMassB, distributionInfoB.VolumeDistribution, distributionInfoB.Volume);
                 }
@@ -187,17 +187,17 @@ namespace BEPUphysics.Collidables.MobileCollidables
             {
                 //Reconfigure the entities using the data computed in the split.
                 float originalMass = a.mass;
-                if (a.CollisionInformation.children.count > 0)
+                if (a.CollisionInformation.children.Count > 0)
                 {
                     float newMassA = (weightA / (weightA + weightB)) * originalMass;
-                    Matrix3X3.Multiply(ref distributionInfoA.VolumeDistribution, newMassA * InertiaHelper.InertiaTensorScale, out distributionInfoA.VolumeDistribution);
+                    Matrix3x3.Multiply(ref distributionInfoA.VolumeDistribution, newMassA * InertiaHelper.InertiaTensorScale, out distributionInfoA.VolumeDistribution);
                     a.Initialize(a.CollisionInformation, newMassA, distributionInfoA.VolumeDistribution, distributionInfoA.Volume);
                 }
 
-                if (b.CollisionInformation.children.count > 0)
+                if (b.CollisionInformation.children.Count > 0)
                 {
                     float newMassB = (weightB / (weightA + weightB)) * originalMass;
-                    Matrix3X3.Multiply(ref distributionInfoB.VolumeDistribution, newMassB * InertiaHelper.InertiaTensorScale, out distributionInfoB.VolumeDistribution);
+                    Matrix3x3.Multiply(ref distributionInfoB.VolumeDistribution, newMassB * InertiaHelper.InertiaTensorScale, out distributionInfoB.VolumeDistribution);
                     b.Initialize(b.CollisionInformation, newMassB, distributionInfoB.VolumeDistribution, distributionInfoB.Volume);
                 }
 
@@ -227,7 +227,7 @@ namespace BEPUphysics.Collidables.MobileCollidables
             out float weightA, out float weightB)
         {
             bool splitOccurred = false;
-            for (int i = a.children.count - 1; i >= 0; i--)
+            for (int i = a.children.Count - 1; i >= 0; i--)
             {
                 //The shape doesn't change during this process.  The entity could, though.
                 //All of the other collidable information, like the Tag, CollisionRules, Events, etc. all stay the same.
@@ -258,7 +258,7 @@ namespace BEPUphysics.Collidables.MobileCollidables
             weightA = 0;
             distributionInfoB = new ShapeDistributionInformation();
             weightB = 0;
-            for (int i = a.children.count - 1; i >= 0; i--)
+            for (int i = a.children.Count - 1; i >= 0; i--)
             {
                 var child = a.children.Elements[i];
                 var entry = child.Entry;
@@ -269,7 +269,7 @@ namespace BEPUphysics.Collidables.MobileCollidables
                 distributionInfoA.Volume += contribution.Volume;
                 weightA += entry.Weight;
             }
-            for (int i = b.children.count - 1; i >= 0; i--)
+            for (int i = b.children.Count - 1; i >= 0; i--)
             {
                 var child = b.children.Elements[i];
                 var entry = child.Entry;
@@ -297,7 +297,7 @@ namespace BEPUphysics.Collidables.MobileCollidables
             Vector3.Negate(ref distributionInfoB.Center, out offsetB);
 
             //Compute the unscaled inertia tensor.
-            for (int i = a.children.count - 1; i >= 0; i--)
+            for (int i = a.children.Count - 1; i >= 0; i--)
             {
                 var child = a.children.Elements[i];
                 var entry = child.Entry;
@@ -309,9 +309,9 @@ namespace BEPUphysics.Collidables.MobileCollidables
                 var contribution = childContributions[child.shapeIndex];
                 CompoundShape.TransformContribution(ref entry.LocalTransform, ref distributionInfoA.Center, ref contribution.VolumeDistribution, entry.Weight, out contribution.VolumeDistribution);
                 //Vector3.Add(ref entry.LocalTransform.Position, ref offsetA, out entry.LocalTransform.Position);
-                Matrix3X3.Add(ref contribution.VolumeDistribution, ref distributionInfoA.VolumeDistribution, out distributionInfoA.VolumeDistribution);
+                Matrix3x3.Add(ref contribution.VolumeDistribution, ref distributionInfoA.VolumeDistribution, out distributionInfoA.VolumeDistribution);
             }
-            for (int i = b.children.count - 1; i >= 0; i--)
+            for (int i = b.children.Count - 1; i >= 0; i--)
             {
                 var child = b.children.Elements[i];
                 var entry = child.Entry;
@@ -323,12 +323,12 @@ namespace BEPUphysics.Collidables.MobileCollidables
                 var contribution = childContributions[child.shapeIndex];
                 CompoundShape.TransformContribution(ref entry.LocalTransform, ref distributionInfoB.Center, ref contribution.VolumeDistribution, entry.Weight, out contribution.VolumeDistribution);
                 //Vector3.Add(ref entry.LocalTransform.Position, ref offsetB, out entry.LocalTransform.Position);
-                Matrix3X3.Add(ref contribution.VolumeDistribution, ref distributionInfoB.VolumeDistribution, out distributionInfoB.VolumeDistribution);
+                Matrix3x3.Add(ref contribution.VolumeDistribution, ref distributionInfoB.VolumeDistribution, out distributionInfoB.VolumeDistribution);
             }
 
             //Normalize the volume distribution.
-            Matrix3X3.Multiply(ref distributionInfoA.VolumeDistribution, 1 / weightA, out distributionInfoA.VolumeDistribution);
-            Matrix3X3.Multiply(ref distributionInfoB.VolumeDistribution, 1 / weightB, out distributionInfoB.VolumeDistribution);
+            Matrix3x3.Multiply(ref distributionInfoA.VolumeDistribution, 1 / weightA, out distributionInfoA.VolumeDistribution);
+            Matrix3x3.Multiply(ref distributionInfoB.VolumeDistribution, 1 / weightB, out distributionInfoB.VolumeDistribution);
 
             //Update the hierarchies of the compounds.
             //TODO: Create a new method that does this quickly without garbage.  Requires a new Reconstruct method which takes a pool which stores the appropriate node types.
@@ -406,7 +406,7 @@ namespace BEPUphysics.Collidables.MobileCollidables
                 {
                     float originalMass = compound.mass;
                     float newMass = (weight / (weight + removedWeight)) * originalMass;
-                    Matrix3X3.Multiply(ref distributionInfo.VolumeDistribution, newMass * InertiaHelper.InertiaTensorScale, out distributionInfo.VolumeDistribution);
+                    Matrix3x3.Multiply(ref distributionInfo.VolumeDistribution, newMass * InertiaHelper.InertiaTensorScale, out distributionInfo.VolumeDistribution);
                     compound.Initialize(compound.CollisionInformation, newMass, distributionInfo.VolumeDistribution, distributionInfo.Volume);
 
                     RemoveReposition(compound, ref distributionInfo, weight, removedWeight, ref removedCenter);
@@ -435,7 +435,7 @@ namespace BEPUphysics.Collidables.MobileCollidables
             bool removalOccurred = false;
             removedWeight = 0;
             removedCenter = new Vector3();
-            for (int i = compound.children.count - 1; i >= 0; i--)
+            for (int i = compound.children.Count - 1; i >= 0; i--)
             {
                 //The shape doesn't change during this process.  The entity could, though.
                 //All of the other collidable information, like the Tag, CollisionRules, Events, etc. all stay the same.
@@ -469,7 +469,7 @@ namespace BEPUphysics.Collidables.MobileCollidables
             //Compute the contributions from the original shape to the new form of the original collidable.
             distributionInfo = new ShapeDistributionInformation();
             weight = 0;
-            for (int i = compound.children.count - 1; i >= 0; i--)
+            for (int i = compound.children.Count - 1; i >= 0; i--)
             {
                 var child = compound.children.Elements[i];
                 var entry = child.Entry;
@@ -490,7 +490,7 @@ namespace BEPUphysics.Collidables.MobileCollidables
             Vector3.Negate(ref distributionInfo.Center, out offset);
 
             //Compute the unscaled inertia tensor.
-            for (int i = compound.children.count - 1; i >= 0; i--)
+            for (int i = compound.children.Count - 1; i >= 0; i--)
             {
                 var child = compound.children.Elements[i];
                 var entry = child.Entry;
@@ -502,11 +502,11 @@ namespace BEPUphysics.Collidables.MobileCollidables
                 var contribution = childContributions[child.shapeIndex];
                 CompoundShape.TransformContribution(ref entry.LocalTransform, ref distributionInfo.Center, ref contribution.VolumeDistribution, entry.Weight, out contribution.VolumeDistribution);
                 //Vector3.Add(ref entry.LocalTransform.Position, ref offsetA, out entry.LocalTransform.Position);
-                Matrix3X3.Add(ref contribution.VolumeDistribution, ref distributionInfo.VolumeDistribution, out distributionInfo.VolumeDistribution);
+                Matrix3x3.Add(ref contribution.VolumeDistribution, ref distributionInfo.VolumeDistribution, out distributionInfo.VolumeDistribution);
             }
 
             //Normalize the volume distribution.
-            Matrix3X3.Multiply(ref distributionInfo.VolumeDistribution, 1 / weight, out distributionInfo.VolumeDistribution);
+            Matrix3x3.Multiply(ref distributionInfo.VolumeDistribution, 1 / weight, out distributionInfo.VolumeDistribution);
 
             //Update the hierarchies of the compounds.
             //TODO: Create a new method that does this quickly without garbage.  Requires a new Reconstruct method which takes a pool which stores the appropriate node types.
@@ -524,7 +524,7 @@ namespace BEPUphysics.Collidables.MobileCollidables
         public static CompoundCollidable CreatePartialCompoundCollidable(CompoundShape shape, IList<int> childIndices)
         {
             if (childIndices.Count == 0)
-                throw new Exception("Cannot create a compound from zero shapes.");
+                throw new ArgumentException("Cannot create a compound from zero shapes.");
             
             CompoundCollidable compound = new CompoundCollidable();
             Vector3 center = new Vector3();
@@ -542,7 +542,7 @@ namespace BEPUphysics.Collidables.MobileCollidables
             }
             if (totalWeight <= 0)
             {
-                throw new Exception("Compound has zero total weight; invalid configuration.");
+                throw new ArgumentException("Compound has zero total weight; invalid configuration.");
             }
             Vector3.Divide(ref center, totalWeight, out center);
             //Our subset of the compound is not necessarily aligned with the shape's origin.

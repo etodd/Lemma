@@ -1,7 +1,6 @@
 ﻿using System;
 using BEPUphysics.BroadPhaseEntries;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 
 namespace BEPUphysics.NarrowPhaseSystems.Pairs
 {
@@ -40,7 +39,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                 mobileMesh = entryB as MobileMeshCollidable;
                 if (mobileMesh == null)
                 {
-                    throw new Exception("Inappropriate types used to initialize pair.");
+                    throw new ArgumentException("Inappropriate types used to initialize pair.");
                 }
             }
 

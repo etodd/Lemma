@@ -5,8 +5,8 @@ using System.Text;
 using BEPUphysics.Entities.Prefabs;
 using BEPUphysics;
 using Microsoft.Xna.Framework;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.CollisionTests;
 using System.Xml.Serialization;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
@@ -32,7 +32,7 @@ namespace Lemma.Components
 				this.Sphere = new Sphere(Vector3.Zero, this.Radius);
 			else
 				this.Sphere = new Sphere(Vector3.Zero, this.Radius, this.Mass);
-			this.Sphere.CollisionInformation.Events.ContactCreated += new BEPUphysics.Collidables.Events.ContactCreatedEventHandler<EntityCollidable>(Events_ContactCreated);
+			this.Sphere.CollisionInformation.Events.ContactCreated += new BEPUphysics.BroadPhaseEntries.Events.ContactCreatedEventHandler<EntityCollidable>(Events_ContactCreated);
 			this.Sphere.CollisionInformation.CollisionRules.Group = Util.Character.NoCollideGroup;
 			this.Transform.Set = delegate(Matrix matrix)
 			{

@@ -1,4 +1,5 @@
 ﻿using System;
+using BEPUutilities;
 
 namespace BEPUphysics.Paths
 {
@@ -41,7 +42,7 @@ namespace BEPUphysics.Paths
         /// <param name="preLoop">Looping behavior of the curve before the first endpoint's time.</param>
         /// <param name="postLoop">Looping behavior of the curve after the last endpoint's time.</param>
         /// <returns>Time within the curve's interval.</returns>
-        public static double ModifyTime(double time, float intervalBegin, float intervalEnd, CurveEndpointBehavior preLoop, CurveEndpointBehavior postLoop)
+        public static double ModifyTime(double time, double intervalBegin, double intervalEnd, CurveEndpointBehavior preLoop, CurveEndpointBehavior postLoop)
         {
             if (time < intervalBegin)
             {
@@ -109,7 +110,7 @@ namespace BEPUphysics.Paths
         /// <param name="value">Curve value at the given time.</param>
         public override void Evaluate(double time, out TValue value)
         {
-            float firstTime, lastTime;
+            double firstTime, lastTime;
             int minIndex, maxIndex;
             GetCurveBoundsInformation(out firstTime, out lastTime, out minIndex, out maxIndex);
             if (minIndex < 0 || maxIndex < 0)
@@ -138,13 +139,13 @@ namespace BEPUphysics.Paths
             }
             else
             {
-                float denominator = ControlPoints[index + 1].Time - ControlPoints[index].Time;
+                var denominator = ControlPoints[index + 1].Time - ControlPoints[index].Time;
 
                 float intervalTime;
                 if (denominator < Toolbox.Epsilon)
                     intervalTime = 0;
                 else
-                    intervalTime = (float) (time - ControlPoints[index].Time) / denominator;
+                    intervalTime = (float) ((time - ControlPoints[index].Time) / denominator);
 
 
                 Evaluate(index, intervalTime, out value);
@@ -156,7 +157,7 @@ namespace BEPUphysics.Paths
         /// </summary>
         /// <param name="startingTime">Beginning time of the path.</param>
         /// <param name="endingTime">Ending time of the path.</param>
-        public override void GetPathBoundsInformation(out float startingTime, out float endingTime)
+        public override void GetPathBoundsInformation(out double startingTime, out double endingTime)
         {
             int index;
             GetCurveBoundsInformation(out startingTime, out endingTime, out index, out index);
@@ -170,7 +171,7 @@ namespace BEPUphysics.Paths
         /// <param name="lastIndexTime">Time of the last index.</param>
         /// <param name="minIndex">First index in the reachable curve.</param>
         /// <param name="maxIndex">Last index in the reachable curve.</param>
-        public void GetCurveBoundsInformation(out float firstIndexTime, out float lastIndexTime, out int minIndex, out int maxIndex)
+        public void GetCurveBoundsInformation(out double firstIndexTime, out double lastIndexTime, out int minIndex, out int maxIndex)
         {
             GetCurveIndexBoundsInformation(out minIndex, out maxIndex);
             if (minIndex >= 0 && maxIndex < ControlPoints.Count && minIndex <= maxIndex)
@@ -204,24 +205,15 @@ namespace BEPUphysics.Paths
                 int midIndex = (indexMin + indexMax) / 2;
                 if (time > ControlPoints[midIndex].Time)
                 {
-                    //Use midIndex as the minimum.
                     indexMin = midIndex;
-                }
-                else if (time < ControlPoints[midIndex].Time)
-                {
-                    //Use midindex as the max.
-                    indexMax = midIndex;
                 }
                 else
                 {
-                    //Equal; use it.
-                    indexMin = midIndex;
-                    break;
+                    indexMax = midIndex;
                 }
+
             }
-            if (ControlPoints[indexMin].Time <= time)
-                return indexMin;
-            return indexMin - 1;
+            return indexMin;
         }
 
 

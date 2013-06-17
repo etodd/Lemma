@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 
 namespace BEPUphysics.DeactivationManagement
 {
@@ -27,7 +27,7 @@ namespace BEPUphysics.DeactivationManagement
         /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.IList`1"/>.</param>
         public int IndexOf(SimulationIslandMember item)
         {
-            return Array.IndexOf(entries.Elements, item, 0, entries.count);
+            return Array.IndexOf(entries.Elements, item, 0, entries.Count);
         }
 
         void IList<SimulationIslandMember>.Insert(int index, SimulationIslandMember item)
@@ -88,7 +88,7 @@ namespace BEPUphysics.DeactivationManagement
         /// <param name="arrayIndex">The zero-based index in <paramref name="array"/> at which copying begins.</param>
         public void CopyTo(SimulationIslandMember[] array, int arrayIndex)
         {
-            for (int i = 0; i < entries.count; i++)
+            for (int i = 0; i < entries.Count; i++)
             {
                 array[i + arrayIndex] = entries.Elements[i].Member;
             }
@@ -102,7 +102,7 @@ namespace BEPUphysics.DeactivationManagement
         /// </returns>
         public int Count
         {
-            get { return entries.count; }
+            get { return entries.Count; }
         }
 
         bool ICollection<SimulationIslandMember>.IsReadOnly
@@ -180,7 +180,7 @@ namespace BEPUphysics.DeactivationManagement
             public bool MoveNext()
             {
                 index++;
-                return index >= entries.count;
+                return index >= entries.Count;
             }
 
             /// <summary>

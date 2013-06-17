@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using BEPUphysics.DataStructures;
-using BEPUphysics.MathExtensions;
+using BEPUutilities.DataStructures;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 using BEPUphysics.CollisionShapes.ConvexShapes;
 using System.Diagnostics;
@@ -125,12 +125,12 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             float bZ = b.HalfLength;
 
             //Relative rotation from A to B.
-            Matrix3X3 bR;
+            Matrix3x3 bR;
 
-            Matrix3X3 aO;
-            Matrix3X3.CreateFromQuaternion(ref transformA.Orientation, out aO);
-            Matrix3X3 bO;
-            Matrix3X3.CreateFromQuaternion(ref transformB.Orientation, out bO);
+            Matrix3x3 aO;
+            Matrix3x3.CreateFromQuaternion(ref transformA.Orientation, out aO);
+            Matrix3x3 bO;
+            Matrix3x3.CreateFromQuaternion(ref transformB.Orientation, out bO);
 
             //Relative translation rotated into A's configuration space.
             Vector3 t;
@@ -139,7 +139,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             bR.M11 = aO.M11 * bO.M11 + aO.M12 * bO.M12 + aO.M13 * bO.M13;
             bR.M12 = aO.M11 * bO.M21 + aO.M12 * bO.M22 + aO.M13 * bO.M23;
             bR.M13 = aO.M11 * bO.M31 + aO.M12 * bO.M32 + aO.M13 * bO.M33;
-            Matrix3X3 absBR;
+            Matrix3x3 absBR;
             //Epsilons are added to deal with near-parallel edges.
             absBR.M11 = Math.Abs(bR.M11) + Toolbox.Epsilon;
             absBR.M12 = Math.Abs(bR.M12) + Toolbox.Epsilon;
@@ -275,12 +275,12 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             float bZ = b.HalfLength;
 
             //Relative rotation from A to B.
-            Matrix3X3 bR;
+            Matrix3x3 bR;
 
-            Matrix3X3 aO;
-            Matrix3X3.CreateFromQuaternion(ref transformA.Orientation, out aO);
-            Matrix3X3 bO;
-            Matrix3X3.CreateFromQuaternion(ref transformB.Orientation, out bO);
+            Matrix3x3 aO;
+            Matrix3x3.CreateFromQuaternion(ref transformA.Orientation, out aO);
+            Matrix3x3 bO;
+            Matrix3x3.CreateFromQuaternion(ref transformB.Orientation, out bO);
 
             //Relative translation rotated into A's configuration space.
             Vector3 t;
@@ -291,7 +291,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             bR.M11 = aO.M11 * bO.M11 + aO.M12 * bO.M12 + aO.M13 * bO.M13;
             bR.M12 = aO.M11 * bO.M21 + aO.M12 * bO.M22 + aO.M13 * bO.M23;
             bR.M13 = aO.M11 * bO.M31 + aO.M12 * bO.M32 + aO.M13 * bO.M33;
-            Matrix3X3 absBR;
+            Matrix3x3 absBR;
             //Epsilons are added to deal with near-parallel edges.
             absBR.M11 = Math.Abs(bR.M11) + Toolbox.Epsilon;
             absBR.M12 = Math.Abs(bR.M12) + Toolbox.Epsilon;
@@ -647,12 +647,12 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             float bZ = b.HalfLength;
 
             //Relative rotation from A to B.
-            Matrix3X3 bR;
+            Matrix3x3 bR;
 
-            Matrix3X3 aO;
-            Matrix3X3.CreateFromQuaternion(ref transformA.Orientation, out aO);
-            Matrix3X3 bO;
-            Matrix3X3.CreateFromQuaternion(ref transformB.Orientation, out bO);
+            Matrix3x3 aO;
+            Matrix3x3.CreateFromQuaternion(ref transformA.Orientation, out aO);
+            Matrix3x3 bO;
+            Matrix3x3.CreateFromQuaternion(ref transformB.Orientation, out bO);
 
             //Relative translation rotated into A's configuration space.
             Vector3 t;
@@ -667,7 +667,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             bR.M11 = aO.M11 * bO.M11 + aO.M12 * bO.M12 + aO.M13 * bO.M13;
             bR.M12 = aO.M11 * bO.M21 + aO.M12 * bO.M22 + aO.M13 * bO.M23;
             bR.M13 = aO.M11 * bO.M31 + aO.M12 * bO.M32 + aO.M13 * bO.M33;
-            Matrix3X3 absBR;
+            Matrix3x3 absBR;
             //Epsilons are added to deal with near-parallel edges.
             absBR.M11 = Math.Abs(bR.M11) + Toolbox.Epsilon;
             absBR.M12 = Math.Abs(bR.M12) + Toolbox.Epsilon;
@@ -1472,12 +1472,12 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             contactData = new TinyStructList<BoxContactData>();
 #endif
             //Relative rotation from A to B.
-            Matrix3X3 bR;
+            Matrix3x3 bR;
 
-            Matrix3X3 aO;
-            Matrix3X3.CreateFromQuaternion(ref transformA.Orientation, out aO);
-            Matrix3X3 bO;
-            Matrix3X3.CreateFromQuaternion(ref transformB.Orientation, out bO);
+            Matrix3x3 aO;
+            Matrix3x3.CreateFromQuaternion(ref transformA.Orientation, out aO);
+            Matrix3x3 bO;
+            Matrix3x3.CreateFromQuaternion(ref transformB.Orientation, out bO);
 
             //Relative translation rotated into A's configuration space.
             Vector3 t;
@@ -1493,7 +1493,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             bR.M11 = aO.M11 * bO.M11 + aO.M12 * bO.M12 + aO.M13 * bO.M13;
             bR.M12 = aO.M11 * bO.M21 + aO.M12 * bO.M22 + aO.M13 * bO.M23;
             bR.M13 = aO.M11 * bO.M31 + aO.M12 * bO.M32 + aO.M13 * bO.M33;
-            Matrix3X3 absBR;
+            Matrix3x3 absBR;
             //Epsilons are added to deal with near-parallel edges.
             absBR.M11 = Math.Abs(bR.M11) + Toolbox.Epsilon;
             absBR.M12 = Math.Abs(bR.M12) + Toolbox.Epsilon;
@@ -2324,7 +2324,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
         }
 
 #if ALLOWUNSAFE
-        internal static void GetEdgeEdgeContact(BoxShape a, BoxShape b, ref Vector3 positionA, ref Matrix3X3 orientationA, ref Vector3 positionB, ref Matrix3X3 orientationB, float depth, ref Vector3 mtd, out BoxContactDataCache contactData)
+        internal static void GetEdgeEdgeContact(BoxShape a, BoxShape b, ref Vector3 positionA, ref Matrix3x3 orientationA, ref Vector3 positionB, ref Matrix3x3 orientationB, float depth, ref Vector3 mtd, out BoxContactDataCache contactData)
 #else
         internal static void GetEdgeEdgeContact(BoxShape a, BoxShape b, ref Vector3 positionA, ref Matrix3X3 orientationA, ref Vector3 positionB, ref Matrix3X3 orientationB, float depth, ref Vector3 mtd, out TinyStructList<BoxContactData> contactData)
 #endif
@@ -2367,8 +2367,8 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             Vector3 mtdA, mtdB;
             Vector3 negatedMtd;
             Vector3.Negate(ref mtd, out negatedMtd);
-            Matrix3X3.TransformTranspose(ref negatedMtd, ref orientationA, out mtdA);
-            Matrix3X3.TransformTranspose(ref mtd, ref orientationB, out mtdB);
+            Matrix3x3.TransformTranspose(ref negatedMtd, ref orientationA, out mtdA);
+            Matrix3x3.TransformTranspose(ref mtd, ref orientationB, out mtdB);
 
 
 #if !WINDOWS
@@ -2517,15 +2517,15 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             #endregion
 
 
-            Matrix3X3.Transform(ref edgeAStart1, ref orientationA, out edgeAStart1);
-            Matrix3X3.Transform(ref edgeAEnd1, ref orientationA, out edgeAEnd1);
-            Matrix3X3.Transform(ref edgeBStart1, ref orientationB, out edgeBStart1);
-            Matrix3X3.Transform(ref edgeBEnd1, ref orientationB, out edgeBEnd1);
+            Matrix3x3.Transform(ref edgeAStart1, ref orientationA, out edgeAStart1);
+            Matrix3x3.Transform(ref edgeAEnd1, ref orientationA, out edgeAEnd1);
+            Matrix3x3.Transform(ref edgeBStart1, ref orientationB, out edgeBStart1);
+            Matrix3x3.Transform(ref edgeBEnd1, ref orientationB, out edgeBEnd1);
 
-            Matrix3X3.Transform(ref edgeAStart2, ref orientationA, out edgeAStart2);
-            Matrix3X3.Transform(ref edgeAEnd2, ref orientationA, out edgeAEnd2);
-            Matrix3X3.Transform(ref edgeBStart2, ref orientationB, out edgeBStart2);
-            Matrix3X3.Transform(ref edgeBEnd2, ref orientationB, out edgeBEnd2);
+            Matrix3x3.Transform(ref edgeAStart2, ref orientationA, out edgeAStart2);
+            Matrix3x3.Transform(ref edgeAEnd2, ref orientationA, out edgeAEnd2);
+            Matrix3x3.Transform(ref edgeBStart2, ref orientationB, out edgeBStart2);
+            Matrix3x3.Transform(ref edgeBEnd2, ref orientationB, out edgeBEnd2);
 
             Vector3.Add(ref edgeAStart1, ref positionA, out edgeAStart1);
             Vector3.Add(ref edgeAEnd1, ref positionA, out edgeAEnd1);
@@ -2800,7 +2800,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
                     edgeEndId = 7; //111
                     break;
                 default:
-                    throw new Exception("Invalid index or axis.");
+                    throw new ArgumentException("Invalid index or axis.");
             }
         }
 
@@ -3391,7 +3391,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
         //        }
 
 #if ALLOWUNSAFE
-        internal static void GetFaceContacts(BoxShape a, BoxShape b, ref Vector3 positionA, ref Matrix3X3 orientationA, ref Vector3 positionB, ref Matrix3X3 orientationB, bool aIsFaceOwner, ref Vector3 mtd, out BoxContactDataCache contactData)
+        internal static void GetFaceContacts(BoxShape a, BoxShape b, ref Vector3 positionA, ref Matrix3x3 orientationA, ref Vector3 positionB, ref Matrix3x3 orientationB, bool aIsFaceOwner, ref Vector3 mtd, out BoxContactDataCache contactData)
 #else
         internal static void GetFaceContacts(BoxShape a, BoxShape b, ref Vector3 positionA, ref Matrix3X3 orientationA, ref Vector3 positionB, ref Matrix3X3 orientationB, bool aIsFaceOwner, ref Vector3 mtd, out TinyStructList<BoxContactData> contactData)
 #endif
@@ -6105,7 +6105,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             return true;
         }
 
-        private static void GetNearestFace(ref Vector3 position, ref Matrix3X3 orientation, ref Vector3 mtd, float halfWidth, float halfHeight, float halfLength, out BoxFace boxFace)
+        private static void GetNearestFace(ref Vector3 position, ref Matrix3x3 orientation, ref Vector3 mtd, float halfWidth, float halfHeight, float halfLength, out BoxFace boxFace)
         {
             boxFace = new BoxFace();
 
@@ -6124,7 +6124,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             float absZ = Math.Abs(zDot);
 
             Matrix worldTransform;
-            Matrix3X3.ToMatrix4X4(ref orientation, out worldTransform);
+            Matrix3x3.ToMatrix4X4(ref orientation, out worldTransform);
             worldTransform.M41 = position.X;
             worldTransform.M42 = position.Y;
             worldTransform.M43 = position.Z;

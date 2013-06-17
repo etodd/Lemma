@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using BEPUphysics.Entities;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 using BEPUphysics.SolverSystems;
 
 namespace BEPUphysics.Constraints.SolverGroups
@@ -35,7 +35,7 @@ namespace BEPUphysics.Constraints.SolverGroups
         {
             foreach (EntitySolverUpdateable item in solverUpdateables)
             {
-                for (int i = 0; i < item.involvedEntities.count; i++)
+                for (int i = 0; i < item.involvedEntities.Count; i++)
                 {
                     if (!outputInvolvedEntities.Contains(item.involvedEntities.Elements[i]))
                     {
@@ -44,6 +44,7 @@ namespace BEPUphysics.Constraints.SolverGroups
                 }
             }
         }
+
 
         /// <summary>
         /// Sets the activity state of the constraint based on the activity state of its connections.
@@ -55,7 +56,7 @@ namespace BEPUphysics.Constraints.SolverGroups
             if (isActive)
             {
                 isActiveInSolver = false;
-                for (int i = 0; i < solverUpdateables.count; i++)
+                for (int i = 0; i < solverUpdateables.Count; i++)
                 {
                     var item = solverUpdateables.Elements[i];
                     item.UpdateSolverActivity();
@@ -88,7 +89,7 @@ namespace BEPUphysics.Constraints.SolverGroups
         ///<param name="dt">Timestep duration.</param>
         public override void Update(float dt)
         {
-            for (int i = 0; i < solverUpdateables.count; i++)
+            for (int i = 0; i < solverUpdateables.Count; i++)
             {
                 UpdateUpdateable(solverUpdateables.Elements[i], dt);
             }
@@ -103,7 +104,7 @@ namespace BEPUphysics.Constraints.SolverGroups
         /// </summary>
         public override void ExclusiveUpdate()
         {
-            for (int i = 0; i < solverUpdateables.count; i++)
+            for (int i = 0; i < solverUpdateables.Count; i++)
             {
                 ExclusiveUpdateUpdateable(solverUpdateables.Elements[i]);
             }
@@ -123,12 +124,12 @@ namespace BEPUphysics.Constraints.SolverGroups
 
                 subSolverSettings.currentIterations++;
                 if (subSolverSettings.currentIterations <= solver.iterationLimit &&
-                    subSolverSettings.currentIterations <= subSolverSettings.maximumIterations)
+                    subSolverSettings.currentIterations <= subSolverSettings.maximumIterationCount)
                 {
                     if (item.SolveIteration() < subSolverSettings.minimumImpulse)
                     {
                         subSolverSettings.iterationsAtZeroImpulse++;
-                        if (subSolverSettings.iterationsAtZeroImpulse > subSolverSettings.minimumIterations)
+                        if (subSolverSettings.iterationsAtZeroImpulse > subSolverSettings.minimumIterationCount)
                             item.isActiveInSolver = false;
                         else
                         {
@@ -157,7 +158,7 @@ namespace BEPUphysics.Constraints.SolverGroups
         public override float SolveIteration()
         {
             int activeConstraints = 0;
-            for (int i = 0; i < solverUpdateables.count; i++)
+            for (int i = 0; i < solverUpdateables.Count; i++)
             {
                 SolveUpdateable(solverUpdateables.Elements[i], ref activeConstraints);
             }
@@ -248,7 +249,7 @@ namespace BEPUphysics.Constraints.SolverGroups
             internal set
             {
                 base.Solver = value;
-                for (int i = 0; i < solverUpdateables.count; i++)
+                for (int i = 0; i < solverUpdateables.Count; i++)
                 {
                     solverUpdateables.Elements[i].Solver = value;
                 }

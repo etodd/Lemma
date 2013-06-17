@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using BEPUphysics.BroadPhaseEntries;
-using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
-using BEPUphysics.Constraints;
-using BEPUphysics.Constraints.Collision;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.DataStructures;
-using BEPUphysics.CollisionRuleManagement;
-using BEPUphysics.CollisionTests;
+using BEPUutilities.DataStructures;
 
 namespace BEPUphysics.NarrowPhaseSystems.Pairs
 {
@@ -18,16 +12,16 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
     public class StaticGroupCompoundPairHandler : StaticGroupPairHandler
     {
 
-        CompoundCollidable compoundInfoB;
+        CompoundCollidable compoundInfo;
 
         public override Collidable CollidableB
         {
-            get { return compoundInfoB; }
+            get { return compoundInfo; }
         }
 
         public override Entities.Entity EntityB
         {
-            get { return compoundInfoB.entity; }
+            get { return compoundInfo.entity; }
         }
 
 
@@ -38,10 +32,14 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
         ///<param name="entryB">Second entry in the pair.</param>
         public override void Initialize(BroadPhaseEntry entryA, BroadPhaseEntry entryB)
         {
-            compoundInfoB = entryB as CompoundCollidable;
-            if (compoundInfoB == null)
+            compoundInfo = entryA as CompoundCollidable;
+            if (compoundInfo == null)
             {
-                throw new Exception("Inappropriate types used to initialize pair.");
+                compoundInfo = entryB as CompoundCollidable;
+                if (compoundInfo == null)
+                {
+                    throw new ArgumentException("Inappropriate types used to initialize pair.");
+                }
             }
 
             base.Initialize(entryA, entryB);
@@ -55,7 +53,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
         {
 
             base.CleanUp();
-            compoundInfoB = null;
+            compoundInfo = null;
 
 
         }
@@ -65,13 +63,13 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
         RawList<TreeOverlapPair<Collidable, CompoundChild>> overlappedElements = new RawList<TreeOverlapPair<Collidable, CompoundChild>>();
         protected override void UpdateContainedPairs()
         {
-            staticGroup.Shape.CollidableTree.GetOverlaps(compoundInfoB.hierarchy.Tree, overlappedElements);
-            for (int i = 0; i < overlappedElements.count; i++)
+            staticGroup.Shape.CollidableTree.GetOverlaps(compoundInfo.hierarchy.Tree, overlappedElements);
+            for (int i = 0; i < overlappedElements.Count; i++)
             {
                 var element = overlappedElements.Elements[i];
                 var staticCollidable = element.OverlapA as StaticCollidable;
                 TryToAdd(element.OverlapA, element.OverlapB.CollisionInformation,
-                    staticCollidable != null ? staticCollidable.Material : null, element.OverlapB.Material);
+                    staticCollidable != null ? staticCollidable.Material : staticGroup.Material, element.OverlapB.Material);
             }
             overlappedElements.Clear();
         }

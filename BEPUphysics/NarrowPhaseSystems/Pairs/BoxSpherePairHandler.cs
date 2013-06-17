@@ -1,8 +1,7 @@
 ﻿using System;
 using BEPUphysics.BroadPhaseEntries;
 using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.CollisionTests;
 using BEPUphysics.CollisionTests.CollisionAlgorithms.GJK;
 using BEPUphysics.Constraints.Collision;
@@ -83,7 +82,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                 sphere = entryA as ConvexCollidable<SphereShape>;
                 if (box == null || sphere == null)
                 {
-                    throw new Exception("Inappropriate types used to initialize pair.");
+                    throw new ArgumentException("Inappropriate types used to initialize pair.");
                 }
             }
 
@@ -116,7 +115,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
             //Find the contact's force.
             info.FrictionImpulse = 0;
             info.NormalImpulse = 0;
-            for (int i = 0; i < contactConstraint.frictionConstraints.count; i++)
+            for (int i = 0; i < contactConstraint.frictionConstraints.Count; i++)
             {
                 if (contactConstraint.frictionConstraints.Elements[i].PenetrationConstraint.contact == info.Contact)
                 {

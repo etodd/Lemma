@@ -7,7 +7,7 @@ using Lemma.Components;
 using Microsoft.Xna.Framework.Input;
 using BEPUphysics;
 using Lemma.Util;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
 
 namespace Lemma.Factories
@@ -1336,7 +1336,7 @@ namespace Lemma.Factories
 			};
 
 			// Damage the player if they hit something too hard
-			result.Add(new CommandBinding<BEPUphysics.Collidables.Collidable, ContactCollection>(player.Collided, delegate(BEPUphysics.Collidables.Collidable other, ContactCollection contacts)
+			result.Add(new CommandBinding<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection>(player.Collided, delegate(BEPUphysics.BroadPhaseEntries.Collidable other, ContactCollection contacts)
 			{
 				DynamicMap map = other.Tag as DynamicMap;
 				if (map != null)
@@ -1795,6 +1795,7 @@ namespace Lemma.Factories
 						Session.Recorder.Event(main, "Jump");
 
 						player.IsSupported.Value = false;
+						player.SupportEntity.Value = null;
 						player.HasTraction.Value = false;
 					}
 

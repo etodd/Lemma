@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using BEPUphysics.Entities;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using Microsoft.Xna.Framework.Input;
 
 namespace BEPUphysics.Constraints.TwoEntity.Motors
@@ -54,7 +54,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
 
         /// <summary>
         /// Gets the basis attached to entity A.
-        /// The primary axis represents the limited axis of rotation.  The 'measurement plane' which the test axis is tested against is based on this primary axis.
+        /// The primary axis represents the motorized axis of rotation.  The 'measurement plane' which the test axis is tested against is based on this primary axis.
         /// The x axis defines the 'base' direction on the measurement plane corresponding to 0 degrees of relative rotation.
         /// </summary>
         public JointBasis2D Basis
@@ -72,7 +72,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             set
             {
                 localTestAxis = Vector3.Normalize(value);
-                Matrix3X3.Transform(ref localTestAxis, ref connectionB.orientationMatrix, out worldTestAxis);
+                Matrix3x3.Transform(ref localTestAxis, ref connectionB.orientationMatrix, out worldTestAxis);
             }
         }
 
@@ -94,7 +94,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             set
             {
                 worldTestAxis = Vector3.Normalize(value);
-                Matrix3X3.TransformTranspose(ref worldTestAxis, ref connectionB.orientationMatrix, out localTestAxis);
+                Matrix3x3.TransformTranspose(ref worldTestAxis, ref connectionB.orientationMatrix, out localTestAxis);
             }
         }
 
@@ -215,7 +215,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             //Transform the axes into world space.
             basis.rotationMatrix = connectionA.orientationMatrix;
             basis.ComputeWorldSpaceAxes();
-            Matrix3X3.Transform(ref localTestAxis, ref connectionB.orientationMatrix, out worldTestAxis);
+            Matrix3x3.Transform(ref localTestAxis, ref connectionB.orientationMatrix, out worldTestAxis);
 
 
             if (settings.mode == MotorMode.Servomechanism)
@@ -260,7 +260,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             Vector3 transformedAxis;
             if (connectionA.isDynamic)
             {
-                Matrix3X3.Transform(ref jacobianA, ref connectionA.inertiaTensorInverse, out transformedAxis);
+                Matrix3x3.Transform(ref jacobianA, ref connectionA.inertiaTensorInverse, out transformedAxis);
                 Vector3.Dot(ref transformedAxis, ref jacobianA, out entryA);
             }
             else
@@ -270,7 +270,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             float entryB;
             if (connectionB.isDynamic)
             {
-                Matrix3X3.Transform(ref jacobianB, ref connectionB.inertiaTensorInverse, out transformedAxis);
+                Matrix3x3.Transform(ref jacobianB, ref connectionB.inertiaTensorInverse, out transformedAxis);
                 Vector3.Dot(ref transformedAxis, ref jacobianB, out entryB);
             }
             else

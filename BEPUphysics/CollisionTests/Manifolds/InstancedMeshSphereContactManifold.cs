@@ -1,10 +1,4 @@
-﻿using System;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
-using Microsoft.Xna.Framework;
-using BEPUphysics.DataStructures;
-using BEPUphysics.MathExtensions;
-using BEPUphysics.ResourceManagement;
+﻿using BEPUutilities.ResourceManagement;
 using BEPUphysics.CollisionTests.CollisionAlgorithms;
 
 namespace BEPUphysics.CollisionTests.Manifolds

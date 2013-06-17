@@ -1,6 +1,6 @@
 using System;
 using BEPUphysics.Entities;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 
@@ -15,10 +15,10 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         private Vector3 biasVelocity;
         private Vector3 localAnchorA;
         private Vector3 localAnchorB;
-        private Matrix3X3 massMatrix;
+        private Matrix3x3 massMatrix;
         private Vector3 error;
-        private Matrix3X3 rACrossProduct;
-        private Matrix3X3 rBCrossProduct;
+        private Matrix3x3 rACrossProduct;
+        private Matrix3x3 rBCrossProduct;
         private Vector3 worldOffsetA, worldOffsetB;
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 localAnchorA = value;
-                Matrix3X3.Transform(ref localAnchorA, ref connectionA.orientationMatrix, out worldOffsetA); 
+                Matrix3x3.Transform(ref localAnchorA, ref connectionA.orientationMatrix, out worldOffsetA); 
             }
         }
 
@@ -69,7 +69,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 localAnchorB = value;
-                Matrix3X3.Transform(ref localAnchorB, ref connectionB.orientationMatrix, out worldOffsetB); 
+                Matrix3x3.Transform(ref localAnchorB, ref connectionB.orientationMatrix, out worldOffsetB); 
             }
         }
 
@@ -82,7 +82,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 worldOffsetA = value;
-                Matrix3X3.TransformTranspose(ref worldOffsetA, ref connectionA.orientationMatrix, out localAnchorA);
+                Matrix3x3.TransformTranspose(ref worldOffsetA, ref connectionA.orientationMatrix, out localAnchorA);
             }
         }
 
@@ -95,7 +95,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 worldOffsetB = value;
-                Matrix3X3.TransformTranspose(ref worldOffsetB, ref connectionB.orientationMatrix, out localAnchorB);
+                Matrix3x3.TransformTranspose(ref worldOffsetB, ref connectionB.orientationMatrix, out localAnchorB);
             }
         }
 
@@ -194,7 +194,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         /// Gets the mass matrix of the constraint.
         /// </summary>
         /// <param name="outputMassMatrix">Constraint's mass matrix.</param>
-        public void GetMassMatrix(out Matrix3X3 outputMassMatrix)
+        public void GetMassMatrix(out Matrix3x3 outputMassMatrix)
         {
             outputMassMatrix = massMatrix;
         }
@@ -209,44 +209,44 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         /// <param name="dt">Time in seconds since the last update.</param>
         public override void Update(float dt)
         {
-            Matrix3X3.Transform(ref localAnchorA, ref connectionA.orientationMatrix, out worldOffsetA);
-            Matrix3X3.Transform(ref localAnchorB, ref connectionB.orientationMatrix, out worldOffsetB);
+            Matrix3x3.Transform(ref localAnchorA, ref connectionA.orientationMatrix, out worldOffsetA);
+            Matrix3x3.Transform(ref localAnchorB, ref connectionB.orientationMatrix, out worldOffsetB);
 
 
             float errorReductionParameter;
             springSettings.ComputeErrorReductionAndSoftness(dt, out errorReductionParameter, out softness);
 
             //Mass Matrix
-            Matrix3X3 k;
-            Matrix3X3 linearComponent;
-            Matrix3X3.CreateCrossProduct(ref worldOffsetA, out rACrossProduct);
-            Matrix3X3.CreateCrossProduct(ref worldOffsetB, out rBCrossProduct);
+            Matrix3x3 k;
+            Matrix3x3 linearComponent;
+            Matrix3x3.CreateCrossProduct(ref worldOffsetA, out rACrossProduct);
+            Matrix3x3.CreateCrossProduct(ref worldOffsetB, out rBCrossProduct);
             if (connectionA.isDynamic && connectionB.isDynamic)
             {
-                Matrix3X3.CreateScale(connectionA.inverseMass + connectionB.inverseMass, out linearComponent);
-                Matrix3X3 angularComponentA, angularComponentB;
-                Matrix3X3.Multiply(ref rACrossProduct, ref connectionA.inertiaTensorInverse, out angularComponentA);
-                Matrix3X3.Multiply(ref rBCrossProduct, ref connectionB.inertiaTensorInverse, out angularComponentB);
-                Matrix3X3.Multiply(ref angularComponentA, ref rACrossProduct, out angularComponentA);
-                Matrix3X3.Multiply(ref angularComponentB, ref rBCrossProduct, out angularComponentB);
-                Matrix3X3.Subtract(ref linearComponent, ref angularComponentA, out k);
-                Matrix3X3.Subtract(ref k, ref angularComponentB, out k);
+                Matrix3x3.CreateScale(connectionA.inverseMass + connectionB.inverseMass, out linearComponent);
+                Matrix3x3 angularComponentA, angularComponentB;
+                Matrix3x3.Multiply(ref rACrossProduct, ref connectionA.inertiaTensorInverse, out angularComponentA);
+                Matrix3x3.Multiply(ref rBCrossProduct, ref connectionB.inertiaTensorInverse, out angularComponentB);
+                Matrix3x3.Multiply(ref angularComponentA, ref rACrossProduct, out angularComponentA);
+                Matrix3x3.Multiply(ref angularComponentB, ref rBCrossProduct, out angularComponentB);
+                Matrix3x3.Subtract(ref linearComponent, ref angularComponentA, out k);
+                Matrix3x3.Subtract(ref k, ref angularComponentB, out k);
             }
             else if (connectionA.isDynamic && !connectionB.isDynamic)
             {
-                Matrix3X3.CreateScale(connectionA.inverseMass, out linearComponent);
-                Matrix3X3 angularComponentA;
-                Matrix3X3.Multiply(ref rACrossProduct, ref connectionA.inertiaTensorInverse, out angularComponentA);
-                Matrix3X3.Multiply(ref angularComponentA, ref rACrossProduct, out angularComponentA);
-                Matrix3X3.Subtract(ref linearComponent, ref angularComponentA, out k);
+                Matrix3x3.CreateScale(connectionA.inverseMass, out linearComponent);
+                Matrix3x3 angularComponentA;
+                Matrix3x3.Multiply(ref rACrossProduct, ref connectionA.inertiaTensorInverse, out angularComponentA);
+                Matrix3x3.Multiply(ref angularComponentA, ref rACrossProduct, out angularComponentA);
+                Matrix3x3.Subtract(ref linearComponent, ref angularComponentA, out k);
             }
             else if (!connectionA.isDynamic && connectionB.isDynamic)
             {
-                Matrix3X3.CreateScale(connectionB.inverseMass, out linearComponent);
-                Matrix3X3 angularComponentB;
-                Matrix3X3.Multiply(ref rBCrossProduct, ref connectionB.inertiaTensorInverse, out angularComponentB);
-                Matrix3X3.Multiply(ref angularComponentB, ref rBCrossProduct, out angularComponentB);
-                Matrix3X3.Subtract(ref linearComponent, ref angularComponentB, out k);
+                Matrix3x3.CreateScale(connectionB.inverseMass, out linearComponent);
+                Matrix3x3 angularComponentB;
+                Matrix3x3.Multiply(ref rBCrossProduct, ref connectionB.inertiaTensorInverse, out angularComponentB);
+                Matrix3x3.Multiply(ref angularComponentB, ref rBCrossProduct, out angularComponentB);
+                Matrix3x3.Subtract(ref linearComponent, ref angularComponentB, out k);
             }
             else
             {
@@ -255,7 +255,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             k.M11 += softness;
             k.M22 += softness;
             k.M33 += softness;
-            Matrix3X3.Invert(ref k, out massMatrix);
+            Matrix3x3.Invert(ref k, out massMatrix);
 
             Vector3.Add(ref connectionB.position, ref worldOffsetB, out error);
             Vector3.Subtract(ref error, ref connectionA.position, out error);
@@ -336,7 +336,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             lambda.Z = aVel.Z - bVel.Z + biasVelocity.Z - softness * accumulatedImpulse.Z;
 
             //Turn the velocity into an impulse.
-            Matrix3X3.Transform(ref lambda, ref massMatrix, out lambda);
+            Matrix3x3.Transform(ref lambda, ref massMatrix, out lambda);
 
             //ACcumulate the impulse
             Vector3.Add(ref accumulatedImpulse, ref lambda, out accumulatedImpulse);

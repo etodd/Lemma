@@ -1,6 +1,6 @@
-﻿using BEPUphysics.Collidables.MobileCollidables;
+﻿using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 
 namespace BEPUphysics.CollisionShapes
 {
@@ -27,7 +27,7 @@ namespace BEPUphysics.CollisionShapes
         /// </summary>
         /// <param name="volume">Volume of the shape.</param>
         /// <returns>Volume distribution of the shape.</returns>
-        public virtual Matrix3X3 ComputeVolumeDistribution(out float volume)
+        public virtual Matrix3x3 ComputeVolumeDistribution(out float volume)
         {
             ShapeDistributionInformation shapeInfo;
             ComputeDistributionInformation(out shapeInfo);
@@ -40,7 +40,7 @@ namespace BEPUphysics.CollisionShapes
         /// paired with mass and other tuning factors.
         /// </summary>
         /// <returns>Volume distribution of the shape.</returns>
-        public virtual Matrix3X3 ComputeVolumeDistribution()
+        public virtual Matrix3x3 ComputeVolumeDistribution()
         {
             ShapeDistributionInformation shapeInfo;
             ComputeDistributionInformation(out shapeInfo);
@@ -84,5 +84,11 @@ namespace BEPUphysics.CollisionShapes
         /// <returns>EntityCollidable that uses this shape.</returns>
         public abstract EntityCollidable GetCollidableInstance();
 
+        /// <summary>
+        /// Computes a bounding box for the shape given the specified transform.
+        /// </summary>
+        /// <param name="transform">Transform to apply to the shape to compute the bounding box.</param>
+        /// <param name="boundingBox">Bounding box for the shape given the transform.</param>
+        public abstract void GetBoundingBox(ref RigidTransform transform, out BoundingBox boundingBox);
     }
 }

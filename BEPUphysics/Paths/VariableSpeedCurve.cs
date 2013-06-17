@@ -43,7 +43,7 @@
         /// </summary>
         /// <param name="time">Time to evaluate.</param>
         /// <returns>Speed at the given time.</returns>
-        public override float GetSpeedAtCurveTime(float time)
+        public override float GetSpeedAtCurveTime(double time)
         {
             return SpeedCurve.Evaluate(time);
         }

@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using BEPUphysics.Constraints;
-using System.Collections.ObjectModel;
+﻿using BEPUphysics.Constraints;
 using BEPUphysics.DeactivationManagement;
-using BEPUphysics.DataStructures;
-using BEPUphysics.ResourceManagement;
 
 namespace BEPUphysics.SolverSystems
 {
@@ -34,7 +30,7 @@ namespace BEPUphysics.SolverSystems
         {
             //Initialize the connection.
             //It will usually be overridden and end up floating on back to the resource pool.
-            simulationIslandConnection = Resources.GetSimulationIslandConnection();
+            simulationIslandConnection = PhysicsResources.GetSimulationIslandConnection();
             simulationIslandConnection.Owner = this;
         }
 
@@ -124,7 +120,7 @@ namespace BEPUphysics.SolverSystems
             {
                 //This is a simulation island connection.  We already know that all connected objects share the
                 //same simulation island (or don't have one, in the case of kinematics).  All we have to do is test to see if that island is active!
-                for (int i = 0; i < simulationIslandConnection.entries.count; i++)
+                for (int i = 0; i < simulationIslandConnection.entries.Count; i++)
                 {
                     var island = simulationIslandConnection.entries.Elements[i].Member.SimulationIsland;
                     if (island != null && island.isActive)

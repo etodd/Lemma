@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
+using BEPUutilities.ResourceManagement;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
-using System.Collections.ObjectModel;
-using BEPUphysics.DataStructures;
-using BEPUphysics.ResourceManagement;
+using BEPUutilities;
+using BEPUutilities.DataStructures;
 
 namespace BEPUphysics.CollisionShapes.ConvexShapes
 {
@@ -38,10 +37,10 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             if (vertices.Count == 0)
                 throw new ArgumentException("Vertices list used to create a ConvexHullShape cannot be empty.");
 
-            var surfaceVertices = Resources.GetVectorList();
+            var surfaceVertices = CommonResources.GetVectorList();
             ComputeCenter(vertices, surfaceVertices);
             this.vertices = new RawList<Vector3>(surfaceVertices);
-            Resources.GiveBack(surfaceVertices);
+            CommonResources.GiveBack(surfaceVertices);
 
             OnShapeChanged();
         }
@@ -58,10 +57,10 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             if (vertices.Count == 0)
                 throw new ArgumentException("Vertices list used to create a ConvexHullShape cannot be empty.");
 
-            var surfaceVertices = Resources.GetVectorList();
+            var surfaceVertices = CommonResources.GetVectorList();
             center = ComputeCenter(vertices, surfaceVertices);
             this.vertices = new RawList<Vector3>(surfaceVertices);
-            Resources.GiveBack(surfaceVertices);
+            CommonResources.GiveBack(surfaceVertices);
 
             OnShapeChanged();
         }
@@ -100,8 +99,8 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             boundingBox = new BoundingBox();
 #endif
 
-            Matrix3X3 o;
-            Matrix3X3.CreateFromQuaternion(ref shapeTransform.Orientation, out o);
+            Matrix3x3 o;
+            Matrix3x3.CreateFromQuaternion(ref shapeTransform.Orientation, out o);
 
             float minX, maxX;
             float minY, maxY;
@@ -121,7 +120,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             int maxYIndex = 0;
             int minZIndex = 0;
             int maxZIndex = 0;
-            for (int i = 1; i < vertices.count; i++)
+            for (int i = 1; i < vertices.Count; i++)
             {
                 float dot;
                 Vector3.Dot(ref vertices.Elements[i], ref right, out dot);
@@ -163,12 +162,12 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
 
             Vector3 minXpoint, maxXpoint, minYpoint, maxYpoint, minZpoint, maxZpoint;
 
-            Matrix3X3.Transform(ref vertices.Elements[minXIndex], ref o, out minXpoint);
-            Matrix3X3.Transform(ref vertices.Elements[maxXIndex], ref o, out maxXpoint);
-            Matrix3X3.Transform(ref vertices.Elements[minYIndex], ref o, out minYpoint);
-            Matrix3X3.Transform(ref vertices.Elements[maxYIndex], ref o, out maxYpoint);
-            Matrix3X3.Transform(ref vertices.Elements[minZIndex], ref o, out minZpoint);
-            Matrix3X3.Transform(ref vertices.Elements[maxZIndex], ref o, out maxZpoint);
+            Matrix3x3.Transform(ref vertices.Elements[minXIndex], ref o, out minXpoint);
+            Matrix3x3.Transform(ref vertices.Elements[maxXIndex], ref o, out maxXpoint);
+            Matrix3x3.Transform(ref vertices.Elements[minYIndex], ref o, out minYpoint);
+            Matrix3x3.Transform(ref vertices.Elements[maxYIndex], ref o, out maxYpoint);
+            Matrix3x3.Transform(ref vertices.Elements[minZIndex], ref o, out minZpoint);
+            Matrix3x3.Transform(ref vertices.Elements[maxZIndex], ref o, out maxZpoint);
 
             boundingBox.Max.X = shapeTransform.Position.X + collisionMargin + maxXpoint.X;
             boundingBox.Max.Y = shapeTransform.Position.Y + collisionMargin + maxYpoint.Y;
@@ -185,7 +184,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             float max;
             Vector3.Dot(ref vertices.Elements[0], ref direction, out max);
             int maxIndex = 0;
-            for (int i = 1; i < vertices.count; i++)
+            for (int i = 1; i < vertices.Count; i++)
             {
                 float dot;
                 Vector3.Dot(ref vertices.Elements[i], ref direction, out dot);
@@ -264,11 +263,11 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         ///<returns>Center of the convex hull.</returns>
         public static Vector3 ComputeCenter(IList<Vector3> vertices, out float volume)
         {
-            var localSurfaceVertices = Resources.GetVectorList();
-            var surfaceTriangles = Resources.GetIntList();
+            var localSurfaceVertices = CommonResources.GetVectorList();
+            var surfaceTriangles = CommonResources.GetIntList();
             Vector3 toReturn = ComputeCenter(vertices, out volume, surfaceTriangles, localSurfaceVertices);
-            Resources.GiveBack(localSurfaceVertices);
-            Resources.GiveBack(surfaceTriangles);
+            CommonResources.GiveBack(localSurfaceVertices);
+            CommonResources.GiveBack(surfaceTriangles);
             return toReturn;
         }
 
@@ -281,9 +280,9 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         public static Vector3 ComputeCenter(IList<Vector3> vertices, IList<Vector3> outputLocalSurfaceVertices)
         {
             float volume;
-            var indices = Resources.GetIntList();
+            var indices = CommonResources.GetIntList();
             Vector3 toReturn = ComputeCenter(vertices, out volume, indices, outputLocalSurfaceVertices);
-            Resources.GiveBack(indices);
+            CommonResources.GiveBack(indices);
             return toReturn;
         }
 
@@ -322,8 +321,8 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             ConvexHullHelper.GetConvexHull(vertices, outputSurfaceTriangles, outputLocalSurfaceVertices);
 
             volume = 0;
-            var volumes = Resources.GetFloatList();
-            var centroids = Resources.GetVectorList();
+            var volumes = CommonResources.GetFloatList();
+            var centroids = CommonResources.GetVectorList();
             for (int k = 0; k < outputSurfaceTriangles.Count; k += 3)
             {
                 volumes.Add(Vector3.Dot(
@@ -343,8 +342,8 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             {
                 outputLocalSurfaceVertices[k] -= center;
             }
-            Resources.GiveBack(centroids);
-            Resources.GiveBack(volumes);
+            CommonResources.GiveBack(centroids);
+            CommonResources.GiveBack(volumes);
             return center;
         }
 
@@ -355,14 +354,14 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         /// </summary>
         /// <param name="volume">Volume of the shape.</param>
         /// <returns>Volume distribution of the shape.</returns>
-        public override Matrix3X3 ComputeVolumeDistribution(out float volume)
+        public override Matrix3x3 ComputeVolumeDistribution(out float volume)
         {
-            var surfaceTriangles = Resources.GetIntList();
-            var surfaceVertices = Resources.GetVectorList();
+            var surfaceTriangles = CommonResources.GetIntList();
+            var surfaceVertices = CommonResources.GetVectorList();
             ComputeCenter(out volume, surfaceTriangles, surfaceVertices);
-            Matrix3X3 toReturn = ComputeVolumeDistribution(volume, surfaceTriangles);
-            Resources.GiveBack(surfaceTriangles);
-            Resources.GiveBack(surfaceVertices);
+            Matrix3x3 toReturn = ComputeVolumeDistribution(volume, surfaceTriangles);
+            CommonResources.GiveBack(surfaceTriangles);
+            CommonResources.GiveBack(surfaceVertices);
             return toReturn;
         }
 
@@ -372,7 +371,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         ///<param name="volume">Volume of the convex hull.</param>
         ///<param name="localSurfaceTriangles">Surface triangles of the convex hull.</param>
         ///<returns>Volume distribution of the convex hull.</returns>
-        public Matrix3X3 ComputeVolumeDistribution(float volume, IList<int> localSurfaceTriangles)
+        public Matrix3x3 ComputeVolumeDistribution(float volume, IList<int> localSurfaceTriangles)
         {
             //TODO: This method has a lot of overlap with the volume calculation.  Conceptually very similar, could bundle tighter.
 
@@ -420,7 +419,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             ao *= offFactor;
             bo *= offFactor;
             co *= offFactor;
-            var distribution = new Matrix3X3(a, bo, co,
+            var distribution = new Matrix3x3(a, bo, co,
                                                    bo, b, ao,
                                                    co, ao, c);
 
@@ -436,7 +435,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         public override float ComputeMaximumRadius()
         {
             float maximumRadius = 0;
-            for (int i = 0; i < vertices.count; i++)
+            for (int i = 0; i < vertices.Count; i++)
             {
                 float tempDist = vertices.Elements[i].Length();
                 if (maximumRadius < tempDist)

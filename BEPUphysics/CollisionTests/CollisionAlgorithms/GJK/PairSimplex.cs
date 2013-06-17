@@ -1,6 +1,6 @@
 ﻿using BEPUphysics.CollisionShapes.ConvexShapes;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using System.Diagnostics;
 
 namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
@@ -92,12 +92,14 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
     {
         ///<summary>
         /// The baseline amount that a GJK iteration must progress through to avoid exiting.
+        /// Defaults to 1e-8f.
         ///</summary>
-        public static float ProgressionEpsilon = Toolbox.Epsilon * .1f;
+        public static float ProgressionEpsilon = 1e-8f;
         /// <summary>
         /// The baseline amount that an iteration must converge with its distance to avoid exiting.
+        /// Defaults to 1e-7f.
         /// </summary>
-        public static float DistanceConvergenceEpsilon = Toolbox.Epsilon;
+        public static float DistanceConvergenceEpsilon = 1e-7f;
 
         ///<summary>
         /// Simplex as viewed from the local space of A.
@@ -198,10 +200,10 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
                     D = new Vector3();
                     break;
                 case SimplexState.Segment:
-                    Matrix3X3 transform;
-                    Matrix3X3.CreateFromQuaternion(ref localTransformB.Orientation, out transform);
-                    Matrix3X3.Transform(ref cachedSimplex.LocalSimplexB.A, ref transform, out SimplexB.A);
-                    Matrix3X3.Transform(ref cachedSimplex.LocalSimplexB.B, ref transform, out SimplexB.B);
+                    Matrix3x3 transform;
+                    Matrix3x3.CreateFromQuaternion(ref localTransformB.Orientation, out transform);
+                    Matrix3x3.Transform(ref cachedSimplex.LocalSimplexB.A, ref transform, out SimplexB.A);
+                    Matrix3x3.Transform(ref cachedSimplex.LocalSimplexB.B, ref transform, out SimplexB.B);
                     Vector3.Add(ref SimplexB.A, ref LocalTransformB.Position, out SimplexB.A);
                     Vector3.Add(ref SimplexB.B, ref LocalTransformB.Position, out SimplexB.B);
 
@@ -218,10 +220,10 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
 
                     break;
                 case SimplexState.Triangle:
-                    Matrix3X3.CreateFromQuaternion(ref localTransformB.Orientation, out transform);
-                    Matrix3X3.Transform(ref cachedSimplex.LocalSimplexB.A, ref transform, out SimplexB.A);
-                    Matrix3X3.Transform(ref cachedSimplex.LocalSimplexB.B, ref transform, out SimplexB.B);
-                    Matrix3X3.Transform(ref cachedSimplex.LocalSimplexB.C, ref transform, out SimplexB.C);
+                    Matrix3x3.CreateFromQuaternion(ref localTransformB.Orientation, out transform);
+                    Matrix3x3.Transform(ref cachedSimplex.LocalSimplexB.A, ref transform, out SimplexB.A);
+                    Matrix3x3.Transform(ref cachedSimplex.LocalSimplexB.B, ref transform, out SimplexB.B);
+                    Matrix3x3.Transform(ref cachedSimplex.LocalSimplexB.C, ref transform, out SimplexB.C);
                     Vector3.Add(ref SimplexB.A, ref LocalTransformB.Position, out SimplexB.A);
                     Vector3.Add(ref SimplexB.B, ref LocalTransformB.Position, out SimplexB.B);
                     Vector3.Add(ref SimplexB.C, ref LocalTransformB.Position, out SimplexB.C);
@@ -244,11 +246,11 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
 
                     break;
                 case SimplexState.Tetrahedron:
-                    Matrix3X3.CreateFromQuaternion(ref localTransformB.Orientation, out transform);
-                    Matrix3X3.Transform(ref cachedSimplex.LocalSimplexB.A, ref transform, out SimplexB.A);
-                    Matrix3X3.Transform(ref cachedSimplex.LocalSimplexB.B, ref transform, out SimplexB.B);
-                    Matrix3X3.Transform(ref cachedSimplex.LocalSimplexB.C, ref transform, out SimplexB.C);
-                    Matrix3X3.Transform(ref cachedSimplex.LocalSimplexB.D, ref transform, out SimplexB.D);
+                    Matrix3x3.CreateFromQuaternion(ref localTransformB.Orientation, out transform);
+                    Matrix3x3.Transform(ref cachedSimplex.LocalSimplexB.A, ref transform, out SimplexB.A);
+                    Matrix3x3.Transform(ref cachedSimplex.LocalSimplexB.B, ref transform, out SimplexB.B);
+                    Matrix3x3.Transform(ref cachedSimplex.LocalSimplexB.C, ref transform, out SimplexB.C);
+                    Matrix3x3.Transform(ref cachedSimplex.LocalSimplexB.D, ref transform, out SimplexB.D);
                     Vector3.Add(ref SimplexB.A, ref LocalTransformB.Position, out SimplexB.A);
                     Vector3.Add(ref SimplexB.B, ref LocalTransformB.Position, out SimplexB.B);
                     Vector3.Add(ref SimplexB.C, ref LocalTransformB.Position, out SimplexB.C);
@@ -300,20 +302,20 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
                     Vector3.Subtract(ref SimplexB.A, ref LocalTransformB.Position, out simplex.LocalSimplexB.A);
                     Vector3.Subtract(ref SimplexB.B, ref LocalTransformB.Position, out simplex.LocalSimplexB.B);
 
-                    Matrix3X3 transform;
-                    Matrix3X3.CreateFromQuaternion(ref LocalTransformB.Orientation, out transform);
-                    Matrix3X3.TransformTranspose(ref simplex.LocalSimplexB.A, ref transform, out simplex.LocalSimplexB.A);
-                    Matrix3X3.TransformTranspose(ref simplex.LocalSimplexB.B, ref transform, out simplex.LocalSimplexB.B);
+                    Matrix3x3 transform;
+                    Matrix3x3.CreateFromQuaternion(ref LocalTransformB.Orientation, out transform);
+                    Matrix3x3.TransformTranspose(ref simplex.LocalSimplexB.A, ref transform, out simplex.LocalSimplexB.A);
+                    Matrix3x3.TransformTranspose(ref simplex.LocalSimplexB.B, ref transform, out simplex.LocalSimplexB.B);
                     break;
                 case SimplexState.Triangle:
                     Vector3.Subtract(ref SimplexB.A, ref LocalTransformB.Position, out simplex.LocalSimplexB.A);
                     Vector3.Subtract(ref SimplexB.B, ref LocalTransformB.Position, out simplex.LocalSimplexB.B);
                     Vector3.Subtract(ref SimplexB.C, ref LocalTransformB.Position, out simplex.LocalSimplexB.C);
 
-                    Matrix3X3.CreateFromQuaternion(ref LocalTransformB.Orientation, out transform);
-                    Matrix3X3.TransformTranspose(ref simplex.LocalSimplexB.A, ref transform, out simplex.LocalSimplexB.A);
-                    Matrix3X3.TransformTranspose(ref simplex.LocalSimplexB.B, ref transform, out simplex.LocalSimplexB.B);
-                    Matrix3X3.TransformTranspose(ref simplex.LocalSimplexB.C, ref transform, out simplex.LocalSimplexB.C);
+                    Matrix3x3.CreateFromQuaternion(ref LocalTransformB.Orientation, out transform);
+                    Matrix3x3.TransformTranspose(ref simplex.LocalSimplexB.A, ref transform, out simplex.LocalSimplexB.A);
+                    Matrix3x3.TransformTranspose(ref simplex.LocalSimplexB.B, ref transform, out simplex.LocalSimplexB.B);
+                    Matrix3x3.TransformTranspose(ref simplex.LocalSimplexB.C, ref transform, out simplex.LocalSimplexB.C);
                     break;
                 case SimplexState.Tetrahedron:
                     Vector3.Subtract(ref SimplexB.A, ref LocalTransformB.Position, out simplex.LocalSimplexB.A);
@@ -321,11 +323,11 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
                     Vector3.Subtract(ref SimplexB.C, ref LocalTransformB.Position, out simplex.LocalSimplexB.C);
                     Vector3.Subtract(ref SimplexB.D, ref LocalTransformB.Position, out simplex.LocalSimplexB.D);
 
-                    Matrix3X3.CreateFromQuaternion(ref LocalTransformB.Orientation, out transform);
-                    Matrix3X3.TransformTranspose(ref simplex.LocalSimplexB.A, ref transform, out simplex.LocalSimplexB.A);
-                    Matrix3X3.TransformTranspose(ref simplex.LocalSimplexB.B, ref transform, out simplex.LocalSimplexB.B);
-                    Matrix3X3.TransformTranspose(ref simplex.LocalSimplexB.C, ref transform, out simplex.LocalSimplexB.C);
-                    Matrix3X3.TransformTranspose(ref simplex.LocalSimplexB.D, ref transform, out simplex.LocalSimplexB.D);
+                    Matrix3x3.CreateFromQuaternion(ref LocalTransformB.Orientation, out transform);
+                    Matrix3x3.TransformTranspose(ref simplex.LocalSimplexB.A, ref transform, out simplex.LocalSimplexB.A);
+                    Matrix3x3.TransformTranspose(ref simplex.LocalSimplexB.B, ref transform, out simplex.LocalSimplexB.B);
+                    Matrix3x3.TransformTranspose(ref simplex.LocalSimplexB.C, ref transform, out simplex.LocalSimplexB.C);
+                    Matrix3x3.TransformTranspose(ref simplex.LocalSimplexB.D, ref transform, out simplex.LocalSimplexB.D);
                     break;
             }
             simplex.State = State;

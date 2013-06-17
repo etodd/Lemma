@@ -1,13 +1,13 @@
 ﻿using BEPUphysics.BroadPhaseEntries;
+using BEPUphysics.BroadPhaseEntries.Events;
 using BEPUphysics.BroadPhaseSystems;
 using BEPUphysics.CollisionShapes;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
 using BEPUphysics.CollisionRuleManagement;
 using System;
-using BEPUphysics.Collidables.Events;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 
-namespace BEPUphysics.Collidables
+namespace BEPUphysics.BroadPhaseEntries
 {
     ///<summary>
     /// Superclass of objects living in the collision detection pipeline
@@ -97,16 +97,16 @@ namespace BEPUphysics.Collidables
 
         internal void AddPair(CollidablePairHandler pair, ref int index)
         {
-            index = pairs.count;
+            index = pairs.Count;
             pairs.Add(pair);
         }
 
         internal void RemovePair(CollidablePairHandler pair, ref int index)
         {
-            if (pairs.count > index)
+            if (pairs.Count > index)
             {
                 pairs.FastRemoveAt(index);
-                if (pairs.count > index)
+                if (pairs.Count > index)
                 {
                     var endPair = pairs.Elements[index];
                     if (endPair.CollidableA == this)

@@ -2,10 +2,11 @@
 using BEPUphysics.BroadPhaseSystems;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
 using BEPUphysics.OtherSpaceStages;
-using BEPUphysics.Threading;
+using BEPUutilities;
 using System;
+using BEPUutilities.DataStructures;
 
-namespace BEPUphysics.Collidables.Events
+namespace BEPUphysics.BroadPhaseEntries.Events
 {
 
     ///<summary>

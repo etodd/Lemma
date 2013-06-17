@@ -2,9 +2,9 @@
 using BEPUphysics.CollisionTests.CollisionAlgorithms.GJK;
 using Microsoft.Xna.Framework;
 using BEPUphysics.CollisionShapes.ConvexShapes;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using BEPUphysics.Settings;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 using System.Diagnostics;
 
 namespace BEPUphysics.CollisionTests.CollisionAlgorithms
@@ -626,7 +626,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
                 }
 
 
-               contact.Id = -1;
+                contact.Id = -1;
 
                 if (contact.PenetrationDepth < convex.collisionMargin + triangle.collisionMargin)
                 {
@@ -641,7 +641,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             {
                 contactList.Add(ref contact);
             }
-            if (contactList.count > 0)
+            if (contactList.Count > 0)
                 return true;
 
             state = CollisionState.ExternalSeparated;

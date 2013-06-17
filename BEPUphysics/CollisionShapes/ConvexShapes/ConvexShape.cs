@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
+using BEPUphysics.CollisionTests.CollisionAlgorithms;
 using BEPUphysics.CollisionTests.CollisionAlgorithms.GJK;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using BEPUphysics.Settings;
 
 namespace BEPUphysics.CollisionShapes.ConvexShapes
@@ -26,7 +28,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             set
             {
                 if (value < 0)
-                    throw new Exception("Collision margin must be nonnegative..");
+                    throw new ArgumentException("Collision margin must be nonnegative..");
                 collisionMargin = value;
                 OnShapeChanged();
             }
@@ -114,13 +116,13 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         /// </summary>
         /// <param name="shapeTransform">Transform to use.</param>
         /// <param name="boundingBox">Bounding box of the transformed shape.</param>
-        public virtual void GetBoundingBox(ref RigidTransform shapeTransform, out BoundingBox boundingBox)
+        public override void GetBoundingBox(ref RigidTransform shapeTransform, out BoundingBox boundingBox)
         {
 #if !WINDOWS
             boundingBox = new BoundingBox();
 #endif
-            Matrix3X3 o;
-            Matrix3X3.CreateFromQuaternion(ref shapeTransform.Orientation, out o);
+            Matrix3x3 o;
+            Matrix3x3.CreateFromQuaternion(ref shapeTransform.Orientation, out o);
             //Sample the local directions from the orientation matrix, implicitly transposed.
 
             Vector3 right;
@@ -148,12 +150,12 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             GetLocalExtremePointWithoutMargin(ref direction, out forward);
 
 
-            Matrix3X3.Transform(ref right, ref o, out right);
-            Matrix3X3.Transform(ref left, ref o, out left);
-            Matrix3X3.Transform(ref up, ref o, out up);
-            Matrix3X3.Transform(ref down, ref o, out down);
-            Matrix3X3.Transform(ref backward, ref o, out backward);
-            Matrix3X3.Transform(ref forward, ref o, out forward);
+            Matrix3x3.Transform(ref right, ref o, out right);
+            Matrix3x3.Transform(ref left, ref o, out left);
+            Matrix3x3.Transform(ref up, ref o, out up);
+            Matrix3x3.Transform(ref down, ref o, out down);
+            Matrix3x3.Transform(ref backward, ref o, out backward);
+            Matrix3x3.Transform(ref forward, ref o, out forward);
 
             //These right/up/backward represent the extreme points in world space along the world space axes.
 
@@ -164,7 +166,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             boundingBox.Min.X = shapeTransform.Position.X - collisionMargin + left.X;
             boundingBox.Min.Y = shapeTransform.Position.Y - collisionMargin + down.Y;
             boundingBox.Min.Z = shapeTransform.Position.Z - collisionMargin + forward.Z;
-            
+
         }
 
         /// <summary>
@@ -177,14 +179,31 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         /// <returns>Whether or not the ray hit the target.</returns>
         public virtual bool RayTest(ref Ray ray, ref RigidTransform transform, float maximumLength, out RayHit hit)
         {
-            //TODO:
+            
             //RayHit newHit;
             //bool newBool = GJKToolbox.RayCast(ray, this, ref transform, maximumLength, out newHit);
-            //bool oldBool = OldGJKVerifier.RayCastGJK(ray.Position, ray.Direction, maximumLength, this, transform, out hit.Location, out hit.Normal, out hit.T);
-            //if (newBool != oldBool || ((newBool && oldBool) && Vector3.DistanceSquared(newHit.Location, hit.Location) > .01f))
-            //    Debug.WriteLine("break.");
-            //return oldBool;
-            return GJKToolbox.RayCast(ray, this, ref transform, maximumLength, out hit);
+            //RayHit oldHit;
+            //bool oldBool = OldGJKVerifier.RayCastGJK(ray.Position, ray.Direction, maximumLength, this, transform, out oldHit.Location, out oldHit.Normal, out oldHit.T);
+            //bool mprBool = MPRToolbox.RayCast(ray, maximumLength, this, ref transform, out hit);
+            ////if (newBool != oldBool || ((newBool && oldBool) && Vector3.DistanceSquared(newHit.Location, hit.Location) > .01f))
+            ////    Debug.WriteLine("break.");
+            //return mprBool;
+
+            //if (GJKToolbox.RayCast(ray, this, ref transform, maximumLength, out hit))
+            //{
+            //    //GJK toolbox doesn't normalize the hit normal; it's unnecessary for some other systems so it just saves on time.
+            //    //It would be nice if ray tests always normalized it though.
+            //    float length = hit.Normal.LengthSquared();
+            //    if (length > Toolbox.Epsilon)
+            //        Vector3.Divide(ref hit.Normal, (float) Math.Sqrt(length), out hit.Normal);
+            //    else
+            //        hit.Normal = new Vector3();
+            //    return true;
+            //}
+
+            //return false;
+
+            return MPRToolbox.RayCast(ray, maximumLength, this, ref transform, out hit);
         }
 
         /// <summary>
@@ -227,16 +246,16 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         /// </summary>
         /// <param name="volume">Volume of the shape.</param>
         /// <returns>Volume distribution of the shape.</returns>
-        public override Matrix3X3 ComputeVolumeDistribution(out float volume)
+        public override Matrix3x3 ComputeVolumeDistribution(out float volume)
         {
             return InertiaHelper.ComputeVolumeDistribution(this, out volume);
         }
 
         protected override void OnShapeChanged()
         {
-            base.OnShapeChanged();
             minimumRadius = ComputeMinimumRadius();
             maximumRadius = ComputeMaximumRadius();
+            base.OnShapeChanged();
         }
 
         /// <summary>
@@ -245,7 +264,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         /// paired with mass and other tuning factors.
         /// </summary>
         /// <returns>Volume distribution of the shape.</returns>
-        public override Matrix3X3 ComputeVolumeDistribution()
+        public override Matrix3x3 ComputeVolumeDistribution()
         {
             float volume;
             return ComputeVolumeDistribution(out volume);
@@ -255,6 +274,19 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         {
             shapeInfo.VolumeDistribution = ComputeVolumeDistribution(out shapeInfo.Volume);
             shapeInfo.Center = ComputeCenter();
+        }
+
+        /// <summary>
+        /// Computes a bounding box for the shape and expands it.
+        /// </summary>
+        /// <param name="transform">Transform to use to position the shape.</param>
+        /// <param name="sweep">Extra to add to the bounding box.</param>
+        /// <param name="boundingBox">Expanded bounding box.</param>
+        public void GetSweptBoundingBox(ref RigidTransform transform, ref Vector3 sweep, out BoundingBox boundingBox)
+        {
+            GetBoundingBox(ref transform, out boundingBox);
+            Toolbox.ExpandBoundingBox(ref boundingBox, ref sweep);
+
         }
 
         /// <summary>
@@ -269,7 +301,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         {
             GetLocalBoundingBox(ref shapeTransform, ref spaceTransform, out boundingBox);
             Vector3 expansion;
-            Matrix3X3.TransformTranspose(ref sweep, ref spaceTransform.LinearTransform, out expansion);
+            Matrix3x3.TransformTranspose(ref sweep, ref spaceTransform.LinearTransform, out expansion);
             Toolbox.ExpandBoundingBox(ref boundingBox, ref expansion);
         }
 
@@ -324,12 +356,12 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
 
 
             //This could be optimized.  Unnecessary transformation information gets computed.
-            Matrix3X3.Transform(ref right, ref transform.LinearTransform, out right);
-            Matrix3X3.Transform(ref left, ref transform.LinearTransform, out left);
-            Matrix3X3.Transform(ref up, ref transform.LinearTransform, out up);
-            Matrix3X3.Transform(ref down, ref transform.LinearTransform, out down);
-            Matrix3X3.Transform(ref backward, ref transform.LinearTransform, out backward);
-            Matrix3X3.Transform(ref forward, ref transform.LinearTransform, out forward);
+            Matrix3x3.Transform(ref right, ref transform.LinearTransform, out right);
+            Matrix3x3.Transform(ref left, ref transform.LinearTransform, out left);
+            Matrix3x3.Transform(ref up, ref transform.LinearTransform, out up);
+            Matrix3x3.Transform(ref down, ref transform.LinearTransform, out down);
+            Matrix3x3.Transform(ref backward, ref transform.LinearTransform, out backward);
+            Matrix3x3.Transform(ref forward, ref transform.LinearTransform, out forward);
 
             //These right/up/backward represent the extreme points in world space along the world space axes.
             boundingBox.Max.X = transform.Translation.X + right.X;

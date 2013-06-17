@@ -1,6 +1,7 @@
 ﻿using BEPUphysics.Constraints.SolverGroups;
 using BEPUphysics.Entities;
 using System;
+using BEPUutilities.DataStructures;
 
 namespace BEPUphysics.Constraints.Collision
 {
@@ -77,7 +78,7 @@ namespace BEPUphysics.Constraints.Collision
             }
         }
 
-        protected internal override void CollectInvolvedEntities(DataStructures.RawList<Entity> outputInvolvedEntities)
+        protected internal override void CollectInvolvedEntities(RawList<Entity> outputInvolvedEntities)
         {
             //The default implementation for solver groups looks at every single subconstraint.
             //That's not necessary for these special constraints.

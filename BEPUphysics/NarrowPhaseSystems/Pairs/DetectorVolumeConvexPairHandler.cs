@@ -1,9 +1,9 @@
 ﻿using BEPUphysics.BroadPhaseEntries;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using System;
 using BEPUphysics.CollisionTests.CollisionAlgorithms;
-using BEPUphysics.DataStructures;
-using BEPUphysics.MathExtensions;
+using BEPUutilities.DataStructures;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 using BEPUphysics.CollisionShapes.ConvexShapes;
 
@@ -35,7 +35,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                 convex = entryB as ConvexCollidable;
                 if (convex == null)
                 {
-                    throw new Exception("Incorrect types passed to pair handler.");
+                    throw new ArgumentException("Incorrect types passed to pair handler.");
                 }
             }
         }
@@ -64,7 +64,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
 
             var transform = new RigidTransform { Orientation = Quaternion.Identity };
             DetectorVolume.TriangleMesh.Tree.GetOverlaps(convex.boundingBox, overlaps);
-            for (int i = 0; i < overlaps.count; i++)
+            for (int i = 0; i < overlaps.Count; i++)
             {
                 DetectorVolume.TriangleMesh.Data.GetTriangle(overlaps.Elements[i], out triangle.vA, out triangle.vB, out triangle.vC);
                 Vector3.Add(ref triangle.vA, ref triangle.vB, out transform.Position);

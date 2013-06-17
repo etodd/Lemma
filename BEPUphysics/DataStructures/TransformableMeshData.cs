@@ -1,4 +1,4 @@
-﻿using BEPUphysics.MathExtensions;
+﻿using BEPUutilities;
 using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.DataStructures

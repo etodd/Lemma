@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.Collidables;
+using BEPUphysics.BroadPhaseEntries;
 using BEPUphysics.CollisionRuleManagement;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 using BEPUphysics.Materials;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using Microsoft.Xna.Framework.Input;
 
 namespace BEPUphysics.NarrowPhaseSystems.Pairs
@@ -89,7 +89,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                 if (!containedPairs.Contains(other))
                     pairsToRemove.Add(other);
             }
-            for (int i = 0; i < pairsToRemove.count; i++)
+            for (int i = 0; i < pairsToRemove.Count; i++)
             {
                 var toReturn = subPairs[pairsToRemove.Elements[i]];
                 subPairs.Remove(pairsToRemove.Elements[i]);

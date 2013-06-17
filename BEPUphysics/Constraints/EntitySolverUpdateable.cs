@@ -1,11 +1,7 @@
 using System.Collections.Generic;
-using System.Threading;
 using BEPUphysics.Constraints.SolverGroups;
-using BEPUphysics.DeactivationManagement;
 using BEPUphysics.Entities;
-using BEPUphysics.ResourceManagement;
-using System.Collections.ObjectModel;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 using BEPUphysics.SolverSystems;
 
 namespace BEPUphysics.Constraints
@@ -133,9 +129,9 @@ namespace BEPUphysics.Constraints
         {
             //First verify that something really changed.
             bool entitiesChanged = false;
-            RawList<Entity> newInvolvedEntities = Resources.GetEntityRawList();
+            RawList<Entity> newInvolvedEntities = PhysicsResources.GetEntityRawList();
             CollectInvolvedEntities(newInvolvedEntities);
-            if (newInvolvedEntities.count == involvedEntities.count)
+            if (newInvolvedEntities.Count == involvedEntities.Count)
             {
                 for (int i = 0; i < newInvolvedEntities.Count; i++)
                 {
@@ -155,7 +151,7 @@ namespace BEPUphysics.Constraints
             {
                 //Probably need to wake things up given that such a significant change was made.
 
-                for (int i = 0; i < involvedEntities.count; i++)
+                for (int i = 0; i < involvedEntities.Count; i++)
                 {
                     Entity e = involvedEntities.Elements[i];
                     if (e.isDynamic)
@@ -174,7 +170,7 @@ namespace BEPUphysics.Constraints
                     SolverGroup.OnInvolvedEntitiesChanged();
 
                 //We woke up the FORMER involved entities, now wake up the current involved entities.
-                for (int i = 0; i < involvedEntities.count; i++)
+                for (int i = 0; i < involvedEntities.Count; i++)
                 {
                     Entity e = involvedEntities.Elements[i];
                     if (e.isDynamic)
@@ -184,7 +180,7 @@ namespace BEPUphysics.Constraints
                     }
                 }
             }
-            Resources.GiveBack(newInvolvedEntities);
+            PhysicsResources.GiveBack(newInvolvedEntities);
         }
 
         /// <summary>
@@ -223,21 +219,31 @@ namespace BEPUphysics.Constraints
             //simulation islands hear about it.  This is NOT thread safe.
             var deactivationManager = simulationIslandConnection.DeactivationManager;
 
+            //Orphan the simulation island connection since it's about to get replaced.
+            //There's three possible situations here:
+            //1) We belong to the DeactivationManager.
+            //2) We don't belong to a DeactivationManager and the connection is slated for removal (we were in the deactivation manager before).
+            //   This can happen when a solver updateable associated with a pair gets removed and cleaned up.
+            //3) We don't belong to a DeactivationManager and the connection is not slated for removal (we weren't in a deactivation manager before).
 
+            //In Case #1, all we have to do is orphan the connection and remove it from the manager. This performs any splits necessary. The replacement connection will force any necessary merges.
+            //In Case #2, we were just removed but the connection is still considered to have an owner.
+            //It won't get cleaned up by the removal, and doing it here would be premature: orphan the connection so the next deactivation manager splits flush cleans it up!
+            //In Case #3, we have full control over the simulation island connection because there is no interaction with a deactivation manager. We can just get rid of it directly.
+            simulationIslandConnection.Owner = null; 
             if (deactivationManager != null)
             {
-                simulationIslandConnection.Owner = null; //Orphan the simulation island connection.
                 deactivationManager.Remove(simulationIslandConnection);
             }
-            else if (!simulationIslandConnection.SlatedForRemoval) //If it's not already going to be cleaned up, then we need to do it here.
-                Resources.GiveBack(simulationIslandConnection); //Well, since we're going to orphan the connection, we'll need to take care of its trash.
+            else if (!simulationIslandConnection.SlatedForRemoval) //If it's already been removed, cleaning it ourselves would prevent proper simulation island splits in the deactivation manager split flush.
+                PhysicsResources.GiveBack(simulationIslandConnection); //Well, since we're going to orphan the connection, we'll need to take care of its trash.
 
 
             //The SimulationIslandConnection is immutable.
             //So create a new one!
             //Assume we've already dealt with the old connection.
-            simulationIslandConnection = Resources.GetSimulationIslandConnection();
-            for (int i = 0; i < involvedEntities.count; i++)
+            simulationIslandConnection = PhysicsResources.GetSimulationIslandConnection();
+            for (int i = 0; i < involvedEntities.Count; i++)
             {
                 simulationIslandConnection.Add(involvedEntities.Elements[i].activityInformation);
             }

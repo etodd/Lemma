@@ -23,15 +23,18 @@ namespace BEPUphysics.Materials
 
 
         ///<summary>
-        /// Default coefficient of kinetic friction.
+        /// Default coefficient of kinetic friction. 
+        /// Defaults to 0.8.
         ///</summary>
         public static float DefaultKineticFriction = .8f;
         ///<summary>
         /// Default coefficient of static friction.
+        /// Defaults to 1.
         ///</summary>
         public static float DefaultStaticFriction = 1f;
         ///<summary>
         /// Default coefficient of restitution.
+        /// Defaults to 0.
         ///</summary>
         public static float DefaultBounciness;
 

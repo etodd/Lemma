@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using BEPUphysics.Collidables.MobileCollidables;
-using BEPUphysics.MathExtensions;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 
 namespace BEPUphysics.CollisionShapes.ConvexShapes
 {
@@ -113,8 +113,8 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             shapes.Add(firstShape);
             shapes.Add(secondShape);
             shapes.Changed += ShapesChanged;
-            localOffset = -ComputeCenter();
             OnShapeChanged();
+            localOffset = -ComputeCenter();
         }
 
         /// <summary>
@@ -125,14 +125,14 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         public MinkowskiSumShape(IList<OrientedConvexShapeEntry> shapeEntries)
         {
             if (shapeEntries.Count == 0)
-                throw new Exception("Cannot create a wrapped shape with no contained shapes.");
+                throw new ArgumentException("Cannot create a wrapped shape with no contained shapes.");
             for (int i = 0; i < shapeEntries.Count; i++)
             {
                 shapes.Add(shapeEntries[i]);
             }
             shapes.Changed += ShapesChanged;
-            localOffset = -ComputeCenter();
             OnShapeChanged();
+            localOffset = -ComputeCenter();
         }
 
         void ShapesChanged(ObservableList<OrientedConvexShapeEntry> list)
@@ -154,13 +154,13 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         ///<param name="extremePoint">Extreme point on the shape.</param>
         public override void GetLocalExtremePointWithoutMargin(ref Vector3 direction, out Vector3 extremePoint)
         {
-            var transform = new RigidTransform {Orientation = shapes.list.Elements[0].Orientation};
-            shapes.list.Elements[0].CollisionShape.GetExtremePoint(direction, ref transform, out extremePoint);
-            for (int i = 1; i < shapes.list.count; i++)
+            var transform = new RigidTransform { Orientation = shapes.WrappedList.Elements[0].Orientation };
+            shapes.WrappedList.Elements[0].CollisionShape.GetExtremePoint(direction, ref transform, out extremePoint);
+            for (int i = 1; i < shapes.WrappedList.Count; i++)
             {
                 Vector3 temp;
-                transform.Orientation = shapes.list.Elements[i].Orientation;
-                shapes.list.Elements[i].CollisionShape.GetExtremePoint(direction, ref transform, out temp);
+                transform.Orientation = shapes.WrappedList.Elements[i].Orientation;
+                shapes.WrappedList.Elements[i].CollisionShape.GetExtremePoint(direction, ref transform, out temp);
                 Vector3.Add(ref extremePoint, ref temp, out extremePoint);
             }
             Vector3.Add(ref extremePoint, ref localOffset, out extremePoint);
@@ -177,7 +177,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             float minRadius = 0;
             for (int i = 0; i < shapes.Count; i++)
             {
-                minRadius += shapes.list.Elements[i].CollisionShape.ComputeMinimumRadius();
+                minRadius += shapes.WrappedList.Elements[i].CollisionShape.ComputeMinimumRadius();
             }
             return minRadius + collisionMargin;
         }
@@ -195,7 +195,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             float maxRadius = 0;
             for (int i = 0; i < shapes.Count; i++)
             {
-                maxRadius += shapes.list.Elements[i].CollisionShape.ComputeMaximumRadius();
+                maxRadius += shapes.WrappedList.Elements[i].CollisionShape.ComputeMaximumRadius();
             }
             return maxRadius + collisionMargin;
         }

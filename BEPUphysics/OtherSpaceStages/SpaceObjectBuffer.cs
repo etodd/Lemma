@@ -1,4 +1,5 @@
-﻿using BEPUphysics.Threading;
+﻿using BEPUutilities;
+using BEPUutilities.DataStructures;
 
 namespace BEPUphysics.OtherSpaceStages
 {

@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
 using BEPUphysics.Entities;
 using BEPUphysics.CollisionRuleManagement;
-using BEPUphysics.Collidables;
+using BEPUphysics.BroadPhaseEntries;
 
 namespace BEPUphysics.Settings
 {
@@ -61,6 +61,8 @@ namespace BEPUphysics.Settings
         /// Defaults to false.
         /// </summary>
         public static bool UseExtraExpansionForContinuousBoundingBoxes;
+
+
 
         /// <summary>
         /// Delegate which determines if a given pair should be allowed to run continuous collision detection.

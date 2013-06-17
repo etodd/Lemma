@@ -6,11 +6,10 @@ using BEPUphysics.UpdateableSystems;
 using BEPUphysics.Entities.Prefabs;
 using Microsoft.Xna.Framework;
 using BEPUphysics.CollisionRuleManagement;
-using BEPUphysics.MathExtensions;
 using BEPUphysics.Entities;
 using BEPUphysics;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using Lemma.Components;
 using BEPUphysics.CollisionTests;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
@@ -146,7 +145,7 @@ namespace Lemma.Util
 			this.Body.CollisionInformation.CollisionRules.Group = Character.CharacterGroup;
 			this.defaultCharacterHeight = characterHeight;
 			this.crouchedCharacterHeight = crouchedHeight;
-			this.Body.CollisionInformation.Events.ContactCreated += new BEPUphysics.Collidables.Events.ContactCreatedEventHandler<EntityCollidable>(Events_ContactCreated);
+			this.Body.CollisionInformation.Events.ContactCreated += new BEPUphysics.BroadPhaseEntries.Events.ContactCreatedEventHandler<EntityCollidable>(Events_ContactCreated);
 			this.collisionPairCollector = new Box(position + new Vector3(0, (characterHeight * -0.5f) - supportHeight, 0), characterWidth, supportHeight * 2, characterWidth, 1);
 			this.collisionPairCollector.CollisionInformation.CollisionRules.Personal = CollisionRule.NoNarrowPhaseUpdate; //Prevents collision detection/contact generation from being run.
 			this.collisionPairCollector.IsAffectedByGravity = false;
@@ -156,8 +155,8 @@ namespace Lemma.Util
 			this.defaultSupportHeight = supportHeight;
 			this.crouchedSupportHeight = crouchedSupportHeight;
 
-			this.Body.LocalInertiaTensorInverse = new Matrix3X3();
-			this.collisionPairCollector.LocalInertiaTensorInverse = new Matrix3X3();
+			this.Body.LocalInertiaTensorInverse = new BEPUutilities.Matrix3x3();
+			this.collisionPairCollector.LocalInertiaTensorInverse = new BEPUutilities.Matrix3x3();
 
 			//Make the body slippery.
 			//Note that this will not make all collisions have zero friction;
@@ -218,11 +217,8 @@ namespace Lemma.Util
 			// linear velocity of point on body relative to center
 			Vector3 supportLocationVelocity;
 			if (supportEntity != null)
-			{
 				supportLocationVelocity = supportEntity.LinearVelocity + //linear component
 											Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
-				supportEntity.ActivityInformation.Activate();
-			}
 			else
 				supportLocationVelocity = new Vector3();
 
@@ -314,12 +310,13 @@ namespace Lemma.Util
 		{
 			supportEntity = null;
 			supportEntityTag = null;
-			supportLocation = Toolbox.NoVector;
-			supportNormal = Toolbox.NoVector;
+			supportLocation = BEPUutilities.Toolbox.NoVector;
+			supportNormal = BEPUutilities.Toolbox.NoVector;
 			supportDistance = float.MaxValue;
 
+			const float fudgeFactor = 0.1f;
 			Vector3 rayOrigin = this.Body.Position;
-			rayOrigin.Y += this.Body.Height * -0.5f;
+			rayOrigin.Y += fudgeFactor + this.Body.Height * -0.5f;
 
 			for (int i = 0; i < this.collisionPairCollector.CollisionInformation.Pairs.Count; i++)
 			{
@@ -339,13 +336,13 @@ namespace Lemma.Util
 				//The 'glue' effect should only occur if the character has a solid hold on the ground though.
 				//Otherwise, the character is falling or sliding around uncontrollably.
 				if (this.HasTraction && !this.IsSwimming)
-					maximumDistance = (this.SupportHeight * 2.0f);
+					maximumDistance = fudgeFactor + (this.SupportHeight * 2.0f);
 				else
-					maximumDistance = this.SupportHeight;
+					maximumDistance = fudgeFactor + this.SupportHeight;
 
 				foreach (Vector3 rayStart in this.rayOffsets.Select(x => x + rayOrigin))
 				{
-					RayHit rayHit;
+					BEPUutilities.RayHit rayHit;
 					// Fire a ray at the candidate and determine some details!
 					if (candidate.RayCast(new Ray(rayStart, Vector3.Down), maximumDistance, out rayHit))
 					{
@@ -357,7 +354,7 @@ namespace Lemma.Util
 						// We want to find the closest support, so compare it against the last closest support.
 						if (rayHit.T < supportDistance && n.Y > 0.25f)
 						{
-							supportDistance = rayHit.T;
+							supportDistance = rayHit.T - fudgeFactor;
 							supportLocation = rayHit.Location;
 							if (rayHit.T < 0.0f)
 								supportNormal = Vector3.Up;
@@ -428,6 +425,7 @@ namespace Lemma.Util
 				Vector3 supportLocation = this.SupportLocation;
 				Vector3 impulse = (this.Body.Mass * 1.5f) * ((Space)this.Space).ForceUpdater.Gravity * dt;
 				supportEntity.ApplyImpulse(ref supportLocation, ref impulse);
+				supportEntity.ActivityInformation.Activate();
 			}
 		}
 

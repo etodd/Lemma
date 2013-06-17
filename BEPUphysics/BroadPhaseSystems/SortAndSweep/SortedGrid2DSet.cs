@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using BEPUphysics.DataStructures;
-using BEPUphysics.ResourceManagement;
+﻿using BEPUutilities.DataStructures;
+using BEPUutilities.ResourceManagement;
 
 namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
 {
@@ -125,7 +121,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
             if (TryGetIndex(ref index, out cellIndex, out sortingHash))
             {
                 cells.Elements[cellIndex].Remove(entry);
-                if (cells.Elements[cellIndex].entries.count == 0)
+                if (cells.Elements[cellIndex].entries.Count == 0)
                 {
                     //The cell is now empty.  Give it back to the pool.
                     var toRemove = cells.Elements[cellIndex];

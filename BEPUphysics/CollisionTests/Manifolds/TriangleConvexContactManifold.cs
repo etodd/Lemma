@@ -1,13 +1,13 @@
 ﻿using System;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.CollisionTests.CollisionAlgorithms;
+using BEPUutilities.ResourceManagement;
 using Microsoft.Xna.Framework;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 using BEPUphysics.Settings;
-using BEPUphysics.ResourceManagement;
 using BEPUphysics.CollisionShapes.ConvexShapes;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 
 namespace BEPUphysics.CollisionTests.Manifolds
 {
@@ -79,11 +79,11 @@ namespace BEPUphysics.CollisionTests.Manifolds
             //TODO: this could be quicker and cleaner.
             localTriangleShape.collisionMargin = triangle.Shape.collisionMargin;
             localTriangleShape.sidedness = triangle.Shape.sidedness;
-            Matrix3X3 orientation;
-            Matrix3X3.CreateFromQuaternion(ref triangle.worldTransform.Orientation, out orientation);
-            Matrix3X3.Transform(ref triangle.Shape.vA, ref orientation, out localTriangleShape.vA);
-            Matrix3X3.Transform(ref triangle.Shape.vB, ref orientation, out localTriangleShape.vB);
-            Matrix3X3.Transform(ref triangle.Shape.vC, ref orientation, out localTriangleShape.vC);
+            Matrix3x3 orientation;
+            Matrix3x3.CreateFromQuaternion(ref triangle.worldTransform.Orientation, out orientation);
+            Matrix3x3.Transform(ref triangle.Shape.vA, ref orientation, out localTriangleShape.vA);
+            Matrix3x3.Transform(ref triangle.Shape.vB, ref orientation, out localTriangleShape.vB);
+            Matrix3x3.Transform(ref triangle.Shape.vC, ref orientation, out localTriangleShape.vC);
             Vector3.Add(ref localTriangleShape.vA, ref triangle.worldTransform.Position, out localTriangleShape.vA);
             Vector3.Add(ref localTriangleShape.vB, ref triangle.worldTransform.Position, out localTriangleShape.vB);
             Vector3.Add(ref localTriangleShape.vC, ref triangle.worldTransform.Position, out localTriangleShape.vC);
@@ -91,28 +91,28 @@ namespace BEPUphysics.CollisionTests.Manifolds
             Vector3.Subtract(ref localTriangleShape.vA, ref convex.worldTransform.Position, out localTriangleShape.vA);
             Vector3.Subtract(ref localTriangleShape.vB, ref convex.worldTransform.Position, out localTriangleShape.vB);
             Vector3.Subtract(ref localTriangleShape.vC, ref convex.worldTransform.Position, out localTriangleShape.vC);
-            Matrix3X3.CreateFromQuaternion(ref convex.worldTransform.Orientation, out orientation);
-            Matrix3X3.TransformTranspose(ref localTriangleShape.vA, ref orientation, out localTriangleShape.vA);
-            Matrix3X3.TransformTranspose(ref localTriangleShape.vB, ref orientation, out localTriangleShape.vB);
-            Matrix3X3.TransformTranspose(ref localTriangleShape.vC, ref orientation, out localTriangleShape.vC);
+            Matrix3x3.CreateFromQuaternion(ref convex.worldTransform.Orientation, out orientation);
+            Matrix3x3.TransformTranspose(ref localTriangleShape.vA, ref orientation, out localTriangleShape.vA);
+            Matrix3x3.TransformTranspose(ref localTriangleShape.vB, ref orientation, out localTriangleShape.vB);
+            Matrix3x3.TransformTranspose(ref localTriangleShape.vC, ref orientation, out localTriangleShape.vC);
 
             //Now, generate a contact between the two shapes.
             ContactData contact;
             TinyStructList<ContactData> contactList;
             if (pairTester.GenerateContactCandidate(out contactList))
             {
-                for (int i = 0; i < contactList.count; i++)
+                for (int i = 0; i < contactList.Count; i++)
                 {
                     contactList.Get(i, out contact);
                     //Put the contact into world space.
-                    Matrix3X3.Transform(ref contact.Position, ref orientation, out contact.Position);
+                    Matrix3x3.Transform(ref contact.Position, ref orientation, out contact.Position);
                     Vector3.Add(ref contact.Position, ref convex.worldTransform.Position, out contact.Position);
-                    Matrix3X3.Transform(ref contact.Normal, ref orientation, out contact.Normal);
+                    Matrix3x3.Transform(ref contact.Normal, ref orientation, out contact.Normal);
                     //Check if the contact is unique before proceeding.
                     if (IsContactUnique(ref contact))
                     {
                         //Check if adding the new contact would overflow the manifold.
-                        if (contacts.count == 4)
+                        if (contacts.Count == 4)
                         {
                             //Adding that contact would overflow the manifold.  Reduce to the best subset.
                             bool addCandidate;
@@ -132,7 +132,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
             else
             {
                 //Clear out the contacts, it's separated.
-                for (int i = contacts.count - 1; i >= 0; i--)
+                for (int i = contacts.Count - 1; i >= 0; i--)
                     Remove(i);
             }
 
@@ -158,9 +158,9 @@ namespace BEPUphysics.CollisionTests.Manifolds
 
         private bool IsContactUnique(ref ContactData contactCandidate)
         {
-
+            contactCandidate.Validate();
             float distanceSquared;
-            for (int i = 0; i < contacts.count; i++)
+            for (int i = 0; i < contacts.Count; i++)
             {
                 Vector3.DistanceSquared(ref contacts.Elements[i].Position, ref contactCandidate.Position, out distanceSquared);
                 if (distanceSquared < CollisionDetectionSettings.ContactMinimumSeparationDistanceSquared)
@@ -190,7 +190,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
                 convex = newCollidableB as ConvexCollidable;
                 triangle = newCollidableA as ConvexCollidable<TriangleShape>;
                 if (convex == null || triangle == null)
-                    throw new Exception("Inappropriate types used to initialize contact manifold.");
+                    throw new ArgumentException("Inappropriate types used to initialize contact manifold.");
             }
 
             pairTester.Initialize(convex.Shape, localTriangleShape);
@@ -199,7 +199,6 @@ namespace BEPUphysics.CollisionTests.Manifolds
         public override void CleanUp()
         {
             supplementData.Clear();
-            contacts.Clear();
             convex = null;
             triangle = null;
             pairTester.CleanUp();

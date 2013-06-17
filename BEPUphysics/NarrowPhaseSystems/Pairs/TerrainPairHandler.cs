@@ -1,16 +1,13 @@
 ﻿using System;
 using BEPUphysics.BroadPhaseEntries;
-using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
-using BEPUphysics.CollisionTests;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.CollisionTests.CollisionAlgorithms.GJK;
 using BEPUphysics.CollisionTests.Manifolds;
 using BEPUphysics.Constraints.Collision;
 using BEPUphysics.PositionUpdating;
 using BEPUphysics.Settings;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
-using BEPUphysics.ResourceManagement;
 
 namespace BEPUphysics.NarrowPhaseSystems.Pairs
 {
@@ -79,7 +76,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                 convex = entryA as ConvexCollidable;
 
                 if (terrain == null || convex == null)
-                    throw new Exception("Inappropriate types used to initialize pair.");
+                    throw new ArgumentException("Inappropriate types used to initialize pair.");
             }
 
             //Contact normal goes from A to B.
@@ -131,11 +128,11 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                 timeOfImpact = 1;
                 if (minimumRadius * minimumRadius < velocitySquared)
                 {
-                    var triangle = Resources.GetTriangle();
+                    var triangle = PhysicsResources.GetTriangle();
                     triangle.collisionMargin = 0;
                     Vector3 terrainUp = new Vector3(terrain.worldTransform.LinearTransform.M21, terrain.worldTransform.LinearTransform.M22, terrain.worldTransform.LinearTransform.M23);
                     //Spherecast against all triangles to find the earliest time.
-                    for (int i = 0; i < TerrainManifold.overlappedTriangles.count; i++)
+                    for (int i = 0; i < TerrainManifold.overlappedTriangles.Count; i++)
                     {
                         terrain.Shape.GetTriangle(ref TerrainManifold.overlappedTriangles.Elements[i], ref terrain.worldTransform, out triangle.vA, out triangle.vB, out triangle.vC);
                         //Put the triangle into 'localish' space of the convex.
@@ -170,7 +167,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                             }
                         }
                     }
-                    Resources.GiveBack(triangle);
+                    PhysicsResources.GiveBack(triangle);
                 }
 
 
@@ -186,7 +183,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
             //Find the contact's normal and friction forces.
             info.FrictionImpulse = 0;
             info.NormalImpulse = 0;
-            for (int i = 0; i < contactConstraint.frictionConstraints.count; i++)
+            for (int i = 0; i < contactConstraint.frictionConstraints.Count; i++)
             {
                 if (contactConstraint.frictionConstraints.Elements[i].PenetrationConstraint.contact == info.Contact)
                 {

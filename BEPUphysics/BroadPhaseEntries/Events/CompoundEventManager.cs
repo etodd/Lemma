@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.OtherSpaceStages;
 
-namespace BEPUphysics.Collidables.Events
+namespace BEPUphysics.BroadPhaseEntries.Events
 {
     /// <summary>
     /// Event manager for use with the CompoundCollidable.
@@ -33,7 +33,7 @@ namespace BEPUphysics.Collidables.Events
             }
             else
             {
-                throw new Exception("Cannot use a CompoundEventManager with anything but a CompoundCollidable.");
+                throw new InvalidOperationException("Cannot use a CompoundEventManager with anything but a CompoundCollidable.");
             }
             base.DispatchEvents();
         }

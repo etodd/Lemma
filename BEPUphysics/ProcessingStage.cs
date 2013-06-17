@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace BEPUphysics
 {
@@ -22,6 +23,22 @@ namespace BEPUphysics
         ///</summary>
         public event Action Finishing;
 
+#if PROFILE
+        /// <summary>
+        /// Gets the time elapsed in the previous execution of this stage, not including any hooked Starting or Finishing events.
+        /// </summary>
+        public double Time
+        {
+            get
+            {
+                return (end - start) / (double)Stopwatch.Frequency;
+            }
+        }
+
+        long start, end;
+      
+          
+#endif
         ///<summary>
         /// Updates the stage.
         ///</summary>
@@ -31,7 +48,15 @@ namespace BEPUphysics
                 return;
             if (Starting != null)
                 Starting();
+#if PROFILE
+            start = Stopwatch.GetTimestamp();
+#endif
+
             UpdateStage();
+
+#if PROFILE
+            end = Stopwatch.GetTimestamp();
+#endif
             if (Finishing != null)
                 Finishing();
         }

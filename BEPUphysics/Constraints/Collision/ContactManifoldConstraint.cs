@@ -1,5 +1,5 @@
 ﻿using BEPUphysics.Constraints.SolverGroups;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 using BEPUphysics.Entities;
 using BEPUphysics.CollisionTests;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
@@ -87,6 +87,7 @@ namespace BEPUphysics.Constraints.Collision
         ///<param name="contact">Contact to remove.</param>
         public abstract void RemoveContact(Contact contact);
 
+
         ///<summary>
         /// Initializes the constraint.
         ///</summary>
@@ -139,11 +140,10 @@ namespace BEPUphysics.Constraints.Collision
 
             if (isActive)
             {
-                var aValid = entityA != null && entityA.isDynamic;
                 isActiveInSolver = pair.BroadPhaseOverlap.collisionRule < CollisionRule.NoSolver &&
                                    ((entityA != null && entityA.isDynamic && entityA.activityInformation.IsActive) || //At least one of the objects must be an active dynamic entity.
                                    (entityB != null && entityB.isDynamic && entityB.activityInformation.IsActive));
-                for (int i = 0; i < solverUpdateables.count; i++)
+                for (int i = 0; i < solverUpdateables.Count; i++)
                 {
                     solverUpdateables.Elements[i].isActiveInSolver = solverUpdateables.Elements[i].isActive && isActiveInSolver;
                 }
@@ -182,6 +182,8 @@ namespace BEPUphysics.Constraints.Collision
                 materialInteraction.Bounciness = 0;
             }
         }
+
+
 
     }
 }

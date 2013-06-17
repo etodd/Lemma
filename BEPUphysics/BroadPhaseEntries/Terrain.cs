@@ -1,16 +1,13 @@
 ﻿using System;
-using BEPUphysics.Collidables.Events;
-using BEPUphysics.MathExtensions;
+using BEPUphysics.BroadPhaseEntries.Events;
+using BEPUutilities;
+using BEPUutilities.ResourceManagement;
 using Microsoft.Xna.Framework;
 using BEPUphysics.CollisionShapes;
-using BEPUphysics.Materials;
-using BEPUphysics.CollisionRuleManagement;
-using BEPUphysics.ResourceManagement;
-using BEPUphysics.CollisionShapes.ConvexShapes;
 using BEPUphysics.CollisionTests.CollisionAlgorithms;
 using BEPUphysics.OtherSpaceStages;
 
-namespace BEPUphysics.Collidables
+namespace BEPUphysics.BroadPhaseEntries
 {
     ///<summary>
     /// Heightfield-based unmovable collidable object.
@@ -82,7 +79,7 @@ namespace BEPUphysics.Collidables
             {
                 if (value.Owner != null && //Can't use a manager which is owned by a different entity.
                     value != events) //Stay quiet if for some reason the same event manager is being set.
-                    throw new Exception("Event manager is already owned by a Terrain; event managers cannot be shared.");
+                    throw new ArgumentException("Event manager is already owned by a Terrain; event managers cannot be shared.");
                 if (events != null)
                     events.Owner = null;
                 events = value;
@@ -116,7 +113,7 @@ namespace BEPUphysics.Collidables
             set
             {
                 if (value < 0)
-                    throw new Exception("Cannot use a negative thickness value.");
+                    throw new ArgumentException("Cannot use a negative thickness value.");
 
                 //Modify the bounding box to include the new thickness.
                 Vector3 down = Vector3.Normalize(worldTransform.LinearTransform.Down);
@@ -216,12 +213,12 @@ namespace BEPUphysics.Collidables
             hit = new RayHit();
             BoundingBox boundingBox;
             castShape.GetSweptLocalBoundingBox(ref startingTransform, ref worldTransform, ref sweep, out boundingBox);
-            var tri = Resources.GetTriangle();
-            var hitElements = Resources.GetTriangleIndicesList();
+            var tri = PhysicsResources.GetTriangle();
+            var hitElements = PhysicsResources.GetTriangleIndicesList();
             if (Shape.GetOverlaps(boundingBox, hitElements))
             {
                 hit.T = float.MaxValue;
-                for (int i = 0; i < hitElements.count; i++)
+                for (int i = 0; i < hitElements.Count; i++)
                 {
                     Shape.GetTriangle(ref hitElements.Elements[i], ref worldTransform, out tri.vA, out tri.vB, out tri.vC);
                     Vector3 center;
@@ -248,12 +245,12 @@ namespace BEPUphysics.Collidables
                     }
                 }
                 tri.maximumRadius = 0;
-                Resources.GiveBack(tri);
-                Resources.GiveBack(hitElements);
+                PhysicsResources.GiveBack(tri);
+                PhysicsResources.GiveBack(hitElements);
                 return hit.T != float.MaxValue;
             }
-            Resources.GiveBack(tri);
-            Resources.GiveBack(hitElements);
+            PhysicsResources.GiveBack(tri);
+            PhysicsResources.GiveBack(hitElements);
             return false;
         }
 

@@ -26,18 +26,18 @@ namespace BEPUphysics.UpdateableSystems
             }
         }
 
-        private bool isSequentiallyUpdated = true;
+        private bool isUpdatedSequentially = true;
         /// <summary>
         /// Gets and sets whether or not the updateable should be updated sequentially even in a multithreaded space.
         /// If this is true, the updateable can make use of the space's ThreadManager for internal multithreading.
         /// </summary>
         public bool IsUpdatedSequentially
         {
-            get { return isSequentiallyUpdated; }
+            get { return isUpdatedSequentially; }
             set
             {
-                bool oldValue = isSequentiallyUpdated;
-                isSequentiallyUpdated = value;
+                bool oldValue = isUpdatedSequentially;
+                isUpdatedSequentially = value;
                 if (value != oldValue)
                     for (int i = 0; i < managers.Count; i++)
                     {

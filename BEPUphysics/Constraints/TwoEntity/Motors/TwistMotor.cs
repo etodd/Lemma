@@ -1,7 +1,7 @@
 ﻿using System;
 using BEPUphysics.Entities;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 
 namespace BEPUphysics.Constraints.TwoEntity.Motors
 {
@@ -314,7 +314,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             Vector3 transformedAxis;
             if (connectionA.isDynamic)
             {
-                Matrix3X3.Transform(ref jacobianA, ref connectionA.inertiaTensorInverse, out transformedAxis);
+                Matrix3x3.Transform(ref jacobianA, ref connectionA.inertiaTensorInverse, out transformedAxis);
                 Vector3.Dot(ref transformedAxis, ref jacobianA, out entryA);
             }
             else
@@ -324,7 +324,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             float entryB;
             if (connectionB.isDynamic)
             {
-                Matrix3X3.Transform(ref jacobianB, ref connectionB.inertiaTensorInverse, out transformedAxis);
+                Matrix3x3.Transform(ref jacobianB, ref connectionB.inertiaTensorInverse, out transformedAxis);
                 Vector3.Dot(ref transformedAxis, ref jacobianB, out entryB);
             }
             else

@@ -1,12 +1,11 @@
 ﻿using System;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.CollisionTests.CollisionAlgorithms;
+using BEPUutilities.ResourceManagement;
 using Microsoft.Xna.Framework;
-using BEPUphysics.DataStructures;
-using BEPUphysics.ResourceManagement;
+using BEPUutilities.DataStructures;
 using BEPUphysics.CollisionShapes.ConvexShapes;
-using System.Diagnostics;
 
 namespace BEPUphysics.CollisionTests.Manifolds
 {
@@ -68,7 +67,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
                     BoxContactData* manifoldPointer = &manifold.D1;
                     Vector3.Negate(ref axis, out axis);
                     var toRemove = new TinyList<int>();
-                    for (int i = 0; i < contacts.count; i++)
+                    for (int i = 0; i < contacts.Count; i++)
                     {
                         bool found = false;
                         for (int j = manifold.Count - 1; j >= 0; j--)
@@ -76,11 +75,13 @@ namespace BEPUphysics.CollisionTests.Manifolds
                             if (contacts.Elements[i].Id == manifoldPointer[j].Id)
                             {
                                 found = true;
+                                contacts.Elements[i].Validate();
                                 //Update contact...
                                 contacts.Elements[i].Position = manifoldPointer[j].Position;
                                 contacts.Elements[i].PenetrationDepth = -manifoldPointer[j].Depth;
                                 contacts.Elements[i].Normal = axis;
                                 //Remove manifold entry
+                                contacts.Elements[i].Validate();
                                 manifold.RemoveAt(j);
                                 break;
                             }
@@ -114,7 +115,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
             else
             {
                 //Not colliding, so get rid of it.
-                for (int i = contacts.count - 1; i >= 0; i--)
+                for (int i = contacts.Count - 1; i >= 0; i--)
                 {
                     Remove(i);
                 }
@@ -133,7 +134,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
                 Vector3.Negate(ref axis, out axis);
                 TinyList<int> toRemove = new TinyList<int>();
                 BoxContactData data;
-                for (int i = 0; i < contacts.count; i++)
+                for (int i = 0; i < contacts.Count; i++)
                 {
                     bool found = false;
                     for (int j = manifold.Count - 1; j >= 0; j--)
@@ -146,6 +147,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
                             contacts.Elements[i].Position = data.Position;
                             contacts.Elements[i].PenetrationDepth = -data.Depth;
                             contacts.Elements[i].Normal = axis;
+                            contacts.Elements[i].Validate();
                             //Remove manifold entry
                             manifold.RemoveAt(j);
                             break;
@@ -196,7 +198,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
             else
             {
                 //Not colliding, so get rid of it.
-                for (int i = contacts.count - 1; i >= 0; i--)
+                for (int i = contacts.Count - 1; i >= 0; i--)
                 {
                     Remove(i);
                 }
@@ -219,7 +221,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
 
             if (boxA == null || boxB == null)
             {
-                throw new Exception("Inappropriate types used to initialize pair tester.");
+                throw new ArgumentException("Inappropriate types used to initialize pair tester.");
             }
         }
 
@@ -228,7 +230,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
         ///</summary>
         public override void CleanUp()
         {
-            contacts.Clear();
+
             boxA = null;
             boxB = null;
             base.CleanUp();

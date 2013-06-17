@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BEPUphysics.CollisionShapes.ConvexShapes;
+using BEPUutilities;
+using BEPUutilities.DataStructures;
 using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.CollisionTests.CollisionAlgorithms
@@ -14,7 +16,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
     {
         //TODO: Having a specialized triangle-triangle pair test would be nice.  Even if it didn't use an actual triangle-triangle test, certain assumptions could still make it speedier and more elegant.
         //"Closest points between triangles" + persistent manifolding would probably be the best approach (a lot faster than the triangle-convex general case anyway).
-        public override bool GenerateContactCandidate(out DataStructures.TinyStructList<ContactData> contactList)
+        public override bool GenerateContactCandidate(out TinyStructList<ContactData> contactList)
         {
             if (base.GenerateContactCandidate(out contactList))
             {
@@ -30,7 +32,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
                 var sidedness = shape.sidedness;
                 if (sidedness != TriangleSidedness.DoubleSided)
                 {
-                    for (int i = contactList.count - 1; i >= 0; i--)
+                    for (int i = contactList.Count - 1; i >= 0; i--)
                     {
                         ContactData item;
                         contactList.Get(i, out item);
@@ -53,7 +55,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
                         }
                     }
                 }
-                return contactList.count > 0;
+                return contactList.Count > 0;
             }
             return false;
         }

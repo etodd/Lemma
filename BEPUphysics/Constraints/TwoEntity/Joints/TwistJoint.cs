@@ -1,7 +1,7 @@
 ﻿using System;
 using BEPUphysics.Entities;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 
 namespace BEPUphysics.Constraints.TwoEntity.Joints
 {
@@ -58,7 +58,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 localAxisA = Vector3.Normalize(value);
-                Matrix3X3.Transform(ref localAxisA, ref connectionA.orientationMatrix, out worldAxisA);
+                Matrix3x3.Transform(ref localAxisA, ref connectionA.orientationMatrix, out worldAxisA);
                 Initialize();
             }
         }
@@ -72,7 +72,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 localAxisB = Vector3.Normalize(value);
-                Matrix3X3.Transform(ref localAxisB, ref connectionA.orientationMatrix, out worldAxisB);
+                Matrix3x3.Transform(ref localAxisB, ref connectionA.orientationMatrix, out worldAxisB);
                 Initialize();
             }
         }
@@ -234,11 +234,11 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         {
             Vector3 aAxisY, aAxisZ;
             Vector3 bAxisY;
-            Matrix3X3.Transform(ref localAxisA, ref connectionA.orientationMatrix, out worldAxisA);
-            Matrix3X3.Transform(ref aLocalAxisY, ref connectionA.orientationMatrix, out aAxisY);
-            Matrix3X3.Transform(ref aLocalAxisZ, ref connectionA.orientationMatrix, out aAxisZ);
-            Matrix3X3.Transform(ref localAxisB, ref connectionB.orientationMatrix, out worldAxisB);
-            Matrix3X3.Transform(ref bLocalAxisY, ref connectionB.orientationMatrix, out bAxisY);
+            Matrix3x3.Transform(ref localAxisA, ref connectionA.orientationMatrix, out worldAxisA);
+            Matrix3x3.Transform(ref aLocalAxisY, ref connectionA.orientationMatrix, out aAxisY);
+            Matrix3x3.Transform(ref aLocalAxisZ, ref connectionA.orientationMatrix, out aAxisZ);
+            Matrix3x3.Transform(ref localAxisB, ref connectionB.orientationMatrix, out worldAxisB);
+            Matrix3x3.Transform(ref bLocalAxisY, ref connectionB.orientationMatrix, out bAxisY);
 
             Quaternion rotation;
             Toolbox.GetQuaternionBetweenNormalizedVectors(ref worldAxisB, ref worldAxisA, out rotation);
@@ -286,7 +286,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             Vector3 transformedAxis;
             if (connectionA.isDynamic)
             {
-                Matrix3X3.Transform(ref jacobianA, ref connectionA.inertiaTensorInverse, out transformedAxis);
+                Matrix3x3.Transform(ref jacobianA, ref connectionA.inertiaTensorInverse, out transformedAxis);
                 Vector3.Dot(ref transformedAxis, ref jacobianA, out entryA);
             }
             else
@@ -296,7 +296,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             float entryB;
             if (connectionB.isDynamic)
             {
-                Matrix3X3.Transform(ref jacobianB, ref connectionB.inertiaTensorInverse, out transformedAxis);
+                Matrix3x3.Transform(ref jacobianB, ref connectionB.inertiaTensorInverse, out transformedAxis);
                 Vector3.Dot(ref transformedAxis, ref jacobianB, out entryB);
             }
             else

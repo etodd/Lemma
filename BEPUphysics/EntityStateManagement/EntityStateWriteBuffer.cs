@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using BEPUphysics.Entities;
-using BEPUphysics.Threading;
+using BEPUutilities;
+using BEPUutilities.DataStructures;
 using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.EntityStateManagement
@@ -32,7 +33,7 @@ namespace BEPUphysics.EntityStateManagement
             internal Vector3 vector;
             [FieldOffset(16)]
             internal TargetField targetField;
-            [FieldOffset(20)]
+            [FieldOffset(24)]
             internal Entity target;
         }
 #else

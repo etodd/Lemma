@@ -1,5 +1,5 @@
 ﻿using System;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.Constraints
@@ -13,7 +13,7 @@ namespace BEPUphysics.Constraints
         internal Vector3 localXAxis = Vector3.Right;
         internal Vector3 localYAxis = Vector3.Up;
         internal Vector3 primaryAxis = Vector3.Backward;
-        internal Matrix3X3 rotationMatrix = Matrix3X3.Identity;
+        internal Matrix3x3 rotationMatrix = Matrix3x3.Identity;
         internal Vector3 xAxis = Vector3.Right;
         internal Vector3 yAxis = Vector3.Up;
 
@@ -28,11 +28,11 @@ namespace BEPUphysics.Constraints
         /// <summary>
         /// Gets or sets the local transform of the basis.
         /// </summary>
-        public Matrix3X3 LocalTransform
+        public Matrix3x3 LocalTransform
         {
             get
             {
-                var toReturn = new Matrix3X3 {Right = localXAxis, Up = localYAxis, Backward = localPrimaryAxis};
+                var toReturn = new Matrix3x3 {Right = localXAxis, Up = localYAxis, Backward = localPrimaryAxis};
                 return toReturn;
             }
             set { SetLocalAxes(value); }
@@ -65,7 +65,7 @@ namespace BEPUphysics.Constraints
         /// <summary>
         /// Gets or sets the rotation matrix used by the joint transform to convert local space axes to world space.
         /// </summary>
-        public Matrix3X3 RotationMatrix
+        public Matrix3x3 RotationMatrix
         {
             get { return rotationMatrix; }
             set
@@ -78,11 +78,11 @@ namespace BEPUphysics.Constraints
         /// <summary>
         /// Gets or sets the world transform of the basis.
         /// </summary>
-        public Matrix3X3 WorldTransform
+        public Matrix3x3 WorldTransform
         {
             get
             {
-                var toReturn = new Matrix3X3 {Right = xAxis, Up = yAxis, Backward = primaryAxis};
+                var toReturn = new Matrix3x3 {Right = xAxis, Up = yAxis, Backward = primaryAxis};
                 return toReturn;
             }
             set { SetWorldAxes(value); }
@@ -112,7 +112,7 @@ namespace BEPUphysics.Constraints
         /// <param name="xAxis">Second axis in the transform.</param>
         /// <param name="yAxis">Third axis in the transform.</param>
         /// <param name="rotationMatrix">Matrix to use to transform the local axes into world space.</param>
-        public void SetLocalAxes(Vector3 primaryAxis, Vector3 xAxis, Vector3 yAxis, Matrix3X3 rotationMatrix)
+        public void SetLocalAxes(Vector3 primaryAxis, Vector3 xAxis, Vector3 yAxis, Matrix3x3 rotationMatrix)
         {
             this.rotationMatrix = rotationMatrix;
             SetLocalAxes(primaryAxis, xAxis, yAxis);
@@ -145,7 +145,7 @@ namespace BEPUphysics.Constraints
         /// The matrix's backward vector is used as the primary axis.  
         /// The matrix's right vector is used as the x axis.
         /// The matrix's up vector is used as the y axis.</param>
-        public void SetLocalAxes(Matrix3X3 matrix)
+        public void SetLocalAxes(Matrix3x3 matrix)
         {
             if (Math.Abs(Vector3.Dot(matrix.Backward, matrix.Right)) > Toolbox.BigEpsilon ||
                 Math.Abs(Vector3.Dot(matrix.Backward, matrix.Up)) > Toolbox.BigEpsilon ||
@@ -166,7 +166,7 @@ namespace BEPUphysics.Constraints
         /// <param name="xAxis">Second axis in the transform.</param>
         /// <param name="yAxis">Third axis in the transform.</param>
         /// <param name="rotationMatrix">Matrix to use to transform the local axes into world space.</param>
-        public void SetWorldAxes(Vector3 primaryAxis, Vector3 xAxis, Vector3 yAxis, Matrix3X3 rotationMatrix)
+        public void SetWorldAxes(Vector3 primaryAxis, Vector3 xAxis, Vector3 yAxis, Matrix3x3 rotationMatrix)
         {
             this.rotationMatrix = rotationMatrix;
             SetWorldAxes(primaryAxis, xAxis, yAxis);
@@ -188,9 +188,9 @@ namespace BEPUphysics.Constraints
             this.primaryAxis = Vector3.Normalize(primaryAxis);
             this.xAxis = Vector3.Normalize(xAxis);
             this.yAxis = Vector3.Normalize(yAxis);
-            Matrix3X3.TransformTranspose(ref this.primaryAxis, ref rotationMatrix, out localPrimaryAxis);
-            Matrix3X3.TransformTranspose(ref this.xAxis, ref rotationMatrix, out localXAxis);
-            Matrix3X3.TransformTranspose(ref this.yAxis, ref rotationMatrix, out localYAxis);
+            Matrix3x3.TransformTranspose(ref this.primaryAxis, ref rotationMatrix, out localPrimaryAxis);
+            Matrix3x3.TransformTranspose(ref this.xAxis, ref rotationMatrix, out localXAxis);
+            Matrix3x3.TransformTranspose(ref this.yAxis, ref rotationMatrix, out localYAxis);
         }
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace BEPUphysics.Constraints
         /// The matrix's backward vector is used as the primary axis.  
         /// The matrix's right vector is used as the x axis.
         /// The matrix's up vector is used as the y axis.</param>
-        public void SetWorldAxes(Matrix3X3 matrix)
+        public void SetWorldAxes(Matrix3x3 matrix)
         {
             if (Math.Abs(Vector3.Dot(matrix.Backward, matrix.Right)) > Toolbox.BigEpsilon ||
                 Math.Abs(Vector3.Dot(matrix.Backward, matrix.Up)) > Toolbox.BigEpsilon ||
@@ -210,16 +210,16 @@ namespace BEPUphysics.Constraints
             primaryAxis = Vector3.Normalize(matrix.Backward);
             xAxis = Vector3.Normalize(matrix.Right);
             yAxis = Vector3.Normalize(matrix.Up);
-            Matrix3X3.TransformTranspose(ref this.primaryAxis, ref rotationMatrix, out localPrimaryAxis);
-            Matrix3X3.TransformTranspose(ref this.xAxis, ref rotationMatrix, out localXAxis);
-            Matrix3X3.TransformTranspose(ref this.yAxis, ref rotationMatrix, out localYAxis);
+            Matrix3x3.TransformTranspose(ref this.primaryAxis, ref rotationMatrix, out localPrimaryAxis);
+            Matrix3x3.TransformTranspose(ref this.xAxis, ref rotationMatrix, out localXAxis);
+            Matrix3x3.TransformTranspose(ref this.yAxis, ref rotationMatrix, out localYAxis);
         }
 
         internal void ComputeWorldSpaceAxes()
         {
-            Matrix3X3.Transform(ref localPrimaryAxis, ref rotationMatrix, out primaryAxis);
-            Matrix3X3.Transform(ref localXAxis, ref rotationMatrix, out xAxis);
-            Matrix3X3.Transform(ref localYAxis, ref rotationMatrix, out yAxis);
+            Matrix3x3.Transform(ref localPrimaryAxis, ref rotationMatrix, out primaryAxis);
+            Matrix3x3.Transform(ref localXAxis, ref rotationMatrix, out xAxis);
+            Matrix3x3.Transform(ref localYAxis, ref rotationMatrix, out yAxis);
         }
     }
 
@@ -231,7 +231,7 @@ namespace BEPUphysics.Constraints
         internal Vector3 localPrimaryAxis = Vector3.Backward;
         internal Vector3 localXAxis = Vector3.Right;
         internal Vector3 primaryAxis = Vector3.Backward;
-        internal Matrix3X3 rotationMatrix = Matrix3X3.Identity;
+        internal Matrix3x3 rotationMatrix = Matrix3x3.Identity;
         internal Vector3 xAxis = Vector3.Right;
 
         /// <summary>
@@ -261,7 +261,7 @@ namespace BEPUphysics.Constraints
         /// <summary>
         /// Gets or sets the rotation matrix used by the joint transform to convert local space axes to world space.
         /// </summary>
-        public Matrix3X3 RotationMatrix
+        public Matrix3x3 RotationMatrix
         {
             get { return rotationMatrix; }
             set
@@ -286,7 +286,7 @@ namespace BEPUphysics.Constraints
         /// <param name="primaryAxis">First axis in the transform.  Usually aligned along the main axis of a joint, like the twist axis of a TwistLimit.</param>
         /// <param name="xAxis">Second axis in the transform.</param>
         /// <param name="rotationMatrix">Matrix to use to transform the local axes into world space.</param>
-        public void SetLocalAxes(Vector3 primaryAxis, Vector3 xAxis, Matrix3X3 rotationMatrix)
+        public void SetLocalAxes(Vector3 primaryAxis, Vector3 xAxis, Matrix3x3 rotationMatrix)
         {
             this.rotationMatrix = rotationMatrix;
             SetLocalAxes(primaryAxis, xAxis);
@@ -313,7 +313,7 @@ namespace BEPUphysics.Constraints
         /// <param name="matrix">Rotation matrix representing the three axes.
         /// The matrix's backward vector is used as the primary axis.  
         /// The matrix's right vector is used as the x axis.</param>
-        public void SetLocalAxes(Matrix3X3 matrix)
+        public void SetLocalAxes(Matrix3x3 matrix)
         {
             if (Math.Abs(Vector3.Dot(matrix.Backward, matrix.Right)) > Toolbox.BigEpsilon)
                 throw new ArgumentException("The axes provided to the joint transform are not perpendicular.  Ensure that the specified axes form a valid constraint.");
@@ -329,7 +329,7 @@ namespace BEPUphysics.Constraints
         /// <param name="primaryAxis">First axis in the transform.  Usually aligned along the main axis of a joint, like the twist axis of a TwistLimit.</param>
         /// <param name="xAxis">Second axis in the transform.</param>
         /// <param name="rotationMatrix">Matrix to use to transform the local axes into world space.</param>
-        public void SetWorldAxes(Vector3 primaryAxis, Vector3 xAxis, Matrix3X3 rotationMatrix)
+        public void SetWorldAxes(Vector3 primaryAxis, Vector3 xAxis, Matrix3x3 rotationMatrix)
         {
             this.rotationMatrix = rotationMatrix;
             SetWorldAxes(primaryAxis, xAxis);
@@ -346,8 +346,8 @@ namespace BEPUphysics.Constraints
                 throw new ArgumentException("The axes provided to the joint transform are not perpendicular.  Ensure that the specified axes form a valid constraint.");
             this.primaryAxis = Vector3.Normalize(primaryAxis);
             this.xAxis = Vector3.Normalize(xAxis);
-            Matrix3X3.TransformTranspose(ref this.primaryAxis, ref rotationMatrix, out localPrimaryAxis);
-            Matrix3X3.TransformTranspose(ref this.xAxis, ref rotationMatrix, out localXAxis);
+            Matrix3x3.TransformTranspose(ref this.primaryAxis, ref rotationMatrix, out localPrimaryAxis);
+            Matrix3x3.TransformTranspose(ref this.xAxis, ref rotationMatrix, out localXAxis);
         }
 
         /// <summary>
@@ -356,20 +356,20 @@ namespace BEPUphysics.Constraints
         /// <param name="matrix">Rotation matrix representing the three axes.
         /// The matrix's backward vector is used as the primary axis.  
         /// The matrix's right vector is used as the x axis.</param>
-        public void SetWorldAxes(Matrix3X3 matrix)
+        public void SetWorldAxes(Matrix3x3 matrix)
         {
             if (Math.Abs(Vector3.Dot(matrix.Backward, matrix.Right)) > Toolbox.BigEpsilon)
                 throw new ArgumentException("The axes provided to the joint transform are not perpendicular.  Ensure that the specified axes form a valid constraint.");
             primaryAxis = Vector3.Normalize(matrix.Backward);
             xAxis = Vector3.Normalize(matrix.Right);
-            Matrix3X3.TransformTranspose(ref this.primaryAxis, ref rotationMatrix, out localPrimaryAxis);
-            Matrix3X3.TransformTranspose(ref this.xAxis, ref rotationMatrix, out localXAxis);
+            Matrix3x3.TransformTranspose(ref this.primaryAxis, ref rotationMatrix, out localPrimaryAxis);
+            Matrix3x3.TransformTranspose(ref this.xAxis, ref rotationMatrix, out localXAxis);
         }
 
         internal void ComputeWorldSpaceAxes()
         {
-            Matrix3X3.Transform(ref localPrimaryAxis, ref rotationMatrix, out primaryAxis);
-            Matrix3X3.Transform(ref localXAxis, ref rotationMatrix, out xAxis);
+            Matrix3x3.Transform(ref localPrimaryAxis, ref rotationMatrix, out primaryAxis);
+            Matrix3x3.Transform(ref localXAxis, ref rotationMatrix, out xAxis);
         }
     }
 }

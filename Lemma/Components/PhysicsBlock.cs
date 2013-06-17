@@ -5,8 +5,8 @@ using System.Text;
 using BEPUphysics.Entities.Prefabs;
 using BEPUphysics;
 using Microsoft.Xna.Framework;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.CollisionTests;
 using System.Xml.Serialization;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
@@ -37,7 +37,7 @@ namespace Lemma.Components
 				this.Box = new Box(Vector3.Zero, this.Size.Value.X, this.Size.Value.Y, this.Size.Value.Z);
 			else
 				this.Box = new Box(Vector3.Zero, this.Size.Value.X, this.Size.Value.Y, this.Size.Value.Z, this.Mass);
-			this.Box.CollisionInformation.Events.ContactCreated += new BEPUphysics.Collidables.Events.ContactCreatedEventHandler<EntityCollidable>(Events_ContactCreated);
+			this.Box.CollisionInformation.Events.ContactCreated += new BEPUphysics.BroadPhaseEntries.Events.ContactCreatedEventHandler<EntityCollidable>(Events_ContactCreated);
 			this.Transform.Set = delegate(Matrix matrix)
 			{
 				this.Box.WorldTransform = matrix;

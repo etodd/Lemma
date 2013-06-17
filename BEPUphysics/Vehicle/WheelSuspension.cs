@@ -1,7 +1,7 @@
 ﻿using BEPUphysics.Constraints;
 using BEPUphysics.Entities;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 
 namespace BEPUphysics.Vehicle
 {
@@ -111,7 +111,7 @@ namespace BEPUphysics.Vehicle
             {
                 localDirection = Vector3.Normalize(value);
                 if (wheel != null && wheel.vehicle != null)
-                    Matrix3X3.Transform(ref localDirection, ref wheel.vehicle.Body.orientationMatrix, out worldDirection);
+                    Matrix3x3.Transform(ref localDirection, ref wheel.vehicle.Body.orientationMatrix, out worldDirection);
                 else
                     worldDirection = localDirection;
             }
@@ -190,7 +190,7 @@ namespace BEPUphysics.Vehicle
                 worldDirection = Vector3.Normalize(value);
                 if (wheel != null && wheel.vehicle != null)
                 {
-                    Matrix3X3.TransformTranspose(ref worldDirection, ref wheel.Vehicle.Body.orientationMatrix, out localDirection);
+                    Matrix3x3.TransformTranspose(ref worldDirection, ref wheel.Vehicle.Body.orientationMatrix, out localDirection);
                 }
                 else
                     localDirection = worldDirection;
@@ -289,7 +289,7 @@ namespace BEPUphysics.Vehicle
         {
             //Transform local space vectors to world space.
             RigidTransform.Transform(ref localAttachmentPoint, ref wheel.vehicle.Body.CollisionInformation.worldTransform, out worldAttachmentPoint);
-            Matrix3X3.Transform(ref localDirection, ref wheel.vehicle.Body.orientationMatrix, out worldDirection);
+            Matrix3x3.Transform(ref localDirection, ref wheel.vehicle.Body.orientationMatrix, out worldDirection);
         }
 
         internal void OnAdditionToVehicle()

@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using BEPUphysics.Paths.PathFollowing;
 using Lemma.Util;
 using BEPUphysics;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.Constraints.TwoEntity.Motors;
 using BEPUphysics.Constraints.TwoEntity.Joints;
 using BEPUphysics.Constraints.SolverGroups;
@@ -102,7 +102,7 @@ namespace Lemma.Factories
 				return joint;
 			};
 
-			JointFactory.Bind(result, main, createJoint, creating);
+			JointFactory.Bind(result, main, createJoint, true, creating);
 
 			result.Add("On", new Command
 			{
@@ -124,8 +124,8 @@ namespace Lemma.Factories
 
 						Vector3 localTestAxis = joint.Motor.LocalTestAxis;
 						Vector3 worldTestAxis;
-						BEPUphysics.MathExtensions.Matrix3X3 orientationMatrix = joint.Motor.ConnectionB.OrientationMatrix;
-						BEPUphysics.MathExtensions.Matrix3X3.Transform(ref localTestAxis, ref orientationMatrix, out worldTestAxis);
+						BEPUutilities.Matrix3x3 orientationMatrix = joint.Motor.ConnectionB.OrientationMatrix;
+						BEPUutilities.Matrix3x3.Transform(ref localTestAxis, ref orientationMatrix, out worldTestAxis);
 
 						float y, x;
 						Vector3 yAxis = Vector3.Cross(basis.PrimaryAxis, basis.XAxis);

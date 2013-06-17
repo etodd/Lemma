@@ -1,5 +1,6 @@
 ﻿using BEPUphysics.BroadPhaseEntries;
 using BEPUphysics.BroadPhaseSystems;
+using BEPUutilities;
 
 namespace BEPUphysics
 {

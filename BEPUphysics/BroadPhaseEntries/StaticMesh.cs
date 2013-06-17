@@ -1,18 +1,15 @@
 ﻿using System;
-using BEPUphysics.Collidables.Events;
+using BEPUphysics.BroadPhaseEntries.Events;
 using BEPUphysics.CollisionShapes;
-using BEPUphysics.MathExtensions;
-using Microsoft.Xna.Framework;
 using BEPUphysics.DataStructures;
-using BEPUphysics.Materials;
-using BEPUphysics.CollisionRuleManagement;
+using BEPUutilities;
+using BEPUutilities.ResourceManagement;
+using Microsoft.Xna.Framework;
 using BEPUphysics.CollisionShapes.ConvexShapes;
-using BEPUphysics.ResourceManagement;
 using BEPUphysics.CollisionTests.CollisionAlgorithms;
-using BEPUphysics.CollisionTests.CollisionAlgorithms.GJK;
 using BEPUphysics.OtherSpaceStages;
 
-namespace BEPUphysics.Collidables
+namespace BEPUphysics.BroadPhaseEntries
 {
     ///<summary>
     /// Unmoving, collidable triangle mesh.
@@ -139,7 +136,7 @@ namespace BEPUphysics.Collidables
             {
                 if (value.Owner != null && //Can't use a manager which is owned by a different entity.
                     value != events) //Stay quiet if for some reason the same event manager is being set.
-                    throw new Exception("Event manager is already owned by a mesh; event managers cannot be shared.");
+                    throw new ArgumentException("Event manager is already owned by a mesh; event managers cannot be shared.");
                 if (events != null)
                     events.Owner = null;
                 events = value;
@@ -197,9 +194,9 @@ namespace BEPUphysics.Collidables
         {
             hit = new RayHit();
             BoundingBox boundingBox;
-            Toolbox.GetExpandedBoundingBox(ref castShape, ref startingTransform, ref sweep, out boundingBox);
-            var tri = Resources.GetTriangle();
-            var hitElements = Resources.GetIntList();
+            castShape.GetSweptBoundingBox(ref startingTransform, ref sweep, out boundingBox);
+            var tri = PhysicsResources.GetTriangle();
+            var hitElements = CommonResources.GetIntList();
             if (Mesh.Tree.GetOverlaps(boundingBox, hitElements))
             {
                 hit.T = float.MaxValue;
@@ -230,12 +227,12 @@ namespace BEPUphysics.Collidables
                     }
                 }
                 tri.maximumRadius = 0;
-                Resources.GiveBack(tri);
-                Resources.GiveBack(hitElements);
+                PhysicsResources.GiveBack(tri);
+                CommonResources.GiveBack(hitElements);
                 return hit.T != float.MaxValue;
             }
-            Resources.GiveBack(tri);
-            Resources.GiveBack(hitElements);
+            PhysicsResources.GiveBack(tri);
+            CommonResources.GiveBack(hitElements);
             return false;
         }
 

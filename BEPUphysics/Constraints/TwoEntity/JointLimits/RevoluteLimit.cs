@@ -1,6 +1,6 @@
 ﻿using System;
 using BEPUphysics.Entities;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.Constraints.TwoEntity.JointLimits
@@ -106,7 +106,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             set
             {
                 localTestAxis = Vector3.Normalize(value);
-                Matrix3X3.Transform(ref localTestAxis, ref connectionB.orientationMatrix, out worldTestAxis);
+                Matrix3x3.Transform(ref localTestAxis, ref connectionB.orientationMatrix, out worldTestAxis);
             }
         }
 
@@ -151,7 +151,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             set
             {
                 worldTestAxis = Vector3.Normalize(value);
-                Matrix3X3.TransformTranspose(ref worldTestAxis, ref connectionB.orientationMatrix, out localTestAxis);
+                Matrix3x3.TransformTranspose(ref worldTestAxis, ref connectionB.orientationMatrix, out localTestAxis);
             }
         }
 
@@ -268,7 +268,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// and the M22 field represents the maximum plane mass matrix.
         /// </summary>
         /// <param name="massMatrix">Mass matrix of the constraint.</param>
-        public void GetMassMatrix(out Matrix2X2 massMatrix)
+        public void GetMassMatrix(out Matrix2x2 massMatrix)
         {
             massMatrix.M11 = velocityToImpulse.X;
             massMatrix.M22 = velocityToImpulse.Y;
@@ -362,7 +362,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             //Transform the axes into world space.
             basis.rotationMatrix = connectionA.orientationMatrix;
             basis.ComputeWorldSpaceAxes();
-            Matrix3X3.Transform(ref localTestAxis, ref connectionB.orientationMatrix, out worldTestAxis);
+            Matrix3x3.Transform(ref localTestAxis, ref connectionB.orientationMatrix, out worldTestAxis);
 
             //Compute the plane normals.
             Vector3 minPlaneNormal, maxPlaneNormal;
@@ -542,14 +542,14 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             {
                 if (minIsActive)
                 {
-                    Matrix3X3.Transform(ref jacobianMinA, ref connectionA.inertiaTensorInverse, out transformedAxis);
+                    Matrix3x3.Transform(ref jacobianMinA, ref connectionA.inertiaTensorInverse, out transformedAxis);
                     Vector3.Dot(ref transformedAxis, ref jacobianMinA, out minEntryA);
                 }
                 else
                     minEntryA = 0;
                 if (maxIsActive)
                 {
-                    Matrix3X3.Transform(ref jacobianMaxA, ref connectionA.inertiaTensorInverse, out transformedAxis);
+                    Matrix3x3.Transform(ref jacobianMaxA, ref connectionA.inertiaTensorInverse, out transformedAxis);
                     Vector3.Dot(ref transformedAxis, ref jacobianMaxA, out maxEntryA);
                 }
                 else
@@ -565,14 +565,14 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             {
                 if (minIsActive)
                 {
-                    Matrix3X3.Transform(ref jacobianMinB, ref connectionB.inertiaTensorInverse, out transformedAxis);
+                    Matrix3x3.Transform(ref jacobianMinB, ref connectionB.inertiaTensorInverse, out transformedAxis);
                     Vector3.Dot(ref transformedAxis, ref jacobianMinB, out minEntryB);
                 }
                 else
                     minEntryB = 0;
                 if (maxIsActive)
                 {
-                    Matrix3X3.Transform(ref jacobianMaxB, ref connectionB.inertiaTensorInverse, out transformedAxis);
+                    Matrix3x3.Transform(ref jacobianMaxB, ref connectionB.inertiaTensorInverse, out transformedAxis);
                     Vector3.Dot(ref transformedAxis, ref jacobianMaxB, out maxEntryB);
                 }
                 else

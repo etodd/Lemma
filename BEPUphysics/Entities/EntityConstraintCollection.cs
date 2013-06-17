@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using BEPUphysics.Constraints.TwoEntity;
 using BEPUphysics.DeactivationManagement;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 
 namespace BEPUphysics.Entities
 {

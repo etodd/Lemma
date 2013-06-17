@@ -1,7 +1,7 @@
 using System;
 using BEPUphysics.Entities;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 
 namespace BEPUphysics.Constraints.TwoEntity.Joints
 {
@@ -88,7 +88,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 localAnchorA = value;
-                Matrix3X3.Transform(ref localAnchorA, ref connectionA.orientationMatrix, out anchorA);
+                Matrix3x3.Transform(ref localAnchorA, ref connectionA.orientationMatrix, out anchorA);
                 anchorA += connectionA.position;
             }
         }
@@ -102,7 +102,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 localAnchorB = value;
-                Matrix3X3.Transform(ref localAnchorB, ref connectionB.orientationMatrix, out anchorB);
+                Matrix3x3.Transform(ref localAnchorB, ref connectionB.orientationMatrix, out anchorB);
                 anchorB += connectionB.position;
             }
         }
@@ -274,8 +274,8 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         public override void Update(float dt)
         {
             //Transform the anchors and offsets into world space.
-            Matrix3X3.Transform(ref localAnchorA, ref connectionA.orientationMatrix, out offsetA);
-            Matrix3X3.Transform(ref localAnchorB, ref connectionB.orientationMatrix, out offsetB);
+            Matrix3x3.Transform(ref localAnchorA, ref connectionA.orientationMatrix, out offsetA);
+            Matrix3x3.Transform(ref localAnchorB, ref connectionB.orientationMatrix, out offsetB);
             Vector3.Add(ref connectionA.position, ref offsetA, out anchorA);
             Vector3.Add(ref connectionB.position, ref offsetB, out anchorB);
 
@@ -307,10 +307,10 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             if (connectionA.isDynamic && connectionB.isDynamic)
             {
                 Vector3 aAngular;
-                Matrix3X3.Transform(ref jAngularA, ref connectionA.localInertiaTensorInverse, out aAngular);
+                Matrix3x3.Transform(ref jAngularA, ref connectionA.localInertiaTensorInverse, out aAngular);
                 Vector3.Cross(ref aAngular, ref offsetA, out aAngular);
                 Vector3 bAngular;
-                Matrix3X3.Transform(ref jAngularB, ref connectionB.localInertiaTensorInverse, out bAngular);
+                Matrix3x3.Transform(ref jAngularB, ref connectionB.localInertiaTensorInverse, out bAngular);
                 Vector3.Cross(ref bAngular, ref offsetB, out bAngular);
                 Vector3.Add(ref aAngular, ref bAngular, out aAngular);
                 Vector3.Dot(ref aAngular, ref jLinearB, out velocityToImpulse);
@@ -319,7 +319,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             else if (connectionA.isDynamic)
             {
                 Vector3 aAngular;
-                Matrix3X3.Transform(ref jAngularA, ref connectionA.localInertiaTensorInverse, out aAngular);
+                Matrix3x3.Transform(ref jAngularA, ref connectionA.localInertiaTensorInverse, out aAngular);
                 Vector3.Cross(ref aAngular, ref offsetA, out aAngular);
                 Vector3.Dot(ref aAngular, ref jLinearB, out velocityToImpulse);
                 velocityToImpulse += connectionA.inverseMass;
@@ -327,7 +327,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             else if (connectionB.isDynamic)
             {
                 Vector3 bAngular;
-                Matrix3X3.Transform(ref jAngularB, ref connectionB.localInertiaTensorInverse, out bAngular);
+                Matrix3x3.Transform(ref jAngularB, ref connectionB.localInertiaTensorInverse, out bAngular);
                 Vector3.Cross(ref bAngular, ref offsetB, out bAngular);
                 Vector3.Dot(ref bAngular, ref jLinearB, out velocityToImpulse);
                 velocityToImpulse += connectionB.inverseMass;

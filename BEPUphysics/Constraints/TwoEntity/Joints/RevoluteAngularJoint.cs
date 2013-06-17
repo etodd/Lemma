@@ -1,6 +1,6 @@
 ﻿using System;
 using BEPUphysics.Entities;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.Constraints.TwoEntity.Joints
@@ -13,7 +13,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
     {
         private Vector2 accumulatedImpulse;
         private Vector2 biasVelocity;
-        private Matrix2X2 effectiveMassMatrix;
+        private Matrix2x2 effectiveMassMatrix;
         private Vector3 localAxisA, localAxisB;
         private Vector3 localConstrainedAxis1, localConstrainedAxis2; //Not a and b because they are both based on a...
         private Vector2 error;
@@ -61,7 +61,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 localAxisA = Vector3.Normalize(value);
-                Matrix3X3.Transform(ref localAxisA, ref connectionA.orientationMatrix, out worldAxisA);
+                Matrix3x3.Transform(ref localAxisA, ref connectionA.orientationMatrix, out worldAxisA);
                 UpdateRestrictedAxes();
             }
         }
@@ -75,7 +75,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 localAxisB = Vector3.Normalize(value);
-                Matrix3X3.Transform(ref localAxisB, ref connectionB.orientationMatrix, out worldAxisB);
+                Matrix3x3.Transform(ref localAxisB, ref connectionB.orientationMatrix, out worldAxisB);
             }
         }
 
@@ -86,11 +86,11 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         /// </summary>
         public Vector3 WorldFreeAxisA
         {
-            get { return localAxisA; }
+            get { return worldAxisA; }
             set
             {
                 worldAxisA = Vector3.Normalize(value);
-                Matrix3X3.TransformTranspose(ref worldAxisA, ref connectionA.orientationMatrix, out localAxisA);
+                Matrix3x3.TransformTranspose(ref worldAxisA, ref connectionA.orientationMatrix, out localAxisA);
                 UpdateRestrictedAxes();
             }
         }
@@ -101,11 +101,11 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         /// </summary>
         public Vector3 WorldFreeAxisB
         {
-            get { return localAxisB; }
+            get { return worldAxisB; }
             set
             {
                 worldAxisB = Vector3.Normalize(value);
-                Matrix3X3.TransformTranspose(ref worldAxisB, ref connectionB.orientationMatrix, out localAxisB);
+                Matrix3x3.TransformTranspose(ref worldAxisB, ref connectionB.orientationMatrix, out localAxisB);
             }
         }
 
@@ -200,7 +200,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         /// Gets the mass matrix of the constraint.
         /// </summary>
         /// <param name="massMatrix">Constraint's mass matrix.</param>
-        public void GetMassMatrix(out Matrix2X2 massMatrix)
+        public void GetMassMatrix(out Matrix2x2 massMatrix)
         {
             massMatrix = effectiveMassMatrix;
         }
@@ -229,7 +229,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             Vector2 softnessImpulse;
             Vector2.Multiply(ref accumulatedImpulse, softness, out softnessImpulse);
             Vector2.Add(ref lambda, ref softnessImpulse, out lambda);
-            Matrix2X2.Transform(ref lambda, ref effectiveMassMatrix, out lambda);
+            Matrix2x2.Transform(ref lambda, ref effectiveMassMatrix, out lambda);
             Vector2.Add(ref accumulatedImpulse, ref lambda, out accumulatedImpulse);
 
 
@@ -260,12 +260,12 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         ///<param name="dt">Timestep duration.</param>
         public override void Update(float dt)
         {
-            Matrix3X3.Transform(ref localAxisA, ref connectionA.orientationMatrix, out worldAxisA);
-            Matrix3X3.Transform(ref localAxisB, ref connectionB.orientationMatrix, out worldAxisB);
+            Matrix3x3.Transform(ref localAxisA, ref connectionA.orientationMatrix, out worldAxisA);
+            Matrix3x3.Transform(ref localAxisB, ref connectionB.orientationMatrix, out worldAxisB);
 
 
-            Matrix3X3.Transform(ref localConstrainedAxis1, ref connectionA.orientationMatrix, out worldConstrainedAxis1);
-            Matrix3X3.Transform(ref localConstrainedAxis2, ref connectionA.orientationMatrix, out worldConstrainedAxis2);
+            Matrix3x3.Transform(ref localConstrainedAxis1, ref connectionA.orientationMatrix, out worldConstrainedAxis1);
+            Matrix3x3.Transform(ref localConstrainedAxis2, ref connectionA.orientationMatrix, out worldConstrainedAxis2);
 
             Vector3 error;
             Vector3.Cross(ref worldAxisA, ref worldAxisB, out error);
@@ -291,21 +291,21 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             Vector3 axis1I, axis2I;
             if (connectionA.isDynamic && connectionB.isDynamic)
             {
-                Matrix3X3 inertiaTensorSum;
-                Matrix3X3.Add(ref connectionA.inertiaTensorInverse, ref connectionB.inertiaTensorInverse, out inertiaTensorSum);
+                Matrix3x3 inertiaTensorSum;
+                Matrix3x3.Add(ref connectionA.inertiaTensorInverse, ref connectionB.inertiaTensorInverse, out inertiaTensorSum);
 
-                Matrix3X3.Transform(ref worldConstrainedAxis1, ref inertiaTensorSum, out axis1I);
-                Matrix3X3.Transform(ref worldConstrainedAxis2, ref inertiaTensorSum, out axis2I);
+                Matrix3x3.Transform(ref worldConstrainedAxis1, ref inertiaTensorSum, out axis1I);
+                Matrix3x3.Transform(ref worldConstrainedAxis2, ref inertiaTensorSum, out axis2I);
             }
             else if (connectionA.isDynamic && !connectionB.isDynamic)
             {
-                Matrix3X3.Transform(ref worldConstrainedAxis1, ref connectionA.inertiaTensorInverse, out axis1I);
-                Matrix3X3.Transform(ref worldConstrainedAxis2, ref connectionA.inertiaTensorInverse, out axis2I);
+                Matrix3x3.Transform(ref worldConstrainedAxis1, ref connectionA.inertiaTensorInverse, out axis1I);
+                Matrix3x3.Transform(ref worldConstrainedAxis2, ref connectionA.inertiaTensorInverse, out axis2I);
             }
             else if (!connectionA.isDynamic && connectionB.isDynamic)
             {
-                Matrix3X3.Transform(ref worldConstrainedAxis1, ref connectionB.inertiaTensorInverse, out axis1I);
-                Matrix3X3.Transform(ref worldConstrainedAxis2, ref connectionB.inertiaTensorInverse, out axis2I);
+                Matrix3x3.Transform(ref worldConstrainedAxis1, ref connectionB.inertiaTensorInverse, out axis1I);
+                Matrix3x3.Transform(ref worldConstrainedAxis2, ref connectionB.inertiaTensorInverse, out axis2I);
             }
             else
             {
@@ -318,8 +318,8 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             Vector3.Dot(ref axis2I, ref worldConstrainedAxis2, out effectiveMassMatrix.M22);
             effectiveMassMatrix.M11 += softness;
             effectiveMassMatrix.M22 += softness;
-            Matrix2X2.Invert(ref effectiveMassMatrix, out effectiveMassMatrix);
-            Matrix2X2.Negate(ref effectiveMassMatrix, out effectiveMassMatrix);
+            Matrix2x2.Invert(ref effectiveMassMatrix, out effectiveMassMatrix);
+            Matrix2x2.Negate(ref effectiveMassMatrix, out effectiveMassMatrix);
 
    
         }

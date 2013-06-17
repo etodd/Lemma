@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using BEPUphysics.Paths.PathFollowing;
 using Lemma.Util;
 using BEPUphysics;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.Constraints.TwoEntity.Motors;
 using BEPUphysics.Constraints.TwoEntity.Joints;
 using BEPUphysics.Constraints.SolverGroups;
@@ -17,7 +17,7 @@ namespace Lemma.Factories
 {
 	public class JointFactory
 	{
-		public static void Bind(Entity result, Main main, Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint, bool creating = false)
+		public static void Bind(Entity result, Main main, Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint, bool allowRotation, bool creating = false)
 		{
 			Transform mapTransform = result.GetOrCreate<Transform>("MapTransform");
 
@@ -43,7 +43,8 @@ namespace Lemma.Factories
 						Map staticMap = parent.Get<Map>();
 						coord.Value = staticMap.GetCoordinate(transform.Position);
 						mapTransform.Position.Value = staticMap.GetAbsolutePosition(staticMap.GetRelativePosition(coord) - new Vector3(0.5f) + staticMap.Offset + map.Offset);
-						mapTransform.Orientation.Value = parent.Get<Transform>().Orientation;
+						if (!allowRotation)
+							mapTransform.Orientation.Value = parent.Get<Transform>().Orientation;
 					}
 				}
 				else
@@ -60,7 +61,8 @@ namespace Lemma.Factories
 			{
 				if (joint != null)
 				{
-					main.Space.Remove(joint);
+					if (joint.Space != null)
+						main.Space.Remove(joint);
 					result.Remove(jointDeleteBinding);
 					if (physicsUpdateBinding != null)
 						result.Remove(physicsUpdateBinding);
@@ -72,7 +74,10 @@ namespace Lemma.Factories
 				Entity parent = parentMap.Value.Target;
 
 				if (main.EditorEnabled)
+				{
 					refreshMapTransform();
+					return;
+				}
 
 				if (parent != null)
 				{
@@ -83,7 +88,8 @@ namespace Lemma.Factories
 						Map staticMap = parent.Get<Map>();
 
 						map.PhysicsEntity.Position = mapTransform.Position;
-						map.PhysicsEntity.Orientation = mapTransform.Quaternion;
+						if (!allowRotation)
+							map.PhysicsEntity.Orientation = mapTransform.Quaternion;
 
 						if (dir != Direction.None && !main.EditorEnabled)
 						{
@@ -92,6 +98,7 @@ namespace Lemma.Factories
 							DynamicMap dynamicMap = parent.Get<DynamicMap>();
 							joint = createJoint(map.PhysicsEntity, dynamicMap == null ? null : dynamicMap.PhysicsEntity, map.PhysicsEntity.Position, staticMap.GetAbsoluteVector(dir.Value.GetVector()), lineAnchor);
 							main.Space.Add(joint);
+							map.PhysicsEntity.ActivityInformation.Activate();
 
 							if (dynamicMap != null)
 							{
@@ -111,11 +118,21 @@ namespace Lemma.Factories
 			result.Add(new NotifyBinding(rebuildJoint, parentMap));
 			result.Add(new CommandBinding(result.Delete, delegate()
 			{
-				if (joint != null)
+				if (joint != null && joint.Space != null)
 				{
 					main.Space.Remove(joint);
 					joint = null;
 				}
+			}));
+			result.Add(new CommandBinding(map.OnSuspended, delegate()
+			{
+				if (joint != null && joint.Space != null)
+					main.Space.Remove(joint);
+			}));
+			result.Add(new CommandBinding(map.OnResumed, delegate()
+			{
+				if (joint != null && joint.Space == null)
+					main.Space.Add(joint);
 			}));
 			rebuildJoint();
 			Command rebuildJointCommand = new Command();

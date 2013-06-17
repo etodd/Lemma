@@ -1,7 +1,7 @@
 ﻿using System;
 using BEPUphysics.Entities;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 
 namespace BEPUphysics.Constraints.TwoEntity.JointLimits
 {
@@ -102,7 +102,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             set
             {
                 localTwistAxisB = value;
-                Matrix3X3.Transform(ref localTwistAxisB, ref connectionB.orientationMatrix, out worldTwistAxisB);
+                Matrix3x3.Transform(ref localTwistAxisB, ref connectionB.orientationMatrix, out worldTwistAxisB);
             }
         }
 
@@ -136,7 +136,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             set
             {
                 worldTwistAxisB = value;
-                Matrix3X3.TransformTranspose(ref worldTwistAxisB, ref connectionB.orientationMatrix, out localTwistAxisB);
+                Matrix3x3.TransformTranspose(ref worldTwistAxisB, ref connectionB.orientationMatrix, out localTwistAxisB);
             }
         }
 
@@ -301,7 +301,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             //Transform the axes into world space.
             basis.rotationMatrix = connectionA.orientationMatrix;
             basis.ComputeWorldSpaceAxes();
-            Matrix3X3.Transform(ref localTwistAxisB, ref connectionB.orientationMatrix, out worldTwistAxisB);
+            Matrix3x3.Transform(ref localTwistAxisB, ref connectionB.orientationMatrix, out worldTwistAxisB);
 
             //Compute the individual swing angles.
             Quaternion relativeRotation;
@@ -409,7 +409,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             Vector3 transformedAxis;
             if (connectionA.isDynamic)
             {
-                Matrix3X3.Transform(ref jacobianA, ref connectionA.inertiaTensorInverse, out transformedAxis);
+                Matrix3x3.Transform(ref jacobianA, ref connectionA.inertiaTensorInverse, out transformedAxis);
                 Vector3.Dot(ref transformedAxis, ref jacobianA, out entryA);
             }
             else
@@ -419,7 +419,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             float entryB;
             if (connectionB.isDynamic)
             {
-                Matrix3X3.Transform(ref jacobianB, ref connectionB.inertiaTensorInverse, out transformedAxis);
+                Matrix3x3.Transform(ref jacobianB, ref connectionB.inertiaTensorInverse, out transformedAxis);
                 Vector3.Dot(ref transformedAxis, ref jacobianB, out entryB);
             }
             else

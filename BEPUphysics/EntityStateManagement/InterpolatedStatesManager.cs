@@ -1,8 +1,9 @@
 ﻿using System;
 using BEPUphysics.Entities;
-using BEPUphysics.MathExtensions;
-using Microsoft.Xna.Framework;
 using BEPUphysics.Threading;
+using BEPUutilities;
+using Microsoft.Xna.Framework;
+using BEPUutilities;
 
 namespace BEPUphysics.EntityStateManagement
 {

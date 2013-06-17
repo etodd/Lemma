@@ -1,8 +1,8 @@
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.EntityStateManagement;
 using Microsoft.Xna.Framework;
 using BEPUphysics.CollisionShapes.ConvexShapes;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 
 namespace BEPUphysics.Entities.Prefabs
 {
@@ -63,11 +63,11 @@ namespace BEPUphysics.Entities.Prefabs
         {
             get
             {
-                return Matrix3X3.Transform(CollisionInformation.Shape.VertexA, orientationMatrix) + position;
+                return Matrix3x3.Transform(CollisionInformation.Shape.VertexA, orientationMatrix) + position;
             }
             set
             {
-                CollisionInformation.Shape.VertexA = Matrix3X3.TransformTranspose(value - position, orientationMatrix);
+                CollisionInformation.Shape.VertexA = Matrix3x3.TransformTranspose(value - position, orientationMatrix);
             }
         }
         ///<summary>
@@ -77,11 +77,11 @@ namespace BEPUphysics.Entities.Prefabs
         {
             get
             {
-                return Matrix3X3.Transform(CollisionInformation.Shape.VertexB, orientationMatrix) + position;
+                return Matrix3x3.Transform(CollisionInformation.Shape.VertexB, orientationMatrix) + position;
             }
             set
             {
-                CollisionInformation.Shape.VertexB = Matrix3X3.TransformTranspose(value - position, orientationMatrix);
+                CollisionInformation.Shape.VertexB = Matrix3x3.TransformTranspose(value - position, orientationMatrix);
             }
         }
         ///<summary>
@@ -91,11 +91,11 @@ namespace BEPUphysics.Entities.Prefabs
         {
             get
             {
-                return Matrix3X3.Transform(CollisionInformation.Shape.VertexB, orientationMatrix) + position;
+                return Matrix3x3.Transform(CollisionInformation.Shape.VertexC, orientationMatrix) + position;
             }
             set
             {
-                CollisionInformation.Shape.VertexC = Matrix3X3.TransformTranspose(value - position, orientationMatrix);
+                CollisionInformation.Shape.VertexC = Matrix3x3.TransformTranspose(value - position, orientationMatrix);
             }
         }
 

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using Microsoft.Xna.Framework;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 using BEPUphysics.CollisionShapes;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using System.Collections.ObjectModel;
 using BEPUphysics.CollisionShapes.ConvexShapes;
 
@@ -45,8 +45,8 @@ namespace BEPUphysics.Entities.Prefabs
         {
             ShapeDistributionInformation info;
             var shape = new MobileMeshShape(vertices, indices, localTransform, solidity, out info);
-            Matrix3X3 inertia;
-            Matrix3X3.Multiply(ref info.VolumeDistribution, mass * InertiaHelper.InertiaTensorScale, out inertia);
+            Matrix3x3 inertia;
+            Matrix3x3.Multiply(ref info.VolumeDistribution, mass * InertiaHelper.InertiaTensorScale, out inertia);
             Initialize(new MobileMeshCollidable(shape), mass, inertia, info.Volume);
             Position = info.Center;
         }

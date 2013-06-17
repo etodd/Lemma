@@ -1,9 +1,8 @@
 ﻿using BEPUphysics.BroadPhaseEntries;
 using BEPUphysics.BroadPhaseSystems;
 using System;
-using BEPUphysics.Collidables;
 using BEPUphysics.UpdateableSystems;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 
 namespace BEPUphysics.NarrowPhaseSystems.Pairs
 {
@@ -80,7 +79,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
             {
                 DetectorVolume = entryB as DetectorVolume;
                 if (DetectorVolume == null)
-                    throw new Exception("Incorrect types used to initialize detector volume pair.");
+                    throw new ArgumentException("Incorrect types used to initialize detector volume pair.");
             }
 
         }

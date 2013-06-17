@@ -1,6 +1,7 @@
 ﻿using System;
 using BEPUphysics.Entities;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
+using BEPUutilities.DataStructures;
 using Microsoft.Xna.Framework;
 using BEPUphysics.Settings;
 
@@ -23,14 +24,14 @@ namespace BEPUphysics.Constraints.Collision
             }
         }
         internal Vector2 accumulatedImpulse;
-        internal Matrix2X3 angularA, angularB;
+        internal Matrix2x3 angularA, angularB;
         private int contactCount;
         private float friction;
-        internal Matrix2X3 linearA;
+        internal Matrix2x3 linearA;
         private Entity entityA, entityB;
         private bool entityADynamic, entityBDynamic;
         private Vector3 ra, rb;
-        private Matrix2X2 velocityToImpulse;
+        private Matrix2x2 velocityToImpulse;
 
 
         /// <summary>
@@ -244,7 +245,7 @@ namespace BEPUphysics.Constraints.Collision
             entityADynamic = entityA != null && entityA.isDynamic;
             entityBDynamic = entityB != null && entityB.isDynamic;
 
-            contactCount = contactManifoldConstraint.penetrationConstraints.count;
+            contactCount = contactManifoldConstraint.penetrationConstraints.Count;
             switch (contactCount)
             {
                 case 1:
@@ -398,42 +399,42 @@ namespace BEPUphysics.Constraints.Collision
                 angularB.M23 = (linearA.M21 * rb.Y) - (linearA.M22 * rb.X);
             }
             //Compute inverse effective mass matrix
-            Matrix2X2 entryA, entryB;
+            Matrix2x2 entryA, entryB;
 
             //these are the transformed coordinates
-            Matrix2X3 transform;
-            Matrix3X2 transpose;
+            Matrix2x3 transform;
+            Matrix3x2 transpose;
             if (entityADynamic)
             {
-                Matrix2X3.Multiply(ref angularA, ref entityA.inertiaTensorInverse, out transform);
-                Matrix2X3.Transpose(ref angularA, out transpose);
-                Matrix2X2.Multiply(ref transform, ref transpose, out entryA);
+                Matrix2x3.Multiply(ref angularA, ref entityA.inertiaTensorInverse, out transform);
+                Matrix2x3.Transpose(ref angularA, out transpose);
+                Matrix2x2.Multiply(ref transform, ref transpose, out entryA);
                 entryA.M11 += entityA.inverseMass;
                 entryA.M22 += entityA.inverseMass;
             }
             else
             {
-                entryA = new Matrix2X2();
+                entryA = new Matrix2x2();
             }
 
             if (entityBDynamic)
             {
-                Matrix2X3.Multiply(ref angularB, ref entityB.inertiaTensorInverse, out transform);
-                Matrix2X3.Transpose(ref angularB, out transpose);
-                Matrix2X2.Multiply(ref transform, ref transpose, out entryB);
+                Matrix2x3.Multiply(ref angularB, ref entityB.inertiaTensorInverse, out transform);
+                Matrix2x3.Transpose(ref angularB, out transpose);
+                Matrix2x2.Multiply(ref transform, ref transpose, out entryB);
                 entryB.M11 += entityB.inverseMass;
                 entryB.M22 += entityB.inverseMass;
             }
             else
             {
-                entryB = new Matrix2X2();
+                entryB = new Matrix2x2();
             }
 
             velocityToImpulse.M11 = -entryA.M11 - entryB.M11;
             velocityToImpulse.M12 = -entryA.M12 - entryB.M12;
             velocityToImpulse.M21 = -entryA.M21 - entryB.M21;
             velocityToImpulse.M22 = -entryA.M22 - entryB.M22;
-            Matrix2X2.Invert(ref velocityToImpulse, out velocityToImpulse);
+            Matrix2x2.Invert(ref velocityToImpulse, out velocityToImpulse);
 
 
         }
@@ -485,7 +486,7 @@ namespace BEPUphysics.Constraints.Collision
             this.contactManifoldConstraint = contactManifoldConstraint;
             isActive = true;
 
-            linearA = new Matrix2X3();
+            linearA = new Matrix2x3();
 
             entityA = contactManifoldConstraint.EntityA;
             entityB = contactManifoldConstraint.EntityB;
@@ -500,7 +501,7 @@ namespace BEPUphysics.Constraints.Collision
             isActive = false;
         }
 
-        protected internal override void CollectInvolvedEntities(DataStructures.RawList<Entity> outputInvolvedEntities)
+        protected internal override void CollectInvolvedEntities(RawList<Entity> outputInvolvedEntities)
         {
             //This should never really have to be called.
             if (entityA != null)

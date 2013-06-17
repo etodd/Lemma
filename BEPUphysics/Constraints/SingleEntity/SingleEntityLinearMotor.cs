@@ -1,7 +1,7 @@
 ﻿using System;
 using BEPUphysics.Constraints.TwoEntity.Motors;
 using BEPUphysics.Entities;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.Constraints.SingleEntity
@@ -19,7 +19,7 @@ namespace BEPUphysics.Constraints.SingleEntity
         private Vector3 accumulatedImpulse = Vector3.Zero;
 
         private Vector3 biasVelocity;
-        private Matrix3X3 effectiveMassMatrix;
+        private Matrix3x3 effectiveMassMatrix;
 
         /// <summary>
         /// Maximum impulse that can be applied in a single frame.
@@ -93,7 +93,7 @@ namespace BEPUphysics.Constraints.SingleEntity
             set
             {
                 localPoint = value;
-                Matrix3X3.Transform(ref localPoint, ref entity.orientationMatrix, out worldPoint);
+                Matrix3x3.Transform(ref localPoint, ref entity.orientationMatrix, out worldPoint);
                 Vector3.Add(ref worldPoint, ref entity.position, out worldPoint);
             }
         }
@@ -108,7 +108,7 @@ namespace BEPUphysics.Constraints.SingleEntity
             {
                 worldPoint = value;
                 Vector3.Subtract(ref worldPoint, ref entity.position, out localPoint);
-                Matrix3X3.TransformTranspose(ref localPoint, ref entity.orientationMatrix, out localPoint);
+                Matrix3x3.TransformTranspose(ref localPoint, ref entity.orientationMatrix, out localPoint);
             }
         }
 
@@ -175,7 +175,7 @@ namespace BEPUphysics.Constraints.SingleEntity
             Vector3.Subtract(ref lambda, ref softnessVelocity, out lambda);
 
             //In terms of an impulse (an instantaneous change in momentum), what is it?
-            Matrix3X3.Transform(ref lambda, ref effectiveMassMatrix, out lambda);
+            Matrix3x3.Transform(ref lambda, ref effectiveMassMatrix, out lambda);
 
             //Sum the impulse.
             Vector3 previousAccumulatedImpulse = accumulatedImpulse;
@@ -208,7 +208,7 @@ namespace BEPUphysics.Constraints.SingleEntity
         public override void Update(float dt)
         {
             //Transform point into world space.
-            Matrix3X3.Transform(ref localPoint, ref entity.orientationMatrix, out r);
+            Matrix3x3.Transform(ref localPoint, ref entity.orientationMatrix, out r);
             Vector3.Add(ref r, ref entity.position, out worldPoint);
 
 
@@ -255,20 +255,20 @@ namespace BEPUphysics.Constraints.SingleEntity
 
             //COMPUTE EFFECTIVE MASS MATRIX
             //Transforms a change in velocity to a change in momentum when multiplied.
-            Matrix3X3 linearComponent;
-            Matrix3X3.CreateScale(entity.inverseMass, out linearComponent);
-            Matrix3X3 rACrossProduct;
-            Matrix3X3.CreateCrossProduct(ref r, out rACrossProduct);
-            Matrix3X3 angularComponentA;
-            Matrix3X3.Multiply(ref rACrossProduct, ref entity.inertiaTensorInverse, out angularComponentA);
-            Matrix3X3.Multiply(ref angularComponentA, ref rACrossProduct, out angularComponentA);
-            Matrix3X3.Subtract(ref linearComponent, ref angularComponentA, out effectiveMassMatrix);
+            Matrix3x3 linearComponent;
+            Matrix3x3.CreateScale(entity.inverseMass, out linearComponent);
+            Matrix3x3 rACrossProduct;
+            Matrix3x3.CreateCrossProduct(ref r, out rACrossProduct);
+            Matrix3x3 angularComponentA;
+            Matrix3x3.Multiply(ref rACrossProduct, ref entity.inertiaTensorInverse, out angularComponentA);
+            Matrix3x3.Multiply(ref angularComponentA, ref rACrossProduct, out angularComponentA);
+            Matrix3x3.Subtract(ref linearComponent, ref angularComponentA, out effectiveMassMatrix);
 
             effectiveMassMatrix.M11 += usedSoftness;
             effectiveMassMatrix.M22 += usedSoftness;
             effectiveMassMatrix.M33 += usedSoftness;
 
-            Matrix3X3.Invert(ref effectiveMassMatrix, out effectiveMassMatrix);
+            Matrix3x3.Invert(ref effectiveMassMatrix, out effectiveMassMatrix);
 
         }
 

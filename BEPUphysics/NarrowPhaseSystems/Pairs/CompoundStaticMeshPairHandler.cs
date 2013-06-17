@@ -1,15 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using BEPUphysics.BroadPhaseEntries;
-using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
-using BEPUphysics.Constraints;
-using BEPUphysics.Constraints.Collision;
-using BEPUphysics.DataStructures;
-using BEPUphysics.ResourceManagement;
-using BEPUphysics.CollisionRuleManagement;
-using BEPUphysics.CollisionTests;
 
 namespace BEPUphysics.NarrowPhaseSystems.Pairs
 {
@@ -44,7 +34,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                 mesh = entryB as StaticMesh;
                 if (mesh == null)
                 {
-                    throw new Exception("Inappropriate types used to initialize pair.");
+                    throw new ArgumentException("Inappropriate types used to initialize pair.");
                 }
             }
 
@@ -73,14 +63,14 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
             //TODO: Static triangle meshes have a worldspace hierarchy that could be more efficiently traversed with a tree vs tree test.
             //This is just a lot simpler to manage in the short term.
 
-            var overlappedElements = Resources.GetCompoundChildList();
+            var overlappedElements = PhysicsResources.GetCompoundChildList();
             compoundInfo.hierarchy.Tree.GetOverlaps(mesh.boundingBox, overlappedElements);
-            for (int i = 0; i < overlappedElements.count; i++)
+            for (int i = 0; i < overlappedElements.Count; i++)
             {
-                TryToAdd(overlappedElements.Elements[i].CollisionInformation, mesh, overlappedElements.Elements[i].Material);
+                TryToAdd(overlappedElements.Elements[i].CollisionInformation, mesh, overlappedElements.Elements[i].Material, mesh.material);
             }
 
-            Resources.GiveBack(overlappedElements);
+            PhysicsResources.GiveBack(overlappedElements);
 
         }
 

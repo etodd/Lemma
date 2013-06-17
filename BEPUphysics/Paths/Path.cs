@@ -18,7 +18,7 @@
         /// </summary>
         /// <param name="startingTime">Beginning time of the path.</param>
         /// <param name="endingTime">Ending time of the path.</param>
-        public abstract void GetPathBoundsInformation(out float startingTime, out float endingTime);
+        public abstract void GetPathBoundsInformation(out double startingTime, out double endingTime);
 
         /// <summary>
         /// Computes the value of the path at a given time.

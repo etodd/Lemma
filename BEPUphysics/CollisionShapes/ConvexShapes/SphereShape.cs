@@ -1,7 +1,7 @@
 ﻿using System;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 
 namespace BEPUphysics.CollisionShapes.ConvexShapes
 {
@@ -84,9 +84,9 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         /// </summary>
         /// <param name="volume">Volume of the shape.</param>
         /// <returns>Volume distribution of the shape.</returns>
-        public override Matrix3X3 ComputeVolumeDistribution(out float volume)
+        public override Matrix3x3 ComputeVolumeDistribution(out float volume)
         {
-            var volumeDistribution = new Matrix3X3();
+            var volumeDistribution = new Matrix3x3();
             float diagValue = ((2f / 5f) * Radius * Radius);
             volumeDistribution.M11 = diagValue;
             volumeDistribution.M22 = diagValue;

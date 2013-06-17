@@ -1,7 +1,6 @@
-﻿using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.NarrowPhaseSystems.Pairs;
-using BEPUphysics.ResourceManagement;
+﻿using BEPUphysics.NarrowPhaseSystems.Pairs;
 using System;
+using BEPUutilities.ResourceManagement;
 
 namespace BEPUphysics.NarrowPhaseSystems
 {
@@ -83,7 +82,7 @@ namespace BEPUphysics.NarrowPhaseSystems
         public override NarrowPhasePair GetNarrowPhasePair()
         {
             if (!allowOnDemandConstruction && pool.Count == 0)
-                throw new Exception("Cannot request additional resources from this factory; it is exhausted.  Consider specifying a greater number of initial resources or setting AllowOnDemandConstruction to true.");
+                throw new InvalidOperationException("Cannot request additional resources from this factory; it is exhausted.  Consider specifying a greater number of initial resources or setting AllowOnDemandConstruction to true.");
             var pair = pool.Take();
             pair.NeedsUpdate = true;
             return pair;

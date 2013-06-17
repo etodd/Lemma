@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using BEPUphysics.BroadPhaseEntries;
-using BEPUphysics.DataStructures;
-using Microsoft.Xna.Framework;
 using BEPUphysics.Threading;
+using BEPUutilities.DataStructures;
+using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
 {
@@ -56,7 +53,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
                 entry.UpdateBoundingBox();
             //binary search for the approximately correct location.  This helps prevent large first-frame sort times.
             int minIndex = 0; //inclusive
-            int maxIndex = entries.count; //exclusive
+            int maxIndex = entries.Count; //exclusive
             int index = 0;
             while (maxIndex - minIndex > 0)
             {
@@ -85,14 +82,14 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
         Action<int> sweepSegment;
         protected override void UpdateMultithreaded()
         {
-            if (backbuffer.count != entries.count)
+            if (backbuffer.Count != entries.Count)
             {
                 backbuffer.Capacity = entries.Capacity;
-                backbuffer.count = entries.count;
+                backbuffer.Count = entries.Count;
             }
             Overlaps.Clear();
             //Sort along x axis using insertion sort; the list will be nearly sorted, so very few swaps are necessary.
-            for (int i = 1; i < entries.count; i++)
+            for (int i = 1; i < entries.Count; i++)
             {
                 var entry = entries.Elements[i];
                 for (int j = i - 1; j >= 0; j--)
@@ -144,7 +141,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
         {
             Overlaps.Clear();
             //Sort along x axis using insertion sort; the list will be nearly sorted, so very few swaps are necessary.
-            for (int i = 1; i < entries.count; i++)
+            for (int i = 1; i < entries.Count; i++)
             {
                 var entry = entries.Elements[i];
                 for (int j = i - 1; j >= 0; j--)
@@ -160,10 +157,10 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
 
             }
             //Sweep the list looking for overlaps.
-            for (int i = 0; i < entries.count; i++)
+            for (int i = 0; i < entries.Count; i++)
             {
                 BoundingBox a = entries.Elements[i].boundingBox;
-                for (int j = i + 1; j < entries.count && a.Max.X >= entries.Elements[j].boundingBox.Min.X; j++)
+                for (int j = i + 1; j < entries.Count && a.Max.X >= entries.Elements[j].boundingBox.Min.X; j++)
                 {
                     if (!(a.Min.Y > entries.Elements[j].boundingBox.Max.Y || a.Max.Y < entries.Elements[j].boundingBox.Min.Y ||
                           a.Min.Z > entries.Elements[j].boundingBox.Max.Z || a.Max.Z < entries.Elements[j].boundingBox.Min.Z))
@@ -180,16 +177,16 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
         int sweepSegmentCount = 32;
         void Sweep(int segment)
         {
-            int intervalLength = entries.count / sweepSegmentCount;
+            int intervalLength = entries.Count / sweepSegmentCount;
             int end;
             if (segment == sweepSegmentCount - 1)
-                end = entries.count;
+                end = entries.Count;
             else
                 end = intervalLength * (segment + 1);
             for (int i = intervalLength * segment; i < end; i++)
             {
                 BoundingBox a = entries.Elements[i].boundingBox;
-                for (int j = i + 1; j < entries.count && a.Max.X >= entries.Elements[j].boundingBox.Min.X; j++)
+                for (int j = i + 1; j < entries.Count && a.Max.X >= entries.Elements[j].boundingBox.Min.X; j++)
                 {
                     if (!(a.Min.Y > entries.Elements[j].boundingBox.Max.Y || a.Max.Y < entries.Elements[j].boundingBox.Min.Y ||
                           a.Min.Z > entries.Elements[j].boundingBox.Max.Z || a.Max.Z < entries.Elements[j].boundingBox.Min.Z))
@@ -203,11 +200,11 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
         int sortSegmentCount = 4;
         void SortSection(int section)
         {
-            int intervalLength = entries.count / sortSegmentCount;
+            int intervalLength = entries.Count / sortSegmentCount;
             int start = section * intervalLength;
             int end;
             if (section == sortSegmentCount - 1)
-                end = entries.count;
+                end = entries.Count;
             else
                 end = intervalLength * (section + 1);
 
@@ -231,7 +228,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
         RawList<BroadPhaseEntry> backbuffer;
         void MergeSections(int a, int b)
         {
-            int intervalLength = entries.count / sortSegmentCount;
+            int intervalLength = entries.Count / sortSegmentCount;
             //'a' is known to be less than b, which means it cannot be the last section.
             int aStart = intervalLength * a;
             int aEnd = intervalLength * (a + 1);
@@ -240,8 +237,8 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
             int length;
             if (b == sortSegmentCount - 1)
             {
-                bEnd = entries.count;
-                length = intervalLength + entries.count - bStart;
+                bEnd = entries.Count;
+                length = intervalLength + entries.Count - bStart;
             }
             else
             {

@@ -1,5 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 
 namespace BEPUphysics.EntityStateManagement
 {
@@ -79,25 +79,25 @@ namespace BEPUphysics.EntityStateManagement
         ///<summary>
         /// Gets or sets the buffered orientation matrix of the entity.
         ///</summary>
-        public Matrix3X3 OrientationMatrix
+        public Matrix3x3 OrientationMatrix
         {
             get
             {
-                Matrix3X3 toReturn;
+                Matrix3x3 toReturn;
                 if (IsReadBufferAccessible())
                 {
                     Quaternion o = bufferedStates.BufferedStatesManager.ReadBuffers.GetState(bufferedStates.motionStateIndex).Orientation;
-                    Matrix3X3.CreateFromQuaternion(ref o, out toReturn);
+                    Matrix3x3.CreateFromQuaternion(ref o, out toReturn);
                 }
                 else
-                    Matrix3X3.CreateFromQuaternion(ref bufferedStates.Entity.orientation, out toReturn);
+                    Matrix3x3.CreateFromQuaternion(ref bufferedStates.Entity.orientation, out toReturn);
                 return toReturn;
             }
             set
             {
                 if (IsWriteBufferAccessible())
                 {
-                    Quaternion toSet = Quaternion.Normalize(Quaternion.CreateFromRotationMatrix(Matrix3X3.ToMatrix4X4(value)));
+                    Quaternion toSet = Quaternion.Normalize(Quaternion.CreateFromRotationMatrix(Matrix3x3.ToMatrix4X4(value)));
                     WriteBuffer.EnqueueOrientation(bufferedStates.Entity, ref toSet);
                 }
                 else

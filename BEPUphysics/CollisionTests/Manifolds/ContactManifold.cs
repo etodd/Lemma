@@ -1,8 +1,7 @@
 ﻿using System;
-using BEPUphysics.Collidables;
-using BEPUphysics.DataStructures;
-using BEPUphysics.ResourceManagement;
-using System.Collections.ObjectModel;
+using BEPUphysics.BroadPhaseEntries;
+using BEPUutilities.DataStructures;
+using BEPUutilities.ResourceManagement;
 
 namespace BEPUphysics.CollisionTests.Manifolds
 {
@@ -31,7 +30,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
         protected void RemoveQueuedContacts()
         {
             //TOREMOVE MUST BE SORTED LEAST TO GREATEST INDEX.
-            for (int i = contactIndicesToRemove.count - 1; i >= 0; i--)
+            for (int i = contactIndicesToRemove.Count - 1; i >= 0; i--)
             {
                 Remove(contactIndicesToRemove.Elements[i]);
             }
@@ -89,6 +88,11 @@ namespace BEPUphysics.CollisionTests.Manifolds
         ///</summary>
         public virtual void CleanUp()
         {
+            for (int i = contacts.Count - 1; i >= 0; --i)
+            {
+                unusedContacts.GiveBack(contacts.Elements[i]);
+                contacts.FastRemoveAt(i);
+            }
         }
 
         ///<summary>
@@ -102,7 +106,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
         /// </summary>
         public virtual void ClearContacts()
         {
-            for (int i = contacts.count - 1; i >= 0; i--)
+            for (int i = contacts.Count - 1; i >= 0; i--)
             {
                 Remove(i);
             }

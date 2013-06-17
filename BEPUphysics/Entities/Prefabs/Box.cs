@@ -1,4 +1,4 @@
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.EntityStateManagement;
 using Microsoft.Xna.Framework;
 using BEPUphysics.CollisionShapes.ConvexShapes;
@@ -133,8 +133,6 @@ namespace BEPUphysics.Entities.Prefabs
             get { return CollisionInformation.Shape.Length; }
             set { CollisionInformation.Shape.Length = value; }
         }
-
-
 
 
 

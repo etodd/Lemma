@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using BEPUphysics.CollisionShapes;
 using BEPUphysics.CollisionShapes.ConvexShapes;
 using BEPUphysics.CollisionTests.CollisionAlgorithms;
-using BEPUphysics.DataStructures;
-using BEPUphysics.Collidables.MobileCollidables;
-using BEPUphysics.MathExtensions;
-using BEPUphysics.ResourceManagement;
+using BEPUutilities.DataStructures;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 
 namespace BEPUphysics.NarrowPhaseSystems.Pairs
 {
@@ -48,7 +44,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
             {
                 mesh = entryB as MobileMeshCollidable;
                 if (mesh == null)
-                    throw new Exception("Invalid types used to initialize pair handler.");
+                    throw new ArgumentException("Invalid types used to initialize pair handler.");
             }
 
         }
@@ -106,7 +102,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                 BoundingBox mobileBoundingBox;
                 mobileTriangle.GetBoundingBox(ref mobileTriangleTransform, out mobileBoundingBox);
                 DetectorVolume.TriangleMesh.Tree.GetOverlaps(mobileBoundingBox, overlaps);
-                for (int j = 0; j < overlaps.count; j++)
+                for (int j = 0; j < overlaps.Count; j++)
                 {
                     DetectorVolume.TriangleMesh.Data.GetTriangle(overlaps.Elements[j], out detectorTriangle.vA, out detectorTriangle.vB, out detectorTriangle.vC);
                     Vector3.Add(ref detectorTriangle.vA, ref detectorTriangle.vB, out detectorTriangleTransform.Position);

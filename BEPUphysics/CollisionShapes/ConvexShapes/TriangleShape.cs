@@ -1,29 +1,11 @@
 ﻿using System;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using RigidTransform = BEPUutilities.RigidTransform;
 
 namespace BEPUphysics.CollisionShapes.ConvexShapes
 {
-    ///<summary>
-    /// Sidedness of a triangle or mesh.
-    /// A triangle can be double sided, or allow one of its sides to let interacting objects through.
-    ///</summary>
-    public enum TriangleSidedness
-    {
-        /// <summary>
-        /// The triangle will interact with objects coming from both directions.
-        /// </summary>
-        DoubleSided,
-        /// <summary>
-        /// The triangle will interact with objects from which the winding of the triangle appears to be clockwise.
-        /// </summary>
-        Clockwise,
-        /// <summary>
-        /// The triangle will interact with objects from which the winding of the triangle appears to be counterclockwise..
-        /// </summary>
-        Counterclockwise
-    }
 
     ///<summary>
     /// Triangle collision shape.
@@ -221,7 +203,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         /// </summary>
         /// <param name="volume">Volume of the shape.</param>
         /// <returns>Volume distribution of the shape.</returns>
-        public override Matrix3X3 ComputeVolumeDistribution(out float volume)
+        public override Matrix3x3 ComputeVolumeDistribution(out float volume)
         {
             Vector3 center = ComputeCenter();
             volume = ComputeVolume(); //Just approximate.
@@ -239,25 +221,25 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             float j = vA.Y - center.Y;
             float k = vA.Z - center.Z;
             //localInertiaTensor += new Matrix(j * j + k * k, -j * j, -j * k, 0, -j * j, j * j + k * k, -j * k, 0, -j * k, -j * k, j * j + j * j, 0, 0, 0, 0, 0); //No mass per point.
-            var volumeDistribution = new Matrix3X3(massPerPoint * (j * j + k * k), massPerPoint * (-i * j), massPerPoint * (-i * k),
+            var volumeDistribution = new Matrix3x3(massPerPoint * (j * j + k * k), massPerPoint * (-i * j), massPerPoint * (-i * k),
                                                          massPerPoint * (-i * j), massPerPoint * (i * i + k * k), massPerPoint * (-j * k),
                                                          massPerPoint * (-i * k), massPerPoint * (-j * k), massPerPoint * (i * i + j * j));
 
             i = vB.X - center.X;
             j = vB.Y - center.Y;
             k = vB.Z - center.Z;
-            var pointContribution = new Matrix3X3(massPerPoint * (j * j + k * k), massPerPoint * (-i * j), massPerPoint * (-i * k),
+            var pointContribution = new Matrix3x3(massPerPoint * (j * j + k * k), massPerPoint * (-i * j), massPerPoint * (-i * k),
                                                         massPerPoint * (-i * j), massPerPoint * (i * i + k * k), massPerPoint * (-j * k),
                                                         massPerPoint * (-i * k), massPerPoint * (-j * k), massPerPoint * (i * i + j * j));
-            Matrix3X3.Add(ref volumeDistribution, ref pointContribution, out volumeDistribution);
+            Matrix3x3.Add(ref volumeDistribution, ref pointContribution, out volumeDistribution);
 
             i = vC.X - center.X;
             j = vC.Y - center.Y;
             k = vC.Z - center.Z;
-            pointContribution = new Matrix3X3(massPerPoint * (j * j + k * k), massPerPoint * (-i * j), massPerPoint * (-i * k),
+            pointContribution = new Matrix3x3(massPerPoint * (j * j + k * k), massPerPoint * (-i * j), massPerPoint * (-i * k),
                                               massPerPoint * (-i * j), massPerPoint * (i * i + k * k), massPerPoint * (-j * k),
                                               massPerPoint * (-i * k), massPerPoint * (-j * k), massPerPoint * (i * i + j * j));
-            Matrix3X3.Add(ref volumeDistribution, ref pointContribution, out volumeDistribution);
+            Matrix3x3.Add(ref volumeDistribution, ref pointContribution, out volumeDistribution);
             return volumeDistribution;
         }
 
@@ -331,8 +313,8 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         /// <returns>Whether or not the ray hit the target.</returns>
         public override bool RayTest(ref Ray ray, ref RigidTransform transform, float maximumLength, out RayHit hit)
         {
-            Matrix3X3 orientation;
-            Matrix3X3.CreateFromQuaternion(ref transform.Orientation, out orientation);
+            Matrix3x3 orientation;
+            Matrix3x3.CreateFromQuaternion(ref transform.Orientation, out orientation);
             Ray localRay;
             Quaternion conjugate;
             Quaternion.Conjugate(ref transform.Orientation, out conjugate);

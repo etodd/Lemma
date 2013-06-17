@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using BEPUphysics.Paths.PathFollowing;
 using Lemma.Util;
 using BEPUphysics;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 
 namespace Lemma.Factories
 {

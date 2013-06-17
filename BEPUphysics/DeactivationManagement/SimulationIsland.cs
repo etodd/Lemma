@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 using System.Collections.ObjectModel;
 
 namespace BEPUphysics.DeactivationManagement
@@ -38,7 +38,23 @@ namespace BEPUphysics.DeactivationManagement
             }
         }
         internal int memberCount;
+
+        /// <summary>
+        /// Gets the number of simulation island members within this simulation island.
+        /// </summary>
+        public int MemberCount
+        {
+            get { return memberCount; }
+        }
+
         internal int deactivationCandidateCount;
+        /// <summary>
+        /// Gets the number of simulation island members in the simulation island which are prepared to go to sleep.
+        /// </summary>
+        public int DeactivationCandidateCount
+        {
+            get { return deactivationCandidateCount; }
+        }
 
         ///<summary>
         /// Constructs a simulation island.
@@ -133,7 +149,7 @@ namespace BEPUphysics.DeactivationManagement
                 }
             }
             else
-                throw new Exception("Member either is not dynamic or already has a simulation island; cannot add.");
+                throw new ArgumentException("Member either is not dynamic or already has a simulation island; cannot add.");
         }
 
         ///<summary>
@@ -164,7 +180,7 @@ namespace BEPUphysics.DeactivationManagement
                 }
             }
             else
-                throw new Exception("Member does not belong to island; cannot remove.");
+                throw new ArgumentException("Member does not belong to island; cannot remove.");
         }
 
 

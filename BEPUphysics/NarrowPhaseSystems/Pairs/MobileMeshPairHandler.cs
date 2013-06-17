@@ -1,20 +1,15 @@
 ﻿using System;
 using BEPUphysics.BroadPhaseEntries;
-using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
-using BEPUphysics.CollisionTests;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.CollisionTests.CollisionAlgorithms.GJK;
 using BEPUphysics.CollisionTests.Manifolds;
 using BEPUphysics.Constraints.Collision;
 using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 using BEPUphysics.PositionUpdating;
 using BEPUphysics.Settings;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
-using BEPUphysics.ResourceManagement;
-using BEPUphysics.CollisionShapes.ConvexShapes;
-using System.Diagnostics;
+using BEPUutilities;
 
 namespace BEPUphysics.NarrowPhaseSystems.Pairs
 {
@@ -79,7 +74,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                 convex = entryA as ConvexCollidable;
 
                 if (mobileMesh == null || convex == null)
-                    throw new Exception("Inappropriate types used to initialize pair.");
+                    throw new ArgumentException("Inappropriate types used to initialize pair.");
             }
 
 
@@ -168,19 +163,19 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                 if (minimumRadius * minimumRadius < velocitySquared)
                 {
                     TriangleSidedness sidedness = mobileMesh.Shape.Sidedness;
-                    Matrix3X3 orientation;
-                    Matrix3X3.CreateFromQuaternion(ref mobileMesh.worldTransform.Orientation, out orientation);
-                    var triangle = Resources.GetTriangle();
+                    Matrix3x3 orientation;
+                    Matrix3x3.CreateFromQuaternion(ref mobileMesh.worldTransform.Orientation, out orientation);
+                    var triangle = PhysicsResources.GetTriangle();
                     triangle.collisionMargin = 0;
                     //Spherecast against all triangles to find the earliest time.
-                    for (int i = 0; i < MeshManifold.overlappedTriangles.count; i++)
+                    for (int i = 0; i < MeshManifold.overlappedTriangles.Count; i++)
                     {
                         MeshBoundingBoxTreeData data = mobileMesh.Shape.TriangleMesh.Data;
                         int triangleIndex = MeshManifold.overlappedTriangles.Elements[i];
                         data.GetTriangle(triangleIndex, out triangle.vA, out triangle.vB, out triangle.vC);
-                        Matrix3X3.Transform(ref triangle.vA, ref orientation, out triangle.vA);
-                        Matrix3X3.Transform(ref triangle.vB, ref orientation, out triangle.vB);
-                        Matrix3X3.Transform(ref triangle.vC, ref orientation, out triangle.vC);
+                        Matrix3x3.Transform(ref triangle.vA, ref orientation, out triangle.vA);
+                        Matrix3x3.Transform(ref triangle.vB, ref orientation, out triangle.vB);
+                        Matrix3x3.Transform(ref triangle.vC, ref orientation, out triangle.vC);
                         Vector3.Add(ref triangle.vA, ref mobileMesh.worldTransform.Position, out triangle.vA);
                         Vector3.Add(ref triangle.vB, ref mobileMesh.worldTransform.Position, out triangle.vB);
                         Vector3.Add(ref triangle.vC, ref mobileMesh.worldTransform.Position, out triangle.vC);
@@ -217,7 +212,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                             }
                         }
                     }
-                    Resources.GiveBack(triangle);
+                    PhysicsResources.GiveBack(triangle);
                 }
 
 
@@ -233,7 +228,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
             //Find the contact's normal and friction forces.
             info.FrictionImpulse = 0;
             info.NormalImpulse = 0;
-            for (int i = 0; i < contactConstraint.frictionConstraints.count; i++)
+            for (int i = 0; i < contactConstraint.frictionConstraints.Count; i++)
             {
                 if (contactConstraint.frictionConstraints.Elements[i].PenetrationConstraint.contact == info.Contact)
                 {

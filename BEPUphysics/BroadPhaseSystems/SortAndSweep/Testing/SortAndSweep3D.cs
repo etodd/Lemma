@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BEPUphysics.BroadPhaseEntries;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.BroadPhaseSystems.SortAndSweep.Testing
@@ -20,7 +20,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep.Testing
             //binary search for the approximately correct location.  This helps prevent large first-frame sort times.
             //X Axis:
             int minIndex = 0; //inclusive
-            int maxIndex = entriesX.count; //exclusive
+            int maxIndex = entriesX.Count; //exclusive
             int index = 0;
             while (maxIndex - minIndex > 0)
             {
@@ -36,7 +36,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep.Testing
 
             //Y Axis:
             minIndex = 0; //inclusive
-            maxIndex = entriesY.count; //exclusive
+            maxIndex = entriesY.Count; //exclusive
             while (maxIndex - minIndex > 0)
             {
                 index = (maxIndex + minIndex) / 2;
@@ -51,7 +51,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep.Testing
 
             //Z Axis:
             minIndex = 0; //inclusive
-            maxIndex = entriesZ.count; //exclusive
+            maxIndex = entriesZ.Count; //exclusive
             while (maxIndex - minIndex > 0)
             {
                 index = (maxIndex + minIndex) / 2;
@@ -88,7 +88,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep.Testing
             Overlaps.Clear();
 
             //Sort along x axis using insertion sort; the list will be nearly sorted, so very few swaps are necessary.
-            for (int i = 1; i < entriesX.count; i++)
+            for (int i = 1; i < entriesX.Count; i++)
             {
                 var entry = entriesX.Elements[i];
                 for (int j = i - 1; j >= 0; j--)
@@ -104,7 +104,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep.Testing
 
             }
             //Sort along y axis using insertion sort; the list will be nearly sorted, so very few swaps are necessary.
-            for (int i = 1; i < entriesY.count; i++)
+            for (int i = 1; i < entriesY.Count; i++)
             {
                 var entry = entriesY.Elements[i];
                 for (int j = i - 1; j >= 0; j--)
@@ -120,7 +120,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep.Testing
 
             }
             //Sort along z axis using insertion sort; the list will be nearly sorted, so very few swaps are necessary.
-            for (int i = 1; i < entriesZ.count; i++)
+            for (int i = 1; i < entriesZ.Count; i++)
             {
                 var entry = entriesZ.Elements[i];
                 for (int j = i - 1; j >= 0; j--)
@@ -140,28 +140,28 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep.Testing
 
             //Sweep the list looking for overlaps.
             //Sweep the X axis first; in this phase, add overlaps to the hash set if they exist.
-            for (int i = 0; i < entriesX.count; i++)
+            for (int i = 0; i < entriesX.Count; i++)
             {
                 BoundingBox a = entriesX.Elements[i].boundingBox;
-                for (int j = i + 1; j < entriesX.count && a.Max.X > entriesX.Elements[j].boundingBox.Min.X; j++)
+                for (int j = i + 1; j < entriesX.Count && a.Max.X > entriesX.Elements[j].boundingBox.Min.X; j++)
                 {
                     overlapCandidatesX.Add(new BroadPhaseOverlap(entriesX.Elements[i], entriesX.Elements[j]));
                 }
             }
             //Sweep the Y axis second; same thing
-            for (int i = 0; i < entriesY.count; i++)
+            for (int i = 0; i < entriesY.Count; i++)
             {
                 BoundingBox a = entriesY.Elements[i].boundingBox;
-                for (int j = i + 1; j < entriesY.count && a.Max.Y > entriesY.Elements[j].boundingBox.Min.Y; j++)
+                for (int j = i + 1; j < entriesY.Count && a.Max.Y > entriesY.Elements[j].boundingBox.Min.Y; j++)
                 {
                     overlapCandidatesY.Add(new BroadPhaseOverlap(entriesY.Elements[i], entriesY.Elements[j]));
                 }
             }
             //Sweep the Z axis last
-            for (int i = 0; i < entriesZ.count; i++)
+            for (int i = 0; i < entriesZ.Count; i++)
             {
                 BoundingBox a = entriesZ.Elements[i].boundingBox;
-                for (int j = i + 1; j < entriesZ.count && a.Max.Z > entriesZ.Elements[j].boundingBox.Min.Z; j++)
+                for (int j = i + 1; j < entriesZ.Count && a.Max.Z > entriesZ.Elements[j].boundingBox.Min.Z; j++)
                 {
                     var overlap = new BroadPhaseOverlap(entriesZ.Elements[i], entriesZ.Elements[j]);
                     if (overlapCandidatesX.Contains(overlap) && overlapCandidatesY.Contains(overlap))

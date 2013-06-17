@@ -1,6 +1,7 @@
 ﻿using System;
 using BEPUphysics.Constraints;
 using BEPUphysics.Entities;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 using BEPUphysics.Materials;
 

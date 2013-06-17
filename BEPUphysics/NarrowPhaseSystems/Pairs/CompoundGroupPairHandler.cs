@@ -1,15 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using BEPUphysics.BroadPhaseEntries;
-using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
-using BEPUphysics.Constraints;
-using BEPUphysics.Constraints.Collision;
-using BEPUphysics.DataStructures;
-using BEPUphysics.ResourceManagement;
-using BEPUphysics.CollisionRuleManagement;
-using BEPUphysics.CollisionTests;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 
 namespace BEPUphysics.NarrowPhaseSystems.Pairs
 {
@@ -45,7 +36,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                 compoundInfo = entryB as CompoundCollidable;
                 if (compoundInfo == null)
                 {
-                    throw new Exception("Inappropriate types used to initialize pair.");
+                    throw new ArgumentException("Inappropriate types used to initialize pair.");
                 }
             }
 

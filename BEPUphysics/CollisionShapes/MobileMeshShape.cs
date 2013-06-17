@@ -1,10 +1,9 @@
-﻿using Microsoft.Xna.Framework;
-using BEPUphysics.DataStructures;
-using BEPUphysics.MathExtensions;
-using BEPUphysics.Collidables.MobileCollidables;
-using BEPUphysics.CollisionShapes.ConvexShapes;
-using BEPUphysics.ResourceManagement;
-using System.Collections.Generic;
+﻿using BEPUphysics.DataStructures;
+using BEPUutilities.ResourceManagement;
+using Microsoft.Xna.Framework;
+using BEPUutilities.DataStructures;
+using BEPUutilities;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using System;
 using BEPUphysics.Settings;
 
@@ -31,7 +30,7 @@ namespace BEPUphysics.CollisionShapes
             set
             {
                 if (value < 0)
-                    throw new Exception("Mesh margin must be nonnegative.");
+                    throw new ArgumentException("Mesh margin must be nonnegative.");
                 meshCollisionMargin = value;
                 OnShapeChanged();
             }
@@ -132,7 +131,7 @@ namespace BEPUphysics.CollisionShapes
             ShapeDistributionInformation distributionInfo;
             ComputeShapeInformation(data, out distributionInfo);
 
-            for (int i = 0; i < surfaceVertices.count; i++)
+            for (int i = 0; i < surfaceVertices.Count; i++)
             {
                 Vector3.Subtract(ref surfaceVertices.Elements[i], ref distributionInfo.Center, out surfaceVertices.Elements[i]);
             }
@@ -155,7 +154,7 @@ namespace BEPUphysics.CollisionShapes
             var data = new TransformableMeshData(vertices, indices, localTransform);
             ComputeShapeInformation(data, out distributionInfo);
 
-            for (int i = 0; i < surfaceVertices.count; i++)
+            for (int i = 0; i < surfaceVertices.Count; i++)
             {
                 Vector3.Subtract(ref surfaceVertices.Elements[i], ref distributionInfo.Center, out surfaceVertices.Elements[i]);
             }
@@ -185,7 +184,7 @@ namespace BEPUphysics.CollisionShapes
         /// <returns>Whether or not the ray origin was in the mesh.</returns>
         public bool IsLocalRayOriginInMesh(ref Ray ray, out RayHit hit)
         {
-            var overlapList = Resources.GetIntList();
+            var overlapList = CommonResources.GetIntList();
             hit = new RayHit();
             hit.T = float.MaxValue;
             if (triangleMesh.Tree.GetOverlaps(ray, overlapList))
@@ -204,12 +203,12 @@ namespace BEPUphysics.CollisionShapes
                         minimumClockwise = hitClockwise;
                     }
                 }
-                Resources.GiveBack(overlapList);
+                CommonResources.GiveBack(overlapList);
 
                 //If the mesh is hit from behind by the ray on the first hit, then the ray is inside.
                 return hit.T < float.MaxValue && ((solidSidedness == TriangleSidedness.Clockwise && !minimumClockwise) || (solidSidedness == TriangleSidedness.Counterclockwise && minimumClockwise));
             }
-            Resources.GiveBack(overlapList);
+            CommonResources.GiveBack(overlapList);
             return false;
 
         }
@@ -221,7 +220,7 @@ namespace BEPUphysics.CollisionShapes
 
         internal bool IsHitUnique(RawList<RayHit> hits, ref RayHit hit)
         {
-            for (int i = 0; i < hits.count; i++)
+            for (int i = 0; i < hits.Count; i++)
             {
                 if (Math.Abs(hits.Elements[i].T - hit.T) < MeshHitUniquenessThreshold)
                     return false;
@@ -281,11 +280,11 @@ namespace BEPUphysics.CollisionShapes
         TriangleSidedness ComputeSolidSidednessHelper(Ray ray)
         {
             TriangleSidedness toReturn;
-            var hitList = Resources.GetIntList();
+            var hitList = CommonResources.GetIntList();
             if (triangleMesh.Tree.GetOverlaps(ray, hitList))
             {
                 Vector3 vA, vB, vC;
-                var hits = Resources.GetRayHitList();
+                var hits = CommonResources.GetRayHitList();
                 //Identify the first and last hits.
                 int minimum = 0;
                 int maximum = 0;
@@ -311,7 +310,7 @@ namespace BEPUphysics.CollisionShapes
                     }
                 }
 
-                if (hits.count % 2 == 0)
+                if (hits.Count % 2 == 0)
                 {
                     //Since we were outside, the first hit triangle should be calibrated
                     //such that it faces towards us.
@@ -336,12 +335,12 @@ namespace BEPUphysics.CollisionShapes
                         toReturn = TriangleSidedness.Clockwise;
                 }
 
-                Resources.GiveBack(hits);
+                CommonResources.GiveBack(hits);
 
             }
             else
                 toReturn = TriangleSidedness.DoubleSided; //This is a problem...
-            Resources.GiveBack(hitList);
+            CommonResources.GiveBack(hitList);
             return toReturn;
         }
 
@@ -352,7 +351,7 @@ namespace BEPUphysics.CollisionShapes
             try
             {
                 ConvexHullHelper.GetConvexHull(data.vertices, surfaceVertices);
-                for (int i = 0; i < surfaceVertices.count; i++)
+                for (int i = 0; i < surfaceVertices.Count; i++)
                 {
                     AffineTransform.Transform(ref surfaceVertices.Elements[i], ref data.worldTransform, out surfaceVertices.Elements[i]);
                 }
@@ -458,7 +457,7 @@ namespace BEPUphysics.CollisionShapes
                 ao *= offFactor;
                 bo *= offFactor;
                 co *= offFactor;
-                shapeInformation.VolumeDistribution = new Matrix3X3(a, bo, co,
+                shapeInformation.VolumeDistribution = new Matrix3x3(a, bo, co,
                                                                     bo, b, ao,
                                                                     co, ao, c);
 
@@ -491,7 +490,7 @@ namespace BEPUphysics.CollisionShapes
 
                 data.worldTransform.Translation -= shapeInformation.Center;
 
-                shapeInformation.VolumeDistribution = new Matrix3X3();
+                shapeInformation.VolumeDistribution = new Matrix3x3();
                 for (int i = 0; i < data.indices.Length; i += 3)
                 { //Configure the inertia tensor to be local.
                     Vector3 vA, vB, vC;
@@ -505,29 +504,29 @@ namespace BEPUphysics.CollisionShapes
                     float weight = cross.Length();
                     totalWeight += weight;
 
-                    Matrix3X3 innerProduct;
-                    Matrix3X3.CreateScale(vA.LengthSquared(), out innerProduct);
-                    Matrix3X3 outerProduct;
-                    Matrix3X3.CreateOuterProduct(ref vA, ref vA, out outerProduct);
-                    Matrix3X3 contribution;
-                    Matrix3X3.Subtract(ref innerProduct, ref outerProduct, out contribution);
-                    Matrix3X3.Multiply(ref contribution, weight, out contribution);
-                    Matrix3X3.Add(ref shapeInformation.VolumeDistribution, ref contribution, out shapeInformation.VolumeDistribution);
+                    Matrix3x3 innerProduct;
+                    Matrix3x3.CreateScale(vA.LengthSquared(), out innerProduct);
+                    Matrix3x3 outerProduct;
+                    Matrix3x3.CreateOuterProduct(ref vA, ref vA, out outerProduct);
+                    Matrix3x3 contribution;
+                    Matrix3x3.Subtract(ref innerProduct, ref outerProduct, out contribution);
+                    Matrix3x3.Multiply(ref contribution, weight, out contribution);
+                    Matrix3x3.Add(ref shapeInformation.VolumeDistribution, ref contribution, out shapeInformation.VolumeDistribution);
 
-                    Matrix3X3.CreateScale(vB.LengthSquared(), out innerProduct);
-                    Matrix3X3.CreateOuterProduct(ref vB, ref vB, out outerProduct);
-                    Matrix3X3.Subtract(ref innerProduct, ref outerProduct, out outerProduct);
-                    Matrix3X3.Multiply(ref contribution, weight, out contribution);
-                    Matrix3X3.Add(ref shapeInformation.VolumeDistribution, ref contribution, out shapeInformation.VolumeDistribution);
+                    Matrix3x3.CreateScale(vB.LengthSquared(), out innerProduct);
+                    Matrix3x3.CreateOuterProduct(ref vB, ref vB, out outerProduct);
+                    Matrix3x3.Subtract(ref innerProduct, ref outerProduct, out outerProduct);
+                    Matrix3x3.Multiply(ref contribution, weight, out contribution);
+                    Matrix3x3.Add(ref shapeInformation.VolumeDistribution, ref contribution, out shapeInformation.VolumeDistribution);
 
-                    Matrix3X3.CreateScale(vC.LengthSquared(), out innerProduct);
-                    Matrix3X3.CreateOuterProduct(ref vC, ref vC, out outerProduct);
-                    Matrix3X3.Subtract(ref innerProduct, ref outerProduct, out contribution);
-                    Matrix3X3.Multiply(ref contribution, weight, out contribution);
-                    Matrix3X3.Add(ref shapeInformation.VolumeDistribution, ref contribution, out shapeInformation.VolumeDistribution);
+                    Matrix3x3.CreateScale(vC.LengthSquared(), out innerProduct);
+                    Matrix3x3.CreateOuterProduct(ref vC, ref vC, out outerProduct);
+                    Matrix3x3.Subtract(ref innerProduct, ref outerProduct, out contribution);
+                    Matrix3x3.Multiply(ref contribution, weight, out contribution);
+                    Matrix3x3.Add(ref shapeInformation.VolumeDistribution, ref contribution, out shapeInformation.VolumeDistribution);
 
                 }
-                Matrix3X3.Multiply(ref shapeInformation.VolumeDistribution, 1 / (6 * totalWeight), out shapeInformation.VolumeDistribution);
+                Matrix3x3.Multiply(ref shapeInformation.VolumeDistribution, 1 / (6 * totalWeight), out shapeInformation.VolumeDistribution);
             }
 
             ////Configure the inertia tensor to be local.
@@ -616,7 +615,7 @@ namespace BEPUphysics.CollisionShapes
         //    }
         //}
 
-        private void GetBoundingBox(ref Matrix3X3 o, out BoundingBox boundingBox)
+        private void GetBoundingBox(ref Matrix3x3 o, out BoundingBox boundingBox)
         {
 #if !WINDOWS
             boundingBox = new BoundingBox();
@@ -629,7 +628,7 @@ namespace BEPUphysics.CollisionShapes
             int right = 0, left = 0, up = 0, down = 0, backward = 0, forward = 0;
             float minX = float.MaxValue, maxX = -float.MaxValue, minY = float.MaxValue, maxY = -float.MaxValue, minZ = float.MaxValue, maxZ = -float.MaxValue;
 
-            for (int i = 0; i < surfaceVertices.count; i++)
+            for (int i = 0; i < surfaceVertices.Count; i++)
             {
                 float dotX, dotY, dotZ;
                 Vector3.Dot(ref rightDirection, ref surfaceVertices.Elements[i], out dotX);
@@ -690,12 +689,12 @@ namespace BEPUphysics.CollisionShapes
 
             //TODO: This could be optimized.  Unnecessary transformation information gets computed.
             Vector3 vMinX, vMaxX, vMinY, vMaxY, vMinZ, vMaxZ;
-            Matrix3X3.Transform(ref rightElement, ref o, out vMaxX);
-            Matrix3X3.Transform(ref leftElement, ref o, out vMinX);
-            Matrix3X3.Transform(ref upElement, ref o, out vMaxY);
-            Matrix3X3.Transform(ref downElement, ref o, out vMinY);
-            Matrix3X3.Transform(ref backwardElement, ref o, out vMaxZ);
-            Matrix3X3.Transform(ref forwardElement, ref o, out vMinZ);
+            Matrix3x3.Transform(ref rightElement, ref o, out vMaxX);
+            Matrix3x3.Transform(ref leftElement, ref o, out vMinX);
+            Matrix3x3.Transform(ref upElement, ref o, out vMaxY);
+            Matrix3x3.Transform(ref downElement, ref o, out vMinY);
+            Matrix3x3.Transform(ref backwardElement, ref o, out vMaxZ);
+            Matrix3x3.Transform(ref forwardElement, ref o, out vMinZ);
 
 
             boundingBox.Max.X = vMaxX.X;
@@ -712,7 +711,7 @@ namespace BEPUphysics.CollisionShapes
         ///</summary>
         ///<param name="shapeTransform">Transform to apply to the shape during the bounding box calculation.</param>
         ///<param name="boundingBox">Bounding box containing the transformed mesh shape.</param>
-        public void GetBoundingBox(ref RigidTransform shapeTransform, out BoundingBox boundingBox)
+        public override void GetBoundingBox(ref RigidTransform shapeTransform, out BoundingBox boundingBox)
         {
             ////TODO: Could use an approximate bounding volume.  Would be cheaper at runtime and use less memory, though the box would be bigger.
             //Matrix3X3 o;
@@ -752,8 +751,8 @@ namespace BEPUphysics.CollisionShapes
             //boundingBox.Min.Z = shapeTransform.Position.Z + forward.Z;
 
 
-            Matrix3X3 o;
-            Matrix3X3.CreateFromQuaternion(ref shapeTransform.Orientation, out o);
+            Matrix3x3 o;
+            Matrix3x3.CreateFromQuaternion(ref shapeTransform.Orientation, out o);
             GetBoundingBox(ref o, out boundingBox);
 
 
@@ -813,7 +812,7 @@ namespace BEPUphysics.CollisionShapes
         {
             GetLocalBoundingBox(ref shapeTransform, ref spaceTransform, out boundingBox);
             Vector3 expansion;
-            Matrix3X3.TransformTranspose(ref sweep, ref spaceTransform.LinearTransform, out expansion);
+            Matrix3x3.TransformTranspose(ref sweep, ref spaceTransform.LinearTransform, out expansion);
             Toolbox.ExpandBoundingBox(ref boundingBox, ref expansion);
         }
 
@@ -827,7 +826,7 @@ namespace BEPUphysics.CollisionShapes
             ComputeShapeInformation(this.TriangleMesh.Data as TransformableMeshData, out shapeInfo);
         }
 
-        public override Collidables.MobileCollidables.EntityCollidable GetCollidableInstance()
+        public override EntityCollidable GetCollidableInstance()
         {
             return new MobileMeshCollidable(this);
         }

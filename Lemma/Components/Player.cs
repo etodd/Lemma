@@ -1,13 +1,12 @@
 ﻿using System;
 using BEPUphysics;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.Entities;
 using BEPUphysics.Entities.Prefabs;
 using BEPUphysics.UpdateableSystems;
 using Microsoft.Xna.Framework;
 using BEPUphysics.CollisionRuleManagement;
-using BEPUphysics.MathExtensions;
 using Lemma.Util;
 using BEPUphysics.CollisionTests;
 using System.Xml.Serialization;

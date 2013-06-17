@@ -1,7 +1,7 @@
-﻿using BEPUphysics.MathExtensions;
+﻿using BEPUutilities;
 using BEPUphysics.Settings;
 using Microsoft.Xna.Framework;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 using System.Diagnostics;
 using System;
 
@@ -22,8 +22,9 @@ namespace BEPUphysics.CollisionTests
             //TODO: Could also refresh normals with some trickery.
             //Would also need to refresh depth using new normals, and would require some extra information.
 
-            for (int k = 0; k < contacts.count; k++)
+            for (int k = 0; k < contacts.Count; k++)
             {
+                contacts.Elements[k].Validate();
                 ContactSupplementData data = supplementData.Elements[k];
                 Vector3 newPosA, newPosB;
                 RigidTransform.Transform(ref data.LocalOffsetA, ref transformA, out newPosA);
@@ -63,6 +64,7 @@ namespace BEPUphysics.CollisionTests
                         //RigidTransform.TransformByInverse(ref newPos, ref transformA, out data.LocalOffsetA);
                         //RigidTransform.TransformByInverse(ref newPos, ref transformB, out data.LocalOffsetB);
                     }
+                    contacts.Elements[k].Validate();
                 }
                
             }

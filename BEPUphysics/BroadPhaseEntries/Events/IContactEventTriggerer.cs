@@ -6,7 +6,7 @@ using BEPUphysics.BroadPhaseSystems;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
 using BEPUphysics.CollisionTests;
 
-namespace BEPUphysics.Collidables.Events
+namespace BEPUphysics.BroadPhaseEntries.Events
 {
     /// <summary>
     /// Manages triggers for events in an ContactEventManager.

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 
@@ -23,7 +23,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
         internal int GetIndex(float x)
         {
             int minIndex = 0; //inclusive
-            int maxIndex = entries.count; //exclusive
+            int maxIndex = entries.Count; //exclusive
             int index = 0;
             while (maxIndex - minIndex > 0)
             {
@@ -53,7 +53,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
         internal void UpdateOverlaps(Grid2DSortAndSweep owner)
         {
             //Sort along x axis using insertion sort; the list will be nearly sorted, so very few swaps are necessary.
-            for (int i = 1; i < entries.count; i++)
+            for (int i = 1; i < entries.Count; i++)
             {
                 var entry = entries.Elements[i];
                 for (int j = i - 1; j >= 0; j--)
@@ -68,12 +68,12 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
                 }
             }
             //Sweep the list looking for overlaps.
-            for (int i = 0; i < entries.count; i++)
+            for (int i = 0; i < entries.Count; i++)
             {
                 Grid2DEntry a = entries.Elements[i];
                 Grid2DEntry b;
                 //TODO: Microoptimize
-                for (int j = i + 1; j < entries.count && a.item.boundingBox.Max.X >= (b = entries.Elements[j]).item.boundingBox.Min.X; j++)
+                for (int j = i + 1; j < entries.Count && a.item.boundingBox.Max.X >= (b = entries.Elements[j]).item.boundingBox.Min.X; j++)
                 {
                     if (!(a.item.boundingBox.Min.Y > b.item.boundingBox.Max.Y || a.item.boundingBox.Max.Y < b.item.boundingBox.Min.Y ||
                           a.item.boundingBox.Min.Z > b.item.boundingBox.Max.Z || a.item.boundingBox.Max.Z < b.item.boundingBox.Min.Z))
@@ -114,7 +114,7 @@ namespace BEPUphysics.BroadPhaseSystems.SortAndSweep
 
         public override string ToString()
         {
-            return "{" + cellIndex.Y + ", " + cellIndex.Z + "}: " + entries.count;
+            return "{" + cellIndex.Y + ", " + cellIndex.Z + "}: " + entries.Count;
         }
 
     }

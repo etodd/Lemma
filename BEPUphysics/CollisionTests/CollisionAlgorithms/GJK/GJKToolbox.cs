@@ -1,7 +1,8 @@
 ﻿using BEPUphysics.CollisionShapes.ConvexShapes;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 using BEPUphysics.Settings;
+using RigidTransform = BEPUutilities.RigidTransform;
 
 namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
 {
@@ -201,18 +202,18 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
             Vector3.Transform(ref ray.Position, ref conjugate, out ray.Position);
             Vector3.Transform(ref ray.Direction, ref conjugate, out ray.Direction);
 
-            Vector3 w, p;
+            Vector3 extremePointToRayOrigin, extremePoint;
             hit.T = 0;
             hit.Location = ray.Position;
             hit.Normal = Toolbox.ZeroVector;
-            Vector3 v = hit.Location;
+            Vector3 closestOffset = hit.Location;
 
             RaySimplex simplex = new RaySimplex();
 
-            float vw, vdir;
+            float vw, closestPointDotDirection;
             int count = 0;
             //This epsilon has a significant impact on performance and accuracy.  Changing it to use BigEpsilon instead increases speed by around 30-40% usually, but jigging is more evident.
-            while (v.LengthSquared() >= Toolbox.Epsilon * simplex.GetErrorTolerance(ref ray.Position))
+            while (closestOffset.LengthSquared() >= Toolbox.Epsilon * simplex.GetErrorTolerance(ref ray.Position))
             {
                 if (++count > MaximumGJKIterations)
                 {
@@ -221,19 +222,22 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
                     return false;
                 }
 
-                shape.GetLocalExtremePoint(v, out p);
+                shape.GetLocalExtremePoint(closestOffset, out extremePoint);
 
-                Vector3.Subtract(ref hit.Location, ref p, out w);
-                Vector3.Dot(ref v, ref w, out vw);
+                Vector3.Subtract(ref hit.Location, ref extremePoint, out extremePointToRayOrigin);
+                Vector3.Dot(ref closestOffset, ref extremePointToRayOrigin, out vw);
+                //If the closest offset and the extreme point->ray origin direction point the same way,
+                //then we might be able to conservatively advance the point towards the surface.
                 if (vw > 0)
                 {
-                    Vector3.Dot(ref v, ref ray.Direction, out vdir);
-                    if (vdir >= 0)
+                    
+                    Vector3.Dot(ref closestOffset, ref ray.Direction, out closestPointDotDirection);
+                    if (closestPointDotDirection >= 0)
                     {
                         hit = new RayHit();
                         return false;
                     }
-                    hit.T = hit.T - vw / vdir;
+                    hit.T = hit.T - vw / closestPointDotDirection;
                     if (hit.T > maximumLength)
                     {
                         //If we've gone beyond where the ray can reach, there's obviously no hit.
@@ -243,13 +247,14 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
                     //Shift the ray up.
                     Vector3.Multiply(ref ray.Direction, hit.T, out hit.Location);
                     Vector3.Add(ref hit.Location, ref ray.Position, out hit.Location);
-                    hit.Normal = v;
+                    hit.Normal = closestOffset;
                 }
 
                 RaySimplex shiftedSimplex;
-                simplex.AddNewSimplexPoint(ref p, ref hit.Location, out shiftedSimplex);
+                simplex.AddNewSimplexPoint(ref extremePoint, ref hit.Location, out shiftedSimplex);
 
-                shiftedSimplex.GetPointClosestToOrigin(ref simplex, out v);
+                //Compute the offset from the simplex surface to the origin.
+                shiftedSimplex.GetPointClosestToOrigin(ref simplex, out closestOffset);
 
             }
             //Transform the hit data into world space.

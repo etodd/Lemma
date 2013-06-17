@@ -1,6 +1,5 @@
 ﻿using BEPUphysics.BroadPhaseEntries;
 using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.Collidables;
 using BEPUphysics.CollisionRuleManagement;
 using BEPUphysics.Entities;
 using BEPUphysics.Constraints.Collision;
@@ -79,9 +78,6 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
         public abstract void UpdateTimeOfImpact(Collidable requester, float dt);
 
 
-
-
-
         protected bool suppressEvents;
         ///<summary>
         /// Gets or sets whether or not to suppress events from this pair handler.
@@ -138,6 +134,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
 
         protected virtual void OnContactAdded(Contact contact)
         {
+            contact.Validate();
             //Children manage the addition of the contact to the constraint, if any.
             if (!suppressEvents)
             {
@@ -161,6 +158,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                 Parent.OnContactRemoved(contact);
 
         }
+
 
         ///<summary>
         /// Cleans up the pair handler.
@@ -237,6 +235,23 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
         /// Gets a list of the contacts in the pair and their associated constraint information.
         ///</summary>
         public ContactCollection Contacts { get; private set; }
+
+        /// <summary>
+        /// Gets whether or not this pair has any contacts in it with nonnegative penetration depths.
+        /// Such a contact would imply the pair of objects is actually colliding.
+        /// </summary>
+        public bool Colliding
+        {
+            get
+            {
+                foreach (var contact in Contacts)
+                {
+                    if (contact.Contact.PenetrationDepth >= 0)
+                        return true;
+                }
+                return false;
+            }
+        }
 
         /// <summary>
         /// Forces the pair handler to clean out its contacts.

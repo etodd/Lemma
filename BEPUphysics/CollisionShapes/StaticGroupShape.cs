@@ -1,9 +1,10 @@
-﻿using BEPUphysics.MathExtensions;
-using Microsoft.Xna.Framework;
+﻿using System;
 using BEPUphysics.DataStructures;
+using BEPUutilities;
+using Microsoft.Xna.Framework;
+using BEPUutilities.DataStructures;
 using System.Collections.Generic;
-using BEPUphysics.Collidables;
-using BEPUphysics.ResourceManagement;
+using BEPUphysics.BroadPhaseEntries;
 
 namespace BEPUphysics.CollisionShapes
 {
@@ -62,12 +63,11 @@ namespace BEPUphysics.CollisionShapes
         /// <returns>Whether or not the ray hit the entry.</returns>
         public bool RayCast(Ray ray, float maximumLength, out RayCastResult result)
         {
-            var outputOverlappedElements = Resources.GetCollidableList();
-            var rayHits = Resources.GetRayHitList();
+            var outputOverlappedElements = PhysicsResources.GetCollidableList();
             CollidableTree.GetOverlaps(ray, maximumLength, outputOverlappedElements);
             result = new RayCastResult();
             result.HitData.T = float.MaxValue;
-            for (int i = 0; i < outputOverlappedElements.count; ++i)
+            for (int i = 0; i < outputOverlappedElements.Count; ++i)
             {
                 RayHit hit;
                 if (outputOverlappedElements.Elements[i].RayCast(ray, maximumLength, out hit))
@@ -79,8 +79,38 @@ namespace BEPUphysics.CollisionShapes
                     }
                 }
             }
-            Resources.GiveBack(rayHits);
-            Resources.GiveBack(outputOverlappedElements);
+            PhysicsResources.GiveBack(outputOverlappedElements);
+            return result.HitData.T < float.MaxValue;
+        }
+
+        /// <summary>
+        /// Tests a ray against the collidable.
+        /// </summary>
+        /// <param name="ray">Ray to test.</param>
+        /// <param name="maximumLength">Maximum length, in units of the ray's direction's length, to test.</param>
+        /// <param name="filter">Test to apply to the entry. If it returns true, the entry is processed, otherwise the entry is ignored. If a collidable hierarchy is present
+        /// in the entry, this filter will be passed into inner ray casts.</param>
+        /// <param name="result">Hit data, if any.</param>
+        /// <returns>Whether or not the ray hit the entry.</returns>
+        public bool RayCast(Ray ray, float maximumLength, Func<BroadPhaseEntry, bool> filter, out RayCastResult result)
+        {
+            var outputOverlappedElements = PhysicsResources.GetCollidableList();
+            CollidableTree.GetOverlaps(ray, maximumLength, outputOverlappedElements);
+            result = new RayCastResult();
+            result.HitData.T = float.MaxValue;
+            for (int i = 0; i < outputOverlappedElements.Count; ++i)
+            {
+                RayHit hit;
+                if (outputOverlappedElements.Elements[i].RayCast(ray, maximumLength, filter, out hit))
+                {
+                    if (hit.T < result.HitData.T)
+                    {
+                        result.HitData = hit;
+                        result.HitObject = outputOverlappedElements.Elements[i];
+                    }
+                }
+            }
+            PhysicsResources.GiveBack(outputOverlappedElements);
             return result.HitData.T < float.MaxValue;
         }
 
@@ -95,15 +125,14 @@ namespace BEPUphysics.CollisionShapes
         /// <returns>Whether or not the cast hit anything.</returns>
         public bool ConvexCast(ConvexShapes.ConvexShape castShape, ref RigidTransform startingTransform, ref Vector3 sweep, out RayCastResult result)
         {
-            var outputOverlappedElements = Resources.GetCollidableList();
-            var rayHits = Resources.GetRayHitList();
+            var outputOverlappedElements = PhysicsResources.GetCollidableList();
             BoundingBox boundingBox;
-            Toolbox.GetExpandedBoundingBox(ref castShape, ref startingTransform, ref sweep, out boundingBox);
+            castShape.GetSweptBoundingBox(ref startingTransform, ref sweep, out boundingBox);
 
             CollidableTree.GetOverlaps(boundingBox, outputOverlappedElements);
             result = new RayCastResult();
             result.HitData.T = float.MaxValue;
-            for (int i = 0; i < outputOverlappedElements.count; ++i)
+            for (int i = 0; i < outputOverlappedElements.Count; ++i)
             {
                 RayHit hit;
                 if (outputOverlappedElements.Elements[i].ConvexCast(castShape, ref startingTransform, ref sweep, out hit))
@@ -115,8 +144,42 @@ namespace BEPUphysics.CollisionShapes
                     }
                 }
             }
-            Resources.GiveBack(rayHits);
-            Resources.GiveBack(outputOverlappedElements);
+            PhysicsResources.GiveBack(outputOverlappedElements);
+            return result.HitData.T < float.MaxValue;
+        }
+
+        /// <summary>
+        /// Casts a convex shape against the collidable.
+        /// </summary>
+        /// <param name="castShape">Shape to cast.</param>
+        /// <param name="startingTransform">Initial transform of the shape.</param>
+        /// <param name="sweep">Sweep to apply to the shape.</param>
+        /// <param name="filter">Test to apply to the entry. If it returns true, the entry is processed, otherwise the entry is ignored. If a collidable hierarchy is present
+        /// in the entry, this filter will be passed into inner ray casts.</param>
+        /// <param name="result">Hit data, if any.</param>
+        /// <returns>Whether or not the cast hit anything.</returns>
+        public bool ConvexCast(ConvexShapes.ConvexShape castShape, ref RigidTransform startingTransform, ref Vector3 sweep, Func<BroadPhaseEntry, bool> filter, out RayCastResult result)
+        {
+            var outputOverlappedElements = PhysicsResources.GetCollidableList();
+            BoundingBox boundingBox;
+            castShape.GetSweptBoundingBox(ref startingTransform, ref sweep, out boundingBox);
+
+            CollidableTree.GetOverlaps(boundingBox, outputOverlappedElements);
+            result = new RayCastResult();
+            result.HitData.T = float.MaxValue;
+            for (int i = 0; i < outputOverlappedElements.Count; ++i)
+            {
+                RayHit hit;
+                if (outputOverlappedElements.Elements[i].ConvexCast(castShape, ref startingTransform, ref sweep, filter, out hit))
+                {
+                    if (hit.T < result.HitData.T)
+                    {
+                        result.HitData = hit;
+                        result.HitObject = outputOverlappedElements.Elements[i];
+                    }
+                }
+            }
+            PhysicsResources.GiveBack(outputOverlappedElements);
             return result.HitData.T < float.MaxValue;
         }
 

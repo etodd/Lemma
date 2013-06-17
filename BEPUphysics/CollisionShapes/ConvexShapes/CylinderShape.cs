@@ -1,7 +1,7 @@
 ﻿using System;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 
 namespace BEPUphysics.CollisionShapes.ConvexShapes
 {
@@ -44,8 +44,8 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
 #endif
 
 
-            Matrix3X3 o;
-            Matrix3X3.CreateFromQuaternion(ref shapeTransform.Orientation, out o);
+            Matrix3x3 o;
+            Matrix3x3.CreateFromQuaternion(ref shapeTransform.Orientation, out o);
             //Sample the local directions from the orientation matrix, implicitly transposed.
             //Notice only three directions are used.  Due to box symmetry, 'left' is just -right.
             var direction = new Vector3(o.M11, o.M21, o.M31);
@@ -60,9 +60,9 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             Vector3 backward;
             GetLocalExtremePointWithoutMargin(ref direction, out backward);
 
-            Matrix3X3.Transform(ref right, ref o, out right);
-            Matrix3X3.Transform(ref up, ref o, out up);
-            Matrix3X3.Transform(ref backward, ref o, out backward);
+            Matrix3x3.Transform(ref right, ref o, out right);
+            Matrix3x3.Transform(ref up, ref o, out up);
+            Matrix3x3.Transform(ref backward, ref o, out backward);
             //These right/up/backward represent the extreme points in world space along the world space axes.
 
             boundingBox.Max.X = shapeTransform.Position.X + collisionMargin + right.X;
@@ -124,11 +124,11 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         /// </summary>
         /// <param name="volume">Volume of the shape.</param>
         /// <returns>Volume distribution of the shape.</returns>
-        public override Matrix3X3 ComputeVolumeDistribution(out float volume)
+        public override Matrix3x3 ComputeVolumeDistribution(out float volume)
         {
             volume = ComputeVolume();
 
-            var volumeDistribution = new Matrix3X3();
+            var volumeDistribution = new Matrix3x3();
 
             float diagValue = (.0833333333f * Height * Height + .25f * Radius * Radius);
             volumeDistribution.M11 = diagValue;
@@ -179,6 +179,161 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
         {
             return new ConvexCollidable<CylinderShape>(this);
         }
+
+        /// <summary>
+        /// Gets the intersection between the convex shape and the ray.
+        /// </summary>
+        /// <param name="ray">Ray to test.</param>
+        /// <param name="transform">Transform of the convex shape.</param>
+        /// <param name="maximumLength">Maximum distance to travel in units of the ray direction's length.</param>
+        /// <param name="hit">Ray hit data, if any.</param>
+        /// <returns>Whether or not the ray hit the target.</returns>
+        public override bool RayTest(ref Ray ray, ref RigidTransform transform, float maximumLength, out RayHit hit)
+        {
+            //Put the ray into local space.
+            Quaternion conjugate;
+            Quaternion.Conjugate(ref transform.Orientation, out conjugate);
+            Ray localRay;
+            Vector3.Subtract(ref ray.Position, ref transform.Position, out localRay.Position);
+            Vector3.Transform(ref localRay.Position, ref conjugate, out localRay.Position);
+            Vector3.Transform(ref ray.Direction, ref conjugate, out localRay.Direction);
+
+            //Check for containment.
+            if (localRay.Position.Y >= -halfHeight && localRay.Position.Y <= halfHeight && localRay.Position.X * localRay.Position.X + localRay.Position.Z * localRay.Position.Z <= radius * radius)
+            {
+                //It's inside!
+                hit.T = 0;
+                hit.Location = localRay.Position;
+                hit.Normal = new Vector3(hit.Location.X, 0, hit.Location.Z);
+                float normalLengthSquared = hit.Normal.LengthSquared();
+                if (normalLengthSquared > 1e-9f)
+                    Vector3.Divide(ref hit.Normal, (float)Math.Sqrt(normalLengthSquared), out hit.Normal);
+                else
+                    hit.Normal = new Vector3();
+                //Pull the hit into world space.
+                Vector3.Transform(ref hit.Normal, ref transform.Orientation, out hit.Normal);
+                RigidTransform.Transform(ref hit.Location, ref transform, out hit.Location);
+                return true;
+            }
+
+            //Project the ray direction onto the plane where the cylinder is a circle.
+            //The projected ray is then tested against the circle to compute the time of impact.
+            //That time of impact is used to compute the 3d hit location.
+            Vector2 planeDirection = new Vector2(localRay.Direction.X, localRay.Direction.Z);
+            float planeDirectionLengthSquared = planeDirection.LengthSquared();
+
+            if (planeDirectionLengthSquared < Toolbox.Epsilon)
+            {
+                //The ray is nearly parallel with the axis.
+                //Skip the cylinder-sides test.  We're either inside the cylinder and won't hit the sides, or we're outside
+                //and won't hit the sides.  
+                if (localRay.Position.Y > halfHeight)
+                    goto upperTest;
+                if (localRay.Position.Y < -halfHeight)
+                    goto lowerTest;
+
+
+                hit = new RayHit();
+                return false;
+
+            }
+            Vector2 planeOrigin = new Vector2(localRay.Position.X, localRay.Position.Z);
+            float dot;
+            Vector2.Dot(ref planeDirection, ref planeOrigin, out dot);
+            float closestToCenterT = -dot / planeDirectionLengthSquared;
+
+            Vector2 closestPoint;
+            Vector2.Multiply(ref planeDirection, closestToCenterT, out closestPoint);
+            Vector2.Add(ref planeOrigin, ref closestPoint, out closestPoint);
+            //How close does the ray come to the circle?
+            float squaredDistance = closestPoint.LengthSquared();
+            if (squaredDistance > radius * radius)
+            {
+                //It's too far!  The ray cannot possibly hit the capsule.
+                hit = new RayHit();
+                return false;
+            }
+
+
+
+            //With the squared distance, compute the distance backward along the ray from the closest point on the ray to the axis.
+            float backwardsDistance = radius * (float)Math.Sqrt(1 - squaredDistance / (radius * radius));
+            float tOffset = backwardsDistance / (float)Math.Sqrt(planeDirectionLengthSquared);
+
+            hit.T = closestToCenterT - tOffset;
+
+            //Compute the impact point on the infinite cylinder in 3d local space.
+            Vector3.Multiply(ref localRay.Direction, hit.T, out hit.Location);
+            Vector3.Add(ref hit.Location, ref localRay.Position, out hit.Location);
+
+            //Is it intersecting the cylindrical portion of the capsule?
+            if (hit.Location.Y <= halfHeight && hit.Location.Y >= -halfHeight && hit.T < maximumLength)
+            {
+                //Yup!
+                hit.Normal = new Vector3(hit.Location.X, 0, hit.Location.Z);
+                float normalLengthSquared = hit.Normal.LengthSquared();
+                if (normalLengthSquared > 1e-9f)
+                    Vector3.Divide(ref hit.Normal, (float)Math.Sqrt(normalLengthSquared), out hit.Normal);
+                else
+                    hit.Normal = new Vector3();
+                //Pull the hit into world space.
+                Vector3.Transform(ref hit.Normal, ref transform.Orientation, out hit.Normal);
+                RigidTransform.Transform(ref hit.Location, ref transform, out hit.Location);
+                return true;
+            }
+
+            if (hit.Location.Y < halfHeight)
+                goto lowerTest;
+        upperTest:
+            //Nope! It may be intersecting the ends of the cylinder though.
+            //We're above the cylinder, so cast a ray against the upper cap.
+            if (localRay.Direction.Y > -1e-9)
+            {
+                //Can't hit the upper cap if the ray isn't pointing down.
+                hit = new RayHit();
+                return false;
+            }
+            float t = (halfHeight - localRay.Position.Y) / localRay.Direction.Y;
+            Vector3 planeIntersection;
+            Vector3.Multiply(ref localRay.Direction, t, out planeIntersection);
+            Vector3.Add(ref localRay.Position, ref planeIntersection, out planeIntersection);
+            if(planeIntersection.X * planeIntersection.X + planeIntersection.Z * planeIntersection.Z < radius * radius + 1e-9 && t < maximumLength)
+            {
+                //Pull the hit into world space.
+                Vector3.Transform(ref Toolbox.UpVector, ref transform.Orientation, out hit.Normal);
+                RigidTransform.Transform(ref planeIntersection, ref transform, out hit.Location);
+                hit.T = t;
+                return true;
+            }
+            //No intersection! We can't be hitting the other sphere, so it's over!
+            hit = new RayHit();
+            return false;
+
+        lowerTest:
+            //Is it intersecting the bottom cap?
+            if (localRay.Direction.Y < 1e-9)
+            {
+                //Can't hit the bottom cap if the ray isn't pointing up.
+                hit = new RayHit();
+                return false;
+            }
+            t = (-halfHeight - localRay.Position.Y) / localRay.Direction.Y;
+            Vector3.Multiply(ref localRay.Direction, t, out planeIntersection);
+            Vector3.Add(ref localRay.Position, ref planeIntersection, out planeIntersection);
+            if (planeIntersection.X * planeIntersection.X + planeIntersection.Z * planeIntersection.Z < radius * radius + 1e-9 && t < maximumLength)
+            {
+                //Pull the hit into world space.
+                Vector3.Transform(ref Toolbox.DownVector, ref transform.Orientation, out hit.Normal);
+                RigidTransform.Transform(ref planeIntersection, ref transform, out hit.Location);
+                hit.T = t;
+                return true;
+            }
+            //No intersection! We can't be hitting the other sphere, so it's over!
+            hit = new RayHit();
+            return false;
+
+        }
+
 
     }
 }

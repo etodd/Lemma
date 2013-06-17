@@ -1,5 +1,5 @@
-﻿using BEPUphysics.Collidables.MobileCollidables;
-using BEPUphysics.MathExtensions;
+﻿using BEPUphysics.BroadPhaseEntries.MobileCollidables;
+using BEPUutilities;
 using BEPUphysics.CollisionShapes;
 
 namespace BEPUphysics.Entities
@@ -49,7 +49,7 @@ namespace BEPUphysics.Entities
         ///<param name="collisionInformation">Collidable to use with the entity.</param>
         ///<param name="mass">Mass of the entity.</param>
         /// <param name="inertiaTensor">Inertia tensor of the entity.</param>
-        public MorphableEntity(EntityCollidable collisionInformation, float mass, Matrix3X3 inertiaTensor)
+        public MorphableEntity(EntityCollidable collisionInformation, float mass, Matrix3x3 inertiaTensor)
             : base(collisionInformation, mass, inertiaTensor)
         {
         }
@@ -61,7 +61,7 @@ namespace BEPUphysics.Entities
         ///<param name="mass">Mass of the entity.</param>
         /// <param name="inertiaTensor">Inertia tensor of the entity.</param>
         /// <param name="volume">Volume of the entity.</param>
-        public MorphableEntity(EntityCollidable collisionInformation, float mass, Matrix3X3 inertiaTensor, float volume)
+        public MorphableEntity(EntityCollidable collisionInformation, float mass, Matrix3x3 inertiaTensor, float volume)
             : base(collisionInformation, mass, inertiaTensor, volume)
         {
         }
@@ -91,7 +91,7 @@ namespace BEPUphysics.Entities
         ///<param name="shape">Shape to use with the entity.</param>
         ///<param name="mass">Mass of the entity.</param>
         /// <param name="inertiaTensor">Inertia tensor of the entity.</param>
-        public MorphableEntity(EntityShape shape, float mass, Matrix3X3 inertiaTensor)
+        public MorphableEntity(EntityShape shape, float mass, Matrix3x3 inertiaTensor)
             : base(shape, mass, inertiaTensor)
         {
         }
@@ -103,7 +103,7 @@ namespace BEPUphysics.Entities
         ///<param name="mass">Mass of the entity.</param>
         /// <param name="inertiaTensor">Inertia tensor of the entity.</param>
         /// <param name="volume">Volume of the entity.</param>
-        public MorphableEntity(EntityShape shape, float mass, Matrix3X3 inertiaTensor, float volume)
+        public MorphableEntity(EntityShape shape, float mass, Matrix3x3 inertiaTensor, float volume)
             : base(shape, mass, inertiaTensor, volume)
         {
         }
@@ -160,7 +160,7 @@ namespace BEPUphysics.Entities
         /// <param name="newCollisionInformation">New collidable to use.</param>
         /// <param name="newMass">New mass to use for the entity.</param>
         /// <param name="newInertia">New inertia tensor to use for the entity.</param>
-        public void SetCollisionInformation(EntityCollidable newCollisionInformation, float newMass, Matrix3X3 newInertia)
+        public void SetCollisionInformation(EntityCollidable newCollisionInformation, float newMass, Matrix3x3 newInertia)
         {
             //Temporarily remove the object from the space.  
             //The reset process will update any systems that need to be updated.

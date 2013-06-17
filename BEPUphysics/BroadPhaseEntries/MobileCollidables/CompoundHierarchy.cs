@@ -1,7 +1,7 @@
 ﻿using System;
 using BEPUphysics.DataStructures;
 
-namespace BEPUphysics.Collidables.MobileCollidables
+namespace BEPUphysics.BroadPhaseEntries.MobileCollidables
 {
     ///<summary>
     /// Hierarchy of children used to accelerate queries and tests for compound collidables.
@@ -39,8 +39,8 @@ namespace BEPUphysics.Collidables.MobileCollidables
         public CompoundHierarchy(CompoundCollidable owner)
         {
             this.owner = owner;
-            var children = new CompoundChild[owner.children.count];
-            Array.Copy(owner.children.Elements, children, owner.children.count);
+            var children = new CompoundChild[owner.children.Count];
+            Array.Copy(owner.children.Elements, children, owner.children.Count);
             //In order to initialize a good tree, the local space bounding boxes should first be computed.
             //Otherwise, the tree would try to create a hierarchy based on a bunch of zeroed out bounding boxes!
             for (int i = 0; i < children.Length; i++)

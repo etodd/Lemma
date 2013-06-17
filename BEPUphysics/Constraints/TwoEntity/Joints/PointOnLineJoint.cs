@@ -1,6 +1,6 @@
 using System;
 using BEPUphysics.Entities;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.Constraints.TwoEntity.Joints
@@ -25,7 +25,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         private Vector3 worldLineAnchor;
         private Vector3 worldLineDirection;
         private Vector3 worldPoint;
-        private Matrix2X2 negativeEffectiveMassMatrix;
+        private Matrix2x2 negativeEffectiveMassMatrix;
 
         //Jacobians
         //(Linear jacobians are just:
@@ -72,7 +72,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 localAxisAnchor = value - connectionA.position;
-                Matrix3X3.TransformTranspose(ref localAxisAnchor, ref connectionA.orientationMatrix, out localAxisAnchor);
+                Matrix3x3.TransformTranspose(ref localAxisAnchor, ref connectionA.orientationMatrix, out localAxisAnchor);
                 worldLineAnchor = value;
             }
         }
@@ -86,7 +86,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 worldLineDirection = Vector3.Normalize(value);
-                Matrix3X3.TransformTranspose(ref worldLineDirection, ref connectionA.orientationMatrix, out localLineDirection);
+                Matrix3x3.TransformTranspose(ref worldLineDirection, ref connectionA.orientationMatrix, out localLineDirection);
                 UpdateRestrictedAxes();
             }
         }
@@ -101,7 +101,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 localAxisAnchor = value;
-                Matrix3X3.Transform(ref localAxisAnchor, ref connectionA.orientationMatrix, out worldLineAnchor);
+                Matrix3x3.Transform(ref localAxisAnchor, ref connectionA.orientationMatrix, out worldLineAnchor);
                 Vector3.Add(ref worldLineAnchor, ref connectionA.position, out worldLineAnchor);
             }
         }
@@ -115,7 +115,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 localLineDirection = Vector3.Normalize(value);
-                Matrix3X3.Transform(ref localLineDirection, ref connectionA.orientationMatrix, out worldLineDirection);
+                Matrix3x3.Transform(ref localLineDirection, ref connectionA.orientationMatrix, out worldLineDirection);
                 UpdateRestrictedAxes();
             }
         }
@@ -130,7 +130,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             set
             {
                 localPoint = value;
-                Matrix3X3.Transform(ref localPoint, ref connectionB.orientationMatrix, out worldPoint);
+                Matrix3x3.Transform(ref localPoint, ref connectionB.orientationMatrix, out worldPoint);
                 Vector3.Add(ref worldPoint, ref connectionB.position, out worldPoint);
             }
         }
@@ -162,7 +162,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             {
                 worldPoint = value;
                 localPoint = worldPoint - connectionB.position;
-                Matrix3X3.TransformTranspose(ref localPoint, ref connectionB.orientationMatrix, out localPoint);
+                Matrix3x3.TransformTranspose(ref localPoint, ref connectionB.orientationMatrix, out localPoint);
             }
         }
 
@@ -262,9 +262,9 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         /// Gets the mass matrix of the constraint.
         /// </summary>
         /// <param name="massMatrix">Constraint's mass matrix.</param>
-        public void GetMassMatrix(out Matrix2X2 massMatrix)
+        public void GetMassMatrix(out Matrix2x2 massMatrix)
         {
-            Matrix2X2.Negate(ref negativeEffectiveMassMatrix, out massMatrix);
+            Matrix2x2.Negate(ref negativeEffectiveMassMatrix, out massMatrix);
         }
 
         #endregion
@@ -346,7 +346,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             lambda.Y += biasVelocity.Y + softness * accumulatedImpulse.Y;
 
             //Convert to impulse
-            Matrix2X2.Transform(ref lambda, ref negativeEffectiveMassMatrix, out lambda);
+            Matrix2x2.Transform(ref lambda, ref negativeEffectiveMassMatrix, out lambda);
 
             Vector2.Add(ref lambda, ref accumulatedImpulse, out accumulatedImpulse);
 
@@ -395,23 +395,22 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         public override void Update(float dt)
         {
             //Transform local axes into world space
-            Matrix3X3.Transform(ref localRestrictedAxis1, ref connectionA.orientationMatrix, out worldRestrictedAxis1);
-            Matrix3X3.Transform(ref localRestrictedAxis2, ref connectionA.orientationMatrix, out worldRestrictedAxis2);
-            Matrix3X3.Transform(ref localAxisAnchor, ref connectionA.orientationMatrix, out worldLineAnchor);
+            Matrix3x3.Transform(ref localRestrictedAxis1, ref connectionA.orientationMatrix, out worldRestrictedAxis1);
+            Matrix3x3.Transform(ref localRestrictedAxis2, ref connectionA.orientationMatrix, out worldRestrictedAxis2);
+            Matrix3x3.Transform(ref localAxisAnchor, ref connectionA.orientationMatrix, out worldLineAnchor);
             Vector3.Add(ref worldLineAnchor, ref connectionA.position, out worldLineAnchor);
-            Matrix3X3.Transform(ref localLineDirection, ref connectionA.orientationMatrix, out worldLineDirection);
+            Matrix3x3.Transform(ref localLineDirection, ref connectionA.orientationMatrix, out worldLineDirection);
 
             //Transform local 
-            Matrix3X3.Transform(ref localPoint, ref connectionB.orientationMatrix, out rB);
+            Matrix3x3.Transform(ref localPoint, ref connectionB.orientationMatrix, out rB);
             Vector3.Add(ref rB, ref connectionB.position, out worldPoint);
 
-            //Find the closest point worldAxis line to worldPoint on the line.
+            //Find the point on the line closest to the world point.
             Vector3 offset;
             Vector3.Subtract(ref worldPoint, ref worldLineAnchor, out offset);
             float distanceAlongAxis;
             Vector3.Dot(ref offset, ref worldLineDirection, out distanceAlongAxis);
 
-            //Find the point on the line closest to the world point.
             Vector3 worldNearPoint;
             Vector3.Multiply(ref worldLineDirection, distanceAlongAxis, out offset);
             Vector3.Add(ref worldLineAnchor, ref offset, out worldNearPoint);
@@ -454,11 +453,11 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             if (connectionA.isDynamic)
             {
                 inverseMass = connectionA.inverseMass;
-                Matrix3X3.Transform(ref angularA1, ref connectionA.inertiaTensorInverse, out intermediate);
+                Matrix3x3.Transform(ref angularA1, ref connectionA.inertiaTensorInverse, out intermediate);
                 Vector3.Dot(ref intermediate, ref angularA1, out m11);
                 m11 += inverseMass;
                 Vector3.Dot(ref intermediate, ref angularA2, out m1221);
-                Matrix3X3.Transform(ref angularA2, ref connectionA.inertiaTensorInverse, out intermediate);
+                Matrix3x3.Transform(ref angularA2, ref connectionA.inertiaTensorInverse, out intermediate);
                 Vector3.Dot(ref intermediate, ref angularA2, out m22);
                 m22 += inverseMass;
             }
@@ -469,12 +468,12 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             {
                 float extra;
                 inverseMass = connectionB.inverseMass;
-                Matrix3X3.Transform(ref angularB1, ref connectionB.inertiaTensorInverse, out intermediate);
+                Matrix3x3.Transform(ref angularB1, ref connectionB.inertiaTensorInverse, out intermediate);
                 Vector3.Dot(ref intermediate, ref angularB1, out extra);
                 m11 += inverseMass + extra;
                 Vector3.Dot(ref intermediate, ref angularB2, out extra);
                 m1221 += extra;
-                Matrix3X3.Transform(ref angularB2, ref connectionB.inertiaTensorInverse, out intermediate);
+                Matrix3x3.Transform(ref angularB2, ref connectionB.inertiaTensorInverse, out intermediate);
                 Vector3.Dot(ref intermediate, ref angularB2, out extra);
                 m22 += inverseMass + extra;
             }
@@ -485,8 +484,8 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             negativeEffectiveMassMatrix.M12 = m1221;
             negativeEffectiveMassMatrix.M21 = m1221;
             negativeEffectiveMassMatrix.M22 = m22 + softness;
-            Matrix2X2.Invert(ref negativeEffectiveMassMatrix, out negativeEffectiveMassMatrix);
-            Matrix2X2.Negate(ref negativeEffectiveMassMatrix, out negativeEffectiveMassMatrix);
+            Matrix2x2.Invert(ref negativeEffectiveMassMatrix, out negativeEffectiveMassMatrix);
+            Matrix2x2.Negate(ref negativeEffectiveMassMatrix, out negativeEffectiveMassMatrix);
 
         }
 

@@ -1,6 +1,6 @@
 ﻿using System;
 using BEPUphysics.Entities;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.Constraints.SingleEntity
@@ -10,7 +10,7 @@ namespace BEPUphysics.Constraints.SingleEntity
     /// </summary>
     public class MaximumAngularSpeedConstraint : SingleEntityConstraint, I3DImpulseConstraint
     {
-        private Matrix3X3 effectiveMassMatrix;
+        private Matrix3x3 effectiveMassMatrix;
         private float maxForceDt = float.MaxValue;
         private float maxForceDtSquared = float.MaxValue;
         private Vector3 accumulatedImpulse;
@@ -127,7 +127,7 @@ namespace BEPUphysics.Constraints.SingleEntity
                 Vector3.Subtract(ref impulse, ref softnessImpulse, out impulse);
 
                 //Transform into impulse
-                Matrix3X3.Transform(ref impulse, ref effectiveMassMatrix, out impulse);
+                Matrix3x3.Transform(ref impulse, ref effectiveMassMatrix, out impulse);
 
 
                 //Accumulate
@@ -172,7 +172,7 @@ namespace BEPUphysics.Constraints.SingleEntity
             effectiveMassMatrix.M22 += usedSoftness;
             effectiveMassMatrix.M33 += usedSoftness;
 
-            Matrix3X3.Invert(ref effectiveMassMatrix, out effectiveMassMatrix);
+            Matrix3x3.Invert(ref effectiveMassMatrix, out effectiveMassMatrix);
 
             //Determine maximum force
             if (maximumForce < float.MaxValue)

@@ -1,15 +1,13 @@
 using System;
 using System.Collections.Generic;
 using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
-using BEPUphysics.ResourceManagement;
+using BEPUphysics.BroadPhaseEntries;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using Microsoft.Xna.Framework;
 using BEPUphysics.Threading;
 using BEPUphysics.UpdateableSystems;
 using Lemma.Components;
 using BEPUphysics;
-using BEPUphysics.BroadPhaseEntries;
 using System.Xml.Serialization;
 
 namespace Lemma.Util
@@ -242,7 +240,7 @@ namespace Lemma.Util
 		/// </summary>
 		public void RecalculateBoundingBox()
 		{
-			var points = Resources.GetVectorList();
+			var points = BEPUutilities.ResourceManagement.CommonResources.GetVectorList();
 			foreach (var tri in SurfaceTriangles)
 			{
 				points.Add(tri[0]);
@@ -254,7 +252,7 @@ namespace Lemma.Util
 			}
 			boundingBox = BoundingBox.CreateFromPoints(points);
 			surfacePlaneHeight = Vector3.Dot(points[0], upVector);
-			Resources.GiveBack(points);
+			BEPUutilities.ResourceManagement.CommonResources.GiveBack(points);
 		}
 
 		List<BroadPhaseEntry> collisionEntries = new List<BroadPhaseEntry>();
@@ -301,7 +299,7 @@ namespace Lemma.Util
 				{
 					//Don't need to do anything if the entity is outside of the water.
 					Vector3 pos = entityEntry.WorldTransform.Position;
-					if (Toolbox.IsPointInsideTriangle(ref tri[0], ref tri[1], ref tri[2], ref pos))
+					if (BEPUutilities.Toolbox.IsPointInsideTriangle(ref tri[0], ref tri[1], ref tri[2], ref pos))
 					{
 						keepGoing = true;
 						break;
@@ -400,9 +398,9 @@ namespace Lemma.Util
 			//Compute spacing and increment informaiton.
 			float widthIncrement = (entityBoundingBox.Max.X - entityBoundingBox.Min.X) / samplePointsPerDimension;
 			float lengthIncrement = (entityBoundingBox.Max.Z - entityBoundingBox.Min.Z) / samplePointsPerDimension;
-			Vector3 right = Toolbox.RightVector;// new Vector3(surfaceOrientationTranspose.M11, surfaceOrientationTranspose.M21, surfaceOrientationTranspose.M31);
+			Vector3 right = BEPUutilities.Toolbox.RightVector;// new Vector3(surfaceOrientationTranspose.M11, surfaceOrientationTranspose.M21, surfaceOrientationTranspose.M31);
 			Vector3.Multiply(ref right, widthIncrement, out xSpacing);
-			Vector3 backward = Toolbox.BackVector;// new Vector3(surfaceOrientationTranspose.M13, surfaceOrientationTranspose.M23, surfaceOrientationTranspose.M33);
+			Vector3 backward = BEPUutilities.Toolbox.BackVector;// new Vector3(surfaceOrientationTranspose.M13, surfaceOrientationTranspose.M23, surfaceOrientationTranspose.M33);
 			Vector3.Multiply(ref backward, lengthIncrement, out zSpacing);
 			perColumnArea = widthIncrement * lengthIncrement;
 
@@ -471,7 +469,7 @@ namespace Lemma.Util
 			Vector3.Add(ref ray.Position, ref rayOrigin, out ray.Position);
 			ray.Direction = upVector;
 			//do a bottom-up raycast.
-			RayHit rayHit;
+			BEPUutilities.RayHit rayHit;
 			//Only go up to maxLength.  If it's further away than maxLength, then it's above the water and it doesn't contribute anything.
 			if (info.RayCast(ray, maxLength, out rayHit))
 			{

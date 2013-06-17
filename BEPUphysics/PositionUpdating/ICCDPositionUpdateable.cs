@@ -29,7 +29,7 @@
         /// Updates the time of impacts associated with the updateable.
         ///</summary>
         ///<param name="dt">Time step duration.</param>
-        void UpdateTimeOfImpacts(float dt);
+        void UpdateTimesOfImpact(float dt);
 
         /// <summary>
         /// Updates the updateable using its continuous nature.
@@ -43,5 +43,10 @@
         /// interacts with continuous collision detection.
         /// </summary>
         PositionUpdateMode PositionUpdateMode { get; set; }
+        
+        /// <summary>
+        /// Resets the times of impact for pairs associated with this position updateable.
+        /// </summary>
+        void ResetTimesOfImpact();
     }
 }

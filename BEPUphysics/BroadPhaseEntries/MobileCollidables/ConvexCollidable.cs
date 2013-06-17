@@ -1,12 +1,13 @@
-﻿using BEPUphysics.CollisionShapes.ConvexShapes;
+﻿using BEPUphysics.BroadPhaseEntries.Events;
+using BEPUphysics.CollisionShapes.ConvexShapes;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 using System;
 using BEPUphysics.PositionUpdating;
 using BEPUphysics.Settings;
 using BEPUphysics.CollisionTests.CollisionAlgorithms;
-using BEPUphysics.Collidables.Events;
 
-namespace BEPUphysics.Collidables.MobileCollidables
+namespace BEPUphysics.BroadPhaseEntries.MobileCollidables
 {
     ///<summary>
     /// Collidable with a convex shape.
@@ -32,7 +33,7 @@ namespace BEPUphysics.Collidables.MobileCollidables
         }
 
 
-        public override bool ConvexCast(ConvexShape castShape, ref MathExtensions.RigidTransform startingTransform, ref Vector3 sweep, out RayHit hit)
+        public override bool ConvexCast(ConvexShape castShape, ref RigidTransform startingTransform, ref Vector3 sweep, out RayHit hit)
         {
             return MPRToolbox.Sweep(castShape, Shape, ref sweep, ref Toolbox.ZeroVector, ref startingTransform, ref worldTransform, out hit);
         }

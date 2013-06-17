@@ -93,7 +93,7 @@ namespace BEPUphysics.UpdateableSystems
             }
             else
             {
-                throw new Exception("Updateable does not belong to this manager.");
+                throw new ArgumentException("Updateable does not belong to this manager.");
             }
         }
 
@@ -114,7 +114,7 @@ namespace BEPUphysics.UpdateableSystems
             }
             else
             {
-                throw new Exception("Updateable already belongs to the manager, cannot re-add.");
+                throw new ArgumentException("Updateable already belongs to the manager, cannot re-add.");
             }
         }
 
@@ -135,7 +135,7 @@ namespace BEPUphysics.UpdateableSystems
             }
             else
             {
-                throw new Exception("Updateable does not belong to this manager; cannot remove.");
+                throw new ArgumentException("Updateable does not belong to this manager; cannot remove.");
             }
 
         }

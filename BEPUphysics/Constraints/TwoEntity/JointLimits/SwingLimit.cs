@@ -1,7 +1,7 @@
 ﻿using System;
 using BEPUphysics.Entities;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 
 namespace BEPUphysics.Constraints.TwoEntity.JointLimits
 {
@@ -61,7 +61,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             set
             {
                 localAxisA = Vector3.Normalize(value);
-                Matrix3X3.Transform(ref localAxisA, ref connectionA.orientationMatrix, out worldAxisA);
+                Matrix3x3.Transform(ref localAxisA, ref connectionA.orientationMatrix, out worldAxisA);
             }
         }
 
@@ -74,7 +74,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             set
             {
                 localAxisB = Vector3.Normalize(value);
-                Matrix3X3.Transform(ref localAxisB, ref connectionA.orientationMatrix, out worldAxisB);
+                Matrix3x3.Transform(ref localAxisB, ref connectionA.orientationMatrix, out worldAxisB);
             }
         }
 
@@ -248,8 +248,8 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// <param name="dt">Time since the last frame.</param>
         public override void Update(float dt)
         {
-            Matrix3X3.Transform(ref localAxisA, ref connectionA.orientationMatrix, out worldAxisA);
-            Matrix3X3.Transform(ref localAxisB, ref connectionB.orientationMatrix, out worldAxisB);
+            Matrix3x3.Transform(ref localAxisA, ref connectionA.orientationMatrix, out worldAxisA);
+            Matrix3x3.Transform(ref localAxisB, ref connectionB.orientationMatrix, out worldAxisB);
 
             float dot;
             Vector3.Dot(ref worldAxisA, ref worldAxisB, out dot);
@@ -319,7 +319,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             Vector3 transformedAxis;
             if (connectionA.isDynamic)
             {
-                Matrix3X3.Transform(ref hingeAxis, ref connectionA.inertiaTensorInverse, out transformedAxis);
+                Matrix3x3.Transform(ref hingeAxis, ref connectionA.inertiaTensorInverse, out transformedAxis);
                 Vector3.Dot(ref transformedAxis, ref hingeAxis, out entryA);
             }
             else
@@ -329,7 +329,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             float entryB;
             if (connectionB.isDynamic)
             {
-                Matrix3X3.Transform(ref hingeAxis, ref connectionB.inertiaTensorInverse, out transformedAxis);
+                Matrix3x3.Transform(ref hingeAxis, ref connectionB.inertiaTensorInverse, out transformedAxis);
                 Vector3.Dot(ref transformedAxis, ref hingeAxis, out entryB);
             }
             else

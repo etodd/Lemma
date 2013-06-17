@@ -1,14 +1,14 @@
 ﻿using System;
 using BEPUphysics.BroadPhaseEntries;
 using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.CollisionTests;
 using BEPUphysics.CollisionTests.CollisionAlgorithms.GJK;
 using BEPUphysics.CollisionTests.Manifolds;
 using BEPUphysics.Constraints.Collision;
 using BEPUphysics.PositionUpdating;
 using BEPUphysics.Settings;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 using BEPUphysics.CollisionShapes.ConvexShapes;
 
@@ -26,6 +26,8 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
 
             base.Initialize(entryA, entryB);
         }
+
+
 
         ///<summary>
         /// Updates the time of impact for the pair.

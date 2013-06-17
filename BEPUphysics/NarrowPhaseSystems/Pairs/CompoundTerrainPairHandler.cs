@@ -1,15 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using BEPUphysics.BroadPhaseEntries;
-using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
-using BEPUphysics.Constraints;
-using BEPUphysics.Constraints.Collision;
-using BEPUphysics.DataStructures;
-using BEPUphysics.ResourceManagement;
-using BEPUphysics.CollisionRuleManagement;
-using BEPUphysics.CollisionTests;
 
 namespace BEPUphysics.NarrowPhaseSystems.Pairs
 {
@@ -44,7 +34,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                 terrain = entryB as Terrain;
                 if (terrain == null)
                 {
-                    throw new Exception("Inappropriate types used to initialize pair.");
+                    throw new ArgumentException("Inappropriate types used to initialize pair.");
                 }
             }
 
@@ -72,15 +62,15 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
         {           
             //Could go other way; get triangles in mesh that overlap the compound.
             //Could be faster sometimes depending on the way it's set up.
-            var overlappedElements = Resources.GetCompoundChildList();
+            var overlappedElements = PhysicsResources.GetCompoundChildList();
             compoundInfo.hierarchy.Tree.GetOverlaps(terrain.boundingBox, overlappedElements);
-            for (int i = 0; i < overlappedElements.count; i++)
+            for (int i = 0; i < overlappedElements.Count; i++)
             {
-                TryToAdd(overlappedElements.Elements[i].CollisionInformation, terrain, overlappedElements.Elements[i].Material);
+                TryToAdd(overlappedElements.Elements[i].CollisionInformation, terrain, overlappedElements.Elements[i].Material, terrain.Material);
 
             }
 
-            Resources.GiveBack(overlappedElements);
+            PhysicsResources.GiveBack(overlappedElements);
         }
 
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using BEPUphysics.Constraints.TwoEntity.Motors;
 using BEPUphysics.Entities;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.Constraints.SingleEntity
@@ -22,7 +22,7 @@ namespace BEPUphysics.Constraints.SingleEntity
         private Vector3 axis;
 
         private Vector3 biasVelocity;
-        private Matrix3X3 effectiveMassMatrix;
+        private Matrix3x3 effectiveMassMatrix;
 
         private float maxForceDt;
         private float maxForceDtSquared;
@@ -115,7 +115,7 @@ namespace BEPUphysics.Constraints.SingleEntity
             lambda.Y = -aVel.Y + biasVelocity.Y - usedSoftness * accumulatedImpulse.Y;
             lambda.Z = -aVel.Z + biasVelocity.Z - usedSoftness * accumulatedImpulse.Z;
 
-            Matrix3X3.Transform(ref lambda, ref effectiveMassMatrix, out lambda);
+            Matrix3x3.Transform(ref lambda, ref effectiveMassMatrix, out lambda);
 
             Vector3 previousAccumulatedImpulse = accumulatedImpulse;
             accumulatedImpulse.X += lambda.X;
@@ -156,7 +156,7 @@ namespace BEPUphysics.Constraints.SingleEntity
             if (settings.mode == MotorMode.Servomechanism) //Only need to do the bulk of this work if it's a servo.
             {
                 Quaternion currentRelativeOrientation;
-                Matrix worldTransform = Matrix3X3.ToMatrix4X4(basis.WorldTransform);
+                Matrix worldTransform = Matrix3x3.ToMatrix4X4(basis.WorldTransform);
                 Quaternion.CreateFromRotationMatrix(ref worldTransform, out currentRelativeOrientation);
 
 
@@ -202,8 +202,8 @@ namespace BEPUphysics.Constraints.SingleEntity
             {
                 usedSoftness = settings.velocityMotor.softness / dt;
                 angle = 0; //Zero out the error;
-                Matrix3X3 transform = basis.WorldTransform;
-                Matrix3X3.Transform(ref settings.velocityMotor.goalVelocity, ref transform, out biasVelocity);
+                Matrix3x3 transform = basis.WorldTransform;
+                Matrix3x3.Transform(ref settings.velocityMotor.goalVelocity, ref transform, out biasVelocity);
             }
 
             //Compute effective mass
@@ -211,7 +211,7 @@ namespace BEPUphysics.Constraints.SingleEntity
             effectiveMassMatrix.M11 += usedSoftness;
             effectiveMassMatrix.M22 += usedSoftness;
             effectiveMassMatrix.M33 += usedSoftness;
-            Matrix3X3.Invert(ref effectiveMassMatrix, out effectiveMassMatrix);
+            Matrix3x3.Invert(ref effectiveMassMatrix, out effectiveMassMatrix);
 
             //Update the maximum force
             ComputeMaxForces(settings.maximumForce, dt);

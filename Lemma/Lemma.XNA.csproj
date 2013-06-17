@@ -111,6 +111,7 @@
     </Compile>
     <Compile Include="Factories\AnimatedPropFactory.cs" />
     <Compile Include="Factories\CloudFactory.cs" />
+    <Compile Include="Factories\FloaterFactory.cs" />
     <Compile Include="Factories\SpinnerFactory.cs" />
     <Compile Include="Factories\JointFactory.cs" />
     <Compile Include="Factories\SceneryBlockFactory.cs" />
@@ -222,9 +223,13 @@
     </NestedContentProject>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BEPUphysics\BEPUphysics.XNA.csproj">
+    <ProjectReference Include="..\BEPUphysics\BEPUphysics.csproj">
       <Project>{2A9D2227-78D7-4804-B6D1-560BB43AE911}</Project>
-      <Name>BEPUphysics.XNA</Name>
+      <Name>BEPUphysics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BEPUutilities\BEPUutilities.csproj">
+      <Project>{E3AAEB61-D7DF-4E7E-A75B-B5282D2FF3F5}</Project>
+      <Name>BEPUutilities</Name>
     </ProjectReference>
     <ProjectReference Include="..\SkinnedModel\SkinnedModelContent.csproj">
       <Project>{882A32E7-CB48-4E63-8180-0D1859575723}</Project>

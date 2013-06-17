@@ -12,9 +12,9 @@ using BEPUphysics.Entities;
 using BEPUphysics.CollisionShapes;
 using BEPUphysics.CollisionShapes.ConvexShapes;
 using Lemma.Factories;
-using BEPUphysics.Collidables;
+using BEPUphysics.BroadPhaseEntries;
 using BEPUphysics.CollisionTests;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using System.ComponentModel;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
 using System.Threading;
@@ -463,9 +463,9 @@ namespace Lemma.Components
 					}
 
 					Matrix transform = this.Map.Transform;
-					pair.Value.Mesh = new StaticMesh(vertices, indices, new BEPUphysics.MathExtensions.AffineTransform(BEPUphysics.MathExtensions.Matrix3X3.CreateFromMatrix(transform), transform.Translation));
+					pair.Value.Mesh = new StaticMesh(vertices, indices, new BEPUutilities.AffineTransform(BEPUutilities.Matrix3x3.CreateFromMatrix(transform), transform.Translation));
 					pair.Value.Mesh.Tag = this.Map;
-					pair.Value.Mesh.Sidedness = TriangleSidedness.Clockwise;
+					pair.Value.Mesh.Sidedness = BEPUutilities.TriangleSidedness.Clockwise;
 					if (this.Active)
 					{
 						pair.Value.Added = true;
@@ -4152,6 +4152,7 @@ namespace Lemma.Components
 				}
 				foreach (Chunk chunk in this.Chunks)
 					chunk.Activate();
+				this.PhysicsEntity.ActivityInformation.Activate();
 			}));
 		}
 
@@ -4190,10 +4191,11 @@ namespace Lemma.Components
 				{
 					hasVolume = true;
 					EntityCollidable collisionInfo = shape.GetCollidableInstance();
-					collisionInfo.Events.ContactCreated += new BEPUphysics.Collidables.Events.ContactCreatedEventHandler<BEPUphysics.Collidables.MobileCollidables.EntityCollidable>(Events_ContactCreated);
+					collisionInfo.Events.ContactCreated += new BEPUphysics.BroadPhaseEntries.Events.ContactCreatedEventHandler<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable>(Events_ContactCreated);
 					collisionInfo.Tag = this;
 					this.PhysicsEntity.SetCollisionInformation(collisionInfo, mass);
-					this.PhysicsEntity.Volume = volume;
+					// TODO: figure out how to manually override volume in new BEPUphysics
+					//this.PhysicsEntity.Volume = volume;
 					this.PhysicsEntity.ActivityInformation.Activate();
 				}
 			}

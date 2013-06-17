@@ -1,6 +1,7 @@
-﻿using Microsoft.Xna.Framework;
-using BEPUphysics.DataStructures;
-using BEPUphysics.MathExtensions;
+﻿using BEPUphysics.DataStructures;
+using Microsoft.Xna.Framework;
+using BEPUutilities.DataStructures;
+using BEPUutilities;
 
 namespace BEPUphysics.CollisionShapes
 {
@@ -63,7 +64,7 @@ namespace BEPUphysics.CollisionShapes
             {
                 Vector3 vertex;
                 triangleMesh.Data.GetVertexPosition(i, out vertex);
-                Matrix3X3.Transform(ref vertex, ref transform.LinearTransform, out vertex);
+                Matrix3x3.Transform(ref vertex, ref transform.LinearTransform, out vertex);
                 if (vertex.X < minX)
                     minX = vertex.X;
                 if (vertex.X > maxX)

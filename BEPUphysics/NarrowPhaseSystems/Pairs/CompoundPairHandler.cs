@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using BEPUphysics.BroadPhaseEntries;
 using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.Constraints;
 using BEPUphysics.Constraints.Collision;
 using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 using BEPUphysics.CollisionRuleManagement;
 using BEPUphysics.CollisionTests;
 
@@ -41,7 +41,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
             compoundInfoB = entryB as CompoundCollidable;
             if (compoundInfoB == null)
             {
-                throw new Exception("Inappropriate types used to initialize pair.");
+                throw new ArgumentException("Inappropriate types used to initialize pair.");
             }
 
             base.Initialize(entryA, entryB);
@@ -66,7 +66,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
         protected override void UpdateContainedPairs()
         {
             compoundInfo.hierarchy.Tree.GetOverlaps(compoundInfoB.hierarchy.Tree, overlappedElements);
-            for (int i = 0; i < overlappedElements.count; i++)
+            for (int i = 0; i < overlappedElements.Count; i++)
             {
                 var element = overlappedElements.Elements[i];
                 TryToAdd(element.OverlapA.CollisionInformation, element.OverlapB.CollisionInformation,

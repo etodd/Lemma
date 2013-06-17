@@ -1,5 +1,5 @@
-﻿using BEPUphysics.Collidables.MobileCollidables;
-using BEPUphysics.MathExtensions;
+﻿using BEPUphysics.BroadPhaseEntries.MobileCollidables;
+using BEPUutilities;
 
 namespace BEPUphysics.Entities
 {
@@ -34,15 +34,6 @@ namespace BEPUphysics.Entities
             Initialize(collisionInformation);
         }
 
-        ///<summary>
-        /// Constructs a kinematic Entity.
-        ///</summary>
-        ///<param name="collisionInformation">Collidable for the entity.</param>
-        public Entity(T collisionInformation, bool computeVolume)
-        {
-            Initialize(collisionInformation);
-        }
-
 
         ///<summary>
         /// Constructs a dynamic Entity.
@@ -59,7 +50,7 @@ namespace BEPUphysics.Entities
         ///<param name="collisionInformation">Collidable for the entity.</param>
         /// <param name="mass">Mass of the entity.</param>
         /// <param name="inertiaTensor">Inertia of the entity.</param>
-        public Entity(T collisionInformation, float mass, Matrix3X3 inertiaTensor)
+        public Entity(T collisionInformation, float mass, Matrix3x3 inertiaTensor)
         {
             Initialize(collisionInformation, mass, inertiaTensor);
         }
@@ -71,7 +62,7 @@ namespace BEPUphysics.Entities
         /// <param name="mass">Mass of the entity.</param>
         /// <param name="inertiaTensor">Inertia of the entity.</param>
         /// <param name="volume">Volume of the entity.</param>
-        public Entity(T collisionInformation, float mass, Matrix3X3 inertiaTensor, float volume)
+        public Entity(T collisionInformation, float mass, Matrix3x3 inertiaTensor, float volume)
         {
             Initialize(collisionInformation, mass, inertiaTensor, volume);
         }

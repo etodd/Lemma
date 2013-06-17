@@ -3,7 +3,7 @@ using BEPUphysics.BroadPhaseSystems;
 using BEPUphysics.CollisionTests;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
 
-namespace BEPUphysics.Collidables.Events
+namespace BEPUphysics.BroadPhaseEntries.Events
 {
     //TODO: Contravariance isn't supported on all platforms...
 

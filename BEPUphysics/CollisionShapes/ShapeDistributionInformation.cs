@@ -1,4 +1,4 @@
-﻿using BEPUphysics.MathExtensions;
+﻿using BEPUutilities;
 using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.CollisionShapes
@@ -12,7 +12,7 @@ namespace BEPUphysics.CollisionShapes
         /// The distribution of volume in a shape.
         /// This can be scaled to create an inertia tensor for a shape.
         ///</summary>
-        public Matrix3X3 VolumeDistribution;
+        public Matrix3x3 VolumeDistribution;
         /// <summary>
         /// The center of a shape.
         /// </summary>

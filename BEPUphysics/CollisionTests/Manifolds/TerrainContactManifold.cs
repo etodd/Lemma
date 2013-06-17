@@ -1,10 +1,10 @@
 ﻿using System;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using Microsoft.Xna.Framework;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 using BEPUphysics.CollisionShapes.ConvexShapes;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using BEPUphysics.Settings;
 
 namespace BEPUphysics.CollisionTests.Manifolds
@@ -38,9 +38,9 @@ namespace BEPUphysics.CollisionTests.Manifolds
             if (convex.entity != null)
             {
                 Vector3 transformedVelocity;
-                Matrix3X3 inverse;
-                Matrix3X3.Invert(ref terrain.worldTransform.LinearTransform, out inverse);
-                Matrix3X3.Transform(ref convex.entity.linearVelocity, ref inverse, out transformedVelocity);
+                Matrix3x3 inverse;
+                Matrix3x3.Invert(ref terrain.worldTransform.LinearTransform, out inverse);
+                Matrix3x3.Transform(ref convex.entity.linearVelocity, ref inverse, out transformedVelocity);
                 Vector3.Multiply(ref transformedVelocity, dt, out transformedVelocity);
 
 
@@ -62,7 +62,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
 
 
             terrain.Shape.GetOverlaps(boundingBox, overlappedTriangles);
-            return overlappedTriangles.count;
+            return overlappedTriangles.Count;
         }
 
         protected override bool ConfigureTriangle(int i, out TriangleIndices indices)
@@ -104,10 +104,10 @@ namespace BEPUphysics.CollisionTests.Manifolds
         protected override void ProcessCandidates(RawValueList<ContactData> candidates)
         {
             //If the candidates list is empty, then let's see if the convex is in the 'thickness' of the terrain.
-            if (candidates.count == 0 & terrain.thickness > 0)
+            if (candidates.Count == 0 & terrain.thickness > 0)
             {
                 RayHit rayHit;
-                Ray ray = new Ray() { Position = convex.worldTransform.Position, Direction = terrain.worldTransform.LinearTransform.Up };
+                Ray ray = new Ray { Position = convex.worldTransform.Position, Direction = terrain.worldTransform.LinearTransform.Up };
                 ray.Direction.Normalize();
                 //The raycast has to use doublesidedness, since we're casting from the bottom up.
                 if (terrain.Shape.RayCast(ref ray, terrain.thickness, ref terrain.worldTransform, TriangleSidedness.DoubleSided, out rayHit))
@@ -117,15 +117,16 @@ namespace BEPUphysics.CollisionTests.Manifolds
                     float dot;
                     Vector3.Dot(ref ray.Direction, ref rayHit.Normal, out dot);
 
-                    ContactData newContact = new ContactData()
+                    var newContact = new ContactData
                     {
                         Normal = rayHit.Normal,
                         Position = convex.worldTransform.Position,
                         Id = 2,
                         PenetrationDepth = -rayHit.T * dot + convex.Shape.minimumRadius
                     };
+                    newContact.Validate();
                     bool found = false;
-                    for (int i = 0; i < contacts.count; i++)
+                    for (int i = 0; i < contacts.Count; i++)
                     {
                         if (contacts.Elements[i].Id == 2)
                         {
@@ -178,7 +179,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
                 convex = newCollidableB as ConvexCollidable;
                 terrain = newCollidableA as Terrain;
                 if (convex == null || terrain == null)
-                    throw new Exception("Inappropriate types used to initialize contact manifold.");
+                    throw new ArgumentException("Inappropriate types used to initialize contact manifold.");
             }
 
         }

@@ -1,6 +1,6 @@
 ﻿using System;
 using BEPUphysics.CollisionShapes.ConvexShapes;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 using Microsoft.Xna.Framework;
 using BEPUphysics.Settings;
 

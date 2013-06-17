@@ -1,4 +1,4 @@
-﻿namespace BEPUphysics.Collidables.MobileCollidables
+﻿namespace BEPUphysics.BroadPhaseEntries.MobileCollidables
 {
     //This is implemented by anything which wants the engine to update its bounding box every frame (so long as it is 'active').
     ///<summary>

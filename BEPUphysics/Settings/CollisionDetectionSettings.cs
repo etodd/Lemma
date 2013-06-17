@@ -95,7 +95,7 @@ namespace BEPUphysics.Settings
                 if (value >= 0)
                     maximumContactDistance = value;
                 else
-                    throw new Exception("Distance must be nonnegative.");
+                    throw new ArgumentException("Distance must be nonnegative.");
             }
         }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using BEPUphysics.Entities;
 using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
+using BEPUutilities;
 
 namespace BEPUphysics.Constraints.TwoEntity.Motors
 {
@@ -69,7 +69,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             {
                 worldAnchorA = value;
                 worldOffsetA = worldAnchorA - connectionA.position;
-                Matrix3X3.TransformTranspose(ref worldOffsetA, ref connectionA.orientationMatrix, out localAnchorA);
+                Matrix3x3.TransformTranspose(ref worldOffsetA, ref connectionA.orientationMatrix, out localAnchorA);
             }
         }
 
@@ -83,7 +83,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             {
                 worldAnchorB = value;
                 worldOffsetB = worldAnchorB - connectionB.position;
-                Matrix3X3.TransformTranspose(ref worldOffsetB, ref connectionB.orientationMatrix, out localAnchorB);
+                Matrix3x3.TransformTranspose(ref worldOffsetB, ref connectionB.orientationMatrix, out localAnchorB);
             }
         }
 
@@ -97,7 +97,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             set
             {
                 worldAxis = Vector3.Normalize(value);
-                Matrix3X3.TransformTranspose(ref worldAxis, ref connectionA.orientationMatrix, out localAxis);
+                Matrix3x3.TransformTranspose(ref worldAxis, ref connectionA.orientationMatrix, out localAxis);
             }
         }
 
@@ -110,7 +110,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             set
             {
                 localAxis = Vector3.Normalize(value);
-                Matrix3X3.Transform(ref localAxis, ref connectionA.orientationMatrix, out worldAxis);
+                Matrix3x3.Transform(ref localAxis, ref connectionA.orientationMatrix, out worldAxis);
             }
         }
 
@@ -123,7 +123,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             set
             {
                 localAnchorA = value;
-                Matrix3X3.Transform(ref localAnchorA, ref connectionA.orientationMatrix, out worldOffsetA);
+                Matrix3x3.Transform(ref localAnchorA, ref connectionA.orientationMatrix, out worldOffsetA);
                 worldAnchorA = connectionA.position + worldOffsetA;
             }
         }
@@ -137,7 +137,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             set
             {
                 localAnchorB = value;
-                Matrix3X3.Transform(ref localAnchorB, ref connectionB.orientationMatrix, out worldOffsetB);
+                Matrix3x3.Transform(ref localAnchorB, ref connectionB.orientationMatrix, out worldOffsetB);
                 worldAnchorB = connectionB.position + worldOffsetB;
             }
         }
@@ -152,7 +152,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             {
                 worldOffsetA = value; 
                 worldAnchorA = connectionA.position + worldOffsetA;
-                Matrix3X3.TransformTranspose(ref worldOffsetA, ref connectionA.orientationMatrix, out localAnchorA); //Looks weird, but localAnchorA is "localOffsetA."
+                Matrix3x3.TransformTranspose(ref worldOffsetA, ref connectionA.orientationMatrix, out localAnchorA); //Looks weird, but localAnchorA is "localOffsetA."
                 
             }
         }
@@ -167,7 +167,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             {
                 worldOffsetB = value;
                 worldAnchorB = connectionB.position + worldOffsetB;
-                Matrix3X3.TransformTranspose(ref worldOffsetB, ref connectionB.orientationMatrix, out localAnchorB);//Looks weird, but localAnchorB is "localOffsetB."
+                Matrix3x3.TransformTranspose(ref worldOffsetB, ref connectionB.orientationMatrix, out localAnchorB);//Looks weird, but localAnchorB is "localOffsetB."
             }
         }
 
@@ -320,12 +320,12 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
         public override void Update(float dt)
         {
             //Compute the 'pre'-jacobians
-            Matrix3X3.Transform(ref localAnchorA, ref connectionA.orientationMatrix, out worldOffsetA);
-            Matrix3X3.Transform(ref localAnchorB, ref connectionB.orientationMatrix, out worldOffsetB);
+            Matrix3x3.Transform(ref localAnchorA, ref connectionA.orientationMatrix, out worldOffsetA);
+            Matrix3x3.Transform(ref localAnchorB, ref connectionB.orientationMatrix, out worldOffsetB);
             Vector3.Add(ref worldOffsetA, ref connectionA.position, out worldAnchorA);
             Vector3.Add(ref worldOffsetB, ref connectionB.position, out worldAnchorB);
             Vector3.Subtract(ref worldAnchorB, ref connectionA.position, out rA);
-            Matrix3X3.Transform(ref localAxis, ref connectionA.orientationMatrix, out worldAxis);
+            Matrix3x3.Transform(ref localAxis, ref connectionA.orientationMatrix, out worldAxis);
 
             if (settings.mode == MotorMode.Servomechanism)
             {
@@ -372,7 +372,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
             Vector3 intermediate;
             if (connectionA.isDynamic)
             {
-                Matrix3X3.Transform(ref jAngularA, ref connectionA.inertiaTensorInverse, out intermediate);
+                Matrix3x3.Transform(ref jAngularA, ref connectionA.inertiaTensorInverse, out intermediate);
                 Vector3.Dot(ref intermediate, ref jAngularA, out entryA);
                 entryA += connectionA.inverseMass;
             }
@@ -380,7 +380,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Motors
                 entryA = 0;
             if (connectionB.isDynamic)
             {
-                Matrix3X3.Transform(ref jAngularB, ref connectionB.inertiaTensorInverse, out intermediate);
+                Matrix3x3.Transform(ref jAngularB, ref connectionB.inertiaTensorInverse, out intermediate);
                 Vector3.Dot(ref intermediate, ref jAngularB, out entryB);
                 entryB += connectionB.inverseMass;
             }

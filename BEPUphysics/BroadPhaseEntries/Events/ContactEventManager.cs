@@ -1,8 +1,9 @@
-﻿using BEPUphysics.Threading;
+﻿using BEPUutilities;
 using BEPUphysics.CollisionTests;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
+using BEPUutilities.DataStructures;
 
-namespace BEPUphysics.Collidables.Events
+namespace BEPUphysics.BroadPhaseEntries.Events
 {
 
     ///<summary>

@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BEPUutilities;
+using Microsoft.Xna.Framework;
 
 namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
 {

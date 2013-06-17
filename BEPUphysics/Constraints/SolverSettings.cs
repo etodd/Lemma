@@ -1,4 +1,6 @@
-﻿namespace BEPUphysics.Constraints
+﻿using System;
+
+namespace BEPUphysics.Constraints
 {
     /// <summary>
     /// Contains information about how a wheel solves its constraints.
@@ -10,9 +12,9 @@
         /// </summary>
         internal int currentIterations;
 
-        internal int maximumIterations = int.MaxValue;
+        internal int maximumIterationCount = int.MaxValue;
 
-        internal int minimumIterations = DefaultMinimumIterations;
+        internal int minimumIterationCount = DefaultMinimumIterationCount;
 
         internal float minimumImpulse = DefaultMinimumImpulse;
         internal int iterationsAtZeroImpulse;
@@ -23,10 +25,10 @@
         /// as many iterations as the space iteration count.
         /// Lower iteration counts are less accurate, but can improve performance.
         /// </summary>
-        public int MaximumIterations
+        public int MaximumIterationCount
         {
-            get { return maximumIterations; }
-            set { maximumIterations = value; }
+            get { return maximumIterationCount; }
+            set { maximumIterationCount = Math.Max(value, 0); }
         }
 
         /// <summary>
@@ -34,10 +36,10 @@
         /// If an impulse of magnitude smaller than the MinimumImpulse is applied, a 'tiny impulses' counter increases.  Once it exceeds the MinimumIterations,
         /// the system can decide to stop solving to save time if appropriate.
         /// </summary>
-        public int MinimumIterations
+        public int MinimumIterationCount
         {
-            get { return minimumIterations; }
-            set { minimumIterations = value; }
+            get { return minimumIterationCount; }
+            set { minimumIterationCount = Math.Max(value, 0); }
         }
 
         /// <summary>
@@ -48,7 +50,7 @@
         public float MinimumImpulse
         {
             get { return minimumImpulse; }
-            set { minimumImpulse = value; }
+            set { minimumImpulse = Math.Max(value, 0); }
         }
 
         /// <summary>
@@ -65,6 +67,6 @@
         /// Higher values force the system to wait longer before trying to early out, possibly improving behavior.
         /// Defaults to 1.
         /// </summary>
-        public static int DefaultMinimumIterations = 1;
+        public static int DefaultMinimumIterationCount = 1;
     }
 }

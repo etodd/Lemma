@@ -1,16 +1,13 @@
 ﻿using System;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
-using Microsoft.Xna.Framework;
+using BEPUphysics.BroadPhaseEntries;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.DataStructures;
-using BEPUphysics.MathExtensions;
-using BEPUphysics.CollisionShapes.ConvexShapes;
+using BEPUutilities.ResourceManagement;
+using Microsoft.Xna.Framework;
+using BEPUutilities.DataStructures;
+using BEPUutilities;
 using BEPUphysics.CollisionShapes;
-using BEPUphysics.ResourceManagement;
 using BEPUphysics.CollisionTests.CollisionAlgorithms;
-using System.Diagnostics;
-using BEPUphysics.NarrowPhaseSystems.Pairs;
-using Microsoft.Xna.Framework.Input;
 
 namespace BEPUphysics.CollisionTests.Manifolds
 {
@@ -22,7 +19,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
         protected MobileMeshCollidable mesh;
         internal int parentContactCount;
 
-        internal RawList<int> overlappedTriangles = new RawList<int>(4);
+        internal RawList<int> overlappedTriangles = new RawList<int>(8);
 
         ///<summary>
         /// Gets the mesh of the pair.
@@ -59,7 +56,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
                 Vector3.Subtract(ref transformedVelocity, ref mesh.entity.linearVelocity, out transformedVelocity);
 
             //The linear transform is known to be orientation only, so using the transpose is allowed.
-            Matrix3X3.TransformTranspose(ref transformedVelocity, ref transform.LinearTransform, out transformedVelocity);
+            Matrix3x3.TransformTranspose(ref transformedVelocity, ref transform.LinearTransform, out transformedVelocity);
             Vector3.Multiply(ref transformedVelocity, dt, out transformedVelocity);
 
             if (transformedVelocity.X > 0)
@@ -78,7 +75,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
                 boundingBox.Min.Z += transformedVelocity.Z;
 
             mesh.Shape.TriangleMesh.Tree.GetOverlaps(boundingBox, overlappedTriangles);
-            return overlappedTriangles.count;
+            return overlappedTriangles.Count;
         }
 
         protected override bool ConfigureTriangle(int i, out TriangleIndices indices)
@@ -145,7 +142,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
         Vector3 lastValidConvexPosition;
         protected override void ProcessCandidates(RawValueList<ContactData> candidates)
         {
-            if (candidates.count == 0 && parentContactCount == 0 && Mesh.Shape.solidity == MobileMeshSolidity.Solid)
+            if (candidates.Count == 0 && parentContactCount == 0 && Mesh.Shape.solidity == MobileMeshSolidity.Solid)
             {
 
                 //If there's no new contacts on the mesh and it's supposed to be a solid,
@@ -156,12 +153,12 @@ namespace BEPUphysics.CollisionTests.Manifolds
 
                 //To find out which it is, raycast against the shell.
 
-                Matrix3X3 orientation;
-                Matrix3X3.CreateFromQuaternion(ref mesh.worldTransform.Orientation, out orientation);
+                Matrix3x3 orientation;
+                Matrix3x3.CreateFromQuaternion(ref mesh.worldTransform.Orientation, out orientation);
 
                 Ray ray;
                 Vector3.Subtract(ref convex.worldTransform.Position, ref mesh.worldTransform.Position, out ray.Position);
-                Matrix3X3.TransformTranspose(ref ray.Position, ref orientation, out ray.Position);
+                Matrix3x3.TransformTranspose(ref ray.Position, ref orientation, out ray.Position);
 
                 //Cast from the current position back to the previous position.
                 Vector3.Subtract(ref lastValidConvexPosition, ref ray.Position, out ray.Direction);
@@ -187,7 +184,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
                 {
                     ContactData newContact = new ContactData {Id = 2};
                     //Give it a special id so that we know that it came from the inside.
-                    Matrix3X3.Transform(ref ray.Position, ref orientation, out newContact.Position);
+                    Matrix3x3.Transform(ref ray.Position, ref orientation, out newContact.Position);
                     Vector3.Add(ref newContact.Position, ref mesh.worldTransform.Position, out newContact.Position);
 
                     newContact.Normal = hit.Normal;
@@ -197,11 +194,13 @@ namespace BEPUphysics.CollisionTests.Manifolds
                     Vector3.Dot(ref ray.Direction, ref newContact.Normal, out factor);
                     newContact.PenetrationDepth = -factor * hit.T + convex.Shape.minimumRadius;
 
-                    Matrix3X3.Transform(ref newContact.Normal, ref orientation, out newContact.Normal);
+                    Matrix3x3.Transform(ref newContact.Normal, ref orientation, out newContact.Normal);
+
+                    newContact.Validate();
 
                     //Do not yet create a new contact.  Check to see if an 'inner contact' with id == 2 already exists.
                     bool addContact = true;
-                    for (int i = 0; i < contacts.count; i++)
+                    for (int i = 0; i < contacts.Count; i++)
                     {
                         if (contacts.Elements[i].Id == 2)
                         {
@@ -215,7 +214,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
                             break;
                         }
                     }
-                    if (addContact && contacts.count == 0)
+                    if (addContact && contacts.Count == 0)
                         Add(ref newContact);
                     previousDepth = newContact.PenetrationDepth;
                 }
@@ -261,7 +260,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
                 convex = newCollidableB as ConvexCollidable;
                 mesh = newCollidableA as MobileMeshCollidable;
                 if (convex == null || mesh == null)
-                    throw new Exception("Inappropriate types used to initialize contact manifold.");
+                    throw new ArgumentException("Inappropriate types used to initialize contact manifold.");
             }
 
         }

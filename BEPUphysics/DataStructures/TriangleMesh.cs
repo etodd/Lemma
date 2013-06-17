@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using BEPUutilities;
+using BEPUutilities.ResourceManagement;
 using Microsoft.Xna.Framework;
-using BEPUphysics.ResourceManagement;
-using BEPUphysics.CollisionShapes.ConvexShapes;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace BEPUphysics.DataStructures
@@ -59,10 +58,10 @@ namespace BEPUphysics.DataStructures
         ///<returns>Whether or not the ray hit the mesh.</returns>
         public bool RayCast(Ray ray, out int hitCount)
         {
-            var rayHits = Resources.GetRayHitList();
+            var rayHits = CommonResources.GetRayHitList();
             bool toReturn = RayCast(ray, rayHits);
             hitCount = rayHits.Count;
-            Resources.GiveBack(rayHits);
+            CommonResources.GiveBack(rayHits);
             return toReturn;
         }
 
@@ -134,7 +133,7 @@ namespace BEPUphysics.DataStructures
         ///<returns>Whether or not the ray hit the mesh.</returns>
         public bool RayCast(Ray ray, float maximumLength, TriangleSidedness sidedness, out RayHit rayHit)
         {
-            var rayHits = Resources.GetRayHitList();
+            var rayHits = CommonResources.GetRayHitList();
             bool toReturn = RayCast(ray, maximumLength, sidedness, rayHits);
             if (toReturn)
             {
@@ -148,7 +147,7 @@ namespace BEPUphysics.DataStructures
             }
             else
                 rayHit = new RayHit();
-            Resources.GiveBack(rayHits);
+            CommonResources.GiveBack(rayHits);
             return toReturn;
         }
 
@@ -174,7 +173,7 @@ namespace BEPUphysics.DataStructures
         ///<returns>Whether or not the ray hit the mesh.</returns>
         public bool RayCast(Ray ray, float maximumLength, TriangleSidedness sidedness, IList<RayHit> hits)
         {
-            var hitElements = Resources.GetIntList();
+            var hitElements = CommonResources.GetIntList();
             tree.GetOverlaps(ray, maximumLength, hitElements);
             for (int i = 0; i < hitElements.Count; i++)
             {
@@ -186,7 +185,7 @@ namespace BEPUphysics.DataStructures
                     hits.Add(hit);
                 }
             }
-            Resources.GiveBack(hitElements);
+            CommonResources.GiveBack(hitElements);
             return hits.Count > 0;
         }
 

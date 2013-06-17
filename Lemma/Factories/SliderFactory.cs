@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using BEPUphysics.Paths.PathFollowing;
 using Lemma.Util;
 using BEPUphysics;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.Constraints.TwoEntity.Motors;
 using BEPUphysics.Constraints.TwoEntity.Joints;
 using BEPUphysics.Constraints.SolverGroups;
@@ -61,7 +61,7 @@ namespace Lemma.Factories
 				if (joint != null)
 				{
 					if (maxForce > 0.001f)
-						joint.Motor.Settings.MaximumForce = maxForce;
+						joint.Motor.Settings.MaximumForce = maxForce * result.Get<DynamicMap>().PhysicsEntity.Mass;
 					else
 						joint.Motor.Settings.MaximumForce = float.MaxValue;
 				}
@@ -117,7 +117,7 @@ namespace Lemma.Factories
 				return joint;
 			};
 
-			JointFactory.Bind(result, main, createJoint, creating);
+			JointFactory.Bind(result, main, createJoint, false, creating);
 
 			result.Add("Forward", new Command
 			{

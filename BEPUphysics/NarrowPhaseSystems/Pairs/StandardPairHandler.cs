@@ -1,21 +1,8 @@
-﻿using System;
-using BEPUphysics.BroadPhaseEntries;
-using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
+﻿using BEPUphysics.BroadPhaseEntries;
 using BEPUphysics.CollisionTests;
-using BEPUphysics.CollisionTests.CollisionAlgorithms.GJK;
 using BEPUphysics.CollisionTests.Manifolds;
 using BEPUphysics.Constraints.Collision;
-using BEPUphysics.DataStructures;
-using BEPUphysics.PositionUpdating;
-using BEPUphysics.Settings;
-using Microsoft.Xna.Framework;
-using BEPUphysics.MathExtensions;
-using BEPUphysics.ResourceManagement;
-using BEPUphysics.CollisionShapes.ConvexShapes;
 using BEPUphysics.Materials;
-using BEPUphysics.Entities;
 
 namespace BEPUphysics.NarrowPhaseSystems.Pairs
 {
@@ -57,6 +44,8 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
             base.OnContactRemoved(contact);
 
         }
+
+
 
         ///<summary>
         /// Initializes the pair handler.
@@ -104,7 +93,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
         public override void CleanUp()
         {
             //Deal with the remaining contacts.
-            for (int i = ContactManifold.contacts.count - 1; i >= 0; i--)
+            for (int i = ContactManifold.contacts.Count - 1; i >= 0; i--)
             {
                 OnContactRemoved(ContactManifold.contacts[i]);
             }
@@ -159,7 +148,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
 
             ContactManifold.Update(dt);
 
-            if (ContactManifold.contacts.count > 0)
+            if (ContactManifold.contacts.Count > 0)
             {
                 if (!suppressEvents)
                 {
@@ -201,7 +190,8 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                     triggerB.OnCollisionEnded(a, this);
                 }
             }
-            previousContactCount = ContactManifold.contacts.count;
+
+            previousContactCount = ContactManifold.contacts.Count;
 
         }
 
@@ -211,7 +201,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
         /// </summary>
         protected internal override int ContactCount
         {
-            get { return ContactManifold.contacts.count; }
+            get { return ContactManifold.contacts.Count; }
         }
 
         /// <summary>
@@ -219,7 +209,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
         /// </summary>
         public override void ClearContacts()
         {
-             if (previousContactCount > 0)
+            if (previousContactCount > 0)
             {
                 //Just exited collision.
 

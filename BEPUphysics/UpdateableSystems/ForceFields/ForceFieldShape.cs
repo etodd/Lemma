@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using BEPUphysics.Entities;
-using BEPUphysics.DataStructures;
+using BEPUutilities.DataStructures;
 
 namespace BEPUphysics.UpdateableSystems.ForceFields
 {

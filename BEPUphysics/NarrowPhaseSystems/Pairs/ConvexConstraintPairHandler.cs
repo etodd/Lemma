@@ -1,7 +1,7 @@
 ﻿using System;
 using BEPUphysics.BroadPhaseSystems;
-using BEPUphysics.Collidables;
-using BEPUphysics.Collidables.MobileCollidables;
+using BEPUphysics.BroadPhaseEntries;
+using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.CollisionTests;
 using BEPUphysics.CollisionTests.CollisionAlgorithms.GJK;
 using BEPUphysics.CollisionTests.Manifolds;
@@ -43,7 +43,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
             //Find the contact's normal force.
             float totalNormalImpulse = 0;
             info.NormalImpulse = 0;
-            for (int i = 0; i < contactConstraint.penetrationConstraints.count; i++)
+            for (int i = 0; i < contactConstraint.penetrationConstraints.Count; i++)
             {
                 totalNormalImpulse += contactConstraint.penetrationConstraints.Elements[i].accumulatedImpulse;
                 if (contactConstraint.penetrationConstraints.Elements[i].contact == info.Contact)

@@ -42,7 +42,7 @@
         /// </summary>
         /// <param name="time">Time to check for speed.</param>
         /// <returns>Speed at the given time.</returns>
-        public override float GetSpeedAtCurveTime(float time)
+        public override float GetSpeedAtCurveTime(double time)
         {
             return Speed;
         }
