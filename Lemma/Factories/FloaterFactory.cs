@@ -105,7 +105,7 @@ namespace Lemma.Factories
 				{
 					Entity parentEntity = parent.Value.Target;
 					if (parentEntity != null && parentEntity.Active)
-						mover.TargetPosition = parentEntity.Get<Map>().GetAbsolutePosition(coord);
+						mover.TargetPosition = parentEntity.Get<Map>().GetAbsolutePosition(coord) + new Vector3(0, -0.01f, 0);
 					else
 					{
 						updater.Delete.Execute();

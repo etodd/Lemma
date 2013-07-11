@@ -4045,7 +4045,6 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command<Collidable, ContactCollection> Collided = new Command<Collidable, ContactCollection>();
 
-		[XmlIgnore]
 		public Property<Vector3> LinearVelocity = new Property<Vector3> { Editable = false };
 
 		public Property<bool> IsAffectedByGravity = new Property<bool> { Editable = true, Value = true };
