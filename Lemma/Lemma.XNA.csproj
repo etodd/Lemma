@@ -121,7 +121,6 @@
     <Compile Include="Factories\RainFactory.cs" />
     <Compile Include="Factories\SliderFactory.cs" />
     <Compile Include="Factories\VineFactory.cs" />
-    <Compile Include="Factories\EnergyPickupFactory.cs" />
     <Compile Include="Factories\ParticleEmitterFactory.cs" />
     <Compile Include="Factories\PlayerDataFactory.cs" />
     <Compile Include="Factories\EffectBlockFactory.cs" />

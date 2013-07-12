@@ -37,7 +37,6 @@ namespace Lemma.Factories
 			result.Add("EnableSlowMotion", new Property<bool> { Value = enabled });
 			result.Add("EnableStamina", new Property<bool> { Value = enabled });
 			result.Add("EnableMoves", new Property<bool> { Value = true });
-			result.Add("Stamina", new Property<int> { Value = 100 });
 			result.Add("Pistol", new Property<Entity.Handle> { Editable = false });
 			result.Add("GameTime", new Property<float> { Editable = false });
 

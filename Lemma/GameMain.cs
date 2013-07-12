@@ -45,6 +45,7 @@ namespace Lemma
 			public Property<bool> InvertMouseX = new Property<bool> { Value = false };
 			public Property<bool> InvertMouseY = new Property<bool> { Value = false };
 			public Property<float> MouseSensitivity = new Property<float> { Value = 1.0f };
+			public Property<float> FieldOfView = new Property<float> { Value = MathHelper.ToRadians(80.0f) };
 			public int Version;
 			public string UUID;
 			public Property<PCInput.PCInputBinding> Forward = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.W } };
@@ -90,7 +91,6 @@ namespace Lemma
 		public Command<Entity> PlayerSpawned = new Command<Entity>();
 
 		const float respawnInterval = 1.0f;
-		const float staminaDepletedReloadInterval = 3.0f;
 
 		private float respawnTimer = -1.0f;
 
@@ -331,6 +331,7 @@ namespace Lemma
 				new TwoWayBinding<float>(this.Settings.MotionBlurAmount, this.Renderer.MotionBlurAmount);
 				new TwoWayBinding<float>(this.Settings.Gamma, this.Renderer.Gamma);
 				new TwoWayBinding<bool>(this.Settings.EnableBloom, this.Renderer.EnableBloom);
+				new TwoWayBinding<float>(this.Settings.FieldOfView, this.Camera.FieldOfView);
 				if (this.Settings.FullscreenResolution.Value.X == 0)
 				{
 					Microsoft.Xna.Framework.Graphics.DisplayMode display = Microsoft.Xna.Framework.Graphics.GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
@@ -896,6 +897,13 @@ namespace Lemma
 					this.Renderer.Gamma.Value = Math.Max(0, Math.Min(2, this.Renderer.Gamma + (scroll * 0.1f)));
 				}));
 				settingsMenu.Children.Add(gamma);
+
+				UIComponent fieldOfView = this.createMenuButton<float>("Field of View", this.Camera.FieldOfView, x => ((int)Math.Round(MathHelper.ToDegrees(this.Camera.FieldOfView))).ToString() + " deg");
+				fieldOfView.Add(new CommandBinding<Point, int>(fieldOfView.MouseScrolled, delegate(Point mouse, int scroll)
+				{
+					this.Camera.FieldOfView.Value = Math.Max(MathHelper.ToRadians(60.0f), Math.Min(MathHelper.ToRadians(120.0f), this.Camera.FieldOfView + MathHelper.ToRadians(scroll)));
+				}));
+				settingsMenu.Children.Add(fieldOfView);
 
 				UIComponent motionBlurAmount = this.createMenuButton<float>("Motion Blur Amount", this.Renderer.MotionBlurAmount, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
 				motionBlurAmount.Add(new CommandBinding<Point, int>(motionBlurAmount.MouseScrolled, delegate(Point mouse, int scroll)
@@ -1513,29 +1521,25 @@ namespace Lemma
 							));
 						}
 
-						bool staminaDepleted = Factory.Get<PlayerDataFactory>().Instance(this).GetProperty<int>("Stamina") <= 0;
-						float respawnInterval = staminaDepleted ? GameMain.staminaDepletedReloadInterval : GameMain.respawnInterval;
-						if (this.respawnTimer > respawnInterval || this.respawnTimer < 0)
+						if (this.respawnTimer > GameMain.respawnInterval || this.respawnTimer < 0)
 						{
-							if (staminaDepleted)
-								this.MapFile.Reset();
-							else
+							if (createPlayer)
 							{
-								if (createPlayer)
-								{
-									this.player = Factory.CreateAndBind(this, "Player");
-									this.Add(this.player);
-								}
+								this.player = Factory.CreateAndBind(this, "Player");
+								this.Add(this.player);
+							}
 
-								bool spawnFound = false;
-								PlayerFactory.RespawnLocation foundSpawnLocation = default(PlayerFactory.RespawnLocation);
+							bool spawnFound = false;
+							PlayerFactory.RespawnLocation foundSpawnLocation = default(PlayerFactory.RespawnLocation);
 
-								ListProperty<PlayerFactory.RespawnLocation> respawnLocations = Factory.Get<PlayerDataFactory>().Instance(this).GetOrMakeListProperty<PlayerFactory.RespawnLocation>("RespawnLocations");
-								int supportedLocations = 0;
-								for (int i = respawnLocations.Count - 1; i >= 0; i--)
+							ListProperty<PlayerFactory.RespawnLocation> respawnLocations = Factory.Get<PlayerDataFactory>().Instance(this).GetOrMakeListProperty<PlayerFactory.RespawnLocation>("RespawnLocations");
+							int supportedLocations = 0;
+							for (int i = respawnLocations.Count - 1; i >= 0; i--)
+							{
+								PlayerFactory.RespawnLocation respawnLocation = respawnLocations[i];
+								Entity respawnMapEntity = respawnLocation.Map.Target;
+								if (respawnMapEntity != null && respawnMapEntity.Active)
 								{
-									PlayerFactory.RespawnLocation respawnLocation = respawnLocations[i];
-									Entity respawnMapEntity = respawnLocation.Map.Target;
 									Map respawnMap = respawnMapEntity.Get<Map>();
 									if (respawnMap.Active && respawnMap[respawnLocation.Coordinate].ID != 0 && respawnMap.GetAbsoluteVector(respawnMap.GetRelativeDirection(Direction.PositiveY).GetVector()).Y > 0.5f)
 									{
@@ -1549,62 +1553,62 @@ namespace Lemma
 											foundSpawnLocation = respawnLocation;
 										}
 									}
-									if (supportedLocations > 2)
-										break;
+								}
+								if (supportedLocations > 2)
+									break;
+							}
+
+							if (spawnFound)
+							{
+								Vector3 absolutePos = foundSpawnLocation.Map.Target.Get<Map>().GetAbsolutePosition(foundSpawnLocation.Coordinate);
+								this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = absolutePos + new Vector3(0, 3, 0);
+
+								FPSInput.RecenterMouse();
+								Property<Vector2> mouse = this.player.Get<FPSInput>().Mouse;
+								mouse.Value = new Vector2(foundSpawnLocation.Rotation, 0.0f);
+							}
+							else
+							{
+								PlayerSpawn spawn = null;
+								Entity spawnEntity = null;
+								if (!string.IsNullOrEmpty(this.StartSpawnPoint.Value))
+								{
+									spawnEntity = this.GetByID(this.StartSpawnPoint);
+									if (spawnEntity != null)
+										spawn = spawnEntity.Get<PlayerSpawn>();
+									this.lastEditorSpawnPoint = this.StartSpawnPoint;
+									this.StartSpawnPoint.Value = null;
 								}
 
-								if (spawnFound)
+								if (spawnEntity == null)
 								{
-									Vector3 absolutePos = foundSpawnLocation.Map.Target.Get<Map>().GetAbsolutePosition(foundSpawnLocation.Coordinate);
-									this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = absolutePos + new Vector3(0, 3, 0);
+									spawn = PlayerSpawn.FirstActive();
+									spawnEntity = spawn == null ? null : spawn.Entity;
+								}
 
+								if (spawnEntity != null)
+									this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = spawnEntity.Get<Transform>().Position;
+
+								if (spawn != null)
+								{
+									spawn.IsActivated.Value = true;
 									FPSInput.RecenterMouse();
 									Property<Vector2> mouse = this.player.Get<FPSInput>().Mouse;
-									mouse.Value = new Vector2(foundSpawnLocation.Rotation, 0.0f);
+									mouse.Value = new Vector2(spawn.Rotation, 0.0f);
 								}
-								else
-								{
-									PlayerSpawn spawn = null;
-									Entity spawnEntity = null;
-									if (!string.IsNullOrEmpty(this.StartSpawnPoint.Value))
-									{
-										spawnEntity = this.GetByID(this.StartSpawnPoint);
-										if (spawnEntity != null)
-											spawn = spawnEntity.Get<PlayerSpawn>();
-										this.lastEditorSpawnPoint = this.StartSpawnPoint;
-										this.StartSpawnPoint.Value = null;
-									}
-
-									if (spawnEntity == null)
-									{
-										spawn = PlayerSpawn.FirstActive();
-										spawnEntity = spawn == null ? null : spawn.Entity;
-									}
-
-									if (spawnEntity != null)
-										this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = spawnEntity.Get<Transform>().Position;
-
-									if (spawn != null)
-									{
-										spawn.IsActivated.Value = true;
-										FPSInput.RecenterMouse();
-										Property<Vector2> mouse = this.player.Get<FPSInput>().Mouse;
-										mouse.Value = new Vector2(spawn.Rotation, 0.0f);
-									}
-								}
-
-								this.AddComponent(new Animation
-								(
-									new Animation.Parallel
-									(
-										new Animation.Vector3MoveTo(this.Renderer.Tint, Vector3.One, 0.5f),
-										new Animation.FloatMoveTo(this.Renderer.InternalGamma, 0.0f, 0.5f)
-									)
-								));
-								this.respawnTimer = 0;
-
-								this.PlayerSpawned.Execute(this.player);
 							}
+
+							this.AddComponent(new Animation
+							(
+								new Animation.Parallel
+								(
+									new Animation.Vector3MoveTo(this.Renderer.Tint, Vector3.One, 0.5f),
+									new Animation.FloatMoveTo(this.Renderer.InternalGamma, 0.0f, 0.5f)
+								)
+							));
+							this.respawnTimer = 0;
+
+							this.PlayerSpawned.Execute(this.player);
 						}
 						else
 							this.respawnTimer += this.ElapsedTime;

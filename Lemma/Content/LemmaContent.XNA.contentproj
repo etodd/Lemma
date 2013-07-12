@@ -205,14 +205,6 @@
       <Name>tutorials</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Maps\lava-cave.map">
-      <Name>lava-cave</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Maps\lava-cave2.map">
-      <Name>lava-cave2</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <Compile Include="Maps\room.fbx">
       <Name>room</Name>
       <Importer>FbxImporter</Importer>
@@ -238,14 +230,6 @@
     </None>
     <None Include="Maps\spinner.cs">
       <Name>spinner</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Maps\lava-cave.cs">
-      <Name>lava-cave</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Maps\lava-cave2.cs">
-      <Name>lava-cave2</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Compile Include="Models\spotlight.fbx">

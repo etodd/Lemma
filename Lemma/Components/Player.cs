@@ -57,8 +57,6 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<bool> HasTraction = new Property<bool> { Editable = false };
 		[XmlIgnore]
-		public Property<int> Stamina = new Property<int> { Editable = false, Value = 100 };
-		[XmlIgnore]
 		public Property<Vector3> SupportLocation = new Property<Vector3> { Editable = false };
 		[XmlIgnore]
 		public Property<BEPUphysics.Entities.Entity> SupportEntity = new Property<BEPUphysics.Entities.Entity> { Editable = false };
@@ -73,17 +71,12 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<bool> SlowMotion = new Property<bool> { Editable = false };
 		[XmlIgnore]
-		public Property<bool> SlowBurnStamina = new Property<bool> { Editable = false };
-		[XmlIgnore]
 		public Property<WallRun> WallRunState = new Property<WallRun> { Editable = false, Value = WallRun.None };
 		[XmlIgnore]
 		public Property<bool> Jumping = new Property<bool> { Editable = false };
 
 		[XmlIgnore]
 		public Command<Collidable, ContactCollection> Collided = new Command<Collidable, ContactCollection>();
-
-		[XmlIgnore]
-		public Command StaminaDepleted = new Command();
 
 		[XmlIgnore]
 		public Command HealthDepleted = new Command();
@@ -93,17 +86,6 @@ namespace Lemma.Components
 
 		private const float healthRegenerateDelay = 4.0f;
 		private const float healthRegenerateRate = 0.1f;
-
-		private const float staminaDecayTime = 3.0f * 60.0f; // Time in seconds to drain all 100 stamina points
-		private const float staminaDecayInterval = staminaDecayTime / 100.0f;
-
-		private const float slowmoStaminaDecayTime = 30.0f; // Time in seconds to drain all 100 stamina points while in slowmo
-		private const float slowmoStaminaDecayInterval = slowmoStaminaDecayTime / 100.0f;
-
-		private const float slowBurnStaminaDecayTime = 5.0f * 60.0f; // Time in seconds to slow-burn all 100 stamina points
-		private const float slowBurnStaminaDecayInterval = slowBurnStaminaDecayTime / 100.0f;
-
-		private float timeUntilNextStaminaDecay = staminaDecayInterval;
 
 		[XmlIgnore]
 		public BEPUphysics.Entities.Entity Body
@@ -147,28 +129,6 @@ namespace Lemma.Components
 					this.HealthDepleted.Execute();
 			};
 
-			this.SlowMotion.Set = delegate(bool value)
-			{
-				if (this.EnableSlowMotion)
-				{
-					if (value && !this.SlowMotion.InternalValue)
-						this.timeUntilNextStaminaDecay = 0.0f;
-					else if (!value && this.SlowMotion.InternalValue)
-						this.timeUntilNextStaminaDecay = staminaDecayInterval;
-					this.SlowMotion.InternalValue = value;
-				}
-				else
-					this.SlowMotion.InternalValue = false;
-			};
-
-			this.Stamina.Set = delegate(int value)
-			{
-				int oldValue = this.Stamina.InternalValue;
-				this.Stamina.InternalValue = Math.Max(0, Math.Min(100, value));
-				if (oldValue > 0 && this.Stamina.InternalValue == 0 && this.EnableStamina)
-					this.StaminaDepleted.Execute();
-			};
-
 			this.Add(new Binding<float>(this.main.TimeMultiplier, () => this.SlowMotion && !this.main.Paused ? 0.4f : 1.0f, this.SlowMotion, this.main.Paused));
 			this.Add(new TwoWayBinding<Vector2>(this.MovementDirection, this.character.MovementDirection));
 			this.Add(new TwoWayBinding<float>(this.MaxSpeed, this.character.MaxSpeed));
@@ -209,15 +169,6 @@ namespace Lemma.Components
 			{
 				return this.character.Body.LinearVelocity;
 			};
-
-			this.SlowBurnStamina.Set = delegate(bool value)
-			{
-				if (value && !this.SlowBurnStamina.InternalValue)
-					this.timeUntilNextStaminaDecay = 0.0f;
-				else if (!value && this.SlowBurnStamina.InternalValue)
-					this.timeUntilNextStaminaDecay = staminaDecayInterval;
-				this.SlowBurnStamina.InternalValue = value;
-			};
 		}
 
 		protected override void delete()
@@ -235,14 +186,6 @@ namespace Lemma.Components
 					this.damageTimer += dt;
 				else
 					this.Health.Value += Player.healthRegenerateRate * dt;
-			}
-			if (!this.IsSupported || this.MovementDirection.Value.LengthSquared() > 0.0f || !this.EnableWalking || this.IsLevitating)
-				this.timeUntilNextStaminaDecay -= dt;
-			while (this.timeUntilNextStaminaDecay < 0.0f)
-			{
-				this.Stamina.Value--;
-				float interval = this.SlowMotion ? slowmoStaminaDecayInterval : (this.SlowBurnStamina ? slowBurnStaminaDecayInterval : staminaDecayInterval);
-				this.timeUntilNextStaminaDecay += interval;
 			}
 			this.Transform.Changed();
 			this.LinearVelocity.Changed();

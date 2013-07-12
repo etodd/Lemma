@@ -142,33 +142,6 @@ namespace Lemma.Factories
 			crosshair.Visible.Value = false;
 			ui.Root.Children.Add(crosshair);
 
-			const float healthBarWidth = 200.0f;
-			const float healthBarHeight = 16.0f;
-
-			Container healthContainer = new Container();
-			healthContainer.PaddingBottom.Value = healthContainer.PaddingLeft.Value = healthContainer.PaddingRight.Value = healthContainer.PaddingTop.Value = 1;
-			healthContainer.Add(new Binding<Microsoft.Xna.Framework.Color>(healthContainer.Tint, () => player.SlowMotion || player.SlowBurnStamina ? Microsoft.Xna.Framework.Color.Red : Microsoft.Xna.Framework.Color.White, player.SlowMotion, player.SlowBurnStamina));
-			healthContainer.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
-			healthContainer.Add(new Binding<Vector2, Point>(healthContainer.Position, x => new Vector2(x.X * 0.5f, x.Y - healthBarHeight), main.ScreenSize));
-			healthContainer.Add(new Binding<bool>(healthContainer.Visible, player.EnableStamina));
-			ui.Root.Children.Add(healthContainer);
-
-			Container healthBackground = new Container();
-			healthBackground.ResizeHorizontal.Value = false;
-			healthBackground.Size.Value = new Vector2(healthBarWidth, healthBarHeight);
-			healthBackground.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-			healthBackground.PaddingBottom.Value = healthBackground.PaddingLeft.Value = healthBackground.PaddingRight.Value = healthBackground.PaddingTop.Value = 1;
-			healthContainer.Children.Add(healthBackground);
-
-			Container healthBar = new Container();
-			healthBar.ResizeHorizontal.Value = false;
-			healthBar.ResizeVertical.Value = false;
-			healthBar.Position.Value = new Vector2(healthBarWidth * 0.5f, 0.0f);
-			healthBar.AnchorPoint.Value = new Vector2(0.5f, 0.0f);
-			healthBar.Add(new Binding<Microsoft.Xna.Framework.Color, int>(healthBar.Tint, x => x > 10 ? Microsoft.Xna.Framework.Color.White : Microsoft.Xna.Framework.Color.Red, player.Stamina));
-			healthBar.Add(new Binding<Vector2, int>(healthBar.Size, x => new Vector2(healthBarWidth * ((float)x / 100.0f), healthBarHeight), player.Stamina));
-			healthBackground.Children.Add(healthBar);
-
 			GameMain.Config settings = ((GameMain)main).Settings;
 			input.Add(new Binding<float>(input.MouseSensitivity, settings.MouseSensitivity));
 			input.Add(new Binding<bool>(input.InvertMouseX, settings.InvertMouseX));
@@ -240,10 +213,6 @@ namespace Lemma.Factories
 					respawnLocations = data.Value.Target.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
 					
 					// Bind player data properties
-					Property<int> stamina = data.Value.Target.GetProperty<int>("Stamina");
-					if (creating && stamina < 25)
-						stamina.Value = 25;
-					result.Add(new TwoWayBinding<int>(stamina, player.Stamina));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableRoll"), player.EnableRoll));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableKick"), player.EnableKick));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
@@ -251,75 +220,9 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableLevitation"), player.EnableLevitation));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableStamina"), player.EnableStamina));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableMoves"), player.EnableMoves));
 				}
 			});
-
-			// Die if stamina is depleted
-			Sound faintSound = null;
-			Animation faintSequence = null;
-			result.Add(new CommandBinding(player.StaminaDepleted, delegate()
-			{
-				player.MaxSpeed.Value = 4.0f;
-				player.EnableMoves.Value = false;
-				model.StartClip("WobblyCam", 6, false);
-				faintSound = new Sound();
-				faintSound.Cue.Value = "FaintSequence";
-				faintSound.DeleteStopOption.Value = Microsoft.Xna.Framework.Audio.AudioStopOptions.AsAuthored;
-				faintSound.Serialize = false;
-				faintSound.Is3D.Value = false;
-				result.Add(faintSound);
-				faintSound.Play.Execute();
-				faintSequence = new Animation
-				(
-					new Animation.Sequence
-					(
-						new Animation.FloatMoveTo(main.Renderer.BlurAmount, 0.5f, 2.0f),
-						new Animation.FloatMoveTo(main.Renderer.BlurAmount, 0.0f, 2.0f),
-						new Animation.FloatMoveTo(main.Renderer.BlurAmount, 1.0f, 3.0f)
-					),
-					new Animation.Execute(delegate()
-					{
-						player.EnableWalking.Value = false;
-						input.Enabled.Value = false;
-						model.Stop();
-						model.StartClip("Collapse", 6, false, AnimatedModel.DefaultBlendTime, false);
-					}),
-					new Animation.Delay(1.5f),
-					new Animation.Execute(delegate()
-					{
-						Sound.PlayCue(main, "Collapse");
-					}),
-					new Animation.Delay(1.5f),
-					new Animation.Execute(delegate()
-					{
-						Session.Recorder.Event(main, "DieFromStamina");
-					}),
-					new Animation.Execute(result.Delete)
-				);
-				result.Add(faintSequence);
-			}));
-
-			result.Add(new NotifyBinding(delegate()
-			{
-				if (faintSequence != null && player.Stamina > 0)
-				{
-					if (model.IsPlaying("Collapse"))
-						return; // Too late
-
-					// Stop fainting, we picked up an energy orb
-					result.Remove(faintSound);
-					faintSound = null;
-					faintSequence.Delete.Execute();
-					faintSequence = null;
-					model.Stop("WobblyCam");
-					main.Renderer.BlurAmount.Value = 0.0f;
-					
-					player.EnableMoves.Value = true;
-					player.MaxSpeed.Value = Player.DefaultMaxSpeed;
-				}
-			}, player.Stamina));
 
 			result.Add(new CommandBinding(player.HealthDepleted, delegate()
 			{
@@ -747,7 +650,6 @@ namespace Lemma.Factories
 			});
 
 			// Block possibilities
-			const float blockInstantiationStaminaCostPerCell = 0.05f;
 			const float blockPossibilityTotalLifetime = 2.0f;
 			const float blockPossibilityInitialAlpha = 0.125f;
 
@@ -811,8 +713,6 @@ namespace Lemma.Factories
 				}
 			});
 
-			const float enhancedWallRunStaminaCostPerCell = 0.1f;
-
 			Action<IEnumerable<BlockBuildOrder>, bool> buildBlocks = delegate(IEnumerable<BlockBuildOrder> blocks, bool fake)
 			{
 				int index = 0;
@@ -836,7 +736,6 @@ namespace Lemma.Factories
 					main.Add(block);
 					index++;
 				}
-				player.Stamina.Value -= (int)(enhancedWallRunStaminaCostPerCell * index);
 			};
 
 			Action<BlockPossibility> instantiateBlockPossibility = delegate(BlockPossibility block)
@@ -849,10 +748,6 @@ namespace Lemma.Factories
 				mapList.Remove(block);
 				if (mapList.Count == 0)
 					blockPossibilities.Remove(block.Map);
-				player.Stamina.Value -= (int)Math.Round(blockInstantiationStaminaCostPerCell
-					* (block.EndCoord.X - block.StartCoord.X)
-					* (block.EndCoord.Y - block.StartCoord.Y)
-					* (block.EndCoord.Z - block.StartCoord.Z));
 				Vector3 position = 0.5f * (block.Map.GetAbsolutePosition(block.StartCoord) + block.Map.GetAbsolutePosition(block.EndCoord));
 				main.AddComponent(new Animation
 				(
@@ -2387,8 +2282,6 @@ namespace Lemma.Factories
 
 			// Levitate
 			const float levitationMaxDistance = 25.0f;
-			const int levitateStaminaCost = 4;
-			const int levitateRipStaminaCost = 8; // In addition to the regular levitate cost
 			const int levitateRipRadius = 4;
 			Vector3 levitationRelativeGrabPoint = Vector3.Zero;
 			float levitatingDistance = 0.0f;
@@ -2417,7 +2310,6 @@ namespace Lemma.Factories
 					map.IsAffectedByGravity.Value = false;
 					Sound.PlayCue(main, "Levitate", grabPoint);
 					map.PhysicsEntity.LinearVelocity += new Vector3(0.0f, 1.0f, 0.0f);
-					player.Stamina.Value -= levitateStaminaCost;
 				}
 				else
 					levitateButtonPressStart = main.TotalTime;
@@ -2559,7 +2451,6 @@ namespace Lemma.Factories
 								if (spawnedMap[center].ID != 0)
 								{
 									toggleLevitate(spawnedMap, grabPoint);
-									player.Stamina.Value -= levitateRipStaminaCost;
 									break;
 								}
 							}
@@ -2680,8 +2571,6 @@ namespace Lemma.Factories
 
 						// Delete the map
 						levitatingMap.Entity.Delete.Execute();
-
-						player.Stamina.Value -= levitateRipStaminaCost;
 					}
 					else
 						levitatingMap.IsAffectedByGravity.Value = true;

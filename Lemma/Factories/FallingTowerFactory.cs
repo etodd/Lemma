@@ -241,8 +241,6 @@ namespace Lemma.Factories
 				}
 			});
 
-			EnemyBase.SpawnPickupsOnDeath(main, result);
-
 			this.SetMain(result, main);
 		}
 

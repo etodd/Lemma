@@ -45,6 +45,7 @@ namespace Lemma.Factories
 				}
 			};
 			result.Add(new NotifyBinding(setMaxForce, maxForce));
+			result.Add(new CommandBinding(result.Get<DynamicMap>().PhysicsUpdated, setMaxForce));
 
 			Action setDamping = delegate()
 			{
@@ -56,9 +57,10 @@ namespace Lemma.Factories
 			Action setStiffness = delegate()
 			{
 				if (mover != null && stiffness != 0)
-					mover.LinearMotor.Settings.Servo.SpringSettings.StiffnessConstant = stiffness;
+					mover.LinearMotor.Settings.Servo.SpringSettings.StiffnessConstant = stiffness * result.Get<DynamicMap>().PhysicsEntity.Mass;
 			};
 			result.Add(new NotifyBinding(setStiffness, stiffness));
+			result.Add(new CommandBinding(result.Get<DynamicMap>().PhysicsUpdated, setStiffness));
 
 			Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint = delegate(BEPUphysics.Entities.Entity entity1, BEPUphysics.Entities.Entity entity2, Vector3 pos, Vector3 direction, Vector3 anchor)
 			{

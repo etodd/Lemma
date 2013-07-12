@@ -148,49 +148,5 @@ namespace Lemma.Components
 				});
 			}
 		}
-
-		public static void SpawnPickupsOnDeath(Main main, Entity entity, int minCount = 2, int maxCount = 5, int minEnergy = 2, int maxEnergy = 10)
-		{
-			if (!main.EditorEnabled)
-			{
-				EnemyBase enemyBase = entity.Get<EnemyBase>();
-				enemyBase.Add(new CommandBinding(enemyBase.Delete, delegate()
-				{
-					Vector3 pos = enemyBase.Position;
-					Random r = new Random();
-					int count = r.Next(minCount, maxCount);
-
-					EnergyPickupFactory energyPickupFactory = Factory.Get<EnergyPickupFactory>();
-
-					for (int i = 0; i < count; i++)
-					{
-						Vector3 direction = new Vector3((float)r.NextDouble() - 0.5f, 0.0f, (float)r.NextDouble() - 0.5f);
-						direction.Normalize();
-						direction *= enemyBase.Offset;
-						direction.Y = (float)r.NextDouble() * enemyBase.Offset;
-
-						Entity pickup = energyPickupFactory.CreateAndBind(main);
-
-						Transform transform = pickup.Get<Transform>();
-
-						transform.Position.Value = pos + direction;
-
-						pickup.GetProperty<bool>("Respawn").Value = false;
-						pickup.GetProperty<int>("Energy").Value = r.Next(minEnergy, maxEnergy);
-						direction.Normalize();
-						pickup.Add(new Animation
-						(
-							new Animation.Ease
-							(
-								new Animation.Vector3MoveBySpeed(transform.Position, Vector3.Normalize(direction) * enemyBase.Offset * (float)r.NextDouble(), 2.0f),
-								Animation.Ease.Type.OutQuadratic
-							)
-						));
-
-						main.Add(pickup);
-					}
-				}));
-			}
-		}
 	}
 }

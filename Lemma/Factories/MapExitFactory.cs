@@ -81,7 +81,9 @@ namespace Lemma.Factories
 					new Animation.Execute(delegate()
 					{
 						// We are exiting the map; just save the state of the map without the player.
-						// So save the player and pistol and then delete them.
+						ListProperty<PlayerFactory.RespawnLocation> respawnLocations = Factory.Get<PlayerDataFactory>().Instance(main).GetOrMakeListProperty<PlayerFactory.RespawnLocation>("RespawnLocations");
+						respawnLocations.Clear();
+
 						List<Entity> persistentEntities = main.Entities.Where((Func<Entity, bool>)MapExitFactory.isPersistent).ToList();
 
 						serializer.Serialize(stream, persistentEntities);
