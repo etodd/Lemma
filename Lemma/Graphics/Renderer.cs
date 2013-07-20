@@ -58,7 +58,10 @@ namespace Lemma.Components
 		public Property<float> Gamma = new Property<float> { Value = 1.0f };
 		public Property<float> MotionBlurAmount = new Property<float> { Value = 1.0f };
 		private Texture2D lightRampTexture;
+		private TextureCube environmentMap;
 		public Property<string> LightRampTexture = new Property<string>();
+		public Property<string> EnvironmentMap = new Property<string>();
+		public Property<Vector3> EnvironmentColor = new Property<Vector3> { Value = Vector3.One };
 		public Property<bool> EnableBloom = new Property<bool> { Value = true };
 		public Property<bool> EnableSSAO = new Property<bool> { Value = true };
 		public Property<float> BloomThreshold = new Property<float> { Value = 0.9f };
@@ -135,6 +138,15 @@ namespace Lemma.Components
 				}
 			};
 
+			this.EnvironmentMap.Set = delegate(string file)
+			{
+				if (this.EnvironmentMap.InternalValue != file)
+				{
+					this.EnvironmentMap.InternalValue = file;
+					this.loadEnvironmentMap(file);
+				}
+			};
+
 			this.InternalGamma.Set = delegate(float value)
 			{
 				this.InternalGamma.InternalValue = value;
@@ -145,6 +157,12 @@ namespace Lemma.Components
 			{
 				this.Gamma.InternalValue = value;
 				this.toneMapEffect.Parameters["Gamma"].SetValue(value + this.InternalGamma);
+			};
+
+			this.EnvironmentColor.Set = delegate(Vector3 value)
+			{
+				this.EnvironmentColor.InternalValue = value;
+				Renderer.globalLightEffect.Parameters["EnvironmentColor"].SetValue(value);
 			};
 
 			if (this.allowMotionBlur)
@@ -172,6 +190,12 @@ namespace Lemma.Components
 			this.toneMapEffect.Parameters["Ramp" + Model.SamplerPostfix].SetValue(this.lightRampTexture);
 		}
 
+		private void loadEnvironmentMap(string file)
+		{
+			this.environmentMap = file == null ? (TextureCube)null : this.main.Content.Load<TextureCube>(file);
+			Renderer.globalLightEffect.Parameters["Environment" + Model.SamplerPostfix].SetValue(this.environmentMap);
+		}
+
 		public override void LoadContent(bool reload)
 		{
 			// Load static resources
@@ -188,6 +212,7 @@ namespace Lemma.Components
 			if (Renderer.globalLightEffect == null || reload)
 			{
 				Renderer.globalLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\GlobalLight");
+				this.loadEnvironmentMap(this.EnvironmentMap);
 				Renderer.pointLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\PointLight");
 				Renderer.spotLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\SpotLight");
 			}

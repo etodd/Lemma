@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ByteImporter.cs" />
+    <Compile Include="CubemapProcessor.cs" />
     <Compile Include="CustomModelProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SkinnedModelImporter.cs" />

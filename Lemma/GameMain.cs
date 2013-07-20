@@ -323,6 +323,7 @@ namespace Lemma
 				};
 
 				this.Renderer.LightRampTexture.Value = "Images\\default-ramp";
+				this.Renderer.EnvironmentMap.Value = "Maps\\env0";
 
 				this.input = new PCInput();
 				this.AddComponent(this.input);
