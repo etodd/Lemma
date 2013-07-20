@@ -883,13 +883,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Maps\Textures\temporary.png">
-      <Name>temporary</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Maps\Textures\metal-channels2-normal.jpg">
       <Name>metal-channels2-normal</Name>
       <Importer>TextureImporter</Importer>
