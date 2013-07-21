@@ -187,6 +187,10 @@
       <Name>materials</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Maps\cave.cs">
+      <Name>cave</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Compile Include="Maps\fan.fbx">
       <Name>fan</Name>
       <Importer>FbxImporter</Importer>
@@ -536,18 +540,6 @@
   <ItemGroup>
     <Compile Include="Particles\debug.png">
       <Name>debug</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Images\ui-bullet.png">
-      <Name>ui-bullet</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Images\ui-mag.png">
-      <Name>ui-mag</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
