@@ -120,6 +120,7 @@
     <Compile Include="Factories\MapAttachable.cs" />
     <Compile Include="Factories\RainFactory.cs" />
     <Compile Include="Factories\SliderFactory.cs" />
+    <Compile Include="Factories\TargetFactory.cs" />
     <Compile Include="Factories\VineFactory.cs" />
     <Compile Include="Factories\ParticleEmitterFactory.cs" />
     <Compile Include="Factories\PlayerDataFactory.cs" />

@@ -237,6 +237,42 @@ namespace Lemma.Factories
 				Session.Recorder.Event(main, "Die");
 			}));
 
+			UIComponent targets = new UIComponent();
+			ui.Root.Children.Add(targets);
+			ui.Add(new ListBinding<UIComponent, Transform>(targets.Children, TargetFactory.Positions, delegate(Transform target)
+			{
+				Sprite sprite = new Sprite();
+				sprite.Image.Value = "Images\\target";
+				sprite.Add(new Binding<bool>(sprite.Visible, target.Enabled));
+				sprite.Add(new Binding<Vector2>(sprite.Position, delegate()
+				{
+					Vector3 pos = target.Position.Value;
+					Vector4 projectionSpace = Vector4.Transform(new Vector4(pos.X, pos.Y, pos.Z, 1.0f), main.Camera.ViewProjection);
+					float originalDepth = projectionSpace.Z;
+					projectionSpace /= projectionSpace.W;
+
+					Point screenSize = main.ScreenSize;
+					Vector2 screenCenter = new Vector2(screenSize.X * 0.5f, screenSize.Y * 0.5f);
+
+					Vector2 offset = new Vector2(projectionSpace.X * (float)screenSize.X * 0.5f, -projectionSpace.Y * (float)screenSize.Y * 0.5f);
+
+					float radius = Math.Min(screenSize.X, screenSize.Y) * 0.95f * 0.5f;
+
+					float offsetLength = offset.Length();
+
+					bool behind = originalDepth < main.Camera.NearPlaneDistance;
+
+					if (behind || offsetLength > radius)
+						offset *= radius / offsetLength;
+
+					if (behind)
+						offset *= -1.0f;
+
+					return screenCenter + offset;
+				}, target.Position, main.Camera.ViewProjection, main.ScreenSize));
+				return new[] { sprite };
+			}));
+
 			player.EnabledInEditMode.Value = false;
 			ui.EnabledInEditMode.Value = false;
 
