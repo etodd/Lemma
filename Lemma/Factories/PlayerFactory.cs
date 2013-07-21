@@ -1253,7 +1253,7 @@ namespace Lemma.Factories
 			// Fall damage
 			Vector3 playerLastVelocity = Vector3.Zero;
 			const float damageVelocity = -20.0f; // Vertical velocity above which damage occurs
-			const float rollingDamageVelocity = -22.0f; // Damage velocity when rolling
+			const float rollingDamageVelocity = -28.0f; // Damage velocity when rolling
 
 			Action<float> fallDamage = delegate(float verticalVelocity)
 			{
@@ -1262,7 +1262,8 @@ namespace Lemma.Factories
 				{
 					player.Health.Value += (verticalVelocity - v) * 0.2f;
 					player.LinearVelocity.Value = new Vector3(0, player.LinearVelocity.Value.Y, 0);
-					model.StartClip("Land", 1, false, 0.1f);
+					if (!model.IsPlaying("Roll"))
+						model.StartClip("Land", 1, false, 0.1f);
 				}
 			};
 
@@ -1282,7 +1283,7 @@ namespace Lemma.Factories
 
 			update.Add(delegate(float dt)
 			{
-				if (player.IsSupported)
+				if (!lastSupported && player.IsSupported)
 				{
 					// Damage the player if they fall too hard and they're not smashing or rolling
 					fallDamage(playerLastVelocity.Y - player.LinearVelocity.Value.Y);
@@ -2262,7 +2263,7 @@ namespace Lemma.Factories
 						bool shouldBuildFloor = !player.IsSupported && player.EnableEnhancedWallRun;
 
 						Vector3 velocity = forward * player.MaxSpeed * (player.IsSupported ? 0.75f : 1.25f);
-						player.LinearVelocity.Value = new Vector3(velocity.X, 0.0f, velocity.Z);
+						player.LinearVelocity.Value = new Vector3(velocity.X, player.LinearVelocity.Value.Y, velocity.Z);
 
 						// Crouch
 						player.Crouched.Value = true;
@@ -2279,7 +2280,7 @@ namespace Lemma.Factories
 							{
 								rollTime += dt;
 
-								// Stop if we're about to roll off the edge of an instaniated block possibility.
+								// Stop if we're about to roll off the edge of an instantiated block possibility.
 								bool stop = instantiatedBlockPossibility && !shouldBuildFloor && rollTime > 0.1f && Map.GlobalRaycast(transform.Position + forward * 0.5f, Vector3.Down, player.Height * 0.5f + player.SupportHeight + 1.1f).Map != null;
 
 								if (stop || rollTime > 1.0f || Vector3.Dot(player.LinearVelocity, forward) < 0.1f)

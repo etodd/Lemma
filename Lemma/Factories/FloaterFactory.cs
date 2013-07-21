@@ -27,9 +27,9 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
-			Property<float> maxForce = result.GetOrMakeProperty<float>("MaxForce", true);
-			Property<float> damping = result.GetOrMakeProperty<float>("Damping", true);
-			Property<float> stiffness = result.GetOrMakeProperty<float>("Stiffness", true);
+			Property<float> maxForce = result.GetOrMakeProperty<float>("MaxForce", true, 150.0f);
+			Property<float> damping = result.GetOrMakeProperty<float>("Damping", true, 1.5f);
+			Property<float> stiffness = result.GetOrMakeProperty<float>("Stiffness", true, 15.0f);
 
 			NoRotationJoint joint = null;
 			EntityMover mover = null;
