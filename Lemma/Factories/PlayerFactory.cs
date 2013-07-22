@@ -31,6 +31,7 @@ namespace Lemma.Factories
 			public Entity.Handle Map;
 			public Map.Coordinate Coordinate;
 			public float Rotation;
+			public Vector3 OriginalPosition;
 		}
 
 		public override Entity Create(Main main)
@@ -406,6 +407,7 @@ namespace Lemma.Factories
 									Coordinate = groundRaycast.Coordinate.Value,
 									Map = groundRaycast.Map.Entity,
 									Rotation = rotation,
+									OriginalPosition = groundRaycast.Map.GetAbsolutePosition(groundRaycast.Coordinate.Value),
 								});
 								while (respawnLocations.Count > 30)
 									respawnLocations.RemoveAt(0);
