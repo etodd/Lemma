@@ -161,7 +161,10 @@ namespace Lemma.Components
 			system.Settings.Value = settings;
 
 			if (ParticleSystem.systems == null)
+			{
 				ParticleSystem.systems = new Dictionary<string, ParticleSystem>();
+				ParticleSystem.initialize(main);
+			}
 			ParticleSystem.systems.Add(system.Type, system);
 
 			main.AddComponent(system);
