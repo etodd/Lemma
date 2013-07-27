@@ -14,7 +14,7 @@ namespace Lemma.Components
 		public Property<Vector3> Color = new Property<Vector3> { Value = Vector3.One, Editable = true };
 		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
 		public Property<float> Attenuation = new Property<float> { Value = 10.0f, Editable = true };
-		public Property<bool> Shadowed = new Property<bool> { Value = true, Editable = true };
+		public Property<bool> Shadowed = new Property<bool> { Value = false, Editable = true };
 
 		[XmlIgnore]
 		public Property<BoundingSphere> BoundingSphere = new Property<BoundingSphere> { Editable = false };

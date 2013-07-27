@@ -30,10 +30,12 @@ namespace Lemma.Factories
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
 			result.CannotSuspend = true;
+
+			Script script = result.Get<Script>();
+
 			Property<bool> executeOnLoad = result.GetProperty<bool>("ExecuteOnLoad");
 			if (executeOnLoad && !main.EditorEnabled)
 			{
-				Script script = result.Get<Script>();
 				result.Add("Executor", new PostInitialization
 				{
 					delegate()
@@ -43,6 +45,11 @@ namespace Lemma.Factories
 					}
 				});
 			}
+
+			Property<bool> deleteOnExecute = result.GetOrMakeProperty<bool>("DeleteOnExecute", true, false);
+			if (deleteOnExecute)
+				result.Add(new CommandBinding(script.Execute, result.Delete));
+
 			this.SetMain(result, main);
 		}
 

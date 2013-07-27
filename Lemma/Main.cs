@@ -384,6 +384,10 @@ namespace Lemma
 				}));
 				this.AddComponent(input);
 #endif
+
+				IEnumerable<string> globalStaticScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "Maps", "GlobalStaticScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("Maps", "GlobalStaticScripts", Path.GetFileNameWithoutExtension(x)));
+				foreach (string scriptName in globalStaticScripts)
+					this.executeStaticScript(scriptName);
 			}
 			else
 			{
@@ -398,25 +402,50 @@ namespace Lemma
 			return c.Active && c.Enabled && !c.Suspended && (!this.EditorEnabled || c.EnabledInEditMode) && (!this.Paused || c.EnabledWhenPaused);
 		}
 
+		protected void executeScript(string scriptName)
+		{
+			string id = "global_script_" + scriptName;
+			Entity existingEntity = this.GetByID(id);
+			if (existingEntity != null)
+				existingEntity.Get<Script>().Execute.Execute();
+			else
+			{
+				Entity scriptEntity = Factory.Get<ScriptFactory>().CreateAndBind(this);
+				scriptEntity.ID = id;
+				scriptEntity.Serialize = true;
+				this.Add(scriptEntity);
+				scriptEntity.GetProperty<bool>("ExecuteOnLoad").Value = false;
+				Script script = scriptEntity.Get<Script>();
+				script.Name.Value = scriptName;
+				if (!string.IsNullOrEmpty(script.Errors))
+					throw new Exception(script.Errors);
+				else
+					script.Execute.Execute();
+			}
+		}
+
+		protected void executeStaticScript(string scriptName)
+		{
+			Entity scriptEntity = Factory.Get<ScriptFactory>().CreateAndBind(this);
+			scriptEntity.Serialize = false;
+			this.Add(scriptEntity);
+			scriptEntity.GetProperty<bool>("ExecuteOnLoad").Value = false;
+			Script script = scriptEntity.Get<Script>();
+			script.Name.Value = scriptName;
+			if (!string.IsNullOrEmpty(script.Errors))
+				throw new Exception(script.Errors);
+			else
+				script.Execute.Execute();
+			scriptEntity.Delete.Execute();
+		}
+
 		protected override void Update(GameTime gameTime)
 		{
 			if (!this.EditorEnabled && this.mapLoaded)
 			{
-				IEnumerable<string> globalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("GlobalScripts", Path.GetFileNameWithoutExtension(x)));
 				IEnumerable<string> mapGlobalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "Maps", "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("Maps", "GlobalScripts", Path.GetFileNameWithoutExtension(x)));
-				foreach (string scriptName in globalScripts.Concat(mapGlobalScripts))
-				{
-					Entity scriptEntity = Factory.Get<ScriptFactory>().CreateAndBind(this);
-					scriptEntity.Serialize = false;
-					this.Add(scriptEntity);
-					scriptEntity.GetProperty<bool>("ExecuteOnLoad").Value = false;
-					Script script = scriptEntity.Get<Script>();
-					script.Name.Value = scriptName;
-					if (!string.IsNullOrEmpty(script.Errors))
-						throw new Exception(script.Errors);
-					else
-						script.Execute.Execute();
-				}
+				foreach (string scriptName in mapGlobalScripts)
+					this.executeScript(scriptName);
 			}
 			this.mapLoaded = false;
 

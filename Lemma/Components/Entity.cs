@@ -60,6 +60,8 @@ namespace Lemma.Components
 	[XmlInclude(typeof(PID3))]
 	[XmlInclude(typeof(PlayerFactory.RespawnLocation))]
 	[XmlInclude(typeof(ListProperty<PlayerFactory.RespawnLocation>))]
+	[XmlInclude(typeof(PlayerFactory.ScheduledBlock))]
+	[XmlInclude(typeof(ListProperty<PlayerFactory.ScheduledBlock>))]
 	public class Entity
 	{
 		public struct Handle

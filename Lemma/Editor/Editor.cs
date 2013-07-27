@@ -171,7 +171,7 @@ namespace Lemma.Components
 				this.StartTranslation.Execute();
 			};
 
-			this.Brush.Value = WorldFactory.StateList[1].Name;
+			this.Brush.Value = "[Procedural]";
 
 			this.MapEditMode.Set = delegate(bool value)
 			{
@@ -305,7 +305,7 @@ namespace Lemma.Components
 					List<Map.Coordinate> coords = coordEnumerable.ToList();
 					m.Empty(coords);
 					foreach (Map.Coordinate c in coords)
-							m.Fill(c, material);
+						m.Fill(c, material);
 					m.Regenerate();
 				}
 			};

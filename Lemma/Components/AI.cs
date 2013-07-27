@@ -15,7 +15,7 @@ namespace Lemma.Components
 		{
 			public float _leftOverIntervalTime;
 			[XmlIgnore]
-			public float Interval = -1.0f;
+			public float Interval = 0.0f;
 			[XmlIgnore]
 			public Action Action;
 		}
@@ -128,7 +128,7 @@ namespace Lemma.Components
 			this.TimeInCurrentState.Value += elapsedTime;
 			foreach (Task t in this.currentState.Tasks)
 			{
-				if (t.Interval == -1.0f)
+				if (t.Interval == 0.0f)
 				{
 					// Call once per frame
 					t.Action();

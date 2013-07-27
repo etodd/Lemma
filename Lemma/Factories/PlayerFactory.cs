@@ -26,6 +26,13 @@ namespace Lemma.Factories
 			public Map.CellState State;
 		}
 
+		public class ScheduledBlock
+		{
+			public Entity.Handle Map;
+			public Map.Coordinate Coordinate;
+			public float Time;
+		}
+
 		public struct RespawnLocation
 		{
 			public Entity.Handle Map;
@@ -240,10 +247,14 @@ namespace Lemma.Factories
 
 			UIComponent targets = new UIComponent();
 			ui.Root.Children.Add(targets);
+			const string targetOnScreen = "Images\\target";
+			const string targetOffScreen = "Images\\target-pointer";
 			ui.Add(new ListBinding<UIComponent, Transform>(targets.Children, TargetFactory.Positions, delegate(Transform target)
 			{
 				Sprite sprite = new Sprite();
 				sprite.Image.Value = "Images\\target";
+				sprite.Opacity.Value = 0.5f;
+				sprite.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
 				sprite.Add(new Binding<bool>(sprite.Visible, target.Enabled));
 				sprite.Add(new Binding<Vector2>(sprite.Position, delegate()
 				{
@@ -261,13 +272,27 @@ namespace Lemma.Factories
 
 					float offsetLength = offset.Length();
 
+					Vector2 normalizedOffset = offset / offsetLength;
+
+					bool offscreen = offsetLength > radius;
+
 					bool behind = originalDepth < main.Camera.NearPlaneDistance;
 
-					if (behind || offsetLength > radius)
-						offset *= radius / offsetLength;
+					string img = offscreen || behind ? targetOffScreen : targetOnScreen;
+
+					if (sprite.Image.Value != img)
+						sprite.Image.Value = img;
 
 					if (behind)
-						offset *= -1.0f;
+						normalizedOffset *= -1.0f;
+
+					if (offscreen || behind)
+						sprite.Rotation.Value = -(float)Math.Atan2(normalizedOffset.Y, -normalizedOffset.X) - (float)Math.PI * 0.5f;
+					else
+						sprite.Rotation.Value = 0.0f;
+
+					if (behind || offscreen)
+						offset = normalizedOffset * radius;
 
 					return screenCenter + offset;
 				}, target.Position, main.Camera.ViewProjection, main.ScreenSize));
@@ -436,7 +461,7 @@ namespace Lemma.Factories
 						footsteps.Play.Execute();
 					}
 				}
-				else if (wallRunState != Player.WallRun.Down)
+				else if (wallRunState != Player.WallRun.Down && wallRunState != Player.WallRun.Reverse)
 					footsteps.Play.Execute();
 			}));
 			footstepTimer.Add(new Binding<bool>(footstepTimer.Enabled, () => player.WallRunState.Value != Player.WallRun.None || (player.MovementDirection.Value.LengthSquared() > 0.0f && player.IsSupported && player.EnableWalking), player.MovementDirection, player.IsSupported, player.EnableWalking, player.WallRunState));
