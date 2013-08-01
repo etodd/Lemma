@@ -101,6 +101,9 @@ namespace Lemma
 		private const float startGamma = 10.0f;
 		private static Vector3 startTint = new Vector3(2.0f);
 
+		private const int defaultRespawnRewindLength = 3;
+		public int RespawnRewindLength = defaultRespawnRewindLength;
+
 		private int displayModeIndex;
 
 		public GameMain(bool allowEditing, string mapFile)
@@ -1535,9 +1538,9 @@ namespace Lemma
 
 							ListProperty<PlayerFactory.RespawnLocation> respawnLocations = Factory.Get<PlayerDataFactory>().Instance(this).GetOrMakeListProperty<PlayerFactory.RespawnLocation>("RespawnLocations");
 							int supportedLocations = 0;
-							for (int i = respawnLocations.Count - 1; i >= 0; i--)
+							while (respawnLocations.Count > 0)
 							{
-								PlayerFactory.RespawnLocation respawnLocation = respawnLocations[i];
+								PlayerFactory.RespawnLocation respawnLocation = respawnLocations[respawnLocations.Count - 1];
 								Entity respawnMapEntity = respawnLocation.Map.Target;
 								if (respawnMapEntity != null && respawnMapEntity.Active)
 								{
@@ -1559,9 +1562,12 @@ namespace Lemma
 										}
 									}
 								}
-								if (supportedLocations > 2)
+								respawnLocations.RemoveAt(respawnLocations.Count - 1);
+								if (supportedLocations >= this.RespawnRewindLength)
 									break;
 							}
+
+							this.RespawnRewindLength = defaultRespawnRewindLength;
 
 							if (spawnFound)
 							{
