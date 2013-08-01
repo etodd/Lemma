@@ -82,6 +82,7 @@ namespace Lemma.Factories
 
 			Map.CellState fillState = WorldFactory.StatesByName["Snake"];
 			Map.CellState criticalState = WorldFactory.StatesByName["InfectedCritical"];
+			Map.CellState temporaryState = WorldFactory.StatesByName["Temporary"];
 
 			VoxelChaseAI chase = null;
 			result.Add(new PostInitialization
@@ -95,9 +96,10 @@ namespace Lemma.Factories
 			chase = result.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
 			chase.Filter = delegate(Map.CellState state)
 			{
-				if (state.ID == fillState.ID || state.ID == 0)
+				int id = state.ID;
+				if (id == fillState.ID || id == temporaryState.ID || id == 0)
 					return VoxelChaseAI.Cell.Empty;
-				if (state.Permanent || state.ID == criticalState.ID)
+				if (state.Permanent || id == criticalState.ID)
 					return VoxelChaseAI.Cell.Filled;
 				return VoxelChaseAI.Cell.Penetrable;
 			};
