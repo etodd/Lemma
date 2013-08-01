@@ -11,20 +11,14 @@ using System.Threading;
 
 namespace Lemma.Factories
 {
-	public class VineFactory : Factory
+	public class SnakeFactory : Factory
 	{
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Vine");
+			Entity result = new Entity(main, "Snake");
 
 			Transform transform = new Transform();
 			result.Add("Transform", transform);
-
-			PointLight light = new PointLight();
-			light.Color.Value = new Vector3(0.5f, 1.3f, 0.5f);
-			light.Attenuation.Value = 10.0f;
-			light.Shadowed.Value = false;
-			result.Add("Light", light);
 
 			result.Add("Coordinate", new Property<Map.Coordinate> { Editable = false });
 
@@ -35,9 +29,9 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
-			if (ParticleSystem.Get(main, "VineSparks") == null)
+			if (ParticleSystem.Get(main, "SnakeSparks") == null)
 			{
-				ParticleSystem.Add(main, "VineSparks",
+				ParticleSystem.Add(main, "SnakeSparks",
 				new ParticleSystem.ParticleSettings
 				{
 					TextureName = "Particles\\splash",
@@ -62,27 +56,19 @@ namespace Lemma.Factories
 
 			result.CannotSuspendByDistance = true;
 			Transform transform = result.Get<Transform>();
-			PointLight light = result.Get<PointLight>();
-			EnemyBase enemy = result.GetOrCreate<EnemyBase>("Base");
 
-			Property<bool> hasCoordinate = result.GetOrMakeProperty<bool>("HasCoordinate");
-			hasCoordinate.Editable = false;
+			PointLight light = result.GetOrCreate<PointLight>("Light");
+			light.Color.Value = new Vector3(1.3f, 0.5f, 0.5f);
+			light.Attenuation.Value = 10.0f;
+			light.Shadowed.Value = false;
+			light.Serialize = false;
+
+			EnemyBase enemy = result.GetOrCreate<EnemyBase>("Base");
 
 			enemy.Add(new Binding<Matrix>(enemy.Transform, transform.Matrix));
 			enemy.Add(new CommandBinding(enemy.Delete, result.Delete));
 
-			Property<Map.Coordinate> coordinate = result.GetProperty<Map.Coordinate>("Coordinate");
 			Property<float> operationalRadius = result.GetOrMakeProperty<float>("OperationalRadius", true, 100.0f);
-
-			if (!hasCoordinate)
-			{
-				// Find our starting coordinate
-				result.Add(new NotifyBinding(delegate()
-				{
-					coordinate.Value = enemy.BaseBoxes.First().GetCoords().First();
-					hasCoordinate.Value = true;
-				}, enemy.Map));
-			}
 
 			light.Add(new Binding<Vector3>(light.Position, enemy.Position));
 
@@ -93,6 +79,27 @@ namespace Lemma.Factories
 			AI ai = result.GetOrCreate<AI>("AI");
 
 			Agent agent = result.GetOrCreate<Agent>("Agent");
+
+			Map.CellState fillState = WorldFactory.StatesByName["Snake"];
+			Map.CellState criticalState = WorldFactory.StatesByName["InfectedCritical"];
+
+			VoxelChaseAI chase = null;
+			result.Add(new PostInitialization
+			{
+				delegate()
+				{
+					if (chase.Map.Value.Target == null)
+						chase.Position.Value = enemy.Position;
+				}
+			});
+			chase = result.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
+			chase.Filter = delegate(Map.CellState state)
+			{
+				if (state.ID == fillState.ID || state.ID == 0)
+					return VoxelChaseAI.Cell.Empty;
+				return state.Permanent ? VoxelChaseAI.Cell.Filled : VoxelChaseAI.Cell.Penetrable;
+			};
+			result.Add(new CommandBinding(chase.Delete, result.Delete));
 
 			PointLight positionLight = null;
 			Property<float> positionLightRadius = result.GetOrMakeProperty<float>("PositionLightRadius", true, 20.0f);
@@ -114,7 +121,7 @@ namespace Lemma.Factories
 						case "Alert":
 							return new Vector3(1.5f, 1.5f, 0.5f);
 						default:
-							return new Vector3(0.5f, 1.3f, 0.5f);
+							return new Vector3(1.0f, 1.0f, 1.0f);
 					}
 				}, ai.CurrentState));
 				result.Add("PositionLight", positionLight);
@@ -122,15 +129,14 @@ namespace Lemma.Factories
 				emitter.Editable = false;
 				emitter.Serialize = false;
 				emitter.ParticlesPerSecond.Value = 100;
-				emitter.ParticleType.Value = "VineSparks";
-				emitter.Add(new Binding<Vector3>(emitter.Position, positionLight.Position));
+				emitter.ParticleType.Value = "SnakeSparks";
+				emitter.Add(new Binding<Vector3>(emitter.Position, chase.Position));
 				emitter.Add(new Binding<bool, string>(emitter.Enabled, x => x != "Suspended", ai.CurrentState));
 
-				agent.Add(new Binding<Vector3>(agent.Position, positionLight.Position));
-
+				positionLight.Add(new Binding<Vector3>(positionLight.Position, chase.Position));
+				emitter.Add(new Binding<Vector3>(emitter.Position, chase.Position));
+				agent.Add(new Binding<Vector3>(agent.Position, chase.Position));
 			}
-			
-			Vector3 currentPosition = Vector3.Zero;
 
 			AI.Task checkMap = new AI.Task
 			{
@@ -138,8 +144,6 @@ namespace Lemma.Factories
 				{
 					if (enemy.Map.Value.Target == null || !enemy.Map.Value.Target.Active)
 						result.Delete.Execute();
-					else
-						currentPosition = positionLight.Position.Value = enemy.Map.Value.Target.Get<Map>().GetAbsolutePosition(coordinate);
 				},
 			};
 
@@ -148,7 +152,7 @@ namespace Lemma.Factories
 				Interval = 2.0f,
 				Action = delegate()
 				{
-					bool shouldBeActive = (currentPosition - main.Camera.Position).Length() < operationalRadius || (enemy.Map.Value.Target.Get<Map>().GetAbsolutePosition(enemy.BaseBoxes.First().GetCoords().First()) - main.Camera.Position).Length() < operationalRadius;
+					bool shouldBeActive = (chase.Position.Value - main.Camera.Position).Length() < operationalRadius || (enemy.Map.Value.Target.Get<Map>().GetAbsolutePosition(enemy.BaseBoxes.First().GetCoords().First()) - main.Camera.Position).Length() < operationalRadius;
 					if (shouldBeActive && ai.CurrentState == "Suspended")
 						ai.CurrentState.Value = "Idle";
 					else if (!shouldBeActive && ai.CurrentState != "Suspended")
@@ -164,67 +168,33 @@ namespace Lemma.Factories
 					if (target == null || !target.Active)
 					{
 						targetAgent.Value = null;
-						ai.CurrentState.Value = "Alert";
+						ai.CurrentState.Value = "Idle";
 					}
 				},
 			};
 
-			Action<Vector3> updatePath = delegate(Vector3 target)
+			chase.Add(new CommandBinding<Map, Map.Coordinate>(chase.Moved, delegate(Map m, Map.Coordinate c)
 			{
-				Map m = enemy.Map.Value.Target.Get<Map>();
-				path.Clear();
-				List<Map.Coordinate> calculatedPath = m.CustomAStar(coordinate, m.GetCoordinate(target));
-				if (calculatedPath != null)
+				if (chase.Active)
 				{
-					foreach (Map.Coordinate c in calculatedPath)
-						path.Add(c);
-				}
-			};
-
-			Action advancePath = delegate()
-			{
-				if (path.Count > 0)
-				{
-					coordinate.Value = path[0];
-					path.RemoveAt(0);
-					if (enemy.BaseBoxes.FirstOrDefault(x => x.Contains(coordinate)) == null)
+					if (m[c].ID != criticalState.ID)
 					{
-						Map m = enemy.Map.Value.Target.Get<Map>();
-						bool regenerate = m.Empty(coordinate);
-						regenerate |= m.Fill(coordinate, WorldFactory.StatesByName["Gravel"]);
+						bool regenerate = m.Empty(c);
+						regenerate |= m.Fill(c, fillState);
 						if (regenerate)
 							m.Regenerate();
 					}
-					Sound.PlayCue(main, "VineMove", currentPosition);
-				}
-			};
+					Sound.PlayCue(main, "SnakeMove", chase.Position);
 
-			Action randomPath = delegate()
-			{
-				Random random = new Random();
-				Vector3 goal = currentPosition;
-				MapBoundaryFactory mapBoundaries = Factory.Get<MapBoundaryFactory>();
-				while (true)
-				{
-					goal = currentPosition + new Vector3(((float)random.NextDouble() * 2.0f) - 1.0f, ((float)random.NextDouble() * 2.0f) - 1.0f, ((float)random.NextDouble() * 2.0f) - 1.0f) * 15.0f;
-					if (mapBoundaries.IsInsideMap(goal))
-						break;
+					if (path.Count > 0)
+					{
+						chase.Coord.Value = path[0];
+						path.RemoveAt(0);
+					}
 				}
-				updatePath(goal);
-			};
+			}));
 
-			IBinding cellEmptiedBinding = null;
-			result.Add(new NotifyBinding(delegate()
-			{
-				if (cellEmptiedBinding != null)
-					result.Remove(cellEmptiedBinding);
-				cellEmptiedBinding = new CommandBinding<IEnumerable<Map.Coordinate>, Map>(enemy.Map.Value.Target.Get<Map>().CellsEmptied, delegate(IEnumerable<Map.Coordinate> coords, Map transferringToNewMap)
-				{
-					if (coords.Contains(coordinate))
-						ai.CurrentState.Value = "Alert";
-				});
-				result.Add(cellEmptiedBinding);
-			}, enemy.Map));
+			Property<Map.Coordinate> crushCoordinate = result.GetOrMakeProperty<Map.Coordinate>("CrushCoordinate");
 
 			ai.Setup
 			(
@@ -236,10 +206,6 @@ namespace Lemma.Factories
 				new AI.State
 				{
 					Name = "Idle",
-					Enter = delegate(AI.State oldState)
-					{
-						randomPath();
-					},
 					Tasks = new[]
 					{
 						checkMap,
@@ -249,26 +215,24 @@ namespace Lemma.Factories
 							Interval = 1.0f,
 							Action = delegate()
 							{
-								Agent a = Agent.Query(currentPosition, 30.0f, 10.0f, agent);
+								Agent a = Agent.Query(chase.Position, 30.0f, 10.0f, agent);
 								if (a != null)
 									ai.CurrentState.Value = "Alert";
 							},
-						},
-						new AI.Task
-						{
-							Interval = 3.0f,
-							Action = randomPath,
-						},
-						new AI.Task
-						{
-							Interval = 0.15f,
-							Action = advancePath,
 						},
 					},
 				},
 				new AI.State
 				{
 					Name = "Alert",
+					Enter = delegate(AI.State previous)
+					{
+						chase.Enabled.Value = false;
+					},
+					Exit = delegate(AI.State next)
+					{
+						chase.Enabled.Value = true;
+					},
 					Tasks = new[]
 					{ 
 						checkMap,
@@ -278,11 +242,11 @@ namespace Lemma.Factories
 							Interval = 1.0f,
 							Action = delegate()
 							{
-								if (ai.TimeInCurrentState > 4.0f)
+								if (ai.TimeInCurrentState > 3.0f)
 									ai.CurrentState.Value = "Idle";
 								else
 								{
-									Agent a = Agent.Query(currentPosition, 30.0f, 10.0f, agent);
+									Agent a = Agent.Query(chase.Position, 50.0f, 20.0f, agent);
 									if (a != null)
 									{
 										targetAgent.Value = a.Entity;
@@ -296,9 +260,13 @@ namespace Lemma.Factories
 				new AI.State
 				{
 					Name = "Chase",
-					Enter = delegate(AI.State lastState)
+					Enter = delegate(AI.State previousState)
 					{
-						updatePath(targetAgent.Value.Target.Get<Agent>().Position);
+						chase.TargetActive.Value = true;
+					},
+					Exit = delegate(AI.State nextState)
+					{
+						chase.TargetActive.Value = false;
 					},
 					Tasks = new[]
 					{
@@ -307,25 +275,18 @@ namespace Lemma.Factories
 						checkTargetAgent,
 						new AI.Task
 						{
-							Interval = 0.75f,
-							Action = delegate()
-							{
-								updatePath(targetAgent.Value.Target.Get<Agent>().Position);
-							},
-						},
-						new AI.Task
-						{
 							Interval = 0.07f,
 							Action = delegate()
 							{
 								Vector3 targetPosition = targetAgent.Value.Target.Get<Agent>().Position;
-								float targetDistance = (targetPosition - currentPosition).Length();
-								if (targetDistance > 30.0f || ai.TimeInCurrentState > 20.0f) // He got away
+
+								float targetDistance = (targetPosition - chase.Position).Length();
+								if (targetDistance > 50.0f || ai.TimeInCurrentState > 40.0f) // He got away
 									ai.CurrentState.Value = "Alert";
 								else if (targetDistance < 5.0f) // We got 'im
 									ai.CurrentState.Value = "Crush";
 								else
-									advancePath();
+									chase.Target.Value = targetPosition;
 							},
 						},
 					},
@@ -374,6 +335,18 @@ namespace Lemma.Factories
 							for (int z = center.Z - radius; z <= center.Z + radius; z++)
 								path.Add(new Map.Coordinate { X = x, Y = center.Y + 3, Z = z });
 						}
+
+						chase.EnablePathfinding.Value = false;
+						chase.Speed.Value = 125.0f;
+
+						crushCoordinate.Value = chase.Coord;
+					},
+					Exit = delegate(AI.State nextState)
+					{
+						chase.EnablePathfinding.Value = true;
+						chase.Speed.Value = 8.0f;
+						chase.Coord.Value = chase.LastCoord.Value = crushCoordinate;
+						path.Clear();
 					},
 					Tasks = new[]
 					{
@@ -391,9 +364,8 @@ namespace Lemma.Factories
 									ai.CurrentState.Value = "Alert";
 								else
 								{
-									if ((a.Position - currentPosition).Length() > 5.0f) // They're getting away
+									if ((a.Position - chase.Position.Value).Length() > 5.0f) // They're getting away
 										ai.CurrentState.Value = "Chase";
-									advancePath();
 								}
 							}
 						}

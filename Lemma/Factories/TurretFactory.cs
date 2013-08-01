@@ -120,7 +120,7 @@ namespace Lemma.Factories
 						light.Delete.Execute();
 						return;
 					}
-					Entity player = main.Get("Player").FirstOrDefault();
+					Entity player = PlayerFactory.Instance;
 					if (player != null)
 					{
 						Vector3 playerPosition = player.Get<Transform>().Position.Value;

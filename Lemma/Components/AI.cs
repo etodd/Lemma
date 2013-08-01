@@ -28,6 +28,8 @@ namespace Lemma.Components
 			[XmlIgnore]
 			public Action<State> Exit;
 			public Task[] Tasks;
+			[XmlIgnore]
+			public bool _valid;
 		}
 
 		[XmlArray("States")]
@@ -78,6 +80,7 @@ namespace Lemma.Components
 			State existingState = null;
 			if (this.states.TryGetValue(state.Name, out existingState))
 			{
+				existingState._valid = true;
 				existingState.Enter = state.Enter;
 				existingState.Exit = state.Exit;
 				for (int i = 0; i < Math.Min(state.Tasks.Length, existingState.Tasks.Length); i++)
@@ -90,7 +93,10 @@ namespace Lemma.Components
 					existingState.Enter(null);
 			}
 			else
+			{
 				this.states[state.Name] = state;
+				state._valid = true;
+			}
 		}
 
 		private bool switching = false;
@@ -98,6 +104,15 @@ namespace Lemma.Components
 		{
 			this.EnabledInEditMode.Value = false;
 			this.EnabledWhenPaused.Value = false;
+			foreach (State s in this.states.Values.ToList())
+			{
+				if (!s._valid)
+					this.states.Remove(s.Name);
+			}
+
+			if (!this.states.ContainsKey(this.CurrentState))
+				this.CurrentState.Value = this.states.Keys.First();
+
 			this.CurrentState.Set = delegate(string value)
 			{
 				if (this.switching)
@@ -128,24 +143,27 @@ namespace Lemma.Components
 			this.TimeInCurrentState.Value += elapsedTime;
 			foreach (Task t in this.currentState.Tasks)
 			{
-				if (t.Interval == 0.0f)
+				if (t.Action != null)
 				{
-					// Call once per frame
-					t.Action();
-					if (this.currentState != originalState || !this.Active)
-						return;
-				}
-				else
-				{
-					float timeToSpend = t._leftOverIntervalTime + elapsedTime;
-					while (timeToSpend > t.Interval)
+					if (t.Interval == 0.0f)
 					{
+						// Call once per frame
 						t.Action();
 						if (this.currentState != originalState || !this.Active)
 							return;
-						timeToSpend -= t.Interval;
 					}
-					t._leftOverIntervalTime = timeToSpend;
+					else
+					{
+						float timeToSpend = t._leftOverIntervalTime + elapsedTime;
+						while (timeToSpend > t.Interval)
+						{
+							t.Action();
+							if (this.currentState != originalState || !this.Active)
+								return;
+							timeToSpend -= t.Interval;
+						}
+						t._leftOverIntervalTime = timeToSpend;
+					}
 				}
 			}
 		}

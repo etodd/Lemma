@@ -122,7 +122,7 @@
     <Compile Include="Factories\RainFactory.cs" />
     <Compile Include="Factories\SliderFactory.cs" />
     <Compile Include="Factories\TargetFactory.cs" />
-    <Compile Include="Factories\VineFactory.cs" />
+    <Compile Include="Factories\SnakeFactory.cs" />
     <Compile Include="Factories\ParticleEmitterFactory.cs" />
     <Compile Include="Factories\PlayerDataFactory.cs" />
     <Compile Include="Factories\EffectBlockFactory.cs" />
@@ -130,6 +130,7 @@
     <Compile Include="Factories\MapExitFactory.cs" />
     <Compile Include="Factories\PropFactory.cs" />
     <Compile Include="Factories\RandomAmbientSoundFactory.cs" />
+    <Compile Include="Factories\VoxelChaseAI.cs" />
     <Compile Include="Graphics\DynamicModel.cs" />
     <Compile Include="Graphics\LineDrawer.cs" />
     <Compile Include="Factories\ZoneFactory.cs" />

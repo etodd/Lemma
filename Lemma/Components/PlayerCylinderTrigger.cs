@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 using Lemma.Util;
 using System.Xml.Serialization;
+using Lemma.Factories;
 
 namespace Lemma.Components
 {
@@ -39,7 +40,8 @@ namespace Lemma.Components
 		public void Update(float elapsedTime)
 		{
 			bool playerFound = false;
-			foreach (Entity player in this.main.Get("Player"))
+			Entity player = PlayerFactory.Instance;
+			if (player != null)
 			{
 				Vector3 pos = Vector3.Transform(player.Get<Transform>().Position, Matrix.Invert(this.Transform));
 				if (pos.Y > this.Bottom && pos.Y < this.Top)
@@ -54,10 +56,10 @@ namespace Lemma.Components
 							this.IsTriggered.Value = true;
 							this.PlayerEntered.Execute(player);
 						}
-						break;
 					}
 				}
 			}
+
 			if (!playerFound && this.IsTriggered)
 			{
 				this.PlayerExited.Execute(this.Player.Value.Target);

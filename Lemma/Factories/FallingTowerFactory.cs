@@ -26,12 +26,6 @@ namespace Lemma.Factories
 
 			result.Add("Trigger", new PlayerCylinderTrigger());
 
-			PointLight light = new PointLight();
-			light.Color.Value = new Vector3(0.5f, 1.3f, 0.5f);
-			light.Attenuation.Value = 10.0f;
-			light.Shadowed.Value = false;
-			result.Add("Light", light);
-
 			result.Add("DynamicMaps", new ListProperty<Entity.Handle> { Editable = false });
 			result.Add("TimeUntilRebuild", new Property<float> { Editable = false });
 			result.Add("TimeUntilRebuildComplete", new Property<float> { Editable = false });
@@ -46,7 +40,13 @@ namespace Lemma.Factories
 			Transform transform = result.Get<Transform>();
 			EnemyBase enemy = result.GetOrCreate<EnemyBase>("Base");
 			PlayerCylinderTrigger trigger = result.Get<PlayerCylinderTrigger>();
-			PointLight light = result.Get<PointLight>();
+
+			PointLight light = result.GetOrCreate<PointLight>();
+			light.Color.Value = new Vector3(1.3f, 0.5f, 0.5f);
+			light.Attenuation.Value = 15.0f;
+			light.Shadowed.Value = false;
+			light.Serialize = false;
+
 			ListProperty<Entity.Handle> dynamicMaps = result.GetListProperty<Entity.Handle>("DynamicMaps");
 			Property<float> timeUntilRebuild = result.GetProperty<float>("TimeUntilRebuild");
 			Property<float> timeUntilRebuildComplete = result.GetProperty<float>("TimeUntilRebuildComplete");

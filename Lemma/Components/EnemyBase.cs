@@ -118,7 +118,7 @@ namespace Lemma.Components
 				if (this.Map.Value.Target != null)
 					setupMap();
 
-				this.infectedID = WorldFactory.StatesByName["Infected"].ID;
+				this.infectedID = WorldFactory.StatesByName["InfectedCritical"].ID;
 
 				this.main.AddComponent(new PostInitialization
 				{

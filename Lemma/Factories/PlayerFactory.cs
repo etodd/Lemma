@@ -104,9 +104,27 @@ namespace Lemma.Factories
 			public int Level;
 		}
 
+		private static Entity instance;
+		public static Entity Instance
+		{
+			get
+			{
+				if (PlayerFactory.instance != null && !PlayerFactory.instance.Active)
+					PlayerFactory.instance = null;
+				return PlayerFactory.instance;
+			}
+
+			set
+			{
+				PlayerFactory.instance = value;
+			}
+		}
+
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
 			result.CannotSuspend = true;
+
+			PlayerFactory.Instance = result;
 
 			this.SetMain(result, main);
 
@@ -1953,7 +1971,7 @@ namespace Lemma.Factories
 
 				// Don't allow vaulting
 				// Also don't try anything if we're crouched or in the middle of vaulting
-				if (vaultMover == null && !jump(false, false) && player.EnableSlowMotion && !player.Crouched)
+				if (vaultMover == null && !jump(false, false) && player.EnableSlowMotion && (!player.Crouched || !player.IsSupported))
 				{
 					float interval = getPredictionInterval();
 

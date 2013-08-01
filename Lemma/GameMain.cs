@@ -1494,7 +1494,7 @@ namespace Lemma
 				bool setupSpawn = this.player == null || !this.player.Active;
 
 				if (setupSpawn)
-					this.player = this.Get("Player").FirstOrDefault();
+					this.player = PlayerFactory.Instance;
 
 				bool createPlayer = this.player == null || !this.player.Active;
 

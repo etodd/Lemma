@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 using Lemma.Util;
 using System.Xml.Serialization;
+using Lemma.Factories;
 
 namespace Lemma.Components
 {
@@ -44,20 +45,18 @@ namespace Lemma.Components
 		public void Update(float elapsedTime)
 		{
 			bool playerFound = false;
-			foreach (Entity player in this.main.Get("Player"))
+			Entity player = PlayerFactory.Instance;
+			if (player != null && (player.Get<Transform>().Position.Value - this.Position.Value).Length() <= this.Radius)
 			{
-				if ((player.Get<Transform>().Position.Value - this.Position.Value).Length() <= this.Radius)
+				playerFound = true;
+				if (!this.IsTriggered)
 				{
-					playerFound = true;
-					if (!this.IsTriggered)
-					{
-						this.Player.Value = player;
-						this.IsTriggered.Value = true;
-						this.PlayerEntered.Execute(player);
-					}
-					break;
+					this.Player.Value = player;
+					this.IsTriggered.Value = true;
+					this.PlayerEntered.Execute(player);
 				}
 			}
+
 			if (!playerFound && this.IsTriggered)
 			{
 				this.PlayerExited.Execute(this.Player.Value.Target);
