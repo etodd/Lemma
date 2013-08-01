@@ -254,6 +254,7 @@ namespace Lemma.Factories
 			{
 				Session.Recorder.Event(main, "DieFromHealth");
 				Sound.PlayCue(main, "Death");
+				((GameMain)main).RespawnRewindLength = 20;
 			}));
 
 			result.Add(new CommandBinding(player.HealthDepleted, result.Delete));
@@ -427,6 +428,24 @@ namespace Lemma.Factories
 
 			Command<Map, Map.Coordinate?> walkedOn = new Command<Map,Map.Coordinate?>();
 			result.Add("WalkedOn", walkedOn);
+
+			int infectedID = WorldFactory.StatesByName["Infected"].ID,
+				infectedCriticalID = WorldFactory.StatesByName["InfectedCritical"].ID,
+				temporaryID = WorldFactory.StatesByName["Temporary"].ID;
+			
+			result.Add(new CommandBinding<Map, Map.Coordinate?>(walkedOn, delegate(Map map, Map.Coordinate? coord)
+			{
+				if (coord.HasValue)
+				{
+					int id = map[coord.Value].ID;
+					if (id == infectedID || id == infectedCriticalID)
+					{
+						map.Empty(coord.Value);
+						map.Fill(coord.Value, WorldFactory.States[temporaryID]);
+						map.Regenerate();
+					}
+				}
+			}));
 
 			int walkedOnCount = 0;
 
@@ -824,6 +843,7 @@ namespace Lemma.Factories
 			Action<BlockPossibility> instantiateBlockPossibility = delegate(BlockPossibility block)
 			{
 				Map.CellState state = WorldFactory.StatesByName["Temporary"];
+				block.Map.Empty(block.StartCoord.CoordinatesBetween(block.EndCoord));
 				block.Map.Fill(block.StartCoord, block.EndCoord, state);
 				block.Map.Regenerate();
 				block.Model.Delete.Execute();
@@ -906,9 +926,12 @@ namespace Lemma.Factories
 						player.LinearVelocity.Value = new Vector3(0, verticalVelocity, 0);
 					}
 					Vector3 wallVector = wallRunMap.GetAbsoluteVector(wallDirection.GetVector());
+
 					if (state == Player.WallRun.Reverse)
 						wallVector = -wallVector;
-					rotation.Value = (float)Math.Atan2(wallVector.X, wallVector.Z);
+					else
+						rotation.Value = (float)Math.Atan2(wallVector.X, wallVector.Z);
+
 					rotationLocked.Value = true;
 				}
 				else
@@ -980,6 +1003,7 @@ namespace Lemma.Factories
 							break;
 						case Player.WallRun.Reverse:
 							wallVector = -forwardVector;
+							wallInstantiationTimer = 0.25f;
 							break;
 						default:
 							wallVector = Vector3.Zero;
@@ -1210,14 +1234,18 @@ namespace Lemma.Factories
 							for (Map.Coordinate y = x.Move(up, -radius); y.GetComponent(up) < wallCoord.GetComponent(up) + upwardRadius; y = y.Move(up))
 							{
 								int dy = y.GetComponent(up) - wallCoord.GetComponent(up);
-								if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && wallRunMap[y].ID == 0)
+								if ((float)Math.Sqrt(dx * dx + dy * dy) < radius)
 								{
-									buildCoords.Add(new BlockBuildOrder
+									int id = wallRunMap[y].ID;
+									if (id == 0 || id == infectedID || id == infectedCriticalID)
 									{
-										Map = wallRunMap,
-										Coordinate = y,
-										State = fillState,
-									});
+										buildCoords.Add(new BlockBuildOrder
+										{
+											Map = wallRunMap,
+											Coordinate = y,
+											State = fillState,
+										});
+									}
 								}
 							}
 						}
@@ -1308,9 +1336,14 @@ namespace Lemma.Factories
 				if (verticalVelocity < v)
 				{
 					player.Health.Value += (verticalVelocity - v) * 0.2f;
-					player.LinearVelocity.Value = new Vector3(0, player.LinearVelocity.Value.Y, 0);
-					if (!model.IsPlaying("Roll"))
-						model.StartClip("Land", 1, false, 0.1f);
+					if (player.Health.Value == 0.0f)
+						((GameMain)main).RespawnRewindLength = GameMain.DefaultRespawnRewindLength;
+					else
+					{
+						player.LinearVelocity.Value = new Vector3(0, player.LinearVelocity.Value.Y, 0);
+						if (!model.IsPlaying("Roll"))
+							model.StartClip("Land", 1, false, 0.1f);
+					}
 				}
 			};
 
@@ -1583,6 +1616,8 @@ namespace Lemma.Factories
 						wallType = WorldFactory.StatesByName["Temporary"];
 					footsteps.Cue.Value = wallType.FootstepCue;
 					footsteps.Play.Execute();
+
+					walkedOn.Execute(wallJumpMap, wallCoordinate);
 
 					wallJumping = true;
 					// Set up wall jump velocity
@@ -1880,7 +1915,7 @@ namespace Lemma.Factories
 				if (vaultMover != null)
 					vaultMover.Delete.Execute(); // If we're already vaulting, start a new vault
 
-				bool walkedOffEdge = false;
+				float walkOffEdgeTimer = 0.0f;
 				Vector3 originalPosition = transform.Position;
 
 				vaultMover = new Updater
@@ -1893,17 +1928,29 @@ namespace Lemma.Factories
 
 						if (vaultTime > maxVaultTime) // Max vault time ensures we never get stuck
 							delete = true;
-						else if (walkedOffEdge && player.IsSupported)
+						else if (walkOffEdgeTimer > 0.2f && player.IsSupported)
 							delete = true; // We went over the edge and hit the ground. Stop.
 						else if (!player.IsSupported) // We hit the edge, go down it
 						{
-							if (!walkedOffEdge)
-							{
-								walkedOffEdge = true;
+							walkOffEdgeTimer += dt;
+
+							if (walkOffEdgeTimer > 0.1f)
 								player.LinearVelocity.Value = new Vector3(0, -vaultVerticalSpeed, 0);
-							}
-							if (!input.GetInput(settings.Parkour) || (transform.Position.Value.Y < originalPosition.Y - 1.0f && activateWallRun(Player.WallRun.Reverse)))
+
+							if (!input.GetInput(settings.Parkour))
+							{
 								delete = true;
+								result.Add(new Animation
+								(
+									new Animation.Delay(0.25f),
+									new Animation.Set<bool>(rotationLocked, false)
+								));
+							}
+							else
+							{
+								if (transform.Position.Value.Y < originalPosition.Y - 1.0f && activateWallRun(Player.WallRun.Reverse))
+									delete = true;
+							}
 						}
 						else
 						{
@@ -1915,14 +1962,9 @@ namespace Lemma.Factories
 						if (delete)
 						{
 							player.AllowUncrouch.Value = true;
+							player.EnableWalking.Value = true;
 							vaultMover.Delete.Execute(); // Make sure we get rid of this vault mover
 							vaultMover = null;
-							result.Add(new Animation
-							(
-								new Animation.Delay(0.25f),
-								new Animation.Set<bool>(rotationLocked, false),
-								new Animation.Set<bool>(player.EnableWalking, true)
-							));
 						}
 					}
 				};
@@ -2163,7 +2205,7 @@ namespace Lemma.Factories
 
 					Map.GlobalRaycastResult floorRaycast = new Map.GlobalRaycastResult();
 
-					bool shouldBuildFloor = !player.IsSupported && player.EnableEnhancedWallRun && player.LinearVelocity.Value.Y <= 0.0f && (floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height)).Map != null;
+					bool shouldBuildFloor = !player.IsSupported && player.EnableEnhancedWallRun && (floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height)).Map != null;
 
 					Direction forwardDir = Direction.None;
 					Direction rightDir = Direction.None;
@@ -2304,11 +2346,10 @@ namespace Lemma.Factories
 
 						model.StartClip("Roll", 5, false);
 
-						// If the player is not yet supported, that means they're just about to land.
-						// So give them a little speed boost for having such good timing.
-
 						bool shouldBuildFloor = !player.IsSupported && player.EnableEnhancedWallRun;
 
+						// If the player is not yet supported, that means they're just about to land.
+						// So give them a little speed boost for having such good timing.
 						Vector3 velocity = forward * player.MaxSpeed * (player.IsSupported ? 0.75f : 1.25f);
 						player.LinearVelocity.Value = new Vector3(velocity.X, player.LinearVelocity.Value.Y, velocity.Z);
 

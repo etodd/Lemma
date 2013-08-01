@@ -101,8 +101,8 @@ namespace Lemma
 		private const float startGamma = 10.0f;
 		private static Vector3 startTint = new Vector3(2.0f);
 
-		private const int defaultRespawnRewindLength = 3;
-		public int RespawnRewindLength = defaultRespawnRewindLength;
+		public const int DefaultRespawnRewindLength = 3;
+		public int RespawnRewindLength = DefaultRespawnRewindLength;
 
 		private int displayModeIndex;
 
@@ -1567,7 +1567,7 @@ namespace Lemma
 									break;
 							}
 
-							this.RespawnRewindLength = defaultRespawnRewindLength;
+							this.RespawnRewindLength = DefaultRespawnRewindLength;
 
 							if (spawnFound)
 							{

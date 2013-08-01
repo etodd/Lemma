@@ -125,7 +125,7 @@ namespace Lemma.Factories
 								Vector3 absolutePosition = m.GetAbsolutePosition(c);
 								foreach (Map m2 in Map.ActivePhysicsMaps)
 								{
-									if (m2[absolutePosition].ID != 0)
+									if (m2 != m && m2[absolutePosition].Permanent)
 									{
 										foundConflict = true;
 										break;
@@ -134,11 +134,19 @@ namespace Lemma.Factories
 
 								if (!foundConflict)
 								{
-									m.Fill(coord, WorldFactory.States[stateId]);
-									m.Regenerate();
-									Sound.PlayCue(main, "BuildBlock", transform.Position, 1.0f, 0.06f);
-									result.Delete.Execute();
-									return;
+									Map.CellState state = m[coord];
+									if (state.Permanent)
+										foundConflict = true;
+									else
+									{
+										if (state.ID != 0)
+											m.Empty(coord);
+										m.Fill(coord, WorldFactory.States[stateId]);
+										m.Regenerate();
+										Sound.PlayCue(main, "BuildBlock", transform.Position, 1.0f, 0.06f);
+										result.Delete.Execute();
+										return;
+									}
 								}
 							}
 

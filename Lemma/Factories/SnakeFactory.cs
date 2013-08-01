@@ -97,7 +97,9 @@ namespace Lemma.Factories
 			{
 				if (state.ID == fillState.ID || state.ID == 0)
 					return VoxelChaseAI.Cell.Empty;
-				return state.Permanent ? VoxelChaseAI.Cell.Filled : VoxelChaseAI.Cell.Penetrable;
+				if (state.Permanent || state.ID == criticalState.ID)
+					return VoxelChaseAI.Cell.Filled;
+				return VoxelChaseAI.Cell.Penetrable;
 			};
 			result.Add(new CommandBinding(chase.Delete, result.Delete));
 
