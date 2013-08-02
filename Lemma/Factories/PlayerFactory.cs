@@ -262,7 +262,7 @@ namespace Lemma.Factories
 			result.Add(new CommandBinding(result.Delete, delegate()
 			{
 				Session.Recorder.Event(main, "Die");
-				if (Agent.Query(transform.Position, 0.0f, 10.0f, agent) != null)
+				if (Agent.Query(transform.Position, 0.0f, 10.0f, x => x != agent) != null)
 					((GameMain)main).RespawnRewindLength = 20;
 			}));
 

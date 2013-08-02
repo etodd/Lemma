@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Lemma.Components;
 
 namespace Lemma.Util
 {
@@ -164,6 +165,26 @@ namespace Lemma.Util
 					return new Vector3(0.0f, -1.0f, 0.0f);
 			}
 			return Vector3.Zero;
+		}
+
+		public static Map.Coordinate GetCoordinate(this Direction dir)
+		{
+			switch (dir)
+			{
+				case Direction.NegativeX:
+					return new Map.Coordinate { X = -1, Y = 0, Z = 0 };
+				case Direction.PositiveX:
+					return new Map.Coordinate { X = 1, Y = 0, Z = 0 };
+				case Direction.NegativeZ:
+					return new Map.Coordinate { X = 0, Y = 0, Z = -1 };
+				case Direction.PositiveZ:
+					return new Map.Coordinate { X = 0, Y = 0, Z = 1 };
+				case Direction.PositiveY:
+					return new Map.Coordinate { X = 0, Y = 1, Z = 0 };
+				case Direction.NegativeY:
+					return new Map.Coordinate { X = 0, Y = -1, Z = 0 };
+			}
+			return new Map.Coordinate { X = 0, Y = 0, Z = 0 };
 		}
 
 		public static Direction RotateCounterClockwise(this Direction dir)

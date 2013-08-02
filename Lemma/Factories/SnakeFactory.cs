@@ -219,7 +219,7 @@ namespace Lemma.Factories
 							Interval = 1.0f,
 							Action = delegate()
 							{
-								Agent a = Agent.Query(chase.Position, 30.0f, 10.0f, agent);
+								Agent a = Agent.Query(chase.Position, 30.0f, 10.0f, x => x.Entity.Type == "Player");
 								if (a != null)
 									ai.CurrentState.Value = "Alert";
 							},
@@ -250,7 +250,7 @@ namespace Lemma.Factories
 									ai.CurrentState.Value = "Idle";
 								else
 								{
-									Agent a = Agent.Query(chase.Position, 50.0f, 20.0f, agent);
+									Agent a = Agent.Query(chase.Position, 30.0f, 20.0f, x => x.Entity.Type == "Player");
 									if (a != null)
 									{
 										targetAgent.Value = a.Entity;

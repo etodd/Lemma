@@ -791,6 +791,11 @@ namespace Lemma.Components
 				}
 			}
 
+			public Vector3 GetCenter()
+			{
+				return new Vector3(this.X + (this.Width * 0.5f), this.Y + (this.Height * 0.5f), this.Z + (this.Depth * 0.5f));
+			}
+
 			public int GetSizeComponent(Direction dir)
 			{
 				switch (dir)

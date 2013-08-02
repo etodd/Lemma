@@ -57,6 +57,101 @@ namespace Lemma.Factories
 			this.EnabledWhenPaused.Value = false;
 		}
 
+		private class AStarEntry
+		{
+			public AStarEntry Parent;
+			public Map.Box Box;
+			public int G;
+			public float F;
+			public int BoxSize;
+			public int PathIndex;
+		}
+
+		private static Map.Box reconstructPath(AStarEntry entry, out int length)
+		{
+			length = 0;
+			while (entry.PathIndex > 1)
+			{
+				entry = entry.Parent;
+				length++;
+			}
+			return entry.Box;
+		}
+
+		public static Map.Box AStar(Map m, Map.Box start, Vector3 target, out int pathLength)
+		{
+			Dictionary<Map.Box, int> closed = new Dictionary<Map.Box, int>();
+
+			PriorityQueue<AStarEntry> queue = new PriorityQueue<AStarEntry>(new LambdaComparer<AStarEntry>((x, y) => x.F.CompareTo(y.F)));
+
+			Dictionary<Map.Box, AStarEntry> queueLookup = new Dictionary<Map.Box, AStarEntry>();
+
+			AStarEntry startEntry = new AStarEntry
+			{
+				Parent = null,
+				Box = start,
+				G = 0,
+				F = (target - start.GetCenter()).Length(),
+				BoxSize = Math.Max(start.Width, Math.Max(start.Height, start.Depth)),
+				PathIndex = 0,
+			};
+			queue.Push(startEntry);
+			queueLookup[start] = startEntry;
+
+			const float thresholdFCoefficient = 0.6f;
+			const int iterationLimit = 10;
+
+			int iteration = 0;
+			while (queue.Count > 0)
+			{
+				AStarEntry entry = queue.Pop();
+
+				if (iteration >= iterationLimit || entry.F < entry.BoxSize * thresholdFCoefficient)
+					return VoxelChaseAI.reconstructPath(entry, out pathLength);
+
+				iteration++;
+
+				queueLookup.Remove(entry.Box);
+
+				closed[entry.Box] = entry.G;
+				foreach (Map.Box adjacent in entry.Box.Adjacent.ToList())
+				{
+					int boxSize = Math.Max(adjacent.Width, Math.Max(adjacent.Height, adjacent.Depth));
+
+					int tentativeGScore = entry.G + boxSize;
+
+					int previousGScore;
+					bool hasPreviousGScore = closed.TryGetValue(adjacent, out previousGScore);
+
+					if (hasPreviousGScore && tentativeGScore > previousGScore)
+						continue;
+
+					AStarEntry alreadyInQueue;
+					bool throwaway = queueLookup.TryGetValue(adjacent, out alreadyInQueue);
+
+					if (alreadyInQueue == null || tentativeGScore < previousGScore)
+					{
+						AStarEntry newEntry = alreadyInQueue != null ? alreadyInQueue : new AStarEntry();
+
+						newEntry.Parent = entry;
+						newEntry.G = tentativeGScore;
+						newEntry.F = tentativeGScore + (target - adjacent.GetCenter()).Length();
+						newEntry.PathIndex = entry.PathIndex + 1;
+
+						if (alreadyInQueue == null)
+						{
+							newEntry.Box = adjacent;
+							newEntry.BoxSize = boxSize;
+							queue.Push(newEntry);
+							queueLookup[adjacent] = newEntry;
+						}
+					}
+				}
+			}
+			pathLength = 0;
+			return null;
+		}
+
 		public void Update(float dt)
 		{
 			Entity mapEntity = this.Map.Value.Target;
@@ -238,11 +333,13 @@ namespace Lemma.Factories
 						}
 
 						Vector3 toTarget = this.Target - this.Position.Value;
-						int randomness = 2;
-						if (!this.TargetActive || toTarget.Length() > 15)
-							randomness = 6;
+						// The higher the number, the less likely we are to change direction
+						int oddsOfChangingDirection = 2;
+						float distanceToTarget = toTarget.Length();
+						if (!this.TargetActive)
+							oddsOfChangingDirection = 6;
 
-						if (!directions.Contains(Direction) || new Random().Next(randomness) == 0)
+						if (!directions.Contains(this.Direction) || new Random().Next(oddsOfChangingDirection) == 0)
 						{
 							bool randomDirection = false;
 							Direction randomDirectionOtherThan = Lemma.Util.Direction.None;
@@ -251,6 +348,31 @@ namespace Lemma.Factories
 								randomDirection = true;
 							else
 							{
+								if (distanceToTarget > 5)
+								{
+									Direction supportedDirection = Lemma.Util.Direction.None;
+									foreach (Direction dir in DirectionExtensions.Directions)
+									{
+										Map.Coordinate cellLookup = dir.GetCoordinate();
+										if (supported(cells[cellLookup.X + 1, cellLookup.Y + 1, cellLookup.Z + 1]))
+										{
+											supportedDirection = dir;
+											break;
+										}
+									}
+
+									if (supportedDirection != Lemma.Util.Direction.None)
+									{
+										Map.Box box = m.GetBox(c.Move(supportedDirection));
+
+										int pathLength;
+										box = VoxelChaseAI.AStar(m, box, this.Target, out pathLength);
+
+										if (pathLength > 2)
+											toTarget = m.GetAbsolutePosition(box.GetCenter()) - this.Position;
+									}
+								}
+								
 								Direction closestDir = Lemma.Util.Direction.None;
 								float closestDot = -2.0f;
 								foreach (Direction dir in directions)
