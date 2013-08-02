@@ -32,9 +32,15 @@ namespace Lemma.Factories
 			light.Attenuation.Value = defaultLightAttenuation;
 
 			Transform transform = result.GetOrCreate<Transform>("Transform");
-			light.Add(new TwoWayBinding<Vector3>(light.Position, transform.Position));
+			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
 			VoxelChaseAI chase = result.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
+
+			chase.Filter = delegate(Map.CellState state)
+			{
+				return state.ID == 0 ? VoxelChaseAI.Cell.Empty : VoxelChaseAI.Cell.Filled;
+			};
+
 			chase.Add(new TwoWayBinding<Vector3>(transform.Position, chase.Position));
 			result.Add(new CommandBinding(chase.Delete, result.Delete));
 
@@ -96,7 +102,7 @@ namespace Lemma.Factories
 			Agent agent = result.GetOrCreate<Agent>();
 			agent.Add(new Binding<Vector3>(agent.Position, chase.Position));
 
-			Property<int> operationalRadius = result.GetOrMakeProperty<int>("OperationalRadius", false, 100);
+			Property<int> operationalRadius = result.GetOrMakeProperty<int>("OperationalRadius", true, 100);
 
 			AI.Task checkOperationalRadius = new AI.Task
 			{

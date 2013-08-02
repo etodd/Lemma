@@ -161,13 +161,6 @@ namespace Lemma.Factories
 			damageOverlay.AnchorPoint.Value = new Vector2(0.5f);
 			ui.Root.Children.Add(damageOverlay);
 
-			Sprite crosshair = new Sprite();
-			crosshair.Image.Value = "Images\\crosshair";
-			crosshair.AnchorPoint.Value = new Vector2(0.5f);
-			crosshair.Add(new Binding<Vector2, Point>(crosshair.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
-			crosshair.Visible.Value = false;
-			ui.Root.Children.Add(crosshair);
-
 			GameMain.Config settings = ((GameMain)main).Settings;
 			input.Add(new Binding<float>(input.MouseSensitivity, settings.MouseSensitivity));
 			input.Add(new Binding<bool>(input.InvertMouseX, settings.InvertMouseX));
@@ -244,7 +237,6 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRunHorizontal"), player.EnableWallRunHorizontal));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableLevitation"), player.EnableLevitation));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableMoves"), player.EnableMoves));
 				}
@@ -537,12 +529,6 @@ namespace Lemma.Factories
 				}
 			});
 
-			Property<bool> levitationMode = result.GetOrMakeProperty<bool>("LevitationMode");
-
-			Property<Vector3> handPosition = new Property<Vector3>();
-
-			Property<Matrix> handTransform = model.GetWorldBoneTransform("Palm-2_R");
-
 			Property<bool> enableCameraControl = result.GetOrMakeProperty<bool>("EnableCameraControl", false, true);
 			enableCameraControl.Serialize = false;
 
@@ -563,8 +549,6 @@ namespace Lemma.Factories
 				else
 					angle = Math.Min(0.5f, angle * 1.1f);
 
-				crosshair.Visible.Value = levitationMode && !player.IsLevitating;
-
 				Matrix r = Matrix.CreateRotationX(angle);
 
 				Matrix parent = clavicleLeft;
@@ -576,8 +560,6 @@ namespace Lemma.Factories
 				relativeUpperRightArm.Value *= parent * r * Matrix.Invert(parent);
 
 				model.UpdateWorldTransforms();
-
-				handPosition.Value = handTransform.Value.Translation;
 
 				float shakeAngle = 0.0f;
 				if (cameraShakeTime > 0.0f)
@@ -871,16 +853,12 @@ namespace Lemma.Factories
 
 			// Wall run
 
-			Action stopLevitate = null;
-
 			const float minWallRunSpeed = 4.0f;
 
 			Action<Map, Direction, Player.WallRun, Vector3, bool> setUpWallRun = delegate(Map map, Direction dir, Player.WallRun state, Vector3 forwardVector, bool addInitialVelocity)
 			{
 				stopKick();
 				player.AllowUncrouch.Value = true;
-				stopLevitate();
-				levitationMode.Value = false;
 
 				wallRunMap = lastWallRunMap = map;
 				wallDirection = lastWallDirection = dir;
@@ -1286,41 +1264,12 @@ namespace Lemma.Factories
 				}
 			});
 
-			// Aiming / levitation
-
-			Action tryLevitate = null, delevitateMap = null;
-
-			input.Bind(settings.Aim, PCInput.InputState.Down, delegate()
-			{
-				// TODO: Aim code?
-			});
-
-			Map.GlobalRaycastResult aimRaycastResult = new Map.GlobalRaycastResult();
-			update.Add(delegate(float dt)
-			{
-				if (levitationMode)
-					aimRaycastResult = Map.GlobalRaycast(main.Camera.Position.Value, main.Camera.Forward, main.Camera.FarPlaneDistance);
-			});
-
-			input.Bind(settings.ToggleSpecialAbility, PCInput.InputState.Down, delegate()
-			{
-				if (!player.EnableMoves || !player.EnableLevitation || player.Crouched || player.WallRunState != Player.WallRun.None)
-					return;
-
-				levitationMode.Value = !levitationMode;
-			});
-
-			float levitateButtonPressStart = -1.0f;
-			DynamicMap levitatingMap = null;
-
 			player.Add(new NotifyBinding(delegate()
 			{
 				if (!player.EnableMoves)
 				{
 					deactivateWallRun();
-					stopLevitate();
 					stopKick();
-					levitationMode.Value = false;
 					player.SlowMotion.Value = false;
 				}
 			}, player.EnableMoves));
@@ -2142,7 +2091,7 @@ namespace Lemma.Factories
 					rotationLocked.Value = false;
 				}
 			};
-			input.Bind(settings.Fire, PCInput.InputState.Down, delegate()
+			input.Bind(settings.Kick, PCInput.InputState.Down, delegate()
 			{
 				if (!player.EnableMoves)
 					return;
@@ -2150,13 +2099,8 @@ namespace Lemma.Factories
 				Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
 				Vector3 forward = -rotationMatrix.Forward;
 				Vector3 right = rotationMatrix.Right;
-				if (levitationMode)
-				{
-					// Levitate
-					if (!player.Crouched)
-						tryLevitate();
-				}
-				else if (!input.GetInput(settings.Aim) && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && Vector3.Dot(player.LinearVelocity, forward) > 1.0f && kickUpdate == null)
+
+				if (!model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && Vector3.Dot(player.LinearVelocity, forward) > 1.0f && kickUpdate == null)
 				{
 					// Kick
 					canKick = false;
@@ -2237,29 +2181,13 @@ namespace Lemma.Factories
 				}
 			});
 
-			input.Bind(settings.Fire, PCInput.InputState.Up, delegate()
-			{
-				if (player.IsLevitating)
-				{
-					if (main.TotalTime - levitateButtonPressStart < 0.25f)
-					{
-						// De-levitate the map
-						levitateButtonPressStart = -1.0f;
-						delevitateMap();
-					}
-
-					// Whether the map is still floating or not, we are not controlling it anymore.
-					stopLevitate();
-				}
-			});
-
 			bool rolling = false;
 			input.Bind(settings.Roll, PCInput.InputState.Down, delegate()
 			{
 				if (!player.EnableMoves)
 					return;
 
-				if (!input.GetInput(settings.Aim) && !model.IsPlaying("PlayerReload") && kickUpdate == null && !rolling && player.EnableRoll && !player.IsSwimming)
+				if (!model.IsPlaying("PlayerReload") && kickUpdate == null && !rolling && player.EnableRoll && !player.IsSwimming)
 				{
 					// Try to roll
 					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
@@ -2312,9 +2240,6 @@ namespace Lemma.Factories
 					{
 						// We're rolling.
 						rolling = true;
-
-						stopLevitate();
-						levitationMode.Value = false;
 
 						Session.Recorder.Event(main, "Roll");
 
@@ -2404,320 +2329,6 @@ namespace Lemma.Factories
 				if (!rolling)
 					player.AllowUncrouch.Value = true;
 			});
-
-			// Levitate
-			const float levitationMaxDistance = 25.0f;
-			const int levitateRipRadius = 4;
-			Vector3 levitationRelativeGrabPoint = Vector3.Zero;
-			float levitatingDistance = 0.0f;
-			PointLight levitatingLight = null;
-
-			Action<DynamicMap, Vector3> toggleLevitate = delegate(DynamicMap map, Vector3 grabPoint)
-			{
-				levitatingMap = map;
-				levitatingDistance = (grabPoint - main.Camera.Position).Length();
-				levitationRelativeGrabPoint = map.GetRelativePosition(grabPoint);
-				player.IsLevitating.Value = true;
-
-				model.StartClip("Levitating", 6, true);
-
-				levitatingLight = new PointLight();
-				levitatingLight.Serialize = false;
-				levitatingLight.Position.Value = grabPoint;
-				levitatingLight.Color.Value = new Vector3(0.0f, 1.0f, 2.0f);
-				levitatingLight.Attenuation.Value = 20.0f;
-				levitatingLight.Shadowed.Value = false;
-				result.Add(levitatingLight);
-
-				if (map.IsAffectedByGravity)
-				{
-					// This map is just now starting to levitate
-					map.IsAffectedByGravity.Value = false;
-					Sound.PlayCue(main, "Levitate", grabPoint);
-					map.PhysicsEntity.LinearVelocity += new Vector3(0.0f, 1.0f, 0.0f);
-				}
-				else
-					levitateButtonPressStart = main.TotalTime;
-			};
-
-			ParticleEmitter levitationParticleEmitter = result.GetOrCreate<ParticleEmitter>("Levitation");
-			levitationParticleEmitter.ParticlesPerSecond.Value = 100;
-			levitationParticleEmitter.ParticleType.Value = "DistortionSmall";
-			levitationParticleEmitter.Add(new Binding<Vector3>(levitationParticleEmitter.Position, handPosition));
-			levitationParticleEmitter.Add(new Binding<bool>(levitationParticleEmitter.Enabled, levitationMode));
-
-			Action updateLevitateAnimation = delegate()
-			{
-				if (levitationMode)
-					model.StartClip("LevitateMode", 5, true);
-				else
-					model.Stop("LevitateMode");
-			};
-			updateLevitateAnimation();
-			model.Add(new NotifyBinding(updateLevitateAnimation, levitationMode));
-
-			result.Add(new NotifyBinding(delegate()
-			{
-				if (!player.EnableLevitation)
-				{
-					levitationMode.Value = false;
-					stopLevitate();
-				}
-			}, player.EnableLevitation));
-
-			tryLevitate = delegate()
-			{
-				if (aimRaycastResult.Map != null && (aimRaycastResult.Position - transform.Position).Length() < levitationMaxDistance)
-				{
-					Vector3 grabPoint = aimRaycastResult.Position;
-					if (aimRaycastResult.Map is DynamicMap)
-						toggleLevitate((DynamicMap)aimRaycastResult.Map, grabPoint); // We're already dealing with a DynamicMap
-					else if (!aimRaycastResult.Map[aimRaycastResult.Coordinate.Value].Permanent)
-					{
-						// It's a static map.
-						// Break off a chunk of it into a new DynamicMap.
-						Map.Coordinate center = aimRaycastResult.Coordinate.Value;
-
-						List<Map.Coordinate> edges = new List<Map.Coordinate>();
-
-						Map.Coordinate ripStart = center.Move(-levitateRipRadius, -levitateRipRadius, -levitateRipRadius);
-						Map.Coordinate ripEnd = center.Move(levitateRipRadius, levitateRipRadius, levitateRipRadius);
-
-						Dictionary<Map.Box, bool> permanentBoxes = new Dictionary<Map.Box, bool>();
-						foreach (Map.Coordinate c in ripStart.CoordinatesBetween(ripEnd))
-						{
-							Map.Box box = aimRaycastResult.Map.GetBox(c);
-							if (box != null && box.Type.Permanent)
-								permanentBoxes[box] = true;
-						}
-
-						foreach (Map.Box b in permanentBoxes.Keys)
-						{
-							// Top and bottom
-							for (int x = b.X - 1; x <= b.X + b.Width; x++)
-							{
-								for (int z = b.Z - 1; z <= b.Z + b.Depth; z++)
-								{
-									Map.Coordinate coord = new Map.Coordinate { X = x, Y = b.Y + b.Height, Z = z };
-									if (coord.Between(ripStart, ripEnd))
-										edges.Add(coord);
-
-									coord = new Map.Coordinate { X = x, Y = b.Y - 1, Z = z };
-									if (coord.Between(ripStart, ripEnd))
-										edges.Add(coord);
-								}
-							}
-
-							// Outer shell
-							for (int y = b.Y; y < b.Y + b.Height; y++)
-							{
-								// Left and right
-								for (int z = b.Z - 1; z <= b.Z + b.Depth; z++)
-								{
-									Map.Coordinate coord = new Map.Coordinate { X = b.X - 1, Y = y, Z = z };
-									if (coord.Between(ripStart, ripEnd))
-										edges.Add(coord);
-
-									coord = new Map.Coordinate { X = b.X + b.Width, Y = y, Z = z };
-									if (coord.Between(ripStart, ripEnd))
-										edges.Add(coord);
-								}
-
-								// Backward and forward
-								for (int x = b.X; x < b.X + b.Width; x++)
-								{
-									Map.Coordinate coord = new Map.Coordinate { X = x, Y = y, Z = b.Z - 1 };
-									if (coord.Between(ripStart, ripEnd))
-										edges.Add(coord);
-
-									coord = new Map.Coordinate { X = x, Y = y, Z = b.Z + b.Depth };
-									if (coord.Between(ripStart, ripEnd))
-										edges.Add(coord);
-								}
-							}
-						}
-
-						if (edges.Contains(center))
-							return;
-
-						// Top and bottom
-						for (int x = ripStart.X; x <= ripEnd.X; x++)
-						{
-							for (int z = ripStart.Z; z <= ripEnd.Z; z++)
-							{
-								edges.Add(new Map.Coordinate { X = x, Y = ripStart.Y, Z = z });
-								edges.Add(new Map.Coordinate { X = x, Y = ripEnd.Y, Z = z });
-							}
-						}
-
-						// Sides
-						for (int y = ripStart.Y + 1; y <= ripEnd.Y - 1; y++)
-						{
-							// Left and right
-							for (int z = ripStart.Z; z <= ripEnd.Z; z++)
-							{
-								edges.Add(new Map.Coordinate { X = ripStart.X, Y = y, Z = z });
-								edges.Add(new Map.Coordinate { X = ripEnd.X, Y = y, Z = z });
-							}
-
-							// Backward and forward
-							for (int x = ripStart.X; x <= ripEnd.X; x++)
-							{
-								edges.Add(new Map.Coordinate { X = x, Y = y, Z = ripStart.Z });
-								edges.Add(new Map.Coordinate { X = x, Y = y, Z = ripEnd.Z });
-							}
-						}
-
-						aimRaycastResult.Map.Empty(edges);
-						aimRaycastResult.Map.Regenerate(delegate(List<DynamicMap> spawnedMaps)
-						{
-							foreach (DynamicMap spawnedMap in spawnedMaps)
-							{
-								if (spawnedMap[center].ID != 0)
-								{
-									toggleLevitate(spawnedMap, grabPoint);
-									break;
-								}
-							}
-						});
-					}
-				}
-			};
-
-			input.Add(new CommandBinding<int>(input.MouseScrolled, delegate(int scroll)
-			{
-				if (player.IsLevitating)
-					levitatingDistance = Math.Max(2, Math.Min(levitationMaxDistance, levitatingDistance + scroll));
-			}));
-
-			update.Add(delegate(float dt)
-			{
-				if (levitatingMap != null)
-				{
-					if (!levitatingMap.Active)
-					{
-						stopLevitate();
-						return;
-					}
-					Vector3 target = main.Camera.Position + (main.Camera.Forward.Value * levitatingDistance);
-					levitatingLight.Position.Value = target;
-					Vector3 grabPoint = levitatingMap.GetAbsolutePosition(levitationRelativeGrabPoint);
-					Vector3 diff = (target - grabPoint) * 0.25f * (float)Math.Sqrt(levitatingMap.PhysicsEntity.Mass) * (1.25f - Math.Min(1.0f, ((grabPoint - transform.Position).Length() / levitationMaxDistance)));
-					levitatingMap.PhysicsEntity.ApplyImpulse(ref grabPoint, ref diff);
-				}
-				else if (levitationMode)
-				{
-					bool canLevitate = aimRaycastResult.Map != null
-						&& (aimRaycastResult.Position - transform.Position).Length() < levitationMaxDistance
-						&& (aimRaycastResult.Map is DynamicMap || !aimRaycastResult.Map[aimRaycastResult.Coordinate.Value].Permanent);
-					crosshair.Tint.Value = canLevitate ? Microsoft.Xna.Framework.Color.White : Microsoft.Xna.Framework.Color.Red;
-				}
-				else
-					crosshair.Tint.Value = Microsoft.Xna.Framework.Color.White;
-			});
-
-			delevitateMap = delegate()
-			{
-				if (!levitatingMap.IsAffectedByGravity)
-				{
-					int maxDistance = levitateRipRadius + 7;
-					Map closestMap = null;
-					Map.Coordinate closestCoord = new Map.Coordinate();
-					foreach (Map m in Map.ActivePhysicsMaps)
-					{
-						if (m == levitatingMap)
-							continue;
-
-						Map.Coordinate relativeCoord = m.GetCoordinate(levitatingMap.Transform.Value.Translation);
-						Map.Coordinate? closestFilled = m.FindClosestFilledCell(relativeCoord, maxDistance);
-						if (closestFilled != null)
-						{
-							maxDistance = Math.Min(Math.Abs(relativeCoord.X - closestFilled.Value.X), Math.Min(Math.Abs(relativeCoord.Y - closestFilled.Value.Y), Math.Abs(relativeCoord.Z - closestFilled.Value.Z)));
-							closestMap = m;
-							closestCoord = closestFilled.Value;
-						}
-					}
-					if (closestMap != null)
-					{
-						// Combine this map with the other one
-
-						Direction x = closestMap.GetRelativeDirection(levitatingMap.GetAbsoluteVector(Vector3.Right));
-						Direction y = closestMap.GetRelativeDirection(levitatingMap.GetAbsoluteVector(Vector3.Up));
-						Direction z = closestMap.GetRelativeDirection(levitatingMap.GetAbsoluteVector(Vector3.Backward));
-
-						if (x.IsParallel(y))
-							x = y.Cross(z);
-						else if (y.IsParallel(z))
-							y = x.Cross(z);
-
-						Map.Coordinate offset = new Map.Coordinate();
-						float closestCoordDistance = float.MaxValue;
-						Vector3 closestCoordPosition = closestMap.GetAbsolutePosition(closestCoord);
-						foreach (Map.Coordinate c in levitatingMap.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()))
-						{
-							float distance = (levitatingMap.GetAbsolutePosition(c) - closestCoordPosition).LengthSquared();
-							if (distance < closestCoordDistance)
-							{
-								closestCoordDistance = distance;
-								offset = c;
-							}
-						}
-						Vector3 toLevitatingMap = levitatingMap.Transform.Value.Translation - closestMap.GetAbsolutePosition(closestCoord);
-						offset = offset.Move(levitatingMap.GetRelativeDirection(-toLevitatingMap));
-
-						Matrix orientation = levitatingMap.Transform.Value;
-						orientation.Translation = Vector3.Zero;
-
-						EffectBlockFactory blockFactory = Factory.Get<EffectBlockFactory>();
-
-						int index = 0;
-						foreach (Map.Coordinate c in levitatingMap.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()).OrderBy(c2 => new Vector3(c2.X - offset.X, c2.Y - offset.Y, c2.Z - offset.Z).LengthSquared()))
-						{
-							Map.Coordinate offsetFromCenter = c.Move(-offset.X, -offset.Y, -offset.Z);
-							Map.Coordinate targetCoord = new Map.Coordinate();
-							targetCoord.SetComponent(x, offsetFromCenter.GetComponent(Direction.PositiveX));
-							targetCoord.SetComponent(y, offsetFromCenter.GetComponent(Direction.PositiveY));
-							targetCoord.SetComponent(z, offsetFromCenter.GetComponent(Direction.PositiveZ));
-							targetCoord = targetCoord.Move(closestCoord.X, closestCoord.Y, closestCoord.Z);
-							if (closestMap[targetCoord].ID == 0)
-							{
-								Entity block = blockFactory.CreateAndBind(main);
-								c.Data.ApplyToEffectBlock(block.Get<ModelInstance>());
-								block.GetProperty<Vector3>("Offset").Value = closestMap.GetRelativePosition(targetCoord);
-								block.GetProperty<bool>("Scale").Value = false;
-								block.GetProperty<Vector3>("StartPosition").Value = levitatingMap.GetAbsolutePosition(c);
-								block.GetProperty<Matrix>("StartOrientation").Value = orientation;
-								block.GetProperty<float>("TotalLifetime").Value = 0.05f + (index * 0.0075f);
-								blockFactory.Setup(block, closestMap.Entity, targetCoord, c.Data.ID);
-								main.Add(block);
-								index++;
-							}
-						}
-
-						// Delete the map
-						levitatingMap.Entity.Delete.Execute();
-					}
-					else
-						levitatingMap.IsAffectedByGravity.Value = true;
-					Sound.PlayCue(main, "LevitateStop", aimRaycastResult.Position);
-				}
-			};
-
-			stopLevitate = delegate()
-			{
-				model.Stop("Levitating");
-				if (levitatingMap != null)
-				{
-					levitatingMap = null;
-					player.IsLevitating.Value = false;
-					result.Add(new Animation
-					(
-						new Animation.FloatMoveTo(levitatingLight.Attenuation, 0.0f, 1.0f),
-						new Animation.Execute(levitatingLight.Delete)
-					));
-					levitatingLight = null;
-				}
-			};
 		}
 
 		public override void AttachEditorComponents(Entity result, Main main)

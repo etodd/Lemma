@@ -55,10 +55,8 @@ namespace Lemma
 			public Property<PCInput.PCInputBinding> Jump = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Space } };
 			public Property<PCInput.PCInputBinding> Parkour = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.LeftShift } };
 			public Property<PCInput.PCInputBinding> Roll = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.LeftControl } };
-			public Property<PCInput.PCInputBinding> Aim = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.RightMouseButton } };
-			public Property<PCInput.PCInputBinding> Fire = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton } };
+			public Property<PCInput.PCInputBinding> Kick = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton } };
 			public Property<PCInput.PCInputBinding> Reload = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.R } };
-			public Property<PCInput.PCInputBinding> ToggleSpecialAbility = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D1 } };
 			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F5 } };
 			public Property<PCInput.PCInputBinding> ToggleFullscreen = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F11 } };
 		}
@@ -276,14 +274,6 @@ namespace Lemma
 				{
 					if (this.player != null && this.player.Active)
 						return this.player.Get<Player>().Stamina;
-					else
-						return 0;
-				});
-
-				this.SessionRecorder.Add("LevitationMode", delegate()
-				{
-					if (this.player != null && this.player.Active)
-						return player.Get<Player>().IsLevitating ? 1 : 0;
 					else
 						return 0;
 				});
@@ -1067,9 +1057,7 @@ namespace Lemma
 				addInputSetting(this.Settings.Jump, "Jump");
 				addInputSetting(this.Settings.Parkour, "Parkour");
 				addInputSetting(this.Settings.Roll, "Roll / Crouch");
-				addInputSetting(this.Settings.Fire, "Kick / Primary Fire");
-				addInputSetting(this.Settings.Aim, "Aim");
-				addInputSetting(this.Settings.ToggleSpecialAbility, "Toggle Special Ability");
+				addInputSetting(this.Settings.Kick, "Kick");
 				addInputSetting(this.Settings.Reload, "Reload");
 				addInputSetting(this.Settings.QuickSave, "Quicksave");
 				addInputSetting(this.Settings.ToggleFullscreen, "Toggle Fullscreen");

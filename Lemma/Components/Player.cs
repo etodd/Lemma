@@ -29,8 +29,6 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<float> JumpSpeed = new Property<float> { Value = Player.DefaultJumpSpeed, Editable = false };
 		[XmlIgnore]
-		public Property<bool> IsLevitating = new Property<bool> { Value = false, Editable = false };
-		[XmlIgnore]
 		public Property<bool> EnableRoll = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
 		public Property<bool> EnableKick = new Property<bool> { Value = false, Editable = false };
@@ -40,8 +38,6 @@ namespace Lemma.Components
 		public Property<bool> EnableWallRunHorizontal = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
 		public Property<bool> EnableEnhancedWallRun = new Property<bool> { Value = false, Editable = false };
-		[XmlIgnore]
-		public Property<bool> EnableLevitation = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
 		public Property<bool> EnableSlowMotion = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]

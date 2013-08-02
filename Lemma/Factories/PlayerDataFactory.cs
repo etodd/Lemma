@@ -33,7 +33,6 @@ namespace Lemma.Factories
 			result.Add("EnableWallRun", new Property<bool> { Value = enabled });
 			result.Add("EnableWallRunHorizontal", new Property<bool> { Value = enabled });
 			result.Add("EnableEnhancedWallRun", new Property<bool> { Value = enabled });
-			result.Add("EnableLevitation", new Property<bool> { Value = enabled });
 			result.Add("EnableSlowMotion", new Property<bool> { Value = enabled });
 			result.Add("EnableStamina", new Property<bool> { Value = enabled });
 			result.Add("EnableMoves", new Property<bool> { Value = true });

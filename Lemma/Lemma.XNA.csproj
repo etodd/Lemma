@@ -111,6 +111,7 @@
     </Compile>
     <Compile Include="Factories\AnimatedPropFactory.cs" />
     <Compile Include="Factories\CloudFactory.cs" />
+    <Compile Include="Factories\LevitatorFactory.cs" />
     <Compile Include="Factories\Explosion.cs" />
     <Compile Include="Factories\OrbFactory.cs" />
     <Compile Include="Factories\FloaterFactory.cs" />

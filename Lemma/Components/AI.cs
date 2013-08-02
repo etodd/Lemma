@@ -104,6 +104,8 @@ namespace Lemma.Components
 		{
 			this.EnabledInEditMode.Value = false;
 			this.EnabledWhenPaused.Value = false;
+			this.Serialize = true;
+
 			foreach (State s in this.states.Values.ToList())
 			{
 				if (!s._valid)

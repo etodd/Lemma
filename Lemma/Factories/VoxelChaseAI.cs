@@ -31,30 +31,29 @@ namespace Lemma.Factories
 			return cell == Cell.Penetrable || cell == Cell.Filled;
 		}
 
-		public Property<Entity.Handle> Map = new Property<Entity.Handle>();
-		public Property<Map.Coordinate> LastCoord = new Property<Map.Coordinate>();
-		public Property<float> Blend = new Property<float>();
-		public Property<Map.Coordinate> Coord = new Property<Map.Coordinate>();
-		public Property<Direction> Direction = new Property<Direction>();
-		public ListProperty<Map.Coordinate> History = new ListProperty<Map.Coordinate>();
-		public Property<bool> EnablePathfinding = new Property<bool> { Value = true };
-		public Property<float> Speed = new Property<float> { Value = 8.0f };
+		public Property<Entity.Handle> Map = new Property<Entity.Handle> { Editable = false };
+		public Property<Map.Coordinate> LastCoord = new Property<Map.Coordinate> { Editable = false };
+		public Property<float> Blend = new Property<float> { Editable = false };
+		public Property<Map.Coordinate> Coord = new Property<Map.Coordinate> { Editable = false };
+		public Property<Direction> Direction = new Property<Direction> { Editable = false };
+		public ListProperty<Map.Coordinate> History = new ListProperty<Map.Coordinate> { Editable = false };
+		public Property<bool> EnablePathfinding = new Property<bool> { Value = true, Editable = false };
+		public Property<float> Speed = new Property<float> { Value = 8.0f, Editable = false };
 
 		[XmlIgnore]
 		public Func<Map.CellState, Cell> Filter = VoxelChaseAI.filter;
 		[XmlIgnore]
-		public Property<bool> TargetActive = new Property<bool>();
-		[XmlIgnore]
-		public Property<Vector3> Target = new Property<Vector3>();
-		[XmlIgnore]
 		public Command<Map, Map.Coordinate> Moved = new Command<Map, Map.Coordinate>();
 
-		public Property<Vector3> Position = new Property<Vector3>();
+		public Property<bool> TargetActive = new Property<bool> { Editable = false };
+		public Property<Vector3> Target = new Property<Vector3> { Editable = false };
+		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
 
 		public override void InitializeProperties()
 		{
 			this.EnabledInEditMode.Value = false;
 			this.EnabledWhenPaused.Value = false;
+			this.Serialize = true;
 		}
 
 		private class AStarEntry
@@ -116,6 +115,9 @@ namespace Lemma.Factories
 				closed[entry.Box] = entry.G;
 				foreach (Map.Box adjacent in entry.Box.Adjacent.ToList())
 				{
+					if (adjacent == null)
+						continue;
+
 					int boxSize = Math.Max(adjacent.Width, Math.Max(adjacent.Height, adjacent.Depth));
 
 					int tentativeGScore = entry.G + boxSize;
