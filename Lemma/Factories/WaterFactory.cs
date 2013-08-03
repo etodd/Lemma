@@ -32,6 +32,23 @@ namespace Lemma.Factories
 			Transform transform = result.Get<Transform>();
 			Water water = result.Get<Water>();
 
+			Sound sound = result.GetOrCreate<Sound>("SoundLoop");
+			sound.Cue.Value = "Water Loop";
+			sound.IsPlaying.Value = true;
+			sound.Is3D.Value = true;
+			sound.Serialize = false;
+			sound.Editable = false;
+
+			result.Add(new Updater
+			{
+				delegate(float dt)
+				{
+					Vector3 pos = main.Camera.Position;
+					pos.Y = transform.Position.Value.Y;
+					sound.Position.Value = pos;
+				}
+			});
+
 			this.SetMain(result, main);
 
 			water.Add(new TwoWayBinding<Vector3>(water.Position, transform.Position));

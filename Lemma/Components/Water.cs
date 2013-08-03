@@ -358,7 +358,8 @@ namespace Lemma.Components
 			{
 				foreach (BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable collidable in this.fluid.NotifyEntries)
 				{
-					Component component = collidable.Tag as Component ?? collidable.Entity.Tag as Component;
+					if (collidable.Entity == null)
+						continue;
 
 					float speed = collidable.Entity.LinearVelocity.Length();
 
@@ -373,19 +374,20 @@ namespace Lemma.Components
 						}
 					}
 
-					if (speed < 5.0f)
-						return;
-					Random random = new Random();
-					collidable.UpdateBoundingBox();
-					BoundingBox boundingBox = collidable.BoundingBox;
-					Vector3[] particlePositions = new Vector3[30];
+					if (speed > 5.0f)
+					{
+						Random random = new Random();
+						collidable.UpdateBoundingBox();
+						BoundingBox boundingBox = collidable.BoundingBox;
+						Vector3[] particlePositions = new Vector3[30];
 
-					for (int i = 0; i < particlePositions.Length; i++)
-						particlePositions[i] = new Vector3(boundingBox.Min.X + ((float)random.NextDouble() * (boundingBox.Max.X - boundingBox.Min.X)),
-							waterHeight,
-							boundingBox.Min.Z + ((float)random.NextDouble() * (boundingBox.Max.Z - boundingBox.Min.Z)));
+						for (int i = 0; i < particlePositions.Length; i++)
+							particlePositions[i] = new Vector3(boundingBox.Min.X + ((float)random.NextDouble() * (boundingBox.Max.X - boundingBox.Min.X)),
+								waterHeight,
+								boundingBox.Min.Z + ((float)random.NextDouble() * (boundingBox.Max.Z - boundingBox.Min.Z)));
 
-					ParticleEmitter.Emit(this.main, "Splash", particlePositions);
+						ParticleEmitter.Emit(this.main, "Splash", particlePositions);
+					}
 				}
 				this.fluid.NotifyEntries.Clear();
 			}

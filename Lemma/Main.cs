@@ -274,8 +274,6 @@ namespace Lemma
 			this.Space.ForceUpdater.Gravity = new Vector3(0, -18.0f, 0);
 
 			this.IsFixedTimeStep = false;
-			//this.IsFixedTimeStep = true;
-			//this.TargetElapsedTime = new TimeSpan((long)((1.0f / 30.0f) * (float)TimeSpan.TicksPerSecond));
 
 			this.Window.AllowUserResizing = true;
 			this.Window.ClientSizeChanged += new EventHandler<EventArgs>(delegate(object obj, EventArgs e)
