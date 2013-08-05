@@ -84,6 +84,10 @@ namespace Lemma.Factories
 			Map.CellState criticalState = WorldFactory.StatesByName["InfectedCritical"];
 			Map.CellState temporaryState = WorldFactory.StatesByName["Temporary"];
 
+			const float defaultSpeed = 8.0f;
+			const float chaseSpeed = 14.0f;
+			const float crushSpeed = 125.0f;
+
 			VoxelChaseAI chase = null;
 			result.Add(new PostInitialization
 			{
@@ -94,6 +98,7 @@ namespace Lemma.Factories
 				}
 			});
 			chase = result.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
+			chase.Speed.Value = defaultSpeed;
 			chase.Filter = delegate(Map.CellState state)
 			{
 				int id = state.ID;
@@ -219,7 +224,7 @@ namespace Lemma.Factories
 							Interval = 1.0f,
 							Action = delegate()
 							{
-								Agent a = Agent.Query(chase.Position, 30.0f, 10.0f, x => x.Entity.Type == "Player");
+								Agent a = Agent.Query(chase.Position, 50.0f, 20.0f, x => x.Entity.Type == "Player");
 								if (a != null)
 									ai.CurrentState.Value = "Alert";
 							},
@@ -238,7 +243,7 @@ namespace Lemma.Factories
 						chase.Enabled.Value = true;
 					},
 					Tasks = new[]
-					{ 
+					{
 						checkMap,
 						checkOperationalRadius,
 						new AI.Task
@@ -250,7 +255,7 @@ namespace Lemma.Factories
 									ai.CurrentState.Value = "Idle";
 								else
 								{
-									Agent a = Agent.Query(chase.Position, 30.0f, 20.0f, x => x.Entity.Type == "Player");
+									Agent a = Agent.Query(chase.Position, 50.0f, 30.0f, x => x.Entity.Type == "Player");
 									if (a != null)
 									{
 										targetAgent.Value = a.Entity;
@@ -267,10 +272,12 @@ namespace Lemma.Factories
 					Enter = delegate(AI.State previousState)
 					{
 						chase.TargetActive.Value = true;
+						chase.Speed.Value = chaseSpeed;
 					},
 					Exit = delegate(AI.State nextState)
 					{
 						chase.TargetActive.Value = false;
+						chase.Speed.Value = defaultSpeed;
 					},
 					Tasks = new[]
 					{
@@ -341,14 +348,14 @@ namespace Lemma.Factories
 						}
 
 						chase.EnablePathfinding.Value = false;
-						chase.Speed.Value = 125.0f;
+						chase.Speed.Value = crushSpeed;
 
 						crushCoordinate.Value = chase.Coord;
 					},
 					Exit = delegate(AI.State nextState)
 					{
 						chase.EnablePathfinding.Value = true;
-						chase.Speed.Value = 8.0f;
+						chase.Speed.Value = defaultSpeed;
 						chase.Coord.Value = chase.LastCoord.Value = crushCoordinate;
 						path.Clear();
 					},

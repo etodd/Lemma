@@ -113,39 +113,42 @@ namespace Lemma.Factories
 				queueLookup.Remove(entry.Box);
 
 				closed[entry.Box] = entry.G;
-				foreach (Map.Box adjacent in entry.Box.Adjacent.ToList())
+				lock (m.MutationLock)
 				{
-					if (adjacent == null)
-						continue;
-
-					int boxSize = Math.Max(adjacent.Width, Math.Max(adjacent.Height, adjacent.Depth));
-
-					int tentativeGScore = entry.G + boxSize;
-
-					int previousGScore;
-					bool hasPreviousGScore = closed.TryGetValue(adjacent, out previousGScore);
-
-					if (hasPreviousGScore && tentativeGScore > previousGScore)
-						continue;
-
-					AStarEntry alreadyInQueue;
-					bool throwaway = queueLookup.TryGetValue(adjacent, out alreadyInQueue);
-
-					if (alreadyInQueue == null || tentativeGScore < previousGScore)
+					foreach (Map.Box adjacent in entry.Box.Adjacent)
 					{
-						AStarEntry newEntry = alreadyInQueue != null ? alreadyInQueue : new AStarEntry();
+						if (adjacent == null)
+							continue;
 
-						newEntry.Parent = entry;
-						newEntry.G = tentativeGScore;
-						newEntry.F = tentativeGScore + (target - adjacent.GetCenter()).Length();
-						newEntry.PathIndex = entry.PathIndex + 1;
+						int boxSize = Math.Max(adjacent.Width, Math.Max(adjacent.Height, adjacent.Depth));
 
-						if (alreadyInQueue == null)
+						int tentativeGScore = entry.G + boxSize;
+
+						int previousGScore;
+						bool hasPreviousGScore = closed.TryGetValue(adjacent, out previousGScore);
+
+						if (hasPreviousGScore && tentativeGScore > previousGScore)
+							continue;
+
+						AStarEntry alreadyInQueue;
+						bool throwaway = queueLookup.TryGetValue(adjacent, out alreadyInQueue);
+
+						if (alreadyInQueue == null || tentativeGScore < previousGScore)
 						{
-							newEntry.Box = adjacent;
-							newEntry.BoxSize = boxSize;
-							queue.Push(newEntry);
-							queueLookup[adjacent] = newEntry;
+							AStarEntry newEntry = alreadyInQueue != null ? alreadyInQueue : new AStarEntry();
+
+							newEntry.Parent = entry;
+							newEntry.G = tentativeGScore;
+							newEntry.F = tentativeGScore + (target - adjacent.GetCenter()).Length();
+							newEntry.PathIndex = entry.PathIndex + 1;
+
+							if (alreadyInQueue == null)
+							{
+								newEntry.Box = adjacent;
+								newEntry.BoxSize = boxSize;
+								queue.Push(newEntry);
+								queueLookup[adjacent] = newEntry;
+							}
 						}
 					}
 				}
@@ -370,7 +373,7 @@ namespace Lemma.Factories
 										int pathLength;
 										box = VoxelChaseAI.AStar(m, box, this.Target, out pathLength);
 
-										if (pathLength > 2)
+										if (pathLength > 1)
 											toTarget = m.GetAbsolutePosition(box.GetCenter()) - this.Position;
 									}
 								}

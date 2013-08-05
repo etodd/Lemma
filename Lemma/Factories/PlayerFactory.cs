@@ -427,7 +427,7 @@ namespace Lemma.Factories
 			
 			result.Add(new CommandBinding<Map, Map.Coordinate?>(walkedOn, delegate(Map map, Map.Coordinate? coord)
 			{
-				if (coord.HasValue)
+				if (coord.HasValue && player.EnableEnhancedWallRun)
 				{
 					int id = map[coord.Value].ID;
 					if (id == infectedID || id == infectedCriticalID)

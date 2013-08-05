@@ -224,6 +224,12 @@
       <Name>level3</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Maps\no-abilities.cs">
+      <Name>no-abilities</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Maps\spinner.map">
       <Name>spinner</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -232,12 +238,12 @@
       <Name>start</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Maps\valley.cs">
-      <Name>valley</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Maps\spinner.cs">
       <Name>spinner</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Maps\test.cs">
+      <Name>test</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Compile Include="Models\spotlight.fbx">
@@ -304,10 +310,6 @@
     </None>
     <None Include="Maps\test.map">
       <Name>test</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Maps\valley.map">
-      <Name>valley</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

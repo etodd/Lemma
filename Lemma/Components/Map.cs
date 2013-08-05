@@ -1147,7 +1147,7 @@ namespace Lemma.Components
 			this.Data.Get = delegate()
 			{
 				List<int> result = new List<int>();
-				lock (this.mutationLock)
+				lock (this.MutationLock)
 				{
 					List<Box> boxes = this.Chunks.Where(x => x.Data != null).SelectMany(x => x.Boxes).ToList();
 					bool[] modifications = this.simplify(boxes);
@@ -1401,7 +1401,7 @@ namespace Lemma.Components
 		protected override void delete()
 		{
 			base.delete();
-			lock (this.mutationLock)
+			lock (this.MutationLock)
 			{
 				foreach (Chunk chunk in this.Chunks)
 					chunk.Delete();
@@ -1586,7 +1586,7 @@ namespace Lemma.Components
 				return false;
 
 			bool filled = false;
-			lock (this.mutationLock)
+			lock (this.MutationLock)
 			{
 				Chunk chunk = this.GetChunk(x, y, z);
 				if (chunk != null)
@@ -1643,7 +1643,7 @@ namespace Lemma.Components
 			bool modified = false;
 			List<Box> boxAdditions = new List<Box>();
 			List<Coordinate> removed = new List<Coordinate>();
-			lock (this.mutationLock)
+			lock (this.MutationLock)
 			{
 				foreach (Map.Coordinate coord in coords)
 				{
@@ -1787,7 +1787,7 @@ namespace Lemma.Components
 		{
 			bool modified = false;
 			Map.Coordinate coord = new Coordinate { X = x, Y = y, Z = z, };
-			lock (this.mutationLock)
+			lock (this.MutationLock)
 			{
 				Chunk chunk = this.GetChunk(x, y, z, false);
 
@@ -2531,7 +2531,7 @@ namespace Lemma.Components
 
 		private static Thread workThread;
 
-		private object mutationLock = new object();
+		public object MutationLock = new object();
 
 		/// <summary>
 		/// Applies any changes made to the map.
@@ -2543,7 +2543,7 @@ namespace Lemma.Components
 			if (!this.main.EditorEnabled && !this.EnablePhysics)
 				return;
 
-			lock (this.mutationLock)
+			lock (this.MutationLock)
 			{
 				if (!this.Active)
 					return;
