@@ -183,6 +183,13 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </None>
+    <Compile Include="Maps\david.fbx">
+      <Name>david</Name>
+      <Importer>SkinnedModelImporter</Importer>
+      <Processor>SkinnedModelProcessor</Processor>
+      <ProcessorParameters_EffectFileName>..\Effects\Animation.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_DiffuseTexture>david.jpg</ProcessorParameters_DiffuseTexture>
+    </Compile>
     <None Include="Maps\GlobalStaticScripts\materials.cs">
       <Name>materials</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

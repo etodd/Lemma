@@ -465,7 +465,7 @@ namespace Lemma.Factories
 									Rotation = rotation,
 									OriginalPosition = groundRaycast.Map.GetAbsolutePosition(groundRaycast.Coordinate.Value),
 								});
-								while (respawnLocations.Count > 30)
+								while (respawnLocations.Count > 50)
 									respawnLocations.RemoveAt(0);
 								walkedOnCount = 0;
 							}
@@ -898,10 +898,22 @@ namespace Lemma.Factories
 				{
 					if (state == Player.WallRun.Straight)
 					{
-						float verticalVelocity = addInitialVelocity ? (player.IsSupported ? player.JumpSpeed : player.LinearVelocity.Value.Y + 7.0f) : player.LinearVelocity.Value.Y;
+						Vector3 velocity = player.LinearVelocity.Value;
+						velocity.X = 0;
+						velocity.Z = 0;
+						if (addInitialVelocity)
+						{
+							if (player.IsSupported)
+								velocity.Y = player.JumpSpeed * 1.25f;
+							else
+								velocity.Y = player.LinearVelocity.Value.Y + player.JumpSpeed * 0.7f;
+						}
+						else
+							velocity.Y = player.LinearVelocity.Value.Y;
+
+						player.LinearVelocity.Value = velocity;
 						player.IsSupported.Value = false;
 						player.HasTraction.Value = false;
-						player.LinearVelocity.Value = new Vector3(0, verticalVelocity, 0);
 					}
 					Vector3 wallVector = wallRunMap.GetAbsoluteVector(wallDirection.GetVector());
 
@@ -940,6 +952,7 @@ namespace Lemma.Factories
 
 							float currentVerticalSpeed = player.LinearVelocity.Value.Y;
 							velocity.Y = (currentVerticalSpeed > 0.0f ? currentVerticalSpeed * 0.7f : currentVerticalSpeed * 0.5f) + 4.5f;
+
 							player.LinearVelocity.Value = velocity;
 						}
 					}

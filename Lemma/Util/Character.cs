@@ -503,9 +503,6 @@ namespace Lemma.Util
 			float acceleration = this.Acceleration * accelerationRatio;
 			float maxSpeed = this.MaxSpeed * speedRatio;
 
-			if (this.Jumping && !this.IsSwimming)
-				this.Body.LinearVelocity += new Vector3(0, dt * this.JumpSpeed * accelerationRatio * 0.7f, 0);
-			
 			if (this.MovementDirection != Vector2.Zero)
 			{
 				//Identify a coordinate system that uses the support normal as Y.
