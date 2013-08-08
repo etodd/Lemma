@@ -53,10 +53,9 @@ namespace PipelineExtensions
 			// Read the bind pose and skeleton hierarchy data.
 			IList<BoneContent> bones = MeshHelper.FlattenSkeleton(skeleton);
 
-			if (bones.Count > SkinnedEffect.MaxBones)
-			{
-				throw new InvalidContentException(string.Format("Skeleton has {0} bones, but the maximum supported is {1}.", bones.Count, SkinnedEffect.MaxBones));
-			}
+			const int maxBones = 78;
+			if (bones.Count > maxBones)
+				throw new InvalidContentException(string.Format("Skeleton has {0} bones, but the maximum supported is {1}.", bones.Count, maxBones));
 
 			Dictionary<string, int> boneMap = new Dictionary<string, int>();
 			List<Matrix> bindPose = new List<Matrix>();
