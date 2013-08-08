@@ -1166,11 +1166,90 @@ namespace Lemma
 					pauseMenu.Children.Add(switchToEditMode);
 				}
 
+				// Credits window
+				Animation creditsAnimation = null;
+				bool creditsShown = false;
+
+				ListContainer creditsMenu = new ListContainer();
+				creditsMenu.Visible.Value = false;
+				creditsMenu.Add(new Binding<Vector2, Point>(creditsMenu.Position, x => new Vector2(0, x.Y * 0.5f), this.ScreenSize));
+				creditsMenu.AnchorPoint.Value = new Vector2(1, 0.5f);
+				this.UI.Root.Children.Add(creditsMenu);
+				creditsMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+				Container creditsLabelPadding = new Container();
+				creditsLabelPadding.PaddingLeft.Value = 8.0f;
+				creditsLabelPadding.Opacity.Value = 0.0f;
+				creditsMenu.Children.Add(creditsLabelPadding);
+
+				ListContainer creditsLabelContainer = new ListContainer();
+				creditsLabelContainer.Orientation.Value = ListContainer.ListOrientation.Vertical;
+				creditsLabelPadding.Children.Add(creditsLabelContainer);
+
+				TextElement creditsLabel = new TextElement();
+				creditsLabel.FontFile.Value = "Font";
+				creditsLabel.Text.Value = "C R E D I T S";
+				creditsLabelContainer.Children.Add(creditsLabel);
+
+				TextElement creditsScrollLabel = new TextElement();
+				creditsScrollLabel.FontFile.Value = "Font";
+				creditsScrollLabel.Text.Value = "Scroll for more";
+				creditsLabelContainer.Children.Add(creditsScrollLabel);
+
+				Action hideCredits = delegate()
+				{
+					creditsShown = false;
+
+					showPauseMenu();
+
+					if (creditsAnimation != null)
+						creditsAnimation.Delete.Execute();
+					creditsAnimation = new Animation
+					(
+						new Animation.Vector2MoveToSpeed(creditsMenu.AnchorPoint, new Vector2(1, 0.5f), 5.0f),
+						new Animation.Set<bool>(creditsMenu.Visible, false)
+					);
+					this.AddComponent(creditsAnimation);
+				};
+
+				UIComponent creditsBack = this.createMenuButton("Back");
+				creditsBack.Add(new CommandBinding<Point>(creditsBack.MouseLeftUp, delegate(Point p)
+				{
+					hideCredits();
+				}));
+				creditsMenu.Children.Add(creditsBack);
+
+				TextElement creditsDisplay = new TextElement();
+				creditsDisplay.FontFile.Value = "Font";
+				creditsDisplay.Text.Value = File.ReadAllText("attribution.txt");
+
+				Scroller creditsScroller = new Scroller();
+				creditsScroller.Add(new Binding<Vector2>(creditsScroller.Size, () => new Vector2(creditsDisplay.Size.Value.X, this.ScreenSize.Value.Y * 0.5f), creditsDisplay.Size, this.ScreenSize));
+				creditsScroller.Children.Add(creditsDisplay);
+				creditsMenu.Children.Add(creditsScroller);
+
+				// Credits button
+				UIComponent credits = this.createMenuButton("Credits");
+				credits.Add(new CommandBinding<Point>(credits.MouseLeftUp, delegate(Point mouse)
+				{
+					hidePauseMenu();
+
+					creditsMenu.Visible.Value = true;
+					if (creditsAnimation != null)
+						creditsAnimation.Delete.Execute();
+					creditsAnimation = new Animation(new Animation.Vector2MoveToSpeed(creditsMenu.AnchorPoint, new Vector2(0, 0.5f), 5.0f));
+					this.AddComponent(creditsAnimation);
+
+					creditsShown = true;
+				}));
+				pauseMenu.Children.Add(credits);
+
 				// Exit button
 				UIComponent exit = this.createMenuButton("Exit");
 				exit.Add(new CommandBinding<Point>(exit.MouseLeftUp, delegate(Point mouse)
 				{
 					if (this.MapFile.Value != null)
+					{
 						showDialog
 						(
 							"Exiting will erase any unsaved progress. Are you sure?", "Exit",
@@ -1179,6 +1258,7 @@ namespace Lemma
 								throw new ExitException();
 							}
 						);
+					}
 					else
 						throw new ExitException();
 				}));
@@ -1231,6 +1311,11 @@ namespace Lemma
 					else if (controlsShown)
 					{
 						hideControls();
+						return;
+					}
+					else if (creditsShown)
+					{
+						hideCredits();
 						return;
 					}
 					else if (loadSaveShown)
