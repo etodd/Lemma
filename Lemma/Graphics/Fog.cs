@@ -14,6 +14,7 @@ namespace Lemma.Components
 		public Property<float> StartDistance = new Property<float> { Editable = true, Value = 50.0f };
 		public Property<float> VerticalCenter = new Property<float> { Editable = true, Value = 0.0f };
 		public Property<float> VerticalSize = new Property<float> { Editable = true, Value = 20.0f };
+		public Property<bool> VerticalLimit = new Property<bool> { Editable = true, Value = true };
 		private Property<float> endDistance = new Property<float> { Editable = false };
 
 		public override void InitializeProperties()
@@ -44,6 +45,11 @@ namespace Lemma.Components
 				this.endDistance.InternalValue = value;
 				this.effect.Parameters["EndDistance"].SetValue(value);
 			};
+			this.VerticalLimit.Set = delegate(bool value)
+			{
+				this.VerticalLimit.InternalValue = value;
+				this.effect.CurrentTechnique = this.effect.Techniques[value ? "FogVerticalLimit" : "Fog"];
+			};
 			this.DrawOrder.Value = 11; // In front of water
 			this.Add(new Binding<float>(this.endDistance, this.main.Camera.FarPlaneDistance));
 			this.Enabled.Editable = true;
@@ -53,7 +59,7 @@ namespace Lemma.Components
 		{
 			base.LoadContent(reload);
 			this.effect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Fog").Clone();
-			this.effect.CurrentTechnique = this.effect.Techniques["Fog"];
+			this.VerticalLimit.Reset();
 			if (reload)
 			{
 				this.VerticalCenter.Reset();

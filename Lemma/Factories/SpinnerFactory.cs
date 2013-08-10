@@ -89,7 +89,7 @@ namespace Lemma.Factories
 
 			Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint = delegate(BEPUphysics.Entities.Entity entity1, BEPUphysics.Entities.Entity entity2, Vector3 pos, Vector3 direction, Vector3 anchor)
 			{
-				joint = new RevoluteJoint(entity1, entity2, pos, direction);
+				joint = new RevoluteJoint(entity1, entity2, anchor, direction);
 				float multiplier = Math.Max(1.0f, map.PhysicsEntity.Mass);
 				joint.AngularJoint.SpringSettings.StiffnessConstant *= multiplier;
 				joint.Limit.SpringSettings.StiffnessConstant *= multiplier;

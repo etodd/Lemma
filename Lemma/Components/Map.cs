@@ -19,6 +19,7 @@ using System.ComponentModel;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
 using System.Threading;
 using System.Collections;
+using BEPUphysics.Materials;
 
 namespace Lemma.Components
 {
@@ -105,6 +106,8 @@ namespace Lemma.Components
 			public string RubbleCue;
 			public float SpecularPower;
 			public float SpecularIntensity;
+			public float KineticFriction = MaterialManager.DefaultKineticFriction;
+			public float StaticFriction = MaterialManager.DefaultStaticFriction;
 			public float Density;
 			[DefaultValue(false)]
 			public bool AllowAlpha;
@@ -389,87 +392,94 @@ namespace Lemma.Components
 					}
 
 					List<Box> boxes = this.Boxes.Where(x => x.ChunkHash == pair.Key).ToList();
-					Vector3[] vertices = new Vector3[boxes.Count * 8];
-					int[] indices = new int[boxes.SelectMany(x => x.Surfaces).Count(x => x.HasArea) * 6];
-					int vertexIndex = 0;
-					int index = 0;
-					foreach (Box box in boxes)
+					if (boxes.Count > 0)
 					{
-						vertices[vertexIndex + 0] = new Vector3(box.X, box.Y, box.Z);
-						vertices[vertexIndex + 1] = new Vector3(box.X, box.Y, box.Z + box.Depth);
-						vertices[vertexIndex + 2] = new Vector3(box.X, box.Y + box.Height, box.Z);
-						vertices[vertexIndex + 3] = new Vector3(box.X, box.Y + box.Height, box.Z + box.Depth);
-						vertices[vertexIndex + 4] = new Vector3(box.X + box.Width, box.Y, box.Z);
-						vertices[vertexIndex + 5] = new Vector3(box.X + box.Width, box.Y, box.Z + box.Depth);
-						vertices[vertexIndex + 6] = new Vector3(box.X + box.Width, box.Y + box.Height, box.Z);
-						vertices[vertexIndex + 7] = new Vector3(box.X + box.Width, box.Y + box.Height, box.Z + box.Depth);
+						Vector3[] vertices = new Vector3[boxes.Count * 8];
+						int[] indices = new int[boxes.SelectMany(x => x.Surfaces).Count(x => x.HasArea) * 6];
+						int vertexIndex = 0;
+						int index = 0;
+						foreach (Box box in boxes)
+						{
+							vertices[vertexIndex + 0] = new Vector3(box.X, box.Y, box.Z);
+							vertices[vertexIndex + 1] = new Vector3(box.X, box.Y, box.Z + box.Depth);
+							vertices[vertexIndex + 2] = new Vector3(box.X, box.Y + box.Height, box.Z);
+							vertices[vertexIndex + 3] = new Vector3(box.X, box.Y + box.Height, box.Z + box.Depth);
+							vertices[vertexIndex + 4] = new Vector3(box.X + box.Width, box.Y, box.Z);
+							vertices[vertexIndex + 5] = new Vector3(box.X + box.Width, box.Y, box.Z + box.Depth);
+							vertices[vertexIndex + 6] = new Vector3(box.X + box.Width, box.Y + box.Height, box.Z);
+							vertices[vertexIndex + 7] = new Vector3(box.X + box.Width, box.Y + box.Height, box.Z + box.Depth);
 
-						if (box.Surfaces[(int)Direction.NegativeX].HasArea)
-						{
-							indices[index++] = vertexIndex + 0;
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 3;
-						}
-						if (box.Surfaces[(int)Direction.PositiveX].HasArea)
-						{
-							indices[index++] = vertexIndex + 6;
-							indices[index++] = vertexIndex + 5;
-							indices[index++] = vertexIndex + 4;
-							indices[index++] = vertexIndex + 7;
-							indices[index++] = vertexIndex + 5;
-							indices[index++] = vertexIndex + 6;
-						}
-						if (box.Surfaces[(int)Direction.NegativeY].HasArea)
-						{
-							indices[index++] = vertexIndex + 0;
-							indices[index++] = vertexIndex + 4;
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 4;
-							indices[index++] = vertexIndex + 5;
-						}
-						if (box.Surfaces[(int)Direction.PositiveY].HasArea)
-						{
-							indices[index++] = vertexIndex + 3;
-							indices[index++] = vertexIndex + 6;
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 7;
-							indices[index++] = vertexIndex + 6;
-							indices[index++] = vertexIndex + 3;
-						}
-						if (box.Surfaces[(int)Direction.NegativeZ].HasArea)
-						{
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 4;
-							indices[index++] = vertexIndex + 0;
-							indices[index++] = vertexIndex + 6;
-							indices[index++] = vertexIndex + 4;
-							indices[index++] = vertexIndex + 2;
-						}
-						if (box.Surfaces[(int)Direction.PositiveZ].HasArea)
-						{
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 5;
-							indices[index++] = vertexIndex + 3;
-							indices[index++] = vertexIndex + 3;
-							indices[index++] = vertexIndex + 5;
-							indices[index++] = vertexIndex + 7;
+							if (box.Surfaces[(int)Direction.NegativeX].HasArea)
+							{
+								indices[index++] = vertexIndex + 0;
+								indices[index++] = vertexIndex + 1;
+								indices[index++] = vertexIndex + 2;
+								indices[index++] = vertexIndex + 2;
+								indices[index++] = vertexIndex + 1;
+								indices[index++] = vertexIndex + 3;
+							}
+							if (box.Surfaces[(int)Direction.PositiveX].HasArea)
+							{
+								indices[index++] = vertexIndex + 6;
+								indices[index++] = vertexIndex + 5;
+								indices[index++] = vertexIndex + 4;
+								indices[index++] = vertexIndex + 7;
+								indices[index++] = vertexIndex + 5;
+								indices[index++] = vertexIndex + 6;
+							}
+							if (box.Surfaces[(int)Direction.NegativeY].HasArea)
+							{
+								indices[index++] = vertexIndex + 0;
+								indices[index++] = vertexIndex + 4;
+								indices[index++] = vertexIndex + 1;
+								indices[index++] = vertexIndex + 1;
+								indices[index++] = vertexIndex + 4;
+								indices[index++] = vertexIndex + 5;
+							}
+							if (box.Surfaces[(int)Direction.PositiveY].HasArea)
+							{
+								indices[index++] = vertexIndex + 3;
+								indices[index++] = vertexIndex + 6;
+								indices[index++] = vertexIndex + 2;
+								indices[index++] = vertexIndex + 7;
+								indices[index++] = vertexIndex + 6;
+								indices[index++] = vertexIndex + 3;
+							}
+							if (box.Surfaces[(int)Direction.NegativeZ].HasArea)
+							{
+								indices[index++] = vertexIndex + 2;
+								indices[index++] = vertexIndex + 4;
+								indices[index++] = vertexIndex + 0;
+								indices[index++] = vertexIndex + 6;
+								indices[index++] = vertexIndex + 4;
+								indices[index++] = vertexIndex + 2;
+							}
+							if (box.Surfaces[(int)Direction.PositiveZ].HasArea)
+							{
+								indices[index++] = vertexIndex + 1;
+								indices[index++] = vertexIndex + 5;
+								indices[index++] = vertexIndex + 3;
+								indices[index++] = vertexIndex + 3;
+								indices[index++] = vertexIndex + 5;
+								indices[index++] = vertexIndex + 7;
+							}
+
+							vertexIndex += 8;
 						}
 
-						vertexIndex += 8;
-					}
-
-					Matrix transform = this.Map.Transform;
-					pair.Value.Mesh = new StaticMesh(vertices, indices, new BEPUutilities.AffineTransform(BEPUutilities.Matrix3x3.CreateFromMatrix(transform), transform.Translation));
-					pair.Value.Mesh.Tag = this.Map;
-					pair.Value.Mesh.Sidedness = BEPUutilities.TriangleSidedness.Clockwise;
-					if (this.Active)
-					{
-						pair.Value.Added = true;
-						this.Map.main.Space.SpaceObjectBuffer.Add(pair.Value.Mesh);
+						Matrix transform = this.Map.Transform;
+						StaticMesh mesh = new StaticMesh(vertices, indices, new BEPUutilities.AffineTransform(BEPUutilities.Matrix3x3.CreateFromMatrix(transform), transform.Translation));
+						CellState state = boxes[0].Type;
+						mesh.Material.KineticFriction = state.KineticFriction;
+						mesh.Material.StaticFriction = state.StaticFriction;
+						mesh.Tag = this.Map;
+						mesh.Sidedness = BEPUutilities.TriangleSidedness.Clockwise;
+						pair.Value.Mesh = mesh;
+						if (this.Active)
+						{
+							pair.Value.Added = true;
+							this.Map.main.Space.SpaceObjectBuffer.Add(mesh);
+						}
 					}
 				}
 			}
@@ -4056,6 +4066,10 @@ namespace Lemma.Components
 
 		public Property<bool> IsAlwaysActive = new Property<bool> { Editable = true, Value = false };
 
+		public Property<float> KineticFriction = new Property<float> { Editable = true, Value = 0.0f };
+
+		public Property<float> StaticFriction = new Property<float> { Editable = true, Value = 0.0f };
+
 		private bool firstPhysicsUpdate = true;
 		private object physicsLock = new object();
 		private bool physicsUpdated;
@@ -4108,6 +4122,18 @@ namespace Lemma.Components
 				this.IsAffectedByGravity.InternalValue = value;
 				this.PhysicsEntity.IsAffectedByGravity = value;
 				this.PhysicsEntity.ActivityInformation.Activate();
+			};
+
+			this.KineticFriction.Set = delegate(float value)
+			{
+				this.KineticFriction.InternalValue = value;
+				this.PhysicsEntity.Material.KineticFriction = value;
+			};
+
+			this.StaticFriction.Set = delegate(float value)
+			{
+				this.StaticFriction.InternalValue = value;
+				this.PhysicsEntity.Material.StaticFriction = value;
 			};
 
 			this.IsAlwaysActive.Set = delegate(bool value)

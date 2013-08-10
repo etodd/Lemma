@@ -85,7 +85,7 @@ namespace Lemma.Factories
 						parent = null;
 					else
 					{
-						Map staticMap = parent.Get<Map>();
+						Map parentStaticMap = parent.Get<Map>();
 
 						map.PhysicsEntity.Position = mapTransform.Position;
 						if (!allowRotation)
@@ -93,16 +93,16 @@ namespace Lemma.Factories
 
 						if (dir != Direction.None && !main.EditorEnabled)
 						{
-							Vector3 relativeLineAnchor = staticMap.GetRelativePosition(coord) - new Vector3(0.5f) + staticMap.Offset + map.Offset;
-							Vector3 lineAnchor = staticMap.GetAbsolutePosition(relativeLineAnchor);
-							DynamicMap dynamicMap = parent.Get<DynamicMap>();
-							joint = createJoint(map.PhysicsEntity, dynamicMap == null ? null : dynamicMap.PhysicsEntity, map.PhysicsEntity.Position, staticMap.GetAbsoluteVector(dir.Value.GetVector()), lineAnchor);
+							Vector3 relativeLineAnchor = parentStaticMap.GetRelativePosition(coord) - new Vector3(0.5f) + parentStaticMap.Offset + map.Offset;
+							Vector3 lineAnchor = parentStaticMap.GetAbsolutePosition(relativeLineAnchor);
+							DynamicMap parentDynamicMap = parent.Get<DynamicMap>();
+							joint = createJoint(map.PhysicsEntity, parentDynamicMap == null ? null : parentDynamicMap.PhysicsEntity, lineAnchor, parentStaticMap.GetAbsoluteVector(dir.Value.GetVector()), transform.Position);
 							main.Space.Add(joint);
 							map.PhysicsEntity.ActivityInformation.Activate();
 
-							if (dynamicMap != null)
+							if (parentDynamicMap != null)
 							{
-								physicsUpdateBinding = new CommandBinding(dynamicMap.PhysicsUpdated, rebuildJoint);
+								physicsUpdateBinding = new CommandBinding(parentDynamicMap.PhysicsUpdated, rebuildJoint);
 								result.Add(physicsUpdateBinding);
 							}
 

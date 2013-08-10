@@ -36,6 +36,7 @@ namespace Lemma.Factories
 			Property<float> damping = result.GetOrMakeProperty<float>("Damping", true);
 			Property<float> stiffness = result.GetOrMakeProperty<float>("Stiffness", true);
 			Property<int> goal = result.GetOrMakeProperty<int>("Goal", true);
+			Property<bool> servo = result.GetOrMakeProperty<bool>("Servo", true, true);
 
 			PrismaticJoint joint = null;
 
@@ -71,7 +72,10 @@ namespace Lemma.Factories
 			Action setSpeed = delegate()
 			{
 				if (joint != null)
+				{
 					joint.Motor.Settings.Servo.BaseCorrectiveSpeed = speed;
+					joint.Motor.Settings.VelocityMotor.GoalVelocity = speed;
+				}
 			};
 			result.Add(new NotifyBinding(setSpeed, speed));
 
@@ -103,10 +107,16 @@ namespace Lemma.Factories
 			};
 			result.Add(new NotifyBinding(setStiffness, stiffness));
 
+			Action setMode = delegate()
+			{
+				if (joint != null)
+					joint.Motor.Settings.Mode = servo ? MotorMode.Servomechanism : MotorMode.VelocityMotor;
+			};
+			result.Add(new NotifyBinding(setMode, servo));
+
 			Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint = delegate(BEPUphysics.Entities.Entity entity1, BEPUphysics.Entities.Entity entity2, Vector3 pos, Vector3 direction, Vector3 anchor)
 			{
-				joint = new PrismaticJoint(entity1, entity2, pos, -direction, anchor);
-				joint.Motor.Settings.Mode = MotorMode.Servomechanism;
+				joint = new PrismaticJoint(entity1, entity2, pos, -direction, pos);
 				setLimits();
 				setLocked();
 				setSpeed();
@@ -114,6 +124,7 @@ namespace Lemma.Factories
 				setGoal();
 				setDamping();
 				setStiffness();
+				setMode();
 				return joint;
 			};
 

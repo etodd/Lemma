@@ -253,6 +253,10 @@
       <Name>test</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Maps\valley.cs">
+      <Name>valley</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Compile Include="Models\spotlight.fbx">
       <Name>spotlight</Name>
       <Importer>FbxImporter</Importer>
