@@ -29,6 +29,8 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
+			result.CannotSuspendByDistance = true;
+
 			PointLight light = result.Get<PointLight>();
 			Transform transform = result.Get<Transform>();
 			Property<float> attachOffset = result.GetOrMakeProperty<float>("AttachmentOffset", true);

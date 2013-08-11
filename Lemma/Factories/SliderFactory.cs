@@ -116,7 +116,12 @@ namespace Lemma.Factories
 
 			Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint = delegate(BEPUphysics.Entities.Entity entity1, BEPUphysics.Entities.Entity entity2, Vector3 pos, Vector3 direction, Vector3 anchor)
 			{
+				// entity1 is us
+				// entity2 is the main map we are attaching to
+				Vector3 originalPos = entity1.Position;
+				entity1.Position = pos;
 				joint = new PrismaticJoint(entity1, entity2, pos, -direction, pos);
+				entity1.Position = originalPos;
 				setLimits();
 				setLocked();
 				setSpeed();

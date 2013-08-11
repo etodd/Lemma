@@ -96,7 +96,7 @@ namespace Lemma.Factories
 							Vector3 relativeLineAnchor = parentStaticMap.GetRelativePosition(coord) - new Vector3(0.5f) + parentStaticMap.Offset + map.Offset;
 							Vector3 lineAnchor = parentStaticMap.GetAbsolutePosition(relativeLineAnchor);
 							DynamicMap parentDynamicMap = parent.Get<DynamicMap>();
-							joint = createJoint(map.PhysicsEntity, parentDynamicMap == null ? null : parentDynamicMap.PhysicsEntity, lineAnchor, parentStaticMap.GetAbsoluteVector(dir.Value.GetVector()), transform.Position);
+							joint = createJoint(map.PhysicsEntity, parentDynamicMap == null ? null : parentDynamicMap.PhysicsEntity, lineAnchor, parentStaticMap.GetAbsoluteVector(dir.Value.GetVector()), parentStaticMap.GetAbsolutePosition(coord));
 							main.Space.Add(joint);
 							map.PhysicsEntity.ActivityInformation.Activate();
 

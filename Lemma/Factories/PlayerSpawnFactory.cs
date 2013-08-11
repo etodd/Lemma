@@ -33,6 +33,8 @@ namespace Lemma.Factories
 			if (result.GetOrMakeProperty<bool>("Attach", true))
 				MapAttachable.MakeAttachable(result, main);
 
+			result.CannotSuspendByDistance = true;
+
 			this.SetMain(result, main);
 
 			if (main.EditorEnabled)
