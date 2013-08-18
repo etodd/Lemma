@@ -50,6 +50,7 @@ namespace Lemma.Components
 				this.VerticalLimit.InternalValue = value;
 				this.effect.CurrentTechnique = this.effect.Techniques[value ? "FogVerticalLimit" : "Fog"];
 			};
+			this.VerticalLimit.Reset();
 			this.DrawOrder.Value = 11; // In front of water
 			this.Add(new Binding<float>(this.endDistance, this.main.Camera.FarPlaneDistance));
 			this.Enabled.Editable = true;

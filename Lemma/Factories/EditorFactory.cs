@@ -1083,6 +1083,7 @@ namespace Lemma.Factories
 			}));
 
 			addCommand("Propagate current material", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.E }, () => editor.MapEditMode, editor.PropagateMaterial);
+			addCommand("Propagate current material to selected box", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.R }, () => editor.MapEditMode, editor.PropagateMaterialBox);
 			addCommand("Sample current material", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.Q }, () => editor.MapEditMode, editor.SampleMaterial);
 			addCommand("Delete current material", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.X }, () => editor.MapEditMode, editor.DeleteMaterial);
 
@@ -1114,8 +1115,8 @@ namespace Lemma.Factories
 			editorLight.Serialize = false;
 			editorLight.Editable = false;
 			editorLight.Shadowed.Value = false;
-			editorLight.Add(new Binding<float>(editorLight.Attenuation, x => x * 2.0f, cameraDistance));
-			editorLight.Color.Value = Vector3.One;
+			editorLight.Add(new Binding<float>(editorLight.Attenuation, main.Camera.FarPlaneDistance));
+			editorLight.Color.Value = new Vector3(1.5f, 1.5f, 1.5f);
 			editorLight.Add(new Binding<Vector3>(editorLight.Position, main.Camera.Position));
 			editorLight.Enabled.Value = false;
 

@@ -183,6 +183,10 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </None>
+    <None Include="Maps\cave2.cs">
+      <Name>cave2</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Compile Include="Maps\david.fbx">
       <Name>david</Name>
       <Importer>SkinnedModelImporter</Importer>
@@ -190,6 +194,10 @@
       <ProcessorParameters_EffectFileName>..\Effects\Animation.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_DiffuseTexture>david.jpg</ProcessorParameters_DiffuseTexture>
     </Compile>
+    <None Include="Maps\cave2.map">
+      <Name>cave2</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Maps\GlobalStaticScripts\materials.cs">
       <Name>materials</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -323,6 +331,12 @@
       <Name>test</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Compile Include="Maps\wall.fbx">
+      <Name>wall</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_EffectFileName>..\Effects\UnlitSolidColor.fx</ProcessorParameters_EffectFileName>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Effects\Animation.fx">

@@ -467,9 +467,12 @@ namespace Lemma.Components
 			// Point lights
 			if (!parameters.ReverseCullOrder)
 				this.main.GraphicsDevice.RasterizerState = reverseCullState;
-			parameters.Camera.FarPlaneDistance.Value *= 1.5f;
+
+			// HACK
+			float originalFarPlane = parameters.Camera.FarPlaneDistance;
+			parameters.Camera.FarPlaneDistance.Value *= 3.0f;
 			parameters.Camera.SetParameters(Renderer.pointLightEffect);
-			parameters.Camera.FarPlaneDistance.Value /= 1.5f;
+			parameters.Camera.FarPlaneDistance.Value = originalFarPlane;
 
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.pointLightEffect);
 			foreach (PointLight light in PointLight.All)
@@ -485,9 +488,9 @@ namespace Lemma.Components
 			// Spot lights
 
 			// HACK
-			parameters.Camera.FarPlaneDistance.Value *= 1.5f;
+			parameters.Camera.FarPlaneDistance.Value *= 3.0f;
 			parameters.Camera.SetParameters(Renderer.spotLightEffect);
-			parameters.Camera.FarPlaneDistance.Value /= 1.5f;
+			parameters.Camera.FarPlaneDistance.Value = originalFarPlane;
 
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.spotLightEffect);
 			foreach (SpotLight light in SpotLight.All)
