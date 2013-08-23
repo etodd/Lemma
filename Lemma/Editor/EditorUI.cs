@@ -377,6 +377,9 @@ namespace Lemma.Components
 						
 					propertyList.Children.Add(row);
 				}
+
+				if (typeof(IEditorUIComponent).IsAssignableFrom(entry.Value.GetType()))
+					((IEditorUIComponent)entry.Value).AddEditorElements(propertyList);
 			}
 		}
 

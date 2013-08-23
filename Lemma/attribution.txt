@@ -13,7 +13,7 @@ Texture source material from CGTextures. http://cgtextures.com
 
 ==========================================
 
-Player model and rig adapted from MakeHuman. http://www.makehuman.org/
+Human models, textures, and rigs adapted from MakeHuman. http://www.makehuman.org/
 
 ==========================================
 
@@ -28,6 +28,20 @@ Music and some sounds by Jack Menhorn. http://jackmenhorn.com
 
 Audio source material pulled from FreeSound. http://freesound.org
 
+Downloaded on August 17th, 2013
+     S: UnrelentingAgony1.wav by zimbot -- http://www.freesound.org/people/zimbot/sounds/191525/ -- License: Attribution
+Downloaded on August 9th, 2013
+     S: Cellos Destroyed and Droned with Paulstretch by RutgerMuller -- http://www.freesound.org/people/RutgerMuller/sounds/195850/ -- License: Creative Commons 0
+     S: mosters_of_the_abyss2_(PS).wav by AlienXXX -- http://www.freesound.org/people/AlienXXX/sounds/123647/ -- License: Attribution
+     S: Crone (Max for Live) Ambient/Drone Jam.aif by RutgerMuller -- http://www.freesound.org/people/RutgerMuller/sounds/151761/ -- License: Creative Commons 0
+Downloaded on August 2nd, 2013
+     S: electrocute.wav by aust_paul -- http://www.freesound.org/people/aust_paul/sounds/30933/ -- License: Creative Commons 0
+Downloaded on July 30th, 2013
+     S: coldwater_waves.wav by Corsica_S -- http://www.freesound.org/people/Corsica_S/sounds/92822/ -- License: Attribution
+     S: Water_Splash_Objects_falling.aif by Dynamicell -- http://www.freesound.org/people/Dynamicell/sounds/17832/ -- License: Sampling+
+Downloaded on July 21st, 2013
+     S: Sad soft song girl.mp3 by AlucardsBride -- http://www.freesound.org/people/AlucardsBride/sounds/179651/ -- License: Creative Commons 0
+     S: creepy lala 2.wav by AlucardsBride -- http://www.freesound.org/people/AlucardsBride/sounds/193940/ -- License: Creative Commons 0
 Downloaded on April 30th, 2013
      S: indoors room tone WC bahtroom ambient ambience distant bird.wav by bulbastre -- http://www.freesound.org/people/bulbastre/sounds/126940/ -- License: Attribution
      S: Front Door open and close.wav by DJPhizz -- http://www.freesound.org/people/DJPhizz/sounds/52375/ -- License: Attribution

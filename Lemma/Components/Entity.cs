@@ -63,6 +63,7 @@ namespace Lemma.Components
 	[XmlInclude(typeof(PlayerFactory.ScheduledBlock))]
 	[XmlInclude(typeof(ListProperty<PlayerFactory.ScheduledBlock>))]
 	[XmlInclude(typeof(VoxelChaseAI))]
+	[XmlInclude(typeof(VoiceActor))]
 	public class Entity
 	{
 		public struct Handle

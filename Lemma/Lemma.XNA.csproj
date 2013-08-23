@@ -96,6 +96,7 @@
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Analytics.cs" />
+    <Compile Include="Components\VoiceActor.cs" />
     <Compile Include="Components\PID.cs" />
     <Compile Include="Components\ProceduralGenerator.cs" />
     <Compile Include="Components\EnemyBase.cs" />
@@ -111,6 +112,7 @@
     </Compile>
     <Compile Include="Factories\AnimatedPropFactory.cs" />
     <Compile Include="Factories\CloudFactory.cs" />
+    <Compile Include="Factories\VoiceActorFactory.cs" />
     <Compile Include="Factories\LevitatorFactory.cs" />
     <Compile Include="Factories\Explosion.cs" />
     <Compile Include="Factories\OrbFactory.cs" />

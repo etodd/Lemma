@@ -26,6 +26,11 @@ namespace Lemma.Components
 		void Update(float dt);
 	}
 
+	public interface IEditorUIComponent : IComponent
+	{
+		void AddEditorElements(UIComponent propertyList);
+	}
+
 	public interface IDrawableComponent : IComponent
 	{
 		void Draw(GameTime time, RenderParameters parameters);
