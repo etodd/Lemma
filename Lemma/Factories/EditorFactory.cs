@@ -1188,7 +1188,7 @@ namespace Lemma.Factories
 
 			addCommand("Toggle voxel edit", new PCInput.Chord { Key = Keys.Tab }, delegate()
 			{
-				if (editor.TransformMode.Value != Editor.TransformModes.None)
+				if (editor.TransformMode.Value != Editor.TransformModes.None || ui.StringPropertyLocked)
 					return false;
 
 				if (editor.MapEditMode)

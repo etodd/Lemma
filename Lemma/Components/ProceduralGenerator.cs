@@ -41,10 +41,17 @@ namespace Lemma.Components
 
 		public ProceduralGenerator()
 		{
+			this.reseed();
+		}
+
+		private void reseed()
+		{
 			Random random = new Random();
 			for (int i = 0; i < 512; i++)
 				this.permutations[i] = random.Next(256);
 		}
+
+		public Command Reseed = new Command { ShowInEditor = true };
 
 		// Get a pseudo-random gradient for the given 2D cell
 		private Vector2 gradientAtCell2d(int x, int y)
@@ -205,6 +212,8 @@ namespace Lemma.Components
 		public override void InitializeProperties()
 		{
 			this.EnabledInEditMode.Value = true;
+
+			this.Reseed.Action = this.reseed;
 
 			this.PrimaryFillValue.Set = delegate(string value)
 			{

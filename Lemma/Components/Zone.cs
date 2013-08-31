@@ -25,6 +25,8 @@ namespace Lemma.Components
 
 		public Property<bool> Exclusive = new Property<bool> { Value = true, Editable = true };
 
+		public Property<int> Priority = new Property<int> { Value = 0, Editable = true };
+
 		public static IEnumerable<Zone> GetConnectedZones(Zone zone)
 		{
 			IEnumerable<Zone> result = new Zone[] { zone };
@@ -86,6 +88,8 @@ namespace Lemma.Components
 
 		public static Zone Get(Vector3 x)
 		{
+			Zone result = null;
+			int minPriority = int.MaxValue;
 			foreach (Zone z in Zone.Zones)
 			{
 				if (z.BoundingBox.Value.Contains(Vector3.Transform(x, Matrix.Invert(z.Transform))) == ContainmentType.Contains)
@@ -93,10 +97,14 @@ namespace Lemma.Components
 					Zone zone = z;
 					while (zone.Parent.Value.Target != null)
 						zone = zone.Parent.Value.Target.Get<Zone>();
-					return zone;
+					if (zone.Priority < minPriority)
+					{
+						result = zone;
+						minPriority = zone.Priority;
+					}
 				}
 			}
-			return null;
+			return result;
 		}
 	}
 }

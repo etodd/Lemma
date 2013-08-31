@@ -17,8 +17,8 @@ Global Settings
     Header File = Lemma.h;
     Exclude Category Names = 0;
     Exclude Variable Names = 0;
-    Last Modified Low = 2357783178;
-    Last Modified High = 30318493;
+    Last Modified Low = 783283052;
+    Last Modified High = 30318501;
 
     Category
     {
@@ -1110,10 +1110,10 @@ Wave Bank
     Compression Preset Name = <none>;
     Xbox Bank Last Modified Low = 0;
     Xbox Bank Last Modified High = 0;
-    PC Bank Last Modified Low = 2357983391;
-    PC Bank Last Modified High = 30318493;
-    Bank Last Revised Low = 2246724424;
-    Bank Last Revised High = 30318493;
+    PC Bank Last Modified Low = 1213551581;
+    PC Bank Last Modified High = 30318813;
+    Bank Last Revised Low = 1213541568;
+    Bank Last Revised High = 30318813;
 
     Wave
     {
@@ -3521,12 +3521,12 @@ Wave Bank
             Sampling Rate = 44100;
             Bits Per Sample = 1;
             Play Region Offset = 44;
-            Play Region Length = 1497088;
+            Play Region Length = 2641920;
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 395653879;
-            Last Modified High = 30317459;
+            Last Modified Low = 1144178381;
+            Last Modified High = 30318813;
         }
     }
 
@@ -3649,8 +3649,8 @@ Sound Bank
     Windows File = Sounds.xsb;
     Xbox Bank Path Edited = 0;
     Windows Bank Path Edited = 1;
-    Bank Last Modified Low = 2363099889;
-    Bank Last Modified High = 30318493;
+    Bank Last Modified Low = 3742771753;
+    Bank Last Modified High = 30318816;
     Header Last Modified High = 0;
     Header Last Modified Low = 0;
 
@@ -7769,7 +7769,7 @@ Sound Bank
     Sound
     {
         Name = wall;
-        Volume = -520;
+        Volume = -600;
         Pitch = 0;
         Priority = 0;
 
@@ -7795,7 +7795,7 @@ Sound Bank
 
         RPC Entry
         {
-            RPC Name = Loud distance attenuation;
+            RPC Name = Very loud distance attenuation;
         }
 
         Track
