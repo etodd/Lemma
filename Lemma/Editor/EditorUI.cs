@@ -304,8 +304,9 @@ namespace Lemma.Components
 					propertyListContainer.Visible.Value = !propertyListContainer.Visible;
 				}));
 
-				foreach (DictionaryEntry property in properties)
+				foreach (DictionaryEntry propEntry in properties)
 				{
+					DictionaryEntry property = propEntry;
 					ListContainer row = new ListContainer();
 					row.Orientation.Value = ListContainer.ListOrientation.Horizontal;
 
