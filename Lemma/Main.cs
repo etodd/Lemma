@@ -269,7 +269,7 @@ namespace Lemma
 
 			// Give the space some threads to work with.
 			// Just throw a thread at every processor. The thread scheduler will take care of where to put them.
-			for (int i = 0; i < Environment.ProcessorCount; i++)
+			for (int i = 0; i < Environment.ProcessorCount - 1; i++)
 				this.Space.ThreadManager.AddThread();
 			this.Space.ForceUpdater.Gravity = new Vector3(0, -18.0f, 0);
 
