@@ -204,6 +204,11 @@ namespace Lemma.Components
 				}
 			}, () => this.PopupVisible, this.PopupVisible, this.PopupSearchText));
 
+			this.UIElements.ItemRemoved += delegate(int index, UIComponent removed)
+			{
+				removed.Delete.Execute();
+			};
+
 			this.Add(new ListBinding<UIComponent, PopupCommand>(this.PopupElements, this.PopupCommands, delegate(PopupCommand command)
 			{
 				Container container = new Container();
@@ -324,64 +329,45 @@ namespace Lemma.Components
 					if (property.Value.GetType() == typeof(Command))
 					{
 						// It's a command
-						Container field = new Container();
-						field.Tint.Value = Color.Black;
-
-						field.Add(new Binding<float, bool>(field.Opacity, x => x ? 1.0f : 0.5f, field.Highlighted));
-
-						TextElement textField = new TextElement();
-						textField.FontFile.Value = "Font";
-						textField.Text.Value = "[Execute]";
-						field.Children.Add(textField);
-
-						field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point p)
-						{
-							((Command)property.Value).Execute();
-						}));
-
-						row.Children.Add(field);
+						row.Children.Add(this.BuildButton((Command)property.Value, "[Execute]"));
 					}
 					else
 					{
 						// It's a property
-						PropertyInfo info = property.Value.GetType().GetProperty("Value");
-						if (info.PropertyType.Equals(typeof(Vector2)))
-						{
-							ListContainer elementList = new ListContainer();
-							elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
-							row.Children.Add(elementList);
-							foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y })
-								elementList.Children.Add(this.buildValueMemberField(info.PropertyType, (IProperty)property.Value, field));
-						}
-						else if (info.PropertyType.Equals(typeof(Vector3)))
-						{
-							ListContainer elementList = new ListContainer();
-							elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
-							row.Children.Add(elementList);
-							foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z })
-								elementList.Children.Add(this.buildValueMemberField(info.PropertyType, (IProperty)property.Value, field));
-						}
-						else if (info.PropertyType.Equals(typeof(Vector4)) || info.PropertyType.Equals(typeof(Quaternion)) || info.PropertyType.Equals(typeof(Color)))
-						{
-							ListContainer elementList = new ListContainer();
-							elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
-							row.Children.Add(elementList);
-							foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z, VectorElement.W })
-								elementList.Children.Add(this.buildValueMemberField(info.PropertyType, (IProperty)property.Value, field));
-						}
-						else
-						{
-							UIComponent field = this.buildValueField((IProperty)property.Value, info);
-							row.Children.Add(field);
-						}
+						row.Children.Add(this.BuildValueField((IProperty)property.Value));
 					}
-						
+					
 					propertyList.Children.Add(row);
 				}
 
 				if (typeof(IEditorUIComponent).IsAssignableFrom(entry.Value.GetType()))
-					((IEditorUIComponent)entry.Value).AddEditorElements(propertyList);
+					((IEditorUIComponent)entry.Value).AddEditorElements(propertyList, this);
 			}
+		}
+
+		public UIComponent BuildButton(Command command, string label, Color color = default(Color))
+		{
+			if (color.A == 0)
+				color = Color.White;
+
+			Container field = new Container();
+			field.Tint.Value = Color.Black;
+
+			field.Add(new Binding<float, bool>(field.Opacity, x => x ? 1.0f : 0.5f, field.Highlighted));
+
+			TextElement textField = new TextElement();
+			textField.FontFile.Value = "Font";
+			textField.Text.Value = label;
+			textField.Tint.Value = color;
+			field.Children.Add(textField);
+
+			field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point p)
+			{
+				command.Execute();
+			}));
+			field.SwallowMouseEvents.Value = true;
+
+			return field;
 		}
 
 		private void refresh()
@@ -489,7 +475,7 @@ namespace Lemma.Components
 			this.selectedStringNavigateInterval += dt;
 		}
 
-		private UIComponent buildValueMemberField(Type type, IProperty property, VectorElement element)
+		public UIComponent BuildValueMemberField(Type type, IProperty property, VectorElement element)
 		{
 			Container field = new Container();
 			field.Tint.Value = Color.Black;
@@ -569,114 +555,142 @@ namespace Lemma.Components
 			return field;
 		}
 
-		private UIComponent buildValueField(IProperty property, PropertyInfo propertyInfo)
+		public UIComponent BuildValueField(IProperty property)
 		{
-			Container field = new Container();
-			field.Tint.Value = Color.Black;
+			PropertyInfo propertyInfo = property.GetType().GetProperty("Value");
+			if (propertyInfo.PropertyType.Equals(typeof(Vector2)))
+			{
+				ListContainer elementList = new ListContainer();
+				elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
+				foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y })
+					elementList.Children.Add(this.BuildValueMemberField(propertyInfo.PropertyType, property, field));
+				return elementList;
+			}
+			else if (propertyInfo.PropertyType.Equals(typeof(Vector3)))
+			{
+				ListContainer elementList = new ListContainer();
+				elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
+				foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z })
+					elementList.Children.Add(this.BuildValueMemberField(propertyInfo.PropertyType, property, field));
+				return elementList;
+			}
+			else if (propertyInfo.PropertyType.Equals(typeof(Vector4)) || propertyInfo.PropertyType.Equals(typeof(Quaternion)) || propertyInfo.PropertyType.Equals(typeof(Color)))
+			{
+				ListContainer elementList = new ListContainer();
+				elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
+				foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z, VectorElement.W })
+					elementList.Children.Add(this.BuildValueMemberField(propertyInfo.PropertyType, property, field));
+				return elementList;
+			}
+			else
+			{
+				Container field = new Container();
+				field.Tint.Value = Color.Black;
 
-			field.Add(new Binding<float, bool>(field.Opacity, x => x ? 1.0f : 0.5f, field.Highlighted));
+				field.Add(new Binding<float, bool>(field.Opacity, x => x ? 1.0f : 0.5f, field.Highlighted));
 
-			TextElement textField = new TextElement();
-			textField.FontFile.Value = "Font";
-			field.Children.Add(textField);
+				TextElement textField = new TextElement();
+				textField.FontFile.Value = "Font";
+				field.Children.Add(textField);
 			
-			if (!propertyInfo.PropertyType.Equals(typeof(string)))
-			{
-				// Some kind of float, int, or bool
-				field.Add(new CommandBinding<Point>(field.MouseLeftDown, delegate(Point mouse)
+				if (!propertyInfo.PropertyType.Equals(typeof(string)))
 				{
-					field.SwallowMouseEvents.Value = true;
-					field.MouseLocked.Value = true;
-				}));
-				field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point mouse)
-				{
-					field.SwallowMouseEvents.Value = false;
-					field.MouseLocked.Value = false;
-				}));
-			}
-
-			if (propertyInfo.PropertyType.Equals(typeof(int)))
-			{
-				Property<int> socket = (Property<int>)property;
-				field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
-				{
-					this.NeedsSave.Value = true;
-					socket.Value += scroll * (this.EnablePrecision ? 1 : 10);
-				}));
-				textField.Add(new Binding<string, int>(textField.Text, x => x.ToString(), socket));
-			}
-			else if (propertyInfo.PropertyType.Equals(typeof(float)))
-			{
-				Property<float> socket = (Property<float>)property;
-				field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
-				{
-					this.NeedsSave.Value = true;
-					socket.Value += scroll * (this.EnablePrecision ? EditorUI.precisionDelta : EditorUI.normalDelta);;
-				}));
-				textField.Add(new Binding<string, float>(textField.Text, x => x.ToString("F"), socket));
-			}
-			else if (propertyInfo.PropertyType.Equals(typeof(bool)))
-			{
-				Property<bool> socket = (Property<bool>)property;
-				field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
-				{
-					this.NeedsSave.Value = true;
-					socket.Value = !socket;
-				}));
-				textField.Add(new Binding<string, bool>(textField.Text, x => x.ToString(), socket));
-			}
-			else if (typeof(Enum).IsAssignableFrom(propertyInfo.PropertyType))
-			{
-				int numFields = propertyInfo.PropertyType.GetFields(BindingFlags.Static | BindingFlags.Public).Length;
-				field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
-				{
-					this.NeedsSave.Value = true;
-					int i = (int)propertyInfo.GetValue(property, null);
-					i += scroll;
-					if (i < 0)
-						i = numFields - 1;
-					else if (i >= numFields)
-						i = 0;
-					propertyInfo.SetValue(property, Enum.ToObject(propertyInfo.PropertyType, i), null);
-				}));
-				textField.Add(new Binding<string>(textField.Text, () => propertyInfo.GetValue(property, null).ToString(), (IProperty)property));
-			}
-			else if (propertyInfo.PropertyType.Equals(typeof(string)))
-			{
-				Property<string> socket = (Property<string>)property;
-				Binding<string> binding = new Binding<string>(textField.Text, socket);
-				textField.Add(binding);
-				field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point mouse)
-				{
-					if (this.selectedStringProperty != socket)
+					// Some kind of float, int, or bool
+					field.Add(new CommandBinding<Point>(field.MouseLeftDown, delegate(Point mouse)
 					{
-						if (this.selectedStringProperty != null)
-							this.revertStringProperty();
-						this.selectedStringProperty = socket;
-						this.selectedStringDisplayProperty = textField.Text;
-						binding.Enabled = false;
-						this.selectedStringBinding = binding;
-						this.selectedStringValue = socket.Value ?? "";
-						this.selectedStringIndex = this.selectedStringValue.Length;
-						this.selectedStringDisplayProperty.Value = this.selectedStringValue.Insert(this.selectedStringIndex, "_");
-						this.StringPropertyLocked.Value = true;
-					}
-				}));
-			}
-			else if (propertyInfo.PropertyType.Equals(typeof(Entity.Handle)))
-			{
-				Property<Entity.Handle> socket = (Property<Entity.Handle>)property;
-				Binding<string> binding = new Binding<string>(textField.Text, () => socket.Value.ID, socket);
-				textField.Add(binding);
-				field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point mouse)
+						field.SwallowMouseEvents.Value = true;
+						field.MouseLocked.Value = true;
+					}));
+					field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point mouse)
+					{
+						field.SwallowMouseEvents.Value = false;
+						field.MouseLocked.Value = false;
+					}));
+				}
+
+				if (propertyInfo.PropertyType.Equals(typeof(int)))
 				{
-					this.lockStringProperty(textField.Text, socket, socket.Value.ID ?? "", binding);
-				}));
-			}
-			else if (propertyInfo.PropertyType.Equals(typeof(Matrix)))
-				textField.Text.Value = "[matrix]";
+					Property<int> socket = (Property<int>)property;
+					field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+					{
+						this.NeedsSave.Value = true;
+						socket.Value += scroll * (this.EnablePrecision ? 1 : 10);
+					}));
+					textField.Add(new Binding<string, int>(textField.Text, x => x.ToString(), socket));
+				}
+				else if (propertyInfo.PropertyType.Equals(typeof(float)))
+				{
+					Property<float> socket = (Property<float>)property;
+					field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+					{
+						this.NeedsSave.Value = true;
+						socket.Value += scroll * (this.EnablePrecision ? EditorUI.precisionDelta : EditorUI.normalDelta);;
+					}));
+					textField.Add(new Binding<string, float>(textField.Text, x => x.ToString("F"), socket));
+				}
+				else if (propertyInfo.PropertyType.Equals(typeof(bool)))
+				{
+					Property<bool> socket = (Property<bool>)property;
+					field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+					{
+						this.NeedsSave.Value = true;
+						socket.Value = !socket;
+					}));
+					textField.Add(new Binding<string, bool>(textField.Text, x => x.ToString(), socket));
+				}
+				else if (typeof(Enum).IsAssignableFrom(propertyInfo.PropertyType))
+				{
+					int numFields = propertyInfo.PropertyType.GetFields(BindingFlags.Static | BindingFlags.Public).Length;
+					field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+					{
+						this.NeedsSave.Value = true;
+						int i = (int)propertyInfo.GetValue(property, null);
+						i += scroll;
+						if (i < 0)
+							i = numFields - 1;
+						else if (i >= numFields)
+							i = 0;
+						propertyInfo.SetValue(property, Enum.ToObject(propertyInfo.PropertyType, i), null);
+					}));
+					textField.Add(new Binding<string>(textField.Text, () => propertyInfo.GetValue(property, null).ToString(), (IProperty)property));
+				}
+				else if (propertyInfo.PropertyType.Equals(typeof(string)))
+				{
+					Property<string> socket = (Property<string>)property;
+					Binding<string> binding = new Binding<string>(textField.Text, socket);
+					textField.Add(binding);
+					field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point mouse)
+					{
+						if (this.selectedStringProperty != socket)
+						{
+							if (this.selectedStringProperty != null)
+								this.revertStringProperty();
+							this.selectedStringProperty = socket;
+							this.selectedStringDisplayProperty = textField.Text;
+							binding.Enabled = false;
+							this.selectedStringBinding = binding;
+							this.selectedStringValue = socket.Value ?? "";
+							this.selectedStringIndex = this.selectedStringValue.Length;
+							this.selectedStringDisplayProperty.Value = this.selectedStringValue.Insert(this.selectedStringIndex, "_");
+							this.StringPropertyLocked.Value = true;
+						}
+					}));
+				}
+				else if (propertyInfo.PropertyType.Equals(typeof(Entity.Handle)))
+				{
+					Property<Entity.Handle> socket = (Property<Entity.Handle>)property;
+					Binding<string> binding = new Binding<string>(textField.Text, () => socket.Value.ID, socket);
+					textField.Add(binding);
+					field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point mouse)
+					{
+						this.lockStringProperty(textField.Text, socket, socket.Value.ID ?? "", binding);
+					}));
+				}
+				else if (propertyInfo.PropertyType.Equals(typeof(Matrix)))
+					textField.Text.Value = "[matrix]";
 			
-			return field;
+				return field;
+			}
 		}
 
 		private void lockStringProperty(Property<string> displayProperty, IProperty targetProperty, string initialValue, Binding<string> binding, bool allowMultiline = true, bool allowEscape = false)

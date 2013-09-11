@@ -108,18 +108,15 @@ namespace Lemma.Components
 		{
 			base.delete();
 			if (this.Parent.Value != null)
-			{
 				this.Parent.Value.Children.Remove(this);
-				this.Parent.Value = null;
-			}
-			else
-				this.deleteWithoutRemovingFromParent();
 		}
 
 		private void deleteWithoutRemovingFromParent()
 		{
+			this.Parent.Value = null;
 			foreach (UIComponent child in this.Children)
 				child.deleteWithoutRemovingFromParent();
+			this.Delete.Execute();
 		}
 
 		public void CheckLayout()
@@ -237,9 +234,9 @@ namespace Lemma.Components
 
 			try
 			{
-				foreach (UIComponent child in this.Children)
+				for (int i = this.Children.Count - 1; i >= 0; i--)
 				{
-					if (child.HandleMouse(mouse, lastMouse, transform, newHighlighted))
+					if (this.Children[i].HandleMouse(mouse, lastMouse, transform, newHighlighted))
 						return true; // Mouse events have been swallowed
 				}
 			}

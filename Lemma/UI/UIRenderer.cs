@@ -30,6 +30,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public RootUIComponent Root;
 
+		[XmlIgnore]
+		public Command SwallowMouseEvents = new Command();
+
 		public Property<bool> EnableMouse = new Property<bool> { Value = true };
 
 		public UIRenderer()
@@ -57,7 +60,10 @@ namespace Lemma.Components
 		void IUpdateableComponent.Update(float dt)
 		{
 			if (this.main.IsActive && this.EnableMouse)
-				this.Root.HandleMouse(this.main.MouseState, this.main.LastMouseState, Matrix.Identity, true);
+			{
+				if (this.Root.HandleMouse(this.main.MouseState, this.main.LastMouseState, Matrix.Identity, true))
+					this.SwallowMouseEvents.Execute();
+			}
 			this.Root.CheckLayout();
 		}
 

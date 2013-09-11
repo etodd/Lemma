@@ -1089,6 +1089,8 @@ namespace Lemma.Factories
 
 			editor.Add(new Binding<Vector2>(editor.Mouse, input.Mouse, () => !input.EnableLook));
 
+			uiRenderer.Add(new CommandBinding(uiRenderer.SwallowMouseEvents, (Action)input.SwallowEvents));
+
 			Camera camera = main.Camera;
 
 			Property<float> cameraDistance = new Property<float> { Value = 10.0f };

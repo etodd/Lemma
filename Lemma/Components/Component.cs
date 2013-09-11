@@ -28,7 +28,7 @@ namespace Lemma.Components
 
 	public interface IEditorUIComponent : IComponent
 	{
-		void AddEditorElements(UIComponent propertyList);
+		void AddEditorElements(UIComponent propertyList, EditorUI ui);
 	}
 
 	public interface IDrawableComponent : IComponent

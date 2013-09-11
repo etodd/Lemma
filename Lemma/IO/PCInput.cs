@@ -441,6 +441,11 @@ namespace Lemma.Components
 			this.preventKeyDownEvents = false;
 		}
 
+		public void SwallowEvents()
+		{
+			this.preventKeyDownEvents = true;
+		}
+
 		protected virtual void handleMouse()
 		{
 			MouseState state = this.main.MouseState, lastState = this.main.LastMouseState;
