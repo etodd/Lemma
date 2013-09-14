@@ -262,6 +262,7 @@ namespace Lemma.Components
 					de = new DictionaryEntry();
 					de.Key = component.Key;
 					de.Value = component.Value;
+					component.Value.OnSave();
 					ret[i] = de;
 					i++;
 				}

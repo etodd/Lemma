@@ -117,6 +117,11 @@ namespace Lemma.Components
 			this.Delete.Action = (Action)this.delete;
 		}
 
+		public virtual void OnSave()
+		{
+
+		}
+
 		public virtual void InitializeProperties()
 		{
 
