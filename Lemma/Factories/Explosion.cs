@@ -10,10 +10,20 @@ namespace Lemma.Factories
 {
 	public static class Explosion
 	{
+		public static void Explode(Main main, Vector3 pos, int radius = 8, float physicsRadius = 12.0f)
+		{
+			Explosion.explode(main, null, new Map.Coordinate(), pos, radius, physicsRadius);
+		}
+
 		public static void Explode(Main main, Map map, Map.Coordinate coord, int radius = 8, float physicsRadius = 12.0f)
 		{
-			// Kaboom
 			Vector3 pos = map.GetAbsolutePosition(coord);
+			Explosion.explode(main, map, coord, pos, radius, physicsRadius);
+		}
+
+		private static void explode(Main main, Map map, Map.Coordinate coord, Vector3 pos, int radius, float physicsRadius)
+		{
+			// Kaboom
 			Sound.PlayCue(main, "Explosion", pos, 1.0f, 0.0f);
 
 			Entity lightEntity = Factory.Get<PointLightFactory>().CreateAndBind(main);

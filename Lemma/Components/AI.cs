@@ -30,6 +30,11 @@ namespace Lemma.Components
 			public Task[] Tasks;
 			[XmlIgnore]
 			public bool _valid;
+
+			public State()
+			{
+				this.Tasks = new AI.Task[] { };
+			}
 		}
 
 		[XmlArray("States")]
@@ -83,10 +88,13 @@ namespace Lemma.Components
 				existingState._valid = true;
 				existingState.Enter = state.Enter;
 				existingState.Exit = state.Exit;
-				for (int i = 0; i < Math.Min(state.Tasks.Length, existingState.Tasks.Length); i++)
+				if (state.Tasks != null && existingState.Tasks != null)
 				{
-					Task existingTask = existingState.Tasks[i], task = state.Tasks[i];
-					task._leftOverIntervalTime = existingTask._leftOverIntervalTime;
+					for (int i = 0; i < Math.Min(state.Tasks.Length, existingState.Tasks.Length); i++)
+					{
+						Task existingTask = existingState.Tasks[i], task = state.Tasks[i];
+						task._leftOverIntervalTime = existingTask._leftOverIntervalTime;
+					}
 				}
 				existingState.Tasks = state.Tasks;
 				if (existingState == this.currentState && this.TimeInCurrentState == 0.0f && existingState.Enter != null)

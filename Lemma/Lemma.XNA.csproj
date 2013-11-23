@@ -156,7 +156,6 @@
     <Compile Include="Factories\AmbientLightFactory.cs" />
     <Compile Include="Factories\AmbientSoundFactory.cs" />
     <Compile Include="Factories\BlockFactory.cs" />
-    <Compile Include="Factories\BlastFactory.cs" />
     <Compile Include="Factories\WaterFactory.cs" />
     <Compile Include="Factories\SpotLightFactory.cs" />
     <Compile Include="Factories\PlayerTriggerFactory.cs" />

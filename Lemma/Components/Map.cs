@@ -99,6 +99,7 @@ namespace Lemma.Components
 		{
 			public int ID;
 			public bool Permanent;
+			public bool Hard;
 			public string Name;
 			public string DiffuseMap;
 			public string NormalMap;
@@ -877,6 +878,7 @@ namespace Lemma.Components
 			// Voxel raycasting
 			GlobalRaycastResult result = new GlobalRaycastResult();
 			result.Distance = length;
+			result.Position = start + ray * length;
 
 			IEnumerable<Map> maps = includeScenery ? Map.ActiveMaps : Map.ActivePhysicsMaps;
 

@@ -25,22 +25,6 @@ namespace Lemma.Factories
 			light.Editable = false;
 			result.Add("Light", light);
 
-			Sound blastChargeSound = new Sound();
-			blastChargeSound.Cue.Value = "Blast Charge";
-			result.Add("BlastChargeSound", blastChargeSound);
-
-			Sound blastFireSound = new Sound();
-			blastFireSound.Cue.Value = "Blast Fire";
-			result.Add("BlastFireSound", blastFireSound);
-
-			result.Add("Damage", new Property<float> { Editable = true, Value = 0.1f });
-			result.Add("VisibilityCheckInterval", new Property<float> { Editable = true, Value = 1.0f });
-			result.Add("BlastChargeTime", new Property<float> { Editable = true, Value = 1.25f });
-			result.Add("BlastInterval", new Property<float> { Editable = true, Value = 1.0f });
-			result.Add("PlayerPositionMemoryTime", new Property<float> { Editable = true, Value = 4.0f });
-			result.Add("BlastSpeed", new Property<float> { Editable = true, Value = 75.0f });
-			result.Add("PlayerDetectionRadius", new Property<float> { Editable = true, Value = 15.0f });
-
 			return result;
 		}
 
@@ -52,11 +36,19 @@ namespace Lemma.Factories
 			DynamicMap map = result.Get<DynamicMap>();
 			PointLight light = result.Get<PointLight>();
 
-			Sound blastFireSound = result.Get<Sound>("BlastFireSound");
+			Sound blastChargeSound = new Sound();
+			blastChargeSound.Cue.Value = "Blast Charge";
+			blastChargeSound.Serialize = false;
+			result.Add("BlastChargeSound", blastChargeSound);
+
+			Sound blastFireSound = new Sound();
+			blastFireSound.Cue.Value = "Blast Fire";
+			blastFireSound.Serialize = false;
+			result.Add("BlastFireSound", blastFireSound);
+
 			blastFireSound.Add(new Binding<Vector3>(blastFireSound.Position, transform.Position));
 			blastFireSound.Add(new Binding<Vector3>(blastFireSound.Velocity, map.LinearVelocity));
 
-			Sound blastChargeSound = result.Get<Sound>("BlastChargeSound");
 			blastChargeSound.Add(new Binding<Vector3>(blastChargeSound.Position, transform.Position));
 			blastChargeSound.Add(new Binding<Vector3>(blastChargeSound.Velocity, map.LinearVelocity));
 
@@ -71,6 +63,7 @@ namespace Lemma.Factories
 			if (!main.EditorEnabled)
 			{
 				rotator = new EntityRotator(map.PhysicsEntity);
+				rotator.AngularMotor.Settings.Servo.MaxCorrectiveVelocity = 3.0f;
 				main.Space.Add(rotator);
 
 				mover = new EntityMover(map.PhysicsEntity);
@@ -80,113 +73,137 @@ namespace Lemma.Factories
 
 			Map.Coordinate blastSource = map.GetCoordinate(0, 0, 0);
 			Map.Coordinate blastPosition = blastSource;
-			Map.CellState criticalMaterial = WorldFactory.StatesByName["Critical"];
+			Map.CellState whiteMaterial = WorldFactory.StatesByName["White"];
+			Map.CellState permanentWhiteMaterial = WorldFactory.StatesByName["WhitePermanent"];
 			foreach (Map.Box box in map.Chunks.SelectMany(x => x.Boxes))
 			{
-				if (box.Type == criticalMaterial)
+				if (box.Type == whiteMaterial || box.Type == permanentWhiteMaterial)
 				{
 					blastSource = map.GetCoordinate(box.X, box.Y, box.Z);
-					blastPosition = map.GetCoordinate(box.X, box.Y, box.Z - 3);
+					blastPosition = map.GetCoordinate(box.X, box.Y, box.Z - 1);
 					break;
 				}
 			}
 
-			Property<float> blastIntervalTime = result.GetProperty<float>("BlastInterval");
+			LineDrawer laser = new LineDrawer { Serialize = false };
+			result.Add(laser);
+
+			const float blastIntervalTime = 3.0f;
 			float blastInterval = 0.0f;
 
-			Property<float> playerPositionMemoryTime = result.GetProperty<float>("PlayerPositionMemoryTime");
+			const float playerPositionMemoryTime = 4.0f;
 			float timeSinceLastSpottedPlayer = playerPositionMemoryTime;
 
-			Property<float> visibilityCheckInterval = result.GetProperty<float>("VisibilityCheckInterval");
+			const float visibilityCheckInterval = 1.0f;
 			float timeSinceLastVisibilityCheck = 0.0f;
 
-			Property<float> blastChargeTime = result.GetProperty<float>("BlastChargeTime");
+			const float blastChargeTime = 1.25f;
 			float blastCharge = 0.0f;
 
-			Property<float> blastSpeed = result.GetProperty<float>("BlastSpeed");
-			Property<float> playerDetectionRadius = result.GetProperty<float>("PlayerDetectionRadius");
+			const float playerDetectionRadius = 15.0f;
+
+			result.Add(new CommandBinding(result.Delete, delegate()
+			{
+				if (rotator != null)
+				{
+					main.Space.Remove(rotator);
+					main.Space.Remove(mover);
+				}
+			}));
+
+			Property<Vector3> target = result.GetOrMakeProperty<Vector3>("Target");
+
+			Microsoft.Xna.Framework.Color color = new Microsoft.Xna.Framework.Color(0.2f, 1.0f, 0.2f, 0.7f);
 
 			Updater update = new Updater();
 			update.Add(delegate(float dt)
+			{
+				if (map[blastSource].ID == 0)
 				{
-					if (map[blastSource].ID == 0)
+					result.Delete.Execute();
+					return;
+				}
+
+				laser.Lines.Clear();
+				Entity player = PlayerFactory.Instance;
+				if (player != null)
+				{
+					Vector3 rayStart = map.GetAbsolutePosition(blastPosition);
+
+					target.Value += (player.Get<Transform>().Position - target.Value) * 0.5f * dt;
+
+					Vector3 rayDirection = target - rayStart;
+					rayDirection.Normalize();
+
+					Vector3 aimDirection = map.GetAbsoluteVector(Vector3.Forward);
+
+					Map.GlobalRaycastResult hit = Map.GlobalRaycast(rayStart, aimDirection, 300.0f);
+
+					laser.Lines.Add(new LineDrawer.Line
 					{
-						update.Delete.Execute();
-						if (rotator != null)
-						{
-							main.Space.Remove(rotator);
-							main.Space.Remove(mover);
-						}
-						light.Delete.Execute();
-						return;
-					}
-					Entity player = PlayerFactory.Instance;
-					if (player != null)
+						A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(map.GetAbsolutePosition(blastSource), color),
+						B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(hit.Position, color),
+					});
+
+					timeSinceLastVisibilityCheck += dt;
+					if (timeSinceLastVisibilityCheck > visibilityCheckInterval)
 					{
-						Vector3 playerPosition = player.Get<Transform>().Position.Value;
-
-						Vector3 rayStart = map.GetAbsolutePosition(blastPosition);
-
-						Vector3 rayDirection = playerPosition - rayStart;
-						rayDirection.Normalize();
-
-						timeSinceLastVisibilityCheck += dt;
-						if (timeSinceLastVisibilityCheck > visibilityCheckInterval)
+						if ((target.Value - transform.Position).Length() < playerDetectionRadius)
+							timeSinceLastSpottedPlayer = 0.0f;
+						else if (Vector3.Dot(rayDirection, map.GetAbsoluteVector(Vector3.Forward)) > 0)
 						{
-							if ((playerPosition - transform.Position).Length() < playerDetectionRadius)
-								timeSinceLastSpottedPlayer = 0.0f;
-							else if (Vector3.Dot(rayDirection, map.GetAbsoluteVector(Vector3.Forward)) > 0)
+							RayCastResult physicsHit;
+							if (main.Space.RayCast(new Ray(rayStart, rayDirection), out physicsHit))
 							{
-								RayCastResult hit;
-								if (main.Space.RayCast(new Ray(rayStart, rayDirection), out hit))
-								{
-									EntityCollidable collidable = hit.HitObject as EntityCollidable;
-									if (collidable != null && collidable.Entity.Tag is Player)
-										timeSinceLastSpottedPlayer = 0.0f;
-								}
+								EntityCollidable collidable = physicsHit.HitObject as EntityCollidable;
+								if (collidable != null && collidable.Entity.Tag is Player)
+									timeSinceLastSpottedPlayer = 0.0f;
 							}
-							timeSinceLastVisibilityCheck = 0.0f;
 						}
-						timeSinceLastSpottedPlayer += dt;
+						timeSinceLastVisibilityCheck = 0.0f;
+					}
+					timeSinceLastSpottedPlayer += dt;
 
-						light.Attenuation.Value = 0.0f;
-						if (timeSinceLastSpottedPlayer < playerPositionMemoryTime)
+					light.Attenuation.Value = 0.0f;
+					if (timeSinceLastSpottedPlayer < playerPositionMemoryTime)
+					{
+						rotator.TargetOrientation = Quaternion.CreateFromRotationMatrix(Matrix.Invert(Matrix.CreateLookAt(rayStart, target, Vector3.Up)));
+						if (blastInterval > blastIntervalTime && Vector3.Dot(rayDirection, aimDirection) > 0.9f)
 						{
-							rotator.TargetOrientation = Quaternion.CreateFromRotationMatrix(Matrix.Invert(Matrix.CreateLookAt(rayStart, playerPosition, Vector3.Up)));
-							if (blastInterval > blastIntervalTime)
+							if (blastCharge < blastChargeTime)
 							{
-								if (blastCharge < blastChargeTime)
-								{
-									if (blastCharge == 0.0f)
-										blastChargeSound.Play.Execute();
-									blastCharge += dt;
-									light.Position.Value = rayStart;
-									light.Attenuation.Value = (blastCharge / blastChargeTime) * 30.0f;
-								}
-								else
-								{
-									blastCharge = 0.0f;
-									blastFireSound.Play.Execute();
-									blastInterval = 0.0f;
-									Entity blast = Factory.CreateAndBind(main, "Blast");
-
-									PhysicsBlock physics = blast.Get<PhysicsBlock>();
-									Transform blastTransform = blast.Get<Transform>();
-									blastTransform.Position.Value = rayStart;
-									physics.LinearVelocity.Value = (rayDirection * blastSpeed) + new Vector3(0.0f, 6.0f, 0.0f);
-									main.Add(blast);
-								}
+								if (blastCharge == 0.0f)
+									blastChargeSound.Play.Execute();
+								blastCharge += dt;
+								light.Position.Value = rayStart;
+								light.Attenuation.Value = (blastCharge / blastChargeTime) * 30.0f;
 							}
 							else
 							{
-								blastInterval += dt;
 								blastCharge = 0.0f;
+								blastFireSound.Play.Execute();
+								blastInterval = 0.0f;
+
+								if (hit.Map != null)
+									Explosion.Explode(main, hit.Map, hit.Coordinate.Value, 5, 8.0f);
+								else
+								{
+									BEPUutilities.RayHit physicsHit;
+									if (player.Get<Player>().Body.CollisionInformation.RayCast(new Ray(rayStart, aimDirection), hit.Distance, out physicsHit))
+										Explosion.Explode(main, player.Get<Transform>().Position, 5, 8.0f);
+								}
 							}
 						}
 						else
+						{
+							blastInterval += dt;
 							blastCharge = 0.0f;
+						}
 					}
-				});
+					else
+						blastCharge = 0.0f;
+				}
+			});
 			result.Add("Update", update);
 		}
 	}

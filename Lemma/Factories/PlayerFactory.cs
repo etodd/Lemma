@@ -1094,7 +1094,7 @@ namespace Lemma.Factories
 							for (Map.Coordinate z = y.Move(rightDir.GetReverse(), 1); z.GetComponent(rightDir) < center.GetComponent(rightDir) + 2; z = z.Move(rightDir))
 							{
 								Map.CellState state = map[z];
-								if (state.ID != 0 && !state.Permanent && !removals.Contains(z))
+								if (state.ID != 0 && !state.Permanent && !state.Hard && !removals.Contains(z))
 								{
 									removals.Add(z);
 									Vector3 cellPos = map.GetAbsolutePosition(z);

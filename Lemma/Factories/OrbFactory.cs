@@ -56,7 +56,7 @@ namespace Lemma.Factories
 			const float defaultVolume = 0.5f;
 			volume.Value = defaultVolume;
 
-			AI ai = result.GetOrCreate<AI>();
+			AI ai = result.GetOrCreate<AI>("AI");
 
 			Model model = result.GetOrCreate<Model>();
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
@@ -77,10 +77,8 @@ namespace Lemma.Factories
 						return new Vector3(1.5f, 0.5f, 0.5f);
 					case "Explode":
 						return new Vector3(2.0f, 1.0f, 0.5f);
-					case "Idle":
-						return new Vector3(1.0f, 1.0f, 1.0f);
 					default:
-						return new Vector3(0.0f, 0.0f, 0.0f);
+						return new Vector3(1.0f, 1.0f, 1.0f);
 				}
 			}, ai.CurrentState));
 
@@ -116,6 +114,20 @@ namespace Lemma.Factories
 						ai.CurrentState.Value = "Suspended";
 				},
 			};
+
+			ai.Add(new AI.State
+			{
+				Name = "Suspended",
+				Enter = delegate(AI.State previous)
+				{
+					chase.Enabled.Value = false;
+				},
+				Exit = delegate(AI.State next)
+				{
+					chase.Enabled.Value = true;
+				},
+				Tasks = new[] { checkOperationalRadius, },
+			});
 
 			const float sightDistance = 30.0f;
 			const float hearingDistance = 15.0f;
