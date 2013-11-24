@@ -23,6 +23,7 @@ namespace Lemma.Components
 		public Property<float> MaxY = new Property<float> { Value = (float)Math.PI * 0.5f };
 
 		const float sensitivityMultiplier = 0.002f;
+		const float gamePadSensitivityMultiplier = -5.0f;
 		public Property<bool> EnableLook = new Property<bool> { Value = true };
 		public Property<bool> EnableMovement = new Property<bool> { Value = true };
 
@@ -97,7 +98,13 @@ namespace Lemma.Components
 				KeyboardState keyboard = this.main.KeyboardState;
 				float x = this.GetInput(this.LeftKey) ? -1.0f : (this.GetInput(this.RightKey) ? 1.0f : 0.0f);
 				float y = this.GetInput(this.BackwardKey) ? -1.0f : (this.GetInput(this.ForwardKey) ? 1.0f : 0.0f);
+
 				Vector2 newMovement = new Vector2(x, y);
+
+				GamePadState gamePad = this.main.GamePadState;
+				if (gamePad.IsConnected)
+					newMovement += gamePad.ThumbSticks.Left;
+
 				if (!this.Movement.Value.Equals(newMovement))
 					this.Movement.Value = newMovement;
 			}
@@ -112,10 +119,16 @@ namespace Lemma.Components
 				MouseState mouse = this.main.MouseState;
 
 				Vector2 mouseMovement = new Vector2(FPSInput.mouseCenterX - mouse.X, mouse.Y - FPSInput.mouseCenterY) * this.MouseSensitivity * FPSInput.sensitivityMultiplier;
+
+				GamePadState gamePad = this.main.GamePadState;
+				if (gamePad.IsConnected)
+					mouseMovement += gamePad.ThumbSticks.Right * this.MouseSensitivity * FPSInput.gamePadSensitivityMultiplier * this.main.ElapsedTime;
+
 				if (this.InvertMouseX)
 					mouseMovement.X *= -1;
 				if (this.InvertMouseY)
 					mouseMovement.Y *= -1;
+
 				if (mouseMovement.LengthSquared() > 0.0f)
 				{
 					Vector2 newValue = this.Mouse.Value + mouseMovement;

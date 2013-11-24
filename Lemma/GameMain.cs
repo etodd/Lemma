@@ -26,7 +26,7 @@ namespace Lemma
 
 		}
 
-		public const int ConfigVersion = 3;
+		public const int ConfigVersion = 4;
 		public const int MapVersion = 4;
 		public const int Build = 4;
 
@@ -52,12 +52,11 @@ namespace Lemma
 			public Property<PCInput.PCInputBinding> Left = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.A } };
 			public Property<PCInput.PCInputBinding> Right = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D } };
 			public Property<PCInput.PCInputBinding> Backward = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.S } };
-			public Property<PCInput.PCInputBinding> Jump = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Space } };
-			public Property<PCInput.PCInputBinding> Parkour = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.LeftShift } };
-			public Property<PCInput.PCInputBinding> Roll = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.LeftControl } };
-			public Property<PCInput.PCInputBinding> Kick = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton } };
-			public Property<PCInput.PCInputBinding> Reload = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.R } };
-			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F5 } };
+			public Property<PCInput.PCInputBinding> Jump = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Space, GamePadButton = Buttons.RightTrigger } };
+			public Property<PCInput.PCInputBinding> Parkour = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.LeftShift, GamePadButton = Buttons.LeftTrigger } };
+			public Property<PCInput.PCInputBinding> Roll = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.LeftControl, GamePadButton = Buttons.LeftStick } };
+			public Property<PCInput.PCInputBinding> Kick = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton, GamePadButton = Buttons.RightStick } };
+			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F5, GamePadButton = Buttons.Back } };
 			public Property<PCInput.PCInputBinding> ToggleFullscreen = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F11 } };
 		}
 
@@ -1000,7 +999,7 @@ namespace Lemma
 				controlsScroller.Children.Add(controlsList);
 				controlsMenu.Children.Add(controlsScroller);
 
-				UIComponent invertMouseX = this.createMenuButton<bool>("Invert Mouse X", this.Settings.InvertMouseX);
+				UIComponent invertMouseX = this.createMenuButton<bool>("Invert Look X", this.Settings.InvertMouseX);
 				invertMouseX.Add(new CommandBinding<Point, int>(invertMouseX.MouseScrolled, delegate(Point mouse, int scroll)
 				{
 					this.Settings.InvertMouseX.Value = !this.Settings.InvertMouseX;
@@ -1011,7 +1010,7 @@ namespace Lemma
 				}));
 				controlsList.Children.Add(invertMouseX);
 
-				UIComponent invertMouseY = this.createMenuButton<bool>("Invert Mouse Y", this.Settings.InvertMouseY);
+				UIComponent invertMouseY = this.createMenuButton<bool>("Invert Look Y", this.Settings.InvertMouseY);
 				invertMouseY.Add(new CommandBinding<Point, int>(invertMouseY.MouseScrolled, delegate(Point mouse, int scroll)
 				{
 					this.Settings.InvertMouseY.Value = !this.Settings.InvertMouseY;
@@ -1022,7 +1021,7 @@ namespace Lemma
 				}));
 				controlsList.Children.Add(invertMouseY);
 
-				UIComponent mouseSensitivity = this.createMenuButton<float>("Mouse Sensitivity", this.Settings.MouseSensitivity, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
+				UIComponent mouseSensitivity = this.createMenuButton<float>("Look Sensitivity", this.Settings.MouseSensitivity, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
 				mouseSensitivity.SwallowMouseEvents.Value = true;
 				mouseSensitivity.Add(new CommandBinding<Point, int>(mouseSensitivity.MouseScrolled, delegate(Point mouse, int scroll)
 				{
@@ -1030,37 +1029,62 @@ namespace Lemma
 				}));
 				controlsList.Children.Add(mouseSensitivity);
 
-				Action<Property<PCInput.PCInputBinding>, string> addInputSetting = delegate(Property<PCInput.PCInputBinding> setting, string display)
+				Action<Property<PCInput.PCInputBinding>, string, bool> addInputSetting = delegate(Property<PCInput.PCInputBinding> setting, string display, bool allowGamepad)
 				{
 					UIComponent button = this.createMenuButton<PCInput.PCInputBinding>(display, setting);
 					button.Add(new CommandBinding<Point>(button.MouseLeftUp, delegate(Point mouse)
 					{
 						PCInput.PCInputBinding originalValue = setting;
-						setting.Value = new PCInput.PCInputBinding(); // Clear setting. Will display [?] for the key.
+						setting.Value = new PCInput.PCInputBinding();
 						this.UI.EnableMouse.Value = false;
 						input.GetNextInput(delegate(PCInput.PCInputBinding binding)
 						{
 							if (binding.Key == Keys.Escape)
 								setting.Value = originalValue;
 							else
-								setting.Value = binding;
+							{
+								PCInput.PCInputBinding newValue = new PCInput.PCInputBinding();
+								newValue.Key = originalValue.Key;
+								newValue.MouseButton = originalValue.MouseButton;
+								newValue.GamePadButton = originalValue.GamePadButton;
+
+								if (binding.Key != Keys.None)
+								{
+									newValue.Key = binding.Key;
+									newValue.MouseButton = PCInput.MouseButton.None;
+								}
+								else if (binding.MouseButton != PCInput.MouseButton.None)
+								{
+									newValue.Key = Keys.None;
+									newValue.MouseButton = binding.MouseButton;
+								}
+
+								if (allowGamepad)
+								{
+									if (binding.GamePadButton != Buttons.BigButton)
+										newValue.GamePadButton = binding.GamePadButton;
+								}
+								else
+									newValue.GamePadButton = Buttons.BigButton;
+
+								setting.Value = newValue;
+							}
 							this.UI.EnableMouse.Value = true;
 						});
 					}));
 					controlsList.Children.Add(button);
 				};
 
-				addInputSetting(this.Settings.Forward, "Move Forward");
-				addInputSetting(this.Settings.Left, "Move Left");
-				addInputSetting(this.Settings.Backward, "Move Backward");
-				addInputSetting(this.Settings.Right, "Move Right");
-				addInputSetting(this.Settings.Jump, "Jump");
-				addInputSetting(this.Settings.Parkour, "Parkour");
-				addInputSetting(this.Settings.Roll, "Roll / Crouch");
-				addInputSetting(this.Settings.Kick, "Kick");
-				addInputSetting(this.Settings.Reload, "Reload");
-				addInputSetting(this.Settings.QuickSave, "Quicksave");
-				addInputSetting(this.Settings.ToggleFullscreen, "Toggle Fullscreen");
+				addInputSetting(this.Settings.Forward, "Move Forward", false);
+				addInputSetting(this.Settings.Left, "Move Left", false);
+				addInputSetting(this.Settings.Backward, "Move Backward", false);
+				addInputSetting(this.Settings.Right, "Move Right", false);
+				addInputSetting(this.Settings.Jump, "Jump", true);
+				addInputSetting(this.Settings.Parkour, "Parkour", true);
+				addInputSetting(this.Settings.Roll, "Roll / Crouch", true);
+				addInputSetting(this.Settings.Kick, "Kick", true);
+				addInputSetting(this.Settings.QuickSave, "Quicksave", true);
+				addInputSetting(this.Settings.ToggleFullscreen, "Toggle Fullscreen", true);
 
 				// Resume button
 				UIComponent resume = this.createMenuButton("Resume");
@@ -1301,7 +1325,9 @@ namespace Lemma
 				// Escape key
 				// Make sure we can only pause when there is a player currently spawned
 				// Otherwise we could save the current map without the player. And that would be awkward.
-				this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), () => !this.EditorEnabled && ((this.player != null && this.player.Active) || this.MapFile.Value == null), delegate()
+				Func<bool> canPause = () => !this.EditorEnabled && ((this.player != null && this.player.Active) || this.MapFile.Value == null);
+
+				Action togglePause = delegate()
 				{
 					if (settingsShown)
 					{
@@ -1339,7 +1365,10 @@ namespace Lemma
 						else
 							restorePausedSettings();
 					}
-				}));
+				};
+
+				this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), canPause, togglePause));
+				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.Start), canPause, togglePause));
 
 				if (allowEditing)
 				{

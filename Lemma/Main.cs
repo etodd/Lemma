@@ -103,6 +103,8 @@ namespace Lemma
 		public Property<KeyboardState> KeyboardState = new Property<KeyboardState>();
 		public Property<MouseState> LastMouseState = new Property<MouseState>();
 		public Property<MouseState> MouseState = new Property<MouseState>();
+		public Property<GamePadState> LastGamePadState = new Property<GamePadState>();
+		public Property<GamePadState> GamePadState = new Property<GamePadState>();
 		public new Property<bool> IsMouseVisible = new Property<bool> { };
 
 		public bool IsLoadingMap = false;
@@ -458,6 +460,9 @@ namespace Lemma
 			this.KeyboardState.Value = Microsoft.Xna.Framework.Input.Keyboard.GetState();
 			this.LastMouseState.Value = this.MouseState;
 			this.MouseState.Value = Microsoft.Xna.Framework.Input.Mouse.GetState();
+
+			this.LastGamePadState.Value = this.GamePadState;
+			this.GamePadState.Value = Microsoft.Xna.Framework.Input.GamePad.GetState(PlayerIndex.One);
 
 #if PERFORMANCE_MONITOR
 			Stopwatch timer = new Stopwatch();
