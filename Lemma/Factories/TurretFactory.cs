@@ -150,7 +150,7 @@ namespace Lemma.Factories
 					{
 						if ((target.Value - transform.Position).Length() < playerDetectionRadius)
 							timeSinceLastSpottedPlayer = 0.0f;
-						else if (Vector3.Dot(rayDirection, map.GetAbsoluteVector(Vector3.Forward)) > 0)
+						else if (Vector3.Dot(rayDirection, aimDirection) > 0)
 						{
 							RayCastResult physicsHit;
 							if (main.Space.RayCast(new Ray(rayStart, rayDirection), out physicsHit))

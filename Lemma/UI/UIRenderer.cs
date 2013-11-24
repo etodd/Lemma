@@ -61,8 +61,19 @@ namespace Lemma.Components
 		{
 			if (this.main.IsActive && this.EnableMouse)
 			{
-				if (this.Root.HandleMouse(this.main.MouseState, this.main.LastMouseState, Matrix.Identity, true))
-					this.SwallowMouseEvents.Execute();
+				MouseState current = this.main.MouseState, last = this.main.LastMouseState;
+				if (current.LeftButton != last.LeftButton
+					|| current.RightButton != last.RightButton
+					|| current.MiddleButton != last.MiddleButton
+					|| current.ScrollWheelValue != last.ScrollWheelValue
+					|| current.X != last.X
+					|| current.Y != last.Y
+					|| current.XButton1 != last.XButton1
+					|| current.XButton2 != last.XButton2)
+				{
+					if (this.Root.HandleMouse(current, last, Matrix.Identity, true))
+						this.SwallowMouseEvents.Execute();
+				}
 			}
 			this.Root.CheckLayout();
 		}

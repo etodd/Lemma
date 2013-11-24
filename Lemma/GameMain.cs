@@ -388,6 +388,8 @@ namespace Lemma
 				logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((this.ScreenSize.Value.X * 0.75f) / logo.Size.Value.X), this.ScreenSize, logo.Size));
 				this.UI.Root.Children.Add(logo);
 
+				Property<ListContainer> currentMenu = new Property<ListContainer> { Value = null };
+
 				// Pause menu
 				ListContainer pauseMenu = new ListContainer();
 				pauseMenu.Visible.Value = false;
@@ -418,6 +420,7 @@ namespace Lemma
 						new Animation.Set<bool>(pauseMenu.Visible, false)
 					);
 					this.AddComponent(pauseAnimation);
+					currentMenu.Value = null;
 				};
 
 				Action showPauseMenu = delegate()
@@ -427,6 +430,7 @@ namespace Lemma
 						pauseAnimation.Delete.Execute();
 					pauseAnimation = new Animation(new Animation.Vector2MoveToSpeed(pauseMenu.AnchorPoint, new Vector2(0, 0.5f), 5.0f));
 					this.AddComponent(pauseAnimation);
+					currentMenu.Value = pauseMenu;
 				};
 
 				// Settings to be restored when unpausing
@@ -475,6 +479,8 @@ namespace Lemma
 						)
 					);
 					this.AddComponent(pauseAnimation);
+
+					currentMenu.Value = pauseMenu;
 				};
 
 				// Unpause
@@ -521,6 +527,8 @@ namespace Lemma
 						screenshot = null;
 						screenshotSize = Point.Zero;
 					}
+
+					currentMenu.Value = null;
 				};
 
 				// Load / save menu
@@ -1111,6 +1119,7 @@ namespace Lemma
 					this.AddComponent(loadSaveAnimation);
 
 					loadSaveShown = true;
+					currentMenu.Value = loadSaveMenu;
 				}));
 				saveButton.Visible.Value = false;
 				pauseMenu.Children.Add(saveButton);
@@ -1128,6 +1137,7 @@ namespace Lemma
 					this.AddComponent(loadSaveAnimation);
 
 					loadSaveShown = true;
+					currentMenu.Value = loadSaveList;
 				};
 
 				// Load button
@@ -1151,6 +1161,7 @@ namespace Lemma
 					this.AddComponent(controlsAnimation);
 
 					controlsShown = true;
+					currentMenu.Value = controlsList;
 				}));
 				pauseMenu.Children.Add(controlsButton);
 
@@ -1167,6 +1178,8 @@ namespace Lemma
 					this.AddComponent(settingsAnimation);
 
 					settingsShown = true;
+
+					currentMenu.Value = settingsMenu;
 				}));
 				pauseMenu.Children.Add(settingsButton);
 
@@ -1369,6 +1382,140 @@ namespace Lemma
 
 				this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), canPause, togglePause));
 				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.Start), canPause, togglePause));
+				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.B), () => this.Paused, togglePause));
+
+				int selected = 0;
+
+				Func<ListContainer, int, int, int> nextMenuItem = delegate(ListContainer menu, int current, int delta)
+				{
+					int end = menu.Children.Count;
+					if (current <= 0 && delta < 0)
+						return end - 1;
+					else if (current >= end - 1 && delta > 0)
+						return 0;
+					else
+						return current + delta;
+				};
+
+				Func<UIComponent, bool> isButton = delegate(UIComponent item)
+				{
+					return item.Visible && item.GetType() == typeof(Container) && (item.MouseLeftUp.HasBindings || item.MouseScrolled.HasBindings);
+				};
+
+				Func<UIComponent, bool> isScrollButton = delegate(UIComponent item)
+				{
+					return item.Visible && item.GetType() == typeof(Container) && item.MouseScrolled.HasBindings;
+				};
+
+				this.input.Add(new NotifyBinding(delegate()
+				{
+					ListContainer menu = currentMenu;
+					if (menu != null && this.GamePadState.Value.IsConnected)
+					{
+						foreach (UIComponent item in menu.Children)
+							item.Highlighted.Value = false;
+
+						int i = 0;
+						foreach (UIComponent item in menu.Children)
+						{
+							if (isButton(item))
+							{
+								item.Highlighted.Value = true;
+								selected = i;
+								break;
+							}
+							i++;
+						}
+					}
+				}, currentMenu));
+
+				Action<int> moveSelection = delegate(int delta)
+				{
+					ListContainer menu = currentMenu;
+					if (menu != null)
+					{
+						Container button = (Container)menu.Children[selected];
+						button.Highlighted.Value = false;
+
+						int i = nextMenuItem(menu, selected, delta);
+						while (true)
+						{
+							UIComponent item = menu.Children[i];
+							if (isButton(item))
+							{
+								selected = i;
+								break;
+							}
+
+							i = nextMenuItem(menu, i, delta);
+						}
+
+						button = (Container)menu.Children[selected];
+						button.Highlighted.Value = true;
+					}
+				};
+
+				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickUp), () => this.Paused, delegate()
+				{
+					moveSelection(-1);
+				}));
+
+				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.DPadUp), () => this.Paused, delegate()
+				{
+					moveSelection(-1);
+				}));
+
+				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickDown), () => this.Paused, delegate()
+				{
+					moveSelection(1);
+				}));
+
+				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.DPadDown), () => this.Paused, delegate()
+				{
+					moveSelection(-1);
+				}));
+
+				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.A), () => this.Paused, delegate()
+				{
+					ListContainer menu = currentMenu;
+					if (menu != null)
+					{
+						UIComponent selectedItem = menu.Children[selected];
+						if (isButton(selectedItem) && selectedItem.Highlighted)
+							selectedItem.MouseLeftUp.Execute(new Point());
+					}
+				}));
+
+				Action<int> scrollButton = delegate(int delta)
+				{
+					ListContainer menu = currentMenu;
+					if (menu != null)
+					{
+						UIComponent selectedItem = menu.Children[selected];
+						if (isScrollButton(selectedItem) && selectedItem.Highlighted)
+							selectedItem.MouseScrolled.Execute(new Point(), delta);
+					}
+				};
+
+				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickLeft), () => this.Paused, delegate()
+				{
+					scrollButton(-1);
+				}));
+
+				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.DPadLeft), () => this.Paused, delegate()
+				{
+					scrollButton(-1);
+				}));
+
+				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickRight), () => this.Paused, delegate()
+				{
+					scrollButton(1);
+				}));
+
+				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.DPadRight), () => this.Paused, delegate()
+				{
+					scrollButton(1);
+				}));
 
 				if (allowEditing)
 				{
