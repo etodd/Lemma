@@ -116,6 +116,26 @@ namespace Lemma.Components
 			}
 		}
 
+		public void ScrollTo(UIComponent target)
+		{
+			if (this.Children.Count == 1)
+			{
+				UIComponent child = this.Children.First();
+
+				Vector2 newPosition = child.Position;
+
+				Vector2 targetPos = target.ScaledSize.Value;
+				while (target != child)
+				{
+					targetPos += target.Position;
+					target = target.Parent;
+				}
+
+				newPosition.Y = Math.Min(this.Size.Value.Y - targetPos.Y, 0);
+				child.Position.Value = newPosition;
+			}
+		}
+
 		public void ScrollToTop()
 		{
 			if (this.Children.Count == 1)

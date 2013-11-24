@@ -388,7 +388,7 @@ namespace Lemma
 				logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((this.ScreenSize.Value.X * 0.75f) / logo.Size.Value.X), this.ScreenSize, logo.Size));
 				this.UI.Root.Children.Add(logo);
 
-				Property<ListContainer> currentMenu = new Property<ListContainer> { Value = null };
+				Property<UIComponent> currentMenu = new Property<UIComponent> { Value = null };
 
 				// Pause menu
 				ListContainer pauseMenu = new ListContainer();
@@ -575,6 +575,7 @@ namespace Lemma
 					dialogLayout.Children.Add(dialogButtons);
 
 					UIComponent overwrite = this.createMenuButton(action);
+					overwrite.Name.Value = "Okay";
 					dialogButtons.Children.Add(overwrite);
 					overwrite.Add(new CommandBinding<Point>(overwrite.MouseLeftUp, delegate(Point p2)
 					{
@@ -1278,6 +1279,7 @@ namespace Lemma
 					this.AddComponent(creditsAnimation);
 
 					creditsShown = true;
+					currentMenu.Value = creditsDisplay;
 				}));
 				pauseMenu.Children.Add(credits);
 
@@ -1342,7 +1344,13 @@ namespace Lemma
 
 				Action togglePause = delegate()
 				{
-					if (settingsShown)
+					if (dialog != null)
+					{
+						dialog.Delete.Execute();
+						dialog = null;
+						return;
+					}
+					else if (settingsShown)
 					{
 						hideSettings();
 						return;
@@ -1362,12 +1370,6 @@ namespace Lemma
 						hideLoadSave();
 						return;
 					}
-					else if (dialog != null)
-					{
-						dialog.Delete.Execute();
-						dialog = null;
-						return;
-					}
 
 					if (this.MapFile.Value != null || !this.Paused)
 					{
@@ -1384,9 +1386,11 @@ namespace Lemma
 				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.Start), canPause, togglePause));
 				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.B), () => this.Paused, togglePause));
 
+				// Gamepad menu code
+
 				int selected = 0;
 
-				Func<ListContainer, int, int, int> nextMenuItem = delegate(ListContainer menu, int current, int delta)
+				Func<UIComponent, int, int, int> nextMenuItem = delegate(UIComponent menu, int current, int delta)
 				{
 					int end = menu.Children.Count;
 					if (current <= 0 && delta < 0)
@@ -1409,8 +1413,8 @@ namespace Lemma
 
 				this.input.Add(new NotifyBinding(delegate()
 				{
-					ListContainer menu = currentMenu;
-					if (menu != null && this.GamePadState.Value.IsConnected)
+					UIComponent menu = currentMenu;
+					if (menu != null && menu != creditsDisplay && this.GamePadState.Value.IsConnected)
 					{
 						foreach (UIComponent item in menu.Children)
 							item.Highlighted.Value = false;
@@ -1431,9 +1435,18 @@ namespace Lemma
 
 				Action<int> moveSelection = delegate(int delta)
 				{
-					ListContainer menu = currentMenu;
-					if (menu != null)
+					UIComponent menu = currentMenu;
+					if (menu != null && dialog == null)
 					{
+						if (menu == loadSaveList)
+							delta = -delta;
+						else if (menu == creditsDisplay)
+						{
+							Scroller scroll = (Scroller)menu.Parent;
+							scroll.MouseScrolled.Execute(new Point(), delta * -4);
+							return;
+						}
+
 						Container button = (Container)menu.Children[selected];
 						button.Highlighted.Value = false;
 
@@ -1452,6 +1465,12 @@ namespace Lemma
 
 						button = (Container)menu.Children[selected];
 						button.Highlighted.Value = true;
+
+						if (menu.Parent.Value.GetType() == typeof(Scroller))
+						{
+							Scroller scroll = (Scroller)menu.Parent;
+							scroll.ScrollTo(button);
+						}
 					}
 				};
 
@@ -1472,24 +1491,29 @@ namespace Lemma
 
 				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.DPadDown), () => this.Paused, delegate()
 				{
-					moveSelection(-1);
+					moveSelection(1);
 				}));
 
 				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.A), () => this.Paused, delegate()
 				{
-					ListContainer menu = currentMenu;
-					if (menu != null)
+					if (dialog != null)
+						dialog.GetChildByName("Okay").MouseLeftUp.Execute(new Point());
+					else
 					{
-						UIComponent selectedItem = menu.Children[selected];
-						if (isButton(selectedItem) && selectedItem.Highlighted)
-							selectedItem.MouseLeftUp.Execute(new Point());
+						UIComponent menu = currentMenu;
+						if (menu != null && menu != creditsDisplay )
+						{
+							UIComponent selectedItem = menu.Children[selected];
+							if (isButton(selectedItem) && selectedItem.Highlighted)
+								selectedItem.MouseLeftUp.Execute(new Point());
+						}
 					}
 				}));
 
 				Action<int> scrollButton = delegate(int delta)
 				{
-					ListContainer menu = currentMenu;
-					if (menu != null)
+					UIComponent menu = currentMenu;
+					if (menu != null && menu != creditsDisplay && dialog == null)
 					{
 						UIComponent selectedItem = menu.Children[selected];
 						if (isScrollButton(selectedItem) && selectedItem.Highlighted)
