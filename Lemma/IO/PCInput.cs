@@ -66,20 +66,15 @@ namespace Lemma.Components
 				else if (this.MouseButton != PCInput.MouseButton.None)
 					value = this.MouseButton.ToString();
 
-				if (this.GamePadButton != Buttons.BigButton)
+				if (GamePad.GetState(PlayerIndex.One).IsConnected && this.GamePadButton != Buttons.BigButton)
 				{
-					string button;
 					if (this.GamePadButton == Buttons.A
 						|| this.GamePadButton == Buttons.B
 						|| this.GamePadButton == Buttons.X
 						|| this.GamePadButton == Buttons.Y)
-						button = "Gamepad " + this.GamePadButton.ToString();
+						return "Gamepad " + this.GamePadButton.ToString();
 					else
-						button = this.GamePadButton.ToString();
-					if (value != null)
-						return value + " or " + button;
-					else
-						return button;
+						return this.GamePadButton.ToString();
 				}
 				else if (value != null)
 					return value;
@@ -328,9 +323,7 @@ namespace Lemma.Components
 		{
 			if (binding.Key != Keys.None)
 				return this.GetKey(binding.Key);
-			else if (binding.GamePadButton != Buttons.BigButton)
-				return this.GetButton(binding.GamePadButton);
-			else
+			else if (binding.MouseButton != MouseButton.None)
 			{
 				switch (binding.MouseButton)
 				{
@@ -344,15 +337,15 @@ namespace Lemma.Components
 						return null;
 				}
 			}
+			else
+				return this.GetButton(binding.GamePadButton);
 		}
 
 		public Command GetInputUp(PCInputBinding binding)
 		{
 			if (binding.Key != Keys.None)
 				return this.GetKeyUp(binding.Key);
-			else if (binding.GamePadButton != Buttons.BigButton)
-				return this.GetButtonUp(binding.GamePadButton);
-			else
+			else if (binding.MouseButton != MouseButton.None)
 			{
 				switch (binding.MouseButton)
 				{
@@ -366,15 +359,15 @@ namespace Lemma.Components
 						return null;
 				}
 			}
+			else
+				return this.GetButtonUp(binding.GamePadButton);
 		}
 
 		public Command GetInputDown(PCInputBinding binding)
 		{
 			if (binding.Key != Keys.None)
 				return this.GetKeyDown(binding.Key);
-			else if (binding.GamePadButton != Buttons.BigButton)
-				return this.GetButtonDown(binding.GamePadButton);
-			else
+			else if (binding.MouseButton != MouseButton.None)
 			{
 				switch (binding.MouseButton)
 				{
@@ -388,6 +381,8 @@ namespace Lemma.Components
 						return null;
 				}
 			}
+			else
+				return this.GetButtonDown(binding.GamePadButton);
 		}
 
 		public Command GetChord(Chord chord)

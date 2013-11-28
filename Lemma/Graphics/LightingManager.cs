@@ -200,7 +200,7 @@ namespace Lemma.Components
 			}
 
 			this.ambientLightColor = Vector3.Zero;
-			foreach (AmbientLight light in AmbientLight.All)
+			foreach (AmbientLight light in AmbientLight.All.Where(x => x.Enabled))
 				this.ambientLightColor += light.Color;
 		}
 

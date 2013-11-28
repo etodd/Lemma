@@ -181,6 +181,7 @@ namespace Lemma.Factories
 			agent.Add(new TwoWayBinding<float>(player.Health, agent.Health));
 			agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
 			agent.Add(new CommandBinding(agent.Die, result.Delete));
+			agent.Add(new Binding<bool>(agent.Loud, x => !x, player.Crouched));
 
 #if DEVELOPMENT
 			Property<bool> thirdPerson = new Property<bool> { Value = false };

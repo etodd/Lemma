@@ -103,6 +103,8 @@ namespace Lemma
 
 		private int displayModeIndex;
 
+		private List<Property<PCInput.PCInputBinding>> bindings = new List<Property<PCInput.PCInputBinding>>();
+
 		public GameMain(bool allowEditing, string mapFile)
 			: base()
 		{
@@ -1040,6 +1042,7 @@ namespace Lemma
 
 				Action<Property<PCInput.PCInputBinding>, string, bool> addInputSetting = delegate(Property<PCInput.PCInputBinding> setting, string display, bool allowGamepad)
 				{
+					this.bindings.Add(setting);
 					UIComponent button = this.createMenuButton<PCInput.PCInputBinding>(display, setting);
 					button.Add(new CommandBinding<Point>(button.MouseLeftUp, delegate(Point mouse)
 					{
@@ -1732,6 +1735,15 @@ namespace Lemma
 		protected override void Update(GameTime gameTime)
 		{
 			base.Update(gameTime);
+
+			if (this.GamePadState.Value.IsConnected != this.LastGamePadState.Value.IsConnected)
+			{
+				// Re-bind inputs so their string representations are properly displayed
+				// We need to show both PC and gamepad bindings
+
+				foreach (Property<PCInput.PCInputBinding> binding in this.bindings)
+					binding.Reset();
+			}
 
 			if (this.mapJustLoaded)
 			{

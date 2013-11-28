@@ -384,6 +384,39 @@ namespace Lemma.Components
 			}
 		}
 
+		public class Execute<T> : Interval
+		{
+			private Command<T> action;
+			private bool executed;
+			private T parameter;
+
+			public Execute(Action<T> action, T parameter)
+				: this(new Command<T> { Action = action }, parameter)
+			{
+
+			}
+
+			public Execute(Command<T> action, T parameter)
+				: base(0)
+			{
+				this.action = action;
+				this.parameter = parameter;
+			}
+
+			public override void Reset()
+			{
+				base.Reset();
+				this.executed = false;
+			}
+
+			public override void UpdateInterval(float x)
+			{
+				if (!this.executed)
+					this.action.Execute(this.parameter);
+				this.executed = true;
+			}
+		}
+
 		public class Set<T> : Interval
 		{
 			private Property<T> property;

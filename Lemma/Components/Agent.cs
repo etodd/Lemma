@@ -25,7 +25,7 @@ namespace Lemma.Components
 				{
 					Vector3 toAgent = agent.Position - pos;
 					float distance = toAgent.LengthSquared();
-					if (distance < soundRadius)
+					if (distance < soundRadius && agent.Loud)
 						return agent;
 					else if (distance < visionRadius)
 					{
@@ -57,5 +57,7 @@ namespace Lemma.Components
 		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
 
 		public Property<float> Health = new Property<float> { Value = 1.0f };
+
+		public Property<bool> Loud = new Property<bool> { Value = true };
 	}
 }
