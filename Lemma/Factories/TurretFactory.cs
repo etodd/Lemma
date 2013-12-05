@@ -15,26 +15,21 @@ namespace Lemma.Factories
 	{
 		public override Entity Create(Main main)
 		{
-			Entity result = Factory.Get<DynamicMapFactory>().Create(main);
-			result.Type = "Turret";
-
-			PointLight light = new PointLight();
-			light.Shadowed.Value = true;
-			light.Color.Value = new Vector3(0.75f, 2.0f, 0.75f);
-			light.Attenuation.Value = 0.0f;
-			light.Editable = false;
-			result.Add("Light", light);
+			Entity result = new Entity(main, "Turret");
 
 			return result;
 		}
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
-			Factory.Get<DynamicMapFactory>().Bind(result, main);
+			PointLight light = result.GetOrCreate<PointLight>();
+			light.Serialize = false;
 
-			Transform transform = result.Get<Transform>();
-			DynamicMap map = result.Get<DynamicMap>();
-			PointLight light = result.Get<PointLight>();
+			const float defaultLightAttenuation = 15.0f;
+			light.Attenuation.Value = defaultLightAttenuation;
+
+			Transform transform = result.GetOrCreate<Transform>("Transform");
+			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
 			Sound blastChargeSound = new Sound();
 			blastChargeSound.Cue.Value = "Blast Charge";
@@ -47,164 +42,229 @@ namespace Lemma.Factories
 			result.Add("BlastFireSound", blastFireSound);
 
 			blastFireSound.Add(new Binding<Vector3>(blastFireSound.Position, transform.Position));
-			blastFireSound.Add(new Binding<Vector3>(blastFireSound.Velocity, map.LinearVelocity));
 
 			blastChargeSound.Add(new Binding<Vector3>(blastChargeSound.Position, transform.Position));
-			blastChargeSound.Add(new Binding<Vector3>(blastChargeSound.Velocity, map.LinearVelocity));
-
-			map.Add(new CommandBinding(map.CompletelyEmptied, delegate()
-			{
-				if (!main.EditorEnabled)
-					result.Delete.Execute();
-			}));
-
-			EntityRotator rotator = null;
-			EntityMover mover = null;
-			if (!main.EditorEnabled)
-			{
-				rotator = new EntityRotator(map.PhysicsEntity);
-				rotator.AngularMotor.Settings.Servo.MaxCorrectiveVelocity = 3.0f;
-				main.Space.Add(rotator);
-
-				mover = new EntityMover(map.PhysicsEntity);
-				mover.TargetPosition = transform.Position;
-				main.Space.Add(mover);
-			}
-
-			Map.Coordinate blastSource = map.GetCoordinate(0, 0, 0);
-			Map.Coordinate blastPosition = blastSource;
-			Map.CellState whiteMaterial = WorldFactory.StatesByName["White"];
-			Map.CellState permanentWhiteMaterial = WorldFactory.StatesByName["WhitePermanent"];
-			foreach (Map.Box box in map.Chunks.SelectMany(x => x.Boxes))
-			{
-				if (box.Type == whiteMaterial || box.Type == permanentWhiteMaterial)
-				{
-					blastSource = map.GetCoordinate(box.X, box.Y, box.Z);
-					blastPosition = map.GetCoordinate(box.X, box.Y, box.Z - 1);
-					break;
-				}
-			}
 
 			LineDrawer laser = new LineDrawer { Serialize = false };
 			result.Add(laser);
 
-			const float blastIntervalTime = 3.0f;
-			float blastInterval = 0.0f;
+			Property<Vector3> reticle = result.GetOrMakeProperty<Vector3>("Reticle");
 
-			const float playerPositionMemoryTime = 4.0f;
-			float timeSinceLastSpottedPlayer = playerPositionMemoryTime;
+			AI ai = result.GetOrCreate<AI>();
 
-			const float visibilityCheckInterval = 1.0f;
-			float timeSinceLastVisibilityCheck = 0.0f;
+			Model model = result.GetOrCreate<Model>();
+			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
+			model.Filename.Value = "Models\\sphere";
+			model.Editable = false;
+			model.Serialize = false;
 
-			const float blastChargeTime = 1.25f;
-			float blastCharge = 0.0f;
+			const float defaultModelScale = 0.25f;
+			model.Scale.Value = new Vector3(defaultModelScale);
 
-			const float playerDetectionRadius = 15.0f;
-
-			result.Add(new CommandBinding(result.Delete, delegate()
+			model.Add(new Binding<Vector3, string>(model.Color, delegate(string state)
 			{
-				if (rotator != null)
+				switch (state)
 				{
-					main.Space.Remove(rotator);
-					main.Space.Remove(mover);
+					case "Alert":
+						return new Vector3(1.5f, 1.5f, 0.5f);
+					case "Aggressive":
+						return new Vector3(1.5f, 0.8f, 0.5f);
+					case "Firing":
+						return new Vector3(2.0f, 0.0f, 0.0f);
+					case "Idle":
+						return new Vector3(0.5f, 1.0f, 0.5f);
+					default:
+						return new Vector3(0.0f, 0.0f, 0.0f);
 				}
-			}));
+			}, ai.CurrentState));
 
-			Property<Vector3> target = result.GetOrMakeProperty<Vector3>("Target");
-
-			Microsoft.Xna.Framework.Color color = new Microsoft.Xna.Framework.Color(0.2f, 1.0f, 0.2f, 0.7f);
-
-			Updater update = new Updater();
-			update.Add(delegate(float dt)
+			Random random = new Random();
+			result.Add(new Updater
 			{
-				if (map[blastSource].ID == 0)
+				delegate(float dt)
 				{
-					result.Delete.Execute();
-					return;
+					float source = ((float)random.NextDouble() - 0.5f) * 2.0f;
+					model.Scale.Value = new Vector3(defaultModelScale * (1.0f + (source * 0.5f)));
+					light.Attenuation.Value = defaultLightAttenuation * (1.0f + (source * 0.05f));
 				}
+			});
 
-				laser.Lines.Clear();
-				Entity player = PlayerFactory.Instance;
-				if (player != null)
+			Map.GlobalRaycastResult rayHit = new Map.GlobalRaycastResult();
+			Vector3 toReticle = Vector3.Zero;
+			const int operationalRadius = 100;
+
+			AI.Task checkOperationalRadius = new AI.Task
+			{
+				Interval = 2.0f,
+				Action = delegate()
 				{
-					Vector3 rayStart = map.GetAbsolutePosition(blastPosition);
+					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < operationalRadius;
+					if (shouldBeActive && ai.CurrentState == "Suspended")
+						ai.CurrentState.Value = "Idle";
+					else if (!shouldBeActive && ai.CurrentState != "Suspended")
+						ai.CurrentState.Value = "Suspended";
+				},
+			};
 
-					target.Value += (player.Get<Transform>().Position - target.Value) * 0.5f * dt;
+			AI.Task updateRay = new AI.Task
+			{
+				Action = delegate()
+				{
+					toReticle = Vector3.Normalize(reticle.Value - transform.Position.Value);
+					rayHit = Map.GlobalRaycast(transform.Position, toReticle, 300.0f);
+					laser.Lines.Clear();
 
-					Vector3 rayDirection = target - rayStart;
-					rayDirection.Normalize();
-
-					Vector3 aimDirection = map.GetAbsoluteVector(Vector3.Forward);
-
-					Map.GlobalRaycastResult hit = Map.GlobalRaycast(rayStart, aimDirection, 300.0f);
-
+					Microsoft.Xna.Framework.Color color = new Microsoft.Xna.Framework.Color(model.Color);
 					laser.Lines.Add(new LineDrawer.Line
 					{
-						A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(map.GetAbsolutePosition(blastSource), color),
-						B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(hit.Position, color),
+						A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, color),
+						B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(rayHit.Position, color),
 					});
+				}
+			};
 
-					timeSinceLastVisibilityCheck += dt;
-					if (timeSinceLastVisibilityCheck > visibilityCheckInterval)
-					{
-						if ((target.Value - transform.Position).Length() < playerDetectionRadius)
-							timeSinceLastSpottedPlayer = 0.0f;
-						else if (Vector3.Dot(rayDirection, aimDirection) > 0)
-						{
-							RayCastResult physicsHit;
-							if (main.Space.RayCast(new Ray(rayStart, rayDirection), out physicsHit))
-							{
-								EntityCollidable collidable = physicsHit.HitObject as EntityCollidable;
-								if (collidable != null && collidable.Entity.Tag is Player)
-									timeSinceLastSpottedPlayer = 0.0f;
-							}
-						}
-						timeSinceLastVisibilityCheck = 0.0f;
-					}
-					timeSinceLastSpottedPlayer += dt;
+			const float sightDistance = 100.0f;
+			const float hearingDistance = 20.0f;
 
-					light.Attenuation.Value = 0.0f;
-					if (timeSinceLastSpottedPlayer < playerPositionMemoryTime)
+			ai.Add(new AI.State
+			{
+				Name = "Idle",
+				Tasks = new[]
+				{ 
+					checkOperationalRadius,
+					updateRay,
+					new AI.Task
 					{
-						rotator.TargetOrientation = Quaternion.CreateFromRotationMatrix(Matrix.Invert(Matrix.CreateLookAt(rayStart, target, Vector3.Up)));
-						if (blastInterval > blastIntervalTime && Vector3.Dot(rayDirection, aimDirection) > 0.9f)
+						Interval = 1.0f,
+						Action = delegate()
 						{
-							if (blastCharge < blastChargeTime)
-							{
-								if (blastCharge == 0.0f)
-									blastChargeSound.Play.Execute();
-								blastCharge += dt;
-								light.Position.Value = rayStart;
-								light.Attenuation.Value = (blastCharge / blastChargeTime) * 30.0f;
-							}
+							Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
+							if (a != null)
+								ai.CurrentState.Value = "Alert";
+						},
+					},
+				},
+			});
+
+			Property<Entity.Handle> targetAgent = result.GetOrMakeProperty<Entity.Handle>("TargetAgent");
+
+			ai.Add(new AI.State
+			{
+				Name = "Alert",
+				Tasks = new[]
+				{ 
+					checkOperationalRadius,
+					updateRay,
+					new AI.Task
+					{
+						Interval = 1.0f,
+						Action = delegate()
+						{
+							if (ai.TimeInCurrentState > 3.0f)
+								ai.CurrentState.Value = "Idle";
 							else
 							{
-								blastCharge = 0.0f;
-								blastFireSound.Play.Execute();
-								blastInterval = 0.0f;
+								Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
+								if (a != null)
+								{
+									targetAgent.Value = a.Entity;
+									ai.CurrentState.Value = "Aggressive";
+								}
+							}
+						},
+					},
+				},
+			});
 
-								if (hit.Map != null)
-									Explosion.Explode(main, hit.Map, hit.Coordinate.Value, 5, 8.0f);
+			AI.Task checkTargetAgent = new AI.Task
+			{
+				Action = delegate()
+				{
+					Entity target = targetAgent.Value.Target;
+					if (target == null || !target.Active)
+					{
+						targetAgent.Value = null;
+						ai.CurrentState.Value = "Idle";
+					}
+				},
+			};
+
+			float lastSpotted = 0.0f;
+
+			ai.Add(new AI.State
+			{
+				Name = "Aggressive",
+				Tasks = new[]
+				{
+					checkTargetAgent,
+					updateRay,
+					new AI.Task
+					{
+						Action = delegate()
+						{
+							Entity target = targetAgent.Value.Target;
+							reticle.Value += (target.Get<Transform>().Position - reticle.Value) * Math.Min(2.0f * main.ElapsedTime, 1.0f);
+						}
+					},
+					new AI.Task
+					{
+						Interval = 0.1f,
+						Action = delegate()
+						{
+							if (Agent.Query(transform.Position, sightDistance, hearingDistance, targetAgent.Value.Target.Get<Agent>()))
+								lastSpotted = main.TotalTime;
+
+							if (ai.TimeInCurrentState.Value > 2.0f)
+							{
+								if (lastSpotted < main.TotalTime - 2.0f)
+									ai.CurrentState.Value = "Alert";
 								else
 								{
-									BEPUutilities.RayHit physicsHit;
-									if (player.Get<Player>().Body.CollisionInformation.RayCast(new Ray(rayStart, aimDirection), hit.Distance, out physicsHit))
-										Explosion.Explode(main, player.Get<Transform>().Position, 5, 8.0f);
+									Vector3 toTarget = Vector3.Normalize(targetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position.Value);
+									if (Vector3.Dot(toReticle, toTarget) > 0.95f)
+										ai.CurrentState.Value = "Firing";
 								}
 							}
 						}
-						else
-						{
-							blastInterval += dt;
-							blastCharge = 0.0f;
-						}
-					}
-					else
-						blastCharge = 0.0f;
+					},
 				}
 			});
-			result.Add("Update", update);
+
+			ai.Add(new AI.State
+			{
+				Name = "Firing",
+				Enter = delegate(AI.State last)
+				{
+					
+				},
+				Exit = delegate(AI.State next)
+				{
+					if (rayHit.Map != null)
+						Explosion.Explode(main, rayHit.Map, rayHit.Coordinate.Value, 5, 8.0f);
+					else
+					{
+						Entity target = targetAgent.Value.Target;
+						BEPUutilities.RayHit physicsHit;
+						if (target.Get<Player>().Body.CollisionInformation.RayCast(new Ray(transform.Position, toReticle), rayHit.Distance, out physicsHit))
+							Explosion.Explode(main, target.Get<Transform>().Position, 5, 8.0f);
+					}
+				},
+				Tasks = new[]
+				{
+					checkTargetAgent,
+					updateRay,
+					new AI.Task
+					{
+						Action = delegate()
+						{
+							if (ai.TimeInCurrentState.Value > 0.75f)
+								ai.CurrentState.Value = "Aggressive"; // This actually fires (in the Exit function)
+						}
+					}
+				}
+			});
+
+			this.SetMain(result, main);
 		}
 	}
 }

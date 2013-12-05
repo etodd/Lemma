@@ -15,11 +15,21 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command Die = new Command();
 
+		public static bool Query(Vector3 pos, float visionRadius, float soundRadius, Agent agent)
+		{
+			return Agent.query(pos, visionRadius, soundRadius, new[] { agent }) != null;
+		}
+
 		public static Agent Query(Vector3 pos, float visionRadius, float soundRadius, Func<Agent, bool> filter = null)
+		{
+			return Agent.query(pos, visionRadius, soundRadius, Agent.agents, filter);
+		}
+
+		private static Agent query(Vector3 pos, float visionRadius, float soundRadius, IEnumerable<Agent> agents, Func<Agent, bool> filter = null)
 		{
 			visionRadius *= visionRadius;
 			soundRadius *= soundRadius;
-			foreach (Agent agent in Agent.agents)
+			foreach (Agent agent in agents)
 			{
 				if (agent.Active && agent.Enabled && !agent.Suspended && (filter == null || filter(agent)))
 				{
