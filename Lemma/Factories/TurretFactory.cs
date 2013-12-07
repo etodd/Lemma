@@ -78,6 +78,8 @@ namespace Lemma.Factories
 				}
 			}, ai.CurrentState));
 
+			light.Add(new Binding<Vector3>(light.Color, model.Color));
+
 			Random random = new Random();
 			result.Add(new Updater
 			{
