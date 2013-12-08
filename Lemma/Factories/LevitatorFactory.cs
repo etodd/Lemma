@@ -11,6 +11,8 @@ namespace Lemma.Factories
 {
 	public class LevitatorFactory : Factory
 	{
+		private Random random = new Random();
+
 		public LevitatorFactory()
 		{
 			this.Color = new Vector3(1.0f, 1.0f, 0.7f);
@@ -84,12 +86,11 @@ namespace Lemma.Factories
 				}
 			}, ai.CurrentState));
 
-			Random random = new Random();
 			result.Add(new Updater
 			{
 				delegate(float dt)
 				{
-					float source = ((float)random.NextDouble() - 0.5f) * 2.0f;
+					float source = ((float)this.random.NextDouble() - 0.5f) * 2.0f;
 					model.Scale.Value = new Vector3(defaultModelScale * (1.0f + (source * 0.5f)));
 					light.Attenuation.Value = defaultLightAttenuation * (1.0f + (source * 0.05f));
 				}
@@ -453,7 +454,7 @@ namespace Lemma.Factories
 			Action findNextPosition = delegate()
 			{
 				lastPosition.Value = chase.Position.Value;
-				nextPosition.Value = targetAgent.Value.Target.Get<Transform>().Position + new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble(), (float)random.NextDouble() - 0.5f) * 5.0f;
+				nextPosition.Value = targetAgent.Value.Target.Get<Transform>().Position + new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble(), (float)this.random.NextDouble() - 0.5f) * 5.0f;
 				positionBlend.Value = 0.0f;
 			};
 

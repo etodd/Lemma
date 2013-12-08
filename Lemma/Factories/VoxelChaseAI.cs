@@ -11,6 +11,8 @@ namespace Lemma.Factories
 {
 	public class VoxelChaseAI : Component, IUpdateableComponent
 	{
+		private Random random = new Random();
+
 		public enum Cell
 		{
 			Empty, Penetrable, Filled
@@ -344,7 +346,7 @@ namespace Lemma.Factories
 						if (!this.TargetActive)
 							oddsOfChangingDirection = 6;
 
-						if (!directions.Contains(this.Direction) || new Random().Next(oddsOfChangingDirection) == 0)
+						if (!directions.Contains(this.Direction) || this.random.Next(oddsOfChangingDirection) == 0)
 						{
 							bool randomDirection = false;
 							Direction randomDirectionOtherThan = Lemma.Util.Direction.None;

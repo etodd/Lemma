@@ -22,14 +22,15 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
-			PointLight light = result.GetOrCreate<PointLight>();
+			SpotLight light = result.GetOrCreate<SpotLight>();
 			light.Serialize = false;
 
-			const float defaultLightAttenuation = 15.0f;
-			light.Attenuation.Value = defaultLightAttenuation;
+			light.FieldOfView.Value = 1.0f;
+			light.Attenuation.Value = 75.0f;
 
 			Transform transform = result.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
+			light.Add(new Binding<Quaternion>(light.Orientation, transform.Quaternion));
 
 			Sound blastChargeSound = new Sound();
 			blastChargeSound.Cue.Value = "Blast Charge";
@@ -80,17 +81,6 @@ namespace Lemma.Factories
 
 			light.Add(new Binding<Vector3>(light.Color, model.Color));
 
-			Random random = new Random();
-			result.Add(new Updater
-			{
-				delegate(float dt)
-				{
-					float source = ((float)random.NextDouble() - 0.5f) * 2.0f;
-					model.Scale.Value = new Vector3(defaultModelScale * (1.0f + (source * 0.5f)));
-					light.Attenuation.Value = defaultLightAttenuation * (1.0f + (source * 0.05f));
-				}
-			});
-
 			Map.GlobalRaycastResult rayHit = new Map.GlobalRaycastResult();
 			Vector3 toReticle = Vector3.Zero;
 			const int operationalRadius = 100;
@@ -113,6 +103,7 @@ namespace Lemma.Factories
 				Action = delegate()
 				{
 					toReticle = Vector3.Normalize(reticle.Value - transform.Position.Value);
+					transform.Orientation.Value = Matrix.Invert(Matrix.CreateLookAt(Vector3.Zero, toReticle, Vector3.Up));
 					rayHit = Map.GlobalRaycast(transform.Position, toReticle, 300.0f);
 					laser.Lines.Clear();
 
@@ -237,18 +228,29 @@ namespace Lemma.Factories
 				Name = "Firing",
 				Enter = delegate(AI.State last)
 				{
-					
+					Sound.PlayCue(main, "Charge", transform.Position, 1.0f, 0.0f);
 				},
 				Exit = delegate(AI.State next)
 				{
+					Sound.PlayCue(main, "Fire", transform.Position, 1.0f, 0.0f);
+
+					Entity target = targetAgent.Value.Target;
+					Vector3 targetPos = target.Get<Transform>().Position;
+					Vector3 toTarget = targetPos - transform.Position.Value;
+					if (Vector3.Dot(toReticle, Vector3.Normalize(toTarget)) > 0.2f)
+					{
+						float distance = toTarget.Length();
+						if (distance < rayHit.Distance)
+							Sound.PlayCue(main, "Miss", transform.Position + toReticle * distance);
+					}
+
 					if (rayHit.Map != null)
 						Explosion.Explode(main, rayHit.Map, rayHit.Coordinate.Value, 5, 8.0f);
 					else
 					{
-						Entity target = targetAgent.Value.Target;
 						BEPUutilities.RayHit physicsHit;
 						if (target.Get<Player>().Body.CollisionInformation.RayCast(new Ray(transform.Position, toReticle), rayHit.Distance, out physicsHit))
-							Explosion.Explode(main, target.Get<Transform>().Position, 5, 8.0f);
+							Explosion.Explode(main, targetPos, 5, 8.0f);
 					}
 				},
 				Tasks = new[]

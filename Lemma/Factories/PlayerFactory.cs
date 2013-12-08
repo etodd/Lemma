@@ -120,6 +120,8 @@ namespace Lemma.Factories
 			}
 		}
 
+		private Random random = new Random();
+
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
 			result.CannotSuspend = true;
@@ -1075,7 +1077,6 @@ namespace Lemma.Factories
 
 			Action<Vector3, Vector3, bool> breakWalls = delegate(Vector3 forward, Vector3 right, bool breakFloor)
 			{
-				Random random = new Random();
 				BlockFactory blockFactory = Factory.Get<BlockFactory>();
 				Vector3 pos = transform.Position + new Vector3(0, 0.1f + (player.Height * -0.5f) - player.SupportHeight, 0);
 				Vector3 basePos = pos;
@@ -1109,7 +1110,7 @@ namespace Lemma.Factories
 									toCell.Normalize();
 									PhysicsBlock physicsBlock = block.Get<PhysicsBlock>();
 									physicsBlock.LinearVelocity.Value = toCell * 15.0f;
-									physicsBlock.AngularVelocity.Value = new Vector3(((float)random.NextDouble() - 0.5f) * 2.0f, ((float)random.NextDouble() - 0.5f) * 2.0f, ((float)random.NextDouble() - 0.5f) * 2.0f);
+									physicsBlock.AngularVelocity.Value = new Vector3(((float)this.random.NextDouble() - 0.5f) * 2.0f, ((float)this.random.NextDouble() - 0.5f) * 2.0f, ((float)this.random.NextDouble() - 0.5f) * 2.0f);
 									main.Add(block);
 								}
 							}

@@ -36,6 +36,8 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Action<Vector3, Vector3> AddParticle;
 
+		private static Random random = new Random();
+
 		public ParticleEmitter()
 		{
 			this.AddParticle = delegate(Vector3 position, Vector3 velocity)
@@ -64,7 +66,6 @@ namespace Lemma.Components
 
 		public static void Emit(Main main, string type, Vector3 position, float jitter, int amount)
 		{
-			Random random = new Random();
 			ParticleSystem particleSystem = ParticleSystem.Get(main, type);
 			for (int i = 0; i < amount; i++)
 				particleSystem.AddParticle(position + new Vector3(2.0f * ((float)random.NextDouble() - 0.5f) * jitter, 2.0f * ((float)random.NextDouble() - 0.5f) * jitter, 2.0f * ((float)random.NextDouble() - 0.5f) * jitter), Vector3.Zero);
@@ -108,7 +109,6 @@ namespace Lemma.Components
 			Vector3 jitter = this.Jitter;
 
 			// Create particles as long as we have a big enough time interval.
-			Random random = new Random();
 			while (timeToSpend > this.timeBetweenParticles)
 			{
 				currentTime += this.timeBetweenParticles;

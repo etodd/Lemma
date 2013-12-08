@@ -21,6 +21,8 @@ namespace Lemma.Factories
 			Explosion.explode(main, map, coord, pos, radius, physicsRadius);
 		}
 
+		private static Random random = new Random();
+
 		private static void explode(Main main, Map map, Map.Coordinate coord, Vector3 pos, int radius, float physicsRadius)
 		{
 			// Kaboom
@@ -39,11 +41,19 @@ namespace Lemma.Factories
 			));
 			main.Add(lightEntity);
 
+			SmokeFactory smokeFactory = Factory.Get<SmokeFactory>();
+			for (int i = 0; i < 5; i++)
+			{
+				Entity smoke = smokeFactory.CreateAndBind(main);
+				smoke.Get<Transform>().Position.Value = pos;
+				main.Add(smoke);
+			}
+
+			ParticleEmitter.Emit(main, "Smoke", pos, physicsRadius * 0.4f, 250);
+
 			Entity player = PlayerFactory.Instance;
 			if (player != null && player.Active)
 				player.GetCommand<Vector3, float>("ShakeCamera").Execute(pos, 50.0f);
-		
-			Random random = new Random();
 		
 			const float physicsImpulse = 70.0f;
 			const float minPlayerDamage = 0.2f;

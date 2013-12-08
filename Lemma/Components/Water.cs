@@ -89,6 +89,8 @@ namespace Lemma.Components
 
 		private bool needResize = false;
 
+		private Random random = new Random();
+
 		private void resize()
 		{
 			Point size = this.main.ScreenSize;
@@ -376,15 +378,14 @@ namespace Lemma.Components
 
 					if (speed > 5.0f)
 					{
-						Random random = new Random();
 						collidable.UpdateBoundingBox();
 						BoundingBox boundingBox = collidable.BoundingBox;
 						Vector3[] particlePositions = new Vector3[30];
 
 						for (int i = 0; i < particlePositions.Length; i++)
-							particlePositions[i] = new Vector3(boundingBox.Min.X + ((float)random.NextDouble() * (boundingBox.Max.X - boundingBox.Min.X)),
+							particlePositions[i] = new Vector3(boundingBox.Min.X + ((float)this.random.NextDouble() * (boundingBox.Max.X - boundingBox.Min.X)),
 								waterHeight,
-								boundingBox.Min.Z + ((float)random.NextDouble() * (boundingBox.Max.Z - boundingBox.Min.Z)));
+								boundingBox.Min.Z + ((float)this.random.NextDouble() * (boundingBox.Max.Z - boundingBox.Min.Z)));
 
 						ParticleEmitter.Emit(this.main, "Splash", particlePositions);
 					}

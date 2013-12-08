@@ -11,6 +11,8 @@ namespace Lemma.Factories
 {
 	public class OrbFactory : Factory
 	{
+		private Random random = new Random();
+
 		public OrbFactory()
 		{
 			this.Color = new Vector3(1.0f, 1.0f, 0.7f);
@@ -83,12 +85,11 @@ namespace Lemma.Factories
 				}
 			}, ai.CurrentState));
 
-			Random random = new Random();
 			result.Add(new Updater
 			{
 				delegate(float dt)
 				{
-					float source = ((float)random.NextDouble() - 0.5f) * 2.0f;
+					float source = ((float)this.random.NextDouble() - 0.5f) * 2.0f;
 					model.Scale.Value = new Vector3(defaultModelScale * (1.0f + (source * 0.5f)));
 					light.Attenuation.Value = defaultLightAttenuation * (1.0f + (source * 0.05f));
 				}
