@@ -430,7 +430,7 @@ namespace Lemma.Factories
 			
 			result.Add(new CommandBinding<Map, Map.Coordinate?>(walkedOn, delegate(Map map, Map.Coordinate? coord)
 			{
-				if (coord.HasValue && player.EnableEnhancedWallRun)
+				if (coord.HasValue)
 				{
 					int id = map[coord.Value].ID;
 					if (id == infectedID || id == infectedCriticalID)
@@ -857,11 +857,14 @@ namespace Lemma.Factories
 			// Wall run
 
 			const float minWallRunSpeed = 4.0f;
+			Map.Coordinate lastWallCoord = new Map.Coordinate();
 
 			Action<Map, Direction, Player.WallRun, Vector3, bool> setUpWallRun = delegate(Map map, Direction dir, Player.WallRun state, Vector3 forwardVector, bool addInitialVelocity)
 			{
 				stopKick();
 				player.AllowUncrouch.Value = true;
+
+				lastWallCoord = new Map.Coordinate();
 
 				wallRunMap = lastWallRunMap = map;
 				wallDirection = lastWallDirection = dir;
@@ -1210,6 +1213,11 @@ namespace Lemma.Factories
 					Map.Coordinate wallCoord = coord.Move(wallDirection, 2);
 					Map.CellState wallType = wallRunMap[wallCoord];
 					footsteps.Cue.Value = wallType.FootstepCue;
+					if (!wallCoord.Equivalent(lastWallCoord))
+					{
+						walkedOn.Execute(wallRunMap, wallCoord);
+						lastWallCoord = wallCoord;
+					}
 					if (player.EnableEnhancedWallRun && wallRunState != Player.WallRun.Straight && (wallRunState != Player.WallRun.Reverse || player.LinearVelocity.Value.Y < 0))
 					{
 						Direction up = wallRunMap.GetRelativeDirection(Direction.PositiveY);
@@ -1227,18 +1235,14 @@ namespace Lemma.Factories
 							for (Map.Coordinate y = x.Move(up, -radius); y.GetComponent(up) < wallCoord.GetComponent(up) + upwardRadius; y = y.Move(up))
 							{
 								int dy = y.GetComponent(up) - wallCoord.GetComponent(up);
-								if ((float)Math.Sqrt(dx * dx + dy * dy) < radius)
+								if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && wallRunMap[y].ID == 0)
 								{
-									int id = wallRunMap[y].ID;
-									if (id == 0 || id == infectedID || id == infectedCriticalID)
+									buildCoords.Add(new BlockBuildOrder
 									{
-										buildCoords.Add(new BlockBuildOrder
-										{
-											Map = wallRunMap,
-											Coordinate = y,
-											State = fillState,
-										});
-									}
+										Map = wallRunMap,
+										Coordinate = y,
+										State = fillState,
+									});
 								}
 							}
 						}

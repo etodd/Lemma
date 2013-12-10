@@ -29,6 +29,7 @@ namespace Lemma.Factories
 		{
 			PointLight light = result.GetOrCreate<PointLight>("PointLight");
 			light.Serialize = false;
+			light.Shadowed.Value = true;
 
 			const float defaultLightAttenuation = 15.0f;
 			light.Attenuation.Value = defaultLightAttenuation;
@@ -127,6 +128,11 @@ namespace Lemma.Factories
 				Enter = delegate(AI.State previous)
 				{
 					chase.Speed.Value = 3.0f;
+					pitch.Value = -0.5f;
+				},
+				Exit = delegate(AI.State next)
+				{
+					pitch.Value = 0.0f;
 				},
 				Tasks = new[]
 				{ 
@@ -152,10 +158,12 @@ namespace Lemma.Factories
 				Enter = delegate(AI.State previous)
 				{
 					chase.Enabled.Value = false;
+					volume.Value = 0.0f;
 				},
 				Exit = delegate(AI.State next)
 				{
 					chase.Enabled.Value = true;
+					volume.Value = defaultVolume;
 				},
 				Tasks = new[]
 				{ 
@@ -494,7 +502,7 @@ namespace Lemma.Factories
 							volume.Value = 1.0f;
 							pitch.Value = 1.0f;
 							Entity levitatingMapEntity = levitatingMap.Value.Target;
-							if (!levitatingMapEntity.Active || ai.TimeInCurrentState.Value > 8.0f)
+							if (levitatingMapEntity == null || !levitatingMapEntity.Active || ai.TimeInCurrentState.Value > 8.0f)
 							{
 								ai.CurrentState.Value = "Alert";
 								return;

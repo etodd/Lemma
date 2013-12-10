@@ -140,6 +140,7 @@ namespace Lemma.Factories
 				Enter = delegate(AI.State previous)
 				{
 					chase.Speed.Value = 3.0f;
+					pitch.Value = -0.5f;
 				},
 				Tasks = new[]
 				{ 
@@ -165,10 +166,12 @@ namespace Lemma.Factories
 				Enter = delegate(AI.State previous)
 				{
 					chase.Enabled.Value = false;
+					volume.Value = 0.0f;
 				},
 				Exit = delegate(AI.State next)
 				{
 					chase.Enabled.Value = true;
+					volume.Value = defaultVolume;
 				},
 				Tasks = new[]
 				{ 
@@ -214,6 +217,7 @@ namespace Lemma.Factories
 				{
 					chase.Speed.Value = 10.0f;
 					chase.TargetActive.Value = true;
+					pitch.Value = 0.0f;
 				},
 				Exit = delegate(AI.State next)
 				{
@@ -309,6 +313,7 @@ namespace Lemma.Factories
 					coordQueue.Clear();
 					chase.EnablePathfinding.Value = true;
 					chase.LastCoord.Value = chase.Coord.Value = explosionOriginalCoord;
+					volume.Value = defaultVolume;
 				},
 				Tasks = new[]
 				{ 
@@ -345,7 +350,6 @@ namespace Lemma.Factories
 					chase.EnablePathfinding.Value = true;
 					exploded.Value = false;
 					volume.Value = defaultVolume;
-					pitch.Value = 0.0f;
 					sound.Play.Execute();
 				},
 				Tasks = new[]
