@@ -433,7 +433,7 @@ namespace Lemma.Factories
 				if (coord.HasValue)
 				{
 					int id = map[coord.Value].ID;
-					if (id == infectedID || id == infectedCriticalID)
+					if (id == infectedID)
 					{
 						map.Empty(coord.Value);
 						map.Fill(coord.Value, WorldFactory.States[temporaryID]);

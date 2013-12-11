@@ -2565,8 +2565,7 @@ namespace Lemma.Components
 					// Spawn new maps for portions that have been cut off
 
 					IEnumerable<IEnumerable<Box>> islands;
-					bool foundPermanentBlock;
-					this.GetAdjacentIslands(this.removalCoords, out islands, out foundPermanentBlock, null);
+					this.GetAdjacentIslands(this.removalCoords, out islands);
 
 					List<List<Box>> finalIslands = new List<List<Box>>();
 
@@ -2741,11 +2740,11 @@ namespace Lemma.Components
 			return result;
 		}
 
-		public void GetAdjacentIslands(IEnumerable<Coordinate> removals, out IEnumerable<IEnumerable<Box>> islands, out bool foundPermanentBlock, IEnumerable<Box> ignore)
+		public void GetAdjacentIslands(IEnumerable<Coordinate> removals, out IEnumerable<IEnumerable<Box>> islands)
 		{
 			List<Dictionary<Box, bool>> lists = new List<Dictionary<Box, bool>>();
 
-			foundPermanentBlock = false;
+			bool foundPermanentBlock = false;
 
 			// Build adjacency lists
 			foreach (Coordinate removal in removals)
@@ -2771,17 +2770,7 @@ namespace Lemma.Components
 					if (alreadyFound)
 						continue;
 					Dictionary<Box, bool> newList = new Dictionary<Box, bool>();
-					if (ignore != null)
-					{
-						foreach (Box b in ignore)
-							newList.Add(b, true);
-					}
 					bool permanent = this.buildAdjacency(box, newList);
-					if (ignore != null)
-					{
-						foreach (Box b in ignore)
-							newList.Remove(b);
-					}
 					foundPermanentBlock |= permanent;
 					if (!permanent && newList.Count > 0)
 						lists.Add(newList);
@@ -2810,6 +2799,49 @@ namespace Lemma.Components
 			}
 			else
 				islands = new Box[][] { };
+		}
+
+		public IEnumerable<IEnumerable<Box>> GetAdjacentIslands(IEnumerable<Coordinate> removals, CellState state, CellState search)
+		{
+			List<Dictionary<Box, bool>> lists = new List<Dictionary<Box, bool>>();
+
+			bool foundSearchBlock = false;
+
+			// Build adjacency lists
+			foreach (Coordinate removal in removals)
+			{
+				if (this[removal].ID != 0) // A new block was subsequently filled in after removal. Forget about it.
+					continue;
+
+				foreach (Direction dir in DirectionExtensions.Directions)
+				{
+					Coordinate adjacentCoord = removal.Move(dir);
+					Box box = this.GetBox(adjacentCoord);
+					if (box == null || (box.Type.ID != state.ID && box.Type.ID != search.ID))
+						continue;
+					bool alreadyFound = false;
+					foreach (Dictionary<Box, bool> list in lists)
+					{
+						if (list.ContainsKey(box))
+						{
+							alreadyFound = true;
+							break;
+						}
+					}
+					if (alreadyFound)
+						continue;
+					Dictionary<Box, bool> newList = new Dictionary<Box, bool>();
+					bool found = this.buildAdjacency(box, newList, state, search);
+					foundSearchBlock |= found;
+					if (!found && newList.Count > 0)
+						lists.Add(newList);
+				}
+			}
+
+			if (foundSearchBlock)
+				return lists.Select(x => x.Keys);
+			else
+				return new Box[][] { };
 		}
 
 		private bool adjacentToFilledCell(Coordinate coord)
@@ -3207,6 +3239,43 @@ namespace Lemma.Components
 			}
 
 			return null;
+		}
+
+		private bool buildAdjacency(Box box, Dictionary<Box, bool> list, CellState state, CellState search)
+		{
+			Queue<Box> boxes = new Queue<Box>();
+
+			if (box.Type.ID == search.ID)
+			{
+				list.Add(box, true);
+				return true;
+			}
+
+			if (box.Type.ID == state.ID && !list.ContainsKey(box))
+			{
+				boxes.Enqueue(box);
+				list.Add(box, true);
+			}
+
+			while (boxes.Count > 0)
+			{
+				Box b = boxes.Dequeue();
+				
+				foreach (Box adjacent in b.Adjacent)
+				{
+					if (!list.ContainsKey(adjacent))
+					{
+						if (adjacent.Type.ID == search.ID)
+							return true;
+						else if (adjacent.Type.ID == state.ID)
+						{
+							boxes.Enqueue(adjacent);
+							list.Add(adjacent, true);
+						}
+					}
+				}
+			}
+			return false;
 		}
 
 		private bool buildAdjacency(Box box, Dictionary<Box, bool> list)
