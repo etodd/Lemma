@@ -80,7 +80,7 @@ namespace Lemma.Factories
 
 			Agent agent = result.GetOrCreate<Agent>("Agent");
 
-			Map.CellState fillState = WorldFactory.StatesByName["Snake"];
+			Map.CellState fillState = WorldFactory.StatesByName["Infected"];
 			Map.CellState criticalState = WorldFactory.StatesByName["InfectedCritical"];
 			Map.CellState temporaryState = WorldFactory.StatesByName["Temporary"];
 

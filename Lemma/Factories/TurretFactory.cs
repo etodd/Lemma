@@ -121,6 +121,12 @@ namespace Lemma.Factories
 
 			ai.Add(new AI.State
 			{
+				Name = "Suspended",
+				Tasks = new[] { checkOperationalRadius, },
+			});
+
+			ai.Add(new AI.State
+			{
 				Name = "Idle",
 				Tasks = new[]
 				{ 

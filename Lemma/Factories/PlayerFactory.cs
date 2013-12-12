@@ -424,8 +424,7 @@ namespace Lemma.Factories
 			Command<Map, Map.Coordinate?> walkedOn = new Command<Map,Map.Coordinate?>();
 			result.Add("WalkedOn", walkedOn);
 
-			int infectedID = WorldFactory.StatesByName["Infected"].ID,
-				infectedCriticalID = WorldFactory.StatesByName["InfectedCritical"].ID,
+			int neutralID = WorldFactory.StatesByName["Neutral"].ID,
 				temporaryID = WorldFactory.StatesByName["Temporary"].ID;
 			
 			result.Add(new CommandBinding<Map, Map.Coordinate?>(walkedOn, delegate(Map map, Map.Coordinate? coord)
@@ -433,7 +432,7 @@ namespace Lemma.Factories
 				if (coord.HasValue)
 				{
 					int id = map[coord.Value].ID;
-					if (id == infectedID)
+					if (id == neutralID)
 					{
 						map.Empty(coord.Value);
 						map.Fill(coord.Value, WorldFactory.States[temporaryID]);

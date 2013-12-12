@@ -388,7 +388,7 @@ namespace Lemma.Factories
 			});
 
 			EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
-			Map.CellState snakeState = WorldFactory.StatesByName["Snake"];
+			Map.CellState infectedState = WorldFactory.StatesByName["Infected"];
 			chase.Add(new CommandBinding<Map, Map.Coordinate>(chase.Moved, delegate(Map m, Map.Coordinate c)
 			{
 				if (chase.Active)
@@ -399,7 +399,7 @@ namespace Lemma.Factories
 						coordQueue.RemoveAt(0);
 
 						Entity block = factory.CreateAndBind(main);
-						snakeState.ApplyToEffectBlock(block.Get<ModelInstance>());
+						infectedState.ApplyToEffectBlock(block.Get<ModelInstance>());
 
 						Map map = chase.Map.Value.Target.Get<Map>();
 
@@ -410,7 +410,7 @@ namespace Lemma.Factories
 						block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f);
 						block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f) * Matrix.CreateRotationY(0.15f);
 						block.GetProperty<float>("TotalLifetime").Value = 0.05f;
-						factory.Setup(block, chase.Map.Value.Target, coord, snakeState.ID);
+						factory.Setup(block, chase.Map.Value.Target, coord, infectedState.ID);
 						main.Add(block);
 					}
 				}
