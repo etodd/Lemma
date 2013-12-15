@@ -1200,18 +1200,21 @@ namespace Lemma.Components
 					{
 						if (box.Adjacent == null)
 							continue;
-						foreach (Box adjacent in box.Adjacent)
+						lock (box.Adjacent)
 						{
-							if (box.Type.Permanent && adjacent.Type.Permanent)
-								continue;
-
-							BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
-							BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
-							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
+							foreach (Box adjacent in box.Adjacent)
 							{
-								relationships[relationship1] = true;
-								result.Add(index);
-								result.Add(indexLookup[adjacent]);
+								if (box.Type.Permanent && adjacent.Type.Permanent)
+									continue;
+
+								BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
+								BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
+								if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
+								{
+									relationships[relationship1] = true;
+									result.Add(index);
+									result.Add(indexLookup[adjacent]);
+								}
 							}
 						}
 						index++;
@@ -1529,12 +1532,12 @@ namespace Lemma.Components
 				&& coord.Z >= this.minZ && coord.Z < this.maxZ;
 		}
 
-		public bool Fill(Vector3 pos, CellState state)
+		public bool Fill(Vector3 pos, CellState state, bool notify = true)
 		{
-			return this.Fill(this.GetCoordinate(pos), state);
+			return this.Fill(this.GetCoordinate(pos), state, notify);
 		}
 
-		public bool Fill(Coordinate start, Coordinate end, CellState state)
+		public bool Fill(Coordinate start, Coordinate end, CellState state, bool notify = true)
 		{
 			bool changed = false;
 			for (int x = start.X; x < end.X; x++)
@@ -1543,29 +1546,29 @@ namespace Lemma.Components
 				{
 					for (int z = start.Z; z < end.Z; z++)
 					{
-						changed |= this.Fill(x, y, z, state);
+						changed |= this.Fill(x, y, z, state, notify);
 					}
 				}
 			}
 			return changed;
 		}
 
-		public bool Fill(Coordinate coord, CellState state)
+		public bool Fill(Coordinate coord, CellState state, bool notify = true)
 		{
-			return this.Fill(coord.X, coord.Y, coord.Z, state);
+			return this.Fill(coord.X, coord.Y, coord.Z, state, notify);
 		}
 
-		public bool Empty(Vector3 pos, Map transferringToNewMap = null)
+		public bool Empty(Vector3 pos, Map transferringToNewMap = null, bool notify = true)
 		{
-			return this.Empty(this.GetCoordinate(pos), transferringToNewMap);
+			return this.Empty(this.GetCoordinate(pos), transferringToNewMap, notify);
 		}
 
-		public bool Empty(Coordinate coord, Map transferringToNewMap = null)
+		public bool Empty(Coordinate coord, Map transferringToNewMap = null, bool notify = true)
 		{
-			return this.Empty(coord.X, coord.Y, coord.Z, transferringToNewMap);
+			return this.Empty(coord.X, coord.Y, coord.Z, transferringToNewMap, notify);
 		}
 
-		public bool Empty(Coordinate a, Coordinate b, Map transferringToNewMap = null)
+		public bool Empty(Coordinate a, Coordinate b, Map transferringToNewMap = null, bool notify = true)
 		{
 			int minY = Math.Min(a.Y, b.Y);
 			int minZ = Math.Min(a.Z, b.Z);
@@ -1583,7 +1586,7 @@ namespace Lemma.Components
 					}
 				}
 			}
-			return this.Empty(coords, transferringToNewMap);
+			return this.Empty(coords, transferringToNewMap, notify);
 		}
 
 		/// <summary>
@@ -1592,7 +1595,7 @@ namespace Lemma.Components
 		/// <param name="x"></param>
 		/// <param name="y"></param>
 		/// <param name="z"></param>
-		public bool Fill(int x, int y, int z, CellState state)
+		public bool Fill(int x, int y, int z, CellState state, bool notify = true)
 		{
 			if (state.ID == 0 || (!this.main.EditorEnabled && !this.EnablePhysics)) // 0 = empty
 				return false;
@@ -1610,7 +1613,7 @@ namespace Lemma.Components
 					}
 				}
 			}
-			if (filled)
+			if (filled && notify)
 				this.notifyFilled(new Coordinate[] { new Coordinate { X = x, Y = y, Z = z, Data = state } }, null);
 			return filled;
 		}
@@ -1650,7 +1653,7 @@ namespace Lemma.Components
 				this.CompletelyEmptied.Execute();
 		}
 
-		public bool Empty(IEnumerable<Coordinate> coords, Map transferringToNewMap = null)
+		public bool Empty(IEnumerable<Coordinate> coords, Map transferringToNewMap = null, bool notify = true)
 		{
 			bool modified = false;
 			List<Box> boxAdditions = new List<Box>();
@@ -1782,7 +1785,7 @@ namespace Lemma.Components
 				this.calculateAdjacency(boxAdditions.Where(x => x.Active));
 			}
 
-			if (modified)
+			if (modified && notify)
 				this.notifyEmptied(removed, transferringToNewMap);
 
 			return modified;
@@ -1795,7 +1798,7 @@ namespace Lemma.Components
 		/// <param name="x"></param>
 		/// <param name="y"></param>
 		/// <param name="z"></param>
-		public bool Empty(int x, int y, int z, Map transferringToNewMap = null)
+		public bool Empty(int x, int y, int z, Map transferringToNewMap = null, bool notify = true)
 		{
 			bool modified = false;
 			Map.Coordinate coord = new Coordinate { X = x, Y = y, Z = z, };
@@ -1920,7 +1923,7 @@ namespace Lemma.Components
 				}
 			}
 
-			if (modified)
+			if (modified && notify)
 				this.notifyEmptied(new Coordinate[] { coord }, transferringToNewMap);
 
 			return modified;
@@ -1964,8 +1967,10 @@ namespace Lemma.Components
 						if (!adjacents.ContainsKey(adjacent))
 						{
 							adjacents[adjacent] = true;
-							box.Adjacent.Add(adjacent);
-							adjacent.Adjacent.Add(box);
+							lock (box.Adjacent)
+								box.Adjacent.Add(adjacent);
+							lock (adjacent.Adjacent)
+								adjacent.Adjacent.Add(box);
 						}
 						y = adjacent.Y + adjacent.Height;
 					}
@@ -1985,8 +1990,10 @@ namespace Lemma.Components
 						if (!adjacents.ContainsKey(adjacent))
 						{
 							adjacents[adjacent] = true;
-							box.Adjacent.Add(adjacent);
-							adjacent.Adjacent.Add(box);
+							lock (box.Adjacent)
+								box.Adjacent.Add(adjacent);
+							lock (adjacent.Adjacent)
+								adjacent.Adjacent.Add(box);
 						}
 						y = adjacent.Y + adjacent.Height;
 					}
@@ -2006,8 +2013,10 @@ namespace Lemma.Components
 						if (!adjacents.ContainsKey(adjacent))
 						{
 							adjacents[adjacent] = true;
-							box.Adjacent.Add(adjacent);
-							adjacent.Adjacent.Add(box);
+							lock (box.Adjacent)
+								box.Adjacent.Add(adjacent);
+							lock (adjacent.Adjacent)
+								adjacent.Adjacent.Add(box);
 						}
 						y = adjacent.Y + adjacent.Height;
 					}
@@ -2027,8 +2036,10 @@ namespace Lemma.Components
 						if (!adjacents.ContainsKey(adjacent))
 						{
 							adjacents[adjacent] = true;
-							box.Adjacent.Add(adjacent);
-							adjacent.Adjacent.Add(box);
+							lock (box.Adjacent)
+								box.Adjacent.Add(adjacent);
+							lock (adjacent.Adjacent)
+								adjacent.Adjacent.Add(box);
 						}
 						y = adjacent.Y + adjacent.Height;
 					}
@@ -2048,8 +2059,10 @@ namespace Lemma.Components
 						if (!adjacents.ContainsKey(adjacent))
 						{
 							adjacents[adjacent] = true;
-							box.Adjacent.Add(adjacent);
-							adjacent.Adjacent.Add(box);
+							lock (box.Adjacent)
+								box.Adjacent.Add(adjacent);
+							lock (adjacent.Adjacent)
+								adjacent.Adjacent.Add(box);
 						}
 						z = adjacent.Z + adjacent.Depth;
 					}
@@ -2069,8 +2082,10 @@ namespace Lemma.Components
 						if (!adjacents.ContainsKey(adjacent))
 						{
 							adjacents[adjacent] = true;
-							box.Adjacent.Add(adjacent);
-							adjacent.Adjacent.Add(box);
+							lock (box.Adjacent)
+								box.Adjacent.Add(adjacent);
+							lock (adjacent.Adjacent)
+								adjacent.Adjacent.Add(box);
 						}
 						z = adjacent.Z + adjacent.Depth;
 					}
@@ -2228,8 +2243,10 @@ namespace Lemma.Components
 							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
 							{
 								relationships[relationship1] = true;
-								box.Adjacent.Add(adjacent);
-								adjacent.Adjacent.Add(box);
+								lock (box.Adjacent)
+									box.Adjacent.Add(adjacent);
+								lock (adjacent.Adjacent)
+									adjacent.Adjacent.Add(box);
 							}
 							y = adjacent.Y + adjacent.Height;
 						}
@@ -2251,8 +2268,10 @@ namespace Lemma.Components
 							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
 							{
 								relationships[relationship1] = true;
-								box.Adjacent.Add(adjacent);
-								adjacent.Adjacent.Add(box);
+								lock (box.Adjacent)
+									box.Adjacent.Add(adjacent);
+								lock (adjacent.Adjacent)
+									adjacent.Adjacent.Add(box);
 							}
 							y = adjacent.Y + adjacent.Height;
 						}
@@ -2274,8 +2293,10 @@ namespace Lemma.Components
 							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
 							{
 								relationships[relationship1] = true;
-								box.Adjacent.Add(adjacent);
-								adjacent.Adjacent.Add(box);
+								lock (box.Adjacent)
+									box.Adjacent.Add(adjacent);
+								lock (adjacent.Adjacent)
+									adjacent.Adjacent.Add(box);
 							}
 							y = adjacent.Y + adjacent.Height;
 						}
@@ -2297,8 +2318,10 @@ namespace Lemma.Components
 							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
 							{
 								relationships[relationship1] = true;
-								box.Adjacent.Add(adjacent);
-								adjacent.Adjacent.Add(box);
+								lock (box.Adjacent)
+									box.Adjacent.Add(adjacent);
+								lock (adjacent.Adjacent)
+									adjacent.Adjacent.Add(box);
 							}
 							y = adjacent.Y + adjacent.Height;
 						}
@@ -2320,8 +2343,10 @@ namespace Lemma.Components
 							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
 							{
 								relationships[relationship1] = true;
-								box.Adjacent.Add(adjacent);
-								adjacent.Adjacent.Add(box);
+								lock (box.Adjacent)
+									box.Adjacent.Add(adjacent);
+								lock (adjacent.Adjacent)
+									adjacent.Adjacent.Add(box);
 							}
 							z = adjacent.Z + adjacent.Depth;
 						}
@@ -2343,8 +2368,10 @@ namespace Lemma.Components
 							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
 							{
 								relationships[relationship1] = true;
-								box.Adjacent.Add(adjacent);
-								adjacent.Adjacent.Add(box);
+								lock (box.Adjacent)
+									box.Adjacent.Add(adjacent);
+								lock (adjacent.Adjacent)
+									adjacent.Adjacent.Add(box);
 							}
 							z = adjacent.Z + adjacent.Depth;
 						}
@@ -2495,8 +2522,14 @@ namespace Lemma.Components
 
 		protected void removeBoxAdjacency(Box box)
 		{
-			foreach (Box box2 in box.Adjacent)
-				box2.Adjacent.Remove(box);
+			lock (box.Adjacent)
+			{
+				foreach (Box box2 in box.Adjacent)
+				{
+					lock (box2.Adjacent)
+						box2.Adjacent.Remove(box);
+				}
+			}
 		}
 
 		public void Regenerate(Action<List<DynamicMap>> callback = null)
@@ -2721,17 +2754,29 @@ namespace Lemma.Components
 				if (b.Type == state)
 				{
 					result.Add(b);
-					IEnumerable<Box> adjacentBoxes;
 					if (b.Type.Permanent) // We probably don't have any adjacency info for it.
-						adjacentBoxes = this.getAdjacentBoxes(b);
-					else
-						adjacentBoxes = b.Adjacent;
-					foreach (Box adjacent in adjacentBoxes)
 					{
-						if (!alreadyVisited.ContainsKey(adjacent))
+						foreach (Box adjacent in this.getAdjacentBoxes(b))
 						{
-							boxes.Enqueue(adjacent);
-							alreadyVisited.Add(adjacent, true);
+							if (!alreadyVisited.ContainsKey(adjacent))
+							{
+								boxes.Enqueue(adjacent);
+								alreadyVisited.Add(adjacent, true);
+							}
+						}
+					}
+					else
+					{
+						lock (b.Adjacent)
+						{
+							foreach (Box adjacent in b.Adjacent)
+							{
+								if (!alreadyVisited.ContainsKey(adjacent))
+								{
+									boxes.Enqueue(adjacent);
+									alreadyVisited.Add(adjacent, true);
+								}
+							}
 						}
 					}
 				}
@@ -3260,17 +3305,20 @@ namespace Lemma.Components
 			while (boxes.Count > 0)
 			{
 				Box b = boxes.Dequeue();
-				
-				foreach (Box adjacent in b.Adjacent)
+
+				lock (b.Adjacent)
 				{
-					if (!list.ContainsKey(adjacent))
+					foreach (Box adjacent in b.Adjacent)
 					{
-						if (adjacent.Type.ID == search.ID)
-							return true;
-						else if (adjacent.Type.ID == state.ID)
+						if (!list.ContainsKey(adjacent))
 						{
-							boxes.Enqueue(adjacent);
-							list.Add(adjacent, true);
+							if (adjacent.Type.ID == search.ID)
+								return true;
+							else if (adjacent.Type.ID == state.ID)
+							{
+								boxes.Enqueue(adjacent);
+								list.Add(adjacent, true);
+							}
 						}
 					}
 				}
@@ -3293,13 +3341,16 @@ namespace Lemma.Components
 
 				if (b.Type.Permanent)
 					return true;
-				
-				foreach (Box adjacent in b.Adjacent)
+
+				lock (b.Adjacent)
 				{
-					if (!list.ContainsKey(adjacent))
+					foreach (Box adjacent in b.Adjacent)
 					{
-						boxes.Enqueue(adjacent);
-						list.Add(adjacent, true);
+						if (!list.ContainsKey(adjacent))
+						{
+							boxes.Enqueue(adjacent);
+							list.Add(adjacent, true);
+						}
 					}
 				}
 			}
@@ -3331,8 +3382,10 @@ namespace Lemma.Components
 						{
 							if (adjacent == baseBox)
 								continue;
-							baseBox.Adjacent.Add(adjacent);
-							adjacent.Adjacent.Add(baseBox);
+							lock (baseBox.Adjacent)
+								baseBox.Adjacent.Add(adjacent);
+							lock (adjacent.Adjacent)
+								adjacent.Adjacent.Add(baseBox);
 						}
 						this.removeBoxAdjacency(box);
 						this.removals.Add(box);
@@ -3411,8 +3464,10 @@ namespace Lemma.Components
 						{
 							if (adjacent == baseBox)
 								continue;
-							baseBox.Adjacent.Add(adjacent);
-							adjacent.Adjacent.Add(baseBox);
+							lock (baseBox.Adjacent)
+								baseBox.Adjacent.Add(adjacent);
+							lock (adjacent.Adjacent)
+								adjacent.Adjacent.Add(baseBox);
 						}
 						this.removeBoxAdjacency(box);
 						this.removals.Add(box);
@@ -3490,8 +3545,10 @@ namespace Lemma.Components
 						{
 							if (adjacent == baseBox)
 								continue;
-							baseBox.Adjacent.Add(adjacent);
-							adjacent.Adjacent.Add(baseBox);
+							lock (baseBox.Adjacent)
+								baseBox.Adjacent.Add(adjacent);
+							lock (adjacent.Adjacent)
+								adjacent.Adjacent.Add(baseBox);
 						}
 						this.removeBoxAdjacency(box);
 						this.removals.Add(box);

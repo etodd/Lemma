@@ -30,34 +30,45 @@ namespace Lemma.Factories
 			Property<Entity.Handle> map = result.GetOrMakeProperty<Entity.Handle>("AttachedMap");
 			Property<Map.Coordinate> coord = result.GetOrMakeProperty<Map.Coordinate>("AttachedCoordinate");
 
-			Property<Entity.Handle> spawn = result.GetOrMakeProperty<Entity.Handle>("SpawnPoint");
+			Property<float> lastTrigger = result.GetOrMakeProperty<float>("LastTrigger", false, -3.0f);
+
+			ListProperty<Entity.Handle> triggers = result.GetOrMakeListProperty<Entity.Handle>("Triggers");
+
+			Property<int> operationalRadius = result.GetOrMakeProperty<int>("OperationalRadius", true, 200);
+
+			Property<bool> enabled = result.GetOrMakeProperty<bool>("Enabled", true, false);
+
+			Map.CellState neutral = WorldFactory.StatesByName["Neutral"];
+			Map.CellState infected = WorldFactory.StatesByName["Infected"];
 
 			Action<Entity> infect = delegate(Entity player)
 			{
+				enabled.Value = true;
+
+				if (main.TotalTime.Value - lastTrigger.Value < 3.0f)
+					return;
+
+				lastTrigger.Value = main.TotalTime;
+
 				Entity mapEntity = map.Value.Target;
 				if (mapEntity.Active)
 				{
-					Map.CellState neutral = WorldFactory.StatesByName["Neutral"];
-					Map.CellState infected = WorldFactory.StatesByName["Infected"];
-
 					Map m = mapEntity.Get<Map>();
 					if (m[coord.Value].ID == infected.ID)
 					{
 						List<Map.Coordinate> contiguous = m.GetContiguousByType(new[] { m.GetBox(coord.Value) }).SelectMany(x => x.GetCoords()).ToList();
 
-						m.Empty(contiguous);
+						m.Empty(contiguous, null, false);
 						foreach (Map.Coordinate c in contiguous)
-							m.Fill(c, c.Equivalent(coord.Value) ? infected : neutral);
+						{
+							bool isStart = c.Equivalent(coord.Value);
+							m.Fill(c, isStart ? infected : neutral, isStart);
+						}
 					}
 					else
 					{
-						if (!m.Empty(coord.Value))
-						{
-							result.Delete.Execute();
-							return;
-						}
-						else
-							m.Fill(coord.Value, infected);
+						m.Empty(coord.Value, null, false);
+						m.Fill(coord.Value, infected);
 					}
 					m.Regenerate();
 				}
@@ -71,10 +82,17 @@ namespace Lemma.Factories
 				{
 					delegate()
 					{
-						Entity spawnEntity = spawn.Value.Target;
-						if (spawnEntity != null && spawnEntity.Active)
-							result.Add(new CommandBinding<Entity>(spawnEntity.Get<PlayerTrigger>().PlayerEntered, infect));
-						else
+						bool delete = true;
+						foreach (Entity.Handle trigger in triggers)
+						{
+							Entity e = trigger.Target;
+							if (e != null && e.Active)
+							{
+								result.Add(new CommandBinding<Entity>(e.Get<PlayerTrigger>().PlayerEntered, infect));
+								delete = false;
+							}
+						}
+						if (delete)
 							result.Delete.Execute();
 					}
 				});
@@ -85,8 +103,17 @@ namespace Lemma.Factories
 				Player player = p.Get<Player>();
 				p.Add(new CommandBinding(p.Delete, delegate()
 				{
-					if (player.Health.Value == 0)
-						infect(p);
+					if (player.Health.Value == 0 && enabled && (p.Get<Transform>().Position - transform.Position.Value).Length() < operationalRadius)
+					{
+						result.Add(new Animation
+						(
+							new Animation.Delay(0.5f),
+							new Animation.Execute(delegate()
+							{
+								infect(p);
+							})
+						));
+					}
 				}));
 			}));
 
@@ -106,13 +133,16 @@ namespace Lemma.Factories
 			Property<bool> selected = result.GetOrMakeProperty<bool>("EditorSelected");
 			selected.Serialize = false;
 
-			Property<Entity.Handle> spawn = result.GetOrMakeProperty<Entity.Handle>("SpawnPoint");
+			ListProperty<Entity.Handle> triggers = result.GetOrMakeListProperty<Entity.Handle>("Triggers");
 
 			Command<Entity> toggleEntityConnected = new Command<Entity>
 			{
 				Action = delegate(Entity entity)
 				{
-					spawn.Value = entity;
+					if (triggers.Contains(entity))
+						triggers.Remove(entity);
+					else
+						triggers.Add(entity);
 				}
 			};
 			result.Add("ToggleEntityConnected", toggleEntityConnected);
@@ -122,39 +152,25 @@ namespace Lemma.Factories
 
 			Color connectionLineColor = new Color(1.0f, 1.0f, 1.0f, 0.5f);
 
-			Action recalculateLine = delegate()
+			ListBinding<LineDrawer.Line, Entity.Handle> connectionBinding = new ListBinding<LineDrawer.Line, Entity.Handle>(connectionLines.Lines, triggers, delegate(Entity.Handle entity)
 			{
-				connectionLines.Lines.Clear();
-				Entity parent = spawn.Value.Target;
-				if (parent != null)
+				if (entity.Target == null)
+					return new LineDrawer.Line[] { };
+				else
 				{
-					connectionLines.Lines.Add(new LineDrawer.Line
+					return new[]
 					{
-						A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, connectionLineColor),
-						B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(parent.Get<Transform>().Position, connectionLineColor)
-					});
+						new LineDrawer.Line
+						{
+							A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, connectionLineColor),
+							B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(entity.Target.Get<Transform>().Position, connectionLineColor)
+						}
+					};
 				}
-			};
-
-			NotifyBinding recalculateBinding = null;
-			Action rebuildBinding = delegate()
-			{
-				if (recalculateBinding != null)
-				{
-					connectionLines.Remove(recalculateBinding);
-					recalculateBinding = null;
-				}
-				if (spawn.Value.Target != null)
-				{
-					recalculateBinding = new NotifyBinding(recalculateLine, spawn.Value.Target.Get<Transform>().Matrix);
-					connectionLines.Add(recalculateBinding);
-				}
-				recalculateLine();
-			};
-			connectionLines.Add(new NotifyBinding(rebuildBinding, spawn));
-
-			connectionLines.Add(new NotifyBinding(recalculateLine, selected));
-			connectionLines.Add(new NotifyBinding(recalculateLine, () => selected, transform.Position));
+			});
+			result.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, selected));
+			result.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, () => selected, transform.Position));
+			connectionLines.Add(connectionBinding);
 			result.Add(connectionLines);
 		}
 	}

@@ -115,7 +115,7 @@ namespace Lemma.Factories
 				queueLookup.Remove(entry.Box);
 
 				closed[entry.Box] = entry.G;
-				lock (m.MutationLock)
+				lock (entry.Box.Adjacent)
 				{
 					foreach (Map.Box adjacent in entry.Box.Adjacent)
 					{
