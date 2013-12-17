@@ -27,19 +27,32 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
+			PlayerTrigger trigger = result.GetOrCreate<PlayerTrigger>("Trigger");
+
 			base.Bind(result, main, creating);
 
 			Transform transform = result.Get<Transform>();
+
 			TargetFactory.Positions.Add(transform);
 			result.Add(new CommandBinding(result.Delete, delegate()
 			{
 				TargetFactory.Positions.Remove(transform);
+			}));
+
+			Property<bool> deleteWhenReached = result.GetOrMakeProperty<bool>("DeleteWhenReached", true, true);
+			trigger.Add(new Binding<bool>(trigger.Enabled, deleteWhenReached));
+			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
+			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity p)
+			{
+				result.Delete.Execute();
 			}));
 		}
 
 		public override void AttachEditorComponents(Entity result, Main main)
 		{
 			base.AttachEditorComponents(result, main);
+
+			PlayerTrigger.AttachEditorComponents(result, main, this.Color);
 
 			Model model = new Model();
 			model.Filename.Value = "Models\\sphere";

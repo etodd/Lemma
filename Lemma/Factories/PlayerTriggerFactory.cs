@@ -42,25 +42,7 @@ namespace Lemma.Factories
 		{
 			base.AttachEditorComponents(result, main);
 
-			Property<bool> selected = new Property<bool> { Value = false, Editable = false, Serialize = false };
-			result.Add("EditorSelected", selected);
-
-			PlayerTrigger trigger = result.Get<PlayerTrigger>();
-
-			ModelAlpha model = new ModelAlpha();
-			model.Filename.Value = "Models\\alpha-sphere";
-			model.Alpha.Value = 0.15f;
-			model.Color.Value = this.Color;
-			model.DisableCulling.Value = true;
-			model.IsInstanced.Value = false;
-			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(x), trigger.Radius));
-			model.Editable = false;
-			model.Serialize = false;
-			model.Add(new Binding<bool>(model.Enabled, selected));
-
-			result.Add(model);
-
-			model.Add(new Binding<Matrix, Vector3>(model.Transform, x => Matrix.CreateTranslation(x), trigger.Position));
+			PlayerTrigger.AttachEditorComponents(result, main, this.Color);
 		}
 	}
 }
