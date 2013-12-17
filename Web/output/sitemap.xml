@@ -9,11 +9,15 @@
   <changefreq>weekly</changefreq>
 </url>
 <url>
-  <loc>http://lemmagame.com/about.html</loc>
+  <loc>http://lemmagame.com/blog</loc>
   <changefreq>weekly</changefreq>
 </url>
 <url>
-  <loc>http://lemmagame.com/downloads.html</loc>
+  <loc>http://lemmagame.com/about</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://lemmagame.com/play</loc>
   <changefreq>weekly</changefreq>
 </url>
 </urlset>

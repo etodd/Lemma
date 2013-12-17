@@ -17,6 +17,7 @@ body
 {
 	background-color: #000;
 	color: #fff;
+	line-height: 1.5em;
 }
 
 a
@@ -50,7 +51,12 @@ header
 	background-size: 60%;
 	background-position: center center;
 	background-repeat: no-repeat;
-	height: 80px;
+	height: 100px;
+}
+
+header h1
+{
+	display: none;
 }
 
 header.svg-fallback
@@ -175,38 +181,21 @@ article #news img
 	width: 100% !important;
 }
 
-@media screen and (min-width: 590px)
+@media screen and (min-width: 750px)
 {
 	tr td
 	{
 		display: table-cell;
 	}
-	
-	#menu
-	{
-		background-color: #fff;
-	}
-	
-	#menu tr td a
-	{
-		color: #000;
-	}
 
 	header
 	{
-		height: 128px;
-	}
-
-	body
-	{
-		background-image: url(graphics/header-background.jpg);
-		background-repeat: no-repeat;
-		background-position: center top;
+		height: 138px;
 	}
 
 	article
 	{
-		padding: 20px;
+		padding: 10px;
 		padding-left: 40px;
 		padding-right: 40px;
 		background-color: rgba(40, 40, 40, 0.85);
@@ -220,12 +209,6 @@ article #news img
 
 @media screen and (min-width: 960px)
 {
-	#menu
-	{
-		border-top-left-radius: 8px;
-		border-top-right-radius: 8px;
-	}
-
 	blockquote
 	{
 		margin-left: 40px;
@@ -234,7 +217,8 @@ article #news img
 
 	article
 	{
-		padding: 30px;
+		padding-top: 10px;
+		padding-bottom: 30px;
 		padding-left: 70px;
 		padding-right: 70px;
 	}

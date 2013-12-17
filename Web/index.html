@@ -1,23 +1,28 @@
 {% extends "_base.html" %}
 
 {% block extrahead %}
-	<script src="https://www.google.com/jsapi"></script>
-	<script src="feed.js"></script>
+<style>
+	center
+	{
+		padding-left: 10px;
+		padding-right: 10px;
+	}
+	article
+	{
+		background-color: transparent;
+		padding-left: 0px;
+		padding-right: 0px;
+		padding-bottom: 0px;
+	}
+</style>
 {% endblock %}
 
 {% block content %}
-	<blockquote>
-		<iframe width="560" height="315" src="http://www.youtube.com/embed/wwnujGWmhEg" frameborder="0" allowfullscreen></iframe>
-		<br />
-		<b>Lemma</b> is an immersive <b>first-person parkour</b> game.
-		Every parkour move has the potential to <b>modify the environment</b>. Surfaces pop in and out of existence at will!
-	</blockquote>
-	<h1><a href="http://et1337.wordpress.com/category/lemma">Blog</a></h1>
-	<div id="news">
-	</div>
+	<center>
+		<b>Lemma</b> is an immersive <b>first-person parkour</b> game.<br />
+		Every parkour move has the potential to <b>modify the environment</b>.<br />
+		Surfaces pop in and out of existence at will.
+	</center>
 	<br />
-	<a href="http://et1337.wordpress.com/category/lemma">More posts...</a>
-	<script type="text/javascript">
-		populateFeed('#news', 'http://et1337.wordpress.com/category/lemma/feed/');
-	</script>
+	<iframe width="560" height="315" src="http://www.youtube.com/embed/wwnujGWmhEg?autohide=1&modestbranding=1&rel=0&showinfo=0" frameborder="0" allowfullscreen></iframe>
 {% endblock %}
