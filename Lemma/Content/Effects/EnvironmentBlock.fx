@@ -33,7 +33,10 @@ void RenderVS(	in RenderVSInput input,
 	normalMap.tangentToWorld[2] = normalize(mul(input.normal, world));
 
 	float3 pos = input.position + Offset[input.index];
-	tex.uvCoordinates = float2(pos.x + (pos.z * input.normal.x), -pos.y + (pos.z * input.normal.y)) * 0.075f * Tiling;
+
+	float diff = length(pos * input.normal) * 2;
+
+	tex.uvCoordinates = float2(diff + pos.x + (pos.z * input.normal.x), diff - pos.y + (pos.z * input.normal.y)) * 0.075f * Tiling;
 }
 
 void ClipVS(	in RenderVSInput input,

@@ -29,7 +29,9 @@ void RenderVS(	in RenderVSInput input,
 	normalMap.tangentToWorld[1] = normalize(mul(input.binormal, WorldMatrix));
 	normalMap.tangentToWorld[2] = normalize(mul(input.normal, WorldMatrix));
 
-	tex.uvCoordinates = float2(input.position.x + (input.position.z * input.normal.x), -input.position.y + (input.position.z * input.normal.y)) * 0.075f * Tiling;
+	float diff = length(input.position * input.normal) * 2;
+
+	tex.uvCoordinates = float2(diff + input.position.x + (input.position.z * input.normal.x), diff - input.position.y + (input.position.z * input.normal.y)) * 0.075f * Tiling;
 }
 
 void ClipVS(	in RenderVSInput input,
