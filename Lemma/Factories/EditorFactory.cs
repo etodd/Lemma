@@ -294,6 +294,30 @@ namespace Lemma.Factories
 				}
 			});
 
+			addCommand("Join voxels", new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.J }, () => !editor.MapEditMode && editor.SelectedEntities.Count == 2 && editor.SelectedEntities[0].Get<Map>() != null && editor.SelectedEntities[1].Get<Map>() != null, new Command
+			{
+				Action = delegate()
+				{
+					Entity entity1 = editor.SelectedEntities[0];
+					Entity entity2 = editor.SelectedEntities[1];
+
+					Map map1 = entity1.Get<Map>();
+					Map map2 = entity2.Get<Map>();
+
+					foreach (Map.Chunk chunk in map1.Chunks)
+					{
+						foreach (Map.Box box in chunk.Boxes)
+						{
+							foreach (Map.Coordinate coord in box.GetCoords())
+								map2.Fill(map1.GetAbsolutePosition(coord), box.Type, false);
+						}
+					}
+					map2.Regenerate();
+					entity1.Delete.Execute();
+					editor.NeedsSave.Value = true;
+				}
+			});
+
 			result.Add(new CommandBinding(main.MapLoaded, delegate()
 			{
 				editor.Position.Value = Vector3.Zero;
