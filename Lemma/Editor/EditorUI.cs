@@ -688,6 +688,8 @@ namespace Lemma.Components
 				}
 				else if (propertyInfo.PropertyType.Equals(typeof(Matrix)))
 					textField.Text.Value = "[matrix]";
+				else if (propertyInfo.PropertyType.Equals(typeof(Map.Coordinate)))
+					textField.Add(new Binding<string, Map.Coordinate>(textField.Text, x => "X:" + x.X.ToString() + " Y:" + x.Y.ToString() + " Z:" + x.Z.ToString(), (Property<Map.Coordinate>)property));
 			
 				return field;
 			}

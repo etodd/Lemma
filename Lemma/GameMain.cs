@@ -87,7 +87,7 @@ namespace Lemma
 
 		public Command<Entity> PlayerSpawned = new Command<Entity>();
 
-		const float respawnInterval = 1.0f;
+		const float respawnInterval = 0.5f;
 
 		private float respawnTimer = -1.0f;
 

@@ -76,6 +76,8 @@ namespace Lemma.Components
 		private Map.Coordinate coord;
 		private float movementInterval;
 
+		public Property<Map.Coordinate> Coordinate = new Property<Map.Coordinate> { Editable = true }; // Readonly, for displaying to the UI
+
 		private bool justCommitedOrRevertedVoxelOperation;
 
 		public Editor()
@@ -182,6 +184,7 @@ namespace Lemma.Components
 				{
 					this.Orientation.Value = this.SelectedEntities[0].Get<Transform>().Orientation;
 					this.lastCoord = this.coord = this.SelectedEntities[0].Get<Map>().GetCoordinate(this.Position);
+					this.Coordinate.Value = this.coord;
 				}
 				else if (!value && oldValue)
 					this.Orientation.Value = Matrix.Identity;
@@ -516,6 +519,7 @@ namespace Lemma.Components
 							Map map = this.SelectedEntities[0].Get<Map>();
 							Direction relativeDir = map.GetRelativeDirection(movementDir);
 							this.coord = this.coord.Move(relativeDir);
+							this.Coordinate.Value = this.coord;
 							if (this.EditSelection)
 							{
 								this.VoxelSelectionStart.Value = new Map.Coordinate

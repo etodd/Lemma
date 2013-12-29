@@ -1248,8 +1248,9 @@ namespace Lemma.Components
 					int index = 1 + (i * boxDataSize);
 					if (data[index + 6] != 0)
 					{
-						CellState state = WorldFactory.States[data[index + 6]];
 						int x = data[index], y = data[index + 1], z = data[index + 2], w = data[index + 3], h = data[index + 4], d = data[index + 5];
+						int v = data[index + 6];
+						CellState state = WorldFactory.States[v];
 						int chunkX = this.minX + ((x - this.minX) / this.chunkSize) * this.chunkSize, chunkY = this.minY + ((y - this.minY) / this.chunkSize) * this.chunkSize, chunkZ = this.minZ + ((z - this.minZ) / this.chunkSize) * this.chunkSize;
 						int nextChunkX = this.minX + ((x + w - this.minX) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ) / this.chunkSize) * this.chunkSize;
 						for (int ix = chunkX; ix <= nextChunkX; ix += this.chunkSize)
