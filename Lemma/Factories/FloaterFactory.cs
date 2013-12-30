@@ -69,13 +69,14 @@ namespace Lemma.Factories
 					main.Space.Remove(mover);
 				mover = new EntityMover(entity1);
 				main.Space.Add(mover);
+
 				setMaxForce();
 				setDamping();
 				setStiffness();
 				return joint;
 			};
 
-			JointFactory.Bind(result, main, createJoint, true, creating);
+			JointFactory.Bind(result, main, createJoint, false, creating);
 
 			result.Add(new CommandBinding(result.Get<DynamicMap>().OnSuspended, delegate()
 			{
@@ -92,10 +93,9 @@ namespace Lemma.Factories
 			result.Add(new CommandBinding(result.Delete, delegate()
 			{
 				if (mover != null && mover.Space != null)
-				{
 					main.Space.Remove(mover);
-					mover = null;
-				}
+				mover = null;
+
 			}));
 
 			Property<Entity.Handle> parent = result.GetOrMakeProperty<Entity.Handle>("Parent");
@@ -107,16 +107,17 @@ namespace Lemma.Factories
 				{
 					Entity parentEntity = parent.Value.Target;
 					if (parentEntity != null && parentEntity.Active)
-						mover.TargetPosition = parentEntity.Get<Map>().GetAbsolutePosition(coord) + new Vector3(0, -0.01f, 0);
+					{
+						Map parentMap = parentEntity.Get<Map>();
+						mover.TargetPosition = parentMap.GetAbsolutePosition(coord) + new Vector3(0, -0.01f, 0);
+					}
 					else
 					{
 						updater.Delete.Execute();
 						parent.Value = null;
 						if (mover != null && mover.Space != null)
-						{
 							main.Space.Remove(mover);
-							mover = null;
-						}
+						mover = null;
 					}
 				}
 			};
