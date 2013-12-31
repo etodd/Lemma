@@ -427,7 +427,7 @@ namespace Lemma.Factories
 
 					this.History.Add(this.Coord);
 
-					if (this.History.Count > 4)
+					while (this.History.Count > 4)
 						this.History.RemoveAt(0);
 				}
 

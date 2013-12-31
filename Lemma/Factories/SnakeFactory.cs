@@ -82,9 +82,10 @@ namespace Lemma.Factories
 
 			Map.CellState fillState = WorldFactory.StatesByName["Infected"];
 			Map.CellState criticalState = WorldFactory.StatesByName["InfectedCritical"];
+			Map.CellState poweredState = WorldFactory.StatesByName["Powered"];
 			Map.CellState temporaryState = WorldFactory.StatesByName["Temporary"];
 
-			const float defaultSpeed = 8.0f;
+			const float defaultSpeed = 5.0f;
 			const float chaseSpeed = 14.0f;
 			const float crushSpeed = 125.0f;
 
@@ -186,6 +187,12 @@ namespace Lemma.Factories
 			{
 				if (chase.Active)
 				{
+					if (m[chase.Coord].ID == poweredState.ID)
+					{
+						result.Delete.Execute();
+						return;
+					}
+
 					if (m[c].ID != criticalState.ID)
 					{
 						bool regenerate = m.Empty(c);
