@@ -42,7 +42,7 @@ namespace Lemma.Factories
 					{
 						Map staticMap = parent.Get<Map>();
 						coord.Value = staticMap.GetCoordinate(transform.Position);
-						mapTransform.Position.Value = staticMap.GetAbsolutePosition(staticMap.GetRelativePosition(coord) - new Vector3(0.5f) + staticMap.Offset + map.Offset);
+						mapTransform.Position.Value = staticMap.GetAbsolutePosition(staticMap.GetRelativePosition(coord) - new Vector3(0.5f) + staticMap.Offset + map.Offset.Value);
 						if (!allowRotation)
 							mapTransform.Orientation.Value = parent.Get<Transform>().Orientation;
 					}
@@ -54,7 +54,7 @@ namespace Lemma.Factories
 				result.Add(new NotifyBinding(refreshMapTransform, transform.Matrix, map.Offset));
 
 			ISpaceObject joint = null;
-			CommandBinding jointDeleteBinding = null, physicsUpdateBinding = null;
+			CommandBinding jointDeleteBinding = null, physicsUpdateBinding = null, parentPhysicsUpdateBinding = null;
 
 			Action rebuildJoint = null;
 			rebuildJoint = delegate()
@@ -64,9 +64,15 @@ namespace Lemma.Factories
 					if (joint.Space != null)
 						main.Space.Remove(joint);
 					result.Remove(jointDeleteBinding);
+
+					if (parentPhysicsUpdateBinding != null)
+						result.Remove(parentPhysicsUpdateBinding);
+					parentPhysicsUpdateBinding = null;
+
 					if (physicsUpdateBinding != null)
 						result.Remove(physicsUpdateBinding);
 					physicsUpdateBinding = null;
+
 					joint = null;
 					jointDeleteBinding = null;
 				}
@@ -91,7 +97,7 @@ namespace Lemma.Factories
 						if (!allowRotation)
 							map.PhysicsEntity.Orientation = mapTransform.Quaternion;
 
-						if (dir != Direction.None && !main.EditorEnabled)
+						if (dir != Direction.None)
 						{
 							Vector3 relativeLineAnchor = parentStaticMap.GetRelativePosition(coord) - new Vector3(0.5f) + parentStaticMap.Offset + map.Offset;
 							Vector3 lineAnchor = parentStaticMap.GetAbsolutePosition(relativeLineAnchor);
@@ -102,9 +108,12 @@ namespace Lemma.Factories
 
 							if (parentDynamicMap != null)
 							{
-								physicsUpdateBinding = new CommandBinding(parentDynamicMap.PhysicsUpdated, rebuildJoint);
-								result.Add(physicsUpdateBinding);
+								parentPhysicsUpdateBinding = new CommandBinding(parentDynamicMap.PhysicsUpdated, rebuildJoint);
+								result.Add(parentPhysicsUpdateBinding);
 							}
+
+							physicsUpdateBinding = new CommandBinding(map.PhysicsUpdated, rebuildJoint);
+							result.Add(physicsUpdateBinding);
 
 							jointDeleteBinding = new CommandBinding(parent.Delete, delegate()
 							{
@@ -135,8 +144,10 @@ namespace Lemma.Factories
 					main.Space.Add(joint);
 			}));
 			rebuildJoint();
-			Command rebuildJointCommand = new Command();
-			result.Add(new CommandBinding(rebuildJointCommand, rebuildJoint));
+			Command rebuildJointCommand = new Command
+			{
+				Action = rebuildJoint,
+			};
 			result.Add("RebuildJoint", rebuildJointCommand);
 
 			if (main.EditorEnabled)
