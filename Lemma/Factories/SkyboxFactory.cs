@@ -21,7 +21,7 @@ namespace Lemma.Factories
 			Transform transform = new Transform();
 			result.Add("Transform", transform);
 
-			Model skybox = new Model();
+			ModelAlpha skybox = new ModelAlpha();
 			skybox.Filename.Value = "Models\\skybox";
 			skybox.CullBoundingBox.Value = false;
 			result.Add("Skybox", skybox);
@@ -34,9 +34,12 @@ namespace Lemma.Factories
 			base.Bind(result, main, creating);
 			result.CannotSuspendByDistance = true;
 
-			Model skybox = result.Get<Model>("Skybox");
+			ModelAlpha skybox = result.Get<ModelAlpha>("Skybox");
 			skybox.Add(new Binding<Matrix>(skybox.Transform, result.Get<Transform>().Matrix));
 			skybox.DrawOrder.Value = -10;
+
+			Property<float> startDistance = result.GetOrMakeProperty<float>("StartDistance", true, 50);
+			skybox.Add(new Binding<float>(skybox.GetFloatParameter("StartDistance"), startDistance));
 		}
 	}
 }

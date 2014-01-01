@@ -239,10 +239,6 @@
       <ProcessorParameters_DiffuseTexture>room-texture.jpg</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_EffectFileName>..\Effects\Default.fx</ProcessorParameters_EffectFileName>
     </Compile>
-    <None Include="Maps\level3.map">
-      <Name>level3</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Maps\no-abilities.cs">
       <Name>no-abilities</Name>
       <Importer>EffectImporter</Importer>
