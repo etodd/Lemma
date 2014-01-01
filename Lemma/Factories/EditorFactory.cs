@@ -154,7 +154,13 @@ namespace Lemma.Factories
 			radiusVisual.DisableCulling.Value = true;
 			result.Add(radiusVisual);
 			radiusVisual.Add(new Binding<Matrix, Vector3>(radiusVisual.Transform, x => Matrix.CreateTranslation(x), editor.Position));
-			radiusVisual.Add(new Binding<Vector3, int>(radiusVisual.Scale, x => new Vector3(x), editor.BrushSize));
+			radiusVisual.Add(new Binding<Vector3, int>(radiusVisual.Scale, delegate(int brushSize)
+			{
+				float s = 1.0f;
+				if (editor.MapEditMode)
+					s = editor.SelectedEntities[0].Get<Map>().Scale;
+				return new Vector3(s * brushSize);
+			}, editor.BrushSize));
 			radiusVisual.Add(new Binding<bool>(radiusVisual.Enabled, () => editor.BrushSize > 1 && editor.MapEditMode, editor.BrushSize, editor.MapEditMode));
 			radiusVisual.CullBoundingBox.Value = false;
 
@@ -1227,6 +1233,7 @@ namespace Lemma.Factories
 				Action = delegate()
 				{
 					editor.MapEditMode.Value = !editor.MapEditMode;
+					model.Scale.Value = new Vector3(editor.SelectedEntities[0].Get<Map>().Scale);
 				}
 			});
 

@@ -844,7 +844,7 @@ namespace Lemma.Components
 		{
 			get
 			{
-				return Map.Maps.Where(x => !x.Suspended && x.EnablePhysics);
+				return Map.Maps.Where(x => !x.Suspended && x.EnablePhysics && x.Scale.Value == 1.0f);
 			}
 		}
 
@@ -1023,6 +1023,8 @@ namespace Lemma.Components
 		public int OffsetY { get; set; }
 		[DefaultValueAttribute(0)]
 		public int OffsetZ { get; set; }
+
+		public Property<float> Scale = new Property<float> { Editable = true, Value = 1.0f };
 
 		public Map()
 			: this(0, 0, 0)

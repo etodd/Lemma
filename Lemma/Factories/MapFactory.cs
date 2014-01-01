@@ -57,7 +57,21 @@ namespace Lemma.Factories
 			Map map = result.Get<Map>();
 
 			// Apply the position and orientation components to the map
-			map.Add(new TwoWayBinding<Matrix>(transform.Matrix, map.Transform));
+			if (main.EditorEnabled || map.Scale.Value != 1.0f)
+			{
+				map.Add(new TwoWayBinding<Matrix, Matrix>
+				(
+					transform.Matrix,
+					x => x * Matrix.CreateScale(1.0f / map.Scale),
+					new IProperty[] { map.Scale },
+					map.Transform,
+					x => Matrix.CreateScale(map.Scale) * x,
+					new IProperty[] { map.Scale },
+					() => true
+				));
+			}
+			else
+				map.Add(new TwoWayBinding<Matrix>(transform.Matrix, map.Transform));
 
 			map.Add(new CommandBinding(map.CompletelyEmptied, delegate()
 			{
@@ -97,7 +111,10 @@ namespace Lemma.Factories
 					result.Add(debug);
 					*/
 
-					model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
+					if (main.EditorEnabled || map.Scale.Value != 1.0f)
+						model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateScale(map.Scale) * transform.Matrix, transform.Matrix, map.Scale));
+					else
+						model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 
 					Vector3 min = new Vector3(chunk.X, chunk.Y, chunk.Z);
 					Vector3 max = min + new Vector3(map.ChunkSize);
