@@ -15,7 +15,7 @@ namespace Lemma.Factories
 
 		public enum Cell
 		{
-			Empty, Penetrable, Filled
+			Empty, Penetrable, Filled, Avoid
 		}
 
 		private static Cell filter(Map.CellState state)
@@ -71,7 +71,7 @@ namespace Lemma.Factories
 		private static Map.Box reconstructPath(AStarEntry entry, out int length)
 		{
 			length = 0;
-			while (entry.PathIndex > 1)
+			while (entry.PathIndex > 2)
 			{
 				entry = entry.Parent;
 				length++;
@@ -99,15 +99,14 @@ namespace Lemma.Factories
 			queue.Push(startEntry);
 			queueLookup[start] = startEntry;
 
-			const float thresholdFCoefficient = 0.6f;
-			const int iterationLimit = 10;
+			const int iterationLimit = 20;
 
 			int iteration = 0;
 			while (queue.Count > 0)
 			{
 				AStarEntry entry = queue.Pop();
 
-				if (iteration >= iterationLimit || entry.F < entry.BoxSize * thresholdFCoefficient)
+				if (iteration >= iterationLimit || entry.F < entry.BoxSize)
 					return VoxelChaseAI.reconstructPath(entry, out pathLength);
 
 				iteration++;
@@ -122,7 +121,7 @@ namespace Lemma.Factories
 						if (adjacent == null)
 							continue;
 
-						int boxSize = Math.Max(adjacent.Width, Math.Max(adjacent.Height, adjacent.Depth));
+						int boxSize = (int)((adjacent.Width + adjacent.Height + adjacent.Depth) / 3.0f);
 
 						int tentativeGScore = entry.G + boxSize;
 
@@ -161,6 +160,8 @@ namespace Lemma.Factories
 
 		public void Update(float dt)
 		{
+			const int historySize = 5;
+
 			Entity mapEntity = this.Map.Value.Target;
 			if (mapEntity == null || !mapEntity.Active)
 			{
@@ -427,7 +428,7 @@ namespace Lemma.Factories
 
 					this.History.Add(this.Coord);
 
-					while (this.History.Count > 4)
+					while (this.History.Count > historySize)
 						this.History.RemoveAt(0);
 				}
 

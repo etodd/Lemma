@@ -100,9 +100,12 @@ namespace Lemma.Factories
 			});
 			chase = result.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
 			chase.Speed.Value = defaultSpeed;
+			Map.CellState avoidState = WorldFactory.StatesByName["AvoidAI"];
 			chase.Filter = delegate(Map.CellState state)
 			{
 				int id = state.ID;
+				if (state.ID == avoidState.ID)
+					return VoxelChaseAI.Cell.Avoid;
 				if (id == fillState.ID || id == temporaryState.ID || id == 0)
 					return VoxelChaseAI.Cell.Empty;
 				if (state.Permanent || id == criticalState.ID)

@@ -1233,7 +1233,7 @@ namespace Lemma.Factories
 				Action = delegate()
 				{
 					editor.MapEditMode.Value = !editor.MapEditMode;
-					model.Scale.Value = new Vector3(editor.SelectedEntities[0].Get<Map>().Scale);
+					model.Scale.Value = new Vector3(editor.SelectedEntities[0].Get<Map>().Scale * 0.5f);
 				}
 			});
 

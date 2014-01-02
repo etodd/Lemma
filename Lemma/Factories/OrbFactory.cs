@@ -39,9 +39,11 @@ namespace Lemma.Factories
 
 			VoxelChaseAI chase = result.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
 
+			int avoidID = WorldFactory.StatesByName["AvoidAI"].ID;
+
 			chase.Filter = delegate(Map.CellState state)
 			{
-				return state.ID == 0 ? VoxelChaseAI.Cell.Empty : VoxelChaseAI.Cell.Filled;
+				return state.ID == avoidID ? VoxelChaseAI.Cell.Avoid : (state.ID == 0 ? VoxelChaseAI.Cell.Empty : VoxelChaseAI.Cell.Filled);
 			};
 
 			chase.Add(new TwoWayBinding<Vector3>(transform.Position, chase.Position));

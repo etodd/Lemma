@@ -1469,7 +1469,17 @@ namespace Lemma.Factories
 				const float vaultVerticalSpeed = 8.0f;
 				const float maxVaultTime = 1.25f;
 
-				player.LinearVelocity.Value = new Vector3(0, vaultVerticalSpeed, 0);
+				Vector3 vaultVelocity = new Vector3(0, vaultVerticalSpeed, 0);
+
+				DynamicMap dynamicMap = map as DynamicMap;
+				if (dynamicMap != null)
+				{
+					BEPUphysics.Entities.Entity supportEntity = dynamicMap.PhysicsEntity;
+					Vector3 supportLocation = transform.Position.Value + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
+					vaultVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
+				}
+
+				player.LinearVelocity.Value = vaultVelocity;
 				player.IsSupported.Value = false;
 				player.HasTraction.Value = false;
 				rotationLocked.Value = true;
@@ -1501,7 +1511,7 @@ namespace Lemma.Factories
 							delete = true;
 						}
 						else
-							player.LinearVelocity.Value = new Vector3(0, vaultVerticalSpeed, 0.0f);
+							player.LinearVelocity.Value = vaultVelocity;
 
 						if (delete)
 						{
@@ -1567,6 +1577,8 @@ namespace Lemma.Factories
 
 				Vector2 jumpDirection = player.MovementDirection;
 
+				Vector3 baseVelocity = Vector3.Zero;
+
 				bool wallJumping = false;
 
 				const float wallJumpHorizontalVelocityAmount = 0.75f;
@@ -1609,6 +1621,14 @@ namespace Lemma.Factories
 					{
 						// If we're jumping perpendicular to the wall, add some velocity so we jump away from the wall a bit
 						jumpDirection += wallJumpHorizontalVelocityAmount * 0.75f * wallNormal2;
+					}
+
+					DynamicMap dynamicMap = wallJumpMap as DynamicMap;
+					if (dynamicMap != null)
+					{
+						BEPUphysics.Entities.Entity supportEntity = dynamicMap.PhysicsEntity;
+						Vector3 supportLocation = transform.Position.Value + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
+						baseVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
 					}
 
 					if (dot < -0.8f)
@@ -1746,6 +1766,19 @@ namespace Lemma.Factories
 						fallDamage(player.LinearVelocity.Value.Y);
 					}
 
+					if (supported && !wallJumping)
+					{
+						// Regular jump
+						// Take base velocity into account
+
+						BEPUphysics.Entities.Entity supportEntity = player.SupportEntity;
+						if (supportEntity != null)
+						{
+							Vector3 supportLocation = transform.Position.Value + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
+							baseVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
+						}
+					}
+
 					if (!vaulting)
 					{
 						// Just a normal jump.
@@ -1764,7 +1797,7 @@ namespace Lemma.Factories
 
 						float verticalJumpSpeed = (player.JumpSpeed * verticalMultiplier) + (currentVerticalSpeed * 0.5f);
 
-						player.LinearVelocity.Value = new Vector3(jumpDirection.X, verticalJumpSpeed, jumpDirection.Y) * totalMultiplier;
+						player.LinearVelocity.Value = baseVelocity + new Vector3(jumpDirection.X, verticalJumpSpeed, jumpDirection.Y) * totalMultiplier;
 
 						if (supported && player.SupportEntity.Value != null)
 						{
