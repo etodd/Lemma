@@ -23,13 +23,11 @@ void FogVerticalLimitPS(	in PostProcessPSInput input,
 	// Convert from clip space to UV coordinate space
 	float depth = tex2D(DepthSampler, input.texCoord).r;
 
-	float blend = clamp(lerp(0, 1, (depth - StartDistance) / (EndDistance - StartDistance)), 0, 1);
-
 	float3 worldPosition = PositionFromDepth(depth, normalize(input.viewRay));
 
-	float verticalBlend = 1.0f - clamp(abs((worldPosition.y - CameraPosition.y - VerticalCenter) / VerticalSize), 0, 1);
+	float verticalBlend = 1.0f - clamp((worldPosition.y - VerticalCenter) / VerticalSize, 0, 1);
 
-	color = float4(EncodeColor(Color.xyz), Color.a * blend * verticalBlend);
+	color = float4(EncodeColor(Color.xyz), Color.a * verticalBlend);
 }
 
 void FogPS(	in PostProcessPSInput input,
