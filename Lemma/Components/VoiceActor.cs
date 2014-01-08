@@ -53,8 +53,51 @@ namespace Lemma.Components
 		public VoiceActor()
 		{
 			this.EnabledInEditMode.Value = true;
-			this.EnabledWhenPaused.Value = false;
+			this.EnabledWhenPaused.Value = true;
 			this.Enabled.Editable = true;
+		}
+
+		[XmlIgnore]
+		public Command<string> Play = new Command<string>();
+
+		public override void InitializeProperties()
+		{
+			this.Position.Set = delegate(Vector3 value)
+			{
+				this.Position.InternalValue = value;
+				if (this.emitter != null)
+					this.emitter.Position = value;
+			};
+
+			this.Velocity.Set = delegate(Vector3 value)
+			{
+				this.Velocity.InternalValue = value;
+				if (this.emitter != null)
+					this.emitter.Velocity = value;
+			};
+
+			this.Play.Action = delegate(string value)
+			{
+				this.activeClip = null;
+				foreach (Clip clip in this.Clips)
+				{
+					if (clip.Name.Value == value)
+					{
+						this.activeClip = clip;
+						break;
+					}
+				}
+
+				if (this.activeClip == null)
+					return;
+
+				this.Load(this.activeClip.Sound);
+				this.soundEffect.SubmitBuffer(this.soundData, 0, this.soundData.Length);
+				if (this.emitter == null)
+					this.emitter = new AudioEmitter { Position = this.Position, Velocity = this.Velocity };
+				AudioListener.Apply3D(this.soundEffect, this.emitter);
+				this.soundEffect.Play();
+			};
 		}
 
 		public override void OnSave()
@@ -73,6 +116,16 @@ namespace Lemma.Components
 		private float time;
 		private Shape currentShape;
 
+		private DynamicSoundEffectInstance soundEffect;
+		private byte[] soundData = null;
+		private int sampleRate = 0;
+		private AudioChannels channels = AudioChannels.Mono;
+
+		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
+		public Property<Vector3> Velocity = new Property<Vector3> { Editable = false };
+
+		protected AudioEmitter emitter;
+
 		private Clip activeClip;
 
 		public void Update(float elapsedTime)
@@ -87,6 +140,10 @@ namespace Lemma.Components
 			}
 			else
 			{
+				if (this.main.Paused && this.soundEffect.State == SoundState.Playing)
+					this.soundEffect.Pause();
+				else if (!this.main.Paused && this.soundEffect.State == SoundState.Paused)
+					this.soundEffect.Resume();
 
 				if (this.time > this.activeClip.Duration)
 				{
@@ -101,7 +158,7 @@ namespace Lemma.Components
 
 				if (!this.main.EditorEnabled)
 				{
-					searchStart = this.lastPosition;
+					searchStart = Math.Max(0, this.lastPosition);
 					this.time += elapsedTime;
 				}
 
@@ -129,6 +186,8 @@ namespace Lemma.Components
 						model.StartClip(newShape.ToString(), 0, false, 0.1f, false);
 					this.currentShape = newShape;
 				}
+
+				AudioListener.Apply3D(this.soundEffect, this.emitter);
 			}
 		}
 
@@ -249,12 +308,7 @@ namespace Lemma.Components
 					deleteTriggerButton.Visible.Value = selectedTrigger != null;
 				}));
 
-				DynamicSoundEffectInstance soundEffect = null;
-				byte[] soundData = null;
-
 				int bufferPosition = -1;
-				int sampleRate = 0;
-				AudioChannels channels = AudioChannels.Mono;
 				Property<bool> playing = new Property<bool>();
 				Property<float> playPosition = new Property<float>();
 
@@ -269,49 +323,9 @@ namespace Lemma.Components
 				{
 					try
 					{
-						if (!Path.HasExtension(sound))
-							sound = Path.ChangeExtension(sound, "wav");
-						using (Stream stream = TitleContainer.OpenStream(Path.Combine(this.main.Content.RootDirectory, sound)))
-						{
-							BinaryReader reader = new BinaryReader(stream);
-							int chunkID = reader.ReadInt32();
-							int fileSize = reader.ReadInt32();
-							int riffType = reader.ReadInt32();
-							int fmtID = reader.ReadInt32();
-							int fmtSize = reader.ReadInt32();
-							int fmtCode = reader.ReadInt16();
-							channels = (AudioChannels)reader.ReadInt16();
-							sampleRate = reader.ReadInt32();
-							int fmtAvgBPS = reader.ReadInt32();
-							int fmtBlockAlign = reader.ReadInt16();
-							int bitDepth = reader.ReadInt16();
-
-							if (fmtSize == 18)
-							{
-								// Read any extra values
-								int fmtExtraSize = reader.ReadInt16();
-								reader.ReadBytes(fmtExtraSize);
-							}
-
-							MemoryStream memStream = new MemoryStream();
-							BinaryWriter writer = new BinaryWriter(memStream);
-
-							int totalDataSize = 0;
-
-							while (reader.PeekChar() != -1)
-							{
-								int dataID = reader.ReadInt32();
-								int dataSize = reader.ReadInt32();
-								totalDataSize += dataSize;
-								writer.Write(reader.ReadBytes(dataSize));
-							}
-							soundData = memStream.ToArray();
-
-							soundEffect = new DynamicSoundEffectInstance(sampleRate, channels);
-
-							float duration = (float)soundEffect.GetSampleDuration(totalDataSize).TotalSeconds;
-							return duration;
-						}
+						int totalDataSize = this.Load(sound);
+						float duration = (float)this.soundEffect.GetSampleDuration(totalDataSize).TotalSeconds;
+						return duration;
 					}
 					catch (Exception)
 					{
@@ -324,7 +338,7 @@ namespace Lemma.Components
 					bufferPosition = -1;
 					playPosition.Value = originalPlayPosition;
 					playing.Value = false;
-					soundEffect.Stop();
+					this.soundEffect.Stop();
 				};
 
 				Action play = delegate()
@@ -334,21 +348,23 @@ namespace Lemma.Components
 					playing.Value = true;
 					if (bufferPosition == -1)
 					{
-						soundEffect.Dispose();
-						soundEffect = new DynamicSoundEffectInstance(sampleRate, channels);
-						bufferPosition = soundEffect.GetSampleSizeInBytes(TimeSpan.FromSeconds(playPosition));
-						soundEffect.SubmitBuffer(soundData, bufferPosition, soundData.Length - bufferPosition);
-						soundEffect.Play();
+						this.soundEffect.Dispose();
+						this.soundEffect = new DynamicSoundEffectInstance(this.sampleRate, this.channels);
+						bufferPosition = this.soundEffect.GetSampleSizeInBytes(TimeSpan.FromSeconds(playPosition));
+						this.soundEffect.SubmitBuffer(this.soundData, bufferPosition, this.soundData.Length - bufferPosition);
+						this.emitter = new AudioEmitter { Position = this.Position, Velocity = this.Velocity };
+						AudioListener.Apply3D(this.soundEffect, this.emitter);
+						this.soundEffect.Play();
 					}
 					else
-						soundEffect.Resume();
+						this.soundEffect.Resume();
 				};
 
 				UIComponent playButton = ui.BuildButton(new Command
 				{
 					Action = delegate()
 					{
-						if (soundEffect != null)
+						if (this.soundEffect != null)
 						{
 							if (playing)
 								stop();
@@ -506,6 +522,54 @@ namespace Lemma.Components
 				}
 			},
 			"[Add new]"));
+		}
+
+		public int Load(string sound)
+		{
+			if (!Path.HasExtension(sound))
+				sound = Path.ChangeExtension(sound, "wav");
+			using (Stream stream = TitleContainer.OpenStream(Path.Combine(this.main.Content.RootDirectory, sound)))
+			{
+				BinaryReader reader = new BinaryReader(stream);
+				int chunkID = reader.ReadInt32();
+				int fileSize = reader.ReadInt32();
+				int riffType = reader.ReadInt32();
+				int fmtID = reader.ReadInt32();
+				int fmtSize = reader.ReadInt32();
+				int fmtCode = reader.ReadInt16();
+				this.channels = (AudioChannels)reader.ReadInt16();
+				this.sampleRate = reader.ReadInt32();
+				int fmtAvgBPS = reader.ReadInt32();
+				int fmtBlockAlign = reader.ReadInt16();
+				int bitDepth = reader.ReadInt16();
+
+				if (fmtSize == 18)
+				{
+					// Read any extra values
+					int fmtExtraSize = reader.ReadInt16();
+					reader.ReadBytes(fmtExtraSize);
+				}
+
+				MemoryStream memStream = new MemoryStream();
+				BinaryWriter writer = new BinaryWriter(memStream);
+
+				int totalDataSize = 0;
+
+				while (reader.PeekChar() != -1)
+				{
+					int dataID = reader.ReadInt32();
+					int dataSize = reader.ReadInt32();
+					totalDataSize += dataSize;
+					writer.Write(reader.ReadBytes(dataSize));
+				}
+				this.soundData = memStream.ToArray();
+
+				if (this.soundEffect != null)
+					this.soundEffect.Dispose();
+				this.soundEffect = new DynamicSoundEffectInstance(this.sampleRate, this.channels);
+
+				return totalDataSize;
+			}
 		}
 	}
 }

@@ -10,10 +10,17 @@ namespace Lemma.Components
 	public class AudioListener : Component
 	{
 		protected static List<AudioListener> listeners = new List<AudioListener>();
+
 		public static void Apply3D(Cue cue, AudioEmitter emitter)
 		{
 			cue.Apply3D(AudioListener.GetClosestListener(emitter.Position), emitter);
 		}
+
+		public static void Apply3D(DynamicSoundEffectInstance instance, AudioEmitter emitter)
+		{
+			instance.Apply3D(AudioListener.GetClosestListener(emitter.Position), emitter);
+		}
+
 		public static Microsoft.Xna.Framework.Audio.AudioListener GetClosestListener(Vector3 pos)
 		{
 			AudioListener component;

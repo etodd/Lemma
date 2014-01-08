@@ -1711,10 +1711,10 @@ namespace Lemma
 			};
 
 			addLink("lemmagame.com", "http://lemmagame.com");
-			addLink("moddb.com/games/lemma", "http://moddb.com/games/lemma");
-			addLink("facebook.com/lemmagame", "http://facebook.com/lemmagame");
+			addLink("indiedb.com/games/lemma", "http://indiedb.com/games/lemma");
+			addLink("Greenlight", "http://steamcommunity.com/sharedfiles/filedetails/?id=105075009");
+			addLink("et1337.com", "http://et1337.com");
 			addLink("twitter.com/et1337", "http://twitter.com/et1337");
-			addLink("Steam Greenlight (Concept)", "http://steamcommunity.com/sharedfiles/filedetails/?id=105075009");
 
 			addText("Writing, programming, and artwork by Evan Todd. Music and some sounds by Jack Menhorn. Full attribution list available on the website.");
 		}

@@ -191,6 +191,10 @@
       <Name>cave2</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Maps\voice.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Name>voice</Name>
+    </None>
     <Compile Include="Maps\david.fbx">
       <Name>david</Name>
       <Importer>SkinnedModelImporter</Importer>

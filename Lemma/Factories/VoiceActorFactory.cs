@@ -26,6 +26,7 @@ namespace Lemma.Factories
 			Transform transform = result.GetOrCreate<Transform>("Transform");
 
 			VoiceActor actor = result.GetOrCreate<VoiceActor>("VoiceActor");
+			actor.Add(new Binding<Vector3>(actor.Position, transform.Position));
 
 			AnimatedModel model = result.GetOrCreate<AnimatedModel>("Model");
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
