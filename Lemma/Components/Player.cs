@@ -31,6 +31,8 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<bool> EnableRoll = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
+		public Property<bool> EnableCrouch = new Property<bool> { Value = false, Editable = false };
+		[XmlIgnore]
 		public Property<bool> EnableKick = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
 		public Property<bool> EnableWallRun = new Property<bool> { Value = false, Editable = false };

@@ -459,7 +459,7 @@ namespace Lemma.Util
 				float supportEntityZVelocity = Vector3.Dot(supportLocationVelocity, z);
 				float netZVelocity = bodyZVelocity - supportEntityZVelocity;
 				// The velocity difference along the Z axis should accelerate/decelerate to match the goal velocity (max speed).
-				float speed = this.Crouched ? this.MaxSpeed * 0.5f : this.MaxSpeed;
+				float speed = this.Crouched ? this.MaxSpeed * 0.3f : this.MaxSpeed;
 				if (netZVelocity > speed)
 				{
 					// Decelerate

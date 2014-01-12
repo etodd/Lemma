@@ -29,6 +29,7 @@ namespace Lemma.Factories
 #endif
 
 			result.Add("EnableRoll", new Property<bool> { Value = enabled });
+			result.Add("EnableCrouch", new Property<bool> { Value = enabled });
 			result.Add("EnableKick", new Property<bool> { Value = enabled });
 			result.Add("EnableWallRun", new Property<bool> { Value = enabled });
 			result.Add("EnableWallRunHorizontal", new Property<bool> { Value = enabled });

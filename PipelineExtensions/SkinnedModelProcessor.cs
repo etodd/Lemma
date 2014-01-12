@@ -134,11 +134,7 @@ namespace PipelineExtensions
 				int boneIndex;
 
 				if (!boneMap.TryGetValue(inputChannel.Key, out boneIndex))
-				{
-					throw new InvalidContentException(string.Format(
-						"Found animation for bone '{0}', " +
-						"which is not part of the skeleton.", inputChannel.Key));
-				}
+					continue;
 
 				if (inputChannel.Value.Count > 0)
 				{

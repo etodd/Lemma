@@ -195,6 +195,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Name>voice</Name>
     </None>
+    <None Include="Maps\intro.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Name>intro</Name>
+    </None>
     <Compile Include="Maps\david.fbx">
       <Name>david</Name>
       <Importer>SkinnedModelImporter</Importer>

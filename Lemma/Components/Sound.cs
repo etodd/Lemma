@@ -138,7 +138,7 @@ namespace Lemma.Components
 				{
 					try
 					{
-						if (!this.Suspended && !this.main.EditorEnabled)
+						if (!this.Suspended && this.Enabled && !this.main.EditorEnabled)
 						{
 							this.cue = this.main.SoundBank.GetCue(this.Cue);
 							
@@ -204,6 +204,12 @@ namespace Lemma.Components
 						this.Play.Execute();
 				}
 			}, this.Suspended));
+
+			this.Add(new CommandBinding(this.OnDisabled, delegate()
+			{
+				if (this.cue != null)
+					this.Stop.Execute(AudioStopOptions.Immediate);
+			}));
 
 			if (this.Entity != null && this.main.IsLoadingMap)
 			{

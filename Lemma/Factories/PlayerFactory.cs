@@ -236,6 +236,7 @@ namespace Lemma.Factories
 					
 					// Bind player data properties
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableRoll"), player.EnableRoll));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableCrouch"), player.EnableCrouch));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableKick"), player.EnableKick));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRunHorizontal"), player.EnableWallRunHorizontal));
@@ -500,6 +501,7 @@ namespace Lemma.Factories
 			footstepTimer.Add(new Binding<bool>(footstepTimer.Enabled, () => player.WallRunState.Value != Player.WallRun.None || (player.MovementDirection.Value.LengthSquared() > 0.0f && player.IsSupported && player.EnableWalking), player.MovementDirection, player.IsSupported, player.EnableWalking, player.WallRunState));
 			footsteps.Add(new Binding<Vector3>(footsteps.Position, x => x - new Vector3(0, player.Height * 0.5f, 0), transform.Position));
 			footsteps.Add(new Binding<Vector3>(footsteps.Velocity, player.LinearVelocity));
+			footsteps.Add(new Binding<bool>(footsteps.Enabled, x => !x, player.Crouched));
 
 			main.IsMouseVisible.Value = false;
 
@@ -535,7 +537,7 @@ namespace Lemma.Factories
 			enableCameraControl.Serialize = false;
 
 			Vector3 originalCameraPosition = cameraBone.Value.Translation;
-			Vector3 cameraOffset = cameraBone.Value.Translation - headBone.Value.Translation;
+			Vector3 cameraOffset = cameraBone.Value.Translation - headBone.Value.Translation - new Vector3(0, 0.1f, 0);
 
 			update.Add(delegate(float dt)
 			{
@@ -2235,11 +2237,35 @@ namespace Lemma.Factories
 			bool rolling = false;
 			input.Bind(settings.Roll, PCInput.InputState.Down, delegate()
 			{
-				if (!player.EnableMoves)
-					return;
-
-				if (!model.IsPlaying("PlayerReload") && kickUpdate == null && !rolling && player.EnableRoll && !player.IsSwimming)
+				if (!model.IsPlaying("PlayerReload") && kickUpdate == null && !rolling && !player.IsSwimming)
 				{
+					if (!player.EnableRoll || !player.EnableMoves)
+					{
+						if (player.EnableCrouch)
+						{
+							// Just crouch, don't roll
+							player.Crouched.Value = true;
+							player.AllowUncrouch.Value = false;
+							model.Stop
+							(
+								"CrouchWalkBackwards",
+								"CrouchWalk",
+								"CrouchStrafeRight",
+								"CrouchStrafeLeft",
+								"Idle",
+								"WalkBackwards",
+								"Walk",
+								"StrafeRight",
+								"StrafeLeft",
+								"Jump",
+								"JumpLeft",
+								"JumpRight",
+								"JumpBackward"
+							);
+							model.StartClip("CrouchIdle", 2, true);
+						}
+						return;
+					}
 					// Try to roll
 					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
 

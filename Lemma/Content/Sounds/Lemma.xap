@@ -17,8 +17,8 @@ Global Settings
     Header File = Lemma.h;
     Exclude Category Names = 0;
     Exclude Variable Names = 0;
-    Last Modified Low = 662436151;
-    Last Modified High = 30340026;
+    Last Modified Low = 3016870072;
+    Last Modified High = 30347030;
 
     Category
     {
@@ -333,7 +333,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::e4ecef26-5240-4c7c-bcd8-3cd1ab0d34da;
+            Name = Sound::b04a03d0-ab59-47e8-8a82-a8ca1e830868;
             Property = 0;
             Sound = 1;
             Line Color = 4290413690;
@@ -366,7 +366,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::e8100007-5bf4-41c1-aa61-4ed8abeda6c3;
+            Name = Sound::e61ad64e-ef9a-41b6-b9d5-f4e7b1615d4b;
             Property = 0;
             Sound = 1;
             Line Color = 4293962024;
@@ -399,7 +399,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::7e570b63-9b4f-41e4-8f27-579f7be6895b;
+            Name = Sound::40669e5a-3dc4-44b6-9c51-a1e756d340a0;
             Property = 1;
             Sound = 1;
             Line Color = 4285108677;
@@ -432,7 +432,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::51eb25ab-7970-4caf-ac8d-4c52901cdc17;
+            Name = 1::63fbefbc-9893-4c18-98c9-2c06299193f1;
             Property = 0;
             Sound = 0;
             Line Color = 4279752145;
@@ -460,7 +460,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::d1724e17-95dd-4a32-8890-3908381d5329;
+            Name = 1::1970bbfd-f344-48ef-8673-8e790c460852;
             Property = 0;
             Sound = 0;
             Line Color = 4284596858;
@@ -488,7 +488,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::78c089d2-46ec-4dd1-b9f3-4fab12846f33;
+            Name = 1::04560531-1633-44af-a11e-f55a7d3cd79f;
             Property = 1;
             Sound = 0;
             Line Color = 4281010387;
@@ -516,7 +516,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::d7c450e7-7e23-4728-a6fa-bc7d63e18167;
+            Name = 1::1f5f28a5-2f13-4124-9645-76a91e3dce62;
             Property = 1;
             Sound = 0;
             Line Color = 4292380630;
@@ -549,7 +549,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::137132d8-270f-4726-af1b-a0c06e6d0ea5;
+            Name = 1::77838fcf-53e3-4780-9509-3921c861d72b;
             Property = 0;
             Sound = 0;
             Line Color = 4286296165;
@@ -582,7 +582,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::77d7551e-3e96-4ea5-ba3b-87e3942994e1;
+            Name = Sound::d72c38a5-77fb-4bd7-ab90-3a0df7435a66;
             Property = 0;
             Sound = 1;
             Line Color = 4286980210;
@@ -596,7 +596,7 @@ Global Settings
             RPC Point
             {
                 X = 0.000000;
-                Y = -3000.000000;
+                Y = -5000.000000;
                 Curve = 3;
             }
 
@@ -615,7 +615,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::b9c63622-59b2-44c1-a9c4-f88ab20ec01e;
+            Name = Sound::ef78d841-e92d-40a3-a27a-d05d2aacee2d;
             Property = 1;
             Sound = 1;
             Line Color = 4290600932;
@@ -648,7 +648,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::a1830a9c-a2c5-4077-b2ce-7f3fe5425f53;
+            Name = 1::6220764a-ebd8-4206-8f7e-ec0446bb9e72;
             Property = 0;
             Sound = 0;
             Line Color = 4290171999;
@@ -681,7 +681,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::c26e34fb-f0d6-4f76-adf4-4c9cf9d7d259;
+            Name = 1::144095c1-f187-4587-ae5b-bcdd81766312;
             Property = 0;
             Sound = 0;
             Line Color = 4281489917;
@@ -714,7 +714,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::5796425f-9eec-4014-92c4-e294d1025ef1;
+            Name = 1::3f89e94e-1aef-48ba-b6e8-2e1dae6a0b77;
             Property = 0;
             Sound = 0;
             Line Color = 4279931599;
@@ -747,7 +747,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Effect::f3b224b2-2b83-43a1-bfc9-1c3d40a4e97d;
+            Name = Effect::93090f7d-1ead-401c-8d4e-a6339300ceb1;
             Property = 5;
             Sound = 0;
             Line Color = 4280672033;
@@ -781,7 +781,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Effect::5baaad20-40d3-4102-83d2-a808f3ed8965;
+            Name = Effect::f947fb26-7f2c-4a57-998f-e3a33dd13fe2;
             Property = 5;
             Sound = 0;
             Line Color = 4280009593;
@@ -815,7 +815,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Effect::590c2d77-b2b9-43ba-a5f4-e64825374372;
+            Name = Effect::1e4cdf9e-bca4-4d6f-994e-db4d897f6394;
             Property = 5;
             Sound = 0;
             Line Color = 4288044720;
@@ -859,7 +859,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::ab65ef47-71c3-43b4-8622-5c53b480ec3f;
+            Name = Sound::d04f240c-1577-4ef4-a7b5-12480f4b2579;
             Property = 0;
             Sound = 1;
             Line Color = 4290754937;
@@ -1110,10 +1110,10 @@ Wave Bank
     Compression Preset Name = <none>;
     Xbox Bank Last Modified Low = 0;
     Xbox Bank Last Modified High = 0;
-    PC Bank Last Modified Low = 662626304;
-    PC Bank Last Modified High = 30340026;
-    Bank Last Revised Low = 662586265;
-    Bank Last Revised High = 30340026;
+    PC Bank Last Modified Low = 3017000194;
+    PC Bank Last Modified High = 30347030;
+    Bank Last Revised Low = 3016970138;
+    Bank Last Revised High = 30347030;
 
     Wave
     {
@@ -3741,8 +3741,8 @@ Sound Bank
     Windows File = Sounds.xsb;
     Xbox Bank Path Edited = 0;
     Windows Bank Path Edited = 1;
-    Bank Last Modified Low = 663587298;
-    Bank Last Modified High = 30340026;
+    Bank Last Modified Low = 3018061267;
+    Bank Last Modified High = 30347030;
     Header Last Modified High = 0;
     Header Last Modified Low = 0;
 
@@ -4236,13 +4236,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::137132d8-270f-4726-af1b-a0c06e6d0ea5;
+                RPC Curve Name = 1::77838fcf-53e3-4780-9509-3921c861d72b;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::5796425f-9eec-4014-92c4-e294d1025ef1;
+                RPC Curve Name = 1::3f89e94e-1aef-48ba-b6e8-2e1dae6a0b77;
             }
         }
     }
@@ -4360,7 +4360,7 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::137132d8-270f-4726-af1b-a0c06e6d0ea5;
+                RPC Curve Name = 1::77838fcf-53e3-4780-9509-3921c861d72b;
             }
         }
     }
@@ -4475,7 +4475,7 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::5796425f-9eec-4014-92c4-e294d1025ef1;
+                RPC Curve Name = 1::3f89e94e-1aef-48ba-b6e8-2e1dae6a0b77;
             }
         }
     }
@@ -4544,13 +4544,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::5796425f-9eec-4014-92c4-e294d1025ef1;
+                RPC Curve Name = 1::3f89e94e-1aef-48ba-b6e8-2e1dae6a0b77;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::137132d8-270f-4726-af1b-a0c06e6d0ea5;
+                RPC Curve Name = 1::77838fcf-53e3-4780-9509-3921c861d72b;
             }
         }
     }
@@ -4575,6 +4575,11 @@ Sound Bank
         RPC Entry
         {
             RPC Name = Time shift;
+        }
+
+        RPC Entry
+        {
+            RPC Name = Volume control;
         }
 
         Effect Entry
@@ -4686,6 +4691,11 @@ Sound Bank
             RPC Name = Time shift;
         }
 
+        RPC Entry
+        {
+            RPC Name = Volume control;
+        }
+
         Effect Entry
         {
             Effect Name = Microsoft Reverb;
@@ -4795,6 +4805,11 @@ Sound Bank
             RPC Name = Time shift;
         }
 
+        RPC Entry
+        {
+            RPC Name = Volume control;
+        }
+
         Effect Entry
         {
             Effect Name = Microsoft Reverb;
@@ -4902,6 +4917,11 @@ Sound Bank
         RPC Entry
         {
             RPC Name = Time shift;
+        }
+
+        RPC Entry
+        {
+            RPC Name = Volume control;
         }
 
         Effect Entry
@@ -5065,13 +5085,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade out slow;
-                RPC Curve Name = 1::a1830a9c-a2c5-4077-b2ce-7f3fe5425f53;
+                RPC Curve Name = 1::6220764a-ebd8-4206-8f7e-ec0446bb9e72;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::5796425f-9eec-4014-92c4-e294d1025ef1;
+                RPC Curve Name = 1::3f89e94e-1aef-48ba-b6e8-2e1dae6a0b77;
             }
         }
     }
@@ -5255,13 +5275,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::5796425f-9eec-4014-92c4-e294d1025ef1;
+                RPC Curve Name = 1::3f89e94e-1aef-48ba-b6e8-2e1dae6a0b77;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::137132d8-270f-4726-af1b-a0c06e6d0ea5;
+                RPC Curve Name = 1::77838fcf-53e3-4780-9509-3921c861d72b;
             }
         }
 
@@ -6498,6 +6518,11 @@ Sound Bank
             RPC Name = Time shift;
         }
 
+        RPC Entry
+        {
+            RPC Name = Volume control;
+        }
+
         Effect Entry
         {
             Effect Name = Microsoft Reverb;
@@ -7196,13 +7221,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::5796425f-9eec-4014-92c4-e294d1025ef1;
+                RPC Curve Name = 1::3f89e94e-1aef-48ba-b6e8-2e1dae6a0b77;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::137132d8-270f-4726-af1b-a0c06e6d0ea5;
+                RPC Curve Name = 1::77838fcf-53e3-4780-9509-3921c861d72b;
             }
         }
     }
@@ -7364,7 +7389,7 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::137132d8-270f-4726-af1b-a0c06e6d0ea5;
+                RPC Curve Name = 1::77838fcf-53e3-4780-9509-3921c861d72b;
             }
         }
     }
@@ -7552,13 +7577,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::5796425f-9eec-4014-92c4-e294d1025ef1;
+                RPC Curve Name = 1::3f89e94e-1aef-48ba-b6e8-2e1dae6a0b77;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::137132d8-270f-4726-af1b-a0c06e6d0ea5;
+                RPC Curve Name = 1::77838fcf-53e3-4780-9509-3921c861d72b;
             }
         }
     }
@@ -7689,13 +7714,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::5796425f-9eec-4014-92c4-e294d1025ef1;
+                RPC Curve Name = 1::3f89e94e-1aef-48ba-b6e8-2e1dae6a0b77;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::137132d8-270f-4726-af1b-a0c06e6d0ea5;
+                RPC Curve Name = 1::77838fcf-53e3-4780-9509-3921c861d72b;
             }
         }
     }
@@ -7837,13 +7862,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::5796425f-9eec-4014-92c4-e294d1025ef1;
+                RPC Curve Name = 1::3f89e94e-1aef-48ba-b6e8-2e1dae6a0b77;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::137132d8-270f-4726-af1b-a0c06e6d0ea5;
+                RPC Curve Name = 1::77838fcf-53e3-4780-9509-3921c861d72b;
             }
         }
     }
@@ -7917,13 +7942,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::5796425f-9eec-4014-92c4-e294d1025ef1;
+                RPC Curve Name = 1::3f89e94e-1aef-48ba-b6e8-2e1dae6a0b77;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::137132d8-270f-4726-af1b-a0c06e6d0ea5;
+                RPC Curve Name = 1::77838fcf-53e3-4780-9509-3921c861d72b;
             }
         }
     }
