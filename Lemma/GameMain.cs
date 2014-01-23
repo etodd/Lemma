@@ -1805,8 +1805,7 @@ namespace Lemma
 								(
 									new Animation.Vector3MoveTo(this.Renderer.Tint, GameMain.startTint, 0.5f),
 									new Animation.FloatMoveTo(this.Renderer.InternalGamma, GameMain.startGamma, 0.5f)
-								),
-								new Animation.Set<Vector3>(this.Camera.Position, new Vector3(0, -10000, 0))
+								)
 							));
 						}
 
