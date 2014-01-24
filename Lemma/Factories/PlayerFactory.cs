@@ -596,9 +596,30 @@ namespace Lemma.Factories
 						Vector3 adjustedCameraOffset = cameraOffset + (cameraBone.Value.Translation - originalCameraPosition);
 						Vector3 cameraPosition = Vector3.Transform(adjustedCameraOffset, headBone.Value * model.Transform);
 
-						if (model.IsPlaying("CrouchWalkBackwards", "CrouchWalk", "CrouchStrafeRight", "CrouchStrafeLeft")
-							&& !model.IsPlaying("Kick"))
-							cameraPosition.Y = Math.Min(cameraPosition.Y, transform.Position.Value.Y + player.Height.Value * 0.5f);
+						if (player.Crouched)
+						{
+							bool limitHeight = true;
+							foreach (SkinnedModel.Clip clip in model.CurrentClips)
+							{
+								if (clip.Name == "Kick"
+									|| clip.Name == "Roll"
+									|| clip.Name == "Vault"
+									|| clip.Name == "Walk"
+									|| clip.Name == "Idle"
+									|| clip.Name == "WalkBackwards"
+									|| clip.Name == "Walk"
+									|| clip.Name == "StrafeRight"
+									|| clip.Name == "Land"
+									|| clip.Name == "StrafeLeft")
+								{
+									limitHeight = false;
+									break;
+								}
+							}
+
+							if (limitHeight)
+								cameraPosition.Y = Math.Min(cameraPosition.Y, transform.Position.Value.Y + player.Height.Value * 0.5f);
+						}
 
 						main.Camera.Position.Value = cameraPosition;
 

@@ -40,12 +40,15 @@ namespace Lemma.Factories
 			}));
 
 			Property<bool> deleteWhenReached = result.GetOrMakeProperty<bool>("DeleteWhenReached", true, true);
-			trigger.Add(new Binding<bool>(trigger.Enabled, deleteWhenReached));
+			trigger.Add(new TwoWayBinding<bool>(deleteWhenReached, trigger.Enabled));
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity p)
 			{
 				result.Delete.Execute();
 			}));
+
+			if (result.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(result, main);
 		}
 
 		public override void AttachEditorComponents(Entity result, Main main)
@@ -62,9 +65,11 @@ namespace Lemma.Factories
 			model.Editable = false;
 			model.Serialize = false;
 
-			result.Add("EditorModel2", model);
+			result.Add("EditorModel3", model);
 
 			model.Add(new Binding<Matrix>(model.Transform, result.Get<Transform>().Matrix));
+
+			MapAttachable.AttachEditorComponents(result, main);
 		}
 	}
 }
