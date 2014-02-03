@@ -191,21 +191,10 @@
       <Name>cave2</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Maps\voice.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Name>voice</Name>
-    </None>
     <None Include="Maps\intro.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Name>intro</Name>
     </None>
-    <Compile Include="Maps\david.fbx">
-      <Name>david</Name>
-      <Importer>SkinnedModelImporter</Importer>
-      <Processor>SkinnedModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\Animation.fx</ProcessorParameters_EffectFileName>
-      <ProcessorParameters_DiffuseTexture>david.jpg</ProcessorParameters_DiffuseTexture>
-    </Compile>
     <None Include="Maps\cave2.map">
       <Name>cave2</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -841,14 +830,6 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Maps\voice-test.wav">
-      <Name>voice-test</Name>
-      <Importer>ByteImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Maps\Textures\dirty.jpg">
