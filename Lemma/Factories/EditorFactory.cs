@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework;
 using Lemma.Components;
 using Microsoft.Xna.Framework.Input;
 using BEPUphysics;
+using System.Xml.Serialization;
+using System.IO;
 
 namespace Lemma.Factories
 {
@@ -1299,6 +1301,57 @@ namespace Lemma.Factories
 				new PCInput.Chord { Key = Keys.Z },
 				() => !editor.MapEditMode && editor.TransformMode.Value != Editor.TransformModes.None,
 				new Command { Action = () => editor.TransformAxis.Value = Editor.TransformAxes.Z }
+			);
+
+			MemoryStream yankBuffer = null;
+			addCommand
+			(
+				"Yank",
+				new PCInput.Chord { Key = Keys.Y },
+				() => !editor.MapEditMode && !input.EnableLook && editor.SelectedEntities.Count > 0 && editor.TransformMode.Value == Editor.TransformModes.None,
+				new Command
+				{
+					Action = delegate()
+					{
+						if (yankBuffer != null)
+						{
+							yankBuffer.Dispose();
+							yankBuffer = null;
+						}
+						yankBuffer = new MemoryStream();
+						XmlSerializer serializer = new XmlSerializer(typeof(List<Entity>));
+						serializer.Serialize(yankBuffer, editor.SelectedEntities.ToList());
+					}
+				}
+			);
+
+			addCommand
+			(
+				"Paste",
+				new PCInput.Chord { Key = Keys.P },
+				() => !editor.MapEditMode && !input.EnableLook && yankBuffer != null,
+				new Command
+				{
+					Action = delegate()
+					{
+						yankBuffer.Seek(0, SeekOrigin.Begin);
+						XmlSerializer serializer = new XmlSerializer(typeof(List<Entity>));
+						List<Entity> entities = (List<Entity>)serializer.Deserialize(yankBuffer);
+
+						foreach (Entity entity in entities)
+						{
+							entity.ID = Entity.GenerateID(entity, main);
+							Factory factory = Factory.Get(entity.Type);
+							factory.Bind(entity, main);
+							main.Add(entity);
+						}
+
+						editor.SelectedEntities.Clear();
+						foreach (Entity entity in entities)
+							editor.SelectedEntities.Add(entity);
+						editor.StartTranslation.Execute();
+					}
+				}
 			);
 
 			editor.Add(new CommandBinding
