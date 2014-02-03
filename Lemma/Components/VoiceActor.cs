@@ -34,7 +34,7 @@ namespace Lemma.Components
 		public static Shape[] Shapes = new[] { Shape.E, Shape.C, Shape.M, Shape.A, Shape.F, Shape.O, Shape.Q, Shape.L, Shape.None, };
 		private static string[] shapeNames = new[] { "E", "C", "M", "A", "F", "O", "Q", "L", };
 
-		public class Trigger
+		public class VT
 		{
 			public Shape Shape;
 			public float Time;
@@ -45,7 +45,7 @@ namespace Lemma.Components
 			public Property<float> Duration = new Property<float>();
 			public Property<string> Name = new Property<string>();
 			public Property<string> Sound = new Property<string>();
-			public ListProperty<Trigger> Triggers = new ListProperty<Trigger>();
+			public ListProperty<VT> Triggers = new ListProperty<VT>();
 		}
 
 		public ListProperty<Clip> Clips = new ListProperty<Clip>();
@@ -104,10 +104,10 @@ namespace Lemma.Components
 		{
 			foreach (Clip clip in this.Clips)
 			{
-				List<Trigger> triggers = clip.Triggers.ToList();
-				triggers.Sort(0, triggers.Count, new LambdaComparer<Trigger>((a, b) => a.Time.CompareTo(b.Time)));
+				List<VT> triggers = clip.Triggers.ToList();
+				triggers.Sort(0, triggers.Count, new LambdaComparer<VT>((a, b) => a.Time.CompareTo(b.Time)));
 				clip.Triggers.Clear();
-				foreach (Trigger t in triggers)
+				foreach (VT t in triggers)
 					clip.Triggers.Add(t);
 			}
 		}
@@ -151,7 +151,7 @@ namespace Lemma.Components
 					return;
 				}
 
-				ListProperty<Trigger> triggers = this.activeClip.Triggers;
+				ListProperty<VT> triggers = this.activeClip.Triggers;
 
 				int position = triggers.Count - 1;
 				int searchStart = 0;
@@ -209,7 +209,7 @@ namespace Lemma.Components
 			uiRoot.Children.Add(popupContainer);
 
 			Clip selectedClip = null;
-			Trigger selectedTrigger = null;
+			VT selectedTrigger = null;
 			float selectedTime = 0.0f;
 
 			Action hidePopup = delegate()
@@ -230,7 +230,7 @@ namespace Lemma.Components
 				}
 				else if (selectedClip != null)
 				{
-					selectedClip.Triggers.Add(new Trigger { Shape = s, Time = selectedTime });
+					selectedClip.Triggers.Add(new VT { Shape = s, Time = selectedTime });
 					this.OnSave();
 				}
 				hidePopup();
@@ -381,7 +381,7 @@ namespace Lemma.Components
 				timeline.Add(new Binding<Vector2, float>(timeline.Scale, x => new Vector2(timelineScroller.Size.Value.X / x, 1.0f), clip.Duration));
 
 				LineDrawer2D lines = new LineDrawer2D();
-				lines.Add(new ListBinding<LineDrawer2D.Line, Trigger>(lines.Lines, clip.Triggers, delegate(Trigger t)
+				lines.Add(new ListBinding<LineDrawer2D.Line, VT>(lines.Lines, clip.Triggers, delegate(VT t)
 				{
 					return new[]
 					{
@@ -473,7 +473,7 @@ namespace Lemma.Components
 
 								float threshold = 6.0f / timeline.Scale.Value.X;
 							
-								foreach (Trigger t in clip.Triggers)
+								foreach (VT t in clip.Triggers)
 								{
 									if (Math.Abs(t.Time - currentTime) < threshold)
 									{

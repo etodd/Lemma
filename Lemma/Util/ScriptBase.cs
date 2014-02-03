@@ -15,7 +15,24 @@ namespace Lemma.Scripts
 
 		protected static Entity get(string id)
 		{
-			return ScriptBase.main.GetByID(id);
+			Entity result = ScriptBase.main.GetByID(id);
+			if (result == null)
+				throw new Exception("Entity " + id + " not found!");
+			return result;
+		}
+
+		protected static void bindTrigger(string id, Action callback, bool oneTimeOnly = true)
+		{
+			Entity triggerEntity = ScriptBase.get(id);
+			if (triggerEntity == null)
+				throw new Exception("Entity " + id + " not found!");
+			Trigger trigger = triggerEntity.Get<Trigger>();
+			Action[] callbacks;
+			if (oneTimeOnly)
+				callbacks = new[] { callback, delegate() { trigger.Enabled.Value = false; } };
+			else
+				callbacks = new[] { callback };
+			triggerEntity.Add(new CommandBinding(trigger.Entered, callbacks));
 		}
 
 		protected static void bindTrigger(string id, Action<Entity> callback, bool oneTimeOnly = true)

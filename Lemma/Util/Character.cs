@@ -32,11 +32,11 @@ namespace Lemma.Util
 		/// <summary>
 		/// Rate of increase in the character's speed in the movementDirection.
 		/// </summary>
-		public Property<float> Acceleration = new Property<float> { Value = 6.0f };
+		public Property<float> Acceleration = new Property<float> { Value = 4.5f };
 
 		public Property<float> InitialAcceleration = new Property<float> { Value = 25.0f };
 
-		public const float InitialAccelerationSpeedThreshold = 3.0f;
+		public const float InitialAccelerationSpeedThreshold = 4.0f;
 
 		/// <summary>
 		/// The character's physical representation that handles iteractions with the environment.
@@ -200,6 +200,8 @@ namespace Lemma.Util
 			this.Collided.Execute(other, pair.Contacts);
 		}
 
+		private bool lastSupported = true;
+		private float lastSupportedSpeed = 0.0f;
 		/// <summary>
 		/// Handles the updating of the character.  Called by the owning space object when necessary.
 		/// </summary>
@@ -236,15 +238,21 @@ namespace Lemma.Util
 			}
 			else
 			{
+				if (this.lastSupported)
+				{
+					this.lastSupportedSpeed = this.Body.LinearVelocity.Length();
+					this.lastSupported = false;
+				}
+
 				this.SupportEntity.Value = null;
 				this.IsSupported.Value = false;
 				this.HasTraction.Value = false;
 				if (this.EnableWalking)
 				{
 					if (this.IsSwimming)
-						this.handleNoTraction(dt, 0.5f, 0.5f, 0.5f);
+						this.handleNoTraction(dt, 0.5f, 0.5f, this.MaxSpeed * 0.5f);
 					else
-						this.handleNoTraction(dt, 0.0f, 0.35f, -1.0f); // -1.0 = Infinite max speed
+						this.handleNoTraction(dt, 0.0f, 0.5f, this.lastSupportedSpeed);
 				}
 			}
 
@@ -497,11 +505,10 @@ namespace Lemma.Util
 			}
 		}
 
-		private void handleNoTraction(float dt, float tractionDecelerationRatio, float accelerationRatio, float speedRatio)
+		private void handleNoTraction(float dt, float tractionDecelerationRatio, float accelerationRatio, float maxSpeed)
 		{
 			float tractionDeceleration = this.TractionDeceleration * tractionDecelerationRatio;
 			float acceleration = this.Acceleration * accelerationRatio;
-			float maxSpeed = this.MaxSpeed * speedRatio;
 
 			if (this.MovementDirection != Vector2.Zero)
 			{
@@ -520,7 +527,7 @@ namespace Lemma.Util
 
 				float bodyZVelocity = Vector3.Dot(Body.LinearVelocity, z);
 				//The velocity difference along the Z axis should accelerate/decelerate to match the goal velocity (max speed).
-				if (maxSpeed > 0 && bodyZVelocity > maxSpeed)
+				if (bodyZVelocity > maxSpeed)
 				{
 					//Decelerate
 					velocityChange = Math.Min(dt * tractionDeceleration, bodyZVelocity - maxSpeed);
@@ -529,8 +536,6 @@ namespace Lemma.Util
 				else
 				{
 					//Accelerate
-					if (maxSpeed < -1.0f)
-						maxSpeed = this.MaxSpeed;
 					velocityChange = Math.Min(dt * acceleration, maxSpeed - bodyZVelocity);
 					this.Body.LinearVelocity += velocityChange * z;
 				}

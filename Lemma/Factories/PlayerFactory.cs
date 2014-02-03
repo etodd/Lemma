@@ -634,7 +634,14 @@ namespace Lemma.Factories
 
 						main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shakeAngle) * Matrix.CreateFromAxisAngle(right, -input.Mouse.Value.Y);
 					}
+
+					float minBlur = 4.0f;
+					float maxBlur = player.MaxSpeed.Value + 2.0f;
+					float speed = Math.Abs(Vector3.Dot(player.LinearVelocity.Value, main.Camera.Forward));
+					main.Renderer.SpeedBlurAmount.Value = Math.Min(1.0f, Math.Max(0.0f, (speed - minBlur) / (maxBlur - minBlur)));
 				}
+				else
+					main.Renderer.SpeedBlurAmount.Value = 0;
 			});
 
 			// Movement binding
@@ -664,10 +671,10 @@ namespace Lemma.Factories
 				{
 					// Update footstep sound interval when wall-running
 					if (player.WallRunState != Player.WallRun.None)
-						footstepTimer.Interval.Value = 0.25f / model[player.WallRunState == Player.WallRun.Straight ? "WallWalkStraight" : (player.WallRunState == Player.WallRun.Left ? "WallWalkLeft" : "WallWalkRight")].Speed;
-
-					if (player.WallRunState.Value != Player.WallRun.None)
+					{
+						footstepTimer.Interval.Value = 0.37f / model[player.WallRunState == Player.WallRun.Straight ? "WallWalkStraight" : (player.WallRunState == Player.WallRun.Left ? "WallWalkLeft" : "WallWalkRight")].Speed;
 						return;
+					}
 
 					model.Stop("WallWalkLeft", "WallWalkRight", "WallWalkStraight", "WallSlideDown", "WallSlideReverse");
 					if (player.IsSupported && !lastSupported)
@@ -705,9 +712,9 @@ namespace Lemma.Factories
 						float speed = velocity.Length();
 						
 						if (movementAnimation != "Idle" && movementAnimation != "CrouchIdle")
-							model[movementAnimation].Speed = player.Crouched ? 1.0f : (speed / 7.0f);
+							model[movementAnimation].Speed = player.Crouched ? 1.0f : (speed / 6.0f);
 
-						footstepTimer.Interval.Value = player.Crouched ? 0.5f : 0.37f / (speed / 7.0f);
+						footstepTimer.Interval.Value = player.Crouched ? 0.5f : 0.37f / (speed / 6.0f);
 
 						if (!model.IsPlaying(movementAnimation))
 						{
@@ -1103,7 +1110,7 @@ namespace Lemma.Factories
 			Action<Vector3, Vector3, bool> breakWalls = delegate(Vector3 forward, Vector3 right, bool breakFloor)
 			{
 				BlockFactory blockFactory = Factory.Get<BlockFactory>();
-				Vector3 pos = transform.Position + new Vector3(0, 0.1f + (player.Height * -0.5f) - player.SupportHeight, 0);
+				Vector3 pos = transform.Position + new Vector3(0, 0.1f + (player.Height * -0.5f) - player.SupportHeight, 0) + forward * -1.0f;
 				Vector3 basePos = pos;
 				foreach (Map map in Map.ActivePhysicsMaps.ToList())
 				{
@@ -1228,7 +1235,11 @@ namespace Lemma.Factories
 					}
 
 					if (wallRunAnimation != null)
-						model[wallRunAnimation].Speed = Math.Min(1.0f, wallRunSpeed / 9.0f);
+					{
+						Vector3 wallNormal = wallRunMap.GetAbsoluteVector(wallDirection.GetVector());
+						float animationSpeed = (player.LinearVelocity.Value - wallNormal * Vector3.Dot(player.LinearVelocity.Value, wallNormal)).Length();
+						model[wallRunAnimation].Speed = Math.Max(1.0f, Math.Min(1.5f, animationSpeed / 6.0f));
+					}
 
 					Vector3 pos = transform.Position + new Vector3(0, player.Height * -0.5f, 0);
 					Map.Coordinate coord = wallRunMap.GetCoordinate(pos);
@@ -2262,7 +2273,7 @@ namespace Lemma.Factories
 				{
 					if (!player.EnableRoll || !player.EnableMoves)
 					{
-						if (player.EnableCrouch)
+						if (player.EnableCrouch && player.IsSupported)
 						{
 							// Just crouch, don't roll
 							player.Crouched.Value = true;

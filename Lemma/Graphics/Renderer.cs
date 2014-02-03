@@ -53,6 +53,7 @@ namespace Lemma.Components
 		private static Microsoft.Xna.Framework.Graphics.Model spotLightModel;
 
 		public Property<float> BlurAmount = new Property<float>();
+		public Property<float> SpeedBlurAmount = new Property<float> { Value = 0.0f };
 		public Property<Vector3> Tint = new Property<Vector3> { Value = Vector3.One };
 		public Property<float> InternalGamma = new Property<float> { Value = 0.0f };
 		public Property<float> Gamma = new Property<float> { Value = 1.0f };
@@ -172,6 +173,12 @@ namespace Lemma.Components
 					this.MotionBlurAmount.InternalValue = value;
 					this.motionBlurEffect.Parameters["MotionBlurAmount"].SetValue(value);
 				};
+				this.SpeedBlurAmount.Set = delegate(float value)
+				{
+					this.SpeedBlurAmount.InternalValue = value;
+					this.motionBlurEffect.Parameters["SpeedBlurAmount"].SetValue(value);
+				};
+				this.SpeedBlurAmount.Value = 0.0f;
 			}
 
 			if (this.allowBloom)

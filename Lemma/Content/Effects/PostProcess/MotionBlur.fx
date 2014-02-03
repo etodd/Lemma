@@ -1,6 +1,7 @@
 #include "EffectCommon.fxh"
 
 float MotionBlurAmount = 1.0f;
+float SpeedBlurAmount = 1.0f;
 
 float4 SampleMotionBlur(float2 texCoord, float2 pixelVelocity)
 {
@@ -24,8 +25,11 @@ float4 SampleMotionBlur(float2 texCoord, float2 pixelVelocity)
 
 float4 MotionBlurPS(in PostProcessPSInput input)	: COLOR0
 {
+	const float threshold = 1.0f / 127.0f;
+	const float thresholdSquared = threshold * threshold;
 	// Sample velocity from our velocity buffers
 	float2 currentFramePixelVelocity = tex2D(SourceSampler1, input.texCoord).xy - float2(0.5f, 0.5f);
+
 	float2 lastFramePixelVelocity = tex2D(SourceSampler2, input.texCoord).xy - float2(0.5f, 0.5f);
 
 	// We'll compare the magnitude of the velocity from the current frame and from
@@ -34,6 +38,15 @@ float4 MotionBlurPS(in PostProcessPSInput input)	: COLOR0
 
 	float currentVelocitySquared = currentFramePixelVelocity.x * currentFramePixelVelocity.x +
 						   currentFramePixelVelocity.y * currentFramePixelVelocity.y;
+
+	// Speed blurring
+	float2 speedOffset = (input.texCoord + float2(-0.5f, -0.5f)) * SpeedBlurAmount * 0.08f;
+	float speedOffsetSquared = speedOffset.x * speedOffset.x + speedOffset.y * speedOffset.y;
+	if (speedOffsetSquared > thresholdSquared)
+	{
+		currentFramePixelVelocity = speedOffset * (1.0f - threshold / sqrt(speedOffsetSquared));
+		currentVelocitySquared = speedOffsetSquared;
+	}
 
 	float lastVelocitySquared = lastFramePixelVelocity.x * lastFramePixelVelocity.x +
 							  lastFramePixelVelocity.y * lastFramePixelVelocity.y;
@@ -49,7 +62,7 @@ float4 MotionBlurPS(in PostProcessPSInput input)	: COLOR0
 		pixelVelocity = currentFramePixelVelocity;
 		velocitySquared = currentVelocitySquared;
 	}
-	if (velocitySquared < (1.0f / 127.0f) * (1.0f / 127.0f))
+	if (velocitySquared < thresholdSquared)
 		return tex2D(SourceSampler0, input.texCoord);
 	return SampleMotionBlur(input.texCoord, pixelVelocity);
 }

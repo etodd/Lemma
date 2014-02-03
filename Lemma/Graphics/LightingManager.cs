@@ -106,7 +106,7 @@ namespace Lemma.Components
 					foreach (Microsoft.Xna.Framework.Graphics.RenderTarget2D target in this.spotShadowMaps)
 						target.Dispose();
 				}
-				
+
 				if (this.EnableGlobalShadowMap)
 				{
 					this.globalShadowMap = new Microsoft.Xna.Framework.Graphics.RenderTarget2D(this.main.GraphicsDevice,
@@ -282,7 +282,7 @@ namespace Lemma.Components
 				if (light.Enabled && !light.Suspended && light.Shadowed && light.Attenuation > 0.0f && camera.BoundingFrustum.Value.Intersects(light.BoundingSphere))
 					shadowedPointLights.Add(light);
 			}
-			shadowedPointLights = shadowedPointLights.Select(x => new { Light = x, Score = (x.Position.Value - camera.Position.Value).LengthSquared() / x.Attenuation }).Where(x => x.Score < LightingManager.lightShadowThreshold).OrderBy(x => x.Score).Take(this.maxShadowedPointLights).Select(x => x.Light).ToList();
+			shadowedPointLights = shadowedPointLights.Select(x => new { Light = x, Score = (x.Position.Value - camera.Position.Value).LengthSquared() / x.Attenuation }).Where(x => x.Light.AlwaysShadow || x.Score < LightingManager.lightShadowThreshold).OrderBy(x => x.Score).Take(this.maxShadowedPointLights).Select(x => x.Light).ToList();
 
 			// Render point shadow maps
 			int index = 0;

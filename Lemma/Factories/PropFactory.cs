@@ -29,6 +29,9 @@ namespace Lemma.Factories
 			Transform transform = result.Get<Transform>();
 			Model model = result.Get<Model>("Model");
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
+
+			if (result.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(result, main);
 		}
 
 		public override void AttachEditorComponents(Entity result, Main main)
@@ -39,6 +42,8 @@ namespace Lemma.Factories
 			Property<bool> editorSelected = result.GetOrMakeProperty<bool>("EditorSelected", false);
 			editorSelected.Serialize = false;
 			editorModel.Add(new Binding<bool>(editorModel.Enabled, () => !editorSelected || !model.IsValid, editorSelected, model.IsValid));
+
+			MapAttachable.AttachEditorComponents(result, main, editorModel.Color);
 		}
 	}
 

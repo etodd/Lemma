@@ -87,6 +87,7 @@ namespace Lemma.Factories
 
 			const float defaultSpeed = 5.0f;
 			const float chaseSpeed = 14.0f;
+			const float closeChaseSpeed = 10.0f;
 			const float crushSpeed = 125.0f;
 
 			VoxelChaseAI chase = null;
@@ -302,6 +303,9 @@ namespace Lemma.Factories
 								Vector3 targetPosition = targetAgent.Value.Target.Get<Agent>().Position;
 
 								float targetDistance = (targetPosition - chase.Position).Length();
+
+								chase.Speed.Value = targetDistance < 15.0f ? closeChaseSpeed : chaseSpeed;
+
 								if (targetDistance > 50.0f || ai.TimeInCurrentState > 40.0f) // He got away
 									ai.CurrentState.Value = "Alert";
 								else if (targetDistance < 5.0f) // We got 'im

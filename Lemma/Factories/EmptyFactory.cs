@@ -23,20 +23,18 @@ namespace Lemma.Factories
 			return result;
 		}
 
+		public override void Bind(Entity result, Main main, bool creating = false)
+		{
+			this.SetMain(result, main);
+			if (result.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(result, main);
+		}
+
 		public override void AttachEditorComponents(Entity result, Main main)
 		{
 			base.AttachEditorComponents(result, main);
 
-			Model model = new Model();
-			model.Filename.Value = "Models\\cone";
-			model.Color.Value = this.Color;
-			model.IsInstanced.Value = false;
-			model.Editable = false;
-			model.Serialize = false;
-
-			result.Add("EditorModel2", model);
-
-			model.Add(new Binding<Matrix>(model.Transform, result.Get<Transform>().Matrix));
+			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
 		}
 	}
 }

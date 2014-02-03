@@ -35,6 +35,9 @@ namespace Lemma.Factories
 			Transform transform = result.Get<Transform>();
 			PlayerTrigger trigger = result.Get<PlayerTrigger>();
 
+			if (result.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(result, main);
+
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 		}
 
@@ -43,6 +46,8 @@ namespace Lemma.Factories
 			base.AttachEditorComponents(result, main);
 
 			PlayerTrigger.AttachEditorComponents(result, main, this.Color);
+
+			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
 		}
 	}
 }

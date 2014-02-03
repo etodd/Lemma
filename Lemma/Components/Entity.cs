@@ -15,6 +15,7 @@ namespace Lemma.Components
 	[XmlInclude(typeof(Component))]
 	[XmlInclude(typeof(AudioListener))]
 	[XmlInclude(typeof(PlayerTrigger))]
+	[XmlInclude(typeof(Trigger))]
 	[XmlInclude(typeof(PlayerCylinderTrigger))]
 	[XmlInclude(typeof(Map))]
 	[XmlInclude(typeof(DynamicMap))]
