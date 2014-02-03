@@ -3,6 +3,7 @@
 float3 Tint = float3(1, 1, 1);
 
 float Gamma = 1.0f;
+float Brightness = 0.0f;
 
 texture1D RampTexture;
 sampler1D RampSampler = sampler_state
@@ -21,7 +22,7 @@ float3 toneMap(float3 color)
 	color.x = tex1D(RampSampler, color.x).x;
 	color.y = tex1D(RampSampler, color.y).y;
 	color.z = tex1D(RampSampler, color.z).z;
-	return color * Tint * Gamma;
+	return Brightness + color * Tint * Gamma;
 }
 
 float4 ToneMapPS(in PostProcessPSInput input)	: COLOR0

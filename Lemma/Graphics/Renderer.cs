@@ -57,6 +57,7 @@ namespace Lemma.Components
 		public Property<Vector3> Tint = new Property<Vector3> { Value = Vector3.One };
 		public Property<float> InternalGamma = new Property<float> { Value = 0.0f };
 		public Property<float> Gamma = new Property<float> { Value = 1.0f };
+		public Property<float> Brightness = new Property<float> { Value = 0.0f };
 		public Property<float> MotionBlurAmount = new Property<float> { Value = 1.0f };
 		private Texture2D lightRampTexture;
 		private TextureCube environmentMap;
@@ -158,6 +159,12 @@ namespace Lemma.Components
 			{
 				this.Gamma.InternalValue = value;
 				this.toneMapEffect.Parameters["Gamma"].SetValue(value + this.InternalGamma);
+			};
+
+			this.Brightness.Set = delegate(float value)
+			{
+				this.Brightness.InternalValue = value;
+				this.toneMapEffect.Parameters["Brightness"].SetValue(value);
 			};
 
 			this.EnvironmentColor.Set = delegate(Vector3 value)

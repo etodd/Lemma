@@ -1636,6 +1636,7 @@ namespace Lemma
 					this.respawnTimer = -1.0f;
 					this.mapJustLoaded = true;
 					this.Renderer.InternalGamma.Value = GameMain.startGamma;
+					this.Renderer.Brightness.Value = 1.0f;
 				});
 
 				logo.Add(new CommandBinding(this.MapLoaded, delegate() { resume.Visible.Value = saveButton.Visible.Value = true; }));
@@ -1647,6 +1648,7 @@ namespace Lemma
 		{
 			this.MapFile.Value = null; // Clears all the entities too
 			this.Renderer.InternalGamma.Value = 0.0f;
+			this.Renderer.Brightness.Value = 0.0f;
 			this.Renderer.BackgroundColor.Value = Color.Black;
 			this.IsMouseVisible.Value = true;
 
@@ -1757,6 +1759,7 @@ namespace Lemma
 			{
 				this.player = null;
 				this.Renderer.InternalGamma.Value = 0.0f;
+				this.Renderer.Brightness.Value = 0.0f;
 				if (this.editor == null)
 				{
 					this.editor = Factory.Get("Editor").CreateAndBind(this);
@@ -1791,6 +1794,7 @@ namespace Lemma
 					if (this.loadingSavedGame)
 					{
 						this.Renderer.InternalGamma.Value = 0.0f;
+						this.Renderer.Brightness.Value = 0.0f;
 						this.PlayerSpawned.Execute(this.player);
 						this.loadingSavedGame = false;
 						this.respawnTimer = 0;
@@ -1804,7 +1808,8 @@ namespace Lemma
 								new Animation.Parallel
 								(
 									new Animation.Vector3MoveTo(this.Renderer.Tint, GameMain.startTint, 0.5f),
-									new Animation.FloatMoveTo(this.Renderer.InternalGamma, GameMain.startGamma, 0.5f)
+									new Animation.FloatMoveTo(this.Renderer.InternalGamma, GameMain.startGamma, 0.5f),
+									new Animation.FloatMoveTo(this.Renderer.Brightness, 1.0f, 0.5f)
 								)
 							));
 						}
@@ -1898,7 +1903,8 @@ namespace Lemma
 								new Animation.Parallel
 								(
 									new Animation.Vector3MoveTo(this.Renderer.Tint, Vector3.One, 0.5f),
-									new Animation.FloatMoveTo(this.Renderer.InternalGamma, 0.0f, 0.5f)
+									new Animation.FloatMoveTo(this.Renderer.InternalGamma, 0.0f, 0.5f),
+									new Animation.FloatMoveTo(this.Renderer.Brightness, 0.0f, 0.5f)
 								)
 							));
 							this.respawnTimer = 0;

@@ -38,8 +38,17 @@ namespace Lemma.Factories
 				result.CannotSuspendByDistance = !sound.Is3D;
 			}, sound.Is3D));
 
+			if (result.GetOrMakeProperty<bool>("Attachable", true))
+				MapAttachable.MakeAttachable(result, main);
 
 			sound.Add(new Binding<Vector3>(sound.Position, transform.Position));
+		}
+
+		public override void AttachEditorComponents(Entity result, Main main)
+		{
+			base.AttachEditorComponents(result, main);
+
+			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
 		}
 	}
 }
