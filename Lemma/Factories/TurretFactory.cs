@@ -241,19 +241,23 @@ namespace Lemma.Factories
 					Sound.PlayCue(main, "Fire", transform.Position, 1.0f, 0.0f);
 
 					Entity target = targetAgent.Value.Target;
-					Vector3 targetPos = target.Get<Transform>().Position;
-					Vector3 toTarget = targetPos - transform.Position.Value;
-					if (Vector3.Dot(toReticle, Vector3.Normalize(toTarget)) > 0.2f)
+					if (target != null && target.Active)
 					{
-						float distance = toTarget.Length();
-						if (distance < rayHit.Distance)
-							Sound.PlayCue(main, "Miss", transform.Position + toReticle * distance);
+						Vector3 targetPos = target.Get<Transform>().Position;
+						Vector3 toTarget = targetPos - transform.Position.Value;
+						if (Vector3.Dot(toReticle, Vector3.Normalize(toTarget)) > 0.2f)
+						{
+							float distance = toTarget.Length();
+							if (distance < rayHit.Distance)
+								Sound.PlayCue(main, "Miss", transform.Position + toReticle * distance);
+						}
 					}
 
 					if (rayHit.Map != null)
 						Explosion.Explode(main, rayHit.Map, rayHit.Coordinate.Value, 5, 8.0f);
-					else
+					else if (target != null && target.Active)
 					{
+						Vector3 targetPos = target.Get<Transform>().Position;
 						BEPUutilities.RayHit physicsHit;
 						if (target.Get<Player>().Body.CollisionInformation.RayCast(new Ray(transform.Position, toReticle), rayHit.Distance, out physicsHit))
 							Explosion.Explode(main, targetPos, 5, 8.0f);

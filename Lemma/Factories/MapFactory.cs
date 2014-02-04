@@ -47,7 +47,7 @@ namespace Lemma.Factories
 			this.InternalBind(result, main, creating);
 		}
 
-		public void InternalBind(Entity result, Main main, bool creating = false, Transform transform = null)
+		public void InternalBind(Entity result, Main main, bool creating = false, Transform transform = null, bool dataOnly = false)
 		{
 			if (transform == null)
 				transform = result.GetOrCreate<Transform>("Transform");
@@ -81,93 +81,98 @@ namespace Lemma.Factories
 
 			Entity world = main.Get("World").FirstOrDefault();
 
-			map.Chunks.ItemAdded += delegate(int index, Map.Chunk chunk)
+			if (dataOnly && !main.EditorEnabled)
+				map.EnablePhysics.Value = false;
+			else
 			{
-				Dictionary<int, bool> models = new Dictionary<int, bool>();
-
-				Action<Map.CellState> createModel = delegate(Map.CellState state)
+				map.Chunks.ItemAdded += delegate(int index, Map.Chunk chunk)
 				{
-					if (state.ID == 0)
-						return; // 0 = empty
+					Dictionary<int, bool> models = new Dictionary<int, bool>();
 
-					DynamicModel<Map.MapVertex> model = new DynamicModel<Map.MapVertex>(Map.MapVertex.VertexDeclaration);
-					model.EffectFile.Value = "Effects\\Environment";
-					model.Lock = map.Lock;
-					state.ApplyTo(model);
-
-					/*
-					ModelAlpha debug = new ModelAlpha { Serialize = false };
-					debug.Alpha.Value = 0.01f;
-					debug.DrawOrder.Value = 11; // In front of water
-					debug.Color.Value = new Vector3(1.0f, 0.8f, 0.6f);
-					debug.Filename.Value = "Models\\alpha-box";
-					debug.CullBoundingBox.Value = false;
-					debug.DisableCulling.Value = true;
-					debug.Add(new Binding<Matrix>(debug.Transform, delegate()
+					Action<Map.CellState> createModel = delegate(Map.CellState state)
 					{
-						BoundingBox box = model.BoundingBox;
-						return Matrix.CreateScale(box.Max - box.Min) * Matrix.CreateTranslation((box.Max + box.Min) * 0.5f) * transform.Matrix;
-					}, transform.Matrix, model.BoundingBox));
-					result.Add(debug);
-					*/
+						if (state.ID == 0)
+							return; // 0 = empty
 
-					if (main.EditorEnabled || map.Scale.Value != 1.0f)
-						model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateScale(map.Scale) * transform.Matrix, transform.Matrix, map.Scale));
-					else
-						model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
+						DynamicModel<Map.MapVertex> model = new DynamicModel<Map.MapVertex>(Map.MapVertex.VertexDeclaration);
+						model.EffectFile.Value = "Effects\\Environment";
+						model.Lock = map.Lock;
+						state.ApplyTo(model);
 
-					Vector3 min = new Vector3(chunk.X, chunk.Y, chunk.Z);
-					Vector3 max = min + new Vector3(map.ChunkSize);
-
-					model.Add(new Binding<Vector3>(model.GetVector3Parameter("Offset"), map.Offset));
-
-					Map.CellState s = state;
-
-					if (!s.ShadowCast)
-						model.UnsupportedTechniques.Add(new[] { Technique.Shadow, Technique.PointLightShadow });
-
-					model.Add(new ListBinding<Map.MapVertex, Map.Box>
-					(
-						model.Vertices,
-						chunk.Boxes,
-						delegate(Map.Box box)
+						/*
+						ModelAlpha debug = new ModelAlpha { Serialize = false };
+						debug.Alpha.Value = 0.01f;
+						debug.DrawOrder.Value = 11; // In front of water
+						debug.Color.Value = new Vector3(1.0f, 0.8f, 0.6f);
+						debug.Filename.Value = "Models\\alpha-box";
+						debug.CullBoundingBox.Value = false;
+						debug.DisableCulling.Value = true;
+						debug.Add(new Binding<Matrix>(debug.Transform, delegate()
 						{
-							Map.MapVertex[] vertices = new Map.MapVertex[box.Surfaces.Where(x => x.HasArea).Count() * 4];
-							int i = 0;
-							foreach (Map.Surface surface in box.Surfaces)
+							BoundingBox box = model.BoundingBox;
+							return Matrix.CreateScale(box.Max - box.Min) * Matrix.CreateTranslation((box.Max + box.Min) * 0.5f) * transform.Matrix;
+						}, transform.Matrix, model.BoundingBox));
+						result.Add(debug);
+						*/
+
+						if (main.EditorEnabled || map.Scale.Value != 1.0f)
+							model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateScale(map.Scale) * transform.Matrix, transform.Matrix, map.Scale));
+						else
+							model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
+
+						Vector3 min = new Vector3(chunk.X, chunk.Y, chunk.Z);
+						Vector3 max = min + new Vector3(map.ChunkSize);
+
+						model.Add(new Binding<Vector3>(model.GetVector3Parameter("Offset"), map.Offset));
+
+						Map.CellState s = state;
+
+						if (!s.ShadowCast)
+							model.UnsupportedTechniques.Add(new[] { Technique.Shadow, Technique.PointLightShadow });
+
+						model.Add(new ListBinding<Map.MapVertex, Map.Box>
+						(
+							model.Vertices,
+							chunk.Boxes,
+							delegate(Map.Box box)
 							{
-								if (surface.HasArea)
+								Map.MapVertex[] vertices = new Map.MapVertex[box.Surfaces.Where(x => x.HasArea).Count() * 4];
+								int i = 0;
+								foreach (Map.Surface surface in box.Surfaces)
 								{
-									Array.Copy(surface.Vertices, 0, vertices, i, 4);
-									i += 4;
+									if (surface.HasArea)
+									{
+										Array.Copy(surface.Vertices, 0, vertices, i, 4);
+										i += 4;
+									}
 								}
-							}
-							return vertices;
-						},
-						x => x.Type == s
-					));
+								return vertices;
+							},
+							x => x.Type == s
+						));
 
-					result.Add(model);
+						result.Add(model);
 
-					// We have to create this binding after adding the model to the entity
-					// Because when the model loads, it automatically calculates a bounding box for it.
-					model.Add(new Binding<BoundingBox, Vector3>(model.BoundingBox, x => new BoundingBox(min - x, max - x), map.Offset));
+						// We have to create this binding after adding the model to the entity
+						// Because when the model loads, it automatically calculates a bounding box for it.
+						model.Add(new Binding<BoundingBox, Vector3>(model.BoundingBox, x => new BoundingBox(min - x, max - x), map.Offset));
 
-					models[state.ID] = true;
+						models[state.ID] = true;
+					};
+
+					chunk.Boxes.ItemAdded += delegate(int i, Map.Box box)
+					{
+						if ((!box.Type.Invisible || main.EditorEnabled) && !models.ContainsKey(box.Type.ID))
+							createModel(box.Type);
+					};
+
+					chunk.Boxes.ItemChanged += delegate(int i, Map.Box oldBox, Map.Box newBox)
+					{
+						if ((!newBox.Type.Invisible || main.EditorEnabled) && !models.ContainsKey(newBox.Type.ID))
+							createModel(newBox.Type);
+					};
 				};
-
-				chunk.Boxes.ItemAdded += delegate(int i, Map.Box box)
-				{
-					if ((!box.Type.Invisible || main.EditorEnabled) && !models.ContainsKey(box.Type.ID))
-						createModel(box.Type);
-				};
-
-				chunk.Boxes.ItemChanged += delegate(int i, Map.Box oldBox, Map.Box newBox)
-				{
-					if ((!newBox.Type.Invisible || main.EditorEnabled) && !models.ContainsKey(newBox.Type.ID))
-						createModel(newBox.Type);
-				};
-			};
+			}
 
 			this.SetMain(result, main);
 			map.Offset.Changed();

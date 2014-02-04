@@ -158,6 +158,8 @@ namespace Lemma
 			Sound.Reset(this);
 			this.Renderer.BlurAmount.Value = 0.0f;
 			this.Renderer.Tint.Value = Vector3.One;
+			this.Renderer.Brightness.Value = 0.0f;
+			this.Renderer.SpeedBlurAmount.Value = 0.0f;
 			this.TimeMultiplier.Value = 1.0f;
 			this.Camera.Angles.Value = Vector3.Zero;
 		}

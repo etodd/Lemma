@@ -250,6 +250,10 @@
       <Name>spinner</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Maps\spinner2.map">
+      <Name>spinner2</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Maps\start.cs">
       <Name>start</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

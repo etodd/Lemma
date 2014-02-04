@@ -86,6 +86,8 @@ namespace Lemma.Factories
 			Property<float> totalLifetime = result.GetProperty<float>("TotalLifetime");
 			Property<float> lifetime = result.GetProperty<float>("Lifetime");
 
+			Property<bool> checkAdjacent = result.GetOrMakeProperty<bool>("CheckAdjacent");
+
 			Updater update = null;
 			update = new Updater
 			{
@@ -110,15 +112,21 @@ namespace Lemma.Factories
 							Map.Coordinate c = coord;
 
 							bool foundAdjacentCell = false;
-							foreach (Direction dir in DirectionExtensions.Directions)
+							if (checkAdjacent)
 							{
-								Map.Coordinate adjacent = c.Move(dir);
-								if (m[adjacent].ID != 0)
+								foreach (Direction dir in DirectionExtensions.Directions)
 								{
-									foundAdjacentCell = true;
-									break;
+									Map.Coordinate adjacent = c.Move(dir);
+									if (m[adjacent].ID != 0)
+									{
+										foundAdjacentCell = true;
+										break;
+									}
 								}
 							}
+							else
+								foundAdjacentCell = true;
+
 							if (foundAdjacentCell)
 							{
 								bool foundConflict = false;
