@@ -81,9 +81,10 @@ namespace Lemma.Factories
 
 			Entity world = main.Get("World").FirstOrDefault();
 
-			if (dataOnly && !main.EditorEnabled)
+			if (dataOnly)
 				map.EnablePhysics.Value = false;
-			else
+
+			if (!dataOnly || main.EditorEnabled)
 			{
 				map.Chunks.ItemAdded += delegate(int index, Map.Chunk chunk)
 				{

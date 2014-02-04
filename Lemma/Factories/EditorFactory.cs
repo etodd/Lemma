@@ -1303,6 +1303,36 @@ namespace Lemma.Factories
 				new Command { Action = () => editor.TransformAxis.Value = Editor.TransformAxes.Z }
 			);
 
+			addCommand
+			(
+				"Clear rotation",
+				new PCInput.Chord { },
+				() => !editor.MapEditMode && editor.SelectedEntities.Count > 0,
+				new Command
+				{
+					Action = delegate()
+					{
+						foreach (Entity e in editor.SelectedEntities)
+							e.Get<Transform>().Orientation.Value = Matrix.Identity;
+					}
+				}
+			);
+
+			addCommand
+			(
+				"Clear translation",
+				new PCInput.Chord { },
+				() => !editor.MapEditMode && editor.SelectedEntities.Count > 0,
+				new Command
+				{
+					Action = delegate()
+					{
+						foreach (Entity e in editor.SelectedEntities)
+							e.Get<Transform>().Position.Value = Vector3.Zero;
+					}
+				}
+			);
+
 			MemoryStream yankBuffer = null;
 			addCommand
 			(

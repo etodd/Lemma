@@ -75,8 +75,12 @@ namespace Lemma.IO
 
 			try
 			{
-				using (Stream stream = new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.None))
-					MapLoader.Save(main, stream);
+				using (MemoryStream ms = new MemoryStream())
+				{
+					MapLoader.Save(main, ms);
+					using (Stream stream = new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.None))
+						ms.CopyTo(stream);
+				}
 			}
 			catch (Exception e)
 			{

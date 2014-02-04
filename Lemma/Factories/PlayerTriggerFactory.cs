@@ -45,7 +45,12 @@ namespace Lemma.Factories
 				{
 					Entity target = targetProperty.Value.Target;
 					if (target != null && target.Active)
-						trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, target.GetCommand<Entity>("Trigger")));
+					{
+						Command<Entity> triggerCommand = target.GetCommand<Entity>("Trigger");
+						trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, triggerCommand));
+						if (trigger.IsTriggered)
+							triggerCommand.Execute(trigger.Player.Value);
+					}
 				}
 			});
 

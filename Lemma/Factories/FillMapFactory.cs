@@ -16,6 +16,13 @@ namespace Lemma.Factories
 {
 	public class FillMapFactory : MapFactory
 	{
+		public class CoordinateEntry
+		{
+			public Map.Coordinate Coord;
+			public Vector3 Position;
+			public float Distance;
+		}
+
 		public override Entity Create(Main main, int offsetX, int offsetY, int offsetZ)
 		{
 			Entity result = base.Create(main, offsetX, offsetY, offsetZ);
@@ -36,38 +43,101 @@ namespace Lemma.Factories
 
 			Property<float> intervalMultiplier = result.GetOrMakeProperty<float>("IntervalMultiplier", true, 1.0f);
 
+			ListProperty<CoordinateEntry> coords = result.GetOrMakeListProperty<CoordinateEntry>("Coordinates");
+
+			Property<int> index = result.GetOrMakeProperty<int>("FillIndex");
+
+			Action populateCoords = delegate()
+			{
+				if (coords.Count == 0)
+				{
+					Entity targetEntity = target.Value.Target;
+					if (targetEntity != null && targetEntity.Active)
+					{
+						Map m = targetEntity.Get<Map>();
+						foreach (CoordinateEntry e in map.Chunks.SelectMany(c => c.Boxes.SelectMany(x => x.GetCoords())).Select(delegate(Map.Coordinate y)
+						{
+							Map.Coordinate z = m.GetCoordinate(map.GetAbsolutePosition(y));
+							z.Data = y.Data;
+							return new CoordinateEntry { Coord = z, };
+						}))
+							coords.Add(e);
+					}
+				}
+			};
+
+			if (main.EditorEnabled)
+				coords.Clear();
+			else
+				result.Add(new PostInitialization { populateCoords });
+
+			Property<float> blockLifetime = result.GetOrMakeProperty<float>("BlockLifetime", true, 0.25f);
+
+			float intervalTimer = 0.0f;
+			Updater update = new Updater
+			{
+				delegate(float dt)
+				{
+					intervalTimer += dt;
+					Entity targetEntity = target.Value.Target;
+					if (targetEntity != null && targetEntity.Active && index < coords.Count)
+					{
+						float interval = 0.03f * intervalMultiplier;
+						while (intervalTimer > interval && index < coords.Count)
+						{
+							EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
+							Map m = targetEntity.Get<Map>();
+							
+							CoordinateEntry entry = coords[index];
+							Entity block = factory.CreateAndBind(main);
+							entry.Coord.Data.ApplyToEffectBlock(block.Get<ModelInstance>());
+							block.GetProperty<bool>("CheckAdjacent").Value = false;
+							block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(entry.Coord);
+							block.GetProperty<bool>("Scale").Value = true;
+
+							block.GetProperty<Vector3>("StartPosition").Value = entry.Position + new Vector3(2.0f, 5.0f, 2.0f);
+							block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
+
+							block.GetProperty<float>("TotalLifetime").Value = blockLifetime;
+							factory.Setup(block, targetEntity, entry.Coord, entry.Coord.Data.ID);
+							main.Add(block);
+
+							index.Value++;
+							intervalTimer -= interval;
+						}
+					}
+					else
+						result.Delete.Execute();
+				}
+			};
+			update.Enabled.Value = index > 0;
+			result.Add("Update", update);
+
 			Action fill = delegate()
 			{
-				EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
+				if (index > 0 || update.Enabled)
+					return; // We're already filling
 
 				Entity targetEntity = target.Value.Target;
 				if (targetEntity != null && targetEntity.Active)
 				{
+					populateCoords();
 					Map m = targetEntity.Get<Map>();
-					int index = 0;
-					foreach (Map.Chunk chunk in map.Chunks)
+					Vector3 focusPoint = main.Camera.Position;
+					foreach (CoordinateEntry entry in coords)
 					{
-						foreach (Map.Coordinate coord in chunk.Boxes.SelectMany(x => x.GetCoords()))
-						{
-							Vector3 pos = map.GetAbsolutePosition(coord);
-							Map.Coordinate c = m.GetCoordinate(pos);
-							Entity block = factory.CreateAndBind(main);
-							coord.Data.ApplyToEffectBlock(block.Get<ModelInstance>());
-							block.GetProperty<bool>("CheckAdjacent").Value = false;
-							block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(c);
-							block.GetProperty<bool>("Scale").Value = true;
-
-							block.GetProperty<Vector3>("StartPosition").Value = pos + new Vector3(0.25f, 0.5f, 0.25f) * index;
-							block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
-
-							block.GetProperty<float>("TotalLifetime").Value = 0.05f + (index * 0.03f * intervalMultiplier);
-							factory.Setup(block, targetEntity, c, coord.Data.ID);
-							main.Add(block);
-							index++;
-						}
+						entry.Position = m.GetAbsolutePosition(entry.Coord);
+						entry.Distance = (focusPoint - entry.Position).LengthSquared();
 					}
+
+					List<CoordinateEntry> coordList = coords.ToList();
+					coords.Clear();
+					coordList.Sort(new LambdaComparer<CoordinateEntry>((x, y) => x.Distance.CompareTo(y.Distance)));
+					foreach (CoordinateEntry e in coordList)
+						coords.Add(e);
+
+					update.Enabled.Value = true;
 				}
-				result.Delete.Execute();
 			};
 
 			result.Add("Fill", new Command

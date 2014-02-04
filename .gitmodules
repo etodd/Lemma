@@ -3,7 +3,7 @@
 	url = https://github.com/et1337/MonoGame.git
 [submodule "Lemma/Content/Maps"]
 	path = Lemma/Content/Maps
-	url = https://et1337@bitbucket.org/et1337/lemma-game-assets.git
+	url = git@bitbucket.org:et1337/lemma-game-assets.git
 [submodule "LemmaAnalytics"]
 	path = LemmaAnalytics
-	url = https://et1337@bitbucket.org/et1337/lemmaanalytics.git
+	url = git@bitbucket.org:et1337/lemmaanalytics.git
