@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma.Components
 {
-	public class UIRenderer : Component, IUpdateableComponent, INonPostProcessedDrawableComponent
+	public class UIRenderer : Component, IUpdateableComponent, INonPostProcessedDrawableComponent, IDrawablePreFrameComponent
 	{
 		public class RootUIComponent : UIComponent
 		{
@@ -35,6 +35,31 @@ namespace Lemma.Components
 
 		public Property<bool> EnableMouse = new Property<bool> { Value = true };
 
+		public Property<Point> RenderTargetSize = new Property<Point>();
+
+		public Property<Color> RenderTargetBackground = new Property<Color>();
+
+		[XmlIgnore]
+		public Property<RenderTarget2D> RenderTarget = new Property<RenderTarget2D>();
+
+		[XmlIgnore]
+		public Func<MouseState, MouseState> MouseFilter = x => x;
+
+		private MouseState lastMouseState;
+
+		private void resize()
+		{
+			if (this.RenderTarget.Value != null)
+				this.RenderTarget.Value.Dispose();
+			this.RenderTarget.Value = null;
+
+			Point size = this.RenderTargetSize;
+			if (size.X > 0 && size.Y > 0)
+				this.RenderTarget.Value = new RenderTarget2D(this.main.GraphicsDevice, size.X, size.Y);
+
+			this.needResize = false;
+		}
+
 		public UIRenderer()
 		{
 			this.DrawOrder = new Property<int> { Editable = false, Value = 0 };
@@ -44,10 +69,18 @@ namespace Lemma.Components
 			this.Serialize = false;
 		}
 
+		private bool needResize = false;
+		public override void InitializeProperties()
+		{
+			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.RenderTargetSize));
+			this.lastMouseState = this.main.LastMouseState;
+		}
+
 		public override void LoadContent(bool reload)
 		{
 			base.LoadContent(reload);
 			this.Batch = new SpriteBatch(this.main.GraphicsDevice);
+			this.resize();
 		}
 
 		public override void SetMain(Main _main)
@@ -61,7 +94,7 @@ namespace Lemma.Components
 		{
 			if (this.main.IsActive && this.EnableMouse)
 			{
-				MouseState current = this.main.MouseState, last = this.main.LastMouseState;
+				MouseState current = this.MouseFilter(this.main.MouseState), last = this.lastMouseState;
 				if (current.LeftButton != last.LeftButton
 					|| current.RightButton != last.RightButton
 					|| current.MiddleButton != last.MiddleButton
@@ -73,19 +106,38 @@ namespace Lemma.Components
 				{
 					if (this.Root.HandleMouse(current, last, Matrix.Identity, true))
 						this.SwallowMouseEvents.Execute();
+					this.lastMouseState = current;
 				}
 			}
 			this.Root.CheckLayout();
 		}
 
-		void INonPostProcessedDrawableComponent.DrawNonPostProcessed(GameTime time, RenderParameters parameters)
+		private void draw(GameTime time, Point screenSize)
 		{
 			RasterizerState originalState = this.main.GraphicsDevice.RasterizerState;
-			Point screenSize = this.main.ScreenSize;
 			this.Batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, this.RasterizerState, null, Matrix.Identity);
 			this.Root.Draw(time, Matrix.Identity, new Rectangle(0, 0, screenSize.X, screenSize.Y));
 			this.Batch.End();
 			this.main.GraphicsDevice.RasterizerState = originalState;
+		}
+
+		void INonPostProcessedDrawableComponent.DrawNonPostProcessed(GameTime time, RenderParameters parameters)
+		{
+			if (this.RenderTarget.Value == null)
+				this.draw(time, this.main.ScreenSize);
+		}
+
+		void IDrawablePreFrameComponent.DrawPreFrame(GameTime time, RenderParameters parameters)
+		{
+			if (this.needResize)
+				this.resize();
+
+			if (this.RenderTarget.Value != null)
+			{
+				this.main.GraphicsDevice.SetRenderTarget(this.RenderTarget);
+				this.main.GraphicsDevice.Clear(this.RenderTargetBackground);
+				this.draw(time, this.RenderTargetSize);
+			}
 		}
 
 		protected override void delete()

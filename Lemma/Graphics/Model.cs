@@ -605,6 +605,28 @@ namespace Lemma.Components
 			return (Property<Texture2D>)result;
 		}
 
+		public Property<RenderTarget2D> GetRenderTarget2DParameter(string name)
+		{
+			IProperty result = null;
+			if (!this.properties.TryGetValue(name, out result))
+			{
+				Property<RenderTarget2D> property = new Property<RenderTarget2D> { Editable = false };
+				property.Set = delegate(RenderTarget2D value)
+				{
+					property.InternalValue = value;
+					if (this.effect != null)
+					{
+						EffectParameter param = this.effect.Parameters[name];
+						if (param != null)
+							param.SetValue(value);
+					}
+				};
+				this.properties[name] = property;
+				result = property;
+			}
+			return (Property<RenderTarget2D>)result;
+		}
+
 		protected virtual bool setParameters(Matrix transform, RenderParameters parameters)
 		{
 			if (this.UnsupportedTechniques.Contains(parameters.Technique))
