@@ -43,7 +43,10 @@ namespace Lemma.Components
 		public override void InitializeProperties()
 		{
 			base.InitializeProperties();
-			this.Add(new CommandBinding(this.OnEnabled, (Action)FPSInput.RecenterMouse));
+			this.Add(new CommandBinding(this.OnEnabled, delegate()
+			{
+				FPSInput.RecenterMouse();
+			}));
 			this.Add(new CommandBinding(this.OnDisabled, delegate()
 			{
 				if (!this.Movement.Value.Equals(Vector2.Zero))

@@ -236,12 +236,22 @@
       <ProcessorParameters_DiffuseTexture>room-texture.jpg</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_EffectFileName>..\Effects\Default.fx</ProcessorParameters_EffectFileName>
     </Compile>
+    <None Include="Maps\intro.map">
+      <Name>intro</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Maps\no-abilities.cs">
       <Name>no-abilities</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Compile Include="Maps\phone.fbx">
+      <Name>phone</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColor.fx</ProcessorParameters_EffectFileName>
+    </Compile>
     <None Include="Maps\sandbox.map">
       <Name>sandbox</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

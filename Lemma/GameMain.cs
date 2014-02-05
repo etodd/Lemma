@@ -56,6 +56,7 @@ namespace Lemma
 			public Property<PCInput.PCInputBinding> Parkour = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.LeftShift, GamePadButton = Buttons.LeftTrigger } };
 			public Property<PCInput.PCInputBinding> Roll = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.LeftControl, GamePadButton = Buttons.LeftStick } };
 			public Property<PCInput.PCInputBinding> Kick = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton, GamePadButton = Buttons.RightStick } };
+			public Property<PCInput.PCInputBinding> TogglePhone = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Tab, GamePadButton = Buttons.Y } };
 			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F5, GamePadButton = Buttons.Back } };
 			public Property<PCInput.PCInputBinding> ToggleFullscreen = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F11 } };
 		}
@@ -157,6 +158,12 @@ namespace Lemma
 				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true);
 			else
 				this.ResizeViewport(this.Settings.Size.Value.X, this.Settings.Size.Value.Y, false, false);
+		}
+
+		public override void ClearEntities(bool deleteEditor)
+		{
+			base.ClearEntities(deleteEditor);
+			this.UI.Root.GetChildByName("Messages").Children.Clear();
 		}
 
 		private void copySave(string src, string dst)
@@ -1095,6 +1102,7 @@ namespace Lemma
 				addInputSetting(this.Settings.Parkour, "Parkour", true);
 				addInputSetting(this.Settings.Roll, "Roll / Crouch", true);
 				addInputSetting(this.Settings.Kick, "Kick", true);
+				addInputSetting(this.Settings.TogglePhone, "Toggle Phone", true);
 				addInputSetting(this.Settings.QuickSave, "Quicksave", true);
 				addInputSetting(this.Settings.ToggleFullscreen, "Toggle Fullscreen", true);
 

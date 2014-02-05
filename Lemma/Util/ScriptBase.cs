@@ -52,10 +52,19 @@ namespace Lemma.Scripts
 		private const float messageFadeTime = 1.0f;
 		private const float messageBackgroundOpacity = 0.75f;
 
-		private static Container buildMessage()
+		private static Container buildMessage(bool centered = false)
 		{
 			Container msgBackground = new Container();
-			((GameMain)main).UI.Root.GetChildByName("Messages").Children.Add(msgBackground);
+
+			if (centered)
+			{
+				((GameMain)main).UI.Root.Children.Add(msgBackground);
+				msgBackground.Add(new Binding<Vector2, Point>(msgBackground.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
+				msgBackground.AnchorPoint.Value = new Vector2(0.5f);
+			}
+			else
+				((GameMain)main).UI.Root.GetChildByName("Messages").Children.Add(msgBackground);
+
 			msgBackground.Tint.Value = Color.Black;
 			msgBackground.Opacity.Value = 0.0f;
 			TextElement msg = new TextElement();
@@ -63,7 +72,6 @@ namespace Lemma.Scripts
 			msg.Opacity.Value = 0.0f;
 			msg.WrapWidth.Value = 250.0f;
 			msgBackground.Children.Add(msg);
-			WorldFactory.Get().Add(msgBackground);
 			return msgBackground;
 		}
 
@@ -83,9 +91,9 @@ namespace Lemma.Scripts
 			return container;
 		}
 
-		protected static Container showMessage(string text)
+		protected static Container showMessage(string text, bool centered = false)
 		{
-			Container container = buildMessage();
+			Container container = buildMessage(centered);
 			TextElement textElement = (TextElement)container.Children[0];
 			textElement.Text.Value = text;
 			WorldFactory.Get().Add(new Animation

@@ -78,6 +78,7 @@ namespace Lemma.IO
 				using (MemoryStream ms = new MemoryStream())
 				{
 					MapLoader.Save(main, ms);
+					ms.Seek(0, SeekOrigin.Begin);
 					using (Stream stream = new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.None))
 						ms.CopyTo(stream);
 				}

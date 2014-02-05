@@ -243,6 +243,7 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableMoves"), player.EnableMoves));
+					result.Add(new TwoWayBinding<float>(data.Value.Target.GetProperty<float>("MaxSpeed"), player.MaxSpeed));
 				}
 			});
 
@@ -712,9 +713,9 @@ namespace Lemma.Factories
 						float speed = velocity.Length();
 						
 						if (movementAnimation != "Idle" && movementAnimation != "CrouchIdle")
-							model[movementAnimation].Speed = player.Crouched ? 1.0f : (speed / 6.0f);
+							model[movementAnimation].Speed = player.Crouched ? (speed / 2.2f) : (speed / 6.0f);
 
-						footstepTimer.Interval.Value = player.Crouched ? 0.5f : 0.37f / (speed / 6.0f);
+						footstepTimer.Interval.Value = 0.37f / (speed / 6.0f);
 
 						if (!model.IsPlaying(movementAnimation))
 						{

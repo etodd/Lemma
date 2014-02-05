@@ -78,16 +78,16 @@ namespace Lemma.Components
 					case DynamicShadowSetting.Medium:
 						this.EnableGlobalShadowMap = true;
 						this.globalShadowMapSize = 1024;
-						this.spotShadowMapSize = 256;
-						this.pointShadowMapSize = 256;
+						this.spotShadowMapSize = 512;
+						this.pointShadowMapSize = 512;
 						this.maxShadowedPointLights = 1;
 						this.maxShadowedSpotLights = 1;
 						break;
 					case DynamicShadowSetting.High:
 						this.EnableGlobalShadowMap = true;
 						this.globalShadowMapSize = 2048;
-						this.spotShadowMapSize = 256;
-						this.pointShadowMapSize = 256;
+						this.spotShadowMapSize = 512;
+						this.pointShadowMapSize = 512;
 						this.maxShadowedPointLights = 2;
 						this.maxShadowedSpotLights = 2;
 						break;

@@ -126,7 +126,7 @@ namespace Lemma
 
 		public Property<bool> Paused = new Property<bool>();
 
-		public void ClearEntities(bool deleteEditor)
+		public virtual void ClearEntities(bool deleteEditor)
 		{
 			while (this.Entities.Count > (deleteEditor ? 0 : 1))
 			{
