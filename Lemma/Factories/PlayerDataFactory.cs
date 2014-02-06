@@ -51,6 +51,8 @@ namespace Lemma.Factories
 
 			result.CannotSuspend = true;
 
+			result.GetOrCreate<Phone>("Phone");
+
 			Property<float> gameTime = result.GetOrMakeProperty<float>("GameTime", false);
 			result.Add(new Updater
 			{

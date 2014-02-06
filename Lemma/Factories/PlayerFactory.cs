@@ -225,31 +225,6 @@ namespace Lemma.Factories
 
 			ListProperty<RespawnLocation> respawnLocations = null;
 
-			Property<bool> enablePhone = new Property<bool>();
-
-			result.Add(new PostInitialization
-			{
-				delegate()
-				{
-					if (data.Value.Target == null)
-						data.Value = Factory.Get<PlayerDataFactory>().Instance(main);
-
-					respawnLocations = data.Value.Target.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
-					
-					// Bind player data properties
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableRoll"), player.EnableRoll));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableCrouch"), player.EnableCrouch));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableKick"), player.EnableKick));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRunHorizontal"), player.EnableWallRunHorizontal));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableMoves"), player.EnableMoves));
-					result.Add(new TwoWayBinding<float>(data.Value.Target.GetProperty<float>("MaxSpeed"), player.MaxSpeed));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetOrMakeProperty<bool>("EnablePhone"), enablePhone));
-				}
-			});
-
 			result.Add(new CommandBinding(player.HealthDepleted, delegate()
 			{
 				Session.Recorder.Event(main, "DieFromHealth");
@@ -2445,6 +2420,8 @@ namespace Lemma.Factories
 
 			// Phone
 
+			Phone phone = null;
+
 			UIRenderer phoneUi = result.GetOrCreate<UIRenderer>("PhoneUI");
 
 			const float phoneWidth = 200.0f;
@@ -2475,6 +2452,11 @@ namespace Lemma.Factories
 			phoneLight.Enabled.Value = false;
 			phoneLight.Attenuation.Value = 0.35f;
 			phoneLight.Add(new Binding<Vector3, Matrix>(phoneLight.Position, x => x.Translation, screen.Transform));
+
+			Sound phoneSound = result.GetOrCreate<Sound>("PhoneSound");
+			phoneSound.Cue.Value = "Phone";
+			phoneSound.Is3D.Value = true;
+			phoneSound.Add(new Binding<Vector3>(phoneSound.Position, phoneLight.Position));
 
 			const float screenScale = 0.0007f;
 			screen.Scale.Value = new Vector3(1.0f, (float)phoneUi.RenderTargetSize.Value.Y * screenScale, (float)phoneUi.RenderTargetSize.Value.X * screenScale);
@@ -2519,34 +2501,6 @@ namespace Lemma.Factories
 
 			Property<bool> phoneActive = result.GetOrMakeProperty<bool>("PhoneActive");
 
-			Action<bool> showPhone = delegate(bool show)
-			{
-				phoneActive.Value = !phoneActive;
-
-				input.EnableLook.Value = input.EnableMouse.Value = !phoneActive;
-				main.IsMouseVisible.Value = phoneActive;
-				player.EnableWalking.Value = !phoneActive;
-				player.EnableMoves.Value = !phoneActive;
-				phoneModel.Enabled.Value = phoneActive;
-				screen.Enabled.Value = phoneActive;
-				phoneUi.Enabled.Value = phoneActive;
-				phoneLight.Enabled.Value = phoneActive;
-
-				if (phoneActive)
-					model.StartClip("Phone", 6, true);
-				else
-					model.Stop("Phone");
-			};
-
-			if (phoneActive)
-				showPhone(true);
-
-			input.Bind(settings.TogglePhone, PCInput.InputState.Up, delegate()
-			{
-				if (player.IsSupported && !player.IsSwimming && !player.Crouched && enablePhone)
-					showPhone(!phoneActive);
-			});
-
 			// Phone UI
 
 			const float padding = 8.0f;
@@ -2589,38 +2543,142 @@ namespace Lemma.Factories
 			phoneLayout.Add(new Binding<Vector2, Point>(phoneLayout.Size, x => new Vector2(x.X - padding * 2.0f, x.Y - padding * 2.0f), phoneUi.RenderTargetSize));
 			phoneUi.Root.Children.Add(phoneLayout);
 
-			Container composeButton = makeButton(new Color(0.1f, 0.3f, 0.5f, 1.0f), "Compose");
+			Color incomingColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
+			Color outgoingColor = new Color(0.0f, 0.2f, 0.4f, 1.0f);
+
+			Container composeButton = makeButton(outgoingColor, "Compose");
 
 			Scroller phoneScroll = new Scroller();
+			phoneScroll.ResizeVertical.Value = false;
 			phoneScroll.Add(new Binding<Vector2>(phoneScroll.Size, () => new Vector2(phoneLayout.Size.Value.X, phoneLayout.Size.Value.Y - phoneLayout.Spacing.Value - composeButton.ScaledSize.Value.Y), phoneLayout.Size, phoneLayout.Spacing, composeButton.ScaledSize));
 
 			phoneLayout.Children.Add(phoneScroll);
-			phoneLayout.Children.Add(makeAlign(composeButton, true));
+			UIComponent composeAlign = makeAlign(composeButton, true);
+			phoneLayout.Children.Add(composeAlign);
 
-			ListContainer messages = new ListContainer();
-			messages.Spacing.Value = padding * 0.5f;
-			messages.Orientation.Value = ListContainer.ListOrientation.Vertical;
-			messages.ResizePerpendicular.Value = false;
-			messages.Size.Value = new Vector2(messageWidth, 0.0f);
-			phoneScroll.Children.Add(messages);
+			ListContainer msgList = new ListContainer();
+			msgList.Spacing.Value = padding * 0.5f;
+			msgList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			msgList.ResizePerpendicular.Value = false;
+			msgList.Size.Value = new Vector2(messageWidth, 0.0f);
+			phoneScroll.Children.Add(msgList);
 
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test this is a really really long message that I probably don't want to write but I'll do it anyway because that's what needs to be done."), false));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
-			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
+			Container answerContainer = new Container();
+			answerContainer.PaddingBottom.Value = answerContainer.PaddingLeft.Value = answerContainer.PaddingRight.Value = answerContainer.PaddingTop.Value = padding;
+			answerContainer.Tint.Value = incomingColor;
+			answerContainer.AnchorPoint.Value = new Vector2(1.0f, 1.0f);
+			answerContainer.Add(new Binding<Vector2>(answerContainer.Position, () => composeAlign.Position.Value + new Vector2(composeAlign.ScaledSize.Value.X + padding, padding), composeAlign.Position, composeAlign.ScaledSize));
+			phoneUi.Root.Children.Add(answerContainer);
+			answerContainer.Visible.Value = false;
+
+			ListContainer answerList = new ListContainer();
+			answerList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			answerList.Alignment.Value = ListContainer.ListAlignment.Max;
+			answerContainer.Children.Add(answerList);
+
+			composeButton.Add(new CommandBinding<Point>(composeButton.MouseLeftUp, delegate(Point p)
+			{
+				answerContainer.Visible.Value = !answerContainer.Visible;
+			}));
+
+			// Toggle phone
+
+			Action<bool> showPhone = delegate(bool show)
+			{
+				if (show || (phone.ActiveAnswers.Count == 0 && phone.Schedules.Count == 0))
+				{
+					phoneActive.Value = show;
+					input.EnableLook.Value = input.EnableMouse.Value = !phoneActive;
+					main.IsMouseVisible.Value = phoneActive;
+					player.EnableWalking.Value = !phoneActive;
+					player.EnableMoves.Value = !phoneActive;
+					phoneModel.Enabled.Value = phoneActive;
+					screen.Enabled.Value = phoneActive;
+					phoneUi.Enabled.Value = phoneActive;
+					phoneLight.Enabled.Value = phoneActive;
+					answerContainer.Visible.Value = false;
+
+					model.Stop("Phone");
+					if (phoneActive)
+						model.StartClip("Phone", 6, true);
+				}
+			};
+
+			input.Bind(settings.TogglePhone, PCInput.InputState.Up, delegate()
+			{
+				if (player.IsSupported && !player.IsSwimming && !player.Crouched && phone.Enabled)
+					showPhone(!phoneActive);
+			});
+
+			// Player data bindings
+
+			result.Add(new PostInitialization
+			{
+				delegate()
+				{
+					if (data.Value.Target == null)
+						data.Value = Factory.Get<PlayerDataFactory>().Instance(main);
+
+					respawnLocations = data.Value.Target.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
+					
+					// Bind player data properties
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableRoll"), player.EnableRoll));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableCrouch"), player.EnableCrouch));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableKick"), player.EnableKick));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRunHorizontal"), player.EnableWallRunHorizontal));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableMoves"), player.EnableMoves));
+					result.Add(new TwoWayBinding<float>(data.Value.Target.GetProperty<float>("MaxSpeed"), player.MaxSpeed));
+
+					phone = data.Value.Target.GetOrCreate<Phone>("Phone");
+
+					msgList.Add(new ListBinding<UIComponent, Phone.Message>
+					(
+						msgList.Children,
+						phone.Messages,
+						delegate(Phone.Message msg)
+						{
+							return new[] { makeAlign(makeButton(msg.Incoming ? incomingColor : outgoingColor, msg.Text), !msg.Incoming) };
+						}
+					));
+
+					answerList.Add(new ListBinding<UIComponent, Phone.Ans>
+					(
+						answerList.Children,
+						phone.ActiveAnswers,
+						delegate(Phone.Ans answer)
+						{
+							UIComponent button = makeButton(outgoingColor, answer.Text);
+							button.Add(new CommandBinding<Point>(button.MouseLeftUp, delegate(Point p)
+							{
+								phone.Answer(answer);
+								if (phone.Schedules.Count == 0) // No more messages incoming
+									showPhone(false);
+							}));
+							return new[] { button };
+						}
+					));
+
+					composeButton.Add(new ListNotifyBinding<Phone.Ans>(delegate()
+					{
+						answerContainer.Visible.Value &= phone.ActiveAnswers.Count > 0;
+						composeButton.Visible.Value = phone.ActiveAnswers.Count > 0;
+					}, phone.ActiveAnswers));
+					composeButton.Visible.Value = phone.ActiveAnswers.Count > 0;
+
+					result.Add(new CommandBinding(phone.MessageReceived, delegate()
+					{
+						if (!phoneActive)
+							showPhone(true);
+						phoneSound.Play.Execute();
+					}));
+
+					if (phoneActive)
+						showPhone(true);
+				}
+			});
 		}
 
 		public override void AttachEditorComponents(Entity result, Main main)

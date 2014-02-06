@@ -67,6 +67,13 @@ namespace Lemma.Components
 	[XmlInclude(typeof(VoiceActor))]
 	[XmlInclude(typeof(FillMapFactory.CoordinateEntry))]
 	[XmlInclude(typeof(ListProperty<FillMapFactory.CoordinateEntry>))]
+	[XmlInclude(typeof(Phone))]
+	[XmlInclude(typeof(Phone.Message))]
+	[XmlInclude(typeof(ListProperty<Phone.Message>))]
+	[XmlInclude(typeof(Phone.Schedule))]
+	[XmlInclude(typeof(ListProperty<Phone.Schedule>))]
+	[XmlInclude(typeof(Phone.Ans))]
+	[XmlInclude(typeof(ListProperty<Phone.Ans>))]
 	public class Entity
 	{
 		public struct Handle

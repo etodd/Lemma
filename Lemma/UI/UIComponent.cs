@@ -234,7 +234,7 @@ namespace Lemma.Components
 
 			try
 			{
-				for (int i = this.Children.Count - 1; i >= 0; i--)
+				for (int i = this.Children.Count - 1; i >= 0 && i < this.Children.Count; i--)
 				{
 					if (this.Children[i].HandleMouse(mouse, lastMouse, transform, newHighlighted))
 						return true; // Mouse events have been swallowed
