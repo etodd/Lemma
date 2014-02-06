@@ -360,7 +360,7 @@
       <Name>plane</Name>
       <Importer>FbxImporter</Importer>
       <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\Default.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_EffectFileName>..\Effects\Unlit.fx</ProcessorParameters_EffectFileName>
     </Compile>
   </ItemGroup>
   <ItemGroup>

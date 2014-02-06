@@ -37,7 +37,7 @@ namespace Lemma.Factories
 			result.Add("EnableSlowMotion", new Property<bool> { Value = enabled });
 			result.Add("EnableStamina", new Property<bool> { Value = enabled });
 			result.Add("EnableMoves", new Property<bool> { Value = true });
-			result.Add("EnablePhone", new Property<bool> { Value = true });
+			result.Add("EnablePhone", new Property<bool> { Value = enabled });
 			result.Add("MaxSpeed", new Property<float> { Value = Player.DefaultMaxSpeed, Editable = false });
 			result.Add("GameTime", new Property<float> { Editable = false });
 

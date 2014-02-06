@@ -113,7 +113,6 @@
     </Compile>
     <Compile Include="Factories\AnimatedPropFactory.cs" />
     <Compile Include="Factories\CloudFactory.cs" />
-    <Compile Include="Factories\PhoneFactory.cs" />
     <Compile Include="Factories\FillMapFactory.cs" />
     <Compile Include="Factories\TriggerFactory.cs" />
     <Compile Include="Factories\InfectorFactory.cs" />

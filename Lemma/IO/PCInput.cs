@@ -97,6 +97,8 @@ namespace Lemma.Components
 		public Command RightMouseButtonUp = new Command();
 		public Command<int> MouseScrolled = new Command<int>();
 
+		public Property<bool> EnableMouse = new Property<bool> { Value = true };
+
 		public void Bind(Property<PCInput.PCInputBinding> inputBinding, InputState state, Action action)
 		{
 			CommandBinding commandBinding = null;
@@ -574,67 +576,70 @@ namespace Lemma.Components
 			else if (keyboard.GetPressedKeys().Length == 0)
 				this.chordActivated = false;
 
-			MouseState mouse = this.main.MouseState;
-			this.handleMouse();
-
-			bool newLeftMouseButton = mouse.LeftButton == ButtonState.Pressed;
-			if (newLeftMouseButton != this.LeftMouseButton)
+			if (this.EnableMouse)
 			{
-				this.LeftMouseButton.Value = newLeftMouseButton;
-				if (!this.preventKeyDownEvents)
+				MouseState mouse = this.main.MouseState;
+				this.handleMouse();
+
+				bool newLeftMouseButton = mouse.LeftButton == ButtonState.Pressed;
+				if (newLeftMouseButton != this.LeftMouseButton)
 				{
-					if (newLeftMouseButton)
+					this.LeftMouseButton.Value = newLeftMouseButton;
+					if (!this.preventKeyDownEvents)
 					{
-						if (this.nextInputListeners.Count > 0)
-							this.notifyNextInputListeners(new PCInputBinding { MouseButton = MouseButton.LeftMouseButton });
-						this.LeftMouseButtonDown.Execute();
+						if (newLeftMouseButton)
+						{
+							if (this.nextInputListeners.Count > 0)
+								this.notifyNextInputListeners(new PCInputBinding { MouseButton = MouseButton.LeftMouseButton });
+							this.LeftMouseButtonDown.Execute();
+						}
+						else
+							this.LeftMouseButtonUp.Execute();
 					}
-					else
-						this.LeftMouseButtonUp.Execute();
 				}
-			}
 
-			bool newMiddleMouseButton = mouse.MiddleButton == ButtonState.Pressed;
-			if (newMiddleMouseButton != this.MiddleMouseButton)
-			{
-				this.MiddleMouseButton.Value = newMiddleMouseButton;
-				if (!this.preventKeyDownEvents)
+				bool newMiddleMouseButton = mouse.MiddleButton == ButtonState.Pressed;
+				if (newMiddleMouseButton != this.MiddleMouseButton)
 				{
-					if (newMiddleMouseButton)
+					this.MiddleMouseButton.Value = newMiddleMouseButton;
+					if (!this.preventKeyDownEvents)
 					{
-						if (this.nextInputListeners.Count > 0)
-							this.notifyNextInputListeners(new PCInputBinding { MouseButton = MouseButton.MiddleMouseButton });
-						this.MiddleMouseButtonDown.Execute();
+						if (newMiddleMouseButton)
+						{
+							if (this.nextInputListeners.Count > 0)
+								this.notifyNextInputListeners(new PCInputBinding { MouseButton = MouseButton.MiddleMouseButton });
+							this.MiddleMouseButtonDown.Execute();
+						}
+						else
+							this.MiddleMouseButtonUp.Execute();
 					}
-					else
-						this.MiddleMouseButtonUp.Execute();
 				}
-			}
 
-			bool newRightMouseButton = mouse.RightButton == ButtonState.Pressed;
-			if (newRightMouseButton != this.RightMouseButton)
-			{
-				this.RightMouseButton.Value = newRightMouseButton;
-				if (!this.preventKeyDownEvents)
+				bool newRightMouseButton = mouse.RightButton == ButtonState.Pressed;
+				if (newRightMouseButton != this.RightMouseButton)
 				{
-					if (newRightMouseButton)
+					this.RightMouseButton.Value = newRightMouseButton;
+					if (!this.preventKeyDownEvents)
 					{
-						if (this.nextInputListeners.Count > 0)
-							this.notifyNextInputListeners(new PCInputBinding { MouseButton = MouseButton.RightMouseButton });
-						this.RightMouseButtonDown.Execute();
+						if (newRightMouseButton)
+						{
+							if (this.nextInputListeners.Count > 0)
+								this.notifyNextInputListeners(new PCInputBinding { MouseButton = MouseButton.RightMouseButton });
+							this.RightMouseButtonDown.Execute();
+						}
+						else
+							this.RightMouseButtonUp.Execute();
 					}
-					else
-						this.RightMouseButtonUp.Execute();
 				}
-			}
 
-			int newScrollWheel = mouse.ScrollWheelValue;
-			int oldScrollWheel = this.ScrollWheel;
-			if (newScrollWheel != oldScrollWheel)
-			{
-				this.ScrollWheel.Value = newScrollWheel;
-				if (!this.preventKeyDownEvents)
-					this.MouseScrolled.Execute(newScrollWheel > oldScrollWheel ? 1 : -1);
+				int newScrollWheel = mouse.ScrollWheelValue;
+				int oldScrollWheel = this.ScrollWheel;
+				if (newScrollWheel != oldScrollWheel)
+				{
+					this.ScrollWheel.Value = newScrollWheel;
+					if (!this.preventKeyDownEvents)
+						this.MouseScrolled.Execute(newScrollWheel > oldScrollWheel ? 1 : -1);
+				}
 			}
 			this.preventKeyDownEvents = false;
 		}

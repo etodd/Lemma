@@ -58,17 +58,18 @@ namespace Lemma.Components
 				this.EnableLook.InternalValue = value;
 				if (value && !oldValue)
 				{
-					this.lastMouseNonLook = this.Mouse;
 					this.Mouse.Value = this.lastMouseLook;
 					FPSInput.RecenterMouse();
 					MouseState oldState = this.main.MouseState;
+					this.lastMouseNonLook = new Vector2(oldState.X, oldState.Y);
 					this.main.MouseState.Value = new MouseState(FPSInput.mouseCenterX, FPSInput.mouseCenterY, oldState.ScrollWheelValue, oldState.LeftButton, oldState.MiddleButton, oldState.RightButton, oldState.XButton1, oldState.XButton2);
 				}
 				else if (!value && oldValue)
 				{
 					this.lastMouseLook = this.Mouse;
 					Microsoft.Xna.Framework.Input.Mouse.SetPosition((int)this.lastMouseNonLook.X, (int)this.lastMouseNonLook.Y);
-					this.Mouse.Value = this.lastMouseNonLook;
+					if (this.EnableMouse)
+						this.Mouse.Value = this.lastMouseNonLook;
 				}
 			};
 			this.MinX.Set = delegate(float value)

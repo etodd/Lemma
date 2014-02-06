@@ -225,6 +225,8 @@ namespace Lemma.Factories
 
 			ListProperty<RespawnLocation> respawnLocations = null;
 
+			Property<bool> enablePhone = new Property<bool>();
+
 			result.Add(new PostInitialization
 			{
 				delegate()
@@ -244,6 +246,7 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
 					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableMoves"), player.EnableMoves));
 					result.Add(new TwoWayBinding<float>(data.Value.Target.GetProperty<float>("MaxSpeed"), player.MaxSpeed));
+					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetOrMakeProperty<bool>("EnablePhone"), enablePhone));
 				}
 			});
 
@@ -540,6 +543,7 @@ namespace Lemma.Factories
 			Vector3 originalCameraPosition = cameraBone.Value.Translation;
 			Vector3 cameraOffset = cameraBone.Value.Translation - headBone.Value.Translation - new Vector3(0, 0.1f, 0);
 
+			// Update camera
 			update.Add(delegate(float dt)
 			{
 				relativeHeadBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.5f);
@@ -2219,7 +2223,6 @@ namespace Lemma.Factories
 					player.Crouched.Value = true;
 					player.AllowUncrouch.Value = false;
 
-
 					player.LinearVelocity.Value += forward * player.LinearVelocity.Value.Length() * 0.5f + new Vector3(0, player.JumpSpeed * 0.25f, 0);
 
 					Vector3 kickVelocity = player.LinearVelocity;
@@ -2439,6 +2442,185 @@ namespace Lemma.Factories
 				if (!rolling)
 					player.AllowUncrouch.Value = true;
 			});
+
+			// Phone
+
+			UIRenderer phoneUi = result.GetOrCreate<UIRenderer>("PhoneUI");
+
+			const float phoneWidth = 200.0f;
+
+			phoneUi.RenderTargetBackground.Value = Microsoft.Xna.Framework.Color.White;
+			phoneUi.RenderTargetSize.Value = new Point((int)phoneWidth, (int)(phoneWidth * 2.0f));
+			phoneUi.Serialize = false;
+			phoneUi.Enabled.Value = false;
+
+			Model phoneModel = result.GetOrCreate<Model>("PhoneModel");
+			phoneModel.Filename.Value = "Maps\\phone";
+			phoneModel.Color.Value = new Vector3(0.13f, 0.13f, 0.13f);
+			phoneModel.Serialize = false;
+			phoneModel.Enabled.Value = false;
+
+			Property<Matrix> phoneBone = model.GetBoneTransform("Phone");
+			phoneModel.Add(new Binding<Matrix>(phoneModel.Transform, () => phoneBone.Value * model.Transform, phoneBone, model.Transform));
+
+			Model screen = result.GetOrCreate<Model>("Screen");
+			screen.Filename.Value = "Models\\plane";
+			screen.Add(new Binding<Microsoft.Xna.Framework.Graphics.RenderTarget2D>(screen.GetRenderTarget2DParameter("Diffuse" + Model.SamplerPostfix), phoneUi.RenderTarget));
+			screen.Add(new Binding<Matrix>(screen.Transform, x => Matrix.CreateTranslation(0.015f, 0.0f, 0.0f) * x, phoneModel.Transform));
+			screen.Serialize = false;
+			screen.Enabled.Value = false;
+
+			PointLight phoneLight = result.GetOrCreate<PointLight>("PhoneLight");
+			phoneLight.Serialize = false;
+			phoneLight.Enabled.Value = false;
+			phoneLight.Attenuation.Value = 0.35f;
+			phoneLight.Add(new Binding<Vector3, Matrix>(phoneLight.Position, x => x.Translation, screen.Transform));
+
+			const float screenScale = 0.0007f;
+			screen.Scale.Value = new Vector3(1.0f, (float)phoneUi.RenderTargetSize.Value.Y * screenScale, (float)phoneUi.RenderTargetSize.Value.X * screenScale);
+
+			phoneUi.MouseFilter = delegate(MouseState mouse)
+			{
+				Microsoft.Xna.Framework.Graphics.Viewport viewport = main.GraphicsDevice.Viewport;
+
+				Matrix screenTransform = Matrix.CreateScale(screen.Scale) * screen.Transform;
+				Matrix inverseTransform = Matrix.Invert(screenTransform);
+				Vector3 ray = Vector3.Normalize(viewport.Unproject(new Vector3(mouse.X, mouse.Y, 1), main.Camera.Projection, main.Camera.View, Matrix.Identity) - viewport.Unproject(new Vector3(mouse.X, mouse.Y, 0), main.Camera.Projection, main.Camera.View, Matrix.Identity));
+				Vector3 rayStart = main.Camera.Position;
+
+				ray = Vector3.TransformNormal(ray, inverseTransform);
+				rayStart = Vector3.Transform(rayStart, inverseTransform);
+
+				Point output;
+
+				float? intersection = new Ray(rayStart, ray).Intersects(new Plane(Vector3.Right, 0.0f));
+				if (intersection.HasValue)
+				{
+					Vector3 intersectionPoint = rayStart + ray * intersection.Value;
+					Point size = phoneUi.RenderTargetSize;
+					Vector2 sizeF = new Vector2(size.X, size.Y);
+					output = new Point((int)((0.5f - intersectionPoint.Z) * sizeF.X), (int)((0.5f - intersectionPoint.Y) * sizeF.Y));
+				}
+				else
+					output = new Point(-1, -1);
+
+				return new MouseState
+				(
+					output.X,
+					output.Y,
+					mouse.ScrollWheelValue,
+					mouse.LeftButton,
+					mouse.MiddleButton,
+					mouse.RightButton,
+					mouse.XButton1,
+					mouse.XButton2
+				);
+			};
+
+			Property<bool> phoneActive = result.GetOrMakeProperty<bool>("PhoneActive");
+
+			Action<bool> showPhone = delegate(bool show)
+			{
+				phoneActive.Value = !phoneActive;
+
+				input.EnableLook.Value = input.EnableMouse.Value = !phoneActive;
+				main.IsMouseVisible.Value = phoneActive;
+				player.EnableWalking.Value = !phoneActive;
+				player.EnableMoves.Value = !phoneActive;
+				phoneModel.Enabled.Value = phoneActive;
+				screen.Enabled.Value = phoneActive;
+				phoneUi.Enabled.Value = phoneActive;
+				phoneLight.Enabled.Value = phoneActive;
+
+				if (phoneActive)
+					model.StartClip("Phone", 6, true);
+				else
+					model.Stop("Phone");
+			};
+
+			if (phoneActive)
+				showPhone(true);
+
+			input.Bind(settings.TogglePhone, PCInput.InputState.Up, delegate()
+			{
+				if (player.IsSupported && !player.IsSwimming && !player.Crouched && enablePhone)
+					showPhone(!phoneActive);
+			});
+
+			// Phone UI
+
+			const float padding = 8.0f;
+			const float messageWidth = phoneWidth - padding * 2.0f;
+
+			Func<Color, string, Container> makeButton = delegate(Color color, string text)
+			{
+				Container bg = new Container();
+				bg.Tint.Value = color;
+				bg.Opacity.Value = 0.5f;
+				bg.PaddingBottom.Value = bg.PaddingLeft.Value = bg.PaddingRight.Value = bg.PaddingTop.Value = padding * 0.5f;
+				bg.Add(new Binding<float, bool>(bg.Opacity, x => x ? 0.75f : 1.0f, bg.Highlighted));
+
+				TextElement msg = new TextElement();
+				msg.FontFile.Value = "Font";
+				msg.Text.Value = text;
+				msg.Opacity.Value = 1.0f;
+				msg.WrapWidth.Value = messageWidth - padding;
+				bg.Children.Add(msg);
+				return bg;
+			};
+
+			Func<UIComponent, bool, Container> makeAlign = delegate(UIComponent component, bool right)
+			{
+				Container container = new Container();
+				container.Opacity.Value = 0.0f;
+				container.PaddingBottom.Value = container.PaddingLeft.Value = container.PaddingRight.Value = container.PaddingTop.Value = 0.0f;
+				container.ResizeHorizontal.Value = false;
+				container.Size.Value = new Vector2(messageWidth, 0.0f);
+				component.AnchorPoint.Value = new Vector2(right ? 1.0f : 0.0f, 0.0f);
+				component.Position.Value = new Vector2(right ? messageWidth : 0.0f, 0.0f);
+				container.Children.Add(component);
+				return container;
+			};
+
+			ListContainer phoneLayout = new ListContainer();
+			phoneLayout.Spacing.Value = padding;
+			phoneLayout.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			phoneLayout.Position.Value = new Vector2(padding, padding);
+			phoneLayout.Add(new Binding<Vector2, Point>(phoneLayout.Size, x => new Vector2(x.X - padding * 2.0f, x.Y - padding * 2.0f), phoneUi.RenderTargetSize));
+			phoneUi.Root.Children.Add(phoneLayout);
+
+			Container composeButton = makeButton(new Color(0.1f, 0.3f, 0.5f, 1.0f), "Compose");
+
+			Scroller phoneScroll = new Scroller();
+			phoneScroll.Add(new Binding<Vector2>(phoneScroll.Size, () => new Vector2(phoneLayout.Size.Value.X, phoneLayout.Size.Value.Y - phoneLayout.Spacing.Value - composeButton.ScaledSize.Value.Y), phoneLayout.Size, phoneLayout.Spacing, composeButton.ScaledSize));
+
+			phoneLayout.Children.Add(phoneScroll);
+			phoneLayout.Children.Add(makeAlign(composeButton, true));
+
+			ListContainer messages = new ListContainer();
+			messages.Spacing.Value = padding * 0.5f;
+			messages.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			messages.ResizePerpendicular.Value = false;
+			messages.Size.Value = new Vector2(messageWidth, 0.0f);
+			phoneScroll.Children.Add(messages);
+
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test this is a really really long message that I probably don't want to write but I'll do it anyway because that's what needs to be done."), false));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), true));
+			messages.Children.Add(makeAlign(makeButton(new Color(0.0f, 0.0f, 0.0f, 1.0f), "Test"), false));
 		}
 
 		public override void AttachEditorComponents(Entity result, Main main)

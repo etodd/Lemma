@@ -109,11 +109,12 @@ namespace Lemma.Components
 					this.lastMouseState = current;
 				}
 			}
-			this.Root.CheckLayout();
+
 		}
 
 		private void draw(GameTime time, Point screenSize)
 		{
+			this.Root.CheckLayout();
 			RasterizerState originalState = this.main.GraphicsDevice.RasterizerState;
 			this.Batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, this.RasterizerState, null, Matrix.Identity);
 			this.Root.Draw(time, Matrix.Identity, new Rectangle(0, 0, screenSize.X, screenSize.Y));
@@ -143,6 +144,11 @@ namespace Lemma.Components
 		protected override void delete()
 		{
 			base.delete();
+			if (this.RenderTarget.Value != null)
+			{
+				this.RenderTarget.Value.Dispose();
+				this.RenderTarget.Value = null;
+			}
 			this.main.RemoveComponent(this.Root);
 		}
 	}
