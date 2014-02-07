@@ -183,10 +183,6 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </None>
-    <None Include="Maps\cave.map">
-      <Name>cave</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Maps\cave2.cs">
       <Name>cave2</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -203,9 +199,9 @@
       <Name>materials</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Maps\cave.cs">
-      <Name>cave</Name>
+    <None Include="Maps\wallrun.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Name>wallrun</Name>
     </None>
     <Compile Include="Maps\fan.fbx">
       <Name>fan</Name>
@@ -228,6 +224,10 @@
     <None Include="Maps\GlobalStaticScripts\particles.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Name>particles</Name>
+    </None>
+    <None Include="Maps\power.cs">
+      <Name>power</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Compile Include="Maps\room.fbx">
       <Name>room</Name>
@@ -252,32 +252,32 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColor.fx</ProcessorParameters_EffectFileName>
     </Compile>
+    <None Include="Maps\power.map">
+      <Name>power</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Maps\sandbox.map">
       <Name>sandbox</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Maps\spinner.map">
-      <Name>spinner</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Maps\spinner2.map">
-      <Name>spinner2</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Maps\start.cs">
       <Name>start</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Maps\spinner.cs">
-      <Name>spinner</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Maps\test.cs">
       <Name>test</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Maps\tut.map">
+      <Name>tut</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Maps\valley.cs">
       <Name>valley</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Maps\tut.cs">
+      <Name>tut</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Compile Include="Models\spotlight.fbx">
@@ -362,6 +362,10 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\Unlit.fx</ProcessorParameters_EffectFileName>
     </Compile>
+    <None Include="Maps\wallrun.map">
+      <Name>wallrun</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Effects\Animation.fx">

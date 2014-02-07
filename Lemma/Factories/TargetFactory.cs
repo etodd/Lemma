@@ -32,6 +32,8 @@ namespace Lemma.Factories
 			base.Bind(result, main, creating);
 
 			Transform transform = result.Get<Transform>();
+			transform.Editable = true;
+			transform.Enabled.Editable = true;
 
 			TargetFactory.Positions.Add(transform);
 			result.Add(new CommandBinding(result.Delete, delegate()

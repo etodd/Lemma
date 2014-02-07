@@ -95,7 +95,7 @@ namespace Lemma.Factories
 							block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(entry.Coord);
 							block.GetProperty<bool>("Scale").Value = true;
 
-							block.GetProperty<Vector3>("StartPosition").Value = entry.Position + new Vector3(2.0f, 5.0f, 2.0f);
+							block.GetProperty<Vector3>("StartPosition").Value = entry.Position + new Vector3(8.0f, 20.0f, 8.0f) * blockLifetime.Value;
 							block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
 
 							block.GetProperty<float>("TotalLifetime").Value = blockLifetime;
