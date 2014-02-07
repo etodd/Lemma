@@ -121,8 +121,15 @@ namespace Lemma.Components
 
 		public void Msg(string text, string id = null)
 		{
+			if (this.Messages.Count >= 256)
+				this.Messages.RemoveAt(0);
 			this.Messages.Add(new Message { Text = text, Incoming = true, ID = id, });
 			this.MessageReceived.Execute();
+		}
+
+		public void ArchivedAnswer(string text)
+		{
+			this.Messages.Add(new Message { Text = text, Incoming = false, ID = null, });
 		}
 
 		private Dictionary<string, Action<string>> callbacks = new Dictionary<string, Action<string>>();

@@ -2547,13 +2547,13 @@ namespace Lemma.Factories
 			Color outgoingColor = new Color(0.0f, 0.2f, 0.4f, 1.0f);
 
 			Container composeButton = makeButton(outgoingColor, "Compose");
+			UIComponent composeAlign = makeAlign(composeButton, true);
 
 			Scroller phoneScroll = new Scroller();
 			phoneScroll.ResizeVertical.Value = false;
-			phoneScroll.Add(new Binding<Vector2>(phoneScroll.Size, () => new Vector2(phoneLayout.Size.Value.X, phoneLayout.Size.Value.Y - phoneLayout.Spacing.Value - composeButton.ScaledSize.Value.Y), phoneLayout.Size, phoneLayout.Spacing, composeButton.ScaledSize));
+			phoneScroll.Add(new Binding<Vector2>(phoneScroll.Size, () => new Vector2(phoneLayout.Size.Value.X, phoneLayout.Size.Value.Y - phoneLayout.Spacing.Value - composeAlign.ScaledSize.Value.Y), phoneLayout.Size, phoneLayout.Spacing, composeAlign.ScaledSize));
 
 			phoneLayout.Children.Add(phoneScroll);
-			UIComponent composeAlign = makeAlign(composeButton, true);
 			phoneLayout.Children.Add(composeAlign);
 
 			ListContainer msgList = new ListContainer();
@@ -2600,7 +2600,19 @@ namespace Lemma.Factories
 
 					model.Stop("Phone");
 					if (phoneActive)
+					{
+						phoneScroll.CheckLayout();
+						// HACK
+						main.AddComponent(new Animation
+						(
+							new Animation.Delay(0.01f),
+							new Animation.Execute(delegate()
+							{
+								phoneScroll.ScrollToBottom();
+							})
+						));
 						model.StartClip("Phone", 6, true);
+					}
 				}
 			};
 
@@ -2654,6 +2666,7 @@ namespace Lemma.Factories
 							button.Add(new CommandBinding<Point>(button.MouseLeftUp, delegate(Point p)
 							{
 								phone.Answer(answer);
+								phoneScroll.ScrollToBottom();
 								if (phone.Schedules.Count == 0) // No more messages incoming
 									showPhone(false);
 							}));
