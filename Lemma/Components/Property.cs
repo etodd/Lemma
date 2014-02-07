@@ -5,6 +5,7 @@ using System.Text;
 using System.Xml.Serialization;
 using System.ComponentModel;
 using System.Collections;
+using System.Diagnostics;
 
 namespace Lemma.Components
 {
@@ -17,6 +18,7 @@ namespace Lemma.Components
 		void Reset();
 	}
 
+	[DebuggerDisplay("Property {Value}")]
 	public class Property<Type> : IProperty
 	{
 		[XmlIgnore]
@@ -139,12 +141,6 @@ namespace Lemma.Components
 		public static implicit operator Type(Property<Type> obj)
 		{
 			return obj.Value;
-		}
-
-		public override string ToString()
-		{
-			Type obj = this.Value;
-			return obj == null ? "[null]" : obj.ToString();
 		}
 	}
 

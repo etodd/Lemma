@@ -869,6 +869,15 @@ namespace Lemma.Components
 			this.Alpha.Editable = true;
 		}
 
+		public override void InitializeProperties()
+		{
+			base.InitializeProperties();
+
+			float alpha = this.Alpha;
+			this.Alpha = this.GetFloatParameter("Alpha");
+			this.Alpha.Value = alpha;
+		}
+
 		public override void Draw(GameTime time, RenderParameters parameters)
 		{
 			
