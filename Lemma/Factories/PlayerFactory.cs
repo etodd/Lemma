@@ -152,6 +152,8 @@ namespace Lemma.Factories
 			Sound footsteps = result.Get<Sound>("Footsteps");
 			Timer footstepTimer = result.Get<Timer>("FootstepTimer");
 
+			Property<bool> phoneActive = result.GetOrMakeProperty<bool>("PhoneActive");
+
 			// Build UI
 
 			UIRenderer ui = new UIRenderer();
@@ -2024,7 +2026,7 @@ namespace Lemma.Factories
 			// Jumping
 			input.Bind(settings.Jump, PCInput.InputState.Down, delegate()
 			{
-				if (!player.EnableMoves)
+				if (!player.EnableMoves || phoneActive)
 					return;
 
 				// Don't allow vaulting
@@ -2067,7 +2069,7 @@ namespace Lemma.Factories
 			// Wall-run, vault, predictive
 			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
 			{
-				if (!player.EnableMoves || (player.Crouched && player.IsSupported))
+				if (!player.EnableMoves || phoneActive || (player.Crouched && player.IsSupported))
 					return;
 
 				bool vaulted = jump(true, true); // Try vaulting first
@@ -2158,7 +2160,7 @@ namespace Lemma.Factories
 			};
 			input.Bind(settings.Kick, PCInput.InputState.Down, delegate()
 			{
-				if (!player.EnableMoves)
+				if (!player.EnableMoves || phoneActive)
 					return;
 
 				Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
@@ -2248,9 +2250,9 @@ namespace Lemma.Factories
 			bool rolling = false;
 			input.Bind(settings.Roll, PCInput.InputState.Down, delegate()
 			{
-				if (!model.IsPlaying("PlayerReload") && kickUpdate == null && !rolling && !player.IsSwimming)
+				if (kickUpdate == null && !rolling && !player.IsSwimming)
 				{
-					if (!player.EnableRoll || !player.EnableMoves)
+					if (!player.EnableRoll || !player.EnableMoves || phoneActive)
 					{
 						if (player.EnableCrouch && player.IsSupported)
 						{
@@ -2499,8 +2501,6 @@ namespace Lemma.Factories
 				);
 			};
 
-			Property<bool> phoneActive = result.GetOrMakeProperty<bool>("PhoneActive");
-
 			// Phone UI
 
 			const float padding = 8.0f;
@@ -2591,7 +2591,6 @@ namespace Lemma.Factories
 					input.EnableLook.Value = input.EnableMouse.Value = !phoneActive;
 					main.IsMouseVisible.Value = phoneActive;
 					player.EnableWalking.Value = !phoneActive;
-					player.EnableMoves.Value = !phoneActive;
 					phoneModel.Enabled.Value = phoneActive;
 					screen.Enabled.Value = phoneActive;
 					phoneUi.Enabled.Value = phoneActive;
@@ -2618,7 +2617,7 @@ namespace Lemma.Factories
 
 			input.Bind(settings.TogglePhone, PCInput.InputState.Up, delegate()
 			{
-				if (player.IsSupported && !player.IsSwimming && !player.Crouched && phone.Enabled)
+				if (phone.CanReceiveMessages)
 					showPhone(!phoneActive);
 			});
 
@@ -2645,6 +2644,8 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<float>(data.Value.Target.GetProperty<float>("MaxSpeed"), player.MaxSpeed));
 
 					phone = data.Value.Target.GetOrCreate<Phone>("Phone");
+
+					phone.Add(new Binding<bool>(phone.CanReceiveMessages, () => player.IsSupported && !player.IsSwimming && !player.Crouched && phone.Enabled, player.IsSupported, player.IsSwimming, player.Crouched, phone.Enabled));
 
 					msgList.Add(new ListBinding<UIComponent, Phone.Message>
 					(

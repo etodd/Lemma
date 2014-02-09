@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework;
 
 namespace Lemma.Components
 {
-	public class Phone : Component
+	public class Phone : Component, IUpdateableComponent
 	{
 		public class Message
 		{
@@ -80,14 +80,10 @@ namespace Lemma.Components
 
 		public ListProperty<Ans> ActiveAnswers = new ListProperty<Ans>();
 
+		public Property<bool> CanReceiveMessages = new Property<bool>();
+
 		[XmlIgnore]
 		public Command MessageReceived = new Command();
-
-		public override void InitializeProperties()
-		{
-			foreach (Schedule s in this.Schedules)
-				this.schedule(s);
-		}
 
 		private void schedule(Schedule s)
 		{
@@ -96,12 +92,27 @@ namespace Lemma.Components
 				new Animation.Delay(s.Delay),
 				new Animation.Execute(delegate()
 				{
-					this.Msg(s.Message.Text, s.Message.ID);
+					this.msg(s.Message.Text, s.Message.ID);
 					this.Schedules.Remove(s);
 				})
 			);
-			anim.EnabledWhenPaused.Value = false;
-			this.main.AddComponent(anim);
+		}
+
+		void IUpdateableComponent.Update(float dt)
+		{
+			List<int> removals = new List<int>();
+			for (int i = this.Schedules.Count - 1; i >= 0; i--)
+			{
+				Schedule s = this.Schedules[i];
+				s.Delay -= dt;
+				if (this.CanReceiveMessages && s.Delay < 0.0f)
+				{
+					this.msg(s.Message.Text, s.Message.ID);
+					removals.Add(i);
+				}
+			}
+			foreach (int i in removals)
+				this.Schedules.RemoveAt(i);
 		}
 
 		public void Delay(float delay, string text, string id = null)
@@ -121,13 +132,23 @@ namespace Lemma.Components
 
 		public void Msg(string text, string id = null)
 		{
+			this.Delay(0.0f, text, id);
+		}
+
+		private void msg(string text, string id = null)
+		{
 			if (this.Messages.Count >= 256)
 				this.Messages.RemoveAt(0);
 			this.Messages.Add(new Message { Text = text, Incoming = true, ID = id, });
 			this.MessageReceived.Execute();
 		}
 
-		public void ArchivedAnswer(string text)
+		public void ArchivedMsg(string text)
+		{
+			this.Messages.Add(new Message { Text = text, Incoming = true, ID = null, });
+		}
+
+		public void ArchivedAns(string text)
 		{
 			this.Messages.Add(new Message { Text = text, Incoming = false, ID = null, });
 		}

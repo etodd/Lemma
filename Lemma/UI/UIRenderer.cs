@@ -73,14 +73,14 @@ namespace Lemma.Components
 		public override void InitializeProperties()
 		{
 			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.RenderTargetSize));
+			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.main.ScreenSize));
 			this.lastMouseState = this.main.LastMouseState;
 		}
 
 		public override void LoadContent(bool reload)
 		{
-			base.LoadContent(reload);
 			this.Batch = new SpriteBatch(this.main.GraphicsDevice);
-			this.resize();
+			this.needResize = true;
 		}
 
 		public override void SetMain(Main _main)
