@@ -277,14 +277,6 @@ namespace Lemma
 					else
 						return 0.0f;
 				});
-
-				this.SessionRecorder.Add("Stamina", delegate()
-				{
-					if (this.player != null && this.player.Active)
-						return this.player.Get<Player>().Stamina;
-					else
-						return 0;
-				});
 #endif
 
 				this.MapFile.Set = delegate(string value)
@@ -413,6 +405,7 @@ namespace Lemma
 				TextElement pauseLabel = new TextElement();
 				pauseLabel.FontFile.Value = "Font";
 				pauseLabel.Text.Value = "L E M M A";
+				pauseLabel.Add(new Binding<bool, string>(pauseLabel.Visible, x => !string.IsNullOrEmpty(x), this.MapFile));
 				pauseLabelContainer.Children.Add(pauseLabel);
 
 				pauseMenu.Children.Add(pauseLabelContainer);
