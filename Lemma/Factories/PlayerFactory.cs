@@ -2384,9 +2384,9 @@ namespace Lemma.Factories
 								rollTime += dt;
 
 								// Stop if we're about to roll off the edge of an instantiated block possibility.
-								bool stop = instantiatedBlockPossibility && !shouldBuildFloor && rollTime > 0.1f && Map.GlobalRaycast(transform.Position + forward * 0.5f, Vector3.Down, player.Height * 0.5f + player.SupportHeight + 1.1f).Map != null;
+								bool stop = instantiatedBlockPossibility && !shouldBuildFloor && Map.GlobalRaycast(transform.Position + forward * 0.5f, Vector3.Down, player.Height * 0.5f + player.SupportHeight + 1.1f).Map != null;
 
-								if (stop || rollTime > 1.0f || Vector3.Dot(player.LinearVelocity, forward) < 0.1f)
+								if (rollTime > 0.1f && (stop || rollTime > 1.0f || Vector3.Dot(player.LinearVelocity, forward) < 0.1f))
 								{
 									rollUpdate.Delete.Execute();
 									player.EnableWalking.Value = true;

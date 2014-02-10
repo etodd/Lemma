@@ -58,57 +58,27 @@ namespace Lemma.Factories
 		{
 			Transform transform = result.Get<Transform>();
 
+			Property<bool> selected = result.GetOrMakeProperty<bool>("EditorSelected");
+
 			Zone zone = result.Get<Zone>();
 
-			Property<bool> selected = new Property<bool> { Value = false, Editable = false, Serialize = false };
-			result.Add("EditorSelected", selected);
+			EntityConnectable.AttachEditorComponents(result, main, zone.ConnectedEntities);
 
-			Command<Entity> toggleEntityConnected = new Command<Entity>
+			zone.Add(new CommandBinding<Entity>(result.GetCommand<Entity>("ToggleEntityConnected"), delegate(Entity entity)
 			{
-				Action = delegate(Entity entity)
+				if (zone.ConnectedEntities.Contains(entity))
 				{
-					if (zone.ConnectedEntities.Contains(entity))
-					{
-						zone.ConnectedEntities.Remove(entity);
-						Zone z = entity.Get<Zone>();
-						if (z != null)
-							z.Parent.Value = null;
-					}
-					else
-					{
-						zone.ConnectedEntities.Add(entity);
-						Zone z = entity.Get<Zone>();
-						if (z != null)
-							z.Parent.Value = result;
-					}
+					Zone z = entity.Get<Zone>();
+					if (z != null)
+						z.Parent.Value = null;
 				}
-			};
-			result.Add("ToggleEntityConnected", toggleEntityConnected);
-
-			LineDrawer connectionLines = new LineDrawer { Serialize = false };
-			connectionLines.Add(new Binding<bool>(connectionLines.Enabled, selected));
-
-			Color connectionLineColor = new Color(1.0f, 1.0f, 1.0f, 0.5f);
-			ListBinding<LineDrawer.Line, Entity.Handle> connectionBinding = new ListBinding<LineDrawer.Line, Entity.Handle>(connectionLines.Lines, zone.ConnectedEntities, delegate(Entity.Handle entity)
-			{
-				if (entity.Target == null)
-					return new LineDrawer.Line[] { };
 				else
 				{
-					return new[]
-					{
-						new LineDrawer.Line
-						{
-							A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, connectionLineColor),
-							B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(entity.Target.Get<Transform>().Position, connectionLineColor)
-						}
-					};
+					Zone z = entity.Get<Zone>();
+					if (z != null)
+						z.Parent.Value = result;
 				}
-			});
-			result.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, selected));
-			result.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, () => selected, transform.Position));
-			connectionLines.Add(connectionBinding);
-			result.Add(connectionLines);
+			}));
 
 			Model model = new Model();
 			model.Filename.Value = "Models\\sphere";

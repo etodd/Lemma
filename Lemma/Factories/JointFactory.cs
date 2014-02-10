@@ -158,39 +158,9 @@ namespace Lemma.Factories
 		{
 			Transform transform = result.Get<Transform>();
 
-			Property<bool> selected = new Property<bool> { Value = false, Editable = false, Serialize = false };
-			result.Add("EditorSelected", selected);
-
 			Property<Entity.Handle> parentMap = result.GetOrMakeProperty<Entity.Handle>("Parent");
 
-			Command<Entity> toggleEntityConnected = new Command<Entity>
-			{
-				Action = delegate(Entity entity)
-				{
-					parentMap.Value = entity;
-				}
-			};
-			result.Add("ToggleEntityConnected", toggleEntityConnected);
-
-			LineDrawer connectionLines = new LineDrawer { Serialize = false };
-			connectionLines.Add(new Binding<bool>(connectionLines.Enabled, selected));
-
-			Color connectionLineColor = new Color(1.0f, 1.0f, 1.0f, 0.5f);
-
-			Action recalculateLine = delegate()
-			{
-				connectionLines.Lines.Clear();
-				Entity parent = parentMap.Value.Target;
-				if (parent != null)
-				{
-					connectionLines.Lines.Add(new LineDrawer.Line
-					{
-						A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, connectionLineColor),
-						B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(parent.Get<Transform>().Position, connectionLineColor)
-					});
-				}
-			};
-
+			EntityConnectable.AttachEditorComponents(result, main, parentMap);
 			Model model = new Model();
 			model.Filename.Value = "Models\\cone";
 			model.Editable = false;
@@ -221,27 +191,6 @@ namespace Lemma.Factories
 				}
 				return m;
 			}, transform.Matrix, mapTransform.Matrix));
-
-			NotifyBinding recalculateBinding = null;
-			Action rebuildBinding = delegate()
-			{
-				if (recalculateBinding != null)
-				{
-					connectionLines.Remove(recalculateBinding);
-					recalculateBinding = null;
-				}
-				if (parentMap.Value.Target != null)
-				{
-					recalculateBinding = new NotifyBinding(recalculateLine, parentMap.Value.Target.Get<Transform>().Matrix);
-					connectionLines.Add(recalculateBinding);
-				}
-				recalculateLine();
-			};
-			connectionLines.Add(new NotifyBinding(rebuildBinding, parentMap));
-
-			connectionLines.Add(new NotifyBinding(recalculateLine, selected));
-			connectionLines.Add(new NotifyBinding(recalculateLine, () => selected, transform.Position));
-			result.Add(connectionLines);
 		}
 	}
 }

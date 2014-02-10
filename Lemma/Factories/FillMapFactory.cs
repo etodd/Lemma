@@ -157,50 +157,10 @@ namespace Lemma.Factories
 		public override void AttachEditorComponents(Entity result, Main main)
 		{
 			base.AttachEditorComponents(result, main);
+
 			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
 
-			Property<Entity.Handle> targetProperty = result.GetOrMakeProperty<Entity.Handle>("Target");
-
-			Transform transform = result.Get<Transform>();
-
-			Property<bool> selected = result.GetOrMakeProperty<bool>("EditorSelected");
-			selected.Serialize = false;
-
-			Command<Entity> toggleEntityConnected = new Command<Entity>
-			{
-				Action = delegate(Entity entity)
-				{
-					if (targetProperty.Value.Target == entity)
-						targetProperty.Value = null;
-					else
-						targetProperty.Value = entity;
-				}
-			};
-			result.Add("ToggleEntityConnected", toggleEntityConnected);
-
-			LineDrawer connectionLines = new LineDrawer { Serialize = false };
-			connectionLines.Add(new Binding<bool>(connectionLines.Enabled, selected));
-
-			Color connectionLineColor = new Color(1.0f, 1.0f, 1.0f, 0.5f);
-
-			connectionLines.Add(new NotifyBinding(delegate()
-			{
-				connectionLines.Lines.Clear();
-				Entity target = targetProperty.Value.Target;
-				if (target != null)
-				{
-					connectionLines.Lines.Add
-					(
-						new LineDrawer.Line
-						{
-							A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, connectionLineColor),
-							B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(target.Get<Transform>().Position, connectionLineColor)
-						}
-					);
-				}
-			}, transform.Position, targetProperty, selected));
-
-			result.Add(connectionLines);
+			EntityConnectable.AttachEditorComponents(result, main, result.GetOrMakeProperty<Entity.Handle>("Target"));
 		}
 	}
 }

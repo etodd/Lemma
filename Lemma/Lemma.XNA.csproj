@@ -114,6 +114,7 @@
     </Compile>
     <Compile Include="Factories\AnimatedPropFactory.cs" />
     <Compile Include="Factories\CloudFactory.cs" />
+    <Compile Include="Factories\EntityConnectable.cs" />
     <Compile Include="Factories\FillMapFactory.cs" />
     <Compile Include="Factories\TriggerFactory.cs" />
     <Compile Include="Factories\InfectorFactory.cs" />

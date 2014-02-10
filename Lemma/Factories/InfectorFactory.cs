@@ -128,50 +128,7 @@ namespace Lemma.Factories
 
 			VoxelEntity.AttachEditorComponents(result, main);
 
-			Transform transform = result.Get<Transform>();
-
-			Property<bool> selected = result.GetOrMakeProperty<bool>("EditorSelected");
-			selected.Serialize = false;
-
-			ListProperty<Entity.Handle> triggers = result.GetOrMakeListProperty<Entity.Handle>("Triggers");
-
-			Command<Entity> toggleEntityConnected = new Command<Entity>
-			{
-				Action = delegate(Entity entity)
-				{
-					if (triggers.Contains(entity))
-						triggers.Remove(entity);
-					else
-						triggers.Add(entity);
-				}
-			};
-			result.Add("ToggleEntityConnected", toggleEntityConnected);
-
-			LineDrawer connectionLines = new LineDrawer { Serialize = false };
-			connectionLines.Add(new Binding<bool>(connectionLines.Enabled, selected));
-
-			Color connectionLineColor = new Color(1.0f, 1.0f, 1.0f, 0.5f);
-
-			ListBinding<LineDrawer.Line, Entity.Handle> connectionBinding = new ListBinding<LineDrawer.Line, Entity.Handle>(connectionLines.Lines, triggers, delegate(Entity.Handle entity)
-			{
-				if (entity.Target == null)
-					return new LineDrawer.Line[] { };
-				else
-				{
-					return new[]
-					{
-						new LineDrawer.Line
-						{
-							A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, connectionLineColor),
-							B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(entity.Target.Get<Transform>().Position, connectionLineColor)
-						}
-					};
-				}
-			});
-			result.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, selected));
-			result.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, () => selected, transform.Position));
-			connectionLines.Add(connectionBinding);
-			result.Add(connectionLines);
+			EntityConnectable.AttachEditorComponents(result, main, result.GetOrMakeListProperty<Entity.Handle>("Triggers"));
 		}
 	}
 }
