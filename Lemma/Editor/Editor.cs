@@ -39,6 +39,8 @@ namespace Lemma.Components
 		public Property<Map.Coordinate> VoxelSelectionEnd = new Property<Map.Coordinate> { Editable = false };
 		public Property<bool> VoxelSelectionActive = new Property<bool> { Editable = false };
 
+		public Property<float> CameraDistance = new Property<float> { Value = 10.0f };
+
 		public Command<string> Spawn = new Command<string>();
 		public Command Save = new Command();
 		public Command Duplicate = new Command();
@@ -510,7 +512,7 @@ namespace Lemma.Components
 					if (!moving)
 						this.movementInterval = 0.5f; 
 
-					if (this.movementInterval > (this.SpeedMode ? 0.05f : 0.1f))
+					if (this.movementInterval > (this.SpeedMode ? 0.5f : 1.0f) / this.CameraDistance)
 					{
 						if (moving)
 							this.movementInterval = 0.0f;
@@ -556,7 +558,7 @@ namespace Lemma.Components
 					this.movementInterval += elapsedTime;
 				}
 				else
-					this.Position.Value = this.Position.Value + movementDir * (this.SpeedMode ? 50.0f : 25.0f) * elapsedTime;
+					this.Position.Value = this.Position.Value + movementDir * (this.SpeedMode ? 5.0f : 2.5f) * this.CameraDistance * elapsedTime;
 			}
 
 			if (this.MapEditMode)

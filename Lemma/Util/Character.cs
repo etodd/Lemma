@@ -140,6 +140,8 @@ namespace Lemma.Util
 		{
 			this.main = main;
 			this.Body = new Cylinder(position, characterHeight, characterWidth / 2, mass);
+			this.Body.Tag = this;
+			this.Body.CollisionInformation.Tag = this;
 			this.Body.IgnoreShapeChanges = true;
 			this.Body.LinearDamping = 0.0f;
 			this.Body.CollisionInformation.CollisionRules.Group = Character.CharacterGroup;

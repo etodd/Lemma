@@ -109,7 +109,6 @@ namespace Lemma.Components
 					this.lastMouseState = current;
 				}
 			}
-
 		}
 
 		private void draw(GameTime time, Point screenSize)
