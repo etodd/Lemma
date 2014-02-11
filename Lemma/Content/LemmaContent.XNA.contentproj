@@ -183,17 +183,9 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </None>
-    <None Include="Maps\cave2.cs">
-      <Name>cave2</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Maps\intro.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Name>intro</Name>
-    </None>
-    <None Include="Maps\cave2.map">
-      <Name>cave2</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Maps\GlobalStaticScripts\materials.cs">
       <Name>materials</Name>
@@ -648,14 +640,14 @@
       <Processor>TextureProcessor</Processor>
       <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
     </Compile>
-    <Compile Include="Maps\Textures\concrete-normal.jpg">
-      <Name>concrete-normal</Name>
+    <Compile Include="Maps\Textures\rock-normal.jpg">
+      <Name>rock-normal</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
     </Compile>
-    <Compile Include="Maps\Textures\concrete.jpg">
-      <Name>concrete</Name>
+    <Compile Include="Maps\Textures\rock.jpg">
+      <Name>rock</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
@@ -686,18 +678,6 @@
     </Compile>
     <Compile Include="Maps\Textures\fragile-dirt.jpg">
       <Name>fragile-dirt</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-      <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
-    </Compile>
-    <Compile Include="Maps\Textures\grass-normal.jpg">
-      <Name>grass-normal</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-      <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
-    </Compile>
-    <Compile Include="Maps\Textures\grass.jpg">
-      <Name>grass</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>

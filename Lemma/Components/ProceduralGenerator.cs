@@ -176,10 +176,10 @@ namespace Lemma.Components
 		public Property<float> HeightOctave = new Property<float> { Value = 20.0f };
 
 		private Map.CellState primaryFillValue;
-		public Property<string> PrimaryFillValue = new Property<string> { Value = "Concrete" };
+		public Property<string> PrimaryFillValue = new Property<string> { Value = "Rock" };
 
 		private Map.CellState secondaryFillValue;
-		public Property<string> SecondaryFillValue = new Property<string> { Value = "Grass" };
+		public Property<string> SecondaryFillValue = new Property<string> { Value = "Rock" };
 
 		public Property<float> PrimaryFillThreshold = new Property<float> { Value = 0.0f };
 

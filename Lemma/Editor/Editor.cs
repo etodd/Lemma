@@ -63,9 +63,11 @@ namespace Lemma.Components
 		public Command CommitTransform = new Command();
 		public Command RevertTransform = new Command();
 		public Command PropagateMaterial = new Command();
+		public Command PropagateMaterialAll = new Command();
 		public Command PropagateMaterialBox = new Command();
 		public Command SampleMaterial = new Command();
 		public Command DeleteMaterial = new Command();
+		public Command DeleteMaterialAll = new Command();
 
 		private Map.Coordinate originalSelectionStart;
 		private Map.Coordinate originalSelectionEnd;
@@ -302,6 +304,9 @@ namespace Lemma.Components
 				Map.CellState material;
 				if (WorldFactory.StatesByName.TryGetValue(this.Brush, out material))
 				{
+					if (material == selectedBox.Type)
+						return;
+
 					IEnumerable<Map.Coordinate> coordEnumerable;
 					if (selectionActive)
 						coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => y.Between(startSelection, endSelection)));
@@ -309,6 +314,32 @@ namespace Lemma.Components
 						coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords());
 
 					List<Map.Coordinate> coords = coordEnumerable.ToList();
+					m.Empty(coords);
+					foreach (Map.Coordinate c in coords)
+						m.Fill(c, material);
+					m.Regenerate();
+				}
+			};
+
+			// Propagate to all cells of a certain type, including non-contiguous ones
+			this.PropagateMaterialAll.Action = delegate()
+			{
+				if (!this.MapEditMode)
+					return;
+
+				Map m = this.SelectedEntities[0].Get<Map>();
+				Map.Box selectedBox = m.GetBox(this.coord);
+				if (selectedBox == null)
+					return;
+
+				Map.CellState oldMaterial = selectedBox.Type;
+
+				Map.CellState material;
+				if (WorldFactory.StatesByName.TryGetValue(this.Brush, out material))
+				{
+					if (material == oldMaterial)
+						return;
+					List<Map.Coordinate> coords = m.Chunks.SelectMany(x => x.Boxes).Where(x => x.Type == oldMaterial).SelectMany(x => x.GetCoords()).ToList();
 					m.Empty(coords);
 					foreach (Map.Coordinate c in coords)
 						m.Fill(c, material);
@@ -333,6 +364,9 @@ namespace Lemma.Components
 				Map.CellState material;
 				if (WorldFactory.StatesByName.TryGetValue(this.Brush, out material))
 				{
+					if (material == selectedBox.Type)
+						return;
+
 					IEnumerable<Map.Coordinate> coordEnumerable;
 					if (selectionActive)
 						coordEnumerable = selectedBox.GetCoords().Where(y => y.Between(startSelection, endSelection));
@@ -374,19 +408,32 @@ namespace Lemma.Components
 				Map.Coordinate endSelection = this.VoxelSelectionEnd;
 				bool selectionActive = this.VoxelSelectionActive;
 
-				Map.CellState material;
-				if (WorldFactory.StatesByName.TryGetValue(this.Brush, out material))
-				{
-					IEnumerable<Map.Coordinate> coordEnumerable;
-					if (selectionActive)
-						coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => y.Between(startSelection, endSelection)));
-					else
-						coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords());
+				IEnumerable<Map.Coordinate> coordEnumerable;
+				if (selectionActive)
+					coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => y.Between(startSelection, endSelection)));
+				else
+					coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords());
 
-					List<Map.Coordinate> coords = coordEnumerable.ToList();
-					m.Empty(coords);
-					m.Regenerate();
-				}
+				List<Map.Coordinate> coords = coordEnumerable.ToList();
+				m.Empty(coords);
+				m.Regenerate();
+			};
+
+			// Delete all cells of a certain type in the current map, including non-contiguous ones
+			this.DeleteMaterialAll.Action = delegate()
+			{
+				if (!this.MapEditMode)
+					return;
+
+				Map m = this.SelectedEntities[0].Get<Map>();
+				Map.Box selectedBox = m.GetBox(this.coord);
+				if (selectedBox == null)
+					return;
+
+				Map.CellState material = selectedBox.Type;
+
+				m.Empty(m.Chunks.SelectMany(x => x.Boxes).Where(x => x.Type == material).SelectMany(x => x.GetCoords()).ToList());
+				m.Regenerate();
 			};
 
 			Action<TransformModes> startTransform = delegate(TransformModes mode)

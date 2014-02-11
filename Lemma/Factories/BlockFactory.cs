@@ -29,7 +29,7 @@ namespace Lemma.Factories
 			PhysicsBlock physics = new PhysicsBlock();
 			result.Add("Physics", physics);
 
-			Property<string> cue = new Property<string> { Value = "ConcreteRubble" };
+			Property<string> cue = new Property<string> { Value = "Rubble" };
 			result.Add("CollisionSoundCue", cue);
 
 			ModelInstance model = new ModelInstance();

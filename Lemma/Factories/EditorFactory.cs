@@ -1116,8 +1116,10 @@ namespace Lemma.Factories
 
 			addCommand("Propagate current material", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.E }, () => editor.MapEditMode, editor.PropagateMaterial);
 			addCommand("Propagate current material to selected box", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.R }, () => editor.MapEditMode, editor.PropagateMaterialBox);
+			addCommand("Propagate current material (non-contiguous)", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.T }, () => editor.MapEditMode, editor.PropagateMaterialAll);
 			addCommand("Sample current material", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.Q }, () => editor.MapEditMode, editor.SampleMaterial);
 			addCommand("Delete current material", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.X }, () => editor.MapEditMode, editor.DeleteMaterial);
+			addCommand("Delete current material (non-contiguous)", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.Z }, () => editor.MapEditMode, editor.DeleteMaterialAll);
 
 			editor.Add(new Binding<Vector2>(editor.Mouse, input.Mouse, () => !input.EnableLook));
 
