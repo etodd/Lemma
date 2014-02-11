@@ -217,10 +217,6 @@
       <ProcessorParameters_DiffuseTexture>door-texture.jpg</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_EffectFileName>..\Effects\Default.fx</ProcessorParameters_EffectFileName>
     </Compile>
-    <None Include="Maps\GlobalScripts\tutorials.cs">
-      <Name>tutorials</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Maps\GlobalStaticScripts\particles.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Name>particles</Name>
