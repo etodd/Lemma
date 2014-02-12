@@ -189,6 +189,13 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Name>intro</Name>
     </None>
+    <Compile Include="Maps\papers.fbx">
+      <Name>papers</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_EffectFileName>..\Effects\Default.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_DiffuseTexture>papers.jpg</ProcessorParameters_DiffuseTexture>
+    </Compile>
     <None Include="Maps\wallrun.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Name>wallrun</Name>

@@ -16,13 +16,6 @@ Human models, textures, and rigs adapted from MakeHuman. http://www.makehuman.or
 skybox-night.jpg generated with Spacescape. http://alexcpeterson.com/spacescape
 skybox-sunset.jpg, skybox1.jpg, skybox2.jpg by Tim Heldna. http://www.garagegames.com/community/blogs/view/12655
 foliage.png based on Leaves-4145.jpg by David R. Tribble. http://commons.wikimedia.org/wiki/File:Leaves-4146.jpg
-http://commons.wikimedia.org/wiki/File:Dalli2.jpg
-http://commons.wikimedia.org/wiki/File:Dalli-2.jpg
-http://commons.wikimedia.org/wiki/File:Figure_Transform%C3%A9e_MOJETTE.PNG
-http://commons.wikimedia.org/wiki/File:Drake_Equation.jpg
-http://commons.wikimedia.org/wiki/File:Henneberg_Surface.png
-http://commons.wikimedia.org/wiki/File:Quantum_bouncer.png
-http://commons.wikimedia.org/wiki/File:Quantum_mechanics_travelling_wavefunctions.svg
 
 ==========================================
 
