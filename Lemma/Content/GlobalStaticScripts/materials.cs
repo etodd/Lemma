@@ -13,7 +13,7 @@ WorldFactory.AddState
 		FootstepCue = "RockFootsteps",
 		RubbleCue = "Rubble",
 		SpecularPower = 200.0f,
-		SpecularIntensity = 0.2f
+		SpecularIntensity = 0.2f,
 	},
 	new Map.CellState
 	{
@@ -118,7 +118,7 @@ WorldFactory.AddState
 		RubbleCue = "TemporaryRubble",
 		SpecularPower = 250.0f,
 		SpecularIntensity = 0.4f,
-		Tint = new Vector3(8.0f, 1.0f, 0.2f),
+		Tint = new Vector3(0.8f, 1.0f, 0.2f),
 	},
 	// 13
 	new Map.CellState

@@ -128,7 +128,6 @@
     <Compile Include="Factories\SpinnerFactory.cs" />
     <Compile Include="Factories\JointFactory.cs" />
     <Compile Include="Factories\SceneryBlockFactory.cs" />
-    <Compile Include="Factories\MapBoundaryFactory.cs" />
     <Compile Include="Factories\SkyboxFactory.cs" />
     <Compile Include="Factories\MapAttachable.cs" />
     <Compile Include="Factories\RainFactory.cs" />

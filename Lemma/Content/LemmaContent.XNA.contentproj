@@ -138,11 +138,6 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>
-    <Compile Include="Effects\Electricity.fx">
-      <Name>Electricity</Name>
-      <Importer>EffectImporter</Importer>
-      <Processor>EffectProcessor</Processor>
-    </Compile>
     <Compile Include="Effects\Lines2D.fx">
       <Name>Lines2D</Name>
       <Importer>EffectImporter</Importer>
@@ -183,6 +178,13 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </None>
+    <Compile Include="Maps\coat.fbx">
+      <Name>coat</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_EffectFileName>..\Effects\Default.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_DiffuseTexture>coat.jpg</ProcessorParameters_DiffuseTexture>
+    </Compile>
     <None Include="Maps\intro.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Name>intro</Name>
@@ -311,14 +313,6 @@
       <ProcessorParameters_EffectFileName>..\Effects\AnimationNormalMap.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_DiffuseTexture>skin.jpg</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_NormalMapTexture>skin-normal.jpg</ProcessorParameters_NormalMapTexture>
-    </Compile>
-    <Compile Include="Models\electricity.fbx">
-      <Name>electricity</Name>
-      <Importer>FbxImporter</Importer>
-      <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\Electricity.fx</ProcessorParameters_EffectFileName>
-      <ProcessorParameters_DiffuseTexture>electricity.png</ProcessorParameters_DiffuseTexture>
-      <ProcessorParameters_NormalMapTexture>..\Images\water-normal.jpg</ProcessorParameters_NormalMapTexture>
     </Compile>
     <Compile Include="Models\position-model.fbx">
       <Name>position-model</Name>
