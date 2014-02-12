@@ -9,16 +9,13 @@ http://www.moddb.com/members/et1337
 
 ==========================================
 
-Texture source material from CGTextures. http://cgtextures.com
-
-==========================================
-
 Human models, textures, and rigs adapted from MakeHuman. http://www.makehuman.org/
 
 ==========================================
 
 skybox-night.jpg generated with Spacescape. http://alexcpeterson.com/spacescape
 skybox-sunset.jpg, skybox1.jpg, skybox2.jpg by Tim Heldna. http://www.garagegames.com/community/blogs/view/12655
+foliage.png based on Leaves-4145.jpg by David R. Tribble. http://commons.wikimedia.org/wiki/File:Leaves-4146.jpg
 
 ==========================================
 

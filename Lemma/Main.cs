@@ -387,7 +387,7 @@ namespace Lemma
 				this.AddComponent(input);
 #endif
 
-				IEnumerable<string> globalStaticScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "Maps", "GlobalStaticScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("Maps", "GlobalStaticScripts", Path.GetFileNameWithoutExtension(x)));
+				IEnumerable<string> globalStaticScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalStaticScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("GlobalStaticScripts", Path.GetFileNameWithoutExtension(x)));
 				foreach (string scriptName in globalStaticScripts)
 					this.executeStaticScript(scriptName);
 			}
@@ -445,7 +445,7 @@ namespace Lemma
 		{
 			if (!this.EditorEnabled && this.mapLoaded)
 			{
-				IEnumerable<string> mapGlobalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "Maps", "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("Maps", "GlobalScripts", Path.GetFileNameWithoutExtension(x)));
+				IEnumerable<string> mapGlobalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("GlobalScripts", Path.GetFileNameWithoutExtension(x)));
 				foreach (string scriptName in mapGlobalScripts)
 					this.executeScript(scriptName);
 			}

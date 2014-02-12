@@ -1233,7 +1233,7 @@ namespace Lemma.Factories
 						walkedOn.Execute(wallRunMap, wallCoord);
 						lastWallCoord = wallCoord;
 					}
-					if (player.EnableEnhancedWallRun && wallRunState != Player.WallRun.Straight && (wallRunState != Player.WallRun.Reverse || player.LinearVelocity.Value.Y < 0))
+					if (player.EnableEnhancedWallRun && wallRunState == Player.WallRun.Left || wallRunState == Player.WallRun.Right)
 					{
 						Direction up = wallRunMap.GetRelativeDirection(Direction.PositiveY);
 						Direction right = wallDirection.Cross(up);
