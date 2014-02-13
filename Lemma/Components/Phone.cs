@@ -85,34 +85,21 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command MessageReceived = new Command();
 
-		private void schedule(Schedule s)
-		{
-			Animation anim = new Animation
-			(
-				new Animation.Delay(s.Delay),
-				new Animation.Execute(delegate()
-				{
-					this.msg(s.Message.Text, s.Message.ID);
-					this.Schedules.Remove(s);
-				})
-			);
-		}
-
 		void IUpdateableComponent.Update(float dt)
 		{
-			List<int> removals = new List<int>();
-			for (int i = this.Schedules.Count - 1; i >= 0; i--)
+			List<Schedule> removals = new List<Schedule>();
+			foreach (Schedule s in this.Schedules)
 			{
-				Schedule s = this.Schedules[i];
 				s.Delay -= dt;
 				if (this.CanReceiveMessages && s.Delay < 0.0f)
-				{
-					this.msg(s.Message.Text, s.Message.ID);
-					removals.Add(i);
-				}
+					removals.Add(s);
 			}
-			foreach (int i in removals)
-				this.Schedules.RemoveAt(i);
+
+			foreach (Schedule s in removals)
+				this.Schedules.Remove(s);
+
+			foreach (Schedule s in removals)
+				this.msg(s.Message.Text, s.Message.ID);
 		}
 
 		public void Delay(float delay, string text, string id = null)
@@ -127,7 +114,6 @@ namespace Lemma.Components
 				},
 			};
 			this.Schedules.Add(s);
-			this.schedule(s);
 		}
 
 		public void Msg(string text, string id = null)

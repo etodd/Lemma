@@ -2546,7 +2546,7 @@ namespace Lemma.Factories
 			Color incomingColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
 			Color outgoingColor = new Color(0.0f, 0.2f, 0.4f, 1.0f);
 
-			Container composeButton = makeButton(outgoingColor, "Compose");
+			Container composeButton = makeButton(new Color(0.5f, 0.0f, 0.0f, 1.0f), "Compose");
 			UIComponent composeAlign = makeAlign(composeButton, true);
 
 			Scroller phoneScroll = new Scroller();
@@ -2583,8 +2583,15 @@ namespace Lemma.Factories
 
 			// Toggle phone
 
+			Container togglePhoneMessage = null;
+
 			Action<bool> showPhone = delegate(bool show)
 			{
+				if (togglePhoneMessage != null)
+				{
+					((GameMain)main).HideMessage(togglePhoneMessage);
+					togglePhoneMessage = null;
+				}
 				if (show || (phone.ActiveAnswers.Count == 0 && phone.Schedules.Count == 0))
 				{
 					phoneActive.Value = show;
@@ -2668,25 +2675,30 @@ namespace Lemma.Factories
 							{
 								phone.Answer(answer);
 								phoneScroll.ScrollToBottom();
-								if (phone.Schedules.Count == 0) // No more messages incoming
-									showPhone(false);
+								if (togglePhoneMessage == null && phone.Schedules.Count == 0) // No more messages incoming
+									togglePhoneMessage = ((GameMain)main).ShowMessage(() => "[" + settings.TogglePhone.Value.ToString() + "]", settings.TogglePhone);
 							}));
 							return new[] { button };
 						}
 					));
 
-					composeButton.Add(new ListNotifyBinding<Phone.Ans>(delegate()
+					Action refreshComposeButtonVisibility = delegate()
 					{
-						answerContainer.Visible.Value &= phone.ActiveAnswers.Count > 0;
-						composeButton.Visible.Value = phone.ActiveAnswers.Count > 0;
-					}, phone.ActiveAnswers));
-					composeButton.Visible.Value = phone.ActiveAnswers.Count > 0;
+						bool show = phone.ActiveAnswers.Count > 0 && phone.Schedules.Count == 0;
+						answerContainer.Visible.Value &= show;
+						composeButton.Visible.Value = show;
+					};
+					composeButton.Add(new ListNotifyBinding<Phone.Ans>(refreshComposeButtonVisibility, phone.ActiveAnswers));
+					composeButton.Add(new ListNotifyBinding<Phone.Schedule>(refreshComposeButtonVisibility, phone.Schedules));
+					composeButton.Visible.Value = phone.ActiveAnswers.Count > 0 && phone.Schedules.Count == 0;
 
 					result.Add(new CommandBinding(phone.MessageReceived, delegate()
 					{
 						if (!phoneActive)
 							showPhone(true);
 						phoneSound.Play.Execute();
+						if (togglePhoneMessage == null && phone.Schedules.Count == 0 && phone.ActiveAnswers.Count == 0) // No more messages incoming, and no more answers to give
+							togglePhoneMessage = ((GameMain)main).ShowMessage(() => "[" + settings.TogglePhone.Value.ToString() + "]", settings.TogglePhone);
 					}));
 
 					if (phoneActive)

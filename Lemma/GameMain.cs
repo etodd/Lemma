@@ -106,6 +106,8 @@ namespace Lemma
 
 		private List<Property<PCInput.PCInputBinding>> bindings = new List<Property<PCInput.PCInputBinding>>();
 
+		private ListContainer messages;
+
 		public GameMain(bool allowEditing, string mapFile)
 			: base()
 		{
@@ -160,10 +162,85 @@ namespace Lemma
 				this.ResizeViewport(this.Settings.Size.Value.X, this.Settings.Size.Value.Y, false, false);
 		}
 
+		private const float messageFadeTime = 1.0f;
+		private const float messageBackgroundOpacity = 0.75f;
+
+		private Container buildMessage(bool centered = false)
+		{
+			Container msgBackground = new Container();
+
+			if (centered)
+			{
+				this.UI.Root.Children.Add(msgBackground);
+				msgBackground.Add(new Binding<Vector2, Point>(msgBackground.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.ScreenSize));
+				msgBackground.AnchorPoint.Value = new Vector2(0.5f);
+			}
+			else
+				this.messages.Children.Add(msgBackground);
+
+			msgBackground.Tint.Value = Color.Black;
+			msgBackground.Opacity.Value = 0.0f;
+			TextElement msg = new TextElement();
+			msg.FontFile.Value = "Font";
+			msg.Opacity.Value = 0.0f;
+			msg.WrapWidth.Value = 250.0f;
+			msgBackground.Children.Add(msg);
+			return msgBackground;
+		}
+
+		public Container ShowMessage(Func<string> text, params IProperty[] properties)
+		{
+			Container container = this.buildMessage();
+			TextElement textElement = (TextElement)container.Children[0];
+			textElement.Add(new Binding<string>(textElement.Text, text, properties));
+			WorldFactory.Get().Add(new Animation
+			(
+				new Animation.Parallel
+				(
+					new Animation.FloatMoveTo(container.Opacity, messageBackgroundOpacity, messageFadeTime),
+					new Animation.FloatMoveTo(textElement.Opacity, 1.0f, messageFadeTime)
+				)
+			));
+			return container;
+		}
+
+		public Container ShowMessage(string text, bool centered = false)
+		{
+			Container container = this.buildMessage(centered);
+			TextElement textElement = (TextElement)container.Children[0];
+			textElement.Text.Value = text;
+			WorldFactory.Get().Add(new Animation
+			(
+				new Animation.Parallel
+				(
+					new Animation.FloatMoveTo(container.Opacity, messageBackgroundOpacity, messageFadeTime),
+					new Animation.FloatMoveTo(textElement.Opacity, 1.0f, messageFadeTime)
+				)
+			));
+			return container;
+		}
+
+		public void HideMessage(Container container, float delay = 0.0f)
+		{
+			if (container != null && container.Active)
+			{
+				WorldFactory.Get().Add(new Animation
+				(
+					new Animation.Delay(messageFadeTime + delay),
+					new Animation.Parallel
+					(
+						new Animation.FloatMoveTo(container.Opacity, 0.0f, messageFadeTime),
+						new Animation.FloatMoveTo(((TextElement)container.Children[0]).Opacity, 0.0f, messageFadeTime)
+					),
+					new Animation.Execute(container.Delete)
+				));
+			}
+		}
+
 		public override void ClearEntities(bool deleteEditor)
 		{
 			base.ClearEntities(deleteEditor);
-			this.UI.Root.GetChildByName("Messages").Children.Clear();
+			this.messages.Children.Clear();
 		}
 
 		private void copySave(string src, string dst)
@@ -333,13 +410,12 @@ namespace Lemma
 				}
 
 				// Message list
-				ListContainer messages = new ListContainer();
-				messages.Alignment.Value = ListContainer.ListAlignment.Max;
-				messages.AnchorPoint.Value = new Vector2(1.0f, 1.0f);
-				messages.Reversed.Value = true;
-				messages.Name.Value = "Messages";
-				messages.Add(new Binding<Vector2, Point>(messages.Position, x => new Vector2(x.X * 0.9f, x.Y * 0.9f), this.ScreenSize));
-				this.UI.Root.Children.Add(messages);
+				this.messages = new ListContainer();
+				this.messages.Alignment.Value = ListContainer.ListAlignment.Max;
+				this.messages.AnchorPoint.Value = new Vector2(1.0f, 1.0f);
+				this.messages.Reversed.Value = true;
+				this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * 0.9f, x.Y * 0.9f), this.ScreenSize));
+				this.UI.Root.Children.Add(this.messages);
 
 				ListContainer notifications = new ListContainer();
 				notifications.Alignment.Value = ListContainer.ListAlignment.Max;

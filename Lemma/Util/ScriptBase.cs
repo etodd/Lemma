@@ -21,6 +21,21 @@ namespace Lemma.Scripts
 			return result;
 		}
 
+		protected static Container showMessage(Func<string> text, params IProperty[] properties)
+		{
+			return ((GameMain)main).ShowMessage(text, properties);
+		}
+
+		protected static Container showMessage(string text, bool centered = false)
+		{
+			return ((GameMain)main).ShowMessage(text, centered);
+		}
+
+		protected static void hideMessage(Container container, float delay = 0.0f)
+		{
+			((GameMain)main).HideMessage(container, delay);
+		}
+
 		protected static void bindTrigger(string id, Action callback, bool oneTimeOnly = true)
 		{
 			Entity triggerEntity = ScriptBase.get(id);
@@ -47,81 +62,6 @@ namespace Lemma.Scripts
 			else
 				callbacks = new[] { callback };
 			triggerEntity.Add(new CommandBinding<Entity>(trigger.PlayerEntered, callbacks));
-		}
-
-		private const float messageFadeTime = 1.0f;
-		private const float messageBackgroundOpacity = 0.75f;
-
-		private static Container buildMessage(bool centered = false)
-		{
-			Container msgBackground = new Container();
-
-			if (centered)
-			{
-				((GameMain)main).UI.Root.Children.Add(msgBackground);
-				msgBackground.Add(new Binding<Vector2, Point>(msgBackground.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
-				msgBackground.AnchorPoint.Value = new Vector2(0.5f);
-			}
-			else
-				((GameMain)main).UI.Root.GetChildByName("Messages").Children.Add(msgBackground);
-
-			msgBackground.Tint.Value = Color.Black;
-			msgBackground.Opacity.Value = 0.0f;
-			TextElement msg = new TextElement();
-			msg.FontFile.Value = "Font";
-			msg.Opacity.Value = 0.0f;
-			msg.WrapWidth.Value = 250.0f;
-			msgBackground.Children.Add(msg);
-			return msgBackground;
-		}
-
-		protected static Container showMessage(Func<string> text, params IProperty[] properties)
-		{
-			Container container = buildMessage();
-			TextElement textElement = (TextElement)container.Children[0];
-			textElement.Add(new Binding<string>(textElement.Text, text, properties));
-			WorldFactory.Get().Add(new Animation
-			(
-				new Animation.Parallel
-				(
-					new Animation.FloatMoveTo(container.Opacity, messageBackgroundOpacity, messageFadeTime),
-					new Animation.FloatMoveTo(textElement.Opacity, 1.0f, messageFadeTime)
-				)
-			));
-			return container;
-		}
-
-		protected static Container showMessage(string text, bool centered = false)
-		{
-			Container container = buildMessage(centered);
-			TextElement textElement = (TextElement)container.Children[0];
-			textElement.Text.Value = text;
-			WorldFactory.Get().Add(new Animation
-			(
-				new Animation.Parallel
-				(
-					new Animation.FloatMoveTo(container.Opacity, messageBackgroundOpacity, messageFadeTime),
-					new Animation.FloatMoveTo(textElement.Opacity, 1.0f, messageFadeTime)
-				)
-			));
-			return container;
-		}
-
-		protected static void hideMessage(Container container, float delay = 0.0f)
-		{
-			if (container != null && container.Active)
-			{
-				WorldFactory.Get().Add(new Animation
-				(
-					new Animation.Delay(messageFadeTime + delay),
-					new Animation.Parallel
-					(
-						new Animation.FloatMoveTo(container.Opacity, 0.0f, messageFadeTime),
-						new Animation.FloatMoveTo(((TextElement)container.Children[0]).Opacity, 0.0f, messageFadeTime)
-					),
-					new Animation.Execute(container.Delete)
-				));
-			}
 		}
 	}
 }
