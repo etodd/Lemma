@@ -144,13 +144,14 @@ namespace Lemma.Components
 		public void Answer(Ans answer)
 		{
 			string messageID = null;
-			if (answer.ID != null && this.Messages.Count > 0)
+			if (this.Messages.Count > 0)
 			{
 				Message msg = this.Messages[this.Messages.Count - 1];
 				messageID = msg.ID;
-				if (messageID != null)
+				if (answer.ID != null && messageID != null)
 					this.answers[messageID] = answer.ID;
 			}
+
 			this.Messages.Add(new Message { Text = answer.Text, Incoming = false, ID = null, });
 			this.ActiveAnswers.Clear();
 

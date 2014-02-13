@@ -750,13 +750,11 @@
       <Name>powered-permanent</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
-      <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
     </Compile>
     <Compile Include="Textures\powered.png">
       <Name>powered</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
-      <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
     </Compile>
     <Compile Include="Textures\rock-chunky-normal.jpg">
       <Name>rock-chunky-normal</Name>

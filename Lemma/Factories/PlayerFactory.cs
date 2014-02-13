@@ -1233,7 +1233,7 @@ namespace Lemma.Factories
 						walkedOn.Execute(wallRunMap, wallCoord);
 						lastWallCoord = wallCoord;
 					}
-					if (player.EnableEnhancedWallRun && wallRunState == Player.WallRun.Left || wallRunState == Player.WallRun.Right)
+					if (player.EnableEnhancedWallRun && (wallRunState == Player.WallRun.Left || wallRunState == Player.WallRun.Right))
 					{
 						Direction up = wallRunMap.GetRelativeDirection(Direction.PositiveY);
 						Direction right = wallDirection.Cross(up);
@@ -2506,7 +2506,7 @@ namespace Lemma.Factories
 			const float padding = 8.0f;
 			const float messageWidth = phoneWidth - padding * 2.0f;
 
-			Func<Color, string, Container> makeButton = delegate(Color color, string text)
+			Func<Color, string, float, Container> makeButton = delegate(Color color, string text, float width)
 			{
 				Container bg = new Container();
 				bg.Tint.Value = color;
@@ -2518,7 +2518,7 @@ namespace Lemma.Factories
 				msg.FontFile.Value = "Font";
 				msg.Text.Value = text;
 				msg.Opacity.Value = 1.0f;
-				msg.WrapWidth.Value = messageWidth - padding;
+				msg.WrapWidth.Value = width;
 				bg.Children.Add(msg);
 				return bg;
 			};
@@ -2546,7 +2546,7 @@ namespace Lemma.Factories
 			Color incomingColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
 			Color outgoingColor = new Color(0.0f, 0.2f, 0.4f, 1.0f);
 
-			Container composeButton = makeButton(new Color(0.5f, 0.0f, 0.0f, 1.0f), "Compose");
+			Container composeButton = makeButton(new Color(0.5f, 0.0f, 0.0f, 1.0f), "Compose", messageWidth - padding * 2.0f);
 			UIComponent composeAlign = makeAlign(composeButton, true);
 
 			Scroller phoneScroll = new Scroller();
@@ -2581,6 +2581,19 @@ namespace Lemma.Factories
 				answerContainer.Visible.Value = !answerContainer.Visible;
 			}));
 
+			Action scrollToBottom = delegate()
+			{
+				// HACK
+				main.AddComponent(new Animation
+				(
+					new Animation.Delay(0.01f),
+					new Animation.Execute(delegate()
+					{
+						phoneScroll.ScrollToBottom();
+					})
+				));
+			};
+
 			// Toggle phone
 
 			Container togglePhoneMessage = null;
@@ -2608,15 +2621,6 @@ namespace Lemma.Factories
 					if (phoneActive)
 					{
 						phoneScroll.CheckLayout();
-						// HACK
-						main.AddComponent(new Animation
-						(
-							new Animation.Delay(0.01f),
-							new Animation.Execute(delegate()
-							{
-								phoneScroll.ScrollToBottom();
-							})
-						));
 						model.StartClip("Phone", 6, true);
 					}
 				}
@@ -2637,22 +2641,28 @@ namespace Lemma.Factories
 					if (data.Value.Target == null)
 						data.Value = Factory.Get<PlayerDataFactory>().Instance(main);
 
-					respawnLocations = data.Value.Target.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
+					Entity dataEntity = data.Value.Target;
+
+					respawnLocations = dataEntity.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
 					
 					// Bind player data properties
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableRoll"), player.EnableRoll));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableCrouch"), player.EnableCrouch));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableKick"), player.EnableKick));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableWallRunHorizontal"), player.EnableWallRunHorizontal));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
-					result.Add(new TwoWayBinding<bool>(data.Value.Target.GetProperty<bool>("EnableMoves"), player.EnableMoves));
-					result.Add(new TwoWayBinding<float>(data.Value.Target.GetProperty<float>("MaxSpeed"), player.MaxSpeed));
+					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableRoll"), player.EnableRoll));
+					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableCrouch"), player.EnableCrouch));
+					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableKick"), player.EnableKick));
+					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
+					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableWallRunHorizontal"), player.EnableWallRunHorizontal));
+					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
+					result.Add(new NotifyBinding(delegate()
+					{
+						result.Get<Phone>();
+					}, dataEntity.GetProperty<bool>("EnableEnhancedWallRun")));
+					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
+					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableMoves"), player.EnableMoves));
+					result.Add(new TwoWayBinding<float>(dataEntity.GetProperty<float>("MaxSpeed"), player.MaxSpeed));
 
-					phone = data.Value.Target.GetOrCreate<Phone>("Phone");
+					phone = dataEntity.GetOrCreate<Phone>("Phone");
 
-					phone.Add(new Binding<bool>(phone.CanReceiveMessages, () => player.IsSupported && !player.IsSwimming && !player.Crouched && phone.Enabled, player.IsSupported, player.IsSwimming, player.Crouched, phone.Enabled));
+					result.Add(new Binding<bool>(phone.CanReceiveMessages, () => player.IsSupported && !player.IsSwimming && !player.Crouched && phone.Enabled, player.IsSupported, player.IsSwimming, player.Crouched, phone.Enabled));
 
 					msgList.Add(new ListBinding<UIComponent, Phone.Message>
 					(
@@ -2660,7 +2670,7 @@ namespace Lemma.Factories
 						phone.Messages,
 						delegate(Phone.Message msg)
 						{
-							return new[] { makeAlign(makeButton(msg.Incoming ? incomingColor : outgoingColor, msg.Text), !msg.Incoming) };
+							return new[] { makeAlign(makeButton(msg.Incoming ? incomingColor : outgoingColor, msg.Text, messageWidth - padding * 2.0f), !msg.Incoming) };
 						}
 					));
 
@@ -2670,11 +2680,11 @@ namespace Lemma.Factories
 						phone.ActiveAnswers,
 						delegate(Phone.Ans answer)
 						{
-							UIComponent button = makeButton(outgoingColor, answer.Text);
+							UIComponent button = makeButton(outgoingColor, answer.Text, messageWidth - padding * 4.0f);
 							button.Add(new CommandBinding<Point>(button.MouseLeftUp, delegate(Point p)
 							{
 								phone.Answer(answer);
-								phoneScroll.ScrollToBottom();
+								scrollToBottom();
 								if (togglePhoneMessage == null && phone.Schedules.Count == 0) // No more messages incoming
 									togglePhoneMessage = ((GameMain)main).ShowMessage(() => "[" + settings.TogglePhone.Value.ToString() + "]", settings.TogglePhone);
 							}));
@@ -2699,6 +2709,7 @@ namespace Lemma.Factories
 						phoneSound.Play.Execute();
 						if (togglePhoneMessage == null && phone.Schedules.Count == 0 && phone.ActiveAnswers.Count == 0) // No more messages incoming, and no more answers to give
 							togglePhoneMessage = ((GameMain)main).ShowMessage(() => "[" + settings.TogglePhone.Value.ToString() + "]", settings.TogglePhone);
+						scrollToBottom();
 					}));
 
 					if (phoneActive)
