@@ -29,10 +29,12 @@ namespace Lemma.Factories
 		{
 			Transform transform = result.GetOrCreate<Transform>("Transform");
 			PhysicsBlock physics = result.GetOrCreate<PhysicsBlock>();
+			physics.Serialize = true;
 			physics.Size.Value = Vector3.One;
 			physics.Editable = false;
 			ModelInstance model = result.GetOrCreate<ModelInstance>();
 			model.Editable = false;
+			model.Serialize = true;
 
 			physics.Add(new TwoWayBinding<Matrix>(transform.Matrix, physics.Transform));
 

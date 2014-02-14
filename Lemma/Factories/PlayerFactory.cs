@@ -2622,6 +2622,14 @@ namespace Lemma.Factories
 					{
 						phoneScroll.CheckLayout();
 						model.StartClip("Phone", 6, true);
+						float startRotationY = input.Mouse.Value.Y;
+						result.Add(new Animation
+						(
+							new Animation.Custom(delegate(float x)
+							{
+								input.Mouse.Value = new Vector2(input.Mouse.Value.X, startRotationY * (1.0f - x));
+							}, 0.5f)
+						));
 					}
 				}
 			};
