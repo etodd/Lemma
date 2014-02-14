@@ -74,6 +74,12 @@ namespace Lemma.Components
 			}
 		}
 
+		public override void InitializeProperties()
+		{
+			this.EnabledInEditMode.Value = false;
+			this.EnabledWhenPaused.Value = false;
+		}
+
 		public ListProperty<Schedule> Schedules = new ListProperty<Schedule>();
 
 		public ListProperty<Message> Messages = new ListProperty<Message>();

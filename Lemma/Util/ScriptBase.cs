@@ -17,7 +17,7 @@ namespace Lemma.Scripts
 		{
 			Entity result = ScriptBase.main.GetByID(id);
 			if (result == null)
-				throw new Exception("Entity " + id + " not found!");
+				Log.d("Entity " + id + " not found!");
 			return result;
 		}
 

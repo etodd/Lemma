@@ -46,7 +46,11 @@ namespace Lemma.Factories
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity p)
 			{
-				result.Delete.Execute();
+				result.Add(new Animation
+				(
+					new Animation.Delay(0.0f),
+					new Animation.Execute(result.Delete)
+				));
 			}));
 
 			if (result.GetOrMakeProperty<bool>("Attach", true))
