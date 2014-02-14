@@ -13,7 +13,7 @@ namespace Lemma
 #if DEVELOPMENT
 			return new GameMain(true, null); // Editor binary
 #else
-			return new GameMain(false, "start"); // Game binary
+			return new GameMain(false, "intro"); // Game binary
 #endif
 		}
 
