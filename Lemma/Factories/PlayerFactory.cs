@@ -2215,7 +2215,7 @@ namespace Lemma.Factories
 
 					Map.GlobalRaycastResult floorRaycast = new Map.GlobalRaycastResult();
 
-					bool shouldBuildFloor = !player.IsSupported && player.EnableEnhancedWallRun && (floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height)).Map != null;
+					bool shouldBuildFloor = player.EnableEnhancedWallRun && (floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height)).Map != null;
 
 					Direction forwardDir = Direction.None;
 					Direction rightDir = Direction.None;
@@ -2361,7 +2361,7 @@ namespace Lemma.Factories
 
 						model.StartClip("Roll", 5, false);
 
-						bool shouldBuildFloor = !player.IsSupported && player.EnableEnhancedWallRun;
+						bool shouldBuildFloor = player.EnableEnhancedWallRun;
 
 						// If the player is not yet supported, that means they're just about to land.
 						// So give them a little speed boost for having such good timing.

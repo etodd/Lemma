@@ -254,7 +254,7 @@ namespace Lemma.Util
 					if (this.IsSwimming)
 						this.handleNoTraction(dt, 0.75f, 0.75f, this.MaxSpeed * 0.75f);
 					else
-						this.handleNoTraction(dt, 0.0f, 0.5f, this.lastSupportedSpeed);
+						this.handleNoTraction(dt, 0.0f, 0.75f, this.lastSupportedSpeed);
 				}
 			}
 
