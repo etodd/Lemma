@@ -88,6 +88,8 @@ namespace Lemma.Components
 
 		public Property<bool> CanReceiveMessages = new Property<bool>();
 
+		public Property<bool> TutorialShown = new Property<bool>();
+
 		[XmlIgnore]
 		public Command MessageReceived = new Command();
 

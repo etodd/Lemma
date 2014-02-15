@@ -1554,27 +1554,27 @@ namespace Lemma
 					}
 				};
 
-				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickUp), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickUp), () => this.Paused, delegate()
 				{
 					moveSelection(-1);
 				}));
 
-				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.DPadUp), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadUp), () => this.Paused, delegate()
 				{
 					moveSelection(-1);
 				}));
 
-				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickDown), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickDown), () => this.Paused, delegate()
 				{
 					moveSelection(1);
 				}));
 
-				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.DPadDown), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadDown), () => this.Paused, delegate()
 				{
 					moveSelection(1);
 				}));
 
-				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.A), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.A), () => this.Paused, delegate()
 				{
 					if (dialog != null)
 						dialog.GetChildByName("Okay").MouseLeftUp.Execute(new Point());
@@ -1601,22 +1601,22 @@ namespace Lemma
 					}
 				};
 
-				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickLeft), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickLeft), () => this.Paused, delegate()
 				{
 					scrollButton(-1);
 				}));
 
-				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.DPadLeft), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadLeft), () => this.Paused, delegate()
 				{
 					scrollButton(-1);
 				}));
 
-				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickRight), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickRight), () => this.Paused, delegate()
 				{
 					scrollButton(1);
 				}));
 
-				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.DPadRight), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadRight), () => this.Paused, delegate()
 				{
 					scrollButton(1);
 				}));
@@ -1790,10 +1790,10 @@ namespace Lemma
 			};
 
 			addLink("lemmagame.com", "http://lemmagame.com");
-			addLink("indiedb.com/games/lemma", "http://indiedb.com/games/lemma");
-			addLink("Greenlight", "http://steamcommunity.com/sharedfiles/filedetails/?id=105075009");
 			addLink("et1337.com", "http://et1337.com");
-			addLink("twitter.com/et1337", "http://twitter.com/et1337");
+			addLink("@et1337", "http://twitter.com/et1337");
+			addLink("IndieDB", "http://indiedb.com/games/lemma");
+			addLink("Greenlight", "http://steamcommunity.com/sharedfiles/filedetails/?id=105075009");
 
 			addText("Writing, programming, and artwork by Evan Todd. Music and some sounds by Jack Menhorn. Full attribution list available on the website.");
 		}

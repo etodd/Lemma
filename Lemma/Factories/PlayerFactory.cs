@@ -921,9 +921,9 @@ namespace Lemma.Factories
 						if (addInitialVelocity)
 						{
 							if (player.IsSupported)
-								velocity.Y = player.JumpSpeed * 1.25f;
+								velocity.Y = player.JumpSpeed * 1.3f;
 							else
-								velocity.Y = player.LinearVelocity.Value.Y + player.JumpSpeed * 0.7f;
+								velocity.Y = player.LinearVelocity.Value.Y + player.JumpSpeed * 0.75f;
 						}
 						else
 							velocity.Y = player.LinearVelocity.Value.Y;
@@ -968,7 +968,7 @@ namespace Lemma.Factories
 								velocity = Vector3.Normalize(velocity) * (minWallRunSpeed + 1.0f);
 
 							float currentVerticalSpeed = player.LinearVelocity.Value.Y;
-							velocity.Y = (currentVerticalSpeed > 0.0f ? currentVerticalSpeed * 0.7f : currentVerticalSpeed * 0.5f) + 4.5f;
+							velocity.Y = (currentVerticalSpeed > -3.0f ? Math.Max(currentVerticalSpeed * 0.7f, 0.0f) : currentVerticalSpeed * 0.5f) + 5.0f;
 
 							player.LinearVelocity.Value = velocity;
 						}
@@ -2597,6 +2597,7 @@ namespace Lemma.Factories
 			// Toggle phone
 
 			Container togglePhoneMessage = null;
+			Container phoneTutorialMessage = null;
 
 			Action<bool> showPhone = delegate(bool show)
 			{
@@ -2605,6 +2606,13 @@ namespace Lemma.Factories
 					((GameMain)main).HideMessage(togglePhoneMessage);
 					togglePhoneMessage = null;
 				}
+
+				if (phoneTutorialMessage != null)
+				{
+					((GameMain)main).HideMessage(phoneTutorialMessage);
+					phoneTutorialMessage = null;
+				}
+
 				if (show || (phone.ActiveAnswers.Count == 0 && phone.Schedules.Count == 0))
 				{
 					phoneActive.Value = show;
@@ -2620,6 +2628,11 @@ namespace Lemma.Factories
 					model.Stop("Phone");
 					if (phoneActive)
 					{
+						if (!phone.TutorialShown)
+						{
+							phone.TutorialShown.Value = true;
+							phoneTutorialMessage = ((GameMain)main).ShowMessage("Scroll to read more.");
+						}
 						phoneScroll.CheckLayout();
 						model.StartClip("Phone", 6, true);
 						float startRotationY = input.Mouse.Value.Y;
@@ -2639,6 +2652,31 @@ namespace Lemma.Factories
 				if (phone.CanReceiveMessages)
 					showPhone(!phoneActive);
 			});
+
+			Action<int> scrollPhone = delegate(int delta)
+			{
+				phoneScroll.MouseScrolled.Execute(new Point(), delta * -4);
+			};
+
+			input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickUp), () => phoneActive, delegate()
+			{
+				scrollPhone(-1);
+			}));
+
+			input.Add(new CommandBinding(input.GetButtonDown(Buttons.DPadUp), () => phoneActive, delegate()
+			{
+				scrollPhone(-1);
+			}));
+
+			input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickDown), () => phoneActive, delegate()
+			{
+				scrollPhone(1);
+			}));
+
+			input.Add(new CommandBinding(input.GetButtonDown(Buttons.DPadDown), () => phoneActive, delegate()
+			{
+				scrollPhone(1);
+			}));
 
 			// Player data bindings
 
