@@ -20,6 +20,7 @@ namespace Lemma.Components
 		public override void InitializeProperties()
 		{
 			base.InitializeProperties();
+			this.DrawOrder.Editable = true;
 			this.VerticalCenter.Set = delegate(float value)
 			{
 				this.VerticalCenter.InternalValue = value;

@@ -23,7 +23,6 @@ namespace Lemma.Factories
 			result.Add("Transform", new Transform());
 			result.Add("ParticleEmitter", new ParticleEmitter());
 
-
 			return result;
 		}
 
@@ -41,6 +40,10 @@ namespace Lemma.Factories
 		public override void AttachEditorComponents(Entity result, Main main)
 		{
 			base.AttachEditorComponents(result, main);
+			Model editorModel = result.Get<Model>("EditorModel");
+			Property<bool> editorSelected = result.GetOrMakeProperty<bool>("EditorSelected");
+			editorSelected.Serialize = false;
+			editorModel.Add(new Binding<bool>(editorModel.Enabled, x => !x, editorSelected));
 
 			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
 		}

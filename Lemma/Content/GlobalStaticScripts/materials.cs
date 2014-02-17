@@ -266,7 +266,7 @@ WorldFactory.AddState
 		DiffuseMap = "Textures\\debug2",
 		NormalMap = "Textures\\plain-normal",
 		SpecularPower = 1.0f,
-		SpecularIntensity = 0.0f
+		SpecularIntensity = 0.0f,
 	},
 	new Map.CellState
 	{

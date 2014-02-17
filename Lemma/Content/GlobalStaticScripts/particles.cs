@@ -42,3 +42,25 @@ new ParticleSystem.ParticleSettings
 	MinColor = new Vector4(1.5f, 1.25f, 1.0f, 1.0f),
 	MaxColor = new Vector4(1.5f, 1.25f, 1.0f, 1.0f),
 });
+
+ParticleSystem.Add(main, "Electricity",
+new ParticleSystem.ParticleSettings
+{
+	TextureName = "Particles\\spark",
+	MaxParticles = 2000,
+	Duration = TimeSpan.FromSeconds(0.3f),
+	MinHorizontalVelocity = -1.0f,
+	MaxHorizontalVelocity = 1.0f,
+	MinVerticalVelocity = 0.0f,
+	MaxVerticalVelocity = 1.5f,
+	Gravity = new Vector3(0.0f, -1.2f, 0.0f),
+	MinRotateSpeed = -10.0f,
+	MaxRotateSpeed = 10.0f,
+	MinStartSize = 0.05f,
+	MaxStartSize = 0.1f,
+	MinEndSize = 0.0f,
+	MaxEndSize = 0.0f,
+	BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Additive,
+	MinColor = new Vector4(1.0f, 1.25f, 1.5f, 1.0f),
+	MaxColor = new Vector4(1.0f, 1.25f, 1.5f, 1.0f),
+});
