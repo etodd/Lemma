@@ -107,9 +107,11 @@ namespace Lemma.Factories
 			Property<bool> editorSelected = result.GetOrMakeProperty<bool>("EditorSelected");
 			editorSelected.Serialize = false;
 
+			Property<float> attachmentOffset = result.GetOrMakeProperty<float>("AttachmentOffset", true);
+
 			Model editorModel = result.Get<Model>("EditorModel");
-			model.Add(new Binding<bool>(model.Enabled, () => editorSelected && editorModel.Enabled, editorSelected, editorModel.Enabled));
-			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(1.0f, 1.0f, x), result.GetOrMakeProperty<float>("AttachmentOffset", true)));
+			model.Add(new Binding<bool>(model.Enabled, () => editorSelected && editorModel.Enabled && attachmentOffset > 0, editorSelected, editorModel.Enabled, attachmentOffset));
+			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(1.0f, 1.0f, x), attachmentOffset));
 			model.Editable = false;
 			model.Serialize = false;
 

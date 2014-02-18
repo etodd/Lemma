@@ -29,6 +29,7 @@ namespace Lemma
 		public const int ConfigVersion = 4;
 		public const int MapVersion = 4;
 		public const int Build = 4;
+		public const string HumanReadableVersion = "Alpha 4";
 
 		public class Config
 		{
@@ -293,7 +294,8 @@ namespace Lemma
 
 		public void SaveAnalytics()
 		{
-			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, this.MapFile.Value + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml"));
+			string filename = GameMain.Build.ToString() + "-" + (string.IsNullOrEmpty(this.MapFile.Value) ? "null" : this.MapFile.Value) + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml";
+			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, filename));
 		}
 
 		public string[] AnalyticsSessionFiles
@@ -310,10 +312,26 @@ namespace Lemma
 			List<Session> result = new List<Session>();
 			foreach (string file in Directory.GetFiles(this.analyticsDirectory, "*", SearchOption.TopDirectoryOnly))
 			{
-				string name = Path.GetFileNameWithoutExtension(file);
-				name = name.Substring(0, name.LastIndexOf('-'));
-				if (name == map)
-					result.Add(Session.Load(file));
+				Session s = Session.Load(file);
+				if (s.Build == GameMain.Build)
+				{
+					string sessionMap = s.Map;
+					if (sessionMap == null)
+					{
+						// Attempt to extract the map name from the filename
+						string fileWithoutExtension = Path.GetFileNameWithoutExtension(file);
+
+						int firstDash = fileWithoutExtension.IndexOf('-');
+						int lastDash = fileWithoutExtension.LastIndexOf('-');
+
+						if (firstDash == lastDash) // Old filename format "map-hash"
+							sessionMap = fileWithoutExtension.Substring(0, firstDash);
+						else // New format "build-map-hash"
+							sessionMap = fileWithoutExtension.Substring(firstDash + 1, lastDash - (firstDash + 1));
+					}
+					if (sessionMap == map)
+						result.Add(s);
+				}
 			}
 			return result;
 		}
@@ -1654,7 +1672,7 @@ namespace Lemma
 
 					TextElement header = new TextElement();
 					header.FontFile.Value = "Font";
-					header.Text.Value = "Alpha " + GameMain.Build.ToString();
+					header.Text.Value = GameMain.HumanReadableVersion;
 					header.AnchorPoint.Value = new Vector2(0.5f, 0);
 					header.Add(new Binding<Vector2>(header.Position, () => logo.Position + new Vector2(0, 30 + (logo.InverseAnchorPoint.Value.Y * logo.ScaledSize.Value.Y)), logo.Position, logo.InverseAnchorPoint, logo.ScaledSize));
 					this.UI.Root.Children.Add(header);

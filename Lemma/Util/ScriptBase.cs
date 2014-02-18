@@ -50,6 +50,20 @@ namespace Lemma.Scripts
 			triggerEntity.Add(new CommandBinding(trigger.Entered, callbacks));
 		}
 
+		protected static void bindTriggerLeave(string id, Action callback, bool oneTimeOnly = false)
+		{
+			Entity triggerEntity = ScriptBase.get(id);
+			if (triggerEntity == null)
+				throw new Exception("Entity " + id + " not found!");
+			Trigger trigger = triggerEntity.Get<Trigger>();
+			Action[] callbacks;
+			if (oneTimeOnly)
+				callbacks = new[] { callback, delegate() { trigger.Enabled.Value = false; } };
+			else
+				callbacks = new[] { callback };
+			triggerEntity.Add(new CommandBinding(trigger.Exited, callbacks));
+		}
+
 		protected static void bindTrigger(string id, Action<Entity> callback, bool oneTimeOnly = true)
 		{
 			Entity triggerEntity = ScriptBase.get(id);
@@ -62,6 +76,20 @@ namespace Lemma.Scripts
 			else
 				callbacks = new[] { callback };
 			triggerEntity.Add(new CommandBinding<Entity>(trigger.PlayerEntered, callbacks));
+		}
+
+		protected static void bindTriggerLeave(string id, Action<Entity> callback, bool oneTimeOnly = false)
+		{
+			Entity triggerEntity = ScriptBase.get(id);
+			if (triggerEntity == null)
+				throw new Exception("Entity " + id + " not found!");
+			PlayerTrigger trigger = triggerEntity.Get<PlayerTrigger>();
+			Action<Entity>[] callbacks;
+			if (oneTimeOnly)
+				callbacks = new[] { callback, delegate(Entity p) { trigger.Enabled.Value = false; } };
+			else
+				callbacks = new[] { callback };
+			triggerEntity.Add(new CommandBinding<Entity>(trigger.PlayerExited, callbacks));
 		}
 	}
 }

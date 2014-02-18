@@ -244,6 +244,8 @@ namespace Lemma.Components
 
 		public float TotalTime;
 
+		public string Map;
+
 		public float Interval;
 
 		public static Session Load(string path)
@@ -305,6 +307,7 @@ namespace Lemma.Components
 			{
 				this.data.UUID = ((GameMain)this.main).Settings.UUID;
 				this.data.TotalTime = this.main.TotalTime;
+				this.data.Map = this.main.MapFile;
 				using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
 					new XmlSerializer(typeof(Session)).Serialize(stream, this.data);
 			}
