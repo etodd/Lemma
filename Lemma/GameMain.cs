@@ -1924,43 +1924,49 @@ namespace Lemma
 							}
 
 							bool spawnFound = false;
+
 							PlayerFactory.RespawnLocation foundSpawnLocation = default(PlayerFactory.RespawnLocation);
 
-							ListProperty<PlayerFactory.RespawnLocation> respawnLocations = Factory.Get<PlayerDataFactory>().Instance(this).GetOrMakeListProperty<PlayerFactory.RespawnLocation>("RespawnLocations");
-							int supportedLocations = 0;
-							while (respawnLocations.Count > 0)
+							if (string.IsNullOrEmpty(this.StartSpawnPoint.Value))
 							{
-								PlayerFactory.RespawnLocation respawnLocation = respawnLocations[respawnLocations.Count - 1];
-								Entity respawnMapEntity = respawnLocation.Map.Target;
-								if (respawnMapEntity != null && respawnMapEntity.Active)
+								// Look for an autosaved spawn point
+								ListProperty<PlayerFactory.RespawnLocation> respawnLocations = Factory.Get<PlayerDataFactory>().Instance(this).GetOrMakeListProperty<PlayerFactory.RespawnLocation>("RespawnLocations");
+								int supportedLocations = 0;
+								while (respawnLocations.Count > 0)
 								{
-									Map respawnMap = respawnMapEntity.Get<Map>();
-									if (respawnMap.Active && respawnMap[respawnLocation.Coordinate].ID != 0 && respawnMap.GetAbsoluteVector(respawnMap.GetRelativeDirection(Direction.PositiveY).GetVector()).Y > 0.5f)
+									PlayerFactory.RespawnLocation respawnLocation = respawnLocations[respawnLocations.Count - 1];
+									Entity respawnMapEntity = respawnLocation.Map.Target;
+									if (respawnMapEntity != null && respawnMapEntity.Active)
 									{
-										supportedLocations++;
-										Vector3 absolutePos = respawnMap.GetAbsolutePosition(respawnLocation.Coordinate);
-										DynamicMap dynamicMap = respawnMap as DynamicMap;
-										if (dynamicMap == null || dynamicMap.IsAffectedByGravity || absolutePos.Y > respawnLocation.OriginalPosition.Y - 1.0f)
+										Map respawnMap = respawnMapEntity.Get<Map>();
+										if (respawnMap.Active && respawnMap[respawnLocation.Coordinate].ID != 0 && respawnMap.GetAbsoluteVector(respawnMap.GetRelativeDirection(Direction.PositiveY).GetVector()).Y > 0.5f)
 										{
-											Map.GlobalRaycastResult hit = Map.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Up, 2);
-											if (hit.Map == null)
+											supportedLocations++;
+											Vector3 absolutePos = respawnMap.GetAbsolutePosition(respawnLocation.Coordinate);
+											DynamicMap dynamicMap = respawnMap as DynamicMap;
+											if (dynamicMap == null || dynamicMap.IsAffectedByGravity || absolutePos.Y > respawnLocation.OriginalPosition.Y - 1.0f)
 											{
-												// We can spawn here
-												spawnFound = true;
-												foundSpawnLocation = respawnLocation;
+												Map.GlobalRaycastResult hit = Map.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Up, 2);
+												if (hit.Map == null)
+												{
+													// We can spawn here
+													spawnFound = true;
+													foundSpawnLocation = respawnLocation;
+												}
 											}
 										}
 									}
+									respawnLocations.RemoveAt(respawnLocations.Count - 1);
+									if (supportedLocations >= this.RespawnRewindLength)
+										break;
 								}
-								respawnLocations.RemoveAt(respawnLocations.Count - 1);
-								if (supportedLocations >= this.RespawnRewindLength)
-									break;
-							}
 
-							this.RespawnRewindLength = DefaultRespawnRewindLength;
+								this.RespawnRewindLength = DefaultRespawnRewindLength;
+							}
 
 							if (spawnFound)
 							{
+								// Spawn at an autosaved location
 								Vector3 absolutePos = foundSpawnLocation.Map.Target.Get<Map>().GetAbsolutePosition(foundSpawnLocation.Coordinate);
 								this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = absolutePos + new Vector3(0, 3, 0);
 
@@ -1970,6 +1976,7 @@ namespace Lemma
 							}
 							else
 							{
+								// Spawn at a spawn point
 								PlayerSpawn spawn = null;
 								Entity spawnEntity = null;
 								if (!string.IsNullOrEmpty(this.StartSpawnPoint.Value))

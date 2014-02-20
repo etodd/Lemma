@@ -16,7 +16,7 @@ namespace Lemma.Components
 	{
 		private const float precisionDelta = 0.025f;
 		private const float normalDelta = 1.0f;
-		private const float stringNavigateInterval = 0.06f;
+		private const float stringNavigateInterval = 0.08f;
 
 		private static Keys[] ignoredKeys = new Keys[]
 		{ 

@@ -67,15 +67,7 @@ namespace Lemma.Components
 					value = this.MouseButton.ToString();
 
 				if (GamePad.GetState(PlayerIndex.One).IsConnected && this.GamePadButton != Buttons.BigButton)
-				{
-					if (this.GamePadButton == Buttons.A
-						|| this.GamePadButton == Buttons.B
-						|| this.GamePadButton == Buttons.X
-						|| this.GamePadButton == Buttons.Y)
-						return "Gamepad " + this.GamePadButton.ToString();
-					else
-						return this.GamePadButton.ToString();
-				}
+					return this.GamePadButton.ToString();
 				else if (value != null)
 					return value;
 				else

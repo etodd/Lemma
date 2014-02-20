@@ -2649,7 +2649,7 @@ namespace Lemma.Factories
 			{
 				noteActive.Value = show;
 				input.EnableLook.Value = input.EnableMouse.Value = !noteActive;
-				main.IsMouseVisible.Value = noteActive;
+				main.IsMouseVisible.Value = false;
 				player.EnableWalking.Value = !noteActive;
 				note.Enabled.Value = noteActive;
 				noteUi.Enabled.Value = noteActive;
