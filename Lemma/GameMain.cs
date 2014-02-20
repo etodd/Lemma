@@ -26,14 +26,16 @@ namespace Lemma
 
 		}
 
-		public const int ConfigVersion = 4;
-		public const int MapVersion = 4;
-		public const int Build = 4;
-		public const string HumanReadableVersion = "Alpha 4";
+		public const int ConfigVersion = 5;
+		public const int Build = 238;
 
 		public class Config
 		{
+#if DEVELOPMENT
 			public Property<bool> Fullscreen = new Property<bool> { Value = false };
+#else
+			public Property<bool> Fullscreen = new Property<bool> { Value = true };
+#endif
 			public Property<bool> Maximized = new Property<bool> { Value = false };
 			public Property<Point> Origin = new Property<Point> { Value = new Point(50, 50) };
 			public Property<Point> Size = new Property<Point> { Value = new Point(1280, 720) };
@@ -162,6 +164,12 @@ namespace Lemma
 			if (this.Settings.UUID == null)
 				Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32);
 
+			if (this.Settings.FullscreenResolution.Value.X == 0)
+			{
+				Microsoft.Xna.Framework.Graphics.DisplayMode display = Microsoft.Xna.Framework.Graphics.GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
+				this.Settings.FullscreenResolution.Value = new Point(display.Width, display.Height);
+			}
+
 			// Restore window state
 			if (this.Settings.Fullscreen)
 				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true);
@@ -286,6 +294,7 @@ namespace Lemma
 		{
 			Container result = new Container();
 			result.Tint.Value = Color.Black;
+			result.Add(new Binding<Color, bool>(result.Tint, x => x ? new Color(0.0f, 0.175f, 0.35f) : new Color(0.0f, 0.0f, 0.0f), result.Highlighted));
 			result.Add(new Binding<float, bool>(result.Opacity, x => x ? 1.0f : 0.5f, result.Highlighted));
 			TextElement text = new TextElement();
 			text.Name.Value = "Text";
@@ -427,11 +436,6 @@ namespace Lemma
 				new TwoWayBinding<float>(this.Settings.Gamma, this.Renderer.Gamma);
 				new TwoWayBinding<bool>(this.Settings.EnableBloom, this.Renderer.EnableBloom);
 				new TwoWayBinding<float>(this.Settings.FieldOfView, this.Camera.FieldOfView);
-				if (this.Settings.FullscreenResolution.Value.X == 0)
-				{
-					Microsoft.Xna.Framework.Graphics.DisplayMode display = Microsoft.Xna.Framework.Graphics.GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
-					this.Settings.FullscreenResolution.Value = new Point(display.Width, display.Height);
-				}
 
 				// Message list
 				this.messages = new ListContainer();
@@ -486,7 +490,7 @@ namespace Lemma
 				logo.Image.Value = "Images\\logo";
 				logo.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
 				logo.Add(new Binding<Vector2, Point>(logo.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.ScreenSize));
-				logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((this.ScreenSize.Value.X * 0.75f) / logo.Size.Value.X), this.ScreenSize, logo.Size));
+				logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((this.ScreenSize.Value.X * 0.25f) / logo.Size.Value.X), this.ScreenSize, logo.Size));
 				this.UI.Root.Children.Add(logo);
 
 				Property<UIComponent> currentMenu = new Property<UIComponent> { Value = null };
@@ -498,17 +502,6 @@ namespace Lemma
 				pauseMenu.AnchorPoint.Value = new Vector2(1, 0.5f);
 				this.UI.Root.Children.Add(pauseMenu);
 				pauseMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
-
-				Container pauseLabelContainer = new Container();
-				pauseLabelContainer.Opacity.Value = 0.0f;
-
-				TextElement pauseLabel = new TextElement();
-				pauseLabel.FontFile.Value = "Font";
-				pauseLabel.Text.Value = "L E M M A";
-				pauseLabel.Add(new Binding<bool, string>(pauseLabel.Visible, x => !string.IsNullOrEmpty(x), this.MapFile));
-				pauseLabelContainer.Children.Add(pauseLabel);
-
-				pauseMenu.Children.Add(pauseLabelContainer);
 
 				Animation pauseAnimation = null;
 
@@ -654,7 +647,7 @@ namespace Lemma
 						dialog.Delete.Execute();
 					dialog = new Container();
 					dialog.Tint.Value = Color.Black;
-					dialog.Opacity.Value = 0.2f;
+					dialog.Opacity.Value = 0.5f;
 					dialog.AnchorPoint.Value = new Vector2(0.5f);
 					dialog.Add(new Binding<Vector2, Point>(dialog.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.ScreenSize));
 					dialog.Add(new CommandBinding(dialog.Delete, delegate()
@@ -771,7 +764,7 @@ namespace Lemma
 					{
 						using (Stream stream = new FileStream(Path.Combine(this.saveDirectory, timestamp, "save.xml"), FileMode.Open, FileAccess.Read, FileShare.None))
 							info = (SaveInfo)new XmlSerializer(typeof(SaveInfo)).Deserialize(stream);
-						if (info.Version != GameMain.MapVersion)
+						if (info.Version != GameMain.Build)
 							throw new Exception();
 					}
 					catch (Exception)
@@ -869,7 +862,7 @@ namespace Lemma
 					try
 					{
 						using (Stream stream = new FileStream(Path.Combine(this.saveDirectory, this.currentSave, "save.xml"), FileMode.Create, FileAccess.Write, FileShare.None))
-							new XmlSerializer(typeof(SaveInfo)).Serialize(stream, new SaveInfo { MapFile = this.MapFile, Version = GameMain.MapVersion });
+							new XmlSerializer(typeof(SaveInfo)).Serialize(stream, new SaveInfo { MapFile = this.MapFile, Version = GameMain.Build });
 					}
 					catch (InvalidOperationException e)
 					{
@@ -948,7 +941,15 @@ namespace Lemma
 
 				TextElement settingsScrollLabel = new TextElement();
 				settingsScrollLabel.FontFile.Value = "Font";
-				settingsScrollLabel.Text.Value = "Scroll or click to modify";
+				settingsScrollLabel.Add(new Binding<string>(settingsScrollLabel.Text, delegate()
+				{
+					string val;
+					if (this.GamePadState.Value.IsConnected)
+						val = "[A] or [LeftStick] to modify";
+					else
+						val = "Scroll or click to modify";
+					return val + "\n[" + this.Settings.ToggleFullscreen.Value.ToString() + "] to toggle fullscreen";
+				}, this.Settings.ToggleFullscreen));
 				settingsLabelContainer.Children.Add(settingsScrollLabel);
 
 				Action hideSettings = delegate()
@@ -1673,47 +1674,47 @@ namespace Lemma
 				{
 					// "Press space to start" screen
 
-					this.Paused.Value = true;
-					savePausedSettings();
+					TextElement version = new TextElement();
+					version.FontFile.Value = "Font";
+					version.Text.Value = "Build " + GameMain.Build.ToString();
+					version.AnchorPoint.Value = new Vector2(1.0f, 1.0f);
+					version.Add(new Binding<Vector2, Point>(version.Position, x => new Vector2(x.X - 10.0f, x.Y - 10.0f), this.ScreenSize));
+					this.UI.Root.Children.Add(version);
 
-					TextElement header = new TextElement();
-					header.FontFile.Value = "Font";
-					header.Text.Value = GameMain.HumanReadableVersion;
-					header.AnchorPoint.Value = new Vector2(0.5f, 0);
-					header.Add(new Binding<Vector2>(header.Position, () => logo.Position + new Vector2(0, 30 + (logo.InverseAnchorPoint.Value.Y * logo.ScaledSize.Value.Y)), logo.Position, logo.InverseAnchorPoint, logo.ScaledSize));
-					this.UI.Root.Children.Add(header);
+					this.MapFile.Value = "menu";
+					this.CanSpawn = false;
+					savePausedSettings();
 
 					UIComponent startNew = this.createMenuButton("Start New");
 					startNew.Add(new CommandBinding<Point>(startNew.MouseLeftUp, delegate(Point p)
 					{
-						this.Paused.Value = false;
 						restorePausedSettings();
-						logo.Opacity.Value = 1.0f;
-						header.Opacity.Value = 1.0f;
-						header.Text.Value = "Loading...";
 						this.AddComponent(new Animation
 						(
-							new Animation.Delay(0.2f),
+							new Animation.Parallel
+							(
+								new Animation.FloatMoveTo(logo.Opacity, 0.0f, 0.2f),
+								new Animation.FloatMoveTo(version.Opacity, 0.0f, 0.2f)
+							),
 							new Animation.Set<string>(this.MapFile, this.initialMapFile)
 						));
 					}));
 					pauseMenu.Children.Insert(1, startNew);
 
 					logo.Opacity.Value = 0.0f;
-					header.Opacity.Value = 0.0f;
+					version.Opacity.Value = 0.0f;
 
-					Animation fadeAnimation = new Animation
+					this.AddComponent(new Animation
 					(
+						new Animation.Delay(0.5f),
 						new Animation.Parallel
 						(
 							new Animation.FloatMoveTo(logo.Opacity, 1.0f, 1.0f),
-							new Animation.FloatMoveTo(header.Opacity, 1.0f, 1.0f)
+							new Animation.FloatMoveTo(version.Opacity, 1.0f, 1.0f)
 						)
-					);
+					));
 
-					this.AddComponent(fadeAnimation);
-
-					new CommandBinding(this.MapLoaded, header.Delete);
+					new CommandBinding(this.MapLoaded, version.Delete);
 
 					startNew.Add(new CommandBinding(this.MapLoaded, startNew.Delete));
 				}
@@ -1735,9 +1736,12 @@ namespace Lemma
 				new CommandBinding(this.MapLoaded, delegate()
 				{
 					this.respawnTimer = -1.0f;
+					this.CanSpawn = true;
 					this.mapJustLoaded = true;
 					this.Renderer.InternalGamma.Value = GameMain.startGamma;
 					this.Renderer.Brightness.Value = 1.0f;
+					this.Renderer.BlurAmount.Value = 0.0f;
+					this.Renderer.Tint.Value = new Vector3(1.0f);
 				});
 
 				logo.Add(new CommandBinding(this.MapLoaded, delegate() { resume.Visible.Value = saveButton.Visible.Value = true; }));

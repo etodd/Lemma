@@ -1670,7 +1670,7 @@ namespace Lemma.Components
 				{
 					Chunk chunk = this.GetChunk(coord.X, coord.Y, coord.Z, false);
 
-					if (chunk == null)
+					if (chunk == null || (!this.main.EditorEnabled && !this.EnablePhysics))
 						continue;
 
 					Box box = chunk.Data[coord.X - chunk.X, coord.Y - chunk.Y, coord.Z - chunk.Z];
@@ -2391,7 +2391,7 @@ namespace Lemma.Components
 		protected bool regenerateSurfaces(Box box, bool firstTime = false)
 		{
 			bool permanent = box.Type.Permanent;
-			if (permanent && !firstTime && box.Added)
+			if (permanent && !firstTime && box.Added && !main.EditorEnabled)
 				return false;
 			int x, y, z;
 			Surface surface;
@@ -2590,6 +2590,9 @@ namespace Lemma.Components
 		public void RegenerateImmediately(Action<List<DynamicMap>> callback = null)
 		{
 			List<DynamicMap> spawnedMaps = new List<DynamicMap>();
+
+			if (!this.main.EditorEnabled && !this.EnablePhysics)
+				return;
 
 			lock (this.MutationLock)
 			{

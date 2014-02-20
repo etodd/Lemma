@@ -2059,8 +2059,6 @@ namespace Lemma.Factories
 				}
 			});
 
-			input.Bind(settings.Jump, player.Jumping);
-
 			input.Bind(settings.Jump, PCInput.InputState.Up, delegate()
 			{
 				player.SlowMotion.Value = false;

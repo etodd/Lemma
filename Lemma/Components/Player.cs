@@ -70,8 +70,6 @@ namespace Lemma.Components
 		public Property<bool> SlowMotion = new Property<bool> { Editable = false };
 		[XmlIgnore]
 		public Property<WallRun> WallRunState = new Property<WallRun> { Editable = false, Value = WallRun.None };
-		[XmlIgnore]
-		public Property<bool> Jumping = new Property<bool> { Editable = false };
 
 		[XmlIgnore]
 		public Command<Collidable, ContactCollection> Collided = new Command<Collidable, ContactCollection>();
@@ -141,7 +139,6 @@ namespace Lemma.Components
 			this.Add(new TwoWayBinding<bool>(this.Crouched, this.character.Crouched));
 			this.Add(new TwoWayBinding<bool>(this.AllowUncrouch, this.character.AllowUncrouch));
 			this.Add(new TwoWayBinding<float>(this.SupportHeight, this.character.SupportHeight));
-			this.Add(new TwoWayBinding<bool>(this.Jumping, this.character.Jumping));
 			this.Add(new CommandBinding<Collidable, ContactCollection>(this.character.Collided, this.Collided));
 			this.Add(new Binding<float, bool>(this.Height, x => x ? CrouchedCharacterHeight : DefaultCharacterHeight, this.Crouched));
 

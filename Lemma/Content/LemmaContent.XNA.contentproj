@@ -193,6 +193,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Name>intro</Name>
     </None>
+    <None Include="Maps\menu.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Name>menu</Name>
+    </None>
     <Compile Include="Maps\papers.fbx">
       <Name>papers</Name>
       <Importer>FbxImporter</Importer>
@@ -200,6 +204,10 @@
       <ProcessorParameters_EffectFileName>..\Effects\Default.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_DiffuseTexture>papers.jpg</ProcessorParameters_DiffuseTexture>
     </Compile>
+    <None Include="Maps\menu.map">
+      <Name>menu</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Maps\wallrun.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Name>wallrun</Name>
@@ -355,6 +363,11 @@
       <Name>wallrun</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Compile Include="Models\pointlight.fbx">
+      <Name>pointlight</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>ModelProcessor</Processor>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Effects\Animation.fx">

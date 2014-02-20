@@ -234,7 +234,7 @@ namespace Lemma.Components
 			if (Renderer.pointLightModel == null || reload)
 			{
 				// Load light models
-				Renderer.pointLightModel = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>("Models\\sphere");
+				Renderer.pointLightModel = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>("Models\\pointlight");
 				Renderer.spotLightModel = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>("Models\\spotlight");
 			}
 
@@ -491,7 +491,7 @@ namespace Lemma.Components
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.pointLightEffect);
 			foreach (PointLight light in PointLight.All)
 			{
-				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || !parameters.Camera.BoundingFrustum.Value.Intersects(light.BoundingSphere))
+				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || light.Color.Value.LengthSquared() == 0.0f || !parameters.Camera.BoundingFrustum.Value.Intersects(light.BoundingSphere))
 					continue;
 
 				this.lightingManager.SetPointLightParameters(light, Renderer.pointLightEffect);
@@ -509,7 +509,7 @@ namespace Lemma.Components
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.spotLightEffect);
 			foreach (SpotLight light in SpotLight.All)
 			{
-				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || !parameters.Camera.BoundingFrustum.Value.Intersects(light.BoundingFrustum))
+				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || light.Color.Value.LengthSquared() == 0.0f || !parameters.Camera.BoundingFrustum.Value.Intersects(light.BoundingFrustum))
 					continue;
 
 				this.lightingManager.SetSpotLightParameters(light, Renderer.spotLightEffect);

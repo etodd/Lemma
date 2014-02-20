@@ -75,6 +75,12 @@ namespace Lemma.Components
 			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.RenderTargetSize));
 			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.main.ScreenSize));
 			this.lastMouseState = this.main.LastMouseState;
+			this.main.GraphicsDevice.DeviceReset += this.deviceReset;
+		}
+
+		private void deviceReset(object sender, EventArgs e)
+		{
+			this.needResize = true;
 		}
 
 		public override void LoadContent(bool reload)
@@ -148,6 +154,7 @@ namespace Lemma.Components
 				this.RenderTarget.Value.Dispose();
 				this.RenderTarget.Value = null;
 			}
+			this.main.GraphicsDevice.DeviceReset -= this.deviceReset;
 			this.main.RemoveComponent(this.Root);
 		}
 	}

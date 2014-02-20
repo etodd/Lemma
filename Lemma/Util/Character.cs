@@ -91,8 +91,6 @@ namespace Lemma.Util
 
 		public Property<bool> EnableWalking = new Property<bool> { Value = true };
 
-		public Property<bool> Jumping = new Property<bool>();
-
 		/// <summary>
 		/// The location of the player's feet.
 		/// </summary>

@@ -124,27 +124,6 @@ namespace Lemma.Components
 			rebindCommand();
 		}
 
-		public void Bind(Property<PCInput.PCInputBinding> inputBinding, Property<bool> target)
-		{
-			Binding<bool> binding = null;
-			Action rebind = delegate()
-			{
-				if (binding != null)
-					this.Remove(binding);
-
-				PCInput.PCInputBinding ib = inputBinding;
-				if (ib.Key == Keys.None && ib.MouseButton == PCInput.MouseButton.None)
-					binding = null;
-				else
-				{
-					binding = new Binding<bool>(target, this.GetInput(ib));
-					this.Add(binding);
-				}
-			};
-			this.Add(new NotifyBinding(rebind, inputBinding));
-			rebind();
-		}
-
 		protected Dictionary<Keys, Property<bool>> keyProperties = new Dictionary<Keys, Property<bool>>();
 
 		protected Dictionary<Keys, Command> keyUpCommands = new Dictionary<Keys, Command>();
@@ -313,26 +292,31 @@ namespace Lemma.Components
 			this.nextInputListeners.Add(listener);
 		}
 
-		public Property<bool> GetInput(PCInputBinding binding)
+		public bool GetInput(PCInputBinding binding)
 		{
+			bool result = false;
+
 			if (binding.Key != Keys.None)
-				return this.GetKey(binding.Key);
-			else if (binding.MouseButton != MouseButton.None)
+				result |= this.GetKey(binding.Key);
+
+			switch (binding.MouseButton)
 			{
-				switch (binding.MouseButton)
-				{
-					case MouseButton.LeftMouseButton:
-						return this.LeftMouseButton;
-					case MouseButton.MiddleMouseButton:
-						return this.MiddleMouseButton;
-					case MouseButton.RightMouseButton:
-						return this.RightMouseButton;
-					default:
-						return null;
-				}
+				case MouseButton.LeftMouseButton:
+					result |= this.LeftMouseButton;
+					break;
+				case MouseButton.MiddleMouseButton:
+					result |= this.MiddleMouseButton;
+					break;
+				case MouseButton.RightMouseButton:
+					result |= this.RightMouseButton;
+					break;
+				default:
+					break;
 			}
-			else
-				return this.GetButton(binding.GamePadButton);
+
+			result |= this.GetButton(binding.GamePadButton);
+
+			return result;
 		}
 
 		public Command GetInputUp(PCInputBinding binding)
