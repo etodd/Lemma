@@ -365,7 +365,7 @@ namespace Lemma.Factories
 				}
 				rotationLocked.InternalValue = value;
 			};
-			
+
 			// When rotation is locked, we want to make sure the player can't turn their head
 			// 180 degrees from the direction they're facing
 
@@ -403,12 +403,12 @@ namespace Lemma.Factories
 
 			Map.GlobalRaycastResult groundRaycast = new Map.GlobalRaycastResult();
 
-			Command<Map, Map.Coordinate?> walkedOn = new Command<Map,Map.Coordinate?>();
+			Command<Map, Map.Coordinate?> walkedOn = new Command<Map, Map.Coordinate?>();
 			result.Add("WalkedOn", walkedOn);
 
 			int neutralID = WorldFactory.StatesByName["Neutral"].ID,
 				temporaryID = WorldFactory.StatesByName["Temporary"].ID;
-			
+
 			result.Add(new CommandBinding<Map, Map.Coordinate?>(walkedOn, delegate(Map map, Map.Coordinate? coord)
 			{
 				if (coord.HasValue)
@@ -642,7 +642,7 @@ namespace Lemma.Factories
 
 			player.Crouched.Value = true;
 			player.AllowUncrouch.Value = true;
-			
+
 			// Update animation
 			bool lastSupported = false;
 			bool canKick = false;
@@ -1063,7 +1063,7 @@ namespace Lemma.Factories
 								break;
 							}
 						}
-						
+
 						if (activate)
 						{
 							setUpWallRun(map, dir, state, forwardVector, addInitialVelocity);
@@ -1194,7 +1194,7 @@ namespace Lemma.Factories
 					}
 
 					string wallRunAnimation;
-					switch(wallRunState)
+					switch (wallRunState)
 					{
 						case Player.WallRun.Straight:
 							wallRunAnimation = "WallWalkStraight";
@@ -1273,14 +1273,14 @@ namespace Lemma.Factories
 						return;
 
 					wallInstantiationTimer = Math.Max(0.0f, wallInstantiationTimer - dt);
-					
+
 					Vector3 coordPos = wallRunMap.GetAbsolutePosition(coord);
 
 					Vector3 normal = wallRunMap.GetAbsoluteVector(wallDirection.GetVector());
 					// Equation of a plane
 					// normal (dot) point = d
 					float d = Vector3.Dot(normal, coordPos);
-					
+
 					// Distance along the normal to keep the player glued to the wall
 					float snapDistance = d - Vector3.Dot(pos, normal);
 
@@ -1472,7 +1472,7 @@ namespace Lemma.Factories
 						EndCoord = new Map.Coordinate { X = Math.Max(startCoord.X, endCoord.X), Y = Math.Max(startCoord.Y, endCoord.Y), Z = Math.Max(startCoord.Z, endCoord.Z) },
 					};
 				}
-				
+
 				return null;
 			};
 
@@ -2511,14 +2511,14 @@ namespace Lemma.Factories
 			{
 				Container bg = new Container();
 				bg.Tint.Value = color;
-				bg.Opacity.Value = 0.5f;
 				bg.PaddingBottom.Value = bg.PaddingLeft.Value = bg.PaddingRight.Value = bg.PaddingTop.Value = padding * 0.5f;
-				bg.Add(new Binding<float, bool>(bg.Opacity, x => x ? 0.75f : 1.0f, bg.Highlighted));
+				Color highlightColor = new Color(color.ToVector4() + new Vector4(0.2f, 0.2f, 0.2f, 0.0f));
+				bg.Add(new Binding<Color, bool>(bg.Tint, x => x ? highlightColor : color, bg.Highlighted));
 
 				TextElement msg = new TextElement();
+				msg.Name.Value = "Text";
 				msg.FontFile.Value = "Font";
 				msg.Text.Value = text;
-				msg.Opacity.Value = 1.0f;
 				msg.WrapWidth.Value = width;
 				bg.Children.Add(msg);
 				return bg;
@@ -2545,9 +2545,11 @@ namespace Lemma.Factories
 			phoneUi.Root.Children.Add(phoneLayout);
 
 			Color incomingColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
-			Color outgoingColor = new Color(0.0f, 0.2f, 0.4f, 1.0f);
+			Color outgoingColor = new Color(0.0f, 0.175f, 0.35f, 1.0f);
 
 			Container composeButton = makeButton(new Color(0.5f, 0.0f, 0.0f, 1.0f), "Compose", messageWidth - padding * 2.0f);
+			TextElement composeText = (TextElement)composeButton.GetChildByName("Text");
+			composeText.Add(new Binding<string, GamePadState>(composeText.Text, x => x.IsConnected ? "Compose [A]" : "Compose", main.GamePadState));
 			UIComponent composeAlign = makeAlign(composeButton, true);
 
 			Scroller phoneScroll = new Scroller();
@@ -2577,9 +2579,18 @@ namespace Lemma.Factories
 			answerList.Alignment.Value = ListContainer.ListAlignment.Max;
 			answerContainer.Children.Add(answerList);
 
+			int selectedAnswer = 0;
+
 			composeButton.Add(new CommandBinding<Point>(composeButton.MouseLeftUp, delegate(Point p)
 			{
 				answerContainer.Visible.Value = !answerContainer.Visible;
+				if (answerContainer.Visible && main.GamePadState.Value.IsConnected)
+				{
+					selectedAnswer = 0;
+					foreach (UIComponent answer in answerList.Children)
+						answer.Highlighted.Value = false;
+					answerList.Children[0].Highlighted.Value = true;
+				}
 			}));
 
 			Action scrollToBottom = delegate()
@@ -2737,9 +2748,35 @@ namespace Lemma.Factories
 				}
 			});
 
+			// Gamepad code for the phone
+
+			input.Add(new CommandBinding(input.GetButtonUp(Buttons.A), () => phoneActive, delegate()
+			{
+				if (answerContainer.Visible)
+					answerList.Children[selectedAnswer].MouseLeftUp.Execute(new Point());
+				else
+					answerContainer.Visible.Value = true;
+			}));
+
+			input.Add(new CommandBinding(input.GetButtonUp(Buttons.B), () => phoneActive && answerContainer.Visible, delegate()
+			{
+				answerContainer.Visible.Value = false;
+			}));
+
 			Action<int> scrollPhone = delegate(int delta)
 			{
-				phoneScroll.MouseScrolled.Execute(new Point(), delta * -4);
+				if (answerContainer.Visible)
+				{
+					answerList.Children[selectedAnswer].Highlighted.Value = false;
+					selectedAnswer += delta;
+					while (selectedAnswer < 0)
+						selectedAnswer += answerList.Children.Count;
+					while (selectedAnswer > answerList.Children.Count - 1)
+						selectedAnswer -= answerList.Children.Count;
+					answerList.Children[selectedAnswer].Highlighted.Value = true;
+				}
+				else
+					phoneScroll.MouseScrolled.Execute(new Point(), delta * -4);
 			};
 
 			input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickUp), () => phoneActive, delegate()
@@ -2823,6 +2860,7 @@ namespace Lemma.Factories
 						bool show = phone.ActiveAnswers.Count > 0 && phone.Schedules.Count == 0;
 						answerContainer.Visible.Value &= show;
 						composeButton.Visible.Value = show;
+						selectedAnswer = 0;
 					};
 					composeButton.Add(new ListNotifyBinding<Phone.Ans>(refreshComposeButtonVisibility, phone.ActiveAnswers));
 					composeButton.Add(new ListNotifyBinding<Phone.Schedule>(refreshComposeButtonVisibility, phone.Schedules));
