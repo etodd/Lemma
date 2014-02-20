@@ -113,7 +113,7 @@ namespace Lemma.Components
 					}
 				}
 			}
-			map.Empty(removals);
+			map.Empty(removals, true);
 
 			for (int x = start.X; x < end.X; x++)
 			{
@@ -314,7 +314,7 @@ namespace Lemma.Components
 						coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords());
 
 					List<Map.Coordinate> coords = coordEnumerable.ToList();
-					m.Empty(coords);
+					m.Empty(coords, true);
 					foreach (Map.Coordinate c in coords)
 						m.Fill(c, material);
 					m.Regenerate();
@@ -340,7 +340,7 @@ namespace Lemma.Components
 					if (material == oldMaterial)
 						return;
 					List<Map.Coordinate> coords = m.Chunks.SelectMany(x => x.Boxes).Where(x => x.Type == oldMaterial).SelectMany(x => x.GetCoords()).ToList();
-					m.Empty(coords);
+					m.Empty(coords, true);
 					foreach (Map.Coordinate c in coords)
 						m.Fill(c, material);
 					m.Regenerate();
@@ -374,7 +374,7 @@ namespace Lemma.Components
 						coordEnumerable = selectedBox.GetCoords();
 
 					List<Map.Coordinate> coords = coordEnumerable.ToList();
-					m.Empty(coords);
+					m.Empty(coords, true);
 					foreach (Map.Coordinate c in coords)
 						m.Fill(c, material);
 					m.Regenerate();
@@ -415,7 +415,7 @@ namespace Lemma.Components
 					coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords());
 
 				List<Map.Coordinate> coords = coordEnumerable.ToList();
-				m.Empty(coords);
+				m.Empty(coords, true);
 				m.Regenerate();
 			};
 
@@ -432,7 +432,7 @@ namespace Lemma.Components
 
 				Map.CellState material = selectedBox.Type;
 
-				m.Empty(m.Chunks.SelectMany(x => x.Boxes).Where(x => x.Type == material).SelectMany(x => x.GetCoords()).ToList());
+				m.Empty(m.Chunks.SelectMany(x => x.Boxes).Where(x => x.Type == material).SelectMany(x => x.GetCoords()).ToList(), true);
 				m.Regenerate();
 			};
 
@@ -634,7 +634,7 @@ namespace Lemma.Components
 						else if (this.Empty)
 						{
 							if (this.VoxelSelectionActive)
-								map.Empty(this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd).Where(x => generator.GetValue(map, x).ID == 0));
+								map.Empty(this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd).Where(x => generator.GetValue(map, x).ID == 0), true);
 							else
 								this.brushStroke(map, coord, this.BrushSize, x => generator.GetValue(map, x), false, true);
 						}
@@ -655,7 +655,7 @@ namespace Lemma.Components
 						else if (this.Empty)
 						{
 							if (this.VoxelSelectionActive)
-								map.Empty(this.VoxelSelectionStart, this.VoxelSelectionEnd);
+								map.Empty(this.VoxelSelectionStart, this.VoxelSelectionEnd, true);
 							else
 								this.brushStroke(map, coord, this.BrushSize, new Map.CellState());
 						}
@@ -708,7 +708,7 @@ namespace Lemma.Components
 									}
 								}
 							}
-							map.Empty(removals);
+							map.Empty(removals, true);
 						}
 					}
 					map.Regenerate();
@@ -818,7 +818,7 @@ namespace Lemma.Components
 			}
 
 			if (empty)
-				map.Empty(coords.Where(x => x.Data.ID == 0));
+				map.Empty(coords.Where(x => x.Data.ID == 0), true);
 
 			if (fill)
 			{
@@ -843,7 +843,7 @@ namespace Lemma.Components
 				}
 			}
 			if (state.ID == 0)
-				map.Empty(coords);
+				map.Empty(coords, true);
 			else
 			{
 				foreach (Map.Coordinate coord in coords)

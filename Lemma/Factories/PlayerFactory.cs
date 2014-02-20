@@ -2252,9 +2252,9 @@ namespace Lemma.Factories
 			{
 				if (kickUpdate == null && !rolling && !player.IsSwimming)
 				{
-					if (!player.EnableRoll || !player.EnableMoves || phoneActive)
+					if (!player.EnableRoll || !player.EnableMoves)
 					{
-						if (player.EnableCrouch && player.IsSupported)
+						if (player.EnableWalking && player.EnableCrouch && player.IsSupported)
 						{
 							// Just crouch, don't roll
 							player.Crouched.Value = true;
@@ -2463,6 +2463,7 @@ namespace Lemma.Factories
 			const float screenScale = 0.0007f;
 			screen.Scale.Value = new Vector3(1.0f, (float)phoneUi.RenderTargetSize.Value.Y * screenScale, (float)phoneUi.RenderTargetSize.Value.X * screenScale);
 
+			// Transform screen space mouse position into 3D, then back into the 2D space of the phone UI
 			phoneUi.MouseFilter = delegate(MouseState mouse)
 			{
 				Microsoft.Xna.Framework.Graphics.Viewport viewport = main.GraphicsDevice.Viewport;
@@ -2594,6 +2595,81 @@ namespace Lemma.Factories
 				));
 			};
 
+			// Note
+
+			UIRenderer noteUi = result.GetOrCreate<UIRenderer>("NoteUI");
+
+			const float noteWidth = 400.0f;
+			const float noteScale = 0.0009f;
+
+			noteUi.RenderTargetBackground.Value = new Microsoft.Xna.Framework.Color(1.0f, 0.95f, 0.9f);
+			noteUi.RenderTargetSize.Value = new Point((int)noteWidth, (int)(noteWidth * 1.29f)); // 8.5x11 aspect ratio
+			noteUi.Serialize = false;
+			noteUi.Enabled.Value = false;
+
+			Model note = result.GetOrCreate<Model>("Note");
+			note.Filename.Value = "Models\\plane";
+			note.EffectFile.Value = "Effects\\Default";
+			note.Add(new Binding<Microsoft.Xna.Framework.Graphics.RenderTarget2D>(note.GetRenderTarget2DParameter("Diffuse" + Model.SamplerPostfix), noteUi.RenderTarget));
+			note.Add(new Binding<Matrix>(note.Transform, x => Matrix.CreateTranslation(-0.005f, 0.05f, 0.08f) * x, phoneModel.Transform));
+			note.Scale.Value = new Vector3(1.0f, (float)noteUi.RenderTargetSize.Value.Y * noteScale, (float)noteUi.RenderTargetSize.Value.X * noteScale);
+			note.Serialize = false;
+			note.Enabled.Value = false;
+
+			Property<bool> noteActive = result.GetOrMakeProperty<bool>("NoteActive");
+			Property<string> noteText = result.GetOrMakeProperty<string>("NoteText");
+			Property<string> noteImage = result.GetOrMakeProperty<string>("NoteImage");
+
+			// Note UI
+
+			const float notePadding = 40.0f;
+
+			ListContainer noteLayout = new ListContainer();
+			noteLayout.Spacing.Value = padding;
+			noteLayout.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			noteLayout.Alignment.Value = ListContainer.ListAlignment.Min;
+			noteLayout.Position.Value = new Vector2(notePadding, notePadding);
+			noteLayout.Add(new Binding<Vector2, Point>(noteLayout.Size, x => new Vector2(x.X - notePadding * 2.0f, x.Y - notePadding * 2.0f), noteUi.RenderTargetSize));
+			noteUi.Root.Children.Add(noteLayout);
+
+			Sprite noteUiImage = new Sprite();
+			noteUiImage.Add(new Binding<string>(noteUiImage.Image, noteImage));
+			noteLayout.Children.Add(noteUiImage);
+
+			TextElement noteUiText = new TextElement();
+			noteUiText.FontFile.Value = "Font";
+			noteUiText.Tint.Value = new Microsoft.Xna.Framework.Color(0.1f, 0.1f, 0.1f);
+			noteUiText.Add(new Binding<string>(noteUiText.Text, noteText));
+			noteUiText.Add(new Binding<float, Vector2>(noteUiText.WrapWidth, x => x.X, noteLayout.Size));
+			noteLayout.Children.Add(noteUiText);
+
+			// Toggle note
+
+			Action<bool> showNote = delegate(bool show)
+			{
+				noteActive.Value = show;
+				input.EnableLook.Value = input.EnableMouse.Value = !noteActive;
+				main.IsMouseVisible.Value = noteActive;
+				player.EnableWalking.Value = !noteActive;
+				note.Enabled.Value = noteActive;
+				noteUi.Enabled.Value = noteActive;
+
+				model.Stop("Phone");
+				if (noteActive)
+				{
+					model.StartClip("Phone", 6, true);
+					float startRotationY = input.Mouse.Value.Y;
+					// Level the player's view
+					result.Add(new Animation
+					(
+						new Animation.Custom(delegate(float x)
+						{
+							input.Mouse.Value = new Vector2(input.Mouse.Value.X, startRotationY * (1.0f - x));
+						}, 0.5f)
+					));
+				}
+			};
+
 			// Toggle phone
 
 			Container togglePhoneMessage = null;
@@ -2634,7 +2710,10 @@ namespace Lemma.Factories
 							phoneTutorialMessage = ((GameMain)main).ShowMessage("Scroll to read more.");
 						}
 						phoneScroll.CheckLayout();
+
 						model.StartClip("Phone", 6, true);
+
+						// Level the player's view
 						float startRotationY = input.Mouse.Value.Y;
 						result.Add(new Animation
 						(
@@ -2649,8 +2728,13 @@ namespace Lemma.Factories
 
 			input.Bind(settings.TogglePhone, PCInput.InputState.Up, delegate()
 			{
-				if (phone.CanReceiveMessages)
-					showPhone(!phoneActive);
+				if (noteActive || phoneActive || phone.CanReceiveMessages)
+				{
+					if (!phoneActive && (!string.IsNullOrEmpty(noteText) || !string.IsNullOrEmpty(noteImage)))
+						showNote(!noteActive);
+					else
+						showPhone(!phoneActive);
+				}
 			});
 
 			Action<int> scrollPhone = delegate(int delta)
@@ -2698,17 +2782,13 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
 					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableWallRunHorizontal"), player.EnableWallRunHorizontal));
 					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
-					result.Add(new NotifyBinding(delegate()
-					{
-						result.Get<Phone>();
-					}, dataEntity.GetProperty<bool>("EnableEnhancedWallRun")));
 					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
 					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableMoves"), player.EnableMoves));
 					result.Add(new TwoWayBinding<float>(dataEntity.GetProperty<float>("MaxSpeed"), player.MaxSpeed));
 
 					phone = dataEntity.GetOrCreate<Phone>("Phone");
 
-					result.Add(new Binding<bool>(phone.CanReceiveMessages, () => player.IsSupported && !player.IsSwimming && !player.Crouched && phone.Enabled, player.IsSupported, player.IsSwimming, player.Crouched, phone.Enabled));
+					result.Add(new Binding<bool>(phone.CanReceiveMessages, () => player.IsSupported && !player.IsSwimming && !player.Crouched && phone.Enabled && !noteActive, player.IsSupported, player.IsSwimming, player.Crouched, phone.Enabled, noteActive));
 
 					msgList.Add(new ListBinding<UIComponent, Phone.Message>
 					(
@@ -2758,7 +2838,9 @@ namespace Lemma.Factories
 						scrollToBottom();
 					}));
 
-					if (phoneActive)
+					if (noteActive)
+						showNote(true);
+					else if (phoneActive)
 						showPhone(true);
 				}
 			});

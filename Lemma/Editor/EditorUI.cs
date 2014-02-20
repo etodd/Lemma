@@ -16,6 +16,7 @@ namespace Lemma.Components
 	{
 		private const float precisionDelta = 0.025f;
 		private const float normalDelta = 1.0f;
+		private const float stringNavigateInterval = 0.06f;
 
 		private static Keys[] ignoredKeys = new Keys[]
 		{ 
@@ -389,7 +390,7 @@ namespace Lemma.Components
 			Keys[] keys = unfilteredKeys.Except(this.lastPressedKeys).ToArray();
 			if (this.StringPropertyLocked && unfilteredKeys.Length > 0)
 			{
-				if (this.selectedStringNavigateInterval > 0.1f)
+				if (this.selectedStringNavigateInterval > EditorUI.stringNavigateInterval)
 				{
 					if (unfilteredKeys.Contains(Keys.Back))
 					{
@@ -671,6 +672,7 @@ namespace Lemma.Components
 							this.selectedStringBinding = binding;
 							this.selectedStringValue = socket.Value ?? "";
 							this.selectedStringIndex = this.selectedStringValue.Length;
+							this.selectedStringAllowMultiline = true;
 							this.selectedStringDisplayProperty.Value = this.selectedStringValue.Insert(this.selectedStringIndex, "_");
 							this.StringPropertyLocked.Value = true;
 						}
@@ -683,7 +685,7 @@ namespace Lemma.Components
 					textField.Add(binding);
 					field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point mouse)
 					{
-						this.lockStringProperty(textField.Text, socket, socket.Value.ID ?? "", binding);
+						this.lockStringProperty(textField.Text, socket, socket.Value.ID ?? "", binding, true);
 					}));
 				}
 				else if (propertyInfo.PropertyType.Equals(typeof(Matrix)))

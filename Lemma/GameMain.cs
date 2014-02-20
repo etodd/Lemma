@@ -112,6 +112,12 @@ namespace Lemma
 		public GameMain(bool allowEditing, string mapFile)
 			: base()
 		{
+#if DEBUG
+			Log.Handler = delegate(string log)
+			{
+				this.HideMessage(this.ShowMessage(log), 2.0f);
+			};
+#endif
 			this.graphics.PreparingDeviceSettings += delegate(object sender, PreparingDeviceSettingsEventArgs args)
 			{
 				this.supportedDisplayModes = args.GraphicsDeviceInformation.Adapter.SupportedDisplayModes;

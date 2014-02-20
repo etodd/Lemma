@@ -40,7 +40,11 @@ namespace Lemma.Scripts
 		{
 			Entity triggerEntity = ScriptBase.get(id);
 			if (triggerEntity == null)
-				throw new Exception("Entity " + id + " not found!");
+			{
+				Log.d("Trigger entity " + id + " not found!");
+				return;
+			}
+
 			Trigger trigger = triggerEntity.Get<Trigger>();
 			Action[] callbacks;
 			if (oneTimeOnly)

@@ -23,7 +23,9 @@ namespace Lemma.Factories
 			Transform transform = new Transform();
 			result.Add("Transform", transform);
 
-			result.Add("Trigger", new PlayerTrigger());
+			PlayerTrigger trigger = new PlayerTrigger();
+			trigger.Enabled.Value = false;
+			result.Add("Trigger", trigger);
 
 			return result;
 		}
@@ -60,7 +62,7 @@ namespace Lemma.Factories
 			spawn.Add(new TwoWayBinding<Vector3>(transform.Position, spawn.Position));
 			spawn.Add(new Binding<float, Vector3>(spawn.Rotation, x => ((float)Math.PI * -0.5f) - (float)Math.Atan2(x.Z, x.X), transform.Forward));
 
-			PlayerTrigger trigger = result.Get<PlayerTrigger>();
+			PlayerTrigger trigger = result.GetOrCreate<PlayerTrigger>("Trigger");
 			trigger.Enabled.Editable = true;
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity player) { spawn.Activate.Execute(); }));

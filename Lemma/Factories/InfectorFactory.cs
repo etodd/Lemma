@@ -58,7 +58,7 @@ namespace Lemma.Factories
 					{
 						List<Map.Coordinate> contiguous = m.GetContiguousByType(new[] { m.GetBox(coord.Value) }).SelectMany(x => x.GetCoords()).ToList();
 
-						m.Empty(contiguous, null, false);
+						m.Empty(contiguous, false, null, false);
 						foreach (Map.Coordinate c in contiguous)
 						{
 							bool isStart = c.Equivalent(coord.Value);
@@ -67,7 +67,7 @@ namespace Lemma.Factories
 					}
 					else
 					{
-						m.Empty(coord.Value, null, false);
+						m.Empty(coord.Value, false, null, false);
 						m.Fill(coord.Value, infected);
 					}
 					m.Regenerate();

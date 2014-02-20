@@ -1561,17 +1561,17 @@ namespace Lemma.Components
 			return this.Fill(coord.X, coord.Y, coord.Z, state, notify);
 		}
 
-		public bool Empty(Vector3 pos, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(Vector3 pos, bool force = false, Map transferringToNewMap = null, bool notify = true)
 		{
-			return this.Empty(this.GetCoordinate(pos), transferringToNewMap, notify);
+			return this.Empty(this.GetCoordinate(pos), force, transferringToNewMap, notify);
 		}
 
-		public bool Empty(Coordinate coord, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(Coordinate coord, bool force = false, Map transferringToNewMap = null, bool notify = true)
 		{
-			return this.Empty(coord.X, coord.Y, coord.Z, transferringToNewMap, notify);
+			return this.Empty(coord.X, coord.Y, coord.Z, force, transferringToNewMap, notify);
 		}
 
-		public bool Empty(Coordinate a, Coordinate b, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(Coordinate a, Coordinate b, bool force = false, Map transferringToNewMap = null, bool notify = true)
 		{
 			int minY = Math.Min(a.Y, b.Y);
 			int minZ = Math.Min(a.Z, b.Z);
@@ -1589,7 +1589,7 @@ namespace Lemma.Components
 					}
 				}
 			}
-			return this.Empty(coords, transferringToNewMap, notify);
+			return this.Empty(coords, force, transferringToNewMap, notify);
 		}
 
 		/// <summary>
@@ -1656,8 +1656,11 @@ namespace Lemma.Components
 				this.CompletelyEmptied.Execute();
 		}
 
-		public bool Empty(IEnumerable<Coordinate> coords, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(IEnumerable<Coordinate> coords, bool force = false, Map transferringToNewMap = null, bool notify = true)
 		{
+			if (!this.main.EditorEnabled && !this.EnablePhysics)
+				return false;
+
 			bool modified = false;
 			List<Box> boxAdditions = new List<Box>();
 			List<Coordinate> removed = new List<Coordinate>();
@@ -1667,11 +1670,11 @@ namespace Lemma.Components
 				{
 					Chunk chunk = this.GetChunk(coord.X, coord.Y, coord.Z, false);
 
-					if (chunk == null || (!this.main.EditorEnabled && !this.EnablePhysics))
+					if (chunk == null)
 						continue;
 
 					Box box = chunk.Data[coord.X - chunk.X, coord.Y - chunk.Y, coord.Z - chunk.Z];
-					if (box != null && (!box.Type.Permanent || this.main.EditorEnabled))
+					if (box != null && (!box.Type.Permanent || force))
 					{
 						this.removalCoords.Add(coord);
 						if (box != null)
@@ -1801,7 +1804,7 @@ namespace Lemma.Components
 		/// <param name="x"></param>
 		/// <param name="y"></param>
 		/// <param name="z"></param>
-		public bool Empty(int x, int y, int z, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(int x, int y, int z, bool force = false, Map transferringToNewMap = null, bool notify = true)
 		{
 			bool modified = false;
 			Map.Coordinate coord = new Coordinate { X = x, Y = y, Z = z, };
@@ -1813,7 +1816,7 @@ namespace Lemma.Components
 					return false;
 
 				Box box = chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];
-				if (box != null && (!box.Type.Permanent || this.main.EditorEnabled))
+				if (box != null && (!box.Type.Permanent || force))
 				{
 					List<Box> boxAdditions = new List<Box>();
 					coord.Data = box.Type;
@@ -2388,7 +2391,7 @@ namespace Lemma.Components
 		protected bool regenerateSurfaces(Box box, bool firstTime = false)
 		{
 			bool permanent = box.Type.Permanent;
-			if (permanent && !firstTime && box.Added && !main.EditorEnabled)
+			if (permanent && !firstTime && box.Added)
 				return false;
 			int x, y, z;
 			Surface surface;
@@ -2587,9 +2590,6 @@ namespace Lemma.Components
 		public void RegenerateImmediately(Action<List<DynamicMap>> callback = null)
 		{
 			List<DynamicMap> spawnedMaps = new List<DynamicMap>();
-
-			if (!this.main.EditorEnabled && !this.EnablePhysics)
-				return;
 
 			lock (this.MutationLock)
 			{

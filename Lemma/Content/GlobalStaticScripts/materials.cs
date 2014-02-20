@@ -184,7 +184,7 @@ WorldFactory.AddState
 	new Map.CellState
 	{
 		ID = 31,
-		Name = "MetalChannels2",
+		Name = "Metal",
 		Permanent = true,
 		Hard = true,
 		Density = 1,
