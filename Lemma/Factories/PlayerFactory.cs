@@ -1220,7 +1220,7 @@ namespace Lemma.Factories
 					{
 						Vector3 wallNormal = wallRunMap.GetAbsoluteVector(wallDirection.GetVector());
 						float animationSpeed = (player.LinearVelocity.Value - wallNormal * Vector3.Dot(player.LinearVelocity.Value, wallNormal)).Length();
-						model[wallRunAnimation].Speed = Math.Max(1.0f, Math.Min(1.5f, animationSpeed / 6.0f));
+						model[wallRunAnimation].Speed = Math.Min(1.5f, animationSpeed / 6.0f);
 					}
 
 					Vector3 pos = transform.Position + new Vector3(0, player.Height * -0.5f, 0);

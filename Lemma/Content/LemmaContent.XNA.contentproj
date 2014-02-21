@@ -197,6 +197,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Name>menu</Name>
     </None>
+    <None Include="Maps\cave.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Name>cave</Name>
+    </None>
     <Compile Include="Maps\papers.fbx">
       <Name>papers</Name>
       <Importer>FbxImporter</Importer>

@@ -97,6 +97,8 @@ namespace Lemma
 
 		private bool saveAfterTakingScreenshot = false;
 
+		private static Color highlightColor = new Color(0.0f, 0.175f, 0.35f);
+
 		private DisplayModeCollection supportedDisplayModes;
 
 		private const float startGamma = 10.0f;
@@ -290,12 +292,27 @@ namespace Lemma
 			return result;
 		}
 
-		private UIComponent createMenuButton(string label)
+		private UIComponent createMenuButtonContainer()
 		{
 			Container result = new Container();
 			result.Tint.Value = Color.Black;
-			result.Add(new Binding<Color, bool>(result.Tint, x => x ? new Color(0.0f, 0.175f, 0.35f) : new Color(0.0f, 0.0f, 0.0f), result.Highlighted));
+			result.Add(new Binding<Color, bool>(result.Tint, x => x ? GameMain.highlightColor : new Color(0.0f, 0.0f, 0.0f), result.Highlighted));
 			result.Add(new Binding<float, bool>(result.Opacity, x => x ? 1.0f : 0.5f, result.Highlighted));
+			result.Add(new NotifyBinding(delegate()
+			{
+				if (result.Highlighted)
+					Sound.PlayCue(this, "Mouse", 1.0f, -1.0f);
+			}, result.Highlighted));
+			result.Add(new CommandBinding<Point>(result.MouseLeftUp, delegate(Point p)
+			{
+				Sound.PlayCue(this, "Click", 1.0f, -1.0f);
+			}));
+			return result;
+		}
+
+		private UIComponent createMenuButton(string label)
+		{
+			UIComponent result = this.createMenuButtonContainer();
 			TextElement text = new TextElement();
 			text.Name.Value = "Text";
 			text.FontFile.Value = "Font";
@@ -784,9 +801,7 @@ namespace Lemma
 						return;
 					}
 
-					Container container = new Container();
-					container.Tint.Value = Color.Black;
-					container.Add(new Binding<float, bool>(container.Opacity, x => x ? 1.0f : 0.2f, container.Highlighted));
+					UIComponent container = this.createMenuButtonContainer();
 					container.UserData.Value = timestamp;
 
 					ListContainer layout = new ListContainer();
@@ -1445,7 +1460,7 @@ namespace Lemma
 				// Escape key
 				// Make sure we can only pause when there is a player currently spawned
 				// Otherwise we could save the current map without the player. And that would be awkward.
-				Func<bool> canPause = () => !this.EditorEnabled && ((this.player != null && this.player.Active) || this.MapFile.Value == null);
+				Func<bool> canPause = () => !this.EditorEnabled && ((this.player != null && this.player.Active) || this.MapFile.Value == "menu");
 
 				Action togglePause = delegate()
 				{
@@ -1579,27 +1594,32 @@ namespace Lemma
 					}
 				};
 
-				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickUp), () => this.Paused, delegate()
+				Func<bool> enableGamepad = delegate()
+				{
+					return this.Paused || this.MapFile.Value == "menu";
+				};
+
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickUp), enableGamepad, delegate()
 				{
 					moveSelection(-1);
 				}));
 
-				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadUp), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadUp), enableGamepad, delegate()
 				{
 					moveSelection(-1);
 				}));
 
-				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickDown), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickDown), enableGamepad, delegate()
 				{
 					moveSelection(1);
 				}));
 
-				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadDown), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadDown), enableGamepad, delegate()
 				{
 					moveSelection(1);
 				}));
 
-				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.A), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.A), enableGamepad, delegate()
 				{
 					if (dialog != null)
 						dialog.GetChildByName("Okay").MouseLeftUp.Execute(new Point());
@@ -1626,22 +1646,22 @@ namespace Lemma
 					}
 				};
 
-				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickLeft), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickLeft), enableGamepad, delegate()
 				{
 					scrollButton(-1);
 				}));
 
-				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadLeft), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadLeft), enableGamepad, delegate()
 				{
 					scrollButton(-1);
 				}));
 
-				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickRight), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickRight), enableGamepad, delegate()
 				{
 					scrollButton(1);
 				}));
 
-				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadRight), () => this.Paused, delegate()
+				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadRight), enableGamepad, delegate()
 				{
 					scrollButton(1);
 				}));
@@ -1706,11 +1726,11 @@ namespace Lemma
 
 					this.AddComponent(new Animation
 					(
-						new Animation.Delay(0.5f),
+						new Animation.Delay(1.0f),
 						new Animation.Parallel
 						(
-							new Animation.FloatMoveTo(logo.Opacity, 1.0f, 1.0f),
-							new Animation.FloatMoveTo(version.Opacity, 1.0f, 1.0f)
+							new Animation.FloatMoveTo(logo.Opacity, 1.0f, 2.0f),
+							new Animation.FloatMoveTo(version.Opacity, 1.0f, 2.0f)
 						)
 					));
 
@@ -1751,45 +1771,47 @@ namespace Lemma
 
 		public void EndGame()
 		{
-			this.MapFile.Value = null; // Clears all the entities too
+			this.MapFile.Value = "menu";
+			Sound.PlayCue(this, "Theme", 1.0f, -1.0f);
 			this.Renderer.InternalGamma.Value = 0.0f;
 			this.Renderer.Brightness.Value = 0.0f;
-			this.Renderer.BackgroundColor.Value = Color.Black;
+			this.Renderer.BackgroundColor.Value = Renderer.DefaultBackgroundColor;
 			this.IsMouseVisible.Value = true;
 
 			ListContainer list = new ListContainer();
 			list.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
-			list.Spacing.Value = 40.0f;
+			list.Add(new Binding<float, Point>(list.Spacing, x => x.Y * 0.05f, this.ScreenSize));
 			list.Alignment.Value = ListContainer.ListAlignment.Middle;
 			list.Add(new Binding<Vector2, Point>(list.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.ScreenSize));
 			this.UI.Root.Children.Add(list);
 
+			const float fadeTime = 1.0f;
+
 			Sprite logo = new Sprite();
 			logo.Image.Value = "Images\\logo";
-			logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((this.ScreenSize.Value.X * 0.75f) / logo.Size.Value.X), this.ScreenSize, logo.Size));
+			logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((this.ScreenSize.Value.X * 0.25f) / logo.Size.Value.X), this.ScreenSize, logo.Size));
+			logo.Opacity.Value = 0.0f;
+			this.AddComponent(new Animation
+			(
+				new Animation.FloatMoveTo(logo.Opacity, 1.0f, fadeTime)
+			));
 			list.Children.Add(logo);
-
-			ListContainer texts = new ListContainer();
-			texts.Spacing.Value = 40.0f;
-			list.Children.Add(texts);
 
 			Action<string> addText = delegate(string text)
 			{
 				TextElement element = new TextElement();
 				element.FontFile.Value = "Font";
 				element.Text.Value = text;
-				element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X * 0.5f, logo.ScaledSize));
-				texts.Children.Add(element);
+				element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X, logo.ScaledSize));
+				element.Opacity.Value = 0.0f;
+				this.AddComponent(new Animation
+				(
+					new Animation.FloatMoveTo(element.Opacity, 1.0f, fadeTime)
+				));
+				list.Children.Add(element);
 			};
 
-			addText("Thanks for playing! That's it for now. If you like what you see, please spread the word! Click the links below to join the discussion.");
-
-			ListContainer links = new ListContainer();
-			links.Alignment.Value = ListContainer.ListAlignment.Middle;
-			links.ResizePerpendicular.Value = false;
-			links.Spacing.Value = 20.0f;
-			links.Add(new Binding<Vector2>(links.Size, x => new Vector2(x.X * 0.5f, links.Size.Value.Y), logo.ScaledSize));
-			texts.Children.Add(links);
+			addText("Want more Lemma? Vote for it on Greenlight and back the Kickstarter!");
 
 			System.Windows.Forms.Form winForm = (System.Windows.Forms.Form)System.Windows.Forms.Form.FromHandle(this.Window.Handle);
 
@@ -1799,7 +1821,7 @@ namespace Lemma
 				element.FontFile.Value = "Font";
 				element.Text.Value = text;
 				element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X * 0.5f, logo.ScaledSize));
-				element.Add(new Binding<Color, bool>(element.Tint, x => x ? new Color(1.0f, 0.0f, 0.0f) : new Color(1.0f, 1.0f, 1.0f), element.Highlighted));
+				element.Add(new Binding<Color, bool>(element.Tint, x => x ? new Color(1.0f, 0.0f, 0.0f) : new Color(91.0f / 255.0f, 175.0f / 255.0f, 205.0f / 255.0f), element.Highlighted));
 				element.Add(new CommandBinding<Point>(element.MouseLeftUp, delegate(Point mouse)
 				{
 					Process.Start(new ProcessStartInfo(url));
@@ -1814,16 +1836,19 @@ namespace Lemma
 				{
 					winForm.Cursor = System.Windows.Forms.Cursors.Default;
 				}));
-				links.Children.Add(element);
+				element.Opacity.Value = 0.0f;
+				this.AddComponent(new Animation
+				(
+					new Animation.FloatMoveTo(element.Opacity, 1.0f, fadeTime)
+				));
+				list.Children.Add(element);
 			};
 
-			addLink("lemmagame.com", "http://lemmagame.com");
-			addLink("et1337.com", "http://et1337.com");
-			addLink("@et1337", "http://twitter.com/et1337");
-			addLink("IndieDB", "http://indiedb.com/games/lemma");
+			addLink("Kickstarter", "http://lemmagame.com");
 			addLink("Greenlight", "http://steamcommunity.com/sharedfiles/filedetails/?id=105075009");
 
-			addText("Writing, programming, and artwork by Evan Todd. Music and some sounds by Jack Menhorn. Full attribution list available on the website.");
+			addLink("@et1337", "http://twitter.com/et1337");
+			addLink("@KomradeJack", "http://twitter.com/KomradeJack");
 		}
 
 		protected void saveSettings()
