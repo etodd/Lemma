@@ -15,16 +15,6 @@ _gaq.push(['_trackPageview']);
 if (!document.implementation.hasFeature('http://www.w3.org/TR/SVG11/feature#BasicStructure', '1.1'))
 	$('header').addClass('svg-fallback');
 
-// Facebook
-(function(d, s, id)
-{
-	var js, fjs = d.getElementsByTagName(s)[0];
-	if (d.getElementById(id)) return;
-	js = d.createElement(s); js.id = id;
-	js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=254751214540576";
-	fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));
-
 // Fitvids
 $(document).ready(function()
 {

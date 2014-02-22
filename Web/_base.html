@@ -1,8 +1,9 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!doctype html>
+<html>
 <head>
-	<title>LEMMA</title>
 	<meta charset="utf-8" />
+	<title>Lemma{% block title %}{% endblock %}</title>
+	<link href="http://fonts.googleapis.com/css?family=Signika:700" rel="stylesheet" type="text/css"/>
 	<meta name="viewport" content="width=device-width" />
 	<meta name="description" content="Lemma is an immersive first-person parkour game. Every parkour move has the potential to modify the environment. Surfaces pop in and out of existence at will!" />
 	<link href="base.css" type="text/css" rel="stylesheet"/>
@@ -13,7 +14,6 @@
 	{% block extrahead %}{% endblock %}
 </head>
 <body>
-	<div id="fb-root"></div>
 	<div id="container">
 		<a href="./">
 			<header>
@@ -22,22 +22,18 @@
 		</a>
 		<table id="menu">
 			<tr>
-				<td><a href="about.html">About</a></td>
-				<td><a href="play.html">Play the alpha</a></td>
-				<td><a href="http://et1337.com/category/lemma">Blog</a></td>
+				<td><a href="play.html">Play Alpha 3</a></td>
+				<td><a href="http://et1337.com">Blog</a></td>
 				<td><a href="http://indiedb.com/games/lemma">IndieDB</a></td>
-				<td>
-					<div class="fb-like" data-href="http://www.facebook.com/lemmagame" data-send="false" data-layout="button_count" data-width="100" data-show-faces="false" data-font="tahoma"></div>
-				</td>
-				<td>
-					<a href="https://twitter.com/et1337" class="twitter-follow-button" data-show-count="true" data-lang="en">Follow</a>
-					<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-				</td>
+				<td><a href="press.html">Press</a></td>
 			</tr>
 		</table>
+	</div>
+	<div id="article-container">
 		<article>
 			{% block content %}{% endblock %}
 		</article>
 	</div>
+	{% block footer %}{% endblock %}
 </body>
 </html>

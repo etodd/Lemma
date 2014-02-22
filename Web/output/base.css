@@ -9,14 +9,10 @@ html, body
 {
 	padding: 0px;
 	margin: 0px;
-	font-family: Tahoma, Verdana, Helvetica, sans-serif;
-	font-size: small;
-}
-
-body
-{
 	background-color: #000;
 	color: #fff;
+	font-family: Tahoma, Verdana, Helvetica, sans-serif;
+	font-size: small;
 	line-height: 1.5em;
 }
 
@@ -31,13 +27,7 @@ a img
 	border: 0px;
 }
 
-blockquote
-{
-	margin-left: 0px;
-	margin-right: 0px;
-}
-
-#container
+#container, article
 {
 	max-width: 980px;
 	margin-left: auto;
@@ -71,7 +61,7 @@ a:hover
 
 h1, h2, h3
 {
-	margin-top: 20px;
+	margin-top: 1em;
 	margin-bottom: 0px;
 	font-family: Signika;
 	text-transform: uppercase;
@@ -80,6 +70,7 @@ h1, h2, h3
 
 h1
 {
+	margin-top: 0px;
 	font-size: 2.5em;
 }
 
@@ -98,9 +89,8 @@ h3
 	width: 100%;
 	padding-left: 5%;
 	padding-right: 5%;
-	padding-top: 10px;
-	padding-bottom: 10px;
-	font-family: Signika;
+	padding-top: 1em;
+	padding-bottom: 1em;
 }
 
 tr td
@@ -110,15 +100,9 @@ tr td
 
 #menu tr td a
 {
-	text-transform: uppercase;
+	font-weight: bold;
 	font-size: medium;
-	font-weight: normal;
-	color: #fff;
-}
-
-#menu tr td a:hover
-{
-	color: #ff0000;
+	text-transform: uppercase;
 }
 
 #menu tr td
@@ -136,19 +120,15 @@ table
 	width: 100%;
 }
 
-article
+#article-container
 {
-	background-color: #262626;
-	padding: 10px;
+	background-color: #222;
 }
 
-blockquote
+article
 {
-	background-color: #fff;
-	color: #000;
-	padding: 10px;
-	border-radius: 5px;
-	font-size: larger;
+	padding: 1em;
+	overflow: hidden;
 }
 
 p
@@ -156,32 +136,21 @@ p
 	line-height: 150%;
 }
 
-article #news img
+.sidebar
 {
-	max-width: 100%;
-	height: auto !important;
-	display: block;
-	margin-left: auto;
-	margin-right: auto;
-}
-
-#twitter-feed, #sidebar
-{
-	margin-bottom: 20px;
-}
-
-#sidebar
-{
-	padding: 20px;
+	padding: 1em;
 	background-color: black;
+	margin-bottom: 1em;
 }
 
-.twtr-doc
+footer
 {
-	width: 100% !important;
+	margin-top: 1em;
+	margin-bottom: 1em;
+	text-align: center;
 }
 
-@media screen and (min-width: 750px)
+@media screen and (min-width: 600px)
 {
 	tr td
 	{
@@ -192,46 +161,18 @@ article #news img
 	{
 		height: 138px;
 	}
-
-	article
-	{
-		padding: 10px;
-		padding-left: 40px;
-		padding-right: 40px;
-		background-color: rgba(40, 40, 40, 0.85);
-	}
-
-	#sidebar
-	{
-		background-color: rgba(0, 0, 0, 0.6);
-	}
 }
-
-@media screen and (min-width: 960px)
+@media screen and (min-width: 780px)
 {
-	blockquote
+	.content
 	{
-		margin-left: 40px;
-		margin-right: 40px;
-	}
-
-	article
-	{
-		padding-top: 10px;
-		padding-bottom: 30px;
-		padding-left: 70px;
-		padding-right: 70px;
-	}
-
-	#twitter-feed, #sidebar
-	{
+		width: 61%;
 		float: right;
-		margin-left: 10px;
-		width: 250px;
 	}
 
-	.twtr-doc
+	.sidebar
 	{
-		width: 250px !important;
+		float: left;
+		width: 31%;
 	}
 }

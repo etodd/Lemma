@@ -1,15 +1,20 @@
 {% extends "_base.html" %}
 
+{% block title %} - First-person parkour{% endblock %}
+
 {% block extrahead %}
 <style>
 	center
 	{
-		padding-left: 10px;
-		padding-right: 10px;
+		padding-left: 1em;
+		padding-right: 1em;
+	}
+	#article-container
+	{
+		background-color: transparent;
 	}
 	article
 	{
-		background-color: transparent;
 		padding-left: 0px;
 		padding-right: 0px;
 		padding-bottom: 0px;
@@ -25,4 +30,11 @@
 	</center>
 	<br />
 	<iframe width="560" height="315" src="http://www.youtube.com/embed/wwnujGWmhEg?autohide=1&modestbranding=1&rel=0&showinfo=0" frameborder="0" allowfullscreen></iframe>
+{% endblock %}
+
+{% block footer %}
+	<footer>
+		<a href="https://twitter.com/et1337" class="twitter-follow-button" data-show-count="true" data-lang="en">Follow</a>
+		<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="http://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+	</footer>
 {% endblock %}
