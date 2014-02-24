@@ -203,7 +203,7 @@ namespace Lemma.Factories
 			result.CannotSuspend = true;
 
 			result.Add(new TwoWayBinding<string>(result.GetProperty<string>("LightRampTexture"), main.Renderer.LightRampTexture));
-			result.Add(new TwoWayBinding<string>(result.GetOrMakeProperty<string>("EnvironmentMap", true, "Maps\\env0"), main.Renderer.EnvironmentMap));
+			result.Add(new TwoWayBinding<string>(result.GetOrMakeProperty<string>("EnvironmentMap", true, "Images\\env0"), main.Renderer.EnvironmentMap));
 			result.Add(new TwoWayBinding<Vector3>(result.GetOrMakeProperty<Vector3>("EnvironmentColor", true, Vector3.One), main.Renderer.EnvironmentColor));
 			result.Add(new TwoWayBinding<Color>(result.GetProperty<Color>("BackgroundColor"), main.Renderer.BackgroundColor));
 			result.Add(new TwoWayBinding<float>(result.GetProperty<float>("FarPlaneDistance"), main.Camera.FarPlaneDistance));

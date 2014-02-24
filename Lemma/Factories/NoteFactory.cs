@@ -29,7 +29,7 @@ namespace Lemma.Factories
 			Model model = result.GetOrCreate<Model>("Model");
 			this.SetMain(result, main);
 			model.Serialize = false;
-			model.Filename.Value = "Maps\\papers";
+			model.Filename.Value = "Models\\papers";
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 
 			Property<string> text = result.GetOrMakeProperty<string>("Text", true);

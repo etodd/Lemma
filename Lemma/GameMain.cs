@@ -443,7 +443,7 @@ namespace Lemma
 				};
 
 				this.Renderer.LightRampTexture.Value = "Images\\default-ramp";
-				this.Renderer.EnvironmentMap.Value = "Maps\\env0";
+				this.Renderer.EnvironmentMap.Value = "Images\\env0";
 
 				this.input = new PCInput();
 				this.AddComponent(this.input);
@@ -853,7 +853,7 @@ namespace Lemma
 					string newSave = DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss");
 					if (newSave != this.currentSave)
 					{
-						this.copySave(this.currentSave == null ? "Content\\Maps" : Path.Combine(this.saveDirectory, this.currentSave), Path.Combine(this.saveDirectory, newSave));
+						this.copySave(this.currentSave == null ? IO.MapLoader.MapDirectory : Path.Combine(this.saveDirectory, this.currentSave), Path.Combine(this.saveDirectory, newSave));
 						this.currentSave = newSave;
 					}
 				};

@@ -249,9 +249,14 @@
       <Project>{882A32E7-CB48-4E63-8180-0D1859575723}</Project>
       <Name>SkinnedModelContent</Name>
     </ProjectReference>
-    <ProjectReference Include="Content\LemmaContent.XNA.contentproj">
+    <ProjectReference Include="Content\EngineContent.XNA.contentproj">
       <Project>{6D5DBC4B-1DE9-47B2-92AF-546C5D1E4268}</Project>
-      <Name>LemmaContent.XNA %28Content%29</Name>
+      <Name>EngineContent.XNA %28Content%29</Name>
+      <XnaReferenceType>Content</XnaReferenceType>
+    </ProjectReference>
+    <ProjectReference Include="Game\Game.XNA.contentproj">
+      <Project>{D487DC94-C8CB-44EB-8A6C-026D03936D1A}</Project>
+      <Name>Game.XNA %28Content\Game%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>

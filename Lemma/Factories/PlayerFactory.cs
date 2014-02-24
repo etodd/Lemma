@@ -2432,7 +2432,7 @@ namespace Lemma.Factories
 			phoneUi.Enabled.Value = false;
 
 			Model phoneModel = result.GetOrCreate<Model>("PhoneModel");
-			phoneModel.Filename.Value = "Maps\\phone";
+			phoneModel.Filename.Value = "Models\\phone";
 			phoneModel.Color.Value = new Vector3(0.13f, 0.13f, 0.13f);
 			phoneModel.Serialize = false;
 			phoneModel.Enabled.Value = false;
@@ -2741,7 +2741,7 @@ namespace Lemma.Factories
 				{
 					if (!phoneActive && (!string.IsNullOrEmpty(noteText) || !string.IsNullOrEmpty(noteImage)))
 						showNote(!noteActive);
-					else
+					else if (phone.Enabled)
 						showPhone(!phoneActive);
 				}
 			});
@@ -2823,7 +2823,7 @@ namespace Lemma.Factories
 
 					phone = dataEntity.GetOrCreate<Phone>("Phone");
 
-					result.Add(new Binding<bool>(phone.CanReceiveMessages, () => player.IsSupported && !player.IsSwimming && !player.Crouched && phone.Enabled && !noteActive, player.IsSupported, player.IsSwimming, player.Crouched, phone.Enabled, noteActive));
+					result.Add(new Binding<bool>(phone.CanReceiveMessages, () => player.IsSupported && !player.IsSwimming && !player.Crouched && phone.Enabled && !noteActive, player.IsSupported, player.IsSwimming, player.Crouched, noteActive));
 
 					msgList.Add(new ListBinding<UIComponent, Phone.Message>
 					(

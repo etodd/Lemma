@@ -14,7 +14,7 @@ namespace Lemma.IO
 {
 	public class MapLoader
 	{
-		public const string MapDirectory = "Content\\Maps";
+		public const string MapDirectory = "Content\\Game";
 		public const string MapExtension = "map";
 
 		public static void Load(Main main, string directory, string filename, bool deleteEditor = true)

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lemma.XNA", "Lemma\Lemma.XNA.csproj", "{3D2D163E-393B-4AFD-997B-143E909AC653}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LemmaContent.XNA", "Lemma\Content\LemmaContent.XNA.contentproj", "{6D5DBC4B-1DE9-47B2-92AF-546C5D1E4268}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EngineContent.XNA", "Lemma\Content\EngineContent.XNA.contentproj", "{6D5DBC4B-1DE9-47B2-92AF-546C5D1E4268}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkinnedModelContent", "SkinnedModel\SkinnedModelContent.csproj", "{882A32E7-CB48-4E63-8180-0D1859575723}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BEPUphysics", "BEPUphysics\BEPUphysics.csproj", "{2A9D2227-78D7-4804-B6D1-560BB43AE911}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BEPUutilities", "BEPUutilities\BEPUutilities.csproj", "{E3AAEB61-D7DF-4E7E-A75B-B5282D2FF3F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Game.XNA", "Lemma\Game\Game.XNA.contentproj", "{D487DC94-C8CB-44EB-8A6C-026D03936D1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -113,6 +115,16 @@ Global
 		{E3AAEB61-D7DF-4E7E-A75B-B5282D2FF3F5}.Release|x86.ActiveCfg = Release|x86
 		{E3AAEB61-D7DF-4E7E-A75B-B5282D2FF3F5}.Release|x86.Build.0 = Release|x86
 		{E3AAEB61-D7DF-4E7E-A75B-B5282D2FF3F5}.Release|Xbox 360.ActiveCfg = Release|x86
+		{D487DC94-C8CB-44EB-8A6C-026D03936D1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D487DC94-C8CB-44EB-8A6C-026D03936D1A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D487DC94-C8CB-44EB-8A6C-026D03936D1A}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{D487DC94-C8CB-44EB-8A6C-026D03936D1A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D487DC94-C8CB-44EB-8A6C-026D03936D1A}.Debug|Xbox 360.ActiveCfg = Debug|Any CPU
+		{D487DC94-C8CB-44EB-8A6C-026D03936D1A}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{D487DC94-C8CB-44EB-8A6C-026D03936D1A}.Release|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D487DC94-C8CB-44EB-8A6C-026D03936D1A}.Release|Win32.ActiveCfg = Debug|Any CPU
+		{D487DC94-C8CB-44EB-8A6C-026D03936D1A}.Release|x86.ActiveCfg = Debug|Any CPU
+		{D487DC94-C8CB-44EB-8A6C-026D03936D1A}.Release|Xbox 360.ActiveCfg = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

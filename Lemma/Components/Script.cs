@@ -65,8 +65,8 @@ namespace Lemma.Scripts
 
 			errors = null;
 
-			string scriptPath = Path.Combine(main.Content.RootDirectory, name + "." + Script.ScriptExtension);
-			string binaryPath = Path.Combine(main.Content.RootDirectory, name + "." + Script.BinaryExtension);
+			string scriptPath = Path.Combine(IO.MapLoader.MapDirectory, name + "." + Script.ScriptExtension);
+			string binaryPath = Path.Combine(IO.MapLoader.MapDirectory, name + "." + Script.BinaryExtension);
 
 			DateTime scriptTime = File.GetLastWriteTime(scriptPath);
 			DateTime binaryTime = File.GetLastWriteTime(binaryPath);

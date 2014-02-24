@@ -1,0 +1,1 @@
+cp Lemma/bin/x86/Debug/Content/Maps/*.map Lemma/Content/Maps/
