@@ -1,5 +1,7 @@
 #include "RenderCommonAlpha.fxh"
 
+float StartDistance;
+
 float Time;
 float2 Velocity;
 float Height;
@@ -46,10 +48,13 @@ void CloudPS(in RenderPSInput input,
 	float2 uv = 0.5f * alpha.clipSpacePosition.xy / alpha.clipSpacePosition.w + float2(0.5f, 0.5f);
 	uv.y = 1.0f - uv.y;
 	uv = (round(uv * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
-	clip(tex2D(DepthSampler, uv).r - FarPlaneDistance);
+	float depth = tex2D(DepthSampler, uv).r;
 	float4 texColor = tex2D(DiffuseSampler, tex.uvCoordinates + Velocity * Time);
 	output.xyz = EncodeColor(DiffuseColor.xyz * texColor.xyz);
-	output.w = Alpha * texColor.w * (1.0f - 2.0f * length(tex.uvCoordinates - float2(0.5f, 0.5f)));
+
+	float blend = clamp(lerp(0, 1, (depth - StartDistance) / (FarPlaneDistance - StartDistance)), 0, 1);
+
+	output.w = Alpha * texColor.w * blend * (1.0f - 2.0f * length(tex.uvCoordinates - float2(0.5f, 0.5f)));
 }
 
 void ClipCloudPS(in RenderPSInput input,

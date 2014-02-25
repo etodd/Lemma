@@ -49,6 +49,9 @@ namespace Lemma.Factories
 				height.Reset();
 				velocity.Reset();
 			}));
+
+			Property<float> startDistance = result.GetOrMakeProperty<float>("StartDistance", true, 50);
+			clouds.Add(new Binding<float>(clouds.GetFloatParameter("StartDistance"), startDistance));
 		}
 	}
 }

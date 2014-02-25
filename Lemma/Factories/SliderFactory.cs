@@ -123,7 +123,7 @@ namespace Lemma.Factories
 				b = entity2;
 				Vector3 originalPos = entity1.Position;
 				entity1.Position = pos;
-				joint = new PrismaticJoint(entity2, entity1, pos, -direction, pos);
+				joint = new PrismaticJoint(entity1, entity2, pos, -direction, pos);
 				entity1.Position = originalPos;
 				setLimits();
 				setLocked();
@@ -152,24 +152,23 @@ namespace Lemma.Factories
 			Command hitMin = new Command();
 			result.Add("HitMin", hitMin);
 
-			bool lastLimitExceeded = false;
+			bool lastLimitExceeded = true;
 			result.Add(new Updater
 			{
 				delegate(float dt)
 				{
 					if (joint != null)
 					{
-
 						// HACK
 						a.Orientation = b != null ? b.Orientation : Quaternion.Identity;
 
 						bool limitExceeded = joint.Limit.IsLimitExceeded;
 						if (limitExceeded && !lastLimitExceeded)
 						{
-							if (joint.Limit.Error < 0)
-								hitMin.Execute();
-							else
+							if (joint.Limit.Error > 0)
 								hitMax.Execute();
+							else
+								hitMin.Execute();
 						}
 						lastLimitExceeded = limitExceeded;
 					}

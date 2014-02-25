@@ -1493,7 +1493,7 @@ namespace Lemma
 						return;
 					}
 
-					if (this.MapFile.Value != null || !this.Paused)
+					if (this.MapFile.Value != GameMain.menuMap)
 					{
 						this.Paused.Value = !this.Paused;
 
@@ -1507,6 +1507,16 @@ namespace Lemma
 				this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), canPause, togglePause));
 				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.Start), canPause, togglePause));
 				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.B), () => this.Paused, togglePause));
+
+				// Pause on window lost focus
+				this.Deactivated += delegate(object sender, EventArgs e)
+				{
+					if (!this.Paused && this.MapFile.Value != GameMain.menuMap && !this.EditorEnabled)
+					{
+						this.Paused.Value = true;
+						savePausedSettings();
+					}
+				};
 
 				// Gamepad menu code
 

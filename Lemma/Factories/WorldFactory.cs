@@ -141,10 +141,12 @@ namespace Lemma.Factories
 				if (hasPosition)
 					pos = transform.Position;
 
-				if (map != null && typeof(DynamicMap).IsAssignableFrom(map.GetType()))
+				if (map != null)
 				{
+					// Dynamic map
 					hasPosition = true;
 					pos = Vector3.Transform(Vector3.Zero, map.Transform);
+					suspendDistance += Math.Max(Math.Max(map.MaxX - map.MinX, map.MaxY - map.MinY), map.MaxZ - map.MinZ) * 0.5f;
 				}
 
 				bool suspended;

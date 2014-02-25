@@ -966,7 +966,7 @@ namespace Lemma.Components
 		{
 			get
 			{
-				return this.minX;
+				return this.maxX;
 			}
 		}
 
@@ -975,7 +975,7 @@ namespace Lemma.Components
 		{
 			get
 			{
-				return this.minY;
+				return this.maxY;
 			}
 		}
 
@@ -984,7 +984,7 @@ namespace Lemma.Components
 		{
 			get
 			{
-				return this.minZ;
+				return this.maxZ;
 			}
 		}
 
@@ -4206,7 +4206,7 @@ namespace Lemma.Components
 
 		private bool firstPhysicsUpdate = true;
 		private object physicsLock = new object();
-		private bool physicsUpdated;
+		private bool physicsDirty;
 
 		[XmlIgnore]
 		public Command PhysicsUpdated = new Command();
@@ -4327,6 +4327,12 @@ namespace Lemma.Components
 
 		public override void updatePhysics()
 		{
+			lock (this.physicsLock)
+				this.physicsDirty = true;
+		}
+
+		private void updatePhysicsImmediately()
+		{
 			foreach (Chunk chunk in this.Chunks)
 				chunk.Activate();
 
@@ -4358,8 +4364,6 @@ namespace Lemma.Components
 					collisionInfo.Events.ContactCreated += new BEPUphysics.BroadPhaseEntries.Events.ContactCreatedEventHandler<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable>(Events_ContactCreated);
 					collisionInfo.Tag = this;
 					this.PhysicsEntity.SetCollisionInformation(collisionInfo, mass);
-					// TODO: figure out how to manually override volume in new BEPUphysics
-					//this.PhysicsEntity.Volume = volume;
 					this.PhysicsEntity.ActivityInformation.Activate();
 				}
 			}
@@ -4375,25 +4379,29 @@ namespace Lemma.Components
 				this.addedToSpace = false;
 			}
 
-			if (this.firstPhysicsUpdate)
-				this.firstPhysicsUpdate = false;
-			else
-			{
-				lock (this.physicsLock)
-					this.physicsUpdated = true;
-			}
+			this.firstPhysicsUpdate = false;
 		}
 
 		void IUpdateableComponent.Update(float dt)
 		{
+			bool dirty = this.physicsDirty;
+			lock (this.physicsLock)
+			{
+				if (dirty)
+				{
+					this.updatePhysicsImmediately();
+					this.physicsDirty = false;
+				}
+			}
+
+			if (dirty && !this.firstPhysicsUpdate)
+			{
+				this.PhysicsUpdated.Execute();
+				this.firstPhysicsUpdate = false;
+			}
+
 			this.Transform.Changed();
 			this.LinearVelocity.Changed();
-			if (this.physicsUpdated)
-			{
-				lock (this.physicsLock)
-					this.physicsUpdated = false;
-				this.PhysicsUpdated.Execute();
-			}
 		}
 
 		protected override void delete()

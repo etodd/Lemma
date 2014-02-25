@@ -213,6 +213,8 @@ namespace PipelineExtensions
 			processorParameters["ColorKeyColor"] = this.ColorKeyColor;
 			processorParameters["ColorKeyEnabled"] = this.ColorKeyEnabled;
 			processorParameters["TextureFormat"] = this.TextureFormat;
+			processorParameters["PremultiplyTextureAlpha"] = this.PremultiplyTextureAlpha;
+			processorParameters["PremultiplyVertexColors"] = this.PremultiplyVertexColors;
 			processorParameters["GenerateMipmaps"] = this.GenerateMipmaps;
 			processorParameters["ResizeTexturesToPowerOfTwo"] = this.ResizeTexturesToPowerOfTwo;
 
