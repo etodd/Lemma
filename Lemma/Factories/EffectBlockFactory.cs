@@ -133,7 +133,7 @@ namespace Lemma.Factories
 								Vector3 absolutePosition = m.GetAbsolutePosition(c);
 								foreach (Map m2 in Map.ActivePhysicsMaps)
 								{
-									if (m2 != m && m2[absolutePosition].Permanent)
+									if (m2 != m && m2[absolutePosition].ID != 0)
 									{
 										foundConflict = true;
 										break;

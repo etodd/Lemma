@@ -830,6 +830,7 @@ namespace Lemma.Factories
 					block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f) * distance;
 					block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * (distance + index)) * Matrix.CreateRotationY(0.15f * (distance + index));
 					block.GetProperty<float>("TotalLifetime").Value = Math.Max(0.05f, distance * 0.05f);
+					block.GetProperty<bool>("CheckAdjacent").Value = true;
 					factory.Setup(block, entry.Map.Entity, entry.Coordinate, fake ? 0 : entry.State.ID);
 					main.Add(block);
 					index++;

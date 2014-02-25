@@ -1139,6 +1139,7 @@ namespace Lemma.Components
 									DynamicMap newMapComponent = newMap.Get<DynamicMap>();
 									newMapComponent.Offset.Value = spawn.Source.Offset;
 									newMapComponent.BuildFromBoxes(island);
+									newMapComponent.UpdatePhysicsImmediately();
 									spawn.Source.notifyEmptied(island.SelectMany(x => x.GetCoords()), newMapComponent);
 									newMapComponent.notifyFilled(island.SelectMany(x => x.GetCoords()), spawn.Source);
 									newMapComponent.Transform.Reset();
@@ -4382,11 +4383,21 @@ namespace Lemma.Components
 			this.firstPhysicsUpdate = false;
 		}
 
-		void IUpdateableComponent.Update(float dt)
+		public void UpdatePhysicsImmediately()
 		{
-			bool dirty = this.physicsDirty;
 			lock (this.physicsLock)
 			{
+				this.updatePhysicsImmediately();
+				this.physicsDirty = false;
+			}
+		}
+
+		void IUpdateableComponent.Update(float dt)
+		{
+			bool dirty;
+			lock (this.physicsLock)
+			{
+				dirty = this.physicsDirty;
 				if (dirty)
 				{
 					this.updatePhysicsImmediately();
