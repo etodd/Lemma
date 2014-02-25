@@ -157,12 +157,12 @@ namespace Lemma.Factories
 				Name = "Alert",
 				Enter = delegate(AI.State previous)
 				{
-					chase.Enabled.Value = false;
+					chase.EnableMovement.Value = false;
 					volume.Value = 0.0f;
 				},
 				Exit = delegate(AI.State next)
 				{
-					chase.Enabled.Value = true;
+					chase.EnableMovement.Value = true;
 					volume.Value = defaultVolume;
 				},
 				Tasks = new[]
@@ -471,7 +471,7 @@ namespace Lemma.Factories
 				Name = "Levitating",
 				Enter = delegate(AI.State previous)
 				{
-					chase.Enabled.Value = false;
+					chase.EnableMovement.Value = false;
 					findNextPosition();
 				},
 				Exit = delegate(AI.State next)
@@ -488,7 +488,7 @@ namespace Lemma.Factories
 						chase.Coord.Value = closest.Value;
 						chase.Blend.Value = 0.0f;
 					}
-					chase.Enabled.Value = true;
+					chase.EnableMovement.Value = true;
 					volume.Value = defaultVolume;
 					pitch.Value = 0.0f;
 				},

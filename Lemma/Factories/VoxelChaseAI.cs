@@ -33,6 +33,7 @@ namespace Lemma.Factories
 			return cell == Cell.Penetrable || cell == Cell.Filled;
 		}
 
+		public Property<bool> EnableMovement = new Property<bool> { Value = true, Editable = false };
 		public Property<Entity.Handle> Map = new Property<Entity.Handle> { Editable = false };
 		public Property<Map.Coordinate> LastCoord = new Property<Map.Coordinate> { Editable = false };
 		public Property<float> Blend = new Property<float> { Editable = false };
@@ -195,7 +196,10 @@ namespace Lemma.Factories
 			if (mapEntity != null && mapEntity.Active)
 			{
 				Map m = mapEntity.Get<Map>();
-				this.Blend.Value += dt * this.Speed;
+
+				if (this.EnableMovement)
+					this.Blend.Value += dt * this.Speed;
+
 				if (this.Blend > 1.0f)
 				{
 					this.Blend.Value = 0.0f;
@@ -341,10 +345,13 @@ namespace Lemma.Factories
 						}
 
 						Vector3 toTarget = this.Target - this.Position.Value;
-						// The higher the number, the less likely we are to change direction
-						int oddsOfChangingDirection = 2;
 						float distanceToTarget = toTarget.Length();
-						if (!this.TargetActive)
+
+						// The higher the number, the less likely we are to change direction
+						int oddsOfChangingDirection;
+						if (this.TargetActive && distanceToTarget < 10.0f)
+							oddsOfChangingDirection = 2;
+						else
 							oddsOfChangingDirection = 6;
 
 						if (!directions.Contains(this.Direction) || this.random.Next(oddsOfChangingDirection) == 0)

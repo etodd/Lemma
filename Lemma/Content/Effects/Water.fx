@@ -1,6 +1,7 @@
 #include "Common.fxh"
 
 float3 Position;
+float2 Scale;
 
 float3 Color = float3(1, 1, 1);
 float3 UnderwaterColor = float3(1, 1, 1);
@@ -85,6 +86,7 @@ void SurfaceVS(	in RenderVSInput input,
 {
 	// Calculate the clip-space vertex position
 	float4 worldPosition = input.position;
+	worldPosition.xyz *= float3(Scale.x, 1.0f, Scale.y);
 	worldPosition.xyz += Position;
 	output.worldPosition = worldPosition;
 	float4 viewSpacePosition = mul(worldPosition, ViewMatrix);
@@ -96,7 +98,7 @@ void SurfaceVS(	in RenderVSInput input,
 	float4 clipSpacePosition2 = mul(worldPosition + float4(0, 0, 0.2f, 0), ViewProjectionMatrix);
 	output.distortionAmount = length(clipSpacePosition2 - clipSpacePosition) * Distortion;
 
-	tex.uvCoordinates = input.uvCoordinates;
+	tex.uvCoordinates = input.uvCoordinates * Scale * RippleDensity * (400.0f / 2000.0f) + (float2(Time, Time) * Speed);
 	flat.normal = input.normal;
 }
 
@@ -111,9 +113,7 @@ void SurfacePS(	in SurfacePSInput input,
 	uv.y = 1.0f - uv.y;
 	uv = (round(uv * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
 
-	float2 coords = tex.uvCoordinates * RippleDensity * 400.0f;
-
-	float2 distortion = (tex2D(NormalMapSampler, coords + (float2(Time, Time) * Speed)).xy - float2(0.5f, 0.5f)) * 2.0f * input.distortionAmount;
+	float2 distortion = (tex2D(NormalMapSampler, tex.uvCoordinates).xy - float2(0.5f, 0.5f)) * 2.0f * input.distortionAmount;
 
 	float existingDepth = tex2D(DepthSampler, uv).r;
 

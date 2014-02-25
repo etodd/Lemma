@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Xml.Serialization;
 
 namespace Lemma.Components
 {
@@ -78,6 +79,8 @@ namespace Lemma.Components
 		public Property<float> Distortion = new Property<float> { Value = 0.25f, Editable = true };
 		public Property<float> Brightness = new Property<float> { Value = 0.1f, Editable = true };
 		public Property<float> Clearness = new Property<float> { Value = 0.25f, Editable = true };
+		public Property<float> Depth = new Property<float> { Value = 100.0f, Editable = true };
+		public Property<Vector2> Scale = new Property<Vector2> { Value = new Vector2(100.0f, 100.0f), Editable = true };
 
 		private Renderer renderer;
 		private RenderTarget2D buffer;
@@ -85,7 +88,8 @@ namespace Lemma.Components
 		private RenderParameters parameters;
 		private Camera camera;
 
-		private Util.CustomFluidVolume fluid;
+		[XmlIgnore]
+		public Util.CustomFluidVolume Fluid;
 
 		private bool needResize = false;
 
@@ -131,7 +135,7 @@ namespace Lemma.Components
 			QuadVertex[] surfaceData = new QuadVertex[4];
 
 			// Upper right
-			const float scale = 2000.0f;
+			const float scale = 1.0f;
 			surfaceData[0].Position = new Vector3(scale, 0, scale);
 			surfaceData[0].TexCoord = new Vector2(1, 0);
 
@@ -187,14 +191,14 @@ namespace Lemma.Components
 
 			Action removeFluid = delegate()
 			{
-				if (this.fluid.Space != null)
-					this.main.Space.Remove(this.fluid);
+				if (this.Fluid.Space != null)
+					this.main.Space.Remove(this.Fluid);
 			};
 
 			Action addFluid = delegate()
 			{
-				if (this.fluid.Space == null && this.Enabled && !this.Suspended)
-					this.main.Space.Add(this.fluid);
+				if (this.Fluid.Space == null && this.Enabled && !this.Suspended)
+					this.main.Space.Add(this.Fluid);
 			};
 
 			this.Add(new CommandBinding(this.OnSuspended, removeFluid));
@@ -202,7 +206,7 @@ namespace Lemma.Components
 			this.Add(new CommandBinding(this.OnResumed, addFluid));
 			this.Add(new CommandBinding(this.OnEnabled, addFluid));
 
-			this.DrawOrder = new Property<int> { Editable = false, Value = 10 };
+			this.DrawOrder = new Property<int> { Editable = true, Value = 10 };
 
 			this.camera = new Camera();
 			this.main.AddComponent(this.camera);
@@ -217,6 +221,13 @@ namespace Lemma.Components
 			{
 				this.Color.InternalValue = value;
 				this.effect.Parameters["Color"].SetValue(value);
+			};
+
+			this.Scale.Set = delegate(Vector2 value)
+			{
+				this.Scale.InternalValue = value;
+				this.effect.Parameters["Scale"].SetValue(value);
+				this.updatePhysics();
 			};
 
 			this.UnderwaterColor.Set = delegate(Vector3 value)
@@ -261,31 +272,58 @@ namespace Lemma.Components
 				this.effect.Parameters["Clearness"].SetValue(value);
 			};
 
-			List<Vector3[]> tris = new List<Vector3[]>();
-			const float basinWidth = 2500.0f;
-			const float basinLength = 2500.0f;
-			float waterHeight = this.Position.Value.Y;
-
-			tris.Add(new[]
+			this.Position.Set = delegate(Vector3 value)
 			{
-				new Vector3(-basinWidth / 2, waterHeight, -basinLength / 2), new Vector3(basinWidth / 2, waterHeight, -basinLength / 2),
-				new Vector3(-basinWidth / 2, waterHeight, basinLength / 2)
-			});
-			tris.Add(new[]
-			{
-				new Vector3(-basinWidth / 2, waterHeight, basinLength / 2), new Vector3(basinWidth / 2, waterHeight, -basinLength / 2),
-				new Vector3(basinWidth / 2, waterHeight, basinLength / 2)
-			});
+				this.Position.InternalValue = value;
+				this.effect.Parameters["Position"].SetValue(this.Position);
+				this.updatePhysics();
+			};
 
-			this.fluid = new Util.CustomFluidVolume(Vector3.Up, this.main.Space.ForceUpdater.Gravity.Y, tris, 1000.0f, 1.25f, 0.997f, 0.2f, this.main.Space.BroadPhase.QueryAccelerator, this.main.Space.ThreadManager);
-			this.main.Space.Add(this.fluid);
+			this.Depth.Set = delegate(float value)
+			{
+				 this.Depth.InternalValue = value;
+				 this.updatePhysics();
+			};
 
 			instances.Add(this);
+		}
+
+		private void updatePhysics()
+		{
+			if (this.Fluid != null)
+				this.main.Space.Remove(this.Fluid);
+
+			List<Vector3[]> tris = new List<Vector3[]>();
+			float width = this.Scale.Value.X;
+			float length = this.Scale.Value.Y;
+			Vector3 pos = this.Position;
+
+			tris.Add(new[]
+			{
+				pos + new Vector3(width / -2, 0, length / -2),
+				pos + new Vector3(width / 2, 0, length / -2),
+				pos + new Vector3(width / -2, 0, length / 2)
+			});
+			tris.Add(new[]
+			{
+				pos + new Vector3(width / -2, 0, length / 2),
+				pos + new Vector3(width / 2, 0, length / -2),
+				pos + new Vector3(width / 2, 0, length / 2)
+			});
+
+			this.Fluid = new Util.CustomFluidVolume(Vector3.Up, this.main.Space.ForceUpdater.Gravity.Y, tris, this.Depth, 1.25f, 0.997f, 0.2f, this.main.Space.BroadPhase.QueryAccelerator, this.main.Space.ThreadManager);
+			this.main.Space.Add(this.Fluid);
 		}
 
 		void IDrawableAlphaComponent.DrawAlpha(Microsoft.Xna.Framework.GameTime time, RenderParameters p)
 		{
 			if (!p.IsMainRender)
+				return;
+
+			Vector3 cameraPos = p.Camera.Position;
+			Vector3 pos = this.Position;
+			bool underwater = this.Fluid.BoundingBox.Contains(cameraPos) != ContainmentType.Disjoint;
+			if (!underwater && cameraPos.Y < pos.Y)
 				return;
 
 			RasterizerState originalState = this.main.GraphicsDevice.RasterizerState;
@@ -297,12 +335,11 @@ namespace Lemma.Components
 			p.Camera.SetParameters(this.effect);
 			this.effect.Parameters["ActualFarPlaneDistance"].SetValue(oldFarPlane);
 			this.effect.Parameters["Reflection" + Model.SamplerPostfix].SetValue(this.buffer);
-			this.effect.Parameters["Position"].SetValue(this.Position);
 			this.effect.Parameters["Time"].SetValue(this.main.TotalTime);
 			this.effect.Parameters["Depth" + Model.SamplerPostfix].SetValue(p.DepthBuffer);
 			this.effect.Parameters["Frame" + Model.SamplerPostfix].SetValue(p.FrameBuffer);
 
-			bool underwater = p.Camera.Position.Value.Y < this.Position.Value.Y;
+			Vector2 scale = this.Scale.Value * 0.5f;
 
 			// Draw surface
 			this.effect.CurrentTechnique = this.effect.Techniques[underwater || !this.EnableReflection ? "Surface" : "SurfaceReflection"];
@@ -356,9 +393,9 @@ namespace Lemma.Components
 
 			float waterHeight = this.Position.Value.Y;
 
-			lock (this.fluid.NotifyEntries)
+			lock (this.Fluid.NotifyEntries)
 			{
-				foreach (BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable collidable in this.fluid.NotifyEntries)
+				foreach (BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable collidable in this.Fluid.NotifyEntries)
 				{
 					if (collidable.Entity == null)
 						continue;
@@ -390,7 +427,7 @@ namespace Lemma.Components
 						ParticleEmitter.Emit(this.main, "Splash", particlePositions);
 					}
 				}
-				this.fluid.NotifyEntries.Clear();
+				this.Fluid.NotifyEntries.Clear();
 			}
 		}
 
@@ -402,8 +439,8 @@ namespace Lemma.Components
 			this.buffer.Dispose();
 			this.surfaceVertexBuffer.Dispose();
 			this.underwaterVertexBuffer.Dispose();
-			if (this.fluid.Space != null)
-				this.main.Space.Remove(this.fluid);
+			if (this.Fluid.Space != null)
+				this.main.Space.Remove(this.Fluid);
 			instances.Remove(this);
 			base.delete();
 		}

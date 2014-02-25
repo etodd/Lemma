@@ -322,9 +322,10 @@ namespace Lemma.Factories
 			update.Add(delegate(float dt)
 			{
 				bool swimming = false;
+				Vector3 pos = transform.Position.Value + new Vector3(0, -1.0f, 0);
 				foreach (Water w in Water.ActiveInstances)
 				{
-					if (transform.Position.Value.Y < w.Position.Value.Y + 1.0f)
+					if (w.Fluid.BoundingBox.Contains(pos) != ContainmentType.Disjoint)
 					{
 						swimming = true;
 						break;

@@ -247,11 +247,11 @@ namespace Lemma.Factories
 					Name = "Alert",
 					Enter = delegate(AI.State previous)
 					{
-						chase.Enabled.Value = false;
+						chase.EnableMovement.Value = false;
 					},
 					Exit = delegate(AI.State next)
 					{
-						chase.Enabled.Value = true;
+						chase.EnableMovement.Value = true;
 					},
 					Tasks = new[]
 					{

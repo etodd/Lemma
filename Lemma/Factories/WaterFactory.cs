@@ -28,7 +28,12 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
-			result.CannotSuspendByDistance = true;
+			Property<bool> cannotSuspendByDistance = result.GetOrMakeProperty<bool>("CannotSuspendByDistance", true, true);
+			cannotSuspendByDistance.Set = delegate(bool value)
+			{
+				cannotSuspendByDistance.InternalValue = value;
+				result.CannotSuspendByDistance = value;
+			};
 			Transform transform = result.Get<Transform>();
 			Water water = result.Get<Water>();
 

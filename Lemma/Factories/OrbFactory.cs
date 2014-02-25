@@ -124,11 +124,11 @@ namespace Lemma.Factories
 				Name = "Suspended",
 				Enter = delegate(AI.State previous)
 				{
-					chase.Enabled.Value = false;
+					chase.EnableMovement.Value = false;
 				},
 				Exit = delegate(AI.State next)
 				{
-					chase.Enabled.Value = true;
+					chase.EnableMovement.Value = true;
 				},
 				Tasks = new[] { checkOperationalRadius, },
 			});
@@ -167,12 +167,12 @@ namespace Lemma.Factories
 				Name = "Alert",
 				Enter = delegate(AI.State previous)
 				{
-					chase.Enabled.Value = false;
+					chase.EnableMovement.Value = false;
 					volume.Value = 0.0f;
 				},
 				Exit = delegate(AI.State next)
 				{
-					chase.Enabled.Value = true;
+					chase.EnableMovement.Value = true;
 					volume.Value = defaultVolume;
 				},
 				Tasks = new[]
