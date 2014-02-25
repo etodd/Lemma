@@ -1,1 +1,0 @@
-cp Lemma/Content/Maps/*.cs Lemma/bin/x86/Debug/Content/Maps/

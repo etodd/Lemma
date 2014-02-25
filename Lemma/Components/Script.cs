@@ -113,7 +113,7 @@ namespace Lemma.Scripts
 					else
 					{
 						assembly = cr.CompiledAssembly;
-						// TODO: Hack for the alpha
+						// TODO: DLL caching
 						//File.Copy(cp.OutputAssembly, binaryPath, true);
 					}
 				}

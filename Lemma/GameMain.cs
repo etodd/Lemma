@@ -91,7 +91,7 @@ namespace Lemma
 
 		public Command<Entity> PlayerSpawned = new Command<Entity>();
 
-		const float respawnInterval = 0.5f;
+		private const float respawnInterval = 0.5f;
 
 		private float respawnTimer = -1.0f;
 
@@ -106,6 +106,8 @@ namespace Lemma
 
 		public const int DefaultRespawnRewindLength = 3;
 		public int RespawnRewindLength = DefaultRespawnRewindLength;
+
+		private const string menuMap = "..\\Menu\\menu";
 
 		private int displayModeIndex;
 
@@ -1460,7 +1462,7 @@ namespace Lemma
 				// Escape key
 				// Make sure we can only pause when there is a player currently spawned
 				// Otherwise we could save the current map without the player. And that would be awkward.
-				Func<bool> canPause = () => !this.EditorEnabled && ((this.player != null && this.player.Active) || this.MapFile.Value == "menu");
+				Func<bool> canPause = () => !this.EditorEnabled && ((this.player != null && this.player.Active) || this.MapFile.Value == GameMain.menuMap);
 
 				Action togglePause = delegate()
 				{
@@ -1596,7 +1598,7 @@ namespace Lemma
 
 				Func<bool> enableGamepad = delegate()
 				{
-					return this.Paused || this.MapFile.Value == "menu";
+					return this.Paused || this.MapFile.Value == GameMain.menuMap;
 				};
 
 				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickUp), enableGamepad, delegate()
@@ -1701,7 +1703,7 @@ namespace Lemma
 					version.Add(new Binding<Vector2, Point>(version.Position, x => new Vector2(x.X - 10.0f, x.Y - 10.0f), this.ScreenSize));
 					this.UI.Root.Children.Add(version);
 
-					this.MapFile.Value = "menu";
+					this.MapFile.Value = GameMain.menuMap;
 					this.CanSpawn = false;
 					savePausedSettings();
 
@@ -1771,7 +1773,7 @@ namespace Lemma
 
 		public void EndGame()
 		{
-			this.MapFile.Value = "menu";
+			this.MapFile.Value = GameMain.menuMap;
 			Sound.PlayCue(this, "Theme", 1.0f, -1.0f);
 			this.Renderer.InternalGamma.Value = 0.0f;
 			this.Renderer.Brightness.Value = 0.0f;

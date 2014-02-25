@@ -1,0 +1,1 @@
+cp Content/Game/*.cs bin/x86/Debug/Content/Game/

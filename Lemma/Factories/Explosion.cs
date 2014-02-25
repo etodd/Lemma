@@ -127,7 +127,7 @@ namespace Lemma.Factories
 				float distanceToMap = toMap.Length();
 				toMap /= distanceToMap;
 			
-				toMap *= Math.Max(0.0f, 1.0f - (distanceToMap / physicsRadius)) * dm.PhysicsEntity.Mass * physicsImpulse;
+				toMap *= Math.Max(0.0f, 1.0f - (distanceToMap / physicsRadius)) * Math.Min(200.0f, dm.PhysicsEntity.Mass) * physicsImpulse;
 			
 				dm.PhysicsEntity.ApplyImpulse(dm.Transform.Value.Translation + new Vector3(((float)random.NextDouble() - 0.5f) * 2.0f, ((float)random.NextDouble() - 0.5f) * 2.0f, ((float)random.NextDouble() - 0.5f) * 2.0f), toMap);
 			}

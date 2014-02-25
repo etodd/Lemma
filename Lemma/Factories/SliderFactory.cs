@@ -114,13 +114,16 @@ namespace Lemma.Factories
 			};
 			result.Add(new NotifyBinding(setMode, servo));
 
+			BEPUphysics.Entities.Entity a = null, b = null;
 			Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint = delegate(BEPUphysics.Entities.Entity entity1, BEPUphysics.Entities.Entity entity2, Vector3 pos, Vector3 direction, Vector3 anchor)
 			{
 				// entity1 is us
 				// entity2 is the main map we are attaching to
+				a = entity1;
+				b = entity2;
 				Vector3 originalPos = entity1.Position;
 				entity1.Position = pos;
-				joint = new PrismaticJoint(entity1, entity2, pos, -direction, pos);
+				joint = new PrismaticJoint(entity2, entity1, pos, -direction, pos);
 				entity1.Position = originalPos;
 				setLimits();
 				setLocked();
@@ -135,22 +138,14 @@ namespace Lemma.Factories
 
 			JointFactory.Bind(result, main, createJoint, false, creating);
 
-			result.Add("Forward", new Command
+			Action<int> move = delegate(int value)
 			{
-				Action = delegate()
-				{
-					if (joint != null && locked)
-						goal.Value = maximum;
-				},
-			});
-			result.Add("Backward", new Command
-			{
-				Action = delegate()
-				{
-					if (joint != null && locked)
-						goal.Value = minimum;
-				},
-			});
+				if (joint != null && locked)
+					goal.Value = value;
+			};
+			result.Add("Forward", new Command { Action = delegate() { move(maximum); } });
+			result.Add("Trigger", new Command<Entity> { Action = delegate(Entity p) { move(maximum); } });
+			result.Add("Backward", new Command { Action = delegate() { move(minimum); } });
 
 			Command hitMax = new Command();
 			result.Add("HitMax", hitMax);
@@ -164,6 +159,10 @@ namespace Lemma.Factories
 				{
 					if (joint != null)
 					{
+
+						// HACK
+						a.Orientation = b != null ? b.Orientation : Quaternion.Identity;
+
 						bool limitExceeded = joint.Limit.IsLimitExceeded;
 						if (limitExceeded && !lastLimitExceeded)
 						{

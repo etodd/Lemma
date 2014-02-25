@@ -133,6 +133,7 @@ namespace Lemma.Factories
 					joint = null;
 				}
 			}));
+			
 			result.Add(new CommandBinding(map.OnSuspended, delegate()
 			{
 				if (joint != null && joint.Space != null)
@@ -143,6 +144,7 @@ namespace Lemma.Factories
 				if (joint != null && joint.Space == null)
 					main.Space.Add(joint);
 			}));
+			
 			rebuildJoint();
 			Command rebuildJointCommand = new Command
 			{
