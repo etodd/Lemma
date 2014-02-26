@@ -69,18 +69,18 @@ namespace Lemma.Factories
 			public int PathIndex;
 		}
 
-		private static Map.Box reconstructPath(AStarEntry entry, out int length)
+		private static Stack<Map.Box> reconstructPath(AStarEntry entry)
 		{
-			length = 0;
-			while (entry.PathIndex > 2)
+			Stack<Map.Box> result = new Stack<Map.Box>();
+			while (entry != null)
 			{
+				result.Push(entry.Box);
 				entry = entry.Parent;
-				length++;
 			}
-			return entry.Box;
+			return result;
 		}
 
-		public static Map.Box AStar(Map m, Map.Box start, Vector3 target, out int pathLength)
+		public static Stack<Map.Box> AStar(Map m, Map.Box start, Vector3 target)
 		{
 			Dictionary<Map.Box, int> closed = new Dictionary<Map.Box, int>();
 
@@ -108,7 +108,7 @@ namespace Lemma.Factories
 				AStarEntry entry = queue.Pop();
 
 				if (iteration >= iterationLimit || entry.F < entry.BoxSize)
-					return VoxelChaseAI.reconstructPath(entry, out pathLength);
+					return VoxelChaseAI.reconstructPath(entry);
 
 				iteration++;
 
@@ -155,9 +155,16 @@ namespace Lemma.Factories
 					}
 				}
 			}
-			pathLength = 0;
-			return null;
+			return new Stack<Map.Box>();
 		}
+
+		public void ChangeDirection()
+		{
+			this.oddsOfChangingDirection = 1;
+		}
+
+		private const int normalOddsOfChangingDirection = 6;
+		private int oddsOfChangingDirection = VoxelChaseAI.normalOddsOfChangingDirection;
 
 		public void Update(float dt)
 		{
@@ -348,17 +355,10 @@ namespace Lemma.Factories
 						float distanceToTarget = toTarget.Length();
 
 						// The higher the number, the less likely we are to change direction
-						int oddsOfChangingDirection;
-						if (this.TargetActive)
-							if (distanceToTarget < 10.0f)
-								oddsOfChangingDirection = 6;
-							else
-								oddsOfChangingDirection = 0;
-						else
-							oddsOfChangingDirection = 6;
 
-						if (!directions.Contains(this.Direction) || (oddsOfChangingDirection > 0 && this.random.Next(oddsOfChangingDirection) == 0))
+						if (!directions.Contains(this.Direction) || (this.oddsOfChangingDirection > 0 && this.random.Next(this.oddsOfChangingDirection) == 0))
 						{
+							this.oddsOfChangingDirection = VoxelChaseAI.normalOddsOfChangingDirection;
 							bool randomDirection = false;
 							Direction randomDirectionOtherThan = Lemma.Util.Direction.None;
 
@@ -383,11 +383,44 @@ namespace Lemma.Factories
 									{
 										Map.Box box = m.GetBox(c.Move(supportedDirection));
 
-										int pathLength;
-										box = VoxelChaseAI.AStar(m, box, this.Target, out pathLength);
+										Stack<Map.Box> path = VoxelChaseAI.AStar(m, box, this.Target);
 
-										if (pathLength > 1)
-											toTarget = m.GetAbsolutePosition(box.GetCenter()) - this.Position;
+										// Debug visualization
+										/*
+										int i = 0;
+										foreach (Map.Box b in path)
+										{
+											Vector3 start = m.GetRelativePosition(b.X, b.Y, b.Z) - new Vector3(0.1f), end = m.GetRelativePosition(b.X + b.Width, b.Y + b.Height, b.Z + b.Depth) + new Vector3(0.1f);
+
+											Matrix matrix = Matrix.CreateScale(Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y), Math.Abs(end.Z - start.Z)) * Matrix.CreateTranslation(new Vector3(-0.5f) + (start + end) * 0.5f);
+
+											ModelAlpha model = new ModelAlpha();
+											model.Filename.Value = "Models\\alpha-box";
+											model.Color.Value = new Vector3((float)i / (float)path.Count);
+											model.Alpha.Value = 1.0f;
+											model.IsInstanced.Value = false;
+											model.Editable = false;
+											model.Serialize = false;
+											model.DrawOrder.Value = 11; // In front of water
+											model.CullBoundingBox.Value = false;
+											model.DisableCulling.Value = true;
+											model.Add(new Binding<Matrix>(model.Transform, () => matrix * Matrix.CreateTranslation(-m.Offset.Value) * m.Transform, m.Transform, m.Offset));
+											this.main.AddComponent(model);
+
+											this.main.AddComponent(new Animation
+											(
+												new Animation.FloatMoveTo(model.Alpha, 0.0f, 3.0f),
+												new Animation.Execute(model.Delete)
+											));
+											i++;
+										}
+										*/
+
+										if (path.Count > 1)
+										{
+											path.Pop();
+											toTarget = m.GetAbsolutePosition(path.Peek().GetCenter()) - this.Position;
+										}
 									}
 								}
 								
@@ -434,12 +467,12 @@ namespace Lemma.Factories
 						}
 
 						this.Coord.Value = c.Move(this.Direction);
+
+						this.History.Add(this.Coord);
+
+						while (this.History.Count > historySize)
+							this.History.RemoveAt(0);
 					}
-
-					this.History.Add(this.Coord);
-
-					while (this.History.Count > historySize)
-						this.History.RemoveAt(0);
 				}
 
 				Vector3 last = m.GetAbsolutePosition(this.LastCoord), current = m.GetAbsolutePosition(this.Coord);

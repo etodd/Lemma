@@ -183,7 +183,7 @@ namespace Lemma.Factories
 			// Set up AI agent
 			Agent agent = result.GetOrCreate<Agent>();
 			agent.Add(new TwoWayBinding<float>(player.Health, agent.Health));
-			agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
+			agent.Add(new Binding<Vector3>(agent.Position, () => transform.Position.Value + new Vector3(0, player.Height * -0.5f, 0), transform.Position, player.Height));
 			agent.Add(new CommandBinding(agent.Die, result.Delete));
 			agent.Add(new Binding<bool>(agent.Loud, x => !x, player.Crouched));
 
@@ -2237,7 +2237,7 @@ namespace Lemma.Factories
 							else
 							{
 								player.LinearVelocity.Value = new Vector3(kickVelocity.X, player.LinearVelocity.Value.Y, kickVelocity.Z);
-								breakWalls(forward, right, false);
+								breakWalls(forward, right, !shouldBuildFloor);
 								if (shouldBuildFloor)
 									buildFloor(floorRaycast.Map, floorRaycast.Coordinate.Value, forwardDir, rightDir);
 							}

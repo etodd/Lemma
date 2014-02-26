@@ -217,8 +217,9 @@ namespace Lemma.Factories
 				Name = "Chase",
 				Enter = delegate(AI.State previous)
 				{
-					chase.Speed.Value = 10.0f;
+					chase.Speed.Value = 12.0f;
 					chase.TargetActive.Value = true;
+					chase.ChangeDirection();
 					pitch.Value = 0.0f;
 				},
 				Exit = delegate(AI.State next)
@@ -343,13 +344,13 @@ namespace Lemma.Factories
 				Name = "Exploding",
 				Enter = delegate(AI.State previous)
 				{
-					chase.EnablePathfinding.Value = false;
+					chase.EnableMovement.Value = false;
 					exploded.Value = false;
 					sound.Stop.Execute(AudioStopOptions.AsAuthored);
 				},
 				Exit = delegate(AI.State next)
 				{
-					chase.EnablePathfinding.Value = true;
+					chase.EnableMovement.Value = true;
 					exploded.Value = false;
 					volume.Value = defaultVolume;
 					sound.Play.Execute();
