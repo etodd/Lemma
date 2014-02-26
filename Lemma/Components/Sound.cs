@@ -31,6 +31,8 @@ namespace Lemma.Components
 
 		public Property<AudioStopOptions> DeleteStopOption = new Property<AudioStopOptions> { Editable = true };
 
+		public Property<bool> IsGameSpecific = new Property<bool> { Editable = true, Value = false };
+
 		protected AudioEmitter emitter;
 
 		[XmlIgnore]
@@ -58,26 +60,31 @@ namespace Lemma.Components
 
 		private static Dictionary<string, float> lastSoundPlayedTimes = new Dictionary<string, float>();
 
-		public static Sound PlayCue(Main main, string cue, float volume = 1.0f, float minimumTimeBetweenSounds = 0.25f)
+		public static Cue PlayCue(Main main, string cue, float volume = 1.0f, float minimumTimeBetweenSounds = -1.0f)
 		{
 			float lastSoundPlayedTime = minimumTimeBetweenSounds * -2.0f;
 			Sound.lastSoundPlayedTimes.TryGetValue(cue, out lastSoundPlayedTime);
 			float time = main.TotalTime;
 			if (time > lastSoundPlayedTime + minimumTimeBetweenSounds)
-			{
-				Sound.lastSoundPlayedTimes[cue] = time;
-				Sound sound = new Sound();
-				sound.Cue.Value = cue;
-				sound.Is3D.Value = false;
-				if (volume != 1.0f)
-					sound.GetProperty("Volume").Value = volume;
-				sound.DeleteWhenDone.Value = true;
-				sound.DeleteStopOption.Value = AudioStopOptions.AsAuthored;
-				main.AddComponent(sound);
-				sound.Play.Execute();
-				return sound;
-			}
+				return Sound.PlayCue(main.SoundBank, cue, volume);
 			return null;
+		}
+
+		public static Cue PlayCue(SoundBank bank, string cue, float volume = 1.0f)
+		{
+			Cue c = null;
+			try
+			{
+				c = bank.GetCue(cue);
+				if (volume != 1.0f)
+					c.SetVariable("Volume", volume);
+				c.Play();
+			}
+			catch (ArgumentException)
+			{
+
+			}
+			return c;
 		}
 
 		public static Sound PlayCue(Main main, string cue, Vector3 position, float volume = 1.0f, float minimumTimeBetweenSounds = 0.25f)
@@ -106,21 +113,19 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
-			this.Position.Set =
-				delegate(Vector3 value)
-				{
-					this.Position.InternalValue = value;
-					if (this.emitter != null)
-						this.emitter.Position = value;
-				};
+			this.Position.Set = delegate(Vector3 value)
+			{
+				this.Position.InternalValue = value;
+				if (this.emitter != null)
+					this.emitter.Position = value;
+			};
 
-			this.Velocity.Set =
-				delegate(Vector3 value)
-				{
-					this.Velocity.InternalValue = value;
-					if (this.emitter != null)
-						this.emitter.Velocity = value;
-				};
+			this.Velocity.Set = delegate(Vector3 value)
+			{
+				this.Velocity.InternalValue = value;
+				if (this.emitter != null)
+					this.emitter.Velocity = value;
+			};
 
 			this.Is3D.Set = delegate(bool value)
 			{
@@ -133,58 +138,55 @@ namespace Lemma.Components
 				}
 			};
 
-			this.Play.Action =
-				delegate()
+			this.Play.Action = delegate()
+			{
+				try
 				{
-					try
+					if (!this.Suspended && this.Enabled && !this.main.EditorEnabled)
 					{
-						if (!this.Suspended && this.Enabled && !this.main.EditorEnabled)
+						this.cue = this.main.SoundBank.GetCue(this.Cue);
+
+						if (this.Is3D)
 						{
-							this.cue = this.main.SoundBank.GetCue(this.Cue);
-							
-							if (this.Is3D)
-							{
-								this.emitter = new AudioEmitter { Position = this.Position, Velocity = this.Velocity };
-								AudioListener.Apply3D(this.cue, this.emitter);
-							}
-							this.cue.Play();
+							this.emitter = new AudioEmitter { Position = this.Position, Velocity = this.Velocity };
+							AudioListener.Apply3D(this.cue, this.emitter);
 						}
+						this.cue.Play();
 					}
-					catch (ArgumentException)
-					{
-						this.cue = null;
-					}
-				};
-
-			this.Stop.Action =
-				delegate(AudioStopOptions options)
+				}
+				catch (ArgumentException)
 				{
-					if (this.cue != null)
-						this.cue.Stop(options);
-				};
+					this.cue = null;
+				}
+			};
 
-			this.IsPlaying.Get =
-				delegate()
+			this.Stop.Action = delegate(AudioStopOptions options)
+			{
+				if (this.cue != null)
+					this.cue.Stop(options);
+			};
+
+			this.IsPlaying.Get = delegate()
+			{
+				if (this.main.EditorEnabled)
+					return this.IsPlaying.InternalValue;
+				else
+					return this.cue != null ? this.cue.IsPlaying : false;
+			};
+			this.IsPlaying.Set = delegate(bool value)
+			{
+				this.IsPlaying.InternalValue = value;
+				if (value && !this.IsPlaying)
 				{
-					if (this.main.EditorEnabled)
-						return this.IsPlaying.InternalValue;
+					if (this.main.IsLoadingMap)
+						this.playWhenResumed = true;
 					else
-						return this.cue != null ? this.cue.IsPlaying : false;
-				};
-			this.IsPlaying.Set =
-				delegate(bool value)
-				{
-					this.IsPlaying.InternalValue = value;
-					if (value && !this.IsPlaying)
-					{
-						if (this.main.IsLoadingMap)
-							this.playWhenResumed = true;
-						else
-							this.Play.Execute();
-					}
-					else if (!value && this.IsPlaying)
-						this.Stop.Execute(AudioStopOptions.Immediate);
-				};
+						this.Play.Execute();
+				}
+				else if (!value && this.IsPlaying)
+					this.Stop.Execute(AudioStopOptions.Immediate);
+			};
+
 			this.Add(new NotifyBinding(delegate()
 			{
 				if (this.Suspended)

@@ -115,6 +115,9 @@ namespace Lemma
 
 		private ListContainer messages;
 
+		private WaveBank musicWaveBank;
+		public SoundBank MusicBank;
+
 		public GameMain(bool allowEditing, string mapFile)
 			: base()
 		{
@@ -260,6 +263,9 @@ namespace Lemma
 		{
 			base.ClearEntities(deleteEditor);
 			this.messages.Children.Clear();
+			this.AudioEngine.GetCategory("Music").Stop(AudioStopOptions.Immediate);
+			this.AudioEngine.GetCategory("Default").Stop(AudioStopOptions.Immediate);
+			this.AudioEngine.GetCategory("Ambient").Stop(AudioStopOptions.Immediate);
 		}
 
 		private void copySave(string src, string dst)
@@ -303,11 +309,11 @@ namespace Lemma
 			result.Add(new NotifyBinding(delegate()
 			{
 				if (result.Highlighted)
-					Sound.PlayCue(this, "Mouse", 1.0f, -1.0f);
+					Sound.PlayCue(this, "Mouse");
 			}, result.Highlighted));
 			result.Add(new CommandBinding<Point>(result.MouseLeftUp, delegate(Point p)
 			{
-				Sound.PlayCue(this, "Click", 1.0f, -1.0f);
+				Sound.PlayCue(this, "Click");
 			}));
 			return result;
 		}
@@ -386,6 +392,16 @@ namespace Lemma
 			if (firstInitialization)
 			{
 				this.IsMouseVisible.Value = true;
+
+				try
+				{
+					this.musicWaveBank = new WaveBank(this.AudioEngine, "Content\\Game\\Music\\Music.xwb");
+					this.MusicBank = new SoundBank(this.AudioEngine, "Content\\Game\\Music\\Music.xsb");
+				}
+				catch (Exception)
+				{
+					// Don't HAVE to load music
+				}
 
 #if ANALYTICS
 				this.SessionRecorder = new Session.Recorder();
@@ -595,6 +611,9 @@ namespace Lemma
 					this.AddComponent(pauseAnimation);
 
 					currentMenu.Value = pauseMenu;
+
+					this.AudioEngine.GetCategory("Music").Pause();
+					this.AudioEngine.GetCategory("Default").Pause();
 				};
 
 				// Unpause
@@ -643,6 +662,9 @@ namespace Lemma
 					}
 
 					currentMenu.Value = null;
+
+					this.AudioEngine.GetCategory("Music").Resume();
+					this.AudioEngine.GetCategory("Default").Resume();
 				};
 
 				// Load / save menu

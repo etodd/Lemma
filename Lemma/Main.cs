@@ -75,7 +75,7 @@ namespace Lemma
 		// XACT stuff
 		public AudioEngine AudioEngine;
 		private WaveBank waveBank;
-		private WaveBank musicBank;
+		private WaveBank compressedWaveBank;
 		public SoundBank SoundBank;
 
 		private bool mapLoaded;
@@ -300,7 +300,7 @@ namespace Lemma
 
 			this.AudioEngine = new AudioEngine("Content\\Sounds\\WinSettings.xgs");
 			this.waveBank = new WaveBank(this.AudioEngine, "Content\\Sounds\\Waves.xwb");
-			this.musicBank = new WaveBank(this.AudioEngine, "Content\\Sounds\\Music.xwb");
+			this.compressedWaveBank = new WaveBank(this.AudioEngine, "Content\\Sounds\\Compressed.xwb");
 			this.SoundBank = new SoundBank(this.AudioEngine, "Content\\Sounds\\Sounds.xsb");
 
 			this.Camera = new Camera();

@@ -349,12 +349,15 @@ namespace Lemma.Factories
 
 						// The higher the number, the less likely we are to change direction
 						int oddsOfChangingDirection;
-						if (this.TargetActive && distanceToTarget < 10.0f)
-							oddsOfChangingDirection = 2;
+						if (this.TargetActive)
+							if (distanceToTarget < 10.0f)
+								oddsOfChangingDirection = 6;
+							else
+								oddsOfChangingDirection = 0;
 						else
 							oddsOfChangingDirection = 6;
 
-						if (!directions.Contains(this.Direction) || this.random.Next(oddsOfChangingDirection) == 0)
+						if (!directions.Contains(this.Direction) || (oddsOfChangingDirection > 0 && this.random.Next(oddsOfChangingDirection) == 0))
 						{
 							bool randomDirection = false;
 							Direction randomDirectionOtherThan = Lemma.Util.Direction.None;
@@ -363,7 +366,7 @@ namespace Lemma.Factories
 								randomDirection = true;
 							else
 							{
-								if (distanceToTarget > 5)
+								if (distanceToTarget > 10.0f)
 								{
 									Direction supportedDirection = Lemma.Util.Direction.None;
 									foreach (Direction dir in DirectionExtensions.Directions)

@@ -1,0 +1,1094 @@
+Signature = XACT3;
+Version = 18;
+Content Version = 46;
+Release = February 2010;
+
+Global Settings
+{
+    Xbox File = XboxSettings.xgs;
+    Windows File = WinSettings.xgs;
+    Shared Settings File = C:\Users\Evan\Code\Lemma\Lemma\Content\Sounds\SharedSettings.xgs;
+    Header File = Lemma.h;
+    Exclude Category Names = 0;
+    Exclude Variable Names = 0;
+    Last Modified Low = 30356216;
+    Last Modified High = 3692041036;
+
+    Category
+    {
+        Name = Global;
+        Public = 1;
+        Background Music = 0;
+        Volume = 400;
+
+        Category Entry
+        {
+        }
+
+        Instance Limit
+        {
+            Max Instances = 255;
+            Behavior = 0;
+
+            Crossfade
+            {
+                Fade In = 0;
+                Fade Out = 0;
+                Crossfade Type = 0;
+            }
+        }
+    }
+
+    Category
+    {
+        Name = Default;
+        Public = 1;
+        Background Music = 0;
+        Volume = 400;
+
+        Category Entry
+        {
+            Name = Global;
+        }
+
+        Instance Limit
+        {
+            Max Instances = 255;
+            Behavior = 0;
+
+            Crossfade
+            {
+                Fade In = 0;
+                Fade Out = 0;
+                Crossfade Type = 0;
+            }
+        }
+    }
+
+    Category
+    {
+        Name = Music;
+        Public = 1;
+        Background Music = 1;
+        Volume = 0;
+
+        Category Entry
+        {
+            Name = Global;
+        }
+
+        Instance Limit
+        {
+            Max Instances = 255;
+            Behavior = 0;
+
+            Crossfade
+            {
+                Fade In = 0;
+                Fade Out = 0;
+                Crossfade Type = 0;
+            }
+        }
+    }
+
+    Category
+    {
+        Name = Ambient;
+        Public = 1;
+        Background Music = 0;
+        Volume = 0;
+
+        Category Entry
+        {
+            Name = Global;
+        }
+
+        Instance Limit
+        {
+            Max Instances = 255;
+            Behavior = 0;
+
+            Crossfade
+            {
+                Fade In = 0;
+                Fade Out = 0;
+                Crossfade Type = 0;
+            }
+        }
+    }
+
+    Variable
+    {
+        Name = OrientationAngle;
+        Public = 1;
+        Global = 0;
+        Internal = 0;
+        External = 0;
+        Monitored = 1;
+        Reserved = 1;
+        Read Only = 0;
+        Time = 0;
+        Value = 0.000000;
+        Initial Value = 0.000000;
+        Min = -180.000000;
+        Max = 180.000000;
+    }
+
+    Variable
+    {
+        Name = DopplerPitchScalar;
+        Public = 1;
+        Global = 0;
+        Internal = 0;
+        External = 0;
+        Monitored = 1;
+        Reserved = 1;
+        Read Only = 0;
+        Time = 0;
+        Value = 1.000000;
+        Initial Value = 1.000000;
+        Min = 0.000000;
+        Max = 4.000000;
+    }
+
+    Variable
+    {
+        Name = SpeedOfSound;
+        Public = 1;
+        Global = 1;
+        Internal = 0;
+        External = 0;
+        Monitored = 1;
+        Reserved = 1;
+        Read Only = 0;
+        Time = 0;
+        Value = 343.500000;
+        Initial Value = 343.500000;
+        Min = 0.000000;
+        Max = 1000000.000000;
+    }
+
+    Variable
+    {
+        Name = ReleaseTime;
+        Public = 1;
+        Global = 0;
+        Internal = 1;
+        External = 1;
+        Monitored = 1;
+        Reserved = 1;
+        Read Only = 1;
+        Time = 1;
+        Value = 0.000000;
+        Initial Value = 0.000000;
+        Min = 0.000000;
+        Max = 15000.000000;
+    }
+
+    Variable
+    {
+        Name = AttackTime;
+        Public = 1;
+        Global = 0;
+        Internal = 1;
+        External = 1;
+        Monitored = 1;
+        Reserved = 1;
+        Read Only = 1;
+        Time = 1;
+        Value = 0.000000;
+        Initial Value = 0.000000;
+        Min = 0.000000;
+        Max = 15000.000000;
+    }
+
+    Variable
+    {
+        Name = NumCueInstances;
+        Public = 1;
+        Global = 0;
+        Internal = 1;
+        External = 1;
+        Monitored = 1;
+        Reserved = 1;
+        Read Only = 1;
+        Time = 0;
+        Value = 0.000000;
+        Initial Value = 0.000000;
+        Min = 0.000000;
+        Max = 1024.000000;
+    }
+
+    Variable
+    {
+        Name = Distance;
+        Public = 1;
+        Global = 0;
+        Internal = 0;
+        External = 0;
+        Monitored = 1;
+        Reserved = 1;
+        Read Only = 0;
+        Time = 0;
+        Value = 0.000000;
+        Initial Value = 0.000000;
+        Min = 0.000000;
+        Max = 1000.000000;
+    }
+
+    Variable
+    {
+        Name = Pitch;
+        Public = 1;
+        Global = 0;
+        Internal = 0;
+        External = 0;
+        Monitored = 1;
+        Reserved = 0;
+        Read Only = 0;
+        Time = 0;
+        Value = 0.000000;
+        Initial Value = 0.000000;
+        Min = -1.000000;
+        Max = 1.000000;
+    }
+
+    Variable
+    {
+        Name = Volume;
+        Public = 1;
+        Global = 0;
+        Internal = 0;
+        External = 0;
+        Monitored = 1;
+        Reserved = 0;
+        Read Only = 0;
+        Time = 0;
+        Value = 1.000000;
+        Initial Value = 1.000000;
+        Min = 0.000000;
+        Max = 1.000000;
+    }
+
+    Variable
+    {
+        Name = TimeShift;
+        Public = 1;
+        Global = 1;
+        Internal = 0;
+        External = 0;
+        Monitored = 1;
+        Reserved = 0;
+        Read Only = 0;
+        Time = 0;
+        Value = 0.000000;
+        Initial Value = 0.000000;
+        Min = -12.000000;
+        Max = 12.000000;
+    }
+
+    Variable
+    {
+        Name = ReverbAmount;
+        Public = 1;
+        Global = 1;
+        Internal = 0;
+        External = 0;
+        Monitored = 1;
+        Reserved = 0;
+        Read Only = 0;
+        Time = 0;
+        Value = 0.000000;
+        Initial Value = 0.000000;
+        Min = 0.000000;
+        Max = 1.000000;
+    }
+
+    Variable
+    {
+        Name = ReverbSize;
+        Public = 1;
+        Global = 1;
+        Internal = 0;
+        External = 0;
+        Monitored = 1;
+        Reserved = 0;
+        Read Only = 0;
+        Time = 0;
+        Value = 1.000000;
+        Initial Value = 0.000000;
+        Min = 0.000000;
+        Max = 1.000000;
+    }
+
+    RPC
+    {
+        Name = Loud distance attenuation;
+
+        RPC Curve
+        {
+            Name = Sound::417a3501-5119-4001-986f-27b358feb859;
+            Property = 0;
+            Sound = 1;
+            Line Color = 4290413690;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = Distance;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = 600.000000;
+                Curve = 2;
+            }
+
+            RPC Point
+            {
+                X = 100.000000;
+                Y = -9600.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    RPC
+    {
+        Name = Quiet distance attenuation;
+
+        RPC Curve
+        {
+            Name = Sound::1f15381b-1ac8-4faa-874c-bffb7464d0bc;
+            Property = 0;
+            Sound = 1;
+            Line Color = 4293962024;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = Distance;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = 0.000000;
+                Curve = 2;
+            }
+
+            RPC Point
+            {
+                X = 50.000000;
+                Y = -9600.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    RPC
+    {
+        Name = Pitch control;
+
+        RPC Curve
+        {
+            Name = Sound::05a7e5e2-cb22-413a-b35e-1d0bbc0190fe;
+            Property = 1;
+            Sound = 1;
+            Line Color = 4285108677;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = Pitch;
+            }
+
+            RPC Point
+            {
+                X = -1.000000;
+                Y = -1200.000000;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 1.000000;
+                Y = 1200.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    RPC
+    {
+        Name = Pitch in / pitch out;
+
+        RPC Curve
+        {
+            Name = 1::8d6808f5-48fa-4d9b-986c-487b4e992d08;
+            Property = 0;
+            Sound = 0;
+            Line Color = 4279752145;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = AttackTime;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = -1517.647095;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 1071.000000;
+                Y = 0.000000;
+                Curve = 0;
+            }
+        }
+
+        RPC Curve
+        {
+            Name = 1::4bcb97af-e980-4f25-b0d8-0bce48874dd3;
+            Property = 0;
+            Sound = 0;
+            Line Color = 4284596858;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = ReleaseTime;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = 0.000000;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 1108.000000;
+                Y = -6176.470703;
+                Curve = 0;
+            }
+        }
+
+        RPC Curve
+        {
+            Name = 1::9bd99dcf-5aa4-4971-9fe6-6dc447d7f8b2;
+            Property = 1;
+            Sound = 0;
+            Line Color = 4281010387;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = AttackTime;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = -1200.000000;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 960.000000;
+                Y = 12.456747;
+                Curve = 0;
+            }
+        }
+
+        RPC Curve
+        {
+            Name = 1::d085ee40-084e-42bd-8600-38951be2b07d;
+            Property = 1;
+            Sound = 0;
+            Line Color = 4292380630;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = ReleaseTime;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = 12.456747;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 1145.000000;
+                Y = -1200.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    RPC
+    {
+        Name = Fade out fast;
+
+        RPC Curve
+        {
+            Name = 1::c7b0d98f-85b9-4e5b-8a5a-9b2971dbc776;
+            Property = 0;
+            Sound = 0;
+            Line Color = 4286296165;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = ReleaseTime;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = 0.000000;
+                Curve = 2;
+            }
+
+            RPC Point
+            {
+                X = 2000.000000;
+                Y = -6000.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    RPC
+    {
+        Name = Volume control;
+
+        RPC Curve
+        {
+            Name = Sound::16dd1850-8507-40a2-9ade-a1178b9bad66;
+            Property = 0;
+            Sound = 1;
+            Line Color = 4286980210;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = Volume;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = -5000.000000;
+                Curve = 3;
+            }
+
+            RPC Point
+            {
+                X = 1.000000;
+                Y = 0.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    RPC
+    {
+        Name = Time shift;
+
+        RPC Curve
+        {
+            Name = Sound::38cde38e-a561-4767-aa6a-db5ae3f1a077;
+            Property = 1;
+            Sound = 1;
+            Line Color = 4290600932;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = TimeShift;
+            }
+
+            RPC Point
+            {
+                X = -12.000000;
+                Y = -1200.000000;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 12.000000;
+                Y = 1200.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    RPC
+    {
+        Name = Fade out slow;
+
+        RPC Curve
+        {
+            Name = 1::e5b2f5f9-42e7-4527-b83c-8eae29eba168;
+            Property = 0;
+            Sound = 0;
+            Line Color = 4290171999;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = ReleaseTime;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = 0.000000;
+                Curve = 1;
+            }
+
+            RPC Point
+            {
+                X = 15000.000000;
+                Y = -4000.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    RPC
+    {
+        Name = Fade in slow;
+
+        RPC Curve
+        {
+            Name = 1::b3c675d5-ea66-43b7-bb4d-4f066bd84d63;
+            Property = 0;
+            Sound = 0;
+            Line Color = 4281489917;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = AttackTime;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = -4000.000000;
+                Curve = 1;
+            }
+
+            RPC Point
+            {
+                X = 15000.000000;
+                Y = 0.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    RPC
+    {
+        Name = Fade in fast;
+
+        RPC Curve
+        {
+            Name = 1::21aab571-e701-4fd8-8d5e-d984888332c5;
+            Property = 0;
+            Sound = 0;
+            Line Color = 4279931599;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = AttackTime;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = -6000.000000;
+                Curve = 1;
+            }
+
+            RPC Point
+            {
+                X = 2000.000000;
+                Y = 0.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    RPC
+    {
+        Name = Microsoft Reverb;
+
+        RPC Curve
+        {
+            Name = Effect::729ab3d5-5e7f-48d8-94c8-5876b9f890c1;
+            Property = 5;
+            Sound = 0;
+            Line Color = 4280672033;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = ReverbAmount;
+            }
+
+            Effect Parameter Entry
+            {
+                Effect Name = Microsoft Reverb;
+                Parameter Name = Reverb Gain;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = -100.000000;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 1.000000;
+                Y = -2.000000;
+                Curve = 0;
+            }
+        }
+
+        RPC Curve
+        {
+            Name = Effect::4aae6d2b-d5a5-4efb-aacb-7d22bdc4983c;
+            Property = 5;
+            Sound = 0;
+            Line Color = 4280009593;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = ReverbSize;
+            }
+
+            Effect Parameter Entry
+            {
+                Effect Name = Microsoft Reverb;
+                Parameter Name = Decay Time;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = 0.548500;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 1.000000;
+                Y = 1.000000;
+                Curve = 0;
+            }
+        }
+
+        RPC Curve
+        {
+            Name = Effect::7dba947d-d516-4d43-a926-6e2cf0a0f12f;
+            Property = 5;
+            Sound = 0;
+            Line Color = 4288044720;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = ReverbSize;
+            }
+
+            Effect Parameter Entry
+            {
+                Effect Name = Microsoft Reverb;
+                Parameter Name = Reflections Delay;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = 10.000000;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 1.000000;
+                Y = 300.000000;
+                Curve = 0;
+            }
+        }
+
+        Effect Entry
+        {
+            Effect Name = Microsoft Reverb;
+        }
+    }
+
+    RPC
+    {
+        Name = Very loud distance attenuation;
+
+        RPC Curve
+        {
+            Name = Sound::4e964726-8ea3-4dba-80b8-536998b4c651;
+            Property = 0;
+            Sound = 1;
+            Line Color = 4290754937;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = Distance;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = 600.000000;
+                Curve = 2;
+            }
+
+            RPC Point
+            {
+                X = 200.000000;
+                Y = -9600.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    Effect
+    {
+        Name = Microsoft Reverb;
+        Global = 1;
+        Parameter Preset = City;
+
+        Effect Parameter
+        {
+            Name = Reflections Delay;
+            Minimum = 0.000000;
+            Maximum = 300.000000;
+            Value = 7.000000;
+            Type = 1;
+        }
+
+        Effect Parameter
+        {
+            Name = Reverb Delay;
+            Minimum = 0.000000;
+            Maximum = 85.000000;
+            Value = 11.000000;
+            Type = 1;
+        }
+
+        Effect Parameter
+        {
+            Name = Position Left;
+            Minimum = 0.000000;
+            Maximum = 30.000000;
+            Value = 6.000000;
+            Type = 1;
+        }
+
+        Effect Parameter
+        {
+            Name = Position Right;
+            Minimum = 0.000000;
+            Maximum = 30.000000;
+            Value = 6.000000;
+            Type = 1;
+        }
+
+        Effect Parameter
+        {
+            Name = Position Left Matrix;
+            Minimum = 0.000000;
+            Maximum = 30.000000;
+            Value = 27.000000;
+            Type = 1;
+        }
+
+        Effect Parameter
+        {
+            Name = Position Right Matrix;
+            Minimum = 0.000000;
+            Maximum = 30.000000;
+            Value = 27.000000;
+            Type = 1;
+        }
+
+        Effect Parameter
+        {
+            Name = Early Diffusion;
+            Minimum = 0.000000;
+            Maximum = 15.000000;
+            Value = 7.000000;
+            Type = 1;
+        }
+
+        Effect Parameter
+        {
+            Name = Late Diffusion;
+            Minimum = 0.000000;
+            Maximum = 15.000000;
+            Value = 7.000000;
+            Type = 1;
+        }
+
+        Effect Parameter
+        {
+            Name = Low EQ Gain;
+            Minimum = 0.000000;
+            Maximum = 12.000000;
+            Value = 8.000000;
+            Type = 1;
+        }
+
+        Effect Parameter
+        {
+            Name = Low EQ Cutoff;
+            Minimum = 0.000000;
+            Maximum = 9.000000;
+            Value = 4.000000;
+            Type = 1;
+        }
+
+        Effect Parameter
+        {
+            Name = High EQ Gain;
+            Minimum = 0.000000;
+            Maximum = 8.000000;
+            Value = 8.000000;
+            Type = 1;
+        }
+
+        Effect Parameter
+        {
+            Name = High EQ Cutoff;
+            Minimum = 0.000000;
+            Maximum = 14.000000;
+            Value = 6.000000;
+            Type = 1;
+        }
+
+        Effect Parameter
+        {
+            Name = Rear Delay;
+            Minimum = 0.000000;
+            Maximum = 5.000000;
+            Value = 5.000000;
+            Type = 1;
+        }
+
+        Effect Parameter
+        {
+            Name = Room Filter Frequency;
+            Minimum = 20.000000;
+            Maximum = 20000.000000;
+            Value = 5000.000000;
+            Type = 0;
+        }
+
+        Effect Parameter
+        {
+            Name = Room Filter Main;
+            Minimum = -100.000000;
+            Maximum = 0.000000;
+            Value = -10.000000;
+            Type = 0;
+        }
+
+        Effect Parameter
+        {
+            Name = Room Filter High Frequency;
+            Minimum = -100.000000;
+            Maximum = 0.000000;
+            Value = -8.000000;
+            Type = 0;
+        }
+
+        Effect Parameter
+        {
+            Name = Reflections Gain;
+            Minimum = -100.000000;
+            Maximum = 20.000000;
+            Value = -22.730000;
+            Type = 0;
+        }
+
+        Effect Parameter
+        {
+            Name = Reverb Gain;
+            Minimum = -100.000000;
+            Maximum = 20.000000;
+            Value = -22.170000;
+            Type = 0;
+        }
+
+        Effect Parameter
+        {
+            Name = Decay Time;
+            Minimum = 0.100000;
+            Maximum = 30.000000;
+            Value = 1.490000;
+            Type = 0;
+        }
+
+        Effect Parameter
+        {
+            Name = Density;
+            Minimum = 0.000000;
+            Maximum = 100.000000;
+            Value = 100.000000;
+            Type = 0;
+        }
+
+        Effect Parameter
+        {
+            Name = Room Size;
+            Minimum = 1.000000;
+            Maximum = 100.000000;
+            Value = 100.000000;
+            Type = 0;
+        }
+
+        Effect Parameter
+        {
+            Name = Wet/Dry Mix;
+            Minimum = 0.000000;
+            Maximum = 100.000000;
+            Value = 100.000000;
+            Type = 0;
+        }
+    }
+
+    Compression Preset
+    {
+        Name = Music;
+        Xbox Format Tag = 0;
+        PC Format Tag = 0;
+    }
+}
