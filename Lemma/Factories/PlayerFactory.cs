@@ -231,7 +231,7 @@ namespace Lemma.Factories
 			{
 				Session.Recorder.Event(main, "DieFromHealth");
 				Sound.PlayCue(main, "Death");
-				((GameMain)main).RespawnRewindLength = 20;
+				((GameMain)main).RespawnRewindLength = GameMain.KilledRespawnRewindLength;
 			}));
 
 			result.Add(new CommandBinding(player.HealthDepleted, result.Delete));
@@ -240,7 +240,7 @@ namespace Lemma.Factories
 			{
 				Session.Recorder.Event(main, "Die");
 				if (Agent.Query(transform.Position, 0.0f, 10.0f, x => x != agent) != null)
-					((GameMain)main).RespawnRewindLength = 20;
+					((GameMain)main).RespawnRewindLength = GameMain.KilledRespawnRewindLength;
 			}));
 
 			UIComponent targets = new UIComponent();
@@ -450,7 +450,7 @@ namespace Lemma.Factories
 									Rotation = rotation,
 									OriginalPosition = groundRaycast.Map.GetAbsolutePosition(groundRaycast.Coordinate.Value),
 								});
-								while (respawnLocations.Count > 50)
+								while (respawnLocations.Count > GameMain.RespawnMemoryLength)
 									respawnLocations.RemoveAt(0);
 								walkedOnCount = 0;
 							}
@@ -1485,7 +1485,7 @@ namespace Lemma.Factories
 			Action<Map, Map.Coordinate, Vector3> vault = delegate(Map map, Map.Coordinate coord, Vector3 forward)
 			{
 				const float vaultVerticalSpeed = 8.0f;
-				const float maxVaultTime = 1.25f;
+				const float maxVaultTime = 1.0f;
 
 				Vector3 vaultVelocity = new Vector3(0, vaultVerticalSpeed, 0);
 
@@ -1567,10 +1567,11 @@ namespace Lemma.Factories
 						Direction right = map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
 						Vector3 pos = transform.Position + rotationMatrix.Forward * -1.75f;
 						Map.Coordinate baseCoord = map.GetCoordinate(pos).Move(up, 1);
+						int verticalSearchDistance = player.IsSupported ? 2 : 3;
 						for (int x = -1; x < 2; x++)
 						{
 							Map.Coordinate coord = baseCoord.Move(right, x);
-							for (int i = 0; i < 3; i++)
+							for (int i = 0; i < verticalSearchDistance; i++)
 							{
 								Map.Coordinate downCoord = coord.Move(up.GetReverse());
 

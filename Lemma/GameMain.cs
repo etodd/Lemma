@@ -104,7 +104,9 @@ namespace Lemma
 		private const float startGamma = 10.0f;
 		private static Vector3 startTint = new Vector3(2.0f);
 
+		public const int RespawnMemoryLength = 100;
 		public const int DefaultRespawnRewindLength = 3;
+		public const int KilledRespawnRewindLength = 40;
 		public int RespawnRewindLength = DefaultRespawnRewindLength;
 
 		private const string menuMap = "..\\Menu\\menu";

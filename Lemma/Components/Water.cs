@@ -95,6 +95,11 @@ namespace Lemma.Components
 
 		private Random random = new Random();
 
+		public Water()
+		{
+			this.DrawOrder = new Property<int> { Editable = true, Value = 10 };
+		}
+
 		private void resize()
 		{
 			Point size = this.main.ScreenSize;
@@ -205,8 +210,6 @@ namespace Lemma.Components
 			this.Add(new CommandBinding(this.OnDisabled, removeFluid));
 			this.Add(new CommandBinding(this.OnResumed, addFluid));
 			this.Add(new CommandBinding(this.OnEnabled, addFluid));
-
-			this.DrawOrder = new Property<int> { Editable = true, Value = 10 };
 
 			this.camera = new Camera();
 			this.main.AddComponent(this.camera);

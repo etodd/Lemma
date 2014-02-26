@@ -37,24 +37,12 @@ namespace Lemma.Factories
 			Transform transform = result.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
-			VoxelChaseAI chase = result.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
-
-			int avoidID = WorldFactory.StatesByName["AvoidAI"].ID;
-
-			chase.Filter = delegate(Map.CellState state)
-			{
-				return state.ID == avoidID ? VoxelChaseAI.Cell.Avoid : (state.ID == 0 ? VoxelChaseAI.Cell.Empty : VoxelChaseAI.Cell.Filled);
-			};
-
-			chase.Add(new TwoWayBinding<Vector3>(transform.Position, chase.Position));
-			result.Add(new CommandBinding(chase.Delete, result.Delete));
-
 			Sound sound = result.GetOrCreate<Sound>("LoopSound");
 			sound.Serialize = false;
 			sound.Cue.Value = "Orb Loop";
 			sound.Is3D.Value = true;
 			sound.IsPlaying.Value = true;
-			sound.Add(new Binding<Vector3>(sound.Position, chase.Position));
+			sound.Add(new Binding<Vector3>(sound.Position, transform.Position));
 			Property<float> volume = sound.GetProperty("Volume");
 			Property<float> pitch = sound.GetProperty("Pitch");
 
@@ -102,7 +90,7 @@ namespace Lemma.Factories
 			light.Add(new Binding<Vector3>(light.Color, model.Color));
 
 			Agent agent = result.GetOrCreate<Agent>();
-			agent.Add(new Binding<Vector3>(agent.Position, chase.Position));
+			agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
 
 			Property<int> operationalRadius = result.GetOrMakeProperty<int>("OperationalRadius", true, 100);
 
@@ -111,7 +99,7 @@ namespace Lemma.Factories
 				Interval = 2.0f,
 				Action = delegate()
 				{
-					bool shouldBeActive = (chase.Position.Value - main.Camera.Position).Length() < operationalRadius;
+					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < operationalRadius;
 					if (shouldBeActive && ai.CurrentState == "Suspended")
 						ai.CurrentState.Value = "Idle";
 					else if (!shouldBeActive && ai.CurrentState != "Suspended")
@@ -119,40 +107,93 @@ namespace Lemma.Factories
 				},
 			};
 
+			Property<Entity.Handle> map = result.GetOrMakeProperty<Entity.Handle>("Map");
+			Property<Map.Coordinate> coord = result.GetOrMakeProperty<Map.Coordinate>("Coordinate");
+
+			AI.Task updatePosition = new AI.Task
+			{
+				Action = delegate()
+				{
+					Entity mapEntity = map.Value.Target;
+					if (mapEntity != null && mapEntity.Active)
+						transform.Position.Value = mapEntity.Get<Map>().GetAbsolutePosition(coord);
+					else
+						map.Value = null;
+				},
+			};
+
 			ai.Add(new AI.State
 			{
 				Name = "Suspended",
-				Enter = delegate(AI.State previous)
-				{
-					chase.EnableMovement.Value = false;
-				},
-				Exit = delegate(AI.State next)
-				{
-					chase.EnableMovement.Value = true;
-				},
 				Tasks = new[] { checkOperationalRadius, },
 			});
 
-			const float sightDistance = 30.0f;
+			const float sightDistance = 40.0f;
 			const float hearingDistance = 15.0f;
+			const float movementDistance = 10.0f;
+
+			Action<Vector3> move = delegate(Vector3 dir)
+			{
+				dir.Normalize();
+
+				Vector3 pos = transform.Position;
+				float radius = 0.0f;
+				const int attempts = 20;
+
+				Vector3 up = Vector3.Up;
+				if ((float)Math.Abs(dir.Y) == 1.0f)
+					up = Vector3.Right;
+
+				Matrix mat = Matrix.Identity;
+				mat.Forward = -dir;
+				mat.Right = Vector3.Cross(dir, up);
+				mat.Up = Vector3.Cross(mat.Right, dir);
+				
+				for (int i = 0; i < attempts; i++)
+				{
+					float x = ((float)Math.PI * 0.5f) + (((float)this.random.NextDouble() * 2.0f) - 1.0f) * radius;
+					float y = (((float)this.random.NextDouble() * 2.0f) - 1.0f) * radius;
+					Vector3 ray = new Vector3((float)Math.Cos(x) * (float)Math.Cos(y), (float)Math.Sin(y), (float)Math.Sin(x) * (float)Math.Cos(y));
+					Map.GlobalRaycastResult hit = Map.GlobalRaycast(pos, Vector3.TransformNormal(ray, mat), movementDistance);
+					if (hit.Map != null && hit.Distance > 2.0f)
+					{
+						Map.Coordinate newCoord = hit.Coordinate.Value.Move(hit.Normal);
+						if (hit.Map[newCoord].ID == 0)
+						{
+							coord.Value = newCoord;
+							map.Value = hit.Map.Entity;
+							break;
+						}
+					}
+					radius += (float)Math.PI * 2.0f / (float)attempts;
+				}
+			};
 
 			ai.Add(new AI.State
 			{
 				Name = "Idle",
 				Enter = delegate(AI.State previous)
 				{
-					chase.Speed.Value = 3.0f;
 					pitch.Value = -0.5f;
 				},
 				Tasks = new[]
 				{ 
 					checkOperationalRadius,
+					updatePosition,
 					new AI.Task
 					{
 						Interval = 1.0f,
 						Action = delegate()
 						{
-							Agent a = Agent.Query(chase.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
+							move(new Vector3(((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f));
+						}
+					},
+					new AI.Task
+					{
+						Interval = 1.0f,
+						Action = delegate()
+						{
+							Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
 							if (a != null)
 								ai.CurrentState.Value = "Alert";
 						},
@@ -167,17 +208,16 @@ namespace Lemma.Factories
 				Name = "Alert",
 				Enter = delegate(AI.State previous)
 				{
-					chase.EnableMovement.Value = false;
 					volume.Value = 0.0f;
 				},
 				Exit = delegate(AI.State next)
 				{
-					chase.EnableMovement.Value = true;
 					volume.Value = defaultVolume;
 				},
 				Tasks = new[]
 				{ 
 					checkOperationalRadius,
+					updatePosition,
 					new AI.Task
 					{
 						Interval = 1.0f,
@@ -187,7 +227,7 @@ namespace Lemma.Factories
 								ai.CurrentState.Value = "Idle";
 							else
 							{
-								Agent a = Agent.Query(chase.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
+								Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
 								if (a != null)
 								{
 									targetAgent.Value = a.Entity;
@@ -217,14 +257,11 @@ namespace Lemma.Factories
 				Name = "Chase",
 				Enter = delegate(AI.State previous)
 				{
-					chase.Speed.Value = 12.0f;
-					chase.TargetActive.Value = true;
-					chase.ChangeDirection();
 					pitch.Value = 0.0f;
 				},
 				Exit = delegate(AI.State next)
 				{
-					chase.TargetActive.Value = false;
+
 				},
 				Tasks = new[]
 				{
@@ -232,15 +269,21 @@ namespace Lemma.Factories
 					checkTargetAgent,
 					new AI.Task
 					{
+						Interval = 0.3f,
 						Action = delegate()
 						{
-							Entity target = targetAgent.Value.Target;
-							Vector3 targetPosition = target.Get<Transform>().Position;
-							chase.Target.Value = targetPosition;
-							if ((targetPosition - chase.Position).Length() < 10.0f)
+							move(targetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
+						}
+					},
+					new AI.Task
+					{
+						Action = delegate()
+						{
+							if ((targetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position).Length() < 10.0f)
 								ai.CurrentState.Value = "Explode";
 						}
-					}
+					},
+					updatePosition,
 				},
 			});
 
@@ -248,46 +291,28 @@ namespace Lemma.Factories
 
 			Property<Map.Coordinate> explosionOriginalCoord = result.GetOrMakeProperty<Map.Coordinate>("ExplosionOriginalCoord");
 
+			EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
+			Map.CellState infectedState = WorldFactory.StatesByName["Infected"];
+
 			ai.Add(new AI.State
 			{
 				Name = "Explode",
 				Enter = delegate(AI.State previous)
 				{
-					chase.Speed.Value = 5.0f;
 					coordQueue.Clear();
-					chase.EnablePathfinding.Value = false;
 					
-					Map map = chase.Map.Value.Target.Get<Map>();
+					Map m = map.Value.Target.Get<Map>();
 
-					Map.Coordinate coord = chase.Coord.Value;
+					Map.Coordinate c = coord.Value;
 
 					Direction toSupport = Direction.None;
 
 					foreach (Direction dir in DirectionExtensions.Directions)
 					{
-						if (map[coord.Move(dir)].ID != 0)
+						if (m[coord.Value.Move(dir)].ID != 0)
 						{
 							toSupport = dir;
 							break;
-						}
-					}
-
-					if (toSupport == Direction.None)
-					{
-						// Try again with the last coord
-						coord = chase.LastCoord.Value;
-						foreach (Direction dir in DirectionExtensions.Directions)
-						{
-							if (map[coord.Move(dir)].ID != 0)
-							{
-								toSupport = dir;
-								break;
-							}
-						}
-						if (toSupport == Direction.None)
-						{
-							ai.CurrentState.Value = "Idle";
-							return;
 						}
 					}
 
@@ -302,11 +327,11 @@ namespace Lemma.Factories
 						right = Direction.PositiveX;
 					Direction forward = up.Cross(right);
 
-					for (Map.Coordinate y = coord.Clone(); y.GetComponent(up) < coord.GetComponent(up) + 3; y = y.Move(up))
+					for (Map.Coordinate y = c.Clone(); y.GetComponent(up) < c.GetComponent(up) + 3; y = y.Move(up))
 					{
-						for (Map.Coordinate x = y.Clone(); x.GetComponent(right) < coord.GetComponent(right) + 2; x = x.Move(right))
+						for (Map.Coordinate x = y.Clone(); x.GetComponent(right) < c.GetComponent(right) + 2; x = x.Move(right))
 						{
-							for (Map.Coordinate z = x.Clone(); z.GetComponent(forward) < coord.GetComponent(forward) + 2; z = z.Move(forward))
+							for (Map.Coordinate z = x.Clone(); z.GetComponent(forward) < c.GetComponent(forward) + 2; z = z.Move(forward))
 								coordQueue.Add(z);
 						}
 					}
@@ -314,13 +339,38 @@ namespace Lemma.Factories
 				Exit = delegate(AI.State next)
 				{
 					coordQueue.Clear();
-					chase.EnablePathfinding.Value = true;
-					chase.LastCoord.Value = chase.Coord.Value = explosionOriginalCoord;
 					volume.Value = defaultVolume;
 				},
 				Tasks = new[]
 				{ 
 					checkOperationalRadius,
+					new AI.Task
+					{
+						Interval = 0.15f,
+						Action = delegate()
+						{
+							if (coordQueue.Count > 0)
+							{
+								coord.Value = coordQueue[0];
+								coordQueue.RemoveAt(0);
+
+								Entity block = factory.CreateAndBind(main);
+								infectedState.ApplyToEffectBlock(block.Get<ModelInstance>());
+
+								Map m = map.Value.Target.Get<Map>();
+
+								block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(coord);
+
+								Vector3 absolutePos = m.GetAbsolutePosition(coord);
+
+								block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f);
+								block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f) * Matrix.CreateRotationY(0.15f);
+								block.GetProperty<float>("TotalLifetime").Value = 0.05f;
+								factory.Setup(block, map.Value.Target, coord, infectedState.ID);
+								main.Add(block);
+							}
+						}
+					},
 					new AI.Task
 					{
 						Action = delegate()
@@ -334,6 +384,7 @@ namespace Lemma.Factories
 							}
 						},
 					},
+					updatePosition,
 				},
 			});
 
@@ -344,13 +395,11 @@ namespace Lemma.Factories
 				Name = "Exploding",
 				Enter = delegate(AI.State previous)
 				{
-					chase.EnableMovement.Value = false;
 					exploded.Value = false;
 					sound.Stop.Execute(AudioStopOptions.AsAuthored);
 				},
 				Exit = delegate(AI.State next)
 				{
-					chase.EnableMovement.Value = true;
 					exploded.Value = false;
 					volume.Value = defaultVolume;
 					sound.Play.Execute();
@@ -367,19 +416,17 @@ namespace Lemma.Factories
 							float timeInCurrentState = ai.TimeInCurrentState;
 							if (timeInCurrentState > 1.0f && !exploded)
 							{
-								Map map = chase.Map.Value.Target.Get<Map>();
-								Explosion.Explode(main, map, chase.Coord, radius, 18.0f);
+								Explosion.Explode(main, map.Value.Target.Get<Map>(), coord, radius, 18.0f);
 								exploded.Value = true;
 							}
 
 							if (timeInCurrentState > 2.0f)
 							{
-								Map map = chase.Map.Value.Target.Get<Map>();
-								Map.Coordinate? closestCell = map.FindClosestFilledCell(chase.Coord, radius + 1);
+								Map m = map.Value.Target.Get<Map>();
+								Map.Coordinate? closestCell = m.FindClosestFilledCell(coord, radius + 1);
 								if (closestCell.HasValue)
 								{
-									chase.Blend.Value = 0.0f;
-									chase.Coord.Value = closestCell.Value;
+									move(m.GetAbsolutePosition(closestCell.Value) - transform.Position);
 									ai.CurrentState.Value = "Alert";
 								}
 								else
@@ -387,37 +434,9 @@ namespace Lemma.Factories
 							}
 						},
 					},
+					updatePosition,
 				},
 			});
-
-			EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
-			Map.CellState infectedState = WorldFactory.StatesByName["Infected"];
-			chase.Add(new CommandBinding<Map, Map.Coordinate>(chase.Moved, delegate(Map m, Map.Coordinate c)
-			{
-				if (chase.Active)
-				{
-					if (coordQueue.Count > 0)
-					{
-						Map.Coordinate coord = chase.Coord.Value = coordQueue[0];
-						coordQueue.RemoveAt(0);
-
-						Entity block = factory.CreateAndBind(main);
-						infectedState.ApplyToEffectBlock(block.Get<ModelInstance>());
-
-						Map map = chase.Map.Value.Target.Get<Map>();
-
-						block.GetProperty<Vector3>("Offset").Value = map.GetRelativePosition(coord);
-
-						Vector3 absolutePos = map.GetAbsolutePosition(coord);
-
-						block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f);
-						block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f) * Matrix.CreateRotationY(0.15f);
-						block.GetProperty<float>("TotalLifetime").Value = 0.05f;
-						factory.Setup(block, chase.Map.Value.Target, coord, infectedState.ID);
-						main.Add(block);
-					}
-				}
-			}));
 
 			this.SetMain(result, main);
 		}

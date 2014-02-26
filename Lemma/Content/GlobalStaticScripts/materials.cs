@@ -47,6 +47,20 @@ WorldFactory.AddState
 	},
 	new Map.CellState
 	{
+		ID = 4,
+		Name = "Dirt",
+		Permanent = false,
+		Hard = true,
+		Density = 0.5f,
+		DiffuseMap = "Textures\\dirt",
+		NormalMap = "Textures\\dirt-normal",
+		FootstepCue = "DirtFootsteps",
+		RubbleCue = "DirtRubble",
+		SpecularPower = 1.0f,
+		SpecularIntensity = 0.0f,
+	},
+	new Map.CellState
+	{
 		ID = 6,
 		Name = "Critical",
 		Permanent = false,
