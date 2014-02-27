@@ -81,7 +81,7 @@ void PostProcessVS (	in float3 position : POSITION,
 	// Pass along the texture coordinate and the world-space view ray
 	output.texCoord = texCoord.xy;
 	float4 v = mul(outputPosition, InverseViewProjectionMatrix);
-	output.viewRay = (v.xyz / v.w) - CameraPosition;
+	output.viewRay = v.xyz / v.w;
 
 	output.viewSpacePosition = mul(outputPosition, InverseProjectionMatrix);
 }
@@ -89,7 +89,7 @@ void PostProcessVS (	in float3 position : POSITION,
 // Reconstruct position from a linear depth
 float3 PositionFromDepth(float depth, float3 viewRay)
 {
-	return CameraPosition + (viewRay * depth);
+	return viewRay * depth;
 }
 
 // Reconstruct position from a linear depth buffer

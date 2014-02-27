@@ -12,9 +12,6 @@ namespace Lemma.Components
 		public enum DynamicShadowSetting { Off, Low, Medium, High };
 		private const int maxDirectionalLights = 3;
 		private int globalShadowMapSize;
-		private const float globalShadowSize = 100.0f;
-		private const float globalShadowDepth = 4000.0f;
-		private const float globalShadowCameraDistance = 2000.0f;
 		private const float lightShadowThreshold = 60.0f;
 		private const float globalShadowFocusInterval = 10.0f;
 		private int spotShadowMapSize;
@@ -213,17 +210,21 @@ namespace Lemma.Components
 			}
 		}
 
-		public void RenderGlobalShadowMap(Vector3 focus)
+		public void RenderGlobalShadowMap(Camera camera)
 		{
+			Vector3 focus = camera.Position;
 			focus = new Vector3((float)Math.Round(focus.X / LightingManager.globalShadowFocusInterval), (float)Math.Round(focus.Y / LightingManager.globalShadowFocusInterval), (float)Math.Round(focus.Z / LightingManager.globalShadowFocusInterval)) * LightingManager.globalShadowFocusInterval;
-			this.shadowCamera.Position.Value = focus - (this.globalShadowLight.Direction.Value * LightingManager.globalShadowCameraDistance);
-			this.shadowCamera.View.Value = Matrix.CreateLookAt(this.shadowCamera.Position, focus, Vector3.Up);
-			this.shadowCamera.SetOrthographicProjection(LightingManager.globalShadowSize, LightingManager.globalShadowSize, 1.0f, LightingManager.globalShadowDepth);
-			this.globalShadowViewProjection = this.shadowCamera.ViewProjection;
+			Vector3 shadowCameraOffset = this.globalShadowLight.Direction.Value * -camera.FarPlaneDistance;
+			this.shadowCamera.View.Value = Matrix.CreateLookAt(focus + shadowCameraOffset, focus, Vector3.Up);
+
+			float size = camera.FarPlaneDistance;
+			this.shadowCamera.SetOrthographicProjection(size, size, 1.0f, size * 2.0f);
 
 			this.main.GraphicsDevice.SetRenderTarget(this.globalShadowMap);
 			this.main.GraphicsDevice.Clear(new Color(0, 255, 255));
 			this.main.DrawScene(new RenderParameters { Camera = this.shadowCamera, Technique = Technique.Shadow });
+
+			this.globalShadowViewProjection = this.shadowCamera.ViewProjection;
 		}
 
 		public void RenderPointShadowMap(PointLight light, int index)
@@ -311,26 +312,27 @@ namespace Lemma.Components
 				index++;
 			}
 
-			if (this.EnableGlobalShadowMap && this.globalShadowLight != null)
-				this.RenderGlobalShadowMap(camera.Position);
-
 			this.main.GraphicsDevice.RasterizerState = originalState;
+
+			// Render global shadow map
+			if (this.EnableGlobalShadowMap && this.globalShadowLight != null)
+				this.RenderGlobalShadowMap(camera);
 		}
 
-		public void SetGlobalLightParameters(Microsoft.Xna.Framework.Graphics.Effect effect)
+		public void SetGlobalLightParameters(Microsoft.Xna.Framework.Graphics.Effect effect, Vector3 cameraPos)
 		{
 			effect.Parameters["DirectionalLightDirections"].SetValue(this.directionalLightDirections);
 			effect.Parameters["DirectionalLightColors"].SetValue(this.directionalLightColors);
 			effect.Parameters["AmbientLightColor"].SetValue(this.ambientLightColor);
 			if (this.EnableGlobalShadowMap)
 			{
-				effect.Parameters["ShadowViewProjectionMatrix"].SetValue(this.globalShadowViewProjection);
+				effect.Parameters["ShadowViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * this.globalShadowViewProjection);
 				effect.Parameters["ShadowMapSize"].SetValue(this.globalShadowMapSize);
 				effect.Parameters["ShadowMap" + Model.SamplerPostfix].SetValue(this.globalShadowMap);
 			}
 		}
 
-		public void SetSpotLightParameters(SpotLight light, Microsoft.Xna.Framework.Graphics.Effect effect)
+		public void SetSpotLightParameters(SpotLight light, Microsoft.Xna.Framework.Graphics.Effect effect, Vector3 cameraPos)
 		{
 			bool shadowed = light.Shadowed && this.shadowMapIndices.ContainsKey(light);
 			effect.CurrentTechnique = effect.Techniques[shadowed ? "SpotLightShadowed" : "SpotLight"];
@@ -343,18 +345,20 @@ namespace Lemma.Components
 
 			float horizontalScale = (float)Math.Sin(light.FieldOfView * 0.5f) * light.Attenuation;
 			float depthScale = (float)Math.Cos(light.FieldOfView * 0.5f) * light.Attenuation;
+			effect.Parameters["SpotLightViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * light.ViewProjection);
+			effect.Parameters["SpotLightPosition"].SetValue(light.Position - cameraPos);
+
 			Matrix rotation = Matrix.CreateFromQuaternion(light.Orientation);
-			effect.Parameters["SpotLightViewProjectionMatrix"].SetValue(light.ViewProjection);
-			effect.Parameters["SpotLightPosition"].SetValue(light.Position);
 			rotation.Forward *= -1.0f;
 			effect.Parameters["SpotLightDirection"].SetValue(rotation.Forward);
-			effect.Parameters["WorldMatrix"].SetValue(Matrix.CreateScale(horizontalScale, horizontalScale, depthScale) * rotation * Matrix.CreateTranslation(light.Position));
+			effect.Parameters["WorldMatrix"].SetValue(Matrix.CreateScale(horizontalScale, horizontalScale, depthScale) * rotation * Matrix.CreateTranslation(light.Position - cameraPos));
+
 			effect.Parameters["SpotLightRadius"].SetValue(depthScale);
 			effect.Parameters["SpotLightColor"].SetValue(light.Color);
 			effect.Parameters["Cookie" + Model.SamplerPostfix].SetValue(light.CookieTexture);
 		}
 
-		public void SetPointLightParameters(PointLight light, Microsoft.Xna.Framework.Graphics.Effect effect)
+		public void SetPointLightParameters(PointLight light, Microsoft.Xna.Framework.Graphics.Effect effect, Vector3 cameraPos)
 		{
 			bool shadowed = light.Shadowed && this.shadowMapIndices.ContainsKey(light);
 			effect.CurrentTechnique = effect.Techniques[shadowed ? "PointLightShadowed" : "PointLight"];
@@ -368,8 +372,8 @@ namespace Lemma.Components
 				effect.Parameters["ShadowMapSize"].SetValue(new Vector3(this.pointShadowMapSize));
 			}
 
-			effect.Parameters["WorldMatrix"].SetValue(Matrix.CreateScale(light.Attenuation) * Matrix.CreateTranslation(light.Position));
-			effect.Parameters["PointLightPosition"].SetValue(light.Position);
+			effect.Parameters["WorldMatrix"].SetValue(Matrix.CreateScale(light.Attenuation) * Matrix.CreateTranslation(light.Position - cameraPos));
+			effect.Parameters["PointLightPosition"].SetValue(light.Position - cameraPos);
 			effect.Parameters["PointLightRadius"].SetValue(light.Attenuation);
 			effect.Parameters["PointLightColor"].SetValue(light.Color);
 		}

@@ -457,6 +457,10 @@ namespace Lemma.Components
 
 		public void PostProcess(RenderTarget2D result, RenderParameters parameters, DrawStageDelegate alphaStageDelegate)
 		{
+			Vector3 originalCameraPosition = parameters.Camera.Position;
+			BoundingFrustum originalBoundingFrustum = parameters.Camera.BoundingFrustum;
+			parameters.Camera.Position.Value = Vector3.Zero;
+
 			RasterizerState originalState = this.main.GraphicsDevice.RasterizerState;
 			RasterizerState reverseCullState = new RasterizerState { CullMode = CullMode.CullClockwiseFace };
 
@@ -473,7 +477,7 @@ namespace Lemma.Components
 			this.setTargets(this.lightingBuffer, this.specularBuffer);
 			Renderer.globalLightEffect.CurrentTechnique = Renderer.globalLightEffect.Techniques["GlobalLight" + (this.lightingManager.EnableGlobalShadowMap && this.lightingManager.HasGlobalShadowLight ? "Shadow" : "")];
 			parameters.Camera.SetParameters(Renderer.globalLightEffect);
-			this.lightingManager.SetGlobalLightParameters(Renderer.globalLightEffect);
+			this.lightingManager.SetGlobalLightParameters(Renderer.globalLightEffect, originalCameraPosition);
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.globalLightEffect);
 			this.applyEffect(Renderer.globalLightEffect);
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
@@ -491,10 +495,10 @@ namespace Lemma.Components
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.pointLightEffect);
 			foreach (PointLight light in PointLight.All)
 			{
-				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || light.Color.Value.LengthSquared() == 0.0f || !parameters.Camera.BoundingFrustum.Value.Intersects(light.BoundingSphere))
+				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || light.Color.Value.LengthSquared() == 0.0f || !originalBoundingFrustum.Intersects(light.BoundingSphere))
 					continue;
 
-				this.lightingManager.SetPointLightParameters(light, Renderer.pointLightEffect);
+				this.lightingManager.SetPointLightParameters(light, Renderer.pointLightEffect, originalCameraPosition);
 				this.applyEffect(Renderer.pointLightEffect);
 				this.drawModel(Renderer.pointLightModel);
 			}
@@ -509,10 +513,10 @@ namespace Lemma.Components
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.spotLightEffect);
 			foreach (SpotLight light in SpotLight.All)
 			{
-				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || light.Color.Value.LengthSquared() == 0.0f || !parameters.Camera.BoundingFrustum.Value.Intersects(light.BoundingFrustum))
+				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || light.Color.Value.LengthSquared() == 0.0f || !originalBoundingFrustum.Intersects(light.BoundingFrustum))
 					continue;
 
-				this.lightingManager.SetSpotLightParameters(light, Renderer.spotLightEffect);
+				this.lightingManager.SetSpotLightParameters(light, Renderer.spotLightEffect, originalCameraPosition);
 				this.applyEffect(Renderer.spotLightEffect);
 				this.drawModel(Renderer.spotLightModel);
 			}
@@ -573,6 +577,8 @@ namespace Lemma.Components
 			this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
 			this.spriteBatch.Draw(colorSource, Vector2.Zero, Color.White);
 			this.spriteBatch.End();
+
+			parameters.Camera.Position.Value = originalCameraPosition;
 
 			if (alphaStageDelegate != null)
 				alphaStageDelegate(parameters);

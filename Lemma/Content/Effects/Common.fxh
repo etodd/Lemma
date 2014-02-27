@@ -2,7 +2,6 @@
 float4x4 ViewMatrix;
 float4x4 ProjectionMatrix;
 float4x4 ViewProjectionMatrix;
-float3 CameraPosition;
 
 // Constants
 static const float PI = 3.14159265f;

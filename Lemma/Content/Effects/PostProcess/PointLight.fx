@@ -125,7 +125,7 @@ void PointLightPS(	in PointLightPSInput input,
 	texCoord = (round(texCoord * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
 	float4 normalValue = tex2D(SourceSampler1, texCoord);
 	float3 normal = DecodeNormal(normalValue);
-	float3 viewRay = normalize(input.worldPosition - CameraPosition);
+	float3 viewRay = normalize(input.worldPosition);
 	float3 position = PositionFromDepthSampler(SourceSampler0, texCoord, viewRay);
 	LightingOutput data = CalcPointLighting(PointLightColor, PointLightRadius, normal, PointLightPosition, position, viewRay, tex2D(SourceSampler1, texCoord).w * 255.0f, normalValue.w);
 	lighting.xyz = EncodeColor(data.lighting);
@@ -143,7 +143,7 @@ void PointLightShadowedPS(	in PointLightPSInput input,
 	texCoord = (round(texCoord * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
 	float4 normalValue = tex2D(SourceSampler1, texCoord);
 	float3 normal = DecodeNormal(normalValue);
-	float3 viewRay = normalize(input.worldPosition - CameraPosition);
+	float3 viewRay = normalize(input.worldPosition);
 	float3 position = PositionFromDepthSampler(SourceSampler0, texCoord, viewRay);
 	LightingOutput data = CalcPointLighting(PointLightColor, PointLightRadius, normal, PointLightPosition, position, viewRay, tex2D(SourceSampler1, texCoord).w * 255.0f, normalValue.w);
 

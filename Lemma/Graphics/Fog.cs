@@ -21,11 +21,6 @@ namespace Lemma.Components
 		{
 			base.InitializeProperties();
 			this.DrawOrder.Editable = true;
-			this.VerticalCenter.Set = delegate(float value)
-			{
-				this.VerticalCenter.InternalValue = value;
-				this.effect.Parameters["VerticalCenter"].SetValue(value);
-			};
 			this.VerticalSize.Set = delegate(float value)
 			{
 				this.VerticalSize.InternalValue = value;
@@ -64,7 +59,6 @@ namespace Lemma.Components
 			this.VerticalLimit.Reset();
 			if (reload)
 			{
-				this.VerticalCenter.Reset();
 				this.VerticalSize.Reset();
 				this.Color.Reset();
 				this.StartDistance.Reset();
@@ -76,9 +70,11 @@ namespace Lemma.Components
 		{
 			if (p.IsMainRender)
 			{
-				this.effect.CurrentTechnique.Passes[0].Apply();
 				p.Camera.SetParameters(this.effect);
 				this.effect.Parameters["Depth" + Model.SamplerPostfix].SetValue(p.DepthBuffer);
+				if (this.VerticalLimit)
+					this.effect.Parameters["VerticalCenter"].SetValue(this.VerticalCenter - p.Camera.Position.Value.Y);
+				this.effect.CurrentTechnique.Passes[0].Apply();
 				base.DrawAlpha(time, p);
 			}
 		}

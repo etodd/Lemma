@@ -57,7 +57,7 @@ struct SpotLightVSInput
 struct SpotLightPSInput
 {
 	float4 projectedPosition : TEXCOORD0;
-	float3 worldPosition : TEXCOORD1;
+	float4 worldPosition : TEXCOORD1;
 };
 
 void SpotLightVS(	in SpotLightVSInput input,
@@ -75,14 +75,15 @@ void SpotLightVS(	in SpotLightVSInput input,
 
 void SpotLightPS(	in SpotLightPSInput input,
 					out float4 lighting : COLOR0,
-					out float4 specular : COLOR1)
+					out float4 specular : COLOR1,
+					uniform bool shadow)
 {
 	float2 texCoord = (0.5f * input.projectedPosition.xy / input.projectedPosition.w) + float2(0.5f, 0.5f);
 	texCoord.y = 1.0f - texCoord.y;
 	texCoord = (round(texCoord * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
 	float4 normalValue = tex2D(SourceSampler1, texCoord);
 	float3 normal = DecodeNormal(normalValue);
-	float3 viewRay = normalize(input.worldPosition - CameraPosition);
+	float3 viewRay = normalize(input.worldPosition);
 	float3 position = PositionFromDepthSampler(SourceSampler0, texCoord, viewRay);
 
 	float4 spotProjectedPosition = mul(float4(position, 1.0f), SpotLightViewProjectionMatrix);
@@ -92,35 +93,16 @@ void SpotLightPS(	in SpotLightPSInput input,
 	
 	LightingOutput data = CalcSpotLighting(SpotLightColor, SpotLightRadius, normal, SpotLightPosition, SpotLightDirection, position, viewRay, tex2D(SourceSampler1, texCoord).w * 255.0f, normalValue.w, cookieColor);
 	
+	if (shadow)
+	{
+		float shadowValue = GetShadowValueFromClip(spotClipPosition, 1.0f - (spotProjectedPosition.z / spotProjectedPosition.w), ShadowBias);
+		data.lighting *= shadowValue;
+		data.specular *= shadowValue;
+	}
+
 	lighting.xyz = EncodeColor(data.lighting);
 	lighting.w = 1.0f;
 	specular.xyz = EncodeColor(data.specular);
-	specular.w = 1.0f;
-}
-
-void SpotLightShadowedPS(	in SpotLightPSInput input,
-							out float4 lighting : COLOR0,
-							out float4 specular : COLOR1)
-{
-	float2 texCoord = (0.5f * input.projectedPosition.xy / input.projectedPosition.w) + float2(0.5f, 0.5f);
-	texCoord.y = 1.0f - texCoord.y;
-	texCoord = (round(texCoord * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
-	float4 normalValue = tex2D(SourceSampler1, texCoord);
-	float3 normal = DecodeNormal(normalValue);
-	float3 viewRay = normalize(input.worldPosition - CameraPosition);
-	float3 position = PositionFromDepthSampler(SourceSampler0, texCoord, viewRay);
-
-	float4 spotProjectedPosition = mul(float4(position, 1.0f), SpotLightViewProjectionMatrix);
-	float2 spotClipPosition = (0.5f * (spotProjectedPosition.xy / spotProjectedPosition.w)) + float2(0.5f, 0.5f);
-	spotClipPosition.y = 1.0f - spotClipPosition.y;
-	float3 cookieColor = tex2D(CookieSampler, spotClipPosition).xyz;
-	
-	LightingOutput data = CalcSpotLighting(SpotLightColor, SpotLightRadius, normal, SpotLightPosition, SpotLightDirection, position, viewRay, tex2D(SourceSampler1, texCoord).w * 255.0f, normalValue.w, cookieColor);
-
-	float shadow = GetShadowValueFromClip(spotClipPosition, 1.0f - (spotProjectedPosition.z / spotProjectedPosition.w), ShadowBias);
-	lighting.xyz = EncodeColor(data.lighting * shadow);
-	lighting.w = 1.0f;
-	specular.xyz = EncodeColor(data.specular * shadow);
 	specular.w = 1.0f;
 }
 
@@ -129,7 +111,7 @@ technique SpotLight
 	pass p0
 	{
 		VertexShader = compile vs_3_0 SpotLightVS();
-		PixelShader = compile ps_3_0 SpotLightPS();
+		PixelShader = compile ps_3_0 SpotLightPS(false);
 		ZEnable = false;
 		ZWriteEnable = false;
 		AlphaBlendEnable = true;
@@ -143,7 +125,7 @@ technique SpotLightShadowed
 	pass p0
 	{
 		VertexShader = compile vs_3_0 SpotLightVS();
-		PixelShader = compile ps_3_0 SpotLightShadowedPS();
+		PixelShader = compile ps_3_0 SpotLightPS(true);
 		ZEnable = false;
 		ZWriteEnable = false;
 		AlphaBlendEnable = true;

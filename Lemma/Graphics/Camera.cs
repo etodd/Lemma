@@ -214,9 +214,6 @@ namespace Lemma.Components
 			param = effect.Parameters["InverseViewProjectionMatrix"];
 			if (param != null)
 				param.SetValue(this.InverseViewProjection);
-			param = effect.Parameters["CameraPosition"];
-			if (param != null)
-				param.SetValue(this.Position);
 			param = effect.Parameters["LastFrameViewProjectionMatrix"];
 			if (param != null)
 				param.SetValue(this.LastViewProjection);

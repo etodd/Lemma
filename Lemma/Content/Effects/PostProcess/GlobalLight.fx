@@ -44,37 +44,12 @@ LightingOutput CalcDirectionalLighting(
 	return output;
 }
 
-LightingOutput GetGlobalLighting(uniform int start, float3 normal, float specularPower, float specularIntensity, float3 cameraToPoint, float3 reflectedViewRay)
-{
-	LightingOutput output;
-	output.lighting = AmbientLightColor;
-	output.specular = float3(0, 0, 0);
+const float ShadowBias = 0.001f;
 
-	// Directional lights
-	[unroll]
-	for(int i = start; i < NUM_DIRECTIONAL_LIGHTS; i++)
-	{
-		LightingOutput light = CalcDirectionalLighting(DirectionalLightColors[i],
-								normal,
-								specularPower,
-								specularIntensity,
-								cameraToPoint,
-								-DirectionalLightDirections[i],
-								reflectedViewRay);
-		output.lighting += light.lighting;
-		output.specular += light.specular;
-	}
-
-	output.specular += texCUBE(EnvironmentSampler, reflectedViewRay).xyz * EnvironmentColor * specularIntensity * specularPower * (specularPower == 255.0f ? 1.0f : 0.25f / 255.0f);
-
-	return output;
-}
-
-const float ShadowBias = 0.00002f;
-
-void GlobalLightShadowPS(	in PostProcessPSInput input,
+void GlobalLightPS(	in PostProcessPSInput input,
 					out float4 lighting : COLOR0,
-					out float4 specular : COLOR1)
+					out float4 specular : COLOR1,
+					uniform bool shadow)
 {
 	float4 normalValue = tex2D(SourceSampler1, input.texCoord);
 	float3 normal = DecodeNormal(normalValue);
@@ -92,50 +67,47 @@ void GlobalLightShadowPS(	in PostProcessPSInput input,
 
 		float3 reflectedViewRay = reflect(viewRay, normal);
 
-		LightingOutput data = GetGlobalLighting(1, normal, specularPower, specularIntensity, viewRay, reflectedViewRay);
+		LightingOutput output;
+		output.lighting = AmbientLightColor;
+		output.specular = float3(0, 0, 0);
 
-		// Shadowed light
-		LightingOutput shadowLight = CalcDirectionalLighting(DirectionalLightColors[0],
-								normal,
-								specularPower,
-								specularIntensity,
-								viewRay,
-								-DirectionalLightDirections[0],
-								reflectedViewRay);
-		float4 shadowPos = mul(float4(worldPos, 1.0f), ShadowViewProjectionMatrix);
-		float shadowValue = GetShadowValue(shadowPos, ShadowBias);
-		data.lighting += shadowLight.lighting * shadowValue;
-		data.specular += shadowLight.specular * shadowValue;
+		// Directional lights
 
-		lighting.xyz = EncodeColor(data.lighting);
+		if (shadow)
+		{
+			// Shadowed light
+			LightingOutput shadowLight = CalcDirectionalLighting(DirectionalLightColors[0],
+									normal,
+									specularPower,
+									specularIntensity,
+									viewRay,
+									-DirectionalLightDirections[0],
+									reflectedViewRay);
+			float4 shadowPos = mul(float4(worldPos, 1.0f), ShadowViewProjectionMatrix);
+			float shadowValue = GetShadowValue(shadowPos, ShadowBias);
+			output.lighting += shadowLight.lighting * shadowValue;
+			output.specular += shadowLight.specular * shadowValue;
+		}
+
+		[unroll]
+		for(int i = shadow ? 1 : 0; i < NUM_DIRECTIONAL_LIGHTS; i++)
+		{
+			LightingOutput light = CalcDirectionalLighting(DirectionalLightColors[i],
+									normal,
+									specularPower,
+									specularIntensity,
+									viewRay,
+									-DirectionalLightDirections[i],
+									reflectedViewRay);
+			output.lighting += light.lighting;
+			output.specular += light.specular;
+		}
+
+		output.specular += texCUBE(EnvironmentSampler, reflectedViewRay).xyz * EnvironmentColor * specularIntensity * specularPower * (specularPower == 255.0f ? 1.0f : 0.25f / 255.0f);
+
+		lighting.xyz = EncodeColor(output.lighting);
 		lighting.w = 1.0f;
-		specular.xyz = EncodeColor(data.specular);
-		specular.w = 1.0f;
-	}
-}
-
-void GlobalLightPS(	in PostProcessPSInput input,
-					out float4 lighting : COLOR0,
-					out float4 specular : COLOR1)
-{
-	float4 normalValue = tex2D(SourceSampler1, input.texCoord);
-	float3 normal = DecodeNormal(normalValue);
-	if (normal.x * normal.y * normal.z == 0.0f)
-	{
-		lighting = (float4)0;
-		specular = (float4)0;
-	}
-	else
-	{
-		float3 viewRay = normalize(input.viewRay);
-		float3 worldPos = PositionFromDepthSampler(SourceSampler0, input.texCoord, viewRay);
-
-		float3 reflectedViewRay = reflect(viewRay, normal);
-
-		LightingOutput data = GetGlobalLighting(0, normal, tex2D(SourceSampler2, input.texCoord).w * 255.0f, normalValue.w, viewRay, reflectedViewRay);
-		lighting.xyz = EncodeColor(data.lighting);
-		lighting.w = 1.0f;
-		specular.xyz = EncodeColor(data.specular);
+		specular.xyz = EncodeColor(output.specular);
 		specular.w = 1.0f;
 	}
 }
@@ -145,7 +117,7 @@ technique GlobalLightShadow
 	pass p0
 	{
 		VertexShader = compile vs_3_0 PostProcessVS();
-		PixelShader = compile ps_3_0 GlobalLightShadowPS();
+		PixelShader = compile ps_3_0 GlobalLightPS(true);
 		
 		ZEnable = false;
 		ZWriteEnable = false;
@@ -158,7 +130,7 @@ technique GlobalLight
 	pass p0
 	{
 		VertexShader = compile vs_3_0 PostProcessVS();
-		PixelShader = compile ps_3_0 GlobalLightPS();
+		PixelShader = compile ps_3_0 GlobalLightPS(false);
 		
 		ZEnable = false;
 		ZWriteEnable = false;
