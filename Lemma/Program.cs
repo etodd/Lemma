@@ -8,15 +8,6 @@ namespace Lemma
 {
 	public static class Program
 	{
-		private static GameMain create()
-		{
-#if DEVELOPMENT
-			return new GameMain(true, null); // Editor binary
-#else
-			return new GameMain(false, "intro"); // Game binary
-#endif
-		}
-
 		/// <summary>
 		/// The main entry point for the application.
 		/// </summary>
@@ -25,7 +16,7 @@ namespace Lemma
 			GameMain main = null;
 			if (Debugger.IsAttached)
 			{
-				main = create();
+				main = new GameMain();
 				main.Run();
 			}
 			else
@@ -33,7 +24,7 @@ namespace Lemma
 				string error = null;
 				try
 				{
-					main = create();
+					main = new GameMain();
 					main.Run();
 				}
 				catch (Exception e)

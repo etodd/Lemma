@@ -91,7 +91,7 @@ namespace Lemma.Factories
 						foreach (Entity e in persistentEntities)
 							e.Delete.Execute();
 
-						((GameMain)main).StartSpawnPoint = startSpawnPoint;
+						((GameMain)main).StartSpawnPoint.Value = startSpawnPoint;
 					}),
 					new Animation.Execute(((GameMain)main).SaveCurrentMap),
 					new Animation.Set<string>(main.MapFile, nextMap),

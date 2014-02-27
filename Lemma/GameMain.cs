@@ -21,6 +21,16 @@ namespace Lemma
 {
 	public class GameMain : Main
 	{
+#if DEVELOPMENT
+		public const bool AllowEditor = true;
+		public const string InitialMap = null;
+#else
+		public const bool AllowEditor = false;
+		public const string InitialMap = "intro";
+#endif
+
+		public const string MenuMap = "..\\Menu\\menu";
+
 		public class ExitException : Exception
 		{
 
@@ -82,9 +92,6 @@ namespace Lemma
 		private Entity editor;
 		private PCInput input;
 
-		private string initialMapFile;
-		private bool allowEditing;
-
 		private bool loadingSavedGame;
 
 		public Property<string> StartSpawnPoint = new Property<string>();
@@ -109,8 +116,6 @@ namespace Lemma
 		public const int KilledRespawnRewindLength = 40;
 		public int RespawnRewindLength = DefaultRespawnRewindLength;
 
-		private const string menuMap = "..\\Menu\\menu";
-
 		private int displayModeIndex;
 
 		private List<Property<PCInput.PCInputBinding>> bindings = new List<Property<PCInput.PCInputBinding>>();
@@ -120,7 +125,7 @@ namespace Lemma
 		private WaveBank musicWaveBank;
 		public SoundBank MusicBank;
 
-		public GameMain(bool allowEditing, string mapFile)
+		public GameMain()
 			: base()
 		{
 #if DEBUG
@@ -143,9 +148,7 @@ namespace Lemma
 					i++;
 				}
 			};
-			this.EditorEnabled.Value = allowEditing;
-			this.initialMapFile = mapFile;
-			this.allowEditing = allowEditing;
+			this.EditorEnabled.Value = GameMain.AllowEditor;
 			this.settingsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lemma");
 			if (!Directory.Exists(this.settingsDirectory))
 				Directory.CreateDirectory(this.settingsDirectory);
@@ -614,8 +617,11 @@ namespace Lemma
 
 					currentMenu.Value = pauseMenu;
 
-					this.AudioEngine.GetCategory("Music").Pause();
-					this.AudioEngine.GetCategory("Default").Pause();
+					if (this.MapFile.Value != GameMain.MenuMap)
+					{
+						this.AudioEngine.GetCategory("Music").Pause();
+						this.AudioEngine.GetCategory("Default").Pause();
+					}
 				};
 
 				// Unpause
@@ -1331,7 +1337,7 @@ namespace Lemma
 				pauseMenu.Children.Add(settingsButton);
 
 				// Edit mode toggle button
-				if (this.allowEditing)
+				if (GameMain.AllowEditor)
 				{
 					UIComponent switchToEditMode = this.createMenuButton("Switch to edit mode");
 					switchToEditMode.Add(new CommandBinding<Point>(switchToEditMode.MouseLeftUp, delegate(Point mouse)
@@ -1486,7 +1492,7 @@ namespace Lemma
 				// Escape key
 				// Make sure we can only pause when there is a player currently spawned
 				// Otherwise we could save the current map without the player. And that would be awkward.
-				Func<bool> canPause = () => !this.EditorEnabled && ((this.player != null && this.player.Active) || this.MapFile.Value == GameMain.menuMap);
+				Func<bool> canPause = () => !this.EditorEnabled && ((this.player != null && this.player.Active) || this.MapFile.Value == GameMain.MenuMap);
 
 				Action togglePause = delegate()
 				{
@@ -1517,7 +1523,12 @@ namespace Lemma
 						return;
 					}
 
-					if (this.MapFile.Value != GameMain.menuMap)
+					if (this.MapFile.Value == GameMain.MenuMap)
+					{
+						if (currentMenu.Value == null)
+							savePausedSettings();
+					}
+					else
 					{
 						this.Paused.Value = !this.Paused;
 
@@ -1535,7 +1546,7 @@ namespace Lemma
 				// Pause on window lost focus
 				this.Deactivated += delegate(object sender, EventArgs e)
 				{
-					if (!this.Paused && this.MapFile.Value != GameMain.menuMap && !this.EditorEnabled)
+					if (!this.Paused && this.MapFile.Value != GameMain.MenuMap && !this.EditorEnabled)
 					{
 						this.Paused.Value = true;
 						savePausedSettings();
@@ -1632,7 +1643,7 @@ namespace Lemma
 
 				Func<bool> enableGamepad = delegate()
 				{
-					return this.Paused || this.MapFile.Value == GameMain.menuMap;
+					return this.Paused || this.MapFile.Value == GameMain.MenuMap;
 				};
 
 				this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickUp), enableGamepad, delegate()
@@ -1702,7 +1713,7 @@ namespace Lemma
 					scrollButton(1);
 				}));
 
-				if (allowEditing)
+				if (GameMain.AllowEditor)
 				{
 					// Editor instructions
 					Container editorMsgBackground = new Container();
@@ -1737,7 +1748,7 @@ namespace Lemma
 					version.Add(new Binding<Vector2, Point>(version.Position, x => new Vector2(x.X - 10.0f, x.Y - 10.0f), this.ScreenSize));
 					this.UI.Root.Children.Add(version);
 
-					this.MapFile.Value = GameMain.menuMap;
+					this.MapFile.Value = GameMain.MenuMap;
 					this.CanSpawn = false;
 					savePausedSettings();
 
@@ -1752,7 +1763,7 @@ namespace Lemma
 								new Animation.FloatMoveTo(logo.Opacity, 0.0f, 0.2f),
 								new Animation.FloatMoveTo(version.Opacity, 0.0f, 0.2f)
 							),
-							new Animation.Set<string>(this.MapFile, this.initialMapFile)
+							new Animation.Set<string>(this.MapFile, GameMain.InitialMap)
 						));
 					}));
 					pauseMenu.Children.Insert(1, startNew);
@@ -1803,88 +1814,6 @@ namespace Lemma
 				logo.Add(new CommandBinding(this.MapLoaded, delegate() { resume.Visible.Value = saveButton.Visible.Value = true; }));
 				logo.Add(new CommandBinding(this.MapLoaded, logo.Delete));
 			}
-		}
-
-		public void EndGame()
-		{
-			this.MapFile.Value = GameMain.menuMap;
-			Sound.PlayCue(this, "Theme", 1.0f, -1.0f);
-			this.Renderer.InternalGamma.Value = 0.0f;
-			this.Renderer.Brightness.Value = 0.0f;
-			this.Renderer.BackgroundColor.Value = Renderer.DefaultBackgroundColor;
-			this.IsMouseVisible.Value = true;
-
-			ListContainer list = new ListContainer();
-			list.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
-			list.Add(new Binding<float, Point>(list.Spacing, x => x.Y * 0.05f, this.ScreenSize));
-			list.Alignment.Value = ListContainer.ListAlignment.Middle;
-			list.Add(new Binding<Vector2, Point>(list.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.ScreenSize));
-			this.UI.Root.Children.Add(list);
-
-			const float fadeTime = 1.0f;
-
-			Sprite logo = new Sprite();
-			logo.Image.Value = "Images\\logo";
-			logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((this.ScreenSize.Value.X * 0.25f) / logo.Size.Value.X), this.ScreenSize, logo.Size));
-			logo.Opacity.Value = 0.0f;
-			this.AddComponent(new Animation
-			(
-				new Animation.FloatMoveTo(logo.Opacity, 1.0f, fadeTime)
-			));
-			list.Children.Add(logo);
-
-			Action<string> addText = delegate(string text)
-			{
-				TextElement element = new TextElement();
-				element.FontFile.Value = "Font";
-				element.Text.Value = text;
-				element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X, logo.ScaledSize));
-				element.Opacity.Value = 0.0f;
-				this.AddComponent(new Animation
-				(
-					new Animation.FloatMoveTo(element.Opacity, 1.0f, fadeTime)
-				));
-				list.Children.Add(element);
-			};
-
-			addText("Want more Lemma? Vote for it on Greenlight and back the Kickstarter!");
-
-			System.Windows.Forms.Form winForm = (System.Windows.Forms.Form)System.Windows.Forms.Form.FromHandle(this.Window.Handle);
-
-			Action<string, string> addLink = delegate(string text, string url)
-			{
-				TextElement element = new TextElement();
-				element.FontFile.Value = "Font";
-				element.Text.Value = text;
-				element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X * 0.5f, logo.ScaledSize));
-				element.Add(new Binding<Color, bool>(element.Tint, x => x ? new Color(1.0f, 0.0f, 0.0f) : new Color(91.0f / 255.0f, 175.0f / 255.0f, 205.0f / 255.0f), element.Highlighted));
-				element.Add(new CommandBinding<Point>(element.MouseLeftUp, delegate(Point mouse)
-				{
-					Process.Start(new ProcessStartInfo(url));
-					if (this.graphics.IsFullScreen)
-						this.ExitFullscreen();
-				}));
-				element.Add(new CommandBinding<Point>(element.MouseOver, delegate(Point mouse)
-				{
-					winForm.Cursor = System.Windows.Forms.Cursors.Hand;
-				}));
-				element.Add(new CommandBinding<Point>(element.MouseOut, delegate(Point mouse)
-				{
-					winForm.Cursor = System.Windows.Forms.Cursors.Default;
-				}));
-				element.Opacity.Value = 0.0f;
-				this.AddComponent(new Animation
-				(
-					new Animation.FloatMoveTo(element.Opacity, 1.0f, fadeTime)
-				));
-				list.Children.Add(element);
-			};
-
-			addLink("Kickstarter", "http://lemmagame.com");
-			addLink("Greenlight", "http://steamcommunity.com/sharedfiles/filedetails/?id=105075009");
-
-			addLink("@et1337", "http://twitter.com/et1337");
-			addLink("@KomradeJack", "http://twitter.com/KomradeJack");
 		}
 
 		protected void saveSettings()
@@ -2123,14 +2052,20 @@ namespace Lemma
 
 		public void EnterFullscreen()
 		{
-			Point res = this.Settings.FullscreenResolution;
-			this.ResizeViewport(res.X, res.Y, true);
+			if (!this.graphics.IsFullScreen)
+			{
+				Point res = this.Settings.FullscreenResolution;
+				this.ResizeViewport(res.X, res.Y, true);
+			}
 		}
 
 		public void ExitFullscreen()
 		{
-			Point res = this.Settings.Size;
-			this.ResizeViewport(res.X, res.Y, false);
+			if (this.graphics.IsFullScreen)
+			{
+				Point res = this.Settings.Size;
+				this.ResizeViewport(res.X, res.Y, false);
+			}
 		}
 	}
 }
