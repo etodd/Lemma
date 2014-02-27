@@ -458,6 +458,7 @@ namespace Lemma.Components
 		public void PostProcess(RenderTarget2D result, RenderParameters parameters, DrawStageDelegate alphaStageDelegate)
 		{
 			Vector3 originalCameraPosition = parameters.Camera.Position;
+			Matrix originalViewMatrix = parameters.Camera.View;
 			BoundingFrustum originalBoundingFrustum = parameters.Camera.BoundingFrustum;
 			parameters.Camera.Position.Value = Vector3.Zero;
 
@@ -579,6 +580,7 @@ namespace Lemma.Components
 			this.spriteBatch.End();
 
 			parameters.Camera.Position.Value = originalCameraPosition;
+			parameters.Camera.View.Value = originalViewMatrix;
 
 			if (alphaStageDelegate != null)
 				alphaStageDelegate(parameters);
