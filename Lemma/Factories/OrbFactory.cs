@@ -109,7 +109,13 @@ namespace Lemma.Factories
 
 			Property<Entity.Handle> map = result.GetOrMakeProperty<Entity.Handle>("Map");
 			Property<Map.Coordinate> coord = result.GetOrMakeProperty<Map.Coordinate>("Coordinate");
+			Property<Entity.Handle> lastMap = result.GetOrMakeProperty<Entity.Handle>("LastMap");
+			Property<Map.Coordinate> lastCoord = result.GetOrMakeProperty<Map.Coordinate>("LastCoordinate");
 			Property<Direction> normal = result.GetOrMakeProperty<Direction>("Normal");
+
+			float blend = 0.0f;
+
+			const float blendTime = 0.1f;
 
 			AI.Task updatePosition = new AI.Task
 			{
@@ -117,7 +123,15 @@ namespace Lemma.Factories
 				{
 					Entity mapEntity = map.Value.Target;
 					if (mapEntity != null && mapEntity.Active)
-						transform.Position.Value = mapEntity.Get<Map>().GetAbsolutePosition(coord);
+					{
+						Vector3 currentPosition = mapEntity.Get<Map>().GetAbsolutePosition(coord);
+						Entity lastMapEntity = lastMap.Value.Target;
+						if (blend < 1.0f && lastMapEntity != null && lastMapEntity.Active)
+							transform.Position.Value = Vector3.Lerp(lastMapEntity.Get<Map>().GetAbsolutePosition(lastCoord), currentPosition, blend);
+						else
+							transform.Position.Value = currentPosition;
+						blend += main.ElapsedTime.Value / blendTime;
+					}
 					else
 						map.Value = null;
 				},
@@ -180,9 +194,12 @@ namespace Lemma.Factories
 						Map.Coordinate newCoord = hit.Coordinate.Value.Move(hit.Normal);
 						if (hit.Map[newCoord].ID == 0)
 						{
+							lastCoord.Value = coord;
 							coord.Value = newCoord;
+							lastMap.Value = map;
 							map.Value = hit.Map.Entity;
 							normal.Value = hit.Normal;
+							blend = 0.0f;
 							break;
 						}
 					}
@@ -211,7 +228,7 @@ namespace Lemma.Factories
 					},
 					new AI.Task
 					{
-						Interval = 1.0f,
+						Interval = 0.5f,
 						Action = delegate()
 						{
 							Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
@@ -372,7 +389,10 @@ namespace Lemma.Factories
 						{
 							if (coordQueue.Count > 0)
 							{
+								lastCoord.Value = coord;
 								coord.Value = coordQueue[0];
+								blend = 0.0f;
+
 								coordQueue.RemoveAt(0);
 
 								Entity block = factory.CreateAndBind(main);

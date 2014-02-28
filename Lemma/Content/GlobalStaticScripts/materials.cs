@@ -317,7 +317,7 @@ WorldFactory.AddState
 		ID = 40,
 		Name = "InfectedCritical",
 		Permanent = false,
-		Hard = false,
+		Hard = true,
 		Density = 3,
 		FootstepCue = "InfectedFootsteps",
 		RubbleCue = "InfectedRubble",
