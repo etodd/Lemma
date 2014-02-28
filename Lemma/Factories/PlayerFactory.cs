@@ -232,6 +232,7 @@ namespace Lemma.Factories
 				Session.Recorder.Event(main, "DieFromHealth");
 				Sound.PlayCue(main, "Death");
 				((GameMain)main).RespawnRewindLength = GameMain.KilledRespawnRewindLength;
+				((GameMain)main).RespawnInterval = GameMain.KilledRespawnInterval;
 			}));
 
 			result.Add(new CommandBinding(player.HealthDepleted, result.Delete));
@@ -240,7 +241,10 @@ namespace Lemma.Factories
 			{
 				Session.Recorder.Event(main, "Die");
 				if (Agent.Query(transform.Position, 0.0f, 10.0f, x => x != agent) != null)
+				{
 					((GameMain)main).RespawnRewindLength = GameMain.KilledRespawnRewindLength;
+					((GameMain)main).RespawnInterval = GameMain.KilledRespawnInterval;
+				}
 			}));
 
 			UIComponent targets = new UIComponent();
@@ -882,8 +886,12 @@ namespace Lemma.Factories
 				wallRunMap = lastWallRunMap = map;
 				wallDirection = lastWallDirection = dir;
 
-				if (state == Player.WallRun.Straight && player.LinearVelocity.Value.Y < 0.0f)
-					state = Player.WallRun.Down;
+				if (state == Player.WallRun.Straight)
+				{
+					// Determine if we're actually going down
+					if (!player.IsSupported && player.LinearVelocity.Value.Y < -0.1f)
+						state = Player.WallRun.Down;
+				}
 
 				player.WallRunState.Value = state;
 
@@ -1028,8 +1036,6 @@ namespace Lemma.Factories
 					{
 						Map.Coordinate coord = map.GetCoordinate(pos);
 						Direction dir = map.GetRelativeDirection(wallVector);
-						List<BlockPossibility> mapBlockPossibilities;
-						bool hasBlockPossibilities = blockPossibilities.TryGetValue(map, out mapBlockPossibilities);
 						for (int i = 1; i < 4; i++)
 						{
 							Map.Coordinate wallCoord = coord.Move(dir, i);
@@ -1042,6 +1048,8 @@ namespace Lemma.Factories
 							else
 							{
 								// Check block possibilities
+								List<BlockPossibility> mapBlockPossibilities;
+								bool hasBlockPossibilities = blockPossibilities.TryGetValue(map, out mapBlockPossibilities);
 								if (hasBlockPossibilities)
 								{
 									foreach (BlockPossibility block in mapBlockPossibilities)
@@ -1322,7 +1330,10 @@ namespace Lemma.Factories
 				{
 					player.Health.Value += (verticalVelocity - v) * 0.2f;
 					if (player.Health.Value == 0.0f)
+					{
 						((GameMain)main).RespawnRewindLength = GameMain.DefaultRespawnRewindLength;
+						((GameMain)main).RespawnInterval = GameMain.DefaultRespawnInterval;
+					}
 					else
 					{
 						player.LinearVelocity.Value = new Vector3(0, player.LinearVelocity.Value.Y, 0);
@@ -2070,13 +2081,13 @@ namespace Lemma.Factories
 			// Wall-run, vault, predictive
 			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
 			{
-				if (!player.EnableMoves || phoneActive || (player.Crouched && player.IsSupported))
+				if (!player.EnableMoves || phoneActive || (player.Crouched && player.IsSupported) || vaultMover != null)
 					return;
 
 				bool vaulted = jump(true, true); // Try vaulting first
 
 				bool wallRan = false;
-				if (!vaulted && player.EnableWallRun && vaultMover == null)
+				if (!vaulted && player.EnableWallRun)
 				{
 					// Try to wall-run
 					if (!(wallRan = activateWallRun(Player.WallRun.Straight)) && player.EnableWallRunHorizontal)

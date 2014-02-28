@@ -36,5 +36,16 @@
 	<footer>
 		<a href="https://twitter.com/et1337" class="twitter-follow-button" data-show-count="true" data-lang="en">Follow</a>
 		<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="http://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+		<br /><a id="twitch" href="http://www.twitch.tv/emt1337">Development Stream</a>
+		<script src="https://ttv-api.s3.amazonaws.com/twitch.min.js"></script>
+		<script>
+			Twitch.init({ clientId: 'c56est2cughcn9tj87viq9j3sugebpn' }, function(error, status)
+			{
+				Twitch.api({ method: 'streams/emt1337' }, function(error, data)
+				{
+					$('#twitch').text('Development Stream (' + (data.stream !== null ? 'Online' : 'Offline') + ')');
+				});
+			});
+		</script>
 	</footer>
 {% endblock %}

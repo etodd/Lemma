@@ -3972,22 +3972,26 @@ namespace Lemma.Components
 
 			for (; ; )
 			{
-				if ((coord.X >= 0 && coord.X < this.chunkSize
+				if (coord.X >= 0 && coord.X < this.chunkSize
 					&& coord.Y >= 0 && coord.Y < this.chunkSize
 					&& coord.Z >= 0 && coord.Z < this.chunkSize)
-					&& c.Data[coord.X, coord.Y, coord.Z] != null)
 				{
-					Coordinate actualCoord = coord.Move(c.X, c.Y, c.Z);
+					Box box = c.Data[coord.X, coord.Y, coord.Z];
+					if (box != null)
+					{
+						Coordinate actualCoord = coord.Move(c.X, c.Y, c.Z);
+						actualCoord.Data = box.Type;
 
-					// Found intersection
+						// Found intersection
 
-					Vector3 ray = actualEnd - actualStart;
+						Vector3 ray = actualEnd - actualStart;
 
-					Vector3 norm = normal == Direction.None ? -Vector3.Normalize(ray) : normal.GetVector();
+						Vector3 norm = normal == Direction.None ? -Vector3.Normalize(ray) : normal.GetVector();
 
-					Vector3 planePosition = new Vector3(actualCoord.X + 0.5f, actualCoord.Y + 0.5f, actualCoord.Z + 0.5f) + norm * 0.5f;
+						Vector3 planePosition = new Vector3(actualCoord.X + 0.5f, actualCoord.Y + 0.5f, actualCoord.Z + 0.5f) + norm * 0.5f;
 
-					return new RaycastResult { Coordinate = actualCoord, Normal = normal, Position = this.GetAbsolutePosition(actualStart + (ray * Vector3.Dot((planePosition - actualStart), norm) / Vector3.Dot(ray, norm))) };
+						return new RaycastResult { Coordinate = actualCoord, Normal = normal, Position = this.GetAbsolutePosition(actualStart + (ray * Vector3.Dot((planePosition - actualStart), norm) / Vector3.Dot(ray, norm))) };
+					}
 				}
 
 				if (tx <= ty && tx <= tz)

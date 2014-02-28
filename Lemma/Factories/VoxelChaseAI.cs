@@ -100,7 +100,7 @@ namespace Lemma.Factories
 			queue.Push(startEntry);
 			queueLookup[start] = startEntry;
 
-			const int iterationLimit = 20;
+			const int iterationLimit = 50;
 
 			int iteration = 0;
 			while (queue.Count > 0)
@@ -386,7 +386,6 @@ namespace Lemma.Factories
 										Stack<Map.Box> path = VoxelChaseAI.AStar(m, box, this.Target);
 
 										// Debug visualization
-										/*
 										int i = 0;
 										foreach (Map.Box b in path)
 										{
@@ -414,7 +413,6 @@ namespace Lemma.Factories
 											));
 											i++;
 										}
-										*/
 
 										if (path.Count > 1)
 										{

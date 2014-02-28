@@ -109,6 +109,7 @@ namespace Lemma.Factories
 
 			Property<Entity.Handle> map = result.GetOrMakeProperty<Entity.Handle>("Map");
 			Property<Map.Coordinate> coord = result.GetOrMakeProperty<Map.Coordinate>("Coordinate");
+			Property<Direction> normal = result.GetOrMakeProperty<Direction>("Normal");
 
 			AI.Task updatePosition = new AI.Task
 			{
@@ -130,13 +131,32 @@ namespace Lemma.Factories
 
 			const float sightDistance = 40.0f;
 			const float hearingDistance = 15.0f;
-			const float movementDistance = 10.0f;
+			const float movementDistance = 15.0f;
+
+			Map.CellState avoid = WorldFactory.StatesByName["AvoidAI"];
 
 			Action<Vector3> move = delegate(Vector3 dir)
 			{
-				dir.Normalize();
+				float dirLength = dir.Length();
+				if (dirLength == 0.0f)
+					return; // We're already where we need to be
+				else
+					dir /= dirLength; // Normalize
 
-				Vector3 pos = transform.Position;
+				Vector3 pos;
+
+				if (map.Value.Target != null && map.Value.Target.Active)
+				{
+					Map m = map.Value.Target.Get<Map>();
+					Map.Coordinate adjacent = coord.Value.Move(normal);
+					if (m[adjacent].ID == 0)
+						pos = m.GetAbsolutePosition(adjacent);
+					else
+						pos = transform.Position;
+				}
+				else
+					pos = transform.Position;
+
 				float radius = 0.0f;
 				const int attempts = 20;
 
@@ -155,13 +175,14 @@ namespace Lemma.Factories
 					float y = (((float)this.random.NextDouble() * 2.0f) - 1.0f) * radius;
 					Vector3 ray = new Vector3((float)Math.Cos(x) * (float)Math.Cos(y), (float)Math.Sin(y), (float)Math.Sin(x) * (float)Math.Cos(y));
 					Map.GlobalRaycastResult hit = Map.GlobalRaycast(pos, Vector3.TransformNormal(ray, mat), movementDistance);
-					if (hit.Map != null && hit.Distance > 2.0f)
+					if (hit.Map != null && hit.Distance > 2.0f && hit.Coordinate.Value.Data != avoid)
 					{
 						Map.Coordinate newCoord = hit.Coordinate.Value.Move(hit.Normal);
 						if (hit.Map[newCoord].ID == 0)
 						{
 							coord.Value = newCoord;
 							map.Value = hit.Map.Entity;
+							normal.Value = hit.Normal;
 							break;
 						}
 					}
@@ -411,7 +432,7 @@ namespace Lemma.Factories
 						Interval = 0.1f,
 						Action = delegate()
 						{
-							const int radius = 8;
+							const int radius = 9;
 
 							float timeInCurrentState = ai.TimeInCurrentState;
 							if (timeInCurrentState > 1.0f && !exploded)

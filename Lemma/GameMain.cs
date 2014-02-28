@@ -98,8 +98,6 @@ namespace Lemma
 
 		public Command<Entity> PlayerSpawned = new Command<Entity>();
 
-		private const float respawnInterval = 0.5f;
-
 		private float respawnTimer = -1.0f;
 
 		private bool saveAfterTakingScreenshot = false;
@@ -113,8 +111,12 @@ namespace Lemma
 
 		public const int RespawnMemoryLength = 100;
 		public const int DefaultRespawnRewindLength = 3;
+		public const float DefaultRespawnInterval = 0.5f;
 		public const int KilledRespawnRewindLength = 40;
+		public const float KilledRespawnInterval = 3.0f;
+
 		public int RespawnRewindLength = DefaultRespawnRewindLength;
+		public float RespawnInterval = DefaultRespawnInterval;
 
 		private int displayModeIndex;
 
@@ -1909,8 +1911,9 @@ namespace Lemma
 							));
 						}
 
-						if (this.respawnTimer > GameMain.respawnInterval || this.respawnTimer < 0)
+						if (this.respawnTimer > this.RespawnInterval || this.respawnTimer < 0)
 						{
+							this.RespawnInterval = GameMain.DefaultRespawnInterval;
 							if (createPlayer)
 							{
 								this.player = Factory.CreateAndBind(this, "Player");

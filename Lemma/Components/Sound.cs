@@ -62,11 +62,15 @@ namespace Lemma.Components
 
 		public static Cue PlayCue(Main main, string cue, float volume = 1.0f, float minimumTimeBetweenSounds = -1.0f)
 		{
-			float lastSoundPlayedTime = minimumTimeBetweenSounds * -2.0f;
-			Sound.lastSoundPlayedTimes.TryGetValue(cue, out lastSoundPlayedTime);
+			float lastSoundPlayedTime;
+			if (!Sound.lastSoundPlayedTimes.TryGetValue(cue, out lastSoundPlayedTime))
+				lastSoundPlayedTime = minimumTimeBetweenSounds * -2.0f;
 			float time = main.TotalTime;
 			if (time > lastSoundPlayedTime + minimumTimeBetweenSounds)
+			{
+				Sound.lastSoundPlayedTimes[cue] = time;
 				return Sound.PlayCue(main.SoundBank, cue, volume);
+			}
 			return null;
 		}
 
@@ -89,8 +93,9 @@ namespace Lemma.Components
 
 		public static Sound PlayCue(Main main, string cue, Vector3 position, float volume = 1.0f, float minimumTimeBetweenSounds = 0.25f)
 		{
-			float lastSoundPlayedTime = minimumTimeBetweenSounds * -2.0f;
-			Sound.lastSoundPlayedTimes.TryGetValue(cue, out lastSoundPlayedTime);
+			float lastSoundPlayedTime;
+			if (!Sound.lastSoundPlayedTimes.TryGetValue(cue, out lastSoundPlayedTime))
+				lastSoundPlayedTime = minimumTimeBetweenSounds * -2.0f;
 			float time = main.TotalTime;
 			if (time > lastSoundPlayedTime + minimumTimeBetweenSounds)
 			{
