@@ -70,7 +70,13 @@ namespace Lemma.Components
 		{
 			if (p.IsMainRender)
 			{
+				Vector3 originalCameraPosition = p.Camera.Position;
+				Matrix originalViewMatrix = p.Camera.View;
+				p.Camera.Position.Value = Vector3.Zero;
 				p.Camera.SetParameters(this.effect);
+				p.Camera.Position.Value = originalCameraPosition;
+				p.Camera.View.Value = originalViewMatrix;
+
 				this.effect.Parameters["Depth" + Model.SamplerPostfix].SetValue(p.DepthBuffer);
 				if (this.VerticalLimit)
 					this.effect.Parameters["VerticalCenter"].SetValue(this.VerticalCenter - p.Camera.Position.Value.Y);
