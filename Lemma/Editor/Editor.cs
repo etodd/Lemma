@@ -39,7 +39,7 @@ namespace Lemma.Components
 		public Property<Map.Coordinate> VoxelSelectionEnd = new Property<Map.Coordinate> { Editable = false };
 		public Property<bool> VoxelSelectionActive = new Property<bool> { Editable = false };
 
-		public Property<float> CameraDistance = new Property<float> { Value = 10.0f };
+		public Property<float> CameraDistance = new Property<float> { Value = 10.0f, Editable = false };
 
 		public Command<string> Spawn = new Command<string>();
 		public Command Save = new Command();
@@ -178,7 +178,7 @@ namespace Lemma.Components
 				this.StartTranslation.Execute();
 			};
 
-			this.Brush.Value = "[Procedural]";
+			this.Brush.Value = "(Procedural)";
 
 			this.MapEditMode.Set = delegate(bool value)
 			{
@@ -618,7 +618,7 @@ namespace Lemma.Components
 				if (this.TransformMode.Value == TransformModes.None && (this.Fill || this.Empty || this.Extend) && !this.justCommitedOrRevertedVoxelOperation)
 				{
 					this.NeedsSave.Value = true;
-					if (this.Brush == "[Procedural]")
+					if (this.Brush == "(Procedural)")
 					{
 						ProceduralGenerator generator = this.Entity.Get<ProceduralGenerator>();
 						if (this.Fill)

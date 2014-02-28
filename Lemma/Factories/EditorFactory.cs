@@ -1097,7 +1097,7 @@ namespace Lemma.Factories
 				if (brush < 1)
 					brush = stateCount + ((brush - 1) % stateCount);
 				if (brush == stateCount - 1)
-					editor.Brush.Value = "[Procedural]";
+					editor.Brush.Value = "(Procedural)";
 				else
 					editor.Brush.Value = WorldFactory.StateList[brush].Name;
 			};
