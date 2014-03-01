@@ -74,12 +74,11 @@ namespace Lemma.Components
 		/// <param name="transform"></param>
 		protected override void draw(RenderParameters parameters, Matrix transform)
 		{
-			bool locked = parameters.IsMainRender;
-			if (this.Lock != null && parameters.IsMainRender)
-				locked = Monitor.TryEnter(this.Lock, 0);
-
-			if (locked)
+			if (parameters.IsMainRender)
 			{
+				if (this.Lock != null)
+					Monitor.Enter(this.Lock);
+
 				if (this.Vertices.Count > 0 && (this.vertexBuffer == null || this.vertexBuffer.IsContentLost || this.vertexBuffer.VertexCount < this.Vertices.Count))
 				{
 					if (this.vertexBuffer != null && !this.vertexBuffer.IsDisposed)
@@ -149,12 +148,12 @@ namespace Lemma.Components
 
 				if (noCullState != null)
 					this.main.GraphicsDevice.RasterizerState = originalState;
+			}
 
-				if (parameters.IsMainRender)
-				{
-					this.lastTransform = transform;
-					this.lastWorldViewProjection = transform * parameters.Camera.ViewProjection;
-				}
+			if (parameters.IsMainRender)
+			{
+				this.lastTransform = transform;
+				this.lastWorldViewProjection = transform * parameters.Camera.ViewProjection;
 			}
 		}
 
