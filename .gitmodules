@@ -1,6 +1,3 @@
-[submodule "MonoGame"]
-	path = MonoGame
-	url = https://github.com/et1337/MonoGame.git
 [submodule "Game"]
 	path = Lemma/Game
 	url = git@bitbucket.org:et1337/lemma-game-assets.git
