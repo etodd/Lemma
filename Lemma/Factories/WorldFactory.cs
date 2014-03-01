@@ -57,8 +57,12 @@ namespace Lemma.Factories
 
 		public static Entity Get()
 		{
+			if (WorldFactory.instance == null)
+				return null;
+
 			if (!WorldFactory.instance.Active)
 				WorldFactory.instance = null;
+
 			return WorldFactory.instance;
 		}
 

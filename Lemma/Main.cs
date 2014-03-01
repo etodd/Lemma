@@ -44,10 +44,10 @@ namespace Lemma
 		public Property<float> TotalTime = new Property<float>();
 		public Property<float> TimeMultiplier = new Property<float> { Value = 1.0f };
 
+#if PERFORMANCE_MONITOR
 		private const float performanceUpdateTime = 0.5f;
 		private float performanceInterval;
 
-#if PERFORMANCE_MONITOR
 		private int frameSum;
 		private Property<float> frameRate = new Property<float>();
 		private double physicsSum;

@@ -454,7 +454,7 @@
             <Value>true</Value>
           </Enabled>
           <Name>
-            <Value>menu</Value>
+            <Value>..\Menu\menu</Value>
           </Name>
         </Value>
       </Component>

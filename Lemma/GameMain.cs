@@ -33,11 +33,10 @@ namespace Lemma
 
 		public class ExitException : Exception
 		{
-
 		}
 
 		public const int ConfigVersion = 5;
-		public const int Build = 259;
+		public const int Build = 260;
 
 		public class Config
 		{
@@ -136,6 +135,7 @@ namespace Lemma
 				this.HideMessage(this.ShowMessage(log), 2.0f);
 			};
 #endif
+
 			this.graphics.PreparingDeviceSettings += delegate(object sender, PreparingDeviceSettingsEventArgs args)
 			{
 				this.supportedDisplayModes = args.GraphicsDeviceInformation.Adapter.SupportedDisplayModes;
@@ -341,7 +341,7 @@ namespace Lemma
 
 		public void SaveAnalytics()
 		{
-			string filename = GameMain.Build.ToString() + "-" + (string.IsNullOrEmpty(this.MapFile.Value) ? "null" : this.MapFile.Value) + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml";
+			string filename = GameMain.Build.ToString() + "-" + (string.IsNullOrEmpty(this.MapFile.Value) ? "null" : Path.GetFileName(this.MapFile)) + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml";
 			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, filename));
 		}
 
