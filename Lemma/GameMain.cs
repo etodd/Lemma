@@ -37,7 +37,7 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 5;
-		public const int Build = 241;
+		public const int Build = 259;
 
 		public class Config
 		{
