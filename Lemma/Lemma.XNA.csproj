@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
-  <Import Project="..\MonoGame\MonoGame.ContentPipeline\MonoGame.ContentPipeline.targets" />
   <PropertyGroup>
-    <MonoGamePlatform>Windows</MonoGamePlatform>
     <ProjectGuid>{3D2D163E-393B-4AFD-997B-143E909AC653}</ProjectGuid>
     <ProjectTypeGuids>{6D335F3A-9D43-41b4-9D22-F6F17C4BE596};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
