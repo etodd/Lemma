@@ -1548,7 +1548,7 @@ namespace Lemma.Factories
 							vaultMover = null;
 							result.Add(new Animation
 							(
-								//new Animation.Delay(0.25f),
+								new Animation.Delay(0.1f),
 								new Animation.Set<bool>(player.AllowUncrouch, true),
 								new Animation.Set<bool>(rotationLocked, false),
 								new Animation.Set<bool>(player.EnableWalking, true)
