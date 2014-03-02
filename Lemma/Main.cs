@@ -62,6 +62,8 @@ namespace Lemma
 		private Property<double> shadowRenderTime = new Property<double>();
 		private double postProcessSum;
 		private Property<double> postProcessTime = new Property<double>();
+		private double unPostProcessedSum;
+		private Property<double> unPostProcessedTime = new Property<double>();
 #endif
 
 		public Property<Point> ScreenSize = new Property<Point>();
@@ -378,6 +380,7 @@ namespace Lemma
 				addLabel("Raw render", this.rawRenderTime);
 				addLabel("Shadow render", this.shadowRenderTime);
 				addLabel("Post-process", this.postProcessTime);
+				addLabel("Non-post-processed", this.unPostProcessedTime);
 
 				PCInput input = new PCInput();
 				input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.P }), delegate()
@@ -551,12 +554,14 @@ namespace Lemma
 				this.rawRenderTime.Value = this.rawRenderSum;
 				this.shadowRenderTime.Value = this.shadowRenderSum;
 				this.postProcessTime.Value = this.postProcessSum;
+				this.unPostProcessedTime.Value = this.unPostProcessedSum;
 				this.physicsSum = 0;
 				this.updateSum = 0;
 				this.preframeSum = 0;
 				this.rawRenderSum = 0;
 				this.shadowRenderSum = 0;
 				this.postProcessSum = 0;
+				this.unPostProcessedSum = 0;
 				this.frameSum = 0;
 				this.performanceInterval = 0;
 			}
@@ -610,15 +615,24 @@ namespace Lemma
 #endif
 			this.Renderer.PostProcess(this.renderTarget, this.renderParameters, this.DrawAlphaComponents);
 
+#if PERFORMANCE_MONITOR
+			timer.Stop();
+			this.postProcessSum = Math.Max(this.postProcessSum, timer.Elapsed.TotalSeconds);
+
+			timer.Restart();
+#endif
+
 			foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
 			{
 				if (this.componentEnabled(c))
 					c.DrawNonPostProcessed(gameTime, this.renderParameters);
 			}
+
 #if PERFORMANCE_MONITOR
 			timer.Stop();
-			this.postProcessSum = Math.Max(this.postProcessSum, timer.Elapsed.TotalSeconds);
+			this.unPostProcessedSum = Math.Max(this.unPostProcessedSum, timer.Elapsed.TotalSeconds);
 #endif
+
 		}
 
 		public void DrawScene(RenderParameters parameters)
