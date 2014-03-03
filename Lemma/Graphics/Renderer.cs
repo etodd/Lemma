@@ -461,6 +461,9 @@ namespace Lemma.Components
 			Matrix originalViewMatrix = parameters.Camera.View;
 			BoundingFrustum originalBoundingFrustum = parameters.Camera.BoundingFrustum;
 			parameters.Camera.Position.Value = Vector3.Zero;
+			Matrix newViewMatrix = originalViewMatrix;
+			newViewMatrix.Translation = Vector3.Zero;
+			parameters.Camera.View.Value = newViewMatrix;
 
 			RasterizerState originalState = this.main.GraphicsDevice.RasterizerState;
 			RasterizerState reverseCullState = new RasterizerState { CullMode = CullMode.CullClockwiseFace };

@@ -44,7 +44,7 @@ LightingOutput CalcDirectionalLighting(
 	return output;
 }
 
-const float ShadowBias = 0.001f;
+const float ShadowBias = 0.0013f;
 
 void GlobalLightPS(	in PostProcessPSInput input,
 					out float4 lighting : COLOR0,

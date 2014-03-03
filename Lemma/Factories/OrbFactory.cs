@@ -191,6 +191,12 @@ namespace Lemma.Factories
 					Map.GlobalRaycastResult hit = Map.GlobalRaycast(pos, Vector3.TransformNormal(ray, mat), movementDistance);
 					if (hit.Map != null && hit.Distance > 2.0f && hit.Coordinate.Value.Data != avoid)
 					{
+						foreach (Water w in Water.ActiveInstances)
+						{
+							if (w.Fluid.BoundingBox.Contains(hit.Position) != ContainmentType.Disjoint)
+								continue;
+						}
+
 						Map.Coordinate newCoord = hit.Coordinate.Value.Move(hit.Normal);
 						if (hit.Map[newCoord].ID == 0)
 						{
