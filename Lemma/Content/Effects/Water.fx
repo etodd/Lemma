@@ -10,6 +10,7 @@ float Fresnel = 0.7f;
 float ActualFarPlaneDistance;
 float2 DestinationDimensions;
 float Clearness = 1.0f;
+float Refraction = 0.0f;
 
 float Distortion = 1.0f;
 
@@ -98,7 +99,7 @@ void SurfaceVS(	in RenderVSInput input,
 	float4 clipSpacePosition2 = mul(worldPosition + float4(0, 0, 0.2f, 0), ViewProjectionMatrix);
 	output.distortionAmount = length(clipSpacePosition2 - clipSpacePosition) * Distortion;
 
-	tex.uvCoordinates = input.uvCoordinates * Scale * RippleDensity * (400.0f / 2000.0f) + (float2(Time, Time) * Speed);
+	tex.uvCoordinates = input.uvCoordinates * Scale * RippleDensity * (200.0f / 2000.0f) + (float2(Time, Time) * Speed);
 	flat.normal = input.normal;
 }
 
@@ -117,14 +118,16 @@ void SurfacePS(	in SurfacePSInput input,
 
 	float existingDepth = tex2D(DepthSampler, uv).r;
 
-	float depth = existingDepth - length(input.viewSpacePosition);
+	float pixelDepth = length(input.viewSpacePosition) - distortion.x * 5.0f;
+
+	float depth = existingDepth - pixelDepth;
 
 	if (existingDepth < ActualFarPlaneDistance)
-		clip(depth - distortion.x * 5.0f);
+		clip(depth);
 
 	uv += distortion;
 
-	float depthBlend = clamp(depth * 0.5f * (1.0f - Clearness), 0.0f, 1.0f);
+	float depthBlend = clamp((tex2D(DepthSampler, uv) - pixelDepth) * 0.5f * (1.0f - Clearness), 0.0f, 1.0f);
 
 	float3 normal = flat.normal;
 	normal.xz += distortion;
@@ -134,7 +137,7 @@ void SurfacePS(	in SurfacePSInput input,
 	float3 refraction = lerp(tex2D(FrameSampler, uv).xyz * Color + Brightness, UnderwaterColor, depthBlend);
 
 	if (reflection)
-		color = float4(EncodeColor(lerp(tex2D(ReflectionSampler, uv).xyz, refraction, fresnel * Fresnel)), 1.0f);
+		color = float4(EncodeColor(lerp(tex2D(ReflectionSampler, uv).xyz, refraction, clamp(Refraction + fresnel * Fresnel, 0.0f, 1.0f))), 1.0f);
 	else
 		color = float4(EncodeColor(refraction), 1.0f);
 }

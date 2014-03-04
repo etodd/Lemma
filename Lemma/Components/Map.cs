@@ -4344,15 +4344,15 @@ namespace Lemma.Components
 			bool hasVolume = false;
 			List<CompoundShapeEntry> bodies = new List<CompoundShapeEntry>();
 			float mass = 0.0f;
-			float volume = 0.0f;
-			foreach (Box box in this.Chunks.SelectMany(x => x.Boxes))
+			lock (this.MutationLock)
 			{
-				if (!box.Type.Fake)
+				foreach (Box box in this.Chunks.SelectMany(x => x.Boxes))
 				{
-					bodies.Add(box.GetCompoundShapeEntry());
-					float v = box.Width * box.Height * box.Depth;
-					volume += v;
-					mass += v * box.Type.Density;
+					if (!box.Type.Fake)
+					{
+						bodies.Add(box.GetCompoundShapeEntry());
+						mass += box.Width * box.Height * box.Depth * box.Type.Density;
+					}
 				}
 			}
 

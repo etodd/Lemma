@@ -27,17 +27,6 @@ void RenderVS(	in RenderVSInput input,
 	alpha.clipSpacePosition = vs.position;
 }
 
-void ClipVS(	in RenderVSInput input,
-				out RenderVSOutput vs,
-				out RenderPSInput output,
-				out TexturePSInput tex,
-				out AlphaPSInput alpha,
-				out ClipPSInput clipData)
-{
-	RenderVS(input, vs, output, tex, alpha);
-	clipData = GetClipData(output.position);
-}
-
 void SkyboxPS(in RenderPSInput input,
 						in AlphaPSInput alpha,
 						in TexturePSInput tex,
@@ -53,16 +42,6 @@ void SkyboxPS(in RenderPSInput input,
 	
 	output.xyz = EncodeColor(DiffuseColor.xyz * color.xyz);
 	output.w = blend;
-}
-
-void ClipSkyboxPS(in RenderPSInput input,
-						in AlphaPSInput alpha,
-						in TexturePSInput tex,
-						in ClipPSInput clipData,
-						out float4 output : COLOR0)
-{
-	HandleClipPlanes(clipData.clipPlaneDistances);
-	SkyboxPS(input, alpha, tex, output);
 }
 
 // No shadow technique. We don't want the skybox casting shadows.
@@ -92,8 +71,8 @@ technique Clip
 		SrcBlend = SrcAlpha;
 		DestBlend = InvSrcAlpha;
 
-		VertexShader = compile vs_3_0 ClipVS();
-		PixelShader = compile ps_3_0 ClipSkyboxPS();
+		VertexShader = compile vs_3_0 RenderVS();
+		PixelShader = compile ps_3_0 SkyboxPS();
 	}
 }
 

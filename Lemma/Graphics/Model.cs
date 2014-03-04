@@ -706,7 +706,7 @@ namespace Lemma.Components
 
 					RasterizerState originalState = this.main.GraphicsDevice.RasterizerState;
 					RasterizerState noCullState = null;
-					if (parameters.IsMainRender && this.DisableCulling)
+					if (this.DisableCulling)
 					{
 						noCullState = new RasterizerState { CullMode = CullMode.None };
 						this.main.GraphicsDevice.RasterizerState = noCullState;

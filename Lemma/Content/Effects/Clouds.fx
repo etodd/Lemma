@@ -29,17 +29,6 @@ void RenderVS(	in RenderVSInput input,
 	tex.uvCoordinates = input.uvCoordinates;
 }
 
-void ClipVS(	in RenderVSInput input,
-				out RenderVSOutput vs,
-				out RenderPSInput output,
-				out TexturePSInput tex,
-				out AlphaPSInput alpha,
-				out ClipPSInput clipData)
-{
-	RenderVS(input, vs, output, alpha, tex);
-	clipData = GetClipData(output.position);
-}
-
 void CloudPS(in RenderPSInput input,
 						in TexturePSInput tex,
 						in AlphaPSInput alpha,
@@ -94,8 +83,8 @@ technique Clip
 		SrcBlend = SrcAlpha;
 		DestBlend = InvSrcAlpha;
 
-		VertexShader = compile vs_3_0 ClipVS();
-		PixelShader = compile ps_3_0 ClipCloudPS();
+		VertexShader = compile vs_3_0 RenderVS();
+		PixelShader = compile ps_3_0 CloudPS();
 	}
 }
 

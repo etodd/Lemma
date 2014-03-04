@@ -80,6 +80,7 @@ namespace Lemma.Components
 		public Property<float> Brightness = new Property<float> { Value = 0.1f, Editable = true };
 		public Property<float> Clearness = new Property<float> { Value = 0.25f, Editable = true };
 		public Property<float> Depth = new Property<float> { Value = 100.0f, Editable = true };
+		public Property<float> Refraction = new Property<float> { Value = 0.0f, Editable = true };
 		public Property<Vector2> Scale = new Property<Vector2> { Value = new Vector2(100.0f, 100.0f), Editable = true };
 
 		private Renderer renderer;
@@ -133,6 +134,7 @@ namespace Lemma.Components
 			this.Distortion.Reset();
 			this.Brightness.Reset();
 			this.Clearness.Reset();
+			this.Refraction.Reset();
 			this.UnderwaterColor.Reset();
 
 			// Surface
@@ -140,7 +142,7 @@ namespace Lemma.Components
 			QuadVertex[] surfaceData = new QuadVertex[4];
 
 			// Upper right
-			const float scale = 1.0f;
+			const float scale = 0.5f;
 			surfaceData[0].Position = new Vector3(scale, 0, scale);
 			surfaceData[0].TexCoord = new Vector2(1, 0);
 
@@ -275,6 +277,12 @@ namespace Lemma.Components
 				this.effect.Parameters["Clearness"].SetValue(value);
 			};
 
+			this.Refraction.Set = delegate(float value)
+			{
+				this.Refraction.InternalValue = value;
+				this.effect.Parameters["Refraction"].SetValue(value);
+			};
+
 			this.Position.Set = delegate(Vector3 value)
 			{
 				this.Position.InternalValue = value;
@@ -341,8 +349,6 @@ namespace Lemma.Components
 			this.effect.Parameters["Time"].SetValue(this.main.TotalTime);
 			this.effect.Parameters["Depth" + Model.SamplerPostfix].SetValue(p.DepthBuffer);
 			this.effect.Parameters["Frame" + Model.SamplerPostfix].SetValue(p.FrameBuffer);
-
-			Vector2 scale = this.Scale.Value * 0.5f;
 
 			// Draw surface
 			this.effect.CurrentTechnique = this.effect.Techniques[underwater || !this.EnableReflection ? "Surface" : "SurfaceReflection"];
