@@ -1355,7 +1355,7 @@ namespace Lemma.Components
 			}
 		}
 
-		protected void postDeserialization()
+		protected virtual void postDeserialization()
 		{
 			foreach (Chunk c in this.Chunks)
 				c.Instantiate();
@@ -4328,6 +4328,12 @@ namespace Lemma.Components
 		void Events_ContactCreated(EntityCollidable sender, Collidable other, BEPUphysics.NarrowPhaseSystems.Pairs.CollidablePairHandler pair, ContactData contact)
 		{
 			this.Collided.Execute(other, pair.Contacts);
+		}
+
+		protected override void postDeserialization()
+		{
+			base.postDeserialization();
+			this.UpdatePhysicsImmediately();
 		}
 
 		public override void updatePhysics()
