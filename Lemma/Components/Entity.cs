@@ -74,6 +74,7 @@ namespace Lemma.Components
 	[XmlInclude(typeof(ListProperty<Phone.Schedule>))]
 	[XmlInclude(typeof(Phone.Ans))]
 	[XmlInclude(typeof(ListProperty<Phone.Ans>))]
+	[XmlInclude(typeof(ListProperty<string>))]
 	public class Entity
 	{
 		public struct Handle

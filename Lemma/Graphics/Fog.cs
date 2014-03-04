@@ -71,6 +71,13 @@ namespace Lemma.Components
 			if (p.IsMainRender)
 			{
 				Vector3 originalCameraPosition = p.Camera.Position;
+				float verticalDiff = this.VerticalCenter - originalCameraPosition.Y;
+				if (this.VerticalLimit)
+				{
+					if (Math.Abs(verticalDiff) - this.VerticalSize > p.Camera.FarPlaneDistance)
+						return; // We're not visible anyway
+				}
+
 				Matrix originalViewMatrix = p.Camera.View;
 				p.Camera.Position.Value = Vector3.Zero;
 				p.Camera.SetParameters(this.effect);
@@ -79,7 +86,7 @@ namespace Lemma.Components
 
 				this.effect.Parameters["Depth" + Model.SamplerPostfix].SetValue(p.DepthBuffer);
 				if (this.VerticalLimit)
-					this.effect.Parameters["VerticalCenter"].SetValue(this.VerticalCenter - p.Camera.Position.Value.Y);
+					this.effect.Parameters["VerticalCenter"].SetValue(verticalDiff);
 				this.effect.CurrentTechnique.Passes[0].Apply();
 				base.DrawAlpha(time, p);
 			}

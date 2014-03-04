@@ -29,14 +29,6 @@ namespace Lemma
 			if (this.error != null)
 				this.label2.Text = "You found a bug!";
 			Cursor.Show();
-		}
-
-		private void button1_Click(object sender, EventArgs e)
-		{
-			this.button1.Enabled = false;
-			this.button1.Text = "Uploading";
-			this.button2.Text = "Cancel";
-			this.label2.Text = "Uploading (0%)";
 			this.backgroundWorker1.RunWorkerAsync();
 		}
 
@@ -87,14 +79,13 @@ namespace Lemma
 
 		private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
 		{
-			this.label2.Text = "Uploading (" + e.ProgressPercentage.ToString() + "%";
+			this.status.Text = "Uploading (" + e.ProgressPercentage.ToString() + "%";
 		}
 
 		private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
 			this.button2.Enabled = true;
-			this.label2.Text = this.cancelled ? "Upload cancelled." : (this.success ? "Upload complete. Thanks!" : "Upload failed. Please try again later.");
-			this.button1.Text = "Done";
+			this.status.Text = this.cancelled ? "Upload cancelled." : (this.success ? "Upload complete. Thanks!" : "Upload failed. Please try again later.");
 			this.button2.Text = "Close";
 		}
 	}
