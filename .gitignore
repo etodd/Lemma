@@ -3,7 +3,6 @@
 *bin
 *obj
 *Debug
-/MonoGame/ThirdParty/Libs
 *.opensdf
 *.sdf
 *.blend1
