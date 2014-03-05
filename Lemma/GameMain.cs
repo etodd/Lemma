@@ -22,10 +22,8 @@ namespace Lemma
 	public class GameMain : Main
 	{
 #if DEVELOPMENT
-		public const bool AllowEditor = true;
 		public const string InitialMap = null;
 #else
-		public const bool AllowEditor = false;
 		public const string InitialMap = "intro";
 #endif
 
@@ -126,6 +124,8 @@ namespace Lemma
 		private WaveBank musicWaveBank;
 		public SoundBank MusicBank;
 
+		public string Credits { get; private set; }
+
 		public GameMain()
 			: base()
 		{
@@ -150,7 +150,11 @@ namespace Lemma
 					i++;
 				}
 			};
-			this.EditorEnabled.Value = GameMain.AllowEditor;
+#if DEVELOPMENT
+			this.EditorEnabled.Value = true;
+#else
+			this.EditorEnabled.Value = false;
+#endif
 			this.settingsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lemma");
 			if (!Directory.Exists(this.settingsDirectory))
 				Directory.CreateDirectory(this.settingsDirectory);
@@ -383,6 +387,31 @@ namespace Lemma
 			return result;
 		}
 
+		public TextElement CreateLink(string text, string url)
+		{
+			System.Windows.Forms.Form winForm = (System.Windows.Forms.Form)System.Windows.Forms.Form.FromHandle(this.Window.Handle);
+
+			TextElement element = new TextElement();
+			element.FontFile.Value = "Font";
+			element.Text.Value = text;
+			element.Add(new Binding<Color, bool>(element.Tint, x => x ? new Color(1.0f, 0.0f, 0.0f) : new Color(91.0f / 255.0f, 175.0f / 255.0f, 205.0f / 255.0f), element.Highlighted));
+			element.Add(new CommandBinding<Point>(element.MouseLeftUp, delegate(Point mouse)
+			{
+				this.ExitFullscreen();
+				System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url));
+			}));
+			element.Add(new CommandBinding<Point>(element.MouseOver, delegate(Point mouse)
+			{
+				winForm.Cursor = System.Windows.Forms.Cursors.Hand;
+			}));
+			element.Add(new CommandBinding<Point>(element.MouseOut, delegate(Point mouse)
+			{
+				winForm.Cursor = System.Windows.Forms.Cursors.Default;
+			}));
+
+			return element;
+		}
+
 		// Takes a screenshot and saves a directory with a copy of all the map files
 		public Command Save = new Command();
 
@@ -443,8 +472,8 @@ namespace Lemma
 
 					try
 					{
-						IO.MapLoader.Load(this, this.currentSave == null ? null : Path.Combine(this.saveDirectory, this.currentSave), value, false);
 						this.MapFile.InternalValue = value;
+						IO.MapLoader.Load(this, this.currentSave == null ? null : Path.Combine(this.saveDirectory, this.currentSave), value, false);
 					}
 					catch (FileNotFoundException)
 					{
@@ -1338,25 +1367,24 @@ namespace Lemma
 				}));
 				pauseMenu.Children.Add(settingsButton);
 
+#if DEVELOPMENT
 				// Edit mode toggle button
-				if (GameMain.AllowEditor)
+				UIComponent switchToEditMode = this.createMenuButton("Switch to edit mode");
+				switchToEditMode.Add(new CommandBinding<Point>(switchToEditMode.MouseLeftUp, delegate(Point mouse)
 				{
-					UIComponent switchToEditMode = this.createMenuButton("Switch to edit mode");
-					switchToEditMode.Add(new CommandBinding<Point>(switchToEditMode.MouseLeftUp, delegate(Point mouse)
+					pauseMenu.Visible.Value = false;
+					this.EditorEnabled.Value = true;
+					this.Paused.Value = false;
+					if (pauseAnimation != null)
 					{
-						pauseMenu.Visible.Value = false;
-						this.EditorEnabled.Value = true;
-						this.Paused.Value = false;
-						if (pauseAnimation != null)
-						{
-							pauseAnimation.Delete.Execute();
-							pauseAnimation = null;
-						}
-						IO.MapLoader.Load(this, null, this.MapFile, true);
-						this.currentSave = null;
-					}));
-					pauseMenu.Children.Add(switchToEditMode);
-				}
+						pauseAnimation.Delete.Execute();
+						pauseAnimation = null;
+					}
+					IO.MapLoader.Load(this, null, this.MapFile, true);
+					this.currentSave = null;
+				}));
+				pauseMenu.Children.Add(switchToEditMode);
+#endif
 
 				// Credits window
 				Animation creditsAnimation = null;
@@ -1413,7 +1441,7 @@ namespace Lemma
 
 				TextElement creditsDisplay = new TextElement();
 				creditsDisplay.FontFile.Value = "Font";
-				creditsDisplay.Text.Value = File.ReadAllText("attribution.txt");
+				creditsDisplay.Text.Value = this.Credits = File.ReadAllText("attribution.txt");
 
 				Scroller creditsScroller = new Scroller();
 				creditsScroller.Add(new Binding<Vector2>(creditsScroller.Size, () => new Vector2(creditsDisplay.Size.Value.X, this.ScreenSize.Value.Y * 0.5f), creditsDisplay.Size, this.ScreenSize));
@@ -1715,8 +1743,7 @@ namespace Lemma
 					scrollButton(1);
 				}));
 
-				if (GameMain.AllowEditor)
-				{
+#if DEVELOPMENT
 					// Editor instructions
 					Container editorMsgBackground = new Container();
 					this.UI.Root.Children.Add(editorMsgBackground);
@@ -1738,17 +1765,23 @@ namespace Lemma
 						),
 						new Animation.Execute(delegate() { this.UI.Root.Children.Remove(editorMsgBackground); })
 					));
-				}
-				else
-				{
+#else
 					// "Press space to start" screen
 
+					ListContainer corner = new ListContainer();
+					corner.AnchorPoint.Value = new Vector2(1, 1);
+					corner.Orientation.Value = ListContainer.ListOrientation.Vertical;
+					corner.Alignment.Value = ListContainer.ListAlignment.Max;
+					corner.Add(new Binding<Vector2, Point>(corner.Position, x => new Vector2(x.X - 10.0f, x.Y - 10.0f), this.ScreenSize));
+					this.UI.Root.Children.Add(corner);
+
+					TextElement webLink = this.CreateLink("et1337.com", "http://et1337.com");
+					corner.Children.Add(webLink);
+						
 					TextElement version = new TextElement();
 					version.FontFile.Value = "Font";
 					version.Text.Value = "Build " + GameMain.Build.ToString();
-					version.AnchorPoint.Value = new Vector2(1.0f, 1.0f);
-					version.Add(new Binding<Vector2, Point>(version.Position, x => new Vector2(x.X - 10.0f, x.Y - 10.0f), this.ScreenSize));
-					this.UI.Root.Children.Add(version);
+					corner.Children.Add(version);
 
 					this.MapFile.Value = GameMain.MenuMap;
 					this.CanSpawn = false;
@@ -1763,7 +1796,8 @@ namespace Lemma
 							new Animation.Parallel
 							(
 								new Animation.FloatMoveTo(logo.Opacity, 0.0f, 0.2f),
-								new Animation.FloatMoveTo(version.Opacity, 0.0f, 0.2f)
+								new Animation.FloatMoveTo(version.Opacity, 0.0f, 0.2f),
+								new Animation.FloatMoveTo(webLink.Opacity, 0.0f, 0.2f)
 							),
 							new Animation.Set<string>(this.MapFile, GameMain.InitialMap)
 						));
@@ -1772,6 +1806,7 @@ namespace Lemma
 
 					logo.Opacity.Value = 0.0f;
 					version.Opacity.Value = 0.0f;
+					webLink.Opacity.Value = 0.0f;
 
 					this.AddComponent(new Animation
 					(
@@ -1779,14 +1814,14 @@ namespace Lemma
 						new Animation.Parallel
 						(
 							new Animation.FloatMoveTo(logo.Opacity, 1.0f, 2.0f),
-							new Animation.FloatMoveTo(version.Opacity, 1.0f, 2.0f)
+							new Animation.FloatMoveTo(version.Opacity, 1.0f, 2.0f),
+							new Animation.FloatMoveTo(webLink.Opacity, 1.0f, 2.0f)
 						)
 					));
 
-					new CommandBinding(this.MapLoaded, version.Delete);
-
+					corner.Add(new CommandBinding(this.MapLoaded, corner.Delete));
 					startNew.Add(new CommandBinding(this.MapLoaded, startNew.Delete));
-				}
+#endif
 
 #if ANALYTICS
 				bool editorLastEnabled = this.EditorEnabled;
@@ -1811,9 +1846,10 @@ namespace Lemma
 					this.Renderer.Brightness.Value = 1.0f;
 					this.Renderer.BlurAmount.Value = 0.0f;
 					this.Renderer.Tint.Value = new Vector3(1.0f);
+
+					resume.Visible.Value = saveButton.Visible.Value = this.MapFile.Value != GameMain.MenuMap;
 				});
 
-				logo.Add(new CommandBinding(this.MapLoaded, delegate() { resume.Visible.Value = saveButton.Visible.Value = true; }));
 				logo.Add(new CommandBinding(this.MapLoaded, logo.Delete));
 			}
 		}

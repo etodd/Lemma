@@ -15,9 +15,10 @@ All the code and some of the assets for Lemma are open source. Everything you ne
 Getting started
 ---------------
 
+1. Install [Microsoft Visual C# 2010](http://go.microsoft.com/?linkid=9709939) and [XNA Game Studio 4](http://www.microsoft.com/en-us/download/details.aspx?id=23714).
 1. Clone the repository.
 1. Copy the contents of the `Template` folder into the empty `Game` folder.
-1. Open `Lemma.sln` in [Microsoft Visual C# 2010](http://go.microsoft.com/?linkid=9709939)
+1. Open `Lemma.sln` in Visual C# 2010.
 1. [Set the active solution configuration](http://msdn.microsoft.com/en-us/library/wx0123s5(v=vs.100).aspx) to `Release`.
 1. Build and run the solution.
 1. Have fun playing around in the test level!
@@ -95,3 +96,29 @@ To make or edit models, you'll need [Blender](http://blender.org). The asset pip
 1. Copy the file into the Blender program folder under `2.66\scripts\addons\io_scene_fbx` (it should replace an existing file).
 1. Open Blender and make sure the [FBX export addon is enabled](http://wiki.blender.org/index.php/Doc:2.6/Manual/Extensions/Python/Add-Ons#Enabling_and_Disabling).
 1. Open a .blend file and select File -> Export -> Autodesk FBX.
+
+License
+=======
+
+The game content is closed-source, but everything you see in this repository is made available under the following license.
+
+The MIT License (MIT)
+---------------------
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
