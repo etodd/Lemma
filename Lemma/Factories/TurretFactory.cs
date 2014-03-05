@@ -24,6 +24,7 @@ namespace Lemma.Factories
 		{
 			SpotLight light = result.GetOrCreate<SpotLight>();
 			light.Serialize = false;
+			light.Enabled.Value = !main.EditorEnabled;
 
 			light.FieldOfView.Value = 1.0f;
 			light.Attenuation.Value = 75.0f;

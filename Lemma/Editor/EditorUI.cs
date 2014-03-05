@@ -548,7 +548,7 @@ namespace Lemma.Components
 				field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
 				{
 					this.NeedsSave.Value = true;
-					socket.Value = socket.Value.SetElement(element, (byte)Math.Max(0, Math.Min(255, socket.Value.GetElement(element) + scroll)));
+					socket.Value = socket.Value.SetElement(element, (byte)Math.Max(0, Math.Min(255, socket.Value.GetElement(element) + scroll * (this.EnablePrecision ? 1 : 10))));
 				}));
 				textField.Add(new Binding<string, Color>(textField.Text, x => x.GetElement(element).ToString(), socket));
 			}

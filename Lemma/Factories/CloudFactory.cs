@@ -11,7 +11,7 @@ namespace Lemma.Factories
 	{
 		public CloudFactory()
 		{
-			this.Color = new Vector3(0.8f, 0.6f, 0.4f);
+			this.Color = new Vector3(0.9f, 0.7f, 0.5f);
 		}
 
 		public override Entity Create(Main main)
