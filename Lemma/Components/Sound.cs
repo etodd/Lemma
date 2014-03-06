@@ -31,8 +31,6 @@ namespace Lemma.Components
 
 		public Property<AudioStopOptions> DeleteStopOption = new Property<AudioStopOptions> { Editable = true };
 
-		public Property<bool> IsGameSpecific = new Property<bool> { Editable = true, Value = false };
-
 		protected AudioEmitter emitter;
 
 		[XmlIgnore]
@@ -157,6 +155,7 @@ namespace Lemma.Components
 							AudioListener.Apply3D(this.cue, this.emitter);
 						}
 						this.cue.Play();
+						this.IsPlaying.Changed();
 					}
 				}
 				catch (ArgumentException)
