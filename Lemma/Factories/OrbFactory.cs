@@ -396,6 +396,7 @@ namespace Lemma.Factories
 							if (coordQueue.Count > 0)
 							{
 								lastCoord.Value = coord;
+								lastMap.Value = map;
 								coord.Value = coordQueue[0];
 								blend = 0.0f;
 
@@ -404,17 +405,21 @@ namespace Lemma.Factories
 								Entity block = factory.CreateAndBind(main);
 								infectedState.ApplyToEffectBlock(block.Get<ModelInstance>());
 
-								Map m = map.Value.Target.Get<Map>();
+								Entity mapEntity = map.Value.Target;
+								if (mapEntity != null && mapEntity.Active)
+								{
+									Map m = map.Value.Target.Get<Map>();
 
-								block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(coord);
+									block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(coord);
 
-								Vector3 absolutePos = m.GetAbsolutePosition(coord);
+									Vector3 absolutePos = m.GetAbsolutePosition(coord);
 
-								block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f);
-								block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f) * Matrix.CreateRotationY(0.15f);
-								block.GetProperty<float>("TotalLifetime").Value = 0.05f;
-								factory.Setup(block, map.Value.Target, coord, infectedState.ID);
-								main.Add(block);
+									block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f);
+									block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f) * Matrix.CreateRotationY(0.15f);
+									block.GetProperty<float>("TotalLifetime").Value = 0.05f;
+									factory.Setup(block, map.Value.Target, coord, infectedState.ID);
+									main.Add(block);
+								}
 							}
 						}
 					},
@@ -463,7 +468,10 @@ namespace Lemma.Factories
 							float timeInCurrentState = ai.TimeInCurrentState;
 							if (timeInCurrentState > 1.0f && !exploded)
 							{
-								Explosion.Explode(main, map.Value.Target.Get<Map>(), coord, radius, 18.0f);
+								Entity mapEntity = map.Value.Target;
+								if (mapEntity != null && mapEntity.Active)
+									Explosion.Explode(main, map.Value.Target.Get<Map>(), coord, radius, 18.0f);
+
 								exploded.Value = true;
 							}
 
