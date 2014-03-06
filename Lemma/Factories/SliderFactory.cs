@@ -152,7 +152,7 @@ namespace Lemma.Factories
 			Command hitMin = new Command();
 			result.Add("HitMin", hitMin);
 
-			bool lastLimitExceeded = true;
+			float lastX = minimum + (maximum - minimum) * 0.5f;
 			result.Add(new Updater
 			{
 				delegate(float dt)
@@ -162,15 +162,23 @@ namespace Lemma.Factories
 						// HACK
 						a.Orientation = b != null ? b.Orientation : Quaternion.Identity;
 
-						bool limitExceeded = joint.Limit.IsLimitExceeded;
-						if (limitExceeded && !lastLimitExceeded)
+						Vector3 separation = joint.Limit.AnchorB - joint.Limit.AnchorA;
+
+						float x = Vector3.Dot(separation, joint.Limit.Axis);
+
+						if (x > maximum - 0.5f)
 						{
-							if (joint.Limit.Error > 0)
+							if (lastX <= maximum - 0.5f)
 								hitMax.Execute();
-							else
+						}
+						
+						if (x < minimum + 0.5f)
+						{
+							if (lastX >= minimum + 0.5f)
 								hitMin.Execute();
 						}
-						lastLimitExceeded = limitExceeded;
+
+						lastX = x;
 					}
 				}
 			});
