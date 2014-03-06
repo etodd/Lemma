@@ -14,6 +14,7 @@ if (((GameMain)main).StartSpawnPoint.Value == "end")
 	list.Alignment.Value = ListContainer.ListAlignment.Middle;
 	list.Add(new Binding<Vector2, Point>(list.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
 	((GameMain)main).UI.Root.Children.Add(list);
+	script.Add(new CommandBinding(script.Delete, list.Delete));
 
 	const float fadeTime = 1.0f;
 
