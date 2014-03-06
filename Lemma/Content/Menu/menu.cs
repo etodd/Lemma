@@ -73,7 +73,7 @@ if (((GameMain)main).StartSpawnPoint.Value == "end")
 
 	script.Add(new Animation
 	(
-		new Animation.Vector2MoveToSpeed(credits.Position, new Vector2(0, -credits.ScaledSize.Value.Y - creditsScroll.ScaledSize.Value.Y), 20.0f)
+		new Animation.Vector2MoveToSpeed(credits.Position, new Vector2(0, -credits.ScaledSize.Value.Y - creditsScroll.ScaledSize.Value.Y), 30.0f)
 	));
 }
 

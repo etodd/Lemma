@@ -2179,7 +2179,7 @@ namespace Lemma.Factories
 				Vector3 forward = -rotationMatrix.Forward;
 				Vector3 right = rotationMatrix.Right;
 
-				if (!model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && Vector3.Dot(player.LinearVelocity, forward) > 1.0f && kickUpdate == null)
+				if (!model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && kickUpdate == null)
 				{
 					// Kick
 					canKick = false;
@@ -2212,7 +2212,7 @@ namespace Lemma.Factories
 					player.Crouched.Value = true;
 					player.AllowUncrouch.Value = false;
 
-					player.LinearVelocity.Value += forward * player.LinearVelocity.Value.Length() * 0.5f + new Vector3(0, player.JumpSpeed * 0.25f, 0);
+					player.LinearVelocity.Value += forward * Math.Max(4.0f, Vector3.Dot(forward, player.LinearVelocity) * 0.5f) + new Vector3(0, player.JumpSpeed * 0.25f, 0);
 
 					Vector3 kickVelocity = player.LinearVelocity;
 
@@ -2702,13 +2702,13 @@ namespace Lemma.Factories
 			{
 				if (togglePhoneMessage != null)
 				{
-					((GameMain)main).HideMessage(togglePhoneMessage);
+					((GameMain)main).HideMessage(result, togglePhoneMessage);
 					togglePhoneMessage = null;
 				}
 
 				if (phoneTutorialMessage != null)
 				{
-					((GameMain)main).HideMessage(phoneTutorialMessage);
+					((GameMain)main).HideMessage(result, phoneTutorialMessage);
 					phoneTutorialMessage = null;
 				}
 
@@ -2730,7 +2730,7 @@ namespace Lemma.Factories
 						if (!phone.TutorialShown)
 						{
 							phone.TutorialShown.Value = true;
-							phoneTutorialMessage = ((GameMain)main).ShowMessage("Scroll to read more.");
+							phoneTutorialMessage = ((GameMain)main).ShowMessage(result, "Scroll to read more.");
 						}
 						phoneScroll.CheckLayout();
 
@@ -2861,7 +2861,7 @@ namespace Lemma.Factories
 								phone.Answer(answer);
 								scrollToBottom();
 								if (togglePhoneMessage == null && phone.Schedules.Count == 0) // No more messages incoming
-									togglePhoneMessage = ((GameMain)main).ShowMessage(() => "[" + settings.TogglePhone.Value.ToString() + "]", settings.TogglePhone);
+									togglePhoneMessage = ((GameMain)main).ShowMessage(result, () => "[" + settings.TogglePhone.Value.ToString() + "]", settings.TogglePhone);
 							}));
 							return new[] { button };
 						}
@@ -2884,7 +2884,7 @@ namespace Lemma.Factories
 							showPhone(true);
 						phoneSound.Play.Execute();
 						if (togglePhoneMessage == null && phone.Schedules.Count == 0 && phone.ActiveAnswers.Count == 0) // No more messages incoming, and no more answers to give
-							togglePhoneMessage = ((GameMain)main).ShowMessage(() => "[" + settings.TogglePhone.Value.ToString() + "]", settings.TogglePhone);
+							togglePhoneMessage = ((GameMain)main).ShowMessage(result, () => "[" + settings.TogglePhone.Value.ToString() + "]", settings.TogglePhone);
 						scrollToBottom();
 					}));
 

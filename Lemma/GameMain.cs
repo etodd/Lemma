@@ -132,7 +132,7 @@ namespace Lemma
 #if DEBUG
 			Log.Handler = delegate(string log)
 			{
-				this.HideMessage(this.ShowMessage(log), 2.0f);
+				this.HideMessage(null, this.ShowMessage(null, log), 2.0f);
 			};
 #endif
 
@@ -195,78 +195,91 @@ namespace Lemma
 				this.ResizeViewport(this.Settings.Size.Value.X, this.Settings.Size.Value.Y, false, false);
 		}
 
-		private const float messageFadeTime = 1.0f;
+		private const float messageFadeTime = 0.5f;
 		private const float messageBackgroundOpacity = 0.75f;
 
-		private Container buildMessage(bool centered = false)
+		private Container buildMessage()
 		{
 			Container msgBackground = new Container();
 
-			if (centered)
-			{
-				this.UI.Root.Children.Add(msgBackground);
-				msgBackground.Add(new Binding<Vector2, Point>(msgBackground.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.ScreenSize));
-				msgBackground.AnchorPoint.Value = new Vector2(0.5f);
-			}
-			else
-				this.messages.Children.Add(msgBackground);
+			this.messages.Children.Add(msgBackground);
 
 			msgBackground.Tint.Value = Color.Black;
-			msgBackground.Opacity.Value = 0.0f;
+			msgBackground.Opacity.Value = messageBackgroundOpacity;
 			TextElement msg = new TextElement();
 			msg.FontFile.Value = "Font";
-			msg.Opacity.Value = 0.0f;
 			msg.WrapWidth.Value = 250.0f;
 			msgBackground.Children.Add(msg);
 			return msgBackground;
 		}
 
-		public Container ShowMessage(Func<string> text, params IProperty[] properties)
+		public Container ShowMessage(Entity entity, Func<string> text, params IProperty[] properties)
 		{
 			Container container = this.buildMessage();
 			TextElement textElement = (TextElement)container.Children[0];
 			textElement.Add(new Binding<string>(textElement.Text, text, properties));
-			WorldFactory.Get().Add(new Animation
-			(
-				new Animation.Parallel
-				(
-					new Animation.FloatMoveTo(container.Opacity, messageBackgroundOpacity, messageFadeTime),
-					new Animation.FloatMoveTo(textElement.Opacity, 1.0f, messageFadeTime)
-				)
-			));
+
+			this.animateMessage(entity, container);
+
 			return container;
 		}
 
-		public Container ShowMessage(string text, bool centered = false)
+		private void animateMessage(Entity entity, Container container)
 		{
-			Container container = this.buildMessage(centered);
+			container.CheckLayout();
+			Vector2 originalSize = container.Size;
+			container.ResizeVertical.Value = false;
+			container.EnableScissor.Value = true;
+			container.Size.Value = new Vector2(originalSize.X, 0);
+
+			Animation anim = new Animation
+			(
+				new Animation.Vector2MoveTo(container.Size, originalSize, messageFadeTime),
+				new Animation.Set<bool>(container.ResizeVertical, true),
+				new Animation.Set<bool>(container.EnableScissor, false)
+			);
+
+			if (entity == null)
+			{
+				anim.EnabledWhenPaused.Value = false;
+				this.AddComponent(anim);
+			}
+			else
+				entity.Add(anim);
+		}
+
+		public Container ShowMessage(Entity entity, string text)
+		{
+			Container container = this.buildMessage();
 			TextElement textElement = (TextElement)container.Children[0];
 			textElement.Text.Value = text;
-			WorldFactory.Get().Add(new Animation
-			(
-				new Animation.Parallel
-				(
-					new Animation.FloatMoveTo(container.Opacity, messageBackgroundOpacity, messageFadeTime),
-					new Animation.FloatMoveTo(textElement.Opacity, 1.0f, messageFadeTime)
-				)
-			));
+
+			this.animateMessage(entity, container);
+
 			return container;
 		}
 
-		public void HideMessage(Container container, float delay = 0.0f)
+		public void HideMessage(Entity entity, Container container, float delay = 0.0f)
 		{
 			if (container != null && container.Active)
 			{
-				WorldFactory.Get().Add(new Animation
+				container.CheckLayout();
+				Animation anim = new Animation
 				(
-					new Animation.Delay(messageFadeTime + delay),
-					new Animation.Parallel
-					(
-						new Animation.FloatMoveTo(container.Opacity, 0.0f, messageFadeTime),
-						new Animation.FloatMoveTo(((TextElement)container.Children[0]).Opacity, 0.0f, messageFadeTime)
-					),
+					new Animation.Delay(delay),
+					new Animation.Set<bool>(container.ResizeVertical, false),
+					new Animation.Set<bool>(container.EnableScissor, true),
+					new Animation.Vector2MoveTo(container.Size, new Vector2(container.Size.Value.X, 0), messageFadeTime),
 					new Animation.Execute(container.Delete)
-				));
+				);
+
+				if (entity == null)
+				{
+					anim.EnabledWhenPaused.Value = false;
+					this.AddComponent(anim);
+				}
+				else
+					entity.Add(anim);
 			}
 		}
 

@@ -45,7 +45,7 @@ namespace Lemma.Factories
 			{
 				p.GetOrMakeProperty<string>("NoteText").Value = text;
 				p.GetOrMakeProperty<string>("NoteImage").Value = image;
-				msg = gameMain.ShowMessage("[" + gameMain.Settings.TogglePhone.Value.ToString() + "]");
+				msg = gameMain.ShowMessage(result, "[" + gameMain.Settings.TogglePhone.Value.ToString() + "]");
 			}));
 
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerExited, delegate(Entity p)
@@ -55,7 +55,7 @@ namespace Lemma.Factories
 
 				if (msg != null)
 				{
-					gameMain.HideMessage(msg);
+					gameMain.HideMessage(result, msg);
 					msg = null;
 				}
 			}));

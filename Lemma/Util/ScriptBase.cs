@@ -23,17 +23,17 @@ namespace Lemma.Scripts
 
 		protected static Container showMessage(Func<string> text, params IProperty[] properties)
 		{
-			return ((GameMain)main).ShowMessage(text, properties);
+			return ((GameMain)main).ShowMessage(WorldFactory.Get(), text, properties);
 		}
 
-		protected static Container showMessage(string text, bool centered = false)
+		protected static Container showMessage(string text)
 		{
-			return ((GameMain)main).ShowMessage(text, centered);
+			return ((GameMain)main).ShowMessage(WorldFactory.Get(), text);
 		}
 
 		protected static void hideMessage(Container container, float delay = 0.0f)
 		{
-			((GameMain)main).HideMessage(container, delay);
+			((GameMain)main).HideMessage(WorldFactory.Get(), container, delay);
 		}
 
 		protected static void bindTrigger(string id, Action callback, bool oneTimeOnly = true)
