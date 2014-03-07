@@ -313,7 +313,7 @@ namespace Lemma.Factories
 					checkTargetAgent,
 					new AI.Task
 					{
-						Interval = 0.3f,
+						Interval = 0.35f,
 						Action = delegate()
 						{
 							move(targetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
@@ -390,7 +390,7 @@ namespace Lemma.Factories
 					checkOperationalRadius,
 					new AI.Task
 					{
-						Interval = 0.15f,
+						Interval = 0.2f,
 						Action = delegate()
 						{
 							if (coordQueue.Count > 0)

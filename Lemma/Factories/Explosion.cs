@@ -56,7 +56,7 @@ namespace Lemma.Factories
 				player.GetCommand<Vector3, float>("ShakeCamera").Execute(pos, 50.0f);
 		
 			const float physicsImpulse = 70.0f;
-			const float minPlayerDamage = 0.2f;
+			const float minPlayerDamage = 0.1f;
 			const float playerDamageMultiplier = 2.0f;
 		
 			// Remove the cells
