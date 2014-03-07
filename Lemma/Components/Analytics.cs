@@ -303,11 +303,11 @@ namespace Lemma.Components
 				this.data.Build = GameMain.Build;
 			}
 
-			public void Save(string path)
+			public void Save(string path, string map, float totalTime)
 			{
 				this.data.UUID = ((GameMain)this.main).Settings.UUID;
-				this.data.TotalTime = this.main.TotalTime;
-				this.data.Map = this.main.MapFile;
+				this.data.TotalTime = totalTime;
+				this.data.Map = map;
 				using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
 					new XmlSerializer(typeof(Session)).Serialize(stream, this.data);
 			}

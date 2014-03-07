@@ -36,6 +36,9 @@ namespace Lemma
 		public const int ConfigVersion = 5;
 		public const int Build = 281;
 
+		protected string lastMapFile;
+		protected float lastSessionTotalTime;
+
 		public class Config
 		{
 #if DEVELOPMENT
@@ -358,8 +361,9 @@ namespace Lemma
 
 		public void SaveAnalytics()
 		{
-			string filename = GameMain.Build.ToString() + "-" + (string.IsNullOrEmpty(this.MapFile.Value) ? "null" : Path.GetFileName(this.MapFile)) + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml";
-			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, filename));
+			string map = string.IsNullOrEmpty(this.lastMapFile) ? this.MapFile : this.lastMapFile;
+			string filename = GameMain.Build.ToString() + "-" + (string.IsNullOrEmpty(map) ? "null" : Path.GetFileName(map)) + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml";
+			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, filename), map, this.lastSessionTotalTime);
 		}
 
 		public string[] AnalyticsSessionFiles
@@ -475,6 +479,8 @@ namespace Lemma
 
 				this.MapFile.Set = delegate(string value)
 				{
+					this.lastSessionTotalTime = this.TotalTime;
+					this.lastMapFile = this.MapFile;
 					this.ClearEntities(false);
 
 					if (value == null || value.Length == 0)
