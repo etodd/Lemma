@@ -486,7 +486,10 @@ namespace Lemma
 					try
 					{
 						this.MapFile.InternalValue = value;
-						IO.MapLoader.Load(this, this.currentSave == null ? null : Path.Combine(this.saveDirectory, this.currentSave), value, false);
+						string directory = this.currentSave == null ? null : Path.Combine(this.saveDirectory, this.currentSave);
+						if (value == GameMain.MenuMap)
+							directory = null; // Don't try to load the menu from a save game
+						IO.MapLoader.Load(this, directory, value, false);
 					}
 					catch (FileNotFoundException)
 					{
