@@ -451,11 +451,8 @@ namespace Lemma.Util
 				// X is the axis point along the left (negative) and right (positive) relative to the movement direction.
 				// Z points forward (positive) and backward (negative) in the movement direction modified to be parallel to the surface.
 				Vector3 horizontal = new Vector3(this.MovementDirection.Value.X, 0, this.MovementDirection.Value.Y);
-				horizontal.Normalize();
 				Vector3 x = Vector3.Cross(horizontal, supportNormal);
-				x.Normalize();
 				Vector3 z = Vector3.Cross(supportNormal, x);
-				z.Normalize();
 
 				// Remove from the character a portion of velocity which pushes it horizontally off the desired movement track defined by the movementDirection.
 				float bodyXVelocity = Vector3.Dot(this.Body.LinearVelocity, x);
@@ -516,7 +513,6 @@ namespace Lemma.Util
 				//X is the axis point along the left (negative) and right (positive) relative to the movement direction.
 				//Z points forward (positive) and backward (negative) in the movement direction modified to be parallel to the surface.
 				Vector3 horizontal = new Vector3(this.MovementDirection.Value.X, 0, this.MovementDirection.Value.Y);
-				horizontal.Normalize();
 				Vector3 x = Vector3.Cross(horizontal, Vector3.Up);
 				Vector3 z = Vector3.Cross(Vector3.Up, x);
 

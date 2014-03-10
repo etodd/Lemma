@@ -642,7 +642,7 @@ namespace Lemma.Factories
 
 				Vector2 forwardDir = new Vector2(matrix.Forward.X, matrix.Forward.Z);
 				Vector2 rightDir = new Vector2(matrix.Right.X, matrix.Right.Z);
-				return -Vector2.Normalize((forwardDir * movement.Y) + (rightDir * movement.X));
+				return -(forwardDir * movement.Y) - (rightDir * movement.X);
 			}, input.Movement, rotation));
 
 			player.Crouched.Value = true;

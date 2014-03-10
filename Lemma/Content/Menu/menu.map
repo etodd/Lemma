@@ -46,7 +46,7 @@
       <Property>
         <Key xsi:type="xsd:string">LightRampTexture</Key>
         <Value xsi:type="PropertyOfString">
-          <Value>Images\default-ramp</Value>
+          <Value>Images\bright-ramp</Value>
         </Value>
       </Property>
       <Property>
@@ -553,6 +553,18 @@
           <Clearness>
             <Value>0.55</Value>
           </Clearness>
+          <Depth>
+            <Value>100</Value>
+          </Depth>
+          <Refraction>
+            <Value>0</Value>
+          </Refraction>
+          <Scale>
+            <Value>
+              <X>100</X>
+              <Y>100</Y>
+            </Value>
+          </Scale>
           <DrawOrder Editable="false">
             <Value>10</Value>
           </DrawOrder>
@@ -564,6 +576,12 @@
         <Key xsi:type="xsd:string">ID</Key>
         <Value xsi:type="PropertyOfString">
           <Value>water1</Value>
+        </Value>
+      </Property>
+      <Property>
+        <Key xsi:type="xsd:string">CannotSuspendByDistance</Key>
+        <Value xsi:type="PropertyOfBoolean">
+          <Value>true</Value>
         </Value>
       </Property>
     </Properties>

@@ -56,7 +56,7 @@ if (((GameMain)main).StartSpawnPoint.Value == "end")
 		list.Children.Add(element);
 	};
 
-	addLink("Back the Kickstarter", "http://lemmagame.com");
+	addLink("Back the Kickstarter", "https://www.kickstarter.com/projects/869028656/lemma-first-person-parkour");
 	addLink("Vote for Lemma on Greenlight", "http://steamcommunity.com/sharedfiles/filedetails/?id=105075009");
 	addLink("Follow @et1337", "http://twitter.com/et1337");
 

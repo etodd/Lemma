@@ -156,15 +156,20 @@ namespace Lemma.Components
 
 		public static ParticleSystem Add(Main main, string type, ParticleSystem.ParticleSettings settings)
 		{
+			if (ParticleSystem.systems == null)
+			{
+				ParticleSystem.initialize(main);
+			}
+
+			return ParticleSystem.add(main, type, settings);
+		}
+
+		protected static ParticleSystem add(Main main, string type, ParticleSystem.ParticleSettings settings)
+		{
 			ParticleSystem system = new ParticleSystem();
 			system.Type.Value = type;
 			system.Settings.Value = settings;
 
-			if (ParticleSystem.systems == null)
-			{
-				ParticleSystem.systems = new Dictionary<string, ParticleSystem>();
-				ParticleSystem.initialize(main);
-			}
 			ParticleSystem.systems.Add(system.Type, system);
 
 			main.AddComponent(system);
@@ -173,7 +178,8 @@ namespace Lemma.Components
 
 		private static void initialize(Main main)
 		{
-			ParticleSystem.Add(main, "Splash",
+			ParticleSystem.systems = new Dictionary<string, ParticleSystem>();
+			ParticleSystem.add(main, "Splash",
 			new ParticleSystem.ParticleSettings
 			{
 				TextureName = "Particles\\splash",
@@ -196,7 +202,7 @@ namespace Lemma.Components
 			});
 
 #if DEVELOPMENT
-			ParticleSystem.Add(main, "Debug",
+			ParticleSystem.add(main, "Debug",
 			new ParticleSystem.ParticleSettings
 			{
 				TextureName = "Particles\\debug",
@@ -219,7 +225,7 @@ namespace Lemma.Components
 			});
 #endif
 
-			ParticleSystem.Add(main, "Distortion",
+			ParticleSystem.add(main, "Distortion",
 			new ParticleSystem.ParticleSettings
 			{
 				TextureName = "Particles\\distortion",
@@ -243,7 +249,7 @@ namespace Lemma.Components
 				MaxColor = Vector4.One,
 			});
 
-			ParticleSystem.Add(main, "DistortionSmall",
+			ParticleSystem.add(main, "DistortionSmall",
 			new ParticleSystem.ParticleSettings
 			{
 				TextureName = "Particles\\distortion",
@@ -267,7 +273,7 @@ namespace Lemma.Components
 				MaxColor = new Vector4(0.8f, 0.9f, 1.0f, 1.0f),
 			});
 
-			ParticleSystem.Add(main, "Smoke",
+			ParticleSystem.add(main, "Smoke",
 			new ParticleSystem.ParticleSettings
 			{
 				TextureName = "Particles\\smoke",
@@ -287,6 +293,72 @@ namespace Lemma.Components
 				BlendState = Microsoft.Xna.Framework.Graphics.BlendState.AlphaBlend,
 				MinColor = new Vector4(1.0f, 1.0f, 1.0f, 0.8f),
 				MaxColor = new Vector4(1.0f, 1.0f, 1.0f, 0.8f),
+			});
+
+			ParticleSystem.add(main, "InfectedShatter",
+			new ParticleSystem.ParticleSettings
+			{
+				TextureName = "Particles\\spark",
+				MaxParticles = 1000,
+				Duration = TimeSpan.FromSeconds(1.0f),
+				MinHorizontalVelocity = -4.0f,
+				MaxHorizontalVelocity = 4.0f,
+				MinVerticalVelocity = 0.0f,
+				MaxVerticalVelocity = 5.0f,
+				Gravity = new Vector3(0.0f, -8.0f, 0.0f),
+				MinRotateSpeed = -2.0f,
+				MaxRotateSpeed = 2.0f,
+				MinStartSize = 0.1f,
+				MaxStartSize = 0.3f,
+				MinEndSize = 0.0f,
+				MaxEndSize = 0.0f,
+				BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Additive,
+				MinColor = new Vector4(2.0f, 0.75f, 0.75f, 1.0f),
+				MaxColor = new Vector4(2.0f, 0.75f, 0.75f, 1.0f),
+			});
+
+			ParticleSystem.add(main, "WhiteShatter",
+			new ParticleSystem.ParticleSettings
+			{
+				TextureName = "Particles\\spark",
+				MaxParticles = 1000,
+				Duration = TimeSpan.FromSeconds(1.0f),
+				MinHorizontalVelocity = -4.0f,
+				MaxHorizontalVelocity = 4.0f,
+				MinVerticalVelocity = 0.0f,
+				MaxVerticalVelocity = 5.0f,
+				Gravity = new Vector3(0.0f, -8.0f, 0.0f),
+				MinRotateSpeed = -2.0f,
+				MaxRotateSpeed = 2.0f,
+				MinStartSize = 0.1f,
+				MaxStartSize = 0.3f,
+				MinEndSize = 0.0f,
+				MaxEndSize = 0.0f,
+				BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Additive,
+				MinColor = new Vector4(1.5f, 1.25f, 1.0f, 1.0f),
+				MaxColor = new Vector4(1.5f, 1.25f, 1.0f, 1.0f),
+			});
+
+			ParticleSystem.add(main, "Electricity",
+			new ParticleSystem.ParticleSettings
+			{
+				TextureName = "Particles\\spark",
+				MaxParticles = 2000,
+				Duration = TimeSpan.FromSeconds(0.3f),
+				MinHorizontalVelocity = -1.0f,
+				MaxHorizontalVelocity = 1.0f,
+				MinVerticalVelocity = 0.0f,
+				MaxVerticalVelocity = 1.5f,
+				Gravity = new Vector3(0.0f, -1.2f, 0.0f),
+				MinRotateSpeed = -10.0f,
+				MaxRotateSpeed = 10.0f,
+				MinStartSize = 0.05f,
+				MaxStartSize = 0.1f,
+				MinEndSize = 0.0f,
+				MaxEndSize = 0.0f,
+				BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Additive,
+				MinColor = new Vector4(1.0f, 1.25f, 1.5f, 1.0f),
+				MaxColor = new Vector4(1.0f, 1.25f, 1.5f, 1.0f),
 			});
 		}
 

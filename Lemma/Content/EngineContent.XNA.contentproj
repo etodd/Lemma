@@ -48,6 +48,8 @@
     <OutputPath>bin\x86\Editor</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Folder Include="GlobalScripts\" />
+    <Folder Include="GlobalStaticScripts\" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
@@ -189,18 +191,6 @@
       <ProcessorParameters_EffectFileName>..\Effects\Default.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_DiffuseTexture>papers.jpg</ProcessorParameters_DiffuseTexture>
     </Compile>
-    <None Include="GlobalScripts\materials.cs">
-      <Name>materials</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="GlobalStaticScripts\materials.cs">
-      <Name>materials</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="GlobalStaticScripts\particles.cs">
-      <Name>particles</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <Compile Include="Models\spotlight.fbx">
       <Name>spotlight</Name>
       <Importer>FbxImporter</Importer>
