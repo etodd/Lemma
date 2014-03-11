@@ -1573,17 +1573,17 @@ namespace Lemma.Components
 			return this.Fill(coord.X, coord.Y, coord.Z, state, notify);
 		}
 
-		public bool Empty(Vector3 pos, bool force = false, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(Vector3 pos, bool force = false, bool forceHard = true, Map transferringToNewMap = null, bool notify = true)
 		{
-			return this.Empty(this.GetCoordinate(pos), force, transferringToNewMap, notify);
+			return this.Empty(this.GetCoordinate(pos), force, forceHard, transferringToNewMap, notify);
 		}
 
-		public bool Empty(Coordinate coord, bool force = false, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(Coordinate coord, bool force = false, bool forceHard = true, Map transferringToNewMap = null, bool notify = true)
 		{
-			return this.Empty(coord.X, coord.Y, coord.Z, force, transferringToNewMap, notify);
+			return this.Empty(coord.X, coord.Y, coord.Z, force, forceHard, transferringToNewMap, notify);
 		}
 
-		public bool Empty(Coordinate a, Coordinate b, bool force = false, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(Coordinate a, Coordinate b, bool force = false, bool forceHard = true, Map transferringToNewMap = null, bool notify = true)
 		{
 			int minY = Math.Min(a.Y, b.Y);
 			int minZ = Math.Min(a.Z, b.Z);
@@ -1601,7 +1601,7 @@ namespace Lemma.Components
 					}
 				}
 			}
-			return this.Empty(coords, force, transferringToNewMap, notify);
+			return this.Empty(coords, force, forceHard, transferringToNewMap, notify);
 		}
 
 		/// <summary>
@@ -1668,7 +1668,7 @@ namespace Lemma.Components
 				this.CompletelyEmptied.Execute();
 		}
 
-		public bool Empty(IEnumerable<Coordinate> coords, bool force = false, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(IEnumerable<Coordinate> coords, bool force = false, bool forceHard = true, Map transferringToNewMap = null, bool notify = true)
 		{
 			if (!this.main.EditorEnabled && !this.EnablePhysics)
 				return false;
@@ -1686,7 +1686,7 @@ namespace Lemma.Components
 						continue;
 
 					Box box = chunk.Data[coord.X - chunk.X, coord.Y - chunk.Y, coord.Z - chunk.Z];
-					if (box != null && (!box.Type.Permanent || force))
+					if (box != null && (force || !box.Type.Permanent) && (forceHard || !box.Type.Hard))
 					{
 						this.removalCoords.Add(coord);
 						if (box != null)
@@ -1816,7 +1816,7 @@ namespace Lemma.Components
 		/// <param name="x"></param>
 		/// <param name="y"></param>
 		/// <param name="z"></param>
-		public bool Empty(int x, int y, int z, bool force = false, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(int x, int y, int z, bool force = false, bool forceHard = true, Map transferringToNewMap = null, bool notify = true)
 		{
 			bool modified = false;
 			Map.Coordinate coord = new Coordinate { X = x, Y = y, Z = z, };
@@ -1828,7 +1828,7 @@ namespace Lemma.Components
 					return false;
 
 				Box box = chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];
-				if (box != null && (!box.Type.Permanent || force))
+				if (box != null && (force || !box.Type.Permanent) && (forceHard || !box.Type.Hard))
 				{
 					List<Box> boxAdditions = new List<Box>();
 					coord.Data = box.Type;

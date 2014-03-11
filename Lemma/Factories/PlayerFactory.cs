@@ -837,8 +837,8 @@ namespace Lemma.Factories
 
 			Action<BlockPossibility> instantiateBlockPossibility = delegate(BlockPossibility block)
 			{
-				Map.CellState state = WorldFactory.StatesByName["Temporary"];
-				block.Map.Empty(block.StartCoord.CoordinatesBetween(block.EndCoord));
+				Map.CellState state = WorldFactory.StatesByName["Breakable"];
+				block.Map.Empty(block.StartCoord.CoordinatesBetween(block.EndCoord), false, false);
 				block.Map.Fill(block.StartCoord, block.EndCoord, state);
 				block.Map.Regenerate();
 				block.Model.Delete.Execute();

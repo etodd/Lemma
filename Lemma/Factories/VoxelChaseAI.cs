@@ -386,6 +386,7 @@ namespace Lemma.Factories
 										Stack<Map.Box> path = VoxelChaseAI.AStar(m, box, this.Target);
 
 										// Debug visualization
+										/*
 										int i = 0;
 										foreach (Map.Box b in path)
 										{
@@ -413,6 +414,7 @@ namespace Lemma.Factories
 											));
 											i++;
 										}
+										*/
 
 										if (path.Count > 1)
 										{

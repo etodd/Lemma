@@ -845,7 +845,6 @@ namespace Lemma.Factories
 								int id = map[c].ID;
 
 								bool isTemporary = id == temporaryID;
-								bool isBreakable = id == breakableID;
 								bool isInfected = id == infectedID || id == infectedCriticalID;
 								bool isPowered = id == poweredID || id == permanentPoweredID || id == hardPoweredID;
 
@@ -872,7 +871,7 @@ namespace Lemma.Factories
 											}
 										}
 									}
-									else if (entry.Generation > 0 && (isTemporary || isBreakable || isInfected || isPowered))
+									else if (entry.Generation > 0 && (isTemporary || isInfected || isPowered || id == breakableID))
 									{
 										generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = c }] = entry.Generation;
 										map.Empty(c);
@@ -882,7 +881,6 @@ namespace Lemma.Factories
 								}
 								else if (isTemporary
 									|| isInfected
-									|| isBreakable
 									|| isPowered)
 								{
 									if (isTemporary)
@@ -905,22 +903,6 @@ namespace Lemma.Factories
 												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
 												map.Fill(adjacent, WorldFactory.States[temporaryID]);
 												sparks(map.GetAbsolutePosition(adjacent));
-												regenerate = true;
-											}
-										}
-									}
-									else if (isBreakable)
-									{
-										foreach (Direction dir in DirectionExtensions.Directions)
-										{
-											Map.Coordinate adjacent = c.Move(dir);
-											int adjacentID = map[adjacent].ID;
-
-											if (adjacentID == infectedID || adjacentID == infectedCriticalID)
-											{
-												map.Empty(c);
-												map.Fill(c, WorldFactory.States[infectedID]);
-												sparks(map.GetAbsolutePosition(c));
 												regenerate = true;
 											}
 										}
@@ -952,9 +934,10 @@ namespace Lemma.Factories
 										{
 											Map.Coordinate adjacent = c.Move(dir);
 											int adjacentID = map[adjacent].ID;
-											if (adjacentID == breakableID)
+											if (adjacentID == breakableID && entry.Generation < maxGenerations)
 											{
 												map.Empty(adjacent);
+												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
 												map.Fill(adjacent, WorldFactory.States[infectedID]);
 												sparks(map.GetAbsolutePosition(adjacent));
 												regenerate = true;
@@ -979,7 +962,7 @@ namespace Lemma.Factories
 
 			result.Add(new CommandBinding<Map, IEnumerable<Map.Coordinate>, Map>(Map.GlobalCellsEmptied, delegate(Map map, IEnumerable<Map.Coordinate> coords, Map transferringToNewMap)
 			{
-				if (transferringToNewMap != null)
+				if (transferringToNewMap != null || main.EditorEnabled)
 					return;
 				
 				bool handlePowered = false;

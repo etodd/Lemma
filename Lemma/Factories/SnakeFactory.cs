@@ -20,10 +20,6 @@ namespace Lemma.Factories
 			Transform transform = new Transform();
 			result.Add("Transform", transform);
 
-			result.Add("Coordinate", new Property<Map.Coordinate> { Editable = false });
-
-			result.Add("OperationalRadius", new Property<float> { Editable = true, Value = 100.0f });
-
 			return result;
 		}
 
@@ -57,20 +53,7 @@ namespace Lemma.Factories
 			result.CannotSuspendByDistance = true;
 			Transform transform = result.Get<Transform>();
 
-			PointLight light = result.GetOrCreate<PointLight>("Light");
-			light.Color.Value = new Vector3(1.3f, 0.5f, 0.5f);
-			light.Attenuation.Value = 10.0f;
-			light.Shadowed.Value = false;
-			light.Serialize = false;
-
-			EnemyBase enemy = result.GetOrCreate<EnemyBase>("Base");
-
-			enemy.Add(new Binding<Matrix>(enemy.Transform, transform.Matrix));
-			enemy.Add(new CommandBinding(enemy.Delete, result.Delete));
-
 			Property<float> operationalRadius = result.GetOrMakeProperty<float>("OperationalRadius", true, 100.0f);
-
-			light.Add(new Binding<Vector3>(light.Position, enemy.Position));
 
 			ListProperty<Map.Coordinate> path = result.GetOrMakeListProperty<Map.Coordinate>("PathCoordinates");
 
@@ -80,38 +63,43 @@ namespace Lemma.Factories
 
 			Agent agent = result.GetOrCreate<Agent>("Agent");
 
-			Map.CellState fillState = WorldFactory.StatesByName["Infected"];
-			Map.CellState criticalState = WorldFactory.StatesByName["InfectedCritical"];
-			Map.CellState poweredState = WorldFactory.StatesByName["Powered"];
-			Map.CellState temporaryState = WorldFactory.StatesByName["Temporary"];
+			Map.CellState infectedState = WorldFactory.StatesByName["Infected"],
+				breakableState = WorldFactory.StatesByName["Breakable"];
 
 			const float defaultSpeed = 5.0f;
 			const float chaseSpeed = 14.0f;
 			const float closeChaseSpeed = 10.0f;
 			const float crushSpeed = 125.0f;
 
-			VoxelChaseAI chase = null;
+			Property<Entity.Handle> map = result.GetOrMakeProperty<Entity.Handle>("Map");
 			result.Add(new PostInitialization
 			{
 				delegate()
 				{
-					if (chase.Map.Value.Target == null)
-						chase.Position.Value = enemy.Position;
+					if (map.Value.Target == null)
+					{
+						foreach (Map m in Lemma.Components.Map.Maps)
+						{
+							if (m.FindClosestFilledCell(m.GetCoordinate(transform.Position), 2).HasValue)
+							{
+								map.Value = m.Entity;
+								break;
+							}
+						}
+					}
 				}
 			});
-			chase = result.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
+
+			VoxelChaseAI chase = result.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
+			chase.Add(new TwoWayBinding<Vector3>(transform.Position, chase.Position));
 			chase.Speed.Value = defaultSpeed;
-			Map.CellState avoidState = WorldFactory.StatesByName["AvoidAI"];
 			chase.Filter = delegate(Map.CellState state)
 			{
-				int id = state.ID;
-				if (state.ID == avoidState.ID)
-					return VoxelChaseAI.Cell.Avoid;
-				if (id == fillState.ID || id == temporaryState.ID || id == 0)
+				if (state.ID == 0)
 					return VoxelChaseAI.Cell.Empty;
-				if (state.Permanent || id == criticalState.ID)
-					return VoxelChaseAI.Cell.Filled;
-				return VoxelChaseAI.Cell.Penetrable;
+				if (state == criticalState || state == infectedState || state == breakableState)
+					return VoxelChaseAI.Cell.Penetrable;
+				return VoxelChaseAI.Cell.Avoid;
 			};
 			result.Add(new CommandBinding(chase.Delete, result.Delete));
 
@@ -144,19 +132,19 @@ namespace Lemma.Factories
 				emitter.Serialize = false;
 				emitter.ParticlesPerSecond.Value = 100;
 				emitter.ParticleType.Value = "SnakeSparks";
-				emitter.Add(new Binding<Vector3>(emitter.Position, chase.Position));
+				emitter.Add(new Binding<Vector3>(emitter.Position, transform.Position));
 				emitter.Add(new Binding<bool, string>(emitter.Enabled, x => x != "Suspended", ai.CurrentState));
 
-				positionLight.Add(new Binding<Vector3>(positionLight.Position, chase.Position));
-				emitter.Add(new Binding<Vector3>(emitter.Position, chase.Position));
-				agent.Add(new Binding<Vector3>(agent.Position, chase.Position));
+				positionLight.Add(new Binding<Vector3>(positionLight.Position, transform.Position));
+				emitter.Add(new Binding<Vector3>(emitter.Position, transform.Position));
+				agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
 			}
 
 			AI.Task checkMap = new AI.Task
 			{
 				Action = delegate()
 				{
-					if (enemy.Map.Value.Target == null || !enemy.Map.Value.Target.Active)
+					if (map.Value.Target == null || !map.Value.Target.Active)
 						result.Delete.Execute();
 				},
 			};
@@ -166,7 +154,7 @@ namespace Lemma.Factories
 				Interval = 2.0f,
 				Action = delegate()
 				{
-					bool shouldBeActive = (chase.Position.Value - main.Camera.Position).Length() < operationalRadius || (enemy.Map.Value.Target.Get<Map>().GetAbsolutePosition(enemy.BaseBoxes.First().GetCoords().First()) - main.Camera.Position).Length() < operationalRadius;
+					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < operationalRadius;
 					if (shouldBeActive && ai.CurrentState == "Suspended")
 						ai.CurrentState.Value = "Idle";
 					else if (!shouldBeActive && ai.CurrentState != "Suspended")
@@ -191,20 +179,15 @@ namespace Lemma.Factories
 			{
 				if (chase.Active)
 				{
-					if (m[chase.Coord].ID == poweredState.ID)
-					{
-						result.Delete.Execute();
-						return;
-					}
-
-					if (m[c].ID != criticalState.ID)
+					string currentState = ai.CurrentState.Value;
+					if ((currentState == "Chase" || currentState == "Crush"))
 					{
 						bool regenerate = m.Empty(c);
-						regenerate |= m.Fill(c, fillState);
+						regenerate |= m.Fill(c, infectedState);
 						if (regenerate)
 							m.Regenerate();
 					}
-					Sound.PlayCue(main, "SnakeMove", chase.Position);
+					Sound.PlayCue(main, "SnakeMove", transform.Position);
 
 					if (path.Count > 0)
 					{
@@ -235,7 +218,7 @@ namespace Lemma.Factories
 							Interval = 1.0f,
 							Action = delegate()
 							{
-								Agent a = Agent.Query(chase.Position, 50.0f, 20.0f, x => x.Entity.Type == "Player");
+								Agent a = Agent.Query(transform.Position, 50.0f, 20.0f, x => x.Entity.Type == "Player");
 								if (a != null)
 									ai.CurrentState.Value = "Alert";
 							},
@@ -266,7 +249,7 @@ namespace Lemma.Factories
 									ai.CurrentState.Value = "Idle";
 								else
 								{
-									Agent a = Agent.Query(chase.Position, 50.0f, 30.0f, x => x.Entity.Type == "Player");
+									Agent a = Agent.Query(transform.Position, 50.0f, 30.0f, x => x.Entity.Type == "Player");
 									if (a != null)
 									{
 										targetAgent.Value = a.Entity;
@@ -302,7 +285,7 @@ namespace Lemma.Factories
 							{
 								Vector3 targetPosition = targetAgent.Value.Target.Get<Agent>().Position;
 
-								float targetDistance = (targetPosition - chase.Position).Length();
+								float targetDistance = (targetPosition - transform.Position).Length();
 
 								chase.Speed.Value = targetDistance < 15.0f ? closeChaseSpeed : chaseSpeed;
 
@@ -322,7 +305,7 @@ namespace Lemma.Factories
 					Enter = delegate(AI.State lastState)
 					{
 						// Set up cage
-						Map.Coordinate center = enemy.Map.Value.Target.Get<Map>().GetCoordinate(targetAgent.Value.Target.Get<Agent>().Position);
+						Map.Coordinate center = map.Value.Target.Get<Map>().GetCoordinate(targetAgent.Value.Target.Get<Agent>().Position);
 
 						int radius = 1;
 
@@ -389,7 +372,7 @@ namespace Lemma.Factories
 									ai.CurrentState.Value = "Alert";
 								else
 								{
-									if ((a.Position - chase.Position.Value).Length() > 5.0f) // They're getting away
+									if ((a.Position - transform.Position.Value).Length() > 5.0f) // They're getting away
 										ai.CurrentState.Value = "Chase";
 								}
 							}
@@ -399,13 +382,6 @@ namespace Lemma.Factories
 			);
 
 			this.SetMain(result, main);
-		}
-
-		public override void AttachEditorComponents(Entity result, Main main)
-		{
-			base.AttachEditorComponents(result, main);
-
-			EnemyBase.AttachEditorComponents(result, main, this.Color);
 		}
 	}
 }
