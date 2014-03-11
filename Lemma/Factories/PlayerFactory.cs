@@ -26,15 +26,6 @@ namespace Lemma.Factories
 			public Map.CellState State;
 		}
 
-		public class ScheduledBlock
-		{
-			public Entity.Handle Map;
-			public Map.Coordinate Coordinate;
-			public float Time;
-			[System.ComponentModel.DefaultValue(0)]
-			public int Generation;
-		}
-
 		public struct RespawnLocation
 		{
 			public Entity.Handle Map;

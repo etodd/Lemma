@@ -10,6 +10,17 @@ namespace Lemma.Factories
 {
 	public class WorldFactory : Factory
 	{
+		public class ScheduledBlock
+		{
+			public Entity.Handle Map;
+			public Map.Coordinate Coordinate;
+			public float Time;
+			[System.ComponentModel.DefaultValue(0)]
+			public int Generation;
+			[System.ComponentModel.DefaultValue(false)]
+			public bool Removing;
+		}
+
 		public static Dictionary<int, Map.CellState> States = new Dictionary<int, Map.CellState>();
 		public static Dictionary<string, Map.CellState> StatesByName = new Dictionary<string, Map.CellState>();
 		public static List<Map.CellState> StateList = new List<Map.CellState>();
@@ -753,8 +764,9 @@ namespace Lemma.Factories
 			}));
 
 			const float propagateDelay = 0.07f;
+			const int maxGenerations = 4;
 
-			ListProperty<PlayerFactory.ScheduledBlock> blockQueue = result.GetOrMakeListProperty<PlayerFactory.ScheduledBlock>("PowerQueue");
+			ListProperty<ScheduledBlock> blockQueue = result.GetOrMakeListProperty<ScheduledBlock>("PowerQueue");
 			if (main.EditorEnabled)
 				blockQueue.Clear();
 
@@ -775,7 +787,7 @@ namespace Lemma.Factories
 							EffectBlockFactory.BlockEntry generationsKey = new EffectBlockFactory.BlockEntry { Map = map, Coordinate = newCoord };
 							if (generations.TryGetValue(generationsKey, out generation))
 								generations.Remove(generationsKey);
-							blockQueue.Add(new PlayerFactory.ScheduledBlock
+							blockQueue.Add(new ScheduledBlock
 							{
 								Map = map.Entity,
 								Coordinate = newCoord,
@@ -818,7 +830,7 @@ namespace Lemma.Factories
 				{
 					for (int i = 0; i < blockQueue.Count; i++)
 					{
-						PlayerFactory.ScheduledBlock entry = blockQueue[i];
+						ScheduledBlock entry = blockQueue[i];
 						entry.Time -= dt;
 						if (entry.Time < 0.0f)
 						{
@@ -837,13 +849,42 @@ namespace Lemma.Factories
 								bool isInfected = id == infectedID || id == infectedCriticalID;
 								bool isPowered = id == poweredID || id == permanentPoweredID || id == hardPoweredID;
 
-								if (isTemporary
+								bool regenerate = false;
+
+								if (entry.Removing)
+								{
+									if (entry.Generation == 0 && id == 0)
+									{
+										foreach (Direction dir in DirectionExtensions.Directions)
+										{
+											Map.Coordinate adjacent = c.Move(dir);
+											int adjacentID = map[adjacent].ID;
+											if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == breakableID || adjacentID == infectedID)
+											{
+												blockQueue.Add(new ScheduledBlock
+												{
+													Map = map.Entity,
+													Coordinate = adjacent,
+													Time = propagateDelay,
+													Removing = true,
+													Generation = 1,
+												});
+											}
+										}
+									}
+									else if (entry.Generation > 0 && (isTemporary || isBreakable || isInfected || isPowered))
+									{
+										generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = c }] = entry.Generation;
+										map.Empty(c);
+										sparks(map.GetAbsolutePosition(c));
+										regenerate = true;
+									}
+								}
+								else if (isTemporary
 									|| isInfected
 									|| isBreakable
 									|| isPowered)
 								{
-									bool regenerate = false;
-
 									if (isTemporary)
 									{
 										foreach (Direction dir in DirectionExtensions.Directions)
@@ -858,10 +899,10 @@ namespace Lemma.Factories
 												sparks(map.GetAbsolutePosition(c));
 												regenerate = true;
 											}
-											else if (adjacentID == breakableID && entry.Generation < 4)
+											else if (adjacentID == breakableID && entry.Generation < maxGenerations)
 											{
-												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
 												map.Empty(adjacent);
+												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
 												map.Fill(adjacent, WorldFactory.States[temporaryID]);
 												sparks(map.GetAbsolutePosition(adjacent));
 												regenerate = true;
@@ -925,10 +966,10 @@ namespace Lemma.Factories
 											}
 										}
 									}
-
-									if (regenerate)
-										map.Regenerate();
 								}
+
+								if (regenerate)
+									map.Regenerate();
 							}
 						}
 						i++;
@@ -944,9 +985,13 @@ namespace Lemma.Factories
 				bool handlePowered = false;
 				foreach (Map.Coordinate coord in coords)
 				{
-					if (coord.Data.ID == criticalID) // Critical. Explodes when destroyed.
+					int id = coord.Data.ID;
+					if (id == poweredID)
+						handlePowered = true;
+
+					if (id == criticalID) // Critical. Explodes when destroyed.
 						Explosion.Explode(main, map, coord);
-					else if (coord.Data.ID == infectedCriticalID) // Infected. Shatter effects.
+					else if (id == infectedCriticalID) // Infected. Shatter effects.
 					{
 						ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
 						Vector3 pos = map.GetAbsolutePosition(coord);
@@ -957,9 +1002,49 @@ namespace Lemma.Factories
 							shatter.AddParticle(pos + offset, offset);
 						}
 					}
-					else if (coord.Data.ID == poweredID)
-						handlePowered = true;
-					else if (coord.Data.ID == whiteID) // White. Shatter effects.
+					else if (id == poweredID || id == temporaryID || id == breakableID || id == infectedID)
+					{
+						int generation;
+						Map.Coordinate c = coord;
+						c.Data = emptyState;
+						EffectBlockFactory.BlockEntry generationKey = new EffectBlockFactory.BlockEntry { Map = map, Coordinate = c };
+						if (generations.TryGetValue(generationKey, out generation))
+							generations.Remove(generationKey);
+
+						if (generation == 0)
+						{
+							blockQueue.Add(new ScheduledBlock
+							{
+								Map = map.Entity,
+								Coordinate = coord,
+								Time = propagateDelay,
+								Removing = true,
+							});
+						}
+						else if (generation < maxGenerations)
+						{
+							foreach (Direction dir in DirectionExtensions.Directions)
+							{
+								Map.Coordinate adjacent = coord.Move(dir);
+								if (!coords.Contains(adjacent))
+								{
+									int adjacentID = map[adjacent].ID;
+									if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == breakableID || adjacentID == infectedID)
+									{
+										blockQueue.Add(new ScheduledBlock
+										{
+											Map = map.Entity,
+											Coordinate = adjacent,
+											Time = propagateDelay,
+											Removing = true,
+											Generation = generation + 1,
+										});
+									}
+								}
+							}
+						}
+					}
+					else if (id == whiteID) // White. Shatter effects.
 					{
 						ParticleSystem shatter = ParticleSystem.Get(main, "WhiteShatter");
 						Vector3 pos = map.GetAbsolutePosition(coord);

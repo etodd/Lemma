@@ -485,15 +485,24 @@ namespace Lemma.Factories
 
 							if (timeInCurrentState > 2.0f)
 							{
-								Map m = map.Value.Target.Get<Map>();
-								Map.Coordinate? closestCell = m.FindClosestFilledCell(coord, radius + 1);
-								if (closestCell.HasValue)
+								Entity mapEntity = map.Value.Target;
+								if (mapEntity != null && mapEntity.Active)
 								{
-									move(m.GetAbsolutePosition(closestCell.Value) - transform.Position);
+									Map m = map.Value.Target.Get<Map>();
+									Map.Coordinate? closestCell = m.FindClosestFilledCell(coord, radius + 1);
+									if (closestCell.HasValue)
+									{
+										move(m.GetAbsolutePosition(closestCell.Value) - transform.Position);
+										ai.CurrentState.Value = "Alert";
+									}
+									else
+										result.Delete.Execute();
+								}
+								else // Our map got deleted. Hope we find a new one.
+								{
+									move(new Vector3(((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f));
 									ai.CurrentState.Value = "Alert";
 								}
-								else
-									result.Delete.Execute();
 							}
 						},
 					},

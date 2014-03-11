@@ -616,6 +616,17 @@ namespace Lemma.Components
 				return coord.X == this.X && coord.Y == this.Y && coord.Z == this.Z;
 			}
 
+			public override bool Equals(object obj)
+			{
+				if (obj.GetType() == typeof(Map.Coordinate))
+				{
+					Map.Coordinate coord = (Map.Coordinate)obj;
+					return coord.X == this.X && coord.Y == this.Y && coord.Z == this.Z;
+				}
+				else
+					return false;
+			}
+
 			public Coordinate Move(int x, int y, int z)
 			{
 				return new Coordinate { X = this.X + x, Y = this.Y + y, Z = this.Z + z, Data = this.Data };
