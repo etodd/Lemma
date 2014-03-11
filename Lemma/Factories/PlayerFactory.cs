@@ -2884,8 +2884,11 @@ namespace Lemma.Factories
 
 					result.Add(new CommandBinding(phone.MessageReceived, delegate()
 					{
-						if (!phoneActive)
+						if (phoneActive)
+							scrollToBottom();
+						else
 							showPhone(true);
+
 						phoneSound.Play.Execute();
 						if (togglePhoneMessage == null && phone.Schedules.Count == 0 && phone.ActiveAnswers.Count == 0) // No more messages incoming, and no more answers to give
 							togglePhoneMessage = ((GameMain)main).ShowMessage(result, () => "[" + settings.TogglePhone.Value.ToString() + "]", settings.TogglePhone);

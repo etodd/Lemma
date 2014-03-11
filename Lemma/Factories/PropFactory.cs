@@ -53,7 +53,7 @@ namespace Lemma.Factories
 		{
 			Entity result = new Entity(main, "PropAlpha");
 			result.Add("Transform", new Transform());
-			Model model = new ModelAlpha();
+			ModelAlpha model = new ModelAlpha();
 			model.DrawOrder.Value = 11;
 			result.Add("Model", model);
 

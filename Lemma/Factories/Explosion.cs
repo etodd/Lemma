@@ -77,9 +77,6 @@ namespace Lemma.Factories
 					{
 						for (Map.Coordinate z = y.Move(Direction.NegativeZ, radius - 1); z.Z < c.Z + radius; z.Z++)
 						{
-							if (m == map && z.Equivalent(coord))
-								continue;
-						
 							Map.CellState s = m[z];
 							if (s.ID == 0 || s.Permanent)
 								continue;

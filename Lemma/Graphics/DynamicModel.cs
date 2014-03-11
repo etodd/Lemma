@@ -76,53 +76,59 @@ namespace Lemma.Components
 		{
 			if (parameters.IsMainRender)
 			{
-				if (this.Lock != null)
-					Monitor.Enter(this.Lock);
+				bool locked;
+				if (this.Lock == null)
+					locked = true;
+				else
+					locked = Monitor.TryEnter(this.Lock);
 
-				if (this.Vertices.Count > 0 && (this.vertexBuffer == null || this.vertexBuffer.IsContentLost || this.vertexBuffer.VertexCount < this.Vertices.Count))
+				if (locked)
 				{
-					if (this.vertexBuffer != null && !this.vertexBuffer.IsDisposed)
-						this.vertexBuffer.Dispose();
-					this.vertexBuffer = new DynamicVertexBuffer
-					(
-						this.main.GraphicsDevice,
-						this.declaration,
-						(int)Math.Pow(2.0, Math.Ceiling(Math.Log(this.Vertices.Count, 2.0))),
-						BufferUsage.WriteOnly
-					);
-					int numTriangles = this.vertexBuffer.VertexCount / 2;
-
-					if (this.indexBuffer != null)
-						this.indexBuffer.Dispose();
-
-					uint[] indices = new uint[numTriangles * 6];
-					for (int i = 0; i < numTriangles; i++)
+					if (this.Vertices.Count > 0 && (this.vertexBuffer == null || this.vertexBuffer.IsContentLost || this.vertexBuffer.VertexCount < this.Vertices.Count))
 					{
-						indices[i * 6] = (uint)(i * 4);
-						indices[i * 6 + 1] = (uint)(i * 4 + 1);
-						indices[i * 6 + 2] = (uint)(i * 4 + 2);
+						if (this.vertexBuffer != null && !this.vertexBuffer.IsDisposed)
+							this.vertexBuffer.Dispose();
+						this.vertexBuffer = new DynamicVertexBuffer
+						(
+							this.main.GraphicsDevice,
+							this.declaration,
+							(int)Math.Pow(2.0, Math.Ceiling(Math.Log(this.Vertices.Count, 2.0))),
+							BufferUsage.WriteOnly
+						);
+						int numTriangles = this.vertexBuffer.VertexCount / 2;
 
-						indices[i * 6 + 3] = (uint)(i * 4 + 0);
-						indices[i * 6 + 4] = (uint)(i * 4 + 2);
-						indices[i * 6 + 5] = (uint)(i * 4 + 3);
+						if (this.indexBuffer != null)
+							this.indexBuffer.Dispose();
+
+						uint[] indices = new uint[numTriangles * 6];
+						for (int i = 0; i < numTriangles; i++)
+						{
+							indices[i * 6] = (uint)(i * 4);
+							indices[i * 6 + 1] = (uint)(i * 4 + 1);
+							indices[i * 6 + 2] = (uint)(i * 4 + 2);
+
+							indices[i * 6 + 3] = (uint)(i * 4 + 0);
+							indices[i * 6 + 4] = (uint)(i * 4 + 2);
+							indices[i * 6 + 5] = (uint)(i * 4 + 3);
+						}
+
+						this.indexBuffer = new IndexBuffer(this.main.GraphicsDevice, typeof(uint), indices.Length, BufferUsage.WriteOnly);
+						this.indexBuffer.SetData(indices);
+
+						this.verticesChanged = true;
 					}
 
-					this.indexBuffer = new IndexBuffer(this.main.GraphicsDevice, typeof(uint), indices.Length, BufferUsage.WriteOnly);
-					this.indexBuffer.SetData(indices);
+					if (this.verticesChanged)
+					{
+						if (this.Vertices.Count > 0)
+							this.vertexBuffer.SetData(0, this.Vertices.InternalList.ToArray(), 0, this.Vertices.Count, this.declaration.VertexStride, SetDataOptions.Discard);
+						this.verticesChanged = false;
+						this.lockedVertexCount = this.Vertices.Count;
+					}
 
-					this.verticesChanged = true;
+					if (this.Lock != null)
+						Monitor.Exit(this.Lock);
 				}
-
-				if (this.verticesChanged)
-				{
-					if (this.Vertices.Count > 0)
-						this.vertexBuffer.SetData(0, this.Vertices.InternalList.ToArray(), 0, this.Vertices.Count, this.declaration.VertexStride, SetDataOptions.Discard);
-					this.verticesChanged = false;
-					this.lockedVertexCount = this.Vertices.Count;
-				}
-
-				if (this.Lock != null)
-					Monitor.Exit(this.Lock);
 			}
 
 			if (this.lockedVertexCount > 0 && this.vertexBuffer != null && !this.vertexBuffer.IsContentLost && this.setParameters(transform, parameters))
