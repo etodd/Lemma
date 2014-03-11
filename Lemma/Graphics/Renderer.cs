@@ -593,32 +593,14 @@ namespace Lemma.Components
 			colorDestination = colorSource;
 			colorSource = colorTemp;
 
-			// Motion blur
-			if (this.allowMotionBlur && this.MotionBlurAmount > 0.0f)
-			{
-				this.motionBlurEffect.CurrentTechnique = this.motionBlurEffect.Techniques["MotionBlur"];
-				parameters.Camera.SetParameters(this.motionBlurEffect);
-				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.velocityBuffer, this.velocityBufferLastFrame }, new RenderTarget2D[] { colorDestination }, this.motionBlurEffect);
-				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
-
-				// Swap the velocity buffers
-				RenderTarget2D temp = this.velocityBufferLastFrame;
-				this.velocityBufferLastFrame = this.velocityBuffer;
-				this.velocityBuffer = temp;
-
-				// Swap the color buffers
-				colorTemp = colorDestination;
-				colorDestination = colorSource;
-				colorSource = colorTemp;
-			}
-
 			bool enableBloom = this.allowBloom && this.EnableBloom && this.BloomThreshold < 1.0f;
+			bool enableMotionBlur = this.allowMotionBlur && this.MotionBlurAmount > 0.0f;
 			bool enableBlur = this.BlurAmount > 0.0f;
 
 			// Tone mapping
 			this.toneMapEffect.CurrentTechnique = this.toneMapEffect.Techniques[enableBloom ? "ToneMap" : "ToneMapDecode"];
 			parameters.Camera.SetParameters(this.toneMapEffect);
-			this.preparePostProcess(new RenderTarget2D[] { colorSource }, new RenderTarget2D[] { enableBloom || enableBlur ? colorDestination : result }, this.toneMapEffect);
+			this.preparePostProcess(new RenderTarget2D[] { colorSource }, new RenderTarget2D[] { enableBloom || enableBlur || enableMotionBlur ? colorDestination : result }, this.toneMapEffect);
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 			// Swap the color buffers
@@ -634,8 +616,27 @@ namespace Lemma.Components
 				this.preparePostProcess(new RenderTarget2D[] { colorSource }, new RenderTarget2D[] { this.bloomBuffer }, this.bloomEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["Composite"];
-				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.bloomBuffer }, new RenderTarget2D[] { enableBlur ? colorDestination : result }, this.bloomEffect);
+				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.bloomBuffer }, new RenderTarget2D[] { enableBlur || enableMotionBlur ? colorDestination : result }, this.bloomEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
+
+				// Swap the color buffers
+				colorTemp = colorDestination;
+				colorDestination = colorSource;
+				colorSource = colorTemp;
+			}
+
+			// Motion blur
+			if (enableMotionBlur)
+			{
+				this.motionBlurEffect.CurrentTechnique = this.motionBlurEffect.Techniques["MotionBlur"];
+				parameters.Camera.SetParameters(this.motionBlurEffect);
+				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.velocityBuffer, this.velocityBufferLastFrame }, new RenderTarget2D[] { enableBlur ? colorDestination : result }, this.motionBlurEffect);
+				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
+
+				// Swap the velocity buffers
+				RenderTarget2D temp = this.velocityBufferLastFrame;
+				this.velocityBufferLastFrame = this.velocityBuffer;
+				this.velocityBuffer = temp;
 
 				// Swap the color buffers
 				colorTemp = colorDestination;

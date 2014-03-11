@@ -38,7 +38,7 @@ namespace Lemma.Factories
 
 			Property<bool> enabled = result.GetOrMakeProperty<bool>("Enabled", true, false);
 
-			Map.CellState neutral = WorldFactory.StatesByName["Neutral"];
+			Map.CellState breakable = WorldFactory.StatesByName["Breakable"];
 			Map.CellState infected = WorldFactory.StatesByName["Infected"];
 
 			Action<Entity> infect = delegate(Entity player)
@@ -62,7 +62,7 @@ namespace Lemma.Factories
 						foreach (Map.Coordinate c in contiguous)
 						{
 							bool isStart = c.Equivalent(coord.Value);
-							m.Fill(c, isStart ? infected : neutral, isStart);
+							m.Fill(c, isStart ? infected : breakable, isStart);
 						}
 					}
 					else

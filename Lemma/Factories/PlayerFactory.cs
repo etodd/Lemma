@@ -413,8 +413,7 @@ namespace Lemma.Factories
 			Command<Map, Map.Coordinate?> walkedOn = new Command<Map, Map.Coordinate?>();
 			result.Add("WalkedOn", walkedOn);
 
-			int neutralID = WorldFactory.StatesByName["Neutral"].ID,
-				breakableID = WorldFactory.StatesByName["Breakable"].ID,
+			int breakableID = WorldFactory.StatesByName["Breakable"].ID,
 				temporaryID = WorldFactory.StatesByName["Temporary"].ID;
 
 			result.Add(new CommandBinding<Map, Map.Coordinate?>(walkedOn, delegate(Map map, Map.Coordinate? coord)
@@ -422,7 +421,7 @@ namespace Lemma.Factories
 				if (coord.HasValue)
 				{
 					int id = map[coord.Value].ID;
-					if (id == neutralID || id == breakableID)
+					if (id == breakableID)
 					{
 						map.Empty(coord.Value);
 						map.Fill(coord.Value, WorldFactory.States[temporaryID]);

@@ -51,13 +51,13 @@ namespace Lemma.Factories
 
 			AI ai = result.GetOrCreate<AI>("AI");
 
-			Model model = result.GetOrCreate<Model>();
+			ModelAlpha model = result.GetOrCreate<ModelAlpha>();
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
-			model.Filename.Value = "Models\\sphere";
+			model.Filename.Value = "Models\\alpha-box";
 			model.Editable = false;
 			model.Serialize = false;
 
-			const float defaultModelScale = 0.25f;
+			const float defaultModelScale = 1.0f;
 			model.Scale.Value = new Vector3(defaultModelScale);
 
 			model.Add(new Binding<Vector3, string>(model.Color, delegate(string state)
@@ -79,9 +79,9 @@ namespace Lemma.Factories
 			{
 				delegate(float dt)
 				{
-					float source = ((float)this.random.NextDouble() - 0.5f) * 2.0f;
-					model.Scale.Value = new Vector3(defaultModelScale * (1.0f + (source * 0.5f)));
-					light.Attenuation.Value = defaultLightAttenuation * (1.0f + (source * 0.05f));
+					float source = 1.0f + ((float)this.random.NextDouble() - 0.5f) * 2.0f * 0.05f;
+					model.Scale.Value = new Vector3(defaultModelScale * source);
+					light.Attenuation.Value = defaultLightAttenuation * source;
 				}
 			});
 
@@ -124,12 +124,20 @@ namespace Lemma.Factories
 					Entity mapEntity = map.Value.Target;
 					if (mapEntity != null && mapEntity.Active)
 					{
-						Vector3 currentPosition = mapEntity.Get<Map>().GetAbsolutePosition(coord);
+						Map currentMap = mapEntity.Get<Map>();
+						Vector3 currentPosition = currentMap.GetAbsolutePosition(coord);
 						Entity lastMapEntity = lastMap.Value.Target;
 						if (blend < 1.0f && lastMapEntity != null && lastMapEntity.Active)
-							transform.Position.Value = Vector3.Lerp(lastMapEntity.Get<Map>().GetAbsolutePosition(lastCoord), currentPosition, blend);
+						{
+							Map lastM = lastMapEntity.Get<Map>();
+							transform.Position.Value = Vector3.Lerp(lastM.GetAbsolutePosition(lastCoord), currentPosition, blend);
+							transform.Orientation.Value = Matrix.Lerp(lastM.Transform, currentMap.Transform, blend);
+						}
 						else
+						{
 							transform.Position.Value = currentPosition;
+							transform.Orientation.Value = currentMap.Transform;
+						}
 						blend += main.ElapsedTime.Value / blendTime;
 					}
 					else
