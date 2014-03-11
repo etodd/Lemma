@@ -205,7 +205,7 @@ namespace Lemma.Factories
 				new Map.CellState
 				{
 					ID = 18,
-					Name = "Breakable",
+					Name = "Neutral",
 					Permanent = false,
 					Hard = false,
 					Density = 1,
@@ -682,7 +682,7 @@ namespace Lemma.Factories
 				infectedCriticalID = WorldFactory.StatesByName["InfectedCritical"].ID,
 				whiteID = WorldFactory.StatesByName["White"].ID,
 				temporaryID = WorldFactory.StatesByName["Temporary"].ID,
-				breakableID = WorldFactory.StatesByName["Breakable"].ID,
+				neutralID = WorldFactory.StatesByName["Neutral"].ID,
 				poweredID = WorldFactory.StatesByName["Powered"].ID,
 				permanentPoweredID = WorldFactory.StatesByName["PermanentPowered"].ID,
 				hardPoweredID = WorldFactory.StatesByName["HardPowered"].ID,
@@ -858,7 +858,7 @@ namespace Lemma.Factories
 										{
 											Map.Coordinate adjacent = c.Move(dir);
 											int adjacentID = map[adjacent].ID;
-											if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == breakableID || adjacentID == infectedID)
+											if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID)
 											{
 												blockQueue.Add(new ScheduledBlock
 												{
@@ -871,7 +871,7 @@ namespace Lemma.Factories
 											}
 										}
 									}
-									else if (entry.Generation > 0 && (isTemporary || isInfected || isPowered || id == breakableID))
+									else if (entry.Generation > 0 && (isTemporary || isInfected || isPowered || id == neutralID))
 									{
 										generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = c }] = entry.Generation;
 										map.Empty(c);
@@ -897,7 +897,7 @@ namespace Lemma.Factories
 												sparks(map.GetAbsolutePosition(c));
 												regenerate = true;
 											}
-											else if (adjacentID == breakableID && entry.Generation < maxGenerations)
+											else if (adjacentID == neutralID && entry.Generation < maxGenerations)
 											{
 												map.Empty(adjacent);
 												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
@@ -934,7 +934,7 @@ namespace Lemma.Factories
 										{
 											Map.Coordinate adjacent = c.Move(dir);
 											int adjacentID = map[adjacent].ID;
-											if (adjacentID == breakableID && entry.Generation < maxGenerations)
+											if (adjacentID == neutralID && entry.Generation < maxGenerations)
 											{
 												map.Empty(adjacent);
 												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
@@ -985,7 +985,7 @@ namespace Lemma.Factories
 							shatter.AddParticle(pos + offset, offset);
 						}
 					}
-					else if (id == poweredID || id == temporaryID || id == breakableID || id == infectedID)
+					else if (id == poweredID || id == temporaryID || id == neutralID || id == infectedID)
 					{
 						int generation;
 						Map.Coordinate c = coord;
@@ -1012,7 +1012,7 @@ namespace Lemma.Factories
 								if (!coords.Contains(adjacent))
 								{
 									int adjacentID = map[adjacent].ID;
-									if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == breakableID || adjacentID == infectedID)
+									if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID)
 									{
 										blockQueue.Add(new ScheduledBlock
 										{

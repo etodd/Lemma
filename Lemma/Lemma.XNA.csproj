@@ -116,7 +116,6 @@
     <Compile Include="Factories\EntityConnectable.cs" />
     <Compile Include="Factories\FillMapFactory.cs" />
     <Compile Include="Factories\TriggerFactory.cs" />
-    <Compile Include="Factories\InfectorFactory.cs" />
     <Compile Include="Factories\VoxelEntity.cs" />
     <Compile Include="Factories\SmokeFactory.cs" />
     <Compile Include="Factories\VoiceActorFactory.cs" />

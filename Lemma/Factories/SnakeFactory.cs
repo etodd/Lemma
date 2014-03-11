@@ -64,7 +64,7 @@ namespace Lemma.Factories
 			Agent agent = result.GetOrCreate<Agent>("Agent");
 
 			Map.CellState infectedState = WorldFactory.StatesByName["Infected"],
-				breakableState = WorldFactory.StatesByName["Breakable"];
+				neutralState = WorldFactory.StatesByName["Neutral"];
 
 			const float defaultSpeed = 5.0f;
 			const float chaseSpeed = 14.0f;
@@ -97,7 +97,7 @@ namespace Lemma.Factories
 			{
 				if (state.ID == 0)
 					return VoxelChaseAI.Cell.Empty;
-				if (state == criticalState || state == infectedState || state == breakableState)
+				if (state == infectedState || state == neutralState)
 					return VoxelChaseAI.Cell.Penetrable;
 				return VoxelChaseAI.Cell.Avoid;
 			};
