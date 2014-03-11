@@ -303,7 +303,7 @@ namespace Lemma.Factories
 			debug.Add(new Binding<string, float>(debug.Text, x => x.ToString("F"), speedSound.GetProperty("Volume")));*/
 
 			Sound speedSound = result.Get<Sound>("SpeedSound");
-			player.Add(new Binding<float, Vector3>(speedSound.GetProperty("Volume"), delegate(Vector3 velocity)
+			speedSound.Add(new Binding<float, Vector3>(speedSound.GetProperty("Volume"), delegate(Vector3 velocity)
 			{
 				float speed = velocity.Length();
 				float maxSpeed = player.MaxSpeed * 1.25f;
@@ -314,6 +314,12 @@ namespace Lemma.Factories
 			}, player.LinearVelocity));
 			speedSound.Play.Execute();
 			speedSound.GetProperty("Volume").Value = 0.0f;
+
+			Sound slowmoSound = result.GetOrCreate<Sound>("SlowmoSound");
+			slowmoSound.Serialize = false;
+			slowmoSound.Is3D.Value = false;
+			slowmoSound.Cue.Value = "Slowmo";
+			slowmoSound.Add(new Binding<bool>(slowmoSound.IsPlaying, player.SlowMotion));
 
 			// Determine if the player is swimming
 			update.Add(delegate(float dt)

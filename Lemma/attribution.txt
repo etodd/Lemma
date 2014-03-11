@@ -30,6 +30,8 @@ foliage.png based on Leaves-4145.jpg by David R. Tribble -- http://commons.wikim
 Audio source material pulled from FreeSound -- http://freesound.org
 
 
+drone0006.flac by Trebblofang -- http://www.freesound.org/people/Trebblofang/sounds/172672/ -- License: Creative Commons 0
+lucid drone.wav by decembered -- http://www.freesound.org/people/decembered/sounds/42761/ -- License: Attribution
 Stick-Swoosh Whoosh by Hitrison -- http://www.freesound.org/people/Hitrison/sounds/216675/ -- License: Attribution
 2_takes_bats.aif by thanvannispen -- http://www.freesound.org/people/thanvannispen/sounds/29845/ -- License: Attribution
 Fighting Game grunts - young female.wav by AderuMoro -- http://www.freesound.org/people/AderuMoro/sounds/213295/ -- License: Attribution

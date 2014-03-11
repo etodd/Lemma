@@ -47,7 +47,7 @@ namespace Lemma.Factories
 
 			Random random = new Random();
 			float interval = min + ((float)random.NextDouble() * (max - min));
-			result.Add(new Updater
+			Updater updater = new Updater
 			{
 				delegate(float dt)
 				{
@@ -59,7 +59,9 @@ namespace Lemma.Factories
 						interval = min + ((float)random.NextDouble() * (max - min));
 					}
 				}
-			});
+			};
+			updater.EnabledWhenPaused.Value = true;
+			result.Add(updater);
 		}
 	}
 }
