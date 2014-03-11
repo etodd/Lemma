@@ -31,6 +31,8 @@ namespace Lemma.Factories
 			public Entity.Handle Map;
 			public Map.Coordinate Coordinate;
 			public float Time;
+			[System.ComponentModel.DefaultValue(0)]
+			public int Generation;
 		}
 
 		public struct RespawnLocation
@@ -412,6 +414,7 @@ namespace Lemma.Factories
 			result.Add("WalkedOn", walkedOn);
 
 			int neutralID = WorldFactory.StatesByName["Neutral"].ID,
+				breakableID = WorldFactory.StatesByName["Breakable"].ID,
 				temporaryID = WorldFactory.StatesByName["Temporary"].ID;
 
 			result.Add(new CommandBinding<Map, Map.Coordinate?>(walkedOn, delegate(Map map, Map.Coordinate? coord)
@@ -419,7 +422,7 @@ namespace Lemma.Factories
 				if (coord.HasValue)
 				{
 					int id = map[coord.Value].ID;
-					if (id == neutralID)
+					if (id == neutralID || id == breakableID)
 					{
 						map.Empty(coord.Value);
 						map.Fill(coord.Value, WorldFactory.States[temporaryID]);

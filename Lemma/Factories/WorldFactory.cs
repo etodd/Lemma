@@ -42,11 +42,7 @@ namespace Lemma.Factories
 				{
 					ID = 0,
 					Name = "Empty"
-				}
-			);
-
-			WorldFactory.AddState
-			(
+				},
 				new Map.CellState
 				{
 					ID = 1,
@@ -180,7 +176,21 @@ namespace Lemma.Factories
 					SpecularIntensity = 0.4f,
 					Tint = new Vector3(0.8f, 1.0f, 0.2f),
 				},
-				// 13
+				new Map.CellState
+				{
+					ID = 13,
+					Name = "FakePowered",
+					Permanent = false,
+					Hard = true,
+					Density = 2,
+					DiffuseMap = "Textures\\powered-permanent",
+					NormalMap = "Textures\\temporary-normal",
+					FootstepCue = "TemporaryFootsteps",
+					RubbleCue = "TemporaryRubble",
+					SpecularPower = 250.0f,
+					SpecularIntensity = 0.4f,
+					Glow = false,
+				},
 				new Map.CellState
 				{
 					ID = 14,
@@ -347,7 +357,7 @@ namespace Lemma.Factories
 				{
 					ID = 39,
 					Name = "PermanentPowered",
-					Permanent = false,
+					Permanent = true,
 					Hard = true,
 					Density = 2,
 					DiffuseMap = "Textures\\powered-permanent",
@@ -666,6 +676,7 @@ namespace Lemma.Factories
 			WorldFactory.instance = result;
 
 			// Materials
+			Map.CellState emptyState = WorldFactory.States[0];
 
 			Random random = new Random();
 
@@ -676,6 +687,7 @@ namespace Lemma.Factories
 				neutralID = WorldFactory.StatesByName["Neutral"].ID,
 				whiteID = WorldFactory.StatesByName["White"].ID,
 				temporaryID = WorldFactory.StatesByName["Temporary"].ID,
+				breakableID = WorldFactory.StatesByName["Breakable"].ID,
 				poweredID = WorldFactory.StatesByName["Powered"].ID,
 				permanentPoweredID = WorldFactory.StatesByName["PermanentPowered"].ID,
 				infectedID = WorldFactory.StatesByName["Infected"].ID,
@@ -759,6 +771,8 @@ namespace Lemma.Factories
 
 			ListProperty<PlayerFactory.ScheduledBlock> blockQueue = result.GetOrMakeListProperty<PlayerFactory.ScheduledBlock>("PowerQueue");
 
+			Dictionary<EffectBlockFactory.BlockEntry, int> generations = new Dictionary<EffectBlockFactory.BlockEntry, int>();
+
 			result.Add(new CommandBinding<Map, IEnumerable<Map.Coordinate>, Map>(Map.GlobalCellsFilled, delegate(Map map, IEnumerable<Map.Coordinate> coords, Map transferredFromMap)
 			{
 				foreach (Map.Coordinate c in coords)
@@ -766,11 +780,18 @@ namespace Lemma.Factories
 					int id = c.Data.ID;
 					if (id == temporaryID || id == poweredID || id == infectedID)
 					{
+						Map.Coordinate newCoord = c;
+						newCoord.Data = emptyState;
+						int generation;
+						EffectBlockFactory.BlockEntry generationsKey = new EffectBlockFactory.BlockEntry { Map = map, Coordinate = newCoord };
+						if (generations.TryGetValue(generationsKey, out generation))
+							generations.Remove(generationsKey);
 						blockQueue.Add(new PlayerFactory.ScheduledBlock
 						{
 							Map = map.Entity,
-							Coordinate = c,
+							Coordinate = newCoord,
 							Time = propagateDelay,
+							Generation = generation,
 						});
 					}
 				}
@@ -823,19 +844,20 @@ namespace Lemma.Factories
 
 								bool isTemporary = id == temporaryID;
 								bool isNeutral = id == neutralID;
+								bool isBreakable = id == breakableID;
 								bool isInfected = id == infectedID || id == infectedCriticalID;
 								bool isPowered = id == poweredID || id == permanentPoweredID;
 
 								if (isTemporary
 									|| isNeutral
 									|| isInfected
+									|| isBreakable
 									|| isPowered)
 								{
 									bool regenerate = false;
 
-									if (isTemporary || isPowered)
+									if (isTemporary)
 									{
-										int newID = id;
 										foreach (Direction dir in DirectionExtensions.Directions)
 										{
 											Map.Coordinate adjacent = c.Move(dir);
@@ -843,46 +865,46 @@ namespace Lemma.Factories
 
 											if (adjacentID == poweredID || adjacentID == permanentPoweredID)
 											{
-												newID = poweredID;
-												break;
+												map.Empty(c);
+												map.Fill(c, WorldFactory.States[poweredID]);
+												sparks(map.GetAbsolutePosition(c));
+												regenerate = true;
 											}
-											else if (newID != poweredID && (adjacentID == infectedID || adjacentID == infectedCriticalID))
-												newID = infectedID;
-										}
-
-										if (newID != id)
-										{
-											map.Empty(c);
-											map.Fill(c, WorldFactory.States[newID]);
-											sparks(map.GetAbsolutePosition(c));
-											regenerate = true;
-										}
-										else
-										{
-											foreach (Direction dir in DirectionExtensions.Directions)
+											else if (adjacentID == criticalID)
 											{
-												Map.Coordinate adjacent = c.Move(dir);
-												int adjacentID = map[adjacent].ID;
+												map.Empty(adjacent);
+												regenerate = true;
+											}
+											else if (adjacentID == neutralID)
+											{
+												map.Empty(adjacent);
+												map.Fill(adjacent, WorldFactory.States[temporaryID]);
+												sparks(map.GetAbsolutePosition(adjacent));
+												regenerate = true;
+											}
+											else if (adjacentID == breakableID && entry.Generation < 3)
+											{
+												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
+												map.Empty(adjacent);
+												map.Fill(adjacent, WorldFactory.States[temporaryID]);
+												sparks(map.GetAbsolutePosition(adjacent));
+												regenerate = true;
+											}
+										}
+									}
+									else if (isBreakable)
+									{
+										foreach (Direction dir in DirectionExtensions.Directions)
+										{
+											Map.Coordinate adjacent = c.Move(dir);
+											int adjacentID = map[adjacent].ID;
 
-												if (!isPowered && adjacentID == neutralID)
-												{
-													map.Empty(adjacent);
-													map.Fill(adjacent, WorldFactory.States[temporaryID]);
-													sparks(map.GetAbsolutePosition(adjacent));
-													regenerate = true;
-												}
-												else if (isPowered && (adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID))
-												{
-													map.Empty(adjacent);
-													map.Fill(adjacent, WorldFactory.States[poweredID]);
-													sparks(map.GetAbsolutePosition(adjacent));
-													regenerate = true;
-												}
-												else if (adjacentID == criticalID)
-												{
-													map.Empty(adjacent);
-													regenerate = true;
-												}
+											if (adjacentID == infectedID || adjacentID == infectedCriticalID)
+											{
+												map.Empty(c);
+												map.Fill(c, WorldFactory.States[infectedID]);
+												sparks(map.GetAbsolutePosition(c));
+												regenerate = true;
 											}
 										}
 									}
@@ -898,7 +920,7 @@ namespace Lemma.Factories
 												newID = temporaryID;
 											else if (adjacentID == poweredID || adjacentID == permanentPoweredID)
 												newID = poweredID;
-											else if (newID != poweredID && (adjacentID == infectedID || adjacentID == infectedCriticalID))
+											else if (adjacentID == infectedID || adjacentID == infectedCriticalID)
 												newID = infectedID;
 										}
 
@@ -910,42 +932,39 @@ namespace Lemma.Factories
 											regenerate = true;
 										}
 									}
-									else if (isInfected)
+									else if (isPowered)
 									{
-										bool changed = false;
 										foreach (Direction dir in DirectionExtensions.Directions)
 										{
 											Map.Coordinate adjacent = c.Move(dir);
 											int adjacentID = map[adjacent].ID;
-											if (adjacentID == poweredID || adjacentID == permanentPoweredID)
+
+											if (adjacentID == temporaryID || adjacentID == neutralID)
 											{
-												map.Empty(c);
-												map.Fill(c, WorldFactory.States[poweredID]);
+												map.Empty(adjacent);
+												map.Fill(adjacent, WorldFactory.States[poweredID]);
 												sparks(map.GetAbsolutePosition(adjacent));
 												regenerate = true;
-												changed = true;
-												break;
 											}
 										}
-
-										if (!changed)
+									}
+									else if (isInfected)
+									{
+										foreach (Direction dir in DirectionExtensions.Directions)
 										{
-											foreach (Direction dir in DirectionExtensions.Directions)
+											Map.Coordinate adjacent = c.Move(dir);
+											int adjacentID = map[adjacent].ID;
+											if (adjacentID == neutralID || adjacentID == breakableID)
 											{
-												Map.Coordinate adjacent = c.Move(dir);
-												int adjacentID = map[adjacent].ID;
-												if (adjacentID == temporaryID || adjacentID == neutralID)
-												{
-													map.Empty(adjacent);
-													map.Fill(adjacent, WorldFactory.States[infectedID]);
-													sparks(map.GetAbsolutePosition(adjacent));
-													regenerate = true;
-												}
-												else if (adjacentID == criticalID)
-												{
-													map.Empty(adjacent);
-													regenerate = true;
-												}
+												map.Empty(adjacent);
+												map.Fill(adjacent, WorldFactory.States[infectedID]);
+												sparks(map.GetAbsolutePosition(adjacent));
+												regenerate = true;
+											}
+											else if (adjacentID == criticalID)
+											{
+												map.Empty(adjacent);
+												regenerate = true;
 											}
 										}
 									}

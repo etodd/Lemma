@@ -4210,7 +4210,6 @@ namespace Lemma.Components
 		public Property<float> StaticFriction = new Property<float> { Editable = true, Value = 0.0f };
 
 		private bool firstPhysicsUpdate = true;
-		private object physicsLock = new object();
 		private bool physicsDirty;
 
 		[XmlIgnore]
@@ -4338,8 +4337,7 @@ namespace Lemma.Components
 
 		public override void updatePhysics()
 		{
-			lock (this.physicsLock)
-				this.physicsDirty = true;
+			this.physicsDirty = true;
 		}
 
 		private void updatePhysicsImmediately()
@@ -4395,24 +4393,17 @@ namespace Lemma.Components
 
 		public void UpdatePhysicsImmediately()
 		{
-			lock (this.physicsLock)
-			{
-				this.updatePhysicsImmediately();
-				this.physicsDirty = false;
-			}
+			this.physicsDirty = false;
+			this.updatePhysicsImmediately();
 		}
 
 		void IUpdateableComponent.Update(float dt)
 		{
-			bool dirty;
-			lock (this.physicsLock)
+			bool dirty = this.physicsDirty;
+			if (dirty)
 			{
-				dirty = this.physicsDirty;
-				if (dirty)
-				{
-					this.updatePhysicsImmediately();
-					this.physicsDirty = false;
-				}
+				this.physicsDirty = false;
+				this.updatePhysicsImmediately();
 			}
 
 			if (dirty && !this.firstPhysicsUpdate)
