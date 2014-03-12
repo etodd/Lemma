@@ -19,7 +19,6 @@ if (((GameMain)main).StartSpawnPoint.Value == "end")
 
 	Sprite logo = new Sprite();
 	logo.Image.Value = "Images\\logo";
-	logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((main.ScreenSize.Value.X * 0.25f) / logo.Size.Value.X), main.ScreenSize, logo.Size));
 	logo.Opacity.Value = 0.0f;
 	script.Add(new Animation
 	(
@@ -82,7 +81,6 @@ else
 
 	Sprite logo = new Sprite();
 	logo.Image.Value = "Images\\logo";
-	logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((main.ScreenSize.Value.X * 0.25f) / logo.Size.Value.X), main.ScreenSize, logo.Size));
 	logo.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
 	logo.Add(new Binding<Vector2, Point>(logo.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
 	((GameMain)main).UI.Root.Children.Add(logo);

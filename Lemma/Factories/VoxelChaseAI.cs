@@ -174,9 +174,9 @@ namespace Lemma.Factories
 			if (mapEntity == null || !mapEntity.Active)
 			{
 				// Find closest map
-				int closest = 10;
+				int closest = 5;
 				Map.Coordinate newCoord = default(Map.Coordinate);
-				foreach (Map m in Lemma.Components.Map.ActiveMaps)
+				foreach (Map m in Lemma.Components.Map.Maps)
 				{
 					Map.Coordinate mCoord = m.GetCoordinate(this.Position);
 					Map.Coordinate? c = m.FindClosestFilledCell(mCoord, closest);

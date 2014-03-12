@@ -854,20 +854,24 @@ namespace Lemma.Factories
 								{
 									if (entry.Generation == 0 && id == 0)
 									{
+										Direction down = map.GetRelativeDirection(Direction.NegativeY);
 										foreach (Direction dir in DirectionExtensions.Directions)
 										{
-											Map.Coordinate adjacent = c.Move(dir);
-											int adjacentID = map[adjacent].ID;
-											if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID)
+											if (dir != down)
 											{
-												blockQueue.Add(new ScheduledBlock
+												Map.Coordinate adjacent = c.Move(dir);
+												int adjacentID = map[adjacent].ID;
+												if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID)
 												{
-													Map = map.Entity,
-													Coordinate = adjacent,
-													Time = propagateDelay,
-													Removing = true,
-													Generation = 1,
-												});
+													blockQueue.Add(new ScheduledBlock
+													{
+														Map = map.Entity,
+														Coordinate = adjacent,
+														Time = propagateDelay,
+														Removing = true,
+														Generation = 1,
+													});
+												}
 											}
 										}
 									}
@@ -1006,22 +1010,26 @@ namespace Lemma.Factories
 						}
 						else if (generation < maxGenerations)
 						{
+							Direction down = map.GetRelativeDirection(Direction.NegativeY);
 							foreach (Direction dir in DirectionExtensions.Directions)
 							{
-								Map.Coordinate adjacent = coord.Move(dir);
-								if (!coords.Contains(adjacent))
+								if (dir != down)
 								{
-									int adjacentID = map[adjacent].ID;
-									if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID)
+									Map.Coordinate adjacent = coord.Move(dir);
+									if (!coords.Contains(adjacent))
 									{
-										blockQueue.Add(new ScheduledBlock
+										int adjacentID = map[adjacent].ID;
+										if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID)
 										{
-											Map = map.Entity,
-											Coordinate = adjacent,
-											Time = propagateDelay,
-											Removing = true,
-											Generation = generation + 1,
-										});
+											blockQueue.Add(new ScheduledBlock
+											{
+												Map = map.Entity,
+												Coordinate = adjacent,
+												Time = propagateDelay,
+												Removing = true,
+												Generation = generation + 1,
+											});
+										}
 									}
 								}
 							}

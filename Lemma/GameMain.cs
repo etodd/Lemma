@@ -664,7 +664,6 @@ namespace Lemma
 
 					if (this.MapFile.Value != GameMain.MenuMap)
 					{
-						this.AudioEngine.GetCategory("Music").Pause();
 						this.AudioEngine.GetCategory("Default").Pause();
 					}
 				};
@@ -716,7 +715,6 @@ namespace Lemma
 
 					currentMenu.Value = null;
 
-					this.AudioEngine.GetCategory("Music").Resume();
 					this.AudioEngine.GetCategory("Default").Resume();
 				};
 
@@ -763,18 +761,22 @@ namespace Lemma
 					dialogButtons.Orientation.Value = ListContainer.ListOrientation.Horizontal;
 					dialogLayout.Children.Add(dialogButtons);
 
-					UIComponent overwrite = this.createMenuButton(action);
-					overwrite.Name.Value = "Okay";
-					dialogButtons.Children.Add(overwrite);
-					overwrite.Add(new CommandBinding<Point>(overwrite.MouseLeftUp, delegate(Point p2)
+					UIComponent okay = this.createMenuButton("");
+					TextElement okayText = (TextElement)okay.GetChildByName("Text");
+					okayText.Add(new Binding<string>(okayText.Text, () => (this.GamePadState.Value.IsConnected ? "[A] " : "") + action, this.Settings.ToggleFullscreen));
+					okay.Name.Value = "Okay";
+					dialogButtons.Children.Add(okay);
+					okay.Add(new CommandBinding<Point>(okay.MouseLeftUp, delegate(Point p2)
 					{
 						dialog.Delete.Execute();
 						dialog = null;
 						callback();
 					}));
 
-					UIComponent cancel = this.createMenuButton("Cancel");
+					UIComponent cancel = this.createMenuButton("");
 					dialogButtons.Children.Add(cancel);
+					TextElement cancelText = (TextElement)cancel.GetChildByName("Text");
+					cancelText.Add(new Binding<string>(cancelText.Text, () => (this.GamePadState.Value.IsConnected ? "[B] " : "") + "Cancel", this.Settings.ToggleFullscreen));
 					cancel.Add(new CommandBinding<Point>(cancel.MouseLeftUp, delegate(Point p2)
 					{
 						dialog.Delete.Execute();

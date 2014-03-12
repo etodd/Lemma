@@ -22,11 +22,7 @@ namespace Lemma.Factories
 		{
 			Entity result = new Entity(main, "PlayerData");
 
-#if DEVELOPMENT
 			const bool enabled = true;
-#else
-			const bool enabled = false;
-#endif
 
 			result.Add("EnableRoll", new Property<bool> { Value = enabled });
 			result.Add("EnableCrouch", new Property<bool> { Value = enabled });

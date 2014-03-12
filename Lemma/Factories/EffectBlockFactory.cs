@@ -114,10 +114,12 @@ namespace Lemma.Factories
 							bool foundAdjacentCell = false;
 							if (checkAdjacent)
 							{
+								int floaterID = WorldFactory.StatesByName["Floater"].ID;
 								foreach (Direction dir in DirectionExtensions.Directions)
 								{
 									Map.Coordinate adjacent = c.Move(dir);
-									if (m[adjacent].ID != 0)
+									int adjacentID = m[adjacent].ID;
+									if (adjacentID != 0 && adjacentID != floaterID)
 									{
 										foundAdjacentCell = true;
 										break;

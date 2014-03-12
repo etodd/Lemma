@@ -71,25 +71,6 @@ namespace Lemma.Factories
 			const float closeChaseSpeed = 10.0f;
 			const float crushSpeed = 125.0f;
 
-			Property<Entity.Handle> map = result.GetOrMakeProperty<Entity.Handle>("Map");
-			result.Add(new PostInitialization
-			{
-				delegate()
-				{
-					if (map.Value.Target == null)
-					{
-						foreach (Map m in Lemma.Components.Map.Maps)
-						{
-							if (m.FindClosestFilledCell(m.GetCoordinate(transform.Position), 2).HasValue)
-							{
-								map.Value = m.Entity;
-								break;
-							}
-						}
-					}
-				}
-			});
-
 			VoxelChaseAI chase = result.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
 			chase.Add(new TwoWayBinding<Vector3>(transform.Position, chase.Position));
 			chase.Speed.Value = defaultSpeed;
@@ -144,7 +125,7 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					if (map.Value.Target == null || !map.Value.Target.Active)
+					if (chase.Map.Value.Target == null || !chase.Map.Value.Target.Active)
 						result.Delete.Execute();
 				},
 			};
@@ -305,7 +286,7 @@ namespace Lemma.Factories
 					Enter = delegate(AI.State lastState)
 					{
 						// Set up cage
-						Map.Coordinate center = map.Value.Target.Get<Map>().GetCoordinate(targetAgent.Value.Target.Get<Agent>().Position);
+						Map.Coordinate center = chase.Map.Value.Target.Get<Map>().GetCoordinate(targetAgent.Value.Target.Get<Agent>().Position);
 
 						int radius = 1;
 
