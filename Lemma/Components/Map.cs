@@ -616,6 +616,15 @@ namespace Lemma.Components
 				return coord.X == this.X && coord.Y == this.Y && coord.Z == this.Z;
 			}
 
+			public override int GetHashCode()
+			{
+				int hash = 23;
+				hash = hash * 31 + this.X;
+				hash = hash * 31 + this.Y;
+				hash = hash * 31 + this.Z;
+				return hash;
+			}
+
 			public override bool Equals(object obj)
 			{
 				if (obj.GetType() == typeof(Map.Coordinate))

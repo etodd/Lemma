@@ -26,6 +26,7 @@ namespace Lemma.Factories
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
 			this.SetMain(result, main);
+			result.Get<Transform>().Editable = true;
 			if (result.GetOrMakeProperty<bool>("Attach", true))
 				MapAttachable.MakeAttachable(result, main);
 		}
