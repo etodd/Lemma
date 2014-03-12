@@ -1,3 +1,4 @@
+const float fadeTime = 1.0f;
 
 if (((GameMain)main).StartSpawnPoint.Value == "end")
 {
@@ -10,13 +11,11 @@ if (((GameMain)main).StartSpawnPoint.Value == "end")
 
 	ListContainer list = new ListContainer();
 	list.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
+	list.Add(new Binding<Vector2, Point>(list.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
 	list.Add(new Binding<float, Point>(list.Spacing, x => x.Y * 0.025f, main.ScreenSize));
 	list.Alignment.Value = ListContainer.ListAlignment.Middle;
-	list.Add(new Binding<Vector2, Point>(list.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
 	((GameMain)main).UI.Root.Children.Add(list);
 	script.Add(new CommandBinding(script.Delete, list.Delete));
-
-	const float fadeTime = 1.0f;
 
 	Sprite logo = new Sprite();
 	logo.Image.Value = "Images\\logo";
@@ -76,6 +75,49 @@ if (((GameMain)main).StartSpawnPoint.Value == "end")
 	(
 		new Animation.Vector2MoveToSpeed(credits.Position, new Vector2(0, -credits.ScaledSize.Value.Y - creditsScroll.ScaledSize.Value.Y), 30.0f)
 	));
+}
+else
+{
+	// Main menu
+
+	Sprite logo = new Sprite();
+	logo.Image.Value = "Images\\logo";
+	logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((main.ScreenSize.Value.X * 0.25f) / logo.Size.Value.X), main.ScreenSize, logo.Size));
+	logo.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
+	logo.Add(new Binding<Vector2, Point>(logo.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
+	((GameMain)main).UI.Root.Children.Add(logo);
+
+	ListContainer corner = new ListContainer();
+	corner.AnchorPoint.Value = new Vector2(1, 1);
+	corner.Orientation.Value = ListContainer.ListOrientation.Vertical;
+	corner.Alignment.Value = ListContainer.ListAlignment.Max;
+	corner.Add(new Binding<Vector2, Point>(corner.Position, x => new Vector2(x.X - 10.0f, x.Y - 10.0f), main.ScreenSize));
+	((GameMain)main).UI.Root.Children.Add(corner);
+
+	TextElement webLink = ((GameMain)main).CreateLink("et1337.com", "http://et1337.com");
+	corner.Children.Add(webLink);
+		
+	TextElement version = new TextElement();
+	version.FontFile.Value = "Font";
+	version.Text.Value = "Build " + GameMain.Build.ToString();
+	corner.Children.Add(version);
+
+	logo.Opacity.Value = 0.0f;
+	version.Opacity.Value = 0.0f;
+	webLink.Opacity.Value = 0.0f;
+
+	script.Add(new Animation
+	(
+		new Animation.Delay(1.0f),
+		new Animation.Parallel
+		(
+			new Animation.FloatMoveTo(logo.Opacity, 1.0f, fadeTime),
+			new Animation.FloatMoveTo(version.Opacity, 1.0f, fadeTime),
+			new Animation.FloatMoveTo(webLink.Opacity, 1.0f, fadeTime)
+		)
+	));
+
+	script.Add(new CommandBinding(script.Delete, logo.Delete, corner.Delete));
 }
 
 ((GameMain)main).CanSpawn = false;

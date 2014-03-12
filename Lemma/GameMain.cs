@@ -578,14 +578,6 @@ namespace Lemma
 					new Animation.Execute(delegate() { this.UI.Root.Children.Remove(msgBackground); })
 				));
 
-				// Logo
-				Sprite logo = new Sprite();
-				logo.Image.Value = "Images\\logo";
-				logo.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
-				logo.Add(new Binding<Vector2, Point>(logo.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.ScreenSize));
-				logo.Add(new Binding<Vector2>(logo.Scale, () => new Vector2((this.ScreenSize.Value.X * 0.25f) / logo.Size.Value.X), this.ScreenSize, logo.Size));
-				this.UI.Root.Children.Add(logo);
-
 				Property<UIComponent> currentMenu = new Property<UIComponent> { Value = null };
 
 				// Pause menu
@@ -1300,6 +1292,21 @@ namespace Lemma
 				addInputSetting(this.Settings.QuickSave, "Quicksave", true);
 				addInputSetting(this.Settings.ToggleFullscreen, "Toggle Fullscreen", true);
 
+				// Start new button
+				UIComponent startNew = this.createMenuButton("Start New");
+				startNew.Add(new CommandBinding<Point>(startNew.MouseLeftUp, delegate(Point p)
+				{
+					restorePausedSettings();
+					this.currentSave = null;
+					this.AddComponent(new Animation
+					(
+						new Animation.Delay(0.2f),
+						new Animation.Set<string>(this.MapFile, GameMain.InitialMap)
+					));
+				}));
+				pauseMenu.Children.Add(startNew);
+				startNew.Add(new Binding<bool, string>(startNew.Visible, x => x == GameMain.MenuMap, this.MapFile));
+
 				// Resume button
 				UIComponent resume = this.createMenuButton("Resume");
 				resume.Visible.Value = false;
@@ -1309,6 +1316,7 @@ namespace Lemma
 					restorePausedSettings();
 				}));
 				pauseMenu.Children.Add(resume);
+				resume.Add(new Binding<bool, string>(resume.Visible, x => x != GameMain.MenuMap, this.MapFile));
 
 				// Save button
 				UIComponent saveButton = this.createMenuButton("Save");
@@ -1327,7 +1335,7 @@ namespace Lemma
 					loadSaveShown = true;
 					currentMenu.Value = loadSaveMenu;
 				}));
-				saveButton.Visible.Value = false;
+				saveButton.Add(new Binding<bool, string>(saveButton.Visible, x => x != GameMain.MenuMap, this.MapFile));
 				pauseMenu.Children.Add(saveButton);
 
 				Action showLoad = delegate()
@@ -1353,6 +1361,21 @@ namespace Lemma
 					showLoad();
 				}));
 				pauseMenu.Children.Add(load);
+
+				// Sandbox button
+				UIComponent sandbox = this.createMenuButton("Sandbox");
+				sandbox.Add(new CommandBinding<Point>(sandbox.MouseLeftUp, delegate(Point p)
+				{
+					restorePausedSettings();
+					this.currentSave = null;
+					this.AddComponent(new Animation
+					(
+						new Animation.Delay(0.2f),
+						new Animation.Set<string>(this.MapFile, "sandbox")
+					));
+				}));
+				pauseMenu.Children.Add(sandbox);
+				sandbox.Add(new Binding<bool, string>(sandbox.Visible, x => x == GameMain.MenuMap, this.MapFile));
 
 				// Controls button
 				UIComponent controlsButton = this.createMenuButton("Controls");
@@ -1485,13 +1508,32 @@ namespace Lemma
 					creditsShown = true;
 					currentMenu.Value = creditsDisplay;
 				}));
+				credits.Add(new Binding<bool, string>(credits.Visible, x => x == GameMain.MenuMap, this.MapFile));
 				pauseMenu.Children.Add(credits);
+
+				// Main menu button
+				UIComponent mainMenu = this.createMenuButton("Main Menu");
+				mainMenu.Add(new CommandBinding<Point>(mainMenu.MouseLeftUp, delegate(Point p)
+				{
+					showDialog
+					(
+						"Quitting will erase any unsaved progress. Are you sure?", "Quit to main menu",
+						delegate()
+						{
+							this.currentSave = null;
+							this.MapFile.Value = GameMain.MenuMap;
+							this.Paused.Value = false;
+						}
+					);
+				}));
+				pauseMenu.Children.Add(mainMenu);
+				mainMenu.Add(new Binding<bool, string>(mainMenu.Visible, x => x != GameMain.MenuMap, this.MapFile));
 
 				// Exit button
 				UIComponent exit = this.createMenuButton("Exit");
 				exit.Add(new CommandBinding<Point>(exit.MouseLeftUp, delegate(Point mouse)
 				{
-					if (this.MapFile.Value != null)
+					if (this.MapFile.Value != GameMain.MenuMap)
 					{
 						showDialog
 						(
@@ -1765,6 +1807,27 @@ namespace Lemma
 					scrollButton(1);
 				}));
 
+				new CommandBinding(this.MapLoaded, delegate()
+				{
+					if (this.MapFile.Value == GameMain.MenuMap)
+					{
+						this.CanSpawn = false;
+						this.Renderer.InternalGamma.Value = 0.0f;
+						this.Renderer.Brightness.Value = 0.0f;
+					}
+					else
+					{
+						this.CanSpawn = true;
+						this.Renderer.InternalGamma.Value = GameMain.startGamma;
+						this.Renderer.Brightness.Value = 1.0f;
+					}
+
+					this.respawnTimer = -1.0f;
+					this.Renderer.BlurAmount.Value = 0.0f;
+					this.Renderer.Tint.Value = new Vector3(1.0f);
+					this.mapJustLoaded = true;
+				});
+
 #if DEVELOPMENT
 					// Editor instructions
 					Container editorMsgBackground = new Container();
@@ -1790,59 +1853,8 @@ namespace Lemma
 #else
 					// "Press space to start" screen
 
-					ListContainer corner = new ListContainer();
-					corner.AnchorPoint.Value = new Vector2(1, 1);
-					corner.Orientation.Value = ListContainer.ListOrientation.Vertical;
-					corner.Alignment.Value = ListContainer.ListAlignment.Max;
-					corner.Add(new Binding<Vector2, Point>(corner.Position, x => new Vector2(x.X - 10.0f, x.Y - 10.0f), this.ScreenSize));
-					this.UI.Root.Children.Add(corner);
-
-					TextElement webLink = this.CreateLink("et1337.com", "http://et1337.com");
-					corner.Children.Add(webLink);
-						
-					TextElement version = new TextElement();
-					version.FontFile.Value = "Font";
-					version.Text.Value = "Build " + GameMain.Build.ToString();
-					corner.Children.Add(version);
-
 					this.MapFile.Value = GameMain.MenuMap;
-					this.CanSpawn = false;
 					savePausedSettings();
-
-					UIComponent startNew = this.createMenuButton("Start New");
-					startNew.Add(new CommandBinding<Point>(startNew.MouseLeftUp, delegate(Point p)
-					{
-						restorePausedSettings();
-						this.AddComponent(new Animation
-						(
-							new Animation.Parallel
-							(
-								new Animation.FloatMoveTo(logo.Opacity, 0.0f, 0.2f),
-								new Animation.FloatMoveTo(version.Opacity, 0.0f, 0.2f),
-								new Animation.FloatMoveTo(webLink.Opacity, 0.0f, 0.2f)
-							),
-							new Animation.Set<string>(this.MapFile, GameMain.InitialMap)
-						));
-					}));
-					pauseMenu.Children.Insert(1, startNew);
-
-					logo.Opacity.Value = 0.0f;
-					version.Opacity.Value = 0.0f;
-					webLink.Opacity.Value = 0.0f;
-
-					this.AddComponent(new Animation
-					(
-						new Animation.Delay(1.0f),
-						new Animation.Parallel
-						(
-							new Animation.FloatMoveTo(logo.Opacity, 1.0f, 2.0f),
-							new Animation.FloatMoveTo(version.Opacity, 1.0f, 2.0f),
-							new Animation.FloatMoveTo(webLink.Opacity, 1.0f, 2.0f)
-						)
-					));
-
-					corner.Add(new CommandBinding(this.MapLoaded, corner.Delete));
-					startNew.Add(new CommandBinding(this.MapLoaded, startNew.Delete));
 #endif
 
 #if ANALYTICS
@@ -1858,21 +1870,6 @@ namespace Lemma
 					editorLastEnabled = this.EditorEnabled;
 				});
 #endif
-
-				new CommandBinding(this.MapLoaded, delegate()
-				{
-					this.respawnTimer = -1.0f;
-					this.CanSpawn = true;
-					this.mapJustLoaded = true;
-					this.Renderer.InternalGamma.Value = GameMain.startGamma;
-					this.Renderer.Brightness.Value = 1.0f;
-					this.Renderer.BlurAmount.Value = 0.0f;
-					this.Renderer.Tint.Value = new Vector3(1.0f);
-
-					resume.Visible.Value = saveButton.Visible.Value = this.MapFile.Value != GameMain.MenuMap;
-				});
-
-				logo.Add(new CommandBinding(this.MapLoaded, logo.Delete));
 			}
 		}
 

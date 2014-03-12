@@ -2837,7 +2837,7 @@ namespace Lemma.Factories
 
 					phone = dataEntity.GetOrCreate<Phone>("Phone");
 
-					result.Add(new Binding<bool>(phone.CanReceiveMessages, () => player.IsSupported && !player.IsSwimming && !player.Crouched && phone.Enabled && !noteActive, player.IsSupported, player.IsSwimming, player.Crouched, noteActive));
+					phone.Add(new Binding<bool>(phone.CanReceiveMessages, () => player.IsSupported && !player.IsSwimming && !player.Crouched && !noteActive, player.IsSupported, player.IsSwimming, player.Crouched, noteActive));
 
 					msgList.Add(new ListBinding<UIComponent, Phone.Message>
 					(
