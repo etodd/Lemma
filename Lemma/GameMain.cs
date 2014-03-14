@@ -34,7 +34,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 5;
-		public const int Build = 281;
+		public const int MapVersion = 297;
+		public const int Build = 297;
 
 		protected string lastMapFile;
 		protected float lastSessionTotalTime;
@@ -860,7 +861,7 @@ namespace Lemma
 					{
 						using (Stream stream = new FileStream(Path.Combine(this.saveDirectory, timestamp, "save.xml"), FileMode.Open, FileAccess.Read, FileShare.None))
 							info = (SaveInfo)new XmlSerializer(typeof(SaveInfo)).Deserialize(stream);
-						if (info.Version != GameMain.Build)
+						if (info.Version != GameMain.MapVersion)
 							throw new Exception();
 					}
 					catch (Exception)
@@ -956,7 +957,7 @@ namespace Lemma
 					try
 					{
 						using (Stream stream = new FileStream(Path.Combine(this.saveDirectory, this.currentSave, "save.xml"), FileMode.Create, FileAccess.Write, FileShare.None))
-							new XmlSerializer(typeof(SaveInfo)).Serialize(stream, new SaveInfo { MapFile = this.MapFile, Version = GameMain.Build });
+							new XmlSerializer(typeof(SaveInfo)).Serialize(stream, new SaveInfo { MapFile = this.MapFile, Version = GameMain.MapVersion });
 					}
 					catch (InvalidOperationException e)
 					{
