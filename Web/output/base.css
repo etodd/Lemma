@@ -5,6 +5,12 @@
 	font-weight: bold;
 }
 
+::selection
+{
+	background-color: #5bafcd;
+	color: #fff;
+}
+
 html, body
 {
 	padding: 0px;
