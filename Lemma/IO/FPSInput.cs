@@ -109,6 +109,10 @@ namespace Lemma.Components
 				if (gamePad.IsConnected)
 					newMovement += gamePad.ThumbSticks.Left;
 
+				float movementAmount = newMovement.Length();
+				if (movementAmount > 1)
+					newMovement /= movementAmount;
+
 				if (!this.Movement.Value.Equals(newMovement))
 					this.Movement.Value = newMovement;
 			}

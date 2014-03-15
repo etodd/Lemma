@@ -84,6 +84,8 @@ namespace Lemma.Util
 		/// </summary>
 		public Property<float> SlidingDeceleration = new Property<float> { Value = 0.3f };
 
+		public Property<float> NoTractionAcceleration = new Property<float> { Value = 7.0f };
+
 		/// <summary>
 		/// Deceleration applied to oppose uncontrolled horizontal movement when the character has a steady foothold on the ground (hasTraction == true).
 		/// </summary>
@@ -232,6 +234,7 @@ namespace Lemma.Util
 				this.SupportEntity.Value = supportEntity;
 				this.SupportLocation.Value = supportLocation;
 				this.IsSupported.Value = true;
+				this.lastSupported = true;
 				this.support(supportLocationVelocity, supportNormal, supportDistance, dt);
 				this.HasTraction.Value = this.isSupportSlopeWalkable(supportNormal);
 				this.handleHorizontalMotion(supportLocationVelocity, supportNormal, dt);
@@ -240,7 +243,7 @@ namespace Lemma.Util
 			{
 				if (this.lastSupported)
 				{
-					this.lastSupportedSpeed = this.Body.LinearVelocity.Length();
+					this.lastSupportedSpeed = new Vector2(this.Body.LinearVelocity.X, this.Body.LinearVelocity.Z).Length();
 					this.lastSupported = false;
 				}
 
@@ -250,9 +253,9 @@ namespace Lemma.Util
 				if (this.EnableWalking)
 				{
 					if (this.IsSwimming)
-						this.handleNoTraction(dt, 0.75f, 0.75f, this.MaxSpeed * 0.75f);
+						this.handleNoTraction(dt, 0.75f, this.MaxSpeed * 0.75f);
 					else
-						this.handleNoTraction(dt, 0.0f, 0.75f, this.lastSupportedSpeed);
+						this.handleNoTraction(dt, 0.0f, this.lastSupportedSpeed);
 				}
 			}
 
@@ -451,10 +454,21 @@ namespace Lemma.Util
 				// X is the axis point along the left (negative) and right (positive) relative to the movement direction.
 				// Z points forward (positive) and backward (negative) in the movement direction modified to be parallel to the surface.
 				Vector3 horizontal = new Vector3(this.MovementDirection.Value.X, 0, this.MovementDirection.Value.Y);
-				Vector3 x = Vector3.Cross(horizontal, supportNormal);
-				Vector3 z = Vector3.Cross(supportNormal, x);
+				Vector3 x = Vector3.Normalize(Vector3.Cross(horizontal, supportNormal));
+				Vector3 z = Vector3.Normalize(Vector3.Cross(supportNormal, x)) * horizontal.Length();
+
+				Vector2 netVelocity = new Vector2(this.Body.LinearVelocity.X - supportLocationVelocity.X, this.Body.LinearVelocity.Z - supportLocationVelocity.Z);
+				float accel;
+				if (Vector2.Dot(new Vector2(horizontal.X, horizontal.Z), netVelocity) < 0)
+					accel = this.TractionDeceleration;
+				else if (netVelocity.Length() < Character.InitialAccelerationSpeedThreshold)
+					accel = this.InitialAcceleration;
+				else
+					accel = this.Acceleration;
+				accel += Math.Abs(Vector2.Dot(new Vector2(x.X, x.Z), netVelocity)) * this.Acceleration * 2.0f;
 
 				// Remove from the character a portion of velocity which pushes it horizontally off the desired movement track defined by the movementDirection.
+
 				float bodyXVelocity = Vector3.Dot(this.Body.LinearVelocity, x);
 				float supportEntityXVelocity = Vector3.Dot(supportLocationVelocity, x);
 				float velocityChange = MathHelper.Clamp(bodyXVelocity - supportEntityXVelocity, -dt * this.TractionDeceleration, dt * this.TractionDeceleration);
@@ -463,6 +477,7 @@ namespace Lemma.Util
 				float bodyZVelocity = Vector3.Dot(this.Body.LinearVelocity, z);
 				float supportEntityZVelocity = Vector3.Dot(supportLocationVelocity, z);
 				float netZVelocity = bodyZVelocity - supportEntityZVelocity;
+
 				// The velocity difference along the Z axis should accelerate/decelerate to match the goal velocity (max speed).
 				float speed = this.Crouched ? this.MaxSpeed * 0.3f : this.MaxSpeed;
 				if (netZVelocity > speed)
@@ -474,7 +489,6 @@ namespace Lemma.Util
 				else
 				{
 					// Accelerate
-					float accel = netZVelocity < Character.InitialAccelerationSpeedThreshold ? this.InitialAcceleration : this.Acceleration;
 					velocityChange = Math.Min(dt * accel, speed - netZVelocity);
 					this.Body.LinearVelocity += velocityChange * z;
 					if (z.Y > 0.0f)
@@ -502,10 +516,9 @@ namespace Lemma.Util
 			}
 		}
 
-		private void handleNoTraction(float dt, float tractionDecelerationRatio, float accelerationRatio, float maxSpeed)
+		private void handleNoTraction(float dt, float tractionDecelerationRatio, float maxSpeed)
 		{
 			float tractionDeceleration = this.TractionDeceleration * tractionDecelerationRatio;
-			float acceleration = this.Acceleration * accelerationRatio;
 
 			if (this.MovementDirection != Vector2.Zero)
 			{
@@ -514,26 +527,25 @@ namespace Lemma.Util
 				//Z points forward (positive) and backward (negative) in the movement direction modified to be parallel to the surface.
 				Vector3 horizontal = new Vector3(this.MovementDirection.Value.X, 0, this.MovementDirection.Value.Y);
 				Vector3 x = Vector3.Cross(horizontal, Vector3.Up);
-				Vector3 z = Vector3.Cross(Vector3.Up, x);
 
 				//Remove from the character a portion of velocity which pushes it horizontally off the desired movement track defined by the movementDirection.
 				float bodyXVelocity = Vector3.Dot(this.Body.LinearVelocity, x);
 				float velocityChange = MathHelper.Clamp(bodyXVelocity, -dt * tractionDeceleration, dt * tractionDeceleration);
 				this.Body.LinearVelocity -= velocityChange * x;
 
-				float bodyZVelocity = Vector3.Dot(Body.LinearVelocity, z);
+				float bodyZVelocity = Vector3.Dot(Body.LinearVelocity, horizontal);
 				//The velocity difference along the Z axis should accelerate/decelerate to match the goal velocity (max speed).
 				if (bodyZVelocity > maxSpeed)
 				{
 					//Decelerate
-					velocityChange = Math.Min(dt * tractionDeceleration, bodyZVelocity - maxSpeed);
-					this.Body.LinearVelocity -= velocityChange * z;
+					velocityChange = Math.Min(dt * this.NoTractionAcceleration, bodyZVelocity - maxSpeed);
+					this.Body.LinearVelocity -= velocityChange * horizontal;
 				}
 				else
 				{
 					//Accelerate
-					velocityChange = Math.Min(dt * acceleration, maxSpeed - bodyZVelocity);
-					this.Body.LinearVelocity += velocityChange * z;
+					velocityChange = Math.Min(dt * this.NoTractionAcceleration, maxSpeed - bodyZVelocity);
+					this.Body.LinearVelocity += velocityChange * horizontal;
 				}
 			}
 			else

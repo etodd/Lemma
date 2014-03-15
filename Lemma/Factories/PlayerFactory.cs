@@ -72,13 +72,6 @@ namespace Lemma.Factories
 			result.Add("Rotation", new Property<float> { Editable = false });
 			result.Add("Data", new Property<Entity.Handle> { Editable = false });
 
-			/*TextElement debug = new TextElement();
-			debug.FontFile.Value = "Font";
-			debug.Name.Value = "Debug";
-			debug.AnchorPoint.Value = new Vector2(1, 1);
-			debug.Add(new Binding<Vector2, Point>(debug.Position, x => new Vector2(x.X, x.Y), main.ScreenSize));
-			ui.Root.Children.Add(debug);*/
-
 			return result;
 		}
 
@@ -299,8 +292,14 @@ namespace Lemma.Factories
 
 			input.MaxY.Value = (float)Math.PI * 0.35f;
 
-			/*TextElement debug = (TextElement)ui.Root.GetChildByName("Debug");
-			debug.Add(new Binding<string, float>(debug.Text, x => x.ToString("F"), speedSound.GetProperty("Volume")));*/
+			/*
+			TextElement debug = new TextElement();
+			debug.FontFile.Value = "Font";
+			debug.AnchorPoint.Value = new Vector2(1, 1);
+			ui.Root.Children.Add(debug);
+			debug.Add(new Binding<Vector2, Point>(debug.Position, x => new Vector2(x.X, x.Y), main.ScreenSize));
+			debug.Add(new Binding<string, Vector3>(debug.Text, x => x.Length().ToString(), player.LinearVelocity));
+			*/
 
 			Sound speedSound = result.Get<Sound>("SpeedSound");
 			speedSound.Add(new Binding<float, Vector3>(speedSound.GetProperty("Volume"), delegate(Vector3 velocity)
