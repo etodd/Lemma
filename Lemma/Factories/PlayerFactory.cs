@@ -406,13 +406,13 @@ namespace Lemma.Factories
 
 			Map.GlobalRaycastResult groundRaycast = new Map.GlobalRaycastResult();
 
-			Command<Map, Map.Coordinate?> walkedOn = new Command<Map, Map.Coordinate?>();
+			Command<Map, Map.Coordinate?, Direction> walkedOn = new Command<Map, Map.Coordinate?, Direction>();
 			result.Add("WalkedOn", walkedOn);
 
 			int neutralID = WorldFactory.StatesByName["Neutral"].ID,
 				temporaryID = WorldFactory.StatesByName["Temporary"].ID;
 
-			result.Add(new CommandBinding<Map, Map.Coordinate?>(walkedOn, delegate(Map map, Map.Coordinate? coord)
+			result.Add(new CommandBinding<Map, Map.Coordinate?, Direction>(walkedOn, delegate(Map map, Map.Coordinate? coord, Direction dir)
 			{
 				if (coord.HasValue)
 				{
@@ -437,7 +437,7 @@ namespace Lemma.Factories
 					groundRaycast = Map.GlobalRaycast(transform.Position, Vector3.Down, player.Height.Value * 0.5f + player.SupportHeight + 1.1f);
 					if (groundRaycast.Map != oldMap || (oldCoord != null && groundRaycast.Coordinate != null && !oldCoord.Value.Equivalent(groundRaycast.Coordinate.Value)))
 					{
-						walkedOn.Execute(groundRaycast.Map, groundRaycast.Coordinate);
+						walkedOn.Execute(groundRaycast.Map, groundRaycast.Coordinate, groundRaycast.Normal.GetReverse());
 
 						if (groundRaycast.Map != null)
 						{
@@ -462,7 +462,7 @@ namespace Lemma.Factories
 				else
 				{
 					if (groundRaycast.Map != null)
-						walkedOn.Execute(null, null);
+						walkedOn.Execute(null, null, Direction.None);
 					groundRaycast.Map = null;
 					groundRaycast.Coordinate = null;
 				}
@@ -1238,7 +1238,7 @@ namespace Lemma.Factories
 					footsteps.Cue.Value = wallType.FootstepCue;
 					if (!wallCoord.Equivalent(lastWallCoord))
 					{
-						walkedOn.Execute(wallRunMap, wallCoord);
+						walkedOn.Execute(wallRunMap, wallCoord, wallDirection);
 						lastWallCoord = wallCoord;
 					}
 					if (player.EnableEnhancedWallRun && (wallRunState == Player.WallRun.Left || wallRunState == Player.WallRun.Right))
@@ -1624,7 +1624,7 @@ namespace Lemma.Factories
 					footsteps.Cue.Value = wallType.FootstepCue;
 					footsteps.Play.Execute();
 
-					walkedOn.Execute(wallJumpMap, wallCoordinate);
+					walkedOn.Execute(wallJumpMap, wallCoordinate, wallNormalDirection.GetReverse());
 
 					wallJumping = true;
 					// Set up wall jump velocity

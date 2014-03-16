@@ -122,7 +122,6 @@
     <Compile Include="Factories\LevitatorFactory.cs" />
     <Compile Include="Factories\Explosion.cs" />
     <Compile Include="Factories\OrbFactory.cs" />
-    <Compile Include="Factories\FloaterFactory.cs" />
     <Compile Include="Factories\SpinnerFactory.cs" />
     <Compile Include="Factories\JointFactory.cs" />
     <Compile Include="Factories\SceneryBlockFactory.cs" />

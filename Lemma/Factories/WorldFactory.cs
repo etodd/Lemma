@@ -162,7 +162,7 @@ namespace Lemma.Factories
 					ID = 9,
 					Name = "Floater",
 					Permanent = false,
-					Hard = true,
+					Hard = false,
 					Density = 0.1f,
 					DiffuseMap = "Textures\\dirty",
 					NormalMap = "Textures\\metal-channels-normal",
@@ -171,21 +171,6 @@ namespace Lemma.Factories
 					SpecularPower = 1.0f,
 					SpecularIntensity = 0.0f,
 					Tint = new Vector3(0.9f, 0.3f, 0.0f),
-				},
-				new Map.CellState
-				{
-					ID = 12,
-					Name = "Fragile",
-					Permanent = false,
-					Hard = false,
-					Density = 0.5f,
-					DiffuseMap = "Textures\\white",
-					NormalMap = "Textures\\temporary-normal",
-					FootstepCue = "TemporaryFootsteps",
-					RubbleCue = "TemporaryRubble",
-					SpecularPower = 250.0f,
-					SpecularIntensity = 0.4f,
-					Tint = new Vector3(0.8f, 1.0f, 0.2f),
 				},
 				new Map.CellState
 				{
@@ -687,7 +672,7 @@ namespace Lemma.Factories
 				permanentPoweredID = WorldFactory.StatesByName["PermanentPowered"].ID,
 				hardPoweredID = WorldFactory.StatesByName["HardPowered"].ID,
 				infectedID = WorldFactory.StatesByName["Infected"].ID,
-				fragileID = WorldFactory.StatesByName["Fragile"].ID;
+				floaterID = WorldFactory.StatesByName["Floater"].ID;
 
 			Action<Entity> bindPlayer = delegate(Entity p)
 			{
@@ -709,7 +694,7 @@ namespace Lemma.Factories
 
 				player.Add(lavaDamager);
 				
-				player.Add(new CommandBinding<Map, Map.Coordinate?>(player.GetCommand<Map, Map.Coordinate?>("WalkedOn"), delegate(Map map, Map.Coordinate? coord)
+				player.Add(new CommandBinding<Map, Map.Coordinate?, Direction>(player.GetCommand<Map, Map.Coordinate?, Direction>("WalkedOn"), delegate(Map map, Map.Coordinate? coord, Direction dir)
 				{
 					int groundType = map == null ? 0 : map[coord.Value].ID;
 
@@ -719,33 +704,20 @@ namespace Lemma.Factories
 						playerComponent.Health.Value -= 0.2f;
 					lavaDamager.Enabled.Value = isLava;
 
-					// Fragile dirt. Delete the block after a delay.
-					if (groundType == fragileID)
+					// Floater. Delete the block after a delay.
+					if (groundType == floaterID)
 					{
+						Vector3 pos = map.GetAbsolutePosition(coord.Value);
+						ParticleEmitter.Emit(main, "Smoke", pos, 1.0f, 10);
+						Sound.PlayCue(main, "FragileDirt Crumble", pos);
 						result.Add(new Animation
 						(
 							new Animation.Delay(1.0f),
 							new Animation.Execute(delegate()
 							{
-								Vector3 start = map.GetAbsolutePosition(coord.Value);
-								Vector3 end = start - new Vector3(0, 5, 0);
-
-								bool regenerate = false;
-								foreach (Map.Coordinate c in map.Rasterize(start, end))
+								if (map[coord.Value].ID == floaterID)
 								{
-									if (map[c].ID == fragileID)
-									{
-										map.Empty(c);
-										regenerate = true;
-									}
-									else
-										break;
-								}
-
-								if (regenerate)
-								{
-									ParticleEmitter.Emit(main, "Smoke", start, 1.0f, 10);
-									Sound.PlayCue(main, "FragileDirt Crumble", start);
+									map.Empty(coord.Value);
 									map.Regenerate();
 								}
 							})
@@ -857,11 +829,12 @@ namespace Lemma.Factories
 										Direction down = map.GetRelativeDirection(Direction.NegativeY);
 										foreach (Direction dir in DirectionExtensions.Directions)
 										{
-											if (dir != down)
+											Map.Coordinate adjacent = c.Move(dir);
+											int adjacentID = map[adjacent].ID;
+											bool adjacentIsFloater = adjacentID == floaterID;
+											if (dir != down || adjacentIsFloater)
 											{
-												Map.Coordinate adjacent = c.Move(dir);
-												int adjacentID = map[adjacent].ID;
-												if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID)
+												if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID || adjacentIsFloater)
 												{
 													blockQueue.Add(new ScheduledBlock
 													{
@@ -875,7 +848,7 @@ namespace Lemma.Factories
 											}
 										}
 									}
-									else if (entry.Generation > 0 && (isTemporary || isInfected || isPowered || id == neutralID))
+									else if (entry.Generation > 0 && (isTemporary || isInfected || isPowered || id == neutralID || id == floaterID))
 									{
 										generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = c }] = entry.Generation;
 										map.Empty(c);
@@ -989,7 +962,7 @@ namespace Lemma.Factories
 							shatter.AddParticle(pos + offset, offset);
 						}
 					}
-					else if (id == poweredID || id == temporaryID || id == neutralID || id == infectedID)
+					else if (id == poweredID || id == temporaryID || id == neutralID || id == infectedID || id == floaterID)
 					{
 						int generation;
 						Map.Coordinate c = coord;
@@ -1013,13 +986,14 @@ namespace Lemma.Factories
 							Direction down = map.GetRelativeDirection(Direction.NegativeY);
 							foreach (Direction dir in DirectionExtensions.Directions)
 							{
-								if (dir != down)
+								Map.Coordinate adjacent = coord.Move(dir);
+								if (!coords.Contains(adjacent))
 								{
-									Map.Coordinate adjacent = coord.Move(dir);
-									if (!coords.Contains(adjacent))
+									int adjacentID = map[adjacent].ID;
+									bool adjacentIsFloater = adjacentID == floaterID;
+									if (dir != down || adjacentIsFloater)
 									{
-										int adjacentID = map[adjacent].ID;
-										if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID)
+										if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID || adjacentIsFloater)
 										{
 											blockQueue.Add(new ScheduledBlock
 											{
