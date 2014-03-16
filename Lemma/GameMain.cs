@@ -1296,16 +1296,19 @@ namespace Lemma
 				addInputSetting(this.Settings.ToggleFullscreen, "Toggle Fullscreen", true);
 
 				// Start new button
-				UIComponent startNew = this.createMenuButton("Start New");
+				UIComponent startNew = this.createMenuButton("New Game");
 				startNew.Add(new CommandBinding<Point>(startNew.MouseLeftUp, delegate(Point p)
 				{
-					restorePausedSettings();
-					this.currentSave = null;
-					this.AddComponent(new Animation
-					(
-						new Animation.Delay(0.2f),
-						new Animation.Set<string>(this.MapFile, GameMain.InitialMap)
-					));
+					showDialog("This is an ALPHA release. Animations and other assets are not final.", "Play", delegate()
+					{
+						restorePausedSettings();
+						this.currentSave = null;
+						this.AddComponent(new Animation
+						(
+							new Animation.Delay(0.2f),
+							new Animation.Set<string>(this.MapFile, GameMain.InitialMap)
+						));
+					});
 				}));
 				pauseMenu.Children.Add(startNew);
 				startNew.Add(new Binding<bool, string>(startNew.Visible, x => x == GameMain.MenuMap, this.MapFile));

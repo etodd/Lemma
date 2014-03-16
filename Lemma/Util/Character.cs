@@ -241,21 +241,29 @@ namespace Lemma.Util
 			}
 			else
 			{
-				if (this.lastSupported)
-				{
-					this.lastSupportedSpeed = new Vector2(this.Body.LinearVelocity.X, this.Body.LinearVelocity.Z).Length();
-					this.lastSupported = false;
-				}
-
 				this.SupportEntity.Value = null;
 				this.IsSupported.Value = false;
 				this.HasTraction.Value = false;
-				if (this.EnableWalking)
+
+				if (this.WallRunState.Value == Player.WallRun.None)
 				{
-					if (this.IsSwimming)
-						this.handleNoTraction(dt, 0.75f, this.MaxSpeed * 0.75f);
-					else
-						this.handleNoTraction(dt, 0.0f, this.lastSupportedSpeed);
+					this.lastSupported = true;
+				}
+				else
+				{
+					if (this.lastSupported)
+					{
+						this.lastSupportedSpeed = new Vector2(this.Body.LinearVelocity.X, this.Body.LinearVelocity.Z).Length();
+						this.lastSupported = false;
+					}
+
+					if (this.EnableWalking)
+					{
+						if (this.IsSwimming)
+							this.handleNoTraction(dt, 0.75f, this.MaxSpeed * 0.75f);
+						else
+							this.handleNoTraction(dt, 0.0f, this.lastSupportedSpeed);
+					}
 				}
 			}
 
