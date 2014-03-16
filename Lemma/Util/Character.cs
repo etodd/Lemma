@@ -245,7 +245,7 @@ namespace Lemma.Util
 				this.IsSupported.Value = false;
 				this.HasTraction.Value = false;
 
-				if (this.WallRunState.Value == Player.WallRun.None)
+				if (this.WallRunState.Value != Player.WallRun.None)
 				{
 					this.lastSupported = true;
 				}
@@ -260,7 +260,7 @@ namespace Lemma.Util
 					if (this.EnableWalking)
 					{
 						if (this.IsSwimming)
-							this.handleNoTraction(dt, 0.75f, this.MaxSpeed * 0.75f);
+							this.handleNoTraction(dt, 0.75f * this.TractionDeceleration, this.MaxSpeed * 0.5f);
 						else
 							this.handleNoTraction(dt, 0.0f, this.lastSupportedSpeed);
 					}
@@ -524,10 +524,8 @@ namespace Lemma.Util
 			}
 		}
 
-		private void handleNoTraction(float dt, float tractionDecelerationRatio, float maxSpeed)
+		private void handleNoTraction(float dt, float tractionDeceleration, float maxSpeed)
 		{
-			float tractionDeceleration = this.TractionDeceleration * tractionDecelerationRatio;
-
 			if (this.MovementDirection != Vector2.Zero)
 			{
 				//Identify a coordinate system that uses the support normal as Y.
@@ -541,7 +539,7 @@ namespace Lemma.Util
 				float velocityChange = MathHelper.Clamp(bodyXVelocity, -dt * tractionDeceleration, dt * tractionDeceleration);
 				this.Body.LinearVelocity -= velocityChange * x;
 
-				float bodyZVelocity = Vector3.Dot(Body.LinearVelocity, horizontal);
+				float bodyZVelocity = Vector3.Dot(this.Body.LinearVelocity, horizontal);
 				//The velocity difference along the Z axis should accelerate/decelerate to match the goal velocity (max speed).
 				if (bodyZVelocity > maxSpeed)
 				{
