@@ -1716,6 +1716,8 @@ namespace Lemma.Factories
 
 				bool go = vaulting || (!onlyVault && (supported || wallJumping));
 
+				bool blockPossibilityBeneath = false;
+
 				if (!go && !onlyVault)
 				{
 					// Check block possibilities beneath us
@@ -1727,6 +1729,7 @@ namespace Lemma.Factories
 						{
 							instantiateBlockPossibility(possibility);
 							go = true;
+							blockPossibilityBeneath = true;
 							break;
 						}
 					}
@@ -1823,7 +1826,11 @@ namespace Lemma.Factories
 						if (main.TotalTime - rollEnded < 0.3f)
 							totalMultiplier *= 1.5f;
 
-						float verticalJumpSpeed = (player.JumpSpeed * verticalMultiplier) + (currentVerticalSpeed * 0.5f);
+						float verticalJumpSpeed = player.JumpSpeed * verticalMultiplier;
+
+						// If we're instantiating a block possibility beneath us and we're currently falling, then cancel that negative vertical speed
+						if (!blockPossibilityBeneath || currentVerticalSpeed > 0.0f)
+							verticalJumpSpeed += currentVerticalSpeed * 0.5f;
 
 						player.LinearVelocity.Value = baseVelocity + new Vector3(jumpDirection.X, verticalJumpSpeed, jumpDirection.Y) * totalMultiplier;
 
@@ -2132,7 +2139,7 @@ namespace Lemma.Factories
 				floorCoordinate.SetComponent(rightDir, newFloorCoordinate.GetComponent(rightDir));
 				floorCoordinate.SetComponent(forwardDir, newFloorCoordinate.GetComponent(forwardDir));
 
-				Map.CellState fillState = WorldFactory.StatesByName["Temporary"];
+				Map.CellState fillState = WorldFactory.StatesByName["Neutral"];
 
 				const int radius = 3;
 				for (Map.Coordinate x = floorCoordinate.Move(rightDir, -radius); x.GetComponent(rightDir) < floorCoordinate.GetComponent(rightDir) + radius; x = x.Move(rightDir))
