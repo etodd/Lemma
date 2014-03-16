@@ -1248,7 +1248,7 @@ namespace Lemma.Factories
 
 						List<BlockBuildOrder> buildCoords = new List<BlockBuildOrder>();
 
-						Map.CellState fillState = WorldFactory.StatesByName["Temporary"];
+						Map.CellState fillState = WorldFactory.StatesByName["Neutral"];
 
 						const int radius = 5;
 						int upwardRadius = wallRunState == Player.WallRun.Down || wallRunState == Player.WallRun.Reverse ? 0 : radius;
@@ -2232,7 +2232,13 @@ namespace Lemma.Factories
 
 					Map.GlobalRaycastResult floorRaycast = new Map.GlobalRaycastResult();
 
-					bool shouldBuildFloor = player.EnableEnhancedWallRun && (floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height)).Map != null;
+					bool shouldBuildFloor = false;
+					if (player.EnableEnhancedWallRun)
+					{
+						floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height);
+						if (floorRaycast.Map != null && floorRaycast.Coordinate.Value.Data.Name != "Temporary")
+							shouldBuildFloor = true;
+					}
 
 					Direction forwardDir = Direction.None;
 					Direction rightDir = Direction.None;
@@ -2378,7 +2384,9 @@ namespace Lemma.Factories
 
 						model.StartClip("Roll", 5, false);
 
-						bool shouldBuildFloor = player.EnableEnhancedWallRun;
+						bool shouldBuildFloor = false;
+						if (player.EnableEnhancedWallRun && floorRaycast.Coordinate.Value.Data.Name != "Temporary")
+							shouldBuildFloor = true;
 
 						// If the player is not yet supported, that means they're just about to land.
 						// So give them a little speed boost for having such good timing.
