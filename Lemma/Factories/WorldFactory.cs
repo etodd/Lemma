@@ -742,6 +742,16 @@ namespace Lemma.Factories
 			if (main.EditorEnabled)
 				blockQueue.Clear();
 
+			Func<Entity, Map.Coordinate, bool, bool> isInQueue = delegate(Entity m, Map.Coordinate c, bool removing)
+			{
+				foreach (ScheduledBlock b in blockQueue)
+				{
+					if (b.Removing == removing && m == b.Map.Target && b.Coordinate.Equivalent(c))
+						return true;
+				}
+				return false;
+			};
+
 			Dictionary<EffectBlockFactory.BlockEntry, int> generations = new Dictionary<EffectBlockFactory.BlockEntry, int>();
 
 			result.Add(new CommandBinding<Map, IEnumerable<Map.Coordinate>, Map>(Map.GlobalCellsFilled, delegate(Map map, IEnumerable<Map.Coordinate> coords, Map transferredFromMap)
@@ -836,14 +846,17 @@ namespace Lemma.Factories
 											{
 												if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID || adjacentIsFloater)
 												{
-													blockQueue.Add(new ScheduledBlock
+													if (!isInQueue(map.Entity, adjacent, true))
 													{
-														Map = map.Entity,
-														Coordinate = adjacent,
-														Time = propagateDelay,
-														Removing = true,
-														Generation = 1,
-													});
+														blockQueue.Add(new ScheduledBlock
+														{
+															Map = map.Entity,
+															Coordinate = adjacent,
+															Time = propagateDelay,
+															Removing = true,
+															Generation = 1,
+														});
+													}
 												}
 											}
 										}
@@ -973,13 +986,16 @@ namespace Lemma.Factories
 
 						if (generation == 0)
 						{
-							blockQueue.Add(new ScheduledBlock
+							if (!isInQueue(map.Entity, coord, true))
 							{
-								Map = map.Entity,
-								Coordinate = coord,
-								Time = propagateDelay,
-								Removing = true,
-							});
+								blockQueue.Add(new ScheduledBlock
+								{
+									Map = map.Entity,
+									Coordinate = coord,
+									Time = propagateDelay,
+									Removing = true,
+								});
+							}
 						}
 						else if (generation < maxGenerations)
 						{
@@ -995,14 +1011,17 @@ namespace Lemma.Factories
 									{
 										if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID || adjacentIsFloater)
 										{
-											blockQueue.Add(new ScheduledBlock
+											if (!isInQueue(map.Entity, adjacent, true))
 											{
-												Map = map.Entity,
-												Coordinate = adjacent,
-												Time = propagateDelay,
-												Removing = true,
-												Generation = generation + 1,
-											});
+												blockQueue.Add(new ScheduledBlock
+												{
+													Map = map.Entity,
+													Coordinate = adjacent,
+													Time = propagateDelay,
+													Removing = true,
+													Generation = generation + 1,
+												});
+											}
 										}
 									}
 								}

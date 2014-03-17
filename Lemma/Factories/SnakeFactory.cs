@@ -67,8 +67,8 @@ namespace Lemma.Factories
 				neutralState = WorldFactory.StatesByName["Neutral"];
 
 			const float defaultSpeed = 5.0f;
-			const float chaseSpeed = 14.0f;
-			const float closeChaseSpeed = 10.0f;
+			const float chaseSpeed = 18.0f;
+			const float closeChaseSpeed = 12.0f;
 			const float crushSpeed = 125.0f;
 
 			VoxelChaseAI chase = result.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
@@ -76,8 +76,6 @@ namespace Lemma.Factories
 			chase.Speed.Value = defaultSpeed;
 			chase.Filter = delegate(Map.CellState state)
 			{
-				if (state.ID == 0)
-					return VoxelChaseAI.Cell.Empty;
 				if (state == infectedState || state == neutralState)
 					return VoxelChaseAI.Cell.Penetrable;
 				return VoxelChaseAI.Cell.Avoid;

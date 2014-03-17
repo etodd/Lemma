@@ -1790,6 +1790,9 @@ namespace Lemma.Factories
 
 				if (go)
 				{
+					if (!wallJumping)
+						canKick = true;
+
 					if (!supported && !wallJumping)
 					{
 						// We haven't hit the ground, so fall damage will not be handled by the physics system.
@@ -2230,13 +2233,14 @@ namespace Lemma.Factories
 
 					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
 
-					Map.GlobalRaycastResult floorRaycast = new Map.GlobalRaycastResult();
+					bool shouldBuildFloor = false, shouldBreakFloor = false;
 
-					bool shouldBuildFloor = false;
-					if (player.EnableEnhancedWallRun)
+					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height);
+					if (floorRaycast.Map == null)
+						shouldBreakFloor = true;
+					else if (player.EnableEnhancedWallRun)
 					{
-						floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height);
-						if (floorRaycast.Map != null && floorRaycast.Coordinate.Value.Data.Name != "Temporary")
+						if (floorRaycast.Coordinate.Value.Data.Name != "Temporary")
 							shouldBuildFloor = true;
 					}
 
@@ -2260,7 +2264,7 @@ namespace Lemma.Factories
 							else
 							{
 								player.LinearVelocity.Value = new Vector3(kickVelocity.X, player.LinearVelocity.Value.Y, kickVelocity.Z);
-								breakWalls(forward, right, !shouldBuildFloor);
+								breakWalls(forward, right, shouldBreakFloor);
 								if (shouldBuildFloor)
 									buildFloor(floorRaycast.Map, floorRaycast.Coordinate.Value, forwardDir, rightDir);
 							}
@@ -2385,7 +2389,7 @@ namespace Lemma.Factories
 						model.StartClip("Roll", 5, false);
 
 						bool shouldBuildFloor = false;
-						if (player.EnableEnhancedWallRun && floorRaycast.Coordinate.Value.Data.Name != "Temporary")
+						if (player.EnableEnhancedWallRun && floorRaycast.Map != null && floorRaycast.Coordinate.Value.Data.Name != "Temporary")
 							shouldBuildFloor = true;
 
 						// If the player is not yet supported, that means they're just about to land.
