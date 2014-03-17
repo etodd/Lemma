@@ -2782,7 +2782,7 @@ namespace Lemma.Factories
 
 			// Gamepad code for the phone
 
-			input.Add(new CommandBinding(input.GetButtonUp(Buttons.A), () => phoneActive, delegate()
+			input.Add(new CommandBinding(input.GetButtonUp(Buttons.A), () => phoneActive && composeButton.Visible, delegate()
 			{
 				if (answerContainer.Visible)
 					answerList.Children[selectedAnswer].MouseLeftUp.Execute(new Point());

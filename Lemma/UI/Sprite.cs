@@ -30,13 +30,23 @@ namespace Lemma.Components
 		public override void LoadContent(bool reload)
 		{
 			base.LoadContent(reload);
-			if (reload && this.Image.Value != null)
+			if (reload)
 				this.loadTexture(this.Image);
+		}
+
+		protected override void delete()
+		{
+			base.delete();
 		}
 
 		private void loadTexture(string file)
 		{
-			if (file != null)
+			if (file == null)
+			{
+				this.texture = null;
+				this.Size.Value = Vector2.Zero;
+			}
+			else
 			{
 				if (this.IsStandardImage)
 				{
