@@ -83,27 +83,32 @@ namespace Lemma.Factories
 
 				m.Regenerate(delegate(List<DynamicMap> spawnedMaps)
 				{
-					Vector3 playerPos = player.Get<Transform>().Position;
-					playerPos += player.Get<Player>().LinearVelocity.Value * 0.65f;
-					foreach (DynamicMap newMap in spawnedMaps)
+					if (spawnedMaps.Count == 0)
+						result.Delete.Execute();
+					else
 					{
-						Vector3 toPlayer = playerPos - newMap.PhysicsEntity.Position;
-						toPlayer.Normalize();
-						if (Math.Abs(toPlayer.Y) < 0.9f)
+						Vector3 playerPos = player.Get<Transform>().Position;
+						playerPos += player.Get<Player>().LinearVelocity.Value * 0.65f;
+						foreach (DynamicMap newMap in spawnedMaps)
 						{
-							toPlayer *= 25.0f * newMap.PhysicsEntity.Mass;
+							Vector3 toPlayer = playerPos - newMap.PhysicsEntity.Position;
+							toPlayer.Normalize();
+							if (Math.Abs(toPlayer.Y) < 0.9f)
+							{
+								toPlayer *= 25.0f * newMap.PhysicsEntity.Mass;
 
-							Vector3 positionAtPlayerHeight = newMap.PhysicsEntity.Position;
-							Vector3 impulseAtBase = toPlayer * -0.75f;
-							impulseAtBase.Y = 0.0f;
-							positionAtPlayerHeight.Y = playerPos.Y;
-							newMap.PhysicsEntity.ApplyImpulse(ref positionAtPlayerHeight, ref impulseAtBase);
+								Vector3 positionAtPlayerHeight = newMap.PhysicsEntity.Position;
+								Vector3 impulseAtBase = toPlayer * -0.75f;
+								impulseAtBase.Y = 0.0f;
+								positionAtPlayerHeight.Y = playerPos.Y;
+								newMap.PhysicsEntity.ApplyImpulse(ref positionAtPlayerHeight, ref impulseAtBase);
 
-							newMap.PhysicsEntity.ApplyLinearImpulse(ref toPlayer);
+								newMap.PhysicsEntity.ApplyLinearImpulse(ref toPlayer);
+							}
+							newMap.PhysicsEntity.Material.KineticFriction = 1.0f;
+							newMap.PhysicsEntity.Material.StaticFriction = 1.0f;
+							dynamicMaps.Add(newMap.Entity);
 						}
-						newMap.PhysicsEntity.Material.KineticFriction = 1.0f;
-						newMap.PhysicsEntity.Material.StaticFriction = 1.0f;
-						dynamicMaps.Add(newMap.Entity);
 					}
 				});
 

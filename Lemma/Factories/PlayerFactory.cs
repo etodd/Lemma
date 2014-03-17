@@ -783,7 +783,7 @@ namespace Lemma.Factories
 					box.DrawOrder.Value = 11; // In front of water
 					box.CullBoundingBox.Value = false;
 					box.DisableCulling.Value = true;
-					box.Add(new Binding<Matrix>(box.Transform, () => matrix * Matrix.CreateTranslation(-block.Map.Offset.Value) * block.Map.Transform, block.Map.Transform, block.Map.Offset));
+					box.Add(new Binding<Matrix>(box.Transform, x => matrix * x, block.Map.Transform));
 					result.Add(box);
 					block.Model = box;
 				}
@@ -1110,7 +1110,7 @@ namespace Lemma.Factories
 					for (int i = 0; i < 5; i++)
 					{
 						Map.Coordinate center = map.GetCoordinate(pos);
-						Map.Coordinate top = map.GetCoordinate(basePos + new Vector3(0, Player.DefaultCharacterHeight + Player.DefaultSupportHeight + 0.5f, 0));
+						Map.Coordinate top = map.GetCoordinate(basePos + new Vector3(0, Player.CrouchedCharacterHeight + Player.CrouchedSupportHeight + 0.5f, 0));
 						Direction upDir = map.GetRelativeDirection(Vector3.Up);
 						Direction rightDir = map.GetRelativeDirection(right);
 						for (Map.Coordinate y = center.Move(upDir.GetReverse(), breakFloor ? 2 : 0); y.GetComponent(upDir) <= top.GetComponent(upDir); y = y.Move(upDir))
