@@ -2873,7 +2873,7 @@ namespace Lemma.Components
 				islands = new Box[][] { };
 		}
 
-		public IEnumerable<IEnumerable<Box>> GetAdjacentIslands(IEnumerable<Coordinate> removals, CellState state, CellState search)
+		public IEnumerable<IEnumerable<Box>> GetAdjacentIslands(IEnumerable<Coordinate> removals, Func<CellState, bool> filter, CellState search)
 		{
 			List<Dictionary<Box, bool>> lists = new List<Dictionary<Box, bool>>();
 
@@ -2889,7 +2889,7 @@ namespace Lemma.Components
 				{
 					Coordinate adjacentCoord = removal.Move(dir);
 					Box box = this.GetBox(adjacentCoord);
-					if (box == null || (box.Type.ID != state.ID && box.Type.ID != search.ID))
+					if (box == null || (!filter(box.Type) && box.Type.ID != search.ID))
 						continue;
 					bool alreadyFound = false;
 					foreach (Dictionary<Box, bool> list in lists)
@@ -2903,7 +2903,7 @@ namespace Lemma.Components
 					if (alreadyFound)
 						continue;
 					Dictionary<Box, bool> newList = new Dictionary<Box, bool>();
-					bool found = this.buildAdjacency(box, newList, state, search);
+					bool found = this.buildAdjacency(box, newList, filter, search);
 					foundSearchBlock |= found;
 					if (!found && newList.Count > 0)
 						lists.Add(newList);
@@ -3313,7 +3313,7 @@ namespace Lemma.Components
 			return null;
 		}
 
-		private bool buildAdjacency(Box box, Dictionary<Box, bool> list, CellState state, CellState search)
+		private bool buildAdjacency(Box box, Dictionary<Box, bool> list, Func<CellState, bool> filter, CellState search)
 		{
 			Queue<Box> boxes = new Queue<Box>();
 
@@ -3323,7 +3323,7 @@ namespace Lemma.Components
 				return true;
 			}
 
-			if (box.Type.ID == state.ID && !list.ContainsKey(box))
+			if (filter(box.Type) && !list.ContainsKey(box))
 			{
 				boxes.Enqueue(box);
 				list.Add(box, true);
@@ -3341,7 +3341,7 @@ namespace Lemma.Components
 						{
 							if (adjacent.Type.ID == search.ID)
 								return true;
-							else if (adjacent.Type.ID == state.ID)
+							else if (filter(adjacent.Type))
 							{
 								boxes.Enqueue(adjacent);
 								list.Add(adjacent, true);

@@ -294,30 +294,34 @@ namespace Lemma.Factories
 				new Map.CellState
 				{
 					ID = 36,
-					Name = "Debug",
+					Name = "Switch",
 					Permanent = true,
 					Hard = true,
 					Density = 1,
 					FootstepCue = "MetalFootsteps",
 					RubbleCue = "MetalRubble",
-					DiffuseMap = "Textures\\debug",
-					NormalMap = "Textures\\plain-normal",
-					SpecularPower = 1.0f,
-					SpecularIntensity = 0.0f
+					DiffuseMap = "Textures\\switch",
+					NormalMap = "Textures\\switch-normal",
+					SpecularPower = 250.0f,
+					SpecularIntensity = 0.4f,
+					Tiling = 4.0f,
+					Tint = new Vector3(0.3f, 0.6f, 0.8f),
 				},
 				new Map.CellState
 				{
 					ID = 37,
-					Name = "DebugTemporary",
-					Permanent = false,
+					Name = "PoweredSwitch",
+					Permanent = true,
 					Hard = true,
 					Density = 1,
-					FootstepCue = "WoodFootsteps",
-					RubbleCue = "WoodRubble",
-					DiffuseMap = "Textures\\debug2",
-					NormalMap = "Textures\\plain-normal",
+					FootstepCue = "MetalFootsteps",
+					RubbleCue = "MetalRubble",
+					DiffuseMap = "Textures\\powered-switch",
+					NormalMap = "Textures\\switch-normal",
 					SpecularPower = 1.0f,
 					SpecularIntensity = 0.0f,
+					Glow = true,
+					Tiling = 4.0f,
 				},
 				new Map.CellState
 				{
@@ -671,6 +675,8 @@ namespace Lemma.Factories
 				poweredID = WorldFactory.StatesByName["Powered"].ID,
 				permanentPoweredID = WorldFactory.StatesByName["PermanentPowered"].ID,
 				hardPoweredID = WorldFactory.StatesByName["HardPowered"].ID,
+				switchID = WorldFactory.StatesByName["Switch"].ID,
+				poweredSwitchID = WorldFactory.StatesByName["PoweredSwitch"].ID,
 				infectedID = WorldFactory.StatesByName["Infected"].ID,
 				floaterID = WorldFactory.StatesByName["Floater"].ID;
 
@@ -761,7 +767,7 @@ namespace Lemma.Factories
 					foreach (Map.Coordinate c in coords)
 					{
 						int id = c.Data.ID;
-						if (id == temporaryID || id == poweredID || id == infectedID)
+						if (id == temporaryID || id == poweredID || id == poweredSwitchID || id == infectedID)
 						{
 							Map.Coordinate newCoord = c;
 							newCoord.Data = emptyState;
@@ -828,7 +834,7 @@ namespace Lemma.Factories
 
 								bool isTemporary = id == temporaryID;
 								bool isInfected = id == infectedID || id == infectedCriticalID;
-								bool isPowered = id == poweredID || id == permanentPoweredID || id == hardPoweredID;
+								bool isPowered = id == poweredID || id == permanentPoweredID || id == hardPoweredID || id == poweredSwitchID;
 
 								bool regenerate = false;
 
@@ -880,7 +886,7 @@ namespace Lemma.Factories
 											Map.Coordinate adjacent = c.Move(dir);
 											int adjacentID = map[adjacent].ID;
 
-											if (adjacentID == poweredID || adjacentID == permanentPoweredID || adjacentID == hardPoweredID)
+											if (adjacentID == poweredID || adjacentID == permanentPoweredID || adjacentID == hardPoweredID || adjacentID == poweredSwitchID)
 											{
 												map.Empty(c);
 												map.Fill(c, WorldFactory.States[poweredID]);
@@ -908,6 +914,13 @@ namespace Lemma.Factories
 											{
 												map.Empty(adjacent);
 												map.Fill(adjacent, WorldFactory.States[poweredID]);
+												sparks(map.GetAbsolutePosition(adjacent));
+												regenerate = true;
+											}
+											else if (adjacentID == switchID)
+											{
+												map.Empty(adjacent, true);
+												map.Fill(adjacent, WorldFactory.States[poweredSwitchID]);
 												sparks(map.GetAbsolutePosition(adjacent));
 												regenerate = true;
 											}
@@ -959,7 +972,7 @@ namespace Lemma.Factories
 				foreach (Map.Coordinate coord in coords)
 				{
 					int id = coord.Data.ID;
-					if (id == poweredID)
+					if (id == poweredID || id == poweredSwitchID)
 						handlePowered = true;
 
 					if (id == criticalID) // Critical. Explodes when destroyed.
@@ -1043,14 +1056,15 @@ namespace Lemma.Factories
 
 				if (handlePowered)
 				{
-					IEnumerable<IEnumerable<Map.Box>> poweredIslands = map.GetAdjacentIslands(coords.Where(x => x.Data.ID == poweredID), WorldFactory.StatesByName["Powered"], WorldFactory.StatesByName["PermanentPowered"]);
+					IEnumerable<IEnumerable<Map.Box>> poweredIslands = map.GetAdjacentIslands(coords.Where(x => x.Data.ID == poweredID), x => x.ID == poweredID || x.ID == poweredSwitchID, WorldFactory.StatesByName["PermanentPowered"]);
 					List<Map.Coordinate> poweredCoords = poweredIslands.SelectMany(x => x).SelectMany(x => x.GetCoords()).ToList();
 					if (poweredCoords.Count > 0)
 					{
 						Map.CellState temporaryState = WorldFactory.StatesByName["Temporary"];
-						map.Empty(poweredCoords);
+						Map.CellState switchState = WorldFactory.StatesByName["Switch"];
+						map.Empty(poweredCoords, true, true, null, false);
 						foreach (Map.Coordinate coord in poweredCoords)
-							map.Fill(coord, temporaryState);
+							map.Fill(coord, coord.Data.ID == poweredSwitchID ? switchState : temporaryState);
 						map.Regenerate();
 					}
 				}
