@@ -1236,7 +1236,7 @@ namespace Lemma
 				}));
 				controlsList.Children.Add(mouseSensitivity);
 
-				Action<Property<PCInput.PCInputBinding>, string, bool> addInputSetting = delegate(Property<PCInput.PCInputBinding> setting, string display, bool allowGamepad)
+				Action<Property<PCInput.PCInputBinding>, string, bool, bool> addInputSetting = delegate(Property<PCInput.PCInputBinding> setting, string display, bool allowGamepad, bool allowMouse)
 				{
 					this.bindings.Add(setting);
 					UIComponent button = this.createMenuButton<PCInput.PCInputBinding>(display, setting);
@@ -1261,7 +1261,7 @@ namespace Lemma
 									newValue.Key = binding.Key;
 									newValue.MouseButton = PCInput.MouseButton.None;
 								}
-								else if (binding.MouseButton != PCInput.MouseButton.None)
+								else if (allowMouse && binding.MouseButton != PCInput.MouseButton.None)
 								{
 									newValue.Key = Keys.None;
 									newValue.MouseButton = binding.MouseButton;
@@ -1283,17 +1283,20 @@ namespace Lemma
 					controlsList.Children.Add(button);
 				};
 
-				addInputSetting(this.Settings.Forward, "Move Forward", false);
-				addInputSetting(this.Settings.Left, "Move Left", false);
-				addInputSetting(this.Settings.Backward, "Move Backward", false);
-				addInputSetting(this.Settings.Right, "Move Right", false);
-				addInputSetting(this.Settings.Jump, "Jump", true);
-				addInputSetting(this.Settings.Parkour, "Parkour", true);
-				addInputSetting(this.Settings.Roll, "Roll / Crouch", true);
-				addInputSetting(this.Settings.Kick, "Kick", true);
-				addInputSetting(this.Settings.TogglePhone, "Toggle Phone", true);
-				addInputSetting(this.Settings.QuickSave, "Quicksave", true);
-				addInputSetting(this.Settings.ToggleFullscreen, "Toggle Fullscreen", true);
+				addInputSetting(this.Settings.Forward, "Move Forward", false, true);
+				addInputSetting(this.Settings.Left, "Move Left", false, true);
+				addInputSetting(this.Settings.Backward, "Move Backward", false, true);
+				addInputSetting(this.Settings.Right, "Move Right", false, true);
+				addInputSetting(this.Settings.Jump, "Jump", true, true);
+				addInputSetting(this.Settings.Parkour, "Parkour", true, true);
+				addInputSetting(this.Settings.Roll, "Roll / Crouch", true, true);
+				addInputSetting(this.Settings.Kick, "Kick", true, true);
+				addInputSetting(this.Settings.TogglePhone, "Toggle Phone", true, true);
+				addInputSetting(this.Settings.QuickSave, "Quicksave", true, true);
+
+				// Mapping LMB to toggle fullscreen makes it impossible to change any other settings.
+				// So don't allow it.
+				addInputSetting(this.Settings.ToggleFullscreen, "Toggle Fullscreen", true, false);
 
 				// Start new button
 				UIComponent startNew = this.createMenuButton("New Game");
@@ -1558,7 +1561,7 @@ namespace Lemma
 				bool saving = false;
 				this.input.Bind(this.Settings.QuickSave, PCInput.InputState.Down, delegate()
 				{
-					if (!saving && !this.Paused)
+					if (!saving && !this.Paused && this.MapFile != GameMain.MenuMap)
 					{
 						saving = true;
 						Container notification = new Container();
