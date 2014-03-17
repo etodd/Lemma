@@ -414,7 +414,7 @@ namespace Lemma.Components
 						{
 							int index = this.selectedStringValue.IndexOf('\n', this.selectedStringIndex + 1);
 							if (index == -1)
-								this.selectedStringIndex = this.selectedStringValue.Length;
+								this.selectedStringIndex = this.selectedStringValue.Length - 1;
 							else
 								this.selectedStringIndex = index;
 						}
@@ -658,6 +658,7 @@ namespace Lemma.Components
 				else if (propertyInfo.PropertyType.Equals(typeof(string)))
 				{
 					Property<string> socket = (Property<string>)property;
+					textField.Add(new Binding<float, Point>(textField.WrapWidth, x => x.X * 0.5f, this.main.ScreenSize));
 					Binding<string> binding = new Binding<string>(textField.Text, socket);
 					textField.Add(binding);
 					field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point mouse)
