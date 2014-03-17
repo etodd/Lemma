@@ -1248,7 +1248,7 @@ namespace Lemma.Factories
 
 						List<BlockBuildOrder> buildCoords = new List<BlockBuildOrder>();
 
-						Map.CellState fillState = WorldFactory.StatesByName["Neutral"];
+						Map.CellState fillState = WorldFactory.StatesByName["Temporary"];
 
 						const int radius = 5;
 						int upwardRadius = wallRunState == Player.WallRun.Down || wallRunState == Player.WallRun.Reverse ? 0 : radius;
@@ -2142,7 +2142,7 @@ namespace Lemma.Factories
 				floorCoordinate.SetComponent(rightDir, newFloorCoordinate.GetComponent(rightDir));
 				floorCoordinate.SetComponent(forwardDir, newFloorCoordinate.GetComponent(forwardDir));
 
-				Map.CellState fillState = WorldFactory.StatesByName["Neutral"];
+				Map.CellState fillState = WorldFactory.StatesByName["Temporary"];
 
 				const int radius = 3;
 				for (Map.Coordinate x = floorCoordinate.Move(rightDir, -radius); x.GetComponent(rightDir) < floorCoordinate.GetComponent(rightDir) + radius; x = x.Move(rightDir))
