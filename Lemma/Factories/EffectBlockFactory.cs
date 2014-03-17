@@ -114,11 +114,13 @@ namespace Lemma.Factories
 							bool foundAdjacentCell = false;
 							if (checkAdjacent)
 							{
+								bool avoid = stateId == WorldFactory.StatesByName["Temporary"].ID;
+								int avoidID = WorldFactory.StatesByName["AvoidAI"].ID;
 								foreach (Direction dir in DirectionExtensions.Directions)
 								{
 									Map.Coordinate adjacent = c.Move(dir);
 									int adjacentID = m[adjacent].ID;
-									if (adjacentID != 0)
+									if (adjacentID != 0 && (!avoid || adjacentID != avoidID))
 									{
 										foundAdjacentCell = true;
 										break;

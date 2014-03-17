@@ -163,7 +163,7 @@ namespace Lemma.Factories
 					Name = "Floater",
 					Permanent = false,
 					Hard = false,
-					Density = 0.1f,
+					Density = 0.5f,
 					DiffuseMap = "Textures\\dirty",
 					NormalMap = "Textures\\metal-channels-normal",
 					FootstepCue = "WoodFootsteps",

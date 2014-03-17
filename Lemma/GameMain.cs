@@ -1375,13 +1375,16 @@ namespace Lemma
 				UIComponent sandbox = this.createMenuButton("Sandbox");
 				sandbox.Add(new CommandBinding<Point>(sandbox.MouseLeftUp, delegate(Point p)
 				{
-					restorePausedSettings();
-					this.currentSave = null;
-					this.AddComponent(new Animation
-					(
-						new Animation.Delay(0.2f),
-						new Animation.Set<string>(this.MapFile, "sandbox")
-					));
+					showDialog("The sandbox is unpolished and has no tutorial. You may want to complete the game first.", "Play anyway", delegate()
+					{
+						restorePausedSettings();
+						this.currentSave = null;
+						this.AddComponent(new Animation
+						(
+							new Animation.Delay(0.2f),
+							new Animation.Set<string>(this.MapFile, "sandbox")
+						));
+					});
 				}));
 				pauseMenu.Children.Add(sandbox);
 				sandbox.Add(new Binding<bool, string>(sandbox.Visible, x => x == GameMain.MenuMap, this.MapFile));

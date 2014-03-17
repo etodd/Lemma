@@ -410,7 +410,8 @@ namespace Lemma.Factories
 			result.Add("WalkedOn", walkedOn);
 
 			int neutralID = WorldFactory.StatesByName["Neutral"].ID,
-				temporaryID = WorldFactory.StatesByName["Temporary"].ID;
+				temporaryID = WorldFactory.StatesByName["Temporary"].ID,
+				avoidID = WorldFactory.StatesByName["AvoidAI"].ID;
 
 			result.Add(new CommandBinding<Map, Map.Coordinate?, Direction>(walkedOn, delegate(Map map, Map.Coordinate? coord, Direction dir)
 			{
@@ -1396,7 +1397,7 @@ namespace Lemma.Factories
 						{
 							Map.Coordinate coord = playerCoord.Move(relativeDir, i);
 							Map.CellState state = map[coord];
-							if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = map, Coordinate = coord, }))
+							if ((state.ID != 0 && state.ID != avoidID) || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = map, Coordinate = coord, }))
 							{
 								shortestDistance = i;
 								relativeShortestDirection = relativeDir;
@@ -1455,7 +1456,8 @@ namespace Lemma.Factories
 								for (int i = 0; i < shortestDistance; i++)
 								{
 									Map.Coordinate c = coord.Move(dir, i);
-									if (map[c].ID != 0)
+									Map.CellState state = map[c];
+									if (state.ID != 0 && state.ID != avoidID)
 									{
 										shortestMap = map;
 										shortestBuildDirection = dir;
