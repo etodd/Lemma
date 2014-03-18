@@ -34,8 +34,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 6;
-		public const int MapVersion = 297;
-		public const int Build = 297;
+		public const int MapVersion = 313;
+		public const int Build = 313;
 
 		public class Config
 		{

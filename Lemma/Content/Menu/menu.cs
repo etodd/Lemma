@@ -54,8 +54,8 @@ if (((GameMain)main).StartSpawnPoint.Value == "end")
 		list.Children.Add(element);
 	};
 
-	addLink("Back the Kickstarter", "https://www.kickstarter.com/projects/869028656/lemma-first-person-parkour");
-	addLink("Vote for Lemma on Greenlight", "http://steamcommunity.com/sharedfiles/filedetails/?id=105075009");
+	addLink("Back the Kickstarter", "https://www.kickstarter.com/projects/et1337/869028656?token=1ccf4cd0");
+	addLink("Vote for Lemma on Greenlight", "http://steamcommunity.com/sharedfiles/filedetails/?id=239551444");
 	addLink("Follow @et1337", "http://twitter.com/et1337");
 
 	UIComponent creditsScroll = new UIComponent();

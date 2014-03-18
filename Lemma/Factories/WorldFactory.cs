@@ -117,7 +117,7 @@ namespace Lemma.Factories
 					ID = 6,
 					Name = "Critical",
 					Permanent = false,
-					Hard = false,
+					Hard = true,
 					Density = 2,
 					DiffuseMap = "Textures\\danger",
 					NormalMap = "Textures\\plain-normal",
