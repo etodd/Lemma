@@ -821,7 +821,7 @@ namespace Lemma
 				TextElement quickSaveLabel = new TextElement();
 				quickSaveLabel.FontFile.Value = "Font";
 				quickSaveLabel.Add(new Binding<bool>(quickSaveLabel.Visible, saveMode));
-				quickSaveLabel.Add(new Binding<string>(quickSaveLabel.Text, () => this.Settings.QuickSave.Value.ToString() + " to quicksave", this.Settings.QuickSave));
+				quickSaveLabel.Add(new Binding<string>(quickSaveLabel.Text, () => "[" + this.Settings.QuickSave.Value.ToString() + "] to quicksave", this.Settings.QuickSave));
 				loadSaveLabelContainer.Children.Add(quickSaveLabel);
 
 				UIComponent loadSaveBack = this.createMenuButton("Back");
@@ -1334,7 +1334,7 @@ namespace Lemma
 					this.AddComponent(loadSaveAnimation);
 
 					loadSaveShown = true;
-					currentMenu.Value = loadSaveMenu;
+					currentMenu.Value = loadSaveList;
 				}));
 				saveButton.Add(new Binding<bool, string>(saveButton.Visible, x => x != GameMain.MenuMap, this.MapFile));
 				pauseMenu.Children.Add(saveButton);

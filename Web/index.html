@@ -32,7 +32,8 @@ Surfaces pop in and out of existence at will.
 	<center>
 		<b>Lemma</b> is an immersive <b>first-person parkour</b> game.<br />
 		Every parkour move has the potential to <b>modify the environment</b>.<br />
-		Surfaces pop in and out of existence at will.
+		Surfaces pop in and out of existence at will.<br /><br />
+		<b>March 18:</b> <a href="http://et1337.itch.io/lemma">Build 313</a> is available! And we're on <a href="https://www.kickstarter.com/projects/et1337/869028656?token=1ccf4cd0">Kickstarter</a> and <a href="http://steamcommunity.com/sharedfiles/filedetails/?id=239551444">Greenlight</a>.
 	</center>
 	<br />
 	<iframe width="560" height="315" src="http://www.youtube.com/embed/wwnujGWmhEg?autohide=1&modestbranding=1&rel=0&showinfo=0" frameborder="0" allowfullscreen></iframe>
@@ -40,16 +41,19 @@ Surfaces pop in and out of existence at will.
 
 {% block footer %}
 	<footer>
-		<a href="https://twitter.com/et1337" class="twitter-follow-button" data-show-count="true" data-lang="en">Follow</a>
+		<br />
+		<a href="https://twitter.com/et1337" class="twitter-follow-button" data-show-count="true" data-lang="en">Follow</a><br /><br />
+		<iframe src="http://steamcommunity.com/sharedfiles/widget/239551444" width="336" height="137" frameborder="0" scrolling="no"></iframe><br />
+		<iframe src="https://www.kickstarter.com/projects/et1337/869028656/widget/card.html" width="220" height="380" frameborder="0" scrolling="no"></iframe><br />
 		<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="http://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-		<br /><a id="twitch" href="http://www.twitch.tv/emt1337">Development Stream</a>
+		<br /><a id="twitch" href="http://www.twitch.tv/emt1337">Twitch Stream</a>
 		<script src="https://ttv-api.s3.amazonaws.com/twitch.min.js"></script>
 		<script>
 			Twitch.init({ clientId: 'c56est2cughcn9tj87viq9j3sugebpn' }, function(error, status)
 			{
 				Twitch.api({ method: 'streams/emt1337' }, function(error, data)
 				{
-					$('#twitch').text('Development Stream (' + (data.stream !== null ? 'Online' : 'Offline') + ')');
+					$('#twitch').text('Twitch Stream (' + (data.stream !== null ? 'Online' : 'Offline') + ')');
 				});
 			});
 		</script>
