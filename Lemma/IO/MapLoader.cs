@@ -21,6 +21,9 @@ namespace Lemma.IO
 		{
 			main.LoadingMap.Execute(filename);
 
+			// HACK HACK HACK
+			main.MapFile.InternalValue = filename;
+
 			bool inAppPackage = false;
 
 			if (directory == null)

@@ -37,9 +37,6 @@ namespace Lemma
 		public const int MapVersion = 297;
 		public const int Build = 297;
 
-		protected string lastMapFile;
-		protected float lastSessionTotalTime;
-
 		public class Config
 		{
 #if DEVELOPMENT
@@ -362,9 +359,9 @@ namespace Lemma
 
 		public void SaveAnalytics()
 		{
-			string map = string.IsNullOrEmpty(this.lastMapFile) ? this.MapFile : this.lastMapFile;
+			string map = this.MapFile;
 			string filename = GameMain.Build.ToString() + "-" + (string.IsNullOrEmpty(map) ? "null" : Path.GetFileName(map)) + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml";
-			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, filename), map, this.lastSessionTotalTime);
+			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, filename), map, this.TotalTime);
 		}
 
 		public string[] AnalyticsSessionFiles
@@ -480,10 +477,6 @@ namespace Lemma
 
 				this.MapFile.Set = delegate(string value)
 				{
-					this.lastSessionTotalTime = this.TotalTime;
-					this.lastMapFile = this.MapFile;
-					this.ClearEntities(false);
-
 					if (value == null || value.Length == 0)
 					{
 						this.MapFile.InternalValue = null;
@@ -492,7 +485,6 @@ namespace Lemma
 
 					try
 					{
-						this.MapFile.InternalValue = value;
 						string directory = this.currentSave == null ? null : Path.Combine(this.saveDirectory, this.currentSave);
 						if (value == GameMain.MenuMap)
 							directory = null; // Don't try to load the menu from a save game
