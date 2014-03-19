@@ -50,8 +50,11 @@ namespace Lemma.Factories
 
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerExited, delegate(Entity p)
 			{
-				p.GetOrMakeProperty<string>("NoteText").Value = null;
-				p.GetOrMakeProperty<string>("NoteImage").Value = null;
+				if (p != null)
+				{
+					p.GetOrMakeProperty<string>("NoteText").Value = null;
+					p.GetOrMakeProperty<string>("NoteImage").Value = null;
+				}
 
 				if (msg != null)
 				{
