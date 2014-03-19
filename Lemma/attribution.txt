@@ -30,6 +30,7 @@ foliage.png based on Leaves-4145.jpg by David R. Tribble -- http://commons.wikim
 Audio source material pulled from FreeSound -- http://freesound.org
 
 
+S: Metal Lever 1.aif by timgormly -- http://www.freesound.org/people/timgormly/sounds/151271/ -- License: Creative Commons 0
 drone0006.flac by Trebblofang -- http://www.freesound.org/people/Trebblofang/sounds/172672/ -- License: Creative Commons 0
 lucid drone.wav by decembered -- http://www.freesound.org/people/decembered/sounds/42761/ -- License: Attribution
 Stick-Swoosh Whoosh by Hitrison -- http://www.freesound.org/people/Hitrison/sounds/216675/ -- License: Attribution

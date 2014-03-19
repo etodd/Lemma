@@ -33,7 +33,6 @@ namespace Lemma.Factories
 
 			PointLight light = result.Get<PointLight>();
 			Transform transform = result.Get<Transform>();
-			Property<float> attachOffset = result.GetOrMakeProperty<float>("AttachmentOffset", true);
 			light.Add(new TwoWayBinding<Vector3>(light.Position, transform.Position));
 
 			if (result.GetOrMakeProperty<bool>("Attach", true))
@@ -44,18 +43,11 @@ namespace Lemma.Factories
 
 		public override void AttachEditorComponents(Entity result, Main main)
 		{
-			Model model = new Model();
-			model.Filename.Value = "Models\\sphere";
-			model.IsInstanced.Value = false;
+			base.AttachEditorComponents(result, main);
+			Model model = result.Get<Model>("EditorModel");
+
 			Property<Vector3> color = result.Get<PointLight>().Color;
 			model.Add(new Binding<Vector3>(model.Color, color));
-			model.Scale.Value = new Vector3(0.5f);
-			model.Editable = false;
-			model.Serialize = false;
-
-			result.Add("EditorModel", model);
-
-			model.Add(new Binding<Matrix>(model.Transform, result.Get<Transform>().Matrix));
 
 			MapAttachable.AttachEditorComponents(result, main, color);
 		}
