@@ -35,7 +35,7 @@ namespace Lemma
 
 		public const int ConfigVersion = 6;
 		public const int MapVersion = 313;
-		public const int Build = 313;
+		public const int Build = 320;
 
 		public class Config
 		{
@@ -65,8 +65,7 @@ namespace Lemma
 			public Property<PCInput.PCInputBinding> Backward = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.S } };
 			public Property<PCInput.PCInputBinding> Jump = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Space, GamePadButton = Buttons.RightTrigger } };
 			public Property<PCInput.PCInputBinding> Parkour = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.LeftShift, GamePadButton = Buttons.LeftTrigger } };
-			public Property<PCInput.PCInputBinding> Roll = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.RightMouseButton, GamePadButton = Buttons.LeftStick } };
-			public Property<PCInput.PCInputBinding> Kick = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton, GamePadButton = Buttons.RightStick } };
+			public Property<PCInput.PCInputBinding> RollKick = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton, GamePadButton = Buttons.RightStick } };
 			public Property<PCInput.PCInputBinding> TogglePhone = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Tab, GamePadButton = Buttons.Y } };
 			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F5, GamePadButton = Buttons.Back } };
 			public Property<PCInput.PCInputBinding> ToggleFullscreen = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F11 } };
@@ -378,7 +377,16 @@ namespace Lemma
 			List<Session> result = new List<Session>();
 			foreach (string file in Directory.GetFiles(this.analyticsDirectory, "*", SearchOption.TopDirectoryOnly))
 			{
-				Session s = Session.Load(file);
+				Session s;
+				try
+				{
+					s = Session.Load(file);
+				}
+				catch (Exception e)
+				{
+					throw new Exception("Error loading analytics file " + file, e);
+				}
+
 				if (s.Build == GameMain.Build)
 				{
 					string sessionMap = s.Map;
@@ -1281,8 +1289,7 @@ namespace Lemma
 				addInputSetting(this.Settings.Right, "Move Right", false, true);
 				addInputSetting(this.Settings.Jump, "Jump", true, true);
 				addInputSetting(this.Settings.Parkour, "Parkour", true, true);
-				addInputSetting(this.Settings.Roll, "Roll / Crouch", true, true);
-				addInputSetting(this.Settings.Kick, "Kick", true, true);
+				addInputSetting(this.Settings.RollKick, "Roll / Kick", true, true);
 				addInputSetting(this.Settings.TogglePhone, "Toggle Phone", true, true);
 				addInputSetting(this.Settings.QuickSave, "Quicksave", true, true);
 

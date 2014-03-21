@@ -412,8 +412,8 @@ namespace Lemma.Factories
 									}
 									analyticsSessions.Add(new SessionEntry { Session = s });
 								}
-								analyticsEvents.Add(distinctEventNames.Keys.Select(x => new EventEntry { Name = x }));
-								analyticsProperties.Add(distinctPropertyNames.Keys.Select(x => new PropertyEntry { Name = x }));
+								analyticsEvents.AddAll(distinctEventNames.Keys.Select(x => new EventEntry { Name = x }));
+								analyticsProperties.AddAll(distinctPropertyNames.Keys.Select(x => new PropertyEntry { Name = x }));
 								timeline.Size.Value = new Vector2(analyticsSessions.Max(x => x.Session.TotalTime), timelineScroller.Size.Value.Y);
 								timelines.Scale.Value = new Vector2(timelineScroller.Size.Value.X / timeline.Size.Value.X, 1.0f);
 							}
@@ -694,7 +694,7 @@ namespace Lemma.Factories
 						}
 					}
 
-					timeline.Children.Add(s.Session.Events.Where(x => x.Name == ee.Name).Select(createEventLines));
+					timeline.Children.AddAll(s.Session.Events.Where(x => x.Name == ee.Name).Select(createEventLines));
 				}
 			};
 
@@ -860,7 +860,7 @@ namespace Lemma.Factories
 				result.Add(instance);
 				sessionPositionModels.Add(s.Session, instance);
 				s.Active.Value = true;
-				timeline.Children.Add(s.Session.Events.Where(x => analyticsActiveEvents.FirstOrDefault(y => y.Name == x.Name) != null).Select(createEventLines));
+				timeline.Children.AddAll(s.Session.Events.Where(x => analyticsActiveEvents.FirstOrDefault(y => y.Name == x.Name) != null).Select(createEventLines));
 				playbackLocation.Reset();
 
 				refreshPropertyGraphs();

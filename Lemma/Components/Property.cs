@@ -297,7 +297,7 @@ namespace Lemma.Components
 				this.ItemAdded(this.InternalList.Count - 1, t);
 		}
 
-		public void Add(IEnumerable<Type> items)
+		public void AddAll(IEnumerable<Type> items)
 		{
 			foreach (Type t in items)
 				this.Add(t);

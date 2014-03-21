@@ -1660,25 +1660,6 @@ namespace Lemma.Factories
 						Vector3 supportLocation = transform.Position.Value + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
 						baseVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
 					}
-
-					if (dot < -0.8f)
-					{
-						// We're facing the wall and jumping backward away from it
-						// Do a quick spin move
-
-						const float spinDuration = 0.25f;
-
-						float spinAmount = (-(float)Math.Atan2(jumpDirection.Y, jumpDirection.X) + (float)Math.PI * 0.5f).ClosestAngle(input.Mouse.Value.X) - input.Mouse.Value.X;
-
-						result.Add(new Animation
-						(
-							new Animation.Custom(delegate(float x)
-							{
-								Vector2 oldMouse = input.Mouse;
-								input.Mouse.Value = new Vector2((oldMouse.X + (main.ElapsedTime / spinDuration) * spinAmount).ToAngleRange(), oldMouse.Y);
-							}, spinDuration)
-						));
-					}
 				};
 
 				if (!onlyVault && !vaulting && !supported && player.WallRunState.Value == Player.WallRun.None)
@@ -2176,144 +2157,27 @@ namespace Lemma.Factories
 					kickUpdate = null;
 					model.Stop("Kick");
 					player.EnableWalking.Value = true;
-					player.AllowUncrouch.Value = true;
+					if (!input.GetInput(settings.RollKick))
+						player.AllowUncrouch.Value = true;
 					rotationLocked.Value = false;
 				}
 			};
-			input.Bind(settings.Kick, PCInput.InputState.Down, delegate()
+
+			bool rolling = false;
+
+			input.Bind(settings.RollKick, PCInput.InputState.Down, delegate()
 			{
-				if (!player.EnableMoves || phoneActive)
+				if (!player.EnableMoves || phoneActive || rolling || kickUpdate != null)
 					return;
 
 				Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
 				Vector3 forward = -rotationMatrix.Forward;
 				Vector3 right = rotationMatrix.Right;
 
-				if (!model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && kickUpdate == null)
+				if (player.EnableCrouch && player.EnableRoll && !player.IsSwimming && (!player.EnableKick || !player.IsSupported || player.LinearVelocity.Value.Length() < 2.0f))
 				{
-					// Kick
-					canKick = false;
-
-					Session.Recorder.Event(main, "Kick");
-
-					deactivateWallRun();
-
-					model.Stop
-					(
-						"CrouchWalkBackwards",
-						"CrouchWalk",
-						"CrouchStrafeRight",
-						"CrouchStrafeLeft",
-						"Idle",
-						"WalkBackwards",
-						"Walk",
-						"StrafeRight",
-						"StrafeLeft",
-						"Jump",
-						"JumpLeft",
-						"JumpRight",
-						"JumpBackward"
-					);
-					model.StartClip("CrouchIdle", 2, true);
-
-					player.EnableWalking.Value = false;
-					rotationLocked.Value = true;
-
-					player.Crouched.Value = true;
-					player.AllowUncrouch.Value = false;
-
-					player.LinearVelocity.Value += forward * Math.Max(4.0f, Vector3.Dot(forward, player.LinearVelocity) * 0.5f) + new Vector3(0, player.JumpSpeed * 0.25f, 0);
-
-					Vector3 kickVelocity = player.LinearVelocity;
-
-					result.Add(new Animation
-					(
-						new Animation.Delay(0.25f),
-						new Animation.Execute(delegate() { Sound.PlayCue(main, "Kick", transform.Position); })
-					));
-					model.StartClip("Kick", 5, false);
-
-					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
-
-					bool shouldBuildFloor = false, shouldBreakFloor = false;
-
-					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height);
-					if (floorRaycast.Map == null)
-						shouldBreakFloor = true;
-					else if (player.EnableEnhancedWallRun)
-					{
-						if (floorRaycast.Coordinate.Value.Data.Name != "Temporary")
-							shouldBuildFloor = true;
-					}
-
-					Direction forwardDir = Direction.None;
-					Direction rightDir = Direction.None;
-
-					if (shouldBuildFloor)
-					{
-						forwardDir = floorRaycast.Map.GetRelativeDirection(forward);
-						rightDir = floorRaycast.Map.GetRelativeDirection(right);
-					}
-
-					float kickTime = 0.0f;
-					kickUpdate = new Updater
-					{
-						delegate(float dt)
-						{
-							kickTime += dt;
-							if (kickTime > 0.75f || player.LinearVelocity.Value.Length() < 0.1f)
-								stopKick();
-							else
-							{
-								player.LinearVelocity.Value = new Vector3(kickVelocity.X, player.LinearVelocity.Value.Y, kickVelocity.Z);
-								breakWalls(forward, right, shouldBreakFloor);
-								if (shouldBuildFloor)
-									buildFloor(floorRaycast.Map, floorRaycast.Coordinate.Value, forwardDir, rightDir);
-							}
-						}
-					};
-					result.Add(kickUpdate);
-				}
-			});
-
-			bool rolling = false;
-			input.Bind(settings.Roll, PCInput.InputState.Down, delegate()
-			{
-				if (kickUpdate == null && !rolling && !player.IsSwimming)
-				{
-					if (!player.EnableRoll || !player.EnableMoves)
-					{
-						if (player.EnableWalking && player.EnableCrouch && player.IsSupported)
-						{
-							// Just crouch, don't roll
-							player.Crouched.Value = true;
-							player.AllowUncrouch.Value = false;
-							model.Stop
-							(
-								"CrouchWalkBackwards",
-								"CrouchWalk",
-								"CrouchStrafeRight",
-								"CrouchStrafeLeft",
-								"Idle",
-								"WalkBackwards",
-								"Walk",
-								"StrafeRight",
-								"StrafeLeft",
-								"Jump",
-								"JumpLeft",
-								"JumpRight",
-								"JumpBackward"
-							);
-							model.StartClip("CrouchIdle", 2, true);
-						}
-						return;
-					}
 					// Try to roll
 					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
-
-					Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
-					Vector3 forward = -rotationMatrix.Forward;
-					Vector3 right = rotationMatrix.Right;
 
 					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height + 1.0f);
 
@@ -2421,7 +2285,7 @@ namespace Lemma.Factories
 								{
 									rollUpdate.Delete.Execute();
 									player.EnableWalking.Value = true;
-									if (!input.GetInput(settings.Roll))
+									if (!input.GetInput(settings.RollKick))
 										player.AllowUncrouch.Value = true;
 									rotationLocked.Value = false;
 									rollEnded = main.TotalTime;
@@ -2440,14 +2304,99 @@ namespace Lemma.Factories
 							}
 						};
 						result.Add(rollUpdate);
-						return;
 					}
+				}
+
+				if (!rolling && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && kickUpdate == null)
+				{
+					// Kick
+					canKick = false;
+
+					Session.Recorder.Event(main, "Kick");
+
+					deactivateWallRun();
+
+					model.Stop
+					(
+						"CrouchWalkBackwards",
+						"CrouchWalk",
+						"CrouchStrafeRight",
+						"CrouchStrafeLeft",
+						"Idle",
+						"WalkBackwards",
+						"Walk",
+						"StrafeRight",
+						"StrafeLeft",
+						"Jump",
+						"JumpLeft",
+						"JumpRight",
+						"JumpBackward"
+					);
+					model.StartClip("CrouchIdle", 2, true);
+
+					player.EnableWalking.Value = false;
+					rotationLocked.Value = true;
+
+					player.Crouched.Value = true;
+					player.AllowUncrouch.Value = false;
+
+					player.LinearVelocity.Value += forward * Math.Max(4.0f, Vector3.Dot(forward, player.LinearVelocity) * 0.5f) + new Vector3(0, player.JumpSpeed * 0.25f, 0);
+
+					Vector3 kickVelocity = player.LinearVelocity;
+
+					result.Add(new Animation
+					(
+						new Animation.Delay(0.25f),
+						new Animation.Execute(delegate() { Sound.PlayCue(main, "Kick", transform.Position); })
+					));
+					model.StartClip("Kick", 5, false);
+
+					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
+
+					bool shouldBuildFloor = false, shouldBreakFloor = false;
+
+					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height);
+					if (floorRaycast.Map == null)
+						shouldBreakFloor = true;
+					else if (player.EnableEnhancedWallRun)
+					{
+						if (floorRaycast.Coordinate.Value.Data.Name != "Temporary")
+							shouldBuildFloor = true;
+					}
+
+					Direction forwardDir = Direction.None;
+					Direction rightDir = Direction.None;
+
+					if (shouldBuildFloor)
+					{
+						forwardDir = floorRaycast.Map.GetRelativeDirection(forward);
+						rightDir = floorRaycast.Map.GetRelativeDirection(right);
+					}
+
+					float kickTime = 0.0f;
+					kickUpdate = new Updater
+					{
+						delegate(float dt)
+						{
+							kickTime += dt;
+							if (kickTime > 0.75f || player.LinearVelocity.Value.Length() < 0.1f)
+								stopKick();
+							else
+							{
+								player.LinearVelocity.Value = new Vector3(kickVelocity.X, player.LinearVelocity.Value.Y, kickVelocity.Z);
+								breakWalls(forward, right, shouldBreakFloor);
+								if (shouldBuildFloor)
+									buildFloor(floorRaycast.Map, floorRaycast.Coordinate.Value, forwardDir, rightDir);
+							}
+						}
+					};
+					result.Add(kickUpdate);
 				}
 			});
 
-			input.Bind(settings.Roll, PCInput.InputState.Up, delegate()
+			input.Bind(settings.RollKick, PCInput.InputState.Up, delegate()
 			{
-				if (!rolling)
+				if (!rolling && kickUpdate == null)
 					player.AllowUncrouch.Value = true;
 			});
 

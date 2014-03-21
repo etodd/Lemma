@@ -273,8 +273,9 @@ namespace Lemma.Factories
 					Density = 1,
 					FootstepCue = "WoodFootsteps",
 					RubbleCue = "WoodRubble",
-					DiffuseMap = "Textures\\debug",
+					DiffuseMap = "Textures\\white",
 					NormalMap = "Textures\\plain-normal",
+					Tint = new Vector3(0.5f),
 				},
 				new Map.CellState
 				{
