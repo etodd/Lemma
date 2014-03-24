@@ -578,7 +578,8 @@ namespace Lemma.Factories
 			}));
 
 			// Zone management
-			Zone currentZone = null;
+			Property<Zone> currentZone = result.GetOrMakeProperty<Zone>("CurrentZone");
+			currentZone.Serialize = false;
 
 			result.Add(new CommandBinding<Entity>(main.EntityAdded, delegate(Entity e)
 			{
@@ -613,7 +614,7 @@ namespace Lemma.Factories
 
 			Action<Zone> updateZones = delegate(Zone newZone)
 			{
-				currentZone = newZone;
+				currentZone.Value = newZone;
 
 				if (newZone != null)
 					Sound.ReverbSettings(main, newZone.ReverbAmount, newZone.ReverbSize);
@@ -651,7 +652,7 @@ namespace Lemma.Factories
 
 					Zone newZone = Zone.Get(main.Camera.Position);
 
-					if (newZone != currentZone || (newZone == null && (main.Camera.Position - lastUpdatedCameraPosition).Length() > 10.0f))
+					if (newZone != currentZone.Value || (newZone == null && (main.Camera.Position - lastUpdatedCameraPosition).Length() > 10.0f))
 						updateZones(newZone);
 				}
 			};
