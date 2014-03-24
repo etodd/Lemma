@@ -384,7 +384,8 @@ namespace Lemma
 				}
 				catch (Exception e)
 				{
-					throw new Exception("Error loading analytics file " + file, e);
+					Log.d("Error loading analytics file " + file);
+					continue;
 				}
 
 				if (s.Build == GameMain.Build)
@@ -2002,12 +2003,15 @@ namespace Lemma
 									if (respawnMapEntity != null && respawnMapEntity.Active)
 									{
 										Map respawnMap = respawnMapEntity.Get<Map>();
-										if (respawnMap.Active && respawnMap[respawnLocation.Coordinate].ID != 0 && respawnMap.GetAbsoluteVector(respawnMap.GetRelativeDirection(Direction.PositiveY).GetVector()).Y > 0.5f)
+										Vector3 absolutePos = respawnMap.GetAbsolutePosition(respawnLocation.Coordinate);
+										if (respawnMap.Active
+											&& respawnMap[respawnLocation.Coordinate].ID != 0
+											&& respawnMap.GetAbsoluteVector(respawnMap.GetRelativeDirection(Direction.PositiveY).GetVector()).Y > 0.5f
+											&& Agent.Query(absolutePos, 0.0f, 20.0f) == null)
 										{
 											supportedLocations++;
-											Vector3 absolutePos = respawnMap.GetAbsolutePosition(respawnLocation.Coordinate);
 											DynamicMap dynamicMap = respawnMap as DynamicMap;
-											if (dynamicMap == null || dynamicMap.IsAffectedByGravity || absolutePos.Y > respawnLocation.OriginalPosition.Y - 1.0f)
+											if (dynamicMap == null || absolutePos.Y > respawnLocation.OriginalPosition.Y - 1.0f)
 											{
 												Map.GlobalRaycastResult hit = Map.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Up, 2);
 												if (hit.Map == null)
