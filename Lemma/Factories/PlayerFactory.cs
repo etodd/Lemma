@@ -2613,18 +2613,32 @@ namespace Lemma.Factories
 			noteUi.Serialize = false;
 			noteUi.Enabled.Value = false;
 
-			Model note = result.GetOrCreate<Model>("Note");
-			note.Filename.Value = "Models\\plane";
-			note.EffectFile.Value = "Effects\\Default";
-			note.Add(new Binding<Microsoft.Xna.Framework.Graphics.RenderTarget2D>(note.GetRenderTarget2DParameter("Diffuse" + Model.SamplerPostfix), noteUi.RenderTarget));
-			note.Add(new Binding<Matrix>(note.Transform, x => Matrix.CreateTranslation(-0.005f, 0.05f, 0.08f) * x, phoneModel.Transform));
-			note.Scale.Value = new Vector3(1.0f, (float)noteUi.RenderTargetSize.Value.Y * noteScale, (float)noteUi.RenderTargetSize.Value.X * noteScale);
-			note.Serialize = false;
-			note.Enabled.Value = false;
+			Model noteModel = result.GetOrCreate<Model>("Note");
+			noteModel.Filename.Value = "Models\\plane";
+			noteModel.EffectFile.Value = "Effects\\Default";
+			noteModel.Add(new Binding<Microsoft.Xna.Framework.Graphics.RenderTarget2D>(noteModel.GetRenderTarget2DParameter("Diffuse" + Model.SamplerPostfix), noteUi.RenderTarget));
+			noteModel.Add(new Binding<Matrix>(noteModel.Transform, x => Matrix.CreateTranslation(-0.005f, 0.05f, 0.08f) * x, phoneModel.Transform));
+			noteModel.Scale.Value = new Vector3(1.0f, (float)noteUi.RenderTargetSize.Value.Y * noteScale, (float)noteUi.RenderTargetSize.Value.X * noteScale);
+			noteModel.Serialize = false;
+			noteModel.Enabled.Value = false;
 
 			Property<bool> noteActive = result.GetOrMakeProperty<bool>("NoteActive");
-			Property<string> noteText = result.GetOrMakeProperty<string>("NoteText");
-			Property<string> noteImage = result.GetOrMakeProperty<string>("NoteImage");
+			Property<Entity.Handle> note = result.GetOrMakeProperty<Entity.Handle>("Note");
+
+			Container togglePhoneMessage = null;
+
+			result.Add(new NotifyBinding(delegate()
+			{
+				bool hasNote = note.Value.Target != null && note.Value.Target.Active;
+
+				if (togglePhoneMessage == null && hasNote)
+					togglePhoneMessage = ((GameMain)main).ShowMessage(result, "[" + ((GameMain)main).Settings.TogglePhone.Value.ToString() + "]");
+				else if (togglePhoneMessage != null && !hasNote && !phoneActive)
+				{
+					((GameMain)main).HideMessage(result, togglePhoneMessage);
+					togglePhoneMessage = null;
+				}
+			}, note));
 
 			// Note UI
 
@@ -2639,13 +2653,11 @@ namespace Lemma.Factories
 			noteUi.Root.Children.Add(noteLayout);
 
 			Sprite noteUiImage = new Sprite();
-			noteUiImage.Add(new Binding<string>(noteUiImage.Image, noteImage));
 			noteLayout.Children.Add(noteUiImage);
 
 			TextElement noteUiText = new TextElement();
 			noteUiText.FontFile.Value = "Font";
 			noteUiText.Tint.Value = new Microsoft.Xna.Framework.Color(0.1f, 0.1f, 0.1f);
-			noteUiText.Add(new Binding<string>(noteUiText.Text, noteText));
 			noteUiText.Add(new Binding<float, Vector2>(noteUiText.WrapWidth, x => x.X, noteLayout.Size));
 			noteLayout.Children.Add(noteUiText);
 
@@ -2657,12 +2669,18 @@ namespace Lemma.Factories
 				input.EnableLook.Value = input.EnableMouse.Value = !noteActive;
 				main.IsMouseVisible.Value = false;
 				player.EnableWalking.Value = !noteActive;
-				note.Enabled.Value = noteActive;
+				noteModel.Enabled.Value = noteActive;
 				noteUi.Enabled.Value = noteActive;
 
 				model.Stop("Phone");
 				if (noteActive)
 				{
+					Entity noteEntity = note.Value.Target;
+					Property<bool> collected = noteEntity.GetOrMakeProperty<bool>("Collected");
+					if (!collected)
+						collected.Value = true;
+					noteUiImage.Image.Value = noteEntity.GetOrMakeProperty<string>("Image");
+					noteUiText.Text.Value = noteEntity.GetOrMakeProperty<string>("Text");
 					model.StartClip("Phone", 6, true);
 					float startRotationY = input.Mouse.Value.Y;
 					// Level the player's view
@@ -2678,7 +2696,6 @@ namespace Lemma.Factories
 
 			// Toggle phone
 
-			Container togglePhoneMessage = null;
 			Container phoneTutorialMessage = null;
 
 			Action<bool> showPhone = delegate(bool show)
@@ -2737,7 +2754,7 @@ namespace Lemma.Factories
 			{
 				if (noteActive || phoneActive || phone.CanReceiveMessages)
 				{
-					if (!phoneActive && (!string.IsNullOrEmpty(noteText) || !string.IsNullOrEmpty(noteImage)))
+					if (!phoneActive && (noteActive || note.Value.Target != null && note.Value.Target.Active))
 						showNote(!noteActive);
 					else if (phone.Enabled)
 						showPhone(!phoneActive);

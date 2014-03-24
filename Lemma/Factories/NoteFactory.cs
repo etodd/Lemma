@@ -35,32 +35,36 @@ namespace Lemma.Factories
 			Property<string> text = result.GetOrMakeProperty<string>("Text", true);
 			Property<string> image = result.GetOrMakeProperty<string>("Image", true);
 
+			Property<bool> collected = result.GetOrMakeProperty<bool>("Collected");
+			result.Add(new NotifyBinding(delegate()
+			{
+				if (collected)
+				{
+					GameMain gameMain = (GameMain)main;
+					List<Entity> notes = main.Get("Note").ToList();
+					Container msg = gameMain.ShowMessage
+					(
+						result,
+						notes.Where(x => x.GetOrMakeProperty<bool>("Collected")).Count().ToString()
+						+ " / " + notes.Count.ToString() + " notes collected"
+					);
+					gameMain.HideMessage(result, msg, 4.0f);
+				}
+			}, collected));
+
 			trigger.Serialize = false;
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
 			trigger.Radius.Value = 4.0f;
 
-			Container msg = null;
-			GameMain gameMain = (GameMain)main;
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity p)
 			{
-				p.GetOrMakeProperty<string>("NoteText").Value = text;
-				p.GetOrMakeProperty<string>("NoteImage").Value = image;
-				msg = gameMain.ShowMessage(result, "[" + gameMain.Settings.TogglePhone.Value.ToString() + "]");
+				p.GetOrMakeProperty<Entity.Handle>("Note").Value = result;
 			}));
 
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerExited, delegate(Entity p)
 			{
 				if (p != null)
-				{
-					p.GetOrMakeProperty<string>("NoteText").Value = null;
-					p.GetOrMakeProperty<string>("NoteImage").Value = null;
-				}
-
-				if (msg != null)
-				{
-					gameMain.HideMessage(result, msg);
-					msg = null;
-				}
+					p.GetOrMakeProperty<Entity.Handle>("Note").Value = null;
 			}));
 
 			if (result.GetOrMakeProperty<bool>("Attach", true))
