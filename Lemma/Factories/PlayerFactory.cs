@@ -366,6 +366,8 @@ namespace Lemma.Factories
 					lockedRotationValue = rotation.Value.ClosestAngle(input.Mouse.Value.X);
 					rotationLockBlending = 0.0f;
 				}
+				else if (!rotationLocked.Value && value)
+					rotationLockBlending = 0.0f;
 				rotationLocked.InternalValue = value;
 			};
 
@@ -379,13 +381,15 @@ namespace Lemma.Factories
 
 			update.Add(delegate(float dt)
 			{
+				if (rotationLockBlending < rotationLockBlendTime)
+					rotationLockBlending += dt;
+
 				if (!rotationLocked)
 				{
 					if (rotationLockBlending < rotationLockBlendTime)
 					{
 						lockedRotationValue = lockedRotationValue.ClosestAngle(input.Mouse.Value.X);
 						rotation.Value = lockedRotationValue + (input.Mouse.Value.X - lockedRotationValue) * (rotationLockBlending / rotationLockBlendTime);
-						rotationLockBlending += dt;
 					}
 					else
 						rotation.Value = input.Mouse.Value.X;
@@ -527,8 +531,25 @@ namespace Lemma.Factories
 			// Update camera
 			update.Add(delegate(float dt)
 			{
-				relativeHeadBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.5f);
-				relativeSpineBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.25f);
+				float blend;
+
+				if (rotationLocked)
+				{
+					if (rotationLockBlending < rotationLockBlendTime)
+						blend = (1.0f - rotationLockBlending / rotationLockBlendTime);
+					else
+						blend = 0.0f;
+				}
+				else
+				{
+					if (rotationLockBlending < rotationLockBlendTime)
+						blend = rotationLockBlending / rotationLockBlendTime;
+					else
+						blend = 1.0f;
+				}
+
+				relativeHeadBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.5f * blend);
+				relativeSpineBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.25f * blend);
 				model.UpdateWorldTransforms();
 
 				float targetAngle = input.Mouse.Value.Y * 0.75f;
@@ -538,6 +559,8 @@ namespace Lemma.Factories
 					angle *= 0.9f;
 				else
 					angle = Math.Min(0.5f, angle * 1.1f);
+				
+				angle *= blend;
 
 				Matrix r = Matrix.CreateRotationX(angle);
 
@@ -658,24 +681,26 @@ namespace Lemma.Factories
 					// Update footstep sound interval when wall-running
 					if (player.WallRunState != Player.WallRun.None)
 					{
+						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "JumpFall", "CrouchFall", "Vault");
 						footstepTimer.Interval.Value = 0.37f / model[player.WallRunState == Player.WallRun.Straight ? "WallWalkStraight" : (player.WallRunState == Player.WallRun.Left ? "WallWalkLeft" : "WallWalkRight")].Speed;
 						return;
 					}
 
 					model.Stop("WallWalkLeft", "WallWalkRight", "WallWalkStraight", "WallSlideDown", "WallSlideReverse");
-					if (player.IsSupported && !lastSupported)
+
+					if (player.IsSupported)
 					{
-						canKick = true;
-						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "JumpFall", "Vault");
-						if (main.TotalTime > lastLandAnimationPlayed + 0.5f)
+						if (!lastSupported)
 						{
-							footstepTimer.Command.Execute();
-							Sound.PlayCue(main, "Land", transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0));
+							if (main.TotalTime > lastLandAnimationPlayed + 0.5f && !player.Crouched)
+							{
+								footstepTimer.Command.Execute();
+								Sound.PlayCue(main, "Land", transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0));
+							}
+							lastLandAnimationPlayed = main.TotalTime;
 						}
-						lastLandAnimationPlayed = main.TotalTime;
-					}
-					else if (player.IsSupported)
-					{
+
+						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "JumpFall", "CrouchFall", "Vault");
 						canKick = true;
 
 						Vector2 dir = input.Movement;
@@ -739,9 +764,17 @@ namespace Lemma.Factories
 							"StrafeRight",
 							"StrafeLeft"
 						);
-						if (!model.IsPlaying("Fall") && !model.IsPlaying("JumpFall"))
+						if (player.Crouched)
 						{
-							model.Stop("JumpFall", "Fall");
+							if (!model.IsPlaying("CrouchFall"))
+							{
+								model.Stop("Fall, JumpFall");
+								model.StartClip("CrouchFall", 0, true);
+							}
+						}
+						else if (!model.IsPlaying("Fall") && !model.IsPlaying("JumpFall"))
+						{
+							model.Stop("JumpFall", "Fall", "CrouchFall");
 							bool jumpFall = model.IsPlaying("Jump", "JumpLeft", "JumpBackward", "JumpRight");
 							model.StartClip(jumpFall ? "JumpFall" : "Fall", 0, true);
 						}
@@ -945,9 +978,9 @@ namespace Lemma.Factories
 
 					if (state == Player.WallRun.Reverse)
 						wallVector = -wallVector;
-					else
-						rotation.Value = (float)Math.Atan2(wallVector.X, wallVector.Z);
 
+					// Make sure we lock in the correct rotation value
+					rotation.Value = (float)Math.Atan2(wallVector.X, wallVector.Z);
 					rotationLocked.Value = true;
 				}
 				else
@@ -1004,6 +1037,7 @@ namespace Lemma.Factories
 					bool wallRunJumpDelayPassed = main.TotalTime - lastWallJump > wallRunDelay;
 
 					Matrix matrix = Matrix.CreateRotationY(rotation);
+
 					Vector3 forwardVector = -matrix.Forward;
 
 					Vector3 wallVector;
@@ -1087,15 +1121,14 @@ namespace Lemma.Factories
 			Action deactivateWallRun = delegate()
 			{
 				if (player.WallRunState.Value != Player.WallRun.None)
-				{
 					lastWallRunEnded = main.TotalTime; // Prevent the player from repeatedly wall-running and wall-jumping ad infinitum.
-					wallRunMap = null;
-					wallDirection = Direction.None;
-					wallRunDirection = Direction.None;
-					player.WallRunState.Value = Player.WallRun.None;
-					rotationLocked.Value = false;
-					model.Stop("WallWalkLeft", "WallWalkRight", "WallWalkStraight", "WallSlideDown", "WallSlideReverse");
-				}
+
+				wallRunMap = null;
+				wallDirection = Direction.None;
+				wallRunDirection = Direction.None;
+				player.WallRunState.Value = Player.WallRun.None;
+				model.Stop("WallWalkLeft", "WallWalkRight", "WallWalkStraight", "WallSlideDown", "WallSlideReverse");
+				rotationLocked.Value = false;
 			};
 
 			Action<Vector3, Vector3, bool> breakWalls = delegate(Vector3 forward, Vector3 right, bool breakFloor)
@@ -1159,7 +1192,7 @@ namespace Lemma.Factories
 					if (jump(true, true)) // Try to vault up
 						return;
 
-					if (!wallRunMap.Active)
+					if (!wallRunMap.Active || player.IsSupported)
 					{
 						deactivateWallRun();
 						return;
@@ -1169,13 +1202,7 @@ namespace Lemma.Factories
 
 					if (wallRunState == Player.WallRun.Straight)
 					{
-						if (player.IsSupported)
-						{
-							// We landed on the ground
-							deactivateWallRun();
-							return;
-						}
-						else if (wallRunSpeed < 0.0f)
+						if (wallRunSpeed < 0.0f)
 						{
 							// Start sliding down
 							player.WallRunState.Value = wallRunState = Player.WallRun.Down;
@@ -1183,18 +1210,9 @@ namespace Lemma.Factories
 							model.StartClip("WallSlideDown", 5, true);
 						}
 					}
-					else if (wallRunState == Player.WallRun.Down || wallRunState == Player.WallRun.Reverse)
+					else if (wallRunState == Player.WallRun.Left || wallRunState == Player.WallRun.Right)
 					{
-						if (player.IsSupported)
-						{
-							// We landed on the ground
-							deactivateWallRun();
-							return;
-						}
-					}
-					else
-					{
-						if (player.IsSupported || wallRunSpeed < minWallRunSpeed)
+						if (wallRunSpeed < minWallRunSpeed)
 						{
 							// We landed on the ground or we're going too slow to continue wall-running
 							deactivateWallRun();
@@ -1921,8 +1939,8 @@ namespace Lemma.Factories
 
 			Action<Vector3> vaultDown = delegate(Vector3 forward)
 			{
-				const float vaultVerticalSpeed = 8.0f;
-				const float maxVaultTime = 1.25f;
+				const float vaultVerticalSpeed = -8.0f;
+				const float maxVaultTime = 0.5f;
 
 				Vector3 velocity = forward * player.MaxSpeed;
 				velocity.Y = player.LinearVelocity.Value.Y;
@@ -1956,24 +1974,19 @@ namespace Lemma.Factories
 							walkOffEdgeTimer += dt;
 
 							if (walkOffEdgeTimer > 0.1f)
-								player.LinearVelocity.Value = new Vector3(0, -vaultVerticalSpeed, 0);
+							{
+								player.LinearVelocity.Value = new Vector3(0, vaultVerticalSpeed, 0);
 
-							if (!input.GetInput(settings.Parkour))
-							{
-								delete = true;
-								result.Add(new Animation
-								(
-									new Animation.Delay(0.25f),
-									new Animation.Set<bool>(rotationLocked, false)
-								));
-							}
-							else
-							{
-								if (transform.Position.Value.Y < originalPosition.Y - 1.0f && activateWallRun(Player.WallRun.Reverse))
+								if (!input.GetInput(settings.Parkour)
+									|| transform.Position.Value.Y < originalPosition.Y - 3.0f
+									|| activateWallRun(Player.WallRun.Reverse))
+								{
 									delete = true;
+								}
 							}
 						}
-						else
+
+						if (walkOffEdgeTimer < 0.1f)
 						{
 							velocity = forward * player.MaxSpeed;
 							velocity.Y = player.LinearVelocity.Value.Y;
@@ -1984,6 +1997,8 @@ namespace Lemma.Factories
 						{
 							player.AllowUncrouch.Value = true;
 							player.EnableWalking.Value = true;
+							if (player.WallRunState.Value == Player.WallRun.None)
+								rotationLocked.Value = false;
 							vaultMover.Delete.Execute(); // Make sure we get rid of this vault mover
 							vaultMover = null;
 						}

@@ -119,6 +119,12 @@ namespace Lemma.Factories
 				},
 			};
 
+			ai.Add(new AI.State
+			{
+				Name = "Suspended",
+				Tasks = new[] { checkOperationalRadius, },
+			});
+
 			const float sightDistance = 30.0f;
 			const float hearingDistance = 15.0f;
 
