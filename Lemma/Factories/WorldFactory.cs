@@ -789,27 +789,39 @@ namespace Lemma.Factories
 				}
 			}));
 
+			List<PointLight> sparkLights = new List<PointLight>();
+			const float startSparkLightAttenuation = 5.0f;
+			const float sparkLightFadeTime = 0.5f;
+			int activeSparkLights = 0;
+
 			Action<Vector3> sparks = delegate(Vector3 pos)
 			{
 				ParticleSystem shatter = ParticleSystem.Get(main, "WhiteShatter");
-				for (int j = 0; j < 50; j++)
+				for (int j = 0; j < 30; j++)
 				{
 					Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
 					shatter.AddParticle(pos + offset, offset);
 				}
 
-				PointLight light = new PointLight();
-				result.Add(light);
+				PointLight light;
+				if (activeSparkLights < sparkLights.Count)
+				{
+					light = sparkLights[activeSparkLights];
+					light.Enabled.Value = true;
+				}
+				else
+				{
+					light = new PointLight();
+					result.Add(light);
+					sparkLights.Add(light);
+				}
+				activeSparkLights++;
+
 				light.Serialize = false;
 				light.Shadowed.Value = false;
-				light.Color.Value = new Vector3(0.8f);
-				light.Attenuation.Value = 6.0f;
+				light.Color.Value = new Vector3(1.0f);
+				light.Attenuation.Value = startSparkLightAttenuation;
 				light.Position.Value = pos;
-				result.Add(new Animation
-				(
-					new Animation.FloatMoveTo(light.Attenuation, 0.0f, 0.75f),
-					new Animation.Execute(light.Delete)
-				));
 
 				Sound.PlayCue(main, "Sparks", pos, 1.0f, 0.05f);
 			};
@@ -818,6 +830,23 @@ namespace Lemma.Factories
 			{
 				delegate(float dt)
 				{
+					float sparkLightFade = startSparkLightAttenuation * dt / sparkLightFadeTime;
+					for (int i = 0; i < activeSparkLights; i++)
+					{
+						PointLight light = sparkLights[i];
+						float a = light.Attenuation - sparkLightFade;
+						if (a < 0.0f)
+						{
+							light.Enabled.Value = false;
+							PointLight swap = sparkLights[activeSparkLights - 1];
+							sparkLights[i] = swap;
+							sparkLights[activeSparkLights - 1] = light;
+							activeSparkLights--;
+						}
+						else
+							light.Attenuation.Value = a;
+					}
+
 					for (int i = 0; i < blockQueue.Count; i++)
 					{
 						ScheduledBlock entry = blockQueue[i];
