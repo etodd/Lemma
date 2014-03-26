@@ -107,6 +107,9 @@ namespace Lemma.Components
 		{
 			Map.Coordinate cell = new Map.Coordinate { X = (int)Math.Floor(pos.X) & 255, Y = (int)Math.Floor(pos.Y) & 255, Z = (int)Math.Floor(pos.Z) & 255 };
 			
+			pos.X = pos.X % 256;
+			pos.Y = pos.Y % 256;
+			pos.Z = pos.Z % 256;
 			Vector3 withinCell = pos - new Vector3(cell.X, cell.Y, cell.Z);
 			
 			// Calculate contribution of gradients from each cell
@@ -184,6 +187,14 @@ namespace Lemma.Components
 		public Property<float> PrimaryFillThreshold = new Property<float> { Value = 0.0f };
 
 		public Property<float> SecondaryFillThreshold = new Property<float> { Value = 0.2f };
+
+		public float Sample(Map map, Map.Coordinate coord, float octave)
+		{
+			coord.X -= map.MinX;
+			coord.Y -= map.MinY;
+			coord.Z -= map.MinZ;
+			return this.noise3d(new Vector3(coord.X / octave, coord.Y / octave, coord.Z / octave));
+		}
 
 		public Map.CellState GetValue(Map map, Map.Coordinate coord)
 		{

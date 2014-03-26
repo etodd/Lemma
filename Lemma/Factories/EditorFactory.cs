@@ -1115,6 +1115,7 @@ namespace Lemma.Factories
 			}));
 
 			addCommand("Propagate current material", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.E }, () => editor.MapEditMode, editor.PropagateMaterial);
+			addCommand("Intersect current material with selection", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.I }, () => editor.MapEditMode, editor.IntersectMaterial);
 			addCommand("Propagate current material to selected box", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.R }, () => editor.MapEditMode, editor.PropagateMaterialBox);
 			addCommand("Propagate current material (non-contiguous)", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.T }, () => editor.MapEditMode, editor.PropagateMaterialAll);
 			addCommand("Sample current material", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.Q }, () => editor.MapEditMode, editor.SampleMaterial);

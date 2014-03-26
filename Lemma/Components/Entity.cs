@@ -75,6 +75,7 @@ namespace Lemma.Components
 	[XmlInclude(typeof(Phone.Ans))]
 	[XmlInclude(typeof(ListProperty<Phone.Ans>))]
 	[XmlInclude(typeof(ListProperty<string>))]
+	[XmlInclude(typeof(RaycastAI))]
 	public class Entity
 	{
 		public struct Handle

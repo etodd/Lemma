@@ -382,7 +382,7 @@ namespace Lemma
 				{
 					s = Session.Load(file);
 				}
-				catch (Exception e)
+				catch (Exception)
 				{
 					Log.d("Error loading analytics file " + file);
 					continue;

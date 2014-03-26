@@ -24,6 +24,7 @@ namespace Lemma.Factories
 		{
 			SpotLight light = result.GetOrCreate<SpotLight>();
 			light.Serialize = false;
+			light.Editable = false;
 			light.Enabled.Value = !main.EditorEnabled;
 
 			light.FieldOfView.Value = 1.0f;
@@ -32,6 +33,11 @@ namespace Lemma.Factories
 			Transform transform = result.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 			light.Add(new Binding<Quaternion>(light.Orientation, transform.Quaternion));
+
+			PointLight pointLight = result.GetOrCreate<PointLight>();
+			pointLight.Serialize = false;
+			pointLight.Editable = false;
+			pointLight.Add(new Binding<Vector3>(pointLight.Position, transform.Position));
 
 			Sound blastChargeSound = new Sound();
 			blastChargeSound.Cue.Value = "Blast Charge";
@@ -60,7 +66,9 @@ namespace Lemma.Factories
 			model.Editable = false;
 			model.Serialize = false;
 
-			const float defaultModelScale = 0.25f;
+			MapAttachable.MakeAttachable(result, main, true, true);
+
+			const float defaultModelScale = 0.75f;
 			model.Scale.Value = new Vector3(defaultModelScale);
 
 			model.Add(new Binding<Vector3, string>(model.Color, delegate(string state)
@@ -73,14 +81,13 @@ namespace Lemma.Factories
 						return new Vector3(1.5f, 0.8f, 0.5f);
 					case "Firing":
 						return new Vector3(2.0f, 0.0f, 0.0f);
-					case "Idle":
-						return new Vector3(0.5f, 1.0f, 0.5f);
 					default:
-						return new Vector3(0.0f, 0.0f, 0.0f);
+						return new Vector3(1.0f, 1.0f, 1.0f);
 				}
 			}, ai.CurrentState));
 
 			light.Add(new Binding<Vector3>(light.Color, model.Color));
+			pointLight.Add(new Binding<Vector3>(pointLight.Color, model.Color));
 
 			Map.GlobalRaycastResult rayHit = new Map.GlobalRaycastResult();
 			Vector3 toReticle = Vector3.Zero;
@@ -239,6 +246,9 @@ namespace Lemma.Factories
 				},
 				Exit = delegate(AI.State next)
 				{
+					if (rayHit.Map != null && (rayHit.Position - transform.Position).Length() < 8.0f)
+						return; // Danger close, cease fire!
+
 					Sound.PlayCue(main, "Fire", transform.Position, 1.0f, 0.0f);
 
 					Entity target = targetAgent.Value.Target;
@@ -255,13 +265,13 @@ namespace Lemma.Factories
 					}
 
 					if (rayHit.Map != null)
-						Explosion.Explode(main, rayHit.Map, rayHit.Coordinate.Value, 5, 8.0f);
+						Explosion.Explode(main, rayHit.Map, rayHit.Coordinate.Value, 6, 8.0f);
 					else if (target != null && target.Active)
 					{
 						Vector3 targetPos = target.Get<Transform>().Position;
 						BEPUutilities.RayHit physicsHit;
 						if (target.Get<Player>().Body.CollisionInformation.RayCast(new Ray(transform.Position, toReticle), rayHit.Distance, out physicsHit))
-							Explosion.Explode(main, targetPos, 5, 8.0f);
+							Explosion.Explode(main, targetPos, 6, 8.0f);
 					}
 				},
 				Tasks = new[]
@@ -280,6 +290,12 @@ namespace Lemma.Factories
 			});
 
 			this.SetMain(result, main);
+		}
+
+		public override void AttachEditorComponents(Entity result, Main main)
+		{
+			base.AttachEditorComponents(result, main);
+			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
 		}
 	}
 }

@@ -520,6 +520,33 @@ namespace Lemma.Components
 				}));
 				textField.Add(new Binding<string, Vector3>(textField.Text, x => x.GetElement(element).ToString("F"), socket));
 			}
+			else if (type.Equals(typeof(Map.Coordinate)))
+			{
+				Property<Map.Coordinate> socket = (Property<Map.Coordinate>)property;
+				Direction dir;
+				switch (element)
+				{
+					case VectorElement.X:
+						dir = Direction.PositiveX;
+						break;
+					case VectorElement.Y:
+						dir = Direction.PositiveY;
+						break;
+					default:
+						dir = Direction.PositiveZ;
+						break;
+				}
+
+				field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+				{
+					this.NeedsSave.Value = true;
+					int delta = scroll * (this.EnablePrecision ? 1 : 10);
+					Map.Coordinate c = socket.Value;
+					c.SetComponent(dir, c.GetComponent(dir) + delta);
+					socket.Value = c;
+				}));
+				textField.Add(new Binding<string, Map.Coordinate>(textField.Text, x => x.GetComponent(dir).ToString(), socket));
+			}
 			else if (type.Equals(typeof(Vector4)))
 			{
 				Property<Vector4> socket = (Property<Vector4>)property;
@@ -567,7 +594,7 @@ namespace Lemma.Components
 					elementList.Children.Add(this.BuildValueMemberField(propertyInfo.PropertyType, property, field));
 				return elementList;
 			}
-			else if (propertyInfo.PropertyType.Equals(typeof(Vector3)))
+			else if (propertyInfo.PropertyType.Equals(typeof(Vector3)) || propertyInfo.PropertyType.Equals(typeof(Map.Coordinate)))
 			{
 				ListContainer elementList = new ListContainer();
 				elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;

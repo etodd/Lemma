@@ -56,6 +56,7 @@ namespace Lemma.Factories
 			model.Filename.Value = "Models\\alpha-box";
 			model.Editable = false;
 			model.Serialize = false;
+			model.DrawOrder.Value = 15;
 
 			const float defaultModelScale = 1.0f;
 			model.Scale.Value = new Vector3(defaultModelScale);
@@ -107,41 +108,15 @@ namespace Lemma.Factories
 				},
 			};
 
-			Property<Entity.Handle> map = result.GetOrMakeProperty<Entity.Handle>("Map");
-			Property<Map.Coordinate> coord = result.GetOrMakeProperty<Map.Coordinate>("Coordinate");
-			Property<Entity.Handle> lastMap = result.GetOrMakeProperty<Entity.Handle>("LastMap");
-			Property<Map.Coordinate> lastCoord = result.GetOrMakeProperty<Map.Coordinate>("LastCoordinate");
-			Property<Direction> normal = result.GetOrMakeProperty<Direction>("Normal");
-
-			float blend = 0.0f;
-
-			const float blendTime = 0.1f;
+			RaycastAI raycastAI = result.GetOrCreate<RaycastAI>("RaycastAI");
+			raycastAI.Add(new TwoWayBinding<Vector3>(transform.Position, raycastAI.Position));
+			raycastAI.Add(new Binding<Matrix>(transform.Orientation, raycastAI.Orientation));
 
 			AI.Task updatePosition = new AI.Task
 			{
 				Action = delegate()
 				{
-					Entity mapEntity = map.Value.Target;
-					if (mapEntity != null && mapEntity.Active)
-					{
-						Map currentMap = mapEntity.Get<Map>();
-						Vector3 currentPosition = currentMap.GetAbsolutePosition(coord);
-						Entity lastMapEntity = lastMap.Value.Target;
-						if (blend < 1.0f && lastMapEntity != null && lastMapEntity.Active)
-						{
-							Map lastM = lastMapEntity.Get<Map>();
-							transform.Position.Value = Vector3.Lerp(lastM.GetAbsolutePosition(lastCoord), currentPosition, blend);
-							transform.Orientation.Value = Matrix.Lerp(lastM.Transform, currentMap.Transform, blend);
-						}
-						else
-						{
-							transform.Position.Value = currentPosition;
-							transform.Orientation.Value = currentMap.Transform;
-						}
-						blend += main.ElapsedTime.Value / blendTime;
-					}
-					else
-						map.Value = null;
+					raycastAI.Update();
 				},
 			};
 
@@ -153,73 +128,6 @@ namespace Lemma.Factories
 
 			const float sightDistance = 40.0f;
 			const float hearingDistance = 15.0f;
-			const float movementDistance = 15.0f;
-
-			Map.CellState avoid = WorldFactory.StatesByName["AvoidAI"];
-
-			Action<Vector3> move = delegate(Vector3 dir)
-			{
-				float dirLength = dir.Length();
-				if (dirLength == 0.0f)
-					return; // We're already where we need to be
-				else
-					dir /= dirLength; // Normalize
-
-				Vector3 pos;
-
-				if (map.Value.Target != null && map.Value.Target.Active)
-				{
-					Map m = map.Value.Target.Get<Map>();
-					Map.Coordinate adjacent = coord.Value.Move(normal);
-					if (m[adjacent].ID == 0)
-						pos = m.GetAbsolutePosition(adjacent);
-					else
-						pos = transform.Position;
-				}
-				else
-					pos = transform.Position;
-
-				float radius = 0.0f;
-				const int attempts = 20;
-
-				Vector3 up = Vector3.Up;
-				if ((float)Math.Abs(dir.Y) == 1.0f)
-					up = Vector3.Right;
-
-				Matrix mat = Matrix.Identity;
-				mat.Forward = -dir;
-				mat.Right = Vector3.Cross(dir, up);
-				mat.Up = Vector3.Cross(mat.Right, dir);
-				
-				for (int i = 0; i < attempts; i++)
-				{
-					float x = ((float)Math.PI * 0.5f) + (((float)this.random.NextDouble() * 2.0f) - 1.0f) * radius;
-					float y = (((float)this.random.NextDouble() * 2.0f) - 1.0f) * radius;
-					Vector3 ray = new Vector3((float)Math.Cos(x) * (float)Math.Cos(y), (float)Math.Sin(y), (float)Math.Sin(x) * (float)Math.Cos(y));
-					Map.GlobalRaycastResult hit = Map.GlobalRaycast(pos, Vector3.TransformNormal(ray, mat), movementDistance);
-					if (hit.Map != null && hit.Distance > 2.0f && hit.Coordinate.Value.Data != avoid)
-					{
-						foreach (Water w in Water.ActiveInstances)
-						{
-							if (w.Fluid.BoundingBox.Contains(hit.Position) != ContainmentType.Disjoint)
-								continue;
-						}
-
-						Map.Coordinate newCoord = hit.Coordinate.Value.Move(hit.Normal);
-						if (hit.Map[newCoord].ID == 0)
-						{
-							lastCoord.Value = coord;
-							coord.Value = newCoord;
-							lastMap.Value = map;
-							map.Value = hit.Map.Entity;
-							normal.Value = hit.Normal;
-							blend = 0.0f;
-							break;
-						}
-					}
-					radius += (float)Math.PI * 2.0f / (float)attempts;
-				}
-			};
 
 			ai.Add(new AI.State
 			{
@@ -237,7 +145,7 @@ namespace Lemma.Factories
 						Interval = 1.0f,
 						Action = delegate()
 						{
-							move(new Vector3(((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f));
+							raycastAI.Move(new Vector3(((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f));
 						}
 					},
 					new AI.Task
@@ -324,7 +232,7 @@ namespace Lemma.Factories
 						Interval = 0.35f,
 						Action = delegate()
 						{
-							move(targetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
+							raycastAI.Move(targetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
 						}
 					},
 					new AI.Task
@@ -353,15 +261,15 @@ namespace Lemma.Factories
 				{
 					coordQueue.Clear();
 					
-					Map m = map.Value.Target.Get<Map>();
+					Map m = raycastAI.Map.Value.Target.Get<Map>();
 
-					Map.Coordinate c = coord.Value;
+					Map.Coordinate c = raycastAI.Coord.Value;
 
 					Direction toSupport = Direction.None;
 
 					foreach (Direction dir in DirectionExtensions.Directions)
 					{
-						if (m[coord.Value.Move(dir)].ID != 0)
+						if (m[raycastAI.Coord.Value.Move(dir)].ID != 0)
 						{
 							toSupport = dir;
 							break;
@@ -370,7 +278,7 @@ namespace Lemma.Factories
 
 					Direction up = toSupport.GetReverse();
 
-					explosionOriginalCoord.Value = coord;
+					explosionOriginalCoord.Value = raycastAI.Coord;
 
 					Direction right;
 					if (up.IsParallel(Direction.PositiveX))
@@ -403,29 +311,26 @@ namespace Lemma.Factories
 						{
 							if (coordQueue.Count > 0)
 							{
-								lastCoord.Value = coord;
-								lastMap.Value = map;
-								coord.Value = coordQueue[0];
-								blend = 0.0f;
+								raycastAI.MoveTo(coordQueue[0]);
 
 								coordQueue.RemoveAt(0);
 
 								Entity block = factory.CreateAndBind(main);
 								infectedState.ApplyToEffectBlock(block.Get<ModelInstance>());
 
-								Entity mapEntity = map.Value.Target;
+								Entity mapEntity = raycastAI.Map.Value.Target;
 								if (mapEntity != null && mapEntity.Active)
 								{
-									Map m = map.Value.Target.Get<Map>();
+									Map m = raycastAI.Map.Value.Target.Get<Map>();
 
-									block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(coord);
+									block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(raycastAI.Coord);
 
-									Vector3 absolutePos = m.GetAbsolutePosition(coord);
+									Vector3 absolutePos = m.GetAbsolutePosition(raycastAI.Coord);
 
 									block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f);
 									block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f) * Matrix.CreateRotationY(0.15f);
 									block.GetProperty<float>("TotalLifetime").Value = 0.05f;
-									factory.Setup(block, map.Value.Target, coord, infectedState.ID);
+									factory.Setup(block, raycastAI.Map.Value.Target, raycastAI.Coord, infectedState.ID);
 									main.Add(block);
 								}
 							}
@@ -476,23 +381,23 @@ namespace Lemma.Factories
 							float timeInCurrentState = ai.TimeInCurrentState;
 							if (timeInCurrentState > 1.0f && !exploded)
 							{
-								Entity mapEntity = map.Value.Target;
+								Entity mapEntity = raycastAI.Map.Value.Target;
 								if (mapEntity != null && mapEntity.Active)
-									Explosion.Explode(main, map.Value.Target.Get<Map>(), coord, radius, 18.0f);
+									Explosion.Explode(main, raycastAI.Map.Value.Target.Get<Map>(), raycastAI.Coord, radius, 18.0f);
 
 								exploded.Value = true;
 							}
 
 							if (timeInCurrentState > 2.0f)
 							{
-								Entity mapEntity = map.Value.Target;
+								Entity mapEntity = raycastAI.Map.Value.Target;
 								if (mapEntity != null && mapEntity.Active)
 								{
-									Map m = map.Value.Target.Get<Map>();
-									Map.Coordinate? closestCell = m.FindClosestFilledCell(coord, radius + 1);
+									Map m = raycastAI.Map.Value.Target.Get<Map>();
+									Map.Coordinate? closestCell = m.FindClosestFilledCell(raycastAI.Coord, radius + 1);
 									if (closestCell.HasValue)
 									{
-										move(m.GetAbsolutePosition(closestCell.Value) - transform.Position);
+										raycastAI.Move(m.GetAbsolutePosition(closestCell.Value) - transform.Position);
 										ai.CurrentState.Value = "Alert";
 									}
 									else
@@ -500,7 +405,7 @@ namespace Lemma.Factories
 								}
 								else // Our map got deleted. Hope we find a new one.
 								{
-									move(new Vector3(((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f));
+									raycastAI.Move(new Vector3(((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f));
 									ai.CurrentState.Value = "Alert";
 								}
 							}

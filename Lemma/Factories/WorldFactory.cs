@@ -174,6 +174,21 @@ namespace Lemma.Factories
 				},
 				new Map.CellState
 				{
+					ID = 10,
+					Name = "Expander",
+					Permanent = false,
+					Hard = true,
+					Density = 0.5f,
+					DiffuseMap = "Textures\\dirty",
+					NormalMap = "Textures\\metal-swirl-normal",
+					FootstepCue = "WoodFootsteps",
+					RubbleCue = "WoodRubble",
+					SpecularPower = 1.0f,
+					SpecularIntensity = 0.0f,
+					Tint = new Vector3(0.8f, 0.5f, 0.9f),
+				},
+				new Map.CellState
+				{
 					ID = 13,
 					Name = "HardPowered",
 					Permanent = false,
@@ -680,7 +695,45 @@ namespace Lemma.Factories
 				switchID = WorldFactory.StatesByName["Switch"].ID,
 				poweredSwitchID = WorldFactory.StatesByName["PoweredSwitch"].ID,
 				infectedID = WorldFactory.StatesByName["Infected"].ID,
-				floaterID = WorldFactory.StatesByName["Floater"].ID;
+				floaterID = WorldFactory.StatesByName["Floater"].ID,
+				expanderID = WorldFactory.StatesByName["Expander"].ID;
+
+			List<PointLight> sparkLights = new List<PointLight>();
+			const float startSparkLightAttenuation = 5.0f;
+			const float sparkLightFadeTime = 0.5f;
+			int activeSparkLights = 0;
+
+			Action<Vector3, float> sparks = delegate(Vector3 pos, float size)
+			{
+				ParticleSystem shatter = ParticleSystem.Get(main, "WhiteShatter");
+				for (int j = 0; j < 30; j++)
+				{
+					Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
+					shatter.AddParticle(pos + offset, offset);
+				}
+
+				PointLight light;
+				if (activeSparkLights < sparkLights.Count)
+				{
+					light = sparkLights[activeSparkLights];
+					light.Enabled.Value = true;
+				}
+				else
+				{
+					light = new PointLight();
+					result.Add(light);
+					sparkLights.Add(light);
+				}
+				activeSparkLights++;
+
+				light.Serialize = false;
+				light.Shadowed.Value = false;
+				light.Color.Value = new Vector3(1.0f);
+				light.Attenuation.Value = size;
+				light.Position.Value = pos;
+
+				Sound.PlayCue(main, "Sparks", pos, 1.0f, 0.05f);
+			};
 
 			Action<Entity> bindPlayer = delegate(Entity p)
 			{
@@ -710,11 +763,9 @@ namespace Lemma.Factories
 					bool isLava = groundType == infectedID || groundType == infectedCriticalID;
 					if (isLava)
 						playerComponent.Health.Value -= 0.2f;
-					lavaDamager.Enabled.Value = isLava;
-
-					// Floater. Delete the block after a delay.
-					if (groundType == floaterID)
+					else if (groundType == floaterID)
 					{
+						// Floater. Delete the block after a delay.
 						Vector3 pos = map.GetAbsolutePosition(coord.Value);
 						ParticleEmitter.Emit(main, "Smoke", pos, 1.0f, 10);
 						Sound.PlayCue(main, "FragileDirt Crumble", pos);
@@ -731,6 +782,46 @@ namespace Lemma.Factories
 							})
 						));
 					}
+					else if (groundType == expanderID)
+					{
+						// Expander. Expand the block after a delay.
+						const int expandLength = 6;
+						const int expandWidth = 1;
+						Vector3 pos = map.GetAbsolutePosition(coord.Value);
+						ParticleEmitter.Emit(main, "Smoke", pos, 1.0f, 10);
+						Sound.PlayCue(main, "FragileDirt Crumble", pos);
+						result.Add(new Animation
+						(
+							new Animation.Delay(1.5f),
+							new Animation.Execute(delegate()
+							{
+								if (map[coord.Value].ID == expanderID)
+								{
+									Direction normal = dir.GetReverse();
+									Direction right = normal == Direction.PositiveY ? Direction.PositiveX : normal.Cross(Direction.PositiveY);
+									Direction ortho = normal.Cross(right);
+									pos = map.GetAbsolutePosition(coord.Value);
+									sparks(pos, 10.0f);
+									List<EffectBlockFactory.BlockBuildOrder> buildCoords = new List<EffectBlockFactory.BlockBuildOrder>();
+									foreach (Map.Coordinate c in coord.Value.Move(right, -expandWidth).Move(ortho, -expandWidth).CoordinatesBetween(coord.Value.Move(right, expandWidth).Move(ortho, expandWidth).Move(normal, expandLength).Move(1, 1, 1)))
+									{
+										if (map[c].ID == 0)
+										{
+											buildCoords.Add(new EffectBlockFactory.BlockBuildOrder
+											{
+												Map = map,
+												Coordinate = c,
+												State = WorldFactory.States[expanderID],
+											});
+										}
+									}
+									Factory.Get<EffectBlockFactory>().Build(main, buildCoords, false, pos, 0.15f);
+								}
+							})
+						));
+					}
+
+					lavaDamager.Enabled.Value = isLava;
 				}));
 			};
 
@@ -788,43 +879,6 @@ namespace Lemma.Factories
 					}
 				}
 			}));
-
-			List<PointLight> sparkLights = new List<PointLight>();
-			const float startSparkLightAttenuation = 5.0f;
-			const float sparkLightFadeTime = 0.5f;
-			int activeSparkLights = 0;
-
-			Action<Vector3> sparks = delegate(Vector3 pos)
-			{
-				ParticleSystem shatter = ParticleSystem.Get(main, "WhiteShatter");
-				for (int j = 0; j < 30; j++)
-				{
-					Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
-					shatter.AddParticle(pos + offset, offset);
-				}
-
-				PointLight light;
-				if (activeSparkLights < sparkLights.Count)
-				{
-					light = sparkLights[activeSparkLights];
-					light.Enabled.Value = true;
-				}
-				else
-				{
-					light = new PointLight();
-					result.Add(light);
-					sparkLights.Add(light);
-				}
-				activeSparkLights++;
-
-				light.Serialize = false;
-				light.Shadowed.Value = false;
-				light.Color.Value = new Vector3(1.0f);
-				light.Attenuation.Value = startSparkLightAttenuation;
-				light.Position.Value = pos;
-
-				Sound.PlayCue(main, "Sparks", pos, 1.0f, 0.05f);
-			};
 
 			result.Add(new Updater
 			{
@@ -902,7 +956,7 @@ namespace Lemma.Factories
 									{
 										generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = c }] = entry.Generation;
 										map.Empty(c);
-										sparks(map.GetAbsolutePosition(c));
+										sparks(map.GetAbsolutePosition(c), startSparkLightAttenuation);
 										regenerate = true;
 									}
 								}
@@ -921,7 +975,7 @@ namespace Lemma.Factories
 											{
 												map.Empty(c);
 												map.Fill(c, WorldFactory.States[poweredID]);
-												sparks(map.GetAbsolutePosition(c));
+												sparks(map.GetAbsolutePosition(c), startSparkLightAttenuation);
 												regenerate = true;
 											}
 											else if (adjacentID == neutralID && entry.Generation < maxGenerations)
@@ -929,7 +983,7 @@ namespace Lemma.Factories
 												map.Empty(adjacent);
 												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
 												map.Fill(adjacent, WorldFactory.States[temporaryID]);
-												sparks(map.GetAbsolutePosition(adjacent));
+												sparks(map.GetAbsolutePosition(adjacent), startSparkLightAttenuation);
 												regenerate = true;
 											}
 										}
@@ -945,14 +999,14 @@ namespace Lemma.Factories
 											{
 												map.Empty(adjacent);
 												map.Fill(adjacent, WorldFactory.States[poweredID]);
-												sparks(map.GetAbsolutePosition(adjacent));
+												sparks(map.GetAbsolutePosition(adjacent), startSparkLightAttenuation);
 												regenerate = true;
 											}
 											else if (adjacentID == switchID)
 											{
 												map.Empty(adjacent, true);
 												map.Fill(adjacent, WorldFactory.States[poweredSwitchID]);
-												sparks(map.GetAbsolutePosition(adjacent));
+												sparks(map.GetAbsolutePosition(adjacent), startSparkLightAttenuation);
 												regenerate = true;
 											}
 											else if (adjacentID == criticalID)
@@ -973,7 +1027,7 @@ namespace Lemma.Factories
 												map.Empty(adjacent);
 												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
 												map.Fill(adjacent, WorldFactory.States[infectedID]);
-												sparks(map.GetAbsolutePosition(adjacent));
+												sparks(map.GetAbsolutePosition(adjacent), startSparkLightAttenuation);
 												regenerate = true;
 											}
 											else if (adjacentID == criticalID)

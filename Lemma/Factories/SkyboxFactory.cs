@@ -23,7 +23,6 @@ namespace Lemma.Factories
 
 			ModelAlpha skybox = new ModelAlpha();
 			skybox.Filename.Value = "Models\\skybox";
-			skybox.CullBoundingBox.Value = false;
 			result.Add("Skybox", skybox);
 
 			return result;
@@ -35,6 +34,8 @@ namespace Lemma.Factories
 			result.CannotSuspendByDistance = true;
 
 			ModelAlpha skybox = result.Get<ModelAlpha>("Skybox");
+			skybox.DisableCulling.Value = true;
+			skybox.CullBoundingBox.Value = false;
 			skybox.Add(new Binding<Matrix>(skybox.Transform, result.Get<Transform>().Matrix));
 			skybox.DrawOrder.Value = -10;
 

@@ -23,8 +23,6 @@ namespace Lemma.Factories
 
 			ModelAlpha clouds = new ModelAlpha();
 			clouds.Filename.Value = "Models\\clouds";
-			clouds.CullBoundingBox.Value = false;
-			clouds.DisableCulling.Value = true;
 			clouds.DrawOrder.Value = -9;
 			result.Add("Clouds", clouds);
 
@@ -37,6 +35,8 @@ namespace Lemma.Factories
 			result.CannotSuspendByDistance = true;
 
 			ModelAlpha clouds = result.Get<ModelAlpha>("Clouds");
+			clouds.CullBoundingBox.Value = false;
+			clouds.DisableCulling.Value = true;
 
 			Property<float> height = result.GetOrMakeProperty<float>("Height", true, 1.0f);
 			result.Add(new Binding<float>(clouds.GetFloatParameter("Height"), height));

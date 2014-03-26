@@ -20,6 +20,9 @@ namespace Lemma.Components
 		public ListProperty<Entity> SelectedEntities = new ListProperty<Entity>();
 		public Property<Transform> SelectedTransform = new Property<Transform> { Editable = false };
 		public Property<string> Brush = new Property<string> { Editable = true };
+		public Property<Map.Coordinate> Jitter = new Property<Map.Coordinate> { Editable = true };
+		public Property<Map.Coordinate> JitterOctave = new Property<Map.Coordinate> { Value = new Map.Coordinate { X = 1, Y = 1, Z = 1 }, Editable = true };
+		public Property<float> JitterOctaveMultiplier = new Property<float> { Value = 10.0f, Editable = true };
 		public Property<int> BrushSize = new Property<int> { Editable = true };
 		public Property<string> MapFile = new Property<string> { Editable = true };
 		public Property<bool> NeedsSave = new Property<bool> { Editable = false };
@@ -63,6 +66,7 @@ namespace Lemma.Components
 		public Command CommitTransform = new Command();
 		public Command RevertTransform = new Command();
 		public Command PropagateMaterial = new Command();
+		public Command IntersectMaterial = new Command();
 		public Command PropagateMaterialAll = new Command();
 		public Command PropagateMaterialBox = new Command();
 		public Command SampleMaterial = new Command();
@@ -78,6 +82,7 @@ namespace Lemma.Components
 		private Map.Coordinate selectionStart;
 		private Map.Coordinate lastCoord;
 		private Map.Coordinate coord;
+		private ProceduralGenerator generator;
 		private float movementInterval;
 
 		public Property<Map.Coordinate> Coordinate = new Property<Map.Coordinate> { Editable = true }; // Readonly, for displaying to the UI
@@ -138,6 +143,8 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			this.generator = this.Entity.Get<ProceduralGenerator>();
+
 			this.Spawn.Action = delegate(string type)
 			{
 				if (Factory.Get(type) != null)
@@ -319,6 +326,31 @@ namespace Lemma.Components
 						m.Fill(c, material);
 					m.Regenerate();
 				}
+			};
+
+			this.IntersectMaterial.Action = delegate()
+			{
+				if (!this.MapEditMode)
+					return;
+
+				Map m = this.SelectedEntities[0].Get<Map>();
+				Map.Box selectedBox = m.GetBox(this.coord);
+				if (selectedBox == null)
+					return;
+
+				Map.Coordinate startSelection = this.VoxelSelectionStart;
+				Map.Coordinate endSelection = this.VoxelSelectionEnd;
+				bool selectionActive = this.VoxelSelectionActive;
+
+				IEnumerable<Map.Coordinate> coordEnumerable;
+				if (selectionActive)
+					coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => !y.Between(startSelection, endSelection)));
+				else
+					coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => (m.GetRelativePosition(this.coord) - m.GetRelativePosition(y)).Length() > this.BrushSize));
+
+				List<Map.Coordinate> coords = coordEnumerable.ToList();
+				m.Empty(coords, true);
+				m.Regenerate();
 			};
 
 			// Propagate to all cells of a certain type, including non-contiguous ones
@@ -620,23 +652,22 @@ namespace Lemma.Components
 					this.NeedsSave.Value = true;
 					if (this.Brush == "(Procedural)")
 					{
-						ProceduralGenerator generator = this.Entity.Get<ProceduralGenerator>();
 						if (this.Fill)
 						{
 							if (this.VoxelSelectionActive)
 							{
 								foreach (Map.Coordinate c in this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd))
-									map.Fill(c, generator.GetValue(map, c));
+									map.Fill(c, this.generator.GetValue(map, c));
 							}
 							else
-								this.brushStroke(map, coord, this.BrushSize, x => generator.GetValue(map, x), true, false);
+								this.brushStroke(map, coord, this.BrushSize, x => this.generator.GetValue(map, x), true, false);
 						}
 						else if (this.Empty)
 						{
 							if (this.VoxelSelectionActive)
-								map.Empty(this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd).Where(x => generator.GetValue(map, x).ID == 0), true);
+								map.Empty(this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd).Where(x => this.generator.GetValue(map, x).ID == 0), true);
 							else
-								this.brushStroke(map, coord, this.BrushSize, x => generator.GetValue(map, x), false, true);
+								this.brushStroke(map, coord, this.BrushSize, x => this.generator.GetValue(map, x), false, true);
 						}
 					}
 					else
@@ -647,7 +678,27 @@ namespace Lemma.Components
 							if (WorldFactory.StatesByName.TryGetValue(this.Brush, out material))
 							{
 								if (this.VoxelSelectionActive)
-									map.Fill(this.VoxelSelectionStart, this.VoxelSelectionEnd, material);
+								{
+									if (this.Jitter.Value.Equivalent(new Map.Coordinate { X = 0, Y = 0, Z = 0 }) || this.BrushSize <= 1)
+										map.Fill(this.VoxelSelectionStart, this.VoxelSelectionEnd, material);
+									else
+									{
+										Map.Coordinate start = this.VoxelSelectionStart;
+										Map.Coordinate end = this.VoxelSelectionEnd;
+										int size = this.BrushSize;
+										int halfSize = size / 2;
+										for (int x = start.X + size - 1; x < end.X - size + 1; x += halfSize)
+										{
+											for (int y = start.Y + size - 1; y < end.Y - size + 1; y += halfSize)
+											{
+												for (int z = start.Z + size - 1; z < end.Z - size + 1; z += halfSize)
+												{
+													this.brushStroke(map, new Map.Coordinate { X = x, Y = y, Z = z }, size, material);
+												}
+											}
+										}
+									}
+								}
 								else
 									this.brushStroke(map, coord, this.BrushSize, material);
 							}
@@ -655,7 +706,27 @@ namespace Lemma.Components
 						else if (this.Empty)
 						{
 							if (this.VoxelSelectionActive)
-								map.Empty(this.VoxelSelectionStart, this.VoxelSelectionEnd, true);
+							{
+								if (this.Jitter.Value.Equivalent(new Map.Coordinate { X = 0, Y = 0, Z = 0 }) || this.BrushSize <= 1)
+									map.Empty(this.VoxelSelectionStart, this.VoxelSelectionEnd, true);
+								else
+								{
+									Map.Coordinate start = this.VoxelSelectionStart;
+									Map.Coordinate end = this.VoxelSelectionEnd;
+									int size = this.BrushSize;
+									int halfSize = size / 2;
+									for (int x = start.X + size - 2; x < end.X - size; x += halfSize)
+									{
+										for (int y = start.Y + size - 2; y < end.Y - size; y += halfSize)
+										{
+											for (int z = start.Z + size - 2; z < end.Z - size; z += halfSize)
+											{
+												this.brushStroke(map, new Map.Coordinate { X = x, Y = y, Z = z }, size, new Map.CellState());
+											}
+										}
+									}
+								}
+							}
 							else
 								this.brushStroke(map, coord, this.BrushSize, new Map.CellState());
 						}
@@ -801,8 +872,25 @@ namespace Lemma.Components
 			}
 		}
 
+		protected Map.Coordinate jitter(Map map, Map.Coordinate coord)
+		{
+			Map.Coordinate octave = this.JitterOctave;
+			Map.Coordinate jitter = this.Jitter;
+			Map.Coordinate sample = coord.Clone();
+			sample.X *= octave.X;
+			sample.Y *= octave.Y;
+			sample.Z *= octave.Z;
+			coord.X += (int)Math.Round(this.generator.Sample(map, sample.Move(0, 0, map.ChunkSize * 2), this.JitterOctaveMultiplier) * jitter.X);
+			coord.Y += (int)Math.Round(this.generator.Sample(map, sample.Move(map.ChunkSize * 2, 0, 0), this.JitterOctaveMultiplier) * jitter.Y);
+			coord.Z += (int)Math.Round(this.generator.Sample(map, sample.Move(0, map.ChunkSize * 2, 0), this.JitterOctaveMultiplier) * jitter.Z);
+			return coord;
+		}
+
 		protected void brushStroke(Map map, Map.Coordinate center, int brushSize, Func<Map.Coordinate, Map.CellState> function, bool fill = true, bool empty = true)
 		{
+			if (brushSize > 1)
+				center = this.jitter(map, center);
+
 			Vector3 pos = map.GetRelativePosition(center);
 			List<Map.Coordinate> coords = new List<Map.Coordinate>();
 			for (Map.Coordinate x = center.Move(Direction.NegativeX, this.BrushSize - 1); x.X < center.X + this.BrushSize; x.X++)
@@ -829,6 +917,9 @@ namespace Lemma.Components
 
 		protected void brushStroke(Map map, Map.Coordinate center, int brushSize, Map.CellState state)
 		{
+			if (brushSize > 1)
+				center = this.jitter(map, center);
+
 			Vector3 pos = map.GetRelativePosition(center);
 			List<Map.Coordinate> coords = new List<Map.Coordinate>();
 			for (Map.Coordinate x = center.Move(Direction.NegativeX, this.BrushSize - 1); x.X < center.X + this.BrushSize; x.X++)

@@ -19,6 +19,13 @@ namespace Lemma.Factories
 			public Map.Coordinate Coordinate;
 		}
 
+		public struct BlockBuildOrder
+		{
+			public Map Map;
+			public Map.Coordinate Coordinate;
+			public Map.CellState State;
+		}
+
 		private Dictionary<BlockEntry, bool> animatingBlocks = new Dictionary<BlockEntry, bool>();
 
 		public bool IsAnimating(BlockEntry block)
@@ -225,6 +232,32 @@ namespace Lemma.Factories
 				offsetBinding = new Binding<Vector3>(model.GetVector3Parameter("Offset"), result.GetProperty<Vector3>("Offset"));
 				model.Add(offsetBinding);
 			}, model.FullInstanceKey));
+		}
+
+		public void Build(Main main, IEnumerable<BlockBuildOrder> blocks, bool fake, Vector3 center, float delayMultiplier = 0.05f)
+		{
+			int index = 0;
+			EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
+			foreach (BlockBuildOrder entry in blocks)
+			{
+				if (factory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = entry.Map, Coordinate = entry.Coordinate }))
+					continue;
+
+				Entity block = factory.CreateAndBind(main);
+				entry.State.ApplyToEffectBlock(block.Get<ModelInstance>());
+				block.GetProperty<Vector3>("Offset").Value = entry.Map.GetRelativePosition(entry.Coordinate);
+
+				Vector3 absolutePos = entry.Map.GetAbsolutePosition(entry.Coordinate);
+
+				float distance = (absolutePos - center).Length();
+				block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f) * distance;
+				block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * (distance + index)) * Matrix.CreateRotationY(0.15f * (distance + index));
+				block.GetProperty<float>("TotalLifetime").Value = Math.Max(delayMultiplier, distance * delayMultiplier);
+				block.GetProperty<bool>("CheckAdjacent").Value = true;
+				factory.Setup(block, entry.Map.Entity, entry.Coordinate, fake ? 0 : entry.State.ID);
+				main.Add(block);
+				index++;
+			}
 		}
 
 		public void Setup(Entity result, Entity m, Map.Coordinate c, int s)

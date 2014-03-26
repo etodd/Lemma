@@ -9,7 +9,7 @@ namespace Lemma.Factories
 {
 	public static class MapAttachable
 	{
-		public static void MakeAttachable(Entity entity, Main main, bool deleteIfRemoved = true)
+		public static void MakeAttachable(Entity entity, Main main, bool deleteIfRemoved = true, bool deleteIfMoved = false)
 		{
 			Transform transform = entity.Get<Transform>();
 			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
@@ -55,7 +55,12 @@ namespace Lemma.Factories
 									entity.Delete.Execute();
 							}
 							else
-								map.Value = newMap.Entity;
+							{
+								if (deleteIfMoved)
+									entity.Delete.Execute();
+								else
+									map.Value = newMap.Entity;
+							}
 							break;
 						}
 					}

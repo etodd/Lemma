@@ -19,13 +19,6 @@ namespace Lemma.Factories
 			this.Color = new Vector3(0.4f, 0.4f, 0.4f);
 		}
 
-		struct BlockBuildOrder
-		{
-			public Map Map;
-			public Map.Coordinate Coordinate;
-			public Map.CellState State;
-		}
-
 		public struct RespawnLocation
 		{
 			public Entity.Handle Map;
@@ -415,6 +408,7 @@ namespace Lemma.Factories
 
 			int neutralID = WorldFactory.StatesByName["Neutral"].ID,
 				temporaryID = WorldFactory.StatesByName["Temporary"].ID,
+				poweredID = WorldFactory.StatesByName["Powered"].ID,
 				avoidID = WorldFactory.StatesByName["AvoidAI"].ID;
 
 			result.Add(new CommandBinding<Map, Map.Coordinate?, Direction>(walkedOn, delegate(Map map, Map.Coordinate? coord, Direction dir)
@@ -467,7 +461,7 @@ namespace Lemma.Factories
 				else
 				{
 					if (groundRaycast.Map != null)
-						walkedOn.Execute(null, null, Direction.None);
+						walkedOn.Execute(null, null, Direction.NegativeY);
 					groundRaycast.Map = null;
 					groundRaycast.Coordinate = null;
 				}
@@ -847,32 +841,6 @@ namespace Lemma.Factories
 					}
 				}
 			});
-
-			Action<IEnumerable<BlockBuildOrder>, bool> buildBlocks = delegate(IEnumerable<BlockBuildOrder> blocks, bool fake)
-			{
-				int index = 0;
-				EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
-				foreach (BlockBuildOrder entry in blocks)
-				{
-					if (factory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = entry.Map, Coordinate = entry.Coordinate }))
-						continue;
-
-					Entity block = factory.CreateAndBind(main);
-					entry.State.ApplyToEffectBlock(block.Get<ModelInstance>());
-					block.GetProperty<Vector3>("Offset").Value = entry.Map.GetRelativePosition(entry.Coordinate);
-
-					Vector3 absolutePos = entry.Map.GetAbsolutePosition(entry.Coordinate);
-
-					float distance = (absolutePos - transform.Position).Length();
-					block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f) * distance;
-					block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * (distance + index)) * Matrix.CreateRotationY(0.15f * (distance + index));
-					block.GetProperty<float>("TotalLifetime").Value = Math.Max(0.05f, distance * 0.05f);
-					block.GetProperty<bool>("CheckAdjacent").Value = true;
-					factory.Setup(block, entry.Map.Entity, entry.Coordinate, fake ? 0 : entry.State.ID);
-					main.Add(block);
-					index++;
-				}
-			};
 
 			Action<BlockPossibility> instantiateBlockPossibility = delegate(BlockPossibility block)
 			{
@@ -1265,7 +1233,7 @@ namespace Lemma.Factories
 						Direction up = wallRunMap.GetRelativeDirection(Direction.PositiveY);
 						Direction right = wallDirection.Cross(up);
 
-						List<BlockBuildOrder> buildCoords = new List<BlockBuildOrder>();
+						List<EffectBlockFactory.BlockBuildOrder> buildCoords = new List<EffectBlockFactory.BlockBuildOrder>();
 
 						Map.CellState fillState = WorldFactory.StatesByName["Temporary"];
 
@@ -1279,7 +1247,7 @@ namespace Lemma.Factories
 								int dy = y.GetComponent(up) - wallCoord.GetComponent(up);
 								if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && wallRunMap[y].ID == 0)
 								{
-									buildCoords.Add(new BlockBuildOrder
+									buildCoords.Add(new EffectBlockFactory.BlockBuildOrder
 									{
 										Map = wallRunMap,
 										Coordinate = y,
@@ -1288,7 +1256,7 @@ namespace Lemma.Factories
 								}
 							}
 						}
-						buildBlocks(buildCoords, false);
+						Factory.Get<EffectBlockFactory>().Build(main, buildCoords, false, transform.Position);
 					}
 					else if (wallType.ID == 0 && wallInstantiationTimer == 0.0f) // We ran out of wall to walk on
 					{
@@ -2133,7 +2101,7 @@ namespace Lemma.Factories
 
 			Action<Map, Map.Coordinate, Direction, Direction> buildFloor = delegate(Map floorMap, Map.Coordinate floorCoordinate, Direction forwardDir, Direction rightDir)
 			{
-				List<BlockBuildOrder> buildCoords = new List<BlockBuildOrder>();
+				List<EffectBlockFactory.BlockBuildOrder> buildCoords = new List<EffectBlockFactory.BlockBuildOrder>();
 
 				Map.Coordinate newFloorCoordinate = floorMap.GetCoordinate(transform.Position);
 
@@ -2151,7 +2119,7 @@ namespace Lemma.Factories
 						int dy = y.GetComponent(forwardDir) - floorCoordinate.GetComponent(forwardDir);
 						if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && floorMap[y].ID == 0)
 						{
-							buildCoords.Add(new BlockBuildOrder
+							buildCoords.Add(new EffectBlockFactory.BlockBuildOrder
 							{
 								Map = floorMap,
 								Coordinate = y,
@@ -2160,7 +2128,7 @@ namespace Lemma.Factories
 						}
 					}
 				}
-				buildBlocks(buildCoords, false);
+				Factory.Get<EffectBlockFactory>().Build(main, buildCoords, false, transform.Position);
 			};
 
 			Updater kickUpdate = null;
@@ -2269,8 +2237,9 @@ namespace Lemma.Factories
 
 						model.StartClip("Roll", 5, false);
 
+						Map.CellState floorState = floorRaycast.Map == null ? WorldFactory.States[0] : floorRaycast.Coordinate.Value.Data;
 						bool shouldBuildFloor = false;
-						if (player.EnableEnhancedWallRun && floorRaycast.Map != null && floorRaycast.Coordinate.Value.Data.Name != "Temporary")
+						if (player.EnableEnhancedWallRun && (instantiatedBlockPossibility || (floorState.ID != 0 && floorState.ID != temporaryID && floorState.ID != poweredID)))
 							shouldBuildFloor = true;
 
 						// If the player is not yet supported, that means they're just about to land.
@@ -2293,10 +2262,7 @@ namespace Lemma.Factories
 							{
 								rollTime += dt;
 
-								// Stop if we're about to roll off the edge of an instantiated block possibility.
-								bool stop = instantiatedBlockPossibility && !shouldBuildFloor && Map.GlobalRaycast(transform.Position + forward * 0.5f, Vector3.Down, player.Height * 0.5f + player.SupportHeight + 1.1f).Map != null;
-
-								if (rollTime > 0.1f && (stop || rollTime > 1.0f || Vector3.Dot(player.LinearVelocity, forward) < 0.1f))
+								if (rollTime > 0.1f && (rollTime > 1.0f || Vector3.Dot(player.LinearVelocity, forward) < 0.1f))
 								{
 									rollUpdate.Delete.Execute();
 									player.EnableWalking.Value = true;
@@ -2305,9 +2271,6 @@ namespace Lemma.Factories
 									rotationLocked.Value = false;
 									rollEnded = main.TotalTime;
 									rolling = false;
-
-									if (stop) // Stop from rolling off the edge
-										player.LinearVelocity.Value = new Vector3(0, player.LinearVelocity.Value.Y, 0);
 								}
 								else
 								{

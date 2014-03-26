@@ -37,22 +37,12 @@ namespace Lemma.Factories
 			Transform transform = result.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
-			VoxelChaseAI chase = result.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
-
-			chase.Filter = delegate(Map.CellState state)
-			{
-				return state.ID == 0 ? VoxelChaseAI.Cell.Empty : VoxelChaseAI.Cell.Filled;
-			};
-
-			chase.Add(new TwoWayBinding<Vector3>(transform.Position, chase.Position));
-			result.Add(new CommandBinding(chase.Delete, result.Delete));
-
 			Sound sound = result.GetOrCreate<Sound>("LoopSound");
 			sound.Serialize = false;
 			sound.Cue.Value = "Orb Loop";
 			sound.Is3D.Value = true;
 			sound.IsPlaying.Value = true;
-			sound.Add(new Binding<Vector3>(sound.Position, chase.Position));
+			sound.Add(new Binding<Vector3>(sound.Position, transform.Position));
 			Property<float> volume = sound.GetProperty("Volume");
 			Property<float> pitch = sound.GetProperty("Pitch");
 
@@ -61,13 +51,14 @@ namespace Lemma.Factories
 
 			AI ai = result.GetOrCreate<AI>();
 
-			Model model = result.GetOrCreate<Model>();
+			ModelAlpha model = result.GetOrCreate<ModelAlpha>();
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
-			model.Filename.Value = "Models\\sphere";
+			model.Filename.Value = "Models\\alpha-box";
 			model.Editable = false;
 			model.Serialize = false;
+			model.DrawOrder.Value = 15;
 
-			const float defaultModelScale = 0.25f;
+			const float defaultModelScale = 1.0f;
 			model.Scale.Value = new Vector3(defaultModelScale);
 
 			model.Add(new Binding<Vector3, string>(model.Color, delegate(string state)
@@ -80,10 +71,8 @@ namespace Lemma.Factories
 						return new Vector3(1.5f, 0.5f, 0.5f);
 					case "Levitating":
 						return new Vector3(2.0f, 1.0f, 0.5f);
-					case "Idle":
-						return new Vector3(1.0f, 1.0f, 1.0f);
 					default:
-						return new Vector3(0.0f, 0.0f, 0.0f);
+						return new Vector3(1.0f, 1.0f, 1.0f);
 				}
 			}, ai.CurrentState));
 
@@ -91,9 +80,9 @@ namespace Lemma.Factories
 			{
 				delegate(float dt)
 				{
-					float source = ((float)this.random.NextDouble() - 0.5f) * 2.0f;
-					model.Scale.Value = new Vector3(defaultModelScale * (1.0f + (source * 0.5f)));
-					light.Attenuation.Value = defaultLightAttenuation * (1.0f + (source * 0.05f));
+					float source = 1.0f + ((float)this.random.NextDouble() - 0.5f) * 2.0f * 0.05f;
+					model.Scale.Value = new Vector3(defaultModelScale * source);
+					light.Attenuation.Value = defaultLightAttenuation * source;
 				}
 			});
 
@@ -102,7 +91,11 @@ namespace Lemma.Factories
 			light.Add(new Binding<Vector3>(light.Color, model.Color));
 
 			Agent agent = result.GetOrCreate<Agent>();
-			agent.Add(new Binding<Vector3>(agent.Position, chase.Position));
+			agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
+
+			RaycastAI raycastAI = result.GetOrCreate<RaycastAI>("RaycastAI");
+			raycastAI.Add(new TwoWayBinding<Vector3>(transform.Position, raycastAI.Position));
+			raycastAI.Add(new Binding<Matrix>(transform.Orientation, raycastAI.Orientation));
 
 			Property<int> operationalRadius = result.GetOrMakeProperty<int>("OperationalRadius", true, 100);
 
@@ -111,11 +104,19 @@ namespace Lemma.Factories
 				Interval = 2.0f,
 				Action = delegate()
 				{
-					bool shouldBeActive = (chase.Position.Value - main.Camera.Position).Length() < operationalRadius;
+					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < operationalRadius;
 					if (shouldBeActive && ai.CurrentState == "Suspended")
 						ai.CurrentState.Value = "Idle";
 					else if (!shouldBeActive && ai.CurrentState != "Suspended")
 						ai.CurrentState.Value = "Suspended";
+				},
+			};
+
+			AI.Task updatePosition = new AI.Task
+			{
+				Action = delegate()
+				{
+					raycastAI.Update();
 				},
 			};
 
@@ -133,7 +134,6 @@ namespace Lemma.Factories
 				Name = "Idle",
 				Enter = delegate(AI.State previous)
 				{
-					chase.Speed.Value = 3.0f;
 					pitch.Value = -0.5f;
 				},
 				Exit = delegate(AI.State next)
@@ -143,12 +143,21 @@ namespace Lemma.Factories
 				Tasks = new[]
 				{ 
 					checkOperationalRadius,
+					updatePosition,
 					new AI.Task
 					{
 						Interval = 1.0f,
 						Action = delegate()
 						{
-							Agent a = Agent.Query(chase.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
+							raycastAI.Move(new Vector3(((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f));
+						}
+					},
+					new AI.Task
+					{
+						Interval = 1.0f,
+						Action = delegate()
+						{
+							Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
 							if (a != null)
 								ai.CurrentState.Value = "Alert";
 						},
@@ -163,17 +172,16 @@ namespace Lemma.Factories
 				Name = "Alert",
 				Enter = delegate(AI.State previous)
 				{
-					chase.EnableMovement.Value = false;
 					volume.Value = 0.0f;
 				},
 				Exit = delegate(AI.State next)
 				{
-					chase.EnableMovement.Value = true;
 					volume.Value = defaultVolume;
 				},
 				Tasks = new[]
 				{ 
 					checkOperationalRadius,
+					updatePosition,
 					new AI.Task
 					{
 						Interval = 1.0f,
@@ -183,7 +191,7 @@ namespace Lemma.Factories
 								ai.CurrentState.Value = "Idle";
 							else
 							{
-								Agent a = Agent.Query(chase.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
+								Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
 								if (a != null)
 								{
 									targetAgent.Value = a.Entity;
@@ -217,8 +225,8 @@ namespace Lemma.Factories
 
 			Func<bool> tryLevitate = delegate()
 			{
-				Map map = chase.Map.Value.Target.Get<Map>();
-				Map.Coordinate? candidate = map.FindClosestFilledCell(chase.Coord, 3);
+				Map map = raycastAI.Map.Value.Target.Get<Map>();
+				Map.Coordinate? candidate = map.FindClosestFilledCell(raycastAI.Coord, 3);
 
 				if (!candidate.HasValue)
 					return false;
@@ -429,19 +437,19 @@ namespace Lemma.Factories
 			ai.Add(new AI.State
 			{
 				Name = "Chase",
-				Enter = delegate(AI.State previous)
-				{
-					chase.Speed.Value = 10.0f;
-					chase.TargetActive.Value = true;
-				},
-				Exit = delegate(AI.State next)
-				{
-					chase.TargetActive.Value = false;
-				},
 				Tasks = new[]
 				{
 					checkOperationalRadius,
 					checkTargetAgent,
+					new AI.Task
+					{
+						Interval = 0.35f,
+						Action = delegate()
+						{
+							raycastAI.Move(targetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
+						}
+					},
+					updatePosition,
 					new AI.Task
 					{
 						Interval = 0.1f,
@@ -449,9 +457,8 @@ namespace Lemma.Factories
 						{
 							Entity target = targetAgent.Value.Target;
 							Vector3 targetPosition = target.Get<Transform>().Position;
-							chase.Target.Value = targetPosition;
 							Entity levitatingMapEntity = levitatingMap.Value.Target;
-							if ((targetPosition - chase.Position).Length() < 10.0f && (levitatingMapEntity == null || !levitatingMapEntity.Active))
+							if ((targetPosition - transform.Position).Length() < 10.0f && (levitatingMapEntity == null || !levitatingMapEntity.Active))
 							{
 								if (tryLevitate())
 									ai.CurrentState.Value = "Levitating";
@@ -467,7 +474,7 @@ namespace Lemma.Factories
 
 			Action findNextPosition = delegate()
 			{
-				lastPosition.Value = chase.Position.Value;
+				lastPosition.Value = transform.Position.Value;
 				nextPosition.Value = targetAgent.Value.Target.Get<Transform>().Position + new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble(), (float)this.random.NextDouble() - 0.5f) * 5.0f;
 				positionBlend.Value = 0.0f;
 			};
@@ -477,7 +484,6 @@ namespace Lemma.Factories
 				Name = "Levitating",
 				Enter = delegate(AI.State previous)
 				{
-					chase.EnableMovement.Value = false;
 					findNextPosition();
 				},
 				Exit = delegate(AI.State next)
@@ -485,16 +491,11 @@ namespace Lemma.Factories
 					delevitateMap();
 					levitatingMap.Value = null;
 
-					Map map = chase.Map.Value.Target.Get<Map>();
-					Map.Coordinate currentCoord = map.GetCoordinate(chase.Position);
+					Map map = raycastAI.Map.Value.Target.Get<Map>();
+					Map.Coordinate currentCoord = map.GetCoordinate(transform.Position);
 					Map.Coordinate? closest = map.FindClosestFilledCell(currentCoord, 10);
 					if (closest.HasValue)
-					{
-						chase.LastCoord.Value = currentCoord;
-						chase.Coord.Value = closest.Value;
-						chase.Blend.Value = 0.0f;
-					}
-					chase.EnableMovement.Value = true;
+						raycastAI.MoveTo(closest.Value);
 					volume.Value = defaultVolume;
 					pitch.Value = 0.0f;
 				},
@@ -520,10 +521,10 @@ namespace Lemma.Factories
 							if (positionBlend > 1.0f)
 								findNextPosition();
 
-							chase.Position.Value = Vector3.Lerp(lastPosition, nextPosition, positionBlend);
+							transform.Position.Value = Vector3.Lerp(lastPosition, nextPosition, positionBlend);
 
 							Vector3 grabPoint = dynamicMap.GetAbsolutePosition(grabCoord);
-							Vector3 diff = chase.Position.Value - grabPoint;
+							Vector3 diff = transform.Position.Value - grabPoint;
 							if (diff.Length() > 15.0f)
 							{
 								ai.CurrentState.Value = "Chase";
