@@ -132,6 +132,7 @@ namespace Lemma.Factories
 			Timer footstepTimer = result.Get<Timer>("FootstepTimer");
 
 			Property<bool> phoneActive = result.GetOrMakeProperty<bool>("PhoneActive");
+			Property<bool> noteActive = result.GetOrMakeProperty<bool>("NoteActive");
 
 			// Build UI
 
@@ -2014,7 +2015,7 @@ namespace Lemma.Factories
 			// Jumping
 			input.Bind(settings.Jump, PCInput.InputState.Down, delegate()
 			{
-				if (!player.EnableMoves || phoneActive)
+				if (!player.EnableMoves || phoneActive || noteActive)
 					return;
 
 				// Don't allow vaulting
@@ -2055,7 +2056,7 @@ namespace Lemma.Factories
 			// Wall-run, vault, predictive
 			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
 			{
-				if (!player.EnableMoves || phoneActive || (player.Crouched && player.IsSupported) || vaultMover != null)
+				if (!player.EnableMoves || phoneActive || noteActive || (player.Crouched && player.IsSupported) || vaultMover != null)
 					return;
 
 				bool vaulted = jump(true, true); // Try vaulting first
@@ -2150,7 +2151,7 @@ namespace Lemma.Factories
 
 			input.Bind(settings.RollKick, PCInput.InputState.Down, delegate()
 			{
-				if (!player.EnableMoves || phoneActive || rolling || kickUpdate != null)
+				if (!player.EnableMoves || phoneActive || noteActive || rolling || kickUpdate != null)
 					return;
 
 				Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
@@ -2584,8 +2585,6 @@ namespace Lemma.Factories
 			noteModel.Scale.Value = new Vector3(1.0f, (float)noteUi.RenderTargetSize.Value.Y * noteScale, (float)noteUi.RenderTargetSize.Value.X * noteScale);
 			noteModel.Serialize = false;
 			noteModel.Enabled.Value = false;
-
-			Property<bool> noteActive = result.GetOrMakeProperty<bool>("NoteActive");
 			Property<Entity.Handle> note = result.GetOrMakeProperty<Entity.Handle>("Note");
 
 			Container togglePhoneMessage = null;
@@ -2596,7 +2595,7 @@ namespace Lemma.Factories
 
 				if (togglePhoneMessage == null && hasNote)
 					togglePhoneMessage = ((GameMain)main).ShowMessage(result, "[" + ((GameMain)main).Settings.TogglePhone.Value.ToString() + "]");
-				else if (togglePhoneMessage != null && !hasNote && !phoneActive)
+				else if (togglePhoneMessage != null && !hasNote && !phoneActive && !noteActive)
 				{
 					((GameMain)main).HideMessage(result, togglePhoneMessage);
 					togglePhoneMessage = null;
