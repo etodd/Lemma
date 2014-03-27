@@ -334,6 +334,7 @@ namespace Lemma.Factories
 							if (spawnedMap[center].ID != 0)
 							{
 								levitatingMap.Value = spawnedMap.Entity;
+								Sound.PlayCue(main, "InfectedShatter", transform.Position, 1.0f, 0.05f);
 								break;
 							}
 						}

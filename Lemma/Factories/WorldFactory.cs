@@ -194,7 +194,7 @@ namespace Lemma.Factories
 					Permanent = false,
 					Hard = true,
 					Density = 2,
-					DiffuseMap = "Textures\\powered-permanent",
+					DiffuseMap = "Textures\\powered-hard",
 					NormalMap = "Textures\\temporary-normal",
 					FootstepCue = "TemporaryFootsteps",
 					RubbleCue = "TemporaryRubble",

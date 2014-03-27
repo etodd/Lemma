@@ -9,7 +9,7 @@ namespace Lemma.Factories
 {
 	public static class MapAttachable
 	{
-		public static void MakeAttachable(Entity entity, Main main, bool deleteIfRemoved = true, bool deleteIfMoved = false)
+		public static void MakeAttachable(Entity entity, Main main, bool deleteIfRemoved = true, bool deleteIfMoved = false, Command deleteCommand = null)
 		{
 			Transform transform = entity.Get<Transform>();
 			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
@@ -40,7 +40,10 @@ namespace Lemma.Factories
 				attachmentBinding = new Binding<Matrix>(transform.Matrix, () => offset * Matrix.CreateTranslation(m.Offset) * m.Transform, m.Transform, m.Offset);
 				entity.Add(attachmentBinding);
 
-				deleteBinding = new CommandBinding(m.Delete, entity.Delete);
+				if (deleteCommand == null)
+					deleteCommand = entity.Delete;
+
+				deleteBinding = new CommandBinding(m.Delete, deleteCommand);
 				entity.Add(deleteBinding);
 
 				cellEmptiedBinding = new CommandBinding<IEnumerable<Map.Coordinate>, Map>(m.CellsEmptied, delegate(IEnumerable<Map.Coordinate> coords, Map newMap)
@@ -52,12 +55,12 @@ namespace Lemma.Factories
 							if (newMap == null)
 							{
 								if (deleteIfRemoved)
-									entity.Delete.Execute();
+									deleteCommand.Execute();
 							}
 							else
 							{
 								if (deleteIfMoved)
-									entity.Delete.Execute();
+									deleteCommand.Execute();
 								else
 									map.Value = newMap.Entity;
 							}
@@ -94,7 +97,7 @@ namespace Lemma.Factories
 							}
 						}
 						if (closestMap == null)
-							entity.Delete.Execute();
+							deleteCommand.Execute();
 						else
 							map.Value = closestMap.Entity;
 					}

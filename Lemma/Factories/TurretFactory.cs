@@ -66,7 +66,23 @@ namespace Lemma.Factories
 			model.Editable = false;
 			model.Serialize = false;
 
-			MapAttachable.MakeAttachable(result, main, true, true);
+			Command die = new Command
+			{
+				Action = delegate()
+				{
+					Sound.PlayCue(main, "InfectedShatter", transform.Position, 1.0f, 0.05f);
+					ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
+					Random random = new Random();
+					for (int i = 0; i < 50; i++)
+					{
+						Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
+						shatter.AddParticle(transform.Position + offset, offset);
+					}
+					result.Delete.Execute();
+				}
+			};
+
+			MapAttachable.MakeAttachable(result, main, true, true, die);
 
 			const float defaultModelScale = 0.75f;
 			model.Scale.Value = new Vector3(defaultModelScale);

@@ -1654,22 +1654,25 @@ namespace Lemma.Components
 			Map.GlobalCellsEmptied.Execute(this, coords, transferringToNewMap);
 
 			bool completelyEmptied = true;
-			if (this.additions.FirstOrDefault(x => x.Active) != null)
-				completelyEmptied = false;
-			else
+			lock (this.MutationLock)
 			{
-				foreach (Chunk chunk in this.Chunks)
+				if (this.additions.FirstOrDefault(x => x.Active) != null)
+					completelyEmptied = false;
+				else
 				{
-					foreach (Box box in chunk.Boxes)
+					foreach (Chunk chunk in this.Chunks)
 					{
-						if (box.Active)
+						foreach (Box box in chunk.Boxes)
 						{
-							completelyEmptied = false;
-							break;
+							if (box.Active)
+							{
+								completelyEmptied = false;
+								break;
+							}
 						}
+						if (!completelyEmptied)
+							break;
 					}
-					if (!completelyEmptied)
-						break;
 				}
 			}
 
