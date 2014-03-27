@@ -211,7 +211,7 @@ namespace Lemma.Factories
 			{
 				Session.Recorder.Event(main, "DieFromHealth");
 				Sound.PlayCue(main, "Death");
-				((GameMain)main).RespawnRewindLength = GameMain.KilledRespawnRewindLength;
+				((GameMain)main).RespawnDistance = GameMain.KilledRespawnDistance;
 				((GameMain)main).RespawnInterval = GameMain.KilledRespawnInterval;
 			}));
 
@@ -222,7 +222,7 @@ namespace Lemma.Factories
 				Session.Recorder.Event(main, "Die");
 				if (Agent.Query(transform.Position, 0.0f, 10.0f, x => x != agent) != null)
 				{
-					((GameMain)main).RespawnRewindLength = GameMain.KilledRespawnRewindLength;
+					((GameMain)main).RespawnDistance = GameMain.KilledRespawnDistance;
 					((GameMain)main).RespawnInterval = GameMain.KilledRespawnInterval;
 				}
 			}));
@@ -1317,7 +1317,7 @@ namespace Lemma.Factories
 					player.Health.Value += (verticalVelocity - v) * 0.2f;
 					if (player.Health.Value == 0.0f)
 					{
-						((GameMain)main).RespawnRewindLength = GameMain.DefaultRespawnRewindLength;
+						((GameMain)main).RespawnDistance = GameMain.DefaultRespawnDistance;
 						((GameMain)main).RespawnInterval = GameMain.DefaultRespawnInterval;
 					}
 					else
@@ -2242,11 +2242,11 @@ namespace Lemma.Factories
 						bool shouldBuildFloor = false;
 						if (player.EnableEnhancedWallRun && (instantiatedBlockPossibility || (floorState.ID != 0 && floorState.ID != temporaryID && floorState.ID != poweredID)))
 							shouldBuildFloor = true;
-
+						
 						// If the player is not yet supported, that means they're just about to land.
 						// So give them a little speed boost for having such good timing.
 						Vector3 velocity = forward * player.MaxSpeed * (player.IsSupported ? 0.75f : 1.25f);
-						player.LinearVelocity.Value = new Vector3(velocity.X, player.LinearVelocity.Value.Y, velocity.Z);
+						player.LinearVelocity.Value = new Vector3(velocity.X, instantiatedBlockPossibility ? 0.0f : player.LinearVelocity.Value.Y, velocity.Z);
 
 						// Crouch
 						player.Crouched.Value = true;

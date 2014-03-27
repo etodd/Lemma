@@ -106,14 +106,16 @@ namespace Lemma
 		private const float startGamma = 10.0f;
 		private static Vector3 startTint = new Vector3(2.0f);
 
-		public const int RespawnMemoryLength = 100;
-		public const int DefaultRespawnRewindLength = 3;
+		public const int RespawnMemoryLength = 200;
+		public const float DefaultRespawnDistance = 0.0f;
 		public const float DefaultRespawnInterval = 0.5f;
-		public const int KilledRespawnRewindLength = 40;
+		public const float KilledRespawnDistance = 40.0f;
 		public const float KilledRespawnInterval = 3.0f;
 
-		public int RespawnRewindLength = DefaultRespawnRewindLength;
+		public float RespawnDistance = DefaultRespawnDistance;
 		public float RespawnInterval = DefaultRespawnInterval;
+
+		private Vector3 lastPlayerPosition;
 
 		private int displayModeIndex;
 
@@ -1980,7 +1982,6 @@ namespace Lemma
 
 						if (this.respawnTimer > this.RespawnInterval || this.respawnTimer < 0)
 						{
-							this.RespawnInterval = GameMain.DefaultRespawnInterval;
 							if (createPlayer)
 							{
 								this.player = Factory.CreateAndBind(this, "Player");
@@ -1990,6 +1991,7 @@ namespace Lemma
 							bool spawnFound = false;
 
 							PlayerFactory.RespawnLocation foundSpawnLocation = default(PlayerFactory.RespawnLocation);
+							Vector3 foundSpawnAbsolutePosition = Vector3.Zero;
 
 							if (string.IsNullOrEmpty(this.StartSpawnPoint.Value))
 							{
@@ -2019,16 +2021,15 @@ namespace Lemma
 													// We can spawn here
 													spawnFound = true;
 													foundSpawnLocation = respawnLocation;
+													foundSpawnAbsolutePosition = absolutePos;
 												}
 											}
 										}
 									}
 									respawnLocations.RemoveAt(respawnLocations.Count - 1);
-									if (supportedLocations >= this.RespawnRewindLength)
+									if (supportedLocations >= 40 || (foundSpawnAbsolutePosition - this.lastPlayerPosition).Length() > this.RespawnDistance)
 										break;
 								}
-
-								this.RespawnRewindLength = DefaultRespawnRewindLength;
 							}
 
 							if (spawnFound)
@@ -2085,11 +2086,16 @@ namespace Lemma
 							this.respawnTimer = 0;
 
 							this.PlayerSpawned.Execute(this.player);
+
+							this.RespawnInterval = GameMain.DefaultRespawnInterval;
+							this.RespawnDistance = GameMain.DefaultRespawnDistance;
 						}
 						else
 							this.respawnTimer += this.ElapsedTime;
 					}
 				}
+				else
+					this.lastPlayerPosition = this.player.Get<Transform>().Position;
 			}
 		}
 
