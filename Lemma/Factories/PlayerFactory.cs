@@ -890,7 +890,7 @@ namespace Lemma.Factories
 				if (state == Player.WallRun.Straight)
 				{
 					// Determine if we're actually going down
-					if (!player.IsSupported && player.LinearVelocity.Value.Y < -0.1f)
+					if (!player.IsSupported && player.LinearVelocity.Value.Y < -0.5f)
 						state = Player.WallRun.Down;
 				}
 
@@ -954,6 +954,8 @@ namespace Lemma.Factories
 				}
 				else
 				{
+					player.IsSupported.Value = false;
+					player.HasTraction.Value = false;
 					Vector3 velocity = map.GetAbsoluteVector(wallRunDirection.GetVector());
 					if (Vector3.Dot(velocity, forwardVector) < 0.0f)
 					{
@@ -1000,91 +1002,87 @@ namespace Lemma.Factories
 				wallInstantiationTimer = 0.0f;
 
 				// Prevent the player from repeatedly wall-running and wall-jumping ad infinitum.
-				if ((!player.IsSupported || state == Player.WallRun.Straight))
+				bool wallRunDelayPassed = main.TotalTime - lastWallRunEnded > wallRunDelay;
+				bool wallRunJumpDelayPassed = main.TotalTime - lastWallJump > wallRunDelay;
+
+				Matrix matrix = Matrix.CreateRotationY(rotation);
+
+				Vector3 forwardVector = -matrix.Forward;
+
+				Vector3 wallVector;
+				switch (state)
 				{
-					bool wallRunDelayPassed = main.TotalTime - lastWallRunEnded > wallRunDelay;
-					bool wallRunJumpDelayPassed = main.TotalTime - lastWallJump > wallRunDelay;
+					case Player.WallRun.Straight:
+						wallVector = forwardVector;
+						break;
+					case Player.WallRun.Left:
+						wallVector = -matrix.Left;
+						break;
+					case Player.WallRun.Right:
+						wallVector = -matrix.Right;
+						break;
+					case Player.WallRun.Reverse:
+						wallVector = -forwardVector;
+						wallInstantiationTimer = 0.25f;
+						break;
+					default:
+						wallVector = Vector3.Zero;
+						break;
+				}
 
-					Matrix matrix = Matrix.CreateRotationY(rotation);
+				Vector3 pos = transform.Position + new Vector3(0, player.Height * -0.5f, 0);
 
-					Vector3 forwardVector = -matrix.Forward;
-
-					Vector3 wallVector;
-					switch (state)
+				// Attempt to wall-walk on an existing map
+				bool activate = false, addInitialVelocity = false;
+				foreach (Map map in Map.ActivePhysicsMaps)
+				{
+					Map.Coordinate coord = map.GetCoordinate(pos);
+					Direction dir = map.GetRelativeDirection(wallVector);
+					for (int i = 1; i < 4; i++)
 					{
-						case Player.WallRun.Straight:
-							wallVector = forwardVector;
-							break;
-						case Player.WallRun.Left:
-							wallVector = -matrix.Left;
-							break;
-						case Player.WallRun.Right:
-							wallVector = -matrix.Right;
-							break;
-						case Player.WallRun.Reverse:
-							wallVector = -forwardVector;
-							wallInstantiationTimer = 0.25f;
-							break;
-						default:
-							wallVector = Vector3.Zero;
-							break;
-					}
-
-					Vector3 pos = transform.Position + new Vector3(0, player.Height * -0.5f, 0);
-
-					// Attempt to wall-walk on an existing map
-					bool activate = false, addInitialVelocity = false;
-					foreach (Map map in Map.ActivePhysicsMaps)
-					{
-						Map.Coordinate coord = map.GetCoordinate(pos);
-						Direction dir = map.GetRelativeDirection(wallVector);
-						for (int i = 1; i < 4; i++)
+						Map.Coordinate wallCoord = coord.Move(dir, i);
+						if (map[wallCoord].ID != 0)
 						{
-							Map.Coordinate wallCoord = coord.Move(dir, i);
-							if (map[wallCoord].ID != 0)
+							bool differentWall = map != lastWallRunMap || dir != lastWallDirection;
+							activate = differentWall || wallRunJumpDelayPassed;
+							addInitialVelocity = differentWall || wallRunDelayPassed;
+						}
+						else
+						{
+							// Check block possibilities
+							List<BlockPossibility> mapBlockPossibilities;
+							bool hasBlockPossibilities = blockPossibilities.TryGetValue(map, out mapBlockPossibilities);
+							if (hasBlockPossibilities)
 							{
-								bool differentWall = map != lastWallRunMap || dir != lastWallDirection;
-								activate = differentWall || wallRunJumpDelayPassed;
-								addInitialVelocity = differentWall || wallRunDelayPassed;
-							}
-							else
-							{
-								// Check block possibilities
-								List<BlockPossibility> mapBlockPossibilities;
-								bool hasBlockPossibilities = blockPossibilities.TryGetValue(map, out mapBlockPossibilities);
-								if (hasBlockPossibilities)
+								foreach (BlockPossibility block in mapBlockPossibilities)
 								{
-									foreach (BlockPossibility block in mapBlockPossibilities)
+									if (wallCoord.Between(block.StartCoord, block.EndCoord))
 									{
-										if (wallCoord.Between(block.StartCoord, block.EndCoord))
-										{
-											instantiateBlockPossibility(block);
-											activate = true;
-											addInitialVelocity = true;
-											wallInstantiationTimer = 0.25f;
-											break;
-										}
+										instantiateBlockPossibility(block);
+										activate = true;
+										addInitialVelocity = true;
+										wallInstantiationTimer = 0.25f;
+										break;
 									}
 								}
-							}
-
-							if (activate)
-							{
-								// Move so the player is exactly two coordinates away from the wall
-								transform.Position.Value = map.GetAbsolutePosition(coord.Move(dir, i - 2)) + new Vector3(0, player.Height * 0.5f, 0);
-								break;
 							}
 						}
 
 						if (activate)
 						{
-							setUpWallRun(map, dir, state, forwardVector, addInitialVelocity);
+							// Move so the player is exactly two coordinates away from the wall
+							transform.Position.Value = map.GetAbsolutePosition(coord.Move(dir, i - 2)) + new Vector3(0, player.Height * 0.5f, 0);
 							break;
 						}
 					}
-					return activate;
+
+					if (activate)
+					{
+						setUpWallRun(map, dir, state, forwardVector, addInitialVelocity);
+						break;
+					}
 				}
-				return false;
+				return activate;
 			};
 
 			Action deactivateWallRun = delegate()

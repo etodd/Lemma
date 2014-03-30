@@ -86,8 +86,6 @@ namespace Lemma.Factories
 				}
 			});
 
-			model.Add(new Binding<bool, string>(model.Enabled, x => x != "Exploding", ai.CurrentState));
-
 			light.Add(new Binding<Vector3>(light.Color, model.Color));
 
 			Agent agent = result.GetOrCreate<Agent>();

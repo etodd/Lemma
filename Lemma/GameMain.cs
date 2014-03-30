@@ -85,7 +85,7 @@ namespace Lemma
 		private string analyticsDirectory;
 		private string settingsFile;
 
-		private Entity player;
+		private Property<Entity> player = new Property<Entity>();
 		private Entity editor;
 		private PCInput input;
 
@@ -237,8 +237,7 @@ namespace Lemma
 			Animation anim = new Animation
 			(
 				new Animation.Vector2MoveTo(container.Size, originalSize, messageFadeTime),
-				new Animation.Set<bool>(container.ResizeVertical, true),
-				new Animation.Set<bool>(container.EnableScissor, false)
+				new Animation.Set<bool>(container.ResizeVertical, true)
 			);
 
 			if (entity == null)
@@ -270,7 +269,6 @@ namespace Lemma
 				(
 					new Animation.Delay(delay),
 					new Animation.Set<bool>(container.ResizeVertical, false),
-					new Animation.Set<bool>(container.EnableScissor, true),
 					new Animation.Vector2MoveTo(container.Size, new Vector2(container.Size.Value.X, 0), messageFadeTime),
 					new Animation.Execute(container.Delete)
 				);
@@ -1346,7 +1344,8 @@ namespace Lemma
 					loadSaveShown = true;
 					currentMenu.Value = loadSaveList;
 				}));
-				saveButton.Add(new Binding<bool, string>(saveButton.Visible, x => x != GameMain.MenuMap, this.MapFile));
+				saveButton.Add(new Binding<bool>(saveButton.Visible, () => this.MapFile != GameMain.MenuMap && (this.player.Value != null && this.player.Value.Active), this.MapFile, this.player));
+
 				pauseMenu.Children.Add(saveButton);
 
 				Action showLoad = delegate()
@@ -1566,7 +1565,7 @@ namespace Lemma
 				bool saving = false;
 				this.input.Bind(this.Settings.QuickSave, PCInput.InputState.Down, delegate()
 				{
-					if (!saving && !this.Paused && this.MapFile != GameMain.MenuMap)
+					if (!saving && !this.Paused && this.MapFile != GameMain.MenuMap && this.player.Value != null && this.player.Value.Active)
 					{
 						saving = true;
 						Container notification = new Container();
@@ -1600,7 +1599,16 @@ namespace Lemma
 				// Escape key
 				// Make sure we can only pause when there is a player currently spawned
 				// Otherwise we could save the current map without the player. And that would be awkward.
-				Func<bool> canPause = () => !this.EditorEnabled && ((this.player != null && this.player.Active) || this.MapFile.Value == GameMain.MenuMap);
+				Func<bool> canPause = delegate()
+				{
+					if (this.EditorEnabled)
+						return false;
+
+					if (this.MapFile.Value == GameMain.MenuMap)
+						return !this.Paused; // Only allow pausing, don't allow unpausing
+
+					return true;
+				};
 
 				Action togglePause = delegate()
 				{
@@ -1923,7 +1931,7 @@ namespace Lemma
 			// Spawn an editor or a player if needed
 			if (this.EditorEnabled)
 			{
-				this.player = null;
+				this.player.Value = null;
 				this.Renderer.InternalGamma.Value = 0.0f;
 				this.Renderer.Brightness.Value = 0.0f;
 				if (this.editor == null)
@@ -1948,12 +1956,12 @@ namespace Lemma
 
 				this.editor = null;
 
-				bool setupSpawn = this.player == null || !this.player.Active;
+				bool setupSpawn = this.player.Value == null || !this.player.Value.Active;
 
 				if (setupSpawn)
-					this.player = PlayerFactory.Instance;
+					this.player.Value = PlayerFactory.Instance;
 
-				bool createPlayer = this.player == null || !this.player.Active;
+				bool createPlayer = this.player.Value == null || !this.player.Value.Active;
 
 				if (createPlayer || setupSpawn)
 				{
@@ -1984,7 +1992,7 @@ namespace Lemma
 						{
 							if (createPlayer)
 							{
-								this.player = Factory.CreateAndBind(this, "Player");
+								this.player.Value = Factory.CreateAndBind(this, "Player");
 								this.Add(this.player);
 							}
 
@@ -2036,10 +2044,10 @@ namespace Lemma
 							{
 								// Spawn at an autosaved location
 								Vector3 absolutePos = foundSpawnLocation.Map.Target.Get<Map>().GetAbsolutePosition(foundSpawnLocation.Coordinate);
-								this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = absolutePos + new Vector3(0, 3, 0);
+								this.player.Value.Get<Transform>().Position.Value = this.Camera.Position.Value = absolutePos + new Vector3(0, 3, 0);
 
 								FPSInput.RecenterMouse();
-								Property<Vector2> mouse = this.player.Get<FPSInput>().Mouse;
+								Property<Vector2> mouse = this.player.Value.Get<FPSInput>().Mouse;
 								mouse.Value = new Vector2(foundSpawnLocation.Rotation, 0.0f);
 							}
 							else
@@ -2063,13 +2071,13 @@ namespace Lemma
 								}
 
 								if (spawnEntity != null)
-									this.player.Get<Transform>().Position.Value = this.Camera.Position.Value = spawnEntity.Get<Transform>().Position;
+									this.player.Value.Get<Transform>().Position.Value = this.Camera.Position.Value = spawnEntity.Get<Transform>().Position;
 
 								if (spawn != null)
 								{
 									spawn.IsActivated.Value = true;
 									FPSInput.RecenterMouse();
-									Property<Vector2> mouse = this.player.Get<FPSInput>().Mouse;
+									Property<Vector2> mouse = this.player.Value.Get<FPSInput>().Mouse;
 									mouse.Value = new Vector2(spawn.Rotation, 0.0f);
 								}
 							}
@@ -2095,7 +2103,7 @@ namespace Lemma
 					}
 				}
 				else
-					this.lastPlayerPosition = this.player.Get<Transform>().Position;
+					this.lastPlayerPosition = this.player.Value.Get<Transform>().Position;
 			}
 		}
 

@@ -113,6 +113,7 @@
     </Compile>
     <Compile Include="Factories\AnimatedPropFactory.cs" />
     <Compile Include="Factories\CloudFactory.cs" />
+    <Compile Include="Factories\EvilBlocksFactory.cs" />
     <Compile Include="Factories\SwitchFactory.cs" />
     <Compile Include="Factories\NoteFactory.cs" />
     <Compile Include="Factories\EntityConnectable.cs" />
