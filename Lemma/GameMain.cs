@@ -21,11 +21,7 @@ namespace Lemma
 {
 	public class GameMain : Main
 	{
-#if DEVELOPMENT
-		public const string InitialMap = null;
-#else
-		public const string InitialMap = "intro";
-#endif
+		public const string InitialMap = "start";
 
 		public const string MenuMap = "..\\Menu\\menu";
 
@@ -39,11 +35,11 @@ namespace Lemma
 
 		private static Dictionary<string, string> maps = new Dictionary<string,string>
 		{
-			{ "intro", "Introduction" },
-			{ "start", "Tutorial Part 1" },
-			{ "tut", "Tutorial Part 2" },
-			{ "power", "Monolith" },
-			{ "wallrun", "Hub World" },
+			{ "start", "1 | Apartment" },
+			{ "rain", "2 | Rain" },
+			{ "dawn", "3 | Dawn" },
+			{ "monolith", "4 | Monolith" },
+			{ "forest", "5 | Forest" },
 		};
 
 		public class Config
@@ -1988,7 +1984,7 @@ namespace Lemma
 						new Animation.Execute(delegate() { this.UI.Root.Children.Remove(editorMsgBackground); })
 					));
 #else
-					// "Press space to start" screen
+					// Main menu
 
 					this.MapFile.Value = GameMain.MenuMap;
 					savePausedSettings();
