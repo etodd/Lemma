@@ -37,6 +37,15 @@ namespace Lemma
 		public const int MapVersion = 313;
 		public const int Build = 320;
 
+		private static Dictionary<string, string> maps = new Dictionary<string,string>
+		{
+			{ "intro", "Introduction" },
+			{ "start", "Tutorial Part 1" },
+			{ "tut", "Tutorial Part 2" },
+			{ "power", "Monolith" },
+			{ "wallrun", "Hub World" },
+		};
+
 		public class Config
 		{
 #if DEVELOPMENT
@@ -1390,6 +1399,105 @@ namespace Lemma
 				pauseMenu.Children.Add(sandbox);
 				sandbox.Add(new Binding<bool, string>(sandbox.Visible, x => x == GameMain.MenuMap, this.MapFile));
 
+				// Cheat menu
+#if CHEAT
+				Animation cheatAnimation = null;
+				bool cheatShown = false;
+
+				ListContainer cheatMenu = new ListContainer();
+				cheatMenu.Visible.Value = false;
+				cheatMenu.Add(new Binding<Vector2, Point>(cheatMenu.Position, x => new Vector2(0, x.Y * 0.5f), this.ScreenSize));
+				cheatMenu.AnchorPoint.Value = new Vector2(1, 0.5f);
+				this.UI.Root.Children.Add(cheatMenu);
+				cheatMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+				Container cheatLabelPadding = new Container();
+				cheatLabelPadding.PaddingLeft.Value = 8.0f;
+				cheatLabelPadding.Opacity.Value = 0.0f;
+				cheatMenu.Children.Add(cheatLabelPadding);
+
+				ListContainer cheatLabelContainer = new ListContainer();
+				cheatLabelContainer.Orientation.Value = ListContainer.ListOrientation.Vertical;
+				cheatLabelPadding.Children.Add(cheatLabelContainer);
+
+				TextElement cheatLabel = new TextElement();
+				cheatLabel.FontFile.Value = "Font";
+				cheatLabel.Text.Value = "C H E A T";
+				cheatLabelContainer.Children.Add(cheatLabel);
+
+				TextElement cheatScrollLabel = new TextElement();
+				cheatScrollLabel.FontFile.Value = "Font";
+				cheatScrollLabel.Text.Value = "Scroll for more";
+				cheatLabelContainer.Children.Add(cheatScrollLabel);
+
+				Action hideCheat = delegate()
+				{
+					cheatShown = false;
+
+					showPauseMenu();
+
+					if (cheatAnimation != null)
+						cheatAnimation.Delete.Execute();
+					cheatAnimation = new Animation
+					(
+						new Animation.Vector2MoveToSpeed(cheatMenu.AnchorPoint, new Vector2(1, 0.5f), 5.0f),
+						new Animation.Set<bool>(cheatMenu.Visible, false)
+					);
+					this.AddComponent(cheatAnimation);
+				};
+
+				UIComponent cheatBack = this.createMenuButton("Back");
+				cheatBack.Add(new CommandBinding<Point>(cheatBack.MouseLeftUp, delegate(Point p)
+				{
+					hideCheat();
+				}));
+				cheatMenu.Children.Add(cheatBack);
+
+				ListContainer cheatList = new ListContainer();
+				cheatList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+				foreach (KeyValuePair<string, string> item in GameMain.maps)
+				{
+					UIComponent button = this.createMenuButton(item.Value);
+					string m = item.Key;
+					button.Add(new CommandBinding<Point>(button.MouseLeftUp, delegate(Point mouse)
+					{
+						hideCheat();
+						restorePausedSettings();
+						this.currentSave = null;
+						this.AddComponent(new Animation
+						(
+							new Animation.Delay(0.2f),
+							new Animation.Set<string>(this.MapFile, m)
+						));
+					}));
+					cheatList.Children.Add(button);
+				}
+
+				Scroller cheatScroller = new Scroller();
+				cheatScroller.Children.Add(cheatList);
+				cheatScroller.Add(new Binding<Vector2>(cheatScroller.Size, () => new Vector2(cheatList.Size.Value.X, this.ScreenSize.Value.Y * 0.5f), cheatList.Size, this.ScreenSize));
+				cheatMenu.Children.Add(cheatScroller);
+
+				// Cheat button
+				UIComponent cheat = this.createMenuButton("CHEAT");
+				cheat.Add(new CommandBinding<Point>(cheat.MouseLeftUp, delegate(Point mouse)
+				{
+					hidePauseMenu();
+
+					cheatMenu.Visible.Value = true;
+					if (cheatAnimation != null)
+						cheatAnimation.Delete.Execute();
+					cheatAnimation = new Animation(new Animation.Vector2MoveToSpeed(cheatMenu.AnchorPoint, new Vector2(0, 0.5f), 5.0f));
+					this.AddComponent(cheatAnimation);
+
+					cheatShown = true;
+					currentMenu.Value = cheatList;
+				}));
+				cheat.Add(new Binding<bool, string>(cheat.Visible, x => x == GameMain.MenuMap, this.MapFile));
+				pauseMenu.Children.Add(cheat);
+#endif
+
 				// Controls button
 				UIComponent controlsButton = this.createMenuButton("Controls");
 				controlsButton.Add(new CommandBinding<Point>(controlsButton.MouseLeftUp, delegate(Point mouse)
@@ -1638,6 +1746,13 @@ namespace Lemma
 						hideLoadSave();
 						return;
 					}
+#if CHEAT
+					else if (cheatShown)
+					{
+						hideCheat();
+						return;
+					}
+#endif
 
 					if (this.MapFile.Value == GameMain.MenuMap)
 					{
@@ -1655,9 +1770,9 @@ namespace Lemma
 					}
 				};
 
-				this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), canPause, togglePause));
+				this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), () => canPause() || dialog != null, togglePause));
 				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.Start), canPause, togglePause));
-				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.B), () => this.Paused, togglePause));
+				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.B), () => canPause() || dialog != null, togglePause));
 
 				// Pause on window lost focus
 				this.Deactivated += delegate(object sender, EventArgs e)
