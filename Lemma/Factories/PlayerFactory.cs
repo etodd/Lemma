@@ -1038,9 +1038,18 @@ namespace Lemma.Factories
 				{
 					Map.Coordinate coord = map.GetCoordinate(pos);
 					Direction dir = map.GetRelativeDirection(wallVector);
+					Direction up = map.GetRelativeDirection(Direction.PositiveY);
 					for (int i = 1; i < 4; i++)
 					{
 						Map.Coordinate wallCoord = coord.Move(dir, i);
+						if (map[coord.Move(dir, i - 1)].ID != 0
+							|| map[coord.Move(dir, i - 1).Move(up, 1)].ID != 0
+							|| map[coord.Move(dir, i - 1).Move(up, 2)].ID != 0)
+						{
+							// Blocked
+							break;
+						}
+
 						if (map[wallCoord].ID != 0)
 						{
 							bool differentWall = map != lastWallRunMap || dir != lastWallDirection;
