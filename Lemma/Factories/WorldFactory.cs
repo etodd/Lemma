@@ -140,7 +140,7 @@ namespace Lemma.Factories
 					SpecularPower = 1.0f,
 					SpecularIntensity = 0.0f,
 					AllowAlpha = true,
-					Tiling = 3.0f,
+					Tiling = 4.0f,
 				},
 				new Map.CellState
 				{
@@ -186,6 +186,21 @@ namespace Lemma.Factories
 					SpecularPower = 1.0f,
 					SpecularIntensity = 0.0f,
 					Tint = new Vector3(0.8f, 0.5f, 0.9f),
+				},
+				new Map.CellState
+				{
+					ID = 11,
+					Name = "Wood",
+					Permanent = false,
+					Hard = true,
+					Density = 0.5f,
+					DiffuseMap = "Textures\\wood",
+					NormalMap = "Textures\\wood-normal",
+					FootstepCue = "WoodFootsteps",
+					RubbleCue = "WoodRubble",
+					SpecularPower = 1.0f,
+					SpecularIntensity = 0.0f,
+					Tiling = 1.5f,
 				},
 				new Map.CellState
 				{
