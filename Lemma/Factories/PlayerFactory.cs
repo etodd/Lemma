@@ -2156,7 +2156,8 @@ namespace Lemma.Factories
 
 			bool rolling = false;
 
-			input.Bind(settings.RollKick, PCInput.InputState.Down, delegate()
+			Action rollKick = null;
+			rollKick = delegate()
 			{
 				if (!player.EnableMoves || phoneActive || noteActive || rolling || kickUpdate != null)
 					return;
@@ -2344,10 +2345,13 @@ namespace Lemma.Factories
 					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height);
 					if (floorRaycast.Map == null)
 						shouldBreakFloor = true;
-					else if (player.EnableEnhancedWallRun)
+					else
 					{
-						if (floorRaycast.Coordinate.Value.Data.Name != "Temporary")
-							shouldBuildFloor = true;
+						if (player.EnableEnhancedWallRun)
+						{
+							if (floorRaycast.Coordinate.Value.Data.Name != "Temporary")
+								shouldBuildFloor = true;
+						}
 					}
 
 					Direction forwardDir = Direction.None;
@@ -2365,20 +2369,37 @@ namespace Lemma.Factories
 						delegate(float dt)
 						{
 							kickTime += dt;
-							if (kickTime > 0.75f || player.LinearVelocity.Value.Length() < 0.1f)
-								stopKick();
-							else
+
+							if (shouldBreakFloor) // We weren't supported when we started kicking. We're flying.
 							{
-								player.LinearVelocity.Value = new Vector3(kickVelocity.X, player.LinearVelocity.Value.Y, kickVelocity.Z);
-								breakWalls(forward, right, shouldBreakFloor);
-								if (shouldBuildFloor)
-									buildFloor(floorRaycast.Map, floorRaycast.Coordinate.Value, forwardDir, rightDir);
+								// Roll if we hit the ground while kicking mid-air
+								playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
+								Map.GlobalRaycastResult r = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height);
+								if (r.Map != null)
+								{
+									stopKick();
+									rollKick();
+									return;
+								}
 							}
+
+							if (kickTime > 0.75f || player.LinearVelocity.Value.Length() < 0.1f)
+							{
+								stopKick();
+								return;
+							}
+
+							player.LinearVelocity.Value = new Vector3(kickVelocity.X, player.LinearVelocity.Value.Y, kickVelocity.Z);
+							breakWalls(forward, right, shouldBreakFloor);
+							if (shouldBuildFloor)
+								buildFloor(floorRaycast.Map, floorRaycast.Coordinate.Value, forwardDir, rightDir);
 						}
 					};
 					result.Add(kickUpdate);
 				}
-			});
+			};
+
+			input.Bind(settings.RollKick, PCInput.InputState.Down, rollKick);
 
 			input.Bind(settings.RollKick, PCInput.InputState.Up, delegate()
 			{
