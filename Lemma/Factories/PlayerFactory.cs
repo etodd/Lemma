@@ -1391,7 +1391,11 @@ namespace Lemma.Factories
 						{
 							Map.Coordinate coord = playerCoord.Move(relativeDir, i);
 							Map.CellState state = map[coord];
-							if ((state.ID != 0 && state.ID != avoidID) || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = map, Coordinate = coord, }))
+
+							if (state.ID == avoidID)
+								break;
+
+							if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = map, Coordinate = coord, }))
 							{
 								shortestDistance = i;
 								relativeShortestDirection = relativeDir;
@@ -1451,13 +1455,18 @@ namespace Lemma.Factories
 								{
 									Map.Coordinate c = coord.Move(dir, i);
 									Map.CellState state = map[c];
-									if (state.ID != 0 && state.ID != avoidID)
+
+									if (state.ID == avoidID)
+										break;
+
+									if (state.ID != 0)
 									{
 										shortestMap = map;
 										shortestBuildDirection = dir;
 										shortestWallDirection = relativeWallDir;
 										shortestDistance = i;
 										shortestPlayerCoord = coord;
+										break;
 									}
 								}
 							}
@@ -1667,7 +1676,7 @@ namespace Lemma.Factories
 					foreach (Vector3 dir in new[] { rotationMatrix.Left, rotationMatrix.Right, rotationMatrix.Backward, rotationMatrix.Forward })
 					{
 						Map.GlobalRaycastResult hit = Map.GlobalRaycast(playerPos, dir, wallJumpDistance);
-						if (hit.Map != null)
+						if (hit.Map != null && hit.Coordinate.Value.Data.ID != avoidID) // Can't jump off the avoid material
 						{
 							wallRaycastDirection = dir;
 							wallRaycastHit = hit;
@@ -1687,8 +1696,9 @@ namespace Lemma.Factories
 				if (!onlyVault && player.WallRunState.Value != Player.WallRun.None)
 				{
 					Vector3 pos = transform.Position + new Vector3(0, (player.Height * -0.5f) - 0.5f, 0);
-					Map.Coordinate coord = wallRunMap.GetCoordinate(pos);
-					wallJump(wallRunMap, wallDirection.GetReverse(), coord.Move(wallDirection, 2));
+					Map.Coordinate wallCoord = wallRunMap.GetCoordinate(pos).Move(wallDirection, 2);
+					if (wallRunMap[wallCoord].ID != avoidID)
+						wallJump(wallRunMap, wallDirection.GetReverse(), wallCoord);
 				}
 
 				bool go = vaulting || (!onlyVault && (supported || wallJumping));
@@ -1770,25 +1780,30 @@ namespace Lemma.Factories
 					if (!wallJumping)
 						canKick = true;
 
-					if (!supported && !wallJumping)
+					if (!wallJumping)
 					{
-						// We haven't hit the ground, so fall damage will not be handled by the physics system.
-						// Need to do it manually here.
-						fallDamage(player.LinearVelocity.Value.Y);
-					}
-
-					if (supported && !wallJumping)
-					{
-						// Regular jump
-						// Take base velocity into account
-
-						BEPUphysics.Entities.Entity supportEntity = player.SupportEntity;
-						if (supportEntity != null)
+						if (supported)
 						{
-							Vector3 supportLocation = transform.Position.Value + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
-							baseVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
+							// Regular jump
+							// Take base velocity into account
+							if (!vaulting && groundRaycast.Map != null && groundRaycast.Coordinate.Value.Data.ID == avoidID) // Can't jump off avoid material
+								return false;
+
+							BEPUphysics.Entities.Entity supportEntity = player.SupportEntity;
+							if (supportEntity != null)
+							{
+								Vector3 supportLocation = transform.Position.Value + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
+								baseVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
+							}
+						}
+						else
+						{
+							// We haven't hit the ground, so fall damage will not be handled by the physics system.
+							// Need to do it manually here.
+							fallDamage(player.LinearVelocity.Value.Y);
 						}
 					}
+
 
 					if (!vaulting)
 					{
@@ -2027,7 +2042,7 @@ namespace Lemma.Factories
 
 				// Don't allow vaulting
 				// Also don't try anything if we're crouched or in the middle of vaulting
-				if (vaultMover == null && !jump(false, false) && player.EnableSlowMotion && (!player.Crouched || !player.IsSupported))
+				if (vaultMover == null && !jump(false, false) && player.EnableSlowMotion && !player.IsSupported)
 				{
 					float interval = getPredictionInterval();
 
