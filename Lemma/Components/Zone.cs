@@ -9,6 +9,8 @@ namespace Lemma.Components
 {
 	public class Zone : Component
 	{
+		public enum BuildMode { CanBuild, NoBuild, ExclusiveBuild };
+
 		public static List<Zone> Zones = new List<Zone>();
 
 		public ListProperty<Entity.Handle> ConnectedEntities = new ListProperty<Entity.Handle>();
@@ -26,6 +28,8 @@ namespace Lemma.Components
 		public Property<bool> Exclusive = new Property<bool> { Value = true, Editable = true };
 
 		public Property<int> Priority = new Property<int> { Value = 0, Editable = true };
+
+		public Property<BuildMode> Build = new Property<BuildMode> { Value = BuildMode.CanBuild, Editable = true };
 
 		public static IEnumerable<Zone> GetConnectedZones(Zone zone)
 		{
@@ -86,13 +90,18 @@ namespace Lemma.Components
 			});
 		}
 
+		public bool Contains(Vector3 x)
+		{
+			return this.BoundingBox.Value.Contains(Vector3.Transform(x, Matrix.Invert(this.Transform))) == ContainmentType.Contains;
+		}
+
 		public static Zone Get(Vector3 x)
 		{
 			Zone result = null;
 			int minPriority = int.MaxValue;
 			foreach (Zone z in Zone.Zones)
 			{
-				if (z.BoundingBox.Value.Contains(Vector3.Transform(x, Matrix.Invert(z.Transform))) == ContainmentType.Contains)
+				if (z.Contains(x))
 				{
 					Zone zone = z;
 					while (zone.Parent.Value.Target != null)

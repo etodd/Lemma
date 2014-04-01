@@ -140,13 +140,26 @@ namespace Lemma.Factories
 							if (foundAdjacentCell)
 							{
 								bool foundConflict = false;
-								Vector3 absolutePosition = m.GetAbsolutePosition(c);
-								foreach (Map m2 in Map.ActivePhysicsMaps)
+								Vector3 absolutePos = m.GetAbsolutePosition(c);
+								foreach (Zone z in Zone.Zones)
 								{
-									if (m2 != m && m2[absolutePosition].ID != 0)
+									if ((z.Build == Zone.BuildMode.NoBuild && z.Contains(absolutePos))
+										|| (z.Build == Zone.BuildMode.ExclusiveBuild && !z.Contains(absolutePos)))
 									{
 										foundConflict = true;
 										break;
+									}
+								}
+
+								if (!foundConflict)
+								{
+									foreach (Map m2 in Map.ActivePhysicsMaps)
+									{
+										if (m2 != m && m2[absolutePos].ID != 0)
+										{
+											foundConflict = true;
+											break;
+										}
 									}
 								}
 

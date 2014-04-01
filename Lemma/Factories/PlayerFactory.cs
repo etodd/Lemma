@@ -1392,11 +1392,26 @@ namespace Lemma.Factories
 							Map.Coordinate coord = playerCoord.Move(relativeDir, i);
 							Map.CellState state = map[coord];
 
-							if (state.ID == avoidID)
-								break;
-
 							if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = map, Coordinate = coord, }))
 							{
+								if (state.ID == avoidID)
+									break;
+								
+								// Check we're not in a no-build zone
+								Vector3 absolutePos = map.GetAbsolutePosition(coord);
+								bool cancel = false;
+								foreach (Zone z in Zone.Zones)
+								{
+									if ((z.Build == Zone.BuildMode.NoBuild && z.Contains(absolutePos))
+										|| (z.Build == Zone.BuildMode.ExclusiveBuild && !z.Contains(absolutePos)))
+									{
+										cancel = true;
+										break;
+									}
+								}
+								if (cancel)
+									break;
+
 								shortestDistance = i;
 								relativeShortestDirection = relativeDir;
 								absoluteShortestDirection = absoluteDir;
@@ -1456,11 +1471,26 @@ namespace Lemma.Factories
 									Map.Coordinate c = coord.Move(dir, i);
 									Map.CellState state = map[c];
 
-									if (state.ID == avoidID)
-										break;
-
 									if (state.ID != 0)
 									{
+										if (state.ID == avoidID)
+											break;
+
+										// Check we're not in a no-build zone
+										Vector3 absolutePos = map.GetAbsolutePosition(c);
+										bool cancel = false;
+										foreach (Zone z in Zone.Zones)
+										{
+											if ((z.Build == Zone.BuildMode.NoBuild && z.Contains(absolutePos))
+												|| (z.Build == Zone.BuildMode.ExclusiveBuild && !z.Contains(absolutePos)))
+											{
+												cancel = true;
+												break;
+											}
+										}
+										if (cancel)
+											break;
+
 										shortestMap = map;
 										shortestBuildDirection = dir;
 										shortestWallDirection = relativeWallDir;
