@@ -140,7 +140,7 @@ namespace Lemma.Factories
 					SpecularPower = 1.0f,
 					SpecularIntensity = 0.0f,
 					AllowAlpha = true,
-					Tiling = 4.0f,
+					Tiling = 3.0f,
 				},
 				new Map.CellState
 				{

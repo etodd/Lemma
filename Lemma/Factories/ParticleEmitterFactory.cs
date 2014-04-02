@@ -41,9 +41,10 @@ namespace Lemma.Factories
 		{
 			base.AttachEditorComponents(result, main);
 			Model editorModel = result.Get<Model>("EditorModel");
+			ParticleEmitter emitter = result.Get<ParticleEmitter>();
 			Property<bool> editorSelected = result.GetOrMakeProperty<bool>("EditorSelected");
 			editorSelected.Serialize = false;
-			editorModel.Add(new Binding<bool>(editorModel.Enabled, x => !x, editorSelected));
+			editorModel.Add(new Binding<bool>(editorModel.Enabled, () => !editorSelected || emitter.ParticleType.Value == null, editorSelected, emitter.ParticleType));
 
 			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
 		}
