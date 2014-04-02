@@ -4009,7 +4009,10 @@ namespace Lemma.Components
 
 						Vector3 ray = actualEnd - actualStart;
 
-						Vector3 norm = normal == Direction.None ? -Vector3.Normalize(ray) : normal.GetVector();
+						if (normal == Direction.None)
+							normal = DirectionExtensions.GetDirectionFromVector(-Vector3.Normalize(ray));
+
+						Vector3 norm = normal.GetVector();
 
 						Vector3 planePosition = new Vector3(actualCoord.X + 0.5f, actualCoord.Y + 0.5f, actualCoord.Z + 0.5f) + norm * 0.5f;
 
