@@ -2045,7 +2045,7 @@ namespace Lemma
 				this.player.Value = null;
 				this.Renderer.InternalGamma.Value = 0.0f;
 				this.Renderer.Brightness.Value = 0.0f;
-				if (this.editor == null)
+				if (this.editor == null || !this.editor.Active)
 				{
 					this.editor = Factory.Get("Editor").CreateAndBind(this);
 					FPSInput.RecenterMouse();
