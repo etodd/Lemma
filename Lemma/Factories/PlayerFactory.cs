@@ -2415,7 +2415,7 @@ namespace Lemma.Factories
 						{
 							kickTime += dt;
 
-							if (shouldBreakFloor) // We weren't supported when we started kicking. We're flying.
+							if (shouldBreakFloor && !player.IsSupported) // We weren't supported when we started kicking. We're flying.
 							{
 								// Roll if we hit the ground while kicking mid-air
 								playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
