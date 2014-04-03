@@ -40,6 +40,7 @@ namespace Lemma
 			{ "dawn", "3 | Dawn" },
 			{ "monolith", "4 | Monolith" },
 			{ "forest", "5 | Forest" },
+			{ "valley", "6 | Valley" },
 		};
 
 		public class Config

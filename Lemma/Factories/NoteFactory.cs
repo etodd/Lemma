@@ -46,7 +46,7 @@ namespace Lemma.Factories
 					(
 						result,
 						notes.Where(x => x.GetOrMakeProperty<bool>("Collected")).Count().ToString()
-						+ " / " + notes.Count.ToString() + " notes collected"
+						+ " / " + notes.Count.ToString() + " notes read"
 					);
 					gameMain.HideMessage(result, msg, 4.0f);
 				}

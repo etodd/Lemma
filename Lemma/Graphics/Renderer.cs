@@ -10,7 +10,7 @@ namespace Lemma.Components
 {
 	public enum Technique { Render, MotionBlur, Shadow, PointLightShadow, NonPostProcessed, Clip };
 
-	public struct RenderParameters
+	public class RenderParameters
 	{
 		public Camera Camera;
 		private Plane[] clipPlanes;
@@ -36,6 +36,20 @@ namespace Lemma.Components
 		public RenderTarget2D FrameBuffer;
 		public bool IsMainRender;
 		public static readonly RenderParameters Default = new RenderParameters();
+		public RenderParameters Clone()
+		{
+			return new RenderParameters
+			{
+				Camera = this.Camera,
+				clipPlanes = (Plane[])this.clipPlanes.Clone(),
+				ClipPlaneData = (Vector4[])this.ClipPlaneData.Clone(),
+				Technique = this.Technique,
+				ReverseCullOrder = this.ReverseCullOrder,
+				DepthBuffer = this.DepthBuffer,
+				FrameBuffer = this.FrameBuffer,
+				IsMainRender = this.IsMainRender,
+			};
+		}
 	}
 
 	/// <summary>

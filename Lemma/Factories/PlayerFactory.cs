@@ -410,6 +410,8 @@ namespace Lemma.Factories
 			int neutralID = WorldFactory.StatesByName["Neutral"].ID,
 				temporaryID = WorldFactory.StatesByName["Temporary"].ID,
 				poweredID = WorldFactory.StatesByName["Powered"].ID,
+				resetID = WorldFactory.StatesByName["Reset"].ID,
+				infectedID = WorldFactory.StatesByName["Infected"].ID,
 				avoidID = WorldFactory.StatesByName["AvoidAI"].ID;
 
 			result.Add(new CommandBinding<Map, Map.Coordinate?, Direction>(walkedOn, delegate(Map map, Map.Coordinate? coord, Direction dir)
@@ -422,6 +424,34 @@ namespace Lemma.Factories
 						map.Empty(coord.Value);
 						map.Fill(coord.Value, WorldFactory.States[temporaryID]);
 						map.Regenerate();
+					}
+					else if (id == resetID)
+					{
+						bool regenerate = false;
+
+						Dictionary<Map.Coordinate, bool> visited = new Dictionary<Map.Coordinate, bool>();
+						Queue<Map.Coordinate> queue = new Queue<Map.Coordinate>();
+						queue.Enqueue(coord.Value);
+						while (queue.Count > 0)
+						{
+							Map.Coordinate c = queue.Dequeue();
+							visited[c] = true;
+							foreach (Direction adjacentDirection in DirectionExtensions.Directions)
+							{
+								Map.Coordinate adjacentCoord = coord.Value.Move(adjacentDirection);
+								int adjacentID = map[adjacentCoord].ID;
+								if (adjacentID == resetID && !visited.ContainsKey(adjacentCoord))
+									queue.Enqueue(adjacentCoord);
+								else if (adjacentID == infectedID || adjacentID == temporaryID)
+								{
+									map.Empty(adjacentCoord);
+									map.Fill(adjacentCoord, WorldFactory.States[neutralID]);
+									regenerate = true;
+								}
+							}
+						}
+						if (regenerate)
+							map.Regenerate();
 					}
 				}
 			}));

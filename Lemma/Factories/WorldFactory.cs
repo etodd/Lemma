@@ -114,6 +114,21 @@ namespace Lemma.Factories
 				},
 				new Map.CellState
 				{
+					ID = 5,
+					Name = "Reset",
+					Permanent = false,
+					Hard = true,
+					Density = 2,
+					DiffuseMap = "Textures\\white",
+					NormalMap = "Textures\\temporary-normal",
+					FootstepCue = "TemporaryFootsteps",
+					RubbleCue = "TemporaryRubble",
+					SpecularPower = 250.0f,
+					SpecularIntensity = 0.4f,
+					Tint = new Vector3(0.0f, 0.6f, 0.0f),
+				},
+				new Map.CellState
+				{
 					ID = 6,
 					Name = "Critical",
 					Permanent = false,
@@ -457,19 +472,6 @@ namespace Lemma.Factories
 		{
 			Entity result = new Entity(main, "World");
 			result.Add("Transform", new Transform());
-			result.Add("Gravity",
-				new Property<Vector3>
-				{
-					Get = delegate()
-					{
-						return main.Space.ForceUpdater.Gravity;
-					},
-					Set = delegate(Vector3 value)
-					{
-						main.Space.ForceUpdater.Gravity = value;
-					}
-				}
-			);
 
 			result.Add("LightRampTexture", new Property<string> { Editable = true, Value = "Images\\default-ramp" });
 			result.Add("BackgroundColor", new Property<Color> { Editable = true, Value = WorldFactory.defaultBackgroundColor });
@@ -600,6 +602,16 @@ namespace Lemma.Factories
 			result.Add(new TwoWayBinding<Vector3>(result.GetOrMakeProperty<Vector3>("EnvironmentColor", true, Vector3.One), main.Renderer.EnvironmentColor));
 			result.Add(new TwoWayBinding<Color>(result.GetProperty<Color>("BackgroundColor"), main.Renderer.BackgroundColor));
 			result.Add(new TwoWayBinding<float>(result.GetProperty<float>("FarPlaneDistance"), main.Camera.FarPlaneDistance));
+
+			Property<Vector3> gravity = result.GetOrMakeProperty<Vector3>("Gravity", true, new Vector3(0.0f, -18.0f, -0.0f));
+			gravity.Set = delegate(Vector3 value)
+			{
+				main.Space.ForceUpdater.Gravity = value;
+			};
+			gravity.Get = delegate()
+			{
+				return main.Space.ForceUpdater.Gravity;
+			};
 
 			WorldFactory.AddState(result.GetListProperty<Map.CellState>("AdditionalMaterials").ToArray());
 			result.Add(new CommandBinding(result.Delete, delegate()
@@ -875,7 +887,7 @@ namespace Lemma.Factories
 					foreach (Map.Coordinate c in coords)
 					{
 						int id = c.Data.ID;
-						if (id == temporaryID || id == poweredID || id == poweredSwitchID || id == infectedID)
+						if (id == temporaryID || id == poweredID || id == poweredSwitchID || id == infectedID || id == neutralID)
 						{
 							Map.Coordinate newCoord = c;
 							newCoord.Data = emptyState;
@@ -933,6 +945,7 @@ namespace Lemma.Factories
 								int id = map[c].ID;
 
 								bool isTemporary = id == temporaryID;
+								bool isNeutral = id == neutralID;
 								bool isInfected = id == infectedID || id == infectedCriticalID;
 								bool isPowered = id == poweredID || id == permanentPoweredID || id == hardPoweredID || id == poweredSwitchID;
 
@@ -977,7 +990,8 @@ namespace Lemma.Factories
 								}
 								else if (isTemporary
 									|| isInfected
-									|| isPowered)
+									|| isPowered
+									|| isNeutral)
 								{
 									if (isTemporary)
 									{
@@ -998,6 +1012,21 @@ namespace Lemma.Factories
 												map.Empty(adjacent);
 												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
 												map.Fill(adjacent, WorldFactory.States[temporaryID]);
+												sparks(map.GetAbsolutePosition(adjacent), startSparkLightAttenuation);
+												regenerate = true;
+											}
+										}
+									}
+									else if (isNeutral)
+									{
+										foreach (Direction dir in DirectionExtensions.Directions)
+										{
+											Map.Coordinate adjacent = c.Move(dir);
+											int adjacentID = map[adjacent].ID;
+											if (adjacentID == infectedID || adjacentID == temporaryID)
+											{
+												map.Empty(adjacent);
+												map.Fill(adjacent, WorldFactory.States[neutralID]);
 												sparks(map.GetAbsolutePosition(adjacent), startSparkLightAttenuation);
 												regenerate = true;
 											}
