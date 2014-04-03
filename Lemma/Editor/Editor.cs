@@ -255,7 +255,9 @@ namespace Lemma.Components
 					this.originalSelectionStart = this.VoxelSelectionStart;
 					this.originalSelectionEnd = this.VoxelSelectionEnd;
 					this.originalSelectionCoord = this.coord;
-					this.mapState = new Map.MapState(m.GetChunksBetween(this.originalSelectionStart, this.originalSelectionEnd));
+					if (this.mapState != null)
+						this.mapState.Free();
+					this.mapState = new Map.MapState(m, this.originalSelectionStart, this.originalSelectionEnd);
 					this.voxelDuplicate = false;
 				}
 			};
@@ -269,7 +271,7 @@ namespace Lemma.Components
 					this.VoxelSelectionStart.Value = newSelectionStart;
 					this.VoxelSelectionEnd.Value = this.coord.Plus(this.originalSelectionEnd.Minus(this.originalSelectionCoord));
 
-					this.mapState.Add(m.GetChunksBetween(this.VoxelSelectionStart, this.VoxelSelectionEnd));
+					this.mapState.Add(this.VoxelSelectionStart, this.VoxelSelectionEnd);
 
 					Map.Coordinate offset = this.originalSelectionStart.Minus(newSelectionStart);
 					this.restoreMap(newSelectionStart, this.VoxelSelectionEnd, false, offset.X, offset.Y, offset.Z);
@@ -626,7 +628,7 @@ namespace Lemma.Components
 								this.VoxelSelectionStart.Value = newSelectionStart;
 								this.VoxelSelectionEnd.Value = this.VoxelSelectionEnd.Value.Move(relativeDir);
 
-								this.mapState.Add(map.GetChunksBetween(this.VoxelSelectionStart, this.VoxelSelectionEnd));
+								this.mapState.Add(this.VoxelSelectionStart, this.VoxelSelectionEnd);
 
 								Map.Coordinate offset = this.originalSelectionStart.Minus(newSelectionStart);
 								this.restoreMap(newSelectionStart, this.VoxelSelectionEnd, false, offset.X, offset.Y, offset.Z);

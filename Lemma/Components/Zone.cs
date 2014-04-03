@@ -115,5 +115,24 @@ namespace Lemma.Components
 			}
 			return result;
 		}
+
+		public static bool CanBuild(Vector3 pos)
+		{
+			bool defaultValue = true;
+			foreach (Zone z in Zone.Zones)
+			{
+				bool inZone = z.Contains(pos);
+				if (inZone)
+				{
+					if (z.Build == Zone.BuildMode.NoBuild)
+						defaultValue = false;
+					else if (z.Build == Zone.BuildMode.CanBuild)
+						return true;
+				}
+				else if (z.Build == Zone.BuildMode.ExclusiveBuild)
+					defaultValue = false;
+			}
+			return defaultValue;
+		}
 	}
 }

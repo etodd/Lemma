@@ -59,6 +59,7 @@ namespace Lemma.Factories
 			Transform transform = result.Get<Transform>();
 
 			Property<bool> selected = result.GetOrMakeProperty<bool>("EditorSelected");
+			selected.Serialize = false;
 
 			Zone zone = result.Get<Zone>();
 

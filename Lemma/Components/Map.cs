@@ -61,34 +61,82 @@ namespace Lemma.Components
 
 		public class MapState
 		{
-			public List<Box> Boxes = new List<Box>();
-			public List<Chunk> Chunks = new List<Chunk>();
+			private List<Chunk> chunks = new List<Chunk>();
+			private List<Box[, ,]> data = new List<Box[,,]>();
+			private Map map;
 
-			public MapState(IEnumerable<Chunk> chunks)
+			public MapState(Map m, Coordinate start, Coordinate end)
 			{
-				this.Add(chunks);
+				this.map = m;
+				this.Add(start, end);
 			}
 
-			public void Add(IEnumerable<Chunk> chunks)
+			public void Add(Coordinate start, Coordinate end)
 			{
-				foreach (Chunk chunk in chunks)
+				foreach (Chunk chunk in this.map.GetChunksBetween(start, end))
 				{
-					if (!this.Chunks.Contains(chunk))
+					if (!this.chunks.Contains(chunk))
 					{
-						this.Chunks.Add(chunk);
-						this.Boxes.AddRange(chunks.SelectMany(x => x.Boxes));
+						this.chunks.Add(chunk);
+
+						Box[, ,] d;
+						Queue<Box[, ,]> queue;
+						if (Map.freeDataChunks.TryGetValue(this.map.chunkSize, out queue) && queue.Count > 0)
+							d = queue.Dequeue();
+						else
+							d = new Box[this.map.chunkSize, this.map.chunkSize, this.map.chunkSize];
+						for (int u = 0; u < this.map.chunkSize; u++)
+						{
+							for (int v = 0; v < this.map.chunkSize; v++)
+							{
+								for (int w = 0; w < this.map.chunkSize; w++)
+									d[u, v, w] = chunk.Data[u, v, w];
+							}
+						}
+						this.data.Add(d);
 					}
 				}
+			}
+
+			public void Free()
+			{
+				foreach (Box[, ,] d in this.data)
+				{
+					for (int u = 0; u < this.map.chunkSize; u++)
+					{
+						for (int v = 0; v < this.map.chunkSize; v++)
+						{
+							for (int w = 0; w < this.map.chunkSize; w++)
+								d[u, v, w] = null;
+						}
+					}
+					Queue<Box[, ,]> queue;
+					if (!Map.freeDataChunks.TryGetValue(this.map.chunkSize, out queue))
+						queue = Map.freeDataChunks[this.map.chunkSize] = new Queue<Box[, ,]>();
+					queue.Enqueue(d);
+				}
+				this.data.Clear();
 			}
 
 			public CellState this[Coordinate coord]
 			{
 				get
 				{
-					foreach (Box box in this.Boxes)
+					int indexX = (coord.X - this.map.minX) / this.map.chunkSize;
+					int indexY = (coord.Y - this.map.minY) / this.map.chunkSize;
+					int indexZ = (coord.Z - this.map.minZ) / this.map.chunkSize;
+					int i = 0;
+					foreach (Chunk c in this.chunks)
 					{
-						if (box.Contains(coord))
-							return box.Type;
+						if (c.IndexX == indexX && c.IndexY == indexY && c.IndexZ == indexZ)
+						{
+							Box box = this.data[i][coord.X - c.X, coord.Y - c.Y, coord.Z - c.Z];
+							if (box == null)
+								return WorldFactory.States[0];
+							else
+								return box.Type;
+						}
+						i++;
 					}
 					return null;
 				}
@@ -4066,21 +4114,21 @@ namespace Lemma.Components
 			get
 			{
 				if (!this.main.EditorEnabled && !this.EnablePhysics)
-					return new CellState();
+					return WorldFactory.States[0]; // Empty
 
 				Chunk chunk = this.GetChunk(x, y, z, false);
 				if (chunk == null)
-					return new CellState();
+					return WorldFactory.States[0]; // Empty
 				else if (chunk.Data != null)
 				{
 					Box box = chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];
 					if (box == null)
-						return new CellState();
+						return WorldFactory.States[0]; // Empty
 					else
 						return box.Type;
 				}
 				else
-					return new CellState();
+					return WorldFactory.States[0]; // Empty
 			}
 		}
 

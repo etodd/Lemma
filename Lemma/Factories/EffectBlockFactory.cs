@@ -139,17 +139,11 @@ namespace Lemma.Factories
 
 							if (foundAdjacentCell)
 							{
-								bool foundConflict = false;
 								Vector3 absolutePos = m.GetAbsolutePosition(c);
-								foreach (Zone z in Zone.Zones)
-								{
-									if ((z.Build == Zone.BuildMode.NoBuild && z.Contains(absolutePos))
-										|| (z.Build == Zone.BuildMode.ExclusiveBuild && !z.Contains(absolutePos)))
-									{
-										foundConflict = true;
-										break;
-									}
-								}
+
+								bool foundConflict = false;
+								if (!Zone.CanBuild(absolutePos))
+									foundConflict = true;
 
 								if (!foundConflict)
 								{
