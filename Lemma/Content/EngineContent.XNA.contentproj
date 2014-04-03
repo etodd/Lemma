@@ -264,6 +264,12 @@
       <Name>menu</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Compile Include="Models\pyramid.fbx">
+      <Name>pyramid</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_EffectFileName>..\Effects\UnlitSolidColor.fx</ProcessorParameters_EffectFileName>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Effects\Animation.fx">

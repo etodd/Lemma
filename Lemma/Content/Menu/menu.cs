@@ -55,7 +55,7 @@ if (((GameMain)main).StartSpawnPoint.Value == "end")
 	};
 
 	addLink("Back the Kickstarter", "https://www.kickstarter.com/projects/et1337/869028656?token=1ccf4cd0");
-	addLink("Vote for Lemma on Greenlight", "http://steamcommunity.com/sharedfiles/filedetails/?id=239551444");
+	addLink("Check out Lemma on IndieDB", "http://indiedb.com/games/lemma");
 	addLink("Follow @et1337", "http://twitter.com/et1337");
 
 	UIComponent creditsScroll = new UIComponent();

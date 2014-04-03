@@ -62,7 +62,7 @@ namespace Lemma.Factories
 
 			Model model = result.GetOrCreate<Model>();
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
-			model.Filename.Value = "Models\\sphere";
+			model.Filename.Value = "Models\\pyramid";
 			model.Editable = false;
 			model.Serialize = false;
 
@@ -127,7 +127,6 @@ namespace Lemma.Factories
 				Action = delegate()
 				{
 					toReticle = Vector3.Normalize(reticle.Value - transform.Position.Value);
-					transform.Orientation.Value = Matrix.Invert(Matrix.CreateLookAt(Vector3.Zero, toReticle, Vector3.Up));
 					rayHit = Map.GlobalRaycast(transform.Position, toReticle, 300.0f);
 					laser.Lines.Clear();
 
