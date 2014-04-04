@@ -30,8 +30,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 6;
-		public const int MapVersion = 313;
-		public const int Build = 320;
+		public const int MapVersion = 353;
+		public const int Build = 353;
 
 		private static Dictionary<string, string> maps = new Dictionary<string,string>
 		{
