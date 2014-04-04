@@ -1773,16 +1773,17 @@ namespace Lemma
 				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.Start), canPause, togglePause));
 				this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.B), () => canPause() || dialog != null, togglePause));
 
-				// Pause on window lost focus
-				this.Deactivated += delegate(object sender, EventArgs e)
-				{
-					if (!this.Paused && this.MapFile.Value != GameMain.MenuMap && !this.EditorEnabled)
+#if !DEVELOPMENT
+					// Pause on window lost focus
+					this.Deactivated += delegate(object sender, EventArgs e)
 					{
-						this.Paused.Value = true;
-						savePausedSettings();
-					}
-				};
-
+						if (!this.Paused && this.MapFile.Value != GameMain.MenuMap && !this.EditorEnabled)
+						{
+							this.Paused.Value = true;
+							savePausedSettings();
+						}
+					};
+#endif
 				// Gamepad menu code
 
 				int selected = 0;
