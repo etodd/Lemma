@@ -475,16 +475,18 @@ namespace Lemma
 
 				this.SessionRecorder.Add("Position", delegate()
 				{
-					if (this.player != null && this.player.Active)
-						return this.player.Get<Transform>().Position;
+					Entity p = this.player;
+					if (p != null && p.Active)
+						return p.Get<Transform>().Position;
 					else
 						return Vector3.Zero;
 				});
 
 				this.SessionRecorder.Add("Health", delegate()
 				{
-					if (this.player != null && this.player.Active)
-						return this.player.Get<Player>().Health;
+					Entity p = this.player;
+					if (p != null && p.Active)
+						return p.Get<Player>().Health;
 					else
 						return 0.0f;
 				});
