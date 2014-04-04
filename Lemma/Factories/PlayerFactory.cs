@@ -2713,24 +2713,30 @@ namespace Lemma.Factories
 				noteUi.Enabled.Value = noteActive;
 
 				model.Stop("Phone");
-				if (noteActive)
+				Entity noteEntity = note.Value.Target;
+				if (noteEntity != null && noteEntity.Active)
 				{
-					Entity noteEntity = note.Value.Target;
-					Property<bool> collected = noteEntity.GetOrMakeProperty<bool>("Collected");
-					if (!collected)
-						collected.Value = true;
-					noteUiImage.Image.Value = noteEntity.GetOrMakeProperty<string>("Image");
-					noteUiText.Text.Value = noteEntity.GetOrMakeProperty<string>("Text");
-					model.StartClip("Phone", 6, true);
-					float startRotationY = input.Mouse.Value.Y;
-					// Level the player's view
-					result.Add(new Animation
-					(
-						new Animation.Custom(delegate(float x)
-						{
-							input.Mouse.Value = new Vector2(input.Mouse.Value.X, startRotationY * (1.0f - x));
-						}, 0.5f)
-					));
+					if (noteActive)
+					{
+						noteUiImage.Image.Value = noteEntity.GetOrMakeProperty<string>("Image");
+						noteUiText.Text.Value = noteEntity.GetOrMakeProperty<string>("Text");
+						model.StartClip("Phone", 6, true);
+						float startRotationY = input.Mouse.Value.Y;
+						// Level the player's view
+						result.Add(new Animation
+						(
+							new Animation.Custom(delegate(float x)
+							{
+								input.Mouse.Value = new Vector2(input.Mouse.Value.X, startRotationY * (1.0f - x));
+							}, 0.5f)
+						));
+					}
+					else
+					{
+						Property<bool> collected = noteEntity.GetOrMakeProperty<bool>("Collected");
+						if (!collected)
+							collected.Value = true;
+					}
 				}
 			};
 

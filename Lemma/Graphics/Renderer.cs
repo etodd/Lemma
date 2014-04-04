@@ -675,6 +675,9 @@ namespace Lemma.Components
 				this.preparePostProcess(new RenderTarget2D[] { colorSource }, new RenderTarget2D[] { result }, this.blurEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 			}
+
+			parameters.DepthBuffer = null;
+			parameters.FrameBuffer = null;
 		}
 
 		private void drawModel(Microsoft.Xna.Framework.Graphics.Model model)
