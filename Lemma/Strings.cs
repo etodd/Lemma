@@ -42,7 +42,16 @@ namespace Lemma
 				{
 					string key = reader.GetString(0);
 					for (int i = 0; i < Math.Min(languageList.Count, reader.FieldCount); i++)
-						languageList[i][reader.GetString(0)] = reader.GetString(i + 1);
+					{
+						try
+						{
+							languageList[i].Add(key, reader.GetString(i + 1));
+						}
+						catch (ArgumentException e)
+						{
+							throw new Exception("Duplicate localization key: \"" + key + "\"", e);
+						}
+					}
 				}
 			}
 		}

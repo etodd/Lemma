@@ -14,6 +14,7 @@ namespace Lemma.Components
 		{
 			public bool Incoming;
 			public string ID;
+			public string Text;
 		}
 
 		public class Schedule
@@ -25,15 +26,17 @@ namespace Lemma.Components
 		public class Ans
 		{
 			public string ID;
+			public string Text;
 
 			public Ans()
 				: this(null)
 			{
 			}
 
-			public Ans(string id)
+			public Ans(string id, string msg = null)
 			{
 				this.ID = id;
+				this.Text = msg == null ? id : msg;
 			}
 		}
 
@@ -104,10 +107,10 @@ namespace Lemma.Components
 				this.Schedules.Remove(s);
 
 			foreach (Schedule s in removals)
-				this.msg(s.Message.ID);
+				this.msg(s.Message.ID, s.Message.Text);
 		}
 
-		public void Delay(float delay, string id)
+		public void Delay(float delay, string id, string text = null)
 		{
 			Schedule s = new Schedule
 			{
@@ -115,32 +118,33 @@ namespace Lemma.Components
 				Message = new Message
 				{
 					ID = id,
+					Text = text == null ? id : text,
 				},
 			};
 			this.Schedules.Add(s);
 		}
 
-		public void Msg(string id)
+		public void Msg(string id, string text = null)
 		{
-			this.Delay(0.0f, id);
+			this.msg(id, text);
 		}
 
-		private void msg(string id)
+		private void msg(string id, string text)
 		{
 			if (this.Messages.Count >= 256)
 				this.Messages.RemoveAt(0);
-			this.Messages.Add(new Message { Incoming = true, ID = id, });
+			this.Messages.Add(new Message { Incoming = true, ID = id, Text = text == null ? id : text });
 			this.MessageReceived.Execute();
 		}
 
-		public void ArchivedMsg(string id)
+		public void ArchivedMsg(string id, string text = null)
 		{
-			this.Messages.Add(new Message { Incoming = true, ID = id, });
+			this.Messages.Add(new Message { Incoming = true, ID = id, Text = text == null ? id : text });
 		}
 
-		public void ArchivedAns(string id)
+		public void ArchivedAns(string id, string text = null)
 		{
-			this.Messages.Add(new Message { Incoming = false, ID = id, });
+			this.Messages.Add(new Message { Incoming = false, ID = id, Text = text == null ? id : text });
 		}
 
 		private Dictionary<string, Action<string>> callbacks = new Dictionary<string, Action<string>>();
@@ -161,7 +165,7 @@ namespace Lemma.Components
 			if (messageID != null)
 				this.answers[messageID] = answer.ID;
 
-			this.Messages.Add(new Message { Incoming = false, ID = answer.ID, });
+			this.Messages.Add(new Message { Incoming = false, ID = answer.ID, Text = answer.Text });
 			this.ActiveAnswers.Clear();
 
 			if (messageID != null)
