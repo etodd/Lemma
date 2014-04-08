@@ -270,6 +270,10 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\UnlitSolidColor.fx</ProcessorParameters_EffectFileName>
     </Compile>
+    <None Include="Strings.xlsx">
+      <Name>Strings</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Effects\Animation.fx">

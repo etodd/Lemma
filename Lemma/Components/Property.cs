@@ -142,6 +142,11 @@ namespace Lemma.Components
 		{
 			return obj.Value;
 		}
+
+		public override string ToString()
+		{
+			return this.Value.ToString();
+		}
 	}
 
 	public interface IListProperty : IProperty

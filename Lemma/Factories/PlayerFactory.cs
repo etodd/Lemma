@@ -2584,9 +2584,9 @@ namespace Lemma.Factories
 			Color incomingColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
 			Color outgoingColor = new Color(0.0f, 0.175f, 0.35f, 1.0f);
 
-			Container composeButton = makeButton(new Color(0.5f, 0.0f, 0.0f, 1.0f), "Compose", messageWidth - padding * 2.0f);
+			Container composeButton = makeButton(new Color(0.5f, 0.0f, 0.0f, 1.0f), "\\compose", messageWidth - padding * 2.0f);
 			TextElement composeText = (TextElement)composeButton.GetChildByName("Text");
-			composeText.Add(new Binding<string, GamePadState>(composeText.Text, x => x.IsConnected ? "Compose [A]" : "Compose", main.GamePadState));
+			composeText.Add(new Binding<string, bool>(composeText.Text, x => x ? "\\compose gamepad" : "\\compose", main.GamePadConnected));
 			UIComponent composeAlign = makeAlign(composeButton, true);
 
 			Scroller phoneScroll = new Scroller();
@@ -2621,7 +2621,7 @@ namespace Lemma.Factories
 			composeButton.Add(new CommandBinding<Point>(composeButton.MouseLeftUp, delegate(Point p)
 			{
 				answerContainer.Visible.Value = !answerContainer.Visible;
-				if (answerContainer.Visible && main.GamePadState.Value.IsConnected)
+				if (answerContainer.Visible && main.GamePadConnected)
 				{
 					selectedAnswer = 0;
 					foreach (UIComponent answer in answerList.Children)
@@ -2672,7 +2672,7 @@ namespace Lemma.Factories
 				bool hasNote = note.Value.Target != null && note.Value.Target.Active;
 
 				if (togglePhoneMessage == null && hasNote)
-					togglePhoneMessage = ((GameMain)main).ShowMessage(result, "[" + ((GameMain)main).Settings.TogglePhone.Value.ToString() + "]");
+					togglePhoneMessage = ((GameMain)main).ShowMessage(result, "[{{TogglePhone}}]");
 				else if (togglePhoneMessage != null && !hasNote && !phoneActive && !noteActive)
 				{
 					((GameMain)main).HideMessage(result, togglePhoneMessage);
@@ -2776,7 +2776,7 @@ namespace Lemma.Factories
 						if (!phone.TutorialShown)
 						{
 							phone.TutorialShown.Value = true;
-							phoneTutorialMessage = ((GameMain)main).ShowMessage(result, "Scroll to read more.");
+							phoneTutorialMessage = ((GameMain)main).ShowMessage(result, "\\scroll for more");
 						}
 						phoneScroll.CheckLayout();
 						scrollToBottom();
@@ -2892,7 +2892,7 @@ namespace Lemma.Factories
 						phone.Messages,
 						delegate(Phone.Message msg)
 						{
-							return new[] { makeAlign(makeButton(msg.Incoming ? incomingColor : outgoingColor, msg.Text, messageWidth - padding * 2.0f), !msg.Incoming) };
+							return new[] { makeAlign(makeButton(msg.Incoming ? incomingColor : outgoingColor, msg.ID == null ? null : "\\" + msg.ID, messageWidth - padding * 2.0f), !msg.Incoming) };
 						}
 					));
 
@@ -2902,13 +2902,14 @@ namespace Lemma.Factories
 						phone.ActiveAnswers,
 						delegate(Phone.Ans answer)
 						{
-							UIComponent button = makeButton(outgoingColor, answer.Text, messageWidth - padding * 4.0f);
+							string messageId = phone.LastMessageID();
+							UIComponent button = makeButton(outgoingColor, "\\" + (messageId == null ? "" : messageId + " ") + answer.ID, messageWidth - padding * 4.0f);
 							button.Add(new CommandBinding<Point>(button.MouseLeftUp, delegate(Point p)
 							{
 								phone.Answer(answer);
 								scrollToBottom();
 								if (togglePhoneMessage == null && phone.Schedules.Count == 0) // No more messages incoming
-									togglePhoneMessage = ((GameMain)main).ShowMessage(result, () => "[" + settings.TogglePhone.Value.ToString() + "]", settings.TogglePhone);
+									togglePhoneMessage = ((GameMain)main).ShowMessage(result, "[{{TogglePhone}}]");
 							}));
 							return new[] { button };
 						}
@@ -2934,7 +2935,7 @@ namespace Lemma.Factories
 
 						phoneSound.Play.Execute();
 						if (togglePhoneMessage == null && phone.Schedules.Count == 0 && phone.ActiveAnswers.Count == 0) // No more messages incoming, and no more answers to give
-							togglePhoneMessage = ((GameMain)main).ShowMessage(result, () => "[" + settings.TogglePhone.Value.ToString() + "]", settings.TogglePhone);
+							togglePhoneMessage = ((GameMain)main).ShowMessage(result, "[{{TogglePhone}}]");
 					}));
 
 					if (noteActive)

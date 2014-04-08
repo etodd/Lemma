@@ -48,6 +48,8 @@ namespace Lemma
 		private const float performanceUpdateTime = 0.5f;
 		private float performanceInterval;
 
+		private ListContainer performanceMonitor;
+
 		private int frameSum;
 		private Property<float> frameRate = new Property<float>();
 		private double physicsSum;
@@ -108,6 +110,9 @@ namespace Lemma
 		public Property<GamePadState> LastGamePadState = new Property<GamePadState>();
 		public Property<GamePadState> GamePadState = new Property<GamePadState>();
 		public new Property<bool> IsMouseVisible = new Property<bool> { };
+		public Property<bool> GamePadConnected = new Property<bool>();
+
+		public Strings Strings = new Strings();
 
 		public bool IsLoadingMap = false;
 
@@ -354,25 +359,25 @@ namespace Lemma
 				this.AddComponent(this.UI);
 
 #if PERFORMANCE_MONITOR
-				ListContainer performanceMonitor = new ListContainer();
-				performanceMonitor.Add(new Binding<Vector2, Point>(performanceMonitor.Position, x => new Vector2(0, x.Y), this.ScreenSize));
-				performanceMonitor.AnchorPoint.Value = new Vector2(0, 1);
-				performanceMonitor.Visible.Value = false;
-				performanceMonitor.Name.Value = "PerformanceMonitor";
-				this.UI.Root.Children.Add(performanceMonitor);
+				this.performanceMonitor = new ListContainer();
+				this.performanceMonitor.Add(new Binding<Vector2, Point>(performanceMonitor.Position, x => new Vector2(0, x.Y), this.ScreenSize));
+				this.performanceMonitor.AnchorPoint.Value = new Vector2(0, 1);
+				this.performanceMonitor.Visible.Value = false;
+				this.performanceMonitor.Name.Value = "PerformanceMonitor";
+				this.UI.Root.Children.Add(this.performanceMonitor);
 
 				Action<string, Property<double>> addLabel = delegate(string label, Property<double> property)
 				{
 					TextElement text = new TextElement();
 					text.FontFile.Value = "Font";
 					text.Add(new Binding<string, double>(text.Text, x => label + ": " + (x * 1000.0).ToString("F") + "ms", property));
-					performanceMonitor.Children.Add(text);
+					this.performanceMonitor.Children.Add(text);
 				};
 
 				TextElement frameRateText = new TextElement();
 				frameRateText.FontFile.Value = "Font";
 				frameRateText.Add(new Binding<string, float>(frameRateText.Text, x => "FPS: " + x.ToString("0"), this.frameRate));
-				performanceMonitor.Children.Add(frameRateText);
+				this.performanceMonitor.Children.Add(frameRateText);
 
 				addLabel("Physics", this.physicsTime);
 				addLabel("Update", this.updateTime);
@@ -385,7 +390,7 @@ namespace Lemma
 				PCInput input = new PCInput();
 				input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.P }), delegate()
 				{
-					performanceMonitor.Visible.Value = !performanceMonitor.Visible;
+					this.performanceMonitor.Visible.Value = !this.performanceMonitor.Visible;
 				}));
 				this.AddComponent(input);
 #endif
@@ -468,6 +473,8 @@ namespace Lemma
 
 			this.LastGamePadState.Value = this.GamePadState;
 			this.GamePadState.Value = Microsoft.Xna.Framework.Input.GamePad.GetState(PlayerIndex.One);
+			if (this.GamePadState.Value.IsConnected != this.GamePadConnected)
+				this.GamePadConnected.Value = this.GamePadState.Value.IsConnected;
 
 #if PERFORMANCE_MONITOR
 			Stopwatch timer = new Stopwatch();
@@ -547,14 +554,17 @@ namespace Lemma
 			this.performanceInterval += this.ElapsedTime;
 			if (this.performanceInterval > Main.performanceUpdateTime)
 			{
-				this.frameRate.Value = this.frameSum / this.performanceInterval;
-				this.physicsTime.Value = this.physicsSum;
-				this.updateTime.Value = this.updateSum;
-				this.preframeTime.Value = this.preframeSum;
-				this.rawRenderTime.Value = this.rawRenderSum;
-				this.shadowRenderTime.Value = this.shadowRenderSum;
-				this.postProcessTime.Value = this.postProcessSum;
-				this.unPostProcessedTime.Value = this.unPostProcessedSum;
+				if (this.performanceMonitor.Visible)
+				{
+					this.frameRate.Value = this.frameSum / this.performanceInterval;
+					this.physicsTime.Value = this.physicsSum;
+					this.updateTime.Value = this.updateSum;
+					this.preframeTime.Value = this.preframeSum;
+					this.rawRenderTime.Value = this.rawRenderSum;
+					this.shadowRenderTime.Value = this.shadowRenderSum;
+					this.postProcessTime.Value = this.postProcessSum;
+					this.unPostProcessedTime.Value = this.unPostProcessedSum;
+				}
 				this.physicsSum = 0;
 				this.updateSum = 0;
 				this.preframeSum = 0;

@@ -4,3 +4,6 @@
 [submodule "LemmaAnalytics"]
 	path = LemmaAnalytics
 	url = git@bitbucket.org:et1337/lemmaanalytics.git
+[submodule "SharpZipLib"]
+	path = SharpZipLib
+	url = git@github.com:et1337/SharpZipLib.git

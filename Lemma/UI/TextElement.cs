@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
+using System.Globalization;
 
 namespace Lemma.Components
 {
@@ -16,6 +17,11 @@ namespace Lemma.Components
 		public Property<float> Opacity = new Property<float> { Editable = true, Value = 1.0f };
 		public Property<float> WrapWidth = new Property<float> { Editable = true, Value = 0.0f };
 		private SpriteFont font;
+
+		private Property<string> internalText = new Property<string> { Editable = false, Value = "" };
+		private Binding<string> internalTextBinding;
+
+		public static Dictionary<string, IProperty> BindableProperties = new Dictionary<string, IProperty>();
 
 		private string wrappedText;
 
@@ -49,7 +55,7 @@ namespace Lemma.Components
 			if (this.font == null)
 				return;
 
-			string text = this.Text;
+			string text = this.internalText;
 			float wrapWidth = this.WrapWidth;
 			if (text == null)
 				this.wrappedText = null;
@@ -76,9 +82,9 @@ namespace Lemma.Components
 					this.loadFont();
 			};
 
-			this.Text.Set = delegate(string value)
+			this.internalText.Set = delegate(string value)
 			{
-				this.Text.InternalValue = value;
+				this.internalText.InternalValue = value;
 				this.updateText();
 			};
 
@@ -87,6 +93,73 @@ namespace Lemma.Components
 				this.WrapWidth.InternalValue = value;
 				this.updateText();
 			};
+
+			this.Text.Set = delegate(string value)
+			{
+				this.Text.InternalValue = value;
+
+				List<IProperty> dependencies = new List<IProperty>();
+
+				StringBuilder builder;
+				if (value != null && value.Length > 0 && value[0] == '\\')
+				{
+					builder = new StringBuilder(this.main.Strings.Get(value.Substring(1)));
+					dependencies.Add(this.main.Strings.Language);
+				}
+				else
+					builder = new StringBuilder(value);
+
+				for (int i = 0; i < builder.Length; i++)
+				{
+					if (builder[i] == '{' && builder[i + 1] == '{')
+					{
+						// Grab the key
+						string key = null;
+						StringBuilder keyBuilder = new StringBuilder();
+						for (int j = i + 2; j < builder.Length; j++)
+						{
+							if (builder[j] == '}' && builder[j + 1] == '}')
+							{
+								key = keyBuilder.ToString();
+								break;
+							}
+							else
+								keyBuilder.Append(builder[j]);
+						}
+						if (key != null)
+						{
+							IProperty property;
+							if (TextElement.BindableProperties.TryGetValue(key, out property))
+							{
+								string oldKey = string.Format("{{{{{0}}}}}", key);
+								string argumentIndexKey = string.Format("{{{0}}}", dependencies.Count);
+								builder.Replace(oldKey, argumentIndexKey, i, key.Length + 4);
+								dependencies.Add(property);
+								i += argumentIndexKey.Length - 1;
+							}
+						}
+					}
+				}
+
+				if (this.internalTextBinding != null)
+				{
+					this.Remove(this.internalTextBinding);
+					this.internalTextBinding = null;
+				}
+
+				if (dependencies.Count > 0)
+				{
+					string format = builder.ToString();
+					this.internalTextBinding = new Binding<string>(this.internalText, delegate()
+					{
+						return string.Format(CultureInfo.CurrentCulture, format, dependencies.ToArray());
+					}, dependencies.ToArray());
+					this.Add(this.internalTextBinding);
+				}
+				else
+					this.internalText.Value = value;
+			};
+
 		}
 
 		public override void LoadContent(bool reload)

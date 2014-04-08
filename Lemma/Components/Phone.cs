@@ -12,7 +12,6 @@ namespace Lemma.Components
 	{
 		public class Message
 		{
-			public string Text;
 			public bool Incoming;
 			public string ID;
 		}
@@ -25,17 +24,15 @@ namespace Lemma.Components
 
 		public class Ans
 		{
-			public string Text;
 			public string ID;
 
 			public Ans()
-				: this(null, null)
+				: this(null)
 			{
 			}
 
-			public Ans(string text, string id = null)
+			public Ans(string id)
 			{
-				this.Text = text;
 				this.ID = id;
 			}
 		}
@@ -107,60 +104,64 @@ namespace Lemma.Components
 				this.Schedules.Remove(s);
 
 			foreach (Schedule s in removals)
-				this.msg(s.Message.Text, s.Message.ID);
+				this.msg(s.Message.ID);
 		}
 
-		public void Delay(float delay, string text, string id = null)
+		public void Delay(float delay, string id)
 		{
 			Schedule s = new Schedule
 			{
 				Delay = delay,
 				Message = new Message
 				{
-					Text = text,
 					ID = id,
 				},
 			};
 			this.Schedules.Add(s);
 		}
 
-		public void Msg(string text, string id = null)
+		public void Msg(string id)
 		{
-			this.Delay(0.0f, text, id);
+			this.Delay(0.0f, id);
 		}
 
-		private void msg(string text, string id = null)
+		private void msg(string id)
 		{
 			if (this.Messages.Count >= 256)
 				this.Messages.RemoveAt(0);
-			this.Messages.Add(new Message { Text = text, Incoming = true, ID = id, });
+			this.Messages.Add(new Message { Incoming = true, ID = id, });
 			this.MessageReceived.Execute();
 		}
 
-		public void ArchivedMsg(string text)
+		public void ArchivedMsg(string id)
 		{
-			this.Messages.Add(new Message { Text = text, Incoming = true, ID = null, });
+			this.Messages.Add(new Message { Incoming = true, ID = id, });
 		}
 
-		public void ArchivedAns(string text)
+		public void ArchivedAns(string id)
 		{
-			this.Messages.Add(new Message { Text = text, Incoming = false, ID = null, });
+			this.Messages.Add(new Message { Incoming = false, ID = id, });
 		}
 
 		private Dictionary<string, Action<string>> callbacks = new Dictionary<string, Action<string>>();
 
-		public void Answer(Ans answer)
+		public string LastMessageID()
 		{
-			string messageID = null;
 			if (this.Messages.Count > 0)
 			{
 				Message msg = this.Messages[this.Messages.Count - 1];
-				messageID = msg.ID;
-				if (answer.ID != null && messageID != null)
-					this.answers[messageID] = answer.ID;
+				return msg.ID;
 			}
+			return null;
+		}
 
-			this.Messages.Add(new Message { Text = answer.Text, Incoming = false, ID = null, });
+		public void Answer(Ans answer)
+		{
+			string messageID = this.LastMessageID();
+			if (messageID != null)
+				this.answers[messageID] = answer.ID;
+
+			this.Messages.Add(new Message { Incoming = false, ID = answer.ID, });
 			this.ActiveAnswers.Clear();
 
 			if (messageID != null)

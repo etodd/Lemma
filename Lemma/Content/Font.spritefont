@@ -51,10 +51,58 @@ with.
     See the documentation for more information.
     -->
     <CharacterRegions>
+      <!-- ASCII -->
       <CharacterRegion>
         <Start>&#32;</Start>
         <End>&#126;</End>
       </CharacterRegion>
+
+      <!-- Extended latin characters -->
+      <CharacterRegion>
+        <Start>&#160;</Start>
+        <End>&#191;</End>
+      </CharacterRegion>
+
+      <!-- Punctuation -->
+      <CharacterRegion>
+        <Start>&#8208;</Start>
+        <End>&#8231;</End>
+      </CharacterRegion>
+      
+      <!-- Cyrillic -->
+      <CharacterRegion>
+        <Start>&#1024;</Start>
+        <End>&#1279;</End>
+      </CharacterRegion>
+
+      <!-- Cyrillic Supplement -->
+      <CharacterRegion>
+        <Start>&#1280;</Start>
+        <End>&#1327;</End>
+      </CharacterRegion>
+
+      <!-- Cyrillic Extended-A -->
+      <CharacterRegion>
+        <Start>&#11744;</Start>
+        <End>&#11775;</End>
+      </CharacterRegion>
+
+      <!-- Cyrillic Extended-B -->
+      <CharacterRegion>
+        <Start>&#42560;</Start>
+        <End>&#42655;</End>
+      </CharacterRegion>
+
+      <!-- Cyrillic Phonetic Extensions -->
+      <CharacterRegion>
+        <Start>&#7467;</Start>
+        <End>&#7467;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#7544;</Start>
+        <End>&#7544;</End>
+      </CharacterRegion>
+
     </CharacterRegions>
   </Asset>
 </XnaContent>

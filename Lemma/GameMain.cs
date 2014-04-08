@@ -15,6 +15,8 @@ using Lemma.Util;
 using System.Reflection;
 using System.IO;
 using System.Xml.Serialization;
+using System.Globalization;
+using System.Threading;
 #endregion
 
 namespace Lemma
@@ -35,16 +37,18 @@ namespace Lemma
 
 		private static Dictionary<string, string> maps = new Dictionary<string,string>
 		{
-			{ "start", "1 | Apartment" },
-			{ "rain", "2 | Rain" },
-			{ "dawn", "3 | Dawn" },
-			{ "monolith", "4 | Monolith" },
-			{ "forest", "5 | Forest" },
-			{ "valley", "6 | Valley" },
+			{ "start", "\\map apartment" },
+			{ "rain", "\\map rain" },
+			{ "dawn", "\\map dawn" },
+			{ "monolith", "\\map monolith" },
+			{ "forest", "\\map forest" },
+			{ "valley", "\\map valley" },
 		};
 
 		public class Config
 		{
+			public enum Lang { en, ru }
+			public Property<Lang> Language = new Property<Lang>();
 #if DEVELOPMENT
 			public Property<bool> Fullscreen = new Property<bool> { Value = false };
 #else
@@ -137,13 +141,6 @@ namespace Lemma
 		public GameMain()
 			: base()
 		{
-#if DEBUG
-			Log.Handler = delegate(string log)
-			{
-				this.HideMessage(null, this.ShowMessage(null, log), 2.0f);
-			};
-#endif
-
 			this.graphics.PreparingDeviceSettings += delegate(object sender, PreparingDeviceSettingsEventArgs args)
 			{
 				this.supportedDisplayModes = args.GraphicsDeviceInformation.Adapter.SupportedDisplayModes;
@@ -189,6 +186,24 @@ namespace Lemma
 
 			if (this.Settings.UUID == null)
 				Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32);
+			
+			Action updateLanguage = delegate()
+			{
+				Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture(this.Settings.Language.Value.ToString());
+			};
+			new NotifyBinding(updateLanguage, this.Settings.Language);
+			updateLanguage();
+			
+			TextElement.BindableProperties.Add("Forward", this.Settings.Forward);
+			TextElement.BindableProperties.Add("Left", this.Settings.Left);
+			TextElement.BindableProperties.Add("Backward", this.Settings.Backward);
+			TextElement.BindableProperties.Add("Right", this.Settings.Right);
+			TextElement.BindableProperties.Add("Jump", this.Settings.Jump);
+			TextElement.BindableProperties.Add("Parkour", this.Settings.Parkour);
+			TextElement.BindableProperties.Add("RollKick", this.Settings.RollKick);
+			TextElement.BindableProperties.Add("TogglePhone", this.Settings.TogglePhone);
+			TextElement.BindableProperties.Add("QuickSave", this.Settings.QuickSave);
+			TextElement.BindableProperties.Add("ToggleFullscreen", this.Settings.ToggleFullscreen);
 
 			if (this.Settings.FullscreenResolution.Value.X == 0)
 			{
@@ -319,14 +334,26 @@ namespace Lemma
 
 		private UIComponent createMenuButton<Type>(string label, Property<Type> property)
 		{
-			return this.createMenuButton<Type>(label, property, (x) => x.ToString());
+			return this.createMenuButton<Type>(label, property, x => x.ToString());
 		}
 
 		private UIComponent createMenuButton<Type>(string label, Property<Type> property, Func<Type, string> conversion)
 		{
-			UIComponent result = this.createMenuButton(label);
-			TextElement text = (TextElement)result.GetChildByName("Text");
-			text.Add(new Binding<string, Type>(text.Text, x => label + ": " + conversion(x), property));
+			UIComponent result = this.createMenuButtonContainer();
+
+			TextElement text = new TextElement();
+			text.Name.Value = "Text";
+			text.FontFile.Value = "Font";
+			text.Text.Value = label;
+			result.Children.Add(text);
+
+			TextElement value = new TextElement();
+			value.Position.Value = new Vector2(200.0f, value.Position.Value.Y);
+			value.Name.Value = "Value";
+			value.FontFile.Value = "Font";
+			value.Add(new Binding<string, Type>(value.Text, conversion, property));
+			result.Children.Add(value);
+
 			return result;
 		}
 
@@ -461,8 +488,8 @@ namespace Lemma
 
 				try
 				{
-					this.musicWaveBank = new WaveBank(this.AudioEngine, "Content\\Game\\Music\\Music.xwb");
-					this.MusicBank = new SoundBank(this.AudioEngine, "Content\\Game\\Music\\Music.xsb");
+					this.musicWaveBank = new WaveBank(this.AudioEngine, Path.Combine(this.Content.RootDirectory, "Game\\Music\\Music.xwb"));
+					this.MusicBank = new SoundBank(this.AudioEngine, Path.Combine(this.Content.RootDirectory, "Game\\Music\\Music.xsb"));
 				}
 				catch (Exception)
 				{
@@ -555,6 +582,19 @@ namespace Lemma
 				notifications.Add(new Binding<Vector2, Point>(notifications.Position, x => new Vector2(x.X * 0.9f, x.Y * 0.1f), this.ScreenSize));
 				this.UI.Root.Children.Add(notifications);
 
+#if DEBUG
+				Log.Handler = delegate(string log)
+				{
+					this.HideMessage(null, this.ShowMessage(null, log), 2.0f);
+				};
+#endif
+
+				// Load strings
+				this.Strings.Load(Path.Combine(this.Content.RootDirectory, "Strings.xlsx"));
+
+				foreach (string file in Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "Game"), "*.xlsx", SearchOption.TopDirectoryOnly))
+					this.Strings.Load(file);
+
 				bool controlsShown = false;
 
 				// Toggle fullscreen
@@ -566,6 +606,8 @@ namespace Lemma
 						this.EnterFullscreen();
 				});
 
+				new Binding<string, Config.Lang>(this.Strings.Language, x => x.ToString(), this.Settings.Language);
+
 				// Fullscreen message
 				Container msgBackground = new Container();
 				this.UI.Root.Children.Add(msgBackground);
@@ -575,7 +617,7 @@ namespace Lemma
 				msgBackground.Add(new Binding<Vector2, Point>(msgBackground.Position, x => new Vector2(x.X * 0.5f, x.Y - 30.0f), this.ScreenSize));
 				TextElement msg = new TextElement();
 				msg.FontFile.Value = "Font";
-				msg.Add(new Binding<string, PCInput.PCInputBinding>(msg.Text, x => x.ToString() + " - Toggle Fullscreen", this.Settings.ToggleFullscreen));
+				msg.Text.Value = "\\toggle fullscreen tooltip";
 				msgBackground.Children.Add(msg);
 				this.AddComponent(new Animation
 				(
@@ -773,7 +815,7 @@ namespace Lemma
 
 					UIComponent okay = this.createMenuButton("");
 					TextElement okayText = (TextElement)okay.GetChildByName("Text");
-					okayText.Add(new Binding<string>(okayText.Text, () => (this.GamePadState.Value.IsConnected ? "[A] " : "") + action, this.Settings.ToggleFullscreen));
+					okayText.Add(new Binding<string, bool>(okayText.Text, x => action + (x ? " gamepad" : ""), this.GamePadConnected));
 					okay.Name.Value = "Okay";
 					dialogButtons.Children.Add(okay);
 					okay.Add(new CommandBinding<Point>(okay.MouseLeftUp, delegate(Point p2)
@@ -783,10 +825,10 @@ namespace Lemma
 						callback();
 					}));
 
-					UIComponent cancel = this.createMenuButton("");
+					UIComponent cancel = this.createMenuButton("\\cancel");
 					dialogButtons.Children.Add(cancel);
 					TextElement cancelText = (TextElement)cancel.GetChildByName("Text");
-					cancelText.Add(new Binding<string>(cancelText.Text, () => (this.GamePadState.Value.IsConnected ? "[B] " : "") + "Cancel", this.Settings.ToggleFullscreen));
+					cancelText.Add(new Binding<string, bool>(cancelText.Text, x => x ? "\\cancel gamepad" : "\\cancel", this.GamePadConnected));
 					cancel.Add(new CommandBinding<Point>(cancel.MouseLeftUp, delegate(Point p2)
 					{
 						dialog.Delete.Execute();
@@ -832,23 +874,23 @@ namespace Lemma
 
 				TextElement loadSaveScrollLabel = new TextElement();
 				loadSaveScrollLabel.FontFile.Value = "Font";
-				loadSaveScrollLabel.Text.Value = "Scroll for more";
+				loadSaveScrollLabel.Text.Value = "\\scroll for more";
 				loadSaveLabelContainer.Children.Add(loadSaveScrollLabel);
 
 				TextElement quickSaveLabel = new TextElement();
 				quickSaveLabel.FontFile.Value = "Font";
 				quickSaveLabel.Add(new Binding<bool>(quickSaveLabel.Visible, saveMode));
-				quickSaveLabel.Add(new Binding<string>(quickSaveLabel.Text, () => "[" + this.Settings.QuickSave.Value.ToString() + "] to quicksave", this.Settings.QuickSave));
+				quickSaveLabel.Text.Value = "\\quicksave instructions";
 				loadSaveLabelContainer.Children.Add(quickSaveLabel);
 
-				UIComponent loadSaveBack = this.createMenuButton("Back");
+				UIComponent loadSaveBack = this.createMenuButton("\\back");
 				loadSaveBack.Add(new CommandBinding<Point>(loadSaveBack.MouseLeftUp, delegate(Point p)
 				{
 					hideLoadSave();
 				}));
 				loadSaveMenu.Children.Add(loadSaveBack);
 
-				UIComponent saveNew = this.createMenuButton("Save new");
+				UIComponent saveNew = this.createMenuButton("\\save new");
 				saveNew.Add(new Binding<bool>(saveNew.Visible, saveMode));
 				loadSaveMenu.Children.Add(saveNew);
 
@@ -912,7 +954,7 @@ namespace Lemma
 						if (saveMode)
 						{
 							loadSaveMenu.EnableInput.Value = false;
-							showDialog("Overwrite this save?", "Overwrite", delegate()
+							showDialog("\\overwrite prompt", "\\overwrite", delegate()
 							{
 								container.Delete.Execute();
 								save();
@@ -1040,7 +1082,7 @@ namespace Lemma
 
 				TextElement settingsLabel = new TextElement();
 				settingsLabel.FontFile.Value = "Font";
-				settingsLabel.Text.Value = "O P T I O N S";
+				settingsLabel.Text.Value = "\\options title";
 				settingsLabelContainer.Children.Add(settingsLabel);
 
 				TextElement settingsScrollLabel = new TextElement();
@@ -1048,12 +1090,11 @@ namespace Lemma
 				settingsScrollLabel.Add(new Binding<string>(settingsScrollLabel.Text, delegate()
 				{
 					string val;
-					if (this.GamePadState.Value.IsConnected)
-						val = "[A] or [LeftStick] to modify";
+					if (this.GamePadConnected)
+						return "\\modify setting gamepad";
 					else
-						val = "Scroll or click to modify";
-					return val + "\n[" + this.Settings.ToggleFullscreen.Value.ToString() + "] to toggle fullscreen";
-				}, this.Settings.ToggleFullscreen));
+						return "\\modify setting";
+				}, this.GamePadConnected));
 				settingsLabelContainer.Children.Add(settingsScrollLabel);
 
 				Action hideSettings = delegate()
@@ -1072,14 +1113,14 @@ namespace Lemma
 					this.AddComponent(settingsAnimation);
 				};
 
-				UIComponent settingsBack = this.createMenuButton("Back");
+				UIComponent settingsBack = this.createMenuButton("\\back");
 				settingsBack.Add(new CommandBinding<Point>(settingsBack.MouseLeftUp, delegate(Point p)
 				{
 					hideSettings();
 				}));
 				settingsMenu.Children.Add(settingsBack);
 
-				UIComponent fullscreenResolution = this.createMenuButton<Point>("Fullscreen Resolution", this.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString());
+				UIComponent fullscreenResolution = this.createMenuButton<Point>("\\fullscreen resolution", this.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString());
 				
 				Action<int> changeFullscreenResolution = delegate(int scroll)
 				{
@@ -1100,28 +1141,28 @@ namespace Lemma
 				}));
 				settingsMenu.Children.Add(fullscreenResolution);
 
-				UIComponent gamma = this.createMenuButton<float>("Gamma", this.Renderer.Gamma, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
+				UIComponent gamma = this.createMenuButton<float>("\\gamma", this.Renderer.Gamma, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
 				gamma.Add(new CommandBinding<Point, int>(gamma.MouseScrolled, delegate(Point mouse, int scroll)
 				{
 					this.Renderer.Gamma.Value = Math.Max(0, Math.Min(2, this.Renderer.Gamma + (scroll * 0.1f)));
 				}));
 				settingsMenu.Children.Add(gamma);
 
-				UIComponent fieldOfView = this.createMenuButton<float>("Field of View", this.Camera.FieldOfView, x => ((int)Math.Round(MathHelper.ToDegrees(this.Camera.FieldOfView))).ToString() + " deg");
+				UIComponent fieldOfView = this.createMenuButton<float>("\\field of view", this.Camera.FieldOfView, x => ((int)Math.Round(MathHelper.ToDegrees(this.Camera.FieldOfView))).ToString() + "°");
 				fieldOfView.Add(new CommandBinding<Point, int>(fieldOfView.MouseScrolled, delegate(Point mouse, int scroll)
 				{
 					this.Camera.FieldOfView.Value = Math.Max(MathHelper.ToRadians(60.0f), Math.Min(MathHelper.ToRadians(120.0f), this.Camera.FieldOfView + MathHelper.ToRadians(scroll)));
 				}));
 				settingsMenu.Children.Add(fieldOfView);
 
-				UIComponent motionBlurAmount = this.createMenuButton<float>("Motion Blur Amount", this.Renderer.MotionBlurAmount, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
+				UIComponent motionBlurAmount = this.createMenuButton<float>("\\motion blur amount", this.Renderer.MotionBlurAmount, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
 				motionBlurAmount.Add(new CommandBinding<Point, int>(motionBlurAmount.MouseScrolled, delegate(Point mouse, int scroll)
 				{
 					this.Renderer.MotionBlurAmount.Value = Math.Max(0, Math.Min(1, this.Renderer.MotionBlurAmount + (scroll * 0.1f)));
 				}));
 				settingsMenu.Children.Add(motionBlurAmount);
 
-				UIComponent reflectionsEnabled = this.createMenuButton<bool>("Reflections Enabled", this.Settings.EnableReflections);
+				UIComponent reflectionsEnabled = this.createMenuButton<bool>("\\reflections enabled", this.Settings.EnableReflections);
 				reflectionsEnabled.Add(new CommandBinding<Point, int>(reflectionsEnabled.MouseScrolled, delegate(Point mouse, int scroll)
 				{
 					this.Settings.EnableReflections.Value = !this.Settings.EnableReflections;
@@ -1132,7 +1173,7 @@ namespace Lemma
 				}));
 				settingsMenu.Children.Add(reflectionsEnabled);
 
-				UIComponent bloomEnabled = this.createMenuButton<bool>("Bloom Enabled", this.Renderer.EnableBloom);
+				UIComponent bloomEnabled = this.createMenuButton<bool>("\\bloom enabled", this.Renderer.EnableBloom);
 				bloomEnabled.Add(new CommandBinding<Point, int>(bloomEnabled.MouseScrolled, delegate(Point mouse, int scroll)
 				{
 					this.Renderer.EnableBloom.Value = !this.Renderer.EnableBloom;
@@ -1143,7 +1184,7 @@ namespace Lemma
 				}));
 				settingsMenu.Children.Add(bloomEnabled);
 
-				UIComponent dynamicShadows = this.createMenuButton<LightingManager.DynamicShadowSetting>("Dynamic Shadows", this.LightingManager.DynamicShadows);
+				UIComponent dynamicShadows = this.createMenuButton<LightingManager.DynamicShadowSetting>("\\dynamic shadows", this.LightingManager.DynamicShadows);
 				int numDynamicShadowSettings = typeof(LightingManager.DynamicShadowSetting).GetFields(BindingFlags.Static | BindingFlags.Public).Length;
 				dynamicShadows.Add(new CommandBinding<Point, int>(dynamicShadows.MouseScrolled, delegate(Point mouse, int scroll)
 				{
@@ -1176,12 +1217,12 @@ namespace Lemma
 
 				TextElement controlsLabel = new TextElement();
 				controlsLabel.FontFile.Value = "Font";
-				controlsLabel.Text.Value = "C O N T R O L S";
+				controlsLabel.Text.Value = "\\controls title";
 				controlsLabelContainer.Children.Add(controlsLabel);
 
 				TextElement controlsScrollLabel = new TextElement();
 				controlsScrollLabel.FontFile.Value = "Font";
-				controlsScrollLabel.Text.Value = "Scroll for more";
+				controlsScrollLabel.Text.Value = "\\scroll for more";
 				controlsLabelContainer.Children.Add(controlsScrollLabel);
 
 				Action hideControls = delegate()
@@ -1200,7 +1241,7 @@ namespace Lemma
 					this.AddComponent(controlsAnimation);
 				};
 
-				UIComponent controlsBack = this.createMenuButton("Back");
+				UIComponent controlsBack = this.createMenuButton("\\back");
 				controlsBack.Add(new CommandBinding<Point>(controlsBack.MouseLeftUp, delegate(Point p)
 				{
 					hideControls();
@@ -1215,7 +1256,7 @@ namespace Lemma
 				controlsScroller.Children.Add(controlsList);
 				controlsMenu.Children.Add(controlsScroller);
 
-				UIComponent invertMouseX = this.createMenuButton<bool>("Invert Look X", this.Settings.InvertMouseX);
+				UIComponent invertMouseX = this.createMenuButton<bool>("\\invert look x", this.Settings.InvertMouseX);
 				invertMouseX.Add(new CommandBinding<Point, int>(invertMouseX.MouseScrolled, delegate(Point mouse, int scroll)
 				{
 					this.Settings.InvertMouseX.Value = !this.Settings.InvertMouseX;
@@ -1226,7 +1267,7 @@ namespace Lemma
 				}));
 				controlsList.Children.Add(invertMouseX);
 
-				UIComponent invertMouseY = this.createMenuButton<bool>("Invert Look Y", this.Settings.InvertMouseY);
+				UIComponent invertMouseY = this.createMenuButton<bool>("\\invert look y", this.Settings.InvertMouseY);
 				invertMouseY.Add(new CommandBinding<Point, int>(invertMouseY.MouseScrolled, delegate(Point mouse, int scroll)
 				{
 					this.Settings.InvertMouseY.Value = !this.Settings.InvertMouseY;
@@ -1237,7 +1278,7 @@ namespace Lemma
 				}));
 				controlsList.Children.Add(invertMouseY);
 
-				UIComponent mouseSensitivity = this.createMenuButton<float>("Look Sensitivity", this.Settings.MouseSensitivity, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
+				UIComponent mouseSensitivity = this.createMenuButton<float>("\\look sensitivity", this.Settings.MouseSensitivity, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
 				mouseSensitivity.SwallowMouseEvents.Value = true;
 				mouseSensitivity.Add(new CommandBinding<Point, int>(mouseSensitivity.MouseScrolled, delegate(Point mouse, int scroll)
 				{
@@ -1292,25 +1333,25 @@ namespace Lemma
 					controlsList.Children.Add(button);
 				};
 
-				addInputSetting(this.Settings.Forward, "Move Forward", false, true);
-				addInputSetting(this.Settings.Left, "Move Left", false, true);
-				addInputSetting(this.Settings.Backward, "Move Backward", false, true);
-				addInputSetting(this.Settings.Right, "Move Right", false, true);
-				addInputSetting(this.Settings.Jump, "Jump", true, true);
-				addInputSetting(this.Settings.Parkour, "Parkour", true, true);
-				addInputSetting(this.Settings.RollKick, "Roll / Kick", true, true);
-				addInputSetting(this.Settings.TogglePhone, "Toggle Phone", true, true);
-				addInputSetting(this.Settings.QuickSave, "Quicksave", true, true);
+				addInputSetting(this.Settings.Forward, "\\move forward", false, true);
+				addInputSetting(this.Settings.Left, "\\move left", false, true);
+				addInputSetting(this.Settings.Backward, "\\move backward", false, true);
+				addInputSetting(this.Settings.Right, "\\move right", false, true);
+				addInputSetting(this.Settings.Jump, "\\jump", true, true);
+				addInputSetting(this.Settings.Parkour, "\\parkour", true, true);
+				addInputSetting(this.Settings.RollKick, "\\roll / kick", true, true);
+				addInputSetting(this.Settings.TogglePhone, "\\toggle phone", true, true);
+				addInputSetting(this.Settings.QuickSave, "\\quicksave", true, true);
 
 				// Mapping LMB to toggle fullscreen makes it impossible to change any other settings.
 				// So don't allow it.
-				addInputSetting(this.Settings.ToggleFullscreen, "Toggle Fullscreen", true, false);
+				addInputSetting(this.Settings.ToggleFullscreen, "\\toggle fullscreen", true, false);
 
 				// Start new button
-				UIComponent startNew = this.createMenuButton("New Game");
+				UIComponent startNew = this.createMenuButton("\\new game");
 				startNew.Add(new CommandBinding<Point>(startNew.MouseLeftUp, delegate(Point p)
 				{
-					showDialog("This is an ALPHA release. Animations and other assets are not final.", "Play", delegate()
+					showDialog("\\alpha disclaimer", "\\play", delegate()
 					{
 						restorePausedSettings();
 						this.currentSave = null;
@@ -1325,7 +1366,7 @@ namespace Lemma
 				startNew.Add(new Binding<bool, string>(startNew.Visible, x => x == GameMain.MenuMap, this.MapFile));
 
 				// Resume button
-				UIComponent resume = this.createMenuButton("Resume");
+				UIComponent resume = this.createMenuButton("\\resume");
 				resume.Visible.Value = false;
 				resume.Add(new CommandBinding<Point>(resume.MouseLeftUp, delegate(Point p)
 				{
@@ -1336,7 +1377,7 @@ namespace Lemma
 				resume.Add(new Binding<bool, string>(resume.Visible, x => x != GameMain.MenuMap, this.MapFile));
 
 				// Save button
-				UIComponent saveButton = this.createMenuButton("Save");
+				UIComponent saveButton = this.createMenuButton("\\save");
 				saveButton.Add(new CommandBinding<Point>(saveButton.MouseLeftUp, delegate(Point p)
 				{
 					hidePauseMenu();
@@ -1373,7 +1414,7 @@ namespace Lemma
 				};
 
 				// Load button
-				UIComponent load = this.createMenuButton("Load");
+				UIComponent load = this.createMenuButton("\\load");
 				load.Add(new CommandBinding<Point>(load.MouseLeftUp, delegate(Point p)
 				{
 					showLoad();
@@ -1381,10 +1422,10 @@ namespace Lemma
 				pauseMenu.Children.Add(load);
 
 				// Sandbox button
-				UIComponent sandbox = this.createMenuButton("Sandbox");
+				UIComponent sandbox = this.createMenuButton("\\sandbox");
 				sandbox.Add(new CommandBinding<Point>(sandbox.MouseLeftUp, delegate(Point p)
 				{
-					showDialog("The sandbox is unpolished and has no tutorial. You may want to complete the game first.", "Play anyway", delegate()
+					showDialog("\\sandbox disclaimer", "\\play anyway", delegate()
 					{
 						restorePausedSettings();
 						this.currentSave = null;
@@ -1421,12 +1462,12 @@ namespace Lemma
 
 				TextElement cheatLabel = new TextElement();
 				cheatLabel.FontFile.Value = "Font";
-				cheatLabel.Text.Value = "C H E A T";
+				cheatLabel.Text.Value = "\\cheat title";
 				cheatLabelContainer.Children.Add(cheatLabel);
 
 				TextElement cheatScrollLabel = new TextElement();
 				cheatScrollLabel.FontFile.Value = "Font";
-				cheatScrollLabel.Text.Value = "Scroll for more";
+				cheatScrollLabel.Text.Value = "\\scroll for more";
 				cheatLabelContainer.Children.Add(cheatScrollLabel);
 
 				Action hideCheat = delegate()
@@ -1445,7 +1486,7 @@ namespace Lemma
 					this.AddComponent(cheatAnimation);
 				};
 
-				UIComponent cheatBack = this.createMenuButton("Back");
+				UIComponent cheatBack = this.createMenuButton("\\back");
 				cheatBack.Add(new CommandBinding<Point>(cheatBack.MouseLeftUp, delegate(Point p)
 				{
 					hideCheat();
@@ -1479,7 +1520,7 @@ namespace Lemma
 				cheatMenu.Children.Add(cheatScroller);
 
 				// Cheat button
-				UIComponent cheat = this.createMenuButton("CHEAT");
+				UIComponent cheat = this.createMenuButton("\\cheat");
 				cheat.Add(new CommandBinding<Point>(cheat.MouseLeftUp, delegate(Point mouse)
 				{
 					hidePauseMenu();
@@ -1498,7 +1539,7 @@ namespace Lemma
 #endif
 
 				// Controls button
-				UIComponent controlsButton = this.createMenuButton("Controls");
+				UIComponent controlsButton = this.createMenuButton("\\controls");
 				controlsButton.Add(new CommandBinding<Point>(controlsButton.MouseLeftUp, delegate(Point mouse)
 				{
 					hidePauseMenu();
@@ -1515,7 +1556,7 @@ namespace Lemma
 				pauseMenu.Children.Add(controlsButton);
 
 				// Settings button
-				UIComponent settingsButton = this.createMenuButton("Options");
+				UIComponent settingsButton = this.createMenuButton("\\options");
 				settingsButton.Add(new CommandBinding<Point>(settingsButton.MouseLeftUp, delegate(Point mouse)
 				{
 					hidePauseMenu();
@@ -1534,7 +1575,7 @@ namespace Lemma
 
 #if DEVELOPMENT
 				// Edit mode toggle button
-				UIComponent switchToEditMode = this.createMenuButton("Switch to edit mode");
+				UIComponent switchToEditMode = this.createMenuButton("\\edit mode");
 				switchToEditMode.Add(new CommandBinding<Point>(switchToEditMode.MouseLeftUp, delegate(Point mouse)
 				{
 					pauseMenu.Visible.Value = false;
@@ -1573,12 +1614,12 @@ namespace Lemma
 
 				TextElement creditsLabel = new TextElement();
 				creditsLabel.FontFile.Value = "Font";
-				creditsLabel.Text.Value = "C R E D I T S";
+				creditsLabel.Text.Value = "\\credits title";
 				creditsLabelContainer.Children.Add(creditsLabel);
 
 				TextElement creditsScrollLabel = new TextElement();
 				creditsScrollLabel.FontFile.Value = "Font";
-				creditsScrollLabel.Text.Value = "Scroll for more";
+				creditsScrollLabel.Text.Value = "\\scroll for more";
 				creditsLabelContainer.Children.Add(creditsScrollLabel);
 
 				Action hideCredits = delegate()
@@ -1597,7 +1638,7 @@ namespace Lemma
 					this.AddComponent(creditsAnimation);
 				};
 
-				UIComponent creditsBack = this.createMenuButton("Back");
+				UIComponent creditsBack = this.createMenuButton("\\back");
 				creditsBack.Add(new CommandBinding<Point>(creditsBack.MouseLeftUp, delegate(Point p)
 				{
 					hideCredits();
@@ -1614,7 +1655,7 @@ namespace Lemma
 				creditsMenu.Children.Add(creditsScroller);
 
 				// Credits button
-				UIComponent credits = this.createMenuButton("Credits");
+				UIComponent credits = this.createMenuButton("\\credits");
 				credits.Add(new CommandBinding<Point>(credits.MouseLeftUp, delegate(Point mouse)
 				{
 					hidePauseMenu();
@@ -1632,12 +1673,12 @@ namespace Lemma
 				pauseMenu.Children.Add(credits);
 
 				// Main menu button
-				UIComponent mainMenu = this.createMenuButton("Main Menu");
+				UIComponent mainMenu = this.createMenuButton("\\main menu");
 				mainMenu.Add(new CommandBinding<Point>(mainMenu.MouseLeftUp, delegate(Point p)
 				{
 					showDialog
 					(
-						"Quitting will erase any unsaved progress. Are you sure?", "Quit to main menu",
+						"\\quit prompt", "\\quit",
 						delegate()
 						{
 							this.currentSave = null;
@@ -1650,14 +1691,14 @@ namespace Lemma
 				mainMenu.Add(new Binding<bool, string>(mainMenu.Visible, x => x != GameMain.MenuMap, this.MapFile));
 
 				// Exit button
-				UIComponent exit = this.createMenuButton("Exit");
+				UIComponent exit = this.createMenuButton("\\exit");
 				exit.Add(new CommandBinding<Point>(exit.MouseLeftUp, delegate(Point mouse)
 				{
 					if (this.MapFile.Value != GameMain.MenuMap)
 					{
 						showDialog
 						(
-							"Exiting will erase any unsaved progress. Are you sure?", "Exit",
+							"\\exit prompt", "\\exit",
 							delegate()
 							{
 								throw new ExitException();
@@ -1681,14 +1722,14 @@ namespace Lemma
 						TextElement notificationText = new TextElement();
 						notificationText.Name.Value = "Text";
 						notificationText.FontFile.Value = "Font";
-						notificationText.Text.Value = "Saving...";
+						notificationText.Text.Value = "\\saving";
 						notification.Children.Add(notificationText);
 						this.UI.Root.GetChildByName("Notifications").Children.Add(notification);
 						this.AddComponent(new Animation
 						(
 							new Animation.Delay(0.01f),
 							new Animation.Execute(this.Save),
-							new Animation.Set<string>(notificationText.Text, "Saved"),
+							new Animation.Set<string>(notificationText.Text, "\\saved"),
 							new Animation.Parallel
 							(
 								new Animation.FloatMoveTo(notification.Opacity, 0.0f, 1.0f),
@@ -1812,7 +1853,7 @@ namespace Lemma
 				this.input.Add(new NotifyBinding(delegate()
 				{
 					UIComponent menu = currentMenu;
-					if (menu != null && menu != creditsDisplay && this.GamePadState.Value.IsConnected)
+					if (menu != null && menu != creditsDisplay && this.GamePadConnected)
 					{
 						foreach (UIComponent item in menu.Children)
 							item.Highlighted.Value = false;
@@ -1975,7 +2016,7 @@ namespace Lemma
 					editorMsgBackground.Add(new Binding<Vector2, Point>(editorMsgBackground.Position, x => new Vector2(x.X * 0.5f, 30.0f), this.ScreenSize));
 					TextElement editorMsg = new TextElement();
 					editorMsg.FontFile.Value = "Font";
-					editorMsg.Text.Value = "Space - Show menu";
+					editorMsg.Text.Value = "\\editor menu";
 					editorMsgBackground.Children.Add(editorMsg);
 					this.AddComponent(new Animation
 					(
@@ -2249,6 +2290,10 @@ namespace Lemma
 		{
 			base.ResizeViewport(width, height, fullscreen, applyChanges);
 			this.Settings.Fullscreen.Value = fullscreen;
+			if (fullscreen)
+				this.Settings.FullscreenResolution.Value = new Point(width, height);
+			else
+				this.Settings.Size.Value = new Point(width, height);
 			this.saveSettings();
 		}
 
