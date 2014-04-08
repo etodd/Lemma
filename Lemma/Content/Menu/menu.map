@@ -99,6 +99,10 @@
           </Value>
         </Value>
       </Property>
+      <Property>
+        <Key xsi:type="xsd:string">PowerQueue</Key>
+        <Value xsi:type="ArrayOfScheduledBlock" />
+      </Property>
     </Properties>
   </Entity>
   <Entity Type="AmbientLight">
@@ -379,7 +383,7 @@
     <Components>
       <Component>
         <Key xsi:type="xsd:string">Transform</Key>
-        <Value xsi:type="Transform" Editable="false">
+        <Value xsi:type="Transform">
           <Enabled Editable="false">
             <Value>true</Value>
           </Enabled>
