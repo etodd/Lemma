@@ -27,14 +27,19 @@ namespace Lemma.Components
 		public class Ans
 		{
 			public string ID;
+
+			[DefaultValue(null)]
 			public string Text;
 
 			[DefaultValue(true)]
 			public bool Exclusive = true;
 
-			// True if the answer is an initiating one (the player is starting a conversation)
 			[DefaultValue(false)]
-			public bool IsInitiating;
+			public bool IsInitiating = false;
+
+			// True if the answer is an initiating one (the player is starting a conversation)
+			[DefaultValue(null)]
+			public string QuestionID;
 
 			public Ans()
 				: this(null)
@@ -44,7 +49,7 @@ namespace Lemma.Components
 			public Ans(string id, string text = null, bool exclusive = true)
 			{
 				this.ID = id;
-				this.Text = string.IsNullOrEmpty(text) ? id : text;
+				this.Text = text;
 				this.Exclusive = exclusive;
 			}
 		}
@@ -127,7 +132,7 @@ namespace Lemma.Components
 				Message = new Message
 				{
 					ID = id,
-					Text = string.IsNullOrEmpty(text) ? id : text,
+					Text = text,
 				},
 			};
 			this.Schedules.Add(s);
@@ -142,18 +147,18 @@ namespace Lemma.Components
 		{
 			if (this.Messages.Count >= 256)
 				this.Messages.RemoveAt(0);
-			this.Messages.Add(new Message { Incoming = true, ID = id, Text = string.IsNullOrEmpty(text) ? id : text });
+			this.Messages.Add(new Message { Incoming = true, ID = id, Text = text });
 			this.MessageReceived.Execute();
 		}
 
 		public void ArchivedMsg(string id, string text = null)
 		{
-			this.Messages.Add(new Message { Incoming = true, ID = id, Text = string.IsNullOrEmpty(text) ? id : text });
+			this.Messages.Add(new Message { Incoming = true, ID = id, Text = text });
 		}
 
 		public void ArchivedAns(string id, string text = null)
 		{
-			this.Messages.Add(new Message { Incoming = false, ID = id, Text = string.IsNullOrEmpty(text) ? id : text });
+			this.Messages.Add(new Message { Incoming = false, ID = id, Text = text });
 		}
 
 		private Dictionary<string, Action<string>> callbacks = new Dictionary<string, Action<string>>();
@@ -170,7 +175,13 @@ namespace Lemma.Components
 
 		public void Answer(Ans answer)
 		{
-			string messageID = this.LastMessageID();
+			string messageID;
+
+			if (string.IsNullOrEmpty(answer.QuestionID))
+				messageID = this.LastMessageID();
+			else
+				messageID = answer.QuestionID;
+
 			if (messageID != null)
 				this.answers[messageID] = answer.ID;
 

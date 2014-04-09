@@ -103,7 +103,11 @@ namespace Lemma.Components
 				StringBuilder builder;
 				if (value != null && value.Length > 0 && value[0] == '\\')
 				{
-					builder = new StringBuilder(this.main.Strings.Get(value.Substring(1)));
+					string key = value.Substring(1);
+					string translated = this.main.Strings.Get(key);
+					if (translated == null)
+						translated = key;
+					builder = new StringBuilder(translated);
 					dependencies.Add(this.main.Strings.Language);
 				}
 				else

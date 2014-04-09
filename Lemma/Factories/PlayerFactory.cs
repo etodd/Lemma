@@ -2918,7 +2918,7 @@ namespace Lemma.Factories
 						phone.Messages,
 						delegate(Phone.Message msg)
 						{
-							return new[] { makeAlign(makeButton(msg.Incoming ? incomingColor : outgoingColor, "\\" + msg.Text, messageWidth - padding * 2.0f), !msg.Incoming) };
+							return new[] { makeAlign(makeButton(msg.Incoming ? incomingColor : outgoingColor, "\\" + (msg.Text == null ? msg.ID : msg.Text), messageWidth - padding * 2.0f), !msg.Incoming) };
 						}
 					));
 
@@ -2928,7 +2928,7 @@ namespace Lemma.Factories
 						phone.ActiveAnswers,
 						delegate(Phone.Ans answer)
 						{
-							UIComponent button = makeButton(outgoingColor, "\\" + answer.Text, messageWidth - padding * 4.0f);
+							UIComponent button = makeButton(outgoingColor, "\\" + (answer.Text == null ? answer.ID : answer.Text), messageWidth - padding * 4.0f);
 							button.Add(new CommandBinding<Point>(button.MouseLeftUp, delegate(Point p)
 							{
 								phone.Answer(answer);

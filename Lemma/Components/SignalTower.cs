@@ -37,13 +37,11 @@ namespace Lemma.Components
 				{
 					phone.Delay(SignalTower.messageDelay, this.MessageID, this.MessageText);
 					this.MessageID.Value = this.MessageText.Value = null;
-					p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = this.Entity;
 				}
 				else if (this.Answers.Count > 0)
-				{
 					phone.ActiveAnswers.AddAll(this.Answers);
-					p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = this.Entity;
-				}
+
+				p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = this.Entity;
 			};
 
 			this.PlayerExitedRange.Action = delegate(Entity p)
@@ -93,6 +91,14 @@ namespace Lemma.Components
 					answer.ID = value;
 				};
 
+				Property<string> questionId = new Property<string>();
+				questionId.Value = answer.QuestionID;
+				questionId.Set = delegate(string value)
+				{
+					questionId.InternalValue = value;
+					answer.QuestionID = value;
+				};
+
 				Property<string> answerText = new Property<string>();
 				answerText.Value = answer.Text;
 				answerText.Set = delegate(string value)
@@ -101,6 +107,8 @@ namespace Lemma.Components
 					answer.Text = value;
 				};
 
+				item.Children.Add(ui.BuildLabel("Question"));
+				item.Children.Add(ui.BuildValueField(questionId));
 				item.Children.Add(ui.BuildLabel("ID"));
 				item.Children.Add(ui.BuildValueField(answerId));
 				item.Children.Add(ui.BuildLabel("Text"));
