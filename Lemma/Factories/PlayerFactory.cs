@@ -2463,6 +2463,8 @@ namespace Lemma.Factories
 
 			UIRenderer phoneUi = result.GetOrCreate<UIRenderer>("PhoneUI");
 
+			Property<Entity.Handle> signalTower = result.GetOrMakeProperty<Entity.Handle>("SignalTower");
+
 			const float phoneWidth = 200.0f;
 
 			phoneUi.RenderTargetBackground.Value = Microsoft.Xna.Framework.Color.White;
@@ -2574,15 +2576,38 @@ namespace Lemma.Factories
 				return container;
 			};
 
+			Color incomingColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
+			Color outgoingColor = new Color(0.0f, 0.175f, 0.35f, 1.0f);
+
+			Container topBarContainer = new Container();
+			topBarContainer.ResizeHorizontal.Value = false;
+			topBarContainer.Size.Value = new Vector2(phoneUi.RenderTargetSize.Value.X, 0.0f);
+			topBarContainer.Tint.Value = new Color(0.15f, 0.15f, 0.15f, 1.0f);
+			phoneUi.Root.Children.Add(topBarContainer);
+
+			ListContainer phoneTopBar = new ListContainer();
+			phoneTopBar.Orientation.Value = ListContainer.ListOrientation.Horizontal;
+			phoneTopBar.Spacing.Value = padding;
+			topBarContainer.Children.Add(phoneTopBar);
+
+			Sprite signalIcon = new Sprite();
+			signalIcon.Image.Value = "Images\\signal";
+			phoneTopBar.Children.Add(signalIcon);
+
+			TextElement noService = new TextElement();
+			noService.FontFile.Value = "Font";
+			noService.Text.Value = "\\no service";
+			phoneTopBar.Children.Add(noService);
+
+			signalIcon.Add(new Binding<bool, Entity.Handle>(signalIcon.Visible, x => x.Target != null && x.Target.Active, signalTower));
+			noService.Add(new Binding<bool, Entity.Handle>(noService.Visible, x => x.Target == null || !x.Target.Active, signalTower));
+
 			ListContainer phoneLayout = new ListContainer();
 			phoneLayout.Spacing.Value = padding;
 			phoneLayout.Orientation.Value = ListContainer.ListOrientation.Vertical;
-			phoneLayout.Position.Value = new Vector2(padding, padding);
-			phoneLayout.Add(new Binding<Vector2, Point>(phoneLayout.Size, x => new Vector2(x.X - padding * 2.0f, x.Y - padding * 2.0f), phoneUi.RenderTargetSize));
+			phoneLayout.Add(new Binding<Vector2>(phoneLayout.Position, x => new Vector2(padding, x.Y), topBarContainer.Size));
+			phoneLayout.Add(new Binding<Vector2>(phoneLayout.Size, () => new Vector2(phoneUi.RenderTargetSize.Value.X - padding * 2.0f, phoneUi.RenderTargetSize.Value.Y - padding - topBarContainer.Size.Value.Y), phoneUi.RenderTargetSize, topBarContainer.Size));
 			phoneUi.Root.Children.Add(phoneLayout);
-
-			Color incomingColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
-			Color outgoingColor = new Color(0.0f, 0.175f, 0.35f, 1.0f);
 
 			Container composeButton = makeButton(new Color(0.5f, 0.0f, 0.0f, 1.0f), "\\compose", messageWidth - padding * 2.0f);
 			TextElement composeText = (TextElement)composeButton.GetChildByName("Text");
@@ -2607,7 +2632,7 @@ namespace Lemma.Factories
 			answerContainer.PaddingBottom.Value = answerContainer.PaddingLeft.Value = answerContainer.PaddingRight.Value = answerContainer.PaddingTop.Value = padding;
 			answerContainer.Tint.Value = incomingColor;
 			answerContainer.AnchorPoint.Value = new Vector2(1.0f, 1.0f);
-			answerContainer.Add(new Binding<Vector2>(answerContainer.Position, () => composeAlign.Position.Value + new Vector2(composeAlign.ScaledSize.Value.X + padding, padding), composeAlign.Position, composeAlign.ScaledSize));
+			answerContainer.Add(new Binding<Vector2>(answerContainer.Position, () => composeAlign.Position.Value + new Vector2(composeAlign.ScaledSize.Value.X + padding, padding * 3.0f), composeAlign.Position, composeAlign.ScaledSize));
 			phoneUi.Root.Children.Add(answerContainer);
 			answerContainer.Visible.Value = false;
 
@@ -2669,16 +2694,17 @@ namespace Lemma.Factories
 
 			result.Add(new NotifyBinding(delegate()
 			{
-				bool hasNote = note.Value.Target != null && note.Value.Target.Active;
+				bool hasNoteOrSignalTower = (note.Value.Target != null && note.Value.Target.Active)
+					|| (signalTower.Value.Target != null && signalTower.Value.Target.Active);
 
-				if (togglePhoneMessage == null && hasNote)
+				if (togglePhoneMessage == null && hasNoteOrSignalTower)
 					togglePhoneMessage = ((GameMain)main).ShowMessage(result, "[{{TogglePhone}}]");
-				else if (togglePhoneMessage != null && !hasNote && !phoneActive && !noteActive)
+				else if (togglePhoneMessage != null && !hasNoteOrSignalTower && !phoneActive && !noteActive)
 				{
 					((GameMain)main).HideMessage(result, togglePhoneMessage);
 					togglePhoneMessage = null;
 				}
-			}, note));
+			}, note, signalTower));
 
 			// Note UI
 
@@ -2758,7 +2784,7 @@ namespace Lemma.Factories
 					phoneTutorialMessage = null;
 				}
 
-				if (show || (phone.ActiveAnswers.Count == 0 && phone.Schedules.Count == 0))
+				if (show || (phone.ActiveAnswers.Count(x => x.IsInitiating) == 0 && phone.Schedules.Count == 0))
 				{
 					phoneActive.Value = show;
 					input.EnableLook.Value = input.EnableMouse.Value = !phoneActive;
@@ -2902,7 +2928,6 @@ namespace Lemma.Factories
 						phone.ActiveAnswers,
 						delegate(Phone.Ans answer)
 						{
-							string messageId = phone.LastMessageID();
 							UIComponent button = makeButton(outgoingColor, "\\" + answer.Text, messageWidth - padding * 4.0f);
 							button.Add(new CommandBinding<Point>(button.MouseLeftUp, delegate(Point p)
 							{
@@ -2932,6 +2957,16 @@ namespace Lemma.Factories
 							scrollToBottom();
 						else
 							showPhone(true);
+						
+						// Animate the new message
+						Container lastMessage = (Container)msgList.Children[msgList.Children.Count - 1].Children[0];
+						lastMessage.CheckLayout();
+						Vector2 originalSize = lastMessage.Size;
+						lastMessage.Size.Value = new Vector2(0, originalSize.Y);
+						main.AddComponent(new Animation
+						(
+							new Animation.Vector2MoveTo(lastMessage.Size, originalSize, 0.25f)
+						));
 
 						phoneSound.Play.Execute();
 						if (togglePhoneMessage == null && phone.Schedules.Count == 0 && phone.ActiveAnswers.Count == 0) // No more messages incoming, and no more answers to give

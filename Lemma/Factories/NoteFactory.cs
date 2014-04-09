@@ -50,7 +50,7 @@ namespace Lemma.Factories
 							int notesCollected = notes.Where(x => x.GetOrMakeProperty<bool>("Collected")).Count();
 							int total = notes.Count;
 							return string.Format(main.Strings.Get("notes read"), notesCollected, total);
-						}, 
+						},
 						main.Strings.Language
 					);
 					gameMain.HideMessage(result, msg, 4.0f);

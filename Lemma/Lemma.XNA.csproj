@@ -94,6 +94,7 @@
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Analytics.cs" />
+    <Compile Include="Components\SignalTower.cs" />
     <Compile Include="Components\Phone.cs" />
     <Compile Include="Components\RaycastAI.cs" />
     <Compile Include="Components\Trigger.cs" />

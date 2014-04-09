@@ -5,6 +5,7 @@ using System.Text;
 using System.Xml.Serialization;
 using System.Collections;
 using Microsoft.Xna.Framework;
+using System.ComponentModel;
 
 namespace Lemma.Components
 {
@@ -28,15 +29,23 @@ namespace Lemma.Components
 			public string ID;
 			public string Text;
 
+			[DefaultValue(true)]
+			public bool Exclusive = true;
+
+			// True if the answer is an initiating one (the player is starting a conversation)
+			[DefaultValue(false)]
+			public bool IsInitiating;
+
 			public Ans()
 				: this(null)
 			{
 			}
 
-			public Ans(string id, string msg = null)
+			public Ans(string id, string text = null, bool exclusive = true)
 			{
 				this.ID = id;
-				this.Text = msg == null ? id : msg;
+				this.Text = string.IsNullOrEmpty(text) ? id : text;
+				this.Exclusive = exclusive;
 			}
 		}
 
@@ -118,7 +127,7 @@ namespace Lemma.Components
 				Message = new Message
 				{
 					ID = id,
-					Text = text == null ? id : text,
+					Text = string.IsNullOrEmpty(text) ? id : text,
 				},
 			};
 			this.Schedules.Add(s);
@@ -133,18 +142,18 @@ namespace Lemma.Components
 		{
 			if (this.Messages.Count >= 256)
 				this.Messages.RemoveAt(0);
-			this.Messages.Add(new Message { Incoming = true, ID = id, Text = text == null ? id : text });
+			this.Messages.Add(new Message { Incoming = true, ID = id, Text = string.IsNullOrEmpty(text) ? id : text });
 			this.MessageReceived.Execute();
 		}
 
 		public void ArchivedMsg(string id, string text = null)
 		{
-			this.Messages.Add(new Message { Incoming = true, ID = id, Text = text == null ? id : text });
+			this.Messages.Add(new Message { Incoming = true, ID = id, Text = string.IsNullOrEmpty(text) ? id : text });
 		}
 
 		public void ArchivedAns(string id, string text = null)
 		{
-			this.Messages.Add(new Message { Incoming = false, ID = id, Text = text == null ? id : text });
+			this.Messages.Add(new Message { Incoming = false, ID = id, Text = string.IsNullOrEmpty(text) ? id : text });
 		}
 
 		private Dictionary<string, Action<string>> callbacks = new Dictionary<string, Action<string>>();
@@ -166,7 +175,10 @@ namespace Lemma.Components
 				this.answers[messageID] = answer.ID;
 
 			this.Messages.Add(new Message { Incoming = false, ID = answer.ID, Text = answer.Text });
-			this.ActiveAnswers.Clear();
+			if (answer.Exclusive)
+				this.ActiveAnswers.Clear();
+			else
+				this.ActiveAnswers.Remove(answer);
 
 			if (messageID != null)
 			{

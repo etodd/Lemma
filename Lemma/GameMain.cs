@@ -1089,7 +1089,6 @@ namespace Lemma
 				settingsScrollLabel.FontFile.Value = "Font";
 				settingsScrollLabel.Add(new Binding<string>(settingsScrollLabel.Text, delegate()
 				{
-					string val;
 					if (this.GamePadConnected)
 						return "\\modify setting gamepad";
 					else

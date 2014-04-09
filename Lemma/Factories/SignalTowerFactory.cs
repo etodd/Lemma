@@ -29,11 +29,17 @@ namespace Lemma.Factories
 		{
 			this.SetMain(result, main);
 			Transform transform = result.GetOrCreate<Transform>("Transform");
+
 			if (result.GetOrMakeProperty<bool>("Attach", true))
 				MapAttachable.MakeAttachable(result, main);
+			Property<float> attachOffset = result.GetOrMakeProperty<float>("AttachmentOffset", true);
 			
+			PlayerTrigger trigger = result.GetOrCreate<PlayerTrigger>();
+			trigger.Radius.Value = 15.0f;
+			trigger.Add(new Binding<Vector3>(trigger.Position, () => Vector3.Transform(new Vector3(0.0f, 0.0f, attachOffset), transform.Matrix), attachOffset, transform.Matrix));
+
 			PointLight light = result.GetOrCreate<PointLight>();
-			light.Add(new Binding<Vector3>(light.Position, transform.Position));
+			light.Add(new Binding<Vector3>(light.Position, trigger.Position));
 			light.Color.Value = new Vector3(1.0f, 0.5f, 1.7f);
 
 			Property<float> lightBaseRadius = new Property<float> { Value = 10.0f };
@@ -47,34 +53,35 @@ namespace Lemma.Factories
 			};
 			updater.EnabledInEditMode.Value = true;
 			result.Add(updater);
-			
-			PlayerTrigger trigger = result.GetOrCreate<PlayerTrigger>();
-			trigger.Radius.Value = 15.0f;
-			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
+
+			SignalTower tower = result.GetOrCreate<SignalTower>("SignalTower");
+			tower.Add(new CommandBinding<Entity>(trigger.PlayerEntered, tower.PlayerEnteredRange));
+			tower.Add(new CommandBinding<Entity>(trigger.PlayerExited, tower.PlayerExitedRange));
+			tower.Add(new Binding<Entity.Handle>(tower.Player, trigger.Player));
 
 			Sound loop = result.GetOrCreate<Sound>("LoopSound");
 			loop.Serialize = false;
 			loop.Cue.Value = "Signal Tower Loop";
 			loop.Is3D.Value = true;
-			loop.Add(new Binding<Vector3>(loop.Position, transform.Position));
+			loop.Add(new Binding<Vector3>(loop.Position, trigger.Position));
 			loop.IsPlaying.Value = true;
 
 			Sound activate = result.GetOrCreate<Sound>("ActivateSound");
 			activate.Serialize = false;
 			activate.Cue.Value = "Signal Tower Activate";
 			activate.Is3D.Value = true;
-			activate.Add(new Binding<Vector3>(activate.Position, transform.Position));
+			activate.Add(new Binding<Vector3>(activate.Position, trigger.Position));
 
 			ParticleEmitter distortionEmitter = result.GetOrCreate<ParticleEmitter>("DistortionEmitter");
 			distortionEmitter.Serialize = false;
-			distortionEmitter.Add(new Binding<Vector3>(distortionEmitter.Position, transform.Position));
+			distortionEmitter.Add(new Binding<Vector3>(distortionEmitter.Position, trigger.Position));
 			distortionEmitter.ParticleType.Value = "Distortion";
 			distortionEmitter.ParticlesPerSecond.Value = 4;
 			distortionEmitter.Jitter.Value = new Vector3(0.5f);
 
 			ParticleEmitter purpleEmitter = result.GetOrCreate<ParticleEmitter>("PurpleEmitter");
 			purpleEmitter.Serialize = false;
-			purpleEmitter.Add(new Binding<Vector3>(purpleEmitter.Position, transform.Position));
+			purpleEmitter.Add(new Binding<Vector3>(purpleEmitter.Position, trigger.Position));
 			purpleEmitter.ParticleType.Value = "Purple";
 			purpleEmitter.ParticlesPerSecond.Value = 30;
 			purpleEmitter.Jitter.Value = new Vector3(0.5f);

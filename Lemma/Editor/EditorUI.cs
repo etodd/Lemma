@@ -348,25 +348,33 @@ namespace Lemma.Components
 
 		public UIComponent BuildButton(Command command, string label, Color color = default(Color))
 		{
-			if (color.A == 0)
-				color = Color.White;
-
-			Container field = new Container();
-			field.Tint.Value = Color.Black;
+			Container field = (Container)this.BuildLabel(label, color);
 
 			field.Add(new Binding<float, bool>(field.Opacity, x => x ? 1.0f : 0.5f, field.Highlighted));
-
-			TextElement textField = new TextElement();
-			textField.FontFile.Value = "Font";
-			textField.Text.Value = label;
-			textField.Tint.Value = color;
-			field.Children.Add(textField);
 
 			field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point p)
 			{
 				command.Execute();
 			}));
 			field.SwallowMouseEvents.Value = true;
+
+			return field;
+		}
+
+		public UIComponent BuildLabel(string label, Color color = default(Color))
+		{
+			if (color.A == 0)
+				color = Color.White;
+
+			Container field = new Container();
+			field.Tint.Value = Color.Black;
+			field.Opacity.Value = 0.5f;
+
+			TextElement textField = new TextElement();
+			textField.FontFile.Value = "Font";
+			textField.Text.Value = label;
+			textField.Tint.Value = color;
+			field.Children.Add(textField);
 
 			return field;
 		}
