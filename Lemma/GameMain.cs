@@ -15,7 +15,6 @@ using Lemma.Util;
 using System.Reflection;
 using System.IO;
 using System.Xml.Serialization;
-using System.Globalization;
 using System.Threading;
 #endregion
 
@@ -44,6 +43,8 @@ namespace Lemma
 			{ "forest", "\\map forest" },
 			{ "valley", "\\map valley" },
 		};
+
+		public static Config.Lang[] Languages = new[] { Config.Lang.en, Config.Lang.ru };
 
 		public class Config
 		{
@@ -186,13 +187,6 @@ namespace Lemma
 
 			if (this.Settings.UUID == null)
 				Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32);
-			
-			Action updateLanguage = delegate()
-			{
-				Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture(this.Settings.Language.Value.ToString());
-			};
-			new NotifyBinding(updateLanguage, this.Settings.Language);
-			updateLanguage();
 			
 			TextElement.BindableProperties.Add("Forward", this.Settings.Forward);
 			TextElement.BindableProperties.Add("Left", this.Settings.Left);
@@ -339,7 +333,7 @@ namespace Lemma
 
 		private UIComponent createMenuButton<Type>(string label, Property<Type> property, Func<Type, string> conversion)
 		{
-			UIComponent result = this.createMenuButtonContainer();
+			UIComponent result = this.CreateButton();
 
 			TextElement text = new TextElement();
 			text.Name.Value = "Text";
@@ -357,7 +351,7 @@ namespace Lemma
 			return result;
 		}
 
-		private UIComponent createMenuButtonContainer()
+		public UIComponent CreateButton(Action action = null)
 		{
 			Container result = new Container();
 			result.Tint.Value = Color.Black;
@@ -371,18 +365,21 @@ namespace Lemma
 			result.Add(new CommandBinding<Point>(result.MouseLeftUp, delegate(Point p)
 			{
 				Sound.PlayCue(this, "Click");
+				if (action != null)
+					action();
 			}));
 			return result;
 		}
 
-		private UIComponent createMenuButton(string label)
+		public UIComponent CreateButton(string label, Action action = null)
 		{
-			UIComponent result = this.createMenuButtonContainer();
+			UIComponent result = this.CreateButton(action);
 			TextElement text = new TextElement();
 			text.Name.Value = "Text";
 			text.FontFile.Value = "Font";
 			text.Text.Value = label;
 			result.Children.Add(text);
+
 			return result;
 		}
 
@@ -607,6 +604,7 @@ namespace Lemma
 				});
 
 				new Binding<string, Config.Lang>(this.Strings.Language, x => x.ToString(), this.Settings.Language);
+				new NotifyBinding(this.saveSettings, this.Settings.Language);
 
 				// Fullscreen message
 				Container msgBackground = new Container();
@@ -813,27 +811,26 @@ namespace Lemma
 					dialogButtons.Orientation.Value = ListContainer.ListOrientation.Horizontal;
 					dialogLayout.Children.Add(dialogButtons);
 
-					UIComponent okay = this.createMenuButton("");
-					TextElement okayText = (TextElement)okay.GetChildByName("Text");
-					okayText.Add(new Binding<string, bool>(okayText.Text, x => action + (x ? " gamepad" : ""), this.GamePadConnected));
-					okay.Name.Value = "Okay";
-					dialogButtons.Children.Add(okay);
-					okay.Add(new CommandBinding<Point>(okay.MouseLeftUp, delegate(Point p2)
+					UIComponent okay = this.CreateButton("", delegate()
 					{
 						dialog.Delete.Execute();
 						dialog = null;
 						callback();
-					}));
+					});
+					TextElement okayText = (TextElement)okay.GetChildByName("Text");
+					okayText.Add(new Binding<string, bool>(okayText.Text, x => action + (x ? " gamepad" : ""), this.GamePadConnected));
+					okay.Name.Value = "Okay";
+					dialogButtons.Children.Add(okay);
 
-					UIComponent cancel = this.createMenuButton("\\cancel");
-					dialogButtons.Children.Add(cancel);
-					TextElement cancelText = (TextElement)cancel.GetChildByName("Text");
-					cancelText.Add(new Binding<string, bool>(cancelText.Text, x => x ? "\\cancel gamepad" : "\\cancel", this.GamePadConnected));
-					cancel.Add(new CommandBinding<Point>(cancel.MouseLeftUp, delegate(Point p2)
+					UIComponent cancel = this.CreateButton("\\cancel", delegate()
 					{
 						dialog.Delete.Execute();
 						dialog = null;
-					}));
+					});
+					dialogButtons.Children.Add(cancel);
+
+					TextElement cancelText = (TextElement)cancel.GetChildByName("Text");
+					cancelText.Add(new Binding<string, bool>(cancelText.Text, x => x ? "\\cancel gamepad" : "\\cancel", this.GamePadConnected));
 				};
 
 				Action hideLoadSave = delegate()
@@ -883,14 +880,18 @@ namespace Lemma
 				quickSaveLabel.Text.Value = "\\quicksave instructions";
 				loadSaveLabelContainer.Children.Add(quickSaveLabel);
 
-				UIComponent loadSaveBack = this.createMenuButton("\\back");
-				loadSaveBack.Add(new CommandBinding<Point>(loadSaveBack.MouseLeftUp, delegate(Point p)
-				{
-					hideLoadSave();
-				}));
+				UIComponent loadSaveBack = this.CreateButton("\\back", hideLoadSave);
 				loadSaveMenu.Children.Add(loadSaveBack);
 
-				UIComponent saveNew = this.createMenuButton("\\save new");
+				Action save = null;
+
+				UIComponent saveNew = this.CreateButton("\\save new", delegate()
+				{
+					save();
+					hideLoadSave();
+					this.Paused.Value = false;
+					restorePausedSettings();
+				});
 				saveNew.Add(new Binding<bool>(saveNew.Visible, saveMode));
 				loadSaveMenu.Children.Add(saveNew);
 
@@ -902,8 +903,6 @@ namespace Lemma
 				loadSaveList.Orientation.Value = ListContainer.ListOrientation.Vertical;
 				loadSaveList.Reversed.Value = true;
 				loadSaveScroll.Children.Add(loadSaveList);
-
-				Action save = null;
 
 				Action<string> addSaveGame = delegate(string timestamp)
 				{
@@ -932,7 +931,7 @@ namespace Lemma
 						return;
 					}
 
-					UIComponent container = this.createMenuButtonContainer();
+					UIComponent container = this.CreateButton();
 					container.UserData.Value = timestamp;
 
 					ListContainer layout = new ListContainer();
@@ -1054,10 +1053,6 @@ namespace Lemma
 
 				saveNew.Add(new CommandBinding<Point>(saveNew.MouseLeftUp, delegate(Point p)
 				{
-					save();
-					hideLoadSave();
-					this.Paused.Value = false;
-					restorePausedSettings();
 				}));
 
 				// Settings menu
@@ -1112,11 +1107,7 @@ namespace Lemma
 					this.AddComponent(settingsAnimation);
 				};
 
-				UIComponent settingsBack = this.createMenuButton("\\back");
-				settingsBack.Add(new CommandBinding<Point>(settingsBack.MouseLeftUp, delegate(Point p)
-				{
-					hideSettings();
-				}));
+				UIComponent settingsBack = this.CreateButton("\\back", hideSettings);
 				settingsMenu.Children.Add(settingsBack);
 
 				UIComponent fullscreenResolution = this.createMenuButton<Point>("\\fullscreen resolution", this.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString());
@@ -1240,11 +1231,7 @@ namespace Lemma
 					this.AddComponent(controlsAnimation);
 				};
 
-				UIComponent controlsBack = this.createMenuButton("\\back");
-				controlsBack.Add(new CommandBinding<Point>(controlsBack.MouseLeftUp, delegate(Point p)
-				{
-					hideControls();
-				}));
+				UIComponent controlsBack = this.CreateButton("\\back", hideControls);
 				controlsMenu.Children.Add(controlsBack);
 
 				ListContainer controlsList = new ListContainer();
@@ -1347,8 +1334,7 @@ namespace Lemma
 				addInputSetting(this.Settings.ToggleFullscreen, "\\toggle fullscreen", true, false);
 
 				// Start new button
-				UIComponent startNew = this.createMenuButton("\\new game");
-				startNew.Add(new CommandBinding<Point>(startNew.MouseLeftUp, delegate(Point p)
+				UIComponent startNew = this.CreateButton("\\new game", delegate()
 				{
 					showDialog("\\alpha disclaimer", "\\play", delegate()
 					{
@@ -1360,24 +1346,22 @@ namespace Lemma
 							new Animation.Set<string>(this.MapFile, GameMain.InitialMap)
 						));
 					});
-				}));
+				});
 				pauseMenu.Children.Add(startNew);
 				startNew.Add(new Binding<bool, string>(startNew.Visible, x => x == GameMain.MenuMap, this.MapFile));
 
 				// Resume button
-				UIComponent resume = this.createMenuButton("\\resume");
-				resume.Visible.Value = false;
-				resume.Add(new CommandBinding<Point>(resume.MouseLeftUp, delegate(Point p)
+				UIComponent resume = this.CreateButton("\\resume", delegate()
 				{
 					this.Paused.Value = false;
 					restorePausedSettings();
-				}));
+				});
+				resume.Visible.Value = false;
 				pauseMenu.Children.Add(resume);
 				resume.Add(new Binding<bool, string>(resume.Visible, x => x != GameMain.MenuMap, this.MapFile));
 
 				// Save button
-				UIComponent saveButton = this.createMenuButton("\\save");
-				saveButton.Add(new CommandBinding<Point>(saveButton.MouseLeftUp, delegate(Point p)
+				UIComponent saveButton = this.CreateButton("\\save", delegate()
 				{
 					hidePauseMenu();
 
@@ -1391,7 +1375,7 @@ namespace Lemma
 
 					loadSaveShown = true;
 					currentMenu.Value = loadSaveList;
-				}));
+				});
 				saveButton.Add(new Binding<bool>(saveButton.Visible, () => this.MapFile != GameMain.MenuMap && (this.player.Value != null && this.player.Value.Active), this.MapFile, this.player));
 
 				pauseMenu.Children.Add(saveButton);
@@ -1413,16 +1397,11 @@ namespace Lemma
 				};
 
 				// Load button
-				UIComponent load = this.createMenuButton("\\load");
-				load.Add(new CommandBinding<Point>(load.MouseLeftUp, delegate(Point p)
-				{
-					showLoad();
-				}));
+				UIComponent load = this.CreateButton("\\load", showLoad);
 				pauseMenu.Children.Add(load);
 
 				// Sandbox button
-				UIComponent sandbox = this.createMenuButton("\\sandbox");
-				sandbox.Add(new CommandBinding<Point>(sandbox.MouseLeftUp, delegate(Point p)
+				UIComponent sandbox = this.CreateButton("\\sandbox", delegate()
 				{
 					showDialog("\\sandbox disclaimer", "\\play anyway", delegate()
 					{
@@ -1434,7 +1413,7 @@ namespace Lemma
 							new Animation.Set<string>(this.MapFile, "sandbox")
 						));
 					});
-				}));
+				});
 				pauseMenu.Children.Add(sandbox);
 				sandbox.Add(new Binding<bool, string>(sandbox.Visible, x => x == GameMain.MenuMap, this.MapFile));
 
@@ -1485,11 +1464,7 @@ namespace Lemma
 					this.AddComponent(cheatAnimation);
 				};
 
-				UIComponent cheatBack = this.createMenuButton("\\back");
-				cheatBack.Add(new CommandBinding<Point>(cheatBack.MouseLeftUp, delegate(Point p)
-				{
-					hideCheat();
-				}));
+				UIComponent cheatBack = this.CreateButton("\\back", hideCheat);
 				cheatMenu.Children.Add(cheatBack);
 
 				ListContainer cheatList = new ListContainer();
@@ -1497,9 +1472,8 @@ namespace Lemma
 
 				foreach (KeyValuePair<string, string> item in GameMain.maps)
 				{
-					UIComponent button = this.createMenuButton(item.Value);
 					string m = item.Key;
-					button.Add(new CommandBinding<Point>(button.MouseLeftUp, delegate(Point mouse)
+					UIComponent button = this.CreateButton(item.Value, delegate()
 					{
 						hideCheat();
 						restorePausedSettings();
@@ -1509,7 +1483,7 @@ namespace Lemma
 							new Animation.Delay(0.2f),
 							new Animation.Set<string>(this.MapFile, m)
 						));
-					}));
+					});
 					cheatList.Children.Add(button);
 				}
 
@@ -1519,8 +1493,7 @@ namespace Lemma
 				cheatMenu.Children.Add(cheatScroller);
 
 				// Cheat button
-				UIComponent cheat = this.createMenuButton("\\cheat");
-				cheat.Add(new CommandBinding<Point>(cheat.MouseLeftUp, delegate(Point mouse)
+				UIComponent cheat = this.CreateButton("\\cheat", delegate()
 				{
 					hidePauseMenu();
 
@@ -1532,14 +1505,13 @@ namespace Lemma
 
 					cheatShown = true;
 					currentMenu.Value = cheatList;
-				}));
+				});
 				cheat.Add(new Binding<bool, string>(cheat.Visible, x => x == GameMain.MenuMap, this.MapFile));
 				pauseMenu.Children.Add(cheat);
 #endif
 
 				// Controls button
-				UIComponent controlsButton = this.createMenuButton("\\controls");
-				controlsButton.Add(new CommandBinding<Point>(controlsButton.MouseLeftUp, delegate(Point mouse)
+				UIComponent controlsButton = this.CreateButton("\\controls", delegate()
 				{
 					hidePauseMenu();
 
@@ -1551,12 +1523,11 @@ namespace Lemma
 
 					controlsShown = true;
 					currentMenu.Value = controlsList;
-				}));
+				});
 				pauseMenu.Children.Add(controlsButton);
 
 				// Settings button
-				UIComponent settingsButton = this.createMenuButton("\\options");
-				settingsButton.Add(new CommandBinding<Point>(settingsButton.MouseLeftUp, delegate(Point mouse)
+				UIComponent settingsButton = this.CreateButton("\\options", delegate()
 				{
 					hidePauseMenu();
 
@@ -1569,13 +1540,12 @@ namespace Lemma
 					settingsShown = true;
 
 					currentMenu.Value = settingsMenu;
-				}));
+				});
 				pauseMenu.Children.Add(settingsButton);
 
 #if DEVELOPMENT
 				// Edit mode toggle button
-				UIComponent switchToEditMode = this.createMenuButton("\\edit mode");
-				switchToEditMode.Add(new CommandBinding<Point>(switchToEditMode.MouseLeftUp, delegate(Point mouse)
+				UIComponent switchToEditMode = this.CreateButton("\\edit mode", delegate()
 				{
 					pauseMenu.Visible.Value = false;
 					this.EditorEnabled.Value = true;
@@ -1587,7 +1557,7 @@ namespace Lemma
 					}
 					IO.MapLoader.Load(this, null, this.MapFile, true);
 					this.currentSave = null;
-				}));
+				});
 				pauseMenu.Children.Add(switchToEditMode);
 #endif
 
@@ -1637,11 +1607,10 @@ namespace Lemma
 					this.AddComponent(creditsAnimation);
 				};
 
-				UIComponent creditsBack = this.createMenuButton("\\back");
-				creditsBack.Add(new CommandBinding<Point>(creditsBack.MouseLeftUp, delegate(Point p)
+				UIComponent creditsBack = this.CreateButton("\\back", delegate()
 				{
 					hideCredits();
-				}));
+				});
 				creditsMenu.Children.Add(creditsBack);
 
 				TextElement creditsDisplay = new TextElement();
@@ -1654,8 +1623,7 @@ namespace Lemma
 				creditsMenu.Children.Add(creditsScroller);
 
 				// Credits button
-				UIComponent credits = this.createMenuButton("\\credits");
-				credits.Add(new CommandBinding<Point>(credits.MouseLeftUp, delegate(Point mouse)
+				UIComponent credits = this.CreateButton("\\credits", delegate()
 				{
 					hidePauseMenu();
 
@@ -1667,13 +1635,12 @@ namespace Lemma
 
 					creditsShown = true;
 					currentMenu.Value = creditsDisplay;
-				}));
+				});
 				credits.Add(new Binding<bool, string>(credits.Visible, x => x == GameMain.MenuMap, this.MapFile));
 				pauseMenu.Children.Add(credits);
 
 				// Main menu button
-				UIComponent mainMenu = this.createMenuButton("\\main menu");
-				mainMenu.Add(new CommandBinding<Point>(mainMenu.MouseLeftUp, delegate(Point p)
+				UIComponent mainMenu = this.CreateButton("\\main menu", delegate()
 				{
 					showDialog
 					(
@@ -1685,13 +1652,12 @@ namespace Lemma
 							this.Paused.Value = false;
 						}
 					);
-				}));
+				});
 				pauseMenu.Children.Add(mainMenu);
 				mainMenu.Add(new Binding<bool, string>(mainMenu.Visible, x => x != GameMain.MenuMap, this.MapFile));
 
 				// Exit button
-				UIComponent exit = this.createMenuButton("\\exit");
-				exit.Add(new CommandBinding<Point>(exit.MouseLeftUp, delegate(Point mouse)
+				UIComponent exit = this.CreateButton("\\exit", delegate()
 				{
 					if (this.MapFile.Value != GameMain.MenuMap)
 					{
@@ -1706,7 +1672,7 @@ namespace Lemma
 					}
 					else
 						throw new ExitException();
-				}));
+				});
 				pauseMenu.Children.Add(exit);
 
 				bool saving = false;

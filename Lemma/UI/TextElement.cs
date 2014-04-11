@@ -20,6 +20,7 @@ namespace Lemma.Components
 
 		private Property<string> internalText = new Property<string> { Editable = false, Value = "" };
 		private Binding<string> internalTextBinding;
+		private NotifyBinding languageBinding;
 
 		public static Dictionary<string, IProperty> BindableProperties = new Dictionary<string, IProperty>();
 
@@ -100,6 +101,8 @@ namespace Lemma.Components
 
 				List<IProperty> dependencies = new List<IProperty>();
 
+				bool dependsOnLanguage = false;
+
 				StringBuilder builder;
 				if (value != null && value.Length > 0 && value[0] == '\\')
 				{
@@ -108,7 +111,7 @@ namespace Lemma.Components
 					if (translated == null)
 						translated = key;
 					builder = new StringBuilder(translated);
-					dependencies.Add(this.main.Strings.Language);
+					dependsOnLanguage = true;
 				}
 				else
 					builder = new StringBuilder(value);
@@ -146,22 +149,34 @@ namespace Lemma.Components
 				}
 
 				if (this.internalTextBinding != null)
-				{
 					this.Remove(this.internalTextBinding);
-					this.internalTextBinding = null;
+
+				if (this.languageBinding != null)
+					this.Remove(this.languageBinding);
+
+				if (dependsOnLanguage)
+				{
+					this.languageBinding = new NotifyBinding(this.Text.Reset, this.main.Strings.Language);
+					this.Add(this.languageBinding);
 				}
+				else
+					this.languageBinding = null;
 
 				if (dependencies.Count > 0)
 				{
 					string format = builder.ToString();
+					IProperty[] dependenciesArray = dependencies.ToArray();
 					this.internalTextBinding = new Binding<string>(this.internalText, delegate()
 					{
-						return string.Format(CultureInfo.CurrentCulture, format, dependencies.ToArray());
-					}, dependencies.ToArray());
+						return string.Format(CultureInfo.CurrentCulture, format, dependenciesArray);
+					}, dependenciesArray);
 					this.Add(this.internalTextBinding);
 				}
 				else
-					this.internalText.Value = value;
+				{
+					this.internalTextBinding = null;
+					this.internalText.Value = builder.ToString();
+				}
 			};
 
 		}

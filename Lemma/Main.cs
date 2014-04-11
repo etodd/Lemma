@@ -16,6 +16,7 @@ using System.Linq;
 using BEPUphysics;
 using System.Xml.Serialization;
 using System.Reflection;
+using System.Globalization;
 
 namespace Lemma
 {
@@ -334,6 +335,13 @@ namespace Lemma
 			{
 				this.mapLoaded = true;
 			});
+
+			Action updateLanguage = delegate()
+			{
+				Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture(this.Strings.Language.Value.ToString());
+			};
+			new NotifyBinding(updateLanguage, this.Strings.Language);
+			updateLanguage();
 		}
 
 		protected bool firstLoadContentCall = true;

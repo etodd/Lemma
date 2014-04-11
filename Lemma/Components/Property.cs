@@ -92,8 +92,8 @@ namespace Lemma.Components
 
 		public void Changed()
 		{
-			foreach (IPropertyBinding b in this.bindings)
-				b.OnChanged(this);
+			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
+				this.bindings[j].OnChanged(this);
 		}
 
 		public Type Value
@@ -119,17 +119,12 @@ namespace Lemma.Components
 				this.Set(obj);
 			else
 				this.InternalValue = obj;
-			try
+
+			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
 			{
-				foreach (IPropertyBinding b in this.bindings)
-				{
-					if (b != binding)
-						b.OnChanged(this);
-				}
-			}
-			catch (InvalidOperationException)
-			{
-				// Bindings were modified while we were enumerating
+				IPropertyBinding b = this.bindings[j];
+				if (b != binding)
+					b.OnChanged(this);
 			}
 		}
 
@@ -266,15 +261,8 @@ namespace Lemma.Components
 
 		public void Changed()
 		{
-			try
-			{
-				foreach (IPropertyBinding b in this.bindings)
-					b.OnChanged(this);
-			}
-			catch (InvalidOperationException)
-			{
-				// Bindings were modified while we were enumerating
-			}
+			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
+				this.bindings[j].OnChanged(this);
 		}
 
 		public void CopyTo(IListProperty dest)
@@ -288,15 +276,10 @@ namespace Lemma.Components
 		public void Add(Type t)
 		{
 			this.InternalList.Add(t);
-			try
-			{
-				foreach (IListBinding<Type> b in this.bindings)
-					b.Add(t, this);
-			}
-			catch (InvalidOperationException)
-			{
-				// Bindings were modified while we were enumerating
-			}
+
+			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
+				this.bindings[j].Add(t, this);
+
 			this.Size.Value = this.InternalList.Count;
 			if (this.ItemAdded != null)
 				this.ItemAdded(this.InternalList.Count - 1, t);
@@ -311,15 +294,10 @@ namespace Lemma.Components
 		public void Insert(int index, Type t)
 		{
 			this.InternalList.Insert(index, t);
-			try
-			{
-				foreach (IListBinding<Type> b in this.bindings)
-					b.Add(t, this);
-			}
-			catch (InvalidOperationException)
-			{
-				// Bindings were modified while we were enumerating
-			}
+
+			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
+				this.bindings[j].Add(t, this);
+
 			this.Size.Value = this.InternalList.Count;
 			if (this.ItemAdded != null)
 				this.ItemAdded(index, t);
@@ -332,15 +310,9 @@ namespace Lemma.Components
 			this.Size.Value = this.InternalList.Count;
 			if (this.ItemRemoved != null)
 				this.ItemRemoved(index, t);
-			try
-			{
-				foreach (IListBinding<Type> b in this.bindings)
-					b.Remove(t, this);
-			}
-			catch (InvalidOperationException)
-			{
-				// Bindings were modified while we were enumerating
-			}
+
+			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
+				this.bindings[j].Remove(t, this);
 		}
 
 		public bool Remove(Type t)
@@ -350,15 +322,10 @@ namespace Lemma.Components
 			this.Size.Value = this.InternalList.Count;
 			if (this.ItemRemoved != null)
 				this.ItemRemoved(index, t);
-			try
-			{
-				foreach (IListBinding<Type> b in this.bindings)
-					b.Remove(t, this);
-			}
-			catch (InvalidOperationException)
-			{
-				// Bindings were modified while we were enumerating
-			}
+
+			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
+				this.bindings[j].Remove(t, this);
+
 			return true;
 		}
 
@@ -367,15 +334,10 @@ namespace Lemma.Components
 			int index = this.InternalList.IndexOf(t);
 			this.InternalList.RemoveAt(index);
 			this.Size.Value = this.InternalList.Count;
-			try
-			{
-				foreach (IListBinding<Type> b in this.bindings)
-					b.Remove(t, this);
-			}
-			catch (InvalidOperationException)
-			{
-				// Bindings were modified while we were enumerating
-			}
+
+			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
+				this.bindings[j].Remove(t, this);
+
 			return true;
 		}
 
@@ -391,15 +353,9 @@ namespace Lemma.Components
 			this.InternalList[i] = to;
 			if (this.ItemChanged != null)
 				this.ItemChanged(i, from, to);
-			try
-			{
-				foreach (IListBinding<Type> b in this.bindings)
-					b.OnChanged(from, to, this);
-			}
-			catch (InvalidOperationException)
-			{
-				// Bindings were modified while we were enumerating
-			}
+
+			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
+				this.bindings[j].OnChanged(from, to, this);
 		}
 
 		public void Changed(int i, Type to)
@@ -408,15 +364,9 @@ namespace Lemma.Components
 			this.InternalList[i] = to;
 			if (this.ItemChanged != null)
 				this.ItemChanged(i, from, to);
-			try
-			{
-				foreach (IListBinding<Type> b in this.bindings)
-					b.OnChanged(from, to, this);
-			}
-			catch (InvalidOperationException)
-			{
-				// Bindings were modified while we were enumerating
-			}
+
+			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
+				this.bindings[j].OnChanged(from, to, this);
 		}
 
 		public void Clear()
@@ -433,15 +383,9 @@ namespace Lemma.Components
 			{
 				if (this.Cleared != null)
 					this.Cleared();
-				try
-				{
-					foreach (IListBinding<Type> b in this.bindings)
-						b.Clear(this);
-				}
-				catch (InvalidOperationException)
-				{
-					// Bindings were modified while we were enumerating
-				}
+
+				for (int i = this.bindings.Count - 1; i >= 0; i = Math.Min(this.bindings.Count - 1, i - 1))
+					this.bindings[i].Clear(this);
 			}
 		}
 
@@ -452,15 +396,9 @@ namespace Lemma.Components
 				int i = this.InternalList.IndexOf(t);
 				this.ItemChanged(i, t, t);
 			}
-			try
-			{
-				foreach (IListBinding<Type> b in this.bindings)
-					b.OnChanged(t, t, this);
-			}
-			catch (InvalidOperationException)
-			{
-				// Bindings were modified while we were enumerating
-			}
+
+			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
+				this.bindings[j].OnChanged(t, t, this);
 		}
 	}
 }

@@ -88,17 +88,54 @@ else
 	ListContainer corner = new ListContainer();
 	corner.AnchorPoint.Value = new Vector2(1, 1);
 	corner.Orientation.Value = ListContainer.ListOrientation.Vertical;
+	corner.Reversed.Value = true;
 	corner.Alignment.Value = ListContainer.ListAlignment.Max;
 	corner.Add(new Binding<Vector2, Point>(corner.Position, x => new Vector2(x.X - 10.0f, x.Y - 10.0f), main.ScreenSize));
 	((GameMain)main).UI.Root.Children.Add(corner);
 
-	TextElement webLink = ((GameMain)main).CreateLink("et1337.com", "http://et1337.com");
-	corner.Children.Add(webLink);
-		
 	TextElement version = new TextElement();
 	version.FontFile.Value = "Font";
 	version.Text.Value = "Build " + GameMain.Build.ToString();
 	corner.Children.Add(version);
+
+	TextElement webLink = ((GameMain)main).CreateLink("et1337.com", "http://et1337.com");
+	corner.Children.Add(webLink);
+
+	Container languageMenu = new Container();
+
+	UIComponent languageButton = ((GameMain)main).CreateButton(delegate()
+	{
+		languageMenu.Visible.Value = !languageMenu.Visible;
+	});
+	corner.Children.Add(languageButton);
+
+	Sprite currentLanguageIcon = new Sprite();
+	currentLanguageIcon.Add(new Binding<string, GameMain.Config.Lang>(currentLanguageIcon.Image, x => "Images\\" + x.ToString(), ((GameMain)main).Settings.Language));
+	languageButton.Children.Add(currentLanguageIcon);
+
+	languageMenu.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+	languageMenu.Visible.Value = false;
+	corner.Children.Add(languageMenu);
+	
+	ListContainer languages = new ListContainer();
+	languages.Orientation.Value = ListContainer.ListOrientation.Vertical;
+	languages.Alignment.Value = ListContainer.ListAlignment.Max;
+	languageMenu.Children.Add(languages);
+	
+	foreach (GameMain.Config.Lang language in GameMain.Languages)
+	{
+		UIComponent button = ((GameMain)main).CreateButton(delegate()
+		{
+			((GameMain)main).Settings.Language.Value = language;
+			languageMenu.Visible.Value = false;
+		});
+
+		Sprite icon = new Sprite();
+		icon.Image.Value = "Images\\" + language.ToString();
+		button.Children.Add(icon);
+
+		languages.Children.Add(button);
+	}
 
 	logo.Opacity.Value = 0.0f;
 	version.Opacity.Value = 0.0f;
