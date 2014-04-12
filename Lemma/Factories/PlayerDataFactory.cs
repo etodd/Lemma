@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +9,7 @@ using System.Xml.Serialization;
 
 namespace Lemma.Factories
 {
-	public class PlayerDataFactory : Factory
+	public class PlayerDataFactory : Factory<Main>
 	{
 		private Entity instance;
 

@@ -11,10 +11,11 @@ using Lemma.Util;
 using BEPUphysics.CollisionTests;
 using System.Xml.Serialization;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class Player : Component, IUpdateableComponent
+	public class Player : Component<Main>, IUpdateableComponent
 	{
 		public enum WallRun { None, Left, Right, Straight, Down, Reverse }
 		public const float DefaultMaxSpeed = 8.8f;

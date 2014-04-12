@@ -7,6 +7,7 @@ using System.Xml.Serialization;
 using System.IO;
 using System.Collections.Specialized;
 using System.Net;
+using ComponentBind;
 
 namespace Lemma.Components
 {
@@ -274,7 +275,7 @@ namespace Lemma.Components
 
 		public string UUID;
 
-		public class Recorder : Component, IUpdateableComponent
+		public class Recorder : Component<Main>, IUpdateableComponent
 		{
 			public static void Event(Main main, string name, string data = null)
 			{

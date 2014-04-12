@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +12,7 @@ using BEPUphysics.NarrowPhaseSystems.Pairs;
 
 namespace Lemma.Factories
 {
-	public class BlockFactory : Factory
+	public class BlockFactory : Factory<Main>
 	{
 		public BlockFactory()
 		{

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class Timer : Component, IUpdateableComponent
+	public class Timer : Component<Main>, IUpdateableComponent
 	{
 		protected float time = 0.0f;
 		public Property<bool> Repeat = new Property<bool> { Editable = true };

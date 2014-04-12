@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class Animation : Component, IUpdateableComponent
+	public class Animation : Component<Main>, IUpdateableComponent
 	{
 		public abstract class Base
 		{

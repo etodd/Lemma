@@ -9,10 +9,11 @@ using System.Collections;
 using Microsoft.Xna.Framework.Input;
 using System.Xml.Serialization;
 using Lemma.Util;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class EditorUI : Component, IUpdateableComponent
+	public class EditorUI : Component<Main>, IUpdateableComponent
 	{
 		private const float precisionDelta = 0.025f;
 		private const float normalDelta = 1.0f;
@@ -168,11 +169,11 @@ namespace Lemma.Components
 			{
 				this.refresh();
 			});
-			this.SelectedEntities.ItemChanged += new ListProperty<Components.Entity>.ItemChangedEventHandler(delegate(int index, Entity old, Entity newValue)
+			this.SelectedEntities.ItemChanged += new ListProperty<ComponentBind.Entity>.ItemChangedEventHandler(delegate(int index, Entity old, Entity newValue)
 			{
 				this.refresh();
 			});
-			this.SelectedEntities.Cleared += new ListProperty<Components.Entity>.ClearEventHandler(this.refresh);
+			this.SelectedEntities.Cleared += new ListProperty<ComponentBind.Entity>.ClearEventHandler(this.refresh);
 			this.Add(new NotifyBinding(this.refresh, this.MapEditMode));
 
 			this.PopupVisible.Set = delegate(bool value)
@@ -272,10 +273,10 @@ namespace Lemma.Components
 		private void show(Entity entity)
 		{
 			foreach (DictionaryEntry entry in new DictionaryEntry[] { new DictionaryEntry("[" + entity.Type.ToString() + " entity]", entity.Properties.Concat(entity.Commands)) }
-				.Union(entity.Components.Where(x => ((Component)x.Value).Editable)))
+				.Union(entity.Components.Where(x => ((IComponent)x.Value).Editable)))
 			{
 				IEnumerable<DictionaryEntry> properties = null;
-				if (typeof(Component).IsAssignableFrom(entry.Value.GetType()))
+				if (typeof(IComponent).IsAssignableFrom(entry.Value.GetType()))
 					properties = entry.Value.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance)
 						.Select(x => new DictionaryEntry(x.Name, x.GetValue(entry.Value)))
 						.Concat(entry.Value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)

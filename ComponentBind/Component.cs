@@ -6,19 +6,23 @@ using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
 using System.ComponentModel;
 
-namespace Lemma.Components
+namespace ComponentBind
 {
 	public interface IComponent
 	{
-		Entity Entity { get; }
+		Entity Entity { get; set; }
 		bool NeedsAdded { get; }
 		bool Active { get; }
-		void SetMain(Main main);
+		bool Serialize { get; set; }
+		bool Editable { get; set; }
+		void SetMain(BaseMain main);
 		Property<bool> Enabled { get; }
 		Property<bool> EnabledInEditMode { get; }
 		Property<bool> EnabledWhenPaused { get; }
 		Property<bool> Suspended { get; }
+		Command Delete { get; }
 		void LoadContent(bool reload);
+		void OnSave();
 	}
 
 	public interface IUpdateableComponent : IComponent
@@ -26,42 +30,15 @@ namespace Lemma.Components
 		void Update(float dt);
 	}
 
-	public interface IEditorUIComponent : IComponent
-	{
-		void AddEditorElements(UIComponent propertyList, EditorUI ui);
-	}
-
-	public interface IDrawableComponent : IComponent
-	{
-		void Draw(GameTime time, RenderParameters parameters);
-		Property<int> DrawOrder { get; }
-	}
-
-	public interface IDrawableAlphaComponent : IComponent
-	{
-		void DrawAlpha(GameTime time, RenderParameters parameters);
-		Property<int> DrawOrder { get; }
-	}
-
-	public interface IDrawablePreFrameComponent : IComponent
-	{
-		void DrawPreFrame(GameTime time, RenderParameters parameters);
-	}
-
-	public interface INonPostProcessedDrawableComponent : IComponent
-	{
-		void DrawNonPostProcessed(GameTime time, RenderParameters parameters);
-		Property<int> DrawOrder { get; }
-	}
-
-	public class Component : IComponent
+	public class Component<MainClass> : IComponent
+		where MainClass : BaseMain
 	{
 		[XmlIgnore]
-		public bool Serialize = true;
+		public bool Serialize { get; set; }
 
 		[XmlAttribute]
 		[DefaultValue(true)]
-		public bool Editable = true;
+		public bool Editable { get; set; }
 
 		public Property<bool> Enabled { get; set; }
 
@@ -89,8 +66,15 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command OnResumed = new Command();
 
+		private Command del = new Command();
 		[XmlIgnore]
-		public Command Delete = new Command();
+		public Command Delete
+		{
+			get
+			{
+				return this.del;
+			}
+		}
 
 		[XmlIgnore]
 		public Property<bool> EnabledInEditMode { get; set; }
@@ -99,7 +83,7 @@ namespace Lemma.Components
 
 		private List<IBinding> bindings = new List<IBinding>();
 
-		protected Main main;
+		protected MainClass main;
 
 		[XmlIgnore]
 		public virtual Entity Entity { get; set; }
@@ -109,7 +93,9 @@ namespace Lemma.Components
 
 		public Component()
 		{
+			this.Serialize = true;
 			this.Active = true;
+			this.Editable = true;
 			this.Enabled = new Property<bool> { Value = true, Editable = false };
 			this.Suspended = new Property<bool> { Value = false, Editable = false };
 			this.EnabledInEditMode = new Property<bool> { Value = true, Editable = false };
@@ -150,9 +136,9 @@ namespace Lemma.Components
 			this.bindings.Clear();
 		}
 
-		public virtual void SetMain(Main _main)
+		public virtual void SetMain(BaseMain _main)
 		{
-			this.main = _main;
+			this.main = (MainClass)_main;
 			this.LoadContent(false);
 			this.InitializeProperties();
 			this.Enabled.Set = delegate(bool value)

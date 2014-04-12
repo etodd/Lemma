@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace Lemma.Factories
 {
-	public class SnakeFactory : Factory
+	public class SnakeFactory : Factory<Main>
 	{
 		public override Entity Create(Main main)
 		{

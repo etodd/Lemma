@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +14,7 @@ using BEPUphysics.Constraints.SolverGroups;
 
 namespace Lemma.Factories
 {
-	public class SpinnerFactory : Factory
+	public class SpinnerFactory : Factory<Main>
 	{
 		public override Entity Create(Main main)
 		{

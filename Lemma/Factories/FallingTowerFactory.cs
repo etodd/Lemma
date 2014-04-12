@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +10,7 @@ using BEPUphysics.CollisionTests;
 
 namespace Lemma.Factories
 {
-	public class FallingTowerFactory : Factory
+	public class FallingTowerFactory : Factory<Main>
 	{
 		public FallingTowerFactory()
 		{

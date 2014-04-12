@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class AudioListener : Component
+	public class AudioListener : Component<Main>
 	{
 		protected static List<AudioListener> listeners = new List<AudioListener>();
 

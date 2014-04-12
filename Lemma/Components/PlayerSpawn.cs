@@ -5,10 +5,11 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Xml.Serialization;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class PlayerSpawn : Component
+	public class PlayerSpawn : Component<Main>
 	{
 		public Property<bool> IsActivated = new Property<bool> { Editable = true };
 		public Property<Vector3> Position = new Property<Vector3> { Editable = false };

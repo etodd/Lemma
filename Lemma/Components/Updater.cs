@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class Updater : Component, IEnumerable<Action<float>>, IUpdateableComponent
+	public class Updater : Component<Main>, IEnumerable<Action<float>>, IUpdateableComponent
 	{
 		protected List<Action<float>> actions = new List<Action<float>>();
 

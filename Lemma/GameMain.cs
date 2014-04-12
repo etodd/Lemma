@@ -1,5 +1,5 @@
 #region Using Statements
-using System;
+using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
@@ -535,16 +535,16 @@ namespace Lemma
 					{
 						this.MapFile.InternalValue = value;
 						// Create a new map
-						Entity world = Factory.CreateAndBind(this, "World");
+						Entity world = Factory.Get<WorldFactory>().CreateAndBind(this);
 						world.Get<Transform>().Position.Value = new Vector3(0, 3, 0);
 						this.Add(world);
 
-						Entity ambientLight = Factory.CreateAndBind(this, "AmbientLight");
+						Entity ambientLight = Factory.Get<AmbientLightFactory>().CreateAndBind(this);
 						ambientLight.Get<Transform>().Position.Value = new Vector3(0, 5.0f, 0);
 						ambientLight.Get<AmbientLight>().Color.Value = new Vector3(0.25f, 0.25f, 0.25f);
 						this.Add(ambientLight);
 
-						Entity map = Factory.CreateAndBind(this, "Map");
+						Entity map = Factory.Get<MapFactory>().CreateAndBind(this);
 						map.Get<Transform>().Position.Value = new Vector3(0, 1, 0);
 						this.Add(map);
 
@@ -2057,7 +2057,7 @@ namespace Lemma
 				this.Renderer.Brightness.Value = 0.0f;
 				if (this.editor == null || !this.editor.Active)
 				{
-					this.editor = Factory.Get("Editor").CreateAndBind(this);
+					this.editor = Factory.Get<EditorFactory>().CreateAndBind(this);
 					FPSInput.RecenterMouse();
 					this.editor.Get<Editor>().Position.Value = this.lastEditorPosition;
 					this.editor.Get<FPSInput>().Mouse.Value = this.lastEditorMouse;
@@ -2113,7 +2113,7 @@ namespace Lemma
 						{
 							if (createPlayer)
 							{
-								this.player.Value = Factory.CreateAndBind(this, "Player");
+								this.player.Value = Factory.Get<PlayerFactory>().CreateAndBind(this);
 								this.Add(this.player);
 							}
 

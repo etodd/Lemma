@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Lemma.Factories;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class EnemyBase : Component
+	public class EnemyBase : Component<Main>
 	{
 		public Property<Matrix> Transform = new Property<Matrix> { Editable = false };
 		public Property<Vector3> Position = new Property<Vector3> { Editable = false };

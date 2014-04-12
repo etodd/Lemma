@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +7,7 @@ using Lemma.Components;
 
 namespace Lemma.Factories
 {
-	public class SwitchFactory : Factory
+	public class SwitchFactory : Factory<Main>
 	{
 		public SwitchFactory()
 		{
@@ -156,7 +156,7 @@ namespace Lemma.Factories
 		public override void AttachEditorComponents(Entity result, Main main)
 		{
 			base.AttachEditorComponents(result, main);
-			EntityConnectable.AttachEditorComponents(result, main, result.GetOrMakeListProperty<Entity.Handle>("Targets"));
+			EntityConnectable.AttachEditorComponents(result, result.GetOrMakeListProperty<Entity.Handle>("Targets"));
 			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
 		}
 	}

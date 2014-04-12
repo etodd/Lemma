@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +7,7 @@ using Lemma.Components;
 
 namespace Lemma.Factories
 {
-	public class ScriptFactory : Factory
+	public class ScriptFactory : Factory<Main>
 	{
 		public ScriptFactory()
 		{

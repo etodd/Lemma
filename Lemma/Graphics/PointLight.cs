@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +7,7 @@ using System.Xml.Serialization;
 
 namespace Lemma.Components
 {
-	public class PointLight : Component
+	public class PointLight : Component<Main>
 	{
 		public static readonly List<PointLight> All = new List<PointLight>();
 
@@ -26,7 +26,7 @@ namespace Lemma.Components
 			this.Enabled.Editable = true;
 		}
 
-		public override void SetMain(Main _main)
+		public override void SetMain(BaseMain _main)
 		{
 			base.SetMain(_main);
 			PointLight.All.Add(this);

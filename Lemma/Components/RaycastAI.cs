@@ -5,10 +5,11 @@ using System.Text;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
 using Lemma.Factories;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class RaycastAI : Component
+	public class RaycastAI : Component<Main>
 	{
 		public Property<Entity.Handle> Map = new Property<Entity.Handle> { Editable = false };
 		public Property<Map.Coordinate> Coord = new Property<Map.Coordinate> { Editable = false };

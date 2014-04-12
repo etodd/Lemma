@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +11,7 @@ using System.IO;
 
 namespace Lemma.Factories
 {
-	public class EditorFactory : Factory
+	public class EditorFactory : Factory<Main>
 	{
 		public EditorFactory()
 		{
@@ -1373,7 +1373,7 @@ namespace Lemma.Factories
 						foreach (Entity entity in entities)
 						{
 							entity.ID = Entity.GenerateID(entity, main);
-							Factory factory = Factory.Get(entity.Type);
+							Factory<Main> factory = Factory<Main>.Get(entity.Type);
 							factory.Bind(entity, main);
 							main.Add(entity);
 						}

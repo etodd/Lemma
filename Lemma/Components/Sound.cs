@@ -8,10 +8,11 @@ using System.IO;
 using Microsoft.Xna.Framework.Audio;
 using System.Xml.Serialization;
 using Lemma.Factories;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class Sound : Component, IUpdateableComponent
+	public class Sound : Component<Main>, IUpdateableComponent
 	{
 		protected Cue cue;
 

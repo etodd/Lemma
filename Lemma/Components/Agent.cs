@@ -5,10 +5,11 @@ using System.Text;
 using System.Xml.Serialization;
 using System.Collections;
 using Microsoft.Xna.Framework;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class Agent : Component
+	public class Agent : Component<Main>
 	{
 		private static List<Agent> agents = new List<Agent>();
 

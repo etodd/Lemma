@@ -5,10 +5,11 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Xml.Serialization;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class Water : Component, IDrawableAlphaComponent, IDrawablePreFrameComponent, IUpdateableComponent
+	public class Water : Component<Main>, IDrawableAlphaComponent, IDrawablePreFrameComponent, IUpdateableComponent
 	{
 		private static List<Water> instances = new List<Water>();
 

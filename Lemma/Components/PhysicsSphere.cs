@@ -10,10 +10,11 @@ using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.CollisionTests;
 using System.Xml.Serialization;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class PhysicsSphere : Component, IUpdateableComponent
+	public class PhysicsSphere : Component<Main>, IUpdateableComponent
 	{
 		public Property<Matrix> Transform = new Property<Matrix> { Editable = false };
 		public Property<float> Mass = new Property<float> { Editable = true, Value = 0.25f };

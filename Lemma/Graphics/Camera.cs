@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +10,7 @@ using Lemma.Util;
 
 namespace Lemma.Components
 {
-	public class Camera : Component, IUpdateableComponent
+	public class Camera : Component<Main>, IUpdateableComponent
 	{
 		/// <summary>
 		/// Gets camera view matrix.

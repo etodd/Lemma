@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +7,7 @@ using Lemma.Components;
 
 namespace Lemma.Factories
 {
-	public class PlayerTriggerFactory : Factory
+	public class PlayerTriggerFactory : Factory<Main>
 	{
 		public PlayerTriggerFactory()
 		{
@@ -60,7 +60,7 @@ namespace Lemma.Factories
 
 			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
 
-			EntityConnectable.AttachEditorComponents(result, main, result.GetOrMakeListProperty<Entity.Handle>("Targets"));
+			EntityConnectable.AttachEditorComponents(result, result.GetOrMakeListProperty<Entity.Handle>("Targets"));
 		}
 	}
 }

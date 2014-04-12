@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Lemma.Components
 {
-	public class ModelInstance : Component
+	public class ModelInstance : Component<Main>
 	{
 		public class ModelInstanceSystem : Model
 		{

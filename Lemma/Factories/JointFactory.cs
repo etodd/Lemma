@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -162,7 +162,7 @@ namespace Lemma.Factories
 
 			Property<Entity.Handle> parentMap = result.GetOrMakeProperty<Entity.Handle>("Parent");
 
-			EntityConnectable.AttachEditorComponents(result, main, parentMap);
+			EntityConnectable.AttachEditorComponents(result, parentMap);
 			Model model = new Model();
 			model.Filename.Value = "Models\\cone";
 			model.Editable = false;

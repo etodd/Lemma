@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Collections;
 using System.Diagnostics;
 
-namespace Lemma.Components
+namespace ComponentBind
 {
 	public interface IProperty
 	{

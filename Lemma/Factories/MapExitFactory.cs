@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +9,7 @@ using System.Xml.Serialization;
 
 namespace Lemma.Factories
 {
-	public class MapExitFactory : Factory
+	public class MapExitFactory : Factory<Main>
 	{
 		public MapExitFactory()
 		{
@@ -62,8 +62,6 @@ namespace Lemma.Factories
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity player)
 			{
-				XmlSerializer serializer = new XmlSerializer(typeof(List<Entity>));
-
 				Container notification = new Container();
 				notification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
 				notification.Opacity.Value = 0.5f;
@@ -86,7 +84,7 @@ namespace Lemma.Factories
 
 						List<Entity> persistentEntities = main.Entities.Where((Func<Entity, bool>)MapExitFactory.isPersistent).ToList();
 
-						serializer.Serialize(stream, persistentEntities);
+						IO.MapLoader.Serializer.Serialize(stream, persistentEntities);
 
 						foreach (Entity e in persistentEntities)
 							e.Delete.Execute();
@@ -99,10 +97,10 @@ namespace Lemma.Factories
 					{
 						notification.Visible.Value = false;
 						stream.Seek(0, SeekOrigin.Begin);
-						List<Entity> entities = (List<Entity>)serializer.Deserialize(stream);
+						List<Entity> entities = (List<Entity>)IO.MapLoader.Serializer.Deserialize(stream);
 						foreach (Entity entity in entities)
 						{
-							Factory factory = Factory.Get(entity.Type);
+							Factory<Main> factory = Factory<Main>.Get(entity.Type);
 							factory.Bind(entity, main);
 							main.Add(entity);
 						}

@@ -11,10 +11,11 @@ using Lemma.Factories;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
 using System.IO;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class SignalTower : Component, IEditorUIComponent
+	public class SignalTower : Component<Main>, IEditorUIComponent
 	{
 		public ListProperty<Phone.Ans> Answers = new ListProperty<Phone.Ans>();
 		public Property<string> MessageID = new Property<string> { Editable = true };
@@ -32,7 +33,7 @@ namespace Lemma.Components
 		{
 			this.PlayerEnteredRange.Action = delegate(Entity p)
 			{
-				Phone phone = Factory.Get<PlayerDataFactory>().Instance(this.main).Get<Phone>();
+				Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance(this.main).Get<Phone>();
 				if (!string.IsNullOrEmpty(this.MessageID))
 				{
 					phone.Delay(SignalTower.messageDelay, this.MessageID, this.MessageText);
@@ -46,7 +47,7 @@ namespace Lemma.Components
 
 			this.PlayerExitedRange.Action = delegate(Entity p)
 			{
-				Phone phone = Factory.Get<PlayerDataFactory>().Instance(this.main).Get<Phone>();
+				Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance(this.main).Get<Phone>();
 				if (phone.ActiveAnswers.Count > 0)
 				{
 					// The player didn't pick an answer

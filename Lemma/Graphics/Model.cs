@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +9,7 @@ using Lemma.Util;
 
 namespace Lemma.Components
 {
-	public class Model : Component, IDrawableComponent
+	public class Model : Component<Main>, IDrawableComponent
 	{
 #if MONOGAME
 		public const string SamplerPostfix = "Sampler";

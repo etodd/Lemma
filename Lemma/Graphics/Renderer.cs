@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -55,7 +55,7 @@ namespace Lemma.Components
 	/// <summary>
 	/// Deferred renderer
 	/// </summary>
-	public class Renderer : Component
+	public class Renderer : Component<Main>
 	{
 		public delegate void DrawStageDelegate(RenderParameters parameters);
 

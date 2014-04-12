@@ -1,4 +1,4 @@
-using System;
+using System; using ComponentBind;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,7 +10,7 @@ namespace Lemma.Components
 	/// <summary>
 	/// The main component in charge of displaying particles.
 	/// </summary>
-	public class ParticleSystem : Component, IUpdateableComponent, IDrawableAlphaComponent, IDrawableComponent
+	public class ParticleSystem : Component<Main>, IUpdateableComponent, IDrawableAlphaComponent, IDrawableComponent
 	{
 		public Property<int> DrawOrder { get; set; }
 

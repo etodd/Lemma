@@ -8,11 +8,39 @@ using Microsoft.Xna.Framework.Input;
 
 using Lemma.Util;
 using Lemma.Factories;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class Editor : Component, IUpdateableComponent
+	public interface IEditorUIComponent : IComponent
 	{
+		void AddEditorElements(UIComponent propertyList, EditorUI ui);
+	}
+
+	public class Editor : Component<Main>, IUpdateableComponent
+	{
+		static Editor()
+		{
+			Factory<Main>.DefaultEditorComponents = delegate(Factory<Main> factory, Entity result, Main main)
+			{
+				Transform transform = result.Get<Transform>();
+				if (transform == null)
+					return;
+
+				Model model = new Model();
+				model.Filename.Value = "Models\\sphere";
+				model.Color.Value = new Vector3(factory.Color.X, factory.Color.Y, factory.Color.Z);
+				model.IsInstanced.Value = false;
+				model.Scale.Value = new Vector3(0.5f);
+				model.Editable = false;
+				model.Serialize = false;
+
+				result.Add("EditorModel", model);
+
+				model.Add(new Binding<Matrix, Vector3>(model.Transform, x => Matrix.CreateTranslation(x), transform.Position));
+			};
+		}
+
 		public Property<PlayerIndex> PlayerIndex = new Property<PlayerIndex> { Editable = false };
 		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
 		public Property<Matrix> Orientation = new Property<Matrix> { Editable = false };
@@ -147,9 +175,9 @@ namespace Lemma.Components
 
 			this.Spawn.Action = delegate(string type)
 			{
-				if (Factory.Get(type) != null)
+				if (Factory<Main>.Get(type) != null)
 				{
-					Entity entity = Factory.CreateAndBind(this.main, type);
+					Entity entity = Factory<Main>.Get(type).CreateAndBind(this.main);
 					Transform position = entity.Get<Transform>();
 					if (position != null)
 						position.Position.Value = this.Position;
@@ -178,7 +206,7 @@ namespace Lemma.Components
 				this.SelectedEntities.Clear();
 				foreach (Entity entity in entities)
 				{
-					Entity copy = Factory.Duplicate(this.main, entity);
+					Entity copy = Factory<Main>.Duplicate(this.main, entity);
 					this.main.Add(copy);
 					this.SelectedEntities.Add(copy);
 				}

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +7,7 @@ using Lemma.Components;
 
 namespace Lemma.Components
 {
-	public class LightingManager : Component
+	public class LightingManager : Component<Main>
 	{
 		public enum DynamicShadowSetting { Off, Low, Medium, High };
 		private const int maxDirectionalLights = 3;
@@ -31,7 +31,7 @@ namespace Lemma.Components
 		private Microsoft.Xna.Framework.Graphics.RenderTargetCube[] pointShadowMaps;
 #endif
 		private Microsoft.Xna.Framework.Graphics.RenderTarget2D[] spotShadowMaps;
-		private Dictionary<Component, int> shadowMapIndices = new Dictionary<Component, int>();
+		private Dictionary<IComponent, int> shadowMapIndices = new Dictionary<IComponent, int>();
 		private DirectionalLight globalShadowLight;
 		private Matrix globalShadowViewProjection;
 		private PointLight currentPointLight;

@@ -8,17 +8,18 @@ using System.IO;
 using System.CodeDom.Compiler;
 using System.Reflection;
 using System.Xml.Serialization;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class Script : Component
+	public class Script : Component<Main>
 	{
 		public const string ScriptExtension = "cs";
 		public const string BinaryExtension = "dll";
 
 		private const string scriptPrefix =
 @"
-using System;
+using System; using ComponentBind;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using System.Linq;

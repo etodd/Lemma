@@ -6,77 +6,16 @@ using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
 using System.Collections;
 using System.ComponentModel;
-using Lemma.Factories;
-using Lemma.Util;
 using System.Security.Cryptography;
+using System.Reflection;
 
-namespace Lemma.Components
+namespace ComponentBind
 {
-	[XmlInclude(typeof(Component))]
-	[XmlInclude(typeof(AudioListener))]
-	[XmlInclude(typeof(PlayerTrigger))]
-	[XmlInclude(typeof(Trigger))]
-	[XmlInclude(typeof(PlayerCylinderTrigger))]
-	[XmlInclude(typeof(Map))]
-	[XmlInclude(typeof(DynamicMap))]
-	[XmlInclude(typeof(PlayerSpawn))]
-	[XmlInclude(typeof(Transform))]
-	[XmlInclude(typeof(Sound))]
-	[XmlInclude(typeof(Timer))]
-	[XmlInclude(typeof(Model))]
-	[XmlInclude(typeof(AnimatedModel))]
-	[XmlInclude(typeof(Water))]
-	[XmlInclude(typeof(TextElement))]
-	[XmlInclude(typeof(AmbientLight))]
-	[XmlInclude(typeof(DirectionalLight))]
-	[XmlInclude(typeof(PointLight))]
-	[XmlInclude(typeof(SpotLight))]
-	[XmlInclude(typeof(Map.CellState))]
-	[XmlInclude(typeof(Property<Map.CellState>))]
-	[XmlInclude(typeof(ListProperty<Map.CellState>))]
 	[XmlInclude(typeof(Entity.Handle))]
 	[XmlInclude(typeof(Property<Entity.Handle>))]
 	[XmlInclude(typeof(ListProperty<Entity.Handle>))]
-	[XmlInclude(typeof(Script))]
-	[XmlInclude(typeof(Fog))]
-	[XmlInclude(typeof(ModelInstance))]
-	[XmlInclude(typeof(ModelInstance.ModelInstanceSystem))]
-	[XmlInclude(typeof(Zone))]
-	[XmlInclude(typeof(Direction))]
-	[XmlInclude(typeof(Property<Direction>))]
-	[XmlInclude(typeof(ListProperty<Direction>))]
-	[XmlInclude(typeof(PhysicsBlock))]
-	[XmlInclude(typeof(Player))]
-	[XmlInclude(typeof(Map.Coordinate))]
-	[XmlInclude(typeof(ListProperty<Map.Coordinate>))]
-	[XmlInclude(typeof(ListProperty<Map.Box>))]
-	[XmlInclude(typeof(Property<Map.Coordinate>))]
-	[XmlInclude(typeof(ParticleEmitter))]
-	[XmlInclude(typeof(PhysicsSphere))]
-	[XmlInclude(typeof(ModelAlpha))]
-	[XmlInclude(typeof(EnemyBase))]
-	[XmlInclude(typeof(Agent))]
-	[XmlInclude(typeof(AI))]
-	[XmlInclude(typeof(PID))]
-	[XmlInclude(typeof(PID3))]
-	[XmlInclude(typeof(PlayerFactory.RespawnLocation))]
-	[XmlInclude(typeof(ListProperty<PlayerFactory.RespawnLocation>))]
-	[XmlInclude(typeof(WorldFactory.ScheduledBlock))]
-	[XmlInclude(typeof(ListProperty<WorldFactory.ScheduledBlock>))]
-	[XmlInclude(typeof(VoxelChaseAI))]
-	[XmlInclude(typeof(VoiceActor))]
-	[XmlInclude(typeof(FillMapFactory.CoordinateEntry))]
-	[XmlInclude(typeof(ListProperty<FillMapFactory.CoordinateEntry>))]
-	[XmlInclude(typeof(Phone))]
-	[XmlInclude(typeof(Phone.Message))]
-	[XmlInclude(typeof(ListProperty<Phone.Message>))]
-	[XmlInclude(typeof(Phone.Schedule))]
-	[XmlInclude(typeof(ListProperty<Phone.Schedule>))]
-	[XmlInclude(typeof(Phone.Ans))]
-	[XmlInclude(typeof(ListProperty<Phone.Ans>))]
 	[XmlInclude(typeof(ListProperty<string>))]
-	[XmlInclude(typeof(RaycastAI))]
-	[XmlInclude(typeof(SignalTower))]
+	[XmlInclude(typeof(Transform))]
 	public class Entity
 	{
 		public struct Handle
@@ -147,7 +86,7 @@ namespace Lemma.Components
 
 		private static Dictionary<string, Entity> entities = new Dictionary<string, Entity>();
 
-		public static string GenerateID(Entity entity, Main main)
+		public static string GenerateID(Entity entity, BaseMain main)
 		{
 			string baseId = char.ToLower(entity.Type[0]) + entity.Type.Substring(1);
 			Factory factory = Factory.Get(entity.Type);
@@ -195,9 +134,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public bool CannotSuspendByDistance;
 		
-		private Main main;
-		private Dictionary<string, Component> components = new Dictionary<string, Component>();
-		private Dictionary<Type, Component> componentsByType = new Dictionary<Type, Component>();
+		private BaseMain main;
+		private Dictionary<string, IComponent> components = new Dictionary<string, IComponent>();
+		private Dictionary<Type, IComponent> componentsByType = new Dictionary<Type, IComponent>();
 		private Dictionary<string, IProperty> properties = new Dictionary<string, IProperty>();
 		private List<IBinding> bindings = new List<IBinding>();
 
@@ -239,7 +178,7 @@ namespace Lemma.Components
 		[XmlIgnore]
 		private Dictionary<string, Command> commands = new Dictionary<string, Command>();
 
-		public IEnumerable<Component> ComponentList
+		public IEnumerable<IComponent> ComponentList
 		{
 			get
 			{
@@ -265,12 +204,12 @@ namespace Lemma.Components
 			get
 			{
 				// Make an array of DictionaryEntries to return
-				IEnumerable<KeyValuePair<string, Component>> serializableComponents = this.components.Where(x => x.Value.Serialize);
+				IEnumerable<KeyValuePair<string, IComponent>> serializableComponents = this.components.Where(x => x.Value.Serialize);
 				DictionaryEntry[] ret = new DictionaryEntry[serializableComponents.Count()];
 				int i = 0;
 				DictionaryEntry de;
 				// Iterate through properties to load items into the array.
-				foreach (KeyValuePair<string, Component> component in serializableComponents)
+				foreach (KeyValuePair<string, IComponent> component in serializableComponents)
 				{
 					de = new DictionaryEntry();
 					de.Key = component.Key;
@@ -286,20 +225,21 @@ namespace Lemma.Components
 				this.components.Clear();
 				for (int i = 0; i < value.Length; i++)
 				{
-					Component c = (Component)value[i].Value;
+					IComponent c = (IComponent)value[i].Value;
 					this.components.Add((string)value[i].Key, c);
 					Type t = c.GetType();
-					while (!t.Equals(typeof(Component)))
+					do
 					{
 						this.componentsByType[t] = c;
 						t = t.BaseType;
 					}
+					while (t.Assembly != Entity.componentBindAssembly);
 				}
 			}
 		}
 
 		[XmlIgnore]
-		public Dictionary<string, Component> ComponentDictionary
+		public Dictionary<string, IComponent> ComponentDictionary
 		{
 			get
 			{
@@ -346,7 +286,14 @@ namespace Lemma.Components
 			this.Delete.Action = (Action)this.delete;
 		}
 
-		public Entity(Main _main, string _type)
+		private static Assembly componentBindAssembly;
+
+		static Entity()
+		{
+			Entity.componentBindAssembly = Assembly.GetExecutingAssembly();
+		}
+
+		public Entity(BaseMain _main, string _type)
 			: this()
 		{
 			// Called by a Factory
@@ -355,12 +302,12 @@ namespace Lemma.Components
 			this.Add("ID", new Property<string> { Editable = true, Value = Entity.GenerateID(this, _main) });
 		}
 
-		public void SetMain(Main _main)
+		public void SetMain(BaseMain _main)
 		{
 			this.main = _main;
 			if (this._idProperty == null)
 				this.createIdProperty();
-			foreach (Component c in this.components.Values.ToList())
+			foreach (IComponent c in this.components.Values.ToList())
 			{
 				c.Entity = this;
 				this.main.AddComponent(c);
@@ -369,7 +316,7 @@ namespace Lemma.Components
 
 		public void SetSuspended(bool suspended)
 		{
-			foreach (Component c in this.components.Values.ToList())
+			foreach (IComponent c in this.components.Values.ToList())
 			{
 				if (c.Suspended.Value != suspended)
 					c.Suspended.Value = suspended;
@@ -381,15 +328,16 @@ namespace Lemma.Components
 			this.commands.Add(name, cmd);
 		}
 
-		public void Add(string name, Component component)
+		public void Add(string name, IComponent component)
 		{
 			this.components.Add(name, component);
 			Type t = component.GetType();
-			while (!t.Equals(typeof(Component)))
+			do
 			{
 				this.componentsByType[t] = component;
 				t = t.BaseType;
 			}
+			while (t.Assembly != Entity.componentBindAssembly);
 			if (this.main != null)
 			{
 				component.Entity = this;
@@ -397,16 +345,17 @@ namespace Lemma.Components
 			}
 		}
 
-		public void AddWithoutOverwriting(string name, Component component)
+		public void AddWithoutOverwriting(string name, IComponent component)
 		{
 			this.components.Add(name, component);
 			Type t = component.GetType();
-			while (!t.Equals(typeof(Component)))
+			do
 			{
 				if (!this.componentsByType.ContainsKey(t))
 					this.componentsByType[t] = component;
 				t = t.BaseType;
 			}
+			while (t.Assembly != Entity.componentBindAssembly);
 			if (this.main != null)
 			{
 				component.Entity = this;
@@ -414,13 +363,13 @@ namespace Lemma.Components
 			}
 		}
 
-		public void Add(Component component)
+		public void Add(IComponent component)
 		{
 			component.Serialize = false;
 			this.Add(Guid.NewGuid().ToString(), component);
 		}
 
-		public void AddWithoutOverwriting(Component component)
+		public void AddWithoutOverwriting(IComponent component)
 		{
 			this.AddWithoutOverwriting(Guid.NewGuid().ToString(), component);
 		}
@@ -442,7 +391,7 @@ namespace Lemma.Components
 
 		public void RemoveComponent(string name)
 		{
-			Component c = null;
+			IComponent c = null;
 			this.components.TryGetValue(name, out c);
 			if (c != null)
 			{
@@ -457,9 +406,9 @@ namespace Lemma.Components
 			this.bindings.Remove(b);
 		}
 
-		public void Remove(Component c)
+		public void Remove(IComponent c)
 		{
-			foreach (KeyValuePair<string, Component> pair in this.components)
+			foreach (KeyValuePair<string, IComponent> pair in this.components)
 			{
 				if (pair.Value == c)
 				{
@@ -471,17 +420,17 @@ namespace Lemma.Components
 			this.removeComponentTypeMapping(c);
 		}
 
-		private void removeComponentTypeMapping(Component c)
+		private void removeComponentTypeMapping(IComponent c)
 		{
 			Type type = c.GetType();
-			while (!type.Equals(typeof(Component)))
+			do
 			{
-				Component typeComponent = null;
+				IComponent typeComponent = null;
 				this.componentsByType.TryGetValue(type, out typeComponent);
 				if (typeComponent == c)
 				{
 					bool foundReplacement = false;
-					foreach (Component c2 in this.components.Values)
+					foreach (IComponent c2 in this.components.Values)
 					{
 						if (c2.GetType().Equals(type))
 						{
@@ -495,6 +444,7 @@ namespace Lemma.Components
 				}
 				type = type.BaseType;
 			}
+			while (type.Assembly != Entity.componentBindAssembly);
 		}
 
 		public Property<T> GetProperty<T>()
@@ -543,16 +493,16 @@ namespace Lemma.Components
 			return (ListProperty<T>)result;
 		}
 
-		public T Get<T>() where T : Component
+		public T Get<T>() where T : IComponent
 		{
-			Component result = null;
+			IComponent result = null;
 			this.componentsByType.TryGetValue(typeof(T), out result);
 			return (T)result;
 		}
 
-		public T GetOrCreate<T>() where T : Component, new()
+		public T GetOrCreate<T>() where T : IComponent, new()
 		{
-			Component result = null;
+			IComponent result = null;
 			this.componentsByType.TryGetValue(typeof(T), out result);
 			if (result == null)
 			{
@@ -562,21 +512,21 @@ namespace Lemma.Components
 			return (T)result;
 		}
 
-		public IEnumerable<T> GetAll<T>() where T : Component
+		public IEnumerable<T> GetAll<T>() where T : IComponent
 		{
 			return this.components.Values.OfType<T>();
 		}
 
-		public T Get<T>(string name) where T : Component
+		public T Get<T>(string name) where T : IComponent
 		{
-			Component result = null;
+			IComponent result = null;
 			this.components.TryGetValue(name, out result);
 			return (T)result;
 		}
 
-		public T GetOrCreate<T>(string name) where T : Component, new()
+		public T GetOrCreate<T>(string name) where T : IComponent, new()
 		{
-			Component result = null;
+			IComponent result = null;
 			this.components.TryGetValue(name, out result);
 			if (result == null)
 			{
@@ -619,7 +569,7 @@ namespace Lemma.Components
 			if (this.Active)
 			{
 				this.Active = false;
-				foreach (Component c in this.components.Values.ToList())
+				foreach (IComponent c in this.components.Values.ToList())
 					c.Delete.Execute();
 				this.components.Clear();
 				foreach (IBinding b in this.bindings)

@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using System.Collections;
+using ComponentBind;
 
 namespace Lemma.Components
 {
 	[XmlInclude(typeof(AI.Task))]
 	[XmlInclude(typeof(AI.State))]
-	public class AI : Component, IUpdateableComponent
+	public class AI : Component<Main>, IUpdateableComponent
 	{
 		public class Task
 		{

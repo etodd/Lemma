@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +12,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma.Components
 {
-	public class UIComponent : Component
+	public class UIComponent : Component<Main>
 	{
 		private UIRenderer _renderer;
 		protected UIRenderer renderer
@@ -84,7 +84,7 @@ namespace Lemma.Components
 
 		protected bool layoutDirty;
 
-		public override void SetMain(Main _main)
+		public override void SetMain(BaseMain _main)
 		{
 			base.SetMain(_main);
 			foreach (UIComponent child in this.Children)

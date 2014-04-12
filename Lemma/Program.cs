@@ -1,4 +1,4 @@
-using System;
+using System; using ComponentBind;
 using Microsoft.Xna.Framework;
 using System.IO;
 using System.Reflection;

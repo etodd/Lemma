@@ -11,10 +11,11 @@ using Lemma.Factories;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
 using System.IO;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class VoiceActor : Component, IUpdateableComponent, IEditorUIComponent
+	public class VoiceActor : Component<Main>, IUpdateableComponent, IEditorUIComponent
 	{
 		private AnimatedModel model;
 

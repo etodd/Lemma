@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Audio;
 
 namespace Lemma.Factories
 {
-	public class OrbFactory : Factory
+	public class OrbFactory : Factory<Main>
 	{
 		private Random random = new Random();
 

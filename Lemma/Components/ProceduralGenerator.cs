@@ -5,10 +5,11 @@ using System.Text;
 using System.Xml.Serialization;
 using Microsoft.Xna.Framework;
 using Lemma.Factories;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class ProceduralGenerator : Component
+	public class ProceduralGenerator : Component<Main>
 	{
 		// =========================
 		// Classic 2D and 3D perlin noise implementation

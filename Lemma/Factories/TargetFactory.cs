@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace Lemma.Factories
 {
-	public class TargetFactory : Factory
+	public class TargetFactory : Factory<Main>
 	{
 		public static ListProperty<Transform> Positions = new ListProperty<Transform>();
 

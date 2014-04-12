@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +7,7 @@ using Lemma.Components;
 
 namespace Lemma.Factories
 {
-	public class ZoneFactory : Factory
+	public class ZoneFactory : Factory<Main>
 	{
 		public ZoneFactory()
 		{
@@ -63,7 +63,7 @@ namespace Lemma.Factories
 
 			Zone zone = result.Get<Zone>();
 
-			EntityConnectable.AttachEditorComponents(result, main, zone.ConnectedEntities);
+			EntityConnectable.AttachEditorComponents(result, zone.ConnectedEntities);
 
 			zone.Add(new CommandBinding<Entity>(result.GetCommand<Entity>("ToggleEntityConnected"), delegate(Entity entity)
 			{

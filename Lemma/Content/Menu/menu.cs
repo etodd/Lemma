@@ -120,6 +120,7 @@ else
 	ListContainer languages = new ListContainer();
 	languages.Orientation.Value = ListContainer.ListOrientation.Vertical;
 	languages.Alignment.Value = ListContainer.ListAlignment.Max;
+	languages.Spacing.Value = 0.0f;
 	languageMenu.Children.Add(languages);
 	
 	foreach (GameMain.Config.Lang language in GameMain.Languages)

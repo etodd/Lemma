@@ -1,13 +1,13 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
 
-namespace Lemma.Components
+namespace ComponentBind
 {
-	public class Transform : Component
+	public class Transform : Component<BaseMain>
 	{
 		public Property<Vector3> Position = new Property<Vector3> { Editable = true };
 		public Property<Quaternion> Quaternion = new Property<Quaternion> { Editable = true };

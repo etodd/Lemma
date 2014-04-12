@@ -8,10 +8,11 @@ using Microsoft.Xna.Framework.Graphics;
 using Lemma.Util;
 using System.Xml.Serialization;
 using Lemma.Factories;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class PlayerCylinderTrigger : Component, IUpdateableComponent
+	public class PlayerCylinderTrigger : Component<Main>, IUpdateableComponent
 	{
 		public Property<float> Radius = new Property<float> { Value = 5.0f };
 		public Property<float> Top = new Property<float> { Value = 10.0f };

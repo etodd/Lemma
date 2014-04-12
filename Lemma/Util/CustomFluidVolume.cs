@@ -1,4 +1,4 @@
-using System;
+using System; using ComponentBind;
 using System.Collections.Generic;
 using BEPUphysics.BroadPhaseSystems;
 using BEPUphysics.BroadPhaseEntries;
@@ -336,7 +336,7 @@ namespace Lemma.Util
 					if (submergedVolume < entityEntry.Entity.Volume)
 					{
 						// The entity is intersecting the surface
-						Component tag = entityEntry.Tag as Component ?? entityEntry.Entity.Tag as Component;
+						IComponent tag = entityEntry.Tag as IComponent ?? entityEntry.Entity.Tag as IComponent;
 						if (tag != null)
 						{
 							lock (this.NotifyEntries)

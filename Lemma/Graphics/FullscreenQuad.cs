@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Content;
 
 namespace Lemma.Components
 {
-	public class FullscreenQuad : Component, IDrawableAlphaComponent
+	public class FullscreenQuad : Component<Main>, IDrawableAlphaComponent
 	{
 		/// <summary>
 		/// A struct that represents a single vertex in the

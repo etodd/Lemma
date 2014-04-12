@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,7 @@ using System.ComponentModel;
 
 namespace Lemma.Components
 {
-	public class PCInput : Component, IUpdateableComponent
+	public class PCInput : ComponentBind.Component<Main>, IUpdateableComponent
 	{
 		public enum MouseButton { None, LeftMouseButton, MiddleMouseButton, RightMouseButton }
 

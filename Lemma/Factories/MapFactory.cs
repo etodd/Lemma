@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +11,7 @@ using BEPUphysics.NarrowPhaseSystems.Pairs;
 
 namespace Lemma.Factories
 {
-	public class MapFactory : Factory
+	public class MapFactory : Factory<Main>
 	{
 		public MapFactory()
 		{

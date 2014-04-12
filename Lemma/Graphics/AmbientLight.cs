@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 namespace Lemma.Components
 {
-	public class AmbientLight : Component
+	public class AmbientLight : Component<Main>
 	{
 		public static readonly List<AmbientLight> All = new List<AmbientLight>();
 
@@ -17,7 +17,7 @@ namespace Lemma.Components
 			this.Enabled.Editable = true;
 		}
 
-		public override void SetMain(Main _main)
+		public override void SetMain(BaseMain _main)
 		{
 			base.SetMain(_main);
 			AmbientLight.All.Add(this);

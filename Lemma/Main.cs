@@ -1,4 +1,4 @@
-using System;
+using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -20,7 +20,7 @@ using System.Globalization;
 
 namespace Lemma
 {
-	public class Main : Microsoft.Xna.Framework.Game
+	public class Main : BaseMain
 	{
 		public Camera Camera;
 
@@ -32,18 +32,11 @@ namespace Lemma
 			}
 		}
 
-		public Command<Entity> EntityAdded = new Command<Entity>();
-		public Command<Entity> EntityRemoved = new Command<Entity>();
-
 		protected GraphicsDeviceManager graphics;
 		public Renderer Renderer;
 
 		protected RenderParameters renderParameters;
 		protected RenderTarget2D renderTarget;
-
-		public Property<float> ElapsedTime = new Property<float>();
-		public Property<float> TotalTime = new Property<float>();
-		public Property<float> TimeMultiplier = new Property<float> { Value = 1.0f };
 
 #if PERFORMANCE_MONITOR
 		private const float performanceUpdateTime = 0.5f;
@@ -75,8 +68,6 @@ namespace Lemma
 
 		public UIRenderer UI;
 
-		public Property<bool> EditorEnabled = new Property<bool> { Value = false };
-
 		// XACT stuff
 		public AudioEngine AudioEngine;
 		private WaveBank waveBank;
@@ -87,10 +78,6 @@ namespace Lemma
 
 		public Space Space;
 
-		public List<Entity> Entities;
-
-		private List<IComponent> componentsToRemove = new List<IComponent>();
-		private List<IComponent> componentsToAdd = new List<IComponent>();
 		private List<IComponent> components = new List<IComponent>();
 		private List<IDrawableComponent> drawables = new List<IDrawableComponent>();
 		private List<IUpdateableComponent> updateables = new List<IUpdateableComponent>();
@@ -101,8 +88,6 @@ namespace Lemma
 		private Point? resize;
 
 		public Property<string> MapFile = new Property<string>();
-
-		public GameTime GameTime;
 
 		public Property<KeyboardState> LastKeyboardState = new Property<KeyboardState>();
 		public Property<KeyboardState> KeyboardState = new Property<KeyboardState>();
@@ -117,104 +102,18 @@ namespace Lemma
 
 		public bool IsLoadingMap = false;
 
-		public object ComponentFlushLock = new object();
-
-		public void Add(Entity entity)
-		{
-			if (entity.Active)
-			{
-				this.Entities.Add(entity);
-				this.EntityAdded.Execute(entity);
-			}
-		}
-
 		public Command<string> LoadingMap = new Command<string>();
 
 		public Command MapLoaded = new Command();
 
-		public Property<bool> Paused = new Property<bool>();
+		protected NotifyBinding drawableBinding;
+		protected bool drawablesModified;
+		protected NotifyBinding alphaDrawableBinding;
+		protected bool alphaDrawablesModified;
+		protected NotifyBinding nonPostProcessedDrawableBinding;
+		protected bool nonPostProcessedDrawablesModified;
 
-		public virtual void ClearEntities(bool deleteEditor)
-		{
-			while (this.Entities.Count > (deleteEditor ? 0 : 1))
-			{
-				foreach (Entity entity in this.Entities.ToList())
-				{
-					if (entity.Type == "Editor")
-					{
-						if (deleteEditor)
-							this.Remove(entity);
-						else
-						{
-							// Deselect all entities, since they'll be gone anyway
-							Editor editor = entity.Get<Editor>();
-							editor.SelectedEntities.Clear();
-							if (editor.MapEditMode)
-								editor.MapEditMode.Value = false;
-							editor.TransformMode.Value = Editor.TransformModes.None;
-						}
-					}
-					else
-						this.Remove(entity);
-				}
-			}
-			this.FlushComponents();
-			Factory.Initialize(); // Clear factories to clear out any relationships that might confuse the garbage collector
-			GC.Collect();
-
-			this.TotalTime.Value = 0.0f;
-			Sound.Reset(this);
-			this.Renderer.BlurAmount.Value = 0.0f;
-			this.Renderer.Tint.Value = Vector3.One;
-			this.Renderer.Brightness.Value = 0.0f;
-			this.Renderer.SpeedBlurAmount.Value = 0.0f;
-			this.TimeMultiplier.Value = 1.0f;
-			this.Camera.Angles.Value = Vector3.Zero;
-		}
-
-		public void AddComponent(IComponent component)
-		{
-			if (this.EditorEnabled || component.Entity == null || component.Entity.CannotSuspend)
-				component.Suspended.Value = false;
-			if (component.NeedsAdded)
-			{
-				component.SetMain(this);
-				this.componentsToAdd.Add(component);
-			}
-		}
-
-		public void RemoveComponent(IComponent component)
-		{
-			this.componentsToRemove.Add(component);
-		}
-
-		public void Remove(Entity entity)
-		{
-			if (entity.Active)
-				entity.Delete.Execute();
-			else
-				this.Entities.Remove(entity);
-			this.EntityRemoved.Execute(entity);
-		}
-
-		public IEnumerable<Entity> Get(string type)
-		{
-			return this.Entities.Where(x => x.Type == type && x.Active);
-		}
-
-		public Entity GetByID(string id)
-		{
-			return this.Entities.FirstOrDefault(x => x.ID == id);
-		}
-
-		private NotifyBinding drawableBinding;
-		private bool drawablesModified;
-		private NotifyBinding alphaDrawableBinding;
-		private bool alphaDrawablesModified;
-		private NotifyBinding nonPostProcessedDrawableBinding;
-		private bool nonPostProcessedDrawablesModified;
-
-		public Command ReloadedContent = new Command();
+		public object ComponentFlushLock = new object();
 
 		private bool updating;
 		public void FlushComponents()
@@ -274,8 +173,49 @@ namespace Lemma
 			}
 		}
 
+		public virtual void ClearEntities(bool deleteEditor)
+		{
+			while (this.Entities.Count > (deleteEditor ? 0 : 1))
+			{
+				foreach (Entity entity in this.Entities.ToList())
+				{
+					if (entity.Type == "Editor")
+					{
+						if (deleteEditor)
+							this.Remove(entity);
+						else
+						{
+							// Deselect all entities, since they'll be gone anyway
+							Editor editor = entity.Get<Editor>();
+							editor.SelectedEntities.Clear();
+							if (editor.MapEditMode)
+								editor.MapEditMode.Value = false;
+							editor.TransformMode.Value = Editor.TransformModes.None;
+						}
+					}
+					else
+						this.Remove(entity);
+				}
+			}
+			this.FlushComponents();
+			Factory<Main>.Initialize(); // Clear factories to clear out any relationships that might confuse the garbage collector
+			GC.Collect();
+
+			this.TotalTime.Value = 0.0f;
+			Sound.Reset(this);
+			this.Renderer.BlurAmount.Value = 0.0f;
+			this.Renderer.Tint.Value = Vector3.One;
+			this.Renderer.Brightness.Value = 0.0f;
+			this.Renderer.SpeedBlurAmount.Value = 0.0f;
+			this.TimeMultiplier.Value = 1.0f;
+			this.Camera.Angles.Value = Vector3.Zero;
+		}
+
+		public Command ReloadedContent = new Command();
+
 		public Main()
 		{
+			Factory<Main>.Initialize();
 			this.Space = new Space();
 			this.ScreenSize.Value = new Point(this.Window.ClientBounds.Width, this.Window.ClientBounds.Height);
 
@@ -459,6 +399,13 @@ namespace Lemma
 
 		protected override void Update(GameTime gameTime)
 		{
+			if (gameTime.ElapsedGameTime.TotalSeconds > 0.1f)
+				gameTime = new GameTime(gameTime.TotalGameTime, new TimeSpan((long)(0.1f * (float)TimeSpan.TicksPerSecond)), true);
+			this.GameTime = gameTime;
+			this.ElapsedTime.Value = (float)gameTime.ElapsedGameTime.TotalSeconds * this.TimeMultiplier;
+			if (!this.Paused)
+				this.TotalTime.Value += this.ElapsedTime;
+
 			if (!this.EditorEnabled && this.mapLoaded)
 			{
 				IEnumerable<string> mapGlobalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("..\\GlobalScripts", Path.GetFileNameWithoutExtension(x)));
@@ -466,13 +413,6 @@ namespace Lemma
 					this.executeScript(scriptName);
 			}
 			this.mapLoaded = false;
-
-			if (gameTime.ElapsedGameTime.TotalSeconds > 0.1f)
-				gameTime = new GameTime(gameTime.TotalGameTime, new TimeSpan((long)(0.1f * (float)TimeSpan.TicksPerSecond)), true);
-			this.GameTime = gameTime;
-			this.ElapsedTime.Value = (float)gameTime.ElapsedGameTime.TotalSeconds * this.TimeMultiplier;
-			if (!this.Paused)
-				this.TotalTime.Value += this.ElapsedTime;
 
 			this.LastKeyboardState.Value = this.KeyboardState;
 			this.KeyboardState.Value = Microsoft.Xna.Framework.Input.Keyboard.GetState();
@@ -501,7 +441,7 @@ namespace Lemma
 			this.updating = true;
 			foreach (IUpdateableComponent c in this.updateables)
 			{
-				if (this.componentEnabled((Component)c))
+				if (this.componentEnabled((IComponent)c))
 					c.Update(this.ElapsedTime);
 			}
 			this.updating = false;

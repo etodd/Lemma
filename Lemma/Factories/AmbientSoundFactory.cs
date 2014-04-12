@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,7 @@ using Lemma.Util;
 
 namespace Lemma.Factories
 {
-	public class AmbientSoundFactory : Factory
+	public class AmbientSoundFactory : Factory<Main>
 	{
 		public AmbientSoundFactory()
 		{

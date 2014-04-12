@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,7 @@ using System.Xml.Serialization;
 
 namespace Lemma.Components
 {
-	public class LineDrawer : Component, IDrawableAlphaComponent
+	public class LineDrawer : Component<Main>, IDrawableAlphaComponent
 	{
 		public struct Line
 		{

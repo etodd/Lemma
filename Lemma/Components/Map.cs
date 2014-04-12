@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +23,17 @@ using BEPUphysics.Materials;
 
 namespace Lemma.Components
 {
-	public class Map : Component
+	[XmlInclude(typeof(Map.CellState))]
+	[XmlInclude(typeof(Property<Map.CellState>))]
+	[XmlInclude(typeof(ListProperty<Map.CellState>))]
+	[XmlInclude(typeof(Map.Coordinate))]
+	[XmlInclude(typeof(ListProperty<Map.Coordinate>))]
+	[XmlInclude(typeof(ListProperty<Map.Box>))]
+	[XmlInclude(typeof(Property<Map.Coordinate>))]
+	[XmlInclude(typeof(Direction))]
+	[XmlInclude(typeof(Property<Direction>))]
+	[XmlInclude(typeof(ListProperty<Direction>))]
+	public class Map : ComponentBind.Component<Main>
 	{
 		[XmlIgnore]
 		public object Lock = new object();
@@ -189,7 +199,7 @@ namespace Lemma.Components
 				model.GetFloatParameter("Tiling").Value = this.Tiling;
 			}
 
-			public void ApplyToBlock(Entity block)
+			public void ApplyToBlock(ComponentBind.Entity block)
 			{
 				block.GetProperty<string>("CollisionSoundCue").Value = this.RubbleCue;
 				block.Get<PhysicsBlock>().Box.Mass = this.Density;
@@ -1193,7 +1203,7 @@ namespace Lemma.Components
 								{
 									// Just create a temporary physics block instead of a full-blown map
 									Coordinate coord = new Coordinate { X = firstBox.X, Y = firstBox.Y, Z = firstBox.Z };
-									Entity block = blockFactory.CreateAndBind(main);
+									ComponentBind.Entity block = blockFactory.CreateAndBind(main);
 									block.Get<Transform>().Matrix.Value = this.Transform;
 									block.Get<Transform>().Position.Value = this.GetAbsolutePosition(coord);
 									firstBox.Type.ApplyToBlock(block);
@@ -1202,7 +1212,7 @@ namespace Lemma.Components
 								}
 								else
 								{
-									Entity newMap = factory.CreateAndBind(spawn.Source.main, firstBox.X, firstBox.Y, firstBox.Z);
+									ComponentBind.Entity newMap = factory.CreateAndBind(spawn.Source.main, firstBox.X, firstBox.Y, firstBox.Z);
 									newMap.Get<Transform>().Matrix.Value = spawn.Source.Transform;
 									DynamicMap newMapComponent = newMap.Get<DynamicMap>();
 									newMapComponent.Offset.Value = spawn.Source.Offset;

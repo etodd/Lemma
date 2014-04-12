@@ -1,6 +1,6 @@
 ﻿// Stolen and adapted from http://www.codeguru.com/csharp/csharp/cs_misc/designtechniques/article.php/c12527
 
-using System;
+using System; using ComponentBind;
 using System.Collections;
 using System.Collections.Generic;
 

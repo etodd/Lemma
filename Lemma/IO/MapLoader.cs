@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -16,6 +16,60 @@ namespace Lemma.IO
 	{
 		public const string MapDirectory = "Content\\Game";
 		public const string MapExtension = "map";
+
+		public static Type[] IncludedTypes = new[]
+		{
+			typeof(AudioListener),
+			typeof(PlayerTrigger),
+			typeof(Trigger),
+			typeof(PlayerCylinderTrigger),
+			typeof(Map),
+			typeof(DynamicMap),
+			typeof(PlayerSpawn),
+			typeof(Sound),
+			typeof(Timer),
+			typeof(Model),
+			typeof(AnimatedModel),
+			typeof(Water),
+			typeof(TextElement),
+			typeof(AmbientLight),
+			typeof(DirectionalLight),
+			typeof(PointLight),
+			typeof(SpotLight),
+			typeof(Script),
+			typeof(Fog),
+			typeof(ModelInstance),
+			typeof(ModelInstance.ModelInstanceSystem),
+			typeof(Zone),
+			typeof(PhysicsBlock),
+			typeof(Player),
+			typeof(ParticleEmitter),
+			typeof(PhysicsSphere),
+			typeof(ModelAlpha),
+			typeof(EnemyBase),
+			typeof(Agent),
+			typeof(AI),
+			typeof(PID),
+			typeof(PID3),
+			typeof(PlayerFactory.RespawnLocation),
+			typeof(ListProperty<PlayerFactory.RespawnLocation>),
+			typeof(WorldFactory.ScheduledBlock),
+			typeof(ListProperty<WorldFactory.ScheduledBlock>),
+			typeof(VoxelChaseAI),
+			typeof(VoiceActor),
+			typeof(FillMapFactory.CoordinateEntry),
+			typeof(ListProperty<FillMapFactory.CoordinateEntry>),
+			typeof(Phone),
+			typeof(RaycastAI),
+			typeof(SignalTower),
+		};
+
+		public static XmlSerializer Serializer;
+
+		static MapLoader()
+		{
+			MapLoader.Serializer = new XmlSerializer(typeof(List<Entity>), MapLoader.IncludedTypes);
+		}
 
 		public static void Load(Main main, string directory, string filename, bool deleteEditor = true)
 		{
@@ -49,7 +103,7 @@ namespace Lemma.IO
 			List<Entity> entities = null;
 			try
 			{
-				entities = (List<Entity>)new XmlSerializer(typeof(List<Entity>)).Deserialize(stream);
+				entities = (List<Entity>)MapLoader.Serializer.Deserialize(stream);
 			}
 			catch (InvalidOperationException e)
 			{
@@ -58,7 +112,7 @@ namespace Lemma.IO
 
 			foreach (Entity entity in entities)
 			{
-				Factory factory = Factory.Get(entity.Type);
+				Factory<Main> factory = Factory<Main>.Get(entity.Type);
 				factory.Bind(entity, main);
 				main.Add(entity);
 			}
@@ -94,7 +148,7 @@ namespace Lemma.IO
 
 		public static void Save(Main main, Stream stream)
 		{
-			new XmlSerializer(typeof(List<Entity>)).Serialize(stream, main.Entities.Where(x => x.Serialize && x.Active).ToList());
+			MapLoader.Serializer.Serialize(stream, main.Entities.Where(x => x.Serialize && x.Active).ToList());
 		}
 
 		public static void Reload(Main main, bool deleteEditor = true)
@@ -102,18 +156,17 @@ namespace Lemma.IO
 			main.LoadingMap.Execute(main.MapFile);
 			using (Stream stream = new MemoryStream())
 			{
-				XmlSerializer serializer = new XmlSerializer(typeof(List<Entity>));
-				serializer.Serialize(stream, main.Entities.Where(x => x.Serialize).ToList());
+				MapLoader.Serializer.Serialize(stream, main.Entities.Where(x => x.Serialize).ToList());
 
 				main.ClearEntities(deleteEditor);
 
 				stream.Seek(0, SeekOrigin.Begin);
 
-				List<Entity> entities = (List<Entity>)serializer.Deserialize(stream);
+				List<Entity> entities = (List<Entity>)Serializer.Deserialize(stream);
 
 				foreach (Entity entity in entities)
 				{
-					Factory factory = Factory.Get(entity.Type);
+					Factory<Main> factory = Factory<Main>.Get(entity.Type);
 					factory.Bind(entity, main);
 					main.Add(entity);
 				}

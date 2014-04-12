@@ -91,6 +91,7 @@
     <Compile Include="AnalyticsForm.designer.cs">
       <DependentUpon>AnalyticsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ComponentInterfaces.cs" />
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Analytics.cs" />
@@ -187,14 +188,9 @@
     <Compile Include="Graphics\ParticleSystem.cs" />
     <Compile Include="UI\TextElement.cs" />
     <Compile Include="Components\AudioListener.cs" />
-    <Compile Include="Components\Binding.cs" />
     <Compile Include="Factories\DirectionalLightFactory.cs" />
     <Compile Include="Factories\PlayerSpawnFactory.cs" />
-    <Compile Include="Components\Command.cs" />
-    <Compile Include="Components\CommandBinding.cs" />
     <Compile Include="Factories\MapFactory.cs" />
-    <Compile Include="Factories\Factory.cs" />
-    <Compile Include="Components\Transform.cs" />
     <Compile Include="Components\Timer.cs" />
     <Compile Include="IO\FPSInput.cs" />
     <Compile Include="UI\UIComponent.cs" />
@@ -208,9 +204,6 @@
     <Compile Include="Util\PriorityQueue.cs" />
     <Compile Include="Util\ScriptBase.cs" />
     <Compile Include="Util\VectorExtensions.cs" />
-    <Compile Include="Components\Property.cs" />
-    <Compile Include="Components\Component.cs" />
-    <Compile Include="Components\Entity.cs" />
     <Compile Include="Graphics\AnimatedModel.cs" />
     <Compile Include="Graphics\FullscreenQuad.cs" />
     <Compile Include="Graphics\LightingManager.cs" />
@@ -246,6 +239,10 @@
       <Project>{E3AAEB61-D7DF-4E7E-A75B-B5282D2FF3F5}</Project>
       <Name>BEPUutilities</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ComponentBind\ComponentBind.csproj">
+      <Project>{2D0637AB-A380-4C97-A329-BF7C40C99495}</Project>
+      <Name>ComponentBind</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Excel\Excel.csproj">
       <Project>{4CB0690E-3E7A-497C-9116-D52024F63195}</Project>
       <Name>Excel</Name>
@@ -253,6 +250,10 @@
     <ProjectReference Include="..\SkinnedModel\SkinnedModelContent.csproj">
       <Project>{882A32E7-CB48-4E63-8180-0D1859575723}</Project>
       <Name>SkinnedModelContent</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wwise\Wwise.csproj">
+      <Project>{B1452F01-704F-44CD-BAB5-2A15F8E5C2F1}</Project>
+      <Name>Wwise</Name>
     </ProjectReference>
     <ProjectReference Include="Content\EngineContent.XNA.contentproj">
       <Project>{6D5DBC4B-1DE9-47B2-92AF-546C5D1E4268}</Project>

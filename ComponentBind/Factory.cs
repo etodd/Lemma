@@ -2,50 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Lemma.Components;
 using Microsoft.Xna.Framework;
 using System.Collections;
 using System.Reflection;
 using System.Xml.Serialization;
 
-namespace Lemma.Factories
+namespace ComponentBind
 {
 	public class Factory
 	{
-		static Factory()
-		{
-			Factory.Initialize();
-		}
-
-		public static void Initialize()
-		{
-			Factory.factories.Clear();
-			Factory.factoriesByType.Clear();
-			Type baseType = typeof(Factory);
-			foreach (Type type in Assembly.GetExecutingAssembly().GetTypes().Where(t => t != baseType && baseType.IsAssignableFrom(t)))
-			{
-				Factory factory = (Factory)type.GetConstructor(new Type[] { }).Invoke(new object[] { });
-				Factory.factories.Add(type.Name.Replace("Factory", ""), factory);
-				Factory.factoriesByType.Add(type, factory);
-			}
-		}
-
-		protected Vector3 Color = Vector3.One;
 		protected static Dictionary<string, Factory> factories = new Dictionary<string, Factory>();
 		protected static Dictionary<Type, Factory> factoriesByType = new Dictionary<Type, Factory>();
-
-		private int spawnIndex = 1;
-		public int SpawnIndex
-		{
-			get
-			{
-				return this.spawnIndex;
-			}
-			set
-			{
-				this.spawnIndex = value;
-			}
-		}
 
 		public static T Get<T>() where T : Factory
 		{
@@ -61,29 +28,55 @@ namespace Lemma.Factories
 			return result;
 		}
 
-		public static Entity Create(Main main, string type)
+		public Vector3 Color = Vector3.One;
+
+		public int SpawnIndex = 1;
+	}
+
+	public class Factory<MainClass> : Factory
+		where MainClass : BaseMain
+	{
+		static Factory()
 		{
-			return Factory.factories[type].Create(main);
+			Factory<MainClass>.Initialize();
 		}
 
-		public static Entity CreateAndBind(Main main, string type)
+		public static void Initialize()
 		{
-			return Factory.factories[type].CreateAndBind(main);
+			Factory.factories.Clear();
+			Factory.factoriesByType.Clear();
+			Type baseType = typeof(Factory<MainClass>);
+			foreach (Type type in Assembly.GetEntryAssembly().GetTypes().Where(t => t != baseType && baseType.IsAssignableFrom(t)))
+			{
+				if (!type.ContainsGenericParameters)
+				{
+					Factory factory = (Factory)type.GetConstructor(new Type[] { }).Invoke(new object[] { });
+					Factory.factories.Add(type.Name.Replace("Factory", ""), factory);
+					Factory.factoriesByType.Add(type, factory);
+				}
+			}
 		}
 
-		public virtual Entity Create(Main main)
+		public static new Factory<MainClass> Get(string type)
+		{
+			Factory result = null;
+			Factory.factories.TryGetValue(type, out result);
+			return (Factory<MainClass>)result;
+		}
+
+		public virtual Entity Create(MainClass main)
 		{
 			return null;
 		}
 
-		public Entity CreateAndBind(Main main)
+		public Entity CreateAndBind(MainClass main)
 		{
 			Entity result = this.Create(main);
 			this.Bind(result, main, true);
 			return result;
 		}
 
-		public void SetMain(Entity result, Main main)
+		public void SetMain(Entity result, MainClass main)
 		{
 			this.SpawnIndex++;
 			result.SetMain(main);
@@ -91,33 +84,22 @@ namespace Lemma.Factories
 				this.AttachEditorComponents(result, main);
 		}
 
-		public virtual void Bind(Entity result, Main main, bool creating = false)
+		public virtual void Bind(Entity result, MainClass main, bool creating = false)
 		{
 			this.SetMain(result, main);
 		}
 
-		public virtual void AttachEditorComponents(Entity result, Main main)
+		public static Action<Factory<MainClass>, Entity, MainClass> DefaultEditorComponents;
+
+		public virtual void AttachEditorComponents(Entity result, MainClass main)
 		{
-			Transform transform = result.Get<Transform>();
-			if (transform == null)
-				return;
-
-			Model model = new Model();
-			model.Filename.Value = "Models\\sphere";
-			model.Color.Value = new Vector3(this.Color.X, this.Color.Y, this.Color.Z);
-			model.IsInstanced.Value = false;
-			model.Scale.Value = new Vector3(0.5f);
-			model.Editable = false;
-			model.Serialize = false;
-
-			result.Add("EditorModel", model);
-
-			model.Add(new Binding<Matrix, Vector3>(model.Transform, x => Matrix.CreateTranslation(x), transform.Position));
+			if (Factory<MainClass>.DefaultEditorComponents != null)
+				Factory<MainClass>.DefaultEditorComponents(this, result, main);
 		}
 
-		public static Entity Duplicate(Main main, Entity source)
+		public static Entity Duplicate(MainClass main, Entity source)
 		{
-			Entity dest = Factory.factories[source.Type].CreateAndBind(main);
+			Entity dest = ((Factory<MainClass>)Factory.factories[source.Type]).CreateAndBind(main);
 
 			Dictionary<string, IProperty> destProperties = dest.PropertyDictionary;
 			foreach (KeyValuePair<string, IProperty> pair in source.PropertyDictionary.Where(x => x.Key != "ID"))
@@ -134,12 +116,12 @@ namespace Lemma.Factories
 				}
 			}
 
-			Dictionary<string, Component> destComponents = dest.ComponentDictionary;
-			foreach (KeyValuePair<string, Component> pair in source.ComponentDictionary)
+			Dictionary<string, IComponent> destComponents = dest.ComponentDictionary;
+			foreach (KeyValuePair<string, IComponent> pair in source.ComponentDictionary)
 			{
 				if (pair.Value.Serialize)
 				{
-					Component destComponent = destComponents[pair.Key];
+					IComponent destComponent = destComponents[pair.Key];
 					foreach (FieldInfo field in pair.Value.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance))
 					{
 						if (!typeof(IProperty).IsAssignableFrom(field.FieldType) || field.GetCustomAttributes(true).FirstOrDefault(x => typeof(XmlIgnoreAttribute).IsAssignableFrom(x.GetType())) != null)

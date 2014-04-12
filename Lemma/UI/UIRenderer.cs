@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma.Components
 {
-	public class UIRenderer : Component, IUpdateableComponent, INonPostProcessedDrawableComponent, IDrawablePreFrameComponent
+	public class UIRenderer : Component<Main>, IUpdateableComponent, INonPostProcessedDrawableComponent, IDrawablePreFrameComponent
 	{
 		public class RootUIComponent : UIComponent
 		{
@@ -89,7 +89,7 @@ namespace Lemma.Components
 			this.needResize = true;
 		}
 
-		public override void SetMain(Main _main)
+		public override void SetMain(BaseMain _main)
 		{
 			base.SetMain(_main);
 			this.main.AddComponent(this.Root);

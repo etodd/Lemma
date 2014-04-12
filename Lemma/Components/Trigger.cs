@@ -8,10 +8,11 @@ using Microsoft.Xna.Framework.Graphics;
 using Lemma.Util;
 using System.Xml.Serialization;
 using Lemma.Factories;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class Trigger : Component, IUpdateableComponent
+	public class Trigger : Component<Main>, IUpdateableComponent
 	{
 		public Property<float> Radius = new Property<float> { Value = 10.0f };
 		public Property<Vector3> Position = new Property<Vector3> { Editable = false };

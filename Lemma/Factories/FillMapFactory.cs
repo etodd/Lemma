@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -160,7 +160,7 @@ namespace Lemma.Factories
 
 			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
 
-			EntityConnectable.AttachEditorComponents(result, main, result.GetOrMakeProperty<Entity.Handle>("Target"));
+			EntityConnectable.AttachEditorComponents(result, result.GetOrMakeProperty<Entity.Handle>("Target"));
 		}
 	}
 }

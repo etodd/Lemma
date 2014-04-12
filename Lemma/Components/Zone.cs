@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class Zone : Component
+	public class Zone : Component<Main>
 	{
 		public enum BuildMode { CanBuild, NoBuild, ExclusiveBuild };
 

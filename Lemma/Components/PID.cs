@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class PID : Component, IUpdateableComponent
+	public class PID : Component<Main>, IUpdateableComponent
 	{
 		public Property<float> Input = new Property<float> { Editable = false };
 		public Property<float> Target = new Property<float> { Editable = false };
@@ -35,7 +36,7 @@ namespace Lemma.Components
 		}
 	}
 
-	public class PID3 : Component, IUpdateableComponent
+	public class PID3 : Component<Main>, IUpdateableComponent
 	{
 		public Property<Vector3> Input = new Property<Vector3> { Editable = false };
 		public Property<Vector3> Target = new Property<Vector3> { Editable = false };

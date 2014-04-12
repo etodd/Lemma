@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma.Factories
 {
-	public class RainFactory : Factory
+	public class RainFactory : Factory<Main>
 	{
 		public RainFactory()
 		{

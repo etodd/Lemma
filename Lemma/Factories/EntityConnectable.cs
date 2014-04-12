@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +9,7 @@ namespace Lemma.Factories
 {
 	public class EntityConnectable
 	{
-		public static void AttachEditorComponents(Entity result, Main main, Property<Entity.Handle> target)
+		public static void AttachEditorComponents(Entity result, Property<Entity.Handle> target)
 		{
 			Transform transform = result.Get<Transform>();
 
@@ -53,7 +53,7 @@ namespace Lemma.Factories
 			result.Add(connectionLines);
 		}
 
-		public static void AttachEditorComponents(Entity result, Main main, ListProperty<Entity.Handle> target)
+		public static void AttachEditorComponents(Entity result, ListProperty<Entity.Handle> target)
 		{
 			Transform transform = result.Get<Transform>();
 

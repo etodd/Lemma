@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +7,7 @@ using Lemma.Components;
 
 namespace Lemma.Factories
 {
-	public class SpotLightFactory : Factory
+	public class SpotLightFactory : Factory<Main>
 	{
 		public SpotLightFactory()
 		{

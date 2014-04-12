@@ -6,10 +6,17 @@ using System.Xml.Serialization;
 using System.Collections;
 using Microsoft.Xna.Framework;
 using System.ComponentModel;
+using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class Phone : Component, IUpdateableComponent
+	[XmlInclude(typeof(Phone.Message))]
+	[XmlInclude(typeof(ListProperty<Phone.Message>))]
+	[XmlInclude(typeof(Phone.Schedule))]
+	[XmlInclude(typeof(ListProperty<Phone.Schedule>))]
+	[XmlInclude(typeof(Phone.Ans))]
+	[XmlInclude(typeof(ListProperty<Phone.Ans>))]
+	public class Phone : ComponentBind.Component<Main>, IUpdateableComponent
 	{
 		public class Message
 		{

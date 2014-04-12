@@ -8,14 +8,14 @@
 #endregion
 
 #region Using Statements
-using System;
+using System; using ComponentBind;
 using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
 #endregion
 
 namespace Lemma.Components
 {
-	public class ParticleEmitter : Component, IUpdateableComponent
+	public class ParticleEmitter : Component<Main>, IUpdateableComponent
 	{
 		protected float timeBetweenParticles = 0.1f;
 
