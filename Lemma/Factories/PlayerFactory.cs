@@ -35,20 +35,12 @@ namespace Lemma.Factories
 			Transform transform = new Transform();
 			AnimatedModel model = new AnimatedModel();
 			AnimatedModel firstPersonModel = new AnimatedModel();
-			AudioListener audioListener = new AudioListener();
-			Sound footsteps = new Sound();
-			Sound wind = new Sound();
-			wind.Is3D.Value = false;
-			wind.Cue.Value = "Speed";
 			Timer footstepTimer = new Timer();
 
 			result.Add("Player", player);
 			result.Add("Transform", transform);
 			result.Add("FirstPersonModel", firstPersonModel);
 			result.Add("Model", model);
-			result.Add("AudioListener", audioListener);
-			result.Add("Footsteps", footsteps);
-			result.Add("SpeedSound", wind);
 			result.Add("FootstepTimer", footstepTimer);
 
 			model.Editable = false;
@@ -127,8 +119,6 @@ namespace Lemma.Factories
 			input.EnabledWhenPaused.Value = false;
 			result.Add("Input", input);
 
-			AudioListener audioListener = result.Get<AudioListener>();
-			Sound footsteps = result.Get<Sound>("Footsteps");
 			Timer footstepTimer = result.Get<Timer>("FootstepTimer");
 
 			Property<bool> phoneActive = result.GetOrMakeProperty<bool>("PhoneActive");
@@ -210,7 +200,7 @@ namespace Lemma.Factories
 			result.Add(new CommandBinding(player.HealthDepleted, delegate()
 			{
 				Session.Recorder.Event(main, "DieFromHealth");
-				Sound.PlayCue(main, "Death");
+				AkSoundEngine.PostEvent("Play_death", result);
 				((GameMain)main).RespawnDistance = GameMain.KilledRespawnDistance;
 				((GameMain)main).RespawnInterval = GameMain.KilledRespawnInterval;
 			}));
@@ -295,6 +285,8 @@ namespace Lemma.Factories
 			debug.Add(new Binding<string, Vector3>(debug.Text, x => x.Length().ToString(), player.LinearVelocity));
 			*/
 
+			// TODO: Figure out Wwise volume parameter
+			/*
 			Sound speedSound = result.Get<Sound>("SpeedSound");
 			speedSound.Add(new Binding<float, Vector3>(speedSound.GetProperty("Volume"), delegate(Vector3 velocity)
 			{
@@ -307,12 +299,16 @@ namespace Lemma.Factories
 			}, player.LinearVelocity));
 			speedSound.Play.Execute();
 			speedSound.GetProperty("Volume").Value = 0.0f;
+			*/
 
+			// TODO: Figure out Wwise slow-motion sound
+			/*
 			Sound slowmoSound = result.GetOrCreate<Sound>("SlowmoSound");
 			slowmoSound.Serialize = false;
 			slowmoSound.Is3D.Value = false;
 			slowmoSound.Cue.Value = "Slowmo";
-			slowmoSound.Add(new Binding<bool>(slowmoSound.IsPlaying, player.SlowMotion));
+			slowmoSound.Add(new NotifyBinding<bool>(slowmoSound.IsPlaying, player.SlowMotion));
+			*/
 
 			// Determine if the player is swimming
 			update.Add(delegate(float dt)
@@ -398,9 +394,6 @@ namespace Lemma.Factories
 			model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateTranslation(0, (player.Height * -0.5f) - player.SupportHeight, 0) * Matrix.CreateRotationY(rotation) * transform.Matrix, transform.Matrix, rotation, player.Height, player.SupportHeight));
 			firstPersonModel.Add(new Binding<Matrix>(firstPersonModel.Transform, model.Transform));
 			firstPersonModel.Add(new Binding<Vector3>(firstPersonModel.Scale, model.Scale));
-			audioListener.Add(new Binding<Vector3>(audioListener.Position, main.Camera.Position));
-			audioListener.Add(new Binding<Vector3>(audioListener.Forward, main.Camera.Forward));
-			audioListener.Add(new Binding<Vector3>(audioListener.Velocity, player.LinearVelocity));
 
 			Map.GlobalRaycastResult groundRaycast = new Map.GlobalRaycastResult();
 
@@ -505,17 +498,16 @@ namespace Lemma.Factories
 				{
 					if (groundRaycast.Map != null)
 					{
-						footsteps.Cue.Value = groundRaycast.Map[groundRaycast.Coordinate.Value].FootstepCue;
-						footsteps.Play.Execute();
+						if (!player.Crouched)
+							AkSoundEngine.PostEvent("Footstep_Play", result);
+						// TODO: Figure out Wwise material parameter
+						//footsteps.Cue.Value = groundRaycast.Map[groundRaycast.Coordinate.Value].FootstepCue;
 					}
 				}
-				else if (wallRunState != Player.WallRun.Down && wallRunState != Player.WallRun.Reverse)
-					footsteps.Play.Execute();
+				else if (wallRunState != Player.WallRun.Down && wallRunState != Player.WallRun.Reverse && !player.Crouched)
+					AkSoundEngine.PostEvent("Footstep_Play", result);
 			}));
 			footstepTimer.Add(new Binding<bool>(footstepTimer.Enabled, () => player.WallRunState.Value != Player.WallRun.None || (player.MovementDirection.Value.LengthSquared() > 0.0f && player.IsSupported && player.EnableWalking), player.MovementDirection, player.IsSupported, player.EnableWalking, player.WallRunState));
-			footsteps.Add(new Binding<Vector3>(footsteps.Position, x => x - new Vector3(0, player.Height * 0.5f, 0), transform.Position));
-			footsteps.Add(new Binding<Vector3>(footsteps.Velocity, player.LinearVelocity));
-			footsteps.Add(new Binding<bool>(footsteps.Enabled, x => !x, player.Crouched));
 
 			main.IsMouseVisible.Value = false;
 
@@ -720,7 +712,7 @@ namespace Lemma.Factories
 							if (main.TotalTime > lastLandAnimationPlayed + 0.5f && !player.Crouched)
 							{
 								footstepTimer.Command.Execute();
-								Sound.PlayCue(main, "Land", transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0));
+								AkSoundEngine.PostEvent("Play_land", result);
 							}
 							lastLandAnimationPlayed = main.TotalTime;
 						}
@@ -893,7 +885,7 @@ namespace Lemma.Factories
 						(
 							new Animation.Execute(delegate()
 							{
-								Sound.PlayCue(main, "BuildBlock", position, 1.0f, 0.03f);
+								AkSoundEngine.PostEvent("Play_block_instantiate", position);
 							}),
 							new Animation.Delay(0.06f)
 						),
@@ -1260,7 +1252,8 @@ namespace Lemma.Factories
 					Map.Coordinate coord = wallRunMap.GetCoordinate(pos);
 					Map.Coordinate wallCoord = coord.Move(wallDirection, 2);
 					Map.CellState wallType = wallRunMap[wallCoord];
-					footsteps.Cue.Value = wallType.FootstepCue;
+					// TODO: Figure out Wwise material parameter
+					//footsteps.Cue.Value = wallType.FootstepCue;
 					if (!wallCoord.Equivalent(lastWallCoord))
 					{
 						walkedOn.Execute(wallRunMap, wallCoord, wallDirection);
@@ -1660,8 +1653,9 @@ namespace Lemma.Factories
 					Map.CellState wallType = wallJumpMap[wallCoordinate];
 					if (wallType.ID == 0) // Empty. Must be a block possibility that hasn't been instantiated yet
 						wallType = WorldFactory.StatesByName["Temporary"];
-					footsteps.Cue.Value = wallType.FootstepCue;
-					footsteps.Play.Execute();
+					// TODO: Figure out Wwise material parameter
+					//footsteps.Cue.Value = wallType.FootstepCue;
+					AkSoundEngine.PostEvent("Footstep_Play", result);
 
 					walkedOn.Execute(wallJumpMap, wallCoordinate, wallNormalDirection.GetReverse());
 
@@ -1877,7 +1871,7 @@ namespace Lemma.Factories
 						player.HasTraction.Value = false;
 					}
 
-					Sound.PlayCue(main, vaulting ? "Vault" : "Jump", transform.Position);
+					AkSoundEngine.PostEvent(vaulting ? "Vault_Play" : "Jump_Play", result);
 
 					model.Stop("Vault", "Jump", "JumpLeft", "JumpRight", "JumpBackward");
 					if (vaulting)
@@ -1919,7 +1913,7 @@ namespace Lemma.Factories
 					deactivateWallRun();
 
 					// Play a footstep sound since we're jumping off the ground
-					footsteps.Play.Execute();
+					AkSoundEngine.PostEvent("Footstep_Play", result);
 
 					return true;
 				}
@@ -2292,7 +2286,7 @@ namespace Lemma.Factories
 						rotationLocked.Value = true;
 
 						footstepTimer.Command.Execute(); // We just landed; play a footstep sound
-						Sound.PlayCue(main, "Skill Roll", playerPos);
+						AkSoundEngine.PostEvent("Skill_Roll_Play", result);
 
 						model.StartClip("Roll", 5, false);
 
@@ -2384,7 +2378,7 @@ namespace Lemma.Factories
 					result.Add(new Animation
 					(
 						new Animation.Delay(0.25f),
-						new Animation.Execute(delegate() { Sound.PlayCue(main, "Kick", transform.Position); })
+						new Animation.Execute(delegate() { AkSoundEngine.PostEvent("Kick_Play", result); })
 					));
 					model.StartClip("Kick", 5, false);
 
@@ -2493,11 +2487,6 @@ namespace Lemma.Factories
 			phoneLight.Enabled.Value = false;
 			phoneLight.Attenuation.Value = 0.35f;
 			phoneLight.Add(new Binding<Vector3, Matrix>(phoneLight.Position, x => x.Translation, screen.Transform));
-
-			Sound phoneSound = result.GetOrCreate<Sound>("PhoneSound");
-			phoneSound.Cue.Value = "Phone";
-			phoneSound.Is3D.Value = true;
-			phoneSound.Add(new Binding<Vector3>(phoneSound.Position, phoneLight.Position));
 
 			const float screenScale = 0.0007f;
 			screen.Scale.Value = new Vector3(1.0f, (float)phoneUi.RenderTargetSize.Value.Y * screenScale, (float)phoneUi.RenderTargetSize.Value.X * screenScale);
@@ -2968,7 +2957,7 @@ namespace Lemma.Factories
 							new Animation.Vector2MoveTo(lastMessage.Size, originalSize, 0.25f)
 						));
 
-						phoneSound.Play.Execute();
+						AkSoundEngine.PostEvent("Phone_Play", result);
 						if (togglePhoneMessage == null && phone.Schedules.Count == 0 && phone.ActiveAnswers.Count == 0) // No more messages incoming, and no more answers to give
 							togglePhoneMessage = ((GameMain)main).ShowMessage(result, "[{{TogglePhone}}]");
 					}));

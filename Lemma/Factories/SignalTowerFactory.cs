@@ -59,18 +59,12 @@ namespace Lemma.Factories
 			tower.Add(new CommandBinding<Entity>(trigger.PlayerExited, tower.PlayerExitedRange));
 			tower.Add(new Binding<Entity.Handle>(tower.Player, trigger.Player));
 
-			Sound loop = result.GetOrCreate<Sound>("LoopSound");
-			loop.Serialize = false;
-			loop.Cue.Value = "Signal Tower Loop";
-			loop.Is3D.Value = true;
-			loop.Add(new Binding<Vector3>(loop.Position, trigger.Position));
-			loop.IsPlaying.Value = true;
+			if (!main.EditorEnabled)
+				AkSoundEngine.PostEvent("Signal_tower_loop", result);
+			
+			SoundKiller.Add(result, "Stop_signal_tower_loop");
 
-			Sound activate = result.GetOrCreate<Sound>("ActivateSound");
-			activate.Serialize = false;
-			activate.Cue.Value = "Signal Tower Activate";
-			activate.Is3D.Value = true;
-			activate.Add(new Binding<Vector3>(activate.Position, trigger.Position));
+			AkGameObjectTracker.Attach(result, trigger.Position);
 
 			ParticleEmitter distortionEmitter = result.GetOrCreate<ParticleEmitter>("DistortionEmitter");
 			distortionEmitter.Serialize = false;
@@ -91,7 +85,7 @@ namespace Lemma.Factories
 			{
 				if (enterAnimation == null || !enterAnimation.Active)
 				{
-					activate.Play.Execute();
+					AkSoundEngine.PostEvent("Signal_tower_activate", result);
 					enterAnimation = new Animation
 					(
 						new Animation.FloatMoveTo(lightBaseRadius, 20.0f, 0.25f),

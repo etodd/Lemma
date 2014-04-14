@@ -213,9 +213,10 @@ namespace Lemma.Factories
 				float volume = contact.NormalImpulse * volumeMultiplier;
 				if (volume > 0.1f)
 				{
+					// TODO: figure out Wwise volume parameter
 					string cue = map[contact.Contact.Position - (contact.Contact.Normal * 0.25f)].RubbleCue;
 					if (!string.IsNullOrEmpty(cue))
-						Sound.PlayCue(main, cue, contact.Contact.Position, volume, 0.05f);
+						AkSoundEngine.PostEvent(cue, result);
 				}
 			}));
 		}

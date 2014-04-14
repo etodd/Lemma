@@ -40,16 +40,15 @@ namespace Lemma.Factories
 			Transform transform = result.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
-			Sound sound = result.GetOrCreate<Sound>("LoopSound");
-			sound.Serialize = false;
-			sound.Cue.Value = "Cubes";
-			sound.Is3D.Value = true;
-			sound.IsPlaying.Value = true;
-			sound.Add(new Binding<Vector3>(sound.Position, transform.Position));
+			AkSoundEngine.PostEvent("Play_evil_cubes", result);
+
+			// TODO: Figure out Wwise volume property
+			/*
 			Property<float> volume = sound.GetProperty("Volume");
 
 			const float defaultVolume = 0.5f;
 			volume.Value = defaultVolume;
+			*/
 
 			AI ai = result.GetOrCreate<AI>();
 
@@ -201,11 +200,11 @@ namespace Lemma.Factories
 				Name = "Alert",
 				Enter = delegate(AI.State previous)
 				{
-					volume.Value = 0.0f;
+					//volume.Value = 0.0f;
 				},
 				Exit = delegate(AI.State next)
 				{
-					volume.Value = defaultVolume;
+					//volume.Value = defaultVolume;
 				},
 				Tasks = new[]
 				{ 
@@ -304,7 +303,7 @@ namespace Lemma.Factories
 					Map.Coordinate? closest = map.FindClosestFilledCell(currentCoord, 10);
 					if (closest.HasValue)
 						raycastAI.MoveTo(closest.Value);
-					volume.Value = defaultVolume;
+					//volume.Value = defaultVolume;
 				},
 				Tasks = new[]
 				{ 
@@ -313,7 +312,7 @@ namespace Lemma.Factories
 					{
 						Action = delegate()
 						{
-							volume.Value = 1.0f;
+							//volume.Value = 1.0f;
 							if (ai.TimeInCurrentState.Value > 8.0f)
 							{
 								ai.CurrentState.Value = "Alert";

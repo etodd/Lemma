@@ -115,10 +115,10 @@ namespace Lemma.Components
 			float lastDamagedHealthValue = this.Health;
 			this.Health.Set = delegate(float value)
 			{
-				if (value < this.Health.InternalValue)
+				if (value < this.Health.InternalValue && this.damageTimer > 0.1f)
 				{
-					if (Sound.PlayCue(this.main, value < lastDamagedHealthValue - 0.2f ? "Damage" : "Small Damage", 1.0f, 0.5f) != null)
-						lastDamagedHealthValue = value;
+					AkSoundEngine.PostEvent(value < lastDamagedHealthValue - 0.2f ? "Play_damage" : "Play_small_damge", this.Entity);
+					lastDamagedHealthValue = value;
 					this.damageTimer = 0.0f;
 				}
 				this.Health.InternalValue = Math.Min(1.0f, Math.Max(0.0f, value));

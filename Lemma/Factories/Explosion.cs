@@ -26,7 +26,7 @@ namespace Lemma.Factories
 		private static void explode(Main main, Map map, Map.Coordinate coord, Vector3 pos, int radius, float physicsRadius)
 		{
 			// Kaboom
-			Sound.PlayCue(main, "Explosion", pos, 1.0f, 0.0f);
+			AkSoundEngine.PostEvent("Play_explosion", pos);
 
 			Entity lightEntity = Factory.Get<PointLightFactory>().CreateAndBind(main);
 			lightEntity.Serialize = false;

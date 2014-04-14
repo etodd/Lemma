@@ -59,13 +59,10 @@ namespace Lemma.Factories
 
 			physics.Add(new CommandBinding<Collidable, ContactCollection>(physics.Collided, delegate(Collidable collidable, ContactCollection contacts)
 			{
+				// TODO: figure out Wwise volume parameter
 				float volume = contacts[contacts.Count - 1].NormalImpulse * volumeMultiplier;
 				if (volume > 0.2f && soundCue.Value != null)
-				{
-					Sound sound = Sound.PlayCue(main, soundCue, transform.Position, volume, 0.05f);
-					if (sound != null)
-						sound.GetProperty("Pitch").Value = 1.0f;
-				}
+					AkSoundEngine.PostEvent(soundCue, result);
 			}));
 
 			result.Add("Fade", new Animation

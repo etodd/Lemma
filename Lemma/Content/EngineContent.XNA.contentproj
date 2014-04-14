@@ -274,6 +274,14 @@
       <Name>Strings</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Wwise\Windows\Init.bnk">
+      <Name>Init</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Wwise\Windows\Sounds.bnk">
+      <Name>Sounds</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Effects\Animation.fx">
@@ -417,11 +425,6 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_DiffuseTexture>skybox-night.jpg</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_EffectFileName>..\Effects\Skybox.fx</ProcessorParameters_EffectFileName>
-    </Compile>
-    <Compile Include="Sounds\Lemma.xap">
-      <Name>Lemma</Name>
-      <Importer>XactImporter</Importer>
-      <Processor>XactProcessor</Processor>
     </Compile>
     <Compile Include="Models\player.fbx">
       <Name>player</Name>

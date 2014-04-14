@@ -72,7 +72,6 @@
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
-    <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
@@ -95,11 +94,11 @@
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Analytics.cs" />
+    <Compile Include="Components\SoundKiller.cs" />
     <Compile Include="Components\SignalTower.cs" />
     <Compile Include="Components\Phone.cs" />
     <Compile Include="Components\RaycastAI.cs" />
     <Compile Include="Components\Trigger.cs" />
-    <Compile Include="Components\VoiceActor.cs" />
     <Compile Include="Components\PID.cs" />
     <Compile Include="Components\ProceduralGenerator.cs" />
     <Compile Include="Components\EnemyBase.cs" />
@@ -124,7 +123,6 @@
     <Compile Include="Factories\TriggerFactory.cs" />
     <Compile Include="Factories\VoxelEntity.cs" />
     <Compile Include="Factories\SmokeFactory.cs" />
-    <Compile Include="Factories\VoiceActorFactory.cs" />
     <Compile Include="Factories\LevitatorFactory.cs" />
     <Compile Include="Factories\Explosion.cs" />
     <Compile Include="Factories\OrbFactory.cs" />
@@ -169,14 +167,12 @@
     <Compile Include="Factories\SpotLightFactory.cs" />
     <Compile Include="Factories\PlayerTriggerFactory.cs" />
     <Compile Include="Factories\ScriptFactory.cs" />
-    <Compile Include="Factories\ZombieFactory.cs" />
     <Compile Include="Factories\PlayerFactory.cs" />
     <Compile Include="Factories\EditorFactory.cs" />
     <Compile Include="Factories\PointLightFactory.cs" />
     <Compile Include="Factories\TurretFactory.cs" />
     <Compile Include="Factories\WorldFactory.cs" />
     <Compile Include="Components\Water.cs" />
-    <Compile Include="Log.cs" />
     <Compile Include="Strings.cs" />
     <Compile Include="UI\Container.cs" />
     <Compile Include="UI\LineDrawer2D.cs" />
@@ -187,7 +183,6 @@
     <Compile Include="Graphics\ParticleEmitter.cs" />
     <Compile Include="Graphics\ParticleSystem.cs" />
     <Compile Include="UI\TextElement.cs" />
-    <Compile Include="Components\AudioListener.cs" />
     <Compile Include="Factories\DirectionalLightFactory.cs" />
     <Compile Include="Factories\PlayerSpawnFactory.cs" />
     <Compile Include="Factories\MapFactory.cs" />
@@ -212,7 +207,6 @@
     <Compile Include="IO\PCInput.cs" />
     <Compile Include="IO\MapLoader.cs" />
     <Compile Include="Graphics\Camera.cs" />
-    <Compile Include="Components\Sound.cs" />
     <Compile Include="Components\PlayerTrigger.cs" />
     <Compile Include="Util\Direction.cs" />
     <Compile Include="GameMain.cs" />
@@ -223,6 +217,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\LambdaComparer.cs" />
     <Compile Include="Util\RectangleExtensions.cs" />
+    <Compile Include="Wwise_IDs.cs" />
   </ItemGroup>
   <ItemGroup>
     <NestedContentProject Include="Content\Content.contentproj">

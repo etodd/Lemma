@@ -20,7 +20,6 @@ namespace Lemma.Factories
 			Entity result = new Entity(main, "RandomAmbientSound");
 
 			result.Add("Transform", new Transform());
-			result.Add("Sound", new Sound());
 			result.Add("MinimumInterval", new Property<float> { Value = 10.0f, Editable = true });
 			result.Add("MaximumInterval", new Property<float> { Value = 20.0f, Editable = true });
 
@@ -32,15 +31,16 @@ namespace Lemma.Factories
 			this.SetMain(result, main);
 
 			Transform transform = result.Get<Transform>();
-			Sound sound = result.Get<Sound>("Sound");
 
-			sound.Add(new Binding<Vector3>(sound.Position, transform.Position));
+			Property<bool> is3D = result.GetOrMakeProperty<bool>("Is3D", true);
 
-			result.CannotSuspendByDistance = !sound.Is3D;
+			Property<string> cue = result.GetOrMakeProperty<string>("Cue", true);
+
+			result.CannotSuspendByDistance = !is3D;
 			result.Add(new NotifyBinding(delegate()
 			{
-				result.CannotSuspendByDistance = !sound.Is3D;
-			}, sound.Is3D));
+				result.CannotSuspendByDistance = !is3D;
+			}, is3D));
 
 			Property<float> min = result.GetProperty<float>("MinimumInterval");
 			Property<float> max = result.GetProperty<float>("MaximumInterval");
@@ -51,11 +51,9 @@ namespace Lemma.Factories
 			{
 				delegate(float dt)
 				{
-					if (!sound.IsPlaying)
-						interval -= dt;
 					if (interval <= 0)
 					{
-						sound.Play.Execute();
+						AkSoundEngine.PostEvent(cue, result);
 						interval = min + ((float)random.NextDouble() * (max - min));
 					}
 				}

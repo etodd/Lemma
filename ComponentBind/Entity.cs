@@ -142,6 +142,11 @@ namespace ComponentBind
 
 		private Property<string> _idProperty;
 
+		public static uint CurrentID;
+
+		[XmlIgnore]
+		public uint InternalID;
+
 		private void createIdProperty()
 		{
 			this._idProperty = this.GetProperty<string>("ID");
@@ -284,6 +289,8 @@ namespace ComponentBind
 		{
 			// Called by XmlSerializer
 			this.Delete.Action = (Action)this.delete;
+			this.InternalID = Entity.CurrentID;
+			Entity.CurrentID++;
 		}
 
 		private static Assembly componentBindAssembly;

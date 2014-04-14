@@ -166,7 +166,7 @@ namespace Lemma.Factories
 						if (regenerate)
 							m.Regenerate();
 					}
-					Sound.PlayCue(main, "SnakeMove", transform.Position);
+					AkSoundEngine.PostEvent("Play_snake_move", result);
 
 					if (path.Count > 0)
 					{

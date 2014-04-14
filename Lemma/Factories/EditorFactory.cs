@@ -47,8 +47,6 @@ namespace Lemma.Factories
 			UIRenderer uiRenderer = new UIRenderer { Editable = false };
 			FPSInput input = new FPSInput { Editable = false };
 			input.EnabledWhenPaused.Value = true;
-			AudioListener audioListener = new AudioListener { Editable = false };
-
 			Scroller scroller = new Scroller();
 			scroller.Position.Value = new Vector2(10, 10);
 			scroller.AnchorPoint.Value = new Vector2(0, 0);
@@ -92,7 +90,6 @@ namespace Lemma.Factories
 			result.Add("UIRenderer", uiRenderer);
 			result.Add("Model", model);
 			result.Add("Input", input);
-			result.Add("AudioListener", audioListener);
 			result.Add("StartSpawnPoint", new Property<string>());
 			result.Add("ProceduralGenerator", new ProceduralGenerator());
 
@@ -259,10 +256,6 @@ namespace Lemma.Factories
 			uiRenderer.Add(new Binding<bool>(popup.Visible, ui.PopupVisible));
 			uiRenderer.Add(new Binding<string>(((TextElement)popup.GetChildByName("PopupSearch")).Text, ui.PopupSearchText));
 			uiRenderer.Add(new ListBinding<UIComponent>(popupList.Children, ui.PopupElements));
-
-			AudioListener audioListener = result.Get<AudioListener>();
-			audioListener.Add(new Binding<Vector3>(audioListener.Position, main.Camera.Position));
-			audioListener.Add(new Binding<Vector3>(audioListener.Forward, main.Camera.Forward));
 
 			model.Add(new Binding<bool>(model.Enabled, editor.MapEditMode));
 			model.Add(new Binding<Matrix>(model.Transform, () => editor.Orientation.Value * Matrix.CreateTranslation(editor.Position), editor.Position, editor.Orientation));

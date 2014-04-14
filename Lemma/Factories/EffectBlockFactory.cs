@@ -168,7 +168,7 @@ namespace Lemma.Factories
 											m.Empty(coord);
 										m.Fill(coord, WorldFactory.States[stateId]);
 										m.Regenerate();
-										Sound.PlayCue(main, "BuildBlock", transform.Position, 1.0f, 0.06f);
+										AkSoundEngine.PostEvent("Play_build_block", result);
 										result.Delete.Execute();
 										return;
 									}

@@ -417,9 +417,8 @@ namespace Lemma.Components
 						float volume = Math.Min(speed * collidable.Entity.Mass / 50.0f, 1.0f);
 						if (volume > 0.25f)
 						{
-							Sound splash = Sound.PlayCue(this.main, collidable.Entity.LinearVelocity.Y > 0.0f ? "Splash Out" : "Splash", collidable.Entity.Position, volume);
-							if (splash != null)
-								splash.GetProperty("Pitch").Value = Math.Max(0, 1.0f - (collidable.Entity.Mass / 4.0f));
+							// TODO: Figure out Wwise volume parameter
+							AkSoundEngine.PostEvent(collidable.Entity.LinearVelocity.Y > 0.0f ? "Splash Out" : "Splash", collidable.Entity.Position);
 						}
 					}
 

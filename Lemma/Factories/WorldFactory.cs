@@ -648,8 +648,9 @@ namespace Lemma.Factories
 
 			Property<float> reverbAmount = result.GetProperty<float>("ReverbAmount");
 			Property<float> reverbSize = result.GetProperty<float>("ReverbSize");
+			// TODO: figure out Wwise environment settings
 
-			Sound.ReverbSettings(main, reverbAmount, reverbSize);
+			//Sound.ReverbSettings(main, reverbAmount, reverbSize);
 
 			Vector3 lastUpdatedCameraPosition = new Vector3(float.MinValue);
 			bool lastFrameUpdated = false;
@@ -658,10 +659,12 @@ namespace Lemma.Factories
 			{
 				currentZone.Value = newZone;
 
+				/*
 				if (newZone != null)
 					Sound.ReverbSettings(main, newZone.ReverbAmount, newZone.ReverbSize);
 				else
 					Sound.ReverbSettings(main, reverbAmount, reverbSize);
+				*/
 
 				boxes = getActiveBoundingBoxes(main.Camera, newZone);
 				cameraPosition = main.Camera.Position;
@@ -759,7 +762,7 @@ namespace Lemma.Factories
 				light.Attenuation.Value = size;
 				light.Position.Value = pos;
 
-				Sound.PlayCue(main, "Sparks", pos, 1.0f, 0.05f);
+				AkSoundEngine.PostEvent("Play_sparks", pos);
 			};
 
 			Action<Entity> bindPlayer = delegate(Entity p)
@@ -795,7 +798,7 @@ namespace Lemma.Factories
 						// Floater. Delete the block after a delay.
 						Vector3 pos = map.GetAbsolutePosition(coord.Value);
 						ParticleEmitter.Emit(main, "Smoke", pos, 1.0f, 10);
-						Sound.PlayCue(main, "FragileDirt Crumble", pos);
+						AkSoundEngine.PostEvent("Play_FragileDirt_Crumble", pos);
 						result.Add(new Animation
 						(
 							new Animation.Delay(1.0f),
@@ -816,7 +819,7 @@ namespace Lemma.Factories
 						const int expandWidth = 1;
 						Vector3 pos = map.GetAbsolutePosition(coord.Value);
 						ParticleEmitter.Emit(main, "Smoke", pos, 1.0f, 10);
-						Sound.PlayCue(main, "FragileDirt Crumble", pos);
+						AkSoundEngine.PostEvent("Play_FragileDirt_Crumble", pos);
 						result.Add(new Animation
 						(
 							new Animation.Delay(1.5f),
@@ -1110,7 +1113,7 @@ namespace Lemma.Factories
 					{
 						ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
 						Vector3 pos = map.GetAbsolutePosition(coord);
-						Sound.PlayCue(main, "InfectedShatter", pos, 1.0f, 0.05f);
+						AkSoundEngine.PostEvent("Play_infected_shatter", pos);
 						for (int i = 0; i < 50; i++)
 						{
 							Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
@@ -1174,7 +1177,7 @@ namespace Lemma.Factories
 					{
 						ParticleSystem shatter = ParticleSystem.Get(main, "WhiteShatter");
 						Vector3 pos = map.GetAbsolutePosition(coord);
-						Sound.PlayCue(main, "WhiteShatter", pos, 1.0f, 0.05f);
+						AkSoundEngine.PostEvent("Play_white_shatter", pos);
 						for (int i = 0; i < 50; i++)
 						{
 							Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);

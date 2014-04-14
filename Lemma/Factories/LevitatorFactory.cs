@@ -37,17 +37,11 @@ namespace Lemma.Factories
 			Transform transform = result.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
-			Sound sound = result.GetOrCreate<Sound>("LoopSound");
-			sound.Serialize = false;
-			sound.Cue.Value = "Orb Loop";
-			sound.Is3D.Value = true;
-			sound.IsPlaying.Value = true;
-			sound.Add(new Binding<Vector3>(sound.Position, transform.Position));
-			Property<float> volume = sound.GetProperty("Volume");
-			Property<float> pitch = sound.GetProperty("Pitch");
-
+			// TODO: Figure out Wwise volume parameter
+			/*
 			const float defaultVolume = 0.5f;
 			volume.Value = defaultVolume;
+			*/
 
 			AI ai = result.GetOrCreate<AI>();
 
@@ -132,11 +126,11 @@ namespace Lemma.Factories
 				Name = "Idle",
 				Enter = delegate(AI.State previous)
 				{
-					pitch.Value = -0.5f;
+					//pitch.Value = -0.5f;
 				},
 				Exit = delegate(AI.State next)
 				{
-					pitch.Value = 0.0f;
+					//pitch.Value = 0.0f;
 				},
 				Tasks = new[]
 				{ 
@@ -170,11 +164,11 @@ namespace Lemma.Factories
 				Name = "Alert",
 				Enter = delegate(AI.State previous)
 				{
-					volume.Value = 0.0f;
+					//volume.Value = 0.0f;
 				},
 				Exit = delegate(AI.State next)
 				{
-					volume.Value = defaultVolume;
+					//volume.Value = defaultVolume;
 				},
 				Tasks = new[]
 				{ 
@@ -332,7 +326,7 @@ namespace Lemma.Factories
 							if (spawnedMap[center].ID != 0)
 							{
 								levitatingMap.Value = spawnedMap.Entity;
-								Sound.PlayCue(main, "InfectedShatter", transform.Position, 1.0f, 0.05f);
+								AkSoundEngine.PostEvent("Play_infected_shatter", result);
 								break;
 							}
 						}
@@ -495,8 +489,8 @@ namespace Lemma.Factories
 					Map.Coordinate? closest = map.FindClosestFilledCell(currentCoord, 10);
 					if (closest.HasValue)
 						raycastAI.MoveTo(closest.Value);
-					volume.Value = defaultVolume;
-					pitch.Value = 0.0f;
+					//volume.Value = defaultVolume;
+					//pitch.Value = 0.0f;
 				},
 				Tasks = new[]
 				{ 
@@ -505,8 +499,8 @@ namespace Lemma.Factories
 					{
 						Action = delegate()
 						{
-							volume.Value = 1.0f;
-							pitch.Value = 1.0f;
+							//volume.Value = 1.0f;
+							//pitch.Value = 1.0f;
 							Entity levitatingMapEntity = levitatingMap.Value.Target;
 							if (levitatingMapEntity == null || !levitatingMapEntity.Active || ai.TimeInCurrentState.Value > 8.0f)
 							{

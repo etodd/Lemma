@@ -37,17 +37,17 @@ namespace Lemma.Factories
 			Transform transform = result.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
-			Sound sound = result.GetOrCreate<Sound>("LoopSound");
-			sound.Serialize = false;
-			sound.Cue.Value = "Orb Loop";
-			sound.Is3D.Value = true;
-			sound.IsPlaying.Value = true;
-			sound.Add(new Binding<Vector3>(sound.Position, transform.Position));
+			if (!main.EditorEnabled)
+				AkSoundEngine.PostEvent("Play_cube_drone", result);
+
+			// TODO: figure out Wwise volume parameter
+			/*
 			Property<float> volume = sound.GetProperty("Volume");
 			Property<float> pitch = sound.GetProperty("Pitch");
 
 			const float defaultVolume = 0.5f;
 			volume.Value = defaultVolume;
+			*/
 
 			AI ai = result.GetOrCreate<AI>("AI");
 
@@ -134,7 +134,7 @@ namespace Lemma.Factories
 				Name = "Idle",
 				Enter = delegate(AI.State previous)
 				{
-					pitch.Value = -0.5f;
+					//pitch.Value = -0.5f;
 				},
 				Tasks = new[]
 				{ 
@@ -168,11 +168,11 @@ namespace Lemma.Factories
 				Name = "Alert",
 				Enter = delegate(AI.State previous)
 				{
-					volume.Value = 0.0f;
+					//volume.Value = 0.0f;
 				},
 				Exit = delegate(AI.State next)
 				{
-					volume.Value = defaultVolume;
+					//volume.Value = defaultVolume;
 				},
 				Tasks = new[]
 				{ 
@@ -217,7 +217,7 @@ namespace Lemma.Factories
 				Name = "Chase",
 				Enter = delegate(AI.State previous)
 				{
-					pitch.Value = 0.0f;
+					//pitch.Value = 0.0f;
 				},
 				Exit = delegate(AI.State next)
 				{
@@ -299,7 +299,7 @@ namespace Lemma.Factories
 				Exit = delegate(AI.State next)
 				{
 					coordQueue.Clear();
-					volume.Value = defaultVolume;
+					//volume.Value = defaultVolume;
 				},
 				Tasks = new[]
 				{ 
@@ -340,8 +340,8 @@ namespace Lemma.Factories
 					{
 						Action = delegate()
 						{
-							volume.Value = MathHelper.Lerp(defaultVolume, 1.0f, ai.TimeInCurrentState.Value / 2.0f);
-							pitch.Value = MathHelper.Lerp(0.0f, 0.5f, ai.TimeInCurrentState.Value / 2.0f);
+							//volume.Value = MathHelper.Lerp(defaultVolume, 1.0f, ai.TimeInCurrentState.Value / 2.0f);
+							//pitch.Value = MathHelper.Lerp(0.0f, 0.5f, ai.TimeInCurrentState.Value / 2.0f);
 							if (coordQueue.Count == 0)
 							{
 								// Explode
@@ -361,13 +361,12 @@ namespace Lemma.Factories
 				Enter = delegate(AI.State previous)
 				{
 					exploded.Value = false;
-					sound.Stop.Execute(AudioStopOptions.AsAuthored);
+					AkSoundEngine.PostEvent("Stop_cube_drone", result);
 				},
 				Exit = delegate(AI.State next)
 				{
 					exploded.Value = false;
-					volume.Value = defaultVolume;
-					sound.Play.Execute();
+					AkSoundEngine.PostEvent("Play_cube_drone", result);
 				},
 				Tasks = new[]
 				{

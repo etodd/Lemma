@@ -23,6 +23,7 @@ namespace Lemma
 	public class Main : BaseMain
 	{
 		public Camera Camera;
+		public AkListener Listener;
 
 		public new GraphicsDevice GraphicsDevice
 		{
@@ -67,12 +68,6 @@ namespace Lemma
 		public LightingManager LightingManager;
 
 		public UIRenderer UI;
-
-		// XACT stuff
-		public AudioEngine AudioEngine;
-		private WaveBank waveBank;
-		private WaveBank compressedWaveBank;
-		public SoundBank SoundBank;
 
 		private bool mapLoaded;
 
@@ -202,7 +197,6 @@ namespace Lemma
 			GC.Collect();
 
 			this.TotalTime.Value = 0.0f;
-			Sound.Reset(this);
 			this.Renderer.BlurAmount.Value = 0.0f;
 			this.Renderer.Tint.Value = Vector3.One;
 			this.Renderer.Brightness.Value = 0.0f;
@@ -246,11 +240,6 @@ namespace Lemma
 
 			this.Entities = new List<Entity>();
 
-			this.AudioEngine = new AudioEngine("Content\\Sounds\\WinSettings.xgs");
-			this.waveBank = new WaveBank(this.AudioEngine, "Content\\Sounds\\Waves.xwb");
-			this.compressedWaveBank = new WaveBank(this.AudioEngine, "Content\\Sounds\\Compressed.xwb");
-			this.SoundBank = new SoundBank(this.AudioEngine, "Content\\Sounds\\Sounds.xsb");
-
 			this.Camera = new Camera();
 			this.Camera.Add(new Binding<Point>(this.Camera.ViewportSize, this.ScreenSize));
 			this.AddComponent(this.Camera);
@@ -268,7 +257,8 @@ namespace Lemma
 			this.TimeMultiplier.Set = delegate(float value)
 			{
 				this.TimeMultiplier.InternalValue = value;
-				this.AudioEngine.SetGlobalVariable("TimeShift", (value - 1.0f) * 12.0f);
+				// TODO: XACT -> Wwise
+				// this.AudioEngine.SetGlobalVariable("TimeShift", (value - 1.0f) * 12.0f);
 			};
 
 			new CommandBinding(this.MapLoaded, delegate()
@@ -284,12 +274,36 @@ namespace Lemma
 			updateLanguage();
 		}
 
+		public void Cleanup()
+		{
+			// Terminate Wwise
+			if (AkSoundEngine.IsInitialized())
+			{
+				AkSoundEngine.Term();
+				// NOTE: AkCallbackManager needs to handle last few events after sound engine terminates
+				// So it has to terminate after sound engine does.
+				AkCallbackManager.Term();
+			}
+		}
+
 		protected bool firstLoadContentCall = true;
 		
 		protected override void LoadContent()
 		{
 			if (this.firstLoadContentCall)
 			{
+				// Initialize Wwise
+				AkGlobalSoundEngineInitializer initializer = new AkGlobalSoundEngineInitializer();
+				initializer.basePath = Path.Combine(this.Content.RootDirectory, "Wwise");
+				this.AddComponent(initializer);
+
+				this.Listener = new AkListener();
+				this.Listener.Add(new Binding<Matrix>(this.Listener.Matrix, this.Camera.View));
+				this.AddComponent(this.Listener);
+
+				if (AkInMemBankLoader.LoadBank(AkInMemBankLoader.GetNonLocalizedBankPath(this, "Sounds.bnk")) != AKRESULT.AK_Success)
+					Log.d("Failed to load sound bank");
+
 				// First time loading content. Create the renderer.
 				this.LightingManager = new LightingManager();
 				this.AddComponent(this.LightingManager);
@@ -447,6 +461,8 @@ namespace Lemma
 			this.updating = false;
 			this.FlushComponents();
 
+			AkSoundEngine.RenderAudio();
+
 			if (this.drawableBinding == null)
 			{
 				this.drawableBinding = new NotifyBinding(delegate() { this.drawablesModified = true; }, this.drawables.Select(x => x.DrawOrder).ToArray());
@@ -486,8 +502,6 @@ namespace Lemma
 					return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
 				});
 			}
-
-			this.AudioEngine.Update();
 
 			if (this.resize != null && this.resize.Value.X > 0 && this.resize.Value.Y > 0)
 			{

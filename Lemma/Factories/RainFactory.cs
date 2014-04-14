@@ -46,11 +46,8 @@ namespace Lemma.Factories
 			emitter.Jitter.Value = new Vector3(kernelSpacing * kernelSize * 0.5f, 0.0f, kernelSpacing * kernelSize * 0.5f);
 			Transform transform = result.Get<Transform>();
 
-			Sound rainSound = result.GetOrCreate<Sound>("RainSound");
-			rainSound.Cue.Value = "Rain";
-			rainSound.Is3D.Value = false;
-			rainSound.IsPlaying.Value = true;
-			Property<float> rainSoundVolume = rainSound.GetProperty("Volume");
+			if (!main.EditorEnabled)
+				AkSoundEngine.PostEvent("Play_rain", result);
 
 			Components.DirectionalLight lightning = result.GetOrCreate<Components.DirectionalLight>("Lightning");
 			lightning.Enabled.Value = false;
@@ -100,7 +97,8 @@ namespace Lemma.Factories
 								averageHeight += Math.Max(cameraPos.Y, Math.Min(height, cameraPos.Y + rainStartHeight)) * audioKernel[x, y];
 							}
 						}
-						rainSoundVolume.Value = 1.0f - ((averageHeight - cameraPos.Y) / rainStartHeight);
+						// TODO: Figure out Wwise volume parameter
+						//rainSoundVolume.Value = 1.0f - ((averageHeight - cameraPos.Y) / rainStartHeight);
 					}
 				}
 			};
@@ -127,12 +125,15 @@ namespace Lemma.Factories
 					new Animation.Delay((1.0f - volume) * thunderMaxDelay),
 					new Animation.Execute(delegate()
 					{
-						Sound thunder = Sound.PlayCue(main, "Thunder", main.Camera.Position + Vector3.Normalize(new Vector3(2.0f * ((float)random.NextDouble() - 0.5f), 1.0f, 2.0f * ((float)random.NextDouble() - 0.5f))) * 1000.0f, volume);
-						if (thunder != null)
-							result.Add(thunder);
+						AkSoundEngine.PostEvent("Play_thunder", main.Camera.Position + Vector3.Normalize(new Vector3(2.0f * ((float)random.NextDouble() - 0.5f), 1.0f, 2.0f * ((float)random.NextDouble() - 0.5f))) * 1000.0f);
 					})
 				));
 				timer.Interval.Value = thunderIntervalMin + ((float)random.NextDouble() * (thunderIntervalMax - thunderIntervalMin));
+			}));
+
+			result.Add(new CommandBinding(result.Delete, delegate()
+			{
+				AkSoundEngine.PostEvent("Stop_thunder", result);
 			}));
 
 			if (ParticleSystem.Get(main, "Rain") == null)

@@ -19,14 +19,12 @@ namespace Lemma.IO
 
 		public static Type[] IncludedTypes = new[]
 		{
-			typeof(AudioListener),
 			typeof(PlayerTrigger),
 			typeof(Trigger),
 			typeof(PlayerCylinderTrigger),
 			typeof(Map),
 			typeof(DynamicMap),
 			typeof(PlayerSpawn),
-			typeof(Sound),
 			typeof(Timer),
 			typeof(Model),
 			typeof(AnimatedModel),
@@ -56,7 +54,6 @@ namespace Lemma.IO
 			typeof(WorldFactory.ScheduledBlock),
 			typeof(ListProperty<WorldFactory.ScheduledBlock>),
 			typeof(VoxelChaseAI),
-			typeof(VoiceActor),
 			typeof(FillMapFactory.CoordinateEntry),
 			typeof(ListProperty<FillMapFactory.CoordinateEntry>),
 			typeof(Phone),

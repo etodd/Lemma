@@ -134,9 +134,6 @@ namespace Lemma
 
 		private ListContainer messages;
 
-		private WaveBank musicWaveBank;
-		public SoundBank MusicBank;
-
 		public string Credits { get; private set; }
 
 		public GameMain()
@@ -302,9 +299,12 @@ namespace Lemma
 		{
 			base.ClearEntities(deleteEditor);
 			this.messages.Children.Clear();
+			// TODO: XACT -> Wwise
+			/*
 			this.AudioEngine.GetCategory("Music").Stop(AudioStopOptions.Immediate);
 			this.AudioEngine.GetCategory("Default").Stop(AudioStopOptions.Immediate);
 			this.AudioEngine.GetCategory("Ambient").Stop(AudioStopOptions.Immediate);
+			*/
 		}
 
 		private void copySave(string src, string dst)
@@ -360,11 +360,11 @@ namespace Lemma
 			result.Add(new NotifyBinding(delegate()
 			{
 				if (result.Highlighted)
-					Sound.PlayCue(this, "Mouse");
+					AkSoundEngine.PostEvent("Play_mouse_over", null);
 			}, result.Highlighted));
 			result.Add(new CommandBinding<Point>(result.MouseLeftUp, delegate(Point p)
 			{
-				Sound.PlayCue(this, "Click");
+				AkSoundEngine.PostEvent("Play_mouse_click", null);
 				if (action != null)
 					action();
 			}));
@@ -482,16 +482,6 @@ namespace Lemma
 			if (firstInitialization)
 			{
 				this.IsMouseVisible.Value = true;
-
-				try
-				{
-					this.musicWaveBank = new WaveBank(this.AudioEngine, Path.Combine(this.Content.RootDirectory, "Game\\Music\\Music.xwb"));
-					this.MusicBank = new SoundBank(this.AudioEngine, Path.Combine(this.Content.RootDirectory, "Game\\Music\\Music.xsb"));
-				}
-				catch (Exception)
-				{
-					// Don't HAVE to load music
-				}
 
 #if ANALYTICS
 				this.SessionRecorder = new Session.Recorder();
@@ -714,7 +704,8 @@ namespace Lemma
 
 					if (this.MapFile.Value != GameMain.MenuMap)
 					{
-						this.AudioEngine.GetCategory("Default").Pause();
+						// TODO: XACT -> Wwise
+						//this.AudioEngine.GetCategory("Default").Pause();
 					}
 				};
 
@@ -765,7 +756,8 @@ namespace Lemma
 
 					currentMenu.Value = null;
 
-					this.AudioEngine.GetCategory("Default").Resume();
+					// TODO: XACT -> Wwise
+					//this.AudioEngine.GetCategory("Default").Resume();
 				};
 
 				// Load / save menu

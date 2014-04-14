@@ -13,15 +13,22 @@ namespace Lemma
 		/// </summary>
 		public static void Main(string[] args)
 		{
+			string error = null;
 			GameMain main = null;
 			if (Debugger.IsAttached)
 			{
 				main = new GameMain();
-				main.Run();
+				try
+				{
+					main.Run();
+				}
+				catch (GameMain.ExitException)
+				{
+
+				}
 			}
 			else
 			{
-				string error = null;
 				try
 				{
 					main = new GameMain();
@@ -32,35 +39,36 @@ namespace Lemma
 					if (!(e is GameMain.ExitException))
 						error = e.ToString();
 				}
+			}
+			main.Cleanup();
 #if ANALYTICS
-				if (main.MapFile.Value == null || main.EditorEnabled)
-					main.SessionRecorder.Reset();
-				if (error == null)
-					main.SessionRecorder.RecordEvent("Exit");
-				else
-					main.SessionRecorder.RecordEvent("Crash", error);
-				main.SaveAnalytics();
+			if (main.MapFile.Value == null || main.EditorEnabled)
+				main.SessionRecorder.Reset();
+			if (error == null)
+				main.SessionRecorder.RecordEvent("Exit");
+			else
+				main.SessionRecorder.RecordEvent("Crash", error);
+			main.SaveAnalytics();
 
 #if MONOGAME
-				// TODO: MonoGame analytics form
+			// TODO: MonoGame analytics form
 #else
-				System.Windows.Forms.Application.EnableVisualStyles();
-				AnalyticsForm analyticsForm = new AnalyticsForm(main, error);
-				System.Windows.Forms.Application.Run(analyticsForm);
+			System.Windows.Forms.Application.EnableVisualStyles();
+			AnalyticsForm analyticsForm = new AnalyticsForm(main, error);
+			System.Windows.Forms.Application.Run(analyticsForm);
 #endif
 #else
 #if MONOGAME
-				// TODO: MonoGame error form
+			// TODO: MonoGame error form
 #else
-				if (error != null)
-				{
-					System.Windows.Forms.Application.EnableVisualStyles();
-					ErrorForm errorForm = new ErrorForm(error);
-					System.Windows.Forms.Application.Run(errorForm);
-				}
-#endif
-#endif
+			if (error != null)
+			{
+				System.Windows.Forms.Application.EnableVisualStyles();
+				ErrorForm errorForm = new ErrorForm(error);
+				System.Windows.Forms.Application.Run(errorForm);
 			}
+#endif
+#endif
 		}
 	}
 }

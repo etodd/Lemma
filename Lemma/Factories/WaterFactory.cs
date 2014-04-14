@@ -37,12 +37,8 @@ namespace Lemma.Factories
 			Transform transform = result.Get<Transform>();
 			Water water = result.Get<Water>();
 
-			Sound sound = result.GetOrCreate<Sound>("SoundLoop");
-			sound.Cue.Value = "Water Loop";
-			sound.IsPlaying.Value = true;
-			sound.Is3D.Value = true;
-			sound.Serialize = false;
-			sound.Editable = false;
+			if (!main.EditorEnabled)
+				AkSoundEngine.PostEvent("Play_water", result);
 
 			result.Add(new Updater
 			{
@@ -53,7 +49,7 @@ namespace Lemma.Factories
 					pos.X = Math.Max(box.Min.X, Math.Min(pos.X, box.Max.X));
 					pos.Y = transform.Position.Value.Y;
 					pos.Z = Math.Max(box.Min.Z, Math.Min(pos.Z, box.Max.Z));
-					sound.Position.Value = pos;
+					// TODO: Figure out how to update Wwise position
 				}
 			});
 

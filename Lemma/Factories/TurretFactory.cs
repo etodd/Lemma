@@ -39,20 +39,6 @@ namespace Lemma.Factories
 			pointLight.Editable = false;
 			pointLight.Add(new Binding<Vector3>(pointLight.Position, transform.Position));
 
-			Sound blastChargeSound = new Sound();
-			blastChargeSound.Cue.Value = "Blast Charge";
-			blastChargeSound.Serialize = false;
-			result.Add("BlastChargeSound", blastChargeSound);
-
-			Sound blastFireSound = new Sound();
-			blastFireSound.Cue.Value = "Blast Fire";
-			blastFireSound.Serialize = false;
-			result.Add("BlastFireSound", blastFireSound);
-
-			blastFireSound.Add(new Binding<Vector3>(blastFireSound.Position, transform.Position));
-
-			blastChargeSound.Add(new Binding<Vector3>(blastChargeSound.Position, transform.Position));
-
 			LineDrawer laser = new LineDrawer { Serialize = false };
 			result.Add(laser);
 
@@ -70,7 +56,7 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					Sound.PlayCue(main, "InfectedShatter", transform.Position, 1.0f, 0.05f);
+					AkSoundEngine.PostEvent("Play_infected_shatter", result);
 					ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
 					Random random = new Random();
 					for (int i = 0; i < 50; i++)
@@ -257,14 +243,14 @@ namespace Lemma.Factories
 				Name = "Firing",
 				Enter = delegate(AI.State last)
 				{
-					Sound.PlayCue(main, "Charge", transform.Position, 1.0f, 0.0f);
+					AkSoundEngine.PostEvent("Play_turret_charge", result);
 				},
 				Exit = delegate(AI.State next)
 				{
 					if (rayHit.Map != null && (rayHit.Position - transform.Position).Length() < 8.0f)
 						return; // Danger close, cease fire!
 
-					Sound.PlayCue(main, "Fire", transform.Position, 1.0f, 0.0f);
+					AkSoundEngine.PostEvent("Play_turret_fire", result);
 
 					Entity target = targetAgent.Value.Target;
 					if (target != null && target.Active)
@@ -275,7 +261,7 @@ namespace Lemma.Factories
 						{
 							float distance = toTarget.Length();
 							if (distance < rayHit.Distance)
-								Sound.PlayCue(main, "Miss", transform.Position + toReticle * distance);
+								AkSoundEngine.PostEvent("Play_turret_miss", transform.Position + toReticle * distance);
 						}
 					}
 

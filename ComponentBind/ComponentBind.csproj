@@ -49,6 +49,7 @@
     <Compile Include="Component.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="Factory.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Property.cs" />
     <Compile Include="Transform.cs" />
