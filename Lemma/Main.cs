@@ -238,6 +238,7 @@ namespace Lemma
 					this.physicsSum = Math.Max(this.physicsSum, timer.Elapsed.TotalSeconds);
 				}
 #endif
+				AkSoundEngine.RenderAudio();
 			}
 		}
 
@@ -313,9 +314,11 @@ namespace Lemma
 
 		public void Cleanup()
 		{
-			// Terminate Wwise
+			// Kill physics thread
 			this.alive = false;
-			this.physicsUpdate.WaitOne();
+			this.physicsUpdate.Set();
+
+			// Terminate Wwise
 			if (AkSoundEngine.IsInitialized())
 			{
 				AkSoundEngine.Term();
@@ -342,7 +345,7 @@ namespace Lemma
 				if (AkInMemBankLoader.LoadBank(AkInMemBankLoader.GetNonLocalizedBankPath("Sounds.bnk")) != AKRESULT.AK_Success)
 					Log.d("Failed to load sound bank");
 
-				// First time loading content. Create the renderer.
+				// Create the renderer.
 				this.LightingManager = new LightingManager();
 				this.AddComponent(this.LightingManager);
 				this.Renderer = new Renderer(this, this.ScreenSize, true, true, false);

@@ -1138,7 +1138,7 @@ namespace Lemma.Factories
 			input.Add(new Binding<bool>(input.EnableLook, () => editor.MapEditMode || (input.MiddleMouseButton && editor.TransformMode.Value == Editor.TransformModes.None), input.MiddleMouseButton, editor.MapEditMode, editor.TransformMode));
 			input.Add(new Binding<Vector3, Vector2>(camera.Angles, x => new Vector3(-x.Y, x.X, 0.0f), input.Mouse, () => input.EnableLook));
 			input.Add(new Binding<bool>(main.IsMouseVisible, x => !x, input.EnableLook));
-			editor.Add(new Binding<Vector3>(camera.Position, () => editor.Position.Value - (camera.Forward.Value * editor.CameraDistance), editor.Position, input.Mouse, editor.CameraDistance));
+			editor.Add(new Binding<Vector3>(camera.Position, () => editor.Position.Value - (camera.Forward.Value * editor.CameraDistance), editor.Position, camera.Forward, editor.CameraDistance));
 
 			PointLight editorLight = result.GetOrCreate<PointLight>("EditorLight");
 			editorLight.Serialize = false;
