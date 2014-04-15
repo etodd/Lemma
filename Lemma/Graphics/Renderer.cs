@@ -82,7 +82,7 @@ namespace Lemma.Components
 		public Property<bool> EnableSSAO = new Property<bool> { Value = true };
 		public Property<float> BloomThreshold = new Property<float> { Value = 0.9f };
 
-		public static readonly Color DefaultBackgroundColor = new Color(8.0f / 255.0f, 13.0f / 255.0f, 19.0f / 255.0f, 0.0f);
+		public static readonly Color DefaultBackgroundColor = new Color(16.0f / 255.0f, 26.0f / 255.0f, 38.0f / 255.0f, 0.0f);
 		public Property<Color> BackgroundColor = new Property<Color> { Value = Renderer.DefaultBackgroundColor };
 
 		private Point screenSize;

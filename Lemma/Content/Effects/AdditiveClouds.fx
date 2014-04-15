@@ -10,7 +10,7 @@ technique Render
 		ZWriteEnable = false;
 		AlphaBlendEnable = true;
 		SrcBlend = SrcAlpha;
-		DestBlend = InvSrcAlpha;
+		DestBlend = One;
 	
 		VertexShader = compile vs_3_0 RenderVS();
 		PixelShader = compile ps_3_0 CloudPS();
@@ -25,7 +25,7 @@ technique Clip
 		ZWriteEnable = false;
 		AlphaBlendEnable = true;
 		SrcBlend = SrcAlpha;
-		DestBlend = InvSrcAlpha;
+		DestBlend = One;
 
 		VertexShader = compile vs_3_0 RenderVS();
 		PixelShader = compile ps_3_0 CloudPS();
@@ -40,7 +40,7 @@ technique MotionBlur
 		ZWriteEnable = false;
 		AlphaBlendEnable = true;
 		SrcBlend = SrcAlpha;
-		DestBlend = InvSrcAlpha;
+		DestBlend = One;
 	
 		VertexShader = compile vs_3_0 RenderVS();
 		PixelShader = compile ps_3_0 CloudPS();
