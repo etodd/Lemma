@@ -21,14 +21,14 @@ public class AkInMemBankLoader : ComponentBind.Component<BaseMain>
 
 	public override void InitializeProperties()
 	{
-		string path = this.IsLocalized ? AkInMemBankLoader.GetLocalizedBankPath(this.main, this.Name) : AkInMemBankLoader.GetNonLocalizedBankPath(this.main, this.Name);
+		string path = this.IsLocalized ? AkInMemBankLoader.GetLocalizedBankPath(this.Name) : AkInMemBankLoader.GetNonLocalizedBankPath(this.Name);
 
 		uint id;
 		AkInMemBankLoader.DoLoadBank(path, out id, out this.pinnedArray, out this.pointer);
 		this.ID.Value = id;
 	}
 
-	protected override void delete()
+	public override void delete()
 	{
 		base.delete();
 		if (this.pointer != IntPtr.Zero)
@@ -39,14 +39,14 @@ public class AkInMemBankLoader : ComponentBind.Component<BaseMain>
 		}
 	}
 
-	public static string GetNonLocalizedBankPath(BaseMain main, string filename)
+	public static string GetNonLocalizedBankPath(string filename)
 	{
-		return Path.Combine(AkBankPath.GetPlatformBasePath(main), filename);
+		return Path.Combine(AkBankPath.GetPlatformBasePath(), filename);
 	}
 
-	public static string GetLocalizedBankPath(BaseMain main, string filename)
+	public static string GetLocalizedBankPath(string filename)
 	{
-		return Path.Combine(Path.Combine(AkBankPath.GetPlatformBasePath(main), AkGlobalSoundEngineInitializer.GetCurrentLanguage()), filename);
+		return Path.Combine(Path.Combine(AkBankPath.GetPlatformBasePath(), AkGlobalSoundEngineInitializer.GetCurrentLanguage()), filename);
 	}
 
 	public static AKRESULT LoadBank(string bankPath)

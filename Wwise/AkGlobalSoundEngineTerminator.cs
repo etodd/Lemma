@@ -28,7 +28,7 @@ public class AkGlobalSoundEngineTerminator : Component<BaseMain>
 		// Do nothing. AkGlobalSoundEngineTerminator handles sound engine initialization.
 	}
 
-	protected override void delete()
+	public override void delete()
 	{
 		base.delete();
 		this.Terminate();

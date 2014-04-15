@@ -124,7 +124,7 @@ namespace Lemma.Components
 			this.Transform.Changed();
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			base.delete();
 			if (this.Box.Space != null)

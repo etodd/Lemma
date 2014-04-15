@@ -378,7 +378,7 @@ namespace Lemma.Components
 			effect.Parameters["PointLightColor"].SetValue(light.Color);
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			base.delete();
 			this.shadowCamera.Delete.Execute();

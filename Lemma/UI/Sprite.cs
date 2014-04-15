@@ -34,11 +34,6 @@ namespace Lemma.Components
 				this.loadTexture(this.Image);
 		}
 
-		protected override void delete()
-		{
-			base.delete();
-		}
-
 		private void loadTexture(string file)
 		{
 			if (file == null)

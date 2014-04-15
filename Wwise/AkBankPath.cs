@@ -45,7 +45,7 @@ public class AkBankPath
 
 	public static string GetDefaultPath() { return defaultBasePath; }
 	
-	public static string GetFullBasePath(BaseMain main) 
+	public static string GetFullBasePath() 
 	{
 		// Get full path of base path
 #if UNITY_ANDROID && ! UNITY_EDITOR
@@ -68,10 +68,10 @@ public class AkBankPath
 		return fullBasePath;
 	}
 	
-	public static string GetPlatformBasePath(BaseMain main)
+	public static string GetPlatformBasePath()
 	{
 		// Combine base path with platform sub-folder
-		string platformBasePath = Path.Combine(GetFullBasePath(main), GetPlatformSubDirectory());
+		string platformBasePath = Path.Combine(GetFullBasePath(), GetPlatformSubDirectory());
 		
 		LazyAppendTrailingSeparator(ref platformBasePath);
 

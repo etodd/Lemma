@@ -124,7 +124,7 @@ namespace Lemma.Components
 				base.drawInstances(parameters, transform);
 			}
 
-			protected override void delete()
+			public override void delete()
 			{
 				base.delete();
 				this.modifiedParameters.Clear();
@@ -395,7 +395,7 @@ namespace Lemma.Components
 			return result;
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			base.delete();
 			if (this.model != null)

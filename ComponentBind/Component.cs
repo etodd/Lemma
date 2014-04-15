@@ -23,6 +23,7 @@ namespace ComponentBind
 		Command Delete { get; }
 		void LoadContent(bool reload);
 		void OnSave();
+		void delete();
 	}
 
 	public interface IUpdateableComponent : IComponent
@@ -100,7 +101,14 @@ namespace ComponentBind
 			this.Suspended = new Property<bool> { Value = false, Editable = false };
 			this.EnabledInEditMode = new Property<bool> { Value = true, Editable = false };
 			this.EnabledWhenPaused = new Property<bool> { Value = true, Editable = false };
-			this.Delete.Action = (Action)this.delete;
+			this.Delete.Action = delegate()
+			{
+				if (this.Active)
+				{
+					this.Active = false;
+					this.main.RemoveComponent(this);
+				}
+			};
 		}
 
 		public virtual void OnSave()
@@ -161,18 +169,13 @@ namespace ComponentBind
 			};
 		}
 
-		protected virtual void delete()
+		public virtual void delete()
 		{
-			if (this.Active)
-			{
-				this.Active = false;
-				if (this.Entity != null)
-					this.Entity.Remove(this);
-				foreach (IBinding binding in this.bindings)
-					binding.Delete();
-				this.bindings.Clear();
-				this.main.RemoveComponent(this);
-			}
+			if (this.Entity != null)
+				this.Entity.Remove(this);
+			foreach (IBinding binding in this.bindings)
+				binding.Delete();
+			this.bindings.Clear();
 		}
 	}
 }

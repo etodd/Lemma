@@ -310,7 +310,7 @@ namespace Lemma.Components
 			}
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			base.delete();
 			if (this.effect != null)

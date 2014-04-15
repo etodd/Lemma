@@ -39,7 +39,7 @@ public class AkGameObject : ComponentBind.Component<BaseMain>
 		}
 	}
 
-	protected override void delete()
+	public override void delete()
 	{
 		base.delete();
 		if (AkSoundEngine.IsInitialized())

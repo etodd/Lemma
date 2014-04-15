@@ -23,7 +23,7 @@ namespace Lemma.Components
 			AmbientLight.All.Add(this);
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			base.delete();
 			AmbientLight.All.Remove(this);

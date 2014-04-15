@@ -32,7 +32,7 @@ namespace Lemma.Components
 			PointLight.All.Add(this);
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			base.delete();
 			PointLight.All.Remove(this);

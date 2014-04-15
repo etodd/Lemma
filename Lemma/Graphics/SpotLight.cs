@@ -84,7 +84,7 @@ namespace Lemma.Components
 			SpotLight.All.Add(this);
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			base.delete();
 			SpotLight.All.Remove(this);

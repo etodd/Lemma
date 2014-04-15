@@ -60,7 +60,7 @@ namespace Lemma.Components
 			};
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			Entity player = this.Player.Value.Target;
 			if (player != null && player.Active)

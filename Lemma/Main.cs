@@ -111,73 +111,67 @@ namespace Lemma
 		protected NotifyBinding nonPostProcessedDrawableBinding;
 		protected bool nonPostProcessedDrawablesModified;
 
-		public object ComponentFlushLock = new object();
-
-		private bool updating;
 		public void FlushComponents()
 		{
-			if (this.updating)
-				return;
-
-			lock (this.ComponentFlushLock)
+			for (int i = 0; i < this.componentsToAdd.Count; i++)
 			{
-				foreach (IComponent c in this.componentsToAdd)
+				IComponent c = this.componentsToAdd[i];
+				this.components.Add(c);
+				Type t = c.GetType();
+				if (typeof(IDrawableComponent).IsAssignableFrom(t))
 				{
-					this.components.Add(c);
-					Type t = c.GetType();
-					if (typeof(IDrawableComponent).IsAssignableFrom(t))
+					this.drawables.Add((IDrawableComponent)c);
+					if (this.drawableBinding != null)
 					{
-						this.drawables.Add((IDrawableComponent)c);
-						if (this.drawableBinding != null)
-						{
-							this.drawableBinding.Delete();
-							this.drawableBinding = null;
-						}
-					}
-					if (typeof(IUpdateableComponent).IsAssignableFrom(t))
-						this.updateables.Add((IUpdateableComponent)c);
-					if (typeof(IDrawablePreFrameComponent).IsAssignableFrom(t))
-						this.preframeDrawables.Add((IDrawablePreFrameComponent)c);
-					if (typeof(INonPostProcessedDrawableComponent).IsAssignableFrom(t))
-						this.nonPostProcessedDrawables.Add((INonPostProcessedDrawableComponent)c);
-					if (typeof(IDrawableAlphaComponent).IsAssignableFrom(t))
-					{
-						this.alphaDrawables.Add((IDrawableAlphaComponent)c);
-						if (this.alphaDrawableBinding != null)
-						{
-							this.alphaDrawableBinding.Delete();
-							this.alphaDrawableBinding = null;
-						}
-					}
-					if (typeof(IDrawablePostAlphaComponent).IsAssignableFrom(t))
-					{
-						this.postAlphaDrawables.Add((IDrawablePostAlphaComponent)c);
-						if (this.postAlphaDrawableBinding != null)
-						{
-							this.postAlphaDrawableBinding.Delete();
-							this.postAlphaDrawableBinding = null;
-						}
+						this.drawableBinding.Delete();
+						this.drawableBinding = null;
 					}
 				}
-				this.componentsToAdd.Clear();
-
-				foreach (IComponent c in this.componentsToRemove)
+				if (typeof(IUpdateableComponent).IsAssignableFrom(t))
+					this.updateables.Add((IUpdateableComponent)c);
+				if (typeof(IDrawablePreFrameComponent).IsAssignableFrom(t))
+					this.preframeDrawables.Add((IDrawablePreFrameComponent)c);
+				if (typeof(INonPostProcessedDrawableComponent).IsAssignableFrom(t))
+					this.nonPostProcessedDrawables.Add((INonPostProcessedDrawableComponent)c);
+				if (typeof(IDrawableAlphaComponent).IsAssignableFrom(t))
 				{
-					Type t = c.GetType();
-					if (typeof(IUpdateableComponent).IsAssignableFrom(t))
-						this.updateables.Remove((IUpdateableComponent)c);
-					if (typeof(IDrawableComponent).IsAssignableFrom(t))
-						this.drawables.Remove((IDrawableComponent)c);
-					if (typeof(IDrawablePreFrameComponent).IsAssignableFrom(t))
-						this.preframeDrawables.Remove((IDrawablePreFrameComponent)c);
-					if (typeof(INonPostProcessedDrawableComponent).IsAssignableFrom(t))
-						this.nonPostProcessedDrawables.Remove((INonPostProcessedDrawableComponent)c);
-					if (typeof(IDrawableAlphaComponent).IsAssignableFrom(t))
-						this.alphaDrawables.Remove((IDrawableAlphaComponent)c);
-					this.components.Remove(c);
+					this.alphaDrawables.Add((IDrawableAlphaComponent)c);
+					if (this.alphaDrawableBinding != null)
+					{
+						this.alphaDrawableBinding.Delete();
+						this.alphaDrawableBinding = null;
+					}
 				}
-				this.componentsToRemove.Clear();
+				if (typeof(IDrawablePostAlphaComponent).IsAssignableFrom(t))
+				{
+					this.postAlphaDrawables.Add((IDrawablePostAlphaComponent)c);
+					if (this.postAlphaDrawableBinding != null)
+					{
+						this.postAlphaDrawableBinding.Delete();
+						this.postAlphaDrawableBinding = null;
+					}
+				}
 			}
+			this.componentsToAdd.Clear();
+
+			for (int i = 0; i < this.componentsToRemove.Count; i++)
+			{
+				IComponent c = this.componentsToRemove[i];
+				Type t = c.GetType();
+				if (typeof(IUpdateableComponent).IsAssignableFrom(t))
+					this.updateables.Remove((IUpdateableComponent)c);
+				if (typeof(IDrawableComponent).IsAssignableFrom(t))
+					this.drawables.Remove((IDrawableComponent)c);
+				if (typeof(IDrawablePreFrameComponent).IsAssignableFrom(t))
+					this.preframeDrawables.Remove((IDrawablePreFrameComponent)c);
+				if (typeof(INonPostProcessedDrawableComponent).IsAssignableFrom(t))
+					this.nonPostProcessedDrawables.Remove((INonPostProcessedDrawableComponent)c);
+				if (typeof(IDrawableAlphaComponent).IsAssignableFrom(t))
+					this.alphaDrawables.Remove((IDrawableAlphaComponent)c);
+				this.components.Remove(c);
+				c.delete();
+			}
+			this.componentsToRemove.Clear();
 		}
 
 		public virtual void ClearEntities(bool deleteEditor)
@@ -218,6 +212,34 @@ namespace Lemma
 		}
 
 		public Command ReloadedContent = new Command();
+
+		private Thread physicsThread;
+		private EventWaitHandle physicsUpdate = new EventWaitHandle(false, EventResetMode.AutoReset);
+		private object physicsLock = new object();
+
+		private bool alive = true;
+		private void physics()
+		{
+			while (true)
+			{
+				this.physicsUpdate.WaitOne();
+				if (!this.alive)
+					break;
+				lock (this.physicsLock)
+				{
+#if PERFORMANCE_MONITOR
+					Stopwatch timer = new Stopwatch();
+					timer.Start();
+#endif
+					if (!this.Paused && !this.EditorEnabled)
+						this.Space.Update(this.ElapsedTime);
+#if PERFORMANCE_MONITOR
+					timer.Stop();
+					this.physicsSum = Math.Max(this.physicsSum, timer.Elapsed.TotalSeconds);
+				}
+#endif
+			}
+		}
 
 		public Main()
 		{
@@ -284,11 +306,16 @@ namespace Lemma
 			};
 			new NotifyBinding(updateLanguage, this.Strings.Language);
 			updateLanguage();
+
+			this.physicsThread = new Thread(this.physics);
+			this.physicsThread.Start();
 		}
 
 		public void Cleanup()
 		{
 			// Terminate Wwise
+			this.alive = false;
+			this.physicsUpdate.WaitOne();
 			if (AkSoundEngine.IsInitialized())
 			{
 				AkSoundEngine.Term();
@@ -305,15 +332,14 @@ namespace Lemma
 			if (this.firstLoadContentCall)
 			{
 				// Initialize Wwise
-				AkGlobalSoundEngineInitializer initializer = new AkGlobalSoundEngineInitializer();
-				initializer.basePath = Path.Combine(this.Content.RootDirectory, "Wwise");
+				AkGlobalSoundEngineInitializer initializer = new AkGlobalSoundEngineInitializer(Path.Combine(this.Content.RootDirectory, "Wwise"));
 				this.AddComponent(initializer);
 
 				this.Listener = new AkListener();
 				this.Listener.Add(new Binding<Matrix>(this.Listener.Matrix, this.Camera.View));
 				this.AddComponent(this.Listener);
 
-				if (AkInMemBankLoader.LoadBank(AkInMemBankLoader.GetNonLocalizedBankPath(this, "Sounds.bnk")) != AKRESULT.AK_Success)
+				if (AkInMemBankLoader.LoadBank(AkInMemBankLoader.GetNonLocalizedBankPath("Sounds.bnk")) != AKRESULT.AK_Success)
 					Log.d("Failed to load sound bank");
 
 				// First time loading content. Create the renderer.
@@ -425,144 +451,136 @@ namespace Lemma
 
 		protected override void Update(GameTime gameTime)
 		{
-			if (gameTime.ElapsedGameTime.TotalSeconds > 0.1f)
-				gameTime = new GameTime(gameTime.TotalGameTime, new TimeSpan((long)(0.1f * (float)TimeSpan.TicksPerSecond)), true);
-			this.GameTime = gameTime;
-			this.ElapsedTime.Value = (float)gameTime.ElapsedGameTime.TotalSeconds * this.TimeMultiplier;
-			if (!this.Paused)
-				this.TotalTime.Value += this.ElapsedTime;
-
-			if (!this.EditorEnabled && this.mapLoaded)
+			lock (this.physicsLock)
 			{
-				IEnumerable<string> mapGlobalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("..\\GlobalScripts", Path.GetFileNameWithoutExtension(x)));
-				foreach (string scriptName in mapGlobalScripts)
-					this.executeScript(scriptName);
-			}
-			this.mapLoaded = false;
+				if (gameTime.ElapsedGameTime.TotalSeconds > 0.1f)
+					gameTime = new GameTime(gameTime.TotalGameTime, new TimeSpan((long)(0.1f * (float)TimeSpan.TicksPerSecond)), true);
+				this.GameTime = gameTime;
+				this.ElapsedTime.Value = (float)gameTime.ElapsedGameTime.TotalSeconds * this.TimeMultiplier;
+				if (!this.Paused)
+					this.TotalTime.Value += this.ElapsedTime;
 
-			this.LastKeyboardState.Value = this.KeyboardState;
-			this.KeyboardState.Value = Microsoft.Xna.Framework.Input.Keyboard.GetState();
-			this.LastMouseState.Value = this.MouseState;
-			this.MouseState.Value = Microsoft.Xna.Framework.Input.Mouse.GetState();
-
-			this.LastGamePadState.Value = this.GamePadState;
-			this.GamePadState.Value = Microsoft.Xna.Framework.Input.GamePad.GetState(PlayerIndex.One);
-			if (this.GamePadState.Value.IsConnected != this.GamePadConnected)
-				this.GamePadConnected.Value = this.GamePadState.Value.IsConnected;
-
-#if PERFORMANCE_MONITOR
-			Stopwatch timer = new Stopwatch();
-			timer.Start();
-#endif
-			if (!this.Paused && !this.EditorEnabled)
-				this.Space.Update(this.ElapsedTime);
-#if PERFORMANCE_MONITOR
-			timer.Stop();
-			this.physicsSum = Math.Max(this.physicsSum, timer.Elapsed.TotalSeconds);
-#endif
-
-#if PERFORMANCE_MONITOR
-			timer.Restart();
-#endif
-			this.updating = true;
-			foreach (IUpdateableComponent c in this.updateables)
-			{
-				if (this.componentEnabled((IComponent)c))
-					c.Update(this.ElapsedTime);
-			}
-			this.updating = false;
-			this.FlushComponents();
-
-			AkSoundEngine.RenderAudio();
-
-			if (this.drawableBinding == null)
-			{
-				this.drawableBinding = new NotifyBinding(delegate() { this.drawablesModified = true; }, this.drawables.Select(x => x.DrawOrder).ToArray());
-				this.drawablesModified = true;
-			}
-			if (this.drawablesModified)
-			{
-				this.drawables.InsertionSort(delegate(IDrawableComponent a, IDrawableComponent b)
+				if (!this.EditorEnabled && this.mapLoaded)
 				{
-					return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
-				});
-				this.drawablesModified = false;
-			}
-
-			if (this.alphaDrawableBinding == null)
-			{
-				this.alphaDrawableBinding = new NotifyBinding(delegate() { this.alphaDrawablesModified = true; }, this.alphaDrawables.Select(x => x.DrawOrder).ToArray());
-				this.alphaDrawablesModified = true;
-			}
-			if (this.alphaDrawablesModified)
-			{
-				this.alphaDrawables.InsertionSort(delegate(IDrawableAlphaComponent a, IDrawableAlphaComponent b)
-				{
-					return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
-				});
-			}
-
-			if (this.postAlphaDrawableBinding == null)
-			{
-				this.postAlphaDrawableBinding = new NotifyBinding(delegate() { this.postAlphaDrawablesModified = true; }, this.postAlphaDrawables.Select(x => x.DrawOrder).ToArray());
-				this.postAlphaDrawablesModified = true;
-			}
-			if (this.postAlphaDrawablesModified)
-			{
-				this.postAlphaDrawables.InsertionSort(delegate(IDrawablePostAlphaComponent a, IDrawablePostAlphaComponent b)
-				{
-					return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
-				});
-			}
-
-			if (this.nonPostProcessedDrawableBinding == null)
-			{
-				this.nonPostProcessedDrawableBinding = new NotifyBinding(delegate() { this.nonPostProcessedDrawablesModified = true; }, this.nonPostProcessedDrawables.Select(x => x.DrawOrder).ToArray());
-				this.nonPostProcessedDrawablesModified = true;
-			}
-			if (this.nonPostProcessedDrawablesModified)
-			{
-				this.nonPostProcessedDrawables.InsertionSort(delegate(INonPostProcessedDrawableComponent a, INonPostProcessedDrawableComponent b)
-				{
-					return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
-				});
-			}
-
-			if (this.resize != null && this.resize.Value.X > 0 && this.resize.Value.Y > 0)
-			{
-				this.ResizeViewport(this.resize.Value.X, this.resize.Value.Y, false);
-				this.resize = null;
-			}
-
-#if PERFORMANCE_MONITOR
-			timer.Stop();
-			this.updateSum = Math.Max(this.updateSum, timer.Elapsed.TotalSeconds);
-			this.frameSum++;
-			this.performanceInterval += this.ElapsedTime;
-			if (this.performanceInterval > Main.performanceUpdateTime)
-			{
-				if (this.performanceMonitor.Visible)
-				{
-					this.frameRate.Value = this.frameSum / this.performanceInterval;
-					this.physicsTime.Value = this.physicsSum;
-					this.updateTime.Value = this.updateSum;
-					this.preframeTime.Value = this.preframeSum;
-					this.rawRenderTime.Value = this.rawRenderSum;
-					this.shadowRenderTime.Value = this.shadowRenderSum;
-					this.postProcessTime.Value = this.postProcessSum;
-					this.unPostProcessedTime.Value = this.unPostProcessedSum;
+					IEnumerable<string> mapGlobalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("..\\GlobalScripts", Path.GetFileNameWithoutExtension(x)));
+					foreach (string scriptName in mapGlobalScripts)
+						this.executeScript(scriptName);
 				}
-				this.physicsSum = 0;
-				this.updateSum = 0;
-				this.preframeSum = 0;
-				this.rawRenderSum = 0;
-				this.shadowRenderSum = 0;
-				this.postProcessSum = 0;
-				this.unPostProcessedSum = 0;
-				this.frameSum = 0;
-				this.performanceInterval = 0;
-			}
+				this.mapLoaded = false;
+
+				this.LastKeyboardState.Value = this.KeyboardState;
+				this.KeyboardState.Value = Microsoft.Xna.Framework.Input.Keyboard.GetState();
+				this.LastMouseState.Value = this.MouseState;
+				this.MouseState.Value = Microsoft.Xna.Framework.Input.Mouse.GetState();
+
+				this.LastGamePadState.Value = this.GamePadState;
+				this.GamePadState.Value = Microsoft.Xna.Framework.Input.GamePad.GetState(PlayerIndex.One);
+				if (this.GamePadState.Value.IsConnected != this.GamePadConnected)
+					this.GamePadConnected.Value = this.GamePadState.Value.IsConnected;
+
+#if PERFORMANCE_MONITOR
+				Stopwatch timer = new Stopwatch();
+				timer.Start();
 #endif
+				for (int i = 0; i < this.updateables.Count; i++)
+				{
+					IUpdateableComponent c = this.updateables[i];
+					if (this.componentEnabled(c))
+						c.Update(this.ElapsedTime);
+				}
+				this.FlushComponents();
+
+				if (this.drawableBinding == null)
+				{
+					this.drawableBinding = new NotifyBinding(delegate() { this.drawablesModified = true; }, this.drawables.Select(x => x.DrawOrder).ToArray());
+					this.drawablesModified = true;
+				}
+				if (this.drawablesModified)
+				{
+					this.drawables.InsertionSort(delegate(IDrawableComponent a, IDrawableComponent b)
+					{
+						return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
+					});
+					this.drawablesModified = false;
+				}
+
+				if (this.alphaDrawableBinding == null)
+				{
+					this.alphaDrawableBinding = new NotifyBinding(delegate() { this.alphaDrawablesModified = true; }, this.alphaDrawables.Select(x => x.DrawOrder).ToArray());
+					this.alphaDrawablesModified = true;
+				}
+				if (this.alphaDrawablesModified)
+				{
+					this.alphaDrawables.InsertionSort(delegate(IDrawableAlphaComponent a, IDrawableAlphaComponent b)
+					{
+						return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
+					});
+				}
+
+				if (this.postAlphaDrawableBinding == null)
+				{
+					this.postAlphaDrawableBinding = new NotifyBinding(delegate() { this.postAlphaDrawablesModified = true; }, this.postAlphaDrawables.Select(x => x.DrawOrder).ToArray());
+					this.postAlphaDrawablesModified = true;
+				}
+				if (this.postAlphaDrawablesModified)
+				{
+					this.postAlphaDrawables.InsertionSort(delegate(IDrawablePostAlphaComponent a, IDrawablePostAlphaComponent b)
+					{
+						return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
+					});
+				}
+
+				if (this.nonPostProcessedDrawableBinding == null)
+				{
+					this.nonPostProcessedDrawableBinding = new NotifyBinding(delegate() { this.nonPostProcessedDrawablesModified = true; }, this.nonPostProcessedDrawables.Select(x => x.DrawOrder).ToArray());
+					this.nonPostProcessedDrawablesModified = true;
+				}
+				if (this.nonPostProcessedDrawablesModified)
+				{
+					this.nonPostProcessedDrawables.InsertionSort(delegate(INonPostProcessedDrawableComponent a, INonPostProcessedDrawableComponent b)
+					{
+						return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
+					});
+				}
+
+				if (this.resize != null && this.resize.Value.X > 0 && this.resize.Value.Y > 0)
+				{
+					this.ResizeViewport(this.resize.Value.X, this.resize.Value.Y, false);
+					this.resize = null;
+				}
+
+#if PERFORMANCE_MONITOR
+				timer.Stop();
+				this.updateSum = Math.Max(this.updateSum, timer.Elapsed.TotalSeconds);
+				this.frameSum++;
+				this.performanceInterval += this.ElapsedTime;
+				if (this.performanceInterval > Main.performanceUpdateTime)
+				{
+					if (this.performanceMonitor.Visible)
+					{
+						this.frameRate.Value = this.frameSum / this.performanceInterval;
+						this.physicsTime.Value = this.physicsSum;
+						this.updateTime.Value = this.updateSum;
+						this.preframeTime.Value = this.preframeSum;
+						this.rawRenderTime.Value = this.rawRenderSum;
+						this.shadowRenderTime.Value = this.shadowRenderSum;
+						this.postProcessTime.Value = this.postProcessSum;
+						this.unPostProcessedTime.Value = this.unPostProcessedSum;
+					}
+					this.physicsSum = 0;
+					this.updateSum = 0;
+					this.preframeSum = 0;
+					this.rawRenderSum = 0;
+					this.shadowRenderSum = 0;
+					this.postProcessSum = 0;
+					this.unPostProcessedSum = 0;
+					this.frameSum = 0;
+					this.performanceInterval = 0;
+				}
+#endif
+			}
+				
+			this.physicsUpdate.Set();
 		}
 
 		protected override void Draw(GameTime gameTime)
@@ -606,7 +624,7 @@ namespace Lemma
 
 			timer.Restart();
 #endif
-			this.Renderer.PostProcess(this.renderTarget, this.renderParameters, this.DrawAlphaComponents, this.DrawPostAlphaComponents);
+			this.Renderer.PostProcess(this.renderTarget, this.renderParameters);
 
 #if PERFORMANCE_MONITOR
 			timer.Stop();

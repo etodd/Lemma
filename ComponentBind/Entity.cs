@@ -576,12 +576,15 @@ namespace ComponentBind
 			if (this.Active)
 			{
 				this.Active = false;
-				foreach (IComponent c in this.components.Values.ToList())
-					c.Delete.Execute();
+				IEnumerable<IComponent> components = this.components.Values.ToList();
 				this.components.Clear();
+				this.componentsByType.Clear();
+				foreach (IComponent c in components)
+					c.Delete.Execute();
 				foreach (IBinding b in this.bindings)
 					b.Delete();
 				this.bindings.Clear();
+				this.commands.Clear();
 				this.main.Remove(this);
 				Entity.entities.Remove(this.ID);
 			}

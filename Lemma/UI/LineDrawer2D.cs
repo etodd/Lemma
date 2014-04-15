@@ -84,7 +84,7 @@ namespace Lemma.Components
 			this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.LineList, 0, this.Lines.Count);
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			this.effect.Dispose();
 			if (this.vertexBuffer != null)

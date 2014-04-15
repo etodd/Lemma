@@ -25,7 +25,7 @@ namespace Lemma.Components
 			DirectionalLight.All.Add(this);
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			base.delete();
 			DirectionalLight.All.Remove(this);

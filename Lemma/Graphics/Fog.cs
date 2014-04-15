@@ -92,7 +92,7 @@ namespace Lemma.Components
 			}
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			base.delete();
 			this.effect.Dispose();

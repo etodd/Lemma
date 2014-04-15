@@ -37,10 +37,12 @@ public class AkGlobalSoundEngineInitializer : Component<BaseMain>
 	   return ms_Instance.language;
 	}
 
-	public override void InitializeProperties()
+	public AkGlobalSoundEngineInitializer(string basePath)
 	{
 		if (ms_Instance != null)
 			return; //Don't init twice
+
+		this.basePath = basePath;
 		
 #if UNITY_ANDROID && !UNITY_EDITOR
 		InitalizeAndroidSoundBankIO();
@@ -82,7 +84,7 @@ public class AkGlobalSoundEngineInitializer : Component<BaseMain>
 		ms_Instance = this;
 
 		AkBankPath.UsePlatformSpecificPath();
-		string platformBasePath = AkBankPath.GetPlatformBasePath(this.main);
+		string platformBasePath = AkBankPath.GetPlatformBasePath();
 // Note: Android low-level IO uses relative path to "assets" folder of the apk as SoundBank folder.
 // Unity uses full paths for general path checks. We thus don't use DirectoryInfo.Exists to test 
 // our SoundBank folder for Android.
@@ -128,7 +130,7 @@ public class AkGlobalSoundEngineInitializer : Component<BaseMain>
 		}
 	}
 	
-	protected override void delete()
+	public override void delete()
 	{	
 		base.delete();
 		ms_Instance = null;

@@ -922,7 +922,7 @@ namespace Lemma.Components
 		{
 			get
 			{
-				return Map.Maps.Where(x => !x.Suspended && x.EnablePhysics && x.Scale.Value == 1.0f);
+				return Map.Maps.Where(x => x.Active && !x.Suspended && x.EnablePhysics && x.Scale.Value == 1.0f);
 			}
 		}
 
@@ -930,7 +930,7 @@ namespace Lemma.Components
 		{
 			get
 			{
-				return Map.Maps.Where(x => !x.Suspended);
+				return Map.Maps.Where(x => x.Active && !x.Suspended);
 			}
 		}
 
@@ -1495,7 +1495,7 @@ namespace Lemma.Components
 			return Vector3.TransformNormal(vector, this.Transform);
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			base.delete();
 			lock (this.MutationLock)
@@ -4500,7 +4500,7 @@ namespace Lemma.Components
 			this.LinearVelocity.Changed();
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			base.delete();
 			if (this.addedToSpace)

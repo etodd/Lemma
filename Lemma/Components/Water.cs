@@ -392,7 +392,7 @@ namespace Lemma.Components
 
 				this.main.DrawScene(this.parameters);
 
-				this.renderer.PostProcess(this.buffer, this.parameters, this.main.DrawAlphaComponents, this.main.DrawPostAlphaComponents);
+				this.renderer.PostProcess(this.buffer, this.parameters);
 			}
 		}
 
@@ -440,7 +440,7 @@ namespace Lemma.Components
 			}
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			this.camera.Delete.Execute();
 			this.effect.Dispose();

@@ -167,7 +167,7 @@ namespace Lemma.Components
 			};
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			base.delete();
 			this.main.TimeMultiplier.Value = 1.0f;

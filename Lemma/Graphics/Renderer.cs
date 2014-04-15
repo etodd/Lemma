@@ -477,7 +477,7 @@ namespace Lemma.Components
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 		}
 
-		public void PostProcess(RenderTarget2D result, RenderParameters parameters, DrawStageDelegate alphaStageDelegate, DrawStageDelegate postAlphaStageDelegate)
+		public void PostProcess(RenderTarget2D result, RenderParameters parameters)
 		{
 			Vector3 originalCameraPosition = parameters.Camera.Position;
 			Matrix originalViewMatrix = parameters.Camera.View;
@@ -520,8 +520,9 @@ namespace Lemma.Components
 			parameters.Camera.FarPlaneDistance.Value = originalFarPlane;
 
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.pointLightEffect);
-			foreach (PointLight light in PointLight.All)
+			for (int i = 0; i < PointLight.All.Count; i++)
 			{
+				PointLight light = PointLight.All[i];
 				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || light.Color.Value.LengthSquared() == 0.0f || !originalBoundingFrustum.Intersects(light.BoundingSphere))
 					continue;
 
@@ -538,8 +539,9 @@ namespace Lemma.Components
 			parameters.Camera.FarPlaneDistance.Value = originalFarPlane;
 
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.spotLightEffect);
-			foreach (SpotLight light in SpotLight.All)
+			for (int i = 0; i < SpotLight.All.Count; i++)
 			{
+				SpotLight light = SpotLight.All[i];
 				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || light.Color.Value.LengthSquared() == 0.0f || !originalBoundingFrustum.Intersects(light.BoundingFrustum))
 					continue;
 
@@ -601,40 +603,36 @@ namespace Lemma.Components
 			this.setTargets(colorDestination);
 
 			// Copy the color source to the destination
-			this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.Default, originalState);
+			this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.None, originalState);
 			this.spriteBatch.Draw(colorSource, Vector2.Zero, Color.White);
 			this.spriteBatch.End();
 
 			parameters.Camera.Position.Value = originalCameraPosition;
 			parameters.Camera.View.Value = originalViewMatrix;
 
-			if (alphaStageDelegate != null)
-				alphaStageDelegate(parameters);
+			this.main.DrawAlphaComponents(parameters);
 
 			// Swap the color buffers
 			colorTemp = colorDestination;
 			colorDestination = colorSource;
 			colorSource = colorTemp;
 
-			if (postAlphaStageDelegate != null)
-			{
-				parameters.FrameBuffer = colorSource;
-				this.setTargets(colorDestination);
+			parameters.FrameBuffer = colorSource;
+			this.setTargets(colorDestination);
 
-				// Copy the color source to the destination
-				this.main.GraphicsDevice.Clear(Color.Black); // Because BlendState.Opaque really does not work here for some reason.
-				this.main.GraphicsDevice.SamplerStates[0] = new SamplerState { Filter = TextureFilter.Point };
-				this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.Default, originalState);
-				this.spriteBatch.Draw(colorSource, Vector2.Zero, Color.White);
-				this.spriteBatch.End();
+			// Copy the color source to the destination
+			this.main.GraphicsDevice.Clear(Color.Black); // Because BlendState.Opaque really does not work here for some reason.
+			this.main.GraphicsDevice.SamplerStates[0] = new SamplerState { Filter = TextureFilter.Point };
+			this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.Default, originalState);
+			this.spriteBatch.Draw(colorSource, Vector2.Zero, Color.White);
+			this.spriteBatch.End();
 
-				postAlphaStageDelegate(parameters);
+			this.main.DrawPostAlphaComponents(parameters);
 
-				// Swap the color buffers
-				colorTemp = colorDestination;
-				colorDestination = colorSource;
-				colorSource = colorTemp;
-			}
+			// Swap the color buffers
+			colorTemp = colorDestination;
+			colorDestination = colorSource;
+			colorSource = colorTemp;
 
 			bool enableBloom = this.allowBloom && this.EnableBloom && this.BloomThreshold < 1.0f;
 			bool enableMotionBlur = this.allowMotionBlur && this.MotionBlurAmount > 0.0f;
@@ -774,7 +772,7 @@ namespace Lemma.Components
 			effect.CurrentTechnique.Passes[0].Apply();
 		}
 
-		protected override void delete()
+		public override void delete()
 		{
 			base.delete();
 			this.lightingBuffer.Dispose();
