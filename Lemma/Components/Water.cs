@@ -392,7 +392,7 @@ namespace Lemma.Components
 
 				this.main.DrawScene(this.parameters);
 
-				this.renderer.PostProcess(this.buffer, this.parameters, this.main.DrawAlphaComponents);
+				this.renderer.PostProcess(this.buffer, this.parameters, this.main.DrawAlphaComponents, this.main.DrawPostAlphaComponents);
 			}
 		}
 

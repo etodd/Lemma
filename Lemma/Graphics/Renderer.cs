@@ -97,7 +97,7 @@ namespace Lemma.Components
 		private Effect bloomEffect;
 		private Effect blurEffect;
 		private Effect clearEffect;
-		private Effect depthDownsampleEffect;
+		private Effect downsampleEffect;
 		private Effect ssaoEffect;
 
 		// Render targets
@@ -256,7 +256,7 @@ namespace Lemma.Components
 			this.compositeEffect.CurrentTechnique = this.compositeEffect.Techniques["Composite"];
 			this.blurEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Blur").Clone();
 
-			this.depthDownsampleEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\DepthDownsample").Clone();
+			this.downsampleEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Downsample").Clone();
 			this.ssaoEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\SSAO").Clone();
 			this.ssaoRandomTexture = this.main.Content.Load<Texture2D>("Images\\random");
 			this.ssaoEffect.Parameters["Random" + Model.SamplerPostfix].SetValue(this.ssaoRandomTexture);
@@ -286,7 +286,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.Color,
+												SurfaceFormat.HdrBlendable,
 												DepthFormat.None,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -298,7 +298,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.Color,
+												SurfaceFormat.HdrBlendable,
 												DepthFormat.Depth24,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -310,7 +310,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.Single,
+												SurfaceFormat.Vector2,
 												DepthFormat.Depth24,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -322,7 +322,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.Color,
+												SurfaceFormat.HdrBlendable,
 												DepthFormat.Depth24,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -334,7 +334,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.Color,
+												SurfaceFormat.HdrBlendable,
 												DepthFormat.Depth24,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -346,7 +346,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.Color,
+												SurfaceFormat.HdrBlendable,
 												DepthFormat.None,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -370,7 +370,7 @@ namespace Lemma.Components
 													size.X,
 													size.Y,
 													false,
-													SurfaceFormat.Color,
+													SurfaceFormat.HdrBlendable,
 													DepthFormat.None,
 													0,
 													RenderTargetUsage.DiscardContents);
@@ -380,7 +380,7 @@ namespace Lemma.Components
 													size.X,
 													size.Y,
 													false,
-													SurfaceFormat.Color,
+													SurfaceFormat.HdrBlendable,
 													DepthFormat.None,
 													0,
 													RenderTargetUsage.DiscardContents);
@@ -404,6 +404,19 @@ namespace Lemma.Components
 					this.halfDepthBuffer.Dispose();
 				this.halfDepthBuffer = null;
 			}
+
+			if (this.allowBloom || this.allowSSAO)
+			{
+				this.halfBuffer1 = new RenderTarget2D(this.main.GraphicsDevice,
+					size.X / 2,
+					size.Y / 2,
+					false,
+					SurfaceFormat.HdrBlendable,
+					DepthFormat.None,
+					0,
+					RenderTargetUsage.DiscardContents);
+			}
+
 			if (this.allowSSAO)
 			{
 				this.halfDepthBuffer = new RenderTarget2D(this.main.GraphicsDevice,
@@ -414,19 +427,11 @@ namespace Lemma.Components
 					DepthFormat.None,
 					0,
 					RenderTargetUsage.DiscardContents);
-				this.halfBuffer1 = new RenderTarget2D(this.main.GraphicsDevice,
-					size.X / 2,
-					size.Y / 2,
-					false,
-					SurfaceFormat.Color,
-					DepthFormat.None,
-					0,
-					RenderTargetUsage.DiscardContents);
 				this.halfBuffer2 = new RenderTarget2D(this.main.GraphicsDevice,
 					size.X / 2,
 					size.Y / 2,
 					false,
-					SurfaceFormat.Color,
+					SurfaceFormat.HdrBlendable,
 					DepthFormat.None,
 					0,
 					RenderTargetUsage.DiscardContents);
@@ -445,7 +450,7 @@ namespace Lemma.Components
 													size.X / 2,
 													size.Y / 2,
 													false,
-													SurfaceFormat.Color,
+													SurfaceFormat.HdrBlendable,
 													DepthFormat.Depth24,
 													0,
 													RenderTargetUsage.DiscardContents);
@@ -466,10 +471,13 @@ namespace Lemma.Components
 			this.setTargetParameters(new RenderTarget2D[] { }, new RenderTarget2D[] { this.colorBuffer1 }, this.clearEffect);
 			this.clearEffect.Parameters["BackgroundColor"].SetValue(new Vector3((float)color.R / 255.0f, (float)color.G / 255.0f, (float)color.B / 255.0f));
 			this.applyEffect(this.clearEffect);
+			this.main.GraphicsDevice.SamplerStates[1] = SamplerState.PointClamp;
+			this.main.GraphicsDevice.SamplerStates[2] = SamplerState.PointClamp;
+			this.main.GraphicsDevice.SamplerStates[3] = SamplerState.PointClamp;
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 		}
 
-		public void PostProcess(RenderTarget2D result, RenderParameters parameters, DrawStageDelegate alphaStageDelegate)
+		public void PostProcess(RenderTarget2D result, RenderParameters parameters, DrawStageDelegate alphaStageDelegate, DrawStageDelegate postAlphaStageDelegate)
 		{
 			Vector3 originalCameraPosition = parameters.Camera.Position;
 			Matrix originalViewMatrix = parameters.Camera.View;
@@ -487,7 +495,8 @@ namespace Lemma.Components
 			if (enableSSAO)
 			{
 				// Down-sample depth buffer
-				this.preparePostProcess(new[] { this.depthBuffer }, new[] { this.halfDepthBuffer }, this.depthDownsampleEffect);
+				this.downsampleEffect.CurrentTechnique = this.downsampleEffect.Techniques["DownsampleDepth"];
+				this.preparePostProcess(new[] { this.depthBuffer }, new[] { this.halfDepthBuffer }, this.downsampleEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 			}
 
@@ -592,7 +601,7 @@ namespace Lemma.Components
 			this.setTargets(colorDestination);
 
 			// Copy the color source to the destination
-			this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
+			this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.Default, originalState);
 			this.spriteBatch.Draw(colorSource, Vector2.Zero, Color.White);
 			this.spriteBatch.End();
 
@@ -606,6 +615,26 @@ namespace Lemma.Components
 			colorTemp = colorDestination;
 			colorDestination = colorSource;
 			colorSource = colorTemp;
+
+			if (postAlphaStageDelegate != null)
+			{
+				parameters.FrameBuffer = colorSource;
+				this.setTargets(colorDestination);
+
+				// Copy the color source to the destination
+				this.main.GraphicsDevice.Clear(Color.Black); // Because BlendState.Opaque really does not work here for some reason.
+				this.main.GraphicsDevice.SamplerStates[0] = new SamplerState { Filter = TextureFilter.Point };
+				this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.Default, originalState);
+				this.spriteBatch.Draw(colorSource, Vector2.Zero, Color.White);
+				this.spriteBatch.End();
+
+				postAlphaStageDelegate(parameters);
+
+				// Swap the color buffers
+				colorTemp = colorDestination;
+				colorDestination = colorSource;
+				colorSource = colorTemp;
+			}
 
 			bool enableBloom = this.allowBloom && this.EnableBloom && this.BloomThreshold < 1.0f;
 			bool enableMotionBlur = this.allowMotionBlur && this.MotionBlurAmount > 0.0f;
@@ -625,9 +654,13 @@ namespace Lemma.Components
 			// Bloom
 			if (enableBloom)
 			{
+				this.downsampleEffect.CurrentTechnique = this.downsampleEffect.Techniques["Downsample"];
+				this.preparePostProcess(new[] { colorSource }, new[] { this.halfBuffer1 }, this.downsampleEffect);
+				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
+
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["BlurHorizontal"];
 				parameters.Camera.SetParameters(this.bloomEffect);
-				this.preparePostProcess(new RenderTarget2D[] { colorSource }, new RenderTarget2D[] { this.bloomBuffer }, this.bloomEffect);
+				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer1 }, new RenderTarget2D[] { this.bloomBuffer }, this.bloomEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["Composite"];
 				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.bloomBuffer }, new RenderTarget2D[] { enableBlur || enableMotionBlur ? colorDestination : result }, this.bloomEffect);

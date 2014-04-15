@@ -1,8 +1,8 @@
 #include "EffectCommon.fxh"
 
-float GaussianKernel[16] = { 0.006579f, 0.015139f, 0.031172f, 0.057433f, 0.094691f, 0.139702f, 0.184433f, 0.217882f, 0.230329f, 0.217882f, 0.184433f, 0.139702f, 0.094691f, 0.057433f, 0.031172f, 0.015139f };
+float GaussianKernel[32] = { 0.00007674196886264266, 0.00018155522036679086, 0.0004063095905967308, 0.0008601574100431575, 0.001722547970551906, 0.0032631515508544876, 0.0058475735365225955, 0.009912579160885948, 0.0158953528849071, 0.024111609868575554, 0.03459830086448056, 0.046963003325653944, 0.06030168991413035, 0.07324460350487474, 0.08415778769784837, 0.09147144024753913, 0.0940479325354748, 0.09147144024753913, 0.08415778769784837, 0.07324460350487474, 0.06030168991413035, 0.046963003325653944, 0.03459830086448056, 0.024111609868575554, 0.0158953528849071, 0.009912579160885948, 0.0058475735365225955, 0.0032631515508544876, 0.001722547970551906, 0.0008601574100431575, 0.0004063095905967308, 0.00018155522036679086, };
 
-float BloomThreshold = 0.9f;
+const float3 BloomThreshold = (float3)0.5f;
 
 void BlurHorizontalPS(	in PostProcessPSInput input,
 						out float4 out_Color		: COLOR0)
@@ -11,11 +11,11 @@ void BlurHorizontalPS(	in PostProcessPSInput input,
 
 	float3 sum = 0;
 	[unroll]
-	for (int x = -8; x < 8; x++)
-		sum += saturate((DecodeColor(tex2D(SourceSampler0, float2(input.texCoord.x + (x * xInterval), input.texCoord.y)).xyz) - BloomThreshold) / (1.0f - BloomThreshold)) * GaussianKernel[x + 8];
+	for (int x = -16; x < 16; x++)
+		sum += max(DecodeColor(tex2D(SourceSampler0, float2(input.texCoord.x + (x * xInterval), input.texCoord.y)).xyz) - BloomThreshold, float3(0, 0, 0)) * GaussianKernel[x + 16];
 	
 	// Return the average color of all the samples
-	out_Color.xyz = sum;
+	out_Color.xyz = EncodeColor(sum);
 	out_Color.w = 1.0f;
 }
 
@@ -26,10 +26,10 @@ void CompositePS(	in PostProcessPSInput input,
 
 	float3 sum = 0;
 	[unroll]
-	for (int y = -8; y < 8; y++)
-		sum += tex2D(SourceSampler1, float2(input.texCoord.x, input.texCoord.y + (y * yInterval))).xyz * GaussianKernel[y + 8];
+	for (int y = -16; y < 16; y++)
+		sum += max(DecodeColor(tex2D(SourceSampler1, float2(input.texCoord.x, input.texCoord.y + (y * yInterval))).xyz), float3(0, 0, 0)) * GaussianKernel[y + 16];
 	
-	out_Color.xyz = (DecodeColor(tex2D(SourceSampler0, input.texCoord).xyz) * (1.0f - saturate(sum))) + sum;
+	out_Color.xyz = DecodeColor(tex2D(SourceSampler0, input.texCoord).xyz) * (1 - saturate(sum)) + sum / (1.0f - BloomThreshold);
 	out_Color.w = 1.0f;
 }
 

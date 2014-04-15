@@ -79,6 +79,7 @@ namespace Lemma
 		private List<IDrawablePreFrameComponent> preframeDrawables = new List<IDrawablePreFrameComponent>();
 		private List<INonPostProcessedDrawableComponent> nonPostProcessedDrawables = new List<INonPostProcessedDrawableComponent>();
 		private List<IDrawableAlphaComponent> alphaDrawables = new List<IDrawableAlphaComponent>();
+		private List<IDrawablePostAlphaComponent> postAlphaDrawables = new List<IDrawablePostAlphaComponent>();
 
 		private Point? resize;
 
@@ -105,6 +106,8 @@ namespace Lemma
 		protected bool drawablesModified;
 		protected NotifyBinding alphaDrawableBinding;
 		protected bool alphaDrawablesModified;
+		protected NotifyBinding postAlphaDrawableBinding;
+		protected bool postAlphaDrawablesModified;
 		protected NotifyBinding nonPostProcessedDrawableBinding;
 		protected bool nonPostProcessedDrawablesModified;
 
@@ -144,6 +147,15 @@ namespace Lemma
 						{
 							this.alphaDrawableBinding.Delete();
 							this.alphaDrawableBinding = null;
+						}
+					}
+					if (typeof(IDrawablePostAlphaComponent).IsAssignableFrom(t))
+					{
+						this.postAlphaDrawables.Add((IDrawablePostAlphaComponent)c);
+						if (this.postAlphaDrawableBinding != null)
+						{
+							this.postAlphaDrawableBinding.Delete();
+							this.postAlphaDrawableBinding = null;
 						}
 					}
 				}
@@ -490,6 +502,19 @@ namespace Lemma
 				});
 			}
 
+			if (this.postAlphaDrawableBinding == null)
+			{
+				this.postAlphaDrawableBinding = new NotifyBinding(delegate() { this.postAlphaDrawablesModified = true; }, this.postAlphaDrawables.Select(x => x.DrawOrder).ToArray());
+				this.postAlphaDrawablesModified = true;
+			}
+			if (this.postAlphaDrawablesModified)
+			{
+				this.postAlphaDrawables.InsertionSort(delegate(IDrawablePostAlphaComponent a, IDrawablePostAlphaComponent b)
+				{
+					return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
+				});
+			}
+
 			if (this.nonPostProcessedDrawableBinding == null)
 			{
 				this.nonPostProcessedDrawableBinding = new NotifyBinding(delegate() { this.nonPostProcessedDrawablesModified = true; }, this.nonPostProcessedDrawables.Select(x => x.DrawOrder).ToArray());
@@ -544,16 +569,12 @@ namespace Lemma
 		{
 			if (this.GraphicsDevice == null || this.GraphicsDevice.IsDisposed || this.GraphicsDevice.GraphicsDeviceStatus != GraphicsDeviceStatus.Normal)
 				return;
-
+			
 #if PERFORMANCE_MONITOR
 			Stopwatch timer = new Stopwatch();
 			timer.Start();
 #endif
 			this.renderParameters.Technique = this.Renderer.MotionBlurAmount.Value > 0.0f && !this.Paused ? Technique.MotionBlur : Technique.Render;
-
-			// This line prevents the game from crashing when resizing the window.
-			// Do not ask questions.
-			this.GraphicsDevice.SamplerStates[3] = SamplerState.PointClamp;
 
 			foreach (IDrawablePreFrameComponent c in this.preframeDrawables)
 			{
@@ -585,7 +606,7 @@ namespace Lemma
 
 			timer.Restart();
 #endif
-			this.Renderer.PostProcess(this.renderTarget, this.renderParameters, this.DrawAlphaComponents);
+			this.Renderer.PostProcess(this.renderTarget, this.renderParameters, this.DrawAlphaComponents, this.DrawPostAlphaComponents);
 
 #if PERFORMANCE_MONITOR
 			timer.Stop();
@@ -634,6 +655,15 @@ namespace Lemma
 			{
 				if (this.componentEnabled(c))
 					c.DrawAlpha(this.GameTime, parameters);
+			}
+		}
+
+		public void DrawPostAlphaComponents(RenderParameters parameters)
+		{
+			foreach (IDrawablePostAlphaComponent c in this.postAlphaDrawables)
+			{
+				if (this.componentEnabled(c))
+					c.DrawPostAlpha(this.GameTime, parameters);
 			}
 		}
 

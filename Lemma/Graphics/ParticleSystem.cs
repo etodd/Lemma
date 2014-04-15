@@ -10,7 +10,7 @@ namespace Lemma.Components
 	/// <summary>
 	/// The main component in charge of displaying particles.
 	/// </summary>
-	public class ParticleSystem : Component<Main>, IUpdateableComponent, IDrawableAlphaComponent, IDrawableComponent
+	public class ParticleSystem : Component<Main>, IUpdateableComponent, IDrawablePostAlphaComponent, IDrawableComponent
 	{
 		public Property<int> DrawOrder { get; set; }
 
@@ -727,7 +727,7 @@ namespace Lemma.Components
 		/// <summary>
 		/// Draws the particle system, if it is in fact an alpha-enabled particle system.
 		/// </summary>
-		void IDrawableAlphaComponent.DrawAlpha(GameTime gameTime, RenderParameters parameters)
+		void IDrawablePostAlphaComponent.DrawPostAlpha(GameTime gameTime, RenderParameters parameters)
 		{
 			if (this.settings.BlendState != BlendState.Opaque)
 				this.draw(parameters);

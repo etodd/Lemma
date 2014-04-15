@@ -53,63 +53,56 @@ void GlobalLightPS(	in PostProcessPSInput input,
 {
 	float4 normalValue = tex2D(SourceSampler1, input.texCoord);
 	float3 normal = DecodeNormal(normalValue);
-	if (normal.x * normal.y * normal.z == 0.0f)
+
+	float3 viewRay = normalize(input.viewRay);
+	float3 worldPos = PositionFromDepthSampler(SourceSampler0, input.texCoord, viewRay);
+	float specularPower = tex2D(SourceSampler2, input.texCoord).w * 255.0f;
+	float specularIntensity = normalValue.w;
+
+	float3 reflectedViewRay = reflect(viewRay, normal);
+
+	LightingOutput output;
+	output.lighting = AmbientLightColor;
+	output.specular = float3(0, 0, 0);
+
+	// Directional lights
+
+	if (shadow)
 	{
-		lighting = (float4)0;
-		specular = (float4)0;
+		// Shadowed light
+		LightingOutput shadowLight = CalcDirectionalLighting(DirectionalLightColors[0],
+								normal,
+								specularPower,
+								specularIntensity,
+								viewRay,
+								-DirectionalLightDirections[0],
+								reflectedViewRay);
+		float4 shadowPos = mul(float4(worldPos, 1.0f), ShadowViewProjectionMatrix);
+		float shadowValue = GetShadowValue(shadowPos, ShadowBias);
+		output.lighting += shadowLight.lighting * shadowValue;
+		output.specular += shadowLight.specular * shadowValue;
 	}
-	else
+
+	[unroll]
+	for(int i = shadow ? 1 : 0; i < NUM_DIRECTIONAL_LIGHTS; i++)
 	{
-		float3 viewRay = normalize(input.viewRay);
-		float3 worldPos = PositionFromDepthSampler(SourceSampler0, input.texCoord, viewRay);
-		float specularPower = tex2D(SourceSampler2, input.texCoord).w * 255.0f;
-		float specularIntensity = normalValue.w;
-
-		float3 reflectedViewRay = reflect(viewRay, normal);
-
-		LightingOutput output;
-		output.lighting = AmbientLightColor;
-		output.specular = float3(0, 0, 0);
-
-		// Directional lights
-
-		if (shadow)
-		{
-			// Shadowed light
-			LightingOutput shadowLight = CalcDirectionalLighting(DirectionalLightColors[0],
-									normal,
-									specularPower,
-									specularIntensity,
-									viewRay,
-									-DirectionalLightDirections[0],
-									reflectedViewRay);
-			float4 shadowPos = mul(float4(worldPos, 1.0f), ShadowViewProjectionMatrix);
-			float shadowValue = GetShadowValue(shadowPos, ShadowBias);
-			output.lighting += shadowLight.lighting * shadowValue;
-			output.specular += shadowLight.specular * shadowValue;
-		}
-
-		[unroll]
-		for(int i = shadow ? 1 : 0; i < NUM_DIRECTIONAL_LIGHTS; i++)
-		{
-			LightingOutput light = CalcDirectionalLighting(DirectionalLightColors[i],
-									normal,
-									specularPower,
-									specularIntensity,
-									viewRay,
-									-DirectionalLightDirections[i],
-									reflectedViewRay);
-			output.lighting += light.lighting;
-			output.specular += light.specular;
-		}
-
-		output.specular += texCUBE(EnvironmentSampler, reflectedViewRay).xyz * EnvironmentColor * specularIntensity * specularPower * (specularPower == 255.0f ? 1.0f : 0.25f / 255.0f);
-
-		lighting.xyz = EncodeColor(output.lighting);
-		lighting.w = 1.0f;
-		specular.xyz = EncodeColor(output.specular);
-		specular.w = 1.0f;
+		LightingOutput light = CalcDirectionalLighting(DirectionalLightColors[i],
+								normal,
+								specularPower,
+								specularIntensity,
+								viewRay,
+								-DirectionalLightDirections[i],
+								reflectedViewRay);
+		output.lighting += light.lighting;
+		output.specular += light.specular;
 	}
+
+	output.specular += texCUBE(EnvironmentSampler, reflectedViewRay).xyz * EnvironmentColor * specularIntensity * specularPower * (specularPower == 255.0f ? 1.0f : 0.25f / 255.0f);
+
+	lighting.xyz = EncodeColor(output.lighting);
+	lighting.w = 1.0f;
+	specular.xyz = EncodeColor(output.specular);
+	specular.w = 1.0f;
 }
 
 technique GlobalLightShadow

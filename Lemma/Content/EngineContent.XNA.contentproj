@@ -155,8 +155,8 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </None>
-    <Compile Include="Effects\PostProcess\DepthDownsample.fx">
-      <Name>DepthDownsample</Name>
+    <Compile Include="Effects\PostProcess\Downsample.fx">
+      <Name>Downsample</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>

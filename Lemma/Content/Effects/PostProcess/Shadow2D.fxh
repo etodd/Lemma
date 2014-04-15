@@ -23,10 +23,11 @@ float GetShadowValueFromClip(float2 clipPos, float depth, float bias)
 	
 	// Collect samples from the surrounding four shadow map pixels
 	// These will all evaluate to 1.0 or 0.0
-	float bl = tex2D(ShadowMapSampler, pos).r - bias < depth; // Bottom left sample
-	float br = tex2D(ShadowMapSampler, pos + float2(1 / ShadowMapSize, 0)).r - bias < depth; // Bottom right sample
-	float tl = tex2D(ShadowMapSampler, pos + float2(0, 1 / ShadowMapSize)).r - bias < depth; // Top left sample
-	float tr = tex2D(ShadowMapSampler, pos + (1 / ShadowMapSize)).r - bias < depth; // Top right sample
+	float inverseShadowSize = 1 / ShadowMapSize;
+	float bl = tex2D(ShadowMapSampler, pos + float2(0, 0)).r - bias < depth; // Bottom left sample
+	float br = tex2D(ShadowMapSampler, pos + float2(inverseShadowSize, 0)).r - bias < depth; // Bottom right sample
+	float tl = tex2D(ShadowMapSampler, pos + float2(0, inverseShadowSize)).r - bias < depth; // Top left sample
+	float tr = tex2D(ShadowMapSampler, pos + float2(inverseShadowSize, inverseShadowSize)).r - bias < depth; // Top right sample
 	
 	// Blend between the four samples
 	float horizontalBlend = (clipPos.x - pos.x) * ShadowMapSize;

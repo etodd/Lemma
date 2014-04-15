@@ -102,9 +102,17 @@ void RenderTextureFlatPS(in RenderPSInput input,
 	
 	output.color.xyz = EncodeColor(DiffuseColor.xyz * color.xyz);
 	if (glow)
-		output.color.w = color.a < 0.9f ? SpecularPower / 255.0f : 0.0f;
+	{
+		if (color.a < 0.9f)
+			output.color.a = SpecularPower / 255.0f;
+		else
+		{
+			output.color.a = 0.0f;
+			output.color.rgb *= 2.0f;
+		}
+	}
 	else
-		output.color.w = SpecularPower / 255.0f;
+		output.color.a = SpecularPower / 255.0f;
 	output.depth = float4(length(input.viewSpacePosition), 1.0f, 1.0f, 1.0f);
 	output.normal.xyz = EncodeNormal(normal);
 	output.normal.w = SpecularIntensity;
@@ -229,11 +237,19 @@ void RenderTextureNormalMapPS(	in RenderPSInput input,
 	float3 normal = mul(DecodeNormalMap(tex2D(NormalMapSampler, tex.uvCoordinates).xyz), normalMap.tangentToWorld);
 	output.normal.xyz = EncodeNormal(normal);
 	output.normal.w = SpecularIntensity;
-	output.color.xyz = EncodeColor(DiffuseColor.xyz * color.xyz);
+	output.color.rgb = EncodeColor(DiffuseColor.rgb * color.rgb);
 	if (glow)
-		output.color.w = color.a < 0.9f ? SpecularPower / 255.0f : 0.0f;
+	{
+		if (color.a < 0.9f)
+			output.color.a = SpecularPower / 255.0f;
+		else
+		{
+			output.color.a = 0.0f;
+			output.color.rgb *= 2.0f;
+		}
+	}
 	else
-		output.color.w = SpecularPower / 255.0f;
+		output.color.a = SpecularPower / 255.0f;
 	output.depth = float4(length(input.viewSpacePosition), 1.0f, 1.0f, 1.0f);
 }
 

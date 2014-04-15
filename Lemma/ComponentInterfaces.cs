@@ -20,6 +20,12 @@ namespace Lemma
 		Property<int> DrawOrder { get; }
 	}
 
+	public interface IDrawablePostAlphaComponent : IComponent
+	{
+		void DrawPostAlpha(GameTime time, RenderParameters parameters);
+		Property<int> DrawOrder { get; }
+	}
+
 	public interface IDrawablePreFrameComponent : IComponent
 	{
 		void DrawPreFrame(GameTime time, RenderParameters parameters);

@@ -9,28 +9,28 @@ static const float PI = 3.14159265f;
 // Normal encoding Function
 float3 EncodeNormal(float3 n)
 {
-	return (n.xyz + 1.0f) * 0.5f;
+	return n;
 }
 
 // Normal decoding Function
 float3 DecodeNormal(float3 enc)
 {
-	return (2.0f * enc) - 1.0f;
+	return enc;
 }
 
 float3 DecodeNormalMap(float3 enc)
 {
-	return (2.0f * enc) - 1.0f;
+	return normalize((2.0f * enc) - 1.0f);
 }
 
 float3 EncodeColor(float3 c)
 {
-	return c * 0.5f;
+	return c;
 }
 
 float3 DecodeColor(float3 c)
 {
-	return c * 2.0f;
+	return c;
 }
 
 // Input and output structures
