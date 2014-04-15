@@ -10,7 +10,7 @@ namespace Lemma.Components
 	/// <summary>
 	/// The main component in charge of displaying particles.
 	/// </summary>
-	public class ParticleSystem : Component<Main>, IUpdateableComponent, IDrawablePostAlphaComponent, IDrawableComponent
+	public class ParticleSystem : Component<Main>, IUpdateableComponent, IDrawablePostAlphaComponent, IDrawableAlphaComponent, IDrawableComponent
 	{
 		public Property<int> DrawOrder { get; set; }
 
@@ -71,6 +71,8 @@ namespace Lemma.Components
 
 			// Maximum number of particles that can be displayed at one time.
 			public int MaxParticles = 100;
+
+			public bool PostAlpha = false;
 
 
 			// How long these particles will last.
@@ -247,6 +249,7 @@ namespace Lemma.Components
 				BlendState = BlendState.AlphaBlend,
 				MinColor = Vector4.One,
 				MaxColor = Vector4.One,
+				PostAlpha = true,
 			});
 
 			ParticleSystem.Add(main, "Purple",
@@ -293,6 +296,7 @@ namespace Lemma.Components
 				BlendState = BlendState.AlphaBlend,
 				MinColor = new Vector4(0.8f, 0.9f, 1.0f, 1.0f),
 				MaxColor = new Vector4(0.8f, 0.9f, 1.0f, 1.0f),
+				PostAlpha = true,
 			});
 
 			ParticleSystem.add(main, "Smoke",
@@ -729,7 +733,16 @@ namespace Lemma.Components
 		/// </summary>
 		void IDrawablePostAlphaComponent.DrawPostAlpha(GameTime gameTime, RenderParameters parameters)
 		{
-			if (this.settings.BlendState != BlendState.Opaque)
+			if (this.settings.BlendState != BlendState.Opaque && this.settings.PostAlpha)
+				this.draw(parameters);
+		}
+
+		/// <summary>
+		/// Draws the particle system, if it is in fact an alpha-enabled particle system.
+		/// </summary>
+		void IDrawableAlphaComponent.DrawAlpha(GameTime gameTime, RenderParameters parameters)
+		{
+			if (this.settings.BlendState != BlendState.Opaque && !this.settings.PostAlpha)
 				this.draw(parameters);
 		}
 

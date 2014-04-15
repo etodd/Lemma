@@ -60,7 +60,7 @@ void OpaquePS(VertexShaderOutput input, out RenderPSOutput output)
 	output.color.xyz = EncodeColor(color.xyz);
 	output.color.w = RainSpecularPower / 255.0f;
 	output.depth = float4(length(input.ViewSpacePosition), 1.0f, 1.0f, 1.0f);
-	output.normal.xyz = float3(0.5f, 0.5f, 0.5f);
+	output.normal.xyz = float3(0.0f, 0.0f, 0.0f);
 	output.normal.w = RainSpecularIntensity;
 }
 
