@@ -175,6 +175,14 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>
+    <None Include="Effects\PostProcess\BloomCommon.fxh">
+      <Name>BloomCommon</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </None>
+    <None Include="Effects\PostProcess\EffectSamplers.fxh">
+      <Name>EffectSamplers</Name>
+    </None>
     <None Include="Effects\PostProcess\Shadow2D.fxh">
       <Name>Shadow2D</Name>
       <Importer>EffectImporter</Importer>

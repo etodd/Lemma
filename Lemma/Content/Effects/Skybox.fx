@@ -3,8 +3,6 @@
 float StartDistance;
 
 float4x4 ViewMatrixRotationOnly;
-float4x4 LastFrameViewProjectionMatrixRotationOnly;
-float4x4 LastFrameWorldMatrix;
 
 struct RenderVSInput
 {

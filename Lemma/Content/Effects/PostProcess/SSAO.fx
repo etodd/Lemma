@@ -1,4 +1,5 @@
 #include "EffectCommon.fxh"
+#include "EffectSamplers.fxh"
 
 // Adapted from http://jcoluna.wordpress.com/2011/10/28/xna-light-pre-pass-ambient-light-ssao-and-more/
 // Jorge Adriano Luna 2011

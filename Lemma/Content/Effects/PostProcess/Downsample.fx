@@ -1,6 +1,8 @@
 #include "EffectCommon.fxh"
+#include "EffectSamplers.fxh"
+#include "BloomCommon.fxh"
 
-void DownsamplePS(in PostProcessPSInput input, out float4 output : COLOR0)
+void DownsampleBloomPS(in PostProcessPSInput input, out float4 output : COLOR0)
 {
 	float2 pixelSize = 1.0f / SourceDimensions0;
 
@@ -11,14 +13,7 @@ void DownsamplePS(in PostProcessPSInput input, out float4 output : COLOR0)
 	float3 tl = tex2D(SourceSampler0, pos + float2(0, pixelSize.y));
 	float3 tr = tex2D(SourceSampler0, pos + pixelSize);
 
-	/*
-	float horizontalBlend = (input.texCoord.x - pos.x) * SourceDimensions0.x;
-	float verticalBlend = (input.texCoord.y - pos.y) * SourceDimensions0.y;
-	float3 bottom = (bl * (1.0f - horizontalBlend)) + (br * horizontalBlend);
-	float3 top = (tl * (1.0f - horizontalBlend)) + (tr * horizontalBlend);
-	output = float4((bottom * (1.0f - verticalBlend)) + (top * verticalBlend), 1);
-	*/
-	output = float4(max(max(bl, br), max(tl, tr)), 1);
+	output = float4(EncodeColor(max(max(max(bl, br), max(tl, tr)) - BloomThreshold, float3(0, 0, 0))), 1);
 }
 
 void DownsampleDepthPS(in PostProcessPSInput input, out float4 output : COLOR0)
@@ -31,12 +26,12 @@ void DownsampleDepthPS(in PostProcessPSInput input, out float4 output : COLOR0)
 	output = float4(max(max(depth0, depth1), max(depth2, depth3)), 0, 0, 1);
 }
 
-technique Downsample
+technique DownsampleBloom
 {
 	pass p0
 	{
 		VertexShader = compile vs_3_0 PostProcessVS();
-		PixelShader = compile ps_3_0 DownsamplePS();
+		PixelShader = compile ps_3_0 DownsampleBloomPS();
 		
 		ZEnable = false;
 		ZWriteEnable = false;

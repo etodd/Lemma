@@ -33,6 +33,16 @@ float3 DecodeColor(float3 c)
 	return c;
 }
 
+float2 EncodeVelocity(float2 v)
+{
+	return v;
+}
+
+float2 DecodeVelocity(float2 v)
+{
+	return v;
+};
+
 // Input and output structures
 struct RenderPSInput
 {

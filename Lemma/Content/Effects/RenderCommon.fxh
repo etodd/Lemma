@@ -43,14 +43,9 @@ float SpecularIntensity = 0.2f;
 // Motion blur
 void ProcessMotionBlur(in MotionBlurPSInput input, out MotionBlurPSOutput output)
 {
-	// Calculate the instantaneous pixel velocity. Since clip-space coordinates are of the range [-1, 1] 
-	// with Y increasing from the bottom to the top of screen, we'll rescale x and y and flip y so that
-	// the velocity corresponds to texture coordinates (which are of the range [0,1], and y increases from top to bottom)
 	float2 velocity = (input.currentPosition.xy / input.currentPosition.w) - (input.previousPosition.xy / input.previousPosition.w);
-	velocity *= 0.5f;
 	velocity.y *= -1.0f;
-	velocity = float2(0.5f, 0.5f) + velocity;
-	output.velocity = float4(velocity, 1.0f, 1.0f);
+	output.velocity = float4(EncodeVelocity(velocity), 1.0f, 1.0f);
 }
 
 // Shadow pixel shader

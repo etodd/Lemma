@@ -1,4 +1,5 @@
 #include "EffectCommon.fxh"
+#include "EffectSamplers.fxh"
 
 float3 Tint = float3(1, 1, 1);
 

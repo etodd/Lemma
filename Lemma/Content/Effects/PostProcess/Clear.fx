@@ -1,4 +1,6 @@
 #include "EffectCommon.fxh"
+float4x4 ViewProjectionMatrixRotationOnly;
+float4x4 LastFrameViewProjectionMatrixRotationOnly;
 
 float3 BackgroundColor;
 
@@ -14,7 +16,15 @@ void ClearMotionBlurPS(in PostProcessPSInput input,
 				out MotionBlurPSOutput motionBlurOutput)
 {
 	ClearPS(input, output);
-	motionBlurOutput.velocity = float4(0.5f, 0.5f, 1.0f, 1.0f);
+
+	float3 viewRay = normalize(input.viewSpacePosition);
+
+	float4 currentPos = mul(float4(viewRay, 1), ViewProjectionMatrixRotationOnly);
+	float4 previousPos = mul(float4(viewRay, 1), LastFrameViewProjectionMatrixRotationOnly);
+
+	float2 velocity = (currentPos.xy / currentPos.w) - (previousPos.xy / previousPos.w);
+	velocity.y *= -1.0f;
+	motionBlurOutput.velocity = float4(EncodeVelocity(velocity), 1.0f, 1.0f);
 }
 
 technique Clear

@@ -193,6 +193,13 @@ namespace Lemma.Components
 				m.Translation = Vector3.Zero;
 				param.SetValue(m);
 			}
+			param = effect.Parameters["ViewProjectionMatrixRotationOnly"];
+			if (param != null)
+			{
+				Matrix m = this.View;
+				m.Translation = Vector3.Zero;
+				param.SetValue(m * this.Projection);
+			}
 			param = effect.Parameters["InverseViewMatrix"];
 			if (param != null)
 				param.SetValue(this.InverseView);

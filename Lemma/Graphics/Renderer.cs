@@ -116,7 +116,6 @@ namespace Lemma.Components
 		private RenderTarget2D velocityBuffer;
 		private RenderTarget2D velocityBufferLastFrame;
 		private bool allowBloom;
-		private RenderTarget2D bloomBuffer;
 		private SpriteBatch spriteBatch;
 
 		/// <summary>
@@ -322,7 +321,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.HdrBlendable,
+												SurfaceFormat.HalfVector4,
 												DepthFormat.Depth24,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -370,7 +369,7 @@ namespace Lemma.Components
 													size.X,
 													size.Y,
 													false,
-													SurfaceFormat.HdrBlendable,
+													SurfaceFormat.Vector2,
 													DepthFormat.None,
 													0,
 													RenderTargetUsage.DiscardContents);
@@ -380,7 +379,7 @@ namespace Lemma.Components
 													size.X,
 													size.Y,
 													false,
-													SurfaceFormat.HdrBlendable,
+													SurfaceFormat.Vector2,
 													DepthFormat.None,
 													0,
 													RenderTargetUsage.DiscardContents);
@@ -411,7 +410,15 @@ namespace Lemma.Components
 					size.X / 2,
 					size.Y / 2,
 					false,
-					SurfaceFormat.HdrBlendable,
+					SurfaceFormat.Color,
+					DepthFormat.None,
+					0,
+					RenderTargetUsage.DiscardContents);
+				this.halfBuffer2 = new RenderTarget2D(this.main.GraphicsDevice,
+					size.X / 2,
+					size.Y / 2,
+					false,
+					SurfaceFormat.Color,
 					DepthFormat.None,
 					0,
 					RenderTargetUsage.DiscardContents);
@@ -423,37 +430,10 @@ namespace Lemma.Components
 					size.X / 2,
 					size.Y / 2,
 					false,
-					SurfaceFormat.Single,
+					SurfaceFormat.Vector2,
 					DepthFormat.None,
 					0,
 					RenderTargetUsage.DiscardContents);
-				this.halfBuffer2 = new RenderTarget2D(this.main.GraphicsDevice,
-					size.X / 2,
-					size.Y / 2,
-					false,
-					SurfaceFormat.HdrBlendable,
-					DepthFormat.None,
-					0,
-					RenderTargetUsage.DiscardContents);
-			}
-
-			if (this.bloomBuffer != null)
-			{
-				if (!this.bloomBuffer.IsDisposed)
-					this.bloomBuffer.Dispose();
-				this.bloomBuffer = null;
-			}
-			if (this.allowBloom)
-			{
-				// Bloom buffer
-				this.bloomBuffer = new RenderTarget2D(this.main.GraphicsDevice,
-													size.X / 2,
-													size.Y / 2,
-													false,
-													SurfaceFormat.HdrBlendable,
-													DepthFormat.Depth24,
-													0,
-													RenderTargetUsage.DiscardContents);
 			}
 		}
 
@@ -615,24 +595,26 @@ namespace Lemma.Components
 			// Swap the color buffers
 			colorTemp = colorDestination;
 			colorDestination = colorSource;
-			colorSource = colorTemp;
+			parameters.FrameBuffer = colorSource = colorTemp;
 
-			parameters.FrameBuffer = colorSource;
-			this.setTargets(colorDestination);
+			if (this.main.HasPostAlphaDrawables)
+			{
+				this.setTargets(colorDestination);
 
-			// Copy the color source to the destination
-			this.main.GraphicsDevice.Clear(Color.Black); // Because BlendState.Opaque really does not work here for some reason.
-			this.main.GraphicsDevice.SamplerStates[0] = new SamplerState { Filter = TextureFilter.Point };
-			this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.Default, originalState);
-			this.spriteBatch.Draw(colorSource, Vector2.Zero, Color.White);
-			this.spriteBatch.End();
+				// Copy the color source to the destination
+				this.main.GraphicsDevice.Clear(Color.Black); // Because BlendState.Opaque really does not work here for some reason.
+				this.main.GraphicsDevice.SamplerStates[0] = new SamplerState { Filter = TextureFilter.Point };
+				this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.Default, originalState);
+				this.spriteBatch.Draw(colorSource, Vector2.Zero, Color.White);
+				this.spriteBatch.End();
 
-			this.main.DrawPostAlphaComponents(parameters);
+				this.main.DrawPostAlphaComponents(parameters);
+			}
 
 			// Swap the color buffers
 			colorTemp = colorDestination;
 			colorDestination = colorSource;
-			colorSource = colorTemp;
+			parameters.FrameBuffer = colorSource = colorTemp;
 
 			bool enableBloom = this.allowBloom && this.EnableBloom && this.BloomThreshold < 1.0f;
 			bool enableMotionBlur = this.allowMotionBlur && this.MotionBlurAmount > 0.0f;
@@ -652,16 +634,16 @@ namespace Lemma.Components
 			// Bloom
 			if (enableBloom)
 			{
-				this.downsampleEffect.CurrentTechnique = this.downsampleEffect.Techniques["Downsample"];
+				this.downsampleEffect.CurrentTechnique = this.downsampleEffect.Techniques["DownsampleBloom"];
 				this.preparePostProcess(new[] { colorSource }, new[] { this.halfBuffer1 }, this.downsampleEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["BlurHorizontal"];
 				parameters.Camera.SetParameters(this.bloomEffect);
-				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer1 }, new RenderTarget2D[] { this.bloomBuffer }, this.bloomEffect);
+				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer1 }, new RenderTarget2D[] { this.halfBuffer2 }, this.bloomEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["Composite"];
-				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.bloomBuffer }, new RenderTarget2D[] { enableBlur || enableMotionBlur ? colorDestination : result }, this.bloomEffect);
+				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.halfBuffer2 }, new RenderTarget2D[] { enableBlur || enableMotionBlur ? colorDestination : result }, this.bloomEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				// Swap the color buffers
@@ -801,8 +783,6 @@ namespace Lemma.Components
 			if (this.halfBuffer2 != null)
 				this.halfBuffer2.Dispose();
 
-			if (this.bloomBuffer != null)
-				this.bloomBuffer.Dispose();
 			if (this.bloomEffect != null)
 				this.bloomEffect.Dispose();
 		}

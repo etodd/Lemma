@@ -1,0 +1,1 @@
+const float3 BloomThreshold = (float3)0.9f;

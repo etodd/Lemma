@@ -81,6 +81,14 @@ namespace Lemma
 		private List<IDrawableAlphaComponent> alphaDrawables = new List<IDrawableAlphaComponent>();
 		private List<IDrawablePostAlphaComponent> postAlphaDrawables = new List<IDrawablePostAlphaComponent>();
 
+		public bool HasPostAlphaDrawables
+		{
+			get
+			{
+				return this.postAlphaDrawables.Count > 0;
+			}
+		}
+
 		private Point? resize;
 
 		public Property<string> MapFile = new Property<string>();

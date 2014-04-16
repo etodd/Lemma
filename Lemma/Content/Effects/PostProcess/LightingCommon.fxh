@@ -1,4 +1,5 @@
 #include "EffectCommon.fxh"
+#include "EffectSamplers.fxh"
 
 struct LightingOutput
 {

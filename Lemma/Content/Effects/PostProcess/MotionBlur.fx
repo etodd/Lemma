@@ -1,4 +1,5 @@
 #include "EffectCommon.fxh"
+#include "EffectSamplers.fxh"
 
 float MotionBlurAmount = 1.0f;
 float SpeedBlurAmount = 1.0f;
@@ -16,7 +17,7 @@ float4 SampleMotionBlur(float2 texCoord, float2 pixelVelocity)
 	// to average the color after all the samples are added.
 	float4 sum = 0;
 	[unroll]
-	for (int i = 0; i < numSamples; i++)
+	for (int i = (numSamples / -2) + 1; i < (numSamples / 2) + 1; i++)
 		sum += tex2D(SourceSampler0, texCoord + (pixelVelocity * ((float)i  / (float)numSamples)));
 	
 	// Return the average color of all the samples
@@ -28,9 +29,9 @@ float4 MotionBlurPS(in PostProcessPSInput input)	: COLOR0
 	const float threshold = 1.0f / 127.0f;
 	const float thresholdSquared = threshold * threshold;
 	// Sample velocity from our velocity buffers
-	float2 currentFramePixelVelocity = tex2D(SourceSampler1, input.texCoord).xy - float2(0.5f, 0.5f);
+	float2 currentFramePixelVelocity = DecodeVelocity(tex2D(SourceSampler1, input.texCoord).xy);
 
-	float2 lastFramePixelVelocity = tex2D(SourceSampler2, input.texCoord).xy - float2(0.5f, 0.5f);
+	float2 lastFramePixelVelocity = DecodeVelocity(tex2D(SourceSampler2, input.texCoord).xy);
 
 	// We'll compare the magnitude of the velocity from the current frame and from
 	// the previous frame, and then use whichever is larger
@@ -62,6 +63,7 @@ float4 MotionBlurPS(in PostProcessPSInput input)	: COLOR0
 		pixelVelocity = currentFramePixelVelocity;
 		velocitySquared = currentVelocitySquared;
 	}
+
 	if (velocitySquared < thresholdSquared)
 		return tex2D(SourceSampler0, input.texCoord);
 	return SampleMotionBlur(input.texCoord, pixelVelocity);
