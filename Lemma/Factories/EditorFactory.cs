@@ -483,7 +483,7 @@ namespace Lemma.Factories
 						analyticsActiveSessions.Add(entry);
 				}));
 
-				return new[] { item };
+				return item;
 			}));
 
 			ListContainer allSessionsButton = createCheckboxListItem("[All]");
@@ -550,7 +550,7 @@ namespace Lemma.Factories
 						analyticsActiveEvents.Add(e);
 				}));
 
-				return new[] { item };
+				return item;
 			}));
 
 			ListContainer allEventsButton = createCheckboxListItem("[All]");
@@ -616,7 +616,7 @@ namespace Lemma.Factories
 						analyticsActiveProperties.Add(e);
 				}));
 
-				return new[] { item };
+				return item;
 			}));
 
 			ListContainer allPropertiesButton = createCheckboxListItem("[All]");
@@ -819,7 +819,7 @@ namespace Lemma.Factories
 
 				refreshPropertyGraph(line);
 
-				return new[] { propertyTimeline };
+				return propertyTimeline;
 			}));
 
 			analyticsActiveSessions.ItemAdded += delegate(int index, SessionEntry s)

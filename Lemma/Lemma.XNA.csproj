@@ -196,6 +196,7 @@
     <Compile Include="Util\Character.cs" />
     <Compile Include="Util\Algorithms.cs" />
     <Compile Include="Util\CustomFluidVolume.cs" />
+    <Compile Include="Util\LargeObjectHeap.cs" />
     <Compile Include="Util\PriorityQueue.cs" />
     <Compile Include="Util\ScriptBase.cs" />
     <Compile Include="Util\VectorExtensions.cs" />

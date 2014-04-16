@@ -30,7 +30,7 @@ namespace Lemma
 		{
 		}
 
-		public const int ConfigVersion = 7;
+		public const int ConfigVersion = 6;
 		public const int MapVersion = 353;
 		public const int Build = 353;
 
@@ -59,7 +59,7 @@ namespace Lemma
 			public Property<Point> Origin = new Property<Point> { Value = new Point(50, 50) };
 			public Property<Point> Size = new Property<Point> { Value = new Point(1280, 720) };
 			public Property<Point> FullscreenResolution = new Property<Point> { Value = Point.Zero };
-			public Property<float> MotionBlurAmount = new Property<float> { Value = 1.0f };
+			public Property<float> MotionBlurAmount = new Property<float> { Value = 0.5f };
 			public Property<float> Gamma = new Property<float> { Value = 1.0f };
 			public Property<bool> EnableReflections = new Property<bool> { Value = true };
 			public Property<bool> EnableBloom = new Property<bool> { Value = true };
@@ -130,7 +130,7 @@ namespace Lemma
 
 		private int displayModeIndex;
 
-		private List<Property<PCInput.PCInputBinding>> bindings = new List<Property<PCInput.PCInputBinding>>();
+		private List<Property<PCInput.PCInputBinding>> inputBindings = new List<Property<PCInput.PCInputBinding>>();
 
 		private ListContainer messages;
 
@@ -1266,7 +1266,7 @@ namespace Lemma
 
 				Action<Property<PCInput.PCInputBinding>, string, bool, bool> addInputSetting = delegate(Property<PCInput.PCInputBinding> setting, string display, bool allowGamepad, bool allowMouse)
 				{
-					this.bindings.Add(setting);
+					this.inputBindings.Add(setting);
 					UIComponent button = this.createMenuButton<PCInput.PCInputBinding>(display, setting);
 					button.Add(new CommandBinding<Point>(button.MouseLeftUp, delegate(Point mouse)
 					{
@@ -2021,16 +2021,14 @@ namespace Lemma
 		private Vector2 lastEditorMouse;
 		private string lastEditorSpawnPoint;
 
-		protected override void Update(GameTime gameTime)
+		protected override void update()
 		{
-			base.Update(gameTime);
-
 			if (this.GamePadState.Value.IsConnected != this.LastGamePadState.Value.IsConnected)
 			{
 				// Re-bind inputs so their string representations are properly displayed
 				// We need to show both PC and gamepad bindings
 
-				foreach (Property<PCInput.PCInputBinding> binding in this.bindings)
+				foreach (Property<PCInput.PCInputBinding> binding in this.inputBindings)
 					binding.Reset();
 			}
 

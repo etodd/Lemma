@@ -253,7 +253,7 @@ namespace Lemma.Components
 					chordContainer.Children.Add(chord);
 				}
 
-				return new[] { container };
+				return container;
 			}));
 		}
 

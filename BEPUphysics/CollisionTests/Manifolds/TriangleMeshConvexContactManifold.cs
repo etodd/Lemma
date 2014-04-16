@@ -26,7 +26,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
 
         protected abstract void GiveBackTester(TrianglePairTester tester);
 
-        HashSet<int> blockedVertexRegions = new HashSet<int>();
+        HashSet<uint> blockedVertexRegions = new HashSet<uint>();
         HashSet<Edge> blockedEdgeRegions = new HashSet<Edge>();
         RawValueList<EdgeContact> edgeContacts = new RawValueList<EdgeContact>(8);
         RawValueList<VertexContact> vertexContacts = new RawValueList<VertexContact>(8);
@@ -653,10 +653,10 @@ namespace BEPUphysics.CollisionTests.Manifolds
         /// </summary>
         public struct Edge : IEquatable<Edge>
         {
-            private int A;
-            private int B;
+            private uint A;
+            private uint B;
 
-            public Edge(int a, int b)
+            public Edge(uint a, uint b)
             {
                 A = a;
                 B = b;
@@ -664,7 +664,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
 
             public override int GetHashCode()
             {
-                return A + B;
+                return (int)A + (int)B;
             }
 
             public bool Equals(Edge edge)
@@ -681,15 +681,15 @@ namespace BEPUphysics.CollisionTests.Manifolds
             ///<summary>
             /// First index in the triangle.
             ///</summary>
-            public int A;
+            public uint A;
             ///<summary>
             /// Second index in the triangle.
             ///</summary>
-            public int B;
+            public uint B;
             ///<summary>
             /// Third index in the triangle.
             ///</summary>
-            public int C;
+            public uint C;
 
             /// <summary>
             /// Returns the hash code for this instance.
@@ -700,7 +700,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
             /// <filterpriority>2</filterpriority>
             public override int GetHashCode()
             {
-                return A + B + C;
+                return (int)A + (int)B + (int)C;
             }
 
             /// <summary>
@@ -728,7 +728,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
         {
             public bool ShouldCorrect;
             public Vector3 CorrectedNormal;
-            public int Vertex;
+            public uint Vertex;
             public ContactData ContactData;
         }
     }

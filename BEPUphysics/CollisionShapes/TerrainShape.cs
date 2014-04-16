@@ -493,14 +493,14 @@ namespace BEPUphysics.CollisionShapes
         ///<param name="overlappedTriangles">Triangles whose bounding boxes overlap the input bounding box.</param>
         public bool GetOverlaps(BoundingBox localSpaceBoundingBox, RawList<TriangleMeshConvexContactManifold.TriangleIndices> overlappedTriangles)
         {
-            int width = heights.GetLength(0);
-            int minX = Math.Max((int)localSpaceBoundingBox.Min.X, 0);
-            int minY = Math.Max((int)localSpaceBoundingBox.Min.Z, 0);
-            int maxX = Math.Min((int)localSpaceBoundingBox.Max.X, width - 2);
-            int maxY = Math.Min((int)localSpaceBoundingBox.Max.Z, heights.GetLength(1) - 2);
-            for (int i = minX; i <= maxX; i++)
+            uint width = (uint)heights.GetLength(0);
+            uint minX = (uint)Math.Max((int)localSpaceBoundingBox.Min.X, 0);
+            uint minY = (uint)Math.Max((int)localSpaceBoundingBox.Min.Z, 0);
+            uint maxX = (uint)Math.Min((int)localSpaceBoundingBox.Max.X, width - 2);
+            uint maxY = (uint)Math.Min((int)localSpaceBoundingBox.Max.Z, heights.GetLength(1) - 2);
+            for (uint i = minX; i <= maxX; i++)
             {
-                for (int j = minY; j <= maxY; j++)
+                for (uint j = minY; j <= maxY; j++)
                 {
                     //Before adding a triangle to the list, make sure the object isn't too high or low from the quad.
                     float highest, lowest;
@@ -638,12 +638,12 @@ namespace BEPUphysics.CollisionShapes
             //Reverse the encoded index:
             //index = i + width * j
             int width = heights.GetLength(0);
-            int columnA = indices.A / width;
-            int rowA = indices.A - columnA * width;
-            int columnB = indices.B / width;
-            int rowB = indices.B - columnB * width;
-            int columnC = indices.C / width;
-            int rowC = indices.C - columnC * width;
+            int columnA = (int)indices.A / width;
+            int rowA = (int)indices.A - columnA * width;
+            int columnB = (int)indices.B / width;
+            int rowB = (int)indices.B - columnB * width;
+            int columnC = (int)indices.C / width;
+            int rowC = (int)indices.C - columnC * width;
             GetPosition(rowA, columnA, ref transform, out a);
             GetPosition(rowB, columnB, ref transform, out b);
             GetPosition(rowC, columnC, ref transform, out c);

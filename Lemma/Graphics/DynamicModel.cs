@@ -14,11 +14,23 @@ namespace Lemma.Components
 		where Vertex : struct
 	{
 		private DynamicVertexBuffer vertexBuffer;
-		private VertexDeclaration declaration;
-		public ListProperty<Vertex> Vertices = new ListProperty<Vertex>();
 		private IndexBuffer indexBuffer;
+		private VertexDeclaration declaration;
+		public Vertex[] Vertices = new Vertex[] {};
+		public uint[] Indices = new uint[] {};
 		private bool verticesChanged;
+		private bool indicesChanged;
 		private int lockedVertexCount;
+
+		public void UpdateVertices()
+		{
+			this.verticesChanged = true;
+		}
+
+		public void UpdateIndices()
+		{
+			this.indicesChanged = true;
+		}
 
 		[XmlIgnore]
 		public object Lock;
@@ -27,28 +39,6 @@ namespace Lemma.Components
 		{
 			this.Serialize = false;
 			this.declaration = declaration;
-		}
-
-		public override void InitializeProperties()
-		{
-			base.InitializeProperties();
-
-			this.Vertices.ItemRemoved += delegate(int index, Vertex vertex)
-			{
-				this.verticesChanged = true;
-			};
-			this.Vertices.ItemAdded += delegate(int index, Vertex vertex)
-			{
-				this.verticesChanged = true;
-			};
-			this.Vertices.ItemChanged += delegate(int index, Vertex old, Vertex newValue)
-			{
-				this.verticesChanged = true;
-			};
-			this.Vertices.Cleared += delegate()
-			{
-				this.verticesChanged = true;
-			};
 		}
 
 		public override void LoadContent(bool reload)
@@ -84,7 +74,7 @@ namespace Lemma.Components
 
 				if (locked)
 				{
-					if (this.Vertices.Count > 0 && (this.vertexBuffer == null || this.vertexBuffer.IsContentLost || this.vertexBuffer.VertexCount < this.Vertices.Count))
+					if (this.Vertices.Length > 0 && (this.vertexBuffer == null || this.vertexBuffer.IsContentLost || this.vertexBuffer.VertexCount < this.Vertices.Length))
 					{
 						if (this.vertexBuffer != null && !this.vertexBuffer.IsDisposed)
 							this.vertexBuffer.Dispose();
@@ -92,38 +82,35 @@ namespace Lemma.Components
 						(
 							this.main.GraphicsDevice,
 							this.declaration,
-							(int)Math.Pow(2.0, Math.Ceiling(Math.Log(this.Vertices.Count, 2.0))),
+							(int)Math.Pow(2.0, Math.Ceiling(Math.Log(this.Vertices.Length, 2.0))),
 							BufferUsage.WriteOnly
 						);
-						int numTriangles = this.vertexBuffer.VertexCount / 2;
-
-						if (this.indexBuffer != null)
-							this.indexBuffer.Dispose();
-
-						uint[] indices = new uint[numTriangles * 6];
-						for (int i = 0; i < numTriangles; i++)
-						{
-							indices[i * 6] = (uint)(i * 4);
-							indices[i * 6 + 1] = (uint)(i * 4 + 1);
-							indices[i * 6 + 2] = (uint)(i * 4 + 2);
-
-							indices[i * 6 + 3] = (uint)(i * 4 + 0);
-							indices[i * 6 + 4] = (uint)(i * 4 + 2);
-							indices[i * 6 + 5] = (uint)(i * 4 + 3);
-						}
-
-						this.indexBuffer = new IndexBuffer(this.main.GraphicsDevice, typeof(uint), indices.Length, BufferUsage.WriteOnly);
-						this.indexBuffer.SetData(indices);
 
 						this.verticesChanged = true;
 					}
 
+					if (this.Indices.Length > 0 && (this.indexBuffer == null || this.indexBuffer.IndexCount < this.Indices.Length))
+					{
+						if (this.indexBuffer != null)
+							this.indexBuffer.Dispose();
+
+						this.indexBuffer = new IndexBuffer(this.main.GraphicsDevice, typeof(uint), (int)Math.Pow(2.0, Math.Ceiling(Math.Log(this.Indices.Length, 2.0))), BufferUsage.WriteOnly);
+						this.indicesChanged = true;
+					}
+
+					if (this.indicesChanged)
+					{
+						if (this.Indices.Length > 0)
+							this.indexBuffer.SetData(this.Indices);
+						this.indicesChanged = false;
+					}
+
 					if (this.verticesChanged)
 					{
-						if (this.Vertices.Count > 0)
-							this.vertexBuffer.SetData(0, this.Vertices.InternalList.ToArray(), 0, this.Vertices.Count, this.declaration.VertexStride, SetDataOptions.Discard);
+						if (this.Vertices.Length > 0)
+							this.vertexBuffer.SetData(0, this.Vertices, 0, this.Vertices.Length, this.declaration.VertexStride, SetDataOptions.Discard);
 						this.verticesChanged = false;
-						this.lockedVertexCount = this.Vertices.Count;
+						this.lockedVertexCount = this.Vertices.Length;
 					}
 
 					if (this.Lock != null)

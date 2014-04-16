@@ -268,7 +268,7 @@ namespace Lemma.Factories
 
 					return screenCenter + offset;
 				}, target.Position, main.Camera.ViewProjection, main.ScreenSize));
-				return new[] { sprite };
+				return sprite;
 			}));
 
 			player.EnabledInEditMode.Value = false;
@@ -826,7 +826,7 @@ namespace Lemma.Factories
 
 					ModelAlpha box = new ModelAlpha();
 					box.Filename.Value = "Models\\alpha-box";
-					box.Color.Value = new Vector3(0.5f, 0.7f, 0.9f);
+					box.Color.Value = new Vector3(0.7f, 0.9f, 1.1f);
 					box.Alpha.Value = blockPossibilityInitialAlpha;
 					box.IsInstanced.Value = false;
 					box.Editable = false;
@@ -2907,7 +2907,7 @@ namespace Lemma.Factories
 						phone.Messages,
 						delegate(Phone.Message msg)
 						{
-							return new[] { makeAlign(makeButton(msg.Incoming ? incomingColor : outgoingColor, "\\" + (msg.Text == null ? msg.ID : msg.Text), messageWidth - padding * 2.0f), !msg.Incoming) };
+							return makeAlign(makeButton(msg.Incoming ? incomingColor : outgoingColor, "\\" + (msg.Text == null ? msg.ID : msg.Text), messageWidth - padding * 2.0f), !msg.Incoming);
 						}
 					));
 
@@ -2925,7 +2925,7 @@ namespace Lemma.Factories
 								if (togglePhoneMessage == null && phone.Schedules.Count == 0) // No more messages incoming
 									togglePhoneMessage = ((GameMain)main).ShowMessage(result, "[{{TogglePhone}}]");
 							}));
-							return new[] { button };
+							return button;
 						}
 					));
 

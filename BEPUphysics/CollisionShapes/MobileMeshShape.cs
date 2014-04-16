@@ -124,7 +124,7 @@ namespace BEPUphysics.CollisionShapes
         ///<param name="indices">Indices of the mesh.</param>
         ///<param name="localTransform">Local transform to apply to the shape.</param>
         ///<param name="solidity">Solidity state of the shape.</param>
-        public MobileMeshShape(Vector3[] vertices, int[] indices, AffineTransform localTransform, MobileMeshSolidity solidity)
+        public MobileMeshShape(Vector3[] vertices, uint[] indices, AffineTransform localTransform, MobileMeshSolidity solidity)
         {
             this.solidity = solidity;
             var data = new TransformableMeshData(vertices, indices, localTransform);
@@ -148,7 +148,7 @@ namespace BEPUphysics.CollisionShapes
         ///<param name="localTransform">Local transform to apply to the shape.</param>
         ///<param name="solidity">Solidity state of the shape.</param>
         ///<param name="distributionInfo">Information computed about the shape during construction.</param>
-        public MobileMeshShape(Vector3[] vertices, int[] indices, AffineTransform localTransform, MobileMeshSolidity solidity, out ShapeDistributionInformation distributionInfo)
+        public MobileMeshShape(Vector3[] vertices, uint[] indices, AffineTransform localTransform, MobileMeshSolidity solidity, out ShapeDistributionInformation distributionInfo)
         {
             this.solidity = solidity;
             var data = new TransformableMeshData(vertices, indices, localTransform);

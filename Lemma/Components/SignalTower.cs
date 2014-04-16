@@ -122,7 +122,7 @@ namespace Lemma.Components
 					}
 				}, "[Delete]"));
 
-				return new[] { item };
+				return item;
 			}));
 
 			propertyList.Children.Add(ui.BuildButton(new Command

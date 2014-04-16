@@ -342,11 +342,10 @@ namespace ComponentBind
 	{
 		protected class Entry
 		{
-			public int Start;
-			public int End;
+			public int Index;
 		}
 		protected ListProperty<Type> destination;
-		protected Func<Type2, Type[]> transform;
+		protected Func<Type2, Type> transform;
 		protected Func<Type2, bool> filter;
 		protected Dictionary<Type2, Entry> mapping = new Dictionary<Type2, Entry>();
 		protected IProperty[] sources;
@@ -358,7 +357,7 @@ namespace ComponentBind
 			this.Enabled = true;
 		}
 
-		public ListBinding(ListProperty<Type> _destination, ListProperty<Type2> _source, Func<Type2, Type[]> _transform, Func<Type2, bool> _filter)
+		public ListBinding(ListProperty<Type> _destination, ListProperty<Type2> _source, Func<Type2, Type> _transform, Func<Type2, bool> _filter)
 		{
 			this.Enabled = true;
 			this.destination = _destination;
@@ -369,7 +368,7 @@ namespace ComponentBind
 			this.OnChanged(_source);
 		}
 
-		public ListBinding(ListProperty<Type> _destination, ListProperty<Type2> _source, Func<Type2, Type[]> _transform)
+		public ListBinding(ListProperty<Type> _destination, ListProperty<Type2> _source, Func<Type2, Type> _transform)
 			: this(_destination, _source, _transform, (x) => true)
 		{
 		}
@@ -388,10 +387,9 @@ namespace ComponentBind
 		{
 			if (this.Enabled && this.filter((Type2)x))
 			{
-				Type[] y = this.transform(x);
-				foreach (Type t in y)
-					this.destination.Add(t);
-				this.mapping.Add((Type2)x, new Entry { Start = this.destination.Count - y.Length, End = this.destination.Count });
+				Type y = this.transform(x);
+				this.destination.Add(y);
+				this.mapping.Add((Type2)x, new Entry { Index = this.destination.Count - 1 });
 			}
 		}
 
@@ -399,11 +397,10 @@ namespace ComponentBind
 		{
 			if (this.Enabled && this.filter((Type2)x))
 			{
-				Entry e = this.mapping[(Type2)x];
+				int e = this.mapping[(Type2)x].Index;
 				this.mapping.Remove((Type2)x);
-				for (int i = e.End - 1; i >= e.Start; i--)
-					this.destination.RemoveAt(i);
-				this.recalculate(e.End, e.Start);
+				this.destination.RemoveAt(e);
+				this.recalculate(e + 1, e);
 			}
 		}
 
@@ -414,11 +411,8 @@ namespace ComponentBind
 				int diff = newIndex - oldIndex;
 				foreach (Entry entry in this.mapping.Values)
 				{
-					if (entry.Start >= oldIndex)
-					{
-						entry.Start += diff;
-						entry.End += diff;
-					}
+					if (entry.Index >= oldIndex)
+						entry.Index += diff;
 				}
 			}
 		}
@@ -431,35 +425,25 @@ namespace ComponentBind
 				if (originallyIncluded && nowIncluded)
 				{
 					Entry oldEntry = this.mapping[(Type2)from];
-					Type[] newValue = this.transform((Type2)to);
-					Entry newEntry = new Entry { Start = oldEntry.Start, End = oldEntry.Start + newValue.Length };
+					Type newValue = this.transform((Type2)to);
+					Entry newEntry = new Entry { Index = oldEntry.Index };
 
-					for (int i = oldEntry.Start; i < Math.Min(oldEntry.End, newEntry.End); i++)
-						this.destination.Changed(i, newValue[i - newEntry.Start]);
+					this.destination.Changed(oldEntry.Index, newValue);
 
-					for (int i = oldEntry.End - 1; i >= newEntry.End; i--)
-						this.destination.RemoveAt(i);
-
-					for (int i = oldEntry.End; i < newEntry.End; i++)
-						this.destination.Insert(i, newValue[i - newEntry.Start]);
-
-					this.recalculate(oldEntry.End, newEntry.End);
 					this.mapping[(Type2)from] = newEntry;
 				}
 				else if (!originallyIncluded && nowIncluded)
 				{
-					Type[] newValue = this.transform((Type2)to);
-					foreach (Type t in newValue)
-						this.destination.Add(t);
-					this.mapping.Add((Type2)to, new Entry { Start = this.destination.Count - newValue.Length, End = this.destination.Count });
+					Type newValue = this.transform((Type2)to);
+					this.destination.Add(newValue);
+					this.mapping.Add((Type2)to, new Entry { Index = this.destination.Count - 1 });
 				}
 				else if (originallyIncluded && !nowIncluded)
 				{
 					Entry entry = this.mapping[(Type2)from];
-					for (int i = entry.End - 1; i >= entry.Start; i--)
-						this.destination.RemoveAt(i);
+					this.destination.RemoveAt(entry.Index);
 					this.mapping.Remove((Type2)from);
-					this.recalculate(entry.End, entry.Start);
+					this.recalculate(entry.Index + 1, entry.Index);
 				}
 			}
 		}
@@ -544,7 +528,7 @@ namespace ComponentBind
 	public class ListBinding<Type> : ListBinding<Type, Type>
 	{
 		public ListBinding(ListProperty<Type> _destination, ListProperty<Type> _source)
-			: base(_destination, _source, (x) => new[] { x }, (x) => true)
+			: base(_destination, _source, x => x, x => true)
 		{
 		}
 	}

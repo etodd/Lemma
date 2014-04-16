@@ -57,8 +57,6 @@ namespace Lemma.Components
 	/// </summary>
 	public class Renderer : Component<Main>
 	{
-		public delegate void DrawStageDelegate(RenderParameters parameters);
-
 		private LightingManager lightingManager;
 
 		// Geometry
@@ -116,6 +114,7 @@ namespace Lemma.Components
 		private RenderTarget2D velocityBuffer;
 		private RenderTarget2D velocityBufferLastFrame;
 		private bool allowBloom;
+		private bool allowPostAlphaDrawables;
 		private SpriteBatch spriteBatch;
 
 		/// <summary>
@@ -123,11 +122,12 @@ namespace Lemma.Components
 		/// </summary>
 		/// <param name="graphicsDevice">The GraphicsDevice to use for rendering</param>
 		/// <param name="contentManager">The ContentManager from which to load Effects</param>
-		public Renderer(Main main, Point size, bool allowMotionBlur, bool allowBloom, bool allowSSAO)
+		public Renderer(Main main, Point size, bool allowMotionBlur, bool allowBloom, bool allowSSAO, bool allowPostAlphaDrawables)
 		{
 			this.allowMotionBlur = allowMotionBlur;
 			this.allowBloom = allowBloom;
 			this.allowSSAO = allowSSAO;
+			this.allowPostAlphaDrawables = allowPostAlphaDrawables;
 			this.lightingManager = main.LightingManager;
 			this.screenSize = size;
 		}
@@ -597,7 +597,7 @@ namespace Lemma.Components
 			colorDestination = colorSource;
 			parameters.FrameBuffer = colorSource = colorTemp;
 
-			if (this.main.HasPostAlphaDrawables)
+			if (this.allowPostAlphaDrawables && this.main.HasPostAlphaDrawables)
 			{
 				this.setTargets(colorDestination);
 

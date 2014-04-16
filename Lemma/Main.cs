@@ -221,35 +221,6 @@ namespace Lemma
 
 		public Command ReloadedContent = new Command();
 
-		private Thread physicsThread;
-		private EventWaitHandle physicsUpdate = new EventWaitHandle(false, EventResetMode.AutoReset);
-		private object physicsLock = new object();
-
-		private bool alive = true;
-		private void physics()
-		{
-			while (true)
-			{
-				this.physicsUpdate.WaitOne();
-				if (!this.alive)
-					break;
-				lock (this.physicsLock)
-				{
-#if PERFORMANCE_MONITOR
-					Stopwatch timer = new Stopwatch();
-					timer.Start();
-#endif
-					if (!this.Paused && !this.EditorEnabled)
-						this.Space.Update(this.ElapsedTime);
-#if PERFORMANCE_MONITOR
-					timer.Stop();
-					this.physicsSum = Math.Max(this.physicsSum, timer.Elapsed.TotalSeconds);
-				}
-#endif
-				AkSoundEngine.RenderAudio();
-			}
-		}
-
 		public Main()
 		{
 			Factory<Main>.Initialize();
@@ -315,17 +286,10 @@ namespace Lemma
 			};
 			new NotifyBinding(updateLanguage, this.Strings.Language);
 			updateLanguage();
-
-			this.physicsThread = new Thread(this.physics);
-			this.physicsThread.Start();
 		}
 
 		public void Cleanup()
 		{
-			// Kill physics thread
-			this.alive = false;
-			this.physicsUpdate.Set();
-
 			// Terminate Wwise
 			if (AkSoundEngine.IsInitialized())
 			{
@@ -356,7 +320,7 @@ namespace Lemma
 				// Create the renderer.
 				this.LightingManager = new LightingManager();
 				this.AddComponent(this.LightingManager);
-				this.Renderer = new Renderer(this, this.ScreenSize, true, true, false);
+				this.Renderer = new Renderer(this, this.ScreenSize, true, true, false, true);
 
 				this.AddComponent(this.Renderer);
 				this.renderParameters = new RenderParameters
@@ -462,136 +426,149 @@ namespace Lemma
 
 		protected override void Update(GameTime gameTime)
 		{
-			lock (this.physicsLock)
+			if (gameTime.ElapsedGameTime.TotalSeconds > 0.1f)
+				gameTime = new GameTime(gameTime.TotalGameTime, new TimeSpan((long)(0.1f * (float)TimeSpan.TicksPerSecond)), true);
+			this.GameTime = gameTime;
+			this.ElapsedTime.Value = (float)gameTime.ElapsedGameTime.TotalSeconds * this.TimeMultiplier;
+			if (!this.Paused)
+				this.TotalTime.Value += this.ElapsedTime;
+
+			if (!this.EditorEnabled && this.mapLoaded)
 			{
-				if (gameTime.ElapsedGameTime.TotalSeconds > 0.1f)
-					gameTime = new GameTime(gameTime.TotalGameTime, new TimeSpan((long)(0.1f * (float)TimeSpan.TicksPerSecond)), true);
-				this.GameTime = gameTime;
-				this.ElapsedTime.Value = (float)gameTime.ElapsedGameTime.TotalSeconds * this.TimeMultiplier;
-				if (!this.Paused)
-					this.TotalTime.Value += this.ElapsedTime;
-
-				if (!this.EditorEnabled && this.mapLoaded)
-				{
-					IEnumerable<string> mapGlobalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("..\\GlobalScripts", Path.GetFileNameWithoutExtension(x)));
-					foreach (string scriptName in mapGlobalScripts)
-						this.executeScript(scriptName);
-				}
-				this.mapLoaded = false;
-
-				this.LastKeyboardState.Value = this.KeyboardState;
-				this.KeyboardState.Value = Microsoft.Xna.Framework.Input.Keyboard.GetState();
-				this.LastMouseState.Value = this.MouseState;
-				this.MouseState.Value = Microsoft.Xna.Framework.Input.Mouse.GetState();
-
-				this.LastGamePadState.Value = this.GamePadState;
-				this.GamePadState.Value = Microsoft.Xna.Framework.Input.GamePad.GetState(PlayerIndex.One);
-				if (this.GamePadState.Value.IsConnected != this.GamePadConnected)
-					this.GamePadConnected.Value = this.GamePadState.Value.IsConnected;
-
-#if PERFORMANCE_MONITOR
-				Stopwatch timer = new Stopwatch();
-				timer.Start();
-#endif
-				for (int i = 0; i < this.updateables.Count; i++)
-				{
-					IUpdateableComponent c = this.updateables[i];
-					if (this.componentEnabled(c))
-						c.Update(this.ElapsedTime);
-				}
-				this.FlushComponents();
-
-				if (this.drawableBinding == null)
-				{
-					this.drawableBinding = new NotifyBinding(delegate() { this.drawablesModified = true; }, this.drawables.Select(x => x.DrawOrder).ToArray());
-					this.drawablesModified = true;
-				}
-				if (this.drawablesModified)
-				{
-					this.drawables.InsertionSort(delegate(IDrawableComponent a, IDrawableComponent b)
-					{
-						return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
-					});
-					this.drawablesModified = false;
-				}
-
-				if (this.alphaDrawableBinding == null)
-				{
-					this.alphaDrawableBinding = new NotifyBinding(delegate() { this.alphaDrawablesModified = true; }, this.alphaDrawables.Select(x => x.DrawOrder).ToArray());
-					this.alphaDrawablesModified = true;
-				}
-				if (this.alphaDrawablesModified)
-				{
-					this.alphaDrawables.InsertionSort(delegate(IDrawableAlphaComponent a, IDrawableAlphaComponent b)
-					{
-						return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
-					});
-				}
-
-				if (this.postAlphaDrawableBinding == null)
-				{
-					this.postAlphaDrawableBinding = new NotifyBinding(delegate() { this.postAlphaDrawablesModified = true; }, this.postAlphaDrawables.Select(x => x.DrawOrder).ToArray());
-					this.postAlphaDrawablesModified = true;
-				}
-				if (this.postAlphaDrawablesModified)
-				{
-					this.postAlphaDrawables.InsertionSort(delegate(IDrawablePostAlphaComponent a, IDrawablePostAlphaComponent b)
-					{
-						return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
-					});
-				}
-
-				if (this.nonPostProcessedDrawableBinding == null)
-				{
-					this.nonPostProcessedDrawableBinding = new NotifyBinding(delegate() { this.nonPostProcessedDrawablesModified = true; }, this.nonPostProcessedDrawables.Select(x => x.DrawOrder).ToArray());
-					this.nonPostProcessedDrawablesModified = true;
-				}
-				if (this.nonPostProcessedDrawablesModified)
-				{
-					this.nonPostProcessedDrawables.InsertionSort(delegate(INonPostProcessedDrawableComponent a, INonPostProcessedDrawableComponent b)
-					{
-						return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
-					});
-				}
-
-				if (this.resize != null && this.resize.Value.X > 0 && this.resize.Value.Y > 0)
-				{
-					this.ResizeViewport(this.resize.Value.X, this.resize.Value.Y, false);
-					this.resize = null;
-				}
-
-#if PERFORMANCE_MONITOR
-				timer.Stop();
-				this.updateSum = Math.Max(this.updateSum, timer.Elapsed.TotalSeconds);
-				this.frameSum++;
-				this.performanceInterval += this.ElapsedTime;
-				if (this.performanceInterval > Main.performanceUpdateTime)
-				{
-					if (this.performanceMonitor.Visible)
-					{
-						this.frameRate.Value = this.frameSum / this.performanceInterval;
-						this.physicsTime.Value = this.physicsSum;
-						this.updateTime.Value = this.updateSum;
-						this.preframeTime.Value = this.preframeSum;
-						this.rawRenderTime.Value = this.rawRenderSum;
-						this.shadowRenderTime.Value = this.shadowRenderSum;
-						this.postProcessTime.Value = this.postProcessSum;
-						this.unPostProcessedTime.Value = this.unPostProcessedSum;
-					}
-					this.physicsSum = 0;
-					this.updateSum = 0;
-					this.preframeSum = 0;
-					this.rawRenderSum = 0;
-					this.shadowRenderSum = 0;
-					this.postProcessSum = 0;
-					this.unPostProcessedSum = 0;
-					this.frameSum = 0;
-					this.performanceInterval = 0;
-				}
-#endif
+				IEnumerable<string> mapGlobalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("..\\GlobalScripts", Path.GetFileNameWithoutExtension(x)));
+				foreach (string scriptName in mapGlobalScripts)
+					this.executeScript(scriptName);
 			}
-				
-			this.physicsUpdate.Set();
+			this.mapLoaded = false;
+
+			this.LastKeyboardState.Value = this.KeyboardState;
+			this.KeyboardState.Value = Microsoft.Xna.Framework.Input.Keyboard.GetState();
+			this.LastMouseState.Value = this.MouseState;
+			this.MouseState.Value = Microsoft.Xna.Framework.Input.Mouse.GetState();
+
+			this.LastGamePadState.Value = this.GamePadState;
+			this.GamePadState.Value = Microsoft.Xna.Framework.Input.GamePad.GetState(PlayerIndex.One);
+			if (this.GamePadState.Value.IsConnected != this.GamePadConnected)
+				this.GamePadConnected.Value = this.GamePadState.Value.IsConnected;
+
+#if PERFORMANCE_MONITOR
+			Stopwatch timer = new Stopwatch();
+			timer.Start();
+#endif
+			for (int i = 0; i < this.updateables.Count; i++)
+			{
+				IUpdateableComponent c = this.updateables[i];
+				if (this.componentEnabled(c))
+					c.Update(this.ElapsedTime);
+			}
+			this.FlushComponents();
+
+			if (this.drawableBinding == null)
+			{
+				this.drawableBinding = new NotifyBinding(delegate() { this.drawablesModified = true; }, this.drawables.Select(x => x.DrawOrder).ToArray());
+				this.drawablesModified = true;
+			}
+			if (this.drawablesModified)
+			{
+				this.drawables.InsertionSort(delegate(IDrawableComponent a, IDrawableComponent b)
+				{
+					return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
+				});
+				this.drawablesModified = false;
+			}
+
+			if (this.alphaDrawableBinding == null)
+			{
+				this.alphaDrawableBinding = new NotifyBinding(delegate() { this.alphaDrawablesModified = true; }, this.alphaDrawables.Select(x => x.DrawOrder).ToArray());
+				this.alphaDrawablesModified = true;
+			}
+			if (this.alphaDrawablesModified)
+			{
+				this.alphaDrawables.InsertionSort(delegate(IDrawableAlphaComponent a, IDrawableAlphaComponent b)
+				{
+					return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
+				});
+			}
+
+			if (this.postAlphaDrawableBinding == null)
+			{
+				this.postAlphaDrawableBinding = new NotifyBinding(delegate() { this.postAlphaDrawablesModified = true; }, this.postAlphaDrawables.Select(x => x.DrawOrder).ToArray());
+				this.postAlphaDrawablesModified = true;
+			}
+			if (this.postAlphaDrawablesModified)
+			{
+				this.postAlphaDrawables.InsertionSort(delegate(IDrawablePostAlphaComponent a, IDrawablePostAlphaComponent b)
+				{
+					return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
+				});
+			}
+
+			if (this.nonPostProcessedDrawableBinding == null)
+			{
+				this.nonPostProcessedDrawableBinding = new NotifyBinding(delegate() { this.nonPostProcessedDrawablesModified = true; }, this.nonPostProcessedDrawables.Select(x => x.DrawOrder).ToArray());
+				this.nonPostProcessedDrawablesModified = true;
+			}
+			if (this.nonPostProcessedDrawablesModified)
+			{
+				this.nonPostProcessedDrawables.InsertionSort(delegate(INonPostProcessedDrawableComponent a, INonPostProcessedDrawableComponent b)
+				{
+					return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
+				});
+			}
+
+			if (this.resize != null && this.resize.Value.X > 0 && this.resize.Value.Y > 0)
+			{
+				this.ResizeViewport(this.resize.Value.X, this.resize.Value.Y, false);
+				this.resize = null;
+			}
+
+#if PERFORMANCE_MONITOR
+			timer.Stop();
+			this.updateSum = Math.Max(this.updateSum, timer.Elapsed.TotalSeconds);
+
+			timer.Restart();
+#endif
+			if (!this.Paused && !this.EditorEnabled)
+				this.Space.Update(this.ElapsedTime);
+#if PERFORMANCE_MONITOR
+			timer.Stop();
+			this.physicsSum = Math.Max(this.physicsSum, timer.Elapsed.TotalSeconds);
+
+			AkSoundEngine.RenderAudio();
+
+			this.frameSum++;
+			this.performanceInterval += this.ElapsedTime;
+			if (this.performanceInterval > Main.performanceUpdateTime)
+			{
+				if (this.performanceMonitor.Visible)
+				{
+					this.frameRate.Value = this.frameSum / this.performanceInterval;
+					this.physicsTime.Value = this.physicsSum;
+					this.updateTime.Value = this.updateSum;
+					this.preframeTime.Value = this.preframeSum;
+					this.rawRenderTime.Value = this.rawRenderSum;
+					this.shadowRenderTime.Value = this.shadowRenderSum;
+					this.postProcessTime.Value = this.postProcessSum;
+					this.unPostProcessedTime.Value = this.unPostProcessedSum;
+				}
+				this.physicsSum = 0;
+				this.updateSum = 0;
+				this.preframeSum = 0;
+				this.rawRenderSum = 0;
+				this.shadowRenderSum = 0;
+				this.postProcessSum = 0;
+				this.unPostProcessedSum = 0;
+				this.frameSum = 0;
+				this.performanceInterval = 0;
+			}
+#endif
+
+			this.update();
+		}
+
+		protected virtual void update()
+		{
+
 		}
 
 		protected override void Draw(GameTime gameTime)

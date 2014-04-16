@@ -83,95 +83,54 @@ namespace Lemma.Factories
 
 			if (dataOnly)
 				map.EnablePhysics.Value = false;
-
-			if (!dataOnly || main.EditorEnabled)
+			else
 			{
-				map.Chunks.ItemAdded += delegate(int index, Map.Chunk chunk)
+				map.CreateModel = delegate(Vector3 min, Vector3 max, Map.CellState state)
 				{
-					Dictionary<int, bool> models = new Dictionary<int, bool>();
+					if (state.Invisible)
+						return null;
 
-					Action<Map.CellState> createModel = delegate(Map.CellState state)
+					DynamicModel<Map.MapVertex> model = new DynamicModel<Map.MapVertex>(Map.MapVertex.VertexDeclaration);
+					model.EffectFile.Value = "Effects\\Environment";
+					model.Lock = new object();
+					state.ApplyTo(model);
+
+					/*
+					ModelAlpha debug = new ModelAlpha { Serialize = false };
+					debug.Alpha.Value = 0.01f;
+					debug.DrawOrder.Value = 11; // In front of water
+					debug.Color.Value = new Vector3(1.0f, 0.8f, 0.6f);
+					debug.Filename.Value = "Models\\alpha-box";
+					debug.CullBoundingBox.Value = false;
+					debug.DisableCulling.Value = true;
+					debug.Add(new Binding<Matrix>(debug.Transform, delegate()
 					{
-						if (state.ID == 0)
-							return; // 0 = empty
+						BoundingBox box = model.BoundingBox;
+						return Matrix.CreateScale(box.Max - box.Min) * Matrix.CreateTranslation((box.Max + box.Min) * 0.5f) * transform.Matrix;
+					}, transform.Matrix, model.BoundingBox));
+					result.Add(debug);
+					*/
 
-						DynamicModel<Map.MapVertex> model = new DynamicModel<Map.MapVertex>(Map.MapVertex.VertexDeclaration);
-						model.EffectFile.Value = "Effects\\Environment";
-						model.Lock = map.Lock;
-						state.ApplyTo(model);
+					if (main.EditorEnabled || map.Scale.Value != 1.0f)
+						model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateScale(map.Scale) * transform.Matrix, transform.Matrix, map.Scale));
+					else
+						model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 
-						/*
-						ModelAlpha debug = new ModelAlpha { Serialize = false };
-						debug.Alpha.Value = 0.01f;
-						debug.DrawOrder.Value = 11; // In front of water
-						debug.Color.Value = new Vector3(1.0f, 0.8f, 0.6f);
-						debug.Filename.Value = "Models\\alpha-box";
-						debug.CullBoundingBox.Value = false;
-						debug.DisableCulling.Value = true;
-						debug.Add(new Binding<Matrix>(debug.Transform, delegate()
-						{
-							BoundingBox box = model.BoundingBox;
-							return Matrix.CreateScale(box.Max - box.Min) * Matrix.CreateTranslation((box.Max + box.Min) * 0.5f) * transform.Matrix;
-						}, transform.Matrix, model.BoundingBox));
-						result.Add(debug);
-						*/
+					model.Add(new Binding<Vector3>(model.GetVector3Parameter("Offset"), map.Offset));
 
-						if (main.EditorEnabled || map.Scale.Value != 1.0f)
-							model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateScale(map.Scale) * transform.Matrix, transform.Matrix, map.Scale));
-						else
-							model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
+					Map.CellState s = state;
 
-						Vector3 min = new Vector3(chunk.X, chunk.Y, chunk.Z);
-						Vector3 max = min + new Vector3(map.ChunkSize);
+					if (!s.ShadowCast)
+						model.UnsupportedTechniques.AddAll(new[] { Technique.Shadow, Technique.PointLightShadow });
 
-						model.Add(new Binding<Vector3>(model.GetVector3Parameter("Offset"), map.Offset));
+					result.Add(model);
 
-						Map.CellState s = state;
+					// We have to create this binding after adding the model to the entity
+					// Because when the model loads, it automatically calculates a bounding box for it.
+					model.Add(new Binding<BoundingBox, Vector3>(model.BoundingBox, x => new BoundingBox(min - x, max - x), map.Offset));
+					model.CullBoundingBox.Value = true;
 
-						if (!s.ShadowCast)
-							model.UnsupportedTechniques.AddAll(new[] { Technique.Shadow, Technique.PointLightShadow });
-
-						model.Add(new ListBinding<Map.MapVertex, Map.Box>
-						(
-							model.Vertices,
-							chunk.Boxes,
-							delegate(Map.Box box)
-							{
-								Map.MapVertex[] vertices = new Map.MapVertex[box.Surfaces.Where(x => x.HasArea).Count() * 4];
-								int i = 0;
-								foreach (Map.Surface surface in box.Surfaces)
-								{
-									if (surface.HasArea)
-									{
-										Array.Copy(surface.Vertices, 0, vertices, i, 4);
-										i += 4;
-									}
-								}
-								return vertices;
-							},
-							x => x.Type == s
-						));
-
-						result.Add(model);
-
-						// We have to create this binding after adding the model to the entity
-						// Because when the model loads, it automatically calculates a bounding box for it.
-						model.Add(new Binding<BoundingBox, Vector3>(model.BoundingBox, x => new BoundingBox(min - x, max - x), map.Offset));
-
-						models[state.ID] = true;
-					};
-
-					chunk.Boxes.ItemAdded += delegate(int i, Map.Box box)
-					{
-						if ((!box.Type.Invisible || main.EditorEnabled) && !models.ContainsKey(box.Type.ID))
-							createModel(box.Type);
-					};
-
-					chunk.Boxes.ItemChanged += delegate(int i, Map.Box oldBox, Map.Box newBox)
-					{
-						if ((!newBox.Type.Invisible || main.EditorEnabled) && !models.ContainsKey(newBox.Type.ID))
-							createModel(newBox.Type);
-					};
+					return model;
 				};
 			}
 

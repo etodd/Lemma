@@ -12,7 +12,7 @@ namespace BEPUphysics.DataStructures
         ///</summary>
         ///<param name="vertices">Vertices to use in the data.</param>
         ///<param name="indices">Indices to use in the data.</param>
-        public StaticMeshData(Vector3[] vertices, int[] indices)
+        public StaticMeshData(Vector3[] vertices, uint[] indices)
         {
             Vertices = vertices;
             Indices = indices;

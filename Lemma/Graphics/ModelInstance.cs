@@ -24,7 +24,7 @@ namespace Lemma.Components
 				base.InitializeProperties();
 				this.CullBoundingBox.Value = false;
 				this.IsInstanced.Value = true;
-				this.instanceBinding = new ListBinding<Matrix, ModelInstance>(this.Instances, this.instances, x => new Matrix[] { x.transform });
+				this.instanceBinding = new ListBinding<Matrix, ModelInstance>(this.Instances, this.instances, x => x.transform);
 				this.Add(this.instanceBinding);
 			}
 

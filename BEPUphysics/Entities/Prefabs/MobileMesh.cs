@@ -23,7 +23,7 @@ namespace BEPUphysics.Entities.Prefabs
         /// <param name="indices">Indices of the mesh.</param>
         /// <param name="localTransform">Affine transform to apply to the vertices.</param>
         /// <param name="solidity">Solidity/sidedness of the mesh.  "Solid" is only permitted if the mesh is closed.</param>
-        public MobileMesh(Vector3[] vertices, int[] indices, AffineTransform localTransform, MobileMeshSolidity solidity)
+        public MobileMesh(Vector3[] vertices, uint[] indices, AffineTransform localTransform, MobileMeshSolidity solidity)
         {
             ShapeDistributionInformation info;
             var shape = new MobileMeshShape(vertices, indices, localTransform, solidity, out info);
@@ -41,7 +41,7 @@ namespace BEPUphysics.Entities.Prefabs
         /// <param name="localTransform">Affine transform to apply to the vertices.</param>
         /// <param name="solidity">Solidity/sidedness of the mesh.  "Solid" is only permitted if the mesh is closed.</param>
         /// <param name="mass">Mass of the mesh.</param>
-        public MobileMesh(Vector3[] vertices, int[] indices,  AffineTransform localTransform, MobileMeshSolidity solidity, float mass)
+        public MobileMesh(Vector3[] vertices, uint[] indices,  AffineTransform localTransform, MobileMeshSolidity solidity, float mass)
         {
             ShapeDistributionInformation info;
             var shape = new MobileMeshShape(vertices, indices, localTransform, solidity, out info);

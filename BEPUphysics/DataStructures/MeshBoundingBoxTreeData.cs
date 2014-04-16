@@ -7,11 +7,11 @@ namespace BEPUphysics.DataStructures
     ///</summary>
     public abstract class MeshBoundingBoxTreeData
     {
-        internal int[] indices;
+        internal uint[] indices;
         ///<summary>
         /// Gets or sets the indices of the triangle mesh.
         ///</summary>
-        public int[] Indices
+        public uint[] Indices
         {
             get
             {

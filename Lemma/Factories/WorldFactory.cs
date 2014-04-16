@@ -448,7 +448,7 @@ namespace Lemma.Factories
 			);
 		}
 
-		private static readonly Color defaultBackgroundColor = new Color(8.0f / 255.0f, 13.0f / 255.0f, 19.0f / 255.0f, 1.0f);
+		private static readonly Color defaultBackgroundColor = new Color(16.0f / 255.0f, 26.0f / 255.0f, 38.0f / 255.0f, 1.0f);
 
 		private static Entity instance;
 
