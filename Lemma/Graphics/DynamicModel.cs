@@ -10,25 +10,31 @@ using System.Threading;
 
 namespace Lemma.Components
 {
-	public class DynamicModel<Vertex> : Model
+	public class DynamicModel<Vertex> : Model, IUpdateableComponent
 		where Vertex : struct
 	{
 		private DynamicVertexBuffer vertexBuffer;
 		private IndexBuffer indexBuffer;
 		private VertexDeclaration declaration;
-		public Vertex[] Vertices = new Vertex[] {};
-		public uint[] Indices = new uint[] {};
+		private Vertex[] vertices = new Vertex[] {};
+		public uint[] indices = new uint[] {};
 		private bool verticesChanged;
 		private bool indicesChanged;
+		private int vertexCount;
+		private int indexCount;
 		private int lockedVertexCount;
 
-		public void UpdateVertices()
+		public void UpdateVertices(Vertex[] v, int count)
 		{
+			this.vertices = v;
+			this.vertexCount = count;
 			this.verticesChanged = true;
 		}
 
-		public void UpdateIndices()
+		public void UpdateIndices(uint[] i, int count)
 		{
+			this.indices = i;
+			this.indexCount = count;
 			this.indicesChanged = true;
 		}
 
@@ -57,6 +63,60 @@ namespace Lemma.Components
 			base.loadEffect(file);
 		}
 
+		public void Update(float dt)
+		{
+			bool locked;
+			if (this.Lock == null)
+				locked = true;
+			else
+				locked = Monitor.TryEnter(this.Lock);
+
+			if (locked)
+			{
+				if (this.vertexCount > 0 && (this.vertexBuffer == null || this.vertexBuffer.IsContentLost || this.vertexBuffer.VertexCount < this.vertexCount))
+				{
+					if (this.vertexBuffer != null && !this.vertexBuffer.IsDisposed)
+						this.vertexBuffer.Dispose();
+					this.vertexBuffer = new DynamicVertexBuffer
+					(
+						this.main.GraphicsDevice,
+						this.declaration,
+						(int)Math.Pow(2.0, Math.Ceiling(Math.Log(this.vertexCount, 2.0))),
+						BufferUsage.WriteOnly
+					);
+
+					this.verticesChanged = true;
+				}
+
+				if (this.indexCount > 0 && (this.indexBuffer == null || this.indexBuffer.IndexCount < this.indexCount))
+				{
+					if (this.indexBuffer != null)
+						this.indexBuffer.Dispose();
+
+					this.indexBuffer = new IndexBuffer(this.main.GraphicsDevice, typeof(uint), (int)Math.Pow(2.0, Math.Ceiling(Math.Log(this.indexCount, 2.0))), BufferUsage.WriteOnly);
+					this.indicesChanged = true;
+				}
+
+				if (this.indicesChanged)
+				{
+					if (this.indexCount > 0)
+						this.indexBuffer.SetData(this.indices, 0, this.indexCount);
+					this.indicesChanged = false;
+				}
+
+				if (this.verticesChanged)
+				{
+					if (this.vertexCount > 0)
+						this.vertexBuffer.SetData(0, this.vertices, 0, this.vertexCount, this.declaration.VertexStride, SetDataOptions.Discard);
+					this.verticesChanged = false;
+					this.lockedVertexCount = this.vertexCount;
+				}
+
+				if (this.Lock != null)
+					Monitor.Exit(this.Lock);
+			}
+		}
+
 		/// <summary>
 		/// Draws a single mesh using the given world matrix.
 		/// </summary>
@@ -64,60 +124,6 @@ namespace Lemma.Components
 		/// <param name="transform"></param>
 		protected override void draw(RenderParameters parameters, Matrix transform)
 		{
-			if (parameters.IsMainRender)
-			{
-				bool locked;
-				if (this.Lock == null)
-					locked = true;
-				else
-					locked = Monitor.TryEnter(this.Lock);
-
-				if (locked)
-				{
-					if (this.Vertices.Length > 0 && (this.vertexBuffer == null || this.vertexBuffer.IsContentLost || this.vertexBuffer.VertexCount < this.Vertices.Length))
-					{
-						if (this.vertexBuffer != null && !this.vertexBuffer.IsDisposed)
-							this.vertexBuffer.Dispose();
-						this.vertexBuffer = new DynamicVertexBuffer
-						(
-							this.main.GraphicsDevice,
-							this.declaration,
-							(int)Math.Pow(2.0, Math.Ceiling(Math.Log(this.Vertices.Length, 2.0))),
-							BufferUsage.WriteOnly
-						);
-
-						this.verticesChanged = true;
-					}
-
-					if (this.Indices.Length > 0 && (this.indexBuffer == null || this.indexBuffer.IndexCount < this.Indices.Length))
-					{
-						if (this.indexBuffer != null)
-							this.indexBuffer.Dispose();
-
-						this.indexBuffer = new IndexBuffer(this.main.GraphicsDevice, typeof(uint), (int)Math.Pow(2.0, Math.Ceiling(Math.Log(this.Indices.Length, 2.0))), BufferUsage.WriteOnly);
-						this.indicesChanged = true;
-					}
-
-					if (this.indicesChanged)
-					{
-						if (this.Indices.Length > 0)
-							this.indexBuffer.SetData(this.Indices);
-						this.indicesChanged = false;
-					}
-
-					if (this.verticesChanged)
-					{
-						if (this.Vertices.Length > 0)
-							this.vertexBuffer.SetData(0, this.Vertices, 0, this.Vertices.Length, this.declaration.VertexStride, SetDataOptions.Discard);
-						this.verticesChanged = false;
-						this.lockedVertexCount = this.Vertices.Length;
-					}
-
-					if (this.Lock != null)
-						Monitor.Exit(this.Lock);
-				}
-			}
-
 			if (this.lockedVertexCount > 0 && this.vertexBuffer != null && !this.vertexBuffer.IsContentLost && this.setParameters(transform, parameters))
 			{
 				this.main.LightingManager.SetRenderParameters(this.effect, parameters);

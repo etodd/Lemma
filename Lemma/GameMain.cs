@@ -68,6 +68,7 @@ namespace Lemma
 			public Property<bool> InvertMouseY = new Property<bool> { Value = false };
 			public Property<float> MouseSensitivity = new Property<float> { Value = 1.0f };
 			public Property<float> FieldOfView = new Property<float> { Value = MathHelper.ToRadians(80.0f) };
+			public Property<bool> EnableVsync = new Property<bool> { Value = false };
 			public int Version;
 			public string UUID;
 			public Property<PCInput.PCInputBinding> Forward = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.W } };
@@ -203,6 +204,12 @@ namespace Lemma
 			}
 
 			// Restore window state
+			this.graphics.SynchronizeWithVerticalRetrace = this.Settings.EnableVsync;
+			new NotifyBinding(delegate()
+			{
+				this.graphics.SynchronizeWithVerticalRetrace = this.Settings.EnableVsync;
+				this.graphics.ApplyChanges();
+			}, this.Settings.EnableVsync);
 			if (this.Settings.Fullscreen)
 				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true);
 			else
@@ -1122,6 +1129,17 @@ namespace Lemma
 					changeFullscreenResolution(scroll);
 				}));
 				settingsMenu.Children.Add(fullscreenResolution);
+
+				UIComponent vsyncEnabled = this.createMenuButton<bool>("\\vsync enabled", this.Settings.EnableVsync);
+				vsyncEnabled.Add(new CommandBinding<Point, int>(vsyncEnabled.MouseScrolled, delegate(Point mouse, int scroll)
+				{
+					this.Settings.EnableVsync.Value = !this.Settings.EnableVsync;
+				}));
+				vsyncEnabled.Add(new CommandBinding<Point>(vsyncEnabled.MouseLeftUp, delegate(Point mouse)
+				{
+					this.Settings.EnableVsync.Value = !this.Settings.EnableVsync;
+				}));
+				settingsMenu.Children.Add(vsyncEnabled);
 
 				UIComponent gamma = this.createMenuButton<float>("\\gamma", this.Renderer.Gamma, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
 				gamma.Add(new CommandBinding<Point, int>(gamma.MouseScrolled, delegate(Point mouse, int scroll)
