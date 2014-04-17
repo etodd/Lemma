@@ -83,7 +83,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
             RigidTransform mobileTriangleTransform, detectorTriangleTransform;
             mobileTriangleTransform.Orientation = Quaternion.Identity;
             detectorTriangleTransform.Orientation = Quaternion.Identity;
-            for (int i = 0; i < meshData.Indices.Length; i += 3)
+            for (int i = 0; i < meshData.IndexCount; i += 3)
             {
                 //Grab a triangle associated with the mobile mesh.
                 meshData.GetTriangle(i, out mobileTriangle.vA, out mobileTriangle.vB, out mobileTriangle.vC);

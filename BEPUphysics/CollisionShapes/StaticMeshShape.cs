@@ -35,9 +35,9 @@ namespace BEPUphysics.CollisionShapes
         ///<param name="vertices">Vertices of the mesh.</param>
         ///<param name="indices">Indices of the mesh.</param>
         ///<param name="worldTransform">World transform to use in the local space data.</param>
-        public StaticMeshShape(Vector3[] vertices, uint[] indices, AffineTransform worldTransform)
+        public StaticMeshShape(Vector3[] vertices, uint[] indices, int indexCount, AffineTransform worldTransform)
         {
-            triangleMeshData = new TransformableMeshData(vertices, indices, worldTransform);
+            triangleMeshData = new TransformableMeshData(vertices, indices, indexCount, worldTransform);
         }
 
 
@@ -47,9 +47,9 @@ namespace BEPUphysics.CollisionShapes
         ///</summary>
         ///<param name="vertices">Vertices of the mesh.</param>
         ///<param name="indices">Indices of the mesh.</param>
-        public StaticMeshShape(Vector3[] vertices, uint[] indices)
+        public StaticMeshShape(Vector3[] vertices, uint[] indices, int indexCount)
         {
-            triangleMeshData = new TransformableMeshData(vertices, indices);
+            triangleMeshData = new TransformableMeshData(vertices, indices, indexCount);
         }
 
 

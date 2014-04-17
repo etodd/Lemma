@@ -122,12 +122,13 @@ namespace Lemma.Components
 		/// </summary>
 		/// <param name="graphicsDevice">The GraphicsDevice to use for rendering</param>
 		/// <param name="contentManager">The ContentManager from which to load Effects</param>
-		public Renderer(Main main, Point size, bool allowMotionBlur, bool allowBloom, bool allowSSAO, bool allowPostAlphaDrawables)
+		public Renderer(Main main, Point size, bool allowMotionBlur, bool allowHdr, bool allowBloom, bool allowSSAO, bool allowPostAlphaDrawables)
 		{
 			this.allowMotionBlur = allowMotionBlur;
 			this.allowBloom = allowBloom;
 			this.allowSSAO = allowSSAO;
 			this.allowPostAlphaDrawables = allowPostAlphaDrawables;
+			this.hdr = allowHdr;
 			this.lightingManager = main.LightingManager;
 			this.screenSize = size;
 		}
@@ -275,6 +276,40 @@ namespace Lemma.Components
 			this.ReallocateBuffers(this.screenSize);
 		}
 
+		private bool hdr;
+
+		private SurfaceFormat colorSurfaceFormat
+		{
+			get
+			{
+				return this.hdr ? SurfaceFormat.HdrBlendable : SurfaceFormat.Color;
+			}
+		}
+
+		private SurfaceFormat normalSurfaceFormat
+		{
+			get
+			{
+				return this.hdr ? SurfaceFormat.HalfVector4 : SurfaceFormat.Color;
+			}
+		}
+
+		private SurfaceFormat depthSurfaceFormat
+		{
+			get
+			{
+				return this.hdr ? SurfaceFormat.Vector2 : SurfaceFormat.HalfVector2;
+			}
+		}
+
+		private SurfaceFormat velocitySurfaceFormat
+		{
+			get
+			{
+				return this.hdr ? SurfaceFormat.Vector2 : SurfaceFormat.HalfVector2;
+			}
+		}
+
 		public void ReallocateBuffers(Point size)
 		{
 			this.screenSize = size;
@@ -285,7 +320,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.HdrBlendable,
+												this.colorSurfaceFormat,
 												DepthFormat.None,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -297,8 +332,8 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.HdrBlendable,
-												DepthFormat.Depth24,
+												this.colorSurfaceFormat,
+												DepthFormat.None,
 												0,
 												RenderTargetUsage.DiscardContents);
 
@@ -309,7 +344,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.Vector2,
+												this.depthSurfaceFormat,
 												DepthFormat.Depth24,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -321,8 +356,8 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.HalfVector4,
-												DepthFormat.Depth24,
+												this.normalSurfaceFormat,
+												DepthFormat.None,
 												0,
 												RenderTargetUsage.DiscardContents);
 
@@ -333,7 +368,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.HdrBlendable,
+												this.colorSurfaceFormat,
 												DepthFormat.Depth24,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -345,7 +380,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.HdrBlendable,
+												this.colorSurfaceFormat,
 												DepthFormat.None,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -369,7 +404,7 @@ namespace Lemma.Components
 													size.X,
 													size.Y,
 													false,
-													SurfaceFormat.Vector2,
+													this.velocitySurfaceFormat,
 													DepthFormat.None,
 													0,
 													RenderTargetUsage.DiscardContents);
@@ -379,7 +414,7 @@ namespace Lemma.Components
 													size.X,
 													size.Y,
 													false,
-													SurfaceFormat.Vector2,
+													this.velocitySurfaceFormat,
 													DepthFormat.None,
 													0,
 													RenderTargetUsage.DiscardContents);

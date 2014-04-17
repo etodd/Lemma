@@ -56,9 +56,9 @@ namespace BEPUphysics.BroadPhaseEntries
         ///</summary>
         ///<param name="vertices">Vertex positions of the mesh.</param>
         ///<param name="indices">Index list of the mesh.</param>
-        public StaticMesh(Vector3[] vertices, uint[] indices)
+        public StaticMesh(Vector3[] vertices, uint[] indices, int indexCount)
         {
-            base.Shape = new StaticMeshShape(vertices, indices);
+            base.Shape = new StaticMeshShape(vertices, indices, indexCount);
             Events = new ContactEventManager<StaticMesh>();
 
         }
@@ -69,9 +69,9 @@ namespace BEPUphysics.BroadPhaseEntries
         ///<param name="vertices">Vertex positions of the mesh.</param>
         ///<param name="indices">Index list of the mesh.</param>
         /// <param name="worldTransform">Transform to use to create the mesh initially.</param>
-        public StaticMesh(Vector3[] vertices, uint[] indices, AffineTransform worldTransform)
+        public StaticMesh(Vector3[] vertices, uint[] indices, int indexCount, AffineTransform worldTransform)
         {
-            base.Shape = new StaticMeshShape(vertices, indices, worldTransform);
+            base.Shape = new StaticMeshShape(vertices, indices, indexCount, worldTransform);
             Events = new ContactEventManager<StaticMesh>();
         }
 

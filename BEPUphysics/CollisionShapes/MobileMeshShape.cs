@@ -127,7 +127,7 @@ namespace BEPUphysics.CollisionShapes
         public MobileMeshShape(Vector3[] vertices, uint[] indices, AffineTransform localTransform, MobileMeshSolidity solidity)
         {
             this.solidity = solidity;
-            var data = new TransformableMeshData(vertices, indices, localTransform);
+            var data = new TransformableMeshData(vertices, indices, indices.Length, localTransform);
             ShapeDistributionInformation distributionInfo;
             ComputeShapeInformation(data, out distributionInfo);
 
@@ -151,7 +151,7 @@ namespace BEPUphysics.CollisionShapes
         public MobileMeshShape(Vector3[] vertices, uint[] indices, AffineTransform localTransform, MobileMeshSolidity solidity, out ShapeDistributionInformation distributionInfo)
         {
             this.solidity = solidity;
-            var data = new TransformableMeshData(vertices, indices, localTransform);
+            var data = new TransformableMeshData(vertices, indices, indices.Length, localTransform);
             ComputeShapeInformation(data, out distributionInfo);
 
             for (int i = 0; i < surfaceVertices.Count; i++)
@@ -397,7 +397,7 @@ namespace BEPUphysics.CollisionShapes
                 //The following inertia tensor calculation assumes a closed mesh.
 
                 shapeInformation.Volume = 0;
-                for (int i = 0; i < data.indices.Length; i += 3)
+                for (int i = 0; i < data.IndexCount; i += 3)
                 {
                     Vector3 v2, v3, v4;
                     data.GetTriangle(i, out v2, out v3, out v4);
@@ -426,7 +426,7 @@ namespace BEPUphysics.CollisionShapes
                 float a = 0, b = 0, c = 0, ao = 0, bo = 0, co = 0;
 
                 float totalWeight = 0;
-                for (int i = 0; i < data.indices.Length; i += 3)
+                for (int i = 0; i < data.IndexCount; i += 3)
                 {
                     Vector3 v2, v3, v4;
                     data.GetTriangle(i, out v2, out v3, out v4);
@@ -467,7 +467,7 @@ namespace BEPUphysics.CollisionShapes
             {
                 shapeInformation.Center = new Vector3();
                 float totalWeight = 0;
-                for (int i = 0; i < data.indices.Length; i += 3)
+                for (int i = 0; i < data.IndexCount; i += 3)
                 { //Configure the inertia tensor to be local.
                     Vector3 vA, vB, vC;
                     data.GetTriangle(i, out vA, out vB, out vC);
@@ -491,7 +491,7 @@ namespace BEPUphysics.CollisionShapes
                 data.worldTransform.Translation -= shapeInformation.Center;
 
                 shapeInformation.VolumeDistribution = new Matrix3x3();
-                for (int i = 0; i < data.indices.Length; i += 3)
+                for (int i = 0; i < data.IndexCount; i += 3)
                 { //Configure the inertia tensor to be local.
                     Vector3 vA, vB, vC;
                     data.GetTriangle(i, out vA, out vB, out vC);

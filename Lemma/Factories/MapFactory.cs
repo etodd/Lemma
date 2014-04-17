@@ -87,7 +87,7 @@ namespace Lemma.Factories
 			{
 				map.CreateModel = delegate(Vector3 min, Vector3 max, Map.CellState state)
 				{
-					if (state.Invisible)
+					if (state.Invisible && !main.EditorEnabled)
 						return null;
 
 					DynamicModel<Map.MapVertex> model = new DynamicModel<Map.MapVertex>(Map.MapVertex.VertexDeclaration);

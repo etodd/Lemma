@@ -28,6 +28,8 @@ namespace Lemma.Components
 	[XmlInclude(typeof(ListProperty<Map.CellState>))]
 	[XmlInclude(typeof(Map.Coordinate))]
 	[XmlInclude(typeof(ListProperty<Map.Coordinate>))]
+	[XmlInclude(typeof(Map.Box))]
+	[XmlInclude(typeof(Property<Map.Box>))]
 	[XmlInclude(typeof(ListProperty<Map.Box>))]
 	[XmlInclude(typeof(Property<Map.Coordinate>))]
 	[XmlInclude(typeof(Direction))]
@@ -224,8 +226,6 @@ namespace Lemma.Components
 				public bool Dirty;
 				public bool Added;
 				public MapVertex[] Vertices;
-				public Vector3[] PhysicsVertices;
-				public uint[] Indices;
 			}
 
 			public bool Active = false;
@@ -283,6 +283,13 @@ namespace Lemma.Components
 				};
 			}
 
+			private static MapVertex negativeX = new MapVertex { Normal = Vector3.Left, Binormal = Vector3.Up, Tangent = Vector3.Backward };
+			private static MapVertex positiveX = new MapVertex { Normal = Vector3.Right, Binormal = Vector3.Up, Tangent = Vector3.Forward };
+			private static MapVertex negativeY = new MapVertex { Normal = Vector3.Down, Binormal = Vector3.Right, Tangent = Vector3.Backward };
+			private static MapVertex positiveY = new MapVertex { Normal = Vector3.Up, Binormal = Vector3.Right, Tangent = Vector3.Forward };
+			private static MapVertex negativeZ = new MapVertex { Normal = Vector3.Forward, Binormal = Vector3.Up, Tangent = Vector3.Left };
+			private static MapVertex positiveZ = new MapVertex { Normal = Vector3.Backward, Binormal = Vector3.Up, Tangent = Vector3.Right };
+
 			public void RefreshImmediately()
 			{
 				foreach (KeyValuePair<int, MeshEntry> pair in this.meshes)
@@ -304,15 +311,13 @@ namespace Lemma.Components
 							LargeObjectHeap<MapVertex[]>.Free(entry.Vertices.Length, entry.Vertices);
 						entry.Vertices = LargeObjectHeap<MapVertex[]>.Get((int)Math.Pow(2.0, Math.Ceiling(Math.Log(surfaces * 4, 2.0))), x => new MapVertex[x]);
 					}
-							
 					MapVertex[] vertices = entry.Vertices;
-					Vector3[] physicsVertices = entry.PhysicsVertices = null;
-					if (this.Static && !type.Fake)
-						physicsVertices = entry.PhysicsVertices = new Vector3[surfaces * 4];
 
-					uint[] indices = entry.Indices = new uint[surfaces * 6];
+					Vector3[] physicsVertices = null;
+					if (this.Static && !type.Fake)
+						physicsVertices = LargeObjectHeap<Vector3[]>.Get((int)Math.Pow(2.0, Math.Ceiling(Math.Log(surfaces * 4, 2.0))), x => new Vector3[x]);
+
 					uint vertexIndex = 0;
-					int index = 0;
 					foreach (Box box in boxes)
 					{
 						type = box.Type;
@@ -327,11 +332,10 @@ namespace Lemma.Components
 
 						if (box.Surfaces[(int)Direction.NegativeX].HasArea)
 						{
-							MapVertex v = new MapVertex { Normal = Vector3.Left, Binormal = Vector3.Up, Tangent = Vector3.Backward };
-							v.Position = a; vertices[vertexIndex + 0] = v;
-							v.Position = b; vertices[vertexIndex + 1] = v;
-							v.Position = c; vertices[vertexIndex + 2] = v;
-							v.Position = d; vertices[vertexIndex + 3] = v;
+							Chunk.negativeX.Position = a; vertices[vertexIndex + 0] = Chunk.negativeX;
+							Chunk.negativeX.Position = b; vertices[vertexIndex + 1] = Chunk.negativeX;
+							Chunk.negativeX.Position = c; vertices[vertexIndex + 2] = Chunk.negativeX;
+							Chunk.negativeX.Position = d; vertices[vertexIndex + 3] = Chunk.negativeX;
 							if (physicsVertices != null)
 							{
 								physicsVertices[vertexIndex + 0] = a;
@@ -339,65 +343,44 @@ namespace Lemma.Components
 								physicsVertices[vertexIndex + 2] = c;
 								physicsVertices[vertexIndex + 3] = d;
 							}
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 0;
-							indices[index++] = vertexIndex + 3;
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 2;
 							vertexIndex += 4;
 						}
 						if (box.Surfaces[(int)Direction.PositiveX].HasArea)
 						{
-							MapVertex v = new MapVertex { Normal = Vector3.Right, Binormal = Vector3.Up, Tangent = Vector3.Forward };
-							v.Position = e; vertices[vertexIndex + 0] = v;
-							v.Position = f; vertices[vertexIndex + 1] = v;
-							v.Position = g; vertices[vertexIndex + 2] = v;
-							v.Position = h; vertices[vertexIndex + 3] = v;
+							Chunk.positiveX.Position = e; vertices[vertexIndex + 0] = Chunk.positiveX;
+							Chunk.positiveX.Position = g; vertices[vertexIndex + 1] = Chunk.positiveX;
+							Chunk.positiveX.Position = f; vertices[vertexIndex + 2] = Chunk.positiveX;
+							Chunk.positiveX.Position = h; vertices[vertexIndex + 3] = Chunk.positiveX;
 							if (physicsVertices != null)
 							{
 								physicsVertices[vertexIndex + 0] = e;
-								physicsVertices[vertexIndex + 1] = f;
-								physicsVertices[vertexIndex + 2] = g;
+								physicsVertices[vertexIndex + 1] = g;
+								physicsVertices[vertexIndex + 2] = f;
 								physicsVertices[vertexIndex + 3] = h;
 							}
-							indices[index++] = vertexIndex + 0;
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 3;
 							vertexIndex += 4;
 						}
 						if (box.Surfaces[(int)Direction.NegativeY].HasArea)
 						{
-							MapVertex v = new MapVertex { Normal = Vector3.Down, Binormal = Vector3.Right, Tangent = Vector3.Backward };
-							v.Position = a; vertices[vertexIndex + 0] = v;
-							v.Position = b; vertices[vertexIndex + 1] = v;
-							v.Position = e; vertices[vertexIndex + 2] = v;
-							v.Position = f; vertices[vertexIndex + 3] = v;
+							Chunk.negativeY.Position = a; vertices[vertexIndex + 0] = Chunk.negativeY;
+							Chunk.negativeY.Position = e; vertices[vertexIndex + 1] = Chunk.negativeY;
+							Chunk.negativeY.Position = b; vertices[vertexIndex + 2] = Chunk.negativeY;
+							Chunk.negativeY.Position = f; vertices[vertexIndex + 3] = Chunk.negativeY;
 							if (physicsVertices != null)
 							{
 								physicsVertices[vertexIndex + 0] = a;
-								physicsVertices[vertexIndex + 1] = b;
-								physicsVertices[vertexIndex + 2] = e;
+								physicsVertices[vertexIndex + 1] = e;
+								physicsVertices[vertexIndex + 2] = b;
 								physicsVertices[vertexIndex + 3] = f;
 							}
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 0;
-							indices[index++] = vertexIndex + 3;
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 1;
 							vertexIndex += 4;
 						}
 						if (box.Surfaces[(int)Direction.PositiveY].HasArea)
 						{
-							MapVertex v = new MapVertex { Normal = Vector3.Up, Binormal = Vector3.Right, Tangent = Vector3.Forward };
-							v.Position = c; vertices[vertexIndex + 0] = v;
-							v.Position = d; vertices[vertexIndex + 1] = v;
-							v.Position = g; vertices[vertexIndex + 2] = v;
-							v.Position = h; vertices[vertexIndex + 3] = v;
+							Chunk.positiveY.Position = c; vertices[vertexIndex + 0] = Chunk.positiveY;
+							Chunk.positiveY.Position = d; vertices[vertexIndex + 1] = Chunk.positiveY;
+							Chunk.positiveY.Position = g; vertices[vertexIndex + 2] = Chunk.positiveY;
+							Chunk.positiveY.Position = h; vertices[vertexIndex + 3] = Chunk.positiveY;
 							if (physicsVertices != null)
 							{
 								physicsVertices[vertexIndex + 0] = c;
@@ -405,21 +388,14 @@ namespace Lemma.Components
 								physicsVertices[vertexIndex + 2] = g;
 								physicsVertices[vertexIndex + 3] = h;
 							}
-							indices[index++] = vertexIndex + 0;
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 3;
 							vertexIndex += 4;
 						}
 						if (box.Surfaces[(int)Direction.NegativeZ].HasArea)
 						{
-							MapVertex v = new MapVertex { Normal = Vector3.Forward, Binormal = Vector3.Up, Tangent = Vector3.Left };
-							v.Position = a; vertices[vertexIndex + 0] = v;
-							v.Position = c; vertices[vertexIndex + 1] = v;
-							v.Position = e; vertices[vertexIndex + 2] = v;
-							v.Position = g; vertices[vertexIndex + 3] = v;
+							Chunk.negativeZ.Position = a; vertices[vertexIndex + 0] = Chunk.negativeZ;
+							Chunk.negativeZ.Position = c; vertices[vertexIndex + 1] = Chunk.negativeZ;
+							Chunk.negativeZ.Position = e; vertices[vertexIndex + 2] = Chunk.negativeZ;
+							Chunk.negativeZ.Position = g; vertices[vertexIndex + 3] = Chunk.negativeZ;
 							if (physicsVertices != null)
 							{
 								physicsVertices[vertexIndex + 0] = a;
@@ -427,34 +403,21 @@ namespace Lemma.Components
 								physicsVertices[vertexIndex + 2] = e;
 								physicsVertices[vertexIndex + 3] = g;
 							}
-							indices[index++] = vertexIndex + 0;
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 3;
 							vertexIndex += 4;
 						}
 						if (box.Surfaces[(int)Direction.PositiveZ].HasArea)
 						{
-							MapVertex v = new MapVertex { Normal = Vector3.Backward, Binormal = Vector3.Up, Tangent = Vector3.Right };
-							v.Position = b; vertices[vertexIndex + 0] = v;
-							v.Position = d; vertices[vertexIndex + 1] = v;
-							v.Position = f; vertices[vertexIndex + 2] = v;
-							v.Position = h; vertices[vertexIndex + 3] = v;
+							Chunk.positiveZ.Position = b; vertices[vertexIndex + 0] = Chunk.positiveZ;
+							Chunk.positiveZ.Position = f; vertices[vertexIndex + 1] = Chunk.positiveZ;
+							Chunk.positiveZ.Position = d; vertices[vertexIndex + 2] = Chunk.positiveZ;
+							Chunk.positiveZ.Position = h; vertices[vertexIndex + 3] = Chunk.positiveZ;
 							if (physicsVertices != null)
 							{
 								physicsVertices[vertexIndex + 0] = b;
-								physicsVertices[vertexIndex + 1] = d;
-								physicsVertices[vertexIndex + 2] = f;
+								physicsVertices[vertexIndex + 1] = f;
+								physicsVertices[vertexIndex + 2] = d;
 								physicsVertices[vertexIndex + 3] = h;
 							}
-							indices[index++] = vertexIndex + 1;
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 0;
-							indices[index++] = vertexIndex + 3;
-							indices[index++] = vertexIndex + 2;
-							indices[index++] = vertexIndex + 1;
 							vertexIndex += 4;
 						}
 					}
@@ -463,10 +426,7 @@ namespace Lemma.Components
 					if (model != null)
 					{
 						lock (model.Lock)
-						{
-							model.UpdateVertices(vertices, surfaces * 4);
-							model.UpdateIndices(indices, indices.Length);
-						}
+							model.UpdateVertices(vertices, surfaces);
 					}
 
 					if (entry.Mesh != null && pair.Value.Added)
@@ -475,20 +435,26 @@ namespace Lemma.Components
 						this.Map.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
 					}
 
-					if (physicsVertices != null && surfaces > 0)
+					if (physicsVertices != null)
 					{
-						Matrix transform = this.Map.Transform;
-						StaticMesh mesh = new StaticMesh(physicsVertices, indices, new BEPUutilities.AffineTransform(BEPUutilities.Matrix3x3.CreateFromMatrix(transform), transform.Translation));
-						mesh.Material.KineticFriction = type.KineticFriction;
-						mesh.Material.StaticFriction = type.StaticFriction;
-						mesh.Tag = this.Map;
-						mesh.Sidedness = BEPUutilities.TriangleSidedness.Counterclockwise;
-						pair.Value.Mesh = mesh;
-						if (this.Active)
+						if (surfaces > 0)
 						{
-							pair.Value.Added = true;
-							this.Map.main.Space.SpaceObjectBuffer.Add(mesh);
+							Matrix transform = this.Map.Transform;
+							Vector3[] physicsVerticesCopy = LargeObjectHeap<Vector3[]>.Get(physicsVertices.Length, x => new Vector3[x]);
+							Array.Copy(physicsVertices, physicsVerticesCopy, surfaces * 4);
+							StaticMesh mesh = new StaticMesh(physicsVerticesCopy, DynamicModel<MapVertex>.GetIndices(surfaces * 6), surfaces * 6, new BEPUutilities.AffineTransform(BEPUutilities.Matrix3x3.CreateFromMatrix(transform), transform.Translation));
+							mesh.Material.KineticFriction = type.KineticFriction;
+							mesh.Material.StaticFriction = type.StaticFriction;
+							mesh.Tag = this.Map;
+							mesh.Sidedness = BEPUutilities.TriangleSidedness.Counterclockwise;
+							pair.Value.Mesh = mesh;
+							if (this.Active)
+							{
+								pair.Value.Added = true;
+								this.Map.main.Space.SpaceObjectBuffer.Add(mesh);
+							}
 						}
+						LargeObjectHeap<Vector3[]>.Free(physicsVertices.Length, physicsVertices);
 					}
 				}
 			}

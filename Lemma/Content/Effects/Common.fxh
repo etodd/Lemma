@@ -9,13 +9,13 @@ static const float PI = 3.14159265f;
 // Normal encoding Function
 float3 EncodeNormal(float3 n)
 {
-	return n;
+	return n * 0.5f + 0.5f;
 }
 
 // Normal decoding Function
 float3 DecodeNormal(float3 enc)
 {
-	return enc;
+	return (enc - 0.5f) * 2.0f;
 }
 
 float3 DecodeNormalMap(float3 enc)

@@ -14,28 +14,22 @@ namespace Lemma.Components
 		where Vertex : struct
 	{
 		private DynamicVertexBuffer vertexBuffer;
-		private IndexBuffer indexBuffer;
 		private VertexDeclaration declaration;
 		private Vertex[] vertices = new Vertex[] {};
-		public uint[] indices = new uint[] {};
 		private bool verticesChanged;
-		private bool indicesChanged;
+		private static IndexBuffer indexBuffer;
+		private static object indicesLock = new object();
+		private static uint[] indices = new uint[] { };
 		private int vertexCount;
 		private int indexCount;
 		private int lockedVertexCount;
 
-		public void UpdateVertices(Vertex[] v, int count)
+		public void UpdateVertices(Vertex[] v, int surfaces)
 		{
 			this.vertices = v;
-			this.vertexCount = count;
+			this.vertexCount = surfaces * 4;
 			this.verticesChanged = true;
-		}
-
-		public void UpdateIndices(uint[] i, int count)
-		{
-			this.indices = i;
-			this.indexCount = count;
-			this.indicesChanged = true;
+			this.indexCount = surfaces * 6;
 		}
 
 		[XmlIgnore]
@@ -63,6 +57,36 @@ namespace Lemma.Components
 			base.loadEffect(file);
 		}
 
+		public static uint[] GetIndices(int size)
+		{
+			lock (DynamicModel<Vertex>.indicesLock)
+			{
+				if (size <= DynamicModel<Vertex>.indices.Length)
+					return DynamicModel<Vertex>.indices;
+
+				int newBufferSize = (int)Math.Pow(2.0, Math.Ceiling(Math.Log(size, 2.0)));
+
+				uint[] newIndices = new uint[newBufferSize];
+
+				int startGeneratingIndices = (int)Math.Floor(DynamicModel<Vertex>.indices.Length / 6.0f) * 6;
+				Array.Copy(DynamicModel<Vertex>.indices, newIndices, startGeneratingIndices);
+
+				DynamicModel<Vertex>.indices = newIndices;
+
+				uint vertexIndex = ((uint)startGeneratingIndices / 6) * 4;
+				for (int index = startGeneratingIndices; index < (int)Math.Floor(newBufferSize / 6.0f) * 6; vertexIndex += 4)
+				{
+					newIndices[index++] = vertexIndex + 2;
+					newIndices[index++] = vertexIndex + 1;
+					newIndices[index++] = vertexIndex + 0;
+					newIndices[index++] = vertexIndex + 3;
+					newIndices[index++] = vertexIndex + 1;
+					newIndices[index++] = vertexIndex + 2;
+				}
+				return newIndices;
+			}
+		}
+
 		public void Update(float dt)
 		{
 			bool locked;
@@ -88,20 +112,17 @@ namespace Lemma.Components
 					this.verticesChanged = true;
 				}
 
-				if (this.indexCount > 0 && (this.indexBuffer == null || this.indexBuffer.IndexCount < this.indexCount))
+				if (this.indexCount > 0 && (DynamicModel<Vertex>.indexBuffer == null || DynamicModel<Vertex>.indexBuffer.IndexCount < this.indexCount))
 				{
-					if (this.indexBuffer != null)
-						this.indexBuffer.Dispose();
-
-					this.indexBuffer = new IndexBuffer(this.main.GraphicsDevice, typeof(uint), (int)Math.Pow(2.0, Math.Ceiling(Math.Log(this.indexCount, 2.0))), BufferUsage.WriteOnly);
-					this.indicesChanged = true;
-				}
-
-				if (this.indicesChanged)
-				{
-					if (this.indexCount > 0)
-						this.indexBuffer.SetData(this.indices, 0, this.indexCount);
-					this.indicesChanged = false;
+					if (DynamicModel<Vertex>.indexBuffer != null)
+						DynamicModel<Vertex>.indexBuffer.Dispose();
+					
+					lock (DynamicModel<Vertex>.indicesLock)
+					{
+						uint[] indices = DynamicModel<Vertex>.GetIndices(this.indexCount);
+						DynamicModel<Vertex>.indexBuffer = new IndexBuffer(this.main.GraphicsDevice, typeof(uint), indices.Length, BufferUsage.WriteOnly);
+						DynamicModel<Vertex>.indexBuffer.SetData(indices, 0, indices.Length);
+					}
 				}
 
 				if (this.verticesChanged)
@@ -137,7 +158,7 @@ namespace Lemma.Components
 				}
 
 				this.main.GraphicsDevice.SetVertexBuffer(this.vertexBuffer);
-				this.main.GraphicsDevice.Indices = this.indexBuffer;
+				this.main.GraphicsDevice.Indices = DynamicModel<Vertex>.indexBuffer;
 
 				foreach (EffectPass pass in this.effect.CurrentTechnique.Passes)
 				{
