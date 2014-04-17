@@ -160,6 +160,11 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </None>
+    <Compile Include="Effects\Distortion.fx">
+      <Name>Distortion</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </Compile>
     <None Include="Effects\ParticleCommon.fxh">
       <Name>ParticleCommon</Name>
       <Importer>EffectImporter</Importer>
@@ -287,6 +292,13 @@
       <Importer>FbxImporter</Importer>
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\UnlitSolidColor.fx</ProcessorParameters_EffectFileName>
+    </Compile>
+    <Compile Include="Models\distortion-box.fbx">
+      <Name>distortion-box</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_NormalMapTexture>..\Images\water-normal.jpg</ProcessorParameters_NormalMapTexture>
+      <ProcessorParameters_EffectFileName>..\Effects\Distortion.fx</ProcessorParameters_EffectFileName>
     </Compile>
     <None Include="Strings.xlsx">
       <Name>Strings</Name>

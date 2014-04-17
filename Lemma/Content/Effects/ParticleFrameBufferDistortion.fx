@@ -1,5 +1,17 @@
 #include "ParticleCommon.fxh"
 
+// Frame buffer sampler
+texture2D FrameTexture;
+sampler2D FrameSampler = sampler_state
+{
+	Texture = <FrameTexture>;
+	MinFilter = point;
+	MagFilter = point;
+	MipFilter = point;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
 // Pixel shader for drawing particles.
 float4 ParticlePS(VertexShaderOutput input) : COLOR0
 {

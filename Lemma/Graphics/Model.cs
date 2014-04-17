@@ -861,6 +861,7 @@ namespace Lemma.Components
 	public class ModelAlpha : Model, IDrawableAlphaComponent
 	{
 		public Property<float> Alpha = null;
+		public Property<bool> Distortion = new Property<bool>();
 
 		public ModelAlpha()
 		{
@@ -893,7 +894,11 @@ namespace Lemma.Components
 		{
 			bool result = base.setParameters(transform, parameters);
 			if (result)
+			{
 				this.effect.Parameters["Depth" + Model.SamplerPostfix].SetValue(parameters.DepthBuffer);
+				if (this.Distortion)
+					this.effect.Parameters["Frame" + Model.SamplerPostfix].SetValue(parameters.FrameBuffer);
+			}
 			return result;
 		}
 	}

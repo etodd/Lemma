@@ -802,8 +802,9 @@ namespace Lemma.Factories
 			});
 
 			// Block possibilities
+			const float blockPossibilityFadeInTime = 0.075f;
 			const float blockPossibilityTotalLifetime = 2.0f;
-			const float blockPossibilityInitialAlpha = 0.125f;
+			const float blockPossibilityInitialAlpha = 0.5f;
 
 			float blockPossibilityLifetime = 0.0f;
 
@@ -822,11 +823,13 @@ namespace Lemma.Factories
 				{
 					Vector3 start = block.Map.GetRelativePosition(block.StartCoord), end = block.Map.GetRelativePosition(block.EndCoord);
 
-					Matrix matrix = Matrix.CreateScale(Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y), Math.Abs(end.Z - start.Z)) * Matrix.CreateTranslation(new Vector3(-0.5f) + (start + end) * 0.5f);
+					Vector3 scale = new Vector3(Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y), Math.Abs(end.Z - start.Z));
+					Matrix matrix = Matrix.CreateScale(scale) * Matrix.CreateTranslation(new Vector3(-0.5f) + (start + end) * 0.5f);
 
 					ModelAlpha box = new ModelAlpha();
-					box.Filename.Value = "Models\\alpha-box";
-					box.Color.Value = new Vector3(0.7f, 0.9f, 1.1f);
+					box.Filename.Value = "Models\\distortion-box";
+					box.Distortion.Value = true;
+					box.Color.Value = new Vector3(2.8f, 3.0f, 3.2f);
 					box.Alpha.Value = blockPossibilityInitialAlpha;
 					box.IsInstanced.Value = false;
 					box.Editable = false;
@@ -834,6 +837,7 @@ namespace Lemma.Factories
 					box.DrawOrder.Value = 11; // In front of water
 					box.CullBoundingBox.Value = false;
 					box.DisableCulling.Value = true;
+					box.GetVector3Parameter("Scale").Value = scale;
 					box.Add(new Binding<Matrix>(box.Transform, x => matrix * x, block.Map.Transform));
 					result.Add(box);
 					block.Model = box;
@@ -858,9 +862,18 @@ namespace Lemma.Factories
 						clearBlockPossibilities();
 					else
 					{
-						float alpha = blockPossibilityInitialAlpha * (1.0f - (blockPossibilityLifetime / blockPossibilityTotalLifetime));
+						float alpha;
+						if (blockPossibilityLifetime < blockPossibilityFadeInTime)
+							alpha = blockPossibilityInitialAlpha * (blockPossibilityLifetime / blockPossibilityFadeInTime);
+						else
+							alpha = blockPossibilityInitialAlpha * (1.0f - (blockPossibilityLifetime / blockPossibilityTotalLifetime));
+
+						Vector3 offset = new Vector3(blockPossibilityLifetime * 0.2f);
 						foreach (BlockPossibility block in blockPossibilities.Values.SelectMany(x => x))
+						{
 							block.Model.Alpha.Value = alpha;
+							block.Model.GetVector3Parameter("Offset").Value = offset;
+						}
 					}
 				}
 			});
@@ -2773,7 +2786,7 @@ namespace Lemma.Factories
 					phoneTutorialMessage = null;
 				}
 
-				if (show || (phone.ActiveAnswers.Count(x => x.IsInitiating) == 0 && phone.Schedules.Count == 0))
+				if (show || (phone.ActiveAnswers.Count(x => !x.IsInitiating) == 0 && phone.Schedules.Count == 0))
 				{
 					phoneActive.Value = show;
 					input.EnableLook.Value = input.EnableMouse.Value = !phoneActive;
