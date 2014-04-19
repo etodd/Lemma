@@ -9,7 +9,8 @@ struct RenderVSInput
 void RenderVS(	in RenderVSInput input,
 				out RenderVSOutput vs,
 				out RenderPSInput output,
-				out TexturePSInput tex)
+				out TexturePSInput tex,
+				out MotionBlurPSInput motionBlur)
 {
 	float4 worldPosition = mul(input.position, WorldMatrix);
 	output.position = worldPosition;
@@ -18,31 +19,22 @@ void RenderVS(	in RenderVSInput input,
 	output.viewSpacePosition = viewSpacePosition;
 
 	tex.uvCoordinates = input.uvCoordinates;
+	
+	// Pass along the current vertex position in clip-space,
+	// as well as the previous vertex position in clip-space
+	motionBlur.currentPosition = vs.position;
+	motionBlur.previousPosition = mul(input.position, LastFrameWorldViewProjectionMatrix);
 }
 
 void ClipVS(	in RenderVSInput input,
 				out RenderVSOutput vs,
 				out RenderPSInput output,
 				out TexturePSInput tex,
+				out MotionBlurPSInput motionBlur,
 				out ClipPSInput clipData)
 {
-	RenderVS(input, vs, output, tex);
+	RenderVS(input, vs, output, tex, motionBlur);
 	clipData = GetClipData(output.position);
-}
-
-// Motion blur vertex shader
-void MotionBlurVS(	in RenderVSInput input,
-					out RenderVSOutput vs,
-					out RenderPSInput output,
-					out TexturePSInput tex,
-					out MotionBlurPSInput motionBlur)
-{
-	RenderVS(input, vs, output, tex);
-	
-	// Pass along the current vertex position in clip-space,
-	// as well as the previous vertex position in clip-space
-	motionBlur.currentPosition = vs.position;
-	motionBlur.previousPosition = mul(input.position, LastFrameWorldViewProjectionMatrix);
 }
 
 // No shadow technique. We don't want unlit objects casting shadows.
@@ -70,18 +62,5 @@ technique Clip
 
 		VertexShader = compile vs_3_0 ClipVS();
 		PixelShader = compile ps_3_0 ClipTexturePlainPS();
-	}
-}
-
-technique MotionBlur
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 MotionBlurVS();
-		PixelShader = compile ps_3_0 MotionBlurTexturePlainPS();
 	}
 }

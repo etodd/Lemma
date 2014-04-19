@@ -48,8 +48,6 @@
     <OutputPath>bin\x86\Editor</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="GlobalScripts\" />
-    <Folder Include="GlobalStaticScripts\" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
@@ -308,8 +306,8 @@
       <Name>Init</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Wwise\Windows\Sounds.bnk">
-      <Name>Sounds</Name>
+    <None Include="Wwise\Windows\SFX_Bank_01.bnk">
+      <Name>SFX_Bank_01</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

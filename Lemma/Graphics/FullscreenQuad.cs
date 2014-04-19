@@ -94,6 +94,8 @@ namespace Lemma.Components
 
 			// Draw primitives
 			this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+			Model.DrawCallCounter++;
+			Model.TriangleCounter += 2;
 		}
 	}
 }

@@ -109,10 +109,15 @@
     <Compile Include="Handwritten\AkPositionArray.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="AkSoundEngine_x64.dll">
+  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Content Include="AkSoundEngine_Win32_Release.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <Content Include="AkSoundEngine_Win32_Profile.dll">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ComponentBind\ComponentBind.csproj">
@@ -120,17 +125,10 @@
       <Name>ComponentBind</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="AkSoundEngine_Win32.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
   <Target Name="AfterBuild">
+    <Copy SourceFiles="@(Content)" DestinationFolder="$(OutputPath)" />
   </Target>
-  -->
 </Project>

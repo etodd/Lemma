@@ -16,6 +16,7 @@ void RenderVS(	in RenderVSInput input,
 				out RenderVSOutput vs,
 				out RenderPSInput output,
 				out TexturePSInput tex,
+				out MotionBlurPSInput motionBlur,
 				out NormalMapPSInput normalMap)
 {
 	// Calculate the clip-space vertex position
@@ -32,33 +33,23 @@ void RenderVS(	in RenderVSInput input,
 	float diff = length(input.position * input.normal) * 2;
 
 	tex.uvCoordinates = float2(diff + input.position.x + (input.position.z * input.normal.x), diff - input.position.y + (input.position.z * input.normal.y)) * 0.075f * Tiling;
+	
+	// Pass along the current vertex position in clip-space,
+	// as well as the previous vertex position in clip-space
+	motionBlur.currentPosition = vs.position;
+	motionBlur.previousPosition = mul(float4(input.position - Offset, 1), LastFrameWorldViewProjectionMatrix);
 }
 
 void ClipVS(	in RenderVSInput input,
 				out RenderVSOutput vs,
 				out RenderPSInput output,
 				out TexturePSInput tex,
+				out MotionBlurPSInput motionBlur,
 				out NormalMapPSInput normalMap,
 				out ClipPSInput clipData)
 {
-	RenderVS(input, vs, output, tex, normalMap);
+	RenderVS(input, vs, output, tex, motionBlur, normalMap);
 	clipData = GetClipData(output.position);
-}
-
-// Motion blur vertex shader
-void MotionBlurVS (	in RenderVSInput input,
-					out RenderVSOutput vs,
-					out RenderPSInput output,
-					out TexturePSInput tex,
-					out NormalMapPSInput normalMap,
-					out MotionBlurPSInput motionBlur)
-{
-	RenderVS(input, vs, output, tex, normalMap);
-	
-	// Pass along the current vertex position in clip-space,
-	// as well as the previous vertex position in clip-space
-	motionBlur.currentPosition = vs.position;
-	motionBlur.previousPosition = mul(float4(input.position - Offset, 1), LastFrameWorldViewProjectionMatrix);
 }
 
 void ShadowVS(	in float3 inPosition : POSITION0,
@@ -142,19 +133,6 @@ technique Clip
 	}
 }
 
-technique MotionBlur
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 MotionBlurVS();
-		PixelShader = compile ps_3_0 MotionBlurTextureNormalMapPlainPS();
-	}
-}
-
 // Glow techniques
 
 technique ShadowGlow
@@ -209,19 +187,6 @@ technique ClipGlow
 	}
 }
 
-technique MotionBlurGlow
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 MotionBlurVS();
-		PixelShader = compile ps_3_0 MotionBlurTextureNormalMapGlowPS();
-	}
-}
-
 // Alpha techniques
 
 technique ShadowAlpha
@@ -273,19 +238,6 @@ technique ClipAlpha
 
 		VertexShader = compile vs_3_0 ClipVS();
 		PixelShader = compile ps_3_0 ClipTextureNormalMapClipAlphaPS();
-	}
-}
-
-technique MotionBlurAlpha
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 MotionBlurVS();
-		PixelShader = compile ps_3_0 MotionBlurTextureNormalMapClipAlphaPS();
 	}
 }
 

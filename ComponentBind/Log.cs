@@ -9,7 +9,7 @@ namespace ComponentBind
 {
 	public class Log
 	{
-		public static Action<string> Handler = null;
+		public static Action<string> Handler = (Action<string>)Console.WriteLine;
 #if DEBUG
 		public static void d(string log)
 		{

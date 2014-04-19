@@ -109,7 +109,7 @@ namespace Lemma.Components
 			size.Y = (int)((float)size.Y * 0.5f);
 			if (this.renderer == null)
 			{
-				this.renderer = new Renderer(this.main, size, false, false, false, false, false);
+				this.renderer = new Renderer(this.main, size, false, false, false, false);
 				this.renderer.LightRampTexture.Value = "Images\\default-ramp";
 				this.main.AddComponent(this.renderer);
 			}
@@ -356,6 +356,8 @@ namespace Lemma.Components
 			this.effect.CurrentTechnique.Passes[0].Apply();
 			this.main.GraphicsDevice.SetVertexBuffer(this.surfaceVertexBuffer);
 			this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+			Model.DrawCallCounter++;
+			Model.TriangleCounter += 2;
 
 			this.main.GraphicsDevice.RasterizerState = originalState;
 
@@ -368,6 +370,8 @@ namespace Lemma.Components
 				this.effect.CurrentTechnique.Passes[0].Apply();
 				this.main.GraphicsDevice.SetVertexBuffer(this.underwaterVertexBuffer);
 				this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+				Model.DrawCallCounter++;
+				Model.TriangleCounter += 2;
 			}
 		}
 

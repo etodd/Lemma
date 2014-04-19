@@ -26,6 +26,9 @@ namespace Lemma.Components
 
 		public Property<int> DrawOrder { get; set; }
 
+		public static int DrawCallCounter;
+		public static int TriangleCounter;
+
 		protected Microsoft.Xna.Framework.Graphics.Model model;
 
 		public Property<string> Filename = new Property<string> { Editable = true };
@@ -719,14 +722,12 @@ namespace Lemma.Components
 							if (part.NumVertices > 0)
 							{
 								// Draw all the instance copies in a single call.
-								foreach (EffectPass pass in this.effect.CurrentTechnique.Passes)
-								{
-									pass.Apply();
-									this.main.GraphicsDevice.SetVertexBuffer(part.VertexBuffer, part.VertexOffset);
-									this.main.GraphicsDevice.Indices = part.IndexBuffer;
-
-									this.main.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, part.NumVertices, part.StartIndex, part.PrimitiveCount);
-								}
+								this.effect.CurrentTechnique.Passes[0].Apply();
+								this.main.GraphicsDevice.SetVertexBuffer(part.VertexBuffer, part.VertexOffset);
+								this.main.GraphicsDevice.Indices = part.IndexBuffer;
+								this.main.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, part.NumVertices, part.StartIndex, part.PrimitiveCount);
+								Model.DrawCallCounter++;
+								Model.TriangleCounter += part.PrimitiveCount;
 							}
 						}
 					}
@@ -827,21 +828,20 @@ namespace Lemma.Components
 						this.main.GraphicsDevice.Indices = meshPart.IndexBuffer;
 
 						// Draw all the instance copies in a single call.
-						foreach (EffectPass pass in this.effect.CurrentTechnique.Passes)
-						{
-							pass.Apply();
-							// TODO: Monogame support for GraphicsDevice.DrawInstancedPrimitives()
-							this.main.GraphicsDevice.DrawInstancedPrimitives
-							(
-								PrimitiveType.TriangleList,
-								0,
-								0,
-								meshPart.NumVertices,
-								meshPart.StartIndex,
-								meshPart.PrimitiveCount,
-								this.Instances.Count
-							);
-						}
+						this.effect.CurrentTechnique.Passes[0].Apply();
+						// TODO: Monogame support for GraphicsDevice.DrawInstancedPrimitives()
+						this.main.GraphicsDevice.DrawInstancedPrimitives
+						(
+							PrimitiveType.TriangleList,
+							0,
+							0,
+							meshPart.NumVertices,
+							meshPart.StartIndex,
+							meshPart.PrimitiveCount,
+							this.Instances.Count
+						);
+						Model.DrawCallCounter++;
+						Model.TriangleCounter += meshPart.PrimitiveCount * this.Instances.Count;
 					}
 				}
 

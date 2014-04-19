@@ -18,7 +18,9 @@ void RenderVS(	in RenderVSInput input,
 				out RenderVSOutput vs,
 				out RenderPSInput output,
 				out TexturePSInput tex,
-				out NormalMapPSInput normalMap)
+				out NormalMapPSInput normalMap,
+				in float4x4 lastInstanceTransform : BLENDWEIGHT4,
+				out MotionBlurPSInput motionBlur)
 {
 	// Calculate the clip-space vertex position
 	float4x4 world = mul(WorldMatrix, transpose(input.instanceTransform));
@@ -37,6 +39,11 @@ void RenderVS(	in RenderVSInput input,
 	float diff = length(pos * input.normal) * 2;
 
 	tex.uvCoordinates = float2(diff + pos.x + (pos.z * input.normal.x), diff - pos.y + (pos.z * input.normal.y)) * 0.075f * Tiling;
+	
+	// Pass along the current vertex position in clip-space,
+	// as well as the previous vertex position in clip-space
+	motionBlur.currentPosition = vs.position;
+	motionBlur.previousPosition = mul(input.position, mul(transpose(lastInstanceTransform), LastFrameWorldViewProjectionMatrix));
 }
 
 void ClipVS(	in RenderVSInput input,
@@ -44,27 +51,12 @@ void ClipVS(	in RenderVSInput input,
 				out RenderPSInput output,
 				out TexturePSInput tex,
 				out NormalMapPSInput normalMap,
+				in float4x4 lastInstanceTransform : BLENDWEIGHT4,
+				out MotionBlurPSInput motionBlur,
 				out ClipPSInput clipData)
 {
-	RenderVS(input, vs, output, tex, normalMap);
+	RenderVS(input, vs, output, tex, normalMap, lastInstanceTransform, motionBlur);
 	clipData = GetClipData(output.position);
-}
-
-// Motion blur vertex shader
-void MotionBlurVS ( in RenderVSInput input,
-					in float4x4 lastInstanceTransform : BLENDWEIGHT4,
-					out RenderVSOutput vs,
-					out RenderPSInput output,
-					out TexturePSInput tex,
-					out NormalMapPSInput normalMap,
-					out MotionBlurPSInput motionBlur)
-{
-	RenderVS(input, vs, output, tex, normalMap);
-	
-	// Pass along the current vertex position in clip-space,
-	// as well as the previous vertex position in clip-space
-	motionBlur.currentPosition = vs.position;
-	motionBlur.previousPosition = mul(input.position, mul(transpose(lastInstanceTransform), LastFrameWorldViewProjectionMatrix));
 }
 
 // Shadow vertex shader
@@ -150,19 +142,6 @@ technique Clip
 	}
 }
 
-technique MotionBlur
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 MotionBlurVS();
-		PixelShader = compile ps_3_0 MotionBlurTextureNormalMapPlainPS();
-	}
-}
-
 // Glow techniques
 
 technique ShadowGlow
@@ -217,19 +196,6 @@ technique ClipGlow
 	}
 }
 
-technique MotionBlurGlow
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 MotionBlurVS();
-		PixelShader = compile ps_3_0 MotionBlurTextureNormalMapGlowPS();
-	}
-}
-
 // Alpha techniques
 
 technique ShadowAlpha
@@ -281,19 +247,6 @@ technique ClipAlpha
 
 		VertexShader = compile vs_3_0 ClipVS();
 		PixelShader = compile ps_3_0 ClipTextureNormalMapClipAlphaPS();
-	}
-}
-
-technique MotionBlurAlpha
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 MotionBlurVS();
-		PixelShader = compile ps_3_0 MotionBlurTextureNormalMapClipAlphaPS();
 	}
 }
 

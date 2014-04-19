@@ -50,36 +50,6 @@ technique RenderAlphaParticles
 }
 
 // Effect technique for drawing particles with additive blending.
-technique MotionBlurAdditiveParticles
-{
-	pass P0
-	{
-		VertexShader = compile vs_3_0 ParticleVS();
-		PixelShader = compile ps_3_0 ParticlePS();
-		AlphaBlendEnable = true;
-		SrcBlend = SrcAlpha;
-		DestBlend = One;
-		ZEnable = true;
-		ZWriteEnable = false;
-	}
-}
-
-// Effect technique for drawing particles with alpha blending.
-technique MotionBlurAlphaParticles
-{
-	pass P0
-	{
-		VertexShader = compile vs_3_0 ParticleVS();
-		PixelShader = compile ps_3_0 ParticlePS();
-		AlphaBlendEnable = true;
-		SrcBlend = SrcAlpha;
-		DestBlend = InvSrcAlpha;
-		ZEnable = true;
-		ZWriteEnable = false;
-	}
-}
-
-// Effect technique for drawing particles with additive blending.
 technique ClipAdditiveParticles
 {
 	pass P0

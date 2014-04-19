@@ -367,11 +367,11 @@ namespace Lemma
 			result.Add(new NotifyBinding(delegate()
 			{
 				if (result.Highlighted)
-					AkSoundEngine.PostEvent("Play_mouse_over", null);
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_MOUSEOVER);
 			}, result.Highlighted));
 			result.Add(new CommandBinding<Point>(result.MouseLeftUp, delegate(Point p)
 			{
-				AkSoundEngine.PostEvent("Play_mouse_click", null);
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_CLICK);
 				if (action != null)
 					action();
 			}));
@@ -489,6 +489,9 @@ namespace Lemma
 			if (firstInitialization)
 			{
 				this.IsMouseVisible.Value = true;
+
+				if (AkBankLoader.LoadBank("SFX_Bank_01.bnk") != AKRESULT.AK_Success)
+					Log.d("Failed to load sound bank");
 
 #if ANALYTICS
 				this.SessionRecorder = new Session.Recorder();

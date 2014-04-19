@@ -823,32 +823,35 @@ namespace Lemma.Components
 				this.main.GraphicsDevice.RasterizerState = this.noCullRasterizerState;
 
 				// Activate the particle effect.
-				foreach (EffectPass pass in this.particleEffect.CurrentTechnique.Passes)
+				this.particleEffect.CurrentTechnique.Passes[0].Apply();
+
+				if (this.firstActiveParticle < this.firstFreeParticle)
 				{
-					pass.Apply();
+					// If the active particles are all in one consecutive range,
+					// we can draw them all in a single call.
+					device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0,
+												 this.firstActiveParticle * 4, (this.firstFreeParticle - this.firstActiveParticle) * 4,
+												 this.firstActiveParticle * 6, (this.firstFreeParticle - this.firstActiveParticle) * 2);
+					Model.DrawCallCounter++;
+					Model.TriangleCounter += (this.firstFreeParticle - this.firstActiveParticle) * 2;
+				}
+				else
+				{
+					// If the active particle range wraps past the end of the queue
+					// back to the start, we must split them over two draw calls.
+					device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0,
+												 this.firstActiveParticle * 4, (this.settings.MaxParticles - this.firstActiveParticle) * 4,
+												 this.firstActiveParticle * 6, (this.settings.MaxParticles - this.firstActiveParticle) * 2);
+					Model.DrawCallCounter++;
+					Model.TriangleCounter += (this.settings.MaxParticles - this.firstActiveParticle) * 2;
 
-					if (this.firstActiveParticle < this.firstFreeParticle)
+					if (this.firstFreeParticle > 0)
 					{
-						// If the active particles are all in one consecutive range,
-						// we can draw them all in a single call.
 						device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0,
-													 this.firstActiveParticle * 4, (this.firstFreeParticle - this.firstActiveParticle) * 4,
-													 this.firstActiveParticle * 6, (this.firstFreeParticle - this.firstActiveParticle) * 2);
-					}
-					else
-					{
-						// If the active particle range wraps past the end of the queue
-						// back to the start, we must split them over two draw calls.
-						device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0,
-													 this.firstActiveParticle * 4, (this.settings.MaxParticles - this.firstActiveParticle) * 4,
-													 this.firstActiveParticle * 6, (this.settings.MaxParticles - this.firstActiveParticle) * 2);
-
-						if (this.firstFreeParticle > 0)
-						{
-							device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0,
-														 0, this.firstFreeParticle * 4,
-														 0, this.firstFreeParticle * 2);
-						}
+													 0, this.firstFreeParticle * 4,
+													 0, this.firstFreeParticle * 2);
+						Model.DrawCallCounter++;
+						Model.TriangleCounter += this.firstFreeParticle * 2;
 					}
 				}
 

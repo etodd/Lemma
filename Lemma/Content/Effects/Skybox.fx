@@ -73,18 +73,3 @@ technique Clip
 		PixelShader = compile ps_3_0 SkyboxPS();
 	}
 }
-
-technique MotionBlur
-{
-	pass p0
-	{
-		ZEnable = false;
-		ZWriteEnable = false;
-		AlphaBlendEnable = true;
-		SrcBlend = SrcAlpha;
-		DestBlend = InvSrcAlpha;
-	
-		VertexShader = compile vs_3_0 RenderVS();
-		PixelShader = compile ps_3_0 SkyboxPS();
-	}
-}

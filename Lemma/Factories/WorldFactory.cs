@@ -52,7 +52,11 @@ namespace Lemma.Factories
 				new Map.CellState
 				{
 					ID = 0,
-					Name = "Empty"
+					Name = "Empty",
+					Fake = true,
+					Invisible = true,
+					Permanent = false,
+					Hard = false,
 				},
 				new Map.CellState
 				{
@@ -706,6 +710,7 @@ namespace Lemma.Factories
 
 			this.SetMain(result, main);
 			WorldFactory.instance = result;
+			AkSoundEngine.DefaultGameObject = result;
 
 			// Materials
 			Map.CellState emptyState = WorldFactory.States[0];

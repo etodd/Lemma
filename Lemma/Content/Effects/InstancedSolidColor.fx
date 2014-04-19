@@ -8,7 +8,9 @@ struct RenderVSInput
 
 void RenderVS(	in RenderVSInput input,
 				out RenderVSOutput vs,
-				out RenderPSInput output)
+				out RenderPSInput output,
+				in float4x4 lastInstanceTransform : BLENDWEIGHT4,
+				out MotionBlurPSInput motionBlur)
 {
 	// Calculate the clip-space vertex position
 	float4x4 world = mul(WorldMatrix, transpose(input.instanceTransform));
@@ -17,30 +19,22 @@ void RenderVS(	in RenderVSInput input,
 	float4 viewSpacePosition = mul(worldPosition, ViewMatrix);
 	vs.position = mul(viewSpacePosition, ProjectionMatrix);
 	output.viewSpacePosition = viewSpacePosition;
-}
-
-void ClipVS(	in RenderVSInput input,
-				out RenderVSOutput vs,
-				out RenderPSInput output,
-				out ClipPSInput clipData)
-{
-	RenderVS(input, vs, output);
-	clipData = GetClipData(output.position);
-}
-
-// Motion blur vertex shader
-void MotionBlurVS ( in RenderVSInput input,
-					in float4x4 lastInstanceTransform : BLENDWEIGHT4,
-					out RenderVSOutput vs,
-					out RenderPSInput output,
-					out MotionBlurPSInput motionBlur)
-{
-	RenderVS(input, vs, output);
 	
 	// Pass along the current vertex position in clip-space,
 	// as well as the previous vertex position in clip-space
 	motionBlur.currentPosition = vs.position;
 	motionBlur.previousPosition = mul(input.position, mul(transpose(lastInstanceTransform), LastFrameWorldViewProjectionMatrix));
+}
+
+void ClipVS(	in RenderVSInput input,
+				out RenderVSOutput vs,
+				out RenderPSInput output,
+				in float4x4 lastInstanceTransform : BLENDWEIGHT4,
+				out MotionBlurPSInput motionBlur,
+				out ClipPSInput clipData)
+{
+	RenderVS(input, vs, output, lastInstanceTransform, motionBlur);
+	clipData = GetClipData(output.position);
 }
 
 technique Render
@@ -66,18 +60,5 @@ technique Clip
 
 		VertexShader = compile vs_3_0 ClipVS();
 		PixelShader = compile ps_3_0 ClipSolidColorPS();
-	}
-}
-
-technique MotionBlur
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 MotionBlurVS();
-		PixelShader = compile ps_3_0 MotionBlurSolidColorPS();
 	}
 }

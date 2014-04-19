@@ -110,7 +110,6 @@ namespace Lemma.Factories
 			firstPersonModel.Bind(model);
 
 			model.UnsupportedTechniques.Add(Technique.Clip);
-			model.UnsupportedTechniques.Add(Technique.MotionBlur);
 			model.UnsupportedTechniques.Add(Technique.Render);
 			firstPersonModel.UnsupportedTechniques.Add(Technique.Shadow);
 			firstPersonModel.UnsupportedTechniques.Add(Technique.PointLightShadow);
@@ -168,13 +167,11 @@ namespace Lemma.Factories
 				if (thirdPerson)
 				{
 					model.UnsupportedTechniques.Remove(Technique.Clip);
-					model.UnsupportedTechniques.Remove(Technique.MotionBlur);
 					model.UnsupportedTechniques.Remove(Technique.Render);
 				}
 				else
 				{
 					model.UnsupportedTechniques.Add(Technique.Clip);
-					model.UnsupportedTechniques.Add(Technique.MotionBlur);
 					model.UnsupportedTechniques.Add(Technique.Render);
 				}
 			}, thirdPerson));
@@ -499,13 +496,13 @@ namespace Lemma.Factories
 					if (groundRaycast.Map != null)
 					{
 						if (!player.Crouched)
-							AkSoundEngine.PostEvent("Footstep_Play", result);
+							AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
 						// TODO: Figure out Wwise material parameter
 						//footsteps.Cue.Value = groundRaycast.Map[groundRaycast.Coordinate.Value].FootstepCue;
 					}
 				}
 				else if (wallRunState != Player.WallRun.Down && wallRunState != Player.WallRun.Reverse && !player.Crouched)
-					AkSoundEngine.PostEvent("Footstep_Play", result);
+					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
 			}));
 			footstepTimer.Add(new Binding<bool>(footstepTimer.Enabled, () => player.WallRunState.Value != Player.WallRun.None || (player.MovementDirection.Value.LengthSquared() > 0.0f && player.IsSupported && player.EnableWalking), player.MovementDirection, player.IsSupported, player.EnableWalking, player.WallRunState));
 
@@ -835,8 +832,8 @@ namespace Lemma.Factories
 					box.Editable = false;
 					box.Serialize = false;
 					box.DrawOrder.Value = 11; // In front of water
-					box.CullBoundingBox.Value = false;
-					box.DisableCulling.Value = true;
+					box.BoundingBox.Value = new BoundingBox(new Vector3(-0.5f), new Vector3(0.5f));
+					box.CullBoundingBox.Value = true;
 					box.GetVector3Parameter("Scale").Value = scale;
 					box.Add(new Binding<Matrix>(box.Transform, x => matrix * x, block.Map.Transform));
 					result.Add(box);
@@ -1668,7 +1665,7 @@ namespace Lemma.Factories
 						wallType = WorldFactory.StatesByName["Temporary"];
 					// TODO: Figure out Wwise material parameter
 					//footsteps.Cue.Value = wallType.FootstepCue;
-					AkSoundEngine.PostEvent("Footstep_Play", result);
+					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
 
 					walkedOn.Execute(wallJumpMap, wallCoordinate, wallNormalDirection.GetReverse());
 
@@ -1926,7 +1923,7 @@ namespace Lemma.Factories
 					deactivateWallRun();
 
 					// Play a footstep sound since we're jumping off the ground
-					AkSoundEngine.PostEvent("Footstep_Play", result);
+					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
 
 					return true;
 				}

@@ -61,6 +61,10 @@ namespace Lemma
 		private Property<double> postProcessTime = new Property<double>();
 		private double unPostProcessedSum;
 		private Property<double> unPostProcessedTime = new Property<double>();
+		private Property<int> drawCalls = new Property<int>();
+		private int drawCallCounter;
+		private Property<int> triangles = new Property<int>();
+		private int triangleCounter;
 #endif
 
 		public Property<Point> ScreenSize = new Property<Point>();
@@ -314,13 +318,10 @@ namespace Lemma
 				this.Listener.Add(new Binding<Matrix>(this.Listener.Matrix, this.Camera.View));
 				this.AddComponent(this.Listener);
 
-				if (AkInMemBankLoader.LoadBank(AkInMemBankLoader.GetNonLocalizedBankPath("Sounds.bnk")) != AKRESULT.AK_Success)
-					Log.d("Failed to load sound bank");
-
 				// Create the renderer.
 				this.LightingManager = new LightingManager();
 				this.AddComponent(this.LightingManager);
-				this.Renderer = new Renderer(this, this.ScreenSize, true, true, true, false, true);
+				this.Renderer = new Renderer(this, this.ScreenSize, true, true, false, true);
 
 				this.AddComponent(this.Renderer);
 				this.renderParameters = new RenderParameters
@@ -341,11 +342,19 @@ namespace Lemma
 				this.performanceMonitor.Name.Value = "PerformanceMonitor";
 				this.UI.Root.Children.Add(this.performanceMonitor);
 
-				Action<string, Property<double>> addLabel = delegate(string label, Property<double> property)
+				Action<string, Property<double>> addTimer = delegate(string label, Property<double> property)
 				{
 					TextElement text = new TextElement();
 					text.FontFile.Value = "Font";
 					text.Add(new Binding<string, double>(text.Text, x => label + ": " + (x * 1000.0).ToString("F") + "ms", property));
+					this.performanceMonitor.Children.Add(text);
+				};
+
+				Action<string, Property<int>> addCounter = delegate(string label, Property<int> property)
+				{
+					TextElement text = new TextElement();
+					text.FontFile.Value = "Font";
+					text.Add(new Binding<string, int>(text.Text, x => label + ": " + x.ToString(), property));
 					this.performanceMonitor.Children.Add(text);
 				};
 
@@ -354,13 +363,15 @@ namespace Lemma
 				frameRateText.Add(new Binding<string, float>(frameRateText.Text, x => "FPS: " + x.ToString("0"), this.frameRate));
 				this.performanceMonitor.Children.Add(frameRateText);
 
-				addLabel("Physics", this.physicsTime);
-				addLabel("Update", this.updateTime);
-				addLabel("Pre-frame", this.preframeTime);
-				addLabel("Raw render", this.rawRenderTime);
-				addLabel("Shadow render", this.shadowRenderTime);
-				addLabel("Post-process", this.postProcessTime);
-				addLabel("Non-post-processed", this.unPostProcessedTime);
+				addTimer("Physics", this.physicsTime);
+				addTimer("Update", this.updateTime);
+				addTimer("Pre-frame", this.preframeTime);
+				addTimer("Raw render", this.rawRenderTime);
+				addTimer("Shadow render", this.shadowRenderTime);
+				addTimer("Post-process", this.postProcessTime);
+				addTimer("Non-post-processed", this.unPostProcessedTime);
+				addCounter("Draw calls", this.drawCalls);
+				addCounter("Triangles", this.triangles);
 
 				PCInput input = new PCInput();
 				input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.P }), delegate()
@@ -370,9 +381,16 @@ namespace Lemma
 				this.AddComponent(input);
 #endif
 
-				IEnumerable<string> globalStaticScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalStaticScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("..\\GlobalStaticScripts", Path.GetFileNameWithoutExtension(x)));
-				foreach (string scriptName in globalStaticScripts)
-					this.executeStaticScript(scriptName);
+				try
+				{
+					IEnumerable<string> globalStaticScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalStaticScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("..\\GlobalStaticScripts", Path.GetFileNameWithoutExtension(x)));
+					foreach (string scriptName in globalStaticScripts)
+						this.executeStaticScript(scriptName);
+				}
+				catch (IOException)
+				{
+
+				}
 			}
 			else
 			{
@@ -380,6 +398,8 @@ namespace Lemma
 					c.LoadContent(true);
 				this.ReloadedContent.Execute();
 			}
+			
+			this.GraphicsDevice.RasterizerState = new RasterizerState { MultiSampleAntiAlias = false };
 		}
 
 		private bool componentEnabled(IComponent c)
@@ -435,9 +455,16 @@ namespace Lemma
 
 			if (!this.EditorEnabled && this.mapLoaded)
 			{
-				IEnumerable<string> mapGlobalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("..\\GlobalScripts", Path.GetFileNameWithoutExtension(x)));
-				foreach (string scriptName in mapGlobalScripts)
-					this.executeScript(scriptName);
+				try
+				{
+					IEnumerable<string> mapGlobalScripts = Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "GlobalScripts"), "*", SearchOption.AllDirectories).Select(x => Path.Combine("..\\GlobalScripts", Path.GetFileNameWithoutExtension(x)));
+					foreach (string scriptName in mapGlobalScripts)
+						this.executeScript(scriptName);
+				}
+				catch (IOException)
+				{
+
+				}
 			}
 			this.mapLoaded = false;
 
@@ -537,7 +564,7 @@ namespace Lemma
 			AkSoundEngine.RenderAudio();
 
 			this.frameSum++;
-			this.performanceInterval += this.ElapsedTime;
+			this.performanceInterval += (float)this.GameTime.ElapsedGameTime.TotalSeconds;
 			if (this.performanceInterval > Main.performanceUpdateTime)
 			{
 				if (this.performanceMonitor.Visible)
@@ -550,6 +577,10 @@ namespace Lemma
 					this.shadowRenderTime.Value = this.shadowRenderSum;
 					this.postProcessTime.Value = this.postProcessSum;
 					this.unPostProcessedTime.Value = this.unPostProcessedSum;
+					this.drawCalls.Value = this.drawCallCounter;
+					this.triangles.Value = this.triangleCounter;
+					this.drawCallCounter = 0;
+					this.triangleCounter = 0;
 				}
 				this.physicsSum = 0;
 				this.updateSum = 0;
@@ -575,12 +606,15 @@ namespace Lemma
 		{
 			if (this.GraphicsDevice == null || this.GraphicsDevice.IsDisposed || this.GraphicsDevice.GraphicsDeviceStatus != GraphicsDeviceStatus.Normal)
 				return;
+
+			Lemma.Components.Model.DrawCallCounter = 0;
+			Lemma.Components.Model.TriangleCounter = 0;
 			
 #if PERFORMANCE_MONITOR
 			Stopwatch timer = new Stopwatch();
 			timer.Start();
 #endif
-			this.renderParameters.Technique = this.Renderer.MotionBlurAmount.Value > 0.0f && !this.Paused ? Technique.MotionBlur : Technique.Render;
+			this.renderParameters.Technique = Technique.Render;
 
 			foreach (IDrawablePreFrameComponent c in this.preframeDrawables)
 			{
@@ -630,6 +664,8 @@ namespace Lemma
 #if PERFORMANCE_MONITOR
 			timer.Stop();
 			this.unPostProcessedSum = Math.Max(this.unPostProcessedSum, timer.Elapsed.TotalSeconds);
+			this.drawCallCounter = Math.Max(this.drawCallCounter, Lemma.Components.Model.DrawCallCounter);
+			this.triangleCounter = Math.Max(this.triangleCounter, Lemma.Components.Model.TriangleCounter);
 #endif
 
 		}

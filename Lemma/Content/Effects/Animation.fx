@@ -1,6 +1,6 @@
 #include "RenderCommon.fxh"
 
-float4x3 Bones[79];
+float4x3 Bones[78];
 
 struct RenderVSInput
 {
@@ -11,44 +11,8 @@ struct RenderVSInput
 	float4 weights : BLENDWEIGHT0;
 };
 
-void RenderVS(	in RenderVSInput input,
-				out RenderVSOutput vs,
-				out RenderPSInput output,
-				out TexturePSInput tex,
-				out FlatPSInput flat)
-{
-	float4x3 skinning = 0;
-
-	[unroll]
-	for (int i = 0; i < 4; i++)
-		skinning += Bones[input.indices[i]] * input.weights[i];
-
-	float4 pos = float4(mul(input.position, skinning), input.position.w);
-	input.normal = mul(input.normal, (float3x3)skinning);
-	float4 worldPosition = mul(pos, WorldMatrix);
-	output.position = worldPosition;
-	float4 viewSpacePosition = mul(worldPosition, ViewMatrix);
-	vs.position = mul(viewSpacePosition, ProjectionMatrix);
-	output.viewSpacePosition = viewSpacePosition;
-
-	tex.uvCoordinates = input.uvCoordinates;
-
-	flat.normal = mul(input.normal, WorldMatrix);
-}
-
-void ClipVS(	in RenderVSInput input,
-				out RenderVSOutput vs,
-				out RenderPSInput output,
-				out TexturePSInput tex,
-				out FlatPSInput flat,
-				out ClipPSInput clipData)
-{
-	RenderVS(input, vs, output, tex, flat);
-	clipData = GetClipData(output.position);
-}
-
 // Motion blur vertex shader
-void MotionBlurVS (	in RenderVSInput input,
+void RenderVS (	in RenderVSInput input,
 					out RenderVSOutput vs,
 					out RenderPSInput output,
 					out TexturePSInput tex,
@@ -77,6 +41,18 @@ void MotionBlurVS (	in RenderVSInput input,
 	// as well as the previous vertex position in clip-space
 	motionBlur.currentPosition = vs.position;
 	motionBlur.previousPosition = mul(pos, LastFrameWorldViewProjectionMatrix);
+}
+
+void ClipVS(	in RenderVSInput input,
+				out RenderVSOutput vs,
+				out RenderPSInput output,
+				out TexturePSInput tex,
+				out FlatPSInput flat,
+				out MotionBlurPSInput motionBlur,
+				out ClipPSInput clipData)
+{
+	RenderVS(input, vs, output, tex, flat, motionBlur);
+	clipData = GetClipData(output.position);
 }
 
 // Shadow vertex shader
@@ -137,19 +113,6 @@ technique Render
 	
 		VertexShader = compile vs_3_0 RenderVS();
 		PixelShader = compile ps_3_0 RenderTextureFlatPlainPS();
-	}
-}
-
-technique MotionBlur
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 MotionBlurVS();
-		PixelShader = compile ps_3_0 MotionBlurTextureFlatPlainPS();
 	}
 }
 

@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework;
 
 namespace Lemma.Components
 {
-	public enum Technique { Render, MotionBlur, Shadow, PointLightShadow, NonPostProcessed, Clip };
+	public enum Technique { Render, Shadow, PointLightShadow, NonPostProcessed, Clip };
 
 	public class RenderParameters
 	{
@@ -103,13 +103,13 @@ namespace Lemma.Components
 		private RenderTarget2D specularBuffer;
 		private RenderTarget2D depthBuffer;
 		private RenderTarget2D normalBuffer;
+		private RenderTarget2D albedoBuffer;
 		private RenderTarget2D colorBuffer1;
 		private RenderTarget2D colorBuffer2;
 		private RenderTarget2D halfBuffer1;
 		private RenderTarget2D halfBuffer2;
 		private RenderTarget2D halfDepthBuffer;
 		private Texture2D ssaoRandomTexture;
-		private bool allowMotionBlur;
 		private bool allowSSAO;
 		private RenderTarget2D velocityBuffer;
 		private RenderTarget2D velocityBufferLastFrame;
@@ -122,9 +122,8 @@ namespace Lemma.Components
 		/// </summary>
 		/// <param name="graphicsDevice">The GraphicsDevice to use for rendering</param>
 		/// <param name="contentManager">The ContentManager from which to load Effects</param>
-		public Renderer(Main main, Point size, bool allowMotionBlur, bool allowHdr, bool allowBloom, bool allowSSAO, bool allowPostAlphaDrawables)
+		public Renderer(Main main, Point size, bool allowHdr, bool allowBloom, bool allowSSAO, bool allowPostAlphaDrawables)
 		{
-			this.allowMotionBlur = allowMotionBlur;
 			this.allowBloom = allowBloom;
 			this.allowSSAO = allowSSAO;
 			this.allowPostAlphaDrawables = allowPostAlphaDrawables;
@@ -187,20 +186,17 @@ namespace Lemma.Components
 				Renderer.globalLightEffect.Parameters["EnvironmentColor"].SetValue(value);
 			};
 
-			if (this.allowMotionBlur)
+			this.MotionBlurAmount.Set = delegate(float value)
 			{
-				this.MotionBlurAmount.Set = delegate(float value)
-				{
-					this.MotionBlurAmount.InternalValue = value;
-					this.motionBlurEffect.Parameters["MotionBlurAmount"].SetValue(value);
-				};
-				this.SpeedBlurAmount.Set = delegate(float value)
-				{
-					this.SpeedBlurAmount.InternalValue = value;
-					this.motionBlurEffect.Parameters["SpeedBlurAmount"].SetValue(value);
-				};
-				this.SpeedBlurAmount.Value = 0.0f;
-			}
+				this.MotionBlurAmount.InternalValue = value;
+				this.motionBlurEffect.Parameters["MotionBlurAmount"].SetValue(value);
+			};
+			this.SpeedBlurAmount.Set = delegate(float value)
+			{
+				this.SpeedBlurAmount.InternalValue = value;
+				this.motionBlurEffect.Parameters["SpeedBlurAmount"].SetValue(value);
+			};
+			this.SpeedBlurAmount.Value = 0.0f;
 
 			if (this.allowBloom)
 			{
@@ -266,8 +262,7 @@ namespace Lemma.Components
 
 			this.clearEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Clear").Clone();
 
-			if (this.allowMotionBlur)
-				this.motionBlurEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\MotionBlur").Clone();
+			this.motionBlurEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\MotionBlur").Clone();
 
 			if (this.allowBloom)
 				this.bloomEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Bloom").Clone();
@@ -283,30 +278,6 @@ namespace Lemma.Components
 			get
 			{
 				return this.hdr ? SurfaceFormat.HdrBlendable : SurfaceFormat.Color;
-			}
-		}
-
-		private SurfaceFormat normalSurfaceFormat
-		{
-			get
-			{
-				return this.hdr ? SurfaceFormat.HalfVector4 : SurfaceFormat.Color;
-			}
-		}
-
-		private SurfaceFormat depthSurfaceFormat
-		{
-			get
-			{
-				return this.hdr ? SurfaceFormat.Vector2 : SurfaceFormat.HalfVector2;
-			}
-		}
-
-		private SurfaceFormat velocitySurfaceFormat
-		{
-			get
-			{
-				return this.hdr ? SurfaceFormat.Vector2 : SurfaceFormat.HalfVector2;
 			}
 		}
 
@@ -344,7 +315,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												this.depthSurfaceFormat,
+												SurfaceFormat.Single,
 												DepthFormat.Depth24,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -356,8 +327,20 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												this.normalSurfaceFormat,
+												SurfaceFormat.Color,
 												DepthFormat.None,
+												0,
+												RenderTargetUsage.DiscardContents);
+
+			// Albedo buffer
+			if (this.albedoBuffer != null && !this.albedoBuffer.IsDisposed)
+				this.albedoBuffer.Dispose();
+			this.albedoBuffer = new RenderTarget2D(this.main.GraphicsDevice,
+												size.X,
+												size.Y,
+												false,
+												SurfaceFormat.Color,
+												DepthFormat.Depth24,
 												0,
 												RenderTargetUsage.DiscardContents);
 
@@ -397,28 +380,26 @@ namespace Lemma.Components
 					this.velocityBufferLastFrame.Dispose();
 				this.velocityBufferLastFrame = null;
 			}
-			if (this.allowMotionBlur)
-			{
-				// Velocity for motion blur
-				this.velocityBuffer = new RenderTarget2D(this.main.GraphicsDevice,
-													size.X,
-													size.Y,
-													false,
-													this.velocitySurfaceFormat,
-													DepthFormat.None,
-													0,
-													RenderTargetUsage.DiscardContents);
 
-				// Velocity from last frame
-				this.velocityBufferLastFrame = new RenderTarget2D(this.main.GraphicsDevice,
-													size.X,
-													size.Y,
-													false,
-													this.velocitySurfaceFormat,
-													DepthFormat.None,
-													0,
-													RenderTargetUsage.DiscardContents);
-			}
+			// Velocity for motion blur
+			this.velocityBuffer = new RenderTarget2D(this.main.GraphicsDevice,
+												size.X,
+												size.Y,
+												false,
+												SurfaceFormat.HalfVector2,
+												DepthFormat.None,
+												0,
+												RenderTargetUsage.DiscardContents);
+
+			// Velocity from last frame
+			this.velocityBufferLastFrame = new RenderTarget2D(this.main.GraphicsDevice,
+												size.X,
+												size.Y,
+												false,
+												SurfaceFormat.HalfVector2,
+												DepthFormat.None,
+												0,
+												RenderTargetUsage.DiscardContents);
 
 			if (this.halfBuffer1 != null)
 			{
@@ -465,7 +446,7 @@ namespace Lemma.Components
 					size.X / 2,
 					size.Y / 2,
 					false,
-					SurfaceFormat.Vector2,
+					SurfaceFormat.Single,
 					DepthFormat.None,
 					0,
 					RenderTargetUsage.DiscardContents);
@@ -474,21 +455,16 @@ namespace Lemma.Components
 
 		public void SetRenderTargets(RenderParameters p)
 		{
-			bool motionBlur = this.allowMotionBlur && !this.main.Paused;
-			if (motionBlur)
-				this.main.GraphicsDevice.SetRenderTargets(this.colorBuffer1, this.depthBuffer, this.normalBuffer, this.velocityBuffer);
-			else
-				this.main.GraphicsDevice.SetRenderTargets(this.colorBuffer1, this.depthBuffer, this.normalBuffer);
-
-			this.clearEffect.CurrentTechnique = this.clearEffect.Techniques[motionBlur ? "ClearMotionBlur" : "Clear"];
+			this.main.GraphicsDevice.SetRenderTargets(this.albedoBuffer, this.depthBuffer, this.normalBuffer, this.velocityBuffer);
+			this.clearEffect.CurrentTechnique = this.clearEffect.Techniques["Clear"];
 			Color color = this.BackgroundColor;
 			p.Camera.SetParameters(this.clearEffect);
-			this.setTargetParameters(new RenderTarget2D[] { }, new RenderTarget2D[] { this.colorBuffer1 }, this.clearEffect);
+			this.setTargetParameters(new RenderTarget2D[] { }, new RenderTarget2D[] { this.albedoBuffer }, this.clearEffect);
 			this.clearEffect.Parameters["BackgroundColor"].SetValue(new Vector3((float)color.R / 255.0f, (float)color.G / 255.0f, (float)color.B / 255.0f));
-			this.applyEffect(this.clearEffect);
 			this.main.GraphicsDevice.SamplerStates[1] = SamplerState.PointClamp;
 			this.main.GraphicsDevice.SamplerStates[2] = SamplerState.PointClamp;
 			this.main.GraphicsDevice.SamplerStates[3] = SamplerState.PointClamp;
+			this.applyEffect(this.clearEffect);
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 		}
 
@@ -520,7 +496,7 @@ namespace Lemma.Components
 			Renderer.globalLightEffect.CurrentTechnique = Renderer.globalLightEffect.Techniques["GlobalLight" + (this.lightingManager.EnableGlobalShadowMap && this.lightingManager.HasGlobalShadowLight ? "Shadow" : "")];
 			parameters.Camera.SetParameters(Renderer.globalLightEffect);
 			this.lightingManager.SetGlobalLightParameters(Renderer.globalLightEffect, originalCameraPosition);
-			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.globalLightEffect);
+			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.albedoBuffer }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.globalLightEffect);
 			this.applyEffect(Renderer.globalLightEffect);
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
@@ -534,7 +510,7 @@ namespace Lemma.Components
 			parameters.Camera.SetParameters(Renderer.pointLightEffect);
 			parameters.Camera.FarPlaneDistance.Value = originalFarPlane;
 
-			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.pointLightEffect);
+			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.albedoBuffer }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.pointLightEffect);
 			for (int i = 0; i < PointLight.All.Count; i++)
 			{
 				PointLight light = PointLight.All[i];
@@ -553,7 +529,7 @@ namespace Lemma.Components
 			parameters.Camera.SetParameters(Renderer.spotLightEffect);
 			parameters.Camera.FarPlaneDistance.Value = originalFarPlane;
 
-			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.spotLightEffect);
+			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.albedoBuffer }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.spotLightEffect);
 			for (int i = 0; i < SpotLight.All.Count; i++)
 			{
 				SpotLight light = SpotLight.All[i];
@@ -587,8 +563,8 @@ namespace Lemma.Components
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);*/
 			}
 
-			RenderTarget2D colorSource = this.colorBuffer1;
-			RenderTarget2D colorDestination = this.colorBuffer2;
+			RenderTarget2D colorSource = this.albedoBuffer;
+			RenderTarget2D colorDestination = this.colorBuffer1;
 			RenderTarget2D colorTemp = null;
 
 			// Compositing
@@ -605,9 +581,8 @@ namespace Lemma.Components
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 			// Swap the color buffers
-			colorTemp = colorDestination;
-			colorDestination = colorSource;
-			colorSource = colorTemp;
+			colorDestination = this.colorBuffer2;
+			colorSource = this.colorBuffer1;
 
 			parameters.DepthBuffer = this.depthBuffer;
 			parameters.FrameBuffer = colorSource;
@@ -626,25 +601,7 @@ namespace Lemma.Components
 			parameters.Camera.View.Value = originalViewMatrix;
 
 			this.main.DrawAlphaComponents(parameters);
-
-			// Swap the color buffers
-			colorTemp = colorDestination;
-			colorDestination = colorSource;
-			parameters.FrameBuffer = colorSource = colorTemp;
-
-			if (this.allowPostAlphaDrawables && this.main.HasPostAlphaDrawables)
-			{
-				this.setTargets(colorDestination);
-
-				// Copy the color source to the destination
-				this.main.GraphicsDevice.Clear(Color.Black); // Because BlendState.Opaque really does not work here for some reason.
-				this.main.GraphicsDevice.SamplerStates[0] = new SamplerState { Filter = TextureFilter.Point };
-				this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.Default, originalState);
-				this.spriteBatch.Draw(colorSource, Vector2.Zero, Color.White);
-				this.spriteBatch.End();
-
-				this.main.DrawPostAlphaComponents(parameters);
-			}
+			this.main.DrawPostAlphaComponents(parameters);
 
 			// Swap the color buffers
 			colorTemp = colorDestination;
@@ -652,7 +609,7 @@ namespace Lemma.Components
 			parameters.FrameBuffer = colorSource = colorTemp;
 
 			bool enableBloom = this.allowBloom && this.EnableBloom && this.BloomThreshold < 1.0f;
-			bool enableMotionBlur = this.allowMotionBlur && this.MotionBlurAmount > 0.0f;
+			bool enableMotionBlur = this.MotionBlurAmount > 0.0f;
 			bool enableBlur = this.BlurAmount > 0.0f;
 
 			// Tone mapping
@@ -739,6 +696,8 @@ namespace Lemma.Components
 						this.main.GraphicsDevice.SetVertexBuffer(part.VertexBuffer);
 						this.main.GraphicsDevice.Indices = part.IndexBuffer;
 						this.main.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, part.NumVertices, part.StartIndex, part.PrimitiveCount);
+						Model.DrawCallCounter++;
+						Model.TriangleCounter += part.PrimitiveCount;
 					}
 				}
 			}
@@ -795,7 +754,7 @@ namespace Lemma.Components
 			this.lightingBuffer.Dispose();
 			this.normalBuffer.Dispose();
 			this.depthBuffer.Dispose();
-			this.colorBuffer1.Dispose();
+			this.albedoBuffer.Dispose();
 			this.colorBuffer2.Dispose();
 			this.specularBuffer.Dispose();
 

@@ -82,6 +82,8 @@ namespace Lemma.Components
 			this.effect.CurrentTechnique.Passes[0].Apply();
 			this.main.GraphicsDevice.SetVertexBuffer(this.vertexBuffer);
 			this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.LineList, 0, this.Lines.Count);
+			Model.DrawCallCounter++;
+			Model.TriangleCounter += this.Lines.Count;
 		}
 
 		public override void delete()

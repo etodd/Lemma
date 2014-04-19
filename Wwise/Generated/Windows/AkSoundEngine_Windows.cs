@@ -13,6 +13,7 @@ using Microsoft.Xna.Framework;
 
 public class AkSoundEngine {
   public static IntPtr VirtualAllocHook(IntPtr in_pMemAddress, uint in_size, uint in_dwAllocationType, uint in_dwProtect) { return AkSoundEnginePINVOKE.CSharp_VirtualAllocHook(in_pMemAddress, in_size, in_dwAllocationType, in_dwProtect); }
+  public static ComponentBind.Entity DefaultGameObject = null;
 
   public static void VirtualFreeHook(IntPtr in_pMemAddress, uint in_size, uint in_dwFreeType) {
 	AkSoundEnginePINVOKE.CSharp_VirtualFreeHook(in_pMemAddress, in_size, in_dwFreeType);
@@ -2850,24 +2851,34 @@ public class AkSoundEngine {
 	return ret;
   }
 
-  public static AKRESULT PostEvent(string e, Vector3 pos)
+  public static uint PostEvent(string e)
+  {
+	return AkSoundEngine.PostEvent(e, AkSoundEngine.DefaultGameObject);
+  }
+
+  public static uint PostEvent(uint e)
+  {
+	return AkSoundEngine.PostEvent(e, AkSoundEngine.DefaultGameObject);
+  }
+
+  public static uint PostEvent(string e, Vector3 pos)
   {
 	uint id = ComponentBind.Entity.CurrentID;
 	ComponentBind.Entity.CurrentID++;
 	AkSoundEnginePINVOKE.CSharp_RegisterGameObj__SWIG_1(id);
 	AkSoundEnginePINVOKE.CSharp_SetObjectPosition(id, pos.X, pos.Y, pos.Z, 0.0f, 0.0f, 1.0f);
-	AKRESULT result = (AKRESULT)AkSoundEnginePINVOKE.CSharp_PostEvent__SWIG_11(e, id);
+	uint result = AkSoundEnginePINVOKE.CSharp_PostEvent__SWIG_11(e, id);
 	AkSoundEnginePINVOKE.CSharp_UnregisterGameObj(id);
 	return result;
   }
 
-  public static AKRESULT PostEvent(uint e, Vector3 pos)
+  public static uint PostEvent(uint e, Vector3 pos)
   {
 	uint id = ComponentBind.Entity.CurrentID;
 	ComponentBind.Entity.CurrentID++;
 	AkSoundEnginePINVOKE.CSharp_RegisterGameObj__SWIG_1(id);
 	AkSoundEnginePINVOKE.CSharp_SetObjectPosition(id, pos.X, pos.Y, pos.Z, 0.0f, 0.0f, 1.0f);
-	AKRESULT result = (AKRESULT)AkSoundEnginePINVOKE.CSharp_PostEvent__SWIG_5(e, id);
+	uint result = AkSoundEnginePINVOKE.CSharp_PostEvent__SWIG_5(e, id);
 	AkSoundEnginePINVOKE.CSharp_UnregisterGameObj(id);
 	return result;
   }

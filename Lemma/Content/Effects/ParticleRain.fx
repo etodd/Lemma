@@ -123,18 +123,6 @@ technique PointLightShadowOpaqueParticles
 	}
 }*/
 
-technique MotionBlurOpaqueParticles
-{
-	pass P0
-	{
-		VertexShader = compile vs_3_0 RainVS();
-		PixelShader = compile ps_3_0 OpaquePS();
-		AlphaBlendEnable = false;
-		ZEnable = true;
-		ZWriteEnable = true;
-	}
-}
-
 technique ClipOpaqueParticles
 {
 	pass P0
@@ -148,20 +136,6 @@ technique ClipOpaqueParticles
 }
 
 technique RenderAlphaParticles
-{
-	pass P0
-	{
-		VertexShader = compile vs_3_0 RainVS();
-		PixelShader = compile ps_3_0 AlphaPS();
-		AlphaBlendEnable = true;
-		SrcBlend = SrcAlpha;
-		DestBlend = InvSrcAlpha;
-		ZEnable = true;
-		ZWriteEnable = false;
-	}
-}
-
-technique MotionBlurAlphaParticles
 {
 	pass P0
 	{
