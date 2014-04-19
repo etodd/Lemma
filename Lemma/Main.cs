@@ -275,8 +275,7 @@ namespace Lemma
 			this.TimeMultiplier.Set = delegate(float value)
 			{
 				this.TimeMultiplier.InternalValue = value;
-				// TODO: XACT -> Wwise
-				// this.AudioEngine.SetGlobalVariable("TimeShift", (value - 1.0f) * 12.0f);
+				AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SLOWMOTION, Math.Min(1.0f, (1.0f - value) / 0.6f));
 			};
 
 			new CommandBinding(this.MapLoaded, delegate()

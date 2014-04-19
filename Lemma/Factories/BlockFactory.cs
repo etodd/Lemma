@@ -29,7 +29,7 @@ namespace Lemma.Factories
 			PhysicsBlock physics = new PhysicsBlock();
 			result.Add("Physics", physics);
 
-			Property<string> cue = new Property<string> { Value = "Rubble" };
+			Property<uint> cue = new Property<uint> { };
 			result.Add("CollisionSoundCue", cue);
 
 			ModelInstance model = new ModelInstance();
@@ -49,7 +49,7 @@ namespace Lemma.Factories
 
 			physics.Add(new TwoWayBinding<Matrix>(transform.Matrix, physics.Transform));
 
-			Property<string> soundCue = result.GetProperty<string>("CollisionSoundCue");
+			Property<uint> soundCue = result.GetProperty<uint>("CollisionSoundCue");
 
 			Property<Vector3> scale = new Property<Vector3> { Value = Vector3.One };
 

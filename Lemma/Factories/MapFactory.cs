@@ -173,9 +173,8 @@ namespace Lemma.Factories
 				if (volume > 0.1f)
 				{
 					// TODO: figure out Wwise volume parameter
-					string cue = map[contact.Contact.Position - (contact.Contact.Normal * 0.25f)].RubbleCue;
-					if (!string.IsNullOrEmpty(cue))
-						AkSoundEngine.PostEvent(cue, result);
+					uint cue = map[contact.Contact.Position - (contact.Contact.Normal * 0.25f)].RubbleEvent;
+					AkSoundEngine.PostEvent(cue, result);
 				}
 			}));
 		}

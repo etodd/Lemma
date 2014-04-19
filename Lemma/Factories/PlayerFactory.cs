@@ -107,6 +107,10 @@ namespace Lemma.Factories
 			AnimatedModel model = result.Get<AnimatedModel>("Model");
 			AnimatedModel firstPersonModel = result.Get<AnimatedModel>("FirstPersonModel");
 
+			Property<Vector3> floor = new Property<Vector3>();
+			transform.Add(new Binding<Vector3>(floor, () => transform.Position + new Vector3(0, player.Height * -0.5f, 0), transform.Position, player.Height));
+			AkGameObjectTracker.Attach(result, floor);
+
 			firstPersonModel.Bind(model);
 
 			model.UnsupportedTechniques.Add(Technique.Clip);
@@ -282,30 +286,21 @@ namespace Lemma.Factories
 			debug.Add(new Binding<string, Vector3>(debug.Text, x => x.Length().ToString(), player.LinearVelocity));
 			*/
 
-			// TODO: Figure out Wwise volume parameter
-			/*
-			Sound speedSound = result.Get<Sound>("SpeedSound");
-			speedSound.Add(new Binding<float, Vector3>(speedSound.GetProperty("Volume"), delegate(Vector3 velocity)
+			Action updateFallSound = delegate()
 			{
-				float speed = velocity.Length();
+				float speed = player.LinearVelocity.Value.Length();
 				float maxSpeed = player.MaxSpeed * 1.25f;
+				float value;
 				if (speed > maxSpeed)
-					return (speed - maxSpeed) / (maxSpeed * 2.0f);
+					value = (speed - maxSpeed) / (maxSpeed * 2.0f);
 				else
-					return 0.0f;
-			}, player.LinearVelocity));
-			speedSound.Play.Execute();
-			speedSound.GetProperty("Volume").Value = 0.0f;
-			*/
-
-			// TODO: Figure out Wwise slow-motion sound
-			/*
-			Sound slowmoSound = result.GetOrCreate<Sound>("SlowmoSound");
-			slowmoSound.Serialize = false;
-			slowmoSound.Is3D.Value = false;
-			slowmoSound.Cue.Value = "Slowmo";
-			slowmoSound.Add(new NotifyBinding<bool>(slowmoSound.IsPlaying, player.SlowMotion));
-			*/
+					value = 0.0f;
+				AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_PLAYER_FALL, value);
+			};
+			updateFallSound();
+			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_FALL, result);
+			player.Add(new NotifyBinding(updateFallSound, player.LinearVelocity));
+			SoundKiller.Add(result, AK.EVENTS.STOP_PLAYER_FALL);
 
 			// Determine if the player is swimming
 			update.Add(delegate(float dt)
@@ -495,14 +490,13 @@ namespace Lemma.Factories
 				{
 					if (groundRaycast.Map != null)
 					{
+						AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, groundRaycast.Map[groundRaycast.Coordinate.Value].FootstepSwitch, WorldFactory.Get());
 						if (!player.Crouched)
-							AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
-						// TODO: Figure out Wwise material parameter
-						//footsteps.Cue.Value = groundRaycast.Map[groundRaycast.Coordinate.Value].FootstepCue;
+							AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY);
 					}
 				}
 				else if (wallRunState != Player.WallRun.Down && wallRunState != Player.WallRun.Reverse && !player.Crouched)
-					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
+					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY);
 			}));
 			footstepTimer.Add(new Binding<bool>(footstepTimer.Enabled, () => player.WallRunState.Value != Player.WallRun.None || (player.MovementDirection.Value.LengthSquared() > 0.0f && player.IsSupported && player.EnableWalking), player.MovementDirection, player.IsSupported, player.EnableWalking, player.WallRunState));
 
@@ -1262,8 +1256,7 @@ namespace Lemma.Factories
 					Map.Coordinate coord = wallRunMap.GetCoordinate(pos);
 					Map.Coordinate wallCoord = coord.Move(wallDirection, 2);
 					Map.CellState wallType = wallRunMap[wallCoord];
-					// TODO: Figure out Wwise material parameter
-					//footsteps.Cue.Value = wallType.FootstepCue;
+					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, wallType.FootstepSwitch, WorldFactory.Get());
 					if (!wallCoord.Equivalent(lastWallCoord))
 					{
 						walkedOn.Execute(wallRunMap, wallCoord, wallDirection);
@@ -1663,9 +1656,8 @@ namespace Lemma.Factories
 					Map.CellState wallType = wallJumpMap[wallCoordinate];
 					if (wallType.ID == 0) // Empty. Must be a block possibility that hasn't been instantiated yet
 						wallType = WorldFactory.StatesByName["Temporary"];
-					// TODO: Figure out Wwise material parameter
-					//footsteps.Cue.Value = wallType.FootstepCue;
-					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
+					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, wallType.FootstepSwitch, WorldFactory.Get());
+					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY);
 
 					walkedOn.Execute(wallJumpMap, wallCoordinate, wallNormalDirection.GetReverse());
 
@@ -1923,7 +1915,7 @@ namespace Lemma.Factories
 					deactivateWallRun();
 
 					// Play a footstep sound since we're jumping off the ground
-					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
+					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY);
 
 					return true;
 				}

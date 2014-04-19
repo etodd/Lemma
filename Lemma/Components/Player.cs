@@ -117,7 +117,7 @@ namespace Lemma.Components
 			{
 				if (value < this.Health.InternalValue && this.damageTimer > 0.1f)
 				{
-					AkSoundEngine.PostEvent(value < lastDamagedHealthValue - 0.2f ? "Play_damage" : "Play_small_damge", this.Entity);
+					AkSoundEngine.PostEvent(value < lastDamagedHealthValue - 0.2f ? AK.EVENTS.PLAY_PLAYER_HURT : AK.EVENTS.PLAY_PLAYER_HURT, this.Entity);
 					lastDamagedHealthValue = value;
 					this.damageTimer = 0.0f;
 				}

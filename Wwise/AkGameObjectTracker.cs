@@ -15,6 +15,7 @@ public class AkGameObjectTracker : AkGameObject, IUpdateableComponent
 	private Vector3 forward;
 
 	private bool hasMoved;
+	private bool initial = true;
 
 	public bool HasMovedInLastFrame()
 	{
@@ -42,11 +43,13 @@ public class AkGameObjectTracker : AkGameObject, IUpdateableComponent
 		Matrix m = this.Matrix;
 		Vector3 pos = m.Translation;
 		Vector3 forward = m.Forward;
-		if (this.pos == pos && this.forward == forward)
+		if (!this.initial && this.pos == pos && this.forward == forward)
 		{
 			this.hasMoved = false;
 			return;
 		}
+
+		this.initial = false;
 
 		this.pos = pos;
 		this.forward = forward;    

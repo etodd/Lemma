@@ -149,8 +149,8 @@ namespace Lemma.Components
 			public string Name;
 			public string DiffuseMap;
 			public string NormalMap;
-			public string FootstepCue;
-			public string RubbleCue;
+			public uint FootstepSwitch;
+			public uint RubbleEvent;
 			public float SpecularPower;
 			public float SpecularIntensity;
 			public float KineticFriction = MaterialManager.DefaultKineticFriction;
@@ -189,7 +189,7 @@ namespace Lemma.Components
 
 			public void ApplyToBlock(ComponentBind.Entity block)
 			{
-				block.GetProperty<string>("CollisionSoundCue").Value = this.RubbleCue;
+				block.GetProperty<uint>("CollisionSoundCue").Value = this.RubbleEvent;
 				block.Get<PhysicsBlock>().Box.Mass = this.Density;
 				this.ApplyToEffectBlock(block.Get<ModelInstance>());
 			}
@@ -455,7 +455,7 @@ namespace Lemma.Components
 					if (vertices != null)
 						LargeObjectHeap<MapVertex[]>.Free(vertices.Length, vertices);
 
-					if (entry.Mesh != null && pair.Value.Added)
+					if (entry.Mesh != null && entry.Added)
 					{
 						entry.Added = false;
 						this.Map.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
@@ -471,10 +471,10 @@ namespace Lemma.Components
 						mesh.Material.StaticFriction = type.StaticFriction;
 						mesh.Tag = this.Map;
 						mesh.Sidedness = BEPUutilities.TriangleSidedness.Counterclockwise;
-						pair.Value.Mesh = mesh;
+						entry.Mesh = mesh;
 						if (this.Active)
 						{
-							pair.Value.Added = true;
+							entry.Added = true;
 							this.Map.main.Space.SpaceObjectBuffer.Add(mesh);
 						}
 						LargeObjectHeap<Vector3[]>.Free(physicsVertices.Length, physicsVertices);
