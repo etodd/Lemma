@@ -105,11 +105,12 @@ namespace Lemma.Components
 		private void resize()
 		{
 			Point size = this.main.ScreenSize;
-			size.X = (int)((float)size.X * 0.5f);
-			size.Y = (int)((float)size.Y * 0.5f);
+			size.X = (int)((float)size.X * 0.3f);
+			size.Y = (int)((float)size.Y * 0.3f);
 			if (this.renderer == null)
 			{
 				this.renderer = new Renderer(this.main, size, false, false, false, false);
+				this.renderer.MotionBlurAmount.Value = 0.0f;
 				this.renderer.LightRampTexture.Value = "Images\\default-ramp";
 				this.main.AddComponent(this.renderer);
 			}

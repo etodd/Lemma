@@ -28,7 +28,21 @@ sampler2D SourceSampler1 = sampler_state
 	AddressV = CLAMP;
 };
 
-const float GaussianKernel[32] = { 0.00007674196886264266, 0.00018155522036679086, 0.0004063095905967308, 0.0008601574100431575, 0.001722547970551906, 0.0032631515508544876, 0.0058475735365225955, 0.009912579160885948, 0.0158953528849071, 0.024111609868575554, 0.03459830086448056, 0.046963003325653944, 0.06030168991413035, 0.07324460350487474, 0.08415778769784837, 0.09147144024753913, 0.0940479325354748, 0.09147144024753913, 0.08415778769784837, 0.07324460350487474, 0.06030168991413035, 0.046963003325653944, 0.03459830086448056, 0.024111609868575554, 0.0158953528849071, 0.009912579160885948, 0.0058475735365225955, 0.0032631515508544876, 0.001722547970551906, 0.0008601574100431575, 0.0004063095905967308, 0.00018155522036679086, };
+const float GaussianKernel[16] = { 0.003829872f, 0.0088129551f, 0.0181463396f, 0.03343381f, 0.0551230286f, 0.0813255467f, 0.1073650667f, 0.1268369298f, 0.1340827751f, 0.1268369298f, 0.1073650667f, 0.0813255467f, 0.0551230286f, 0.03343381f, 0.0181463396f, 0.0088129551 };
+
+void DownsamplePS(in PostProcessPSInput input, out float4 output : COLOR0)
+{
+	float2 pixelSize = 1.0f / SourceDimensions0;
+
+	float2 pos = floor(input.texCoord * SourceDimensions0) * pixelSize;
+
+	float3 bl = tex2D(SourceSampler0, pos + float2(0, 0));
+	float3 br = tex2D(SourceSampler0, pos + float2(pixelSize.x, 0));
+	float3 tl = tex2D(SourceSampler0, pos + float2(0, pixelSize.y));
+	float3 tr = tex2D(SourceSampler0, pos + pixelSize);
+
+	output = float4(EncodeColor(max(max(bl, br), max(tl, tr)) - BloomThreshold), 1);
+}
 
 void BlurHorizontalPS(	in PostProcessPSInput input,
 						out float4 out_Color		: COLOR0)
@@ -37,8 +51,23 @@ void BlurHorizontalPS(	in PostProcessPSInput input,
 
 	float3 sum = 0;
 	[unroll]
-	for (int x = -16; x < 16; x++)
-		sum += DecodeColor(tex2D(SourceSampler0, float2(input.texCoord.x + (x * xInterval), input.texCoord.y)).xyz) * GaussianKernel[x + 16];
+	for (int x = -8; x < 8; x++)
+		sum += DecodeColor(tex2D(SourceSampler0, float2(input.texCoord.x + (x * xInterval), input.texCoord.y)).xyz) * GaussianKernel[x + 8];
+	
+	// Return the average color of all the samples
+	out_Color.xyz = EncodeColor(sum);
+	out_Color.w = 1.0f;
+}
+
+void BlurVerticalPS(	in PostProcessPSInput input,
+						out float4 out_Color		: COLOR0)
+{
+	float yInterval = 1.0f / SourceDimensions0.y;
+
+	float3 sum = 0;
+	[unroll]
+	for (int y = -8; y < 8; y++)
+		sum += DecodeColor(tex2D(SourceSampler0, float2(input.texCoord.x, input.texCoord.y + (y * yInterval))).xyz) * GaussianKernel[y + 8];
 	
 	// Return the average color of all the samples
 	out_Color.xyz = EncodeColor(sum);
@@ -48,15 +77,21 @@ void BlurHorizontalPS(	in PostProcessPSInput input,
 void CompositePS(	in PostProcessPSInput input,
 					out float4 out_Color		: COLOR0)
 {
-	float yInterval = 1.0f / SourceDimensions1.y;
-
-	float3 sum = 0;
-	[unroll]
-	for (int y = -16; y < 16; y++)
-		sum += DecodeColor(tex2D(SourceSampler1, float2(input.texCoord.x, input.texCoord.y + (y * yInterval))).xyz) * GaussianKernel[y + 16];
-	
-	out_Color.xyz = DecodeColor(tex2D(SourceSampler0, input.texCoord).xyz) + sum / (1.0f - BloomThreshold);
+	out_Color.xyz = DecodeColor(tex2D(SourceSampler0, input.texCoord).xyz) + (DecodeColor(tex2D(SourceSampler1, input.texCoord).xyz) / (1.0f - BloomThreshold));
 	out_Color.w = 1.0f;
+}
+
+technique Downsample
+{
+	pass p0
+	{
+		VertexShader = compile vs_3_0 PostProcessVS();
+		PixelShader = compile ps_3_0 DownsamplePS();
+		
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = false;
+	}
 }
 
 technique BlurHorizontal
@@ -65,6 +100,19 @@ technique BlurHorizontal
 	{
 		VertexShader = compile vs_3_0 PostProcessVS();
 		PixelShader = compile ps_3_0 BlurHorizontalPS();
+		
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = false;
+	}
+}
+
+technique BlurVertical
+{
+	pass p0
+	{
+		VertexShader = compile vs_3_0 PostProcessVS();
+		PixelShader = compile ps_3_0 BlurVerticalPS();
 		
 		ZEnable = false;
 		ZWriteEnable = false;

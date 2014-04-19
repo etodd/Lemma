@@ -741,12 +741,13 @@ namespace Lemma.Factories
 			Action<Vector3, float> sparks = delegate(Vector3 pos, float size)
 			{
 				ParticleSystem shatter = ParticleSystem.Get(main, "WhiteShatter");
-				for (int j = 0; j < 30; j++)
+				for (int j = 0; j < 40; j++)
 				{
 					Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
 					shatter.AddParticle(pos + offset, offset);
 				}
 
+				/*
 				PointLight light;
 				if (activeSparkLights < sparkLights.Count)
 				{
@@ -766,6 +767,7 @@ namespace Lemma.Factories
 				light.Color.Value = new Vector3(1.0f);
 				light.Attenuation.Value = size;
 				light.Position.Value = pos;
+				*/
 
 				AkSoundEngine.PostEvent("Play_sparks", pos);
 			};

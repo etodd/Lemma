@@ -626,16 +626,20 @@ namespace Lemma.Components
 			// Bloom
 			if (enableBloom)
 			{
-				this.downsampleEffect.CurrentTechnique = this.downsampleEffect.Techniques["DownsampleBloom"];
-				this.preparePostProcess(new[] { colorSource }, new[] { this.halfBuffer1 }, this.downsampleEffect);
+				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["Downsample"];
+				this.preparePostProcess(new[] { colorSource }, new[] { this.halfBuffer1 }, this.bloomEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["BlurHorizontal"];
-				parameters.Camera.SetParameters(this.bloomEffect);
 				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer1 }, new RenderTarget2D[] { this.halfBuffer2 }, this.bloomEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
+
+				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["BlurVertical"];
+				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer2 }, new RenderTarget2D[] { this.halfBuffer1 }, this.bloomEffect);
+				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
+
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["Composite"];
-				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.halfBuffer2 }, new RenderTarget2D[] { enableBlur || enableMotionBlur ? colorDestination : result }, this.bloomEffect);
+				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.halfBuffer1 }, new RenderTarget2D[] { enableBlur || enableMotionBlur ? colorDestination : result }, this.bloomEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				// Swap the color buffers
