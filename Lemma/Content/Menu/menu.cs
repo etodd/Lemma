@@ -3,7 +3,8 @@ const float fadeTime = 1.0f;
 if (((GameMain)main).StartSpawnPoint.Value == "end")
 {
 	// End game
-	Sound.PlayCue(((GameMain)main).MusicBank, "Theme");
+	AkSoundEngine.PostEvent("Play_theme");
+	SoundKiller.Add(script, "Stop_theme");
 	main.Renderer.InternalGamma.Value = 0.0f;
 	main.Renderer.Brightness.Value = 0.0f;
 	main.Renderer.BackgroundColor.Value = Renderer.DefaultBackgroundColor;

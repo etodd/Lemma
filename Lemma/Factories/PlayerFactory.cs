@@ -490,13 +490,13 @@ namespace Lemma.Factories
 				{
 					if (groundRaycast.Map != null)
 					{
-						AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, groundRaycast.Map[groundRaycast.Coordinate.Value].FootstepSwitch, WorldFactory.Get());
+						AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, groundRaycast.Map[groundRaycast.Coordinate.Value].FootstepSwitch, result);
 						if (!player.Crouched)
-							AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY);
+							AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
 					}
 				}
 				else if (wallRunState != Player.WallRun.Down && wallRunState != Player.WallRun.Reverse && !player.Crouched)
-					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY);
+					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
 			}));
 			footstepTimer.Add(new Binding<bool>(footstepTimer.Enabled, () => player.WallRunState.Value != Player.WallRun.None || (player.MovementDirection.Value.LengthSquared() > 0.0f && player.IsSupported && player.EnableWalking), player.MovementDirection, player.IsSupported, player.EnableWalking, player.WallRunState));
 
@@ -1256,7 +1256,7 @@ namespace Lemma.Factories
 					Map.Coordinate coord = wallRunMap.GetCoordinate(pos);
 					Map.Coordinate wallCoord = coord.Move(wallDirection, 2);
 					Map.CellState wallType = wallRunMap[wallCoord];
-					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, wallType.FootstepSwitch, WorldFactory.Get());
+					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, wallType.FootstepSwitch, result);
 					if (!wallCoord.Equivalent(lastWallCoord))
 					{
 						walkedOn.Execute(wallRunMap, wallCoord, wallDirection);
@@ -1656,8 +1656,8 @@ namespace Lemma.Factories
 					Map.CellState wallType = wallJumpMap[wallCoordinate];
 					if (wallType.ID == 0) // Empty. Must be a block possibility that hasn't been instantiated yet
 						wallType = WorldFactory.StatesByName["Temporary"];
-					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, wallType.FootstepSwitch, WorldFactory.Get());
-					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY);
+					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, wallType.FootstepSwitch, result);
+					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
 
 					walkedOn.Execute(wallJumpMap, wallCoordinate, wallNormalDirection.GetReverse());
 
@@ -1915,7 +1915,7 @@ namespace Lemma.Factories
 					deactivateWallRun();
 
 					// Play a footstep sound since we're jumping off the ground
-					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY);
+					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
 
 					return true;
 				}

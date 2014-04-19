@@ -574,7 +574,6 @@ namespace Lemma.Factories
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
 			result.CannotSuspend = true;
-			AkGameObjectTracker.Attach(result);
 
 			result.Add(new TwoWayBinding<string>(result.GetProperty<string>("LightRampTexture"), main.Renderer.LightRampTexture));
 			result.Add(new TwoWayBinding<string>(result.GetOrMakeProperty<string>("EnvironmentMap", true, "Images\\env0"), main.Renderer.EnvironmentMap));

@@ -36,6 +36,9 @@ namespace Lemma
 
 		private static Dictionary<string, string> maps = new Dictionary<string,string>
 		{
+#if DEBUG
+			{ "test", "Test Level" },
+#endif
 			{ "start", "\\map apartment" },
 			{ "rain", "\\map rain" },
 			{ "dawn", "\\map dawn" },
@@ -492,6 +495,8 @@ namespace Lemma
 
 				if (AkBankLoader.LoadBank("SFX_Bank_01.bnk") != AKRESULT.AK_Success)
 					Log.d("Failed to load sound bank");
+
+				AkBankLoader.LoadBank("Music.bnk");
 
 #if ANALYTICS
 				this.SessionRecorder = new Session.Recorder();

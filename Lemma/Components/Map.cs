@@ -455,11 +455,9 @@ namespace Lemma.Components
 					if (vertices != null)
 						LargeObjectHeap<MapVertex[]>.Free(vertices.Length, vertices);
 
+					StaticMesh oldMesh = null;
 					if (entry.Mesh != null && entry.Added)
-					{
-						entry.Added = false;
-						this.Map.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
-					}
+						oldMesh = entry.Mesh;
 
 					if (physicsVertices != null)
 					{
@@ -479,6 +477,9 @@ namespace Lemma.Components
 						}
 						LargeObjectHeap<Vector3[]>.Free(physicsVertices.Length, physicsVertices);
 					}
+
+					if (oldMesh != null)
+						this.Map.main.Space.SpaceObjectBuffer.Remove(oldMesh);
 				}
 			}
 
@@ -1168,7 +1169,7 @@ namespace Lemma.Components
 					bool[] modifications = this.simplify(boxes);
 					this.simplify(boxes, modifications);
 					this.applyChanges(boxes, modifications);
-					this.updateGraphics();
+					this.updateGraphics(this.Chunks);
 
 					boxes = this.Chunks.SelectMany(x => x.Boxes).ToList();
 
@@ -2547,7 +2548,7 @@ namespace Lemma.Components
 
 			if (!this.main.EditorEnabled && !this.EnablePhysics)
 				return;
-
+			List<Chunk> chunks;
 			lock (this.MutationLock)
 			{
 				if (!this.Active)
@@ -2616,13 +2617,14 @@ namespace Lemma.Components
 				this.simplify(boxes, modifications);
 
 				this.applyChanges(boxes, modifications);
+				chunks = this.Chunks.ToList();
 			}
-			this.updateGraphics();
+			this.updateGraphics(chunks);
 		}
 
-		private void updateGraphics()
+		private void updateGraphics(IEnumerable<Chunk> chunks)
 		{
-			foreach (Chunk chunk in this.Chunks)
+			foreach (Chunk chunk in chunks)
 				chunk.RefreshImmediately();
 		}
 
