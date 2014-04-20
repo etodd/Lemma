@@ -13,20 +13,23 @@ using Microsoft.Xna.Framework;
 public class AkListener : Component<BaseMain>, IUpdateableComponent
 {
 	public Property<int> ListenerID = new Property<int>();	//Wwise supports up to 8 listeners.  [0-7]
-	public Property<Matrix> Matrix = new Property<Matrix>();
+	public Property<Vector3> Position = new Property<Vector3>();
+	public Property<Vector3> Forward = new Property<Vector3>();
+	public Property<Vector3> Up = new Property<Vector3>();
 
-	private Matrix lastMatrix;
+	private Vector3 lastPosition;
+	private Vector3 lastForward;
+	private Vector3 lastUp;
 	
 	public void Update(float dt)
 	{
-		Matrix m = this.Matrix;
-		if (m.Equals(this.lastMatrix))
+		Vector3 forward = -this.Forward.Value;
+		Vector3 up = this.Up;
+		Vector3 pos = this.Position;
+		if (forward.Equals(this.lastForward) || up.Equals(this.lastUp) || pos.Equals(this.lastPosition))
 			return;	// Position didn't change, no need to update.
 
 		// Update position
-		Vector3 forward = m.Forward;
-		Vector3 up = m.Up;
-		Vector3 pos = m.Translation;
 		AkSoundEngine.SetListenerPosition(    
 			forward.X,
 			forward.Y, 
@@ -43,6 +46,8 @@ public class AkListener : Component<BaseMain>, IUpdateableComponent
 			(uint)this.ListenerID.Value);
 #endif // #if UNITY_PS3
 
-		this.lastMatrix = m;
+		this.lastPosition = pos;
+		this.lastUp = up;
+		this.lastForward = forward;
 	}
 }

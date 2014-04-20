@@ -314,7 +314,9 @@ namespace Lemma
 				this.AddComponent(initializer);
 
 				this.Listener = new AkListener();
-				this.Listener.Add(new Binding<Matrix>(this.Listener.Matrix, this.Camera.View));
+				this.Listener.Add(new Binding<Vector3>(this.Listener.Position, this.Camera.Position));
+				this.Listener.Add(new Binding<Vector3>(this.Listener.Forward, this.Camera.Forward));
+				this.Listener.Add(new Binding<Vector3>(this.Listener.Up, this.Camera.Up));
 				this.AddComponent(this.Listener);
 
 				// Create the renderer.

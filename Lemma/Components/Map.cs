@@ -477,6 +477,8 @@ namespace Lemma.Components
 						}
 						LargeObjectHeap<Vector3[]>.Free(physicsVertices.Length, physicsVertices);
 					}
+					else
+						entry.Mesh = null;
 
 					if (oldMesh != null)
 						this.Map.main.Space.SpaceObjectBuffer.Remove(oldMesh);
