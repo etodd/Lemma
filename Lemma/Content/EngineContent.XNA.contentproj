@@ -191,11 +191,6 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </None>
-    <Compile Include="Effects\PostProcess\ToneMap.fx">
-      <Name>ToneMap</Name>
-      <Importer>EffectImporter</Importer>
-      <Processor>EffectProcessor</Processor>
-    </Compile>
     <None Include="Effects\RenderCommonAlpha.fxh">
       <Name>RenderCommonAlpha</Name>
       <Importer>EffectImporter</Importer>
