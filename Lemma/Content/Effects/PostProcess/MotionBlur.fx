@@ -29,9 +29,9 @@ float4 MotionBlurPS(in PostProcessPSInput input)	: COLOR0
 	const float threshold = 1.0f / 127.0f;
 	const float thresholdSquared = threshold * threshold;
 	// Sample velocity from our velocity buffers
-	float2 currentFramePixelVelocity = DecodeVelocity(tex2D(SourceSampler1, input.texCoord).xy);
+	float2 currentFramePixelVelocity = DecodeVelocity(tex2D(SourceSampler1, input.texCoord).zw);
 
-	float2 lastFramePixelVelocity = DecodeVelocity(tex2D(SourceSampler2, input.texCoord).xy);
+	float2 lastFramePixelVelocity = DecodeVelocity(tex2D(SourceSampler2, input.texCoord).zw);
 
 	// We'll compare the magnitude of the velocity from the current frame and from
 	// the previous frame, and then use whichever is larger

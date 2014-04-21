@@ -41,11 +41,11 @@ float SpecularPower = 20.0f;
 float SpecularIntensity = 0.2f;
 
 // Motion blur
-void ProcessMotionBlur(in MotionBlurPSInput input, out MotionBlurPSOutput output)
+float2 ProcessMotionBlur(in MotionBlurPSInput input)
 {
 	float2 velocity = (input.currentPosition.xy / input.currentPosition.w) - (input.previousPosition.xy / input.previousPosition.w);
 	velocity.y *= -1.0f;
-	output.velocity = float4(EncodeVelocity(velocity), 1.0f, 1.0f);
+	return EncodeVelocity(velocity);
 }
 
 // Shadow pixel shader
@@ -86,7 +86,6 @@ void RenderTextureFlatPS(in RenderPSInput input,
 						in FlatPSInput flat,
 						out RenderPSOutput output,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						uniform bool clipAlpha,
 						uniform bool glow)
 {
@@ -97,53 +96,40 @@ void RenderTextureFlatPS(in RenderPSInput input,
 
 	float3 normal = normalize(flat.normal);
 	
-	output.color.xyz = EncodeColor(DiffuseColor.xyz * color.xyz);
-	if (glow)
-	{
-		if (color.a < 0.9f)
-			output.color.a = SpecularPower / 255.0f;
-		else
-		{
-			output.color.a = 0.0f;
-			output.color.rgb *= 2.0f;
-		}
-	}
-	else
-		output.color.a = SpecularPower / 255.0f;
-	output.depth = float4(length(input.viewSpacePosition), 1.0f, 1.0f, 1.0f);
-	output.normal.xyz = EncodeNormal(normal);
-	output.normal.w = SpecularIntensity;
-	ProcessMotionBlur(motionBlurInput, motionBlurOutput);
+	output.color.rgb = EncodeColor(DiffuseColor.rgb * color.rgb);
+	output.color.a = EncodeSpecular(SpecularPower, SpecularIntensity, glow && color.a > 0.9f);
+	output.depth.x = length(input.viewSpacePosition);
+	output.normal.xy = EncodeNormal(normal.xy);
+	output.depth.y = normal.z;
+	output.depth.zw = (float2)0;
+	output.normal.zw = ProcessMotionBlur(motionBlurInput);
 }
 
 void RenderTextureFlatPlainPS(in RenderPSInput input,
 						in TexturePSInput tex,
 						in FlatPSInput flat,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
-	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, motionBlurOutput, false, false);
+	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, false, false);
 }
 
 void RenderTextureFlatClipAlphaPS(in RenderPSInput input,
 						in TexturePSInput tex,
 						in FlatPSInput flat,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
-	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, motionBlurOutput, true, false);
+	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, true, false);
 }
 
 void RenderTextureFlatGlowPS(in RenderPSInput input,
 						in TexturePSInput tex,
 						in FlatPSInput flat,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
-	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, motionBlurOutput, false, true);
+	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, false, true);
 }
 
 void ClipTextureFlatPS(in RenderPSInput input,
@@ -152,12 +138,11 @@ void ClipTextureFlatPS(in RenderPSInput input,
 						in ClipPSInput clipData,
 						out RenderPSOutput output,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						uniform bool clipAlpha,
 						uniform bool glow)
 {
 	HandleClipPlanes(clipData.clipPlaneDistances);
-	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, motionBlurOutput, clipAlpha, glow);
+	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, clipAlpha, glow);
 }
 
 void ClipTextureFlatPlainPS(in RenderPSInput input,
@@ -165,10 +150,9 @@ void ClipTextureFlatPlainPS(in RenderPSInput input,
 						in FlatPSInput flat,
 						in ClipPSInput clipData,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
-	ClipTextureFlatPS(input, tex, flat, clipData, output, motionBlurInput, motionBlurOutput, false, false);
+	ClipTextureFlatPS(input, tex, flat, clipData, output, motionBlurInput, false, false);
 }
 
 void ClipTextureFlatClipAlphaPS(in RenderPSInput input,
@@ -176,10 +160,9 @@ void ClipTextureFlatClipAlphaPS(in RenderPSInput input,
 						in FlatPSInput flat,
 						in ClipPSInput clipData,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
-	ClipTextureFlatPS(input, tex, flat, clipData, output, motionBlurInput, motionBlurOutput, true, false);
+	ClipTextureFlatPS(input, tex, flat, clipData, output, motionBlurInput, true, false);
 }
 
 void ClipTextureFlatGlowPS(in RenderPSInput input,
@@ -187,10 +170,9 @@ void ClipTextureFlatGlowPS(in RenderPSInput input,
 						in FlatPSInput flat,
 						in ClipPSInput clipData,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
-	ClipTextureFlatPS(input, tex, flat, clipData, output, motionBlurInput, motionBlurOutput, false, true);
+	ClipTextureFlatPS(input, tex, flat, clipData, output, motionBlurInput, false, true);
 }
 
 void RenderTextureNormalMapPS(	in RenderPSInput input,
@@ -198,7 +180,6 @@ void RenderTextureNormalMapPS(	in RenderPSInput input,
 								in NormalMapPSInput normalMap,
 								out RenderPSOutput output,
 								in MotionBlurPSInput motionBlurInput,
-								out MotionBlurPSOutput motionBlurOutput,
 								uniform bool clipAlpha,
 								uniform bool glow)
 {
@@ -206,53 +187,40 @@ void RenderTextureNormalMapPS(	in RenderPSInput input,
 	if (clipAlpha)
 		clip(color.a - 0.5f);
 	float3 normal = mul(DecodeNormalMap(tex2D(NormalMapSampler, tex.uvCoordinates).xyz), normalMap.tangentToWorld);
-	output.normal.xyz = EncodeNormal(normal);
-	output.normal.w = SpecularIntensity;
 	output.color.rgb = EncodeColor(DiffuseColor.rgb * color.rgb);
-	if (glow)
-	{
-		if (color.a < 0.9f)
-			output.color.a = SpecularPower / 255.0f;
-		else
-		{
-			output.color.a = 0.0f;
-			output.color.rgb *= 2.0f;
-		}
-	}
-	else
-		output.color.a = SpecularPower / 255.0f;
-	output.depth = float4(length(input.viewSpacePosition), 1.0f, 1.0f, 1.0f);
-	ProcessMotionBlur(motionBlurInput, motionBlurOutput);
+	output.color.a = EncodeSpecular(SpecularPower, SpecularIntensity, glow && color.a > 0.9f);
+	output.depth.x = length(input.viewSpacePosition);
+	output.normal.xy = EncodeNormal(normal.xy);
+	output.depth.y = normal.z;
+	output.depth.zw = (float2)0;
+	output.normal.zw = ProcessMotionBlur(motionBlurInput);
 }
 
 void RenderTextureNormalMapPlainPS(	in RenderPSInput input,
 								in TexturePSInput tex,
 								in NormalMapPSInput normalMap,
 								in MotionBlurPSInput motionBlurInput,
-								out MotionBlurPSOutput motionBlurOutput,
 								out RenderPSOutput output)
 {
-	RenderTextureNormalMapPS(input, tex, normalMap, output, motionBlurInput, motionBlurOutput, false, false);
+	RenderTextureNormalMapPS(input, tex, normalMap, output, motionBlurInput, false, false);
 }
 
 void RenderTextureNormalMapClipAlphaPS(	in RenderPSInput input,
 								in TexturePSInput tex,
 								in NormalMapPSInput normalMap,
 								in MotionBlurPSInput motionBlurInput,
-								out MotionBlurPSOutput motionBlurOutput,
 								out RenderPSOutput output)
 {
-	RenderTextureNormalMapPS(input, tex, normalMap, output, motionBlurInput, motionBlurOutput, true, false);
+	RenderTextureNormalMapPS(input, tex, normalMap, output, motionBlurInput, true, false);
 }
 
 void RenderTextureNormalMapGlowPS(	in RenderPSInput input,
 								in TexturePSInput tex,
 								in NormalMapPSInput normalMap,
 								in MotionBlurPSInput motionBlurInput,
-								out MotionBlurPSOutput motionBlurOutput,
 								out RenderPSOutput output)
 {
-	RenderTextureNormalMapPS(input, tex, normalMap, output, motionBlurInput, motionBlurOutput, false, true);
+	RenderTextureNormalMapPS(input, tex, normalMap, output, motionBlurInput, false, true);
 }
 
 void ClipTextureNormalMapPS(	in RenderPSInput input,
@@ -261,12 +229,11 @@ void ClipTextureNormalMapPS(	in RenderPSInput input,
 								in ClipPSInput clipData,
 								out RenderPSOutput output,
 								in MotionBlurPSInput motionBlurInput,
-								out MotionBlurPSOutput motionBlurOutput,
 								uniform bool clipAlpha,
 								uniform bool glow)
 {
 	HandleClipPlanes(clipData.clipPlaneDistances);
-	RenderTextureNormalMapPS(input, tex, normalMap, output, motionBlurInput, motionBlurOutput, clipAlpha, glow);
+	RenderTextureNormalMapPS(input, tex, normalMap, output, motionBlurInput, clipAlpha, glow);
 }
 
 void ClipTextureNormalMapPlainPS(	in RenderPSInput input,
@@ -274,10 +241,9 @@ void ClipTextureNormalMapPlainPS(	in RenderPSInput input,
 								in NormalMapPSInput normalMap,
 								in ClipPSInput clipData,
 								in MotionBlurPSInput motionBlurInput,
-								out MotionBlurPSOutput motionBlurOutput,
 								out RenderPSOutput output)
 {
-	ClipTextureNormalMapPS(input, tex, normalMap, clipData, output, motionBlurInput, motionBlurOutput, false, false);
+	ClipTextureNormalMapPS(input, tex, normalMap, clipData, output, motionBlurInput, false, false);
 }
 
 void ClipTextureNormalMapClipAlphaPS(	in RenderPSInput input,
@@ -285,10 +251,9 @@ void ClipTextureNormalMapClipAlphaPS(	in RenderPSInput input,
 								in NormalMapPSInput normalMap,
 								in ClipPSInput clipData,
 								in MotionBlurPSInput motionBlurInput,
-								out MotionBlurPSOutput motionBlurOutput,
 								out RenderPSOutput output)
 {
-	ClipTextureNormalMapPS(input, tex, normalMap, clipData, output, motionBlurInput, motionBlurOutput, true, false);
+	ClipTextureNormalMapPS(input, tex, normalMap, clipData, output, motionBlurInput, true, false);
 }
 
 void ClipTextureNormalMapGlowPS(	in RenderPSInput input,
@@ -296,72 +261,69 @@ void ClipTextureNormalMapGlowPS(	in RenderPSInput input,
 								in NormalMapPSInput normalMap,
 								in ClipPSInput clipData,
 								in MotionBlurPSInput motionBlurInput,
-								out MotionBlurPSOutput motionBlurOutput,
 								out RenderPSOutput output)
 {
-	ClipTextureNormalMapPS(input, tex, normalMap, clipData, output, motionBlurInput, motionBlurOutput, false, true);
+	ClipTextureNormalMapPS(input, tex, normalMap, clipData, output, motionBlurInput, false, true);
 }
 
 void RenderFlatPS(in RenderPSInput input,
 						in FlatPSInput flat,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
 	float3 normal = normalize(flat.normal);
 	
-	output.color.xyz = EncodeColor(DiffuseColor.xyz);
-	output.color.w = SpecularPower / 255.0f;
-	output.depth = float4(length(input.viewSpacePosition), 1.0f, 1.0f, 1.0f);
-	output.normal.xyz = EncodeNormal(normal);
-	output.normal.w = SpecularIntensity;
-	ProcessMotionBlur(motionBlurInput, motionBlurOutput);
+	output.color.rgb = EncodeColor(DiffuseColor.rgb);
+	output.color.a = EncodeSpecular(SpecularPower, SpecularIntensity, false);
+	output.depth.x = length(input.viewSpacePosition);
+	output.normal.xy = EncodeNormal(normal.xy);
+	output.depth.y = normal.z;
+	output.depth.zw = (float2)0;
+	output.normal.zw = ProcessMotionBlur(motionBlurInput);
 }
 
 void ClipFlatPS(in RenderPSInput input,
 						in FlatPSInput flat,
 						in ClipPSInput clipData,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
 	HandleClipPlanes(clipData.clipPlaneDistances);
-	RenderFlatPS(input, flat, motionBlurInput, motionBlurOutput, output);
+	RenderFlatPS(input, flat, motionBlurInput, output);
 }
 
 void RenderTexturePS(	in RenderPSInput input,
 						in TexturePSInput tex,
 						out RenderPSOutput output,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						uniform bool clipAlpha)
 {
 	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates);
 	if (clipAlpha)
 		clip(color.a - 0.5f);
-	output.color.xyz = EncodeColor(DiffuseColor.xyz * color.xyz);
-	output.color.w = 0.0f;
-	output.depth = float4(length(input.viewSpacePosition), 1.0f, 1.0f, 1.0f);
-	output.normal = float4(0.5f, 0.5f, 0.5f, 0.0f);
-	ProcessMotionBlur(motionBlurInput, motionBlurOutput);
+	output.color.rgb = EncodeColor(DiffuseColor.rgb * color.rgb);
+	output.color.a = EncodeSpecular(0, 0, true);
+	output.depth.x = float4(length(input.viewSpacePosition), 1.0f, 1.0f, 1.0f);
+	output.normal.xy = EncodeNormal(float2(0.0f, 0.0f));
+	output.depth.y = 1.0f;
+	output.depth.zw = (float2)0;
+	output.normal.zw = ProcessMotionBlur(motionBlurInput);
 }
 
 void RenderTexturePlainPS(	in RenderPSInput input,
 						in TexturePSInput tex,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
-	RenderTexturePS(input, tex, output, motionBlurInput, motionBlurOutput, false);
+	RenderTexturePS(input, tex, output, motionBlurInput, false);
 }
 
 void RenderTextureClipAlphaPS(	in RenderPSInput input,
 						in TexturePSInput tex,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
-	RenderTexturePS(input, tex, output, motionBlurInput, motionBlurOutput, true);
+	RenderTexturePS(input, tex, output, motionBlurInput, true);
 }
 
 void ClipTexturePS(	in RenderPSInput input,
@@ -369,66 +331,62 @@ void ClipTexturePS(	in RenderPSInput input,
 						in ClipPSInput clipData,
 						out RenderPSOutput output,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						uniform bool clipAlpha)
 {
 	HandleClipPlanes(clipData.clipPlaneDistances);
-	RenderTexturePS(input, tex, output, motionBlurInput, motionBlurOutput, clipAlpha);
+	RenderTexturePS(input, tex, output, motionBlurInput, clipAlpha);
 }
 
 void ClipTexturePlainPS(	in RenderPSInput input,
 						in TexturePSInput tex,
 						in ClipPSInput clipData,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
-	ClipTexturePS(input, tex, clipData, output, motionBlurInput, motionBlurOutput, false);
+	ClipTexturePS(input, tex, clipData, output, motionBlurInput, false);
 }
 
 void ClipTextureClipAlphaPS(	in RenderPSInput input,
 						in TexturePSInput tex,
 						in ClipPSInput clipData,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
-	ClipTexturePS(input, tex, clipData, output, motionBlurInput, motionBlurOutput, true);
+	ClipTexturePS(input, tex, clipData, output, motionBlurInput, true);
 }
 
 void RenderTextureNoDepthPS(	in RenderPSInput input,
 						in TexturePSInput tex,
 						out RenderPSOutput output,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						uniform bool clipAlpha)
 {
 	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates);
 	if (clipAlpha)
 		clip(color.a - 0.5f);
-	output.color.xyz = EncodeColor(DiffuseColor.xyz * color.xyz);
-	output.color.w = 0.0f;
-	output.depth = float4(FarPlaneDistance, 1.0f, 1.0f, 1.0f);
-	output.normal = float4(0.5f, 0.5f, 0.5f, 0.0f);
-	ProcessMotionBlur(motionBlurInput, motionBlurOutput);
+	output.color.rgb = EncodeColor(DiffuseColor.rgb * color.rgb);
+	output.color.a = EncodeSpecular(0, 0, true);
+	output.depth.x = FarPlaneDistance;
+	output.depth.zw = (float2)0;
+	output.normal.xy = EncodeNormal(float2(0.0f, 0.0f));
+	output.depth.y = 1.0f;
+	output.normal.zw = ProcessMotionBlur(motionBlurInput);
 }
 
 void RenderTextureNoDepthPlainPS(	in RenderPSInput input,
 						in TexturePSInput tex,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
-	RenderTextureNoDepthPS(input, tex, output, motionBlurInput, motionBlurOutput, false);
+	RenderTextureNoDepthPS(input, tex, output, motionBlurInput, false);
 }
 
 void RenderTextureNoDepthClipAlphaPS(	in RenderPSInput input,
 						in TexturePSInput tex,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
-	RenderTextureNoDepthPS(input, tex, output, motionBlurInput, motionBlurOutput, true);
+	RenderTextureNoDepthPS(input, tex, output, motionBlurInput, true);
 }
 
 void ClipTextureNoDepthPS(	in RenderPSInput input,
@@ -436,51 +394,48 @@ void ClipTextureNoDepthPS(	in RenderPSInput input,
 						in ClipPSInput clipData,
 						out RenderPSOutput output,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						uniform bool clipAlpha)
 {
 	HandleClipPlanes(clipData.clipPlaneDistances);
-	RenderTextureNoDepthPS(input, tex, output, motionBlurInput, motionBlurOutput, clipAlpha);
+	RenderTextureNoDepthPS(input, tex, output, motionBlurInput, clipAlpha);
 }
 
 void ClipTextureNoDepthPlainPS(	in RenderPSInput input,
 						in TexturePSInput tex,
 						in ClipPSInput clipData,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
-	ClipTextureNoDepthPS(input, tex, clipData, output, motionBlurInput, motionBlurOutput, false);
+	ClipTextureNoDepthPS(input, tex, clipData, output, motionBlurInput, false);
 }
 
 void ClipTextureNoDepthClipAlphaPS(	in RenderPSInput input,
 						in TexturePSInput tex,
 						in ClipPSInput clipData,
 						in MotionBlurPSInput motionBlurInput,
-						out MotionBlurPSOutput motionBlurOutput,
 						out RenderPSOutput output)
 {
-	ClipTextureNoDepthPS(input, tex, clipData, output, motionBlurInput, motionBlurOutput, true);
+	ClipTextureNoDepthPS(input, tex, clipData, output, motionBlurInput, true);
 }
 
 void RenderSolidColorPS(	in RenderPSInput input,
 							in MotionBlurPSInput motionBlurInput,
-							out MotionBlurPSOutput motionBlurOutput,
 							out RenderPSOutput output)
 {
-	output.color.xyz = EncodeColor(DiffuseColor.xyz);
-	output.color.w = 0.0f;
-	output.depth = float4(length(input.viewSpacePosition), 1.0f, 1.0f, 1.0f);
-	output.normal = float4(0.5f, 0.5f, 0.5f, 0.0f);
-	ProcessMotionBlur(motionBlurInput, motionBlurOutput);
+	output.color.rgb = EncodeColor(DiffuseColor.rgb);
+	output.color.a = EncodeSpecular(0, 0, true);
+	output.depth.x = length(input.viewSpacePosition);
+	output.normal.xy = EncodeNormal(float2(0, 0));
+	output.depth.y = 1.0f;
+	output.depth.zw = (float2)0;
+	output.normal.zw = ProcessMotionBlur(motionBlurInput);
 }
 
 void ClipSolidColorPS(	in RenderPSInput input,
 							in ClipPSInput clipData,
 							in MotionBlurPSInput motionBlurInput,
-							out MotionBlurPSOutput motionBlurOutput,
 							out RenderPSOutput output)
 {
 	HandleClipPlanes(clipData.clipPlaneDistances);
-	RenderSolidColorPS(input, motionBlurInput, motionBlurOutput, output);
+	RenderSolidColorPS(input, motionBlurInput, output);
 }

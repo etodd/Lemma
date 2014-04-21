@@ -655,6 +655,9 @@ namespace Lemma.Components
 			parameter = this.effect.Parameters["WorldMatrix"];
 			if (parameter != null)
 				parameter.SetValue(transform);
+			parameter = this.effect.Parameters["WorldViewMatrix"];
+			if (parameter != null)
+				parameter.SetValue(transform * parameters.Camera.View);
 			parameter = this.effect.Parameters["Time"];
 			if (parameter != null)
 				parameter.SetValue(this.main.TotalTime);

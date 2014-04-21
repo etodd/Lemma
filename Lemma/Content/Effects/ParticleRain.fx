@@ -57,11 +57,13 @@ void OpaquePS(VertexShaderOutput input, out RenderPSOutput output)
 	float4 color = tex2D(Sampler, input.TextureCoordinate) * float4(input.Color.xyz, 1.0f);
 	clip(color.a - 0.5f);
 	
-	output.color.xyz = EncodeColor(color.xyz);
-	output.color.w = RainSpecularPower / 255.0f;
-	output.depth = float4(length(input.ViewSpacePosition), 1.0f, 1.0f, 1.0f);
-	output.normal.xyz = float3(0.0f, 0.0f, 0.0f);
-	output.normal.w = RainSpecularIntensity;
+	output.color.rgb = EncodeColor(color.rgb);
+	output.color.a = EncodeSpecular(0, 0, false);
+	output.depth.x = length(input.ViewSpacePosition);
+	output.normal.xy = EncodeNormal(float2(0, 0));
+	output.depth.y = 0.0f;
+	output.depth.zw = (float2)0;
+	output.normal.zw = EncodeVelocity(float2(0, 0));
 }
 
 float4 ClipAlphaPS(VertexShaderOutput input, ClipPSInput clipData) : COLOR0

@@ -40,14 +40,13 @@ void ClearVS (	in float3 position : POSITION,
 void ClearPS(
 	in PostProcessPSInput input,
 	in ClearMotionBlurPSInput motionBlur,
-	out MotionBlurPSOutput motionBlurOutput,
 	out RenderPSOutput output
 	)
 {
 	output.color = float4(BackgroundColor, 0.0f);
 	output.depth = float4(FarPlaneDistance, 0.0f, 0.0f, 0.0f);
-	output.normal = (float4)0;
-	motionBlurOutput.velocity = float4(EncodeVelocity(motionBlur.velocity), 1.0f, 1.0f);
+	output.normal.xy = (float2)0;
+	output.normal.zw = EncodeVelocity(motionBlur.velocity);
 }
 
 technique Clear

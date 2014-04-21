@@ -61,10 +61,10 @@ void DownsamplePS(in PostProcessPSInput input, out float4 output : COLOR0)
 
 	float2 pos = floor(input.texCoord * SourceDimensions0) * pixelSize;
 
-	float3 bl = tex2D(SourceSampler0, pos + float2(0, 0));
-	float3 br = tex2D(SourceSampler0, pos + float2(pixelSize.x, 0));
-	float3 tl = tex2D(SourceSampler0, pos + float2(0, pixelSize.y));
-	float3 tr = tex2D(SourceSampler0, pos + pixelSize);
+	float3 bl = tex2D(SourceSampler0, pos + float2(0, 0)).rgb;
+	float3 br = tex2D(SourceSampler0, pos + float2(pixelSize.x, 0)).rgb;
+	float3 tl = tex2D(SourceSampler0, pos + float2(0, pixelSize.y)).rgb;
+	float3 tr = tex2D(SourceSampler0, pos + pixelSize).rgb;
 
 	output = float4(EncodeColor(toneMap(max(max(bl, br), max(tl, tr))) - BloomThreshold), 1);
 }
@@ -92,18 +92,25 @@ void BlurVerticalPS(	in PostProcessPSInput input,
 	float3 sum = 0;
 	[unroll]
 	for (int y = -8; y < 8; y++)
-		sum += DecodeColor(tex2D(SourceSampler0, float2(input.texCoord.x, input.texCoord.y + (y * yInterval))).xyz) * GaussianKernel[y + 8];
+		sum += DecodeColor(tex2D(SourceSampler0, float2(input.texCoord.x, input.texCoord.y + (y * yInterval))).rgb) * GaussianKernel[y + 8];
 	
 	// Return the average color of all the samples
-	out_Color.xyz = EncodeColor(sum);
+	out_Color.rgb = EncodeColor(sum);
 	out_Color.w = 1.0f;
 }
 
 void CompositePS(	in PostProcessPSInput input,
 					out float4 out_Color		: COLOR0)
 {
-	out_Color.xyz = toneMap(DecodeColor(tex2D(SourceSampler0, input.texCoord).xyz)) + (DecodeColor(tex2D(SourceSampler1, input.texCoord).xyz) / (1.0f - BloomThreshold));
-	out_Color.w = 1.0f;
+	out_Color.rgb = toneMap(DecodeColor(tex2D(SourceSampler0, input.texCoord).rgb)) + (DecodeColor(tex2D(SourceSampler1, input.texCoord).rgb) / (1.0f - BloomThreshold));
+	out_Color.a = 1.0f;
+}
+
+void ToneMapPS(	in PostProcessPSInput input,
+					out float4 out_Color		: COLOR0)
+{
+	out_Color.rgb = toneMap(DecodeColor(tex2D(SourceSampler0, input.texCoord).rgb));
+	out_Color.a = 1.0f;
 }
 
 technique Downsample
@@ -151,6 +158,19 @@ technique Composite
 	{
 		VertexShader = compile vs_3_0 PostProcessVS();
 		PixelShader = compile ps_3_0 CompositePS();
+		
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = false;
+	}
+}
+
+technique ToneMapOnly
+{
+	pass p0
+	{
+		VertexShader = compile vs_3_0 PostProcessVS();
+		PixelShader = compile ps_3_0 ToneMapPS();
 		
 		ZEnable = false;
 		ZWriteEnable = false;

@@ -110,8 +110,7 @@ namespace Lemma.Components
 		private RenderTarget2D halfDepthBuffer;
 		private Texture2D ssaoRandomTexture;
 		private bool allowSSAO;
-		private RenderTarget2D velocityBuffer;
-		private RenderTarget2D velocityBufferLastFrame;
+		private RenderTarget2D normalBufferLastFrame;
 		private bool allowBloom;
 		private bool allowPostAlphaDrawables;
 		private SpriteBatch spriteBatch;
@@ -180,33 +179,27 @@ namespace Lemma.Components
 			};
 			this.SpeedBlurAmount.Value = 0.0f;
 
-			if (this.allowBloom)
+			this.Gamma.Set = delegate(float value)
 			{
-				this.Gamma.Set = delegate(float value)
-				{
-					this.Gamma.InternalValue = value;
-					this.bloomEffect.Parameters["Gamma"].SetValue(value + this.InternalGamma);
-				};
-				this.Tint.Set = delegate(Vector3 value)
-				{
-					this.Tint.InternalValue = value;
-					this.bloomEffect.Parameters["Tint"].SetValue(value);
-				};
-				this.Brightness.Set = delegate(float value)
-				{
-					this.Brightness.InternalValue = value;
-					this.bloomEffect.Parameters["Brightness"].SetValue(value);
-				};
-			}
+				this.Gamma.InternalValue = value;
+				this.bloomEffect.Parameters["Gamma"].SetValue(value + this.InternalGamma);
+			};
+			this.Tint.Set = delegate(Vector3 value)
+			{
+				this.Tint.InternalValue = value;
+				this.bloomEffect.Parameters["Tint"].SetValue(value);
+			};
+			this.Brightness.Set = delegate(float value)
+			{
+				this.Brightness.InternalValue = value;
+				this.bloomEffect.Parameters["Brightness"].SetValue(value);
+			};
 		}
 
 		private void loadLightRampTexture(string file)
 		{
-			if (this.allowBloom)
-			{
-				this.lightRampTexture = file == null ? (Texture2D)null : this.main.Content.Load<Texture2D>(file);
-				this.bloomEffect.Parameters["Ramp" + Model.SamplerPostfix].SetValue(this.lightRampTexture);
-			}
+			this.lightRampTexture = file == null ? (Texture2D)null : this.main.Content.Load<Texture2D>(file);
+			this.bloomEffect.Parameters["Ramp" + Model.SamplerPostfix].SetValue(this.lightRampTexture);
 		}
 
 		private void loadEnvironmentMap(string file)
@@ -252,8 +245,7 @@ namespace Lemma.Components
 			this.ssaoRandomTexture = this.main.Content.Load<Texture2D>("Images\\random");
 			this.ssaoEffect.Parameters["Random" + Model.SamplerPostfix].SetValue(this.ssaoRandomTexture);
 
-			if (this.allowBloom)
-				this.bloomEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Bloom").Clone();
+			this.bloomEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Bloom").Clone();
 
 			this.loadLightRampTexture(this.LightRampTexture);
 
@@ -309,7 +301,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.Single,
+												SurfaceFormat.HalfVector2,
 												DepthFormat.Depth24,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -382,35 +374,19 @@ namespace Lemma.Components
 				this.hdrBuffer2 = this.colorBuffer2;
 			}
 
-			if (this.velocityBuffer != null)
+			if (this.normalBufferLastFrame != null)
 			{
-				if (!this.velocityBuffer.IsDisposed)
-					this.velocityBuffer.Dispose();
-				this.velocityBuffer = null;
-			}
-			if (this.velocityBufferLastFrame != null)
-			{
-				if (!this.velocityBufferLastFrame.IsDisposed)
-					this.velocityBufferLastFrame.Dispose();
-				this.velocityBufferLastFrame = null;
+				if (!this.normalBufferLastFrame.IsDisposed)
+					this.normalBufferLastFrame.Dispose();
+				this.normalBufferLastFrame = null;
 			}
 
-			// Velocity for motion blur
-			this.velocityBuffer = new RenderTarget2D(this.main.GraphicsDevice,
+			// Normal buffer from last frame
+			this.normalBufferLastFrame = new RenderTarget2D(this.main.GraphicsDevice,
 												size.X,
 												size.Y,
 												false,
-												SurfaceFormat.HalfVector2,
-												DepthFormat.None,
-												0,
-												RenderTargetUsage.DiscardContents);
-
-			// Velocity from last frame
-			this.velocityBufferLastFrame = new RenderTarget2D(this.main.GraphicsDevice,
-												size.X,
-												size.Y,
-												false,
-												SurfaceFormat.HalfVector2,
+												SurfaceFormat.Color,
 												DepthFormat.None,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -469,7 +445,7 @@ namespace Lemma.Components
 
 		public void SetRenderTargets(RenderParameters p)
 		{
-			this.main.GraphicsDevice.SetRenderTargets(this.colorBuffer1, this.depthBuffer, this.normalBuffer, this.velocityBuffer);
+			this.main.GraphicsDevice.SetRenderTargets(this.colorBuffer1, this.depthBuffer, this.normalBuffer);
 			this.clearEffect.CurrentTechnique = this.clearEffect.Techniques["Clear"];
 			Color color = this.BackgroundColor;
 			p.Camera.SetParameters(this.clearEffect);
@@ -600,10 +576,7 @@ namespace Lemma.Components
 
 			// Swap the color buffers
 			colorSource = this.hdrBuffer2;
-			if (enableBloom || enableMotionBlur || enableBlur)
-				colorDestination = this.hdrBuffer1;
-			else
-				colorDestination = result;
+			colorDestination = this.hdrBuffer1;
 
 			parameters.DepthBuffer = this.depthBuffer;
 			parameters.FrameBuffer = colorSource;
@@ -647,24 +620,30 @@ namespace Lemma.Components
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["Composite"];
 				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.halfBuffer1 }, new RenderTarget2D[] { enableBlur || enableMotionBlur ? this.colorBuffer2 : result }, this.bloomEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
-
-				// Swap the color buffers
-				colorDestination = this.colorBuffer1;
-				colorSource = this.colorBuffer2;
 			}
+			else
+			{
+				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["ToneMapOnly"];
+				this.preparePostProcess(new RenderTarget2D[] { colorSource, }, new RenderTarget2D[] { enableBlur || enableMotionBlur ? this.colorBuffer2 : result }, this.bloomEffect);
+				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
+			}
+
+			// Swap the color buffers
+			colorDestination = this.colorBuffer1;
+			colorSource = this.colorBuffer2;
 
 			// Motion blur
 			if (enableMotionBlur)
 			{
 				this.motionBlurEffect.CurrentTechnique = this.motionBlurEffect.Techniques["MotionBlur"];
 				parameters.Camera.SetParameters(this.motionBlurEffect);
-				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.velocityBuffer, this.velocityBufferLastFrame }, new RenderTarget2D[] { enableBlur ? colorDestination : result }, this.motionBlurEffect);
+				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.normalBuffer, this.normalBufferLastFrame }, new RenderTarget2D[] { enableBlur ? colorDestination : result }, this.motionBlurEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				// Swap the velocity buffers
-				RenderTarget2D temp = this.velocityBufferLastFrame;
-				this.velocityBufferLastFrame = this.velocityBuffer;
-				this.velocityBuffer = temp;
+				RenderTarget2D temp = this.normalBufferLastFrame;
+				this.normalBufferLastFrame = this.normalBuffer;
+				this.normalBuffer = temp;
 
 				// Swap the color buffers
 				colorTemp = colorDestination;
@@ -762,6 +741,7 @@ namespace Lemma.Components
 			base.delete();
 			this.lightingBuffer.Dispose();
 			this.normalBuffer.Dispose();
+			this.normalBufferLastFrame.Dispose();
 			this.depthBuffer.Dispose();
 			this.colorBuffer1.Dispose();
 			this.colorBuffer2.Dispose();
@@ -776,10 +756,6 @@ namespace Lemma.Components
 			this.blurEffect.Dispose();
 			this.clearEffect.Dispose();
 
-			if (this.velocityBuffer != null)
-				this.velocityBuffer.Dispose();
-			if (this.velocityBufferLastFrame != null)
-				this.velocityBufferLastFrame.Dispose();
 			if (this.motionBlurEffect != null)
 				this.motionBlurEffect.Dispose();
 

@@ -27,8 +27,7 @@ LightingOutput CalcPointLighting(float3 lightColor,
 						float3 lightPos,
 						float3 pixelPos,
 						float3 cameraToPoint,
-						float specularPower,
-						float specularIntensity)
+						float materialParam)
 {
 	LightingOutput output;
 	// Calculate the raw lighting terms
@@ -36,16 +35,14 @@ LightingOutput CalcPointLighting(float3 lightColor,
 	float distance = length(direction);
 	direction /= distance;
 	
-	// Modulate the lighting terms based on the material colors, and the attenuation factor
 	float attenuation = saturate(1.0f - max(0.01f, distance) / lightAttenuation);
 	float3 totalLightColor = lightColor * attenuation;
+	float2 specularData = DecodeSpecular(materialParam);
 	if (dot(normal, normal) < 0.01f)
 		output.lighting = totalLightColor;
 	else
-	{
 		output.lighting = totalLightColor * saturate(dot(normal, direction));
-		output.specular = totalLightColor * pow(saturate(dot(normal, normalize(direction - cameraToPoint))), specularPower) * specularIntensity;
-	}
+	output.specular = totalLightColor * pow(saturate(dot(normal, normalize(direction - cameraToPoint))), specularData.x) * specularData.y;
 	return output;
 }
 
@@ -124,10 +121,11 @@ void PointLightPS(	in PointLightPSInput input,
 	texCoord.y = 1.0f - texCoord.y;
 	texCoord = (round(texCoord * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
 	float4 normalValue = tex2D(SourceSampler1, texCoord);
-	float3 normal = DecodeNormal(normalValue);
+	float2 depthValue = tex2D(SourceSampler0, texCoord).xy;
+	float3 normal = float3(DecodeNormal(normalValue.xy), depthValue.y);
 	float3 viewRay = normalize(input.worldPosition);
-	float3 position = PositionFromDepthSampler(SourceSampler0, texCoord, viewRay);
-	LightingOutput data = CalcPointLighting(PointLightColor, PointLightRadius, normal, PointLightPosition, position, viewRay, tex2D(SourceSampler1, texCoord).w * 255.0f, normalValue.w);
+	float3 position = PositionFromDepth(depthValue.x, viewRay);
+	LightingOutput data = CalcPointLighting(PointLightColor, PointLightRadius, normal, PointLightPosition, position, viewRay, tex2D(SourceSampler2, texCoord).a);
 	lighting.xyz = EncodeColor(data.lighting);
 	lighting.w = 1.0f;
 	specular.xyz = EncodeColor(data.specular);
@@ -141,11 +139,12 @@ void PointLightShadowedPS(	in PointLightPSInput input,
 	float2 texCoord = (0.5f * input.projectedPosition.xy / input.projectedPosition.w) + float2(0.5f, 0.5f);
 	texCoord.y = 1.0f - texCoord.y;
 	texCoord = (round(texCoord * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
+	float2 depthValue = tex2D(SourceSampler0, texCoord).xy;
 	float4 normalValue = tex2D(SourceSampler1, texCoord);
-	float3 normal = DecodeNormal(normalValue);
+	float3 normal = float3(DecodeNormal(normalValue.xy), depthValue.y);
 	float3 viewRay = normalize(input.worldPosition);
-	float3 position = PositionFromDepthSampler(SourceSampler0, texCoord, viewRay);
-	LightingOutput data = CalcPointLighting(PointLightColor, PointLightRadius, normal, PointLightPosition, position, viewRay, tex2D(SourceSampler1, texCoord).w * 255.0f, normalValue.w);
+	float3 position = PositionFromDepth(depthValue.x, viewRay);
+	LightingOutput data = CalcPointLighting(PointLightColor, PointLightRadius, normal, PointLightPosition, position, viewRay, tex2D(SourceSampler2, texCoord).a);
 
 	float3 fromLight = position - PointLightPosition;
 	float depth = length(fromLight);

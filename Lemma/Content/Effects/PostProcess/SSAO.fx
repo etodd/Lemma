@@ -46,10 +46,10 @@ void SSAOPS(in PostProcessPSInput input, out float4 output : COLOR0)
 {
 	float depth = tex2D(SourceSampler0, input.texCoord).r;
 	
-	float3 normal = mul(DecodeNormal(tex2D(SourceSampler1, input.texCoord).xyz), (float3x3)ViewMatrix);
+	float3 normal = mul(DecodeNormalMap(tex2D(SourceSampler1, input.texCoord).xyz), (float3x3)ViewMatrix);
 	float3 normalScaled = normal * 0.25f;
 
-	float3 randomNormal = DecodeNormal(tex2D(RandomSampler, input.texCoord * RandomTile).xyz);
+	float3 randomNormal = DecodeNormalMap(tex2D(RandomSampler, input.texCoord * RandomTile).xyz);
 
 	float occlusion = 0.0f;
 	[unroll]

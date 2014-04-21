@@ -29,8 +29,7 @@ LightingOutput CalcSpotLighting(float3 lightColor,
 						float3 lightDirection,
 						float3 pixelPos,
 						float3 cameraToPoint,
-						float specularPower,
-						float specularIntensity,
+						float materialParam,
 						float3 cookieColor)
 {
 	LightingOutput output = (LightingOutput)0;
@@ -44,8 +43,12 @@ LightingOutput CalcSpotLighting(float3 lightColor,
 	// Modulate the lighting terms based on the material colors, and the attenuation factor
 	float attenuation = saturate(1.0f - max(0.01f, distance) / lightAttenuation);
 	float3 totalLightColor = lightColor * cookieColor * attenuation;
-	output.lighting = totalLightColor * saturate(dot(normal, direction));
-	output.specular = totalLightColor * pow(saturate(dot(normal, normalize(direction - cameraToPoint))), specularPower) * specularIntensity;
+	float2 specularData = DecodeSpecular(materialParam);
+	if (dot(normal, normal) < 0.01f)
+		output.lighting = totalLightColor;
+	else
+		output.lighting = totalLightColor * saturate(dot(normal, direction));
+	output.specular = totalLightColor * pow(saturate(dot(normal, normalize(direction - cameraToPoint))), specularData.x) * specularData.y;
 	return output;
 }
 
@@ -82,16 +85,17 @@ void SpotLightPS(	in SpotLightPSInput input,
 	texCoord.y = 1.0f - texCoord.y;
 	texCoord = (round(texCoord * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
 	float4 normalValue = tex2D(SourceSampler1, texCoord);
-	float3 normal = DecodeNormal(normalValue);
+	float2 depthValue = tex2D(SourceSampler0, texCoord).xy;
+	float3 normal = float3(DecodeNormal(normalValue.xy), depthValue.y);
 	float3 viewRay = normalize(input.worldPosition);
-	float3 position = PositionFromDepthSampler(SourceSampler0, texCoord, viewRay);
+	float3 position = PositionFromDepth(depthValue.x, viewRay);
 
 	float4 spotProjectedPosition = mul(float4(position, 1.0f), SpotLightViewProjectionMatrix);
 	float2 spotClipPosition = 0.5f * spotProjectedPosition.xy / spotProjectedPosition.w + float2(0.5f, 0.5f);
 	spotClipPosition.y = 1.0f - spotClipPosition.y;
 	float3 cookieColor = tex2D(CookieSampler, spotClipPosition).xyz;
 	
-	LightingOutput data = CalcSpotLighting(SpotLightColor, SpotLightRadius, normal, SpotLightPosition, SpotLightDirection, position, viewRay, tex2D(SourceSampler1, texCoord).w * 255.0f, normalValue.w, cookieColor);
+	LightingOutput data = CalcSpotLighting(SpotLightColor, SpotLightRadius, normal, SpotLightPosition, SpotLightDirection, position, viewRay, tex2D(SourceSampler2, texCoord).a, cookieColor);
 	
 	if (shadow)
 	{
