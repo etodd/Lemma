@@ -66,7 +66,7 @@ void DownsamplePS(in PostProcessPSInput input, out float4 output : COLOR0)
 	float3 tl = tex2D(SourceSampler0, pos + float2(0, pixelSize.y)).rgb;
 	float3 tr = tex2D(SourceSampler0, pos + pixelSize).rgb;
 
-	output = float4(EncodeColor(toneMap(max(max(bl, br), max(tl, tr))) - BloomThreshold), 1);
+	output = float4(toneMap(max(max(bl, br), max(tl, tr))) - BloomThreshold, 1);
 }
 
 void BlurHorizontalPS(	in PostProcessPSInput input,
@@ -77,11 +77,11 @@ void BlurHorizontalPS(	in PostProcessPSInput input,
 	float3 sum = 0;
 	[unroll]
 	for (int x = -8; x < 8; x++)
-		sum += DecodeColor(tex2D(SourceSampler0, float2(input.texCoord.x + (x * xInterval), input.texCoord.y)).xyz) * GaussianKernel[x + 8];
+		sum += tex2D(SourceSampler0, float2(input.texCoord.x + (x * xInterval), input.texCoord.y)).rgb * GaussianKernel[x + 8];
 	
 	// Return the average color of all the samples
-	out_Color.xyz = EncodeColor(sum);
-	out_Color.w = 1.0f;
+	out_Color.rgb = sum;
+	out_Color.a = 1.0f;
 }
 
 void BlurVerticalPS(	in PostProcessPSInput input,
@@ -92,24 +92,24 @@ void BlurVerticalPS(	in PostProcessPSInput input,
 	float3 sum = 0;
 	[unroll]
 	for (int y = -8; y < 8; y++)
-		sum += DecodeColor(tex2D(SourceSampler0, float2(input.texCoord.x, input.texCoord.y + (y * yInterval))).rgb) * GaussianKernel[y + 8];
+		sum += tex2D(SourceSampler0, float2(input.texCoord.x, input.texCoord.y + (y * yInterval))).rgb * GaussianKernel[y + 8];
 	
 	// Return the average color of all the samples
-	out_Color.rgb = EncodeColor(sum);
-	out_Color.w = 1.0f;
+	out_Color.rgb = sum;
+	out_Color.a = 1.0f;
 }
 
 void CompositePS(	in PostProcessPSInput input,
 					out float4 out_Color		: COLOR0)
 {
-	out_Color.rgb = toneMap(DecodeColor(tex2D(SourceSampler0, input.texCoord).rgb)) + (DecodeColor(tex2D(SourceSampler1, input.texCoord).rgb) / (1.0f - BloomThreshold));
+	out_Color.rgb = toneMap(tex2D(SourceSampler0, input.texCoord).rgb) + tex2D(SourceSampler1, input.texCoord).rgb / (1.0f - BloomThreshold);
 	out_Color.a = 1.0f;
 }
 
 void ToneMapPS(	in PostProcessPSInput input,
 					out float4 out_Color		: COLOR0)
 {
-	out_Color.rgb = toneMap(DecodeColor(tex2D(SourceSampler0, input.texCoord).rgb));
+	out_Color.rgb = toneMap(tex2D(SourceSampler0, input.texCoord).rgb);
 	out_Color.a = 1.0f;
 }
 

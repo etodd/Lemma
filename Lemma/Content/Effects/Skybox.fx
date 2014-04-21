@@ -38,8 +38,8 @@ void SkyboxPS(in RenderPSInput input,
 
 	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates);
 	
-	output.xyz = EncodeColor(DiffuseColor.xyz * color.xyz);
-	output.w = blend;
+	output.rgb = DiffuseColor.rgb * color.rgb;
+	output.a = blend;
 }
 
 // No shadow technique. We don't want the skybox casting shadows.

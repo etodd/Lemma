@@ -27,7 +27,7 @@ void FogVerticalLimitPS(	in PostProcessPSInput input,
 
 	float verticalBlend = 1.0f - clamp((worldPosition.y - VerticalCenter) / VerticalSize, 0, 1);
 
-	color = float4(EncodeColor(Color.rgb), Color.a * verticalBlend);
+	color = float4(Color.rgb, Color.a * verticalBlend);
 }
 
 void FogPS(	in PostProcessPSInput input,
@@ -38,7 +38,7 @@ void FogPS(	in PostProcessPSInput input,
 
 	float blend = clamp(lerp(0, 1, (depth - StartDistance) / (EndDistance - StartDistance)), 0, 1);
 
-	color = float4(EncodeColor(Color.xyz), Color.a * blend);
+	color = float4(Color.rgb, Color.a * blend);
 }
 
 technique FogVerticalLimit

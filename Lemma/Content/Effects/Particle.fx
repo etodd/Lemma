@@ -9,8 +9,7 @@ float4 ParticlePS(VertexShaderOutput input) : COLOR0
 
 	clip(tex2D(DepthSampler, uv).r - length(input.ViewSpacePosition));
 
-	float4 color = tex2D(Sampler, input.TextureCoordinate) * input.Color;
-	return float4(EncodeColor(color.rgb), color.a);
+	return tex2D(Sampler, input.TextureCoordinate) * input.Color;
 }
 
 float4 ClipParticlePS(VertexShaderOutput input, ClipPSInput clipData) : COLOR0

@@ -133,60 +133,6 @@ technique Clip
 	}
 }
 
-// Glow techniques
-
-technique ShadowGlow
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 ShadowVS();
-		PixelShader = compile ps_3_0 ShadowPS();
-	}
-}
-
-technique PointLightShadowGlow
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 ShadowVS();
-		PixelShader = compile ps_3_0 PointLightShadowPS();
-	}
-}
-
-technique RenderGlow
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 RenderVS();
-		PixelShader = compile ps_3_0 RenderTextureNormalMapGlowPS();
-	}
-}
-
-technique ClipGlow
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-
-		VertexShader = compile vs_3_0 ClipVS();
-		PixelShader = compile ps_3_0 ClipTextureNormalMapGlowPS();
-	}
-}
-
 // Alpha techniques
 
 technique ShadowAlpha
@@ -238,33 +184,5 @@ technique ClipAlpha
 
 		VertexShader = compile vs_3_0 ClipVS();
 		PixelShader = compile ps_3_0 ClipTextureNormalMapClipAlphaPS();
-	}
-}
-
-// Alpha/glow techniques
-
-technique ShadowAlphaGlow
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 ShadowAlphaVS();
-		PixelShader = compile ps_3_0 ShadowAlphaPS();
-	}
-}
-
-technique PointLightShadowAlphaGlow
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 ShadowAlphaVS();
-		PixelShader = compile ps_3_0 PointLightShadowAlphaPS();
 	}
 }

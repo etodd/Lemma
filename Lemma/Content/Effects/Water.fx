@@ -137,9 +137,9 @@ void SurfacePS(	in SurfacePSInput input,
 	float3 refraction = lerp(tex2D(FrameSampler, uv).xyz * Color + Brightness, UnderwaterColor, depthBlend);
 
 	if (reflection)
-		color = float4(EncodeColor(lerp(tex2D(ReflectionSampler, uv).xyz, refraction, clamp(Refraction + fresnel * Fresnel, 0.0f, 1.0f))), 1.0f);
+		color = float4(lerp(tex2D(ReflectionSampler, uv).rgb, refraction, clamp(Refraction + fresnel * Fresnel, 0.0f, 1.0f)), 1.0f);
 	else
-		color = float4(EncodeColor(refraction), 1.0f);
+		color = float4(refraction, 1.0f);
 }
 
 struct UnderwaterPSInput
@@ -167,7 +167,7 @@ void UnderwaterPS(	in UnderwaterPSInput input,
 
 	float depthBlend = clamp((depth - 2.0f) * 0.25f * (1.0f - Clearness), 0.0f, 1.0f);
 
-	color = float4(EncodeColor(UnderwaterColor), 0.2f + (0.8f * depthBlend));
+	color = float4(UnderwaterColor, 0.2f + (0.8f * depthBlend));
 }
 
 void SurfaceWithReflection(in SurfacePSInput input,

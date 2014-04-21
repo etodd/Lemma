@@ -8,6 +8,8 @@ float SpotLightRadius;
 float3 SpotLightColor;
 float4x4 SpotLightViewProjectionMatrix;
 
+float2 Materials[16];
+
 float ShadowBias = 0.0f;
 
 texture2D CookieTexture;
@@ -43,7 +45,7 @@ LightingOutput CalcSpotLighting(float3 lightColor,
 	// Modulate the lighting terms based on the material colors, and the attenuation factor
 	float attenuation = saturate(1.0f - max(0.01f, distance) / lightAttenuation);
 	float3 totalLightColor = lightColor * cookieColor * attenuation;
-	float2 specularData = DecodeSpecular(materialParam);
+	float2 specularData = Materials[DecodeMaterial(materialParam)];
 	if (dot(normal, normal) < 0.01f)
 		output.lighting = totalLightColor;
 	else
@@ -104,10 +106,10 @@ void SpotLightPS(	in SpotLightPSInput input,
 		data.specular *= shadowValue;
 	}
 
-	lighting.xyz = EncodeColor(data.lighting);
-	lighting.w = 1.0f;
-	specular.xyz = EncodeColor(data.specular);
-	specular.w = 1.0f;
+	lighting.rgb = data.lighting;
+	lighting.a = 1.0f;
+	specular.rgb = data.specular;
+	specular.a = 1.0f;
 }
 
 technique SpotLight

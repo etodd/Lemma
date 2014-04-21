@@ -174,16 +174,21 @@ namespace Lemma.Components
 			{
 				model.DiffuseTexture.Value = this.DiffuseMap;
 				model.NormalMap.Value = this.NormalMap;
-				model.SpecularIntensity.Value = this.SpecularIntensity;
-				model.SpecularPower.Value = this.SpecularPower;
+				if (this.Glow)
+				{
+					model.Materials[0].SpecularIntensity = 0.0f;
+					model.Materials[0].SpecularPower = 0.0f;
+					model.Materials[1].SpecularIntensity = this.SpecularIntensity;
+					model.Materials[1].SpecularPower = this.SpecularPower;
+				}
+				else
+				{
+					model.Materials[0].SpecularIntensity = this.SpecularIntensity;
+					model.Materials[0].SpecularPower = this.SpecularPower;
+				}
 				model.DisableCulling.Value = this.AllowAlpha;
 				model.Color.Value = this.Tint;
-				string postfix = "";
-				if (this.AllowAlpha)
-					postfix += "Alpha";
-				if (this.Glow)
-					postfix += "Glow";
-				model.TechniquePostfix.Value = postfix;
+				model.TechniquePostfix.Value = this.AllowAlpha ? "Alpha" : "";
 				model.GetFloatParameter("Tiling").Value = this.Tiling;
 			}
 

@@ -7,6 +7,8 @@ const float RainSpecularIntensity = 0.5f;
 float3 PointLightPosition;
 float PointLightRadius;
 
+int MaterialID;
+
 // Custom vertex shader animates particles entirely on the GPU.
 void RainVS(in VertexShaderInput input, out VertexShaderOutput output)
 {	
@@ -47,8 +49,7 @@ float4 AlphaPS(VertexShaderOutput input) : COLOR0
 
 	clip(tex2D(DepthSampler, uv).r - length(input.ViewSpacePosition));
 
-	float4 color = tex2D(Sampler, input.TextureCoordinate) * float4(input.Color.xyz, 1.0f);
-	return float4(EncodeColor(color.rgb), color.a);
+	return tex2D(Sampler, input.TextureCoordinate) * float4(input.Color.rgb, 1.0f);
 }
 
 void OpaquePS(VertexShaderOutput input, out RenderPSOutput output)
@@ -57,8 +58,8 @@ void OpaquePS(VertexShaderOutput input, out RenderPSOutput output)
 	float4 color = tex2D(Sampler, input.TextureCoordinate) * float4(input.Color.xyz, 1.0f);
 	clip(color.a - 0.5f);
 	
-	output.color.rgb = EncodeColor(color.rgb);
-	output.color.a = EncodeSpecular(0, 0, false);
+	output.color.rgb = color.rgb;
+	output.color.a = EncodeMaterial(MaterialID);
 	output.depth.x = length(input.ViewSpacePosition);
 	output.normal.xy = EncodeNormal(float2(0, 0));
 	output.depth.y = 0.0f;

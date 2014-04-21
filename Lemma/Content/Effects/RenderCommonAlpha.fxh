@@ -25,8 +25,8 @@ void RenderTextureAlphaPS(in RenderPSInput input,
 	clip(tex2D(DepthSampler, uv).r - length(input.viewSpacePosition));
 	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates);
 	
-	output.xyz = EncodeColor(DiffuseColor.xyz * color.xyz);
-	output.w = Alpha * color.w;
+	output.rgb = DiffuseColor.rgb * color.rgb;
+	output.a = Alpha * color.a;
 }
 
 void ClipTextureAlphaPS(in RenderPSInput input,
@@ -47,8 +47,8 @@ void RenderSolidColorAlphaPS(in RenderPSInput input,
 	uv.y = 1.0f - uv.y;
 	uv = (round(uv * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
 	clip(tex2D(DepthSampler, uv).r - length(input.viewSpacePosition));
-	output.xyz = EncodeColor(DiffuseColor.xyz);
-	output.w = Alpha;
+	output.rgb = DiffuseColor.rgb;
+	output.a = Alpha;
 }
 
 void ClipSolidColorAlphaPS(in RenderPSInput input,
@@ -69,8 +69,8 @@ void RenderVertexColorAlphaPS(in RenderPSInput input,
 	uv.y = 1.0f - uv.y;
 	uv = (round(uv * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
 	clip(tex2D(DepthSampler, uv).r - length(input.viewSpacePosition));
-	output.xyz = EncodeColor(DiffuseColor.xyz * color.color.xyz);
-	output.w = Alpha * color.color.w;
+	output.rgb = DiffuseColor.rgb * color.color.rgb;
+	output.a = Alpha * color.color.a;
 }
 
 void ClipVertexColorAlphaPS(in RenderPSInput input,

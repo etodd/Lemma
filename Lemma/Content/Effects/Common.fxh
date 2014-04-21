@@ -11,39 +11,6 @@ float3 DecodeNormalMap(float3 enc)
 	return (2.0f * enc) - 1.0f;
 }
 
-float3 EncodeColor(float3 c)
-{
-	return c;
-}
-
-float3 DecodeColor(float3 c)
-{
-	return c;
-}
-
-float EncodeSpecular(float power, float intensity, bool glow)
-{
-	if (glow)
-		return 0.0f;
-	else
-	{
-		intensity = floor(intensity * 3.0f) * (1.0f / 4.0f) * (254.0f / 255.0f);
-		return (1.0f / 255.0f) + intensity + (power * (0.25f / 254.0f));
-	}
-}
-
-float2 DecodeSpecular(float param)
-{
-	param -= 1.0f / 255.0f;
-	param *= (255.0f / 254.0f);
-	float intensity = floor(param * 4.0f) * (1.0f / 3.0f);
-	return float2
-	(
-		(param - intensity) * 4.0f * 254.0f,
-		intensity
-	);
-}
-
 float2 EncodeNormal(float2 v)
 {
 	return v * 0.5f + 0.5f;
@@ -62,6 +29,16 @@ float2 EncodeVelocity(float2 v)
 float2 DecodeVelocity(float2 v)
 {
 	return (2.0f * v) - 1.0f;
+}
+
+float EncodeMaterial(int id)
+{
+	return (float)id * (1.0f / 255.0f);
+}
+
+int DecodeMaterial(float x)
+{
+	return (int)(x * 255.0f);
 }
 
 // Input and output structures

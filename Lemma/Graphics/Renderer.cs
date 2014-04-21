@@ -486,6 +486,7 @@ namespace Lemma.Components
 			Renderer.globalLightEffect.CurrentTechnique = Renderer.globalLightEffect.Techniques["GlobalLight" + (this.lightingManager.EnableGlobalShadowMap && this.lightingManager.HasGlobalShadowLight ? "Shadow" : "")];
 			parameters.Camera.SetParameters(Renderer.globalLightEffect);
 			this.lightingManager.SetGlobalLightParameters(Renderer.globalLightEffect, originalCameraPosition);
+			this.lightingManager.SetMaterialParameters(Renderer.globalLightEffect);
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.globalLightEffect);
 			this.applyEffect(Renderer.globalLightEffect);
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
@@ -500,6 +501,7 @@ namespace Lemma.Components
 			parameters.Camera.SetParameters(Renderer.pointLightEffect);
 			parameters.Camera.FarPlaneDistance.Value = originalFarPlane;
 
+			this.lightingManager.SetMaterialParameters(Renderer.pointLightEffect);
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.pointLightEffect);
 			for (int i = 0; i < PointLight.All.Count; i++)
 			{
@@ -519,6 +521,7 @@ namespace Lemma.Components
 			parameters.Camera.SetParameters(Renderer.spotLightEffect);
 			parameters.Camera.FarPlaneDistance.Value = originalFarPlane;
 
+			this.lightingManager.SetMaterialParameters(Renderer.spotLightEffect);
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.spotLightEffect);
 			for (int i = 0; i < SpotLight.All.Count; i++)
 			{
@@ -560,6 +563,7 @@ namespace Lemma.Components
 			// Compositing
 			this.compositeEffect.CurrentTechnique = this.compositeEffect.Techniques["Composite" + (enableSSAO ? "SSAO" : "")];
 			parameters.Camera.SetParameters(this.compositeEffect);
+			this.lightingManager.SetMaterialParameters(this.compositeEffect);
 			this.preparePostProcess
 			(
 				enableSSAO

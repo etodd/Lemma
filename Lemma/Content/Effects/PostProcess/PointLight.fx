@@ -20,6 +20,8 @@ float3 PointLightPosition;
 float PointLightRadius;
 float3 PointLightColor;
 
+float2 Materials[16];
+
 // Calculate the contribution of a point light
 LightingOutput CalcPointLighting(float3 lightColor,
 						float lightAttenuation,
@@ -37,7 +39,7 @@ LightingOutput CalcPointLighting(float3 lightColor,
 	
 	float attenuation = saturate(1.0f - max(0.01f, distance) / lightAttenuation);
 	float3 totalLightColor = lightColor * attenuation;
-	float2 specularData = DecodeSpecular(materialParam);
+	float2 specularData = Materials[DecodeMaterial(materialParam)];
 	if (dot(normal, normal) < 0.01f)
 		output.lighting = totalLightColor;
 	else
@@ -126,10 +128,10 @@ void PointLightPS(	in PointLightPSInput input,
 	float3 viewRay = normalize(input.worldPosition);
 	float3 position = PositionFromDepth(depthValue.x, viewRay);
 	LightingOutput data = CalcPointLighting(PointLightColor, PointLightRadius, normal, PointLightPosition, position, viewRay, tex2D(SourceSampler2, texCoord).a);
-	lighting.xyz = EncodeColor(data.lighting);
-	lighting.w = 1.0f;
-	specular.xyz = EncodeColor(data.specular);
-	specular.w = 1.0f;
+	lighting.rgb = data.lighting;
+	lighting.a = 1.0f;
+	specular.rgb = data.specular;
+	specular.a = 1.0f;
 }
 
 void PointLightShadowedPS(	in PointLightPSInput input,
@@ -150,10 +152,10 @@ void PointLightShadowedPS(	in PointLightPSInput input,
 	float depth = length(fromLight);
 	fromLight.z *= -1.0f;
 	float shadow = GetShadowValue(fromLight / depth, 1.0f - (depth / PointLightRadius));
-	lighting.xyz = EncodeColor(data.lighting * shadow);
-	lighting.w = 1.0f;
-	specular.xyz = EncodeColor(data.specular * shadow);
-	specular.w = 1.0f;
+	lighting.rgb = data.lighting * shadow;
+	lighting.a = 1.0f;
+	specular.rgb = data.specular * shadow;
+	specular.a = 1.0f;
 }
 
 technique PointLight

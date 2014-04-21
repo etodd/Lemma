@@ -39,7 +39,7 @@ void CloudPS(in RenderPSInput input,
 	uv = (round(uv * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
 	float depth = tex2D(DepthSampler, uv).r;
 	float4 texColor = tex2D(DiffuseSampler, tex.uvCoordinates + Velocity * Time);
-	output.xyz = EncodeColor(DiffuseColor.xyz * texColor.xyz);
+	output.xyz = DiffuseColor.xyz * texColor.xyz;
 
 	float blend = clamp(lerp(0, 1, (depth - StartDistance) / (FarPlaneDistance - StartDistance)), 0, 1);
 

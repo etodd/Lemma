@@ -10,7 +10,8 @@ namespace Lemma.Components
 	public class LightingManager : Component<Main>
 	{
 		public enum DynamicShadowSetting { Off, Low, Medium, High };
-		private const int maxDirectionalLights = 3;
+		private const int maxDirectionalLights = 2;
+		private const int maxMaterials = 16;
 		private int globalShadowMapSize;
 		private const float lightShadowThreshold = 60.0f;
 		private const float globalShadowFocusInterval = 10.0f;
@@ -169,8 +170,16 @@ namespace Lemma.Components
 				this.DynamicShadows.Reset();
 		}
 
+		private Dictionary<Model.Material, int> materials = new Dictionary<Model.Material, int>();
+		private Vector2[] materialData = new Vector2[LightingManager.maxMaterials];
+
 		public void UpdateGlobalLights()
 		{
+			foreach (KeyValuePair<Model.Material, int> pair in this.materials)
+				this.materialData[pair.Value] = new Vector2(pair.Key.SpecularPower, pair.Key.SpecularIntensity);
+			this.materials.Clear();
+			this.materials[new Model.Material()] = 0; // Material with no lighting
+
 			this.globalShadowLight = null;
 			int directionalLightIndex = 0;
 			foreach (DirectionalLight light in DirectionalLight.All.Where(x => x.Enabled && !x.Suspended).Take(LightingManager.maxDirectionalLights))
@@ -199,6 +208,20 @@ namespace Lemma.Components
 			this.ambientLightColor = Vector3.Zero;
 			foreach (AmbientLight light in AmbientLight.All.Where(x => x.Enabled))
 				this.ambientLightColor += light.Color;
+		}
+
+		public int GetMaterialIndex(float specularPower, float specularIntensity)
+		{
+			int id;
+			Model.Material key = new Model.Material { SpecularPower = specularPower, SpecularIntensity = specularIntensity, };
+			if (!this.materials.TryGetValue(key, out id))
+			{
+				if (this.materials.Count == LightingManager.maxMaterials)
+					id = LightingManager.maxMaterials - 1;
+				else
+					id = this.materials[key] = this.materials.Count;
+			}
+			return id;
 		}
 
 		public void SetRenderParameters(Microsoft.Xna.Framework.Graphics.Effect effect, RenderParameters parameters)
@@ -330,6 +353,11 @@ namespace Lemma.Components
 				effect.Parameters["ShadowMapSize"].SetValue(this.globalShadowMapSize);
 				effect.Parameters["ShadowMap" + Model.SamplerPostfix].SetValue(this.globalShadowMap);
 			}
+		}
+
+		public void SetMaterialParameters(Microsoft.Xna.Framework.Graphics.Effect effect)
+		{
+			effect.Parameters["Materials"].SetValue(this.materialData);
 		}
 
 		public void SetSpotLightParameters(SpotLight light, Microsoft.Xna.Framework.Graphics.Effect effect, Vector3 cameraPos)

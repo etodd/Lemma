@@ -9,6 +9,9 @@ using Lemma.Util;
 
 namespace Lemma.Components
 {
+	[XmlInclude(typeof(Material))]
+	[XmlInclude(typeof(Property<Material>))]
+	[XmlInclude(typeof(ListProperty<Material>))]
 	public class Model : Component<Main>, IDrawableComponent
 	{
 #if MONOGAME
@@ -40,8 +43,23 @@ namespace Lemma.Components
 		public Property<Matrix> Transform = new Property<Matrix> { Editable = false, Value = Matrix.Identity };
 		public Property<Vector3> Scale = new Property<Vector3> { Editable = true, Value = Vector3.One };
 		public Property<Vector3> Color = new Property<Vector3> { Editable = true, Value = Vector3.One };
-		public Property<float> SpecularPower = new Property<float> { Editable = true, Value = 1.0f };
-		public Property<float> SpecularIntensity = new Property<float> { Editable = true, Value = 0.0f };
+
+		public struct Material
+		{
+			public float SpecularPower;
+			public float SpecularIntensity;
+		}
+		public Material[] Materials = new []
+		{
+			new Material
+			{
+				SpecularPower = 1.0f,
+				SpecularIntensity = 0.0f,
+			},
+			new Material(),
+		};
+		private int[] materialIds = new int[2];
+
 		public Property<bool> IsInstanced = new Property<bool> { Editable = false };
 		public Property<bool> DisableCulling = new Property<bool> { Editable = true };
 		public Property<bool> IsValid = new Property<bool> { Editable = false };
@@ -122,26 +140,6 @@ namespace Lemma.Components
 					EffectParameter param = this.effect.Parameters["Diffuse" + Model.SamplerPostfix];
 					if (param != null)
 						param.SetValue(this.diffuseTexture);
-				}
-			};
-			this.SpecularIntensity.Set = delegate(float value)
-			{
-				this.SpecularIntensity.InternalValue = value;
-				if (this.effect != null)
-				{
-					EffectParameter param = this.effect.Parameters["SpecularIntensity"];
-					if (param != null)
-						param.SetValue(value);
-				}
-			};
-			this.SpecularPower.Set = delegate(float value)
-			{
-				this.SpecularPower.InternalValue = value;
-				if (this.effect != null)
-				{
-					EffectParameter param = this.effect.Parameters["SpecularPower"];
-					if (param != null)
-						param.SetValue(value);
 				}
 			};
 			this.Color.Set = delegate(Vector3 value)
@@ -286,8 +284,6 @@ namespace Lemma.Components
 			if (this.effect != null)
 			{
 				// Reset parameters
-				this.SpecularPower.Reset();
-				this.SpecularIntensity.Reset();
 				this.Color.Reset();
 				this.DiffuseTexture.Reset();
 				this.NormalMap.Reset();
@@ -662,6 +658,12 @@ namespace Lemma.Components
 			if (parameter != null)
 				parameter.SetValue(this.main.TotalTime);
 			parameters.Camera.SetParameters(this.effect);
+			for (int i = 0; i < this.Materials.Length; i++)
+			{
+				Material m = this.Materials[i];
+				this.materialIds[i] = this.main.LightingManager.GetMaterialIndex(m.SpecularPower, m.SpecularIntensity);
+			}
+			this.effect.Parameters["Materials"].SetValue(this.materialIds);
 			return true;
 		}
 
