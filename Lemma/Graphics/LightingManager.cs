@@ -212,8 +212,12 @@ namespace Lemma.Components
 
 		public int GetMaterialIndex(float specularPower, float specularIntensity)
 		{
+			return this.GetMaterialIndex(new Model.Material { SpecularPower = specularPower, SpecularIntensity = specularIntensity, });
+		}
+
+		public int GetMaterialIndex(Model.Material key)
+		{
 			int id;
-			Model.Material key = new Model.Material { SpecularPower = specularPower, SpecularIntensity = specularIntensity, };
 			if (!this.materials.TryGetValue(key, out id))
 			{
 				if (this.materials.Count == LightingManager.maxMaterials)

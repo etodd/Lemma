@@ -159,6 +159,7 @@ namespace Lemma.Factories
 					BlendState = BlendState.Opaque,
 					MinColor = new Vector4(0.5f, 0.6f, 0.7f, 1.0f),
 					MaxColor = new Vector4(0.5f, 0.6f, 0.7f, 1.0f),
+					Material = new Components.Model.Material { SpecularIntensity = 0.0f, SpecularPower = 1.0f },
 				});
 				emitter.ParticleType.Reset();
 			}

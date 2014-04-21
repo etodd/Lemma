@@ -97,6 +97,7 @@ namespace Lemma.Components
 			public float MinHorizontalVelocity = 0;
 			public float MaxHorizontalVelocity = 0;
 
+			public Model.Material Material;
 
 			// Range of values controlling how much Y axis velocity to give each particle.
 			// Values for individual particles are randomly chosen from somewhere between
@@ -401,6 +402,7 @@ namespace Lemma.Components
 		private Effect particleEffect;
 
 		// Shortcuts for accessing frequently changed effect parameters.
+		private EffectParameter effectMaterialIdParameter;
 		private EffectParameter effectViewParameter;
 		private EffectParameter effectInverseViewParameter;
 		private EffectParameter effectCameraPositionParameter;
@@ -596,6 +598,7 @@ namespace Lemma.Components
 
 			// Look up shortcuts for parameters that change every frame.
 			this.effectViewParameter = parameters["View"];
+			this.effectMaterialIdParameter = parameters["MaterialID"];
 			this.effectInverseViewParameter = parameters["InverseView"];
 			this.effectCameraPositionParameter = parameters["CameraPosition"];
 			this.effectProjectionParameter = parameters["Projection"];
@@ -804,6 +807,8 @@ namespace Lemma.Components
 				// Update view/projection matrix
 				if (this.effectViewParameter != null)
 					this.effectViewParameter.SetValue(parameters.Camera.View);
+				if (this.effectMaterialIdParameter != null)
+					this.effectMaterialIdParameter.SetValue(this.main.LightingManager.GetMaterialIndex(this.settings.Material));
 				if (this.effectInverseViewParameter != null)
 					this.effectInverseViewParameter.SetValue(parameters.Camera.InverseView);
 				if (this.effectCameraPositionParameter != null)
