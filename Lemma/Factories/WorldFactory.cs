@@ -76,7 +76,12 @@ namespace Lemma.Factories
 						{
 							SpecularPower = 200.0f,
 							SpecularIntensity = 0.2f,
-						}
+						},
+						new Model.Material
+						{
+							SpecularPower = 150.0f,
+							SpecularIntensity = 0.2f,
+						},
 					},
 				},
 				new Map.CellState
@@ -115,7 +120,7 @@ namespace Lemma.Factories
 						{
 							SpecularPower = 1.0f,
 							SpecularIntensity = 0.0f,
-						}
+						},
 					},
 					Tint = new Vector3(0.15f),
 				},
@@ -212,9 +217,9 @@ namespace Lemma.Factories
 					{
 						new Model.Material
 						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.2f,
-						}
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						},
 					},
 					Tint = new Vector3(0.4f),
 				},
@@ -234,7 +239,7 @@ namespace Lemma.Factories
 						{
 							SpecularPower = 1.0f,
 							SpecularIntensity = 0.0f,
-						}
+						},
 					},
 					Tint = new Vector3(0.9f, 0.3f, 0.0f),
 				},
@@ -253,8 +258,8 @@ namespace Lemma.Factories
 						new Model.Material
 						{
 							SpecularPower = 1.0f,
-							SpecularIntensity = 0.0f,
-						}
+							SpecularIntensity = 0.1f,
+						},
 					},
 					Tint = new Vector3(0.8f, 0.5f, 0.9f),
 				},
@@ -290,7 +295,7 @@ namespace Lemma.Factories
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
 					Materials = new[]
 					{
-						new Model.Material(),
+						Model.Material.Unlit,
 						new Model.Material
 						{
 							SpecularPower = 200.0f,
@@ -351,7 +356,7 @@ namespace Lemma.Factories
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 					Materials = new[]
 					{
-						new Model.Material()
+						Model.Material.Unlit,
 					},
 				},
 				new Map.CellState
@@ -361,7 +366,7 @@ namespace Lemma.Factories
 					Permanent = true,
 					Hard = true,
 					Density = 1,
-					DiffuseMap = "Textures\\dirty",
+					DiffuseMap = "Textures\\white",
 					NormalMap = "Textures\\metal-channels2-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 					Materials = new[]
@@ -370,7 +375,7 @@ namespace Lemma.Factories
 						{
 							SpecularPower = 200.0f,
 							SpecularIntensity = 0.2f,
-						}
+						},
 					},
 					Tint = new Vector3(0.25f),
 				},
@@ -381,7 +386,7 @@ namespace Lemma.Factories
 					Permanent = true,
 					Hard = true,
 					Density = 1,
-					DiffuseMap = "Textures\\dirty",
+					DiffuseMap = "Textures\\white",
 					NormalMap = "Textures\\metal-swirl-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 					Materials = new[]
@@ -390,7 +395,7 @@ namespace Lemma.Factories
 						{
 							SpecularPower = 200.0f,
 							SpecularIntensity = 0.2f,
-						}
+						},
 					},
 					Tint = new Vector3(0.25f),
 				},
@@ -421,7 +426,7 @@ namespace Lemma.Factories
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 					Materials = new[]
 					{
-						new Model.Material(),
+						Model.Material.Unlit,
 					},
 				},
 				new Map.CellState
@@ -457,7 +462,7 @@ namespace Lemma.Factories
 					NormalMap = "Textures\\switch-normal",
 					Materials = new[]
 					{
-						new Model.Material(),
+						Model.Material.Unlit,
 						new Model.Material
 						{
 							SpecularPower = 1.0f,
@@ -478,7 +483,7 @@ namespace Lemma.Factories
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 					Materials = new[]
 					{
-						new Model.Material(),
+						Model.Material.Unlit,
 						new Model.Material
 						{
 							SpecularPower = 200.0f,
@@ -498,7 +503,7 @@ namespace Lemma.Factories
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 					Materials = new[]
 					{
-						new Model.Material(),
+						Model.Material.Unlit,
 						new Model.Material
 						{
 							SpecularPower = 200.0f,

@@ -10,7 +10,7 @@ namespace Lemma.Components
 	public class LightingManager : Component<Main>
 	{
 		public enum DynamicShadowSetting { Off, Low, Medium, High };
-		private const int maxDirectionalLights = 2;
+		private const int maxDirectionalLights = 3;
 		private const int maxMaterials = 16;
 		private int globalShadowMapSize;
 		private const float lightShadowThreshold = 60.0f;

@@ -53,7 +53,7 @@ namespace Lemma.Components
 			}
 		}
 
-		public override void InitializeProperties()
+		public FullscreenQuad()
 		{
 			this.DrawOrder = new Property<int> { Editable = false };
 		}

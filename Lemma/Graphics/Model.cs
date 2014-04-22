@@ -46,6 +46,7 @@ namespace Lemma.Components
 
 		public struct Material
 		{
+			public static Material Unlit = new Material();
 			public float SpecularPower;
 			public float SpecularIntensity;
 		}

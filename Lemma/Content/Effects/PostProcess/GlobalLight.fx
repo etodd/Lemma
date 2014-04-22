@@ -2,7 +2,7 @@
 #include "Shadow2D.fxh"
 
 // Lighting parameters
-static const int NUM_DIRECTIONAL_LIGHTS = 2;
+static const int NUM_DIRECTIONAL_LIGHTS = 3;
 float3 DirectionalLightDirections[NUM_DIRECTIONAL_LIGHTS];
 float3 DirectionalLightColors[NUM_DIRECTIONAL_LIGHTS];
 float3 AmbientLightColor;
