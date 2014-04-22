@@ -21,6 +21,8 @@ namespace Lemma.Factories
 			public bool Removing;
 		}
 
+		private Random random = new Random();
+
 		public static Dictionary<int, Map.CellState> States = new Dictionary<int, Map.CellState>();
 		public static Dictionary<string, Map.CellState> StatesByName = new Dictionary<string, Map.CellState>();
 		public static List<Map.CellState> StateList = new List<Map.CellState>();
@@ -68,8 +70,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\rock",
 					NormalMap = "Textures\\rock-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularPower = 200.0f,
-					SpecularIntensity = 0.2f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.2f,
+						}
+					},
 				},
 				new Map.CellState
 				{
@@ -81,8 +89,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\white",
 					NormalMap = "Textures\\temporary-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularPower = 200.0f,
-					SpecularIntensity = 0.4f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						}
+					},
 					Tint = new Vector3(0.3f, 0.5f, 0.7f),
 				},
 				new Map.CellState
@@ -95,8 +109,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\dirty",
 					NormalMap = "Textures\\dirty-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularPower = 1.0f,
-					SpecularIntensity = 0.0f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						}
+					},
 					Tint = new Vector3(0.15f),
 				},
 				new Map.CellState
@@ -109,8 +129,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\dirt",
 					NormalMap = "Textures\\dirt-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.SAND,
-					SpecularPower = 1.0f,
-					SpecularIntensity = 0.0f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						}
+					},
 				},
 				new Map.CellState
 				{
@@ -122,8 +148,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\white",
 					NormalMap = "Textures\\temporary-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularPower = 200.0f,
-					SpecularIntensity = 0.4f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						}
+					},
 					Tint = new Vector3(0.0f, 0.6f, 0.0f),
 				},
 				new Map.CellState
@@ -136,8 +168,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\danger",
 					NormalMap = "Textures\\plain-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularPower = 1.0f,
-					SpecularIntensity = 0.0f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						}
+					},
 				},
 				new Map.CellState
 				{
@@ -149,8 +187,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\foliage",
 					NormalMap = "Textures\\plain-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.SAND,
-					SpecularPower = 1.0f,
-					SpecularIntensity = 0.0f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						}
+					},
 					AllowAlpha = true,
 					Tiling = 3.0f,
 				},
@@ -164,8 +208,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\dirty",
 					NormalMap = "Textures\\metal-channels-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
-					SpecularPower = 200.0f,
-					SpecularIntensity = 0.2f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.2f,
+						}
+					},
 					Tint = new Vector3(0.4f),
 				},
 				new Map.CellState
@@ -178,8 +228,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\dirty",
 					NormalMap = "Textures\\metal-channels-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularPower = 1.0f,
-					SpecularIntensity = 0.0f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						}
+					},
 					Tint = new Vector3(0.9f, 0.3f, 0.0f),
 				},
 				new Map.CellState
@@ -192,8 +248,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\dirty",
 					NormalMap = "Textures\\metal-swirl-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
-					SpecularPower = 1.0f,
-					SpecularIntensity = 0.0f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						}
+					},
 					Tint = new Vector3(0.8f, 0.5f, 0.9f),
 				},
 				new Map.CellState
@@ -206,8 +268,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\wood",
 					NormalMap = "Textures\\wood-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
-					SpecularPower = 1.0f,
-					SpecularIntensity = 0.0f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						}
+					},
 					Tiling = 1.5f,
 				},
 				new Map.CellState
@@ -220,9 +288,15 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\powered-hard",
 					NormalMap = "Textures\\temporary-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
-					SpecularPower = 200.0f,
-					SpecularIntensity = 0.4f,
-					Glow = true,
+					Materials = new[]
+					{
+						new Model.Material(),
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
 				},
 				new Map.CellState
 				{
@@ -234,8 +308,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\white",
 					NormalMap = "Textures\\temporary-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularPower = 200.0f,
-					SpecularIntensity = 0.4f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
 					Tint = new Vector3(0.7f),
 				},
 				new Map.CellState
@@ -248,8 +328,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\rock-chunky",
 					NormalMap = "Textures\\rock-chunky-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularPower = 1.0f,
-					SpecularIntensity = 0.0f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						}
+					},
 					Tiling = 0.25f,
 				},
 				new Map.CellState
@@ -263,8 +349,10 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\white",
 					NormalMap = "Textures\\plain-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularIntensity = 0.0f,
-					Glow = true,
+					Materials = new[]
+					{
+						new Model.Material()
+					},
 				},
 				new Map.CellState
 				{
@@ -276,8 +364,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\dirty",
 					NormalMap = "Textures\\metal-channels2-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularPower = 200.0f,
-					SpecularIntensity = 0.2f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.2f,
+						}
+					},
 					Tint = new Vector3(0.25f),
 				},
 				new Map.CellState
@@ -290,8 +384,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\dirty",
 					NormalMap = "Textures\\metal-swirl-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularPower = 200.0f,
-					SpecularIntensity = 0.2f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.2f,
+						}
+					},
 					Tint = new Vector3(0.25f),
 				},
 				new Map.CellState
@@ -319,8 +419,10 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\white",
 					NormalMap = "Textures\\plain-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularIntensity = 0.0f,
-					Glow = true,
+					Materials = new[]
+					{
+						new Model.Material(),
+					},
 				},
 				new Map.CellState
 				{
@@ -332,8 +434,14 @@ namespace Lemma.Factories
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 					DiffuseMap = "Textures\\switch",
 					NormalMap = "Textures\\switch-normal",
-					SpecularPower = 200.0f,
-					SpecularIntensity = 0.4f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						}
+					},
 					Tiling = 4.0f,
 					Tint = new Vector3(0.3f, 0.6f, 0.8f),
 				},
@@ -347,9 +455,15 @@ namespace Lemma.Factories
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 					DiffuseMap = "Textures\\powered-switch",
 					NormalMap = "Textures\\switch-normal",
-					SpecularPower = 1.0f,
-					SpecularIntensity = 0.0f,
-					Glow = true,
+					Materials = new[]
+					{
+						new Model.Material(),
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						},
+					},
 					Tiling = 4.0f,
 				},
 				new Map.CellState
@@ -362,9 +476,15 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\powered",
 					NormalMap = "Textures\\temporary-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularPower = 200.0f,
-					SpecularIntensity = 0.4f,
-					Glow = true,
+					Materials = new[]
+					{
+						new Model.Material(),
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
 				},
 				new Map.CellState
 				{
@@ -376,9 +496,15 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\powered-permanent",
 					NormalMap = "Textures\\temporary-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularPower = 200.0f,
-					SpecularIntensity = 0.4f,
-					Glow = true,
+					Materials = new[]
+					{
+						new Model.Material(),
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
 				},
 				new Map.CellState
 				{
@@ -390,8 +516,14 @@ namespace Lemma.Factories
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 					DiffuseMap = "Textures\\white",
 					NormalMap = "Textures\\temporary-normal",
-					SpecularPower = 200.0f,
-					SpecularIntensity = 0.4f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
 					Tint = new Vector3(0.4f, 0.0f, 0.0f),
 				},
 				new Map.CellState
@@ -404,8 +536,14 @@ namespace Lemma.Factories
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 					DiffuseMap = "Textures\\white",
 					NormalMap = "Textures\\temporary-normal",
-					SpecularPower = 200.0f,
-					SpecularIntensity = 0.4f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
 					Tint = new Vector3(0.8f, 0.1f, 0.1f),
 				},
 				new Map.CellState
@@ -419,8 +557,14 @@ namespace Lemma.Factories
 					DiffuseMap = "Textures\\white",
 					NormalMap = "Textures\\plain-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					SpecularPower = 1.0f,
-					SpecularIntensity = 0.0f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						},
+					},
 					Tint = Vector3.Zero,
 				}
 			);
@@ -708,9 +852,20 @@ namespace Lemma.Factories
 				expanderID = WorldFactory.StatesByName["Expander"].ID;
 
 			List<PointLight> sparkLights = new List<PointLight>();
-			const float startSparkLightAttenuation = 5.0f;
+			const float sparkLightAttenuation = 5.0f;
 			const float sparkLightFadeTime = 0.5f;
+			const float sparkLightBrightness = 2.0f;
 			int activeSparkLights = 0;
+			for (int i = 0; i < 10; i++)
+			{
+				PointLight light = new PointLight();
+				light.Serialize = false;
+				light.Shadowed.Value = false;
+				light.Color.Value = new Vector3(1.0f);
+				light.Enabled.Value = false;
+				result.Add(light);
+				sparkLights.Add(light);
+			}
 
 			Action<Vector3, float> sparks = delegate(Vector3 pos, float size)
 			{
@@ -721,29 +876,31 @@ namespace Lemma.Factories
 					shatter.AddParticle(pos + offset, offset);
 				}
 
-				/*
-				PointLight light;
-				if (activeSparkLights < sparkLights.Count)
+				if (this.random.Next(0, 2) == 0)
 				{
-					light = sparkLights[activeSparkLights];
-					light.Enabled.Value = true;
-				}
-				else
-				{
-					light = new PointLight();
-					result.Add(light);
-					sparkLights.Add(light);
-				}
-				activeSparkLights++;
+					PointLight light;
+					if (activeSparkLights < sparkLights.Count)
+					{
+						light = sparkLights[activeSparkLights];
+						light.Enabled.Value = true;
+					}
+					else
+					{
+						light = new PointLight();
+						light.Serialize = false;
+						light.Shadowed.Value = false;
+						light.Color.Value = new Vector3(sparkLightBrightness);
+						result.Add(light);
+						sparkLights.Add(light);
+					}
+					activeSparkLights++;
 
-				light.Serialize = false;
-				light.Shadowed.Value = false;
-				light.Color.Value = new Vector3(1.0f);
-				light.Attenuation.Value = size;
-				light.Position.Value = pos;
-				*/
+					light.Attenuation.Value = size;
+					light.Color.Value = Vector3.One;
+					light.Position.Value = pos;
 
-				AkSoundEngine.PostEvent("Play_sparks", pos);
+					AkSoundEngine.PostEvent("Play_sparks", pos);
+				}
 			};
 
 			Action<Entity> bindPlayer = delegate(Entity p)
@@ -895,11 +1052,11 @@ namespace Lemma.Factories
 			{
 				delegate(float dt)
 				{
-					float sparkLightFade = startSparkLightAttenuation * dt / sparkLightFadeTime;
+					float sparkLightFade = sparkLightBrightness * dt / sparkLightFadeTime;
 					for (int i = 0; i < activeSparkLights; i++)
 					{
 						PointLight light = sparkLights[i];
-						float a = light.Attenuation - sparkLightFade;
+						float a = light.Color.Value.X - sparkLightFade;
 						if (a < 0.0f)
 						{
 							light.Enabled.Value = false;
@@ -909,7 +1066,7 @@ namespace Lemma.Factories
 							activeSparkLights--;
 						}
 						else
-							light.Attenuation.Value = a;
+							light.Color.Value = new Vector3(a);
 					}
 
 					for (int i = 0; i < blockQueue.Count; i++)
@@ -968,7 +1125,7 @@ namespace Lemma.Factories
 									{
 										generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = c }] = entry.Generation;
 										map.Empty(c);
-										sparks(map.GetAbsolutePosition(c), startSparkLightAttenuation);
+										sparks(map.GetAbsolutePosition(c), sparkLightAttenuation);
 										regenerate = true;
 									}
 								}
@@ -988,7 +1145,7 @@ namespace Lemma.Factories
 											{
 												map.Empty(c);
 												map.Fill(c, WorldFactory.States[poweredID]);
-												sparks(map.GetAbsolutePosition(c), startSparkLightAttenuation);
+												sparks(map.GetAbsolutePosition(c), sparkLightAttenuation);
 												regenerate = true;
 											}
 											else if (adjacentID == neutralID && entry.Generation < maxGenerations)
@@ -996,7 +1153,7 @@ namespace Lemma.Factories
 												map.Empty(adjacent);
 												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
 												map.Fill(adjacent, WorldFactory.States[temporaryID]);
-												sparks(map.GetAbsolutePosition(adjacent), startSparkLightAttenuation);
+												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
 												regenerate = true;
 											}
 										}
@@ -1011,7 +1168,7 @@ namespace Lemma.Factories
 											{
 												map.Empty(adjacent);
 												map.Fill(adjacent, WorldFactory.States[neutralID]);
-												sparks(map.GetAbsolutePosition(adjacent), startSparkLightAttenuation);
+												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
 												regenerate = true;
 											}
 										}
@@ -1027,14 +1184,14 @@ namespace Lemma.Factories
 											{
 												map.Empty(adjacent);
 												map.Fill(adjacent, WorldFactory.States[poweredID]);
-												sparks(map.GetAbsolutePosition(adjacent), startSparkLightAttenuation);
+												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
 												regenerate = true;
 											}
 											else if (adjacentID == switchID)
 											{
 												map.Empty(adjacent, true);
 												map.Fill(adjacent, WorldFactory.States[poweredSwitchID]);
-												sparks(map.GetAbsolutePosition(adjacent), startSparkLightAttenuation);
+												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
 												regenerate = true;
 											}
 											else if (adjacentID == criticalID)
@@ -1055,7 +1212,7 @@ namespace Lemma.Factories
 												map.Empty(adjacent);
 												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
 												map.Fill(adjacent, WorldFactory.States[infectedID]);
-												sparks(map.GetAbsolutePosition(adjacent), startSparkLightAttenuation);
+												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
 												regenerate = true;
 											}
 											else if (adjacentID == criticalID)

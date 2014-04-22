@@ -8,6 +8,7 @@ public class AK
         public static uint PLAY_PLAYER_HURT = 887999531U;
         public static uint PLAY_UI_CLICK = 1749424733U;
         public static uint PLAY_UI_MOUSEOVER = 808445146U;
+        public static uint STOP_MUSIC_AMBIENT = 3815910684U;
         public static uint STOP_PLAYER_FALL = 3680109729U;
     } // public class EVENTS
 

@@ -151,8 +151,6 @@ namespace Lemma.Components
 			public string NormalMap;
 			public uint FootstepSwitch;
 			public uint RubbleEvent;
-			public float SpecularPower;
-			public float SpecularIntensity;
 			public float KineticFriction = MaterialManager.DefaultKineticFriction;
 			public float StaticFriction = MaterialManager.DefaultStaticFriction;
 			public float Density;
@@ -164,8 +162,11 @@ namespace Lemma.Components
 			public bool Fake;
 			[DefaultValue(false)]
 			public bool Invisible;
-			[DefaultValue(false)]
-			public bool Glow;
+			public Model.Material[] Materials = new[]
+			{
+				new Model.Material(),
+				new Model.Material()
+			};
 			[DefaultValue(1.0f)]
 			public float Tiling = 1.0f;
 			public Vector3 Tint = Vector3.One;
@@ -174,18 +175,7 @@ namespace Lemma.Components
 			{
 				model.DiffuseTexture.Value = this.DiffuseMap;
 				model.NormalMap.Value = this.NormalMap;
-				if (this.Glow)
-				{
-					model.Materials[0].SpecularIntensity = 0.0f;
-					model.Materials[0].SpecularPower = 0.0f;
-					model.Materials[1].SpecularIntensity = this.SpecularIntensity;
-					model.Materials[1].SpecularPower = this.SpecularPower;
-				}
-				else
-				{
-					model.Materials[0].SpecularIntensity = this.SpecularIntensity;
-					model.Materials[0].SpecularPower = this.SpecularPower;
-				}
+				model.Materials = this.Materials;
 				model.DisableCulling.Value = this.AllowAlpha;
 				model.Color.Value = this.Tint;
 				model.TechniquePostfix.Value = this.AllowAlpha ? "Alpha" : "";

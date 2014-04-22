@@ -77,21 +77,12 @@ namespace Lemma
 
 		public Space Space;
 
-		private List<IComponent> components = new List<IComponent>();
 		private List<IDrawableComponent> drawables = new List<IDrawableComponent>();
 		private List<IUpdateableComponent> updateables = new List<IUpdateableComponent>();
 		private List<IDrawablePreFrameComponent> preframeDrawables = new List<IDrawablePreFrameComponent>();
 		private List<INonPostProcessedDrawableComponent> nonPostProcessedDrawables = new List<INonPostProcessedDrawableComponent>();
 		private List<IDrawableAlphaComponent> alphaDrawables = new List<IDrawableAlphaComponent>();
 		private List<IDrawablePostAlphaComponent> postAlphaDrawables = new List<IDrawablePostAlphaComponent>();
-
-		public bool HasPostAlphaDrawables
-		{
-			get
-			{
-				return this.postAlphaDrawables.Count > 0;
-			}
-		}
 
 		private Point? resize;
 
@@ -128,7 +119,6 @@ namespace Lemma
 			for (int i = 0; i < this.componentsToAdd.Count; i++)
 			{
 				IComponent c = this.componentsToAdd[i];
-				this.components.Add(c);
 				Type t = c.GetType();
 				if (typeof(IDrawableComponent).IsAssignableFrom(t))
 				{
@@ -180,7 +170,6 @@ namespace Lemma
 					this.nonPostProcessedDrawables.Remove((INonPostProcessedDrawableComponent)c);
 				if (typeof(IDrawableAlphaComponent).IsAssignableFrom(t))
 					this.alphaDrawables.Remove((IDrawableAlphaComponent)c);
-				this.components.Remove(c);
 				c.delete();
 			}
 			this.componentsToRemove.Clear();
@@ -395,7 +384,15 @@ namespace Lemma
 			}
 			else
 			{
-				foreach (IComponent c in this.components)
+				foreach (IDrawableComponent c in this.drawables)
+					c.LoadContent(true);
+				foreach (IDrawableAlphaComponent c in this.alphaDrawables)
+					c.LoadContent(true);
+				foreach (IDrawablePostAlphaComponent c in this.postAlphaDrawables)
+					c.LoadContent(true);
+				foreach (IDrawablePreFrameComponent c in this.preframeDrawables)
+					c.LoadContent(true);
+				foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
 					c.LoadContent(true);
 				this.ReloadedContent.Execute();
 			}

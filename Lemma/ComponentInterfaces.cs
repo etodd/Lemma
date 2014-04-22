@@ -8,30 +8,35 @@ using Microsoft.Xna.Framework;
 
 namespace Lemma
 {
-	public interface IDrawableComponent : IComponent
+	public interface IGraphicsComponent : IComponent
+	{
+		void LoadContent(bool reload);
+	}
+
+	public interface IDrawableComponent : IGraphicsComponent
 	{
 		void Draw(GameTime time, RenderParameters parameters);
 		Property<int> DrawOrder { get; }
 	}
 
-	public interface IDrawableAlphaComponent : IComponent
+	public interface IDrawableAlphaComponent : IGraphicsComponent
 	{
 		void DrawAlpha(GameTime time, RenderParameters parameters);
 		Property<int> DrawOrder { get; }
 	}
 
-	public interface IDrawablePostAlphaComponent : IComponent
+	public interface IDrawablePostAlphaComponent : IGraphicsComponent
 	{
 		void DrawPostAlpha(GameTime time, RenderParameters parameters);
 		Property<int> DrawOrder { get; }
 	}
 
-	public interface IDrawablePreFrameComponent : IComponent
+	public interface IDrawablePreFrameComponent : IGraphicsComponent
 	{
 		void DrawPreFrame(GameTime time, RenderParameters parameters);
 	}
 
-	public interface INonPostProcessedDrawableComponent : IComponent
+	public interface INonPostProcessedDrawableComponent : IGraphicsComponent
 	{
 		void DrawNonPostProcessed(GameTime time, RenderParameters parameters);
 		Property<int> DrawOrder { get; }
