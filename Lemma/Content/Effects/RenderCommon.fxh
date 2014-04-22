@@ -4,6 +4,7 @@
 // Transform matrices
 float4x4 WorldMatrix;
 float4x4 LastFrameWorldViewProjectionMatrix;
+float2 DestinationDimensions;
 
 float3 PointLightPosition;
 float PointLightRadius;
@@ -44,7 +45,7 @@ float2 ProcessMotionBlur(in MotionBlurPSInput input)
 {
 	float2 velocity = (input.currentPosition.xy / input.currentPosition.w) - (input.previousPosition.xy / input.previousPosition.w);
 	velocity.y *= -1.0f;
-	return EncodeVelocity(velocity);
+	return EncodeVelocity(velocity, DestinationDimensions);
 }
 
 // Shadow pixel shader

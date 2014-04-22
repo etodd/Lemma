@@ -135,7 +135,6 @@ namespace Lemma.Components
 			this.RippleDensity.Reset();
 			this.Distortion.Reset();
 			this.Brightness.Reset();
-			this.Clearness.Reset();
 			this.Refraction.Reset();
 			this.UnderwaterColor.Reset();
 
@@ -273,12 +272,6 @@ namespace Lemma.Components
 				this.effect.Parameters["Brightness"].SetValue(value);
 			};
 
-			this.Clearness.Set = delegate(float value)
-			{
-				this.Clearness.InternalValue = value;
-				this.effect.Parameters["Clearness"].SetValue(value);
-			};
-
 			this.Refraction.Set = delegate(float value)
 			{
 				this.Refraction.InternalValue = value;
@@ -353,6 +346,7 @@ namespace Lemma.Components
 			this.effect.Parameters["Frame" + Model.SamplerPostfix].SetValue(p.FrameBuffer);
 
 			// Draw surface
+			this.effect.Parameters["Clearness"].SetValue(underwater ? 1.0f : this.Clearness);
 			this.effect.CurrentTechnique = this.effect.Techniques[underwater || !this.EnableReflection ? "Surface" : "SurfaceReflection"];
 			this.effect.CurrentTechnique.Passes[0].Apply();
 			this.main.GraphicsDevice.SetVertexBuffer(this.surfaceVertexBuffer);
@@ -367,7 +361,15 @@ namespace Lemma.Components
 			if (underwater)
 			{
 				// Draw underwater stuff
+				this.effect.Parameters["Clearness"].SetValue(this.Clearness);
 				this.effect.CurrentTechnique = this.effect.Techniques["Underwater"];
+
+				// Ugh
+				p.Camera.Position.Value = Vector3.Zero;
+				p.Camera.SetParameters(this.effect);
+				p.Camera.Position.Value = cameraPos;
+				this.effect.Parameters["CameraPosition"].SetValue(cameraPos);
+
 				this.effect.CurrentTechnique.Passes[0].Apply();
 				this.main.GraphicsDevice.SetVertexBuffer(this.underwaterVertexBuffer);
 				this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);

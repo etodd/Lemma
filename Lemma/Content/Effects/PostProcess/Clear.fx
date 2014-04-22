@@ -46,7 +46,7 @@ void ClearPS(
 	output.color = float4(BackgroundColor, 0.0f);
 	output.depth = float4(FarPlaneDistance, 0.0f, 0.0f, 0.0f);
 	output.normal.xy = (float2)0;
-	output.normal.zw = EncodeVelocity(motionBlur.velocity);
+	output.normal.zw = EncodeVelocity(motionBlur.velocity, DestinationDimensions);
 }
 
 technique Clear

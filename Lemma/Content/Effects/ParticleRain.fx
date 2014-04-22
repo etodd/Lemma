@@ -64,7 +64,7 @@ void OpaquePS(VertexShaderOutput input, out RenderPSOutput output)
 	output.normal.xy = EncodeNormal(float2(0, 0));
 	output.depth.y = 0.0f;
 	output.depth.zw = (float2)0;
-	output.normal.zw = EncodeVelocity(float2(0, 0));
+	output.normal.zw = EncodeVelocity(float2(0, 0), float2(0, 0));
 }
 
 float4 ClipAlphaPS(VertexShaderOutput input, ClipPSInput clipData) : COLOR0

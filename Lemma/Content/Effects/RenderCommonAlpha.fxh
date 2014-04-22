@@ -1,7 +1,6 @@
 #include "RenderCommon.fxh"
 
 float Alpha = 1.0f;
-float2 DestinationDimensions;
 
 texture2D DepthTexture;
 sampler2D DepthSampler = sampler_state

@@ -1,6 +1,7 @@
 #include "Common.fxh"
 
 float3 Position;
+float3 CameraPosition;
 float2 Scale;
 
 float3 Color = float3(1, 1, 1);
@@ -11,6 +12,7 @@ float ActualFarPlaneDistance;
 float2 DestinationDimensions;
 float Clearness = 1.0f;
 float Refraction = 0.0f;
+float4x4 InverseViewProjectionMatrix;
 
 float Distortion = 1.0f;
 
@@ -127,7 +129,7 @@ void SurfacePS(	in SurfacePSInput input,
 
 	uv += distortion;
 
-	float depthBlend = clamp((tex2D(DepthSampler, uv) - pixelDepth) * 0.5f * (1.0f - Clearness), 0.0f, 1.0f);
+	float depthBlend = clamp(depth * 0.5f * (1.0f - Clearness), 0.0f, 1.0f);
 
 	float3 normal = flat.normal;
 	normal.xz += distortion;
@@ -144,7 +146,8 @@ void SurfacePS(	in SurfacePSInput input,
 
 struct UnderwaterPSInput
 {
-	float4 clipSpacePosition : TEXCOORD5;
+	float2 texCoord : TEXCOORD5;
+	float3 viewRay : TEXCOORD6;
 };
 
 void UnderwaterVS(	in RenderVSInput input,
@@ -153,17 +156,24 @@ void UnderwaterVS(	in RenderVSInput input,
 {
 	float4 pos = float4(input.position.xyz, 1.0f);
 	vs.position = pos;
-	output.clipSpacePosition = pos;
+
+	// Convert from clip space to UV coordinate space
+	output.texCoord = 0.5f * pos.xy / pos.w + float2(0.5f, 0.5f);
+	output.texCoord.y = 1.0f - output.texCoord.y;
+	output.texCoord = (round(output.texCoord * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
+
+	float4 v = mul(pos, InverseViewProjectionMatrix);
+	output.viewRay = v.xyz / v.w;
 }
 
 void UnderwaterPS(	in UnderwaterPSInput input,
 					out float4 color : COLOR0)
 {
-	// Convert from clip space to UV coordinate space
-	float2 uv = 0.5f * input.clipSpacePosition.xy / input.clipSpacePosition.w + float2(0.5f, 0.5f);
-	uv.y = 1.0f - uv.y;
+	float depth = tex2D(DepthSampler, input.texCoord).r;
 
-	float depth = tex2D(DepthSampler, uv).r;
+	float3 viewRay = normalize(input.viewRay);
+	if (viewRay.y > 0.0f) // Intersect with water surface above us
+		depth = min(depth, (Position.y - CameraPosition.y) / viewRay.y);
 
 	float depthBlend = clamp((depth - 2.0f) * 0.25f * (1.0f - Clearness), 0.0f, 1.0f);
 
@@ -192,8 +202,8 @@ technique SurfaceReflection
 	{
 		VertexShader = compile vs_3_0 SurfaceVS();
 		PixelShader = compile ps_3_0 SurfaceWithReflection();
-		ZEnable = true;
-		ZWriteEnable = true;
+		ZEnable = false;
+		ZWriteEnable = false;
 		AlphaBlendEnable = false;
 	}
 }
@@ -204,8 +214,8 @@ technique Surface
 	{
 		VertexShader = compile vs_3_0 SurfaceVS();
 		PixelShader = compile ps_3_0 SurfaceWithoutReflection();
-		ZEnable = true;
-		ZWriteEnable = true;
+		ZEnable = false;
+		ZWriteEnable = false;
 		AlphaBlendEnable = false;
 	}
 }
@@ -216,8 +226,8 @@ technique Underwater
 	{
 		VertexShader = compile vs_3_0 UnderwaterVS();
 		PixelShader = compile ps_3_0 UnderwaterPS();
-		ZEnable = true;
-		ZWriteEnable = true;
+		ZEnable = false;
+		ZWriteEnable = false;
 		AlphaBlendEnable = true;
 		SrcBlend = SrcAlpha;
 		DestBlend = InvSrcAlpha;

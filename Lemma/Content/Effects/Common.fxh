@@ -21,14 +21,17 @@ float2 DecodeNormal(float2 v)
 	return (2.0f * v) - 1.0f;
 }
 
-float2 EncodeVelocity(float2 v)
+const float MotionBlurMax = 32.0f;
+
+float2 EncodeVelocity(float2 v, float2 p)
 {
-	return v * 0.5f + 0.5f;
+	// p = screen dimensions
+	return (v * p * (1.0f / MotionBlurMax)) * 0.5f + 0.5f;
 }
 
-float2 DecodeVelocity(float2 v)
+float2 DecodeVelocity(float2 v, float2 p)
 {
-	return (2.0f * v) - 1.0f;
+	return ((2.0f * v) - 1.0f) * (MotionBlurMax / p);
 }
 
 float EncodeMaterial(int id)
