@@ -198,6 +198,11 @@ namespace Lemma.Factories
 						{
 							SpecularPower = 1.0f,
 							SpecularIntensity = 0.0f,
+						},
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
 						}
 					},
 					AllowAlpha = true,

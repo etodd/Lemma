@@ -189,6 +189,11 @@ namespace Lemma.Components
 
 		public Property<float> SecondaryFillThreshold = new Property<float> { Value = 0.2f };
 
+		public float Sample(Vector3 vector)
+		{
+			return this.noise3d(vector);
+		}
+
 		public float Sample(Map map, Map.Coordinate coord, float octave)
 		{
 			coord.X -= map.MinX;

@@ -277,14 +277,15 @@ namespace Lemma.Factories
 
 			input.MaxY.Value = (float)Math.PI * 0.35f;
 
-			/*
+#if DEVELOPMENT
 			TextElement debug = new TextElement();
 			debug.FontFile.Value = "Font";
 			debug.AnchorPoint.Value = new Vector2(1, 1);
 			ui.Root.Children.Add(debug);
 			debug.Add(new Binding<Vector2, Point>(debug.Position, x => new Vector2(x.X, x.Y), main.ScreenSize));
 			debug.Add(new Binding<string, Vector3>(debug.Text, x => x.Length().ToString(), player.LinearVelocity));
-			*/
+			debug.Add(new Binding<bool>(debug.Visible, thirdPerson));
+#endif
 
 			Action updateFallSound = delegate()
 			{
@@ -514,9 +515,12 @@ namespace Lemma.Factories
 
 			// Camera updater / fire code
 			Property<float> cameraShakeAmount = new Property<float> { Value = 0.0f };
+			Property<float> baseCameraShakeAmount = new Property<float> { Value = 0.0f };
 			float cameraShakeTime = 0.0f;
 			const float totalCameraShakeTime = 0.5f;
 			Animation cameraShakeAnimation = null;
+
+			result.Add(new Binding<float>(baseCameraShakeAmount, () => MathHelper.Clamp((player.LinearVelocity.Value.Length() - (player.MaxSpeed * 2.5f)) / (player.MaxSpeed * 3.0f), 0, 1), player.LinearVelocity, player.MaxSpeed));
 
 			result.Add("ShakeCamera", new Command<Vector3, float>
 			{
@@ -535,6 +539,8 @@ namespace Lemma.Factories
 
 			Vector3 originalCameraPosition = cameraBone.Value.Translation;
 			Vector3 cameraOffset = cameraBone.Value.Translation - headBone.Value.Translation - new Vector3(0, 0.1f, 0);
+
+			ProceduralGenerator noise = result.GetOrCreate<ProceduralGenerator>();
 
 			// Update camera
 			update.Add(delegate(float dt)
@@ -582,14 +588,21 @@ namespace Lemma.Factories
 
 				model.UpdateWorldTransforms();
 
-				float shakeAngle = 0.0f;
+				Vector3 shake = Vector3.Zero;
+				float finalShakeAmount = baseCameraShakeAmount;
 				if (cameraShakeTime > 0.0f)
 				{
-					shakeAngle = (float)Math.Sin(main.TotalTime * ((float)Math.PI / 0.05f)) * 0.4f * cameraShakeAmount * (cameraShakeTime / totalCameraShakeTime);
+					finalShakeAmount += cameraShakeAmount * (cameraShakeTime / totalCameraShakeTime);
 					cameraShakeTime -= dt;
 				}
 				else
 					cameraShakeAmount.Value = 0.0f;
+
+				if (finalShakeAmount > 0.0f)
+				{
+					float offset = main.TotalTime * 15.0f;
+					shake = new Vector3(noise.Sample(new Vector3(offset)), noise.Sample(new Vector3(offset + 64)), noise.Sample(new Vector3(offset + 128))) * finalShakeAmount * 0.4f;
+				}
 
 				if (enableCameraControl)
 				{
@@ -598,7 +611,7 @@ namespace Lemma.Factories
 					{
 						Vector3 cameraPosition = Vector3.Transform(new Vector3(0.0f, 3.0f, 0.0f), model.Transform);
 
-						main.Camera.Angles.Value = new Vector3(-input.Mouse.Value.Y, input.Mouse.Value.X + (float)Math.PI * 1.0f, shakeAngle);
+						main.Camera.Angles.Value = new Vector3(-input.Mouse.Value.Y + shake.X, input.Mouse.Value.X + (float)Math.PI * 1.0f + shake.Y, shake.Z);
 
 						Map.GlobalRaycastResult hit = Map.GlobalRaycast(cameraPosition, -main.Camera.Forward.Value, 5.0f);
 
@@ -640,7 +653,7 @@ namespace Lemma.Factories
 
 						main.Camera.Position.Value = cameraPosition;
 
-						Matrix camera = cameraBone.Value * Matrix.CreateRotationY(input.Mouse.Value.X);
+						Matrix camera = cameraBone.Value * Matrix.CreateRotationY(input.Mouse.Value.X + shake.X);
 
 						Matrix rot = Matrix.Identity;
 						rot.Forward = Vector3.Normalize(Vector3.TransformNormal(new Vector3(0, 1.0f, 0), camera));
@@ -649,7 +662,7 @@ namespace Lemma.Factories
 
 						Vector3 right = Vector3.Cross(rot.Forward, Vector3.Up);
 
-						main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shakeAngle) * Matrix.CreateFromAxisAngle(right, -input.Mouse.Value.Y);
+						main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shake.Z) * Matrix.CreateFromAxisAngle(right, -input.Mouse.Value.Y + shake.Y);
 					}
 
 					float minBlur = 4.0f;
