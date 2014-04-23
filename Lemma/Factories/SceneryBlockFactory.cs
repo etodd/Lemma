@@ -38,7 +38,7 @@ namespace Lemma.Factories
 
 			physics.Add(new TwoWayBinding<Matrix>(transform.Matrix, physics.Transform));
 
-			Property<string> soundCue = result.GetOrMakeProperty<string>("CollisionSoundCue", false);
+			Property<uint> soundCue = result.GetOrMakeProperty<uint>("CollisionSoundCue", false);
 			soundCue.Serialize = false;
 
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));

@@ -1545,6 +1545,7 @@ namespace Lemma.Factories
 				const float maxVaultTime = 1.0f;
 
 				Vector3 forward = Vector3.Normalize(map.GetAbsolutePosition(coord) - transform.Position);
+				forward.Y = 0.0f;
 
 				Vector3 vaultVelocity = new Vector3(0, vaultVerticalSpeed, 0);
 
@@ -1579,34 +1580,24 @@ namespace Lemma.Factories
 					{
 						vaultTime += dt;
 
-						bool delete = false;
-
-						if (player.IsSupported || vaultTime > maxVaultTime || player.LinearVelocity.Value.Y < 0.0f) // Max vault time ensures we never get stuck
-							delete = true;
-						else if (transform.Position.Value.Y + (player.Height * -0.5f) - player.SupportHeight > map.GetAbsolutePosition(coord).Y + 0.1f) // Move forward
+						// Max vault time ensures we never get stuck
+						if (player.IsSupported || vaultTime > maxVaultTime || player.LinearVelocity.Value.Y < 0.0f
+						 || (transform.Position.Value.Y + (player.Height * -0.5f) - player.SupportHeight > map.GetAbsolutePosition(coord).Y + 0.1f)) // Move forward
 						{
-							Vector3 velocity = player.Body.LinearVelocity; // Stop moving upward, start moving forward
-							velocity.Y = 0.0f;
-							velocity += forward * player.MaxSpeed;
-							player.LinearVelocity.Value = velocity;
+							player.LinearVelocity.Value = forward * player.MaxSpeed;
 							player.Body.ActivityInformation.Activate();
-							delete = true;
-						}
-						else
-							player.LinearVelocity.Value = vaultVelocity;
-
-						if (delete)
-						{
 							vaultMover.Delete.Execute(); // Make sure we get rid of this vault mover
 							vaultMover = null;
 							result.Add(new Animation
 							(
-								new Animation.Delay(0.1f),
-								new Animation.Set<bool>(player.AllowUncrouch, true),
 								new Animation.Set<bool>(rotationLocked, false),
-								new Animation.Set<bool>(player.EnableWalking, true)
+								new Animation.Set<bool>(player.EnableWalking, true),
+								new Animation.Delay(0.1f),
+								new Animation.Set<bool>(player.AllowUncrouch, true)
 							));
 						}
+						else
+							player.LinearVelocity.Value = vaultVelocity;
 					}
 				};
 				result.RemoveComponent("VaultMover");
