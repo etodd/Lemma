@@ -2410,7 +2410,8 @@ namespace Lemma.Factories
 					{
 						if (player.EnableEnhancedWallRun)
 						{
-							if (floorRaycast.Coordinate.Value.Data.Name != "Temporary")
+							int floorType = floorRaycast.Coordinate.Value.Data.ID;
+							if (floorType != temporaryID && floorType != poweredID)
 								shouldBuildFloor = true;
 						}
 					}
