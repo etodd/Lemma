@@ -277,14 +277,26 @@ namespace Lemma.Factories
 
 			input.MaxY.Value = (float)Math.PI * 0.35f;
 
+			Property<float> rotation = result.GetProperty<float>("Rotation");
+
 #if DEVELOPMENT
-			TextElement debug = new TextElement();
-			debug.FontFile.Value = "Font";
-			debug.AnchorPoint.Value = new Vector2(1, 1);
-			ui.Root.Children.Add(debug);
-			debug.Add(new Binding<Vector2, Point>(debug.Position, x => new Vector2(x.X, x.Y), main.ScreenSize));
-			debug.Add(new Binding<string, Vector3>(debug.Text, x => x.Length().ToString(), player.LinearVelocity));
-			debug.Add(new Binding<bool>(debug.Visible, thirdPerson));
+			ListContainer debugContainer = new ListContainer();
+			debugContainer.AnchorPoint.Value = new Vector2(1, 1);
+			debugContainer.Add(new Binding<Vector2, Point>(debugContainer.Position, x => new Vector2(x.X, x.Y), main.ScreenSize));
+			debugContainer.Alignment.Value = ListContainer.ListAlignment.Max;
+			ui.Root.Children.Add(debugContainer);
+
+			TextElement debugVelocity = new TextElement();
+			debugVelocity.FontFile.Value = "Font";
+			debugVelocity.Add(new Binding<string, Vector3>(debugVelocity.Text, x => x.Length().ToString(), player.LinearVelocity));
+			debugVelocity.Add(new Binding<bool>(debugVelocity.Visible, thirdPerson));
+			debugContainer.Children.Add(debugVelocity);
+
+			TextElement debugRotation = new TextElement();
+			debugRotation.FontFile.Value = "Font";
+			debugRotation.Add(new Binding<string, float>(debugRotation.Text, x => x.ToString("F"), rotation));
+			debugRotation.Add(new Binding<bool>(debugRotation.Visible, thirdPerson));
+			debugContainer.Children.Add(debugRotation);
 #endif
 
 			Action updateFallSound = delegate()
@@ -327,7 +339,6 @@ namespace Lemma.Factories
 			damageOverlay.Add(new Binding<float, float>(damageOverlay.Opacity, x => 1.0f - x, player.Health));
 
 			// Player rotation code
-			Property<float> rotation = result.GetProperty<float>("Rotation");
 			Property<bool> rotationLocked = new Property<bool>();
 			const float rotationLockBlendTime = 0.3f;
 			float lockedRotationValue = 0.0f;
@@ -344,13 +355,13 @@ namespace Lemma.Factories
 
 			rotationLocked.Set = delegate(bool value)
 			{
-				if (rotationLocked.Value && !value)
+				if (rotationLocked.InternalValue && !value)
+					rotationLockBlending = 0.0f;
+				else if (!rotationLocked.InternalValue && value)
 				{
 					lockedRotationValue = rotation.Value.ClosestAngle(input.Mouse.Value.X);
 					rotationLockBlending = 0.0f;
 				}
-				else if (!rotationLocked.Value && value)
-					rotationLockBlending = 0.0f;
 				rotationLocked.InternalValue = value;
 			};
 
@@ -1133,18 +1144,7 @@ namespace Lemma.Factories
 				return activate;
 			};
 
-			Action deactivateWallRun = delegate()
-			{
-				if (player.WallRunState.Value != Player.WallRun.None)
-					lastWallRunEnded = main.TotalTime; // Prevent the player from repeatedly wall-running and wall-jumping ad infinitum.
-
-				wallRunMap = null;
-				wallDirection = Direction.None;
-				wallRunDirection = Direction.None;
-				player.WallRunState.Value = Player.WallRun.None;
-				model.Stop("WallWalkLeft", "WallWalkRight", "WallWalkStraight", "WallSlideDown", "WallSlideReverse");
-				rotationLocked.Value = false;
-			};
+			Action deactivateWallRun = null;
 
 			Action<Vector3, Vector3, bool> breakWalls = delegate(Vector3 forward, Vector3 right, bool breakFloor)
 			{
@@ -1539,10 +1539,12 @@ namespace Lemma.Factories
 
 			float rollEnded = -1.0f;
 
-			Action<Map, Map.Coordinate, Vector3> vault = delegate(Map map, Map.Coordinate coord, Vector3 forward)
+			Action<Map, Map.Coordinate> vault = delegate(Map map, Map.Coordinate coord)
 			{
 				const float vaultVerticalSpeed = 8.0f;
 				const float maxVaultTime = 1.0f;
+
+				Vector3 forward = Vector3.Normalize(map.GetAbsolutePosition(coord) - transform.Position);
 
 				Vector3 vaultVelocity = new Vector3(0, vaultVerticalSpeed, 0);
 
@@ -1557,7 +1559,12 @@ namespace Lemma.Factories
 				player.LinearVelocity.Value = vaultVelocity;
 				player.IsSupported.Value = false;
 				player.HasTraction.Value = false;
+
+				Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
+				Vector3 dir = map.GetAbsoluteVector(map.GetRelativeDirection(new Vector3(-rotationMatrix.Forward.X, 0, -rotationMatrix.Forward.Z)).GetVector());
+				rotation.Value = (float)Math.Atan2(dir.X, dir.Z);
 				rotationLocked.Value = true;
+
 				player.EnableWalking.Value = false;
 				player.Crouched.Value = true;
 				player.AllowUncrouch.Value = false;
@@ -1613,6 +1620,8 @@ namespace Lemma.Factories
 
 				bool supported = player.IsSupported;
 
+				Player.WallRun wallRunState = player.WallRunState;
+
 				// Check if we're vaulting
 				Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
 				bool vaulting = false;
@@ -1625,7 +1634,7 @@ namespace Lemma.Factories
 						Vector3 pos = transform.Position + rotationMatrix.Forward * -1.75f;
 						Map.Coordinate baseCoord = map.GetCoordinate(pos).Move(up, 1);
 						int verticalSearchDistance = player.IsSupported ? 2 : 3;
-						for (int x = -1; x < 2; x++)
+						foreach (int x in new[] { 0, -1, 1 })
 						{
 							Map.Coordinate coord = baseCoord.Move(right, x);
 							for (int i = 0; i < verticalSearchDistance; i++)
@@ -1637,7 +1646,7 @@ namespace Lemma.Factories
 								else if (map[downCoord].ID != 0)
 								{
 									// Vault
-									vault(map, coord, -rotationMatrix.Forward);
+									vault(map, coord);
 									vaulting = true;
 									break;
 								}
@@ -1680,7 +1689,7 @@ namespace Lemma.Factories
 					Vector2 wallNormal2 = new Vector2(absoluteWallNormal.X, absoluteWallNormal.Z);
 					wallNormal2.Normalize();
 
-					bool wallRunningStraight = player.WallRunState.Value == Player.WallRun.Straight || player.WallRunState.Value == Player.WallRun.Down;
+					bool wallRunningStraight = wallRunState == Player.WallRun.Straight || wallRunState == Player.WallRun.Down;
 					if (wallRunningStraight)
 						jumpDirection = new Vector2(main.Camera.Forward.Value.X, main.Camera.Forward.Value.Z);
 					else
@@ -1708,7 +1717,7 @@ namespace Lemma.Factories
 					}
 				};
 
-				if (!onlyVault && !vaulting && !supported && player.WallRunState.Value == Player.WallRun.None)
+				if (!onlyVault && !vaulting && !supported && wallRunState == Player.WallRun.None)
 				{
 					// We're not vaulting, not doing our normal jump, and not wall-walking
 					// See if we can wall-jump
@@ -1736,7 +1745,7 @@ namespace Lemma.Factories
 
 				// If we're wall-running, we can wall-jump
 				// Add some velocity so we jump away from the wall a bit
-				if (!onlyVault && player.WallRunState.Value != Player.WallRun.None)
+				if (!onlyVault && wallRunState != Player.WallRun.None)
 				{
 					Vector3 pos = transform.Position + new Vector3(0, (player.Height * -0.5f) - 0.5f, 0);
 					Map.Coordinate wallCoord = wallRunMap.GetCoordinate(pos).Move(wallDirection, 2);
@@ -1779,7 +1788,7 @@ namespace Lemma.Factories
 							if (!coord.Between(possibility.StartCoord, possibility.EndCoord) && downCoord.Between(possibility.StartCoord, possibility.EndCoord))
 							{
 								instantiateBlockPossibility(possibility);
-								vault(possibility.Map, coord, -rotationMatrix.Forward);
+								vault(possibility.Map, coord);
 								vaulting = true;
 								go = true;
 								break;
@@ -1866,7 +1875,7 @@ namespace Lemma.Factories
 
 						float verticalJumpSpeed = player.JumpSpeed * verticalMultiplier;
 
-						// If we're instantiating a block possibility beneath us and we're currently falling, then cancel that negative vertical speed
+						// If we're not instantiating a block possibility beneath us or we're not currently falling, incorporate some of our existing vertical velocity in our jump
 						if (!blockPossibilityBeneath || currentVerticalSpeed > 0.0f)
 							verticalJumpSpeed += currentVerticalSpeed * 0.5f;
 
@@ -1898,7 +1907,7 @@ namespace Lemma.Factories
 					{
 						Vector3 velocity = -Vector3.TransformNormal(player.LinearVelocity, Matrix.CreateRotationY(-rotation));
 						velocity.Y = 0.0f;
-						if (player.WallRunState.Value == Player.WallRun.Left || player.WallRunState.Value == Player.WallRun.Right)
+						if (wallRunState == Player.WallRun.Left || wallRunState == Player.WallRun.Right)
 							velocity.Z = 0.0f;
 						else if (wallJumping)
 							velocity.Z *= 0.5f;
@@ -1924,7 +1933,7 @@ namespace Lemma.Factories
 						model.StartClip(animation, 4, false, 0.1f);
 					}
 
-					// Deactivate any wall walking we're doing
+					// Deactivate any wall-running we're doing
 					deactivateWallRun();
 
 					// Play a footstep sound since we're jumping off the ground
@@ -2213,6 +2222,8 @@ namespace Lemma.Factories
 				}
 			};
 
+			Updater rollUpdate = null;
+
 			bool rolling = false;
 
 			Action rollKick = null;
@@ -2322,7 +2333,6 @@ namespace Lemma.Factories
 						Direction rightDir = floorMap.GetRelativeDirection(right);
 						Direction forwardDir = floorMap.GetRelativeDirection(forward);
 
-						Updater rollUpdate = null;
 						float rollTime = 0.0f;
 						rollUpdate = new Updater
 						{
@@ -2333,6 +2343,7 @@ namespace Lemma.Factories
 								if (rollTime > 0.1f && (rollTime > 1.0f || Vector3.Dot(player.LinearVelocity, forward) < 0.1f))
 								{
 									rollUpdate.Delete.Execute();
+									rollUpdate = null;
 									player.EnableWalking.Value = true;
 									if (!input.GetInput(settings.RollKick))
 										player.AllowUncrouch.Value = true;
@@ -2465,6 +2476,20 @@ namespace Lemma.Factories
 				if (!rolling && kickUpdate == null)
 					player.AllowUncrouch.Value = true;
 			});
+
+			deactivateWallRun = delegate()
+			{
+				if (player.WallRunState.Value != Player.WallRun.None)
+					lastWallRunEnded = main.TotalTime; // Prevent the player from repeatedly wall-running and wall-jumping ad infinitum.
+
+				wallRunMap = null;
+				wallDirection = Direction.None;
+				wallRunDirection = Direction.None;
+				player.WallRunState.Value = Player.WallRun.None;
+				model.Stop("WallWalkLeft", "WallWalkRight", "WallWalkStraight", "WallSlideDown", "WallSlideReverse");
+				if (vaultMover == null && kickUpdate == null && rollUpdate == null)
+					rotationLocked.Value = false;
+			};
 
 			// Phone
 
