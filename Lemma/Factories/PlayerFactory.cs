@@ -531,7 +531,7 @@ namespace Lemma.Factories
 			const float totalCameraShakeTime = 0.5f;
 			Animation cameraShakeAnimation = null;
 
-			result.Add(new Binding<float>(baseCameraShakeAmount, () => MathHelper.Clamp((player.LinearVelocity.Value.Length() - (player.MaxSpeed * 2.5f)) / (player.MaxSpeed * 3.0f), 0, 1), player.LinearVelocity, player.MaxSpeed));
+			result.Add(new Binding<float>(baseCameraShakeAmount, () => MathHelper.Clamp((player.LinearVelocity.Value.Length() - (player.MaxSpeed * 2.5f)) / (player.MaxSpeed * 4.0f), 0, 1), player.LinearVelocity, player.MaxSpeed));
 
 			result.Add("ShakeCamera", new Command<Vector3, float>
 			{
@@ -612,7 +612,7 @@ namespace Lemma.Factories
 				if (finalShakeAmount > 0.0f)
 				{
 					float offset = main.TotalTime * 15.0f;
-					shake = new Vector3(noise.Sample(new Vector3(offset)), noise.Sample(new Vector3(offset + 64)), noise.Sample(new Vector3(offset + 128))) * finalShakeAmount * 0.4f;
+					shake = new Vector3(noise.Sample(new Vector3(offset)), noise.Sample(new Vector3(offset + 64)), noise.Sample(new Vector3(offset + 128))) * finalShakeAmount * 0.3f;
 				}
 
 				if (enableCameraControl)

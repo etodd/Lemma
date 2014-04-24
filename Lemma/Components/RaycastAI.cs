@@ -101,11 +101,18 @@ namespace Lemma.Components
 				Map.GlobalRaycastResult hit = Lemma.Components.Map.GlobalRaycast(pos, Vector3.TransformNormal(ray, mat), this.MovementDistance);
 				if (hit.Map != null && hit.Distance > 2.0f && hit.Coordinate.Value.Data != WorldFactory.StatesByName["AvoidAI"])
 				{
+					bool skip = false;
 					foreach (Water w in Water.ActiveInstances)
 					{
 						if (w.Fluid.BoundingBox.Contains(hit.Position) != ContainmentType.Disjoint)
-							continue;
+						{
+							skip = true;
+							break;
+						}
 					}
+
+					if (skip)
+						break;
 
 					Map.Coordinate newCoord = hit.Coordinate.Value.Move(hit.Normal);
 					if (hit.Map[newCoord].ID == 0)
