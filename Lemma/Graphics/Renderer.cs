@@ -454,6 +454,7 @@ namespace Lemma.Components
 			this.main.GraphicsDevice.SamplerStates[1] = SamplerState.PointClamp;
 			this.main.GraphicsDevice.SamplerStates[2] = SamplerState.PointClamp;
 			this.main.GraphicsDevice.SamplerStates[3] = SamplerState.PointClamp;
+			this.main.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
 			this.applyEffect(this.clearEffect);
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 		}

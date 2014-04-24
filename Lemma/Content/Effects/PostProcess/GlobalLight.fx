@@ -8,6 +8,7 @@ float3 DirectionalLightColors[NUM_DIRECTIONAL_LIGHTS];
 float3 AmbientLightColor;
 
 float4x4 ShadowViewProjectionMatrix;
+float4x4 DetailShadowViewProjectionMatrix;
 
 float3 EnvironmentColor = float3(1, 1, 1);
 
@@ -78,8 +79,9 @@ void GlobalLightPS(	in PostProcessPSInput input,
 								-DirectionalLightDirections[0],
 								reflectedViewRay,
 								ignoreNormal);
+		float4 detailShadowPos = mul(float4(worldPos, 1.0f), DetailShadowViewProjectionMatrix);
 		float4 shadowPos = mul(float4(worldPos, 1.0f), ShadowViewProjectionMatrix);
-		float shadowValue = GetShadowValue(shadowPos, ShadowBias);
+		float shadowValue = GetShadowValueDetail(detailShadowPos, shadowPos, ShadowBias);
 		output.lighting += shadowLight.lighting * shadowValue;
 		output.specular += shadowLight.specular * shadowValue;
 	}
