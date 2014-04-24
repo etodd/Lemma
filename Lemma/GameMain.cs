@@ -1066,6 +1066,8 @@ namespace Lemma
 				bool settingsShown = false;
 				Animation settingsAnimation = null;
 
+				Func<bool, string> boolDisplay = x => x ? "\\on" : "\\off";
+
 				ListContainer settingsMenu = new ListContainer();
 				settingsMenu.Visible.Value = false;
 				settingsMenu.Add(new Binding<Vector2, Point>(settingsMenu.Position, x => new Vector2(0, x.Y * 0.5f), this.ScreenSize));
@@ -1138,7 +1140,7 @@ namespace Lemma
 				}));
 				settingsMenu.Children.Add(fullscreenResolution);
 
-				UIComponent vsyncEnabled = this.createMenuButton<bool>("\\vsync enabled", this.Settings.EnableVsync);
+				UIComponent vsyncEnabled = this.createMenuButton<bool>("\\vsync", this.Settings.EnableVsync, boolDisplay);
 				vsyncEnabled.Add(new CommandBinding<Point, int>(vsyncEnabled.MouseScrolled, delegate(Point mouse, int scroll)
 				{
 					this.Settings.EnableVsync.Value = !this.Settings.EnableVsync;
@@ -1170,7 +1172,7 @@ namespace Lemma
 				}));
 				settingsMenu.Children.Add(motionBlurAmount);
 
-				UIComponent reflectionsEnabled = this.createMenuButton<bool>("\\reflections enabled", this.Settings.EnableReflections);
+				UIComponent reflectionsEnabled = this.createMenuButton<bool>("\\reflections", this.Settings.EnableReflections, boolDisplay);
 				reflectionsEnabled.Add(new CommandBinding<Point, int>(reflectionsEnabled.MouseScrolled, delegate(Point mouse, int scroll)
 				{
 					this.Settings.EnableReflections.Value = !this.Settings.EnableReflections;
@@ -1181,7 +1183,7 @@ namespace Lemma
 				}));
 				settingsMenu.Children.Add(reflectionsEnabled);
 
-				UIComponent bloomEnabled = this.createMenuButton<bool>("\\bloom enabled", this.Renderer.EnableBloom);
+				UIComponent bloomEnabled = this.createMenuButton<bool>("\\bloom", this.Renderer.EnableBloom, boolDisplay);
 				bloomEnabled.Add(new CommandBinding<Point, int>(bloomEnabled.MouseScrolled, delegate(Point mouse, int scroll)
 				{
 					this.Renderer.EnableBloom.Value = !this.Renderer.EnableBloom;
@@ -1192,11 +1194,14 @@ namespace Lemma
 				}));
 				settingsMenu.Children.Add(bloomEnabled);
 
-				UIComponent dynamicShadows = this.createMenuButton<LightingManager.DynamicShadowSetting>("\\dynamic shadows", this.LightingManager.DynamicShadows);
+				UIComponent dynamicShadows = this.createMenuButton<LightingManager.DynamicShadowSetting>("\\dynamic shadows", this.LightingManager.DynamicShadows, x => "\\" + x.ToString().ToLower());
 				int numDynamicShadowSettings = typeof(LightingManager.DynamicShadowSetting).GetFields(BindingFlags.Static | BindingFlags.Public).Length;
 				dynamicShadows.Add(new CommandBinding<Point, int>(dynamicShadows.MouseScrolled, delegate(Point mouse, int scroll)
 				{
-					this.LightingManager.DynamicShadows.Value = (LightingManager.DynamicShadowSetting)Enum.ToObject(typeof(LightingManager.DynamicShadowSetting), (((int)this.LightingManager.DynamicShadows.Value) + scroll) % numDynamicShadowSettings);
+					int newValue = ((int)this.LightingManager.DynamicShadows.Value) + scroll;
+					while (newValue < 0)
+						newValue += numDynamicShadowSettings;
+					this.LightingManager.DynamicShadows.Value = (LightingManager.DynamicShadowSetting)Enum.ToObject(typeof(LightingManager.DynamicShadowSetting), newValue % numDynamicShadowSettings);
 				}));
 				dynamicShadows.Add(new CommandBinding<Point>(dynamicShadows.MouseLeftUp, delegate(Point mouse)
 				{
