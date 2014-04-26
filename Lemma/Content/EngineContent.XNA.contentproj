@@ -163,6 +163,11 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>
+    <Compile Include="Effects\AnimationSolidColor.fx">
+      <Name>AnimationSolidColor</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </Compile>
     <None Include="Effects\ParticleCommon.fxh">
       <Name>ParticleCommon</Name>
       <Importer>EffectImporter</Importer>
