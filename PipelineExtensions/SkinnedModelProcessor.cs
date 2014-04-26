@@ -147,11 +147,20 @@ namespace PipelineExtensions
 					}
 
 					foreach (AnimationKeyframe keyframe in inputChannel.Value)
-					{
-						if (newChannel.Count == 0 || !newChannel[newChannel.Count - 1].Transform.Equals(keyframe.Transform))
-							newChannel.Add(new Keyframe(new TimeSpan(keyframe.Time.Ticks), keyframe.Transform));
-					}
+						newChannel.Add(new Keyframe(keyframe.Time, keyframe.Transform));
+					
 					newChannel.Sort(CompareKeyframeTimes);
+
+					for (int i = 2; i < newChannel.Count; i++)
+					{
+						Keyframe keyframe = newChannel[i];
+						if (newChannel[i - 1].Transform.Equals(keyframe.Transform)
+							&& newChannel[newChannel.Count - 2].Transform.Equals(keyframe.Transform))
+						{
+							newChannel.RemoveAt(i - 1);
+							i--;
+						}
+					}
 				}
 			}
 

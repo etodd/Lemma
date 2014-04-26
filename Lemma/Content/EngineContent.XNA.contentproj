@@ -245,14 +245,6 @@
       <ProcessorParameters_DiffuseTexture>clouds.png</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
     </Compile>
-    <Compile Include="Models\player-firstperson.fbx">
-      <Name>player-firstperson</Name>
-      <Importer>FbxImporter</Importer>
-      <Processor>SkinnedModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\AnimationNormalMap.fx</ProcessorParameters_EffectFileName>
-      <ProcessorParameters_DiffuseTexture>skin.jpg</ProcessorParameters_DiffuseTexture>
-      <ProcessorParameters_NormalMapTexture>skin-normal.jpg</ProcessorParameters_NormalMapTexture>
-    </Compile>
     <Compile Include="Models\position-model.fbx">
       <Name>position-model</Name>
       <Importer>FbxImporter</Importer>
@@ -292,6 +284,26 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_NormalMapTexture>..\Images\water-normal.jpg</ProcessorParameters_NormalMapTexture>
       <ProcessorParameters_EffectFileName>..\Effects\Distortion.fx</ProcessorParameters_EffectFileName>
+    </Compile>
+    <Compile Include="Models\player-firstperson.fbx">
+      <Name>player-firstperson</Name>
+      <Importer>SkinnedModelImporter</Importer>
+      <Processor>SkinnedModelProcessor</Processor>
+      <ProcessorParameters_EffectFileName>..\Effects\AnimationNormalMap.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_DiffuseTexture>skin.jpg</ProcessorParameters_DiffuseTexture>
+      <ProcessorParameters_NormalMapTexture>skin-normal.jpg</ProcessorParameters_NormalMapTexture>
+      <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
+      <ProcessorParameters_PremultiplyVertexColors>False</ProcessorParameters_PremultiplyVertexColors>
+    </Compile>
+    <Compile Include="Models\player.fbx">
+      <Name>player</Name>
+      <Importer>SkinnedModelImporter</Importer>
+      <Processor>SkinnedModelProcessor</Processor>
+      <ProcessorParameters_EffectFileName>..\Effects\AnimationNormalMap.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_DiffuseTexture>skin.jpg</ProcessorParameters_DiffuseTexture>
+      <ProcessorParameters_NormalMapTexture>skin-normal.jpg</ProcessorParameters_NormalMapTexture>
+      <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
+      <ProcessorParameters_PremultiplyVertexColors>False</ProcessorParameters_PremultiplyVertexColors>
     </Compile>
     <None Include="Strings.xlsx">
       <Name>Strings</Name>
@@ -448,13 +460,6 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_DiffuseTexture>skybox-night.jpg</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_EffectFileName>..\Effects\Skybox.fx</ProcessorParameters_EffectFileName>
-    </Compile>
-    <Compile Include="Models\player.fbx">
-      <Name>player</Name>
-      <Importer>SkinnedModelImporter</Importer>
-      <Processor>SkinnedModelProcessor</Processor>
-      <ProcessorParameters_DiffuseTexture>skin.jpg</ProcessorParameters_DiffuseTexture>
-      <ProcessorParameters_EffectFileName>..\Effects\Animation.fx</ProcessorParameters_EffectFileName>
     </Compile>
     <Compile Include="Models\light.fbx">
       <Name>light</Name>

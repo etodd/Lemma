@@ -25,8 +25,6 @@ namespace Lemma.Components
 
 		public const float DefaultBlendTime = 0.25f;
 
-		private static Matrix rotation = Matrix.CreateRotationX((float)Math.PI * -0.5f);
-
 		// Backlink to the bind pose and skeleton hierarchy data.
 		private SkinnedModel.SkinningData skinningData;
 
@@ -189,7 +187,7 @@ namespace Lemma.Components
 			{
 				int parentBone = this.skinningData.SkeletonHierarchy[bone];
 				if (parentBone == -1)
-					this.worldTransforms[bone] = AnimatedModel.rotation * this.boneTransforms[bone];
+					this.worldTransforms[bone] = this.boneTransforms[bone];
 				else
 					this.worldTransforms[bone] = this.boneTransforms[bone] * this.worldTransforms[parentBone];
 				this.skinTransforms[bone] = this.skinningData.InverseBindPose[bone] * this.worldTransforms[bone];

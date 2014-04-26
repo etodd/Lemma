@@ -35,10 +35,11 @@ namespace Lemma.Factories
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 			Property<string> animation = result.GetProperty<string>("Animation");
 			Property<bool> loop = result.GetProperty<bool>("Loop");
+
 			model.Add(new NotifyBinding(delegate()
 			{
 				model.Stop();
-				if (animation != null)
+				if (!string.IsNullOrEmpty(animation))
 					model.StartClip(animation, 0, loop);
 			}, animation, loop));
 		}

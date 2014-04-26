@@ -28,6 +28,30 @@ import math  # math.pi
 import bpy
 from mathutils import Vector, Matrix
 
+def grouper_exact(it, chunk_size):
+    """
+    Grouper-like func, but returns exactly all elements from it:
+
+    >>> for chunk in grouper_exact(range(10), 3): print(e)
+    (0,1,2)
+    (3,4,5)
+    (6,7,8)
+    (9,)
+
+    About 2 times slower than simple zip(*[it] * 3), but does not need to convert iterator to sequence to be sure to
+    get exactly all elements in it (i.e. get a last chunk that may be smaller than chunk_size).
+    """
+    import itertools
+    i = itertools.zip_longest(*[iter(it)] * chunk_size, fillvalue=...)
+    curr = next(i)
+    for nxt in i:
+        yield curr
+        curr = nxt
+    if ... in curr:
+        yield curr[:curr.index(...)]
+    else:
+        yield curr
+
 # I guess FBX uses degrees instead of radians (Arystan).
 # Call this function just before writing to FBX.
 # 180 / math.pi == 57.295779513
@@ -223,7 +247,7 @@ def save_single(operator, scene, filepath="",
         use_metadata=True,
         path_mode='AUTO',
         use_mesh_edges=True,
-        use_rotate_workaround=False,
+        use_rotate_workaround=True,
         use_default_take=True,
     ):
 
@@ -414,7 +438,7 @@ def save_single(operator, scene, filepath="",
     # ----------------------------------------------
 
     print('\nFBX export starting... %r' % filepath)
-    start_time = time.clock()
+    start_time = time.process_time()
     try:
         file = open(filepath, "w", encoding="utf8", newline="\n")
     except:
@@ -871,11 +895,9 @@ def save_single(operator, scene, filepath="",
         loc, rot, scale, matrix, matrix_rot = write_object_props(my_cam.blenObject, None, my_cam.parRelMatrix())
 
         fw('\n\t\t\tProperty: "Roll", "Roll", "A+",0')
-        fw('\n\t\t\tProperty: "FieldOfView", "FieldOfView", "A+",%.6f' % math.degrees(data.angle_y))
-
-        fw('\n\t\t\tProperty: "FieldOfViewX", "FieldOfView", "A+",1'
-           '\n\t\t\tProperty: "FieldOfViewY", "FieldOfView", "A+",1'
-           )
+        fw('\n\t\t\tProperty: "FieldOfView", "FieldOfView", "A+",%.6f' % math.degrees(data.angle_x))
+        fw('\n\t\t\tProperty: "FieldOfViewX", "FieldOfView", "A+",%.6f' % math.degrees(data.angle_x))
+        fw('\n\t\t\tProperty: "FieldOfViewY", "FieldOfView", "A+",%.6f' % math.degrees(data.angle_y))
 
         fw('\n\t\t\tProperty: "FocalLength", "Number", "A+",%.6f' % data.lens)
         fw('\n\t\t\tProperty: "FilmOffsetX", "Number", "A+",%.6f' % offsetx)
@@ -888,6 +910,7 @@ def save_single(operator, scene, filepath="",
            '\n\t\t\tProperty: "UseMotionBlur", "bool", "",0'
            '\n\t\t\tProperty: "UseRealTimeMotionBlur", "bool", "",1'
            '\n\t\t\tProperty: "ResolutionMode", "enum", "",0'
+            # note that aperture mode 3 is focal length and not horizontal
            '\n\t\t\tProperty: "ApertureMode", "enum", "",3'  # horizontal - Houdini compatible
            '\n\t\t\tProperty: "GateFit", "enum", "",2'
            '\n\t\t\tProperty: "CameraFormat", "enum", "",0'
@@ -1020,13 +1043,15 @@ def save_single(operator, scene, filepath="",
         fw('\n\t\t\tProperty: "DrawFrontFacingVolumetricLight", "bool", "",0')
         fw('\n\t\t\tProperty: "GoboProperty", "object", ""')
         fw('\n\t\t\tProperty: "Color", "Color", "A+",1,1,1')
-        fw('\n\t\t\tProperty: "Intensity", "Intensity", "A+",%.2f' % (min(light.energy * 100.0, 200.0)))  # clamp below 200
         if light.type == 'SPOT':
-            fw('\n\t\t\tProperty: "Cone angle", "Cone angle", "A+",%.2f' % math.degrees(light.spot_size))
+            fw('\n\t\t\tProperty: "OuterAngle", "Number", "A+",%.2f' %
+               math.degrees(light.spot_size))
+            fw('\n\t\t\tProperty: "InnerAngle", "Number", "A+",%.2f' %
+               (math.degrees(light.spot_size) - math.degrees(light.spot_size) * light.spot_blend))
+
         fw('\n\t\t\tProperty: "Fog", "Fog", "A+",50')
         fw('\n\t\t\tProperty: "Color", "Color", "A",%.2f,%.2f,%.2f' % tuple(light.color))
-
-        fw('\n\t\t\tProperty: "Intensity", "Intensity", "A+",%.2f' % (min(light.energy * 100.0, 200.0)))  # clamp below 200
+        fw('\n\t\t\tProperty: "Intensity", "Intensity", "A+",%.2f' % (light.energy * 100.0))
 
         fw('\n\t\t\tProperty: "Fog", "Fog", "A+",50')
         fw('\n\t\t\tProperty: "LightType", "enum", "",%i' % light_type)
@@ -1035,16 +1060,17 @@ def save_single(operator, scene, filepath="",
         fw('\n\t\t\tProperty: "DrawFrontFacingVolumetricLight", "bool", "",0')
         fw('\n\t\t\tProperty: "DrawVolumetricLight", "bool", "",1')
         fw('\n\t\t\tProperty: "GoboProperty", "object", ""')
-        fw('\n\t\t\tProperty: "DecayType", "enum", "",0')
-        fw('\n\t\t\tProperty: "DecayStart", "double", "",%.2f' % light.distance)
-
-        fw('\n\t\t\tProperty: "EnableNearAttenuation", "bool", "",0'
-           '\n\t\t\tProperty: "NearAttenuationStart", "double", "",0'
-           '\n\t\t\tProperty: "NearAttenuationEnd", "double", "",0'
-           '\n\t\t\tProperty: "EnableFarAttenuation", "bool", "",0'
-           '\n\t\t\tProperty: "FarAttenuationStart", "double", "",0'
-           '\n\t\t\tProperty: "FarAttenuationEnd", "double", "",0'
-           )
+        if light.type in {'SPOT', 'POINT'}:
+            if light.falloff_type == 'CONSTANT':
+                fw('\n\t\t\tProperty: "DecayType", "enum", "",0')
+            if light.falloff_type == 'INVERSE_LINEAR':
+                fw('\n\t\t\tProperty: "DecayType", "enum", "",1')
+                fw('\n\t\t\tProperty: "EnableFarAttenuation", "bool", "",1')
+                fw('\n\t\t\tProperty: "FarAttenuationEnd", "double", "",%.2f' % (light.distance * 2.0))
+            if light.falloff_type == 'INVERSE_SQUARE':
+                fw('\n\t\t\tProperty: "DecayType", "enum", "",2')
+                fw('\n\t\t\tProperty: "EnableFarAttenuation", "bool", "",1')
+                fw('\n\t\t\tProperty: "FarAttenuationEnd", "double", "",%.2f' % (light.distance * 2.0))
 
         fw('\n\t\t\tProperty: "CastShadows", "bool", "",%i' % do_shadow)
         fw('\n\t\t\tProperty: "ShadowColor", "ColorRGBA", "",0,0,0,1')
@@ -1099,12 +1125,12 @@ def save_single(operator, scene, filepath="",
             mat_cold = tuple(mat.diffuse_color)
             mat_cols = tuple(mat.specular_color)
             #mat_colm = tuple(mat.mirCol) # we wont use the mirror color
-            mat_colamb = world_amb
+            mat_colamb = 1.0, 1.0, 1.0
 
             mat_dif = mat.diffuse_intensity
             mat_amb = mat.ambient
-            mat_hard = (float(mat.specular_hardness) - 1.0) / 5.10
-            mat_spec = mat.specular_intensity / 2.0
+            mat_hard = ((float(mat.specular_hardness) - 1.0) / 510.0) * 128.0
+            mat_spec = mat.specular_intensity
             mat_alpha = mat.alpha
             mat_emit = mat.emit
             mat_shadeless = mat.use_shadeless
@@ -1116,13 +1142,14 @@ def save_single(operator, scene, filepath="",
                 else:
                     mat_shader = 'Phong'
         else:
-            mat_cols = mat_cold = 0.8, 0.8, 0.8
-            mat_colamb = 0.0, 0.0, 0.0
+            mat_cold = 0.8, 0.8, 0.8
+            mat_cols = 1.0, 1.0, 1.0
+            mat_colamb = 1.0, 1.0, 1.0
             # mat_colm
-            mat_dif = 1.0
-            mat_amb = 0.5
-            mat_hard = 20.0
-            mat_spec = 0.2
+            mat_dif = 0.8
+            mat_amb = 1.0
+            mat_hard = 12.3
+            mat_spec = 0.5
             mat_alpha = 1.0
             mat_emit = 0.0
             mat_shadeless = False
@@ -1148,7 +1175,7 @@ def save_single(operator, scene, filepath="",
         if not mat_shadeless:
             fw('\n\t\t\tProperty: "SpecularColor", "ColorRGB", "",%.4f,%.4f,%.4f' % mat_cols)
             fw('\n\t\t\tProperty: "SpecularFactor", "double", "",%.4f' % mat_spec)
-            fw('\n\t\t\tProperty: "ShininessExponent", "double", "",80.0')
+            fw('\n\t\t\tProperty: "ShininessExponent", "double", "",%.1f' % mat_hard)
             fw('\n\t\t\tProperty: "ReflectionColor", "ColorRGB", "",0,0,0')
             fw('\n\t\t\tProperty: "ReflectionFactor", "double", "",1')
         fw('\n\t\t\tProperty: "Emissive", "ColorRGB", "",0,0,0')
@@ -1350,24 +1377,21 @@ def save_single(operator, scene, filepath="",
         fw('\n\t}')
 
     def write_mesh(my_mesh):
-
         me = my_mesh.blenData
 
-        # if there are non NULL materials on this mesh
-        do_materials = bool(my_mesh.blenMaterials)
-        do_textures = bool(my_mesh.blenTextures)
-        do_uvs = bool(me.tessface_uv_textures)
+        # if there are non None materials on this mesh
+        do_materials = bool([m for m in my_mesh.blenMaterials if m is not None])
+        do_textures = bool([t for t in my_mesh.blenTextures if t is not None])
+        do_uvs = bool(me.uv_layers)
         do_shapekeys = (my_mesh.blenObject.type == 'MESH' and
                         my_mesh.blenObject.data.shape_keys and
                         len(my_mesh.blenObject.data.vertices) == len(me.vertices))
+        # print(len(my_mesh.blenObject.data.vertices), len(me.vertices))  # XXX does not work when org obj is no mesh!
 
         fw('\n\tModel: "Model::%s", "Mesh" {' % my_mesh.fbxName)
         fw('\n\t\tVersion: 232')  # newline is added in write_object_props
 
         # convert into lists once.
-        me_vertices = me.vertices[:]
-        me_edges = me.edges[:] if use_mesh_edges else ()
-        me_faces = me.tessfaces[:]
 
         poseMatrix = write_object_props(my_mesh.blenObject, None, my_mesh.parRelMatrix())[3]
 
@@ -1388,142 +1412,101 @@ def save_single(operator, scene, filepath="",
            '\n\t\tCulling: "CullingOff"'
            )
 
+
+
+
+
+
         # Write the Real Mesh data here
         fw('\n\t\tVertices: ')
-        i = -1
-
-        for v in me_vertices:
-            if i == -1:
-                fw('%.6f,%.6f,%.6f' % v.co[:])
-                i = 0
-            else:
-                if i == 7:
-                    fw('\n\t\t')
-                    i = 0
-                fw(',%.6f,%.6f,%.6f' % v.co[:])
-            i += 1
+        _nchunk = 12  # Number of coordinates per line.
+        t_co = [None] * len(me.vertices) * 3
+        me.vertices.foreach_get("co", t_co)
+        fw(',\n\t\t          '.join(','.join('%.6f' % co for co in chunk) for chunk in grouper_exact(t_co, _nchunk)))
+        del t_co
 
         fw('\n\t\tPolygonVertexIndex: ')
-        i = -1
-        for f in me_faces:
-            fi = f.vertices[:]
+        _nchunk = 32  # Number of indices per line.
+        # A bit more complicated, as we have to ^-1 last index of each loop.
+        # NOTE: Here we assume that loops order matches polygons order!
+        t_vi = [None] * len(me.loops)
+        me.loops.foreach_get("vertex_index", t_vi)
+        t_ls = [None] * len(me.polygons)
+        me.polygons.foreach_get("loop_start", t_ls)
+        if t_ls != sorted(t_ls):
+            print("Error: polygons and loops orders do not match!")
+        for ls in t_ls:
+            t_vi[ls - 1] ^= -1
+        prep = ',\n\t\t                    '
+        fw(prep.join(','.join('%i' % vi for vi in chunk) for chunk in grouper_exact(t_vi, _nchunk)))
+        del t_vi
+        del t_ls
 
-            # last index XORd w. -1 indicates end of face
-            if i == -1:
-                if len(fi) == 3:
-                    fw('%i,%i,%i' % (fi[0], fi[1], fi[2] ^ -1))
-                else:
-                    fw('%i,%i,%i,%i' % (fi[0], fi[1], fi[2], fi[3] ^ -1))
-                i = 0
-            else:
-                if i == 13:
-                    fw('\n\t\t')
-                    i = 0
-                if len(fi) == 3:
-                    fw(',%i,%i,%i' % (fi[0], fi[1], fi[2] ^ -1))
-                else:
-                    fw(',%i,%i,%i,%i' % (fi[0], fi[1], fi[2], fi[3] ^ -1))
-            i += 1
+        if use_mesh_edges:
+            t_vi = [None] * len(me.edges) * 2
+            me.edges.foreach_get("vertices", t_vi)
 
-        # write loose edges as faces.
-        for ed in me_edges:
-            if ed.is_loose:
-                ed_val = ed.vertices[:]
-                ed_val = ed_val[0], ed_val[-1] ^ -1
+            # write loose edges as faces.
+            t_el = [None] * len(me.edges)
+            me.edges.foreach_get("is_loose", t_el)
+            num_lose = sum(t_el)
+            if num_lose != 0:
+                it_el = ((vi ^ -1) if (idx % 2) else vi for idx, vi in enumerate(t_vi) if t_el[idx // 2])
+                if (len(me.loops)):
+                    fw(prep)
+                fw(prep.join(','.join('%i' % vi for vi in chunk) for chunk in grouper_exact(it_el, _nchunk)))
 
-                if i == -1:
-                    fw('%i,%i' % ed_val)
-                    i = 0
-                else:
-                    if i == 13:
-                        fw('\n\t\t')
-                        i = 0
-                    fw(',%i,%i' % ed_val)
-            i += 1
-
-        fw('\n\t\tEdges: ')
-        i = -1
-        for ed in me_edges:
-            if i == -1:
-                fw('%i,%i' % (ed.vertices[0], ed.vertices[1]))
-                i = 0
-            else:
-                if i == 13:
-                    fw('\n\t\t')
-                    i = 0
-                fw(',%i,%i' % (ed.vertices[0], ed.vertices[1]))
-            i += 1
+            fw('\n\t\tEdges: ')
+            fw(',\n\t\t       '.join(','.join('%i' % vi for vi in chunk) for chunk in grouper_exact(t_vi, _nchunk)))
+            del t_vi
+            del t_el
 
         fw('\n\t\tGeometryVersion: 124')
 
-        fw('''
-		LayerElementNormal: 0 {
-			Version: 101
-			Name: ""
-			MappingInformationType: "ByVertice"
-			ReferenceInformationType: "Direct"
-			Normals: ''')
-
-        i = -1
-        for v in me_vertices:
-            if i == -1:
-                fw('%.15f,%.15f,%.15f' % v.normal[:])
-                i = 0
-            else:
-                if i == 2:
-                    fw('\n\t\t\t ')
-                    i = 0
-                fw(',%.15f,%.15f,%.15f' % v.normal[:])
-            i += 1
+        _nchunk = 12  # Number of coordinates per line.
+        t_vn = [None] * len(me.loops) * 3
+        me.calc_normals_split()
+        # NOTE: Here we assume that loops order matches polygons order!
+        me.loops.foreach_get("normal", t_vn)
+        fw('\n\t\tLayerElementNormal: 0 {'
+           '\n\t\t\tVersion: 101'
+           '\n\t\t\tName: ""'
+           '\n\t\t\tMappingInformationType: "ByPolygonVertex"'
+           '\n\t\t\tReferenceInformationType: "Direct"'  # We could save some space with IndexToDirect here too...
+           '\n\t\t\tNormals: ')
+        fw(',\n\t\t\t         '.join(','.join('%.6f' % n for n in chunk) for chunk in grouper_exact(t_vn, _nchunk)))
         fw('\n\t\t}')
+        del t_vn
+        me.free_normals_split()
 
         # Write Face Smoothing
+        _nchunk = 64  # Number of bool per line.
         if mesh_smooth_type == 'FACE':
-            fw('''
-		LayerElementSmoothing: 0 {
-			Version: 102
-			Name: ""
-			MappingInformationType: "ByPolygon"
-			ReferenceInformationType: "Direct"
-			Smoothing: ''')
-
-            i = -1
-            for f in me_faces:
-                if i == -1:
-                    fw('%i' % f.use_smooth)
-                    i = 0
-                else:
-                    if i == 54:
-                        fw('\n\t\t\t ')
-                        i = 0
-                    fw(',%i' % f.use_smooth)
-                i += 1
-
+            t_ps = [None] * len(me.polygons)
+            me.polygons.foreach_get("use_smooth", t_ps)
+            fw('\n\t\tLayerElementSmoothing: 0 {'
+               '\n\t\t\tVersion: 102'
+               '\n\t\t\tName: ""'
+               '\n\t\t\tMappingInformationType: "ByPolygon"'
+               '\n\t\t\tReferenceInformationType: "Direct"'
+               '\n\t\t\tSmoothing: ')
+            fw(',\n\t\t\t           '.join(','.join('%d' % b for b in chunk) for chunk in grouper_exact(t_ps, _nchunk)))
             fw('\n\t\t}')
-
+            del t_ps
         elif mesh_smooth_type == 'EDGE':
             # Write Edge Smoothing
-            fw('''
-		LayerElementSmoothing: 0 {
-			Version: 101
-			Name: ""
-			MappingInformationType: "ByEdge"
-			ReferenceInformationType: "Direct"
-			Smoothing: ''')
-
-            i = -1
-            for ed in me_edges:
-                if i == -1:
-                    fw('%i' % (ed.use_edge_sharp))
-                    i = 0
-                else:
-                    if i == 54:
-                        fw('\n\t\t\t ')
-                        i = 0
-                    fw(',%i' % ed.use_edge_sharp)
-                i += 1
-
+            t_es = [None] * len(me.edges)
+            me.edges.foreach_get("use_edge_sharp", t_es)
+            fw('\n\t\tLayerElementSmoothing: 0 {'
+               '\n\t\t\tVersion: 101'
+               '\n\t\t\tName: ""'
+               '\n\t\t\tMappingInformationType: "ByEdge"'
+               '\n\t\t\tReferenceInformationType: "Direct"'
+               '\n\t\t\tSmoothing: ')
+            fw(',\n\t\t\t           '
+               ''.join(','.join('%d' % (not b) for b in chunk) for chunk in grouper_exact(t_es, _nchunk)))
             fw('\n\t\t}')
+            del t_es
         elif mesh_smooth_type == 'OFF':
             pass
         else:
@@ -1532,345 +1515,237 @@ def save_single(operator, scene, filepath="",
         # Write VertexColor Layers
         # note, no programs seem to use this info :/
         collayers = []
-        if len(me.tessface_vertex_colors):
-            collayers = me.tessface_vertex_colors
+        if len(me.vertex_colors):
+            collayers = me.vertex_colors
+            t_lc = [None] * len(me.loops) * 3
+            col2idx = None
+            _nchunk = 4  # Number of colors per line
+            _nchunk_idx = 64  # Number of color indices per line
             for colindex, collayer in enumerate(collayers):
-                fw('\n\t\tLayerElementColor: %i {' % colindex)
-                fw('\n\t\t\tVersion: 101')
-                fw('\n\t\t\tName: "%s"' % collayer.name)
+                collayer.data.foreach_get("color", t_lc)
+                lc = tuple(zip(*[iter(t_lc)] * 3))
+                fw('\n\t\tLayerElementColor: %i {'
+                   '\n\t\t\tVersion: 101'
+                   '\n\t\t\tName: "%s"'
+                   '\n\t\t\tMappingInformationType: "ByPolygonVertex"'
+                   '\n\t\t\tReferenceInformationType: "IndexToDirect"'
+                   '\n\t\t\tColors: ' % (colindex, collayer.name))
 
-                fw('''
-			MappingInformationType: "ByPolygonVertex"
-			ReferenceInformationType: "IndexToDirect"
-			Colors: ''')
-
-                i = -1
-                ii = 0  # Count how many Colors we write
-                print(len(me_faces), len(collayer.data))
-                for fi, cf in enumerate(collayer.data):
-                    if len(me_faces[fi].vertices) == 4:
-                        colors = cf.color1[:], cf.color2[:], cf.color3[:], cf.color4[:]
-                    else:
-                        colors = cf.color1[:], cf.color2[:], cf.color3[:]
-
-                    for col in colors:
-                        if i == -1:
-                            fw('%.4f,%.4f,%.4f,1' % col)
-                            i = 0
-                        else:
-                            if i == 7:
-                                fw('\n\t\t\t\t')
-                                i = 0
-                            fw(',%.4f,%.4f,%.4f,1' % col)
-                        i += 1
-                        ii += 1  # One more Color
+                col2idx = tuple(set(lc))
+                fw(',\n\t\t\t        '.join(','.join('%.6f,%.6f,%.6f,1' % c for c in chunk)
+                                            for chunk in grouper_exact(col2idx, _nchunk)))
 
                 fw('\n\t\t\tColorIndex: ')
-                i = -1
-                for j in range(ii):
-                    if i == -1:
-                        fw('%i' % j)
-                        i = 0
-                    else:
-                        if i == 55:
-                            fw('\n\t\t\t\t')
-                            i = 0
-                        fw(',%i' % j)
-                    i += 1
-
+                col2idx = {col: idx for idx, col in enumerate(col2idx)}
+                fw(',\n\t\t\t            '
+                   ''.join(','.join('%d' % col2idx[c] for c in chunk) for chunk in grouper_exact(lc, _nchunk_idx)))
                 fw('\n\t\t}')
+            del t_lc
 
         # Write UV and texture layers.
         uvlayers = []
+        uvtextures = []
         if do_uvs:
-            uvlayers = me.tessface_uv_textures
-            for uvindex, uvlayer in enumerate(me.tessface_uv_textures):
-                fw('\n\t\tLayerElementUV: %i {' % uvindex)
-                fw('\n\t\t\tVersion: 101')
-                fw('\n\t\t\tName: "%s"' % uvlayer.name)
+            uvlayers = me.uv_layers
+            uvtextures = me.uv_textures
+            t_uv = [None] * len(me.loops) * 2
+            t_pi = None
+            uv2idx = None
+            tex2idx = None
+            _nchunk = 6  # Number of UVs per line
+            _nchunk_idx = 64  # Number of UV indices per line
+            if do_textures:
+                is_tex_unique = len(my_mesh.blenTextures) == 1
+                tex2idx = {None: -1}
+                tex2idx.update({tex: i for i, tex in enumerate(my_mesh.blenTextures)})
 
-                fw('''
-			MappingInformationType: "ByPolygonVertex"
-			ReferenceInformationType: "IndexToDirect"
-			UV: ''')
-
-                i = -1
-                ii = 0  # Count how many UVs we write
-
-                for uf in uvlayer.data:
-                    # workaround, since uf.uv iteration is wrong atm
-                    for uv in uf.uv:
-                        if i == -1:
-                            fw('%.6f,%.6f' % uv[:])
-                            i = 0
-                        else:
-                            if i == 7:
-                                fw('\n\t\t\t ')
-                                i = 0
-                            fw(',%.6f,%.6f' % uv[:])
-                        i += 1
-                        ii += 1  # One more UV
-
+            for uvindex, (uvlayer, uvtexture) in enumerate(zip(uvlayers, uvtextures)):
+                uvlayer.data.foreach_get("uv", t_uv)
+                uvco = tuple(zip(*[iter(t_uv)] * 2))
+                fw('\n\t\tLayerElementUV: %d {'
+                   '\n\t\t\tVersion: 101'
+                   '\n\t\t\tName: "%s"'
+                   '\n\t\t\tMappingInformationType: "ByPolygonVertex"'
+                   '\n\t\t\tReferenceInformationType: "IndexToDirect"'
+                   '\n\t\t\tUV: ' % (uvindex, uvlayer.name))
+                uv2idx = tuple(set(uvco))
+                fw(',\n\t\t\t    '
+                   ''.join(','.join('%.6f,%.6f' % uv for uv in chunk) for chunk in grouper_exact(uv2idx, _nchunk)))
                 fw('\n\t\t\tUVIndex: ')
-                i = -1
-                for j in range(ii):
-                    if i == -1:
-                        fw('%i' % j)
-                        i = 0
-                    else:
-                        if i == 55:
-                            fw('\n\t\t\t\t')
-                            i = 0
-                        fw(',%i' % j)
-                    i += 1
-
+                uv2idx = {uv: idx for idx, uv in enumerate(uv2idx)}
+                fw(',\n\t\t\t         '
+                   ''.join(','.join('%d' % uv2idx[uv] for uv in chunk) for chunk in grouper_exact(uvco, _nchunk_idx)))
                 fw('\n\t\t}')
 
                 if do_textures:
-                    fw('\n\t\tLayerElementTexture: %i {' % uvindex)
-                    fw('\n\t\t\tVersion: 101')
-                    fw('\n\t\t\tName: "%s"' % uvlayer.name)
-
-                    if len(my_mesh.blenTextures) == 1:
-                        fw('\n\t\t\tMappingInformationType: "AllSame"')
-                    else:
-                        fw('\n\t\t\tMappingInformationType: "ByPolygon"')
-
-                    fw('\n\t\t\tReferenceInformationType: "IndexToDirect"')
-                    fw('\n\t\t\tBlendMode: "Translucent"')
-                    fw('\n\t\t\tTextureAlpha: 1')
-                    fw('\n\t\t\tTextureId: ')
-
-                    if len(my_mesh.blenTextures) == 1:
+                    fw('\n\t\tLayerElementTexture: %d {'
+                       '\n\t\t\tVersion: 101'
+                       '\n\t\t\tName: "%s"' 
+                       '\n\t\t\tMappingInformationType: "%s"'
+                       '\n\t\t\tReferenceInformationType: "IndexToDirect"'
+                       '\n\t\t\tBlendMode: "Translucent"'
+                       '\n\t\t\tTextureAlpha: 1'
+                       '\n\t\t\tTextureId: '
+                       % (uvindex, uvlayer.name, ('AllSame' if is_tex_unique else 'ByPolygon')))
+                    if is_tex_unique:
                         fw('0')
                     else:
-                        texture_mapping_local = {None: -1}
-
-                        i = 0  # 1 for dummy
-                        for tex in my_mesh.blenTextures:
-                            if tex:  # None is set above
-                                texture_mapping_local[tex] = i
-                                i += 1
-
-                        i = -1
-                        for f in uvlayer.data:
-                            img_key = f.image
-
-                            if i == -1:
-                                i = 0
-                                fw('%s' % texture_mapping_local[img_key])
-                            else:
-                                if i == 55:
-                                    fw('\n			 ')
-                                    i = 0
-
-                                fw(',%s' % texture_mapping_local[img_key])
-                            i += 1
-
-                else:
-                    fw('''
-		LayerElementTexture: 0 {
-			Version: 101
-			Name: ""
-			MappingInformationType: "NoMappingInformation"
-			ReferenceInformationType: "IndexToDirect"
-			BlendMode: "Translucent"
-			TextureAlpha: 1
-			TextureId: ''')
-                fw('\n\t\t}')
+                        t_pi = (d.image for d in uvtexture.data)  # Can't use foreach_get here :(
+                        fw(',\n\t\t\t           '.join(','.join('%d' % tex2idx[i] for i in chunk)
+                                                       for chunk in grouper_exact(t_pi, _nchunk_idx)))
+                    fw('\n\t\t}')
+            if not do_textures:
+                fw('\n\t\tLayerElementTexture: 0 {'
+                   '\n\t\t\tVersion: 101'
+                   '\n\t\t\tName: ""'
+                   '\n\t\t\tMappingInformationType: "NoMappingInformation"'
+                   '\n\t\t\tReferenceInformationType: "IndexToDirect"'
+                   '\n\t\t\tBlendMode: "Translucent"'
+                   '\n\t\t\tTextureAlpha: 1'
+                   '\n\t\t\tTextureId: '
+                   '\n\t\t}')
+            del t_uv
+            del t_pi
 
         # Done with UV/textures.
         if do_materials:
-            fw('\n\t\tLayerElementMaterial: 0 {')
-            fw('\n\t\t\tVersion: 101')
-            fw('\n\t\t\tName: ""')
-
-            if len(my_mesh.blenMaterials) == 1:
-                fw('\n\t\t\tMappingInformationType: "AllSame"')
-            else:
-                fw('\n\t\t\tMappingInformationType: "ByPolygon"')
-
-            fw('\n\t\t\tReferenceInformationType: "IndexToDirect"')
-            fw('\n\t\t\tMaterials: ')
-
-            if len(my_mesh.blenMaterials) == 1:
+            is_mat_unique = len(my_mesh.blenMaterials) == 1
+            fw('\n\t\tLayerElementMaterial: 0 {'
+               '\n\t\t\tVersion: 101'
+               '\n\t\t\tName: ""'
+               '\n\t\t\tMappingInformationType: "%s"'
+               '\n\t\t\tReferenceInformationType: "IndexToDirect"'
+               '\n\t\t\tMaterials: ' % ('AllSame' if is_mat_unique else 'ByPolygon',))
+            if is_mat_unique:
                 fw('0')
             else:
+                _nchunk = 64  # Number of material indices per line
                 # Build a material mapping for this
-                material_mapping_local = {}  # local-mat & tex : global index.
-
-                for j, mat_tex_pair in enumerate(my_mesh.blenMaterials):
-                    material_mapping_local[mat_tex_pair] = j
-
+                mat2idx = {mt: i for i, mt in enumerate(my_mesh.blenMaterials)}  # (local-mat, tex) -> global index.
                 mats = my_mesh.blenMaterialList
-
-                if me.tessface_uv_textures.active:
-                    uv_faces = me.tessface_uv_textures.active.data
+                if me.uv_textures.active and do_uvs:
+                    poly_tex = me.uv_textures.active.data
                 else:
-                    uv_faces = [None] * len(me_faces)
-
-                i = -1
-                for f, uf in zip(me_faces, uv_faces):
-                    try:
-                        mat = mats[f.material_index]
-                    except:
-                        mat = None
-
-                    if do_uvs:
-                        tex = uf.image  # WARNING - MULTI UV LAYER IMAGES NOT SUPPORTED :/
-                    else:
-                        tex = None
-
-                    if i == -1:
-                        i = 0
-                        fw('%s' % material_mapping_local[mat, tex])  # None for mat or tex is ok
-                    else:
-                        if i == 55:
-                            fw('\n\t\t\t\t')
-                            i = 0
-
-                        fw(',%s' % material_mapping_local[mat, tex])
-                    i += 1
-
+                    poly_tex = [None] * len(me.polygons)
+                _it_mat = (mats[p.material_index] for p in me.polygons)
+                _it_tex = (pt.image if pt else None for pt in poly_tex)  # WARNING - MULTI UV LAYER IMAGES NOT SUPPORTED
+                t_mti = (mat2idx[m, t] for m, t in zip(_it_mat, _it_tex))
+                fw(',\n\t\t\t           '
+                   ''.join(','.join('%d' % i for i in chunk) for chunk in grouper_exact(t_mti, _nchunk)))
             fw('\n\t\t}')
 
-        fw('''
-		Layer: 0 {
-			Version: 100
-			LayerElement:  {
-				Type: "LayerElementNormal"
-				TypedIndex: 0
-			}''')
-
-        if do_materials:
-            fw('''
-			LayerElement:  {
-				Type: "LayerElementMaterial"
-				TypedIndex: 0
-			}''')
+        fw('\n\t\tLayer: 0 {'
+           '\n\t\t\tVersion: 100'
+           '\n\t\t\tLayerElement:  {'
+           '\n\t\t\t\tType: "LayerElementNormal"'
+           '\n\t\t\t\tTypedIndex: 0'
+           '\n\t\t\t}')
 
         # Smoothing info
         if mesh_smooth_type != 'OFF':
-            fw('''
-			LayerElement:  {
-				Type: "LayerElementSmoothing"
-				TypedIndex: 0
-			}''')
+            fw('\n\t\t\tLayerElement:  {'
+               '\n\t\t\t\tType: "LayerElementSmoothing"'
+               '\n\t\t\t\tTypedIndex: 0'
+               '\n\t\t\t}')
 
-        # Always write this
-        if do_textures:
-            fw('''
-			LayerElement:  {
-				Type: "LayerElementTexture"
-				TypedIndex: 0
-			}''')
-
-        if me.tessface_vertex_colors:
-            fw('''
-			LayerElement:  {
-				Type: "LayerElementColor"
-				TypedIndex: 0
-			}''')
+        if me.vertex_colors:
+            fw('\n\t\t\tLayerElement:  {'
+               '\n\t\t\t\tType: "LayerElementColor"'
+               '\n\t\t\t\tTypedIndex: 0'
+               '\n\t\t\t}')
 
         if do_uvs:  # same as me.faceUV
-            fw('''
-			LayerElement:  {
-				Type: "LayerElementUV"
-				TypedIndex: 0
-			}''')
+            fw('\n\t\t\tLayerElement:  {'
+               '\n\t\t\t\tType: "LayerElementUV"'
+               '\n\t\t\t\tTypedIndex: 0'
+               '\n\t\t\t}')
+
+        # Always write this
+        #if do_textures:
+        if True:
+            fw('\n\t\t\tLayerElement:  {'
+               '\n\t\t\t\tType: "LayerElementTexture"'
+               '\n\t\t\t\tTypedIndex: 0'
+               '\n\t\t\t}')
+
+        if do_materials:
+            fw('\n\t\t\tLayerElement:  {'
+               '\n\t\t\t\tType: "LayerElementMaterial"'
+               '\n\t\t\t\tTypedIndex: 0'
+               '\n\t\t\t}')
 
         fw('\n\t\t}')
 
         if len(uvlayers) > 1:
             for i in range(1, len(uvlayers)):
-
-                fw('\n\t\tLayer: %i {' % i)
-                fw('\n\t\t\tVersion: 100')
-
-                fw('''
-			LayerElement:  {
-				Type: "LayerElementUV"''')
-
-                fw('\n\t\t\t\tTypedIndex: %i' % i)
-                fw('\n\t\t\t}')
-
+                fw('\n\t\tLayer: %d {'
+                   '\n\t\t\tVersion: 100'
+                   '\n\t\t\tLayerElement:  {'
+                   '\n\t\t\t\tType: "LayerElementUV"'
+                   '\n\t\t\t\tTypedIndex: %d'
+                   '\n\t\t\t}' % (i, i))
                 if do_textures:
-
-                    fw('''
-			LayerElement:  {
-				Type: "LayerElementTexture"''')
-
-                    fw('\n\t\t\t\tTypedIndex: %i' % i)
-                    fw('\n\t\t\t}')
-
+                    fw('\n\t\t\tLayerElement:  {'
+                       '\n\t\t\t\tType: "LayerElementTexture"'
+                       '\n\t\t\t\tTypedIndex: %d'
+                       '\n\t\t\t}' % i)
+                else:
+                    fw('\n\t\t\tLayerElement:  {'
+                       '\n\t\t\t\tType: "LayerElementTexture"'
+                       '\n\t\t\t\tTypedIndex: 0'
+                       '\n\t\t\t}')
                 fw('\n\t\t}')
 
+        # XXX Col layers are written before UV ones above, why adding them after UV here???
+        #     And why this offset based on len(UV layers) - 1???
+        #     I have the feeling some indices are wrong here!
+        #     --mont29
         if len(collayers) > 1:
             # Take into account any UV layers
-            layer_offset = 0
-            if uvlayers:
-                layer_offset = len(uvlayers) - 1
-
+            layer_offset = len(uvlayers) - 1 if uvlayers else 0
             for i in range(layer_offset, len(collayers) + layer_offset):
-                fw('\n\t\tLayer: %i {' % i)
-                fw('\n\t\t\tVersion: 100')
-
-                fw('''
-			LayerElement:  {
-				Type: "LayerElementColor"''')
-
-                fw('\n\t\t\t\tTypedIndex: %i' % i)
-                fw('\n\t\t\t}')
-                fw('\n\t\t}')
+                fw('\n\t\tLayer: %d {'
+                   '\n\t\t\tVersion: 100'
+                   '\n\t\t\tLayerElement:  {'
+                   '\n\t\t\t\tType: "LayerElementColor"'
+                   '\n\t\t\t\tTypedIndex: %d'
+                   '\n\t\t\t}'
+                   '\n\t\t}' % (i, i))
 
         if do_shapekeys:
+            # Not sure this works really good...
+            #     Aren't key's co already relative if set as such?
+            #     Also, does not handle custom relative option for each key...
+            # --mont29
+            import operator
             key_blocks = my_mesh.blenObject.data.shape_keys.key_blocks[:]
+            t_sk_basis = [None] * len(me.vertices) * 3
+            t_sk = [None] * len(me.vertices) * 3
+            key_blocks[0].data.foreach_get("co", t_sk_basis)
+            _nchunk = 4  # Number of delta coordinates per line
+            _nchunk_idx = 32  # Number of vert indices per line
+
             for kb in key_blocks[1:]:
-
-                fw('\n\t\tShape: "%s" {' % kb.name)
-                fw('\n\t\t\tIndexes: ')
-
-                basis_verts = key_blocks[0].data
-                range_verts = []
-                delta_verts = []
-                i = -1
-                for j, kv in enumerate(kb.data):
-                    delta = kv.co - basis_verts[j].co
-                    if delta.length > 0.000001:
-                        if i == -1:
-                            fw('%d' % j)
-                        else:
-                            if i == 7:
-                                fw('\n\t\t\t')
-                                i = 0
-                            fw(',%d' % j)
-                        delta_verts.append(delta[:])
-                        i += 1
+                kb.data.foreach_get("co", t_sk)
+                _dcos = tuple(zip(*[map(operator.sub, t_sk, t_sk_basis)] * 3))
+                verts = tuple(i for i, dco in enumerate(_dcos) if sum(map(operator.pow, dco, (2, 2, 2))) > 3e-12)
+                dcos = (_dcos[i] for i in verts)
+                fw('\n\t\tShape: "%s" {'
+                   '\n\t\t\tIndexes: ' % kb.name)
+                fw(',\n\t\t\t         '
+                   ''.join(','.join('%d' % i for i in chunk) for chunk in grouper_exact(verts, _nchunk_idx)))
 
                 fw('\n\t\t\tVertices: ')
-                i = -1
-                for dv in delta_verts:
-                    if i == -1:
-                        fw("%.6f,%.6f,%.6f" % dv)
-                    else:
-                        if i == 4:
-                            fw('\n\t\t\t')
-                            i = 0
-                        fw(",%.6f,%.6f,%.6f" % dv)
-                    i += 1
-
+                fw(',\n\t\t\t          '
+                   ''.join(','.join('%.6f,%.6f,%.6f' % c for c in chunk) for chunk in grouper_exact(dcos, _nchunk)))
                 # all zero, why? - campbell
+                # Would need to recompute them I guess... and I assume those are supposed to be delta as well?
                 fw('\n\t\t\tNormals: ')
-                for j in range(len(delta_verts)):
-                    if i == -1:
-                        fw("0,0,0")
-                    else:
-                        if i == 4:
-                            fw('\n\t\t\t')
-                            i = 0
-                        fw(",0,0,0")
-                    i += 1
+                fw(',\n\t\t\t         '
+                   ''.join(','.join('0,0,0' for c in chunk) for chunk in grouper_exact(range(len(verts)), _nchunk)))
                 fw('\n\t\t}')
+            del t_sk_basis
+            del t_sk
 
         fw('\n\t}')
 
@@ -1903,8 +1778,8 @@ def save_single(operator, scene, filepath="",
     ob_all_typegroups = [ob_meshes, ob_lights, ob_cameras, ob_arms, ob_null]
 
     groups = []  # blender groups, only add ones that have objects in the selections
-    materials = {}  # (mat, image) keys, should be a set()
-    textures = {}  # should be a set()
+    materials = set()  # (mat, image) items
+    textures = set()
 
     tmp_ob_type = None  # in case no objects are exported, so as not to raise an error
 
@@ -1978,7 +1853,7 @@ def save_single(operator, scene, filepath="",
                         mats = me.materials
                     else:
                         me = ob.data
-                        me.update(calc_tessface=True)
+                        me.update()
                         mats = me.materials
 
 # 						# Support object colors
@@ -1998,27 +1873,33 @@ def save_single(operator, scene, filepath="",
 # 					if EXP_MESH_HQ_NORMALS:
 # 						BPyMesh.meshCalcNormals(me) # high quality normals nice for realtime engines.
 
-                    texture_mapping_local = {}
-                    material_mapping_local = {}
-                    if me.tessface_uv_textures:
-                        for uvlayer in me.tessface_uv_textures:
-                            for f, uf in zip(me.tessfaces, uvlayer.data):
-                                tex = uf.image
-                                textures[tex] = texture_mapping_local[tex] = None
+                    if not mats:
+                        mats = [None]
 
-                                try:
-                                    mat = mats[f.material_index]
-                                except:
-                                    mat = None
+                    texture_set_local = set()
+                    material_set_local = set()
+                    if me.uv_textures:
+                        for uvlayer in me.uv_textures:
+                            for p, p_uv in zip(me.polygons, uvlayer.data):
+                                tex = p_uv.image
+                                texture_set_local.add(tex)
+                                mat = mats[p.material_index]
 
-                                materials[mat, tex] = material_mapping_local[mat, tex] = None  # should use sets, wait for blender 2.5
+                                # Should not be needed anymore.
+                                #try:
+                                    #mat = mats[p.material_index]
+                                #except:
+                                    #mat = None
+
+                                material_set_local.add((mat, tex))
 
                     else:
                         for mat in mats:
                             # 2.44 use mat.lib too for uniqueness
-                            materials[mat, None] = material_mapping_local[mat, None] = None
-                        else:
-                            materials[None, None] = None
+                            material_set_local.add((mat, None))
+
+                    textures |= texture_set_local
+                    materials |= material_set_local
 
                     if 'ARMATURE' in object_types:
                         armob = ob.find_armature()
@@ -2045,9 +1926,9 @@ def save_single(operator, scene, filepath="",
                     my_mesh = my_object_generic(ob, mtx)
                     my_mesh.blenData = me
                     my_mesh.origData = origData
-                    my_mesh.blenMaterials = list(material_mapping_local.keys())
+                    my_mesh.blenMaterials = list(material_set_local)
                     my_mesh.blenMaterialList = mats
-                    my_mesh.blenTextures = list(texture_mapping_local.keys())
+                    my_mesh.blenTextures = list(texture_set_local)
 
                     # sort the name so we get predictable output, some items may be NULL
                     my_mesh.blenMaterials.sort(key=lambda m: (getattr(m[0], "name", ""), getattr(m[1], "name", "")))
@@ -2199,8 +2080,8 @@ def save_single(operator, scene, filepath="",
     # == WRITE OBJECTS TO THE FILE ==
     # == From now on we are building the FBX file from the information collected above (JCB)
 
-    materials = [(sane_matname(mat_tex_pair), mat_tex_pair) for mat_tex_pair in materials.keys()]
-    textures = [(sane_texname(tex), tex) for tex in textures.keys()  if tex]
+    materials = [(sane_matname(mat_tex_pair), mat_tex_pair) for mat_tex_pair in materials]
+    textures = [(sane_texname(tex), tex) for tex in textures if tex]
     materials.sort(key=lambda m: m[0])  # sort by name
     textures.sort(key=lambda m: m[0])
 
@@ -2210,7 +2091,6 @@ def save_single(operator, scene, filepath="",
     try:
         assert(not (ob_meshes and ('MESH' not in object_types)))
         assert(not (materials and ('MESH' not in object_types)))
-        assert(not (textures and ('MESH' not in object_types)))
         assert(not (textures and ('MESH' not in object_types)))
 
         assert(not (ob_lights and ('LAMP' not in object_types)))
@@ -2291,7 +2171,8 @@ Definitions:  {
 	}''' % tmp)
     del tmp
 
-    # Bind pose is essential for XNA if the 'MESH' is included (JCB)
+    # Bind pose is essential for XNA if the 'MESH' is included,
+    # but could be removed now?
     fw('''
 	ObjectType: "Pose" {
 		Count: 1
@@ -2593,7 +2474,8 @@ Connections:  {''')
         frame_orig = scene.frame_current
 
         if use_anim_optimize:
-            ANIM_OPTIMIZE_PRECISSION_FLOAT = 0.1 ** anim_optimize_precision
+            # Do we really want to keep such behavior? User could enter real value directly...
+            ANIM_OPTIMIZE_PRECISSION_FLOAT = 10 ** (-anim_optimize_precision + 2)
 
         # default action, when no actions are avaioable
         tmp_actions = []
@@ -2605,10 +2487,9 @@ Connections:  {''')
 
         # get the current action first so we can use it if we only export one action (JCB)
         for my_arm in ob_arms:
-            if not blenActionDefault:
-                blenActionDefault = my_arm.blenAction
-                if blenActionDefault:
-                    break
+            blenActionDefault = my_arm.blenAction
+            if blenActionDefault:
+                break
 
         if use_anim_action_all:
             tmp_actions = bpy.data.actions[:]
@@ -2725,9 +2606,7 @@ Takes:  {''')
                         # do nothing,
                         pass
                     else:
-                        if isinstance(my_ob, my_bone_class) and my_ob.blenName not in action_bone_names(my_ob.fbxArm.blenObject, blenAction):
-                            continue
-                        
+
                         fw('\n\t\tModel: "Model::%s" {' % my_ob.fbxName)  # ??? - not sure why this is needed
                         fw('\n\t\t\tVersion: 1.1')
                         fw('\n\t\t\tChannel: "Transform" {')
@@ -2941,7 +2820,7 @@ Takes:  {''')
     # copy all collected files.
     bpy_extras.io_utils.path_reference_copy(copy_set)
 
-    print('export finished in %.4f sec.' % (time.clock() - start_time))
+    print('export finished in %.4f sec.' % (time.process_time() - start_time))
     return {'FINISHED'}
 
 
@@ -3049,22 +2928,6 @@ def save(operator, context,
 
         return {'FINISHED'}  # so the script wont run after we have batch exported.
 
-# APPLICATION REQUIREMENTS
-# Please update the lists for UDK, Unity, XNA etc. on the following web page:
-#   http://wiki.blender.org/index.php/Dev:2.5/Py/Scripts/Import-Export/UnifiedFBX
-
-# XNA FBX Requirements (JCB 29 July 2011)
-# - Armature must be parented to the scene
-# - Armature must be a 'Limb' never a 'null'.  This is in several places.
-# - First bone must be parented to the armature.
-# - Rotation must be completely disabled including
-#       always returning the original matrix in In object_tx().
-#       It is the animation that gets distorted during rotation!
-# - Lone edges cause intermittent errors in the XNA content pipeline!
-#       I have added a warning message and excluded them.
-# - Bind pose must be included with the 'MESH'
-# Typical settings for XNA export
-#   No Cameras, No Lamps, No Edges, No face smoothing, No Default_Take, Armature as bone, Disable rotation
 
 # NOTE TO Campbell -
 #   Can any or all of the following notes be removed because some have been here for a long time? (JCB 27 July 2011)
