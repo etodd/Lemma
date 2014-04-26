@@ -155,7 +155,7 @@ namespace PipelineExtensions
 				}
 			}
 
-			return new Clip(new TimeSpan(animation.Duration.Ticks), channels.Values);
+			return new Clip(channels.Values);
 		}
 
 

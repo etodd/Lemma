@@ -26,10 +26,9 @@ namespace SkinnedModel
 		/// <summary>
 		/// Constructs a new animation clip object.
 		/// </summary>
-		public Clip(TimeSpan duration, IEnumerable<Channel> channels)
+		public Clip(IEnumerable<Channel> channels)
 		{
 			this.Channels = new List<Channel>(channels);
-			this.Duration = TimeSpan.Zero;
 			foreach (Channel channel in this.Channels)
 			{
 				TimeSpan offset = channel[0].Time;
@@ -39,6 +38,14 @@ namespace SkinnedModel
 					foreach (Keyframe frame in channel)
 					{
 						frame.Time += offset;
+						if (this.Duration < frame.Time)
+							this.Duration = frame.Time;
+					}
+				}
+				else
+				{
+					foreach (Keyframe frame in channel)
+					{
 						if (this.Duration < frame.Time)
 							this.Duration = frame.Time;
 					}

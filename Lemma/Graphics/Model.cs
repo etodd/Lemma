@@ -302,8 +302,9 @@ namespace Lemma.Components
 					this.loadEffect(null);
 				this.IsValid.Value = true;
 			}
-			catch (Exception)
+			catch (Exception e)
 			{
+				Log.d(e.ToString());
 				this.model = null;
 				this.effect = null;
 				this.IsValid.Value = false;

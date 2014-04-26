@@ -184,14 +184,14 @@ namespace Lemma.Components
 		/// </summary>
 		public void UpdateWorldTransforms()
 		{
-			// Root bone.
-			this.worldTransforms[0] = AnimatedModel.rotation * this.boneTransforms[0];
-
 			// Child bones.
-			for (int bone = 1; bone < this.worldTransforms.Length; bone++)
+			for (int bone = 0; bone < this.worldTransforms.Length; bone++)
 			{
 				int parentBone = this.skinningData.SkeletonHierarchy[bone];
-				this.worldTransforms[bone] = this.boneTransforms[bone] * this.worldTransforms[parentBone];
+				if (parentBone == -1)
+					this.worldTransforms[bone] = AnimatedModel.rotation * this.boneTransforms[bone];
+				else
+					this.worldTransforms[bone] = this.boneTransforms[bone] * this.worldTransforms[parentBone];
 				this.skinTransforms[bone] = this.skinningData.InverseBindPose[bone] * this.worldTransforms[bone];
 			}
 
