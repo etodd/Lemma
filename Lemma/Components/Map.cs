@@ -145,6 +145,7 @@ namespace Lemma.Components
 		{
 			public int ID;
 			public bool Permanent;
+			public bool Supported;
 			public bool Hard;
 			public string Name;
 			public string DiffuseMap;
@@ -1206,7 +1207,7 @@ namespace Lemma.Components
 						{
 							foreach (Box adjacent in box.Adjacent)
 							{
-								if (box.Type.Permanent && adjacent.Type.Permanent)
+								if (box.Type.Supported && adjacent.Type.Supported)
 									continue;
 
 								BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
@@ -2596,7 +2597,7 @@ namespace Lemma.Components
 
 					IEnumerable<Box> adjacentBoxes;
 
-					if (box.Type.Permanent) // We probably don't have any adjacency info for it.
+					if (box.Type.Supported) // We probably don't have any adjacency info for it.
 						adjacentBoxes = this.getAdjacentBoxes(box);
 					else
 						adjacentBoxes = box.Adjacent;
@@ -2717,7 +2718,7 @@ namespace Lemma.Components
 				if (b.Type == state)
 				{
 					result.Add(b);
-					if (b.Type.Permanent) // We probably don't have any adjacency info for it.
+					if (b.Type.Supported) // We probably don't have any adjacency info for it.
 					{
 						foreach (Box adjacent in this.getAdjacentBoxes(b))
 						{
@@ -3302,7 +3303,7 @@ namespace Lemma.Components
 			{
 				Box b = boxes.Dequeue();
 
-				if (b.Type.Permanent)
+				if (b.Type.Supported)
 					return true;
 
 				lock (b.Adjacent)
