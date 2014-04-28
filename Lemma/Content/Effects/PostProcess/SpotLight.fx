@@ -106,9 +106,9 @@ void SpotLightPS(	in SpotLightPSInput input,
 		data.specular *= shadowValue;
 	}
 
-	lighting.rgb = data.lighting;
+	lighting.rgb = EncodeColor(data.lighting);
 	lighting.a = 1.0f;
-	specular.rgb = data.specular;
+	specular.rgb = EncodeColor(data.specular);
 	specular.a = 1.0f;
 }
 

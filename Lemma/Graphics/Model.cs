@@ -295,16 +295,9 @@ namespace Lemma.Components
 			if (this.effect != null)
 			{
 				// Reset parameters
-				try
-				{
-					this.Color.Reset();
-					this.DiffuseTexture.Reset();
-					this.NormalMap.Reset();
-				}
-				catch (Exception)
-				{
-
-				}
+				this.Color.Reset();
+				this.DiffuseTexture.Reset();
+				this.NormalMap.Reset();
 			}
 		}
 

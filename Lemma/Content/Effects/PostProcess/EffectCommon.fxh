@@ -45,3 +45,15 @@ float3 PositionFromDepthSampler(sampler2D DepthSampler, float2 texCoord, float3 
 {
 	return PositionFromDepth(tex2D(DepthSampler, texCoord).x, viewRay);
 }
+
+const float lightingEncodeRatio = 2.0f;
+
+float3 EncodeColor(float3 color)
+{
+	return color * (1.0f / lightingEncodeRatio);
+}
+
+float3 DecodeColor(float3 color)
+{
+	return color * lightingEncodeRatio;
+}

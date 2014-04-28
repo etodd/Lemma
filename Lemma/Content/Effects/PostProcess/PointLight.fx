@@ -70,9 +70,9 @@ void PointLightPS(	in PointLightPSInput input,
 	float3 viewRay = normalize(input.worldPosition);
 	float3 position = PositionFromDepth(depthValue.x, viewRay);
 	LightingOutput data = CalcPointLighting(PointLightColor, PointLightRadius, normal, PointLightPosition, position, viewRay, tex2D(SourceSampler2, texCoord).a);
-	lighting.rgb = data.lighting;
+	lighting.rgb = EncodeColor(data.lighting);
 	lighting.a = 1.0f;
-	specular.rgb = data.specular;
+	specular.rgb = EncodeColor(data.specular);
 	specular.a = 1.0f;
 }
 

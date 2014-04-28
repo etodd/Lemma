@@ -77,6 +77,7 @@ namespace Lemma.Components
 		public Property<string> EnvironmentMap = new Property<string>();
 		public Property<Vector3> EnvironmentColor = new Property<Vector3> { Value = Vector3.One };
 		public Property<bool> EnableBloom = new Property<bool> { Value = true };
+		public Property<bool> EnableHighResLighting = new Property<bool> { Value = true };
 		public Property<bool> EnableSSAO = new Property<bool> { Value = true };
 
 		public static readonly Color DefaultBackgroundColor = new Color(16.0f / 255.0f, 26.0f / 255.0f, 38.0f / 255.0f, 0.0f);
@@ -195,6 +196,15 @@ namespace Lemma.Components
 				this.Brightness.InternalValue = value;
 				this.bloomEffect.Parameters["Brightness"].SetValue(value);
 			};
+
+			this.EnableHighResLighting.Set = delegate(bool value)
+			{
+				if (value != this.EnableHighResLighting.InternalValue)
+				{
+					this.EnableHighResLighting.InternalValue = value;
+					this.ReallocateBuffers(this.main.ScreenSize);
+				}
+			};
 		}
 
 		private void loadLightRampTexture(string file)
@@ -270,6 +280,14 @@ namespace Lemma.Components
 			}
 		}
 
+		private SurfaceFormat lightingSurfaceFormat
+		{
+			get
+			{
+				return this.hdr && this.EnableHighResLighting ? SurfaceFormat.HdrBlendable : SurfaceFormat.Color;
+			}
+		}
+
 		public void ReallocateBuffers(Point size)
 		{
 			this.screenSize = size;
@@ -280,7 +298,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												this.hdrSurfaceFormat,
+												this.lightingSurfaceFormat,
 												DepthFormat.None,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -292,7 +310,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												this.hdrSurfaceFormat,
+												this.lightingSurfaceFormat,
 												DepthFormat.None,
 												0,
 												RenderTargetUsage.DiscardContents);

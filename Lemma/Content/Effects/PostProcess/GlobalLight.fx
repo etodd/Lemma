@@ -103,10 +103,24 @@ void GlobalLightPS(	in PostProcessPSInput input,
 
 	output.specular += texCUBE(EnvironmentSampler, reflectedViewRay).xyz * EnvironmentColor * specularData.y * specularData.x * (0.3f / 255.0f);
 
-	lighting.rgb = output.lighting;
+	lighting.rgb = EncodeColor(output.lighting);
 	lighting.a = 1.0f;
-	specular.rgb = output.specular;
+	specular.rgb = EncodeColor(output.specular);
 	specular.a = 1.0f;
+}
+
+void GlobalLightUnshadowedPS(	in PostProcessPSInput input,
+					out float4 lighting : COLOR0,
+					out float4 specular : COLOR1)
+{
+	GlobalLightPS(input, lighting, specular, false);
+}
+
+void GlobalLightShadowedPS(	in PostProcessPSInput input,
+					out float4 lighting : COLOR0,
+					out float4 specular : COLOR1)
+{
+	GlobalLightPS(input, lighting, specular, true);
 }
 
 technique GlobalLightShadow
@@ -114,7 +128,7 @@ technique GlobalLightShadow
 	pass p0
 	{
 		VertexShader = compile vs_3_0 PostProcessVS();
-		PixelShader = compile ps_3_0 GlobalLightPS(true);
+		PixelShader = compile ps_3_0 GlobalLightShadowedPS();
 		
 		ZEnable = false;
 		ZWriteEnable = false;
@@ -127,7 +141,7 @@ technique GlobalLight
 	pass p0
 	{
 		VertexShader = compile vs_3_0 PostProcessVS();
-		PixelShader = compile ps_3_0 GlobalLightPS(false);
+		PixelShader = compile ps_3_0 GlobalLightUnshadowedPS();
 		
 		ZEnable = false;
 		ZWriteEnable = false;

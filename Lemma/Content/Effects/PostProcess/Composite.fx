@@ -16,7 +16,7 @@ float4 CompositePS(in PostProcessPSInput input)	: COLOR0
 	{
 		float4 lighting = tex2D(SourceSampler1, input.texCoord);
 		float4 specular = tex2D(SourceSampler2, input.texCoord);
-		result = color.rgb * lighting.rgb + specular.rgb;
+		result = color.rgb * DecodeColor(lighting.rgb + specular.rgb);
 	}
 	
 	return float4(result, 1.0f);
