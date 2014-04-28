@@ -895,7 +895,6 @@ namespace Lemma.Factories
 			{
 				PointLight light = new PointLight();
 				light.Serialize = false;
-				light.Shadowed.Value = false;
 				light.Color.Value = new Vector3(1.0f);
 				light.Enabled.Value = false;
 				result.Add(light);
@@ -923,7 +922,6 @@ namespace Lemma.Factories
 					{
 						light = new PointLight();
 						light.Serialize = false;
-						light.Shadowed.Value = false;
 						light.Color.Value = new Vector3(sparkLightBrightness);
 						result.Add(light);
 						sparkLights.Add(light);

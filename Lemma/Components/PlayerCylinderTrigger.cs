@@ -35,6 +35,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.Add(new CommandBinding(this.OnDisabled, delegate() { this.IsTriggered.Value = false; }));
 		}
 

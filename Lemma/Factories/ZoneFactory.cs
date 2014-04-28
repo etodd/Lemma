@@ -42,7 +42,6 @@ namespace Lemma.Factories
 			Model cornerModel1 = new Model();
 			cornerModel1.Filename.Value = "Models\\sphere";
 			cornerModel1.Color.Value = this.Color;
-			cornerModel1.IsInstanced.Value = false;
 			cornerModel1.Scale.Value = new Vector3(0.5f);
 			cornerModel1.Editable = false;
 			cornerModel1.Serialize = false;
@@ -84,7 +83,6 @@ namespace Lemma.Factories
 			Model model = new Model();
 			model.Filename.Value = "Models\\sphere";
 			model.Color.Value = this.Color;
-			model.IsInstanced.Value = false;
 			model.Scale.Value = new Vector3(0.5f);
 			model.Editable = false;
 			model.Serialize = false;
@@ -126,7 +124,6 @@ namespace Lemma.Factories
 			box.Filename.Value = "Models\\alpha-box";
 			box.Color.Value = new Vector3(this.Color.X, this.Color.Y, this.Color.Z);
 			box.Alpha.Value = 0.125f;
-			box.IsInstanced.Value = false;
 			box.Editable = false;
 			box.Serialize = false;
 			box.DrawOrder.Value = 11; // In front of water

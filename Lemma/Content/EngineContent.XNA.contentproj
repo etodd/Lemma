@@ -191,6 +191,11 @@
     <None Include="Effects\PostProcess\EffectSamplers.fxh">
       <Name>EffectSamplers</Name>
     </None>
+    <Compile Include="Effects\PostProcess\PointLight.fx">
+      <Name>PointLight</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </Compile>
     <None Include="Effects\PostProcess\Shadow2D.fxh">
       <Name>Shadow2D</Name>
       <Importer>EffectImporter</Importer>
@@ -423,11 +428,6 @@
     </Compile>
     <Compile Include="Effects\PostProcess\Bloom.fx">
       <Name>Bloom</Name>
-      <Importer>EffectImporter</Importer>
-      <Processor>EffectProcessor</Processor>
-    </Compile>
-    <Compile Include="Effects\PostProcess\PointLight.fx">
-      <Name>PointLight</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>

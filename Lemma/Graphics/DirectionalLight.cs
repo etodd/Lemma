@@ -19,9 +19,9 @@ namespace Lemma.Components
 			this.Enabled.Editable = true;
 		}
 
-		public override void SetMain(BaseMain _main)
+		public override void InitializeProperties()
 		{
-			base.SetMain(_main);
+			base.InitializeProperties();
 			DirectionalLight.All.Add(this);
 		}
 

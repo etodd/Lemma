@@ -92,6 +92,15 @@ namespace Lemma.Components
 
 		protected Effect effect;
 
+		[XmlIgnore]
+		public Effect InternalEffect
+		{
+			get
+			{
+				return this.effect;
+			}
+		}
+
 		// To store instance transform matrices in a vertex buffer, we use this custom
 		// vertex type which encodes 4x4 matrices as a set of four Vector4 values.
 		protected static VertexDeclaration instanceVertexDeclaration = new VertexDeclaration
@@ -120,6 +129,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			// Make sure all the parameters come before the model and effect
 			this.NormalMap.Set = delegate(string value)
 			{
@@ -171,7 +181,7 @@ namespace Lemma.Components
 				if (this.model != null)
 				{
 					// TODO: Fix bounding box calculation
-					/*BoundingBox boundingBox = new BoundingBox();
+					BoundingBox boundingBox = new BoundingBox();
 					if (!Model.boundingBoxCache.TryGetValue(this.model, out boundingBox))
 					{
 						// Create variables to hold min and max xyz values for the model. Initialise them to extremes
@@ -192,7 +202,7 @@ namespace Lemma.Components
 								int stride = part.VertexBuffer.VertexDeclaration.VertexStride;
 
 								byte[] vertexData = new byte[stride * part.NumVertices];
-								part.VertexBuffer.GetData(part.VertexOffset * stride, vertexData, 0, part.NumVertices, stride);
+								part.VertexBuffer.GetData(part.VertexOffset * stride, vertexData, 0, part.NumVertices, 1);
 
 								// Find minimum and maximum xyz values for this mesh part
 								// We know the position will always be the first 3 float values of the vertex data
@@ -216,7 +226,7 @@ namespace Lemma.Components
 						boundingBox = new BoundingBox(modelMin, modelMax);
 						Model.boundingBoxCache[this.model] = boundingBox;
 					}
-					this.BoundingBox.Value = boundingBox;*/
+					this.BoundingBox.Value = boundingBox;
 				}
 #endif
 			};
@@ -257,7 +267,7 @@ namespace Lemma.Components
 			};
 		}
 
-		public override void LoadContent(bool reload)
+		public virtual void LoadContent(bool reload)
 		{
 			if (reload)
 			{
@@ -285,9 +295,16 @@ namespace Lemma.Components
 			if (this.effect != null)
 			{
 				// Reset parameters
-				this.Color.Reset();
-				this.DiffuseTexture.Reset();
-				this.NormalMap.Reset();
+				try
+				{
+					this.Color.Reset();
+					this.DiffuseTexture.Reset();
+					this.NormalMap.Reset();
+				}
+				catch (Exception)
+				{
+
+				}
 			}
 		}
 
@@ -295,19 +312,28 @@ namespace Lemma.Components
 		{
 			if (!reload)
 				this.UnsupportedTechniques.Clear();
-			try
+			if (string.IsNullOrEmpty(file))
 			{
-				this.model = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>(file);
-				if (this.EffectFile.Value == null)
-					this.loadEffect(null);
-				this.IsValid.Value = true;
-			}
-			catch (Exception e)
-			{
-				Log.d(e.ToString());
 				this.model = null;
 				this.effect = null;
 				this.IsValid.Value = false;
+			}
+			else
+			{
+				try
+				{
+					this.model = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>(file);
+					if (this.EffectFile.Value == null)
+						this.loadEffect(null);
+					this.IsValid.Value = true;
+				}
+				catch (Exception e)
+				{
+					Log.d(e.ToString());
+					this.model = null;
+					this.effect = null;
+					this.IsValid.Value = false;
+				}
 			}
 		}
 
@@ -538,6 +564,50 @@ namespace Lemma.Components
 				result = property;
 			}
 			return (Property<Vector3[]>)result;
+		}
+
+		public Property<Vector4> GetVector4Parameter(string name)
+		{
+			IProperty result = null;
+			if (!this.properties.TryGetValue(name, out result))
+			{
+				Property<Vector4> property = new Property<Vector4> { Editable = false };
+				property.Set = delegate(Vector4 value)
+				{
+					property.InternalValue = value;
+					if (this.effect != null)
+					{
+						EffectParameter param = this.effect.Parameters[name];
+						if (param != null)
+							param.SetValue(value);
+					}
+				};
+				this.properties[name] = property;
+				result = property;
+			}
+			return (Property<Vector4>)result;
+		}
+
+		public Property<Vector4[]> GetVector4ArrayParameter(string name)
+		{
+			IProperty result = null;
+			if (!this.properties.TryGetValue(name, out result))
+			{
+				Property<Vector4[]> property = new Property<Vector4[]> { Editable = false };
+				property.Set = delegate(Vector4[] value)
+				{
+					property.InternalValue = value;
+					if (this.effect != null)
+					{
+						EffectParameter param = this.effect.Parameters[name];
+						if (param != null)
+							param.SetValue(value);
+					}
+				};
+				this.properties[name] = property;
+				result = property;
+			}
+			return (Property<Vector4[]>)result;
 		}
 
 		public Property<Matrix> GetMatrixParameter(string name)

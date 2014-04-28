@@ -228,6 +228,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.EnabledInEditMode.Value = true;
 
 			this.Reseed.Action = this.reseed;

@@ -171,6 +171,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.generator = this.Entity.Get<ProceduralGenerator>();
 
 			this.Spawn.Action = delegate(string type)

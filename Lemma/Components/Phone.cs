@@ -97,6 +97,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.EnabledInEditMode.Value = false;
 			this.EnabledWhenPaused.Value = false;
 		}

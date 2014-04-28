@@ -29,7 +29,6 @@ namespace Lemma.Factories
 		{
 			PointLight light = result.GetOrCreate<PointLight>("PointLight");
 			light.Serialize = false;
-			light.Shadowed.Value = true;
 
 			const float defaultLightAttenuation = 15.0f;
 			light.Attenuation.Value = defaultLightAttenuation;

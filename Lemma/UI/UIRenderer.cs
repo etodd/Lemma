@@ -72,10 +72,13 @@ namespace Lemma.Components
 		private bool needResize = false;
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.RenderTargetSize));
 			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.main.ScreenSize));
 			this.lastMouseState = this.main.LastMouseState;
 			this.main.GraphicsDevice.DeviceReset += this.deviceReset;
+			this.main.AddComponent(this.Root);
+			this.Root.Add(new Binding<Vector2, Point>(this.Root.Size, x => new Vector2(x.X, x.Y), main.ScreenSize));
 		}
 
 		private void deviceReset(object sender, EventArgs e)
@@ -83,17 +86,10 @@ namespace Lemma.Components
 			this.needResize = true;
 		}
 
-		public override void LoadContent(bool reload)
+		public void LoadContent(bool reload)
 		{
 			this.Batch = new SpriteBatch(this.main.GraphicsDevice);
 			this.needResize = true;
-		}
-
-		public override void SetMain(BaseMain _main)
-		{
-			base.SetMain(_main);
-			this.main.AddComponent(this.Root);
-			this.Root.Add(new Binding<Vector2, Point>(this.Root.Size, x => new Vector2(x.X, x.Y), main.ScreenSize));
 		}
 
 		void IUpdateableComponent.Update(float dt)

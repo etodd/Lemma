@@ -14,21 +14,15 @@ namespace Lemma.Components
 		public Property<Vector3> Color = new Property<Vector3> { Value = Vector3.One, Editable = true };
 		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
 		public Property<float> Attenuation = new Property<float> { Value = 10.0f, Editable = true };
-		public Property<bool> Shadowed = new Property<bool> { Value = false, Editable = true };
-		public Property<bool> AlwaysShadow = new Property<bool> { Value = false, Editable = true };
 
 		[XmlIgnore]
 		public Property<BoundingSphere> BoundingSphere = new Property<BoundingSphere> { Editable = false };
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.Add(new Binding<BoundingSphere>(this.BoundingSphere, () => new BoundingSphere(this.Position, this.Attenuation), this.Position, this.Attenuation));
 			this.Enabled.Editable = true;
-		}
-
-		public override void SetMain(BaseMain _main)
-		{
-			base.SetMain(_main);
 			PointLight.All.Add(this);
 		}
 

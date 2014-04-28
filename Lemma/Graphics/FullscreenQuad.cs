@@ -58,7 +58,7 @@ namespace Lemma.Components
 			this.DrawOrder = new Property<int> { Editable = false };
 		}
 
-		public override void LoadContent(bool reload)
+		public virtual void LoadContent(bool reload)
 		{
 			// Create a vertex buffer for the quad, and fill it in
 			this.vertexBuffer = new VertexBuffer(this.main.GraphicsDevice, typeof(QuadVertex), FullscreenQuad.VertexDeclaration.VertexStride * 4, BufferUsage.None);

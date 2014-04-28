@@ -67,7 +67,6 @@ namespace Lemma.Factories
 			model.Filename.Value = "Models\\sphere";
 			model.Color.Value = this.Color;
 			model.Scale.Value = new Vector3(0.5f);
-			model.IsInstanced.Value = false;
 			model.Editable = false;
 			model.Serialize = false;
 

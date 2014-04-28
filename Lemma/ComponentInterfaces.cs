@@ -8,11 +8,6 @@ using Microsoft.Xna.Framework;
 
 namespace Lemma
 {
-	public interface IGraphicsComponent : IComponent
-	{
-		void LoadContent(bool reload);
-	}
-
 	public interface IDrawableComponent : IGraphicsComponent
 	{
 		void Draw(GameTime time, RenderParameters parameters);

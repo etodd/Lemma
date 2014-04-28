@@ -523,6 +523,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.EnabledWhenPaused.Value = true;
 			this.DrawOrder = new Property<int> { Editable = true, Value = 11 };
 			this.Settings.Get = delegate()
@@ -636,7 +637,7 @@ namespace Lemma.Components
 			this.DrawOrder.Value = this.settings.DrawOrder;
 		}
 
-		public override void LoadContent(bool reload)
+		public void LoadContent(bool reload)
 		{
 			if (this.settings != null)
 				this.initialize(reload);

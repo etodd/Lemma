@@ -21,6 +21,7 @@ public class AkGlobalSoundEngineTerminator : Component<BaseMain>
 
 	public override void InitializeProperties()
 	{
+		base.InitializeProperties();
 		if (ms_Instance != null)
 			return; //Don't init twice
 

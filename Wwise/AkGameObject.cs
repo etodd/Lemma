@@ -13,6 +13,7 @@ public class AkGameObject : ComponentBind.Component<BaseMain>
 {
 	public override void InitializeProperties()
 	{				
+		base.InitializeProperties();
 		this.Serialize = false;
 		this.EnabledWhenPaused.Value = false;
 

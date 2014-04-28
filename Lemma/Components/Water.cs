@@ -102,11 +102,13 @@ namespace Lemma.Components
 			this.DrawOrder = new Property<int> { Editable = true, Value = 10 };
 		}
 
+		private const float resolutionRatio = 0.25f;
+
 		private void resize()
 		{
 			Point size = this.main.ScreenSize;
-			size.X = (int)((float)size.X * 0.3f);
-			size.Y = (int)((float)size.Y * 0.3f);
+			size.X = (int)((float)size.X * Water.resolutionRatio);
+			size.Y = (int)((float)size.Y * Water.resolutionRatio);
 			if (this.renderer == null)
 			{
 				this.renderer = new Renderer(this.main, size, false, false, false, false);
@@ -124,7 +126,7 @@ namespace Lemma.Components
 			this.needResize = false;
 		}
 
-		public override void LoadContent(bool reload)
+		public void LoadContent(bool reload)
 		{
 			this.effect = this.main.Content.Load<Effect>("Effects\\Water").Clone();
 			this.effect.Parameters["NormalMap" + Model.SamplerPostfix].SetValue(this.main.Content.Load<Texture2D>("Images\\water-normal"));
@@ -193,6 +195,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.EnabledWhenPaused.Value = true;
 			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.main.ScreenSize));
 			this.Add(new Binding<bool>(this.EnableReflection, ((GameMain)this.main).Settings.EnableReflections));
@@ -321,17 +324,29 @@ namespace Lemma.Components
 			this.main.Space.Add(this.Fluid);
 		}
 
+		private bool isVisible(Camera c)
+		{
+			Vector3 cameraPos = c.Position;
+			bool underwater = this.Fluid.BoundingBox.Contains(cameraPos) != ContainmentType.Disjoint;
+			if (!underwater && cameraPos.Y < this.Position.Value.Y)
+				return false;
+			
+			if (!c.BoundingFrustum.Value.Intersects(this.Fluid.BoundingBox))
+				return false;
+			
+			return true;
+		}
+
 		void IDrawableAlphaComponent.DrawAlpha(Microsoft.Xna.Framework.GameTime time, RenderParameters p)
 		{
-			if (!p.IsMainRender)
+			if (!p.IsMainRender || !this.isVisible(p.Camera))
 				return;
 
 			Vector3 cameraPos = p.Camera.Position;
 			Vector3 pos = this.Position;
-			bool underwater = this.Fluid.BoundingBox.Contains(cameraPos) != ContainmentType.Disjoint;
-			if (!underwater && cameraPos.Y < pos.Y)
-				return;
 
+			bool underwater = this.Fluid.BoundingBox.Contains(cameraPos) != ContainmentType.Disjoint;
+			
 			RasterizerState originalState = this.main.GraphicsDevice.RasterizerState;
 			this.main.GraphicsDevice.RasterizerState = new RasterizerState { CullMode = CullMode.None };
 
@@ -380,7 +395,7 @@ namespace Lemma.Components
 
 		void IDrawablePreFrameComponent.DrawPreFrame(GameTime time, RenderParameters p)
 		{
-			if (!this.EnableReflection)
+			if (!this.EnableReflection || !this.isVisible(p.Camera))
 				return;
 
 			if (this.needResize)

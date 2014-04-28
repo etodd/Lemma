@@ -37,7 +37,6 @@ namespace Lemma.Factories
 		{
 			Model model = new Model();
 			model.Filename.Value = "Models\\sphere";
-			model.IsInstanced.Value = false;
 			model.Add(new Binding<Vector3>(model.Color, result.Get<AmbientLight>().Color));
 			model.Scale.Value = new Vector3(0.5f);
 			model.Editable = false;

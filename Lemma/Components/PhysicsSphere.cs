@@ -29,6 +29,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			if (this.Mass == 0.0f)
 				this.Sphere = new Sphere(Vector3.Zero, this.Radius);
 			else

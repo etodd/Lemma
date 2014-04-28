@@ -113,10 +113,13 @@ namespace Lemma.Factories
 
 			firstPersonModel.Bind(model);
 
+			// Third person model only gets rendered for shadows. No regular rendering or reflections.
 			model.UnsupportedTechniques.Add(Technique.Clip);
 			model.UnsupportedTechniques.Add(Technique.Render);
+			
+			// First-person model only used for regular rendering. No shadows or reflections.
 			firstPersonModel.UnsupportedTechniques.Add(Technique.Shadow);
-			firstPersonModel.UnsupportedTechniques.Add(Technique.PointLightShadow);
+			firstPersonModel.UnsupportedTechniques.Add(Technique.Clip);
 
 			FPSInput input = new FPSInput();
 			input.EnabledWhenPaused.Value = false;
@@ -846,12 +849,10 @@ namespace Lemma.Factories
 					box.Distortion.Value = true;
 					box.Color.Value = new Vector3(2.8f, 3.0f, 3.2f);
 					box.Alpha.Value = blockPossibilityInitialAlpha;
-					box.IsInstanced.Value = false;
 					box.Editable = false;
 					box.Serialize = false;
 					box.DrawOrder.Value = 11; // In front of water
 					box.BoundingBox.Value = new BoundingBox(new Vector3(-0.5f), new Vector3(0.5f));
-					box.CullBoundingBox.Value = true;
 					box.GetVector3Parameter("Scale").Value = scale;
 					box.Add(new Binding<Matrix>(box.Transform, x => matrix * x, block.Map.Transform));
 					result.Add(box);

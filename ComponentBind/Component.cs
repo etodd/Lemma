@@ -21,9 +21,14 @@ namespace ComponentBind
 		Property<bool> EnabledWhenPaused { get; }
 		Property<bool> Suspended { get; }
 		Command Delete { get; }
-		void LoadContent(bool reload);
 		void OnSave();
 		void delete();
+		void InitializeProperties();
+	}
+
+	public interface IGraphicsComponent : IComponent
+	{
+		void LoadContent(bool reload);
 	}
 
 	public interface IUpdateableComponent : IComponent
@@ -118,12 +123,24 @@ namespace ComponentBind
 
 		public virtual void InitializeProperties()
 		{
-
-		}
-
-		public virtual void LoadContent(bool reload)
-		{
-
+			this.Enabled.Set = delegate(bool value)
+			{
+				bool oldValue = this.Enabled.InternalValue;
+				this.Enabled.InternalValue = value;
+				if (!oldValue && value)
+					this.OnEnabled.Execute();
+				else if (oldValue && !value)
+					this.OnDisabled.Execute();
+			};
+			this.Suspended.Set = delegate(bool value)
+			{
+				bool oldValue = this.Suspended.InternalValue;
+				this.Suspended.InternalValue = value;
+				if (!oldValue && value)
+					this.OnSuspended.Execute();
+				else if (oldValue && !value)
+					this.OnResumed.Execute();
+			};
 		}
 
 		public void Add(IBinding binding)
@@ -144,29 +161,9 @@ namespace ComponentBind
 			this.bindings.Clear();
 		}
 
-		public virtual void SetMain(BaseMain _main)
+		public void SetMain(BaseMain _main)
 		{
 			this.main = (MainClass)_main;
-			this.LoadContent(false);
-			this.InitializeProperties();
-			this.Enabled.Set = delegate(bool value)
-			{
-				bool oldValue = this.Enabled.InternalValue;
-				this.Enabled.InternalValue = value;
-				if (!oldValue && value)
-					this.OnEnabled.Execute();
-				else if (oldValue && !value)
-					this.OnDisabled.Execute();
-			};
-			this.Suspended.Set = delegate(bool value)
-			{
-				bool oldValue = this.Suspended.InternalValue;
-				this.Suspended.InternalValue = value;
-				if (!oldValue && value)
-					this.OnSuspended.Execute();
-				else if (oldValue && !value)
-					this.OnResumed.Execute();
-			};
 		}
 
 		public virtual void delete()

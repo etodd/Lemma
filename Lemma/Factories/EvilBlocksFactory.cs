@@ -29,7 +29,6 @@ namespace Lemma.Factories
 		{
 			PointLight light = result.GetOrCreate<PointLight>("PointLight");
 			light.Serialize = false;
-			light.Shadowed.Value = true;
 
 			ListProperty<Entity.Handle> blockEntities = result.GetOrMakeListProperty<Entity.Handle>("Blocks");
 			List<PhysicsBlock> blocks = new List<PhysicsBlock>();

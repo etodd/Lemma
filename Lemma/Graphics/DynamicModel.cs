@@ -43,6 +43,7 @@ namespace Lemma.Components
 
 		public override void LoadContent(bool reload)
 		{
+			base.LoadContent(reload);
 			if (reload)
 			{
 				this.loadEffect(this.EffectFile);

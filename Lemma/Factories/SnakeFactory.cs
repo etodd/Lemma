@@ -90,7 +90,6 @@ namespace Lemma.Factories
 				positionLight.Serialize = false;
 				positionLight.Color.Value = new Vector3(1.5f, 0.5f, 0.5f);
 				positionLight.Add(new Binding<float>(positionLight.Attenuation, positionLightRadius));
-				positionLight.Shadowed.Value = false;
 				positionLight.Add(new Binding<bool, string>(positionLight.Enabled, x => x != "Suspended", ai.CurrentState));
 				positionLight.Add(new Binding<Vector3, string>(positionLight.Color, delegate(string state)
 				{

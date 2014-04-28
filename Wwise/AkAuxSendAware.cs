@@ -26,6 +26,7 @@ public class AkAuxSendAware : Component<BaseMain>, IUpdateableComponent
 	//We'll assume that this object is then affected by the same AuxSendironment setting.
 	public override void InitializeProperties()
 	{
+		base.InitializeProperties();
 		this.Serialize = false;
 		this.transform = this.Entity.Get<Transform>();
 

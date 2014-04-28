@@ -34,13 +34,14 @@ namespace Lemma.Components
 			this.DrawOrder = new Property<int> { Editable = true, Value = 11 };
 		}
 
-		public override void LoadContent(bool reload)
+		public void LoadContent(bool reload)
 		{
 			this.effect = this.main.Content.Load<Effect>("Effects\\Lines").Clone();
 		}
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.Add(new ListNotifyBinding<Line>(delegate() { this.changed = true; }, this.Lines));
 		}
 

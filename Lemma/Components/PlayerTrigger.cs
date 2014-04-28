@@ -34,6 +34,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			Action clear = delegate()
 			{
 				this.IsTriggered.Value = false;

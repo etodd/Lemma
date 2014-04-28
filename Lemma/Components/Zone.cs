@@ -46,6 +46,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			Zone.Zones.Add(this);
 			this.Add(new CommandBinding(this.Delete, delegate() { Zone.Zones.Remove(this); }));
 

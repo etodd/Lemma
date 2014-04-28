@@ -105,6 +105,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.Editable = false;
 			this.EnabledWhenPaused.Value = false;
 			this.character = new Character(this.main, Vector3.Zero, DefaultCharacterHeight, CrouchedCharacterHeight, CharacterRadius, DefaultSupportHeight, CrouchedSupportHeight, 4.0f);

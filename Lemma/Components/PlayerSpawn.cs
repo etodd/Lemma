@@ -27,14 +27,11 @@ namespace Lemma.Components
 			return PlayerSpawn.spawns.FirstOrDefault(x => x.IsActivated);
 		}
 
-		public PlayerSpawn()
-		{
-			this.EnabledInEditMode.Value = false;
-			this.EnabledWhenPaused.Value = false;
-		}
-
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
+			this.EnabledInEditMode.Value = false;
+			this.EnabledWhenPaused.Value = false;
 			PlayerSpawn.spawns.Add(this);
 
 			this.Add(new CommandBinding(this.Delete, delegate() { PlayerSpawn.spawns.Remove(this); }));

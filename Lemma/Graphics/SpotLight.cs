@@ -39,6 +39,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.FieldOfView.Set = delegate(float value)
 			{
 				this.FieldOfView.InternalValue = Math.Max(0.01f, Math.Min((float)Math.PI - 0.01f, value));
@@ -76,11 +77,7 @@ namespace Lemma.Components
 			this.Add(new Binding<BoundingFrustum, Matrix>(this.BoundingFrustum, x => new BoundingFrustum(x), this.ViewProjection));
 
 			this.Enabled.Editable = true;
-		}
 
-		public override void SetMain(BaseMain _main)
-		{
-			base.SetMain(_main);
 			SpotLight.All.Add(this);
 		}
 
@@ -90,7 +87,7 @@ namespace Lemma.Components
 			SpotLight.All.Remove(this);
 		}
 
-		public override void LoadContent(bool reload)
+		public void LoadContent(bool reload)
 		{
 			if (reload)
 			{

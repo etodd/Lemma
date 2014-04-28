@@ -14,6 +14,7 @@ namespace Lemma.Components
 		public ListProperty<uint> Events = new ListProperty<uint>();
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.Serialize = false;
 
 			this.Add(new CommandBinding(this.Delete, delegate()

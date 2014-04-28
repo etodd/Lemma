@@ -121,7 +121,7 @@ namespace Lemma.Factories
 					Map.CellState s = state;
 
 					if (!s.ShadowCast)
-						model.UnsupportedTechniques.AddAll(new[] { Technique.Shadow, Technique.PointLightShadow });
+						model.UnsupportedTechniques.Add(Technique.Shadow);
 
 					result.Add(model);
 

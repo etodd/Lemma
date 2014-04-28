@@ -42,6 +42,9 @@ namespace ComponentBind
 			if (component.NeedsAdded)
 			{
 				component.SetMain(this);
+				if (typeof(IGraphicsComponent).IsAssignableFrom(component.GetType()))
+					((IGraphicsComponent)component).LoadContent(false);
+				component.InitializeProperties();
 				this.componentsToAdd.Add(component);
 			}
 		}

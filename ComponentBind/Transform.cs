@@ -28,6 +28,7 @@ namespace ComponentBind
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.Add(new TwoWayBinding<Vector3, Matrix>(
 				this.Position,
 				delegate(Matrix value)

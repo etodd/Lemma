@@ -48,6 +48,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.EnabledWhenPaused.Value = false;
 			this.Enabled.Editable = true;
 

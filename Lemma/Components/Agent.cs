@@ -13,9 +13,6 @@ namespace Lemma.Components
 	{
 		private static List<Agent> agents = new List<Agent>();
 
-		[XmlIgnore]
-		public Command Die = new Command();
-
 		public static bool Query(Vector3 pos, float visionRadius, float soundRadius, Agent agent)
 		{
 			return Agent.query(pos, visionRadius, soundRadius, new[] { agent }) != null;
@@ -51,8 +48,18 @@ namespace Lemma.Components
 			return null;
 		}
 
+		[XmlIgnore]
+		public Command Die = new Command();
+
+		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
+
+		public Property<float> Health = new Property<float> { Value = 1.0f };
+
+		public Property<bool> Loud = new Property<bool> { Value = true };
+
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			Agent.agents.Add(this);
 			this.Add(new CommandBinding(this.Delete, delegate()
 			{
@@ -64,11 +71,5 @@ namespace Lemma.Components
 					this.Die.Execute();
 			}, this.Health));
 		}
-
-		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
-
-		public Property<float> Health = new Property<float> { Value = 1.0f };
-
-		public Property<bool> Loud = new Property<bool> { Value = true };
 	}
 }

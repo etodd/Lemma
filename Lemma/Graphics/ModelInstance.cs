@@ -261,6 +261,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.Enabled.Editable = true;
 
 			this.Filename.Set = delegate(string value)

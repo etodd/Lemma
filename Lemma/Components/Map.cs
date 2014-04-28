@@ -1091,6 +1091,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.updateBounds();
 
 			if (Map.workThread == null)

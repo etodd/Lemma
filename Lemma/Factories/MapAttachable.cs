@@ -113,7 +113,6 @@ namespace Lemma.Factories
 			model.Filename.Value = "Models\\cone";
 			if (color != null)
 				model.Add(new Binding<Vector3>(model.Color, color));
-			model.IsInstanced.Value = false;
 
 			Property<bool> editorSelected = result.GetOrMakeProperty<bool>("EditorSelected");
 			editorSelected.Serialize = false;

@@ -6,9 +6,6 @@ float4x4 WorldMatrix;
 float4x4 LastFrameWorldViewProjectionMatrix;
 float2 DestinationDimensions;
 
-float3 PointLightPosition;
-float PointLightRadius;
-
 // Diffuse texture (optional)
 texture2D DiffuseTexture;
 sampler2D DiffuseSampler = sampler_state
@@ -55,28 +52,12 @@ void ShadowPS (	in ShadowPSInput input,
 	out_Depth = float4(1.0f - (input.clipSpacePosition.z / input.clipSpacePosition.w), 1.0f, 1.0f, 1.0f);
 }
 
-// Point light shadow pixel shader
-void PointLightShadowPS (	in ShadowPSInput input,
-							out float4 out_Depth : COLOR0)
-{
-	out_Depth = float4(1.0f - (length(input.worldPosition - PointLightPosition) / PointLightRadius), 1.0f, 1.0f, 1.0f);
-}
-
 void ShadowAlphaPS (	in ShadowPSInput input,
 				in TexturePSInput tex,
 				out float4 out_Depth : COLOR0)
 {
 	clip(tex2D(DiffuseSampler, tex.uvCoordinates).a - 0.5f);
 	out_Depth = float4(1.0f - (input.clipSpacePosition.z / input.clipSpacePosition.w), 1.0f, 1.0f, 1.0f);
-}
-
-// Point light shadow pixel shader
-void PointLightShadowAlphaPS (	in ShadowPSInput input,
-							in TexturePSInput tex,
-							out float4 out_Depth : COLOR0)
-{
-	clip(tex2D(DiffuseSampler, tex.uvCoordinates).a - 0.5f);
-	out_Depth = float4(1.0f - (length(input.worldPosition - PointLightPosition) / PointLightRadius), 1.0f, 1.0f, 1.0f);
 }
 
 // Prefab pixel shaders

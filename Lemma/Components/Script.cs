@@ -135,6 +135,7 @@ namespace Lemma.Scripts
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.Errors.Value = null;
 			this.Name.Set = delegate(string value)
 			{

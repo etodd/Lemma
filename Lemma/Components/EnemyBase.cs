@@ -92,6 +92,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.Add(new Binding<Vector3>(this.Position, () => Vector3.Transform(new Vector3(0.0f, 0.0f, this.Offset), this.Transform), this.Offset, this.Transform));
 			if (!this.main.EditorEnabled)
 			{

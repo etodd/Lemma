@@ -168,6 +168,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.Add(new CommandBinding(this.OnDisabled, delegate()
 			{
 				// Release all the keys

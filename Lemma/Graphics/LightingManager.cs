@@ -7,11 +7,13 @@ using Lemma.Components;
 
 namespace Lemma.Components
 {
-	public class LightingManager : Component<Main>
+	public class LightingManager : Component<Main>, IGraphicsComponent
 	{
 		public enum DynamicShadowSetting { Off, Low, Medium, High, Ultra };
 		private const int maxDirectionalLights = 3;
+
 		private const int maxMaterials = 16;
+
 		private int globalShadowMapSize;
 		private int detailGlobalShadowMapSize;
 		private const float lightShadowThreshold = 60.0f;
@@ -20,8 +22,6 @@ namespace Lemma.Components
 		private const float detailGlobalShadowFocusInterval = 1.0f;
 		private int spotShadowMapSize;
 		private int maxShadowedSpotLights;
-		private int pointShadowMapSize;
-		private int maxShadowedPointLights;
 
 		private Vector3[] directionalLightDirections = new Vector3[LightingManager.maxDirectionalLights];
 		private Vector3[] directionalLightColors = new Vector3[LightingManager.maxDirectionalLights];
@@ -30,17 +30,12 @@ namespace Lemma.Components
 
 		private Microsoft.Xna.Framework.Graphics.RenderTarget2D globalShadowMap;
 		private Microsoft.Xna.Framework.Graphics.RenderTarget2D detailGlobalShadowMap;
-#if MONOGAME
-		private Microsoft.Xna.Framework.Graphics.RenderTarget2D[][] pointShadowMaps;
-#else
-		private Microsoft.Xna.Framework.Graphics.RenderTargetCube[] pointShadowMaps;
-#endif
 		private Microsoft.Xna.Framework.Graphics.RenderTarget2D[] spotShadowMaps;
 		private Dictionary<IComponent, int> shadowMapIndices = new Dictionary<IComponent, int>();
 		private DirectionalLight globalShadowLight;
 		private Matrix globalShadowViewProjection;
 		private Matrix detailGlobalShadowViewProjection;
-		private PointLight currentPointLight;
+		private bool globalShadowMapRenderedLastFrame;
 
 		private Camera shadowCamera;
 
@@ -58,6 +53,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.shadowCamera = new Camera();
 			this.main.AddComponent(this.shadowCamera);
 			this.DynamicShadows.Set = delegate(DynamicShadowSetting value)
@@ -68,7 +64,6 @@ namespace Lemma.Components
 				{
 					case DynamicShadowSetting.Off:
 						this.EnableGlobalShadowMap = false;
-						this.maxShadowedPointLights = 0;
 						this.maxShadowedSpotLights = 0;
 						break;
 					case DynamicShadowSetting.Low:
@@ -77,15 +72,12 @@ namespace Lemma.Components
 						this.detailGlobalShadowMapSize = 512;
 						this.spotShadowMapSize = 256;
 						this.maxShadowedSpotLights = 1;
-						this.maxShadowedPointLights = 0;
 						break;
 					case DynamicShadowSetting.Medium:
 						this.EnableGlobalShadowMap = true;
 						this.globalShadowMapSize = 1024;
 						this.detailGlobalShadowMapSize = 1024;
 						this.spotShadowMapSize = 512;
-						this.pointShadowMapSize = 512;
-						this.maxShadowedPointLights = 1;
 						this.maxShadowedSpotLights = 1;
 						break;
 					case DynamicShadowSetting.High:
@@ -93,8 +85,6 @@ namespace Lemma.Components
 						this.globalShadowMapSize = 2048;
 						this.detailGlobalShadowMapSize = 2048;
 						this.spotShadowMapSize = 512;
-						this.pointShadowMapSize = 512;
-						this.maxShadowedPointLights = 2;
 						this.maxShadowedSpotLights = 2;
 						break;
 					case DynamicShadowSetting.Ultra:
@@ -102,21 +92,12 @@ namespace Lemma.Components
 						this.globalShadowMapSize = 2048;
 						this.detailGlobalShadowMapSize = 2048;
 						this.spotShadowMapSize = 1024;
-						this.pointShadowMapSize = 1024;
-						this.maxShadowedPointLights = 2;
-						this.maxShadowedSpotLights = 2;
+						this.maxShadowedSpotLights = 3;
 						break;
 				}
 				if (this.globalShadowMap != null)
 				{
 					this.globalShadowMap.Dispose();
-#if MONOGAME
-					foreach (Microsoft.Xna.Framework.Graphics.RenderTarget2D target in this.pointShadowMaps.SelectMany(x => x))
-						target.Dispose();
-#else
-					foreach (Microsoft.Xna.Framework.Graphics.RenderTargetCube target in this.pointShadowMaps)
-						target.Dispose();
-#endif
 
 					foreach (Microsoft.Xna.Framework.Graphics.RenderTarget2D target in this.spotShadowMaps)
 						target.Dispose();
@@ -149,38 +130,6 @@ namespace Lemma.Components
 					);
 				}
 
-#if MONOGAME
-				this.pointShadowMaps = new Microsoft.Xna.Framework.Graphics.RenderTarget2D[this.maxShadowedPointLights][];
-#else
-				this.pointShadowMaps = new Microsoft.Xna.Framework.Graphics.RenderTargetCube[this.maxShadowedPointLights];
-#endif
-
-				for (int i = 0; i < this.maxShadowedPointLights; i++)
-				{
-#if MONOGAME
-					this.pointShadowMaps[i] = new Microsoft.Xna.Framework.Graphics.RenderTarget2D[6];
-					for (int j = 0; j < 6; j++)
-					{
-						this.pointShadowMaps[i][j] = new Microsoft.Xna.Framework.Graphics.RenderTarget2D(this.main.GraphicsDevice,
-															this.pointShadowMapSize,
-															this.pointShadowMapSize,
-															false,
-															Microsoft.Xna.Framework.Graphics.SurfaceFormat.Single,
-															Microsoft.Xna.Framework.Graphics.DepthFormat.Depth24,
-															0,
-															Microsoft.Xna.Framework.Graphics.RenderTargetUsage.DiscardContents);
-					}
-#else
-					this.pointShadowMaps[i] = new Microsoft.Xna.Framework.Graphics.RenderTargetCube(this.main.GraphicsDevice,
-															this.pointShadowMapSize,
-															false,
-															Microsoft.Xna.Framework.Graphics.SurfaceFormat.Single,
-															Microsoft.Xna.Framework.Graphics.DepthFormat.Depth24,
-															0,
-															Microsoft.Xna.Framework.Graphics.RenderTargetUsage.DiscardContents);
-#endif
-				}
-
 				this.spotShadowMaps = new Microsoft.Xna.Framework.Graphics.RenderTarget2D[this.maxShadowedSpotLights];
 				for (int i = 0; i < this.maxShadowedSpotLights; i++)
 				{
@@ -196,7 +145,7 @@ namespace Lemma.Components
 			};
 		}
 
-		public override void LoadContent(bool reload)
+		public void LoadContent(bool reload)
 		{
 			if (reload)
 				this.DynamicShadows.Reset();
@@ -262,28 +211,31 @@ namespace Lemma.Components
 
 		public void SetRenderParameters(Microsoft.Xna.Framework.Graphics.Effect effect, RenderParameters parameters)
 		{
-			if (parameters.Technique == Technique.PointLightShadow)
-			{
-				effect.Parameters["PointLightPosition"].SetValue(this.currentPointLight.Position);
-				effect.Parameters["PointLightRadius"].SetValue(this.currentPointLight.Attenuation);
-			}
 		}
 
 		public void RenderGlobalShadowMap(Camera camera)
 		{
-			Vector3 focus = camera.Position;
-			focus = new Vector3((float)Math.Round(focus.X / LightingManager.globalShadowFocusInterval), (float)Math.Round(focus.Y / LightingManager.globalShadowFocusInterval), (float)Math.Round(focus.Z / LightingManager.globalShadowFocusInterval)) * LightingManager.globalShadowFocusInterval;
-			Vector3 shadowCameraOffset = this.globalShadowLight.Direction.Value * -camera.FarPlaneDistance;
-			this.shadowCamera.View.Value = Matrix.CreateLookAt(focus + shadowCameraOffset, focus, Vector3.Up);
-
+			Vector3 focus;
+			Vector3 shadowCameraOffset;
 			float size = camera.FarPlaneDistance;
-			this.shadowCamera.SetOrthographicProjection(size, size, 1.0f, size * 2.0f);
 
-			this.main.GraphicsDevice.SetRenderTarget(this.globalShadowMap);
-			this.main.GraphicsDevice.Clear(new Color(0, 0, 0));
-			this.main.DrawScene(new RenderParameters { Camera = this.shadowCamera, Technique = Technique.Shadow });
+			if (this.globalShadowMapRenderedLastFrame)
+				this.globalShadowMapRenderedLastFrame = false;
+			else
+			{
+				focus = camera.Position;
+				focus = new Vector3((float)Math.Round(focus.X / LightingManager.globalShadowFocusInterval), (float)Math.Round(focus.Y / LightingManager.globalShadowFocusInterval), (float)Math.Round(focus.Z / LightingManager.globalShadowFocusInterval)) * LightingManager.globalShadowFocusInterval;
+				shadowCameraOffset = this.globalShadowLight.Direction.Value * -camera.FarPlaneDistance;
+				this.shadowCamera.View.Value = Matrix.CreateLookAt(focus + shadowCameraOffset, focus, Vector3.Up);
 
-			this.globalShadowViewProjection = this.shadowCamera.ViewProjection;
+				this.shadowCamera.SetOrthographicProjection(size, size, 1.0f, size * 2.0f);
+
+				this.main.GraphicsDevice.SetRenderTarget(this.globalShadowMap);
+				this.main.GraphicsDevice.Clear(new Color(0, 0, 0));
+				this.main.DrawScene(new RenderParameters { Camera = this.shadowCamera, Technique = Technique.Shadow });
+
+				this.globalShadowViewProjection = this.shadowCamera.ViewProjection;
+			}
 
 			// Detail map
 			focus = camera.Position;
@@ -299,38 +251,6 @@ namespace Lemma.Components
 			this.main.DrawScene(new RenderParameters { Camera = this.shadowCamera, Technique = Technique.Shadow });
 
 			this.detailGlobalShadowViewProjection = this.shadowCamera.ViewProjection;
-		}
-
-		public void RenderPointShadowMap(PointLight light, int index)
-		{
-			Matrix[] views = new Matrix[6];
-
-			// Create view matrices
-			Vector3 position = light.Position;
-			views[0] = Matrix.CreateLookAt(position, position + Vector3.Right, Vector3.Up);
-			views[1] = Matrix.CreateLookAt(position, position + Vector3.Left, Vector3.Up);
-			views[2] = Matrix.CreateLookAt(position, position + Vector3.Up, Vector3.Backward);
-			views[3] = Matrix.CreateLookAt(position, position + Vector3.Down, Vector3.Forward);
-			views[4] = Matrix.CreateLookAt(position, position + Vector3.Forward, Vector3.Up);
-			views[5] = Matrix.CreateLookAt(position, position + Vector3.Backward, Vector3.Up);
-
-			// Projection matrix
-			this.shadowCamera.Position.Value = position;
-			this.shadowCamera.SetPerspectiveProjection((float)Math.PI / 2.0f, new Point(this.pointShadowMapSize, this.pointShadowMapSize), 1.0f, Math.Max(2.0f, light.Attenuation));
-
-			this.currentPointLight = light;
-
-			for (int i = 0; i < 6; i++)
-			{
-				this.shadowCamera.View.Value = views[i];
-#if MONOGAME
-				this.main.GraphicsDevice.SetRenderTarget(this.pointShadowMaps[index][i]);
-#else
-				this.main.GraphicsDevice.SetRenderTarget(this.pointShadowMaps[index], (Microsoft.Xna.Framework.Graphics.CubeMapFace)i);
-#endif
-				this.main.GraphicsDevice.Clear(new Color(0, 255, 255));
-				this.main.DrawScene(new RenderParameters { Camera = this.shadowCamera, Technique = Technique.PointLightShadow });
-			}
 		}
 
 		public void RenderSpotShadowMap(SpotLight light, int index)
@@ -350,23 +270,6 @@ namespace Lemma.Components
 			this.main.GraphicsDevice.RasterizerState = reverseCullState;
 
 			this.shadowMapIndices.Clear();
-			// Collect point lights
-			List<PointLight> shadowedPointLights = new List<PointLight>();
-			foreach (PointLight light in PointLight.All)
-			{
-				if (light.Enabled && !light.Suspended && light.Shadowed && light.Attenuation > 0.0f && camera.BoundingFrustum.Value.Intersects(light.BoundingSphere))
-					shadowedPointLights.Add(light);
-			}
-			shadowedPointLights = shadowedPointLights.Select(x => new { Light = x, Score = (x.Position.Value - camera.Position.Value).LengthSquared() / x.Attenuation }).Where(x => x.Light.AlwaysShadow || x.Score < LightingManager.lightShadowThreshold).OrderBy(x => x.Score).Take(this.maxShadowedPointLights).Select(x => x.Light).ToList();
-
-			// Render point shadow maps
-			int index = 0;
-			foreach (PointLight light in shadowedPointLights)
-			{
-				this.shadowMapIndices[light] = index;
-				this.RenderPointShadowMap(light, index);
-				index++;
-			}
 
 			// Collect spot lights
 			List<SpotLight> shadowedSpotLights = new List<SpotLight>();
@@ -378,7 +281,7 @@ namespace Lemma.Components
 			shadowedSpotLights = shadowedSpotLights.Select(x => new { Light = x, Score = (x.Position.Value - camera.Position.Value).LengthSquared() / x.Attenuation }).Where(x => x.Score < LightingManager.lightShadowThreshold).OrderBy(x => x.Score).Take(this.maxShadowedSpotLights).Select(x => x.Light).ToList();
 
 			// Render spot shadow maps
-			index = 0;
+			int index = 0;
 			foreach (SpotLight light in shadowedSpotLights)
 			{
 				this.shadowMapIndices[light] = index;
@@ -443,18 +346,6 @@ namespace Lemma.Components
 
 		public void SetPointLightParameters(PointLight light, Microsoft.Xna.Framework.Graphics.Effect effect, Vector3 cameraPos)
 		{
-			bool shadowed = light.Shadowed && this.shadowMapIndices.ContainsKey(light);
-			effect.CurrentTechnique = effect.Techniques[shadowed ? "PointLightShadowed" : "PointLight"];
-			if (shadowed)
-			{
-#if MONOGAME
-				// TODO: MonoGame point light shadow maps
-#else
-				effect.Parameters["ShadowMap" + Model.SamplerPostfix].SetValue(this.pointShadowMaps[this.shadowMapIndices[light]]);
-#endif
-				effect.Parameters["ShadowMapSize"].SetValue(new Vector3(this.pointShadowMapSize));
-			}
-
 			effect.Parameters["WorldMatrix"].SetValue(Matrix.CreateScale(light.Attenuation) * Matrix.CreateTranslation(light.Position - cameraPos));
 			effect.Parameters["PointLightPosition"].SetValue(light.Position - cameraPos);
 			effect.Parameters["PointLightRadius"].SetValue(light.Attenuation);
@@ -465,15 +356,9 @@ namespace Lemma.Components
 		{
 			base.delete();
 			this.shadowCamera.Delete.Execute();
+
 			foreach (Microsoft.Xna.Framework.Graphics.RenderTarget2D shadowMap in this.spotShadowMaps)
 				shadowMap.Dispose();
-#if MONOGAME
-			foreach (Microsoft.Xna.Framework.Graphics.RenderTarget2D shadowMap in this.pointShadowMaps.SelectMany(x => x))
-				shadowMap.Dispose();
-#else
-			foreach (Microsoft.Xna.Framework.Graphics.RenderTargetCube shadowMap in this.pointShadowMaps)
-				shadowMap.Dispose();
-#endif
 
 			if (this.globalShadowMap != null)
 				this.globalShadowMap.Dispose();

@@ -44,7 +44,6 @@ namespace Lemma.Factories
 			PointLight light = result.GetOrCreate<PointLight>();
 			light.Color.Value = new Vector3(1.3f, 0.5f, 0.5f);
 			light.Attenuation.Value = 15.0f;
-			light.Shadowed.Value = false;
 			light.Serialize = false;
 
 			ListProperty<Entity.Handle> dynamicMaps = result.GetListProperty<Entity.Handle>("DynamicMaps");

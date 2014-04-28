@@ -93,6 +93,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.Add(new Binding<float, Point>(this.AspectRatio, x => (float)x.X / (float)x.Y, this.ViewportSize));
 			
 			this.Add(new Binding<Matrix>(this.Projection,

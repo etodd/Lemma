@@ -31,6 +31,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.PlayerEnteredRange.Action = delegate(Entity p)
 			{
 				Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance(this.main).Get<Phone>();

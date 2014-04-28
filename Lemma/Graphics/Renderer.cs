@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework;
 
 namespace Lemma.Components
 {
-	public enum Technique { Render, Shadow, PointLightShadow, NonPostProcessed, Clip };
+	public enum Technique { Render, Shadow, NonPostProcessed, Clip };
 
 	public class RenderParameters
 	{
@@ -55,7 +55,7 @@ namespace Lemma.Components
 	/// <summary>
 	/// Deferred renderer
 	/// </summary>
-	public class Renderer : Component<Main>
+	public class Renderer : Component<Main>, IGraphicsComponent
 	{
 		private LightingManager lightingManager;
 
@@ -132,6 +132,7 @@ namespace Lemma.Components
 
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
 			this.BlurAmount.Set = delegate(float value)
 			{
 				this.BlurAmount.InternalValue = value;
@@ -208,15 +209,17 @@ namespace Lemma.Components
 			Renderer.globalLightEffect.Parameters["Environment" + Model.SamplerPostfix].SetValue(this.environmentMap);
 		}
 
-		public override void LoadContent(bool reload)
+		public void LoadContent(bool reload)
 		{
 			// Load static resources
 			if (reload)
 				Renderer.quad.LoadContent(true);
-			else
+			else if (Renderer.quad == null)
 			{
 				Renderer.quad = new FullscreenQuad();
 				Renderer.quad.SetMain(this.main);
+				Renderer.quad.LoadContent(false);
+				Renderer.quad.InitializeProperties();
 			}
 
 			this.spriteBatch = new SpriteBatch(this.main.GraphicsDevice);
@@ -500,16 +503,17 @@ namespace Lemma.Components
 			float originalFarPlane = parameters.Camera.FarPlaneDistance;
 			parameters.Camera.FarPlaneDistance.Value *= 3.0f;
 			parameters.Camera.SetParameters(Renderer.pointLightEffect);
+			parameters.Camera.SetParameters(Renderer.spotLightEffect);
 			parameters.Camera.FarPlaneDistance.Value = originalFarPlane;
 
 			this.lightingManager.SetMaterialParameters(Renderer.pointLightEffect);
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.pointLightEffect);
+
 			for (int i = 0; i < PointLight.All.Count; i++)
 			{
 				PointLight light = PointLight.All[i];
 				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || light.Color.Value.LengthSquared() == 0.0f || !originalBoundingFrustum.Intersects(light.BoundingSphere))
 					continue;
-
 				this.lightingManager.SetPointLightParameters(light, Renderer.pointLightEffect, originalCameraPosition);
 				this.applyEffect(Renderer.pointLightEffect);
 				this.drawModel(Renderer.pointLightModel);
@@ -518,9 +522,6 @@ namespace Lemma.Components
 			// Spot lights
 
 			// HACK
-			parameters.Camera.FarPlaneDistance.Value *= 3.0f;
-			parameters.Camera.SetParameters(Renderer.spotLightEffect);
-			parameters.Camera.FarPlaneDistance.Value = originalFarPlane;
 
 			this.lightingManager.SetMaterialParameters(Renderer.spotLightEffect);
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.spotLightEffect);

@@ -12,7 +12,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma.Components
 {
-	public class UIComponent : Component<Main>
+	public class UIComponent : Component<Main>, IGraphicsComponent
 	{
 		private UIRenderer _renderer;
 		protected UIRenderer renderer
@@ -84,19 +84,8 @@ namespace Lemma.Components
 
 		protected bool layoutDirty;
 
-		public override void SetMain(BaseMain _main)
+		public virtual void LoadContent(bool reload)
 		{
-			base.SetMain(_main);
-			foreach (UIComponent child in this.Children)
-			{
-				if (child.main == null)
-					this.main.AddComponent(child);
-			}
-		}
-
-		public override void LoadContent(bool reload)
-		{
-			base.LoadContent(reload);
 			if (reload)
 			{
 				foreach (UIComponent child in this.Children)
@@ -148,6 +137,12 @@ namespace Lemma.Components
 
 		}
 
+		public void Detach()
+		{
+			this.Parent.Value.Children.RemoveWithoutNotifying(this);
+			this.Parent.Value = null;
+		}
+
 		public UIComponent()
 		{
 			this.Children.ItemAdded += new ListProperty<UIComponent>.ItemAddedEventHandler(delegate(int index, UIComponent child)
@@ -179,14 +174,10 @@ namespace Lemma.Components
 			});
 		}
 
-		public void Detach()
-		{
-			this.Parent.Value.Children.RemoveWithoutNotifying(this);
-			this.Parent.Value = null;
-		}
-
 		public override void InitializeProperties()
 		{
+			base.InitializeProperties();
+
 			this.Add(new TwoWayBinding<Vector2, Vector2>(
 				this.AnchorPoint,
 				x => new Vector2(1.0f - x.X, 1.0f - x.Y),
@@ -202,6 +193,12 @@ namespace Lemma.Components
 					* Matrix.CreateScale(new Vector3(this.Scale, 1.0f))
 					* Matrix.CreateTranslation(new Vector3(this.Position.Value, 0.0f));
 			}, this.Position, this.Size, this.Scale, this.Rotation, this.AnchorPoint));
+
+			foreach (UIComponent child in this.Children)
+			{
+				if (child.main == null)
+					this.main.AddComponent(child);
+			}
 		}
 
 		public Matrix GetAbsoluteTransform()

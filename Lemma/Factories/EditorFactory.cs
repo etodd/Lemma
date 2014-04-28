@@ -1143,7 +1143,6 @@ namespace Lemma.Factories
 			PointLight editorLight = result.GetOrCreate<PointLight>("EditorLight");
 			editorLight.Serialize = false;
 			editorLight.Editable = false;
-			editorLight.Shadowed.Value = false;
 			editorLight.Add(new Binding<float>(editorLight.Attenuation, main.Camera.FarPlaneDistance));
 			editorLight.Color.Value = new Vector3(1.5f, 1.5f, 1.5f);
 			editorLight.Add(new Binding<Vector3>(editorLight.Position, main.Camera.Position));
