@@ -70,29 +70,28 @@ namespace Lemma.Components
 						this.EnableGlobalShadowMap = true;
 						this.globalShadowMapSize = 1024;
 						this.detailGlobalShadowMapSize = 512;
+						this.maxShadowedSpotLights = 0;
+						break;
+					case DynamicShadowSetting.Medium:
+						this.EnableGlobalShadowMap = true;
+						this.globalShadowMapSize = 1024;
+						this.detailGlobalShadowMapSize = 1024;
 						this.spotShadowMapSize = 256;
 						this.maxShadowedSpotLights = 1;
 						break;
-					case DynamicShadowSetting.Medium:
+					case DynamicShadowSetting.High:
 						this.EnableGlobalShadowMap = true;
 						this.globalShadowMapSize = 1024;
 						this.detailGlobalShadowMapSize = 1024;
 						this.spotShadowMapSize = 512;
 						this.maxShadowedSpotLights = 1;
 						break;
-					case DynamicShadowSetting.High:
-						this.EnableGlobalShadowMap = true;
-						this.globalShadowMapSize = 2048;
-						this.detailGlobalShadowMapSize = 1024;
-						this.spotShadowMapSize = 512;
-						this.maxShadowedSpotLights = 2;
-						break;
 					case DynamicShadowSetting.Ultra:
 						this.EnableGlobalShadowMap = true;
-						this.globalShadowMapSize = 2048;
+						this.globalShadowMapSize = 1024;
 						this.detailGlobalShadowMapSize = 2048;
 						this.spotShadowMapSize = 1024;
-						this.maxShadowedSpotLights = 3;
+						this.maxShadowedSpotLights = 1;
 						break;
 				}
 				if (this.globalShadowMap != null)
@@ -101,6 +100,8 @@ namespace Lemma.Components
 
 					foreach (Microsoft.Xna.Framework.Graphics.RenderTarget2D target in this.spotShadowMaps)
 						target.Dispose();
+					
+					this.detailGlobalShadowMap.Dispose();
 				}
 
 				if (this.EnableGlobalShadowMap)
@@ -296,18 +297,20 @@ namespace Lemma.Components
 				this.RenderGlobalShadowMap(camera);
 		}
 
-		public void SetGlobalLightParameters(Microsoft.Xna.Framework.Graphics.Effect effect, Vector3 cameraPos)
+		public void SetGlobalLightParameters(Microsoft.Xna.Framework.Graphics.Effect effect, Camera camera, Vector3 cameraPos)
 		{
 			effect.Parameters["DirectionalLightDirections"].SetValue(this.directionalLightDirections);
 			effect.Parameters["DirectionalLightColors"].SetValue(this.directionalLightColors);
 			if (this.EnableGlobalShadowMap)
 			{
+				effect.Parameters["ShadowBias"].SetValue(camera.FarPlaneDistance * 0.02f / this.globalShadowMapSize);
 				effect.Parameters["ShadowViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * this.globalShadowViewProjection);
 				effect.Parameters["ShadowMapSize"].SetValue(this.globalShadowMapSize);
 				effect.Parameters["ShadowMap" + Model.SamplerPostfix].SetValue(this.globalShadowMap);
 
 				effect.Parameters["DetailShadowViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * this.detailGlobalShadowViewProjection);
 				effect.Parameters["DetailShadowMapSize"].SetValue(this.detailGlobalShadowMapSize);
+				effect.Parameters["DetailShadowBias"].SetValue(camera.FarPlaneDistance * 0.02f * LightingManager.detailGlobalShadowSizeRatio / this.detailGlobalShadowMapSize);
 				effect.Parameters["DetailShadowMap" + Model.SamplerPostfix].SetValue(this.detailGlobalShadowMap);
 			}
 		}

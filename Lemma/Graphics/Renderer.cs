@@ -507,7 +507,7 @@ namespace Lemma.Components
 			this.setTargets(this.lightingBuffer, this.specularBuffer);
 			Renderer.globalLightEffect.CurrentTechnique = Renderer.globalLightEffect.Techniques["GlobalLight" + (this.lightingManager.EnableGlobalShadowMap && this.lightingManager.HasGlobalShadowLight ? "Shadow" : "")];
 			parameters.Camera.SetParameters(Renderer.globalLightEffect);
-			this.lightingManager.SetGlobalLightParameters(Renderer.globalLightEffect, originalCameraPosition);
+			this.lightingManager.SetGlobalLightParameters(Renderer.globalLightEffect, parameters.Camera, originalCameraPosition);
 			this.lightingManager.SetMaterialParameters(Renderer.globalLightEffect);
 			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.globalLightEffect);
 			this.applyEffect(Renderer.globalLightEffect);

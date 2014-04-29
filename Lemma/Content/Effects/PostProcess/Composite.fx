@@ -76,7 +76,7 @@ float4 CompositePS(in PostProcessPSInput input, uniform bool ssao)	: COLOR0
 			ambient -= (1.0f - ao) * SSAOIntensity;
 		}
 		
-		result = color.rgb * (ambient + DecodeColor(lighting.rgb + specular.rgb));
+		result = color.rgb * (ambient + DecodeColor(lighting.rgb)) + DecodeColor(specular.rgb);
 	}
 	
 	return float4(result, 1.0f);

@@ -39,6 +39,12 @@ namespace Lemma.Factories
 			skybox.Add(new Binding<Matrix>(skybox.Transform, result.Get<Transform>().Matrix));
 			skybox.DrawOrder.Value = -10;
 
+			Property<bool> vertical = result.GetOrMakeProperty<bool>("VerticalLimit", true);
+			skybox.Add(new Binding<string, bool>(skybox.TechniquePostfix, x => x ? "Vertical" : "", vertical));
+			skybox.Add(new Binding<float>(skybox.GetFloatParameter("VerticalSize"), result.GetOrMakeProperty<float>("VerticalSize", true, 10.0f)));
+			Property<float> verticalCenter = result.GetOrMakeProperty<float>("VerticalCenter", true);
+			skybox.Add(new Binding<float>(skybox.GetFloatParameter("VerticalCenter"), () => verticalCenter - main.Camera.Position.Value.Y, verticalCenter, main.Camera.Position));
+
 			Property<float> startDistance = result.GetOrMakeProperty<float>("StartDistance", true, 50);
 			skybox.Add(new Binding<float>(skybox.GetFloatParameter("StartDistance"), startDistance));
 		}
