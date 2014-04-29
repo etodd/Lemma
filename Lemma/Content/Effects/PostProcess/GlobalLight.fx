@@ -5,7 +5,6 @@
 static const int NUM_DIRECTIONAL_LIGHTS = 3;
 float3 DirectionalLightDirections[NUM_DIRECTIONAL_LIGHTS];
 float3 DirectionalLightColors[NUM_DIRECTIONAL_LIGHTS];
-float3 AmbientLightColor;
 
 float4x4 ShadowViewProjectionMatrix;
 float4x4 DetailShadowViewProjectionMatrix;
@@ -64,7 +63,7 @@ void GlobalLightPS(	in PostProcessPSInput input,
 	float3 reflectedViewRay = reflect(viewRay, normal);
 
 	LightingOutput output;
-	output.lighting = AmbientLightColor;
+	output.lighting = float3(0, 0, 0);
 	output.specular = float3(0, 0, 0);
 
 	// Directional lights

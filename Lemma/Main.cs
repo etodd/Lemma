@@ -311,7 +311,7 @@ namespace Lemma
 				// Create the renderer.
 				this.LightingManager = new LightingManager();
 				this.AddComponent(this.LightingManager);
-				this.Renderer = new Renderer(this, this.ScreenSize, true, true, false, true);
+				this.Renderer = new Renderer(this, this.ScreenSize, true, true, true, true);
 
 				this.AddComponent(this.Renderer);
 				this.renderParameters = new RenderParameters

@@ -1,11 +1,64 @@
 #include "EffectCommon.fxh"
-#include "EffectSamplers.fxh"
 
-const float SSAOIntensity = 0.25f;
+float3 AmbientLightColor;
+
+float2 SourceDimensions0;
+texture2D SourceTexture0;
+sampler2D SourceSampler0 = sampler_state
+{
+	Texture = <SourceTexture0>;
+	MinFilter = point;
+	MagFilter = point;
+	MipFilter = point;
+	MaxAnisotropy = 1;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
+float2 SourceDimensions1;
+texture2D SourceTexture1;
+sampler2D SourceSampler1 = sampler_state
+{
+	Texture = <SourceTexture1>;
+	MinFilter = point;
+	MagFilter = point;
+	MipFilter = point;
+	MaxAnisotropy = 1;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
+float2 SourceDimensions2;
+texture2D SourceTexture2;
+sampler2D SourceSampler2 = sampler_state
+{
+	Texture = <SourceTexture2>;
+	MinFilter = point;
+	MagFilter = point;
+	MipFilter = point;
+	MaxAnisotropy = 1;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
+float2 SourceDimensions3;
+texture2D SourceTexture3;
+sampler2D SourceSampler3 = sampler_state
+{
+	Texture = <SourceTexture3>;
+	MinFilter = linear;
+	MagFilter = linear;
+	MipFilter = linear;
+	MaxAnisotropy = 1;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
+const float SSAOIntensity = 0.6f;
 
 float2 Materials[16];
 
-float4 CompositePS(in PostProcessPSInput input)	: COLOR0
+float4 CompositePS(in PostProcessPSInput input, uniform bool ssao)	: COLOR0
 {
 	float4 color = tex2D(SourceSampler0, input.texCoord);
 	float2 specularData = Materials[DecodeMaterial(color.a)];
@@ -16,37 +69,35 @@ float4 CompositePS(in PostProcessPSInput input)	: COLOR0
 	{
 		float4 lighting = tex2D(SourceSampler1, input.texCoord);
 		float4 specular = tex2D(SourceSampler2, input.texCoord);
-		result = color.rgb * DecodeColor(lighting.rgb + specular.rgb);
+		float3 ambient = AmbientLightColor;
+		if (ssao)
+		{
+			float ao = tex2D(SourceSampler3, input.texCoord).x;
+			ambient -= (1.0f - ao) * SSAOIntensity;
+		}
+		
+		result = color.rgb * (ambient + DecodeColor(lighting.rgb + specular.rgb));
 	}
 	
 	return float4(result, 1.0f);
 }
 
-/*
-float4 CompositeSSAOPS(in PostProcessPSInput input)	: COLOR0
+float4 CompositeSSAOPS(in PostProcessPSInput input) : COLOR0
 {
-	float4 color = tex2D(SourceSampler0, input.texCoord);
-	float3 result;
-	if (color.a == 0.0f)
-		result = color.xyz;
-	else
-	{
-		float4 lighting = tex2D(SourceSampler1, input.texCoord);
-		float4 specular = tex2D(SourceSampler2, input.texCoord);
-		float4 ssao = tex2D(SourceSampler3, input.texCoord);
-		result = color.rgb * (lighting.rgb - ((1.0f - ssao.x) * SSAOIntensity)) + specular.rgb;
-	}
-	
-	return float4(result, 1.0f);
+	return CompositePS(input, true);
 }
-*/
+
+float4 CompositeNormalPS(in PostProcessPSInput input) : COLOR0
+{
+	return CompositePS(input, false);
+}
 
 technique Composite
 {
 	pass p0
 	{
 		VertexShader = compile vs_3_0 PostProcessVS();
-		PixelShader = compile ps_3_0 CompositePS();
+		PixelShader = compile ps_3_0 CompositeNormalPS();
 		
 		ZEnable = false;
 		ZWriteEnable = false;
@@ -54,7 +105,6 @@ technique Composite
 	}
 }
 
-/*
 technique CompositeSSAO
 {
 	pass p0
@@ -67,4 +117,3 @@ technique CompositeSSAO
 		AlphaBlendEnable = false;
 	}
 }
-*/

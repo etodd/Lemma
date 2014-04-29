@@ -11,6 +11,16 @@ float3 DecodeNormalMap(float3 enc)
 	return (2.0f * enc) - 1.0f;
 }
 
+float3 EncodeNormalBuffer(float3 enc)
+{
+	return (enc * 0.5f) + 0.5f;
+}
+
+float3 DecodeNormalBuffer(float3 enc)
+{
+	return (2.0f * enc) - 1.0f;
+}
+
 float2 EncodeNormal(float2 v)
 {
 	return v * 0.5f + 0.5f;

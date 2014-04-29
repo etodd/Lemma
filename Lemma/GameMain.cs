@@ -66,6 +66,7 @@ namespace Lemma
 			public Property<float> Gamma = new Property<float> { Value = 1.0f };
 			public Property<bool> EnableReflections = new Property<bool> { Value = true };
 			public Property<bool> EnableHighResLighting = new Property<bool> { Value = false };
+			public Property<bool> EnableSSAO = new Property<bool> { Value = false };
 			public Property<bool> EnableBloom = new Property<bool> { Value = true };
 			public Property<LightingManager.DynamicShadowSetting> DynamicShadows = new Property<LightingManager.DynamicShadowSetting> { Value = LightingManager.DynamicShadowSetting.High };
 			public Property<bool> InvertMouseX = new Property<bool> { Value = false };
@@ -569,6 +570,7 @@ namespace Lemma
 				new TwoWayBinding<float>(this.Settings.Gamma, this.Renderer.Gamma);
 				new TwoWayBinding<bool>(this.Settings.EnableBloom, this.Renderer.EnableBloom);
 				new TwoWayBinding<bool>(this.Settings.EnableHighResLighting, this.Renderer.EnableHighResLighting);
+				new TwoWayBinding<bool>(this.Settings.EnableSSAO, this.Renderer.EnableSSAO);
 				new TwoWayBinding<float>(this.Settings.FieldOfView, this.Camera.FieldOfView);
 
 				// Message list
@@ -1195,6 +1197,17 @@ namespace Lemma
 					this.Settings.EnableHighResLighting.Value = !this.Settings.EnableHighResLighting;
 				}));
 				settingsMenu.Children.Add(highResLightingEnabled);
+
+				UIComponent ssaoEnabled = this.createMenuButton<bool>("\\ambient occlusion", this.Settings.EnableSSAO, boolDisplay);
+				ssaoEnabled.Add(new CommandBinding<Point, int>(ssaoEnabled.MouseScrolled, delegate(Point mouse, int scroll)
+				{
+					this.Settings.EnableSSAO.Value = !this.Settings.EnableSSAO;
+				}));
+				ssaoEnabled.Add(new CommandBinding<Point>(ssaoEnabled.MouseLeftUp, delegate(Point mouse)
+				{
+					this.Settings.EnableSSAO.Value = !this.Settings.EnableSSAO;
+				}));
+				settingsMenu.Children.Add(ssaoEnabled);
 
 				UIComponent bloomEnabled = this.createMenuButton<bool>("\\bloom", this.Renderer.EnableBloom, boolDisplay);
 				bloomEnabled.Add(new CommandBinding<Point, int>(bloomEnabled.MouseScrolled, delegate(Point mouse, int scroll)

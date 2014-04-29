@@ -3,6 +3,7 @@
 struct RenderVSInput
 {
 	float4 position : POSITION0;
+	float3 normal : NORMAL0;
 	float2 uvCoordinates : TEXCOORD0;
 };
 
@@ -10,6 +11,7 @@ void RenderVS(	in RenderVSInput input,
 				out RenderVSOutput vs,
 				out RenderPSInput output,
 				out TexturePSInput tex,
+				out FlatPSInput flat,
 				out MotionBlurPSInput motionBlur)
 {
 	float4 worldPosition = mul(input.position, WorldMatrix);
@@ -19,6 +21,8 @@ void RenderVS(	in RenderVSInput input,
 	output.viewSpacePosition = viewSpacePosition;
 
 	tex.uvCoordinates = input.uvCoordinates;
+
+	flat.normal = mul(input.normal, WorldMatrix);
 	
 	// Pass along the current vertex position in clip-space,
 	// as well as the previous vertex position in clip-space
@@ -30,10 +34,11 @@ void ClipVS(	in RenderVSInput input,
 				out RenderVSOutput vs,
 				out RenderPSInput output,
 				out TexturePSInput tex,
+				out FlatPSInput flat,
 				out MotionBlurPSInput motionBlur,
 				out ClipPSInput clipData)
 {
-	RenderVS(input, vs, output, tex, motionBlur);
+	RenderVS(input, vs, output, tex, flat, motionBlur);
 	clipData = GetClipData(output.position);
 }
 

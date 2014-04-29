@@ -22,7 +22,7 @@ LightingOutput CalcPointLighting(float3 lightColor,
 	float distance = length(direction);
 	direction /= distance;
 	
-	float attenuation = saturate(1.0f - max(0.01f, distance) / lightAttenuation);
+	float attenuation = saturate(1.0f - distance / lightAttenuation);
 	float3 totalLightColor = lightColor * attenuation;
 	float2 specularData = Materials[DecodeMaterial(materialParam)];
 	if (dot(normal, normal) < 0.01f)

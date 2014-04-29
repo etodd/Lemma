@@ -499,7 +499,7 @@ namespace Lemma.Components
 			{
 				// Down-sample depth buffer
 				this.downsampleEffect.CurrentTechnique = this.downsampleEffect.Techniques["DownsampleDepth"];
-				this.preparePostProcess(new[] { this.depthBuffer }, new[] { this.halfDepthBuffer }, this.downsampleEffect);
+				this.preparePostProcess(new[] { this.depthBuffer, this.normalBuffer }, new[] { this.halfDepthBuffer, this.halfBuffer1 }, this.downsampleEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 			}
 
@@ -561,19 +561,19 @@ namespace Lemma.Components
 			{
 				// Compute SSAO
 				parameters.Camera.SetParameters(this.ssaoEffect);
-				this.preparePostProcess(new[] { this.halfDepthBuffer, this.normalBuffer }, new[] { this.halfBuffer1 }, this.ssaoEffect);
+				this.ssaoEffect.CurrentTechnique = this.ssaoEffect.Techniques["SSAO"];
+				this.preparePostProcess(new[] { this.halfDepthBuffer, this.halfBuffer1 }, new[] { this.halfBuffer2 }, this.ssaoEffect);
 				this.main.GraphicsDevice.Clear(Color.Black);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				// Blur
-				/*this.blurEffect.CurrentTechnique = this.blurEffect.Techniques["BlurHorizontal"];
-				parameters.Camera.SetParameters(this.blurEffect);
-				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer1 }, new RenderTarget2D[] { this.halfBuffer2 }, this.blurEffect);
+				this.ssaoEffect.CurrentTechnique = this.ssaoEffect.Techniques["BlurHorizontal"];
+				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer2, this.halfDepthBuffer }, new RenderTarget2D[] { this.halfBuffer1 }, this.ssaoEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
-				this.blurEffect.CurrentTechnique = this.blurEffect.Techniques["Composite"];
 
-				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer2 }, new RenderTarget2D[] { this.halfBuffer1 }, this.blurEffect);
-				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);*/
+				this.ssaoEffect.CurrentTechnique = this.ssaoEffect.Techniques["Composite"];
+				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer1, this.halfDepthBuffer }, new RenderTarget2D[] { this.halfBuffer2 }, this.ssaoEffect);
+				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 			}
 
 			RenderTarget2D colorSource = this.colorBuffer1;
@@ -582,12 +582,13 @@ namespace Lemma.Components
 
 			// Compositing
 			this.compositeEffect.CurrentTechnique = this.compositeEffect.Techniques["Composite" + (enableSSAO ? "SSAO" : "")];
+			this.lightingManager.SetCompositeParameters(this.compositeEffect);
 			parameters.Camera.SetParameters(this.compositeEffect);
 			this.lightingManager.SetMaterialParameters(this.compositeEffect);
 			this.preparePostProcess
 			(
 				enableSSAO
-				? new RenderTarget2D[] { colorSource, this.lightingBuffer, this.specularBuffer, this.halfBuffer1 }
+				? new RenderTarget2D[] { colorSource, this.lightingBuffer, this.specularBuffer, this.halfBuffer2 }
 				: new RenderTarget2D[] { colorSource, this.lightingBuffer, this.specularBuffer },
 				new RenderTarget2D[] { colorDestination },
 				this.compositeEffect

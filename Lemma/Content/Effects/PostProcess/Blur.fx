@@ -3,7 +3,7 @@
 
 const float GaussianKernel[16] = { 0.003829872f, 0.0088129551f, 0.0181463396f, 0.03343381f, 0.0551230286f, 0.0813255467f, 0.1073650667f, 0.1268369298f, 0.1340827751f, 0.1268369298f, 0.1073650667f, 0.0813255467f, 0.0551230286f, 0.03343381f, 0.0181463396f, 0.0088129551 };
 
-float BlurAmount = 1.0f;
+float BlurAmount = 1.5f;
 
 void BlurHorizontalPS(	in PostProcessPSInput input,
 						out float4 out_Color		: COLOR0)

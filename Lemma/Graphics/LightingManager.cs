@@ -83,7 +83,7 @@ namespace Lemma.Components
 					case DynamicShadowSetting.High:
 						this.EnableGlobalShadowMap = true;
 						this.globalShadowMapSize = 2048;
-						this.detailGlobalShadowMapSize = 2048;
+						this.detailGlobalShadowMapSize = 1024;
 						this.spotShadowMapSize = 512;
 						this.maxShadowedSpotLights = 2;
 						break;
@@ -300,7 +300,6 @@ namespace Lemma.Components
 		{
 			effect.Parameters["DirectionalLightDirections"].SetValue(this.directionalLightDirections);
 			effect.Parameters["DirectionalLightColors"].SetValue(this.directionalLightColors);
-			effect.Parameters["AmbientLightColor"].SetValue(this.ambientLightColor);
 			if (this.EnableGlobalShadowMap)
 			{
 				effect.Parameters["ShadowViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * this.globalShadowViewProjection);
@@ -311,6 +310,11 @@ namespace Lemma.Components
 				effect.Parameters["DetailShadowMapSize"].SetValue(this.detailGlobalShadowMapSize);
 				effect.Parameters["DetailShadowMap" + Model.SamplerPostfix].SetValue(this.detailGlobalShadowMap);
 			}
+		}
+
+		public void SetCompositeParameters(Microsoft.Xna.Framework.Graphics.Effect effect)
+		{
+			effect.Parameters["AmbientLightColor"].SetValue(this.ambientLightColor);
 		}
 
 		public void SetMaterialParameters(Microsoft.Xna.Framework.Graphics.Effect effect)
