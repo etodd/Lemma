@@ -32,6 +32,8 @@ namespace Lemma.Components
 
 		public Property<BuildMode> Build = new Property<BuildMode> { Value = BuildMode.CanBuild, Editable = true };
 
+		public Property<bool> DetailedShadows = new Property<bool> { Value = true, Editable = true };
+
 		public static IEnumerable<Zone> GetConnectedZones(Zone zone)
 		{
 			IEnumerable<Zone> result = new Zone[] { zone };

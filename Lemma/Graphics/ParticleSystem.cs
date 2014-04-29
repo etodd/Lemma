@@ -14,6 +14,16 @@ namespace Lemma.Components
 	{
 		public Property<int> DrawOrder { get; set; }
 
+		public bool IsVisible(BoundingFrustum frustum)
+		{
+			return true;
+		}
+
+		public float GetDistance(Vector3 camera)
+		{
+			return 0.0f;
+		}
+
 		#region ParticleVertex
 		/// <summary>
 		/// Custom vertex structure for drawing particles.

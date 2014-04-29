@@ -11,7 +11,8 @@ namespace Lemma
 	public interface IDrawableComponent : IGraphicsComponent
 	{
 		void Draw(GameTime time, RenderParameters parameters);
-		Property<int> DrawOrder { get; }
+		bool IsVisible(BoundingFrustum frustum);
+		float GetDistance(Vector3 camera);
 	}
 
 	public interface IDrawableAlphaComponent : IGraphicsComponent

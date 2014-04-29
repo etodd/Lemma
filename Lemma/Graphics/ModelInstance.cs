@@ -135,12 +135,14 @@ namespace Lemma.Components
 		public class ModelInstanceSystemAlpha : ModelInstanceSystem, IDrawableAlphaComponent
 		{
 			public Property<float> Alpha = null;
+			public Property<int> DrawOrder { get; set; }
 
 			public ModelInstanceSystemAlpha()
 			{
 				this.Alpha = this.GetFloatParameter("Alpha");
 				this.Alpha.Value = 1.0f;
 				this.Alpha.Editable = true;
+				this.DrawOrder = new Property<int> { Editable = true };
 			}
 
 			public override void Draw(GameTime time, RenderParameters parameters)

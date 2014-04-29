@@ -49,7 +49,8 @@ float DetailShadowBias = 0.0002f;
 void GlobalLightPS(	in PostProcessPSInput input,
 					out float4 lighting : COLOR0,
 					out float4 specular : COLOR1,
-					uniform bool shadow)
+					uniform bool shadow,
+					uniform bool detail)
 {
 	float2 depthValue = tex2D(SourceSampler0, input.texCoord).xy;
 	float4 normalValue = tex2D(SourceSampler1, input.texCoord);
@@ -79,9 +80,17 @@ void GlobalLightPS(	in PostProcessPSInput input,
 								-DirectionalLightDirections[0],
 								reflectedViewRay,
 								ignoreNormal);
-		float4 detailShadowPos = mul(float4(worldPos, 1.0f), DetailShadowViewProjectionMatrix);
+
+		float shadowValue;
 		float4 shadowPos = mul(float4(worldPos, 1.0f), ShadowViewProjectionMatrix);
-		float shadowValue = GetShadowValueDetail(detailShadowPos, shadowPos, DetailShadowBias, ShadowBias);
+		if (detail)
+		{
+			float4 detailShadowPos = mul(float4(worldPos, 1.0f), DetailShadowViewProjectionMatrix);
+			shadowValue = GetShadowValueDetail(detailShadowPos, shadowPos, DetailShadowBias, ShadowBias);
+		}
+		else
+			shadowValue = GetShadowValue(shadowPos, ShadowBias);
+
 		output.lighting += shadowLight.lighting * shadowValue;
 		output.specular += shadowLight.specular * shadowValue;
 	}
@@ -112,14 +121,34 @@ void GlobalLightUnshadowedPS(	in PostProcessPSInput input,
 					out float4 lighting : COLOR0,
 					out float4 specular : COLOR1)
 {
-	GlobalLightPS(input, lighting, specular, false);
+	GlobalLightPS(input, lighting, specular, false, false);
 }
 
 void GlobalLightShadowedPS(	in PostProcessPSInput input,
 					out float4 lighting : COLOR0,
 					out float4 specular : COLOR1)
 {
-	GlobalLightPS(input, lighting, specular, true);
+	GlobalLightPS(input, lighting, specular, true, false);
+}
+
+void GlobalLightDetailShadowedPS(	in PostProcessPSInput input,
+					out float4 lighting : COLOR0,
+					out float4 specular : COLOR1)
+{
+	GlobalLightPS(input, lighting, specular, true, true);
+}
+
+technique GlobalLightDetailShadow
+{
+	pass p0
+	{
+		VertexShader = compile vs_3_0 PostProcessVS();
+		PixelShader = compile ps_3_0 GlobalLightDetailShadowedPS();
+		
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = false;
+	}
 }
 
 technique GlobalLightShadow

@@ -105,8 +105,6 @@ namespace Lemma
 
 		public Command MapLoaded = new Command();
 
-		protected NotifyBinding drawableBinding;
-		protected bool drawablesModified;
 		protected NotifyBinding alphaDrawableBinding;
 		protected bool alphaDrawablesModified;
 		protected NotifyBinding postAlphaDrawableBinding;
@@ -121,14 +119,7 @@ namespace Lemma
 				IComponent c = this.componentsToAdd[i];
 				Type t = c.GetType();
 				if (typeof(IDrawableComponent).IsAssignableFrom(t))
-				{
 					this.drawables.Add((IDrawableComponent)c);
-					if (this.drawableBinding != null)
-					{
-						this.drawableBinding.Delete();
-						this.drawableBinding = null;
-					}
-				}
 				if (typeof(IUpdateableComponent).IsAssignableFrom(t))
 					this.updateables.Add((IUpdateableComponent)c);
 				if (typeof(IDrawablePreFrameComponent).IsAssignableFrom(t))
@@ -488,20 +479,6 @@ namespace Lemma
 			}
 			this.FlushComponents();
 
-			if (this.drawableBinding == null)
-			{
-				this.drawableBinding = new NotifyBinding(delegate() { this.drawablesModified = true; }, this.drawables.Select(x => x.DrawOrder).ToArray());
-				this.drawablesModified = true;
-			}
-			if (this.drawablesModified)
-			{
-				this.drawables.InsertionSort(delegate(IDrawableComponent a, IDrawableComponent b)
-				{
-					return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
-				});
-				this.drawablesModified = false;
-			}
-
 			if (this.alphaDrawableBinding == null)
 			{
 				this.alphaDrawableBinding = new NotifyBinding(delegate() { this.alphaDrawablesModified = true; }, this.alphaDrawables.Select(x => x.DrawOrder).ToArray());
@@ -679,11 +656,16 @@ namespace Lemma
 				this.GraphicsDevice.RasterizerState = reverseCullState;
 			}
 
-			foreach (IDrawableComponent c in this.drawables)
+			Vector3 cameraPos = parameters.Camera.Position;
+			BoundingFrustum frustum = parameters.Camera.BoundingFrustum;
+			List<IDrawableComponent> drawables = this.drawables.Where(c => this.componentEnabled(c) && c.IsVisible(frustum)).ToList();
+			drawables.Sort(delegate(IDrawableComponent a, IDrawableComponent b)
 			{
-				if (this.componentEnabled(c))
-					c.Draw(this.GameTime, parameters);
-			}
+				return a.GetDistance(cameraPos).CompareTo(b.GetDistance(cameraPos));
+			});
+
+			foreach (IDrawableComponent c in drawables)
+				c.Draw(this.GameTime, parameters);
 
 			if (reverseCullState != null)
 				this.GraphicsDevice.RasterizerState = originalState;

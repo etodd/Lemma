@@ -134,6 +134,7 @@ namespace Lemma.Components
 		public override void InitializeProperties()
 		{
 			base.InitializeProperties();
+
 			this.BlurAmount.Set = delegate(float value)
 			{
 				this.BlurAmount.InternalValue = value;
@@ -485,6 +486,7 @@ namespace Lemma.Components
 			Vector3 originalCameraPosition = parameters.Camera.Position;
 			Matrix originalViewMatrix = parameters.Camera.View;
 			BoundingFrustum originalBoundingFrustum = parameters.Camera.BoundingFrustum;
+
 			parameters.Camera.Position.Value = Vector3.Zero;
 			Matrix newViewMatrix = originalViewMatrix;
 			newViewMatrix.Translation = Vector3.Zero;
@@ -501,64 +503,7 @@ namespace Lemma.Components
 				this.downsampleEffect.CurrentTechnique = this.downsampleEffect.Techniques["DownsampleDepth"];
 				this.preparePostProcess(new[] { this.depthBuffer, this.normalBuffer }, new[] { this.halfDepthBuffer, this.halfBuffer1 }, this.downsampleEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
-			}
 
-			// Global lighting
-			this.setTargets(this.lightingBuffer, this.specularBuffer);
-			Renderer.globalLightEffect.CurrentTechnique = Renderer.globalLightEffect.Techniques["GlobalLight" + (this.lightingManager.EnableGlobalShadowMap && this.lightingManager.HasGlobalShadowLight ? "Shadow" : "")];
-			parameters.Camera.SetParameters(Renderer.globalLightEffect);
-			this.lightingManager.SetGlobalLightParameters(Renderer.globalLightEffect, parameters.Camera, originalCameraPosition);
-			this.lightingManager.SetMaterialParameters(Renderer.globalLightEffect);
-			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.globalLightEffect);
-			this.applyEffect(Renderer.globalLightEffect);
-			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
-
-			// Point lights
-			if (!parameters.ReverseCullOrder)
-				this.main.GraphicsDevice.RasterizerState = reverseCullState;
-
-			// HACK
-			float originalFarPlane = parameters.Camera.FarPlaneDistance;
-			parameters.Camera.FarPlaneDistance.Value *= 3.0f;
-			parameters.Camera.SetParameters(Renderer.pointLightEffect);
-			parameters.Camera.SetParameters(Renderer.spotLightEffect);
-			parameters.Camera.FarPlaneDistance.Value = originalFarPlane;
-
-			this.lightingManager.SetMaterialParameters(Renderer.pointLightEffect);
-			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.pointLightEffect);
-
-			for (int i = 0; i < PointLight.All.Count; i++)
-			{
-				PointLight light = PointLight.All[i];
-				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || light.Color.Value.LengthSquared() == 0.0f || !originalBoundingFrustum.Intersects(light.BoundingSphere))
-					continue;
-				this.lightingManager.SetPointLightParameters(light, Renderer.pointLightEffect, originalCameraPosition);
-				this.applyEffect(Renderer.pointLightEffect);
-				this.drawModel(Renderer.pointLightModel);
-			}
-
-			// Spot lights
-
-			// HACK
-
-			this.lightingManager.SetMaterialParameters(Renderer.spotLightEffect);
-			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.spotLightEffect);
-			for (int i = 0; i < SpotLight.All.Count; i++)
-			{
-				SpotLight light = SpotLight.All[i];
-				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || light.Color.Value.LengthSquared() == 0.0f || !originalBoundingFrustum.Intersects(light.BoundingFrustum))
-					continue;
-
-				this.lightingManager.SetSpotLightParameters(light, Renderer.spotLightEffect, originalCameraPosition);
-				this.applyEffect(Renderer.spotLightEffect);
-				this.drawModel(Renderer.spotLightModel);
-			}
-			if (!parameters.ReverseCullOrder)
-				this.main.GraphicsDevice.RasterizerState = originalState;
-
-			// SSAO
-			if (enableSSAO)
-			{
 				// Compute SSAO
 				parameters.Camera.SetParameters(this.ssaoEffect);
 				this.ssaoEffect.CurrentTechnique = this.ssaoEffect.Techniques["SSAO"];
@@ -575,6 +520,66 @@ namespace Lemma.Components
 				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer1, this.halfDepthBuffer }, new RenderTarget2D[] { this.halfBuffer2 }, this.ssaoEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 			}
+
+			// Global lighting
+			this.setTargets(this.lightingBuffer, this.specularBuffer);
+			string globalLightTechnique = "GlobalLight";
+			if (this.lightingManager.EnableGlobalShadowMap && this.lightingManager.HasGlobalShadowLight)
+			{
+				if (this.lightingManager.EnableDetailGlobalShadowMap)
+					globalLightTechnique = "GlobalLightDetailShadow";
+				else
+					globalLightTechnique = "GlobalLightShadow";
+			}
+			Renderer.globalLightEffect.CurrentTechnique = Renderer.globalLightEffect.Techniques[globalLightTechnique];
+			parameters.Camera.SetParameters(Renderer.globalLightEffect);
+			this.lightingManager.SetGlobalLightParameters(Renderer.globalLightEffect, parameters.Camera, originalCameraPosition);
+			this.lightingManager.SetMaterialParameters(Renderer.globalLightEffect);
+			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.globalLightEffect);
+			this.applyEffect(Renderer.globalLightEffect);
+			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
+
+			// Spot and point lights
+			if (!parameters.ReverseCullOrder)
+				this.main.GraphicsDevice.RasterizerState = reverseCullState;
+
+			// HACK
+			// Increase the far plane to prevent clipping back faces of huge lights
+			float originalFarPlane = parameters.Camera.FarPlaneDistance;
+			parameters.Camera.FarPlaneDistance.Value *= 3.0f;
+			parameters.Camera.SetParameters(Renderer.pointLightEffect);
+			parameters.Camera.SetParameters(Renderer.spotLightEffect);
+			parameters.Camera.FarPlaneDistance.Value = originalFarPlane;
+
+			// Spot lights
+			this.lightingManager.SetMaterialParameters(Renderer.spotLightEffect);
+			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.spotLightEffect);
+			for (int i = 0; i < SpotLight.All.Count; i++)
+			{
+				SpotLight light = SpotLight.All[i];
+				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || light.Color.Value.LengthSquared() == 0.0f || !originalBoundingFrustum.Intersects(light.BoundingFrustum))
+					continue;
+
+				this.lightingManager.SetSpotLightParameters(light, Renderer.spotLightEffect, originalCameraPosition);
+				this.applyEffect(Renderer.spotLightEffect);
+				this.drawModel(Renderer.spotLightModel);
+			}
+
+			// Point lights
+			this.lightingManager.SetMaterialParameters(Renderer.pointLightEffect);
+			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.pointLightEffect);
+			for (int i = 0; i < PointLight.All.Count; i++)
+			{
+				PointLight light = PointLight.All[i];
+				if (!light.Enabled || light.Suspended || light.Attenuation == 0.0f || light.Color.Value.LengthSquared() == 0.0f || !originalBoundingFrustum.Intersects(light.BoundingSphere))
+					continue;
+				this.lightingManager.SetPointLightParameters(light, Renderer.pointLightEffect, originalCameraPosition);
+				this.applyEffect(Renderer.pointLightEffect);
+				this.drawModel(Renderer.pointLightModel);
+			}
+
+			if (!parameters.ReverseCullOrder)
+				this.main.GraphicsDevice.RasterizerState = originalState;
 
 			RenderTarget2D colorSource = this.colorBuffer1;
 			RenderTarget2D colorDestination = this.hdrBuffer2;

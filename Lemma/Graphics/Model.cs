@@ -27,7 +27,21 @@ namespace Lemma.Components
 			public int InstanceIndex;
 		}
 
-		public Property<int> DrawOrder { get; set; }
+		public float GetDistance(Vector3 camera)
+		{
+			Vector3 translation = this.Transform.Value.Translation;
+			if (this.boundingBoxValid && this.CullBoundingBox)
+			{
+				BoundingBox box = this.BoundingBox;
+				translation += (box.Min + box.Max) * 0.5f;
+			}
+			return (translation - camera).LengthSquared();
+		}
+
+		public bool IsVisible(BoundingFrustum frustum)
+		{
+			return !this.boundingBoxValid || !this.CullBoundingBox || frustum.Intersects(this.BoundingBox.Value.Transform(this.Transform));
+		}
 
 		public static int DrawCallCounter;
 		public static int TriangleCounter;
@@ -76,9 +90,6 @@ namespace Lemma.Components
 		protected Texture2D diffuseTexture;
 		public Property<string> DiffuseTexture = new Property<string> { Editable = true };
 
-		private bool lastFrameCulled;
-		private bool lastFrameCullUpdated;
-
 		[XmlIgnore]
 		public ListProperty<Matrix> Instances = new ListProperty<Matrix> { Editable = false };
 
@@ -122,7 +133,6 @@ namespace Lemma.Components
 
 		public Model()
 		{
-			this.DrawOrder = new Property<int> { Editable = true };
 			this.Enabled.Editable = true;
 			this.EnabledWhenPaused.Value = true;
 		}
@@ -735,29 +745,6 @@ namespace Lemma.Components
 		public virtual void Draw(GameTime time, RenderParameters parameters)
 		{
 			Matrix transform = Matrix.CreateScale(this.Scale) * this.Transform;
-			if (this.boundingBoxValid && this.CullBoundingBox)
-			{
-				if (!parameters.IsMainRender)
-				{
-					// For the main render, we calculate the culling every other frame
-					// We don't cache the culling data for other cameras.
-					if (!parameters.Camera.BoundingFrustum.Value.Intersects(this.BoundingBox.Value.Transform(transform)))
-						return;
-				}
-				else if (this.lastFrameCullUpdated)
-				{
-					this.lastFrameCullUpdated = false;
-					if (this.lastFrameCulled)
-						return;
-				}
-				else
-				{
-					this.lastFrameCullUpdated = true;
-					this.lastFrameCulled = !parameters.Camera.BoundingFrustum.Value.Intersects(this.BoundingBox.Value.Transform(transform));
-					if (this.lastFrameCulled)
-						return;
-				}
-			}
 			if (!this.IsInstanced)
 				this.draw(parameters, transform);
 			else
@@ -931,6 +918,7 @@ namespace Lemma.Components
 	public class ModelAlpha : Model, IDrawableAlphaComponent
 	{
 		public Property<float> Alpha = null;
+		public Property<int> DrawOrder { get; set; }
 		public Property<bool> Distortion = new Property<bool>();
 
 		public ModelAlpha()
@@ -938,6 +926,7 @@ namespace Lemma.Components
 			this.Alpha = this.GetFloatParameter("Alpha");
 			this.Alpha.Value = 1.0f;
 			this.Alpha.Editable = true;
+			this.DrawOrder = new Property<int> { Editable = true };
 		}
 
 		public override void InitializeProperties()

@@ -823,6 +823,11 @@ namespace Lemma.Factories
 					Sound.ReverbSettings(main, reverbAmount, reverbSize);
 				*/
 
+				if (newZone == null)
+					main.LightingManager.EnableDetailGlobalShadowMap = true;
+				else
+					main.LightingManager.EnableDetailGlobalShadowMap = newZone.DetailedShadows;
+
 				boxes = getActiveBoundingBoxes(main.Camera, newZone);
 				cameraPosition = main.Camera.Position;
 				suspendDistance = main.Camera.FarPlaneDistance;
@@ -890,8 +895,10 @@ namespace Lemma.Factories
 			const float sparkLightAttenuation = 5.0f;
 			const float sparkLightFadeTime = 0.5f;
 			const float sparkLightBrightness = 2.0f;
+			const int maxSparkLights = 10;
 			int activeSparkLights = 0;
-			for (int i = 0; i < 10; i++)
+			int oldestSparkLight = 0;
+			for (int i = 0; i < maxSparkLights; i++)
 			{
 				PointLight light = new PointLight();
 				light.Serialize = false;
@@ -913,20 +920,17 @@ namespace Lemma.Factories
 				if (this.random.Next(0, 2) == 0)
 				{
 					PointLight light;
-					if (activeSparkLights < sparkLights.Count)
+					if (activeSparkLights < maxSparkLights)
 					{
 						light = sparkLights[activeSparkLights];
 						light.Enabled.Value = true;
+						activeSparkLights++;
 					}
 					else
 					{
-						light = new PointLight();
-						light.Serialize = false;
-						light.Color.Value = new Vector3(sparkLightBrightness);
-						result.Add(light);
-						sparkLights.Add(light);
+						light = sparkLights[oldestSparkLight % activeSparkLights];
+						oldestSparkLight = (oldestSparkLight + 1) % maxSparkLights;
 					}
-					activeSparkLights++;
 
 					light.Attenuation.Value = size;
 					light.Color.Value = Vector3.One;
@@ -1097,6 +1101,7 @@ namespace Lemma.Factories
 							sparkLights[i] = swap;
 							sparkLights[activeSparkLights - 1] = light;
 							activeSparkLights--;
+							oldestSparkLight = activeSparkLights;
 						}
 						else
 							light.Color.Value = new Vector3(a);
