@@ -65,8 +65,7 @@ namespace Lemma
 			public Property<float> MotionBlurAmount = new Property<float> { Value = 0.5f };
 			public Property<float> Gamma = new Property<float> { Value = 1.0f };
 			public Property<bool> EnableReflections = new Property<bool> { Value = true };
-			public Property<bool> EnableHighResLighting = new Property<bool> { Value = false };
-			public Property<bool> EnableSSAO = new Property<bool> { Value = false };
+			public Property<bool> EnableSSAO = new Property<bool> { Value = true };
 			public Property<bool> EnableBloom = new Property<bool> { Value = true };
 			public Property<LightingManager.DynamicShadowSetting> DynamicShadows = new Property<LightingManager.DynamicShadowSetting> { Value = LightingManager.DynamicShadowSetting.High };
 			public Property<bool> InvertMouseX = new Property<bool> { Value = false };
@@ -569,7 +568,6 @@ namespace Lemma
 				new TwoWayBinding<float>(this.Settings.MotionBlurAmount, this.Renderer.MotionBlurAmount);
 				new TwoWayBinding<float>(this.Settings.Gamma, this.Renderer.Gamma);
 				new TwoWayBinding<bool>(this.Settings.EnableBloom, this.Renderer.EnableBloom);
-				new TwoWayBinding<bool>(this.Settings.EnableHighResLighting, this.Renderer.EnableHighResLighting);
 				new TwoWayBinding<bool>(this.Settings.EnableSSAO, this.Renderer.EnableSSAO);
 				new TwoWayBinding<float>(this.Settings.FieldOfView, this.Camera.FieldOfView);
 
@@ -1186,17 +1184,6 @@ namespace Lemma
 					this.Settings.EnableReflections.Value = !this.Settings.EnableReflections;
 				}));
 				settingsMenu.Children.Add(reflectionsEnabled);
-
-				UIComponent highResLightingEnabled = this.createMenuButton<bool>("\\high-res lighting", this.Settings.EnableHighResLighting, boolDisplay);
-				highResLightingEnabled.Add(new CommandBinding<Point, int>(highResLightingEnabled.MouseScrolled, delegate(Point mouse, int scroll)
-				{
-					this.Settings.EnableHighResLighting.Value = !this.Settings.EnableHighResLighting;
-				}));
-				highResLightingEnabled.Add(new CommandBinding<Point>(highResLightingEnabled.MouseLeftUp, delegate(Point mouse)
-				{
-					this.Settings.EnableHighResLighting.Value = !this.Settings.EnableHighResLighting;
-				}));
-				settingsMenu.Children.Add(highResLightingEnabled);
 
 				UIComponent ssaoEnabled = this.createMenuButton<bool>("\\ambient occlusion", this.Settings.EnableSSAO, boolDisplay);
 				ssaoEnabled.Add(new CommandBinding<Point, int>(ssaoEnabled.MouseScrolled, delegate(Point mouse, int scroll)

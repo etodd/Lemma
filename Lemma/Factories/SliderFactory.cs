@@ -182,6 +182,22 @@ namespace Lemma.Factories
 					}
 				}
 			});
+
+			Property<bool> startAtMinimum = result.GetOrMakeProperty<bool>("StartAtMinimum", true);
+
+			if (!main.EditorEnabled && startAtMinimum)
+			{
+				startAtMinimum.Value = false;
+				result.Add(new PostInitialization
+				{
+					delegate()
+					{
+						Transform transform = result.GetOrCreate<Transform>("MapTransform");
+						DynamicMap map = result.Get<DynamicMap>();
+						transform.Position.Value = map.GetAbsolutePosition(new Map.Coordinate().Move(dir, minimum));
+					}
+				});
+			}
 		}
 	}
 }

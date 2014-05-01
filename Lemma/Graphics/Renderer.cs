@@ -197,15 +197,6 @@ namespace Lemma.Components
 				this.Brightness.InternalValue = value;
 				this.bloomEffect.Parameters["Brightness"].SetValue(value);
 			};
-
-			this.EnableHighResLighting.Set = delegate(bool value)
-			{
-				if (value != this.EnableHighResLighting.InternalValue)
-				{
-					this.EnableHighResLighting.InternalValue = value;
-					this.ReallocateBuffers(this.main.ScreenSize);
-				}
-			};
 		}
 
 		private void loadLightRampTexture(string file)
@@ -281,14 +272,6 @@ namespace Lemma.Components
 			}
 		}
 
-		private SurfaceFormat lightingSurfaceFormat
-		{
-			get
-			{
-				return this.hdr && this.EnableHighResLighting ? SurfaceFormat.HdrBlendable : SurfaceFormat.Color;
-			}
-		}
-
 		public void ReallocateBuffers(Point size)
 		{
 			this.screenSize = size;
@@ -299,7 +282,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												this.lightingSurfaceFormat,
+												SurfaceFormat.Color,
 												DepthFormat.None,
 												0,
 												RenderTargetUsage.DiscardContents);
@@ -311,7 +294,7 @@ namespace Lemma.Components
 												size.X,
 												size.Y,
 												false,
-												this.lightingSurfaceFormat,
+												SurfaceFormat.Color,
 												DepthFormat.None,
 												0,
 												RenderTargetUsage.DiscardContents);

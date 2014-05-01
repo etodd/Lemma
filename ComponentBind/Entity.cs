@@ -223,6 +223,8 @@ namespace ComponentBind
 					ret[i] = de;
 					i++;
 				}
+				if (this.OnSave != null)
+					this.OnSave.Execute();
 				return ret;
 			}
 			set
@@ -293,6 +295,9 @@ namespace ComponentBind
 			Entity.CurrentID++;
 		}
 
+		[XmlIgnore]
+		public Command OnSave;
+
 		private static Assembly componentBindAssembly;
 
 		static Entity()
@@ -312,6 +317,9 @@ namespace ComponentBind
 		public void SetMain(BaseMain _main)
 		{
 			this.main = _main;
+			if (_main.EditorEnabled)
+				this.OnSave = new Command();
+
 			if (this._idProperty == null)
 				this.createIdProperty();
 			foreach (IComponent c in this.components.Values.ToList())
