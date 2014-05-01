@@ -1092,7 +1092,7 @@ namespace Lemma.Factories
 
 				Vector3 pos = transform.Position + new Vector3(0, player.Height * -0.5f, 0);
 
-				// Attempt to wall-walk on an existing map
+				// Attempt to wall-run on an existing map
 				bool activate = false, addInitialVelocity = false;
 				foreach (Map map in Map.ActivePhysicsMaps)
 				{
@@ -1110,7 +1110,8 @@ namespace Lemma.Factories
 							break;
 						}
 
-						if (map[wallCoord].ID != 0)
+						// Need at least two blocks to consider it a wall
+						if (map[wallCoord].ID != 0 && map[wallCoord.Move(up)].ID != 0)
 						{
 							bool differentWall = map != lastWallRunMap || dir != lastWallDirection;
 							activate = differentWall || wallRunJumpDelayPassed;
