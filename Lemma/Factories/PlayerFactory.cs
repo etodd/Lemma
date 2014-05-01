@@ -705,9 +705,18 @@ namespace Lemma.Factories
 			player.Crouched.Value = true;
 			player.AllowUncrouch.Value = true;
 
+			bool canKick = false;
+			int wallJumpCount = 0;
+			Vector3 wallJumpChainStart = Vector3.Zero;
+			
+			Action resetInAirState = delegate()
+			{
+				canKick = true;
+				wallJumpCount = 0;
+			};
+
 			// Update animation
 			bool lastSupported = false;
-			bool canKick = false;
 			float lastLandAnimationPlayed = 0.0f;
 			result.Add("AnimationUpdater", new Updater
 			{
@@ -736,7 +745,7 @@ namespace Lemma.Factories
 						}
 
 						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "JumpFall", "CrouchFall", "Vault");
-						canKick = true;
+						resetInAirState();
 
 						Vector2 dir = input.Movement;
 
@@ -1821,11 +1830,32 @@ namespace Lemma.Factories
 
 				if (go)
 				{
-					if (!wallJumping)
-						canKick = true;
+					float totalMultiplier = 1.0f;
 
-					if (!wallJumping)
+					if (wallJumping)
 					{
+						if (wallJumpCount == 0)
+							wallJumpChainStart = transform.Position;
+						else
+						{
+							Vector3 chainDistance = transform.Position - wallJumpChainStart;
+							chainDistance.Y = 0.0f;
+							if (chainDistance.Length() > 6.0f)
+							{
+								wallJumpCount = 0;
+								wallJumpChainStart = transform.Position;
+							}
+						}
+
+						if (wallJumpCount > 3)
+							return false;
+						totalMultiplier = 1.0f - Math.Min(1.0f, wallJumpCount / 8.0f);
+						wallJumpCount++;
+					}
+					else
+					{
+						resetInAirState();
+
 						if (supported)
 						{
 							// Regular jump
@@ -1848,7 +1878,6 @@ namespace Lemma.Factories
 						}
 					}
 
-
 					if (!vaulting)
 					{
 						// Just a normal jump.
@@ -1859,7 +1888,6 @@ namespace Lemma.Factories
 						if (jumpSpeed > 0)
 							jumpDirection *= (wallJumping ? player.MaxSpeed : velocity.Length()) / jumpSpeed;
 
-						float totalMultiplier = 1.0f;
 						float verticalMultiplier = 1.0f;
 
 						if (main.TotalTime - rollEnded < 0.3f)
