@@ -25,7 +25,7 @@ float4 ParticlePS(VertexShaderOutput input) : COLOR0
 	clip(t.a - 0.1f);
 	
 	float alpha = t.a * input.Color.a;
-	float2 distortion = ((t.xy * 2.0f) - 1.0f) * alpha * 0.05f;
+	float2 distortion = ((t.xy * 2.0f) - 1.0f) * alpha * 0.12f;
 
 	float4 color = tex2D(FrameSampler, uv + distortion) * input.Color;
 	return float4(color.rgb, alpha);

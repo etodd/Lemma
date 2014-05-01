@@ -258,8 +258,8 @@ namespace Lemma.Components
 				MinEndSize = 2.0f,
 				MaxEndSize = 4.0f,
 				BlendState = BlendState.AlphaBlend,
-				MinColor = Vector4.One,
-				MaxColor = Vector4.One,
+				MinColor = new Vector4(1.2f, 1.4f, 1.6f, 1.0f),
+				MaxColor = new Vector4(1.2f, 1.4f, 1.6f, 1.0f),
 				PostAlpha = true,
 			});
 
@@ -305,8 +305,8 @@ namespace Lemma.Components
 				MinEndSize = 0.3f,
 				MaxEndSize = 0.4f,
 				BlendState = BlendState.AlphaBlend,
-				MinColor = new Vector4(0.8f, 0.9f, 1.0f, 1.0f),
-				MaxColor = new Vector4(0.8f, 0.9f, 1.0f, 1.0f),
+				MinColor = new Vector4(1.2f, 1.4f, 1.6f, 1.0f),
+				MaxColor = new Vector4(1.2f, 1.4f, 1.6f, 1.0f),
 				PostAlpha = true,
 			});
 
@@ -922,7 +922,7 @@ namespace Lemma.Components
 		/// <summary>
 		/// Adds a new particle to the system.
 		/// </summary>
-		public void AddParticle(Vector3 position, Vector3 velocity, float lifetime = -1.0f)
+		public void AddParticle(Vector3 position, Vector3 velocity, float lifetime = -1.0f, float prePrime = 0.0f)
 		{
 			if (lifetime == -1.0f)
 				lifetime = (float)this.settings.Duration.TotalSeconds;
@@ -970,7 +970,7 @@ namespace Lemma.Components
 				v.Position = position;
 				v.Velocity = velocity;
 				v.Random = randomValues;
-				v.Time = currentTime;
+				v.Time = currentTime - prePrime;
 				v.Lifetime = lifetime;
 				this.particles[this.firstFreeParticle * 4 + i] = v;
 			}

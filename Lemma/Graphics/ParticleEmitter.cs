@@ -11,6 +11,7 @@
 using System; using ComponentBind;
 using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
+using System.Collections.Generic;
 #endregion
 
 namespace Lemma.Components
@@ -72,7 +73,7 @@ namespace Lemma.Components
 				particleSystem.AddParticle(position + new Vector3(2.0f * ((float)random.NextDouble() - 0.5f) * jitter, 2.0f * ((float)random.NextDouble() - 0.5f) * jitter, 2.0f * ((float)random.NextDouble() - 0.5f) * jitter), Vector3.Zero);
 		}
 
-		public static void Emit(Main main, string type, params Vector3[] positions)
+		public static void Emit(Main main, string type, IEnumerable<Vector3> positions)
 		{
 			ParticleSystem particleSystem = ParticleSystem.Get(main, type);
 			foreach (Vector3 pos in positions)

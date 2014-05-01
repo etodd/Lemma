@@ -903,6 +903,8 @@ namespace Lemma.Factories
 				}
 			});
 
+			ParticleSystem particleSystem = ParticleSystem.Get(main, "Distortion");
+
 			Action<BlockPossibility> instantiateBlockPossibility = delegate(BlockPossibility block)
 			{
 				Map.CellState state = WorldFactory.StatesByName["Temporary"];
@@ -914,22 +916,39 @@ namespace Lemma.Factories
 				mapList.Remove(block);
 				if (mapList.Count == 0)
 					blockPossibilities.Remove(block.Map);
-				Vector3 position = 0.5f * (block.Map.GetAbsolutePosition(block.StartCoord) + block.Map.GetAbsolutePosition(block.EndCoord));
-				main.AddComponent(new Animation
-				(
-					new Animation.Repeat
-					(
-						new Animation.Sequence
-						(
-							new Animation.Execute(delegate()
-							{
-								AkSoundEngine.PostEvent("Play_block_instantiate", position);
-							}),
-							new Animation.Delay(0.06f)
-						),
-						3
-					)
-				));
+				
+				const float prePrime = 2.0f;
+				// Front and back faces
+				for (int x = block.StartCoord.X; x < block.EndCoord.X; x++)
+				{
+					for (int y = block.StartCoord.Y; y < block.EndCoord.Y; y++)
+					{
+						particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, y, block.EndCoord.Z - 1), Vector3.Zero, -1.0f, prePrime);
+						particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, y, block.StartCoord.Z), Vector3.Zero, -1.0f, prePrime);
+					}
+				}
+
+				// Left and right faces
+				for (int z = block.StartCoord.Z; z < block.EndCoord.Z; z++)
+				{
+					for (int y = block.StartCoord.Y; y < block.EndCoord.Y; y++)
+					{
+						particleSystem.AddParticle(block.Map.GetAbsolutePosition(block.StartCoord.X, y, z), Vector3.Zero, -1.0f, prePrime);
+						particleSystem.AddParticle(block.Map.GetAbsolutePosition(block.EndCoord.X - 1, y, z), Vector3.Zero, -1.0f, prePrime);
+					}
+				}
+
+				// Top and bottom faces
+				for (int z = block.StartCoord.Z; z < block.EndCoord.Z; z++)
+				{
+					for (int x = block.StartCoord.X; x < block.EndCoord.X; x++)
+					{
+						particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, block.StartCoord.Y, z), Vector3.Zero, -1.0f, prePrime);
+						particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, block.EndCoord.Y - 1, z), Vector3.Zero, -1.0f, prePrime);
+					}
+				}
+
+				AkSoundEngine.PostEvent("Play_block_instantiate", 0.5f * (block.Map.GetAbsolutePosition(block.StartCoord) + block.Map.GetAbsolutePosition(block.EndCoord)));
 			};
 
 			// Wall run
