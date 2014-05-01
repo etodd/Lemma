@@ -468,7 +468,6 @@ namespace Lemma.Components
 		public void SetRenderTargets(RenderParameters p)
 		{
 			this.main.GraphicsDevice.SetRenderTargets(this.colorBuffer1, this.depthBuffer, this.normalBuffer);
-			this.clearEffect.CurrentTechnique = this.clearEffect.Techniques["Clear"];
 			Color color = this.BackgroundColor;
 			p.Camera.SetParameters(this.clearEffect);
 			this.setTargetParameters(new RenderTarget2D[] { }, new RenderTarget2D[] { this.colorBuffer1 }, this.clearEffect);
@@ -508,7 +507,6 @@ namespace Lemma.Components
 				parameters.Camera.SetParameters(this.ssaoEffect);
 				this.ssaoEffect.CurrentTechnique = this.ssaoEffect.Techniques["SSAO"];
 				this.preparePostProcess(new[] { this.halfDepthBuffer, this.halfBuffer1 }, new[] { this.halfBuffer2 }, this.ssaoEffect);
-				this.main.GraphicsDevice.Clear(Color.Black);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				// Blur

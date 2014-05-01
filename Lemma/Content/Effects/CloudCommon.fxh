@@ -39,11 +39,11 @@ void CloudPS(in RenderPSInput input,
 	uv = (round(uv * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
 	float depth = tex2D(DepthSampler, uv).r;
 	float4 texColor = tex2D(DiffuseSampler, tex.uvCoordinates + Velocity * Time);
-	output.xyz = DiffuseColor.xyz * texColor.xyz;
+	output.rgb = DiffuseColor.rgb * texColor.rgb;
 
-	float blend = clamp(lerp(0, 1, (depth - StartDistance) / (FarPlaneDistance - StartDistance)), 0, 1);
+	float blend = clamp((depth - StartDistance) / (FarPlaneDistance - StartDistance), 0, 1);
 
-	output.w = Alpha * texColor.w * blend * (1.0f - 2.0f * length(tex.uvCoordinates - float2(0.5f, 0.5f)));
+	output.a = Alpha * texColor.a * blend * clamp(1.0f - 2.0f * length(tex.uvCoordinates - float2(0.5f, 0.5f)), 0, 1);
 }
 
 void ClipCloudPS(in RenderPSInput input,

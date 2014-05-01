@@ -35,7 +35,6 @@ namespace Lemma.IO
 			typeof(PointLight),
 			typeof(SpotLight),
 			typeof(Script),
-			typeof(Fog),
 			typeof(ModelInstance),
 			typeof(ModelInstance.ModelInstanceSystem),
 			typeof(Zone),

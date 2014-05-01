@@ -49,7 +49,7 @@ namespace Lemma.Factories
 			{
 				// TODO: figure out Wwise volume parameter
 				float volume = contacts[contacts.Count - 1].NormalImpulse * volumeMultiplier;
-				if (volume > 0.1f && soundCue.Value != null)
+				if (volume > 0.1f)
 					AkSoundEngine.PostEvent(soundCue, result);
 			}));
 

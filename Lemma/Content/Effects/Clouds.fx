@@ -6,7 +6,7 @@ technique Render
 {
 	pass p0
 	{
-		ZEnable = true;
+		ZEnable = false;
 		ZWriteEnable = false;
 		AlphaBlendEnable = true;
 		SrcBlend = SrcAlpha;
@@ -21,7 +21,7 @@ technique Clip
 {
 	pass p0
 	{
-		ZEnable = true;
+		ZEnable = false;
 		ZWriteEnable = false;
 		AlphaBlendEnable = true;
 		SrcBlend = SrcAlpha;

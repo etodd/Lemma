@@ -147,8 +147,6 @@
     <Compile Include="Graphics\LineDrawer.cs" />
     <Compile Include="Factories\ZoneFactory.cs" />
     <Compile Include="Factories\EmptyFactory.cs" />
-    <Compile Include="Graphics\Fog.cs" />
-    <Compile Include="Factories\FogFactory.cs" />
     <Compile Include="Graphics\AmbientLight.cs" />
     <Compile Include="Components\Animation.cs" />
     <Compile Include="Graphics\SpotLight.cs" />

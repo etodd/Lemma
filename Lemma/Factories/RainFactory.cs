@@ -53,11 +53,6 @@ namespace Lemma.Factories
 			lightning.Enabled.Value = false;
 			Vector3 originalLightningColor = lightning.Color;
 
-			Fog fog = result.GetOrCreate<Fog>("Fog");
-			fog.Enabled.Value = false;
-			Vector3 originalFogColor = new Vector3(fog.Color.Value.X, fog.Color.Value.Y, fog.Color.Value.Z);
-			float originalFogBrightness = fog.Color.Value.W;
-
 			float[,] audioKernel = new float[kernelSize, kernelSize];
 			float sum = 0.0f;
 			for (int x = 0; x < kernelSize; x++)
@@ -110,6 +105,21 @@ namespace Lemma.Factories
 			updater.EnabledInEditMode.Value = true;
 			result.Add(updater);
 
+			ModelAlpha skybox = null;
+			Vector3 originalSkyboxColor = Vector3.Zero;
+			result.Add(new PostInitialization
+			{
+				delegate()
+				{
+					Entity skyboxEntity = main.Get("Skybox").FirstOrDefault();
+					if (skyboxEntity != null)
+					{
+						skybox = skyboxEntity.Get<ModelAlpha>();
+						originalSkyboxColor = skybox.Color;
+					}
+				}
+			});
+
 			Random random = new Random();
 			Property<float> thunderIntervalMin = result.GetOrMakeProperty<float>("ThunderIntervalMin", true, 12.0f);
 			Property<float> thunderIntervalMax = result.GetOrMakeProperty<float>("ThunderIntervalMax", true, 36.0f);
@@ -122,23 +132,26 @@ namespace Lemma.Factories
 			{
 				float volume = 0.6f + ((float)random.NextDouble() * 0.4f);
 				lightning.Color.Value = Vector3.Zero;
-				fog.Color.Value = new Vector4(originalFogColor, 0.0f);
+				Property<Vector3> skyboxColor;
+				if (skybox == null)
+					skyboxColor = new Property<Vector3>(); // Dummy property
+				else
+					skyboxColor = skybox.Color;
+
 				result.Add(new Animation
 				(
 					new Animation.Set<bool>(lightning.Enabled, true),
-					new Animation.Set<bool>(fog.Enabled, true),
 					new Animation.Parallel
 					(
 						new Animation.Vector3MoveTo(lightning.Color, originalLightningColor * volume, 0.2f),
-						new Animation.Vector4MoveTo(fog.Color, new Vector4(originalFogColor, originalFogBrightness * volume), 0.2f)
+						new Animation.Vector3MoveTo(skyboxColor, originalSkyboxColor * (1.0f + volume), 0.2f)
 					),
 					new Animation.Parallel
 					(
 						new Animation.Vector3MoveTo(lightning.Color, Vector3.Zero, 0.5f),
-						new Animation.Vector4MoveTo(fog.Color, new Vector4(originalFogColor, 0.0f), 0.5f)
+						new Animation.Vector3MoveTo(skyboxColor, originalSkyboxColor, 0.5f)
 					),
 					new Animation.Set<bool>(lightning.Enabled, false),
-					new Animation.Set<bool>(fog.Enabled, false),
 					new Animation.Delay((1.0f - volume) * thunderMaxDelay),
 					new Animation.Execute(delegate()
 					{
@@ -203,9 +216,6 @@ namespace Lemma.Factories
 
 			Components.DirectionalLight lightning = result.Get<Components.DirectionalLight>("Lightning");
 			lightning.Add(new Binding<bool>(lightning.Enabled, selected));
-
-			Fog fog = result.Get<Components.Fog>("Fog");
-			fog.Add(new Binding<bool>(fog.Enabled, selected));
 		}
 	}
 }
