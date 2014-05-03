@@ -112,6 +112,7 @@ namespace Lemma.Factories
 					Name = "AvoidAI",
 					Permanent = true,
 					Hard = true,
+					Supported = true,
 					Density = 2,
 					DiffuseMap = "Textures\\dirty",
 					NormalMap = "Textures\\dirty-normal",

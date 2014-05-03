@@ -118,8 +118,6 @@ namespace Lemma.Components
 		/// </summary>
 		public void UpdateBoneTransforms(TimeSpan elapsedTime)
 		{
-			TimeSpan deltaTime = new TimeSpan((long)((float)elapsedTime.Ticks * this.Speed));
-
 			List<SkinnedModel.Clip> removals = new List<SkinnedModel.Clip>();
 
 			int i = 0;
@@ -131,7 +129,7 @@ namespace Lemma.Components
 
 			foreach (SkinnedModel.Clip clip in this.CurrentClips)
 			{
-				TimeSpan newTime = clip.CurrentTime + new TimeSpan((long)((float)deltaTime.Ticks * clip.Speed));
+				TimeSpan newTime = clip.CurrentTime + new TimeSpan((long)((float)elapsedTime.Ticks * clip.Speed));
 
 				if (!clip.Stopping && clip.Duration.TotalSeconds > 0)
 				{
@@ -201,8 +199,6 @@ namespace Lemma.Components
 		private Dictionary<int, Property<Matrix>> absoluteBoneTransformProperties = new Dictionary<int, Property<Matrix>>();
 		private Dictionary<int, Property<Matrix>> relativeBoneTransformProperties = new Dictionary<int, Property<Matrix>>();
 
-		public Property<float> Speed = new Property<float> { Editable = true, Value = 1.0f };
-		
 		public AnimatedModel()
 		{
 			this.EnabledWhenPaused.Value = true;

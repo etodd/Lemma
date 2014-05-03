@@ -27,6 +27,14 @@ namespace Lemma.Factories
 			public Vector3 OriginalPosition;
 		}
 
+		private enum VaultType
+		{
+			None,
+			Left,
+			Right,
+			Straight,
+		}
+
 		public override Entity Create(Main main)
 		{
 			Entity result = new Entity(main, "Player");
@@ -44,11 +52,11 @@ namespace Lemma.Factories
 			result.Add("FootstepTimer", footstepTimer);
 
 			model.Editable = false;
-			model.Filename.Value = "Models\\player";
+			model.Filename.Value = "Models\\joan";
 			model.CullBoundingBox.Value = false;
 
 			firstPersonModel.Editable = false;
-			firstPersonModel.Filename.Value = "Models\\player-firstperson";
+			firstPersonModel.Filename.Value = "Models\\joan-firstperson";
 			firstPersonModel.CullBoundingBox.Value = false;
 
 			footstepTimer.Repeat.Value = true;
@@ -519,13 +527,13 @@ namespace Lemma.Factories
 
 			model.Update(0.0f);
 			Property<Matrix> cameraBone = model.GetBoneTransform("Camera");
-			Property<Matrix> relativeHeadBone = model.GetRelativeBoneTransform("Head");
-			Property<Matrix> relativeSpineBone = model.GetRelativeBoneTransform("Spine3");
-			Property<Matrix> clavicleLeft = model.GetBoneTransform("Clavicle_L");
-			Property<Matrix> clavicleRight = model.GetBoneTransform("Clavicle_R");
-			Property<Matrix> relativeUpperLeftArm = model.GetRelativeBoneTransform("UpArm_L");
-			Property<Matrix> relativeUpperRightArm = model.GetRelativeBoneTransform("UpArm_R");
-			Property<Matrix> headBone = model.GetBoneTransform("Head");
+			Property<Matrix> relativeHeadBone = model.GetRelativeBoneTransform("ORG-head");
+			Property<Matrix> relativeSpineBone = model.GetRelativeBoneTransform("ORG-chest");
+			Property<Matrix> clavicleLeft = model.GetBoneTransform("ORG-shoulder_L");
+			Property<Matrix> clavicleRight = model.GetBoneTransform("ORG-shoulder_R");
+			Property<Matrix> relativeUpperLeftArm = model.GetRelativeBoneTransform("ORG-upper_arm_L");
+			Property<Matrix> relativeUpperRightArm = model.GetRelativeBoneTransform("ORG-upper_arm_R");
+			Property<Matrix> headBone = model.GetBoneTransform("ORG-head");
 
 			// Camera updater / fire code
 			Property<float> cameraShakeAmount = new Property<float> { Value = 0.0f };
@@ -552,7 +560,7 @@ namespace Lemma.Factories
 			enableCameraControl.Serialize = false;
 
 			Vector3 originalCameraPosition = cameraBone.Value.Translation;
-			Vector3 cameraOffset = cameraBone.Value.Translation - headBone.Value.Translation - new Vector3(0, 0.1f, 0);
+			Vector3 cameraOffset = cameraBone.Value.Translation - headBone.Value.Translation;
 
 			ProceduralGenerator noise = result.GetOrCreate<ProceduralGenerator>();
 
@@ -646,15 +654,19 @@ namespace Lemma.Factories
 							foreach (SkinnedModel.Clip clip in model.CurrentClips)
 							{
 								if (clip.Name == "Kick"
+									|| clip.Name == "Slide"
 									|| clip.Name == "Roll"
 									|| clip.Name == "Vault"
-									|| clip.Name == "Walk"
+									|| clip.Name == "VaultLeft"
+									|| clip.Name == "VaultRight"
+									|| clip.Name == "Run"
+									|| clip.Name == "Sprint"
 									|| clip.Name == "Idle"
-									|| clip.Name == "WalkBackwards"
-									|| clip.Name == "Walk"
-									|| clip.Name == "StrafeRight"
+									|| clip.Name == "RunBackward"
+									|| clip.Name == "RunRight"
 									|| clip.Name == "Land"
-									|| clip.Name == "StrafeLeft")
+									|| clip.Name == "LandHard"
+									|| clip.Name == "RunLeft")
 								{
 									limitHeight = false;
 									break;
@@ -725,12 +737,12 @@ namespace Lemma.Factories
 					// Update footstep sound interval when wall-running
 					if (player.WallRunState != Player.WallRun.None)
 					{
-						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "JumpFall", "CrouchFall", "Vault");
-						footstepTimer.Interval.Value = 0.37f / model[player.WallRunState == Player.WallRun.Straight ? "WallWalkStraight" : (player.WallRunState == Player.WallRun.Left ? "WallWalkLeft" : "WallWalkRight")].Speed;
+						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "CrouchFall", "Vault", "VaultLeft", "VaultRight");
+						footstepTimer.Interval.Value = 0.37f / model[player.WallRunState == Player.WallRun.Straight ? "WallRunStraight" : (player.WallRunState == Player.WallRun.Left ? "WallRunLeft" : "WallRunRight")].Speed;
 						return;
 					}
 
-					model.Stop("WallWalkLeft", "WallWalkRight", "WallWalkStraight", "WallSlideDown", "WallSlideReverse");
+					model.Stop("WallRunLeft", "WallRunRight", "WallRunStraight", "WallSlideDown", "WallSlideReverse");
 
 					if (player.IsSupported)
 					{
@@ -744,27 +756,33 @@ namespace Lemma.Factories
 							lastLandAnimationPlayed = main.TotalTime;
 						}
 
-						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "JumpFall", "CrouchFall", "Vault");
+						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "CrouchFall", "Vault", "VaultLeft", "VaultRight");
 						resetInAirState();
 
 						Vector2 dir = input.Movement;
 
 						string movementAnimation;
 						int animationPriority = 0;
-						if (dir.LengthSquared() == 0.0f)
-							movementAnimation = "Idle";
-						else
-							movementAnimation = dir.Y < 0.0f ? "WalkBackwards" : (dir.X > 0.0f ? "StrafeRight" : (dir.X < 0.0f ? "StrafeLeft" : "Walk"));
-
-						if (player.Crouched)
-						{
-							movementAnimation = "Crouch" + movementAnimation;
-							animationPriority = 2;
-						}
 
 						Vector3 velocity = player.LinearVelocity;
 						velocity.Y = 0;
 						float speed = velocity.Length();
+
+						if (player.Crouched)
+						{
+							if (dir.LengthSquared() == 0.0f)
+								movementAnimation = "CrouchIdle";
+							else
+								movementAnimation = dir.Y < 0.0f ? "CrouchWalkBackward" : (dir.X > 0.0f ? "CrouchStrafeRight" : (dir.X < 0.0f ? "CrouchStrafeLeft" : "CrouchWalk"));
+							animationPriority = 2;
+						}
+						else
+						{
+							if (dir.LengthSquared() == 0.0f)
+								movementAnimation = "Idle";
+							else
+								movementAnimation = dir.Y < 0.0f ? "RunBackward" : (dir.X > 0.0f ? "RunRight" : (dir.X < 0.0f ? "RunLeft" : (speed > player.MaxSpeed * 0.8f ? "Sprint" : "Run")));
+						}
 						
 						if (movementAnimation != "Idle" && movementAnimation != "CrouchIdle")
 							model[movementAnimation].Speed = player.Crouched ? (speed / 2.2f) : (speed / 6.0f);
@@ -776,15 +794,16 @@ namespace Lemma.Factories
 							model.Stop
 							(
 								"CrouchIdle",
-								"CrouchWalkBackwards",
+								"CrouchWalkBackward",
 								"CrouchWalk",
 								"CrouchStrafeRight",
 								"CrouchStrafeLeft",
 								"Idle",
-								"WalkBackwards",
-								"Walk",
-								"StrafeRight",
-								"StrafeLeft",
+								"RunBackward",
+								"Run",
+								"Sprint",
+								"RunRight",
+								"RunLeft",
 								"Jump",
 								"JumpRight",
 								"JumpLeft",
@@ -798,29 +817,29 @@ namespace Lemma.Factories
 						model.Stop
 						(
 							"CrouchIdle",
-							"CrouchWalkBackwards",
+							"CrouchWalkBackward",
 							"CrouchWalk",
 							"CrouchStrafeRight",
 							"CrouchStrafeLeft",
 							"Idle",
-							"WalkBackwards",
-							"Walk",
-							"StrafeRight",
-							"StrafeLeft"
+							"RunBackward",
+							"Run",
+							"Sprint",
+							"RunRight",
+							"RunLeft"
 						);
 						if (player.Crouched)
 						{
 							if (!model.IsPlaying("CrouchFall"))
 							{
-								model.Stop("Fall, JumpFall");
+								model.Stop("Fall");
 								model.StartClip("CrouchFall", 0, true);
 							}
 						}
-						else if (!model.IsPlaying("Fall") && !model.IsPlaying("JumpFall"))
+						else if (!model.IsPlaying("Fall"))
 						{
-							model.Stop("JumpFall", "Fall", "CrouchFall");
-							bool jumpFall = model.IsPlaying("Jump", "JumpLeft", "JumpBackward", "JumpRight");
-							model.StartClip(jumpFall ? "JumpFall" : "Fall", 0, true);
+							model.Stop("Fall", "CrouchFall");
+							model.StartClip("Fall", 0, true);
 						}
 					}
 
@@ -979,13 +998,13 @@ namespace Lemma.Factories
 				switch (state)
 				{
 					case Player.WallRun.Left:
-						animation = "WallWalkLeft";
+						animation = "WallRunLeft";
 						break;
 					case Player.WallRun.Right:
-						animation = "WallWalkRight";
+						animation = "WallRunRight";
 						break;
 					case Player.WallRun.Straight:
-						animation = "WallWalkStraight";
+						animation = "WallRunStraight";
 						break;
 					case Player.WallRun.Reverse:
 						animation = "WallSlideReverse";
@@ -1251,7 +1270,7 @@ namespace Lemma.Factories
 						{
 							// Start sliding down
 							player.WallRunState.Value = wallRunState = Player.WallRun.Down;
-							model.Stop("WallWalkStraight");
+							model.Stop("WallRunStraight");
 							model.StartClip("WallSlideDown", 5, true);
 						}
 					}
@@ -1269,16 +1288,16 @@ namespace Lemma.Factories
 					switch (wallRunState)
 					{
 						case Player.WallRun.Straight:
-							wallRunAnimation = "WallWalkStraight";
+							wallRunAnimation = "WallRunStraight";
 							break;
 						case Player.WallRun.Down:
 							wallRunAnimation = "WallSlideDown";
 							break;
 						case Player.WallRun.Left:
-							wallRunAnimation = "WallWalkLeft";
+							wallRunAnimation = "WallRunLeft";
 							break;
 						case Player.WallRun.Right:
-							wallRunAnimation = "WallWalkRight";
+							wallRunAnimation = "WallRunRight";
 							break;
 						case Player.WallRun.Reverse:
 							wallRunAnimation = "WallSlideReverse";
@@ -1645,7 +1664,7 @@ namespace Lemma.Factories
 
 				// Check if we're vaulting
 				Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
-				bool vaulting = false;
+				VaultType vaultType = VaultType.None;
 				if (allowVault)
 				{
 					foreach (Map map in Map.ActivePhysicsMaps)
@@ -1668,15 +1687,26 @@ namespace Lemma.Factories
 								{
 									// Vault
 									vault(map, coord);
-									vaulting = true;
+									switch (x)
+									{
+										case -1:
+											vaultType = VaultType.Left;
+											break;
+										case 1:
+											vaultType = VaultType.Right;
+											break;
+										default:
+											vaultType = VaultType.Straight;
+											break;
+									}
 									break;
 								}
 								coord = coord.Move(up.GetReverse());
 							}
-							if (vaulting)
+							if (vaultType != VaultType.None)
 								break;
 						}
-						if (vaulting)
+						if (vaultType != VaultType.None)
 							break;
 					}
 				}
@@ -1738,7 +1768,7 @@ namespace Lemma.Factories
 					}
 				};
 
-				if (!onlyVault && !vaulting && !supported && wallRunState == Player.WallRun.None)
+				if (!onlyVault && vaultType == VaultType.None && !supported && wallRunState == Player.WallRun.None)
 				{
 					// We're not vaulting, not doing our normal jump, and not wall-walking
 					// See if we can wall-jump
@@ -1774,7 +1804,7 @@ namespace Lemma.Factories
 						wallJump(wallRunMap, wallDirection.GetReverse(), wallCoord);
 				}
 
-				bool go = vaulting || (!onlyVault && (supported || wallJumping));
+				bool go = vaultType != VaultType.None || (!onlyVault && (supported || wallJumping));
 
 				bool blockPossibilityBeneath = false;
 
@@ -1801,22 +1831,40 @@ namespace Lemma.Factories
 					foreach (BlockPossibility possibility in blockPossibilities.Values.SelectMany(x => x))
 					{
 						Direction up = possibility.Map.GetRelativeDirection(Direction.PositiveY);
+						Direction right = possibility.Map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
 						Vector3 pos = transform.Position + rotationMatrix.Forward * -1.75f;
-						Map.Coordinate coord = possibility.Map.GetCoordinate(pos).Move(up, 1);
-						for (int i = 0; i < 4; i++)
+						Map.Coordinate baseCoord = possibility.Map.GetCoordinate(pos).Move(up, 1);
+						foreach (int x in new[] { 0, -1, 1 })
 						{
-							Map.Coordinate downCoord = coord.Move(up.GetReverse());
-							if (!coord.Between(possibility.StartCoord, possibility.EndCoord) && downCoord.Between(possibility.StartCoord, possibility.EndCoord))
+							Map.Coordinate coord = baseCoord.Move(right, x);
+							for (int i = 0; i < 4; i++)
 							{
-								instantiateBlockPossibility(possibility);
-								vault(possibility.Map, coord);
-								vaulting = true;
-								go = true;
-								break;
+								Map.Coordinate downCoord = coord.Move(up.GetReverse());
+								if (!coord.Between(possibility.StartCoord, possibility.EndCoord) && downCoord.Between(possibility.StartCoord, possibility.EndCoord))
+								{
+									instantiateBlockPossibility(possibility);
+									vault(possibility.Map, coord);
+									switch (x)
+									{
+										case -1:
+											vaultType = VaultType.Left;
+											break;
+										case 1:
+											vaultType = VaultType.Right;
+											break;
+										default:
+											vaultType = VaultType.Straight;
+											break;
+									}
+									go = true;
+									break;
+								}
+								coord = coord.Move(up.GetReverse());
 							}
-							coord = coord.Move(up.GetReverse());
+							if (vaultType != VaultType.None)
+								break;
 						}
-						if (vaulting)
+						if (vaultType != VaultType.None)
 							break;
 					}
 				}
@@ -1880,7 +1928,7 @@ namespace Lemma.Factories
 						{
 							// Regular jump
 							// Take base velocity into account
-							if (!vaulting && groundRaycast.Map != null && groundRaycast.Coordinate.Value.Data.ID == avoidID) // Can't jump off avoid material
+							if (vaultType == VaultType.None && groundRaycast.Map != null && groundRaycast.Coordinate.Value.Data.ID == avoidID) // Can't jump off avoid material
 								return false;
 
 							BEPUphysics.Entities.Entity supportEntity = player.SupportEntity;
@@ -1898,7 +1946,7 @@ namespace Lemma.Factories
 						}
 					}
 
-					if (!vaulting)
+					if (vaultType == VaultType.None)
 					{
 						// Just a normal jump.
 						Vector3 velocity = player.LinearVelocity;
@@ -1935,13 +1983,26 @@ namespace Lemma.Factories
 						player.HasTraction.Value = false;
 					}
 
-					AkSoundEngine.PostEvent(vaulting ? "Vault_Play" : "Jump_Play", result);
+					AkSoundEngine.PostEvent(vaultType == VaultType.None ? "Jump_Play" : "Vault_Play", result);
 
-					model.Stop("Vault", "Jump", "JumpLeft", "JumpRight", "JumpBackward");
-					if (vaulting)
+					model.Stop("Vault", "VaultLeft", "VaultRight", "Jump", "JumpLeft", "JumpRight", "JumpBackward");
+					if (vaultType != VaultType.None)
 					{
 						Session.Recorder.Event(main, "Vault");
-						model.StartClip("Vault", 4, false, 0.1f);
+						string anim;
+						switch (vaultType)
+						{
+							case VaultType.Left:
+								anim = "VaultLeft";
+								break;
+							case VaultType.Right:
+								anim = "VaultRight";
+								break;
+							default:
+								anim = "Vault";
+								break;
+						}
+						model.StartClip(anim, 4, false, 0.1f);
 					}
 					else
 					{
@@ -2254,7 +2315,7 @@ namespace Lemma.Factories
 				{
 					kickUpdate.Delete.Execute();
 					kickUpdate = null;
-					model.Stop("Kick");
+					model.Stop("Kick", "Slide");
 					player.EnableWalking.Value = true;
 					if (!input.GetInput(settings.RollKick))
 						player.AllowUncrouch.Value = true;
@@ -2332,15 +2393,16 @@ namespace Lemma.Factories
 
 						model.Stop
 						(
-							"CrouchWalkBackwards",
+							"CrouchWalkBackward",
 							"CrouchWalk",
 							"CrouchStrafeRight",
 							"CrouchStrafeLeft",
 							"Idle",
-							"WalkBackwards",
-							"Walk",
-							"StrafeRight",
-							"StrafeLeft",
+							"RunBackward",
+							"Run",
+							"Sprint",
+							"RunRight",
+							"RunLeft",
 							"Jump",
 							"JumpLeft",
 							"JumpRight",
@@ -2404,7 +2466,7 @@ namespace Lemma.Factories
 					}
 				}
 
-				if (!rolling && !model.IsPlaying("PlayerReload") && !model.IsPlaying("Roll") && player.EnableKick && canKick && kickUpdate == null)
+				if (!rolling && !model.IsPlaying("Roll") && player.EnableKick && canKick && kickUpdate == null)
 				{
 					// Kick
 					canKick = false;
@@ -2415,15 +2477,16 @@ namespace Lemma.Factories
 
 					model.Stop
 					(
-						"CrouchWalkBackwards",
+						"CrouchWalkBackward",
 						"CrouchWalk",
 						"CrouchStrafeRight",
 						"CrouchStrafeLeft",
 						"Idle",
-						"WalkBackwards",
-						"Walk",
-						"StrafeRight",
-						"StrafeLeft",
+						"RunBackward",
+						"Run",
+						"Sprint",
+						"RunRight",
+						"RunLeft",
 						"Jump",
 						"JumpLeft",
 						"JumpRight",
@@ -2446,7 +2509,6 @@ namespace Lemma.Factories
 						new Animation.Delay(0.25f),
 						new Animation.Execute(delegate() { AkSoundEngine.PostEvent("Kick_Play", result); })
 					));
-					model.StartClip("Kick", 5, false);
 
 					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
 
@@ -2464,6 +2526,8 @@ namespace Lemma.Factories
 								shouldBuildFloor = true;
 						}
 					}
+
+					model.StartClip(shouldBreakFloor ? "Kick" : "Slide", 5, false);
 
 					Direction forwardDir = Direction.None;
 					Direction rightDir = Direction.None;
@@ -2527,7 +2591,7 @@ namespace Lemma.Factories
 				wallDirection = Direction.None;
 				wallRunDirection = Direction.None;
 				player.WallRunState.Value = Player.WallRun.None;
-				model.Stop("WallWalkLeft", "WallWalkRight", "WallWalkStraight", "WallSlideDown", "WallSlideReverse");
+				model.Stop("WallRunLeft", "WallRunRight", "WallRunStraight", "WallSlideDown", "WallSlideReverse");
 				if (vaultMover == null && kickUpdate == null && rollUpdate == null)
 					rotationLocked.Value = false;
 			};
