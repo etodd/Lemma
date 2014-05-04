@@ -77,7 +77,6 @@ namespace Lemma.Components
 					{
 						clip.Stopping = true;
 						clip.BlendTime = Math.Max(clip.BlendTotalTime - clip.BlendTime, 0.0f);
-						break;
 					}
 				}
 			}
@@ -142,23 +141,29 @@ namespace Lemma.Components
 						clip.CurrentTime = newTime;
 				}
 
+				clip.BlendTime += (float)elapsedTime.TotalSeconds;
+				float blend = clip.Strength;
 				if (clip.BlendTime < clip.BlendTotalTime)
 				{
-					float blend = clip.BlendTime / clip.BlendTotalTime;
 					if (clip.Stopping)
-						blend = 1.0f - blend;
-
-					foreach (SkinnedModel.Channel channel in clip.Channels)
-						this.boneTransforms[channel.BoneIndex] = Matrix.Lerp(this.boneTransforms[channel.BoneIndex], channel.CurrentMatrix, blend);
-					
-					clip.BlendTime += (float)elapsedTime.TotalSeconds;
+						blend *= 1.0f - clip.BlendTime / clip.BlendTotalTime;
+					else
+						blend *= clip.BlendTime / clip.BlendTotalTime;
 				}
-				else
+				else if (clip.Stopping)
 				{
-					if (clip.Stopping)
+					clip.Stopping = false;
+					clip.BlendTime = 0.0f;
+					removals.Add(clip);
+					continue;
+				}
+
+				if (blend > 0.0f)
+				{
+					if (blend < 1.0f)
 					{
-						clip.Stopping = false;
-						removals.Add(clip);
+						foreach (SkinnedModel.Channel channel in clip.Channels)
+							this.boneTransforms[channel.BoneIndex] = Matrix.Lerp(this.boneTransforms[channel.BoneIndex], channel.CurrentMatrix, blend);
 					}
 					else
 					{

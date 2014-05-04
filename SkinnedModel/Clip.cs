@@ -86,6 +86,21 @@ namespace SkinnedModel
 		[ContentSerializerIgnore]
 		public bool StopOnEnd = true;
 
+		[ContentSerializerIgnore]
+		public float Strength = 1.0f;
+
+		public float TotalStrength
+		{
+			get
+			{
+				float blend = this.BlendTotalTime > 0.0f ? this.BlendTime / this.BlendTotalTime : 1.0f;
+				if (this.Stopping)
+					blend = 1.0f - blend;
+				blend = MathHelper.Clamp(blend, 0.0f, 1.0f);
+				return MathHelper.Clamp(this.Strength * blend, 0.0f, 1.0f);
+			}
+		}
+
 		private List<Channel> channels;
 		/// <summary>
 		/// Gets a combined list containing all the keyframes for all bones,

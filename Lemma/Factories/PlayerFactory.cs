@@ -203,6 +203,15 @@ namespace Lemma.Factories
 				return new Vector3(Player.CharacterRadius, player.Height, Player.CharacterRadius);
 			}, player.Height));
 			result.Add(debugCylinder);
+
+			ModelAlpha debugCameraPosition = new ModelAlpha();
+			debugCameraPosition.Filename.Value = "Models\\alpha-sphere";
+			debugCameraPosition.Serialize = false;
+			debugCameraPosition.Editable = false;
+			debugCameraPosition.Alpha.Value = 0.25f;
+			debugCameraPosition.Scale.Value = new Vector3(0.5f);
+			debugCameraPosition.Add(new Binding<bool>(debugCameraPosition.Enabled, thirdPerson));
+			result.Add(debugCameraPosition);
 #endif
 
 			Property<Entity.Handle> data = result.GetProperty<Entity.Handle>("Data");
@@ -525,7 +534,7 @@ namespace Lemma.Factories
 
 			main.IsMouseVisible.Value = false;
 
-			model.Update(0.0f);
+			model.UpdateWorldTransforms();
 			Property<Matrix> cameraBone = model.GetBoneTransform("Camera");
 			Property<Matrix> relativeHeadBone = model.GetRelativeBoneTransform("ORG-head");
 			Property<Matrix> relativeSpineBone = model.GetRelativeBoneTransform("ORG-chest");
@@ -559,10 +568,11 @@ namespace Lemma.Factories
 			Property<bool> enableCameraControl = result.GetOrMakeProperty<bool>("EnableCameraControl", false, true);
 			enableCameraControl.Serialize = false;
 
-			Vector3 originalCameraPosition = cameraBone.Value.Translation;
 			Vector3 cameraOffset = cameraBone.Value.Translation - headBone.Value.Translation;
 
 			ProceduralGenerator noise = result.GetOrCreate<ProceduralGenerator>();
+
+			SkinnedModel.Clip sprintAnimation = model["Sprint"], runAnimation = model["Run"];
 
 			// Update camera
 			update.Add(delegate(float dt)
@@ -584,21 +594,10 @@ namespace Lemma.Factories
 						blend = 1.0f;
 				}
 
-				relativeHeadBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.5f * blend);
-				relativeSpineBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.25f * blend);
+				relativeHeadBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.4f * blend);
 				model.UpdateWorldTransforms();
 
-				float targetAngle = input.Mouse.Value.Y * 0.75f;
-
-				float angle = targetAngle;
-				if (angle < 0.0f)
-					angle *= 0.9f;
-				else
-					angle = Math.Min(0.5f, angle * 1.1f);
-				
-				angle *= blend;
-
-				Matrix r = Matrix.CreateRotationX(angle);
+				Matrix r = Matrix.CreateRotationX(input.Mouse.Value.Y * 0.4f * blend * sprintAnimation.TotalStrength);
 
 				Matrix parent = clavicleLeft;
 				parent.Translation = Vector3.Zero;
@@ -628,10 +627,14 @@ namespace Lemma.Factories
 
 				if (enableCameraControl)
 				{
+					Vector3 cameraPosition = Vector3.Transform(cameraOffset, Matrix.CreateRotationY((float)Math.PI) * headBone.Value * model.Transform);
+
 #if DEVELOPMENT
 					if (thirdPerson)
 					{
-						Vector3 cameraPosition = Vector3.Transform(new Vector3(0.0f, 3.0f, 0.0f), model.Transform);
+						debugCameraPosition.Transform.Value = Matrix.CreateTranslation(cameraPosition);
+
+						cameraPosition = Vector3.Transform(new Vector3(0.0f, 3.0f, 0.0f), model.Transform);
 
 						main.Camera.Angles.Value = new Vector3(-input.Mouse.Value.Y + shake.X, input.Mouse.Value.X + (float)Math.PI * 1.0f + shake.Y, shake.Z);
 
@@ -645,9 +648,6 @@ namespace Lemma.Factories
 					else
 #endif
 					{
-						Vector3 adjustedCameraOffset = cameraOffset + (cameraBone.Value.Translation - originalCameraPosition);
-						Vector3 cameraPosition = Vector3.Transform(adjustedCameraOffset, headBone.Value * model.Transform);
-
 						if (player.Crouched)
 						{
 							bool limitHeight = true;
@@ -673,7 +673,7 @@ namespace Lemma.Factories
 								}
 							}
 
-							if (limitHeight)
+							if (limitHeight && false)
 								cameraPosition.Y = Math.Min(cameraPosition.Y, transform.Position.Value.Y + player.Height.Value * 0.5f);
 						}
 
@@ -781,11 +781,20 @@ namespace Lemma.Factories
 							if (dir.LengthSquared() == 0.0f)
 								movementAnimation = "Idle";
 							else
-								movementAnimation = dir.Y < 0.0f ? "RunBackward" : (dir.X > 0.0f ? "RunRight" : (dir.X < 0.0f ? "RunLeft" : (speed > player.MaxSpeed * 0.8f ? "Sprint" : "Run")));
+								movementAnimation = dir.Y < 0.0f ? "RunBackward" : (dir.X > 0.0f ? "RunRight" : (dir.X < 0.0f ? "RunLeft" : "Run"));
 						}
 						
 						if (movementAnimation != "Idle" && movementAnimation != "CrouchIdle")
 							model[movementAnimation].Speed = player.Crouched ? (speed / 2.2f) : (speed / 6.0f);
+
+						if (movementAnimation == "Run")
+						{
+							sprintAnimation.Speed = runAnimation.Speed;
+							float targetSprintStrength = MathHelper.Clamp((speed - 6.0f) / 2.0f, 0.0f, 1.0f);
+							float strengthBlendSpeed = (1.0f / AnimatedModel.DefaultBlendTime) * dt;
+							sprintAnimation.Strength += MathHelper.Clamp(targetSprintStrength - sprintAnimation.Strength, -strengthBlendSpeed, strengthBlendSpeed);
+							runAnimation.Strength = 1.0f - sprintAnimation.Strength;
+						}
 
 						footstepTimer.Interval.Value = 0.37f / (speed / 6.0f);
 
@@ -810,6 +819,12 @@ namespace Lemma.Factories
 								"JumpBackward"
 							);
 							model.StartClip(movementAnimation, animationPriority, true);
+							if (movementAnimation == "Run")
+							{
+								runAnimation.Strength = 1.0f;
+								sprintAnimation.Strength = 0.0f;
+								model.StartClip("Sprint", animationPriority + 1, true);
+							}
 						}
 					}
 					else
