@@ -577,6 +577,9 @@ namespace Lemma.Factories
 			// Update camera
 			update.Add(delegate(float dt)
 			{
+				player.Transform.Changed();
+				player.LinearVelocity.Changed();
+
 				float blend;
 
 				if (rotationLocked)
@@ -673,7 +676,7 @@ namespace Lemma.Factories
 								}
 							}
 
-							if (limitHeight && false)
+							if (limitHeight)
 								cameraPosition.Y = Math.Min(cameraPosition.Y, transform.Position.Value.Y + player.Height.Value * 0.5f);
 						}
 

@@ -171,6 +171,7 @@ namespace Lemma.Util
 			this.Crouched.Set = delegate(bool value)
 			{
 				bool oldValue = this.Crouched.InternalValue;
+				this.Crouched.InternalValue = value;
 				if (value && !oldValue)
 				{
 					this.Body.Position += new Vector3(0, (this.crouchedSupportHeight - this.defaultSupportHeight) + 0.5f * (this.crouchedCharacterHeight - this.defaultCharacterHeight), 0);
@@ -184,7 +185,6 @@ namespace Lemma.Util
 					this.SupportHeight.Value = this.defaultSupportHeight;
 				}
 				this.collisionPairCollector.Height = this.SupportHeight * 2;
-				this.Crouched.InternalValue = value;
 			};
 
 			const int rayChecks = 4;

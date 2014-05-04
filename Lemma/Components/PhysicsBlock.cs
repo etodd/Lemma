@@ -47,7 +47,7 @@ namespace Lemma.Components
 
 			this.Transform.Get = delegate()
 			{
-				return this.Box.BufferedStates.InterpolatedStates.WorldTransform;
+				return this.Box.WorldTransform;
 			};
 
 			this.Mass.Set = delegate(float m)

@@ -155,7 +155,7 @@ namespace Lemma.Components
 			};
 			this.Transform.Get = delegate()
 			{
-				return this.character.Body.BufferedStates.InterpolatedStates.WorldTransform;
+				return this.character.Body.WorldTransform;
 			};
 
 			this.LinearVelocity.Set = delegate(Vector3 value)
@@ -184,7 +184,6 @@ namespace Lemma.Components
 				else
 					this.Health.Value += Player.healthRegenerateRate * dt;
 			}
-			this.Transform.Changed();
 			this.LinearVelocity.Changed();
 		}
 	}

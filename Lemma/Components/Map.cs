@@ -4241,7 +4241,7 @@ namespace Lemma.Components
 
 			this.Transform.Get = delegate()
 			{
-				return this.PhysicsEntity.BufferedStates.InterpolatedStates.WorldTransform;
+				return this.PhysicsEntity.WorldTransform;
 			};
 			this.Transform.Set = delegate(Matrix value)
 			{
