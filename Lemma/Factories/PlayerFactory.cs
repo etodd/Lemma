@@ -573,6 +573,7 @@ namespace Lemma.Factories
 			ProceduralGenerator noise = result.GetOrCreate<ProceduralGenerator>();
 
 			SkinnedModel.Clip sprintAnimation = model["Sprint"], runAnimation = model["Run"];
+			sprintAnimation.Strength = 0.0f;
 
 			// Update camera
 			update.Add(delegate(float dt)
