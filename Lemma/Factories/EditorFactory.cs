@@ -1133,7 +1133,7 @@ namespace Lemma.Factories
 					timelines.Scale.Value = new Vector2(newScale, 1.0f);
 				}
 				else
-					editor.CameraDistance.Value = Math.Max(5, editor.CameraDistance.Value + delta * -2.0f);
+					editor.CameraDistance.Value = Math.Max(1, editor.CameraDistance.Value + delta * -2.0f);
 			}));
 			input.Add(new Binding<bool>(input.EnableLook, () => editor.MapEditMode || (input.MiddleMouseButton && editor.TransformMode.Value == Editor.TransformModes.None), input.MiddleMouseButton, editor.MapEditMode, editor.TransformMode));
 			input.Add(new Binding<Vector3, Vector2>(camera.Angles, x => new Vector3(-x.Y, x.X, 0.0f), input.Mouse, () => input.EnableLook));

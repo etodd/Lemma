@@ -299,9 +299,10 @@
       <Name>joan</Name>
       <Importer>SkinnedModelImporter</Importer>
       <Processor>SkinnedModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\Animation.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_EffectFileName>..\Effects\AnimationNormalMap.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_DiffuseTexture>joan.png</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
+      <ProcessorParameters_NormalMapTexture>joan-normal.png</ProcessorParameters_NormalMapTexture>
     </Compile>
     <Compile Include="Models\joan-firstperson.fbx">
       <Name>joan-firstperson</Name>

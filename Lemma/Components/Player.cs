@@ -103,6 +103,8 @@ namespace Lemma.Components
 
 		public const float CrouchedSupportHeight = 0.5f;
 
+		private bool transformBindingCreated = false;
+
 		public override void InitializeProperties()
 		{
 			base.InitializeProperties();
@@ -144,11 +146,6 @@ namespace Lemma.Components
 			this.Add(new CommandBinding<Collidable, ContactCollection>(this.character.Collided, this.Collided));
 			this.Add(new Binding<float, bool>(this.Height, x => x ? CrouchedCharacterHeight : DefaultCharacterHeight, this.Crouched));
 
-			this.Add(new NotifyBinding(delegate()
-			{
-				this.Transform.Changed();
-			}, this.Crouched));
-
 			this.Transform.Set = delegate(Matrix value)
 			{
 				this.character.Body.WorldTransform = value;
@@ -177,6 +174,15 @@ namespace Lemma.Components
 
 		public void Update(float dt)
 		{
+			if (!this.transformBindingCreated)
+			{
+				this.Add(new NotifyBinding(delegate()
+				{
+					this.Transform.Changed();
+				}, this.Crouched));
+				this.transformBindingCreated = true;
+			}
+
 			if (this.Health < 1.0f)
 			{
 				if (this.damageTimer < Player.healthRegenerateDelay)
@@ -184,6 +190,8 @@ namespace Lemma.Components
 				else
 					this.Health.Value += Player.healthRegenerateRate * dt;
 			}
+
+			this.Transform.Changed();
 			this.LinearVelocity.Changed();
 		}
 	}

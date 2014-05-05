@@ -115,6 +115,18 @@ namespace Lemma.Factories
 			AnimatedModel model = result.Get<AnimatedModel>("Model");
 			AnimatedModel firstPersonModel = result.Get<AnimatedModel>("FirstPersonModel");
 
+			model.Materials[0] = firstPersonModel.Materials[0] = new Model.Material
+			{
+				SpecularIntensity = 0.3f,
+				SpecularPower = 20.0f,
+			};
+
+			model.Materials[1] = firstPersonModel.Materials[1] = new Model.Material
+			{
+				SpecularIntensity = 0.0f,
+				SpecularPower = 1.0f,
+			};
+
 			Property<Vector3> floor = new Property<Vector3>();
 			transform.Add(new Binding<Vector3>(floor, () => transform.Position + new Vector3(0, player.Height * -0.5f, 0), transform.Position, player.Height));
 			AkGameObjectTracker.Attach(result, floor);
@@ -579,7 +591,6 @@ namespace Lemma.Factories
 			update.Add(delegate(float dt)
 			{
 				player.Transform.Changed();
-				player.LinearVelocity.Changed();
 
 				float blend;
 
@@ -598,7 +609,7 @@ namespace Lemma.Factories
 						blend = 1.0f;
 				}
 
-				relativeHeadBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.4f * blend);
+				relativeHeadBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.4f);
 				model.UpdateWorldTransforms();
 
 				Matrix r = Matrix.CreateRotationX(input.Mouse.Value.Y * 0.4f * blend * sprintAnimation.TotalStrength);
@@ -2649,7 +2660,7 @@ namespace Lemma.Factories
 			PointLight phoneLight = result.GetOrCreate<PointLight>("PhoneLight");
 			phoneLight.Serialize = false;
 			phoneLight.Enabled.Value = false;
-			phoneLight.Attenuation.Value = 0.35f;
+			phoneLight.Attenuation.Value = 0.5f;
 			phoneLight.Add(new Binding<Vector3, Matrix>(phoneLight.Position, x => x.Translation, screen.Transform));
 
 			const float screenScale = 0.0007f;

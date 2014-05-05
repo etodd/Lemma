@@ -71,7 +71,7 @@ namespace Lemma.Components
 				SpecularPower = 1.0f,
 				SpecularIntensity = 0.0f,
 			},
-			new Material(),
+			Material.Unlit,
 		};
 		private int[] materialIds = new int[2];
 
@@ -733,11 +733,10 @@ namespace Lemma.Components
 			if (parameter != null)
 				parameter.SetValue(this.main.TotalTime);
 			parameters.Camera.SetParameters(this.effect);
+
 			for (int i = 0; i < this.Materials.Length; i++)
-			{
-				Material m = this.Materials[i];
-				this.materialIds[i] = this.main.LightingManager.GetMaterialIndex(m.SpecularPower, m.SpecularIntensity);
-			}
+				this.materialIds[i] = this.main.LightingManager.GetMaterialIndex(this.Materials[i]);
+
 			this.effect.Parameters["Materials"].SetValue(this.materialIds);
 			return true;
 		}
