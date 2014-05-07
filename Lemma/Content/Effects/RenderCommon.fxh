@@ -35,7 +35,7 @@ float FarPlaneDistance;
 
 // Material parameters
 float3 DiffuseColor = float3(1.0f, 1.0f, 1.0f);
-int Materials[2];
+int Materials[3];
 
 // Motion blur
 float2 ProcessMotionBlur(in MotionBlurPSInput input)
@@ -203,6 +203,23 @@ void ClipTextureNormalMapClipAlphaPS(	in RenderPSInput input,
 								out RenderPSOutput output)
 {
 	ClipTextureNormalMapPS(input, tex, normalMap, clipData, output, motionBlurInput, true);
+}
+
+void RenderTextureNormalMap3MaterialsPS(	in RenderPSInput input,
+								in TexturePSInput tex,
+								in NormalMapPSInput normalMap,
+								out RenderPSOutput output,
+								in MotionBlurPSInput motionBlurInput)
+{
+	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates);
+	float3 normal = mul(DecodeNormalMap(tex2D(NormalMapSampler, tex.uvCoordinates).xyz), normalMap.tangentToWorld);
+	output.color.rgb = DiffuseColor.rgb * color.rgb;
+	output.color.a = EncodeMaterial(Materials[(int)color.a * 2.0f]);
+	output.depth.x = length(input.viewSpacePosition);
+	output.normal.xy = EncodeNormal(normal.xy);
+	output.depth.y = normal.z;
+	output.depth.zw = (float2)0;
+	output.normal.zw = ProcessMotionBlur(motionBlurInput);
 }
 
 void RenderFlatPS(in RenderPSInput input,

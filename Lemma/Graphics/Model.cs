@@ -734,6 +734,8 @@ namespace Lemma.Components
 				parameter.SetValue(this.main.TotalTime);
 			parameters.Camera.SetParameters(this.effect);
 
+			if (this.materialIds.Length < this.Materials.Length)
+				this.materialIds = new int[this.Materials.Length];
 			for (int i = 0; i < this.Materials.Length; i++)
 				this.materialIds[i] = this.main.LightingManager.GetMaterialIndex(this.Materials[i]);
 

@@ -115,16 +115,27 @@ namespace Lemma.Factories
 			AnimatedModel model = result.Get<AnimatedModel>("Model");
 			AnimatedModel firstPersonModel = result.Get<AnimatedModel>("FirstPersonModel");
 
-			model.Materials[0] = firstPersonModel.Materials[0] = new Model.Material
-			{
-				SpecularIntensity = 0.3f,
-				SpecularPower = 20.0f,
-			};
+			model.Materials = firstPersonModel.Materials = new Model.Material[3];
 
-			model.Materials[1] = firstPersonModel.Materials[1] = new Model.Material
+			// Hoodie and shoes
+			model.Materials[0] = new Model.Material
 			{
 				SpecularIntensity = 0.0f,
 				SpecularPower = 1.0f,
+			};
+
+			// Hands
+			model.Materials[1] = new Model.Material
+			{
+				SpecularIntensity = 0.3f,
+				SpecularPower = 2.0f,
+			};
+
+			// Pants and skin
+			model.Materials[2] = new Model.Material
+			{
+				SpecularIntensity = 0.3f,
+				SpecularPower = 20.0f,
 			};
 
 			Property<Vector3> floor = new Property<Vector3>();
@@ -1130,10 +1141,8 @@ namespace Lemma.Factories
 			Func<Player.WallRun, bool> activateWallRun = delegate(Player.WallRun state)
 			{
 				Vector3 playerVelocity = player.LinearVelocity;
-				if (playerVelocity.Y < damageVelocity * 1.5f)
+				if (playerVelocity.Y < rollingDamageVelocity)
 					return false;
-
-				playerVelocity.Y = 0.0f;
 
 				wallInstantiationTimer = 0.0f;
 
@@ -1145,7 +1154,9 @@ namespace Lemma.Factories
 
 				Vector3 forwardVector = -matrix.Forward;
 
-				if (Vector3.Dot(forwardVector, Vector3.Normalize(playerVelocity)) < -0.3f)
+				playerVelocity.Normalize();
+				playerVelocity.Y = 0.0f;
+				if (Vector3.Dot(forwardVector, playerVelocity) < -0.3f)
 					return false;
 
 				Vector3 wallVector;
@@ -2918,7 +2929,7 @@ namespace Lemma.Factories
 				noteModel.Enabled.Value = noteActive;
 				noteUi.Enabled.Value = noteActive;
 
-				model.Stop("Phone");
+				model.Stop("Phone", "Note");
 				Entity noteEntity = note.Value.Target;
 				if (noteEntity != null && noteEntity.Active)
 				{
@@ -2926,15 +2937,19 @@ namespace Lemma.Factories
 					{
 						noteUiImage.Image.Value = noteEntity.GetOrMakeProperty<string>("Image");
 						noteUiText.Text.Value = noteEntity.GetOrMakeProperty<string>("Text");
-						model.StartClip("Phone", 6, true);
+						model.StartClip("Note", 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
 						float startRotationY = input.Mouse.Value.Y;
 						// Level the player's view
 						result.Add(new Animation
 						(
-							new Animation.Custom(delegate(float x)
-							{
-								input.Mouse.Value = new Vector2(input.Mouse.Value.X, startRotationY * (1.0f - x));
-							}, 0.5f)
+							new Animation.Ease
+							(
+								new Animation.Custom(delegate(float x)
+								{
+									input.Mouse.Value = new Vector2(input.Mouse.Value.X, startRotationY * (1.0f - x));
+								}, 0.5f),
+								Animation.Ease.Type.OutQuadratic
+							)
 						));
 					}
 					else
@@ -2976,7 +2991,7 @@ namespace Lemma.Factories
 					phoneLight.Enabled.Value = phoneActive;
 					answerContainer.Visible.Value = false;
 
-					model.Stop("Phone");
+					model.Stop("Phone", "Note");
 					if (phoneActive)
 					{
 						if (!phone.TutorialShown)
@@ -2987,16 +3002,20 @@ namespace Lemma.Factories
 						phoneScroll.CheckLayout();
 						scrollToBottom();
 
-						model.StartClip("Phone", 6, true);
+						model.StartClip("Phone", 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
 
 						// Level the player's view
 						float startRotationY = input.Mouse.Value.Y;
 						result.Add(new Animation
 						(
-							new Animation.Custom(delegate(float x)
-							{
-								input.Mouse.Value = new Vector2(input.Mouse.Value.X, startRotationY * (1.0f - x));
-							}, 0.5f)
+							new Animation.Ease
+							(
+								new Animation.Custom(delegate(float x)
+								{
+									input.Mouse.Value = new Vector2(input.Mouse.Value.X, startRotationY * (1.0f - x));
+								}, 0.5f),
+								Animation.Ease.Type.OutQuadratic
+							)
 						));
 					}
 				}

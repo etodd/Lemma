@@ -168,6 +168,16 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>
+    <Compile Include="Effects\Player.fx">
+      <Name>Player</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </Compile>
+    <None Include="Effects\AnimationNormalMapCommon.fxh">
+      <Name>AnimationNormalMapCommon</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </None>
     <None Include="Effects\ParticleCommon.fxh">
       <Name>ParticleCommon</Name>
       <Importer>EffectImporter</Importer>
@@ -299,7 +309,7 @@
       <Name>joan</Name>
       <Importer>SkinnedModelImporter</Importer>
       <Processor>SkinnedModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\AnimationNormalMap.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_EffectFileName>..\Effects\Player.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_DiffuseTexture>joan.png</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
       <ProcessorParameters_NormalMapTexture>joan-normal.png</ProcessorParameters_NormalMapTexture>
@@ -308,7 +318,7 @@
       <Name>joan-firstperson</Name>
       <Importer>SkinnedModelImporter</Importer>
       <Processor>SkinnedModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\AnimationNormalMap.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_EffectFileName>..\Effects\Player.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
       <ProcessorParameters_DiffuseTexture>joan.png</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_NormalMapTexture>joan-normal.png</ProcessorParameters_NormalMapTexture>

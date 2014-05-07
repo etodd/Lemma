@@ -90,15 +90,11 @@ namespace Lemma.Components
 			SkinnedModel.Clip clip = this.skinningData.Clips[clipName];
 
 			if (clip.Stopping)
-			{
 				clip.BlendTime = Math.Max(clip.BlendTotalTime - clip.BlendTime, 0);
-				clip.BlendTotalTime = blendTime;
-			}
 			else
-			{
 				clip.BlendTime = 0.0f;
-				clip.BlendTotalTime = blendTime;
-			}
+
+			clip.BlendTotalTime = blendTime;
 
 			clip.Priority = priority;
 			clip.CurrentTime = TimeSpan.Zero;

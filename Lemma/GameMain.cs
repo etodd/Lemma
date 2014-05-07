@@ -220,7 +220,7 @@ namespace Lemma
 				this.ResizeViewport(this.Settings.Size.Value.X, this.Settings.Size.Value.Y, false, false);
 		}
 
-		private const float messageFadeTime = 0.5f;
+		private const float messageFadeTime = 0.75f;
 		private const float messageBackgroundOpacity = 0.75f;
 
 		private Container buildMessage()
@@ -1085,6 +1085,7 @@ namespace Lemma
 				Animation settingsAnimation = null;
 
 				Func<bool, string> boolDisplay = x => x ? "\\on" : "\\off";
+				Func<PCInput.PCInputBinding, string> inputBindingDisplay = x => "\\" + x.ToString();
 
 				ListContainer settingsMenu = new ListContainer();
 				settingsMenu.Visible.Value = false;
@@ -1323,7 +1324,7 @@ namespace Lemma
 				Action<Property<PCInput.PCInputBinding>, string, bool, bool> addInputSetting = delegate(Property<PCInput.PCInputBinding> setting, string display, bool allowGamepad, bool allowMouse)
 				{
 					this.inputBindings.Add(setting);
-					UIComponent button = this.createMenuButton<PCInput.PCInputBinding>(display, setting);
+					UIComponent button = this.createMenuButton<PCInput.PCInputBinding>(display, setting, inputBindingDisplay);
 					button.Add(new CommandBinding<Point>(button.MouseLeftUp, delegate(Point mouse)
 					{
 						PCInput.PCInputBinding originalValue = setting;

@@ -25,44 +25,7 @@ namespace Lemma.Components
 			{
 				string value = null;
 				if (this.Key != Keys.None)
-				{
-					switch (this.Key)
-					{
-						case Keys.D0:
-							value = "0";
-							break;
-						case Keys.D1:
-							value = "1";
-							break;
-						case Keys.D2:
-							value = "2";
-							break;
-						case Keys.D3:
-							value = "3";
-							break;
-						case Keys.D4:
-							value = "4";
-							break;
-						case Keys.D5:
-							value = "5";
-							break;
-						case Keys.D6:
-							value = "6";
-							break;
-						case Keys.D7:
-							value = "7";
-							break;
-						case Keys.D8:
-							value = "8";
-							break;
-						case Keys.D9:
-							value = "9";
-							break;
-						default:
-							value = this.Key.ToString();
-							break;
-					}
-				}
+					value = this.Key.ToString();
 				else if (this.MouseButton != PCInput.MouseButton.None)
 					value = this.MouseButton.ToString();
 
