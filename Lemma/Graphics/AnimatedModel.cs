@@ -12,7 +12,7 @@ namespace Lemma.Components
 	{
 		// Information about the currently playing animation clip.
 		[XmlIgnore]
-		public List<SkinnedModel.Clip> CurrentClips = new List<SkinnedModel.Clip>();
+		public ListProperty<SkinnedModel.Clip> CurrentClips = new ListProperty<SkinnedModel.Clip>();
 
 		// Animation blending data
 
@@ -105,7 +105,8 @@ namespace Lemma.Components
 			if (!this.CurrentClips.Contains(clip))
 				this.CurrentClips.Add(clip);
 
-			this.CurrentClips.Sort(new Util.LambdaComparer<SkinnedModel.Clip>((x, y) => x.Priority - y.Priority));
+			this.CurrentClips.InternalList.Sort(new Util.LambdaComparer<SkinnedModel.Clip>((x, y) => x.Priority - y.Priority));
+			this.CurrentClips.Changed();
 		}
 
 		/// <summary>
@@ -122,6 +123,7 @@ namespace Lemma.Components
 				i++;
 			}
 
+			bool firstClip = true;
 			foreach (SkinnedModel.Clip clip in this.CurrentClips)
 			{
 				TimeSpan newTime = clip.CurrentTime + new TimeSpan((long)((float)elapsedTime.Ticks * clip.Speed));
@@ -143,8 +145,7 @@ namespace Lemma.Components
 				{
 					float b = clip.BlendTime / clip.BlendTotalTime;
 
-					// Quadratic easing
-					b = -b * (b - 2.0f);
+					b = -b * (b - 2); // Quadratic easing
 
 					if (clip.Stopping)
 						blend *= 1.0f - b;
@@ -161,16 +162,31 @@ namespace Lemma.Components
 
 				if (blend > 0.0f)
 				{
-					if (blend < 1.0f)
+					if (blend < 1.0f && !firstClip)
 					{
 						foreach (SkinnedModel.Channel channel in clip.Channels)
-							this.boneTransforms[channel.BoneIndex] = Matrix.Lerp(this.boneTransforms[channel.BoneIndex], channel.CurrentMatrix, blend);
+						{
+							Matrix bone1 = this.boneTransforms[channel.BoneIndex];
+							Vector3 scale1;
+							Quaternion quat1;
+							Vector3 translation1;
+							bone1.Decompose(out scale1, out quat1, out translation1);
+
+							Matrix bone2 = channel.CurrentMatrix;
+							Vector3 scale2;
+							Quaternion quat2;
+							Vector3 translation2;
+							bone2.Decompose(out scale2, out quat2, out translation2);
+
+							this.boneTransforms[channel.BoneIndex] = Matrix.CreateScale(Vector3.Lerp(scale1, scale2, blend)) * Matrix.CreateFromQuaternion(Quaternion.Lerp(quat1, quat2, blend)) * Matrix.CreateTranslation(Vector3.Lerp(translation1, translation2, blend));
+						}
 					}
 					else
 					{
 						foreach (SkinnedModel.Channel channel in clip.Channels)
 							this.boneTransforms[channel.BoneIndex] = channel.CurrentMatrix;
 					}
+					firstClip = false;
 				}
 			}
 

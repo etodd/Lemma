@@ -324,6 +324,7 @@ namespace Lemma.Factories
 
 #if DEVELOPMENT
 			ListContainer debugContainer = new ListContainer();
+			debugContainer.Reversed.Value = true;
 			debugContainer.AnchorPoint.Value = new Vector2(1, 1);
 			debugContainer.Add(new Binding<Vector2, Point>(debugContainer.Position, x => new Vector2(x.X, x.Y), main.ScreenSize));
 			debugContainer.Alignment.Value = ListContainer.ListAlignment.Max;
@@ -340,6 +341,26 @@ namespace Lemma.Factories
 			debugRotation.Add(new Binding<string, float>(debugRotation.Text, x => x.ToString("F"), rotation));
 			debugRotation.Add(new Binding<bool>(debugRotation.Visible, thirdPerson));
 			debugContainer.Children.Add(debugRotation);
+
+			ListContainer debugAnimations = new ListContainer();
+			debugAnimations.Reversed.Value = true;
+			debugAnimations.Add(new ListBinding<UIComponent, SkinnedModel.Clip>(debugAnimations.Children, model.CurrentClips, delegate(SkinnedModel.Clip clip)
+			{
+				TextElement label = new TextElement();
+				label.FontFile.Value = "Font";
+				label.Text.Value = clip.Name;
+				return label;
+			}));
+			debugAnimations.Add(new Binding<bool>(debugRotation.Visible, thirdPerson));
+			debugContainer.Children.Add(debugAnimations);
+
+			input.Add(new CommandBinding(input.GetKeyUp(Keys.P), delegate()
+			{
+				if (main.TimeMultiplier < 1.0f)
+					main.TimeMultiplier.Value = 1.0f;
+				else
+					main.TimeMultiplier.Value = 0.25f;
+			}));
 #endif
 
 			Action updateFallSound = delegate()
@@ -1836,7 +1857,7 @@ namespace Lemma.Factories
 					foreach (Vector3 dir in new[] { rotationMatrix.Left, rotationMatrix.Right, rotationMatrix.Backward, rotationMatrix.Forward })
 					{
 						Map.GlobalRaycastResult hit = Map.GlobalRaycast(playerPos, dir, wallJumpDistance);
-						if (hit.Map != null && hit.Coordinate.Value.Data.ID != avoidID) // Can't jump off the avoid material
+						if (hit.Map != null)
 						{
 							wallRaycastDirection = dir;
 							wallRaycastHit = hit;
@@ -1857,8 +1878,7 @@ namespace Lemma.Factories
 				{
 					Vector3 pos = transform.Position + new Vector3(0, (player.Height * -0.5f) - 0.5f, 0);
 					Map.Coordinate wallCoord = wallRunMap.GetCoordinate(pos).Move(wallDirection, 2);
-					if (wallRunMap[wallCoord].ID != avoidID)
-						wallJump(wallRunMap, wallDirection.GetReverse(), wallCoord);
+					wallJump(wallRunMap, wallDirection.GetReverse(), wallCoord);
 				}
 
 				bool go = vaultType != VaultType.None || (!onlyVault && (supported || wallJumping));
@@ -1985,8 +2005,6 @@ namespace Lemma.Factories
 						{
 							// Regular jump
 							// Take base velocity into account
-							if (vaultType == VaultType.None && groundRaycast.Map != null && groundRaycast.Coordinate.Value.Data.ID == avoidID) // Can't jump off avoid material
-								return false;
 
 							BEPUphysics.Entities.Entity supportEntity = player.SupportEntity;
 							if (supportEntity != null)

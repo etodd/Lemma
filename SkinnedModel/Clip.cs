@@ -184,7 +184,21 @@ namespace SkinnedModel
 						Keyframe lastKeyframe = channel[channel.LastKeyframeIndex];
 						Keyframe currentKeyframe = channel[channel.CurrentKeyframeIndex];
 						double lerp = (this.currentTime.TotalSeconds - lastKeyframe.Time.TotalSeconds) / (currentKeyframe.Time.TotalSeconds - lastKeyframe.Time.TotalSeconds);
-						channel.CurrentMatrix = Matrix.Lerp(lastKeyframe.Transform, currentKeyframe.Transform, (float)Math.Min(lerp, 1.0));
+						float blend = (float)Math.Min(lerp, 1.0);
+
+						Matrix bone1 = lastKeyframe.Transform;
+						Vector3 scale1;
+						Quaternion quat1;
+						Vector3 translation1;
+						bone1.Decompose(out scale1, out quat1, out translation1);
+
+						Matrix bone2 = currentKeyframe.Transform;
+						Vector3 scale2;
+						Quaternion quat2;
+						Vector3 translation2;
+						bone2.Decompose(out scale2, out quat2, out translation2);
+
+						channel.CurrentMatrix = Matrix.CreateScale(Vector3.Lerp(scale1, scale2, blend)) * Matrix.CreateFromQuaternion(Quaternion.Lerp(quat1, quat2, blend)) * Matrix.CreateTranslation(Vector3.Lerp(translation1, translation2, blend));
 					}
 				}
 			}
