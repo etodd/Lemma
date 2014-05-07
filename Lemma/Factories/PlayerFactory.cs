@@ -1119,6 +1119,8 @@ namespace Lemma.Factories
 
 			float lastWallRunEnded = -1.0f, lastWallJump = -1.0f;
 			const float wallRunDelay = 0.5f;
+			const float damageVelocity = -20.0f; // Vertical velocity above which damage occurs
+			const float rollingDamageVelocity = -28.0f; // Damage velocity when rolling
 
 			// Since block possibilities are instantiated on another thread,
 			// we have to give that thread some time to do it before checking if there is actually a wall to run on.
@@ -1127,6 +1129,12 @@ namespace Lemma.Factories
 
 			Func<Player.WallRun, bool> activateWallRun = delegate(Player.WallRun state)
 			{
+				Vector3 playerVelocity = player.LinearVelocity;
+				if (playerVelocity.Y < damageVelocity * 1.5f)
+					return false;
+
+				playerVelocity.Y = 0.0f;
+
 				wallInstantiationTimer = 0.0f;
 
 				// Prevent the player from repeatedly wall-running and wall-jumping ad infinitum.
@@ -1136,6 +1144,9 @@ namespace Lemma.Factories
 				Matrix matrix = Matrix.CreateRotationY(rotation);
 
 				Vector3 forwardVector = -matrix.Forward;
+
+				if (Vector3.Dot(forwardVector, Vector3.Normalize(playerVelocity)) < -0.3f)
+					return false;
 
 				Vector3 wallVector;
 				switch (state)
@@ -1431,9 +1442,6 @@ namespace Lemma.Factories
 
 			// Fall damage
 			Vector3 playerLastVelocity = Vector3.Zero;
-			const float damageVelocity = -20.0f; // Vertical velocity above which damage occurs
-			const float rollingDamageVelocity = -28.0f; // Damage velocity when rolling
-
 			Action<float> fallDamage = delegate(float verticalVelocity)
 			{
 				float v = model.IsPlaying("Roll") ? rollingDamageVelocity : damageVelocity;
@@ -1804,7 +1812,9 @@ namespace Lemma.Factories
 					}
 				};
 
-				if (!onlyVault && vaultType == VaultType.None && !supported && wallRunState == Player.WallRun.None)
+				if (!onlyVault && vaultType == VaultType.None
+					&& !supported && wallRunState == Player.WallRun.None
+					&& player.LinearVelocity.Value.Y > damageVelocity * 1.5f)
 				{
 					// We're not vaulting, not doing our normal jump, and not wall-walking
 					// See if we can wall-jump

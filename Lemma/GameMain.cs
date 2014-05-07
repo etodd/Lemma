@@ -259,7 +259,7 @@ namespace Lemma
 
 			Animation anim = new Animation
 			(
-				new Animation.Vector2MoveTo(container.Size, originalSize, messageFadeTime),
+				new Animation.Ease(new Animation.Vector2MoveTo(container.Size, originalSize, messageFadeTime), Animation.Ease.Type.OutExponential),
 				new Animation.Set<bool>(container.ResizeVertical, true)
 			);
 
@@ -292,7 +292,7 @@ namespace Lemma
 				(
 					new Animation.Delay(delay),
 					new Animation.Set<bool>(container.ResizeVertical, false),
-					new Animation.Vector2MoveTo(container.Size, new Vector2(container.Size.Value.X, 0), messageFadeTime),
+					new Animation.Ease(new Animation.Vector2MoveTo(container.Size, new Vector2(container.Size.Value.X, 0), messageFadeTime), Animation.Ease.Type.OutExponential),
 					new Animation.Execute(container.Delete)
 				);
 
@@ -353,7 +353,7 @@ namespace Lemma
 			result.Children.Add(text);
 
 			TextElement value = new TextElement();
-			value.Position.Value = new Vector2(200.0f, value.Position.Value.Y);
+			value.Position.Value = new Vector2(GameMain.menuButtonSettingOffset, value.Position.Value.Y);
 			value.Name.Value = "Value";
 			value.FontFile.Value = "Font";
 			value.Add(new Binding<string, Type>(value.Text, conversion, property));
@@ -362,10 +362,28 @@ namespace Lemma
 			return result;
 		}
 
-		public UIComponent CreateButton(Action action = null)
+		private const float menuButtonWidth = 256.0f;
+		private const float menuButtonSettingOffset = 180.0f; // Horizontal offset for the value label on a settings menu item
+		private const float menuButtonLeftPadding = 40.0f;
+		private const float animationSpeed = 2.5f;
+
+		private Container createContainer(bool autosize = false)
 		{
 			Container result = new Container();
 			result.Tint.Value = Color.Black;
+			if (!autosize)
+			{
+				result.ResizeHorizontal.Value = false;
+				result.Size.Value = new Vector2(GameMain.menuButtonWidth + GameMain.menuButtonLeftPadding + 4.0f, 0.0f);
+				result.PaddingLeft.Value = menuButtonLeftPadding;
+			}
+			return result;
+		}
+
+		public UIComponent CreateButton(Action action = null, bool autosize = false)
+		{
+			Container result = this.createContainer(autosize);
+
 			result.Add(new Binding<Color, bool>(result.Tint, x => x ? GameMain.highlightColor : new Color(0.0f, 0.0f, 0.0f), result.Highlighted));
 			result.Add(new Binding<float, bool>(result.Opacity, x => x ? 1.0f : 0.5f, result.Highlighted));
 			result.Add(new NotifyBinding(delegate()
@@ -382,9 +400,9 @@ namespace Lemma
 			return result;
 		}
 
-		public UIComponent CreateButton(string label, Action action = null)
+		public UIComponent CreateButton(string label, Action action = null, bool autosize = false)
 		{
-			UIComponent result = this.CreateButton(action);
+			UIComponent result = this.CreateButton(action, autosize);
 			TextElement text = new TextElement();
 			text.Name.Value = "Text";
 			text.FontFile.Value = "Font";
@@ -653,7 +671,7 @@ namespace Lemma
 						pauseAnimation.Delete.Execute();
 					pauseAnimation = new Animation
 					(
-						new Animation.Vector2MoveToSpeed(pauseMenu.AnchorPoint, new Vector2(1, 0.5f), 5.0f),
+						new Animation.Ease(new Animation.Vector2MoveToSpeed(pauseMenu.AnchorPoint, new Vector2(1, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential),
 						new Animation.Set<bool>(pauseMenu.Visible, false)
 					);
 					this.AddComponent(pauseAnimation);
@@ -665,7 +683,7 @@ namespace Lemma
 					pauseMenu.Visible.Value = true;
 					if (pauseAnimation != null)
 						pauseAnimation.Delete.Execute();
-					pauseAnimation = new Animation(new Animation.Vector2MoveToSpeed(pauseMenu.AnchorPoint, new Vector2(0, 0.5f), 5.0f));
+					pauseAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(pauseMenu.AnchorPoint, new Vector2(0, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential));
 					this.AddComponent(pauseAnimation);
 					currentMenu.Value = pauseMenu;
 				};
@@ -712,7 +730,7 @@ namespace Lemma
 						new Animation.Parallel
 						(
 							new Animation.FloatMoveToSpeed(this.Renderer.BlurAmount, 1.0f, 1.0f),
-							new Animation.Vector2MoveToSpeed(pauseMenu.AnchorPoint, new Vector2(0, 0.5f), 5.0f)
+							new Animation.Ease(new Animation.Vector2MoveToSpeed(pauseMenu.AnchorPoint, new Vector2(0, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential)
 						)
 					);
 					this.AddComponent(pauseAnimation);
@@ -757,7 +775,7 @@ namespace Lemma
 						(
 							new Animation.Sequence
 							(
-								new Animation.Vector2MoveToSpeed(pauseMenu.AnchorPoint, new Vector2(1, 0.5f), 5.0f),
+								new Animation.Ease(new Animation.Vector2MoveToSpeed(pauseMenu.AnchorPoint, new Vector2(1, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential),
 								new Animation.Set<bool>(pauseMenu.Visible, false)
 							)
 						)
@@ -825,7 +843,7 @@ namespace Lemma
 						dialog.Delete.Execute();
 						dialog = null;
 						callback();
-					});
+					}, true);
 					TextElement okayText = (TextElement)okay.GetChildByName("Text");
 					okayText.Add(new Binding<string, bool>(okayText.Text, x => action + (x ? " gamepad" : ""), this.GamePadConnected));
 					okay.Name.Value = "Okay";
@@ -835,7 +853,7 @@ namespace Lemma
 					{
 						dialog.Delete.Execute();
 						dialog = null;
-					});
+					}, true);
 					dialogButtons.Children.Add(cancel);
 
 					TextElement cancelText = (TextElement)cancel.GetChildByName("Text");
@@ -858,15 +876,13 @@ namespace Lemma
 						loadSaveAnimation.Delete.Execute();
 					loadSaveAnimation = new Animation
 					(
-						new Animation.Vector2MoveToSpeed(loadSaveMenu.AnchorPoint, new Vector2(1, 0.5f), 5.0f),
+						new Animation.Ease(new Animation.Vector2MoveToSpeed(loadSaveMenu.AnchorPoint, new Vector2(1, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential),
 						new Animation.Set<bool>(loadSaveMenu.Visible, false)
 					);
 					this.AddComponent(loadSaveAnimation);
 				};
 
-				Container loadSavePadding = new Container();
-				loadSavePadding.Opacity.Value = 0.0f;
-				loadSavePadding.PaddingLeft.Value = 8.0f;
+				Container loadSavePadding = this.createContainer();
 				loadSaveMenu.Children.Add(loadSavePadding);
 
 				ListContainer loadSaveLabelContainer = new ListContainer();
@@ -905,7 +921,7 @@ namespace Lemma
 				loadSaveMenu.Children.Add(saveNew);
 
 				Scroller loadSaveScroll = new Scroller();
-				loadSaveScroll.Add(new Binding<Vector2, Point>(loadSaveScroll.Size, x => new Vector2(276.0f, x.Y * 0.5f), this.ScreenSize));
+				loadSaveScroll.Add(new Binding<Vector2, Point>(loadSaveScroll.Size, x => new Vector2(GameMain.menuButtonWidth + GameMain.menuButtonLeftPadding + 4.0f, x.Y * 0.5f), this.ScreenSize));
 				loadSaveMenu.Children.Add(loadSaveScroll);
 
 				ListContainer loadSaveList = new ListContainer();
@@ -1077,9 +1093,7 @@ namespace Lemma
 				this.UI.Root.Children.Add(settingsMenu);
 				settingsMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
 
-				Container settingsLabelPadding = new Container();
-				settingsLabelPadding.PaddingLeft.Value = 8.0f;
-				settingsLabelPadding.Opacity.Value = 0.0f;
+				Container settingsLabelPadding = this.createContainer();
 				settingsMenu.Children.Add(settingsLabelPadding);
 
 				ListContainer settingsLabelContainer = new ListContainer();
@@ -1112,7 +1126,7 @@ namespace Lemma
 						settingsAnimation.Delete.Execute();
 					settingsAnimation = new Animation
 					(
-						new Animation.Vector2MoveToSpeed(settingsMenu.AnchorPoint, new Vector2(1, 0.5f), 5.0f),
+						new Animation.Ease(new Animation.Vector2MoveToSpeed(settingsMenu.AnchorPoint, new Vector2(1, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential),
 						new Animation.Set<bool>(settingsMenu.Visible, false)
 					);
 					this.AddComponent(settingsAnimation);
@@ -1232,9 +1246,7 @@ namespace Lemma
 				this.UI.Root.Children.Add(controlsMenu);
 				controlsMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
 
-				Container controlsLabelPadding = new Container();
-				controlsLabelPadding.PaddingLeft.Value = 8.0f;
-				controlsLabelPadding.Opacity.Value = 0.0f;
+				Container controlsLabelPadding = this.createContainer();
 				controlsMenu.Children.Add(controlsLabelPadding);
 
 				ListContainer controlsLabelContainer = new ListContainer();
@@ -1261,7 +1273,7 @@ namespace Lemma
 						controlsAnimation.Delete.Execute();
 					controlsAnimation = new Animation
 					(
-						new Animation.Vector2MoveToSpeed(controlsMenu.AnchorPoint, new Vector2(1, 0.5f), 5.0f),
+						new Animation.Ease(new Animation.Vector2MoveToSpeed(controlsMenu.AnchorPoint, new Vector2(1, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential),
 						new Animation.Set<bool>(controlsMenu.Visible, false)
 					);
 					this.AddComponent(controlsAnimation);
@@ -1406,7 +1418,7 @@ namespace Lemma
 					loadSaveMenu.Visible.Value = true;
 					if (loadSaveAnimation != null)
 						loadSaveAnimation.Delete.Execute();
-					loadSaveAnimation = new Animation(new Animation.Vector2MoveToSpeed(loadSaveMenu.AnchorPoint, new Vector2(0, 0.5f), 5.0f));
+					loadSaveAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(loadSaveMenu.AnchorPoint, new Vector2(0, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential));
 					this.AddComponent(loadSaveAnimation);
 
 					loadSaveShown = true;
@@ -1425,7 +1437,7 @@ namespace Lemma
 					loadSaveMenu.Visible.Value = true;
 					if (loadSaveAnimation != null)
 						loadSaveAnimation.Delete.Execute();
-					loadSaveAnimation = new Animation(new Animation.Vector2MoveToSpeed(loadSaveMenu.AnchorPoint, new Vector2(0, 0.5f), 5.0f));
+					loadSaveAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(loadSaveMenu.AnchorPoint, new Vector2(0, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential));
 					this.AddComponent(loadSaveAnimation);
 
 					loadSaveShown = true;
@@ -1465,9 +1477,7 @@ namespace Lemma
 				this.UI.Root.Children.Add(cheatMenu);
 				cheatMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
 
-				Container cheatLabelPadding = new Container();
-				cheatLabelPadding.PaddingLeft.Value = 8.0f;
-				cheatLabelPadding.Opacity.Value = 0.0f;
+				Container cheatLabelPadding = this.createContainer();
 				cheatMenu.Children.Add(cheatLabelPadding);
 
 				ListContainer cheatLabelContainer = new ListContainer();
@@ -1494,7 +1504,7 @@ namespace Lemma
 						cheatAnimation.Delete.Execute();
 					cheatAnimation = new Animation
 					(
-						new Animation.Vector2MoveToSpeed(cheatMenu.AnchorPoint, new Vector2(1, 0.5f), 5.0f),
+						new Animation.Ease(new Animation.Vector2MoveToSpeed(cheatMenu.AnchorPoint, new Vector2(1, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential),
 						new Animation.Set<bool>(cheatMenu.Visible, false)
 					);
 					this.AddComponent(cheatAnimation);
@@ -1536,7 +1546,7 @@ namespace Lemma
 					cheatMenu.Visible.Value = true;
 					if (cheatAnimation != null)
 						cheatAnimation.Delete.Execute();
-					cheatAnimation = new Animation(new Animation.Vector2MoveToSpeed(cheatMenu.AnchorPoint, new Vector2(0, 0.5f), 5.0f));
+					cheatAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(cheatMenu.AnchorPoint, new Vector2(0, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential));
 					this.AddComponent(cheatAnimation);
 
 					cheatShown = true;
@@ -1554,7 +1564,7 @@ namespace Lemma
 					controlsMenu.Visible.Value = true;
 					if (controlsAnimation != null)
 						controlsAnimation.Delete.Execute();
-					controlsAnimation = new Animation(new Animation.Vector2MoveToSpeed(controlsMenu.AnchorPoint, new Vector2(0, 0.5f), 5.0f));
+					controlsAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(controlsMenu.AnchorPoint, new Vector2(0, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential));
 					this.AddComponent(controlsAnimation);
 
 					controlsShown = true;
@@ -1570,7 +1580,7 @@ namespace Lemma
 					settingsMenu.Visible.Value = true;
 					if (settingsAnimation != null)
 						settingsAnimation.Delete.Execute();
-					settingsAnimation = new Animation(new Animation.Vector2MoveToSpeed(settingsMenu.AnchorPoint, new Vector2(0, 0.5f), 5.0f));
+					settingsAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(settingsMenu.AnchorPoint, new Vector2(0, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential));
 					this.AddComponent(settingsAnimation);
 
 					settingsShown = true;
@@ -1608,9 +1618,7 @@ namespace Lemma
 				this.UI.Root.Children.Add(creditsMenu);
 				creditsMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
 
-				Container creditsLabelPadding = new Container();
-				creditsLabelPadding.PaddingLeft.Value = 8.0f;
-				creditsLabelPadding.Opacity.Value = 0.0f;
+				Container creditsLabelPadding = this.createContainer();
 				creditsMenu.Children.Add(creditsLabelPadding);
 
 				ListContainer creditsLabelContainer = new ListContainer();
@@ -1637,7 +1645,7 @@ namespace Lemma
 						creditsAnimation.Delete.Execute();
 					creditsAnimation = new Animation
 					(
-						new Animation.Vector2MoveToSpeed(creditsMenu.AnchorPoint, new Vector2(1, 0.5f), 5.0f),
+						new Animation.Ease(new Animation.Vector2MoveToSpeed(creditsMenu.AnchorPoint, new Vector2(1, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential),
 						new Animation.Set<bool>(creditsMenu.Visible, false)
 					);
 					this.AddComponent(creditsAnimation);
@@ -1666,7 +1674,7 @@ namespace Lemma
 					creditsMenu.Visible.Value = true;
 					if (creditsAnimation != null)
 						creditsAnimation.Delete.Execute();
-					creditsAnimation = new Animation(new Animation.Vector2MoveToSpeed(creditsMenu.AnchorPoint, new Vector2(0, 0.5f), 5.0f));
+					creditsAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(creditsMenu.AnchorPoint, new Vector2(0, 0.5f), GameMain.animationSpeed), Animation.Ease.Type.OutExponential));
 					this.AddComponent(creditsAnimation);
 
 					creditsShown = true;

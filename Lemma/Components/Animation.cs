@@ -638,6 +638,12 @@ namespace Lemma.Components
 			{
 				InQuadratic,
 				OutQuadratic,
+				InCubic,
+				OutCubic,
+				InSin,
+				OutSin,
+				InExponential,
+				OutExponential,
 			}
 
 			private Interval interval;
@@ -666,6 +672,25 @@ namespace Lemma.Components
 						break;
 					case Type.OutQuadratic:
 						this.interval.UpdateInterval(-1 * x * (x - 2));
+						break;
+					case Type.InCubic:
+						this.interval.UpdateInterval(x * x * x);
+						break;
+					case Type.OutCubic:
+						x--;
+						this.interval.UpdateInterval(x * x * x + 1);
+						break;
+					case Type.InSin:
+						this.interval.UpdateInterval((float)-Math.Cos(x * Math.PI * 0.5) + 1.0f);
+						break;
+					case Type.OutSin:
+						this.interval.UpdateInterval((float)Math.Sin(x * Math.PI * 0.5));
+						break;
+					case Type.InExponential:
+						this.interval.UpdateInterval((float)Math.Pow(2, 10 * (x - 1.0)));
+						break;
+					case Type.OutExponential:
+						this.interval.UpdateInterval((float)-Math.Pow(2, -10 * x) + 1.0f);
 						break;
 				}
 			}

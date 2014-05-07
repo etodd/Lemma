@@ -145,10 +145,15 @@ namespace Lemma.Components
 				float blend = clip.Strength;
 				if (clip.BlendTime < clip.BlendTotalTime)
 				{
+					float b = clip.BlendTime / clip.BlendTotalTime;
+
+					// Quadratic easing
+					b = -b * (b - 2.0f);
+
 					if (clip.Stopping)
-						blend *= 1.0f - clip.BlendTime / clip.BlendTotalTime;
+						blend *= 1.0f - b;
 					else
-						blend *= clip.BlendTime / clip.BlendTotalTime;
+						blend *= b;
 				}
 				else if (clip.Stopping)
 				{

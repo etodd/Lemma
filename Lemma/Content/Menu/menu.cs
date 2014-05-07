@@ -107,7 +107,7 @@ else
 	UIComponent languageButton = ((GameMain)main).CreateButton(delegate()
 	{
 		languageMenu.Visible.Value = !languageMenu.Visible;
-	});
+	}, true);
 	corner.Children.Add(languageButton);
 
 	Sprite currentLanguageIcon = new Sprite();
@@ -130,7 +130,7 @@ else
 		{
 			((GameMain)main).Settings.Language.Value = language;
 			languageMenu.Visible.Value = false;
-		});
+		}, true);
 
 		Sprite icon = new Sprite();
 		icon.Image.Value = "Images\\" + language.ToString();
