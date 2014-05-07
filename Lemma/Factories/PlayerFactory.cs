@@ -1623,7 +1623,8 @@ namespace Lemma.Factories
 				const float vaultVerticalSpeed = 8.0f;
 				const float maxVaultTime = 1.0f;
 
-				Vector3 forward = Vector3.Normalize(map.GetAbsolutePosition(coord) - transform.Position);
+				Vector3 coordPosition = map.GetAbsolutePosition(coord);
+				Vector3 forward = Vector3.Normalize(coordPosition - transform.Position);
 				forward.Y = 0.0f;
 
 				Vector3 vaultVelocity = new Vector3(0, vaultVerticalSpeed, 0);
@@ -1635,6 +1636,10 @@ namespace Lemma.Factories
 					Vector3 supportLocation = transform.Position.Value + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
 					vaultVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
 				}
+
+				// If there's nothing on the other side of the wall (it's a one-block-wide wall)
+				// then vault over it rather than standing on top of it
+				bool vaultOver = map[coordPosition + forward].ID == 0;
 
 				player.LinearVelocity.Value = vaultVelocity;
 				player.IsSupported.Value = false;
@@ -1663,7 +1668,8 @@ namespace Lemma.Factories
 						if (player.IsSupported || vaultTime > maxVaultTime || player.LinearVelocity.Value.Y < 0.0f
 						 || (transform.Position.Value.Y + (player.Height * -0.5f) - player.SupportHeight > map.GetAbsolutePosition(coord).Y + 0.1f)) // Move forward
 						{
-							player.LinearVelocity.Value = forward * player.MaxSpeed;
+							player.LinearVelocity.Value = forward * player.MaxSpeed + (vaultOver ? new Vector3(0, 3.0f, 0) : Vector3.Zero);
+							player.LastSupportedSpeed.Value = player.MaxSpeed;
 							player.Body.ActivityInformation.Activate();
 							vaultMover.Delete.Execute(); // Make sure we get rid of this vault mover
 							vaultMover = null;

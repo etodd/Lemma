@@ -203,7 +203,7 @@ namespace Lemma.Util
 		}
 
 		private bool lastSupported = true;
-		private float lastSupportedSpeed = 0.0f;
+		public Property<float> LastSupportedSpeed = new Property<float>();
 		/// <summary>
 		/// Handles the updating of the character.  Called by the owning space object when necessary.
 		/// </summary>
@@ -253,7 +253,7 @@ namespace Lemma.Util
 				{
 					if (this.lastSupported)
 					{
-						this.lastSupportedSpeed = new Vector2(this.Body.LinearVelocity.X, this.Body.LinearVelocity.Z).Length();
+						this.LastSupportedSpeed.Value = new Vector2(this.Body.LinearVelocity.X, this.Body.LinearVelocity.Z).Length();
 						this.lastSupported = false;
 					}
 
@@ -262,7 +262,7 @@ namespace Lemma.Util
 						if (this.IsSwimming)
 							this.handleNoTraction(dt, 0.75f * this.TractionDeceleration, this.MaxSpeed * 0.5f);
 						else
-							this.handleNoTraction(dt, 0.0f, this.lastSupportedSpeed);
+							this.handleNoTraction(dt, 0.0f, this.LastSupportedSpeed);
 					}
 				}
 			}
@@ -557,7 +557,7 @@ namespace Lemma.Util
 			else
 			{
 				float deceleration = dt * tractionDeceleration;
-				//Remove from the character a portion of velocity defined by the deceleration.
+				// Remove from the character a portion of velocity defined by the deceleration.
 				Vector3 bodyHorizontalVelocity = this.Body.LinearVelocity;
 				bodyHorizontalVelocity.Y = 0.0f;
 				float speed = bodyHorizontalVelocity.Length();

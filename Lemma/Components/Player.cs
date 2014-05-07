@@ -71,6 +71,8 @@ namespace Lemma.Components
 		public Property<bool> SlowMotion = new Property<bool> { Editable = false };
 		[XmlIgnore]
 		public Property<WallRun> WallRunState = new Property<WallRun> { Editable = false, Value = WallRun.None };
+		[XmlIgnore]
+		public Property<float> LastSupportedSpeed = new Property<float> { Editable = false };
 
 		[XmlIgnore]
 		public Command<Collidable, ContactCollection> Collided = new Command<Collidable, ContactCollection>();
@@ -136,6 +138,7 @@ namespace Lemma.Components
 			this.Add(new TwoWayBinding<bool>(this.HasTraction, this.character.HasTraction));
 			this.Add(new TwoWayBinding<bool>(this.IsSupported, this.character.IsSupported));
 			this.Add(new TwoWayBinding<bool>(this.IsSwimming, this.character.IsSwimming));
+			this.Add(new TwoWayBinding<float>(this.LastSupportedSpeed, this.character.LastSupportedSpeed));
 			this.Add(new TwoWayBinding<WallRun>(this.WallRunState, this.character.WallRunState));
 			this.Add(new TwoWayBinding<bool>(this.EnableWalking, this.character.EnableWalking));
 			this.Add(new TwoWayBinding<Vector3>(this.character.SupportLocation, this.SupportLocation));
