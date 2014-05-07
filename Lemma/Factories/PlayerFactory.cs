@@ -134,7 +134,7 @@ namespace Lemma.Factories
 			// Pants and skin
 			model.Materials[2] = new Model.Material
 			{
-				SpecularIntensity = 0.3f,
+				SpecularIntensity = 0.5f,
 				SpecularPower = 20.0f,
 			};
 
