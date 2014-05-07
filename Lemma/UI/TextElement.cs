@@ -154,21 +154,27 @@ namespace Lemma.Components
 				if (this.languageBinding != null)
 					this.Remove(this.languageBinding);
 
-				if (dependsOnLanguage)
-				{
-					this.languageBinding = new NotifyBinding(this.Text.Reset, this.main.Strings.Language);
-					this.Add(this.languageBinding);
-				}
-				else
-					this.languageBinding = null;
-
 				if (dependencies.Count > 0)
 				{
+					dependsOnLanguage = true;
 					string format = builder.ToString();
 					IProperty[] dependenciesArray = dependencies.ToArray();
 					this.internalTextBinding = new Binding<string>(this.internalText, delegate()
 					{
-						return string.Format(CultureInfo.CurrentCulture, format, dependenciesArray);
+						string[] strings = new string[dependenciesArray.Length];
+						for (int i = 0; i < dependenciesArray.Length; i++)
+						{
+							string dependency = dependenciesArray[i].ToString();
+							if (dependency[0] == '\\')
+							{
+								string key = dependency.Substring(1);
+								dependency = this.main.Strings.Get(key);
+								if (dependency == null)
+									dependency = key;
+							}
+							strings[i] = dependency;
+						}
+						return string.Format(CultureInfo.CurrentCulture, format, strings);
 					}, dependenciesArray);
 					this.Add(this.internalTextBinding);
 				}
@@ -177,6 +183,14 @@ namespace Lemma.Components
 					this.internalTextBinding = null;
 					this.internalText.Value = builder.ToString();
 				}
+
+				if (dependsOnLanguage)
+				{
+					this.languageBinding = new NotifyBinding(this.Text.Reset, this.main.Strings.Language);
+					this.Add(this.languageBinding);
+				}
+				else
+					this.languageBinding = null;
 			};
 
 		}

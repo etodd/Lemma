@@ -25,12 +25,12 @@ namespace Lemma.Components
 			{
 				string value = null;
 				if (this.Key != Keys.None)
-					value = this.Key.ToString();
+					value = "\\" + this.Key.ToString();
 				else if (this.MouseButton != PCInput.MouseButton.None)
-					value = this.MouseButton.ToString();
+					value = "\\" + this.MouseButton.ToString();
 
 				if (GamePad.GetState(PlayerIndex.One).IsConnected && this.GamePadButton != Buttons.BigButton)
-					return this.GamePadButton.ToString();
+					return "\\" + this.GamePadButton.ToString();
 				else if (value != null)
 					return value;
 				else

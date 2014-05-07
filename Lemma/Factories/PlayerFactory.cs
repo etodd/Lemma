@@ -351,7 +351,7 @@ namespace Lemma.Factories
 				label.Text.Value = clip.Name;
 				return label;
 			}));
-			debugAnimations.Add(new Binding<bool>(debugRotation.Visible, thirdPerson));
+			debugAnimations.Add(new Binding<bool>(debugAnimations.Visible, thirdPerson));
 			debugContainer.Children.Add(debugAnimations);
 
 			input.Add(new CommandBinding(input.GetKeyUp(Keys.P), delegate()
@@ -3182,7 +3182,7 @@ namespace Lemma.Factories
 						lastMessage.Size.Value = new Vector2(0, originalSize.Y);
 						main.AddComponent(new Animation
 						(
-							new Animation.Vector2MoveTo(lastMessage.Size, originalSize, 0.25f)
+							new Animation.Ease(new Animation.Vector2MoveTo(lastMessage.Size, originalSize, 0.5f), Animation.Ease.Type.OutExponential)
 						));
 
 						AkSoundEngine.PostEvent("Phone_Play", result);
