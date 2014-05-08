@@ -25,19 +25,11 @@ namespace Lemma
 		public Camera Camera;
 		public AkListener Listener;
 
-		public new GraphicsDevice GraphicsDevice
-		{
-			get
-			{
-				return this.graphics.GraphicsDevice;
-			}
-		}
-
-		protected GraphicsDeviceManager graphics;
+		public GraphicsDeviceManager Graphics;
 		public Renderer Renderer;
 
 		protected RenderParameters renderParameters;
-		protected RenderTarget2D renderTarget;
+		public RenderTarget2D RenderTarget;
 
 #if PERFORMANCE_MONITOR
 		private const float performanceUpdateTime = 0.5f;
@@ -222,7 +214,7 @@ namespace Lemma
 			this.Window.AllowUserResizing = true;
 			this.Window.ClientSizeChanged += new EventHandler<EventArgs>(delegate(object obj, EventArgs e)
 			{
-				if (!this.graphics.IsFullScreen)
+				if (!this.Graphics.IsFullScreen)
 				{
 					Rectangle bounds = this.Window.ClientBounds;
 					this.ScreenSize.Value = new Point(bounds.Width, bounds.Height);
@@ -230,8 +222,8 @@ namespace Lemma
 				}
 			});
 
-			this.graphics = new GraphicsDeviceManager(this);
-			this.graphics.SynchronizeWithVerticalRetrace = false;
+			this.Graphics = new GraphicsDeviceManager(this);
+			this.Graphics.SynchronizeWithVerticalRetrace = false;
 
 			this.Content = new ContentManager(this.Services);
 			this.Content.RootDirectory = "Content";
@@ -621,7 +613,7 @@ namespace Lemma
 
 			timer.Restart();
 #endif
-			this.Renderer.PostProcess(this.renderTarget, this.renderParameters);
+			this.Renderer.PostProcess(this.RenderTarget, this.renderParameters);
 
 #if PERFORMANCE_MONITOR
 			timer.Stop();
@@ -643,6 +635,20 @@ namespace Lemma
 			this.triangleCounter = Math.Max(this.triangleCounter, Lemma.Components.Model.TriangleCounter);
 #endif
 
+			if (this.RenderTarget != null)
+			{
+				// We just rendered to a target other than the screen.
+				// So make it so we're rendering to the screen again, then copy the render target to the screen.
+
+				this.GraphicsDevice.SetRenderTarget(null);
+
+				SpriteBatch spriteBatch = new SpriteBatch(this.GraphicsDevice);
+				spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
+				spriteBatch.Draw(this.RenderTarget, Vector2.Zero, Color.White);
+				spriteBatch.End();
+
+				this.RenderTarget = null;
+			}
 		}
 
 		public void DrawScene(RenderParameters parameters)
@@ -694,23 +700,23 @@ namespace Lemma
 			this.ScreenSize.Value = new Point(width, height);
 
 			bool needApply = false;
-			if (this.graphics.IsFullScreen != fullscreen)
+			if (this.Graphics.IsFullScreen != fullscreen)
 			{
-				this.graphics.IsFullScreen = fullscreen;
+				this.Graphics.IsFullScreen = fullscreen;
 				needApply = true;
 			}
-			if (this.graphics.PreferredBackBufferWidth != width)
+			if (this.Graphics.PreferredBackBufferWidth != width)
 			{
-				this.graphics.PreferredBackBufferWidth = width;
+				this.Graphics.PreferredBackBufferWidth = width;
 				needApply = true;
 			}
-			if (this.graphics.PreferredBackBufferHeight != height)
+			if (this.Graphics.PreferredBackBufferHeight != height)
 			{
-				this.graphics.PreferredBackBufferHeight = height;
+				this.Graphics.PreferredBackBufferHeight = height;
 				needApply = true;
 			}
 			if (applyChanges && needApply)
-				this.graphics.ApplyChanges();
+				this.Graphics.ApplyChanges();
 
 			if (this.Renderer != null)
 				this.Renderer.ReallocateBuffers(this.ScreenSize);

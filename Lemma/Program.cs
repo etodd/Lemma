@@ -40,7 +40,8 @@ namespace Lemma
 						error = e.ToString();
 				}
 			}
-			main.Cleanup();
+			if (main != null)
+				main.Cleanup();
 #if ANALYTICS
 			if (main.MapFile.Value == null || main.EditorEnabled)
 				main.SessionRecorder.Reset();

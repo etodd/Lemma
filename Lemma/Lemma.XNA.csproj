@@ -171,6 +171,8 @@
     <Compile Include="Factories\TurretFactory.cs" />
     <Compile Include="Factories\WorldFactory.cs" />
     <Compile Include="Components\Water.cs" />
+    <Compile Include="Menu.cs" />
+    <Compile Include="Screenshot.cs" />
     <Compile Include="Strings.cs" />
     <Compile Include="UI\Container.cs" />
     <Compile Include="UI\LineDrawer2D.cs" />

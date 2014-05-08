@@ -62,19 +62,27 @@ namespace Lemma.Factories
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity player)
 			{
+				GameMain gameMain = main as GameMain;
+
+				gameMain.Screenshot.Take();
+
 				Container notification = new Container();
-				notification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-				notification.Opacity.Value = 0.5f;
 				TextElement notificationText = new TextElement();
-				notificationText.Name.Value = "Text";
-				notificationText.FontFile.Value = "Font";
-				notificationText.Text.Value = "Loading...";
-				notification.Children.Add(notificationText);
-				((GameMain)main).UI.Root.GetChildByName("Notifications").Children.Add(notification);
 
 				Stream stream = new MemoryStream();
 				main.AddComponent(new Animation
 				(
+					new Animation.Delay(0.01f),
+					new Animation.Execute(delegate()
+					{
+						notification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+						notification.Opacity.Value = 0.5f;
+						notificationText.Name.Value = "Text";
+						notificationText.FontFile.Value = "Font";
+						notificationText.Text.Value = "Loading...";
+						notification.Children.Add(notificationText);
+						gameMain.UI.Root.GetChildByName("Notifications").Children.Add(notification);
+					}),
 					new Animation.Delay(0.01f),
 					new Animation.Execute(delegate()
 					{
@@ -89,9 +97,13 @@ namespace Lemma.Factories
 						foreach (Entity e in persistentEntities)
 							e.Delete.Execute();
 
-						((GameMain)main).StartSpawnPoint.Value = startSpawnPoint;
+						gameMain.StartSpawnPoint.Value = startSpawnPoint;
 					}),
-					new Animation.Execute(((GameMain)main).SaveCurrentMap),
+					new Animation.Execute(delegate()
+					{
+						gameMain.SaveCurrentMap(gameMain.Screenshot.Buffer, gameMain.Screenshot.Size);
+						gameMain.Screenshot.Clear();
+					}),
 					new Animation.Set<string>(main.MapFile, nextMap),
 					new Animation.Execute(delegate()
 					{
@@ -110,7 +122,10 @@ namespace Lemma.Factories
 					new Animation.Set<string>(notificationText.Text, "Saving..."),
 					new Animation.Set<bool>(notification.Visible, true),
 					new Animation.Delay(0.01f),
-					new Animation.Execute(((GameMain)main).Save),
+					new Animation.Execute(delegate()
+					{
+						gameMain.SaveOverwrite();
+					}),
 					new Animation.Set<string>(notificationText.Text, "Saved"),
 					new Animation.Parallel
 					(

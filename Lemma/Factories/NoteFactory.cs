@@ -42,7 +42,7 @@ namespace Lemma.Factories
 				{
 					GameMain gameMain = (GameMain)main;
 					List<Entity> notes = main.Get("Note").ToList();
-					Container msg = gameMain.ShowMessage
+					Container msg = gameMain.Menu.ShowMessage
 					(
 						result,
 						delegate()
@@ -53,7 +53,7 @@ namespace Lemma.Factories
 						},
 						main.Strings.Language
 					);
-					gameMain.HideMessage(result, msg, 4.0f);
+					gameMain.Menu.HideMessage(result, msg, 4.0f);
 				}
 			}, collected));
 

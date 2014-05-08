@@ -58,6 +58,8 @@ namespace Lemma.IO
 			typeof(Phone),
 			typeof(RaycastAI),
 			typeof(SignalTower),
+			typeof(Property<int>),
+			typeof(Property<UInt32>),
 		};
 
 		public static XmlSerializer Serializer;

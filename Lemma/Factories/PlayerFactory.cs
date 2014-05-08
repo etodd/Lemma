@@ -695,35 +695,6 @@ namespace Lemma.Factories
 					else
 #endif
 					{
-						if (player.Crouched)
-						{
-							bool limitHeight = true;
-							foreach (SkinnedModel.Clip clip in model.CurrentClips)
-							{
-								if (clip.Name == "Kick"
-									|| clip.Name == "Slide"
-									|| clip.Name == "Roll"
-									|| clip.Name == "Vault"
-									|| clip.Name == "VaultLeft"
-									|| clip.Name == "VaultRight"
-									|| clip.Name == "Run"
-									|| clip.Name == "Sprint"
-									|| clip.Name == "Idle"
-									|| clip.Name == "RunBackward"
-									|| clip.Name == "RunRight"
-									|| clip.Name == "Land"
-									|| clip.Name == "LandHard"
-									|| clip.Name == "RunLeft")
-								{
-									limitHeight = false;
-									break;
-								}
-							}
-
-							if (limitHeight)
-								cameraPosition.Y = Math.Min(cameraPosition.Y, transform.Position.Value.Y + player.Height.Value * 0.5f);
-						}
-
 						main.Camera.Position.Value = cameraPosition;
 
 						Matrix camera = cameraBone.Value * Matrix.CreateRotationY(input.Mouse.Value.X + shake.X);
@@ -2907,10 +2878,10 @@ namespace Lemma.Factories
 					|| (signalTower.Value.Target != null && signalTower.Value.Target.Active);
 
 				if (togglePhoneMessage == null && hasNoteOrSignalTower)
-					togglePhoneMessage = ((GameMain)main).ShowMessage(result, "[{{TogglePhone}}]");
+					togglePhoneMessage = ((GameMain)main).Menu.ShowMessage(result, "[{{TogglePhone}}]");
 				else if (togglePhoneMessage != null && !hasNoteOrSignalTower && !phoneActive && !noteActive)
 				{
-					((GameMain)main).HideMessage(result, togglePhoneMessage);
+					((GameMain)main).Menu.HideMessage(result, togglePhoneMessage);
 					togglePhoneMessage = null;
 				}
 			}, note, signalTower));
@@ -2987,13 +2958,13 @@ namespace Lemma.Factories
 			{
 				if (togglePhoneMessage != null)
 				{
-					((GameMain)main).HideMessage(result, togglePhoneMessage);
+					((GameMain)main).Menu.HideMessage(result, togglePhoneMessage);
 					togglePhoneMessage = null;
 				}
 
 				if (phoneTutorialMessage != null)
 				{
-					((GameMain)main).HideMessage(result, phoneTutorialMessage);
+					((GameMain)main).Menu.HideMessage(result, phoneTutorialMessage);
 					phoneTutorialMessage = null;
 				}
 
@@ -3015,7 +2986,7 @@ namespace Lemma.Factories
 						if (!phone.TutorialShown)
 						{
 							phone.TutorialShown.Value = true;
-							phoneTutorialMessage = ((GameMain)main).ShowMessage(result, "\\scroll for more");
+							phoneTutorialMessage = ((GameMain)main).Menu.ShowMessage(result, "\\scroll for more");
 						}
 						phoneScroll.CheckLayout();
 						scrollToBottom();
@@ -3151,7 +3122,7 @@ namespace Lemma.Factories
 								phone.Answer(answer);
 								scrollToBottom();
 								if (togglePhoneMessage == null && phone.Schedules.Count == 0) // No more messages incoming
-									togglePhoneMessage = ((GameMain)main).ShowMessage(result, "[{{TogglePhone}}]");
+									togglePhoneMessage = ((GameMain)main).Menu.ShowMessage(result, "[{{TogglePhone}}]");
 							}));
 							return button;
 						}
@@ -3187,7 +3158,7 @@ namespace Lemma.Factories
 
 						AkSoundEngine.PostEvent("Phone_Play", result);
 						if (togglePhoneMessage == null && phone.Schedules.Count == 0 && phone.ActiveAnswers.Count == 0) // No more messages incoming, and no more answers to give
-							togglePhoneMessage = ((GameMain)main).ShowMessage(result, "[{{TogglePhone}}]");
+							togglePhoneMessage = ((GameMain)main).Menu.ShowMessage(result, "[{{TogglePhone}}]");
 					}));
 
 					if (noteActive)
