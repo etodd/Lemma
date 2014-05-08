@@ -35,6 +35,12 @@ namespace Lemma.Factories
 			Straight,
 		}
 
+		private class AnimationInfo
+		{
+			public int Priority;
+			public float DefaultStrength;
+		}
+
 		public override Entity Create(Main main)
 		{
 			Entity result = new Entity(main, "Player");
@@ -692,8 +698,8 @@ namespace Lemma.Factories
 						Matrix camera = cameraBone.Value * Matrix.CreateRotationY(input.Mouse.Value.X + shake.X);
 
 						Matrix rot = Matrix.Identity;
-						rot.Forward = Vector3.Normalize(Vector3.TransformNormal(new Vector3(0, 1.0f, 0), camera));
-						rot.Up = Vector3.Normalize(Vector3.TransformNormal(new Vector3(0.0f, 0, 1.0f), camera));
+						rot.Forward = Vector3.TransformNormal(new Vector3(0, 1.0f, 0), camera);
+						rot.Up = Vector3.TransformNormal(new Vector3(0.0f, 0, 1.0f), camera);
 						rot.Right = Vector3.Normalize(Vector3.Cross(rot.Forward, rot.Up));
 
 						Vector3 right = Vector3.Cross(rot.Forward, Vector3.Up);
@@ -741,22 +747,22 @@ namespace Lemma.Factories
 			bool lastSupported = false;
 			float lastLandAnimationPlayed = 0.0f;
 			// Animations and their priorities
-			Dictionary<string, int> movementAnimations = new Dictionary<string, int>
+			Dictionary<string, AnimationInfo> movementAnimations = new Dictionary<string, AnimationInfo>
 			{
-				{ "Idle", -1 },
-				{ "Run", 0 },
-				{ "RunBackward", 0 },
-				{ "RunLeft", 0 },
-				{ "RunRight", 0 },
-				{ "Sprint", 1 },
+				{ "Idle", new AnimationInfo { Priority = -1, DefaultStrength = 1.0f, } },
+				{ "Run", new AnimationInfo { Priority = 0 } },
+				{ "RunBackward", new AnimationInfo { Priority = 0 } },
+				{ "RunLeft", new AnimationInfo { Priority = 0 } },
+				{ "RunRight", new AnimationInfo { Priority = 0 } },
+				{ "Sprint", new AnimationInfo { Priority = 1 } },
 			};
-			Dictionary<string, int> crouchMovementAnimations = new Dictionary<string, int>
+			Dictionary<string, AnimationInfo> crouchMovementAnimations = new Dictionary<string, AnimationInfo>
 			{
-				{ "CrouchIdle", -1 },
-				{ "CrouchWalk", 0 },
-				{ "CrouchWalkBackward", 0 },
-				{ "CrouchStrafeLeft", 0 },
-				{ "CrouchStrafeRight", 0 },
+				{ "CrouchIdle", new AnimationInfo { Priority = 1, DefaultStrength = 1.0f } },
+				{ "CrouchWalk", new AnimationInfo { Priority = 2 } },
+				{ "CrouchWalkBackward", new AnimationInfo { Priority = 2 } },
+				{ "CrouchStrafeLeft", new AnimationInfo { Priority = 2 } },
+				{ "CrouchStrafeRight", new AnimationInfo { Priority = 2 } },
 			};
 			result.Add("AnimationUpdater", new Updater
 			{
@@ -795,26 +801,36 @@ namespace Lemma.Factories
 						velocity.Y = 0;
 						float speed = velocity.Length();
 
-						if (player.Crouched)
+						if (player.EnableWalking)
 						{
-							if (dir.LengthSquared() == 0.0f)
-								movementAnimation = "CrouchIdle";
+							if (player.Crouched)
+							{
+								if (dir.LengthSquared() == 0.0f)
+									movementAnimation = "CrouchIdle";
+								else
+									movementAnimation = dir.Y < 0.0f ? "CrouchWalkBackward" : (dir.X > 0.0f ? "CrouchStrafeRight" : (dir.X < 0.0f ? "CrouchStrafeLeft" : "CrouchWalk"));
+							}
 							else
-								movementAnimation = dir.Y < 0.0f ? "CrouchWalkBackward" : (dir.X > 0.0f ? "CrouchStrafeRight" : (dir.X < 0.0f ? "CrouchStrafeLeft" : "CrouchWalk"));
+							{
+								if (dir.LengthSquared() == 0.0f)
+									movementAnimation = "Idle";
+								else
+									movementAnimation = dir.Y < 0.0f ? "RunBackward" : (dir.X > 0.0f ? "RunRight" : (dir.X < 0.0f ? "RunLeft" : "Run"));
+							}
 						}
 						else
 						{
-							if (dir.LengthSquared() == 0.0f)
-								movementAnimation = "Idle";
+							if (player.Crouched)
+								movementAnimation = "CrouchIdle";
 							else
-								movementAnimation = dir.Y < 0.0f ? "RunBackward" : (dir.X > 0.0f ? "RunRight" : (dir.X < 0.0f ? "RunLeft" : "Run"));
+								movementAnimation = "Idle";
 						}
 
-						foreach (string animation in player.Crouched ? crouchMovementAnimations.Keys : movementAnimations.Keys)
+						foreach (KeyValuePair<string, AnimationInfo> animation in player.Crouched ? crouchMovementAnimations : movementAnimations)
 						{
-							if (animation != "Idle" && animation != "CrouchIdle")
-								model[animation].Speed = player.Crouched ? (speed / 2.2f) : (speed / 6.0f);
-							model[animation].TargetStrength = animation == movementAnimation ? 1.0f : 0.0f;
+							if (animation.Key != "Idle" && animation.Key != "CrouchIdle")
+								model[animation.Key].Speed = player.Crouched ? (speed / 2.2f) : (speed / 6.0f);
+							model[animation.Key].TargetStrength = animation.Key == movementAnimation ? 1.0f : animation.Value.DefaultStrength;
 						}
 
 						if (movementAnimation == "Run")
@@ -828,10 +844,10 @@ namespace Lemma.Factories
 						if (!model.IsPlaying(movementAnimation))
 						{
 							model.Stop(player.Crouched ? movementAnimations.Keys.ToArray() : crouchMovementAnimations.Keys.ToArray());
-							foreach (KeyValuePair<string, int> animation in player.Crouched ? crouchMovementAnimations : movementAnimations)
+							foreach (KeyValuePair<string, AnimationInfo> animation in player.Crouched ? crouchMovementAnimations : movementAnimations)
 							{
-								model.StartClip(animation.Key, animation.Value, true);
-								model[animation.Key].Strength = 0.0f;
+								model.StartClip(animation.Key, animation.Value.Priority, true);
+								model[animation.Key].Strength = animation.Value.DefaultStrength;
 							}
 						}
 					}
@@ -856,6 +872,7 @@ namespace Lemma.Factories
 
 					lastSupported = player.IsSupported;
 
+		#if DEVELOPMENT
 					debugAnimations.Children.Clear();
 					foreach (SkinnedModel.Clip clip in model.CurrentClips)
 					{
@@ -864,6 +881,7 @@ namespace Lemma.Factories
 						label.Text.Value = clip.TargetStrength.ToString("F") + " " + clip.TotalStrength.ToString("F") + " " + clip.Name;
 						debugAnimations.Children.Add(label);
 					}
+#endif
 				}
 			});
 

@@ -99,7 +99,7 @@ namespace Lemma.Components
 
 		public const float DefaultCharacterHeight = 2.75f;
 
-		public const float CrouchedCharacterHeight = 1.8f;
+		public const float CrouchedCharacterHeight = 1.7f;
 
 		public const float DefaultSupportHeight = 1.25f;
 

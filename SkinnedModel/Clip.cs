@@ -89,14 +89,17 @@ namespace SkinnedModel
 		[ContentSerializerIgnore]
 		public float Strength = 1.0f;
 
+		[ContentSerializerIgnore]
+		public float TargetStrength = 1.0f;
+
 		public float TotalStrength
 		{
 			get
 			{
-				float blend = this.BlendTotalTime > 0.0f ? this.BlendTime / this.BlendTotalTime : 1.0f;
+				float blend = this.BlendTotalTime > 0.0f ? MathHelper.Clamp(this.BlendTime / this.BlendTotalTime, 0, 1) : 1.0f;
+				blend = -blend * (blend - 2); // Quadratic easing
 				if (this.Stopping)
 					blend = 1.0f - blend;
-				blend = MathHelper.Clamp(blend, 0.0f, 1.0f);
 				return MathHelper.Clamp(this.Strength * blend, 0.0f, 1.0f);
 			}
 		}
