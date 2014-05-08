@@ -354,7 +354,7 @@ namespace Lemma.Factories
 			debugAnimations.Add(new Binding<bool>(debugAnimations.Visible, thirdPerson));
 			debugContainer.Children.Add(debugAnimations);
 
-			input.Add(new CommandBinding(input.GetKeyUp(Keys.P), delegate()
+			input.Add(new CommandBinding(input.GetKeyUp(Keys.T), delegate()
 			{
 				if (main.TimeMultiplier < 1.0f)
 					main.TimeMultiplier.Value = 1.0f;

@@ -98,15 +98,14 @@ namespace Lemma.Factories
 							e.Delete.Execute();
 
 						gameMain.StartSpawnPoint.Value = startSpawnPoint;
-					}),
-					new Animation.Execute(delegate()
-					{
+
+						if (gameMain.Player.Value != null && gameMain.Player.Value.Active)
+							gameMain.Player.Value.Delete.Execute();
+
 						gameMain.SaveCurrentMap(gameMain.Screenshot.Buffer, gameMain.Screenshot.Size);
 						gameMain.Screenshot.Clear();
-					}),
-					new Animation.Set<string>(main.MapFile, nextMap),
-					new Animation.Execute(delegate()
-					{
+						main.MapFile.Value = nextMap;
+
 						notification.Visible.Value = false;
 						stream.Seek(0, SeekOrigin.Begin);
 						List<Entity> entities = (List<Entity>)IO.MapLoader.Serializer.Deserialize(stream);

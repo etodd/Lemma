@@ -392,6 +392,7 @@ namespace Lemma
 
 						this.MapLoaded.Execute();
 					}
+					this.respawnTimer = 0;
 				};
 
 				this.Renderer.LightRampTexture.Value = "Images\\default-ramp";
