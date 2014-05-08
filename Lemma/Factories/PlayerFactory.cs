@@ -344,13 +344,6 @@ namespace Lemma.Factories
 
 			ListContainer debugAnimations = new ListContainer();
 			debugAnimations.Reversed.Value = true;
-			debugAnimations.Add(new ListBinding<UIComponent, SkinnedModel.Clip>(debugAnimations.Children, model.CurrentClips, delegate(SkinnedModel.Clip clip)
-			{
-				TextElement label = new TextElement();
-				label.FontFile.Value = "Font";
-				label.Text.Value = clip.Name;
-				return label;
-			}));
 			debugAnimations.Add(new Binding<bool>(debugAnimations.Visible, thirdPerson));
 			debugContainer.Children.Add(debugAnimations);
 
@@ -617,7 +610,6 @@ namespace Lemma.Factories
 			ProceduralGenerator noise = result.GetOrCreate<ProceduralGenerator>();
 
 			SkinnedModel.Clip sprintAnimation = model["Sprint"], runAnimation = model["Run"];
-			sprintAnimation.Strength = 0.0f;
 
 			// Update camera
 			update.Add(delegate(float dt)
@@ -748,6 +740,24 @@ namespace Lemma.Factories
 			// Update animation
 			bool lastSupported = false;
 			float lastLandAnimationPlayed = 0.0f;
+			// Animations and their priorities
+			Dictionary<string, int> movementAnimations = new Dictionary<string, int>
+			{
+				{ "Idle", -1 },
+				{ "Run", 0 },
+				{ "RunBackward", 0 },
+				{ "RunLeft", 0 },
+				{ "RunRight", 0 },
+				{ "Sprint", 1 },
+			};
+			Dictionary<string, int> crouchMovementAnimations = new Dictionary<string, int>
+			{
+				{ "CrouchIdle", -1 },
+				{ "CrouchWalk", 0 },
+				{ "CrouchWalkBackward", 0 },
+				{ "CrouchStrafeLeft", 0 },
+				{ "CrouchStrafeRight", 0 },
+			};
 			result.Add("AnimationUpdater", new Updater
 			{
 				delegate(float dt)
@@ -780,7 +790,6 @@ namespace Lemma.Factories
 						Vector2 dir = input.Movement;
 
 						string movementAnimation;
-						int animationPriority = 0;
 
 						Vector3 velocity = player.LinearVelocity;
 						velocity.Y = 0;
@@ -792,7 +801,6 @@ namespace Lemma.Factories
 								movementAnimation = "CrouchIdle";
 							else
 								movementAnimation = dir.Y < 0.0f ? "CrouchWalkBackward" : (dir.X > 0.0f ? "CrouchStrafeRight" : (dir.X < 0.0f ? "CrouchStrafeLeft" : "CrouchWalk"));
-							animationPriority = 2;
 						}
 						else
 						{
@@ -801,66 +809,36 @@ namespace Lemma.Factories
 							else
 								movementAnimation = dir.Y < 0.0f ? "RunBackward" : (dir.X > 0.0f ? "RunRight" : (dir.X < 0.0f ? "RunLeft" : "Run"));
 						}
-						
-						if (movementAnimation != "Idle" && movementAnimation != "CrouchIdle")
-							model[movementAnimation].Speed = player.Crouched ? (speed / 2.2f) : (speed / 6.0f);
+
+						foreach (string animation in player.Crouched ? crouchMovementAnimations.Keys : movementAnimations.Keys)
+						{
+							if (animation != "Idle" && animation != "CrouchIdle")
+								model[animation].Speed = player.Crouched ? (speed / 2.2f) : (speed / 6.0f);
+							model[animation].TargetStrength = animation == movementAnimation ? 1.0f : 0.0f;
+						}
 
 						if (movementAnimation == "Run")
 						{
-							sprintAnimation.Speed = runAnimation.Speed;
-							float targetSprintStrength = MathHelper.Clamp((speed - 6.0f) / 2.0f, 0.0f, 1.0f);
-							float strengthBlendSpeed = (1.0f / AnimatedModel.DefaultBlendTime) * dt;
-							sprintAnimation.Strength += MathHelper.Clamp(targetSprintStrength - sprintAnimation.Strength, -strengthBlendSpeed, strengthBlendSpeed);
-							runAnimation.Strength = 1.0f - sprintAnimation.Strength;
+							sprintAnimation.TargetStrength = MathHelper.Clamp((speed - 6.0f) / 2.0f, 0.0f, 1.0f);
+							runAnimation.TargetStrength = 1.0f - sprintAnimation.TargetStrength;
 						}
 
 						footstepTimer.Interval.Value = 0.37f / (speed / 6.0f);
 
 						if (!model.IsPlaying(movementAnimation))
 						{
-							model.Stop
-							(
-								"CrouchIdle",
-								"CrouchWalkBackward",
-								"CrouchWalk",
-								"CrouchStrafeRight",
-								"CrouchStrafeLeft",
-								"Idle",
-								"RunBackward",
-								"Run",
-								"Sprint",
-								"RunRight",
-								"RunLeft",
-								"Jump",
-								"JumpRight",
-								"JumpLeft",
-								"JumpBackward"
-							);
-							model.StartClip(movementAnimation, animationPriority, true);
-							if (movementAnimation == "Run")
+							model.Stop(player.Crouched ? movementAnimations.Keys.ToArray() : crouchMovementAnimations.Keys.ToArray());
+							foreach (KeyValuePair<string, int> animation in player.Crouched ? crouchMovementAnimations : movementAnimations)
 							{
-								runAnimation.Strength = 1.0f;
-								sprintAnimation.Strength = 0.0f;
-								model.StartClip("Sprint", animationPriority + 1, true);
+								model.StartClip(animation.Key, animation.Value, true);
+								model[animation.Key].Strength = 0.0f;
 							}
 						}
 					}
 					else
 					{
-						model.Stop
-						(
-							"CrouchIdle",
-							"CrouchWalkBackward",
-							"CrouchWalk",
-							"CrouchStrafeRight",
-							"CrouchStrafeLeft",
-							"Idle",
-							"RunBackward",
-							"Run",
-							"Sprint",
-							"RunRight",
-							"RunLeft"
-						);
+						model.Stop(movementAnimations.Keys.ToArray());
+						model.Stop(crouchMovementAnimations.Keys.ToArray());
 						if (player.Crouched)
 						{
 							if (!model.IsPlaying("CrouchFall"))
@@ -877,6 +855,15 @@ namespace Lemma.Factories
 					}
 
 					lastSupported = player.IsSupported;
+
+					debugAnimations.Children.Clear();
+					foreach (SkinnedModel.Clip clip in model.CurrentClips)
+					{
+						TextElement label = new TextElement();
+						label.FontFile.Value = "Font";
+						label.Text.Value = clip.TargetStrength.ToString("F") + " " + clip.TotalStrength.ToString("F") + " " + clip.Name;
+						debugAnimations.Children.Add(label);
+					}
 				}
 			});
 
@@ -1650,7 +1637,7 @@ namespace Lemma.Factories
 
 				// If there's nothing on the other side of the wall (it's a one-block-wide wall)
 				// then vault over it rather than standing on top of it
-				bool vaultOver = map[coordPosition + forward].ID == 0;
+				bool vaultOver = map[coordPosition + forward + Vector3.Down].ID == 0;
 
 				player.LinearVelocity.Value = vaultVelocity;
 				player.IsSupported.Value = false;
@@ -1668,6 +1655,9 @@ namespace Lemma.Factories
 				float vaultTime = 0.0f;
 				if (vaultMover != null)
 					vaultMover.Delete.Execute(); // If we're already vaulting, start a new vault
+				
+				float moveForwardStartTime = 0.0f;
+				bool movingForward = false;
 
 				vaultMover = new Updater
 				{
@@ -1675,25 +1665,61 @@ namespace Lemma.Factories
 					{
 						vaultTime += dt;
 
-						// Max vault time ensures we never get stuck
-						if (player.IsSupported || vaultTime > maxVaultTime || player.LinearVelocity.Value.Y < 0.0f
-						 || (transform.Position.Value.Y + (player.Height * -0.5f) - player.SupportHeight > map.GetAbsolutePosition(coord).Y + 0.1f)) // Move forward
+						bool delete = false;
+
+						if (movingForward)
 						{
-							player.LinearVelocity.Value = forward * player.MaxSpeed + (vaultOver ? new Vector3(0, 3.0f, 0) : Vector3.Zero);
-							player.LastSupportedSpeed.Value = player.MaxSpeed;
-							player.Body.ActivityInformation.Activate();
+							if (vaultTime - moveForwardStartTime > 0.25f)
+								delete = true; // Done moving forward
+							else
+							{
+								// Still moving forward
+								player.LinearVelocity.Value = forward * player.MaxSpeed;
+								player.LastSupportedSpeed.Value = player.MaxSpeed;
+							}
+						}
+						else
+						{
+							// We're still going up.
+							if (player.IsSupported || vaultTime > maxVaultTime || player.LinearVelocity.Value.Y < 0.0f
+								|| (transform.Position.Value.Y + (player.Height * -0.5f) - player.SupportHeight > map.GetAbsolutePosition(coord).Y + 0.1f)) // Move forward
+							{
+								// We've reached the top of the vault. Start moving forward.
+								// Max vault time ensures we never get stuck
+
+								if (vaultOver)
+								{
+									// If we're vaulting over a 1-block-wide wall, we need to keep the vaultMover alive for a while
+									// to keep the player moving forward over the wall
+									movingForward = true;
+									moveForwardStartTime = vaultTime;
+								}
+								else
+								{
+									// We're not vaulting over a 1-block-wide wall
+									// So just stop
+									player.LinearVelocity.Value = forward * player.MaxSpeed;
+									player.LastSupportedSpeed.Value = player.MaxSpeed;
+									player.Body.ActivityInformation.Activate();
+									delete = true;
+								}
+							}
+							else // We're still going up.
+								player.LinearVelocity.Value = vaultVelocity;
+						}
+
+						if (delete)
+						{
 							vaultMover.Delete.Execute(); // Make sure we get rid of this vault mover
 							vaultMover = null;
+							rotationLocked.Value = false;
+							player.EnableWalking.Value = true;
 							result.Add(new Animation
 							(
-								new Animation.Set<bool>(rotationLocked, false),
-								new Animation.Set<bool>(player.EnableWalking, true),
 								new Animation.Delay(0.1f),
 								new Animation.Set<bool>(player.AllowUncrouch, true)
 							));
 						}
-						else
-							player.LinearVelocity.Value = vaultVelocity;
 					}
 				};
 				result.RemoveComponent("VaultMover");

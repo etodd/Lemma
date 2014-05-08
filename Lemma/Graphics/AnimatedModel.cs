@@ -128,6 +128,10 @@ namespace Lemma.Components
 			{
 				TimeSpan newTime = clip.CurrentTime + new TimeSpan((long)((float)elapsedTime.Ticks * clip.Speed));
 
+				float targetStrength = MathHelper.Clamp(clip.TargetStrength, 0.0f, 1.0f);
+				float strengthBlendSpeed = (1.0f / AnimatedModel.DefaultBlendTime) * (float)elapsedTime.TotalSeconds;
+				clip.Strength += MathHelper.Clamp(targetStrength - clip.Strength, -strengthBlendSpeed, strengthBlendSpeed);
+
 				if (!clip.Stopping && clip.Duration.TotalSeconds > 0)
 				{
 					if (!clip.Loop && clip.StopOnEnd && newTime >= clip.Duration)
@@ -162,7 +166,7 @@ namespace Lemma.Components
 
 				if (blend > 0.0f)
 				{
-					if (blend < 1.0f && !firstClip)
+					if (blend < 1.0f)
 					{
 						foreach (SkinnedModel.Channel channel in clip.Channels)
 						{
