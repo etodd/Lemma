@@ -702,7 +702,12 @@ namespace Lemma.Factories
 
 				bool suspended;
 				if (currentZone != null && currentZone.Exclusive) // Suspend everything outside the current zone, unless it's connected
-					suspended = !currentZone.ConnectedEntities.Contains(entity) && hasPosition && !boxesContain(boxes, pos);
+				{
+					suspended = hasPosition && !boxesContain(boxes, pos);
+					// Allow the editor to reverse the decision
+					if (currentZone.ConnectedEntities.Contains(entity))
+						suspended = !suspended;
+				}
 				else
 				{
 					// Only suspend things that are in a different (exclusive) zone, or that are just too far away

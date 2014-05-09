@@ -81,7 +81,7 @@ namespace Lemma.Factories
 
 			Entity world = main.Get("World").FirstOrDefault();
 
-			if (dataOnly)
+			if (dataOnly && !main.EditorEnabled)
 				map.EnablePhysics.Value = false;
 			else
 			{
