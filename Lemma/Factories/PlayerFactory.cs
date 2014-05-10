@@ -771,7 +771,7 @@ namespace Lemma.Factories
 					// Update footstep sound interval when wall-running
 					if (player.WallRunState != Player.WallRun.None)
 					{
-						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "CrouchFall", "Vault", "VaultLeft", "VaultRight");
+						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "Vault", "VaultLeft", "VaultRight");
 						footstepTimer.Interval.Value = 0.37f / model[player.WallRunState == Player.WallRun.Straight ? "WallRunStraight" : (player.WallRunState == Player.WallRun.Left ? "WallRunLeft" : "WallRunRight")].Speed;
 						return;
 					}
@@ -790,7 +790,7 @@ namespace Lemma.Factories
 							lastLandAnimationPlayed = main.TotalTime;
 						}
 
-						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "CrouchFall", "Vault", "VaultLeft", "VaultRight");
+						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "Vault", "VaultLeft", "VaultRight");
 						resetInAirState();
 
 						Vector2 dir = input.Movement;
@@ -855,24 +855,13 @@ namespace Lemma.Factories
 					{
 						model.Stop(movementAnimations.Keys.ToArray());
 						model.Stop(crouchMovementAnimations.Keys.ToArray());
-						if (player.Crouched)
-						{
-							if (!model.IsPlaying("CrouchFall"))
-							{
-								model.Stop("Fall");
-								model.StartClip("CrouchFall", 0, true);
-							}
-						}
-						else if (!model.IsPlaying("Fall"))
-						{
-							model.Stop("Fall", "CrouchFall");
+						if (!model.IsPlaying("Fall"))
 							model.StartClip("Fall", 0, true);
-						}
 					}
 
 					lastSupported = player.IsSupported;
 
-		#if DEVELOPMENT
+#if DEVELOPMENT
 					debugAnimations.Children.Clear();
 					foreach (SkinnedModel.Clip clip in model.CurrentClips)
 					{
