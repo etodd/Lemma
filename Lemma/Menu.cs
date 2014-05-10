@@ -933,7 +933,7 @@ namespace Lemma.Components
 				this.ShowDialog("\\alpha disclaimer", "\\play", delegate()
 				{
 					this.restorePausedSettings();
-					this.main.CurrentSave = null;
+					this.main.CurrentSave.Value = null;
 					this.main.AddComponent(new Animation
 					(
 						new Animation.Delay(0.2f),
@@ -1000,7 +1000,7 @@ namespace Lemma.Components
 				this.ShowDialog("\\sandbox disclaimer", "\\play anyway", delegate()
 				{
 					this.restorePausedSettings();
-					this.main.CurrentSave = null;
+					this.main.CurrentSave.Value = null;
 					this.main.AddComponent(new Animation
 					(
 						new Animation.Delay(0.2f),
@@ -1237,7 +1237,7 @@ namespace Lemma.Components
 					"\\quit prompt", "\\quit",
 					delegate()
 					{
-						this.main.CurrentSave = null;
+						this.main.CurrentSave.Value = null;
 						this.main.MapFile.Value = GameMain.MenuMap;
 						this.main.Paused.Value = false;
 					}

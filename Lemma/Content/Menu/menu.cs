@@ -66,7 +66,7 @@ if (((GameMain)main).StartSpawnPoint.Value == "end")
 
 	TextElement credits = new TextElement();
 	credits.FontFile.Value = "Font";
-	credits.Text.Value = ((GameMain)main).Credits;
+	credits.Text.Value = ((GameMain)main).Menu.Credits;
 	credits.Add(new Binding<float, Vector2>(credits.WrapWidth, x => x.X, creditsScroll.Size));
 	credits.Position.Value = new Vector2(0, creditsScroll.ScaledSize.Value.Y * 1.5f);
 	creditsScroll.Children.Add(credits);
@@ -104,7 +104,7 @@ else
 
 	Container languageMenu = new Container();
 
-	UIComponent languageButton = ((GameMain)main).CreateButton(delegate()
+	UIComponent languageButton = ((GameMain)main).Menu.CreateButton(delegate()
 	{
 		languageMenu.Visible.Value = !languageMenu.Visible;
 	}, true);
@@ -126,7 +126,7 @@ else
 	
 	foreach (GameMain.Config.Lang language in GameMain.Languages)
 	{
-		UIComponent button = ((GameMain)main).CreateButton(delegate()
+		UIComponent button = ((GameMain)main).Menu.CreateButton(delegate()
 		{
 			((GameMain)main).Settings.Language.Value = language;
 			languageMenu.Visible.Value = false;
