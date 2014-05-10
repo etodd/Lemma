@@ -17,8 +17,8 @@ Global Settings
     Header File = Lemma.h;
     Exclude Category Names = 0;
     Exclude Variable Names = 0;
-    Last Modified Low = 2843996227;
-    Last Modified High = 30363545;
+    Last Modified Low = 1034366831;
+    Last Modified High = 30370915;
 
     Category
     {
@@ -333,7 +333,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::6c5ab626-bdc2-4082-b680-a242de48b59f;
+            Name = Sound::d36f214d-0312-4018-9def-011d81c812ab;
             Property = 0;
             Sound = 1;
             Line Color = 4290413690;
@@ -366,7 +366,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::6692af06-09b2-4ee2-a322-74bc53b3a45b;
+            Name = Sound::4ed34e60-3050-4b37-bcaa-410c1cd21828;
             Property = 0;
             Sound = 1;
             Line Color = 4293962024;
@@ -399,7 +399,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::d6196ed3-f5cb-405f-bc4d-d18ffa201c20;
+            Name = Sound::320ee3c4-8cde-498c-bc8a-8edcad466914;
             Property = 1;
             Sound = 1;
             Line Color = 4285108677;
@@ -432,7 +432,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::0a2dcbb4-4e2f-47b6-8317-6ff7444a3765;
+            Name = 1::c326877f-abfd-4f95-9845-59ebf4368565;
             Property = 0;
             Sound = 0;
             Line Color = 4279752145;
@@ -460,7 +460,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::0de04060-ffd8-4ead-a196-2847c81743a3;
+            Name = 1::39a06ed0-9532-47fa-9125-ad532a178601;
             Property = 0;
             Sound = 0;
             Line Color = 4284596858;
@@ -488,7 +488,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::96091dc8-60c7-469b-bfac-9b81cfbb748a;
+            Name = 1::c874f41b-b70b-4b9c-bd25-fd2b1a8d6bda;
             Property = 1;
             Sound = 0;
             Line Color = 4281010387;
@@ -516,7 +516,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::8409f0b5-7051-4478-be08-13ffd922c58f;
+            Name = 1::a4f8f47d-706a-46ba-b482-58289df070ed;
             Property = 1;
             Sound = 0;
             Line Color = 4292380630;
@@ -549,7 +549,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::62e6a35d-15a0-443b-a495-3d43f92fbb28;
+            Name = 1::64edd95c-770e-4bb1-b68e-b4db9858e9ed;
             Property = 0;
             Sound = 0;
             Line Color = 4286296165;
@@ -582,7 +582,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::8ae05ee1-8c3f-453e-9b07-e988cbcb7ee8;
+            Name = Sound::be2d8078-ba0d-4827-b9b4-acc709a4df6a;
             Property = 0;
             Sound = 1;
             Line Color = 4286980210;
@@ -615,7 +615,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::139522fd-3ab5-4911-8d9b-5b093bde637d;
+            Name = Sound::45183bc1-6410-4dfc-a5ce-816d6dae4b13;
             Property = 1;
             Sound = 1;
             Line Color = 4290600932;
@@ -648,7 +648,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::b236e137-1c4a-4adc-9cfa-da97deede27b;
+            Name = 1::d6864b01-7c93-434b-80e0-20a5210c9b4a;
             Property = 0;
             Sound = 0;
             Line Color = 4290171999;
@@ -681,7 +681,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::4dea64d9-7f65-4756-bcf6-a98fa30605be;
+            Name = 1::97dde258-7abb-4785-92f5-3874e1627e46;
             Property = 0;
             Sound = 0;
             Line Color = 4281489917;
@@ -714,7 +714,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = 1::121e1aca-3a81-40b5-aad1-2374c91c247f;
+            Name = 1::8cf43aa0-b835-498a-a66d-2cf2a10a49ba;
             Property = 0;
             Sound = 0;
             Line Color = 4279931599;
@@ -747,7 +747,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Effect::255ba6ff-40c6-408b-8175-76d60a568880;
+            Name = Effect::74aead6c-52ef-4c5e-88ef-90a0e923f6a8;
             Property = 5;
             Sound = 0;
             Line Color = 4280672033;
@@ -781,7 +781,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Effect::31f662e5-b886-49d5-8572-a1b6f6fd9f70;
+            Name = Effect::96b5e286-efbd-4936-8ed3-636812d5a324;
             Property = 5;
             Sound = 0;
             Line Color = 4280009593;
@@ -815,7 +815,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Effect::031bfd1d-18fb-4762-8a90-9d03ce67e9dc;
+            Name = Effect::92bbede3-b51d-4433-b085-97c1db8ebe63;
             Property = 5;
             Sound = 0;
             Line Color = 4288044720;
@@ -859,7 +859,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::daebdaac-d7d5-440e-9726-cec5feeb1f23;
+            Name = Sound::1d3aa614-45bf-4d9a-9480-d31d0ac11c9b;
             Property = 0;
             Sound = 1;
             Line Color = 4290754937;
@@ -1110,19 +1110,17 @@ Wave Bank
     Compression Preset Name = <none>;
     Xbox Bank Last Modified Low = 0;
     Xbox Bank Last Modified High = 0;
-    PC Bank Last Modified Low = 1644382020;
-    PC Bank Last Modified High = 30362703;
-    Header Last Modified Low = 0;
-    Header Last Modified High = 0;
-    Bank Last Revised Low = 1326164961;
-    Bank Last Revised High = 30362703;
+    PC Bank Last Modified Low = 1409405045;
+    PC Bank Last Modified High = 30370915;
+    Bank Last Revised Low = 1409364995;
+    Bank Last Revised High = 30370915;
 
     Wave
     {
         Name = explosion1;
-        File = C:\Users\Evan\Code\Lemma\Lemma\Content\Sounds\Turret\explosion1.wav;
-        Build Settings Last Modified Low = 3354801272;
-        Build Settings Last Modified High = 30322509;
+        File = C:\Users\Evan\Work\Lemma\Lemma\Content\Sounds\Turret\explosion1.wav;
+        Build Settings Last Modified Low = 1312822786;
+        Build Settings Last Modified High = 30370915;
 
         Cache
         {
@@ -1135,17 +1133,17 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1286227539;
-            Last Modified High = 30351813;
+            Last Modified Low = 2697217768;
+            Last Modified High = 30370914;
         }
     }
 
     Wave
     {
         Name = explosion2;
-        File = C:\Users\Evan\Code\Lemma\Lemma\Content\Sounds\Turret\explosion2.wav;
-        Build Settings Last Modified Low = 3354849923;
-        Build Settings Last Modified High = 30322509;
+        File = C:\Users\Evan\Work\Lemma\Lemma\Content\Sounds\Turret\explosion2.wav;
+        Build Settings Last Modified Low = 1312842650;
+        Build Settings Last Modified High = 30370915;
 
         Cache
         {
@@ -1158,17 +1156,17 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1286277596;
-            Last Modified High = 30351813;
+            Last Modified Low = 2697267822;
+            Last Modified High = 30370914;
         }
     }
 
     Wave
     {
         Name = explosion3;
-        File = C:\Users\Evan\Code\Lemma\Lemma\Content\Sounds\Turret\explosion3.wav;
-        Build Settings Last Modified Low = 3354880484;
-        Build Settings Last Modified High = 30322509;
+        File = C:\Users\Evan\Work\Lemma\Lemma\Content\Sounds\Turret\explosion3.wav;
+        Build Settings Last Modified Low = 1312852660;
+        Build Settings Last Modified High = 30370915;
 
         Cache
         {
@@ -1181,17 +1179,17 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1286337662;
-            Last Modified High = 30351813;
+            Last Modified Low = 2697347902;
+            Last Modified High = 30370914;
         }
     }
 
     Wave
     {
         Name = explosion4;
-        File = C:\Users\Evan\Code\Lemma\Lemma\Content\Sounds\Turret\explosion4.wav;
-        Build Settings Last Modified Low = 3354920525;
-        Build Settings Last Modified High = 30322509;
+        File = C:\Users\Evan\Work\Lemma\Lemma\Content\Sounds\Turret\explosion4.wav;
+        Build Settings Last Modified Low = 1312862669;
+        Build Settings Last Modified High = 30370915;
 
         Cache
         {
@@ -1204,8 +1202,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1286377704;
-            Last Modified High = 30351813;
+            Last Modified Low = 2697387949;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1227,8 +1225,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285606901;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696497023;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1250,8 +1248,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285867175;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696787328;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1273,8 +1271,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285887197;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696807351;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1296,8 +1294,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285907213;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696827370;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1319,8 +1317,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285937242;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696857399;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1342,8 +1340,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285957264;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696877418;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1365,8 +1363,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285977283;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696897437;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1388,8 +1386,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1286007315;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696937481;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1411,8 +1409,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1286027337;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696957498;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1434,8 +1432,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285626920;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696517043;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1457,8 +1455,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285646942;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696557084;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1480,8 +1478,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285676974;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696587116;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1503,8 +1501,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285707009;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696617147;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1526,8 +1524,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285727022;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696647176;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1549,8 +1547,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285757060;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696667207;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1572,8 +1570,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285787089;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696717252;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1595,8 +1593,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285817121;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696747281;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1618,8 +1616,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285837143;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696767303;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1641,8 +1639,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285526821;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696416941;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1664,8 +1662,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1277968996;
-            Last Modified High = 30351813;
+            Last Modified Low = 2685767693;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1687,8 +1685,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280041138;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689437853;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1710,8 +1708,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280061161;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689457863;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1733,8 +1731,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280081177;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689477882;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1756,8 +1754,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280101205;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689497914;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1779,8 +1777,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280121224;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689517924;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1802,8 +1800,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280241349;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689628038;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1825,8 +1823,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280261374;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689648058;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1848,8 +1846,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280281390;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689668089;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1871,8 +1869,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280301415;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689688111;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1894,8 +1892,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280331441;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689708121;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1917,8 +1915,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280351466;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689728149;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1940,8 +1938,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280361473;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689738150;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1963,8 +1961,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280381498;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689758187;
+            Last Modified High = 30370914;
         }
     }
 
@@ -1986,8 +1984,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280401511;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689778191;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2009,8 +2007,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280421536;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689788204;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2032,8 +2030,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280131237;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689527933;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2055,8 +2053,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280151256;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689547956;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2078,8 +2076,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280171284;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689557977;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2101,8 +2099,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280191300;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689577996;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2124,8 +2122,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280201307;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689598007;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2147,8 +2145,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280221329;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689608019;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2170,8 +2168,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285556850;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696436960;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2193,8 +2191,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 2833177848;
-            Last Modified High = 30359652;
+            Last Modified Low = 2693694125;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2216,8 +2214,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1283094306;
-            Last Modified High = 30351813;
+            Last Modified Low = 2693584016;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2239,8 +2237,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285496786;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696226746;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2262,8 +2260,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1296348015;
-            Last Modified High = 30351813;
+            Last Modified Low = 2707979945;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2285,8 +2283,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1296317992;
-            Last Modified High = 30351813;
+            Last Modified Low = 2707949913;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2308,8 +2306,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285046324;
-            Last Modified High = 30351813;
+            Last Modified Low = 2695946460;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2331,8 +2329,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285066340;
-            Last Modified High = 30351813;
+            Last Modified Low = 2695966476;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2354,8 +2352,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285576869;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696466992;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2377,8 +2375,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1286057369;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696987532;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2400,8 +2398,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1286097405;
-            Last Modified High = 30351813;
+            Last Modified Low = 2697027577;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2423,8 +2421,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1286147462;
-            Last Modified High = 30351813;
+            Last Modified Low = 2697077625;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2446,8 +2444,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280441559;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689808238;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2469,8 +2467,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280451568;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689828254;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2492,8 +2490,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280481597;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689838255;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2515,8 +2513,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280501616;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689878296;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2538,8 +2536,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280511632;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689888306;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2561,8 +2559,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280531654;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689908337;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2584,8 +2582,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1296378071;
-            Last Modified High = 30351813;
+            Last Modified Low = 2708029984;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2607,8 +2605,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285156435;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696046562;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2630,8 +2628,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285176455;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696056565;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2653,8 +2651,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285196477;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696076588;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2676,8 +2674,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285096372;
-            Last Modified High = 30351813;
+            Last Modified Low = 2695986507;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2699,8 +2697,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285116400;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696006517;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2722,8 +2720,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1285136416;
-            Last Modified High = 30351813;
+            Last Modified Low = 2696026540;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2745,8 +2743,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1279280357;
-            Last Modified High = 30351813;
+            Last Modified Low = 2688486858;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2768,8 +2766,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1279380456;
-            Last Modified High = 30351813;
+            Last Modified Low = 2688637014;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2791,8 +2789,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1279490571;
-            Last Modified High = 30351813;
+            Last Modified Low = 2688807192;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2814,8 +2812,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1279620738;
-            Last Modified High = 30351813;
+            Last Modified Low = 2688937326;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2837,8 +2835,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1279710803;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689057450;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2860,8 +2858,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1279820915;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689197593;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2883,8 +2881,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1283064268;
-            Last Modified High = 30351813;
+            Last Modified Low = 2693563997;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2906,8 +2904,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1283484705;
-            Last Modified High = 30351813;
+            Last Modified Low = 2694124573;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2929,8 +2927,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1278019050;
-            Last Modified High = 30351813;
+            Last Modified Low = 2687924524;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2952,8 +2950,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1278079117;
-            Last Modified High = 30351813;
+            Last Modified Low = 2688004606;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2975,8 +2973,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1279170239;
-            Last Modified High = 30351813;
+            Last Modified Low = 2688326704;
+            Last Modified High = 30370914;
         }
     }
 
@@ -2998,8 +2996,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1296057725;
-            Last Modified High = 30351813;
+            Last Modified Low = 2707639580;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3021,8 +3019,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1296097778;
-            Last Modified High = 30351813;
+            Last Modified Low = 2707689640;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3044,8 +3042,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1280011110;
-            Last Modified High = 30351813;
+            Last Modified Low = 2689417822;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3067,8 +3065,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1296428107;
-            Last Modified High = 30351813;
+            Last Modified Low = 2708080047;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3090,8 +3088,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1296458130;
-            Last Modified High = 30351813;
+            Last Modified Low = 2708110076;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3113,17 +3111,17 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1296498171;
-            Last Modified High = 30351813;
+            Last Modified Low = 2708150108;
+            Last Modified High = 30370914;
         }
     }
 
     Wave
     {
         Name = wall;
-        File = C:\Users\Evan\Code\Lemma\Lemma\Content\Sounds\Game\wall.wav;
-        Build Settings Last Modified Low = 3670511240;
-        Build Settings Last Modified High = 30356217;
+        File = C:\Users\Evan\Work\Lemma\Lemma\Content\Sounds\Game\wall.wav;
+        Build Settings Last Modified Low = 1409334981;
+        Build Settings Last Modified High = 30370915;
 
         Cache
         {
@@ -3136,8 +3134,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 3568025541;
-            Last Modified High = 30351815;
+            Last Modified Low = 2693383813;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3159,8 +3157,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1296227894;
-            Last Modified High = 30351813;
+            Last Modified Low = 2707869819;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3182,8 +3180,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1296257923;
-            Last Modified High = 30351813;
+            Last Modified Low = 2707899847;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3205,8 +3203,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1286187500;
-            Last Modified High = 30351813;
+            Last Modified Low = 2697167720;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3228,8 +3226,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1286407730;
-            Last Modified High = 30351813;
+            Last Modified Low = 2697417975;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3251,8 +3249,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1286437767;
-            Last Modified High = 30351813;
+            Last Modified Low = 2697478041;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3274,17 +3272,17 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1286467793;
-            Last Modified High = 30351813;
+            Last Modified Low = 2697508067;
+            Last Modified High = 30370914;
         }
     }
 
     Wave
     {
         Name = power;
-        File = C:\Users\Evan\Code\Lemma\Lemma\Content\Sounds\Game\power.wav;
-        Build Settings Last Modified Low = 3670521220;
-        Build Settings Last Modified High = 30356217;
+        File = C:\Users\Evan\Work\Lemma\Lemma\Content\Sounds\Game\power.wav;
+        Build Settings Last Modified Low = 1409344964;
+        Build Settings Last Modified High = 30370915;
 
         Cache
         {
@@ -3297,17 +3295,17 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 3563758296;
-            Last Modified High = 30351815;
+            Last Modified Low = 2691659828;
+            Last Modified High = 30370914;
         }
     }
 
     Wave
     {
         Name = power-blast;
-        File = C:\Users\Evan\Code\Lemma\Lemma\Content\Sounds\Game\power-blast.wav;
-        Build Settings Last Modified Low = 3670521220;
-        Build Settings Last Modified High = 30356217;
+        File = C:\Users\Evan\Work\Lemma\Lemma\Content\Sounds\Game\power-blast.wav;
+        Build Settings Last Modified Low = 1409354976;
+        Build Settings Last Modified High = 30370915;
 
         Cache
         {
@@ -3320,17 +3318,17 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 3563618144;
-            Last Modified High = 30351815;
+            Last Modified Low = 2691459633;
+            Last Modified High = 30370914;
         }
     }
 
     Wave
     {
         Name = ear-ringing;
-        File = C:\Users\Evan\Code\Lemma\Lemma\Content\Sounds\Game\ear-ringing.wav;
-        Build Settings Last Modified Low = 3670521220;
-        Build Settings Last Modified High = 30356217;
+        File = C:\Users\Evan\Work\Lemma\Lemma\Content\Sounds\Game\ear-ringing.wav;
+        Build Settings Last Modified Low = 1409354976;
+        Build Settings Last Modified High = 30370915;
 
         Cache
         {
@@ -3343,17 +3341,17 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 3563327829;
-            Last Modified High = 30351815;
+            Last Modified Low = 2690178608;
+            Last Modified High = 30370914;
         }
     }
 
     Wave
     {
         Name = wake;
-        File = C:\Users\Evan\Code\Lemma\Lemma\Content\Sounds\Game\wake.wav;
-        Build Settings Last Modified Low = 3670531230;
-        Build Settings Last Modified High = 30356217;
+        File = C:\Users\Evan\Work\Lemma\Lemma\Content\Sounds\Game\wake.wav;
+        Build Settings Last Modified Low = 1409354976;
+        Build Settings Last Modified High = 30370915;
 
         Cache
         {
@@ -3366,17 +3364,17 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1432226444;
-            Last Modified High = 30351865;
+            Last Modified Low = 2692002384;
+            Last Modified High = 30370914;
         }
     }
 
     Wave
     {
         Name = pickup;
-        File = C:\Users\Evan\Code\Lemma\Lemma\Content\Sounds\Game\pickup.wav;
-        Build Settings Last Modified Low = 3670531230;
-        Build Settings Last Modified High = 30356217;
+        File = C:\Users\Evan\Work\Lemma\Lemma\Content\Sounds\Game\pickup.wav;
+        Build Settings Last Modified Low = 1409364995;
+        Build Settings Last Modified High = 30370915;
 
         Cache
         {
@@ -3389,8 +3387,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1990410070;
-            Last Modified High = 30351884;
+            Last Modified Low = 2691339500;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3412,8 +3410,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1052741651;
-            Last Modified High = 30352198;
+            Last Modified Low = 2696156670;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3435,17 +3433,17 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1099183452;
-            Last Modified High = 30352198;
+            Last Modified Low = 2696186699;
+            Last Modified High = 30370914;
         }
     }
 
     Wave
     {
         Name = cubes;
-        File = C:\Users\Evan\Code\Lemma\Lemma\Content\Sounds\Game\cubes.wav;
-        Build Settings Last Modified Low = 3670541239;
-        Build Settings Last Modified High = 30356217;
+        File = C:\Users\Evan\Work\Lemma\Lemma\Content\Sounds\Game\cubes.wav;
+        Build Settings Last Modified Low = 1409364995;
+        Build Settings Last Modified High = 30370915;
 
         Cache
         {
@@ -3458,8 +3456,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1805964701;
-            Last Modified High = 30354025;
+            Last Modified Low = 2689978401;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3481,8 +3479,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 2270869136;
-            Last Modified High = 30355137;
+            Last Modified Low = 2707849808;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3504,8 +3502,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 2364283888;
-            Last Modified High = 30357625;
+            Last Modified Low = 2696116629;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3527,8 +3525,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 3873213072;
-            Last Modified High = 30358892;
+            Last Modified Low = 2696366890;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3550,8 +3548,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 2258103592;
-            Last Modified High = 30360479;
+            Last Modified Low = 2708190149;
+            Last Modified High = 30370914;
         }
     }
 }
@@ -3567,19 +3565,17 @@ Wave Bank
     Compression Preset Name = Music;
     Xbox Bank Last Modified Low = 0;
     Xbox Bank Last Modified High = 0;
-    PC Bank Last Modified Low = 3670258178;
-    PC Bank Last Modified High = 30358899;
-    Header Last Modified Low = 0;
-    Header Last Modified High = 0;
-    Bank Last Revised Low = 3670228150;
-    Bank Last Revised High = 30358899;
+    PC Bank Last Modified Low = 1410005651;
+    PC Bank Last Modified High = 30370915;
+    Bank Last Revised Low = 1409985629;
+    Bank Last Revised High = 30370915;
 
     Wave
     {
         Name = lemma_interior_raw_01;
-        File = C:\Users\Evan\Code\Lemma\Lemma\Content\Sounds\Game\lemma_interior_raw_01.wav;
-        Build Settings Last Modified Low = 3671050778;
-        Build Settings Last Modified High = 30356217;
+        File = C:\Users\Evan\Work\Lemma\Lemma\Content\Sounds\Game\lemma_interior_raw_01.wav;
+        Build Settings Last Modified Low = 1409985629;
+        Build Settings Last Modified High = 30370915;
 
         Cache
         {
@@ -3592,8 +3588,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1279020086;
-            Last Modified High = 30351813;
+            Last Modified Low = 2691269439;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3615,8 +3611,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 1315612318;
-            Last Modified High = 30358898;
+            Last Modified Low = 2686057974;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3638,8 +3634,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 2205140788;
-            Last Modified High = 30358898;
+            Last Modified Low = 2686267549;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3661,8 +3657,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 3153350605;
-            Last Modified High = 30358898;
+            Last Modified Low = 2686752843;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3684,8 +3680,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 3863660957;
-            Last Modified High = 30358898;
+            Last Modified Low = 2687153412;
+            Last Modified High = 30370914;
         }
     }
 
@@ -3707,8 +3703,8 @@ Wave Bank
             Loop Region Offset = 0;
             Loop Region Length = 0;
             File Type = 1;
-            Last Modified Low = 737428634;
-            Last Modified High = 30358899;
+            Last Modified Low = 2687623910;
+            Last Modified High = 30370914;
         }
     }
 }
@@ -3720,8 +3716,8 @@ Sound Bank
     Windows File = Sounds.xsb;
     Xbox Bank Path Edited = 0;
     Windows Bank Path Edited = 1;
-    Bank Last Modified Low = 2844116352;
-    Bank Last Modified High = 30363545;
+    Bank Last Modified Low = 1410275928;
+    Bank Last Modified High = 30370915;
     Header Last Modified High = 0;
     Header Last Modified Low = 0;
 
@@ -4197,13 +4193,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::121e1aca-3a81-40b5-aad1-2374c91c247f;
+                RPC Curve Name = 1::8cf43aa0-b835-498a-a66d-2cf2a10a49ba;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::62e6a35d-15a0-443b-a495-3d43f92fbb28;
+                RPC Curve Name = 1::64edd95c-770e-4bb1-b68e-b4db9858e9ed;
             }
         }
     }
@@ -4738,13 +4734,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade out slow;
-                RPC Curve Name = 1::b236e137-1c4a-4adc-9cfa-da97deede27b;
+                RPC Curve Name = 1::d6864b01-7c93-434b-80e0-20a5210c9b4a;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::121e1aca-3a81-40b5-aad1-2374c91c247f;
+                RPC Curve Name = 1::8cf43aa0-b835-498a-a66d-2cf2a10a49ba;
             }
         }
     }
@@ -6615,13 +6611,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::121e1aca-3a81-40b5-aad1-2374c91c247f;
+                RPC Curve Name = 1::8cf43aa0-b835-498a-a66d-2cf2a10a49ba;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::62e6a35d-15a0-443b-a495-3d43f92fbb28;
+                RPC Curve Name = 1::64edd95c-770e-4bb1-b68e-b4db9858e9ed;
             }
         }
     }
@@ -6731,7 +6727,7 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::62e6a35d-15a0-443b-a495-3d43f92fbb28;
+                RPC Curve Name = 1::64edd95c-770e-4bb1-b68e-b4db9858e9ed;
             }
         }
     }
@@ -6919,13 +6915,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::121e1aca-3a81-40b5-aad1-2374c91c247f;
+                RPC Curve Name = 1::8cf43aa0-b835-498a-a66d-2cf2a10a49ba;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::62e6a35d-15a0-443b-a495-3d43f92fbb28;
+                RPC Curve Name = 1::64edd95c-770e-4bb1-b68e-b4db9858e9ed;
             }
         }
     }
@@ -7061,7 +7057,7 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::121e1aca-3a81-40b5-aad1-2374c91c247f;
+                RPC Curve Name = 1::8cf43aa0-b835-498a-a66d-2cf2a10a49ba;
             }
         }
     }
@@ -7135,13 +7131,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::121e1aca-3a81-40b5-aad1-2374c91c247f;
+                RPC Curve Name = 1::8cf43aa0-b835-498a-a66d-2cf2a10a49ba;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::62e6a35d-15a0-443b-a495-3d43f92fbb28;
+                RPC Curve Name = 1::64edd95c-770e-4bb1-b68e-b4db9858e9ed;
             }
         }
     }
@@ -7215,13 +7211,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::121e1aca-3a81-40b5-aad1-2374c91c247f;
+                RPC Curve Name = 1::8cf43aa0-b835-498a-a66d-2cf2a10a49ba;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::62e6a35d-15a0-443b-a495-3d43f92fbb28;
+                RPC Curve Name = 1::64edd95c-770e-4bb1-b68e-b4db9858e9ed;
             }
         }
     }
@@ -7581,13 +7577,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::121e1aca-3a81-40b5-aad1-2374c91c247f;
+                RPC Curve Name = 1::8cf43aa0-b835-498a-a66d-2cf2a10a49ba;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::62e6a35d-15a0-443b-a495-3d43f92fbb28;
+                RPC Curve Name = 1::64edd95c-770e-4bb1-b68e-b4db9858e9ed;
             }
         }
     }
@@ -7948,13 +7944,13 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade in fast;
-                RPC Curve Name = 1::121e1aca-3a81-40b5-aad1-2374c91c247f;
+                RPC Curve Name = 1::8cf43aa0-b835-498a-a66d-2cf2a10a49ba;
             }
 
             RPC Curve Entry
             {
                 RPC Name = Fade out fast;
-                RPC Curve Name = 1::62e6a35d-15a0-443b-a495-3d43f92fbb28;
+                RPC Curve Name = 1::64edd95c-770e-4bb1-b68e-b4db9858e9ed;
             }
         }
     }
@@ -8211,7 +8207,7 @@ Sound Bank
             RPC Curve Entry
             {
                 RPC Name = Fade out slow;
-                RPC Curve Name = 1::b236e137-1c4a-4adc-9cfa-da97deede27b;
+                RPC Curve Name = 1::d6864b01-7c93-434b-80e0-20a5210c9b4a;
             }
         }
     }
