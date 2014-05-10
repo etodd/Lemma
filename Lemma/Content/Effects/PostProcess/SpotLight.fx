@@ -21,6 +21,8 @@ sampler2D CookieSampler = sampler_state
 	AddressV = CLAMP;
 };
 
+const float SpotlightNormalShadowBias = 0.01f;
+
 // Calculate the contribution of a spot light
 LightingOutput CalcSpotLighting(float3 lightColor,
 						float lightAttenuation,
@@ -90,7 +92,7 @@ void SpotLightPS(	in SpotLightPSInput input,
 	float3 viewRay = normalize(input.worldPosition);
 	float3 position = PositionFromDepth(depthValue.x, viewRay);
 
-	float4 spotProjectedPosition = mul(float4(position + normal * NormalShadowBias, 1.0f), SpotLightViewProjectionMatrix);
+	float4 spotProjectedPosition = mul(float4(position + normal * SpotlightNormalShadowBias, 1.0f), SpotLightViewProjectionMatrix);
 	float2 spotClipPosition = 0.5f * spotProjectedPosition.xy / spotProjectedPosition.w + float2(0.5f, 0.5f);
 	spotClipPosition.y = 1.0f - spotClipPosition.y;
 	float3 cookieColor = tex2D(CookieSampler, spotClipPosition).xyz;
