@@ -18,7 +18,6 @@ namespace Lemma.Components
 		public Property<bool> Shadowed = new Property<bool> { Editable = true, Value = true };
 		public Property<float> FieldOfView = new Property<float> { Value = (float)Math.PI * 0.25f, Editable = true };
 		public Property<float> Attenuation = new Property<float> { Value = 10.0f, Editable = true };
-		public Property<float> ShadowBias = new Property<float> { Value = 0.0f, Editable = true };
 
 		[XmlIgnore]
 		public Property<BoundingFrustum> BoundingFrustum = new Property<BoundingFrustum> { Editable = false };

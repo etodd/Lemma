@@ -304,14 +304,12 @@ namespace Lemma.Components
 			effect.Parameters["DirectionalLightColors"].SetValue(this.directionalLightColors);
 			if (this.EnableGlobalShadowMap)
 			{
-				effect.Parameters["ShadowBias"].SetValue(camera.FarPlaneDistance * 0.02f / this.globalShadowMapSize);
 				effect.Parameters["ShadowViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * this.globalShadowViewProjection);
 				effect.Parameters["ShadowMapSize"].SetValue(this.globalShadowMapSize);
 				effect.Parameters["ShadowMap" + Model.SamplerPostfix].SetValue(this.globalShadowMap);
 
 				effect.Parameters["DetailShadowViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * this.detailGlobalShadowViewProjection);
 				effect.Parameters["DetailShadowMapSize"].SetValue(this.detailGlobalShadowMapSize);
-				effect.Parameters["DetailShadowBias"].SetValue(camera.FarPlaneDistance * 0.02f * LightingManager.detailGlobalShadowSizeRatio / this.detailGlobalShadowMapSize);
 				effect.Parameters["DetailShadowMap" + Model.SamplerPostfix].SetValue(this.detailGlobalShadowMap);
 			}
 		}
@@ -334,7 +332,6 @@ namespace Lemma.Components
 			{
 				effect.Parameters["ShadowMap" + Model.SamplerPostfix].SetValue(this.spotShadowMaps[this.shadowMapIndices[light]]);
 				effect.Parameters["ShadowMapSize"].SetValue(this.spotShadowMapSize);
-				effect.Parameters["ShadowBias"].SetValue(light.ShadowBias);
 			}
 
 			float horizontalScale = (float)Math.Sin(light.FieldOfView * 0.5f) * light.Attenuation;

@@ -10,8 +10,6 @@ float4x4 SpotLightViewProjectionMatrix;
 
 float2 Materials[16];
 
-float ShadowBias = 0.0f;
-
 texture2D CookieTexture;
 sampler2D CookieSampler = sampler_state
 {
@@ -92,7 +90,7 @@ void SpotLightPS(	in SpotLightPSInput input,
 	float3 viewRay = normalize(input.worldPosition);
 	float3 position = PositionFromDepth(depthValue.x, viewRay);
 
-	float4 spotProjectedPosition = mul(float4(position, 1.0f), SpotLightViewProjectionMatrix);
+	float4 spotProjectedPosition = mul(float4(position + normal * NormalShadowBias, 1.0f), SpotLightViewProjectionMatrix);
 	float2 spotClipPosition = 0.5f * spotProjectedPosition.xy / spotProjectedPosition.w + float2(0.5f, 0.5f);
 	spotClipPosition.y = 1.0f - spotClipPosition.y;
 	float3 cookieColor = tex2D(CookieSampler, spotClipPosition).xyz;
@@ -101,7 +99,7 @@ void SpotLightPS(	in SpotLightPSInput input,
 	
 	if (shadow)
 	{
-		float shadowValue = GetShadowValueFromClip(spotClipPosition, 1.0f - (spotProjectedPosition.z / spotProjectedPosition.w), ShadowBias);
+		float shadowValue = GetShadowValueFromClip(spotClipPosition, 1.0f - (spotProjectedPosition.z / spotProjectedPosition.w));
 		data.lighting *= shadowValue;
 		data.specular *= shadowValue;
 	}

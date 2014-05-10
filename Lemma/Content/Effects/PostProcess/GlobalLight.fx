@@ -43,9 +43,6 @@ LightingOutput CalcDirectionalLighting(
 	return output;
 }
 
-float ShadowBias = 0.0013f;
-float DetailShadowBias = 0.0002f;
-
 void GlobalLightPS(	in PostProcessPSInput input,
 					out float4 lighting : COLOR0,
 					out float4 specular : COLOR1,
@@ -82,14 +79,14 @@ void GlobalLightPS(	in PostProcessPSInput input,
 								ignoreNormal);
 
 		float shadowValue;
-		float4 shadowPos = mul(float4(worldPos, 1.0f), ShadowViewProjectionMatrix);
+		float4 shadowPos = mul(float4(worldPos + normal * NormalShadowBias, 1.0f), ShadowViewProjectionMatrix);
 		if (detail)
 		{
-			float4 detailShadowPos = mul(float4(worldPos, 1.0f), DetailShadowViewProjectionMatrix);
-			shadowValue = GetShadowValueDetail(detailShadowPos, shadowPos, DetailShadowBias, ShadowBias);
+			float4 detailShadowPos = mul(float4(worldPos + normal * NormalDetailShadowBias, 1.0f), DetailShadowViewProjectionMatrix);
+			shadowValue = GetShadowValueDetail(detailShadowPos, shadowPos);
 		}
 		else
-			shadowValue = GetShadowValue(shadowPos, ShadowBias);
+			shadowValue = GetShadowValue(shadowPos);
 
 		output.lighting += shadowLight.lighting * shadowValue;
 		output.specular += shadowLight.specular * shadowValue;

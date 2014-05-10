@@ -25,8 +25,11 @@ sampler2D DetailShadowMapSampler = sampler_state
 };
 float DetailShadowMapSize;
 
+const float NormalShadowBias = 0.1f;
+const float NormalDetailShadowBias = 0.02f;
+
 // Shadow map sampling with simple filtering
-float GetShadowValueFromClip(float2 clipPos, float depth, float bias)
+float GetShadowValueFromClip(float2 clipPos, float depth)
 {
 	if (abs(clipPos.x) > 1.0f || abs(clipPos.y) > 1.0f)
 		return 1.0f;
@@ -37,10 +40,10 @@ float GetShadowValueFromClip(float2 clipPos, float depth, float bias)
 	// Collect samples from the surrounding four shadow map pixels
 	// These will all evaluate to 1.0 or 0.0
 	float inverseShadowSize = 1 / ShadowMapSize;
-	float bl = tex2D(ShadowMapSampler, pos + float2(0, 0)).r - bias < depth; // Bottom left sample
-	float br = tex2D(ShadowMapSampler, pos + float2(inverseShadowSize, 0)).r - bias < depth; // Bottom right sample
-	float tl = tex2D(ShadowMapSampler, pos + float2(0, inverseShadowSize)).r - bias < depth; // Top left sample
-	float tr = tex2D(ShadowMapSampler, pos + float2(inverseShadowSize, inverseShadowSize)).r - bias < depth; // Top right sample
+	float bl = tex2D(ShadowMapSampler, pos + float2(0, 0)).r < depth; // Bottom left sample
+	float br = tex2D(ShadowMapSampler, pos + float2(inverseShadowSize, 0)).r < depth; // Bottom right sample
+	float tl = tex2D(ShadowMapSampler, pos + float2(0, inverseShadowSize)).r < depth; // Top left sample
+	float tr = tex2D(ShadowMapSampler, pos + float2(inverseShadowSize, inverseShadowSize)).r < depth; // Top right sample
 	
 	// Blend between the four samples
 	float horizontalBlend = (clipPos.x - pos.x) * ShadowMapSize;
@@ -51,7 +54,7 @@ float GetShadowValueFromClip(float2 clipPos, float depth, float bias)
 }
 
 // Shadow map sampling with simple filtering
-float GetShadowValueFromClipDetail(float2 clipPos, float depth, float bias)
+float GetShadowValueFromClipDetail(float2 clipPos, float depth)
 {
 	if (abs(clipPos.x) > 1.0f || abs(clipPos.y) > 1.0f)
 		return 1.0f;
@@ -62,10 +65,10 @@ float GetShadowValueFromClipDetail(float2 clipPos, float depth, float bias)
 	// Collect samples from the surrounding four shadow map pixels
 	// These will all evaluate to 1.0 or 0.0
 	float inverseShadowSize = 1 / DetailShadowMapSize;
-	float bl = tex2D(DetailShadowMapSampler, pos + float2(0, 0)).r - bias < depth; // Bottom left sample
-	float br = tex2D(DetailShadowMapSampler, pos + float2(inverseShadowSize, 0)).r - bias < depth; // Bottom right sample
-	float tl = tex2D(DetailShadowMapSampler, pos + float2(0, inverseShadowSize)).r - bias < depth; // Top left sample
-	float tr = tex2D(DetailShadowMapSampler, pos + float2(inverseShadowSize, inverseShadowSize)).r - bias < depth; // Top right sample
+	float bl = tex2D(DetailShadowMapSampler, pos + float2(0, 0)).r < depth; // Bottom left sample
+	float br = tex2D(DetailShadowMapSampler, pos + float2(inverseShadowSize, 0)).r < depth; // Bottom right sample
+	float tl = tex2D(DetailShadowMapSampler, pos + float2(0, inverseShadowSize)).r < depth; // Top left sample
+	float tr = tex2D(DetailShadowMapSampler, pos + float2(inverseShadowSize, inverseShadowSize)).r < depth; // Top right sample
 	
 	// Blend between the four samples
 	float horizontalBlend = (clipPos.x - pos.x) * DetailShadowMapSize;
@@ -75,7 +78,7 @@ float GetShadowValueFromClipDetail(float2 clipPos, float depth, float bias)
 	return (bottom * (1.0f - verticalBlend)) + (top * verticalBlend);
 }
 
-float GetShadowValue(float4 position, float bias)
+float GetShadowValue(float4 position)
 {
 	// Get the shadow map depth value for this pixel
 	float depth = 1.0f - (position.z / position.w);
@@ -84,10 +87,10 @@ float GetShadowValue(float4 position, float bias)
 	float2 ShadowTexClipPosition = (0.5f * (position.xy / position.w)) + float2(0.5f, 0.5f);
 	ShadowTexClipPosition.y = 1.0f - ShadowTexClipPosition.y;
 
-	return GetShadowValueFromClip(ShadowTexClipPosition, depth, bias);
+	return GetShadowValueFromClip(ShadowTexClipPosition, depth);
 }
 
-float GetShadowValueDetail(float4 detailPosition, float4 position, float detailBias, float bias)
+float GetShadowValueDetail(float4 detailPosition, float4 position)
 {
 	detailPosition.xyz /= detailPosition.w;
 
@@ -101,7 +104,7 @@ float GetShadowValueDetail(float4 detailPosition, float4 position, float detailB
 
 		float depth = 1.0f - detailPosition.z;
 
-		return GetShadowValueFromClipDetail(ShadowTexClipPosition, depth, detailBias);
+		return GetShadowValueFromClipDetail(ShadowTexClipPosition, depth);
 	}
 	else
 	{
@@ -115,7 +118,7 @@ float GetShadowValueDetail(float4 detailPosition, float4 position, float detailB
 		ShadowTexClipPosition = (0.5f * position.xy) + float2(0.5f, 0.5f);
 		ShadowTexClipPosition.y = 1.0f - ShadowTexClipPosition.y;
 
-		return GetShadowValueFromClip(ShadowTexClipPosition, depth, bias);
+		return GetShadowValueFromClip(ShadowTexClipPosition, depth);
 	}
 
 }
