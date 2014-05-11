@@ -340,7 +340,7 @@ namespace Lemma
 
 				this.SessionRecorder.Add("Position", delegate()
 				{
-					Entity p = this.player;
+					Entity p = PlayerFactory.Instance;
 					if (p != null && p.Active)
 						return p.Get<Transform>().Position;
 					else
@@ -349,7 +349,7 @@ namespace Lemma
 
 				this.SessionRecorder.Add("Health", delegate()
 				{
-					Entity p = this.player;
+					Entity p = PlayerFactory.Instance;
 					if (p != null && p.Active)
 						return p.Get<Player>().Health;
 					else
@@ -462,7 +462,7 @@ namespace Lemma
 					// Main menu
 
 					this.MapFile.Value = GameMain.MenuMap;
-					savePausedSettings();
+					this.Menu.Pause();
 #endif
 
 #if ANALYTICS

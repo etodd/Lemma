@@ -335,6 +335,11 @@ namespace Lemma.Components
 			this.currentMenu.Value = this.pauseMenu;
 		}
 
+		public void Pause()
+		{
+			this.savePausedSettings();
+		}
+
 		// Pause
 		private void savePausedSettings()
 		{
@@ -1374,9 +1379,9 @@ namespace Lemma.Components
 
 #if !DEVELOPMENT
 				// Pause on window lost focus
-				this.Deactivated += delegate(object sender, EventArgs e)
+				this.main.Deactivated += delegate(object sender, EventArgs e)
 				{
-					if (!this.main.Paused && this.main.MapFile.Value != GameMain.MenuMap && !this.EditorEnabled)
+					if (!this.main.Paused && this.main.MapFile.Value != GameMain.MenuMap && !this.main.EditorEnabled)
 					{
 						this.main.Paused.Value = true;
 						this.savePausedSettings();

@@ -6,6 +6,8 @@ float4x4 WorldMatrix;
 float4x4 LastFrameWorldViewProjectionMatrix;
 float2 DestinationDimensions;
 
+const float MaterialAlphaThreshold = 0.9f;
+
 // Diffuse texture (optional)
 texture2D DiffuseTexture;
 sampler2D DiffuseSampler = sampler_state
@@ -77,7 +79,7 @@ void RenderTextureFlatPS(in RenderPSInput input,
 	float3 normal = normalize(flat.normal);
 	
 	output.color.rgb = DiffuseColor.rgb * color.rgb;
-	output.color.a = EncodeMaterial(Materials[(int)(color.a < 0.9f)]);
+	output.color.a = EncodeMaterial(Materials[(int)(color.a < MaterialAlphaThreshold)]);
 	output.depth.x = length(input.viewSpacePosition);
 	output.normal.xy = EncodeNormal(normal.xy);
 	output.depth.y = normal.z;
@@ -147,7 +149,7 @@ void RenderTextureNormalMapPS(	in RenderPSInput input,
 		clip(color.a - 0.5f);
 	float3 normal = mul(DecodeNormalMap(tex2D(NormalMapSampler, tex.uvCoordinates).xyz), normalMap.tangentToWorld);
 	output.color.rgb = DiffuseColor.rgb * color.rgb;
-	output.color.a = EncodeMaterial(Materials[(int)(color.a < 0.9f)]);
+	output.color.a = EncodeMaterial(Materials[(int)(color.a < MaterialAlphaThreshold)]);
 	output.depth.x = length(input.viewSpacePosition);
 	output.normal.xy = EncodeNormal(normal.xy);
 	output.depth.y = normal.z;
