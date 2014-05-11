@@ -148,8 +148,14 @@ namespace Lemma.Factories
 
 					foreach (PhysicsBlock block in blocks)
 					{
-						Vector3 force = (transform.Position - block.Box.Position) * main.ElapsedTime * 4.0f;
-						block.Box.ApplyLinearImpulse(ref force);
+						if (!block.Suspended)
+						{
+							Vector3 toCenter = transform.Position - block.Box.Position;
+							if (toCenter.Length() > 10.0f)
+								block.Box.Position = transform.Position + Vector3.Normalize(toCenter) * -10.0f;
+							Vector3 force = toCenter * main.ElapsedTime * 4.0f;
+							block.Box.ApplyLinearImpulse(ref force);
+						}
 					}
 				}
 			};
@@ -157,7 +163,7 @@ namespace Lemma.Factories
 			ai.Add(new AI.State
 			{
 				Name = "Suspended",
-				Tasks = new[] { checkOperationalRadius, },
+				Tasks = new[] { checkOperationalRadius, dragBlocks, },
 			});
 
 			const float sightDistance = 30.0f;
