@@ -28,9 +28,9 @@ Editor
 
 To edit maps, [set the active solution configuration](http://msdn.microsoft.com/en-us/library/wx0123s5(v=vs.100).aspx) to `Debug` and run the solution. This will open the editor:
 
-[![Lemma in-game editor](http://i.imgur.com/GKfxHull.jpg)](http://i.imgur.com/GKfxHul.jpg)
+[![Lemma in-game editor](http://i.imgur.com/7URVZ85.png)](http://i.imgur.com/7URVZ85l.png)
 
-On the left is a list of properties you can edit. Click the small box to the right of the `MapFile` property, type `intro` and press Tab. This will load the `intro` map.
+On the left is a list of properties you can edit. Click the small box to the right of the `MapFile` property, type `start` and press Tab. This will load the `start` map.
 
 ### Controls
 
@@ -53,7 +53,7 @@ The controls are somewhat similar to [Blender](http://blender.org):
 
 ### Voxel editing
 
-[![Lemma voxel editor](http://i.imgur.com/9FXf5Bol.jpg)](http://i.imgur.com/9FXf5Bo.jpg)
+[![Lemma voxel editor](http://i.imgur.com/vx7MQuO.png)](http://i.imgur.com/vx7MQuOl.png)
 
 - Right-click a voxel object and press Tab to switch into voxel edit mode. (Press Tab again to switch back to normal mode)
 - The four glowing white shapes indicate the current voxel cell.
@@ -62,11 +62,14 @@ The controls are somewhat similar to [Blender](http://blender.org):
 -- The default material is `(Procedural)` which generates interesting shapes using Perlin noise.
 - Left-click to fill the current cell with the selected material. Right-click to empty the current cell.
 - Use the scroll wheel to change the brush size.
+- Switch back to edit mode and change the "Jitter" setting to add a random jitter to your brush.
+The jitter only works with a brush size greater than 1. It also works with voxel selections.
+Change the "jitter octave multiplier" to control how fine-grained the jitter is.
 - Hold F while moving on a box to extend or shrink the box.
 - Hold the middle mouse button and move with WASD to create a voxel selection.
 -- Left-click or right-click to fill or empty the whole selection.
 -- Once selected, hit G and use WASD to move the selected voxels. Left-click to accept the change or right-click to cancel.
--- Hit C to do the same thing, but copy the voxels rather than moving them.
+-- Hit C to do the same thing, but copy the voxels rather than move them.
 
 ### Saving maps
 
@@ -89,13 +92,15 @@ Scripts work the same way. Check `intro.cs` for an example of a simple script.
 Blender pipeline
 ----------------
 
-To make or edit models, you'll need [Blender](http://blender.org). The asset pipeline only works with [Blender 2.66](http://download.blender.org/release/Blender2.66/). Here's how to get started:
+To make or edit models, you'll need [Blender](http://blender.org). The asset pipeline has been tested with [Blender 2.70a](http://download.blender.org/release/Blender2.70/). Here's how to get started:
 
-1. Install Blender 2.66.
+1. Install Blender 2.70a.
 1. Find the file `export_fbx.py` in the `PipelineExtensions` project.
 1. Copy the file into the Blender program folder under `2.66\scripts\addons\io_scene_fbx` (it should replace an existing file).
 1. Open Blender and make sure the [FBX export addon is enabled](http://wiki.blender.org/index.php/Doc:2.6/Manual/Extensions/Python/Add-Ons#Enabling_and_Disabling).
 1. Open a .blend file and select File -> Export -> Autodesk FBX.
+1. Use the following export settings for animations:
+[![Blender FBX animation export settings](http://i.imgur.com/RRhsEey.png)](http://i.imgur.com/RRhsEey.png)
 
 License
 =======
