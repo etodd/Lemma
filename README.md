@@ -100,6 +100,7 @@ To make or edit models, you'll need [Blender](http://blender.org). The asset pip
 1. Open Blender and make sure the [FBX export addon is enabled](http://wiki.blender.org/index.php/Doc:2.6/Manual/Extensions/Python/Add-Ons#Enabling_and_Disabling).
 1. Open a .blend file and select File -> Export -> Autodesk FBX.
 1. Use the following export settings for animations:
+
 [![Blender FBX animation export settings](http://i.imgur.com/RRhsEey.png)](http://i.imgur.com/RRhsEey.png)
 
 License
