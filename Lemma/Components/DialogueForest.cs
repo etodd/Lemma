@@ -24,7 +24,6 @@ namespace Lemma.Components
 			public string variable;
 			public string value;
 			public Type type;
-			public Node Parent;
 		}
 
 		static DialogueForest()
@@ -49,24 +48,6 @@ namespace Lemma.Components
 				this.nodes[node.id] = node;
 				if (node.name != null)
 					this.nodesByName[node.name] = node;
-			}
-
-			foreach (Node node in nodes)
-			{
-				if (node.choices != null)
-				{
-					foreach (string c in node.choices)
-						this[c].Parent = node;
-				}
-
-				if (node.next != null)
-					this[((string)node.next)].Parent = node;
-
-				if (node.branches != null)
-				{
-					foreach (Node child in node.branches.Values.Select(x => this[x]))
-						child.Parent = node;
-				}
 			}
 		}
 

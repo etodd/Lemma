@@ -415,6 +415,11 @@ function gameData()
 			{
 				node.variable = cell.name;
 				node.branches = {};
+				for (var j = 0; j < cell.values.length; j++)
+				{
+					var branch = cell.values[j];
+					node.branches[branch] = null;
+				}
 			}
 			else if (node.type == 'Set')
 			{
@@ -503,8 +508,14 @@ function promptFilename()
 	filename = prompt('Filename', defaultFilename);
 }
 
+function applyTextFields()
+{
+	$('input[type=text]').blur();
+}
+
 function save()
 {
+	applyTextFields();
 	if (!filename)
 		promptFilename();
 	if (filename)
@@ -523,11 +534,13 @@ function load()
 
 function exportFile()
 {
+	applyTextFields();
 	offerDownload(filename ? filename : defaultFilename, graph);
 }
 
 function exportGameFile()
 {
+	applyTextFields();
 	var f = filename ? filename : defaultFilename;
 	offerDownload(f.substring(0, f.length - 2) + 'dlz', gameData());
 }
@@ -581,6 +594,11 @@ paper.on('blank:pointerdown', function(e, x, y)
 	mousePosition.x = e.pageX;
 	mousePosition.y = e.pageY;
 	$('body').css('cursor', 'move');
+	applyTextFields();
+});
+paper.on('cell:pointerdown', function(e, x, y)
+{
+	applyTextFields();
 });
 
 $('#container').mousemove(function(e)
@@ -665,6 +683,7 @@ $(window).on('keydown', function(event)
 
 $(window).resize(function()
 {
+	applyTextFields();
 	var $window = $(window);
 	var $container = $('#container');
     $container.height($window.innerHeight());
@@ -712,7 +731,7 @@ $('#menu button.close').click(function()
 
 $(window).trigger('resize');
 
-$('body').contextmenu(
+$('#paper').contextmenu(
 {
 	width: 150,
 	items:

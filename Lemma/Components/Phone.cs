@@ -84,10 +84,7 @@ namespace Lemma.Components
 			{
 				this.variables.Clear();
 				for (int i = 0; i < value.Length; i++)
-				{
-					string answer = (string)value[i].Value;
-					this.variables.Add((string)value[i].Key, answer);
-				}
+					this.variables.Add((string)value[i].Key, (string)value[i].Value);
 			}
 		}
 

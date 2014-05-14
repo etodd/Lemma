@@ -3153,6 +3153,12 @@ namespace Lemma.Factories
 							button.Add(new CommandBinding<Point>(button.MouseLeftUp, delegate(Point p)
 							{
 								phone.Answer(answer);
+								
+								// Disable the signal tower
+								Entity s = signalTower.Value.Target;
+								if (s != null && s.Active)
+									s.Get<SignalTower>().Initial.Value = null;
+
 								scrollToBottom();
 								if (togglePhoneMessage == null && phone.Schedules.Count == 0) // No more messages incoming
 									togglePhoneMessage = ((GameMain)main).Menu.ShowMessage(result, "[{{TogglePhone}}]");
@@ -3163,15 +3169,13 @@ namespace Lemma.Factories
 
 					Action refreshComposeButtonVisibility = delegate()
 					{
-						Entity s = signalTower.Value.Target;
-						bool show = phone.ActiveAnswers.Count > 0 && phone.Schedules.Count == 0 && s != null && s.Active;
+						bool show = phone.ActiveAnswers.Count > 0 && phone.Schedules.Count == 0;
 						answerContainer.Visible.Value &= show;
 						composeButton.Visible.Value = show;
 						selectedAnswer = 0;
 					};
 					composeButton.Add(new ListNotifyBinding<Phone.Ans>(refreshComposeButtonVisibility, phone.ActiveAnswers));
 					composeButton.Add(new ListNotifyBinding<Phone.Schedule>(refreshComposeButtonVisibility, phone.Schedules));
-					composeButton.Add(new NotifyBinding(refreshComposeButtonVisibility, signalTower));
 					refreshComposeButtonVisibility();
 
 					result.Add(new CommandBinding(phone.MessageReceived, delegate()

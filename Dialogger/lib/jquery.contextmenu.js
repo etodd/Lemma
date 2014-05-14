@@ -102,13 +102,21 @@
             return false;
         };
         //show menu group at specified position
+        var reversed = false;
         var showMenuGroup = function(pos, width) {
             var bwidth = $("body").width();
             var bheight = document.documentElement.clientHeight;
             var mwidth = $(this).outerWidth();
             var mheight = $(this).outerHeight();
+            var originalPosTop = pos.top;
             pos.left = (pos.left + width + mwidth > bwidth) ? (pos.left - mwidth < 0 ? 0 : pos.left - mwidth) : pos.left + width;
             pos.top = (pos.top + mheight > bheight) ? (pos.top - mheight + (width > 0 ? 25 : 0) < 0 ? 0 : pos.top - mheight + (width > 0 ? 25 : 0)) : pos.top;
+            var needsReversed = originalPosTop > pos.top;
+            var $this = $(this);
+            if (reversed != needsReversed)
+                $this.children().each(function(i, child) { $this.prepend(child); });
+            reversed = needsReversed;
+
             $(this).css(pos).show();
             showGroups.push(this.gidx);
         };

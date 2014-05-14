@@ -50,12 +50,13 @@ namespace Lemma.Components
 								// If there are choices available, they will initiate a conversation.
 								// The player should be able to pull up the phone, see the choices, and walk away without picking any of them.
 								// Normally, you can't put the phone down until you've picked an answer.
-								phone.WaitForAnswer.Value = false; 
+								phone.WaitForAnswer.Value = false;
 							}
 							break;
 						}
 					}
-					this.Initial.Value = null;
+					if (phone.Schedules.Count > 0) // We sent a message. That means this signal tower cannot execute again.
+						this.Initial.Value = null;
 				}
 
 				p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = this.Entity;
@@ -64,6 +65,8 @@ namespace Lemma.Components
 			this.PlayerExitedRange.Action = delegate(Entity p)
 			{
 				Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance(this.main).Get<Phone>();
+
+				phone.ActiveAnswers.Clear();
 
 				p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = null;
 			};

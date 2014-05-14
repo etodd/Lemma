@@ -219,14 +219,13 @@ namespace Lemma
 			if (!Directory.Exists(dst))
 				Directory.CreateDirectory(dst);
 
-			string[] ignoredExtensions = new[] { ".cs", ".dll", ".xnb", };
+			string[] whitelistExtensions = new[] { ".map", };
 
 			foreach (string path in Directory.GetFiles(src))
 			{
 				string filename = Path.GetFileName(path);
-				if (filename == "thumbnail.jpg" || filename == "save.xml" || ignoredExtensions.Contains(Path.GetExtension(filename)))
-					continue;
-				File.Copy(path, Path.Combine(dst, filename));
+				if (whitelistExtensions.Contains(Path.GetExtension(filename)))
+					File.Copy(path, Path.Combine(dst, filename));
 			}
 
 			foreach (string path in Directory.GetDirectories(src))
