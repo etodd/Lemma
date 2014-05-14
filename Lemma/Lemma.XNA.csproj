@@ -94,6 +94,7 @@
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Analytics.cs" />
+    <Compile Include="Components\DialogueForest.cs" />
     <Compile Include="Components\SoundKiller.cs" />
     <Compile Include="Components\SignalTower.cs" />
     <Compile Include="Components\Phone.cs" />
@@ -114,6 +115,7 @@
     </Compile>
     <Compile Include="Factories\AnimatedPropFactory.cs" />
     <Compile Include="Factories\CloudFactory.cs" />
+    <Compile Include="Factories\DialogueFileFactory.cs" />
     <Compile Include="Factories\SignalTowerFactory.cs" />
     <Compile Include="Factories\EvilBlocksFactory.cs" />
     <Compile Include="Factories\SwitchFactory.cs" />
@@ -242,6 +244,10 @@
     <ProjectReference Include="..\Excel\Excel.csproj">
       <Project>{4CB0690E-3E7A-497C-9116-D52024F63195}</Project>
       <Name>Excel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Newtonsoft.Json\Newtonsoft.Json.Net40.csproj">
+      <Project>{A9AE40FF-1A21-414A-9FE7-3BE13644CC6D}</Project>
+      <Name>Newtonsoft.Json.Net40</Name>
     </ProjectReference>
     <ProjectReference Include="..\SkinnedModel\SkinnedModelContent.csproj">
       <Project>{882A32E7-CB48-4E63-8180-0D1859575723}</Project>

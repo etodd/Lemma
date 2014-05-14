@@ -36,6 +36,7 @@ namespace Lemma.Factories
 			result.Add("EnablePhone", new Property<bool> { Value = enabled });
 			result.Add("MaxSpeed", new Property<float> { Value = Player.DefaultMaxSpeed, Editable = false });
 			result.Add("GameTime", new Property<float> { Editable = false });
+			result.Add("Phone", new Phone());
 
 			return result;
 		}
@@ -46,8 +47,6 @@ namespace Lemma.Factories
 			this.instance = result;
 
 			result.CannotSuspend = true;
-
-			result.GetOrCreate<Phone>("Phone");
 
 			Property<float> gameTime = result.GetOrMakeProperty<float>("GameTime", false);
 			result.Add(new Updater

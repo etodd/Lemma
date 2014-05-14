@@ -355,7 +355,7 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.NodeView.extend(
 
 // Menu actions
 
-var filename = 'graph.js';
+var filename = 'dialogue.dl';
 
 function offerDownload(name, data)
 {
@@ -393,7 +393,7 @@ function exportFile()
 			if (node.type == 'Branch')
 			{
 				node.variable = cell.name;
-				node.next = {};
+				node.branches = {};
 			}
 			else if (node.type == 'Set')
 			{
@@ -431,12 +431,15 @@ function exportFile()
 						var sourceCell = cellsByID[source.id];
 						value = sourceCell.values[portNumber - 1];
 					}
-					source.next[value] = target ? target.id : null;
+					source.branches[value] = target ? target.id : null;
 				}
 				else if (source.type == 'Text' && target && target.type == 'Choice')
 				{
 					if (!source.choices)
+					{
 						source.choices = [];
+						delete source.next;
+					}
 					source.choices.push(target.id);
 				}
 				else
@@ -444,7 +447,7 @@ function exportFile()
 			}
 		}
 	}
-	offerDownload(filename.substring(0, filename.length - 2) + 'min.js', nodes);
+	offerDownload(filename.substring(0, filename.length - 2) + 'dlz', nodes);
 }
 
 function load()

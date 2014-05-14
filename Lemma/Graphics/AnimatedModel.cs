@@ -123,7 +123,6 @@ namespace Lemma.Components
 				i++;
 			}
 
-			bool firstClip = true;
 			foreach (SkinnedModel.Clip clip in this.CurrentClips)
 			{
 				TimeSpan newTime = clip.CurrentTime + new TimeSpan((long)((float)elapsedTime.Ticks * clip.Speed));
@@ -190,7 +189,6 @@ namespace Lemma.Components
 						foreach (SkinnedModel.Channel channel in clip.Channels)
 							this.boneTransforms[channel.BoneIndex] = channel.CurrentMatrix;
 					}
-					firstClip = false;
 				}
 			}
 

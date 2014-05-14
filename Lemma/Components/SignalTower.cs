@@ -15,11 +15,10 @@ using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class SignalTower : Component<Main>, IEditorUIComponent
+	public class SignalTower : Component<Main>
 	{
-		public ListProperty<Phone.Ans> Answers = new ListProperty<Phone.Ans>();
-		public Property<string> MessageID = new Property<string> { Editable = true };
-		public Property<string> MessageText = new Property<string> { Editable = true };
+		public Property<string> Initial = new Property<string> { Editable = true };
+		public Property<bool> Send = new Property<bool> { Editable = true };
 		public Property<Entity.Handle> Player = new Property<Entity.Handle> { Editable = false };
 
 		private const float messageDelay = 2.0f;
@@ -35,13 +34,31 @@ namespace Lemma.Components
 			this.PlayerEnteredRange.Action = delegate(Entity p)
 			{
 				Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance(this.main).Get<Phone>();
-				if (!string.IsNullOrEmpty(this.MessageID))
+
+				bool active = !string.IsNullOrEmpty(this.Initial);
+				if (active && this.Send)
 				{
-					phone.Delay(SignalTower.messageDelay, this.MessageID, this.MessageText);
-					this.MessageID.Value = this.MessageText.Value = null;
+					phone.Delay(SignalTower.messageDelay, this.Initial);
+					this.Send.Value = false;
 				}
-				else if (this.Answers.Count > 0)
-					phone.ActiveAnswers.AddAll(this.Answers);
+
+				// Add answers to phone
+				phone.ActiveAnswers.Clear();
+
+				if (active)
+				{
+					IEnumerable<DialogueForest> forests = WorldFactory.Get().GetListProperty<DialogueForest>();
+					foreach (DialogueForest forest in forests)
+					{
+						DialogueForest.Node n = forest.GetByName(this.Initial);
+						if (n != null)
+						{
+							foreach (DialogueForest.Node choice in n.choices.Select(x => forest[x]))
+								phone.ActiveAnswers.Add(new Phone.Ans(choice.name));
+							break;
+						}
+					}
+				}
 
 				p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = this.Entity;
 			};
@@ -55,7 +72,7 @@ namespace Lemma.Components
 					phone.ActiveAnswers.Clear();
 				}
 				else
-					this.Answers.Clear(); // The player picked an answer. Don't add the answers again the next time they come by.
+					this.Initial.Value = null; // The player picked an answer. This signal tower is done.
 
 				p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = null;
 			};
@@ -71,69 +88,6 @@ namespace Lemma.Components
 					signalTowerHandle.Value = null;
 			}
 			base.delete();
-		}
-
-		void IEditorUIComponent.AddEditorElements(UIComponent propertyList, EditorUI ui)
-		{
-			propertyList.Children.Add(ui.BuildLabel("Answers"));
-
-			ListContainer container = new ListContainer();
-			propertyList.Children.Add(container);
-
-			container.Add(new ListBinding<UIComponent, Phone.Ans>(container.Children, this.Answers, delegate(Phone.Ans answer)
-			{
-				ListContainer item = new ListContainer();
-				item.Orientation.Value = ListContainer.ListOrientation.Horizontal;
-
-				Property<string> answerId = new Property<string>();
-				answerId.Value = answer.ID;
-				answerId.Set = delegate(string value)
-				{
-					answerId.InternalValue = value;
-					answer.ID = value;
-				};
-
-				Property<string> questionId = new Property<string>();
-				questionId.Value = answer.QuestionID;
-				questionId.Set = delegate(string value)
-				{
-					questionId.InternalValue = value;
-					answer.QuestionID = value;
-				};
-
-				Property<string> answerText = new Property<string>();
-				answerText.Value = answer.Text;
-				answerText.Set = delegate(string value)
-				{
-					answerText.InternalValue = value;
-					answer.Text = value;
-				};
-
-				item.Children.Add(ui.BuildLabel("Question"));
-				item.Children.Add(ui.BuildValueField(questionId));
-				item.Children.Add(ui.BuildLabel("ID"));
-				item.Children.Add(ui.BuildValueField(answerId));
-				item.Children.Add(ui.BuildLabel("Text"));
-				item.Children.Add(ui.BuildValueField(answerText));
-				item.Children.Add(ui.BuildButton(new Command
-				{
-					Action = delegate()
-					{
-						this.Answers.Remove(answer);
-					}
-				}, "[Delete]"));
-
-				return item;
-			}));
-
-			propertyList.Children.Add(ui.BuildButton(new Command
-			{
-				Action = delegate()
-				{
-					this.Answers.Add(new Phone.Ans { IsInitiating = true });
-				}
-			},
-			"[Add new]"));
 		}
 	}
 }

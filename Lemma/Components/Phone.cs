@@ -61,20 +61,20 @@ namespace Lemma.Components
 			}
 		}
 
-		private Dictionary<string, string> answers = new Dictionary<string,string>();
+		private Dictionary<string, string> variables = new Dictionary<string,string>();
 
-		[XmlArray("Answers")]
-		[XmlArrayItem("Answer", Type = typeof(DictionaryEntry))]
-		public DictionaryEntry[] Answers
+		[XmlArray("Variables")]
+		[XmlArrayItem("Variable", Type = typeof(DictionaryEntry))]
+		public DictionaryEntry[] Variables
 		{
 			get
 			{
 				// Make an array of DictionaryEntries to return
-				DictionaryEntry[] ret = new DictionaryEntry[answers.Count];
+				DictionaryEntry[] ret = new DictionaryEntry[this.variables.Count];
 				int i = 0;
 				DictionaryEntry de;
 				// Iterate through properties to load items into the array.
-				foreach (KeyValuePair<string, string> pair in answers)
+				foreach (KeyValuePair<string, string> pair in this.variables)
 				{
 					de = new DictionaryEntry();
 					de.Key = pair.Key;
@@ -86,11 +86,11 @@ namespace Lemma.Components
 			}
 			set
 			{
-				this.answers.Clear();
+				this.variables.Clear();
 				for (int i = 0; i < value.Length; i++)
 				{
 					string answer = (string)value[i].Value;
-					this.answers.Add((string)value[i].Key, answer);
+					this.variables.Add((string)value[i].Key, answer);
 				}
 			}
 		}
@@ -157,6 +157,11 @@ namespace Lemma.Components
 				this.Messages.RemoveAt(0);
 			this.Messages.Add(new Message { Incoming = true, ID = id, Text = text });
 			this.MessageReceived.Execute();
+
+			Action callback;
+			this.messageCallbacks.TryGetValue(id, out callback);
+			if (callback != null)
+				callback();
 		}
 
 		public void ArchivedMsg(string id, string text = null)
@@ -169,7 +174,8 @@ namespace Lemma.Components
 			this.Messages.Add(new Message { Incoming = false, ID = id, Text = text });
 		}
 
-		private Dictionary<string, Action<string>> callbacks = new Dictionary<string, Action<string>>();
+		private Dictionary<string, Action> messageCallbacks = new Dictionary<string, Action>();
+		private Dictionary<string, Action<string>> answerCallbacks = new Dictionary<string, Action<string>>();
 
 		public string LastMessageID()
 		{
@@ -190,9 +196,6 @@ namespace Lemma.Components
 			else
 				messageID = answer.QuestionID;
 
-			if (messageID != null)
-				this.answers[messageID] = answer.ID;
-
 			this.Messages.Add(new Message { Incoming = false, ID = answer.ID, Text = answer.Text });
 			if (answer.Exclusive)
 				this.ActiveAnswers.Clear();
@@ -202,7 +205,8 @@ namespace Lemma.Components
 			if (messageID != null)
 			{
 				Action<string> callback;
-				if (this.callbacks.TryGetValue(messageID, out callback))
+				this.answerCallbacks.TryGetValue(messageID, out callback);
+				if (callback != null)
 					callback(answer.ID);
 			}
 		}
@@ -214,22 +218,79 @@ namespace Lemma.Components
 				this.ActiveAnswers.Add(answer);
 		}
 
-		public void On(string question, Action<string> callback)
+		public void OnMessage(string text, Action callback)
 		{
-			this.callbacks[question] = callback;
+			this.messageCallbacks[text] = callback;
 		}
 
-		public string this[string messageId]
+		public void OnAnswer(string text, Action<string> callback)
+		{
+			this.answerCallbacks[text] = callback;
+		}
+
+		public string this[string variable]
 		{
 			get
 			{
-				string answer;
-				this.answers.TryGetValue(messageId, out answer);
-				return answer;
+				string value;
+				this.variables.TryGetValue(variable, out value);
+				return value;
 			}
 			set
 			{
-				this.answers[messageId] = value;
+				this.variables[variable] = value;
+			}
+		}
+
+		public void Load(DialogueForest forest)
+		{
+			foreach (DialogueForest.Node node in forest.Nodes)
+			{
+				if (node.type == DialogueForest.Node.Type.Text && node.choices != null && node.choices.Count > 0)
+				{
+					this.OnAnswer(node.name, delegate(string c)
+					{
+						DialogueForest.Node selectedChoice = forest.GetByName(c);
+						DialogueForest.Node next = selectedChoice.next != null ? forest[selectedChoice.next] : null;
+						if (next != null)
+							this.visit(forest, next);
+					});
+				}
+			}
+		}
+
+		private const float messageDelay = 2.0f; // 2 seconds in between each message
+		private void visit(DialogueForest forest, DialogueForest.Node node, int textLevel = 1)
+		{
+			switch (node.type)
+			{
+				case DialogueForest.Node.Type.Text:
+					this.Delay(messageDelay * textLevel, node.id, node.name);
+
+					if (node.choices != null)
+					{
+						this.ActiveAnswers.Clear();
+						this.ActiveAnswers.AddAll(node.choices.Select(x => forest[x]).Select(y => new Ans(y.name)));
+					}
+
+					if (node.next != null)
+						this.visit(forest, forest[node.next], textLevel + 1);
+
+					break;
+				case DialogueForest.Node.Type.Set:
+					this[node.variable] = node.value;
+					if (node.next != null)
+						this.visit(forest, forest[node.next]);
+					break;
+				case DialogueForest.Node.Type.Branch:
+					string next;
+					if (!node.branches.TryGetValue(this[node.variable], out next))
+						node.branches.TryGetValue("_default", out next);
+					if (next != null)
+						this.visit(forest, forest[next], textLevel);
+					break;
+				default:
+					break;
 			}
 		}
 	}

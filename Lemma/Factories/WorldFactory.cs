@@ -815,6 +815,10 @@ namespace Lemma.Factories
 		{
 			result.CannotSuspend = true;
 
+			ListProperty<DialogueForest> dialogue = result.GetOrMakeListProperty<DialogueForest>("Dialogue");
+			dialogue.Serialize = false;
+			dialogue.Editable = false;
+
 			result.Add(new TwoWayBinding<string>(result.GetProperty<string>("LightRampTexture"), main.Renderer.LightRampTexture));
 			result.Add(new TwoWayBinding<string>(result.GetOrMakeProperty<string>("EnvironmentMap", true, "Images\\env0"), main.Renderer.EnvironmentMap));
 			result.Add(new TwoWayBinding<Vector3>(result.GetOrMakeProperty<Vector3>("EnvironmentColor", true, Vector3.One), main.Renderer.EnvironmentColor));
