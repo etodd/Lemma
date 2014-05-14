@@ -10,10 +10,42 @@ var defaultLink = new joint.dia.Link(
 });
 defaultLink.set('smooth', true);
 
+var allowableConnections =
+[
+	['dialogue.Text', 'dialogue.Text'],
+	['dialogue.Text', 'dialogue.Node'],
+	['dialogue.Text', 'dialogue.Choice'],
+	['dialogue.Text', 'dialogue.Set'],
+	['dialogue.Text', 'dialogue.Branch'],
+	['dialogue.Node', 'dialogue.Text'],
+	['dialogue.Node', 'dialogue.Node'],
+	['dialogue.Node', 'dialogue.Choice'],
+	['dialogue.Node', 'dialogue.Set'],
+	['dialogue.Node', 'dialogue.Branch'],
+	['dialogue.Choice', 'dialogue.Text'],
+	['dialogue.Choice', 'dialogue.Node'],
+	['dialogue.Choice', 'dialogue.Set'],
+	['dialogue.Choice', 'dialogue.Branch'],
+	['dialogue.Set', 'dialogue.Text'],
+	['dialogue.Set', 'dialogue.Node'],
+	['dialogue.Set', 'dialogue.Set'],
+	['dialogue.Set', 'dialogue.Branch'],
+	['dialogue.Branch', 'dialogue.Text'],
+	['dialogue.Branch', 'dialogue.Node'],
+	['dialogue.Branch', 'dialogue.Set'],
+	['dialogue.Branch', 'dialogue.Branch'],
+];
+
 function validateConnection(cellViewS, magnetS, cellViewT, magnetT, end, linkView)
 {
 	// Prevent loop linking
 	if (magnetS == magnetT)
+		return false;
+
+	if (cellViewS == cellViewT)
+		return false;
+
+	if (magnetT.attributes.magnet.nodeValue !== 'passive') // Can't connect to an output port
 		return false;
 
 	var sourceType = cellViewS.model.attributes.type;
@@ -35,11 +67,13 @@ function validateConnection(cellViewS, magnetS, cellViewT, magnetT, end, linkVie
 	for (var i = 0; i < links.length; i++)
 	{
 		var link = links[i];
-		if (link.attributes.target.id)
+		if (link.attributes.source.id === cellViewS.model.id && link.attributes.source.port === magnetS.attributes.port.nodeValue && link.attributes.target.id)
 		{
 			var targetCell = graph.getCell(link.attributes.target.id);
 			if (targetCell.attributes.type !== targetType)
-				return false;
+				return false; // We can only connect to multiple targets of the same type
+			if (targetCell == cellViewT.model)
+				return false; // Already connected
 		} 
 	}
 
@@ -74,31 +108,13 @@ function validateMagnet(cellView, magnet)
 	return true;
 }
 
-var allowableConnections =
-[
-	['dialogue.Text', 'dialogue.Text'],
-	['dialogue.Text', 'dialogue.Choice'],
-	['dialogue.Text', 'dialogue.Set'],
-	['dialogue.Text', 'dialogue.Branch'],
-	['dialogue.Choice', 'dialogue.Text'],
-	['dialogue.Choice', 'dialogue.Set'],
-	['dialogue.Choice', 'dialogue.Branch'],
-	['dialogue.Set', 'dialogue.Text'],
-	['dialogue.Set', 'dialogue.Set'],
-	['dialogue.Set', 'dialogue.Branch'],
-	['dialogue.Branch', 'dialogue.Text'],
-	['dialogue.Branch', 'dialogue.Set'],
-	['dialogue.Branch', 'dialogue.Branch'],
-];
-
-
 joint.shapes.dialogue = {};
-joint.shapes.dialogue.Node = joint.shapes.devs.Model.extend(
+joint.shapes.dialogue.Base = joint.shapes.devs.Model.extend(
 {
 	defaults: joint.util.deepSupplement
 	(
 		{
-			type: 'dialogue.Node',
+			type: 'dialogue.Base',
 			size: { width: 200, height: 64 },
 			name: '',
 			attrs:
@@ -113,13 +129,13 @@ joint.shapes.dialogue.Node = joint.shapes.devs.Model.extend(
 	),
 });
 
-joint.shapes.dialogue.NodeView = joint.shapes.devs.ModelView.extend(
+joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 {
 	template:
 	[
 		'<div class="node">',
 		'<span class="label"></span>',
-		'<button class="delete">X</button>',
+		'<button class="delete">x</button>',
 		'<input type="text" class="name" placeholder="Text" />',
 		'</div>',
 	].join(''),
@@ -161,7 +177,9 @@ joint.shapes.dialogue.NodeView = joint.shapes.devs.ModelView.extend(
 		// Set the position and dimension of the box so that it covers the JointJS element.
 		var bbox = this.model.getBBox();
 		// Example of updating the HTML with a data stored in the cell model.
-		this.$box.find('input.name').val(this.model.get('name'));
+		var nameField = this.$box.find('input.name');
+		if (!nameField.is(':focus'))
+			nameField.val(this.model.get('name'));
 		var label = this.$box.find('.label');
 		var type = this.model.get('type').slice('dialogue.'.length);
 		label.text(type);
@@ -174,6 +192,24 @@ joint.shapes.dialogue.NodeView = joint.shapes.devs.ModelView.extend(
 		this.$box.remove();
 	},
 });
+
+joint.shapes.dialogue.Node = joint.shapes.devs.Model.extend(
+{
+	defaults: joint.util.deepSupplement
+	(
+		{
+			type: 'dialogue.Node',
+			inPorts: ['input'],
+			outPorts: ['output'],
+			attrs:
+			{
+				'.outPorts circle': { unlimitedConnections: ['dialogue.Choice'], }
+			},
+		},
+		joint.shapes.dialogue.Base.prototype.defaults
+	),
+});
+joint.shapes.dialogue.NodeView = joint.shapes.dialogue.BaseView;
 
 joint.shapes.dialogue.Text = joint.shapes.devs.Model.extend(
 {
@@ -188,10 +224,10 @@ joint.shapes.dialogue.Text = joint.shapes.devs.Model.extend(
 				'.outPorts circle': { unlimitedConnections: ['dialogue.Choice'], }
 			},
 		},
-		joint.shapes.dialogue.Node.prototype.defaults
+		joint.shapes.dialogue.Base.prototype.defaults
 	),
 });
-joint.shapes.dialogue.TextView = joint.shapes.dialogue.NodeView;
+joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView;
 
 joint.shapes.dialogue.Choice = joint.shapes.devs.Model.extend(
 {
@@ -202,10 +238,10 @@ joint.shapes.dialogue.Choice = joint.shapes.devs.Model.extend(
 			inPorts: ['input'],
 			outPorts: ['output'],
 		},
-		joint.shapes.dialogue.Node.prototype.defaults
+		joint.shapes.dialogue.Base.prototype.defaults
 	),
 });
-joint.shapes.dialogue.ChoiceView = joint.shapes.dialogue.NodeView;
+joint.shapes.dialogue.ChoiceView = joint.shapes.dialogue.BaseView;
 
 joint.shapes.dialogue.Branch = joint.shapes.devs.Model.extend(
 {
@@ -218,10 +254,10 @@ joint.shapes.dialogue.Branch = joint.shapes.devs.Model.extend(
 			outPorts: ['output0'],
 			values: [],
 		},
-		joint.shapes.dialogue.Node.prototype.defaults
+		joint.shapes.dialogue.Base.prototype.defaults
 	),
 });
-joint.shapes.dialogue.BranchView = joint.shapes.dialogue.NodeView.extend(
+joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 {
 	template:
 	[
@@ -237,7 +273,7 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.NodeView.extend(
 
 	initialize: function()
 	{
-		joint.shapes.dialogue.NodeView.prototype.initialize.apply(this, arguments);
+		joint.shapes.dialogue.BaseView.prototype.initialize.apply(this, arguments);
 		this.$box.find('.add').on('click', _.bind(this.addPort, this));
 		this.$box.find('.remove').on('click', _.bind(this.removePort, this));
 	},
@@ -269,7 +305,7 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.NodeView.extend(
 
 	updateBox: function()
 	{
-		joint.shapes.dialogue.NodeView.prototype.updateBox.apply(this, arguments);
+		joint.shapes.dialogue.BaseView.prototype.updateBox.apply(this, arguments);
 		var values = this.model.get('values');
 		var valueFields = this.$box.find('input.value');
 
@@ -299,7 +335,11 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.NodeView.extend(
 		// Update value fields
 		valueFields = this.$box.find('input.value');
 		for (var i = 0; i < valueFields.length; i++)
-			$(valueFields[i]).val(values[i]);
+		{
+			var field = $(valueFields[i]);
+			if (!field.is(':focus'))
+				field.val(values[i]);
+		}
 	},
 
 	updateSize: function()
@@ -321,11 +361,11 @@ joint.shapes.dialogue.Set = joint.shapes.devs.Model.extend(
 			size: { width: 200, height: 100, },
 			value: '',
 		},
-		joint.shapes.dialogue.Node.prototype.defaults
+		joint.shapes.dialogue.Base.prototype.defaults
 	),
 });
 
-joint.shapes.dialogue.SetView = joint.shapes.dialogue.NodeView.extend(
+joint.shapes.dialogue.SetView = joint.shapes.dialogue.BaseView.extend(
 {
 	template:
 	[
@@ -339,7 +379,7 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.NodeView.extend(
 
 	initialize: function()
 	{
-		joint.shapes.dialogue.NodeView.prototype.initialize.apply(this, arguments);
+		joint.shapes.dialogue.BaseView.prototype.initialize.apply(this, arguments);
 		this.$box.find('input.value').on('change', _.bind(function(evt)
 		{
 			this.model.set('value', $(evt.target).val());
@@ -348,33 +388,14 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.NodeView.extend(
 
 	updateBox: function()
 	{
-		joint.shapes.dialogue.NodeView.prototype.updateBox.apply(this, arguments);
-		this.$box.find('input.value').val(this.model.get('value'));
+		joint.shapes.dialogue.BaseView.prototype.updateBox.apply(this, arguments);
+		var field = this.$box.find('input.value');
+		if (!field.is(':focus'))
+			field.val(this.model.get('value'));
 	},
 });
 
-// Menu actions
-
-var filename = 'dialogue.dl';
-
-function offerDownload(name, data)
-{
-	var a = $('<a>');
-	a.attr('download', name);
-	a.attr('href', 'data:application/json,' + encodeURIComponent(JSON.stringify(data)));
-	a.attr('target', '_blank');
-	a.hide();
-	$('body').append(a);
-	a[0].click();
-	a.remove();
-}
-
-function save()
-{
-	offerDownload(filename, graph);
-}
-
-function exportFile()
+function gameData()
 {
 	var cells = graph.toJSON().cells;
 	var nodesByID = {};
@@ -433,7 +454,7 @@ function exportFile()
 					}
 					source.branches[value] = target ? target.id : null;
 				}
-				else if (source.type == 'Text' && target && target.type == 'Choice')
+				else if ((source.type == 'Text' || source.type == 'Node') && target && target.type == 'Choice')
 				{
 					if (!source.choices)
 					{
@@ -447,10 +468,71 @@ function exportFile()
 			}
 		}
 	}
-	offerDownload(filename.substring(0, filename.length - 2) + 'dlz', nodes);
+	return nodes;
+}
+
+// Menu actions
+
+var filename = null;
+var defaultFilename = 'dialogue.dl';
+
+function flash(text)
+{
+	var $flash = $('#flash');
+	$flash.text(text);
+	$flash.stop(true, true);
+	$flash.show();
+	$flash.css('opacity', 1.0);
+	$flash.fadeOut({ duration: 1500 });
+}
+
+function offerDownload(name, data)
+{
+	var a = $('<a>');
+	a.attr('download', name);
+	a.attr('href', 'data:application/json,' + encodeURIComponent(JSON.stringify(data)));
+	a.attr('target', '_blank');
+	a.hide();
+	$('body').append(a);
+	a[0].click();
+	a.remove();
+}
+
+function promptFilename()
+{
+	filename = prompt('Filename', defaultFilename);
+}
+
+function save()
+{
+	if (!filename)
+		promptFilename();
+	if (filename)
+	{
+		if (!localStorage[filename])
+			addFileEntry(filename);
+		localStorage[filename] = JSON.stringify(graph);
+		flash('Saved ' + filename);
+	}
 }
 
 function load()
+{
+	$('#menu').show();
+}
+
+function exportFile()
+{
+	offerDownload(filename ? filename : defaultFilename, graph);
+}
+
+function exportGameFile()
+{
+	var f = filename ? filename : defaultFilename;
+	offerDownload(f.substring(0, f.length - 2) + 'dlz', gameData());
+}
+
+function importFile()
 {
 	$('#file').click();
 }
@@ -472,6 +554,7 @@ function add(constructor)
 function clear()
 {
 	graph.clear();
+	filename = null;
 }
 
 // Browser stuff
@@ -500,7 +583,7 @@ paper.on('blank:pointerdown', function(e, x, y)
 	$('body').css('cursor', 'move');
 });
 
-$('#container').mousemove(function (e)
+$('#container').mousemove(function(e)
 {
 	if (panning)
 	{
@@ -582,8 +665,49 @@ $(window).on('keydown', function(event)
 
 $(window).resize(function()
 {
-    $('#container').height($(window).innerHeight());
-    $('#container').width($(window).innerWidth());
+	var $window = $(window);
+	var $container = $('#container');
+    $container.height($window.innerHeight());
+    $container.width($window.innerWidth());
+    var $menu = $('#menu');
+    $menu.css('top', Math.max(0, (($window.height() - $menu.outerHeight()) / 2)) + 'px');
+    $menu.css('left', Math.max(0, (($window.width() - $menu.outerWidth()) / 2)) + 'px');
+    return this;
+});
+
+function addFileEntry(name)
+{
+	var entry = $('<div>');
+	entry.text(name);
+	var deleteButton = $('<button class="delete">-</button>');
+	entry.append(deleteButton);
+	$('#menu').append(entry);
+
+	deleteButton.on('click', function(event)
+	{
+		localStorage.removeItem(name);
+		entry.remove();
+		event.stopPropagation();
+	});
+
+	entry.on('click', function(event)
+	{
+		graph.clear();
+		graph.fromJSON(JSON.parse(localStorage[name]));
+		filename = name;
+		$('#menu').hide();
+	});
+}
+
+(function()
+{
+	for (var i = 0; i < localStorage.length; i++)
+		addFileEntry(localStorage.key(i));
+})();
+
+$('#menu button.close').click(function()
+{
+	$('#menu').hide();
 });
 
 $(window).trigger('resize');
@@ -597,10 +721,13 @@ $('body').contextmenu(
 		{ text: 'Choice', alias: '1-2', action: add(joint.shapes.dialogue.Choice) },
 		{ text: 'Branch', alias: '1-3', action: add(joint.shapes.dialogue.Branch) },
 		{ text: 'Set', alias: '1-4', action: add(joint.shapes.dialogue.Set) },
+		{ text: 'Node', alias: '1-5', action: add(joint.shapes.dialogue.Node) },
 		{ type: 'splitLine' },
 		{ text: 'Save', alias: '2-1', action: save },
 		{ text: 'Load', alias: '2-2', action: load },
-		{ text: 'New', alias: '2-3', action: clear },
-		{ text: 'Export', alias: '2-4', action: exportFile },
+		{ text: 'Import', alias: '2-3', action: importFile },
+		{ text: 'New', alias: '2-4', action: clear },
+		{ text: 'Export', alias: '2-5', action: exportFile },
+		{ text: 'Export game file', alias: '2-6', action: exportGameFile },
 	]
 });

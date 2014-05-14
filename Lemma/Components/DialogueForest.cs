@@ -14,7 +14,7 @@ namespace Lemma.Components
 		{
 			public enum Type
 			{
-				Text, Choice, Branch, Set
+				Node, Text, Choice, Branch, Set
 			}
 			public string next;
 			public List<string> choices;
@@ -93,6 +93,39 @@ namespace Lemma.Components
 			{
 				return this.nodes.Values;
 			}
+		}
+
+		public void Execute(Node node, Action<string, int> textCallback, Action<string, IEnumerable<string>> choiceCallback, Action<string, string> setCallback, Func<string, string> getCallback, int textLevel = 1)
+		{
+			string next = null;
+			switch (node.type)
+			{
+				case DialogueForest.Node.Type.Node:
+					if (node.choices != null && node.choices.Count > 0)
+						choiceCallback(node.name, node.choices.Select(x => this[x].name));
+					next = node.next;
+					break;
+				case DialogueForest.Node.Type.Text:
+					textCallback(node.name, textLevel);
+					if (node.choices != null && node.choices.Count > 0)
+						choiceCallback(node.name, node.choices.Select(x => this[x].name));
+					next = node.next;
+					textLevel++;
+					break;
+				case DialogueForest.Node.Type.Set:
+					setCallback(node.variable, node.value);
+					next = node.next;
+					break;
+				case DialogueForest.Node.Type.Branch:
+					string key = getCallback(node.variable);
+					if (key == null || !node.branches.TryGetValue(key, out next))
+						node.branches.TryGetValue("_default", out next);
+					break;
+				default:
+					break;
+			}
+			if (next != null)
+				this.Execute(this[next], textCallback, choiceCallback, setCallback, getCallback, textLevel);
 		}
 	}
 }

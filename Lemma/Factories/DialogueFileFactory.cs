@@ -27,6 +27,7 @@ namespace Lemma.Factories
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
 			this.SetMain(result, main);
+			result.CannotSuspend = true;
 
 			Property<string> name = result.GetOrMakeProperty<string>("Name", true);
 
@@ -50,7 +51,6 @@ namespace Lemma.Factories
 								Log.d("Failed to load dialogue file: " + name);
 							}
 						}
-						result.Delete.Execute();
 					}
 				});
 			}

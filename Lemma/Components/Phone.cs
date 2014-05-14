@@ -41,12 +41,8 @@ namespace Lemma.Components
 			[DefaultValue(true)]
 			public bool Exclusive = true;
 
-			[DefaultValue(false)]
-			public bool IsInitiating = false;
-
-			// Not null if the answer is an initiating one (the player is starting a conversation)
 			[DefaultValue(null)]
-			public string QuestionID;
+			public string ParentID;
 
 			public Ans()
 				: this(null)
@@ -111,6 +107,8 @@ namespace Lemma.Components
 		public Property<bool> CanReceiveMessages = new Property<bool>();
 
 		public Property<bool> TutorialShown = new Property<bool>();
+
+		public Property<bool> WaitForAnswer = new Property<bool>();
 
 		[XmlIgnore]
 		public Command MessageReceived = new Command();
@@ -191,16 +189,18 @@ namespace Lemma.Components
 		{
 			string messageID;
 
-			if (string.IsNullOrEmpty(answer.QuestionID))
+			if (string.IsNullOrEmpty(answer.ParentID))
 				messageID = this.LastMessageID();
 			else
-				messageID = answer.QuestionID;
+				messageID = answer.ParentID;
 
 			this.Messages.Add(new Message { Incoming = false, ID = answer.ID, Text = answer.Text });
 			if (answer.Exclusive)
 				this.ActiveAnswers.Clear();
 			else
 				this.ActiveAnswers.Remove(answer);
+			
+			this.WaitForAnswer.Value = false;
 
 			if (messageID != null)
 			{
@@ -216,6 +216,7 @@ namespace Lemma.Components
 			this.ActiveAnswers.Clear();
 			foreach (Ans answer in answers)
 				this.ActiveAnswers.Add(answer);
+			this.WaitForAnswer.Value = true;
 		}
 
 		public void OnMessage(string text, Action callback)
@@ -246,52 +247,45 @@ namespace Lemma.Components
 		{
 			foreach (DialogueForest.Node node in forest.Nodes)
 			{
-				if (node.type == DialogueForest.Node.Type.Text && node.choices != null && node.choices.Count > 0)
+				if (node.choices != null && node.choices.Count > 0)
 				{
 					this.OnAnswer(node.name, delegate(string c)
 					{
 						DialogueForest.Node selectedChoice = forest.GetByName(c);
 						DialogueForest.Node next = selectedChoice.next != null ? forest[selectedChoice.next] : null;
 						if (next != null)
-							this.visit(forest, next);
+							this.Execute(forest, next);
 					});
 				}
 			}
 		}
 
-		private const float messageDelay = 2.0f; // 2 seconds in between each message
-		private void visit(DialogueForest forest, DialogueForest.Node node, int textLevel = 1)
+		public void Execute(DialogueForest forest, DialogueForest.Node node)
 		{
-			switch (node.type)
-			{
-				case DialogueForest.Node.Type.Text:
-					this.Delay(messageDelay * textLevel, node.id, node.name);
+			forest.Execute(node, this.handleText, this.handleChoices, this.handleSet, this.handleGet);
+		}
 
-					if (node.choices != null)
-					{
-						this.ActiveAnswers.Clear();
-						this.ActiveAnswers.AddAll(node.choices.Select(x => forest[x]).Select(y => new Ans(y.name)));
-					}
+		private void handleText(string text, int level)
+		{
+			this.Delay(messageDelay * level, text);
+		}
 
-					if (node.next != null)
-						this.visit(forest, forest[node.next], textLevel + 1);
+		private const float messageDelay = 2.0f; // 2 seconds in between each message
+		private void handleChoices(string node, IEnumerable<string> choices)
+		{
+			this.ActiveAnswers.Clear();
+			this.ActiveAnswers.AddAll(choices.Select(x => new Ans { ParentID = node, ID = x }));
+			this.WaitForAnswer.Value = true;
+		}
 
-					break;
-				case DialogueForest.Node.Type.Set:
-					this[node.variable] = node.value;
-					if (node.next != null)
-						this.visit(forest, forest[node.next]);
-					break;
-				case DialogueForest.Node.Type.Branch:
-					string next;
-					if (!node.branches.TryGetValue(this[node.variable], out next))
-						node.branches.TryGetValue("_default", out next);
-					if (next != null)
-						this.visit(forest, forest[next], textLevel);
-					break;
-				default:
-					break;
-			}
+		private void handleSet(string key, string value)
+		{
+			this[key] = value;
+		}
+
+		private string handleGet(string key)
+		{
+			return this[key];
 		}
 	}
 }

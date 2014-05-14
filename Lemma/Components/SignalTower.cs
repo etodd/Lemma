@@ -18,7 +18,6 @@ namespace Lemma.Components
 	public class SignalTower : Component<Main>
 	{
 		public Property<string> Initial = new Property<string> { Editable = true };
-		public Property<bool> Send = new Property<bool> { Editable = true };
 		public Property<Entity.Handle> Player = new Property<Entity.Handle> { Editable = false };
 
 		private const float messageDelay = 2.0f;
@@ -35,17 +34,7 @@ namespace Lemma.Components
 			{
 				Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance(this.main).Get<Phone>();
 
-				bool active = !string.IsNullOrEmpty(this.Initial);
-				if (active && this.Send)
-				{
-					phone.Delay(SignalTower.messageDelay, this.Initial);
-					this.Send.Value = false;
-				}
-
-				// Add answers to phone
-				phone.ActiveAnswers.Clear();
-
-				if (active)
+				if (!string.IsNullOrEmpty(this.Initial))
 				{
 					IEnumerable<DialogueForest> forests = WorldFactory.Get().GetListProperty<DialogueForest>();
 					foreach (DialogueForest forest in forests)
@@ -53,11 +42,20 @@ namespace Lemma.Components
 						DialogueForest.Node n = forest.GetByName(this.Initial);
 						if (n != null)
 						{
-							foreach (DialogueForest.Node choice in n.choices.Select(x => forest[x]))
-								phone.ActiveAnswers.Add(new Phone.Ans(choice.name));
+							if (n.type == DialogueForest.Node.Type.Choice)
+								throw new Exception("Cannot start dialogue tree with a choice");
+							phone.Execute(forest, n);
+							if (phone.Schedules.Count == 0)
+							{
+								// If there are choices available, they will initiate a conversation.
+								// The player should be able to pull up the phone, see the choices, and walk away without picking any of them.
+								// Normally, you can't put the phone down until you've picked an answer.
+								phone.WaitForAnswer.Value = false; 
+							}
 							break;
 						}
 					}
+					this.Initial.Value = null;
 				}
 
 				p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = this.Entity;
@@ -66,13 +64,6 @@ namespace Lemma.Components
 			this.PlayerExitedRange.Action = delegate(Entity p)
 			{
 				Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance(this.main).Get<Phone>();
-				if (phone.ActiveAnswers.Count > 0)
-				{
-					// The player didn't pick an answer
-					phone.ActiveAnswers.Clear();
-				}
-				else
-					this.Initial.Value = null; // The player picked an answer. This signal tower is done.
 
 				p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = null;
 			};

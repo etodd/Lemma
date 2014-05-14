@@ -1,5 +1,4 @@
-html, body
-{
+html, body {
 	padding: 0px;
 	color: #fff;
 	margin: 0px;
@@ -37,6 +36,40 @@ html, body
 #paper svg .link
 {
 	z-index: 2;
+}
+
+#menu
+{
+	position: absolute;
+	display: none;
+	width: 40%;
+	z-index: 10000;
+	padding: 8px;
+	cursor: pointer;
+}
+
+#menu div
+{
+	clear: right;
+	padding: 4px;
+	margin-left: 20px;
+	margin-right: 20px;
+	border-bottom: 1px solid #ccc;
+}
+
+#menu div:hover
+{
+	background-color: black;
+}
+
+#flash
+{
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	padding: 8px;
+	font-weight: bold;
+	display: none;
 }
 
 /*
@@ -108,8 +141,7 @@ Node styles
 	z-index: 2;
 }
 
-.node input,
-.node button
+.node input, button
 {
 	/* Enable interacting with inputs only. */
 	pointer-events: auto;	
@@ -144,7 +176,7 @@ Node styles
 	color: #ea6;
 }
 
-.node button
+button
 {
 	float: right;
 	border: none;
@@ -159,7 +191,7 @@ Node styles
 	cursor: pointer;
 }
 
-.node button.delete:hover
+button.delete:hover
 {
 	background-color: #c0392b;
 }
@@ -189,13 +221,11 @@ Node styles
 /*
 Context menu
 */
-.b-m-mpanel
+.b-m-mpanel, #menu, #flash
 {
 	background-color: #444;
 	position: absolute;
 	z-index: 99997;
-	left: 0px;
-	top: 0px;
 	-moz-box-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.5);
 	-webkit-box-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.5);
 	box-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.5);

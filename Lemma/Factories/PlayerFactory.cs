@@ -3001,7 +3001,7 @@ namespace Lemma.Factories
 					phoneTutorialMessage = null;
 				}
 
-				if (show || (phone.ActiveAnswers.Count(x => !x.IsInitiating) == 0 && phone.Schedules.Count == 0))
+				if (show || (phone.Schedules.Count == 0 && !phone.WaitForAnswer))
 				{
 					phoneActive.Value = show;
 					input.EnableLook.Value = input.EnableMouse.Value = !phoneActive;
@@ -3163,14 +3163,16 @@ namespace Lemma.Factories
 
 					Action refreshComposeButtonVisibility = delegate()
 					{
-						bool show = phone.ActiveAnswers.Count > 0 && phone.Schedules.Count == 0;
+						Entity s = signalTower.Value.Target;
+						bool show = phone.ActiveAnswers.Count > 0 && phone.Schedules.Count == 0 && s != null && s.Active;
 						answerContainer.Visible.Value &= show;
 						composeButton.Visible.Value = show;
 						selectedAnswer = 0;
 					};
 					composeButton.Add(new ListNotifyBinding<Phone.Ans>(refreshComposeButtonVisibility, phone.ActiveAnswers));
 					composeButton.Add(new ListNotifyBinding<Phone.Schedule>(refreshComposeButtonVisibility, phone.Schedules));
-					composeButton.Visible.Value = phone.ActiveAnswers.Count > 0 && phone.Schedules.Count == 0;
+					composeButton.Add(new NotifyBinding(refreshComposeButtonVisibility, signalTower));
+					refreshComposeButtonVisibility();
 
 					result.Add(new CommandBinding(phone.MessageReceived, delegate()
 					{
