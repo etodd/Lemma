@@ -468,11 +468,16 @@ namespace Lemma.Factories
 					{
 						new Model.Material
 						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						},
+						new Model.Material
+						{
 							SpecularPower = 200.0f,
 							SpecularIntensity = 0.4f,
 						}
 					},
-					Tiling = 4.0f,
+					Tiling = 3.0f,
 					Tint = new Vector3(0.3f, 0.6f, 0.8f),
 				},
 				new Map.CellState
@@ -491,11 +496,11 @@ namespace Lemma.Factories
 						Model.Material.Unlit,
 						new Model.Material
 						{
-							SpecularPower = 1.0f,
-							SpecularIntensity = 0.0f,
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
 						},
 					},
-					Tiling = 4.0f,
+					Tiling = 3.0f,
 				},
 				new Map.CellState
 				{
@@ -602,6 +607,56 @@ namespace Lemma.Factories
 						},
 					},
 					Tint = Vector3.Zero,
+				},
+				new Map.CellState
+				{
+					ID = 43,
+					Name = "Slider",
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					Density = 1,
+					DiffuseMap = "Textures\\powered-switch",
+					NormalMap = "Textures\\switch-normal",
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						}
+					},
+					Tiling = 3.0f,
+					Tint = new Vector3(0.0f, 0.8f, 1.0f),
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+				},
+				new Map.CellState
+				{
+					ID = 44,
+					Name = "SliderPowered",
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					Density = 1,
+					DiffuseMap = "Textures\\powered-switch",
+					NormalMap = "Textures\\switch-normal",
+					Materials = new[]
+					{
+						Model.Material.Unlit,
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
+					Tiling = 3.0f,
+					Tint = new Vector3(0.3f, 0.9f, 1.25f),
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 				}
 			);
 		}

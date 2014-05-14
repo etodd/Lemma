@@ -57,6 +57,28 @@ namespace Lemma.Factories
 			};
 			result.Add(new NotifyBinding(setLimits, minimum, maximum));
 
+			Action updateMaterial = delegate()
+			{
+				DynamicMap map = result.Get<DynamicMap>();
+				if (map != null)
+				{
+					bool active = locked && (!servo || (servo && goal.Value != minimum.Value));
+
+					Map.CellState slider = WorldFactory.StatesByName["Slider"];
+					Map.CellState powered = WorldFactory.StatesByName["SliderPowered"];
+					Map.CellState desired = active ? powered : slider;
+					int currentID = map[0, 0, 0].ID;
+					if (currentID != desired.ID & (currentID == slider.ID || currentID == powered.ID))
+					{
+						List<Map.Coordinate> coords = map.GetContiguousByType(new[] { map.GetBox(0, 0, 0) }).SelectMany(x => x.GetCoords()).ToList();
+						map.Empty(coords, true, true, null, false);
+						foreach (Map.Coordinate c in coords)
+							map.Fill(c, desired);
+						map.Regenerate();
+					}
+				}
+			};
+
 			Action setMaxForce = delegate()
 			{
 				if (joint != null)
@@ -83,6 +105,7 @@ namespace Lemma.Factories
 			{
 				if (joint != null)
 					joint.Motor.IsActive = locked;
+				updateMaterial();
 			};
 			result.Add(new NotifyBinding(setLocked, locked));
 
@@ -90,6 +113,7 @@ namespace Lemma.Factories
 			{
 				if (joint != null)
 					joint.Motor.Settings.Servo.Goal = goal;
+				updateMaterial();
 			};
 			result.Add(new NotifyBinding(setGoal, goal));
 
@@ -111,6 +135,7 @@ namespace Lemma.Factories
 			{
 				if (joint != null)
 					joint.Motor.Settings.Mode = servo ? MotorMode.Servomechanism : MotorMode.VelocityMotor;
+				updateMaterial();
 			};
 			result.Add(new NotifyBinding(setMode, servo));
 

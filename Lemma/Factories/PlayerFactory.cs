@@ -642,7 +642,7 @@ namespace Lemma.Factories
 				relativeHeadBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.4f);
 				model.UpdateWorldTransforms();
 
-				Matrix r = Matrix.CreateRotationX(input.Mouse.Value.Y * 0.4f * blend * sprintAnimation.TotalStrength);
+				Matrix r = Matrix.CreateRotationX(input.Mouse.Value.Y * 0.4f * blend * (runAnimation.TotalStrength + sprintAnimation.TotalStrength));
 
 				Matrix parent = clavicleLeft;
 				parent.Translation = Vector3.Zero;
@@ -835,7 +835,7 @@ namespace Lemma.Factories
 
 						if (movementAnimation == "Run")
 						{
-							sprintAnimation.TargetStrength = MathHelper.Clamp((speed - 6.0f) / 2.0f, 0.0f, 1.0f);
+							sprintAnimation.TargetStrength = 0.0f;//MathHelper.Clamp((speed - 6.0f) / 2.0f, 0.0f, 1.0f);
 							runAnimation.TargetStrength = 1.0f - sprintAnimation.TargetStrength;
 						}
 

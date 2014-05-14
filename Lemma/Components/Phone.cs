@@ -44,7 +44,7 @@ namespace Lemma.Components
 			[DefaultValue(false)]
 			public bool IsInitiating = false;
 
-			// True if the answer is an initiating one (the player is starting a conversation)
+			// Not null if the answer is an initiating one (the player is starting a conversation)
 			[DefaultValue(null)]
 			public string QuestionID;
 
@@ -226,6 +226,10 @@ namespace Lemma.Components
 				string answer;
 				this.answers.TryGetValue(messageId, out answer);
 				return answer;
+			}
+			set
+			{
+				this.answers[messageId] = value;
 			}
 		}
 	}
