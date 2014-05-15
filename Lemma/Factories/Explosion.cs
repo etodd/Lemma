@@ -53,7 +53,7 @@ namespace Lemma.Factories
 
 			Entity player = PlayerFactory.Instance;
 			if (player != null && player.Active)
-				player.GetCommand<Vector3, float>("ShakeCamera").Execute(pos, 50.0f);
+				player.Get<CameraControl>().Shake.Execute(pos, 50.0f);
 		
 			const float physicsImpulse = 70.0f;
 			const float minPlayerDamage = 0.1f;

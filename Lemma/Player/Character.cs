@@ -19,6 +19,17 @@ namespace Lemma.Util
 {
 	public class Character : Updateable, IEndOfTimeStepUpdateable
 	{
+		public const float DefaultMaxSpeed = 8.8f;
+		public const float DefaultJumpSpeed = 9.5f;
+		public const float DefaultRadius = 1.75f;
+		public const float DefaultHeight = 2.75f;
+		public const float DefaultCrouchedHeight = 1.7f;
+		public const float DefaultSupportHeight = 1.25f;
+		public const float DefaultCrouchedSupportHeight = 0.5f;
+		public const float DefaultMass = 4.0f;
+
+		public const float InitialAccelerationSpeedThreshold = 4.0f;
+
 		/// <summary>
 		/// A box positioned relative to the character's body used to identify collision pairs with nearby objects that could be possibly stood upon.
 		/// </summary>
@@ -35,8 +46,6 @@ namespace Lemma.Util
 		public Property<float> Acceleration = new Property<float> { Value = 4.5f };
 
 		public Property<float> InitialAcceleration = new Property<float> { Value = 25.0f };
-
-		public const float InitialAccelerationSpeedThreshold = 4.0f;
 
 		/// <summary>
 		/// The character's physical representation that handles iteractions with the environment.
@@ -60,7 +69,7 @@ namespace Lemma.Util
 		/// <summary>
 		/// Initial vertical speed when jumping.
 		/// </summary>
-		public Property<float> JumpSpeed = new Property<float>();
+		public Property<float> JumpSpeed = new Property<float> { Value = Character.DefaultJumpSpeed };
 
 		public Property<Player.WallRun> WallRunState = new Property<Player.WallRun> { Value = Player.WallRun.None };
 
@@ -78,6 +87,9 @@ namespace Lemma.Util
 		/// Normalized direction which the character tries to move.
 		/// </summary>
 		public Property<Vector2> MovementDirection = new Property<Vector2> { Value = Vector2.Zero };
+
+		public Property<float> Height = new Property<float>();
+		public Property<float> Radius = new Property<float>();
 
 		/// <summary>
 		/// Deceleration applied to oppose horizontal movement when the character does not have a steady foothold on the ground (hasTraction == false).
@@ -100,20 +112,24 @@ namespace Lemma.Util
 		/// </summary>
 		public Property<Vector3> SupportLocation = new Property<Vector3>();
 
+		public Property<Matrix> Transform = new Property<Matrix>();
+
+		public Property<Vector3> LinearVelocity = new Property<Vector3>();
+
+		public Property<Vector3> Lean = new Property<Vector3> { Editable = false };
+
 		/// <summary>
 		/// The physics entity the player is currently standing on.
 		/// </summary>
-		[XmlIgnore]
 		public Property<BEPUphysics.Entities.Entity> SupportEntity = new Property<BEPUphysics.Entities.Entity>();
 
-		[XmlIgnore]
 		public Command<Collidable, ContactCollection> Collided = new Command<Collidable, ContactCollection>();
 
-		private float defaultCharacterHeight;
-		private float defaultSupportHeight;
+		public float NormalHeight;
+		public float NormalSupportHeight;
 
-		private float crouchedCharacterHeight;
-		private float crouchedSupportHeight;
+		public float CrouchedHeight;
+		public float CrouchedSupportHeight;
 
 		public Property<bool> Crouched = new Property<bool>();
 		public Property<bool> AllowUncrouch = new Property<bool>();
@@ -134,30 +150,31 @@ namespace Lemma.Util
 		/// Constructs a simple character controller.
 		/// </summary>
 		/// <param name="position">Location to initially place the character.</param>
-		/// <param name="characterHeight">The height of the character.</param>
-		/// <param name="characterWidth">The diameter of the character.</param>
+		/// <param name="height">The height of the character.</param>
+		/// <param name="radius">The diameter of the character.</param>
 		/// <param name="supportHeight">The distance above the ground that the bottom of the character's body floats.</param>
 		/// <param name="mass">Total mass of the character.</param>
-		public Character(Main main, Vector3 position, float characterHeight, float crouchedHeight, float characterWidth, float supportHeight, float crouchedSupportHeight, float mass)
+		public Character(Main main, Vector3 position, float height = Character.DefaultHeight, float crouchedHeight = Character.DefaultCrouchedHeight, float radius = Character.DefaultRadius, float supportHeight = Character.DefaultSupportHeight, float crouchedSupportHeight = Character.DefaultCrouchedSupportHeight, float mass = Character.DefaultMass)
 		{
 			this.main = main;
-			this.Body = new Cylinder(position, characterHeight, characterWidth / 2, mass);
+			this.Radius.Value = radius;
+			this.Body = new Cylinder(position, height, radius, mass);
 			this.Body.Tag = this;
 			this.Body.CollisionInformation.Tag = this;
 			this.Body.IgnoreShapeChanges = true;
 			this.Body.LinearDamping = 0.0f;
 			this.Body.CollisionInformation.CollisionRules.Group = Character.CharacterGroup;
-			this.defaultCharacterHeight = characterHeight;
-			this.crouchedCharacterHeight = crouchedHeight;
+			this.NormalHeight = height;
+			this.CrouchedHeight = crouchedHeight;
 			this.Body.CollisionInformation.Events.ContactCreated += new BEPUphysics.BroadPhaseEntries.Events.ContactCreatedEventHandler<EntityCollidable>(Events_ContactCreated);
-			this.collisionPairCollector = new Box(position + new Vector3(0, (characterHeight * -0.5f) - supportHeight, 0), characterWidth, supportHeight * 2, characterWidth, 1);
+			this.collisionPairCollector = new Box(position + new Vector3(0, (height * -0.5f) - supportHeight, 0), radius * 2, supportHeight * 2, radius, 1);
 			this.collisionPairCollector.CollisionInformation.CollisionRules.Personal = CollisionRule.NoNarrowPhaseUpdate; //Prevents collision detection/contact generation from being run.
 			this.collisionPairCollector.IsAffectedByGravity = false;
 			this.collisionPairCollector.CollisionInformation.CollisionRules.Group = Character.CharacterGroup;
 			CollisionRules.AddRule(this.collisionPairCollector, this.Body, CollisionRule.NoBroadPhase); //Prevents the creation of any collision pairs between the body and the collector.
 			this.SupportHeight.Value = supportHeight;
-			this.defaultSupportHeight = supportHeight;
-			this.crouchedSupportHeight = crouchedSupportHeight;
+			this.NormalSupportHeight = supportHeight;
+			this.CrouchedSupportHeight = crouchedSupportHeight;
 
 			this.Body.LocalInertiaTensorInverse = new BEPUutilities.Matrix3x3();
 			this.collisionPairCollector.LocalInertiaTensorInverse = new BEPUutilities.Matrix3x3();
@@ -176,27 +193,47 @@ namespace Lemma.Util
 				this.Crouched.InternalValue = value;
 				if (value && !oldValue)
 				{
-					this.Body.Position += new Vector3(0, (this.crouchedSupportHeight - this.defaultSupportHeight) + 0.5f * (this.crouchedCharacterHeight - this.defaultCharacterHeight), 0);
-					this.Body.Height = this.crouchedCharacterHeight;
-					this.SupportHeight.Value = this.crouchedSupportHeight;
+					this.Body.Position += new Vector3(0, (this.CrouchedSupportHeight - this.NormalSupportHeight) + 0.5f * (this.CrouchedHeight - this.NormalHeight), 0);
+					this.Body.Height = this.Height.Value = this.CrouchedHeight;
+					this.SupportHeight.Value = this.CrouchedSupportHeight;
 				}
 				else if (!value && oldValue)
 				{
-					this.Body.Height = this.defaultCharacterHeight;
-					this.Body.Position += new Vector3(0, (this.defaultSupportHeight - this.crouchedSupportHeight) + 0.5f * (this.defaultCharacterHeight - this.crouchedCharacterHeight), 0);
-					this.SupportHeight.Value = this.defaultSupportHeight;
+					this.Body.Height = this.Height.Value = this.NormalHeight;
+					this.Body.Position += new Vector3(0, (this.NormalSupportHeight - this.CrouchedSupportHeight) + 0.5f * (this.NormalHeight - this.CrouchedHeight), 0);
+					this.SupportHeight.Value = this.NormalSupportHeight;
 				}
 				this.collisionPairCollector.Height = this.SupportHeight * 2;
+				this.Transform.Changed();
+			};
+
+			this.Transform.Set = delegate(Matrix value)
+			{
+				this.Body.WorldTransform = value;
+			};
+			this.Transform.Get = delegate()
+			{
+				return this.Body.WorldTransform;
+			};
+
+			this.LinearVelocity.Set = delegate(Vector3 value)
+			{
+				this.Body.LinearVelocity = value;
+			};
+			this.LinearVelocity.Get = delegate()
+			{
+				return this.Body.LinearVelocity;
 			};
 
 			const int rayChecks = 4;
-			float radius = this.Body.Radius - 0.1f;
+			float rayCheckRadius = radius - 0.1f;
 			this.rayOffsets = new[] { Vector3.Zero }.Concat(Enumerable.Range(0, rayChecks).Select(
 			delegate(int x)
 			{
 				float angle = x * ((2.0f * (float)Math.PI) / (float)rayChecks);
-				return new Vector3((float)Math.Cos(angle) * radius, 0, (float)Math.Sin(angle) * radius);
+				return new Vector3((float)Math.Cos(angle) * rayCheckRadius, 0, (float)Math.Sin(angle) * rayCheckRadius);
 			})).ToArray();
+			this.IsUpdating = false;
 		}
 
 		private void Events_ContactCreated(EntityCollidable sender, Collidable other, BEPUphysics.NarrowPhaseSystems.Pairs.CollidablePairHandler pair, BEPUphysics.CollisionTests.ContactData contact)
@@ -219,6 +256,18 @@ namespace Lemma.Util
 
 			bool foundSupport = this.findSupport(out supportEntityTag, out supportEntity, out supportLocation, out supportNormal, out supportDistance);
 
+			if (!foundSupport && this.WallRunState.Value == Player.WallRun.None)
+			{
+				// Keep the player from getting stuck on corners
+				foreach (Contact contact in this.Body.CollisionInformation.Pairs.SelectMany(x => x.Contacts.Select(y => y.Contact)))
+				{
+					Vector3 normal = (contact.Position - this.Body.Position).SetComponent(Direction.PositiveY, 0);
+					float length = normal.Length();
+					if (length > 0.5f)
+						this.Body.LinearVelocity += -0.1f * (normal / length);
+				}
+			}
+
 			// Support location only has velocity if we're actually sitting on an entity, as opposed to some static geometry.
 			// linear velocity of point on body relative to center
 			Vector3 supportLocationVelocity;
@@ -228,7 +277,7 @@ namespace Lemma.Util
 			else
 				supportLocationVelocity = new Vector3();
 
-			if (supportLocationVelocity.Y < this.Body.LinearVelocity.Y - 5.0f)
+			if (supportLocationVelocity.Y < this.Body.LinearVelocity.Y - 4.0f)
 				foundSupport = false;
 
 			if (!this.IsSwimming && foundSupport)
@@ -282,7 +331,7 @@ namespace Lemma.Util
 				{
 					RayCastResult rayHit;
 					//Fire a ray at the candidate and determine some details! 
-					if (this.main.Space.RayCast(new Ray(rayStart, Vector3.Up), (this.defaultCharacterHeight - this.Body.Height) + (this.defaultSupportHeight - this.SupportHeight), out rayHit))
+					if (this.main.Space.RayCast(new Ray(rayStart, Vector3.Up), (this.NormalHeight - this.Body.Height) + (this.NormalSupportHeight - this.SupportHeight), out rayHit))
 					{
 						foundCeiling = true;
 						break;
@@ -318,6 +367,18 @@ namespace Lemma.Util
 
 			this.collisionPairCollector.LinearVelocity = this.Body.LinearVelocity;
 			this.collisionPairCollector.Position = this.Body.Position + new Vector3(0, (this.Body.Height * -0.5f) - this.SupportHeight, 0);
+
+			Vector3 accel = Vector3.Zero;
+			if (this.EnableWalking && !this.Crouched)
+			{
+				accel = this.VelocityAdjustments;
+				accel.X = MathHelper.Clamp(accel.X / 0.08f, -1.0f, 1.0f);
+				accel.Z = MathHelper.Clamp(accel.Z / 0.08f, -1.0f, 1.0f);
+				Vector3 v = this.Body.LinearVelocity;
+				v.Y = 0.0f;
+				accel *= Math.Min(1.0f, v.Length() / (this.MaxSpeed * 0.75f));
+			}
+			this.Lean.Value += (accel - this.Lean.Value) * 5.0f * dt;
 		}
 
 		/// <summary>
@@ -395,18 +456,6 @@ namespace Lemma.Util
 			}
 
 			bool isSupported = supportDistance < float.MaxValue;
-
-			if (!isSupported && this.WallRunState.Value == Player.WallRun.None)
-			{
-				// Keep the player from getting stuck on corners
-				foreach (Contact contact in this.Body.CollisionInformation.Pairs.SelectMany(x => x.Contacts.Select(y => y.Contact)))
-				{
-					Vector3 normal = (contact.Position - this.Body.Position).SetComponent(Direction.PositiveY, 0);
-					float length = normal.Length();
-					if (length > 0.5f)
-						this.Body.LinearVelocity += -0.1f * (normal / length);
-				}
-			}
 			return isSupported;
 		}
 

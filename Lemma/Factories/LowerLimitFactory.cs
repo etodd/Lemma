@@ -43,9 +43,9 @@ namespace Lemma.Factories
 					if (player != null && player.Active)
 					{
 						Player p = player.Get<Player>();
-						float y = p.Transform.Value.Translation.Y;
+						float y = p.Character.Transform.Value.Translation.Y;
 						float limit = transform.Position.Value.Y;
-						if (y < limit + absoluteLimit || (y < limit && p.LinearVelocity.Value.Y < velocityThreshold))
+						if (y < limit + absoluteLimit || (y < limit && p.Character.LinearVelocity.Value.Y < velocityThreshold))
 							player.Delete.Execute();
 					}
 					else

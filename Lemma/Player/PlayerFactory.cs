@@ -45,18 +45,11 @@ namespace Lemma.Factories
 		public override Entity Create(Main main)
 		{
 			Entity result = new Entity(main, "Player");
-			result.ID = "player";
-			Player player = new Player();
-			Transform transform = new Transform();
 			AnimatedModel model = new AnimatedModel();
 			AnimatedModel firstPersonModel = new AnimatedModel();
-			Timer footstepTimer = new Timer();
 
-			result.Add("Player", player);
-			result.Add("Transform", transform);
 			result.Add("FirstPersonModel", firstPersonModel);
 			result.Add("Model", model);
-			result.Add("FootstepTimer", footstepTimer);
 
 			model.Editable = false;
 			model.Filename.Value = "Models\\joan";
@@ -65,9 +58,6 @@ namespace Lemma.Factories
 			firstPersonModel.Editable = false;
 			firstPersonModel.Filename.Value = "Models\\joan-firstperson";
 			firstPersonModel.CullBoundingBox.Value = false;
-
-			footstepTimer.Repeat.Value = true;
-			footstepTimer.Interval.Value = 0.35f;
 
 			result.Add("Rotation", new Property<float> { Editable = false });
 			result.Add("Data", new Property<Entity.Handle> { Editable = false });
@@ -116,8 +106,8 @@ namespace Lemma.Factories
 
 			this.SetMain(result, main);
 
-			Player player = result.Get<Player>();
-			Transform transform = result.Get<Transform>();
+			Player player = result.GetOrCreate<Player>("Player");
+			Transform transform = result.GetOrCreate<Transform>("Transform");
 
 			AnimatedModel model = result.Get<AnimatedModel>("Model");
 			AnimatedModel firstPersonModel = result.Get<AnimatedModel>("FirstPersonModel");
@@ -146,7 +136,7 @@ namespace Lemma.Factories
 			};
 
 			Property<Vector3> floor = new Property<Vector3>();
-			transform.Add(new Binding<Vector3>(floor, () => transform.Position + new Vector3(0, player.Height * -0.5f, 0), transform.Position, player.Height));
+			transform.Add(new Binding<Vector3>(floor, () => transform.Position + new Vector3(0, player.Character.Height * -0.5f, 0), transform.Position, player.Character.Height));
 			AkGameObjectTracker.Attach(result, floor);
 
 			firstPersonModel.Bind(model);
@@ -163,7 +153,9 @@ namespace Lemma.Factories
 			input.EnabledWhenPaused.Value = false;
 			result.Add("Input", input);
 
-			Timer footstepTimer = result.Get<Timer>("FootstepTimer");
+			Timer footstepTimer = result.GetOrCreate<Timer>("FootstepTimer");
+			footstepTimer.Serialize = false;
+			footstepTimer.Repeat.Value = true;
 
 			Property<bool> phoneActive = result.GetOrMakeProperty<bool>("PhoneActive");
 			Property<bool> noteActive = result.GetOrMakeProperty<bool>("NoteActive");
@@ -197,52 +189,9 @@ namespace Lemma.Factories
 			// Set up AI agent
 			Agent agent = result.GetOrCreate<Agent>();
 			agent.Add(new TwoWayBinding<float>(player.Health, agent.Health));
-			agent.Add(new Binding<Vector3>(agent.Position, () => transform.Position.Value + new Vector3(0, player.Height * -0.5f, 0), transform.Position, player.Height));
+			agent.Add(new Binding<Vector3>(agent.Position, () => transform.Position.Value + new Vector3(0, player.Character.Height * -0.5f, 0), transform.Position, player.Character.Height));
 			agent.Add(new CommandBinding(agent.Die, result.Delete));
-			agent.Add(new Binding<bool>(agent.Loud, x => !x, player.Crouched));
-
-#if DEVELOPMENT
-			Property<bool> thirdPerson = new Property<bool> { Value = false };
-			input.Add(new CommandBinding(input.GetKeyDown(Keys.C), delegate() { thirdPerson.Value = !thirdPerson; }));
-
-			firstPersonModel.Add(new Binding<bool>(firstPersonModel.Enabled, x => !x, thirdPerson));
-
-			model.Add(new NotifyBinding(delegate()
-			{
-				if (thirdPerson)
-				{
-					model.UnsupportedTechniques.Remove(Technique.Clip);
-					model.UnsupportedTechniques.Remove(Technique.Render);
-				}
-				else
-				{
-					model.UnsupportedTechniques.Add(Technique.Clip);
-					model.UnsupportedTechniques.Add(Technique.Render);
-				}
-			}, thirdPerson));
-
-			ModelAlpha debugCylinder = new ModelAlpha();
-			debugCylinder.Filename.Value = "Models\\alpha-cylinder";
-			debugCylinder.Add(new Binding<Matrix>(debugCylinder.Transform, transform.Matrix));
-			debugCylinder.Serialize = false;
-			debugCylinder.Editable = false;
-			debugCylinder.Alpha.Value = 0.25f;
-			debugCylinder.Add(new Binding<bool>(debugCylinder.Enabled, thirdPerson));
-			debugCylinder.Add(new Binding<Vector3>(debugCylinder.Scale, delegate()
-			{
-				return new Vector3(Player.CharacterRadius, player.Height, Player.CharacterRadius);
-			}, player.Height));
-			result.Add(debugCylinder);
-
-			ModelAlpha debugCameraPosition = new ModelAlpha();
-			debugCameraPosition.Filename.Value = "Models\\alpha-sphere";
-			debugCameraPosition.Serialize = false;
-			debugCameraPosition.Editable = false;
-			debugCameraPosition.Alpha.Value = 0.25f;
-			debugCameraPosition.Scale.Value = new Vector3(0.5f);
-			debugCameraPosition.Add(new Binding<bool>(debugCameraPosition.Enabled, thirdPerson));
-			result.Add(debugCameraPosition);
-#endif
+			agent.Add(new Binding<bool>(agent.Loud, x => !x, player.Character.Crouched));
 
 			Property<Entity.Handle> data = result.GetProperty<Entity.Handle>("Data");
 
@@ -329,44 +278,11 @@ namespace Lemma.Factories
 
 			Property<float> rotation = result.GetProperty<float>("Rotation");
 
-#if DEVELOPMENT
-			ListContainer debugContainer = new ListContainer();
-			debugContainer.Reversed.Value = true;
-			debugContainer.AnchorPoint.Value = new Vector2(1, 1);
-			debugContainer.Add(new Binding<Vector2, Point>(debugContainer.Position, x => new Vector2(x.X, x.Y), main.ScreenSize));
-			debugContainer.Alignment.Value = ListContainer.ListAlignment.Max;
-			ui.Root.Children.Add(debugContainer);
-
-			TextElement debugVelocity = new TextElement();
-			debugVelocity.FontFile.Value = "Font";
-			debugVelocity.Add(new Binding<string, Vector3>(debugVelocity.Text, x => x.Length().ToString(), player.LinearVelocity));
-			debugVelocity.Add(new Binding<bool>(debugVelocity.Visible, thirdPerson));
-			debugContainer.Children.Add(debugVelocity);
-
-			TextElement debugRotation = new TextElement();
-			debugRotation.FontFile.Value = "Font";
-			debugRotation.Add(new Binding<string, float>(debugRotation.Text, x => x.ToString("F"), rotation));
-			debugRotation.Add(new Binding<bool>(debugRotation.Visible, thirdPerson));
-			debugContainer.Children.Add(debugRotation);
-
-			ListContainer debugAnimations = new ListContainer();
-			debugAnimations.Reversed.Value = true;
-			debugAnimations.Add(new Binding<bool>(debugAnimations.Visible, thirdPerson));
-			debugContainer.Children.Add(debugAnimations);
-
-			input.Add(new CommandBinding(input.GetKeyUp(Keys.T), delegate()
-			{
-				if (main.TimeMultiplier < 1.0f)
-					main.TimeMultiplier.Value = 1.0f;
-				else
-					main.TimeMultiplier.Value = 0.25f;
-			}));
-#endif
 
 			Action updateFallSound = delegate()
 			{
-				float speed = player.LinearVelocity.Value.Length();
-				float maxSpeed = player.MaxSpeed * 1.25f;
+				float speed = player.Character.LinearVelocity.Value.Length();
+				float maxSpeed = player.Character.MaxSpeed * 1.25f;
 				float value;
 				if (speed > maxSpeed)
 					value = (speed - maxSpeed) / (maxSpeed * 2.0f);
@@ -376,7 +292,7 @@ namespace Lemma.Factories
 			};
 			updateFallSound();
 			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_FALL, result);
-			player.Add(new NotifyBinding(updateFallSound, player.LinearVelocity));
+			player.Add(new NotifyBinding(updateFallSound, player.Character.LinearVelocity));
 			SoundKiller.Add(result, AK.EVENTS.STOP_PLAYER_FALL);
 
 			// Determine if the player is swimming
@@ -392,7 +308,7 @@ namespace Lemma.Factories
 						break;
 					}
 				}
-				player.IsSwimming.Value = swimming;
+				player.Character.IsSwimming.Value = swimming;
 			});
 
 			Action stopKick = null;
@@ -458,15 +374,14 @@ namespace Lemma.Factories
 			Direction wallDirection = Direction.None, lastWallDirection = Direction.None;
 			Direction wallRunDirection = Direction.None;
 
-			player.Add(new TwoWayBinding<Matrix>(transform.Matrix, player.Transform));
+			player.Add(new TwoWayBinding<Matrix>(transform.Matrix, player.Character.Transform));
 
-			Vector3 lean = Vector3.Zero;
 			model.Add(new Binding<Matrix>(model.Transform, delegate()
 			{
-				lean = Vector3.TransformNormal(player.AccumulatedVelocityAdjustments, Matrix.CreateRotationY(-rotation));
+				Vector3 lean = Vector3.TransformNormal(player.Character.Lean, Matrix.CreateRotationY(-rotation));
 				const float leanAmount = (float)Math.PI * 0.15f;
-				return Matrix.CreateTranslation(0, (player.Height * -0.5f) - player.SupportHeight, 0) * Matrix.CreateRotationX(lean.Z * leanAmount) * Matrix.CreateRotationZ(lean.X * -leanAmount) * Matrix.CreateRotationY(rotation) * transform.Matrix;
-			}, transform.Matrix, rotation, player.Height, player.SupportHeight, player.AccumulatedVelocityAdjustments));
+				return Matrix.CreateTranslation(0, (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0) * Matrix.CreateRotationX(lean.Z * leanAmount) * Matrix.CreateRotationZ(lean.X * -leanAmount) * Matrix.CreateRotationY(rotation) * transform.Matrix;
+			}, transform.Matrix, rotation, player.Character.Height, player.Character.SupportHeight, player.Character.Lean));
 
 			firstPersonModel.Add(new Binding<Matrix>(firstPersonModel.Transform, model.Transform));
 			firstPersonModel.Add(new Binding<Vector3>(firstPersonModel.Scale, model.Scale));
@@ -532,11 +447,11 @@ namespace Lemma.Factories
 
 			update.Add(delegate(float dt)
 			{
-				if (player.IsSupported)
+				if (player.Character.IsSupported)
 				{
 					Map oldMap = groundRaycast.Map;
 					Map.Coordinate? oldCoord = groundRaycast.Coordinate;
-					groundRaycast = Map.GlobalRaycast(transform.Position, Vector3.Down, player.Height.Value * 0.5f + player.SupportHeight + 1.1f);
+					groundRaycast = Map.GlobalRaycast(transform.Position, Vector3.Down, player.Character.Height.Value * 0.5f + player.Character.SupportHeight + 1.1f);
 					if (groundRaycast.Map != oldMap || (oldCoord != null && groundRaycast.Coordinate != null && !oldCoord.Value.Equivalent(groundRaycast.Coordinate.Value)))
 					{
 						walkedOn.Execute(groundRaycast.Map, groundRaycast.Coordinate, groundRaycast.Normal.GetReverse());
@@ -578,159 +493,23 @@ namespace Lemma.Factories
 					if (groundRaycast.Map != null)
 					{
 						AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, groundRaycast.Map[groundRaycast.Coordinate.Value].FootstepSwitch, result);
-						if (!player.Crouched)
+						if (!player.Character.Crouched)
 							AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
 					}
 				}
-				else if (wallRunState != Player.WallRun.Down && wallRunState != Player.WallRun.Reverse && !player.Crouched)
+				else if (wallRunState != Player.WallRun.Down && wallRunState != Player.WallRun.Reverse && !player.Character.Crouched)
 					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
 			}));
-			footstepTimer.Add(new Binding<bool>(footstepTimer.Enabled, () => player.WallRunState.Value != Player.WallRun.None || (player.MovementDirection.Value.LengthSquared() > 0.0f && player.IsSupported && player.EnableWalking), player.MovementDirection, player.IsSupported, player.EnableWalking, player.WallRunState));
+			footstepTimer.Add(new Binding<bool>(footstepTimer.Enabled, () => player.WallRunState.Value != Player.WallRun.None || (player.Character.MovementDirection.Value.LengthSquared() > 0.0f && player.Character.IsSupported && player.Character.EnableWalking), player.Character.MovementDirection, player.Character.IsSupported, player.Character.EnableWalking, player.WallRunState));
 
 			main.IsMouseVisible.Value = false;
 
 			model.UpdateWorldTransforms();
-			Property<Matrix> cameraBone = model.GetBoneTransform("Camera");
-			Property<Matrix> relativeHeadBone = model.GetRelativeBoneTransform("ORG-head");
-			Property<Matrix> relativeSpineBone = model.GetRelativeBoneTransform("ORG-chest");
-			Property<Matrix> clavicleLeft = model.GetBoneTransform("ORG-shoulder_L");
-			Property<Matrix> clavicleRight = model.GetBoneTransform("ORG-shoulder_R");
-			Property<Matrix> relativeUpperLeftArm = model.GetRelativeBoneTransform("ORG-upper_arm_L");
-			Property<Matrix> relativeUpperRightArm = model.GetRelativeBoneTransform("ORG-upper_arm_R");
-			Property<Matrix> headBone = model.GetBoneTransform("ORG-head");
-
-			// Camera updater / fire code
-			Property<float> cameraShakeAmount = new Property<float> { Value = 0.0f };
-			Property<float> baseCameraShakeAmount = new Property<float> { Value = 0.0f };
-			float cameraShakeTime = 0.0f;
-			const float totalCameraShakeTime = 0.5f;
-			Animation cameraShakeAnimation = null;
-
-			result.Add(new Binding<float>(baseCameraShakeAmount, () => MathHelper.Clamp((player.LinearVelocity.Value.Length() - (player.MaxSpeed * 2.5f)) / (player.MaxSpeed * 4.0f), 0, 1), player.LinearVelocity, player.MaxSpeed));
-
-			result.Add("ShakeCamera", new Command<Vector3, float>
-			{
-				Action = delegate(Vector3 pos, float size)
-				{
-					if (cameraShakeAnimation != null && cameraShakeAnimation.Active)
-						cameraShakeAnimation.Delete.Execute();
-					cameraShakeAnimation = new Animation(new Animation.FloatMoveToSpeed(cameraShakeAmount, Math.Max(0.0f, 1.0f - ((pos - main.Camera.Position).Length() / size)), 20.0f));
-					cameraShakeTime = totalCameraShakeTime;
-					result.Add(cameraShakeAnimation);
-				}
-			});
-
-			Property<bool> enableCameraControl = result.GetOrMakeProperty<bool>("EnableCameraControl", false, true);
-			enableCameraControl.Serialize = false;
-
-			Vector3 cameraOffset = cameraBone.Value.Translation - headBone.Value.Translation;
-
-			ProceduralGenerator noise = result.GetOrCreate<ProceduralGenerator>();
 
 			SkinnedModel.Clip sprintAnimation = model["Sprint"], runAnimation = model["Run"];
 
-			// Update camera
-			update.Add(delegate(float dt)
-			{
-				player.Transform.Changed();
-
-				float blend;
-
-				if (rotationLocked)
-				{
-					if (rotationLockBlending < rotationLockBlendTime)
-						blend = (1.0f - rotationLockBlending / rotationLockBlendTime);
-					else
-						blend = 0.0f;
-				}
-				else
-				{
-					if (rotationLockBlending < rotationLockBlendTime)
-						blend = rotationLockBlending / rotationLockBlendTime;
-					else
-						blend = 1.0f;
-				}
-
-				relativeHeadBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.4f);
-				model.UpdateWorldTransforms();
-
-				Matrix r = Matrix.CreateRotationX(input.Mouse.Value.Y * 0.6f * blend * (runAnimation.TotalStrength + sprintAnimation.TotalStrength));
-
-				Matrix parent = clavicleLeft;
-				parent.Translation = Vector3.Zero;
-				relativeUpperLeftArm.Value *= parent * r * Matrix.Invert(parent);
-
-				parent = clavicleRight;
-				parent.Translation = Vector3.Zero;
-				relativeUpperRightArm.Value *= parent * r * Matrix.Invert(parent);
-
-				model.UpdateWorldTransforms();
-
-				Vector3 shake = Vector3.Zero;
-				float finalShakeAmount = baseCameraShakeAmount;
-				if (cameraShakeTime > 0.0f)
-				{
-					finalShakeAmount += cameraShakeAmount * (cameraShakeTime / totalCameraShakeTime);
-					cameraShakeTime -= dt;
-				}
-				else
-					cameraShakeAmount.Value = 0.0f;
-
-				if (finalShakeAmount > 0.0f)
-				{
-					float offset = main.TotalTime * 15.0f;
-					shake = new Vector3(noise.Sample(new Vector3(offset)), noise.Sample(new Vector3(offset + 64)), noise.Sample(new Vector3(offset + 128))) * finalShakeAmount * 0.3f;
-				}
-
-				if (enableCameraControl)
-				{
-					Vector3 cameraPosition = Vector3.Transform(cameraOffset, Matrix.CreateRotationY((float)Math.PI) * headBone.Value * model.Transform);
-
-#if DEVELOPMENT
-					if (thirdPerson)
-					{
-						debugCameraPosition.Transform.Value = Matrix.CreateTranslation(cameraPosition);
-
-						cameraPosition = Vector3.Transform(new Vector3(0.0f, 3.0f, 0.0f), model.Transform);
-
-						main.Camera.Angles.Value = new Vector3(-input.Mouse.Value.Y + shake.X, input.Mouse.Value.X + (float)Math.PI * 1.0f + shake.Y, shake.Z);
-
-						Map.GlobalRaycastResult hit = Map.GlobalRaycast(cameraPosition, -main.Camera.Forward.Value, 5.0f);
-
-						float cameraDistance = 4.0f;
-						if (hit.Map != null)
-							cameraDistance = (hit.Position - cameraPosition).Length() - 1.0f;
-						main.Camera.Position.Value = cameraPosition + (main.Camera.Right.Value * cameraDistance * -0.25f) + (main.Camera.Forward.Value * -cameraDistance);
-					}
-					else
-#endif
-					{
-						main.Camera.Position.Value = cameraPosition;
-
-						Matrix camera = cameraBone.Value * Matrix.CreateRotationY(input.Mouse.Value.X + shake.X);
-
-						Matrix rot = Matrix.Identity;
-						rot.Forward = Vector3.TransformNormal(new Vector3(0, 1.0f, 0), camera);
-						rot.Up = Vector3.TransformNormal(new Vector3(0.0f, 0, 1.0f), camera);
-						rot.Right = Vector3.Normalize(Vector3.Cross(rot.Forward, rot.Up));
-
-						Vector3 right = Vector3.Cross(rot.Forward, Vector3.Up);
-
-						const float leanAmount = (float)Math.PI * 0.05f;
-						main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shake.Z + lean.X * -leanAmount) * Matrix.CreateFromAxisAngle(right, -input.Mouse.Value.Y + shake.Y);
-					}
-
-					float minBlur = 4.0f;
-					float maxBlur = player.MaxSpeed.Value + 2.0f;
-					float speed = Math.Abs(Vector3.Dot(player.LinearVelocity.Value, main.Camera.Forward));
-					main.Renderer.SpeedBlurAmount.Value = Math.Min(1.0f, Math.Max(0.0f, (speed - minBlur) / (maxBlur - minBlur)));
-				}
-				else
-					main.Renderer.SpeedBlurAmount.Value = 0;
-			});
-
 			// Movement binding
-			player.Add(new Binding<Vector2>(player.MovementDirection, delegate()
+			player.Add(new Binding<Vector2>(player.Character.MovementDirection, delegate()
 			{
 				Vector2 movement = input.Movement;
 				if (movement.LengthSquared() == 0.0f)
@@ -743,8 +522,8 @@ namespace Lemma.Factories
 				return -(forwardDir * movement.Y) - (rightDir * movement.X);
 			}, input.Movement, rotation));
 
-			player.Crouched.Value = true;
-			player.AllowUncrouch.Value = true;
+			player.Character.Crouched.Value = true;
+			player.Character.AllowUncrouch.Value = true;
 
 			bool canKick = false;
 			int wallJumpCount = 0;
@@ -791,11 +570,11 @@ namespace Lemma.Factories
 
 					model.Stop("WallRunLeft", "WallRunRight", "WallRunStraight", "WallSlideDown", "WallSlideReverse");
 
-					if (player.IsSupported)
+					if (player.Character.IsSupported)
 					{
 						if (!lastSupported)
 						{
-							if (main.TotalTime > lastLandAnimationPlayed + 0.5f && !player.Crouched)
+							if (main.TotalTime > lastLandAnimationPlayed + 0.5f && !player.Character.Crouched)
 							{
 								footstepTimer.Command.Execute();
 								AkSoundEngine.PostEvent("Play_land", result);
@@ -810,13 +589,13 @@ namespace Lemma.Factories
 
 						string movementAnimation;
 
-						Vector3 velocity = player.LinearVelocity;
+						Vector3 velocity = player.Character.LinearVelocity;
 						velocity.Y = 0;
 						float speed = velocity.Length();
 
-						if (player.EnableWalking)
+						if (player.Character.EnableWalking)
 						{
-							if (player.Crouched)
+							if (player.Character.Crouched)
 							{
 								if (dir.LengthSquared() == 0.0f)
 									movementAnimation = "CrouchIdle";
@@ -833,16 +612,16 @@ namespace Lemma.Factories
 						}
 						else
 						{
-							if (player.Crouched)
+							if (player.Character.Crouched)
 								movementAnimation = "CrouchIdle";
 							else
 								movementAnimation = "Idle";
 						}
 
-						foreach (KeyValuePair<string, AnimationInfo> animation in player.Crouched ? crouchMovementAnimations : movementAnimations)
+						foreach (KeyValuePair<string, AnimationInfo> animation in player.Character.Crouched ? crouchMovementAnimations : movementAnimations)
 						{
 							if (animation.Key != "Idle" && animation.Key != "CrouchIdle")
-								model[animation.Key].Speed = player.Crouched ? (speed / 2.2f) : (speed / 6.5f);
+								model[animation.Key].Speed = player.Character.Crouched ? (speed / 2.2f) : (speed / 6.5f);
 							model[animation.Key].TargetStrength = animation.Key == movementAnimation ? 1.0f : animation.Value.DefaultStrength;
 						}
 
@@ -856,8 +635,8 @@ namespace Lemma.Factories
 
 						if (!model.IsPlaying(movementAnimation))
 						{
-							model.Stop(player.Crouched ? movementAnimations.Keys.ToArray() : crouchMovementAnimations.Keys.ToArray());
-							foreach (KeyValuePair<string, AnimationInfo> animation in player.Crouched ? crouchMovementAnimations : movementAnimations)
+							model.Stop(player.Character.Crouched ? movementAnimations.Keys.ToArray() : crouchMovementAnimations.Keys.ToArray());
+							foreach (KeyValuePair<string, AnimationInfo> animation in player.Character.Crouched ? crouchMovementAnimations : movementAnimations)
 							{
 								model.StartClip(animation.Key, animation.Value.Priority, true);
 								model[animation.Key].Strength = animation.Value.DefaultStrength;
@@ -872,18 +651,7 @@ namespace Lemma.Factories
 							model.StartClip("Fall", 0, true);
 					}
 
-					lastSupported = player.IsSupported;
-
-#if DEVELOPMENT
-					debugAnimations.Children.Clear();
-					foreach (SkinnedModel.Clip clip in model.CurrentClips)
-					{
-						TextElement label = new TextElement();
-						label.FontFile.Value = "Font";
-						label.Text.Value = clip.TargetStrength.ToString("F") + " " + clip.TotalStrength.ToString("F") + " " + clip.Name;
-						debugAnimations.Children.Add(label);
-					}
-#endif
+					lastSupported = player.Character.IsSupported;
 				}
 			});
 
@@ -1018,7 +786,7 @@ namespace Lemma.Factories
 			Action<Map, Direction, Player.WallRun, Vector3, bool> setUpWallRun = delegate(Map map, Direction dir, Player.WallRun state, Vector3 forwardVector, bool addInitialVelocity)
 			{
 				stopKick();
-				player.AllowUncrouch.Value = true;
+				player.Character.AllowUncrouch.Value = true;
 
 				lastWallCoord = new Map.Coordinate();
 
@@ -1028,7 +796,7 @@ namespace Lemma.Factories
 				if (state == Player.WallRun.Straight)
 				{
 					// Determine if we're actually going down
-					if (!player.IsSupported && player.LinearVelocity.Value.Y < -0.5f)
+					if (!player.Character.IsSupported && player.Character.LinearVelocity.Value.Y < -0.5f)
 						state = Player.WallRun.Down;
 				}
 
@@ -1064,22 +832,22 @@ namespace Lemma.Factories
 				{
 					if (state == Player.WallRun.Straight)
 					{
-						Vector3 velocity = player.LinearVelocity.Value;
+						Vector3 velocity = player.Character.LinearVelocity.Value;
 						velocity.X = 0;
 						velocity.Z = 0;
 						if (addInitialVelocity)
 						{
-							if (player.IsSupported)
-								velocity.Y = player.JumpSpeed * 1.3f;
+							if (player.Character.IsSupported)
+								velocity.Y = player.Character.JumpSpeed * 1.3f;
 							else
-								velocity.Y = player.LinearVelocity.Value.Y + player.JumpSpeed * 0.75f;
+								velocity.Y = player.Character.LinearVelocity.Value.Y + player.Character.JumpSpeed * 0.75f;
 						}
 						else
-							velocity.Y = player.LinearVelocity.Value.Y;
+							velocity.Y = player.Character.LinearVelocity.Value.Y;
 
-						player.LinearVelocity.Value = velocity;
-						player.IsSupported.Value = false;
-						player.HasTraction.Value = false;
+						player.Character.LinearVelocity.Value = velocity;
+						player.Character.IsSupported.Value = false;
+						player.Character.HasTraction.Value = false;
 					}
 					Vector3 wallVector = wallRunMap.GetAbsoluteVector(wallDirection.GetVector());
 
@@ -1092,8 +860,8 @@ namespace Lemma.Factories
 				}
 				else
 				{
-					player.IsSupported.Value = false;
-					player.HasTraction.Value = false;
+					player.Character.IsSupported.Value = false;
+					player.Character.HasTraction.Value = false;
 					Vector3 velocity = map.GetAbsoluteVector(wallRunDirection.GetVector());
 					if (Vector3.Dot(velocity, forwardVector) < 0.0f)
 					{
@@ -1111,17 +879,17 @@ namespace Lemma.Factories
 						{
 							velocity /= length;
 
-							Vector3 currentHorizontalVelocity = player.LinearVelocity;
+							Vector3 currentHorizontalVelocity = player.Character.LinearVelocity;
 							currentHorizontalVelocity.Y = 0.0f;
-							velocity *= Math.Min(player.MaxSpeed * 2.0f, Math.Max(currentHorizontalVelocity.Length() * 1.25f, 6.0f));
+							velocity *= Math.Min(player.Character.MaxSpeed * 2.0f, Math.Max(currentHorizontalVelocity.Length() * 1.25f, 6.0f));
 
-							if (state != Player.WallRun.Straight && state != Player.WallRun.Reverse && Vector3.Dot(player.LinearVelocity, forwardVector) < 0.0f)
+							if (state != Player.WallRun.Straight && state != Player.WallRun.Reverse && Vector3.Dot(player.Character.LinearVelocity, forwardVector) < 0.0f)
 								velocity = Vector3.Normalize(velocity) * (minWallRunSpeed + 1.0f);
 
-							float currentVerticalSpeed = player.LinearVelocity.Value.Y;
+							float currentVerticalSpeed = player.Character.LinearVelocity.Value.Y;
 							velocity.Y = (currentVerticalSpeed > -3.0f ? Math.Max(currentVerticalSpeed * 0.7f, 0.0f) : currentVerticalSpeed * 0.5f) + 5.0f;
 
-							player.LinearVelocity.Value = velocity;
+							player.Character.LinearVelocity.Value = velocity;
 						}
 					}
 				}
@@ -1139,7 +907,7 @@ namespace Lemma.Factories
 
 			Func<Player.WallRun, bool> activateWallRun = delegate(Player.WallRun state)
 			{
-				Vector3 playerVelocity = player.LinearVelocity;
+				Vector3 playerVelocity = player.Character.LinearVelocity;
 				if (playerVelocity.Y < rollingDamageVelocity)
 					return false;
 
@@ -1179,7 +947,7 @@ namespace Lemma.Factories
 						break;
 				}
 
-				Vector3 pos = transform.Position + new Vector3(0, player.Height * -0.5f, 0);
+				Vector3 pos = transform.Position + new Vector3(0, player.Character.Height * -0.5f, 0);
 
 				// Attempt to wall-run on an existing map
 				bool activate = false, addInitialVelocity = false;
@@ -1230,7 +998,7 @@ namespace Lemma.Factories
 						if (activate)
 						{
 							// Move so the player is exactly two coordinates away from the wall
-							transform.Position.Value = map.GetAbsolutePosition(coord.Move(dir, i - 2)) + new Vector3(0, player.Height * 0.5f, 0);
+							transform.Position.Value = map.GetAbsolutePosition(coord.Move(dir, i - 2)) + new Vector3(0, player.Character.Height * 0.5f, 0);
 							break;
 						}
 					}
@@ -1249,7 +1017,7 @@ namespace Lemma.Factories
 			Action<Vector3, Vector3, bool> breakWalls = delegate(Vector3 forward, Vector3 right, bool breakFloor)
 			{
 				BlockFactory blockFactory = Factory.Get<BlockFactory>();
-				Vector3 pos = transform.Position + new Vector3(0, 0.1f + (player.Height * -0.5f) - player.SupportHeight, 0) + forward * -1.0f;
+				Vector3 pos = transform.Position + new Vector3(0, 0.1f + (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0) + forward * -1.0f;
 				Vector3 basePos = pos;
 				foreach (Map map in Map.ActivePhysicsMaps.ToList())
 				{
@@ -1259,7 +1027,7 @@ namespace Lemma.Factories
 					for (int i = 0; i < 5; i++)
 					{
 						Map.Coordinate center = map.GetCoordinate(pos);
-						Map.Coordinate top = map.GetCoordinate(basePos + new Vector3(0, Player.CrouchedCharacterHeight + Player.CrouchedSupportHeight + 0.5f, 0));
+						Map.Coordinate top = map.GetCoordinate(basePos + new Vector3(0, player.Character.CrouchedHeight + player.Character.CrouchedSupportHeight + 0.5f, 0));
 						Direction upDir = map.GetRelativeDirection(Vector3.Up);
 						Direction rightDir = map.GetRelativeDirection(right);
 						for (Map.Coordinate y = center.Move(upDir.GetReverse(), breakFloor ? 2 : 0); y.GetComponent(upDir) <= top.GetComponent(upDir); y = y.Move(upDir))
@@ -1307,13 +1075,13 @@ namespace Lemma.Factories
 					if (jump(true, true)) // Try to vault up
 						return;
 
-					if (!wallRunMap.Active || player.IsSupported)
+					if (!wallRunMap.Active || player.Character.IsSupported)
 					{
 						deactivateWallRun();
 						return;
 					}
 
-					float wallRunSpeed = Vector3.Dot(player.LinearVelocity.Value, wallRunMap.GetAbsoluteVector(wallRunDirection.GetVector()));
+					float wallRunSpeed = Vector3.Dot(player.Character.LinearVelocity.Value, wallRunMap.GetAbsoluteVector(wallRunDirection.GetVector()));
 
 					if (wallRunState == Player.WallRun.Straight)
 					{
@@ -1361,11 +1129,11 @@ namespace Lemma.Factories
 					if (wallRunAnimation != null)
 					{
 						Vector3 wallNormal = wallRunMap.GetAbsoluteVector(wallDirection.GetVector());
-						float animationSpeed = (player.LinearVelocity.Value - wallNormal * Vector3.Dot(player.LinearVelocity.Value, wallNormal)).Length();
+						float animationSpeed = (player.Character.LinearVelocity.Value - wallNormal * Vector3.Dot(player.Character.LinearVelocity.Value, wallNormal)).Length();
 						model[wallRunAnimation].Speed = Math.Min(1.5f, animationSpeed / 6.0f);
 					}
 
-					Vector3 pos = transform.Position + new Vector3(0, player.Height * -0.5f, 0);
+					Vector3 pos = transform.Position + new Vector3(0, player.Character.Height * -0.5f, 0);
 					Map.Coordinate coord = wallRunMap.GetCoordinate(pos);
 					Map.Coordinate wallCoord = coord.Move(wallDirection, 2);
 					Map.CellState wallType = wallRunMap[wallCoord];
@@ -1428,7 +1196,7 @@ namespace Lemma.Factories
 
 					transform.Position.Value += normal * snapDistance;
 
-					Vector3 velocity = player.LinearVelocity;
+					Vector3 velocity = player.Character.LinearVelocity;
 
 					// Also fix the velocity so we don't jitter away from the wall
 					velocity -= Vector3.Dot(velocity, normal) * normal;
@@ -1436,7 +1204,7 @@ namespace Lemma.Factories
 					// Slow our descent
 					velocity += new Vector3(0, (wallRunState == Player.WallRun.Straight ? 3.0f : 10.0f) * dt, 0);
 
-					player.LinearVelocity.Value = velocity;
+					player.Character.LinearVelocity.Value = velocity;
 				}
 			});
 
@@ -1465,7 +1233,7 @@ namespace Lemma.Factories
 					}
 					else
 					{
-						player.LinearVelocity.Value = new Vector3(0, player.LinearVelocity.Value.Y, 0);
+						player.Character.LinearVelocity.Value = new Vector3(0, player.Character.LinearVelocity.Value.Y, 0);
 						if (!model.IsPlaying("Roll"))
 							model.StartClip("Land", 1, false, 0.1f);
 					}
@@ -1473,7 +1241,7 @@ namespace Lemma.Factories
 			};
 
 			// Damage the player if they hit something too hard
-			result.Add(new CommandBinding<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection>(player.Collided, delegate(BEPUphysics.BroadPhaseEntries.Collidable other, ContactCollection contacts)
+			result.Add(new CommandBinding<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection>(player.Character.Collided, delegate(BEPUphysics.BroadPhaseEntries.Collidable other, ContactCollection contacts)
 			{
 				DynamicMap map = other.Tag as DynamicMap;
 				if (map != null)
@@ -1488,12 +1256,12 @@ namespace Lemma.Factories
 
 			update.Add(delegate(float dt)
 			{
-				if (!lastSupported && player.IsSupported)
+				if (!lastSupported && player.Character.IsSupported)
 				{
 					// Damage the player if they fall too hard and they're not smashing or rolling
-					fallDamage(playerLastVelocity.Y - player.LinearVelocity.Value.Y);
+					fallDamage(playerLastVelocity.Y - player.Character.LinearVelocity.Value.Y);
 				}
-				playerLastVelocity = player.LinearVelocity;
+				playerLastVelocity = player.Character.LinearVelocity;
 			});
 
 			Direction[] platformBuildableDirections = DirectionExtensions.HorizontalDirections.Union(new[] { Direction.NegativeY }).ToArray();
@@ -1651,7 +1419,7 @@ namespace Lemma.Factories
 				if (dynamicMap != null)
 				{
 					BEPUphysics.Entities.Entity supportEntity = dynamicMap.PhysicsEntity;
-					Vector3 supportLocation = transform.Position.Value + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
+					Vector3 supportLocation = transform.Position.Value + new Vector3(0, (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0);
 					vaultVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
 				}
 
@@ -1659,18 +1427,18 @@ namespace Lemma.Factories
 				// then vault over it rather than standing on top of it
 				bool vaultOver = map[coordPosition + forward + Vector3.Down].ID == 0;
 
-				player.LinearVelocity.Value = vaultVelocity;
-				player.IsSupported.Value = false;
-				player.HasTraction.Value = false;
+				player.Character.LinearVelocity.Value = vaultVelocity;
+				player.Character.IsSupported.Value = false;
+				player.Character.HasTraction.Value = false;
 
 				Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
 				Vector3 dir = map.GetAbsoluteVector(map.GetRelativeDirection(new Vector3(-rotationMatrix.Forward.X, 0, -rotationMatrix.Forward.Z)).GetVector());
 				rotation.Value = (float)Math.Atan2(dir.X, dir.Z);
 				rotationLocked.Value = true;
 
-				player.EnableWalking.Value = false;
-				player.Crouched.Value = true;
-				player.AllowUncrouch.Value = false;
+				player.Character.EnableWalking.Value = false;
+				player.Character.Crouched.Value = true;
+				player.Character.AllowUncrouch.Value = false;
 
 				float vaultTime = 0.0f;
 				if (vaultMover != null)
@@ -1694,15 +1462,15 @@ namespace Lemma.Factories
 							else
 							{
 								// Still moving forward
-								player.LinearVelocity.Value = forward * player.MaxSpeed;
-								player.LastSupportedSpeed.Value = player.MaxSpeed;
+								player.Character.LinearVelocity.Value = forward * player.Character.MaxSpeed;
+								player.Character.LastSupportedSpeed.Value = player.Character.MaxSpeed;
 							}
 						}
 						else
 						{
 							// We're still going up.
-							if (player.IsSupported || vaultTime > maxVaultTime || player.LinearVelocity.Value.Y < 0.0f
-								|| (transform.Position.Value.Y + (player.Height * -0.5f) - player.SupportHeight > map.GetAbsolutePosition(coord).Y + 0.1f)) // Move forward
+							if (player.Character.IsSupported || vaultTime > maxVaultTime || player.Character.LinearVelocity.Value.Y < 0.0f
+								|| (transform.Position.Value.Y + (player.Character.Height * -0.5f) - player.Character.SupportHeight > map.GetAbsolutePosition(coord).Y + 0.1f)) // Move forward
 							{
 								// We've reached the top of the vault. Start moving forward.
 								// Max vault time ensures we never get stuck
@@ -1718,14 +1486,14 @@ namespace Lemma.Factories
 								{
 									// We're not vaulting over a 1-block-wide wall
 									// So just stop
-									player.LinearVelocity.Value = forward * player.MaxSpeed;
-									player.LastSupportedSpeed.Value = player.MaxSpeed;
-									player.Body.ActivityInformation.Activate();
+									player.Character.LinearVelocity.Value = forward * player.Character.MaxSpeed;
+									player.Character.LastSupportedSpeed.Value = player.Character.MaxSpeed;
+									player.Character.Body.ActivityInformation.Activate();
 									delete = true;
 								}
 							}
 							else // We're still going up.
-								player.LinearVelocity.Value = vaultVelocity;
+								player.Character.LinearVelocity.Value = vaultVelocity;
 						}
 
 						if (delete)
@@ -1733,11 +1501,11 @@ namespace Lemma.Factories
 							vaultMover.Delete.Execute(); // Make sure we get rid of this vault mover
 							vaultMover = null;
 							rotationLocked.Value = false;
-							player.EnableWalking.Value = true;
+							player.Character.EnableWalking.Value = true;
 							result.Add(new Animation
 							(
 								new Animation.Delay(0.1f),
-								new Animation.Set<bool>(player.AllowUncrouch, true)
+								new Animation.Set<bool>(player.Character.AllowUncrouch, true)
 							));
 						}
 					}
@@ -1748,10 +1516,10 @@ namespace Lemma.Factories
 
 			jump = delegate(bool allowVault, bool onlyVault)
 			{
-				if (player.Crouched)
+				if (player.Character.Crouched)
 					return false;
 
-				bool supported = player.IsSupported;
+				bool supported = player.Character.IsSupported;
 
 				Player.WallRun wallRunState = player.WallRunState;
 
@@ -1766,7 +1534,7 @@ namespace Lemma.Factories
 						Direction right = map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
 						Vector3 pos = transform.Position + rotationMatrix.Forward * -1.75f;
 						Map.Coordinate baseCoord = map.GetCoordinate(pos).Move(up, 1);
-						int verticalSearchDistance = player.IsSupported ? 2 : 3;
+						int verticalSearchDistance = player.Character.IsSupported ? 2 : 3;
 						foreach (int x in new[] { 0, -1, 1 })
 						{
 							Map.Coordinate coord = baseCoord.Move(right, x);
@@ -1804,7 +1572,7 @@ namespace Lemma.Factories
 					}
 				}
 
-				Vector2 jumpDirection = player.MovementDirection;
+				Vector2 jumpDirection = player.Character.MovementDirection;
 
 				Vector3 baseVelocity = Vector3.Zero;
 
@@ -1856,14 +1624,14 @@ namespace Lemma.Factories
 					if (dynamicMap != null)
 					{
 						BEPUphysics.Entities.Entity supportEntity = dynamicMap.PhysicsEntity;
-						Vector3 supportLocation = transform.Position.Value + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
+						Vector3 supportLocation = transform.Position.Value + new Vector3(0, (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0);
 						baseVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
 					}
 				};
 
 				if (!onlyVault && vaultType == VaultType.None
 					&& !supported && wallRunState == Player.WallRun.None
-					&& player.LinearVelocity.Value.Y > damageVelocity * 1.5f)
+					&& player.Character.LinearVelocity.Value.Y > damageVelocity * 1.5f)
 				{
 					// We're not vaulting, not doing our normal jump, and not wall-walking
 					// See if we can wall-jump
@@ -1893,7 +1661,7 @@ namespace Lemma.Factories
 				// Add some velocity so we jump away from the wall a bit
 				if (!onlyVault && wallRunState != Player.WallRun.None)
 				{
-					Vector3 pos = transform.Position + new Vector3(0, (player.Height * -0.5f) - 0.5f, 0);
+					Vector3 pos = transform.Position + new Vector3(0, (player.Character.Height * -0.5f) - 0.5f, 0);
 					Map.Coordinate wallCoord = wallRunMap.GetCoordinate(pos).Move(wallDirection, 2);
 					wallJump(wallRunMap, wallDirection.GetReverse(), wallCoord);
 				}
@@ -1905,7 +1673,7 @@ namespace Lemma.Factories
 				if (!go && !onlyVault)
 				{
 					// Check block possibilities beneath us
-					Vector3 jumpPos = transform.Position + new Vector3(0, player.Height * -0.5f - player.SupportHeight - 1.0f, 0);
+					Vector3 jumpPos = transform.Position + new Vector3(0, player.Character.Height * -0.5f - player.Character.SupportHeight - 1.0f, 0);
 					foreach (BlockPossibility possibility in blockPossibilities.Values.SelectMany(x => x))
 					{
 						if (possibility.Map.GetCoordinate(jumpPos).Between(possibility.StartCoord, possibility.EndCoord)
@@ -2023,10 +1791,10 @@ namespace Lemma.Factories
 							// Regular jump
 							// Take base velocity into account
 
-							BEPUphysics.Entities.Entity supportEntity = player.SupportEntity;
+							BEPUphysics.Entities.Entity supportEntity = player.Character.SupportEntity;
 							if (supportEntity != null)
 							{
-								Vector3 supportLocation = transform.Position.Value + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
+								Vector3 supportLocation = transform.Position.Value + new Vector3(0, (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0);
 								baseVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
 							}
 						}
@@ -2034,45 +1802,45 @@ namespace Lemma.Factories
 						{
 							// We haven't hit the ground, so fall damage will not be handled by the physics system.
 							// Need to do it manually here.
-							fallDamage(player.LinearVelocity.Value.Y);
+							fallDamage(player.Character.LinearVelocity.Value.Y);
 						}
 					}
 
 					if (vaultType == VaultType.None)
 					{
 						// Just a normal jump.
-						Vector3 velocity = player.LinearVelocity;
+						Vector3 velocity = player.Character.LinearVelocity;
 						float currentVerticalSpeed = velocity.Y;
 						velocity.Y = 0.0f;
 						float jumpSpeed = jumpDirection.Length();
 						if (jumpSpeed > 0)
-							jumpDirection *= (wallJumping ? player.MaxSpeed : velocity.Length()) / jumpSpeed;
+							jumpDirection *= (wallJumping ? player.Character.MaxSpeed : velocity.Length()) / jumpSpeed;
 
 						float verticalMultiplier = 1.0f;
 
 						if (main.TotalTime - rollEnded < 0.3f)
 							totalMultiplier *= 1.5f;
 
-						float verticalJumpSpeed = player.JumpSpeed * verticalMultiplier;
+						float verticalJumpSpeed = player.Character.JumpSpeed * verticalMultiplier;
 
 						// If we're not instantiating a block possibility beneath us or we're not currently falling, incorporate some of our existing vertical velocity in our jump
 						if (!blockPossibilityBeneath || currentVerticalSpeed > 0.0f)
 							verticalJumpSpeed += currentVerticalSpeed * 0.5f;
 
-						player.LinearVelocity.Value = baseVelocity + new Vector3(jumpDirection.X, verticalJumpSpeed, jumpDirection.Y) * totalMultiplier;
+						player.Character.LinearVelocity.Value = baseVelocity + new Vector3(jumpDirection.X, verticalJumpSpeed, jumpDirection.Y) * totalMultiplier;
 
-						if (supported && player.SupportEntity.Value != null)
+						if (supported && player.Character.SupportEntity.Value != null)
 						{
-							Vector3 impulsePosition = transform.Position + new Vector3(0, player.Height * -0.5f - player.SupportHeight, 0);
-							Vector3 impulse = player.LinearVelocity.Value * player.Body.Mass * -1.0f;
-							player.SupportEntity.Value.ApplyImpulse(ref impulsePosition, ref impulse);
+							Vector3 impulsePosition = transform.Position + new Vector3(0, player.Character.Height * -0.5f - player.Character.SupportHeight, 0);
+							Vector3 impulse = player.Character.LinearVelocity.Value * player.Character.Body.Mass * -1.0f;
+							player.Character.SupportEntity.Value.ApplyImpulse(ref impulsePosition, ref impulse);
 						}
 
 						Session.Recorder.Event(main, "Jump");
 
-						player.IsSupported.Value = false;
-						player.SupportEntity.Value = null;
-						player.HasTraction.Value = false;
+						player.Character.IsSupported.Value = false;
+						player.Character.SupportEntity.Value = null;
+						player.Character.HasTraction.Value = false;
 					}
 
 					AkSoundEngine.PostEvent(vaultType == VaultType.None ? "Jump_Play" : "Vault_Play", result);
@@ -2098,7 +1866,7 @@ namespace Lemma.Factories
 					}
 					else
 					{
-						Vector3 velocity = -Vector3.TransformNormal(player.LinearVelocity, Matrix.CreateRotationY(-rotation));
+						Vector3 velocity = -Vector3.TransformNormal(player.Character.LinearVelocity, Matrix.CreateRotationY(-rotation));
 						velocity.Y = 0.0f;
 						if (wallRunState == Player.WallRun.Left || wallRunState == Player.WallRun.Right)
 							velocity.Z = 0.0f;
@@ -2151,18 +1919,18 @@ namespace Lemma.Factories
 
 				clearBlockPossibilities();
 
-				Vector3 startPosition = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
+				Vector3 startPosition = transform.Position + new Vector3(0, (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0);
 
-				Vector3 straightAhead = Matrix.CreateRotationY(rotation).Forward * -player.MaxSpeed;
+				Vector3 straightAhead = Matrix.CreateRotationY(rotation).Forward * -player.Character.MaxSpeed;
 
-				Vector3 velocity = player.LinearVelocity;
-				if (velocity.Length() < player.MaxSpeed * 0.25f)
+				Vector3 velocity = player.Character.LinearVelocity;
+				if (velocity.Length() < player.Character.MaxSpeed * 0.25f)
 					velocity += straightAhead * 0.5f;
 
 				predictJump(predictions, startPosition, velocity, interval, 0);
 
 				Vector3 jumpVelocity = velocity;
-				jumpVelocity.Y = player.JumpSpeed;
+				jumpVelocity.Y = player.Character.JumpSpeed;
 
 				return jumpVelocity;
 			};
@@ -2170,7 +1938,7 @@ namespace Lemma.Factories
 			Func<float> getPredictionInterval = delegate()
 			{
 				// Interval is the time in seconds between locations where we will check for buildable platforms
-				return 0.3f * (8.0f / Math.Max(5.0f, player.LinearVelocity.Value.Length()));
+				return 0.3f * (8.0f / Math.Max(5.0f, player.Character.LinearVelocity.Value.Length()));
 			};
 
 			Action<Vector3> vaultDown = delegate(Vector3 forward)
@@ -2178,13 +1946,13 @@ namespace Lemma.Factories
 				const float vaultVerticalSpeed = -8.0f;
 				const float maxVaultTime = 0.5f;
 
-				Vector3 velocity = forward * player.MaxSpeed;
-				velocity.Y = player.LinearVelocity.Value.Y;
-				player.LinearVelocity.Value = velocity;
+				Vector3 velocity = forward * player.Character.MaxSpeed;
+				velocity.Y = player.Character.LinearVelocity.Value.Y;
+				player.Character.LinearVelocity.Value = velocity;
 				rotationLocked.Value = true;
-				player.EnableWalking.Value = false;
-				player.Crouched.Value = true;
-				player.AllowUncrouch.Value = false;
+				player.Character.EnableWalking.Value = false;
+				player.Character.Crouched.Value = true;
+				player.Character.AllowUncrouch.Value = false;
 
 				float vaultTime = 0.0f;
 				if (vaultMover != null)
@@ -2203,15 +1971,15 @@ namespace Lemma.Factories
 
 						if (vaultTime > maxVaultTime) // Max vault time ensures we never get stuck
 							delete = true;
-						else if (walkOffEdgeTimer > 0.2f && player.IsSupported)
+						else if (walkOffEdgeTimer > 0.2f && player.Character.IsSupported)
 							delete = true; // We went over the edge and hit the ground. Stop.
-						else if (!player.IsSupported) // We hit the edge, go down it
+						else if (!player.Character.IsSupported) // We hit the edge, go down it
 						{
 							walkOffEdgeTimer += dt;
 
 							if (walkOffEdgeTimer > 0.1f)
 							{
-								player.LinearVelocity.Value = new Vector3(0, vaultVerticalSpeed, 0);
+								player.Character.LinearVelocity.Value = new Vector3(0, vaultVerticalSpeed, 0);
 
 								if (!input.GetInput(settings.Parkour)
 									|| transform.Position.Value.Y < originalPosition.Y - 3.0f
@@ -2224,15 +1992,15 @@ namespace Lemma.Factories
 
 						if (walkOffEdgeTimer < 0.1f)
 						{
-							velocity = forward * player.MaxSpeed;
-							velocity.Y = player.LinearVelocity.Value.Y;
-							player.LinearVelocity.Value = velocity;
+							velocity = forward * player.Character.MaxSpeed;
+							velocity.Y = player.Character.LinearVelocity.Value.Y;
+							player.Character.LinearVelocity.Value = velocity;
 						}
 
 						if (delete)
 						{
-							player.AllowUncrouch.Value = true;
-							player.EnableWalking.Value = true;
+							player.Character.AllowUncrouch.Value = true;
+							player.Character.EnableWalking.Value = true;
 							if (player.WallRunState.Value == Player.WallRun.None)
 								rotationLocked.Value = false;
 							vaultMover.Delete.Execute(); // Make sure we get rid of this vault mover
@@ -2246,7 +2014,7 @@ namespace Lemma.Factories
 
 			Func<bool> tryVaultDown = delegate()
 			{
-				if (player.Crouched || !player.IsSupported)
+				if (player.Character.Crouched || !player.Character.IsSupported)
 					return false;
 
 				Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
@@ -2287,7 +2055,7 @@ namespace Lemma.Factories
 
 				// Don't allow vaulting
 				// Also don't try anything if we're crouched or in the middle of vaulting
-				if (vaultMover == null && !jump(false, false) && player.EnableSlowMotion && !player.IsSupported)
+				if (vaultMover == null && !jump(false, false) && player.EnableSlowMotion && !player.Character.IsSupported)
 				{
 					float interval = getPredictionInterval();
 
@@ -2323,7 +2091,7 @@ namespace Lemma.Factories
 			// Wall-run, vault, predictive
 			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
 			{
-				if (!player.EnableMoves || phoneActive || noteActive || (player.Crouched && player.IsSupported) || vaultMover != null)
+				if (!player.EnableMoves || phoneActive || noteActive || (player.Character.Crouched && player.Character.IsSupported) || vaultMover != null)
 					return;
 
 				bool vaulted = jump(true, true); // Try vaulting first
@@ -2341,7 +2109,7 @@ namespace Lemma.Factories
 				if (!vaulted)
 					vaulted = tryVaultDown();
 
-				if (!vaulted && !wallRan && !player.IsSupported && player.EnableSlowMotion)
+				if (!vaulted && !wallRan && !player.Character.IsSupported && player.EnableSlowMotion)
 				{
 					// Predict block possibilities
 					Queue<Prediction> predictions = new Queue<Prediction>();
@@ -2408,9 +2176,9 @@ namespace Lemma.Factories
 					kickUpdate.Delete.Execute();
 					kickUpdate = null;
 					model.Stop("Kick", "Slide");
-					player.EnableWalking.Value = true;
+					player.Character.EnableWalking.Value = true;
 					if (!input.GetInput(settings.RollKick))
-						player.AllowUncrouch.Value = true;
+						player.Character.AllowUncrouch.Value = true;
 					rotationLocked.Value = false;
 				}
 			};
@@ -2429,14 +2197,14 @@ namespace Lemma.Factories
 				Vector3 forward = -rotationMatrix.Forward;
 				Vector3 right = rotationMatrix.Right;
 
-				if (player.EnableCrouch && player.EnableRoll && !player.IsSwimming && (!player.EnableKick || !player.IsSupported || player.LinearVelocity.Value.Length() < 2.0f))
+				if (player.EnableCrouch && player.EnableRoll && !player.Character.IsSwimming && (!player.EnableKick || !player.Character.IsSupported || player.Character.LinearVelocity.Value.Length() < 2.0f))
 				{
 					// Try to roll
-					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
+					Vector3 playerPos = transform.Position + new Vector3(0, (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0);
 
-					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height + 1.0f);
+					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Character.Height + 1.0f);
 
-					bool nearGround = (player.IsSupported || player.LinearVelocity.Value.Y <= 0.0f) && floorRaycast.Map != null;
+					bool nearGround = (player.Character.IsSupported || player.Character.LinearVelocity.Value.Y <= 0.0f) && floorRaycast.Map != null;
 
 					bool instantiatedBlockPossibility = false;
 
@@ -2454,7 +2222,7 @@ namespace Lemma.Factories
 						foreach (BlockPossibility block in blockPossibilities.Values.SelectMany(x => x))
 						{
 							bool first = true;
-							foreach (Map.Coordinate coord in block.Map.Rasterize(playerPos + Vector3.Up * 2.0f, playerPos + (Vector3.Down * (player.Height + 3.0f))))
+							foreach (Map.Coordinate coord in block.Map.Rasterize(playerPos + Vector3.Up * 2.0f, playerPos + (Vector3.Down * (player.Character.Height + 3.0f))))
 							{
 								if (coord.Between(block.StartCoord, block.EndCoord))
 								{
@@ -2502,7 +2270,7 @@ namespace Lemma.Factories
 						);
 						model.StartClip("CrouchIdle", 2, true);
 
-						player.EnableWalking.Value = false;
+						player.Character.EnableWalking.Value = false;
 						rotationLocked.Value = true;
 
 						footstepTimer.Command.Execute(); // We just landed; play a footstep sound
@@ -2517,12 +2285,12 @@ namespace Lemma.Factories
 						
 						// If the player is not yet supported, that means they're just about to land.
 						// So give them a little speed boost for having such good timing.
-						Vector3 velocity = forward * player.MaxSpeed * (player.IsSupported ? 0.75f : 1.25f);
-						player.LinearVelocity.Value = new Vector3(velocity.X, instantiatedBlockPossibility ? 0.0f : player.LinearVelocity.Value.Y, velocity.Z);
+						Vector3 velocity = forward * player.Character.MaxSpeed * (player.Character.IsSupported ? 0.75f : 1.25f);
+						player.Character.LinearVelocity.Value = new Vector3(velocity.X, instantiatedBlockPossibility ? 0.0f : player.Character.LinearVelocity.Value.Y, velocity.Z);
 
 						// Crouch
-						player.Crouched.Value = true;
-						player.AllowUncrouch.Value = false;
+						player.Character.Crouched.Value = true;
+						player.Character.AllowUncrouch.Value = false;
 
 						Direction rightDir = floorMap.GetRelativeDirection(right);
 						Direction forwardDir = floorMap.GetRelativeDirection(forward);
@@ -2534,20 +2302,20 @@ namespace Lemma.Factories
 							{
 								rollTime += dt;
 
-								if (rollTime > 0.1f && (rollTime > 1.0f || Vector3.Dot(player.LinearVelocity, forward) < 0.1f))
+								if (rollTime > 0.1f && (rollTime > 1.0f || Vector3.Dot(player.Character.LinearVelocity, forward) < 0.1f))
 								{
 									rollUpdate.Delete.Execute();
 									rollUpdate = null;
-									player.EnableWalking.Value = true;
+									player.Character.EnableWalking.Value = true;
 									if (!input.GetInput(settings.RollKick))
-										player.AllowUncrouch.Value = true;
+										player.Character.AllowUncrouch.Value = true;
 									rotationLocked.Value = false;
 									rollEnded = main.TotalTime;
 									rolling = false;
 								}
 								else
 								{
-									player.LinearVelocity.Value = new Vector3(velocity.X, player.LinearVelocity.Value.Y, velocity.Z);
+									player.Character.LinearVelocity.Value = new Vector3(velocity.X, player.Character.LinearVelocity.Value.Y, velocity.Z);
 									breakWalls(forward, right, false);
 									if (shouldBuildFloor)
 										buildFloor(floorMap, floorCoordinate, forwardDir, rightDir);
@@ -2586,15 +2354,15 @@ namespace Lemma.Factories
 					);
 					model.StartClip("CrouchIdle", 2, true);
 
-					player.EnableWalking.Value = false;
+					player.Character.EnableWalking.Value = false;
 					rotationLocked.Value = true;
 
-					player.Crouched.Value = true;
-					player.AllowUncrouch.Value = false;
+					player.Character.Crouched.Value = true;
+					player.Character.AllowUncrouch.Value = false;
 
-					player.LinearVelocity.Value += forward * Math.Max(4.0f, Vector3.Dot(forward, player.LinearVelocity) * 0.5f) + new Vector3(0, player.JumpSpeed * 0.25f, 0);
+					player.Character.LinearVelocity.Value += forward * Math.Max(4.0f, Vector3.Dot(forward, player.Character.LinearVelocity) * 0.5f) + new Vector3(0, player.Character.JumpSpeed * 0.25f, 0);
 
-					Vector3 kickVelocity = player.LinearVelocity;
+					Vector3 kickVelocity = player.Character.LinearVelocity;
 
 					result.Add(new Animation
 					(
@@ -2602,11 +2370,11 @@ namespace Lemma.Factories
 						new Animation.Execute(delegate() { AkSoundEngine.PostEvent("Kick_Play", result); })
 					));
 
-					Vector3 playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
+					Vector3 playerPos = transform.Position + new Vector3(0, (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0);
 
 					bool shouldBuildFloor = false, shouldBreakFloor = false;
 
-					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height);
+					Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, player.Character.Height);
 					if (floorRaycast.Map == null)
 						shouldBreakFloor = true;
 					else
@@ -2637,11 +2405,11 @@ namespace Lemma.Factories
 						{
 							kickTime += dt;
 
-							if (shouldBreakFloor && !player.IsSupported) // We weren't supported when we started kicking. We're flying.
+							if (shouldBreakFloor && !player.Character.IsSupported) // We weren't supported when we started kicking. We're flying.
 							{
 								// Roll if we hit the ground while kicking mid-air
-								playerPos = transform.Position + new Vector3(0, (player.Height * -0.5f) - player.SupportHeight, 0);
-								Map.GlobalRaycastResult r = Map.GlobalRaycast(playerPos, Vector3.Down, player.Height);
+								playerPos = transform.Position + new Vector3(0, (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0);
+								Map.GlobalRaycastResult r = Map.GlobalRaycast(playerPos, Vector3.Down, player.Character.Height);
 								if (r.Map != null)
 								{
 									stopKick();
@@ -2650,13 +2418,13 @@ namespace Lemma.Factories
 								}
 							}
 
-							if (kickTime > 0.75f || player.LinearVelocity.Value.Length() < 0.1f)
+							if (kickTime > 0.75f || player.Character.LinearVelocity.Value.Length() < 0.1f)
 							{
 								stopKick();
 								return;
 							}
 
-							player.LinearVelocity.Value = new Vector3(kickVelocity.X, player.LinearVelocity.Value.Y, kickVelocity.Z);
+							player.Character.LinearVelocity.Value = new Vector3(kickVelocity.X, player.Character.LinearVelocity.Value.Y, kickVelocity.Z);
 							breakWalls(forward, right, shouldBreakFloor);
 							if (shouldBuildFloor)
 								buildFloor(floorRaycast.Map, floorRaycast.Coordinate.Value, forwardDir, rightDir);
@@ -2671,7 +2439,7 @@ namespace Lemma.Factories
 			input.Bind(settings.RollKick, PCInput.InputState.Up, delegate()
 			{
 				if (!rolling && kickUpdate == null)
-					player.AllowUncrouch.Value = true;
+					player.Character.AllowUncrouch.Value = true;
 			});
 
 			deactivateWallRun = delegate()
@@ -2687,6 +2455,104 @@ namespace Lemma.Factories
 				if (vaultMover == null && kickUpdate == null && rollUpdate == null)
 					rotationLocked.Value = false;
 			};
+
+			// Camera control
+			Property<Matrix> relativeHeadBone = model.GetRelativeBoneTransform("ORG-head");
+			Property<Matrix> relativeSpineBone = model.GetRelativeBoneTransform("ORG-chest");
+			Property<Matrix> clavicleLeft = model.GetBoneTransform("ORG-shoulder_L");
+			Property<Matrix> clavicleRight = model.GetBoneTransform("ORG-shoulder_R");
+			Property<Matrix> relativeUpperLeftArm = model.GetRelativeBoneTransform("ORG-upper_arm_L");
+			Property<Matrix> relativeUpperRightArm = model.GetRelativeBoneTransform("ORG-upper_arm_R");
+			Property<Matrix> headBone = model.GetBoneTransform("ORG-head");
+
+			CameraControl cameraControl = result.GetOrCreate<CameraControl>();
+			cameraControl.Add(new Binding<Vector2>(cameraControl.Mouse, input.Mouse));
+			cameraControl.Add(new Binding<bool>(cameraControl.EnableLean, () => player.Character.EnableWalking.Value && player.Character.IsSupported.Value, player.Character.EnableWalking, player.Character.IsSupported));
+			cameraControl.Add(new Binding<Vector3>(cameraControl.LinearVelocity, player.Character.LinearVelocity));
+			cameraControl.Add(new Binding<float>(cameraControl.MaxSpeed, player.Character.MaxSpeed));
+			cameraControl.Add(new Binding<Matrix>(cameraControl.CameraBone, model.GetBoneTransform("Camera")));
+			cameraControl.Add(new Binding<Matrix>(cameraControl.HeadBone, headBone));
+			cameraControl.Add(new Binding<Matrix>(cameraControl.ModelTransform, model.Transform));
+			cameraControl.Add(new Binding<float>(cameraControl.BaseCameraShakeAmount, () => MathHelper.Clamp((player.Character.LinearVelocity.Value.Length() - (player.Character.MaxSpeed * 2.5f)) / (player.Character.MaxSpeed * 4.0f), 0, 1), player.Character.LinearVelocity, player.Character.MaxSpeed));
+			cameraControl.Offset = model.GetBoneTransform("Camera").Value.Translation - headBone.Value.Translation;
+
+#if DEVELOPMENT
+			input.Add(new CommandBinding(input.GetKeyDown(Keys.C), delegate() { cameraControl.ThirdPerson.Value = !cameraControl.ThirdPerson; }));
+
+			firstPersonModel.Add(new Binding<bool>(firstPersonModel.Enabled, x => !x, cameraControl.ThirdPerson));
+
+			model.Add(new NotifyBinding(delegate()
+			{
+				if (cameraControl.ThirdPerson)
+				{
+					model.UnsupportedTechniques.Remove(Technique.Clip);
+					model.UnsupportedTechniques.Remove(Technique.Render);
+				}
+				else
+				{
+					model.UnsupportedTechniques.Add(Technique.Clip);
+					model.UnsupportedTechniques.Add(Technique.Render);
+				}
+			}, cameraControl.ThirdPerson));
+
+			ModelAlpha debugCylinder = new ModelAlpha();
+			debugCylinder.Filename.Value = "Models\\alpha-cylinder";
+			debugCylinder.Add(new Binding<Matrix>(debugCylinder.Transform, transform.Matrix));
+			debugCylinder.Serialize = false;
+			debugCylinder.Editable = false;
+			debugCylinder.Alpha.Value = 0.25f;
+			debugCylinder.Add(new Binding<bool>(debugCylinder.Enabled, cameraControl.ThirdPerson));
+			debugCylinder.Add(new Binding<Vector3>(debugCylinder.Scale, delegate()
+			{
+				return new Vector3(player.Character.Radius, player.Character.Height, player.Character.Radius);
+			}, player.Character.Height, player.Character.Radius));
+			result.Add(debugCylinder);
+
+			ListContainer debugContainer = new ListContainer();
+			debugContainer.Reversed.Value = true;
+			debugContainer.AnchorPoint.Value = new Vector2(1, 1);
+			debugContainer.Add(new Binding<Vector2, Point>(debugContainer.Position, x => new Vector2(x.X, x.Y), main.ScreenSize));
+			debugContainer.Alignment.Value = ListContainer.ListAlignment.Max;
+			ui.Root.Children.Add(debugContainer);
+
+			TextElement debugVelocity = new TextElement();
+			debugVelocity.FontFile.Value = "Font";
+			debugVelocity.Add(new Binding<string, Vector3>(debugVelocity.Text, x => x.Length().ToString(), player.Character.LinearVelocity));
+			debugVelocity.Add(new Binding<bool>(debugVelocity.Visible, cameraControl.ThirdPerson));
+			debugContainer.Children.Add(debugVelocity);
+
+			TextElement debugRotation = new TextElement();
+			debugRotation.FontFile.Value = "Font";
+			debugRotation.Add(new Binding<string, float>(debugRotation.Text, x => x.ToString("F"), rotation));
+			debugRotation.Add(new Binding<bool>(debugRotation.Visible, cameraControl.ThirdPerson));
+			debugContainer.Children.Add(debugRotation);
+
+			input.Add(new CommandBinding(input.GetKeyUp(Keys.T), delegate()
+			{
+				if (main.TimeMultiplier < 1.0f)
+					main.TimeMultiplier.Value = 1.0f;
+				else
+					main.TimeMultiplier.Value = 0.25f;
+			}));
+#endif
+
+			update.Add(delegate(float dt)
+			{
+				relativeHeadBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.4f);
+				model.UpdateWorldTransforms();
+
+				Matrix r = Matrix.CreateRotationX(input.Mouse.Value.Y * 0.6f * (runAnimation.TotalStrength + sprintAnimation.TotalStrength));
+
+				Matrix parent = clavicleLeft;
+				parent.Translation = Vector3.Zero;
+				relativeUpperLeftArm.Value *= parent * r * Matrix.Invert(parent);
+
+				parent = clavicleRight;
+				parent.Translation = Vector3.Zero;
+				relativeUpperRightArm.Value *= parent * r * Matrix.Invert(parent);
+
+				model.UpdateWorldTransforms();
+			});
 
 			// Phone
 
@@ -2960,7 +2826,7 @@ namespace Lemma.Factories
 				noteActive.Value = show;
 				input.EnableLook.Value = input.EnableMouse.Value = !noteActive;
 				main.IsMouseVisible.Value = false;
-				player.EnableWalking.Value = !noteActive;
+				player.Character.EnableWalking.Value = !noteActive;
 				noteModel.Enabled.Value = noteActive;
 				noteUi.Enabled.Value = noteActive;
 
@@ -3019,7 +2885,7 @@ namespace Lemma.Factories
 					phoneActive.Value = show;
 					input.EnableLook.Value = input.EnableMouse.Value = !phoneActive;
 					main.IsMouseVisible.Value = phoneActive;
-					player.EnableWalking.Value = !phoneActive;
+					player.Character.EnableWalking.Value = !phoneActive;
 					phoneModel.Enabled.Value = phoneActive;
 					screen.Enabled.Value = phoneActive;
 					phoneUi.Enabled.Value = phoneActive;
@@ -3140,11 +3006,11 @@ namespace Lemma.Factories
 					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
 					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
 					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableMoves"), player.EnableMoves));
-					result.Add(new TwoWayBinding<float>(dataEntity.GetProperty<float>("MaxSpeed"), player.MaxSpeed));
+					result.Add(new TwoWayBinding<float>(dataEntity.GetProperty<float>("MaxSpeed"), player.Character.MaxSpeed));
 
 					phone = dataEntity.GetOrCreate<Phone>("Phone");
 
-					phone.Add(new Binding<bool>(phone.CanReceiveMessages, () => player.IsSupported && !player.IsSwimming && !player.Crouched && !noteActive, player.IsSupported, player.IsSwimming, player.Crouched, noteActive));
+					phone.Add(new Binding<bool>(phone.CanReceiveMessages, () => player.Character.IsSupported && !player.Character.IsSwimming && !player.Character.Crouched && !noteActive, player.Character.IsSupported, player.Character.IsSwimming, player.Character.Crouched, noteActive));
 
 					msgList.Add(new ListBinding<UIComponent, Phone.Message>
 					(

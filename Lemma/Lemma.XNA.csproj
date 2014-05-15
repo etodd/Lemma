@@ -154,7 +154,8 @@
     <Compile Include="Components\Animation.cs" />
     <Compile Include="Graphics\SpotLight.cs" />
     <Compile Include="Graphics\DirectionalLight.cs" />
-    <Compile Include="Components\Player.cs" />
+    <Compile Include="Player\CameraControl.cs" />
+    <Compile Include="Player\Player.cs" />
     <Compile Include="Components\PhysicsBlock.cs" />
     <Compile Include="Graphics\PointLight.cs" />
     <Compile Include="Components\Script.cs" />
@@ -168,7 +169,7 @@
     <Compile Include="Factories\SpotLightFactory.cs" />
     <Compile Include="Factories\PlayerTriggerFactory.cs" />
     <Compile Include="Factories\ScriptFactory.cs" />
-    <Compile Include="Factories\PlayerFactory.cs" />
+    <Compile Include="Player\PlayerFactory.cs" />
     <Compile Include="Factories\EditorFactory.cs" />
     <Compile Include="Factories\PointLightFactory.cs" />
     <Compile Include="Factories\TurretFactory.cs" />
@@ -196,7 +197,7 @@
     <Compile Include="Util\AngleTools.cs" />
     <Compile Include="Util\BlockingQueue.cs" />
     <Compile Include="Util\BoundingBoxExtensions.cs" />
-    <Compile Include="Util\Character.cs" />
+    <Compile Include="Player\Character.cs" />
     <Compile Include="Util\Algorithms.cs" />
     <Compile Include="Util\CustomFluidVolume.cs" />
     <Compile Include="Util\LargeObjectHeap.cs" />

@@ -271,7 +271,7 @@ namespace Lemma.Factories
 					{
 						Vector3 targetPos = target.Get<Transform>().Position;
 						BEPUutilities.RayHit physicsHit;
-						if (target.Get<Player>().Body.CollisionInformation.RayCast(new Ray(transform.Position, toReticle), rayHit.Distance, out physicsHit))
+						if (target.Get<Player>().Character.Body.CollisionInformation.RayCast(new Ray(transform.Position, toReticle), rayHit.Distance, out physicsHit))
 							Explosion.Explode(main, targetPos, 6, 8.0f);
 					}
 				},

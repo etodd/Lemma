@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Lemma.Components;
 using System.IO;
 using System.Xml.Serialization;
+using Lemma.Util;
 
 namespace Lemma.Factories
 {
@@ -35,7 +36,7 @@ namespace Lemma.Factories
 			result.Add("EnableStamina", new Property<bool> { Value = enabled });
 			result.Add("EnableMoves", new Property<bool> { Value = true });
 			result.Add("EnablePhone", new Property<bool> { Value = enabled });
-			result.Add("MaxSpeed", new Property<float> { Value = Player.DefaultMaxSpeed, Editable = false });
+			result.Add("MaxSpeed", new Property<float> { Value = Character.DefaultMaxSpeed, Editable = false });
 			result.Add("GameTime", new Property<float> { Editable = false });
 			result.Add("Phone", new Phone());
 

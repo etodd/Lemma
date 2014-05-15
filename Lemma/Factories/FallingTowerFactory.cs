@@ -87,7 +87,7 @@ namespace Lemma.Factories
 					else
 					{
 						Vector3 playerPos = player.Get<Transform>().Position;
-						playerPos += player.Get<Player>().LinearVelocity.Value * 0.65f;
+						playerPos += player.Get<Player>().Character.LinearVelocity.Value * 0.65f;
 						foreach (DynamicMap newMap in spawnedMaps)
 						{
 							Vector3 toPlayer = playerPos - newMap.PhysicsEntity.Position;

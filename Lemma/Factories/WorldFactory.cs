@@ -1019,7 +1019,7 @@ namespace Lemma.Factories
 				{
 					delegate(float dt)
 					{
-						if (!playerModel.IsPlaying("Kick") && (playerComponent.IsSupported || playerComponent.WallRunState.Value != Player.WallRun.None))
+						if (!playerModel.IsPlaying("Kick") && (playerComponent.Character.IsSupported || playerComponent.WallRunState.Value != Player.WallRun.None))
 							playerComponent.Health.Value -= 0.6f * dt;
 					}
 				};
