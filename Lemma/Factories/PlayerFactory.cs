@@ -17,6 +17,7 @@ namespace Lemma.Factories
 		public PlayerFactory()
 		{
 			this.Color = new Vector3(0.4f, 0.4f, 0.4f);
+			this.EditorCanSpawn = false;
 		}
 
 		public struct RespawnLocation
@@ -499,14 +500,17 @@ namespace Lemma.Factories
 							foreach (Direction adjacentDirection in DirectionExtensions.Directions)
 							{
 								Map.Coordinate adjacentCoord = coord.Value.Move(adjacentDirection);
-								int adjacentID = map[adjacentCoord].ID;
-								if (adjacentID == resetID && !visited.ContainsKey(adjacentCoord))
-									queue.Enqueue(adjacentCoord);
-								else if (adjacentID == infectedID || adjacentID == temporaryID)
+								if (!visited.ContainsKey(adjacentCoord))
 								{
-									map.Empty(adjacentCoord);
-									map.Fill(adjacentCoord, WorldFactory.States[neutralID]);
-									regenerate = true;
+									int adjacentID = map[adjacentCoord].ID;
+									if (adjacentID == resetID)
+										queue.Enqueue(adjacentCoord);
+									else if (adjacentID == infectedID || adjacentID == temporaryID)
+									{
+										map.Empty(adjacentCoord);
+										map.Fill(adjacentCoord, WorldFactory.States[neutralID]);
+										regenerate = true;
+									}
 								}
 							}
 						}

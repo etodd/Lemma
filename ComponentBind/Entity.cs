@@ -108,6 +108,9 @@ namespace ComponentBind
 		public string Type;
 
 		[XmlIgnore]
+		public bool EditorCanDelete = true;
+
+		[XmlIgnore]
 		public string ID
 		{
 			get

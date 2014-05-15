@@ -16,6 +16,7 @@ namespace Lemma.Factories
 		public EditorFactory()
 		{
 			this.Color = new Vector3(0.4f, 0.4f, 0.4f);
+			this.EditorCanSpawn = false;
 		}
 
 		private class EventEntry
@@ -218,12 +219,16 @@ namespace Lemma.Factories
 			foreach (string key in Factory.factories.Keys)
 			{
 				string entityType = key;
-				ui.PopupCommands.Add(new EditorUI.PopupCommand
+				Factory factory = Factory.Get(entityType);
+				if (factory.EditorCanSpawn)
 				{
-					Description = "Add " + entityType,
-					Enabled = () => editor.SelectedEntities.Count == 0 && !editor.MapEditMode,
-					Action = new Command { Action = () => editor.Spawn.Execute(entityType) },
-				});
+					ui.PopupCommands.Add(new EditorUI.PopupCommand
+					{
+						Description = "Add " + entityType,
+						Enabled = () => editor.SelectedEntities.Count == 0 && !editor.MapEditMode,
+						Action = new Command { Action = () => editor.Spawn.Execute(entityType) },
+					});
+				}
 			}
 
 			Scroller scroller = (Scroller)uiRenderer.Root.GetChildByName("Scroller");

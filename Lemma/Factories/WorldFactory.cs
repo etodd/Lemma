@@ -668,6 +668,7 @@ namespace Lemma.Factories
 		public WorldFactory()
 		{
 			this.Color = new Vector3(0.1f, 0.1f, 0.1f);
+			this.EditorCanSpawn = false;
 		}
 
 		public static Entity Get()
@@ -814,6 +815,7 @@ namespace Lemma.Factories
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
 			result.CannotSuspend = true;
+			result.EditorCanDelete = false;
 
 			ListProperty<DialogueForest> dialogue = result.GetOrMakeListProperty<DialogueForest>("Dialogue");
 			dialogue.Serialize = false;

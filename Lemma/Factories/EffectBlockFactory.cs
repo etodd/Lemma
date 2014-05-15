@@ -36,6 +36,7 @@ namespace Lemma.Factories
 		public EffectBlockFactory()
 		{
 			this.Color = new Vector3(1.0f, 0.25f, 0.25f);
+			this.EditorCanSpawn = false;
 		}
 
 		public override Entity Create(Main main)

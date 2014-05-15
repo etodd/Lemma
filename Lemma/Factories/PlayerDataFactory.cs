@@ -16,6 +16,7 @@ namespace Lemma.Factories
 		public PlayerDataFactory()
 		{
 			this.Color = new Vector3(1.0f, 0.4f, 0.4f);
+			this.EditorCanSpawn = false;
 		}
 
 		public override Entity Create(Main main)

@@ -588,7 +588,10 @@ namespace Lemma.Components
 				this.TransformAxis.Value = TransformAxes.All;
 				this.offsetTransforms.Clear();
 				foreach (Entity entity in this.SelectedEntities)
-					entity.Delete.Execute();
+				{
+					if (entity.EditorCanDelete)
+						entity.Delete.Execute();
+				}
 				this.SelectedEntities.Clear();
 			};
 

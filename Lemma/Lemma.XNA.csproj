@@ -115,6 +115,7 @@
     </Compile>
     <Compile Include="Factories\AnimatedPropFactory.cs" />
     <Compile Include="Factories\CloudFactory.cs" />
+    <Compile Include="Factories\LowerLimitFactory.cs" />
     <Compile Include="Factories\DialogueFileFactory.cs" />
     <Compile Include="Factories\SignalTowerFactory.cs" />
     <Compile Include="Factories\EvilBlocksFactory.cs" />

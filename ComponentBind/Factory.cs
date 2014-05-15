@@ -30,6 +30,8 @@ namespace ComponentBind
 
 		public Vector3 Color = Vector3.One;
 
+		public bool EditorCanSpawn = true;
+
 		public int SpawnIndex = 1;
 	}
 
