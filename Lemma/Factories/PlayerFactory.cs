@@ -459,7 +459,15 @@ namespace Lemma.Factories
 			Direction wallRunDirection = Direction.None;
 
 			player.Add(new TwoWayBinding<Matrix>(transform.Matrix, player.Transform));
-			model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateTranslation(0, (player.Height * -0.5f) - player.SupportHeight, 0) * Matrix.CreateRotationY(rotation) * transform.Matrix, transform.Matrix, rotation, player.Height, player.SupportHeight));
+
+			Vector3 lean = Vector3.Zero;
+			model.Add(new Binding<Matrix>(model.Transform, delegate()
+			{
+				lean = Vector3.TransformNormal(player.AccumulatedVelocityAdjustments, Matrix.CreateRotationY(-rotation));
+				const float leanAmount = (float)Math.PI * 0.15f;
+				return Matrix.CreateTranslation(0, (player.Height * -0.5f) - player.SupportHeight, 0) * Matrix.CreateRotationX(lean.Z * leanAmount) * Matrix.CreateRotationZ(lean.X * -leanAmount) * Matrix.CreateRotationY(rotation) * transform.Matrix;
+			}, transform.Matrix, rotation, player.Height, player.SupportHeight, player.AccumulatedVelocityAdjustments));
+
 			firstPersonModel.Add(new Binding<Matrix>(firstPersonModel.Transform, model.Transform));
 			firstPersonModel.Add(new Binding<Vector3>(firstPersonModel.Scale, model.Scale));
 
@@ -646,7 +654,7 @@ namespace Lemma.Factories
 				relativeHeadBone.Value *= Matrix.CreateRotationX(input.Mouse.Value.Y * 0.4f);
 				model.UpdateWorldTransforms();
 
-				Matrix r = Matrix.CreateRotationX(input.Mouse.Value.Y * 0.4f * blend * (runAnimation.TotalStrength + sprintAnimation.TotalStrength));
+				Matrix r = Matrix.CreateRotationX(input.Mouse.Value.Y * 0.6f * blend * (runAnimation.TotalStrength + sprintAnimation.TotalStrength));
 
 				Matrix parent = clavicleLeft;
 				parent.Translation = Vector3.Zero;
@@ -708,7 +716,8 @@ namespace Lemma.Factories
 
 						Vector3 right = Vector3.Cross(rot.Forward, Vector3.Up);
 
-						main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shake.Z) * Matrix.CreateFromAxisAngle(right, -input.Mouse.Value.Y + shake.Y);
+						const float leanAmount = (float)Math.PI * 0.05f;
+						main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shake.Z + lean.X * -leanAmount) * Matrix.CreateFromAxisAngle(right, -input.Mouse.Value.Y + shake.Y);
 					}
 
 					float minBlur = 4.0f;
@@ -833,14 +842,14 @@ namespace Lemma.Factories
 						foreach (KeyValuePair<string, AnimationInfo> animation in player.Crouched ? crouchMovementAnimations : movementAnimations)
 						{
 							if (animation.Key != "Idle" && animation.Key != "CrouchIdle")
-								model[animation.Key].Speed = player.Crouched ? (speed / 2.2f) : (speed / 6.0f);
+								model[animation.Key].Speed = player.Crouched ? (speed / 2.2f) : (speed / 6.5f);
 							model[animation.Key].TargetStrength = animation.Key == movementAnimation ? 1.0f : animation.Value.DefaultStrength;
 						}
 
 						if (movementAnimation == "Run")
 						{
-							sprintAnimation.TargetStrength = 0.0f;//MathHelper.Clamp((speed - 6.0f) / 2.0f, 0.0f, 1.0f);
-							runAnimation.TargetStrength = 1.0f - sprintAnimation.TargetStrength;
+							sprintAnimation.TargetStrength = MathHelper.Clamp((speed - 6.0f) / 2.0f, 0.0f, 1.0f);
+							runAnimation.TargetStrength = Math.Min(MathHelper.Clamp(speed / 4.0f, 0.0f, 1.0f), 1.0f - sprintAnimation.TargetStrength);
 						}
 
 						footstepTimer.Interval.Value = 0.37f / (speed / 6.0f);

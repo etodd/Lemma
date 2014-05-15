@@ -58,6 +58,10 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Vector3> SupportLocation = new Property<Vector3> { Editable = false };
 		[XmlIgnore]
+		public Property<Vector3> VelocityAdjustments = new Property<Vector3> { Editable = false };
+		[XmlIgnore]
+		public Property<Vector3> AccumulatedVelocityAdjustments = new Property<Vector3> { Editable = false };
+		[XmlIgnore]
 		public Property<BEPUphysics.Entities.Entity> SupportEntity = new Property<BEPUphysics.Entities.Entity> { Editable = false };
 		public Property<Vector3> LinearVelocity = new Property<Vector3> { Editable = false };
 		[XmlIgnore]
@@ -142,6 +146,7 @@ namespace Lemma.Components
 			this.Add(new TwoWayBinding<WallRun>(this.WallRunState, this.character.WallRunState));
 			this.Add(new TwoWayBinding<bool>(this.EnableWalking, this.character.EnableWalking));
 			this.Add(new TwoWayBinding<Vector3>(this.character.SupportLocation, this.SupportLocation));
+			this.Add(new TwoWayBinding<Vector3>(this.character.VelocityAdjustments, this.VelocityAdjustments));
 			this.Add(new TwoWayBinding<BEPUphysics.Entities.Entity>(this.character.SupportEntity, this.SupportEntity));
 			this.Add(new TwoWayBinding<bool>(this.Crouched, this.character.Crouched));
 			this.Add(new TwoWayBinding<bool>(this.AllowUncrouch, this.character.AllowUncrouch));
@@ -185,6 +190,15 @@ namespace Lemma.Components
 				}, this.Crouched));
 				this.transformBindingCreated = true;
 			}
+
+			Vector3 accel = Vector3.Zero;
+			if (this.EnableWalking && !this.Crouched)
+			{
+				accel = this.VelocityAdjustments;
+				accel.X = MathHelper.Clamp(accel.X / 0.4f, -1.0f, 1.0f);
+				accel.Z = MathHelper.Clamp(accel.Z / 0.4f, -1.0f, 1.0f);
+			}
+			this.AccumulatedVelocityAdjustments.Value += (accel - this.AccumulatedVelocityAdjustments.Value) * 5.0f * dt;
 
 			if (this.Health < 1.0f)
 			{

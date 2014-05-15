@@ -86,6 +86,8 @@ namespace Lemma.Util
 
 		public Property<float> NoTractionAcceleration = new Property<float> { Value = 7.0f };
 
+		public Property<Vector3> VelocityAdjustments = new Property<Vector3>();
+
 		/// <summary>
 		/// Deceleration applied to oppose uncontrolled horizontal movement when the character has a steady foothold on the ground (hasTraction == true).
 		/// </summary>
@@ -292,6 +294,7 @@ namespace Lemma.Util
 			}
 			else if (!this.Crouched && this.IsSupported)
 			{
+				// Keep the player from fitting into spaces that are too small vertically
 				Vector3 pos = this.Body.Position;
 				Vector2 offset = new Vector2(supportLocation.X - pos.X, supportLocation.Z - pos.Z);
 				if (offset.LengthSquared() > 0)
@@ -395,6 +398,7 @@ namespace Lemma.Util
 
 			if (!isSupported && this.WallRunState.Value == Player.WallRun.None)
 			{
+				// Keep the player from getting stuck on corners
 				foreach (Contact contact in this.Body.CollisionInformation.Pairs.SelectMany(x => x.Contacts.Select(y => y.Contact)))
 				{
 					Vector3 normal = (contact.Position - this.Body.Position).SetComponent(Direction.PositiveY, 0);
@@ -456,6 +460,7 @@ namespace Lemma.Util
 		/// <param name="dt">Timestep of the simulation.</param>
 		private void handleHorizontalMotion(Vector3 supportLocationVelocity, Vector3 supportNormal, float dt)
 		{
+			Vector3 velocityAdjustment = new Vector3(0.0f);
 			if (this.HasTraction && this.MovementDirection != Vector2.Zero && this.EnableWalking)
 			{
 				// Identify a coordinate system that uses the support normal as Y.
@@ -480,7 +485,7 @@ namespace Lemma.Util
 				float bodyXVelocity = Vector3.Dot(this.Body.LinearVelocity, x);
 				float supportEntityXVelocity = Vector3.Dot(supportLocationVelocity, x);
 				float velocityChange = MathHelper.Clamp(bodyXVelocity - supportEntityXVelocity, -dt * this.TractionDeceleration, dt * this.TractionDeceleration);
-				this.Body.LinearVelocity -= velocityChange * x;
+				velocityAdjustment -= velocityChange * x;
 
 				float bodyZVelocity = Vector3.Dot(this.Body.LinearVelocity, z);
 				float supportEntityZVelocity = Vector3.Dot(supportLocationVelocity, z);
@@ -492,15 +497,15 @@ namespace Lemma.Util
 				{
 					// Decelerate
 					velocityChange = Math.Min(dt * this.TractionDeceleration, netZVelocity - speed);
-					this.Body.LinearVelocity -= velocityChange * z;
+					velocityAdjustment -= velocityChange * z;
 				}
 				else
 				{
 					// Accelerate
 					velocityChange = Math.Min(dt * accel, speed - netZVelocity);
-					this.Body.LinearVelocity += velocityChange * z;
+					velocityAdjustment += velocityChange * z;
 					if (z.Y > 0.0f)
-						this.Body.LinearVelocity += new Vector3(0, z.Y * Math.Min(dt * this.Acceleration * 2.0f, speed - netZVelocity) * 2.0f, 0);
+						velocityAdjustment += new Vector3(0, z.Y * Math.Min(dt * this.Acceleration * 2.0f, speed - netZVelocity) * 2.0f, 0);
 				}
 			}
 			else
@@ -510,7 +515,7 @@ namespace Lemma.Util
 					deceleration = dt * this.TractionDeceleration;
 				else
 					deceleration = dt * this.SlidingDeceleration;
-				//Remove from the character a portion of velocity defined by the deceleration.
+				// Remove from the character a portion of velocity defined by the deceleration.
 				Vector3 bodyHorizontalVelocity = this.Body.LinearVelocity - Vector3.Dot(this.Body.LinearVelocity, supportNormal) * supportNormal;
 				Vector3 supportHorizontalVelocity = supportLocationVelocity - Vector3.Dot(supportLocationVelocity, supportNormal) * supportNormal;
 				Vector3 relativeVelocity = bodyHorizontalVelocity - supportHorizontalVelocity;
@@ -519,13 +524,16 @@ namespace Lemma.Util
 				{
 					Vector3 horizontalDirection = relativeVelocity / speed;
 					float velocityChange = Math.Min(speed, deceleration);
-					this.Body.LinearVelocity -= velocityChange * horizontalDirection;
+					velocityAdjustment -= velocityChange * horizontalDirection;
 				}
 			}
+			this.Body.LinearVelocity += velocityAdjustment;
+			this.VelocityAdjustments.Value = velocityAdjustment;
 		}
 
 		private void handleNoTraction(float dt, float tractionDeceleration, float maxSpeed)
 		{
+			Vector3 velocityAdjustment = new Vector3(0.0f);
 			if (this.MovementDirection != Vector2.Zero)
 			{
 				//Identify a coordinate system that uses the support normal as Y.
@@ -537,7 +545,7 @@ namespace Lemma.Util
 				//Remove from the character a portion of velocity which pushes it horizontally off the desired movement track defined by the movementDirection.
 				float bodyXVelocity = Vector3.Dot(this.Body.LinearVelocity, x);
 				float velocityChange = MathHelper.Clamp(bodyXVelocity, -dt * tractionDeceleration, dt * tractionDeceleration);
-				this.Body.LinearVelocity -= velocityChange * x;
+				velocityAdjustment -= velocityChange * x;
 
 				float bodyZVelocity = Vector3.Dot(this.Body.LinearVelocity, horizontal);
 				//The velocity difference along the Z axis should accelerate/decelerate to match the goal velocity (max speed).
@@ -545,13 +553,13 @@ namespace Lemma.Util
 				{
 					//Decelerate
 					velocityChange = Math.Min(dt * this.NoTractionAcceleration, bodyZVelocity - maxSpeed);
-					this.Body.LinearVelocity -= velocityChange * horizontal;
+					velocityAdjustment -= velocityChange * horizontal;
 				}
 				else
 				{
 					//Accelerate
 					velocityChange = Math.Min(dt * this.NoTractionAcceleration, maxSpeed - bodyZVelocity);
-					this.Body.LinearVelocity += velocityChange * horizontal;
+					velocityAdjustment += velocityChange * horizontal;
 				}
 			}
 			else
@@ -565,9 +573,11 @@ namespace Lemma.Util
 				{
 					Vector3 horizontalDirection = bodyHorizontalVelocity / speed;
 					float velocityChange = Math.Min(speed, deceleration);
-					this.Body.LinearVelocity -= velocityChange * horizontalDirection;
+					velocityAdjustment -= velocityChange * horizontalDirection;
 				}
 			}
+			this.VelocityAdjustments.Value = velocityAdjustment;
+			this.Body.LinearVelocity += velocityAdjustment;
 		}
 
 		/// <summary>
