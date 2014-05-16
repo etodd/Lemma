@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using ComponentBind;
 using Microsoft.Xna.Framework;
+using Lemma.Util;
 
 namespace Lemma.Components
 {
@@ -17,7 +18,6 @@ namespace Lemma.Components
 
 		// Input properties
 		public Property<bool> IsSupported = new Property<bool>();
-		public Property<bool> LastSupported = new Property<bool>();
 		public Property<Player.WallRun> WallRunState = new Property<Player.WallRun>();
 		public Property<bool> EnableWalking = new Property<bool>();
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
@@ -155,7 +155,9 @@ namespace Lemma.Components
 
 				if (movementAnimation == "Run")
 				{
-					this.sprintAnimation.TargetStrength = MathHelper.Clamp((speed - 6.0f) / 2.0f, 0.0f, 1.0f);
+					const float sprintRange = 1.0f;
+					const float sprintThreshold = Character.DefaultMaxSpeed - sprintRange;
+					this.sprintAnimation.TargetStrength = MathHelper.Clamp((speed - sprintThreshold) / sprintRange, 0.0f, 1.0f);
 					this.runAnimation.TargetStrength = Math.Min(MathHelper.Clamp(speed / 4.0f, 0.0f, 1.0f), 1.0f - this.sprintAnimation.TargetStrength);
 				}
 

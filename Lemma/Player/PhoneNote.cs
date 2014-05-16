@@ -221,6 +221,11 @@ namespace Lemma.Components
 				}
 			}, note, signalTower));
 
+			result.Add(new CommandBinding(result.Delete, delegate()
+			{
+				((GameMain)main).Menu.HideMessage(null, togglePhoneMessage);
+			}));
+
 			// Note UI
 
 			const float notePadding = 40.0f;

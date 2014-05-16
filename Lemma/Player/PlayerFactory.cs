@@ -103,7 +103,6 @@ namespace Lemma.Factories
 			AnimatedModel firstPersonModel = result.Get<AnimatedModel>("FirstPersonModel");
 
 			anim.Add(new Binding<bool>(anim.IsSupported, player.Character.IsSupported));
-			anim.Add(new Binding<bool>(anim.LastSupported, player.LastSupported));
 			anim.Add(new Binding<Player.WallRun>(anim.WallRunState, player.WallRunState));
 			anim.Add(new Binding<bool>(anim.EnableWalking, player.Character.EnableWalking));
 			anim.Add(new Binding<bool>(anim.Crouched, player.Character.Crouched));
@@ -221,22 +220,6 @@ namespace Lemma.Factories
 			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_FALL, result);
 			player.Add(new NotifyBinding(updateFallSound, player.Character.LinearVelocity));
 			SoundKiller.Add(result, AK.EVENTS.STOP_PLAYER_FALL);
-
-			// Determine if the player is swimming
-			update.Add(delegate(float dt)
-			{
-				bool swimming = false;
-				Vector3 pos = transform.Position.Value + new Vector3(0, -1.0f, 0);
-				foreach (Water w in Water.ActiveInstances)
-				{
-					if (w.Fluid.BoundingBox.Contains(pos) != ContainmentType.Disjoint)
-					{
-						swimming = true;
-						break;
-					}
-				}
-				player.Character.IsSwimming.Value = swimming;
-			});
 
 			Action stopKick = null;
 
@@ -1060,9 +1043,7 @@ namespace Lemma.Factories
 			// Fall damage
 			FallDamage fallDamage = result.GetOrCreate<FallDamage>();
 			fallDamage.Add(new Binding<bool>(fallDamage.IsSupported, player.Character.IsSupported));
-			fallDamage.Add(new Binding<bool>(fallDamage.LastSupported, player.LastSupported));
 			fallDamage.Add(new TwoWayBinding<Vector3>(player.Character.LinearVelocity, fallDamage.LinearVelocity));
-			fallDamage.Add(new Binding<Vector3>(fallDamage.LastLinearVelocity, player.LastLinearVelocity));
 			fallDamage.Add(new TwoWayBinding<float>(player.Health, fallDamage.Health));
 			fallDamage.Add(new CommandBinding<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection>(player.Character.Collided, fallDamage.Collided));
 			fallDamage.Model = model;
@@ -2205,11 +2186,6 @@ namespace Lemma.Factories
 				delegate()
 				{
 					Entity dataEntity = Factory.Get<PlayerDataFactory>().Instance;
-					if (dataEntity == null)
-					{
-						Factory.Get<PlayerDataFactory>().CreateAndBind(main);
-						dataEntity = Factory.Get<PlayerDataFactory>().Instance;
-					}
 
 					// HACK. Overwriting the property rather than binding the two together. Oh well.
 					footsteps.RespawnLocations = dataEntity.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");

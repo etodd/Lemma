@@ -43,9 +43,9 @@ namespace Lemma.Factories
 							Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance.GetOrCreate<Phone>("Phone");
 							try
 							{
-								DialogueForest forest = new DialogueForest(File.ReadAllText(Path.Combine(main.Content.RootDirectory, "Game", name + ".dlz")));
-								phone.Load(forest);
-								WorldFactory.Instance.GetListProperty<DialogueForest>().Add(forest);
+								DialogueForest forest = WorldFactory.Instance.GetProperty<DialogueForest>();
+								IEnumerable<DialogueForest.Node> nodes = forest.Load(File.ReadAllText(Path.Combine(main.Content.RootDirectory, "Game", name + ".dlz")));
+								phone.Load(forest, nodes);
 							}
 							catch (IOException)
 							{

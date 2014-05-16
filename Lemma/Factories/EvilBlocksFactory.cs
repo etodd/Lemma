@@ -91,7 +91,7 @@ namespace Lemma.Factories
 							block.Get<Transform>().Position.Value = blockSpawnPoint + new Vector3(((float)this.random.NextDouble() - 0.5f) * 2.0f, ((float)this.random.NextDouble() - 0.5f) * 2.0f, ((float)this.random.NextDouble() - 0.5f) * 2.0f);
 							block.Get<PhysicsBlock>().Size.Value = scale;
 							block.Get<ModelInstance>().Scale.Value = scale;
-							block.GetOrMakeProperty<string>("Type").Value = "Black";
+							block.GetOrMakeProperty<Map.t>("Type").Value = Map.t.Black;
 							blockEntities.Add(block);
 							main.Add(block);
 						}

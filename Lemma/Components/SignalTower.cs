@@ -36,25 +36,24 @@ namespace Lemma.Components
 
 				if (!string.IsNullOrEmpty(this.Initial))
 				{
-					IEnumerable<DialogueForest> forests = WorldFactory.Instance.GetListProperty<DialogueForest>();
-					foreach (DialogueForest forest in forests)
+					DialogueForest forest = WorldFactory.Instance.GetProperty<DialogueForest>();
+					DialogueForest.Node n = forest.GetByName(this.Initial);
+					if (n == null)
+						Log.d(string.Format("Could not find dialogue node {0}", this.Initial));
+					else
 					{
-						DialogueForest.Node n = forest.GetByName(this.Initial);
-						if (n != null)
+						if (n.type == DialogueForest.Node.Type.Choice)
+							throw new Exception("Cannot start dialogue tree with a choice");
+						phone.Execute(forest, n);
+						if (phone.Schedules.Count == 0)
 						{
-							if (n.type == DialogueForest.Node.Type.Choice)
-								throw new Exception("Cannot start dialogue tree with a choice");
-							phone.Execute(forest, n);
-							if (phone.Schedules.Count == 0)
-							{
-								// If there are choices available, they will initiate a conversation.
-								// The player should be able to pull up the phone, see the choices, and walk away without picking any of them.
-								// Normally, you can't put the phone down until you've picked an answer.
-								phone.WaitForAnswer.Value = false;
-							}
-							break;
+							// If there are choices available, they will initiate a conversation.
+							// The player should be able to pull up the phone, see the choices, and walk away without picking any of them.
+							// Normally, you can't put the phone down until you've picked an answer.
+							phone.WaitForAnswer.Value = false;
 						}
 					}
+
 					if (phone.Schedules.Count > 0) // We sent a message. That means this signal tower cannot execute again.
 						this.Initial.Value = null;
 				}
@@ -68,7 +67,8 @@ namespace Lemma.Components
 
 				phone.ActiveAnswers.Clear();
 
-				p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = null;
+				if (p != null)
+					p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = null;
 			};
 		}
 

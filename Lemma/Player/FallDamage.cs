@@ -18,9 +18,8 @@ namespace Lemma.Components
 		public Command<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection> Collided = new Command<BEPUphysics.BroadPhaseEntries.Collidable,ContactCollection>();
 
 		// Input properties
-		public Property<Vector3> LastLinearVelocity = new Property<Vector3>();
 		public Property<bool> IsSupported = new Property<bool>();
-		public Property<bool> LastSupported = new Property<bool>();
+		private bool lastSupported;
 
 		// Animated model
 		public AnimatedModel Model;
@@ -30,6 +29,8 @@ namespace Lemma.Components
 
 		// Input/output properties
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
+
+		private Vector3 lastLinearVelocity;
 
 		public override void Awake()
 		{
@@ -67,7 +68,7 @@ namespace Lemma.Components
 				{
 					float force = contacts[contacts.Count - 1].NormalImpulse;
 					float threshold = map.Entity.Type == "FallingTower" ? 14.0f : 24.0f;
-					float playerLastSpeed = Vector3.Dot(this.LastLinearVelocity, Vector3.Normalize(-contacts[contacts.Count - 1].Contact.Normal)) * 2.5f;
+					float playerLastSpeed = Vector3.Dot(this.lastLinearVelocity, Vector3.Normalize(-contacts[contacts.Count - 1].Contact.Normal)) * 2.5f;
 					if (force > threshold + playerLastSpeed + 4.0f)
 						this.Health.Value -= (force - threshold - playerLastSpeed) * 0.04f;
 				}
@@ -76,12 +77,14 @@ namespace Lemma.Components
 
 		public void Update(float dt)
 		{
-			if (!this.LastSupported && this.IsSupported)
+			if (!this.lastSupported && this.IsSupported)
 			{
 				// Damage the player if they fall too hard and they're not smashing or rolling
-				float accel = this.LastLinearVelocity.Value.Y - this.LinearVelocity.Value.Y;
+				float accel = this.lastLinearVelocity.Y - this.LinearVelocity.Value.Y;
 				this.Apply.Execute(accel);
 			}
+			this.lastSupported = this.IsSupported;
+			this.lastLinearVelocity = this.LinearVelocity;
 		}
 	}
 }

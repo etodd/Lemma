@@ -56,10 +56,6 @@ namespace Lemma.Factories
 			result.Add("BackgroundColor", new Property<Color> { Editable = true, Value = WorldFactory.defaultBackgroundColor });
 			result.Add("FarPlaneDistance", new Property<float> { Editable = true, Value = 100.0f });
 
-			ListProperty<Map.CellState> additionalMaterials = new ListProperty<Map.CellState>();
-
-			result.Add("AdditionalMaterials", additionalMaterials);
-
 			result.Add("ReverbAmount", new Property<float> { Value = 0.0f, Editable = true });
 
 			result.Add("ReverbSize", new Property<float> { Value = 0.0f, Editable = true });
@@ -182,7 +178,17 @@ namespace Lemma.Factories
 			result.CannotSuspend = true;
 			result.EditorCanDelete = false;
 
-			ListProperty<DialogueForest> dialogue = result.GetOrMakeListProperty<DialogueForest>("Dialogue");
+			result.Add(new PostInitialization
+			{
+				delegate()
+				{
+					if (Factory.Get<PlayerDataFactory>().Instance == null)
+						Factory.Get<PlayerDataFactory>().CreateAndBind(main);
+				}
+			});
+
+			Property<DialogueForest> dialogue = result.GetOrMakeProperty<DialogueForest>("DialogueForest");
+			dialogue.Value = new DialogueForest();
 			dialogue.Serialize = false;
 			dialogue.Editable = false;
 

@@ -241,9 +241,9 @@ namespace Lemma.Components
 			}
 		}
 
-		public void Load(DialogueForest forest)
+		public void Load(DialogueForest forest, IEnumerable<DialogueForest.Node> nodes)
 		{
-			foreach (DialogueForest.Node node in forest.Nodes)
+			foreach (DialogueForest.Node node in nodes)
 			{
 				if (node.choices != null && node.choices.Count > 0)
 				{

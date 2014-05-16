@@ -47,7 +47,7 @@ namespace Lemma.Util
 		private Dictionary<string, Node> nodes = new Dictionary<string, Node>();
 		private Dictionary<string, Node> nodesByName = new Dictionary<string, Node>();
 
-		public DialogueForest(string data)
+		public IEnumerable<Node> Load(string data)
 		{
 			List<Node> nodes = JsonConvert.DeserializeObject<List<Node>>(data);
 
@@ -57,6 +57,7 @@ namespace Lemma.Util
 				if (node.name != null)
 					this.nodesByName[node.name] = node;
 			}
+			return nodes;
 		}
 
 		public Node this[string id]

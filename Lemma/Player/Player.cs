@@ -41,10 +41,6 @@ namespace Lemma.Components
 		public Property<bool> SlowMotion = new Property<bool> { Editable = false };
 		[XmlIgnore]
 		public Property<WallRun> WallRunState = new Property<WallRun> { Editable = false, Value = WallRun.None };
-		[XmlIgnore]
-		public Property<bool> LastSupported = new Property<bool>();
-		[XmlIgnore]
-		public Property<Vector3> LastLinearVelocity = new Property<Vector3>();
 
 		[XmlIgnore]
 		public Command HealthDepleted = new Command();
@@ -97,10 +93,22 @@ namespace Lemma.Components
 				else
 					this.Health.Value += Player.healthRegenerateRate * dt;
 			}
+
+			// Determine if the player is swimming
+			bool swimming = false;
+			Vector3 pos = this.Character.Transform.Value.Translation + new Vector3(0, -1.0f, 0);
+			foreach (Water w in Water.ActiveInstances)
+			{
+				if (w.Fluid.BoundingBox.Contains(pos) != ContainmentType.Disjoint)
+				{
+					swimming = true;
+					break;
+				}
+			}
+			this.Character.IsSwimming.Value = swimming;
+
 			this.Character.Transform.Changed();
 			this.Character.LinearVelocity.Changed();
-			this.LastSupported.Value = this.Character.IsSupported;
-			this.LastLinearVelocity.Value = this.Character.LinearVelocity;
 		}
 	}
 }

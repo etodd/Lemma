@@ -78,15 +78,29 @@ namespace Lemma.Components
 
 		public void Stop(params string[] clips)
 		{
-			foreach (string clipName in clips)
+			if (clips.Length == 0)
 			{
-				SkinnedModel.Clip clip;
-				if (this.skinningData.Clips.TryGetValue(clipName, out clip))
+				foreach (SkinnedModel.Clip clip in this.CurrentClips)
 				{
-					if (clip.Active && !clip.Stopping)
+					if (!clip.Stopping)
 					{
 						clip.Stopping = true;
 						clip.BlendTime = Math.Max(clip.BlendTotalTime - clip.BlendTime, 0.0f);
+					}
+				}
+			}
+			else
+			{
+				foreach (string clipName in clips)
+				{
+					SkinnedModel.Clip clip;
+					if (this.skinningData.Clips.TryGetValue(clipName, out clip))
+					{
+						if (clip.Active && !clip.Stopping)
+						{
+							clip.Stopping = true;
+							clip.BlendTime = Math.Max(clip.BlendTotalTime - clip.BlendTime, 0.0f);
+						}
 					}
 				}
 			}
