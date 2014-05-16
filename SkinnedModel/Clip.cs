@@ -89,6 +89,9 @@ namespace SkinnedModel
 		[ContentSerializerIgnore]
 		public float TargetStrength = 1.0f;
 
+		[ContentSerializerIgnore]
+		public bool Active;
+
 		public float TotalStrength
 		{
 			get

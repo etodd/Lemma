@@ -52,33 +52,42 @@ namespace Lemma.Components
 		{
 			if (this.WallRunState != Player.WallRun.None)
 			{
-				this.Model.Stop.Execute("Jump");
-				this.Model.Stop.Execute("JumpLeft");
-				this.Model.Stop.Execute("JumpBackward");
-				this.Model.Stop.Execute("JumpRight");
-				this.Model.Stop.Execute("Fall");
-				this.Model.Stop.Execute("Vault");
-				this.Model.Stop.Execute("VaultLeft");
-				this.Model.Stop.Execute("VaultRight");
+				this.Model.Stop
+				(
+					"Jump",
+					"JumpLeft",
+					"JumpBackward",
+					"JumpRight",
+					"Fall",
+					"Vault",
+					"VaultLeft",
+					"VaultRight"
+				);
 				return;
 			}
 
-			this.Model.Stop.Execute("WallRunLeft");
-			this.Model.Stop.Execute("WallRunRight");
-			this.Model.Stop.Execute("WallRunStraight");
-			this.Model.Stop.Execute("WallSlideDown");
-			this.Model.Stop.Execute("WallSlideReverse");
+			this.Model.Stop
+			(
+				"WallRunLeft",
+				"WallRunRight",
+				"WallRunStraight",
+				"WallSlideDown",
+				"WallSlideReverse"
+			);
 
 			if (this.IsSupported)
 			{
-				this.Model.Stop.Execute("Jump");
-				this.Model.Stop.Execute("JumpLeft");
-				this.Model.Stop.Execute("JumpBackward");
-				this.Model.Stop.Execute("JumpRight");
-				this.Model.Stop.Execute("Fall");
-				this.Model.Stop.Execute("Vault");
-				this.Model.Stop.Execute("VaultLeft");
-				this.Model.Stop.Execute("VaultRight");
+				this.Model.Stop
+				(
+					"Jump",
+					"JumpLeft",
+					"JumpBackward",
+					"JumpRight",
+					"Fall",
+					"Vault",
+					"VaultLeft",
+					"VaultRight"
+				);
 
 				Vector2 dir = this.Movement;
 
@@ -130,10 +139,10 @@ namespace Lemma.Components
 				if (!this.Model.IsPlaying(movementAnimation))
 				{
 					foreach (string anim in this.Crouched ? movementAnimations.Keys : crouchMovementAnimations.Keys)
-						this.Model.Stop.Execute(anim);
+						this.Model.Stop(anim);
 					foreach (KeyValuePair<string, AnimationInfo> animation in this.Crouched ? crouchMovementAnimations : movementAnimations)
 					{
-						this.Model.StartClip.Execute(animation.Key, animation.Value.Priority, true, AnimatedModel.DefaultBlendTime);
+						this.Model.StartClip(animation.Key, animation.Value.Priority, true, AnimatedModel.DefaultBlendTime);
 						this.Model[animation.Key].Strength = animation.Value.DefaultStrength;
 					}
 				}
@@ -141,12 +150,12 @@ namespace Lemma.Components
 			else
 			{
 				foreach (string anim in movementAnimations.Keys)
-					this.Model.Stop.Execute(anim);
+					this.Model.Stop(anim);
 				foreach (string anim in crouchMovementAnimations.Keys)
-					this.Model.Stop.Execute(anim);
+					this.Model.Stop(anim);
 
 				if (!this.Model.IsPlaying("Fall"))
-					this.Model.StartClip.Execute("Fall", 0, true, AnimatedModel.DefaultBlendTime);
+					this.Model.StartClip("Fall", 0, true, AnimatedModel.DefaultBlendTime);
 			}
 		}
 	}

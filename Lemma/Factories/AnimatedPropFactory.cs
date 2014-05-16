@@ -39,9 +39,9 @@ namespace Lemma.Factories
 			model.Add(new NotifyBinding(delegate()
 			{
 				foreach (SkinnedModel.Clip clip in model.CurrentClips)
-					model.Stop.Execute(clip.Name);
+					model.Stop(clip.Name);
 				if (!string.IsNullOrEmpty(animation))
-					model.StartClip.Execute(animation, 0, loop, AnimatedModel.DefaultBlendTime);
+					model.StartClip(animation, 0, loop, AnimatedModel.DefaultBlendTime);
 			}, animation, loop));
 		}
 

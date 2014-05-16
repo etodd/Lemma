@@ -168,7 +168,7 @@ namespace Lemma.Factories
 			input.Add(new Binding<PCInput.PCInputBinding>(input.BackwardKey, settings.Backward));
 			input.Add(new Binding<PCInput.PCInputBinding>(input.ForwardKey, settings.Forward));
 
-			model.StartClip.Execute("Idle", 0, true, AnimatedModel.DefaultBlendTime);
+			model.StartClip("Idle", 0, true, AnimatedModel.DefaultBlendTime);
 
 			Updater update = new Updater();
 			update.EnabledInEditMode.Value = false;
@@ -535,7 +535,7 @@ namespace Lemma.Factories
 						break;
 				}
 				if (!model.IsPlaying(animation))
-					model.StartClip.Execute(animation, 5, true, 0.1f);
+					model.StartClip(animation, 5, true, 0.1f);
 
 				Session.Recorder.Event(main, "WallRun", animation);
 
@@ -800,8 +800,8 @@ namespace Lemma.Factories
 						{
 							// Start sliding down
 							player.WallRunState.Value = wallRunState = Player.WallRun.Down;
-							model.Stop.Execute("WallRunStraight");
-							model.StartClip.Execute("WallSlideDown", 5, true, AnimatedModel.DefaultBlendTime);
+							model.Stop("WallRunStraight");
+							model.StartClip("WallSlideDown", 5, true, AnimatedModel.DefaultBlendTime);
 						}
 					}
 					else if (wallRunState == Player.WallRun.Left || wallRunState == Player.WallRun.Right)
@@ -1067,8 +1067,7 @@ namespace Lemma.Factories
 			fallDamage.Add(new Binding<Vector3>(fallDamage.LastLinearVelocity, player.LastLinearVelocity));
 			fallDamage.Add(new TwoWayBinding<float>(player.Health, fallDamage.Health));
 			fallDamage.Add(new CommandBinding<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection>(player.Character.Collided, fallDamage.Collided));
-			fallDamage.Add(new ListBinding<SkinnedModel.Clip>(fallDamage.AnimationClips, model.CurrentClips));
-			fallDamage.Add(new CommandBinding<string, int, bool, float>(fallDamage.StartClip, model.StartClip));
+			fallDamage.Model = model;
 
 			Updater vaultMover = null;
 
@@ -1516,13 +1515,16 @@ namespace Lemma.Factories
 
 					AkSoundEngine.PostEvent(vaultType == VaultType.None ? "Jump_Play" : "Vault_Play", result);
 
-					model.Stop.Execute("Vault");
-					model.Stop.Execute("VaultLeft");
-					model.Stop.Execute("VaultRight");
-					model.Stop.Execute("Jump");
-					model.Stop.Execute("JumpLeft");
-					model.Stop.Execute("JumpRight");
-					model.Stop.Execute("JumpBackward");
+					model.Stop
+					(
+						"Vault",
+						"VaultLeft",
+						"VaultRight",
+						"Jump",
+						"JumpLeft",
+						"JumpRight",
+						"JumpBackward"
+					);
 
 					if (vaultType != VaultType.None)
 					{
@@ -1540,7 +1542,7 @@ namespace Lemma.Factories
 								animation = "Vault";
 								break;
 						}
-						model.StartClip.Execute(animation, 4, false, 0.1f);
+						model.StartClip(animation, 4, false, 0.1f);
 					}
 					else
 					{
@@ -1569,7 +1571,7 @@ namespace Lemma.Factories
 								animation = "Jump";
 								break;
 						}
-						model.StartClip.Execute(animation, 4, false, 0.1f);
+						model.StartClip(animation, 4, false, 0.1f);
 					}
 
 					// Deactivate any wall-running we're doing
@@ -1853,8 +1855,7 @@ namespace Lemma.Factories
 				{
 					kickUpdate.Delete.Execute();
 					kickUpdate = null;
-					model.Stop.Execute("Kick");
-					model.Stop.Execute("Slide");
+					model.Stop("Kick", "Slide");
 					player.Character.EnableWalking.Value = true;
 					if (!input.GetInput(settings.RollKick))
 						player.Character.AllowUncrouch.Value = true;
@@ -1930,22 +1931,25 @@ namespace Lemma.Factories
 
 						deactivateWallRun();
 
-						model.Stop.Execute("CrouchWalkBackward");
-						model.Stop.Execute("CrouchWalk");
-						model.Stop.Execute("CrouchStrafeRight");
-						model.Stop.Execute("CrouchStrafeLeft");
-						model.Stop.Execute("Idle");
-						model.Stop.Execute("RunBackward");
-						model.Stop.Execute("Run");
-						model.Stop.Execute("Sprint");
-						model.Stop.Execute("RunRight");
-						model.Stop.Execute("RunLeft");
-						model.Stop.Execute("Jump");
-						model.Stop.Execute("JumpLeft");
-						model.Stop.Execute("JumpRight");
-						model.Stop.Execute("JumpBackward");
+						model.Stop
+						(
+							"CrouchWalkBackward",
+							"CrouchWalk",
+							"CrouchStrafeRight",
+							"CrouchStrafeLeft",
+							"Idle",
+							"RunBackward",
+							"Run",
+							"Sprint",
+							"RunRight",
+							"RunLeft",
+							"Jump",
+							"JumpLeft",
+							"JumpRight",
+							"JumpBackward"
+						);
 
-						model.StartClip.Execute("CrouchIdle", 2, true, AnimatedModel.DefaultBlendTime);
+						model.StartClip("CrouchIdle", 2, true, AnimatedModel.DefaultBlendTime);
 
 						player.Character.EnableWalking.Value = false;
 						rotationLocked.Value = true;
@@ -1953,7 +1957,7 @@ namespace Lemma.Factories
 						footsteps.Footstep.Execute(); // We just landed; play a footstep sound
 						AkSoundEngine.PostEvent("Skill_Roll_Play", result);
 
-						model.StartClip.Execute("Roll", 5, false, AnimatedModel.DefaultBlendTime);
+						model.StartClip("Roll", 5, false, AnimatedModel.DefaultBlendTime);
 
 						Map.CellState floorState = floorRaycast.Map == null ? Map.EmptyState : floorRaycast.Coordinate.Value.Data;
 						bool shouldBuildFloor = false;
@@ -2012,21 +2016,24 @@ namespace Lemma.Factories
 
 					deactivateWallRun();
 
-					model.Stop.Execute("CrouchWalkBackward");
-					model.Stop.Execute("CrouchWalk");
-					model.Stop.Execute("CrouchStrafeRight");
-					model.Stop.Execute("CrouchStrafeLeft");
-					model.Stop.Execute("Idle");
-					model.Stop.Execute("RunBackward");
-					model.Stop.Execute("Run");
-					model.Stop.Execute("Sprint");
-					model.Stop.Execute("RunRight");
-					model.Stop.Execute("RunLeft");
-					model.Stop.Execute("Jump");
-					model.Stop.Execute("JumpLeft");
-					model.Stop.Execute("JumpRight");
-					model.Stop.Execute("JumpBackward");
-					model.StartClip.Execute("CrouchIdle", 2, true, AnimatedModel.DefaultBlendTime);
+					model.Stop
+					(
+						"CrouchWalkBackward",
+						"CrouchWalk",
+						"CrouchStrafeRight",
+						"CrouchStrafeLeft",
+						"Idle",
+						"RunBackward",
+						"Run",
+						"Sprint",
+						"RunRight",
+						"RunLeft",
+						"Jump",
+						"JumpLeft",
+						"JumpRight",
+						"JumpBackward"
+					);
+					model.StartClip("CrouchIdle", 2, true, AnimatedModel.DefaultBlendTime);
 
 					player.Character.EnableWalking.Value = false;
 					rotationLocked.Value = true;
@@ -2061,7 +2068,7 @@ namespace Lemma.Factories
 						}
 					}
 
-					model.StartClip.Execute(shouldBreakFloor ? "Kick" : "Slide", 5, false, AnimatedModel.DefaultBlendTime);
+					model.StartClip(shouldBreakFloor ? "Kick" : "Slide", 5, false, AnimatedModel.DefaultBlendTime);
 
 					Direction forwardDir = Direction.None;
 					Direction rightDir = Direction.None;
@@ -2125,11 +2132,14 @@ namespace Lemma.Factories
 				wallDirection = Direction.None;
 				wallRunDirection = Direction.None;
 				player.WallRunState.Value = Player.WallRun.None;
-				model.Stop.Execute("WallRunLeft");
-				model.Stop.Execute("WallRunRight");
-				model.Stop.Execute("WallRunStraight");
-				model.Stop.Execute("WallSlideDown");
-				model.Stop.Execute("WallSlideReverse");
+				model.Stop
+				(
+					"WallRunLeft",
+					"WallRunRight",
+					"WallRunStraight",
+					"WallSlideDown",
+					"WallSlideReverse"
+				);
 				if (vaultMover == null && kickUpdate == null && rollUpdate == null)
 					rotationLocked.Value = false;
 			};
@@ -2456,8 +2466,7 @@ namespace Lemma.Factories
 				noteModel.Enabled.Value = noteActive;
 				noteUi.Enabled.Value = noteActive;
 
-				model.Stop.Execute("Phone");
-				model.Stop.Execute("Note");
+				model.Stop("Phone", "Note");
 				Entity noteEntity = note.Value.Target;
 				if (noteEntity != null && noteEntity.Active)
 				{
@@ -2465,7 +2474,7 @@ namespace Lemma.Factories
 					{
 						noteUiImage.Image.Value = noteEntity.GetOrMakeProperty<string>("Image");
 						noteUiText.Text.Value = noteEntity.GetOrMakeProperty<string>("Text");
-						model.StartClip.Execute("Note", 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
+						model.StartClip("Note", 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
 						float startRotationY = input.Mouse.Value.Y;
 						// Level the player's view
 						result.Add(new Animation
@@ -2519,8 +2528,7 @@ namespace Lemma.Factories
 					phoneLight.Enabled.Value = phoneActive;
 					answerContainer.Visible.Value = false;
 
-					model.Stop.Execute("Phone");
-					model.Stop.Execute("Note");
+					model.Stop("Phone", "Note");
 					if (phoneActive)
 					{
 						if (!phone.TutorialShown)
@@ -2531,7 +2539,7 @@ namespace Lemma.Factories
 						phoneScroll.CheckLayout();
 						scrollToBottom();
 
-						model.StartClip.Execute("Phone", 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
+						model.StartClip("Phone", 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
 
 						// Level the player's view
 						float startRotationY = input.Mouse.Value.Y;

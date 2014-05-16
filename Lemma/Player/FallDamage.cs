@@ -17,14 +17,13 @@ namespace Lemma.Components
 		public Command<float> Apply = new Command<float>();
 		public Command<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection> Collided = new Command<BEPUphysics.BroadPhaseEntries.Collidable,ContactCollection>();
 
-		// Output commands
-		public Command<string, int, bool, float> StartClip = new Command<string, int, bool, float>();
-
 		// Input properties
 		public Property<Vector3> LastLinearVelocity = new Property<Vector3>();
 		public Property<bool> IsSupported = new Property<bool>();
 		public Property<bool> LastSupported = new Property<bool>();
-		public ListProperty<SkinnedModel.Clip> AnimationClips = new ListProperty<SkinnedModel.Clip>();
+
+		// Animated model
+		public AnimatedModel Model;
 
 		// Output properties
 		public Property<float> Health = new Property<float>();
@@ -37,7 +36,7 @@ namespace Lemma.Components
 			base.Awake();
 			this.Apply.Action = delegate(float verticalAcceleration)
 			{
-				bool rolling = AnimatedModel.IsPlaying(this.AnimationClips, "Roll");
+				bool rolling = this.Model.IsPlaying("Roll");
 				float v = rolling ? RollingDamageVelocity : DamageVelocity;
 				if (verticalAcceleration < v)
 				{
@@ -52,7 +51,7 @@ namespace Lemma.Components
 						this.LinearVelocity.Value = new Vector3(0, this.LinearVelocity.Value.Y, 0);
 						if (!rolling)
 						{
-							this.StartClip.Execute("Land", 1, false, 0.1f);
+							this.Model.StartClip("Land", 1, false, 0.1f);
 							AkSoundEngine.PostEvent("Play_land", this.Entity);
 						}
 					}

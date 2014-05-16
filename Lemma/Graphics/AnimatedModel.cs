@@ -10,14 +10,9 @@ namespace Lemma.Components
 {
 	public class AnimatedModel : Model, IUpdateableComponent
 	{
-		// Information about the currently playing animation clip.
+		// Information about the currently playing animation clips.
 		[XmlIgnore]
 		public ListProperty<SkinnedModel.Clip> CurrentClips = new ListProperty<SkinnedModel.Clip>();
-
-		[XmlIgnore]
-		public Command<string, int, bool, float> StartClip = new Command<string, int, bool, float>();
-		[XmlIgnore]
-		public Command<string> Stop = new Command<string>();
 
 		// Animation blending data
 
@@ -35,17 +30,16 @@ namespace Lemma.Components
 
 		public bool IsPlaying(params string[] clipNames)
 		{
-			return AnimatedModel.IsPlaying(this.CurrentClips, clipNames);
-		}
-
-		public static bool IsPlaying(ListProperty<SkinnedModel.Clip> clips, params string[] clipNames)
-		{
 			if (clipNames.Length == 0)
-				return clips.Count > 0;
-			foreach (SkinnedModel.Clip clip in clips)
+				return this.CurrentClips.Count > 0;
+			foreach (string clipName in clipNames)
 			{
-				if (clipNames.Contains(clip.Name))
-					return !clip.Stopping;
+				SkinnedModel.Clip clip;
+				if (this.skinningData.Clips.TryGetValue(clipName, out clip))
+				{
+					if (clip.Active && !clip.Stopping)
+						return true;
+				}
 			}
 			return false;
 		}
@@ -58,41 +52,44 @@ namespace Lemma.Components
 
 		private Dictionary<string, List<Callback>> callbacks = new Dictionary<string,List<Callback>>();
 
-		public override void Awake()
+		public void StartClip(string clipName, int priority = 0, bool loop = false, float blendTime = AnimatedModel.DefaultBlendTime)
 		{
-			base.Awake();
-			this.StartClip.Action = delegate(string clipName, int priority, bool loop, float blendTime)
-			{
-				SkinnedModel.Clip clip = this.skinningData.Clips[clipName];
+			SkinnedModel.Clip clip = this.skinningData.Clips[clipName];
 
-				if (clip.Stopping)
-					clip.BlendTime = Math.Max(clip.BlendTotalTime - clip.BlendTime, 0);
-				else
-					clip.BlendTime = 0.0f;
+			if (clip.Stopping)
+				clip.BlendTime = Math.Max(clip.BlendTotalTime - clip.BlendTime, 0);
+			else
+				clip.BlendTime = 0.0f;
 
-				clip.BlendTotalTime = blendTime;
+			clip.BlendTotalTime = blendTime;
 
-				clip.Priority = priority;
-				clip.CurrentTime = TimeSpan.Zero;
-				clip.Loop = loop;
-				clip.Stopping = false;
+			clip.Priority = priority;
+			clip.CurrentTime = TimeSpan.Zero;
+			clip.Loop = loop;
+			clip.Stopping = false;
+			clip.Active = true;
 
-				if (!this.CurrentClips.Contains(clip))
-					this.CurrentClips.Add(clip);
+			if (!this.CurrentClips.Contains(clip))
+				this.CurrentClips.Add(clip);
 
-				this.CurrentClips.InternalList.Sort(new Util.LambdaComparer<SkinnedModel.Clip>((x, y) => x.Priority - y.Priority));
-				this.CurrentClips.Changed();
-			};
+			this.CurrentClips.InternalList.Sort(new Util.LambdaComparer<SkinnedModel.Clip>((x, y) => x.Priority - y.Priority));
+			this.CurrentClips.Changed();
+		}
 
-			this.Stop.Action = delegate(string clipName)
+		public void Stop(params string[] clips)
+		{
+			foreach (string clipName in clips)
 			{
 				SkinnedModel.Clip clip;
 				if (this.skinningData.Clips.TryGetValue(clipName, out clip))
 				{
-					clip.Stopping = true;
-					clip.BlendTime = Math.Max(clip.BlendTotalTime - clip.BlendTime, 0.0f);
+					if (clip.Active && !clip.Stopping)
+					{
+						clip.Stopping = true;
+						clip.BlendTime = Math.Max(clip.BlendTotalTime - clip.BlendTime, 0.0f);
+					}
 				}
-			};
+			}
 		}
 
 		public void Trigger(string clip, float offset, Command callback)
@@ -124,8 +121,6 @@ namespace Lemma.Components
 		/// </summary>
 		public void UpdateBoneTransforms(TimeSpan elapsedTime)
 		{
-			List<SkinnedModel.Clip> removals = new List<SkinnedModel.Clip>();
-
 			int i = 0;
 			foreach (Matrix bone in this.skinningData.BindPose)
 			{
@@ -133,8 +128,9 @@ namespace Lemma.Components
 				i++;
 			}
 
-			foreach (SkinnedModel.Clip clip in this.CurrentClips)
+			for (i = 0; i < this.CurrentClips.Count; i++)
 			{
+				SkinnedModel.Clip clip = this.CurrentClips[i];
 				TimeSpan newTime = clip.CurrentTime + new TimeSpan((long)((float)elapsedTime.Ticks * clip.Speed));
 
 				List<Callback> callbacks;
@@ -179,9 +175,9 @@ namespace Lemma.Components
 				}
 				else if (clip.Stopping)
 				{
-					clip.Stopping = false;
-					clip.BlendTime = 0.0f;
-					removals.Add(clip);
+					clip.Active = false;
+					this.CurrentClips.RemoveAt(i);
+					i--;
 					continue;
 				}
 
@@ -213,9 +209,6 @@ namespace Lemma.Components
 					}
 				}
 			}
-
-			foreach (SkinnedModel.Clip clip in removals)
-				this.CurrentClips.Remove(clip);
 
 			foreach (KeyValuePair<int, Property<Matrix>> pair in this.relativeBoneTransformProperties)
 				pair.Value.Changed();
