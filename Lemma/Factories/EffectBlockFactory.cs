@@ -56,7 +56,7 @@ namespace Lemma.Factories
 			result.Add("StartOrientation", new Property<Matrix> { Editable = false });
 			result.Add("TargetMap", new Property<Entity.Handle> { Editable = true });
 			result.Add("TargetCoord", new Property<Map.Coordinate> { Editable = false });
-			result.Add("TargetCellStateID", new Property<int> { Editable = true });
+			result.Add("TargetCellStateID", new Property<Map.t> { Editable = true });
 			result.Add("Scale", new Property<bool> { Editable = true, Value = true });
 
 			return result;
@@ -261,17 +261,17 @@ namespace Lemma.Factories
 				block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * (distance + index)) * Matrix.CreateRotationY(0.15f * (distance + index));
 				block.GetProperty<float>("TotalLifetime").Value = Math.Max(delayMultiplier, distance * delayMultiplier);
 				block.GetProperty<bool>("CheckAdjacent").Value = true;
-				factory.Setup(block, entry.Map.Entity, entry.Coordinate, fake ? 0 : (int)entry.State.ID);
+				factory.Setup(block, entry.Map.Entity, entry.Coordinate, fake ? 0 : entry.State.ID);
 				main.Add(block);
 				index++;
 			}
 		}
 
-		public void Setup(Entity result, Entity m, Map.Coordinate c, int s)
+		public void Setup(Entity result, Entity m, Map.Coordinate c, Map.t s)
 		{
 			Property<Entity.Handle> map = result.GetProperty<Entity.Handle>("TargetMap");
 			Property<Map.Coordinate> coord = result.GetProperty<Map.Coordinate>("TargetCoord");
-			Property<int> stateId = result.GetProperty<int>("TargetCellStateID");
+			Property<Map.t> stateId = result.GetProperty<Map.t>("TargetCellStateID");
 			map.InternalValue = m;
 			coord.InternalValue = c;
 			stateId.InternalValue = s;

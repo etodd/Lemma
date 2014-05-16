@@ -413,7 +413,7 @@ namespace Lemma.Factories
 							block.GetProperty<Vector3>("StartPosition").Value = dynamicMap.GetAbsolutePosition(c);
 							block.GetProperty<Matrix>("StartOrientation").Value = orientation;
 							block.GetProperty<float>("TotalLifetime").Value = 0.05f + (index * 0.0075f);
-							blockFactory.Setup(block, closestMap.Entity, targetCoord, (int)c.Data.ID);
+							blockFactory.Setup(block, closestMap.Entity, targetCoord, c.Data.ID);
 							main.Add(block);
 							index++;
 						}

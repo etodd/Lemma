@@ -329,7 +329,7 @@ namespace Lemma.Factories
 									block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f);
 									block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f) * Matrix.CreateRotationY(0.15f);
 									block.GetProperty<float>("TotalLifetime").Value = 0.05f;
-									factory.Setup(block, raycastAI.Map.Value.Target, raycastAI.Coord, (int)Map.t.Infected);
+									factory.Setup(block, raycastAI.Map.Value.Target, raycastAI.Coord, Map.t.Infected);
 									main.Add(block);
 								}
 							}

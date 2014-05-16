@@ -41,6 +41,10 @@ namespace Lemma.Components
 		public Property<bool> SlowMotion = new Property<bool> { Editable = false };
 		[XmlIgnore]
 		public Property<WallRun> WallRunState = new Property<WallRun> { Editable = false, Value = WallRun.None };
+		[XmlIgnore]
+		public Property<bool> LastSupported = new Property<bool>();
+		[XmlIgnore]
+		public Property<Vector3> LastLinearVelocity = new Property<Vector3>();
 
 		[XmlIgnore]
 		public Command HealthDepleted = new Command();
@@ -95,6 +99,8 @@ namespace Lemma.Components
 			}
 			this.Character.Transform.Changed();
 			this.Character.LinearVelocity.Changed();
+			this.LastSupported.Value = this.Character.IsSupported;
+			this.LastLinearVelocity.Value = this.Character.LinearVelocity;
 		}
 	}
 }

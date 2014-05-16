@@ -14,6 +14,11 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public ListProperty<SkinnedModel.Clip> CurrentClips = new ListProperty<SkinnedModel.Clip>();
 
+		[XmlIgnore]
+		public Command<string, int, bool, float> StartClip = new Command<string, int, bool, float>();
+		[XmlIgnore]
+		public Command<string> Stop = new Command<string>();
+
 		// Animation blending data
 
 		// Current animation transform matrices.
@@ -30,9 +35,14 @@ namespace Lemma.Components
 
 		public bool IsPlaying(params string[] clipNames)
 		{
+			return AnimatedModel.IsPlaying(this.CurrentClips, clipNames);
+		}
+
+		public static bool IsPlaying(ListProperty<SkinnedModel.Clip> clips, params string[] clipNames)
+		{
 			if (clipNames.Length == 0)
-				return this.CurrentClips.Count > 0;
-			foreach (SkinnedModel.Clip clip in this.CurrentClips)
+				return clips.Count > 0;
+			foreach (SkinnedModel.Clip clip in clips)
 			{
 				if (clipNames.Contains(clip.Name))
 					return !clip.Stopping;
@@ -47,6 +57,43 @@ namespace Lemma.Components
 		}
 
 		private Dictionary<string, List<Callback>> callbacks = new Dictionary<string,List<Callback>>();
+
+		public override void Awake()
+		{
+			base.Awake();
+			this.StartClip.Action = delegate(string clipName, int priority, bool loop, float blendTime)
+			{
+				SkinnedModel.Clip clip = this.skinningData.Clips[clipName];
+
+				if (clip.Stopping)
+					clip.BlendTime = Math.Max(clip.BlendTotalTime - clip.BlendTime, 0);
+				else
+					clip.BlendTime = 0.0f;
+
+				clip.BlendTotalTime = blendTime;
+
+				clip.Priority = priority;
+				clip.CurrentTime = TimeSpan.Zero;
+				clip.Loop = loop;
+				clip.Stopping = false;
+
+				if (!this.CurrentClips.Contains(clip))
+					this.CurrentClips.Add(clip);
+
+				this.CurrentClips.InternalList.Sort(new Util.LambdaComparer<SkinnedModel.Clip>((x, y) => x.Priority - y.Priority));
+				this.CurrentClips.Changed();
+			};
+
+			this.Stop.Action = delegate(string clipName)
+			{
+				SkinnedModel.Clip clip;
+				if (this.skinningData.Clips.TryGetValue(clipName, out clip))
+				{
+					clip.Stopping = true;
+					clip.BlendTime = Math.Max(clip.BlendTotalTime - clip.BlendTime, 0.0f);
+				}
+			};
+		}
 
 		public void Trigger(string clip, float offset, Command callback)
 		{
@@ -70,59 +117,6 @@ namespace Lemma.Components
 			{
 				return this.skinningData.Clips[name];
 			}
-		}
-
-		public void Stop(params string[] clips)
-		{
-			if (clips.Length == 0)
-			{
-				foreach (SkinnedModel.Clip clip in this.CurrentClips)
-				{
-					if (!clip.Stopping)
-					{
-						clip.Stopping = true;
-						clip.BlendTime = 0.0f;
-					}
-				}
-			}
-			else
-			{
-				foreach (SkinnedModel.Clip clip in this.CurrentClips)
-				{
-					if (clips.Contains(clip.Name) && !clip.Stopping)
-					{
-						clip.Stopping = true;
-						clip.BlendTime = Math.Max(clip.BlendTotalTime - clip.BlendTime, 0.0f);
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Starts decoding the specified animation clip.
-		/// </summary>
-		public void StartClip(string clipName, int priority = 0, bool loop = false, float blendTime = AnimatedModel.DefaultBlendTime, bool stopOnEnd = true)
-		{
-			SkinnedModel.Clip clip = this.skinningData.Clips[clipName];
-
-			if (clip.Stopping)
-				clip.BlendTime = Math.Max(clip.BlendTotalTime - clip.BlendTime, 0);
-			else
-				clip.BlendTime = 0.0f;
-
-			clip.BlendTotalTime = blendTime;
-
-			clip.Priority = priority;
-			clip.CurrentTime = TimeSpan.Zero;
-			clip.Loop = loop;
-			clip.StopOnEnd = stopOnEnd;
-			clip.Stopping = false;
-
-			if (!this.CurrentClips.Contains(clip))
-				this.CurrentClips.Add(clip);
-
-			this.CurrentClips.InternalList.Sort(new Util.LambdaComparer<SkinnedModel.Clip>((x, y) => x.Priority - y.Priority));
-			this.CurrentClips.Changed();
 		}
 
 		/// <summary>
@@ -161,7 +155,7 @@ namespace Lemma.Components
 
 				if (!clip.Stopping && clip.Duration.TotalSeconds > 0)
 				{
-					if (!clip.Loop && clip.StopOnEnd && newTime >= clip.Duration)
+					if (!clip.Loop && newTime >= clip.Duration)
 					{
 						clip.Stopping = true;
 						clip.BlendTime = 0.0f;

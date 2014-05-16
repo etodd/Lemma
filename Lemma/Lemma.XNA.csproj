@@ -154,8 +154,10 @@
     <Compile Include="Components\Animation.cs" />
     <Compile Include="Graphics\SpotLight.cs" />
     <Compile Include="Graphics\DirectionalLight.cs" />
+    <Compile Include="Player\AnimationController.cs" />
     <Compile Include="Player\CameraController.cs" />
-    <Compile Include="Player\FootstepController.cs" />
+    <Compile Include="Player\FallDamage.cs" />
+    <Compile Include="Player\Footsteps.cs" />
     <Compile Include="Player\Player.cs" />
     <Compile Include="Components\PhysicsBlock.cs" />
     <Compile Include="Graphics\PointLight.cs" />

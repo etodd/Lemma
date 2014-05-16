@@ -18,7 +18,7 @@ namespace Lemma.Components
 		public Vector3 OriginalPosition;
 	}
 
-	public class FootstepController : Component<Main>, IUpdateableComponent
+	public class Footsteps : Component<Main>, IUpdateableComponent
 	{
 		// Input commands
 		[XmlIgnore]
@@ -36,6 +36,8 @@ namespace Lemma.Components
 		public Property<float> Rotation = new Property<float>();
 		public Property<float> CharacterHeight = new Property<float>();
 		public Property<float> SupportHeight = new Property<float>();
+		public Property<bool> IsSupported = new Property<bool>();
+		public Property<bool> LastSupported = new Property<bool>();
 
 		// Output properties
 		public ListProperty<RespawnLocation> RespawnLocations = new ListProperty<RespawnLocation>();
@@ -211,6 +213,9 @@ namespace Lemma.Components
 					this.walkedOnCount = 0;
 				}
 			}
+
+			if (this.IsSupported && !this.LastSupported)
+				this.Footstep.Execute();
 
 			if (this.infectedDamage)
 				this.Health.Value -= 0.6f * dt;

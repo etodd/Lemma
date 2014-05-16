@@ -186,4 +186,43 @@ namespace ComponentBind
 			}
 		}
 	}
+
+	public class CommandBinding<Type, Type2, Type3, Type4> : BaseCommandBinding
+	{
+		public CommandBinding(Command<Type, Type2, Type3, Type4> _source, params Command<Type, Type2, Type3, Type4>[] _destinations)
+			: this(_source, () => true, _destinations)
+		{
+		}
+
+		public CommandBinding(Command<Type, Type2, Type3, Type4> _source, params Action<Type, Type2, Type3, Type4>[] _destinations)
+			: this(_source, () => true, _destinations)
+		{
+		}
+
+		public CommandBinding(Command<Type, Type2, Type3, Type4> _source, Func<bool> enabled, params Action<Type, Type2, Type3, Type4>[] _destinations)
+			: this(_source, enabled, _destinations.Select(x => new Command<Type, Type2, Type3, Type4> { Action = x }).ToArray())
+		{
+		}
+
+		public CommandBinding(Command<Type, Type2, Type3, Type4> _source, Func<bool> enabled, params Command<Type, Type2, Type3, Type4>[] _destinations)
+		{
+			this.source = _source;
+			this.source.AddBinding(this);
+			this.destinations = _destinations;
+			this.enabled = enabled;
+		}
+
+		public void Execute(Type parameter1, Type2 parameter2, Type3 parameter3, Type4 parameter4)
+		{
+			if (this.Enabled && this.enabled())
+			{
+				foreach (Command<Type, Type2, Type3, Type4> cmd in this.destinations)
+				{
+					cmd.Execute(parameter1, parameter2, parameter3, parameter4);
+					if (this.destinations == null)
+						break;
+				}
+			}
+		}
+	}
 }

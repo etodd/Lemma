@@ -167,7 +167,7 @@ namespace Lemma.Util
 			this.NormalHeight = height;
 			this.CrouchedHeight = crouchedHeight;
 			this.Body.CollisionInformation.Events.ContactCreated += new BEPUphysics.BroadPhaseEntries.Events.ContactCreatedEventHandler<EntityCollidable>(Events_ContactCreated);
-			this.collisionPairCollector = new Box(position + new Vector3(0, (height * -0.5f) - supportHeight, 0), radius * 2, supportHeight * 2, radius * 2, 1);
+			this.collisionPairCollector = new Box(position + new Vector3(0, (height * -0.5f) - supportHeight, 0), radius * 2, supportHeight * 2, radius, 1);
 			this.collisionPairCollector.CollisionInformation.CollisionRules.Personal = CollisionRule.NoNarrowPhaseUpdate; //Prevents collision detection/contact generation from being run.
 			this.collisionPairCollector.IsAffectedByGravity = false;
 			this.collisionPairCollector.CollisionInformation.CollisionRules.Group = Character.CharacterGroup;

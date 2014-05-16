@@ -169,7 +169,7 @@ namespace Lemma.Factories
 									block.GetProperty<Vector3>("StartPosition").Value = m.GetAbsolutePosition(c) + new Vector3(0.25f, 0.5f, 0.25f) * index;
 									block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
 									block.GetProperty<float>("TotalLifetime").Value = 0.05f + (index * rebuildTimeMultiplier * rebuildTime);
-									factory.Setup(block, targetMap, c, (int)c.Data.ID);
+									factory.Setup(block, targetMap, c, c.Data.ID);
 									main.Add(block);
 									index++;
 									baseCenter += new Vector3(c.X, c.Y, c.Z);
@@ -214,7 +214,7 @@ namespace Lemma.Factories
 										block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
 									}
 									block.GetProperty<float>("TotalLifetime").Value = 0.05f + (index * rebuildTimeMultiplier * rebuildTime);
-									factory.Setup(block, targetMap, c, (int)c.Data.ID);
+									factory.Setup(block, targetMap, c, c.Data.ID);
 									main.Add(block);
 									index++;
 								}

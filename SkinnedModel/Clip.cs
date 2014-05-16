@@ -84,9 +84,6 @@ namespace SkinnedModel
 		public bool Loop;
 
 		[ContentSerializerIgnore]
-		public bool StopOnEnd = true;
-
-		[ContentSerializerIgnore]
 		public float Strength = 1.0f;
 
 		[ContentSerializerIgnore]

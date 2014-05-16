@@ -28,12 +28,6 @@ namespace Lemma.Factories
 			Straight,
 		}
 
-		private class AnimationInfo
-		{
-			public int Priority;
-			public float DefaultStrength;
-		}
-
 		public override Entity Create(Main main)
 		{
 			Entity result = new Entity(main, "Player");
@@ -52,7 +46,6 @@ namespace Lemma.Factories
 			firstPersonModel.CullBoundingBox.Value = false;
 
 			result.Add("Rotation", new Property<float> { Editable = false });
-			result.Add("Data", new Property<Entity.Handle> { Editable = false });
 
 			return result;
 		}
@@ -98,11 +91,25 @@ namespace Lemma.Factories
 
 			this.SetMain(result, main);
 
+			FPSInput input = new FPSInput();
+			input.EnabledWhenPaused.Value = false;
+			result.Add("Input", input);
+
+			AnimationController anim = result.GetOrCreate<AnimationController>();
 			Player player = result.GetOrCreate<Player>("Player");
 			Transform transform = result.GetOrCreate<Transform>("Transform");
 
 			AnimatedModel model = result.Get<AnimatedModel>("Model");
 			AnimatedModel firstPersonModel = result.Get<AnimatedModel>("FirstPersonModel");
+
+			anim.Add(new Binding<bool>(anim.IsSupported, player.Character.IsSupported));
+			anim.Add(new Binding<bool>(anim.LastSupported, player.LastSupported));
+			anim.Add(new Binding<Player.WallRun>(anim.WallRunState, player.WallRunState));
+			anim.Add(new Binding<bool>(anim.EnableWalking, player.Character.EnableWalking));
+			anim.Add(new Binding<bool>(anim.Crouched, player.Character.Crouched));
+			anim.Add(new Binding<Vector3>(anim.LinearVelocity, player.Character.LinearVelocity));
+			anim.Add(new Binding<Vector2>(anim.Movement, input.Movement));
+			anim.Model = model;
 
 			model.Materials = firstPersonModel.Materials = new Model.Material[3];
 
@@ -141,10 +148,6 @@ namespace Lemma.Factories
 			firstPersonModel.UnsupportedTechniques.Add(Technique.Shadow);
 			firstPersonModel.UnsupportedTechniques.Add(Technique.Clip);
 
-			FPSInput input = new FPSInput();
-			input.EnabledWhenPaused.Value = false;
-			result.Add("Input", input);
-
 			Property<bool> phoneActive = result.GetOrMakeProperty<bool>("PhoneActive");
 			Property<bool> noteActive = result.GetOrMakeProperty<bool>("NoteActive");
 
@@ -165,7 +168,7 @@ namespace Lemma.Factories
 			input.Add(new Binding<PCInput.PCInputBinding>(input.BackwardKey, settings.Backward));
 			input.Add(new Binding<PCInput.PCInputBinding>(input.ForwardKey, settings.Forward));
 
-			model.StartClip("Idle", 0, true);
+			model.StartClip.Execute("Idle", 0, true, AnimatedModel.DefaultBlendTime);
 
 			Updater update = new Updater();
 			update.EnabledInEditMode.Value = false;
@@ -307,7 +310,7 @@ namespace Lemma.Factories
 			firstPersonModel.Add(new Binding<Matrix>(firstPersonModel.Transform, model.Transform));
 			firstPersonModel.Add(new Binding<Vector3>(firstPersonModel.Scale, model.Scale));
 
-			FootstepController footsteps = result.GetOrCreate<FootstepController>();
+			Footsteps footsteps = result.GetOrCreate<Footsteps>();
 			Player.WallRun[] footstepWallrunStates = new[]
 			{
 				Player.WallRun.Left,
@@ -323,13 +326,14 @@ namespace Lemma.Factories
 			footsteps.Add(new TwoWayBinding<float>(player.Health, footsteps.Health));
 			model.Trigger("Run", 0.16f, footsteps.Footstep);
 			model.Trigger("Run", 0.58f, footsteps.Footstep);
+			model.Trigger("WallRunLeft", 0.16f, footsteps.Footstep);
 			model.Trigger("WallRunLeft", 0.58f, footsteps.Footstep);
+			model.Trigger("WallRunRight", 0.16f, footsteps.Footstep);
 			model.Trigger("WallRunRight", 0.58f, footsteps.Footstep);
+			model.Trigger("WallRunStraight", 0.16f, footsteps.Footstep);
 			model.Trigger("WallRunStraight", 0.58f, footsteps.Footstep);
 
 			main.IsMouseVisible.Value = false;
-
-			model.UpdateWorldTransforms();
 
 			SkinnedModel.Clip sprintAnimation = model["Sprint"], runAnimation = model["Run"];
 
@@ -360,122 +364,11 @@ namespace Lemma.Factories
 				wallJumpCount = 0;
 			};
 
-			// Update animation
-			bool lastSupported = false;
-			float lastLandAnimationPlayed = 0.0f;
-			// Animations and their priorities
-			Dictionary<string, AnimationInfo> movementAnimations = new Dictionary<string, AnimationInfo>
+			player.Add(new NotifyBinding(delegate()
 			{
-				{ "Idle", new AnimationInfo { Priority = -1, DefaultStrength = 1.0f, } },
-				{ "Run", new AnimationInfo { Priority = 0 } },
-				{ "RunBackward", new AnimationInfo { Priority = 0 } },
-				{ "RunLeft", new AnimationInfo { Priority = 0 } },
-				{ "RunRight", new AnimationInfo { Priority = 0 } },
-				{ "Sprint", new AnimationInfo { Priority = 1 } },
-			};
-			Dictionary<string, AnimationInfo> crouchMovementAnimations = new Dictionary<string, AnimationInfo>
-			{
-				{ "CrouchIdle", new AnimationInfo { Priority = 1, DefaultStrength = 1.0f } },
-				{ "CrouchWalk", new AnimationInfo { Priority = 2 } },
-				{ "CrouchWalkBackward", new AnimationInfo { Priority = 2 } },
-				{ "CrouchStrafeLeft", new AnimationInfo { Priority = 2 } },
-				{ "CrouchStrafeRight", new AnimationInfo { Priority = 2 } },
-			};
-			result.Add("AnimationUpdater", new Updater
-			{
-				delegate(float dt)
-				{
-					// Update footstep sound interval when wall-running
-					if (player.WallRunState != Player.WallRun.None)
-					{
-						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "Vault", "VaultLeft", "VaultRight");
-						return;
-					}
-
-					model.Stop("WallRunLeft", "WallRunRight", "WallRunStraight", "WallSlideDown", "WallSlideReverse");
-
-					if (player.Character.IsSupported)
-					{
-						if (!lastSupported)
-						{
-							if (main.TotalTime > lastLandAnimationPlayed + 0.5f && !player.Character.Crouched)
-							{
-								footsteps.Footstep.Execute();
-								AkSoundEngine.PostEvent("Play_land", result);
-							}
-							lastLandAnimationPlayed = main.TotalTime;
-						}
-
-						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "Vault", "VaultLeft", "VaultRight");
-						resetInAirState();
-
-						Vector2 dir = input.Movement;
-
-						string movementAnimation;
-
-						Vector3 velocity = player.Character.LinearVelocity;
-						velocity.Y = 0;
-						float speed = velocity.Length();
-
-						if (player.Character.EnableWalking)
-						{
-							if (player.Character.Crouched)
-							{
-								if (dir.LengthSquared() == 0.0f)
-									movementAnimation = "CrouchIdle";
-								else
-									movementAnimation = dir.Y < 0.0f ? "CrouchWalkBackward" : (dir.X > 0.0f ? "CrouchStrafeRight" : (dir.X < 0.0f ? "CrouchStrafeLeft" : "CrouchWalk"));
-							}
-							else
-							{
-								if (dir.LengthSquared() == 0.0f)
-									movementAnimation = "Idle";
-								else
-									movementAnimation = dir.Y < 0.0f ? "RunBackward" : (dir.X > 0.0f ? "RunRight" : (dir.X < 0.0f ? "RunLeft" : "Run"));
-							}
-						}
-						else
-						{
-							if (player.Character.Crouched)
-								movementAnimation = "CrouchIdle";
-							else
-								movementAnimation = "Idle";
-						}
-
-						foreach (KeyValuePair<string, AnimationInfo> animation in player.Character.Crouched ? crouchMovementAnimations : movementAnimations)
-						{
-							if (animation.Key != "Idle" && animation.Key != "CrouchIdle")
-								model[animation.Key].Speed = player.Character.Crouched ? (speed / 2.2f) : (speed / 6.5f);
-							model[animation.Key].TargetStrength = animation.Key == movementAnimation ? 1.0f : animation.Value.DefaultStrength;
-						}
-
-						if (movementAnimation == "Run")
-						{
-							sprintAnimation.TargetStrength = MathHelper.Clamp((speed - 6.0f) / 2.0f, 0.0f, 1.0f);
-							runAnimation.TargetStrength = Math.Min(MathHelper.Clamp(speed / 4.0f, 0.0f, 1.0f), 1.0f - sprintAnimation.TargetStrength);
-						}
-
-						if (!model.IsPlaying(movementAnimation))
-						{
-							model.Stop(player.Character.Crouched ? movementAnimations.Keys.ToArray() : crouchMovementAnimations.Keys.ToArray());
-							foreach (KeyValuePair<string, AnimationInfo> animation in player.Character.Crouched ? crouchMovementAnimations : movementAnimations)
-							{
-								model.StartClip(animation.Key, animation.Value.Priority, true);
-								model[animation.Key].Strength = animation.Value.DefaultStrength;
-							}
-						}
-					}
-					else
-					{
-						model.Stop(movementAnimations.Keys.ToArray());
-						model.Stop(crouchMovementAnimations.Keys.ToArray());
-						if (!model.IsPlaying("Fall"))
-							model.StartClip("Fall", 0, true);
-					}
-
-					lastSupported = player.Character.IsSupported;
-				}
-			});
+				if (player.Character.IsSupported)
+					resetInAirState();
+			}, player.Character.IsSupported));
 
 			// Block possibilities
 			const float blockPossibilityFadeInTime = 0.075f;
@@ -642,7 +535,7 @@ namespace Lemma.Factories
 						break;
 				}
 				if (!model.IsPlaying(animation))
-					model.StartClip(animation, 5, true, 0.1f);
+					model.StartClip.Execute(animation, 5, true, 0.1f);
 
 				Session.Recorder.Event(main, "WallRun", animation);
 
@@ -717,8 +610,6 @@ namespace Lemma.Factories
 
 			float lastWallRunEnded = -1.0f, lastWallJump = -1.0f;
 			const float wallRunDelay = 0.5f;
-			const float damageVelocity = -20.0f; // Vertical velocity above which damage occurs
-			const float rollingDamageVelocity = -28.0f; // Damage velocity when rolling
 
 			// Since block possibilities are instantiated on another thread,
 			// we have to give that thread some time to do it before checking if there is actually a wall to run on.
@@ -728,7 +619,7 @@ namespace Lemma.Factories
 			Func<Player.WallRun, bool> activateWallRun = delegate(Player.WallRun state)
 			{
 				Vector3 playerVelocity = player.Character.LinearVelocity;
-				if (playerVelocity.Y < rollingDamageVelocity)
+				if (playerVelocity.Y < FallDamage.RollingDamageVelocity)
 					return false;
 
 				wallInstantiationTimer = 0.0f;
@@ -909,8 +800,8 @@ namespace Lemma.Factories
 						{
 							// Start sliding down
 							player.WallRunState.Value = wallRunState = Player.WallRun.Down;
-							model.Stop("WallRunStraight");
-							model.StartClip("WallSlideDown", 5, true);
+							model.Stop.Execute("WallRunStraight");
+							model.StartClip.Execute("WallSlideDown", 5, true, AnimatedModel.DefaultBlendTime);
 						}
 					}
 					else if (wallRunState == Player.WallRun.Left || wallRunState == Player.WallRun.Right)
@@ -1031,52 +922,6 @@ namespace Lemma.Factories
 					player.SlowMotion.Value = false;
 				}
 			}, player.EnableMoves));
-
-			// Fall damage
-			Vector3 playerLastVelocity = Vector3.Zero;
-			Action<float> fallDamage = delegate(float verticalVelocity)
-			{
-				float v = model.IsPlaying("Roll") ? rollingDamageVelocity : damageVelocity;
-				if (verticalVelocity < v)
-				{
-					player.Health.Value += (verticalVelocity - v) * 0.2f;
-					if (player.Health.Value == 0.0f)
-					{
-						((GameMain)main).RespawnDistance = GameMain.DefaultRespawnDistance;
-						((GameMain)main).RespawnInterval = GameMain.DefaultRespawnInterval;
-					}
-					else
-					{
-						player.Character.LinearVelocity.Value = new Vector3(0, player.Character.LinearVelocity.Value.Y, 0);
-						if (!model.IsPlaying("Roll"))
-							model.StartClip("Land", 1, false, 0.1f);
-					}
-				}
-			};
-
-			// Damage the player if they hit something too hard
-			result.Add(new CommandBinding<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection>(player.Character.Collided, delegate(BEPUphysics.BroadPhaseEntries.Collidable other, ContactCollection contacts)
-			{
-				DynamicMap map = other.Tag as DynamicMap;
-				if (map != null)
-				{
-					float force = contacts[contacts.Count - 1].NormalImpulse;
-					float threshold = map.Entity.Type == "FallingTower" ? 14.0f : 24.0f;
-					float playerLastSpeed = Vector3.Dot(playerLastVelocity, Vector3.Normalize(-contacts[contacts.Count - 1].Contact.Normal)) * 2.5f;
-					if (force > threshold + playerLastSpeed + 4.0f)
-						player.Health.Value -= (force - threshold - playerLastSpeed) * 0.04f;
-				}
-			}));
-
-			update.Add(delegate(float dt)
-			{
-				if (!lastSupported && player.Character.IsSupported)
-				{
-					// Damage the player if they fall too hard and they're not smashing or rolling
-					fallDamage(playerLastVelocity.Y - player.Character.LinearVelocity.Value.Y);
-				}
-				playerLastVelocity = player.Character.LinearVelocity;
-			});
 
 			Direction[] platformBuildableDirections = DirectionExtensions.HorizontalDirections.Union(new[] { Direction.NegativeY }).ToArray();
 
@@ -1213,6 +1058,17 @@ namespace Lemma.Factories
 
 				return null;
 			};
+
+			// Fall damage
+			FallDamage fallDamage = result.GetOrCreate<FallDamage>();
+			fallDamage.Add(new Binding<bool>(fallDamage.IsSupported, player.Character.IsSupported));
+			fallDamage.Add(new Binding<bool>(fallDamage.LastSupported, player.LastSupported));
+			fallDamage.Add(new TwoWayBinding<Vector3>(player.Character.LinearVelocity, fallDamage.LinearVelocity));
+			fallDamage.Add(new Binding<Vector3>(fallDamage.LastLinearVelocity, player.LastLinearVelocity));
+			fallDamage.Add(new TwoWayBinding<float>(player.Health, fallDamage.Health));
+			fallDamage.Add(new CommandBinding<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection>(player.Character.Collided, fallDamage.Collided));
+			fallDamage.Add(new ListBinding<SkinnedModel.Clip>(fallDamage.AnimationClips, model.CurrentClips));
+			fallDamage.Add(new CommandBinding<string, int, bool, float>(fallDamage.StartClip, model.StartClip));
 
 			Updater vaultMover = null;
 
@@ -1445,7 +1301,7 @@ namespace Lemma.Factories
 
 				if (!onlyVault && vaultType == VaultType.None
 					&& !supported && wallRunState == Player.WallRun.None
-					&& player.Character.LinearVelocity.Value.Y > damageVelocity * 1.5f)
+					&& player.Character.LinearVelocity.Value.Y > FallDamage.DamageVelocity * 1.5f)
 				{
 					// We're not vaulting, not doing our normal jump, and not wall-walking
 					// See if we can wall-jump
@@ -1598,8 +1454,6 @@ namespace Lemma.Factories
 					}
 					else
 					{
-						resetInAirState();
-
 						if (supported)
 						{
 							// Regular jump
@@ -1616,7 +1470,10 @@ namespace Lemma.Factories
 						{
 							// We haven't hit the ground, so fall damage will not be handled by the physics system.
 							// Need to do it manually here.
-							fallDamage(player.Character.LinearVelocity.Value.Y);
+							fallDamage.Apply.Execute(player.Character.LinearVelocity.Value.Y);
+
+							// Also manually reset in-air state
+							resetInAirState();
 						}
 					}
 
@@ -1659,24 +1516,31 @@ namespace Lemma.Factories
 
 					AkSoundEngine.PostEvent(vaultType == VaultType.None ? "Jump_Play" : "Vault_Play", result);
 
-					model.Stop("Vault", "VaultLeft", "VaultRight", "Jump", "JumpLeft", "JumpRight", "JumpBackward");
+					model.Stop.Execute("Vault");
+					model.Stop.Execute("VaultLeft");
+					model.Stop.Execute("VaultRight");
+					model.Stop.Execute("Jump");
+					model.Stop.Execute("JumpLeft");
+					model.Stop.Execute("JumpRight");
+					model.Stop.Execute("JumpBackward");
+
 					if (vaultType != VaultType.None)
 					{
 						Session.Recorder.Event(main, "Vault");
-						string anim;
+						string animation;
 						switch (vaultType)
 						{
 							case VaultType.Left:
-								anim = "VaultLeft";
+								animation = "VaultLeft";
 								break;
 							case VaultType.Right:
-								anim = "VaultRight";
+								animation = "VaultRight";
 								break;
 							default:
-								anim = "Vault";
+								animation = "Vault";
 								break;
 						}
-						model.StartClip(anim, 4, false, 0.1f);
+						model.StartClip.Execute(animation, 4, false, 0.1f);
 					}
 					else
 					{
@@ -1705,7 +1569,7 @@ namespace Lemma.Factories
 								animation = "Jump";
 								break;
 						}
-						model.StartClip(animation, 4, false, 0.1f);
+						model.StartClip.Execute(animation, 4, false, 0.1f);
 					}
 
 					// Deactivate any wall-running we're doing
@@ -1989,7 +1853,8 @@ namespace Lemma.Factories
 				{
 					kickUpdate.Delete.Execute();
 					kickUpdate = null;
-					model.Stop("Kick", "Slide");
+					model.Stop.Execute("Kick");
+					model.Stop.Execute("Slide");
 					player.Character.EnableWalking.Value = true;
 					if (!input.GetInput(settings.RollKick))
 						player.Character.AllowUncrouch.Value = true;
@@ -2065,24 +1930,22 @@ namespace Lemma.Factories
 
 						deactivateWallRun();
 
-						model.Stop
-						(
-							"CrouchWalkBackward",
-							"CrouchWalk",
-							"CrouchStrafeRight",
-							"CrouchStrafeLeft",
-							"Idle",
-							"RunBackward",
-							"Run",
-							"Sprint",
-							"RunRight",
-							"RunLeft",
-							"Jump",
-							"JumpLeft",
-							"JumpRight",
-							"JumpBackward"
-						);
-						model.StartClip("CrouchIdle", 2, true);
+						model.Stop.Execute("CrouchWalkBackward");
+						model.Stop.Execute("CrouchWalk");
+						model.Stop.Execute("CrouchStrafeRight");
+						model.Stop.Execute("CrouchStrafeLeft");
+						model.Stop.Execute("Idle");
+						model.Stop.Execute("RunBackward");
+						model.Stop.Execute("Run");
+						model.Stop.Execute("Sprint");
+						model.Stop.Execute("RunRight");
+						model.Stop.Execute("RunLeft");
+						model.Stop.Execute("Jump");
+						model.Stop.Execute("JumpLeft");
+						model.Stop.Execute("JumpRight");
+						model.Stop.Execute("JumpBackward");
+
+						model.StartClip.Execute("CrouchIdle", 2, true, AnimatedModel.DefaultBlendTime);
 
 						player.Character.EnableWalking.Value = false;
 						rotationLocked.Value = true;
@@ -2090,7 +1953,7 @@ namespace Lemma.Factories
 						footsteps.Footstep.Execute(); // We just landed; play a footstep sound
 						AkSoundEngine.PostEvent("Skill_Roll_Play", result);
 
-						model.StartClip("Roll", 5, false);
+						model.StartClip.Execute("Roll", 5, false, AnimatedModel.DefaultBlendTime);
 
 						Map.CellState floorState = floorRaycast.Map == null ? Map.EmptyState : floorRaycast.Coordinate.Value.Data;
 						bool shouldBuildFloor = false;
@@ -2149,24 +2012,21 @@ namespace Lemma.Factories
 
 					deactivateWallRun();
 
-					model.Stop
-					(
-						"CrouchWalkBackward",
-						"CrouchWalk",
-						"CrouchStrafeRight",
-						"CrouchStrafeLeft",
-						"Idle",
-						"RunBackward",
-						"Run",
-						"Sprint",
-						"RunRight",
-						"RunLeft",
-						"Jump",
-						"JumpLeft",
-						"JumpRight",
-						"JumpBackward"
-					);
-					model.StartClip("CrouchIdle", 2, true);
+					model.Stop.Execute("CrouchWalkBackward");
+					model.Stop.Execute("CrouchWalk");
+					model.Stop.Execute("CrouchStrafeRight");
+					model.Stop.Execute("CrouchStrafeLeft");
+					model.Stop.Execute("Idle");
+					model.Stop.Execute("RunBackward");
+					model.Stop.Execute("Run");
+					model.Stop.Execute("Sprint");
+					model.Stop.Execute("RunRight");
+					model.Stop.Execute("RunLeft");
+					model.Stop.Execute("Jump");
+					model.Stop.Execute("JumpLeft");
+					model.Stop.Execute("JumpRight");
+					model.Stop.Execute("JumpBackward");
+					model.StartClip.Execute("CrouchIdle", 2, true, AnimatedModel.DefaultBlendTime);
 
 					player.Character.EnableWalking.Value = false;
 					rotationLocked.Value = true;
@@ -2201,7 +2061,7 @@ namespace Lemma.Factories
 						}
 					}
 
-					model.StartClip(shouldBreakFloor ? "Kick" : "Slide", 5, false);
+					model.StartClip.Execute(shouldBreakFloor ? "Kick" : "Slide", 5, false, AnimatedModel.DefaultBlendTime);
 
 					Direction forwardDir = Direction.None;
 					Direction rightDir = Direction.None;
@@ -2265,12 +2125,17 @@ namespace Lemma.Factories
 				wallDirection = Direction.None;
 				wallRunDirection = Direction.None;
 				player.WallRunState.Value = Player.WallRun.None;
-				model.Stop("WallRunLeft", "WallRunRight", "WallRunStraight", "WallSlideDown", "WallSlideReverse");
+				model.Stop.Execute("WallRunLeft");
+				model.Stop.Execute("WallRunRight");
+				model.Stop.Execute("WallRunStraight");
+				model.Stop.Execute("WallSlideDown");
+				model.Stop.Execute("WallSlideReverse");
 				if (vaultMover == null && kickUpdate == null && rollUpdate == null)
 					rotationLocked.Value = false;
 			};
 
 			// Camera control
+			model.UpdateWorldTransforms();
 			Property<Matrix> relativeHeadBone = model.GetRelativeBoneTransform("ORG-head");
 			Property<Matrix> relativeSpineBone = model.GetRelativeBoneTransform("ORG-chest");
 			Property<Matrix> clavicleLeft = model.GetBoneTransform("ORG-shoulder_L");
@@ -2591,7 +2456,8 @@ namespace Lemma.Factories
 				noteModel.Enabled.Value = noteActive;
 				noteUi.Enabled.Value = noteActive;
 
-				model.Stop("Phone", "Note");
+				model.Stop.Execute("Phone");
+				model.Stop.Execute("Note");
 				Entity noteEntity = note.Value.Target;
 				if (noteEntity != null && noteEntity.Active)
 				{
@@ -2599,7 +2465,7 @@ namespace Lemma.Factories
 					{
 						noteUiImage.Image.Value = noteEntity.GetOrMakeProperty<string>("Image");
 						noteUiText.Text.Value = noteEntity.GetOrMakeProperty<string>("Text");
-						model.StartClip("Note", 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
+						model.StartClip.Execute("Note", 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
 						float startRotationY = input.Mouse.Value.Y;
 						// Level the player's view
 						result.Add(new Animation
@@ -2653,7 +2519,8 @@ namespace Lemma.Factories
 					phoneLight.Enabled.Value = phoneActive;
 					answerContainer.Visible.Value = false;
 
-					model.Stop("Phone", "Note");
+					model.Stop.Execute("Phone");
+					model.Stop.Execute("Note");
 					if (phoneActive)
 					{
 						if (!phone.TutorialShown)
@@ -2664,7 +2531,7 @@ namespace Lemma.Factories
 						phoneScroll.CheckLayout();
 						scrollToBottom();
 
-						model.StartClip("Phone", 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
+						model.StartClip.Execute("Phone", 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
 
 						// Level the player's view
 						float startRotationY = input.Mouse.Value.Y;

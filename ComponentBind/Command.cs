@@ -130,4 +130,24 @@ namespace ComponentBind
 				this.Action(parameter1, parameter2, parameter3);
 		}
 	}
+
+	public class Command<Type, Type2, Type3, Type4> : Command
+	{
+		public new Action<Type, Type2, Type3, Type4> Action;
+
+		public override void Execute()
+		{
+			throw new Exception("Incorrect number of command parameters.");
+		}
+
+		public void Execute(Type parameter1, Type2 parameter2, Type3 parameter3, Type4 parameter4)
+		{
+			this.preNotification();
+			foreach (CommandBinding<Type, Type2, Type3, Type4> binding in this.bindings)
+				binding.Execute(parameter1, parameter2, parameter3, parameter4);
+			this.postNotification();
+			if (this.Action != null)
+				this.Action(parameter1, parameter2, parameter3, parameter4);
+		}
+	}
 }
