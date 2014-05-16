@@ -47,7 +47,7 @@ namespace Lemma.Factories
 
 			UIRenderer uiRenderer = new UIRenderer { Editable = false };
 			FPSInput input = new FPSInput { Editable = false };
-			input.EnabledWhenPaused.Value = true;
+			input.EnabledWhenPaused = true;
 			Scroller scroller = new Scroller();
 			scroller.Position.Value = new Vector2(10, 10);
 			scroller.AnchorPoint.Value = new Vector2(0, 0);
@@ -1069,7 +1069,7 @@ namespace Lemma.Factories
 					}
 				}
 			};
-			timelineUpdate.EnabledInEditMode.Value = true;
+			timelineUpdate.EnabledInEditMode = true;
 			result.Add(timelineUpdate);
 
 			// Save

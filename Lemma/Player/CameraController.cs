@@ -50,6 +50,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
+			this.EnabledWhenPaused = false;
 			this.Serialize = false;
 			this.noise = this.Entity.GetOrCreate<ProceduralGenerator>();
 			this.lastRotation = this.Mouse.Value.X;

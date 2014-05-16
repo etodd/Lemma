@@ -109,7 +109,7 @@ namespace Lemma.Components
 
 			if (entity == null)
 			{
-				anim.EnabledWhenPaused.Value = false;
+				anim.EnabledWhenPaused = false;
 				this.main.AddComponent(anim);
 			}
 			else
@@ -142,7 +142,7 @@ namespace Lemma.Components
 
 				if (entity == null)
 				{
-					anim.EnabledWhenPaused.Value = false;
+					anim.EnabledWhenPaused = false;
 					this.main.AddComponent(anim);
 				}
 				else

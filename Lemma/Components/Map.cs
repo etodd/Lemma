@@ -1803,8 +1803,8 @@ namespace Lemma.Components
 						}
 					}
 				};
-				Map.spawner.EnabledInEditMode.Value = true;
-				Map.spawner.EnabledWhenPaused.Value = true;
+				Map.spawner.EnabledInEditMode = true;
+				Map.spawner.EnabledWhenPaused = true;
 				this.main.AddComponent(Map.spawner);
 			}
 

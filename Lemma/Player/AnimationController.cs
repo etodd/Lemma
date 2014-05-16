@@ -23,11 +23,35 @@ namespace Lemma.Components
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
 		public Property<Vector2> Movement = new Property<Vector2>();
 		public Property<bool> Crouched = new Property<bool>();
+		public Property<Vector2> Mouse = new Property<Vector2>();
 
 		// Output
-		public AnimatedModel Model;
+		private AnimatedModel model;
+		private SkinnedModel.Clip sprintAnimation;
+		private SkinnedModel.Clip runAnimation;
+		private Property<Matrix> relativeHeadBone;
+		private Property<Matrix> relativeUpperLeftArm;
+		private Property<Matrix> relativeUpperRightArm;
+		private Property<Matrix> clavicleLeft;
+		private Property<Matrix> clavicleRight;
 
-		private float lastLandAnimationPlayed = 0.0f;
+		public override void Awake()
+		{
+			base.Awake();
+			this.EnabledWhenPaused = false;
+		}
+
+		public void Bind(AnimatedModel m)
+		{
+			this.model = m;
+			this.sprintAnimation = m["Sprint"];
+			this.runAnimation = m["Run"];
+			this.relativeHeadBone = m.GetRelativeBoneTransform("ORG-head");
+			this.clavicleLeft = m.GetBoneTransform("ORG-shoulder_L");
+			this.clavicleRight = m.GetBoneTransform("ORG-shoulder_R");
+			this.relativeUpperLeftArm = m.GetRelativeBoneTransform("ORG-upper_arm_L");
+			this.relativeUpperRightArm = m.GetRelativeBoneTransform("ORG-upper_arm_R");
+		}
 
 		// Animations and their priorities
 		private Dictionary<string, AnimationInfo> movementAnimations = new Dictionary<string, AnimationInfo>
@@ -52,7 +76,7 @@ namespace Lemma.Components
 		{
 			if (this.WallRunState != Player.WallRun.None)
 			{
-				this.Model.Stop
+				this.model.Stop
 				(
 					"Jump",
 					"JumpLeft",
@@ -66,7 +90,7 @@ namespace Lemma.Components
 				return;
 			}
 
-			this.Model.Stop
+			this.model.Stop
 			(
 				"WallRunLeft",
 				"WallRunRight",
@@ -77,7 +101,7 @@ namespace Lemma.Components
 
 			if (this.IsSupported)
 			{
-				this.Model.Stop
+				this.model.Stop
 				(
 					"Jump",
 					"JumpLeft",
@@ -125,38 +149,53 @@ namespace Lemma.Components
 				foreach (KeyValuePair<string, AnimationInfo> animation in this.Crouched ? crouchMovementAnimations : movementAnimations)
 				{
 					if (animation.Key != "Idle" && animation.Key != "CrouchIdle")
-						this.Model[animation.Key].Speed = this.Crouched ? (speed / 2.2f) : (speed / 6.5f);
-					this.Model[animation.Key].TargetStrength = animation.Key == movementAnimation ? 1.0f : animation.Value.DefaultStrength;
+						this.model[animation.Key].Speed = this.Crouched ? (speed / 2.2f) : (speed / 6.5f);
+					this.model[animation.Key].TargetStrength = animation.Key == movementAnimation ? 1.0f : animation.Value.DefaultStrength;
 				}
 
 				if (movementAnimation == "Run")
 				{
-					SkinnedModel.Clip sprintAnimation = this.Model["Sprint"];
-					sprintAnimation.TargetStrength = MathHelper.Clamp((speed - 6.0f) / 2.0f, 0.0f, 1.0f);
-					this.Model["Run"].TargetStrength = Math.Min(MathHelper.Clamp(speed / 4.0f, 0.0f, 1.0f), 1.0f - sprintAnimation.TargetStrength);
+					this.sprintAnimation.TargetStrength = MathHelper.Clamp((speed - 6.0f) / 2.0f, 0.0f, 1.0f);
+					this.runAnimation.TargetStrength = Math.Min(MathHelper.Clamp(speed / 4.0f, 0.0f, 1.0f), 1.0f - this.sprintAnimation.TargetStrength);
 				}
 
-				if (!this.Model.IsPlaying(movementAnimation))
+				if (!this.model.IsPlaying(movementAnimation))
 				{
 					foreach (string anim in this.Crouched ? movementAnimations.Keys : crouchMovementAnimations.Keys)
-						this.Model.Stop(anim);
+						this.model.Stop(anim);
 					foreach (KeyValuePair<string, AnimationInfo> animation in this.Crouched ? crouchMovementAnimations : movementAnimations)
 					{
-						this.Model.StartClip(animation.Key, animation.Value.Priority, true, AnimatedModel.DefaultBlendTime);
-						this.Model[animation.Key].Strength = animation.Value.DefaultStrength;
+						this.model.StartClip(animation.Key, animation.Value.Priority, true, AnimatedModel.DefaultBlendTime);
+						this.model[animation.Key].Strength = animation.Value.DefaultStrength;
 					}
 				}
 			}
 			else
 			{
 				foreach (string anim in movementAnimations.Keys)
-					this.Model.Stop(anim);
+					this.model.Stop(anim);
 				foreach (string anim in crouchMovementAnimations.Keys)
-					this.Model.Stop(anim);
+					this.model.Stop(anim);
 
-				if (!this.Model.IsPlaying("Fall"))
-					this.Model.StartClip("Fall", 0, true, AnimatedModel.DefaultBlendTime);
+				if (!this.model.IsPlaying("Fall"))
+					this.model.StartClip("Fall", 0, true, AnimatedModel.DefaultBlendTime);
 			}
+
+			// Rotate head and arms to match mouse
+			this.relativeHeadBone.Value *= Matrix.CreateRotationX(this.Mouse.Value.Y * 0.4f);
+			this.model.UpdateWorldTransforms();
+
+			Matrix r = Matrix.CreateRotationX(this.Mouse.Value.Y * 0.6f * (this.runAnimation.TotalStrength + this.sprintAnimation.TotalStrength));
+
+			Matrix parent = this.clavicleLeft;
+			parent.Translation = Vector3.Zero;
+			this.relativeUpperLeftArm.Value *= parent * r * Matrix.Invert(parent);
+
+			parent = this.clavicleRight;
+			parent.Translation = Vector3.Zero;
+			this.relativeUpperRightArm.Value *= parent * r * Matrix.Invert(parent);
+
+			this.model.UpdateWorldTransforms();
 		}
 	}
 }

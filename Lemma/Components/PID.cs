@@ -23,8 +23,8 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.EnabledInEditMode.Value = false;
-			this.EnabledWhenPaused.Value = false;
+			this.EnabledInEditMode = false;
+			this.EnabledWhenPaused = false;
 		}
 
 		public void Update(float dt)
@@ -53,8 +53,8 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.EnabledInEditMode.Value = false;
-			this.EnabledWhenPaused.Value = false;
+			this.EnabledInEditMode = false;
+			this.EnabledWhenPaused = false;
 		}
 
 		public void Update(float dt)

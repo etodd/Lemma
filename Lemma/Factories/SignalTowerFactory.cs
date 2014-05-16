@@ -51,7 +51,7 @@ namespace Lemma.Factories
 					light.Attenuation.Value = lightBaseRadius.Value * (1.0f + (((float)this.random.NextDouble() - 0.5f) * 0.1f));
 				}
 			};
-			updater.EnabledInEditMode.Value = true;
+			updater.EnabledInEditMode = true;
 			result.Add(updater);
 
 			SignalTower tower = result.GetOrCreate<SignalTower>("SignalTower");

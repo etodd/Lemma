@@ -240,7 +240,7 @@ namespace Lemma.Components
 
 		public AnimatedModel()
 		{
-			this.EnabledWhenPaused.Value = true;
+			this.EnabledWhenPaused = true;
 		}
 
 		public Property<Matrix> GetRelativeBoneTransform(string bone)

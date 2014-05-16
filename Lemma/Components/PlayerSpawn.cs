@@ -30,8 +30,8 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.EnabledInEditMode.Value = false;
-			this.EnabledWhenPaused.Value = false;
+			this.EnabledInEditMode = false;
+			this.EnabledWhenPaused = false;
 			PlayerSpawn.spawns.Add(this);
 
 			this.Add(new CommandBinding(this.Delete, delegate() { PlayerSpawn.spawns.Remove(this); }));

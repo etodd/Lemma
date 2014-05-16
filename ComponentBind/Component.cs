@@ -17,8 +17,8 @@ namespace ComponentBind
 		bool Editable { get; set; }
 		void SetMain(BaseMain main);
 		Property<bool> Enabled { get; }
-		Property<bool> EnabledInEditMode { get; }
-		Property<bool> EnabledWhenPaused { get; }
+		bool EnabledInEditMode { get; }
+		bool EnabledWhenPaused { get; }
 		Property<bool> Suspended { get; }
 		Command Delete { get; }
 		void OnSave();
@@ -83,9 +83,9 @@ namespace ComponentBind
 		}
 
 		[XmlIgnore]
-		public Property<bool> EnabledInEditMode { get; set; }
+		public bool EnabledInEditMode { get; set; }
 		[XmlIgnore]
-		public Property<bool> EnabledWhenPaused { get; set; }
+		public bool EnabledWhenPaused { get; set; }
 
 		private List<IBinding> bindings = new List<IBinding>();
 
@@ -104,8 +104,8 @@ namespace ComponentBind
 			this.Editable = true;
 			this.Enabled = new Property<bool> { Value = true, Editable = false };
 			this.Suspended = new Property<bool> { Value = false, Editable = false };
-			this.EnabledInEditMode = new Property<bool> { Value = true, Editable = false };
-			this.EnabledWhenPaused = new Property<bool> { Value = true, Editable = false };
+			this.EnabledInEditMode = true;
+			this.EnabledWhenPaused = true;
 			this.Delete.Action = delegate()
 			{
 				if (this.Active)

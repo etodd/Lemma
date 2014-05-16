@@ -34,6 +34,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
+			this.EnabledWhenPaused = false;
 			this.Apply.Action = delegate(float verticalAcceleration)
 			{
 				bool rolling = this.Model.IsPlaying("Roll");

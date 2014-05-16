@@ -534,7 +534,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.EnabledWhenPaused.Value = true;
+			this.EnabledWhenPaused = true;
 			this.DrawOrder = new Property<int> { Editable = true, Value = 11 };
 			this.Settings.Get = delegate()
 			{

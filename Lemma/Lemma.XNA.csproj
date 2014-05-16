@@ -94,10 +94,11 @@
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Analytics.cs" />
-    <Compile Include="Components\DialogueForest.cs" />
+    <Compile Include="Player\PhoneNote.cs" />
+    <Compile Include="Util\DialogueForest.cs" />
     <Compile Include="Components\SoundKiller.cs" />
     <Compile Include="Components\SignalTower.cs" />
-    <Compile Include="Components\Phone.cs" />
+    <Compile Include="Player\Phone.cs" />
     <Compile Include="Components\RaycastAI.cs" />
     <Compile Include="Components\Trigger.cs" />
     <Compile Include="Components\PID.cs" />

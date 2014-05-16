@@ -13,7 +13,7 @@ namespace Lemma.Components
 
 		public Updater()
 		{
-			this.EnabledInEditMode.Value = false;
+			this.EnabledInEditMode = false;
 		}
 
 		public override void Awake()
@@ -31,7 +31,7 @@ namespace Lemma.Components
 			set
 			{
 				base.Entity = value;
-				this.EnabledWhenPaused.Value = false;
+				this.EnabledWhenPaused = false;
 			}
 		}
 

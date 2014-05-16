@@ -26,7 +26,7 @@ namespace Lemma.Components
 			set
 			{
 				base.Entity = value;
-				this.EnabledWhenPaused.Value = false;
+				this.EnabledWhenPaused = false;
 				this.Suspended.Set = delegate(bool v)
 				{
 					this.Suspended.InternalValue = false;

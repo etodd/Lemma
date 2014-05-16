@@ -59,7 +59,7 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.Editable = false;
-			this.EnabledWhenPaused.Value = false;
+			this.EnabledWhenPaused = false;
 			this.Character = new Character(this.main, Vector3.Zero);
 			this.Character.Body.Tag = this;
 			this.main.Space.Add(this.Character);

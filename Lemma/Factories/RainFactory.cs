@@ -102,7 +102,7 @@ namespace Lemma.Factories
 					}
 				}
 			};
-			updater.EnabledInEditMode.Value = true;
+			updater.EnabledInEditMode = true;
 			result.Add(updater);
 
 			ModelAlpha skybox = null;

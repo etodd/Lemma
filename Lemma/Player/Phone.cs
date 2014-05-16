@@ -7,6 +7,7 @@ using System.Collections;
 using Microsoft.Xna.Framework;
 using System.ComponentModel;
 using ComponentBind;
+using Lemma.Util;
 
 namespace Lemma.Components
 {
@@ -91,8 +92,8 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.EnabledInEditMode.Value = false;
-			this.EnabledWhenPaused.Value = false;
+			this.EnabledInEditMode = false;
+			this.EnabledWhenPaused = false;
 		}
 
 		public ListProperty<Schedule> Schedules = new ListProperty<Schedule>();

@@ -289,7 +289,7 @@ namespace Lemma.Factories
 						updateZones(newZone);
 				}
 			};
-			update.EnabledInEditMode.Value = true;
+			update.EnabledInEditMode = true;
 			result.Add(update);
 
 			this.SetMain(result, main);

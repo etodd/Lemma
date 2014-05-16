@@ -58,7 +58,7 @@ namespace Lemma.Factories
 					}
 				}
 			};
-			updater.EnabledWhenPaused.Value = true;
+			updater.EnabledWhenPaused = true;
 			result.Add(updater);
 		}
 	}

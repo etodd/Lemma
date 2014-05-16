@@ -27,8 +27,8 @@ namespace Lemma.Components
 
 		public PlayerTrigger()
 		{
-			this.EnabledInEditMode.Value = false;
-			this.EnabledWhenPaused.Value = false;
+			this.EnabledInEditMode = false;
+			this.EnabledWhenPaused = false;
 			this.Enabled.Editable = true;
 		}
 

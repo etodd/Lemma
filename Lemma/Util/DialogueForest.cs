@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using ComponentBind;
 using Newtonsoft.Json.Converters;
 
-namespace Lemma.Components
+namespace Lemma.Util
 {
 	public class DialogueForest
 	{

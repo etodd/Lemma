@@ -134,7 +134,7 @@ namespace Lemma.Components
 		public Model()
 		{
 			this.Enabled.Editable = true;
-			this.EnabledWhenPaused.Value = true;
+			this.EnabledWhenPaused = true;
 		}
 
 		public override void Awake()

@@ -50,7 +50,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.EnabledWhenPaused.Value = false;
+			this.EnabledWhenPaused = false;
 			this.Enabled.Editable = true;
 
 			this.ParticlesPerSecond.Set = delegate(int value)

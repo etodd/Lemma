@@ -29,8 +29,8 @@ namespace Lemma.Components
 
 		public PlayerCylinderTrigger()
 		{
-			this.EnabledInEditMode.Value = false;
-			this.EnabledWhenPaused.Value = false;
+			this.EnabledInEditMode = false;
+			this.EnabledWhenPaused = false;
 		}
 
 		public override void Awake()

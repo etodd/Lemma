@@ -15,7 +15,7 @@ public class AkGameObject : ComponentBind.Component<BaseMain>
 	{				
 		base.Awake();
 		this.Serialize = false;
-		this.EnabledWhenPaused.Value = false;
+		this.EnabledWhenPaused = false;
 
 		// Register a Game Object in the sound engine, with its name.		
 		AkSoundEngine.RegisterGameObj(this.Entity, this.Entity.ID);

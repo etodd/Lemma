@@ -739,7 +739,7 @@ namespace Lemma.Components
 
 				// By default, animations that are attached to entities will pause when the game pauses.
 				// Other animations, like for the pause menu UI, will continue.
-				this.EnabledWhenPaused.Value = false;
+				this.EnabledWhenPaused = false;
 			}
 		}
 

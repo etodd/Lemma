@@ -123,7 +123,7 @@ namespace Lemma.Components
 			set
 			{
 				base.Entity = value;
-				this.EnabledWhenPaused.Value = false;
+				this.EnabledWhenPaused = false;
 			}
 		}
 

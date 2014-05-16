@@ -229,7 +229,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.EnabledInEditMode.Value = true;
+			this.EnabledInEditMode = true;
 
 			this.Reseed.Action = this.reseed;
 
