@@ -99,7 +99,7 @@ namespace Lemma.Components
 				float y = (((float)this.random.NextDouble() * 2.0f) - 1.0f) * radius;
 				Vector3 ray = new Vector3((float)Math.Cos(x) * (float)Math.Cos(y), (float)Math.Sin(y), (float)Math.Sin(x) * (float)Math.Cos(y));
 				Map.GlobalRaycastResult hit = Lemma.Components.Map.GlobalRaycast(pos, Vector3.TransformNormal(ray, mat), this.MovementDistance);
-				if (hit.Map != null && hit.Distance > 2.0f && hit.Coordinate.Value.Data != WorldFactory.StatesByName["AvoidAI"])
+				if (hit.Map != null && hit.Distance > 2.0f && hit.Coordinate.Value.Data.ID != Components.Map.t.AvoidAI)
 				{
 					bool skip = false;
 					foreach (Water w in Water.ActiveInstances)

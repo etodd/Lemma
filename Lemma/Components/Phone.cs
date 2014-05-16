@@ -16,7 +16,7 @@ namespace Lemma.Components
 	[XmlInclude(typeof(ListProperty<Phone.Schedule>))]
 	[XmlInclude(typeof(Phone.Ans))]
 	[XmlInclude(typeof(ListProperty<Phone.Ans>))]
-	public class Phone : ComponentBind.Component<Main>, IUpdateableComponent
+	public class Phone : ComponentBind.Component<Main>, IUpdateableComponent, DialogueForest.IListener
 	{
 		public class Message
 		{
@@ -88,9 +88,9 @@ namespace Lemma.Components
 			}
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.EnabledInEditMode.Value = false;
 			this.EnabledWhenPaused.Value = false;
 		}
@@ -259,28 +259,28 @@ namespace Lemma.Components
 
 		public void Execute(DialogueForest forest, DialogueForest.Node node)
 		{
-			forest.Execute(node, this.handleText, this.handleChoices, this.handleSet, this.handleGet);
+			forest.Execute(node, this);
 		}
 
-		private void handleText(string text, int level)
+		void DialogueForest.IListener.Text(string text, int level)
 		{
 			this.Delay(messageDelay * level, text);
 		}
 
 		private const float messageDelay = 2.0f; // 2 seconds in between each message
-		private void handleChoices(string node, IEnumerable<string> choices)
+		void DialogueForest.IListener.Choice(string node, IEnumerable<string> choices)
 		{
 			this.ActiveAnswers.Clear();
 			this.ActiveAnswers.AddAll(choices.Select(x => new Ans { ParentID = node, ID = x }));
 			this.WaitForAnswer.Value = true;
 		}
 
-		private void handleSet(string key, string value)
+		void DialogueForest.IListener.Set(string key, string value)
 		{
 			this[key] = value;
 		}
 
-		private string handleGet(string key)
+		string DialogueForest.IListener.Get(string key)
 		{
 			return this[key];
 		}

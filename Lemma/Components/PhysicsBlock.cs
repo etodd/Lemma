@@ -32,9 +32,9 @@ namespace Lemma.Components
 			block.Box.CollisionInformation.CollisionRules.Group = Util.Character.NoCollideGroup;
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			if (this.Mass == 0.0f)
 				this.Box = new Box(Vector3.Zero, this.Size.Value.X, this.Size.Value.Y, this.Size.Value.Z);
 			else

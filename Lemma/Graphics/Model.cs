@@ -137,9 +137,9 @@ namespace Lemma.Components
 			this.EnabledWhenPaused.Value = true;
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			// Make sure all the parameters come before the model and effect
 			this.NormalMap.Set = delegate(string value)
 			{
@@ -930,9 +930,9 @@ namespace Lemma.Components
 			this.DrawOrder = new Property<int> { Editable = true };
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 
 			float alpha = this.Alpha;
 			this.Alpha = this.GetFloatParameter("Alpha");

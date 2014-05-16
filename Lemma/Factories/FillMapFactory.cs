@@ -99,7 +99,7 @@ namespace Lemma.Factories
 							block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
 
 							block.GetProperty<float>("TotalLifetime").Value = blockLifetime;
-							factory.Setup(block, targetEntity, entry.Coord, entry.Coord.Data.ID);
+							factory.Setup(block, targetEntity, entry.Coord, (int)entry.Coord.Data.ID);
 							main.Add(block);
 
 							index.Value++;

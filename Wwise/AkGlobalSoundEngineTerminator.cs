@@ -19,9 +19,9 @@ public class AkGlobalSoundEngineTerminator : Component<BaseMain>
 {
 	static private AkGlobalSoundEngineTerminator ms_Instance = null;
 
-	public override void InitializeProperties()
+	public override void Awake()
 	{
-		base.InitializeProperties();
+		base.Awake();
 		if (ms_Instance != null)
 			return; //Don't init twice
 

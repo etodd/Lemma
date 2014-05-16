@@ -33,9 +33,9 @@ namespace Lemma.Components
 			this.EnabledWhenPaused.Value = false;
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Add(new CommandBinding(this.OnDisabled, delegate() { this.IsTriggered.Value = false; }));
 		}
 

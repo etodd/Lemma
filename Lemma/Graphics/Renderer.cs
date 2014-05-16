@@ -131,9 +131,9 @@ namespace Lemma.Components
 			this.screenSize = size;
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 
 			this.BlurAmount.Set = delegate(float value)
 			{
@@ -221,7 +221,7 @@ namespace Lemma.Components
 				Renderer.quad = new FullscreenQuad();
 				Renderer.quad.SetMain(this.main);
 				Renderer.quad.LoadContent(false);
-				Renderer.quad.InitializeProperties();
+				Renderer.quad.Awake();
 			}
 
 			this.spriteBatch = new SpriteBatch(this.main.GraphicsDevice);

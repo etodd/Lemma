@@ -1087,17 +1087,17 @@ namespace Lemma.Factories
 			int brush = 1;
 			Action<int> changeBrush = delegate(int delta)
 			{
-				int foundIndex = WorldFactory.StateList.FindIndex(x => x.Name == editor.Brush);
+				int foundIndex = Map.StateList.FindIndex(x => x.ToString() == editor.Brush);
 				if (foundIndex != -1)
 					brush = foundIndex;
-				int stateCount = WorldFactory.States.Count + 1;
+				int stateCount = Map.States.Count + 1;
 				brush = 1 + ((brush - 1 + delta) % (stateCount - 1));
 				if (brush < 1)
 					brush = stateCount + ((brush - 1) % stateCount);
 				if (brush == stateCount - 1)
 					editor.Brush.Value = "(Procedural)";
 				else
-					editor.Brush.Value = WorldFactory.StateList[brush].Name;
+					editor.Brush.Value = Map.StateList[brush].ToString();
 			};
 			result.Add(new CommandBinding(input.GetKeyDown(Keys.Q), () => editor.MapEditMode, delegate()
 			{

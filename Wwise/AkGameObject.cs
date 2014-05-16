@@ -11,9 +11,9 @@ using ComponentBind;
 // It manages registration of the game object inside the Wwise Sound Engine
 public class AkGameObject : ComponentBind.Component<BaseMain>
 {
-	public override void InitializeProperties()
+	public override void Awake()
 	{				
-		base.InitializeProperties();
+		base.Awake();
 		this.Serialize = false;
 		this.EnabledWhenPaused.Value = false;
 

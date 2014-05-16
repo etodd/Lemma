@@ -174,9 +174,9 @@ namespace Lemma.Components
 			});
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 
 			this.Add(new TwoWayBinding<Vector2, Vector2>(
 				this.AnchorPoint,

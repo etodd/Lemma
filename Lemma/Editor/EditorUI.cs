@@ -159,9 +159,9 @@ namespace Lemma.Components
 			this.selectedStringDisplayProperty.Value = "_";
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.SelectedEntities.ItemAdded += new ListProperty<Entity>.ItemAddedEventHandler(delegate(int index, Entity item)
 			{
 				this.refresh();

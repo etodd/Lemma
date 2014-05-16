@@ -51,9 +51,9 @@ namespace Lemma.Components
 		private const float healthRegenerateDelay = 4.0f;
 		private const float healthRegenerateRate = 0.1f;
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Editable = false;
 			this.EnabledWhenPaused.Value = false;
 			this.Character = new Character(this.main, Vector3.Zero);

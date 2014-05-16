@@ -31,9 +31,9 @@ namespace Lemma.Components
 			this.EnableScissor.Value = true;
 		}
 		
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			new CommandBinding<Point, int>(this.MouseScrolled, delegate(Point mouse, int delta)
 			{
 				if (this.Children.Count == 1 && this.EnableScroll)

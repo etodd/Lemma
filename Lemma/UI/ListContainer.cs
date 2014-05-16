@@ -25,9 +25,9 @@ namespace Lemma.Components
 		public Property<float> Spacing = new Property<float> { Value = 2.0f };
 		private NotifyBinding binding;
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Add(new ListNotifyBinding<UIComponent>(this.childrenChanged, this.Children));
 			this.Add(new NotifyBinding(delegate() { this.layoutDirty = true; }, this.Orientation, this.Spacing, this.ResizePerpendicular));
 			this.childrenChanged();

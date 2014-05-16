@@ -26,8 +26,9 @@ public class AkAuxSend : Component<BaseMain>
 		return 1.0f;
 	}
 	
-	void Awake()
+	public override void Awake()
 	{
+		base.Awake();
 		//Cache the ID to avoid repetitive calls to GetIDFromString that will give the same result.
 		m_auxBusID = AkSoundEngine.GetIDFromString(auxBusName);
 	}

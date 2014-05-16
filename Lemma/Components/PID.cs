@@ -20,9 +20,9 @@ namespace Lemma.Components
 		public Property<float> PreviousError = new Property<float> { Editable = false };
 		public Property<float> Integral = new Property<float> { Editable = false };
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.EnabledInEditMode.Value = false;
 			this.EnabledWhenPaused.Value = false;
 		}
@@ -50,9 +50,9 @@ namespace Lemma.Components
 		public Property<Vector3> PreviousError = new Property<Vector3> { Editable = false };
 		public Property<Vector3> Integral = new Property<Vector3> { Editable = false };
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.EnabledInEditMode.Value = false;
 			this.EnabledWhenPaused.Value = false;
 		}

@@ -169,9 +169,17 @@ namespace Lemma.Components
 			map.Regenerate();
 		}
 
-		public override void InitializeProperties()
+		private Map.CellState getBrush()
 		{
-			base.InitializeProperties();
+			Map.CellState result = Map.StateList.FirstOrDefault(x => x.ID.ToString() == this.Brush);
+			if (result.ID == Map.t.Empty)
+				return Map.EmptyState;
+			return result;
+		}
+
+		public override void Awake()
+		{
+			base.Awake();
 			this.generator = this.Entity.Get<ProceduralGenerator>();
 
 			this.Spawn.Action = delegate(string type)
@@ -339,8 +347,8 @@ namespace Lemma.Components
 				Map.Coordinate endSelection = this.VoxelSelectionEnd;
 				bool selectionActive = this.VoxelSelectionActive;
 
-				Map.CellState material;
-				if (WorldFactory.StatesByName.TryGetValue(this.Brush, out material))
+				Map.CellState material = this.getBrush();
+				if (material != Map.EmptyState)
 				{
 					if (material == selectedBox.Type)
 						return;
@@ -397,8 +405,8 @@ namespace Lemma.Components
 
 				Map.CellState oldMaterial = selectedBox.Type;
 
-				Map.CellState material;
-				if (WorldFactory.StatesByName.TryGetValue(this.Brush, out material))
+				Map.CellState material = this.getBrush();
+				if (material != Map.EmptyState)
 				{
 					if (material == oldMaterial)
 						return;
@@ -424,8 +432,8 @@ namespace Lemma.Components
 				Map.Coordinate endSelection = this.VoxelSelectionEnd;
 				bool selectionActive = this.VoxelSelectionActive;
 
-				Map.CellState material;
-				if (WorldFactory.StatesByName.TryGetValue(this.Brush, out material))
+				Map.CellState material = this.getBrush();
+				if (material != Map.EmptyState)
 				{
 					if (material == selectedBox.Type)
 						return;
@@ -454,7 +462,7 @@ namespace Lemma.Components
 				if (selectedBox == null)
 					return;
 
-				this.Brush.Value = selectedBox.Type.Name;
+				this.Brush.Value = selectedBox.Type.ToString();
 			};
 
 			this.DeleteMaterial.Action = delegate()
@@ -708,8 +716,8 @@ namespace Lemma.Components
 					{
 						if (this.Fill)
 						{
-							Map.CellState material;
-							if (WorldFactory.StatesByName.TryGetValue(this.Brush, out material))
+							Map.CellState material = this.getBrush();
+							if (material != Map.EmptyState)
 							{
 								if (this.VoxelSelectionActive)
 								{

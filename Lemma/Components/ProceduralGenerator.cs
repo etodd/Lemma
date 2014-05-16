@@ -180,10 +180,10 @@ namespace Lemma.Components
 		public Property<float> HeightOctave = new Property<float> { Value = 20.0f };
 
 		private Map.CellState primaryFillValue;
-		public Property<string> PrimaryFillValue = new Property<string> { Value = "Rock" };
+		public Property<Map.t> PrimaryFillValue = new Property<Map.t> { Value = Map.t.Rock };
 
 		private Map.CellState secondaryFillValue;
-		public Property<string> SecondaryFillValue = new Property<string> { Value = "Rock" };
+		public Property<Map.t> SecondaryFillValue = new Property<Map.t> { Value = Map.t.Rock };
 
 		public Property<float> PrimaryFillThreshold = new Property<float> { Value = 0.0f };
 
@@ -226,28 +226,22 @@ namespace Lemma.Components
 			return new Map.CellState();
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.EnabledInEditMode.Value = true;
 
 			this.Reseed.Action = this.reseed;
 
-			this.PrimaryFillValue.Set = delegate(string value)
+			this.PrimaryFillValue.Set = delegate(Map.t value)
 			{
-				Map.CellState state;
-				if (!WorldFactory.StatesByName.TryGetValue(value, out state))
-					state = WorldFactory.States[0];
-				this.primaryFillValue = state;
+				this.primaryFillValue = Map.States[value];
 				this.PrimaryFillValue.InternalValue = value;
 			};
 
-			this.SecondaryFillValue.Set = delegate(string value)
+			this.SecondaryFillValue.Set = delegate(Map.t value)
 			{
-				Map.CellState state;
-				if (!WorldFactory.StatesByName.TryGetValue(value, out state))
-					state = WorldFactory.States[0];
-				this.secondaryFillValue = state;
+				this.secondaryFillValue = Map.States[value];
 				this.SecondaryFillValue.InternalValue = value;
 			};
 		}

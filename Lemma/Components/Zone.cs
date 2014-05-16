@@ -46,9 +46,9 @@ namespace Lemma.Components
 			return result;
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			Zone.Zones.Add(this);
 			this.Add(new CommandBinding(this.Delete, delegate() { Zone.Zones.Remove(this); }));
 
@@ -82,7 +82,7 @@ namespace Lemma.Components
 
 			this.Add(new NotifyBinding(delegate()
 			{
-				Lemma.Factories.WorldFactory.Get().GetCommand("UpdateZones").Execute();
+				Lemma.Factories.WorldFactory.Instance.GetCommand("UpdateZones").Execute();
 			}, this.Parent, this.Exclusive, this.BoundingBox, this.Transform));
 
 			this.main.AddComponent(new PostInitialization

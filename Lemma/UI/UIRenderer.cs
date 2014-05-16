@@ -21,6 +21,46 @@ namespace Lemma.Components
 
 		public Property<int> DrawOrder { get; set; }
 
+		public void Setup3D(Property<Matrix> transform)
+		{
+			this.MouseFilter = delegate(MouseState mouse)
+			{
+				Microsoft.Xna.Framework.Graphics.Viewport viewport = main.GraphicsDevice.Viewport;
+
+				Matrix inverseTransform = Matrix.Invert(transform);
+				Vector3 ray = Vector3.Normalize(viewport.Unproject(new Vector3(mouse.X, mouse.Y, 1), main.Camera.Projection, main.Camera.View, Matrix.Identity) - viewport.Unproject(new Vector3(mouse.X, mouse.Y, 0), main.Camera.Projection, main.Camera.View, Matrix.Identity));
+				Vector3 rayStart = main.Camera.Position;
+
+				ray = Vector3.TransformNormal(ray, inverseTransform);
+				rayStart = Vector3.Transform(rayStart, inverseTransform);
+
+				Point output;
+
+				float? intersection = new Ray(rayStart, ray).Intersects(new Plane(Vector3.Right, 0.0f));
+				if (intersection.HasValue)
+				{
+					Vector3 intersectionPoint = rayStart + ray * intersection.Value;
+					Point size = this.RenderTargetSize;
+					Vector2 sizeF = new Vector2(size.X, size.Y);
+					output = new Point((int)((0.5f - intersectionPoint.Z) * sizeF.X), (int)((0.5f - intersectionPoint.Y) * sizeF.Y));
+				}
+				else
+					output = new Point(-1, -1);
+
+				return new MouseState
+				(
+					output.X,
+					output.Y,
+					mouse.ScrollWheelValue,
+					mouse.LeftButton,
+					mouse.MiddleButton,
+					mouse.RightButton,
+					mouse.XButton1,
+					mouse.XButton2
+				);
+			};
+		}
+
 		[XmlIgnore]
 		public RasterizerState RasterizerState;
 
@@ -70,9 +110,9 @@ namespace Lemma.Components
 		}
 
 		private bool needResize = false;
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.RenderTargetSize));
 			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.main.ScreenSize));
 			this.lastMouseState = this.main.LastMouseState;

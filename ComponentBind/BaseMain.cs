@@ -44,7 +44,7 @@ namespace ComponentBind
 				component.SetMain(this);
 				if (typeof(IGraphicsComponent).IsAssignableFrom(component.GetType()))
 					((IGraphicsComponent)component).LoadContent(false);
-				component.InitializeProperties();
+				component.Awake();
 				this.componentsToAdd.Add(component);
 			}
 		}

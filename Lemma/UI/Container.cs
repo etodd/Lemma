@@ -21,9 +21,9 @@ namespace Lemma.Components
 		private static Texture2D texture;
 		private NotifyBinding binding;
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Add(new ListNotifyBinding<UIComponent>(this.childrenChanged, this.Children));
 			this.Add(new NotifyBinding(this.childrenChanged, this.ResizeHorizontal, this.ResizeVertical, this.PaddingLeft, this.PaddingRight, this.PaddingBottom, this.PaddingTop));
 			this.childrenChanged();

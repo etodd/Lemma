@@ -193,9 +193,9 @@ namespace Lemma.Components
 			this.resize();
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.EnabledWhenPaused.Value = true;
 			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.main.ScreenSize));
 			this.Add(new Binding<bool>(this.EnableReflection, ((GameMain)this.main).Settings.EnableReflections));

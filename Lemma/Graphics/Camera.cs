@@ -91,9 +91,9 @@ namespace Lemma.Components
 		/// </summary>
 		public Property<Vector3> Target = new Property<Vector3>();
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Add(new Binding<float, Point>(this.AspectRatio, x => (float)x.X / (float)x.Y, this.ViewportSize));
 			
 			this.Add(new Binding<Matrix>(this.Projection,

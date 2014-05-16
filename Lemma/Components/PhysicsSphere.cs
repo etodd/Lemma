@@ -27,9 +27,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Sphere Sphere;
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			if (this.Mass == 0.0f)
 				this.Sphere = new Sphere(Vector3.Zero, this.Radius);
 			else

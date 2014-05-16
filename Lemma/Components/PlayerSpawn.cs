@@ -27,9 +27,9 @@ namespace Lemma.Components
 			return PlayerSpawn.spawns.FirstOrDefault(x => x.IsActivated);
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.EnabledInEditMode.Value = false;
 			this.EnabledWhenPaused.Value = false;
 			PlayerSpawn.spawns.Add(this);

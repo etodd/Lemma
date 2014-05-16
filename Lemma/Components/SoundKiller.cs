@@ -12,9 +12,9 @@ namespace Lemma.Components
 	public class SoundKiller : Component<Main>
 	{
 		public ListProperty<uint> Events = new ListProperty<uint>();
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Serialize = false;
 
 			this.Add(new CommandBinding(this.Delete, delegate()

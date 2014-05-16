@@ -36,9 +36,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Texture2D> CookieTexture = new Property<Texture2D> { Editable = false };
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.FieldOfView.Set = delegate(float value)
 			{
 				this.FieldOfView.InternalValue = Math.Max(0.01f, Math.Min((float)Math.PI - 0.01f, value));

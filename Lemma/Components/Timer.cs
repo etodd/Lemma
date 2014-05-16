@@ -18,9 +18,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command Reset = new Command();
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.EnabledInEditMode.Value = false;
 			this.EnabledWhenPaused.Value = false;
 

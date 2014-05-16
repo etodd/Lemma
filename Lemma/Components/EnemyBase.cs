@@ -18,8 +18,6 @@ namespace Lemma.Components
 
 		private CommandBinding<IEnumerable<Map.Coordinate>, Map> cellEmptiedBinding;
 
-		private int infectedID;
-
 		public bool EnableCellEmptyBinding
 		{
 			get
@@ -49,7 +47,7 @@ namespace Lemma.Components
 				{
 					foreach (Map.Coordinate coord in box.GetCoords())
 					{
-						if (m[coord].ID == this.infectedID)
+						if (m[coord].ID == Components.Map.t.InfectedCritical)
 						{
 							found = true;
 							break;
@@ -90,9 +88,9 @@ namespace Lemma.Components
 			model.Add(new Binding<Matrix>(model.Transform, result.Get<EnemyBase>().Transform));
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Add(new Binding<Vector3>(this.Position, () => Vector3.Transform(new Vector3(0.0f, 0.0f, this.Offset), this.Transform), this.Offset, this.Transform));
 			if (!this.main.EditorEnabled)
 			{
@@ -120,8 +118,6 @@ namespace Lemma.Components
 				if (this.Map.Value.Target != null)
 					setupMap();
 
-				this.infectedID = WorldFactory.StatesByName["InfectedCritical"].ID;
-
 				this.main.AddComponent(new PostInitialization
 				{
 					delegate()
@@ -134,7 +130,7 @@ namespace Lemma.Components
 							foreach (Map m in Lemma.Components.Map.Maps)
 							{
 								Map.Box box = m.GetBox(this.Position);
-								if (box != null && box.Type.ID == this.infectedID)
+								if (box != null && box.Type.ID == Components.Map.t.InfectedCritical)
 								{
 									foreach (Map.Box b in m.GetContiguousByType(new[] { box }))
 										this.BaseBoxes.Add(b);

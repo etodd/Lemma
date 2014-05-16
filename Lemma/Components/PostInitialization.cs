@@ -11,9 +11,9 @@ namespace Lemma.Components
 	{
 		protected List<Action> actions = new List<Action>();
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Serialize = false;
 		}
 

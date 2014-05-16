@@ -26,9 +26,9 @@ namespace ComponentBind
 			this.Editable = false;
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Add(new TwoWayBinding<Vector3, Matrix>(
 				this.Position,
 				delegate(Matrix value)

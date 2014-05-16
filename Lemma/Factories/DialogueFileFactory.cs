@@ -39,12 +39,12 @@ namespace Lemma.Factories
 					{
 						if (!string.IsNullOrEmpty(name))
 						{
-							Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance(main).GetOrCreate<Phone>("Phone");
+							Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance.GetOrCreate<Phone>("Phone");
 							try
 							{
 								DialogueForest forest = new DialogueForest(File.ReadAllText(Path.Combine(main.Content.RootDirectory, "Game", name + ".dlz")));
 								phone.Load(forest);
-								WorldFactory.Get().GetListProperty<DialogueForest>().Add(forest);
+								WorldFactory.Instance.GetListProperty<DialogueForest>().Add(forest);
 							}
 							catch (IOException)
 							{

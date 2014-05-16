@@ -89,7 +89,7 @@ namespace Lemma.Factories
 
 			Property<Entity.Handle> map = result.GetProperty<Entity.Handle>("TargetMap");
 			Property<Map.Coordinate> coord = result.GetProperty<Map.Coordinate>("TargetCoord");
-			Property<int> stateId = result.GetProperty<int>("TargetCellStateID");
+			Property<Map.t> stateId = result.GetProperty<Map.t>("TargetCellStateID");
 
 			Property<float> totalLifetime = result.GetProperty<float>("TotalLifetime");
 			Property<float> lifetime = result.GetProperty<float>("Lifetime");
@@ -115,20 +115,19 @@ namespace Lemma.Factories
 
 					if (blend > 1.0f)
 					{
-						if (stateId != 0)
+						if (stateId != Map.t.Empty)
 						{
 							Map.Coordinate c = coord;
 
 							bool foundAdjacentCell = false;
 							if (checkAdjacent)
 							{
-								bool avoid = stateId == WorldFactory.StatesByName["Temporary"].ID;
-								int avoidID = WorldFactory.StatesByName["AvoidAI"].ID;
+								bool avoid = stateId == Map.t.Temporary;
 								foreach (Direction dir in DirectionExtensions.Directions)
 								{
 									Map.Coordinate adjacent = c.Move(dir);
-									int adjacentID = m[adjacent].ID;
-									if (adjacentID != 0 && (!avoid || adjacentID != avoidID))
+									Map.t adjacentID = m[adjacent].ID;
+									if (adjacentID != 0 && (!avoid || adjacentID != Map.t.AvoidAI))
 									{
 										foundAdjacentCell = true;
 										break;
@@ -167,7 +166,7 @@ namespace Lemma.Factories
 									{
 										if (state.ID != 0)
 											m.Empty(coord);
-										m.Fill(coord, WorldFactory.States[stateId]);
+										m.Fill(coord, Map.States[stateId]);
 										m.Regenerate();
 										AkSoundEngine.PostEvent("Play_build_block", result);
 										result.Delete.Execute();
@@ -262,7 +261,7 @@ namespace Lemma.Factories
 				block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * (distance + index)) * Matrix.CreateRotationY(0.15f * (distance + index));
 				block.GetProperty<float>("TotalLifetime").Value = Math.Max(delayMultiplier, distance * delayMultiplier);
 				block.GetProperty<bool>("CheckAdjacent").Value = true;
-				factory.Setup(block, entry.Map.Entity, entry.Coordinate, fake ? 0 : entry.State.ID);
+				factory.Setup(block, entry.Map.Entity, entry.Coordinate, fake ? 0 : (int)entry.State.ID);
 				main.Add(block);
 				index++;
 			}

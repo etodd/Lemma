@@ -109,9 +109,9 @@ namespace Lemma.Components
 		}
 
 		private bool switching = false;
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.EnabledInEditMode.Value = false;
 			this.EnabledWhenPaused.Value = false;
 			this.Serialize = true;

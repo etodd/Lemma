@@ -57,9 +57,9 @@ namespace Lemma.Components
 
 		public Property<bool> Loud = new Property<bool> { Value = true };
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			Agent.agents.Add(this);
 			this.Add(new CommandBinding(this.Delete, delegate()
 			{

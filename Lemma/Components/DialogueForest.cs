@@ -10,6 +10,14 @@ namespace Lemma.Components
 {
 	public class DialogueForest
 	{
+		public interface IListener
+		{
+			void Text(string text, int level);
+			void Choice(string parent, IEnumerable<string> choices);
+			void Set(string key, string value);
+			string Get(string key);
+		}
+
 		public class Node
 		{
 			public enum Type
@@ -76,29 +84,29 @@ namespace Lemma.Components
 			}
 		}
 
-		public void Execute(Node node, Action<string, int> textCallback, Action<string, IEnumerable<string>> choiceCallback, Action<string, string> setCallback, Func<string, string> getCallback, int textLevel = 1)
+		public void Execute(Node node, IListener listener, int textLevel = 1)
 		{
 			string next = null;
 			switch (node.type)
 			{
 				case DialogueForest.Node.Type.Node:
 					if (node.choices != null && node.choices.Count > 0)
-						choiceCallback(node.name, node.choices.Select(x => this[x].name));
+						listener.Choice(node.name, node.choices.Select(x => this[x].name));
 					next = node.next;
 					break;
 				case DialogueForest.Node.Type.Text:
-					textCallback(node.name, textLevel);
+					listener.Text(node.name, textLevel);
 					if (node.choices != null && node.choices.Count > 0)
-						choiceCallback(node.name, node.choices.Select(x => this[x].name));
+						listener.Choice(node.name, node.choices.Select(x => this[x].name));
 					next = node.next;
 					textLevel++;
 					break;
 				case DialogueForest.Node.Type.Set:
-					setCallback(node.variable, node.value);
+					listener.Set(node.variable, node.value);
 					next = node.next;
 					break;
 				case DialogueForest.Node.Type.Branch:
-					string key = getCallback(node.variable);
+					string key = listener.Get(node.variable);
 					if (key == null || !node.branches.TryGetValue(key, out next))
 						node.branches.TryGetValue("_default", out next);
 					break;
@@ -106,7 +114,7 @@ namespace Lemma.Components
 					break;
 			}
 			if (next != null)
-				this.Execute(this[next], textCallback, choiceCallback, setCallback, getCallback, textLevel);
+				this.Execute(this[next], listener, textLevel);
 		}
 	}
 }

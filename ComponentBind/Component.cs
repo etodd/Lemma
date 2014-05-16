@@ -23,7 +23,7 @@ namespace ComponentBind
 		Command Delete { get; }
 		void OnSave();
 		void delete();
-		void InitializeProperties();
+		void Awake();
 	}
 
 	public interface IGraphicsComponent : IComponent
@@ -121,7 +121,7 @@ namespace ComponentBind
 
 		}
 
-		public virtual void InitializeProperties()
+		public virtual void Awake()
 		{
 			this.Enabled.Set = delegate(bool value)
 			{

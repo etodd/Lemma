@@ -39,9 +39,9 @@ namespace Lemma.Components
 			this.effect = this.main.Content.Load<Effect>("Effects\\Lines").Clone();
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Add(new ListNotifyBinding<Line>(delegate() { this.changed = true; }, this.Lines));
 		}
 

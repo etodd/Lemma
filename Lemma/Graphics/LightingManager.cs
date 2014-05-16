@@ -52,9 +52,9 @@ namespace Lemma.Components
 
 		public Property<DynamicShadowSetting> DynamicShadows = new Property<DynamicShadowSetting> { Value = DynamicShadowSetting.Off };
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.shadowCamera = new Camera();
 			this.main.AddComponent(this.shadowCamera);
 			this.DynamicShadows.Set = delegate(DynamicShadowSetting value)

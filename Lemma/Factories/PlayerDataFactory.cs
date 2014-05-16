@@ -60,15 +60,13 @@ namespace Lemma.Factories
 			});
 		}
 
-		public Entity Instance(Main main)
+		public Entity Instance
 		{
-			if (this.instance != null && this.instance.Active)
-				return this.instance;
-			else
+			get
 			{
-				Entity entity = this.CreateAndBind(main);
-				main.Add(entity);
-				return entity;
+				if (this.instance != null && !this.instance.Active)
+					this.instance = null;
+				return this.instance;
 			}
 		}
 

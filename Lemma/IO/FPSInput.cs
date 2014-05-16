@@ -40,9 +40,9 @@ namespace Lemma.Components
 		}
 
 		protected Vector2 lastMouseLook, lastMouseNonLook;
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Add(new CommandBinding(this.OnEnabled, delegate()
 			{
 				FPSInput.RecenterMouse();

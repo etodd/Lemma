@@ -32,9 +32,9 @@ namespace Lemma.Components
 			this.effect = this.main.Content.Load<Effect>("Effects\\Lines2D").Clone();
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.requiresNewBatch = true;
 			this.Add(new ListNotifyBinding<Line>(delegate() { this.changed = true; }, this.Lines));
 		}

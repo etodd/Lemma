@@ -154,7 +154,8 @@
     <Compile Include="Components\Animation.cs" />
     <Compile Include="Graphics\SpotLight.cs" />
     <Compile Include="Graphics\DirectionalLight.cs" />
-    <Compile Include="Player\CameraControl.cs" />
+    <Compile Include="Player\CameraController.cs" />
+    <Compile Include="Player\FootstepController.cs" />
     <Compile Include="Player\Player.cs" />
     <Compile Include="Components\PhysicsBlock.cs" />
     <Compile Include="Graphics\PointLight.cs" />
@@ -176,6 +177,7 @@
     <Compile Include="Factories\WorldFactory.cs" />
     <Compile Include="Components\Water.cs" />
     <Compile Include="Menu.cs" />
+    <Compile Include="Player\PlayerUI.cs" />
     <Compile Include="Screenshot.cs" />
     <Compile Include="Strings.cs" />
     <Compile Include="UI\Container.cs" />

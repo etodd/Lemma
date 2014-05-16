@@ -58,16 +58,16 @@ namespace Lemma.Factories
 			Property<bool> valid = result.GetOrMakeProperty<bool>("Valid", false);
 			valid.Serialize = false;
 
-			Property<string> type = result.GetOrMakeProperty<string>("Type", true);
-			type.Set = delegate(string value)
+			Property<Map.t> type = result.GetOrMakeProperty<Map.t>("Type", true);
+			type.Set = delegate(Map.t value)
 			{
-				Map.CellState state;
-				if (WorldFactory.StatesByName.TryGetValue(value, out state))
+				if (value == Map.t.Empty)
+					valid.Value = false;
+				else
 				{
-					state.ApplyToBlock(result);
+					Map.States[value].ApplyToBlock(result);
 					valid.Value = true;
 				}
-					
 				type.InternalValue = value;
 			};
 		}

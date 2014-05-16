@@ -52,9 +52,9 @@ namespace Lemma.Factories
 		public Property<Vector3> Target = new Property<Vector3> { Editable = false };
 		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.EnabledInEditMode.Value = false;
 			this.EnabledWhenPaused.Value = false;
 			this.Serialize = true;

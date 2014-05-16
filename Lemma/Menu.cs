@@ -505,9 +505,9 @@ namespace Lemma.Components
 			this.displayModeIndex = displayModeIndex;
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 
 			this.input = new PCInput();
 			this.main.AddComponent(this.input);

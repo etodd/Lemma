@@ -32,9 +32,9 @@ namespace Lemma.Components
 			this.Enabled.Editable = true;
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			Action clear = delegate()
 			{
 				this.IsTriggered.Value = false;

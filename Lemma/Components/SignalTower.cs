@@ -27,16 +27,16 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command<Entity> PlayerExitedRange = new Command<Entity>();
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.PlayerEnteredRange.Action = delegate(Entity p)
 			{
-				Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance(this.main).Get<Phone>();
+				Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance.Get<Phone>();
 
 				if (!string.IsNullOrEmpty(this.Initial))
 				{
-					IEnumerable<DialogueForest> forests = WorldFactory.Get().GetListProperty<DialogueForest>();
+					IEnumerable<DialogueForest> forests = WorldFactory.Instance.GetListProperty<DialogueForest>();
 					foreach (DialogueForest forest in forests)
 					{
 						DialogueForest.Node n = forest.GetByName(this.Initial);
@@ -64,7 +64,7 @@ namespace Lemma.Components
 
 			this.PlayerExitedRange.Action = delegate(Entity p)
 			{
-				Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance(this.main).Get<Phone>();
+				Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance.Get<Phone>();
 
 				phone.ActiveAnswers.Clear();
 

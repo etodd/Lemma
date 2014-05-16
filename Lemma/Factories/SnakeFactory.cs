@@ -63,8 +63,8 @@ namespace Lemma.Factories
 
 			Agent agent = result.GetOrCreate<Agent>("Agent");
 
-			Map.CellState infectedState = WorldFactory.StatesByName["Infected"],
-				neutralState = WorldFactory.StatesByName["Neutral"];
+			Map.CellState infectedState = Map.States[Map.t.Infected],
+				neutralState = Map.States[Map.t.Neutral];
 
 			const float defaultSpeed = 5.0f;
 			const float chaseSpeed = 18.0f;

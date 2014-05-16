@@ -24,9 +24,9 @@ public class AkAuxSendAware : Component<BaseMain>, IUpdateableComponent
 	
 	//When starting, check if any of our parent objects have the AkAuxSend component.
 	//We'll assume that this object is then affected by the same AuxSendironment setting.
-	public override void InitializeProperties()
+	public override void Awake()
 	{
-		base.InitializeProperties();
+		base.Awake();
 		this.Serialize = false;
 		this.transform = this.Entity.Get<Transform>();
 

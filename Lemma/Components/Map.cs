@@ -23,9 +23,9 @@ using BEPUphysics.Materials;
 
 namespace Lemma.Components
 {
-	[XmlInclude(typeof(Map.CellState))]
-	[XmlInclude(typeof(Property<Map.CellState>))]
-	[XmlInclude(typeof(ListProperty<Map.CellState>))]
+	[XmlInclude(typeof(CellState))]
+	[XmlInclude(typeof(Property<CellState>))]
+	[XmlInclude(typeof(ListProperty<CellState>))]
 	[XmlInclude(typeof(Map.Coordinate))]
 	[XmlInclude(typeof(ListProperty<Map.Coordinate>))]
 	[XmlInclude(typeof(Map.Box))]
@@ -35,6 +35,9 @@ namespace Lemma.Components
 	[XmlInclude(typeof(Direction))]
 	[XmlInclude(typeof(Property<Direction>))]
 	[XmlInclude(typeof(ListProperty<Direction>))]
+	[XmlInclude(typeof(t))]
+	[XmlInclude(typeof(Property<t>))]
+	[XmlInclude(typeof(ListProperty<t>))]
 	public class Map : ComponentBind.Component<Main>
 	{
 		public static Command<Map, IEnumerable<Coordinate>, Map> GlobalCellsEmptied = new Command<Map, IEnumerable<Coordinate>, Map>();
@@ -46,6 +49,647 @@ namespace Lemma.Components
 
 		[XmlIgnore]
 		public Command<IEnumerable<Coordinate>, Map> CellsFilled = new Command<IEnumerable<Coordinate>, Map>();
+
+		public enum t // Material type
+		{
+			Empty = 0,
+			Rock = 1,
+			Temporary = 2,
+			AvoidAI = 3,
+			Dirt = 4,
+			Reset = 5,
+			Critical = 6,
+			Foliage = 7,
+			Hard = 8,
+			Floater = 9,
+			Expander = 10,
+			Wood = 11,
+			HardPowered = 13,
+			Neutral = 18,
+			RockChunky = 23,
+			White = 30,
+			Metal = 31,
+			MetalSwirl = 32,
+			Invisible = 34,
+			WhitePermanent = 35,
+			Switch = 36,
+			PoweredSwitch = 37,
+			Powered = 38,
+			PermanentPowered = 39,
+			InfectedCritical = 40,
+			Infected = 41,
+			Black = 42,
+			Slider = 43,
+			SliderPowered = 44,
+		}
+
+		public static Dictionary<t, CellState> States = new Dictionary<t, CellState>();
+		public static List<CellState> StateList = new List<CellState>();
+
+		public static void AddState(params CellState[] states)
+		{
+			foreach (CellState state in states)
+			{
+				Map.States[state.ID] = state;
+				Map.StateList.Add(state);
+			}
+		}
+
+		public static void RemoveState(params CellState[] states)
+		{
+			foreach (CellState state in states)
+			{
+				Map.States.Remove(state.ID);
+				Map.StateList.Remove(state);
+			}
+		}
+
+		public static CellState EmptyState;
+		static Map()
+		{
+			Map.EmptyState = new CellState
+			{
+				ID = 0,
+				Fake = true,
+				Invisible = true,
+				Permanent = false,
+				Hard = false,
+			};
+			Map.AddState
+			(
+				Map.EmptyState,
+				new CellState
+				{
+					ID = t.Rock,
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					Density = 2,
+					DiffuseMap = "Textures\\rock",
+					NormalMap = "Textures\\rock-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.2f,
+						},
+						new Model.Material
+						{
+							SpecularPower = 150.0f,
+							SpecularIntensity = 0.2f,
+						},
+					},
+				},
+				new CellState
+				{
+					ID = t.Temporary,
+					Permanent = false,
+					Supported = false,
+					Hard = false,
+					Density = 2,
+					DiffuseMap = "Textures\\white",
+					NormalMap = "Textures\\temporary-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						}
+					},
+					Tint = new Vector3(0.3f, 0.5f, 0.7f),
+				},
+				new CellState
+				{
+					ID = t.AvoidAI,
+					Permanent = true,
+					Hard = true,
+					Supported = true,
+					Density = 2,
+					DiffuseMap = "Textures\\dirty",
+					NormalMap = "Textures\\dirty-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						},
+					},
+					Tint = new Vector3(0.15f),
+				},
+				new CellState
+				{
+					ID = t.Dirt,
+					Permanent = false,
+					Supported = false,
+					Hard = true,
+					Density = 0.5f,
+					DiffuseMap = "Textures\\dirt",
+					NormalMap = "Textures\\dirt-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.SAND,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						}
+					},
+				},
+				new CellState
+				{
+					ID = t.Reset,
+					Permanent = false,
+					Supported = false,
+					Hard = true,
+					Density = 2,
+					DiffuseMap = "Textures\\white",
+					NormalMap = "Textures\\temporary-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						}
+					},
+					Tint = new Vector3(0.0f, 0.6f, 0.0f),
+				},
+				new CellState
+				{
+					ID = t.Critical,
+					Permanent = false,
+					Supported = false,
+					Hard = true,
+					Density = 2,
+					DiffuseMap = "Textures\\danger",
+					NormalMap = "Textures\\plain-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						}
+					},
+				},
+				new CellState
+				{
+					ID = t.Foliage,
+					Permanent = false,
+					Supported = false,
+					Hard = false,
+					Density = 0.5f,
+					DiffuseMap = "Textures\\foliage",
+					NormalMap = "Textures\\plain-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.SAND,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						},
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						}
+					},
+					AllowAlpha = true,
+					Tiling = 3.0f,
+				},
+				new CellState
+				{
+					ID = t.Hard,
+					Permanent = false,
+					Supported = false,
+					Hard = true,
+					Density = 0.5f,
+					DiffuseMap = "Textures\\dirty",
+					NormalMap = "Textures\\metal-channels-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						},
+					},
+					Tint = new Vector3(0.4f),
+				},
+				new CellState
+				{
+					ID = t.Floater,
+					Permanent = false,
+					Supported = true,
+					Hard = false,
+					Density = 0.5f,
+					DiffuseMap = "Textures\\dirty",
+					NormalMap = "Textures\\metal-channels-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						},
+					},
+					Tint = new Vector3(0.9f, 0.3f, 0.0f),
+				},
+				new CellState
+				{
+					ID = t.Expander,
+					Permanent = false,
+					Supported = false,
+					Hard = true,
+					Density = 0.5f,
+					DiffuseMap = "Textures\\dirty",
+					NormalMap = "Textures\\metal-swirl-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.1f,
+						},
+					},
+					Tint = new Vector3(0.8f, 0.5f, 0.9f),
+				},
+				new CellState
+				{
+					ID = t.Wood,
+					Permanent = false,
+					Supported = false,
+					Hard = true,
+					Density = 0.5f,
+					DiffuseMap = "Textures\\wood",
+					NormalMap = "Textures\\wood-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						}
+					},
+					Tiling = 1.5f,
+				},
+				new CellState
+				{
+					ID = t.HardPowered,
+					Permanent = false,
+					Supported = false,
+					Hard = true,
+					Density = 2,
+					DiffuseMap = "Textures\\powered-hard",
+					NormalMap = "Textures\\temporary-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
+					Materials = new[]
+					{
+						Model.Material.Unlit,
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
+				},
+				new CellState
+				{
+					ID = t.Neutral,
+					Permanent = false,
+					Supported = false,
+					Hard = false,
+					Density = 1,
+					DiffuseMap = "Textures\\white",
+					NormalMap = "Textures\\temporary-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
+					Tint = new Vector3(0.7f),
+				},
+				new CellState
+				{
+					ID = t.RockChunky,
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					Density = 2,
+					DiffuseMap = "Textures\\rock-chunky",
+					NormalMap = "Textures\\rock-chunky-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						}
+					},
+					Tiling = 0.25f,
+				},
+				new CellState
+				{
+					ID = t.White,
+					Permanent = false,
+					Supported = false,
+					Hard = false,
+					ShadowCast = false,
+					Density = 0.5f,
+					DiffuseMap = "Textures\\white",
+					NormalMap = "Textures\\plain-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						Model.Material.Unlit,
+					},
+				},
+				new CellState
+				{
+					ID = t.Metal,
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					Density = 1,
+					DiffuseMap = "Textures\\white",
+					NormalMap = "Textures\\metal-channels2-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.2f,
+						},
+					},
+					Tint = new Vector3(0.25f),
+				},
+				new CellState
+				{
+					ID = t.MetalSwirl,
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					Density = 1,
+					DiffuseMap = "Textures\\white",
+					NormalMap = "Textures\\metal-swirl-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.2f,
+						},
+					},
+					Tint = new Vector3(0.25f),
+				},
+				new CellState
+				{
+					ID = t.Invisible,
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					Invisible = true,
+					AllowAlpha = true,
+					Density = 1,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
+					DiffuseMap = "Textures\\white",
+					NormalMap = "Textures\\plain-normal",
+					Tint = new Vector3(0.5f),
+				},
+				new CellState
+				{
+					ID = t.WhitePermanent,
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					ShadowCast = false,
+					Density = 0.5f,
+					DiffuseMap = "Textures\\white",
+					NormalMap = "Textures\\plain-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						Model.Material.Unlit,
+					},
+				},
+				new CellState
+				{
+					ID = t.Switch,
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					Density = 1,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					DiffuseMap = "Textures\\switch",
+					NormalMap = "Textures\\switch-normal",
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						},
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						}
+					},
+					Tiling = 3.0f,
+					Tint = new Vector3(0.3f, 0.6f, 0.8f),
+				},
+				new CellState
+				{
+					ID = t.PoweredSwitch,
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					Density = 1,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					DiffuseMap = "Textures\\powered-switch",
+					NormalMap = "Textures\\switch-normal",
+					Materials = new[]
+					{
+						Model.Material.Unlit,
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
+					Tiling = 3.0f,
+				},
+				new CellState
+				{
+					ID = t.Powered,
+					Permanent = false,
+					Supported = false,
+					Hard = false,
+					Density = 2,
+					DiffuseMap = "Textures\\powered",
+					NormalMap = "Textures\\temporary-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						Model.Material.Unlit,
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
+				},
+				new CellState
+				{
+					ID = t.PermanentPowered,
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					Density = 2,
+					DiffuseMap = "Textures\\powered-permanent",
+					NormalMap = "Textures\\temporary-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						Model.Material.Unlit,
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
+				},
+				new CellState
+				{
+					ID = t.InfectedCritical,
+					Permanent = false,
+					Supported = false,
+					Hard = true,
+					Density = 3,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					DiffuseMap = "Textures\\white",
+					NormalMap = "Textures\\temporary-normal",
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
+					Tint = new Vector3(0.4f, 0.0f, 0.0f),
+				},
+				new CellState
+				{
+					ID = t.Infected,
+					Permanent = false,
+					Supported = false,
+					Hard = false,
+					Density = 3,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					DiffuseMap = "Textures\\white",
+					NormalMap = "Textures\\temporary-normal",
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
+					Tint = new Vector3(0.8f, 0.1f, 0.1f),
+				},
+				new CellState
+				{
+					ID = t.Black,
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					ShadowCast = true,
+					Density = 0.5f,
+					DiffuseMap = "Textures\\white",
+					NormalMap = "Textures\\plain-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						},
+					},
+					Tint = Vector3.Zero,
+				},
+				new CellState
+				{
+					ID = t.Slider,
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					Density = 1,
+					DiffuseMap = "Textures\\powered-switch",
+					NormalMap = "Textures\\switch-normal",
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						}
+					},
+					Tiling = 3.0f,
+					Tint = new Vector3(0.0f, 0.8f, 1.0f),
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+				},
+				new CellState
+				{
+					ID = t.SliderPowered,
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					Density = 1,
+					DiffuseMap = "Textures\\powered-switch",
+					NormalMap = "Textures\\switch-normal",
+					Materials = new[]
+					{
+						Model.Material.Unlit,
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.4f,
+						},
+					},
+					Tiling = 3.0f,
+					Tint = new Vector3(0.3f, 0.9f, 1.25f),
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+				}
+			);
+		}
 
 		public struct MapVertex
 		{
@@ -130,7 +774,7 @@ namespace Lemma.Components
 						{
 							Box box = this.data[i][coord.X - c.X, coord.Y - c.Y, coord.Z - c.Z];
 							if (box == null)
-								return WorldFactory.States[0];
+								return Map.EmptyState;
 							else
 								return box.Type;
 						}
@@ -143,11 +787,10 @@ namespace Lemma.Components
 
 		public class CellState
 		{
-			public int ID;
+			public t ID;
 			public bool Permanent;
 			public bool Supported;
 			public bool Hard;
-			public string Name;
 			public string DiffuseMap;
 			public string NormalMap;
 			public uint FootstepSwitch;
@@ -192,7 +835,7 @@ namespace Lemma.Components
 
 			public void ApplyToEffectBlock(ModelInstance modelInstance)
 			{
-				modelInstance.Setup("Models\\block", this.ID);
+				modelInstance.Setup("Models\\block", (int)this.ID);
 				if (modelInstance.IsFirstInstance)
 				{
 					Model model = modelInstance.Model;
@@ -234,7 +877,7 @@ namespace Lemma.Components
 
 			public List<Box> DataBoxes;
 
-			protected Dictionary<int, MeshEntry> meshes = new Dictionary<int, MeshEntry>();
+			protected Dictionary<t, MeshEntry> meshes = new Dictionary<t, MeshEntry>();
 
 			public void MarkDirty(Box box)
 			{
@@ -291,7 +934,7 @@ namespace Lemma.Components
 			{
 				lock (this.meshes)
 				{
-					foreach (KeyValuePair<int, MeshEntry> pair in this.meshes)
+					foreach (KeyValuePair<t, MeshEntry> pair in this.meshes)
 					{
 						if (!pair.Value.Dirty)
 							continue;
@@ -302,7 +945,7 @@ namespace Lemma.Components
 						IEnumerable<Box> boxes = this.Boxes.Where(x => x.Type.ID == pair.Key);
 						int surfaces = boxes.SelectMany(x => x.Surfaces).Count(x => x.HasArea);
 
-						Map.CellState type = WorldFactory.States[pair.Key];
+						CellState type = Map.States[pair.Key];
 
 						MapVertex[] vertices = null;
 						Vector3[] physicsVertices = null;
@@ -1040,7 +1683,7 @@ namespace Lemma.Components
 		public Property<float> Scale = new Property<float> { Editable = true, Value = 1.0f };
 
 		[XmlIgnore]
-		public Func<Vector3, Vector3, Map.CellState, DynamicModel<Map.MapVertex>> CreateModel;
+		public Func<Vector3, Vector3, CellState, DynamicModel<Map.MapVertex>> CreateModel;
 
 		public Map()
 			: this(0, 0, 0)
@@ -1095,9 +1738,9 @@ namespace Lemma.Components
 		}
 		private static List<SpawnGroup> spawns = new List<SpawnGroup>();
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.updateBounds();
 
 			if (Map.workThread == null)
@@ -1191,7 +1834,7 @@ namespace Lemma.Components
 						result.Add(box.Width);
 						result.Add(box.Height);
 						result.Add(box.Depth);
-						result.Add(box.Type.ID);
+						result.Add((int)box.Type.ID);
 						for (int i = 0; i < 6; i++)
 						{
 							Surface surface = box.Surfaces[i];
@@ -1260,7 +1903,7 @@ namespace Lemma.Components
 					{
 						int x = data[index], y = data[index + 1], z = data[index + 2], w = data[index + 3], h = data[index + 4], d = data[index + 5];
 						int v = data[index + 6];
-						CellState state = WorldFactory.States[v];
+						CellState state = Map.States[(t)v];
 						int chunkX = this.minX + ((x - this.minX) / this.chunkSize) * this.chunkSize, chunkY = this.minY + ((y - this.minY) / this.chunkSize) * this.chunkSize, chunkZ = this.minZ + ((z - this.minZ) / this.chunkSize) * this.chunkSize;
 						int nextChunkX = this.minX + ((x + w - this.minX) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ) / this.chunkSize) * this.chunkSize;
 						for (int ix = chunkX; ix <= nextChunkX; ix += this.chunkSize)
@@ -1580,7 +2223,7 @@ namespace Lemma.Components
 		/// <param name="z"></param>
 		public bool Fill(int x, int y, int z, CellState state, bool notify = true)
 		{
-			if (state.ID == 0 || (!this.main.EditorEnabled && !this.EnablePhysics)) // 0 = empty
+			if (state == Map.EmptyState || (!this.main.EditorEnabled && !this.EnablePhysics))
 				return false;
 
 			bool filled = false;
@@ -2880,7 +3523,7 @@ namespace Lemma.Components
 
 		public Coordinate? FindClosestAStarCell(Coordinate coord, int maxDistance = 20)
 		{
-			Map.CellState s = this[coord];
+			CellState s = this[coord];
 			if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
 				return coord;
 
@@ -3208,7 +3851,7 @@ namespace Lemma.Components
 					Coordinate next = entry.Coordinate.Move(d);
 					if ((entry.Parent == null || !next.Equivalent(entry.Parent.Coordinate)) && !closed.ContainsKey(next))
 					{
-						Map.CellState state = this[next];
+						CellState state = this[next];
 						if (state.ID == 0)
 						{
 							// This is an empty cell
@@ -4004,21 +4647,21 @@ namespace Lemma.Components
 			get
 			{
 				if (!this.main.EditorEnabled && !this.EnablePhysics)
-					return WorldFactory.States[0]; // Empty
+					return Map.EmptyState;
 
 				Chunk chunk = this.GetChunk(x, y, z, false);
 				if (chunk == null)
-					return WorldFactory.States[0]; // Empty
+					return Map.EmptyState;
 				else if (chunk.Data != null)
 				{
 					Box box = chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];
 					if (box == null)
-						return WorldFactory.States[0]; // Empty
+						return Map.EmptyState;
 					else
 						return box.Type;
 				}
 				else
-					return WorldFactory.States[0]; // Empty
+					return Map.EmptyState;
 			}
 		}
 
@@ -4200,13 +4843,13 @@ namespace Lemma.Components
 			return chunk;
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
 			this.PhysicsEntity = new MorphableEntity(new CompoundShape(new CompoundShapeEntry[] { new CompoundShapeEntry(new BoxShape(1, 1, 1), Vector3.Zero, 1.0f) }));
 			this.PhysicsEntity.Tag = this;
 			if (this.main.EditorEnabled)
 				this.PhysicsEntity.BecomeKinematic();
-			base.InitializeProperties();
+			base.Awake();
 
 			this.PhysicsEntity.IsAffectedByGravity = false;
 			this.IsAffectedByGravity.Set = delegate(bool value)

@@ -40,6 +40,22 @@ namespace Lemma.Components
 			return false;
 		}
 
+		private class Callback
+		{
+			public float Offset;
+			public Command Command;
+		}
+
+		private Dictionary<string, List<Callback>> callbacks = new Dictionary<string,List<Callback>>();
+
+		public void Trigger(string clip, float offset, Command callback)
+		{
+			List<Callback> list;
+			if (!this.callbacks.TryGetValue(clip, out list))
+				list = this.callbacks[clip] = new List<Callback>();
+			list.Add(new Callback { Offset = offset, Command = callback });
+		}
+
 		public void Bind(AnimatedModel target)
 		{
 			this.boneTransforms = target.boneTransforms;
@@ -126,6 +142,18 @@ namespace Lemma.Components
 			foreach (SkinnedModel.Clip clip in this.CurrentClips)
 			{
 				TimeSpan newTime = clip.CurrentTime + new TimeSpan((long)((float)elapsedTime.Ticks * clip.Speed));
+
+				List<Callback> callbacks;
+				if (this.callbacks.TryGetValue(clip.Name, out callbacks))
+				{
+					float currentSeconds = (float)clip.CurrentTime.TotalSeconds;
+					float newSeconds = (float)newTime.TotalSeconds;
+					foreach (Callback c in callbacks)
+					{
+						if (currentSeconds < c.Offset && newSeconds > c.Offset)
+							c.Command.Execute();
+					}
+				}
 
 				float targetStrength = MathHelper.Clamp(clip.TargetStrength, 0.0f, 1.0f);
 				float strengthBlendSpeed = (1.0f / AnimatedModel.DefaultBlendTime) * (float)elapsedTime.TotalSeconds;

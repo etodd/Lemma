@@ -16,9 +16,9 @@ namespace Lemma.Components
 			this.EnabledInEditMode.Value = false;
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Serialize = false;
 		}
 

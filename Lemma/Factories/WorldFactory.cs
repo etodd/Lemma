@@ -23,644 +23,6 @@ namespace Lemma.Factories
 
 		private Random random = new Random();
 
-		public static Dictionary<int, Map.CellState> States = new Dictionary<int, Map.CellState>();
-		public static Dictionary<string, Map.CellState> StatesByName = new Dictionary<string, Map.CellState>();
-		public static List<Map.CellState> StateList = new List<Map.CellState>();
-
-		public static void AddState(params Map.CellState[] states)
-		{
-			foreach (Map.CellState state in states)
-			{
-				WorldFactory.States[state.ID] = state;
-				WorldFactory.StatesByName[state.Name] = state;
-				WorldFactory.StateList.Add(state);
-			}
-		}
-
-		public static void RemoveState(params Map.CellState[] states)
-		{
-			foreach (Map.CellState state in states)
-			{
-				WorldFactory.States.Remove(state.ID);
-				WorldFactory.StatesByName.Remove(state.Name);
-				WorldFactory.StateList.Remove(state);
-			}
-		}
-
-		static WorldFactory()
-		{
-			WorldFactory.AddState
-			(
-				new Map.CellState
-				{
-					ID = 0,
-					Name = "Empty",
-					Fake = true,
-					Invisible = true,
-					Permanent = false,
-					Hard = false,
-				},
-				new Map.CellState
-				{
-					ID = 1,
-					Name = "Rock",
-					Permanent = true,
-					Supported = true,
-					Hard = true,
-					Density = 2,
-					DiffuseMap = "Textures\\rock",
-					NormalMap = "Textures\\rock-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.2f,
-						},
-						new Model.Material
-						{
-							SpecularPower = 150.0f,
-							SpecularIntensity = 0.2f,
-						},
-					},
-				},
-				new Map.CellState
-				{
-					ID = 2,
-					Name = "Temporary",
-					Permanent = false,
-					Supported = false,
-					Hard = false,
-					Density = 2,
-					DiffuseMap = "Textures\\white",
-					NormalMap = "Textures\\temporary-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.4f,
-						}
-					},
-					Tint = new Vector3(0.3f, 0.5f, 0.7f),
-				},
-				new Map.CellState
-				{
-					ID = 3,
-					Name = "AvoidAI",
-					Permanent = true,
-					Hard = true,
-					Supported = true,
-					Density = 2,
-					DiffuseMap = "Textures\\dirty",
-					NormalMap = "Textures\\dirty-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 1.0f,
-							SpecularIntensity = 0.0f,
-						},
-					},
-					Tint = new Vector3(0.15f),
-				},
-				new Map.CellState
-				{
-					ID = 4,
-					Name = "Dirt",
-					Permanent = false,
-					Supported = false,
-					Hard = true,
-					Density = 0.5f,
-					DiffuseMap = "Textures\\dirt",
-					NormalMap = "Textures\\dirt-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.SAND,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 1.0f,
-							SpecularIntensity = 0.0f,
-						}
-					},
-				},
-				new Map.CellState
-				{
-					ID = 5,
-					Name = "Reset",
-					Permanent = false,
-					Supported = false,
-					Hard = true,
-					Density = 2,
-					DiffuseMap = "Textures\\white",
-					NormalMap = "Textures\\temporary-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.4f,
-						}
-					},
-					Tint = new Vector3(0.0f, 0.6f, 0.0f),
-				},
-				new Map.CellState
-				{
-					ID = 6,
-					Name = "Critical",
-					Permanent = false,
-					Supported = false,
-					Hard = true,
-					Density = 2,
-					DiffuseMap = "Textures\\danger",
-					NormalMap = "Textures\\plain-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 1.0f,
-							SpecularIntensity = 0.0f,
-						}
-					},
-				},
-				new Map.CellState
-				{
-					ID = 7,
-					Name = "Foliage",
-					Permanent = false,
-					Supported = false,
-					Hard = false,
-					Density = 0.5f,
-					DiffuseMap = "Textures\\foliage",
-					NormalMap = "Textures\\plain-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.SAND,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 1.0f,
-							SpecularIntensity = 0.0f,
-						},
-						new Model.Material
-						{
-							SpecularPower = 1.0f,
-							SpecularIntensity = 0.0f,
-						}
-					},
-					AllowAlpha = true,
-					Tiling = 3.0f,
-				},
-				new Map.CellState
-				{
-					ID = 8,
-					Name = "Hard",
-					Permanent = false,
-					Supported = false,
-					Hard = true,
-					Density = 0.5f,
-					DiffuseMap = "Textures\\dirty",
-					NormalMap = "Textures\\metal-channels-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 1.0f,
-							SpecularIntensity = 0.0f,
-						},
-					},
-					Tint = new Vector3(0.4f),
-				},
-				new Map.CellState
-				{
-					ID = 9,
-					Name = "Floater",
-					Permanent = false,
-					Supported = true,
-					Hard = false,
-					Density = 0.5f,
-					DiffuseMap = "Textures\\dirty",
-					NormalMap = "Textures\\metal-channels-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 1.0f,
-							SpecularIntensity = 0.0f,
-						},
-					},
-					Tint = new Vector3(0.9f, 0.3f, 0.0f),
-				},
-				new Map.CellState
-				{
-					ID = 10,
-					Name = "Expander",
-					Permanent = false,
-					Supported = false,
-					Hard = true,
-					Density = 0.5f,
-					DiffuseMap = "Textures\\dirty",
-					NormalMap = "Textures\\metal-swirl-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 1.0f,
-							SpecularIntensity = 0.1f,
-						},
-					},
-					Tint = new Vector3(0.8f, 0.5f, 0.9f),
-				},
-				new Map.CellState
-				{
-					ID = 11,
-					Name = "Wood",
-					Permanent = false,
-					Supported = false,
-					Hard = true,
-					Density = 0.5f,
-					DiffuseMap = "Textures\\wood",
-					NormalMap = "Textures\\wood-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 1.0f,
-							SpecularIntensity = 0.0f,
-						}
-					},
-					Tiling = 1.5f,
-				},
-				new Map.CellState
-				{
-					ID = 13,
-					Name = "HardPowered",
-					Permanent = false,
-					Supported = false,
-					Hard = true,
-					Density = 2,
-					DiffuseMap = "Textures\\powered-hard",
-					NormalMap = "Textures\\temporary-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
-					Materials = new[]
-					{
-						Model.Material.Unlit,
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.4f,
-						},
-					},
-				},
-				new Map.CellState
-				{
-					ID = 18,
-					Name = "Neutral",
-					Permanent = false,
-					Supported = false,
-					Hard = false,
-					Density = 1,
-					DiffuseMap = "Textures\\white",
-					NormalMap = "Textures\\temporary-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.4f,
-						},
-					},
-					Tint = new Vector3(0.7f),
-				},
-				new Map.CellState
-				{
-					ID = 23,
-					Name = "RockChunky",
-					Permanent = true,
-					Supported = true,
-					Hard = true,
-					Density = 2,
-					DiffuseMap = "Textures\\rock-chunky",
-					NormalMap = "Textures\\rock-chunky-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 1.0f,
-							SpecularIntensity = 0.0f,
-						}
-					},
-					Tiling = 0.25f,
-				},
-				new Map.CellState
-				{
-					ID = 30,
-					Name = "White",
-					Permanent = false,
-					Supported = false,
-					Hard = false,
-					ShadowCast = false,
-					Density = 0.5f,
-					DiffuseMap = "Textures\\white",
-					NormalMap = "Textures\\plain-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						Model.Material.Unlit,
-					},
-				},
-				new Map.CellState
-				{
-					ID = 31,
-					Name = "Metal",
-					Permanent = true,
-					Supported = true,
-					Hard = true,
-					Density = 1,
-					DiffuseMap = "Textures\\white",
-					NormalMap = "Textures\\metal-channels2-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.2f,
-						},
-					},
-					Tint = new Vector3(0.25f),
-				},
-				new Map.CellState
-				{
-					ID = 32,
-					Name = "MetalSwirl",
-					Permanent = true,
-					Supported = true,
-					Hard = true,
-					Density = 1,
-					DiffuseMap = "Textures\\white",
-					NormalMap = "Textures\\metal-swirl-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.2f,
-						},
-					},
-					Tint = new Vector3(0.25f),
-				},
-				new Map.CellState
-				{
-					ID = 34,
-					Name = "Invisible",
-					Permanent = true,
-					Supported = true,
-					Hard = true,
-					Invisible = true,
-					AllowAlpha = true,
-					Density = 1,
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
-					DiffuseMap = "Textures\\white",
-					NormalMap = "Textures\\plain-normal",
-					Tint = new Vector3(0.5f),
-				},
-				new Map.CellState
-				{
-					ID = 35,
-					Name = "WhitePermanent",
-					Permanent = true,
-					Supported = true,
-					Hard = true,
-					ShadowCast = false,
-					Density = 0.5f,
-					DiffuseMap = "Textures\\white",
-					NormalMap = "Textures\\plain-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						Model.Material.Unlit,
-					},
-				},
-				new Map.CellState
-				{
-					ID = 36,
-					Name = "Switch",
-					Permanent = true,
-					Supported = true,
-					Hard = true,
-					Density = 1,
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					DiffuseMap = "Textures\\switch",
-					NormalMap = "Textures\\switch-normal",
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 1.0f,
-							SpecularIntensity = 0.0f,
-						},
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.4f,
-						}
-					},
-					Tiling = 3.0f,
-					Tint = new Vector3(0.3f, 0.6f, 0.8f),
-				},
-				new Map.CellState
-				{
-					ID = 37,
-					Name = "PoweredSwitch",
-					Permanent = true,
-					Supported = true,
-					Hard = true,
-					Density = 1,
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					DiffuseMap = "Textures\\powered-switch",
-					NormalMap = "Textures\\switch-normal",
-					Materials = new[]
-					{
-						Model.Material.Unlit,
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.4f,
-						},
-					},
-					Tiling = 3.0f,
-				},
-				new Map.CellState
-				{
-					ID = 38,
-					Name = "Powered",
-					Permanent = false,
-					Supported = false,
-					Hard = false,
-					Density = 2,
-					DiffuseMap = "Textures\\powered",
-					NormalMap = "Textures\\temporary-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						Model.Material.Unlit,
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.4f,
-						},
-					},
-				},
-				new Map.CellState
-				{
-					ID = 39,
-					Name = "PermanentPowered",
-					Permanent = true,
-					Supported = true,
-					Hard = true,
-					Density = 2,
-					DiffuseMap = "Textures\\powered-permanent",
-					NormalMap = "Textures\\temporary-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						Model.Material.Unlit,
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.4f,
-						},
-					},
-				},
-				new Map.CellState
-				{
-					ID = 40,
-					Name = "InfectedCritical",
-					Permanent = false,
-					Supported = false,
-					Hard = true,
-					Density = 3,
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					DiffuseMap = "Textures\\white",
-					NormalMap = "Textures\\temporary-normal",
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.4f,
-						},
-					},
-					Tint = new Vector3(0.4f, 0.0f, 0.0f),
-				},
-				new Map.CellState
-				{
-					ID = 41,
-					Name = "Infected",
-					Permanent = false,
-					Supported = false,
-					Hard = false,
-					Density = 3,
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					DiffuseMap = "Textures\\white",
-					NormalMap = "Textures\\temporary-normal",
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.4f,
-						},
-					},
-					Tint = new Vector3(0.8f, 0.1f, 0.1f),
-				},
-				new Map.CellState
-				{
-					ID = 42,
-					Name = "Black",
-					Permanent = true,
-					Supported = true,
-					Hard = true,
-					ShadowCast = true,
-					Density = 0.5f,
-					DiffuseMap = "Textures\\white",
-					NormalMap = "Textures\\plain-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 1.0f,
-							SpecularIntensity = 0.0f,
-						},
-					},
-					Tint = Vector3.Zero,
-				},
-				new Map.CellState
-				{
-					ID = 43,
-					Name = "Slider",
-					Permanent = true,
-					Supported = true,
-					Hard = true,
-					Density = 1,
-					DiffuseMap = "Textures\\powered-switch",
-					NormalMap = "Textures\\switch-normal",
-					Materials = new[]
-					{
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.4f,
-						},
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.4f,
-						}
-					},
-					Tiling = 3.0f,
-					Tint = new Vector3(0.0f, 0.8f, 1.0f),
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-				},
-				new Map.CellState
-				{
-					ID = 44,
-					Name = "SliderPowered",
-					Permanent = true,
-					Supported = true,
-					Hard = true,
-					Density = 1,
-					DiffuseMap = "Textures\\powered-switch",
-					NormalMap = "Textures\\switch-normal",
-					Materials = new[]
-					{
-						Model.Material.Unlit,
-						new Model.Material
-						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.4f,
-						},
-					},
-					Tiling = 3.0f,
-					Tint = new Vector3(0.3f, 0.9f, 1.25f),
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-				}
-			);
-		}
-
 		private static readonly Color defaultBackgroundColor = new Color(16.0f / 255.0f, 26.0f / 255.0f, 38.0f / 255.0f, 1.0f);
 
 		private static Entity instance;
@@ -671,15 +33,18 @@ namespace Lemma.Factories
 			this.EditorCanSpawn = false;
 		}
 
-		public static Entity Get()
+		public static Entity Instance
 		{
-			if (WorldFactory.instance == null)
-				return null;
+			get
+			{
+				if (WorldFactory.instance == null)
+					return null;
 
-			if (!WorldFactory.instance.Active)
-				WorldFactory.instance = null;
+				if (!WorldFactory.instance.Active)
+					WorldFactory.instance = null;
 
-			return WorldFactory.instance;
+				return WorldFactory.instance;
+			}
 		}
 
 		public override Entity Create(Main main)
@@ -837,12 +202,6 @@ namespace Lemma.Factories
 				return main.Space.ForceUpdater.Gravity;
 			};
 
-			WorldFactory.AddState(result.GetListProperty<Map.CellState>("AdditionalMaterials").ToArray());
-			result.Add(new CommandBinding(result.Delete, delegate()
-			{
-				WorldFactory.RemoveState(result.GetListProperty<Map.CellState>("AdditionalMaterials").ToArray());
-			}));
-
 			// Zone management
 			Property<Zone> currentZone = result.GetOrMakeProperty<Zone>("CurrentZone");
 			currentZone.Serialize = false;
@@ -937,26 +296,9 @@ namespace Lemma.Factories
 			WorldFactory.instance = result;
 			AkSoundEngine.DefaultGameObject = result;
 
-			// Materials
-			Map.CellState emptyState = WorldFactory.States[0];
-
 			Random random = new Random();
 
 			Entity player = main.Get("Player").FirstOrDefault();
-
-			int criticalID = WorldFactory.StatesByName["Critical"].ID,
-				infectedCriticalID = WorldFactory.StatesByName["InfectedCritical"].ID,
-				whiteID = WorldFactory.StatesByName["White"].ID,
-				temporaryID = WorldFactory.StatesByName["Temporary"].ID,
-				neutralID = WorldFactory.StatesByName["Neutral"].ID,
-				poweredID = WorldFactory.StatesByName["Powered"].ID,
-				permanentPoweredID = WorldFactory.StatesByName["PermanentPowered"].ID,
-				hardPoweredID = WorldFactory.StatesByName["HardPowered"].ID,
-				switchID = WorldFactory.StatesByName["Switch"].ID,
-				poweredSwitchID = WorldFactory.StatesByName["PoweredSwitch"].ID,
-				infectedID = WorldFactory.StatesByName["Infected"].ID,
-				floaterID = WorldFactory.StatesByName["Floater"].ID,
-				expanderID = WorldFactory.StatesByName["Expander"].ID;
 
 			List<PointLight> sparkLights = new List<PointLight>();
 			const float sparkLightAttenuation = 5.0f;
@@ -1007,105 +349,6 @@ namespace Lemma.Factories
 				}
 			};
 
-			Action<Entity> bindPlayer = delegate(Entity p)
-			{
-				player = p;
-				
-				Player playerComponent = player.Get<Player>();
-
-				AnimatedModel playerModel = player.Get<AnimatedModel>("Model");
-
-				Updater lavaDamager = new Updater
-				{
-					delegate(float dt)
-					{
-						if (!playerModel.IsPlaying("Kick") && (playerComponent.Character.IsSupported || playerComponent.WallRunState.Value != Player.WallRun.None))
-							playerComponent.Health.Value -= 0.6f * dt;
-					}
-				};
-				lavaDamager.Enabled.Value = false;
-
-				player.Add(lavaDamager);
-				
-				player.Add(new CommandBinding<Map, Map.Coordinate?, Direction>(player.GetCommand<Map, Map.Coordinate?, Direction>("WalkedOn"), delegate(Map map, Map.Coordinate? coord, Direction dir)
-				{
-					int groundType = map == null ? 0 : map[coord.Value].ID;
-
-					// Lava. Damage the player character if it steps on lava.
-					bool isLava = groundType == infectedID || groundType == infectedCriticalID;
-					if (isLava)
-						playerComponent.Health.Value -= 0.2f;
-					else if (groundType == floaterID)
-					{
-						// Floater. Delete the block after a delay.
-						Vector3 pos = map.GetAbsolutePosition(coord.Value);
-						ParticleEmitter.Emit(main, "Smoke", pos, 1.0f, 10);
-						AkSoundEngine.PostEvent("Play_FragileDirt_Crumble", pos);
-						result.Add(new Animation
-						(
-							new Animation.Delay(1.0f),
-							new Animation.Execute(delegate()
-							{
-								if (map[coord.Value].ID == floaterID)
-								{
-									map.Empty(coord.Value);
-									map.Regenerate();
-								}
-							})
-						));
-					}
-					else if (groundType == expanderID)
-					{
-						// Expander. Expand the block after a delay.
-						const int expandLength = 6;
-						const int expandWidth = 1;
-						Vector3 pos = map.GetAbsolutePosition(coord.Value);
-						ParticleEmitter.Emit(main, "Smoke", pos, 1.0f, 10);
-						AkSoundEngine.PostEvent("Play_FragileDirt_Crumble", pos);
-						result.Add(new Animation
-						(
-							new Animation.Delay(1.5f),
-							new Animation.Execute(delegate()
-							{
-								if (map[coord.Value].ID == expanderID)
-								{
-									Direction normal = dir.GetReverse();
-									Direction right = normal == Direction.PositiveY ? Direction.PositiveX : normal.Cross(Direction.PositiveY);
-									Direction ortho = normal.Cross(right);
-									pos = map.GetAbsolutePosition(coord.Value);
-									sparks(pos, 10.0f);
-									List<EffectBlockFactory.BlockBuildOrder> buildCoords = new List<EffectBlockFactory.BlockBuildOrder>();
-									foreach (Map.Coordinate c in coord.Value.Move(right, -expandWidth).Move(ortho, -expandWidth).CoordinatesBetween(coord.Value.Move(right, expandWidth).Move(ortho, expandWidth).Move(normal, expandLength).Move(1, 1, 1)))
-									{
-										if (map[c].ID == 0)
-										{
-											buildCoords.Add(new EffectBlockFactory.BlockBuildOrder
-											{
-												Map = map,
-												Coordinate = c,
-												State = WorldFactory.States[expanderID],
-											});
-										}
-									}
-									Factory.Get<EffectBlockFactory>().Build(main, buildCoords, false, pos, 0.15f);
-								}
-							})
-						));
-					}
-
-					lavaDamager.Enabled.Value = isLava;
-				}));
-			};
-
-			if (player != null)
-				bindPlayer(player);
-
-			result.Add(new CommandBinding<Entity>(main.EntityAdded, delegate(Entity e)
-			{
-				if (e.Type == "Player")
-					bindPlayer(e);
-			}));
-
 			const float propagateDelay = 0.07f;
 			const int maxGenerations = 4;
 
@@ -1131,11 +374,11 @@ namespace Lemma.Factories
 				{
 					foreach (Map.Coordinate c in coords)
 					{
-						int id = c.Data.ID;
-						if (id == temporaryID || id == poweredID || id == poweredSwitchID || id == infectedID || id == neutralID)
+						Map.t id = c.Data.ID;
+						if (id == Map.t.Temporary || id == Map.t.Powered || id == Map.t.PoweredSwitch || id == Map.t.Infected || id == Map.t.Neutral)
 						{
 							Map.Coordinate newCoord = c;
-							newCoord.Data = emptyState;
+							newCoord.Data = Map.EmptyState;
 							int generation;
 							EffectBlockFactory.BlockEntry generationsKey = new EffectBlockFactory.BlockEntry { Map = map, Coordinate = newCoord };
 							if (generations.TryGetValue(generationsKey, out generation))
@@ -1151,6 +394,14 @@ namespace Lemma.Factories
 					}
 				}
 			}));
+
+			Map.CellState neutral = Map.States[Map.t.Neutral],
+				powered = Map.States[Map.t.Powered],
+				temporary = Map.States[Map.t.Temporary],
+				infected = Map.States[Map.t.Infected],
+				poweredSwitch = Map.States[Map.t.PoweredSwitch],
+				permanentPowered = Map.States[Map.t.PermanentPowered],
+				switchState = Map.States[Map.t.Switch];
 
 			result.Add(new Updater
 			{
@@ -1188,12 +439,12 @@ namespace Lemma.Factories
 							{
 								Map map = mapEntity.Get<Map>();
 								Map.Coordinate c = entry.Coordinate;
-								int id = map[c].ID;
+								Map.t id = map[c].ID;
 
-								bool isTemporary = id == temporaryID;
-								bool isNeutral = id == neutralID;
-								bool isInfected = id == infectedID || id == infectedCriticalID;
-								bool isPowered = id == poweredID || id == permanentPoweredID || id == hardPoweredID || id == poweredSwitchID;
+								bool isTemporary = id == Map.t.Temporary;
+								bool isNeutral = id == Map.t.Neutral;
+								bool isInfected = id == Map.t.Infected || id == Map.t.InfectedCritical;
+								bool isPowered = id == Map.t.Powered || id == Map.t.PermanentPowered || id == Map.t.HardPowered || id == Map.t.PoweredSwitch;
 
 								bool regenerate = false;
 
@@ -1205,11 +456,11 @@ namespace Lemma.Factories
 										foreach (Direction dir in DirectionExtensions.Directions)
 										{
 											Map.Coordinate adjacent = c.Move(dir);
-											int adjacentID = map[adjacent].ID;
-											bool adjacentIsFloater = adjacentID == floaterID;
+											Map.t adjacentID = map[adjacent].ID;
+											bool adjacentIsFloater = adjacentID == Map.t.Floater;
 											if (dir != down || adjacentIsFloater)
 											{
-												if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID || adjacentIsFloater)
+												if (adjacentID == Map.t.Powered || adjacentID == Map.t.Temporary || adjacentID == Map.t.Neutral || adjacentID == Map.t.Infected || adjacentIsFloater)
 												{
 													if (!isInQueue(map.Entity, adjacent, true))
 													{
@@ -1226,7 +477,7 @@ namespace Lemma.Factories
 											}
 										}
 									}
-									else if (entry.Generation > 0 && (isTemporary || isInfected || isPowered || id == neutralID || id == floaterID))
+									else if (entry.Generation > 0 && (isTemporary || isInfected || isPowered || id == Map.t.Neutral || id == Map.t.Floater))
 									{
 										generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = c }] = entry.Generation;
 										map.Empty(c);
@@ -1244,20 +495,20 @@ namespace Lemma.Factories
 										foreach (Direction dir in DirectionExtensions.Directions)
 										{
 											Map.Coordinate adjacent = c.Move(dir);
-											int adjacentID = map[adjacent].ID;
+											Map.t adjacentID = map[adjacent].ID;
 
-											if (adjacentID == poweredID || adjacentID == permanentPoweredID || adjacentID == hardPoweredID || adjacentID == poweredSwitchID)
+											if (adjacentID == Map.t.Powered || adjacentID == Map.t.PermanentPowered || adjacentID == Map.t.HardPowered || adjacentID == Map.t.PoweredSwitch)
 											{
 												map.Empty(c);
-												map.Fill(c, WorldFactory.States[poweredID]);
+												map.Fill(c, powered);
 												sparks(map.GetAbsolutePosition(c), sparkLightAttenuation);
 												regenerate = true;
 											}
-											else if (adjacentID == neutralID && entry.Generation < maxGenerations)
+											else if (adjacentID == Map.t.Neutral && entry.Generation < maxGenerations)
 											{
 												map.Empty(adjacent);
 												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
-												map.Fill(adjacent, WorldFactory.States[temporaryID]);
+												map.Fill(adjacent, temporary);
 												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
 												regenerate = true;
 											}
@@ -1268,11 +519,11 @@ namespace Lemma.Factories
 										foreach (Direction dir in DirectionExtensions.Directions)
 										{
 											Map.Coordinate adjacent = c.Move(dir);
-											int adjacentID = map[adjacent].ID;
-											if (adjacentID == infectedID || adjacentID == temporaryID)
+											Map.t adjacentID = map[adjacent].ID;
+											if (adjacentID == Map.t.Infected || adjacentID == Map.t.Temporary)
 											{
 												map.Empty(adjacent);
-												map.Fill(adjacent, WorldFactory.States[neutralID]);
+												map.Fill(adjacent, neutral);
 												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
 												regenerate = true;
 											}
@@ -1283,23 +534,23 @@ namespace Lemma.Factories
 										foreach (Direction dir in DirectionExtensions.Directions)
 										{
 											Map.Coordinate adjacent = c.Move(dir);
-											int adjacentID = map[adjacent].ID;
+											Map.t adjacentID = map[adjacent].ID;
 
-											if (adjacentID == temporaryID)
+											if (adjacentID == Map.t.Temporary)
 											{
 												map.Empty(adjacent);
-												map.Fill(adjacent, WorldFactory.States[poweredID]);
+												map.Fill(adjacent, powered);
 												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
 												regenerate = true;
 											}
-											else if (adjacentID == switchID)
+											else if (adjacentID == Map.t.Switch)
 											{
 												map.Empty(adjacent, true);
-												map.Fill(adjacent, WorldFactory.States[poweredSwitchID]);
+												map.Fill(adjacent, poweredSwitch);
 												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
 												regenerate = true;
 											}
-											else if (adjacentID == criticalID)
+											else if (adjacentID == Map.t.Critical)
 											{
 												map.Empty(adjacent);
 												regenerate = true;
@@ -1311,16 +562,16 @@ namespace Lemma.Factories
 										foreach (Direction dir in DirectionExtensions.Directions)
 										{
 											Map.Coordinate adjacent = c.Move(dir);
-											int adjacentID = map[adjacent].ID;
-											if (adjacentID == neutralID && entry.Generation < maxGenerations)
+											Map.t adjacentID = map[adjacent].ID;
+											if (adjacentID == Map.t.Neutral && entry.Generation < maxGenerations)
 											{
 												map.Empty(adjacent);
 												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
-												map.Fill(adjacent, WorldFactory.States[infectedID]);
+												map.Fill(adjacent, infected);
 												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
 												regenerate = true;
 											}
-											else if (adjacentID == criticalID)
+											else if (adjacentID == Map.t.Critical)
 											{
 												map.Empty(adjacent);
 												regenerate = true;
@@ -1346,13 +597,13 @@ namespace Lemma.Factories
 				bool handlePowered = false;
 				foreach (Map.Coordinate coord in coords)
 				{
-					int id = coord.Data.ID;
-					if (id == poweredID || id == poweredSwitchID)
+					Map.t id = coord.Data.ID;
+					if (id == Map.t.Powered || id == Map.t.PoweredSwitch)
 						handlePowered = true;
 
-					if (id == criticalID) // Critical. Explodes when destroyed.
+					if (id == Map.t.Critical) // Critical. Explodes when destroyed.
 						Explosion.Explode(main, map, coord);
-					else if (id == infectedCriticalID) // Infected. Shatter effects.
+					else if (id == Map.t.InfectedCritical) // Infected. Shatter effects.
 					{
 						ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
 						Vector3 pos = map.GetAbsolutePosition(coord);
@@ -1363,11 +614,11 @@ namespace Lemma.Factories
 							shatter.AddParticle(pos + offset, offset);
 						}
 					}
-					else if (id == poweredID || id == temporaryID || id == neutralID || id == infectedID || id == floaterID)
+					else if (id == Map.t.Powered || id == Map.t.Temporary || id == Map.t.Neutral || id == Map.t.Infected || id == Map.t.Floater)
 					{
 						int generation;
 						Map.Coordinate c = coord;
-						c.Data = emptyState;
+						c.Data = Map.EmptyState;
 						EffectBlockFactory.BlockEntry generationKey = new EffectBlockFactory.BlockEntry { Map = map, Coordinate = c };
 						if (generations.TryGetValue(generationKey, out generation))
 							generations.Remove(generationKey);
@@ -1393,11 +644,11 @@ namespace Lemma.Factories
 								Map.Coordinate adjacent = coord.Move(dir);
 								if (!coords.Contains(adjacent))
 								{
-									int adjacentID = map[adjacent].ID;
-									bool adjacentIsFloater = adjacentID == floaterID;
+									Map.t adjacentID = map[adjacent].ID;
+									bool adjacentIsFloater = adjacentID == Map.t.Floater;
 									if (dir != down || adjacentIsFloater)
 									{
-										if (adjacentID == poweredID || adjacentID == temporaryID || adjacentID == neutralID || adjacentID == infectedID || adjacentIsFloater)
+										if (adjacentID == Map.t.Powered || adjacentID == Map.t.Temporary || adjacentID == Map.t.Neutral || adjacentID == Map.t.Infected || adjacentIsFloater)
 										{
 											if (!isInQueue(map.Entity, adjacent, true))
 											{
@@ -1416,7 +667,7 @@ namespace Lemma.Factories
 							}
 						}
 					}
-					else if (id == whiteID) // White. Shatter effects.
+					else if (id == Map.t.White) // White. Shatter effects.
 					{
 						ParticleSystem shatter = ParticleSystem.Get(main, "WhiteShatter");
 						Vector3 pos = map.GetAbsolutePosition(coord);
@@ -1431,15 +682,13 @@ namespace Lemma.Factories
 
 				if (handlePowered)
 				{
-					IEnumerable<IEnumerable<Map.Box>> poweredIslands = map.GetAdjacentIslands(coords.Where(x => x.Data.ID == poweredID), x => x.ID == poweredID || x.ID == poweredSwitchID, WorldFactory.StatesByName["PermanentPowered"]);
+					IEnumerable<IEnumerable<Map.Box>> poweredIslands = map.GetAdjacentIslands(coords.Where(x => x.Data.ID == Map.t.Powered), x => x.ID == Map.t.Powered || x.ID == Map.t.PoweredSwitch, permanentPowered);
 					List<Map.Coordinate> poweredCoords = poweredIslands.SelectMany(x => x).SelectMany(x => x.GetCoords()).ToList();
 					if (poweredCoords.Count > 0)
 					{
-						Map.CellState temporaryState = WorldFactory.StatesByName["Temporary"];
-						Map.CellState switchState = WorldFactory.StatesByName["Switch"];
 						map.Empty(poweredCoords, true, true, null, false);
 						foreach (Map.Coordinate coord in poweredCoords)
-							map.Fill(coord, coord.Data.ID == poweredSwitchID ? switchState : temporaryState);
+							map.Fill(coord, coord.Data.ID == Map.t.PoweredSwitch ? switchState : temporary);
 						map.Regenerate();
 					}
 				}

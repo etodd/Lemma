@@ -17,9 +17,9 @@ namespace Lemma.Components
 		public Property<SpriteEffects> Effects = new Property<SpriteEffects> { Value = SpriteEffects.None, Editable = true };
 		private Texture2D texture;
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Image.Set = delegate(string value)
 			{
 				this.Image.InternalValue = value;

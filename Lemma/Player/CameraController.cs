@@ -9,7 +9,7 @@ using System.Xml.Serialization;
 
 namespace Lemma.Components
 {
-	public class CameraControl : Component<Main>, IUpdateableComponent
+	public class CameraController : Component<Main>, IUpdateableComponent
 	{
 		private float lastRotation;
 		private float lean = 0.0f;
@@ -19,10 +19,13 @@ namespace Lemma.Components
 		private const float totalShakeTime = 0.5f;
 		private float shakeAmount;
 
+		private const float leanAmount = (float)Math.PI * 0.1f;
+
+		// Input commands
 		[XmlIgnore]
 		public Command<Vector3, float> Shake = new Command<Vector3, float>();
 
-		// Inputs
+		// Input properties
 		[XmlIgnore]
 		public Property<float> BaseCameraShakeAmount = new Property<float> { Value = 0.0f };
 		[XmlIgnore]
@@ -44,9 +47,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Vector3 Offset;
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Serialize = false;
 			this.noise = this.Entity.GetOrCreate<ProceduralGenerator>();
 			this.lastRotation = this.Mouse.Value.X;
@@ -65,7 +68,7 @@ namespace Lemma.Components
 
 		private float blendShake() // hehe
 		{
-			float x = this.shakeTime / CameraControl.totalShakeTime;
+			float x = this.shakeTime / CameraController.totalShakeTime;
 			// x starts at 1 and goes down to 0
 			if (x > 0.75f)
 				return 1.0f - ((x - 0.75f) / 0.25f);
@@ -120,7 +123,6 @@ namespace Lemma.Components
 
 				Vector3 right = Vector3.Cross(rot.Forward, Vector3.Up);
 
-				const float leanAmount = (float)Math.PI * 0.15f;
 				float l = 0.0f;
 				if (this.EnableLean)
 					l = this.LinearVelocity.Value.Length() * (lastRotation.ClosestAngle(mouse.X) - mouse.X);

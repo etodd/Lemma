@@ -49,9 +49,9 @@ public class AkGameObjectTracker : AkGameObject
 		}
 	}
 
-	public override void InitializeProperties()
+	public override void Awake()
 	{
-		base.InitializeProperties();
+		base.Awake();
 		this.Add(new NotifyBinding(this.Update, this.Matrix));
 		this.Update();
 	}

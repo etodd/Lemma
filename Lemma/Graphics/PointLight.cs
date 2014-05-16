@@ -18,9 +18,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<BoundingSphere> BoundingSphere = new Property<BoundingSphere> { Editable = false };
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Add(new Binding<BoundingSphere>(this.BoundingSphere, () => new BoundingSphere(this.Position, this.Attenuation), this.Position, this.Attenuation));
 			this.Enabled.Editable = true;
 			PointLight.All.Add(this);

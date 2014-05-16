@@ -133,9 +133,9 @@ namespace Lemma.Scripts
 			return null;
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Errors.Value = null;
 			this.Name.Set = delegate(string value)
 			{

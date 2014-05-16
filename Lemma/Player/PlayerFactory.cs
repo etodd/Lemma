@@ -20,14 +20,6 @@ namespace Lemma.Factories
 			this.EditorCanSpawn = false;
 		}
 
-		public struct RespawnLocation
-		{
-			public Entity.Handle Map;
-			public Map.Coordinate Coordinate;
-			public float Rotation;
-			public Vector3 OriginalPosition;
-		}
-
 		private enum VaultType
 		{
 			None,
@@ -153,23 +145,16 @@ namespace Lemma.Factories
 			input.EnabledWhenPaused.Value = false;
 			result.Add("Input", input);
 
-			Timer footstepTimer = result.GetOrCreate<Timer>("FootstepTimer");
-			footstepTimer.Serialize = false;
-			footstepTimer.Repeat.Value = true;
-
 			Property<bool> phoneActive = result.GetOrMakeProperty<bool>("PhoneActive");
 			Property<bool> noteActive = result.GetOrMakeProperty<bool>("NoteActive");
 
 			// Build UI
-
 			UIRenderer ui = new UIRenderer();
 			ui.DrawOrder.Value = -1;
 			ui.EnabledWhenPaused.Value = false;
+			ui.EnabledInEditMode.Value = false;
 			result.Add("UI", ui);
-			Sprite damageOverlay = new Sprite();
-			damageOverlay.Image.Value = "Images\\damage";
-			damageOverlay.AnchorPoint.Value = new Vector2(0.5f);
-			ui.Root.Children.Add(damageOverlay);
+			PlayerUI.Attach(main, ui, player.Health);
 
 			GameMain.Config settings = ((GameMain)main).Settings;
 			input.Add(new Binding<float>(input.MouseSensitivity, settings.MouseSensitivity));
@@ -193,10 +178,6 @@ namespace Lemma.Factories
 			agent.Add(new CommandBinding(agent.Die, result.Delete));
 			agent.Add(new Binding<bool>(agent.Loud, x => !x, player.Character.Crouched));
 
-			Property<Entity.Handle> data = result.GetProperty<Entity.Handle>("Data");
-
-			ListProperty<RespawnLocation> respawnLocations = null;
-
 			result.Add(new CommandBinding(player.HealthDepleted, delegate()
 			{
 				Session.Recorder.Event(main, "DieFromHealth");
@@ -217,62 +198,7 @@ namespace Lemma.Factories
 				}
 			}));
 
-			UIComponent targets = new UIComponent();
-			ui.Root.Children.Add(targets);
-			const string targetOnScreen = "Images\\target";
-			const string targetOffScreen = "Images\\target-pointer";
-			ui.Add(new ListBinding<UIComponent, Transform>(targets.Children, TargetFactory.Positions, delegate(Transform target)
-			{
-				Sprite sprite = new Sprite();
-				sprite.Image.Value = "Images\\target";
-				sprite.Opacity.Value = 0.5f;
-				sprite.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
-				sprite.Add(new Binding<bool>(sprite.Visible, target.Enabled));
-				sprite.Add(new Binding<Vector2>(sprite.Position, delegate()
-				{
-					Vector3 pos = target.Position.Value;
-					Vector4 projectionSpace = Vector4.Transform(new Vector4(pos.X, pos.Y, pos.Z, 1.0f), main.Camera.ViewProjection);
-					float originalDepth = projectionSpace.Z;
-					projectionSpace /= projectionSpace.W;
-
-					Point screenSize = main.ScreenSize;
-					Vector2 screenCenter = new Vector2(screenSize.X * 0.5f, screenSize.Y * 0.5f);
-
-					Vector2 offset = new Vector2(projectionSpace.X * (float)screenSize.X * 0.5f, -projectionSpace.Y * (float)screenSize.Y * 0.5f);
-
-					float radius = Math.Min(screenSize.X, screenSize.Y) * 0.95f * 0.5f;
-
-					float offsetLength = offset.Length();
-
-					Vector2 normalizedOffset = offset / offsetLength;
-
-					bool offscreen = offsetLength > radius;
-
-					bool behind = originalDepth < main.Camera.NearPlaneDistance;
-
-					string img = offscreen || behind ? targetOffScreen : targetOnScreen;
-
-					if (sprite.Image.Value != img)
-						sprite.Image.Value = img;
-
-					if (behind)
-						normalizedOffset *= -1.0f;
-
-					if (offscreen || behind)
-						sprite.Rotation.Value = -(float)Math.Atan2(normalizedOffset.Y, -normalizedOffset.X) - (float)Math.PI * 0.5f;
-					else
-						sprite.Rotation.Value = 0.0f;
-
-					if (behind || offscreen)
-						offset = normalizedOffset * radius;
-
-					return screenCenter + offset;
-				}, target.Position, main.Camera.ViewProjection, main.ScreenSize));
-				return sprite;
-			}));
-
 			player.EnabledInEditMode.Value = false;
-			ui.EnabledInEditMode.Value = false;
 
 			input.MaxY.Value = (float)Math.PI * 0.35f;
 
@@ -312,11 +238,6 @@ namespace Lemma.Factories
 			});
 
 			Action stopKick = null;
-
-			// Center the damage overlay and scale it to fit the screen
-			damageOverlay.Add(new Binding<Vector2, Point>(damageOverlay.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
-			damageOverlay.Add(new Binding<Vector2>(damageOverlay.Scale, () => new Vector2(main.ScreenSize.Value.X / damageOverlay.Size.Value.X, main.ScreenSize.Value.Y / damageOverlay.Size.Value.Y), main.ScreenSize, damageOverlay.Size));
-			damageOverlay.Add(new Binding<float, float>(damageOverlay.Opacity, x => 1.0f - x, player.Health));
 
 			// Player rotation code
 			Property<bool> rotationLocked = new Property<bool>();
@@ -379,128 +300,32 @@ namespace Lemma.Factories
 			model.Add(new Binding<Matrix>(model.Transform, delegate()
 			{
 				Vector3 lean = Vector3.TransformNormal(player.Character.Lean, Matrix.CreateRotationY(-rotation));
-				const float leanAmount = (float)Math.PI * 0.15f;
+				const float leanAmount = (float)Math.PI * 0.1f;
 				return Matrix.CreateTranslation(0, (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0) * Matrix.CreateRotationX(lean.Z * leanAmount) * Matrix.CreateRotationZ(lean.X * -leanAmount) * Matrix.CreateRotationY(rotation) * transform.Matrix;
 			}, transform.Matrix, rotation, player.Character.Height, player.Character.SupportHeight, player.Character.Lean));
 
 			firstPersonModel.Add(new Binding<Matrix>(firstPersonModel.Transform, model.Transform));
 			firstPersonModel.Add(new Binding<Vector3>(firstPersonModel.Scale, model.Scale));
 
-			Map.GlobalRaycastResult groundRaycast = new Map.GlobalRaycastResult();
-
-			Command<Map, Map.Coordinate?, Direction> walkedOn = new Command<Map, Map.Coordinate?, Direction>();
-			result.Add("WalkedOn", walkedOn);
-
-			int neutralID = WorldFactory.StatesByName["Neutral"].ID,
-				temporaryID = WorldFactory.StatesByName["Temporary"].ID,
-				poweredID = WorldFactory.StatesByName["Powered"].ID,
-				resetID = WorldFactory.StatesByName["Reset"].ID,
-				infectedID = WorldFactory.StatesByName["Infected"].ID,
-				avoidID = WorldFactory.StatesByName["AvoidAI"].ID;
-
-			result.Add(new CommandBinding<Map, Map.Coordinate?, Direction>(walkedOn, delegate(Map map, Map.Coordinate? coord, Direction dir)
+			FootstepController footsteps = result.GetOrCreate<FootstepController>();
+			Player.WallRun[] footstepWallrunStates = new[]
 			{
-				if (coord.HasValue)
-				{
-					int id = map[coord.Value].ID;
-					if (id == neutralID)
-					{
-						map.Empty(coord.Value);
-						map.Fill(coord.Value, WorldFactory.States[temporaryID]);
-						map.Regenerate();
-					}
-					else if (id == resetID)
-					{
-						bool regenerate = false;
-
-						Dictionary<Map.Coordinate, bool> visited = new Dictionary<Map.Coordinate, bool>();
-						Queue<Map.Coordinate> queue = new Queue<Map.Coordinate>();
-						queue.Enqueue(coord.Value);
-						while (queue.Count > 0)
-						{
-							Map.Coordinate c = queue.Dequeue();
-							visited[c] = true;
-							foreach (Direction adjacentDirection in DirectionExtensions.Directions)
-							{
-								Map.Coordinate adjacentCoord = coord.Value.Move(adjacentDirection);
-								if (!visited.ContainsKey(adjacentCoord))
-								{
-									int adjacentID = map[adjacentCoord].ID;
-									if (adjacentID == resetID)
-										queue.Enqueue(adjacentCoord);
-									else if (adjacentID == infectedID || adjacentID == temporaryID)
-									{
-										map.Empty(adjacentCoord);
-										map.Fill(adjacentCoord, WorldFactory.States[neutralID]);
-										regenerate = true;
-									}
-								}
-							}
-						}
-						if (regenerate)
-							map.Regenerate();
-					}
-				}
-			}));
-
-			int walkedOnCount = 0;
-
-			update.Add(delegate(float dt)
-			{
-				if (player.Character.IsSupported)
-				{
-					Map oldMap = groundRaycast.Map;
-					Map.Coordinate? oldCoord = groundRaycast.Coordinate;
-					groundRaycast = Map.GlobalRaycast(transform.Position, Vector3.Down, player.Character.Height.Value * 0.5f + player.Character.SupportHeight + 1.1f);
-					if (groundRaycast.Map != oldMap || (oldCoord != null && groundRaycast.Coordinate != null && !oldCoord.Value.Equivalent(groundRaycast.Coordinate.Value)))
-					{
-						walkedOn.Execute(groundRaycast.Map, groundRaycast.Coordinate, groundRaycast.Normal.GetReverse());
-
-						if (groundRaycast.Map != null)
-						{
-							walkedOnCount++;
-							if (walkedOnCount >= 3)
-							{
-								// Every 3 tiles, save off the location for the auto-respawn system
-								respawnLocations.Add(new RespawnLocation
-								{
-									Coordinate = groundRaycast.Coordinate.Value,
-									Map = groundRaycast.Map.Entity,
-									Rotation = rotation,
-									OriginalPosition = groundRaycast.Map.GetAbsolutePosition(groundRaycast.Coordinate.Value),
-								});
-								while (respawnLocations.Count > GameMain.RespawnMemoryLength)
-									respawnLocations.RemoveAt(0);
-								walkedOnCount = 0;
-							}
-						}
-					}
-				}
-				else
-				{
-					if (groundRaycast.Map != null)
-						walkedOn.Execute(null, null, Direction.NegativeY);
-					groundRaycast.Map = null;
-					groundRaycast.Coordinate = null;
-				}
-			});
-
-			footstepTimer.Add(new CommandBinding(footstepTimer.Command, delegate()
-			{
-				Player.WallRun wallRunState = player.WallRunState;
-				if (wallRunState == Player.WallRun.None)
-				{
-					if (groundRaycast.Map != null)
-					{
-						AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, groundRaycast.Map[groundRaycast.Coordinate.Value].FootstepSwitch, result);
-						if (!player.Character.Crouched)
-							AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
-					}
-				}
-				else if (wallRunState != Player.WallRun.Down && wallRunState != Player.WallRun.Reverse && !player.Character.Crouched)
-					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
-			}));
-			footstepTimer.Add(new Binding<bool>(footstepTimer.Enabled, () => player.WallRunState.Value != Player.WallRun.None || (player.Character.MovementDirection.Value.LengthSquared() > 0.0f && player.Character.IsSupported && player.Character.EnableWalking), player.Character.MovementDirection, player.Character.IsSupported, player.Character.EnableWalking, player.WallRunState));
+				Player.WallRun.Left,
+				Player.WallRun.Right,
+				Player.WallRun.Straight,
+				Player.WallRun.None,
+			};
+			footsteps.Add(new Binding<bool>(footsteps.SoundEnabled, () => footstepWallrunStates.Contains(player.WallRunState) || (player.Character.IsSupported && player.Character.EnableWalking), player.Character.IsSupported, player.Character.EnableWalking, player.WallRunState));
+			footsteps.Add(new Binding<Vector3>(footsteps.Position, transform.Position));
+			footsteps.Add(new Binding<float>(footsteps.Rotation, rotation));
+			footsteps.Add(new Binding<float>(footsteps.CharacterHeight, player.Character.Height));
+			footsteps.Add(new Binding<float>(footsteps.SupportHeight, player.Character.SupportHeight));
+			footsteps.Add(new TwoWayBinding<float>(player.Health, footsteps.Health));
+			model.Trigger("Run", 0.16f, footsteps.Footstep);
+			model.Trigger("Run", 0.58f, footsteps.Footstep);
+			model.Trigger("WallRunLeft", 0.58f, footsteps.Footstep);
+			model.Trigger("WallRunRight", 0.58f, footsteps.Footstep);
+			model.Trigger("WallRunStraight", 0.58f, footsteps.Footstep);
 
 			main.IsMouseVisible.Value = false;
 
@@ -564,7 +389,6 @@ namespace Lemma.Factories
 					if (player.WallRunState != Player.WallRun.None)
 					{
 						model.Stop("Jump", "JumpLeft", "JumpBackward", "JumpRight", "Fall", "Vault", "VaultLeft", "VaultRight");
-						footstepTimer.Interval.Value = 0.37f / model[player.WallRunState == Player.WallRun.Straight ? "WallRunStraight" : (player.WallRunState == Player.WallRun.Left ? "WallRunLeft" : "WallRunRight")].Speed;
 						return;
 					}
 
@@ -576,7 +400,7 @@ namespace Lemma.Factories
 						{
 							if (main.TotalTime > lastLandAnimationPlayed + 0.5f && !player.Character.Crouched)
 							{
-								footstepTimer.Command.Execute();
+								footsteps.Footstep.Execute();
 								AkSoundEngine.PostEvent("Play_land", result);
 							}
 							lastLandAnimationPlayed = main.TotalTime;
@@ -630,8 +454,6 @@ namespace Lemma.Factories
 							sprintAnimation.TargetStrength = MathHelper.Clamp((speed - 6.0f) / 2.0f, 0.0f, 1.0f);
 							runAnimation.TargetStrength = Math.Min(MathHelper.Clamp(speed / 4.0f, 0.0f, 1.0f), 1.0f - sprintAnimation.TargetStrength);
 						}
-
-						footstepTimer.Interval.Value = 0.37f / (speed / 6.0f);
 
 						if (!model.IsPlaying(movementAnimation))
 						{
@@ -732,11 +554,12 @@ namespace Lemma.Factories
 
 			ParticleSystem particleSystem = ParticleSystem.Get(main, "Distortion");
 
+			Map.CellState temporary = Map.States[Map.t.Temporary];
+
 			Action<BlockPossibility> instantiateBlockPossibility = delegate(BlockPossibility block)
 			{
-				Map.CellState state = WorldFactory.StatesByName["Temporary"];
 				block.Map.Empty(block.StartCoord.CoordinatesBetween(block.EndCoord), false, false);
-				block.Map.Fill(block.StartCoord, block.EndCoord, state);
+				block.Map.Fill(block.StartCoord, block.EndCoord, temporary);
 				block.Map.Regenerate();
 				block.Model.Delete.Execute();
 				List<BlockPossibility> mapList = blockPossibilities[block.Map];
@@ -781,14 +604,11 @@ namespace Lemma.Factories
 			// Wall run
 
 			const float minWallRunSpeed = 4.0f;
-			Map.Coordinate lastWallCoord = new Map.Coordinate();
 
 			Action<Map, Direction, Player.WallRun, Vector3, bool> setUpWallRun = delegate(Map map, Direction dir, Player.WallRun state, Vector3 forwardVector, bool addInitialVelocity)
 			{
 				stopKick();
 				player.Character.AllowUncrouch.Value = true;
-
-				lastWallCoord = new Map.Coordinate();
 
 				wallRunMap = lastWallRunMap = map;
 				wallDirection = lastWallDirection = dir;
@@ -1136,21 +956,15 @@ namespace Lemma.Factories
 					Vector3 pos = transform.Position + new Vector3(0, player.Character.Height * -0.5f, 0);
 					Map.Coordinate coord = wallRunMap.GetCoordinate(pos);
 					Map.Coordinate wallCoord = coord.Move(wallDirection, 2);
-					Map.CellState wallType = wallRunMap[wallCoord];
-					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, wallType.FootstepSwitch, result);
-					if (!wallCoord.Equivalent(lastWallCoord))
-					{
-						walkedOn.Execute(wallRunMap, wallCoord, wallDirection);
-						lastWallCoord = wallCoord;
-					}
+				Map.CellState wallType = wallRunMap[wallCoord];
+					footsteps.WalkedOn.Execute(wallRunMap, wallCoord, wallDirection);
+
 					if (player.EnableEnhancedWallRun && (wallRunState == Player.WallRun.Left || wallRunState == Player.WallRun.Right))
 					{
 						Direction up = wallRunMap.GetRelativeDirection(Direction.PositiveY);
 						Direction right = wallDirection.Cross(up);
 
 						List<EffectBlockFactory.BlockBuildOrder> buildCoords = new List<EffectBlockFactory.BlockBuildOrder>();
-
-						Map.CellState fillState = WorldFactory.StatesByName["Temporary"];
 
 						const int radius = 5;
 						int upwardRadius = wallRunState == Player.WallRun.Down || wallRunState == Player.WallRun.Reverse ? 0 : radius;
@@ -1166,7 +980,7 @@ namespace Lemma.Factories
 									{
 										Map = wallRunMap,
 										Coordinate = y,
-										State = fillState,
+										State = temporary,
 									});
 								}
 							}
@@ -1281,7 +1095,7 @@ namespace Lemma.Factories
 				foreach (Map map in Map.ActivePhysicsMaps)
 				{
 					List<Matrix> results = new List<Matrix>();
-					Map.CellState fillValue = WorldFactory.StatesByName["Temporary"];
+					Map.CellState fillValue = temporary;
 					Map.Coordinate absolutePlayerCoord = map.GetCoordinate(position);
 					bool inMap = map.GetChunk(absolutePlayerCoord, false) != null;
 					foreach (Direction absoluteDir in platformBuildableDirections)
@@ -1299,7 +1113,7 @@ namespace Lemma.Factories
 							if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = map, Coordinate = coord, }))
 							{
 								// Check we're not in a no-build zone
-								if (state.ID != avoidID && Zone.CanBuild(map.GetAbsolutePosition(coord)))
+								if (state.ID != Map.t.AvoidAI && Zone.CanBuild(map.GetAbsolutePosition(coord)))
 								{
 									shortestDistance = i;
 									relativeShortestDirection = relativeDir;
@@ -1365,7 +1179,7 @@ namespace Lemma.Factories
 									if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = map, Coordinate = c, }))
 									{
 										// Check we're not in a no-build zone
-										if (state.ID != avoidID && Zone.CanBuild(map.GetAbsolutePosition(c)))
+										if (state.ID != Map.t.AvoidAI && Zone.CanBuild(map.GetAbsolutePosition(c)))
 										{
 											shortestMap = map;
 											shortestBuildDirection = dir;
@@ -1588,12 +1402,12 @@ namespace Lemma.Factories
 					lastWallJump = main.TotalTime;
 
 					Map.CellState wallType = wallJumpMap[wallCoordinate];
-					if (wallType.ID == 0) // Empty. Must be a block possibility that hasn't been instantiated yet
-						wallType = WorldFactory.StatesByName["Temporary"];
+					if (wallType == Map.EmptyState) // Empty. Must be a block possibility that hasn't been instantiated yet
+						wallType = temporary;
 					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, wallType.FootstepSwitch, result);
 					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
 
-					walkedOn.Execute(wallJumpMap, wallCoordinate, wallNormalDirection.GetReverse());
+					footsteps.WalkedOn.Execute(wallJumpMap, wallCoordinate, wallNormalDirection.GetReverse());
 
 					wallJumping = true;
 					// Set up wall jump velocity
@@ -2145,7 +1959,7 @@ namespace Lemma.Factories
 				floorCoordinate.SetComponent(rightDir, newFloorCoordinate.GetComponent(rightDir));
 				floorCoordinate.SetComponent(forwardDir, newFloorCoordinate.GetComponent(forwardDir));
 
-				Map.CellState fillState = WorldFactory.StatesByName["Temporary"];
+				Map.CellState fillState = temporary;
 
 				const int radius = 3;
 				for (Map.Coordinate x = floorCoordinate.Move(rightDir, -radius); x.GetComponent(rightDir) < floorCoordinate.GetComponent(rightDir) + radius; x = x.Move(rightDir))
@@ -2273,14 +2087,14 @@ namespace Lemma.Factories
 						player.Character.EnableWalking.Value = false;
 						rotationLocked.Value = true;
 
-						footstepTimer.Command.Execute(); // We just landed; play a footstep sound
+						footsteps.Footstep.Execute(); // We just landed; play a footstep sound
 						AkSoundEngine.PostEvent("Skill_Roll_Play", result);
 
 						model.StartClip("Roll", 5, false);
 
-						Map.CellState floorState = floorRaycast.Map == null ? WorldFactory.States[0] : floorRaycast.Coordinate.Value.Data;
+						Map.CellState floorState = floorRaycast.Map == null ? Map.EmptyState : floorRaycast.Coordinate.Value.Data;
 						bool shouldBuildFloor = false;
-						if (player.EnableEnhancedWallRun && (instantiatedBlockPossibility || (floorState.ID != 0 && floorState.ID != temporaryID && floorState.ID != poweredID)))
+						if (player.EnableEnhancedWallRun && (instantiatedBlockPossibility || (floorState.ID != 0 && floorState.ID != Map.t.Temporary && floorState.ID != Map.t.Powered)))
 							shouldBuildFloor = true;
 						
 						// If the player is not yet supported, that means they're just about to land.
@@ -2381,8 +2195,8 @@ namespace Lemma.Factories
 					{
 						if (player.EnableEnhancedWallRun)
 						{
-							int floorType = floorRaycast.Coordinate.Value.Data.ID;
-							if (floorType != temporaryID && floorType != poweredID)
+							Map.t floorType = floorRaycast.Coordinate.Value.Data.ID;
+							if (floorType != Map.t.Temporary && floorType != Map.t.Powered)
 								shouldBuildFloor = true;
 						}
 					}
@@ -2465,7 +2279,7 @@ namespace Lemma.Factories
 			Property<Matrix> relativeUpperRightArm = model.GetRelativeBoneTransform("ORG-upper_arm_R");
 			Property<Matrix> headBone = model.GetBoneTransform("ORG-head");
 
-			CameraControl cameraControl = result.GetOrCreate<CameraControl>();
+			CameraController cameraControl = result.GetOrCreate<CameraController>();
 			cameraControl.Add(new Binding<Vector2>(cameraControl.Mouse, input.Mouse));
 			cameraControl.Add(new Binding<bool>(cameraControl.EnableLean, () => player.Character.EnableWalking.Value && player.Character.IsSupported.Value, player.Character.EnableWalking, player.Character.IsSupported));
 			cameraControl.Add(new Binding<Vector3>(cameraControl.LinearVelocity, player.Character.LinearVelocity));
@@ -2504,28 +2318,9 @@ namespace Lemma.Factories
 			debugCylinder.Add(new Binding<bool>(debugCylinder.Enabled, cameraControl.ThirdPerson));
 			debugCylinder.Add(new Binding<Vector3>(debugCylinder.Scale, delegate()
 			{
-				return new Vector3(player.Character.Radius, player.Character.Height, player.Character.Radius);
+				return new Vector3(player.Character.Radius * 2.0f, player.Character.Height, player.Character.Radius * 2.0f);
 			}, player.Character.Height, player.Character.Radius));
 			result.Add(debugCylinder);
-
-			ListContainer debugContainer = new ListContainer();
-			debugContainer.Reversed.Value = true;
-			debugContainer.AnchorPoint.Value = new Vector2(1, 1);
-			debugContainer.Add(new Binding<Vector2, Point>(debugContainer.Position, x => new Vector2(x.X, x.Y), main.ScreenSize));
-			debugContainer.Alignment.Value = ListContainer.ListAlignment.Max;
-			ui.Root.Children.Add(debugContainer);
-
-			TextElement debugVelocity = new TextElement();
-			debugVelocity.FontFile.Value = "Font";
-			debugVelocity.Add(new Binding<string, Vector3>(debugVelocity.Text, x => x.Length().ToString(), player.Character.LinearVelocity));
-			debugVelocity.Add(new Binding<bool>(debugVelocity.Visible, cameraControl.ThirdPerson));
-			debugContainer.Children.Add(debugVelocity);
-
-			TextElement debugRotation = new TextElement();
-			debugRotation.FontFile.Value = "Font";
-			debugRotation.Add(new Binding<string, float>(debugRotation.Text, x => x.ToString("F"), rotation));
-			debugRotation.Add(new Binding<bool>(debugRotation.Visible, cameraControl.ThirdPerson));
-			debugContainer.Children.Add(debugRotation);
 
 			input.Add(new CommandBinding(input.GetKeyUp(Keys.T), delegate()
 			{
@@ -2595,43 +2390,9 @@ namespace Lemma.Factories
 			screen.Scale.Value = new Vector3(1.0f, (float)phoneUi.RenderTargetSize.Value.Y * screenScale, (float)phoneUi.RenderTargetSize.Value.X * screenScale);
 
 			// Transform screen space mouse position into 3D, then back into the 2D space of the phone UI
-			phoneUi.MouseFilter = delegate(MouseState mouse)
-			{
-				Microsoft.Xna.Framework.Graphics.Viewport viewport = main.GraphicsDevice.Viewport;
-
-				Matrix screenTransform = Matrix.CreateScale(screen.Scale) * screen.Transform;
-				Matrix inverseTransform = Matrix.Invert(screenTransform);
-				Vector3 ray = Vector3.Normalize(viewport.Unproject(new Vector3(mouse.X, mouse.Y, 1), main.Camera.Projection, main.Camera.View, Matrix.Identity) - viewport.Unproject(new Vector3(mouse.X, mouse.Y, 0), main.Camera.Projection, main.Camera.View, Matrix.Identity));
-				Vector3 rayStart = main.Camera.Position;
-
-				ray = Vector3.TransformNormal(ray, inverseTransform);
-				rayStart = Vector3.Transform(rayStart, inverseTransform);
-
-				Point output;
-
-				float? intersection = new Ray(rayStart, ray).Intersects(new Plane(Vector3.Right, 0.0f));
-				if (intersection.HasValue)
-				{
-					Vector3 intersectionPoint = rayStart + ray * intersection.Value;
-					Point size = phoneUi.RenderTargetSize;
-					Vector2 sizeF = new Vector2(size.X, size.Y);
-					output = new Point((int)((0.5f - intersectionPoint.Z) * sizeF.X), (int)((0.5f - intersectionPoint.Y) * sizeF.Y));
-				}
-				else
-					output = new Point(-1, -1);
-
-				return new MouseState
-				(
-					output.X,
-					output.Y,
-					mouse.ScrollWheelValue,
-					mouse.LeftButton,
-					mouse.MiddleButton,
-					mouse.RightButton,
-					mouse.XButton1,
-					mouse.XButton2
-				);
-			};
+			Property<Matrix> screenTransform = new Property<Matrix>();
+			screen.Add(new Binding<Matrix>(screenTransform, () => Matrix.CreateScale(screen.Scale) * screen.Transform, screen.Scale, screen.Transform));
+			phoneUi.Setup3D(screenTransform);
 
 			// Phone UI
 
@@ -2990,12 +2751,15 @@ namespace Lemma.Factories
 			{
 				delegate()
 				{
-					if (data.Value.Target == null)
-						data.Value = Factory.Get<PlayerDataFactory>().Instance(main);
+					Entity dataEntity = Factory.Get<PlayerDataFactory>().Instance;
+					if (dataEntity == null)
+					{
+						Factory.Get<PlayerDataFactory>().CreateAndBind(main);
+						dataEntity = Factory.Get<PlayerDataFactory>().Instance;
+					}
 
-					Entity dataEntity = data.Value.Target;
-
-					respawnLocations = dataEntity.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
+					// HACK. Overwriting the property rather than binding the two together. Oh well.
+					footsteps.RespawnLocations = dataEntity.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
 					
 					// Bind player data properties
 					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableRoll"), player.EnableRoll));
@@ -3085,11 +2849,6 @@ namespace Lemma.Factories
 						showPhone(true);
 				}
 			});
-		}
-
-		public override void AttachEditorComponents(Entity result, Main main)
-		{
-
 		}
 	}
 }

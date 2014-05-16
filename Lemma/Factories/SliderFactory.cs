@@ -64,11 +64,11 @@ namespace Lemma.Factories
 				{
 					bool active = locked && (!servo || (servo && goal.Value != minimum.Value));
 
-					Map.CellState slider = WorldFactory.StatesByName["Slider"];
-					Map.CellState powered = WorldFactory.StatesByName["SliderPowered"];
+					Map.CellState slider = Map.States[Map.t.Slider];
+					Map.CellState powered = Map.States[Map.t.SliderPowered];
 					Map.CellState desired = active ? powered : slider;
-					int currentID = map[0, 0, 0].ID;
-					if (currentID != desired.ID & (currentID == slider.ID || currentID == powered.ID))
+					Map.t currentID = map[0, 0, 0].ID;
+					if (currentID != desired.ID & (currentID == Map.t.Slider || currentID == Map.t.SliderPowered))
 					{
 						List<Map.Coordinate> coords = map.GetContiguousByType(new[] { map.GetBox(0, 0, 0) }).SelectMany(x => x.GetCoords()).ToList();
 						map.Empty(coords, true, true, null, false);

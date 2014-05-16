@@ -324,7 +324,7 @@ namespace Lemma
 
 			if (firstInitialization)
 			{
-				this.AddComponent(this.Menu); // Have to do this here so the menu's InitializeProperties can use all our loaded stuff
+				this.AddComponent(this.Menu); // Have to do this here so the menu's Awake can use all our loaded stuff
 
 				this.IsMouseVisible.Value = true;
 
@@ -648,45 +648,49 @@ namespace Lemma
 
 							bool spawnFound = false;
 
-							PlayerFactory.RespawnLocation foundSpawnLocation = default(PlayerFactory.RespawnLocation);
+							RespawnLocation foundSpawnLocation = default(RespawnLocation);
 							Vector3 foundSpawnAbsolutePosition = Vector3.Zero;
 
 							if (string.IsNullOrEmpty(this.StartSpawnPoint.Value))
 							{
 								// Look for an autosaved spawn point
-								ListProperty<PlayerFactory.RespawnLocation> respawnLocations = Factory.Get<PlayerDataFactory>().Instance(this).GetOrMakeListProperty<PlayerFactory.RespawnLocation>("RespawnLocations");
-								int supportedLocations = 0;
-								while (respawnLocations.Count > 0)
+								Entity playerData = Factory.Get<PlayerDataFactory>().Instance;
+								if (playerData != null)
 								{
-									PlayerFactory.RespawnLocation respawnLocation = respawnLocations[respawnLocations.Count - 1];
-									Entity respawnMapEntity = respawnLocation.Map.Target;
-									if (respawnMapEntity != null && respawnMapEntity.Active)
+									ListProperty<RespawnLocation> respawnLocations = playerData.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
+									int supportedLocations = 0;
+									while (respawnLocations.Count > 0)
 									{
-										Map respawnMap = respawnMapEntity.Get<Map>();
-										Vector3 absolutePos = respawnMap.GetAbsolutePosition(respawnLocation.Coordinate);
-										if (respawnMap.Active
-											&& respawnMap[respawnLocation.Coordinate].ID != 0
-											&& respawnMap.GetAbsoluteVector(respawnMap.GetRelativeDirection(Direction.PositiveY).GetVector()).Y > 0.5f
-											&& Agent.Query(absolutePos, 0.0f, 20.0f) == null)
+										RespawnLocation respawnLocation = respawnLocations[respawnLocations.Count - 1];
+										Entity respawnMapEntity = respawnLocation.Map.Target;
+										if (respawnMapEntity != null && respawnMapEntity.Active)
 										{
-											supportedLocations++;
-											DynamicMap dynamicMap = respawnMap as DynamicMap;
-											if (dynamicMap == null || absolutePos.Y > respawnLocation.OriginalPosition.Y - 1.0f)
+											Map respawnMap = respawnMapEntity.Get<Map>();
+											Vector3 absolutePos = respawnMap.GetAbsolutePosition(respawnLocation.Coordinate);
+											if (respawnMap.Active
+												&& respawnMap[respawnLocation.Coordinate].ID != 0
+												&& respawnMap.GetAbsoluteVector(respawnMap.GetRelativeDirection(Direction.PositiveY).GetVector()).Y > 0.5f
+												&& Agent.Query(absolutePos, 0.0f, 20.0f) == null)
 											{
-												Map.GlobalRaycastResult hit = Map.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Up, 2);
-												if (hit.Map == null)
+												supportedLocations++;
+												DynamicMap dynamicMap = respawnMap as DynamicMap;
+												if (dynamicMap == null || absolutePos.Y > respawnLocation.OriginalPosition.Y - 1.0f)
 												{
-													// We can spawn here
-													spawnFound = true;
-													foundSpawnLocation = respawnLocation;
-													foundSpawnAbsolutePosition = absolutePos;
+													Map.GlobalRaycastResult hit = Map.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Up, 2);
+													if (hit.Map == null)
+													{
+														// We can spawn here
+														spawnFound = true;
+														foundSpawnLocation = respawnLocation;
+														foundSpawnAbsolutePosition = absolutePos;
+													}
 												}
 											}
 										}
+										respawnLocations.RemoveAt(respawnLocations.Count - 1);
+										if (supportedLocations >= 40 || (foundSpawnAbsolutePosition - this.lastPlayerPosition).Length() > this.RespawnDistance)
+											break;
 									}
-									respawnLocations.RemoveAt(respawnLocations.Count - 1);
-									if (supportedLocations >= 40 || (foundSpawnAbsolutePosition - this.lastPlayerPosition).Length() > this.RespawnDistance)
-										break;
 								}
 							}
 

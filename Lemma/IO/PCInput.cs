@@ -129,9 +129,9 @@ namespace Lemma.Components
 
 		private bool preventKeyDownEvents = false;
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Add(new CommandBinding(this.OnDisabled, delegate()
 			{
 				// Release all the keys

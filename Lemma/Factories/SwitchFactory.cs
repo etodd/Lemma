@@ -76,7 +76,7 @@ namespace Lemma.Factories
 				CommandBinding deleteBinding = null;
 				CommandBinding<IEnumerable<Map.Coordinate>, Map> cellFilledBinding = null;
 
-				Map.CellState poweredState = WorldFactory.StatesByName["PoweredSwitch"];
+				Map.CellState poweredState = Map.States[Map.t.PoweredSwitch];
 
 				result.Add(new NotifyBinding(delegate()
 				{

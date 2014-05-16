@@ -67,9 +67,9 @@ namespace Lemma.Components
 			this.Size.Value = this.font.MeasureString(this.wrappedText ?? "");
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 
 			this.FontFile.Get = delegate()
 			{

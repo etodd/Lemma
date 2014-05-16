@@ -19,9 +19,9 @@ namespace Lemma.Components
 			protected Dictionary<string, IPropertyBinding> parameters = new Dictionary<string, IPropertyBinding>();
 			protected List<IPropertyBinding> modifiedParameters = new List<IPropertyBinding>();
 
-			public override void InitializeProperties()
+			public override void Awake()
 			{
-				base.InitializeProperties();
+				base.Awake();
 				this.CullBoundingBox.Value = false;
 				this.IsInstanced.Value = true;
 				this.instanceBinding = new ListBinding<Matrix, ModelInstance>(this.Instances, this.instances, x => x.transform);
@@ -217,7 +217,7 @@ namespace Lemma.Components
 			{
 				string key = "InstanceSystem" + (this.EnableAlpha ? "Alpha" : "") + ":" + this.Filename.Value + "+" + this.InstanceKey.Value.ToString();
 
-				Entity world = Lemma.Factories.WorldFactory.Get();
+				Entity world = Lemma.Factories.WorldFactory.Instance;
 				
 				ModelInstanceSystem newModel = this.EnableAlpha ? world.Get<ModelInstanceSystemAlpha>(key) : world.Get<ModelInstanceSystem>(key);
 
@@ -261,9 +261,9 @@ namespace Lemma.Components
 			}
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.Enabled.Editable = true;
 
 			this.Filename.Set = delegate(string value)

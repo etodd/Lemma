@@ -47,9 +47,9 @@ namespace Lemma.Components
 			};
 		}
 
-		public override void InitializeProperties()
+		public override void Awake()
 		{
-			base.InitializeProperties();
+			base.Awake();
 			this.EnabledWhenPaused.Value = false;
 			this.Enabled.Editable = true;
 
