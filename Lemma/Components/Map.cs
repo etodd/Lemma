@@ -1,4 +1,5 @@
-﻿using System; using ComponentBind;
+﻿using System;
+using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -141,6 +142,7 @@ namespace Lemma.Components
 							SpecularIntensity = 0.2f,
 						},
 					},
+					Tint = new Vector3(0.88f, 0.89f, 0.9f),
 				},
 				new CellState
 				{
@@ -284,7 +286,7 @@ namespace Lemma.Components
 							SpecularIntensity = 0.0f,
 						},
 					},
-					Tint = new Vector3(0.4f),
+					Tint = new Vector3(0.45f, 0.42f, 0.4f),
 				},
 				new CellState
 				{
@@ -405,6 +407,7 @@ namespace Lemma.Components
 						}
 					},
 					Tiling = 0.25f,
+					Tint = new Vector3(0.88f, 0.89f, 0.9f),
 				},
 				new CellState
 				{
@@ -429,7 +432,7 @@ namespace Lemma.Components
 					Supported = true,
 					Hard = true,
 					Density = 1,
-					DiffuseMap = "Textures\\white",
+					DiffuseMap = "Textures\\metal-channels2",
 					NormalMap = "Textures\\metal-channels2-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 					Materials = new[]
@@ -439,8 +442,13 @@ namespace Lemma.Components
 							SpecularPower = 200.0f,
 							SpecularIntensity = 0.2f,
 						},
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.15f,
+						},
 					},
-					Tint = new Vector3(0.25f),
+					Tint = new Vector3(0.21f, 0.22f, 0.23f),
 				},
 				new CellState
 				{
@@ -449,7 +457,7 @@ namespace Lemma.Components
 					Supported = true,
 					Hard = true,
 					Density = 1,
-					DiffuseMap = "Textures\\white",
+					DiffuseMap = "Textures\\metal-swirl",
 					NormalMap = "Textures\\metal-swirl-normal",
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 					Materials = new[]
@@ -459,8 +467,13 @@ namespace Lemma.Components
 							SpecularPower = 200.0f,
 							SpecularIntensity = 0.2f,
 						},
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.15f,
+						},
 					},
-					Tint = new Vector3(0.25f),
+					Tint = new Vector3(0.21f, 0.22f, 0.23f),
 				},
 				new CellState
 				{
@@ -712,7 +725,7 @@ namespace Lemma.Components
 		public class MapState
 		{
 			private List<Chunk> chunks = new List<Chunk>();
-			private List<Box[, ,]> data = new List<Box[,,]>();
+			private List<Box[, ,]> data = new List<Box[, ,]>();
 			private Map map;
 
 			public MapState(Map m, Coordinate start, Coordinate end)
@@ -938,7 +951,7 @@ namespace Lemma.Components
 					{
 						if (!pair.Value.Dirty)
 							continue;
-						
+
 						MeshEntry entry = pair.Value;
 						entry.Dirty = false;
 
@@ -1236,7 +1249,7 @@ namespace Lemma.Components
 				this.Boxes = null;
 			}
 		}
-		
+
 		public struct Coordinate
 		{
 			public int X;
@@ -1688,7 +1701,7 @@ namespace Lemma.Components
 		public Map()
 			: this(0, 0, 0)
 		{
-			
+
 		}
 
 		public Map(int offsetX, int offsetY, int offsetZ)
@@ -2249,7 +2262,7 @@ namespace Lemma.Components
 			this.CellsFilled.Execute(coords, transferredFromMap);
 			Map.GlobalCellsFilled.Execute(this, coords, transferredFromMap);
 		}
-		
+
 		private void notifyEmptied(IEnumerable<Coordinate> coords, Map transferringToNewMap)
 		{
 			this.CellsEmptied.Execute(coords, transferringToNewMap);
@@ -3257,7 +3270,7 @@ namespace Lemma.Components
 							regenerated[adjacent] = this.regenerateSurfaces(adjacent);
 					}
 				}
-				
+
 				List<Box> boxes = regenerated.Keys.ToList();
 
 				bool[] modifications = regenerated.Values.ToArray();
@@ -3667,7 +3680,7 @@ namespace Lemma.Components
 			for (int radius = 1; radius < maxDistance; radius++)
 			{
 				float closestDistance = float.MaxValue;
-				
+
 				// Left
 				for (int y = -radius; y <= radius; y++)
 				{
@@ -3975,7 +3988,7 @@ namespace Lemma.Components
 		{
 			if (modified == null)
 				modified = new bool[list.Count];
-			
+
 			// Z
 			int i = 0;
 			foreach (Box baseBox in list)

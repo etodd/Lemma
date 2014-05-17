@@ -759,6 +759,17 @@ namespace Lemma.Components
 			}));
 			settingsMenu.Children.Add(ssaoEnabled);
 
+			UIComponent godRaysEnabled = this.createMenuButton<bool>("\\god rays", this.main.Settings.EnableGodRays, boolDisplay);
+			godRaysEnabled.Add(new CommandBinding<Point, int>(godRaysEnabled.MouseScrolled, delegate(Point mouse, int scroll)
+			{
+				this.main.Settings.EnableGodRays.Value = !this.main.Settings.EnableGodRays;
+			}));
+			godRaysEnabled.Add(new CommandBinding<Point>(godRaysEnabled.MouseLeftUp, delegate(Point mouse)
+			{
+				this.main.Settings.EnableGodRays.Value = !this.main.Settings.EnableGodRays;
+			}));
+			settingsMenu.Children.Add(godRaysEnabled);
+
 			UIComponent bloomEnabled = this.createMenuButton<bool>("\\bloom", this.main.Renderer.EnableBloom, boolDisplay);
 			bloomEnabled.Add(new CommandBinding<Point, int>(bloomEnabled.MouseScrolled, delegate(Point mouse, int scroll)
 			{

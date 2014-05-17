@@ -1,8 +1,13 @@
 #include "RenderCommonAlpha.fxh"
+#include "PostProcess\Shadow2D.fxh"
 
 float StartDistance;
 float VerticalSize;
 float VerticalCenter;
+float3 CameraPosition;
+float GodRayStrength;
+
+float4x4 ShadowViewProjectionMatrix;
 
 float4x4 ViewMatrixRotationOnly;
 
@@ -27,11 +32,13 @@ void RenderVS(	in RenderVSInput input,
 	alpha.clipSpacePosition = vs.position;
 }
 
+#define FOG_SHADOW_SAMPLES 14
 void SkyboxPS(in RenderPSInput input,
 						in AlphaPSInput alpha,
 						in TexturePSInput tex,
 						out float4 output : COLOR0,
-						uniform bool vertical)
+						uniform bool vertical,
+						uniform bool shadow)
 {
 	float2 uv = 0.5f * alpha.clipSpacePosition.xy / alpha.clipSpacePosition.w + float2(0.5f, 0.5f);
 	uv.y = 1.0f - uv.y;
@@ -41,15 +48,36 @@ void SkyboxPS(in RenderPSInput input,
 
 	float blend = clamp(lerp(0, 1, (depth - StartDistance) / (FarPlaneDistance - StartDistance)), 0, 1);
 
+	float3 viewRay = normalize(input.position);
+
 	if (vertical)
-	{
-		float3 worldPosition = normalize(input.position) * depth;
-		blend = min(1.0f, blend + max(0, 1.0f - (worldPosition.y - VerticalCenter) / VerticalSize));
-	}
+		blend = min(1.0f, blend + max(0, 1.0f - ((CameraPosition + viewRay * depth).y - VerticalCenter) / VerticalSize));
 
 	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates);
-	
-	output.rgb = DiffuseColor.rgb * color.rgb;
+
+	float interval = (depth - StartDistance) / FOG_SHADOW_SAMPLES;
+
+	if (shadow)
+	{
+		float shadowValue = FOG_SHADOW_SAMPLES;
+
+		float3 s = CameraPosition + viewRay * StartDistance;
+			viewRay *= interval;
+
+		[unroll]
+		for (int i = 0; i < FOG_SHADOW_SAMPLES; i++)
+		{
+			s += viewRay;
+			float4 shadowPos = mul(float4(s, 1.0f), ShadowViewProjectionMatrix);
+				float v = GetShadowValueNoFilter(shadowPos);
+			if (v > 0.0f)
+				shadowValue -= 1.0f - v;
+		}
+		output.rgb = DiffuseColor.rgb * color.rgb * ((1.0f - GodRayStrength) + (shadowValue / FOG_SHADOW_SAMPLES) * GodRayStrength);
+	}
+	else
+		output.rgb = DiffuseColor.rgb * color.rgb;
+
 	output.a = blend;
 }
 
@@ -58,7 +86,7 @@ void SkyboxNormalPS(in RenderPSInput input,
 						in TexturePSInput tex,
 						out float4 output : COLOR0)
 {
-	SkyboxPS(input, alpha, tex, output, false);
+	SkyboxPS(input, alpha, tex, output, false, false);
 }
 
 void SkyboxVerticalPS(in RenderPSInput input,
@@ -66,7 +94,23 @@ void SkyboxVerticalPS(in RenderPSInput input,
 						in TexturePSInput tex,
 						out float4 output : COLOR0)
 {
-	SkyboxPS(input, alpha, tex, output, true);
+	SkyboxPS(input, alpha, tex, output, true, false);
+}
+
+void SkyboxNormalGodRayPS(in RenderPSInput input,
+						in AlphaPSInput alpha,
+						in TexturePSInput tex,
+						out float4 output : COLOR0)
+{
+	SkyboxPS(input, alpha, tex, output, false, true);
+}
+
+void SkyboxVerticalGodRayPS(in RenderPSInput input,
+						in AlphaPSInput alpha,
+						in TexturePSInput tex,
+						out float4 output : COLOR0)
+{
+	SkyboxPS(input, alpha, tex, output, true, true);
 }
 
 // No shadow technique. We don't want the skybox casting shadows.
@@ -101,6 +145,36 @@ technique Clip
 	}
 }
 
+technique RenderGodRays
+{
+	pass p0
+	{
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+	
+		VertexShader = compile vs_3_0 RenderVS();
+		PixelShader = compile ps_3_0 SkyboxNormalGodRayPS();
+	}
+}
+
+technique ClipGodRays
+{
+	pass p0
+	{
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+	
+		VertexShader = compile vs_3_0 RenderVS();
+		PixelShader = compile ps_3_0 SkyboxNormalGodRayPS();
+	}
+}
+
 technique RenderVertical
 {
 	pass p0
@@ -128,5 +202,35 @@ technique ClipVertical
 
 		VertexShader = compile vs_3_0 RenderVS();
 		PixelShader = compile ps_3_0 SkyboxVerticalPS();
+	}
+}
+
+technique RenderVerticalGodRays
+{
+	pass p0
+	{
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+	
+		VertexShader = compile vs_3_0 RenderVS();
+		PixelShader = compile ps_3_0 SkyboxVerticalGodRayPS();
+	}
+}
+
+technique ClipVerticalGodRays
+{
+	pass p0
+	{
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+	
+		VertexShader = compile vs_3_0 RenderVS();
+		PixelShader = compile ps_3_0 SkyboxVerticalGodRayPS();
 	}
 }

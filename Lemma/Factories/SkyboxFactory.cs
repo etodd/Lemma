@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Lemma.Components;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma.Factories
 {
@@ -40,10 +41,24 @@ namespace Lemma.Factories
 			skybox.DrawOrder.Value = -10;
 
 			Property<bool> vertical = result.GetOrMakeProperty<bool>("VerticalLimit", true);
-			skybox.Add(new Binding<string, bool>(skybox.TechniquePostfix, x => x ? "Vertical" : "", vertical));
+			Property<float> godRays = result.GetOrMakeProperty<float>("GodRays", true, 0.25f);
+			skybox.Add
+			(
+				new Binding<string>
+				(
+					skybox.TechniquePostfix,
+					() => (vertical ? "Vertical" : "") + (main.LightingManager.HasGlobalShadowLight && godRays > 0.0f && ((GameMain)main).Settings.EnableGodRays ? "GodRays" : ""),
+					vertical, main.LightingManager.HasGlobalShadowLight, godRays, ((GameMain)main).Settings.EnableGodRays
+				)
+			);
 			skybox.Add(new Binding<float>(skybox.GetFloatParameter("VerticalSize"), result.GetOrMakeProperty<float>("VerticalSize", true, 10.0f)));
 			Property<float> verticalCenter = result.GetOrMakeProperty<float>("VerticalCenter", true);
-			skybox.Add(new Binding<float>(skybox.GetFloatParameter("VerticalCenter"), () => verticalCenter - main.Camera.Position.Value.Y, verticalCenter, main.Camera.Position));
+			skybox.Add(new Binding<float>(skybox.GetFloatParameter("VerticalCenter"), verticalCenter));
+			skybox.Add(new Binding<float>(skybox.GetFloatParameter("GodRayStrength"), godRays));
+			skybox.Add(new Binding<Vector3>(skybox.GetVector3Parameter("CameraPosition"), main.Camera.Position));
+			skybox.Add(new Binding<RenderTarget2D>(skybox.GetRenderTarget2DParameter("ShadowMap" + Components.Model.SamplerPostfix), main.LightingManager.GlobalShadowMap));
+			skybox.Add(new Binding<Matrix>(skybox.GetMatrixParameter("ShadowViewProjectionMatrix"), main.LightingManager.GlobalShadowViewProjection));
+			skybox.Add(new Binding<Matrix>(skybox.GetMatrixParameter("ShadowViewProjectionMatrix"), main.LightingManager.GlobalShadowViewProjection));
 
 			Property<float> startDistance = result.GetOrMakeProperty<float>("StartDistance", true, 50);
 			skybox.Add(new Binding<float>(skybox.GetFloatParameter("StartDistance"), startDistance));

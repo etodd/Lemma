@@ -53,6 +53,7 @@ namespace Lemma
 			public Property<float> Gamma = new Property<float> { Value = 1.0f };
 			public Property<bool> EnableReflections = new Property<bool> { Value = true };
 			public Property<bool> EnableSSAO = new Property<bool> { Value = true };
+			public Property<bool> EnableGodRays = new Property<bool> { Value = true };
 			public Property<bool> EnableBloom = new Property<bool> { Value = true };
 			public Property<LightingManager.DynamicShadowSetting> DynamicShadows = new Property<LightingManager.DynamicShadowSetting> { Value = LightingManager.DynamicShadowSetting.High };
 			public Property<bool> InvertMouseX = new Property<bool> { Value = false };

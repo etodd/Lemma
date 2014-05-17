@@ -90,6 +90,18 @@ float GetShadowValue(float4 position)
 	return GetShadowValueFromClip(ShadowTexClipPosition, depth);
 }
 
+float GetShadowValueNoFilter(float4 position)
+{
+	// Get the shadow map depth value for this pixel
+	float depth = 1.0f - (position.z / position.w);
+
+	// Convert from clip space to UV coordinate space
+	float2 clipPos = (0.5f * (position.xy / position.w)) + float2(0.5f, 0.5f);
+
+	clipPos.y = 1.0f - clipPos.y;
+	return tex2D(ShadowMapSampler, clipPos).r - depth;
+}
+
 float GetShadowValueDetail(float4 detailPosition, float4 position)
 {
 	detailPosition.xyz /= detailPosition.w;

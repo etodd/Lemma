@@ -19,7 +19,7 @@ namespace Lemma.Components
 		private const float totalShakeTime = 0.5f;
 		private float shakeAmount;
 
-		private const float leanAmount = (float)Math.PI * 0.1f;
+		private const float leanAmount = (float)Math.PI * 0.05f;
 
 		// Input commands
 		[XmlIgnore]
@@ -128,8 +128,8 @@ namespace Lemma.Components
 				if (this.EnableLean)
 					l = this.LinearVelocity.Value.Length() * (lastRotation.ClosestAngle(mouse.X) - mouse.X);
 				this.lastRotation = mouse.X;
-				this.lean += (l - this.lean) * 10.0f * dt;
-				main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shake.Z + this.lean * leanAmount) * Matrix.CreateFromAxisAngle(right, -mouse.Y + shake.Y);
+				this.lean += (l - this.lean) * 20.0f * dt;
+				main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shake.Z + this.lean * CameraController.leanAmount) * Matrix.CreateFromAxisAngle(right, -mouse.Y + shake.Y);
 			}
 
 			float minBlur = 4.0f;

@@ -2128,7 +2128,15 @@ namespace Lemma.Factories
 
 			CameraController cameraControl = result.GetOrCreate<CameraController>();
 			cameraControl.Add(new Binding<Vector2>(cameraControl.Mouse, input.Mouse));
-			cameraControl.Add(new Binding<bool>(cameraControl.EnableLean, () => player.Character.EnableWalking.Value && player.Character.IsSupported.Value, player.Character.EnableWalking, player.Character.IsSupported));
+			cameraControl.Add
+			(
+				new Binding<bool>
+				(
+					cameraControl.EnableLean,
+					() => player.Character.EnableWalking.Value && player.Character.IsSupported.Value && input.Movement.Value.Y > 0.75f,
+					player.Character.EnableWalking, player.Character.IsSupported, input.Movement
+				)
+			);
 			cameraControl.Add(new Binding<Vector3>(cameraControl.LinearVelocity, player.Character.LinearVelocity));
 			cameraControl.Add(new Binding<float>(cameraControl.MaxSpeed, player.Character.MaxSpeed));
 			cameraControl.Add(new Binding<Matrix>(cameraControl.CameraBone, model.GetBoneTransform("Camera")));

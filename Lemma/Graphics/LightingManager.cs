@@ -28,13 +28,13 @@ namespace Lemma.Components
 
 		private Vector3 ambientLightColor = Vector3.Zero;
 
-		private Microsoft.Xna.Framework.Graphics.RenderTarget2D globalShadowMap;
-		private Microsoft.Xna.Framework.Graphics.RenderTarget2D detailGlobalShadowMap;
+		public Property<Microsoft.Xna.Framework.Graphics.RenderTarget2D> GlobalShadowMap = new Property<Microsoft.Xna.Framework.Graphics.RenderTarget2D>();
+		public Property<Microsoft.Xna.Framework.Graphics.RenderTarget2D> DetailGlobalShadowMap = new Property<Microsoft.Xna.Framework.Graphics.RenderTarget2D>();
 		private Microsoft.Xna.Framework.Graphics.RenderTarget2D[] spotShadowMaps;
 		private Dictionary<IComponent, int> shadowMapIndices = new Dictionary<IComponent, int>();
 		private DirectionalLight globalShadowLight;
-		private Matrix globalShadowViewProjection;
-		private Matrix detailGlobalShadowViewProjection;
+		public Property<Matrix> GlobalShadowViewProjection = new Property<Matrix>();
+		public Property<Matrix> DetailGlobalShadowViewProjection = new Property<Matrix>();
 		private bool globalShadowMapRenderedLastFrame;
 
 		private Camera shadowCamera;
@@ -42,13 +42,7 @@ namespace Lemma.Components
 		public bool EnableGlobalShadowMap { get; private set; }
 		public bool EnableDetailGlobalShadowMap = true;
 
-		public bool HasGlobalShadowLight
-		{
-			get
-			{
-				return this.globalShadowLight != null;
-			}
-		}
+		public Property<bool> HasGlobalShadowLight = new Property<bool>();
 
 		public Property<DynamicShadowSetting> DynamicShadows = new Property<DynamicShadowSetting> { Value = DynamicShadowSetting.Off };
 
@@ -95,19 +89,19 @@ namespace Lemma.Components
 						this.maxShadowedSpotLights = 1;
 						break;
 				}
-				if (this.globalShadowMap != null)
+				if (this.GlobalShadowMap.Value != null)
 				{
-					this.globalShadowMap.Dispose();
+					this.GlobalShadowMap.Value.Dispose();
 
 					foreach (Microsoft.Xna.Framework.Graphics.RenderTarget2D target in this.spotShadowMaps)
 						target.Dispose();
 					
-					this.detailGlobalShadowMap.Dispose();
+					this.DetailGlobalShadowMap.Value.Dispose();
 				}
 
 				if (this.EnableGlobalShadowMap)
 				{
-					this.globalShadowMap = new Microsoft.Xna.Framework.Graphics.RenderTarget2D
+					this.GlobalShadowMap.Value = new Microsoft.Xna.Framework.Graphics.RenderTarget2D
 					(
 						this.main.GraphicsDevice,
 						this.globalShadowMapSize,
@@ -119,7 +113,7 @@ namespace Lemma.Components
 						Microsoft.Xna.Framework.Graphics.RenderTargetUsage.DiscardContents
 					);
 					
-					this.detailGlobalShadowMap = new Microsoft.Xna.Framework.Graphics.RenderTarget2D
+					this.DetailGlobalShadowMap.Value = new Microsoft.Xna.Framework.Graphics.RenderTarget2D
 					(
 						this.main.GraphicsDevice,
 						this.detailGlobalShadowMapSize,
@@ -187,6 +181,7 @@ namespace Lemma.Components
 				this.directionalLightColors[directionalLightIndex] = Vector3.Zero;
 				directionalLightIndex++;
 			}
+			this.HasGlobalShadowLight.Value = this.globalShadowLight != null;
 
 			this.ambientLightColor = Vector3.Zero;
 			foreach (AmbientLight light in AmbientLight.All.Where(x => x.Enabled))
@@ -232,11 +227,12 @@ namespace Lemma.Components
 
 				this.shadowCamera.SetOrthographicProjection(size, size, 1.0f, size * 2.0f);
 
-				this.main.GraphicsDevice.SetRenderTarget(this.globalShadowMap);
+				this.main.GraphicsDevice.SetRenderTarget(this.GlobalShadowMap);
 				this.main.GraphicsDevice.Clear(new Color(0, 0, 0));
 				this.main.DrawScene(new RenderParameters { Camera = this.shadowCamera, Technique = Technique.Shadow });
 
-				this.globalShadowViewProjection = this.shadowCamera.ViewProjection;
+				this.GlobalShadowViewProjection.Value = this.shadowCamera.ViewProjection;
+				this.globalShadowMapRenderedLastFrame = true;
 			}
 
 			// Detail map
@@ -248,11 +244,11 @@ namespace Lemma.Components
 			float detailSize = size * LightingManager.detailGlobalShadowSizeRatio;
 			this.shadowCamera.SetOrthographicProjection(detailSize, detailSize, 1.0f, size * 2.0f);
 
-			this.main.GraphicsDevice.SetRenderTarget(this.detailGlobalShadowMap);
+			this.main.GraphicsDevice.SetRenderTarget(this.DetailGlobalShadowMap);
 			this.main.GraphicsDevice.Clear(new Color(0, 0, 0));
 			this.main.DrawScene(new RenderParameters { Camera = this.shadowCamera, Technique = Technique.Shadow });
 
-			this.detailGlobalShadowViewProjection = this.shadowCamera.ViewProjection;
+			this.DetailGlobalShadowViewProjection.Value = this.shadowCamera.ViewProjection;
 		}
 
 		public void RenderSpotShadowMap(SpotLight light, int index)
@@ -304,13 +300,13 @@ namespace Lemma.Components
 			effect.Parameters["DirectionalLightColors"].SetValue(this.directionalLightColors);
 			if (this.EnableGlobalShadowMap)
 			{
-				effect.Parameters["ShadowViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * this.globalShadowViewProjection);
+				effect.Parameters["ShadowViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * this.GlobalShadowViewProjection);
 				effect.Parameters["ShadowMapSize"].SetValue(this.globalShadowMapSize);
-				effect.Parameters["ShadowMap" + Model.SamplerPostfix].SetValue(this.globalShadowMap);
+				effect.Parameters["ShadowMap" + Model.SamplerPostfix].SetValue(this.GlobalShadowMap);
 
-				effect.Parameters["DetailShadowViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * this.detailGlobalShadowViewProjection);
+				effect.Parameters["DetailShadowViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * this.DetailGlobalShadowViewProjection);
 				effect.Parameters["DetailShadowMapSize"].SetValue(this.detailGlobalShadowMapSize);
-				effect.Parameters["DetailShadowMap" + Model.SamplerPostfix].SetValue(this.detailGlobalShadowMap);
+				effect.Parameters["DetailShadowMap" + Model.SamplerPostfix].SetValue(this.DetailGlobalShadowMap);
 			}
 		}
 
@@ -365,8 +361,8 @@ namespace Lemma.Components
 			foreach (Microsoft.Xna.Framework.Graphics.RenderTarget2D shadowMap in this.spotShadowMaps)
 				shadowMap.Dispose();
 
-			if (this.globalShadowMap != null)
-				this.globalShadowMap.Dispose();
+			if (this.GlobalShadowMap.Value != null)
+				this.GlobalShadowMap.Value.Dispose();
 		}
 	}
 }
