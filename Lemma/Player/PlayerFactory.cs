@@ -2133,7 +2133,7 @@ namespace Lemma.Factories
 				new Binding<bool>
 				(
 					cameraControl.EnableLean,
-					() => player.Character.EnableWalking.Value && player.Character.IsSupported.Value && input.Movement.Value.Y > 0.75f,
+					() => player.Character.EnableWalking.Value && player.Character.IsSupported.Value && input.Movement.Value.Y > 0.5f,
 					player.Character.EnableWalking, player.Character.IsSupported, input.Movement
 				)
 			);

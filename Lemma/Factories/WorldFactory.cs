@@ -256,9 +256,9 @@ namespace Lemma.Factories
 				*/
 
 				if (newZone == null)
-					main.LightingManager.EnableDetailGlobalShadowMap = true;
+					main.LightingManager.EnableDetailGlobalShadowMap.Value = true;
 				else
-					main.LightingManager.EnableDetailGlobalShadowMap = newZone.DetailedShadows;
+					main.LightingManager.EnableDetailGlobalShadowMap.Value = newZone.DetailedShadows;
 
 				boxes = getActiveBoundingBoxes(main.Camera, newZone);
 				cameraPosition = main.Camera.Position;

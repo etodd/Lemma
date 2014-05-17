@@ -855,6 +855,11 @@ namespace Lemma.Components
 					this.ApplyTo(model);
 				}
 			}
+
+			public override string ToString()
+			{
+				return this.ID.ToString();
+			}
 		}
 
 		public class Surface

@@ -697,8 +697,6 @@ namespace Lemma
 
 		public virtual void ResizeViewport(int width, int height, bool fullscreen, bool applyChanges = true)
 		{
-			this.ScreenSize.Value = new Point(width, height);
-
 			bool needApply = false;
 			if (this.Graphics.IsFullScreen != fullscreen)
 			{
@@ -717,6 +715,8 @@ namespace Lemma
 			}
 			if (applyChanges && needApply)
 				this.Graphics.ApplyChanges();
+
+			this.ScreenSize.Value = new Point(width, height);
 
 			if (this.Renderer != null)
 				this.Renderer.ReallocateBuffers(this.ScreenSize);

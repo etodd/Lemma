@@ -40,7 +40,7 @@ namespace Lemma.Components
 		private Camera shadowCamera;
 
 		public bool EnableGlobalShadowMap { get; private set; }
-		public bool EnableDetailGlobalShadowMap = true;
+		public Property<bool> EnableDetailGlobalShadowMap = new Property<bool> { Value = true };
 
 		public Property<bool> HasGlobalShadowLight = new Property<bool>();
 

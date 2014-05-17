@@ -462,7 +462,7 @@ namespace Lemma.Components
 				if (selectedBox == null)
 					return;
 
-				this.Brush.Value = selectedBox.Type.ToString();
+				this.Brush.Value = selectedBox.Type.ID.ToString();
 			};
 
 			this.DeleteMaterial.Action = delegate()
