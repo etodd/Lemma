@@ -2208,11 +2208,10 @@ namespace Lemma.Factories
 						new Binding<bool>
 						(
 							phone.CanReceiveMessages,
-							() => player.Character.IsSupported && !player.Character.IsSwimming && !player.Character.Crouched && player.Character.EnableWalking,
+							() => player.Character.IsSupported && !player.Character.IsSwimming && !player.Character.Crouched,
 							player.Character.IsSupported,
 							player.Character.IsSwimming,
-							player.Character.Crouched,
-							player.Character.EnableWalking
+							player.Character.Crouched
 						)
 					);
 
