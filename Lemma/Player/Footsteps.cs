@@ -37,7 +37,6 @@ namespace Lemma.Components
 		public Property<float> CharacterHeight = new Property<float>();
 		public Property<float> SupportHeight = new Property<float>();
 		public Property<bool> IsSupported = new Property<bool>();
-		public Property<bool> LastSupported = new Property<bool>();
 
 		// Output properties
 		public ListProperty<RespawnLocation> RespawnLocations = new ListProperty<RespawnLocation>();
@@ -46,6 +45,7 @@ namespace Lemma.Components
 		public Property<float> Health = new Property<float>();
 
 		private Map.GlobalRaycastResult groundRaycast;
+		private bool lastSupported;
 
 		private int walkedOnCount = 0;
 		private bool infectedDamage;
@@ -215,11 +215,13 @@ namespace Lemma.Components
 				}
 			}
 
-			if (this.IsSupported && !this.LastSupported)
+			if (this.IsSupported && !this.lastSupported)
 				this.Footstep.Execute();
 
-			if (this.infectedDamage)
+			if (this.infectedDamage && this.IsSupported)
 				this.Health.Value -= 0.6f * dt;
+
+			this.lastSupported = this.IsSupported;
 		}
 	}
 }

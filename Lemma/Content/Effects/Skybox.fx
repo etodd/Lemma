@@ -32,7 +32,7 @@ void RenderVS(	in RenderVSInput input,
 	alpha.clipSpacePosition = vs.position;
 }
 
-#define FOG_SHADOW_SAMPLES 14
+#define FOG_SHADOW_SAMPLES 12
 void SkyboxPS(in RenderPSInput input,
 						in AlphaPSInput alpha,
 						in TexturePSInput tex,
@@ -64,14 +64,18 @@ void SkyboxPS(in RenderPSInput input,
 		float3 s = CameraPosition + viewRay * StartDistance;
 			viewRay *= interval;
 
+		float lastValue = 0.0f;
 		[unroll]
 		for (int i = 0; i < FOG_SHADOW_SAMPLES; i++)
 		{
 			s += viewRay;
 			float4 shadowPos = mul(float4(s, 1.0f), ShadowViewProjectionMatrix);
-				float v = GetShadowValueNoFilter(shadowPos);
+			float v = GetShadowValueNoFilter(shadowPos);
+			float newValue = 0.0f;
 			if (v > 0.0f)
-				shadowValue -= 1.0f - v;
+				newValue = 1.0f - v;
+			shadowValue -= (newValue + lastValue) * 0.5f;
+			lastValue = newValue;
 		}
 		output.rgb = DiffuseColor.rgb * color.rgb * ((1.0f - GodRayStrength) + (shadowValue / FOG_SHADOW_SAMPLES) * GodRayStrength);
 	}

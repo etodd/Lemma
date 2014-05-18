@@ -369,14 +369,14 @@ namespace Lemma.Util
 			this.collisionPairCollector.Position = this.Body.Position + new Vector3(0, (this.Body.Height * -0.5f) - this.SupportHeight, 0);
 
 			Vector3 accel = Vector3.Zero;
-			if (this.EnableWalking && !this.Crouched)
+			if (this.EnableWalking && !this.Crouched && this.IsSupported)
 			{
 				accel = this.VelocityAdjustments;
 				accel.X = MathHelper.Clamp(accel.X / 0.08f, -1.0f, 1.0f);
 				accel.Z = MathHelper.Clamp(accel.Z / 0.08f, -1.0f, 1.0f);
 				Vector3 v = this.Body.LinearVelocity;
 				v.Y = 0.0f;
-				accel *= Math.Min(1.0f, v.Length() / (this.MaxSpeed * 0.75f));
+				accel *= Math.Min(1.0f, v.Length() / (Character.DefaultMaxSpeed * 0.75f));
 			}
 			this.Lean.Value += (accel - this.Lean.Value) * 5.0f * dt;
 		}

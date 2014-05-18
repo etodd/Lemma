@@ -27,6 +27,7 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
+			PlayerTrigger trigger = result.GetOrCreate<PlayerTrigger>("PlayerTrigger");
 			this.SetMain(result, main);
 			Transform transform = result.GetOrCreate<Transform>("Transform");
 
@@ -34,8 +35,7 @@ namespace Lemma.Factories
 				MapAttachable.MakeAttachable(result, main);
 			Property<float> attachOffset = result.GetOrMakeProperty<float>("AttachmentOffset", true);
 			
-			PlayerTrigger trigger = result.GetOrCreate<PlayerTrigger>();
-			trigger.Radius.Value = 15.0f;
+			trigger.Editable = true;
 			trigger.Add(new Binding<Vector3>(trigger.Position, () => Vector3.Transform(new Vector3(0.0f, 0.0f, attachOffset), transform.Matrix), attachOffset, transform.Matrix));
 
 			PointLight light = result.GetOrCreate<PointLight>();
@@ -101,6 +101,7 @@ namespace Lemma.Factories
 			base.AttachEditorComponents(result, main);
 
 			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
+			PlayerTrigger.AttachEditorComponents(result, main, result.Get<Model>().Color);
 		}
 	}
 }

@@ -64,8 +64,8 @@ namespace Lemma.Components
 
 		public static void AttachEditorComponents(Entity entity, Main main, Vector3 color)
 		{
-			Property<bool> selected = new Property<bool> { Value = false, Editable = false, Serialize = false };
-			entity.Add("EditorSelected", selected);
+			Property<bool> selected = entity.GetOrMakeProperty<bool>("EditorSelected");
+			selected.Serialize = false;
 
 			Transform transform = entity.Get<Transform>();
 

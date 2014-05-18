@@ -828,7 +828,7 @@ namespace Lemma.Factories
 					Vector3 pos = transform.Position + new Vector3(0, player.Character.Height * -0.5f, 0);
 					Map.Coordinate coord = wallRunMap.GetCoordinate(pos);
 					Map.Coordinate wallCoord = coord.Move(wallDirection, 2);
-				Map.CellState wallType = wallRunMap[wallCoord];
+					Map.CellState wallType = wallRunMap[wallCoord];
 					footsteps.WalkedOn.Execute(wallRunMap, wallCoord, wallDirection);
 
 					if (player.EnableEnhancedWallRun && (wallRunState == Player.WallRun.Left || wallRunState == Player.WallRun.Right))

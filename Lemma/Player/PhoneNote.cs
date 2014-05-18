@@ -14,7 +14,6 @@ namespace Lemma.Components
 		{
 			Property<bool> phoneActive = result.GetOrMakeProperty<bool>("PhoneActive");
 			Property<bool> noteActive = result.GetOrMakeProperty<bool>("NoteActive");
-			phone.Add(new Binding<bool>(phone.Enabled, x => !x, noteActive));
 
 			UIRenderer phoneUi = result.GetOrCreate<UIRenderer>("PhoneUI");
 
