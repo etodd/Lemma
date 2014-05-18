@@ -203,7 +203,6 @@ namespace Lemma
 
 #if STEAMWORKS
 			SteamWorker.Init();
-			//SteamWorker.ResetAllStats();
 #endif
 
 			this.Space = new Space();
