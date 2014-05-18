@@ -59,7 +59,7 @@
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\x86\Release</OutputPath>
-    <DefineConstants>WINDOWS;ANALYTICS;CHEAT</DefineConstants>
+    <DefineConstants>WINDOWS;ANALYTICS;CHEAT;STEAMWORKS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -208,6 +208,7 @@
     <Compile Include="Util\LargeObjectHeap.cs" />
     <Compile Include="Util\PriorityQueue.cs" />
     <Compile Include="Util\ScriptBase.cs" />
+    <Compile Include="Util\SteamWorker.cs" />
     <Compile Include="Util\VectorExtensions.cs" />
     <Compile Include="Graphics\AnimatedModel.cs" />
     <Compile Include="Graphics\FullscreenQuad.cs" />
@@ -259,6 +260,11 @@
     <ProjectReference Include="..\SkinnedModel\SkinnedModelContent.csproj">
       <Project>{882A32E7-CB48-4E63-8180-0D1859575723}</Project>
       <Name>SkinnedModelContent</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Steamworks.NET\Standalone\Steamworks.NET.csproj">
+      <Project>{b3543600-587c-4fdc-994a-cb0bdc629a7e}</Project>
+      <Name>Steamworks.NET</Name>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
     <ProjectReference Include="..\Wwise\Wwise.csproj">
       <Project>{B1452F01-704F-44CD-BAB5-2A15F8E5C2F1}</Project>

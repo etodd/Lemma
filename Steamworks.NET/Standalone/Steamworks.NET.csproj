@@ -45,7 +45,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'OSX-Linux|x86'">
     <OutputPath>bin\x86\OSX-Linux\</OutputPath>
-    <DefineConstants>TRACE;STEAMWORKS_LIN_OSX</DefineConstants>
+    <DefineConstants>TRACE;STEAMWORKS_/w</DefineConstants>
     <Optimize>true</Optimize>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>pdbonly</DebugType>

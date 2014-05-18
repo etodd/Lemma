@@ -200,6 +200,11 @@ namespace Lemma
 		public Main()
 		{
 			Factory<Main>.Initialize();
+
+#if STEAMWORKS
+			SteamWorker.Init();
+#endif
+
 			this.Space = new Space();
 			this.ScreenSize.Value = new Point(this.Window.ClientBounds.Width, this.Window.ClientBounds.Height);
 
