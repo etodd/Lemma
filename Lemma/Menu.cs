@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using System.IO;
 using System.Reflection;
 using System.Xml.Serialization;
+using Lemma.Util;
 
 namespace Lemma.Components
 {
@@ -1094,6 +1095,24 @@ namespace Lemma.Components
 				});
 				cheatList.Children.Add(button);
 			}
+			UIComponent cheatIncrementTimePlayed = this.CreateButton("+60s", delegate()
+			{
+				SteamWorker.IncrementStat("stat_time_played", 60);
+				SteamWorker.UploadStats();
+			});
+			cheatMenu.Children.Add(cheatIncrementTimePlayed);
+
+			UIComponent cheatResetStats = this.CreateButton("Reset Stats", delegate()
+			{
+				SteamWorker.ResetAllStats(false);
+			});
+			cheatMenu.Children.Add(cheatResetStats);
+
+			UIComponent cheatResetCheevos = this.CreateButton("Reset Stats and Achievements", delegate()
+			{
+				SteamWorker.ResetAllStats(true);
+			});
+			cheatMenu.Children.Add(cheatResetCheevos);
 
 			Scroller cheatScroller = new Scroller();
 			cheatScroller.Children.Add(cheatList);

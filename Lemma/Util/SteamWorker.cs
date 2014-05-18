@@ -9,11 +9,9 @@ namespace Lemma.Util
 	public static class SteamWorker
 	{
 		private static Dictionary<string, bool> _achievementDictionary;
-		private static Dictionary<string, float> _statDictionary;
+		private static Dictionary<string, int> _statDictionary;
 
 		private static bool _anythingChanged = false;
-
-
 
 		public static bool SteamInitialized { get; private set; }
 
@@ -34,7 +32,7 @@ namespace Lemma.Util
 			new Callback<UserStatsReceived_t>(OnUserStatsReceived);
 			if (!SteamUserStats.RequestCurrentStats()) return false;
 			_achievementDictionary = new Dictionary<string, bool>();
-			_statDictionary = new Dictionary<string, float>();
+			_statDictionary = new Dictionary<string, int>();
 
 			return true;
 		}
@@ -71,23 +69,26 @@ namespace Lemma.Util
 #endif
 		}
 
-		public static void SetStat(string name, float newVal)
+		public static void SetStat(string name, int newVal)
 		{
 			if (!Initialized) return;
 			if (!_statDictionary.ContainsKey(name)) return;
+
+			var curVal = _statDictionary[name];
+			if (curVal == newVal) return;
 			_statDictionary[name] = newVal;
 			SteamUserStats.SetStat(name, newVal);
 			_anythingChanged = true;
 		}
 
-		public static void IncrementStat(string name, float increment)
+		public static void IncrementStat(string name, int increment)
 		{
 			if (!Initialized) return;
 			if (!_statDictionary.ContainsKey(name)) return;
 			SetStat(name, GetStat(name) + increment);
 		}
 
-		public static float GetStat(string name)
+		public static int GetStat(string name)
 		{
 			if (!Initialized) return 0;
 			if (!_statDictionary.ContainsKey(name)) return 0;
@@ -98,6 +99,7 @@ namespace Lemma.Util
 		{
 			if (!Initialized) return;
 			if (!_achievementDictionary.ContainsKey(name)) return;
+			if (_achievementDictionary[name]) return; //No use setting an already-unlocked cheevo.
 			_achievementDictionary[name] = true;
 			SteamUserStats.SetAchievement(name);
 			_anythingChanged = true;
@@ -113,12 +115,23 @@ namespace Lemma.Util
 			_anythingChanged = false;
 		}
 
+		public static void ResetAllStats(bool andCheevos = true)
+		{
+			if (!SteamInitialized) return;
+			SteamUserStats.ResetAllStats(andCheevos);
+			SteamUserStats.RequestCurrentStats();
+
+			_achievementDictionary = new Dictionary<string, bool>();
+			_statDictionary = new Dictionary<string, int>();
+			StatsInitialized = false;
+		}
+
 		#region Callbacks
 		private static void OnUserStatsReceived(UserStatsReceived_t pCallback)
 		{
 			if (!SteamInitialized) return;
 
-			if (pCallback.m_nGameID != 30034 || pCallback.m_eResult != EResult.k_EResultOK) return;
+			if (pCallback.m_nGameID != 300340 || pCallback.m_eResult != EResult.k_EResultOK) return;
 
 			//I'm sorry, Evan. We'll need to find somewhere nice to put this part.
 			string[] cheevoNames = new string[] { "perverse", "win_the_game", "100_blocks", "250_blocks",
@@ -136,7 +149,7 @@ namespace Lemma.Util
 
 			foreach (var stat in statNames)
 			{
-				float value;
+				int value;
 				bool success = SteamUserStats.GetStat("stat_" + stat, out value);
 				if (success)
 					_statDictionary.Add("stat_" + stat, value);

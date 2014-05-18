@@ -203,6 +203,7 @@ namespace Lemma
 
 #if STEAMWORKS
 			SteamWorker.Init();
+			//SteamWorker.ResetAllStats();
 #endif
 
 			this.Space = new Space();
@@ -564,6 +565,10 @@ namespace Lemma
 				this.frameSum = 0;
 				this.performanceInterval = 0;
 			}
+#endif
+
+#if STEAMWORKS
+			SteamWorker.Update();
 #endif
 
 			this.update();
