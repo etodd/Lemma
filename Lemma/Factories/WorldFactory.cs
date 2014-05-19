@@ -323,7 +323,7 @@ namespace Lemma.Factories
 				sparkLights.Add(light);
 			}
 
-			Action<Vector3, float> sparks = delegate(Vector3 pos, float size)
+			Action<Vector3, float, bool> sparks = delegate(Vector3 pos, float size, bool dangerous)
 			{
 				ParticleSystem shatter = ParticleSystem.Get(main, "WhiteShatter");
 				for (int j = 0; j < 40; j++)
@@ -351,7 +351,7 @@ namespace Lemma.Factories
 					light.Color.Value = Vector3.One;
 					light.Position.Value = pos;
 
-					AkSoundEngine.PostEvent("Play_sparks", pos);
+					AkSoundEngine.PostEvent(dangerous ? AK.EVENTS.PLAY_RED_BURN : AK.EVENTS.PLAY_ORANGE_BURN, pos);
 				}
 			};
 
@@ -487,7 +487,7 @@ namespace Lemma.Factories
 									{
 										generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = c }] = entry.Generation;
 										map.Empty(c);
-										sparks(map.GetAbsolutePosition(c), sparkLightAttenuation);
+										sparks(map.GetAbsolutePosition(c), sparkLightAttenuation, false);
 										regenerate = true;
 									}
 								}
@@ -507,7 +507,7 @@ namespace Lemma.Factories
 											{
 												map.Empty(c);
 												map.Fill(c, powered);
-												sparks(map.GetAbsolutePosition(c), sparkLightAttenuation);
+												sparks(map.GetAbsolutePosition(c), sparkLightAttenuation, false);
 												regenerate = true;
 											}
 											else if (adjacentID == Map.t.Neutral && entry.Generation < maxGenerations)
@@ -515,7 +515,7 @@ namespace Lemma.Factories
 												map.Empty(adjacent);
 												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
 												map.Fill(adjacent, temporary);
-												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
+												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation, false);
 												regenerate = true;
 											}
 										}
@@ -530,7 +530,7 @@ namespace Lemma.Factories
 											{
 												map.Empty(adjacent);
 												map.Fill(adjacent, neutral);
-												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
+												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation, false);
 												regenerate = true;
 											}
 										}
@@ -546,14 +546,14 @@ namespace Lemma.Factories
 											{
 												map.Empty(adjacent);
 												map.Fill(adjacent, powered);
-												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
+												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation, false);
 												regenerate = true;
 											}
 											else if (adjacentID == Map.t.Switch)
 											{
 												map.Empty(adjacent, true);
 												map.Fill(adjacent, poweredSwitch);
-												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
+												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation, false);
 												regenerate = true;
 											}
 											else if (adjacentID == Map.t.Critical)
@@ -574,7 +574,7 @@ namespace Lemma.Factories
 												map.Empty(adjacent);
 												generations[new EffectBlockFactory.BlockEntry { Map = map, Coordinate = adjacent }] = entry.Generation + 1;
 												map.Fill(adjacent, infected);
-												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation);
+												sparks(map.GetAbsolutePosition(adjacent), sparkLightAttenuation, true);
 												regenerate = true;
 											}
 											else if (adjacentID == Map.t.Critical)

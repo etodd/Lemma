@@ -10,8 +10,9 @@ namespace Lemma.Components
 {
 	public class FallDamage : Component<Main>, IUpdateableComponent
 	{
-		public const float DamageVelocity = -20.0f; // Vertical velocity above which damage occurs
+		public const float DamageVelocity = -20.0f; // Vertical velocity below which damage occurs
 		public const float RollingDamageVelocity = -28.0f; // Damage velocity when rolling
+		public const float GruntVelocity = -10.0f; // Vertical velocity below which grunting occurs
 
 		// Input commands
 		public Command<float> Apply = new Command<float>();
@@ -54,10 +55,11 @@ namespace Lemma.Components
 						if (!rolling)
 						{
 							this.Model.StartClip("Land", 1, false, 0.1f);
-							AkSoundEngine.PostEvent("Play_land", this.Entity);
 						}
 					}
 				}
+				else if (verticalAcceleration < GruntVelocity)
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, this.Entity);
 			};
 
 			// Damage the player if they hit something too hard

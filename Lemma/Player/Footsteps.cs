@@ -73,6 +73,8 @@ namespace Lemma.Components
 					map.Empty(coord);
 					map.Fill(coord, temporary);
 					map.Regenerate();
+					// TODO: refactor world so we can get this working
+					//sparks(pos, 10.0f);
 				}
 				else if (id == Map.t.Reset)
 				{

@@ -24,8 +24,10 @@ namespace Lemma.Components
 		public Property<Vector2> Movement = new Property<Vector2>();
 		public Property<bool> Crouched = new Property<bool>();
 		public Property<Vector2> Mouse = new Property<Vector2>();
+		public Property<bool> EnableLean = new Property<bool>();
 
 		// Output
+		public Property<float> Lean = new Property<float>();
 		private AnimatedModel model;
 		private SkinnedModel.Clip sprintAnimation;
 		private SkinnedModel.Clip runAnimation;
@@ -35,10 +37,16 @@ namespace Lemma.Components
 		private Property<Matrix> clavicleLeft;
 		private Property<Matrix> clavicleRight;
 
+		private float lastRotation;
+
+		private float breathing;
+
 		public override void Awake()
 		{
 			base.Awake();
 			this.EnabledWhenPaused = false;
+			this.lastRotation = this.Mouse.Value.X;
+			SoundKiller.Add(this.Entity, AK.EVENTS.STOP_PLAYER_BREATHING_SOFT);
 		}
 
 		public void Bind(AnimatedModel m)
@@ -74,6 +82,7 @@ namespace Lemma.Components
 
 		public void Update(float dt)
 		{
+			Vector2 mouse = this.Mouse;
 			if (this.WallRunState != Player.WallRun.None)
 			{
 				this.model.Stop
@@ -160,6 +169,8 @@ namespace Lemma.Components
 					this.sprintAnimation.TargetStrength = MathHelper.Clamp((speed - sprintThreshold) / sprintRange, 0.0f, 1.0f);
 					this.runAnimation.TargetStrength = Math.Min(MathHelper.Clamp(speed / 4.0f, 0.0f, 1.0f), 1.0f - this.sprintAnimation.TargetStrength);
 				}
+				else if (movementAnimation != "Idle" && movementAnimation != "CrouchIdle")
+					this.model[movementAnimation].TargetStrength = MathHelper.Clamp(this.Crouched ? speed / 2.0f : speed / 4.0f, 0.0f, 1.0f);
 
 				if (!this.model.IsPlaying(movementAnimation))
 				{
@@ -184,10 +195,10 @@ namespace Lemma.Components
 			}
 
 			// Rotate head and arms to match mouse
-			this.relativeHeadBone.Value *= Matrix.CreateRotationX(this.Mouse.Value.Y * 0.4f);
+			this.relativeHeadBone.Value *= Matrix.CreateRotationX(mouse.Y * 0.4f);
 			this.model.UpdateWorldTransforms();
 
-			Matrix r = Matrix.CreateRotationX(this.Mouse.Value.Y * 0.6f * (this.runAnimation.TotalStrength + this.sprintAnimation.TotalStrength));
+			Matrix r = Matrix.CreateRotationX(mouse.Y * 0.6f * (this.runAnimation.TotalStrength + this.sprintAnimation.TotalStrength));
 
 			Matrix parent = this.clavicleLeft;
 			parent.Translation = Vector3.Zero;
@@ -198,6 +209,32 @@ namespace Lemma.Components
 			this.relativeUpperRightArm.Value *= parent * r * Matrix.Invert(parent);
 
 			this.model.UpdateWorldTransforms();
+
+			float l = 0.0f;
+			if (this.EnableLean)
+				l = this.LinearVelocity.Value.Length() * (this.lastRotation.ClosestAngle(mouse.X) - mouse.X);
+			this.lastRotation = mouse.X;
+			this.Lean.Value += (l - this.Lean) * 20.0f * dt;
+
+			const float timeScale = 5.0f;
+			const float softBreathingThresholdPercentage = 0.5f;
+			float newBreathing;
+			if (!this.Crouched && this.Movement.Value.LengthSquared() > 0.0f && this.LinearVelocity.Value.Length() > 2.0f)
+			{
+				newBreathing = Math.Min(this.breathing + (dt / timeScale), 1.0f);
+				if (this.breathing < softBreathingThresholdPercentage && newBreathing > softBreathingThresholdPercentage)
+				{
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_BREATHING_SOFT, this.Entity);
+					newBreathing = 1.0f;
+				}
+			}
+			else
+			{
+				newBreathing = Math.Max(0, this.breathing - dt / timeScale);
+				if (this.breathing > softBreathingThresholdPercentage && newBreathing < softBreathingThresholdPercentage)
+					AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_BREATHING_SOFT, this.Entity);
+			}
+			this.breathing = newBreathing;
 		}
 	}
 }

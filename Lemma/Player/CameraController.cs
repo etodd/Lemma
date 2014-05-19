@@ -11,15 +11,11 @@ namespace Lemma.Components
 {
 	public class CameraController : Component<Main>, IUpdateableComponent
 	{
-		private float lastRotation;
-		private float lean = 0.0f;
 		private ProceduralGenerator noise;
 
 		private float shakeTime = 0.0f;
 		private const float totalShakeTime = 0.5f;
 		private float shakeAmount;
-
-		private const float leanAmount = (float)Math.PI * 0.05f;
 
 		// Input commands
 		[XmlIgnore]
@@ -41,9 +37,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<float> MaxSpeed = new Property<float>();
 		[XmlIgnore]
-		public Property<bool> EnableLean = new Property<bool>();
-		[XmlIgnore]
 		public Property<bool> ThirdPerson = new Property<bool>();
+		[XmlIgnore]
+		public Property<float> Lean = new Property<float>();
 		[XmlIgnore]
 		public Vector3 Offset;
 
@@ -53,7 +49,6 @@ namespace Lemma.Components
 			this.EnabledWhenPaused = false;
 			this.Serialize = false;
 			this.noise = this.Entity.GetOrCreate<ProceduralGenerator>();
-			this.lastRotation = this.Mouse.Value.X;
 			this.Add(new CommandBinding(this.OnDisabled, delegate()
 			{
 				this.main.Renderer.SpeedBlurAmount.Value = 0;
@@ -124,12 +119,7 @@ namespace Lemma.Components
 
 				Vector3 right = Vector3.Cross(rot.Forward, Vector3.Up);
 
-				float l = 0.0f;
-				if (this.EnableLean)
-					l = this.LinearVelocity.Value.Length() * (lastRotation.ClosestAngle(mouse.X) - mouse.X);
-				this.lastRotation = mouse.X;
-				this.lean += (l - this.lean) * 20.0f * dt;
-				main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shake.Z + this.lean * CameraController.leanAmount) * Matrix.CreateFromAxisAngle(right, -mouse.Y + shake.Y);
+				main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shake.Z + this.Lean) * Matrix.CreateFromAxisAngle(right, -mouse.Y + shake.Y);
 			}
 
 			float minBlur = 4.0f;

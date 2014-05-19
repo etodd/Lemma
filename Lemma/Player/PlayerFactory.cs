@@ -109,6 +109,15 @@ namespace Lemma.Factories
 			anim.Add(new Binding<Vector3>(anim.LinearVelocity, player.Character.LinearVelocity));
 			anim.Add(new Binding<Vector2>(anim.Movement, input.Movement));
 			anim.Add(new Binding<Vector2>(anim.Mouse, input.Mouse));
+			anim.Add
+			(
+				new Binding<bool>
+				(
+					anim.EnableLean,
+					() => player.Character.EnableWalking.Value && player.Character.IsSupported.Value && input.Movement.Value.Y > 0.5f,
+					player.Character.EnableWalking, player.Character.IsSupported, input.Movement
+				)
+			);
 			anim.Bind(model);
 
 			model.Materials = firstPersonModel.Materials = new Model.Material[3];
@@ -283,10 +292,9 @@ namespace Lemma.Factories
 
 			model.Add(new Binding<Matrix>(model.Transform, delegate()
 			{
-				Vector3 lean = Vector3.TransformNormal(player.Character.Lean, Matrix.CreateRotationY(-rotation));
 				const float leanAmount = (float)Math.PI * 0.1f;
-				return Matrix.CreateTranslation(0, (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0) * Matrix.CreateRotationX(lean.Z * leanAmount) * Matrix.CreateRotationZ(lean.X * -leanAmount) * Matrix.CreateRotationY(rotation) * transform.Matrix;
-			}, transform.Matrix, rotation, player.Character.Height, player.Character.SupportHeight, player.Character.Lean));
+				return Matrix.CreateTranslation(0, (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0) * Matrix.CreateRotationZ(anim.Lean * leanAmount) * Matrix.CreateRotationY(rotation) * transform.Matrix;
+			}, transform.Matrix, rotation, player.Character.Height, player.Character.SupportHeight, anim.Lean));
 
 			firstPersonModel.Add(new Binding<Matrix>(firstPersonModel.Transform, model.Transform));
 			firstPersonModel.Add(new Binding<Vector3>(firstPersonModel.Scale, model.Scale));
@@ -2128,15 +2136,7 @@ namespace Lemma.Factories
 
 			CameraController cameraControl = result.GetOrCreate<CameraController>();
 			cameraControl.Add(new Binding<Vector2>(cameraControl.Mouse, input.Mouse));
-			cameraControl.Add
-			(
-				new Binding<bool>
-				(
-					cameraControl.EnableLean,
-					() => player.Character.EnableWalking.Value && player.Character.IsSupported.Value && input.Movement.Value.Y > 0.5f,
-					player.Character.EnableWalking, player.Character.IsSupported, input.Movement
-				)
-			);
+			cameraControl.Add(new Binding<float>(cameraControl.Lean, x => x * (float)Math.PI * 0.05f, anim.Lean));
 			cameraControl.Add(new Binding<Vector3>(cameraControl.LinearVelocity, player.Character.LinearVelocity));
 			cameraControl.Add(new Binding<float>(cameraControl.MaxSpeed, player.Character.MaxSpeed));
 			cameraControl.Add(new Binding<Matrix>(cameraControl.CameraBone, model.GetBoneTransform("Camera")));
