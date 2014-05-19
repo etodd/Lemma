@@ -1,4 +1,9 @@
 ﻿
+using System;
+using System.Reflection;
+using System.Runtime.Remoting.Messaging;
+using System.Text.RegularExpressions;
+using ComponentBind;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -11,6 +16,8 @@ namespace GeeUI.Views
 	{
 		public NinePatch NinePatchDefault;
 		public NinePatch NinePatchSelected;
+		public NinePatch NinePatchRegexGood;
+		public NinePatch NinePatchRegexBad;
 
 		public SpriteFont TextInputFont;
 
@@ -18,6 +25,8 @@ namespace GeeUI.Views
 		public bool Editable = true;
 
 		private string _text = "";
+
+		//public Property<string> Text;
 		public string Text
 		{
 			get
@@ -26,9 +35,16 @@ namespace GeeUI.Views
 			}
 			set
 			{
+				bool call = _text != value;
 				_text = value;
+				if(call) CallOnChanged();
 			}
 		}
+
+		//Avoid infinite recursion
+		private bool _callingOnChanged = false;
+
+		public Action OnTextChanged = null;
 
 		private int _offsetX;
 		private int _offsetY;
@@ -45,8 +61,8 @@ namespace GeeUI.Views
 		private string _buttonHeldString = "";
 		private Keys _buttonHeld = Keys.None;
 
-		int _delimiterTime;
-		private const int DelimiterLimit = 25;
+		float _delimiterTime;
+		private const float DelimiterLimit = 0.7f;
 		bool _doingDelimiter;
 
 		public string OffsetText
@@ -80,7 +96,6 @@ namespace GeeUI.Views
 			}
 		}
 
-
 		public string[] TextLines
 		{
 			get
@@ -100,12 +115,26 @@ namespace GeeUI.Views
 			}
 		}
 
+		private string _validationRegexString = "";
+		private Regex _validationRegex;
+
+		public string ValidationRegex
+		{
+			get { return _validationRegexString; }
+			set
+			{
+				_validationRegexString = value;
+				_validationRegex = new Regex(value);
+			}
+		}
 
 		public TextFieldView(View rootView, Vector2 position, SpriteFont textFont)
 			: base(rootView)
 		{
 			NinePatchDefault = GeeUI.NinePatchTextFieldDefault;
 			NinePatchSelected = GeeUI.NinePatchTextFieldSelected;
+			NinePatchRegexGood = GeeUI.NinePatchTextFieldRight;
+			NinePatchRegexBad = GeeUI.NinePatchTextFieldWrong;
 
 			Position = position;
 			TextInputFont = textFont;
@@ -113,6 +142,9 @@ namespace GeeUI.Views
 
 			GeeUI.OnKeyPressedHandler += keyPressedHandler;
 			GeeUI.OnKeyReleasedHandler += keyReleasedHandler;
+
+			//Text = new Property<string>();
+			//Text.Get = () => MultiLine ? Text.Value : Text.Value.Replace("\n", "");
 		}
 
 		void keyReleasedHandler(string keyReleased, Keys key)
@@ -123,7 +155,6 @@ namespace GeeUI.Views
 			_buttonHeldTimePreRepeat = 0;
 			_buttonHeldString = "";
 		}
-
 
 		void keyPressedHandler(string keyPressed, Keys key)
 		{
@@ -432,6 +463,25 @@ namespace GeeUI.Views
 			Text += text;
 		}
 
+		private void CallOnChanged()
+		{
+			if (OnTextChanged == null || _callingOnChanged) return;
+			_callingOnChanged = true;
+			OnTextChanged();
+			_callingOnChanged = false;
+		}
+
+		public bool RegexValidate()
+		{
+			if (!MustRegexValidate()) return true;
+			return _validationRegex.IsMatch(Text);
+		}
+
+		public bool MustRegexValidate()
+		{
+			return !(ValidationRegex == "" || _validationRegex == null);
+		}
+
 		public Vector2 GetMouseTextPos(Vector2 pos)
 		{
 			var lines = TextLines;
@@ -563,6 +613,14 @@ namespace GeeUI.Views
 			{
 				keyReleasedHandler("", _buttonHeld);
 			}
+
+			_delimiterTime += dt;
+			if (_delimiterTime >= DelimiterLimit)
+			{
+				_doingDelimiter = !_doingDelimiter;
+				_delimiterTime = 0;
+			}
+
 			base.Update(dt);
 		}
 
@@ -574,6 +632,10 @@ namespace GeeUI.Views
 			var yDrawPos = drawPos.Y;
 
 			var patch = Selected ? NinePatchSelected : NinePatchDefault;
+			if (MustRegexValidate() && Text.Length > 0)
+			{
+				patch = Selected ? (RegexValidate() ? NinePatchRegexGood : NinePatchRegexBad) : patch;
+			}
 			patch.Draw(spriteBatch, AbsolutePosition, Width, Height);
 
 			if (_selectionStart != _selectionEnd && _selectionEnd != new Vector2(-1))
@@ -615,10 +677,6 @@ namespace GeeUI.Views
 
 			spriteBatch.DrawString(TextInputFont, OffsetText, AbsolutePosition + new Vector2(patch.LeftWidth, patch.TopHeight), Color.Black);
 
-			if (_delimiterTime++ % DelimiterLimit == 0)
-			{
-				_doingDelimiter = !_doingDelimiter;
-			}
 			if (_doingDelimiter && Selected && _selectionEnd == _selectionStart)
 				spriteBatch.DrawString(TextInputFont, "|", new Vector2(xDrawPos - 1, yDrawPos), Color.Black);
 			base.Draw(spriteBatch);

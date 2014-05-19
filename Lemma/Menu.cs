@@ -1102,6 +1102,12 @@ namespace Lemma.Components
 			});
 			cheatMenu.Children.Add(cheatIncrementTimePlayed);
 
+			UIComponent cheatUploadStats = this.CreateButton("Upload Stats", delegate()
+			{
+				SteamWorker.UploadStats();
+			});
+			cheatMenu.Children.Add(cheatUploadStats);
+
 			UIComponent cheatResetStats = this.CreateButton("Reset Stats", delegate()
 			{
 				SteamWorker.ResetAllStats(false);

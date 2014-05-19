@@ -152,7 +152,13 @@ namespace Lemma.Util
 				int value;
 				bool success = SteamUserStats.GetStat("stat_" + stat, out value);
 				if (success)
+				{
 					_statDictionary.Add("stat_" + stat, value);
+					if (stat == "time_played")
+					{
+						Main.TotalGameTime.Value = value;
+					}
+				}
 			}
 			StatsInitialized = true;
 		}

@@ -105,7 +105,14 @@ namespace GeeUI.Views
             FollowMouse();
             if (WindowContentView != null)
             {
-                WindowContentView.Position = new Vector2(0, 0);
+	            WindowContentView.IgnoreParentBounds = true;
+
+				NinePatch patch = Selected ? NinePatchSelected : NinePatchNormal;
+                Vector2 windowTextSize = WindowTextFont.MeasureString(WindowText);
+                var barHeight = (patch.TopHeight + patch.BottomHeight + windowTextSize.Y);
+
+	            this.Width = WindowContentView.Width;
+	            this.Height = WindowContentView.Height + (int)barHeight;
             }
 
             base.Update(dt);

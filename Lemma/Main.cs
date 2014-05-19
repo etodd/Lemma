@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using GeeUI.ViewLayouts;
 using GeeUI.Views;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -90,6 +91,8 @@ namespace Lemma
 		public Property<GamePadState> GamePadState = new Property<GamePadState>();
 		public new Property<bool> IsMouseVisible = new Property<bool> { };
 		public Property<bool> GamePadConnected = new Property<bool>();
+
+		public static Property<float> TotalGameTime = new Property<float>(); 
 
 		public Strings Strings = new Strings();
 
@@ -571,10 +574,11 @@ namespace Lemma
 			}
 #endif
 
+			TotalGameTime.Value += this.ElapsedTime.Value;
+			SteamWorker.SetStat("stat_time_played", (int)TotalGameTime.Value);
 #if STEAMWORKS
 			SteamWorker.Update();
 #endif
-
 			GeeUI.GeeUI.Update(this.ElapsedTime);
 
 			this.update();
@@ -737,6 +741,9 @@ namespace Lemma
 				this.Graphics.ApplyChanges();
 
 			this.ScreenSize.Value = new Point(width, height);
+
+			GeeUI.GeeUI.RootView.Width = width;
+			GeeUI.GeeUI.RootView.Height = height;
 
 			if (this.Renderer != null)
 				this.Renderer.ReallocateBuffers(this.ScreenSize);

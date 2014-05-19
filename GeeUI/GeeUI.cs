@@ -253,5 +253,19 @@ namespace GeeUI
             }
             return ret;
         }
-    }
+
+	    public static View FindViewByName(string name)
+	    {
+		    if (RootView == null) return null;
+		    var finds = RootView.FindChildrenByName(name);
+		    if (finds == null || finds.Length == 0) return null;
+		    return finds[0];
+	    }
+
+		public static View[] FindViewsByName(string name)
+		{
+			if (RootView == null) return new View[0];
+			return RootView.FindChildrenByName(name);
+		}
+	}
 }

@@ -138,6 +138,12 @@
     <None Include="Resources\sliderRange.png" />
     <None Include="Resources\slider.png" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ComponentBind\ComponentBind.csproj">
+      <Project>{2d0637ab-a380-4c97-a329-bf7c40c99495}</Project>
+      <Name>ComponentBind</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--

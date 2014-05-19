@@ -1,72 +1,105 @@
-﻿using GeeUI.Views;
+﻿using System.Security;
+using GeeUI.Views;
 using Microsoft.Xna.Framework;
 
 namespace GeeUI.ViewLayouts
 {
-    public class VerticalViewLayout : ViewLayout
-    {
-        private int _paddingBetweenHorizontal;
-        private int _paddingBetweenVertical;
-        private bool _wrapAround;
+	public class VerticalViewLayout : ViewLayout
+	{
+		private int _paddingBetweenHorizontal;
+		private int _paddingBetweenVertical;
+		private bool _wrapAround;
+		private bool _resizeParentToFit;
 
-        /// <summary>
-        /// Creates a new HorizontalViewLayout with the specified padding
-        /// </summary>
-        /// <param name="paddingBetweenHorizontal">If wrapping around, this is the padding in between each layer of views.</param>
-        /// <param name="wrapAround">Whether or not to wrap views if they extend past the parent's boundbox.</param>
-        /// <param name="paddingBetweenVertical">The padding in between each View that is ordered</param>
-        public VerticalViewLayout(int paddingBetweenVertical = 2, bool wrapAround = false, int paddingBetweenHorizontal = 2)
-        {
-            _paddingBetweenHorizontal = paddingBetweenHorizontal;
-            _paddingBetweenVertical = paddingBetweenVertical;
-            _wrapAround = wrapAround;
-        }
+		private int _thinnestSeenParent = -1;
 
-        private void NoWrap(View parentView)
-        {
-            Rectangle container = parentView.ContentBoundBox;
-            int yDone = container.Top - parentView.Y;
-            foreach (View v in parentView.Children)
-            {
-                v.Position = Vector2.Zero;
-                if (ExcludedChildren.Contains(v)) continue;
-                v.Position = new Vector2(container.Left, yDone);
-                yDone += v.BoundBox.Height + _paddingBetweenVertical;
-            }
-        }
+		/// <summary>
+		/// Creates a new HorizontalViewLayout with the specified padding
+		/// </summary>
+		/// <param name="paddingBetweenHorizontal">If wrapping around, this is the padding in between each layer of views.</param>
+		/// <param name="wrapAround">Whether or not to wrap views if they extend past the parent's boundbox.</param>
+		/// <param name="paddingBetweenVertical">The padding in between each View that is ordered</param>
+		/// /// <param name="resizeParentToFit">Expand horizontally to fit new rows if need be</param>
+		public VerticalViewLayout(int paddingBetweenVertical = 2, bool wrapAround = true, int paddingBetweenHorizontal = 2, bool resizeParentToFit = false)
+		{
+			_paddingBetweenHorizontal = paddingBetweenHorizontal;
+			_paddingBetweenVertical = paddingBetweenVertical;
+			_wrapAround = wrapAround;
+			_resizeParentToFit = resizeParentToFit;
+		}
 
-        private void Wrap(View parentView)
-        {
-            Rectangle container = parentView.ContentBoundBox;
-            int xDone = container.Left - parentView.X;
-            int yDone = container.Top - parentView.Y;
-            View widestChild = null;
-            foreach (View v in parentView.Children)
-            {
-                v.Position = Vector2.Zero;
-                if (ExcludedChildren.Contains(v)) continue;
+		private void NoWrap(View parentView)
+		{
+			Rectangle container = parentView.ContentBoundBox;
+			int yDone = container.Top - parentView.Y;
+			foreach (View v in parentView.Children)
+			{
+				v.Position = Vector2.Zero;
+				if (ExcludedChildren.Contains(v)) continue;
+				v.Position = new Vector2(container.Left, yDone);
+				yDone += v.BoundBox.Height + _paddingBetweenVertical;
+			}
+		}
 
-                if (widestChild == null || v.BoundBox.Width > widestChild.BoundBox.Width)
-                    widestChild = v;
+		private void Wrap(View parentView)
+		{
+			Rectangle container = parentView.ContentBoundBox;
+			int xDone = container.Left - parentView.X;
+			int yDone = container.Top - parentView.Y;
+			View widestChild = null;
+			bool nullify = false;
+			int furthestRight = 0;
+			foreach (View v in parentView.Children)
+			{
+				if (nullify)
+				{
+					widestChild = null; //this is per-column
+					nullify = false;
+				}
+				v.Position = Vector2.Zero;
+				if (ExcludedChildren.Contains(v)) continue;
 
-                //Wrapping around has never felt so good
-                if (v.BoundBox.Bottom + yDone > container.Bottom - parentView.Y)
-                {
-                    yDone = container.Top - parentView.Y;
-                    xDone += widestChild.BoundBox.Width + _paddingBetweenHorizontal;
-                }
+				if (widestChild == null || v.BoundBox.Width > widestChild.BoundBox.Width)
+				{
+					widestChild = v;
+				}
+				//Wrapping around has never felt so good
+				if (v.BoundBox.Bottom + yDone > container.Bottom - parentView.Y)
+				{
+					yDone = container.Top - parentView.Y;
+					int addWidth = widestChild.BoundBox.Width + _paddingBetweenHorizontal;
+					if (_resizeParentToFit)
+					{
+						int neededWidth = addWidth + xDone + v.BoundBox.Width;
+						if (neededWidth > parentView.ContentBoundBox.Width)
+						{
+							int theWidth = (neededWidth - parentView.ContentBoundBox.Width);
+							parentView.Width += theWidth;
+							widestChild = v;
+						}
+					}
+					xDone += addWidth;
+					nullify = true;
+				}
 
-                v.Position = new Vector2(xDone, yDone);
-                yDone += v.BoundBox.Height + _paddingBetweenVertical;
-            }
-        }
+				v.Position = new Vector2(xDone, yDone);
+				yDone += v.BoundBox.Height + _paddingBetweenVertical;
+				if(widestChild == v)
+					furthestRight = v.AbsoluteBoundBox.Right - parentView.AbsoluteContentBoundBox.Left;
+			}
 
-        public override void OrderChildren(View parentView)
-        {
-            if (!_wrapAround)
-                NoWrap(parentView);
-            else
-                Wrap(parentView);
-        }
-    }
+			if (_resizeParentToFit)
+				parentView.Width = furthestRight + 1;
+		}
+
+		public override void OrderChildren(View parentView)
+		{
+			if (_thinnestSeenParent == -1 || parentView.ContentBoundBox.Width < _thinnestSeenParent)
+				_thinnestSeenParent = parentView.ContentBoundBox.Width;
+			if (!_wrapAround)
+				NoWrap(parentView);
+			else
+				Wrap(parentView);
+		}
+	}
 }
