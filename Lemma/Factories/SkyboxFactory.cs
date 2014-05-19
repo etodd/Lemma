@@ -55,6 +55,7 @@ namespace Lemma.Factories
 			Property<float> verticalCenter = result.GetOrMakeProperty<float>("VerticalCenter", true);
 			skybox.Add(new Binding<float>(skybox.GetFloatParameter("VerticalCenter"), verticalCenter));
 			skybox.Add(new Binding<float>(skybox.GetFloatParameter("GodRayStrength"), godRays));
+			skybox.Add(new Binding<float>(skybox.GetFloatParameter("GodRayExtinction"), result.GetOrMakeProperty<float>("GodRayExtinction", true, 1.0f)));
 			skybox.Add(new Binding<Vector3>(skybox.GetVector3Parameter("CameraPosition"), main.Camera.Position));
 			skybox.Add(new Binding<RenderTarget2D>(skybox.GetRenderTarget2DParameter("ShadowMap" + Components.Model.SamplerPostfix), () => main.LightingManager.GlobalShadowMap, main.LightingManager.GlobalShadowMap, main.ScreenSize));
 			skybox.Add(new Binding<Matrix>(skybox.GetMatrixParameter("ShadowViewProjectionMatrix"), main.LightingManager.GlobalShadowViewProjection));

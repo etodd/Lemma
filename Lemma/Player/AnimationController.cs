@@ -158,7 +158,7 @@ namespace Lemma.Components
 				foreach (KeyValuePair<string, AnimationInfo> animation in this.Crouched ? crouchMovementAnimations : movementAnimations)
 				{
 					if (animation.Key != "Idle" && animation.Key != "CrouchIdle")
-						this.model[animation.Key].Speed = this.Crouched ? (speed / 2.2f) : (speed / 6.0f);
+						this.model[animation.Key].Speed = this.Crouched ? (speed / 2.2f) : (speed / 6.5f);
 					this.model[animation.Key].TargetStrength = animation.Key == movementAnimation ? 1.0f : animation.Value.DefaultStrength;
 				}
 
@@ -217,7 +217,7 @@ namespace Lemma.Components
 			this.Lean.Value += (l - this.Lean) * 20.0f * dt;
 
 			const float timeScale = 5.0f;
-			const float softBreathingThresholdPercentage = 0.5f;
+			const float softBreathingThresholdPercentage = 0.75f;
 			float newBreathing;
 			if (!this.Crouched && this.Movement.Value.LengthSquared() > 0.0f && this.LinearVelocity.Value.Length() > 2.0f)
 			{
@@ -232,7 +232,10 @@ namespace Lemma.Components
 			{
 				newBreathing = Math.Max(0, this.breathing - dt / timeScale);
 				if (this.breathing > softBreathingThresholdPercentage && newBreathing < softBreathingThresholdPercentage)
+				{
 					AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_BREATHING_SOFT, this.Entity);
+					newBreathing = 0.0f;
+				}
 			}
 			this.breathing = newBreathing;
 		}

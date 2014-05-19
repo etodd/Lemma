@@ -6,6 +6,7 @@ float VerticalSize;
 float VerticalCenter;
 float3 CameraPosition;
 float GodRayStrength;
+float GodRayExtinction;
 
 float4x4 ShadowViewProjectionMatrix;
 
@@ -32,7 +33,7 @@ void RenderVS(	in RenderVSInput input,
 	alpha.clipSpacePosition = vs.position;
 }
 
-#define FOG_SHADOW_SAMPLES 12
+#define FOG_SHADOW_SAMPLES 11
 void SkyboxPS(in RenderPSInput input,
 						in AlphaPSInput alpha,
 						in TexturePSInput tex,
@@ -62,7 +63,7 @@ void SkyboxPS(in RenderPSInput input,
 		float shadowValue = FOG_SHADOW_SAMPLES;
 
 		float3 s = CameraPosition + viewRay * StartDistance;
-			viewRay *= interval;
+		viewRay *= interval;
 
 		float lastValue = 0.0f;
 		[unroll]
@@ -73,7 +74,7 @@ void SkyboxPS(in RenderPSInput input,
 			float v = GetShadowValueNoFilter(shadowPos);
 			float newValue = 0.0f;
 			if (v > 0.0f)
-				newValue = 1.0f - v;
+				newValue = 1.0f - min(v * GodRayExtinction, 1);
 			shadowValue -= (newValue + lastValue) * 0.5f;
 			lastValue = newValue;
 		}
