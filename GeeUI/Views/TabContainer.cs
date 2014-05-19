@@ -96,7 +96,7 @@ namespace GeeUI.Views
             }
         }
 
-        public override void Update(GameTime theTime)
+        public override void Update(float dt)
         {
             //setChildrenWidth();
             Height = 10000;
@@ -108,7 +108,7 @@ namespace GeeUI.Views
             {
                 if (v.BoundBox.Bottom > Height) Height = v.BoundBox.Bottom;
             }
-            base.Update(theTime);
+            base.Update(dt);
         }
 
         public override void Draw(SpriteBatch spriteBatch)

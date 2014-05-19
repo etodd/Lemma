@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using GeeUI.Views;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -574,7 +575,7 @@ namespace Lemma
 			SteamWorker.Update();
 #endif
 
-			GeeUI.GeeUI.Update(gameTime);
+			GeeUI.GeeUI.Update(this.ElapsedTime);
 
 			this.update();
 		}

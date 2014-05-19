@@ -263,7 +263,7 @@ namespace GeeUI.Views
             if (ParentView != null) ParentView.OnMOff(true);
         }
 
-        public virtual void Update(GameTime theTime)
+        public virtual void Update(float dt)
         {
             if (ChildrenLayout != null)
                 OrderChildren(ChildrenLayout);

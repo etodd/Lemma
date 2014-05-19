@@ -125,7 +125,7 @@ namespace GeeUI.Views
         }
 
 
-        public override void Update(GameTime theTime)
+        public override void Update(float dt)
         {
             if (_min > _max)
             {
@@ -133,7 +133,7 @@ namespace GeeUI.Views
             }
             if (SliderPosition > Width) SliderPosition = Width;
             if (SliderPosition < 0) SliderPosition = 0;
-            base.Update(theTime);
+            base.Update(dt);
         }
 
         public override void Draw(SpriteBatch spriteBatch)

@@ -39,7 +39,7 @@ namespace GeeUI.Managers
             return new Vector2(GetMousePos().X, GetMousePos().Y);
         }
 
-        public void Update(GameTime time)
+        public void Update(float dt)
         {
             _keyboardState = Keyboard.GetState();
             _mouseState = Mouse.GetState();

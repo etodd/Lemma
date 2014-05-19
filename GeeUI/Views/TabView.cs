@@ -100,11 +100,11 @@ namespace GeeUI.Views
             base.OnMOff();
         }
 
-        public override void Update(GameTime theTime)
+        public override void Update(float dt)
         {
             TabTextView.Width = Width - CurNinepatch.LeftWidth - CurNinepatch.RightWidth;
             if (Width >= ParentView.Width) Width = ParentView.Width - 1;
-            base.Update(theTime);
+            base.Update(dt);
         }
 
         public override void Draw(SpriteBatch spriteBatch)

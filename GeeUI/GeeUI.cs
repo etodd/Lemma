@@ -207,11 +207,11 @@ namespace GeeUI
             }
         }
 
-        public static void Update(GameTime gameTime)
+        public static void Update(float dt)
         {
-            _inputManager.Update(gameTime);
-            RootView.Update(gameTime);
-            UpdateView(RootView, gameTime);
+            _inputManager.Update(dt);
+            RootView.Update(dt);
+            UpdateView(RootView, dt);
         }
 
         public static void Draw(SpriteBatch spriteBatch)
@@ -219,14 +219,14 @@ namespace GeeUI
             DrawView(RootView, spriteBatch);
         }
 
-        internal static void UpdateView(View toUpdate, GameTime gameTime)
+        internal static void UpdateView(View toUpdate, float dt)
         {
             View[] sortedChildren = toUpdate.Children;
             foreach (View updating in sortedChildren)
             {
                 if (!updating.Active) continue;
-                updating.Update(gameTime);
-                UpdateView(updating, gameTime);
+				updating.Update(dt);
+				UpdateView(updating, dt);
             }
         }
 

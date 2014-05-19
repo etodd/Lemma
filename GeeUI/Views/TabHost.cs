@@ -92,7 +92,7 @@ namespace GeeUI.Views
             return;
         }
 
-        public override void Update(GameTime theTime)
+        public override void Update(float dt)
         {
             for (int i = 1; i < Children.Length; i++  )
             {
@@ -100,7 +100,7 @@ namespace GeeUI.Views
                 Children[i].Width = Width;
                 Children[i].Height = Height - TabContainerView.BoundBox.Height;
             }
-            base.Update(theTime);
+            base.Update(dt);
         }
 
         public override void AddChild(View child)

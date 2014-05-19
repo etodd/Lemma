@@ -100,7 +100,7 @@ namespace GeeUI.Views
             base.Draw(spriteBatch);
         }
 
-        public override void Update(GameTime theTime)
+        public override void Update(float dt)
         {
             FollowMouse();
             if (WindowContentView != null)
@@ -108,7 +108,7 @@ namespace GeeUI.Views
                 WindowContentView.Position = new Vector2(0, 0);
             }
 
-            base.Update(theTime);
+            base.Update(dt);
         }
 
         public override void OnMClick(Vector2 position, bool fromChild = false)
