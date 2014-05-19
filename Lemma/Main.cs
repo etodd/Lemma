@@ -1,4 +1,5 @@
-using System; using ComponentBind;
+using System;
+using ComponentBind;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -266,6 +267,7 @@ namespace Lemma
 			};
 			new NotifyBinding(updateLanguage, this.Strings.Language);
 			updateLanguage();
+
 		}
 
 		public void Cleanup()
@@ -281,7 +283,7 @@ namespace Lemma
 		}
 
 		protected bool firstLoadContentCall = true;
-		
+
 		protected override void LoadContent()
 		{
 			if (this.firstLoadContentCall)
@@ -311,6 +313,8 @@ namespace Lemma
 
 				this.UI = new UIRenderer();
 				this.AddComponent(this.UI);
+
+				GeeUI.GeeUI.Initialize(this);
 
 #if PERFORMANCE_MONITOR
 				this.performanceMonitor = new ListContainer();
@@ -384,7 +388,7 @@ namespace Lemma
 					c.LoadContent(true);
 				this.ReloadedContent.Execute();
 			}
-			
+
 			this.GraphicsDevice.RasterizerState = new RasterizerState { MultiSampleAntiAlias = false };
 		}
 
@@ -570,6 +574,8 @@ namespace Lemma
 			SteamWorker.Update();
 #endif
 
+			GeeUI.GeeUI.Update(gameTime);
+
 			this.update();
 		}
 
@@ -585,7 +591,7 @@ namespace Lemma
 
 			Lemma.Components.Model.DrawCallCounter = 0;
 			Lemma.Components.Model.TriangleCounter = 0;
-			
+
 #if PERFORMANCE_MONITOR
 			Stopwatch timer = new Stopwatch();
 			timer.Start();
@@ -603,7 +609,7 @@ namespace Lemma
 #endif
 
 			this.Renderer.SetRenderTargets(this.renderParameters);
-			
+
 #if PERFORMANCE_MONITOR
 			timer.Restart();
 #endif
@@ -658,6 +664,10 @@ namespace Lemma
 
 				this.RenderTarget = null;
 			}
+			SpriteBatch GeeUISpriteBatch = new SpriteBatch(this.GraphicsDevice);
+			GeeUISpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
+			GeeUI.GeeUI.Draw(GeeUISpriteBatch);
+			GeeUISpriteBatch.End();
 		}
 
 		public void DrawScene(RenderParameters parameters)
