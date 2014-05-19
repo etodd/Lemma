@@ -265,6 +265,9 @@
     <Content Include="..\Plugins\Steamworks.NET\redist\steam_appid.txt">
       <Link>Steamworks.NET\redist\steam_appid.txt</Link>
     </Content>
+    <Content Include="CSteamworks.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
