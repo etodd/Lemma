@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using GeeUI.ViewLayouts;
 using GeeUI.Views;
+using Lemma.Console;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -67,6 +68,9 @@ namespace Lemma
 		public LightingManager LightingManager;
 
 		public UIRenderer UI;
+
+		public Console.Console Console;
+		public ConsoleUI ConsoleUI;
 
 		private bool mapLoaded;
 
@@ -319,6 +323,14 @@ namespace Lemma
 				this.AddComponent(this.UI);
 
 				GeeUI.GeeUI.Initialize(this);
+
+				this.ConsoleUI = new ConsoleUI();
+				this.AddComponent(ConsoleUI);
+
+				this.Console = new Console.Console();
+				this.AddComponent(Console);
+
+
 
 #if PERFORMANCE_MONITOR
 				this.performanceMonitor = new ListContainer();

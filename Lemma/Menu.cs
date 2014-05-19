@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ComponentBind;
+using Lemma.Console;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -15,7 +16,7 @@ namespace Lemma.Components
 {
 	public class Menu : Component<GameMain>, IUpdateableComponent
 	{
-		private static Dictionary<string, string> maps = new Dictionary<string,string>
+		private static Dictionary<string, string> maps = new Dictionary<string, string>
 		{
 #if DEBUG
 			{ "test", "Test Level" },
@@ -686,7 +687,7 @@ namespace Lemma.Components
 			settingsMenu.Children.Add(settingsBack);
 
 			UIComponent fullscreenResolution = this.createMenuButton<Point>("\\fullscreen resolution", this.main.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString());
-			
+
 			Action<int> changeFullscreenResolution = delegate(int scroll)
 			{
 				displayModeIndex = (displayModeIndex + scroll) % this.supportedDisplayModes.Count();
@@ -1409,20 +1410,26 @@ namespace Lemma.Components
 				}
 			};
 
+			this.input.Bind(this.main.Settings.ToggleConsole, PCInput.InputState.Down, delegate()
+							{
+								if (canPause() && main.ConsoleUI.Showing.Value == main.Paused.Value) togglePause();
+								this.main.ConsoleUI.Showing.Value = !this.main.ConsoleUI.Showing.Value;
+							});
+
 			this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), () => canPause() || this.dialog != null, togglePause));
 			this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.Start), canPause, togglePause));
 			this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.B), () => canPause() || this.dialog != null, togglePause));
 
 #if !DEVELOPMENT
-				// Pause on window lost focus
-				this.main.Deactivated += delegate(object sender, EventArgs e)
+			// Pause on window lost focus
+			this.main.Deactivated += delegate(object sender, EventArgs e)
+			{
+				if (!this.main.Paused && this.main.MapFile.Value != GameMain.MenuMap && !this.main.EditorEnabled)
 				{
-					if (!this.main.Paused && this.main.MapFile.Value != GameMain.MenuMap && !this.main.EditorEnabled)
-					{
-						this.main.Paused.Value = true;
-						this.savePausedSettings();
-					}
-				};
+					this.main.Paused.Value = true;
+					this.savePausedSettings();
+				}
+			};
 #endif
 			// Gamepad menu code
 
@@ -1544,7 +1551,7 @@ namespace Lemma.Components
 				else
 				{
 					UIComponent menu = this.currentMenu;
-					if (menu != null && menu != creditsDisplay )
+					if (menu != null && menu != creditsDisplay)
 					{
 						UIComponent selectedItem = menu.Children[selected];
 						if (isButton(selectedItem) && selectedItem.Highlighted)

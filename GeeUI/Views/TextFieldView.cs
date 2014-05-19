@@ -37,7 +37,7 @@ namespace GeeUI.Views
 			{
 				bool call = _text != value;
 				_text = value;
-				if(call) CallOnChanged();
+				if (call) CallOnChanged();
 			}
 		}
 
@@ -45,6 +45,7 @@ namespace GeeUI.Views
 		private bool _callingOnChanged = false;
 
 		public Action OnTextChanged = null;
+		public Action OnTextSubmitted = null;
 
 		private int _offsetX;
 		private int _offsetY;
@@ -173,6 +174,8 @@ namespace GeeUI.Views
 				switch (key)
 				{
 					case Keys.A:
+						this._selectionStart = new Vector2(0, 0);
+						this._selectionEnd = new Vector2(TextLines[TextLines.Length - 1].Length - 1, TextLines.Length - 1);
 						break;
 
 					case Keys.C:
@@ -212,7 +215,10 @@ namespace GeeUI.Views
 						MoveCursorY(1);
 						break;
 					case Keys.Enter:
-						AppendTextCursor("\n");
+						if (MultiLine)
+							AppendTextCursor("\n");
+						else if (Text.Length != 0 && OnTextSubmitted != null)
+							OnTextSubmitted();
 						break;
 					case Keys.Space:
 						AppendTextCursor(" ");
@@ -471,6 +477,13 @@ namespace GeeUI.Views
 			_callingOnChanged = false;
 		}
 
+		public void SetCursorPos(int x, int y)
+		{
+			_cursorX = x;
+			_cursorY = y;
+			ReEvaluateOffset();
+		}
+
 		public bool RegexValidate()
 		{
 			if (!MustRegexValidate()) return true;
@@ -595,6 +608,15 @@ namespace GeeUI.Views
 			var xDrawPos = (int)TextInputFont.MeasureString(cur).X + (AbsoluteX + patch.LeftWidth);
 
 			return new Vector2(xDrawPos, yDrawPos);
+		}
+
+		public void ClearText()
+		{
+			this.Text = "";
+			this._cursorX = 0;
+			this._cursorY = 0;
+			this._offsetX = 0;
+			this._offsetY = 0;
 		}
 
 		public override void Update(float dt)

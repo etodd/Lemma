@@ -95,6 +95,11 @@
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Analytics.cs" />
+    <Compile Include="Console\Console.cs" />
+    <Compile Include="Console\ConsoleParser.cs" />
+    <Compile Include="Console\ConVar.cs" />
+    <Compile Include="Console\ConCommand.cs" />
+    <Compile Include="Console\ConsoleUI.cs" />
     <Compile Include="Player\PhoneNote.cs" />
     <Compile Include="Util\DialogueForest.cs" />
     <Compile Include="Components\SoundKiller.cs" />
