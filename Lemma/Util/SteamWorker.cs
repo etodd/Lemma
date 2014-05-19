@@ -88,6 +88,12 @@ namespace Lemma.Util
 			SetStat(name, GetStat(name) + increment);
 		}
 
+		public static bool IsStat(string name)
+		{
+			if (!Initialized) return false;
+			return _statDictionary.ContainsKey(name);
+		}
+
 		public static int GetStat(string name)
 		{
 			if (!Initialized) return 0;

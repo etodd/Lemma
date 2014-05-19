@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
+using System.Windows.Forms.VisualStyles;
 using ComponentBind;
 
 namespace Lemma.Console
@@ -122,10 +124,11 @@ namespace Lemma.Console
 			public string Name;
 			public bool Optional = false;
 			public object DefaultVal = null;
+			public Func<object, bool> Validate = o => true;
 
-			public object GetConvertedValue(string input)
+			public object GetConvertedValue(string input, bool ignore = false)
 			{
-				if (!IsGoodValue(input)) return null;
+				if (!ignore && !IsGoodValue(input)) return null;
 				var typeConverter = TypeDescriptor.GetConverter(CommandType);
 				return typeConverter.ConvertFromString(input);
 			}
@@ -135,7 +138,7 @@ namespace Lemma.Console
 				Type T = CommandType;
 				if (T == null) return true;
 				var typeConverter = TypeDescriptor.GetConverter(T);
-				return typeConverter.CanConvertFrom(typeof(string)) && IsGood(T, input);
+				return typeConverter.CanConvertFrom(typeof(string)) && IsGood(T, input) && Validate(GetConvertedValue(input, true));
 			}
 
 			public bool IsGood(Type T, string input)

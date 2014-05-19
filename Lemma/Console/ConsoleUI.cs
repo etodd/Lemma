@@ -8,6 +8,7 @@ using Lemma;
 using ComponentBind;
 using Lemma.Components;
 using Lemma.Factories;
+using Lemma.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -38,23 +39,6 @@ namespace Lemma.Console
 				this.Add(new NotifyBinding(HandleResize, main.ScreenSize)); //Supercool~
 				this.Add(new NotifyBinding(HandleToggle, Showing));
 			}
-
-			Console.AddConVar(new ConVar("player_speed", "Player speed.", s =>
-			{
-				Entity playerData = Factory.Get<PlayerDataFactory>().Instance;
-				playerData.GetOrMakeProperty<float>("MaxSpeed").Value = (float)Console.GetConVar("player_speed").GetCastedValue();
-			}, "10") { TypeConstraint = typeof(float) });
-
-			Console.AddConCommand(new ConCommand("help", "Recursion~~",
-				collection => main.Console.PrintConCommandDescription((string)collection.Get("command")),
-				new ConCommand.CommandArgument() { Name = "command" }));
-
-			Lemma.Console.Console.AddConCommand(new ConCommand("show_window", "Shows a messagebox with title + description",
-				collection =>
-				{
-					System.Windows.Forms.MessageBox.Show((string)collection.Get("Message"), (string)collection.Get("Title"));
-				}, new ConCommand.CommandArgument() { Name = "Message" }, new ConCommand.CommandArgument() { Name = "Title", Optional = true, DefaultVal = "A title" }));
-
 			this.Showing.Value = false;
 		}
 
@@ -89,6 +73,43 @@ namespace Lemma.Console
 		public void Update(float dt)
 		{
 
+		}
+
+
+		public static void ConsoleInit()
+		{
+			Console.AddConVar(new ConVar("player_speed", "Player speed.", s =>
+			{
+				Entity playerData = Factory.Get<PlayerDataFactory>().Instance;
+				playerData.GetOrMakeProperty<float>("MaxSpeed").Value = (float)Console.GetConVar("player_speed").GetCastedValue();
+			}, "10") { TypeConstraint = typeof(float) });
+
+			Console.AddConCommand(new ConCommand("help", "Recursion~~",
+				collection => Console.Instance.PrintConCommandDescription((string)collection.Get("command")),
+				new ConCommand.CommandArgument() { Name = "command" }));
+
+			Lemma.Console.Console.AddConCommand(new ConCommand("show_window", "Shows a messagebox with title + description",
+				collection =>
+				{
+					System.Windows.Forms.MessageBox.Show((string)collection.Get("Message"), (string)collection.Get("Title"));
+				}, new ConCommand.CommandArgument() { Name = "Message" }, new ConCommand.CommandArgument() { Name = "Title", Optional = true, DefaultVal = "A title" }));
+
+			Lemma.Console.Console.AddConCommand(new ConCommand("set_stat", "Sets the steamwork stat, if it exists",
+				collection =>
+				{
+					string stat = (string)collection.Get("Stat");
+					int val = (int)collection.Get("Value");
+					SteamWorker.SetStat(stat, val);
+				}, new ConCommand.CommandArgument() { Name = "Stat", Validate = (o) => SteamWorker.IsStat((string)o) }, new ConCommand.CommandArgument()
+				{
+					Name = "Value",
+					CommandType = typeof(int),
+					Validate =
+						o =>
+						{
+							return (int)o > 0;
+						}
+				}));
 		}
 	}
 }

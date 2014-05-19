@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using GeeUI.ViewLayouts;
 using GeeUI.Views;
@@ -16,6 +17,8 @@ namespace Lemma.Console
 	{
 		public static List<ConVar> ConVars = new List<ConVar>();
 		public static List<ConCommand> Commands = new List<ConCommand>();
+
+		public static Console Instance;
 
 		public void ConsoleUserInput(string input)
 		{
@@ -56,7 +59,7 @@ namespace Lemma.Console
 				{
 					var convar = GetConVar(parsed.ParsedResult[0].Value);
 					Log(convar.Name + ": " + convar.Description + " (Value: " + convar.GetCastedValue() + " " +
-						convar.OutCastConstraint + ")");
+						convar.OutCastConstraint.ToString().Replace("System.","") + ")");
 				}
 				else
 				{
@@ -87,8 +90,8 @@ namespace Lemma.Console
 				int i = 0;
 				foreach (var arg in cmd.Arguments.Value)
 				{
-					if (i++ > 0) print += ",";
-					string type = arg.CommandType.ToString();
+					if (i++ > 0) print += ", ";
+					string type = arg.CommandType.ToString().Replace("System.", "");
 					if (arg.Optional)
 					{
 						print += " [ " + type + " " + arg.Name + " = " + arg.DefaultVal + "]";
@@ -163,6 +166,17 @@ namespace Lemma.Console
 		public override void Awake()
 		{
 			base.Awake();
+
+			//Get all classes, and execute "ConsoleInit" if any class has it.
+			Assembly a = Assembly.GetExecutingAssembly();
+			foreach (Type t in a.GetTypes())
+			{
+				MethodInfo info = t.GetMethod("ConsoleInit");
+				if (info != null)
+					info.Invoke(t, new object[0]);
+			}
+
+			Console.Instance = this;
 		}
 
 		public void Update(float dt)
