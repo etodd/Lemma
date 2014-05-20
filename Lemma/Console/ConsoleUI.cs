@@ -32,8 +32,8 @@ namespace Lemma.Console
 				MainFont = main.Content.Load<SpriteFont>("Font");
 				ConsoleFont = main.Content.Load<SpriteFont>("ConsoleFont");
 				int width = main.ScreenSize.Value.X - 6;
-				RootConsoleView = new View(GeeUI.GeeUI.RootView) { Width = width, Height = 190 };
-				ConsoleLogView = new TextFieldView(RootConsoleView, Vector2.Zero, ConsoleFont) { Width = width, Height = 170, Editable = false };
+				RootConsoleView = new View(GeeUI.GeeUI.RootView) { Width = width, Height = 195 };
+				ConsoleLogView = new TextFieldView(RootConsoleView, Vector2.Zero, ConsoleFont) { Width = width, Height = 175, Editable = false };
 				ConsoleInputView = new TextFieldView(RootConsoleView, Vector2.Zero, MainFont) { Width = width, Height = 20, MultiLine = false, OnTextSubmitted = OnTextSubmitted };
 
 				RootConsoleView.ChildrenLayout = new VerticalViewLayout(4, false);
@@ -84,19 +84,19 @@ namespace Lemma.Console
 			{
 				Entity playerData = Factory.Get<PlayerDataFactory>().Instance;
 				playerData.GetOrMakeProperty<float>("MaxSpeed").Value = (float)Console.GetConVar("player_speed").GetCastedValue();
-			}, "10") { TypeConstraint = typeof(float) });
+			}, "10") { TypeConstraint = typeof(float), Validate = o => (float)o > 0 && (float)o < 200 });
 
 			Console.AddConCommand(new ConCommand("help", "Recursion~~",
 				collection => Console.Instance.PrintConCommandDescription((string)collection.Get("command")),
 				new ConCommand.CommandArgument() { Name = "command" }));
 
-			Lemma.Console.Console.AddConCommand(new ConCommand("show_window", "Shows a messagebox with title + description",
+			Console.AddConCommand(new ConCommand("show_window", "Shows a messagebox with title + description",
 				collection =>
 				{
 					System.Windows.Forms.MessageBox.Show((string)collection.Get("Message"), (string)collection.Get("Title"));
 				}, new ConCommand.CommandArgument() { Name = "Message" }, new ConCommand.CommandArgument() { Name = "Title", Optional = true, DefaultVal = "A title" }));
 
-			Lemma.Console.Console.AddConCommand(new ConCommand("set_stat", "Sets the steamwork stat, if it exists",
+			Console.AddConCommand(new ConCommand("set_stat", "Sets the steamwork stat, if it exists",
 				collection =>
 				{
 					string stat = (string)collection.Get("Stat");

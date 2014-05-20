@@ -175,7 +175,7 @@ namespace GeeUI.Views
 				{
 					case Keys.A:
 						this._selectionStart = new Vector2(0, 0);
-						this._selectionEnd = new Vector2(TextLines[TextLines.Length - 1].Length - 1, TextLines.Length - 1);
+						this._selectionEnd = new Vector2(TextLines[TextLines.Length - 1].Length, TextLines.Length - 1);
 						break;
 
 					case Keys.C:

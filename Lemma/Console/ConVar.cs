@@ -15,6 +15,7 @@ namespace Lemma.Console
 		public Property<string> Description = new Property<string>();
 		public Property<string> Value = new Property<string>();
 		public Property<Action<string>> OnChanged = new Property<Action<string>>();
+		public Func<object, bool> Validate = o => true;
 
 		public Type TypeConstraint;
 
@@ -53,13 +54,14 @@ namespace Lemma.Console
 
 		}
 
-		public object GetCastedValue()
+		public object GetCastedValue(string input = null)
 		{
+			string toConvert = input ?? Value.Value;
 			Type T = OutCastConstraint;
 			var typeConverter = TypeDescriptor.GetConverter(T);
-			if (typeConverter.CanConvertFrom(typeof(string)) && typeConverter.IsValid(Value.Value))
+			if (typeConverter.CanConvertFrom(typeof(string)) && typeConverter.IsValid(toConvert))
 			{
-				return typeConverter.ConvertFromString(Value.Value);
+				return typeConverter.ConvertFromString(toConvert);
 			}
 			return default(object);
 		}
@@ -69,7 +71,7 @@ namespace Lemma.Console
 			Type T = TypeConstraint;
 			if (T == null) return true;
 			var typeConverter = TypeDescriptor.GetConverter(T);
-			return typeConverter.CanConvertFrom(typeof(string)) && IsGood(T, input);
+			return typeConverter.CanConvertFrom(typeof(string)) && IsGood(T, input) && Validate(GetCastedValue(input));
 		}
 
 		public bool IsGood(Type T, string input)
