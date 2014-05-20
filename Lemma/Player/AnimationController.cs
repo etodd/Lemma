@@ -219,7 +219,7 @@ namespace Lemma.Components
 			const float timeScale = 5.0f;
 			const float softBreathingThresholdPercentage = 0.75f;
 			float newBreathing;
-			if (!this.Crouched && this.Movement.Value.LengthSquared() > 0.0f && this.LinearVelocity.Value.Length() > 2.0f)
+			if (!this.Crouched && this.Movement.Value.LengthSquared() > 0.0f && this.LinearVelocity.Value.Length() > Character.DefaultMaxSpeed * 0.75f)
 			{
 				newBreathing = Math.Min(this.breathing + (dt / timeScale), 1.0f);
 				if (this.breathing < softBreathingThresholdPercentage && newBreathing > softBreathingThresholdPercentage)

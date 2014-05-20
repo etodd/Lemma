@@ -46,7 +46,6 @@ namespace Lemma.Factories
 			model.Filename.Value = "Models\\light";
 			Property<Vector3> color = result.Get<SpotLight>().Color;
 			model.Add(new Binding<Vector3>(model.Color, color));
-			model.Add(new Binding<Matrix>(model.Transform, result.Get<Transform>().Matrix));
 			model.Editable = false;
 			model.Serialize = false;
 
@@ -54,7 +53,7 @@ namespace Lemma.Factories
 
 			model.Add(new Binding<Matrix>(model.Transform, delegate(Matrix x)
 			{
-				x.Forward *= -1.0f;
+				x.Forward *= -1;
 				return x;
 			}, result.Get<Transform>().Matrix));
 

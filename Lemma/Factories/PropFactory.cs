@@ -25,9 +25,10 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
+			Model model = result.Get<Model>("Model");
+			model.MapContent.Value = true;
 			this.SetMain(result, main);
 			Transform transform = result.Get<Transform>();
-			Model model = result.Get<Model>("Model");
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 
 			if (result.GetOrMakeProperty<bool>("Attach", true))

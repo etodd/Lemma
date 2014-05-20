@@ -48,7 +48,7 @@ namespace Lemma.Factories
 				delegate(Vector3 x)
 				{
 					Matrix matrix = Matrix.Identity;
-					matrix.Forward = Vector3.Normalize(-x);
+					matrix.Forward = Vector3.Normalize(x);
 					matrix.Left = x.Equals(Vector3.Up) ? Vector3.Left : Vector3.Normalize(Vector3.Cross(x, Vector3.Up));
 					matrix.Up = Vector3.Normalize(Vector3.Cross(matrix.Left, matrix.Forward));
 					return matrix;

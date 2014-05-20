@@ -46,7 +46,7 @@
       <Property>
         <Key xsi:type="xsd:string">LightRampTexture</Key>
         <Value xsi:type="PropertyOfString">
-          <Value>Images\bright-ramp</Value>
+          <Value>Images\ultrabright-ramp</Value>
         </Value>
       </Property>
       <Property>
@@ -349,12 +349,6 @@
           <Attenuation>
             <Value>8</Value>
           </Attenuation>
-          <Shadowed>
-            <Value>false</Value>
-          </Shadowed>
-          <AlwaysShadow>
-            <Value>false</Value>
-          </AlwaysShadow>
         </Value>
       </Component>
     </Components>
@@ -638,12 +632,6 @@
           <Attenuation>
             <Value>8</Value>
           </Attenuation>
-          <Shadowed>
-            <Value>false</Value>
-          </Shadowed>
-          <AlwaysShadow>
-            <Value>false</Value>
-          </AlwaysShadow>
         </Value>
       </Component>
     </Components>
@@ -716,12 +704,6 @@
           <Attenuation>
             <Value>8</Value>
           </Attenuation>
-          <Shadowed>
-            <Value>false</Value>
-          </Shadowed>
-          <AlwaysShadow>
-            <Value>false</Value>
-          </AlwaysShadow>
         </Value>
       </Component>
     </Components>
@@ -794,12 +776,6 @@
           <Attenuation>
             <Value>8</Value>
           </Attenuation>
-          <Shadowed>
-            <Value>false</Value>
-          </Shadowed>
-          <AlwaysShadow>
-            <Value>false</Value>
-          </AlwaysShadow>
         </Value>
       </Component>
     </Components>

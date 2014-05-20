@@ -29,9 +29,10 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
+			AnimatedModel model = result.Get<AnimatedModel>("Model");
+			model.MapContent.Value = true;
 			this.SetMain(result, main);
 			Transform transform = result.Get<Transform>();
-			AnimatedModel model = result.Get<AnimatedModel>("Model");
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 			Property<string> animation = result.GetProperty<string>("Animation");
 			Property<bool> loop = result.GetProperty<bool>("Loop");
