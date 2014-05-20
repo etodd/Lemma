@@ -20,6 +20,7 @@ namespace Lemma.Console
 		public TextFieldView ConsoleLogView;
 		public TextFieldView ConsoleInputView;
 		public SpriteFont MainFont;
+		public SpriteFont ConsoleFont;
 
 		public Property<bool> Showing = new Property<bool>();
 
@@ -29,9 +30,10 @@ namespace Lemma.Console
 			if (RootConsoleView == null)
 			{
 				MainFont = main.Content.Load<SpriteFont>("Font");
+				ConsoleFont = main.Content.Load<SpriteFont>("ConsoleFont");
 				int width = main.ScreenSize.Value.X - 6;
 				RootConsoleView = new View(GeeUI.GeeUI.RootView) { Width = width, Height = 190 };
-				ConsoleLogView = new TextFieldView(RootConsoleView, Vector2.Zero, MainFont) { Width = width, Height = 170, Editable = false };
+				ConsoleLogView = new TextFieldView(RootConsoleView, Vector2.Zero, ConsoleFont) { Width = width, Height = 170, Editable = false };
 				ConsoleInputView = new TextFieldView(RootConsoleView, Vector2.Zero, MainFont) { Width = width, Height = 20, MultiLine = false, OnTextSubmitted = OnTextSubmitted };
 
 				RootConsoleView.ChildrenLayout = new VerticalViewLayout(4, false);
