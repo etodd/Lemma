@@ -689,6 +689,8 @@ namespace Lemma.Components
 
 			parameters.DepthBuffer = null;
 			parameters.FrameBuffer = null;
+
+			this.justReallocatedBuffers = false;
 		}
 
 		private void drawModel(Microsoft.Xna.Framework.Graphics.Model model)
