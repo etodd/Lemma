@@ -170,6 +170,11 @@ namespace Lemma
 
 		public virtual void ClearEntities(bool deleteEditor)
 		{
+			if (this.MapContent != null)
+				this.MapContent.Unload();
+			this.MapContent = new ContentManager(this.Services);
+			this.MapContent.RootDirectory = "Content";
+
 			while (this.Entities.Count > (deleteEditor ? 0 : 1))
 			{
 				foreach (Entity entity in this.Entities.ToList())
@@ -206,6 +211,8 @@ namespace Lemma
 		}
 
 		public Command ReloadedContent = new Command();
+
+		public ContentManager MapContent;
 
 		public Main()
 		{

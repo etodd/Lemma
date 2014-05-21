@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
 using Lemma.Util;
+using Microsoft.Xna.Framework.Content;
 
 namespace Lemma.Components
 {
@@ -77,7 +78,11 @@ namespace Lemma.Components
 
 		public Property<bool> IsInstanced = new Property<bool> { Editable = false };
 		public Property<bool> DisableCulling = new Property<bool> { Editable = true };
+
+		[XmlIgnore]
 		public Property<bool> IsValid = new Property<bool> { Editable = false };
+
+		public Property<bool> MapContent = new Property<bool> { Editable = false };
 
 		protected Texture2D normalMap;
 		public Property<string> NormalMap = new Property<string> { Editable = true };
@@ -144,7 +149,7 @@ namespace Lemma.Components
 			this.NormalMap.Set = delegate(string value)
 			{
 				this.NormalMap.InternalValue = value;
-				this.normalMap = string.IsNullOrEmpty(value) ? null : this.main.Content.Load<Texture2D>(value);
+				this.normalMap = string.IsNullOrEmpty(value) ? null : (this.MapContent ? this.main.MapContent : this.main.Content).Load<Texture2D>(value);
 				if (this.effect != null && this.normalMap != null)
 				{
 					EffectParameter param = this.effect.Parameters["NormalMap" + Model.SamplerPostfix];
@@ -155,7 +160,7 @@ namespace Lemma.Components
 			this.DiffuseTexture.Set = delegate(string value)
 			{
 				this.DiffuseTexture.InternalValue = value;
-				this.diffuseTexture = string.IsNullOrEmpty(value) ? null : this.main.Content.Load<Texture2D>(value);
+				this.diffuseTexture = string.IsNullOrEmpty(value) ? null : (this.MapContent ? this.main.MapContent : this.main.Content).Load<Texture2D>(value);
 				if (this.effect != null && this.diffuseTexture != null)
 				{
 					EffectParameter param = this.effect.Parameters["Diffuse" + Model.SamplerPostfix];
@@ -325,7 +330,8 @@ namespace Lemma.Components
 			{
 				try
 				{
-					this.model = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>(file);
+					ContentManager content = this.MapContent ? this.main.MapContent : this.main.Content;
+					this.model = content.Load<Microsoft.Xna.Framework.Graphics.Model>(file);
 					if (this.EffectFile.Value == null)
 						this.loadEffect(null);
 					this.IsValid.Value = true;

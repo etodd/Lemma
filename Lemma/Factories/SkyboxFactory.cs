@@ -31,10 +31,11 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity result, Main main, bool creating = false)
 		{
+			ModelAlpha skybox = result.Get<ModelAlpha>("Skybox");
+			skybox.MapContent.Value = true;
 			base.Bind(result, main, creating);
 			result.CannotSuspendByDistance = true;
 
-			ModelAlpha skybox = result.Get<ModelAlpha>("Skybox");
 			skybox.DisableCulling.Value = true;
 			skybox.CullBoundingBox.Value = false;
 			skybox.Add(new Binding<Matrix>(skybox.Transform, result.Get<Transform>().Matrix));
