@@ -121,7 +121,7 @@ namespace Lemma.Console
 		public static string GetConVarValue(string name, string defaultVal = "")
 		{
 			var convar = GetConVar(name);
-			return convar == null ? defaultVal : convar.Value;
+			return convar == null ? defaultVal : convar.Value.Value;
 		}
 
 		public static ConCommand GetConCommand(string name)

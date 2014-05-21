@@ -7,14 +7,15 @@ namespace Lemma.Console
 {
 	public static class ConsoleParser
 	{
-		public struct ParseResult
+		public class ParseResult
 		{
-			public struct ParseToken
+			public class ParseToken
 			{
 				public enum TokenType
 				{
 					CmdOrVar,
-					Argument
+					Argument,
+					ConVar
 				}
 
 				public TokenType Type;
@@ -39,7 +40,7 @@ namespace Lemma.Console
 
 			List<ParseResult.ParseToken> tokens = new List<ParseResult.ParseToken>();
 
-			string acceptableForNewToken = "\"'abcdefghijklmnopqrstuvwxyz1234567890_-";
+			string acceptableForNewToken = "\"'abcdefghijklmnopqrstuvwxyz1234567890_-%";
 			string acceptableForCurToken = "\"'abcdefghijklmnopqrstuvwxyz1234567890_-!@#$%^&*()<>?,./|\\][}{ ";
 
 			ParseResult.ParseToken curToken = new ParseResult.ParseToken();
@@ -110,6 +111,23 @@ namespace Lemma.Console
 				curToken.Value = tokenStr;
 
 				tokens.Add(curToken);
+			}
+
+			
+			for(int i = 0; i < tokens.Count; i++)
+			{
+				var token = tokens[i];
+				if (token.Type == ParseResult.ParseToken.TokenType.Argument && token.Value.Length >= 3)
+				{
+					if (token.Value[0] == '%' && token.Value[token.Value.Length - 1] == '%')
+					{
+						var conVar = token.Value.Substring(1, token.Value.Length - 2);
+						if (Console.IsConVar(conVar))
+						{
+							token.Value = Console.GetConVarValue(conVar, token.Value);
+						}
+					}
+				}
 			}
 
 			ret.ParsedResult = tokens.ToArray();
