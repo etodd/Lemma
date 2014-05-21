@@ -7,12 +7,13 @@ using GeeUI.Views;
 using Lemma;
 using ComponentBind;
 using Lemma.Components;
+using Lemma.Console;
 using Lemma.Factories;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Lemma.Console
+namespace Lemma.GInterfaces
 {
 	public class ConsoleUI : Component<Main>, IUpdateableComponent
 	{
@@ -80,23 +81,24 @@ namespace Lemma.Console
 
 		public static void ConsoleInit()
 		{
-			Console.AddConVar(new ConVar("player_speed", "Player speed.", s =>
+			Console.Console.AddConVar(new ConVar("player_speed", "Player speed.", s =>
 			{
 				Entity playerData = Factory.Get<PlayerDataFactory>().Instance;
-				playerData.GetOrMakeProperty<float>("MaxSpeed").Value = (float)Console.GetConVar("player_speed").GetCastedValue();
+				playerData.GetOrMakeProperty<float>("MaxSpeed").Value = (float)Console.Console.GetConVar("player_speed").GetCastedValue();
 			}, "10") { TypeConstraint = typeof(float), Validate = o => (float)o > 0 && (float)o < 200 });
 
-			Console.AddConCommand(new ConCommand("help", "Recursion~~",
-				collection => Console.Instance.PrintConCommandDescription((string)collection.Get("command")),
+			Console.Console.AddConCommand(new ConCommand("help", "Recursion~~",
+				collection => Console.Console.Instance.PrintConCommandDescription((string)collection.Get("command")),
 				new ConCommand.CommandArgument() { Name = "command" }));
 
-			Console.AddConCommand(new ConCommand("show_window", "Shows a messagebox with title + description",
+			Console.Console.AddConCommand(new ConCommand("show_window", "Shows a messagebox with title + description",
 				collection =>
 				{
 					System.Windows.Forms.MessageBox.Show((string)collection.Get("Message"), (string)collection.Get("Title"));
-				}, new ConCommand.CommandArgument() { Name = "Message" }, new ConCommand.CommandArgument() { Name = "Title", Optional = true, DefaultVal = "A title" }));
+				},
+				new ConCommand.CommandArgument() { Name = "Message" }, new ConCommand.CommandArgument() { Name = "Title", Optional = true, DefaultVal = "A title" }));
 
-			Console.AddConCommand(new ConCommand("set_stat", "Sets the steamwork stat, if it exists",
+			Console.Console.AddConCommand(new ConCommand("set_stat", "Sets the steamwork stat, if it exists",
 				collection =>
 				{
 					string stat = (string)collection.Get("Stat");

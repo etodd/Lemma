@@ -7,6 +7,7 @@ using System.Threading;
 using GeeUI.ViewLayouts;
 using GeeUI.Views;
 using Lemma.Console;
+using Lemma.GInterfaces;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;

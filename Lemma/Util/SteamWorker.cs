@@ -11,6 +11,8 @@ namespace Lemma.Util
 		private static Dictionary<string, bool> _achievementDictionary;
 		private static Dictionary<string, int> _statDictionary;
 
+		private static DateTime _statsLastUploaded = DateTime.Now;
+
 		private static bool _anythingChanged = false;
 
 		public static bool SteamInitialized { get; private set; }
@@ -79,6 +81,9 @@ namespace Lemma.Util
 			_statDictionary[name] = newVal;
 			SteamUserStats.SetStat(name, newVal);
 			_anythingChanged = true;
+
+			if ((DateTime.Now - _statsLastUploaded).TotalSeconds >= 5)
+				UploadStats();
 		}
 
 		public static void IncrementStat(string name, int increment)
@@ -101,7 +106,7 @@ namespace Lemma.Util
 			return _statDictionary[name];
 		}
 
-		public static void SetAchievement(string name, bool forceUpdate = true)
+		public static void SetAchievement(string name, bool forceUpload = true)
 		{
 			if (!Initialized) return;
 			if (!_achievementDictionary.ContainsKey(name)) return;
@@ -109,7 +114,7 @@ namespace Lemma.Util
 			_achievementDictionary[name] = true;
 			SteamUserStats.SetAchievement(name);
 			_anythingChanged = true;
-			if (forceUpdate)
+			if (forceUpload)
 				UploadStats();
 		}
 
@@ -119,6 +124,7 @@ namespace Lemma.Util
 			if (!_anythingChanged && !force) return;
 			SteamUserStats.StoreStats();
 			_anythingChanged = false;
+			_statsLastUploaded = DateTime.Now;
 		}
 
 		public static void ResetAllStats(bool andCheevos = true)

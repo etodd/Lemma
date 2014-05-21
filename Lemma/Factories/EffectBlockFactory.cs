@@ -266,7 +266,6 @@ namespace Lemma.Factories
 				index++;
 			}
 			SteamWorker.IncrementStat("stat_blocks_created", index);
-			SteamWorker.UploadStats();
 		}
 
 		public void Setup(Entity result, Entity m, Map.Coordinate c, Map.t s)
