@@ -1,5 +1,18 @@
 const float fadeTime = 1.0f;
 
+((GameMain)main).CanSpawn = false;
+
+script.Add(new Animation
+(
+	new Animation.Vector3MoveTo(main.Renderer.Tint, new Vector3(1.0f), 0.2f)
+));
+
+Transform camera = get("camera").Get<Transform>();
+main.Camera.Position.Value = camera.Position;
+main.Camera.RotationMatrix.Value = camera.Orientation;
+
+get("fillMap1").GetCommand("Fill").Execute();
+
 if (((GameMain)main).StartSpawnPoint.Value == "end")
 {
 	// End game
@@ -55,7 +68,6 @@ if (((GameMain)main).StartSpawnPoint.Value == "end")
 		list.Children.Add(element);
 	};
 
-	addLink("Back the Kickstarter", "https://www.kickstarter.com/projects/et1337/869028656?token=1ccf4cd0");
 	addLink("Check out Lemma on IndieDB", "http://indiedb.com/games/lemma");
 	addLink("Follow @et1337", "http://twitter.com/et1337");
 
@@ -157,20 +169,7 @@ else
 	script.Add(new CommandBinding(script.Delete, logo.Delete, corner.Delete));
 }
 
-((GameMain)main).CanSpawn = false;
-
 main.Renderer.BlurAmount.Value = 1.0f;
 main.Renderer.InternalGamma.Value = 0.0f;
 main.Renderer.Brightness.Value = 0.0f;
 main.Renderer.Tint.Value = new Vector3(0.0f);
-
-script.Add(new Animation
-(
-	new Animation.Vector3MoveTo(main.Renderer.Tint, new Vector3(1.0f), 0.2f)
-));
-
-Transform camera = get("camera").Get<Transform>();
-main.Camera.Position.Value = camera.Position;
-main.Camera.RotationMatrix.Value = camera.Orientation;
-
-get("fillMap1").GetCommand("Fill").Execute();

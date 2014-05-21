@@ -116,6 +116,8 @@ namespace Lemma.Components
 		private bool allowPostAlphaDrawables;
 		private SpriteBatch spriteBatch;
 
+		private bool justReallocatedBuffers;
+
 		/// <summary>
 		/// The class constructor
 		/// </summary>
@@ -446,10 +448,13 @@ namespace Lemma.Components
 					0,
 					RenderTargetUsage.DiscardContents);
 			}
+
+			this.justReallocatedBuffers = true;
 		}
 
 		public void SetRenderTargets(RenderParameters p)
 		{
+			p.Camera.ViewportSize.Value = this.screenSize;
 			this.main.GraphicsDevice.SetRenderTargets(this.colorBuffer1, this.depthBuffer, this.normalBuffer);
 			Color color = this.BackgroundColor;
 			p.Camera.SetParameters(this.clearEffect);
@@ -648,7 +653,9 @@ namespace Lemma.Components
 			{
 				this.motionBlurEffect.CurrentTechnique = this.motionBlurEffect.Techniques["MotionBlur"];
 				parameters.Camera.SetParameters(this.motionBlurEffect);
-				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.normalBuffer, this.normalBufferLastFrame }, new RenderTarget2D[] { enableBlur ? colorDestination : result }, this.motionBlurEffect);
+
+				// If we just reallocated our buffers, don't use the velocity buffer from the last frame because it will be empty
+				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.normalBuffer, this.justReallocatedBuffers ? this.normalBuffer : this.normalBufferLastFrame }, new RenderTarget2D[] { enableBlur ? colorDestination : result }, this.motionBlurEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				// Swap the velocity buffers

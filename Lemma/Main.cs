@@ -253,7 +253,6 @@ namespace Lemma
 			this.Entities = new List<Entity>();
 
 			this.Camera = new Camera();
-			this.Camera.Add(new Binding<Point>(this.Camera.ViewportSize, this.ScreenSize));
 			this.AddComponent(this.Camera);
 
 			this.IsMouseVisible.Value = false;
@@ -338,7 +337,33 @@ namespace Lemma
 				this.Console = new Console.Console();
 				this.AddComponent(Console);
 
+				PCInput input = new PCInput();
+				this.AddComponent(input);
 
+#if DEVELOPMENT
+				input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.S }), delegate()
+				{
+					// High-resolution screenshot
+					Screenshot s = new Screenshot();
+					this.AddComponent(s);
+					s.Take(new Point(4096, 2304), delegate()
+					{
+						string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+						string path;
+						int i = 0;
+						do
+						{
+							path = Path.Combine(desktop, "lemma-screen" + i.ToString() + ".png");
+							i++;
+						}
+						while (File.Exists(path));
+
+						using (Stream stream = File.OpenWrite(path))
+							s.Buffer.SaveAsPng(stream, s.Size.X, s.Size.Y);
+						s.Delete.Execute();
+					});
+				}));
+#endif
 
 #if PERFORMANCE_MONITOR
 				this.performanceMonitor = new ListContainer();
@@ -379,12 +404,10 @@ namespace Lemma
 				addCounter("Draw calls", this.drawCalls);
 				addCounter("Triangles", this.triangles);
 
-				PCInput input = new PCInput();
 				input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.P }), delegate()
 				{
 					this.performanceMonitor.Visible.Value = !this.performanceMonitor.Visible;
 				}));
-				this.AddComponent(input);
 #endif
 
 				try

@@ -11,7 +11,7 @@ namespace Lemma
 	public class Screenshot : Component<Main>, IUpdateableComponent
 	{
 		public RenderTarget2D Buffer = null;
-		public Point Size = Point.Zero;
+		public Point Size { get; private set; }
 
 		public void Clear()
 		{
@@ -24,9 +24,12 @@ namespace Lemma
 		private Action callback;
 		private bool take;
 
-		public void Take(Action callback = null)
+		public void Take(Point size, Action callback = null)
 		{
-			this.Size = this.main.ScreenSize;
+			this.Size = size;
+			Point screenSize = this.main.ScreenSize;
+			if (this.Size.X > screenSize.X || this.Size.Y > screenSize.Y)
+				this.main.Renderer.ReallocateBuffers(size);
 			this.Buffer = new RenderTarget2D(this.main.GraphicsDevice, this.Size.X, this.Size.Y, false, SurfaceFormat.Color, DepthFormat.Depth16);
 			this.main.RenderTarget = this.Buffer;
 			this.take = true;
@@ -38,10 +41,19 @@ namespace Lemma
 			if (this.take)
 			{
 				this.main.RenderTarget = null;
+				Point screenSize = this.main.ScreenSize;
+				if (this.Size.X > screenSize.X || this.Size.Y > screenSize.Y)
+					this.main.Renderer.ReallocateBuffers(screenSize);
 				if (this.callback != null)
 					this.callback();
 				this.callback = null;
 			}
+		}
+
+		public override void delete()
+		{
+			base.delete();
+			this.Clear();
 		}
 	}
 }

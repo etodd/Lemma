@@ -346,7 +346,7 @@ namespace Lemma.Components
 		private void savePausedSettings()
 		{
 			// Take screenshot
-			this.main.Screenshot.Take();
+			this.main.Screenshot.Take(this.main.ScreenSize);
 
 			this.originalMouseVisible = this.main.IsMouseVisible;
 			this.main.IsMouseVisible.Value = true;

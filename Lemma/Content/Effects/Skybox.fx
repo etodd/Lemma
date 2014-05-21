@@ -41,7 +41,7 @@ void SkyboxPS(in RenderPSInput input,
 						uniform bool vertical,
 						uniform bool shadow)
 {
-	float2 uv = 0.5f * alpha.clipSpacePosition.xy / alpha.clipSpacePosition.w + float2(0.5f, 0.5f);
+	float2 uv = (0.5f * alpha.clipSpacePosition.xy / alpha.clipSpacePosition.w) + float2(0.5f, 0.5f);
 	uv.y = 1.0f - uv.y;
 	uv = (round(uv * DestinationDimensions) + float2(0.5f, 0.5f)) / DestinationDimensions;
 

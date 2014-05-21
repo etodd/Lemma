@@ -64,7 +64,7 @@ namespace Lemma.Factories
 			{
 				GameMain gameMain = main as GameMain;
 
-				gameMain.Screenshot.Take();
+				gameMain.Screenshot.Take(main.ScreenSize);
 
 				Container notification = new Container();
 				TextElement notificationText = new TextElement();

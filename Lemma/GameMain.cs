@@ -529,7 +529,7 @@ namespace Lemma
 			};
 
 			if (this.Screenshot.Buffer == null)
-				this.Screenshot.Take(doSave);
+				this.Screenshot.Take(this.ScreenSize, doSave);
 			else
 				doSave();
 		}
