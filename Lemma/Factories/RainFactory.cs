@@ -19,20 +19,19 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Rain");
+			Entity entity = new Entity(main, "Rain");
 
-			result.Add("Transform", new Transform());
 			ParticleEmitter emitter = new ParticleEmitter();
 			emitter.ParticleType.Value = "Rain";
 			emitter.ParticlesPerSecond.Value = 12000;
-			result.Add("Emitter", emitter);
+			entity.Add("Emitter", emitter);
 
-			return result;
+			return entity;
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			result.CannotSuspendByDistance = true;
+			entity.CannotSuspendByDistance = true;
 
 			const float kernelSpacing = 8.0f;
 			const int kernelSize = 10;
@@ -42,14 +41,14 @@ namespace Lemma.Factories
 			const float verticalSpeed = 90.0f;
 			const float maxLifetime = 1.0f;
 
-			ParticleEmitter emitter = result.Get<ParticleEmitter>("Emitter");
+			ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("Emitter");
 			emitter.Jitter.Value = new Vector3(kernelSpacing * kernelSize * 0.5f, 0.0f, kernelSpacing * kernelSize * 0.5f);
-			Transform transform = result.Get<Transform>();
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			if (!main.EditorEnabled)
-				AkSoundEngine.PostEvent("Play_rain", result);
+				AkSoundEngine.PostEvent("Play_rain", entity);
 
-			Components.DirectionalLight lightning = result.GetOrCreate<Components.DirectionalLight>("Lightning");
+			Components.DirectionalLight lightning = entity.GetOrCreate<Components.DirectionalLight>("Lightning");
 			lightning.Enabled.Value = false;
 			Vector3 originalLightningColor = lightning.Color;
 
@@ -103,11 +102,11 @@ namespace Lemma.Factories
 				}
 			};
 			updater.EnabledInEditMode = true;
-			result.Add(updater);
+			entity.Add(updater);
 
 			ModelAlpha skybox = null;
 			Vector3 originalSkyboxColor = Vector3.Zero;
-			result.Add(new PostInitialization
+			entity.Add(new PostInitialization
 			{
 				delegate()
 				{
@@ -121,10 +120,10 @@ namespace Lemma.Factories
 			});
 
 			Random random = new Random();
-			Property<float> thunderIntervalMin = result.GetOrMakeProperty<float>("ThunderIntervalMin", true, 12.0f);
-			Property<float> thunderIntervalMax = result.GetOrMakeProperty<float>("ThunderIntervalMax", true, 36.0f);
-			Property<float> thunderMaxDelay = result.GetOrMakeProperty<float>("ThunderMaxDelay", true, 5.0f);
-			Timer timer = result.GetOrCreate<Timer>();
+			Property<float> thunderIntervalMin = entity.GetOrMakeProperty<float>("ThunderIntervalMin", true, 12.0f);
+			Property<float> thunderIntervalMax = entity.GetOrMakeProperty<float>("ThunderIntervalMax", true, 36.0f);
+			Property<float> thunderMaxDelay = entity.GetOrMakeProperty<float>("ThunderMaxDelay", true, 5.0f);
+			Timer timer = entity.GetOrCreate<Timer>();
 			timer.Serialize = false;
 			timer.Repeat.Value = true;
 			timer.Interval.Value = (float)random.NextDouble() * thunderIntervalMax;
@@ -138,7 +137,7 @@ namespace Lemma.Factories
 				else
 					skyboxColor = skybox.Color;
 
-				result.Add(new Animation
+				entity.Add(new Animation
 				(
 					new Animation.Set<bool>(lightning.Enabled, true),
 					new Animation.Parallel
@@ -161,9 +160,9 @@ namespace Lemma.Factories
 				timer.Interval.Value = thunderIntervalMin + ((float)random.NextDouble() * (thunderIntervalMax - thunderIntervalMin));
 			}));
 
-			result.Add(new CommandBinding(result.Delete, delegate()
+			entity.Add(new CommandBinding(entity.Delete, delegate()
 			{
-				AkSoundEngine.PostEvent("Stop_thunder", result);
+				AkSoundEngine.PostEvent("Stop_thunder", entity);
 			}));
 
 			if (ParticleSystem.Get(main, "Rain") == null)
@@ -204,17 +203,16 @@ namespace Lemma.Factories
 
 			emitter.Add(new Binding<Vector3>(emitter.Position, x => x + new Vector3(0.0f, rainStartHeight, 0.0f), main.Camera.Position));
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
+			base.AttachEditorComponents(entity, main);
 
-			Property<bool> selected = new Property<bool> { Value = false, Editable = false, Serialize = false };
-			result.Add("EditorSelected", selected);
+			Property<bool> selected = entity.GetOrMakeProperty<bool>("EditorSelected");
 
-			Components.DirectionalLight lightning = result.Get<Components.DirectionalLight>("Lightning");
+			Components.DirectionalLight lightning = entity.Get<Components.DirectionalLight>("Lightning");
 			lightning.Add(new Binding<bool>(lightning.Enabled, selected));
 		}
 	}

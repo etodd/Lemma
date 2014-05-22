@@ -25,36 +25,34 @@ namespace Lemma.Factories
 
 		public virtual Entity Create(Main main, int offsetX, int offsetY, int offsetZ)
 		{
-			Entity result = new Entity(main, "Map");
-
-			result.Add("Transform", new Transform());
+			Entity entity = new Entity(main, "Map");
 			
 			Map map = this.newMapComponent(offsetX, offsetY, offsetZ);
-			result.Add("Map", map);
+			entity.Add("Map", map);
 
-			return result;
+			return entity;
 		}
 
 		public Entity CreateAndBind(Main main, int offsetX, int offsetY, int offsetZ)
 		{
-			Entity result = this.Create(main, offsetX, offsetY, offsetZ);
-			this.InternalBind(result, main, true);
-			return result;
+			Entity entity = this.Create(main, offsetX, offsetY, offsetZ);
+			this.InternalBind(entity, main, true);
+			return entity;
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.InternalBind(result, main, creating);
+			this.InternalBind(entity, main, creating);
 		}
 
-		public void InternalBind(Entity result, Main main, bool creating = false, Transform transform = null, bool dataOnly = false)
+		public void InternalBind(Entity entity, Main main, bool creating = false, Transform transform = null, bool dataOnly = false)
 		{
 			if (transform == null)
-				transform = result.GetOrCreate<Transform>("Transform");
+				transform = entity.GetOrCreate<Transform>("Transform");
 
-			result.CannotSuspend = false;
+			entity.CannotSuspend = false;
 
-			Map map = result.Get<Map>();
+			Map map = entity.Get<Map>();
 
 			// Apply the position and orientation components to the map
 			if (main.EditorEnabled || map.Scale.Value != 1.0f)
@@ -76,7 +74,7 @@ namespace Lemma.Factories
 			map.Add(new CommandBinding(map.CompletelyEmptied, delegate()
 			{
 				if (!main.EditorEnabled)
-					result.Delete.Execute();
+					entity.Delete.Execute();
 			}));
 
 			Entity world = main.Get("World").FirstOrDefault();
@@ -123,7 +121,7 @@ namespace Lemma.Factories
 					if (!s.ShadowCast)
 						model.UnsupportedTechniques.Add(Technique.Shadow);
 
-					result.Add(model);
+					entity.Add(model);
 
 					// We have to create this binding after adding the model to the entity
 					// Because when the model loads, it automatically calculates a bounding box for it.
@@ -134,7 +132,7 @@ namespace Lemma.Factories
 				};
 			}
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 			map.Offset.Changed();
 		}
 
@@ -148,10 +146,10 @@ namespace Lemma.Factories
 	{
 		public override Entity Create(Main main, int offsetX, int offsetY, int offsetZ)
 		{
-			Entity result = base.Create(main, offsetX, offsetY, offsetZ);
-			result.Type = "DynamicMap";
-			result.ID = Entity.GenerateID(result, main);
-			return result;
+			Entity entity = base.Create(main, offsetX, offsetY, offsetZ);
+			entity.Type = "DynamicMap";
+			entity.ID = Entity.GenerateID(entity, main);
+			return entity;
 		}
 
 		protected override Map newMapComponent(int offsetX, int offsetY, int offsetZ)
@@ -159,10 +157,10 @@ namespace Lemma.Factories
 			return new DynamicMap(offsetX, offsetY, offsetZ);
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			base.Bind(result, main, creating);
-			DynamicMap map = result.Get<DynamicMap>();
+			base.Bind(entity, main, creating);
+			DynamicMap map = entity.Get<DynamicMap>();
 
 			const float volumeMultiplier = 0.002f;
 
@@ -174,7 +172,7 @@ namespace Lemma.Factories
 				{
 					// TODO: figure out Wwise volume parameter
 					uint cue = map[contact.Contact.Position - (contact.Contact.Normal * 0.25f)].RubbleEvent;
-					AkSoundEngine.PostEvent(cue, result);
+					AkSoundEngine.PostEvent(cue, entity);
 				}
 			}));
 		}

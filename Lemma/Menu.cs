@@ -61,10 +61,6 @@ namespace Lemma.Components
 		private bool originalMouseVisible = false;
 		private Point originalMousePosition = new Point();
 
-		public Menu()
-		{
-		}
-
 		public void ClearMessages()
 		{
 			this.messages.Children.Clear();
@@ -369,7 +365,15 @@ namespace Lemma.Components
 				new Animation.Parallel
 				(
 					new Animation.FloatMoveToSpeed(this.main.Renderer.BlurAmount, 1.0f, 1.0f),
-					new Animation.Ease(new Animation.Vector2MoveToSpeed(this.pauseMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.Type.OutExponential)
+					new Animation.Ease
+					(
+						new Animation.Parallel
+						(
+							new Animation.Vector2MoveToSpeed(this.pauseMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
+							new Animation.FloatMoveToSpeed(this.main.PauseAudioEffect, 1.0f, Menu.animationSpeed)
+						),
+						Animation.Ease.Type.OutExponential
+					)
 				)
 			);
 			this.main.AddComponent(this.pauseAnimation);
@@ -412,12 +416,10 @@ namespace Lemma.Components
 			(
 				new Animation.Parallel
 				(
-					new Animation.Sequence
-					(
-						new Animation.Vector2MoveToSpeed(this.pauseMenu.AnchorPoint, new Vector2(1, 0.5f), Menu.hideAnimationSpeed),
-						new Animation.Set<bool>(this.pauseMenu.Visible, false)
-					)
-				)
+					new Animation.Vector2MoveToSpeed(this.pauseMenu.AnchorPoint, new Vector2(1, 0.5f), Menu.hideAnimationSpeed),
+					new Animation.FloatMoveToSpeed(this.main.PauseAudioEffect, 0.0f, Menu.hideAnimationSpeed)
+				),
+				new Animation.Set<bool>(this.pauseMenu.Visible, false)
 			);
 			this.main.AddComponent(this.pauseAnimation);
 
@@ -798,6 +800,20 @@ namespace Lemma.Components
 				this.main.LightingManager.DynamicShadows.Value = (LightingManager.DynamicShadowSetting)Enum.ToObject(typeof(LightingManager.DynamicShadowSetting), (((int)this.main.LightingManager.DynamicShadows.Value) + 1) % numDynamicShadowSettings);
 			}));
 			settingsMenu.Children.Add(dynamicShadows);
+
+			UIComponent soundEffectVolume = this.createMenuButton<float>("\\sound effect volume", this.main.Settings.SoundEffectVolume, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
+			soundEffectVolume.Add(new CommandBinding<Point, int>(soundEffectVolume.MouseScrolled, delegate(Point mouse, int scroll)
+			{
+				this.main.Settings.SoundEffectVolume.Value = MathHelper.Clamp(this.main.Settings.SoundEffectVolume.Value + (scroll * 0.1f), 0, 1);
+			}));
+			settingsMenu.Children.Add(soundEffectVolume);
+
+			UIComponent musicVolume = this.createMenuButton<float>("\\music volume", this.main.Settings.MusicVolume, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
+			musicVolume.Add(new CommandBinding<Point, int>(musicVolume.MouseScrolled, delegate(Point mouse, int scroll)
+			{
+				this.main.Settings.MusicVolume.Value = MathHelper.Clamp(this.main.Settings.MusicVolume.Value + (scroll * 0.1f), 0, 1);
+			}));
+			settingsMenu.Children.Add(musicVolume);
 
 			// Controls menu
 			Animation controlsAnimation = null;
@@ -1299,6 +1315,7 @@ namespace Lemma.Components
 						"\\exit prompt", "\\exit",
 						delegate()
 						{
+							this.main.SaveSettings();
 							throw new GameMain.ExitException();
 						}
 					);

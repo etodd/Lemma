@@ -16,27 +16,24 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Note");
-			result.Add("Transform", new Transform());
-
-			return result;
+			return new Entity(main, "Note");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			Transform transform = result.GetOrCreate<Transform>("Transform");
-			PlayerTrigger trigger = result.GetOrCreate<PlayerTrigger>();
-			Model model = result.GetOrCreate<Model>("Model");
-			this.SetMain(result, main);
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
+			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>();
+			Model model = entity.GetOrCreate<Model>("Model");
+			this.SetMain(entity, main);
 			model.Serialize = false;
 			model.Filename.Value = "Models\\papers";
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 
-			Property<string> text = result.GetOrMakeProperty<string>("Text", true);
-			Property<string> image = result.GetOrMakeProperty<string>("Image", true);
+			Property<string> text = entity.GetOrMakeProperty<string>("Text", true);
+			Property<string> image = entity.GetOrMakeProperty<string>("Image", true);
 
-			Property<bool> collected = result.GetOrMakeProperty<bool>("Collected");
-			result.Add(new NotifyBinding(delegate()
+			Property<bool> collected = entity.GetOrMakeProperty<bool>("Collected");
+			entity.Add(new NotifyBinding(delegate()
 			{
 				if (collected)
 				{
@@ -44,7 +41,7 @@ namespace Lemma.Factories
 					List<Entity> notes = main.Get("Note").ToList();
 					Container msg = gameMain.Menu.ShowMessage
 					(
-						result,
+						entity,
 						delegate()
 						{
 							int notesCollected = notes.Where(x => x.GetOrMakeProperty<bool>("Collected")).Count();
@@ -53,7 +50,7 @@ namespace Lemma.Factories
 						},
 						main.Strings.Language
 					);
-					gameMain.Menu.HideMessage(result, msg, 4.0f);
+					gameMain.Menu.HideMessage(entity, msg, 4.0f);
 				}
 			}, collected));
 
@@ -63,7 +60,7 @@ namespace Lemma.Factories
 
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity p)
 			{
-				p.GetOrMakeProperty<Entity.Handle>("Note").Value = result;
+				p.GetOrMakeProperty<Entity.Handle>("Note").Value = entity;
 			}));
 
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerExited, delegate(Entity p)
@@ -72,20 +69,20 @@ namespace Lemma.Factories
 					p.GetOrMakeProperty<Entity.Handle>("Note").Value = null;
 			}));
 
-			if (result.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(result, main);
+			if (entity.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(entity, main);
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
-			Model editorModel = result.Get<Model>("EditorModel");
-			Property<bool> editorSelected = result.GetOrMakeProperty<bool>("EditorSelected", false);
+			base.AttachEditorComponents(entity, main);
+			Model editorModel = entity.Get<Model>("EditorModel");
+			Property<bool> editorSelected = entity.GetOrMakeProperty<bool>("EditorSelected", false);
 			editorSelected.Serialize = false;
 			editorModel.Add(new Binding<bool>(editorModel.Enabled, () => !editorSelected, editorSelected));
 
-			MapAttachable.AttachEditorComponents(result, main, editorModel.Color);
-			PlayerTrigger.AttachEditorComponents(result, main, editorModel.Color);
+			MapAttachable.AttachEditorComponents(entity, main, editorModel.Color);
+			PlayerTrigger.AttachEditorComponents(entity, main, editorModel.Color);
 		}
 	}
 }

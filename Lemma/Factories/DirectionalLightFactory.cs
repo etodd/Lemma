@@ -16,23 +16,16 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "DirectionalLight");
-
-			Transform transform = new Transform();
-			result.Add("Transform", transform);
-			DirectionalLight directionalLight = new DirectionalLight();
-			result.Add("DirectionalLight", directionalLight);
-
-			return result;
+			return new Entity(main, "DirectionalLight");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			result.CannotSuspendByDistance = true;
-			Transform transform = result.Get<Transform>();
-			DirectionalLight directionalLight = result.Get<DirectionalLight>();
+			entity.CannotSuspendByDistance = true;
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
+			DirectionalLight directionalLight = entity.GetOrCreate<DirectionalLight>("DirectionalLight");
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 
 			directionalLight.Add(new TwoWayBinding<Vector3, Matrix>
 			(
@@ -56,17 +49,17 @@ namespace Lemma.Factories
 			));
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{			
 			Model model = new Model();
 			model.Filename.Value = "Models\\light";
-			model.Add(new Binding<Vector3>(model.Color, result.Get<DirectionalLight>().Color));
+			model.Add(new Binding<Vector3>(model.Color, entity.Get<DirectionalLight>().Color));
 			model.Editable = false;
 			model.Serialize = false;
 
-			result.Add("EditorModel", model);
+			entity.Add("EditorModel", model);
 
-			model.Add(new Binding<Matrix>(model.Transform, result.Get<Transform>().Matrix));
+			model.Add(new Binding<Matrix>(model.Transform, entity.Get<Transform>().Matrix));
 		}
 	}
 }

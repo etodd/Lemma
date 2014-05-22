@@ -17,34 +17,34 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "AmbientLight");
+			Entity entity = new Entity(main, "AmbientLight");
 
-			result.Add("Transform", new Transform());
+			entity.Add("Transform", new Transform());
 			AmbientLight ambientLight = new AmbientLight();
 			ambientLight.Color.Value = Vector3.One;
-			result.Add("AmbientLight", ambientLight);
+			entity.Add("AmbientLight", ambientLight);
 
-			return result;
+			return entity;
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(result, main);
-			result.CannotSuspendByDistance = true;
+			this.SetMain(entity, main);
+			entity.CannotSuspendByDistance = true;
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
 			Model model = new Model();
 			model.Filename.Value = "Models\\sphere";
-			model.Add(new Binding<Vector3>(model.Color, result.Get<AmbientLight>().Color));
+			model.Add(new Binding<Vector3>(model.Color, entity.Get<AmbientLight>().Color));
 			model.Scale.Value = new Vector3(0.5f);
 			model.Editable = false;
 			model.Serialize = false;
 
-			result.Add("EditorModel", model);
+			entity.Add("EditorModel", model);
 
-			model.Add(new Binding<Matrix>(model.Transform, result.Get<Transform>().Matrix));
+			model.Add(new Binding<Matrix>(model.Transform, entity.Get<Transform>().Matrix));
 		}
 	}
 }

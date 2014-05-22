@@ -63,20 +63,20 @@ namespace Lemma.Factories
 			});
 		}
 
-		public static void AttachEditorComponents(Entity result, Main main, Property<Vector3> color = null)
+		public static void AttachEditorComponents(Entity entity, Main main, Property<Vector3> color = null)
 		{
 			Model model = new Model();
 			model.Filename.Value = "Models\\cone";
 			if (color != null)
 				model.Add(new Binding<Vector3>(model.Color, color));
-			model.Add(new Binding<bool>(model.Enabled, result.GetOrMakeProperty<bool>("EditorSelected")));
-			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(1.0f, 1.0f, x), result.GetOrMakeProperty<float>("AttachmentOffset", true)));
+			model.Add(new Binding<bool>(model.Enabled, entity.GetOrMakeProperty<bool>("EditorSelected")));
+			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(1.0f, 1.0f, x), entity.GetOrMakeProperty<float>("AttachmentOffset", true)));
 			model.Editable = false;
 			model.Serialize = false;
 
-			result.Add("EditorModel2", model);
+			entity.Add("EditorModel2", model);
 
-			model.Add(new Binding<Matrix>(model.Transform, result.Get<Transform>().Matrix));
+			model.Add(new Binding<Matrix>(model.Transform, entity.Get<Transform>().Matrix));
 		}
 	}
 }

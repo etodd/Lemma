@@ -16,36 +16,31 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "PlayerSpawn");
-
-			result.Add("PlayerSpawn", new PlayerSpawn());
-
-			Transform transform = new Transform();
-			result.Add("Transform", transform);
+			Entity entity = new Entity(main, "PlayerSpawn");
 
 			PlayerTrigger trigger = new PlayerTrigger();
 			trigger.Enabled.Value = false;
-			result.Add("Trigger", trigger);
+			entity.Add("Trigger", trigger);
 
-			return result;
+			return entity;
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			if (result.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(result, main);
+			if (entity.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(entity, main);
 
-			result.CannotSuspendByDistance = true;
+			entity.CannotSuspendByDistance = true;
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 
 			if (main.EditorEnabled)
 			{
-				result.Add("Spawn Here", new Command
+				entity.Add("Spawn Here", new Command
 				{
 					Action = delegate()
 					{
-						((GameMain)main).StartSpawnPoint.Value = result.ID;
+						((GameMain)main).StartSpawnPoint.Value = entity.ID;
 						Editor editor = main.Get("Editor").First().Get<Editor>();
 						if (editor.NeedsSave)
 							editor.Save.Execute();
@@ -56,19 +51,19 @@ namespace Lemma.Factories
 				});
 			}
 
-			Transform transform = result.Get<Transform>();
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			PlayerSpawn spawn = result.Get<PlayerSpawn>();
+			PlayerSpawn spawn = entity.GetOrCreate<PlayerSpawn>("PlayerSpawn");
 			spawn.Add(new TwoWayBinding<Vector3>(transform.Position, spawn.Position));
 			spawn.Add(new Binding<float, Vector3>(spawn.Rotation, x => ((float)Math.PI * -0.5f) - (float)Math.Atan2(x.Z, x.X), transform.Forward));
 
-			PlayerTrigger trigger = result.GetOrCreate<PlayerTrigger>("Trigger");
+			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");
 			trigger.Enabled.Editable = true;
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity player) { spawn.Activate.Execute(); }));
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
 			Model model = new Model();
 			model.Filename.Value = "Models\\light";
@@ -76,12 +71,12 @@ namespace Lemma.Factories
 			model.Editable = false;
 			model.Serialize = false;
 
-			result.Add("EditorModel", model);
+			entity.Add("EditorModel", model);
 
-			model.Add(new Binding<Matrix>(model.Transform, result.Get<Transform>().Matrix));
+			model.Add(new Binding<Matrix>(model.Transform, entity.Get<Transform>().Matrix));
 
-			PlayerTrigger.AttachEditorComponents(result, main, this.Color);
-			MapAttachable.AttachEditorComponents(result, main);
+			PlayerTrigger.AttachEditorComponents(entity, main, this.Color);
+			MapAttachable.AttachEditorComponents(entity, main);
 		}
 	}
 }

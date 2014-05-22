@@ -15,14 +15,12 @@ namespace Lemma.Factories
 	{
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Turret");
-
-			return result;
+			return new Entity(main, "Turret");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			SpotLight light = result.GetOrCreate<SpotLight>();
+			SpotLight light = entity.GetOrCreate<SpotLight>();
 			light.Serialize = false;
 			light.Editable = false;
 			light.Enabled.Value = !main.EditorEnabled;
@@ -30,23 +28,23 @@ namespace Lemma.Factories
 			light.FieldOfView.Value = 1.0f;
 			light.Attenuation.Value = 75.0f;
 
-			Transform transform = result.GetOrCreate<Transform>("Transform");
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 			light.Add(new Binding<Quaternion>(light.Orientation, transform.Quaternion));
 
-			PointLight pointLight = result.GetOrCreate<PointLight>();
+			PointLight pointLight = entity.GetOrCreate<PointLight>();
 			pointLight.Serialize = false;
 			pointLight.Editable = false;
 			pointLight.Add(new Binding<Vector3>(pointLight.Position, transform.Position));
 
 			LineDrawer laser = new LineDrawer { Serialize = false };
-			result.Add(laser);
+			entity.Add(laser);
 
-			Property<Vector3> reticle = result.GetOrMakeProperty<Vector3>("Reticle");
+			Property<Vector3> reticle = entity.GetOrMakeProperty<Vector3>("Reticle");
 
-			AI ai = result.GetOrCreate<AI>();
+			AI ai = entity.GetOrCreate<AI>();
 
-			Model model = result.GetOrCreate<Model>();
+			Model model = entity.GetOrCreate<Model>();
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 			model.Filename.Value = "Models\\pyramid";
 			model.Editable = false;
@@ -56,7 +54,7 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					AkSoundEngine.PostEvent("Play_infected_shatter", result);
+					AkSoundEngine.PostEvent("Play_infected_shatter", entity);
 					ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
 					Random random = new Random();
 					for (int i = 0; i < 50; i++)
@@ -64,11 +62,11 @@ namespace Lemma.Factories
 						Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
 						shatter.AddParticle(transform.Position + offset, offset);
 					}
-					result.Delete.Execute();
+					entity.Delete.Execute();
 				}
 			};
 
-			MapAttachable.MakeAttachable(result, main, true, true, die);
+			MapAttachable.MakeAttachable(entity, main, true, true, die);
 
 			const float defaultModelScale = 0.75f;
 			model.Scale.Value = new Vector3(defaultModelScale);
@@ -154,7 +152,7 @@ namespace Lemma.Factories
 				},
 			});
 
-			Property<Entity.Handle> targetAgent = result.GetOrMakeProperty<Entity.Handle>("TargetAgent");
+			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
 
 			ai.Add(new AI.State
 			{
@@ -243,14 +241,14 @@ namespace Lemma.Factories
 				Name = "Firing",
 				Enter = delegate(AI.State last)
 				{
-					AkSoundEngine.PostEvent("Play_turret_charge", result);
+					AkSoundEngine.PostEvent("Play_turret_charge", entity);
 				},
 				Exit = delegate(AI.State next)
 				{
 					if (rayHit.Map != null && (rayHit.Position - transform.Position).Length() < 8.0f)
 						return; // Danger close, cease fire!
 
-					AkSoundEngine.PostEvent("Play_turret_fire", result);
+					AkSoundEngine.PostEvent("Play_turret_fire", entity);
 
 					Entity target = targetAgent.Value.Target;
 					if (target != null && target.Active)
@@ -290,13 +288,13 @@ namespace Lemma.Factories
 				}
 			});
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
-			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
+			base.AttachEditorComponents(entity, main);
+			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
 	}
 }

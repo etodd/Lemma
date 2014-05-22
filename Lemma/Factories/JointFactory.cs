@@ -17,19 +17,19 @@ namespace Lemma.Factories
 {
 	public class JointFactory
 	{
-		public static void Bind(Entity result, Main main, Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint, bool allowRotation, bool creating = false)
+		public static void Bind(Entity entity, Main main, Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint, bool allowRotation, bool creating = false)
 		{
-			Transform mapTransform = result.GetOrCreate<Transform>("MapTransform");
+			Transform mapTransform = entity.GetOrCreate<Transform>("MapTransform");
 
-			Transform transform = result.GetOrCreate<Transform>("Transform");
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			Factory.Get<DynamicMapFactory>().InternalBind(result, main, creating, mapTransform);
+			Factory.Get<DynamicMapFactory>().InternalBind(entity, main, creating, mapTransform);
 
-			DynamicMap map = result.Get<DynamicMap>();
+			DynamicMap map = entity.Get<DynamicMap>();
 
-			Property<Entity.Handle> parentMap = result.GetOrMakeProperty<Entity.Handle>("Parent");
-			Property<Map.Coordinate> coord = result.GetOrMakeProperty<Map.Coordinate>("Coord");
-			Property<Direction> dir = result.GetOrMakeProperty<Direction>("Direction", true);
+			Property<Entity.Handle> parentMap = entity.GetOrMakeProperty<Entity.Handle>("Parent");
+			Property<Map.Coordinate> coord = entity.GetOrMakeProperty<Map.Coordinate>("Coord");
+			Property<Direction> dir = entity.GetOrMakeProperty<Direction>("Direction", true);
 
 			Action refreshMapTransform = delegate()
 			{
@@ -51,7 +51,7 @@ namespace Lemma.Factories
 					mapTransform.Matrix.Value = transform.Matrix;
 			};
 			if (main.EditorEnabled)
-				result.Add(new NotifyBinding(refreshMapTransform, transform.Matrix, map.Offset));
+				entity.Add(new NotifyBinding(refreshMapTransform, transform.Matrix, map.Offset));
 
 			ISpaceObject joint = null;
 			CommandBinding jointDeleteBinding = null, physicsUpdateBinding = null, parentPhysicsUpdateBinding = null;
@@ -63,14 +63,14 @@ namespace Lemma.Factories
 				{
 					if (joint.Space != null)
 						main.Space.Remove(joint);
-					result.Remove(jointDeleteBinding);
+					entity.Remove(jointDeleteBinding);
 
 					if (parentPhysicsUpdateBinding != null)
-						result.Remove(parentPhysicsUpdateBinding);
+						entity.Remove(parentPhysicsUpdateBinding);
 					parentPhysicsUpdateBinding = null;
 
 					if (physicsUpdateBinding != null)
-						result.Remove(physicsUpdateBinding);
+						entity.Remove(physicsUpdateBinding);
 					physicsUpdateBinding = null;
 
 					joint = null;
@@ -109,23 +109,23 @@ namespace Lemma.Factories
 							if (parentDynamicMap != null)
 							{
 								parentPhysicsUpdateBinding = new CommandBinding(parentDynamicMap.PhysicsUpdated, rebuildJoint);
-								result.Add(parentPhysicsUpdateBinding);
+								entity.Add(parentPhysicsUpdateBinding);
 							}
 
 							physicsUpdateBinding = new CommandBinding(map.PhysicsUpdated, rebuildJoint);
-							result.Add(physicsUpdateBinding);
+							entity.Add(physicsUpdateBinding);
 
 							jointDeleteBinding = new CommandBinding(parent.Delete, delegate()
 							{
 								parentMap.Value = null;
 							});
-							result.Add(jointDeleteBinding);
+							entity.Add(jointDeleteBinding);
 						}
 					}
 				}
 			};
-			result.Add(new NotifyBinding(rebuildJoint, parentMap));
-			result.Add(new CommandBinding(result.Delete, delegate()
+			entity.Add(new NotifyBinding(rebuildJoint, parentMap));
+			entity.Add(new CommandBinding(entity.Delete, delegate()
 			{
 				if (joint != null && joint.Space != null)
 				{
@@ -134,12 +134,12 @@ namespace Lemma.Factories
 				}
 			}));
 			
-			result.Add(new CommandBinding(map.OnSuspended, delegate()
+			entity.Add(new CommandBinding(map.OnSuspended, delegate()
 			{
 				if (joint != null && joint.Space != null)
 					main.Space.Remove(joint);
 			}));
-			result.Add(new CommandBinding(map.OnResumed, delegate()
+			entity.Add(new CommandBinding(map.OnResumed, delegate()
 			{
 				if (joint != null && joint.Space == null)
 					main.Space.Add(joint);
@@ -150,27 +150,27 @@ namespace Lemma.Factories
 			{
 				Action = rebuildJoint,
 			};
-			result.Add("RebuildJoint", rebuildJointCommand);
+			entity.Add("RebuildJoint", rebuildJointCommand);
 
 			if (main.EditorEnabled)
-				JointFactory.attachEditorComponents(result, main);
+				JointFactory.attachEditorComponents(entity, main);
 		}
 
-		private static void attachEditorComponents(Entity result, Main main)
+		private static void attachEditorComponents(Entity entity, Main main)
 		{
-			Transform transform = result.Get<Transform>();
+			Transform transform = entity.Get<Transform>();
 
-			Property<Entity.Handle> parentMap = result.GetOrMakeProperty<Entity.Handle>("Parent");
+			Property<Entity.Handle> parentMap = entity.GetOrMakeProperty<Entity.Handle>("Parent");
 
-			EntityConnectable.AttachEditorComponents(result, parentMap);
+			EntityConnectable.AttachEditorComponents(entity, parentMap);
 			Model model = new Model();
 			model.Filename.Value = "Models\\cone";
 			model.Editable = false;
 			model.Serialize = false;
-			result.Add("DirectionModel", model);
+			entity.Add("DirectionModel", model);
 
-			Property<Direction> dir = result.GetProperty<Direction>("Direction");
-			Transform mapTransform = result.Get<Transform>("MapTransform");
+			Property<Direction> dir = entity.GetProperty<Direction>("Direction");
+			Transform mapTransform = entity.Get<Transform>("MapTransform");
 			model.Add(new Binding<Matrix>(model.Transform, delegate()
 			{
 				Matrix m = Matrix.Identity;

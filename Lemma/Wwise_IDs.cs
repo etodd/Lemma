@@ -23,7 +23,6 @@ public class AK
         public static uint PLAY_WHITE_LIGHT = 3583610488U;
         public static uint STOP_GLOWSQUARE_CHARGE = 3861030501U;
         public static uint STOP_MUSIC_AMBIENT = 3815910684U;
-        public static uint STOP_PLAYER_BREATHING_HARD = 3180565756U;
         public static uint STOP_PLAYER_BREATHING_SOFT = 1454416799U;
         public static uint STOP_PLAYER_FALL = 3680109729U;
         public static uint STOP_PLAYER_SLIDE_LOOP = 651971942U;
@@ -50,8 +49,12 @@ public class AK
     public class GAME_PARAMETERS
     {
         public static uint MUSIC_AMBIENT_PROGRESS = 2736694343U;
+        public static uint PAUSE_PARAMETER = 2977051669U;
+        public static uint SFX_PLAYER_BREATHING_VOLUME = 854169122U;
         public static uint SFX_PLAYER_FALL = 1894448894U;
         public static uint SLOWMOTION = 340593036U;
+        public static uint VOLUME_MUSIC = 3891337659U;
+        public static uint VOLUME_SFX = 3673881719U;
     } // public class GAME_PARAMETERS
 
     public class BANKS
@@ -65,6 +68,8 @@ public class AK
     {
         public static uint BUS_MUSIC = 1162281553U;
         public static uint BUS_SFX = 3895923845U;
+        public static uint BUS_SFX_BREATHDUCK = 3381165833U;
+        public static uint BUS_SFX_BREATHINGINPUT = 3302530918U;
         public static uint BUS_UI = 1746463750U;
         public static uint MASTER_AUDIO_BUS = 3803692087U;
         public static uint MASTER_SECONDARY_BUS = 805203703U;

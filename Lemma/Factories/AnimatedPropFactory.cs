@@ -16,26 +16,18 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "AnimatedProp");
-			result.Add("Transform", new Transform());
-			AnimatedModel model = new AnimatedModel();
-			result.Add("Model", model);
-
-			result.Add("Animation", new Property<string> { Editable = true });
-			result.Add("Loop", new Property<bool> { Editable = true });
-
-			return result;
+			return new Entity(main, "AnimatedProp");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			AnimatedModel model = result.Get<AnimatedModel>("Model");
+			AnimatedModel model = entity.GetOrCreate<AnimatedModel>("Model");
 			model.MapContent.Value = true;
-			this.SetMain(result, main);
-			Transform transform = result.Get<Transform>();
+			this.SetMain(entity, main);
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
-			Property<string> animation = result.GetProperty<string>("Animation");
-			Property<bool> loop = result.GetProperty<bool>("Loop");
+			Property<string> animation = entity.GetOrMakeProperty<string>("Animation", true);
+			Property<bool> loop = entity.GetOrMakeProperty<bool>("Loop", true);
 
 			model.Add(new NotifyBinding(delegate()
 			{
@@ -46,11 +38,11 @@ namespace Lemma.Factories
 			}, animation, loop));
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
-			Model editorModel = result.Get<Model>("EditorModel");
-			Model model = result.Get<Model>("Model");
+			base.AttachEditorComponents(entity, main);
+			Model editorModel = entity.Get<Model>("EditorModel");
+			Model model = entity.Get<Model>("Model");
 			editorModel.Add(new Binding<bool>(editorModel.Enabled, x => !x, model.IsValid));
 		}
 	}

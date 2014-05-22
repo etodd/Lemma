@@ -73,30 +73,30 @@ namespace ComponentBind
 
 		public Entity CreateAndBind(MainClass main)
 		{
-			Entity result = this.Create(main);
-			this.Bind(result, main, true);
-			return result;
+			Entity entity = this.Create(main);
+			this.Bind(entity, main, true);
+			return entity;
 		}
 
-		public void SetMain(Entity result, MainClass main)
+		public void SetMain(Entity entity, MainClass main)
 		{
 			this.SpawnIndex++;
-			result.SetMain(main);
+			entity.SetMain(main);
 			if (main.EditorEnabled)
-				this.AttachEditorComponents(result, main);
+				this.AttachEditorComponents(entity, main);
 		}
 
-		public virtual void Bind(Entity result, MainClass main, bool creating = false)
+		public virtual void Bind(Entity entity, MainClass main, bool creating = false)
 		{
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 		}
 
 		public static Action<Factory<MainClass>, Entity, MainClass> DefaultEditorComponents;
 
-		public virtual void AttachEditorComponents(Entity result, MainClass main)
+		public virtual void AttachEditorComponents(Entity entity, MainClass main)
 		{
 			if (Factory<MainClass>.DefaultEditorComponents != null)
-				Factory<MainClass>.DefaultEditorComponents(this, result, main);
+				Factory<MainClass>.DefaultEditorComponents(this, entity, main);
 		}
 
 		public static Entity Duplicate(MainClass main, Entity source)

@@ -24,14 +24,14 @@ namespace Lemma.Components
 			}));
 		}
 
-		public static void Add(Entity result, params string[] events)
+		public static void Add(Entity entity, params string[] events)
 		{
-			SoundKiller.Add(result, events.Select(x => AkSoundEngine.GetIDFromString(x)).ToArray());
+			SoundKiller.Add(entity, events.Select(x => AkSoundEngine.GetIDFromString(x)).ToArray());
 		}
 
-		public static void Add(Entity result, params uint[] events)
+		public static void Add(Entity entity, params uint[] events)
 		{
-			SoundKiller killer = result.GetOrCreate<SoundKiller>();
+			SoundKiller killer = entity.GetOrCreate<SoundKiller>();
 			foreach (uint e in events)
 				killer.Events.Add(e);
 		}

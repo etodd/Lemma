@@ -17,33 +17,27 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "RandomAmbientSound");
-
-			result.Add("Transform", new Transform());
-			result.Add("MinimumInterval", new Property<float> { Value = 10.0f, Editable = true });
-			result.Add("MaximumInterval", new Property<float> { Value = 20.0f, Editable = true });
-
-			return result;
+			return new Entity(main, "RandomAmbientSound");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 
-			Transform transform = result.Get<Transform>();
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			Property<bool> is3D = result.GetOrMakeProperty<bool>("Is3D", true);
+			Property<bool> is3D = entity.GetOrMakeProperty<bool>("Is3D", true);
 
-			Property<string> cue = result.GetOrMakeProperty<string>("Cue", true);
+			Property<string> cue = entity.GetOrMakeProperty<string>("Cue", true);
 
-			result.CannotSuspendByDistance = !is3D;
-			result.Add(new NotifyBinding(delegate()
+			entity.CannotSuspendByDistance = !is3D;
+			entity.Add(new NotifyBinding(delegate()
 			{
-				result.CannotSuspendByDistance = !is3D;
+				entity.CannotSuspendByDistance = !is3D;
 			}, is3D));
 
-			Property<float> min = result.GetProperty<float>("MinimumInterval");
-			Property<float> max = result.GetProperty<float>("MaximumInterval");
+			Property<float> min = entity.GetOrMakeProperty<float>("MinimumInterval", true, 10.0f);
+			Property<float> max = entity.GetOrMakeProperty<float>("MaximumInterval", true, 20.0f);
 
 			Random random = new Random();
 			float interval = min + ((float)random.NextDouble() * (max - min));
@@ -53,13 +47,13 @@ namespace Lemma.Factories
 				{
 					if (interval <= 0)
 					{
-						AkSoundEngine.PostEvent(cue, result);
+						AkSoundEngine.PostEvent(cue, entity);
 						interval = min + ((float)random.NextDouble() * (max - min));
 					}
 				}
 			};
 			updater.EnabledWhenPaused = true;
-			result.Add(updater);
+			entity.Add(updater);
 		}
 	}
 }

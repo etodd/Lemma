@@ -18,27 +18,23 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "SignalTower");
-
-			result.Add("Transform", new Transform());
-
-			return result;
+			return new Entity(main, "SignalTower");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			PlayerTrigger trigger = result.GetOrCreate<PlayerTrigger>("PlayerTrigger");
-			this.SetMain(result, main);
-			Transform transform = result.GetOrCreate<Transform>("Transform");
+			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
+			this.SetMain(entity, main);
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			if (result.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(result, main);
-			Property<float> attachOffset = result.GetOrMakeProperty<float>("AttachmentOffset", true);
+			if (entity.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(entity, main);
+			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
 			
 			trigger.Editable = true;
 			trigger.Add(new Binding<Vector3>(trigger.Position, () => Vector3.Transform(new Vector3(0.0f, 0.0f, attachOffset), transform.Matrix), attachOffset, transform.Matrix));
 
-			PointLight light = result.GetOrCreate<PointLight>();
+			PointLight light = entity.GetOrCreate<PointLight>();
 			light.Add(new Binding<Vector3>(light.Position, trigger.Position));
 			light.Color.Value = new Vector3(1.0f, 0.5f, 1.7f);
 
@@ -52,28 +48,28 @@ namespace Lemma.Factories
 				}
 			};
 			updater.EnabledInEditMode = true;
-			result.Add(updater);
+			entity.Add(updater);
 
-			SignalTower tower = result.GetOrCreate<SignalTower>("SignalTower");
+			SignalTower tower = entity.GetOrCreate<SignalTower>("SignalTower");
 			tower.Add(new CommandBinding<Entity>(trigger.PlayerEntered, tower.PlayerEnteredRange));
 			tower.Add(new CommandBinding<Entity>(trigger.PlayerExited, tower.PlayerExitedRange));
 			tower.Add(new Binding<Entity.Handle>(tower.Player, trigger.Player));
 
 			if (!main.EditorEnabled)
-				AkSoundEngine.PostEvent("Signal_tower_loop", result);
+				AkSoundEngine.PostEvent("Signal_tower_loop", entity);
 			
-			SoundKiller.Add(result, "Stop_signal_tower_loop");
+			SoundKiller.Add(entity, "Stop_signal_tower_loop");
 
-			AkGameObjectTracker.Attach(result, trigger.Position);
+			AkGameObjectTracker.Attach(entity, trigger.Position);
 
-			ParticleEmitter distortionEmitter = result.GetOrCreate<ParticleEmitter>("DistortionEmitter");
+			ParticleEmitter distortionEmitter = entity.GetOrCreate<ParticleEmitter>("DistortionEmitter");
 			distortionEmitter.Serialize = false;
 			distortionEmitter.Add(new Binding<Vector3>(distortionEmitter.Position, trigger.Position));
 			distortionEmitter.ParticleType.Value = "Distortion";
 			distortionEmitter.ParticlesPerSecond.Value = 4;
 			distortionEmitter.Jitter.Value = new Vector3(0.5f);
 
-			ParticleEmitter purpleEmitter = result.GetOrCreate<ParticleEmitter>("PurpleEmitter");
+			ParticleEmitter purpleEmitter = entity.GetOrCreate<ParticleEmitter>("PurpleEmitter");
 			purpleEmitter.Serialize = false;
 			purpleEmitter.Add(new Binding<Vector3>(purpleEmitter.Position, trigger.Position));
 			purpleEmitter.ParticleType.Value = "Purple";
@@ -85,23 +81,23 @@ namespace Lemma.Factories
 			{
 				if (enterAnimation == null || !enterAnimation.Active)
 				{
-					AkSoundEngine.PostEvent("Signal_tower_activate", result);
+					AkSoundEngine.PostEvent("Signal_tower_activate", entity);
 					enterAnimation = new Animation
 					(
 						new Animation.FloatMoveTo(lightBaseRadius, 20.0f, 0.25f),
 						new Animation.FloatMoveTo(lightBaseRadius, 10.0f, 0.5f)
 					);
-					result.Add(enterAnimation);
+					entity.Add(enterAnimation);
 				}
 			}));
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
+			base.AttachEditorComponents(entity, main);
 
-			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
-			PlayerTrigger.AttachEditorComponents(result, main, result.Get<Model>().Color);
+			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
+			PlayerTrigger.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
 	}
 }

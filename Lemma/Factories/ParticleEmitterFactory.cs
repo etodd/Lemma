@@ -18,35 +18,30 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "ParticleEmitter");
-
-			result.Add("Transform", new Transform());
-			result.Add("ParticleEmitter", new ParticleEmitter());
-
-			return result;
+			return new Entity(main, "ParticleEmitter");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(result, main);
-			Transform transform = result.Get<Transform>();
-			ParticleEmitter emitter = result.Get<ParticleEmitter>();
+			this.SetMain(entity, main);
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
+			ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("ParticleEmitter");
 			emitter.Add(new Binding<Vector3>(emitter.Position, transform.Position));
 
-			if (result.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(result, main);
+			if (entity.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(entity, main);
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
-			Model editorModel = result.Get<Model>("EditorModel");
-			ParticleEmitter emitter = result.Get<ParticleEmitter>();
-			Property<bool> editorSelected = result.GetOrMakeProperty<bool>("EditorSelected");
+			base.AttachEditorComponents(entity, main);
+			Model editorModel = entity.Get<Model>("EditorModel");
+			ParticleEmitter emitter = entity.Get<ParticleEmitter>();
+			Property<bool> editorSelected = entity.GetOrMakeProperty<bool>("EditorSelected");
 			editorSelected.Serialize = false;
 			editorModel.Add(new Binding<bool>(editorModel.Enabled, () => !editorSelected || emitter.ParticleType.Value == null, editorSelected, emitter.ParticleType));
 
-			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
+			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
 	}
 }

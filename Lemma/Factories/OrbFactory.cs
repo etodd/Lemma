@@ -20,24 +20,22 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Orb");
-
-			return result;
+			return new Entity(main, "Orb");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			PointLight light = result.GetOrCreate<PointLight>("PointLight");
+			PointLight light = entity.GetOrCreate<PointLight>("PointLight");
 			light.Serialize = false;
 
 			const float defaultLightAttenuation = 15.0f;
 			light.Attenuation.Value = defaultLightAttenuation;
 
-			Transform transform = result.GetOrCreate<Transform>("Transform");
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
 			if (!main.EditorEnabled)
-				AkSoundEngine.PostEvent("Play_cube_drone", result);
+				AkSoundEngine.PostEvent("Play_cube_drone", entity);
 
 			// TODO: figure out Wwise volume parameter
 			/*
@@ -48,9 +46,9 @@ namespace Lemma.Factories
 			volume.Value = defaultVolume;
 			*/
 
-			AI ai = result.GetOrCreate<AI>("AI");
+			AI ai = entity.GetOrCreate<AI>("AI");
 
-			ModelAlpha model = result.GetOrCreate<ModelAlpha>();
+			ModelAlpha model = entity.GetOrCreate<ModelAlpha>();
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 			model.Filename.Value = "Models\\alpha-box";
 			model.Editable = false;
@@ -75,7 +73,7 @@ namespace Lemma.Factories
 				}
 			}, ai.CurrentState));
 
-			result.Add(new Updater
+			entity.Add(new Updater
 			{
 				delegate(float dt)
 				{
@@ -89,10 +87,10 @@ namespace Lemma.Factories
 
 			light.Add(new Binding<Vector3>(light.Color, model.Color));
 
-			Agent agent = result.GetOrCreate<Agent>();
+			Agent agent = entity.GetOrCreate<Agent>();
 			agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
 
-			Property<int> operationalRadius = result.GetOrMakeProperty<int>("OperationalRadius", true, 100);
+			Property<int> operationalRadius = entity.GetOrMakeProperty<int>("OperationalRadius", true, 100);
 
 			AI.Task checkOperationalRadius = new AI.Task
 			{
@@ -107,7 +105,7 @@ namespace Lemma.Factories
 				},
 			};
 
-			RaycastAI raycastAI = result.GetOrCreate<RaycastAI>("RaycastAI");
+			RaycastAI raycastAI = entity.GetOrCreate<RaycastAI>("RaycastAI");
 			raycastAI.Add(new TwoWayBinding<Vector3>(transform.Position, raycastAI.Position));
 			raycastAI.Add(new Binding<Matrix>(transform.Orientation, raycastAI.Orientation));
 
@@ -160,7 +158,7 @@ namespace Lemma.Factories
 				},
 			});
 
-			Property<Entity.Handle> targetAgent = result.GetOrMakeProperty<Entity.Handle>("TargetAgent");
+			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
 
 			ai.Add(new AI.State
 			{
@@ -246,9 +244,9 @@ namespace Lemma.Factories
 				},
 			});
 
-			ListProperty<Map.Coordinate> coordQueue = result.GetOrMakeListProperty<Map.Coordinate>("CoordQueue");
+			ListProperty<Map.Coordinate> coordQueue = entity.GetOrMakeListProperty<Map.Coordinate>("CoordQueue");
 
-			Property<Map.Coordinate> explosionOriginalCoord = result.GetOrMakeProperty<Map.Coordinate>("ExplosionOriginalCoord");
+			Property<Map.Coordinate> explosionOriginalCoord = entity.GetOrMakeProperty<Map.Coordinate>("ExplosionOriginalCoord");
 
 			EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
 			Map.CellState infectedState = Map.States[Map.t.Infected];
@@ -352,7 +350,7 @@ namespace Lemma.Factories
 				},
 			});
 
-			Property<bool> exploded = result.GetOrMakeProperty<bool>("Exploded");
+			Property<bool> exploded = entity.GetOrMakeProperty<bool>("Exploded");
 
 			ai.Add(new AI.State
 			{
@@ -360,12 +358,12 @@ namespace Lemma.Factories
 				Enter = delegate(AI.State previous)
 				{
 					exploded.Value = false;
-					AkSoundEngine.PostEvent("Stop_cube_drone", result);
+					AkSoundEngine.PostEvent("Stop_cube_drone", entity);
 				},
 				Exit = delegate(AI.State next)
 				{
 					exploded.Value = false;
-					AkSoundEngine.PostEvent("Play_cube_drone", result);
+					AkSoundEngine.PostEvent("Play_cube_drone", entity);
 				},
 				Tasks = new[]
 				{
@@ -399,7 +397,7 @@ namespace Lemma.Factories
 										ai.CurrentState.Value = "Alert";
 									}
 									else
-										result.Delete.Execute();
+										entity.Delete.Execute();
 								}
 								else // Our map got deleted. Hope we find a new one.
 								{
@@ -413,7 +411,7 @@ namespace Lemma.Factories
 				},
 			});
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 		}
 	}
 }

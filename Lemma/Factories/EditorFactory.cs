@@ -39,11 +39,58 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Editor");
-			result.Serialize = false;
+			Entity entity = new Entity(main, "Editor");
+			entity.Serialize = false;
+			return entity;
+		}
+
+		private Vector4 colorHash(string eventName)
+		{
+			byte[] hash = System.Security.Cryptography.MD5.Create().ComputeHash(ASCIIEncoding.UTF8.GetBytes(eventName));
+			Vector3 color = new Vector3(hash[0] / 255.0f, hash[1] / 255.0f, hash[2] / 255.0f);
+			color.Normalize();
+			return new Vector4(color, 1.0f);
+		}
+
+		private void raycast(Main main, Vector3 ray, out Entity closestEntity, out Transform closestTransform)
+		{
+			closestEntity = null;
+			float closestEntityDistance = main.Camera.FarPlaneDistance;
+			closestTransform = null;
+			Vector3 rayStart = main.Camera.Position;
+			foreach (Entity entity in main.Entities)
+			{
+				foreach (Transform transform in entity.GetAll<Transform>())
+				{
+					Vector3 entityPos = transform.Position;
+					float distance = (entityPos - rayStart).Length();
+					Vector3 closestToEntity = rayStart + ray * distance;
+					if ((distance < closestEntityDistance) && (closestToEntity - entityPos).Length() < 0.5f)
+					{
+						closestEntityDistance = distance;
+						closestEntity = entity;
+						closestTransform = transform;
+					}
+				}
+			}
+
+			Map.GlobalRaycastResult hit = Map.GlobalRaycast(rayStart, ray, closestEntityDistance, true);
+			if (hit.Coordinate != null)
+			{
+				closestEntity = hit.Map.Entity;
+				closestTransform = null;
+			}
+		}
+
+		public override void Bind(Entity entity, Main main, bool creating = false)
+		{
+			this.SetMain(entity, main);
+
 			Editor editor = new Editor();
 			EditorUI ui = new EditorUI { Editable = false };
-			Model model = new Model { Editable = false, Filename = new Property<string> { Value = "Models\\selector" }, Scale = new Property<Vector3> { Value = new Vector3(0.5f) } };
+			Model model = new Model { Editable = false };
+			model.Filename.Value = "Models\\selector";
+			model.Scale.Value = new Vector3(0.5f);
 
 			UIRenderer uiRenderer = new UIRenderer { Editable = false };
 			FPSInput input = new FPSInput { Editable = false };
@@ -86,63 +133,13 @@ namespace Lemma.Factories
 			popupList.Name.Value = "PopupList";
 			popupScroller.Children.Add(popupList);
 
-			result.Add("Editor", editor);
-			result.Add("UI", ui);
-			result.Add("UIRenderer", uiRenderer);
-			result.Add("Model", model);
-			result.Add("Input", input);
-			result.Add("StartSpawnPoint", new Property<string>());
-			result.Add("ProceduralGenerator", new ProceduralGenerator());
-
-			return result;
-		}
-
-		private Vector4 colorHash(string eventName)
-		{
-			byte[] hash = System.Security.Cryptography.MD5.Create().ComputeHash(ASCIIEncoding.UTF8.GetBytes(eventName));
-			Vector3 color = new Vector3(hash[0] / 255.0f, hash[1] / 255.0f, hash[2] / 255.0f);
-			color.Normalize();
-			return new Vector4(color, 1.0f);
-		}
-
-		private void raycast(Main main, Vector3 ray, out Entity closestEntity, out Transform closestTransform)
-		{
-			closestEntity = null;
-			float closestEntityDistance = main.Camera.FarPlaneDistance;
-			closestTransform = null;
-			Vector3 rayStart = main.Camera.Position;
-			foreach (Entity entity in main.Entities)
-			{
-				foreach (Transform transform in entity.GetAll<Transform>())
-				{
-					Vector3 entityPos = transform.Position;
-					float distance = (entityPos - rayStart).Length();
-					Vector3 closestToEntity = rayStart + ray * distance;
-					if ((distance < closestEntityDistance) && (closestToEntity - entityPos).Length() < 0.5f)
-					{
-						closestEntityDistance = distance;
-						closestEntity = entity;
-						closestTransform = transform;
-					}
-				}
-			}
-
-			Map.GlobalRaycastResult hit = Map.GlobalRaycast(rayStart, ray, closestEntityDistance, true);
-			if (hit.Coordinate != null)
-			{
-				closestEntity = hit.Map.Entity;
-				closestTransform = null;
-			}
-		}
-
-		public override void Bind(Entity result, Main main, bool creating = false)
-		{
-			this.SetMain(result, main);
-			Editor editor = result.Get<Editor>();
-			EditorUI ui = result.Get<EditorUI>();
-			Model model = result.Get<Model>("Model");
-			FPSInput input = result.Get<FPSInput>("Input");
-			UIRenderer uiRenderer = result.Get<UIRenderer>();
+			entity.Add("Editor", editor);
+			entity.Add("UI", ui);
+			entity.Add("UIRenderer", uiRenderer);
+			entity.Add("Model", model);
+			entity.Add("Input", input);
+			entity.Add("StartSpawnPoint", new Property<string>());
+			entity.Add("ProceduralGenerator", new ProceduralGenerator());
 
 			ModelAlpha radiusVisual = new ModelAlpha();
 			radiusVisual.Filename.Value = "Models\\alpha-sphere";
@@ -152,7 +149,7 @@ namespace Lemma.Factories
 			radiusVisual.Serialize = false;
 			radiusVisual.DrawOrder.Value = 11; // In front of water
 			radiusVisual.DisableCulling.Value = true;
-			result.Add(radiusVisual);
+			entity.Add(radiusVisual);
 			radiusVisual.Add(new Binding<Matrix, Vector3>(radiusVisual.Transform, x => Matrix.CreateTranslation(x), editor.Position));
 			radiusVisual.Add(new Binding<Vector3, int>(radiusVisual.Scale, delegate(int brushSize)
 			{
@@ -172,7 +169,7 @@ namespace Lemma.Factories
 			selection.Serialize = false;
 			selection.DrawOrder.Value = 12; // In front of water and radius visualizer
 			selection.DisableCulling.Value = true;
-			result.Add(selection);
+			entity.Add(selection);
 			selection.Add(new Binding<bool>(selection.Enabled, editor.VoxelSelectionActive));
 			selection.Add(new Binding<Matrix>(selection.Transform, delegate()
 			{
@@ -231,11 +228,6 @@ namespace Lemma.Factories
 				}
 			}
 
-			Scroller scroller = (Scroller)uiRenderer.Root.GetChildByName("Scroller");
-
-			Container popup = (Container)uiRenderer.Root.GetChildByName("Popup");
-			ListContainer popupList = (ListContainer)popup.GetChildByName("PopupList");
-
 			input.Add(new CommandBinding(input.GetKeyUp(Keys.Space), () => !editor.MapEditMode && !ui.StringPropertyLocked && !editor.MovementEnabled, delegate()
 			{
 				Vector2 pos = input.Mouse;
@@ -267,7 +259,7 @@ namespace Lemma.Factories
 
 			editor.Add(new TwoWayBinding<string>(main.MapFile, editor.MapFile));
 
-			result.Add(new TwoWayBinding<string>(((GameMain)main).StartSpawnPoint, result.GetProperty<string>("StartSpawnPoint")));
+			entity.Add(new TwoWayBinding<string>(((GameMain)main).StartSpawnPoint, entity.GetProperty<string>("StartSpawnPoint")));
 
 			uiRenderer.Add(new ListBinding<UIComponent>(uiRenderer.Root.GetChildByName("PropertyList").Children, ui.UIElements));
 			ui.Add(new ListBinding<Entity>(ui.SelectedEntities, editor.SelectedEntities));
@@ -324,7 +316,7 @@ namespace Lemma.Factories
 				}
 			});
 
-			result.Add(new CommandBinding(main.MapLoaded, delegate()
+			entity.Add(new CommandBinding(main.MapLoaded, delegate()
 			{
 				editor.Position.Value = Vector3.Zero;
 				editor.NeedsSave.Value = false;
@@ -686,7 +678,7 @@ namespace Lemma.Factories
 								i.Scale.Value = new Vector3(0.25f);
 								i.Transform.Value = Matrix.CreateTranslation(positionProperty[e.Time]);
 								models.Add(i);
-								result.Add(i);
+								entity.Add(i);
 							}
 							eventPositionModels[el] = models;
 						}
@@ -845,7 +837,7 @@ namespace Lemma.Factories
 								i.Model.Color.Value = new Vector3(color.X, color.Y, color.Z);
 							i.Scale.Value = new Vector3(0.25f);
 							i.Transform.Value = Matrix.CreateTranslation(positionProperty[e.Time]);
-							result.Add(i);
+							entity.Add(i);
 							models.Add(i);
 						}
 						eventPositionModels[el] = models;
@@ -855,7 +847,7 @@ namespace Lemma.Factories
 				ModelInstance instance = new ModelInstance();
 				instance.Setup("Models\\position-model", 0);
 				instance.Scale.Value = new Vector3(0.25f);
-				result.Add(instance);
+				entity.Add(instance);
 				sessionPositionModels.Add(s.Session, instance);
 				s.Active.Value = true;
 				timeline.Children.AddAll(s.Session.Events.Where(x => analyticsActiveEvents.FirstOrDefault(y => y.Name == x.Name) != null).Select(createEventLines));
@@ -923,7 +915,7 @@ namespace Lemma.Factories
 			playbackLine.Add(new Binding<Vector2, float>(playbackLine.Position, x => new Vector2(x, 0.0f), playbackLocation));
 			timeline.Children.Add(playbackLine);
 
-			result.Add(new NotifyBinding(delegate()
+			entity.Add(new NotifyBinding(delegate()
 			{
 				allEventsButton.Detach();
 				allSessionsButton.Detach();
@@ -1070,7 +1062,7 @@ namespace Lemma.Factories
 				}
 			};
 			timelineUpdate.EnabledInEditMode = true;
-			result.Add(timelineUpdate);
+			entity.Add(timelineUpdate);
 
 			// Save
 			addCommand("Save", new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.S }, () => !editor.MovementEnabled, editor.Save);
@@ -1099,15 +1091,15 @@ namespace Lemma.Factories
 				else
 					editor.Brush.Value = Map.StateList[brush].ToString();
 			};
-			result.Add(new CommandBinding(input.GetKeyDown(Keys.Q), () => editor.MapEditMode, delegate()
+			entity.Add(new CommandBinding(input.GetKeyDown(Keys.Q), () => editor.MapEditMode, delegate()
 			{
 				changeBrush(-1);
 			}));
-			result.Add(new CommandBinding(input.GetKeyDown(Keys.E), () => editor.MapEditMode && !input.GetKey(Keys.LeftShift), delegate()
+			entity.Add(new CommandBinding(input.GetKeyDown(Keys.E), () => editor.MapEditMode && !input.GetKey(Keys.LeftShift), delegate()
 			{
 				changeBrush(1);
 			}));
-			result.Add(new CommandBinding<int>(input.MouseScrolled, () => editor.MapEditMode && !input.GetKey(Keys.LeftAlt), delegate(int delta)
+			entity.Add(new CommandBinding<int>(input.MouseScrolled, () => editor.MapEditMode && !input.GetKey(Keys.LeftAlt), delegate(int delta)
 			{
 				editor.BrushSize.Value = Math.Max(1, editor.BrushSize.Value + delta);
 			}));
@@ -1145,7 +1137,7 @@ namespace Lemma.Factories
 			input.Add(new Binding<bool>(main.IsMouseVisible, x => !x, input.EnableLook));
 			editor.Add(new Binding<Vector3>(camera.Position, () => editor.Position.Value - (camera.Forward.Value * editor.CameraDistance), editor.Position, camera.Forward, editor.CameraDistance));
 
-			PointLight editorLight = result.GetOrCreate<PointLight>("EditorLight");
+			PointLight editorLight = entity.GetOrCreate<PointLight>("EditorLight");
 			editorLight.Serialize = false;
 			editorLight.Editable = false;
 			editorLight.Add(new Binding<float>(editorLight.Attenuation, main.Camera.FarPlaneDistance));
@@ -1180,8 +1172,8 @@ namespace Lemma.Factories
 					if (editor.SelectedEntities.Count == 1 && input.GetKey(Keys.LeftControl).Value)
 					{
 						// The user is trying to connect the two entities
-						Entity entity = editor.SelectedEntities.First();
-						Command<Entity> toggleConnection = entity.GetCommand<Entity>("ToggleEntityConnected");
+						Entity selectedEntity = editor.SelectedEntities.First();
+						Command<Entity> toggleConnection = selectedEntity.GetCommand<Entity>("ToggleEntityConnected");
 						if (toggleConnection != null)
 						{
 							toggleConnection.Execute(closestEntity);
@@ -1367,17 +1359,17 @@ namespace Lemma.Factories
 						XmlSerializer serializer = new XmlSerializer(typeof(List<Entity>));
 						List<Entity> entities = (List<Entity>)serializer.Deserialize(yankBuffer);
 
-						foreach (Entity entity in entities)
+						foreach (Entity e in entities)
 						{
-							entity.ID = Entity.GenerateID(entity, main);
-							Factory<Main> factory = Factory<Main>.Get(entity.Type);
-							factory.Bind(entity, main);
-							main.Add(entity);
+							e.ID = Entity.GenerateID(e, main);
+							Factory<Main> factory = Factory<Main>.Get(e.Type);
+							factory.Bind(e, main);
+							main.Add(e);
 						}
 
 						editor.SelectedEntities.Clear();
-						foreach (Entity entity in entities)
-							editor.SelectedEntities.Add(entity);
+						foreach (Entity e in entities)
+							editor.SelectedEntities.Add(e);
 						editor.StartTranslation.Execute();
 					}
 				}
@@ -1397,7 +1389,7 @@ namespace Lemma.Factories
 			));
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
 			// Cancel editor components
 		}

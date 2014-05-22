@@ -16,41 +16,41 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Cloud");
+			Entity entity = new Entity(main, "Cloud");
 
 			Transform transform = new Transform();
-			result.Add("Transform", transform);
+			entity.Add("Transform", transform);
 
 			ModelAlpha clouds = new ModelAlpha();
 			clouds.Filename.Value = "Models\\clouds";
 			clouds.DrawOrder.Value = -9;
-			result.Add("Clouds", clouds);
+			entity.Add("Clouds", clouds);
 
-			return result;
+			return entity;
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			base.Bind(result, main, creating);
-			result.CannotSuspendByDistance = true;
+			base.Bind(entity, main, creating);
+			entity.CannotSuspendByDistance = true;
 
-			ModelAlpha clouds = result.Get<ModelAlpha>("Clouds");
+			ModelAlpha clouds = entity.Get<ModelAlpha>("Clouds");
 			clouds.CullBoundingBox.Value = false;
 			clouds.DisableCulling.Value = true;
 
-			Property<float> height = result.GetOrMakeProperty<float>("Height", true, 1.0f);
-			result.Add(new Binding<float>(clouds.GetFloatParameter("Height"), height));
+			Property<float> height = entity.GetOrMakeProperty<float>("Height", true, 1.0f);
+			entity.Add(new Binding<float>(clouds.GetFloatParameter("Height"), height));
 
-			Property<Vector2> velocity = result.GetOrMakeProperty<Vector2>("Velocity", true, Vector2.One);
-			result.Add(new Binding<Vector2>(clouds.GetVector2Parameter("Velocity"), x => x * (1.0f / 60.0f), velocity));
+			Property<Vector2> velocity = entity.GetOrMakeProperty<Vector2>("Velocity", true, Vector2.One);
+			entity.Add(new Binding<Vector2>(clouds.GetVector2Parameter("Velocity"), x => x * (1.0f / 60.0f), velocity));
 
-			result.Add(new CommandBinding(main.ReloadedContent, delegate()
+			entity.Add(new CommandBinding(main.ReloadedContent, delegate()
 			{
 				height.Reset();
 				velocity.Reset();
 			}));
 
-			Property<float> startDistance = result.GetOrMakeProperty<float>("StartDistance", true, 50);
+			Property<float> startDistance = entity.GetOrMakeProperty<float>("StartDistance", true, 50);
 			clouds.Add(new Binding<float>(clouds.GetFloatParameter("StartDistance"), startDistance));
 		}
 	}

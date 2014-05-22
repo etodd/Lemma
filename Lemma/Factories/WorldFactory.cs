@@ -38,18 +38,9 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "World");
-			result.Add("Transform", new Transform());
-
-			result.Add("LightRampTexture", new Property<string> { Editable = true, Value = "Images\\default-ramp" });
-			result.Add("BackgroundColor", new Property<Color> { Editable = true, Value = WorldFactory.defaultBackgroundColor });
-			result.Add("FarPlaneDistance", new Property<float> { Editable = true, Value = 100.0f });
-
-			result.Add("ReverbAmount", new Property<float> { Value = 0.0f, Editable = true });
-
-			result.Add("ReverbSize", new Property<float> { Value = 0.0f, Editable = true });
-
-			return result;
+			Entity entity = new Entity(main, "World");
+			entity.Add("Transform", new Transform());
+			return entity;
 		}
 
 		private static bool boxesContain(IEnumerable<NonAxisAlignedBoundingBox> boxes, Vector3 position)
@@ -162,12 +153,12 @@ namespace Lemma.Factories
 				return Zone.GetConnectedZones(currentZone).Select(x => new NonAxisAlignedBoundingBox { BoundingBox = x.BoundingBox, Transform = Matrix.Invert(x.Transform) }).ToList();
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			result.CannotSuspend = true;
-			result.EditorCanDelete = false;
+			entity.CannotSuspend = true;
+			entity.EditorCanDelete = false;
 
-			result.Add(new PostInitialization
+			entity.Add(new PostInitialization
 			{
 				delegate()
 				{
@@ -176,18 +167,18 @@ namespace Lemma.Factories
 				}
 			});
 
-			Property<DialogueForest> dialogue = result.GetOrMakeProperty<DialogueForest>("DialogueForest");
+			Property<DialogueForest> dialogue = entity.GetOrMakeProperty<DialogueForest>("DialogueForest");
 			dialogue.Value = new DialogueForest();
 			dialogue.Serialize = false;
 			dialogue.Editable = false;
 
-			result.Add(new TwoWayBinding<string>(result.GetProperty<string>("LightRampTexture"), main.Renderer.LightRampTexture));
-			result.Add(new TwoWayBinding<string>(result.GetOrMakeProperty<string>("EnvironmentMap", true, "Images\\env0"), main.Renderer.EnvironmentMap));
-			result.Add(new TwoWayBinding<Vector3>(result.GetOrMakeProperty<Vector3>("EnvironmentColor", true, Vector3.One), main.Renderer.EnvironmentColor));
-			result.Add(new TwoWayBinding<Color>(result.GetProperty<Color>("BackgroundColor"), main.Renderer.BackgroundColor));
-			result.Add(new TwoWayBinding<float>(result.GetProperty<float>("FarPlaneDistance"), main.Camera.FarPlaneDistance));
+			entity.Add(new TwoWayBinding<string>(entity.GetOrMakeProperty<string>("LightRampTexture", true, "Images\\default-ramp"), main.Renderer.LightRampTexture));
+			entity.Add(new TwoWayBinding<string>(entity.GetOrMakeProperty<string>("EnvironmentMap", true, "Images\\env0"), main.Renderer.EnvironmentMap));
+			entity.Add(new TwoWayBinding<Vector3>(entity.GetOrMakeProperty<Vector3>("EnvironmentColor", true, Vector3.One), main.Renderer.EnvironmentColor));
+			entity.Add(new TwoWayBinding<Color>(entity.GetOrMakeProperty<Color>("BackgroundColor", true, WorldFactory.defaultBackgroundColor), main.Renderer.BackgroundColor));
+			entity.Add(new TwoWayBinding<float>(entity.GetOrMakeProperty<float>("FarPlaneDistance", true, 100.0f), main.Camera.FarPlaneDistance));
 
-			Property<Vector3> gravity = result.GetOrMakeProperty<Vector3>("Gravity", true, new Vector3(0.0f, -18.0f, -0.0f));
+			Property<Vector3> gravity = entity.GetOrMakeProperty<Vector3>("Gravity", true, new Vector3(0.0f, -18.0f, -0.0f));
 			gravity.Set = delegate(Vector3 value)
 			{
 				main.Space.ForceUpdater.Gravity = value;
@@ -198,10 +189,10 @@ namespace Lemma.Factories
 			};
 
 			// Zone management
-			Property<Zone> currentZone = result.GetOrMakeProperty<Zone>("CurrentZone");
+			Property<Zone> currentZone = entity.GetOrMakeProperty<Zone>("CurrentZone");
 			currentZone.Serialize = false;
 
-			result.Add(new CommandBinding<Entity>(main.EntityAdded, delegate(Entity e)
+			entity.Add(new CommandBinding<Entity>(main.EntityAdded, delegate(Entity e)
 			{
 				if (!e.CannotSuspend)
 					processEntity(e, currentZone, getActiveBoundingBoxes(main.Camera, currentZone), main.Camera.Position, main.Camera.FarPlaneDistance);
@@ -216,7 +207,7 @@ namespace Lemma.Factories
 					processEntity(e, currentZone, boxes, cameraPosition, suspendDistance);
 			}
 
-			result.Add("ProcessMap", new Command<Map>
+			entity.Add("ProcessMap", new Command<Map>
 			{
 				Action = delegate(Map map)
 				{
@@ -224,11 +215,13 @@ namespace Lemma.Factories
 				}
 			});
 
-			Property<float> reverbAmount = result.GetProperty<float>("ReverbAmount");
-			Property<float> reverbSize = result.GetProperty<float>("ReverbSize");
 			// TODO: figure out Wwise environment settings
 
-			//Sound.ReverbSettings(main, reverbAmount, reverbSize);
+			/*
+			Property<float> reverbAmount = result.GetOrMakeProperty<float>("ReverbAmount", true);
+			Property<float> reverbSize = result.GetOrMakeProperty<float>("ReverbSize", true);
+			Sound.ReverbSettings(main, reverbAmount, reverbSize);
+			*/
 
 			Vector3 lastUpdatedCameraPosition = new Vector3(float.MinValue);
 			bool lastFrameUpdated = false;
@@ -261,7 +254,7 @@ namespace Lemma.Factories
 				lastUpdatedCameraPosition = main.Camera.Position;
 			};
 
-			result.Add("UpdateZones", new Command
+			entity.Add("UpdateZones", new Command
 			{
 				Action = delegate() { updateZones(Zone.Get(main.Camera.Position)); },
 			});
@@ -285,13 +278,13 @@ namespace Lemma.Factories
 				}
 			};
 			update.EnabledInEditMode = true;
-			result.Add(update);
+			entity.Add(update);
 
-			result.GetOrCreate<Propagator>("Propagator");
+			entity.GetOrCreate<Propagator>("Propagator");
 
-			this.SetMain(result, main);
-			WorldFactory.instance = result;
-			AkSoundEngine.DefaultGameObject = result;
+			this.SetMain(entity, main);
+			WorldFactory.instance = entity;
+			AkSoundEngine.DefaultGameObject = entity;
 		}
 	}
 }

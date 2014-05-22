@@ -18,25 +18,23 @@ namespace Lemma.Factories
 	{
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Slider");
-
-			result.Add("Map", new DynamicMap(0, 0, 0));
-
-			return result;
+			Entity entity = new Entity(main, "Slider");
+			entity.Add("Map", new DynamicMap(0, 0, 0));
+			return entity;
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			Property<Direction> dir = result.GetOrMakeProperty<Direction>("Direction", true);
-			Property<int> minimum = result.GetOrMakeProperty<int>("Minimum", true);
-			Property<int> maximum = result.GetOrMakeProperty<int>("Maximum", true);
-			Property<bool> locked = result.GetOrMakeProperty<bool>("Locked", true);
-			Property<float> speed = result.GetOrMakeProperty<float>("Speed", true, 5);
-			Property<float> maxForce = result.GetOrMakeProperty<float>("MaxForce", true);
-			Property<float> damping = result.GetOrMakeProperty<float>("Damping", true);
-			Property<float> stiffness = result.GetOrMakeProperty<float>("Stiffness", true);
-			Property<int> goal = result.GetOrMakeProperty<int>("Goal", true);
-			Property<bool> servo = result.GetOrMakeProperty<bool>("Servo", true, true);
+			Property<Direction> dir = entity.GetOrMakeProperty<Direction>("Direction", true);
+			Property<int> minimum = entity.GetOrMakeProperty<int>("Minimum", true);
+			Property<int> maximum = entity.GetOrMakeProperty<int>("Maximum", true);
+			Property<bool> locked = entity.GetOrMakeProperty<bool>("Locked", true);
+			Property<float> speed = entity.GetOrMakeProperty<float>("Speed", true, 5);
+			Property<float> maxForce = entity.GetOrMakeProperty<float>("MaxForce", true);
+			Property<float> damping = entity.GetOrMakeProperty<float>("Damping", true);
+			Property<float> stiffness = entity.GetOrMakeProperty<float>("Stiffness", true);
+			Property<int> goal = entity.GetOrMakeProperty<int>("Goal", true);
+			Property<bool> servo = entity.GetOrMakeProperty<bool>("Servo", true, true);
 
 			PrismaticJoint joint = null;
 
@@ -55,11 +53,11 @@ namespace Lemma.Factories
 						joint.Limit.IsActive = false;
 				}
 			};
-			result.Add(new NotifyBinding(setLimits, minimum, maximum));
+			entity.Add(new NotifyBinding(setLimits, minimum, maximum));
 
 			Action updateMaterial = delegate()
 			{
-				DynamicMap map = result.Get<DynamicMap>();
+				DynamicMap map = entity.Get<DynamicMap>();
 				if (map != null)
 				{
 					bool active = locked && (!servo || (servo && goal.Value != minimum.Value));
@@ -84,12 +82,12 @@ namespace Lemma.Factories
 				if (joint != null)
 				{
 					if (maxForce > 0.001f)
-						joint.Motor.Settings.MaximumForce = maxForce * result.Get<DynamicMap>().PhysicsEntity.Mass;
+						joint.Motor.Settings.MaximumForce = maxForce * entity.Get<DynamicMap>().PhysicsEntity.Mass;
 					else
 						joint.Motor.Settings.MaximumForce = float.MaxValue;
 				}
 			};
-			result.Add(new NotifyBinding(setMaxForce, maxForce));
+			entity.Add(new NotifyBinding(setMaxForce, maxForce));
 
 			Action setSpeed = delegate()
 			{
@@ -99,7 +97,7 @@ namespace Lemma.Factories
 					joint.Motor.Settings.VelocityMotor.GoalVelocity = speed;
 				}
 			};
-			result.Add(new NotifyBinding(setSpeed, speed));
+			entity.Add(new NotifyBinding(setSpeed, speed));
 
 			Action setLocked = delegate()
 			{
@@ -107,7 +105,7 @@ namespace Lemma.Factories
 					joint.Motor.IsActive = locked;
 				updateMaterial();
 			};
-			result.Add(new NotifyBinding(setLocked, locked));
+			entity.Add(new NotifyBinding(setLocked, locked));
 
 			Action setGoal = delegate()
 			{
@@ -115,21 +113,21 @@ namespace Lemma.Factories
 					joint.Motor.Settings.Servo.Goal = goal;
 				updateMaterial();
 			};
-			result.Add(new NotifyBinding(setGoal, goal));
+			entity.Add(new NotifyBinding(setGoal, goal));
 
 			Action setDamping = delegate()
 			{
 				if (joint != null && damping != 0)
 					joint.Motor.Settings.Servo.SpringSettings.DampingConstant = damping;
 			};
-			result.Add(new NotifyBinding(setDamping, damping));
+			entity.Add(new NotifyBinding(setDamping, damping));
 
 			Action setStiffness = delegate()
 			{
 				if (joint != null && stiffness != 0)
 					joint.Motor.Settings.Servo.SpringSettings.StiffnessConstant = stiffness;
 			};
-			result.Add(new NotifyBinding(setStiffness, stiffness));
+			entity.Add(new NotifyBinding(setStiffness, stiffness));
 
 			Action setMode = delegate()
 			{
@@ -137,7 +135,7 @@ namespace Lemma.Factories
 					joint.Motor.Settings.Mode = servo ? MotorMode.Servomechanism : MotorMode.VelocityMotor;
 				updateMaterial();
 			};
-			result.Add(new NotifyBinding(setMode, servo));
+			entity.Add(new NotifyBinding(setMode, servo));
 
 			BEPUphysics.Entities.Entity a = null, b = null;
 			Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint = delegate(BEPUphysics.Entities.Entity entity1, BEPUphysics.Entities.Entity entity2, Vector3 pos, Vector3 direction, Vector3 anchor)
@@ -161,24 +159,24 @@ namespace Lemma.Factories
 				return joint;
 			};
 
-			JointFactory.Bind(result, main, createJoint, false, creating);
+			JointFactory.Bind(entity, main, createJoint, false, creating);
 
 			Action<int> move = delegate(int value)
 			{
 				if (joint != null && locked)
 					goal.Value = value;
 			};
-			result.Add("Forward", new Command { Action = delegate() { move(maximum); } });
-			result.Add("Trigger", new Command<Entity> { Action = delegate(Entity p) { move(maximum); } });
-			result.Add("Backward", new Command { Action = delegate() { move(minimum); } });
+			entity.Add("Forward", new Command { Action = delegate() { move(maximum); } });
+			entity.Add("Trigger", new Command<Entity> { Action = delegate(Entity p) { move(maximum); } });
+			entity.Add("Backward", new Command { Action = delegate() { move(minimum); } });
 
 			Command hitMax = new Command();
-			result.Add("HitMax", hitMax);
+			entity.Add("HitMax", hitMax);
 			Command hitMin = new Command();
-			result.Add("HitMin", hitMin);
+			entity.Add("HitMin", hitMin);
 
 			float lastX = minimum + (maximum - minimum) * 0.5f;
-			result.Add(new Updater
+			entity.Add(new Updater
 			{
 				delegate(float dt)
 				{
@@ -208,17 +206,17 @@ namespace Lemma.Factories
 				}
 			});
 
-			Property<bool> startAtMinimum = result.GetOrMakeProperty<bool>("StartAtMinimum", true);
+			Property<bool> startAtMinimum = entity.GetOrMakeProperty<bool>("StartAtMinimum", true);
 
 			if (!main.EditorEnabled && startAtMinimum)
 			{
 				startAtMinimum.Value = false;
-				result.Add(new PostInitialization
+				entity.Add(new PostInitialization
 				{
 					delegate()
 					{
-						Transform transform = result.GetOrCreate<Transform>("MapTransform");
-						DynamicMap map = result.Get<DynamicMap>();
+						Transform transform = entity.GetOrCreate<Transform>("MapTransform");
+						DynamicMap map = entity.Get<DynamicMap>();
 						transform.Position.Value = map.GetAbsolutePosition(new Map.Coordinate().Move(dir, minimum));
 					}
 				});

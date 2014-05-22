@@ -18,22 +18,22 @@ namespace Lemma.Factories
 	{
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Spinner");
+			Entity entity = new Entity(main, "Spinner");
 
-			result.Add("Map", new DynamicMap(0, 0, 0));
+			entity.Add("Map", new DynamicMap(0, 0, 0));
 
-			return result;
+			return entity;
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			Property<Direction> dir = result.GetOrMakeProperty<Direction>("Direction", true);
-			Property<float> minimum = result.GetOrMakeProperty<float>("Minimum", true);
-			Property<float> maximum = result.GetOrMakeProperty<float>("Maximum", true);
-			Property<bool> locked = result.GetOrMakeProperty<bool>("Locked", true);
-			Property<bool> servo = result.GetOrMakeProperty<bool>("Servo", true, true);
-			Property<float> speed = result.GetOrMakeProperty<float>("Speed", true, 5);
-			Property<float> goal = result.GetOrMakeProperty<float>("Goal", true);
+			Property<Direction> dir = entity.GetOrMakeProperty<Direction>("Direction", true);
+			Property<float> minimum = entity.GetOrMakeProperty<float>("Minimum", true);
+			Property<float> maximum = entity.GetOrMakeProperty<float>("Maximum", true);
+			Property<bool> locked = entity.GetOrMakeProperty<bool>("Locked", true);
+			Property<bool> servo = entity.GetOrMakeProperty<bool>("Servo", true, true);
+			Property<float> speed = entity.GetOrMakeProperty<float>("Speed", true, 5);
+			Property<float> goal = entity.GetOrMakeProperty<float>("Goal", true);
 
 			RevoluteJoint joint = null;
 
@@ -52,7 +52,7 @@ namespace Lemma.Factories
 						joint.Limit.IsActive = false;
 				}
 			};
-			result.Add(new NotifyBinding(setLimits, minimum, maximum));
+			entity.Add(new NotifyBinding(setLimits, minimum, maximum));
 
 			Action setSpeed = delegate()
 			{
@@ -62,30 +62,30 @@ namespace Lemma.Factories
 					joint.Motor.Settings.VelocityMotor.GoalVelocity = speed;
 				}
 			};
-			result.Add(new NotifyBinding(setSpeed, speed));
+			entity.Add(new NotifyBinding(setSpeed, speed));
 
 			Action setGoal = delegate()
 			{
 				if (joint != null)
 					joint.Motor.Settings.Servo.Goal = goal;
 			};
-			result.Add(new NotifyBinding(setGoal, goal));
+			entity.Add(new NotifyBinding(setGoal, goal));
 
 			Action setLocked = delegate()
 			{
 				if (joint != null)
 					joint.Motor.IsActive = locked;
 			};
-			result.Add(new NotifyBinding(setLocked, locked));
+			entity.Add(new NotifyBinding(setLocked, locked));
 
-			DynamicMap map = result.Get<DynamicMap>();
+			DynamicMap map = entity.Get<DynamicMap>();
 
 			Action setServo = delegate()
 			{
 				if (joint != null)
 					joint.Motor.Settings.Mode = servo ? MotorMode.Servomechanism : MotorMode.VelocityMotor;
 			};
-			result.Add(new NotifyBinding(setServo, servo));
+			entity.Add(new NotifyBinding(setServo, servo));
 
 			Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint = delegate(BEPUphysics.Entities.Entity entity1, BEPUphysics.Entities.Entity entity2, Vector3 pos, Vector3 direction, Vector3 anchor)
 			{
@@ -102,9 +102,9 @@ namespace Lemma.Factories
 				return joint;
 			};
 
-			JointFactory.Bind(result, main, createJoint, true, creating);
+			JointFactory.Bind(entity, main, createJoint, true, creating);
 
-			result.Add("On", new Command
+			entity.Add("On", new Command
 			{
 				Action = delegate()
 				{
@@ -113,7 +113,7 @@ namespace Lemma.Factories
 				},
 			});
 
-			result.Add("Off", new Command
+			entity.Add("Off", new Command
 			{
 				Action = delegate()
 				{
@@ -137,7 +137,7 @@ namespace Lemma.Factories
 				},
 			});
 
-			result.Add("Forward", new Command
+			entity.Add("Forward", new Command
 			{
 				Action = delegate()
 				{
@@ -146,7 +146,7 @@ namespace Lemma.Factories
 				},
 			});
 
-			result.Add("Backward", new Command
+			entity.Add("Backward", new Command
 			{
 				Action = delegate()
 				{
@@ -156,12 +156,12 @@ namespace Lemma.Factories
 			});
 
 			Command hitMax = new Command();
-			result.Add("HitMax", hitMax);
+			entity.Add("HitMax", hitMax);
 			Command hitMin = new Command();
-			result.Add("HitMin", hitMin);
+			entity.Add("HitMin", hitMin);
 
 			bool lastLimitExceeded = false;
-			result.Add(new Updater
+			entity.Add(new Updater
 			{
 				delegate(float dt)
 				{

@@ -71,9 +71,9 @@ namespace Lemma.Components
 			}
 		}
 
-		public static void AttachEditorComponents(Entity result, Main main, Vector3 color)
+		public static void AttachEditorComponents(Entity entity, Main main, Vector3 color)
 		{
-			Property<float> offset = result.Get<EnemyBase>().Offset;
+			Property<float> offset = entity.Get<EnemyBase>().Offset;
 
 			Model model = new Model();
 			model.Filename.Value = "Models\\cone";
@@ -83,9 +83,9 @@ namespace Lemma.Components
 			model.Editable = false;
 			model.Serialize = false;
 
-			result.Add("EditorModel2", model);
+			entity.Add("EditorModel2", model);
 
-			model.Add(new Binding<Matrix>(model.Transform, result.Get<EnemyBase>().Transform));
+			model.Add(new Binding<Matrix>(model.Transform, entity.Get<EnemyBase>().Transform));
 		}
 
 		public override void Awake()

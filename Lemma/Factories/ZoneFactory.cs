@@ -16,22 +16,17 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Zone");
-
-			result.Add("Zone", new Zone());
-			result.Add("Transform", new Transform());
-
-			return result;
+			return new Entity(main, "Zone");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			result.CannotSuspend = true;
-			result.CannotSuspendByDistance = true;
-			Zone zone = result.Get<Zone>();
-			Transform transform = result.Get<Transform>();
+			entity.CannotSuspend = true;
+			entity.CannotSuspendByDistance = true;
+			Zone zone = entity.GetOrCreate<Zone>("Zone");
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			zone.Add(new Binding<Matrix>(zone.Transform, transform.Matrix));
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 		}
 
 		private Transform addCornerModel(Entity entity, Property<bool> selected)
@@ -53,30 +48,30 @@ namespace Lemma.Factories
 			return transform;
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			Transform transform = result.Get<Transform>();
+			Transform transform = entity.Get<Transform>();
 
-			Property<bool> selected = result.GetOrMakeProperty<bool>("EditorSelected");
+			Property<bool> selected = entity.GetOrMakeProperty<bool>("EditorSelected");
 			selected.Serialize = false;
 
-			Zone zone = result.Get<Zone>();
+			Zone zone = entity.Get<Zone>();
 
-			EntityConnectable.AttachEditorComponents(result, zone.ConnectedEntities);
+			EntityConnectable.AttachEditorComponents(entity, zone.ConnectedEntities);
 
-			zone.Add(new CommandBinding<Entity>(result.GetCommand<Entity>("ToggleEntityConnected"), delegate(Entity entity)
+			zone.Add(new CommandBinding<Entity>(entity.GetCommand<Entity>("ToggleEntityConnected"), delegate(Entity other)
 			{
-				if (zone.ConnectedEntities.Contains(entity))
+				if (zone.ConnectedEntities.Contains(other))
 				{
-					Zone z = entity.Get<Zone>();
+					Zone z = other.Get<Zone>();
 					if (z != null)
 						z.Parent.Value = null;
 				}
 				else
 				{
-					Zone z = entity.Get<Zone>();
+					Zone z = other.Get<Zone>();
 					if (z != null)
-						z.Parent.Value = result;
+						z.Parent.Value = entity;
 				}
 			}));
 
@@ -86,19 +81,19 @@ namespace Lemma.Factories
 			model.Scale.Value = new Vector3(0.5f);
 			model.Editable = false;
 			model.Serialize = false;
-			result.Add("EditorModel", model);
+			entity.Add("EditorModel", model);
 			model.Add(new Binding<Matrix, Vector3>(model.Transform, x => Matrix.CreateTranslation(x), transform.Position));
 
 			Property<Vector3> corner1 = new Property<Vector3> { Editable = false, Serialize = false, Value = zone.BoundingBox.Value.Min };
 			Property<Vector3> corner2 = new Property<Vector3> { Editable = false, Serialize = false, Value = zone.BoundingBox.Value.Max };
 
-			result.Add(new Binding<BoundingBox>(zone.BoundingBox, delegate()
+			entity.Add(new Binding<BoundingBox>(zone.BoundingBox, delegate()
 			{
 				Vector3 a = corner1, b = corner2;
 				return new BoundingBox(new Vector3(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Min(a.Z, b.Z)), new Vector3(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y), Math.Max(a.Z, b.Z)));
 			}, corner1, corner2));
 
-			Transform cornerTransform1 = this.addCornerModel(result, selected);
+			Transform cornerTransform1 = this.addCornerModel(entity, selected);
 			cornerTransform1.Add(new TwoWayBinding<Vector3, Vector3>
 			(
 				corner1,
@@ -109,7 +104,7 @@ namespace Lemma.Factories
 				new[] { transform.Matrix }
 			));
 
-			Transform cornerTransform2 = this.addCornerModel(result, selected);
+			Transform cornerTransform2 = this.addCornerModel(entity, selected);
 			cornerTransform2.Add(new TwoWayBinding<Vector3, Vector3>
 			(
 				corner2,
@@ -128,7 +123,7 @@ namespace Lemma.Factories
 			box.Serialize = false;
 			box.DrawOrder.Value = 11; // In front of water
 			box.DisableCulling.Value = true;
-			result.Add(box);
+			entity.Add(box);
 			box.Add(new Binding<Matrix>(box.Transform, delegate()
 			{
 				BoundingBox b = zone.BoundingBox;

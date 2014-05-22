@@ -16,40 +16,32 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "PointLight");
-
-			result.Add("Transform", new Transform());
-			PointLight pointLight = new PointLight();
-			pointLight.Attenuation.Value = 10.0f;
-			pointLight.Color.Value = Vector3.One;
-			result.Add("PointLight", pointLight);
-
-			return result;
+			return new Entity(main, "PointLight");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			result.CannotSuspendByDistance = true;
+			entity.CannotSuspendByDistance = true;
 
-			PointLight light = result.Get<PointLight>();
-			Transform transform = result.Get<Transform>();
+			PointLight light = entity.GetOrCreate<PointLight>("PointLight");
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			light.Add(new TwoWayBinding<Vector3>(light.Position, transform.Position));
 
-			if (result.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(result, main);
+			if (entity.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(entity, main);
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
-			Model model = result.Get<Model>("EditorModel");
+			base.AttachEditorComponents(entity, main);
+			Model model = entity.Get<Model>("EditorModel");
 
-			Property<Vector3> color = result.Get<PointLight>().Color;
+			Property<Vector3> color = entity.Get<PointLight>().Color;
 			model.Add(new Binding<Vector3>(model.Color, color));
 
-			MapAttachable.AttachEditorComponents(result, main, color);
+			MapAttachable.AttachEditorComponents(entity, main, color);
 		}
 	}
 }

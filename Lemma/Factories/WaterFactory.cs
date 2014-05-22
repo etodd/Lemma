@@ -16,31 +16,24 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Water");
-
-			Transform transform = new Transform();
-			result.Add("Transform", transform);
-			Water water = new Water();
-			result.Add("Water", water);
-
-			return result;
+			return new Entity(main, "Water");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			Property<bool> cannotSuspendByDistance = result.GetOrMakeProperty<bool>("CannotSuspendByDistance", true, true);
+			Property<bool> cannotSuspendByDistance = entity.GetOrMakeProperty<bool>("CannotSuspendByDistance", true, true);
 			cannotSuspendByDistance.Set = delegate(bool value)
 			{
 				cannotSuspendByDistance.InternalValue = value;
-				result.CannotSuspendByDistance = value;
+				entity.CannotSuspendByDistance = value;
 			};
-			Transform transform = result.Get<Transform>();
-			Water water = result.Get<Water>();
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
+			Water water = entity.GetOrCreate<Water>("Water");
 
 			if (!main.EditorEnabled)
-				AkSoundEngine.PostEvent("Play_water", result);
+				AkSoundEngine.PostEvent("Play_water", entity);
 
-			result.Add(new Updater
+			entity.Add(new Updater
 			{
 				delegate(float dt)
 				{
@@ -53,7 +46,7 @@ namespace Lemma.Factories
 				}
 			});
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 
 			water.Add(new TwoWayBinding<Vector3>(water.Position, transform.Position));
 		}

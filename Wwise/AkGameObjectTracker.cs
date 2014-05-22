@@ -25,26 +25,26 @@ public class AkGameObjectTracker : AkGameObject
 
 	public Property<Matrix> Matrix = new Property<Matrix>();
 
-	public static void Attach(Entity result, Property<Matrix> property = null)
+	public static void Attach(Entity entity, Property<Matrix> property = null)
 	{
-		AkGameObjectTracker tracker = result.Get<AkGameObjectTracker>();
+		AkGameObjectTracker tracker = entity.Get<AkGameObjectTracker>();
 		if (tracker == null)
 		{
 			tracker = new AkGameObjectTracker();
-			result.Add(tracker);
+			entity.Add(tracker);
 			if (property == null)
-				property = result.Get<Transform>().Matrix;
+				property = entity.Get<Transform>().Matrix;
 			tracker.Add(new Binding<Matrix>(tracker.Matrix, property));
 		}
 	}
 
-	public static void Attach(Entity result, Property<Vector3> property)
+	public static void Attach(Entity entity, Property<Vector3> property)
 	{
-		AkGameObjectTracker tracker = result.Get<AkGameObjectTracker>();
+		AkGameObjectTracker tracker = entity.Get<AkGameObjectTracker>();
 		if (tracker == null)
 		{
 			tracker = new AkGameObjectTracker();
-			result.Add(tracker);
+			entity.Add(tracker);
 			tracker.Add(new Binding<Matrix, Vector3>(tracker.Matrix, x => Microsoft.Xna.Framework.Matrix.CreateTranslation(x), property));
 		}
 	}

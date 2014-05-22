@@ -20,26 +20,24 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "EvilBlocks");
-
-			return result;
+			return new Entity(main, "EvilBlocks");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			PointLight light = result.GetOrCreate<PointLight>("PointLight");
+			PointLight light = entity.GetOrCreate<PointLight>("PointLight");
 			light.Serialize = false;
 
-			ListProperty<Entity.Handle> blockEntities = result.GetOrMakeListProperty<Entity.Handle>("Blocks");
+			ListProperty<Entity.Handle> blockEntities = entity.GetOrMakeListProperty<Entity.Handle>("Blocks");
 			List<PhysicsBlock> blocks = new List<PhysicsBlock>();
 
 			const float defaultLightAttenuation = 15.0f;
 			light.Attenuation.Value = defaultLightAttenuation;
 
-			Transform transform = result.GetOrCreate<Transform>("Transform");
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
-			AkSoundEngine.PostEvent("Play_evil_cubes", result);
+			AkSoundEngine.PostEvent("Play_evil_cubes", entity);
 
 			// TODO: Figure out Wwise volume property
 			/*
@@ -49,7 +47,7 @@ namespace Lemma.Factories
 			volume.Value = defaultVolume;
 			*/
 
-			AI ai = result.GetOrCreate<AI>();
+			AI ai = entity.GetOrCreate<AI>();
 
 			light.Add(new Binding<Vector3, string>(light.Color, delegate(string state)
 			{
@@ -66,16 +64,16 @@ namespace Lemma.Factories
 				}
 			}, ai.CurrentState));
 
-			Agent agent = result.GetOrCreate<Agent>();
+			Agent agent = entity.GetOrCreate<Agent>();
 			agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
 
-			RaycastAI raycastAI = result.GetOrCreate<RaycastAI>("RaycastAI");
+			RaycastAI raycastAI = entity.GetOrCreate<RaycastAI>("RaycastAI");
 			raycastAI.Add(new TwoWayBinding<Vector3>(transform.Position, raycastAI.Position));
 			raycastAI.Add(new Binding<Matrix>(transform.Orientation, raycastAI.Orientation));
 
-			Property<int> operationalRadius = result.GetOrMakeProperty<int>("OperationalRadius", true, 100);
+			Property<int> operationalRadius = entity.GetOrMakeProperty<int>("OperationalRadius", true, 100);
 
-			result.Add(new PostInitialization
+			entity.Add(new PostInitialization
 			{
 				delegate()
 				{
@@ -198,7 +196,7 @@ namespace Lemma.Factories
 				},
 			});
 
-			Property<Entity.Handle> targetAgent = result.GetOrMakeProperty<Entity.Handle>("TargetAgent");
+			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
 
 			ai.Add(new AI.State
 			{
@@ -283,9 +281,9 @@ namespace Lemma.Factories
 				},
 			});
 
-			Property<Vector3> lastPosition = result.GetOrMakeProperty<Vector3>("LastPosition");
-			Property<Vector3> nextPosition = result.GetOrMakeProperty<Vector3>("NextPosition");
-			Property<float> positionBlend = result.GetOrMakeProperty<float>("PositionBlend");
+			Property<Vector3> lastPosition = entity.GetOrMakeProperty<Vector3>("LastPosition");
+			Property<Vector3> nextPosition = entity.GetOrMakeProperty<Vector3>("NextPosition");
+			Property<float> positionBlend = entity.GetOrMakeProperty<float>("PositionBlend");
 
 			Action findNextPosition = delegate()
 			{
@@ -336,7 +334,7 @@ namespace Lemma.Factories
 			});
 
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 		}
 	}
 }

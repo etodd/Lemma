@@ -18,50 +18,46 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Target");
-
-			result.Add("Transform", new Transform());
-
-			return result;
+			return new Entity(main, "Target");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			PlayerTrigger trigger = result.GetOrCreate<PlayerTrigger>("Trigger");
+			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");
 
-			base.Bind(result, main, creating);
+			base.Bind(entity, main, creating);
 
-			Transform transform = result.Get<Transform>();
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			transform.Editable = true;
 			transform.Enabled.Editable = true;
 
 			TargetFactory.Positions.Add(transform);
-			result.Add(new CommandBinding(result.Delete, delegate()
+			entity.Add(new CommandBinding(entity.Delete, delegate()
 			{
 				TargetFactory.Positions.Remove(transform);
 			}));
 
-			Property<bool> deleteWhenReached = result.GetOrMakeProperty<bool>("DeleteWhenReached", true, true);
+			Property<bool> deleteWhenReached = entity.GetOrMakeProperty<bool>("DeleteWhenReached", true, true);
 			trigger.Add(new TwoWayBinding<bool>(deleteWhenReached, trigger.Enabled));
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity p)
 			{
-				result.Add(new Animation
+				entity.Add(new Animation
 				(
 					new Animation.Delay(0.0f),
-					new Animation.Execute(result.Delete)
+					new Animation.Execute(entity.Delete)
 				));
 			}));
 
-			if (result.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(result, main);
+			if (entity.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(entity, main);
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
+			base.AttachEditorComponents(entity, main);
 
-			PlayerTrigger.AttachEditorComponents(result, main, this.Color);
+			PlayerTrigger.AttachEditorComponents(entity, main, this.Color);
 
 			Model model = new Model();
 			model.Filename.Value = "Models\\sphere";
@@ -70,11 +66,11 @@ namespace Lemma.Factories
 			model.Editable = false;
 			model.Serialize = false;
 
-			result.Add("EditorModel3", model);
+			entity.Add("EditorModel3", model);
 
-			model.Add(new Binding<Matrix>(model.Transform, result.Get<Transform>().Matrix));
+			model.Add(new Binding<Matrix>(model.Transform, entity.Get<Transform>().Matrix));
 
-			MapAttachable.AttachEditorComponents(result, main);
+			MapAttachable.AttachEditorComponents(entity, main);
 		}
 	}
 }

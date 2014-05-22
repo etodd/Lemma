@@ -18,23 +18,23 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "DialogueFile");
+			Entity entity = new Entity(main, "DialogueFile");
 
-			result.Add("Transform", new Transform());
+			entity.Add("Transform", new Transform());
 
-			return result;
+			return entity;
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(result, main);
-			result.CannotSuspend = true;
+			this.SetMain(entity, main);
+			entity.CannotSuspend = true;
 
-			Property<string> name = result.GetOrMakeProperty<string>("Name", true);
+			Property<string> name = entity.GetOrMakeProperty<string>("Name", true);
 
 			if (!main.EditorEnabled)
 			{
-				result.Add(new PostInitialization
+				entity.Add(new PostInitialization
 				{
 					delegate()
 					{

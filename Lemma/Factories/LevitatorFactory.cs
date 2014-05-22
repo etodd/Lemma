@@ -20,20 +20,18 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Levitator");
-
-			return result;
+			return new Entity(main, "Levitator");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			PointLight light = result.GetOrCreate<PointLight>("PointLight");
+			PointLight light = entity.GetOrCreate<PointLight>("PointLight");
 			light.Serialize = false;
 
 			const float defaultLightAttenuation = 15.0f;
 			light.Attenuation.Value = defaultLightAttenuation;
 
-			Transform transform = result.GetOrCreate<Transform>("Transform");
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
 			// TODO: Figure out Wwise volume parameter
@@ -42,9 +40,9 @@ namespace Lemma.Factories
 			volume.Value = defaultVolume;
 			*/
 
-			AI ai = result.GetOrCreate<AI>();
+			AI ai = entity.GetOrCreate<AI>();
 
-			ModelAlpha model = result.GetOrCreate<ModelAlpha>();
+			ModelAlpha model = entity.GetOrCreate<ModelAlpha>();
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 			model.Filename.Value = "Models\\alpha-box";
 			model.Editable = false;
@@ -69,7 +67,7 @@ namespace Lemma.Factories
 				}
 			}, ai.CurrentState));
 
-			result.Add(new Updater
+			entity.Add(new Updater
 			{
 				delegate(float dt)
 				{
@@ -81,14 +79,14 @@ namespace Lemma.Factories
 
 			light.Add(new Binding<Vector3>(light.Color, model.Color));
 
-			Agent agent = result.GetOrCreate<Agent>();
+			Agent agent = entity.GetOrCreate<Agent>();
 			agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
 
-			RaycastAI raycastAI = result.GetOrCreate<RaycastAI>("RaycastAI");
+			RaycastAI raycastAI = entity.GetOrCreate<RaycastAI>("RaycastAI");
 			raycastAI.Add(new TwoWayBinding<Vector3>(transform.Position, raycastAI.Position));
 			raycastAI.Add(new Binding<Matrix>(transform.Orientation, raycastAI.Orientation));
 
-			Property<int> operationalRadius = result.GetOrMakeProperty<int>("OperationalRadius", true, 100);
+			Property<int> operationalRadius = entity.GetOrMakeProperty<int>("OperationalRadius", true, 100);
 
 			AI.Task checkOperationalRadius = new AI.Task
 			{
@@ -156,7 +154,7 @@ namespace Lemma.Factories
 				},
 			});
 
-			Property<Entity.Handle> targetAgent = result.GetOrMakeProperty<Entity.Handle>("TargetAgent");
+			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
 
 			ai.Add(new AI.State
 			{
@@ -209,8 +207,8 @@ namespace Lemma.Factories
 
 			// Levitate
 
-			Property<Entity.Handle> levitatingMap = result.GetOrMakeProperty<Entity.Handle>("LevitatingMap");
-			Property<Map.Coordinate> grabCoord = result.GetOrMakeProperty<Map.Coordinate>("GrabCoord");
+			Property<Entity.Handle> levitatingMap = entity.GetOrMakeProperty<Entity.Handle>("LevitatingMap");
+			Property<Map.Coordinate> grabCoord = entity.GetOrMakeProperty<Map.Coordinate>("GrabCoord");
 
 			const int levitateRipRadius = 4;
 
@@ -325,7 +323,7 @@ namespace Lemma.Factories
 							if (spawnedMap[center].ID != 0)
 							{
 								levitatingMap.Value = spawnedMap.Entity;
-								AkSoundEngine.PostEvent("Play_infected_shatter", result);
+								AkSoundEngine.PostEvent("Play_infected_shatter", entity);
 								break;
 							}
 						}
@@ -460,9 +458,9 @@ namespace Lemma.Factories
 				},
 			});
 
-			Property<Vector3> lastPosition = result.GetOrMakeProperty<Vector3>("LastPosition");
-			Property<Vector3> nextPosition = result.GetOrMakeProperty<Vector3>("NextPosition");
-			Property<float> positionBlend = result.GetOrMakeProperty<float>("PositionBlend");
+			Property<Vector3> lastPosition = entity.GetOrMakeProperty<Vector3>("LastPosition");
+			Property<Vector3> nextPosition = entity.GetOrMakeProperty<Vector3>("NextPosition");
+			Property<float> positionBlend = entity.GetOrMakeProperty<float>("PositionBlend");
 
 			Action findNextPosition = delegate()
 			{
@@ -531,7 +529,7 @@ namespace Lemma.Factories
 			});
 
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 		}
 	}
 }

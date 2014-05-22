@@ -21,9 +21,9 @@ namespace Lemma.Components
 	{
 		static Editor()
 		{
-			Factory<Main>.DefaultEditorComponents = delegate(Factory<Main> factory, Entity result, Main main)
+			Factory<Main>.DefaultEditorComponents = delegate(Factory<Main> factory, Entity entity, Main main)
 			{
-				Transform transform = result.Get<Transform>();
+				Transform transform = entity.Get<Transform>();
 				if (transform == null)
 					return;
 
@@ -35,7 +35,7 @@ namespace Lemma.Components
 				model.Editable = false;
 				model.Serialize = false;
 
-				result.Add("EditorModel", model);
+				entity.Add("EditorModel", model);
 
 				model.Add(new Binding<Matrix, Vector3>(model.Transform, x => Matrix.CreateTranslation(x), transform.Position));
 			};

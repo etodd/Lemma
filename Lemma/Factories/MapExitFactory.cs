@@ -18,20 +18,7 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "MapExit");
-
-			Transform position = new Transform();
-
-			PlayerTrigger trigger = new PlayerTrigger();
-			trigger.Radius.Value = 10.0f;
-			result.Add("PlayerTrigger", trigger);
-
-			result.Add("Transform", position);
-
-			result.Add("NextMap", new Property<string> { Editable = true });
-			result.Add("SpawnPoint", new Property<string> { Editable = true });
-
-			return result;
+			return new Entity(main, "MapExit");
 		}
 
 		private static string[] persistentTypes = new[] { "PlayerData", };
@@ -51,13 +38,13 @@ namespace Lemma.Factories
 			return false;
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(result, main);
-			Transform transform = result.Get<Transform>();
-			PlayerTrigger trigger = result.Get<PlayerTrigger>();
-			Property<string> nextMap = result.GetProperty<string>("NextMap");
-			Property<string> startSpawnPoint = result.GetProperty<string>("SpawnPoint");
+			this.SetMain(entity, main);
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
+			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
+			Property<string> nextMap = entity.GetOrMakeProperty<string>("NextMap", true);
+			Property<string> startSpawnPoint = entity.GetOrMakeProperty<string>("SpawnPoint", true);
 
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity player)
@@ -109,11 +96,11 @@ namespace Lemma.Factories
 						notification.Visible.Value = false;
 						stream.Seek(0, SeekOrigin.Begin);
 						List<Entity> entities = (List<Entity>)IO.MapLoader.Serializer.Deserialize(stream);
-						foreach (Entity entity in entities)
+						foreach (Entity e in entities)
 						{
-							Factory<Main> factory = Factory<Main>.Get(entity.Type);
-							factory.Bind(entity, main);
-							main.Add(entity);
+							Factory<Main> factory = Factory<Main>.Get(e.Type);
+							factory.Bind(e, main);
+							main.Add(e);
 						}
 						stream.Dispose();
 					}),
@@ -136,10 +123,10 @@ namespace Lemma.Factories
 			}));
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
-			PlayerTrigger.AttachEditorComponents(result, main, this.Color);
+			base.AttachEditorComponents(entity, main);
+			PlayerTrigger.AttachEditorComponents(entity, main, this.Color);
 		}
 	}
 }

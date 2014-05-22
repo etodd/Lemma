@@ -16,35 +16,31 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Prop");
-			result.Add("Transform", new Transform());
-			result.Add("Model", new Model());
-
-			return result;
+			return new Entity(main, "Prop");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			Model model = result.Get<Model>("Model");
+			Model model = entity.GetOrCreate<Model>("Model");
 			model.MapContent.Value = true;
-			this.SetMain(result, main);
-			Transform transform = result.Get<Transform>();
+			this.SetMain(entity, main);
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 
-			if (result.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(result, main);
+			if (entity.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(entity, main);
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
-			Model model = result.Get<Model>("Model");
-			Model editorModel = result.Get<Model>("EditorModel");
-			Property<bool> editorSelected = result.GetOrMakeProperty<bool>("EditorSelected", false);
+			base.AttachEditorComponents(entity, main);
+			Model model = entity.Get<Model>("Model");
+			Model editorModel = entity.Get<Model>("EditorModel");
+			Property<bool> editorSelected = entity.GetOrMakeProperty<bool>("EditorSelected", false);
 			editorSelected.Serialize = false;
 			editorModel.Add(new Binding<bool>(editorModel.Enabled, () => !editorSelected || !model.IsValid, editorSelected, model.IsValid));
 
-			MapAttachable.AttachEditorComponents(result, main, editorModel.Color);
+			MapAttachable.AttachEditorComponents(entity, main, editorModel.Color);
 		}
 	}
 
@@ -52,13 +48,12 @@ namespace Lemma.Factories
 	{
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "PropAlpha");
-			result.Add("Transform", new Transform());
+			Entity entity = new Entity(main, "PropAlpha");
 			ModelAlpha model = new ModelAlpha();
 			model.DrawOrder.Value = 11;
-			result.Add("Model", model);
+			entity.Add("Model", model);
 
-			return result;
+			return entity;
 		}
 	}
 }

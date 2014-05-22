@@ -16,27 +16,21 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Script");
-
-			result.Add("Transform", new Transform());
-
-			result.Add("Script", new Script());
-
-			result.Add("ExecuteOnLoad", new Property<bool> { Editable = true, Value = true });
-
-			return result;
+			Entity entity = new Entity(main, "Script");
+			entity.Add("Transform", new Transform());
+			return entity;
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			result.CannotSuspend = true;
+			entity.CannotSuspend = true;
 
-			Script script = result.Get<Script>();
+			Script script = entity.GetOrCreate<Script>("Script");
 
-			Property<bool> executeOnLoad = result.GetProperty<bool>("ExecuteOnLoad");
+			Property<bool> executeOnLoad = entity.GetOrMakeProperty<bool>("ExecuteOnLoad", true, true);
 			if (executeOnLoad && !main.EditorEnabled)
 			{
-				result.Add("Executor", new PostInitialization
+				entity.Add("Executor", new PostInitialization
 				{
 					delegate()
 					{
@@ -46,19 +40,19 @@ namespace Lemma.Factories
 				});
 			}
 
-			Property<bool> deleteOnExecute = result.GetOrMakeProperty<bool>("DeleteOnExecute", true, false);
+			Property<bool> deleteOnExecute = entity.GetOrMakeProperty<bool>("DeleteOnExecute", true, false);
 			if (deleteOnExecute)
-				result.Add(new CommandBinding(script.Execute, result.Delete));
+				entity.Add(new CommandBinding(script.Execute, entity.Delete));
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
+			base.AttachEditorComponents(entity, main);
 
-			Model model = result.Get<Model>("EditorModel");
-			model.Add(new Binding<Vector3, string>(model.Color, x => string.IsNullOrEmpty(x) ? Vector3.One : new Vector3(1.0f, 0.0f, 0.0f), result.Get<Script>().Errors));
+			Model model = entity.Get<Model>("EditorModel");
+			model.Add(new Binding<Vector3, string>(model.Color, x => string.IsNullOrEmpty(x) ? Vector3.One : new Vector3(1.0f, 0.0f, 0.0f), entity.Get<Script>().Errors));
 		}
 	}
 }

@@ -74,6 +74,8 @@ namespace Lemma
 			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F5, GamePadButton = Buttons.Back } };
 			public Property<PCInput.PCInputBinding> ToggleFullscreen = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F11 } };
 			public Property<PCInput.PCInputBinding> ToggleConsole = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.OemTilde } };
+			public Property<float> SoundEffectVolume = new Property<float> { Value = 1.0f };
+			public Property<float> MusicVolume = new Property<float> { Value = 1.0f };
 		}
 
 		public class SaveInfo
@@ -402,6 +404,22 @@ namespace Lemma
 				this.Renderer.LightRampTexture.Value = "Images\\default-ramp";
 				this.Renderer.EnvironmentMap.Value = "Images\\env0";
 
+				this.Settings.SoundEffectVolume.Set = delegate(float value)
+				{
+					value = MathHelper.Clamp(value, 0.0f, 1.0f);
+					this.Settings.SoundEffectVolume.InternalValue = value;
+					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.VOLUME_SFX, value);
+				};
+				this.Settings.SoundEffectVolume.Reset();
+
+				this.Settings.MusicVolume.Set = delegate(float value)
+				{
+					value = MathHelper.Clamp(value, 0.0f, 1.0f);
+					this.Settings.MusicVolume.InternalValue = value;
+					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.VOLUME_MUSIC, value);
+				};
+				this.Settings.MusicVolume.Reset();
+
 				new TwoWayBinding<LightingManager.DynamicShadowSetting>(this.Settings.DynamicShadows, this.LightingManager.DynamicShadows);
 				new TwoWayBinding<float>(this.Settings.MotionBlurAmount, this.Renderer.MotionBlurAmount);
 				new TwoWayBinding<float>(this.Settings.Gamma, this.Renderer.Gamma);
@@ -417,7 +435,6 @@ namespace Lemma
 
 				new Binding<string, Config.Lang>(this.Strings.Language, x => x.ToString(), this.Settings.Language);
 				new NotifyBinding(this.SaveSettings, this.Settings.Language);
-
 
 				new CommandBinding(this.MapLoaded, delegate()
 				{

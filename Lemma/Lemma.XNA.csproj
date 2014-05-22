@@ -170,7 +170,7 @@
     <Compile Include="Factories\MapExitFactory.cs" />
     <Compile Include="Factories\PropFactory.cs" />
     <Compile Include="Factories\RandomAmbientSoundFactory.cs" />
-    <Compile Include="Factories\VoxelChaseAI.cs" />
+    <Compile Include="Components\VoxelChaseAI.cs" />
     <Compile Include="Graphics\DynamicModel.cs" />
     <Compile Include="Graphics\LineDrawer.cs" />
     <Compile Include="Factories\ZoneFactory.cs" />

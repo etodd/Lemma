@@ -16,35 +16,27 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Switch");
-
-			result.Add("Transform", new Transform());
-			PointLight pointLight = new PointLight();
-			pointLight.Attenuation.Value = 10.0f;
-			pointLight.Color.Value = Vector3.One;
-			result.Add("PointLight", pointLight);
-
-			return result;
+			return new Entity(main, "Switch");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			result.CannotSuspendByDistance = true;
+			entity.CannotSuspendByDistance = true;
 
-			PointLight light = result.Get<PointLight>();
-			Transform transform = result.Get<Transform>();
+			PointLight light = entity.GetOrCreate<PointLight>("PointLight");
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			Property<float> attachOffset = result.GetOrMakeProperty<float>("AttachmentOffset", true);
-			Property<Entity.Handle> map = result.GetOrMakeProperty<Entity.Handle>("AttachedMap");
-			Property<Map.Coordinate> coord = result.GetOrMakeProperty<Map.Coordinate>("AttachedCoordinate");
+			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
+			Property<Entity.Handle> map = entity.GetOrMakeProperty<Entity.Handle>("AttachedMap");
+			Property<Map.Coordinate> coord = entity.GetOrMakeProperty<Map.Coordinate>("AttachedCoordinate");
 
-			Property<bool> on = result.GetOrMakeProperty<bool>("On");
+			Property<bool> on = entity.GetOrMakeProperty<bool>("On");
 
 			light.Add(new Binding<Vector3>(light.Position, () => Vector3.Transform(new Vector3(0, 0, attachOffset), transform.Matrix), attachOffset, transform.Matrix));
 
-			ListProperty<Entity.Handle> targets = result.GetOrMakeListProperty<Entity.Handle>("Targets");
+			ListProperty<Entity.Handle> targets = entity.GetOrMakeListProperty<Entity.Handle>("Targets");
 
-			result.Add(new NotifyBinding(delegate()
+			entity.Add(new NotifyBinding(delegate()
 			{
 				AkSoundEngine.PostEvent(on ? "Play_switch_on" : "Play_switch_off", light.Position);
 				foreach (Entity.Handle targetHandle in targets)
@@ -78,13 +70,13 @@ namespace Lemma.Factories
 
 				Map.CellState poweredState = Map.States[Map.t.PoweredSwitch];
 
-				result.Add(new NotifyBinding(delegate()
+				entity.Add(new NotifyBinding(delegate()
 				{
 					if (attachmentBinding != null)
 					{
-						result.Remove(attachmentBinding);
-						result.Remove(deleteBinding);
-						result.Remove(cellFilledBinding);
+						entity.Remove(attachmentBinding);
+						entity.Remove(deleteBinding);
+						entity.Remove(cellFilledBinding);
 					}
 
 					Map m = map.Value.Target.Get<Map>();
@@ -95,10 +87,10 @@ namespace Lemma.Factories
 					Matrix offset = transform.Matrix * Matrix.Invert(Matrix.CreateTranslation(m.Offset) * m.Transform);
 
 					attachmentBinding = new Binding<Matrix>(transform.Matrix, () => offset * Matrix.CreateTranslation(m.Offset) * m.Transform, m.Transform, m.Offset);
-					result.Add(attachmentBinding);
+					entity.Add(attachmentBinding);
 
-					deleteBinding = new CommandBinding(m.Delete, result.Delete);
-					result.Add(deleteBinding);
+					deleteBinding = new CommandBinding(m.Delete, entity.Delete);
+					entity.Add(deleteBinding);
 
 					cellFilledBinding = new CommandBinding<IEnumerable<Map.Coordinate>, Map>(m.CellsFilled, delegate(IEnumerable<Map.Coordinate> coords, Map newMap)
 					{
@@ -111,10 +103,10 @@ namespace Lemma.Factories
 							}
 						}
 					});
-					result.Add(cellFilledBinding);
+					entity.Add(cellFilledBinding);
 				}, map));
 
-				result.Add(new PostInitialization
+				entity.Add(new PostInitialization
 				{
 					delegate()
 					{
@@ -140,7 +132,7 @@ namespace Lemma.Factories
 								}
 							}
 							if (closestMap == null)
-								result.Delete.Execute();
+								entity.Delete.Execute();
 							else
 								map.Value = closestMap.Entity;
 						}
@@ -150,14 +142,14 @@ namespace Lemma.Factories
 				});
 			}
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
-			EntityConnectable.AttachEditorComponents(result, result.GetOrMakeListProperty<Entity.Handle>("Targets"));
-			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
+			base.AttachEditorComponents(entity, main);
+			EntityConnectable.AttachEditorComponents(entity, entity.GetOrMakeListProperty<Entity.Handle>("Targets"));
+			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
 	}
 }

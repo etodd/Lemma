@@ -58,6 +58,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
+			this.Serialize = false;
 			this.temporary = Map.States[Map.t.Temporary];
 			this.particleSystem = ParticleSystem.Get(main, "Distortion");
 		}

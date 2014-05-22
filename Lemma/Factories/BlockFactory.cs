@@ -22,35 +22,21 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Block");
-
-			Transform transform = new Transform();
-			result.Add("Transform", transform);
-
-			PhysicsBlock physics = new PhysicsBlock();
-			result.Add("Physics", physics);
-
-			Property<uint> cue = new Property<uint> { };
-			result.Add("CollisionSoundCue", cue);
-
-			ModelInstance model = new ModelInstance();
-			result.Add("Model", model);
-			model.Scale.Value = new Vector3(0.5f);
-
-			return result;
+			return new Entity(main, "Block");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			result.CannotSuspend = true;
+			entity.CannotSuspend = true;
 
-			Transform transform = result.Get<Transform>();
-			PhysicsBlock physics = result.Get<PhysicsBlock>();
-			ModelInstance model = result.Get<ModelInstance>();
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
+			PhysicsBlock physics = entity.GetOrCreate<PhysicsBlock>("Physics");
+			ModelInstance model = entity.GetOrCreate<ModelInstance>("Model");
+			model.Scale.Value = new Vector3(0.5f);
 
 			physics.Add(new TwoWayBinding<Matrix>(transform.Matrix, physics.Transform));
 
-			Property<uint> soundCue = result.GetProperty<uint>("CollisionSoundCue");
+			Property<uint> soundCue = entity.GetOrMakeProperty<uint>("CollisionSoundCue");
 
 			Property<Vector3> scale = new Property<Vector3> { Value = Vector3.One };
 
@@ -63,17 +49,17 @@ namespace Lemma.Factories
 				// TODO: figure out Wwise volume parameter
 				float volume = contacts[contacts.Count - 1].NormalImpulse * volumeMultiplier;
 				if (volume > 0.2f)
-					AkSoundEngine.PostEvent(soundCue, result);
+					AkSoundEngine.PostEvent(soundCue, entity);
 			}));
 
-			result.Add("Fade", new Animation
+			entity.Add("Fade", new Animation
 			(
 				new Animation.Delay(5.0f),
 				new Animation.Vector3MoveTo(scale, Vector3.Zero, 1.0f),
-				new Animation.Execute(delegate() { result.Delete.Execute(); })
+				new Animation.Execute(delegate() { entity.Delete.Execute(); })
 			));
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 			PhysicsBlock.CancelPlayerCollisions(physics);
 		}
 	}

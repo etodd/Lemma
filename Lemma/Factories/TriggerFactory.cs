@@ -16,40 +16,30 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Trigger");
-
-			Transform position = new Transform();
-
-			Trigger trigger = new Trigger();
-			trigger.Radius.Value = 10.0f;
-			result.Add("Trigger", trigger);
-
-			result.Add("Position", position);
-
-			return result;
+			return new Entity(main, "Trigger");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(result, main);
-			Transform transform = result.Get<Transform>();
-			Trigger trigger = result.Get<Trigger>();
+			this.SetMain(entity, main);
+			Transform transform = entity.GetOrCreate<Transform>("Position");
+			Trigger trigger = entity.GetOrCreate<Trigger>("Trigger");
 
-			if (result.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(result, main);
+			if (entity.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(entity, main);
 
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
+			base.AttachEditorComponents(entity, main);
 
-			Trigger.AttachEditorComponents(result, main, this.Color);
+			Trigger.AttachEditorComponents(entity, main, this.Color);
 
-			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
+			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 
-			EntityConnectable.AttachEditorComponents(result, result.Get<Trigger>().Target);
+			EntityConnectable.AttachEditorComponents(entity, entity.Get<Trigger>().Target);
 		}
 	}
 }

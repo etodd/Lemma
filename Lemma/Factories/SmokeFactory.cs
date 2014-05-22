@@ -17,32 +17,31 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Smoke");
-			return result;
+			return new Entity(main, "Smoke");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			result.Serialize = false;
-			Transform transform = result.GetOrCreate<Transform>();
+			entity.Serialize = false;
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			const float speed = 20.0f;
 
-			Property<Vector3> velocity = result.GetOrMakeProperty<Vector3>("Velocity");
+			Property<Vector3> velocity = entity.GetOrMakeProperty<Vector3>("Velocity");
 			velocity.Value = speed * Vector3.Normalize(new Vector3(((float)this.random.NextDouble() - 0.5f) * 2.0f, (float)this.random.NextDouble(), ((float)this.random.NextDouble() - 0.5f) * 2.0f));
-			Property<float> lifetime = result.GetOrMakeProperty<float>("Lifetime");
+			Property<float> lifetime = entity.GetOrMakeProperty<float>("Lifetime");
 
-			ParticleEmitter emitter = result.GetOrCreate<ParticleEmitter>();
+			ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("Emitter");
 			emitter.Add(new Binding<Vector3>(emitter.Position, transform.Position));
 			emitter.ParticlesPerSecond.Value = 35;
 			emitter.ParticleType.Value = "Smoke";
-			result.Add(new Updater
+			entity.Add(new Updater
 			{
 				delegate(float dt)
 				{
 					lifetime.Value += dt;
 					if (lifetime > 1.0f)
-						result.Delete.Execute();
+						entity.Delete.Execute();
 					else
 					{
 						velocity.Value += new Vector3(0, dt * -11.0f, 0);
@@ -51,7 +50,7 @@ namespace Lemma.Factories
 				}
 			});
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 		}
 	}
 }

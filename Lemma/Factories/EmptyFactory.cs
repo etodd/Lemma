@@ -16,36 +16,32 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Empty");
-
-			result.Add("Transform", new Transform());
-
-			return result;
+			return new Entity(main, "Empty");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(result, main);
-			result.Get<Transform>().Editable = true;
+			this.SetMain(entity, main);
+			entity.GetOrCreate<Transform>("Transform").Editable = true;
 
 			Command detach = new Command
 			{
 				Action = delegate()
 				{
-					result.Delete.Execute();
+					entity.Delete.Execute();
 				},
 			};
-			result.Add("Detach", detach);
+			entity.Add("Detach", detach);
 
-			if (result.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(result, main, true, false, detach);
+			if (entity.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(entity, main, true, false, detach);
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
+			base.AttachEditorComponents(entity, main);
 
-			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
+			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
 	}
 }

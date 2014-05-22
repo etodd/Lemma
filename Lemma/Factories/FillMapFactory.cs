@@ -25,27 +25,27 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main, int offsetX, int offsetY, int offsetZ)
 		{
-			Entity result = base.Create(main, offsetX, offsetY, offsetZ);
-			result.Type = "FillMap";
-			result.ID = Entity.GenerateID(result, main);
-			return result;
+			Entity entity = base.Create(main, offsetX, offsetY, offsetZ);
+			entity.Type = "FillMap";
+			entity.ID = Entity.GenerateID(entity, main);
+			return entity;
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.InternalBind(result, main, creating, null, true);
-			if (result.GetOrMakeProperty<bool>("Attached", true))
-				MapAttachable.MakeAttachable(result, main);
+			this.InternalBind(entity, main, creating, null, true);
+			if (entity.GetOrMakeProperty<bool>("Attached", true))
+				MapAttachable.MakeAttachable(entity, main);
 
-			Property<Entity.Handle> target = result.GetOrMakeProperty<Entity.Handle>("Target");
+			Property<Entity.Handle> target = entity.GetOrMakeProperty<Entity.Handle>("Target");
 
-			Map map = result.Get<Map>();
+			Map map = entity.Get<Map>();
 
-			Property<float> intervalMultiplier = result.GetOrMakeProperty<float>("IntervalMultiplier", true, 1.0f);
+			Property<float> intervalMultiplier = entity.GetOrMakeProperty<float>("IntervalMultiplier", true, 1.0f);
 
-			ListProperty<CoordinateEntry> coords = result.GetOrMakeListProperty<CoordinateEntry>("Coordinates");
+			ListProperty<CoordinateEntry> coords = entity.GetOrMakeListProperty<CoordinateEntry>("Coordinates");
 
-			Property<int> index = result.GetOrMakeProperty<int>("FillIndex");
+			Property<int> index = entity.GetOrMakeProperty<int>("FillIndex");
 
 			Action populateCoords = delegate()
 			{
@@ -69,9 +69,9 @@ namespace Lemma.Factories
 			if (main.EditorEnabled)
 				coords.Clear();
 			else
-				result.Add(new PostInitialization { populateCoords });
+				entity.Add(new PostInitialization { populateCoords });
 
-			Property<float> blockLifetime = result.GetOrMakeProperty<float>("BlockLifetime", true, 0.25f);
+			Property<float> blockLifetime = entity.GetOrMakeProperty<float>("BlockLifetime", true, 0.25f);
 
 			float intervalTimer = 0.0f;
 			Updater update = new Updater
@@ -107,11 +107,11 @@ namespace Lemma.Factories
 						}
 					}
 					else
-						result.Delete.Execute();
+						entity.Delete.Execute();
 				}
 			};
 			update.Enabled.Value = index > 0;
-			result.Add("Update", update);
+			entity.Add("Update", update);
 
 			Action fill = delegate()
 			{
@@ -140,12 +140,12 @@ namespace Lemma.Factories
 				}
 			};
 
-			result.Add("Fill", new Command
+			entity.Add("Fill", new Command
 			{
 				Action = fill
 			});
 
-			result.Add("Trigger", new Command<Entity>
+			entity.Add("Trigger", new Command<Entity>
 			{
 				Action = delegate(Entity p)
 				{
@@ -154,13 +154,13 @@ namespace Lemma.Factories
 			});
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
+			base.AttachEditorComponents(entity, main);
 
-			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
+			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 
-			EntityConnectable.AttachEditorComponents(result, result.GetOrMakeProperty<Entity.Handle>("Target"));
+			EntityConnectable.AttachEditorComponents(entity, entity.GetOrMakeProperty<Entity.Handle>("Target"));
 		}
 	}
 }

@@ -16,26 +16,22 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "LowerLimit");
-
-			result.Add("Transform", new Transform());
-
-			return result;
+			return new Entity(main, "LowerLimit");
 		}
 
 		const float absoluteLimit = -20.0f;
 		const float velocityThreshold = -40.0f;
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(result, main);
-			result.CannotSuspendByDistance = true;
-			Transform transform = result.Get<Transform>();
+			this.SetMain(entity, main);
+			entity.CannotSuspendByDistance = true;
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			transform.Editable = true;
-			if (result.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(result, main);
+			if (entity.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(entity, main);
 			
-			result.Add(new Updater
+			entity.Add(new Updater
 			{
 				delegate(float dt)
 				{
@@ -54,11 +50,11 @@ namespace Lemma.Factories
 			});
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
+			base.AttachEditorComponents(entity, main);
 
-			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
+			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
 	}
 }

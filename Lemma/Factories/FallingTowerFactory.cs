@@ -19,42 +19,29 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "FallingTower");
-
-			Transform transform = new Transform();
-			result.Add("Transform", transform);
-
-			result.Add("Trigger", new PlayerCylinderTrigger());
-
-			result.Add("DynamicMaps", new ListProperty<Entity.Handle> { Editable = false });
-			result.Add("TimeUntilRebuild", new Property<float> { Editable = false });
-			result.Add("TimeUntilRebuildComplete", new Property<float> { Editable = false });
-			result.Add("RebuildDelay", new Property<float> { Editable = true, Value = 4.0f });
-			result.Add("RebuildTime", new Property<float> { Editable = true, Value = 1.0f });
-
-			return result;
+			return new Entity(main, "FallingTower");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			Transform transform = result.Get<Transform>();
-			EnemyBase enemy = result.GetOrCreate<EnemyBase>("Base");
-			PlayerCylinderTrigger trigger = result.Get<PlayerCylinderTrigger>();
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
+			EnemyBase enemy = entity.GetOrCreate<EnemyBase>("Base");
+			PlayerCylinderTrigger trigger = entity.GetOrCreate<PlayerCylinderTrigger>("Trigger");
 
-			PointLight light = result.GetOrCreate<PointLight>();
+			PointLight light = entity.GetOrCreate<PointLight>();
 			light.Color.Value = new Vector3(1.3f, 0.5f, 0.5f);
 			light.Attenuation.Value = 15.0f;
 			light.Serialize = false;
 
-			ListProperty<Entity.Handle> dynamicMaps = result.GetListProperty<Entity.Handle>("DynamicMaps");
-			Property<float> timeUntilRebuild = result.GetProperty<float>("TimeUntilRebuild");
-			Property<float> timeUntilRebuildComplete = result.GetProperty<float>("TimeUntilRebuildComplete");
-			Property<float> rebuildDelay = result.GetProperty<float>("RebuildDelay");
-			Property<float> rebuildTime = result.GetProperty<float>("RebuildTime");
+			ListProperty<Entity.Handle> dynamicMaps = entity.GetOrMakeListProperty<Entity.Handle>("DynamicMaps");
+			Property<float> timeUntilRebuild = entity.GetOrMakeProperty<float>("TimeUntilRebuild");
+			Property<float> timeUntilRebuildComplete = entity.GetOrMakeProperty<float>("TimeUntilRebuildComplete");
+			Property<float> rebuildDelay = entity.GetOrMakeProperty<float>("RebuildDelay", true, 4.0f);
+			Property<float> rebuildTime = entity.GetOrMakeProperty<float>("RebuildTime", true, 1.0f);
 
 			const float rebuildTimeMultiplier = 0.03f;
 
-			enemy.Add(new CommandBinding(enemy.Delete, result.Delete));
+			enemy.Add(new CommandBinding(enemy.Delete, entity.Delete));
 			enemy.Add(new Binding<Matrix>(enemy.Transform, transform.Matrix));
 			light.Add(new Binding<Vector3>(light.Position, enemy.Position));
 
@@ -67,7 +54,7 @@ namespace Lemma.Factories
 
 				if (!enemy.IsValid)
 				{
-					result.Delete.Execute();
+					entity.Delete.Execute();
 					return;
 				}
 
@@ -83,7 +70,7 @@ namespace Lemma.Factories
 				m.Regenerate(delegate(List<DynamicMap> spawnedMaps)
 				{
 					if (spawnedMaps.Count == 0)
-						result.Delete.Execute();
+						entity.Delete.Execute();
 					else
 					{
 						Vector3 playerPos = player.Get<Transform>().Position;
@@ -114,7 +101,7 @@ namespace Lemma.Factories
 				timeUntilRebuild.Value = rebuildDelay;
 			};
 
-			result.Add(new PostInitialization
+			entity.Add(new PostInitialization
 			{
 				delegate()
 				{
@@ -130,9 +117,9 @@ namespace Lemma.Factories
 				}
 			});
 
-			result.Add(new CommandBinding<Entity>(trigger.PlayerEntered, fall));
+			entity.Add(new CommandBinding<Entity>(trigger.PlayerEntered, fall));
 
-			result.Add(new Updater
+			entity.Add(new Updater
 			{
 				delegate(float dt)
 				{
@@ -140,7 +127,7 @@ namespace Lemma.Factories
 					{
 						if (enemy.Map.Value.Target == null || !enemy.Map.Value.Target.Active)
 						{
-							result.Delete.Execute();
+							entity.Delete.Execute();
 							return;
 						}
 
@@ -233,7 +220,7 @@ namespace Lemma.Factories
 						{
 							// Done rebuilding
 							if (!enemy.IsValid)
-								result.Delete.Execute();
+								entity.Delete.Execute();
 							else
 							{
 								enemy.EnableCellEmptyBinding = !main.EditorEnabled;
@@ -245,16 +232,16 @@ namespace Lemma.Factories
 				}
 			});
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
+			base.AttachEditorComponents(entity, main);
 
-			EnemyBase.AttachEditorComponents(result, main, this.Color);
+			EnemyBase.AttachEditorComponents(entity, main, this.Color);
 
-			PlayerCylinderTrigger.AttachEditorComponents(result, main, this.Color);
+			PlayerCylinderTrigger.AttachEditorComponents(entity, main, this.Color);
 		}
 	}
 }

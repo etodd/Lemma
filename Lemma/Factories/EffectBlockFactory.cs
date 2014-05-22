@@ -41,44 +41,26 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "EffectBlock");
-
-			Transform transform = new Transform();
-			result.Add("Transform", transform);
-
-			ModelInstance model = new ModelInstance();
-			result.Add("Model", model);
-
-			result.Add("Offset", new Property<Vector3> { Editable = false });
-			result.Add("Lifetime", new Property<float> { Editable = false });
-			result.Add("TotalLifetime", new Property<float> { Editable = true });
-			result.Add("StartPosition", new Property<Vector3> { Editable = true });
-			result.Add("StartOrientation", new Property<Matrix> { Editable = false });
-			result.Add("TargetMap", new Property<Entity.Handle> { Editable = true });
-			result.Add("TargetCoord", new Property<Map.Coordinate> { Editable = false });
-			result.Add("TargetCellStateID", new Property<Map.t> { Editable = true });
-			result.Add("Scale", new Property<bool> { Editable = true, Value = true });
-
-			return result;
+			return new Entity(main, "EffectBlock");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			result.CannotSuspend = true;
-			Transform transform = result.Get<Transform>();
-			ModelInstance model = result.Get<ModelInstance>();
+			entity.CannotSuspend = true;
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
+			ModelInstance model = entity.GetOrCreate<ModelInstance>("Model");
 
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 			model.Scale.Value = Vector3.Zero;
 
-			Property<bool> scale = result.GetProperty<bool>("Scale");
-			Property<Vector3> start = result.GetProperty<Vector3>("StartPosition");
+			Property<bool> scale = entity.GetOrMakeProperty<bool>("Scale", false, true);
+			Property<Vector3> start = entity.GetOrMakeProperty<Vector3>("StartPosition");
 			start.Set = delegate(Vector3 value)
 			{
 				start.InternalValue = value;
 				transform.Position.Value = value;
 			};
-			Property<Matrix> startOrientation = result.GetProperty<Matrix>("StartOrientation");
+			Property<Matrix> startOrientation = entity.GetOrMakeProperty<Matrix>("StartOrientation");
 			Vector3 startEuler = Vector3.Zero;
 			startOrientation.Set = delegate(Matrix value)
 			{
@@ -87,14 +69,14 @@ namespace Lemma.Factories
 				transform.Orientation.Value = value;
 			};
 
-			Property<Entity.Handle> map = result.GetProperty<Entity.Handle>("TargetMap");
-			Property<Map.Coordinate> coord = result.GetProperty<Map.Coordinate>("TargetCoord");
-			Property<Map.t> stateId = result.GetProperty<Map.t>("TargetCellStateID");
+			Property<Entity.Handle> map = entity.GetOrMakeProperty<Entity.Handle>("TargetMap");
+			Property<Map.Coordinate> coord = entity.GetOrMakeProperty<Map.Coordinate>("TargetCoord");
+			Property<Map.t> stateId = entity.GetOrMakeProperty<Map.t>("TargetCellStateID");
 
-			Property<float> totalLifetime = result.GetProperty<float>("TotalLifetime");
-			Property<float> lifetime = result.GetProperty<float>("Lifetime");
+			Property<float> totalLifetime = entity.GetOrMakeProperty<float>("TotalLifetime");
+			Property<float> lifetime = entity.GetOrMakeProperty<float>("Lifetime");
 
-			Property<bool> checkAdjacent = result.GetOrMakeProperty<bool>("CheckAdjacent");
+			Property<bool> checkAdjacent = entity.GetOrMakeProperty<bool>("CheckAdjacent");
 
 			Updater update = null;
 			update = new Updater
@@ -107,7 +89,7 @@ namespace Lemma.Factories
 
 					if (map.Value.Target == null || !map.Value.Target.Active)
 					{
-						result.Delete.Execute();
+						entity.Delete.Execute();
 						return;
 					}
 
@@ -168,8 +150,8 @@ namespace Lemma.Factories
 											m.Empty(coord);
 										m.Fill(coord, Map.States[stateId]);
 										m.Regenerate();
-										AkSoundEngine.PostEvent("Play_build_block", result);
-										result.Delete.Execute();
+										AkSoundEngine.PostEvent("Play_build_block", entity);
+										entity.Delete.Execute();
 										return;
 									}
 								}
@@ -178,10 +160,10 @@ namespace Lemma.Factories
 							// For one reason or another, we can't fill the cell
 							// Animate nicely into oblivion
 							update.Delete.Execute();
-							result.Add(new Animation
+							entity.Add(new Animation
 							(
 								new Animation.Vector3MoveTo(model.Scale, Vector3.Zero, 1.0f),
-								new Animation.Execute(result.Delete)
+								new Animation.Execute(entity.Delete)
 							));
 						}
 					}
@@ -205,10 +187,10 @@ namespace Lemma.Factories
 				},
 			};
 
-			result.Add(update);
+			entity.Add(update);
 
 			BlockEntry entry = new BlockEntry();
-			result.Add(new NotifyBinding(delegate()
+			entity.Add(new NotifyBinding(delegate()
 			{
 				if (entry.Map != null)
 					this.animatingBlocks.Remove(entry);
@@ -223,20 +205,20 @@ namespace Lemma.Factories
 				}
 			}, map, coord, stateId));
 
-			result.Add(new CommandBinding(result.Delete, delegate()
+			entity.Add(new CommandBinding(entity.Delete, delegate()
 			{
 				if (entry.Map != null)
 					this.animatingBlocks.Remove(entry);
 				entry.Map = null;
 			}));
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 			IBinding offsetBinding = null;
 			model.Add(new NotifyBinding(delegate()
 			{
 				if (offsetBinding != null)
 					model.Remove(offsetBinding);
-				offsetBinding = new Binding<Vector3>(model.GetVector3Parameter("Offset"), result.GetProperty<Vector3>("Offset"));
+				offsetBinding = new Binding<Vector3>(model.GetVector3Parameter("Offset"), entity.GetOrMakeProperty<Vector3>("Offset"));
 				model.Add(offsetBinding);
 			}, model.FullInstanceKey));
 		}
@@ -252,15 +234,15 @@ namespace Lemma.Factories
 
 				Entity block = factory.CreateAndBind(main);
 				entry.State.ApplyToEffectBlock(block.Get<ModelInstance>());
-				block.GetProperty<Vector3>("Offset").Value = entry.Map.GetRelativePosition(entry.Coordinate);
+				block.GetOrMakeProperty<Vector3>("Offset").Value = entry.Map.GetRelativePosition(entry.Coordinate);
 
 				Vector3 absolutePos = entry.Map.GetAbsolutePosition(entry.Coordinate);
 
 				float distance = (absolutePos - center).Length();
-				block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f) * distance;
-				block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * (distance + index)) * Matrix.CreateRotationY(0.15f * (distance + index));
-				block.GetProperty<float>("TotalLifetime").Value = Math.Max(delayMultiplier, distance * delayMultiplier);
-				block.GetProperty<bool>("CheckAdjacent").Value = true;
+				block.GetOrMakeProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f) * distance;
+				block.GetOrMakeProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * (distance + index)) * Matrix.CreateRotationY(0.15f * (distance + index));
+				block.GetOrMakeProperty<float>("TotalLifetime").Value = Math.Max(delayMultiplier, distance * delayMultiplier);
+				block.GetOrMakeProperty<bool>("CheckAdjacent").Value = true;
 				factory.Setup(block, entry.Map.Entity, entry.Coordinate, fake ? 0 : entry.State.ID);
 				main.Add(block);
 				index++;
@@ -268,12 +250,12 @@ namespace Lemma.Factories
 			SteamWorker.IncrementStat("stat_blocks_created", index);
 		}
 
-		public void Setup(Entity result, Entity m, Map.Coordinate c, Map.t s)
+		public void Setup(Entity entity, Entity map, Map.Coordinate c, Map.t s)
 		{
-			Property<Entity.Handle> map = result.GetProperty<Entity.Handle>("TargetMap");
-			Property<Map.Coordinate> coord = result.GetProperty<Map.Coordinate>("TargetCoord");
-			Property<Map.t> stateId = result.GetProperty<Map.t>("TargetCellStateID");
-			map.InternalValue = m;
+			Property<Entity.Handle> mapHandle = entity.GetOrMakeProperty<Entity.Handle>("TargetMap");
+			Property<Map.Coordinate> coord = entity.GetOrMakeProperty<Map.Coordinate>("TargetCoord");
+			Property<Map.t> stateId = entity.GetOrMakeProperty<Map.t>("TargetCellStateID");
+			mapHandle.InternalValue = map;
 			coord.InternalValue = c;
 			stateId.InternalValue = s;
 			stateId.Changed();

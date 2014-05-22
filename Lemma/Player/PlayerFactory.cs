@@ -30,24 +30,7 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Player");
-			AnimatedModel model = new AnimatedModel();
-			AnimatedModel firstPersonModel = new AnimatedModel();
-
-			result.Add("FirstPersonModel", firstPersonModel);
-			result.Add("Model", model);
-
-			model.Editable = false;
-			model.Filename.Value = "Models\\joan";
-			model.CullBoundingBox.Value = false;
-
-			firstPersonModel.Editable = false;
-			firstPersonModel.Filename.Value = "Models\\joan-firstperson";
-			firstPersonModel.CullBoundingBox.Value = false;
-
-			result.Add("Rotation", new Property<float> { Editable = false });
-
-			return result;
+			return new Entity(main, "Player");
 		}
 
 		private static Entity instance;
@@ -68,24 +51,34 @@ namespace Lemma.Factories
 
 		private Random random = new Random();
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			result.CannotSuspend = true;
+			entity.CannotSuspend = true;
 
-			PlayerFactory.Instance = result;
+			PlayerFactory.Instance = entity;
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 
 			FPSInput input = new FPSInput();
 			input.EnabledWhenPaused = false;
-			result.Add("Input", input);
+			entity.Add("Input", input);
 
-			AnimationController anim = result.GetOrCreate<AnimationController>();
-			Player player = result.GetOrCreate<Player>("Player");
-			Transform transform = result.GetOrCreate<Transform>("Transform");
+			AnimationController anim = entity.GetOrCreate<AnimationController>();
+			Player player = entity.GetOrCreate<Player>("Player");
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			AnimatedModel model = result.Get<AnimatedModel>("Model");
-			AnimatedModel firstPersonModel = result.Get<AnimatedModel>("FirstPersonModel");
+			AnimatedModel model = entity.GetOrCreate<AnimatedModel>("Model");
+			model.Serialize = false;
+			AnimatedModel firstPersonModel = entity.GetOrCreate<AnimatedModel>("FirstPersonModel");
+			firstPersonModel.Serialize = false;
+
+			model.Editable = false;
+			model.Filename.Value = "Models\\joan";
+			model.CullBoundingBox.Value = false;
+
+			firstPersonModel.Editable = false;
+			firstPersonModel.Filename.Value = "Models\\joan-firstperson";
+			firstPersonModel.CullBoundingBox.Value = false;
 
 			anim.Add(new Binding<bool>(anim.IsSupported, player.Character.IsSupported));
 			anim.Add(new Binding<Player.WallRun>(anim.WallRunState, player.WallRunState));
@@ -130,7 +123,7 @@ namespace Lemma.Factories
 
 			Property<Vector3> floor = new Property<Vector3>();
 			transform.Add(new Binding<Vector3>(floor, () => transform.Position + new Vector3(0, player.Character.Height * -0.5f, 0), transform.Position, player.Character.Height));
-			AkGameObjectTracker.Attach(result, floor);
+			AkGameObjectTracker.Attach(entity, floor);
 
 			firstPersonModel.Bind(model);
 
@@ -147,7 +140,7 @@ namespace Lemma.Factories
 			ui.DrawOrder.Value = -1;
 			ui.EnabledWhenPaused = true;
 			ui.EnabledInEditMode = false;
-			result.Add("UI", ui);
+			entity.Add("UI", ui);
 			PlayerUI.Attach(main, ui, player.Health);
 
 			GameMain.Config settings = ((GameMain)main).Settings;
@@ -163,26 +156,26 @@ namespace Lemma.Factories
 
 			Updater update = new Updater();
 			update.EnabledInEditMode = false;
-			result.Add(update);
+			entity.Add(update);
 
 			// Set up AI agent
-			Agent agent = result.GetOrCreate<Agent>();
+			Agent agent = entity.GetOrCreate<Agent>();
 			agent.Add(new TwoWayBinding<float>(player.Health, agent.Health));
 			agent.Add(new Binding<Vector3>(agent.Position, () => transform.Position.Value + new Vector3(0, player.Character.Height * -0.5f, 0), transform.Position, player.Character.Height));
-			agent.Add(new CommandBinding(agent.Die, result.Delete));
+			agent.Add(new CommandBinding(agent.Die, entity.Delete));
 			agent.Add(new Binding<bool>(agent.Loud, x => !x, player.Character.Crouched));
 
-			result.Add(new CommandBinding(player.HealthDepleted, delegate()
+			entity.Add(new CommandBinding(player.HealthDepleted, delegate()
 			{
 				Session.Recorder.Event(main, "DieFromHealth");
-				AkSoundEngine.PostEvent("Play_death", result);
+				AkSoundEngine.PostEvent("Play_death", entity);
 				((GameMain)main).RespawnDistance = GameMain.KilledRespawnDistance;
 				((GameMain)main).RespawnInterval = GameMain.KilledRespawnInterval;
 			}));
 
-			result.Add(new CommandBinding(player.HealthDepleted, result.Delete));
+			entity.Add(new CommandBinding(player.HealthDepleted, entity.Delete));
 
-			result.Add(new CommandBinding(result.Delete, delegate()
+			entity.Add(new CommandBinding(entity.Delete, delegate()
 			{
 				Session.Recorder.Event(main, "Die");
 				if (Agent.Query(transform.Position, 0.0f, 10.0f, x => x != agent) != null)
@@ -196,7 +189,7 @@ namespace Lemma.Factories
 
 			input.MaxY.Value = (float)Math.PI * 0.35f;
 
-			Property<float> rotation = result.GetProperty<float>("Rotation");
+			Property<float> rotation = entity.GetOrMakeProperty<float>("Rotation");
 
 			Action updateFallSound = delegate()
 			{
@@ -210,9 +203,9 @@ namespace Lemma.Factories
 				AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_PLAYER_FALL, value);
 			};
 			updateFallSound();
-			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_FALL, result);
+			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_FALL, entity);
 			player.Add(new NotifyBinding(updateFallSound, player.Character.LinearVelocity));
-			SoundKiller.Add(result, AK.EVENTS.STOP_PLAYER_FALL);
+			SoundKiller.Add(entity, AK.EVENTS.STOP_PLAYER_FALL);
 
 			Action stopKick = null;
 
@@ -283,7 +276,7 @@ namespace Lemma.Factories
 			firstPersonModel.Add(new Binding<Matrix>(firstPersonModel.Transform, model.Transform));
 			firstPersonModel.Add(new Binding<Vector3>(firstPersonModel.Scale, model.Scale));
 
-			Footsteps footsteps = result.GetOrCreate<Footsteps>();
+			Footsteps footsteps = entity.GetOrCreate<Footsteps>();
 			Player.WallRun[] footstepWallrunStates = new[]
 			{
 				Player.WallRun.Left,
@@ -346,7 +339,7 @@ namespace Lemma.Factories
 
 			Map.CellState temporary = Map.States[Map.t.Temporary];
 
-			BlockPredictor predictor = result.GetOrCreate<BlockPredictor>("BlockPredictor");
+			BlockPredictor predictor = entity.GetOrCreate<BlockPredictor>("BlockPredictor");
 			predictor.Add(new Binding<Vector3>(predictor.FootPosition, floor));
 			predictor.Add(new Binding<Vector3>(predictor.LinearVelocity, player.Character.LinearVelocity));
 			predictor.Add(new Binding<float>(predictor.Rotation, rotation));
@@ -785,7 +778,7 @@ namespace Lemma.Factories
 			}, player.EnableMoves));
 
 			// Fall damage
-			FallDamage fallDamage = result.GetOrCreate<FallDamage>();
+			FallDamage fallDamage = entity.GetOrCreate<FallDamage>();
 			fallDamage.Add(new Binding<bool>(fallDamage.IsSupported, player.Character.IsSupported));
 			fallDamage.Add(new TwoWayBinding<Vector3>(player.Character.LinearVelocity, fallDamage.LinearVelocity));
 			fallDamage.Add(new TwoWayBinding<float>(player.Health, fallDamage.Health));
@@ -894,7 +887,7 @@ namespace Lemma.Factories
 							vaultMover = null;
 							rotationLocked.Value = false;
 							player.Character.EnableWalking.Value = true;
-							result.Add(new Animation
+							entity.Add(new Animation
 							(
 								new Animation.Delay(0.1f),
 								new Animation.Set<bool>(player.Character.AllowUncrouch, true)
@@ -902,8 +895,8 @@ namespace Lemma.Factories
 						}
 					}
 				};
-				result.RemoveComponent("VaultMover");
-				result.Add("VaultMover", vaultMover);
+				entity.RemoveComponent("VaultMover");
+				entity.Add("VaultMover", vaultMover);
 			};
 
 			jump = delegate(bool allowVault, bool onlyVault)
@@ -982,8 +975,8 @@ namespace Lemma.Factories
 					Map.CellState wallType = wallJumpMap[wallCoordinate];
 					if (wallType == Map.EmptyState) // Empty. Must be a block possibility that hasn't been instantiated yet
 						wallType = temporary;
-					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, wallType.FootstepSwitch, result);
-					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
+					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, wallType.FootstepSwitch, entity);
+					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, entity);
 
 					footsteps.WalkedOn.Execute(wallJumpMap, wallCoordinate, wallNormalDirection.GetReverse());
 
@@ -1236,7 +1229,7 @@ namespace Lemma.Factories
 						player.Character.HasTraction.Value = false;
 					}
 
-					AkSoundEngine.PostEvent(vaultType == VaultType.None ? AK.EVENTS.PLAY_PLAYER_JUMP : AK.EVENTS.PLAY_PLAYER_GRUNT, result);
+					AkSoundEngine.PostEvent(vaultType == VaultType.None ? AK.EVENTS.PLAY_PLAYER_JUMP : AK.EVENTS.PLAY_PLAYER_GRUNT, entity);
 
 					model.Stop
 					(
@@ -1301,7 +1294,7 @@ namespace Lemma.Factories
 					deactivateWallRun();
 
 					// Play a footstep sound since we're jumping off the ground
-					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, result);
+					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, entity);
 
 					return true;
 				}
@@ -1376,8 +1369,8 @@ namespace Lemma.Factories
 						}
 					}
 				};
-				result.RemoveComponent("VaultMover");
-				result.Add("VaultMover", vaultMover);
+				entity.RemoveComponent("VaultMover");
+				entity.Add("VaultMover", vaultMover);
 			};
 
 			Func<bool> tryVaultDown = delegate()
@@ -1506,7 +1499,7 @@ namespace Lemma.Factories
 			{
 				if (kickUpdate != null)
 				{
-					AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, result);
+					AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, entity);
 					kickUpdate.Delete.Execute();
 					kickUpdate = null;
 					model.Stop("Kick", "Slide");
@@ -1609,7 +1602,7 @@ namespace Lemma.Factories
 						rotationLocked.Value = true;
 
 						footsteps.Footstep.Execute(); // We just landed; play a footstep sound
-						AkSoundEngine.PostEvent("Skill_Roll_Play", result);
+						AkSoundEngine.PostEvent("Skill_Roll_Play", entity);
 
 						model.StartClip("Roll", 5, false, AnimatedModel.DefaultBlendTime);
 
@@ -1655,7 +1648,7 @@ namespace Lemma.Factories
 									if (breakWalls(forward, right, false))
 									{
 										if (firstTimeBreak)
-											AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WALL_BREAK_01, result);
+											AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WALL_BREAK_01, entity);
 										firstTimeBreak = false;
 									}
 
@@ -1664,7 +1657,7 @@ namespace Lemma.Factories
 								}
 							}
 						};
-						result.Add(rollUpdate);
+						entity.Add(rollUpdate);
 					}
 				}
 
@@ -1706,10 +1699,10 @@ namespace Lemma.Factories
 
 					Vector3 kickVelocity = player.Character.LinearVelocity;
 
-					result.Add(new Animation
+					entity.Add(new Animation
 					(
 						new Animation.Delay(0.25f),
-						new Animation.Execute(delegate() { AkSoundEngine.PostEvent("Kick_Play", result); })
+						new Animation.Execute(delegate() { AkSoundEngine.PostEvent("Kick_Play", entity); })
 					));
 
 					Vector3 playerPos = transform.Position + new Vector3(0, (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0);
@@ -1730,9 +1723,9 @@ namespace Lemma.Factories
 					}
 
 					model.StartClip(shouldBreakFloor ? "Kick" : "Slide", 5, false, AnimatedModel.DefaultBlendTime);
-					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE, result);
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE, entity);
 					if (!shouldBreakFloor) // We're sliding on the floor
-						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE_LOOP, result);
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE_LOOP, entity);
 
 					Direction forwardDir = Direction.None;
 					Direction rightDir = Direction.None;
@@ -1774,14 +1767,14 @@ namespace Lemma.Factories
 							if (breakWalls(forward, right, shouldBreakFloor))
 							{
 								if (firstTimeBreak)
-									AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WALL_BREAK_01, result);
+									AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WALL_BREAK_01, entity);
 								firstTimeBreak = false;
 							}
 							if (shouldBuildFloor)
 								buildFloor(floorRaycast.Map, floorRaycast.Coordinate.Value, forwardDir, rightDir);
 						}
 					};
-					result.Add(kickUpdate);
+					entity.Add(kickUpdate);
 				}
 			};
 
@@ -1817,7 +1810,7 @@ namespace Lemma.Factories
 			// Camera control
 			model.UpdateWorldTransforms();
 
-			CameraController cameraControl = result.GetOrCreate<CameraController>();
+			CameraController cameraControl = entity.GetOrCreate<CameraController>();
 			cameraControl.Add(new Binding<Vector2>(cameraControl.Mouse, input.Mouse));
 			cameraControl.Add(new Binding<float>(cameraControl.Lean, x => x * (float)Math.PI * 0.05f, anim.Lean));
 			cameraControl.Add(new Binding<Vector3>(cameraControl.LinearVelocity, player.Character.LinearVelocity));
@@ -1858,7 +1851,7 @@ namespace Lemma.Factories
 			{
 				return new Vector3(player.Character.Radius * 2.0f, player.Character.Height, player.Character.Radius * 2.0f);
 			}, player.Character.Height, player.Character.Radius));
-			result.Add(debugCylinder);
+			entity.Add(debugCylinder);
 
 			input.Add(new CommandBinding(input.GetKeyUp(Keys.T), delegate()
 			{
@@ -1872,7 +1865,7 @@ namespace Lemma.Factories
 
 			// Player data bindings
 
-			result.Add(new PostInitialization
+			entity.Add(new PostInitialization
 			{
 				delegate()
 				{
@@ -1882,15 +1875,15 @@ namespace Lemma.Factories
 					footsteps.RespawnLocations = dataEntity.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
 					
 					// Bind player data properties
-					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableRoll"), player.EnableRoll));
-					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableCrouch"), player.EnableCrouch));
-					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableKick"), player.EnableKick));
-					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
-					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableWallRunHorizontal"), player.EnableWallRunHorizontal));
-					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
-					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
-					result.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableMoves"), player.EnableMoves));
-					result.Add(new TwoWayBinding<float>(dataEntity.GetProperty<float>("MaxSpeed"), player.Character.MaxSpeed));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableRoll"), player.EnableRoll));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableCrouch"), player.EnableCrouch));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableKick"), player.EnableKick));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableWallRun"), player.EnableWallRun));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableWallRunHorizontal"), player.EnableWallRunHorizontal));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableEnhancedWallRun"), player.EnableEnhancedWallRun));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableMoves"), player.EnableMoves));
+					entity.Add(new TwoWayBinding<float>(dataEntity.GetProperty<float>("MaxSpeed"), player.Character.MaxSpeed));
 
 					Phone phone = dataEntity.GetOrCreate<Phone>("Phone");
 
@@ -1906,7 +1899,7 @@ namespace Lemma.Factories
 						)
 					);
 
-					PhoneNote.Attach(main, result, model, input, phone, player.Character.EnableWalking, player.EnableMoves);
+					PhoneNote.Attach(main, entity, model, input, phone, player.Character.EnableWalking, player.EnableMoves);
 				}
 			});
 		}

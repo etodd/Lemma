@@ -99,6 +99,9 @@ namespace Lemma
 		public new Property<bool> IsMouseVisible = new Property<bool> { };
 		public Property<bool> GamePadConnected = new Property<bool>();
 
+		public Property<float> TimeMultiplier = new Property<float> { Value = 1.0f };
+		public Property<float> PauseAudioEffect = new Property<float> { Value = 0.0f };
+
 		[AutoConVar("game_time", "Total time the game has been played")]
 		public static Property<float> TotalGameTime = new Property<float>(); 
 
@@ -210,6 +213,7 @@ namespace Lemma
 			this.Renderer.Brightness.Value = 0.0f;
 			this.Renderer.SpeedBlurAmount.Value = 0.0f;
 			this.TimeMultiplier.Value = 1.0f;
+			this.PauseAudioEffect.Value = 0.0f;
 			this.Camera.Angles.Value = Vector3.Zero;
 		}
 
@@ -272,6 +276,13 @@ namespace Lemma
 			{
 				this.TimeMultiplier.InternalValue = value;
 				AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SLOWMOTION, Math.Min(1.0f, (1.0f - value) / 0.6f));
+			};
+
+			this.PauseAudioEffect.Set = delegate(float value)
+			{
+				value = MathHelper.Clamp(value, 0.0f, 1.0f);
+				this.PauseAudioEffect.InternalValue = value;
+				AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.PAUSE_PARAMETER, value);
 			};
 
 			new CommandBinding(this.MapLoaded, delegate()

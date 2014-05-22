@@ -17,32 +17,31 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Skybox");
-
-			Transform transform = new Transform();
-			result.Add("Transform", transform);
+			Entity entity = new Entity(main, "Skybox");
 
 			ModelAlpha skybox = new ModelAlpha();
 			skybox.Filename.Value = "Models\\skybox";
-			result.Add("Skybox", skybox);
+			entity.Add("Skybox", skybox);
 
-			return result;
+			return entity;
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			ModelAlpha skybox = result.Get<ModelAlpha>("Skybox");
+			ModelAlpha skybox = entity.Get<ModelAlpha>("Skybox");
 			skybox.MapContent.Value = true;
-			base.Bind(result, main, creating);
-			result.CannotSuspendByDistance = true;
+			base.Bind(entity, main, creating);
+			entity.CannotSuspendByDistance = true;
+
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			skybox.DisableCulling.Value = true;
 			skybox.CullBoundingBox.Value = false;
-			skybox.Add(new Binding<Matrix>(skybox.Transform, result.Get<Transform>().Matrix));
+			skybox.Add(new Binding<Matrix>(skybox.Transform, transform.Matrix));
 			skybox.DrawOrder.Value = -10;
 
-			Property<bool> vertical = result.GetOrMakeProperty<bool>("VerticalLimit", true);
-			Property<float> godRays = result.GetOrMakeProperty<float>("GodRays", true, 0.25f);
+			Property<bool> vertical = entity.GetOrMakeProperty<bool>("VerticalLimit", true);
+			Property<float> godRays = entity.GetOrMakeProperty<float>("GodRays", true, 0.25f);
 			skybox.Add
 			(
 				new Binding<string>
@@ -52,16 +51,16 @@ namespace Lemma.Factories
 					vertical, main.LightingManager.HasGlobalShadowLight, godRays, ((GameMain)main).Settings.EnableGodRays
 				)
 			);
-			skybox.Add(new Binding<float>(skybox.GetFloatParameter("VerticalSize"), result.GetOrMakeProperty<float>("VerticalSize", true, 10.0f)));
-			Property<float> verticalCenter = result.GetOrMakeProperty<float>("VerticalCenter", true);
+			skybox.Add(new Binding<float>(skybox.GetFloatParameter("VerticalSize"), entity.GetOrMakeProperty<float>("VerticalSize", true, 10.0f)));
+			Property<float> verticalCenter = entity.GetOrMakeProperty<float>("VerticalCenter", true);
 			skybox.Add(new Binding<float>(skybox.GetFloatParameter("VerticalCenter"), verticalCenter));
 			skybox.Add(new Binding<float>(skybox.GetFloatParameter("GodRayStrength"), godRays));
-			skybox.Add(new Binding<float>(skybox.GetFloatParameter("GodRayExtinction"), result.GetOrMakeProperty<float>("GodRayExtinction", true, 1.0f)));
+			skybox.Add(new Binding<float>(skybox.GetFloatParameter("GodRayExtinction"), entity.GetOrMakeProperty<float>("GodRayExtinction", true, 1.0f)));
 			skybox.Add(new Binding<Vector3>(skybox.GetVector3Parameter("CameraPosition"), main.Camera.Position));
 			skybox.Add(new Binding<RenderTarget2D>(skybox.GetRenderTarget2DParameter("ShadowMap" + Components.Model.SamplerPostfix), () => main.LightingManager.GlobalShadowMap, main.LightingManager.GlobalShadowMap, main.ScreenSize));
 			skybox.Add(new Binding<Matrix>(skybox.GetMatrixParameter("ShadowViewProjectionMatrix"), main.LightingManager.GlobalShadowViewProjection));
 
-			Property<float> startDistance = result.GetOrMakeProperty<float>("StartDistance", true, 50);
+			Property<float> startDistance = entity.GetOrMakeProperty<float>("StartDistance", true, 50);
 			skybox.Add(new Binding<float>(skybox.GetFloatParameter("StartDistance"), startDistance));
 		}
 	}

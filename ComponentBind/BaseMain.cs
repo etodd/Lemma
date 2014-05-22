@@ -15,7 +15,6 @@ namespace ComponentBind
 
 		public Property<float> ElapsedTime = new Property<float>();
 		public Property<float> TotalTime = new Property<float>();
-		public Property<float> TimeMultiplier = new Property<float> { Value = 1.0f };
 
 		public Property<bool> EditorEnabled = new Property<bool> { Value = false };
 

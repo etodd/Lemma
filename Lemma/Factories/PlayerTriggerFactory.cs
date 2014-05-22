@@ -16,29 +16,19 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "PlayerTrigger");
-
-			Transform position = new Transform();
-
-			PlayerTrigger trigger = new PlayerTrigger();
-			trigger.Radius.Value = 10.0f;
-			result.Add("PlayerTrigger", trigger);
-
-			result.Add("Position", position);
-
-			return result;
+			return new Entity(main, "PlayerTrigger");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(result, main);
-			Transform transform = result.Get<Transform>();
-			PlayerTrigger trigger = result.Get<PlayerTrigger>();
+			this.SetMain(entity, main);
+			Transform transform = entity.GetOrCreate<Transform>("Position");
+			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
 
-			if (result.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(result, main);
+			if (entity.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(entity, main);
 
-			ListProperty<Entity.Handle> targets = result.GetOrMakeListProperty<Entity.Handle>("Targets");
+			ListProperty<Entity.Handle> targets = entity.GetOrMakeListProperty<Entity.Handle>("Targets");
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity p)
 			{
 				foreach (Entity.Handle target in targets)
@@ -52,15 +42,15 @@ namespace Lemma.Factories
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
+			base.AttachEditorComponents(entity, main);
 
-			PlayerTrigger.AttachEditorComponents(result, main, this.Color);
+			PlayerTrigger.AttachEditorComponents(entity, main, this.Color);
 
-			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
+			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 
-			EntityConnectable.AttachEditorComponents(result, result.GetOrMakeListProperty<Entity.Handle>("Targets"));
+			EntityConnectable.AttachEditorComponents(entity, entity.GetOrMakeListProperty<Entity.Handle>("Targets"));
 		}
 	}
 }

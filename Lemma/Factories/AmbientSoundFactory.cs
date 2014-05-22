@@ -17,41 +17,41 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "AmbientSound");
+			Entity entity = new Entity(main, "AmbientSound");
 
-			result.Add("Transform", new Transform());
+			entity.Add("Transform", new Transform());
 
-			return result;
+			return entity;
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 
-			Transform transform = result.Get<Transform>();
+			Transform transform = entity.Get<Transform>();
 
-			Property<bool> is3D = result.GetOrMakeProperty<bool>("Is3D", true);
+			Property<bool> is3D = entity.GetOrMakeProperty<bool>("Is3D", true);
 
-			Property<string> cue = result.GetOrMakeProperty<string>("Cue", true);
+			Property<string> cue = entity.GetOrMakeProperty<string>("Cue", true);
 
-			result.CannotSuspendByDistance = !is3D;
-			result.Add(new NotifyBinding(delegate()
+			entity.CannotSuspendByDistance = !is3D;
+			entity.Add(new NotifyBinding(delegate()
 			{
-				result.CannotSuspendByDistance = !is3D;
+				entity.CannotSuspendByDistance = !is3D;
 			}, is3D));
 
-			if (result.GetOrMakeProperty<bool>("Attachable", true))
-				MapAttachable.MakeAttachable(result, main);
+			if (entity.GetOrMakeProperty<bool>("Attachable", true))
+				MapAttachable.MakeAttachable(entity, main);
 
 			if (!main.EditorEnabled)
-				AkSoundEngine.PostEvent(cue, result);
+				AkSoundEngine.PostEvent(cue, entity);
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
+			base.AttachEditorComponents(entity, main);
 
-			MapAttachable.AttachEditorComponents(result, main, result.Get<Model>().Color);
+			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
 	}
 }

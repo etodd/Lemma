@@ -10,14 +10,14 @@ namespace Lemma.Components
 {
 	public class PhoneNote
 	{
-		public static void Attach(Main main, Entity result, AnimatedModel model, FPSInput input, Phone phone, Property<bool> enableWalking, Property<bool> enableMoves)
+		public static void Attach(Main main, Entity entity, AnimatedModel model, FPSInput input, Phone phone, Property<bool> enableWalking, Property<bool> enableMoves)
 		{
-			Property<bool> phoneActive = result.GetOrMakeProperty<bool>("PhoneActive");
-			Property<bool> noteActive = result.GetOrMakeProperty<bool>("NoteActive");
+			Property<bool> phoneActive = entity.GetOrMakeProperty<bool>("PhoneActive");
+			Property<bool> noteActive = entity.GetOrMakeProperty<bool>("NoteActive");
 
-			UIRenderer phoneUi = result.GetOrCreate<UIRenderer>("PhoneUI");
+			UIRenderer phoneUi = entity.GetOrCreate<UIRenderer>("PhoneUI");
 
-			Property<Entity.Handle> signalTower = result.GetOrMakeProperty<Entity.Handle>("SignalTower");
+			Property<Entity.Handle> signalTower = entity.GetOrMakeProperty<Entity.Handle>("SignalTower");
 
 			const float phoneWidth = 200.0f;
 
@@ -26,7 +26,7 @@ namespace Lemma.Components
 			phoneUi.Serialize = false;
 			phoneUi.Enabled.Value = false;
 
-			Model phoneModel = result.GetOrCreate<Model>("PhoneModel");
+			Model phoneModel = entity.GetOrCreate<Model>("PhoneModel");
 			phoneModel.Filename.Value = "Models\\phone";
 			phoneModel.Color.Value = new Vector3(0.13f, 0.13f, 0.13f);
 			phoneModel.Serialize = false;
@@ -35,14 +35,14 @@ namespace Lemma.Components
 			Property<Matrix> phoneBone = model.GetBoneTransform("Phone");
 			phoneModel.Add(new Binding<Matrix>(phoneModel.Transform, () => phoneBone.Value * model.Transform, phoneBone, model.Transform));
 
-			Model screen = result.GetOrCreate<Model>("Screen");
+			Model screen = entity.GetOrCreate<Model>("Screen");
 			screen.Filename.Value = "Models\\plane";
 			screen.Add(new Binding<Microsoft.Xna.Framework.Graphics.RenderTarget2D>(screen.GetRenderTarget2DParameter("Diffuse" + Model.SamplerPostfix), phoneUi.RenderTarget));
 			screen.Add(new Binding<Matrix>(screen.Transform, x => Matrix.CreateTranslation(0.015f, 0.0f, 0.0f) * x, phoneModel.Transform));
 			screen.Serialize = false;
 			screen.Enabled.Value = false;
 
-			PointLight phoneLight = result.GetOrCreate<PointLight>("PhoneLight");
+			PointLight phoneLight = entity.GetOrCreate<PointLight>("PhoneLight");
 			phoneLight.Serialize = false;
 			phoneLight.Enabled.Value = false;
 			phoneLight.Attenuation.Value = 0.5f;
@@ -185,7 +185,7 @@ namespace Lemma.Components
 
 			// Note
 
-			UIRenderer noteUi = result.GetOrCreate<UIRenderer>("NoteUI");
+			UIRenderer noteUi = entity.GetOrCreate<UIRenderer>("NoteUI");
 
 			const float noteWidth = 400.0f;
 			const float noteScale = 0.0009f;
@@ -195,7 +195,7 @@ namespace Lemma.Components
 			noteUi.Serialize = false;
 			noteUi.Enabled.Value = false;
 
-			Model noteModel = result.GetOrCreate<Model>("Note");
+			Model noteModel = entity.GetOrCreate<Model>("Note");
 			noteModel.Filename.Value = "Models\\plane";
 			noteModel.EffectFile.Value = "Effects\\Default";
 			noteModel.Add(new Binding<Microsoft.Xna.Framework.Graphics.RenderTarget2D>(noteModel.GetRenderTarget2DParameter("Diffuse" + Model.SamplerPostfix), noteUi.RenderTarget));
@@ -203,25 +203,25 @@ namespace Lemma.Components
 			noteModel.Scale.Value = new Vector3(1.0f, (float)noteUi.RenderTargetSize.Value.Y * noteScale, (float)noteUi.RenderTargetSize.Value.X * noteScale);
 			noteModel.Serialize = false;
 			noteModel.Enabled.Value = false;
-			Property<Entity.Handle> note = result.GetOrMakeProperty<Entity.Handle>("Note");
+			Property<Entity.Handle> note = entity.GetOrMakeProperty<Entity.Handle>("Note");
 
 			Container togglePhoneMessage = null;
 
-			result.Add(new NotifyBinding(delegate()
+			entity.Add(new NotifyBinding(delegate()
 			{
 				bool hasNoteOrSignalTower = (note.Value.Target != null && note.Value.Target.Active)
 					|| (signalTower.Value.Target != null && signalTower.Value.Target.Active);
 
 				if (togglePhoneMessage == null && hasNoteOrSignalTower)
-					togglePhoneMessage = ((GameMain)main).Menu.ShowMessage(result, "[{{TogglePhone}}]");
+					togglePhoneMessage = ((GameMain)main).Menu.ShowMessage(entity, "[{{TogglePhone}}]");
 				else if (togglePhoneMessage != null && !hasNoteOrSignalTower && !phoneActive && !noteActive)
 				{
-					((GameMain)main).Menu.HideMessage(result, togglePhoneMessage);
+					((GameMain)main).Menu.HideMessage(entity, togglePhoneMessage);
 					togglePhoneMessage = null;
 				}
 			}, note, signalTower));
 
-			result.Add(new CommandBinding(result.Delete, delegate()
+			entity.Add(new CommandBinding(entity.Delete, delegate()
 			{
 				((GameMain)main).Menu.HideMessage(null, togglePhoneMessage);
 			}));
@@ -269,7 +269,7 @@ namespace Lemma.Components
 						model.StartClip("Note", 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
 						float startRotationY = input.Mouse.Value.Y;
 						// Level the player's view
-						result.Add(new Animation
+						entity.Add(new Animation
 						(
 							new Animation.Ease
 							(
@@ -298,13 +298,13 @@ namespace Lemma.Components
 			{
 				if (togglePhoneMessage != null)
 				{
-					((GameMain)main).Menu.HideMessage(result, togglePhoneMessage);
+					((GameMain)main).Menu.HideMessage(entity, togglePhoneMessage);
 					togglePhoneMessage = null;
 				}
 
 				if (phoneTutorialMessage != null)
 				{
-					((GameMain)main).Menu.HideMessage(result, phoneTutorialMessage);
+					((GameMain)main).Menu.HideMessage(entity, phoneTutorialMessage);
 					phoneTutorialMessage = null;
 				}
 
@@ -326,7 +326,7 @@ namespace Lemma.Components
 						if (!phone.TutorialShown)
 						{
 							phone.TutorialShown.Value = true;
-							phoneTutorialMessage = ((GameMain)main).Menu.ShowMessage(result, "\\scroll for more");
+							phoneTutorialMessage = ((GameMain)main).Menu.ShowMessage(entity, "\\scroll for more");
 						}
 						phoneScroll.CheckLayout();
 						scrollToBottom();
@@ -335,7 +335,7 @@ namespace Lemma.Components
 
 						// Level the player's view
 						float startRotationY = input.Mouse.Value.Y;
-						result.Add(new Animation
+						entity.Add(new Animation
 						(
 							new Animation.Ease
 							(
@@ -440,7 +440,7 @@ namespace Lemma.Components
 
 						scrollToBottom();
 						if (togglePhoneMessage == null && phone.Schedules.Count == 0) // No more messages incoming
-							togglePhoneMessage = ((GameMain)main).Menu.ShowMessage(result, "[{{TogglePhone}}]");
+							togglePhoneMessage = ((GameMain)main).Menu.ShowMessage(entity, "[{{TogglePhone}}]");
 					}));
 					return button;
 				}
@@ -457,7 +457,7 @@ namespace Lemma.Components
 			composeButton.Add(new ListNotifyBinding<Phone.Schedule>(refreshComposeButtonVisibility, phone.Schedules));
 			refreshComposeButtonVisibility();
 
-			result.Add(new CommandBinding(phone.MessageReceived, delegate()
+			entity.Add(new CommandBinding(phone.MessageReceived, delegate()
 			{
 				if (phoneActive)
 					scrollToBottom();
@@ -474,9 +474,9 @@ namespace Lemma.Components
 					new Animation.Ease(new Animation.Vector2MoveTo(lastMessage.Size, originalSize, 0.5f), Animation.Ease.Type.OutExponential)
 				));
 
-				AkSoundEngine.PostEvent("Phone_Play", result);
+				AkSoundEngine.PostEvent("Phone_Play", entity);
 				if (togglePhoneMessage == null && phone.Schedules.Count == 0 && phone.ActiveAnswers.Count == 0) // No more messages incoming, and no more answers to give
-					togglePhoneMessage = ((GameMain)main).Menu.ShowMessage(result, "[{{TogglePhone}}]");
+					togglePhoneMessage = ((GameMain)main).Menu.ShowMessage(entity, "[{{TogglePhone}}]");
 			}));
 
 			if (noteActive)

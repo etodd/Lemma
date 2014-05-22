@@ -16,48 +16,41 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "SpotLight");
-
-			Transform transform = new Transform();
-			result.Add("Transform", transform);
-			SpotLight spotLight = new SpotLight();
-			result.Add("SpotLight", spotLight);
-
-			return result;
+			return new Entity(main, "SpotLight");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			Transform transform = result.Get<Transform>();
-			SpotLight spotLight = result.Get<SpotLight>();
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
+			SpotLight spotLight = entity.GetOrCreate<SpotLight>("SpotLight");
 
-			if (result.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(result, main);
+			if (entity.GetOrMakeProperty<bool>("Attach", true))
+				MapAttachable.MakeAttachable(entity, main);
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 
 			spotLight.Add(new TwoWayBinding<Vector3>(spotLight.Position, transform.Position));
 			spotLight.Add(new TwoWayBinding<Quaternion>(spotLight.Orientation, transform.Quaternion));
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
 			Model model = new Model();
 			model.Filename.Value = "Models\\light";
-			Property<Vector3> color = result.Get<SpotLight>().Color;
+			Property<Vector3> color = entity.Get<SpotLight>().Color;
 			model.Add(new Binding<Vector3>(model.Color, color));
 			model.Editable = false;
 			model.Serialize = false;
 
-			result.Add("EditorModel", model);
+			entity.Add("EditorModel", model);
 
 			model.Add(new Binding<Matrix>(model.Transform, delegate(Matrix x)
 			{
 				x.Forward *= -1;
 				return x;
-			}, result.Get<Transform>().Matrix));
+			}, entity.Get<Transform>().Matrix));
 
-			MapAttachable.AttachEditorComponents(result, main, color);
+			MapAttachable.AttachEditorComponents(entity, main, color);
 		}
 	}
 }

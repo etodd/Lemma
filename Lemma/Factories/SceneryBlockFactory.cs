@@ -20,25 +20,21 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "SceneryBlock");
-
-			return result;
+			return new Entity(main, "SceneryBlock");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			Transform transform = result.GetOrCreate<Transform>("Transform");
-			PhysicsBlock physics = result.GetOrCreate<PhysicsBlock>();
-			physics.Serialize = true;
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
+			PhysicsBlock physics = entity.GetOrCreate<PhysicsBlock>("Physics");
 			physics.Size.Value = Vector3.One;
 			physics.Editable = false;
-			ModelInstance model = result.GetOrCreate<ModelInstance>();
+			ModelInstance model = entity.GetOrCreate<ModelInstance>("Model");
 			model.Editable = false;
-			model.Serialize = true;
 
 			physics.Add(new TwoWayBinding<Matrix>(transform.Matrix, physics.Transform));
 
-			Property<uint> soundCue = result.GetOrMakeProperty<uint>("CollisionSoundCue", false);
+			Property<uint> soundCue = entity.GetOrMakeProperty<uint>("CollisionSoundCue", false);
 			soundCue.Serialize = false;
 
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
@@ -50,33 +46,33 @@ namespace Lemma.Factories
 				// TODO: figure out Wwise volume parameter
 				float volume = contacts[contacts.Count - 1].NormalImpulse * volumeMultiplier;
 				if (volume > 0.1f)
-					AkSoundEngine.PostEvent(soundCue, result);
+					AkSoundEngine.PostEvent(soundCue, entity);
 			}));
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 
-			Property<bool> valid = result.GetOrMakeProperty<bool>("Valid", false);
+			Property<bool> valid = entity.GetOrMakeProperty<bool>("Valid", false);
 			valid.Serialize = false;
 
-			Property<Map.t> type = result.GetOrMakeProperty<Map.t>("Type", true);
+			Property<Map.t> type = entity.GetOrMakeProperty<Map.t>("Type", true);
 			type.Set = delegate(Map.t value)
 			{
 				if (value == Map.t.Empty)
 					valid.Value = false;
 				else
 				{
-					Map.States[value].ApplyToBlock(result);
+					Map.States[value].ApplyToBlock(entity);
 					valid.Value = true;
 				}
 				type.InternalValue = value;
 			};
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(result, main);
+			base.AttachEditorComponents(entity, main);
 
-			result.Add(new Binding<bool>(result.Get<Model>("EditorModel").Enabled, x => !x, result.GetOrMakeProperty<bool>("Valid")));
+			entity.Add(new Binding<bool>(entity.Get<Model>("EditorModel").Enabled, x => !x, entity.GetOrMakeProperty<bool>("Valid")));
 		}
 	}
 }

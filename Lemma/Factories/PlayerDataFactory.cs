@@ -22,36 +22,36 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "PlayerData");
+			Entity entity = new Entity(main, "PlayerData");
 
 			const bool enabled = true;
 
-			result.Add("EnableRoll", new Property<bool> { Value = enabled });
-			result.Add("EnableCrouch", new Property<bool> { Value = enabled });
-			result.Add("EnableKick", new Property<bool> { Value = enabled });
-			result.Add("EnableWallRun", new Property<bool> { Value = enabled });
-			result.Add("EnableWallRunHorizontal", new Property<bool> { Value = enabled });
-			result.Add("EnableEnhancedWallRun", new Property<bool> { Value = enabled });
-			result.Add("EnableSlowMotion", new Property<bool> { Value = enabled });
-			result.Add("EnableStamina", new Property<bool> { Value = enabled });
-			result.Add("EnableMoves", new Property<bool> { Value = true });
-			result.Add("EnablePhone", new Property<bool> { Value = enabled });
-			result.Add("MaxSpeed", new Property<float> { Value = Character.DefaultMaxSpeed, Editable = false });
-			result.Add("GameTime", new Property<float> { Editable = false });
-			result.Add("Phone", new Phone());
+			entity.Add("EnableRoll", new Property<bool> { Value = enabled });
+			entity.Add("EnableCrouch", new Property<bool> { Value = enabled });
+			entity.Add("EnableKick", new Property<bool> { Value = enabled });
+			entity.Add("EnableWallRun", new Property<bool> { Value = enabled });
+			entity.Add("EnableWallRunHorizontal", new Property<bool> { Value = enabled });
+			entity.Add("EnableEnhancedWallRun", new Property<bool> { Value = enabled });
+			entity.Add("EnableSlowMotion", new Property<bool> { Value = enabled });
+			entity.Add("EnableStamina", new Property<bool> { Value = enabled });
+			entity.Add("EnableMoves", new Property<bool> { Value = true });
+			entity.Add("EnablePhone", new Property<bool> { Value = enabled });
+			entity.Add("MaxSpeed", new Property<float> { Value = Character.DefaultMaxSpeed, Editable = false });
+			entity.Add("GameTime", new Property<float> { Editable = false });
+			entity.Add("Phone", new Phone());
 
-			return result;
+			return entity;
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			base.Bind(result, main, creating);
-			this.instance = result;
+			base.Bind(entity, main, creating);
+			this.instance = entity;
 
-			result.CannotSuspend = true;
+			entity.CannotSuspend = true;
 
-			Property<float> gameTime = result.GetOrMakeProperty<float>("GameTime", false);
-			result.Add(new Updater
+			Property<float> gameTime = entity.GetOrMakeProperty<float>("GameTime", false);
+			entity.Add(new Updater
 			{
 				delegate(float dt)
 				{
@@ -70,9 +70,9 @@ namespace Lemma.Factories
 			}
 		}
 
-		public override void AttachEditorComponents(Entity result, Main main)
+		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			result.Delete.Execute();
+			entity.Delete.Execute();
 		}
 	}
 }

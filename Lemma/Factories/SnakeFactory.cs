@@ -15,15 +15,10 @@ namespace Lemma.Factories
 	{
 		public override Entity Create(Main main)
 		{
-			Entity result = new Entity(main, "Snake");
-
-			Transform transform = new Transform();
-			result.Add("Transform", transform);
-
-			return result;
+			return new Entity(main, "Snake");
 		}
 
-		public override void Bind(Entity result, Main main, bool creating = false)
+		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			if (ParticleSystem.Get(main, "SnakeSparks") == null)
 			{
@@ -50,18 +45,18 @@ namespace Lemma.Factories
 				});
 			}
 
-			result.CannotSuspendByDistance = true;
-			Transform transform = result.Get<Transform>();
+			entity.CannotSuspendByDistance = true;
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			Property<float> operationalRadius = result.GetOrMakeProperty<float>("OperationalRadius", true, 100.0f);
+			Property<float> operationalRadius = entity.GetOrMakeProperty<float>("OperationalRadius", true, 100.0f);
 
-			ListProperty<Map.Coordinate> path = result.GetOrMakeListProperty<Map.Coordinate>("PathCoordinates");
+			ListProperty<Map.Coordinate> path = entity.GetOrMakeListProperty<Map.Coordinate>("PathCoordinates");
 
-			Property<Entity.Handle> targetAgent = result.GetOrMakeProperty<Entity.Handle>("TargetAgent");
+			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
 
-			AI ai = result.GetOrCreate<AI>("AI");
+			AI ai = entity.GetOrCreate<AI>("AI");
 
-			Agent agent = result.GetOrCreate<Agent>("Agent");
+			Agent agent = entity.GetOrCreate<Agent>("Agent");
 
 			Map.CellState infectedState = Map.States[Map.t.Infected],
 				neutralState = Map.States[Map.t.Neutral];
@@ -71,7 +66,7 @@ namespace Lemma.Factories
 			const float closeChaseSpeed = 12.0f;
 			const float crushSpeed = 125.0f;
 
-			VoxelChaseAI chase = result.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
+			VoxelChaseAI chase = entity.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
 			chase.Add(new TwoWayBinding<Vector3>(transform.Position, chase.Position));
 			chase.Speed.Value = defaultSpeed;
 			chase.Filter = delegate(Map.CellState state)
@@ -80,10 +75,10 @@ namespace Lemma.Factories
 					return VoxelChaseAI.Cell.Penetrable;
 				return VoxelChaseAI.Cell.Avoid;
 			};
-			result.Add(new CommandBinding(chase.Delete, result.Delete));
+			entity.Add(new CommandBinding(chase.Delete, entity.Delete));
 
 			PointLight positionLight = null;
-			Property<float> positionLightRadius = result.GetOrMakeProperty<float>("PositionLightRadius", true, 20.0f);
+			Property<float> positionLightRadius = entity.GetOrMakeProperty<float>("PositionLightRadius", true, 20.0f);
 			if (!main.EditorEnabled)
 			{
 				positionLight = new PointLight();
@@ -104,8 +99,8 @@ namespace Lemma.Factories
 							return new Vector3(1.0f, 1.0f, 1.0f);
 					}
 				}, ai.CurrentState));
-				result.Add("PositionLight", positionLight);
-				ParticleEmitter emitter = result.GetOrCreate<ParticleEmitter>("Particles");
+				entity.Add("PositionLight", positionLight);
+				ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("Particles");
 				emitter.Editable = false;
 				emitter.Serialize = false;
 				emitter.ParticlesPerSecond.Value = 100;
@@ -123,7 +118,7 @@ namespace Lemma.Factories
 				Action = delegate()
 				{
 					if (chase.Map.Value.Target == null || !chase.Map.Value.Target.Active)
-						result.Delete.Execute();
+						entity.Delete.Execute();
 				},
 			};
 
@@ -165,7 +160,7 @@ namespace Lemma.Factories
 						if (regenerate)
 							m.Regenerate();
 					}
-					AkSoundEngine.PostEvent("Play_snake_move", result);
+					AkSoundEngine.PostEvent("Play_snake_move", entity);
 
 					if (path.Count > 0)
 					{
@@ -175,7 +170,7 @@ namespace Lemma.Factories
 				}
 			}));
 
-			Property<Map.Coordinate> crushCoordinate = result.GetOrMakeProperty<Map.Coordinate>("CrushCoordinate");
+			Property<Map.Coordinate> crushCoordinate = entity.GetOrMakeProperty<Map.Coordinate>("CrushCoordinate");
 
 			ai.Setup
 			(
@@ -359,7 +354,7 @@ namespace Lemma.Factories
 				}
 			);
 
-			this.SetMain(result, main);
+			this.SetMain(entity, main);
 		}
 	}
 }
