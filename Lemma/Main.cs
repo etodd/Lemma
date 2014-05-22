@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography.X509Certificates;
 using ComponentBind;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -86,6 +87,7 @@ namespace Lemma
 
 		private Point? resize;
 
+		[AutoConVar("map_file", "Game Map File")]
 		public Property<string> MapFile = new Property<string>();
 
 		public Property<KeyboardState> LastKeyboardState = new Property<KeyboardState>();
@@ -304,6 +306,17 @@ namespace Lemma
 		{
 			if (this.firstLoadContentCall)
 			{
+
+				GeeUI.GeeUI.Initialize(this);
+
+				this.ConsoleUI = new ConsoleUI();
+				this.AddComponent(ConsoleUI);
+
+				this.Console = new Console.Console();
+				this.AddComponent(Console);
+
+				Lemma.Console.Console.BindType(null, this);
+
 				// Initialize Wwise
 				AkGlobalSoundEngineInitializer initializer = new AkGlobalSoundEngineInitializer(Path.Combine(this.Content.RootDirectory, "Wwise"));
 				this.AddComponent(initializer);
@@ -330,16 +343,14 @@ namespace Lemma
 				this.UI = new UIRenderer();
 				this.AddComponent(this.UI);
 
-				GeeUI.GeeUI.Initialize(this);
-
-				this.ConsoleUI = new ConsoleUI();
-				this.AddComponent(ConsoleUI);
-
-				this.Console = new Console.Console();
-				this.AddComponent(Console);
-
 				PCInput input = new PCInput();
 				this.AddComponent(input);
+
+				Lemma.Console.Console.BindType(null, input);
+				Lemma.Console.Console.BindType(null, UI);
+				Lemma.Console.Console.BindType(null, Renderer);
+				Lemma.Console.Console.BindType(null, LightingManager);
+
 
 #if DEVELOPMENT
 				input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.S }), delegate()

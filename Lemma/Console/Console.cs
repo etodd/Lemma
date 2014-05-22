@@ -8,6 +8,7 @@ using GeeUI.Views;
 using Lemma;
 using ComponentBind;
 using Lemma.Components;
+using Lemma.GInterfaces;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -17,6 +18,10 @@ namespace Lemma.Console
 	{
 		public static List<ConVar> ConVars = new List<ConVar>();
 		public static List<ConCommand> Commands = new List<ConCommand>();
+
+		private static List<string> _queuedRemovalCmd = new List<string>();
+		private static List<string> _queuedRemovalVar = new List<string>();
+		private static bool _canRemove = false;
 
 		public static Console Instance;
 
@@ -70,9 +75,9 @@ namespace Lemma.Console
 
 		}
 
-		public void Log(string input)
+		public static void Log(string input)
 		{
-			main.ConsoleUI.LogText(input);
+			Console.Instance.main.ConsoleUI.LogText(input);
 		}
 
 		public void PrintConCommandDescription(string name)
@@ -105,8 +110,6 @@ namespace Lemma.Console
 			print += " )";
 			Log(print);
 		}
-
-
 
 		public static void SetConVarValue(string name, string value)
 		{
@@ -141,6 +144,28 @@ namespace Lemma.Console
 			return (from convar in ConVars where convar.Name == name select convar).Any();
 		}
 
+		public static void RemoveConVar(string name, bool force = false)
+		{
+			if (!_queuedRemovalVar.Contains(name) && !force)
+			{
+				_queuedRemovalVar.Add(name);
+				return;
+			}
+			if (_canRemove || force)
+				ConVars.Remove(GetConVar(name));
+		}
+
+		public static void RemoveConCommand(string name, bool force = false)
+		{
+			if (!_queuedRemovalCmd.Contains(name) && !force)
+			{
+				_queuedRemovalCmd.Add(name);
+				return;
+			}
+			if (_canRemove || force)
+				Commands.Remove(GetConCommand(name));
+		}
+
 		public static void AddConVar(ConVar c)
 		{
 			if (IsConVar(c.Name)) return;
@@ -172,17 +197,22 @@ namespace Lemma.Console
 
 		public static void BindType(Type t, object instance = null)
 		{
-
+			if (instance != null) t = instance.GetType();
 			List<MemberInfo> members = new List<MemberInfo>();
-			foreach (FieldInfo m in t.GetFields(BindingFlags.Public | BindingFlags.Static))
+			var bindingFlags = BindingFlags.Public | BindingFlags.Static;
+			if (instance != null)
+			{
+				bindingFlags = BindingFlags.Instance | BindingFlags.Public;
+			}
+			foreach (FieldInfo m in t.GetFields(bindingFlags))
 			{
 				members.Add(m);
 			}
-			foreach (PropertyInfo m in t.GetProperties(BindingFlags.Public | BindingFlags.Static))
+			foreach (PropertyInfo m in t.GetProperties(bindingFlags))
 			{
 				members.Add(m);
 			}
-			foreach (MethodInfo m in t.GetMethods(BindingFlags.Public | BindingFlags.Static))
+			foreach (MethodInfo m in t.GetMethods(bindingFlags))
 				members.Add(m);
 			foreach (MemberInfo m in members)
 			{
@@ -200,8 +230,17 @@ namespace Lemma.Console
 			}
 		}
 
+		private static void CallMethod(MethodInfo member, ConCommand.ArgCollection collection)
+		{
+			List<object> invokeParams = new List<object>();
+			foreach (var o in collection.ParsedArgs)
+				invokeParams.Add(o.Value);
+			member.Invoke(null, invokeParams.ToArray());
+		}
+
 		public static void BindMethod(MethodInfo member, AutoConCommand command, object instance = null)
 		{
+			bool instantiated = instance != null;
 			List<Type> allowedTypes = new Type[] { typeof(bool), typeof(int), typeof(float), typeof(double), typeof(string) }.ToList();
 			List<ConCommand.CommandArgument> args = new List<ConCommand.CommandArgument>();
 			int numParams = member.GetParameters().Length;
@@ -209,6 +248,7 @@ namespace Lemma.Console
 			{
 				numParams++;
 				var paramType = param.ParameterType;
+				if (!allowedTypes.Contains(paramType)) return;
 				object defaultValue = param.DefaultValue;
 				bool isOptional = param.IsOptional;
 				string name = param.Name;
@@ -220,15 +260,18 @@ namespace Lemma.Console
 					Optional = isOptional
 				});
 			}
-			AddConCommand(new ConCommand(command.ConVarName, command.ConVarDesc, collection => CallMethod(member, collection), args.ToArray()));
-		}
-
-		private static void CallMethod(MethodInfo member, ConCommand.ArgCollection collection)
-		{
-			List<object> invokeParams = new List<object>();
-			foreach(var o in collection.ParsedArgs)
-				invokeParams.Add(o.Value);
-			member.Invoke(null, invokeParams.ToArray());
+			if (instantiated)
+				RemoveConCommand(command.ConVarName, true);
+			AddConCommand(new ConCommand(command.ConVarName, command.ConVarDesc, collection =>
+			{
+				if (instantiated && instance == null)
+				{
+					Log("Removing concommand " + command.ConVarName + ": linked instance is null");
+					RemoveConCommand(command.ConVarName);
+					return;
+				}
+				CallMethod(member, collection);
+			}, args.ToArray()));
 		}
 
 		public static void BindMember(MemberInfo member, AutoConVar convar, object instance = null)
@@ -236,6 +279,8 @@ namespace Lemma.Console
 			List<Type> allowedTypes = new Type[] { typeof(bool), typeof(int), typeof(float), typeof(double), typeof(string) }.ToList();
 			List<Type> generics = allowedTypes.Select(Type => typeof(Property<>).MakeGenericType(Type)).ToList();
 			allowedTypes.AddRange(generics);
+
+			bool instantiated = instance != null;
 
 			Type curType = null;
 			object value = "null";
@@ -313,6 +358,9 @@ namespace Lemma.Console
 				isProperty = false;
 			}
 
+			if(instantiated)
+				RemoveConVar(name, true);
+
 			if (!isProperty)
 			{
 				AddConVar(new ConVar(name, desc, (string)value)
@@ -323,6 +371,12 @@ namespace Lemma.Console
 					{
 						Value = (s) =>
 						{
+							if (instantiated && instance == null)
+							{
+								Log("Removing convar " + name + ": linked instance is null");
+								RemoveConVar(name);
+								return;
+							}
 							switch (member.MemberType)
 							{
 								case MemberTypes.Field:
@@ -346,6 +400,12 @@ namespace Lemma.Console
 					{
 						Value = (s) =>
 						{
+							if (instantiated && instance == null)
+							{
+								Log("Removing convar " + name + ": linked instance is null");
+								RemoveConVar(name);
+								return;
+							}
 							object val = GetConVar(name).GetCastedValue();
 							if (curType == typeof(bool))
 							{
@@ -394,6 +454,17 @@ namespace Lemma.Console
 
 		public void Update(float dt)
 		{
+			_canRemove = true;
+
+			foreach (var remove in _queuedRemovalCmd)
+				RemoveConCommand(remove);
+			foreach (var remove in _queuedRemovalVar)
+				RemoveConVar(remove);
+
+			_canRemove = false;
+
+			_queuedRemovalCmd.Clear();
+			_queuedRemovalVar.Clear();
 
 		}
 	}

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Lemma.Console;
 using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
 using Microsoft.Xna.Framework.Input;
@@ -73,6 +74,7 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command SwallowMouseEvents = new Command();
 
+		[AutoConVar("ui_mouse_enabled", "If true, mouse is enabled")]
 		public Property<bool> EnableMouse = new Property<bool> { Value = true };
 
 		public Property<Point> RenderTargetSize = new Property<Point>();
