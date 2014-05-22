@@ -103,19 +103,6 @@ namespace Lemma.GInterfaces
 					System.Windows.Forms.MessageBox.Show((string)collection.Get("Message"), (string)collection.Get("Title"));
 				},
 				new ConCommand.CommandArgument() { Name = "Message" }, new ConCommand.CommandArgument() { Name = "Title", Optional = true, DefaultVal = "A title" }));
-
-			Console.Console.AddConCommand(new ConCommand("set_stat", "Sets the steamwork stat, if it exists",
-				collection =>
-				{
-					string stat = (string)collection.Get("Stat");
-					int val = (int)collection.Get("Value");
-					SteamWorker.SetStat(stat, val);
-				}, new ConCommand.CommandArgument() { Name = "Stat", Validate = (o) => SteamWorker.IsStat((string)o) }, new ConCommand.CommandArgument()
-				{
-					Name = "Value",
-					CommandType = typeof(int),
-					Validate = o => (int)o > 0
-				}));
 		}
 	}
 }

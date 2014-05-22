@@ -94,7 +94,7 @@ namespace Lemma.Console
 					string type = arg.CommandType.ToString().Replace("System.", "");
 					if (arg.Optional)
 					{
-						print += " [" + type + " " + arg.Name + " = " + arg.DefaultVal + "]";
+						print += "[" + type + " " + arg.Name + " = " + arg.DefaultVal + "]";
 					}
 					else
 					{

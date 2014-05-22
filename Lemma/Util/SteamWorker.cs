@@ -72,6 +72,7 @@ namespace Lemma.Util
 #endif
 		}
 
+		[AutoConCommand("set_stat", "Set a Steam stat")]
 		public static void SetStat(string name, int newVal)
 		{
 			if (!Initialized) return;
@@ -129,6 +130,7 @@ namespace Lemma.Util
 			_statsLastUploaded = DateTime.Now;
 		}
 
+		[AutoConCommand("reset_stats", "Reset all stats.")]
 		public static void ResetAllStats(bool andCheevos = true)
 		{
 			if (!SteamInitialized) return;
