@@ -50,8 +50,6 @@ namespace Lemma.IO
 			typeof(PID3),
 			typeof(RespawnLocation),
 			typeof(ListProperty<RespawnLocation>),
-			typeof(WorldFactory.ScheduledBlock),
-			typeof(ListProperty<WorldFactory.ScheduledBlock>),
 			typeof(VoxelChaseAI),
 			typeof(FillMapFactory.CoordinateEntry),
 			typeof(ListProperty<FillMapFactory.CoordinateEntry>),
@@ -60,6 +58,7 @@ namespace Lemma.IO
 			typeof(SignalTower),
 			typeof(Property<int>),
 			typeof(Property<UInt32>),
+			typeof(Propagator),
 		};
 
 		public static XmlSerializer Serializer;

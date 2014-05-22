@@ -160,7 +160,7 @@ namespace Lemma.Factories
 			// Build UI
 			UIRenderer ui = new UIRenderer();
 			ui.DrawOrder.Value = -1;
-			ui.EnabledWhenPaused = false;
+			ui.EnabledWhenPaused = true;
 			ui.EnabledInEditMode = false;
 			result.Add("UI", ui);
 			PlayerUI.Attach(main, ui, player.Health);

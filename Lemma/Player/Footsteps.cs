@@ -73,8 +73,7 @@ namespace Lemma.Components
 					map.Empty(coord);
 					map.Fill(coord, temporary);
 					map.Regenerate();
-					// TODO: refactor world so we can get this working
-					//sparks(pos, 10.0f);
+					WorldFactory.Instance.Get<Propagator>().Sparks(map.GetAbsolutePosition(coord), Propagator.Spark.Normal);
 				}
 				else if (id == Map.t.Reset)
 				{
@@ -150,8 +149,7 @@ namespace Lemma.Components
 								Direction right = normal == Direction.PositiveY ? Direction.PositiveX : normal.Cross(Direction.PositiveY);
 								Direction ortho = normal.Cross(right);
 								pos = map.GetAbsolutePosition(coord);
-								// TODO: refactor world so we can get this working
-								//sparks(pos, 10.0f);
+								WorldFactory.Instance.Get<Propagator>().Sparks(map.GetAbsolutePosition(coord), Propagator.Spark.Expander);
 								List<EffectBlockFactory.BlockBuildOrder> buildCoords = new List<EffectBlockFactory.BlockBuildOrder>();
 								foreach (Map.Coordinate c in coord.Move(right, -expandWidth).Move(ortho, -expandWidth).CoordinatesBetween(coord.Move(right, expandWidth).Move(ortho, expandWidth).Move(normal, expandLength).Move(1, 1, 1)))
 								{
@@ -182,38 +180,33 @@ namespace Lemma.Components
 			
 			Direction direction;
 
+			// Wall-run code will call our WalkedOn event for us, so only worry about this stuff if we're walking normally
 			if (this.WallRunState == Player.WallRun.None)
 			{
 				groundRaycast = Map.GlobalRaycast(this.Position, Vector3.Down, this.CharacterHeight.Value * 0.5f + this.SupportHeight + 1.1f);
 				direction = groundRaycast.Normal.GetReverse();
-			}
-			else
-			{
-				// TODO: handle wall-running
-				return;
-				Vector3 pos = this.Position + new Vector3(0, this.CharacterHeight * -0.5f, 0);
-			}
 
-			if (groundRaycast.Map != null &&
-				(groundRaycast.Map != oldMap || oldCoord == null || !oldCoord.Value.Equivalent(groundRaycast.Coordinate.Value)))
-			{
-				AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, groundRaycast.Coordinate.Value.Data.FootstepSwitch, this.Entity);
-				this.WalkedOn.Execute(groundRaycast.Map, groundRaycast.Coordinate.Value, direction);
-
-				this.walkedOnCount++;
-				if (this.walkedOnCount >= 3)
+				if (groundRaycast.Map != null &&
+					(groundRaycast.Map != oldMap || oldCoord == null || !oldCoord.Value.Equivalent(groundRaycast.Coordinate.Value)))
 				{
-					// Every 3 tiles, save off the location for the auto-respawn system
-					this.RespawnLocations.Add(new RespawnLocation
+					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, groundRaycast.Coordinate.Value.Data.FootstepSwitch, this.Entity);
+					this.WalkedOn.Execute(groundRaycast.Map, groundRaycast.Coordinate.Value, direction);
+
+					this.walkedOnCount++;
+					if (this.walkedOnCount >= 3)
 					{
-						Coordinate = this.groundRaycast.Coordinate.Value,
-						Map = this.groundRaycast.Map.Entity,
-						Rotation = this.Rotation,
-						OriginalPosition = this.groundRaycast.Map.GetAbsolutePosition(this.groundRaycast.Coordinate.Value),
-					});
-					while (this.RespawnLocations.Count > GameMain.RespawnMemoryLength)
-						this.RespawnLocations.RemoveAt(0);
-					this.walkedOnCount = 0;
+						// Every 3 tiles, save off the location for the auto-respawn system
+						this.RespawnLocations.Add(new RespawnLocation
+						{
+							Coordinate = this.groundRaycast.Coordinate.Value,
+							Map = this.groundRaycast.Map.Entity,
+							Rotation = this.Rotation,
+							OriginalPosition = this.groundRaycast.Map.GetAbsolutePosition(this.groundRaycast.Coordinate.Value),
+						});
+						while (this.RespawnLocations.Count > GameMain.RespawnMemoryLength)
+							this.RespawnLocations.RemoveAt(0);
+						this.walkedOnCount = 0;
+					}
 				}
 			}
 
