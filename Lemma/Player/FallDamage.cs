@@ -59,7 +59,7 @@ namespace Lemma.Components
 					}
 				}
 				else if (verticalAcceleration < GruntVelocity)
-					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, this.Entity);
+					AkSoundEngine.PostEvent("Play_Player_Landing", this.Entity);
 			};
 
 			// Damage the player if they hit something too hard
