@@ -13,6 +13,8 @@ public class AK
         public static uint PLAY_PLAYER_GASP = 3609231453U;
         public static uint PLAY_PLAYER_GRUNT = 4270092958U;
         public static uint PLAY_PLAYER_HURT = 887999531U;
+        public static uint PLAY_PLAYER_JUMP = 562256996U;
+        public static uint PLAY_PLAYER_SLIDE = 2425231895U;
         public static uint PLAY_PLAYER_SLIDE_LOOP = 693421804U;
         public static uint PLAY_RED_BURN = 472607653U;
         public static uint PLAY_UI_CLICK = 1749424733U;

@@ -213,7 +213,6 @@ namespace Lemma.Factories
 
 			Property<float> rotation = result.GetProperty<float>("Rotation");
 
-
 			Action updateFallSound = delegate()
 			{
 				float speed = player.Character.LinearVelocity.Value.Length();
@@ -714,11 +713,12 @@ namespace Lemma.Factories
 
 			Action deactivateWallRun = null;
 
-			Action<Vector3, Vector3, bool> breakWalls = delegate(Vector3 forward, Vector3 right, bool breakFloor)
+			Func<Vector3, Vector3, bool, bool> breakWalls = delegate(Vector3 forward, Vector3 right, bool breakFloor)
 			{
 				BlockFactory blockFactory = Factory.Get<BlockFactory>();
 				Vector3 pos = transform.Position + new Vector3(0, 0.1f + (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0) + forward * -1.0f;
 				Vector3 basePos = pos;
+				bool broke = false;
 				foreach (Map map in Map.ActivePhysicsMaps.ToList())
 				{
 					List<Map.Coordinate> removals = new List<Map.Coordinate>();
@@ -737,6 +737,7 @@ namespace Lemma.Factories
 								Map.CellState state = map[z];
 								if (state.ID != 0 && !state.Permanent && !state.Hard && !removals.Contains(z))
 								{
+									broke = true;
 									removals.Add(z);
 									Vector3 cellPos = map.GetAbsolutePosition(z);
 									Vector3 toCell = cellPos - pos;
@@ -762,6 +763,7 @@ namespace Lemma.Factories
 						map.Regenerate();
 					}
 				}
+				return broke;
 			};
 
 			Func<bool, bool, bool> jump = null;
@@ -1500,7 +1502,7 @@ namespace Lemma.Factories
 						player.Character.HasTraction.Value = false;
 					}
 
-					AkSoundEngine.PostEvent(vaultType == VaultType.None ? "Jump_Play" : "Vault_Play", result);
+					AkSoundEngine.PostEvent(vaultType == VaultType.None ? AK.EVENTS.PLAY_PLAYER_JUMP : AK.EVENTS.PLAY_PLAYER_GRUNT, result);
 
 					model.Stop
 					(
@@ -1840,6 +1842,7 @@ namespace Lemma.Factories
 			{
 				if (kickUpdate != null)
 				{
+					AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, result);
 					kickUpdate.Delete.Execute();
 					kickUpdate = null;
 					model.Stop("Kick", "Slide");
@@ -1964,6 +1967,7 @@ namespace Lemma.Factories
 						Direction forwardDir = floorMap.GetRelativeDirection(forward);
 
 						float rollTime = 0.0f;
+						bool firstTimeBreak = false;
 						rollUpdate = new Updater
 						{
 							delegate(float dt)
@@ -1984,7 +1988,13 @@ namespace Lemma.Factories
 								else
 								{
 									player.Character.LinearVelocity.Value = new Vector3(velocity.X, player.Character.LinearVelocity.Value.Y, velocity.Z);
-									breakWalls(forward, right, false);
+									if (breakWalls(forward, right, false))
+									{
+										if (firstTimeBreak)
+											AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WALL_BREAK_01, result);
+										firstTimeBreak = false;
+									}
+
 									if (shouldBuildFloor)
 										buildFloor(floorMap, floorCoordinate, forwardDir, rightDir);
 								}
@@ -2056,6 +2066,9 @@ namespace Lemma.Factories
 					}
 
 					model.StartClip(shouldBreakFloor ? "Kick" : "Slide", 5, false, AnimatedModel.DefaultBlendTime);
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE, result);
+					if (!shouldBreakFloor) // We're sliding on the floor
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE_LOOP, result);
 
 					Direction forwardDir = Direction.None;
 					Direction rightDir = Direction.None;
@@ -2067,6 +2080,7 @@ namespace Lemma.Factories
 					}
 
 					float kickTime = 0.0f;
+					bool firstTimeBreak = true;
 					kickUpdate = new Updater
 					{
 						delegate(float dt)
@@ -2093,7 +2107,12 @@ namespace Lemma.Factories
 							}
 
 							player.Character.LinearVelocity.Value = new Vector3(kickVelocity.X, player.Character.LinearVelocity.Value.Y, kickVelocity.Z);
-							breakWalls(forward, right, shouldBreakFloor);
+							if (breakWalls(forward, right, shouldBreakFloor))
+							{
+								if (firstTimeBreak)
+									AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WALL_BREAK_01, result);
+								firstTimeBreak = false;
+							}
 							if (shouldBuildFloor)
 								buildFloor(floorRaycast.Map, floorRaycast.Coordinate.Value, forwardDir, rightDir);
 						}
