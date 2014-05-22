@@ -92,6 +92,14 @@ namespace GeeUI.Managers
             b.Begin();
         }
 
+		public static void DrawOutline(Rectangle box, Color c, SpriteBatch b, byte alpha = 255)
+		{
+			var topLeft = new Vector2(box.Left, box.Top);
+			var bottomRight = new Vector2(box.Right, box.Bottom);
+
+			DrawOutline(topLeft, bottomRight, c, b, alpha);
+		}
+
         public static void DrawOutline(Vector2 position, float width, float height, Color c, SpriteBatch b, byte alpha = 255, bool up = true, bool down = true, bool left = true, bool right = true)
         {
             var topLeft = new Vector2(position.X - (width / 2), position.Y - (height / 2));

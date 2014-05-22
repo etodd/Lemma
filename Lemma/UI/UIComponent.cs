@@ -215,7 +215,7 @@ namespace Lemma.Components
 
 		public bool HandleMouse(MouseState mouse, MouseState lastMouse, Matrix parent, bool mouseContainedInParent)
 		{
-			if (!this.Visible || !this.EnableInput)
+			if (!this.Visible || !this.EnableInput || GeeUI.GeeUI.LastClickCaptured)
 				return false;
 			Matrix transform = this.Transform * parent;
 

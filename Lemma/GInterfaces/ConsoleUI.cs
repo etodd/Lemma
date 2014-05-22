@@ -33,11 +33,12 @@ namespace Lemma.GInterfaces
 				MainFont = main.Content.Load<SpriteFont>("Font");
 				ConsoleFont = main.Content.Load<SpriteFont>("ConsoleFont");
 				int width = main.ScreenSize.Value.X - 6;
-				RootConsoleView = new View(GeeUI.GeeUI.RootView) { Width = width, Height = 195 };
-				ConsoleLogView = new TextFieldView(RootConsoleView, Vector2.Zero, ConsoleFont) { Width = width, Height = 175, Editable = false };
-				ConsoleInputView = new TextFieldView(RootConsoleView, Vector2.Zero, MainFont) { Width = width, Height = 20, MultiLine = false, OnTextSubmitted = OnTextSubmitted };
+				int textBoxWidth = width - 0;
+				RootConsoleView = new View(GeeUI.GeeUI.RootView) { Width = width, Height = 210 };
+				ConsoleLogView = new TextFieldView(RootConsoleView, new Vector2(0, 0), ConsoleFont) { Width = textBoxWidth, Height = 175, Editable = false, IgnoreParentBounds = true};
+				ConsoleInputView = new TextFieldView(RootConsoleView, new Vector2(0, 0), MainFont) { Width = textBoxWidth, Height = 20, MultiLine = false, OnTextSubmitted = OnTextSubmitted, IgnoreParentBounds = true };
 
-				RootConsoleView.ChildrenLayout = new VerticalViewLayout(4, false);
+				RootConsoleView.ChildrenLayout = new VerticalViewLayout(0, false);
 
 				this.Add(new NotifyBinding(HandleResize, main.ScreenSize)); //Supercool~
 				this.Add(new NotifyBinding(HandleToggle, Showing));
@@ -68,7 +69,11 @@ namespace Lemma.GInterfaces
 		public void HandleResize()
 		{
 			int width = main.ScreenSize.Value.X - 6;
-			RootConsoleView.Width = ConsoleLogView.Width = ConsoleInputView.Width = width;
+			int textBoxWidth = width - 0;
+
+			RootConsoleView.Width = width;
+			ConsoleLogView.Width = ConsoleInputView.Width = textBoxWidth;
+
 			int newY = ConsoleLogView.TextLines.Length - 1;
 			ConsoleLogView.SetCursorPos(0, newY);
 		}
@@ -108,11 +113,7 @@ namespace Lemma.GInterfaces
 				{
 					Name = "Value",
 					CommandType = typeof(int),
-					Validate =
-						o =>
-						{
-							return (int)o > 0;
-						}
+					Validate = o => (int)o > 0
 				}));
 		}
 	}

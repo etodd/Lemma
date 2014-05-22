@@ -14,6 +14,24 @@ namespace GeeUI.Views
 {
 	public class TextFieldView : View
 	{
+
+		public override Rectangle ContentBoundBox
+		{
+			get
+			{
+				return new Rectangle(X, Y, Width, Height);
+			}
+		}
+
+		public override Rectangle BoundBox
+		{
+			get
+			{
+				var patch = Selected ? NinePatchSelected : NinePatchDefault;
+				return new Rectangle(X, Y, Width + patch.LeftWidth + patch.RightWidth, Height + patch.TopHeight + patch.BottomHeight);
+			}
+		}
+
 		public NinePatch NinePatchDefault;
 		public NinePatch NinePatchSelected;
 		public NinePatch NinePatchRegexGood;

@@ -490,6 +490,9 @@ namespace Lemma
 			if (!this.Paused)
 				this.TotalTime.Value += this.ElapsedTime;
 
+			//We must update GeeUI first before anything else so that its LastClickCaptured property can be of use.
+			GeeUI.GeeUI.Update(this.ElapsedTime);
+
 			if (!this.EditorEnabled && this.mapLoaded)
 			{
 				try
@@ -622,7 +625,6 @@ namespace Lemma
 #if STEAMWORKS
 			SteamWorker.Update();
 #endif
-			GeeUI.GeeUI.Update(this.ElapsedTime);
 
 			this.update();
 		}
