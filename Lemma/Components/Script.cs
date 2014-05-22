@@ -60,6 +60,42 @@ namespace Lemma.Scripts
 
 		private MethodInfo scriptMethod;
 
+		/// <summary>
+		/// Tries to use reflection to load 
+		/// </summary>
+		/// <param name="main"></param>
+		/// <param name="name"></param>
+		/// <param name="scriptEntity"></param>
+		/// <param name="errors"></param>
+		/// <returns></returns>
+		private static MethodInfo GetInternalScriptRunMethod(Main main, string name, Entity scriptEntity, out string errors)
+		{
+			string neededNameSpace = "Lemma.GameScripts";
+			errors = null;
+			Assembly assembly = Assembly.GetExecutingAssembly();
+			foreach (var type in assembly.GetTypes())
+			{
+				if (type.Namespace == neededNameSpace)
+				{
+					if (type.IsClass && type.Name == name)
+					{
+						MethodInfo ret = type.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
+						if (ret == null)
+						{
+							errors = "Could not find public static method Run in " + name;
+							return null;
+						}
+
+						type.GetField("script", BindingFlags.Static | BindingFlags.Public).SetValue(null, scriptEntity);
+						return ret;
+					}
+				}
+			}
+			errors = "Could not find class " + name;
+			return null;
+
+		}
+
 		public static MethodInfo GetScriptRunMethod(Main main, string name, Entity scriptEntity, out string errors)
 		{
 			Assembly assembly = null;
@@ -71,7 +107,7 @@ namespace Lemma.Scripts
 
 			DateTime scriptTime = File.GetLastWriteTime(scriptPath);
 			DateTime binaryTime = File.GetLastWriteTime(binaryPath);
-			if (!File.Exists(binaryPath) || scriptTime > binaryTime)
+			if ((!File.Exists(binaryPath) || scriptTime > binaryTime) && File.Exists(scriptPath))
 			{
 				// Recompile the script
 				using (Stream stream = TitleContainer.OpenStream(scriptPath))
@@ -119,7 +155,7 @@ namespace Lemma.Scripts
 					}
 				}
 			}
-			else // Load the precompiled script binary
+			else if (File.Exists(binaryPath)) // Load the precompiled script binary
 				assembly = Assembly.LoadFrom(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), binaryPath));
 
 			if (assembly != null)
@@ -129,6 +165,10 @@ namespace Lemma.Scripts
 				Type t = assembly.GetType("Lemma.Scripts.Script");
 				t.GetField("script", BindingFlags.Static | BindingFlags.Public).SetValue(null, scriptEntity);
 				return t.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
+			}
+			else
+			{
+				return GetInternalScriptRunMethod(main, name, scriptEntity, out errors);
 			}
 			return null;
 		}

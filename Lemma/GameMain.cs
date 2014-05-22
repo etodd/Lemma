@@ -360,7 +360,7 @@ namespace Lemma
 
 				this.MapFile.Set = delegate(string value)
 				{
-					if (value == null || value.Length == 0)
+					if (string.IsNullOrEmpty(value))
 					{
 						this.MapFile.InternalValue = null;
 						return;

@@ -69,6 +69,20 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Development|x86'">
+    <OutputPath>bin\x86\Development\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;WINDOWS;ANALYTICS;CHEAT;STEAMWORKS</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <NoStdLib>true</NoStdLib>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <XnaCompressContent>True</XnaCompressContent>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
@@ -99,6 +113,7 @@
     <Compile Include="Console\ConsoleParser.cs" />
     <Compile Include="Console\ConVar.cs" />
     <Compile Include="Console\ConCommand.cs" />
+    <Compile Include="Game\LemmaScripts\forest.cs" />
     <Compile Include="GInterfaces\ConsoleUI.cs" />
     <Compile Include="Player\PhoneNote.cs" />
     <Compile Include="Util\DialogueForest.cs" />
@@ -352,6 +367,7 @@
       <DependentUpon>ErrorForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" Condition="" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
