@@ -307,58 +307,26 @@ namespace Lemma.Console
 			}
 
 			object propertyValue = value;
-			//There is NO other way I'm SORRY
-			if (curType == typeof(Property<bool>))
+			var binding = new NotifyBinding(() =>
 			{
-				value = ((Property<bool>)value).Value.ToString();
-				curType = typeof(bool);
-				((Property<bool>)propertyValue).AddBinding(new NotifyBinding(() =>
-				{
-					Console.GetConVar(name).Value.InternalValue = ((Property<bool>)propertyValue).Value.ToString();
-				}));
-			}
-			else if (curType == typeof(Property<int>))
+				GetConVar(name).Value.InternalValue =
+					(string)propertyValue.GetType().GetProperty("Value").GetValue(propertyValue, null);
+			});
+
+			if (generics.Contains(curType))
 			{
-				value = ((Property<int>)value).Value.ToString();
-				curType = typeof(int);
-				((Property<int>)propertyValue).AddBinding(new NotifyBinding(() =>
-				{
-					Console.GetConVar(name).Value.InternalValue = ((Property<int>)propertyValue).Value.ToString();
-				}));
-			}
-			else if (curType == typeof(Property<float>))
-			{
-				value = ((Property<float>)value).Value.ToString();
-				curType = typeof(float);
-				((Property<float>)propertyValue).AddBinding(new NotifyBinding(() =>
-				{
-					Console.GetConVar(name).Value.InternalValue = ((Property<float>)propertyValue).Value.ToString();
-				}));
-			}
-			else if (curType == typeof(Property<double>))
-			{
-				value = ((Property<double>)value).Value.ToString();
-				curType = typeof(double);
-				((Property<double>)propertyValue).AddBinding(new NotifyBinding(() =>
-				{
-					Console.GetConVar(name).Value.InternalValue = ((Property<double>)propertyValue).Value.ToString();
-				}));
-			}
-			else if (curType == typeof(Property<string>))
-			{
-				value = ((Property<string>)value).Value;
-				curType = typeof(string);
-				((Property<string>)propertyValue).AddBinding(new NotifyBinding(() =>
-				{
-					Console.GetConVar(name).Value.InternalValue = ((Property<string>)propertyValue).Value.ToString();
-				}));
+				value = propertyValue.GetType().GetProperty("Value").GetValue(propertyValue, null);
+				if (value == null) value = "null";
+				else value = value.ToString();
+				curType = curType.GetGenericArguments()[0];
+				propertyValue.GetType()
+					.InvokeMember("AddBinding", BindingFlags.InvokeMethod, null, propertyValue, new object[] { binding });
 			}
 			else
-			{
 				isProperty = false;
-			}
 
-			if(instantiated)
+
+			if (instantiated)
 				RemoveConVar(name, true);
 
 			if (!isProperty)
@@ -407,26 +375,7 @@ namespace Lemma.Console
 								return;
 							}
 							object val = GetConVar(name).GetCastedValue();
-							if (curType == typeof(bool))
-							{
-								((Property<bool>)propertyValue).Value = (bool)val;
-							}
-							else if (curType == typeof(int))
-							{
-								((Property<int>)propertyValue).Value = (int)val;
-							}
-							else if (curType == typeof(float))
-							{
-								((Property<float>)propertyValue).Value = (float)val;
-							}
-							else if (curType == typeof(double))
-							{
-								((Property<double>)propertyValue).Value = (double)val;
-							}
-							else if (curType == typeof(string))
-							{
-								((Property<string>)propertyValue).Value = (string)val;
-							}
+							propertyValue.GetType().GetProperty("Value").SetValue(propertyValue, val, null);
 						}
 					}
 				});
