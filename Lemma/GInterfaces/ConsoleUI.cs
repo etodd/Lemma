@@ -23,7 +23,8 @@ namespace Lemma.GInterfaces
 		public SpriteFont MainFont;
 		public SpriteFont ConsoleFont;
 
-		public Property<bool> Showing = new Property<bool>();
+		[AutoConVar("console_showing", "If true, the console is showing")]
+		public static Property<bool> Showing = new Property<bool>();
 
 		public override void Awake()
 		{
@@ -43,7 +44,7 @@ namespace Lemma.GInterfaces
 				this.Add(new NotifyBinding(HandleResize, main.ScreenSize)); //Supercool~
 				this.Add(new NotifyBinding(HandleToggle, Showing));
 			}
-			this.Showing.Value = false;
+			Showing.Value = false;
 		}
 
 		public void OnTextSubmitted()

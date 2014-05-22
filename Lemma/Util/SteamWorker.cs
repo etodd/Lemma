@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Lemma.Console;
 using Steamworks;
 
 namespace Lemma.Util
@@ -118,6 +119,7 @@ namespace Lemma.Util
 				UploadStats();
 		}
 
+		[AutoConCommand("upload_stats", "Upload stats to Steam")]
 		public static void UploadStats(bool force = false)
 		{
 			if (!Initialized) return;

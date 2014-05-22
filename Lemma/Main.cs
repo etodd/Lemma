@@ -97,6 +97,7 @@ namespace Lemma
 		public new Property<bool> IsMouseVisible = new Property<bool> { };
 		public Property<bool> GamePadConnected = new Property<bool>();
 
+		[AutoConVar("game_time", "Total time the game has been played")]
 		public static Property<float> TotalGameTime = new Property<float>(); 
 
 		public Strings Strings = new Strings();

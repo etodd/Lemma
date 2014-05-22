@@ -11,6 +11,7 @@ using System.IO;
 using System.Reflection;
 using System.Xml.Serialization;
 using Lemma.Util;
+using Lemma.GInterfaces;
 
 namespace Lemma.Components
 {
@@ -1412,8 +1413,8 @@ namespace Lemma.Components
 
 			this.input.Bind(this.main.Settings.ToggleConsole, PCInput.InputState.Down, delegate()
 							{
-								if (canPause() && main.ConsoleUI.Showing.Value == main.Paused.Value) togglePause();
-								this.main.ConsoleUI.Showing.Value = !this.main.ConsoleUI.Showing.Value;
+								if (canPause() && ConsoleUI.Showing.Value == main.Paused.Value) togglePause();
+								ConsoleUI.Showing.Value = !ConsoleUI.Showing.Value;
 							});
 
 			this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), () => canPause() || this.dialog != null, togglePause));
