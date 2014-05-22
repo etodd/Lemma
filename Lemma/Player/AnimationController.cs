@@ -62,22 +62,50 @@ namespace Lemma.Components
 		}
 
 		// Animations and their priorities
-		private Dictionary<string, AnimationInfo> movementAnimations = new Dictionary<string, AnimationInfo>
+		private static Dictionary<string, AnimationInfo> movementAnimations = new Dictionary<string, AnimationInfo>
 		{
 			{ "Idle", new AnimationInfo { Priority = -1, DefaultStrength = 1.0f, } },
 			{ "Run", new AnimationInfo { Priority = 0 } },
 			{ "RunBackward", new AnimationInfo { Priority = 0 } },
 			{ "RunLeft", new AnimationInfo { Priority = 0 } },
-			{ "RunRight", new AnimationInfo { Priority = 0 } },
+			// { "RunRight", new AnimationInfo { Priority = 0 } }, // TODO: Uncomment once the animation is in
+			{ "RunLeftForward", new AnimationInfo { Priority = 0 } },
+			{ "RunRightForward", new AnimationInfo { Priority = 0 } },
 			{ "Sprint", new AnimationInfo { Priority = 1 } },
 		};
-		private Dictionary<string, AnimationInfo> crouchMovementAnimations = new Dictionary<string, AnimationInfo>
+
+		// Split the unit circle into 8 pie slices, starting with positive X
+		private static string[] directions = new[]
+		{
+			"RunRightForward", // TODO: Switch to RunRight once the animation is in
+			"RunRightForward",
+			"Run",
+			"RunLeftForward",
+			"RunLeft",
+			"RunBackward",
+			"RunBackward",
+			"RunBackward",
+		};
+
+		private static Dictionary<string, AnimationInfo> crouchMovementAnimations = new Dictionary<string, AnimationInfo>
 		{
 			{ "CrouchIdle", new AnimationInfo { Priority = 1, DefaultStrength = 1.0f } },
 			{ "CrouchWalk", new AnimationInfo { Priority = 2 } },
 			{ "CrouchWalkBackward", new AnimationInfo { Priority = 2 } },
 			{ "CrouchStrafeLeft", new AnimationInfo { Priority = 2 } },
 			{ "CrouchStrafeRight", new AnimationInfo { Priority = 2 } },
+		};
+
+		private static string[] crouchDirections = new[]
+		{
+			"CrouchStrafeRight",
+			"CrouchStrafeRight",
+			"CrouchWalk",
+			"CrouchStrafeLeft",
+			"CrouchStrafeLeft",
+			"CrouchWalkBackward",
+			"CrouchWalkBackward",
+			"CrouchWalkBackward",
 		};
 
 		public void Update(float dt)
@@ -123,6 +151,9 @@ namespace Lemma.Components
 				);
 
 				Vector2 dir = this.Movement;
+				float angle = (float)Math.Atan2(dir.Y, dir.X);
+				if (angle < 0.0f)
+					angle += (float)Math.PI * 2.0f;
 
 				string movementAnimation;
 
@@ -137,14 +168,14 @@ namespace Lemma.Components
 						if (dir.LengthSquared() == 0.0f)
 							movementAnimation = "CrouchIdle";
 						else
-							movementAnimation = dir.Y < 0.0f ? "CrouchWalkBackward" : (dir.X > 0.0f ? "CrouchStrafeRight" : (dir.X < 0.0f ? "CrouchStrafeLeft" : "CrouchWalk"));
+							movementAnimation = AnimationController.crouchDirections[(int)Math.Round(angle / ((float)Math.PI * 0.25f)) % 8];
 					}
 					else
 					{
 						if (dir.LengthSquared() == 0.0f)
 							movementAnimation = "Idle";
 						else
-							movementAnimation = dir.Y < 0.0f ? "RunBackward" : (dir.X > 0.0f ? "RunRight" : (dir.X < 0.0f ? "RunLeft" : "Run"));
+							movementAnimation = AnimationController.directions[(int)Math.Round(angle / ((float)Math.PI * 0.25f)) % 8];
 					}
 				}
 				else
