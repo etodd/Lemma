@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Lemma.Console;
 using Microsoft.Xna.Framework;
 using Lemma.Components;
 using System.IO;
@@ -105,9 +106,15 @@ namespace Lemma.Scripts
 			string scriptPath = Path.Combine(IO.MapLoader.MapDirectory, name + "." + Script.ScriptExtension);
 			string binaryPath = Path.Combine(IO.MapLoader.MapDirectory, name + "." + Script.BinaryExtension);
 
+			bool preferLocalScripts = (bool)Console.Console.GetConVar("prefer_local_scripts").GetCastedValue();
+
 			DateTime scriptTime = File.GetLastWriteTime(scriptPath);
 			DateTime binaryTime = File.GetLastWriteTime(binaryPath);
-			if ((!File.Exists(binaryPath) || scriptTime > binaryTime) && File.Exists(scriptPath))
+
+			bool loadOnlyLocal = preferLocalScripts && (File.Exists(scriptPath) || File.Exists(binaryPath));
+			bool loadAssemblyVsScript = !(!File.Exists(binaryPath) || scriptTime > binaryTime) && File.Exists(scriptPath);
+
+			if (loadOnlyLocal && !loadAssemblyVsScript)
 			{
 				// Recompile the script
 				using (Stream stream = TitleContainer.OpenStream(scriptPath))
@@ -155,7 +162,7 @@ namespace Lemma.Scripts
 					}
 				}
 			}
-			else if (File.Exists(binaryPath)) // Load the precompiled script binary
+			else if (loadOnlyLocal && File.Exists(binaryPath)) // Load the precompiled script binary
 				assembly = Assembly.LoadFrom(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), binaryPath));
 
 			if (assembly != null)
@@ -199,6 +206,11 @@ namespace Lemma.Scripts
 				if (this.scriptMethod != null)
 					this.scriptMethod.Invoke(null, null);
 			};
+		}
+
+		public static void ConsoleInit()
+		{
+			Lemma.Console.Console.AddConVar(new ConVar("prefer_local_scripts", "If true, local scripts will be loaded instead of internal ones.", "true") { TypeConstraint = typeof(bool) });
 		}
 	}
 }

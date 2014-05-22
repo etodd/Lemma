@@ -26,7 +26,6 @@ namespace Lemma.Console
 				if (TypeConstraint == null) return typeof(string);
 				return TypeConstraint;
 			}
-			set { TypeConstraint = value; }
 		}
 
 		public ConVar(string name, string description, Action<string> onChanged, string defaultValue)
