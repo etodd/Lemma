@@ -42,14 +42,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="intro.map">
-      <Name>intro</Name>
+    <None Include="*.dlz">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="intro.cs">
-      <Name>intro</Name>
+    <None Include="*.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="*.map">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
