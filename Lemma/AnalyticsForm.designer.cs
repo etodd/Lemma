@@ -36,6 +36,8 @@
 			this.label5 = new System.Windows.Forms.Label();
 			this.label7 = new System.Windows.Forms.Label();
 			this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+			this.label3 = new System.Windows.Forms.Label();
+			this.anonymousIdTextBox = new System.Windows.Forms.TextBox();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -47,11 +49,11 @@
 			this.label1.Size = new System.Drawing.Size(254, 39);
 			this.label1.TabIndex = 0;
 			this.label1.Text = "We saved an anonymous recording of your play session. Help improve Lemma by hitti" +
-				"ng \"Upload\" to send the following data:";
+    "ng \"Upload\" to send the following data:";
 			// 
 			// button1
 			// 
-			this.button1.Location = new System.Drawing.Point(12, 176);
+			this.button1.Location = new System.Drawing.Point(12, 190);
 			this.button1.Name = "button1";
 			this.button1.Size = new System.Drawing.Size(75, 23);
 			this.button1.TabIndex = 2;
@@ -71,7 +73,7 @@
 			// 
 			// button2
 			// 
-			this.button2.Location = new System.Drawing.Point(197, 176);
+			this.button2.Location = new System.Drawing.Point(197, 190);
 			this.button2.Name = "button2";
 			this.button2.Size = new System.Drawing.Size(75, 23);
 			this.button2.TabIndex = 8;
@@ -83,7 +85,7 @@
 			// label4
 			// 
 			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(12, 84);
+			this.label4.Location = new System.Drawing.Point(12, 77);
 			this.label4.MaximumSize = new System.Drawing.Size(260, 0);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(102, 13);
@@ -93,7 +95,7 @@
 			// label5
 			// 
 			this.label5.AutoSize = true;
-			this.label5.Location = new System.Drawing.Point(12, 106);
+			this.label5.Location = new System.Drawing.Point(12, 99);
 			this.label5.MaximumSize = new System.Drawing.Size(270, 0);
 			this.label5.Name = "label5";
 			this.label5.Size = new System.Drawing.Size(147, 13);
@@ -103,7 +105,7 @@
 			// label7
 			// 
 			this.label7.AutoSize = true;
-			this.label7.Location = new System.Drawing.Point(12, 130);
+			this.label7.Location = new System.Drawing.Point(12, 123);
 			this.label7.MaximumSize = new System.Drawing.Size(260, 0);
 			this.label7.Name = "label7";
 			this.label7.Size = new System.Drawing.Size(62, 13);
@@ -118,12 +120,32 @@
 			this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
 			this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
 			// 
+			// label3
+			// 
+			this.label3.AutoSize = true;
+			this.label3.Location = new System.Drawing.Point(12, 147);
+			this.label3.MaximumSize = new System.Drawing.Size(260, 0);
+			this.label3.Name = "label3";
+			this.label3.Size = new System.Drawing.Size(109, 13);
+			this.label3.TabIndex = 14;
+			this.label3.Text = "- Your anonymous ID:";
+			// 
+			// anonymousIdTextBox
+			// 
+			this.anonymousIdTextBox.Location = new System.Drawing.Point(15, 164);
+			this.anonymousIdTextBox.Name = "anonymousIdTextBox";
+			this.anonymousIdTextBox.ReadOnly = true;
+			this.anonymousIdTextBox.Size = new System.Drawing.Size(251, 20);
+			this.anonymousIdTextBox.TabIndex = 15;
+			// 
 			// AnalyticsForm
 			// 
 			this.AcceptButton = this.button1;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(284, 210);
+			this.ClientSize = new System.Drawing.Size(284, 221);
+			this.Controls.Add(this.anonymousIdTextBox);
+			this.Controls.Add(this.label3);
 			this.Controls.Add(this.label7);
 			this.Controls.Add(this.label5);
 			this.Controls.Add(this.label4);
@@ -152,5 +174,7 @@
 		private System.Windows.Forms.Label label5;
 		private System.Windows.Forms.Label label7;
 		private System.ComponentModel.BackgroundWorker backgroundWorker1;
+		private System.Windows.Forms.Label label3;
+		private System.Windows.Forms.TextBox anonymousIdTextBox;
 	}
 }

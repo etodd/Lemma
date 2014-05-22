@@ -55,7 +55,10 @@ namespace Lemma
 			// TODO: MonoGame analytics form
 #else
 			System.Windows.Forms.Application.EnableVisualStyles();
-			AnalyticsForm analyticsForm = new AnalyticsForm(main, error);
+			string anonymousId = "";
+			if (main.Settings != null)
+				anonymousId = main.Settings.UUID;
+			AnalyticsForm analyticsForm = new AnalyticsForm(main, anonymousId, error);
 			System.Windows.Forms.Application.Run(analyticsForm);
 #endif
 #else

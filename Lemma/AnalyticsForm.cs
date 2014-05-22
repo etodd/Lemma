@@ -17,15 +17,19 @@ namespace Lemma
 		private GameMain main;
 		private bool success;
 		private bool cancelled;
-		public AnalyticsForm(GameMain main, string error)
+		private string anonymousId;
+
+		public AnalyticsForm(GameMain main, string anonymousId, string error)
 		{
 			this.InitializeComponent();
 			this.main = main;
 			this.error = error;
+			this.anonymousId = anonymousId;
 		}
 
 		private void AnalyticsForm_Load(object sender, EventArgs e)
 		{
+			this.anonymousIdTextBox.Text = this.anonymousId;
 			if (this.error != null)
 				this.label2.Text = "You found a bug!";
 			Cursor.Show();

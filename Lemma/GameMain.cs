@@ -152,8 +152,8 @@ namespace Lemma
 				this.Settings = new Config { Version = GameMain.ConfigVersion, };
 			}
 
-			if (this.Settings.UUID == null)
-				Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32);
+			if (string.IsNullOrEmpty(this.Settings.UUID))
+				this.Settings.UUID = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32);
 			
 			TextElement.BindableProperties.Add("Forward", this.Settings.Forward);
 			TextElement.BindableProperties.Add("Left", this.Settings.Left);
