@@ -27,12 +27,12 @@ namespace Lemma.Components
 	[XmlInclude(typeof(CellState))]
 	[XmlInclude(typeof(Property<CellState>))]
 	[XmlInclude(typeof(ListProperty<CellState>))]
-	[XmlInclude(typeof(Map.Coordinate))]
-	[XmlInclude(typeof(ListProperty<Map.Coordinate>))]
-	[XmlInclude(typeof(Map.Box))]
-	[XmlInclude(typeof(Property<Map.Box>))]
-	[XmlInclude(typeof(ListProperty<Map.Box>))]
-	[XmlInclude(typeof(Property<Map.Coordinate>))]
+	[XmlInclude(typeof(Coordinate))]
+	[XmlInclude(typeof(ListProperty<Coordinate>))]
+	[XmlInclude(typeof(Box))]
+	[XmlInclude(typeof(Property<Box>))]
+	[XmlInclude(typeof(ListProperty<Box>))]
+	[XmlInclude(typeof(Property<Coordinate>))]
 	[XmlInclude(typeof(Direction))]
 	[XmlInclude(typeof(Property<Direction>))]
 	[XmlInclude(typeof(ListProperty<Direction>))]
@@ -1287,6 +1287,26 @@ namespace Lemma.Components
 						break;
 				}
 				return new Coordinate { X = x, Y = y, Z = z, Data = this.Data };
+			}
+
+			public static Coordinate Max(Coordinate a, Coordinate b)
+			{
+				return new Coordinate
+				{
+					X = Math.Max(a.X, b.X),
+					Y = Math.Max(a.Y, b.Y),
+					Z = Math.Max(a.Z, b.Z),
+				};
+			}
+
+			public static Coordinate Min(Coordinate a, Coordinate b)
+			{
+				return new Coordinate
+				{
+					X = Math.Min(a.X, b.X),
+					Y = Math.Min(a.Y, b.Y),
+					Z = Math.Min(a.Z, b.Z),
+				};
 			}
 
 			public Coordinate Plus(Coordinate other)

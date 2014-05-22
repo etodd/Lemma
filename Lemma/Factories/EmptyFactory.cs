@@ -27,8 +27,18 @@ namespace Lemma.Factories
 		{
 			this.SetMain(result, main);
 			result.Get<Transform>().Editable = true;
+
+			Command detach = new Command
+			{
+				Action = delegate()
+				{
+					result.Delete.Execute();
+				},
+			};
+			result.Add("Detach", detach);
+
 			if (result.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(result, main);
+				MapAttachable.MakeAttachable(result, main, true, false, detach);
 		}
 
 		public override void AttachEditorComponents(Entity result, Main main)

@@ -49,7 +49,7 @@ namespace Lemma.Util
 				return (SteamInitialized = false) && false;
 #endif
 			}
-			catch (DllNotFoundException exception)
+			catch (DllNotFoundException)
 			{
 				//Required DLLs ain't there
 				SteamInitialized = false;
