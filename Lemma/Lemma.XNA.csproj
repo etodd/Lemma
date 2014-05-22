@@ -114,6 +114,7 @@
     <Compile Include="Console\ConVar.cs" />
     <Compile Include="Console\ConCommand.cs" />
     <Compile Include="Game\LemmaScripts\forest.cs" />
+	<Compile Include="Components\Propagator.cs" />
     <Compile Include="GInterfaces\ConsoleUI.cs" />
     <Compile Include="Player\PhoneNote.cs" />
     <Compile Include="Util\DialogueForest.cs" />
