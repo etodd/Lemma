@@ -377,6 +377,9 @@ namespace Lemma
 					catch (FileNotFoundException)
 					{
 						this.MapFile.InternalValue = value;
+
+						this.ClearEntities(false);
+
 						// Create a new map
 						Entity world = Factory.Get<WorldFactory>().CreateAndBind(this);
 						world.Get<Transform>().Position.Value = new Vector3(0, 3, 0);
