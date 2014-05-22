@@ -29,7 +29,7 @@ using Lemma.Util;
 using Lemma.Components;
 using Lemma.Factories;
 
-namespace Lemma.Scripts
+namespace Lemma.GameScripts
 {
 	public class Script : ScriptBase
 	{
@@ -155,11 +155,7 @@ namespace Lemma.Scripts
 						errors = builder.ToString();
 					}
 					else
-					{
 						assembly = cr.CompiledAssembly;
-						// TODO: DLL caching
-						//File.Copy(cp.OutputAssembly, binaryPath, true);
-					}
 				}
 			}
 			else if (loadOnlyLocal && File.Exists(binaryPath)) // Load the precompiled script binary
@@ -167,17 +163,12 @@ namespace Lemma.Scripts
 
 			if (assembly != null)
 			{
-				Lemma.Scripts.ScriptBase.main = main;
-				Lemma.Scripts.ScriptBase.renderer = main.Renderer;
-				Type t = assembly.GetType("Lemma.Scripts.Script");
+				Type t = assembly.GetType("Lemma.GameScripts.Script");
 				t.GetField("script", BindingFlags.Static | BindingFlags.Public).SetValue(null, scriptEntity);
 				return t.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
 			}
 			else
-			{
 				return GetInternalScriptRunMethod(main, name, scriptEntity, out errors);
-			}
-			return null;
 		}
 
 		public override void Awake()
@@ -203,6 +194,11 @@ namespace Lemma.Scripts
 
 			this.Execute.Action = delegate()
 			{
+				if (Lemma.GameScripts.ScriptBase.main == null)
+				{
+					Lemma.GameScripts.ScriptBase.main = main;
+					Lemma.GameScripts.ScriptBase.renderer = main.Renderer;
+				}
 				if (this.scriptMethod != null)
 					this.scriptMethod.Invoke(null, null);
 			};

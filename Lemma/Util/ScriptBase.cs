@@ -6,7 +6,7 @@ using Lemma.Components;
 using Microsoft.Xna.Framework;
 using Lemma.Factories;
 
-namespace Lemma.Scripts
+namespace Lemma.GameScripts
 {
 	public class ScriptBase
 	{

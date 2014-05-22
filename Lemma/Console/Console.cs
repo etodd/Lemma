@@ -309,8 +309,8 @@ namespace Lemma.Console
 			object propertyValue = value;
 			var binding = new NotifyBinding(() =>
 			{
-				GetConVar(name).Value.InternalValue =
-					(string)propertyValue.GetType().GetProperty("Value").GetValue(propertyValue, null);
+				GetConVar(name).Value.Value =
+					propertyValue.GetType().GetProperty("Value").GetValue(propertyValue, null).ToString();
 			});
 
 			if (generics.Contains(curType))
