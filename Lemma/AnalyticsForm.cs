@@ -44,6 +44,7 @@ namespace Lemma
 			this.label4.Visible = false;
 			this.label5.Visible = false;
 			this.label7.Visible = false;
+			this.anonymousIdTextBox.Visible = false;
 			this.button2.Visible = true;
 			this.backgroundWorker1.RunWorkerAsync();
 		}

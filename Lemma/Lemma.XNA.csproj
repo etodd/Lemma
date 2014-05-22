@@ -117,6 +117,7 @@
     <Compile Include="Console\ConCommand.cs" />
     <Compile Include="Components\Propagator.cs" />
     <Compile Include="GInterfaces\ConsoleUI.cs" />
+    <Compile Include="Player\BlockPredictor.cs" />
     <Compile Include="Player\PhoneNote.cs" />
     <Compile Include="Util\DialogueForest.cs" />
     <Compile Include="Components\SoundKiller.cs" />

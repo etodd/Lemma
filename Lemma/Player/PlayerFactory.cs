@@ -50,21 +50,6 @@ namespace Lemma.Factories
 			return result;
 		}
 
-		private class BlockPossibility
-		{
-			public Map Map;
-			public Map.Coordinate StartCoord;
-			public Map.Coordinate EndCoord;
-			public ModelAlpha Model;
-		}
-
-		private class Prediction
-		{
-			public Vector3 Position;
-			public float Time;
-			public int Level;
-		}
-
 		private static Entity instance;
 		public static Entity Instance
 		{
@@ -358,129 +343,15 @@ namespace Lemma.Factories
 					resetInAirState();
 			}, player.Character.IsSupported));
 
-			// Block possibilities
-			const float blockPossibilityFadeInTime = 0.075f;
-			const float blockPossibilityTotalLifetime = 2.0f;
-			const float blockPossibilityInitialAlpha = 0.5f;
-
-			float blockPossibilityLifetime = 0.0f;
-
-			Dictionary<Map, List<BlockPossibility>> blockPossibilities = new Dictionary<Map, List<BlockPossibility>>();
-
-			Action clearBlockPossibilities = delegate()
-			{
-				foreach (BlockPossibility block in blockPossibilities.Values.SelectMany(x => x))
-					block.Model.Delete.Execute();
-				blockPossibilities.Clear();
-			};
-
-			Action<BlockPossibility> addBlockPossibility = delegate(BlockPossibility block)
-			{
-				if (block.Model == null)
-				{
-					Vector3 start = block.Map.GetRelativePosition(block.StartCoord), end = block.Map.GetRelativePosition(block.EndCoord);
-
-					Vector3 scale = new Vector3(Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y), Math.Abs(end.Z - start.Z));
-					Matrix matrix = Matrix.CreateScale(scale) * Matrix.CreateTranslation(new Vector3(-0.5f) + (start + end) * 0.5f);
-
-					ModelAlpha box = new ModelAlpha();
-					box.Filename.Value = "Models\\distortion-box";
-					box.Distortion.Value = true;
-					box.Color.Value = new Vector3(2.8f, 3.0f, 3.2f);
-					box.Alpha.Value = blockPossibilityInitialAlpha;
-					box.Editable = false;
-					box.Serialize = false;
-					box.DrawOrder.Value = 11; // In front of water
-					box.BoundingBox.Value = new BoundingBox(new Vector3(-0.5f), new Vector3(0.5f));
-					box.GetVector3Parameter("Scale").Value = scale;
-					box.Add(new Binding<Matrix>(box.Transform, x => matrix * x, block.Map.Transform));
-					result.Add(box);
-					block.Model = box;
-				}
-
-				List<BlockPossibility> mapList;
-				if (!blockPossibilities.TryGetValue(block.Map, out mapList))
-				{
-					mapList = new List<BlockPossibility>();
-					blockPossibilities[block.Map] = mapList;
-				}
-				mapList.Add(block);
-				blockPossibilityLifetime = 0.0f;
-			};
-
-			update.Add(delegate(float dt)
-			{
-				if (blockPossibilities.Count > 0)
-				{
-					blockPossibilityLifetime += dt;
-					if (blockPossibilityLifetime > blockPossibilityTotalLifetime)
-						clearBlockPossibilities();
-					else
-					{
-						float alpha;
-						if (blockPossibilityLifetime < blockPossibilityFadeInTime)
-							alpha = blockPossibilityInitialAlpha * (blockPossibilityLifetime / blockPossibilityFadeInTime);
-						else
-							alpha = blockPossibilityInitialAlpha * (1.0f - (blockPossibilityLifetime / blockPossibilityTotalLifetime));
-
-						Vector3 offset = new Vector3(blockPossibilityLifetime * 0.2f);
-						foreach (BlockPossibility block in blockPossibilities.Values.SelectMany(x => x))
-						{
-							block.Model.Alpha.Value = alpha;
-							block.Model.GetVector3Parameter("Offset").Value = offset;
-						}
-					}
-				}
-			});
-
-			ParticleSystem particleSystem = ParticleSystem.Get(main, "Distortion");
 
 			Map.CellState temporary = Map.States[Map.t.Temporary];
 
-			Action<BlockPossibility> instantiateBlockPossibility = delegate(BlockPossibility block)
-			{
-				block.Map.Empty(block.StartCoord.CoordinatesBetween(block.EndCoord), false, false);
-				block.Map.Fill(block.StartCoord, block.EndCoord, temporary);
-				block.Map.Regenerate();
-				block.Model.Delete.Execute();
-				List<BlockPossibility> mapList = blockPossibilities[block.Map];
-				mapList.Remove(block);
-				if (mapList.Count == 0)
-					blockPossibilities.Remove(block.Map);
-				
-				const float prePrime = 2.0f;
-				// Front and back faces
-				for (int x = block.StartCoord.X; x < block.EndCoord.X; x++)
-				{
-					for (int y = block.StartCoord.Y; y < block.EndCoord.Y; y++)
-					{
-						particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, y, block.EndCoord.Z - 1), Vector3.Zero, -1.0f, prePrime);
-						particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, y, block.StartCoord.Z), Vector3.Zero, -1.0f, prePrime);
-					}
-				}
-
-				// Left and right faces
-				for (int z = block.StartCoord.Z; z < block.EndCoord.Z; z++)
-				{
-					for (int y = block.StartCoord.Y; y < block.EndCoord.Y; y++)
-					{
-						particleSystem.AddParticle(block.Map.GetAbsolutePosition(block.StartCoord.X, y, z), Vector3.Zero, -1.0f, prePrime);
-						particleSystem.AddParticle(block.Map.GetAbsolutePosition(block.EndCoord.X - 1, y, z), Vector3.Zero, -1.0f, prePrime);
-					}
-				}
-
-				// Top and bottom faces
-				for (int z = block.StartCoord.Z; z < block.EndCoord.Z; z++)
-				{
-					for (int x = block.StartCoord.X; x < block.EndCoord.X; x++)
-					{
-						particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, block.StartCoord.Y, z), Vector3.Zero, -1.0f, prePrime);
-						particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, block.EndCoord.Y - 1, z), Vector3.Zero, -1.0f, prePrime);
-					}
-				}
-
-				AkSoundEngine.PostEvent("Play_block_instantiate", 0.5f * (block.Map.GetAbsolutePosition(block.StartCoord) + block.Map.GetAbsolutePosition(block.EndCoord)));
-			};
+			BlockPredictor predictor = result.GetOrCreate<BlockPredictor>("BlockPredictor");
+			predictor.Add(new Binding<Vector3>(predictor.FootPosition, floor));
+			predictor.Add(new Binding<Vector3>(predictor.LinearVelocity, player.Character.LinearVelocity));
+			predictor.Add(new Binding<float>(predictor.Rotation, rotation));
+			predictor.Add(new Binding<float>(predictor.MaxSpeed, player.Character.MaxSpeed));
+			predictor.Add(new Binding<float>(predictor.JumpSpeed, player.Character.JumpSpeed));
 
 			// Wall run
 
@@ -676,15 +547,14 @@ namespace Lemma.Factories
 						else
 						{
 							// Check block possibilities
-							List<BlockPossibility> mapBlockPossibilities;
-							bool hasBlockPossibilities = blockPossibilities.TryGetValue(map, out mapBlockPossibilities);
-							if (hasBlockPossibilities)
+							List<BlockPredictor.Possibility> mapBlockPossibilities = predictor.GetPossibilities(map);
+							if (mapBlockPossibilities != null)
 							{
-								foreach (BlockPossibility block in mapBlockPossibilities)
+								foreach (BlockPredictor.Possibility block in mapBlockPossibilities)
 								{
 									if (wallCoord.Between(block.StartCoord, block.EndCoord))
 									{
-										instantiateBlockPossibility(block);
+										predictor.InstantiatePossibility(block);
 										activate = true;
 										addInitialVelocity = true;
 										wallInstantiationTimer = 0.25f;
@@ -913,142 +783,6 @@ namespace Lemma.Factories
 					player.SlowMotion.Value = false;
 				}
 			}, player.EnableMoves));
-
-			Direction[] platformBuildableDirections = DirectionExtensions.HorizontalDirections.Union(new[] { Direction.NegativeY }).ToArray();
-
-			// Function for finding a platform to build for the player
-			Func<Vector3, BlockPossibility> findPlatform = delegate(Vector3 position)
-			{
-				const int searchDistance = 20;
-				const int platformSize = 3;
-
-				int shortestDistance = searchDistance;
-				Direction relativeShortestDirection = Direction.None, absoluteShortestDirection = Direction.None;
-				Map.Coordinate shortestCoordinate = new Map.Coordinate();
-				Map shortestMap = null;
-
-				EffectBlockFactory blockFactory = Factory.Get<EffectBlockFactory>();
-				foreach (Map map in Map.ActivePhysicsMaps)
-				{
-					List<Matrix> results = new List<Matrix>();
-					Map.CellState fillValue = temporary;
-					Map.Coordinate absolutePlayerCoord = map.GetCoordinate(position);
-					bool inMap = map.GetChunk(absolutePlayerCoord, false) != null;
-					foreach (Direction absoluteDir in platformBuildableDirections)
-					{
-						Map.Coordinate playerCoord = absoluteDir == Direction.NegativeY ? absolutePlayerCoord : map.GetCoordinate(position + new Vector3(0, platformSize / -2.0f, 0));
-						Direction relativeDir = map.GetRelativeDirection(absoluteDir);
-						if (!inMap && map.GetChunk(playerCoord.Move(relativeDir, searchDistance), false) == null)
-							continue;
-
-						for (int i = 1; i < shortestDistance; i++)
-						{
-							Map.Coordinate coord = playerCoord.Move(relativeDir, i);
-							Map.CellState state = map[coord];
-
-							if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = map, Coordinate = coord, }))
-							{
-								// Check we're not in a no-build zone
-								if (state.ID != Map.t.AvoidAI && Zone.CanBuild(map.GetAbsolutePosition(coord)))
-								{
-									shortestDistance = i;
-									relativeShortestDirection = relativeDir;
-									absoluteShortestDirection = absoluteDir;
-									shortestCoordinate = playerCoord;
-									shortestMap = map;
-								}
-								break;
-							}
-						}
-					}
-				}
-
-				if (shortestMap != null && shortestDistance > 1)
-				{
-					Direction yDir = relativeShortestDirection.IsParallel(Direction.PositiveY) ? Direction.PositiveX : Direction.PositiveY;
-					Direction zDir = relativeShortestDirection.Cross(yDir);
-
-					int initialOffset = absoluteShortestDirection == Direction.NegativeY ? 0 : -2;
-					Map.Coordinate startCoord = shortestCoordinate.Move(relativeShortestDirection, initialOffset).Move(yDir, platformSize / -2).Move(zDir, platformSize / -2);
-					Map.Coordinate endCoord = startCoord.Move(relativeShortestDirection, -initialOffset + shortestDistance).Move(yDir, platformSize).Move(zDir, platformSize);
-
-					return new BlockPossibility
-					{
-						Map = shortestMap,
-						StartCoord = new Map.Coordinate { X = Math.Min(startCoord.X, endCoord.X), Y = Math.Min(startCoord.Y, endCoord.Y), Z = Math.Min(startCoord.Z, endCoord.Z) },
-						EndCoord = new Map.Coordinate { X = Math.Max(startCoord.X, endCoord.X), Y = Math.Max(startCoord.Y, endCoord.Y), Z = Math.Max(startCoord.Z, endCoord.Z) },
-					};
-				}
-				return null;
-			};
-
-			// Function for finding a wall to build for the player
-			Func<Vector3, Vector2, BlockPossibility> findWall = delegate(Vector3 position, Vector2 direction)
-			{
-				const int searchDistance = 20;
-				const int additionalDistance = 6;
-
-				Map shortestMap = null;
-				Map.Coordinate shortestPlayerCoord = new Map.Coordinate();
-				Direction shortestWallDirection = Direction.None;
-				Direction shortestBuildDirection = Direction.None;
-				int shortestDistance = searchDistance;
-
-				EffectBlockFactory blockFactory = Factory.Get<EffectBlockFactory>();
-				foreach (Map map in Map.ActivePhysicsMaps)
-				{
-					foreach (Direction absoluteWallDir in DirectionExtensions.HorizontalDirections)
-					{
-						Direction relativeWallDir = map.GetRelativeDirection(absoluteWallDir);
-						Vector3 wallVector = map.GetAbsoluteVector(relativeWallDir.GetVector());
-						float dot = Vector2.Dot(direction, Vector2.Normalize(new Vector2(wallVector.X, wallVector.Z)));
-						if (dot > -0.25f && dot < 0.8f)
-						{
-							Map.Coordinate coord = map.GetCoordinate(position).Move(relativeWallDir, 2);
-							foreach (Direction dir in DirectionExtensions.Directions.Where(x => x.IsPerpendicular(relativeWallDir)))
-							{
-								for (int i = 0; i < shortestDistance; i++)
-								{
-									Map.Coordinate c = coord.Move(dir, i);
-									Map.CellState state = map[c];
-
-									if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = map, Coordinate = c, }))
-									{
-										// Check we're not in a no-build zone
-										if (state.ID != Map.t.AvoidAI && Zone.CanBuild(map.GetAbsolutePosition(c)))
-										{
-											shortestMap = map;
-											shortestBuildDirection = dir;
-											shortestWallDirection = relativeWallDir;
-											shortestDistance = i;
-											shortestPlayerCoord = coord;
-										}
-
-										break;
-									}
-								}
-							}
-						}
-					}
-				}
-
-				if (shortestMap != null)
-				{
-					// Found something to build a wall on.
-					Direction dirU = shortestBuildDirection;
-					Direction dirV = dirU.Cross(shortestWallDirection);
-					Map.Coordinate startCoord = shortestPlayerCoord.Move(dirU, shortestDistance).Move(dirV, additionalDistance);
-					Map.Coordinate endCoord = shortestPlayerCoord.Move(dirU, -additionalDistance).Move(dirV, -additionalDistance).Move(shortestWallDirection);
-					return new BlockPossibility
-					{
-						Map = shortestMap,
-						StartCoord = new Map.Coordinate { X = Math.Min(startCoord.X, endCoord.X), Y = Math.Min(startCoord.Y, endCoord.Y), Z = Math.Min(startCoord.Z, endCoord.Z) },
-						EndCoord = new Map.Coordinate { X = Math.Max(startCoord.X, endCoord.X), Y = Math.Max(startCoord.Y, endCoord.Y), Z = Math.Max(startCoord.Z, endCoord.Z) },
-					};
-				}
-
-				return null;
-			};
 
 			// Fall damage
 			FallDamage fallDamage = result.GetOrCreate<FallDamage>();
@@ -1332,12 +1066,12 @@ namespace Lemma.Factories
 				{
 					// Check block possibilities beneath us
 					Vector3 jumpPos = transform.Position + new Vector3(0, player.Character.Height * -0.5f - player.Character.SupportHeight - 1.0f, 0);
-					foreach (BlockPossibility possibility in blockPossibilities.Values.SelectMany(x => x))
+					foreach (BlockPredictor.Possibility possibility in predictor.AllPossibilities)
 					{
 						if (possibility.Map.GetCoordinate(jumpPos).Between(possibility.StartCoord, possibility.EndCoord)
 							&& !possibility.Map.GetCoordinate(jumpPos + new Vector3(2.0f)).Between(possibility.StartCoord, possibility.EndCoord))
 						{
-							instantiateBlockPossibility(possibility);
+							predictor.InstantiatePossibility(possibility);
 							go = true;
 							blockPossibilityBeneath = true;
 							break;
@@ -1348,7 +1082,7 @@ namespace Lemma.Factories
 				if (!go && allowVault)
 				{
 					// Check block possibilities for vaulting
-					foreach (BlockPossibility possibility in blockPossibilities.Values.SelectMany(x => x))
+					foreach (BlockPredictor.Possibility possibility in predictor.AllPossibilities)
 					{
 						Direction up = possibility.Map.GetRelativeDirection(Direction.PositiveY);
 						Direction right = possibility.Map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
@@ -1362,7 +1096,7 @@ namespace Lemma.Factories
 								Map.Coordinate downCoord = coord.Move(up.GetReverse());
 								if (!coord.Between(possibility.StartCoord, possibility.EndCoord) && downCoord.Between(possibility.StartCoord, possibility.EndCoord))
 								{
-									instantiateBlockPossibility(possibility);
+									predictor.InstantiatePossibility(possibility);
 									vault(possibility.Map, coord);
 									switch (x)
 									{
@@ -1394,7 +1128,7 @@ namespace Lemma.Factories
 					// Check block possibilities for wall jumping
 					Vector3 playerPos = transform.Position;
 					Vector3[] wallJumpDirections = new[] { rotationMatrix.Left, rotationMatrix.Right, rotationMatrix.Backward, rotationMatrix.Forward };
-					foreach (BlockPossibility possibility in blockPossibilities.Values.SelectMany(x => x))
+					foreach (BlockPredictor.Possibility possibility in predictor.AllPossibilities)
 					{
 						foreach (Vector3 dir in wallJumpDirections)
 						{
@@ -1402,7 +1136,7 @@ namespace Lemma.Factories
 							{
 								if (coord.Between(possibility.StartCoord, possibility.EndCoord))
 								{
-									instantiateBlockPossibility(possibility);
+									predictor.InstantiatePossibility(possibility);
 									wallJump(possibility.Map, possibility.Map.GetRelativeDirection(dir).GetReverse(), coord);
 									wallJumping = true;
 									break;
@@ -1575,41 +1309,6 @@ namespace Lemma.Factories
 				return false;
 			};
 
-			Action<Queue<Prediction>, Vector3, Vector3, float, int> predictJump = delegate(Queue<Prediction> predictions, Vector3 start, Vector3 v, float interval, int level)
-			{
-				for (float time = interval; time < (level == 0 ? 1.5f : 1.0f); time += interval)
-					predictions.Enqueue(new Prediction { Position = start + (v * time) + (time * time * 0.5f * main.Space.ForceUpdater.Gravity), Time = time, Level = level });
-			};
-
-			Func<Queue<Prediction>, float, Vector3> startSlowMo = delegate(Queue<Prediction> predictions, float interval)
-			{
-				// Go into slow-mo and show block possibilities
-				player.SlowMotion.Value = true;
-
-				clearBlockPossibilities();
-
-				Vector3 startPosition = transform.Position + new Vector3(0, (player.Character.Height * -0.5f) - player.Character.SupportHeight, 0);
-
-				Vector3 straightAhead = Matrix.CreateRotationY(rotation).Forward * -player.Character.MaxSpeed;
-
-				Vector3 velocity = player.Character.LinearVelocity;
-				if (velocity.Length() < player.Character.MaxSpeed * 0.25f)
-					velocity += straightAhead * 0.5f;
-
-				predictJump(predictions, startPosition, velocity, interval, 0);
-
-				Vector3 jumpVelocity = velocity;
-				jumpVelocity.Y = player.Character.JumpSpeed;
-
-				return jumpVelocity;
-			};
-
-			Func<float> getPredictionInterval = delegate()
-			{
-				// Interval is the time in seconds between locations where we will check for buildable platforms
-				return 0.3f * (8.0f / Math.Max(5.0f, player.Character.LinearVelocity.Value.Length()));
-			};
-
 			Action<Vector3> vaultDown = delegate(Vector3 forward)
 			{
 				const float vaultVerticalSpeed = -8.0f;
@@ -1726,29 +1425,8 @@ namespace Lemma.Factories
 				// Also don't try anything if we're crouched or in the middle of vaulting
 				if (vaultMover == null && !jump(false, false) && player.EnableSlowMotion && !player.Character.IsSupported)
 				{
-					float interval = getPredictionInterval();
-
-					Queue<Prediction> predictions = new Queue<Prediction>();
-					Vector3 jumpVelocity = startSlowMo(predictions, interval);
-
-					float[] lastPredictionHit = new float[] { 0.0f, 0.0f };
-
-					while (predictions.Count > 0)
-					{
-						Prediction prediction = predictions.Dequeue();
-
-						if (prediction.Time > lastPredictionHit[prediction.Level] + (interval * 1.5f))
-						{
-							BlockPossibility possibility = findPlatform(prediction.Position);
-							if (possibility != null)
-							{
-								lastPredictionHit[prediction.Level] = prediction.Time;
-								addBlockPossibility(possibility);
-								if (prediction.Level == 0)
-									predictJump(predictions, prediction.Position, jumpVelocity, interval, prediction.Level + 1);
-							}
-						}
-					}
+					player.SlowMotion.Value = true;
+					predictor.PredictPlatforms();
 				}
 			});
 
@@ -1780,22 +1458,8 @@ namespace Lemma.Factories
 
 				if (!vaulted && !wallRan && !player.Character.IsSupported && player.EnableSlowMotion)
 				{
-					// Predict block possibilities
-					Queue<Prediction> predictions = new Queue<Prediction>();
-					startSlowMo(predictions, getPredictionInterval());
-					Matrix rotationMatrix = Matrix.CreateRotationY(rotation);
-					Vector2 direction = new Vector2(-rotationMatrix.Forward.X, -rotationMatrix.Forward.Z);
-
-					while (predictions.Count > 0)
-					{
-						Prediction prediction = predictions.Dequeue();
-						BlockPossibility possibility = findWall(prediction.Position, direction);
-						if (possibility != null)
-						{
-							addBlockPossibility(possibility);
-							break;
-						}
-					}
+					player.SlowMotion.Value = true;
+					predictor.PredictWalls();
 				}
 			});
 
@@ -1889,7 +1553,7 @@ namespace Lemma.Factories
 					else
 					{
 						// Check for block possibilities
-						foreach (BlockPossibility block in blockPossibilities.Values.SelectMany(x => x))
+						foreach (BlockPredictor.Possibility block in predictor.AllPossibilities)
 						{
 							bool first = true;
 							foreach (Map.Coordinate coord in block.Map.Rasterize(playerPos + Vector3.Up * 2.0f, playerPos + (Vector3.Down * (player.Character.Height + 3.0f))))
@@ -1898,7 +1562,7 @@ namespace Lemma.Factories
 								{
 									if (first)
 										break; // If the top coord is intersecting the possible block, we're too far down into the block. Need to be at the top.
-									instantiateBlockPossibility(block);
+									predictor.InstantiatePossibility(block);
 									instantiatedBlockPossibility = true;
 									floorMap = block.Map;
 									floorCoordinate = coord;
