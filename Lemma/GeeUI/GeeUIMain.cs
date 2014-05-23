@@ -5,6 +5,7 @@ using ComponentBind;
 using Lemma;
 using Lemma.Components;
 using Lemma.GeeUI;
+using Lemma.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -64,6 +65,9 @@ namespace GeeUI
 		public SpriteBatch Batch;
 
 		public RasterizerState RasterizerState;
+
+		private int LastScrollValue = 0;
+		private const int OneScrollValue = 120;
 
 		public Property<int> DrawOrder { get; private set; }
 
@@ -177,8 +181,36 @@ namespace GeeUI
 			}, MouseButton.Left);
 			InputManager.BindMouse(() => HandleMouseMovement(RootView, InputManager.GetMousePos()), MouseButton.Movement);
 
+			InputManager.BindMouse(() =>
+			{
+				int newScroll = _inputManager.GetScrollValue();
+				int delta = newScroll - LastScrollValue;
+				int numTimes = (delta / OneScrollValue);
+				HandleScroll(RootView, InputManager.GetMousePos(), numTimes);
+				LastScrollValue = newScroll;
+			}, MouseButton.Scroll);
+
 			this.RasterizerState = new RasterizerState() { ScissorTestEnable = true };
 
+		}
+
+		internal void HandleScroll(View view, Point mousePos, int scrollDelta)
+		{
+			if (!view.Active)
+				return;
+
+			View[] sortedChildren = view.Children;
+			Array.Sort(sortedChildren, ViewDepthComparer.CompareDepths);
+			bool didLower = false;
+			foreach (View child in sortedChildren)
+			{
+				if (!child.AbsoluteBoundBox.Contains(mousePos) || !child.Active) continue;
+				HandleScroll(child, mousePos, scrollDelta);
+				didLower = true;
+				break;
+			}
+			if (didLower) return;
+			view.OnMScroll(ConversionManager.PtoV(mousePos), scrollDelta);
 		}
 
 		internal void HandleClick(View view, Point mousePos)
@@ -247,7 +279,7 @@ namespace GeeUI
 
 		public void Draw(SpriteBatch spriteBatch)
 		{
-			DrawChildren(RootView, spriteBatch);
+			DrawChildren(RootView, spriteBatch, RootView.AbsoluteBoundBox);
 		}
 
 		internal void UpdateView(View toUpdate, float dt)
@@ -261,25 +293,80 @@ namespace GeeUI
 			}
 		}
 
-		internal void DrawChildren(View toDrawParent, SpriteBatch spriteBatch)
+		internal Rectangle CorrectScissor(Rectangle scissor, Point screenSize)
+		{
+			if (scissor.Right > screenSize.X)
+				scissor.Width -= (scissor.Right - screenSize.X);
+			if (scissor.Bottom > screenSize.Y)
+				scissor.Height -= (scissor.Bottom - screenSize.Y);
+			if (scissor.Top < 0)
+			{
+				int diff = scissor.Top;
+				scissor.Y -= diff;
+				scissor.Height += diff;
+			}
+			if (scissor.Left < 0)
+			{
+				int diff = scissor.Left;
+				scissor.X -= diff;
+				scissor.Width += diff;
+			}
+			return scissor;
+		}
+
+		internal Rectangle GetGoodAbsoluteScissor(View view)
+		{
+			if (view.ParentView == null)
+				return view.AbsoluteBoundBox;
+			
+			if (view.ParentView.ParentView == null)
+				return view.ParentView.AbsoluteBoundBox;
+
+			View parent = view.ParentView;
+			View grandParent = parent.ParentView;
+			if (!grandParent.AbsoluteBoundBox.Contains(parent.AbsoluteBoundBox))
+			{
+				return grandParent.AbsoluteBoundBox;
+			}
+			else if (grandParent.AbsoluteBoundBox.Intersects(parent.AbsoluteBoundBox))
+			{
+				return grandParent.AbsoluteBoundBox;
+			}
+			return GetGoodAbsoluteScissor(parent);
+		}
+
+		internal void DrawChildren(View toDrawParent, SpriteBatch spriteBatch, Rectangle origParentScissor)
 		{
 			View[] sortedChildren = toDrawParent.Children;
 			Array.Sort(sortedChildren, ViewDepthComparer.CompareDepthsInverse);
-			var parentScissor = toDrawParent.AbsoluteBoundBox;
-			foreach (View drawing in sortedChildren)
-			{
-				if (!drawing.Active) continue;
-				//Use the child's absoluteboundbox as a scissor.
-				var newScissor = drawing.AbsoluteBoundBox;
-				if (newScissor.Width > this.main.ScreenSize.Value.X) newScissor.Width = this.main.ScreenSize.Value.X;
-				if (newScissor.Height > this.main.ScreenSize.Value.Y) newScissor.Height = this.main.ScreenSize.Value.Y;
-				spriteBatch.End();
-				spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, this.RasterizerState, null, Matrix.Identity);
-				this.main.GraphicsDevice.ScissorRectangle = parentScissor;
-				drawing.Draw(spriteBatch);
-				DrawChildren(drawing, spriteBatch);
-			}
 
+			//Intersect the parent scissor with the current scissor.
+			//This will ensure that we can ONLY constrict the scissor...
+			//This solves the problem where a parent can be outside of the bounds of HIS parent, etc. etc., but his children only adhere to HIS boundbox, so they still get drawn.
+			var parentScissor = origParentScissor.Intersect(toDrawParent.AbsoluteContentBoundBox);
+			parentScissor = CorrectScissor(parentScissor, main.ScreenSize);
+			if (parentScissor.Height > 0 && parentScissor.Width > 0)
+			{
+				foreach (View drawing in sortedChildren)
+				{
+					if (!drawing.Active || parentScissor.Height <= 0 || parentScissor.Width <= 0) continue;
+
+					spriteBatch.End();
+					spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, this.RasterizerState, null, Matrix.Identity);
+					this.main.GraphicsDevice.ScissorRectangle = parentScissor;
+
+					drawing.Draw(spriteBatch);
+					if (drawing.ContentMustBeScissored)
+					{
+						var newScissor = CorrectScissor(drawing.ContentBoundBox, main.ScreenSize);
+						spriteBatch.End();
+						spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, this.RasterizerState, null, Matrix.Identity);
+						this.main.GraphicsDevice.ScissorRectangle = newScissor;
+					}
+					drawing.DrawContent(spriteBatch);
+					DrawChildren(drawing, spriteBatch, parentScissor);
+				}
+			}
 		}
 
 		internal List<View> GetAllViews(View rootView)

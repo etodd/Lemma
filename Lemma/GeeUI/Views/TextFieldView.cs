@@ -166,6 +166,8 @@ namespace GeeUI.Views
 
 			TextColor = GeeUI.TextColorDefault;
 
+			ContentMustBeScissored = true;
+
 			//Text = new Property<string>();
 			//Text.Get = () => MultiLine ? Text.Value : Text.Value.Replace("\n", "");
 		}
@@ -567,6 +569,16 @@ namespace GeeUI.Views
 			return ret;
 		}
 
+		public override void OnMScroll(Vector2 position, int scrollDelta, bool fromChild = false)
+		{
+			if (!Selected) return;
+			_offsetY -= scrollDelta;
+			if (_offsetY < 0) _offsetY = 0;
+			if (_offsetY >= TextLines.Length) _offsetY = TextLines.Length - 1;
+
+			base.OnMScroll(position, scrollDelta, fromChild);
+		}
+
 		public override void OnMClick(Vector2 mousePosition, bool fromChild = false)
 		{
 			Selected = true;
@@ -681,6 +693,21 @@ namespace GeeUI.Views
 			}
 			patch.Draw(spriteBatch, AbsolutePosition, Width, Height);
 
+			
+			base.Draw(spriteBatch);
+		}
+
+		public override void DrawContent(SpriteBatch spriteBatch)
+		{
+			var drawPos = GetDrawPosForCursorPos(_cursorX, _cursorY);
+			var xDrawPos = drawPos.X;
+			var yDrawPos = drawPos.Y;
+
+			var patch = Selected ? NinePatchSelected : NinePatchDefault;
+			if (MustRegexValidate() && Text.Length > 0)
+			{
+				patch = Selected ? (RegexValidate() ? NinePatchRegexGood : NinePatchRegexBad) : patch;
+			}
 			if (_selectionStart != _selectionEnd && _selectionEnd != new Vector2(-1))
 			{
 				var start = _selectionStart;
@@ -721,8 +748,10 @@ namespace GeeUI.Views
 			spriteBatch.DrawString(TextInputFont, OffsetText, AbsolutePosition + new Vector2(patch.LeftWidth, patch.TopHeight), TextColor);
 
 			if (_doingDelimiter && Selected && _selectionEnd == _selectionStart)
+			{
 				spriteBatch.DrawString(TextInputFont, "|", new Vector2(xDrawPos - 1, yDrawPos), TextColor);
-			base.Draw(spriteBatch);
+			}
+			base.DrawContent(spriteBatch);
 		}
 
 		public override void OnDelete()

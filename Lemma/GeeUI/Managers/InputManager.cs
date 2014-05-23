@@ -29,6 +29,11 @@ namespace GeeUI.Managers
             _toBindMouse.Add(new CodeBoundMouse(a, button, press, constant));
         }
 
+	    public int GetScrollValue()
+	    {
+		    return _scrollValue;
+	    }
+
         public static Point GetMousePos()
         {
             return new Point(_mouseState.X, _mouseState.Y);

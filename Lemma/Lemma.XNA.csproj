@@ -136,6 +136,8 @@
     <Compile Include="GeeUI\ViewLayouts\SpinViewLayout.cs" />
     <Compile Include="GeeUI\ViewLayouts\VerticalViewLayout.cs" />
     <Compile Include="GeeUI\ViewLayouts\ViewLayout.cs" />
+    <Compile Include="GeeUI\Views\ListView.cs" />
+    <Compile Include="GeeUI\Views\EmptyView.cs" />
     <Compile Include="GeeUI\Views\ButtonView.cs" />
     <Compile Include="GeeUI\Views\CheckBoxView.cs" />
     <Compile Include="GeeUI\Views\ImageView.cs" />
@@ -314,10 +316,6 @@
     <ProjectReference Include="..\Excel\Excel.csproj">
       <Project>{4CB0690E-3E7A-497C-9116-D52024F63195}</Project>
       <Name>Excel</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GeeUI\GeeUI.csproj">
-      <Project>{ae45ecf5-3362-4886-af88-c6f81a5b9de7}</Project>
-      <Name>GeeUI</Name>
     </ProjectReference>
     <ProjectReference Include="..\Newtonsoft.Json\Newtonsoft.Json.Net40.csproj">
       <Project>{A9AE40FF-1A21-414A-9FE7-3BE13644CC6D}</Project>

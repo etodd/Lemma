@@ -25,10 +25,11 @@ namespace GeeUI.Views
 		public int ChildrenDepth;
 		public int ThisDepth;
 
-		public bool IgnoreParentBounds;
+		public bool IgnoreParentBounds = true;
 		public bool Selected;
 		public bool Active = true;
 		public bool EnabledScissor = true;
+		public bool ContentMustBeScissored = false;
 
 		public bool EnforceRootAttachment = true;
 
@@ -333,8 +334,13 @@ namespace GeeUI.Views
 		public virtual void OnDelete()
 		{
 			Active = false;
-			foreach(var child in Children)
+			foreach (var child in Children)
 				child.OnDelete();
+		}
+
+		public virtual void OnMScroll(Vector2 position, int scrollDelta, bool fromChild = false)
+		{
+			if (ParentView != null) ParentView.OnMScroll(position, scrollDelta, true);
 		}
 
 		public virtual void OnMClick(Vector2 position, bool fromChild = false)
@@ -407,6 +413,15 @@ namespace GeeUI.Views
 		{
 			if (PostDraw != null)
 				PostDraw();
+		}
+
+		/// <summary>
+		/// This will essentially cause the view to draw the things that should be scissored to its own bounds.
+		/// </summary>
+		/// <param name="spriteBatch"></param>
+		public virtual void DrawContent(SpriteBatch spriteBatch)
+		{
+			
 		}
 
 		#endregion
