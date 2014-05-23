@@ -28,6 +28,7 @@ namespace GeeUI.Views
 		public bool IgnoreParentBounds;
 		public bool Selected;
 		public bool Active = true;
+		public bool EnabledScissor = true;
 
 		public Action<float> PostUpdate = null;
 		public Action PostDraw = null;

@@ -742,7 +742,7 @@ namespace Lemma
 
 				this.RenderTarget = null;
 			}
-			SpriteBatch GeeUISpriteBatch = new SpriteBatch(this.GraphicsDevice);
+			//SpriteBatch GeeUISpriteBatch = new SpriteBatch(this.GraphicsDevice);
 			//GeeUISpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
 			//GeeUI.GeeUI.Draw(GeeUISpriteBatch);
 			//GeeUISpriteBatch.End();

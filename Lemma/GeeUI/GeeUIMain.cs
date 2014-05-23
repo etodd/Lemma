@@ -27,7 +27,7 @@ namespace GeeUI
 		public static Effect CircleShader;
 
 		public View RootView;
-		
+
 		internal Game TheGame;
 
 		public Color TextColorDefault = Color.Black;
@@ -36,22 +36,22 @@ namespace GeeUI
 		public static NinePatch NinePatchTextFieldSelected = new NinePatch();
 		public static NinePatch NinePatchTextFieldRight = new NinePatch();
 		public static NinePatch NinePatchTextFieldWrong = new NinePatch();
-			    
+
 		public static NinePatch NinePatchBtnDefault = new NinePatch();
 		public static NinePatch NinePatchBtnHover = new NinePatch();
 		public static NinePatch NinePatchBtnClicked = new NinePatch();
-			    
+
 		public static NinePatch NinePatchWindowSelected = new NinePatch();
 		public static NinePatch NinePatchWindowUnselected = new NinePatch();
-			    
+
 		public static NinePatch NinePatchPanelSelected = new NinePatch();
 		public static NinePatch NinePatchPanelUnselected = new NinePatch();
-			    
+
 		public static Texture2D TextureCheckBoxDefault;
 		public static Texture2D TextureCheckBoxSelected;
 		public static Texture2D TextureCheckBoxDefaultChecked;
 		public static Texture2D TextureCheckBoxSelectedChecked;
-			    
+
 		public static NinePatch NinePatchTabDefault = new NinePatch();
 		public static NinePatch NinePatchTabSelected = new NinePatch();
 
@@ -62,6 +62,8 @@ namespace GeeUI
 		private InputManager _inputManager = new InputManager();
 
 		public SpriteBatch Batch;
+
+		public RasterizerState RasterizerState;
 
 		public Property<int> DrawOrder { get; private set; }
 
@@ -108,7 +110,7 @@ namespace GeeUI
 
 		public void Initialize(Game theGame)
 		{
-			this.DrawOrder = new Property<int>(){Editable = false, Value = 0};
+			this.DrawOrder = new Property<int>() { Editable = false, Value = 0 };
 
 			TheGame = theGame;
 			White = new Texture2D(theGame.GraphicsDevice, 1, 1);
@@ -175,7 +177,8 @@ namespace GeeUI
 			}, MouseButton.Left);
 			InputManager.BindMouse(() => HandleMouseMovement(RootView, InputManager.GetMousePos()), MouseButton.Movement);
 
-			
+			this.RasterizerState = new RasterizerState() { ScissorTestEnable = true };
+
 		}
 
 		internal void HandleClick(View view, Point mousePos)
@@ -244,7 +247,7 @@ namespace GeeUI
 
 		public void Draw(SpriteBatch spriteBatch)
 		{
-			DrawView(RootView, spriteBatch);
+			DrawChildren(RootView, spriteBatch);
 		}
 
 		internal void UpdateView(View toUpdate, float dt)
@@ -258,16 +261,25 @@ namespace GeeUI
 			}
 		}
 
-		internal void DrawView(View toDraw, SpriteBatch spriteBatch)
+		internal void DrawChildren(View toDrawParent, SpriteBatch spriteBatch)
 		{
-			View[] sortedChildren = toDraw.Children;
+			View[] sortedChildren = toDrawParent.Children;
 			Array.Sort(sortedChildren, ViewDepthComparer.CompareDepthsInverse);
+			var parentScissor = toDrawParent.AbsoluteBoundBox;
 			foreach (View drawing in sortedChildren)
 			{
 				if (!drawing.Active) continue;
+				//Use the child's absoluteboundbox as a scissor.
+				var newScissor = drawing.AbsoluteBoundBox;
+				if (newScissor.Width > this.main.ScreenSize.Value.X) newScissor.Width = this.main.ScreenSize.Value.X;
+				if (newScissor.Height > this.main.ScreenSize.Value.Y) newScissor.Height = this.main.ScreenSize.Value.Y;
+				spriteBatch.End();
+				spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, this.RasterizerState, null, Matrix.Identity);
+				this.main.GraphicsDevice.ScissorRectangle = parentScissor;
 				drawing.Draw(spriteBatch);
-				DrawView(drawing, spriteBatch);
+				DrawChildren(drawing, spriteBatch);
 			}
+
 		}
 
 		internal List<View> GetAllViews(View rootView)
@@ -300,12 +312,14 @@ namespace GeeUI
 		{
 			this.Batch = new SpriteBatch(this.main.GraphicsDevice);
 		}
-		
+
 		public void DrawNonPostProcessed(GameTime time, RenderParameters parameters)
 		{
-			Batch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
+			var originalRasterizer = main.GraphicsDevice.RasterizerState;
+			Batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, this.RasterizerState, null, Matrix.Identity);
 			Draw(Batch);
 			Batch.End();
+			main.GraphicsDevice.RasterizerState = originalRasterizer;
 		}
 
 		public override void Awake()

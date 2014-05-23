@@ -35,7 +35,7 @@ namespace Lemma.GInterfaces
 				ConsoleFont = main.Content.Load<SpriteFont>("ConsoleFont");
 				int width = main.ScreenSize.Value.X - 6;
 				int textBoxWidth = width - 0;
-				RootConsoleView = new View(main.GeeUI, main.GeeUI.RootView) { Width = width, Height = 210 };
+				RootConsoleView = new View(main.GeeUI, main.GeeUI.RootView) { Width = width + 6, Height = 210 };
 				ConsoleLogView = new TextFieldView(main.GeeUI, RootConsoleView, new Vector2(0, 0), ConsoleFont) { Width = textBoxWidth, Height = 175, Editable = false, IgnoreParentBounds = true};
 				ConsoleInputView = new TextFieldView(main.GeeUI, RootConsoleView, new Vector2(0, 0), MainFont) { Width = textBoxWidth, Height = 20, MultiLine = false, OnTextSubmitted = OnTextSubmitted, IgnoreParentBounds = true };
 
