@@ -80,6 +80,67 @@ namespace Lemma.Console
 			Console.Instance.main.ConsoleUI.LogText(input);
 		}
 
+		[AutoConCommand("find", "Finds console commands and variables")]
+		public void FindConsoleStuff(string name, bool startsWith = false, bool endsWith = false)
+		{
+			foreach (var command in Commands)
+			{
+				bool print = false;
+				if (startsWith)
+				{
+					print = command.Name.Value.StartsWith(name);
+				}
+				else if (endsWith)
+				{
+					print = command.Name.Value.EndsWith(name);
+				}
+				else
+				{
+					print = command.Name.Value.Contains(name);
+				}
+				if (print)
+				{
+					PrintConCommandDescription(command);
+				}
+			}
+
+			foreach (var convar in ConVars)
+			{
+				bool print = false;
+				if (startsWith)
+				{
+					print = convar.Name.Value.StartsWith(name);
+				}
+				else if (endsWith)
+				{
+					print = convar.Name.Value.EndsWith(name);
+				}
+				else
+				{
+					print = convar.Name.Value.Contains(name);
+				}
+				if (print)
+				{
+					Log(convar.Name + ": " + convar.Description + " (Value: " + convar.GetCastedValue() + " " +
+						convar.OutCastConstraint.ToString().Replace("System.", "") + ")");
+				}
+			}
+		}
+
+		[AutoConCommand("list", "Lists all console commands and variables")]
+		public void ListAllConsoleStuff()
+		{
+			foreach (var command in Commands)
+			{
+				PrintConCommandDescription(command);
+			}
+			foreach (var convar in ConVars)
+			{
+				Log(convar.Name + ": " + convar.Description + " (Value: " + convar.GetCastedValue() + " " +
+						convar.OutCastConstraint.ToString().Replace("System.", "") + ")");
+			}
+		}
+
 		public void PrintConCommandDescription(string name)
 		{
 			PrintConCommandDescription(GetConCommand(name));
@@ -106,8 +167,8 @@ namespace Lemma.Console
 						print += type + " " + arg.Name;
 					}
 				}
+				print += " )";
 			}
-			print += " )";
 			Log(print);
 		}
 
@@ -230,12 +291,12 @@ namespace Lemma.Console
 			}
 		}
 
-		private static void CallMethod(MethodInfo member, ConCommand.ArgCollection collection)
+		private static void CallMethod(MethodInfo member, ConCommand.ArgCollection collection, object instance = null)
 		{
 			List<object> invokeParams = new List<object>();
 			foreach (var o in collection.ParsedArgs)
 				invokeParams.Add(o.Value);
-			member.Invoke(null, invokeParams.ToArray());
+			member.Invoke(instance, invokeParams.ToArray());
 		}
 
 		public static void BindMethod(MethodInfo member, AutoConCommand command, object instance = null)
@@ -270,7 +331,7 @@ namespace Lemma.Console
 					RemoveConCommand(command.ConVarName);
 					return;
 				}
-				CallMethod(member, collection);
+				CallMethod(member, collection, instance);
 			}, args.ToArray()));
 		}
 

@@ -331,6 +331,7 @@ namespace Lemma
 				this.AddComponent(Console);
 
 				Lemma.Console.Console.BindType(null, this);
+				Lemma.Console.Console.BindType(null, Console);
 
 				// Initialize Wwise
 				AkGlobalSoundEngineInitializer initializer = new AkGlobalSoundEngineInitializer(Path.Combine(this.Content.RootDirectory, "Wwise"));

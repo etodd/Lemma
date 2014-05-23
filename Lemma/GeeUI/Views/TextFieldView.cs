@@ -747,7 +747,7 @@ namespace GeeUI.Views
 
 			spriteBatch.DrawString(TextInputFont, OffsetText, AbsolutePosition + new Vector2(patch.LeftWidth, patch.TopHeight), TextColor);
 
-			if (_doingDelimiter && Selected && _selectionEnd == _selectionStart)
+			if (_doingDelimiter && Selected && _selectionEnd == _selectionStart && Editable)
 			{
 				spriteBatch.DrawString(TextInputFont, "|", new Vector2(xDrawPos - 1, yDrawPos), TextColor);
 			}
