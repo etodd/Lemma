@@ -58,9 +58,6 @@ namespace Lemma.Factories
 			input.EnabledWhenPaused = false;
 			entity.Add("Input", input);
 
-			AnimationController anim = entity.GetOrCreate<AnimationController>();
-			Player player = entity.GetOrCreate<Player>("Player");
-
 			AnimatedModel model = entity.GetOrCreate<AnimatedModel>("Model");
 			model.Serialize = false;
 			AnimatedModel firstPersonModel = entity.GetOrCreate<AnimatedModel>("FirstPersonModel");
@@ -74,14 +71,8 @@ namespace Lemma.Factories
 			firstPersonModel.Filename.Value = "Models\\joan-firstperson";
 			firstPersonModel.CullBoundingBox.Value = false;
 
-			Updater update = new Updater();
-			update.EnabledInEditMode = false;
-			entity.Add(update);
-
-			Property<Vector3> floor = new Property<Vector3>();
-			transform.Add(new Binding<Vector3>(floor, () => transform.Position + new Vector3(0, player.Character.Height * -0.5f, 0), transform.Position, player.Character.Height));
-			AkGameObjectTracker.Attach(entity, floor);
-
+			AnimationController anim = entity.GetOrCreate<AnimationController>("AnimationController");
+			Player player = entity.GetOrCreate<Player>("Player");
 			RotationController rotation = entity.GetOrCreate<RotationController>("Rotation");
 			BlockPredictor predictor = entity.GetOrCreate<BlockPredictor>("BlockPredictor");
 			Jump jump = entity.GetOrCreate<Jump>("Jump");
@@ -91,6 +82,10 @@ namespace Lemma.Factories
 			VoxelTools voxelTools = entity.GetOrCreate<VoxelTools>("VoxelTools");
 			Footsteps footsteps = entity.GetOrCreate<Footsteps>("Footsteps");
 			FallDamage fallDamage = entity.GetOrCreate<FallDamage>("FallDamage");
+
+			Property<Vector3> floor = new Property<Vector3>();
+			transform.Add(new Binding<Vector3>(floor, () => transform.Position + new Vector3(0, player.Character.Height * -0.5f, 0), transform.Position, player.Character.Height));
+			AkGameObjectTracker.Attach(entity, floor);
 
 			predictor.Add(new Binding<Vector3>(predictor.FootPosition, floor));
 			predictor.Add(new Binding<Vector3>(predictor.LinearVelocity, player.Character.LinearVelocity));
