@@ -21,8 +21,8 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(entity, main);
 			entity.GetOrCreate<Transform>("Transform").Editable = true;
+			this.SetMain(entity, main);
 
 			Command detach = new Command
 			{

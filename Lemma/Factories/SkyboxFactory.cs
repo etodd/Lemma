@@ -28,12 +28,12 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
+
 			ModelAlpha skybox = entity.Get<ModelAlpha>("Skybox");
 			skybox.MapContent.Value = true;
 			base.Bind(entity, main, creating);
 			entity.CannotSuspendByDistance = true;
-
-			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			skybox.DisableCulling.Value = true;
 			skybox.CullBoundingBox.Value = false;

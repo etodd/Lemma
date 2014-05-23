@@ -40,8 +40,8 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(entity, main);
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
+			this.SetMain(entity, main);
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
 			Property<string> nextMap = entity.GetOrMakeProperty<string>("NextMap", true);
 			Property<string> startSpawnPoint = entity.GetOrMakeProperty<string>("SpawnPoint", true);

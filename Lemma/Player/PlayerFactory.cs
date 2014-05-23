@@ -53,6 +53,8 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
+
 			entity.CannotSuspend = true;
 
 			PlayerFactory.Instance = entity;
@@ -65,7 +67,6 @@ namespace Lemma.Factories
 
 			AnimationController anim = entity.GetOrCreate<AnimationController>();
 			Player player = entity.GetOrCreate<Player>("Player");
-			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			AnimatedModel model = entity.GetOrCreate<AnimatedModel>("Model");
 			model.Serialize = false;

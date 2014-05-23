@@ -23,8 +23,8 @@ namespace Lemma.Factories
 		{
 			AnimatedModel model = entity.GetOrCreate<AnimatedModel>("Model");
 			model.MapContent.Value = true;
-			this.SetMain(entity, main);
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
+			this.SetMain(entity, main);
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 			Property<string> animation = entity.GetOrMakeProperty<string>("Animation", true);
 			Property<bool> loop = entity.GetOrMakeProperty<bool>("Loop", true);

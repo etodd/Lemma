@@ -37,6 +37,8 @@ namespace GeeUI.Views
 		public NinePatch NinePatchRegexGood;
 		public NinePatch NinePatchRegexBad;
 
+		public Color TextColor = GeeUI.TextColorDefault;
+
 		public SpriteFont TextInputFont;
 
 		public bool MultiLine = true;
@@ -715,10 +717,10 @@ namespace GeeUI.Views
 				}
 			}
 
-			spriteBatch.DrawString(TextInputFont, OffsetText, AbsolutePosition + new Vector2(patch.LeftWidth, patch.TopHeight), Color.Black);
+			spriteBatch.DrawString(TextInputFont, OffsetText, AbsolutePosition + new Vector2(patch.LeftWidth, patch.TopHeight), TextColor);
 
 			if (_doingDelimiter && Selected && _selectionEnd == _selectionStart)
-				spriteBatch.DrawString(TextInputFont, "|", new Vector2(xDrawPos - 1, yDrawPos), Color.Black);
+				spriteBatch.DrawString(TextInputFont, "|", new Vector2(xDrawPos - 1, yDrawPos), TextColor);
 			base.Draw(spriteBatch);
 		}
 	}

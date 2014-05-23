@@ -24,9 +24,9 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			this.SetMain(entity, main);
 			entity.CannotSuspendByDistance = true;
-			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			transform.Editable = true;
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
 				MapAttachable.MakeAttachable(entity, main);

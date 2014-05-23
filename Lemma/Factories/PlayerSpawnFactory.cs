@@ -27,6 +27,8 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
+
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
 				MapAttachable.MakeAttachable(entity, main);
 
@@ -50,8 +52,6 @@ namespace Lemma.Factories
 					ShowInEditor = true,
 				});
 			}
-
-			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			PlayerSpawn spawn = entity.GetOrCreate<PlayerSpawn>("PlayerSpawn");
 			spawn.Add(new TwoWayBinding<Vector3>(transform.Position, spawn.Position));

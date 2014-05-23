@@ -23,8 +23,8 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(entity, main);
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
+			this.SetMain(entity, main);
 			ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("ParticleEmitter");
 			emitter.Add(new Binding<Vector3>(emitter.Position, transform.Position));
 

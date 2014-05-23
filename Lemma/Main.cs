@@ -223,6 +223,8 @@ namespace Lemma
 
 		public Main()
 		{
+			GeeUI.GeeUI.TextColorDefault = Color.White;
+
 			Factory<Main>.Initialize();
 
 #if STEAMWORKS
@@ -317,7 +319,6 @@ namespace Lemma
 		{
 			if (this.firstLoadContentCall)
 			{
-
 				GeeUI.GeeUI.Initialize(this);
 
 				this.ConsoleUI = new ConsoleUI();

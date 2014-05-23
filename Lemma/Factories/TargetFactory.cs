@@ -23,13 +23,13 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");
-
-			base.Bind(entity, main, creating);
-
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			transform.Editable = true;
 			transform.Enabled.Editable = true;
+
+			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");
+
+			base.Bind(entity, main, creating);
 
 			TargetFactory.Positions.Add(transform);
 			entity.Add(new CommandBinding(entity.Delete, delegate()

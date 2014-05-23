@@ -23,9 +23,9 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
 			this.SetMain(entity, main);
-			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
 				MapAttachable.MakeAttachable(entity, main);

@@ -22,9 +22,9 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(entity, main);
-
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
+
+			this.SetMain(entity, main);
 
 			Property<bool> is3D = entity.GetOrMakeProperty<bool>("Is3D", true);
 

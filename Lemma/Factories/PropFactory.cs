@@ -23,8 +23,8 @@ namespace Lemma.Factories
 		{
 			Model model = entity.GetOrCreate<Model>("Model");
 			model.MapContent.Value = true;
-			this.SetMain(entity, main);
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
+			this.SetMain(entity, main);
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
