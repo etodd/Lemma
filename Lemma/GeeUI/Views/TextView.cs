@@ -10,7 +10,7 @@ namespace GeeUI.Views
 
 		public string Text;
 
-		public Color TextColor = GeeUI.TextColorDefault;
+		public Color TextColor;
 
 		public TextJustification TextJustification = TextJustification.Left;
 
@@ -78,12 +78,13 @@ namespace GeeUI.Views
 			}
 		}
 
-		public TextView(View rootView, string text, Vector2 position, SpriteFont font)
-			: base(rootView)
+		public TextView(GeeUIMain GeeUI, View rootView, string text, Vector2 position, SpriteFont font)
+			: base(GeeUI, rootView)
 		{
 			Text = text;
 			Position = position;
 			Font = font;
+			TextColor = GeeUI.TextColorDefault;
 		}
 
 		public override void OnMClick(Vector2 position, bool fromChild = false)

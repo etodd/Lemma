@@ -37,8 +37,8 @@ namespace GeeUI.Views
         }
 
 
-        public ImageView(View rootView, Texture2D texture)
-            : base(rootView)
+		public ImageView(GeeUIMain GeeUI, View rootView, Texture2D texture)
+			: base(GeeUI, rootView)
         {
             Texture = texture;
             Width = texture.Width;

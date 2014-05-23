@@ -9,13 +9,13 @@ namespace GeeUI.Managers
 {
     public static class ConversionManager
     {
-        public static Texture2D BitmapToTexture(Bitmap bmp)
+        public static Texture2D BitmapToTexture(Bitmap bmp, GraphicsDevice gd)
         {
             using (var s = new MemoryStream())
             {
                 bmp.Save(s, System.Drawing.Imaging.ImageFormat.Png);
                 s.Seek(0, SeekOrigin.Begin);
-                Texture2D tx = Texture2D.FromStream(GeeUI.TheGame.GraphicsDevice, s);
+                Texture2D tx = Texture2D.FromStream(gd, s);
                 return tx;
             }
         }

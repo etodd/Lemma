@@ -68,25 +68,26 @@ namespace GeeUI.Views
             }
         }
 
-        public ButtonView(View rootView, string text, Vector2 position, SpriteFont font)
-            : base(rootView)
+		public ButtonView(GeeUIMain GeeUI, View rootView, string text, Vector2 position, SpriteFont font)
+            : base(GeeUI, rootView)
         {
-            NinePatchNormal = GeeUI.NinePatchBtnDefault;
-            NinePatchHover = GeeUI.NinePatchBtnHover;
-            NinePatchClicked = GeeUI.NinePatchBtnClicked;
+            NinePatchNormal = GeeUIMain.NinePatchBtnDefault;
+            NinePatchHover = GeeUIMain.NinePatchBtnHover;
+            NinePatchClicked = GeeUIMain.NinePatchBtnClicked;
             Position = position;
 
             //Make the TextView for the text
-            new TextView(this, text, new Vector2(0, 0), font) {TextJustification = TextJustification.Center};
+            new TextView(this.ParentGeeUI, this, text, new Vector2(0, 0), font) {TextJustification = TextJustification.Center};
             Width = (int)font.MeasureString(text).X + NinePatchNormal.LeftWidth + NinePatchNormal.RightWidth;
             Height = (int) font.MeasureString(text).Y + NinePatchNormal.TopHeight + NinePatchNormal.BottomHeight;
         }
 
-        public ButtonView(View rootview, View contentView, Vector2 position) : base(rootview)
+		public ButtonView(GeeUIMain GeeUI, View rootview, View contentView, Vector2 position)
+			: base(GeeUI, rootview)
         {
-            NinePatchNormal = GeeUI.NinePatchBtnDefault;
-            NinePatchHover = GeeUI.NinePatchBtnHover;
-            NinePatchClicked = GeeUI.NinePatchBtnClicked;
+            NinePatchNormal = GeeUIMain.NinePatchBtnDefault;
+            NinePatchHover = GeeUIMain.NinePatchBtnHover;
+            NinePatchClicked = GeeUIMain.NinePatchBtnClicked;
             Position = position;
             ButtonContentview = contentView;
         }

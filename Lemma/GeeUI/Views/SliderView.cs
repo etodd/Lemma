@@ -71,12 +71,12 @@ namespace GeeUI.Views
             }
         }
 
-        public SliderView(View rootView, Vector2 position, int min, int max)
-            : base(rootView)
+		public SliderView(GeeUIMain GeeUI, View rootView, Vector2 position, int min, int max)
+            : base(GeeUI, rootView)
         {
-            SliderRange = GeeUI.NinePatchSliderRange;
-            SliderDefault = GeeUI.TextureSliderDefault;
-            SliderSelected = GeeUI.TextureSliderSelected;
+            SliderRange = GeeUIMain.NinePatchSliderRange;
+            SliderDefault = GeeUIMain.TextureSliderDefault;
+            SliderSelected = GeeUIMain.TextureSliderSelected;
 
             _min = min;
             _max = max;

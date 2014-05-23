@@ -43,11 +43,11 @@ namespace GeeUI.Views
 			}
 		}
 
-		public PanelView(View rootView, Vector2 position)
-			: base(rootView)
+		public PanelView(GeeUIMain GeeUI, View rootView, Vector2 position)
+			: base(GeeUI, rootView)
 		{
-			SelectedNinepatch = GeeUI.NinePatchPanelSelected;
-			UnselectedNinepatch = GeeUI.NinePatchPanelUnselected;
+			SelectedNinepatch = GeeUIMain.NinePatchPanelSelected;
+			UnselectedNinepatch = GeeUIMain.NinePatchPanelUnselected;
 			Position = position;
 		}
 

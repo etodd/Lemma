@@ -33,7 +33,7 @@ namespace GeeUI.Managers
             float yd = midpoint.Y - point2.Y;
             double rotation = Math.Atan2(yd, xd);
             float dist = Vector2.Distance(midpoint, point2) * 2;
-            Texture2D t = GeeUI.White;
+            Texture2D t = GeeUIMain.White;
             c.A = alpha;
             b.Draw(t, point2, null, c, (float)rotation, Vector2.Zero, new Vector2(dist, 1), SpriteEffects.None, 0);
         }
@@ -63,7 +63,7 @@ namespace GeeUI.Managers
             }
             float height = topLeft.Y - bottomRight.Y;
             float width = topLeft.X - bottomRight.X;
-            Texture2D t = GeeUI.White;
+            Texture2D t = GeeUIMain.White;
             c.A = alpha;
             Vector2 pos = bottomRight;
             b.Draw(t, pos, null, c, rotation, Vector2.Zero, new Vector2(width, height), SpriteEffects.None, 0);
@@ -75,7 +75,7 @@ namespace GeeUI.Managers
 
         public static void DrawCircle(Vector2 position, float radius, Color c, Color cOutline, SpriteBatch b, byte alpha = 255, byte cutoff = 0)
         {
-            Effect circleShader = GeeUI.CircleShader;
+            Effect circleShader = GeeUIMain.CircleShader;
 
             b.End();
             b.Begin(0, BlendState.NonPremultiplied, null, null, null, circleShader);
@@ -85,7 +85,7 @@ namespace GeeUI.Managers
             circleShader.Parameters["aspect"].SetValue(diameter / diameter);
             circleShader.Parameters["cutoff"].SetValue(cutoff);
             circleShader.Parameters["outlineColor"].SetValue(new float[] { (float)cOutline.R / 255, (float)cOutline.G / 255, (float)cOutline.B / 255, (float)cOutline.A / 255 });
-            Texture2D t = GeeUI.White;
+            Texture2D t = GeeUIMain.White;
             c.A = alpha;
             b.Draw(t, position, null, c, 0f, Vector2.Zero, diameter, SpriteEffects.None, 0);
             b.End();

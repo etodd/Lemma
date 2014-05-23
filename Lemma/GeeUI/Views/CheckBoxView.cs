@@ -85,18 +85,18 @@ namespace GeeUI.Views
             }
         }
 
-        public CheckBoxView(View rootView, Vector2 position, string label, SpriteFont labelFont)
-            : base(rootView)
+		public CheckBoxView(GeeUIMain GeeUI, View rootView, Vector2 position, string label, SpriteFont labelFont)
+            : base(GeeUI, rootView)
         {
             Position = position;
             NumChildrenAllowed = 1;
 
-            new TextView(this, label, Vector2.Zero, labelFont);
+            new TextView(GeeUI, this, label, Vector2.Zero, labelFont);
 
-            TextureChecked = GeeUI.TextureCheckBoxDefaultChecked;
-            TextureCheckedSelected = GeeUI.TextureCheckBoxSelectedChecked;
-            TextureDefault = GeeUI.TextureCheckBoxDefault;
-            TextureDefaultSelected = GeeUI.TextureCheckBoxSelected;
+            TextureChecked = GeeUIMain.TextureCheckBoxDefaultChecked;
+            TextureCheckedSelected = GeeUIMain.TextureCheckBoxSelectedChecked;
+            TextureDefault = GeeUIMain.TextureCheckBoxDefault;
+            TextureDefaultSelected = GeeUIMain.TextureCheckBoxSelected;
         }
 
         public override void OnMClick(Vector2 position, bool fromChild = false)

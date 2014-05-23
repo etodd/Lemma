@@ -51,7 +51,7 @@ namespace GeeUI.Views
 
         public TabView AddTab(string tabText, View tabChild)
         {
-            var ret = new TabView(this, new Vector2(AllTabsWidth, 0), TabFont) { TabText = tabText };
+            var ret = new TabView(ParentGeeUI, this, new Vector2(AllTabsWidth, 0), TabFont) { TabText = tabText };
             ParentView.AddChild(tabChild);
             if (ActiveTabView == null)
                 TabClicked(ret);
@@ -60,8 +60,8 @@ namespace GeeUI.Views
             return ret;
         }
 
-        public TabContainer(View rootView,  SpriteFont font)
-            : base(rootView)
+		public TabContainer(GeeUIMain GeeUI, View rootView, SpriteFont font)
+            : base(GeeUI, rootView)
         {
             Position = Vector2.Zero;
             TabFont = font;
