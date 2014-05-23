@@ -33,8 +33,8 @@ namespace GeeUI.Views
             get
             {
                 return ActiveTabView == null
-                           ? new Rectangle(X, Y, 0, 0)
-                           : new Rectangle(X, Y, Width, Height);
+                           ? new Rectangle(RealX, RealY, 0, 0)
+                           : new Rectangle(RealX, RealY, Width, Height);
             }
         }
 

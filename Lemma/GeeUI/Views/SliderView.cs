@@ -67,7 +67,7 @@ namespace GeeUI.Views
         {
             get
             {
-                return new Rectangle(X, Y, Width, (int)MathHelper.Max(SliderRange.Texture.Height, SliderDefault.Height));
+                return new Rectangle(RealX, RealY, Width, (int)MathHelper.Max(SliderRange.Texture.Height, SliderDefault.Height));
             }
         }
 

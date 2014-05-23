@@ -30,6 +30,8 @@ namespace GeeUI.Views
 		public bool Active = true;
 		public bool EnabledScissor = true;
 
+		public bool EnforceRootAttachment = true;
+
 		public Action<float> PostUpdate = null;
 		public Action PostDraw = null;
 
@@ -60,7 +62,7 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				return new Rectangle(X, Y, Width, Height);
+				return new Rectangle(RealX, RealY, Width, Height);
 			}
 		}
 
@@ -88,8 +90,8 @@ namespace GeeUI.Views
 			{
 				if (ParentView == null) return ContentBoundBox;
 				Rectangle curBB = ContentBoundBox;
-				curBB.X += AbsoluteX - X;
-				curBB.Y += AbsoluteY - Y;
+				curBB.X += AbsoluteX - RealX;
+				curBB.Y += AbsoluteY - RealY;
 				return curBB;
 			}
 		}
@@ -117,7 +119,35 @@ namespace GeeUI.Views
 			}
 		}
 
+		public int RealX
+		{
+			get
+			{
+				if (ParentView == null) return X;
+				return X - (int)ParentView.ContentOffset.X;
+			}
+		}
+
+		public int RealY
+		{
+			get
+			{
+				if (ParentView == null) return Y;
+				return Y - (int)ParentView.ContentOffset.Y;
+			}
+		}
+
 		public Vector2 Position = Vector2.Zero;
+
+		public Vector2 RealPosition
+		{
+			get
+			{
+				return new Vector2(RealX, RealY);
+			}
+		}
+
+		public Vector2 ContentOffset = Vector2.Zero;
 
 		public int AbsoluteX
 		{
@@ -137,8 +167,8 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				if (ParentView == null) return Position;
-				return Position + ParentView.AbsolutePosition;
+				if (ParentView == null) return RealPosition;
+				return RealPosition + ParentView.AbsolutePosition;
 			}
 		}
 
@@ -242,6 +272,27 @@ namespace GeeUI.Views
 			parent.AddChild(this);
 		}
 
+		private void CheckAttachmentToRoot()
+		{
+			if (!EnforceRootAttachment) return;
+
+			//We're not attached to root anymore--someone removed us from the hierarchy. We should clean up.
+			if (!AttachedToRoot(ParentView))
+			{
+				OnDelete();
+			}
+		}
+
+
+
+		private bool AttachedToRoot(View parent)
+		{
+			if (this == ParentGeeUI.RootView) return true;
+			else if (parent == ParentGeeUI.RootView) return true;
+			else if (parent == null) return false;
+			return AttachedToRoot(parent.ParentView);
+		}
+
 		#endregion
 
 		#region Child depth ordering
@@ -279,6 +330,13 @@ namespace GeeUI.Views
 
 		#region Virtual methods/events
 
+		public virtual void OnDelete()
+		{
+			Active = false;
+			foreach(var child in Children)
+				child.OnDelete();
+		}
+
 		public virtual void OnMClick(Vector2 position, bool fromChild = false)
 		{
 			if (OnMouseClick != null)
@@ -309,6 +367,9 @@ namespace GeeUI.Views
 		{
 			if (ChildrenLayout != null)
 				OrderChildren(ChildrenLayout);
+
+			CheckAttachmentToRoot();
+
 			if (ParentView == null || IgnoreParentBounds)
 			{
 				if (PostUpdate != null)

@@ -26,13 +26,6 @@ namespace GeeUI.Views
             }
         }
 
-        public override Rectangle BoundBox
-        {
-            get
-            {
-                return new Rectangle(X, Y, Width, Height);
-            }
-        }
 
         public TabHost(GeeUIMain GeeUI, View rootView, Vector2 position, SpriteFont font)
             : base(GeeUI, rootView)

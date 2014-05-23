@@ -40,14 +40,6 @@ namespace GeeUI.Views
             }
         }
 
-        public override Rectangle BoundBox
-        {
-            get
-            {
-                return new Rectangle(X, Y, Width, Height);
-            }
-        }
-
         public override Rectangle ContentBoundBox
         {
             get
@@ -55,7 +47,7 @@ namespace GeeUI.Views
                 NinePatch patch = Selected ? NinePatchSelected : NinePatchNormal;
                 Vector2 windowTextSize = WindowTextFont.MeasureString(WindowText);
                 var barHeight = (patch.TopHeight + patch.BottomHeight + windowTextSize.Y);
-                return new Rectangle(X, Y + (int)barHeight, Width, Height - (int)barHeight);
+                return new Rectangle(RealX, RealY + (int)barHeight, Width, Height - (int)barHeight);
             }
         }
 

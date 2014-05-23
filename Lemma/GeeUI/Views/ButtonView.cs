@@ -48,14 +48,6 @@ namespace GeeUI.Views
             }
         }
 
-        public override Rectangle BoundBox
-        {
-            get
-            {
-                return new Rectangle((int)Position.X, (int)Position.Y, Width, Height);
-            }
-        }
-
         public NinePatch CurrentNinepatch
         {
             get

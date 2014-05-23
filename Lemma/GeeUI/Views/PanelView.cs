@@ -30,7 +30,7 @@ namespace GeeUI.Views
 			get
 			{
 				NinePatch curPatch = Selected ? SelectedNinepatch : UnselectedNinepatch;
-				return new Rectangle((int)Position.X, (int)Position.Y, Width + ChildrenPadding + curPatch.LeftWidth + curPatch.RightWidth, Height + ChildrenPadding + curPatch.TopHeight + curPatch.BottomHeight);
+				return new Rectangle((int)RealPosition.X, (int)RealPosition.Y, Width + ChildrenPadding + curPatch.LeftWidth + curPatch.RightWidth, Height + ChildrenPadding + curPatch.TopHeight + curPatch.BottomHeight);
 			}
 		}
 
@@ -39,7 +39,7 @@ namespace GeeUI.Views
 			get
 			{
 				NinePatch curPatch = Selected ? SelectedNinepatch : UnselectedNinepatch;
-				return new Rectangle((int)Position.X + curPatch.LeftWidth + ChildrenPadding, (int)Position.Y + curPatch.TopHeight + ChildrenPadding, Width, Height);
+				return new Rectangle((int)RealPosition.X + curPatch.LeftWidth + ChildrenPadding, (int)RealPosition.Y + curPatch.TopHeight + ChildrenPadding, Width, Height);
 			}
 		}
 

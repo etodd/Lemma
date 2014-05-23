@@ -46,21 +46,12 @@ namespace GeeUI.Views
             get { return Selected ? NinePatchSelected : NinePatchDefault; }
         }
 
-        public override Rectangle BoundBox
-        {
-            get
-            {
-                return new Rectangle(X, Y,
-                        Width,
-                        Height);
-            }
-        }
 
         public override Rectangle ContentBoundBox
         {
             get
             {
-                return new Rectangle(X + CurNinepatch.LeftWidth, Y + CurNinepatch.TopHeight,
+                return new Rectangle(RealX + CurNinepatch.LeftWidth, RealY + CurNinepatch.TopHeight,
                         Width - CurNinepatch.LeftWidth - CurNinepatch.RightWidth,
                         Height - CurNinepatch.TopHeight - CurNinepatch.BottomHeight);
             }

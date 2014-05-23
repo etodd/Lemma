@@ -164,7 +164,7 @@ namespace GeeUI.Views
 			GeeUI.OnKeyPressedHandler += keyPressedHandler;
 			GeeUI.OnKeyReleasedHandler += keyReleasedHandler;
 
-			 TextColor = GeeUI.TextColorDefault;
+			TextColor = GeeUI.TextColorDefault;
 
 			//Text = new Property<string>();
 			//Text.Get = () => MultiLine ? Text.Value : Text.Value.Replace("\n", "");
@@ -723,6 +723,13 @@ namespace GeeUI.Views
 			if (_doingDelimiter && Selected && _selectionEnd == _selectionStart)
 				spriteBatch.DrawString(TextInputFont, "|", new Vector2(xDrawPos - 1, yDrawPos), TextColor);
 			base.Draw(spriteBatch);
+		}
+
+		public override void OnDelete()
+		{
+			ParentGeeUI.OnKeyPressedHandler -= keyPressedHandler;
+			ParentGeeUI.OnKeyReleasedHandler -= keyReleasedHandler;
+			base.OnDelete();
 		}
 	}
 }

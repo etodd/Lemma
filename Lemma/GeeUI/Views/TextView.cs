@@ -14,14 +14,6 @@ namespace GeeUI.Views
 
 		public TextJustification TextJustification = TextJustification.Left;
 
-		public override Rectangle BoundBox
-		{
-			get
-			{
-				return new Rectangle(X, Y, Width, Height);
-			}
-		}
-
 		private Vector2 TextOrigin
 		{
 			get

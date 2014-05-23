@@ -54,7 +54,7 @@ namespace GeeUI.Views
                 {
                     return CurTexture.Bounds;
                 }
-                return new Rectangle((int)Position.X, (int)Position.Y,
+				return new Rectangle((int)RealPosition.X, (int)RealPosition.Y,
                     CurTexture.Width + SeperationBetweenCbAndText + child.BoundBox.Width,
 
                     Math.Max(CurTexture.Height, child.BoundBox.Height));
@@ -78,8 +78,8 @@ namespace GeeUI.Views
                 View child = CheckBoxContentView;
                 if (child != null)
                 {
-                    return new Rectangle(X + CurTexture.Width + SeperationBetweenCbAndText,
-                                         Y, child.BoundBox.Width, child.BoundBox.Height);
+                    return new Rectangle(RealX + CurTexture.Width + SeperationBetweenCbAndText,
+                                         RealY, child.BoundBox.Width, child.BoundBox.Height);
                 }
                 return CurTexture.Bounds;
             }
