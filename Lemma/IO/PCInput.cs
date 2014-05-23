@@ -87,6 +87,53 @@ namespace Lemma.Components
 			rebindCommand();
 		}
 
+		public void Bind(Property<bool> destination, Property<PCInput.PCInputBinding> inputBinding)
+		{
+			Binding<bool> binding = null;
+			Binding<bool> buttonBinding = null;
+			Action rebind = delegate()
+			{
+				if (binding != null)
+					this.Remove(binding);
+				
+				if (buttonBinding != null)
+					this.Remove(buttonBinding);
+
+				PCInput.PCInputBinding ib = inputBinding;
+				if (ib.Key == Keys.None && ib.MouseButton == PCInput.MouseButton.None)
+					binding = null;
+				else
+				{
+					switch (ib.MouseButton)
+					{
+						case MouseButton.None:
+							binding = new Binding<bool>(destination, this.GetKey(ib.Key));
+							break;
+						case MouseButton.LeftMouseButton:
+							binding = new Binding<bool>(destination, this.LeftMouseButton);
+							break;
+						case MouseButton.RightMouseButton:
+							binding = new Binding<bool>(destination, this.RightMouseButton);
+							break;
+						case MouseButton.MiddleMouseButton:
+							binding = new Binding<bool>(destination, this.MiddleMouseButton);
+							break;
+					}
+					this.Add(binding);
+				}
+
+				if (ib.GamePadButton == Buttons.BigButton)
+					buttonBinding = null;
+				else
+				{
+					buttonBinding = new Binding<bool>(destination, this.GetButton(ib.GamePadButton));
+					this.Add(buttonBinding);
+				}
+			};
+			this.Add(new NotifyBinding(rebind, inputBinding));
+			rebind();
+		}
+
 		protected Dictionary<Keys, Property<bool>> keyProperties = new Dictionary<Keys, Property<bool>>();
 
 		protected Dictionary<Keys, Command> keyUpCommands = new Dictionary<Keys, Command>();

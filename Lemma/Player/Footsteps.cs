@@ -24,7 +24,7 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command Footstep = new Command();
 		[XmlIgnore]
-		public Property<Player.WallRun> WallRunState = new Property<Player.WallRun>();
+		public Property<WallRun.State> WallRunState = new Property<WallRun.State>();
 
 		// Output commands
 		[XmlIgnore]
@@ -54,6 +54,7 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.EnabledWhenPaused = false;
+			this.Serialize = false;
 	
 			this.Footstep.Action = delegate()
 			{
@@ -67,7 +68,12 @@ namespace Lemma.Components
 
 			this.Add(new CommandBinding<Map, Map.Coordinate, Direction>(this.WalkedOn, delegate(Map map, Map.Coordinate coord, Direction dir)
 			{
-				Map.t id = map[coord].ID;
+				Map.CellState state = map[coord];
+
+				if (state != Map.EmptyState)
+					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, state.FootstepSwitch, this.Entity);
+
+				Map.t id = state.ID;
 				if (id == Map.t.Neutral)
 				{
 					map.Empty(coord);
@@ -181,7 +187,7 @@ namespace Lemma.Components
 			Direction direction;
 
 			// Wall-run code will call our WalkedOn event for us, so only worry about this stuff if we're walking normally
-			if (this.WallRunState == Player.WallRun.None)
+			if (this.WallRunState == WallRun.State.None)
 			{
 				groundRaycast = Map.GlobalRaycast(this.Position, Vector3.Down, this.CharacterHeight.Value * 0.5f + this.SupportHeight + 1.1f);
 				direction = groundRaycast.Normal.GetReverse();
@@ -189,7 +195,6 @@ namespace Lemma.Components
 				if (groundRaycast.Map != null &&
 					(groundRaycast.Map != oldMap || oldCoord == null || !oldCoord.Value.Equivalent(groundRaycast.Coordinate.Value)))
 				{
-					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, groundRaycast.Coordinate.Value.Data.FootstepSwitch, this.Entity);
 					this.WalkedOn.Execute(groundRaycast.Map, groundRaycast.Coordinate.Value, direction);
 
 					this.walkedOnCount++;

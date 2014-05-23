@@ -118,7 +118,13 @@
     <Compile Include="Components\Propagator.cs" />
     <Compile Include="GInterfaces\ConsoleUI.cs" />
     <Compile Include="Player\BlockPredictor.cs" />
+    <Compile Include="Player\Jump.cs" />
     <Compile Include="Player\PhoneNote.cs" />
+    <Compile Include="Player\RollKickSlide.cs" />
+    <Compile Include="Player\RotationController.cs" />
+    <Compile Include="Player\Vault.cs" />
+    <Compile Include="Player\VoxelTools.cs" />
+    <Compile Include="Player\WallRun.cs" />
     <Compile Include="Util\DialogueForest.cs" />
     <Compile Include="Components\SoundKiller.cs" />
     <Compile Include="Components\SignalTower.cs" />

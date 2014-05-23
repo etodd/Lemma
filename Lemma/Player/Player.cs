@@ -17,30 +17,17 @@ namespace Lemma.Components
 {
 	public class Player : Component<Main>, IUpdateableComponent
 	{
-		public enum WallRun { None, Left, Right, Straight, Down, Reverse }
 		[XmlIgnore]
 		public Character Character;
 
 		[XmlIgnore]
-		public Property<bool> EnableRoll = new Property<bool> { Value = false, Editable = false };
-		[XmlIgnore]
 		public Property<bool> EnableCrouch = new Property<bool> { Value = false, Editable = false };
-		[XmlIgnore]
-		public Property<bool> EnableKick = new Property<bool> { Value = false, Editable = false };
-		[XmlIgnore]
-		public Property<bool> EnableWallRun = new Property<bool> { Value = false, Editable = false };
-		[XmlIgnore]
-		public Property<bool> EnableWallRunHorizontal = new Property<bool> { Value = false, Editable = false };
-		[XmlIgnore]
-		public Property<bool> EnableEnhancedWallRun = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
 		public Property<bool> EnableSlowMotion = new Property<bool> { Value = false, Editable = false };
 		[XmlIgnore]
 		public Property<bool> EnableMoves = new Property<bool> { Editable = false, Value = true };
 		[XmlIgnore]
 		public Property<bool> SlowMotion = new Property<bool> { Editable = false };
-		[XmlIgnore]
-		public Property<WallRun> WallRunState = new Property<WallRun> { Editable = false, Value = WallRun.None };
 
 		[XmlIgnore]
 		public Command HealthDepleted = new Command();

@@ -59,6 +59,7 @@ namespace Lemma.IO
 			typeof(Property<int>),
 			typeof(Property<UInt32>),
 			typeof(Propagator),
+			typeof(RotationController),
 		};
 
 		public static XmlSerializer Serializer;
