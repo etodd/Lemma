@@ -36,6 +36,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
+			this.Serialize = false;
 			this.EnabledWhenPaused = false;
 			this.Apply.Action = delegate(float verticalAcceleration)
 			{

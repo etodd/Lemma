@@ -18,13 +18,15 @@ namespace Lemma.Components
 
 		// Input properties
 		public Property<bool> IsSupported = new Property<bool>();
-		public Property<Player.WallRun> WallRunState = new Property<Player.WallRun>();
+		public Property<WallRun.State> WallRunState = new Property<WallRun.State>();
 		public Property<bool> EnableWalking = new Property<bool>();
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
 		public Property<Vector2> Movement = new Property<Vector2>();
 		public Property<bool> Crouched = new Property<bool>();
 		public Property<Vector2> Mouse = new Property<Vector2>();
 		public Property<bool> EnableLean = new Property<bool>();
+		public Property<Map> WallRunMap = new Property<Map>();
+		public Property<Direction> WallDirection = new Property<Direction>();
 
 		// Output
 		public Property<float> Lean = new Property<float>();
@@ -45,6 +47,7 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.EnabledWhenPaused = false;
+			this.Serialize = false;
 			this.lastRotation = this.Mouse.Value.X;
 			SoundKiller.Add(this.Entity, AK.EVENTS.STOP_PLAYER_BREATHING_SOFT);
 		}
@@ -111,7 +114,18 @@ namespace Lemma.Components
 		public void Update(float dt)
 		{
 			Vector2 mouse = this.Mouse;
-			if (this.WallRunState != Player.WallRun.None)
+			if (this.WallRunState == WallRun.State.None)
+			{
+				this.model.Stop
+				(
+					"WallRunLeft",
+					"WallRunRight",
+					"WallRunStraight",
+					"WallSlideDown",
+					"WallSlideReverse"
+				);
+			}
+			else
 			{
 				this.model.Stop
 				(
@@ -124,6 +138,49 @@ namespace Lemma.Components
 					"VaultLeft",
 					"VaultRight"
 				);
+
+				string wallRunAnimation;
+				switch (this.WallRunState.Value)
+				{
+					case WallRun.State.Straight:
+						wallRunAnimation = "WallRunStraight";
+						break;
+					case WallRun.State.Down:
+						wallRunAnimation = "WallSlideDown";
+						break;
+					case WallRun.State.Left:
+						wallRunAnimation = "WallRunLeft";
+						break;
+					case WallRun.State.Right:
+						wallRunAnimation = "WallRunRight";
+						break;
+					case WallRun.State.Reverse:
+						wallRunAnimation = "WallSlideReverse";
+						break;
+					default:
+						wallRunAnimation = null;
+						break;
+				}
+				if (!this.model.IsPlaying(wallRunAnimation))
+				{
+					this.model.Stop
+					(
+						"WallRunStraight",
+						"WallSlideDown",
+						"WallRunLeft",
+						"WallRunRight",
+						"WallSlideReverse"
+					);
+					this.model.StartClip(wallRunAnimation, 5, true, 0.1f);
+				}
+
+				if (wallRunAnimation != null)
+				{
+					Vector3 wallNormal = this.WallRunMap.Value.GetAbsoluteVector(this.WallDirection.Value.GetVector());
+					float animationSpeed = (this.LinearVelocity.Value - wallNormal * Vector3.Dot(this.LinearVelocity.Value, wallNormal)).Length();
+					this.model[wallRunAnimation].Speed = Math.Min(1.5f, animationSpeed / 6.0f);
+				}
+
 				return;
 			}
 

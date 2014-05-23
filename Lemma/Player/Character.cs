@@ -71,7 +71,8 @@ namespace Lemma.Util
 		/// </summary>
 		public Property<float> JumpSpeed = new Property<float> { Value = Character.DefaultJumpSpeed };
 
-		public Property<Player.WallRun> WallRunState = new Property<Player.WallRun> { Value = Player.WallRun.None };
+		// Input property
+		public Property<WallRun.State> WallRunState = new Property<WallRun.State>();
 
 		/// <summary>
 		/// The maximum slope under which walking forces can be applied.
@@ -90,6 +91,7 @@ namespace Lemma.Util
 
 		public Property<float> Height = new Property<float>();
 		public Property<float> Radius = new Property<float>();
+		public Property<float> Mass = new Property<float>();
 
 		/// <summary>
 		/// Deceleration applied to oppose horizontal movement when the character does not have a steady foothold on the ground (hasTraction == false).
@@ -156,6 +158,7 @@ namespace Lemma.Util
 		{
 			this.main = main;
 			this.Radius.Value = radius;
+			this.Mass.Value = mass;
 			this.Body = new Cylinder(position, height, radius, mass);
 			this.Body.Tag = this;
 			this.Body.CollisionInformation.Tag = this;
@@ -254,7 +257,7 @@ namespace Lemma.Util
 
 			bool foundSupport = this.findSupport(out supportEntityTag, out supportEntity, out supportLocation, out supportNormal, out supportDistance);
 
-			if (!foundSupport && this.WallRunState.Value == Player.WallRun.None)
+			if (!foundSupport && this.WallRunState.Value == WallRun.State.None)
 			{
 				// Keep the player from getting stuck on corners
 				foreach (Contact contact in this.Body.CollisionInformation.Pairs.SelectMany(x => x.Contacts.Select(y => y.Contact)))
@@ -294,25 +297,18 @@ namespace Lemma.Util
 				this.IsSupported.Value = false;
 				this.HasTraction.Value = false;
 
-				if (this.WallRunState.Value != Player.WallRun.None)
+				if (this.lastSupported)
 				{
-					this.lastSupported = true;
+					this.LastSupportedSpeed.Value = new Vector2(this.Body.LinearVelocity.X, this.Body.LinearVelocity.Z).Length();
+					this.lastSupported = false;
 				}
-				else
-				{
-					if (this.lastSupported)
-					{
-						this.LastSupportedSpeed.Value = new Vector2(this.Body.LinearVelocity.X, this.Body.LinearVelocity.Z).Length();
-						this.lastSupported = false;
-					}
 
-					if (this.EnableWalking)
-					{
-						if (this.IsSwimming)
-							this.handleNoTraction(dt, 0.75f * this.TractionDeceleration, this.MaxSpeed * 0.5f);
-						else
-							this.handleNoTraction(dt, 0.0f, this.LastSupportedSpeed);
-					}
+				if (this.EnableWalking)
+				{
+					if (this.IsSwimming)
+						this.handleNoTraction(dt, 0.75f * this.TractionDeceleration, this.MaxSpeed * 0.5f);
+					else
+						this.handleNoTraction(dt, 0.0f, this.LastSupportedSpeed);
 				}
 			}
 
