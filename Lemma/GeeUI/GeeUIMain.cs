@@ -1,5 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using ComponentBind;
+using Lemma;
+using Lemma.Components;
+using Lemma.GeeUI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -12,41 +17,41 @@ namespace GeeUI
 	public delegate void OnKeyReleased(string keyReleased, Keys key);
 	public delegate void OnKeyContinuallyPressed(string keyContinuallyPressed, Keys key);
 
-	public static class GeeUI
+	public class GeeUIMain : Component<Main>, IUpdateableComponent, INonPostProcessedDrawableComponent
 	{
-		public static event OnKeyPressed OnKeyPressedHandler;
-		public static event OnKeyReleased OnKeyReleasedHandler;
-		public static event OnKeyContinuallyPressed OnKeyContinuallyPressedHandler;
+		public event OnKeyPressed OnKeyPressedHandler;
+		public event OnKeyReleased OnKeyReleasedHandler;
+		public event OnKeyContinuallyPressed OnKeyContinuallyPressedHandler;
 
 		public static Texture2D White;
 		public static Effect CircleShader;
 
-		public static View RootView = new View();
+		public View RootView;
+		
+		internal Game TheGame;
 
-		internal static Game TheGame;
-
-		public static Color TextColorDefault = Color.Black;
+		public Color TextColorDefault = Color.Black;
 
 		public static NinePatch NinePatchTextFieldDefault = new NinePatch();
 		public static NinePatch NinePatchTextFieldSelected = new NinePatch();
 		public static NinePatch NinePatchTextFieldRight = new NinePatch();
 		public static NinePatch NinePatchTextFieldWrong = new NinePatch();
-
+			    
 		public static NinePatch NinePatchBtnDefault = new NinePatch();
 		public static NinePatch NinePatchBtnHover = new NinePatch();
 		public static NinePatch NinePatchBtnClicked = new NinePatch();
-
+			    
 		public static NinePatch NinePatchWindowSelected = new NinePatch();
 		public static NinePatch NinePatchWindowUnselected = new NinePatch();
-
+			    
 		public static NinePatch NinePatchPanelSelected = new NinePatch();
 		public static NinePatch NinePatchPanelUnselected = new NinePatch();
-
+			    
 		public static Texture2D TextureCheckBoxDefault;
 		public static Texture2D TextureCheckBoxSelected;
 		public static Texture2D TextureCheckBoxDefaultChecked;
 		public static Texture2D TextureCheckBoxSelectedChecked;
-
+			    
 		public static NinePatch NinePatchTabDefault = new NinePatch();
 		public static NinePatch NinePatchTabSelected = new NinePatch();
 
@@ -54,14 +59,18 @@ namespace GeeUI
 		public static Texture2D TextureSliderDefault;
 		public static NinePatch NinePatchSliderRange = new NinePatch();
 
-		private static InputManager _inputManager = new InputManager();
+		private InputManager _inputManager = new InputManager();
+
+		public SpriteBatch Batch;
+
+		public Property<int> DrawOrder { get; private set; }
 
 		/// <summary>
 		/// Will be true if the latest click within the game bounds resided within an active direct child of the root view.
 		/// </summary>
-		public static bool LastClickCaptured = false;
+		public bool LastClickCaptured = false;
 
-		internal static void InitializeKeybindings()
+		internal void InitializeKeybindings()
 		{
 			string[] toBindUpper = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z ) ! @ # $ % ^ & * ( ? > < \" : } { _ + 0 1 2 3 4 5 6 7 8 9       ".Split(' ');
 			string[] toBindLower = "a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 / . , ' ; ] [ - = 0 1 2 3 4 5 6 7 8 9       ".Split(' ');
@@ -97,40 +106,46 @@ namespace GeeUI
 			}
 		}
 
-		public static void Initialize(Game theGame)
+		public void Initialize(Game theGame)
 		{
+			this.DrawOrder = new Property<int>(){Editable = false, Value = 0};
+
 			TheGame = theGame;
 			White = new Texture2D(theGame.GraphicsDevice, 1, 1);
 			White.SetData(new Color[] { Color.White });
 
+
+			TextColorDefault = Color.White;
+
+			RootView = new View(this);
 			RootView.Width = theGame.Window.ClientBounds.Width;
 			RootView.Height = theGame.Window.ClientBounds.Height;
 
-			Texture2D textFieldDefault = ConversionManager.BitmapToTexture(Resource1.textfield_default_9);
-			Texture2D textFieldSelected = ConversionManager.BitmapToTexture(Resource1.textfield_selected_9);
-			Texture2D textFieldRight = ConversionManager.BitmapToTexture(Resource1.textfield_selected_right_9);
-			Texture2D textFieldWrong = ConversionManager.BitmapToTexture(Resource1.textfield_selected_wrong_9);
+			Texture2D textFieldDefault = ConversionManager.BitmapToTexture(Resource1.textfield_default_9, theGame.GraphicsDevice);
+			Texture2D textFieldSelected = ConversionManager.BitmapToTexture(Resource1.textfield_selected_9, theGame.GraphicsDevice);
+			Texture2D textFieldRight = ConversionManager.BitmapToTexture(Resource1.textfield_selected_right_9, theGame.GraphicsDevice);
+			Texture2D textFieldWrong = ConversionManager.BitmapToTexture(Resource1.textfield_selected_wrong_9, theGame.GraphicsDevice);
 
-			Texture2D windowSelected = ConversionManager.BitmapToTexture(Resource1.window_selected_9);
-			Texture2D windowUnselected = ConversionManager.BitmapToTexture(Resource1.window_unselected_9);
+			Texture2D windowSelected = ConversionManager.BitmapToTexture(Resource1.window_selected_9, theGame.GraphicsDevice);
+			Texture2D windowUnselected = ConversionManager.BitmapToTexture(Resource1.window_unselected_9, theGame.GraphicsDevice);
 
-			Texture2D panelSelected = ConversionManager.BitmapToTexture(Resource1.panel_selected_9);
-			Texture2D panelUnselected = ConversionManager.BitmapToTexture(Resource1.panel_unselected_9);
+			Texture2D panelSelected = ConversionManager.BitmapToTexture(Resource1.panel_selected_9, theGame.GraphicsDevice);
+			Texture2D panelUnselected = ConversionManager.BitmapToTexture(Resource1.panel_unselected_9, theGame.GraphicsDevice);
 
-			Texture2D btnDefault = ConversionManager.BitmapToTexture(Resource1.btn_default_9);
-			Texture2D btnClicked = ConversionManager.BitmapToTexture(Resource1.btn_clicked_9);
-			Texture2D btnHover = ConversionManager.BitmapToTexture(Resource1.btn_hover_9);
+			Texture2D btnDefault = ConversionManager.BitmapToTexture(Resource1.btn_default_9, theGame.GraphicsDevice);
+			Texture2D btnClicked = ConversionManager.BitmapToTexture(Resource1.btn_clicked_9, theGame.GraphicsDevice);
+			Texture2D btnHover = ConversionManager.BitmapToTexture(Resource1.btn_hover_9, theGame.GraphicsDevice);
 
-			Texture2D sliderRange = ConversionManager.BitmapToTexture(Resource1.sliderRange_9);
-			TextureSliderDefault = ConversionManager.BitmapToTexture(Resource1.slider);
-			TextureSliderSelected = ConversionManager.BitmapToTexture(Resource1.sliderSelected);
+			Texture2D sliderRange = ConversionManager.BitmapToTexture(Resource1.sliderRange_9, theGame.GraphicsDevice);
+			TextureSliderDefault = ConversionManager.BitmapToTexture(Resource1.slider, theGame.GraphicsDevice);
+			TextureSliderSelected = ConversionManager.BitmapToTexture(Resource1.sliderSelected, theGame.GraphicsDevice);
 
 			NinePatchSliderRange.LoadFromTexture(sliderRange);
 
-			TextureCheckBoxDefault = ConversionManager.BitmapToTexture(Resource1.checkbox_default);
-			TextureCheckBoxSelected = ConversionManager.BitmapToTexture(Resource1.checkbox_default_selected);
-			TextureCheckBoxDefaultChecked = ConversionManager.BitmapToTexture(Resource1.checkbox_checked);
-			TextureCheckBoxSelectedChecked = ConversionManager.BitmapToTexture(Resource1.checkbox_checked_selected);
+			TextureCheckBoxDefault = ConversionManager.BitmapToTexture(Resource1.checkbox_default, theGame.GraphicsDevice);
+			TextureCheckBoxSelected = ConversionManager.BitmapToTexture(Resource1.checkbox_default_selected, theGame.GraphicsDevice);
+			TextureCheckBoxDefaultChecked = ConversionManager.BitmapToTexture(Resource1.checkbox_checked, theGame.GraphicsDevice);
+			TextureCheckBoxSelectedChecked = ConversionManager.BitmapToTexture(Resource1.checkbox_checked_selected, theGame.GraphicsDevice);
 
 			NinePatchTextFieldDefault.LoadFromTexture(textFieldDefault);
 			NinePatchTextFieldSelected.LoadFromTexture(textFieldSelected);
@@ -159,9 +174,11 @@ namespace GeeUI
 				HandleMouseMovement(RootView, InputManager.GetMousePos());
 			}, MouseButton.Left);
 			InputManager.BindMouse(() => HandleMouseMovement(RootView, InputManager.GetMousePos()), MouseButton.Movement);
+
+			
 		}
 
-		internal static void HandleClick(View view, Point mousePos)
+		internal void HandleClick(View view, Point mousePos)
 		{
 			if (!view.Active)
 				return;
@@ -189,7 +206,7 @@ namespace GeeUI
 			view.OnMClick(ConversionManager.PtoV(mousePos));
 		}
 
-		internal static void HandleMouseMovement(View view, Point mousePos)
+		internal void HandleMouseMovement(View view, Point mousePos)
 		{
 			if (!view.Active) return;
 			View[] sortedChildren = view.Children;
@@ -218,19 +235,19 @@ namespace GeeUI
 			}
 		}
 
-		public static void Update(float dt)
+		public void Update(float dt)
 		{
-			_inputManager.Update(dt);
+			_inputManager.Update(dt, this);
 			RootView.Update(dt);
 			UpdateView(RootView, dt);
 		}
 
-		public static void Draw(SpriteBatch spriteBatch)
+		public void Draw(SpriteBatch spriteBatch)
 		{
 			DrawView(RootView, spriteBatch);
 		}
 
-		internal static void UpdateView(View toUpdate, float dt)
+		internal void UpdateView(View toUpdate, float dt)
 		{
 			View[] sortedChildren = toUpdate.Children;
 			foreach (View updating in sortedChildren)
@@ -241,7 +258,7 @@ namespace GeeUI
 			}
 		}
 
-		internal static void DrawView(View toDraw, SpriteBatch spriteBatch)
+		internal void DrawView(View toDraw, SpriteBatch spriteBatch)
 		{
 			View[] sortedChildren = toDraw.Children;
 			Array.Sort(sortedChildren, ViewDepthComparer.CompareDepthsInverse);
@@ -253,7 +270,7 @@ namespace GeeUI
 			}
 		}
 
-		internal static List<View> GetAllViews(View rootView)
+		internal List<View> GetAllViews(View rootView)
 		{
 			var ret = new List<View>();
 			if (!rootView.Active) return ret;
@@ -265,7 +282,7 @@ namespace GeeUI
 			return ret;
 		}
 
-		public static View FindViewByName(string name)
+		public View FindViewByName(string name)
 		{
 			if (RootView == null) return null;
 			var finds = RootView.FindChildrenByName(name);
@@ -273,10 +290,27 @@ namespace GeeUI
 			return finds[0];
 		}
 
-		public static View[] FindViewsByName(string name)
+		public View[] FindViewsByName(string name)
 		{
 			if (RootView == null) return new View[0];
 			return RootView.FindChildrenByName(name);
+		}
+
+		public void LoadContent(bool reload)
+		{
+			this.Batch = new SpriteBatch(this.main.GraphicsDevice);
+		}
+		
+		public void DrawNonPostProcessed(GameTime time, RenderParameters parameters)
+		{
+			Batch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
+			Draw(Batch);
+			Batch.End();
+		}
+
+		public override void Awake()
+		{
+			this.Initialize(main);
 		}
 	}
 }

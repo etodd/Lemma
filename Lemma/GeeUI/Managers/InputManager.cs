@@ -39,13 +39,13 @@ namespace GeeUI.Managers
             return new Vector2(GetMousePos().X, GetMousePos().Y);
         }
 
-        public void Update(float dt)
+        public void Update(float dt, GeeUIMain GeeUI)
         {
             _keyboardState = Keyboard.GetState();
             _mouseState = Mouse.GetState();
             int scroll = _mouseState.ScrollWheelValue - _scrollValue;
             _scrollValue = _mouseState.ScrollWheelValue;
-            if (GeeUI.TheGame.IsActive)
+			if (GeeUI.TheGame.IsActive)
             {
                 foreach (CodeBoundMouse b in _boundMouse)
                 {

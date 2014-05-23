@@ -23,6 +23,7 @@ using BEPUphysics;
 using System.Xml.Serialization;
 using System.Reflection;
 using System.Globalization;
+using GeeUI;
 
 namespace Lemma
 {
@@ -70,6 +71,7 @@ namespace Lemma
 		public LightingManager LightingManager;
 
 		public UIRenderer UI;
+		public GeeUIMain GeeUI;
 
 		public Console.Console Console;
 		public ConsoleUI ConsoleUI;
@@ -223,8 +225,6 @@ namespace Lemma
 
 		public Main()
 		{
-			GeeUI.GeeUI.TextColorDefault = Color.White;
-
 			Factory<Main>.Initialize();
 
 #if STEAMWORKS
@@ -319,7 +319,10 @@ namespace Lemma
 		{
 			if (this.firstLoadContentCall)
 			{
-				GeeUI.GeeUI.Initialize(this);
+				//GeeUI.GeeUI.Initialize(this);
+
+				this.GeeUI = new GeeUIMain();
+				this.AddComponent(GeeUI);
 
 				this.ConsoleUI = new ConsoleUI();
 				this.AddComponent(ConsoleUI);
@@ -351,6 +354,7 @@ namespace Lemma
 					IsMainRender = true
 				};
 				this.firstLoadContentCall = false;
+
 
 				this.UI = new UIRenderer();
 				this.AddComponent(this.UI);
@@ -515,7 +519,7 @@ namespace Lemma
 				this.TotalTime.Value += this.ElapsedTime;
 
 			//We must update GeeUI first before anything else so that its LastClickCaptured property can be of use.
-			GeeUI.GeeUI.Update(this.ElapsedTime);
+			//GeeUI.Update(this.ElapsedTime);
 
 			if (!this.EditorEnabled && this.mapLoaded)
 			{
@@ -739,9 +743,9 @@ namespace Lemma
 				this.RenderTarget = null;
 			}
 			SpriteBatch GeeUISpriteBatch = new SpriteBatch(this.GraphicsDevice);
-			GeeUISpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
-			GeeUI.GeeUI.Draw(GeeUISpriteBatch);
-			GeeUISpriteBatch.End();
+			//GeeUISpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
+			//GeeUI.GeeUI.Draw(GeeUISpriteBatch);
+			//GeeUISpriteBatch.End();
 		}
 
 		public void DrawScene(RenderParameters parameters)
@@ -811,11 +815,14 @@ namespace Lemma
 
 			this.ScreenSize.Value = new Point(width, height);
 
-			GeeUI.GeeUI.RootView.Width = width;
-			GeeUI.GeeUI.RootView.Height = height;
-
 			if (this.Renderer != null)
 				this.Renderer.ReallocateBuffers(this.ScreenSize);
+
+			if (this.GeeUI != null)
+			{
+				GeeUI.RootView.Width = width;
+				GeeUI.RootView.Height = height;
+			}
 		}
 	}
 }

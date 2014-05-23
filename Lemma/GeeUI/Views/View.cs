@@ -17,6 +17,7 @@ namespace GeeUI.Views
 		public event MouseOverEventHandler OnMouseOver;
 		public event MouseOffEventHandler OnMouseOff;
 
+		public GeeUIMain ParentGeeUI;
 		public View ParentView;
 
 		public ViewLayout ChildrenLayout;
@@ -152,11 +153,13 @@ namespace GeeUI.Views
 			}
 		}
 
-		internal View()
+		internal View(GeeUIMain theGeeUI)
 		{
+			ParentGeeUI = theGeeUI;
 		}
 
-		public View(View parentView)
+		public View(GeeUIMain theGeeUI, View parentView)
+			: this(theGeeUI)
 		{
 			if (parentView != null)
 				parentView.AddChild(this);
@@ -174,8 +177,8 @@ namespace GeeUI.Views
 				child.ParentView.RemoveChild(child);
 			child.ParentView = this;
 			child.ThisDepth = ChildrenDepth++;
+			child.ParentGeeUI = ParentGeeUI;
 			_children.Add(child);
-			//child.Position += new Vector2(ContentBoundBox.Left, ContentBoundBox.Top);
 		}
 
 		public void RemoveChild(View child)

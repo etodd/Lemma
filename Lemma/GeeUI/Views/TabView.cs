@@ -66,17 +66,17 @@ namespace GeeUI.Views
             }
         }
 
-        public TabView(View rootView, Vector2 position, SpriteFont font)
-            : base(rootView)
+		public TabView(GeeUIMain GeeUI, View rootView, Vector2 position, SpriteFont font)
+            : base(GeeUI, rootView)
         {
             Position = position;
             TabFont = font;
             NumChildrenAllowed = 1;
 
-            NinePatchDefault = GeeUI.NinePatchTabDefault;
-            NinePatchSelected = GeeUI.NinePatchTabSelected;
+            NinePatchDefault = GeeUIMain.NinePatchTabDefault;
+            NinePatchSelected = GeeUIMain.NinePatchTabSelected;
             this.Height = 25;
-            new TextView(this, "", Vector2.Zero, font) { TextJustification = TextJustification.Center };
+            new TextView(GeeUI, this, "", Vector2.Zero, font) { TextJustification = TextJustification.Center };
         }
 
         public override void OnMClick(Vector2 position, bool fromChild = false)

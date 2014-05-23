@@ -60,13 +60,13 @@ namespace GeeUI.Views
         }
 
 
-        public WindowView(View rootView, Vector2 position, SpriteFont windowTextFont)
-            : base(rootView)
+		public WindowView(GeeUIMain GeeUI, View rootView, Vector2 position, SpriteFont windowTextFont)
+            : base(GeeUI, rootView)
         {
             Position = position;
             WindowTextFont = windowTextFont;
-            NinePatchNormal = GeeUI.NinePatchWindowUnselected;
-            NinePatchSelected = GeeUI.NinePatchWindowSelected;
+            NinePatchNormal = GeeUIMain.NinePatchWindowUnselected;
+            NinePatchSelected = GeeUIMain.NinePatchWindowSelected;
         }
 
         protected internal void FollowMouse()

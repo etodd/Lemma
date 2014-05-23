@@ -34,11 +34,11 @@ namespace GeeUI.Views
             }
         }
 
-        public TabHost(View rootView, Vector2 position, SpriteFont font)
-            : base(rootView)
+        public TabHost(GeeUIMain GeeUI, View rootView, Vector2 position, SpriteFont font)
+            : base(GeeUI, rootView)
         {
             Position = position;
-            TabContainerView = new TabContainer(this, font);
+            TabContainerView = new TabContainer(GeeUI, this, font);
             TabContainerView.ChildrenLayout = new HorizontalViewLayout(1, true);
         }
 

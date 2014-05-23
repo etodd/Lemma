@@ -116,6 +116,38 @@
     <Compile Include="Console\ConVar.cs" />
     <Compile Include="Console\ConCommand.cs" />
     <Compile Include="Components\Propagator.cs" />
+    <Compile Include="GeeUI\GeeUIMain.cs" />
+    <Compile Include="GeeUI\Managers\ConversionManager.cs" />
+    <Compile Include="GeeUI\Managers\DrawManager.cs" />
+    <Compile Include="GeeUI\Managers\InputManager.cs" />
+    <Compile Include="GeeUI\Resource1.Designer.cs">
+      <DependentUpon>Resource1.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="GeeUI\Structs\BoundKey.cs" />
+    <Compile Include="GeeUI\Structs\BoundMouse.cs" />
+    <Compile Include="GeeUI\Structs\DropDownItem.cs" />
+    <Compile Include="GeeUI\Structs\NinePatch.cs" />
+    <Compile Include="GeeUI\Structs\RadioButtonGroup.cs" />
+    <Compile Include="GeeUI\Structs\ViewDepthComparer.cs" />
+    <Compile Include="GeeUI\ViewLayouts\BorderViewLayout.cs" />
+    <Compile Include="GeeUI\ViewLayouts\HorizontalViewLayout.cs" />
+    <Compile Include="GeeUI\ViewLayouts\SpinViewLayout.cs" />
+    <Compile Include="GeeUI\ViewLayouts\VerticalViewLayout.cs" />
+    <Compile Include="GeeUI\ViewLayouts\ViewLayout.cs" />
+    <Compile Include="GeeUI\Views\ButtonView.cs" />
+    <Compile Include="GeeUI\Views\CheckBoxView.cs" />
+    <Compile Include="GeeUI\Views\ImageView.cs" />
+    <Compile Include="GeeUI\Views\PanelView.cs" />
+    <Compile Include="GeeUI\Views\SliderView.cs" />
+    <Compile Include="GeeUI\Views\TabContainer.cs" />
+    <Compile Include="GeeUI\Views\TabHost.cs" />
+    <Compile Include="GeeUI\Views\TabView.cs" />
+    <Compile Include="GeeUI\Views\TextFieldView.cs" />
+    <Compile Include="GeeUI\Views\TextView.cs" />
+    <Compile Include="GeeUI\Views\View.cs" />
+    <Compile Include="GeeUI\Views\WindowView.cs" />
     <Compile Include="GInterfaces\ConsoleUI.cs" />
     <Compile Include="Player\BlockPredictor.cs" />
     <Compile Include="Player\PhoneNote.cs" />
@@ -354,6 +386,26 @@
     <Content Include="attribution.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="GeeUI\Resources\btn_clicked.9.png" />
+    <None Include="GeeUI\Resources\btn_default.9.png" />
+    <None Include="GeeUI\Resources\btn_hover.9.png" />
+    <Content Include="GeeUI\Resources\checkbox_checked.png" />
+    <Content Include="GeeUI\Resources\checkbox_checked_selected.png" />
+    <Content Include="GeeUI\Resources\checkbox_default.png" />
+    <Content Include="GeeUI\Resources\checkbox_default_selected.png" />
+    <None Include="GeeUI\Resources\imageview.png" />
+    <None Include="GeeUI\Resources\panel_selected.png" />
+    <None Include="GeeUI\Resources\panel_unselected.png" />
+    <None Include="GeeUI\Resources\slider.png" />
+    <None Include="GeeUI\Resources\sliderRange.9.png" />
+    <None Include="GeeUI\Resources\sliderRange.png" />
+    <None Include="GeeUI\Resources\sliderSelected.png" />
+    <None Include="GeeUI\Resources\textfield_default.9.png" />
+    <None Include="GeeUI\Resources\textfield_selected.9 .png" />
+    <None Include="GeeUI\Resources\textfield_selected_right.9.png" />
+    <None Include="GeeUI\Resources\textfield_selected_wrong.9.png" />
+    <None Include="GeeUI\Resources\window_selected.9.png" />
+    <None Include="GeeUI\Resources\window_unselected.9.png" />
     <Content Include="icon.ico" />
     <Content Include="README.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -368,6 +420,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ErrorForm.resx">
       <DependentUpon>ErrorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GeeUI\Resource1.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource1.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

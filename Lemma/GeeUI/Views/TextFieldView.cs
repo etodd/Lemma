@@ -37,7 +37,7 @@ namespace GeeUI.Views
 		public NinePatch NinePatchRegexGood;
 		public NinePatch NinePatchRegexBad;
 
-		public Color TextColor = GeeUI.TextColorDefault;
+		public Color TextColor;
 
 		public SpriteFont TextInputFont;
 
@@ -149,13 +149,13 @@ namespace GeeUI.Views
 			}
 		}
 
-		public TextFieldView(View rootView, Vector2 position, SpriteFont textFont)
-			: base(rootView)
+		public TextFieldView(GeeUIMain GeeUI, View rootView, Vector2 position, SpriteFont textFont)
+			: base(GeeUI, rootView)
 		{
-			NinePatchDefault = GeeUI.NinePatchTextFieldDefault;
-			NinePatchSelected = GeeUI.NinePatchTextFieldSelected;
-			NinePatchRegexGood = GeeUI.NinePatchTextFieldRight;
-			NinePatchRegexBad = GeeUI.NinePatchTextFieldWrong;
+			NinePatchDefault = GeeUIMain.NinePatchTextFieldDefault;
+			NinePatchSelected = GeeUIMain.NinePatchTextFieldSelected;
+			NinePatchRegexGood = GeeUIMain.NinePatchTextFieldRight;
+			NinePatchRegexBad = GeeUIMain.NinePatchTextFieldWrong;
 
 			Position = position;
 			TextInputFont = textFont;
@@ -163,6 +163,8 @@ namespace GeeUI.Views
 
 			GeeUI.OnKeyPressedHandler += keyPressedHandler;
 			GeeUI.OnKeyReleasedHandler += keyReleasedHandler;
+
+			 TextColor = GeeUI.TextColorDefault;
 
 			//Text = new Property<string>();
 			//Text.Get = () => MultiLine ? Text.Value : Text.Value.Replace("\n", "");
@@ -665,7 +667,6 @@ namespace GeeUI.Views
 
 			base.Update(dt);
 		}
-
 
 		public override void Draw(SpriteBatch spriteBatch)
 		{
