@@ -530,6 +530,7 @@ namespace Lemma.Components
 			Log.Handler = delegate(string log)
 			{
 				this.HideMessage(null, this.ShowMessage(null, log), 2.0f);
+				this.main.ConsoleUI.LogText(log);
 			};
 #endif
 
