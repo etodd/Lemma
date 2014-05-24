@@ -58,10 +58,10 @@ namespace Lemma.Factories
 			input.EnabledWhenPaused = false;
 			entity.Add("Input", input);
 
-			AnimatedModel model = entity.GetOrCreate<AnimatedModel>("Model");
-			model.Serialize = false;
 			AnimatedModel firstPersonModel = entity.GetOrCreate<AnimatedModel>("FirstPersonModel");
 			firstPersonModel.Serialize = false;
+			AnimatedModel model = entity.GetOrCreate<AnimatedModel>("Model");
+			model.Serialize = false;
 
 			model.Editable = false;
 			model.Filename.Value = "Models\\joan";
@@ -159,6 +159,7 @@ namespace Lemma.Factories
 			vault.Add(new Binding<float>(vault.MaxSpeed, player.Character.MaxSpeed));
 			vault.Add(new Binding<WallRun.State>(vault.WallRunState, wallRun.CurrentState));
 			vault.Add(new CommandBinding(vault.LockRotation, (Action)rotation.Lock));
+			vault.Add(new CommandBinding(vault.DeactivateWallRun, (Action)wallRun.Deactivate));
 			vault.Add(new CommandBinding<WallRun.State>(vault.ActivateWallRun, delegate(WallRun.State state) { wallRun.Activate(state); }));
 			vault.Add(new TwoWayBinding<float>(player.Character.LastSupportedSpeed, vault.LastSupportedSpeed));
 			vault.Model = model;
@@ -371,6 +372,7 @@ namespace Lemma.Factories
 					wallRun.Deactivate();
 					rollKickSlide.StopKick();
 					player.SlowMotion.Value = false;
+					predictor.ClearPossibilities();
 				}
 			}, player.EnableMoves));
 
@@ -387,16 +389,22 @@ namespace Lemma.Factories
 				if (!player.EnableMoves)
 					return;
 
-				// Don't allow vaulting
-				// Also don't try anything if we're crouched or in the middle of vaulting
-				if (vault.CurrentState.Value == Vault.State.None && !jump.Go() && player.EnableSlowMotion && !player.Character.IsSupported)
+				if (vault.CurrentState.Value == Vault.State.None)
+					jump.Go();
+			});
+
+			input.Bind(settings.SpecialAbility, PCInput.InputState.Down, delegate()
+			{
+				if (player.EnableSlowMotion && !player.Character.IsSupported)
 				{
 					player.SlowMotion.Value = true;
+					predictor.ClearPossibilities();
 					predictor.PredictPlatforms();
+					predictor.PredictWalls();
 				}
 			});
 
-			input.Bind(settings.Jump, PCInput.InputState.Up, delegate()
+			input.Bind(settings.SpecialAbility, PCInput.InputState.Up, delegate()
 			{
 				player.SlowMotion.Value = false;
 			});
@@ -407,33 +415,21 @@ namespace Lemma.Factories
 				if (!player.EnableMoves || (player.Character.Crouched && player.Character.IsSupported) || vault.CurrentState.Value != Vault.State.None)
 					return;
 
-				bool vaulted = vault.Go();
+				bool didSomething;
 
-				bool wallRan = false;
-				if (!vaulted)
-				{
-					// Try to wall-run
-					if (!(wallRan = wallRun.Activate(WallRun.State.Straight)))
-						if (!(wallRan = wallRun.Activate(WallRun.State.Left)))
-							if (!(wallRan = wallRun.Activate(WallRun.State.Right)))
-								wallRan = wallRun.Activate(WallRun.State.Reverse);
-				}
+				if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
+					if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
+						if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
+							didSomething = wallRun.Activate(WallRun.State.Reverse);
 
-				if (!vaulted)
-					vaulted = vault.TryVaultDown();
+				if (!didSomething)
+					didSomething = vault.Go();
 
-				if (!vaulted && !wallRan && !player.Character.IsSupported && player.EnableSlowMotion)
-				{
-					player.SlowMotion.Value = true;
-					predictor.PredictWalls();
-				}
+				if (!didSomething)
+					vault.TryVaultDown();
 			});
 
-			input.Bind(settings.Parkour, PCInput.InputState.Up, delegate()
-			{
-				wallRun.Deactivate();
-				player.SlowMotion.Value = false;
-			});
+			input.Bind(settings.Parkour, PCInput.InputState.Up, wallRun.Deactivate);
 
 			input.Bind(settings.RollKick, PCInput.InputState.Down, rollKickSlide.Go);
 
@@ -497,7 +493,6 @@ namespace Lemma.Factories
 					main.TimeMultiplier.Value = 0.25f;
 			}));
 #endif
-
 
 			// Player data bindings
 

@@ -59,6 +59,7 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.Serialize = false;
+			this.EnabledWhenPaused = false;
 			this.temporary = Map.States[Map.t.Temporary];
 			this.particleSystem = ParticleSystem.Get(main, "Distortion");
 		}
@@ -154,6 +155,8 @@ namespace Lemma.Components
 			}
 
 			AkSoundEngine.PostEvent("Play_block_instantiate", 0.5f * (block.Map.GetAbsolutePosition(block.StartCoord) + block.Map.GetAbsolutePosition(block.EndCoord)));
+
+			this.ClearPossibilities();
 		}
 
 		// Function for finding a platform to build for the player
@@ -303,10 +306,6 @@ namespace Lemma.Components
 
 		private Vector3 startSlowMo(Queue<Prediction> predictions, float interval)
 		{
-			// Go into slow-mo and show block possibilities
-
-			this.ClearPossibilities();
-
 			Vector3 startPosition = this.FootPosition;
 
 			Vector3 straightAhead = Matrix.CreateRotationY(this.Rotation).Forward * -this.MaxSpeed;
@@ -354,7 +353,7 @@ namespace Lemma.Components
 		{
 			// Predict block possibilities
 			Queue<Prediction> predictions = new Queue<Prediction>();
-			startSlowMo(predictions, getPredictionInterval());
+			this.startSlowMo(predictions, this.getPredictionInterval());
 			Matrix rotationMatrix = Matrix.CreateRotationY(this.Rotation);
 			Vector2 direction = new Vector2(-rotationMatrix.Forward.X, -rotationMatrix.Forward.Z);
 

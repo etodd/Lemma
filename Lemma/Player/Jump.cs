@@ -197,6 +197,7 @@ namespace Lemma.Components
 								this.Predictor.InstantiatePossibility(possibility);
 								wallJump(possibility.Map, possibility.Map.GetRelativeDirection(dir).GetReverse(), coord);
 								wallJumping = true;
+								go = true;
 								break;
 							}
 						}
