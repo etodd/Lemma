@@ -131,12 +131,14 @@ namespace GeeUI.Views
 			}
 		}
 
+
+
 		public int RealX
 		{
 			get
 			{
-				if (ParentView == null) return X;
-				return X - (int)ParentView.ContentOffset.Value.X;
+				if (ParentView == null) return X - (int)AnchorOffset.X;
+				return X - (int)ParentView.ContentOffset.Value.X - (int)AnchorOffset.X;
 			}
 		}
 
@@ -144,13 +146,20 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				if (ParentView == null) return Y;
-				return Y - (int)ParentView.ContentOffset.Value.Y;
+				if (ParentView == null) return Y - (int)AnchorOffset.Y;
+				return Y - (int)ParentView.ContentOffset.Value.Y - (int)AnchorOffset.Y;
 			}
 		}
 
 		public Property<Vector2> Position = new Property<Vector2>() { Value = Vector2.Zero };
 
+		public Vector2 AnchorOffset
+		{
+			get
+			{
+				return new Vector2((float)Width * AnchorPoint.Value.X, (float)Height * AnchorPoint.Value.Y);
+			}
+		}
 		public Vector2 RealPosition
 		{
 			get
@@ -160,6 +169,8 @@ namespace GeeUI.Views
 		}
 
 		public Property<Vector2> ContentOffset = new Property<Vector2>() { Value = Vector2.Zero };
+
+		public Property<Vector2> AnchorPoint = new Property<Vector2>() { Value = Vector2.Zero };
 
 		public int AbsoluteX
 		{
