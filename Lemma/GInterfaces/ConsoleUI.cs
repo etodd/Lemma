@@ -27,6 +27,8 @@ namespace Lemma.GInterfaces
 		[AutoConVar("console_showing", "If true, the console is showing")]
 		public static Property<bool> Showing = new Property<bool>();
 
+		private Property<bool> _animating = new Property<bool>() { Value = false}; 
+
 		public override void Awake()
 		{
 			base.Awake();
@@ -42,8 +44,6 @@ namespace Lemma.GInterfaces
 						.SetHeight(175);
 				ConsoleInputView =
 					(TextFieldView)new TextFieldView(main.GeeUI, RootConsoleView, new Vector2(0, 0), MainFont).SetWidth(textBoxWidth).SetHeight(20);
-
-				RootConsoleView.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
 
 				ConsoleLogView.Editable = false;
 				ConsoleInputView.OnTextSubmitted = OnTextSubmitted;
@@ -75,8 +75,10 @@ namespace Lemma.GInterfaces
 
 		public void HandleToggle()
 		{
+			if (_animating.Value) return;
 			float scrollTime = 0.15f;
 			float fadeTime = 0.1f;
+			_animating.Value = true;
 			//RootConsoleView.Active.Value = ConsoleLogView.Active.Value = ConsoleInputView.Active.Value = ConsoleInputView.Selected.Value = Showing.Value;
 			if (Showing.Value)
 			{
@@ -88,7 +90,8 @@ namespace Lemma.GInterfaces
 					new Animation.Parallel(
 							new Animation.FloatMoveTo(RootConsoleView.MyOpacity, 1.0f, fadeTime),
 							new Animation.Vector2MoveTo(RootConsoleView.Position, new Vector2(0, 0), scrollTime)
-					)
+					),
+					new Animation.Set<bool>(_animating, false)
 					));
 			}
 			else
@@ -101,7 +104,8 @@ namespace Lemma.GInterfaces
 						new Animation.Set<bool>(RootConsoleView.Active, false),
 						new Animation.Set<bool>(ConsoleLogView.Active, false),
 						new Animation.Set<bool>(ConsoleInputView.Active, false),
-						new Animation.Set<bool>(ConsoleInputView.Selected, false)
+						new Animation.Set<bool>(ConsoleInputView.Selected, false),
+						new Animation.Set<bool>(_animating, false)
 					));
 
 			}
