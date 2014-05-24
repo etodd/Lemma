@@ -24,7 +24,7 @@ namespace GeeUI.Views
             get {
                 if (Children.Length == 0) return 0;
                 View last = Children[Children.Length - 1];
-                return (int)last.Position.X + last.BoundBox.Width;
+				return (int)last.Position.Value.X + last.BoundBox.Width;
             }
         }
 
@@ -42,9 +42,9 @@ namespace GeeUI.Views
         {
             foreach (TabView tab in Children)
             {
-                tab.Selected = false;
+				tab.Selected.Value = false;
             }
-            child.Selected = true;
+			child.Selected.Value = true;
             var host = (TabHost) ParentView;
             host.TabClicked(_children.IndexOf(child));
         }
@@ -63,7 +63,7 @@ namespace GeeUI.Views
 		public TabContainer(GeeUIMain GeeUI, View rootView, SpriteFont font)
             : base(GeeUI, rootView)
         {
-            Position = Vector2.Zero;
+			Position.Value = Vector2.Zero;
             TabFont = font;
         }
 
@@ -92,21 +92,21 @@ namespace GeeUI.Views
                 if (c.Width > maxWidth) maxWidth = c.Width;
             foreach (var child in Children)
             {
-                child.Width = maxWidth;
+				child.Width.Value = maxWidth;
             }
         }
 
         public override void Update(float dt)
         {
             //setChildrenWidth();
-            Height = 10000;
+			Height.Value = 10000;
             Width = ParentView.Width;
             OrderChildren(ChildrenLayout);
-            Height = 0;
+			Height.Value = 0;
 
             foreach(View v in Children)
             {
-                if (v.BoundBox.Bottom > Height) Height = v.BoundBox.Bottom;
+				if (v.BoundBox.Bottom > Height) Height.Value = v.BoundBox.Bottom;
             }
             base.Update(dt);
         }

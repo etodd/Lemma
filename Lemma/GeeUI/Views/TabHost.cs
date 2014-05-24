@@ -30,7 +30,7 @@ namespace GeeUI.Views
         public TabHost(GeeUIMain GeeUI, View rootView, Vector2 position, SpriteFont font)
             : base(GeeUI, rootView)
         {
-            Position = position;
+            Position.Value = position;
             TabContainerView = new TabContainer(GeeUI, this, font);
             TabContainerView.ChildrenLayout = new HorizontalViewLayout(1, true);
         }
@@ -55,11 +55,11 @@ namespace GeeUI.Views
         {
             for(int i = 1; i < Children.Length; i++)
             {
-                Children[i].Active = false;
-                Children[i].Selected = false;
+				Children[i].Active.Value = false;
+				Children[i].Selected.Value = false;
             }
-            Children[index + 1].Active = true;
-            Children[index + 1].Selected = true;
+			Children[index + 1].Active.Value = true;
+			Children[index + 1].Selected.Value = true;
         }
 
         public override void OnMClick(Vector2 position, bool fromChild = false)
@@ -89,9 +89,9 @@ namespace GeeUI.Views
         {
             for (int i = 1; i < Children.Length; i++  )
             {
-                Children[i].Position = new Vector2(0, TabContainerView.BoundBox.Height);
+				Children[i].Position.Value = new Vector2(0, TabContainerView.BoundBox.Height);
                 Children[i].Width = Width;
-                Children[i].Height = Height - TabContainerView.BoundBox.Height;
+				Children[i].Height.Value = Height.Value - TabContainerView.BoundBox.Height;
             }
             base.Update(dt);
         }

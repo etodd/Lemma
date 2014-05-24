@@ -41,28 +41,28 @@ namespace GeeUI.ViewLayouts
 
             top.X = xStart;
             top.Y = yStart;
-            top.Width = width;
-            top.Height = topBottomHeight;
+			top.Width.Value = width;
+			top.Height.Value = topBottomHeight;
 
             left.X = xStart;
             left.Y = yStart + topBottomHeight;
-            left.Width = rightLeftWidth;
-            left.Height = height - (topBottomHeight*2);
+			left.Width.Value = rightLeftWidth;
+			left.Height.Value = height - (topBottomHeight * 2);
 
             bottom.X = xStart;
             bottom.Y = height - topBottomHeight;
-            bottom.Width = width;
-            bottom.Height = topBottomHeight;
+			bottom.Width.Value = width;
+			bottom.Height.Value = topBottomHeight;
 
             right.X = xEnd - rightLeftWidth;
             right.Y = yStart + topBottomHeight;
-            right.Width = rightLeftWidth;
-            right.Height = height - (topBottomHeight*2);
+			right.Width.Value = rightLeftWidth;
+			right.Height.Value = height - (topBottomHeight * 2);
 
             middle.X = xStart + rightLeftWidth;
             middle.Y = yStart + topBottomHeight;
-            middle.Width = width - (rightLeftWidth*2);
-            middle.Height = height - (topBottomHeight*2);
+			middle.Width.Value = width - (rightLeftWidth * 2);
+			middle.Height.Value = height - (topBottomHeight * 2);
 
         }
     }

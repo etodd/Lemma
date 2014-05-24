@@ -88,8 +88,8 @@ namespace GeeUI.Views
 		public CheckBoxView(GeeUIMain GeeUI, View rootView, Vector2 position, string label, SpriteFont labelFont)
             : base(GeeUI, rootView)
         {
-            Position = position;
-            NumChildrenAllowed = 1;
+			Position.Value = position;
+			NumChildrenAllowed.Value = 1;
 
             new TextView(GeeUI, this, label, Vector2.Zero, labelFont);
 
@@ -123,7 +123,7 @@ namespace GeeUI.Views
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(CurTexture, AbsolutePosition, Color.White);
+            spriteBatch.Draw(CurTexture, AbsolutePosition, Color.White * EffectiveOpacity);
             base.Draw(spriteBatch);
         }
     }

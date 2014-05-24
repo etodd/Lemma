@@ -124,8 +124,8 @@ namespace GeeUI
 			TextColorDefault = Color.White;
 
 			RootView = new View(this);
-			RootView.Width = theGame.Window.ClientBounds.Width;
-			RootView.Height = theGame.Window.ClientBounds.Height;
+			RootView.Width.Value = theGame.Window.ClientBounds.Width;
+			RootView.Height.Value = theGame.Window.ClientBounds.Height;
 
 			Texture2D textFieldDefault = ConversionManager.BitmapToTexture(Resource1.textfield_default_9, theGame.GraphicsDevice);
 			Texture2D textFieldSelected = ConversionManager.BitmapToTexture(Resource1.textfield_selected_9, theGame.GraphicsDevice);

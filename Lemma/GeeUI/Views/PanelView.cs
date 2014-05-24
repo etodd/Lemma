@@ -48,13 +48,13 @@ namespace GeeUI.Views
 		{
 			SelectedNinepatch = GeeUIMain.NinePatchPanelSelected;
 			UnselectedNinepatch = GeeUIMain.NinePatchPanelUnselected;
-			Position = position;
+			Position.Value = position;
 		}
 
 		public override void Draw(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
 		{
 			NinePatch patch = Selected ? SelectedNinepatch : UnselectedNinepatch;
-			patch.Draw(spriteBatch, AbsolutePosition, Width, Height);
+			patch.Draw(spriteBatch, AbsolutePosition, Width, Height, 0f, EffectiveOpacity);
 			base.Draw(spriteBatch);
 		}
 
@@ -65,7 +65,7 @@ namespace GeeUI.Views
 				Vector2 newMousePosition = InputManager.GetMousePosV();
 				if (SelectedOffChildren && Selected && InputManager.IsMousePressed(MouseButton.Left))
 				{
-					Position = (newMousePosition - MouseSelectedOffset);
+					Position.Value = (newMousePosition - MouseSelectedOffset);
 				}
 			}
 			else if (Resizeable && Resizing)
@@ -77,8 +77,8 @@ namespace GeeUI.Views
 					int newHeight = (int)newMousePosition.Y - BoundBox.Y;
 					if (newWidth >= 10 && newHeight >= 10)
 					{
-						Width = newWidth;
-						Height = newHeight;
+						Width.Value = newWidth;
+						Height.Value = newHeight;
 					}
 				}
 			}
@@ -88,7 +88,7 @@ namespace GeeUI.Views
 		public override void OnMClick(Vector2 position, bool fromChild = false)
 		{
 			SelectedOffChildren = !fromChild;
-			Selected = true;
+			Selected.Value = true;
 			MouseSelectedOffset = position - Position;
 			if (ParentView != null)
 				ParentView.BringChildToFront(this);
@@ -105,7 +105,7 @@ namespace GeeUI.Views
 		public override void OnMClickAway(bool fromChild = false)
 		{
 			SelectedOffChildren = false;
-			Selected = false;
+			Selected.Value = false;
 			Resizing = false;
 			base.OnMClickAway(true);
 		}

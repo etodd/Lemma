@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mime;
 using System.Text;
 using GeeUI.ViewLayouts;
 using GeeUI.Views;
@@ -15,7 +16,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma.GInterfaces
 {
-	public class ConsoleUI : Component<Main>, IUpdateableComponent
+	public class ConsoleUI : Component<GameMain>, IUpdateableComponent
 	{
 		public View RootConsoleView;
 		public TextFieldView ConsoleLogView;
@@ -35,9 +36,16 @@ namespace Lemma.GInterfaces
 				ConsoleFont = main.Content.Load<SpriteFont>("ConsoleFont");
 				int width = main.ScreenSize.Value.X - 6;
 				int textBoxWidth = width - 0;
-				RootConsoleView = new View(main.GeeUI, main.GeeUI.RootView) { Width = width + 6, Height = 210, ContentOffset = new Vector2(0, 0)};
-				ConsoleLogView = new TextFieldView(main.GeeUI, RootConsoleView, new Vector2(0, 0), ConsoleFont) { Width = textBoxWidth, Height = 175, Editable = false, IgnoreParentBounds = true};
-				ConsoleInputView = new TextFieldView(main.GeeUI, RootConsoleView, new Vector2(0, 0), MainFont) { Width = textBoxWidth, Height = 20, MultiLine = false, OnTextSubmitted = OnTextSubmitted, IgnoreParentBounds = true };
+				RootConsoleView = new View(main.GeeUI, main.GeeUI.RootView).SetWidth(width + 6).SetHeight(210);
+				ConsoleLogView =
+					(TextFieldView)new TextFieldView(main.GeeUI, RootConsoleView, new Vector2(0, 0), ConsoleFont).SetWidth(textBoxWidth)
+						.SetHeight(175);
+				ConsoleInputView =
+					(TextFieldView)new TextFieldView(main.GeeUI, RootConsoleView, new Vector2(0, 0), MainFont).SetWidth(textBoxWidth).SetHeight(20);
+
+				ConsoleLogView.Editable = false;
+				ConsoleInputView.OnTextSubmitted = OnTextSubmitted;
+				ConsoleInputView.MultiLine = false;
 
 				RootConsoleView.ChildrenLayout = new VerticalViewLayout(0, false);
 
@@ -46,6 +54,7 @@ namespace Lemma.GInterfaces
 			}
 			Showing.Value = false;
 		}
+
 
 		public void OnTextSubmitted()
 		{
@@ -64,7 +73,36 @@ namespace Lemma.GInterfaces
 
 		public void HandleToggle()
 		{
-			RootConsoleView.Active = ConsoleLogView.Active = ConsoleInputView.Active = ConsoleInputView.Selected = Showing.Value;
+			float scrollTime = 0.15f;
+			float fadeTime = 0.1f;
+			//RootConsoleView.Active.Value = ConsoleLogView.Active.Value = ConsoleInputView.Active.Value = ConsoleInputView.Selected.Value = Showing.Value;
+			if (Showing.Value)
+			{
+				main.AddComponent(new Animation(
+					new Animation.Set<bool>(RootConsoleView.Active, true),
+					new Animation.Set<bool>(ConsoleLogView.Active, true),
+					new Animation.Set<bool>(ConsoleInputView.Active, true),
+					new Animation.Set<bool>(ConsoleInputView.Selected, true),
+					new Animation.Parallel(
+							new Animation.FloatMoveTo(RootConsoleView.MyOpacity, 1.0f, fadeTime),
+							new Animation.Vector2MoveTo(RootConsoleView.Position, new Vector2(0, 0), scrollTime)
+					)
+					));
+			}
+			else
+			{
+				main.AddComponent(new Animation(
+						new Animation.Parallel(
+							new Animation.FloatMoveTo(RootConsoleView.MyOpacity, 0.0f, fadeTime),
+							new Animation.Vector2MoveTo(RootConsoleView.Position, new Vector2(0, -RootConsoleView.Height), scrollTime)
+						),
+						new Animation.Set<bool>(RootConsoleView.Active, false),
+						new Animation.Set<bool>(ConsoleLogView.Active, false),
+						new Animation.Set<bool>(ConsoleInputView.Active, false),
+						new Animation.Set<bool>(ConsoleInputView.Selected, false)
+					));
+
+			}
 		}
 
 		public void HandleResize()
@@ -72,8 +110,8 @@ namespace Lemma.GInterfaces
 			int width = main.ScreenSize.Value.X - 6;
 			int textBoxWidth = width - 0;
 
-			RootConsoleView.Width = width;
-			ConsoleLogView.Width = ConsoleInputView.Width = textBoxWidth;
+			RootConsoleView.Width.Value = width;
+			ConsoleLogView.Width.Value = ConsoleInputView.Width.Value = textBoxWidth;
 
 			int newY = ConsoleLogView.TextLines.Length - 1;
 			ConsoleLogView.SetCursorPos(0, newY);

@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using ComponentBind;
+using Lemma;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using GeeUI.Structs;
 using GeeUI.ViewLayouts;
+using Newtonsoft.Json.Schema;
 
 namespace GeeUI.Views
 {
-	public class View
+	public class View : Component<Main>
 	{
 		public delegate void MouseClickEventHandler(object sender, EventArgs e);
 		public delegate void MouseOverEventHandler(object sender, EventArgs e);
@@ -22,23 +25,31 @@ namespace GeeUI.Views
 
 		public ViewLayout ChildrenLayout;
 
-		public int ChildrenDepth;
-		public int ThisDepth;
+		public Property<int> ChildrenDepth = new Property<int>() { Value = 0 };
+		public Property<int> ThisDepth = new Property<int>() {Value = 0};
 
-		public bool IgnoreParentBounds = true;
-		public bool Selected;
-		public bool Active = true;
-		public bool EnabledScissor = true;
-		public bool ContentMustBeScissored = false;
+		public Property<bool> IgnoreParentBounds = new Property<bool>() { Value = true };
+		public Property<bool> Selected = new Property<bool>() { Value = false };
+		public Property<bool> Active = new Property<bool>() { Value = true };
+		public Property<bool> EnabledScissor = new Property<bool>() { Value = true };
+		public Property<bool> ContentMustBeScissored = new Property<bool>() { Value = false };
 
-		public bool EnforceRootAttachment = true;
+		public Property<bool> EnforceRootAttachment = new Property<bool>() { Value = true };
 
 		public Action<float> PostUpdate = null;
 		public Action PostDraw = null;
 
-		public float MasterAlpha = 1;
+		public Property<float> MyOpacity = new Property<float>() { Value = 1f };
+		public float EffectiveOpacity
+		{
+			get
+			{
+				if (ParentView == null) return MyOpacity;
+				return MyOpacity * ParentView.EffectiveOpacity;
+			}
+		}
 
-		public int NumChildrenAllowed = -1;
+		public Property<int> NumChildrenAllowed = new Property<int>() { Value = -1 };
 
 		public string Name = "";
 
@@ -101,22 +112,22 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				return (int)Position.X;
+				return (int)Position.Value.X;
 			}
 			set
 			{
-				Position = new Vector2(value, Y);
+				Position.Value = new Vector2(value, Y);
 			}
 		}
 		public int Y
 		{
 			get
 			{
-				return (int)Position.Y;
+				return (int)Position.Value.Y;
 			}
 			set
 			{
-				Position = new Vector2(X, value);
+				Position.Value = new Vector2(X, value);
 			}
 		}
 
@@ -125,7 +136,7 @@ namespace GeeUI.Views
 			get
 			{
 				if (ParentView == null) return X;
-				return X - (int)ParentView.ContentOffset.X;
+				return X - (int)ParentView.ContentOffset.Value.X;
 			}
 		}
 
@@ -134,11 +145,11 @@ namespace GeeUI.Views
 			get
 			{
 				if (ParentView == null) return Y;
-				return Y - (int)ParentView.ContentOffset.Y;
+				return Y - (int)ParentView.ContentOffset.Value.Y;
 			}
 		}
 
-		public Vector2 Position = Vector2.Zero;
+		public Property<Vector2> Position = new Property<Vector2>() { Value = Vector2.Zero };
 
 		public Vector2 RealPosition
 		{
@@ -148,7 +159,7 @@ namespace GeeUI.Views
 			}
 		}
 
-		public Vector2 ContentOffset = Vector2.Zero;
+		public Property<Vector2> ContentOffset = new Property<Vector2>() { Value = Vector2.Zero };
 
 		public int AbsoluteX
 		{
@@ -173,7 +184,8 @@ namespace GeeUI.Views
 			}
 		}
 
-		public int Width, Height;
+		public Property<int> Width = new Property<int>() {Value = 0};
+		public Property<int> Height = new Property<int>() { Value = 0 };
 
 		protected List<View> _children = new List<View>();
 
@@ -208,7 +220,7 @@ namespace GeeUI.Views
 			if (child.ParentView != null)
 				child.ParentView.RemoveChild(child);
 			child.ParentView = this;
-			child.ThisDepth = ChildrenDepth++;
+			child.ThisDepth.Value = ChildrenDepth.Value++;
 			child.ParentGeeUI = ParentGeeUI;
 			_children.Add(child);
 		}
@@ -262,6 +274,39 @@ namespace GeeUI.Views
 
 		#endregion
 
+		#region Setters
+
+		public View SetWidth(int width)
+		{
+			this.Width.Value = width;
+			return this;
+		}
+
+		public View SetHeight(int height)
+		{
+			this.Height.Value = height;
+			return this;
+		}
+
+		public View SetPosition(Vector2 position)
+		{
+			this.Position.Value = position;
+			return this;
+		}
+
+		public View SetOpacity(float opacity)
+		{
+			this.MyOpacity.Value = opacity;
+			return this;
+		}
+
+		public View SetContentOffset(Vector2 offset)
+		{
+			this.ContentOffset.Value = offset;
+			return this;
+		}
+
+		#endregion
 		#region Parent management
 
 		public void SetParent(View parent)
@@ -305,11 +350,11 @@ namespace GeeUI.Views
 			sortedChildren.Sort(ViewDepthComparer.CompareDepthsInverse);
 			sortedChildren.Add(view);
 			_children = sortedChildren;
-			ChildrenDepth = 0;
+			ChildrenDepth.Value = 0;
 			for (var i = 0; i < _children.Count; i++)
 			{
-				_children[i].ThisDepth = i;
-				ChildrenDepth++;
+				_children[i].ThisDepth.Value = i;
+				ChildrenDepth.Value++;
 			}
 
 		}
@@ -318,12 +363,12 @@ namespace GeeUI.Views
 		{
 			View[] sortedChildren = Children;
 			Array.Sort(sortedChildren, ViewDepthComparer.CompareDepths);
-			ChildrenDepth = 0;
+			ChildrenDepth.Value = 0;
 
 			for (int i = 0; i < sortedChildren.Length; i++)
 			{
-				Children[i].ThisDepth = i;
-				ChildrenDepth++;
+				Children[i].ThisDepth.Value = i;
+				ChildrenDepth.Value++;
 			}
 		}
 
@@ -333,7 +378,7 @@ namespace GeeUI.Views
 
 		public virtual void OnDelete()
 		{
-			Active = false;
+			Active.Value = false;
 			foreach (var child in Children)
 				child.OnDelete();
 		}
@@ -421,7 +466,7 @@ namespace GeeUI.Views
 		/// <param name="spriteBatch"></param>
 		public virtual void DrawContent(SpriteBatch spriteBatch)
 		{
-			
+
 		}
 
 		#endregion

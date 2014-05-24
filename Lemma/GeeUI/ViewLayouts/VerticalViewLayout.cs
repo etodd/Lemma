@@ -34,9 +34,9 @@ namespace GeeUI.ViewLayouts
 			int yDone = container.Top - parentView.RealY;
 			foreach (View v in parentView.Children)
 			{
-				v.Position = Vector2.Zero;
+				v.Position.Value = Vector2.Zero;
 				if (ExcludedChildren.Contains(v)) continue;
-				v.Position = new Vector2(container.Left - parentView.RealX, yDone);
+				v.Position.Value = new Vector2(container.Left - parentView.RealX, yDone);
 				yDone += v.BoundBox.Height + _paddingBetweenVertical;
 			}
 		}
@@ -56,7 +56,7 @@ namespace GeeUI.ViewLayouts
 					widestChild = null; //this is per-column
 					nullify = false;
 				}
-				v.Position = Vector2.Zero;
+				v.Position.Value = Vector2.Zero;
 				if (ExcludedChildren.Contains(v)) continue;
 
 				if (widestChild == null || v.BoundBox.Width > widestChild.BoundBox.Width)
@@ -74,7 +74,7 @@ namespace GeeUI.ViewLayouts
 						if (neededWidth > parentView.ContentBoundBox.Width)
 						{
 							int theWidth = (neededWidth - parentView.ContentBoundBox.Width);
-							parentView.Width += theWidth;
+							parentView.Width.Value += theWidth;
 							widestChild = v;
 						}
 					}
@@ -82,14 +82,14 @@ namespace GeeUI.ViewLayouts
 					nullify = true;
 				}
 
-				v.Position = new Vector2(xDone, yDone);
+				v.Position.Value = new Vector2(xDone, yDone);
 				yDone += v.BoundBox.Height + _paddingBetweenVertical;
 				if(widestChild == v)
 					furthestRight = v.AbsoluteBoundBox.Right - parentView.AbsoluteContentBoundBox.Left;
 			}
 
 			if (_resizeParentToFit)
-				parentView.Width = furthestRight + 1;
+				parentView.Width.Value = furthestRight + 1;
 		}
 
 		public override void OrderChildren(View parentView)

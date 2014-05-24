@@ -23,8 +23,8 @@ namespace GeeUI.Views
             }
             set
             {
-                Width = (int)(Texture.Width * value.X);
-                Height = (int)(Texture.Height * value.Y);
+				Width.Value = (int)(Texture.Width * value.X);
+				Height.Value = (int)(Texture.Height * value.Y);
             }
         }
 
@@ -41,8 +41,8 @@ namespace GeeUI.Views
 			: base(GeeUI, rootView)
         {
             Texture = texture;
-            Width = texture.Width;
-            Height = texture.Height;
+			Width.Value = texture.Width;
+			Height.Value = texture.Height;
         }
 
         public override void OnMClick(Vector2 position, bool fromChild = false)
@@ -66,7 +66,7 @@ namespace GeeUI.Views
         public override void Draw(SpriteBatch spriteBatch)
         {
 
-            spriteBatch.Draw(Texture, AbsolutePosition, null, Color.White, 0f, Vector2.Zero, ScaleVector, SpriteEffects.None, 0f);
+            spriteBatch.Draw(Texture, AbsolutePosition, null, Color.White * EffectiveOpacity, 0f, Vector2.Zero, ScaleVector, SpriteEffects.None, 0f);
 
             base.Draw(spriteBatch);
         }

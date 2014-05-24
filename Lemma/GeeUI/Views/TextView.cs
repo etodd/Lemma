@@ -74,7 +74,7 @@ namespace GeeUI.Views
 			: base(GeeUI, rootView)
 		{
 			Text = text;
-			Position = position;
+			Position.Value = position;
 			Font = font;
 			TextColor = GeeUI.TextColorDefault;
 		}
@@ -98,7 +98,7 @@ namespace GeeUI.Views
 
 		public override void Draw(SpriteBatch spriteBatch)
 		{
-			spriteBatch.DrawString(Font, shortenedText, AbsolutePosition, TextColor, 0f, TextOrigin, 1f, SpriteEffects.None, 0f);
+			spriteBatch.DrawString(Font, shortenedText, AbsolutePosition, TextColor * EffectiveOpacity, 0f, TextOrigin, 1f, SpriteEffects.None, 0f);
 			base.Draw(spriteBatch);
 		}
 

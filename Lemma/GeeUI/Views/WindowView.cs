@@ -55,7 +55,7 @@ namespace GeeUI.Views
 		public WindowView(GeeUIMain GeeUI, View rootView, Vector2 position, SpriteFont windowTextFont)
             : base(GeeUI, rootView)
         {
-            Position = position;
+			Position.Value = position;
             WindowTextFont = windowTextFont;
             NinePatchNormal = GeeUIMain.NinePatchWindowUnselected;
             NinePatchSelected = GeeUIMain.NinePatchWindowSelected;
@@ -67,7 +67,7 @@ namespace GeeUI.Views
             Vector2 newMousePosition = InputManager.GetMousePosV();
             if (SelectedOffChildren && Selected && InputManager.IsMousePressed(MouseButton.Left))
             {
-                Position = (newMousePosition - MouseSelectedOffset);
+				Position.Value = (newMousePosition - MouseSelectedOffset);
             }
             LastMousePosition = newMousePosition;
         }
@@ -76,17 +76,17 @@ namespace GeeUI.Views
         {
             NinePatch patch = Selected ? NinePatchSelected : NinePatchNormal;
 
-            patch.Draw(spriteBatch, AbsolutePosition, Width - patch.LeftWidth - patch.RightWidth, (int)WindowTextFont.MeasureString(WindowText).Y);
+            patch.Draw(spriteBatch, AbsolutePosition, Width - patch.LeftWidth - patch.RightWidth, (int)WindowTextFont.MeasureString(WindowText).Y, 0f, EffectiveOpacity);
 
             string text = TextView.TruncateString(WindowText, WindowTextFont, WindowContentView.ContentBoundBox.Width);
-            spriteBatch.DrawString(WindowTextFont, text, AbsolutePosition + new Vector2(patch.LeftWidth, patch.TopHeight), Color.Black);
+            spriteBatch.DrawString(WindowTextFont, text, AbsolutePosition + new Vector2(patch.LeftWidth, patch.TopHeight), Color.Black * EffectiveOpacity);
 
             if(WindowContentView != null)
             {
                 WindowContentView.Width = Width;
                 Vector2 windowTextSize = WindowTextFont.MeasureString(WindowText);
                 var barHeight = (patch.TopHeight + patch.BottomHeight + windowTextSize.Y);
-                WindowContentView.Height = Height - (int)barHeight;
+				WindowContentView.Height.Value = Height.Value - (int)barHeight;
             }
 
             base.Draw(spriteBatch);
@@ -97,14 +97,14 @@ namespace GeeUI.Views
             FollowMouse();
             if (WindowContentView != null)
             {
-	            WindowContentView.IgnoreParentBounds = true;
+				WindowContentView.IgnoreParentBounds.Value = true;
 
 				NinePatch patch = Selected ? NinePatchSelected : NinePatchNormal;
                 Vector2 windowTextSize = WindowTextFont.MeasureString(WindowText);
                 var barHeight = (patch.TopHeight + patch.BottomHeight + windowTextSize.Y);
 
 	            this.Width = WindowContentView.Width;
-	            this.Height = WindowContentView.Height + (int)barHeight;
+				this.Height.Value = WindowContentView.Height.Value + (int)barHeight;
             }
 
             base.Update(dt);
@@ -113,8 +113,8 @@ namespace GeeUI.Views
         public override void OnMClick(Vector2 position, bool fromChild = false)
         {
             SelectedOffChildren = !fromChild;
-            Selected = true;
-            WindowContentView.Selected = true;
+			Selected.Value = true;
+			WindowContentView.Selected.Value = true;
             LastMousePosition = position;
             MouseSelectedOffset = position - Position;
 
@@ -127,8 +127,8 @@ namespace GeeUI.Views
         public override void OnMClickAway(bool fromChild = false)
         {
             SelectedOffChildren = false;
-            Selected = false;
-            WindowContentView.Selected = false;
+			Selected.Value = false;
+			WindowContentView.Selected.Value = false;
             base.OnMClickAway(true);
         }
         public override void OnMOff(bool fromChild = false)

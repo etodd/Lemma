@@ -157,16 +157,16 @@ namespace GeeUI.Views
 			NinePatchRegexGood = GeeUIMain.NinePatchTextFieldRight;
 			NinePatchRegexBad = GeeUIMain.NinePatchTextFieldWrong;
 
-			Position = position;
+			Position.Value = position;
 			TextInputFont = textFont;
-			NumChildrenAllowed = -1;
+			NumChildrenAllowed.Value = -1;
 
 			GeeUI.OnKeyPressedHandler += keyPressedHandler;
 			GeeUI.OnKeyReleasedHandler += keyReleasedHandler;
 
 			TextColor = GeeUI.TextColorDefault;
 
-			ContentMustBeScissored = true;
+			ContentMustBeScissored.Value = true;
 
 			//Text = new Property<string>();
 			//Text.Get = () => MultiLine ? Text.Value : Text.Value.Replace("\n", "");
@@ -581,7 +581,7 @@ namespace GeeUI.Views
 
 		public override void OnMClick(Vector2 mousePosition, bool fromChild = false)
 		{
-			Selected = true;
+			Selected.Value = true;
 
 			var clickPos = GetMouseTextPos(mousePosition);
 			_cursorX = (int)clickPos.X;
@@ -594,7 +594,7 @@ namespace GeeUI.Views
 
 		public override void OnMClickAway(bool fromChild = false)
 		{
-			Selected = false;
+			Selected.Value = false;
 			_selectionEnd = _selectionStart = new Vector2(-1);
 		}
 
@@ -691,7 +691,7 @@ namespace GeeUI.Views
 			{
 				patch = Selected ? (RegexValidate() ? NinePatchRegexGood : NinePatchRegexBad) : patch;
 			}
-			patch.Draw(spriteBatch, AbsolutePosition, Width, Height);
+			patch.Draw(spriteBatch, AbsolutePosition, Width, Height, 0f, EffectiveOpacity);
 
 			
 			base.Draw(spriteBatch);
@@ -741,15 +741,15 @@ namespace GeeUI.Views
 					}
 					if (y == 0) endDrawY += 1;
 
-					DrawManager.DrawBox(new Vector2(startDrawX, startDrawY), new Vector2(endDrawX, endDrawY), Color.Blue, spriteBatch, 0f, 20);
+					DrawManager.DrawBox(new Vector2(startDrawX, startDrawY), new Vector2(endDrawX, endDrawY), Color.Blue * EffectiveOpacity, spriteBatch, 0f, 20);
 				}
 			}
 
-			spriteBatch.DrawString(TextInputFont, OffsetText, AbsolutePosition + new Vector2(patch.LeftWidth, patch.TopHeight), TextColor);
+			spriteBatch.DrawString(TextInputFont, OffsetText, AbsolutePosition + new Vector2(patch.LeftWidth, patch.TopHeight), TextColor * EffectiveOpacity);
 
 			if (_doingDelimiter && Selected && _selectionEnd == _selectionStart && Editable)
 			{
-				spriteBatch.DrawString(TextInputFont, "|", new Vector2(xDrawPos - 1, yDrawPos), TextColor);
+				spriteBatch.DrawString(TextInputFont, "|", new Vector2(xDrawPos - 1, yDrawPos), TextColor * EffectiveOpacity);
 			}
 			base.DrawContent(spriteBatch);
 		}

@@ -821,8 +821,8 @@ namespace Lemma
 
 			if (this.GeeUI != null)
 			{
-				GeeUI.RootView.Width = width;
-				GeeUI.RootView.Height = height;
+				GeeUI.RootView.Width.Value = width;
+				GeeUI.RootView.Height.Value = height;
 			}
 		}
 	}

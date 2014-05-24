@@ -40,8 +40,8 @@ namespace GeeUI.ViewLayouts
                 child.X = (int) (-_radius * Math.Sin(rads));
                 child.Y = (int) (_radius * Math.Cos(rads));
 
-                child.Position += center;
-                child.Position -= new Vector2(child.Width / 2, child.Height / 2);
+                child.Position.Value += center;
+                child.Position.Value -= new Vector2(child.Width / 2, child.Height / 2);
 
                 angle += angleStep;
             }

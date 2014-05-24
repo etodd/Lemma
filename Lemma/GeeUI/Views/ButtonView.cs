@@ -66,12 +66,12 @@ namespace GeeUI.Views
             NinePatchNormal = GeeUIMain.NinePatchBtnDefault;
             NinePatchHover = GeeUIMain.NinePatchBtnHover;
             NinePatchClicked = GeeUIMain.NinePatchBtnClicked;
-            Position = position;
+			Position.Value = position;
 
             //Make the TextView for the text
             new TextView(this.ParentGeeUI, this, text, new Vector2(0, 0), font) {TextJustification = TextJustification.Center};
-            Width = (int)font.MeasureString(text).X + NinePatchNormal.LeftWidth + NinePatchNormal.RightWidth;
-            Height = (int) font.MeasureString(text).Y + NinePatchNormal.TopHeight + NinePatchNormal.BottomHeight;
+			Width.Value = (int)font.MeasureString(text).X + NinePatchNormal.LeftWidth + NinePatchNormal.RightWidth;
+			Height.Value = (int)font.MeasureString(text).Y + NinePatchNormal.TopHeight + NinePatchNormal.BottomHeight;
         }
 
 		public ButtonView(GeeUIMain GeeUI, View rootview, View contentView, Vector2 position)
@@ -80,7 +80,7 @@ namespace GeeUI.Views
             NinePatchNormal = GeeUIMain.NinePatchBtnDefault;
             NinePatchHover = GeeUIMain.NinePatchBtnHover;
             NinePatchClicked = GeeUIMain.NinePatchBtnClicked;
-            Position = position;
+			Position.Value = position;
             ButtonContentview = contentView;
         }
 
@@ -108,13 +108,13 @@ namespace GeeUI.Views
             int width = Width - patch.LeftWidth - patch.RightWidth;
             int height = Height - patch.TopHeight - patch.BottomHeight;
 
-            patch.Draw(spriteBatch, AbsolutePosition, width, height);
+            patch.Draw(spriteBatch, AbsolutePosition, width, height, 0f, EffectiveOpacity);
 
             View childView = ButtonContentview;
             if (childView != null)
             {
-                childView.Width = width;
-                childView.Height = height;
+				childView.Width.Value = width;
+				childView.Height.Value = height;
                 childView.X = patch.LeftWidth;
                 childView.Y = patch.TopHeight;
             }

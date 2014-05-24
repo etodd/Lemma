@@ -73,24 +73,24 @@ namespace GeeUI.Views
 
 		private void RecomputeOffset()
 		{
-			this.ContentOffset.X = 0;
+			this.ContentOffset.Value = new Vector2(0, this.ContentOffset.Value.Y);
 			if (ChildrenBoundBox.Height <= this.AbsoluteBoundBox.Height)
 			{
-				this.ContentOffset.Y = 0;
+				this.ContentOffset.Value = new Vector2(this.ContentOffset.Value.X, 0);
 				return;
 			}
 			if (ChildrenBoundBox.Bottom < AbsoluteBoundBox.Bottom)
 			{
-				this.ContentOffset.Y += (ChildrenBoundBox.Bottom - AbsoluteBoundBox.Bottom);
+				this.ContentOffset.Value += new Vector2(0, ChildrenBoundBox.Bottom - AbsoluteBoundBox.Bottom);
 			}
 			if (ChildrenBoundBox.Top > AbsoluteBoundBox.Top)
-				this.ContentOffset.Y = 0;
+				this.ContentOffset.Value = new Vector2(this.ContentOffset.Value.X, 0);
 
 		}
 
 		public override void OnMScroll(Vector2 position, int scrollDelta, bool fromChild = false)
 		{
-			this.ContentOffset.Y -= scrollDelta * ScrollMultiplier;
+			this.ContentOffset.Value -= new Vector2(0, scrollDelta * ScrollMultiplier);
 			RecomputeOffset();
 			base.OnMScroll(position, scrollDelta, fromChild);
 		}
@@ -123,7 +123,7 @@ namespace GeeUI.Views
 		public override void Draw(SpriteBatch spriteBatch)
 		{
 			if (ContainerNinePatch != null)
-				ContainerNinePatch.Draw(spriteBatch, AbsolutePosition, Width, Height);
+				ContainerNinePatch.Draw(spriteBatch, AbsolutePosition, Width, Height, 0f, EffectiveOpacity);
 			base.Draw(spriteBatch);
 		}
 	}

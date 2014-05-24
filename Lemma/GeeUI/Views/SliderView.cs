@@ -81,7 +81,7 @@ namespace GeeUI.Views
             _min = min;
             _max = max;
 
-            Position = position;
+			Position.Value = position;
         }
 
         public override void OnMClick(Vector2 position, bool fromChild = false)
@@ -139,15 +139,15 @@ namespace GeeUI.Views
         public override void Draw(SpriteBatch spriteBatch)
         {
             //We want to preserve the slider skin's original height.
-            SliderRange.Draw(spriteBatch, AbsolutePosition, Width, SliderRange.BottomMostPatch - SliderRange.TopMostPatch);
-            spriteBatch.Draw(CurSliderTexture, new Vector2(AbsoluteX + SliderRange.LeftWidth - (CurSliderTexture.Width) + SliderPosition, AbsoluteY), null, Color.White, 0f, new Vector2(CurSliderTexture.Width / -2, 0), 1f, SpriteEffects.None, 0f);
+			SliderRange.Draw(spriteBatch, AbsolutePosition, Width, SliderRange.BottomMostPatch - SliderRange.TopMostPatch, 0f, EffectiveOpacity);
+            spriteBatch.Draw(CurSliderTexture, new Vector2(AbsoluteX + SliderRange.LeftWidth - (CurSliderTexture.Width) + SliderPosition, AbsoluteY), null, Color.White * EffectiveOpacity, 0f, new Vector2(CurSliderTexture.Width / -2, 0), 1f, SpriteEffects.None, 0f);
             if (DrawText)
             {
                 int drawX = AbsoluteX + (Width) / 2;
                 int drawY = AbsoluteY;
                 Vector2 offset = TextFont.MeasureString(CurrentValue.ToString());
                 offset.X = (int)(offset.X / 2);
-                spriteBatch.DrawString(TextFont, CurrentValue.ToString(), new Vector2(drawX, drawY), TextColor, 0f, offset, 1f, SpriteEffects.None, 0f);
+                spriteBatch.DrawString(TextFont, CurrentValue.ToString(), new Vector2(drawX, drawY), TextColor * EffectiveOpacity, 0f, offset, 1f, SpriteEffects.None, 0f);
             }
             base.Draw(spriteBatch);
         }

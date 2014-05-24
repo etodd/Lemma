@@ -17,9 +17,9 @@ namespace GeeUI.Views
             set
             {
                 TabTextView.Text = value;
-                TabTextView.Width = (int)TabFont.MeasureString(value).X;
-                TabTextView.Height = Height - CurNinepatch.TopHeight - CurNinepatch.BottomHeight;
-                this.Width = TabTextView.Width + CurNinepatch.LeftWidth + CurNinepatch.RightWidth;
+				TabTextView.Width.Value = (int)TabFont.MeasureString(value).X;
+				TabTextView.Height.Value = Height - CurNinepatch.TopHeight - CurNinepatch.BottomHeight;
+				this.Width.Value = TabTextView.Width + CurNinepatch.LeftWidth + CurNinepatch.RightWidth;
             }
         }
 
@@ -60,13 +60,13 @@ namespace GeeUI.Views
 		public TabView(GeeUIMain GeeUI, View rootView, Vector2 position, SpriteFont font)
             : base(GeeUI, rootView)
         {
-            Position = position;
+			Position.Value = position;
             TabFont = font;
-            NumChildrenAllowed = 1;
+			NumChildrenAllowed.Value = 1;
 
             NinePatchDefault = GeeUIMain.NinePatchTabDefault;
             NinePatchSelected = GeeUIMain.NinePatchTabSelected;
-            this.Height = 25;
+			this.Height.Value = 25;
             new TextView(GeeUI, this, "", Vector2.Zero, font) { TextJustification = TextJustification.Center };
         }
 
@@ -93,8 +93,8 @@ namespace GeeUI.Views
 
         public override void Update(float dt)
         {
-            TabTextView.Width = Width - CurNinepatch.LeftWidth - CurNinepatch.RightWidth;
-            if (Width >= ParentView.Width) Width = ParentView.Width - 1;
+			TabTextView.Width.Value = Width - CurNinepatch.LeftWidth - CurNinepatch.RightWidth;
+			if (Width >= ParentView.Width) Width.Value = ParentView.Width - 1;
             base.Update(dt);
         }
 
@@ -103,7 +103,7 @@ namespace GeeUI.Views
             var width = Width - CurNinepatch.LeftWidth - CurNinepatch.RightWidth;
             var height = Height - CurNinepatch.TopHeight - CurNinepatch.BottomHeight;
 
-            CurNinepatch.Draw(spriteBatch, AbsolutePosition, width, height);
+			CurNinepatch.Draw(spriteBatch, AbsolutePosition, width, height, 0f, EffectiveOpacity);
             base.Draw(spriteBatch);
         }
     }
