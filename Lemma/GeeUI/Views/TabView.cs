@@ -16,7 +16,7 @@ namespace GeeUI.Views
             get { return TabTextView.Text; }
             set
             {
-                TabTextView.Text = value;
+                TabTextView.Text.Value = value;
 				TabTextView.Width.Value = (int)TabFont.MeasureString(value).X;
 				TabTextView.Height.Value = Height - CurNinepatch.TopHeight - CurNinepatch.BottomHeight;
 				this.Width.Value = TabTextView.Width + CurNinepatch.LeftWidth + CurNinepatch.RightWidth;

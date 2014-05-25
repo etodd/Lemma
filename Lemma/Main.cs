@@ -75,6 +75,7 @@ namespace Lemma
 
 		public Console.Console Console;
 		public ConsoleUI ConsoleUI;
+		public TimeTrialUI TimeTrialUI;
 
 		private bool mapLoaded;
 
@@ -330,8 +331,12 @@ namespace Lemma
 				this.Console = new Console.Console();
 				this.AddComponent(Console);
 
+				this.TimeTrialUI = new TimeTrialUI();
+				this.AddComponent(TimeTrialUI);
+
 				Lemma.Console.Console.BindType(null, this);
 				Lemma.Console.Console.BindType(null, Console);
+				Lemma.Console.Console.BindType(null, TimeTrialUI);
 
 				// Initialize Wwise
 				AkGlobalSoundEngineInitializer initializer = new AkGlobalSoundEngineInitializer(Path.Combine(this.Content.RootDirectory, "Wwise"));

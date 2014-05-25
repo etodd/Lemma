@@ -49,7 +49,7 @@ namespace Lemma.GInterfaces
 				ConsoleInputView.OnTextSubmitted = OnTextSubmitted;
 				ConsoleInputView.MultiLine = false;
 
-				RootConsoleView.ChildrenLayout = new VerticalViewLayout(0, false);
+				RootConsoleView.ChildrenLayouts.Add(new VerticalViewLayout(0, false));
 
 				this.Add(new NotifyBinding(HandleResize, main.ScreenSize)); //Supercool~
 				this.Add(new NotifyBinding(HandleToggle, Showing));

@@ -101,7 +101,6 @@ namespace GeeUI.Views
             //setChildrenWidth();
 			Height.Value = 10000;
             Width = ParentView.Width;
-            OrderChildren(ChildrenLayout);
 			Height.Value = 0;
 
             foreach(View v in Children)

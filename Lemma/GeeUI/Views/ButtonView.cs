@@ -44,7 +44,7 @@ namespace GeeUI.Views
             {
                 if (!(Children[0] is TextView)) return;
                 var c = (TextView)Children[0];
-                c.Text = value;
+                c.Text.Value = value;
             }
         }
 

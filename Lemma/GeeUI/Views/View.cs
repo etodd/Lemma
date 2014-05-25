@@ -23,7 +23,7 @@ namespace GeeUI.Views
 		public GeeUIMain ParentGeeUI;
 		public View ParentView;
 
-		public ViewLayout ChildrenLayout;
+		public List<ViewLayout> ChildrenLayouts = new List<ViewLayout>();
 
 		public Property<int> ChildrenDepth = new Property<int>() { Value = 0 };
 		public Property<int> ThisDepth = new Property<int>() {Value = 0};
@@ -318,6 +318,7 @@ namespace GeeUI.Views
 		}
 
 		#endregion
+
 		#region Parent management
 
 		public void SetParent(View parent)
@@ -427,8 +428,11 @@ namespace GeeUI.Views
 
 		public virtual void Update(float dt)
 		{
-			if (ChildrenLayout != null)
-				OrderChildren(ChildrenLayout);
+			foreach (var layout in ChildrenLayouts)
+			{
+				if(layout != null)
+					OrderChildren(layout);
+			}
 
 			CheckAttachmentToRoot();
 

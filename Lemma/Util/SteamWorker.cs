@@ -68,7 +68,8 @@ namespace Lemma.Util
 		public static void Update()
 		{
 #if STEAMWORKS
-			SteamAPI.RunCallbacks();
+			if (SteamInitialized)
+				SteamAPI.RunCallbacks();
 #endif
 		}
 

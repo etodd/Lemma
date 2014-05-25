@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using ComponentBind;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using GeeUI.Managers;
 
@@ -8,18 +9,20 @@ namespace GeeUI.Views
 	{
 		public SpriteFont Font;
 
-		public string Text;
+		public Property<string> Text = new Property<string>() { Value = "" };
 
 		public Color TextColor;
 
 		public TextJustification TextJustification = TextJustification.Left;
 
+		public Property<float> TextScale = new Property<float>() { Value = 1f };
+
 		private Vector2 TextOrigin
 		{
 			get
 			{
-				var width = (int)Font.MeasureString(shortenedText).X;
-				var height = (int) Font.MeasureString(shortenedText).Y;
+				var width = (int)(Font.MeasureString(Text).X * TextScale.Value);
+				var height = (int)(Font.MeasureString(Text).Y * TextScale.Value);
 				switch (TextJustification)
 				{
 					default:
@@ -33,50 +36,38 @@ namespace GeeUI.Views
 			}
 		}
 
-		private string shortenedText
-		{
-			get
-			{
-				var tWidth = Font.MeasureString(Text).X;
-				if (tWidth > Width)
-				{
-					string testingCur = "";
-					string ret = "";
-					foreach (char t in Text)
-					{
-						testingCur += t;
-						tWidth = Font.MeasureString(testingCur).X;
-						if(tWidth > Width)
-						{
-							string test = testingCur + "\na";
-							var height = Font.MeasureString(ret + test).Y;
-							if(height > Height)
-							{
-								for (int i = 0; i < testingCur.Length; i++ )
-								{
-									string t2 = testingCur.Substring(0, testingCur.Length - (i + 1));
-									var w = Font.MeasureString(t2 + "...").X;
-									if (w <= Width) return ret + t2 + "...";
-								}
-									return ret;
-							}
-							ret += testingCur + "\n";
-							testingCur = "";
-						}
-					}
-					return ret + testingCur;
-				}
-				return Text;
-			}
-		}
+		public Property<bool> AutoSize = new Property<bool>() { Value = true };
 
 		public TextView(GeeUIMain GeeUI, View rootView, string text, Vector2 position, SpriteFont font)
 			: base(GeeUI, rootView)
 		{
-			Text = text;
+			Text.Value = text;
 			Position.Value = position;
 			Font = font;
 			TextColor = GeeUI.TextColorDefault;
+
+			Text.AddBinding(new NotifyBinding(HandleResize, () => AutoSize.Value, Text));
+		}
+
+		private void HandleResize()
+		{
+			var width = (int)(Font.MeasureString(Text).X * TextScale.Value);
+			var height = (int)(Font.MeasureString(Text).Y * TextScale.Value);
+			this.Width.Value = width;
+			this.Height.Value = height;
+		}
+
+		internal static string TruncateString(string input, SpriteFont font, int widthAllowed, string ellipsis = "...")
+		{
+			string cur = "";
+			foreach (char t in input)
+			{
+				float width = font.MeasureString(cur + t + ellipsis).X;
+				if (width > widthAllowed)
+					break;
+				cur += t;
+			}
+			return cur + (cur.Length != input.Length ? ellipsis : "");
 		}
 
 		public override void OnMClick(Vector2 position, bool fromChild = false)
@@ -98,22 +89,10 @@ namespace GeeUI.Views
 
 		public override void Draw(SpriteBatch spriteBatch)
 		{
-			spriteBatch.DrawString(Font, shortenedText, AbsolutePosition, TextColor * EffectiveOpacity, 0f, TextOrigin, 1f, SpriteEffects.None, 0f);
+			spriteBatch.DrawString(Font, Text, AbsolutePosition, TextColor * EffectiveOpacity, 0f, TextOrigin, TextScale.Value, SpriteEffects.None, 0f);
 			base.Draw(spriteBatch);
 		}
 
-		internal static string TruncateString(string input, SpriteFont font, int widthAllowed, string ellipsis = "...")
-		{
-			string cur = "";
-			foreach (char t in input)
-			{
-				float width = font.MeasureString(cur + t + ellipsis).X;
-				if (width > widthAllowed)
-					break;
-				cur += t;
-			}
-			return cur + (cur.Length != input.Length ? ellipsis : "");
-		}
 	}
 	public enum TextJustification
 	{
