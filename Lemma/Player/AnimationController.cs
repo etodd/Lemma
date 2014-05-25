@@ -124,6 +124,95 @@ namespace Lemma.Components
 					"WallSlideDown",
 					"WallSlideReverse"
 				);
+
+				if (this.IsSupported)
+				{
+					this.model.Stop
+					(
+						"Jump",
+						"JumpLeft",
+						"JumpBackward",
+						"JumpRight",
+						"Fall",
+						"Vault",
+						"VaultLeft",
+						"VaultRight"
+					);
+
+					Vector2 dir = this.Movement;
+					float angle = (float)Math.Atan2(dir.Y, dir.X);
+					if (angle < 0.0f)
+						angle += (float)Math.PI * 2.0f;
+
+					string movementAnimation;
+
+					Vector3 velocity = this.LinearVelocity;
+					velocity.Y = 0;
+					float speed = velocity.Length();
+
+					if (this.EnableWalking)
+					{
+						if (this.Crouched)
+						{
+							if (dir.LengthSquared() == 0.0f)
+								movementAnimation = "CrouchIdle";
+							else
+								movementAnimation = AnimationController.crouchDirections[(int)Math.Round(angle / ((float)Math.PI * 0.25f)) % 8];
+						}
+						else
+						{
+							if (dir.LengthSquared() == 0.0f)
+								movementAnimation = "Idle";
+							else
+								movementAnimation = AnimationController.directions[(int)Math.Round(angle / ((float)Math.PI * 0.25f)) % 8];
+						}
+					}
+					else
+					{
+						if (this.Crouched)
+							movementAnimation = "CrouchIdle";
+						else
+							movementAnimation = "Idle";
+					}
+
+					foreach (KeyValuePair<string, AnimationInfo> animation in this.Crouched ? crouchMovementAnimations : movementAnimations)
+					{
+						if (animation.Key != "Idle" && animation.Key != "CrouchIdle")
+							this.model[animation.Key].Speed = this.Crouched ? (speed / 2.2f) : (speed / 6.5f);
+						this.model[animation.Key].TargetStrength = animation.Key == movementAnimation ? 1.0f : animation.Value.DefaultStrength;
+					}
+
+					if (movementAnimation == "Run")
+					{
+						const float sprintRange = 1.0f;
+						const float sprintThreshold = Character.DefaultMaxSpeed - sprintRange;
+						this.sprintAnimation.TargetStrength = MathHelper.Clamp((speed - sprintThreshold) / sprintRange, 0.0f, 1.0f);
+						this.runAnimation.TargetStrength = Math.Min(MathHelper.Clamp(speed / 4.0f, 0.0f, 1.0f), 1.0f - this.sprintAnimation.TargetStrength);
+					}
+					else if (movementAnimation != "Idle" && movementAnimation != "CrouchIdle")
+						this.model[movementAnimation].TargetStrength = MathHelper.Clamp(this.Crouched ? speed / 2.0f : speed / 4.0f, 0.0f, 1.0f);
+
+					if (!this.model.IsPlaying(movementAnimation))
+					{
+						foreach (string anim in this.Crouched ? movementAnimations.Keys : crouchMovementAnimations.Keys)
+							this.model.Stop(anim);
+						foreach (KeyValuePair<string, AnimationInfo> animation in this.Crouched ? crouchMovementAnimations : movementAnimations)
+						{
+							this.model.StartClip(animation.Key, animation.Value.Priority, true, AnimatedModel.DefaultBlendTime);
+							this.model[animation.Key].Strength = animation.Value.DefaultStrength;
+						}
+					}
+				}
+				else
+				{
+					foreach (string anim in movementAnimations.Keys)
+						this.model.Stop(anim);
+					foreach (string anim in crouchMovementAnimations.Keys)
+						this.model.Stop(anim);
+
+					if (!this.model.IsPlaying("Fall"))
+						this.model.StartClip("Fall", 0, true, AnimatedModel.DefaultBlendTime);
+				}
 			}
 			else
 			{
@@ -171,7 +260,7 @@ namespace Lemma.Components
 						"WallRunRight",
 						"WallSlideReverse"
 					);
-					this.model.StartClip(wallRunAnimation, 5, true, 0.1f);
+					this.model.StartClip(wallRunAnimation, 0, true, 0.1f);
 				}
 
 				if (wallRunAnimation != null)
@@ -180,110 +269,11 @@ namespace Lemma.Components
 					float animationSpeed = (this.LinearVelocity.Value - wallNormal * Vector3.Dot(this.LinearVelocity.Value, wallNormal)).Length();
 					this.model[wallRunAnimation].Speed = Math.Min(1.5f, animationSpeed / 6.0f);
 				}
-
-				return;
-			}
-
-			this.model.Stop
-			(
-				"WallRunLeft",
-				"WallRunRight",
-				"WallRunStraight",
-				"WallSlideDown",
-				"WallSlideReverse"
-			);
-
-			if (this.IsSupported)
-			{
-				this.model.Stop
-				(
-					"Jump",
-					"JumpLeft",
-					"JumpBackward",
-					"JumpRight",
-					"Fall",
-					"Vault",
-					"VaultLeft",
-					"VaultRight"
-				);
-
-				Vector2 dir = this.Movement;
-				float angle = (float)Math.Atan2(dir.Y, dir.X);
-				if (angle < 0.0f)
-					angle += (float)Math.PI * 2.0f;
-
-				string movementAnimation;
-
-				Vector3 velocity = this.LinearVelocity;
-				velocity.Y = 0;
-				float speed = velocity.Length();
-
-				if (this.EnableWalking)
-				{
-					if (this.Crouched)
-					{
-						if (dir.LengthSquared() == 0.0f)
-							movementAnimation = "CrouchIdle";
-						else
-							movementAnimation = AnimationController.crouchDirections[(int)Math.Round(angle / ((float)Math.PI * 0.25f)) % 8];
-					}
-					else
-					{
-						if (dir.LengthSquared() == 0.0f)
-							movementAnimation = "Idle";
-						else
-							movementAnimation = AnimationController.directions[(int)Math.Round(angle / ((float)Math.PI * 0.25f)) % 8];
-					}
-				}
-				else
-				{
-					if (this.Crouched)
-						movementAnimation = "CrouchIdle";
-					else
-						movementAnimation = "Idle";
-				}
-
-				foreach (KeyValuePair<string, AnimationInfo> animation in this.Crouched ? crouchMovementAnimations : movementAnimations)
-				{
-					if (animation.Key != "Idle" && animation.Key != "CrouchIdle")
-						this.model[animation.Key].Speed = this.Crouched ? (speed / 2.2f) : (speed / 6.5f);
-					this.model[animation.Key].TargetStrength = animation.Key == movementAnimation ? 1.0f : animation.Value.DefaultStrength;
-				}
-
-				if (movementAnimation == "Run")
-				{
-					const float sprintRange = 1.0f;
-					const float sprintThreshold = Character.DefaultMaxSpeed - sprintRange;
-					this.sprintAnimation.TargetStrength = MathHelper.Clamp((speed - sprintThreshold) / sprintRange, 0.0f, 1.0f);
-					this.runAnimation.TargetStrength = Math.Min(MathHelper.Clamp(speed / 4.0f, 0.0f, 1.0f), 1.0f - this.sprintAnimation.TargetStrength);
-				}
-				else if (movementAnimation != "Idle" && movementAnimation != "CrouchIdle")
-					this.model[movementAnimation].TargetStrength = MathHelper.Clamp(this.Crouched ? speed / 2.0f : speed / 4.0f, 0.0f, 1.0f);
-
-				if (!this.model.IsPlaying(movementAnimation))
-				{
-					foreach (string anim in this.Crouched ? movementAnimations.Keys : crouchMovementAnimations.Keys)
-						this.model.Stop(anim);
-					foreach (KeyValuePair<string, AnimationInfo> animation in this.Crouched ? crouchMovementAnimations : movementAnimations)
-					{
-						this.model.StartClip(animation.Key, animation.Value.Priority, true, AnimatedModel.DefaultBlendTime);
-						this.model[animation.Key].Strength = animation.Value.DefaultStrength;
-					}
-				}
-			}
-			else
-			{
-				foreach (string anim in movementAnimations.Keys)
-					this.model.Stop(anim);
-				foreach (string anim in crouchMovementAnimations.Keys)
-					this.model.Stop(anim);
-
-				if (!this.model.IsPlaying("Fall"))
-					this.model.StartClip("Fall", 0, true, AnimatedModel.DefaultBlendTime);
 			}
 
 			// Rotate head and arms to match mouse
-			this.relativeHeadBone.Value *= Matrix.CreateRotationX(mouse.Y * 0.4f);
+			this.model.UpdateWorldTransforms();
+			this.relativeHeadBone.Value *= Matrix.CreateRotationX(mouse.Y * 0.6f);
 			this.model.UpdateWorldTransforms();
 
 			Matrix r = Matrix.CreateRotationX(mouse.Y * 0.6f * (this.runAnimation.TotalStrength + this.sprintAnimation.TotalStrength));

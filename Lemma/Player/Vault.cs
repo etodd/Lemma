@@ -19,6 +19,8 @@ namespace Lemma.Components
 			Down,
 		}
 
+		private Random random = new Random();
+
 		// Input
 		public Property<Vector3> Position = new Property<Vector3>();
 		public Property<Vector3> FloorPosition = new Property<Vector3>();
@@ -29,6 +31,7 @@ namespace Lemma.Components
 		public Property<State> CurrentState = new Property<State>();
 		public Command LockRotation = new Command();
 		public Property<float> LastSupportedSpeed = new Property<float>();
+		public Command DeactivateWallRun = new Command();
 		public Command<WallRun.State> ActivateWallRun = new Command<WallRun.State>();
 		public AnimatedModel Model;
 
@@ -121,6 +124,7 @@ namespace Lemma.Components
 
 		private void vault(int x, Map map, Map.Coordinate coord)
 		{
+			this.DeactivateWallRun.Execute();
 			switch (x)
 			{
 				case -1:
@@ -186,7 +190,9 @@ namespace Lemma.Components
 					break;
 			}
 			this.Model.StartClip(animation, 4, false, 0.1f);
-			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, this.Entity);
+
+			if (this.random.NextDouble() > 0.5)
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, this.Entity);
 
 			this.vaultTime = 0.0f;
 			this.moveForwardStartTime = 0.0f;

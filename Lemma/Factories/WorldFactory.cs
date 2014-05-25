@@ -163,7 +163,7 @@ namespace Lemma.Factories
 				delegate()
 				{
 					if (Factory.Get<PlayerDataFactory>().Instance == null)
-						Factory.Get<PlayerDataFactory>().CreateAndBind(main);
+						main.Add(Factory.Get<PlayerDataFactory>().CreateAndBind(main));
 				}
 			});
 

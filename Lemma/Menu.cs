@@ -956,6 +956,7 @@ namespace Lemma.Components
 			addInputSetting(this.main.Settings.Jump, "\\jump", true, true);
 			addInputSetting(this.main.Settings.Parkour, "\\parkour", true, true);
 			addInputSetting(this.main.Settings.RollKick, "\\roll / kick", true, true);
+			addInputSetting(this.main.Settings.SpecialAbility, "\\special ability", true, true);
 			addInputSetting(this.main.Settings.TogglePhone, "\\toggle phone", true, true);
 			addInputSetting(this.main.Settings.QuickSave, "\\quicksave", true, true);
 
