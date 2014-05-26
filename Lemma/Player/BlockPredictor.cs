@@ -32,6 +32,7 @@ namespace Lemma.Components
 		public Property<Vector3> FootPosition = new Property<Vector3>();
 		public Property<float> MaxSpeed = new Property<float>();
 		public Property<float> JumpSpeed = new Property<float>();
+		public Property<bool> IsSupported = new Property<bool>();
 
 		private const float blockPossibilityFadeInTime = 0.075f;
 		private const float blockPossibilityTotalLifetime = 2.0f;
@@ -155,8 +156,6 @@ namespace Lemma.Components
 			}
 
 			AkSoundEngine.PostEvent("Play_block_instantiate", 0.5f * (block.Map.GetAbsolutePosition(block.StartCoord) + block.Map.GetAbsolutePosition(block.EndCoord)));
-
-			this.ClearPossibilities();
 		}
 
 		// Function for finding a platform to build for the player
@@ -306,13 +305,24 @@ namespace Lemma.Components
 
 		private Vector3 startSlowMo(Queue<Prediction> predictions, float interval)
 		{
-			Vector3 startPosition = this.FootPosition;
-
 			Vector3 straightAhead = Matrix.CreateRotationY(this.Rotation).Forward * -this.MaxSpeed;
+			Vector3 velocity;
+			Vector3 startPosition;
 
-			Vector3 velocity = this.LinearVelocity;
-			if (velocity.Length() < this.MaxSpeed * 0.25f)
-				velocity += straightAhead * 0.5f;
+			if (this.IsSupported)
+			{
+				startPosition = this.FootPosition + straightAhead;
+
+				velocity = straightAhead + new Vector3(0, this.JumpSpeed, 0);
+			}
+			else
+			{
+				startPosition = this.FootPosition;
+
+				velocity = this.LinearVelocity;
+				if (velocity.Length() < this.MaxSpeed * 0.25f)
+					velocity += straightAhead * 0.5f;
+			}
 
 			this.predictJump(predictions, startPosition, velocity, interval, 0);
 
@@ -324,7 +334,7 @@ namespace Lemma.Components
 
 		public void PredictPlatforms()
 		{
-			float interval = getPredictionInterval();
+			float interval = this.getPredictionInterval();
 
 			Queue<Prediction> predictions = new Queue<Prediction>();
 			Vector3 jumpVelocity = this.startSlowMo(predictions, interval);
