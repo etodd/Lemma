@@ -180,7 +180,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.generator = this.Entity.Get<ProceduralGenerator>();
+			this.generator = this.Entity.GetOrCreate<ProceduralGenerator>();
 
 			this.Spawn.Action = delegate(string type)
 			{
