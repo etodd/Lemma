@@ -94,7 +94,7 @@ namespace Lemma.Components
 						visited[c] = true;
 						foreach (Direction adjacentDirection in DirectionExtensions.Directions)
 						{
-							Map.Coordinate adjacentCoord = coord.Move(adjacentDirection);
+							Map.Coordinate adjacentCoord = c.Move(adjacentDirection);
 							if (!visited.ContainsKey(adjacentCoord))
 							{
 								Map.t adjacentID = map[adjacentCoord].ID;
