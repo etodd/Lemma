@@ -44,7 +44,11 @@ namespace Lemma.Factories
 						coord.Value = staticMap.GetCoordinate(transform.Position);
 						mapTransform.Position.Value = staticMap.GetAbsolutePosition(staticMap.GetRelativePosition(coord) - new Vector3(0.5f) + staticMap.Offset + map.Offset.Value);
 						if (!allowRotation)
-							mapTransform.Orientation.Value = parent.Get<Transform>().Orientation;
+						{
+							Matrix parentOrientation = staticMap.Transform;
+							parentOrientation.Translation = Vector3.Zero;
+							mapTransform.Orientation.Value = parentOrientation;
+						}
 					}
 				}
 				else

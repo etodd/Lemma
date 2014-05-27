@@ -29,8 +29,7 @@ namespace Lemma.Factories
 
 			// The transform has to come before the map component
 			// So that its properties get bound correctly
-			Transform transform = new Transform();
-			entity.Add("Transform", transform);
+			entity.Add("Transform", new Transform());
 			
 			Map map = this.newMapComponent(offsetX, offsetY, offsetZ);
 			entity.Add("Map", map);

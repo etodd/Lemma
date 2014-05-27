@@ -20,6 +20,8 @@ namespace Lemma.Factories
 		{
 			Entity entity = new Entity(main, "Spinner");
 
+			entity.Add("MapTransform", new Transform());
+			entity.Add("Transform", new Transform());
 			entity.Add("Map", new DynamicMap(0, 0, 0));
 
 			return entity;
