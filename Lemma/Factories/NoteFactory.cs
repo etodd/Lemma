@@ -56,7 +56,7 @@ namespace Lemma.Factories
 
 			trigger.Serialize = false;
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
-			trigger.Radius.Value = 4.0f;
+			trigger.Radius.Value = 3.5f;
 
 			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity p)
 			{

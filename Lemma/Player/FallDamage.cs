@@ -12,7 +12,7 @@ namespace Lemma.Components
 	{
 		public const float DamageVelocity = -20.0f; // Vertical velocity below which damage occurs
 		public const float RollingDamageVelocity = -28.0f; // Damage velocity when rolling
-		public const float GruntVelocity = -10.0f; // Vertical velocity below which grunting occurs
+		public const float GruntVelocity = -11.0f; // Vertical velocity below which grunting occurs
 
 		// Input commands
 		public Command<float> Apply = new Command<float>();
@@ -60,7 +60,7 @@ namespace Lemma.Components
 					}
 				}
 				else if (verticalAcceleration < GruntVelocity)
-					AkSoundEngine.PostEvent("Play_Player_Landing", this.Entity);
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_LAND, this.Entity);
 			};
 
 			// Damage the player if they hit something too hard

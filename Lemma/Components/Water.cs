@@ -418,12 +418,17 @@ namespace Lemma.Components
 			}
 		}
 
+		private Dictionary<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable, int> submerged = new Dictionary<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable, int>();
+
 		void IUpdateableComponent.Update(float dt)
 		{
 			if (this.main.Paused)
 				return;
 
 			float waterHeight = this.Position.Value.Y;
+
+			foreach (BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable c in this.submerged.Keys.ToList())
+				this.submerged[c]--;
 
 			lock (this.Fluid.NotifyEntries)
 			{
@@ -437,10 +442,17 @@ namespace Lemma.Components
 					if (speed > 9.0f)
 					{
 						float volume = Math.Min(speed * collidable.Entity.Mass / 50.0f, 1.0f);
-						if (volume > 0.25f)
+						if (volume > 0.25f && !this.submerged.ContainsKey(collidable))
 						{
-							// TODO: Figure out Wwise volume parameter
-							AkSoundEngine.PostEvent(collidable.Entity.LinearVelocity.Y > 0.0f ? "Splash Out" : "Splash", collidable.Entity.Position);
+							if (collidable.Entity.LinearVelocity.Y > 0.0f)
+								AkSoundEngine.PostEvent("Play_Splash_Out", collidable.Entity.Position);
+							else
+							{
+								if (collidable.Entity.Mass > 40.0f)
+									AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH_HEAVY, collidable.Entity.Position);
+								else
+									AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH, collidable.Entity.Position);
+							}
 						}
 					}
 
@@ -448,17 +460,44 @@ namespace Lemma.Components
 					{
 						collidable.UpdateBoundingBox();
 						BoundingBox boundingBox = collidable.BoundingBox;
-						Vector3[] particlePositions = new Vector3[30];
+						Vector3 diff = boundingBox.Max - boundingBox.Min;
+						Vector3[] particlePositions = new Vector3[5 * (int)(diff.X * diff.Z)];
 
 						for (int i = 0; i < particlePositions.Length; i++)
-							particlePositions[i] = new Vector3(boundingBox.Min.X + ((float)this.random.NextDouble() * (boundingBox.Max.X - boundingBox.Min.X)),
+						{
+							particlePositions[i] = new Vector3
+							(
+								boundingBox.Min.X + ((float)this.random.NextDouble() * diff.X),
 								waterHeight,
-								boundingBox.Min.Z + ((float)this.random.NextDouble() * (boundingBox.Max.Z - boundingBox.Min.Z)));
+								boundingBox.Min.Z + ((float)this.random.NextDouble() * diff.Z)
+							);
+						}
 
 						ParticleEmitter.Emit(this.main, "Splash", particlePositions);
+
+						particlePositions = new Vector3[(int)(diff.X * diff.Z)];
+						for (int i = 0; i < particlePositions.Length; i++)
+						{
+							particlePositions[i] = new Vector3
+							(
+								boundingBox.Min.X + ((float)this.random.NextDouble() * diff.X),
+								waterHeight,
+								boundingBox.Min.Z + ((float)this.random.NextDouble() * diff.Z)
+							);
+						}
+
+						ParticleEmitter.Emit(this.main, "BigSplash", particlePositions);
 					}
+
+					this.submerged[collidable] = 10;
 				}
 				this.Fluid.NotifyEntries.Clear();
+			}
+
+			foreach (KeyValuePair<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable, int> p in this.submerged.ToList())
+			{
+				if (p.Value <= 0)
+					this.submerged.Remove(p.Key);
 			}
 		}
 

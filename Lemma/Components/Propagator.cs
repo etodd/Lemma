@@ -435,7 +435,23 @@ namespace Lemma.Components
 
 				light.Attenuation.Value = type == Spark.Expander ? 10.0f : 5.0f;
 
-				AkSoundEngine.PostEvent(type == Spark.Dangerous ? AK.EVENTS.PLAY_RED_BURN : AK.EVENTS.PLAY_ORANGE_BURN, pos);
+				if (this.random.Next(0, 2) == 0)
+				{
+					uint sound;
+					switch (type)
+					{
+						case Spark.Dangerous:
+							sound = AK.EVENTS.PLAY_RED_BURN;
+							break;
+						case Spark.Burn:
+							sound = AK.EVENTS.PLAY_ORANGE_BURN;
+							break;
+						default:
+							sound = AK.EVENTS.PLAY_BLUE_BURN;
+							break;
+					}
+					AkSoundEngine.PostEvent(sound, pos);
+				}
 			}
 		}
 	}

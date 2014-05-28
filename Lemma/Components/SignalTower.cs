@@ -56,6 +56,8 @@ namespace Lemma.Components
 
 					if (phone.Schedules.Count > 0) // We sent a message. That means this signal tower cannot execute again.
 						this.Initial.Value = null;
+					
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SIGNAL_TOWER_ACTIVATE, this.Entity);
 				}
 
 				p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = this.Entity;

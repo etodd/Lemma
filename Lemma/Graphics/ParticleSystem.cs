@@ -214,6 +214,28 @@ namespace Lemma.Components
 				MaxColor = new Vector4(0.7f, 0.75f, 0.8f, 1.0f),
 			});
 
+			ParticleSystem.add(main, "BigSplash",
+			new ParticleSystem.ParticleSettings
+			{
+				TextureName = "Particles\\big-splash",
+				MaxParticles = 1000,
+				Duration = TimeSpan.FromSeconds(0.5f),
+				MinHorizontalVelocity = -4.0f,
+				MaxHorizontalVelocity = 4.0f,
+				MinVerticalVelocity = 0.0f,
+				MaxVerticalVelocity = 2.0f,
+				Gravity = new Vector3(0.0f, 0.0f, 0.0f),
+				MinRotateSpeed = -1.0f,
+				MaxRotateSpeed = 1.0f,
+				MinStartSize = 0.5f,
+				MaxStartSize = 1.0f,
+				MinEndSize = 1.0f,
+				MaxEndSize = 2.0f,
+				BlendState = BlendState.AlphaBlend,
+				MinColor = new Vector4(0.7f, 0.75f, 0.8f, 0.5f),
+				MaxColor = new Vector4(0.7f, 0.75f, 0.8f, 0.5f),
+			});
+
 #if DEVELOPMENT
 			ParticleSystem.add(main, "Debug",
 			new ParticleSystem.ParticleSettings
