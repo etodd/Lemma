@@ -8,8 +8,6 @@ float3 CameraPosition;
 float GodRayStrength;
 float GodRayExtinction;
 
-const float RandomTile = 50.0f;
-
 float4x4 ShadowViewProjectionMatrix;
 
 float4x4 ViewMatrixRotationOnly;
@@ -75,7 +73,7 @@ void SkyboxPS(in RenderPSInput input,
 	{
 		float shadowValue = FOG_SHADOW_SAMPLES;
 
-		float3 s = CameraPosition + viewRay * StartDistance + tex2D(RandomSampler, uv * RandomTile);
+		float3 s = CameraPosition + viewRay * StartDistance;
 		viewRay *= interval;
 
 		float lastValue = 0.0f;
@@ -83,7 +81,7 @@ void SkyboxPS(in RenderPSInput input,
 		for (int i = 0; i < FOG_SHADOW_SAMPLES; i++)
 		{
 			s += viewRay;
-			float4 shadowPos = mul(float4(s, 1.0f), ShadowViewProjectionMatrix);
+			float4 shadowPos = mul(float4(s + tex2D(RandomSampler, s.xy), 1.0f), ShadowViewProjectionMatrix);
 			float v = GetShadowValueNoFilter(shadowPos);
 			float newValue = 0.0f;
 			if (v > 0.0f)
