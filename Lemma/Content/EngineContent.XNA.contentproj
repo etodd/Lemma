@@ -336,12 +336,7 @@
       <Name>Strings</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Wwise\Windows\Init.bnk">
-      <Name>Init</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Wwise\Windows\SFX_Bank_01.bnk">
-      <Name>SFX_Bank_01</Name>
+    <None Include="Wwise\**\*.bnk">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

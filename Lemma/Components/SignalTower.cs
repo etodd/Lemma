@@ -70,10 +70,14 @@ namespace Lemma.Components
 				if (p != null)
 					p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = null;
 			};
+
+			if (!this.main.EditorEnabled)
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SIGNAL_TOWER_LOOP, this.Entity);
 		}
 
 		public override void delete()
 		{
+			AkSoundEngine.PostEvent(AK.EVENTS.STOP_SIGNAL_TOWER_LOOP, this.Entity);
 			Entity player = this.Player.Value.Target;
 			if (player != null && player.Active)
 			{

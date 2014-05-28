@@ -17,6 +17,7 @@ public class AK
         public static uint PLAY_PLAYER_SLIDE = 2425231895U;
         public static uint PLAY_PLAYER_SLIDE_LOOP = 693421804U;
         public static uint PLAY_RED_BURN = 472607653U;
+        public static uint PLAY_SIGNAL_TOWER_LOOP = 1879386073U;
         public static uint PLAY_UI_CLICK = 1749424733U;
         public static uint PLAY_UI_MOUSEOVER = 808445146U;
         public static uint PLAY_WALL_BREAK_01 = 2635525752U;
@@ -26,6 +27,7 @@ public class AK
         public static uint STOP_PLAYER_BREATHING_SOFT = 1454416799U;
         public static uint STOP_PLAYER_FALL = 3680109729U;
         public static uint STOP_PLAYER_SLIDE_LOOP = 651971942U;
+        public static uint STOP_SIGNAL_TOWER_LOOP = 2826848843U;
         public static uint STOP_WHITE_LIGHT = 2253775078U;
     } // public class EVENTS
 

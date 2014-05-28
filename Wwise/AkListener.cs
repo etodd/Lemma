@@ -26,7 +26,7 @@ public class AkListener : Component<BaseMain>, IUpdateableComponent
 		Vector3 forward = -this.Forward.Value;
 		Vector3 up = this.Up;
 		Vector3 pos = this.Position;
-		if (forward.Equals(this.lastForward) || up.Equals(this.lastUp) || pos.Equals(this.lastPosition))
+		if (forward.Equals(this.lastForward) && up.Equals(this.lastUp) && pos.Equals(this.lastPosition))
 			return;	// Position didn't change, no need to update.
 
 		// Update position
