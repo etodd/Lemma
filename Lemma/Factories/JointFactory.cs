@@ -149,7 +149,7 @@ namespace Lemma.Factories
 					main.Space.Add(joint);
 			}));
 			
-			rebuildJoint();
+			entity.Add(new PostInitialization { rebuildJoint });
 			Command rebuildJointCommand = new Command
 			{
 				Action = rebuildJoint,
