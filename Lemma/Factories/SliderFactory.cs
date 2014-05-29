@@ -165,11 +165,11 @@ namespace Lemma.Factories
 
 			Action<int> move = delegate(int value)
 			{
-				if (joint != null && locked)
+				if (locked)
 					goal.Value = value;
 			};
 			entity.Add("Forward", new Command { Action = delegate() { move(maximum); } });
-			entity.Add("Trigger", new Command<Entity> { Action = delegate(Entity p) { move(maximum); } });
+			entity.Add("Trigger", new Command { Action = delegate() { move(maximum); } });
 			entity.Add("Backward", new Command { Action = delegate() { move(minimum); } });
 
 			Command hitMax = new Command();

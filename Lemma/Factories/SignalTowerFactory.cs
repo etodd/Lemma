@@ -53,7 +53,7 @@ namespace Lemma.Factories
 			SignalTower tower = entity.GetOrCreate<SignalTower>("SignalTower");
 
 			Animation enterAnimation = null;
-			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity p)
+			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
 			{
 				if (!string.IsNullOrEmpty(tower.Initial) && (enterAnimation == null || !enterAnimation.Active))
 				{
@@ -66,8 +66,8 @@ namespace Lemma.Factories
 				}
 			}));
 
-			tower.Add(new CommandBinding<Entity>(trigger.PlayerEntered, tower.PlayerEnteredRange));
-			tower.Add(new CommandBinding<Entity>(trigger.PlayerExited, tower.PlayerExitedRange));
+			tower.Add(new CommandBinding(trigger.PlayerEntered, tower.PlayerEnteredRange));
+			tower.Add(new CommandBinding(trigger.PlayerExited, tower.PlayerExitedRange));
 			tower.Add(new Binding<Entity.Handle>(tower.Player, trigger.Player));
 
 			AkGameObjectTracker.Attach(entity, trigger.Position);

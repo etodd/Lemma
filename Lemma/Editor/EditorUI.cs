@@ -219,7 +219,7 @@ namespace Lemma.Components
 				container.UserData.Value = command;
 				container.Tint.Value = Color.Black;
 				container.Add(new Binding<float, bool>(container.Opacity, x => x ? 1.0f : 0.0f, container.Highlighted));
-				container.Add(new CommandBinding<Point>(container.MouseLeftUp, delegate(Point p)
+				container.Add(new CommandBinding(container.MouseLeftUp, delegate()
 				{
 					this.PopupVisible.Value = false;
 					command.Action.Execute();
@@ -308,7 +308,7 @@ namespace Lemma.Components
 
 				label.Add(new Binding<float, bool>(label.Opacity, x => x ? 1.0f : 0.5f, label.Highlighted));
 
-				label.Add(new CommandBinding<Point>(label.MouseLeftUp, delegate(Point mouse)
+				label.Add(new CommandBinding(label.MouseLeftUp, delegate()
 				{
 					propertyListContainer.Visible.Value = !propertyListContainer.Visible;
 				}));
@@ -355,10 +355,7 @@ namespace Lemma.Components
 
 			field.Add(new Binding<float, bool>(field.Opacity, x => x ? 1.0f : 0.5f, field.Highlighted));
 
-			field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point p)
-			{
-				command.Execute();
-			}));
+			field.Add(new CommandBinding(field.MouseLeftUp, command));
 			field.SwallowMouseEvents.Value = true;
 
 			return field;
@@ -498,12 +495,12 @@ namespace Lemma.Components
 			textField.FontFile.Value = "Font";
 			field.Children.Add(textField);
 			
-			field.Add(new CommandBinding<Point>(field.MouseLeftDown, delegate(Point mouse)
+			field.Add(new CommandBinding(field.MouseLeftDown, delegate()
 			{
 				field.SwallowMouseEvents.Value = true;
 				field.MouseLocked.Value = true;
 			}));
-			field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point mouse)
+			field.Add(new CommandBinding(field.MouseLeftUp, delegate()
 			{
 				field.SwallowMouseEvents.Value = false;
 				field.MouseLocked.Value = false;
@@ -512,7 +509,7 @@ namespace Lemma.Components
 			if (type.Equals(typeof(Vector2)))
 			{
 				Property<Vector2> socket = (Property<Vector2>)property;
-				field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
 				{
 					this.NeedsSave.Value = true;
 					float delta = scroll * (this.EnablePrecision ? EditorUI.precisionDelta : EditorUI.normalDelta);
@@ -523,7 +520,7 @@ namespace Lemma.Components
 			else if (type.Equals(typeof(Vector3)))
 			{
 				Property<Vector3> socket = (Property<Vector3>)property;
-				field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
 				{
 					this.NeedsSave.Value = true;
 					float delta = scroll * (this.EnablePrecision ? EditorUI.precisionDelta : EditorUI.normalDelta);
@@ -548,7 +545,7 @@ namespace Lemma.Components
 						break;
 				}
 
-				field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
 				{
 					this.NeedsSave.Value = true;
 					int delta = scroll * (this.EnablePrecision ? 1 : 10);
@@ -561,7 +558,7 @@ namespace Lemma.Components
 			else if (type.Equals(typeof(Vector4)))
 			{
 				Property<Vector4> socket = (Property<Vector4>)property;
-				field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
 				{
 					this.NeedsSave.Value = true;
 					float delta = scroll * (this.EnablePrecision ? EditorUI.precisionDelta : EditorUI.normalDelta);
@@ -572,7 +569,7 @@ namespace Lemma.Components
 			else if (type.Equals(typeof(Quaternion)))
 			{
 				Property<Quaternion> socket = (Property<Quaternion>)property;
-				field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
 				{
 					this.NeedsSave.Value = true;
 					float delta = scroll * (this.EnablePrecision ? EditorUI.precisionDelta : EditorUI.normalDelta);
@@ -583,7 +580,7 @@ namespace Lemma.Components
 			else if (type.Equals(typeof(Color)))
 			{
 				Property<Color> socket = (Property<Color>)property;
-				field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
 				{
 					this.NeedsSave.Value = true;
 					socket.Value = socket.Value.SetElement(element, (byte)Math.Max(0, Math.Min(255, socket.Value.GetElement(element) + scroll * (this.EnablePrecision ? 1 : 10))));
@@ -635,12 +632,12 @@ namespace Lemma.Components
 				if (!propertyInfo.PropertyType.Equals(typeof(string)))
 				{
 					// Some kind of float, int, or bool
-					field.Add(new CommandBinding<Point>(field.MouseLeftDown, delegate(Point mouse)
+					field.Add(new CommandBinding(field.MouseLeftDown, delegate()
 					{
 						field.SwallowMouseEvents.Value = true;
 						field.MouseLocked.Value = true;
 					}));
-					field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point mouse)
+					field.Add(new CommandBinding(field.MouseLeftUp, delegate()
 					{
 						field.SwallowMouseEvents.Value = false;
 						field.MouseLocked.Value = false;
@@ -650,7 +647,7 @@ namespace Lemma.Components
 				if (propertyInfo.PropertyType.Equals(typeof(int)))
 				{
 					Property<int> socket = (Property<int>)property;
-					field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+					field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
 					{
 						this.NeedsSave.Value = true;
 						socket.Value += scroll * (this.EnablePrecision ? 1 : 10);
@@ -660,7 +657,7 @@ namespace Lemma.Components
 				else if (propertyInfo.PropertyType.Equals(typeof(float)))
 				{
 					Property<float> socket = (Property<float>)property;
-					field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+					field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
 					{
 						this.NeedsSave.Value = true;
 						socket.Value += scroll * (this.EnablePrecision ? EditorUI.precisionDelta : EditorUI.normalDelta);;
@@ -670,7 +667,7 @@ namespace Lemma.Components
 				else if (propertyInfo.PropertyType.Equals(typeof(bool)))
 				{
 					Property<bool> socket = (Property<bool>)property;
-					field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+					field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
 					{
 						this.NeedsSave.Value = true;
 						socket.Value = !socket;
@@ -680,7 +677,7 @@ namespace Lemma.Components
 				else if (typeof(Enum).IsAssignableFrom(propertyInfo.PropertyType))
 				{
 					int numFields = propertyInfo.PropertyType.GetFields(BindingFlags.Static | BindingFlags.Public).Length;
-					field.Add(new CommandBinding<Point, int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(Point mouse, int scroll)
+					field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
 					{
 						this.NeedsSave.Value = true;
 						int i = (int)propertyInfo.GetValue(property, null);
@@ -699,7 +696,7 @@ namespace Lemma.Components
 					textField.Add(new Binding<float, Point>(textField.WrapWidth, x => x.X * 0.5f, this.main.ScreenSize));
 					Binding<string> binding = new Binding<string>(textField.Text, socket);
 					textField.Add(binding);
-					field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point mouse)
+					field.Add(new CommandBinding(field.MouseLeftUp, delegate()
 					{
 						if (this.selectedStringProperty != socket)
 						{
@@ -722,7 +719,7 @@ namespace Lemma.Components
 					Property<Entity.Handle> socket = (Property<Entity.Handle>)property;
 					Binding<string> binding = new Binding<string>(textField.Text, () => socket.Value.ID, socket);
 					textField.Add(binding);
-					field.Add(new CommandBinding<Point>(field.MouseLeftUp, delegate(Point mouse)
+					field.Add(new CommandBinding(field.MouseLeftUp, delegate()
 					{
 						this.lockStringProperty(textField.Text, socket, socket.Value.ID ?? "", binding, true);
 					}));

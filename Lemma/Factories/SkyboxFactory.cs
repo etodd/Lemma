@@ -47,8 +47,8 @@ namespace Lemma.Factories
 				new Binding<string>
 				(
 					skybox.TechniquePostfix,
-					() => (vertical ? "Vertical" : "") + (main.LightingManager.HasGlobalShadowLight && godRays > 0.0f && ((GameMain)main).Settings.EnableGodRays ? "GodRays" : ""),
-					vertical, main.LightingManager.HasGlobalShadowLight, godRays, ((GameMain)main).Settings.EnableGodRays
+					() => (vertical ? "Vertical" : "") + (main.LightingManager.HasGlobalShadowLight && godRays > 0.0f && main.Settings.EnableGodRays ? "GodRays" : ""),
+					vertical, main.LightingManager.HasGlobalShadowLight, godRays, main.Settings.EnableGodRays
 				)
 			);
 			skybox.Add(new Binding<float>(skybox.GetFloatParameter("VerticalSize"), entity.GetOrMakeProperty<float>("VerticalSize", true, 10.0f)));

@@ -14,12 +14,12 @@ namespace Lemma
 	public partial class AnalyticsForm : Form
 	{
 		private string error;
-		private GameMain main;
+		private Main main;
 		private bool success;
 		private bool cancelled;
 		private string anonymousId;
 
-		public AnalyticsForm(GameMain main, string anonymousId, string error)
+		public AnalyticsForm(Main main, string anonymousId, string error)
 		{
 			this.InitializeComponent();
 			this.main = main;

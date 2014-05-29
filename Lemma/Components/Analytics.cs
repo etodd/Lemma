@@ -280,7 +280,7 @@ namespace Lemma.Components
 			public static void Event(Main main, string name, string data = null)
 			{
 #if ANALYTICS
-				((GameMain)main).SessionRecorder.RecordEvent(name, data);
+				main.SessionRecorder.RecordEvent(name, data);
 #endif
 			}
 
@@ -301,12 +301,12 @@ namespace Lemma.Components
 			{
 				this.data.Date = DateTime.Now;
 				this.data.Interval = Interval;
-				this.data.Build = GameMain.Build;
+				this.data.Build = Main.Build;
 			}
 
 			public void Save(string path, string map, float totalTime)
 			{
-				this.data.UUID = ((GameMain)this.main).Settings.UUID;
+				this.data.UUID = this.main.Settings.UUID;
 				this.data.TotalTime = totalTime;
 				this.data.Map = map;
 				using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))

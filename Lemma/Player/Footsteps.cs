@@ -208,7 +208,7 @@ namespace Lemma.Components
 							Rotation = this.Rotation,
 							OriginalPosition = this.groundRaycast.Map.GetAbsolutePosition(this.groundRaycast.Coordinate.Value),
 						});
-						while (this.RespawnLocations.Count > GameMain.RespawnMemoryLength)
+						while (this.RespawnLocations.Count > Spawner.RespawnMemoryLength)
 							this.RespawnLocations.RemoveAt(0);
 						this.walkedOnCount = 0;
 					}

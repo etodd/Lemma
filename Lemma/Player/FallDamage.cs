@@ -47,8 +47,8 @@ namespace Lemma.Components
 					this.Health.Value += (verticalAcceleration - v) * 0.2f;
 					if (this.Health.Value == 0.0f)
 					{
-						((GameMain)main).RespawnDistance = GameMain.DefaultRespawnDistance;
-						((GameMain)main).RespawnInterval = GameMain.DefaultRespawnInterval;
+						main.Spawner.RespawnDistance = Spawner.DefaultRespawnDistance;
+						main.Spawner.RespawnInterval = Spawner.DefaultRespawnInterval;
 					}
 					else
 					{

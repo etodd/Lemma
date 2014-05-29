@@ -16,7 +16,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma.GInterfaces
 {
-	public class ConsoleUI : Component<GameMain>, IUpdateableComponent
+	public class ConsoleUI : Component<Main>, IUpdateableComponent
 	{
 		public View RootConsoleView;
 		public TextFieldView ConsoleLogView;
@@ -133,8 +133,9 @@ namespace Lemma.GInterfaces
 		{
 			Console.Console.AddConVar(new ConVar("player_speed", "Player speed.", s =>
 			{
-				Entity playerData = Factory.Get<PlayerDataFactory>().Instance;
-				playerData.GetOrMakeProperty<float>("MaxSpeed").Value = (float)Console.Console.GetConVar("player_speed").GetCastedValue();
+				Entity playerData = PlayerDataFactory.Instance;
+				if (playerData != null)
+					playerData.Get<PlayerData>().MaxSpeed.Value = (float)Console.Console.GetConVar("player_speed").GetCastedValue();
 			}, "10") { TypeConstraint = typeof(float), Validate = o => (float)o > 0 && (float)o < 200 });
 
 			Console.Console.AddConCommand(new ConCommand("help", "Recursion~~",

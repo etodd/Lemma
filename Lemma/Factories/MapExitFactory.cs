@@ -47,11 +47,9 @@ namespace Lemma.Factories
 			Property<string> startSpawnPoint = entity.GetOrMakeProperty<string>("SpawnPoint", true);
 
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
-			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity player)
+			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
 			{
-				GameMain gameMain = main as GameMain;
-
-				gameMain.Screenshot.Take(main.ScreenSize);
+				main.Screenshot.Take(main.ScreenSize);
 
 				Container notification = new Container();
 				TextElement notificationText = new TextElement();
@@ -68,13 +66,13 @@ namespace Lemma.Factories
 						notificationText.FontFile.Value = "Font";
 						notificationText.Text.Value = "Loading...";
 						notification.Children.Add(notificationText);
-						gameMain.UI.Root.GetChildByName("Notifications").Children.Add(notification);
+						main.UI.Root.GetChildByName("Notifications").Children.Add(notification);
 					}),
 					new Animation.Delay(0.01f),
 					new Animation.Execute(delegate()
 					{
 						// We are exiting the map; just save the state of the map without the player.
-						ListProperty<RespawnLocation> respawnLocations = Factory.Get<PlayerDataFactory>().Instance.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
+						ListProperty<RespawnLocation> respawnLocations = PlayerDataFactory.Instance.Get<PlayerData>().RespawnLocations;
 						respawnLocations.Clear();
 
 						List<Entity> persistentEntities = main.Entities.Where((Func<Entity, bool>)MapExitFactory.isPersistent).ToList();
@@ -84,13 +82,13 @@ namespace Lemma.Factories
 						foreach (Entity e in persistentEntities)
 							e.Delete.Execute();
 
-						gameMain.StartSpawnPoint.Value = startSpawnPoint;
+						main.Spawner.StartSpawnPoint.Value = startSpawnPoint;
 
-						if (gameMain.Player.Value != null && gameMain.Player.Value.Active)
-							gameMain.Player.Value.Delete.Execute();
+						if (PlayerFactory.Instance != null)
+							PlayerFactory.Instance.Delete.Execute();
 
-						gameMain.SaveCurrentMap(gameMain.Screenshot.Buffer, gameMain.Screenshot.Size);
-						gameMain.Screenshot.Clear();
+						main.SaveCurrentMap(main.Screenshot.Buffer, main.Screenshot.Size);
+						main.Screenshot.Clear();
 						main.MapFile.Value = nextMap;
 
 						notification.Visible.Value = false;
@@ -110,7 +108,7 @@ namespace Lemma.Factories
 					new Animation.Delay(0.01f),
 					new Animation.Execute(delegate()
 					{
-						gameMain.SaveOverwrite();
+						main.SaveOverwrite();
 					}),
 					new Animation.Set<string>(notificationText.Text, "Saved"),
 					new Animation.Parallel

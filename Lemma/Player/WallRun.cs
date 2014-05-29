@@ -150,6 +150,7 @@ namespace Lemma.Components
 								if (wallCoord.Between(block.StartCoord, block.EndCoord))
 								{
 									this.Predictor.InstantiatePossibility(block);
+									this.Predictor.ClearPossibilities();
 									activate = true;
 									addInitialVelocity = true;
 									wallInstantiationTimer = 0.25f;

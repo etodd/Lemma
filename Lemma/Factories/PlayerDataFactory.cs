@@ -12,7 +12,7 @@ namespace Lemma.Factories
 {
 	public class PlayerDataFactory : Factory<Main>
 	{
-		private Entity instance;
+		private static Entity instance;
 
 		public PlayerDataFactory()
 		{
@@ -24,23 +24,8 @@ namespace Lemma.Factories
 		{
 			Entity entity = new Entity(main, "PlayerData");
 
-			const bool enabled = true;
-
-			entity.Add("EnableRoll", new Property<bool> { Value = enabled });
-			entity.Add("EnableCrouch", new Property<bool> { Value = enabled });
-			entity.Add("EnableKick", new Property<bool> { Value = enabled });
-			entity.Add("EnableWallRun", new Property<bool> { Value = enabled });
-			entity.Add("EnableWallRunHorizontal", new Property<bool> { Value = enabled });
-			entity.Add("EnableEnhancedWallRun", new Property<bool> { Value = enabled });
-			entity.Add("EnableSlowMotion", new Property<bool> { Value = enabled });
-			entity.Add("EnableStamina", new Property<bool> { Value = enabled });
-			entity.Add("EnableMoves", new Property<bool> { Value = true });
-			entity.Add("EnablePhone", new Property<bool> { Value = enabled });
-			entity.Add("MaxSpeed", new Property<float> { Value = Character.DefaultMaxSpeed, Editable = false });
-			entity.Add("GameTime", new Property<float> { Editable = false });
+			entity.Add("Data", new PlayerData());
 			entity.Add("Phone", new Phone());
-			entity.Add("PhoneActive", new Property<bool>());
-			entity.Add("NoteActive", new Property<bool>());
 
 			return entity;
 		}
@@ -48,27 +33,18 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			base.Bind(entity, main, creating);
-			this.instance = entity;
+			instance = entity;
 
 			entity.CannotSuspend = true;
-
-			Property<float> gameTime = entity.GetOrMakeProperty<float>("GameTime", false);
-			entity.Add(new Updater
-			{
-				delegate(float dt)
-				{
-					gameTime.Value += dt;
-				}
-			});
 		}
 
-		public Entity Instance
+		public static Entity Instance
 		{
 			get
 			{
-				if (this.instance != null && !this.instance.Active)
-					this.instance = null;
-				return this.instance;
+				if (instance != null && !instance.Active)
+					instance = null;
+				return instance;
 			}
 		}
 

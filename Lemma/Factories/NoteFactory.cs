@@ -37,9 +37,8 @@ namespace Lemma.Factories
 			{
 				if (collected)
 				{
-					GameMain gameMain = (GameMain)main;
 					List<Entity> notes = main.Get("Note").ToList();
-					Container msg = gameMain.Menu.ShowMessage
+					Container msg = main.Menu.ShowMessage
 					(
 						entity,
 						delegate()
@@ -50,7 +49,7 @@ namespace Lemma.Factories
 						},
 						main.Strings.Language
 					);
-					gameMain.Menu.HideMessage(entity, msg, 4.0f);
+					main.Menu.HideMessage(entity, msg, 4.0f);
 				}
 			}, collected));
 
@@ -58,15 +57,15 @@ namespace Lemma.Factories
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
 			trigger.Radius.Value = 3.5f;
 
-			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity p)
+			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
 			{
-				p.GetOrMakeProperty<Entity.Handle>("Note").Value = entity;
+				PlayerFactory.Instance.GetOrMakeProperty<Entity.Handle>("Note").Value = entity;
 			}));
 
-			trigger.Add(new CommandBinding<Entity>(trigger.PlayerExited, delegate(Entity p)
+			trigger.Add(new CommandBinding(trigger.PlayerExited, delegate()
 			{
-				if (p != null)
-					p.GetOrMakeProperty<Entity.Handle>("Note").Value = null;
+				if (PlayerFactory.Instance != null)
+					PlayerFactory.Instance.GetOrMakeProperty<Entity.Handle>("Note").Value = null;
 			}));
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))

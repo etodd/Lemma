@@ -259,7 +259,7 @@ namespace Lemma.Factories
 
 			editor.Add(new TwoWayBinding<string>(main.MapFile, editor.MapFile));
 
-			entity.Add(new TwoWayBinding<string>(((GameMain)main).StartSpawnPoint, entity.GetProperty<string>("StartSpawnPoint")));
+			entity.Add(new TwoWayBinding<string>(main.Spawner.StartSpawnPoint, entity.GetProperty<string>("StartSpawnPoint")));
 
 			uiRenderer.Add(new ListBinding<UIComponent>(uiRenderer.Root.GetChildByName("PropertyList").Children, ui.UIElements));
 			ui.Add(new ListBinding<Entity>(ui.SelectedEntities, editor.SelectedEntities));
@@ -326,7 +326,7 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					throw new GameMain.ExitException();
+					throw new Main.ExitException();
 				}
 			});
 
@@ -382,7 +382,7 @@ namespace Lemma.Factories
 					{
 						if (main.MapFile.Value != null)
 						{
-							List<Session> sessions = ((GameMain)main).LoadAnalytics(main.MapFile);
+							List<Session> sessions = main.LoadAnalytics(main.MapFile);
 							if (sessions.Count > 0)
 							{
 								analyticsEnable.Value = true;
@@ -469,7 +469,7 @@ namespace Lemma.Factories
 				Container checkbox = (Container)item.GetChildByName("Checkbox");
 				checkbox.Add(new Binding<Microsoft.Xna.Framework.Color, bool>(checkbox.Tint, x => x ? Microsoft.Xna.Framework.Color.White : Microsoft.Xna.Framework.Color.Black, entry.Active));
 
-				item.Add(new CommandBinding<Point>(item.MouseLeftDown, delegate(Point p)
+				item.Add(new CommandBinding(item.MouseLeftDown, delegate()
 				{
 					if (entry.Active)
 					{
@@ -484,7 +484,7 @@ namespace Lemma.Factories
 			}));
 
 			ListContainer allSessionsButton = createCheckboxListItem("[All]");
-			allSessionsButton.Add(new CommandBinding<Point>(allSessionsButton.MouseLeftDown, delegate(Point p)
+			allSessionsButton.Add(new CommandBinding(allSessionsButton.MouseLeftDown, delegate()
 			{
 				if (allSessions)
 				{
@@ -536,7 +536,7 @@ namespace Lemma.Factories
 				TextElement label = (TextElement)item.GetChildByName("Label");
 				label.Tint.Value = new Microsoft.Xna.Framework.Color(this.colorHash(e.Name));
 
-				item.Add(new CommandBinding<Point>(item.MouseLeftDown, delegate(Point p)
+				item.Add(new CommandBinding(item.MouseLeftDown, delegate()
 				{
 					if (e.Active)
 					{
@@ -551,7 +551,7 @@ namespace Lemma.Factories
 			}));
 
 			ListContainer allEventsButton = createCheckboxListItem("[All]");
-			allEventsButton.Add(new CommandBinding<Point>(allEventsButton.MouseLeftDown, delegate(Point p)
+			allEventsButton.Add(new CommandBinding(allEventsButton.MouseLeftDown, delegate()
 			{
 				if (allEvents)
 				{
@@ -602,7 +602,7 @@ namespace Lemma.Factories
 				TextElement label = (TextElement)item.GetChildByName("Label");
 				label.Tint.Value = new Microsoft.Xna.Framework.Color(this.colorHash(e.Name));
 
-				item.Add(new CommandBinding<Point>(item.MouseLeftDown, delegate(Point p)
+				item.Add(new CommandBinding(item.MouseLeftDown, delegate()
 				{
 					if (e.Active)
 					{
@@ -617,7 +617,7 @@ namespace Lemma.Factories
 			}));
 
 			ListContainer allPropertiesButton = createCheckboxListItem("[All]");
-			allPropertiesButton.Add(new CommandBinding<Point>(allPropertiesButton.MouseLeftDown, delegate(Point p)
+			allPropertiesButton.Add(new CommandBinding(allPropertiesButton.MouseLeftDown, delegate()
 			{
 				if (allProperties)
 				{
@@ -974,7 +974,7 @@ namespace Lemma.Factories
 			playbackContainer.Tint.Value = Microsoft.Xna.Framework.Color.Black;
 			playbackContainer.Opacity.Value = 0.5f;
 			sessionsSidebar.Children.Add(playbackContainer);
-			playbackContainer.Add(new CommandBinding<Point, int>(playbackContainer.MouseScrolled, delegate(Point p, int delta)
+			playbackContainer.Add(new CommandBinding<int>(playbackContainer.MouseScrolled, delegate(int delta)
 			{
 				playbackSpeed.Value = Math.Max(1.0f, Math.Min(10.0f, playbackSpeed.Value + delta));
 			}));

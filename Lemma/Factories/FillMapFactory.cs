@@ -145,9 +145,9 @@ namespace Lemma.Factories
 				Action = fill
 			});
 
-			entity.Add("Trigger", new Command<Entity>
+			entity.Add("Trigger", new Command
 			{
-				Action = delegate(Entity p)
+				Action = delegate()
 				{
 					fill();
 				}

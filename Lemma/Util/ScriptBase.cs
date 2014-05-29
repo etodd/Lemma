@@ -23,20 +23,20 @@ namespace Lemma.GameScripts
 
 		protected static Container showMessage(Func<string> text, params IProperty[] properties)
 		{
-			return ((GameMain)main).Menu.ShowMessage(WorldFactory.Instance, text, properties);
+			return main.Menu.ShowMessage(WorldFactory.Instance, text, properties);
 		}
 
 		protected static Container showMessage(string text)
 		{
-			return ((GameMain)main).Menu.ShowMessage(WorldFactory.Instance, text);
+			return main.Menu.ShowMessage(WorldFactory.Instance, text);
 		}
 
 		protected static void hideMessage(Container container, float delay = 0.0f)
 		{
-			((GameMain)main).Menu.HideMessage(WorldFactory.Instance, container, delay);
+			main.Menu.HideMessage(WorldFactory.Instance, container, delay);
 		}
 
-		protected static void bindTrigger(string id, Action callback, bool oneTimeOnly = true)
+		protected static void bindEntityTrigger(string id, Action callback, bool oneTimeOnly = true)
 		{
 			Entity triggerEntity = ScriptBase.get(id);
 			if (triggerEntity == null)
@@ -51,7 +51,7 @@ namespace Lemma.GameScripts
 			triggerEntity.Add(new CommandBinding(trigger.Entered, callbacks));
 		}
 
-		protected static void bindTriggerLeave(string id, Action callback, bool oneTimeOnly = false)
+		protected static void bindEntityTriggerLeave(string id, Action callback, bool oneTimeOnly = false)
 		{
 			Entity triggerEntity = ScriptBase.get(id);
 			if (triggerEntity == null)
@@ -65,32 +65,32 @@ namespace Lemma.GameScripts
 			triggerEntity.Add(new CommandBinding(trigger.Exited, callbacks));
 		}
 
-		protected static void bindTrigger(string id, Action<Entity> callback, bool oneTimeOnly = true)
+		protected static void bindPlayerTrigger(string id, Action callback, bool oneTimeOnly = true)
 		{
 			Entity triggerEntity = ScriptBase.get(id);
 			if (triggerEntity == null)
 				return;
 			PlayerTrigger trigger = triggerEntity.Get<PlayerTrigger>();
-			Action<Entity>[] callbacks;
+			Action[] callbacks;
 			if (oneTimeOnly)
-				callbacks = new[] { callback, delegate(Entity e) { trigger.Enabled.Value = false; } };
+				callbacks = new[] { callback, delegate() { trigger.Enabled.Value = false; } };
 			else
 				callbacks = new[] { callback };
-			triggerEntity.Add(new CommandBinding<Entity>(trigger.PlayerEntered, callbacks));
+			triggerEntity.Add(new CommandBinding(trigger.PlayerEntered, callbacks));
 		}
 
-		protected static void bindTriggerLeave(string id, Action<Entity> callback, bool oneTimeOnly = false)
+		protected static void bindTriggerLeave(string id, Action callback, bool oneTimeOnly = false)
 		{
 			Entity triggerEntity = ScriptBase.get(id);
 			if (triggerEntity == null)
 				return;
 			PlayerTrigger trigger = triggerEntity.Get<PlayerTrigger>();
-			Action<Entity>[] callbacks;
+			Action[] callbacks;
 			if (oneTimeOnly)
-				callbacks = new[] { callback, delegate(Entity p) { trigger.Enabled.Value = false; } };
+				callbacks = new[] { callback, delegate() { trigger.Enabled.Value = false; } };
 			else
 				callbacks = new[] { callback };
-			triggerEntity.Add(new CommandBinding<Entity>(trigger.PlayerExited, callbacks));
+			triggerEntity.Add(new CommandBinding(trigger.PlayerExited, callbacks));
 		}
 	}
 }

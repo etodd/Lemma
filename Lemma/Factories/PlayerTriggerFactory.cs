@@ -29,13 +29,13 @@ namespace Lemma.Factories
 				MapAttachable.MakeAttachable(entity, main);
 
 			ListProperty<Entity.Handle> targets = entity.GetOrMakeListProperty<Entity.Handle>("Targets");
-			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity p)
+			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
 			{
 				foreach (Entity.Handle target in targets)
 				{
 					Entity t = target.Target;
 					if (t != null && t.Active)
-						t.GetCommand<Entity>("Trigger").Execute(p);
+						t.GetCommand("Trigger").Execute();
 				}
 			}));
 

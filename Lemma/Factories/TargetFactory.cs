@@ -40,7 +40,7 @@ namespace Lemma.Factories
 			Property<bool> deleteWhenReached = entity.GetOrMakeProperty<bool>("DeleteWhenReached", true, true);
 			trigger.Add(new TwoWayBinding<bool>(deleteWhenReached, trigger.Enabled));
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
-			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity p)
+			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
 			{
 				entity.Add(new Animation
 				(

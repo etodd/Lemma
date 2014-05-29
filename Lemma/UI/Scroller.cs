@@ -34,7 +34,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			new CommandBinding<Point, int>(this.MouseScrolled, delegate(Point mouse, int delta)
+			new CommandBinding<int>(this.MouseScrolled, delegate(int delta)
 			{
 				if (this.Children.Count == 1 && this.EnableScroll)
 				{

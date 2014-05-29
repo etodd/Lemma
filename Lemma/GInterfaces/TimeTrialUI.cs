@@ -15,24 +15,26 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma.GInterfaces
 {
-	public class TimeTrialUI : Component<GameMain>, IUpdateableComponent
+	public class TimeTrialUI : Component<Main>, IUpdateableComponent, IGraphicsComponent
 	{
-		public PanelView RootTimeTrialView;
-		public TextView TimeTrialCurTimeView;
-		public TextView TimeTrialBestTimeView;
+		private PanelView RootTimeTrialView;
+		private TextView TimeTrialCurTimeView;
+		private TextView TimeTrialBestTimeView;
 
-		public SpriteFont MainFont;
+		private SpriteFont MainFont;
 
-		public float ElapsedTime = 0;
-
-		[AutoConVar("time_trial_enabled", "If true, time trial mode is enabled.")]
-		public Property<bool> TimeTrialActive = new Property<bool>() { Value = false };
+		public Property<float> ElapsedTime = new Property<float>();
 
 		public Property<bool> TimeTrialTicking = new Property<bool>() { Value = true };
 
-		public override void Awake()
+		public void LoadContent(bool reload)
 		{
 			MainFont = main.Content.Load<SpriteFont>("Font");
+		}
+
+		public override void Awake()
+		{
+			this.EnabledWhenPaused = false;
 
 			RootTimeTrialView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);
 			RootTimeTrialView.AnchorPoint.Value = new Vector2(1.0f, 0f);
@@ -50,22 +52,20 @@ namespace Lemma.GInterfaces
 			TimeTrialCurTimeView.TextScale.Value = 2f;
 
 			RootTimeTrialView.Active.Value = false;
-			AnimateOut();
 
-			this.Add(new NotifyBinding(() =>
-			{
-				if (TimeTrialActive.Value)
-				{
-					AnimateIn();
-				}
-				else
-				{
-					AnimateOut();
-				}
-			}, TimeTrialActive));
+			this.TimeTrialCurTimeView.Add(new Binding<string, float>(TimeTrialCurTimeView.Text, x => "Time: " + SecondsToTimeString(x), this.ElapsedTime));
+
+			this.AnimateIn();
 
 			base.Awake();
 		}
+
+		public override void delete()
+		{
+			this.AnimateOut();
+			base.delete();
+		}
+
 		private void AnimateIn()
 		{
 			this.main.AddComponent(
@@ -74,7 +74,7 @@ namespace Lemma.GInterfaces
 					new Animation.Vector2MoveTo(RootTimeTrialView.Position, new Vector2(main.ScreenSize.Value.X - 30, 30), 0.2f)
 				)
 			);
-			this.ElapsedTime = 0f;
+			this.ElapsedTime.Value = 0f;
 		}
 
 		private void AnimateOut()
@@ -85,15 +85,6 @@ namespace Lemma.GInterfaces
 					new Animation.Set<bool>(RootTimeTrialView.Active, false)
 				)
 			);
-		}
-		public void EnableTimeTrial()
-		{
-			this.TimeTrialActive.Value = true;
-		}
-
-		public void DisableTimeTrial()
-		{
-			this.TimeTrialActive.Value = false;
 		}
 
 		public void StartTicking()
@@ -123,12 +114,8 @@ namespace Lemma.GInterfaces
 
 		public void Update(float dt)
 		{
-
-			if (TimeTrialActive.Value && TimeTrialTicking.Value)
-			{
-				ElapsedTime += dt;
-				TimeTrialCurTimeView.Text.Value = "Time: " + SecondsToTimeString(ElapsedTime);
-			}
+			if (TimeTrialTicking.Value)
+				this.ElapsedTime.Value += dt;
 		}
 	}
 }

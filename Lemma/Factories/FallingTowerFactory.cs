@@ -47,7 +47,7 @@ namespace Lemma.Factories
 
 			trigger.Add(new Binding<Matrix>(trigger.Transform, () => Matrix.CreateTranslation(0.0f, 0.0f, enemy.Offset) * transform.Matrix, transform.Matrix, enemy.Offset));
 
-			Action<Entity> fall = delegate(Entity player)
+			Action fall = delegate()
 			{
 				if (timeUntilRebuild.Value > 0 || timeUntilRebuildComplete.Value > 0)
 					return;
@@ -73,8 +73,8 @@ namespace Lemma.Factories
 						entity.Delete.Execute();
 					else
 					{
-						Vector3 playerPos = player.Get<Transform>().Position;
-						playerPos += player.Get<Player>().Character.LinearVelocity.Value * 0.65f;
+						Vector3 playerPos = PlayerFactory.Instance.Get<Transform>().Position;
+						playerPos += PlayerFactory.Instance.Get<Player>().Character.LinearVelocity.Value * 0.65f;
 						foreach (DynamicMap newMap in spawnedMaps)
 						{
 							Vector3 toPlayer = playerPos - newMap.PhysicsEntity.Position;
@@ -117,7 +117,7 @@ namespace Lemma.Factories
 				}
 			});
 
-			entity.Add(new CommandBinding<Entity>(trigger.PlayerEntered, fall));
+			entity.Add(new CommandBinding(trigger.PlayerEntered, fall));
 
 			entity.Add(new Updater
 			{
@@ -225,7 +225,7 @@ namespace Lemma.Factories
 							{
 								enemy.EnableCellEmptyBinding = !main.EditorEnabled;
 								if (trigger.IsTriggered)
-									fall(trigger.Player.Value.Target);
+									fall();
 							}
 						}
 					}

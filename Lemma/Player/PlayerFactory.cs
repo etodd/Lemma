@@ -45,7 +45,7 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			GameMain.Config settings = ((GameMain)main).Settings;
+			Main.Config settings = main.Settings;
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			entity.CannotSuspend = true;
@@ -174,7 +174,7 @@ namespace Lemma.Factories
 			vault.Add(new TwoWayBinding<bool>(player.Character.AllowUncrouch, vault.AllowUncrouch));
 			vault.Add(new TwoWayBinding<bool>(player.Character.Crouched, vault.Crouched));
 
-			rotation.Add(new TwoWayBinding<Vector2>(input.Mouse, rotation.Mouse));
+			rotation.Add(new TwoWayBinding<Vector2>(rotation.Mouse, input.Mouse));
 			rotation.Add(new Binding<bool>(rotation.Rolling, rollKickSlide.Rolling));
 			rotation.Add(new Binding<bool>(rotation.Kicking, rollKickSlide.Kicking));
 			rotation.Add(new Binding<Vault.State>(rotation.VaultState, vault.CurrentState));
@@ -276,8 +276,8 @@ namespace Lemma.Factories
 			{
 				Session.Recorder.Event(main, "DieFromHealth");
 				AkSoundEngine.PostEvent("Play_death", entity);
-				((GameMain)main).RespawnDistance = GameMain.KilledRespawnDistance;
-				((GameMain)main).RespawnInterval = GameMain.KilledRespawnInterval;
+				main.Spawner.RespawnDistance = Spawner.KilledRespawnDistance;
+				main.Spawner.RespawnInterval = Spawner.KilledRespawnInterval;
 			}));
 
 			entity.Add(new CommandBinding(player.HealthDepleted, entity.Delete));
@@ -287,8 +287,8 @@ namespace Lemma.Factories
 				Session.Recorder.Event(main, "Die");
 				if (Agent.Query(transform.Position, 0.0f, 10.0f, x => x != agent) != null)
 				{
-					((GameMain)main).RespawnDistance = GameMain.KilledRespawnDistance;
-					((GameMain)main).RespawnInterval = GameMain.KilledRespawnInterval;
+					main.Spawner.RespawnDistance = Spawner.KilledRespawnDistance;
+					main.Spawner.RespawnInterval = Spawner.KilledRespawnInterval;
 				}
 			}));
 
@@ -419,9 +419,9 @@ namespace Lemma.Factories
 
 				bool didSomething;
 
-				if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
-					if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
-						if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
+				if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
+					if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
+						if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
 							didSomething = wallRun.Activate(WallRun.State.Reverse);
 
 				if (!didSomething)
@@ -502,21 +502,22 @@ namespace Lemma.Factories
 			{
 				delegate()
 				{
-					Entity dataEntity = Factory.Get<PlayerDataFactory>().Instance;
+					Entity dataEntity = PlayerDataFactory.Instance;
+					PlayerData playerData = dataEntity.Get<PlayerData>();
 
 					// HACK. Overwriting the property rather than binding the two together. Oh well.
-					footsteps.RespawnLocations = dataEntity.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
+					footsteps.RespawnLocations = playerData.RespawnLocations;
 					
 					// Bind player data properties
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableRoll"), rollKickSlide.EnableRoll));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableCrouch"), player.EnableCrouch));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableKick"), rollKickSlide.EnableKick));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableWallRun"), wallRun.EnableWallRun));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableWallRunHorizontal"), wallRun.EnableWallRunHorizontal));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableEnhancedWallRun"), wallRun.EnableEnhancedWallRun));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableMoves"), player.EnableMoves));
-					entity.Add(new TwoWayBinding<float>(dataEntity.GetOrMakeProperty<float>("MaxSpeed"), player.Character.MaxSpeed));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableRoll, rollKickSlide.EnableRoll));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableCrouch, player.EnableCrouch));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableKick, rollKickSlide.EnableKick));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableWallRun, wallRun.EnableWallRun));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableWallRunHorizontal, wallRun.EnableWallRunHorizontal));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableEnhancedWallRun, wallRun.EnableEnhancedWallRun));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableSlowMotion, player.EnableSlowMotion));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableMoves, player.EnableMoves));
+					entity.Add(new TwoWayBinding<float>(playerData.MaxSpeed, player.Character.MaxSpeed));
 
 					Phone phone = dataEntity.GetOrCreate<Phone>("Phone");
 

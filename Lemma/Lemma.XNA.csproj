@@ -109,6 +109,7 @@
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Analytics.cs" />
+    <Compile Include="Components\PlayerData.cs" />
     <Compile Include="Components\Spawner.cs" />
     <Compile Include="Console\AutoConCommand.cs" />
     <Compile Include="Console\AutoConVar.cs" />
@@ -153,6 +154,7 @@
     <Compile Include="GeeUI\Views\WindowView.cs" />
     <Compile Include="GInterfaces\ConsoleUI.cs" />
     <Compile Include="GInterfaces\TimeTrialUI.cs" />
+    <Compile Include="MainMenu.cs" />
     <Compile Include="Player\BlockPredictor.cs" />
     <Compile Include="Player\Jump.cs" />
     <Compile Include="Player\PhoneNote.cs" />
@@ -161,6 +163,7 @@
     <Compile Include="Player\Vault.cs" />
     <Compile Include="Player\VoxelTools.cs" />
     <Compile Include="Player\WallRun.cs" />
+    <Compile Include="UI\UIFactory.cs" />
     <Compile Include="Util\DialogueForest.cs" />
     <Compile Include="Components\SoundKiller.cs" />
     <Compile Include="Components\SignalTower.cs" />
@@ -286,7 +289,6 @@
     <Compile Include="Graphics\Camera.cs" />
     <Compile Include="Components\PlayerTrigger.cs" />
     <Compile Include="Util\Direction.cs" />
-    <Compile Include="GameMain.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Components\Map.cs" />
     <Compile Include="Components\PlayerSpawn.cs" />

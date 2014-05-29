@@ -155,7 +155,7 @@ namespace Lemma.Components
 
 			int selectedAnswer = 0;
 
-			composeButton.Add(new CommandBinding<Point>(composeButton.MouseLeftUp, delegate(Point p)
+			composeButton.Add(new CommandBinding(composeButton.MouseLeftUp, delegate()
 			{
 				answerContainer.Visible.Value = !answerContainer.Visible;
 				if (answerContainer.Visible && main.GamePadConnected)
@@ -207,20 +207,20 @@ namespace Lemma.Components
 			entity.Add(new NotifyBinding(delegate()
 			{
 				bool hasNoteOrSignalTower = (note.Value.Target != null && note.Value.Target.Active)
-					|| (signalTower.Value.Target != null && signalTower.Value.Target.Active);
+					|| (signalTower.Value.Target != null && signalTower.Value.Target.Active && !string.IsNullOrEmpty(signalTower.Value.Target.Get<SignalTower>().Initial));
 
 				if (togglePhoneMessage == null && hasNoteOrSignalTower)
-					togglePhoneMessage = ((GameMain)main).Menu.ShowMessage(entity, "[{{TogglePhone}}]");
+					togglePhoneMessage = main.Menu.ShowMessage(entity, "[{{TogglePhone}}]");
 				else if (togglePhoneMessage != null && !hasNoteOrSignalTower && !phoneActive && !noteActive)
 				{
-					((GameMain)main).Menu.HideMessage(entity, togglePhoneMessage);
+					main.Menu.HideMessage(entity, togglePhoneMessage);
 					togglePhoneMessage = null;
 				}
 			}, note, signalTower));
 
 			entity.Add(new CommandBinding(entity.Delete, delegate()
 			{
-				((GameMain)main).Menu.HideMessage(null, togglePhoneMessage);
+				main.Menu.HideMessage(null, togglePhoneMessage);
 			}));
 
 			// Note UI
@@ -295,13 +295,13 @@ namespace Lemma.Components
 			{
 				if (togglePhoneMessage != null)
 				{
-					((GameMain)main).Menu.HideMessage(entity, togglePhoneMessage);
+					main.Menu.HideMessage(entity, togglePhoneMessage);
 					togglePhoneMessage = null;
 				}
 
 				if (phoneTutorialMessage != null)
 				{
-					((GameMain)main).Menu.HideMessage(entity, phoneTutorialMessage);
+					main.Menu.HideMessage(entity, phoneTutorialMessage);
 					phoneTutorialMessage = null;
 				}
 
@@ -323,7 +323,7 @@ namespace Lemma.Components
 						if (!phone.TutorialShown)
 						{
 							phone.TutorialShown.Value = true;
-							phoneTutorialMessage = ((GameMain)main).Menu.ShowMessage(entity, "\\scroll for more");
+							phoneTutorialMessage = main.Menu.ShowMessage(entity, "\\scroll for more");
 						}
 						phoneScroll.CheckLayout();
 						scrollToBottom();
@@ -347,7 +347,7 @@ namespace Lemma.Components
 				}
 			};
 
-			input.Bind(((GameMain)main).Settings.TogglePhone, PCInput.InputState.Up, delegate()
+			input.Bind(main.Settings.TogglePhone, PCInput.InputState.Down, delegate()
 			{
 				if (noteActive || phoneActive || phone.CanReceiveMessages)
 				{
@@ -363,7 +363,7 @@ namespace Lemma.Components
 			input.Add(new CommandBinding(input.GetButtonUp(Buttons.A), () => phoneActive && composeButton.Visible, delegate()
 			{
 				if (answerContainer.Visible)
-					answerList.Children[selectedAnswer].MouseLeftUp.Execute(new Point());
+					answerList.Children[selectedAnswer].MouseLeftUp.Execute();
 				else
 					answerContainer.Visible.Value = true;
 			}));
@@ -386,7 +386,7 @@ namespace Lemma.Components
 					answerList.Children[selectedAnswer].Highlighted.Value = true;
 				}
 				else
-					phoneScroll.MouseScrolled.Execute(new Point(), delta * -4);
+					phoneScroll.MouseScrolled.Execute(delta * -4);
 			};
 
 			input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickUp), () => phoneActive, delegate()
@@ -426,7 +426,7 @@ namespace Lemma.Components
 				delegate(Phone.Ans answer)
 				{
 					UIComponent button = makeButton(outgoingColor, "\\" + (answer.Text == null ? answer.ID : answer.Text), messageWidth - padding * 4.0f);
-					button.Add(new CommandBinding<Point>(button.MouseLeftUp, delegate(Point p)
+					button.Add(new CommandBinding(button.MouseLeftUp, delegate()
 					{
 						phone.Answer(answer);
 						
@@ -437,7 +437,7 @@ namespace Lemma.Components
 
 						scrollToBottom();
 						if (togglePhoneMessage == null && phone.Schedules.Count == 0) // No more messages incoming
-							togglePhoneMessage = ((GameMain)main).Menu.ShowMessage(entity, "[{{TogglePhone}}]");
+							togglePhoneMessage = main.Menu.ShowMessage(entity, "[{{TogglePhone}}]");
 					}));
 					return button;
 				}
@@ -473,7 +473,7 @@ namespace Lemma.Components
 
 				AkSoundEngine.PostEvent("Phone_Play", entity);
 				if (togglePhoneMessage == null && phone.Schedules.Count == 0 && phone.ActiveAnswers.Count == 0) // No more messages incoming, and no more answers to give
-					togglePhoneMessage = ((GameMain)main).Menu.ShowMessage(entity, "[{{TogglePhone}}]");
+					togglePhoneMessage = main.Menu.ShowMessage(entity, "[{{TogglePhone}}]");
 			}));
 
 			if (noteActive)

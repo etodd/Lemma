@@ -62,23 +62,23 @@ namespace Lemma.Components
 		public Property<bool> MouseLocked = new Property<bool> { Value = false, Editable = false };
 
 		[XmlIgnore]
-		public Command<Point> MouseOver = new Command<Point>();
+		public Command MouseOver = new Command();
 		[XmlIgnore]
-		public Command<Point> MouseOut = new Command<Point>();
+		public Command MouseOut = new Command();
 		[XmlIgnore]
-		public Command<Point> MouseLeftDown = new Command<Point>();
+		public Command MouseLeftDown = new Command();
 		[XmlIgnore]
-		public Command<Point> MouseLeftUp = new Command<Point>();
+		public Command MouseLeftUp = new Command();
 		[XmlIgnore]
-		public Command<Point> MouseMiddleDown = new Command<Point>();
+		public Command MouseMiddleDown = new Command();
 		[XmlIgnore]
-		public Command<Point> MouseMiddleUp = new Command<Point>();
+		public Command MouseMiddleUp = new Command();
 		[XmlIgnore]
-		public Command<Point> MouseRightDown = new Command<Point>();
+		public Command MouseRightDown = new Command();
 		[XmlIgnore]
-		public Command<Point> MouseRightUp = new Command<Point>();
+		public Command MouseRightUp = new Command();
 		[XmlIgnore]
-		public Command<Point, int> MouseScrolled = new Command<Point, int>();
+		public Command<int> MouseScrolled = new Command<int>();
 
 		public ListProperty<UIComponent> Children = new ListProperty<UIComponent>();
 
@@ -246,34 +246,34 @@ namespace Lemma.Components
 
 			if (newHighlighted && !this.Highlighted)
 			{
-				this.MouseOver.Execute(absolutePoint);
+				this.MouseOver.Execute();
 				this.Highlighted.Value = true;
 			}
 			else if (!newHighlighted && this.Highlighted)
 			{
-				this.MouseOut.Execute(absolutePoint);
+				this.MouseOut.Execute();
 				this.Highlighted.Value = false;
 			}
 
 			if (newHighlighted)
 			{
 				if (mouse.LeftButton == ButtonState.Pressed && lastMouse.LeftButton == ButtonState.Released)
-					this.MouseLeftDown.Execute(absolutePoint);
+					this.MouseLeftDown.Execute();
 				else if (mouse.LeftButton == ButtonState.Released && lastMouse.LeftButton == ButtonState.Pressed)
-					this.MouseLeftUp.Execute(absolutePoint);
+					this.MouseLeftUp.Execute();
 
 				if (mouse.MiddleButton == ButtonState.Pressed && lastMouse.MiddleButton == ButtonState.Released)
-					this.MouseMiddleDown.Execute(absolutePoint);
+					this.MouseMiddleDown.Execute();
 				else if (mouse.MiddleButton == ButtonState.Released && lastMouse.MiddleButton == ButtonState.Pressed)
-					this.MouseMiddleUp.Execute(absolutePoint);
+					this.MouseMiddleUp.Execute();
 
 				if (mouse.RightButton == ButtonState.Pressed && lastMouse.RightButton == ButtonState.Released)
-					this.MouseRightDown.Execute(absolutePoint);
+					this.MouseRightDown.Execute();
 				else if (mouse.RightButton == ButtonState.Released && lastMouse.RightButton == ButtonState.Pressed)
-					this.MouseRightUp.Execute(absolutePoint);
+					this.MouseRightUp.Execute();
 
 				if (mouse.ScrollWheelValue != lastMouse.ScrollWheelValue)
-					this.MouseScrolled.Execute(absolutePoint, mouse.ScrollWheelValue > lastMouse.ScrollWheelValue ? 1 : -1);
+					this.MouseScrolled.Execute(mouse.ScrollWheelValue > lastMouse.ScrollWheelValue ? 1 : -1);
 			}
 			return newHighlighted && (this.SwallowMouseEvents || this.MouseLocked); // Swallow the mouse events so no one else handles them
 		}
