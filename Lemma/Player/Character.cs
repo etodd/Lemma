@@ -114,6 +114,8 @@ namespace Lemma.Util
 		/// </summary>
 		public Property<Vector3> SupportLocation = new Property<Vector3>();
 
+		public Property<Vector3> SupportVelocity = new Property<Vector3>();
+
 		public Property<Matrix> Transform = new Property<Matrix>();
 
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
@@ -277,6 +279,8 @@ namespace Lemma.Util
 											Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
 			else
 				supportLocationVelocity = new Vector3();
+			
+			this.SupportVelocity.Value = supportLocationVelocity;
 
 			if (supportLocationVelocity.Y < this.Body.LinearVelocity.Y - 4.0f)
 				foundSupport = false;

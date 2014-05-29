@@ -143,6 +143,7 @@ namespace Lemma.Factories
 			rollKickSlide.Add(new Binding<float>(rollKickSlide.Height, player.Character.Height));
 			rollKickSlide.Add(new Binding<float>(rollKickSlide.MaxSpeed, player.Character.MaxSpeed));
 			rollKickSlide.Add(new Binding<float>(rollKickSlide.JumpSpeed, player.Character.JumpSpeed));
+			rollKickSlide.Add(new Binding<Vector3>(rollKickSlide.SupportVelocity, player.Character.SupportVelocity));
 			rollKickSlide.Add(new TwoWayBinding<bool>(wallRun.EnableEnhancedWallRun, rollKickSlide.EnableEnhancedRollSlide));
 			rollKickSlide.Add(new TwoWayBinding<bool>(player.Character.AllowUncrouch, rollKickSlide.AllowUncrouch));
 			rollKickSlide.Add(new TwoWayBinding<bool>(player.Character.Crouched, rollKickSlide.Crouched));
@@ -507,15 +508,15 @@ namespace Lemma.Factories
 					footsteps.RespawnLocations = dataEntity.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
 					
 					// Bind player data properties
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableRoll"), rollKickSlide.EnableRoll));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableCrouch"), player.EnableCrouch));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableKick"), rollKickSlide.EnableKick));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableWallRun"), wallRun.EnableWallRun));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableWallRunHorizontal"), wallRun.EnableWallRunHorizontal));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableEnhancedWallRun"), wallRun.EnableEnhancedWallRun));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableMoves"), player.EnableMoves));
-					entity.Add(new TwoWayBinding<float>(dataEntity.GetProperty<float>("MaxSpeed"), player.Character.MaxSpeed));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableRoll"), rollKickSlide.EnableRoll));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableCrouch"), player.EnableCrouch));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableKick"), rollKickSlide.EnableKick));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableWallRun"), wallRun.EnableWallRun));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableWallRunHorizontal"), wallRun.EnableWallRunHorizontal));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableEnhancedWallRun"), wallRun.EnableEnhancedWallRun));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
+					entity.Add(new TwoWayBinding<bool>(dataEntity.GetOrMakeProperty<bool>("EnableMoves"), player.EnableMoves));
+					entity.Add(new TwoWayBinding<float>(dataEntity.GetOrMakeProperty<float>("MaxSpeed"), player.Character.MaxSpeed));
 
 					Phone phone = dataEntity.GetOrCreate<Phone>("Phone");
 
@@ -531,7 +532,9 @@ namespace Lemma.Factories
 						)
 					);
 
-					PhoneNote.Attach(main, entity, model, input, phone, player.Character.EnableWalking, player.EnableMoves);
+					Property<bool> phoneActive = dataEntity.GetOrMakeProperty<bool>("PhoneActive");
+					Property<bool> noteActive = dataEntity.GetOrMakeProperty<bool>("NoteActive");
+					PhoneNote.Attach(main, entity, model, input, phone, player.Character.EnableWalking, player.EnableMoves, phoneActive, noteActive);
 				}
 			});
 		}

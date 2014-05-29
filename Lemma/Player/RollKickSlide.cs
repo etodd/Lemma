@@ -32,6 +32,7 @@ namespace Lemma.Components
 		public Property<bool> IsSwimming = new Property<bool>();
 		public Property<bool> IsSupported = new Property<bool>();
 		public Property<Vector3> FloorPosition = new Property<Vector3>();
+		public Property<Vector3> SupportVelocity = new Property<Vector3>();
 		public Property<float> Height = new Property<float>();
 		public Property<float> MaxSpeed = new Property<float>();
 		public Property<float> JumpSpeed = new Property<float>();
@@ -92,9 +93,9 @@ namespace Lemma.Components
 				// Try to roll
 				Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
 
-				Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, this.Height + 1.0f);
+				Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, this.Height + MathHelper.Clamp(this.LinearVelocity.Value.Y * -0.2f, 0.0f, 4.0f));
 
-				bool nearGround = (this.IsSupported || this.LinearVelocity.Value.Y <= 0.0f) && floorRaycast.Map != null;
+				bool nearGround = this.LinearVelocity.Value.Y < this.SupportVelocity.Value.Y + 0.1f && (this.IsSupported || floorRaycast.Map != null);
 
 				bool instantiatedBlockPossibility = false;
 

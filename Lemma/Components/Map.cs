@@ -1182,10 +1182,11 @@ namespace Lemma.Components
 				{
 					foreach (MeshEntry entry in this.meshes.Values)
 					{
-						if (entry.Mesh != null && !entry.Added)
+						if (!entry.Added)
 						{
 							entry.Added = true;
-							this.Map.main.Space.SpaceObjectBuffer.Add(entry.Mesh);
+							if (entry.Mesh != null)
+								this.Map.main.Space.SpaceObjectBuffer.Add(entry.Mesh);
 						}
 					}
 				}
@@ -1198,10 +1199,11 @@ namespace Lemma.Components
 				{
 					foreach (MeshEntry entry in this.meshes.Values)
 					{
-						if (entry.Mesh != null && entry.Added)
+						if (entry.Added)
 						{
 							entry.Added = false;
-							this.Map.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
+							if (entry.Mesh != null)
+								this.Map.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
 						}
 					}
 				}
@@ -1231,10 +1233,11 @@ namespace Lemma.Components
 				{
 					foreach (MeshEntry entry in this.meshes.Values)
 					{
-						if (entry.Mesh != null && entry.Added)
+						if (entry.Added)
 						{
 							entry.Added = false;
-							this.Map.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
+							if (entry.Mesh != null)
+								this.Map.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
 						}
 					}
 				}
@@ -5027,7 +5030,7 @@ namespace Lemma.Components
 				this.main.Space.SpaceObjectBuffer.Add(this.PhysicsEntity);
 				this.addedToSpace = true;
 			}
-			else if (this.addedToSpace && this.PhysicsEntity.Space != null && !hasVolume)
+			else if (this.addedToSpace && !hasVolume)
 			{
 				this.main.Space.SpaceObjectBuffer.Remove(this.PhysicsEntity);
 				this.addedToSpace = false;

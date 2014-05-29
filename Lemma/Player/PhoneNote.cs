@@ -10,11 +10,8 @@ namespace Lemma.Components
 {
 	public class PhoneNote
 	{
-		public static void Attach(Main main, Entity entity, AnimatedModel model, FPSInput input, Phone phone, Property<bool> enableWalking, Property<bool> enableMoves)
+		public static void Attach(Main main, Entity entity, AnimatedModel model, FPSInput input, Phone phone, Property<bool> enableWalking, Property<bool> enableMoves, Property<bool> phoneActive, Property<bool> noteActive)
 		{
-			Property<bool> phoneActive = entity.GetOrMakeProperty<bool>("PhoneActive");
-			Property<bool> noteActive = entity.GetOrMakeProperty<bool>("NoteActive");
-
 			UIRenderer phoneUi = entity.GetOrCreate<UIRenderer>("PhoneUI");
 
 			Property<Entity.Handle> signalTower = entity.GetOrMakeProperty<Entity.Handle>("SignalTower");

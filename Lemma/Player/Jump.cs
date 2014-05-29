@@ -52,7 +52,7 @@ namespace Lemma.Components
 			{
 				if (this.IsSupported)
 					this.wallJumpCount = 0;
-			}));
+			}, this.IsSupported));
 		}
 
 		private int wallJumpCount;

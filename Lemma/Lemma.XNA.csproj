@@ -109,6 +109,7 @@
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Analytics.cs" />
+    <Compile Include="Components\Spawner.cs" />
     <Compile Include="Console\AutoConCommand.cs" />
     <Compile Include="Console\AutoConVar.cs" />
     <Compile Include="Console\Console.cs" />

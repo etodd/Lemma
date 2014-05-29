@@ -227,6 +227,8 @@ namespace Lemma.Components
 					"VaultLeft",
 					"VaultRight"
 				);
+				foreach (string anim in movementAnimations.Keys)
+					this.model.Stop(anim);
 
 				string wallRunAnimation;
 				switch (this.WallRunState.Value)

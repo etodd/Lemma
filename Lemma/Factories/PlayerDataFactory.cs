@@ -39,6 +39,8 @@ namespace Lemma.Factories
 			entity.Add("MaxSpeed", new Property<float> { Value = Character.DefaultMaxSpeed, Editable = false });
 			entity.Add("GameTime", new Property<float> { Editable = false });
 			entity.Add("Phone", new Phone());
+			entity.Add("PhoneActive", new Property<bool>());
+			entity.Add("NoteActive", new Property<bool>());
 
 			return entity;
 		}
