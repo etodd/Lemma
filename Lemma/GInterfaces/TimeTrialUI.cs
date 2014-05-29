@@ -1,9 +1,11 @@
-﻿using System.Windows.Forms.VisualStyles;
+﻿using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using ComponentBind;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using GeeUI;
 using GeeUI.ViewLayouts;
 using GeeUI.Views;
 using Lemma.Components;
@@ -15,7 +17,7 @@ namespace Lemma.GInterfaces
 {
 	public class TimeTrialUI : Component<GameMain>, IUpdateableComponent
 	{
-		public View RootTimeTrialView;
+		public PanelView RootTimeTrialView;
 		public TextView TimeTrialCurTimeView;
 		public TextView TimeTrialBestTimeView;
 
@@ -36,6 +38,8 @@ namespace Lemma.GInterfaces
 			RootTimeTrialView.AnchorPoint.Value = new Vector2(1.0f, 0f);
 			RootTimeTrialView.Add(new Binding<Vector2, Point>(RootTimeTrialView.Position, point => new Vector2(point.X - 30, 30), main.ScreenSize));
 			RootTimeTrialView.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
+
+			RootTimeTrialView.UnselectedNinepatch = RootTimeTrialView.SelectedNinepatch = GeeUIMain.NinePatchBtnDefault;
 
 			TimeTrialCurTimeView = new TextView(main.GeeUI, RootTimeTrialView, "Time: 00:00.00", Vector2.Zero, MainFont);
 			TimeTrialBestTimeView = new TextView(main.GeeUI, RootTimeTrialView, "Best: 00:00.00", Vector2.Zero, MainFont);
