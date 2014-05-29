@@ -3,10 +3,16 @@ public class AK
     public class EVENTS
     {
         public static uint FOOTSTEP_PLAY = 1531891632U;
+        public static uint PLAY_BLUE_BURN = 216387374U;
+        public static uint PLAY_EXTERIOR_WIND = 2186390081U;
         public static uint PLAY_GLOWSQUARE = 2925563572U;
         public static uint PLAY_GLOWSQUARE_CHARGE = 4039403831U;
+        public static uint PLAY_LEVEL_LOWER = 2897680458U;
         public static uint PLAY_MUSIC_AMBIENT = 2712742350U;
+        public static uint PLAY_OBELISK_LOCK = 3936891061U;
+        public static uint PLAY_OBELISK_RISE = 2959923063U;
         public static uint PLAY_ORANGE_BURN = 1341922784U;
+        public static uint PLAY_PHONE_PICKUP = 2791348401U;
         public static uint PLAY_PLAYER_BREATHING_HARD = 3584441250U;
         public static uint PLAY_PLAYER_BREATHING_SOFT = 4243459973U;
         public static uint PLAY_PLAYER_FALL = 1306343379U;
@@ -14,18 +20,26 @@ public class AK
         public static uint PLAY_PLAYER_GRUNT = 4270092958U;
         public static uint PLAY_PLAYER_HURT = 887999531U;
         public static uint PLAY_PLAYER_JUMP = 562256996U;
+        public static uint PLAY_PLAYER_LAND = 4249207015U;
         public static uint PLAY_PLAYER_SLIDE = 2425231895U;
         public static uint PLAY_PLAYER_SLIDE_LOOP = 693421804U;
         public static uint PLAY_RED_BURN = 472607653U;
+        public static uint PLAY_SIGNAL_TOWER_ACTIVATE = 2645903392U;
+        public static uint PLAY_SIGNAL_TOWER_LOOP = 1879386073U;
         public static uint PLAY_UI_CLICK = 1749424733U;
         public static uint PLAY_UI_MOUSEOVER = 808445146U;
         public static uint PLAY_WALL_BREAK_01 = 2635525752U;
+        public static uint PLAY_WATER_SPLASH = 1591852251U;
+        public static uint PLAY_WATER_SPLASH_HEAVY = 1166068147U;
         public static uint PLAY_WHITE_LIGHT = 3583610488U;
+        public static uint STOP_EXTERIOR_WIND = 4269705691U;
         public static uint STOP_GLOWSQUARE_CHARGE = 3861030501U;
         public static uint STOP_MUSIC_AMBIENT = 3815910684U;
+        public static uint STOP_OBELISK_RISE = 2606723065U;
         public static uint STOP_PLAYER_BREATHING_SOFT = 1454416799U;
         public static uint STOP_PLAYER_FALL = 3680109729U;
         public static uint STOP_PLAYER_SLIDE_LOOP = 651971942U;
+        public static uint STOP_SIGNAL_TOWER_LOOP = 2826848843U;
         public static uint STOP_WHITE_LIGHT = 2253775078U;
     } // public class EVENTS
 

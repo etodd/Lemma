@@ -59,6 +59,7 @@ namespace Lemma.Factories
 			skybox.Add(new Binding<Vector3>(skybox.GetVector3Parameter("CameraPosition"), main.Camera.Position));
 			skybox.Add(new Binding<RenderTarget2D>(skybox.GetRenderTarget2DParameter("ShadowMap" + Components.Model.SamplerPostfix), () => main.LightingManager.GlobalShadowMap, main.LightingManager.GlobalShadowMap, main.ScreenSize));
 			skybox.Add(new Binding<Matrix>(skybox.GetMatrixParameter("ShadowViewProjectionMatrix"), main.LightingManager.GlobalShadowViewProjection));
+			skybox.GetTexture2DParameter("Random" + Lemma.Components.Model.SamplerPostfix).Value = main.Content.Load<Texture2D>("Images\\random");
 
 			Property<float> startDistance = entity.GetOrMakeProperty<float>("StartDistance", true, 50);
 			skybox.Add(new Binding<float>(skybox.GetFloatParameter("StartDistance"), startDistance));

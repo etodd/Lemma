@@ -92,6 +92,7 @@ namespace Lemma.Factories
 			predictor.Add(new Binding<float>(predictor.Rotation, rotation.Rotation));
 			predictor.Add(new Binding<float>(predictor.MaxSpeed, player.Character.MaxSpeed));
 			predictor.Add(new Binding<float>(predictor.JumpSpeed, player.Character.JumpSpeed));
+			predictor.Add(new Binding<bool>(predictor.IsSupported, player.Character.IsSupported));
 
 			jump.Add(new TwoWayBinding<bool>(player.Character.IsSupported, jump.IsSupported));
 			jump.Add(new TwoWayBinding<bool>(player.Character.HasTraction, jump.HasTraction));
@@ -395,7 +396,7 @@ namespace Lemma.Factories
 
 			input.Bind(settings.SpecialAbility, PCInput.InputState.Down, delegate()
 			{
-				if (player.EnableSlowMotion && !player.Character.IsSupported)
+				if (player.EnableSlowMotion)
 				{
 					player.SlowMotion.Value = true;
 					predictor.ClearPossibilities();

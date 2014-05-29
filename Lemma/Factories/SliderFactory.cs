@@ -19,6 +19,8 @@ namespace Lemma.Factories
 		public override Entity Create(Main main)
 		{
 			Entity entity = new Entity(main, "Slider");
+			entity.Add("MapTransform", new Transform());
+			entity.Add("Transform", new Transform());
 			entity.Add("Map", new DynamicMap(0, 0, 0));
 			return entity;
 		}
@@ -182,9 +184,6 @@ namespace Lemma.Factories
 				{
 					if (joint != null)
 					{
-						// HACK
-						a.Orientation = b != null ? b.Orientation : Quaternion.Identity;
-
 						Vector3 separation = joint.Limit.AnchorB - joint.Limit.AnchorA;
 
 						float x = Vector3.Dot(separation, joint.Limit.Axis);

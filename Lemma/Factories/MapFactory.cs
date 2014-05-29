@@ -26,6 +26,10 @@ namespace Lemma.Factories
 		public virtual Entity Create(Main main, int offsetX, int offsetY, int offsetZ)
 		{
 			Entity entity = new Entity(main, "Map");
+
+			// The transform has to come before the map component
+			// So that its properties get bound correctly
+			entity.Add("Transform", new Transform());
 			
 			Map map = this.newMapComponent(offsetX, offsetY, offsetZ);
 			entity.Add("Map", map);

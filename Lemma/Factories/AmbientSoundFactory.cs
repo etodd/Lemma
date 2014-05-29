@@ -32,7 +32,8 @@ namespace Lemma.Factories
 
 			Property<bool> is3D = entity.GetOrMakeProperty<bool>("Is3D", true);
 
-			Property<string> cue = entity.GetOrMakeProperty<string>("Cue", true);
+			Property<string> play = entity.GetOrMakeProperty<string>("Play", true);
+			Property<string> stop = entity.GetOrMakeProperty<string>("Stop", true);
 
 			entity.CannotSuspendByDistance = !is3D;
 			entity.Add(new NotifyBinding(delegate()
@@ -44,7 +45,10 @@ namespace Lemma.Factories
 				MapAttachable.MakeAttachable(entity, main);
 
 			if (!main.EditorEnabled)
-				AkSoundEngine.PostEvent(cue, entity);
+			{
+				AkSoundEngine.PostEvent(play, entity);
+				SoundKiller.Add(entity, stop);
+			}
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

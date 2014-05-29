@@ -12,6 +12,17 @@ float4x4 ShadowViewProjectionMatrix;
 
 float4x4 ViewMatrixRotationOnly;
 
+texture2D RandomTexture;
+sampler2D RandomSampler = sampler_state
+{
+	Texture = <RandomTexture>;
+	MinFilter = point;
+	MagFilter = point;
+	MipFilter = point;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
 struct RenderVSInput
 {
 	float4 position : POSITION0;
@@ -70,7 +81,7 @@ void SkyboxPS(in RenderPSInput input,
 		for (int i = 0; i < FOG_SHADOW_SAMPLES; i++)
 		{
 			s += viewRay;
-			float4 shadowPos = mul(float4(s, 1.0f), ShadowViewProjectionMatrix);
+			float4 shadowPos = mul(float4(s + tex2D(RandomSampler, s.xy), 1.0f), ShadowViewProjectionMatrix);
 			float v = GetShadowValueNoFilter(shadowPos);
 			float newValue = 0.0f;
 			if (v > 0.0f)

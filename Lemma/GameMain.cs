@@ -638,12 +638,11 @@ namespace Lemma
 
 				if (createPlayer || setupSpawn)
 				{
-					if (this.loadingSavedGame)
+					if (this.loadingSavedGame && !createPlayer)
 					{
 						this.Renderer.InternalGamma.Value = 0.0f;
 						this.Renderer.Brightness.Value = 0.0f;
 						this.PlayerSpawned.Execute(this.Player);
-						this.loadingSavedGame = false;
 						this.respawnTimer = 0;
 					}
 					else
@@ -778,6 +777,7 @@ namespace Lemma
 						else
 							this.respawnTimer += this.ElapsedTime;
 					}
+					this.loadingSavedGame = false;
 				}
 				else
 					this.lastPlayerPosition = this.Player.Value.Get<Transform>().Position;

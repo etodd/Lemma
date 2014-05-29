@@ -13,8 +13,6 @@ namespace Lemma.Components
 		public enum State
 		{
 			None,
-			Left,
-			Right,
 			Straight,
 			Down,
 		}
@@ -87,7 +85,7 @@ namespace Lemma.Components
 						else if (map[downCoord].ID != 0)
 						{
 							// Vault
-							this.vault(x, map, coord);
+							this.vault(map, coord);
 							return true;
 						}
 						coord = coord.Move(up.GetReverse());
@@ -111,7 +109,7 @@ namespace Lemma.Components
 						if (!coord.Between(possibility.StartCoord, possibility.EndCoord) && downCoord.Between(possibility.StartCoord, possibility.EndCoord))
 						{
 							this.Predictor.InstantiatePossibility(possibility);
-							this.vault(x, possibility.Map, coord);
+							this.vault(possibility.Map, coord);
 							return true;
 						}
 						coord = coord.Move(up.GetReverse());
@@ -122,21 +120,10 @@ namespace Lemma.Components
 			return false;
 		}
 
-		private void vault(int x, Map map, Map.Coordinate coord)
+		private void vault(Map map, Map.Coordinate coord)
 		{
 			this.DeactivateWallRun.Execute();
-			switch (x)
-			{
-				case -1:
-					this.CurrentState.Value = State.Left;
-					break;
-				case 1:
-					this.CurrentState.Value = State.Right;
-					break;
-				default:
-					this.CurrentState.Value = State.Straight;
-					break;
-			}
+			this.CurrentState.Value = State.Straight;
 
 			this.coord = coord;
 			const float vaultVerticalSpeed = 8.0f;
@@ -166,8 +153,7 @@ namespace Lemma.Components
 			this.IsSupported.Value = false;
 			this.HasTraction.Value = false;
 
-			Matrix rotationMatrix = Matrix.CreateRotationY(this.Rotation);
-			Vector3 dir = map.GetAbsoluteVector(map.GetRelativeDirection(new Vector3(-rotationMatrix.Forward.X, 0, -rotationMatrix.Forward.Z)).GetVector());
+			Vector3 dir = map.GetAbsoluteVector(map.GetRelativeDirection(this.forward).GetVector());
 			this.Rotation.Value = (float)Math.Atan2(dir.X, dir.Z);
 			this.LockRotation.Execute();
 
@@ -176,20 +162,7 @@ namespace Lemma.Components
 			this.AllowUncrouch.Value = false;
 
 			Session.Recorder.Event(main, "Vault");
-			string animation;
-			switch (this.CurrentState.Value)
-			{
-				case State.Left:
-					animation = "VaultLeft";
-					break;
-				case State.Right:
-					animation = "VaultRight";
-					break;
-				default:
-					animation = "Vault";
-					break;
-			}
-			this.Model.StartClip(animation, 4, false, 0.1f);
+			this.Model.StartClip("Vault", 4, false, 0.1f);
 
 			if (this.random.NextDouble() > 0.5)
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, this.Entity);
