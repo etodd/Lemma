@@ -127,7 +127,7 @@ namespace Lemma.Components
 			if (!supported && wallRunState == WallRun.State.None
 				&& this.LinearVelocity.Value.Y > Lemma.Components.FallDamage.DamageVelocity * 1.5f)
 			{
-				// We're not vaulting, not doing our normal jump, and not wall-walking
+				// We're not doing our normal jump, and not wall-runnign
 				// See if we can wall-jump
 				Vector3 playerPos = this.Position;
 				Map.GlobalRaycastResult? wallRaycastHit = null;
@@ -162,7 +162,8 @@ namespace Lemma.Components
 
 			bool go = supported || wallJumping;
 
-			bool blockPossibilityBeneath = false;
+			BlockPredictor.Possibility instantiatedBlockPossibility = null;
+			Map.Coordinate instantiatedBlockPossibilityCoord = default(Map.Coordinate);
 
 			if (!go)
 			{
@@ -170,12 +171,14 @@ namespace Lemma.Components
 				Vector3 jumpPos = this.FloorPosition + new Vector3(0, -1.0f, 0);
 				foreach (BlockPredictor.Possibility possibility in this.Predictor.AllPossibilities)
 				{
-					if (possibility.Map.GetCoordinate(jumpPos).Between(possibility.StartCoord, possibility.EndCoord)
+					Map.Coordinate possibilityCoord = possibility.Map.GetCoordinate(jumpPos);
+					if (possibilityCoord.Between(possibility.StartCoord, possibility.EndCoord)
 						&& !possibility.Map.GetCoordinate(jumpPos + new Vector3(2.0f)).Between(possibility.StartCoord, possibility.EndCoord))
 					{
 						this.Predictor.InstantiatePossibility(possibility);
 						go = true;
-						blockPossibilityBeneath = true;
+						instantiatedBlockPossibility = possibility;
+						instantiatedBlockPossibilityCoord = possibilityCoord;
 						break;
 					}
 				}
@@ -195,6 +198,8 @@ namespace Lemma.Components
 							if (coord.Between(possibility.StartCoord, possibility.EndCoord))
 							{
 								this.Predictor.InstantiatePossibility(possibility);
+								instantiatedBlockPossibility = possibility;
+								instantiatedBlockPossibilityCoord = coord;
 								wallJump(possibility.Map, possibility.Map.GetRelativeDirection(dir).GetReverse(), coord);
 								wallJumping = true;
 								go = true;
@@ -252,6 +257,8 @@ namespace Lemma.Components
 						// We haven't hit the ground, so fall damage will not be handled by the physics system.
 						// Need to do it manually here.
 						this.FallDamage.Execute(this.LinearVelocity.Value.Y);
+						if (instantiatedBlockPossibility != null)
+							this.WalkedOn.Execute(instantiatedBlockPossibility.Map, instantiatedBlockPossibilityCoord, instantiatedBlockPossibility.Map.GetRelativeDirection(Direction.NegativeY));
 
 						// Also manually reset our ability to kick and wall-jump
 						this.CanKick.Value = true;
@@ -274,7 +281,7 @@ namespace Lemma.Components
 				float verticalJumpSpeed = this.JumpSpeed * verticalMultiplier;
 
 				// If we're not instantiating a block possibility beneath us or we're not currently falling, incorporate some of our existing vertical velocity in our jump
-				if (!blockPossibilityBeneath || currentVerticalSpeed > 0.0f)
+				if (instantiatedBlockPossibility == null || wallJumping || currentVerticalSpeed > 0.0f)
 					verticalJumpSpeed += currentVerticalSpeed * 0.5f;
 
 				this.LinearVelocity.Value = baseVelocity + new Vector3(jumpDirection.X, verticalJumpSpeed, jumpDirection.Y) * totalMultiplier;

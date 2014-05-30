@@ -46,9 +46,9 @@ namespace Lemma.Factories
 					{
 						if (on)
 						{
-							Command<Entity> triggerCommand = target.GetCommand<Entity>("Trigger");
+							Command triggerCommand = target.GetCommand("Trigger");
 							if (triggerCommand != null)
-								triggerCommand.Execute(null);
+								triggerCommand.Execute();
 						}
 
 						if (target.Type == "Spinner")

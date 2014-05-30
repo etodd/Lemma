@@ -158,11 +158,15 @@ namespace Lemma.Components
 		public void AddSaveGame(string timestamp)
 		{
 			Main.SaveInfo info = null;
+			string thumbnailPath = null;
 			try
 			{
 				using (Stream stream = new FileStream(Path.Combine(this.main.SaveDirectory, timestamp, "save.xml"), FileMode.Open, FileAccess.Read, FileShare.None))
 					info = (Main.SaveInfo)new XmlSerializer(typeof(Main.SaveInfo)).Deserialize(stream);
 				if (info.Version != Main.MapVersion)
+					throw new Exception();
+				thumbnailPath = Path.Combine(this.main.SaveDirectory, timestamp, "thumbnail.jpg");
+				if (!File.Exists(thumbnailPath))
 					throw new Exception();
 			}
 			catch (Exception) // Old version. Delete it.
@@ -191,7 +195,7 @@ namespace Lemma.Components
 
 			Sprite sprite = new Sprite();
 			sprite.IsStandardImage.Value = true;
-			sprite.Image.Value = Path.Combine(this.main.SaveDirectory, timestamp, "thumbnail.jpg");
+			sprite.Image.Value = thumbnailPath;
 			layout.Children.Add(sprite);
 
 			TextElement label = new TextElement();

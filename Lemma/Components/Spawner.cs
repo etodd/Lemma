@@ -154,7 +154,7 @@ namespace Lemma.Components
 										Map respawnMap = respawnMapEntity.Get<Map>();
 										Vector3 absolutePos = respawnMap.GetAbsolutePosition(respawnLocation.Coordinate);
 										if (respawnMap.Active
-											&& respawnMap[respawnLocation.Coordinate].ID != 0
+											&& respawnMap[respawnLocation.Coordinate] != Map.EmptyState
 											&& respawnMap.GetAbsoluteVector(respawnMap.GetRelativeDirection(Direction.PositiveY).GetVector()).Y > 0.5f
 											&& Agent.Query(absolutePos, 0.0f, 20.0f) == null)
 										{
@@ -173,9 +173,10 @@ namespace Lemma.Components
 											}
 										}
 									}
-									respawnLocations.RemoveAt(respawnLocations.Count - 1);
-									if (supportedLocations >= 40 || (foundSpawnAbsolutePosition - this.lastPlayerPosition).Length() > this.RespawnDistance)
+									if (supportedLocations >= 40 || (spawnFound && (foundSpawnAbsolutePosition - this.lastPlayerPosition).Length() > this.RespawnDistance))
 										break;
+									else
+										respawnLocations.RemoveAt(respawnLocations.Count - 1);
 								}
 							}
 						}

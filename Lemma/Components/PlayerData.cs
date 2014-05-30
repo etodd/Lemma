@@ -25,6 +25,7 @@ namespace Lemma.Components
 		public ListProperty<RespawnLocation> RespawnLocations = new ListProperty<RespawnLocation>();
 		public Property<bool> PhoneActive = new Property<bool>();
 		public Property<bool> NoteActive = new Property<bool>();
+		public Property<float> CameraShakeAmount = new Property<float>();
 
 		public override void Awake()
 		{

@@ -71,7 +71,31 @@ namespace Lemma.Components
 				Map.CellState state = map[coord];
 
 				if (state != Map.EmptyState)
+				{
 					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, state.FootstepSwitch, this.Entity);
+
+					if (this.WallRunState.Value == WallRun.State.None)
+					{
+						if (map.GetAbsoluteDirection(dir) == Direction.NegativeY)
+						{
+							this.walkedOnCount++;
+							if (this.walkedOnCount >= 2)
+							{
+								// Every few tiles, save off the location for the auto-respawn system
+								this.RespawnLocations.Add(new RespawnLocation
+								{
+									Coordinate = coord,
+									Map = map.Entity,
+									Rotation = this.Rotation,
+									OriginalPosition = map.GetAbsolutePosition(coord),
+								});
+								while (this.RespawnLocations.Count > Spawner.RespawnMemoryLength)
+									this.RespawnLocations.RemoveAt(0);
+								this.walkedOnCount = 0;
+							}
+						}
+					}
+				}
 
 				Map.t id = state.ID;
 				if (id == Map.t.Neutral)
@@ -189,29 +213,13 @@ namespace Lemma.Components
 			// Wall-run code will call our WalkedOn event for us, so only worry about this stuff if we're walking normally
 			if (this.WallRunState == WallRun.State.None)
 			{
-				groundRaycast = Map.GlobalRaycast(this.Position, Vector3.Down, this.CharacterHeight.Value * 0.5f + this.SupportHeight + 1.1f);
-				direction = groundRaycast.Normal.GetReverse();
+				this.groundRaycast = Map.GlobalRaycast(this.Position, Vector3.Down, this.CharacterHeight.Value * 0.5f + this.SupportHeight + 1.1f);
+				direction = this.groundRaycast.Normal.GetReverse();
 
-				if (groundRaycast.Map != null &&
-					(groundRaycast.Map != oldMap || oldCoord == null || !oldCoord.Value.Equivalent(groundRaycast.Coordinate.Value)))
+				if (this.groundRaycast.Map != null &&
+					(this.groundRaycast.Map != oldMap || oldCoord == null || !oldCoord.Value.Equivalent(this.groundRaycast.Coordinate.Value)))
 				{
-					this.WalkedOn.Execute(groundRaycast.Map, groundRaycast.Coordinate.Value, direction);
-
-					this.walkedOnCount++;
-					if (this.walkedOnCount >= 3)
-					{
-						// Every 3 tiles, save off the location for the auto-respawn system
-						this.RespawnLocations.Add(new RespawnLocation
-						{
-							Coordinate = this.groundRaycast.Coordinate.Value,
-							Map = this.groundRaycast.Map.Entity,
-							Rotation = this.Rotation,
-							OriginalPosition = this.groundRaycast.Map.GetAbsolutePosition(this.groundRaycast.Coordinate.Value),
-						});
-						while (this.RespawnLocations.Count > Spawner.RespawnMemoryLength)
-							this.RespawnLocations.RemoveAt(0);
-						this.walkedOnCount = 0;
-					}
+					this.WalkedOn.Execute(this.groundRaycast.Map, this.groundRaycast.Coordinate.Value, direction);
 				}
 			}
 

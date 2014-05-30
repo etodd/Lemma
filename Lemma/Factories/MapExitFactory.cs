@@ -49,15 +49,13 @@ namespace Lemma.Factories
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
 			{
-				main.Screenshot.Take(main.ScreenSize);
-
 				Container notification = new Container();
 				TextElement notificationText = new TextElement();
 
 				Stream stream = new MemoryStream();
-				main.AddComponent(new Animation
+
+				Animation anim = new Animation
 				(
-					new Animation.Delay(0.01f),
 					new Animation.Execute(delegate()
 					{
 						notification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
@@ -87,8 +85,7 @@ namespace Lemma.Factories
 						if (PlayerFactory.Instance != null)
 							PlayerFactory.Instance.Delete.Execute();
 
-						main.SaveCurrentMap(main.Screenshot.Buffer, main.Screenshot.Size);
-						main.Screenshot.Clear();
+						main.SaveCurrentMap();
 						main.MapFile.Value = nextMap;
 
 						notification.Visible.Value = false;
@@ -103,6 +100,11 @@ namespace Lemma.Factories
 						stream.Dispose();
 					}),
 					new Animation.Delay(1.5f),
+					new Animation.Execute(delegate()
+					{
+						main.Screenshot.Take(main.ScreenSize);
+					}),
+					new Animation.Delay(0.01f),
 					new Animation.Set<string>(notificationText.Text, "Saving..."),
 					new Animation.Set<bool>(notification.Visible, true),
 					new Animation.Delay(0.01f),
@@ -117,7 +119,9 @@ namespace Lemma.Factories
 						new Animation.FloatMoveTo(notificationText.Opacity, 0.0f, 1.0f)
 					),
 					new Animation.Execute(notification.Delete)
-				));
+				);
+				anim.EnabledWhenPaused = false;
+				main.AddComponent(anim);
 			}));
 		}
 

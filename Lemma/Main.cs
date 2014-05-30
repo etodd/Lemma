@@ -954,16 +954,18 @@ namespace Lemma
 				doSave();
 		}
 
-		public void SaveCurrentMap(RenderTarget2D screenshot, Point screenshotSize)
+		public void SaveCurrentMap(RenderTarget2D screenshot = null, Point screenshotSize = default(Point))
 		{
 			if (this.CurrentSave.Value == null)
 				this.createNewSave();
 
 			string currentSaveDirectory = Path.Combine(this.SaveDirectory, this.CurrentSave);
-			string screenshotPath = Path.Combine(currentSaveDirectory, "thumbnail.jpg");
-			using (Stream stream = File.OpenWrite(screenshotPath))
-				screenshot.SaveAsJpeg(stream, 256, (int)(screenshotSize.Y * (256.0f / screenshotSize.X)));
-			this.Screenshot.Clear();
+			if (screenshot != null)
+			{
+				string screenshotPath = Path.Combine(currentSaveDirectory, "thumbnail.jpg");
+				using (Stream stream = File.OpenWrite(screenshotPath))
+					screenshot.SaveAsJpeg(stream, 256, (int)(screenshotSize.Y * (256.0f / screenshotSize.X)));
+			}
 
 			IO.MapLoader.Save(this, currentSaveDirectory, this.MapFile);
 

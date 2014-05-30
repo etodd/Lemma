@@ -50,6 +50,14 @@ namespace Lemma.Components
 			}
 		}
 
+		public int PossibilityCount
+		{
+			get
+			{
+				return this.possibilities.Count;
+			}
+		}
+
 		private Map.CellState temporary;
 
 		private static Direction[] platformBuildableDirections = DirectionExtensions.HorizontalDirections.Union(new[] { Direction.NegativeY }).ToArray();
@@ -313,7 +321,7 @@ namespace Lemma.Components
 			{
 				startPosition = this.FootPosition + straightAhead;
 
-				velocity = straightAhead + new Vector3(0, this.JumpSpeed, 0);
+				velocity = (straightAhead * 0.5f) + new Vector3(0, this.JumpSpeed, 0);
 			}
 			else
 			{

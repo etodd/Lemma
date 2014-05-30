@@ -23,7 +23,9 @@ namespace Lemma.Components
 
 		// Input properties
 		[XmlIgnore]
-		public Property<float> BaseCameraShakeAmount = new Property<float> { Value = 0.0f };
+		public Property<float> BaseCameraShakeAmount = new Property<float>();
+
+		public Property<float> CameraShakeAmount = new Property<float>();
 		[XmlIgnore]
 		public Property<Matrix> CameraBone = new Property<Matrix>();
 		[XmlIgnore]
@@ -76,7 +78,7 @@ namespace Lemma.Components
 		{
 			Vector2 mouse = this.Mouse;
 			Vector3 shake = Vector3.Zero;
-			float finalShakeAmount = this.BaseCameraShakeAmount;
+			float finalShakeAmount = this.BaseCameraShakeAmount + this.CameraShakeAmount;
 			if (this.shakeTime > 0.0f)
 			{
 				finalShakeAmount += this.shakeAmount * this.blendShake();

@@ -417,15 +417,26 @@ namespace Lemma.Factories
 				if (!player.EnableMoves || (player.Character.Crouched && player.Character.IsSupported) || vault.CurrentState.Value != Vault.State.None)
 					return;
 
-				bool didSomething;
+				bool didSomething = false;
 
-				if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
-					if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
+				if (predictor.PossibilityCount > 0)
+				{
+					// In slow motion, prefer left and right wall-running
+					if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
+						if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
+							if (!(didSomething = vault.Go()))
+								if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
+									didSomething = wallRun.Activate(WallRun.State.Reverse);
+				}
+				else
+				{
+					// In normal mode, prefer straight wall-running
+					if (!(didSomething = vault.Go()))
 						if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
-							didSomething = wallRun.Activate(WallRun.State.Reverse);
-
-				if (!didSomething)
-					didSomething = vault.Go();
+							if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
+								if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
+									didSomething = wallRun.Activate(WallRun.State.Reverse);
+				}
 
 				if (!didSomething)
 					vault.TryVaultDown();
@@ -506,9 +517,11 @@ namespace Lemma.Factories
 					PlayerData playerData = dataEntity.Get<PlayerData>();
 
 					// HACK. Overwriting the property rather than binding the two together. Oh well.
+					// This is because I haven't written a two-way list binding.
 					footsteps.RespawnLocations = playerData.RespawnLocations;
 					
 					// Bind player data properties
+					entity.Add(new TwoWayBinding<float>(playerData.CameraShakeAmount, cameraControl.CameraShakeAmount));
 					entity.Add(new TwoWayBinding<bool>(playerData.EnableRoll, rollKickSlide.EnableRoll));
 					entity.Add(new TwoWayBinding<bool>(playerData.EnableCrouch, player.EnableCrouch));
 					entity.Add(new TwoWayBinding<bool>(playerData.EnableKick, rollKickSlide.EnableKick));
