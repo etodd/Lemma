@@ -30,7 +30,7 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(entity, main);
+				VoxelAttachable.MakeAttachable(entity, main);
 
 			entity.CannotSuspendByDistance = true;
 
@@ -76,7 +76,7 @@ namespace Lemma.Factories
 			model.Add(new Binding<Matrix>(model.Transform, entity.Get<Transform>().Matrix));
 
 			PlayerTrigger.AttachEditorComponents(entity, main, this.Color);
-			MapAttachable.AttachEditorComponents(entity, main);
+			VoxelAttachable.AttachEditorComponents(entity, main);
 		}
 	}
 }

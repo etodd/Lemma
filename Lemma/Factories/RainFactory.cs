@@ -90,8 +90,8 @@ namespace Lemma.Factories
 							for (int y = 0; y < kernelSize; y++)
 							{
 								Vector3 pos = kernelOffset + new Vector3(x * kernelSpacing, 0, y * kernelSpacing);
-								Map.GlobalRaycastResult raycast = Map.GlobalRaycast(pos, Vector3.Down, rainStartHeight + raycastHeight + (verticalSpeed * maxLifetime));
-								float height = raycast.Map == null ? float.MinValue : raycast.Position.Y;
+								Voxel.GlobalRaycastResult raycast = Voxel.GlobalRaycast(pos, Vector3.Down, rainStartHeight + raycastHeight + (verticalSpeed * maxLifetime));
+								float height = raycast.Voxel == null ? float.MinValue : raycast.Position.Y;
 								raycastHeights[x, y] = height;
 								averageHeight += Math.Max(cameraPos.Y, Math.Min(height, cameraPos.Y + rainStartHeight)) * audioKernel[x, y];
 							}

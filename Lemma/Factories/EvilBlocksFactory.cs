@@ -89,7 +89,7 @@ namespace Lemma.Factories
 							block.Get<Transform>().Position.Value = blockSpawnPoint + new Vector3(((float)this.random.NextDouble() - 0.5f) * 2.0f, ((float)this.random.NextDouble() - 0.5f) * 2.0f, ((float)this.random.NextDouble() - 0.5f) * 2.0f);
 							block.Get<PhysicsBlock>().Size.Value = scale;
 							block.Get<ModelInstance>().Scale.Value = scale;
-							block.GetOrMakeProperty<Map.t>("Type").Value = Map.t.Black;
+							block.GetOrMakeProperty<Voxel.t>("Type").Value = Voxel.t.Black;
 							blockEntities.Add(block);
 							main.Add(block);
 						}
@@ -158,7 +158,7 @@ namespace Lemma.Factories
 				}
 			};
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Suspended",
 				Tasks = new[] { checkOperationalRadius, dragBlocks, },
@@ -167,7 +167,7 @@ namespace Lemma.Factories
 			const float sightDistance = 30.0f;
 			const float hearingDistance = 15.0f;
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Idle",
 				Tasks = new[]
@@ -198,14 +198,14 @@ namespace Lemma.Factories
 
 			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Alert",
-				Enter = delegate(AI.State previous)
+				Enter = delegate(AI.AIState previous)
 				{
 					//volume.Value = 0.0f;
 				},
-				Exit = delegate(AI.State next)
+				Exit = delegate(AI.AIState next)
 				{
 					//volume.Value = defaultVolume;
 				},
@@ -250,7 +250,7 @@ namespace Lemma.Factories
 
 			// Chase AI state
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Chase",
 				Tasks = new[]
@@ -292,18 +292,18 @@ namespace Lemma.Factories
 				positionBlend.Value = 0.0f;
 			};
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Levitating",
-				Enter = delegate(AI.State previous)
+				Enter = delegate(AI.AIState previous)
 				{
 					findNextPosition();
 				},
-				Exit = delegate(AI.State next)
+				Exit = delegate(AI.AIState next)
 				{
-					Map map = raycastAI.Map.Value.Target.Get<Map>();
-					Map.Coordinate currentCoord = map.GetCoordinate(transform.Position);
-					Map.Coordinate? closest = map.FindClosestFilledCell(currentCoord, 10);
+					Voxel map = raycastAI.Voxel.Value.Target.Get<Voxel>();
+					Voxel.Coord currentCoord = map.GetCoordinate(transform.Position);
+					Voxel.Coord? closest = map.FindClosestFilledCell(currentCoord, 10);
 					if (closest.HasValue)
 						raycastAI.MoveTo(closest.Value);
 					//volume.Value = defaultVolume;

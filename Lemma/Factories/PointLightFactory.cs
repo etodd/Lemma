@@ -28,7 +28,7 @@ namespace Lemma.Factories
 			light.Add(new TwoWayBinding<Vector3>(light.Position, transform.Position));
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(entity, main);
+				VoxelAttachable.MakeAttachable(entity, main);
 
 			this.SetMain(entity, main);
 		}
@@ -41,7 +41,7 @@ namespace Lemma.Factories
 			Property<Vector3> color = entity.Get<PointLight>().Color;
 			model.Add(new Binding<Vector3>(model.Color, color));
 
-			MapAttachable.AttachEditorComponents(entity, main, color);
+			VoxelAttachable.AttachEditorComponents(entity, main, color);
 		}
 	}
 }

@@ -26,28 +26,28 @@ namespace Lemma.Components
 		public Property<float> JumpSpeed = new Property<float>();
 		public Property<float> Mass = new Property<float>();
 		public Property<float> LastRollEnded = new Property<float>();
-		public Property<Map> WallRunMap = new Property<Map>();
+		public Property<Voxel> WallRunMap = new Property<Voxel>();
 		public Property<Direction> WallDirection = new Property<Direction>();
 
 		// Output
-		public Command<Map, Map.Coordinate, Direction> WalkedOn = new Command<Map, Map.Coordinate, Direction>();
+		public Command<Voxel, Voxel.Coord, Direction> WalkedOn = new Command<Voxel, Voxel.Coord, Direction>();
 		public Command DeactivateWallRun = new Command();
 		public Command<float> FallDamage = new Command<float>();
 		public BlockPredictor Predictor;
 		public AnimatedModel Model;
-		public Property<Map> LastWallRunMap = new Property<Map>();
+		public Property<Voxel> LastWallRunMap = new Property<Voxel>();
 		public Property<Direction> LastWallDirection = new Property<Direction>();
 		public Property<bool> CanKick = new Property<bool>();
 		public Property<float> LastWallJump = new Property<float> { Value = -1.0f };
 		public Property<float> LastSupportedSpeed = new Property<float>();
 
-		private Map.CellState temporary;
+		private Voxel.State temporary;
 
 		public override void Awake()
 		{
 			base.Awake();
 			this.Serialize = false;
-			this.temporary = Map.States[Map.t.Temporary];
+			this.temporary = Voxel.States[Voxel.t.Temporary];
 			this.Add(new NotifyBinding(delegate()
 			{
 				if (this.IsSupported)
@@ -76,14 +76,14 @@ namespace Lemma.Components
 			const float wallJumpHorizontalVelocityAmount = 0.75f;
 			const float wallJumpDistance = 2.0f;
 
-			Action<Map, Direction, Map.Coordinate> wallJump = delegate(Map wallJumpMap, Direction wallNormalDirection, Map.Coordinate wallCoordinate)
+			Action<Voxel, Direction, Voxel.Coord> wallJump = delegate(Voxel wallJumpMap, Direction wallNormalDirection, Voxel.Coord wallCoordinate)
 			{
 				this.LastWallRunMap.Value = wallJumpMap;
 				this.LastWallDirection.Value = wallNormalDirection.GetReverse();
 				this.LastWallJump.Value = main.TotalTime;
 
-				Map.CellState wallType = wallJumpMap[wallCoordinate];
-				if (wallType == Map.EmptyState) // Empty. Must be a block possibility that hasn't been instantiated yet
+				Voxel.State wallType = wallJumpMap[wallCoordinate];
+				if (wallType == Voxel.EmptyState) // Empty. Must be a block possibility that hasn't been instantiated yet
 					wallType = this.temporary;
 
 				this.WalkedOn.Execute(wallJumpMap, wallCoordinate, wallNormalDirection.GetReverse());
@@ -115,7 +115,7 @@ namespace Lemma.Components
 					jumpDirection += wallJumpHorizontalVelocityAmount * 0.75f * wallNormal2;
 				}
 
-				DynamicMap dynamicMap = wallJumpMap as DynamicMap;
+				DynamicVoxel dynamicMap = wallJumpMap as DynamicVoxel;
 				if (dynamicMap != null)
 				{
 					BEPUphysics.Entities.Entity supportEntity = dynamicMap.PhysicsEntity;
@@ -130,13 +130,13 @@ namespace Lemma.Components
 				// We're not doing our normal jump, and not wall-runnign
 				// See if we can wall-jump
 				Vector3 playerPos = this.Position;
-				Map.GlobalRaycastResult? wallRaycastHit = null;
+				Voxel.GlobalRaycastResult? wallRaycastHit = null;
 				Vector3 wallRaycastDirection = Vector3.Zero;
 
 				foreach (Vector3 dir in new[] { rotationMatrix.Left, rotationMatrix.Right, rotationMatrix.Backward, rotationMatrix.Forward })
 				{
-					Map.GlobalRaycastResult hit = Map.GlobalRaycast(playerPos, dir, wallJumpDistance);
-					if (hit.Map != null)
+					Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(playerPos, dir, wallJumpDistance);
+					if (hit.Voxel != null)
 					{
 						wallRaycastDirection = dir;
 						wallRaycastHit = hit;
@@ -146,7 +146,7 @@ namespace Lemma.Components
 
 				if (wallRaycastHit != null)
 				{
-					Map m = wallRaycastHit.Value.Map;
+					Voxel m = wallRaycastHit.Value.Voxel;
 					wallJump(m, wallRaycastHit.Value.Normal, wallRaycastHit.Value.Coordinate.Value);
 				}
 			}
@@ -156,14 +156,14 @@ namespace Lemma.Components
 			if (wallRunState != WallRun.State.None)
 			{
 				Vector3 pos = this.FloorPosition + new Vector3(0, 0.5f, 0);
-				Map.Coordinate wallCoord = this.WallRunMap.Value.GetCoordinate(pos).Move(this.WallDirection, 2);
+				Voxel.Coord wallCoord = this.WallRunMap.Value.GetCoordinate(pos).Move(this.WallDirection, 2);
 				wallJump(this.WallRunMap, this.WallDirection.Value.GetReverse(), wallCoord);
 			}
 
 			bool go = supported || wallJumping;
 
 			BlockPredictor.Possibility instantiatedBlockPossibility = null;
-			Map.Coordinate instantiatedBlockPossibilityCoord = default(Map.Coordinate);
+			Voxel.Coord instantiatedBlockPossibilityCoord = default(Voxel.Coord);
 
 			if (!go)
 			{
@@ -171,7 +171,7 @@ namespace Lemma.Components
 				Vector3 jumpPos = this.FloorPosition + new Vector3(0, -1.0f, 0);
 				foreach (BlockPredictor.Possibility possibility in this.Predictor.AllPossibilities)
 				{
-					Map.Coordinate possibilityCoord = possibility.Map.GetCoordinate(jumpPos);
+					Voxel.Coord possibilityCoord = possibility.Map.GetCoordinate(jumpPos);
 					if (possibilityCoord.Between(possibility.StartCoord, possibility.EndCoord)
 						&& !possibility.Map.GetCoordinate(jumpPos + new Vector3(2.0f)).Between(possibility.StartCoord, possibility.EndCoord))
 					{
@@ -193,7 +193,7 @@ namespace Lemma.Components
 				{
 					foreach (Vector3 dir in wallJumpDirections)
 					{
-						foreach (Map.Coordinate coord in possibility.Map.Rasterize(playerPos, playerPos + (dir * wallJumpDistance)))
+						foreach (Voxel.Coord coord in possibility.Map.Rasterize(playerPos, playerPos + (dir * wallJumpDistance)))
 						{
 							if (coord.Between(possibility.StartCoord, possibility.EndCoord))
 							{

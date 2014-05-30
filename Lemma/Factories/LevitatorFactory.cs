@@ -109,7 +109,7 @@ namespace Lemma.Factories
 				},
 			};
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Suspended",
 				Tasks = new[] { checkOperationalRadius, },
@@ -118,14 +118,14 @@ namespace Lemma.Factories
 			const float sightDistance = 30.0f;
 			const float hearingDistance = 15.0f;
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Idle",
-				Enter = delegate(AI.State previous)
+				Enter = delegate(AI.AIState previous)
 				{
 					//pitch.Value = -0.5f;
 				},
-				Exit = delegate(AI.State next)
+				Exit = delegate(AI.AIState next)
 				{
 					//pitch.Value = 0.0f;
 				},
@@ -156,14 +156,14 @@ namespace Lemma.Factories
 
 			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Alert",
-				Enter = delegate(AI.State previous)
+				Enter = delegate(AI.AIState previous)
 				{
 					//volume.Value = 0.0f;
 				},
-				Exit = delegate(AI.State next)
+				Exit = delegate(AI.AIState next)
 				{
 					//volume.Value = defaultVolume;
 				},
@@ -207,49 +207,49 @@ namespace Lemma.Factories
 
 			// Levitate
 
-			Property<Entity.Handle> levitatingMap = entity.GetOrMakeProperty<Entity.Handle>("LevitatingMap");
-			Property<Map.Coordinate> grabCoord = entity.GetOrMakeProperty<Map.Coordinate>("GrabCoord");
+			Property<Entity.Handle> levitatingVoxel = entity.GetOrMakeProperty<Entity.Handle>("LevitatingVoxel");
+			Property<Voxel.Coord> grabCoord = entity.GetOrMakeProperty<Voxel.Coord>("GrabCoord");
 
 			const int levitateRipRadius = 4;
 
 			Func<bool> tryLevitate = delegate()
 			{
-				Map map = raycastAI.Map.Value.Target.Get<Map>();
-				Map.Coordinate? candidate = map.FindClosestFilledCell(raycastAI.Coord, 3);
+				Voxel map = raycastAI.Voxel.Value.Target.Get<Voxel>();
+				Voxel.Coord? candidate = map.FindClosestFilledCell(raycastAI.Coord, 3);
 
 				if (!candidate.HasValue)
 					return false;
 
-				Map.Coordinate center = candidate.Value;
+				Voxel.Coord center = candidate.Value;
 				if (!map[center].Permanent)
 				{
 					// Break off a chunk of this map into a new DynamicMap.
 
-					List<Map.Coordinate> edges = new List<Map.Coordinate>();
+					List<Voxel.Coord> edges = new List<Voxel.Coord>();
 
-					Map.Coordinate ripStart = center.Move(-levitateRipRadius, -levitateRipRadius, -levitateRipRadius);
-					Map.Coordinate ripEnd = center.Move(levitateRipRadius, levitateRipRadius, levitateRipRadius);
+					Voxel.Coord ripStart = center.Move(-levitateRipRadius, -levitateRipRadius, -levitateRipRadius);
+					Voxel.Coord ripEnd = center.Move(levitateRipRadius, levitateRipRadius, levitateRipRadius);
 
-					Dictionary<Map.Box, bool> permanentBoxes = new Dictionary<Map.Box, bool>();
-					foreach (Map.Coordinate c in ripStart.CoordinatesBetween(ripEnd))
+					Dictionary<Voxel.Box, bool> permanentBoxes = new Dictionary<Voxel.Box, bool>();
+					foreach (Voxel.Coord c in ripStart.CoordinatesBetween(ripEnd))
 					{
-						Map.Box box = map.GetBox(c);
+						Voxel.Box box = map.GetBox(c);
 						if (box != null && box.Type.Permanent)
 							permanentBoxes[box] = true;
 					}
 
-					foreach (Map.Box b in permanentBoxes.Keys)
+					foreach (Voxel.Box b in permanentBoxes.Keys)
 					{
 						// Top and bottom
 						for (int x = b.X - 1; x <= b.X + b.Width; x++)
 						{
 							for (int z = b.Z - 1; z <= b.Z + b.Depth; z++)
 							{
-								Map.Coordinate coord = new Map.Coordinate { X = x, Y = b.Y + b.Height, Z = z };
+								Voxel.Coord coord = new Voxel.Coord { X = x, Y = b.Y + b.Height, Z = z };
 								if (coord.Between(ripStart, ripEnd))
 									edges.Add(coord);
 
-								coord = new Map.Coordinate { X = x, Y = b.Y - 1, Z = z };
+								coord = new Voxel.Coord { X = x, Y = b.Y - 1, Z = z };
 								if (coord.Between(ripStart, ripEnd))
 									edges.Add(coord);
 							}
@@ -261,11 +261,11 @@ namespace Lemma.Factories
 							// Left and right
 							for (int z = b.Z - 1; z <= b.Z + b.Depth; z++)
 							{
-								Map.Coordinate coord = new Map.Coordinate { X = b.X - 1, Y = y, Z = z };
+								Voxel.Coord coord = new Voxel.Coord { X = b.X - 1, Y = y, Z = z };
 								if (coord.Between(ripStart, ripEnd))
 									edges.Add(coord);
 
-								coord = new Map.Coordinate { X = b.X + b.Width, Y = y, Z = z };
+								coord = new Voxel.Coord { X = b.X + b.Width, Y = y, Z = z };
 								if (coord.Between(ripStart, ripEnd))
 									edges.Add(coord);
 							}
@@ -273,11 +273,11 @@ namespace Lemma.Factories
 							// Backward and forward
 							for (int x = b.X; x < b.X + b.Width; x++)
 							{
-								Map.Coordinate coord = new Map.Coordinate { X = x, Y = y, Z = b.Z - 1 };
+								Voxel.Coord coord = new Voxel.Coord { X = x, Y = y, Z = b.Z - 1 };
 								if (coord.Between(ripStart, ripEnd))
 									edges.Add(coord);
 
-								coord = new Map.Coordinate { X = x, Y = y, Z = b.Z + b.Depth };
+								coord = new Voxel.Coord { X = x, Y = y, Z = b.Z + b.Depth };
 								if (coord.Between(ripStart, ripEnd))
 									edges.Add(coord);
 							}
@@ -292,8 +292,8 @@ namespace Lemma.Factories
 					{
 						for (int z = ripStart.Z; z <= ripEnd.Z; z++)
 						{
-							edges.Add(new Map.Coordinate { X = x, Y = ripStart.Y, Z = z });
-							edges.Add(new Map.Coordinate { X = x, Y = ripEnd.Y, Z = z });
+							edges.Add(new Voxel.Coord { X = x, Y = ripStart.Y, Z = z });
+							edges.Add(new Voxel.Coord { X = x, Y = ripEnd.Y, Z = z });
 						}
 					}
 
@@ -303,26 +303,26 @@ namespace Lemma.Factories
 						// Left and right
 						for (int z = ripStart.Z; z <= ripEnd.Z; z++)
 						{
-							edges.Add(new Map.Coordinate { X = ripStart.X, Y = y, Z = z });
-							edges.Add(new Map.Coordinate { X = ripEnd.X, Y = y, Z = z });
+							edges.Add(new Voxel.Coord { X = ripStart.X, Y = y, Z = z });
+							edges.Add(new Voxel.Coord { X = ripEnd.X, Y = y, Z = z });
 						}
 
 						// Backward and forward
 						for (int x = ripStart.X; x <= ripEnd.X; x++)
 						{
-							edges.Add(new Map.Coordinate { X = x, Y = y, Z = ripStart.Z });
-							edges.Add(new Map.Coordinate { X = x, Y = y, Z = ripEnd.Z });
+							edges.Add(new Voxel.Coord { X = x, Y = y, Z = ripStart.Z });
+							edges.Add(new Voxel.Coord { X = x, Y = y, Z = ripEnd.Z });
 						}
 					}
 
 					map.Empty(edges);
-					map.Regenerate(delegate(List<DynamicMap> spawnedMaps)
+					map.Regenerate(delegate(List<DynamicVoxel> spawnedMaps)
 					{
-						foreach (DynamicMap spawnedMap in spawnedMaps)
+						foreach (DynamicVoxel spawnedMap in spawnedMaps)
 						{
 							if (spawnedMap[center].ID != 0)
 							{
-								levitatingMap.Value = spawnedMap.Entity;
+								levitatingVoxel.Value = spawnedMap.Entity;
 								AkSoundEngine.PostEvent("Play_infected_shatter", entity);
 								break;
 							}
@@ -337,22 +337,22 @@ namespace Lemma.Factories
 
 			Action delevitateMap = delegate()
 			{
-				Entity levitatingMapEntity = levitatingMap.Value.Target;
+				Entity levitatingMapEntity = levitatingVoxel.Value.Target;
 				if (levitatingMapEntity == null || !levitatingMapEntity.Active)
 					return;
 
-				DynamicMap dynamicMap = levitatingMapEntity.Get<DynamicMap>();
+				DynamicVoxel dynamicMap = levitatingMapEntity.Get<DynamicVoxel>();
 
 				int maxDistance = levitateRipRadius + 7;
-				Map closestMap = null;
-				Map.Coordinate closestCoord = new Map.Coordinate();
-				foreach (Map m in Map.ActivePhysicsMaps)
+				Voxel closestMap = null;
+				Voxel.Coord closestCoord = new Voxel.Coord();
+				foreach (Voxel m in Voxel.ActivePhysicsVoxels)
 				{
 					if (m == dynamicMap)
 						continue;
 
-					Map.Coordinate relativeCoord = m.GetCoordinate(dynamicMap.Transform.Value.Translation);
-					Map.Coordinate? closestFilled = m.FindClosestFilledCell(relativeCoord, maxDistance);
+					Voxel.Coord relativeCoord = m.GetCoordinate(dynamicMap.Transform.Value.Translation);
+					Voxel.Coord? closestFilled = m.FindClosestFilledCell(relativeCoord, maxDistance);
 					if (closestFilled != null)
 					{
 						maxDistance = Math.Min(Math.Abs(relativeCoord.X - closestFilled.Value.X), Math.Min(Math.Abs(relativeCoord.Y - closestFilled.Value.Y), Math.Abs(relativeCoord.Z - closestFilled.Value.Z)));
@@ -373,10 +373,10 @@ namespace Lemma.Factories
 					else if (y.IsParallel(z))
 						y = x.Cross(z);
 
-					Map.Coordinate offset = new Map.Coordinate();
+					Voxel.Coord offset = new Voxel.Coord();
 					float closestCoordDistance = float.MaxValue;
 					Vector3 closestCoordPosition = closestMap.GetAbsolutePosition(closestCoord);
-					foreach (Map.Coordinate c in dynamicMap.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()))
+					foreach (Voxel.Coord c in dynamicMap.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()))
 					{
 						float distance = (dynamicMap.GetAbsolutePosition(c) - closestCoordPosition).LengthSquared();
 						if (distance < closestCoordDistance)
@@ -394,10 +394,10 @@ namespace Lemma.Factories
 					EffectBlockFactory blockFactory = Factory.Get<EffectBlockFactory>();
 
 					int index = 0;
-					foreach (Map.Coordinate c in dynamicMap.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()).OrderBy(c2 => new Vector3(c2.X - offset.X, c2.Y - offset.Y, c2.Z - offset.Z).LengthSquared()))
+					foreach (Voxel.Coord c in dynamicMap.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()).OrderBy(c2 => new Vector3(c2.X - offset.X, c2.Y - offset.Y, c2.Z - offset.Z).LengthSquared()))
 					{
-						Map.Coordinate offsetFromCenter = c.Move(-offset.X, -offset.Y, -offset.Z);
-						Map.Coordinate targetCoord = new Map.Coordinate();
+						Voxel.Coord offsetFromCenter = c.Move(-offset.X, -offset.Y, -offset.Z);
+						Voxel.Coord targetCoord = new Voxel.Coord();
 						targetCoord.SetComponent(x, offsetFromCenter.GetComponent(Direction.PositiveX));
 						targetCoord.SetComponent(y, offsetFromCenter.GetComponent(Direction.PositiveY));
 						targetCoord.SetComponent(z, offsetFromCenter.GetComponent(Direction.PositiveZ));
@@ -424,7 +424,7 @@ namespace Lemma.Factories
 
 			// Chase AI state
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Chase",
 				Tasks = new[]
@@ -447,7 +447,7 @@ namespace Lemma.Factories
 						{
 							Entity target = targetAgent.Value.Target;
 							Vector3 targetPosition = target.Get<Transform>().Position;
-							Entity levitatingMapEntity = levitatingMap.Value.Target;
+							Entity levitatingMapEntity = levitatingVoxel.Value.Target;
 							if ((targetPosition - transform.Position).Length() < 10.0f && (levitatingMapEntity == null || !levitatingMapEntity.Active))
 							{
 								if (tryLevitate())
@@ -469,21 +469,21 @@ namespace Lemma.Factories
 				positionBlend.Value = 0.0f;
 			};
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Levitating",
-				Enter = delegate(AI.State previous)
+				Enter = delegate(AI.AIState previous)
 				{
 					findNextPosition();
 				},
-				Exit = delegate(AI.State next)
+				Exit = delegate(AI.AIState next)
 				{
 					delevitateMap();
-					levitatingMap.Value = null;
+					levitatingVoxel.Value = null;
 
-					Map map = raycastAI.Map.Value.Target.Get<Map>();
-					Map.Coordinate currentCoord = map.GetCoordinate(transform.Position);
-					Map.Coordinate? closest = map.FindClosestFilledCell(currentCoord, 10);
+					Voxel map = raycastAI.Voxel.Value.Target.Get<Voxel>();
+					Voxel.Coord currentCoord = map.GetCoordinate(transform.Position);
+					Voxel.Coord? closest = map.FindClosestFilledCell(currentCoord, 10);
 					if (closest.HasValue)
 						raycastAI.MoveTo(closest.Value);
 					//volume.Value = defaultVolume;
@@ -498,14 +498,14 @@ namespace Lemma.Factories
 						{
 							//volume.Value = 1.0f;
 							//pitch.Value = 1.0f;
-							Entity levitatingMapEntity = levitatingMap.Value.Target;
+							Entity levitatingMapEntity = levitatingVoxel.Value.Target;
 							if (levitatingMapEntity == null || !levitatingMapEntity.Active || ai.TimeInCurrentState.Value > 8.0f)
 							{
 								ai.CurrentState.Value = "Alert";
 								return;
 							}
 
-							DynamicMap dynamicMap = levitatingMapEntity.Get<DynamicMap>();
+							DynamicVoxel dynamicMap = levitatingMapEntity.Get<DynamicVoxel>();
 
 							positionBlend.Value += (main.ElapsedTime.Value / 1.0f);
 							if (positionBlend > 1.0f)

@@ -9,7 +9,7 @@ using ComponentBind;
 namespace Lemma.Components
 {
 	[XmlInclude(typeof(AI.Task))]
-	[XmlInclude(typeof(AI.State))]
+	[XmlInclude(typeof(AI.AIState))]
 	public class AI : Component<Main>, IUpdateableComponent
 	{
 		public class Task
@@ -21,26 +21,26 @@ namespace Lemma.Components
 			public Action Action;
 		}
 
-		public class State
+		public class AIState
 		{
 			public string Name;
 			[XmlIgnore]
-			public Action<State> Enter;
+			public Action<AIState> Enter;
 			[XmlIgnore]
-			public Action<State> Exit;
+			public Action<AIState> Exit;
 			public Task[] Tasks;
 			[XmlIgnore]
 			public bool _valid;
 
-			public State()
+			public AIState()
 			{
 				this.Tasks = new AI.Task[] { };
 			}
 		}
 
 		[XmlArray("States")]
-		[XmlArrayItem("State", Type = typeof(State))]
-		public State[] States
+		[XmlArrayItem("State", Type = typeof(AIState))]
+		public AIState[] States
 		{
 			get
 			{
@@ -48,9 +48,9 @@ namespace Lemma.Components
 			}
 			set
 			{
-				foreach (State state in value)
+				foreach (AIState state in value)
 				{
-					State existingState = null;
+					AIState existingState = null;
 					if (this.states.TryGetValue(state.Name, out existingState))
 					{
 						for (int i = 0; i < Math.Min(state.Tasks.Length, existingState.Tasks.Length); i++)
@@ -66,24 +66,24 @@ namespace Lemma.Components
 
 		public Property<float> TimeInCurrentState = new Property<float> { Serialize = true, Editable = false };
 
-		private Dictionary<string, State> states = new Dictionary<string, State>();
+		private Dictionary<string, AIState> states = new Dictionary<string, AIState>();
 
-		private State currentState;
+		private AIState currentState;
 
-		public void Setup(params State[] states)
+		public void Setup(params AIState[] states)
 		{
-			foreach (State state in states)
+			foreach (AIState state in states)
 				this.Add(state);
 		}
 
-		public void Add(State state)
+		public void Add(AIState state)
 		{
 			if (this.currentState == null && this.CurrentState.InternalValue == null)
 			{
 				this.currentState = state;
 				this.CurrentState.InternalValue = state.Name;
 			}
-			State existingState = null;
+			AIState existingState = null;
 			if (this.states.TryGetValue(state.Name, out existingState))
 			{
 				existingState._valid = true;
@@ -116,7 +116,7 @@ namespace Lemma.Components
 			this.EnabledWhenPaused = false;
 			this.Serialize = true;
 
-			foreach (State s in this.states.Values.ToList())
+			foreach (AIState s in this.states.Values.ToList())
 			{
 				if (!s._valid)
 					this.states.Remove(s.Name);
@@ -132,7 +132,7 @@ namespace Lemma.Components
 				if ((value == this.CurrentState.InternalValue && !this.CurrentState.IsInitializing) || value == null || main.EditorEnabled)
 					return;
 				this.CurrentState.InternalValue = value;
-				State oldState = this.currentState;
+				AIState oldState = this.currentState;
 				this.currentState = this.states[value];
 				if (!this.CurrentState.IsInitializing || this.TimeInCurrentState == 0.0f)
 				{
@@ -151,7 +151,7 @@ namespace Lemma.Components
 
 		public void Update(float elapsedTime)
 		{
-			State originalState = this.currentState;
+			AIState originalState = this.currentState;
 			this.TimeInCurrentState.Value += elapsedTime;
 			foreach (Task t in this.currentState.Tasks)
 			{

@@ -50,7 +50,7 @@ namespace Lemma.Factories
 			}));
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(entity, main);
+				VoxelAttachable.MakeAttachable(entity, main);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
@@ -70,7 +70,7 @@ namespace Lemma.Factories
 
 			model.Add(new Binding<Matrix>(model.Transform, entity.Get<Transform>().Matrix));
 
-			MapAttachable.AttachEditorComponents(entity, main);
+			VoxelAttachable.AttachEditorComponents(entity, main);
 		}
 	}
 }

@@ -28,7 +28,7 @@ namespace Lemma.Factories
 			this.SetMain(entity, main);
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(entity, main);
+				VoxelAttachable.MakeAttachable(entity, main);
 			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
 			
 			trigger.Editable = true;
@@ -91,7 +91,7 @@ namespace Lemma.Factories
 		{
 			base.AttachEditorComponents(entity, main);
 
-			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
+			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 			PlayerTrigger.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
 	}

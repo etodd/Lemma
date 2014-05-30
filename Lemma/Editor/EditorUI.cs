@@ -528,9 +528,9 @@ namespace Lemma.Components
 				}));
 				textField.Add(new Binding<string, Vector3>(textField.Text, x => x.GetElement(element).ToString("F"), socket));
 			}
-			else if (type.Equals(typeof(Map.Coordinate)))
+			else if (type.Equals(typeof(Voxel.Coord)))
 			{
-				Property<Map.Coordinate> socket = (Property<Map.Coordinate>)property;
+				Property<Voxel.Coord> socket = (Property<Voxel.Coord>)property;
 				Direction dir;
 				switch (element)
 				{
@@ -549,11 +549,11 @@ namespace Lemma.Components
 				{
 					this.NeedsSave.Value = true;
 					int delta = scroll * (this.EnablePrecision ? 1 : 10);
-					Map.Coordinate c = socket.Value;
+					Voxel.Coord c = socket.Value;
 					c.SetComponent(dir, c.GetComponent(dir) + delta);
 					socket.Value = c;
 				}));
-				textField.Add(new Binding<string, Map.Coordinate>(textField.Text, x => x.GetComponent(dir).ToString(), socket));
+				textField.Add(new Binding<string, Voxel.Coord>(textField.Text, x => x.GetComponent(dir).ToString(), socket));
 			}
 			else if (type.Equals(typeof(Vector4)))
 			{
@@ -602,7 +602,7 @@ namespace Lemma.Components
 					elementList.Children.Add(this.BuildValueMemberField(propertyInfo.PropertyType, property, field));
 				return elementList;
 			}
-			else if (propertyInfo.PropertyType.Equals(typeof(Vector3)) || propertyInfo.PropertyType.Equals(typeof(Map.Coordinate)))
+			else if (propertyInfo.PropertyType.Equals(typeof(Vector3)) || propertyInfo.PropertyType.Equals(typeof(Voxel.Coord)))
 			{
 				ListContainer elementList = new ListContainer();
 				elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
@@ -726,8 +726,8 @@ namespace Lemma.Components
 				}
 				else if (propertyInfo.PropertyType.Equals(typeof(Matrix)))
 					textField.Text.Value = "[matrix]";
-				else if (propertyInfo.PropertyType.Equals(typeof(Map.Coordinate)))
-					textField.Add(new Binding<string, Map.Coordinate>(textField.Text, x => "X:" + x.X.ToString() + " Y:" + x.Y.ToString() + " Z:" + x.Z.ToString(), (Property<Map.Coordinate>)property));
+				else if (propertyInfo.PropertyType.Equals(typeof(Voxel.Coord)))
+					textField.Add(new Binding<string, Voxel.Coord>(textField.Text, x => "X:" + x.X.ToString() + " Y:" + x.Y.ToString() + " Z:" + x.Z.ToString(), (Property<Voxel.Coord>)property));
 			
 				return field;
 			}

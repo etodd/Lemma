@@ -25,7 +25,7 @@ namespace Lemma.Factories
 			SpotLight spotLight = entity.GetOrCreate<SpotLight>("SpotLight");
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(entity, main);
+				VoxelAttachable.MakeAttachable(entity, main);
 
 			this.SetMain(entity, main);
 
@@ -50,7 +50,7 @@ namespace Lemma.Factories
 				return x;
 			}, entity.Get<Transform>().Matrix));
 
-			MapAttachable.AttachEditorComponents(entity, main, color);
+			VoxelAttachable.AttachEditorComponents(entity, main, color);
 		}
 	}
 }

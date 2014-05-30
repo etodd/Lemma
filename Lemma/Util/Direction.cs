@@ -167,24 +167,24 @@ namespace Lemma.Util
 			return Vector3.Zero;
 		}
 
-		public static Map.Coordinate GetCoordinate(this Direction dir)
+		public static Voxel.Coord GetCoordinate(this Direction dir)
 		{
 			switch (dir)
 			{
 				case Direction.NegativeX:
-					return new Map.Coordinate { X = -1, Y = 0, Z = 0 };
+					return new Voxel.Coord { X = -1, Y = 0, Z = 0 };
 				case Direction.PositiveX:
-					return new Map.Coordinate { X = 1, Y = 0, Z = 0 };
+					return new Voxel.Coord { X = 1, Y = 0, Z = 0 };
 				case Direction.NegativeZ:
-					return new Map.Coordinate { X = 0, Y = 0, Z = -1 };
+					return new Voxel.Coord { X = 0, Y = 0, Z = -1 };
 				case Direction.PositiveZ:
-					return new Map.Coordinate { X = 0, Y = 0, Z = 1 };
+					return new Voxel.Coord { X = 0, Y = 0, Z = 1 };
 				case Direction.PositiveY:
-					return new Map.Coordinate { X = 0, Y = 1, Z = 0 };
+					return new Voxel.Coord { X = 0, Y = 1, Z = 0 };
 				case Direction.NegativeY:
-					return new Map.Coordinate { X = 0, Y = -1, Z = 0 };
+					return new Voxel.Coord { X = 0, Y = -1, Z = 0 };
 			}
-			return new Map.Coordinate { X = 0, Y = 0, Z = 0 };
+			return new Voxel.Coord { X = 0, Y = 0, Z = 0 };
 		}
 
 		public static Direction RotateCounterClockwise(this Direction dir)

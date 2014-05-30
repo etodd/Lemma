@@ -66,7 +66,7 @@ namespace Lemma.Components
 			// Damage the player if they hit something too hard
 			this.Collided.Action = delegate(BEPUphysics.BroadPhaseEntries.Collidable other, ContactCollection contacts)
 			{
-				DynamicMap map = other.Tag as DynamicMap;
+				DynamicVoxel map = other.Tag as DynamicVoxel;
 				if (map != null)
 				{
 					float force = contacts[contacts.Count - 1].NormalImpulse;

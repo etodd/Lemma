@@ -26,7 +26,7 @@ namespace Lemma.Factories
 			Trigger trigger = entity.GetOrCreate<Trigger>("Trigger");
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(entity, main);
+				VoxelAttachable.MakeAttachable(entity, main);
 
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 		}
@@ -37,7 +37,7 @@ namespace Lemma.Factories
 
 			Trigger.AttachEditorComponents(entity, main, this.Color);
 
-			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
+			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 
 			EntityConnectable.AttachEditorComponents(entity, entity.Get<Trigger>().Target);
 		}

@@ -24,32 +24,32 @@ using BEPUphysics.Materials;
 
 namespace Lemma.Components
 {
-	[XmlInclude(typeof(CellState))]
-	[XmlInclude(typeof(Property<CellState>))]
-	[XmlInclude(typeof(ListProperty<CellState>))]
-	[XmlInclude(typeof(Coordinate))]
-	[XmlInclude(typeof(ListProperty<Coordinate>))]
+	[XmlInclude(typeof(State))]
+	[XmlInclude(typeof(Property<State>))]
+	[XmlInclude(typeof(ListProperty<State>))]
+	[XmlInclude(typeof(Coord))]
+	[XmlInclude(typeof(ListProperty<Coord>))]
 	[XmlInclude(typeof(Box))]
 	[XmlInclude(typeof(Property<Box>))]
 	[XmlInclude(typeof(ListProperty<Box>))]
-	[XmlInclude(typeof(Property<Coordinate>))]
+	[XmlInclude(typeof(Property<Coord>))]
 	[XmlInclude(typeof(Direction))]
 	[XmlInclude(typeof(Property<Direction>))]
 	[XmlInclude(typeof(ListProperty<Direction>))]
 	[XmlInclude(typeof(t))]
 	[XmlInclude(typeof(Property<t>))]
 	[XmlInclude(typeof(ListProperty<t>))]
-	public class Map : ComponentBind.Component<Main>
+	public class Voxel : ComponentBind.Component<Main>
 	{
-		public static Command<Map, IEnumerable<Coordinate>, Map> GlobalCellsEmptied = new Command<Map, IEnumerable<Coordinate>, Map>();
+		public static Command<Voxel, IEnumerable<Coord>, Voxel> GlobalCellsEmptied = new Command<Voxel, IEnumerable<Coord>, Voxel>();
 
-		public static Command<Map, IEnumerable<Coordinate>, Map> GlobalCellsFilled = new Command<Map, IEnumerable<Coordinate>, Map>();
-
-		[XmlIgnore]
-		public Command<IEnumerable<Coordinate>, Map> CellsEmptied = new Command<IEnumerable<Coordinate>, Map>();
+		public static Command<Voxel, IEnumerable<Coord>, Voxel> GlobalCellsFilled = new Command<Voxel, IEnumerable<Coord>, Voxel>();
 
 		[XmlIgnore]
-		public Command<IEnumerable<Coordinate>, Map> CellsFilled = new Command<IEnumerable<Coordinate>, Map>();
+		public Command<IEnumerable<Coord>, Voxel> CellsEmptied = new Command<IEnumerable<Coord>, Voxel>();
+
+		[XmlIgnore]
+		public Command<IEnumerable<Coord>, Voxel> CellsFilled = new Command<IEnumerable<Coord>, Voxel>();
 
 		public enum t // Material type
 		{
@@ -84,31 +84,31 @@ namespace Lemma.Components
 			SliderPowered = 44,
 		}
 
-		public static Dictionary<t, CellState> States = new Dictionary<t, CellState>();
-		public static List<CellState> StateList = new List<CellState>();
+		public static Dictionary<t, State> States = new Dictionary<t, State>();
+		public static List<State> StateList = new List<State>();
 
-		public static void AddState(params CellState[] states)
+		public static void AddState(params State[] states)
 		{
-			foreach (CellState state in states)
+			foreach (State state in states)
 			{
-				Map.States[state.ID] = state;
-				Map.StateList.Add(state);
+				Voxel.States[state.ID] = state;
+				Voxel.StateList.Add(state);
 			}
 		}
 
-		public static void RemoveState(params CellState[] states)
+		public static void RemoveState(params State[] states)
 		{
-			foreach (CellState state in states)
+			foreach (State state in states)
 			{
-				Map.States.Remove(state.ID);
-				Map.StateList.Remove(state);
+				Voxel.States.Remove(state.ID);
+				Voxel.StateList.Remove(state);
 			}
 		}
 
-		public static CellState EmptyState;
-		static Map()
+		public static State EmptyState;
+		static Voxel()
 		{
-			Map.EmptyState = new CellState
+			Voxel.EmptyState = new State
 			{
 				ID = 0,
 				Fake = true,
@@ -116,10 +116,10 @@ namespace Lemma.Components
 				Permanent = false,
 				Hard = false,
 			};
-			Map.AddState
+			Voxel.AddState
 			(
-				Map.EmptyState,
-				new CellState
+				Voxel.EmptyState,
+				new State
 				{
 					ID = t.Rock,
 					Permanent = true,
@@ -144,7 +144,7 @@ namespace Lemma.Components
 					},
 					Tint = new Vector3(0.88f, 0.89f, 0.9f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.Temporary,
 					Permanent = false,
@@ -164,7 +164,7 @@ namespace Lemma.Components
 					},
 					Tint = new Vector3(0.3f, 0.5f, 0.7f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.AvoidAI,
 					Permanent = true,
@@ -184,7 +184,7 @@ namespace Lemma.Components
 					},
 					Tint = new Vector3(0.15f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.Dirt,
 					Permanent = false,
@@ -203,7 +203,7 @@ namespace Lemma.Components
 						}
 					},
 				},
-				new CellState
+				new State
 				{
 					ID = t.Reset,
 					Permanent = false,
@@ -223,7 +223,7 @@ namespace Lemma.Components
 					},
 					Tint = new Vector3(0.0f, 0.6f, 0.0f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.Critical,
 					Permanent = false,
@@ -242,7 +242,7 @@ namespace Lemma.Components
 						}
 					},
 				},
-				new CellState
+				new State
 				{
 					ID = t.Foliage,
 					Permanent = false,
@@ -268,7 +268,7 @@ namespace Lemma.Components
 					AllowAlpha = true,
 					Tiling = 3.0f,
 				},
-				new CellState
+				new State
 				{
 					ID = t.Hard,
 					Permanent = false,
@@ -288,7 +288,7 @@ namespace Lemma.Components
 					},
 					Tint = new Vector3(0.45f, 0.42f, 0.4f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.Floater,
 					Permanent = false,
@@ -308,7 +308,7 @@ namespace Lemma.Components
 					},
 					Tint = new Vector3(0.9f, 0.3f, 0.0f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.Expander,
 					Permanent = false,
@@ -328,7 +328,7 @@ namespace Lemma.Components
 					},
 					Tint = new Vector3(0.8f, 0.5f, 0.9f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.Wood,
 					Permanent = false,
@@ -348,7 +348,7 @@ namespace Lemma.Components
 					},
 					Tiling = 1.5f,
 				},
-				new CellState
+				new State
 				{
 					ID = t.HardPowered,
 					Permanent = false,
@@ -368,7 +368,7 @@ namespace Lemma.Components
 						},
 					},
 				},
-				new CellState
+				new State
 				{
 					ID = t.Neutral,
 					Permanent = false,
@@ -388,7 +388,7 @@ namespace Lemma.Components
 					},
 					Tint = new Vector3(0.7f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.RockChunky,
 					Permanent = true,
@@ -409,7 +409,7 @@ namespace Lemma.Components
 					Tiling = 0.25f,
 					Tint = new Vector3(0.88f, 0.89f, 0.9f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.White,
 					Permanent = false,
@@ -425,7 +425,7 @@ namespace Lemma.Components
 						Model.Material.Unlit,
 					},
 				},
-				new CellState
+				new State
 				{
 					ID = t.Metal,
 					Permanent = true,
@@ -450,7 +450,7 @@ namespace Lemma.Components
 					},
 					Tint = new Vector3(0.21f, 0.22f, 0.23f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.MetalSwirl,
 					Permanent = true,
@@ -475,7 +475,7 @@ namespace Lemma.Components
 					},
 					Tint = new Vector3(0.21f, 0.22f, 0.23f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.Invisible,
 					Permanent = true,
@@ -489,7 +489,7 @@ namespace Lemma.Components
 					NormalMap = "Textures\\plain-normal",
 					Tint = new Vector3(0.5f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.WhitePermanent,
 					Permanent = true,
@@ -505,7 +505,7 @@ namespace Lemma.Components
 						Model.Material.Unlit,
 					},
 				},
-				new CellState
+				new State
 				{
 					ID = t.Switch,
 					Permanent = true,
@@ -531,7 +531,7 @@ namespace Lemma.Components
 					Tiling = 3.0f,
 					Tint = new Vector3(0.3f, 0.6f, 0.8f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.PoweredSwitch,
 					Permanent = true,
@@ -552,7 +552,7 @@ namespace Lemma.Components
 					},
 					Tiling = 3.0f,
 				},
-				new CellState
+				new State
 				{
 					ID = t.Powered,
 					Permanent = false,
@@ -572,7 +572,7 @@ namespace Lemma.Components
 						},
 					},
 				},
-				new CellState
+				new State
 				{
 					ID = t.PermanentPowered,
 					Permanent = true,
@@ -592,7 +592,7 @@ namespace Lemma.Components
 						},
 					},
 				},
-				new CellState
+				new State
 				{
 					ID = t.InfectedCritical,
 					Permanent = false,
@@ -612,7 +612,7 @@ namespace Lemma.Components
 					},
 					Tint = new Vector3(0.4f, 0.0f, 0.0f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.Infected,
 					Permanent = false,
@@ -632,7 +632,7 @@ namespace Lemma.Components
 					},
 					Tint = new Vector3(0.8f, 0.1f, 0.1f),
 				},
-				new CellState
+				new State
 				{
 					ID = t.Black,
 					Permanent = true,
@@ -653,7 +653,7 @@ namespace Lemma.Components
 					},
 					Tint = Vector3.Zero,
 				},
-				new CellState
+				new State
 				{
 					ID = t.Slider,
 					Permanent = true,
@@ -679,7 +679,7 @@ namespace Lemma.Components
 					Tint = new Vector3(0.0f, 0.8f, 1.0f),
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 				},
-				new CellState
+				new State
 				{
 					ID = t.SliderPowered,
 					Permanent = true,
@@ -704,7 +704,7 @@ namespace Lemma.Components
 			);
 		}
 
-		public struct MapVertex
+		public struct Vertex
 		{
 			public Vector3 Position;
 			public Vector3 Normal;
@@ -722,19 +722,19 @@ namespace Lemma.Components
 			public const int SizeInBytes = 48;
 		}
 
-		public class MapState
+		public class Snapshot
 		{
 			private List<Chunk> chunks = new List<Chunk>();
 			private List<Box[, ,]> data = new List<Box[, ,]>();
-			private Map map;
+			private Voxel map;
 
-			public MapState(Map m, Coordinate start, Coordinate end)
+			public Snapshot(Voxel m, Coord start, Coord end)
 			{
 				this.map = m;
 				this.Add(start, end);
 			}
 
-			public void Add(Coordinate start, Coordinate end)
+			public void Add(Coord start, Coord end)
 			{
 				foreach (Chunk chunk in this.map.GetChunksBetween(start, end))
 				{
@@ -773,7 +773,7 @@ namespace Lemma.Components
 				this.data.Clear();
 			}
 
-			public CellState this[Coordinate coord]
+			public State this[Coord coord]
 			{
 				get
 				{
@@ -787,7 +787,7 @@ namespace Lemma.Components
 						{
 							Box box = this.data[i][coord.X - c.X, coord.Y - c.Y, coord.Z - c.Z];
 							if (box == null)
-								return Map.EmptyState;
+								return Voxel.EmptyState;
 							else
 								return box.Type;
 						}
@@ -798,7 +798,7 @@ namespace Lemma.Components
 			}
 		}
 
-		public class CellState
+		public class State
 		{
 			public t ID;
 			public bool Permanent;
@@ -879,14 +879,14 @@ namespace Lemma.Components
 			protected class MeshEntry
 			{
 				public StaticMesh Mesh;
-				public DynamicModel<MapVertex> Model;
+				public DynamicModel<Vertex> Model;
 				public bool Dirty;
 				public bool Added;
 			}
 
 			public bool Active = false;
 			public bool Static;
-			public Map Map;
+			public Voxel Voxel;
 			public Box[, ,] Data;
 			public int X, Y, Z;
 			public ListProperty<Box> Boxes = new ListProperty<Box>();
@@ -905,11 +905,11 @@ namespace Lemma.Components
 					lock (this.meshes)
 					{
 						entry = new MeshEntry();
-						if (this.Map.CreateModel != null)
+						if (this.Voxel.CreateModel != null)
 						{
 							Vector3 min = new Vector3(this.X, this.Y, this.Z);
-							Vector3 max = min + new Vector3(this.Map.chunkSize);
-							entry.Model = this.Map.CreateModel(min, max, box.Type);
+							Vector3 max = min + new Vector3(this.Voxel.chunkSize);
+							entry.Model = this.Voxel.CreateModel(min, max, box.Type);
 						}
 						this.meshes[box.Type.ID] = entry;
 					}
@@ -921,7 +921,7 @@ namespace Lemma.Components
 			{
 				this.Boxes.ItemAdded += delegate(int index, Box t)
 				{
-					int chunkHalfSize = this.Map.chunkHalfSize;
+					int chunkHalfSize = this.Voxel.chunkHalfSize;
 					this.MarkDirty(t);
 					t.Added = true;
 					t.ChunkIndex = index;
@@ -941,12 +941,12 @@ namespace Lemma.Components
 				};
 			}
 
-			private static MapVertex negativeX = new MapVertex { Normal = Vector3.Left, Binormal = Vector3.Up, Tangent = Vector3.Backward };
-			private static MapVertex positiveX = new MapVertex { Normal = Vector3.Right, Binormal = Vector3.Up, Tangent = Vector3.Forward };
-			private static MapVertex negativeY = new MapVertex { Normal = Vector3.Down, Binormal = Vector3.Right, Tangent = Vector3.Backward };
-			private static MapVertex positiveY = new MapVertex { Normal = Vector3.Up, Binormal = Vector3.Right, Tangent = Vector3.Forward };
-			private static MapVertex negativeZ = new MapVertex { Normal = Vector3.Forward, Binormal = Vector3.Up, Tangent = Vector3.Left };
-			private static MapVertex positiveZ = new MapVertex { Normal = Vector3.Backward, Binormal = Vector3.Up, Tangent = Vector3.Right };
+			private static Vertex negativeX = new Vertex { Normal = Vector3.Left, Binormal = Vector3.Up, Tangent = Vector3.Backward };
+			private static Vertex positiveX = new Vertex { Normal = Vector3.Right, Binormal = Vector3.Up, Tangent = Vector3.Forward };
+			private static Vertex negativeY = new Vertex { Normal = Vector3.Down, Binormal = Vector3.Right, Tangent = Vector3.Backward };
+			private static Vertex positiveY = new Vertex { Normal = Vector3.Up, Binormal = Vector3.Right, Tangent = Vector3.Forward };
+			private static Vertex negativeZ = new Vertex { Normal = Vector3.Forward, Binormal = Vector3.Up, Tangent = Vector3.Left };
+			private static Vertex positiveZ = new Vertex { Normal = Vector3.Backward, Binormal = Vector3.Up, Tangent = Vector3.Right };
 
 			public void RefreshImmediately()
 			{
@@ -963,17 +963,17 @@ namespace Lemma.Components
 						IEnumerable<Box> boxes = this.Boxes.Where(x => x.Type.ID == pair.Key);
 						int surfaces = boxes.SelectMany(x => x.Surfaces).Count(x => x.HasArea);
 
-						CellState type = Map.States[pair.Key];
+						State type = Voxel.States[pair.Key];
 
-						MapVertex[] vertices = null;
+						Vertex[] vertices = null;
 						Vector3[] physicsVertices = null;
 
-						DynamicModel<MapVertex> model = pair.Value.Model;
+						DynamicModel<Vertex> model = pair.Value.Model;
 
 						if (surfaces > 0)
 						{
 							if (model != null)
-								vertices = LargeObjectHeap<MapVertex[]>.Get((int)Math.Pow(2.0, Math.Ceiling(Math.Log(surfaces * 4, 2.0))), x => new MapVertex[x]);
+								vertices = LargeObjectHeap<Vertex[]>.Get((int)Math.Pow(2.0, Math.Ceiling(Math.Log(surfaces * 4, 2.0))), x => new Vertex[x]);
 
 							if (this.Static && !type.Fake)
 								physicsVertices = LargeObjectHeap<Vector3[]>.Get((int)Math.Pow(2.0, Math.Ceiling(Math.Log(surfaces * 4, 2.0))), x => new Vector3[x]);
@@ -1101,10 +1101,10 @@ namespace Lemma.Components
 							}
 						}
 
-						MapVertex[] verticesCopy = null;
+						Vertex[] verticesCopy = null;
 						if (vertices != null)
 						{
-							verticesCopy = LargeObjectHeap<MapVertex[]>.Get(vertices.Length, x => new MapVertex[x]);
+							verticesCopy = LargeObjectHeap<Vertex[]>.Get(vertices.Length, x => new Vertex[x]);
 							Array.Copy(vertices, verticesCopy, surfaces * 4);
 						}
 
@@ -1115,7 +1115,7 @@ namespace Lemma.Components
 						}
 
 						if (vertices != null)
-							LargeObjectHeap<MapVertex[]>.Free(vertices.Length, vertices);
+							LargeObjectHeap<Vertex[]>.Free(vertices.Length, vertices);
 
 						StaticMesh oldMesh = null;
 						if (entry.Mesh != null && entry.Added)
@@ -1123,19 +1123,19 @@ namespace Lemma.Components
 
 						if (physicsVertices != null)
 						{
-							Matrix transform = this.Map.Transform;
+							Matrix transform = this.Voxel.Transform;
 							Vector3[] physicsVerticesCopy = LargeObjectHeap<Vector3[]>.Get(physicsVertices.Length, x => new Vector3[x]);
 							Array.Copy(physicsVertices, physicsVerticesCopy, surfaces * 4);
-							StaticMesh mesh = new StaticMesh(physicsVerticesCopy, DynamicModel<MapVertex>.GetIndices(surfaces * 6), surfaces * 6, new BEPUutilities.AffineTransform(BEPUutilities.Matrix3x3.CreateFromMatrix(transform), transform.Translation));
+							StaticMesh mesh = new StaticMesh(physicsVerticesCopy, DynamicModel<Vertex>.GetIndices(surfaces * 6), surfaces * 6, new BEPUutilities.AffineTransform(BEPUutilities.Matrix3x3.CreateFromMatrix(transform), transform.Translation));
 							mesh.Material.KineticFriction = type.KineticFriction;
 							mesh.Material.StaticFriction = type.StaticFriction;
-							mesh.Tag = this.Map;
+							mesh.Tag = this.Voxel;
 							mesh.Sidedness = BEPUutilities.TriangleSidedness.Counterclockwise;
 							entry.Mesh = mesh;
 							if (this.Active)
 							{
 								entry.Added = true;
-								this.Map.main.Space.SpaceObjectBuffer.Add(mesh);
+								this.Voxel.main.Space.SpaceObjectBuffer.Add(mesh);
 							}
 							LargeObjectHeap<Vector3[]>.Free(physicsVertices.Length, physicsVertices);
 						}
@@ -1143,7 +1143,7 @@ namespace Lemma.Components
 							entry.Mesh = null;
 
 						if (oldMesh != null)
-							this.Map.main.Space.SpaceObjectBuffer.Remove(oldMesh);
+							this.Voxel.main.Space.SpaceObjectBuffer.Remove(oldMesh);
 					}
 				}
 			}
@@ -1151,7 +1151,7 @@ namespace Lemma.Components
 			public void Instantiate()
 			{
 				foreach (Box b in this.DataBoxes)
-					this.Map.addBoxWithoutAdjacency(b);
+					this.Voxel.addBoxWithoutAdjacency(b);
 
 				foreach (Box box in this.DataBoxes)
 				{
@@ -1163,7 +1163,7 @@ namespace Lemma.Components
 				this.DataBoxes.Clear();
 				this.DataBoxes = null;
 
-				if (!this.Map.main.EditorEnabled && !this.Map.EnablePhysics)
+				if (!this.Voxel.main.EditorEnabled && !this.Voxel.EnablePhysics)
 				{
 					this.freeData();
 					foreach (Box box in this.Boxes)
@@ -1186,7 +1186,7 @@ namespace Lemma.Components
 						{
 							entry.Added = true;
 							if (entry.Mesh != null)
-								this.Map.main.Space.SpaceObjectBuffer.Add(entry.Mesh);
+								this.Voxel.main.Space.SpaceObjectBuffer.Add(entry.Mesh);
 						}
 					}
 				}
@@ -1203,7 +1203,7 @@ namespace Lemma.Components
 						{
 							entry.Added = false;
 							if (entry.Mesh != null)
-								this.Map.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
+								this.Voxel.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
 						}
 					}
 				}
@@ -1215,15 +1215,15 @@ namespace Lemma.Components
 				if (this.Data == null)
 					return; // Already freed
 
-				for (int u = 0; u < this.Map.chunkSize; u++)
+				for (int u = 0; u < this.Voxel.chunkSize; u++)
 				{
-					for (int v = 0; v < this.Map.chunkSize; v++)
+					for (int v = 0; v < this.Voxel.chunkSize; v++)
 					{
-						for (int w = 0; w < this.Map.chunkSize; w++)
+						for (int w = 0; w < this.Voxel.chunkSize; w++)
 							this.Data[u, v, w] = null;
 					}
 				}
-				LargeObjectHeap<Box[, ,]>.Free(this.Map.chunkSize, this.Data);
+				LargeObjectHeap<Box[, ,]>.Free(this.Voxel.chunkSize, this.Data);
 				this.Data = null;
 			}
 
@@ -1237,7 +1237,7 @@ namespace Lemma.Components
 						{
 							entry.Added = false;
 							if (entry.Mesh != null)
-								this.Map.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
+								this.Voxel.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
 						}
 					}
 				}
@@ -1258,14 +1258,14 @@ namespace Lemma.Components
 			}
 		}
 
-		public struct Coordinate
+		public struct Coord
 		{
 			public int X;
 			public int Y;
 			public int Z;
-			public CellState Data;
+			public State Data;
 
-			public Coordinate Move(Direction dir, int amount)
+			public Coord Move(Direction dir, int amount)
 			{
 				int x = this.X, y = this.Y, z = this.Z;
 				switch (dir)
@@ -1289,12 +1289,12 @@ namespace Lemma.Components
 						z += amount;
 						break;
 				}
-				return new Coordinate { X = x, Y = y, Z = z, Data = this.Data };
+				return new Coord { X = x, Y = y, Z = z, Data = this.Data };
 			}
 
-			public static Coordinate Max(Coordinate a, Coordinate b)
+			public static Coord Max(Coord a, Coord b)
 			{
-				return new Coordinate
+				return new Coord
 				{
 					X = Math.Max(a.X, b.X),
 					Y = Math.Max(a.Y, b.Y),
@@ -1302,9 +1302,9 @@ namespace Lemma.Components
 				};
 			}
 
-			public static Coordinate Min(Coordinate a, Coordinate b)
+			public static Coord Min(Coord a, Coord b)
 			{
-				return new Coordinate
+				return new Coord
 				{
 					X = Math.Min(a.X, b.X),
 					Y = Math.Min(a.Y, b.Y),
@@ -1312,25 +1312,25 @@ namespace Lemma.Components
 				};
 			}
 
-			public Coordinate Plus(Coordinate other)
+			public Coord Plus(Coord other)
 			{
-				return new Coordinate { X = this.X + other.X, Y = this.Y + other.Y, Z = this.Z + other.Z };
+				return new Coord { X = this.X + other.X, Y = this.Y + other.Y, Z = this.Z + other.Z };
 			}
 
-			public Coordinate Minus(Coordinate other)
+			public Coord Minus(Coord other)
 			{
-				return new Coordinate { X = this.X - other.X, Y = this.Y - other.Y, Z = this.Z - other.Z };
+				return new Coord { X = this.X - other.X, Y = this.Y - other.Y, Z = this.Z - other.Z };
 			}
 
 			// Expects every dimension of A to be smaller than every dimension of B.
-			public bool Between(Coordinate a, Coordinate b)
+			public bool Between(Coord a, Coord b)
 			{
 				return this.X >= a.X && this.X < b.X
 					&& this.Y >= a.Y && this.Y < b.Y
 					&& this.Z >= a.Z && this.Z < b.Z;
 			}
 
-			public IEnumerable<Coordinate> CoordinatesBetween(Coordinate b)
+			public IEnumerable<Coord> CoordinatesBetween(Coord b)
 			{
 				for (int x = this.X; x < b.X; x++)
 				{
@@ -1338,13 +1338,13 @@ namespace Lemma.Components
 					{
 						for (int z = this.Z; z < b.Z; z++)
 						{
-							yield return new Coordinate { X = x, Y = y, Z = z };
+							yield return new Coord { X = x, Y = y, Z = z };
 						}
 					}
 				}
 			}
 
-			public bool Equivalent(Coordinate coord)
+			public bool Equivalent(Coord coord)
 			{
 				return coord.X == this.X && coord.Y == this.Y && coord.Z == this.Z;
 			}
@@ -1360,28 +1360,28 @@ namespace Lemma.Components
 
 			public override bool Equals(object obj)
 			{
-				if (obj.GetType() == typeof(Map.Coordinate))
+				if (obj.GetType() == typeof(Voxel.Coord))
 				{
-					Map.Coordinate coord = (Map.Coordinate)obj;
+					Voxel.Coord coord = (Voxel.Coord)obj;
 					return coord.X == this.X && coord.Y == this.Y && coord.Z == this.Z;
 				}
 				else
 					return false;
 			}
 
-			public Coordinate Move(int x, int y, int z)
+			public Coord Move(int x, int y, int z)
 			{
-				return new Coordinate { X = this.X + x, Y = this.Y + y, Z = this.Z + z, Data = this.Data };
+				return new Coord { X = this.X + x, Y = this.Y + y, Z = this.Z + z, Data = this.Data };
 			}
 
-			public Coordinate Move(Direction dir)
+			public Coord Move(Direction dir)
 			{
 				return this.Move(dir, 1);
 			}
 
-			public Coordinate Clone()
+			public Coord Clone()
 			{
-				return new Coordinate { X = this.X, Y = this.Y, Z = this.Z, Data = this.Data };
+				return new Coord { X = this.X, Y = this.Y, Z = this.Z, Data = this.Data };
 			}
 
 			public int GetComponent(Direction dir)
@@ -1441,7 +1441,7 @@ namespace Lemma.Components
 			public int Width;
 			public int Height;
 			public int Depth;
-			public CellState Type;
+			public State Type;
 
 			[XmlIgnore]
 			public bool Active = true;
@@ -1485,7 +1485,7 @@ namespace Lemma.Components
 				}
 			}
 
-			public IEnumerable<Map.Coordinate> GetCoords()
+			public IEnumerable<Voxel.Coord> GetCoords()
 			{
 				for (int x = this.X; x < this.X + this.Width; x++)
 				{
@@ -1493,7 +1493,7 @@ namespace Lemma.Components
 					{
 						for (int z = this.Z; z < this.Z + this.Depth; z++)
 						{
-							yield return new Map.Coordinate { X = x, Y = y, Z = z, Data = this.Type };
+							yield return new Voxel.Coord { X = x, Y = y, Z = z, Data = this.Type };
 						}
 					}
 				}
@@ -1522,7 +1522,7 @@ namespace Lemma.Components
 				}
 			}
 
-			public bool Contains(Coordinate coord)
+			public bool Contains(Coord coord)
 			{
 				return coord.X >= this.X && coord.X < this.X + this.Width
 					&& coord.Y >= this.Y && coord.Y < this.Y + this.Height
@@ -1535,28 +1535,28 @@ namespace Lemma.Components
 			}
 		}
 
-		public static readonly List<Map> Maps = new List<Map>();
+		public static readonly List<Voxel> Voxels = new List<Voxel>();
 
-		public static IEnumerable<Map> ActivePhysicsMaps
+		public static IEnumerable<Voxel> ActivePhysicsVoxels
 		{
 			get
 			{
-				return Map.Maps.Where(x => x.Active && !x.Suspended && x.EnablePhysics && x.Scale.Value == 1.0f);
+				return Voxel.Voxels.Where(x => x.Active && !x.Suspended && x.EnablePhysics && x.Scale.Value == 1.0f);
 			}
 		}
 
-		public static IEnumerable<Map> ActiveMaps
+		public static IEnumerable<Voxel> ActiveVoxels
 		{
 			get
 			{
-				return Map.Maps.Where(x => x.Active && !x.Suspended);
+				return Voxel.Voxels.Where(x => x.Active && !x.Suspended);
 			}
 		}
 
 		public struct GlobalRaycastResult
 		{
-			public Map Map;
-			public Map.Coordinate? Coordinate;
+			public Voxel Voxel;
+			public Voxel.Coord? Coordinate;
 			public Vector3 Position;
 			public Direction Normal;
 			public float Distance;
@@ -1564,7 +1564,7 @@ namespace Lemma.Components
 
 		public struct RaycastResult
 		{
-			public Map.Coordinate? Coordinate;
+			public Voxel.Coord? Coordinate;
 			public Vector3 Position;
 			public Direction Normal;
 			public float Distance;
@@ -1577,14 +1577,14 @@ namespace Lemma.Components
 			result.Distance = length;
 			result.Position = start + ray * length;
 
-			IEnumerable<Map> maps = includeScenery ? Map.ActiveMaps : Map.ActivePhysicsMaps;
+			IEnumerable<Voxel> maps = includeScenery ? Voxel.ActiveVoxels : Voxel.ActivePhysicsVoxels;
 
-			foreach (Map map in maps)
+			foreach (Voxel map in maps)
 			{
 				RaycastResult hit = map.Raycast(start, ray, result.Distance);
 				if (hit.Coordinate != null && hit.Distance < result.Distance)
 				{
-					result.Map = map;
+					result.Voxel = map;
 					result.Coordinate = hit.Coordinate;
 					result.Normal = hit.Normal;
 					result.Position = hit.Position;
@@ -1594,22 +1594,22 @@ namespace Lemma.Components
 			return result;
 		}
 
-		public static GlobalRaycastResult GlobalRaycast(Vector3 start, Vector3 ray, float length, Func<Map, bool> filter, bool includeScenery = false)
+		public static GlobalRaycastResult GlobalRaycast(Vector3 start, Vector3 ray, float length, Func<Voxel, bool> filter, bool includeScenery = false)
 		{
 			// Voxel raycasting
 			GlobalRaycastResult result = new GlobalRaycastResult();
 			result.Distance = length;
 
-			IEnumerable<Map> maps = includeScenery ? Map.ActiveMaps : Map.ActivePhysicsMaps;
+			IEnumerable<Voxel> maps = includeScenery ? Voxel.ActiveVoxels : Voxel.ActivePhysicsVoxels;
 
-			foreach (Map map in maps)
+			foreach (Voxel map in maps)
 			{
 				if (!filter(map))
 					continue;
 				RaycastResult hit = map.Raycast(start, ray, result.Distance);
 				if (hit.Coordinate != null && hit.Distance < result.Distance)
 				{
-					result.Map = map;
+					result.Voxel = map;
 					result.Coordinate = hit.Coordinate;
 					result.Normal = hit.Normal;
 					result.Position = hit.Position;
@@ -1707,7 +1707,7 @@ namespace Lemma.Components
 
 		protected List<Box> additions = new List<Box>();
 		protected List<Box> removals = new List<Box>();
-		protected List<Coordinate> removalCoords = new List<Coordinate>();
+		protected List<Coord> removalCoords = new List<Coord>();
 
 		[XmlIgnore]
 		public Property<Vector3> Offset = new Property<Vector3> { Editable = false };
@@ -1724,15 +1724,15 @@ namespace Lemma.Components
 		public Property<float> Scale = new Property<float> { Editable = true, Value = 1.0f };
 
 		[XmlIgnore]
-		public Func<Vector3, Vector3, CellState, DynamicModel<Map.MapVertex>> CreateModel;
+		public Func<Vector3, Vector3, State, DynamicModel<Voxel.Vertex>> CreateModel;
 
-		public Map()
+		public Voxel()
 			: this(0, 0, 0)
 		{
 
 		}
 
-		public Map(int offsetX, int offsetY, int offsetZ)
+		public Voxel(int offsetX, int offsetY, int offsetZ)
 			: this(20, 40)
 		{
 			this.OffsetX = offsetX;
@@ -1740,7 +1740,7 @@ namespace Lemma.Components
 			this.OffsetZ = offsetZ;
 		}
 
-		protected Map(int maxChunks, int chunkHalfSize)
+		protected Voxel(int maxChunks, int chunkHalfSize)
 		{
 			this.chunkHalfSize = chunkHalfSize;
 			this.chunkSize = chunkHalfSize * 2;
@@ -1774,8 +1774,8 @@ namespace Lemma.Components
 		private class SpawnGroup
 		{
 			public List<List<Box>> Islands;
-			public Map Source;
-			public Action<List<DynamicMap>> Callback;
+			public Voxel Source;
+			public Action<List<DynamicVoxel>> Callback;
 		}
 		private static List<SpawnGroup> spawns = new List<SpawnGroup>();
 
@@ -1784,37 +1784,37 @@ namespace Lemma.Components
 			base.Awake();
 			this.updateBounds();
 
-			if (Map.workThread == null)
+			if (Voxel.workThread == null)
 			{
-				Map.workThread = new Thread(new ThreadStart(Map.worker));
-				Map.workThread.Start();
+				Voxel.workThread = new Thread(new ThreadStart(Voxel.worker));
+				Voxel.workThread.Start();
 				this.main.Exiting += delegate(object a, EventArgs b)
 				{
-					Map.workThread.Abort();
+					Voxel.workThread.Abort();
 				};
 				Main m = this.main;
-				Map.spawner = new Updater
+				Voxel.spawner = new Updater
 				{
 					delegate(float dt)
 					{
-						DynamicMapFactory factory = Factory.Get<DynamicMapFactory>();
+						DynamicVoxelFactory factory = Factory.Get<DynamicVoxelFactory>();
 						BlockFactory blockFactory = Factory.Get<BlockFactory>();
 						List<SpawnGroup> spawns = null;
-						lock (Map.spawns)
+						lock (Voxel.spawns)
 						{
-							spawns = Map.spawns.ToList();
-							Map.spawns.Clear();
+							spawns = Voxel.spawns.ToList();
+							Voxel.spawns.Clear();
 						}
 						foreach (SpawnGroup spawn in spawns)
 						{
-							List<DynamicMap> spawnedMaps = new List<DynamicMap>();
+							List<DynamicVoxel> spawnedMaps = new List<DynamicVoxel>();
 							foreach (List<Box> island in spawn.Islands)
 							{
 								Box firstBox = island.First();
 								if (island.Count == 1 && firstBox.Width * firstBox.Height * firstBox.Depth == 1)
 								{
 									// Just create a temporary physics block instead of a full-blown map
-									Coordinate coord = new Coordinate { X = firstBox.X, Y = firstBox.Y, Z = firstBox.Z };
+									Coord coord = new Coord { X = firstBox.X, Y = firstBox.Y, Z = firstBox.Z };
 									ComponentBind.Entity block = blockFactory.CreateAndBind(main);
 									block.Get<Transform>().Matrix.Value = this.Transform;
 									block.Get<Transform>().Position.Value = this.GetAbsolutePosition(coord);
@@ -1826,15 +1826,15 @@ namespace Lemma.Components
 								{
 									ComponentBind.Entity newMap = factory.CreateAndBind(spawn.Source.main, firstBox.X, firstBox.Y, firstBox.Z);
 									newMap.Get<Transform>().Matrix.Value = spawn.Source.Transform;
-									DynamicMap newMapComponent = newMap.Get<DynamicMap>();
+									DynamicVoxel newMapComponent = newMap.Get<DynamicVoxel>();
 									newMapComponent.Offset.Value = spawn.Source.Offset;
 									newMapComponent.BuildFromBoxes(island);
 									newMapComponent.UpdatePhysicsImmediately();
 									spawn.Source.notifyEmptied(island.SelectMany(x => x.GetCoords()), newMapComponent);
 									newMapComponent.notifyFilled(island.SelectMany(x => x.GetCoords()), spawn.Source);
 									newMapComponent.Transform.Reset();
-									if (spawn.Source is DynamicMap)
-										newMapComponent.IsAffectedByGravity.Value = ((DynamicMap)spawn.Source).IsAffectedByGravity;
+									if (spawn.Source is DynamicVoxel)
+										newMapComponent.IsAffectedByGravity.Value = ((DynamicVoxel)spawn.Source).IsAffectedByGravity;
 									spawn.Source.main.Add(newMap);
 									spawnedMaps.Add(newMapComponent);
 								}
@@ -1844,9 +1844,9 @@ namespace Lemma.Components
 						}
 					}
 				};
-				Map.spawner.EnabledInEditMode = true;
-				Map.spawner.EnabledWhenPaused = true;
-				this.main.AddComponent(Map.spawner);
+				Voxel.spawner.EnabledInEditMode = true;
+				Voxel.spawner.EnabledWhenPaused = true;
+				this.main.AddComponent(Voxel.spawner);
 			}
 
 			this.Data.Get = delegate()
@@ -1915,12 +1915,12 @@ namespace Lemma.Components
 					}
 				}
 
-				return Map.serializeData(result.ToArray());
+				return Voxel.serializeData(result.ToArray());
 			};
 
 			this.Data.Set = delegate(string value)
 			{
-				int[] data = Map.deserializeData(value);
+				int[] data = Voxel.deserializeData(value);
 
 				int boxCount = data[0];
 
@@ -1944,7 +1944,7 @@ namespace Lemma.Components
 					{
 						int x = data[index], y = data[index + 1], z = data[index + 2], w = data[index + 3], h = data[index + 4], d = data[index + 5];
 						int v = data[index + 6];
-						CellState state = Map.States[(t)v];
+						State state = Voxel.States[(t)v];
 						int chunkX = this.minX + ((x - this.minX) / this.chunkSize) * this.chunkSize, chunkY = this.minY + ((y - this.minY) / this.chunkSize) * this.chunkSize, chunkZ = this.minZ + ((z - this.minZ) / this.chunkSize) * this.chunkSize;
 						int nextChunkX = this.minX + ((x + w - this.minX) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ) / this.chunkSize) * this.chunkSize;
 						for (int ix = chunkX; ix <= nextChunkX; ix += this.chunkSize)
@@ -2009,10 +2009,10 @@ namespace Lemma.Components
 
 				this.postDeserialization();
 			};
-			Map.Maps.Add(this);
+			Voxel.Voxels.Add(this);
 		}
 
-		public IEnumerable<Chunk> GetChunksBetween(Map.Coordinate a, Map.Coordinate b)
+		public IEnumerable<Chunk> GetChunksBetween(Voxel.Coord a, Voxel.Coord b)
 		{
 			a.X = Math.Max(this.minX, a.X);
 			b.X = Math.Min(this.maxX - 1, b.X);
@@ -2122,10 +2122,10 @@ namespace Lemma.Components
 
 				LargeObjectHeap<Chunk[, ,]>.Free(this.maxChunks, this.chunks);
 			}
-			Map.Maps.Remove(this);
+			Voxel.Voxels.Remove(this);
 		}
 
-		public Chunk GetChunk(Coordinate coord, bool createIfNonExistent = true)
+		public Chunk GetChunk(Coord coord, bool createIfNonExistent = true)
 		{
 			return this.GetChunk(coord.X, coord.Y, coord.Z, createIfNonExistent);
 		}
@@ -2170,7 +2170,7 @@ namespace Lemma.Components
 			if (createIfNonExistent && chunk == null)
 			{
 				chunk = this.newChunk();
-				chunk.Map = this;
+				chunk.Voxel = this;
 				chunk.X = this.minX + (ix * this.chunkSize);
 				chunk.Y = this.minY + (iy * this.chunkSize);
 				chunk.Z = this.minZ + (iz * this.chunkSize);
@@ -2188,23 +2188,23 @@ namespace Lemma.Components
 		protected virtual Chunk newChunk()
 		{
 			Chunk chunk = new Chunk { Static = !this.main.EditorEnabled && this.EnablePhysics };
-			chunk.Map = this;
+			chunk.Voxel = this;
 			return chunk;
 		}
 
-		public bool Contains(Coordinate coord)
+		public bool Contains(Coord coord)
 		{
 			return coord.X >= this.minX && coord.X < this.maxX
 				&& coord.Y >= this.minY && coord.Y < this.maxY
 				&& coord.Z >= this.minZ && coord.Z < this.maxZ;
 		}
 
-		public bool Fill(Vector3 pos, CellState state, bool notify = true)
+		public bool Fill(Vector3 pos, State state, bool notify = true)
 		{
 			return this.Fill(this.GetCoordinate(pos), state, notify);
 		}
 
-		public bool Fill(Coordinate start, Coordinate end, CellState state, bool notify = true)
+		public bool Fill(Coord start, Coord end, State state, bool notify = true)
 		{
 			bool changed = false;
 			for (int x = start.X; x < end.X; x++)
@@ -2220,36 +2220,36 @@ namespace Lemma.Components
 			return changed;
 		}
 
-		public bool Fill(Coordinate coord, CellState state, bool notify = true)
+		public bool Fill(Coord coord, State state, bool notify = true)
 		{
 			return this.Fill(coord.X, coord.Y, coord.Z, state, notify);
 		}
 
-		public bool Empty(Vector3 pos, bool force = false, bool forceHard = true, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(Vector3 pos, bool force = false, bool forceHard = true, Voxel transferringToNewMap = null, bool notify = true)
 		{
 			return this.Empty(this.GetCoordinate(pos), force, forceHard, transferringToNewMap, notify);
 		}
 
-		public bool Empty(Coordinate coord, bool force = false, bool forceHard = true, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(Coord coord, bool force = false, bool forceHard = true, Voxel transferringToNewMap = null, bool notify = true)
 		{
 			return this.Empty(coord.X, coord.Y, coord.Z, force, forceHard, transferringToNewMap, notify);
 		}
 
-		public bool Empty(Coordinate a, Coordinate b, bool force = false, bool forceHard = true, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(Coord a, Coord b, bool force = false, bool forceHard = true, Voxel transferringToNewMap = null, bool notify = true)
 		{
 			int minY = Math.Min(a.Y, b.Y);
 			int minZ = Math.Min(a.Z, b.Z);
 			int maxX = Math.Max(a.X, b.X);
 			int maxY = Math.Max(a.Y, b.Y);
 			int maxZ = Math.Max(a.Z, b.Z);
-			List<Map.Coordinate> coords = new List<Coordinate>();
+			List<Voxel.Coord> coords = new List<Coord>();
 			for (int x = Math.Min(a.X, b.X); x < maxX; x++)
 			{
 				for (int y = minY; y < maxY; y++)
 				{
 					for (int z = minZ; z < maxZ; z++)
 					{
-						coords.Add(new Map.Coordinate { X = x, Y = y, Z = z });
+						coords.Add(new Voxel.Coord { X = x, Y = y, Z = z });
 					}
 				}
 			}
@@ -2262,9 +2262,9 @@ namespace Lemma.Components
 		/// <param name="x"></param>
 		/// <param name="y"></param>
 		/// <param name="z"></param>
-		public bool Fill(int x, int y, int z, CellState state, bool notify = true)
+		public bool Fill(int x, int y, int z, State state, bool notify = true)
 		{
-			if (state == Map.EmptyState || (!this.main.EditorEnabled && !this.EnablePhysics))
+			if (state == Voxel.EmptyState || (!this.main.EditorEnabled && !this.EnablePhysics))
 				return false;
 
 			bool filled = false;
@@ -2281,20 +2281,20 @@ namespace Lemma.Components
 				}
 			}
 			if (filled && notify)
-				this.notifyFilled(new Coordinate[] { new Coordinate { X = x, Y = y, Z = z, Data = state } }, null);
+				this.notifyFilled(new Coord[] { new Coord { X = x, Y = y, Z = z, Data = state } }, null);
 			return filled;
 		}
 
-		private void notifyFilled(IEnumerable<Coordinate> coords, Map transferredFromMap)
+		private void notifyFilled(IEnumerable<Coord> coords, Voxel transferredFromMap)
 		{
 			this.CellsFilled.Execute(coords, transferredFromMap);
-			Map.GlobalCellsFilled.Execute(this, coords, transferredFromMap);
+			Voxel.GlobalCellsFilled.Execute(this, coords, transferredFromMap);
 		}
 
-		private void notifyEmptied(IEnumerable<Coordinate> coords, Map transferringToNewMap)
+		private void notifyEmptied(IEnumerable<Coord> coords, Voxel transferringToNewMap)
 		{
 			this.CellsEmptied.Execute(coords, transferringToNewMap);
-			Map.GlobalCellsEmptied.Execute(this, coords, transferringToNewMap);
+			Voxel.GlobalCellsEmptied.Execute(this, coords, transferringToNewMap);
 
 			bool completelyEmptied = true;
 			lock (this.MutationLock)
@@ -2323,17 +2323,17 @@ namespace Lemma.Components
 				this.CompletelyEmptied.Execute();
 		}
 
-		public bool Empty(IEnumerable<Coordinate> coords, bool force = false, bool forceHard = true, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(IEnumerable<Coord> coords, bool force = false, bool forceHard = true, Voxel transferringToNewMap = null, bool notify = true)
 		{
 			if (!this.main.EditorEnabled && !this.EnablePhysics)
 				return false;
 
 			bool modified = false;
 			List<Box> boxAdditions = new List<Box>();
-			List<Coordinate> removed = new List<Coordinate>();
+			List<Coord> removed = new List<Coord>();
 			lock (this.MutationLock)
 			{
-				foreach (Map.Coordinate coord in coords)
+				foreach (Voxel.Coord coord in coords)
 				{
 					Chunk chunk = this.GetChunk(coord.X, coord.Y, coord.Z, false);
 
@@ -2450,7 +2450,7 @@ namespace Lemma.Components
 								boxAdditions.Add(newBox);
 							}
 
-							removed.Add(new Map.Coordinate { X = coord.X, Y = coord.Y, Z = coord.Z, Data = box.Type });
+							removed.Add(new Voxel.Coord { X = coord.X, Y = coord.Y, Z = coord.Z, Data = box.Type });
 							modified = true;
 						}
 					}
@@ -2471,10 +2471,10 @@ namespace Lemma.Components
 		/// <param name="x"></param>
 		/// <param name="y"></param>
 		/// <param name="z"></param>
-		public bool Empty(int x, int y, int z, bool force = false, bool forceHard = true, Map transferringToNewMap = null, bool notify = true)
+		public bool Empty(int x, int y, int z, bool force = false, bool forceHard = true, Voxel transferringToNewMap = null, bool notify = true)
 		{
 			bool modified = false;
-			Map.Coordinate coord = new Coordinate { X = x, Y = y, Z = z, };
+			Voxel.Coord coord = new Coord { X = x, Y = y, Z = z, };
 			lock (this.MutationLock)
 			{
 				Chunk chunk = this.GetChunk(x, y, z, false);
@@ -2597,7 +2597,7 @@ namespace Lemma.Components
 			}
 
 			if (modified && notify)
-				this.notifyEmptied(new Coordinate[] { coord }, transferringToNewMap);
+				this.notifyEmptied(new Coord[] { coord }, transferringToNewMap);
 
 			return modified;
 		}
@@ -3202,15 +3202,15 @@ namespace Lemma.Components
 			}
 		}
 
-		public void Regenerate(Action<List<DynamicMap>> callback = null)
+		public void Regenerate(Action<List<DynamicVoxel>> callback = null)
 		{
 			workQueue.Enqueue(new WorkItem { Map = this, Callback = callback });
 		}
 
 		private struct WorkItem
 		{
-			public Map Map;
-			public Action<List<DynamicMap>> Callback;
+			public Voxel Map;
+			public Action<List<DynamicVoxel>> Callback;
 		}
 
 		private static BlockingQueue<WorkItem> workQueue = new BlockingQueue<WorkItem>(32);
@@ -3219,7 +3219,7 @@ namespace Lemma.Components
 		{
 			while (true)
 			{
-				WorkItem item = Map.workQueue.Dequeue();
+				WorkItem item = Voxel.workQueue.Dequeue();
 				item.Map.RegenerateImmediately(item.Callback);
 			}
 		}
@@ -3231,9 +3231,9 @@ namespace Lemma.Components
 		/// <summary>
 		/// Applies any changes made to the map.
 		/// </summary>
-		public void RegenerateImmediately(Action<List<DynamicMap>> callback = null)
+		public void RegenerateImmediately(Action<List<DynamicVoxel>> callback = null)
 		{
-			List<DynamicMap> spawnedMaps = new List<DynamicMap>();
+			List<DynamicVoxel> spawnedMaps = new List<DynamicVoxel>();
 
 			if (!this.main.EditorEnabled && !this.EnablePhysics)
 				return;
@@ -3263,9 +3263,9 @@ namespace Lemma.Components
 
 					if (finalIslands.Count > 0)
 					{
-						lock (Map.spawns)
+						lock (Voxel.spawns)
 						{
-							Map.spawns.Add(new SpawnGroup
+							Voxel.spawns.Add(new SpawnGroup
 							{
 								Source = this,
 								Callback = callback,
@@ -3393,7 +3393,7 @@ namespace Lemma.Components
 
 		public List<Box> GetContiguousByType(IEnumerable<Box> input)
 		{
-			CellState state = input.First().Type;
+			State state = input.First().Type;
 			Queue<Box> boxes = new Queue<Box>();
 
 			foreach (Box box in input)
@@ -3440,21 +3440,21 @@ namespace Lemma.Components
 			return result;
 		}
 
-		public void GetAdjacentIslands(IEnumerable<Coordinate> removals, out IEnumerable<IEnumerable<Box>> islands)
+		public void GetAdjacentIslands(IEnumerable<Coord> removals, out IEnumerable<IEnumerable<Box>> islands)
 		{
 			List<Dictionary<Box, bool>> lists = new List<Dictionary<Box, bool>>();
 
 			bool foundPermanentBlock = false;
 
 			// Build adjacency lists
-			foreach (Coordinate removal in removals)
+			foreach (Coord removal in removals)
 			{
 				if (this[removal].ID != 0) // A new block was subsequently filled in after removal. Forget about it.
 					continue;
 
 				foreach (Direction dir in DirectionExtensions.Directions)
 				{
-					Coordinate adjacentCoord = removal.Move(dir);
+					Coord adjacentCoord = removal.Move(dir);
 					Box box = this.GetBox(adjacentCoord);
 					if (box == null)
 						continue;
@@ -3501,21 +3501,21 @@ namespace Lemma.Components
 				islands = new Box[][] { };
 		}
 
-		public IEnumerable<IEnumerable<Box>> GetAdjacentIslands(IEnumerable<Coordinate> removals, Func<CellState, bool> filter, CellState search)
+		public IEnumerable<IEnumerable<Box>> GetAdjacentIslands(IEnumerable<Coord> removals, Func<State, bool> filter, State search)
 		{
 			List<Dictionary<Box, bool>> lists = new List<Dictionary<Box, bool>>();
 
 			bool foundSearchBlock = false;
 
 			// Build adjacency lists
-			foreach (Coordinate removal in removals)
+			foreach (Coord removal in removals)
 			{
 				if (this[removal].ID != 0) // A new block was subsequently filled in after removal. Forget about it.
 					continue;
 
 				foreach (Direction dir in DirectionExtensions.Directions)
 				{
-					Coordinate adjacentCoord = removal.Move(dir);
+					Coord adjacentCoord = removal.Move(dir);
 					Box box = this.GetBox(adjacentCoord);
 					if (box == null || (!filter(box.Type) && box.Type.ID != search.ID))
 						continue;
@@ -3544,7 +3544,7 @@ namespace Lemma.Components
 				return new Box[][] { };
 		}
 
-		private bool adjacentToFilledCell(Coordinate coord)
+		private bool adjacentToFilledCell(Coord coord)
 		{
 			return this[coord.Move(0, 0, 1)].ID != 0
 			|| this[coord.Move(0, 1, 0)].ID != 0
@@ -3562,15 +3562,15 @@ namespace Lemma.Components
 			|| this[coord.Move(-1, -1, -1)].ID != 0;
 		}
 
-		public Coordinate? FindClosestAStarCell(Coordinate coord, int maxDistance = 20)
+		public Coord? FindClosestAStarCell(Coord coord, int maxDistance = 20)
 		{
-			CellState s = this[coord];
+			State s = this[coord];
 			if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
 				return coord;
 
 			Vector3 pos = this.GetRelativePosition(coord);
 
-			Coordinate? closestCoord = null;
+			Coord? closestCoord = null;
 
 			for (int radius = 1; radius < maxDistance; radius++)
 			{
@@ -3581,7 +3581,7 @@ namespace Lemma.Components
 				{
 					for (int z = -radius; z <= radius; z++)
 					{
-						Coordinate c = coord.Move(-radius, y, z);
+						Coord c = coord.Move(-radius, y, z);
 						s = this[c];
 						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
 						{
@@ -3600,7 +3600,7 @@ namespace Lemma.Components
 				{
 					for (int z = -radius; z <= radius; z++)
 					{
-						Coordinate c = coord.Move(radius, y, z);
+						Coord c = coord.Move(radius, y, z);
 						s = this[c];
 						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
 						{
@@ -3619,7 +3619,7 @@ namespace Lemma.Components
 				{
 					for (int z = -radius + 1; z < radius; z++)
 					{
-						Coordinate c = coord.Move(x, -radius, z);
+						Coord c = coord.Move(x, -radius, z);
 						s = this[c];
 						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
 						{
@@ -3638,7 +3638,7 @@ namespace Lemma.Components
 				{
 					for (int z = -radius + 1; z < radius; z++)
 					{
-						Coordinate c = coord.Move(x, radius, z);
+						Coord c = coord.Move(x, radius, z);
 						s = this[c];
 						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
 						{
@@ -3657,7 +3657,7 @@ namespace Lemma.Components
 				{
 					for (int y = -radius; y <= radius; y++)
 					{
-						Coordinate c = coord.Move(x, y, -radius);
+						Coord c = coord.Move(x, y, -radius);
 						s = this[c];
 						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
 						{
@@ -3676,7 +3676,7 @@ namespace Lemma.Components
 				{
 					for (int y = -radius; y <= radius; y++)
 					{
-						Coordinate c = coord.Move(x, y, radius);
+						Coord c = coord.Move(x, y, radius);
 						s = this[c];
 						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
 						{
@@ -3696,14 +3696,14 @@ namespace Lemma.Components
 			return closestCoord;
 		}
 
-		public Coordinate? FindClosestFilledCell(Coordinate coord, int maxDistance = 20)
+		public Coord? FindClosestFilledCell(Coord coord, int maxDistance = 20)
 		{
 			if (this[coord].ID != 0)
 				return coord;
 
 			Vector3 pos = this.GetRelativePosition(coord);
 
-			Coordinate? closestCoord = null;
+			Coord? closestCoord = null;
 
 			for (int radius = 1; radius < maxDistance; radius++)
 			{
@@ -3714,7 +3714,7 @@ namespace Lemma.Components
 				{
 					for (int z = -radius; z <= radius; z++)
 					{
-						Coordinate c = coord.Move(-radius, y, z);
+						Coord c = coord.Move(-radius, y, z);
 						if (this[c].ID != 0)
 						{
 							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
@@ -3732,7 +3732,7 @@ namespace Lemma.Components
 				{
 					for (int z = -radius; z <= radius; z++)
 					{
-						Coordinate c = coord.Move(radius, y, z);
+						Coord c = coord.Move(radius, y, z);
 						if (this[c].ID != 0)
 						{
 							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
@@ -3750,7 +3750,7 @@ namespace Lemma.Components
 				{
 					for (int z = -radius + 1; z < radius; z++)
 					{
-						Coordinate c = coord.Move(x, -radius, z);
+						Coord c = coord.Move(x, -radius, z);
 						if (this[c].ID != 0)
 						{
 							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
@@ -3768,7 +3768,7 @@ namespace Lemma.Components
 				{
 					for (int z = -radius + 1; z < radius; z++)
 					{
-						Coordinate c = coord.Move(x, radius, z);
+						Coord c = coord.Move(x, radius, z);
 						if (this[c].ID != 0)
 						{
 							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
@@ -3786,7 +3786,7 @@ namespace Lemma.Components
 				{
 					for (int y = -radius; y <= radius; y++)
 					{
-						Coordinate c = coord.Move(x, y, -radius);
+						Coord c = coord.Move(x, y, -radius);
 						if (this[c].ID != 0)
 						{
 							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
@@ -3804,7 +3804,7 @@ namespace Lemma.Components
 				{
 					for (int y = -radius; y <= radius; y++)
 					{
-						Coordinate c = coord.Move(x, y, radius);
+						Coord c = coord.Move(x, y, radius);
 						if (this[c].ID != 0)
 						{
 							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
@@ -3828,12 +3828,12 @@ namespace Lemma.Components
 			public AStarEntry Parent;
 			public float SoFar;
 			public float ToGoal;
-			public Coordinate Coordinate;
+			public Coord Coordinate;
 		}
 
-		private List<Coordinate> constructPath(AStarEntry entry)
+		private List<Coord> constructPath(AStarEntry entry)
 		{
-			List<Coordinate> result = new List<Coordinate>();
+			List<Coord> result = new List<Coord>();
 			result.Add(entry.Coordinate);
 			while (entry.Parent != null)
 			{
@@ -3844,13 +3844,13 @@ namespace Lemma.Components
 		}
 
 		// This isn't really A* at all. But whatevs.
-		public List<Coordinate> CustomAStar(Coordinate start, Coordinate end, int iterationLimit = 200)
+		public List<Coord> CustomAStar(Coord start, Coord end, int iterationLimit = 200)
 		{
-			Dictionary<Coordinate, bool> closed = new Dictionary<Coordinate, bool>();
-			Dictionary<Coordinate, AStarEntry> queueReverseLookup = new Dictionary<Coordinate, AStarEntry>();
+			Dictionary<Coord, bool> closed = new Dictionary<Coord, bool>();
+			Dictionary<Coord, AStarEntry> queueReverseLookup = new Dictionary<Coord, AStarEntry>();
 
-			Coordinate? closestStart = this.FindClosestAStarCell(start, 10);
-			Coordinate? closestEnd = this.FindClosestFilledCell(end);
+			Coord? closestStart = this.FindClosestAStarCell(start, 10);
+			Coord? closestEnd = this.FindClosestFilledCell(end);
 
 			if (!closestStart.HasValue || !closestEnd.HasValue)
 				return null;
@@ -3889,10 +3889,10 @@ namespace Lemma.Components
 
 				foreach (Direction d in DirectionExtensions.Directions)
 				{
-					Coordinate next = entry.Coordinate.Move(d);
+					Coord next = entry.Coordinate.Move(d);
 					if ((entry.Parent == null || !next.Equivalent(entry.Parent.Coordinate)) && !closed.ContainsKey(next))
 					{
-						CellState state = this[next];
+						State state = this[next];
 						if (state.ID == 0)
 						{
 							// This is an empty cell
@@ -3941,7 +3941,7 @@ namespace Lemma.Components
 			return null;
 		}
 
-		private bool buildAdjacency(Box box, Dictionary<Box, bool> list, Func<CellState, bool> filter, CellState search)
+		private bool buildAdjacency(Box box, Dictionary<Box, bool> list, Func<State, bool> filter, State search)
 		{
 			Queue<Box> boxes = new Queue<Box>();
 
@@ -4263,19 +4263,19 @@ namespace Lemma.Components
 			return modified;
 		}
 
-		public RaycastResult Raycast(Coordinate start, Direction dir, int length)
+		public RaycastResult Raycast(Coord start, Direction dir, int length)
 		{
 			return this.Raycast(start, start.Move(dir, length));
 		}
 
-		public RaycastResult Raycast(Coordinate start, Coordinate end)
+		public RaycastResult Raycast(Coord start, Coord end)
 		{
 			return this.Raycast(this.GetRelativePosition(start), this.GetRelativePosition(end));
 		}
 
-		private Coordinate getChunkCoordinateFromCoordinate(Coordinate coord)
+		private Coord getChunkCoordinateFromCoordinate(Coord coord)
 		{
-			return new Coordinate { X = (coord.X - this.minX) / this.chunkSize, Y = (coord.Y - this.minY) / this.chunkSize, Z = (coord.Z - this.minZ) / this.chunkSize };
+			return new Coord { X = (coord.X - this.minX) / this.chunkSize, Y = (coord.Y - this.minY) / this.chunkSize, Z = (coord.Z - this.minZ) / this.chunkSize };
 		}
 
 		private IEnumerable<Chunk> rasterizeChunks(Vector3 startRelative, Vector3 endRelative)
@@ -4286,8 +4286,8 @@ namespace Lemma.Components
 			startRelative = (startRelative - new Vector3(this.minX, this.minY, this.minZ)) / this.chunkSize;
 			endRelative = (endRelative - new Vector3(this.minX, this.minY, this.minZ)) / this.chunkSize;
 
-			Coordinate startCoord = new Coordinate { X = (int)startRelative.X, Y = (int)startRelative.Y, Z = (int)startRelative.Z };
-			Coordinate endCoord = new Coordinate { X = (int)endRelative.X, Y = (int)endRelative.Y, Z = (int)endRelative.Z };
+			Coord startCoord = new Coord { X = (int)startRelative.X, Y = (int)startRelative.Y, Z = (int)startRelative.Z };
+			Coord endCoord = new Coord { X = (int)endRelative.X, Y = (int)endRelative.Y, Z = (int)endRelative.Z };
 
 			int dx = ((startRelative.X < endRelative.X) ? 1 : ((startRelative.X > endRelative.X) ? -1 : 0));
 			int dy = ((startRelative.Y < endRelative.Y) ? 1 : ((startRelative.Y > endRelative.Y) ? -1 : 0));
@@ -4304,7 +4304,7 @@ namespace Lemma.Components
 			float deltaty = 1.0f / Math.Abs(endRelative.Y - startRelative.Y);
 			float deltatz = 1.0f / Math.Abs(endRelative.Z - startRelative.Z);
 
-			Coordinate coord = startCoord.Clone();
+			Coord coord = startCoord.Clone();
 
 			Direction xDirection = dx > 0 ? Direction.NegativeX : (dx < 0 ? Direction.PositiveX : Direction.None);
 			Direction yDirection = dy > 0 ? Direction.NegativeY : (dy < 0 ? Direction.PositiveY : Direction.None);
@@ -4341,28 +4341,28 @@ namespace Lemma.Components
 			}
 		}
 
-		public IEnumerable<Coordinate> Rasterize(Vector3 start, Vector3 end)
+		public IEnumerable<Coord> Rasterize(Vector3 start, Vector3 end)
 		{
 			start = this.GetRelativePosition(start);
 			end = this.GetRelativePosition(end);
 
-			Coordinate startCoord = this.GetCoordinateFromRelative(start);
-			Coordinate endCoord = this.GetCoordinateFromRelative(end);
+			Coord startCoord = this.GetCoordinateFromRelative(start);
+			Coord endCoord = this.GetCoordinateFromRelative(end);
 
-			foreach (Coordinate coord in this.rasterize(start, end, startCoord, endCoord))
+			foreach (Coord coord in this.rasterize(start, end, startCoord, endCoord))
 				yield return coord;
 		}
 
-		public IEnumerable<Coordinate> Rasterize(Coordinate startCoord, Coordinate endCoord)
+		public IEnumerable<Coord> Rasterize(Coord startCoord, Coord endCoord)
 		{
 			Vector3 start = this.GetRelativePosition(startCoord);
 			Vector3 end = this.GetRelativePosition(endCoord);
 
-			foreach (Coordinate coord in this.rasterize(start, end, startCoord, endCoord))
+			foreach (Coord coord in this.rasterize(start, end, startCoord, endCoord))
 				yield return coord;
 		}
 
-		private IEnumerable<Coordinate> rasterize(Vector3 start, Vector3 end, Coordinate startCoord, Coordinate endCoord)
+		private IEnumerable<Coord> rasterize(Vector3 start, Vector3 end, Coord startCoord, Coord endCoord)
 		{
 			// Adapted from PolyVox
 			// http://www.volumesoffun.com/polyvox/documentation/library/doc/html/_raycast_8inl_source.html
@@ -4382,7 +4382,7 @@ namespace Lemma.Components
 			float deltaty = 1.0f / Math.Abs(end.Y - start.Y);
 			float deltatz = 1.0f / Math.Abs(end.Z - start.Z);
 
-			Coordinate coord = startCoord.Clone();
+			Coord coord = startCoord.Clone();
 
 			Direction normal = Direction.None;
 
@@ -4589,8 +4589,8 @@ namespace Lemma.Components
 			start -= new Vector3(c.X, c.Y, c.Z);
 			end -= new Vector3(c.X, c.Y, c.Z);
 
-			Coordinate startCoord = new Coordinate { X = (int)start.X, Y = (int)start.Y, Z = (int)start.Z };
-			Coordinate endCoord = new Coordinate { X = (int)end.X, Y = (int)end.Y, Z = (int)end.Z };
+			Coord startCoord = new Coord { X = (int)start.X, Y = (int)start.Y, Z = (int)start.Z };
+			Coord endCoord = new Coord { X = (int)end.X, Y = (int)end.Y, Z = (int)end.Z };
 
 			int dx = ((start.X < end.X) ? 1 : ((start.X > end.X) ? -1 : 0));
 			int dy = ((start.Y < end.Y) ? 1 : ((start.Y > end.Y) ? -1 : 0));
@@ -4607,7 +4607,7 @@ namespace Lemma.Components
 			float deltaty = 1.0f / Math.Abs(end.Y - start.Y);
 			float deltatz = 1.0f / Math.Abs(end.Z - start.Z);
 
-			Coordinate coord = startCoord.Clone();
+			Coord coord = startCoord.Clone();
 
 			Direction normal = Direction.None;
 
@@ -4624,7 +4624,7 @@ namespace Lemma.Components
 					Box box = c.Data[coord.X, coord.Y, coord.Z];
 					if (box != null)
 					{
-						Coordinate actualCoord = coord.Move(c.X, c.Y, c.Z);
+						Coord actualCoord = coord.Move(c.X, c.Y, c.Z);
 						actualCoord.Data = box.Type;
 
 						// Found intersection
@@ -4675,7 +4675,7 @@ namespace Lemma.Components
 			return this.Raycast(rayStart, rayStart + (ray * length));
 		}
 
-		public CellState this[Coordinate coord]
+		public State this[Coord coord]
 		{
 			get
 			{
@@ -4683,30 +4683,30 @@ namespace Lemma.Components
 			}
 		}
 
-		public CellState this[int x, int y, int z]
+		public State this[int x, int y, int z]
 		{
 			get
 			{
 				if (!this.main.EditorEnabled && !this.EnablePhysics)
-					return Map.EmptyState;
+					return Voxel.EmptyState;
 
 				Chunk chunk = this.GetChunk(x, y, z, false);
 				if (chunk == null)
-					return Map.EmptyState;
+					return Voxel.EmptyState;
 				else if (chunk.Data != null)
 				{
 					Box box = chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];
 					if (box == null)
-						return Map.EmptyState;
+						return Voxel.EmptyState;
 					else
 						return box.Type;
 				}
 				else
-					return Map.EmptyState;
+					return Voxel.EmptyState;
 			}
 		}
 
-		public CellState this[Vector3 pos]
+		public State this[Vector3 pos]
 		{
 			get
 			{
@@ -4719,7 +4719,7 @@ namespace Lemma.Components
 		/// </summary>
 		/// <param name="position"></param>
 		/// <returns></returns>
-		public Coordinate GetCoordinate(Vector3 position)
+		public Coord GetCoordinate(Vector3 position)
 		{
 			return this.GetCoordinateFromRelative(this.GetRelativePosition(position));
 		}
@@ -4729,9 +4729,9 @@ namespace Lemma.Components
 		/// </summary>
 		/// <param name="position"></param>
 		/// <returns></returns>
-		public Coordinate GetCoordinateFromRelative(Vector3 pos)
+		public Coord GetCoordinateFromRelative(Vector3 pos)
 		{
-			return new Coordinate
+			return new Coord
 			{
 				X = (int)Math.Floor(pos.X),
 				Y = (int)Math.Floor(pos.Y),
@@ -4739,9 +4739,9 @@ namespace Lemma.Components
 			};
 		}
 
-		public Coordinate GetCoordinate(int x, int y, int z)
+		public Coord GetCoordinate(int x, int y, int z)
 		{
-			return new Coordinate
+			return new Coord
 			{
 				X = x,
 				Y = y,
@@ -4784,12 +4784,12 @@ namespace Lemma.Components
 			return new Vector3(x + 0.5f, y + 0.5f, z + 0.5f) - this.Offset;
 		}
 
-		public Vector3 GetAbsolutePosition(Coordinate coord)
+		public Vector3 GetAbsolutePosition(Coord coord)
 		{
 			return this.GetAbsolutePosition(coord.X, coord.Y, coord.Z);
 		}
 
-		public Vector3 GetRelativePosition(Coordinate coord)
+		public Vector3 GetRelativePosition(Coord coord)
 		{
 			return this.GetRelativePosition(coord.X, coord.Y, coord.Z);
 		}
@@ -4809,7 +4809,7 @@ namespace Lemma.Components
 		/// </summary>
 		/// <param name="coord"></param>
 		/// <returns></returns>
-		public Box GetBox(Coordinate coord)
+		public Box GetBox(Coord coord)
 		{
 			return this.GetBox(coord.X, coord.Y, coord.Z);
 		}
@@ -4831,7 +4831,7 @@ namespace Lemma.Components
 		}
 	}
 
-	public class DynamicMap : Map, IUpdateableComponent
+	public class DynamicVoxel : Voxel, IUpdateableComponent
 	{
 		private const float defaultLinearDamping = .03f;
 		private const float defaultAngularDamping = .15f;
@@ -4863,13 +4863,13 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command PhysicsUpdated = new Command();
 
-		public DynamicMap()
+		public DynamicVoxel()
 			: this(0, 0, 0)
 		{
 
 		}
 
-		public DynamicMap(int offsetX, int offsetY, int offsetZ)
+		public DynamicVoxel(int offsetX, int offsetY, int offsetZ)
 			: base(2, 10)
 		{
 			this.OffsetX = offsetX;
@@ -4880,7 +4880,7 @@ namespace Lemma.Components
 		protected override Chunk newChunk()
 		{
 			Chunk chunk = new Chunk();
-			chunk.Map = this;
+			chunk.Voxel = this;
 			return chunk;
 		}
 
@@ -4897,13 +4897,13 @@ namespace Lemma.Components
 			{
 				if (value)
 				{
-					this.PhysicsEntity.LinearDamping = DynamicMap.defaultLinearDamping;
-					this.PhysicsEntity.AngularDamping = DynamicMap.defaultAngularDamping;
+					this.PhysicsEntity.LinearDamping = DynamicVoxel.defaultLinearDamping;
+					this.PhysicsEntity.AngularDamping = DynamicVoxel.defaultAngularDamping;
 				}
 				else
 				{
-					this.PhysicsEntity.LinearDamping = DynamicMap.floatingLinearDamping;
-					this.PhysicsEntity.AngularDamping = DynamicMap.floatingAngularDamping;
+					this.PhysicsEntity.LinearDamping = DynamicVoxel.floatingLinearDamping;
+					this.PhysicsEntity.AngularDamping = DynamicVoxel.floatingAngularDamping;
 				}
 				this.IsAffectedByGravity.InternalValue = value;
 				this.PhysicsEntity.IsAffectedByGravity = value;

@@ -23,32 +23,27 @@ namespace Lemma.Factories
 
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			Factory.Get<DynamicMapFactory>().InternalBind(entity, main, creating, mapTransform);
+			Factory.Get<DynamicVoxelFactory>().InternalBind(entity, main, creating, mapTransform);
 
-			DynamicMap map = entity.Get<DynamicMap>();
+			DynamicVoxel map = entity.Get<DynamicVoxel>();
 
 			Property<Entity.Handle> parentMap = entity.GetOrMakeProperty<Entity.Handle>("Parent");
-			Property<Map.Coordinate> coord = entity.GetOrMakeProperty<Map.Coordinate>("Coord");
+			Property<Voxel.Coord> coord = entity.GetOrMakeProperty<Voxel.Coord>("Coord");
 			Property<Direction> dir = entity.GetOrMakeProperty<Direction>("Direction", true);
 
 			Action refreshMapTransform = delegate()
 			{
 				Entity parent = parentMap.Value.Target;
-				if (parent != null)
+				if (parent != null && parent.Active)
 				{
-					if (!parent.Active)
-						parent = null;
-					else
+					Voxel staticMap = parent.Get<Voxel>();
+					coord.Value = staticMap.GetCoordinate(transform.Position);
+					mapTransform.Position.Value = staticMap.GetAbsolutePosition(staticMap.GetRelativePosition(coord) - new Vector3(0.5f) + staticMap.Offset + map.Offset.Value);
+					if (!allowRotation)
 					{
-						Map staticMap = parent.Get<Map>();
-						coord.Value = staticMap.GetCoordinate(transform.Position);
-						mapTransform.Position.Value = staticMap.GetAbsolutePosition(staticMap.GetRelativePosition(coord) - new Vector3(0.5f) + staticMap.Offset + map.Offset.Value);
-						if (!allowRotation)
-						{
-							Matrix parentOrientation = staticMap.Transform;
-							parentOrientation.Translation = Vector3.Zero;
-							mapTransform.Orientation.Value = parentOrientation;
-						}
+						Matrix parentOrientation = staticMap.Transform;
+						parentOrientation.Translation = Vector3.Zero;
+						mapTransform.Orientation.Value = parentOrientation;
 					}
 				}
 				else
@@ -58,67 +53,62 @@ namespace Lemma.Factories
 				entity.Add(new NotifyBinding(refreshMapTransform, transform.Matrix, map.Offset));
 
 			ISpaceObject joint = null;
-			CommandBinding jointDeleteBinding = null, physicsUpdateBinding = null, parentPhysicsUpdateBinding = null;
+			CommandBinding jointDeleteBinding = null, parentPhysicsUpdateBinding = null;
+
+			Action updateJoint = null;
 
 			Action rebuildJoint = null;
 			rebuildJoint = delegate()
+			{
+				if (jointDeleteBinding != null)
+					entity.Remove(jointDeleteBinding);
+				jointDeleteBinding = null;
+
+				if (parentPhysicsUpdateBinding != null)
+					entity.Remove(parentPhysicsUpdateBinding);
+				parentPhysicsUpdateBinding = null;
+
+				updateJoint();
+			};
+
+			updateJoint = delegate()
 			{
 				if (joint != null)
 				{
 					if (joint.Space != null)
 						main.Space.Remove(joint);
-					entity.Remove(jointDeleteBinding);
-
-					if (parentPhysicsUpdateBinding != null)
-						entity.Remove(parentPhysicsUpdateBinding);
-					parentPhysicsUpdateBinding = null;
-
-					if (physicsUpdateBinding != null)
-						entity.Remove(physicsUpdateBinding);
-					physicsUpdateBinding = null;
-
 					joint = null;
-					jointDeleteBinding = null;
 				}
 
 				Entity parent = parentMap.Value.Target;
 
 				if (main.EditorEnabled)
-				{
 					refreshMapTransform();
-					return;
-				}
-
-				if (parent != null)
+				else if (parent != null && parent.Active)
 				{
-					if (!parent.Active)
-						parent = null;
-					else
+					Voxel parentStaticMap = parent.Get<Voxel>();
+
+					//map.PhysicsEntity.Position = mapTransform.Position;
+					if (!allowRotation)
+						map.PhysicsEntity.Orientation = mapTransform.Quaternion;
+
+					if (dir != Direction.None)
 					{
-						Map parentStaticMap = parent.Get<Map>();
+						Vector3 relativeLineAnchor = parentStaticMap.GetRelativePosition(coord) - new Vector3(0.5f) + parentStaticMap.Offset + map.Offset;
+						Vector3 lineAnchor = parentStaticMap.GetAbsolutePosition(relativeLineAnchor);
+						DynamicVoxel parentDynamicMap = parent.Get<DynamicVoxel>();
+						joint = createJoint(map.PhysicsEntity, parentDynamicMap == null ? null : parentDynamicMap.PhysicsEntity, lineAnchor, parentStaticMap.GetAbsoluteVector(dir.Value.GetVector()), parentStaticMap.GetAbsolutePosition(coord));
+						main.Space.Add(joint);
+						map.PhysicsEntity.ActivityInformation.Activate();
 
-						map.PhysicsEntity.Position = mapTransform.Position;
-						if (!allowRotation)
-							map.PhysicsEntity.Orientation = mapTransform.Quaternion;
-
-						if (dir != Direction.None)
+						if (parentDynamicMap != null && parentPhysicsUpdateBinding == null)
 						{
-							Vector3 relativeLineAnchor = parentStaticMap.GetRelativePosition(coord) - new Vector3(0.5f) + parentStaticMap.Offset + map.Offset;
-							Vector3 lineAnchor = parentStaticMap.GetAbsolutePosition(relativeLineAnchor);
-							DynamicMap parentDynamicMap = parent.Get<DynamicMap>();
-							joint = createJoint(map.PhysicsEntity, parentDynamicMap == null ? null : parentDynamicMap.PhysicsEntity, lineAnchor, parentStaticMap.GetAbsoluteVector(dir.Value.GetVector()), parentStaticMap.GetAbsolutePosition(coord));
-							main.Space.Add(joint);
-							map.PhysicsEntity.ActivityInformation.Activate();
+							parentPhysicsUpdateBinding = new CommandBinding(parentDynamicMap.PhysicsUpdated, updateJoint);
+							entity.Add(parentPhysicsUpdateBinding);
+						}
 
-							if (parentDynamicMap != null)
-							{
-								parentPhysicsUpdateBinding = new CommandBinding(parentDynamicMap.PhysicsUpdated, rebuildJoint);
-								entity.Add(parentPhysicsUpdateBinding);
-							}
-
-							physicsUpdateBinding = new CommandBinding(map.PhysicsUpdated, rebuildJoint);
-							entity.Add(physicsUpdateBinding);
-
+						if (jointDeleteBinding == null)
+						{
 							jointDeleteBinding = new CommandBinding(parent.Delete, delegate()
 							{
 								parentMap.Value = null;
@@ -128,6 +118,7 @@ namespace Lemma.Factories
 					}
 				}
 			};
+			entity.Add(new CommandBinding(map.PhysicsUpdated, updateJoint));
 			entity.Add(new NotifyBinding(rebuildJoint, parentMap));
 			entity.Add(new CommandBinding(entity.Delete, delegate()
 			{

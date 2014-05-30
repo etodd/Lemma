@@ -272,8 +272,8 @@ namespace Lemma
 							// Deselect all entities, since they'll be gone anyway
 							Editor editor = entity.Get<Editor>();
 							editor.SelectedEntities.Clear();
-							if (editor.MapEditMode)
-								editor.MapEditMode.Value = false;
+							if (editor.VoxelEditMode)
+								editor.VoxelEditMode.Value = false;
 							editor.TransformMode.Value = Editor.TransformModes.None;
 						}
 					}
@@ -750,7 +750,7 @@ namespace Lemma
 						ambientLight.Get<AmbientLight>().Color.Value = new Vector3(0.25f, 0.25f, 0.25f);
 						this.Add(ambientLight);
 
-						Entity map = Factory.Get<MapFactory>().CreateAndBind(this);
+						Entity map = Factory.Get<VoxelFactory>().CreateAndBind(this);
 						map.Get<Transform>().Position.Value = new Vector3(0, 1, 0);
 						this.Add(map);
 

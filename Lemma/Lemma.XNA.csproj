@@ -192,7 +192,7 @@
     <Compile Include="Factories\SwitchFactory.cs" />
     <Compile Include="Factories\NoteFactory.cs" />
     <Compile Include="Factories\EntityConnectable.cs" />
-    <Compile Include="Factories\FillMapFactory.cs" />
+    <Compile Include="Factories\VoxelFillFactory.cs" />
     <Compile Include="Factories\TriggerFactory.cs" />
     <Compile Include="Factories\VoxelEntity.cs" />
     <Compile Include="Factories\SmokeFactory.cs" />
@@ -203,7 +203,7 @@
     <Compile Include="Factories\JointFactory.cs" />
     <Compile Include="Factories\SceneryBlockFactory.cs" />
     <Compile Include="Factories\SkyboxFactory.cs" />
-    <Compile Include="Factories\MapAttachable.cs" />
+    <Compile Include="Factories\VoxelAttachable.cs" />
     <Compile Include="Factories\RainFactory.cs" />
     <Compile Include="Factories\SliderFactory.cs" />
     <Compile Include="Factories\TargetFactory.cs" />
@@ -263,7 +263,7 @@
     <Compile Include="UI\TextElement.cs" />
     <Compile Include="Factories\DirectionalLightFactory.cs" />
     <Compile Include="Factories\PlayerSpawnFactory.cs" />
-    <Compile Include="Factories\MapFactory.cs" />
+    <Compile Include="Factories\VoxelFactory.cs" />
     <Compile Include="Components\Timer.cs" />
     <Compile Include="IO\FPSInput.cs" />
     <Compile Include="UI\UIComponent.cs" />
@@ -290,7 +290,7 @@
     <Compile Include="Components\PlayerTrigger.cs" />
     <Compile Include="Util\Direction.cs" />
     <Compile Include="Main.cs" />
-    <Compile Include="Components\Map.cs" />
+    <Compile Include="Components\Voxel.cs" />
     <Compile Include="Components\PlayerSpawn.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

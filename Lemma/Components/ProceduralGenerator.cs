@@ -62,7 +62,7 @@ namespace Lemma.Components
 		}
 
 		// Get a psuedo-random gradient for the given 3D cell
-		private Vector3 gradientAtCell3d(Map.Coordinate coord)
+		private Vector3 gradientAtCell3d(Voxel.Coord coord)
 		{
 			return gradients[this.permutations[coord.X + this.permutations[coord.Y + this.permutations[coord.Z]]] % gradients.Length];
 		}
@@ -106,7 +106,7 @@ namespace Lemma.Components
 		// Classic 3D perlin noise
 		float noise3d(Vector3 pos)
 		{
-			Map.Coordinate cell = new Map.Coordinate { X = (int)Math.Floor(pos.X) & 255, Y = (int)Math.Floor(pos.Y) & 255, Z = (int)Math.Floor(pos.Z) & 255 };
+			Voxel.Coord cell = new Voxel.Coord { X = (int)Math.Floor(pos.X) & 255, Y = (int)Math.Floor(pos.Y) & 255, Z = (int)Math.Floor(pos.Z) & 255 };
 			
 			pos.X = pos.X % 256;
 			pos.Y = pos.Y % 256;
@@ -147,7 +147,7 @@ namespace Lemma.Components
 		// We sample the noise function at different octaves and combine them together.
 		// If its value sampled at a certain voxel cell is above a certain threshold,
 		// we fill in that voxel cell.
-		private float density(Map.Coordinate sample)
+		private float density(Voxel.Coord sample)
 		{
 			Vector3 sampleVector = new Vector3(sample.X, sample.Y, sample.Z);
 
@@ -179,11 +179,11 @@ namespace Lemma.Components
 
 		public Property<float> HeightOctave = new Property<float> { Value = 20.0f };
 
-		private Map.CellState primaryFillValue;
-		public Property<Map.t> PrimaryFillValue = new Property<Map.t> { Value = Map.t.Rock };
+		private Voxel.State primaryFillValue;
+		public Property<Voxel.t> PrimaryFillValue = new Property<Voxel.t> { Value = Voxel.t.Rock };
 
-		private Map.CellState secondaryFillValue;
-		public Property<Map.t> SecondaryFillValue = new Property<Map.t> { Value = Map.t.Rock };
+		private Voxel.State secondaryFillValue;
+		public Property<Voxel.t> SecondaryFillValue = new Property<Voxel.t> { Value = Voxel.t.Rock };
 
 		public Property<float> PrimaryFillThreshold = new Property<float> { Value = 0.0f };
 
@@ -194,19 +194,19 @@ namespace Lemma.Components
 			return this.noise3d(vector);
 		}
 
-		public float Sample(Map map, Map.Coordinate coord, float octave)
+		public float Sample(Voxel voxel, Voxel.Coord coord, float octave)
 		{
-			coord.X -= map.MinX;
-			coord.Y -= map.MinY;
-			coord.Z -= map.MinZ;
+			coord.X -= voxel.MinX;
+			coord.Y -= voxel.MinY;
+			coord.Z -= voxel.MinZ;
 			return this.noise3d(new Vector3(coord.X / octave, coord.Y / octave, coord.Z / octave));
 		}
 
-		public Map.CellState GetValue(Map map, Map.Coordinate coord)
+		public Voxel.State GetValue(Voxel voxel, Voxel.Coord coord)
 		{
-			coord.X -= map.MinX;
-			coord.Y -= map.MinY;
-			coord.Z -= map.MinZ;
+			coord.X -= voxel.MinX;
+			coord.Y -= voxel.MinY;
+			coord.Z -= voxel.MinZ;
 			float value = this.density(coord);
 
 			if (value > this.PrimaryFillThreshold)
@@ -214,7 +214,7 @@ namespace Lemma.Components
 				// We are filling in material in this cell
 
 				// Determine whether to fill in with primary or secondary material
-				Map.CellState state;
+				Voxel.State state;
 				if (this.density(coord.Move(0, 2, 0)) < this.PrimaryFillThreshold // We're on the top of a ground formation
 					&& this.noise3d(new Vector3(coord.X, coord.Y, coord.Z) / this.SecondaryOctave) > this.SecondaryFillThreshold) // Modulate by another noise function
 					state = this.secondaryFillValue;
@@ -223,7 +223,7 @@ namespace Lemma.Components
 
 				return state;
 			}
-			return new Map.CellState();
+			return new Voxel.State();
 		}
 
 		public override void Awake()
@@ -233,15 +233,15 @@ namespace Lemma.Components
 
 			this.Reseed.Action = this.reseed;
 
-			this.PrimaryFillValue.Set = delegate(Map.t value)
+			this.PrimaryFillValue.Set = delegate(Voxel.t value)
 			{
-				this.primaryFillValue = Map.States[value];
+				this.primaryFillValue = Voxel.States[value];
 				this.PrimaryFillValue.InternalValue = value;
 			};
 
-			this.SecondaryFillValue.Set = delegate(Map.t value)
+			this.SecondaryFillValue.Set = delegate(Voxel.t value)
 			{
-				this.secondaryFillValue = Map.States[value];
+				this.secondaryFillValue = Voxel.States[value];
 				this.SecondaryFillValue.InternalValue = value;
 			};
 		}

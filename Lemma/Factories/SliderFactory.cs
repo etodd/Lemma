@@ -21,7 +21,7 @@ namespace Lemma.Factories
 			Entity entity = new Entity(main, "Slider");
 			entity.Add("MapTransform", new Transform());
 			entity.Add("Transform", new Transform());
-			entity.Add("Map", new DynamicMap(0, 0, 0));
+			entity.Add("Voxel", new DynamicVoxel(0, 0, 0));
 			return entity;
 		}
 
@@ -59,20 +59,20 @@ namespace Lemma.Factories
 
 			Action updateMaterial = delegate()
 			{
-				DynamicMap map = entity.Get<DynamicMap>();
+				DynamicVoxel map = entity.Get<DynamicVoxel>();
 				if (map != null)
 				{
 					bool active = locked && (!servo || (servo && goal.Value != minimum.Value));
 
-					Map.CellState slider = Map.States[Map.t.Slider];
-					Map.CellState powered = Map.States[Map.t.SliderPowered];
-					Map.CellState desired = active ? powered : slider;
-					Map.t currentID = map[0, 0, 0].ID;
-					if (currentID != desired.ID & (currentID == Map.t.Slider || currentID == Map.t.SliderPowered))
+					Voxel.State slider = Voxel.States[Voxel.t.Slider];
+					Voxel.State powered = Voxel.States[Voxel.t.SliderPowered];
+					Voxel.State desired = active ? powered : slider;
+					Voxel.t currentID = map[0, 0, 0].ID;
+					if (currentID != desired.ID & (currentID == Voxel.t.Slider || currentID == Voxel.t.SliderPowered))
 					{
-						List<Map.Coordinate> coords = map.GetContiguousByType(new[] { map.GetBox(0, 0, 0) }).SelectMany(x => x.GetCoords()).ToList();
+						List<Voxel.Coord> coords = map.GetContiguousByType(new[] { map.GetBox(0, 0, 0) }).SelectMany(x => x.GetCoords()).ToList();
 						map.Empty(coords, true, true, null, false);
-						foreach (Map.Coordinate c in coords)
+						foreach (Voxel.Coord c in coords)
 							map.Fill(c, desired);
 						map.Regenerate();
 					}
@@ -84,7 +84,7 @@ namespace Lemma.Factories
 				if (joint != null)
 				{
 					if (maxForce > 0.001f)
-						joint.Motor.Settings.MaximumForce = maxForce * entity.Get<DynamicMap>().PhysicsEntity.Mass;
+						joint.Motor.Settings.MaximumForce = maxForce * entity.Get<DynamicVoxel>().PhysicsEntity.Mass;
 					else
 						joint.Motor.Settings.MaximumForce = float.MaxValue;
 				}
@@ -215,8 +215,8 @@ namespace Lemma.Factories
 					delegate()
 					{
 						Transform transform = entity.GetOrCreate<Transform>("MapTransform");
-						DynamicMap map = entity.Get<DynamicMap>();
-						transform.Position.Value = map.GetAbsolutePosition(new Map.Coordinate().Move(dir, minimum));
+						DynamicVoxel map = entity.Get<DynamicVoxel>();
+						transform.Position.Value = map.GetAbsolutePosition(new Voxel.Coord().Move(dir, minimum));
 					}
 				});
 			}

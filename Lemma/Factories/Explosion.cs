@@ -12,10 +12,10 @@ namespace Lemma.Factories
 	{
 		public static void Explode(Main main, Vector3 pos, int radius = 8, float physicsRadius = 12.0f)
 		{
-			Explosion.explode(main, null, new Map.Coordinate(), pos, radius, physicsRadius);
+			Explosion.explode(main, null, new Voxel.Coord(), pos, radius, physicsRadius);
 		}
 
-		public static void Explode(Main main, Map map, Map.Coordinate coord, int radius = 8, float physicsRadius = 12.0f)
+		public static void Explode(Main main, Voxel map, Voxel.Coord coord, int radius = 8, float physicsRadius = 12.0f)
 		{
 			Vector3 pos = map.GetAbsolutePosition(coord);
 			Explosion.explode(main, map, coord, pos, radius, physicsRadius);
@@ -23,7 +23,7 @@ namespace Lemma.Factories
 
 		private static Random random = new Random();
 
-		private static void explode(Main main, Map map, Map.Coordinate coord, Vector3 pos, int radius, float physicsRadius)
+		private static void explode(Main main, Voxel map, Voxel.Coord coord, Vector3 pos, int radius, float physicsRadius)
 		{
 			// Kaboom
 			AkSoundEngine.PostEvent("Play_explosion", pos);
@@ -62,22 +62,22 @@ namespace Lemma.Factories
 			// Remove the cells
 			BlockFactory blockFactory = Factory.Get<BlockFactory>();
 			
-			foreach (Map m in Map.ActiveMaps.ToList())
+			foreach (Voxel m in Voxel.ActiveVoxels.ToList())
 			{
-				List<Map.Coordinate> removals = new List<Map.Coordinate>();
+				List<Voxel.Coord> removals = new List<Voxel.Coord>();
 			
-				Map.Coordinate c = m.GetCoordinate(pos);
+				Voxel.Coord c = m.GetCoordinate(pos);
 				Vector3 relativePos = m.GetRelativePosition(c);
 				
 				Quaternion quat = m.Entity.Get<Transform>().Quaternion;
 			
-				for (Map.Coordinate x = c.Move(Direction.NegativeX, radius - 1); x.X < c.X + radius; x.X++)
+				for (Voxel.Coord x = c.Move(Direction.NegativeX, radius - 1); x.X < c.X + radius; x.X++)
 				{
-					for (Map.Coordinate y = x.Move(Direction.NegativeY, radius - 1); y.Y < c.Y + radius; y.Y++)
+					for (Voxel.Coord y = x.Move(Direction.NegativeY, radius - 1); y.Y < c.Y + radius; y.Y++)
 					{
-						for (Map.Coordinate z = y.Move(Direction.NegativeZ, radius - 1); z.Z < c.Z + radius; z.Z++)
+						for (Voxel.Coord z = y.Move(Direction.NegativeZ, radius - 1); z.Z < c.Z + radius; z.Z++)
 						{
-							Map.CellState s = m[z];
+							Voxel.State s = m[z];
 							if (s.ID == 0 || s.Permanent)
 								continue;
 							
@@ -114,9 +114,9 @@ namespace Lemma.Factories
 			}
 		
 			// Apply impulse to dynamic maps
-			foreach (Map m in Map.ActiveMaps)
+			foreach (Voxel m in Voxel.ActiveVoxels)
 			{
-				DynamicMap dm = m as DynamicMap;
+				DynamicVoxel dm = m as DynamicVoxel;
 				if (dm == null)
 					continue;
 			

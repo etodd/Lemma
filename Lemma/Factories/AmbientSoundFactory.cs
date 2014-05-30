@@ -42,7 +42,7 @@ namespace Lemma.Factories
 			}, is3D));
 
 			if (entity.GetOrMakeProperty<bool>("Attachable", true))
-				MapAttachable.MakeAttachable(entity, main);
+				VoxelAttachable.MakeAttachable(entity, main);
 
 			if (!main.EditorEnabled)
 			{
@@ -55,7 +55,7 @@ namespace Lemma.Factories
 		{
 			base.AttachEditorComponents(entity, main);
 
-			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
+			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
 	}
 }

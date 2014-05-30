@@ -33,7 +33,7 @@ namespace Lemma.Factories
 			light.Attenuation.Value = 15.0f;
 			light.Serialize = false;
 
-			ListProperty<Entity.Handle> dynamicMaps = entity.GetOrMakeListProperty<Entity.Handle>("DynamicMaps");
+			ListProperty<Entity.Handle> dynamicVoxels = entity.GetOrMakeListProperty<Entity.Handle>("DynamicVoxels");
 			Property<float> timeUntilRebuild = entity.GetOrMakeProperty<float>("TimeUntilRebuild");
 			Property<float> timeUntilRebuildComplete = entity.GetOrMakeProperty<float>("TimeUntilRebuildComplete");
 			Property<float> rebuildDelay = entity.GetOrMakeProperty<float>("RebuildDelay", true, 4.0f);
@@ -63,11 +63,11 @@ namespace Lemma.Factories
 				// We are not in fact dying, we're just destroying the base so we can fall over.
 				enemy.EnableCellEmptyBinding = false;
 
-				Map m = enemy.Map.Value.Target.Get<Map>();
+				Voxel m = enemy.Voxel.Value.Target.Get<Voxel>();
 
 				m.Empty(enemy.BaseBoxes.SelectMany(x => x.GetCoords()));
 
-				m.Regenerate(delegate(List<DynamicMap> spawnedMaps)
+				m.Regenerate(delegate(List<DynamicVoxel> spawnedMaps)
 				{
 					if (spawnedMaps.Count == 0)
 						entity.Delete.Execute();
@@ -75,7 +75,7 @@ namespace Lemma.Factories
 					{
 						Vector3 playerPos = PlayerFactory.Instance.Get<Transform>().Position;
 						playerPos += PlayerFactory.Instance.Get<Player>().Character.LinearVelocity.Value * 0.65f;
-						foreach (DynamicMap newMap in spawnedMaps)
+						foreach (DynamicVoxel newMap in spawnedMaps)
 						{
 							Vector3 toPlayer = playerPos - newMap.PhysicsEntity.Position;
 							toPlayer.Normalize();
@@ -93,7 +93,7 @@ namespace Lemma.Factories
 							}
 							newMap.PhysicsEntity.Material.KineticFriction = 1.0f;
 							newMap.PhysicsEntity.Material.StaticFriction = 1.0f;
-							dynamicMaps.Add(newMap.Entity);
+							dynamicVoxels.Add(newMap.Entity);
 						}
 					}
 				});
@@ -105,11 +105,11 @@ namespace Lemma.Factories
 			{
 				delegate()
 				{
-					foreach (Entity.Handle map in dynamicMaps)
+					foreach (Entity.Handle map in dynamicVoxels)
 					{
 						if (map.Target != null)
 						{
-							BEPUphysics.Entities.MorphableEntity e = map.Target.Get<DynamicMap>().PhysicsEntity;
+							BEPUphysics.Entities.MorphableEntity e = map.Target.Get<DynamicVoxel>().PhysicsEntity;
 							e.Material.KineticFriction = 1.0f;
 							e.Material.StaticFriction = 1.0f;
 						}
@@ -125,7 +125,7 @@ namespace Lemma.Factories
 				{
 					if (timeUntilRebuild > 0)
 					{
-						if (enemy.Map.Value.Target == null || !enemy.Map.Value.Target.Active)
+						if (enemy.Voxel.Value.Target == null || !enemy.Voxel.Value.Target.Active)
 						{
 							entity.Delete.Execute();
 							return;
@@ -136,7 +136,7 @@ namespace Lemma.Factories
 						if (newValue == 0.0f)
 						{
 							// Rebuild
-							Map m = enemy.Map.Value.Target.Get<Map>();
+							Voxel m = enemy.Voxel.Value.Target.Get<Voxel>();
 
 							int index = 0;
 
@@ -144,9 +144,9 @@ namespace Lemma.Factories
 
 							EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
 
-							Entity targetMap = enemy.Map.Value.Target;
+							Entity targetMap = enemy.Voxel.Value.Target;
 
-							foreach (Map.Coordinate c in enemy.BaseBoxes.SelectMany(x => x.GetCoords()))
+							foreach (Voxel.Coord c in enemy.BaseBoxes.SelectMany(x => x.GetCoords()))
 							{
 								if (m[c].ID == 0)
 								{
@@ -165,10 +165,10 @@ namespace Lemma.Factories
 
 							baseCenter /= index; // Get the average position of the base cells
 
-							foreach (Entity.Handle e in dynamicMaps)
+							foreach (Entity.Handle e in dynamicVoxels)
 							{
 								Entity dynamicMap = e.Target;
-								Map dynamicMapComponent = dynamicMap != null && dynamicMap.Active ? dynamicMap.Get<Map>() : null;
+								Voxel dynamicMapComponent = dynamicMap != null && dynamicMap.Active ? dynamicMap.Get<Voxel>() : null;
 
 								if (dynamicMap == null || !dynamicMap.Active)
 									continue;
@@ -176,15 +176,15 @@ namespace Lemma.Factories
 								Matrix orientation = dynamicMapComponent.Transform.Value;
 								orientation.Translation = Vector3.Zero;
 
-								List<Map.Coordinate> coords = new List<Map.Coordinate>();
+								List<Voxel.Coord> coords = new List<Voxel.Coord>();
 
-								foreach (Map.Coordinate c in dynamicMapComponent.Chunks.SelectMany(x => x.Boxes).SelectMany(x => x.GetCoords()))
+								foreach (Voxel.Coord c in dynamicMapComponent.Chunks.SelectMany(x => x.Boxes).SelectMany(x => x.GetCoords()))
 								{
 									if (m[c].ID == 0)
 										coords.Add(c);
 								}
 
-								foreach (Map.Coordinate c in coords.OrderBy(x => (new Vector3(x.X, x.Y, x.Z) - baseCenter).LengthSquared()))
+								foreach (Voxel.Coord c in coords.OrderBy(x => (new Vector3(x.X, x.Y, x.Z) - baseCenter).LengthSquared()))
 								{
 									Entity block = factory.CreateAndBind(main);
 									c.Data.ApplyToEffectBlock(block.Get<ModelInstance>());
@@ -208,7 +208,7 @@ namespace Lemma.Factories
 								dynamicMap.Delete.Execute();
 							}
 							timeUntilRebuildComplete.Value = 0.05f + (index * rebuildTimeMultiplier * rebuildTime);
-							dynamicMaps.Clear();
+							dynamicVoxels.Clear();
 						}
 					}
 					else if (timeUntilRebuildComplete > 0)

@@ -13,10 +13,10 @@ namespace Lemma.Components
 		public Property<Matrix> Transform = new Property<Matrix> { Editable = false };
 		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
 		public Property<float> Offset = new Property<float> { Editable = true, Value = 4.0f };
-		public Property<Entity.Handle> Map = new Property<Entity.Handle> { Editable = false };
-		public ListProperty<Map.Box> BaseBoxes = new ListProperty<Map.Box> { Editable = false };
+		public Property<Entity.Handle> Voxel = new Property<Entity.Handle> { Editable = false };
+		public ListProperty<Voxel.Box> BaseBoxes = new ListProperty<Voxel.Box> { Editable = false };
 
-		private CommandBinding<IEnumerable<Map.Coordinate>, Map> cellEmptiedBinding;
+		private CommandBinding<IEnumerable<Voxel.Coord>, Voxel> cellEmptiedBinding;
 
 		public bool EnableCellEmptyBinding
 		{
@@ -35,19 +35,19 @@ namespace Lemma.Components
 		{
 			get
 			{
-				Entity mapEntity = this.Map.Value.Target;
+				Entity mapEntity = this.Voxel.Value.Target;
 				if (mapEntity == null || !mapEntity.Active)
 					return false;
 
-				Map m = mapEntity.Get<Map>();
+				Voxel m = mapEntity.Get<Voxel>();
 
 				bool found = false;
-				List<Map.Box> boxRemovals = null;
-				foreach (Map.Box box in this.BaseBoxes)
+				List<Voxel.Box> boxRemovals = null;
+				foreach (Voxel.Box box in this.BaseBoxes)
 				{
-					foreach (Map.Coordinate coord in box.GetCoords())
+					foreach (Voxel.Coord coord in box.GetCoords())
 					{
-						if (m[coord].ID == Components.Map.t.InfectedCritical)
+						if (m[coord].ID == Components.Voxel.t.InfectedCritical)
 						{
 							found = true;
 							break;
@@ -56,14 +56,14 @@ namespace Lemma.Components
 					if (!found)
 					{
 						if (boxRemovals == null)
-							boxRemovals = new List<Map.Box>();
+							boxRemovals = new List<Voxel.Box>();
 						boxRemovals.Add(box);
 					}
 				}
 
 				if (boxRemovals != null)
 				{
-					foreach (Map.Box box in boxRemovals)
+					foreach (Voxel.Box box in boxRemovals)
 						this.BaseBoxes.Remove(box);
 				}
 
@@ -96,7 +96,7 @@ namespace Lemma.Components
 			{
 				Action setupMap = delegate()
 				{
-					Entity entity = this.Map.Value.Target;
+					Entity entity = this.Voxel.Value.Target;
 					if (entity == null || !entity.Active)
 					{
 						this.Delete.Execute();
@@ -106,7 +106,7 @@ namespace Lemma.Components
 					{
 						if (this.cellEmptiedBinding != null)
 							this.Remove(this.cellEmptiedBinding);
-						this.cellEmptiedBinding = new CommandBinding<IEnumerable<Map.Coordinate>, Map>(entity.Get<Map>().CellsEmptied, delegate(IEnumerable<Map.Coordinate> coords, Map newMap)
+						this.cellEmptiedBinding = new CommandBinding<IEnumerable<Voxel.Coord>, Voxel>(entity.Get<Voxel>().CellsEmptied, delegate(IEnumerable<Voxel.Coord> coords, Voxel newMap)
 						{
 							if (!this.IsValid)
 								this.Delete.Execute();
@@ -114,27 +114,27 @@ namespace Lemma.Components
 						this.Add(this.cellEmptiedBinding);
 					}
 				};
-				this.Add(new NotifyBinding(setupMap, this.Map));
-				if (this.Map.Value.Target != null)
+				this.Add(new NotifyBinding(setupMap, this.Voxel));
+				if (this.Voxel.Value.Target != null)
 					setupMap();
 
 				this.main.AddComponent(new PostInitialization
 				{
 					delegate()
 					{
-						if (this.Map.Value.Target == null || !this.Map.Value.Target.Active)
+						if (this.Voxel.Value.Target == null || !this.Voxel.Value.Target.Active)
 						{
 							this.BaseBoxes.Clear();
 
 							bool found = false;
-							foreach (Map m in Lemma.Components.Map.Maps)
+							foreach (Voxel m in Lemma.Components.Voxel.Voxels)
 							{
-								Map.Box box = m.GetBox(this.Position);
-								if (box != null && box.Type.ID == Components.Map.t.InfectedCritical)
+								Voxel.Box box = m.GetBox(this.Position);
+								if (box != null && box.Type.ID == Components.Voxel.t.InfectedCritical)
 								{
-									foreach (Map.Box b in m.GetContiguousByType(new[] { box }))
+									foreach (Voxel.Box b in m.GetContiguousByType(new[] { box }))
 										this.BaseBoxes.Add(b);
-									this.Map.Value = m.Entity;
+									this.Voxel.Value = m.Entity;
 									found = true;
 									break;
 								}

@@ -53,9 +53,9 @@ namespace Lemma.Factories
 			return false;
 		}
 
-		private static void processMap(Map map, IEnumerable<NonAxisAlignedBoundingBox> boxes)
+		private static void processMap(Voxel map, IEnumerable<NonAxisAlignedBoundingBox> boxes)
 		{
-			foreach (Map.Chunk chunk in map.Chunks)
+			foreach (Voxel.Chunk chunk in map.Chunks)
 			{
 				BoundingBox absoluteChunkBoundingBox = chunk.RelativeBoundingBox.Transform(map.Transform);
 				bool active = false;
@@ -76,8 +76,8 @@ namespace Lemma.Factories
 
 		private static void processEntity(Entity entity, Zone currentZone, IEnumerable<NonAxisAlignedBoundingBox> boxes, Vector3 cameraPosition, float suspendDistance)
 		{
-			Map map = entity.Get<Map>();
-			if (map != null && !typeof(DynamicMap).IsAssignableFrom(map.GetType()))
+			Voxel map = entity.Get<Voxel>();
+			if (map != null && !typeof(DynamicVoxel).IsAssignableFrom(map.GetType()))
 				processMap(map, boxes);
 			else
 			{
@@ -207,9 +207,9 @@ namespace Lemma.Factories
 					processEntity(e, currentZone, boxes, cameraPosition, suspendDistance);
 			}
 
-			entity.Add("ProcessMap", new Command<Map>
+			entity.Add("ProcessMap", new Command<Voxel>
 			{
-				Action = delegate(Map map)
+				Action = delegate(Voxel map)
 				{
 					processMap(map, boxes);
 				}

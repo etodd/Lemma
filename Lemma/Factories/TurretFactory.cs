@@ -66,7 +66,7 @@ namespace Lemma.Factories
 				}
 			};
 
-			MapAttachable.MakeAttachable(entity, main, true, true, die);
+			VoxelAttachable.MakeAttachable(entity, main, true, true, die);
 
 			const float defaultModelScale = 0.75f;
 			model.Scale.Value = new Vector3(defaultModelScale);
@@ -89,7 +89,7 @@ namespace Lemma.Factories
 			light.Add(new Binding<Vector3>(light.Color, model.Color));
 			pointLight.Add(new Binding<Vector3>(pointLight.Color, model.Color));
 
-			Map.GlobalRaycastResult rayHit = new Map.GlobalRaycastResult();
+			Voxel.GlobalRaycastResult rayHit = new Voxel.GlobalRaycastResult();
 			Vector3 toReticle = Vector3.Zero;
 			const int operationalRadius = 100;
 
@@ -111,7 +111,7 @@ namespace Lemma.Factories
 				Action = delegate()
 				{
 					toReticle = Vector3.Normalize(reticle.Value - transform.Position.Value);
-					rayHit = Map.GlobalRaycast(transform.Position, toReticle, 300.0f);
+					rayHit = Voxel.GlobalRaycast(transform.Position, toReticle, 300.0f);
 					laser.Lines.Clear();
 
 					Microsoft.Xna.Framework.Color color = new Microsoft.Xna.Framework.Color(model.Color);
@@ -126,13 +126,13 @@ namespace Lemma.Factories
 			const float sightDistance = 100.0f;
 			const float hearingDistance = 20.0f;
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Suspended",
 				Tasks = new[] { checkOperationalRadius, },
 			});
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Idle",
 				Tasks = new[]
@@ -154,7 +154,7 @@ namespace Lemma.Factories
 
 			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Alert",
 				Tasks = new[]
@@ -197,7 +197,7 @@ namespace Lemma.Factories
 
 			float lastSpotted = 0.0f;
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Aggressive",
 				Tasks = new[]
@@ -236,16 +236,16 @@ namespace Lemma.Factories
 				}
 			});
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Firing",
-				Enter = delegate(AI.State last)
+				Enter = delegate(AI.AIState last)
 				{
 					AkSoundEngine.PostEvent("Play_turret_charge", entity);
 				},
-				Exit = delegate(AI.State next)
+				Exit = delegate(AI.AIState next)
 				{
-					if (rayHit.Map != null && (rayHit.Position - transform.Position).Length() < 8.0f)
+					if (rayHit.Voxel != null && (rayHit.Position - transform.Position).Length() < 8.0f)
 						return; // Danger close, cease fire!
 
 					AkSoundEngine.PostEvent("Play_turret_fire", entity);
@@ -263,8 +263,8 @@ namespace Lemma.Factories
 						}
 					}
 
-					if (rayHit.Map != null)
-						Explosion.Explode(main, rayHit.Map, rayHit.Coordinate.Value, 6, 8.0f);
+					if (rayHit.Voxel != null)
+						Explosion.Explode(main, rayHit.Voxel, rayHit.Coordinate.Value, 6, 8.0f);
 					else if (target != null && target.Active)
 					{
 						Vector3 targetPos = target.Get<Transform>().Position;
@@ -294,7 +294,7 @@ namespace Lemma.Factories
 		public override void AttachEditorComponents(Entity entity, Main main)
 		{
 			base.AttachEditorComponents(entity, main);
-			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
+			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
 	}
 }

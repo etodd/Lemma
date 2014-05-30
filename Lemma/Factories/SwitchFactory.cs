@@ -28,7 +28,7 @@ namespace Lemma.Factories
 
 			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
 			Property<Entity.Handle> map = entity.GetOrMakeProperty<Entity.Handle>("AttachedMap");
-			Property<Map.Coordinate> coord = entity.GetOrMakeProperty<Map.Coordinate>("AttachedCoordinate");
+			Property<Voxel.Coord> coord = entity.GetOrMakeProperty<Voxel.Coord>("AttachedCoordinate");
 
 			Property<bool> on = entity.GetOrMakeProperty<bool>("On");
 
@@ -66,9 +66,9 @@ namespace Lemma.Factories
 				light.Add(new Binding<bool>(light.Enabled, on));
 				Binding<Matrix> attachmentBinding = null;
 				CommandBinding deleteBinding = null;
-				CommandBinding<IEnumerable<Map.Coordinate>, Map> cellFilledBinding = null;
+				CommandBinding<IEnumerable<Voxel.Coord>, Voxel> cellFilledBinding = null;
 
-				Map.CellState poweredState = Map.States[Map.t.PoweredSwitch];
+				Voxel.State poweredState = Voxel.States[Voxel.t.PoweredSwitch];
 
 				entity.Add(new NotifyBinding(delegate()
 				{
@@ -79,7 +79,7 @@ namespace Lemma.Factories
 						entity.Remove(cellFilledBinding);
 					}
 
-					Map m = map.Value.Target.Get<Map>();
+					Voxel m = map.Value.Target.Get<Voxel>();
 					coord.Value = m.GetCoordinate(Vector3.Transform(new Vector3(0, 0, attachOffset), transform.Matrix));
 
 					on.Value = m[coord] == poweredState;
@@ -92,9 +92,9 @@ namespace Lemma.Factories
 					deleteBinding = new CommandBinding(m.Delete, entity.Delete);
 					entity.Add(deleteBinding);
 
-					cellFilledBinding = new CommandBinding<IEnumerable<Map.Coordinate>, Map>(m.CellsFilled, delegate(IEnumerable<Map.Coordinate> coords, Map newMap)
+					cellFilledBinding = new CommandBinding<IEnumerable<Voxel.Coord>, Voxel>(m.CellsFilled, delegate(IEnumerable<Voxel.Coord> coords, Voxel newMap)
 					{
-						foreach (Map.Coordinate c in coords)
+						foreach (Voxel.Coord c in coords)
 						{
 							if (c.Equivalent(coord))
 							{
@@ -112,14 +112,14 @@ namespace Lemma.Factories
 					{
 						if (map.Value.Target == null)
 						{
-							Map closestMap = null;
+							Voxel closestMap = null;
 							int closestDistance = 3;
 							float closestFloatDistance = 3.0f;
 							Vector3 target = Vector3.Transform(new Vector3(0, 0, attachOffset), transform.Matrix);
-							foreach (Map m in Map.Maps)
+							foreach (Voxel m in Voxel.Voxels)
 							{
-								Map.Coordinate targetCoord = m.GetCoordinate(target);
-								Map.Coordinate? c = m.FindClosestFilledCell(targetCoord, closestDistance);
+								Voxel.Coord targetCoord = m.GetCoordinate(target);
+								Voxel.Coord? c = m.FindClosestFilledCell(targetCoord, closestDistance);
 								if (c.HasValue)
 								{
 									float distance = (m.GetRelativePosition(c.Value) - m.GetRelativePosition(targetCoord)).Length();
@@ -149,7 +149,7 @@ namespace Lemma.Factories
 		{
 			base.AttachEditorComponents(entity, main);
 			EntityConnectable.AttachEditorComponents(entity, entity.GetOrMakeListProperty<Entity.Handle>("Targets"));
-			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
+			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
 	}
 }

@@ -107,14 +107,14 @@ namespace Lemma.Factories
 			jump.Add(new Binding<float>(jump.JumpSpeed, player.Character.JumpSpeed));
 			jump.Add(new Binding<float>(jump.Mass, player.Character.Mass));
 			jump.Add(new Binding<float>(jump.LastRollEnded, rollKickSlide.LastRollEnded));
-			jump.Add(new Binding<Map>(jump.WallRunMap, wallRun.WallRunMap));
+			jump.Add(new Binding<Voxel>(jump.WallRunMap, wallRun.WallRunMap));
 			jump.Add(new Binding<Direction>(jump.WallDirection, wallRun.WallDirection));
-			jump.Add(new CommandBinding<Map, Map.Coordinate, Direction>(jump.WalkedOn, footsteps.WalkedOn));
+			jump.Add(new CommandBinding<Voxel, Voxel.Coord, Direction>(jump.WalkedOn, footsteps.WalkedOn));
 			jump.Add(new CommandBinding(jump.DeactivateWallRun, (Action)wallRun.Deactivate));
 			jump.Add(new CommandBinding<float>(jump.FallDamage, fallDamage.Apply));
 			jump.Predictor = predictor;
 			jump.Model = model;
-			jump.Add(new TwoWayBinding<Map>(wallRun.LastWallRunMap, jump.LastWallRunMap));
+			jump.Add(new TwoWayBinding<Voxel>(wallRun.LastWallRunMap, jump.LastWallRunMap));
 			jump.Add(new TwoWayBinding<Direction>(wallRun.LastWallDirection, jump.LastWallDirection));
 			jump.Add(new TwoWayBinding<bool>(rollKickSlide.CanKick, jump.CanKick));
 			jump.Add(new TwoWayBinding<float>(player.Character.LastSupportedSpeed, jump.LastSupportedSpeed));
@@ -191,7 +191,7 @@ namespace Lemma.Factories
 			anim.Add(new Binding<Vector3>(anim.LinearVelocity, player.Character.LinearVelocity));
 			anim.Add(new Binding<Vector2>(anim.Movement, input.Movement));
 			anim.Add(new Binding<Vector2>(anim.Mouse, input.Mouse));
-			anim.Add(new Binding<Map>(anim.WallRunMap, wallRun.WallRunMap));
+			anim.Add(new Binding<Voxel>(anim.WallRunMap, wallRun.WallRunMap));
 			anim.Add(new Binding<Direction>(anim.WallDirection, wallRun.WallDirection));
 			anim.Add
 			(
@@ -336,7 +336,7 @@ namespace Lemma.Factories
 			footsteps.Add(new Binding<float>(footsteps.CharacterHeight, player.Character.Height));
 			footsteps.Add(new Binding<float>(footsteps.SupportHeight, player.Character.SupportHeight));
 			footsteps.Add(new TwoWayBinding<float>(player.Health, footsteps.Health));
-			footsteps.Add(new CommandBinding<Map, Map.Coordinate, Direction>(wallRun.WalkedOn, footsteps.WalkedOn));
+			footsteps.Add(new CommandBinding<Voxel, Voxel.Coord, Direction>(wallRun.WalkedOn, footsteps.WalkedOn));
 			model.Trigger("Run", 0.16f, footsteps.Footstep);
 			model.Trigger("Run", 0.58f, footsteps.Footstep);
 			model.Trigger("WallRunLeft", 0.16f, footsteps.Footstep);

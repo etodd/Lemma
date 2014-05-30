@@ -11,9 +11,9 @@ using BEPUphysics.NarrowPhaseSystems.Pairs;
 
 namespace Lemma.Factories
 {
-	public class MapFactory : Factory<Main>
+	public class VoxelFactory : Factory<Main>
 	{
-		public MapFactory()
+		public VoxelFactory()
 		{
 			this.Color = new Vector3(0.4f, 0.4f, 0.4f);
 		}
@@ -25,14 +25,14 @@ namespace Lemma.Factories
 
 		public virtual Entity Create(Main main, int offsetX, int offsetY, int offsetZ)
 		{
-			Entity entity = new Entity(main, "Map");
+			Entity entity = new Entity(main, "Voxel");
 
 			// The transform has to come before the map component
 			// So that its properties get bound correctly
 			entity.Add("Transform", new Transform());
 			
-			Map map = this.newMapComponent(offsetX, offsetY, offsetZ);
-			entity.Add("Map", map);
+			Voxel map = this.newVoxelComponent(offsetX, offsetY, offsetZ);
+			entity.Add("Voxel", map);
 
 			return entity;
 		}
@@ -56,7 +56,7 @@ namespace Lemma.Factories
 
 			entity.CannotSuspend = false;
 
-			Map map = entity.Get<Map>();
+			Voxel map = entity.Get<Voxel>();
 
 			// Apply the position and orientation components to the map
 			if (main.EditorEnabled || map.Scale.Value != 1.0f)
@@ -87,12 +87,12 @@ namespace Lemma.Factories
 				map.EnablePhysics.Value = false;
 			else
 			{
-				map.CreateModel = delegate(Vector3 min, Vector3 max, Map.CellState state)
+				map.CreateModel = delegate(Vector3 min, Vector3 max, Voxel.State state)
 				{
 					if (state.Invisible && !main.EditorEnabled)
 						return null;
 
-					DynamicModel<Map.MapVertex> model = new DynamicModel<Map.MapVertex>(Map.MapVertex.VertexDeclaration);
+					DynamicModel<Voxel.Vertex> model = new DynamicModel<Voxel.Vertex>(Voxel.Vertex.VertexDeclaration);
 					model.EffectFile.Value = "Effects\\Environment";
 					model.Lock = new object();
 					state.ApplyTo(model);
@@ -120,7 +120,7 @@ namespace Lemma.Factories
 
 					model.Add(new Binding<Vector3>(model.GetVector3Parameter("Offset"), map.Offset));
 
-					Map.CellState s = state;
+					Voxel.State s = state;
 
 					if (!s.ShadowCast)
 						model.UnsupportedTechniques.Add(Technique.Shadow);
@@ -140,31 +140,31 @@ namespace Lemma.Factories
 			map.Offset.Changed();
 		}
 
-		protected virtual Map newMapComponent(int offsetX, int offsetY, int offsetZ)
+		protected virtual Voxel newVoxelComponent(int offsetX, int offsetY, int offsetZ)
 		{
-			return new Map(offsetX, offsetY, offsetZ);
+			return new Voxel(offsetX, offsetY, offsetZ);
 		}
 	}
 
-	public class DynamicMapFactory : MapFactory
+	public class DynamicVoxelFactory : VoxelFactory
 	{
 		public override Entity Create(Main main, int offsetX, int offsetY, int offsetZ)
 		{
 			Entity entity = base.Create(main, offsetX, offsetY, offsetZ);
-			entity.Type = "DynamicMap";
+			entity.Type = "DynamicVoxel";
 			entity.ID = Entity.GenerateID(entity, main);
 			return entity;
 		}
 
-		protected override Map newMapComponent(int offsetX, int offsetY, int offsetZ)
+		protected override Voxel newVoxelComponent(int offsetX, int offsetY, int offsetZ)
 		{
-			return new DynamicMap(offsetX, offsetY, offsetZ);
+			return new DynamicVoxel(offsetX, offsetY, offsetZ);
 		}
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			base.Bind(entity, main, creating);
-			DynamicMap map = entity.Get<DynamicMap>();
+			DynamicVoxel map = entity.Get<DynamicVoxel>();
 
 			const float volumeMultiplier = 0.002f;
 

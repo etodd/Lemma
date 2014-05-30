@@ -151,19 +151,19 @@ namespace Lemma.Components
 									Entity respawnMapEntity = respawnLocation.Map.Target;
 									if (respawnMapEntity != null && respawnMapEntity.Active)
 									{
-										Map respawnMap = respawnMapEntity.Get<Map>();
+										Voxel respawnMap = respawnMapEntity.Get<Voxel>();
 										Vector3 absolutePos = respawnMap.GetAbsolutePosition(respawnLocation.Coordinate);
 										if (respawnMap.Active
-											&& respawnMap[respawnLocation.Coordinate] != Map.EmptyState
+											&& respawnMap[respawnLocation.Coordinate] != Voxel.EmptyState
 											&& respawnMap.GetAbsoluteVector(respawnMap.GetRelativeDirection(Direction.PositiveY).GetVector()).Y > 0.5f
 											&& Agent.Query(absolutePos, 0.0f, 20.0f) == null)
 										{
 											supportedLocations++;
-											DynamicMap dynamicMap = respawnMap as DynamicMap;
+											DynamicVoxel dynamicMap = respawnMap as DynamicVoxel;
 											if (dynamicMap == null || absolutePos.Y > respawnLocation.OriginalPosition.Y - 1.0f)
 											{
-												Map.GlobalRaycastResult hit = Map.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Up, 2);
-												if (hit.Map == null)
+												Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Up, 2);
+												if (hit.Voxel == null)
 												{
 													// We can spawn here
 													spawnFound = true;
@@ -184,7 +184,7 @@ namespace Lemma.Components
 						if (spawnFound)
 						{
 							// Spawn at an autosaved location
-							Vector3 absolutePos = foundSpawnLocation.Map.Target.Get<Map>().GetAbsolutePosition(foundSpawnLocation.Coordinate);
+							Vector3 absolutePos = foundSpawnLocation.Map.Target.Get<Voxel>().GetAbsolutePosition(foundSpawnLocation.Coordinate);
 							PlayerFactory.Instance.Get<Transform>().Position.Value = this.main.Camera.Position.Value = absolutePos + new Vector3(0, 3, 0);
 
 							FPSInput.RecenterMouse();

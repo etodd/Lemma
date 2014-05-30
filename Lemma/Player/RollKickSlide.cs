@@ -62,8 +62,8 @@ namespace Lemma.Components
 		private Vector3 right;
 		private Direction forwardDir;
 		private Direction rightDir;
-		private Map floorMap;
-		private Map.Coordinate floorCoordinate;
+		private Voxel floorMap;
+		private Voxel.Coord floorCoordinate;
 		private bool shouldBuildFloor;
 		private bool shouldBreakFloor;
 		private Vector3 velocity;
@@ -93,18 +93,18 @@ namespace Lemma.Components
 				// Try to roll
 				Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
 
-				Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, this.Height + MathHelper.Clamp(this.LinearVelocity.Value.Y * -0.2f, 0.0f, 4.0f));
+				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height + MathHelper.Clamp(this.LinearVelocity.Value.Y * -0.2f, 0.0f, 4.0f));
 
-				bool nearGround = this.LinearVelocity.Value.Y < this.SupportVelocity.Value.Y + 0.1f && (this.IsSupported || floorRaycast.Map != null);
+				bool nearGround = this.LinearVelocity.Value.Y < this.SupportVelocity.Value.Y + 0.1f && (this.IsSupported || floorRaycast.Voxel != null);
 
 				bool instantiatedBlockPossibility = false;
 
-				this.floorCoordinate = new Map.Coordinate();
+				this.floorCoordinate = new Voxel.Coord();
 				this.floorMap = null;
 
 				if (nearGround)
 				{
-					this.floorMap = floorRaycast.Map;
+					this.floorMap = floorRaycast.Voxel;
 					this.floorCoordinate = floorRaycast.Coordinate.Value;
 				}
 				else
@@ -113,7 +113,7 @@ namespace Lemma.Components
 					foreach (BlockPredictor.Possibility block in this.Predictor.AllPossibilities)
 					{
 						bool first = true;
-						foreach (Map.Coordinate coord in block.Map.Rasterize(playerPos + Vector3.Up * 2.0f, playerPos + (Vector3.Down * (this.Height + 3.0f))))
+						foreach (Voxel.Coord coord in block.Map.Rasterize(playerPos + Vector3.Up * 2.0f, playerPos + (Vector3.Down * (this.Height + 3.0f))))
 						{
 							if (coord.Between(block.StartCoord, block.EndCoord))
 							{
@@ -150,9 +150,9 @@ namespace Lemma.Components
 
 					this.Model.StartClip("Roll", 5, false, AnimatedModel.DefaultBlendTime);
 
-					Map.CellState floorState = floorRaycast.Map == null ? Map.EmptyState : floorRaycast.Coordinate.Value.Data;
+					Voxel.State floorState = floorRaycast.Voxel == null ? Voxel.EmptyState : floorRaycast.Coordinate.Value.Data;
 					this.shouldBuildFloor = false;
-					if (this.EnableEnhancedRollSlide && (instantiatedBlockPossibility || (floorState.ID != 0 && floorState.ID != Map.t.Temporary && floorState.ID != Map.t.Powered)))
+					if (this.EnableEnhancedRollSlide && (instantiatedBlockPossibility || (floorState.ID != 0 && floorState.ID != Voxel.t.Temporary && floorState.ID != Voxel.t.Powered)))
 						this.shouldBuildFloor = true;
 					
 					// If the player is not yet supported, that means they're just about to land.
@@ -203,20 +203,20 @@ namespace Lemma.Components
 				this.shouldBuildFloor = false;
 				this.shouldBreakFloor = false;
 
-				Map.GlobalRaycastResult floorRaycast = Map.GlobalRaycast(playerPos, Vector3.Down, this.Height);
-				this.floorMap = floorRaycast.Map;
-				if (floorRaycast.Map == null)
+				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height);
+				this.floorMap = floorRaycast.Voxel;
+				if (floorRaycast.Voxel == null)
 				{
 					this.shouldBreakFloor = true;
-					this.floorCoordinate = new Map.Coordinate();
+					this.floorCoordinate = new Voxel.Coord();
 				}
 				else
 				{
 					this.floorCoordinate = floorRaycast.Coordinate.Value;
 					if (this.EnableEnhancedRollSlide)
 					{
-						Map.t floorType = floorRaycast.Coordinate.Value.Data.ID;
-						if (floorType != Map.t.Temporary && floorType != Map.t.Powered)
+						Voxel.t floorType = floorRaycast.Coordinate.Value.Data.ID;
+						if (floorType != Voxel.t.Temporary && floorType != Voxel.t.Powered)
 							this.shouldBuildFloor = true;
 					}
 				}
@@ -231,8 +231,8 @@ namespace Lemma.Components
 
 				if (this.shouldBuildFloor)
 				{
-					this.forwardDir = floorRaycast.Map.GetRelativeDirection(this.forward);
-					this.rightDir = floorRaycast.Map.GetRelativeDirection(this.right);
+					this.forwardDir = floorRaycast.Voxel.GetRelativeDirection(this.forward);
+					this.rightDir = floorRaycast.Voxel.GetRelativeDirection(this.right);
 				}
 
 				this.rollKickTime = 0.0f;
@@ -276,8 +276,8 @@ namespace Lemma.Components
 				{
 					// Roll if we hit the ground while kicking mid-air
 					Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
-					Map.GlobalRaycastResult r = Map.GlobalRaycast(playerPos, Vector3.Down, this.Height);
-					if (r.Map != null)
+					Voxel.GlobalRaycastResult r = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height);
+					if (r.Voxel != null)
 					{
 						this.StopKick();
 						this.Go();

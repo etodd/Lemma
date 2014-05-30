@@ -14,7 +14,7 @@ namespace Lemma.Factories
 			Transform transform = entity.Get<Transform>();
 			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
 			Property<Entity.Handle> map = entity.GetOrMakeProperty<Entity.Handle>("AttachedMap");
-			Property<Map.Coordinate> coord = entity.GetOrMakeProperty<Map.Coordinate>("AttachedCoordinate");
+			Property<Voxel.Coord> coord = entity.GetOrMakeProperty<Voxel.Coord>("AttachedCoordinate");
 
 			if (main.EditorEnabled)
 				return;
@@ -25,15 +25,15 @@ namespace Lemma.Factories
 				{
 					if (map.Value.Target == null)
 					{
-						Map closestMap = null;
-						Map.Coordinate? closestCoord = null;
+						Voxel closestMap = null;
+						Voxel.Coord? closestCoord = null;
 						int closestDistance = 3;
 						float closestFloatDistance = 3.0f;
 						Vector3 target = Vector3.Transform(new Vector3(0, 0, attachOffset), transform.Matrix);
-						foreach (Map m in Map.Maps)
+						foreach (Voxel m in Voxel.Voxels)
 						{
-							Map.Coordinate targetCoord = m.GetCoordinate(target);
-							Map.Coordinate? c = m.FindClosestFilledCell(targetCoord, closestDistance);
+							Voxel.Coord targetCoord = m.GetCoordinate(target);
+							Voxel.Coord? c = m.FindClosestFilledCell(targetCoord, closestDistance);
 							if (c.HasValue)
 							{
 								float distance = (m.GetRelativePosition(c.Value) - m.GetRelativePosition(targetCoord)).Length();

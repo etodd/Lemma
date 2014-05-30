@@ -22,11 +22,11 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Position");
-			this.SetMain(entity, main);
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
+			this.SetMain(entity, main);
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(entity, main);
+				VoxelAttachable.MakeAttachable(entity, main);
 
 			ListProperty<Entity.Handle> targets = entity.GetOrMakeListProperty<Entity.Handle>("Targets");
 			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
@@ -48,7 +48,7 @@ namespace Lemma.Factories
 
 			PlayerTrigger.AttachEditorComponents(entity, main, this.Color);
 
-			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
+			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 
 			EntityConnectable.AttachEditorComponents(entity, entity.GetOrMakeListProperty<Entity.Handle>("Targets"));
 		}

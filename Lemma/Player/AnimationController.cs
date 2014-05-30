@@ -25,7 +25,7 @@ namespace Lemma.Components
 		public Property<bool> Crouched = new Property<bool>();
 		public Property<Vector2> Mouse = new Property<Vector2>();
 		public Property<bool> EnableLean = new Property<bool>();
-		public Property<Map> WallRunMap = new Property<Map>();
+		public Property<Voxel> WallRunMap = new Property<Voxel>();
 		public Property<Direction> WallDirection = new Property<Direction>();
 
 		// Output

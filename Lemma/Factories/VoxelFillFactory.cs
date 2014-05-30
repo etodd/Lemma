@@ -14,11 +14,11 @@ using BEPUphysics.Constraints.SolverGroups;
 
 namespace Lemma.Factories
 {
-	public class FillMapFactory : MapFactory
+	public class VoxelFillFactory : VoxelFactory
 	{
 		public class CoordinateEntry
 		{
-			public Map.Coordinate Coord;
+			public Voxel.Coord Coord;
 			public Vector3 Position;
 			public float Distance;
 		}
@@ -26,7 +26,7 @@ namespace Lemma.Factories
 		public override Entity Create(Main main, int offsetX, int offsetY, int offsetZ)
 		{
 			Entity entity = base.Create(main, offsetX, offsetY, offsetZ);
-			entity.Type = "FillMap";
+			entity.Type = "VoxelFill";
 			entity.ID = Entity.GenerateID(entity, main);
 			return entity;
 		}
@@ -35,11 +35,11 @@ namespace Lemma.Factories
 		{
 			this.InternalBind(entity, main, creating, null, true);
 			if (entity.GetOrMakeProperty<bool>("Attached", true))
-				MapAttachable.MakeAttachable(entity, main);
+				VoxelAttachable.MakeAttachable(entity, main);
 
 			Property<Entity.Handle> target = entity.GetOrMakeProperty<Entity.Handle>("Target");
 
-			Map map = entity.Get<Map>();
+			Voxel map = entity.Get<Voxel>();
 
 			Property<float> intervalMultiplier = entity.GetOrMakeProperty<float>("IntervalMultiplier", true, 1.0f);
 
@@ -54,10 +54,10 @@ namespace Lemma.Factories
 					Entity targetEntity = target.Value.Target;
 					if (targetEntity != null && targetEntity.Active)
 					{
-						Map m = targetEntity.Get<Map>();
-						foreach (CoordinateEntry e in map.Chunks.SelectMany(c => c.Boxes.SelectMany(x => x.GetCoords())).Select(delegate(Map.Coordinate y)
+						Voxel m = targetEntity.Get<Voxel>();
+						foreach (CoordinateEntry e in map.Chunks.SelectMany(c => c.Boxes.SelectMany(x => x.GetCoords())).Select(delegate(Voxel.Coord y)
 						{
-							Map.Coordinate z = m.GetCoordinate(map.GetAbsolutePosition(y));
+							Voxel.Coord z = m.GetCoordinate(map.GetAbsolutePosition(y));
 							z.Data = y.Data;
 							return new CoordinateEntry { Coord = z, };
 						}))
@@ -86,7 +86,7 @@ namespace Lemma.Factories
 						while (intervalTimer > interval && index < coords.Count)
 						{
 							EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
-							Map m = targetEntity.Get<Map>();
+							Voxel m = targetEntity.Get<Voxel>();
 							
 							CoordinateEntry entry = coords[index];
 							Entity block = factory.CreateAndBind(main);
@@ -122,7 +122,7 @@ namespace Lemma.Factories
 				if (targetEntity != null && targetEntity.Active)
 				{
 					populateCoords();
-					Map m = targetEntity.Get<Map>();
+					Voxel m = targetEntity.Get<Voxel>();
 					Vector3 focusPoint = main.Camera.Position;
 					foreach (CoordinateEntry entry in coords)
 					{
@@ -158,7 +158,7 @@ namespace Lemma.Factories
 		{
 			base.AttachEditorComponents(entity, main);
 
-			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
+			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 
 			EntityConnectable.AttachEditorComponents(entity, entity.GetOrMakeProperty<Entity.Handle>("Target"));
 		}
