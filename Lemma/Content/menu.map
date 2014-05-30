@@ -25,6 +25,15 @@
           </Quaternion>
         </Value>
       </Component>
+      <Component>
+        <Key xsi:type="xsd:string">Propagator</Key>
+        <Value xsi:type="Propagator">
+          <Enabled Editable="false">
+            <Value>true</Value>
+          </Enabled>
+          <BlockQueue />
+        </Value>
+      </Component>
     </Components>
     <Properties>
       <Property>
@@ -192,6 +201,9 @@
           <EnablePhysics>
             <Value>true</Value>
           </EnablePhysics>
+          <Mutable>
+            <Value>true</Value>
+          </Mutable>
           <Scale>
             <Value>1</Value>
           </Scale>
@@ -245,6 +257,9 @@
           <EnablePhysics>
             <Value>false</Value>
           </EnablePhysics>
+          <Mutable>
+            <Value>true</Value>
+          </Mutable>
           <Scale>
             <Value>1</Value>
           </Scale>
@@ -452,7 +467,7 @@
             <Value>true</Value>
           </Enabled>
           <Name>
-            <Value>..\Menu\menu</Value>
+            <Value>MainMenu</Value>
           </Name>
         </Value>
       </Component>
