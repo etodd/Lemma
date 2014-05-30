@@ -29,6 +29,80 @@ namespace Lemma
 {
 	public class Main : BaseMain
 	{
+		public const string InitialMap = "start";
+
+		public const string MenuMap = "..\\menu";
+
+		public class ExitException : Exception
+		{
+		}
+
+		public const int ConfigVersion = 7;
+		public const int MapVersion = 353;
+		public const int Build = 353;
+
+		public static Config.Lang[] Languages = new[] { Config.Lang.en, Config.Lang.ru };
+
+		public class Config
+		{
+			public enum Lang { en, ru }
+			public Property<Lang> Language = new Property<Lang>();
+#if DEVELOPMENT
+			public Property<bool> Fullscreen = new Property<bool> { Value = false };
+#else
+			public Property<bool> Fullscreen = new Property<bool> { Value = true };
+#endif
+			public Property<bool> Maximized = new Property<bool> { Value = false };
+			public Property<Point> Origin = new Property<Point> { Value = new Point(50, 50) };
+			public Property<Point> Size = new Property<Point> { Value = new Point(1280, 720) };
+			public Property<Point> FullscreenResolution = new Property<Point> { Value = Point.Zero };
+			public Property<float> MotionBlurAmount = new Property<float> { Value = 0.5f };
+			public Property<float> Gamma = new Property<float> { Value = 1.0f };
+			public Property<bool> EnableReflections = new Property<bool> { Value = true };
+			public Property<bool> EnableSSAO = new Property<bool> { Value = true };
+			public Property<bool> EnableGodRays = new Property<bool> { Value = true };
+			public Property<bool> EnableBloom = new Property<bool> { Value = true };
+			public Property<LightingManager.DynamicShadowSetting> DynamicShadows = new Property<LightingManager.DynamicShadowSetting> { Value = LightingManager.DynamicShadowSetting.High };
+			public Property<bool> InvertMouseX = new Property<bool> { Value = false };
+			public Property<bool> InvertMouseY = new Property<bool> { Value = false };
+			public Property<float> MouseSensitivity = new Property<float> { Value = 1.0f };
+			public Property<float> FieldOfView = new Property<float> { Value = MathHelper.ToRadians(80.0f) };
+			public Property<bool> EnableVsync = new Property<bool> { Value = false };
+			public int Version;
+			public string UUID;
+			public Property<PCInput.PCInputBinding> Forward = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.W } };
+			public Property<PCInput.PCInputBinding> Left = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.A } };
+			public Property<PCInput.PCInputBinding> Right = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D } };
+			public Property<PCInput.PCInputBinding> Backward = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.S } };
+			public Property<PCInput.PCInputBinding> Jump = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Space, GamePadButton = Buttons.RightTrigger } };
+			public Property<PCInput.PCInputBinding> Parkour = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.LeftShift, GamePadButton = Buttons.LeftTrigger } };
+			public Property<PCInput.PCInputBinding> RollKick = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton, GamePadButton = Buttons.LeftStick } };
+			public Property<PCInput.PCInputBinding> SpecialAbility = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.RightMouseButton, GamePadButton = Buttons.RightStick } };
+			public Property<PCInput.PCInputBinding> TogglePhone = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Tab, GamePadButton = Buttons.Y } };
+			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F5, GamePadButton = Buttons.Back } };
+			public Property<PCInput.PCInputBinding> ToggleFullscreen = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F11 } };
+			public Property<PCInput.PCInputBinding> ToggleConsole = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.OemTilde } };
+			public Property<float> SoundEffectVolume = new Property<float> { Value = 1.0f };
+			public Property<float> MusicVolume = new Property<float> { Value = 1.0f };
+		}
+
+		public class SaveInfo
+		{
+			public string MapFile;
+			public int Version;
+		}
+
+		public Config Settings;
+		private string dataDirectory;
+		public string SaveDirectory;
+		private string analyticsDirectory;
+		private string settingsFile;
+
+		public Screenshot Screenshot;
+
+		public Menu Menu;
+		public UIFactory UIFactory;
+
 		public Camera Camera;
 		public AkListener Listener;
 
@@ -75,7 +149,6 @@ namespace Lemma
 
 		public Console.Console Console;
 		public ConsoleUI ConsoleUI;
-		public TimeTrialUI TimeTrialUI;
 
 		private bool mapLoaded;
 
@@ -92,6 +165,8 @@ namespace Lemma
 
 		[AutoConVar("map_file", "Game Map File")]
 		public Property<string> MapFile = new Property<string>();
+
+		public Spawner Spawner;
 
 		public Property<KeyboardState> LastKeyboardState = new Property<KeyboardState>();
 		public Property<KeyboardState> KeyboardState = new Property<KeyboardState>();
@@ -197,8 +272,8 @@ namespace Lemma
 							// Deselect all entities, since they'll be gone anyway
 							Editor editor = entity.Get<Editor>();
 							editor.SelectedEntities.Clear();
-							if (editor.MapEditMode)
-								editor.MapEditMode.Value = false;
+							if (editor.VoxelEditMode)
+								editor.VoxelEditMode.Value = false;
 							editor.TransformMode.Value = Editor.TransformModes.None;
 						}
 					}
@@ -218,6 +293,7 @@ namespace Lemma
 			this.TimeMultiplier.Value = 1.0f;
 			this.PauseAudioEffect.Value = 0.0f;
 			this.Camera.Angles.Value = Vector3.Zero;
+			this.Menu.ClearMessages();
 		}
 
 		public Command ReloadedContent = new Command();
@@ -300,8 +376,165 @@ namespace Lemma
 			new NotifyBinding(updateLanguage, this.Strings.Language);
 			updateLanguage();
 
+#if DEVELOPMENT
+			this.EditorEnabled.Value = true;
+#else
+			this.EditorEnabled.Value = false;
+#endif
+
+			this.dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lemma");
+			if (!Directory.Exists(this.dataDirectory))
+				Directory.CreateDirectory(this.dataDirectory);
+			this.settingsFile = Path.Combine(this.dataDirectory, "settings.xml");
+			this.SaveDirectory = Path.Combine(this.dataDirectory, "saves");
+			if (!Directory.Exists(this.SaveDirectory))
+				Directory.CreateDirectory(this.SaveDirectory);
+			this.analyticsDirectory = Path.Combine(this.dataDirectory, "analytics");
+			if (!Directory.Exists(this.analyticsDirectory))
+				Directory.CreateDirectory(this.analyticsDirectory);
+
+			try
+			{
+				// Attempt to load previous window state
+				using (Stream stream = new FileStream(this.settingsFile, FileMode.Open, FileAccess.Read, FileShare.None))
+					this.Settings = (Config)new XmlSerializer(typeof(Config)).Deserialize(stream);
+				if (this.Settings.Version != Main.ConfigVersion)
+					throw new Exception();
+			}
+			catch (Exception) // File doesn't exist, there was a deserialization error, or we are on a new version. Use default window settings
+			{
+				this.Settings = new Config { Version = Main.ConfigVersion, };
+			}
+
+			if (string.IsNullOrEmpty(this.Settings.UUID))
+				this.Settings.UUID = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32);
+			
+			TextElement.BindableProperties.Add("Forward", this.Settings.Forward);
+			TextElement.BindableProperties.Add("Left", this.Settings.Left);
+			TextElement.BindableProperties.Add("Backward", this.Settings.Backward);
+			TextElement.BindableProperties.Add("Right", this.Settings.Right);
+			TextElement.BindableProperties.Add("Jump", this.Settings.Jump);
+			TextElement.BindableProperties.Add("Parkour", this.Settings.Parkour);
+			TextElement.BindableProperties.Add("RollKick", this.Settings.RollKick);
+			TextElement.BindableProperties.Add("TogglePhone", this.Settings.TogglePhone);
+			TextElement.BindableProperties.Add("QuickSave", this.Settings.QuickSave);
+			TextElement.BindableProperties.Add("ToggleFullscreen", this.Settings.ToggleFullscreen);
+
+			if (this.Settings.FullscreenResolution.Value.X == 0)
+			{
+				Microsoft.Xna.Framework.Graphics.DisplayMode display = Microsoft.Xna.Framework.Graphics.GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
+				this.Settings.FullscreenResolution.Value = new Point(display.Width, display.Height);
+			}
+
+			// Have to create the menu here so it can catch the PreparingDeviceSettings event
+			// We call AddComponent(this.Menu) later on in LoadContent.
+			this.Menu = new Menu();
+			this.Graphics.PreparingDeviceSettings += delegate(object sender, PreparingDeviceSettingsEventArgs args)
+			{
+				DisplayModeCollection supportedDisplayModes = args.GraphicsDeviceInformation.Adapter.SupportedDisplayModes;
+				int displayModeIndex = 0;
+				foreach (DisplayMode mode in supportedDisplayModes)
+				{
+					if (mode.Format == SurfaceFormat.Color && mode.Width == this.Settings.FullscreenResolution.Value.X && mode.Height == this.Settings.FullscreenResolution.Value.Y)
+						break;
+					displayModeIndex++;
+				}
+				this.Menu.SetupDisplayModes(supportedDisplayModes, displayModeIndex);
+			};
+
+			this.Screenshot = new Screenshot();
+			this.AddComponent(this.Screenshot);
+
+			// Restore window state
+			this.Graphics.SynchronizeWithVerticalRetrace = this.Settings.EnableVsync;
+			new NotifyBinding(delegate()
+			{
+				this.Graphics.SynchronizeWithVerticalRetrace = this.Settings.EnableVsync;
+				this.Graphics.ApplyChanges();
+			}, this.Settings.EnableVsync);
+			if (this.Settings.Fullscreen)
+				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true);
+			else
+				this.ResizeViewport(this.Settings.Size.Value.X, this.Settings.Size.Value.Y, false, false);
 		}
 
+		private void copySave(string src, string dst)
+		{
+			if (!Directory.Exists(dst))
+				Directory.CreateDirectory(dst);
+
+			string[] whitelistExtensions = new[] { ".map", };
+
+			foreach (string path in Directory.GetFiles(src))
+			{
+				string filename = Path.GetFileName(path);
+				if (whitelistExtensions.Contains(Path.GetExtension(filename)))
+					File.Copy(path, Path.Combine(dst, filename));
+			}
+
+			foreach (string path in Directory.GetDirectories(src))
+				this.copySave(path, Path.Combine(dst, Path.GetFileName(path)));
+		}
+
+#if ANALYTICS
+		public Session.Recorder SessionRecorder;
+
+		public void SaveAnalytics()
+		{
+			string map = this.MapFile;
+			string filename = GameMain.Build.ToString() + "-" + (string.IsNullOrEmpty(map) ? "null" : Path.GetFileName(map)) + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml";
+			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, filename), map, this.TotalTime);
+		}
+
+		public string[] AnalyticsSessionFiles
+		{
+			get
+			{
+				return Directory.GetFiles(this.analyticsDirectory, "*", SearchOption.TopDirectoryOnly);
+			}
+		}
+#endif
+
+		public List<Session> LoadAnalytics(string map)
+		{
+			List<Session> result = new List<Session>();
+			foreach (string file in Directory.GetFiles(this.analyticsDirectory, "*", SearchOption.TopDirectoryOnly))
+			{
+				Session s;
+				try
+				{
+					s = Session.Load(file);
+				}
+				catch (Exception)
+				{
+					Log.d("Error loading analytics file " + file);
+					continue;
+				}
+
+				if (s.Build == Main.Build)
+				{
+					string sessionMap = s.Map;
+					if (sessionMap == null)
+					{
+						// Attempt to extract the map name from the filename
+						string fileWithoutExtension = Path.GetFileNameWithoutExtension(file);
+
+						int firstDash = fileWithoutExtension.IndexOf('-');
+						int lastDash = fileWithoutExtension.LastIndexOf('-');
+
+						if (firstDash == lastDash) // Old filename format "map-hash"
+							sessionMap = fileWithoutExtension.Substring(0, firstDash);
+						else // New format "build-map-hash"
+							sessionMap = fileWithoutExtension.Substring(firstDash + 1, lastDash - (firstDash + 1));
+					}
+					if (sessionMap == map)
+						result.Add(s);
+				}
+			}
+			return result;
+		}
+
+		public Property<string> CurrentSave = new Property<string>();
 		public void Cleanup()
 		{
 			// Terminate Wwise
@@ -320,8 +553,6 @@ namespace Lemma
 		{
 			if (this.firstLoadContentCall)
 			{
-				//GeeUI.GeeUI.Initialize(this);
-
 				this.GeeUI = new GeeUIMain();
 				this.AddComponent(GeeUI);
 
@@ -331,12 +562,8 @@ namespace Lemma
 				this.Console = new Console.Console();
 				this.AddComponent(Console);
 
-				this.TimeTrialUI = new TimeTrialUI();
-				this.AddComponent(TimeTrialUI);
-
 				Lemma.Console.Console.BindType(null, this);
 				Lemma.Console.Console.BindType(null, Console);
-				Lemma.Console.Console.BindType(null, TimeTrialUI);
 
 				// Initialize Wwise
 				AkGlobalSoundEngineInitializer initializer = new AkGlobalSoundEngineInitializer(Path.Combine(this.Content.RootDirectory, "Wwise"));
@@ -454,6 +681,166 @@ namespace Lemma
 				{
 
 				}
+
+				this.UIFactory = new UIFactory();
+				this.AddComponent(this.UIFactory);
+				this.AddComponent(this.Menu); // Have to do this here so the menu's Awake can use all our loaded stuff
+
+				this.Spawner = new Spawner();
+				this.AddComponent(this.Spawner);
+
+				this.IsMouseVisible.Value = true;
+
+				if (AkBankLoader.LoadBank("SFX_Bank_01.bnk") != AKRESULT.AK_Success)
+					Log.d("Failed to load sound bank");
+
+				AkBankLoader.LoadBank("Music.bnk");
+
+#if ANALYTICS
+				this.SessionRecorder = new Session.Recorder();
+				this.AddComponent(this.SessionRecorder);
+
+				this.SessionRecorder.Add("Position", delegate()
+				{
+					Entity p = PlayerFactory.Instance;
+					if (p != null && p.Active)
+						return p.Get<Transform>().Position;
+					else
+						return Vector3.Zero;
+				});
+
+				this.SessionRecorder.Add("Health", delegate()
+				{
+					Entity p = PlayerFactory.Instance;
+					if (p != null && p.Active)
+						return p.Get<Player>().Health;
+					else
+						return 0.0f;
+				});
+#endif
+
+				this.MapFile.Set = delegate(string value)
+				{
+					if (string.IsNullOrEmpty(value))
+					{
+						this.MapFile.InternalValue = null;
+						return;
+					}
+
+					try
+					{
+						string directory = this.CurrentSave.Value == null ? null : Path.Combine(this.SaveDirectory, this.CurrentSave);
+						if (value == Main.MenuMap)
+							directory = null; // Don't try to load the menu from a save game
+						IO.MapLoader.Load(this, directory, value, false);
+					}
+					catch (FileNotFoundException)
+					{
+						this.MapFile.InternalValue = value;
+
+						this.ClearEntities(false);
+
+						// Create a new map
+						Entity world = Factory.Get<WorldFactory>().CreateAndBind(this);
+						world.Get<Transform>().Position.Value = new Vector3(0, 3, 0);
+						this.Add(world);
+
+						Entity ambientLight = Factory.Get<AmbientLightFactory>().CreateAndBind(this);
+						ambientLight.Get<Transform>().Position.Value = new Vector3(0, 5.0f, 0);
+						ambientLight.Get<AmbientLight>().Color.Value = new Vector3(0.25f, 0.25f, 0.25f);
+						this.Add(ambientLight);
+
+						Entity map = Factory.Get<VoxelFactory>().CreateAndBind(this);
+						map.Get<Transform>().Position.Value = new Vector3(0, 1, 0);
+						this.Add(map);
+
+						this.MapLoaded.Execute();
+					}
+				};
+
+				this.Renderer.LightRampTexture.Value = "Images\\default-ramp";
+				this.Renderer.EnvironmentMap.Value = "Images\\env0";
+
+				this.Settings.SoundEffectVolume.Set = delegate(float value)
+				{
+					value = MathHelper.Clamp(value, 0.0f, 1.0f);
+					this.Settings.SoundEffectVolume.InternalValue = value;
+					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.VOLUME_SFX, value);
+				};
+				this.Settings.SoundEffectVolume.Reset();
+
+				this.Settings.MusicVolume.Set = delegate(float value)
+				{
+					value = MathHelper.Clamp(value, 0.0f, 1.0f);
+					this.Settings.MusicVolume.InternalValue = value;
+					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.VOLUME_MUSIC, value);
+				};
+				this.Settings.MusicVolume.Reset();
+
+				new TwoWayBinding<LightingManager.DynamicShadowSetting>(this.Settings.DynamicShadows, this.LightingManager.DynamicShadows);
+				new TwoWayBinding<float>(this.Settings.MotionBlurAmount, this.Renderer.MotionBlurAmount);
+				new TwoWayBinding<float>(this.Settings.Gamma, this.Renderer.Gamma);
+				new TwoWayBinding<bool>(this.Settings.EnableBloom, this.Renderer.EnableBloom);
+				new TwoWayBinding<bool>(this.Settings.EnableSSAO, this.Renderer.EnableSSAO);
+				new TwoWayBinding<float>(this.Settings.FieldOfView, this.Camera.FieldOfView);
+
+				// Load strings
+				this.Strings.Load(Path.Combine(this.Content.RootDirectory, "Strings.xlsx"));
+
+				foreach (string file in Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "Game"), "*.xlsx", SearchOption.TopDirectoryOnly))
+					this.Strings.Load(file);
+
+				new Binding<string, Config.Lang>(this.Strings.Language, x => x.ToString(), this.Settings.Language);
+				new NotifyBinding(this.SaveSettings, this.Settings.Language);
+
+				new CommandBinding(this.MapLoaded, delegate()
+				{
+					this.Renderer.BlurAmount.Value = 0.0f;
+					this.Renderer.Tint.Value = new Vector3(1.0f);
+				});
+
+#if DEVELOPMENT
+				// Editor instructions
+				Container editorMsgBackground = new Container();
+				this.UI.Root.Children.Add(editorMsgBackground);
+				editorMsgBackground.Tint.Value = Color.Black;
+				editorMsgBackground.Opacity.Value = 0.2f;
+				editorMsgBackground.AnchorPoint.Value = new Vector2(0.5f, 0.0f);
+				editorMsgBackground.Add(new Binding<Vector2, Point>(editorMsgBackground.Position, x => new Vector2(x.X * 0.5f, 30.0f), this.ScreenSize));
+				TextElement editorMsg = new TextElement();
+				editorMsg.FontFile.Value = "Font";
+				editorMsg.Text.Value = "\\editor menu";
+				editorMsgBackground.Children.Add(editorMsg);
+				this.AddComponent(new Animation
+				(
+					new Animation.Delay(4.0f),
+					new Animation.Parallel
+					(
+						new Animation.FloatMoveTo(editorMsgBackground.Opacity, 0.0f, 2.0f),
+						new Animation.FloatMoveTo(editorMsg.Opacity, 0.0f, 2.0f)
+					),
+					new Animation.Execute(delegate() { this.UI.Root.Children.Remove(editorMsgBackground); })
+				));
+#else
+					// Main menu
+
+					this.MapFile.Value = GameMain.MenuMap;
+					this.Menu.Pause();
+#endif
+
+#if ANALYTICS
+				bool editorLastEnabled = this.EditorEnabled;
+				new CommandBinding<string>(this.LoadingMap, delegate(string newMap)
+				{
+					if (this.MapFile.Value != null && !editorLastEnabled)
+					{
+						this.SessionRecorder.RecordEvent("ChangedMap", newMap);
+						this.SaveAnalytics();
+					}
+					this.SessionRecorder.Reset();
+					editorLastEnabled = this.EditorEnabled;
+				});
+#endif
 			}
 			else
 			{
@@ -515,6 +902,109 @@ namespace Lemma
 			scriptEntity.Delete.Execute();
 		}
 
+		private void createNewSave()
+		{
+			string newSave = DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss");
+			if (newSave != this.CurrentSave)
+			{
+				this.copySave(this.CurrentSave.Value == null ? IO.MapLoader.MapDirectory : Path.Combine(this.SaveDirectory, this.CurrentSave), Path.Combine(this.SaveDirectory, newSave));
+				this.CurrentSave.Value = newSave;
+			}
+		}
+
+		public void SaveNew()
+		{
+			this.save(null); // null means don't delete any old saves
+		}
+
+		public void SaveOverwrite(string oldSave = null)
+		{
+			if (oldSave == null)
+				oldSave = this.CurrentSave;
+			this.save(oldSave);
+		}
+
+		private void save(string oldSave)
+		{
+			Action doSave = delegate()
+			{
+				// Delete the old save thumbnail.
+				if (oldSave != null)
+					this.Menu.RemoveSaveGame(oldSave);
+
+				// Create the new save.
+				this.createNewSave();
+
+				this.SaveCurrentMap(this.Screenshot.Buffer, this.Screenshot.Size);
+
+				this.Screenshot.Clear();
+
+				this.Menu.AddSaveGame(this.CurrentSave);
+
+				// Delete the old save files.
+				// We have to do this AFTER creating the new save
+				// because it copies the old save to create the new one
+				if (oldSave != null)
+					Directory.Delete(Path.Combine(this.SaveDirectory, oldSave), true);
+			};
+
+			if (this.Screenshot.Buffer == null)
+				this.Screenshot.Take(this.ScreenSize, doSave);
+			else
+				doSave();
+		}
+
+		public void SaveCurrentMap(RenderTarget2D screenshot = null, Point screenshotSize = default(Point))
+		{
+			if (this.CurrentSave.Value == null)
+				this.createNewSave();
+
+			string currentSaveDirectory = Path.Combine(this.SaveDirectory, this.CurrentSave);
+			if (screenshot != null)
+			{
+				string screenshotPath = Path.Combine(currentSaveDirectory, "thumbnail.jpg");
+				using (Stream stream = File.OpenWrite(screenshotPath))
+					screenshot.SaveAsJpeg(stream, 256, (int)(screenshotSize.Y * (256.0f / screenshotSize.X)));
+			}
+
+			IO.MapLoader.Save(this, currentSaveDirectory, this.MapFile);
+
+			try
+			{
+				using (Stream stream = new FileStream(Path.Combine(currentSaveDirectory, "save.xml"), FileMode.Create, FileAccess.Write, FileShare.None))
+					new XmlSerializer(typeof(Main.SaveInfo)).Serialize(stream, new Main.SaveInfo { MapFile = this.MapFile, Version = Main.MapVersion });
+			}
+			catch (InvalidOperationException e)
+			{
+				throw new Exception("Failed to save game.", e);
+			}
+		}
+
+		public void SaveSettings()
+		{
+			// Save settings
+			using (Stream stream = new FileStream(this.settingsFile, FileMode.Create, FileAccess.Write, FileShare.None))
+				new XmlSerializer(typeof(Config)).Serialize(stream, this.Settings);
+		}
+
+		public void EnterFullscreen()
+		{
+			if (!this.Graphics.IsFullScreen)
+			{
+				Point res = this.Settings.FullscreenResolution;
+				this.ResizeViewport(res.X, res.Y, true);
+			}
+		}
+
+		public void ExitFullscreen()
+		{
+			if (this.Graphics.IsFullScreen)
+			{
+				Point res = this.Settings.Size;
+				this.ResizeViewport(res.X, res.Y, false);
+			}
+		}
+
 		protected override void Update(GameTime gameTime)
 		{
 			if (gameTime.ElapsedGameTime.TotalSeconds > 0.1f)
@@ -523,9 +1013,6 @@ namespace Lemma
 			this.ElapsedTime.Value = (float)gameTime.ElapsedGameTime.TotalSeconds * this.TimeMultiplier;
 			if (!this.Paused)
 				this.TotalTime.Value += this.ElapsedTime;
-
-			//We must update GeeUI first before anything else so that its LastClickCaptured property can be of use.
-			//GeeUI.Update(this.ElapsedTime);
 
 			if (!this.EditorEnabled && this.mapLoaded)
 			{
@@ -659,13 +1146,6 @@ namespace Lemma
 #if STEAMWORKS
 			SteamWorker.Update();
 #endif
-
-			this.update();
-		}
-
-		protected virtual void update()
-		{
-
 		}
 
 		protected override void Draw(GameTime gameTime)
@@ -798,7 +1278,7 @@ namespace Lemma
 			}
 		}
 
-		public virtual void ResizeViewport(int width, int height, bool fullscreen, bool applyChanges = true)
+		public void ResizeViewport(int width, int height, bool fullscreen, bool applyChanges = true)
 		{
 			bool needApply = false;
 			if (this.Graphics.IsFullScreen != fullscreen)
@@ -829,6 +1309,13 @@ namespace Lemma
 				GeeUI.RootView.Width.Value = width;
 				GeeUI.RootView.Height.Value = height;
 			}
+
+			this.Settings.Fullscreen.Value = fullscreen;
+			if (fullscreen)
+				this.Settings.FullscreenResolution.Value = new Point(width, height);
+			else
+				this.Settings.Size.Value = new Point(width, height);
+			this.SaveSettings();
 		}
 	}
 }

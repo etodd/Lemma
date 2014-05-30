@@ -20,10 +20,10 @@ namespace Lemma.Components
 		public Property<Entity.Handle> Player = new Property<Entity.Handle> { Editable = false };
 
 		[XmlIgnore]
-		public Command<Entity> PlayerEntered = new Command<Entity>();
+		public Command PlayerEntered = new Command();
 
 		[XmlIgnore]
-		public Command<Entity> PlayerExited = new Command<Entity>();
+		public Command PlayerExited = new Command();
 
 		public PlayerTrigger()
 		{
@@ -55,13 +55,13 @@ namespace Lemma.Components
 				{
 					this.Player.Value = player;
 					this.IsTriggered.Value = true;
-					this.PlayerEntered.Execute(player);
+					this.PlayerEntered.Execute();
 				}
 			}
 
 			if (!playerFound && this.IsTriggered)
 			{
-				this.PlayerExited.Execute(this.Player.Value.Target);
+				this.PlayerExited.Execute();
 				this.IsTriggered.Value = false;
 				this.Player.Value = null;
 			}

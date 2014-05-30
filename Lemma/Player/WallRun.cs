@@ -35,13 +35,13 @@ namespace Lemma.Components
 		public Command StopKick = new Command();
 		public Command LockRotation = new Command();
 		public Command Vault = new Command();
-		public Command<Map, Map.Coordinate, Direction> WalkedOn = new Command<Map, Map.Coordinate, Direction>();
+		public Command<Voxel, Voxel.Coord, Direction> WalkedOn = new Command<Voxel, Voxel.Coord, Direction>();
 		public Property<State> CurrentState = new Property<State>();
-		public Property<Map> WallRunMap = new Property<Map>();
+		public Property<Voxel> WallRunMap = new Property<Voxel>();
 		public Property<Direction> WallDirection = new Property<Direction>();
 		public Property<Direction> WallRunDirection = new Property<Direction>();
 
-		private Map.CellState temporary;
+		private Voxel.State temporary;
 
 		private const float minWallRunSpeed = 4.0f;
 
@@ -53,14 +53,14 @@ namespace Lemma.Components
 		// Otherwise, we will immediately stop wall-running since the wall hasn't been instantiated yet.
 		private float wallInstantiationTimer = 0.0f;
 
-		public Property<Map> LastWallRunMap = new Property<Map>();
+		public Property<Voxel> LastWallRunMap = new Property<Voxel>();
 		public Property<Direction> LastWallDirection = new Property<Direction>();
 
 		public override void Awake()
 		{
 			base.Awake();
 			this.Serialize = false;
-			this.temporary = Map.States[Map.t.Temporary];
+			this.temporary = Voxel.States[Voxel.t.Temporary];
 		}
 
 		public bool Activate(State state)
@@ -116,14 +116,14 @@ namespace Lemma.Components
 
 			// Attempt to wall-run on an existing map
 			bool activate = false, addInitialVelocity = false;
-			foreach (Map map in Map.ActivePhysicsMaps)
+			foreach (Voxel map in Voxel.ActivePhysicsVoxels)
 			{
-				Map.Coordinate coord = map.GetCoordinate(pos);
+				Voxel.Coord coord = map.GetCoordinate(pos);
 				Direction dir = map.GetRelativeDirection(wallVector);
 				Direction up = map.GetRelativeDirection(Direction.PositiveY);
 				for (int i = 1; i < 4; i++)
 				{
-					Map.Coordinate wallCoord = coord.Move(dir, i);
+					Voxel.Coord wallCoord = coord.Move(dir, i);
 					if (map[coord.Move(dir, i - 1)].ID != 0
 						|| map[coord.Move(dir, i - 1).Move(up, 1)].ID != 0
 						|| map[coord.Move(dir, i - 1).Move(up, 2)].ID != 0)
@@ -150,6 +150,7 @@ namespace Lemma.Components
 								if (wallCoord.Between(block.StartCoord, block.EndCoord))
 								{
 									this.Predictor.InstantiatePossibility(block);
+									this.Predictor.ClearPossibilities();
 									activate = true;
 									addInitialVelocity = true;
 									wallInstantiationTimer = 0.25f;
@@ -176,7 +177,7 @@ namespace Lemma.Components
 			return activate;
 		}
 
-		private void setup(Map map, Direction dir, State state, Vector3 forwardVector, bool addInitialVelocity)
+		private void setup(Voxel map, Direction dir, State state, Vector3 forwardVector, bool addInitialVelocity)
 		{
 			this.StopKick.Execute();
 			this.AllowUncrouch.Value = true;
@@ -311,9 +312,9 @@ namespace Lemma.Components
 				}
 
 				Vector3 pos = this.Position + new Vector3(0, this.Height * -0.5f, 0);
-				Map.Coordinate coord = this.WallRunMap.Value.GetCoordinate(pos);
-				Map.Coordinate wallCoord = coord.Move(this.WallDirection, 2);
-				Map.CellState wallType = this.WallRunMap.Value[wallCoord];
+				Voxel.Coord coord = this.WallRunMap.Value.GetCoordinate(pos);
+				Voxel.Coord wallCoord = coord.Move(this.WallDirection, 2);
+				Voxel.State wallType = this.WallRunMap.Value[wallCoord];
 				this.WalkedOn.Execute(this.WallRunMap, wallCoord, this.WallDirection);
 
 				if (this.EnableEnhancedWallRun && (wallRunState == State.Left || wallRunState == State.Right))
@@ -325,17 +326,17 @@ namespace Lemma.Components
 
 					const int radius = 5;
 					int upwardRadius = wallRunState == State.Down || wallRunState == State.Reverse ? 0 : radius;
-					for (Map.Coordinate x = wallCoord.Move(right, -radius); x.GetComponent(right) < wallCoord.GetComponent(right) + radius; x = x.Move(right))
+					for (Voxel.Coord x = wallCoord.Move(right, -radius); x.GetComponent(right) < wallCoord.GetComponent(right) + radius; x = x.Move(right))
 					{
 						int dx = x.GetComponent(right) - wallCoord.GetComponent(right);
-						for (Map.Coordinate y = x.Move(up, -radius); y.GetComponent(up) < wallCoord.GetComponent(up) + upwardRadius; y = y.Move(up))
+						for (Voxel.Coord y = x.Move(up, -radius); y.GetComponent(up) < wallCoord.GetComponent(up) + upwardRadius; y = y.Move(up))
 						{
 							int dy = y.GetComponent(up) - wallCoord.GetComponent(up);
 							if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && this.WallRunMap.Value[y].ID == 0)
 							{
 								buildCoords.Add(new EffectBlockFactory.BlockBuildOrder
 								{
-									Map = this.WallRunMap,
+									Voxel = this.WallRunMap,
 									Coordinate = y,
 									State = temporary,
 								});

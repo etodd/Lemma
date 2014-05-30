@@ -50,7 +50,7 @@ namespace Lemma.Factories
 
 			Property<float> operationalRadius = entity.GetOrMakeProperty<float>("OperationalRadius", true, 100.0f);
 
-			ListProperty<Map.Coordinate> path = entity.GetOrMakeListProperty<Map.Coordinate>("PathCoordinates");
+			ListProperty<Voxel.Coord> path = entity.GetOrMakeListProperty<Voxel.Coord>("PathCoordinates");
 
 			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
 
@@ -58,8 +58,8 @@ namespace Lemma.Factories
 
 			Agent agent = entity.GetOrCreate<Agent>("Agent");
 
-			Map.CellState infectedState = Map.States[Map.t.Infected],
-				neutralState = Map.States[Map.t.Neutral];
+			Voxel.State infectedState = Voxel.States[Voxel.t.Infected],
+				neutralState = Voxel.States[Voxel.t.Neutral];
 
 			const float defaultSpeed = 5.0f;
 			const float chaseSpeed = 18.0f;
@@ -69,7 +69,7 @@ namespace Lemma.Factories
 			VoxelChaseAI chase = entity.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
 			chase.Add(new TwoWayBinding<Vector3>(transform.Position, chase.Position));
 			chase.Speed.Value = defaultSpeed;
-			chase.Filter = delegate(Map.CellState state)
+			chase.Filter = delegate(Voxel.State state)
 			{
 				if (state == infectedState || state == neutralState)
 					return VoxelChaseAI.Cell.Penetrable;
@@ -117,7 +117,7 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					if (chase.Map.Value.Target == null || !chase.Map.Value.Target.Active)
+					if (chase.Voxel.Value.Target == null || !chase.Voxel.Value.Target.Active)
 						entity.Delete.Execute();
 				},
 			};
@@ -148,7 +148,7 @@ namespace Lemma.Factories
 				},
 			};
 
-			chase.Add(new CommandBinding<Map, Map.Coordinate>(chase.Moved, delegate(Map m, Map.Coordinate c)
+			chase.Add(new CommandBinding<Voxel, Voxel.Coord>(chase.Moved, delegate(Voxel m, Voxel.Coord c)
 			{
 				if (chase.Active)
 				{
@@ -170,16 +170,16 @@ namespace Lemma.Factories
 				}
 			}));
 
-			Property<Map.Coordinate> crushCoordinate = entity.GetOrMakeProperty<Map.Coordinate>("CrushCoordinate");
+			Property<Voxel.Coord> crushCoordinate = entity.GetOrMakeProperty<Voxel.Coord>("CrushCoordinate");
 
 			ai.Setup
 			(
-				new AI.State
+				new AI.AIState
 				{
 					Name = "Suspended",
 					Tasks = new[] { checkOperationalRadius },
 				},
-				new AI.State
+				new AI.AIState
 				{
 					Name = "Idle",
 					Tasks = new[]
@@ -198,14 +198,14 @@ namespace Lemma.Factories
 						},
 					},
 				},
-				new AI.State
+				new AI.AIState
 				{
 					Name = "Alert",
-					Enter = delegate(AI.State previous)
+					Enter = delegate(AI.AIState previous)
 					{
 						chase.EnableMovement.Value = false;
 					},
-					Exit = delegate(AI.State next)
+					Exit = delegate(AI.AIState next)
 					{
 						chase.EnableMovement.Value = true;
 					},
@@ -233,15 +233,15 @@ namespace Lemma.Factories
 						},
 					},
 				},
-				new AI.State
+				new AI.AIState
 				{
 					Name = "Chase",
-					Enter = delegate(AI.State previousState)
+					Enter = delegate(AI.AIState previousState)
 					{
 						chase.TargetActive.Value = true;
 						chase.Speed.Value = chaseSpeed;
 					},
-					Exit = delegate(AI.State nextState)
+					Exit = delegate(AI.AIState nextState)
 					{
 						chase.TargetActive.Value = false;
 						chase.Speed.Value = defaultSpeed;
@@ -272,13 +272,13 @@ namespace Lemma.Factories
 						},
 					},
 				},
-				new AI.State
+				new AI.AIState
 				{
 					Name = "Crush",
-					Enter = delegate(AI.State lastState)
+					Enter = delegate(AI.AIState lastState)
 					{
 						// Set up cage
-						Map.Coordinate center = chase.Map.Value.Target.Get<Map>().GetCoordinate(targetAgent.Value.Target.Get<Agent>().Position);
+						Voxel.Coord center = chase.Voxel.Value.Target.Get<Voxel>().GetCoordinate(targetAgent.Value.Target.Get<Agent>().Position);
 
 						int radius = 1;
 
@@ -286,7 +286,7 @@ namespace Lemma.Factories
 						for (int x = center.X - radius; x <= center.X + radius; x++)
 						{
 							for (int z = center.Z - radius; z <= center.Z + radius; z++)
-								path.Add(new Map.Coordinate { X = x, Y = center.Y - 4, Z = z });
+								path.Add(new Voxel.Coord { X = x, Y = center.Y - 4, Z = z });
 						}
 
 						// Outer shell
@@ -295,26 +295,26 @@ namespace Lemma.Factories
 						{
 							// Left
 							for (int z = center.Z - radius; z <= center.Z + radius; z++)
-								path.Add(new Map.Coordinate { X = center.X - radius, Y = y, Z = z });
+								path.Add(new Voxel.Coord { X = center.X - radius, Y = y, Z = z });
 
 							// Right
 							for (int z = center.Z - radius; z <= center.Z + radius; z++)
-								path.Add(new Map.Coordinate { X = center.X + radius, Y = y, Z = z });
+								path.Add(new Voxel.Coord { X = center.X + radius, Y = y, Z = z });
 
 							// Backward
 							for (int x = center.X - radius; x <= center.X + radius; x++)
-								path.Add(new Map.Coordinate { X = x, Y = y, Z = center.Z - radius });
+								path.Add(new Voxel.Coord { X = x, Y = y, Z = center.Z - radius });
 
 							// Forward
 							for (int x = center.X - radius; x <= center.X + radius; x++)
-								path.Add(new Map.Coordinate { X = x, Y = y, Z = center.Z + radius });
+								path.Add(new Voxel.Coord { X = x, Y = y, Z = center.Z + radius });
 						}
 
 						// Top
 						for (int x = center.X - radius; x <= center.X + radius; x++)
 						{
 							for (int z = center.Z - radius; z <= center.Z + radius; z++)
-								path.Add(new Map.Coordinate { X = x, Y = center.Y + 3, Z = z });
+								path.Add(new Voxel.Coord { X = x, Y = center.Y + 3, Z = z });
 						}
 
 						chase.EnablePathfinding.Value = false;
@@ -322,7 +322,7 @@ namespace Lemma.Factories
 
 						crushCoordinate.Value = chase.Coord;
 					},
-					Exit = delegate(AI.State nextState)
+					Exit = delegate(AI.AIState nextState)
 					{
 						chase.EnablePathfinding.Value = true;
 						chase.Speed.Value = defaultSpeed;

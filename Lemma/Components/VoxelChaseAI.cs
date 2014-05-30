@@ -18,7 +18,7 @@ namespace Lemma.Factories
 			Empty, Penetrable, Filled, Avoid
 		}
 
-		private static Cell filter(Map.CellState state)
+		private static Cell filter(Voxel.State state)
 		{
 			return state.ID == 0 ? Cell.Empty : Cell.Filled;
 		}
@@ -34,19 +34,19 @@ namespace Lemma.Factories
 		}
 
 		public Property<bool> EnableMovement = new Property<bool> { Value = true, Editable = false };
-		public Property<Entity.Handle> Map = new Property<Entity.Handle> { Editable = false };
-		public Property<Map.Coordinate> LastCoord = new Property<Map.Coordinate> { Editable = false };
+		public Property<Entity.Handle> Voxel = new Property<Entity.Handle> { Editable = false };
+		public Property<Voxel.Coord> LastCoord = new Property<Voxel.Coord> { Editable = false };
 		public Property<float> Blend = new Property<float> { Editable = false };
-		public Property<Map.Coordinate> Coord = new Property<Map.Coordinate> { Editable = false };
+		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord> { Editable = false };
 		public Property<Direction> Direction = new Property<Direction> { Editable = false };
-		public ListProperty<Map.Coordinate> History = new ListProperty<Map.Coordinate> { Editable = false };
+		public ListProperty<Voxel.Coord> History = new ListProperty<Voxel.Coord> { Editable = false };
 		public Property<bool> EnablePathfinding = new Property<bool> { Value = true, Editable = false };
 		public Property<float> Speed = new Property<float> { Value = 8.0f, Editable = false };
 
 		[XmlIgnore]
-		public Func<Map.CellState, Cell> Filter = VoxelChaseAI.filter;
+		public Func<Voxel.State, Cell> Filter = VoxelChaseAI.filter;
 		[XmlIgnore]
-		public Command<Map, Map.Coordinate> Moved = new Command<Map, Map.Coordinate>();
+		public Command<Voxel, Voxel.Coord> Moved = new Command<Voxel, Voxel.Coord>();
 
 		public Property<bool> TargetActive = new Property<bool> { Editable = false };
 		public Property<Vector3> Target = new Property<Vector3> { Editable = false };
@@ -63,16 +63,16 @@ namespace Lemma.Factories
 		private class AStarEntry
 		{
 			public AStarEntry Parent;
-			public Map.Box Box;
+			public Voxel.Box Box;
 			public int G;
 			public float F;
 			public int BoxSize;
 			public int PathIndex;
 		}
 
-		private static Stack<Map.Box> reconstructPath(AStarEntry entry)
+		private static Stack<Voxel.Box> reconstructPath(AStarEntry entry)
 		{
-			Stack<Map.Box> result = new Stack<Map.Box>();
+			Stack<Voxel.Box> result = new Stack<Voxel.Box>();
 			while (entry != null)
 			{
 				result.Push(entry.Box);
@@ -81,13 +81,13 @@ namespace Lemma.Factories
 			return result;
 		}
 
-		public static Stack<Map.Box> AStar(Map m, Map.Box start, Vector3 target)
+		public static Stack<Voxel.Box> AStar(Voxel m, Voxel.Box start, Vector3 target)
 		{
-			Dictionary<Map.Box, int> closed = new Dictionary<Map.Box, int>();
+			Dictionary<Voxel.Box, int> closed = new Dictionary<Voxel.Box, int>();
 
 			PriorityQueue<AStarEntry> queue = new PriorityQueue<AStarEntry>(new LambdaComparer<AStarEntry>((x, y) => x.F.CompareTo(y.F)));
 
-			Dictionary<Map.Box, AStarEntry> queueLookup = new Dictionary<Map.Box, AStarEntry>();
+			Dictionary<Voxel.Box, AStarEntry> queueLookup = new Dictionary<Voxel.Box, AStarEntry>();
 
 			AStarEntry startEntry = new AStarEntry
 			{
@@ -118,7 +118,7 @@ namespace Lemma.Factories
 				closed[entry.Box] = entry.G;
 				lock (entry.Box.Adjacent)
 				{
-					foreach (Map.Box adjacent in entry.Box.Adjacent)
+					foreach (Voxel.Box adjacent in entry.Box.Adjacent)
 					{
 						if (adjacent == null)
 							continue;
@@ -156,7 +156,7 @@ namespace Lemma.Factories
 					}
 				}
 			}
-			return new Stack<Map.Box>();
+			return new Stack<Voxel.Box>();
 		}
 
 		public void ChangeDirection()
@@ -171,20 +171,20 @@ namespace Lemma.Factories
 		{
 			const int historySize = 5;
 
-			Entity mapEntity = this.Map.Value.Target;
+			Entity mapEntity = this.Voxel.Value.Target;
 			if (mapEntity == null || !mapEntity.Active)
 			{
 				// Find closest map
 				int closest = 5;
-				Map.Coordinate newCoord = default(Map.Coordinate);
-				foreach (Map m in Lemma.Components.Map.Maps)
+				Voxel.Coord newCoord = default(Voxel.Coord);
+				foreach (Voxel m in Lemma.Components.Voxel.Voxels)
 				{
-					Map.Coordinate mCoord = m.GetCoordinate(this.Position);
-					Map.Coordinate? c = m.FindClosestFilledCell(mCoord, closest);
+					Voxel.Coord mCoord = m.GetCoordinate(this.Position);
+					Voxel.Coord? c = m.FindClosestFilledCell(mCoord, closest);
 					if (c.HasValue)
 					{
 						mapEntity = m.Entity;
-						Map.Coordinate cValue = c.Value;
+						Voxel.Coord cValue = c.Value;
 
 						Direction dir = DirectionExtensions.GetDirectionFromVector(new Vector3(mCoord.X - cValue.X, mCoord.Y - cValue.Y, mCoord.Z - cValue.Z));
 						newCoord = cValue.Move(dir);
@@ -195,7 +195,7 @@ namespace Lemma.Factories
 					this.Delete.Execute();
 				else
 				{
-					this.Map.Value = mapEntity;
+					this.Voxel.Value = mapEntity;
 					this.Coord.Value = this.LastCoord.Value = newCoord;
 					this.Blend.Value = 1.0f;
 				}
@@ -203,7 +203,7 @@ namespace Lemma.Factories
 
 			if (mapEntity != null && mapEntity.Active)
 			{
-				Map m = mapEntity.Get<Map>();
+				Voxel m = mapEntity.Get<Voxel>();
 
 				if (this.EnableMovement)
 					this.Blend.Value += dt * this.Speed;
@@ -211,7 +211,7 @@ namespace Lemma.Factories
 				if (this.Blend > 1.0f)
 				{
 					this.Blend.Value = 0.0f;
-					Map.Coordinate c = this.Coord.Value;
+					Voxel.Coord c = this.Coord.Value;
 
 					this.Moved.Execute(m, c);
 
@@ -372,7 +372,7 @@ namespace Lemma.Factories
 									Direction supportedDirection = Lemma.Util.Direction.None;
 									foreach (Direction dir in DirectionExtensions.Directions)
 									{
-										Map.Coordinate cellLookup = dir.GetCoordinate();
+										Voxel.Coord cellLookup = dir.GetCoordinate();
 										if (supported(cells[cellLookup.X + 1, cellLookup.Y + 1, cellLookup.Z + 1]))
 										{
 											supportedDirection = dir;
@@ -382,9 +382,9 @@ namespace Lemma.Factories
 
 									if (supportedDirection != Lemma.Util.Direction.None)
 									{
-										Map.Box box = m.GetBox(c.Move(supportedDirection));
+										Voxel.Box box = m.GetBox(c.Move(supportedDirection));
 
-										Stack<Map.Box> path = VoxelChaseAI.AStar(m, box, this.Target);
+										Stack<Voxel.Box> path = VoxelChaseAI.AStar(m, box, this.Target);
 
 										// Debug visualization
 										/*
@@ -437,7 +437,7 @@ namespace Lemma.Factories
 									}
 								}
 
-								Map.Coordinate nextCoord = c.Move(closestDir);
+								Voxel.Coord nextCoord = c.Move(closestDir);
 								if (this.History.Contains(nextCoord))
 								{
 									randomDirection = true;

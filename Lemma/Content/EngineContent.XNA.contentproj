@@ -230,7 +230,7 @@
       <Importer>FontDescriptionImporter</Importer>
       <Processor>FontDescriptionProcessor</Processor>
     </Compile>
-    <None Include="Menu\menu.cs">
+    <None Include="menu.map">
       <Name>menu</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -302,10 +302,6 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColor.fx</ProcessorParameters_EffectFileName>
     </Compile>
-    <None Include="Menu\menu.map">
-      <Name>menu</Name>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <Compile Include="Models\pyramid.fbx">
       <Name>pyramid</Name>
       <Importer>FbxImporter</Importer>

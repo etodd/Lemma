@@ -41,25 +41,22 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
-			this.SetMain(entity, main);
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
+			this.SetMain(entity, main);
 			Property<string> nextMap = entity.GetOrMakeProperty<string>("NextMap", true);
 			Property<string> startSpawnPoint = entity.GetOrMakeProperty<string>("SpawnPoint", true);
 
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
-			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity player)
+			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
 			{
-				GameMain gameMain = main as GameMain;
-
-				gameMain.Screenshot.Take(main.ScreenSize);
-
 				Container notification = new Container();
 				TextElement notificationText = new TextElement();
 
 				Stream stream = new MemoryStream();
-				main.AddComponent(new Animation
+
+				Animation anim = new Animation
 				(
-					new Animation.Delay(0.01f),
+					main.Spawner.FlashAnimation(),
 					new Animation.Execute(delegate()
 					{
 						notification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
@@ -68,13 +65,13 @@ namespace Lemma.Factories
 						notificationText.FontFile.Value = "Font";
 						notificationText.Text.Value = "Loading...";
 						notification.Children.Add(notificationText);
-						gameMain.UI.Root.GetChildByName("Notifications").Children.Add(notification);
+						main.UI.Root.GetChildByName("Notifications").Children.Add(notification);
 					}),
 					new Animation.Delay(0.01f),
 					new Animation.Execute(delegate()
 					{
 						// We are exiting the map; just save the state of the map without the player.
-						ListProperty<RespawnLocation> respawnLocations = Factory.Get<PlayerDataFactory>().Instance.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
+						ListProperty<RespawnLocation> respawnLocations = PlayerDataFactory.Instance.Get<PlayerData>().RespawnLocations;
 						respawnLocations.Clear();
 
 						List<Entity> persistentEntities = main.Entities.Where((Func<Entity, bool>)MapExitFactory.isPersistent).ToList();
@@ -84,13 +81,12 @@ namespace Lemma.Factories
 						foreach (Entity e in persistentEntities)
 							e.Delete.Execute();
 
-						gameMain.StartSpawnPoint.Value = startSpawnPoint;
+						main.Spawner.StartSpawnPoint.Value = startSpawnPoint;
 
-						if (gameMain.Player.Value != null && gameMain.Player.Value.Active)
-							gameMain.Player.Value.Delete.Execute();
+						if (PlayerFactory.Instance != null)
+							PlayerFactory.Instance.Delete.Execute();
 
-						gameMain.SaveCurrentMap(gameMain.Screenshot.Buffer, gameMain.Screenshot.Size);
-						gameMain.Screenshot.Clear();
+						main.SaveCurrentMap();
 						main.MapFile.Value = nextMap;
 
 						notification.Visible.Value = false;
@@ -105,12 +101,17 @@ namespace Lemma.Factories
 						stream.Dispose();
 					}),
 					new Animation.Delay(1.5f),
+					new Animation.Execute(delegate()
+					{
+						main.Screenshot.Take(main.ScreenSize);
+					}),
+					new Animation.Delay(0.01f),
 					new Animation.Set<string>(notificationText.Text, "Saving..."),
 					new Animation.Set<bool>(notification.Visible, true),
 					new Animation.Delay(0.01f),
 					new Animation.Execute(delegate()
 					{
-						gameMain.SaveOverwrite();
+						main.SaveOverwrite();
 					}),
 					new Animation.Set<string>(notificationText.Text, "Saved"),
 					new Animation.Parallel
@@ -119,7 +120,9 @@ namespace Lemma.Factories
 						new Animation.FloatMoveTo(notificationText.Opacity, 0.0f, 1.0f)
 					),
 					new Animation.Execute(notification.Delete)
-				));
+				);
+				anim.EnabledWhenPaused = false;
+				main.AddComponent(anim);
 			}));
 		}
 

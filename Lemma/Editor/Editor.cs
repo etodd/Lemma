@@ -48,15 +48,15 @@ namespace Lemma.Components
 		public ListProperty<Entity> SelectedEntities = new ListProperty<Entity>();
 		public Property<Transform> SelectedTransform = new Property<Transform> { Editable = false };
 		public Property<string> Brush = new Property<string> { Editable = true };
-		public Property<Map.Coordinate> Jitter = new Property<Map.Coordinate> { Editable = true };
-		public Property<Map.Coordinate> JitterOctave = new Property<Map.Coordinate> { Value = new Map.Coordinate { X = 1, Y = 1, Z = 1 }, Editable = true };
+		public Property<Voxel.Coord> Jitter = new Property<Voxel.Coord> { Editable = true };
+		public Property<Voxel.Coord> JitterOctave = new Property<Voxel.Coord> { Value = new Voxel.Coord { X = 1, Y = 1, Z = 1 }, Editable = true };
 		public Property<float> JitterOctaveMultiplier = new Property<float> { Value = 10.0f, Editable = true };
 		public Property<int> BrushSize = new Property<int> { Editable = true };
 		public Property<string> MapFile = new Property<string> { Editable = true };
 		public Property<bool> NeedsSave = new Property<bool> { Editable = false };
 
 		// Input properties
-		public Property<bool> MapEditMode = new Property<bool> { Editable = false };
+		public Property<bool> VoxelEditMode = new Property<bool> { Editable = false };
 		public Property<Vector2> Movement = new Property<Vector2> { Editable = false };
 		public Property<Vector2> Mouse = new Property<Vector2> { Editable = false };
 		public Property<bool> Up = new Property<bool> { Editable = false };
@@ -66,8 +66,8 @@ namespace Lemma.Components
 		public Property<bool> Empty = new Property<bool> { Editable = false };
 		public Property<bool> Fill = new Property<bool> { Editable = false };
 		public Property<bool> EditSelection = new Property<bool> { Editable = false };
-		public Property<Map.Coordinate> VoxelSelectionStart = new Property<Map.Coordinate> { Editable = false };
-		public Property<Map.Coordinate> VoxelSelectionEnd = new Property<Map.Coordinate> { Editable = false };
+		public Property<Voxel.Coord> VoxelSelectionStart = new Property<Voxel.Coord> { Editable = false };
+		public Property<Voxel.Coord> VoxelSelectionEnd = new Property<Voxel.Coord> { Editable = false };
 		public Property<bool> VoxelSelectionActive = new Property<bool> { Editable = false };
 
 		public Property<float> CameraDistance = new Property<float> { Value = 10.0f, Editable = false };
@@ -101,19 +101,19 @@ namespace Lemma.Components
 		public Command DeleteMaterial = new Command();
 		public Command DeleteMaterialAll = new Command();
 
-		private Map.Coordinate originalSelectionStart;
-		private Map.Coordinate originalSelectionEnd;
-		private Map.Coordinate originalSelectionCoord;
+		private Voxel.Coord originalSelectionStart;
+		private Voxel.Coord originalSelectionEnd;
+		private Voxel.Coord originalSelectionCoord;
 		private bool voxelDuplicate;
 
-		private Map.MapState mapState;
-		private Map.Coordinate selectionStart;
-		private Map.Coordinate lastCoord;
-		private Map.Coordinate coord;
+		private Voxel.Snapshot mapState;
+		private Voxel.Coord selectionStart;
+		private Voxel.Coord lastCoord;
+		private Voxel.Coord coord;
 		private ProceduralGenerator generator;
 		private float movementInterval;
 
-		public Property<Map.Coordinate> Coordinate = new Property<Map.Coordinate> { Editable = true }; // Readonly, for displaying to the UI
+		public Property<Voxel.Coord> Coordinate = new Property<Voxel.Coord> { Editable = true }; // Readonly, for displaying to the UI
 
 		private bool justCommitedOrRevertedVoxelOperation;
 
@@ -124,25 +124,25 @@ namespace Lemma.Components
 			this.Orientation.Value = Matrix.Identity;
 		}
 
-		private void restoreMap(Map.Coordinate start, Map.Coordinate end, bool eraseOriginal, int offsetX = 0, int offsetY = 0, int offsetZ = 0)
+		private void restoreVoxel(Voxel.Coord start, Voxel.Coord end, bool eraseOriginal, int offsetX = 0, int offsetY = 0, int offsetZ = 0)
 		{
-			Map map = this.SelectedEntities[0].Get<Map>();
-			List<Map.Coordinate> removals = new List<Map.Coordinate>();
+			Voxel map = this.SelectedEntities[0].Get<Voxel>();
+			List<Voxel.Coord> removals = new List<Voxel.Coord>();
 			for (int x = start.X; x < end.X; x++)
 			{
 				for (int y = start.Y; y < end.Y; y++)
 				{
 					for (int z = start.Z; z < end.Z; z++)
 					{
-						Map.CellState desiredState;
+						Voxel.State desiredState;
 						if (eraseOriginal && x >= this.originalSelectionStart.X && x < this.originalSelectionEnd.X
 							&& y >= this.originalSelectionStart.Y && y < this.originalSelectionEnd.Y
 							&& z >= this.originalSelectionStart.Z && z < this.originalSelectionEnd.Z)
 							desiredState = null;
 						else
-							desiredState = this.mapState[new Map.Coordinate { X = x + offsetX, Y = y + offsetY, Z = z + offsetZ }];
+							desiredState = this.mapState[new Voxel.Coord { X = x + offsetX, Y = y + offsetY, Z = z + offsetZ }];
 						if (map[x, y, z] != desiredState)
-							removals.Add(new Map.Coordinate { X = x, Y = y, Z = z });
+							removals.Add(new Voxel.Coord { X = x, Y = y, Z = z });
 					}
 				}
 			}
@@ -154,13 +154,13 @@ namespace Lemma.Components
 				{
 					for (int z = start.Z; z < end.Z; z++)
 					{
-						Map.CellState desiredState;
+						Voxel.State desiredState;
 						if (eraseOriginal && x >= this.originalSelectionStart.X && x < this.originalSelectionEnd.X
 							&& y >= this.originalSelectionStart.Y && y < this.originalSelectionEnd.Y
 							&& z >= this.originalSelectionStart.Z && z < this.originalSelectionEnd.Z)
 							desiredState = null;
 						else
-							desiredState = this.mapState[new Map.Coordinate { X = x + offsetX, Y = y + offsetY, Z = z + offsetZ }];
+							desiredState = this.mapState[new Voxel.Coord { X = x + offsetX, Y = y + offsetY, Z = z + offsetZ }];
 						if (desiredState != null && map[x, y, z] != desiredState)
 							map.Fill(x, y, z, desiredState);
 					}
@@ -169,11 +169,11 @@ namespace Lemma.Components
 			map.Regenerate();
 		}
 
-		private Map.CellState getBrush()
+		private Voxel.State getBrush()
 		{
-			Map.CellState result = Map.StateList.FirstOrDefault(x => x.ID.ToString() == this.Brush);
-			if (result.ID == Map.t.Empty)
-				return Map.EmptyState;
+			Voxel.State result = Voxel.StateList.FirstOrDefault(x => x.ID.ToString() == this.Brush);
+			if (result.ID == Voxel.t.Empty)
+				return Voxel.EmptyState;
 			return result;
 		}
 
@@ -224,14 +224,14 @@ namespace Lemma.Components
 
 			this.Brush.Value = "(Procedural)";
 
-			this.MapEditMode.Set = delegate(bool value)
+			this.VoxelEditMode.Set = delegate(bool value)
 			{
-				bool oldValue = this.MapEditMode.InternalValue;
-				this.MapEditMode.InternalValue = value;
+				bool oldValue = this.VoxelEditMode.InternalValue;
+				this.VoxelEditMode.InternalValue = value;
 				if (value && !oldValue)
 				{
 					this.Orientation.Value = this.SelectedEntities[0].Get<Transform>().Orientation;
-					this.lastCoord = this.coord = this.SelectedEntities[0].Get<Map>().GetCoordinate(this.Position);
+					this.lastCoord = this.coord = this.SelectedEntities[0].Get<Voxel>().GetCoordinate(this.Position);
 					this.Coordinate.Value = this.coord;
 				}
 				else if (!value && oldValue)
@@ -286,38 +286,38 @@ namespace Lemma.Components
 
 			this.VoxelCopy.Action = delegate()
 			{
-				if (this.MapEditMode && this.VoxelSelectionActive)
+				if (this.VoxelEditMode && this.VoxelSelectionActive)
 				{
-					Map m = this.SelectedEntities[0].Get<Map>();
+					Voxel m = this.SelectedEntities[0].Get<Voxel>();
 					this.originalSelectionStart = this.VoxelSelectionStart;
 					this.originalSelectionEnd = this.VoxelSelectionEnd;
 					this.originalSelectionCoord = this.coord;
 					if (this.mapState != null)
 						this.mapState.Free();
-					this.mapState = new Map.MapState(m, this.originalSelectionStart, this.originalSelectionEnd);
+					this.mapState = new Voxel.Snapshot(m, this.originalSelectionStart, this.originalSelectionEnd);
 					this.voxelDuplicate = false;
 				}
 			};
 
 			this.VoxelPaste.Action = delegate()
 			{
-				if (this.MapEditMode && this.mapState != null)
+				if (this.VoxelEditMode && this.mapState != null)
 				{
-					Map m = this.SelectedEntities[0].Get<Map>();
-					Map.Coordinate newSelectionStart = this.coord.Plus(this.originalSelectionStart.Minus(this.originalSelectionCoord));
+					Voxel m = this.SelectedEntities[0].Get<Voxel>();
+					Voxel.Coord newSelectionStart = this.coord.Plus(this.originalSelectionStart.Minus(this.originalSelectionCoord));
 					this.VoxelSelectionStart.Value = newSelectionStart;
 					this.VoxelSelectionEnd.Value = this.coord.Plus(this.originalSelectionEnd.Minus(this.originalSelectionCoord));
 
 					this.mapState.Add(this.VoxelSelectionStart, this.VoxelSelectionEnd);
 
-					Map.Coordinate offset = this.originalSelectionStart.Minus(newSelectionStart);
-					this.restoreMap(newSelectionStart, this.VoxelSelectionEnd, false, offset.X, offset.Y, offset.Z);
+					Voxel.Coord offset = this.originalSelectionStart.Minus(newSelectionStart);
+					this.restoreVoxel(newSelectionStart, this.VoxelSelectionEnd, false, offset.X, offset.Y, offset.Z);
 				}
 			};
 
 			this.StartVoxelTranslation.Action = delegate()
 			{
-				if (this.MapEditMode && this.VoxelSelectionActive)
+				if (this.VoxelEditMode && this.VoxelSelectionActive)
 				{
 					this.VoxelCopy.Execute();
 					this.TransformMode.Value = TransformModes.Translate;
@@ -326,7 +326,7 @@ namespace Lemma.Components
 
 			this.VoxelDuplicate.Action = delegate()
 			{
-				if (this.MapEditMode && this.VoxelSelectionActive)
+				if (this.VoxelEditMode && this.VoxelSelectionActive)
 				{
 					this.StartVoxelTranslation.Execute();
 					this.voxelDuplicate = true;
@@ -335,33 +335,33 @@ namespace Lemma.Components
 
 			this.PropagateMaterial.Action = delegate()
 			{
-				if (!this.MapEditMode)
+				if (!this.VoxelEditMode)
 					return;
 
-				Map m = this.SelectedEntities[0].Get<Map>();
-				Map.Box selectedBox = m.GetBox(this.coord);
+				Voxel m = this.SelectedEntities[0].Get<Voxel>();
+				Voxel.Box selectedBox = m.GetBox(this.coord);
 				if (selectedBox == null)
 					return;
 
-				Map.Coordinate startSelection = this.VoxelSelectionStart;
-				Map.Coordinate endSelection = this.VoxelSelectionEnd;
+				Voxel.Coord startSelection = this.VoxelSelectionStart;
+				Voxel.Coord endSelection = this.VoxelSelectionEnd;
 				bool selectionActive = this.VoxelSelectionActive;
 
-				Map.CellState material = this.getBrush();
-				if (material != Map.EmptyState)
+				Voxel.State material = this.getBrush();
+				if (material != Voxel.EmptyState)
 				{
 					if (material == selectedBox.Type)
 						return;
 
-					IEnumerable<Map.Coordinate> coordEnumerable;
+					IEnumerable<Voxel.Coord> coordEnumerable;
 					if (selectionActive)
-						coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => y.Between(startSelection, endSelection)));
+						coordEnumerable = m.GetContiguousByType(new Voxel.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => y.Between(startSelection, endSelection)));
 					else
-						coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords());
+						coordEnumerable = m.GetContiguousByType(new Voxel.Box[] { selectedBox }).SelectMany(x => x.GetCoords());
 
-					List<Map.Coordinate> coords = coordEnumerable.ToList();
+					List<Voxel.Coord> coords = coordEnumerable.ToList();
 					m.Empty(coords, true);
-					foreach (Map.Coordinate c in coords)
+					foreach (Voxel.Coord c in coords)
 						m.Fill(c, material);
 					m.Regenerate();
 				}
@@ -369,25 +369,25 @@ namespace Lemma.Components
 
 			this.IntersectMaterial.Action = delegate()
 			{
-				if (!this.MapEditMode)
+				if (!this.VoxelEditMode)
 					return;
 
-				Map m = this.SelectedEntities[0].Get<Map>();
-				Map.Box selectedBox = m.GetBox(this.coord);
+				Voxel m = this.SelectedEntities[0].Get<Voxel>();
+				Voxel.Box selectedBox = m.GetBox(this.coord);
 				if (selectedBox == null)
 					return;
 
-				Map.Coordinate startSelection = this.VoxelSelectionStart;
-				Map.Coordinate endSelection = this.VoxelSelectionEnd;
+				Voxel.Coord startSelection = this.VoxelSelectionStart;
+				Voxel.Coord endSelection = this.VoxelSelectionEnd;
 				bool selectionActive = this.VoxelSelectionActive;
 
-				IEnumerable<Map.Coordinate> coordEnumerable;
+				IEnumerable<Voxel.Coord> coordEnumerable;
 				if (selectionActive)
-					coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => !y.Between(startSelection, endSelection)));
+					coordEnumerable = m.GetContiguousByType(new Voxel.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => !y.Between(startSelection, endSelection)));
 				else
-					coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => (m.GetRelativePosition(this.coord) - m.GetRelativePosition(y)).Length() > this.BrushSize));
+					coordEnumerable = m.GetContiguousByType(new Voxel.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => (m.GetRelativePosition(this.coord) - m.GetRelativePosition(y)).Length() > this.BrushSize));
 
-				List<Map.Coordinate> coords = coordEnumerable.ToList();
+				List<Voxel.Coord> coords = coordEnumerable.ToList();
 				m.Empty(coords, true);
 				m.Regenerate();
 			};
@@ -395,24 +395,24 @@ namespace Lemma.Components
 			// Propagate to all cells of a certain type, including non-contiguous ones
 			this.PropagateMaterialAll.Action = delegate()
 			{
-				if (!this.MapEditMode)
+				if (!this.VoxelEditMode)
 					return;
 
-				Map m = this.SelectedEntities[0].Get<Map>();
-				Map.Box selectedBox = m.GetBox(this.coord);
+				Voxel m = this.SelectedEntities[0].Get<Voxel>();
+				Voxel.Box selectedBox = m.GetBox(this.coord);
 				if (selectedBox == null)
 					return;
 
-				Map.CellState oldMaterial = selectedBox.Type;
+				Voxel.State oldMaterial = selectedBox.Type;
 
-				Map.CellState material = this.getBrush();
-				if (material != Map.EmptyState)
+				Voxel.State material = this.getBrush();
+				if (material != Voxel.EmptyState)
 				{
 					if (material == oldMaterial)
 						return;
-					List<Map.Coordinate> coords = m.Chunks.SelectMany(x => x.Boxes).Where(x => x.Type == oldMaterial).SelectMany(x => x.GetCoords()).ToList();
+					List<Voxel.Coord> coords = m.Chunks.SelectMany(x => x.Boxes).Where(x => x.Type == oldMaterial).SelectMany(x => x.GetCoords()).ToList();
 					m.Empty(coords, true);
-					foreach (Map.Coordinate c in coords)
+					foreach (Voxel.Coord c in coords)
 						m.Fill(c, material);
 					m.Regenerate();
 				}
@@ -420,33 +420,33 @@ namespace Lemma.Components
 
 			this.PropagateMaterialBox.Action = delegate()
 			{
-				if (!this.MapEditMode)
+				if (!this.VoxelEditMode)
 					return;
 
-				Map m = this.SelectedEntities[0].Get<Map>();
-				Map.Box selectedBox = m.GetBox(this.coord);
+				Voxel m = this.SelectedEntities[0].Get<Voxel>();
+				Voxel.Box selectedBox = m.GetBox(this.coord);
 				if (selectedBox == null)
 					return;
 
-				Map.Coordinate startSelection = this.VoxelSelectionStart;
-				Map.Coordinate endSelection = this.VoxelSelectionEnd;
+				Voxel.Coord startSelection = this.VoxelSelectionStart;
+				Voxel.Coord endSelection = this.VoxelSelectionEnd;
 				bool selectionActive = this.VoxelSelectionActive;
 
-				Map.CellState material = this.getBrush();
-				if (material != Map.EmptyState)
+				Voxel.State material = this.getBrush();
+				if (material != Voxel.EmptyState)
 				{
 					if (material == selectedBox.Type)
 						return;
 
-					IEnumerable<Map.Coordinate> coordEnumerable;
+					IEnumerable<Voxel.Coord> coordEnumerable;
 					if (selectionActive)
 						coordEnumerable = selectedBox.GetCoords().Where(y => y.Between(startSelection, endSelection));
 					else
 						coordEnumerable = selectedBox.GetCoords();
 
-					List<Map.Coordinate> coords = coordEnumerable.ToList();
+					List<Voxel.Coord> coords = coordEnumerable.ToList();
 					m.Empty(coords, true);
-					foreach (Map.Coordinate c in coords)
+					foreach (Voxel.Coord c in coords)
 						m.Fill(c, material);
 					m.Regenerate();
 				}
@@ -454,11 +454,11 @@ namespace Lemma.Components
 
 			this.SampleMaterial.Action = delegate()
 			{
-				if (!this.MapEditMode)
+				if (!this.VoxelEditMode)
 					return;
 
-				Map m = this.SelectedEntities[0].Get<Map>();
-				Map.Box selectedBox = m.GetBox(this.coord);
+				Voxel m = this.SelectedEntities[0].Get<Voxel>();
+				Voxel.Box selectedBox = m.GetBox(this.coord);
 				if (selectedBox == null)
 					return;
 
@@ -467,25 +467,25 @@ namespace Lemma.Components
 
 			this.DeleteMaterial.Action = delegate()
 			{
-				if (!this.MapEditMode)
+				if (!this.VoxelEditMode)
 					return;
 
-				Map m = this.SelectedEntities[0].Get<Map>();
-				Map.Box selectedBox = m.GetBox(this.coord);
+				Voxel m = this.SelectedEntities[0].Get<Voxel>();
+				Voxel.Box selectedBox = m.GetBox(this.coord);
 				if (selectedBox == null)
 					return;
 
-				Map.Coordinate startSelection = this.VoxelSelectionStart;
-				Map.Coordinate endSelection = this.VoxelSelectionEnd;
+				Voxel.Coord startSelection = this.VoxelSelectionStart;
+				Voxel.Coord endSelection = this.VoxelSelectionEnd;
 				bool selectionActive = this.VoxelSelectionActive;
 
-				IEnumerable<Map.Coordinate> coordEnumerable;
+				IEnumerable<Voxel.Coord> coordEnumerable;
 				if (selectionActive)
-					coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => y.Between(startSelection, endSelection)));
+					coordEnumerable = m.GetContiguousByType(new Voxel.Box[] { selectedBox }).SelectMany(x => x.GetCoords().Where(y => y.Between(startSelection, endSelection)));
 				else
-					coordEnumerable = m.GetContiguousByType(new Map.Box[] { selectedBox }).SelectMany(x => x.GetCoords());
+					coordEnumerable = m.GetContiguousByType(new Voxel.Box[] { selectedBox }).SelectMany(x => x.GetCoords());
 
-				List<Map.Coordinate> coords = coordEnumerable.ToList();
+				List<Voxel.Coord> coords = coordEnumerable.ToList();
 				m.Empty(coords, true);
 				m.Regenerate();
 			};
@@ -493,15 +493,15 @@ namespace Lemma.Components
 			// Delete all cells of a certain type in the current map, including non-contiguous ones
 			this.DeleteMaterialAll.Action = delegate()
 			{
-				if (!this.MapEditMode)
+				if (!this.VoxelEditMode)
 					return;
 
-				Map m = this.SelectedEntities[0].Get<Map>();
-				Map.Box selectedBox = m.GetBox(this.coord);
+				Voxel m = this.SelectedEntities[0].Get<Voxel>();
+				Voxel.Box selectedBox = m.GetBox(this.coord);
 				if (selectedBox == null)
 					return;
 
-				Map.CellState material = selectedBox.Type;
+				Voxel.State material = selectedBox.Type;
 
 				m.Empty(m.Chunks.SelectMany(x => x.Boxes).Where(x => x.Type == material).SelectMany(x => x.GetCoords()).ToList(), true);
 				m.Regenerate();
@@ -551,7 +551,7 @@ namespace Lemma.Components
 				this.NeedsSave.Value = true;
 				this.TransformMode.Value = TransformModes.None;
 				this.TransformAxis.Value = TransformAxes.All;
-				if (this.MapEditMode)
+				if (this.VoxelEditMode)
 					this.justCommitedOrRevertedVoxelOperation = true;
 				this.offsetTransforms.Clear();
 			};
@@ -559,12 +559,12 @@ namespace Lemma.Components
 			this.RevertTransform.Action = delegate()
 			{
 				this.TransformMode.Value = TransformModes.None;
-				if (this.MapEditMode)
+				if (this.VoxelEditMode)
 				{
-					this.restoreMap(this.VoxelSelectionStart, this.VoxelSelectionEnd, false);
+					this.restoreVoxel(this.VoxelSelectionStart, this.VoxelSelectionEnd, false);
 					this.VoxelSelectionStart.Value = this.originalSelectionStart;
 					this.VoxelSelectionEnd.Value = this.originalSelectionEnd;
-					this.restoreMap(this.VoxelSelectionStart, this.VoxelSelectionEnd, false);
+					this.restoreVoxel(this.VoxelSelectionStart, this.VoxelSelectionEnd, false);
 					this.justCommitedOrRevertedVoxelOperation = true;
 				}
 				else
@@ -605,11 +605,11 @@ namespace Lemma.Components
 
 			this.Add(new Binding<bool>(this.VoxelSelectionActive, delegate()
 			{
-				if (!this.MapEditMode)
+				if (!this.VoxelEditMode)
 					return false;
-				Map.Coordinate start = this.VoxelSelectionStart, end = this.VoxelSelectionEnd;
+				Voxel.Coord start = this.VoxelSelectionStart, end = this.VoxelSelectionEnd;
 				return start.X != end.X && start.Y != end.Y && start.Z != end.Z;
-			}, this.MapEditMode, this.VoxelSelectionStart, this.VoxelSelectionEnd));
+			}, this.VoxelEditMode, this.VoxelSelectionStart, this.VoxelSelectionEnd));
 		}
 
 		public void Update(float elapsedTime)
@@ -624,7 +624,7 @@ namespace Lemma.Components
 				else if (this.Down)
 					movementDir = movementDir.SetComponent(Direction.NegativeY, 1.0f);
 					
-				if (this.MapEditMode)
+				if (this.VoxelEditMode)
 				{
 					bool moving = movementDir.LengthSquared() > 0.0f;
 
@@ -639,19 +639,19 @@ namespace Lemma.Components
 							this.movementInterval = 0.0f;
 						if (movementDir.LengthSquared() > 0.0f)
 						{
-							Map map = this.SelectedEntities[0].Get<Map>();
+							Voxel map = this.SelectedEntities[0].Get<Voxel>();
 							Direction relativeDir = map.GetRelativeDirection(movementDir);
 							this.coord = this.coord.Move(relativeDir);
 							this.Coordinate.Value = this.coord;
 							if (this.EditSelection)
 							{
-								this.VoxelSelectionStart.Value = new Map.Coordinate
+								this.VoxelSelectionStart.Value = new Voxel.Coord
 								{
 									X = Math.Min(this.selectionStart.X, this.coord.X),
 									Y = Math.Min(this.selectionStart.Y, this.coord.Y),
 									Z = Math.Min(this.selectionStart.Z, this.coord.Z),
 								};
-								this.VoxelSelectionEnd.Value = new Map.Coordinate
+								this.VoxelSelectionEnd.Value = new Voxel.Coord
 								{
 									X = Math.Max(this.selectionStart.X, this.coord.X) + 1,
 									Y = Math.Max(this.selectionStart.Y, this.coord.Y) + 1,
@@ -662,16 +662,16 @@ namespace Lemma.Components
 							{
 								this.NeedsSave.Value = true;
 
-								this.restoreMap(this.VoxelSelectionStart, this.VoxelSelectionEnd, !this.voxelDuplicate);
+								this.restoreVoxel(this.VoxelSelectionStart, this.VoxelSelectionEnd, !this.voxelDuplicate);
 
-								Map.Coordinate newSelectionStart = this.VoxelSelectionStart.Value.Move(relativeDir);
+								Voxel.Coord newSelectionStart = this.VoxelSelectionStart.Value.Move(relativeDir);
 								this.VoxelSelectionStart.Value = newSelectionStart;
 								this.VoxelSelectionEnd.Value = this.VoxelSelectionEnd.Value.Move(relativeDir);
 
 								this.mapState.Add(this.VoxelSelectionStart, this.VoxelSelectionEnd);
 
-								Map.Coordinate offset = this.originalSelectionStart.Minus(newSelectionStart);
-								this.restoreMap(newSelectionStart, this.VoxelSelectionEnd, false, offset.X, offset.Y, offset.Z);
+								Voxel.Coord offset = this.originalSelectionStart.Minus(newSelectionStart);
+								this.restoreVoxel(newSelectionStart, this.VoxelSelectionEnd, false, offset.X, offset.Y, offset.Z);
 							}
 							this.Position.Value = map.GetAbsolutePosition(this.coord);
 						}
@@ -682,13 +682,13 @@ namespace Lemma.Components
 					this.Position.Value = this.Position.Value + movementDir * (this.SpeedMode ? 5.0f : 2.5f) * this.CameraDistance * elapsedTime;
 			}
 
-			if (this.MapEditMode)
+			if (this.VoxelEditMode)
 			{
 				if (!this.Fill && !this.Empty)
 					this.justCommitedOrRevertedVoxelOperation = false;
 
-				Map map = this.SelectedEntities[0].Get<Map>();
-				Map.Coordinate coord = map.GetCoordinate(this.Position);
+				Voxel map = this.SelectedEntities[0].Get<Voxel>();
+				Voxel.Coord coord = map.GetCoordinate(this.Position);
 				if (this.TransformMode.Value == TransformModes.None && (this.Fill || this.Empty || this.Extend) && !this.justCommitedOrRevertedVoxelOperation)
 				{
 					this.NeedsSave.Value = true;
@@ -698,7 +698,7 @@ namespace Lemma.Components
 						{
 							if (this.VoxelSelectionActive)
 							{
-								foreach (Map.Coordinate c in this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd))
+								foreach (Voxel.Coord c in this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd))
 									map.Fill(c, this.generator.GetValue(map, c));
 							}
 							else
@@ -716,17 +716,17 @@ namespace Lemma.Components
 					{
 						if (this.Fill)
 						{
-							Map.CellState material = this.getBrush();
-							if (material != Map.EmptyState)
+							Voxel.State material = this.getBrush();
+							if (material != Voxel.EmptyState)
 							{
 								if (this.VoxelSelectionActive)
 								{
-									if (this.Jitter.Value.Equivalent(new Map.Coordinate { X = 0, Y = 0, Z = 0 }) || this.BrushSize <= 1)
+									if (this.Jitter.Value.Equivalent(new Voxel.Coord { X = 0, Y = 0, Z = 0 }) || this.BrushSize <= 1)
 										map.Fill(this.VoxelSelectionStart, this.VoxelSelectionEnd, material);
 									else
 									{
-										Map.Coordinate start = this.VoxelSelectionStart;
-										Map.Coordinate end = this.VoxelSelectionEnd;
+										Voxel.Coord start = this.VoxelSelectionStart;
+										Voxel.Coord end = this.VoxelSelectionEnd;
 										int size = this.BrushSize;
 										int halfSize = size / 2;
 										for (int x = start.X + size - 1; x < end.X - size + 1; x += halfSize)
@@ -735,7 +735,7 @@ namespace Lemma.Components
 											{
 												for (int z = start.Z + size - 1; z < end.Z - size + 1; z += halfSize)
 												{
-													this.brushStroke(map, new Map.Coordinate { X = x, Y = y, Z = z }, size, material);
+													this.brushStroke(map, new Voxel.Coord { X = x, Y = y, Z = z }, size, material);
 												}
 											}
 										}
@@ -749,12 +749,12 @@ namespace Lemma.Components
 						{
 							if (this.VoxelSelectionActive)
 							{
-								if (this.Jitter.Value.Equivalent(new Map.Coordinate { X = 0, Y = 0, Z = 0 }) || this.BrushSize <= 1)
+								if (this.Jitter.Value.Equivalent(new Voxel.Coord { X = 0, Y = 0, Z = 0 }) || this.BrushSize <= 1)
 									map.Empty(this.VoxelSelectionStart, this.VoxelSelectionEnd, true);
 								else
 								{
-									Map.Coordinate start = this.VoxelSelectionStart;
-									Map.Coordinate end = this.VoxelSelectionEnd;
+									Voxel.Coord start = this.VoxelSelectionStart;
+									Voxel.Coord end = this.VoxelSelectionEnd;
 									int size = this.BrushSize;
 									int halfSize = size / 2;
 									for (int x = start.X + size - 2; x < end.X - size; x += halfSize)
@@ -763,25 +763,25 @@ namespace Lemma.Components
 										{
 											for (int z = start.Z + size - 2; z < end.Z - size; z += halfSize)
 											{
-												this.brushStroke(map, new Map.Coordinate { X = x, Y = y, Z = z }, size, new Map.CellState());
+												this.brushStroke(map, new Voxel.Coord { X = x, Y = y, Z = z }, size, new Voxel.State());
 											}
 										}
 									}
 								}
 							}
 							else
-								this.brushStroke(map, coord, this.BrushSize, new Map.CellState());
+								this.brushStroke(map, coord, this.BrushSize, new Voxel.State());
 						}
 					}
 
 					if (this.Extend && !this.coord.Equivalent(this.lastCoord))
 					{
 						Direction dir = DirectionExtensions.GetDirectionFromVector(Vector3.TransformNormal(movementDir, Matrix.Invert(map.Transform)));
-						Map.Box box = map.GetBox(this.lastCoord);
+						Voxel.Box box = map.GetBox(this.lastCoord);
 						bool grow = map.GetBox(this.coord) != box;
 						if (box != null)
 						{
-							List<Map.Coordinate> removals = new List<Map.Coordinate>();
+							List<Voxel.Coord> removals = new List<Voxel.Coord>();
 							if (dir.IsParallel(Direction.PositiveX))
 							{
 								for (int y = box.Y; y < box.Y + box.Height; y++)
@@ -914,11 +914,11 @@ namespace Lemma.Components
 			}
 		}
 
-		protected Map.Coordinate jitter(Map map, Map.Coordinate coord)
+		protected Voxel.Coord jitter(Voxel map, Voxel.Coord coord)
 		{
-			Map.Coordinate octave = this.JitterOctave;
-			Map.Coordinate jitter = this.Jitter;
-			Map.Coordinate sample = coord.Clone();
+			Voxel.Coord octave = this.JitterOctave;
+			Voxel.Coord jitter = this.Jitter;
+			Voxel.Coord sample = coord.Clone();
 			sample.X *= octave.X;
 			sample.Y *= octave.Y;
 			sample.Z *= octave.Z;
@@ -928,21 +928,21 @@ namespace Lemma.Components
 			return coord;
 		}
 
-		protected void brushStroke(Map map, Map.Coordinate center, int brushSize, Func<Map.Coordinate, Map.CellState> function, bool fill = true, bool empty = true)
+		protected void brushStroke(Voxel map, Voxel.Coord center, int brushSize, Func<Voxel.Coord, Voxel.State> function, bool fill = true, bool empty = true)
 		{
 			if (brushSize > 1)
 				center = this.jitter(map, center);
 
 			Vector3 pos = map.GetRelativePosition(center);
-			List<Map.Coordinate> coords = new List<Map.Coordinate>();
-			for (Map.Coordinate x = center.Move(Direction.NegativeX, this.BrushSize - 1); x.X < center.X + this.BrushSize; x.X++)
+			List<Voxel.Coord> coords = new List<Voxel.Coord>();
+			for (Voxel.Coord x = center.Move(Direction.NegativeX, this.BrushSize - 1); x.X < center.X + this.BrushSize; x.X++)
 			{
-				for (Map.Coordinate y = x.Move(Direction.NegativeY, this.BrushSize - 1); y.Y < center.Y + this.BrushSize; y.Y++)
+				for (Voxel.Coord y = x.Move(Direction.NegativeY, this.BrushSize - 1); y.Y < center.Y + this.BrushSize; y.Y++)
 				{
-					for (Map.Coordinate z = y.Move(Direction.NegativeZ, this.BrushSize - 1); z.Z < center.Z + this.BrushSize; z.Z++)
+					for (Voxel.Coord z = y.Move(Direction.NegativeZ, this.BrushSize - 1); z.Z < center.Z + this.BrushSize; z.Z++)
 					{
 						if ((pos - map.GetRelativePosition(z)).Length() <= this.BrushSize)
-							coords.Add(new Map.Coordinate { X = z.X, Y = z.Y, Z = z.Z, Data = function(z) });
+							coords.Add(new Voxel.Coord { X = z.X, Y = z.Y, Z = z.Z, Data = function(z) });
 					}
 				}
 			}
@@ -952,23 +952,23 @@ namespace Lemma.Components
 
 			if (fill)
 			{
-				foreach (Map.Coordinate coord in coords)
+				foreach (Voxel.Coord coord in coords)
 					map.Fill(coord, coord.Data);
 			}
 		}
 
-		protected void brushStroke(Map map, Map.Coordinate center, int brushSize, Map.CellState state)
+		protected void brushStroke(Voxel map, Voxel.Coord center, int brushSize, Voxel.State state)
 		{
 			if (brushSize > 1)
 				center = this.jitter(map, center);
 
 			Vector3 pos = map.GetRelativePosition(center);
-			List<Map.Coordinate> coords = new List<Map.Coordinate>();
-			for (Map.Coordinate x = center.Move(Direction.NegativeX, this.BrushSize - 1); x.X < center.X + this.BrushSize; x.X++)
+			List<Voxel.Coord> coords = new List<Voxel.Coord>();
+			for (Voxel.Coord x = center.Move(Direction.NegativeX, this.BrushSize - 1); x.X < center.X + this.BrushSize; x.X++)
 			{
-				for (Map.Coordinate y = x.Move(Direction.NegativeY, this.BrushSize - 1); y.Y < center.Y + this.BrushSize; y.Y++)
+				for (Voxel.Coord y = x.Move(Direction.NegativeY, this.BrushSize - 1); y.Y < center.Y + this.BrushSize; y.Y++)
 				{
-					for (Map.Coordinate z = y.Move(Direction.NegativeZ, this.BrushSize - 1); z.Z < center.Z + this.BrushSize; z.Z++)
+					for (Voxel.Coord z = y.Move(Direction.NegativeZ, this.BrushSize - 1); z.Z < center.Z + this.BrushSize; z.Z++)
 					{
 						if ((pos - map.GetRelativePosition(z)).Length() <= this.BrushSize)
 							coords.Add(z);
@@ -979,7 +979,7 @@ namespace Lemma.Components
 				map.Empty(coords, true);
 			else
 			{
-				foreach (Map.Coordinate coord in coords)
+				foreach (Voxel.Coord coord in coords)
 					map.Fill(coord, state);
 			}
 		}

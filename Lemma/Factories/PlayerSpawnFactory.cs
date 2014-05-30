@@ -30,7 +30,7 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(entity, main);
+				VoxelAttachable.MakeAttachable(entity, main);
 
 			entity.CannotSuspendByDistance = true;
 
@@ -42,7 +42,7 @@ namespace Lemma.Factories
 				{
 					Action = delegate()
 					{
-						((GameMain)main).StartSpawnPoint.Value = entity.ID;
+						main.Spawner.StartSpawnPoint.Value = entity.ID;
 						Editor editor = main.Get("Editor").First().Get<Editor>();
 						if (editor.NeedsSave)
 							editor.Save.Execute();
@@ -60,7 +60,7 @@ namespace Lemma.Factories
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");
 			trigger.Enabled.Editable = true;
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
-			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity player) { spawn.Activate.Execute(); }));
+			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate() { spawn.Activate.Execute(); }));
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
@@ -76,7 +76,7 @@ namespace Lemma.Factories
 			model.Add(new Binding<Matrix>(model.Transform, entity.Get<Transform>().Matrix));
 
 			PlayerTrigger.AttachEditorComponents(entity, main, this.Color);
-			MapAttachable.AttachEditorComponents(entity, main);
+			VoxelAttachable.AttachEditorComponents(entity, main);
 		}
 	}
 }

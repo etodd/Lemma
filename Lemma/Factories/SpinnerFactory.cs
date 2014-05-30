@@ -22,7 +22,7 @@ namespace Lemma.Factories
 
 			entity.Add("MapTransform", new Transform());
 			entity.Add("Transform", new Transform());
-			entity.Add("Map", new DynamicMap(0, 0, 0));
+			entity.Add("Voxel", new DynamicVoxel(0, 0, 0));
 
 			return entity;
 		}
@@ -80,7 +80,7 @@ namespace Lemma.Factories
 			};
 			entity.Add(new NotifyBinding(setLocked, locked));
 
-			DynamicMap map = entity.Get<DynamicMap>();
+			DynamicVoxel map = entity.Get<DynamicVoxel>();
 
 			Action setServo = delegate()
 			{

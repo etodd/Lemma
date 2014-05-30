@@ -117,7 +117,7 @@ namespace Lemma.Factories
 				},
 			};
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Suspended",
 				Tasks = new[] { checkOperationalRadius, },
@@ -126,10 +126,10 @@ namespace Lemma.Factories
 			const float sightDistance = 40.0f;
 			const float hearingDistance = 15.0f;
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Idle",
-				Enter = delegate(AI.State previous)
+				Enter = delegate(AI.AIState previous)
 				{
 					//pitch.Value = -0.5f;
 				},
@@ -160,14 +160,14 @@ namespace Lemma.Factories
 
 			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Alert",
-				Enter = delegate(AI.State previous)
+				Enter = delegate(AI.AIState previous)
 				{
 					//volume.Value = 0.0f;
 				},
-				Exit = delegate(AI.State next)
+				Exit = delegate(AI.AIState next)
 				{
 					//volume.Value = defaultVolume;
 				},
@@ -209,14 +209,14 @@ namespace Lemma.Factories
 				},
 			};
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Chase",
-				Enter = delegate(AI.State previous)
+				Enter = delegate(AI.AIState previous)
 				{
 					//pitch.Value = 0.0f;
 				},
-				Exit = delegate(AI.State next)
+				Exit = delegate(AI.AIState next)
 				{
 
 				},
@@ -244,23 +244,23 @@ namespace Lemma.Factories
 				},
 			});
 
-			ListProperty<Map.Coordinate> coordQueue = entity.GetOrMakeListProperty<Map.Coordinate>("CoordQueue");
+			ListProperty<Voxel.Coord> coordQueue = entity.GetOrMakeListProperty<Voxel.Coord>("CoordQueue");
 
-			Property<Map.Coordinate> explosionOriginalCoord = entity.GetOrMakeProperty<Map.Coordinate>("ExplosionOriginalCoord");
+			Property<Voxel.Coord> explosionOriginalCoord = entity.GetOrMakeProperty<Voxel.Coord>("ExplosionOriginalCoord");
 
 			EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
-			Map.CellState infectedState = Map.States[Map.t.Infected];
+			Voxel.State infectedState = Voxel.States[Voxel.t.Infected];
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Explode",
-				Enter = delegate(AI.State previous)
+				Enter = delegate(AI.AIState previous)
 				{
 					coordQueue.Clear();
 					
-					Map m = raycastAI.Map.Value.Target.Get<Map>();
+					Voxel m = raycastAI.Voxel.Value.Target.Get<Voxel>();
 
-					Map.Coordinate c = raycastAI.Coord.Value;
+					Voxel.Coord c = raycastAI.Coord.Value;
 
 					Direction toSupport = Direction.None;
 
@@ -284,16 +284,16 @@ namespace Lemma.Factories
 						right = Direction.PositiveX;
 					Direction forward = up.Cross(right);
 
-					for (Map.Coordinate y = c.Clone(); y.GetComponent(up) < c.GetComponent(up) + 3; y = y.Move(up))
+					for (Voxel.Coord y = c.Clone(); y.GetComponent(up) < c.GetComponent(up) + 3; y = y.Move(up))
 					{
-						for (Map.Coordinate x = y.Clone(); x.GetComponent(right) < c.GetComponent(right) + 2; x = x.Move(right))
+						for (Voxel.Coord x = y.Clone(); x.GetComponent(right) < c.GetComponent(right) + 2; x = x.Move(right))
 						{
-							for (Map.Coordinate z = x.Clone(); z.GetComponent(forward) < c.GetComponent(forward) + 2; z = z.Move(forward))
+							for (Voxel.Coord z = x.Clone(); z.GetComponent(forward) < c.GetComponent(forward) + 2; z = z.Move(forward))
 								coordQueue.Add(z);
 						}
 					}
 				},
-				Exit = delegate(AI.State next)
+				Exit = delegate(AI.AIState next)
 				{
 					coordQueue.Clear();
 					//volume.Value = defaultVolume;
@@ -315,10 +315,10 @@ namespace Lemma.Factories
 								Entity block = factory.CreateAndBind(main);
 								infectedState.ApplyToEffectBlock(block.Get<ModelInstance>());
 
-								Entity mapEntity = raycastAI.Map.Value.Target;
+								Entity mapEntity = raycastAI.Voxel.Value.Target;
 								if (mapEntity != null && mapEntity.Active)
 								{
-									Map m = raycastAI.Map.Value.Target.Get<Map>();
+									Voxel m = raycastAI.Voxel.Value.Target.Get<Voxel>();
 
 									block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(raycastAI.Coord);
 
@@ -327,7 +327,7 @@ namespace Lemma.Factories
 									block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f);
 									block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f) * Matrix.CreateRotationY(0.15f);
 									block.GetProperty<float>("TotalLifetime").Value = 0.05f;
-									factory.Setup(block, raycastAI.Map.Value.Target, raycastAI.Coord, Map.t.Infected);
+									factory.Setup(block, raycastAI.Voxel.Value.Target, raycastAI.Coord, Voxel.t.Infected);
 									main.Add(block);
 								}
 							}
@@ -352,15 +352,15 @@ namespace Lemma.Factories
 
 			Property<bool> exploded = entity.GetOrMakeProperty<bool>("Exploded");
 
-			ai.Add(new AI.State
+			ai.Add(new AI.AIState
 			{
 				Name = "Exploding",
-				Enter = delegate(AI.State previous)
+				Enter = delegate(AI.AIState previous)
 				{
 					exploded.Value = false;
 					AkSoundEngine.PostEvent("Stop_cube_drone", entity);
 				},
-				Exit = delegate(AI.State next)
+				Exit = delegate(AI.AIState next)
 				{
 					exploded.Value = false;
 					AkSoundEngine.PostEvent("Play_cube_drone", entity);
@@ -377,20 +377,20 @@ namespace Lemma.Factories
 							float timeInCurrentState = ai.TimeInCurrentState;
 							if (timeInCurrentState > 1.0f && !exploded)
 							{
-								Entity mapEntity = raycastAI.Map.Value.Target;
+								Entity mapEntity = raycastAI.Voxel.Value.Target;
 								if (mapEntity != null && mapEntity.Active)
-									Explosion.Explode(main, raycastAI.Map.Value.Target.Get<Map>(), raycastAI.Coord, radius, 18.0f);
+									Explosion.Explode(main, raycastAI.Voxel.Value.Target.Get<Voxel>(), raycastAI.Coord, radius, 18.0f);
 
 								exploded.Value = true;
 							}
 
 							if (timeInCurrentState > 2.0f)
 							{
-								Entity mapEntity = raycastAI.Map.Value.Target;
+								Entity mapEntity = raycastAI.Voxel.Value.Target;
 								if (mapEntity != null && mapEntity.Active)
 								{
-									Map m = raycastAI.Map.Value.Target.Get<Map>();
-									Map.Coordinate? closestCell = m.FindClosestFilledCell(raycastAI.Coord, radius + 1);
+									Voxel m = raycastAI.Voxel.Value.Target.Get<Voxel>();
+									Voxel.Coord? closestCell = m.FindClosestFilledCell(raycastAI.Coord, radius + 1);
 									if (closestCell.HasValue)
 									{
 										raycastAI.Move(m.GetAbsolutePosition(closestCell.Value) - transform.Position);

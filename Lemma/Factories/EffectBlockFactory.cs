@@ -15,15 +15,15 @@ namespace Lemma.Factories
 	{
 		public struct BlockEntry
 		{
-			public Map Map;
-			public Map.Coordinate Coordinate;
+			public Voxel Voxel;
+			public Voxel.Coord Coordinate;
 		}
 
 		public struct BlockBuildOrder
 		{
-			public Map Map;
-			public Map.Coordinate Coordinate;
-			public Map.CellState State;
+			public Voxel Voxel;
+			public Voxel.Coord Coordinate;
+			public Voxel.State State;
 		}
 
 		private Dictionary<BlockEntry, bool> animatingBlocks = new Dictionary<BlockEntry, bool>();
@@ -69,9 +69,9 @@ namespace Lemma.Factories
 				transform.Orientation.Value = value;
 			};
 
-			Property<Entity.Handle> map = entity.GetOrMakeProperty<Entity.Handle>("TargetMap");
-			Property<Map.Coordinate> coord = entity.GetOrMakeProperty<Map.Coordinate>("TargetCoord");
-			Property<Map.t> stateId = entity.GetOrMakeProperty<Map.t>("TargetCellStateID");
+			Property<Entity.Handle> voxel = entity.GetOrMakeProperty<Entity.Handle>("TargetVoxel");
+			Property<Voxel.Coord> coord = entity.GetOrMakeProperty<Voxel.Coord>("TargetCoord");
+			Property<Voxel.t> stateId = entity.GetOrMakeProperty<Voxel.t>("TargetVoxelState");
 
 			Property<float> totalLifetime = entity.GetOrMakeProperty<float>("TotalLifetime");
 			Property<float> lifetime = entity.GetOrMakeProperty<float>("Lifetime");
@@ -87,29 +87,29 @@ namespace Lemma.Factories
 
 					float blend = lifetime / totalLifetime;
 
-					if (map.Value.Target == null || !map.Value.Target.Active)
+					if (voxel.Value.Target == null || !voxel.Value.Target.Active)
 					{
 						entity.Delete.Execute();
 						return;
 					}
 
-					Map m = map.Value.Target.Get<Map>();
+					Voxel m = voxel.Value.Target.Get<Voxel>();
 
 					if (blend > 1.0f)
 					{
-						if (stateId != Map.t.Empty)
+						if (stateId != Voxel.t.Empty)
 						{
-							Map.Coordinate c = coord;
+							Voxel.Coord c = coord;
 
 							bool foundAdjacentCell = false;
 							if (checkAdjacent)
 							{
-								bool avoid = stateId == Map.t.Temporary;
+								bool avoid = stateId == Voxel.t.Temporary;
 								foreach (Direction dir in DirectionExtensions.Directions)
 								{
-									Map.Coordinate adjacent = c.Move(dir);
-									Map.t adjacentID = m[adjacent].ID;
-									if (adjacentID != 0 && (!avoid || adjacentID != Map.t.AvoidAI))
+									Voxel.Coord adjacent = c.Move(dir);
+									Voxel.t adjacentID = m[adjacent].ID;
+									if (adjacentID != 0 && (!avoid || adjacentID != Voxel.t.AvoidAI))
 									{
 										foundAdjacentCell = true;
 										break;
@@ -129,7 +129,7 @@ namespace Lemma.Factories
 
 								if (!foundConflict)
 								{
-									foreach (Map m2 in Map.ActivePhysicsMaps)
+									foreach (Voxel m2 in Voxel.ActivePhysicsVoxels)
 									{
 										if (m2 != m && m2[absolutePos].ID != 0)
 										{
@@ -141,14 +141,14 @@ namespace Lemma.Factories
 
 								if (!foundConflict)
 								{
-									Map.CellState state = m[coord];
+									Voxel.State state = m[coord];
 									if (state.Permanent)
 										foundConflict = true;
 									else
 									{
 										if (state.ID != 0)
 											m.Empty(coord);
-										m.Fill(coord, Map.States[stateId]);
+										m.Fill(coord, Voxel.States[stateId]);
 										m.Regenerate();
 										AkSoundEngine.PostEvent("Play_build_block", entity);
 										entity.Delete.Execute();
@@ -192,24 +192,24 @@ namespace Lemma.Factories
 			BlockEntry entry = new BlockEntry();
 			entity.Add(new NotifyBinding(delegate()
 			{
-				if (entry.Map != null)
+				if (entry.Voxel != null)
 					this.animatingBlocks.Remove(entry);
 
-				Entity m = map.Value.Target;
-				entry.Map = m != null ? m.Get<Map>() : null;
+				Entity m = voxel.Value.Target;
+				entry.Voxel = m != null ? m.Get<Voxel>() : null;
 				
-				if (entry.Map != null)
+				if (entry.Voxel != null)
 				{
 					entry.Coordinate = coord;
 					this.animatingBlocks[entry] = true;
 				}
-			}, map, coord, stateId));
+			}, voxel, coord, stateId));
 
 			entity.Add(new CommandBinding(entity.Delete, delegate()
 			{
-				if (entry.Map != null)
+				if (entry.Voxel != null)
 					this.animatingBlocks.Remove(entry);
-				entry.Map = null;
+				entry.Voxel = null;
 			}));
 
 			this.SetMain(entity, main);
@@ -229,32 +229,32 @@ namespace Lemma.Factories
 			EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
 			foreach (BlockBuildOrder entry in blocks)
 			{
-				if (factory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = entry.Map, Coordinate = entry.Coordinate }))
+				if (factory.IsAnimating(new EffectBlockFactory.BlockEntry { Voxel = entry.Voxel, Coordinate = entry.Coordinate }))
 					continue;
 
 				Entity block = factory.CreateAndBind(main);
 				entry.State.ApplyToEffectBlock(block.Get<ModelInstance>());
-				block.GetOrMakeProperty<Vector3>("Offset").Value = entry.Map.GetRelativePosition(entry.Coordinate);
+				block.GetOrMakeProperty<Vector3>("Offset").Value = entry.Voxel.GetRelativePosition(entry.Coordinate);
 
-				Vector3 absolutePos = entry.Map.GetAbsolutePosition(entry.Coordinate);
+				Vector3 absolutePos = entry.Voxel.GetAbsolutePosition(entry.Coordinate);
 
 				float distance = (absolutePos - center).Length();
 				block.GetOrMakeProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f) * distance;
 				block.GetOrMakeProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * (distance + index)) * Matrix.CreateRotationY(0.15f * (distance + index));
 				block.GetOrMakeProperty<float>("TotalLifetime").Value = Math.Max(delayMultiplier, distance * delayMultiplier);
 				block.GetOrMakeProperty<bool>("CheckAdjacent").Value = true;
-				factory.Setup(block, entry.Map.Entity, entry.Coordinate, fake ? 0 : entry.State.ID);
+				factory.Setup(block, entry.Voxel.Entity, entry.Coordinate, fake ? 0 : entry.State.ID);
 				main.Add(block);
 				index++;
 			}
 			SteamWorker.IncrementStat("stat_blocks_created", index);
 		}
 
-		public void Setup(Entity entity, Entity map, Map.Coordinate c, Map.t s)
+		public void Setup(Entity entity, Entity map, Voxel.Coord c, Voxel.t s)
 		{
-			Property<Entity.Handle> mapHandle = entity.GetOrMakeProperty<Entity.Handle>("TargetMap");
-			Property<Map.Coordinate> coord = entity.GetOrMakeProperty<Map.Coordinate>("TargetCoord");
-			Property<Map.t> stateId = entity.GetOrMakeProperty<Map.t>("TargetCellStateID");
+			Property<Entity.Handle> mapHandle = entity.GetOrMakeProperty<Entity.Handle>("TargetVoxel");
+			Property<Voxel.Coord> coord = entity.GetOrMakeProperty<Voxel.Coord>("TargetCoord");
+			Property<Voxel.t> stateId = entity.GetOrMakeProperty<Voxel.t>("TargetVoxelState");
 			mapHandle.InternalValue = map;
 			coord.InternalValue = c;
 			stateId.InternalValue = s;

@@ -54,14 +54,14 @@ namespace Lemma.Factories
 			Property<bool> valid = entity.GetOrMakeProperty<bool>("Valid", false);
 			valid.Serialize = false;
 
-			Property<Map.t> type = entity.GetOrMakeProperty<Map.t>("Type", true);
-			type.Set = delegate(Map.t value)
+			Property<Voxel.t> type = entity.GetOrMakeProperty<Voxel.t>("Type", true);
+			type.Set = delegate(Voxel.t value)
 			{
-				if (value == Map.t.Empty)
+				if (value == Voxel.t.Empty)
 					valid.Value = false;
 				else
 				{
-					Map.States[value].ApplyToBlock(entity);
+					Voxel.States[value].ApplyToBlock(entity);
 					valid.Value = true;
 				}
 				type.InternalValue = value;

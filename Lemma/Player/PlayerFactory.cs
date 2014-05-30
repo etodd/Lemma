@@ -45,7 +45,7 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			GameMain.Config settings = ((GameMain)main).Settings;
+			Main.Config settings = main.Settings;
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			entity.CannotSuspend = true;
@@ -107,14 +107,14 @@ namespace Lemma.Factories
 			jump.Add(new Binding<float>(jump.JumpSpeed, player.Character.JumpSpeed));
 			jump.Add(new Binding<float>(jump.Mass, player.Character.Mass));
 			jump.Add(new Binding<float>(jump.LastRollEnded, rollKickSlide.LastRollEnded));
-			jump.Add(new Binding<Map>(jump.WallRunMap, wallRun.WallRunMap));
+			jump.Add(new Binding<Voxel>(jump.WallRunMap, wallRun.WallRunMap));
 			jump.Add(new Binding<Direction>(jump.WallDirection, wallRun.WallDirection));
-			jump.Add(new CommandBinding<Map, Map.Coordinate, Direction>(jump.WalkedOn, footsteps.WalkedOn));
+			jump.Add(new CommandBinding<Voxel, Voxel.Coord, Direction>(jump.WalkedOn, footsteps.WalkedOn));
 			jump.Add(new CommandBinding(jump.DeactivateWallRun, (Action)wallRun.Deactivate));
 			jump.Add(new CommandBinding<float>(jump.FallDamage, fallDamage.Apply));
 			jump.Predictor = predictor;
 			jump.Model = model;
-			jump.Add(new TwoWayBinding<Map>(wallRun.LastWallRunMap, jump.LastWallRunMap));
+			jump.Add(new TwoWayBinding<Voxel>(wallRun.LastWallRunMap, jump.LastWallRunMap));
 			jump.Add(new TwoWayBinding<Direction>(wallRun.LastWallDirection, jump.LastWallDirection));
 			jump.Add(new TwoWayBinding<bool>(rollKickSlide.CanKick, jump.CanKick));
 			jump.Add(new TwoWayBinding<float>(player.Character.LastSupportedSpeed, jump.LastSupportedSpeed));
@@ -143,6 +143,7 @@ namespace Lemma.Factories
 			rollKickSlide.Add(new Binding<float>(rollKickSlide.Height, player.Character.Height));
 			rollKickSlide.Add(new Binding<float>(rollKickSlide.MaxSpeed, player.Character.MaxSpeed));
 			rollKickSlide.Add(new Binding<float>(rollKickSlide.JumpSpeed, player.Character.JumpSpeed));
+			rollKickSlide.Add(new Binding<Vector3>(rollKickSlide.SupportVelocity, player.Character.SupportVelocity));
 			rollKickSlide.Add(new TwoWayBinding<bool>(wallRun.EnableEnhancedWallRun, rollKickSlide.EnableEnhancedRollSlide));
 			rollKickSlide.Add(new TwoWayBinding<bool>(player.Character.AllowUncrouch, rollKickSlide.AllowUncrouch));
 			rollKickSlide.Add(new TwoWayBinding<bool>(player.Character.Crouched, rollKickSlide.Crouched));
@@ -173,7 +174,7 @@ namespace Lemma.Factories
 			vault.Add(new TwoWayBinding<bool>(player.Character.AllowUncrouch, vault.AllowUncrouch));
 			vault.Add(new TwoWayBinding<bool>(player.Character.Crouched, vault.Crouched));
 
-			rotation.Add(new TwoWayBinding<Vector2>(input.Mouse, rotation.Mouse));
+			rotation.Add(new TwoWayBinding<Vector2>(rotation.Mouse, input.Mouse));
 			rotation.Add(new Binding<bool>(rotation.Rolling, rollKickSlide.Rolling));
 			rotation.Add(new Binding<bool>(rotation.Kicking, rollKickSlide.Kicking));
 			rotation.Add(new Binding<Vault.State>(rotation.VaultState, vault.CurrentState));
@@ -190,7 +191,7 @@ namespace Lemma.Factories
 			anim.Add(new Binding<Vector3>(anim.LinearVelocity, player.Character.LinearVelocity));
 			anim.Add(new Binding<Vector2>(anim.Movement, input.Movement));
 			anim.Add(new Binding<Vector2>(anim.Mouse, input.Mouse));
-			anim.Add(new Binding<Map>(anim.WallRunMap, wallRun.WallRunMap));
+			anim.Add(new Binding<Voxel>(anim.WallRunMap, wallRun.WallRunMap));
 			anim.Add(new Binding<Direction>(anim.WallDirection, wallRun.WallDirection));
 			anim.Add
 			(
@@ -275,8 +276,8 @@ namespace Lemma.Factories
 			{
 				Session.Recorder.Event(main, "DieFromHealth");
 				AkSoundEngine.PostEvent("Play_death", entity);
-				((GameMain)main).RespawnDistance = GameMain.KilledRespawnDistance;
-				((GameMain)main).RespawnInterval = GameMain.KilledRespawnInterval;
+				main.Spawner.RespawnDistance = Spawner.KilledRespawnDistance;
+				main.Spawner.RespawnInterval = Spawner.KilledRespawnInterval;
 			}));
 
 			entity.Add(new CommandBinding(player.HealthDepleted, entity.Delete));
@@ -286,8 +287,8 @@ namespace Lemma.Factories
 				Session.Recorder.Event(main, "Die");
 				if (Agent.Query(transform.Position, 0.0f, 10.0f, x => x != agent) != null)
 				{
-					((GameMain)main).RespawnDistance = GameMain.KilledRespawnDistance;
-					((GameMain)main).RespawnInterval = GameMain.KilledRespawnInterval;
+					main.Spawner.RespawnDistance = Spawner.KilledRespawnDistance;
+					main.Spawner.RespawnInterval = Spawner.KilledRespawnInterval;
 				}
 			}));
 
@@ -335,7 +336,7 @@ namespace Lemma.Factories
 			footsteps.Add(new Binding<float>(footsteps.CharacterHeight, player.Character.Height));
 			footsteps.Add(new Binding<float>(footsteps.SupportHeight, player.Character.SupportHeight));
 			footsteps.Add(new TwoWayBinding<float>(player.Health, footsteps.Health));
-			footsteps.Add(new CommandBinding<Map, Map.Coordinate, Direction>(wallRun.WalkedOn, footsteps.WalkedOn));
+			footsteps.Add(new CommandBinding<Voxel, Voxel.Coord, Direction>(wallRun.WalkedOn, footsteps.WalkedOn));
 			model.Trigger("Run", 0.16f, footsteps.Footstep);
 			model.Trigger("Run", 0.58f, footsteps.Footstep);
 			model.Trigger("WallRunLeft", 0.16f, footsteps.Footstep);
@@ -416,15 +417,26 @@ namespace Lemma.Factories
 				if (!player.EnableMoves || (player.Character.Crouched && player.Character.IsSupported) || vault.CurrentState.Value != Vault.State.None)
 					return;
 
-				bool didSomething;
+				bool didSomething = false;
 
-				if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
+				if (predictor.PossibilityCount > 0)
+				{
+					// In slow motion, prefer left and right wall-running
 					if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
 						if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
-							didSomething = wallRun.Activate(WallRun.State.Reverse);
-
-				if (!didSomething)
-					didSomething = vault.Go();
+							if (!(didSomething = vault.Go()))
+								if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
+									didSomething = wallRun.Activate(WallRun.State.Reverse);
+				}
+				else
+				{
+					// In normal mode, prefer straight wall-running
+					if (!(didSomething = vault.Go()))
+						if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
+							if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
+								if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
+									didSomething = wallRun.Activate(WallRun.State.Reverse);
+				}
 
 				if (!didSomething)
 					vault.TryVaultDown();
@@ -501,21 +513,24 @@ namespace Lemma.Factories
 			{
 				delegate()
 				{
-					Entity dataEntity = Factory.Get<PlayerDataFactory>().Instance;
+					Entity dataEntity = PlayerDataFactory.Instance;
+					PlayerData playerData = dataEntity.Get<PlayerData>();
 
 					// HACK. Overwriting the property rather than binding the two together. Oh well.
-					footsteps.RespawnLocations = dataEntity.GetOrMakeListProperty<RespawnLocation>("RespawnLocations");
+					// This is because I haven't written a two-way list binding.
+					footsteps.RespawnLocations = playerData.RespawnLocations;
 					
 					// Bind player data properties
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableRoll"), rollKickSlide.EnableRoll));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableCrouch"), player.EnableCrouch));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableKick"), rollKickSlide.EnableKick));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableWallRun"), wallRun.EnableWallRun));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableWallRunHorizontal"), wallRun.EnableWallRunHorizontal));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableEnhancedWallRun"), wallRun.EnableEnhancedWallRun));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableSlowMotion"), player.EnableSlowMotion));
-					entity.Add(new TwoWayBinding<bool>(dataEntity.GetProperty<bool>("EnableMoves"), player.EnableMoves));
-					entity.Add(new TwoWayBinding<float>(dataEntity.GetProperty<float>("MaxSpeed"), player.Character.MaxSpeed));
+					entity.Add(new TwoWayBinding<float>(playerData.CameraShakeAmount, cameraControl.CameraShakeAmount));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableRoll, rollKickSlide.EnableRoll));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableCrouch, player.EnableCrouch));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableKick, rollKickSlide.EnableKick));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableWallRun, wallRun.EnableWallRun));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableWallRunHorizontal, wallRun.EnableWallRunHorizontal));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableEnhancedWallRun, wallRun.EnableEnhancedWallRun));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableSlowMotion, player.EnableSlowMotion));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableMoves, player.EnableMoves));
+					entity.Add(new TwoWayBinding<float>(playerData.MaxSpeed, player.Character.MaxSpeed));
 
 					Phone phone = dataEntity.GetOrCreate<Phone>("Phone");
 
@@ -531,7 +546,9 @@ namespace Lemma.Factories
 						)
 					);
 
-					PhoneNote.Attach(main, entity, model, input, phone, player.Character.EnableWalking, player.EnableMoves);
+					Property<bool> phoneActive = dataEntity.GetOrMakeProperty<bool>("PhoneActive");
+					Property<bool> noteActive = dataEntity.GetOrMakeProperty<bool>("NoteActive");
+					PhoneNote.Attach(main, entity, model, input, phone, player.Character.EnableWalking, player.EnableMoves, phoneActive, noteActive);
 				}
 			});
 		}

@@ -40,7 +40,7 @@ namespace Lemma.Factories
 					{
 						if (!string.IsNullOrEmpty(name))
 						{
-							Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance.GetOrCreate<Phone>("Phone");
+							Phone phone = PlayerDataFactory.Instance.GetOrCreate<Phone>("Phone");
 							try
 							{
 								DialogueForest forest = WorldFactory.Instance.GetProperty<DialogueForest>();

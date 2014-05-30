@@ -14,15 +14,15 @@ namespace Lemma
 		public static void Main(string[] args)
 		{
 			string error = null;
-			GameMain main = null;
+			Main main = null;
 			if (Debugger.IsAttached)
 			{
-				main = new GameMain();
+				main = new Main();
 				try
 				{
 					main.Run();
 				}
-				catch (GameMain.ExitException)
+				catch (Main.ExitException)
 				{
 
 				}
@@ -31,12 +31,12 @@ namespace Lemma
 			{
 				try
 				{
-					main = new GameMain();
+					main = new Main();
 					main.Run();
 				}
 				catch (Exception e)
 				{
-					if (!(e is GameMain.ExitException))
+					if (!(e is Main.ExitException))
 						error = e.ToString();
 				}
 			}

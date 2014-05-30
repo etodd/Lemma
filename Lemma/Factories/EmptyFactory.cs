@@ -34,14 +34,14 @@ namespace Lemma.Factories
 			entity.Add("Detach", detach);
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(entity, main, true, false, detach);
+				VoxelAttachable.MakeAttachable(entity, main, true, false, detach);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
 		{
 			base.AttachEditorComponents(entity, main);
 
-			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
+			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
 	}
 }

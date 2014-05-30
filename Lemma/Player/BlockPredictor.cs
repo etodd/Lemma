@@ -13,9 +13,9 @@ namespace Lemma.Components
 	{
 		public class Possibility
 		{
-			public Map Map;
-			public Map.Coordinate StartCoord;
-			public Map.Coordinate EndCoord;
+			public Voxel Map;
+			public Voxel.Coord StartCoord;
+			public Voxel.Coord EndCoord;
 			public ModelAlpha Model;
 		}
 
@@ -40,7 +40,7 @@ namespace Lemma.Components
 
 		private float blockPossibilityLifetime = 0.0f;
 
-		private Dictionary<Map, List<Possibility>> possibilities = new Dictionary<Map, List<Possibility>>();
+		private Dictionary<Voxel, List<Possibility>> possibilities = new Dictionary<Voxel, List<Possibility>>();
 		
 		public IEnumerable<Possibility> AllPossibilities
 		{
@@ -50,7 +50,15 @@ namespace Lemma.Components
 			}
 		}
 
-		private Map.CellState temporary;
+		public int PossibilityCount
+		{
+			get
+			{
+				return this.possibilities.Count;
+			}
+		}
+
+		private Voxel.State temporary;
 
 		private static Direction[] platformBuildableDirections = DirectionExtensions.HorizontalDirections.Union(new[] { Direction.NegativeY }).ToArray();
 
@@ -61,7 +69,7 @@ namespace Lemma.Components
 			base.Awake();
 			this.Serialize = false;
 			this.EnabledWhenPaused = false;
-			this.temporary = Map.States[Map.t.Temporary];
+			this.temporary = Voxel.States[Voxel.t.Temporary];
 			this.particleSystem = ParticleSystem.Get(main, "Distortion");
 		}
 
@@ -106,7 +114,7 @@ namespace Lemma.Components
 			blockPossibilityLifetime = 0.0f;
 		}
 
-		public List<Possibility> GetPossibilities(Map m)
+		public List<Possibility> GetPossibilities(Voxel m)
 		{
 			List<Possibility> result;
 			this.possibilities.TryGetValue(m, out result);
@@ -166,31 +174,31 @@ namespace Lemma.Components
 
 			int shortestDistance = searchDistance;
 			Direction relativeShortestDirection = Direction.None, absoluteShortestDirection = Direction.None;
-			Map.Coordinate shortestCoordinate = new Map.Coordinate();
-			Map shortestMap = null;
+			Voxel.Coord shortestCoordinate = new Voxel.Coord();
+			Voxel shortestMap = null;
 
 			EffectBlockFactory blockFactory = Factory.Get<EffectBlockFactory>();
-			foreach (Map map in Map.ActivePhysicsMaps)
+			foreach (Voxel map in Voxel.ActivePhysicsVoxels)
 			{
 				List<Matrix> results = new List<Matrix>();
-				Map.Coordinate absolutePlayerCoord = map.GetCoordinate(position);
+				Voxel.Coord absolutePlayerCoord = map.GetCoordinate(position);
 				bool inMap = map.GetChunk(absolutePlayerCoord, false) != null;
 				foreach (Direction absoluteDir in platformBuildableDirections)
 				{
-					Map.Coordinate playerCoord = absoluteDir == Direction.NegativeY ? absolutePlayerCoord : map.GetCoordinate(position + new Vector3(0, platformSize / -2.0f, 0));
+					Voxel.Coord playerCoord = absoluteDir == Direction.NegativeY ? absolutePlayerCoord : map.GetCoordinate(position + new Vector3(0, platformSize / -2.0f, 0));
 					Direction relativeDir = map.GetRelativeDirection(absoluteDir);
 					if (!inMap && map.GetChunk(playerCoord.Move(relativeDir, searchDistance), false) == null)
 						continue;
 
 					for (int i = 1; i < shortestDistance; i++)
 					{
-						Map.Coordinate coord = playerCoord.Move(relativeDir, i);
-						Map.CellState state = map[coord];
+						Voxel.Coord coord = playerCoord.Move(relativeDir, i);
+						Voxel.State state = map[coord];
 
-						if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = map, Coordinate = coord, }))
+						if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Voxel = map, Coordinate = coord, }))
 						{
 							// Check we're not in a no-build zone
-							if (state.ID != Map.t.AvoidAI && Zone.CanBuild(map.GetAbsolutePosition(coord)))
+							if (state.ID != Voxel.t.AvoidAI && Zone.CanBuild(map.GetAbsolutePosition(coord)))
 							{
 								shortestDistance = i;
 								relativeShortestDirection = relativeDir;
@@ -210,14 +218,14 @@ namespace Lemma.Components
 				Direction zDir = relativeShortestDirection.Cross(yDir);
 
 				int initialOffset = absoluteShortestDirection == Direction.NegativeY ? 0 : -2;
-				Map.Coordinate startCoord = shortestCoordinate.Move(relativeShortestDirection, initialOffset).Move(yDir, platformSize / -2).Move(zDir, platformSize / -2);
-				Map.Coordinate endCoord = startCoord.Move(relativeShortestDirection, -initialOffset + shortestDistance).Move(yDir, platformSize).Move(zDir, platformSize);
+				Voxel.Coord startCoord = shortestCoordinate.Move(relativeShortestDirection, initialOffset).Move(yDir, platformSize / -2).Move(zDir, platformSize / -2);
+				Voxel.Coord endCoord = startCoord.Move(relativeShortestDirection, -initialOffset + shortestDistance).Move(yDir, platformSize).Move(zDir, platformSize);
 
 				return new Possibility
 				{
 					Map = shortestMap,
-					StartCoord = new Map.Coordinate { X = Math.Min(startCoord.X, endCoord.X), Y = Math.Min(startCoord.Y, endCoord.Y), Z = Math.Min(startCoord.Z, endCoord.Z) },
-					EndCoord = new Map.Coordinate { X = Math.Max(startCoord.X, endCoord.X), Y = Math.Max(startCoord.Y, endCoord.Y), Z = Math.Max(startCoord.Z, endCoord.Z) },
+					StartCoord = new Voxel.Coord { X = Math.Min(startCoord.X, endCoord.X), Y = Math.Min(startCoord.Y, endCoord.Y), Z = Math.Min(startCoord.Z, endCoord.Z) },
+					EndCoord = new Voxel.Coord { X = Math.Max(startCoord.X, endCoord.X), Y = Math.Max(startCoord.Y, endCoord.Y), Z = Math.Max(startCoord.Z, endCoord.Z) },
 				};
 			}
 			return null;
@@ -229,14 +237,14 @@ namespace Lemma.Components
 			const int searchDistance = 20;
 			const int additionalDistance = 6;
 
-			Map shortestMap = null;
-			Map.Coordinate shortestPlayerCoord = new Map.Coordinate();
+			Voxel shortestMap = null;
+			Voxel.Coord shortestPlayerCoord = new Voxel.Coord();
 			Direction shortestWallDirection = Direction.None;
 			Direction shortestBuildDirection = Direction.None;
 			int shortestDistance = searchDistance;
 
 			EffectBlockFactory blockFactory = Factory.Get<EffectBlockFactory>();
-			foreach (Map map in Map.ActivePhysicsMaps)
+			foreach (Voxel map in Voxel.ActivePhysicsVoxels)
 			{
 				foreach (Direction absoluteWallDir in DirectionExtensions.HorizontalDirections)
 				{
@@ -245,18 +253,18 @@ namespace Lemma.Components
 					float dot = Vector2.Dot(direction, Vector2.Normalize(new Vector2(wallVector.X, wallVector.Z)));
 					if (dot > -0.25f && dot < 0.8f)
 					{
-						Map.Coordinate coord = map.GetCoordinate(position).Move(relativeWallDir, 2);
+						Voxel.Coord coord = map.GetCoordinate(position).Move(relativeWallDir, 2);
 						foreach (Direction dir in DirectionExtensions.Directions.Where(x => x.IsPerpendicular(relativeWallDir)))
 						{
 							for (int i = 0; i < shortestDistance; i++)
 							{
-								Map.Coordinate c = coord.Move(dir, i);
-								Map.CellState state = map[c];
+								Voxel.Coord c = coord.Move(dir, i);
+								Voxel.State state = map[c];
 
-								if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Map = map, Coordinate = c, }))
+								if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Voxel = map, Coordinate = c, }))
 								{
 									// Check we're not in a no-build zone
-									if (state.ID != Map.t.AvoidAI && Zone.CanBuild(map.GetAbsolutePosition(c)))
+									if (state.ID != Voxel.t.AvoidAI && Zone.CanBuild(map.GetAbsolutePosition(c)))
 									{
 										shortestMap = map;
 										shortestBuildDirection = dir;
@@ -278,13 +286,13 @@ namespace Lemma.Components
 				// Found something to build a wall on.
 				Direction dirU = shortestBuildDirection;
 				Direction dirV = dirU.Cross(shortestWallDirection);
-				Map.Coordinate startCoord = shortestPlayerCoord.Move(dirU, shortestDistance).Move(dirV, additionalDistance);
-				Map.Coordinate endCoord = shortestPlayerCoord.Move(dirU, -additionalDistance).Move(dirV, -additionalDistance).Move(shortestWallDirection);
+				Voxel.Coord startCoord = shortestPlayerCoord.Move(dirU, shortestDistance).Move(dirV, additionalDistance);
+				Voxel.Coord endCoord = shortestPlayerCoord.Move(dirU, -additionalDistance).Move(dirV, -additionalDistance).Move(shortestWallDirection);
 				return new Possibility
 				{
 					Map = shortestMap,
-					StartCoord = new Map.Coordinate { X = Math.Min(startCoord.X, endCoord.X), Y = Math.Min(startCoord.Y, endCoord.Y), Z = Math.Min(startCoord.Z, endCoord.Z) },
-					EndCoord = new Map.Coordinate { X = Math.Max(startCoord.X, endCoord.X), Y = Math.Max(startCoord.Y, endCoord.Y), Z = Math.Max(startCoord.Z, endCoord.Z) },
+					StartCoord = new Voxel.Coord { X = Math.Min(startCoord.X, endCoord.X), Y = Math.Min(startCoord.Y, endCoord.Y), Z = Math.Min(startCoord.Z, endCoord.Z) },
+					EndCoord = new Voxel.Coord { X = Math.Max(startCoord.X, endCoord.X), Y = Math.Max(startCoord.Y, endCoord.Y), Z = Math.Max(startCoord.Z, endCoord.Z) },
 				};
 			}
 
@@ -313,7 +321,7 @@ namespace Lemma.Components
 			{
 				startPosition = this.FootPosition + straightAhead;
 
-				velocity = straightAhead + new Vector3(0, this.JumpSpeed, 0);
+				velocity = (straightAhead * 0.5f) + new Vector3(0, this.JumpSpeed, 0);
 			}
 			else
 			{

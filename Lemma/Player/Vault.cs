@@ -54,8 +54,8 @@ namespace Lemma.Components
 		private Vector3 originalPosition;
 		private Vector3 vaultVelocity;
 		private Vector3 forward;
-		private Map map;
-		private Map.Coordinate coord;
+		private Voxel map;
+		private Voxel.Coord coord;
 
 		public override void Awake()
 		{
@@ -66,19 +66,19 @@ namespace Lemma.Components
 		public bool Go()
 		{
 			Matrix rotationMatrix = Matrix.CreateRotationY(this.Rotation);
-			foreach (Map map in Map.ActivePhysicsMaps)
+			foreach (Voxel map in Voxel.ActivePhysicsVoxels)
 			{
 				Direction up = map.GetRelativeDirection(Direction.PositiveY);
 				Direction right = map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
 				Vector3 pos = this.Position + rotationMatrix.Forward * -1.75f;
-				Map.Coordinate baseCoord = map.GetCoordinate(pos).Move(up, 1);
+				Voxel.Coord baseCoord = map.GetCoordinate(pos).Move(up, 1);
 				int verticalSearchDistance = this.IsSupported ? 2 : 3;
 				foreach (int x in new[] { 0, -1, 1 })
 				{
-					Map.Coordinate coord = baseCoord.Move(right, x);
+					Voxel.Coord coord = baseCoord.Move(right, x);
 					for (int i = 0; i < verticalSearchDistance; i++)
 					{
-						Map.Coordinate downCoord = coord.Move(up.GetReverse());
+						Voxel.Coord downCoord = coord.Move(up.GetReverse());
 
 						if (map[coord].ID != 0)
 							break;
@@ -99,13 +99,13 @@ namespace Lemma.Components
 				Direction up = possibility.Map.GetRelativeDirection(Direction.PositiveY);
 				Direction right = possibility.Map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
 				Vector3 pos = this.Position + rotationMatrix.Forward * -1.75f;
-				Map.Coordinate baseCoord = possibility.Map.GetCoordinate(pos).Move(up, 1);
+				Voxel.Coord baseCoord = possibility.Map.GetCoordinate(pos).Move(up, 1);
 				foreach (int x in new[] { 0, -1, 1 })
 				{
-					Map.Coordinate coord = baseCoord.Move(right, x);
+					Voxel.Coord coord = baseCoord.Move(right, x);
 					for (int i = 0; i < 4; i++)
 					{
-						Map.Coordinate downCoord = coord.Move(up.GetReverse());
+						Voxel.Coord downCoord = coord.Move(up.GetReverse());
 						if (!coord.Between(possibility.StartCoord, possibility.EndCoord) && downCoord.Between(possibility.StartCoord, possibility.EndCoord))
 						{
 							this.Predictor.InstantiatePossibility(possibility);
@@ -120,8 +120,9 @@ namespace Lemma.Components
 			return false;
 		}
 
-		private void vault(Map map, Map.Coordinate coord)
+		private void vault(Voxel map, Voxel.Coord coord)
 		{
+			bool topOut = this.WallRunState.Value != WallRun.State.None;
 			this.DeactivateWallRun.Execute();
 			this.CurrentState.Value = State.Straight;
 
@@ -137,7 +138,7 @@ namespace Lemma.Components
 
 			this.map = map;
 
-			DynamicMap dynamicMap = map as DynamicMap;
+			DynamicVoxel dynamicMap = map as DynamicVoxel;
 			if (dynamicMap != null)
 			{
 				BEPUphysics.Entities.Entity supportEntity = dynamicMap.PhysicsEntity;
@@ -162,7 +163,7 @@ namespace Lemma.Components
 			this.AllowUncrouch.Value = false;
 
 			Session.Recorder.Event(main, "Vault");
-			this.Model.StartClip("Vault", 4, false, 0.1f);
+			this.Model.StartClip(topOut ? "TopOut" : "Mantle", 4, false, 0.1f);
 
 			if (this.random.NextDouble() > 0.5)
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, this.Entity);
@@ -198,11 +199,11 @@ namespace Lemma.Components
 
 			Matrix rotationMatrix = Matrix.CreateRotationY(this.Rotation);
 			bool foundObstacle = false;
-			foreach (Map map in Map.ActivePhysicsMaps)
+			foreach (Voxel map in Voxel.ActivePhysicsVoxels)
 			{
 				Direction down = map.GetRelativeDirection(Direction.NegativeY);
 				Vector3 pos = this.Position + rotationMatrix.Forward * -1.75f;
-				Map.Coordinate coord = map.GetCoordinate(pos);
+				Voxel.Coord coord = map.GetCoordinate(pos);
 
 				for (int i = 0; i < 5; i++)
 				{
@@ -306,6 +307,8 @@ namespace Lemma.Components
 							// to keep the player moving forward over the wall
 							this.movingForward = true;
 							this.moveForwardStartTime = this.vaultTime;
+							this.Model.Stop("Mantle", "TopOut");
+							this.Model.StartClip("Vault", 4, false, 0.0f);
 						}
 						else
 						{

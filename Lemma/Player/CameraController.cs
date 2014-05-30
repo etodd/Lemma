@@ -23,7 +23,9 @@ namespace Lemma.Components
 
 		// Input properties
 		[XmlIgnore]
-		public Property<float> BaseCameraShakeAmount = new Property<float> { Value = 0.0f };
+		public Property<float> BaseCameraShakeAmount = new Property<float>();
+
+		public Property<float> CameraShakeAmount = new Property<float>();
 		[XmlIgnore]
 		public Property<Matrix> CameraBone = new Property<Matrix>();
 		[XmlIgnore]
@@ -76,7 +78,7 @@ namespace Lemma.Components
 		{
 			Vector2 mouse = this.Mouse;
 			Vector3 shake = Vector3.Zero;
-			float finalShakeAmount = this.BaseCameraShakeAmount;
+			float finalShakeAmount = this.BaseCameraShakeAmount + this.CameraShakeAmount;
 			if (this.shakeTime > 0.0f)
 			{
 				finalShakeAmount += this.shakeAmount * this.blendShake();
@@ -99,10 +101,10 @@ namespace Lemma.Components
 
 				main.Camera.Angles.Value = new Vector3(-mouse.Y + shake.X, mouse.X + (float)Math.PI * 1.0f + shake.Y, shake.Z);
 
-				Map.GlobalRaycastResult hit = Map.GlobalRaycast(cameraPosition, -main.Camera.Forward.Value, 5.0f);
+				Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(cameraPosition, -main.Camera.Forward.Value, 5.0f);
 
 				float cameraDistance = 4.0f;
-				if (hit.Map != null)
+				if (hit.Voxel != null)
 					cameraDistance = (hit.Position - cameraPosition).Length() - 1.0f;
 				main.Camera.Position.Value = cameraPosition + (main.Camera.Right.Value * cameraDistance * -0.25f) + (main.Camera.Forward.Value * -cameraDistance);
 			}

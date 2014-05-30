@@ -39,8 +39,8 @@ namespace Lemma.Components
 					{
 						distance = (float)Math.Sqrt(distance);
 						toAgent /= distance;
-						Map.GlobalRaycastResult hit = Map.GlobalRaycast(pos + toAgent * 4.0f, toAgent, distance);
-						if (hit.Map == null || hit.Map.Entity == agent.Entity)
+						Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(pos + toAgent * 4.0f, toAgent, distance);
+						if (hit.Voxel == null || hit.Voxel.Entity == agent.Entity)
 							return agent;
 					}
 				}

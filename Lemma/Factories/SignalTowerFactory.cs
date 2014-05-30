@@ -28,7 +28,7 @@ namespace Lemma.Factories
 			this.SetMain(entity, main);
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				MapAttachable.MakeAttachable(entity, main);
+				VoxelAttachable.MakeAttachable(entity, main);
 			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
 			
 			trigger.Editable = true;
@@ -53,7 +53,7 @@ namespace Lemma.Factories
 			SignalTower tower = entity.GetOrCreate<SignalTower>("SignalTower");
 
 			Animation enterAnimation = null;
-			trigger.Add(new CommandBinding<Entity>(trigger.PlayerEntered, delegate(Entity p)
+			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
 			{
 				if (!string.IsNullOrEmpty(tower.Initial) && (enterAnimation == null || !enterAnimation.Active))
 				{
@@ -66,8 +66,8 @@ namespace Lemma.Factories
 				}
 			}));
 
-			tower.Add(new CommandBinding<Entity>(trigger.PlayerEntered, tower.PlayerEnteredRange));
-			tower.Add(new CommandBinding<Entity>(trigger.PlayerExited, tower.PlayerExitedRange));
+			tower.Add(new CommandBinding(trigger.PlayerEntered, tower.PlayerEnteredRange));
+			tower.Add(new CommandBinding(trigger.PlayerExited, tower.PlayerExitedRange));
 			tower.Add(new Binding<Entity.Handle>(tower.Player, trigger.Player));
 
 			AkGameObjectTracker.Attach(entity, trigger.Position);
@@ -91,7 +91,7 @@ namespace Lemma.Factories
 		{
 			base.AttachEditorComponents(entity, main);
 
-			MapAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
+			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 			PlayerTrigger.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
 	}

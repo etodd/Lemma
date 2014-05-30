@@ -23,16 +23,16 @@ namespace Lemma.Components
 		private const float messageDelay = 2.0f;
 
 		[XmlIgnore]
-		public Command<Entity> PlayerEnteredRange = new Command<Entity>();
+		public Command PlayerEnteredRange = new Command();
 		[XmlIgnore]
-		public Command<Entity> PlayerExitedRange = new Command<Entity>();
+		public Command PlayerExitedRange = new Command();
 
 		public override void Awake()
 		{
 			base.Awake();
-			this.PlayerEnteredRange.Action = delegate(Entity p)
+			this.PlayerEnteredRange.Action = delegate()
 			{
-				Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance.Get<Phone>();
+				Phone phone = PlayerDataFactory.Instance.Get<Phone>();
 
 				if (!string.IsNullOrEmpty(this.Initial))
 				{
@@ -60,17 +60,17 @@ namespace Lemma.Components
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SIGNAL_TOWER_ACTIVATE, this.Entity);
 				}
 
-				p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = this.Entity;
+				PlayerFactory.Instance.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = this.Entity;
 			};
 
-			this.PlayerExitedRange.Action = delegate(Entity p)
+			this.PlayerExitedRange.Action = delegate()
 			{
-				Phone phone = Factory<Main>.Get<PlayerDataFactory>().Instance.Get<Phone>();
+				Phone phone = PlayerDataFactory.Instance.Get<Phone>();
 
 				phone.ActiveAnswers.Clear();
 
-				if (p != null)
-					p.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = null;
+				if (PlayerFactory.Instance != null)
+					PlayerFactory.Instance.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = null;
 			};
 
 			if (!this.main.EditorEnabled)

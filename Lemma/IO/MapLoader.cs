@@ -22,8 +22,8 @@ namespace Lemma.IO
 			typeof(PlayerTrigger),
 			typeof(Trigger),
 			typeof(PlayerCylinderTrigger),
-			typeof(Map),
-			typeof(DynamicMap),
+			typeof(Voxel),
+			typeof(DynamicVoxel),
 			typeof(PlayerSpawn),
 			typeof(Timer),
 			typeof(Model),
@@ -51,8 +51,8 @@ namespace Lemma.IO
 			typeof(RespawnLocation),
 			typeof(ListProperty<RespawnLocation>),
 			typeof(VoxelChaseAI),
-			typeof(FillMapFactory.CoordinateEntry),
-			typeof(ListProperty<FillMapFactory.CoordinateEntry>),
+			typeof(VoxelFillFactory.CoordinateEntry),
+			typeof(ListProperty<VoxelFillFactory.CoordinateEntry>),
 			typeof(Phone),
 			typeof(RaycastAI),
 			typeof(SignalTower),
@@ -60,6 +60,7 @@ namespace Lemma.IO
 			typeof(Property<UInt32>),
 			typeof(Propagator),
 			typeof(RotationController),
+			typeof(PlayerData),
 		};
 
 		public static XmlSerializer Serializer;

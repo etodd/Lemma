@@ -13,7 +13,7 @@ namespace Lemma.Components
 	public class RespawnLocation
 	{
 		public Entity.Handle Map;
-		public Map.Coordinate Coordinate;
+		public Voxel.Coord Coordinate;
 		public float Rotation;
 		public Vector3 OriginalPosition;
 	}
@@ -28,7 +28,7 @@ namespace Lemma.Components
 
 		// Output commands
 		[XmlIgnore]
-		public Command<Map, Map.Coordinate, Direction> WalkedOn = new Command<Map, Map.Coordinate, Direction>();
+		public Command<Voxel, Voxel.Coord, Direction> WalkedOn = new Command<Voxel, Voxel.Coord, Direction>();
 
 		// Input properties
 		public Property<bool> SoundEnabled = new Property<bool>();
@@ -44,7 +44,7 @@ namespace Lemma.Components
 		// Input/output properties
 		public Property<float> Health = new Property<float>();
 
-		private Map.GlobalRaycastResult groundRaycast;
+		private Voxel.GlobalRaycastResult groundRaycast;
 		private bool lastSupported;
 
 		private int walkedOnCount = 0;
@@ -62,45 +62,69 @@ namespace Lemma.Components
 					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, this.Entity);
 			};
 
-			Map.CellState temporary = Map.States[Map.t.Temporary],
-				expander = Map.States[Map.t.Expander],
-				neutral = Map.States[Map.t.Neutral];
+			Voxel.State temporary = Voxel.States[Voxel.t.Temporary],
+				expander = Voxel.States[Voxel.t.Expander],
+				neutral = Voxel.States[Voxel.t.Neutral];
 
-			this.Add(new CommandBinding<Map, Map.Coordinate, Direction>(this.WalkedOn, delegate(Map map, Map.Coordinate coord, Direction dir)
+			this.Add(new CommandBinding<Voxel, Voxel.Coord, Direction>(this.WalkedOn, delegate(Voxel map, Voxel.Coord coord, Direction dir)
 			{
-				Map.CellState state = map[coord];
+				Voxel.State state = map[coord];
 
-				if (state != Map.EmptyState)
+				if (state != Voxel.EmptyState)
+				{
 					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, state.FootstepSwitch, this.Entity);
 
-				Map.t id = state.ID;
-				if (id == Map.t.Neutral)
+					if (this.WallRunState.Value == WallRun.State.None)
+					{
+						if (map.GetAbsoluteDirection(dir) == Direction.NegativeY)
+						{
+							this.walkedOnCount++;
+							if (this.walkedOnCount >= 2)
+							{
+								// Every few tiles, save off the location for the auto-respawn system
+								this.RespawnLocations.Add(new RespawnLocation
+								{
+									Coordinate = coord,
+									Map = map.Entity,
+									Rotation = this.Rotation,
+									OriginalPosition = map.GetAbsolutePosition(coord),
+								});
+								while (this.RespawnLocations.Count > Spawner.RespawnMemoryLength)
+									this.RespawnLocations.RemoveAt(0);
+								this.walkedOnCount = 0;
+							}
+						}
+					}
+				}
+
+				Voxel.t id = state.ID;
+				if (id == Voxel.t.Neutral)
 				{
 					map.Empty(coord);
 					map.Fill(coord, temporary);
 					map.Regenerate();
 					WorldFactory.Instance.Get<Propagator>().Sparks(map.GetAbsolutePosition(coord), Propagator.Spark.Normal);
 				}
-				else if (id == Map.t.Reset)
+				else if (id == Voxel.t.Reset)
 				{
 					bool regenerate = false;
 
-					Dictionary<Map.Coordinate, bool> visited = new Dictionary<Map.Coordinate, bool>();
-					Queue<Map.Coordinate> queue = new Queue<Map.Coordinate>();
+					Dictionary<Voxel.Coord, bool> visited = new Dictionary<Voxel.Coord, bool>();
+					Queue<Voxel.Coord> queue = new Queue<Voxel.Coord>();
 					queue.Enqueue(coord);
 					while (queue.Count > 0)
 					{
-						Map.Coordinate c = queue.Dequeue();
+						Voxel.Coord c = queue.Dequeue();
 						visited[c] = true;
 						foreach (Direction adjacentDirection in DirectionExtensions.Directions)
 						{
-							Map.Coordinate adjacentCoord = c.Move(adjacentDirection);
+							Voxel.Coord adjacentCoord = c.Move(adjacentDirection);
 							if (!visited.ContainsKey(adjacentCoord))
 							{
-								Map.t adjacentID = map[adjacentCoord].ID;
-								if (adjacentID == Map.t.Reset)
+								Voxel.t adjacentID = map[adjacentCoord].ID;
+								if (adjacentID == Voxel.t.Reset)
 									queue.Enqueue(adjacentCoord);
-								else if (adjacentID == Map.t.Infected || adjacentID == Map.t.Temporary)
+								else if (adjacentID == Voxel.t.Infected || adjacentID == Voxel.t.Temporary)
 								{
 									map.Empty(adjacentCoord);
 									map.Fill(adjacentCoord, neutral);
@@ -114,10 +138,10 @@ namespace Lemma.Components
 				}
 
 				// Lava. Damage the player character if it steps on lava.
-				bool isInfected = id == Map.t.Infected || id == Map.t.InfectedCritical;
+				bool isInfected = id == Voxel.t.Infected || id == Voxel.t.InfectedCritical;
 				if (isInfected)
 					this.Health.Value -= 0.2f;
-				else if (id == Map.t.Floater)
+				else if (id == Voxel.t.Floater)
 				{
 					// Floater. Delete the block after a delay.
 					Vector3 pos = map.GetAbsolutePosition(coord);
@@ -128,7 +152,7 @@ namespace Lemma.Components
 						new Animation.Delay(1.0f),
 						new Animation.Execute(delegate()
 						{
-							if (map[coord].ID == Map.t.Floater)
+							if (map[coord].ID == Voxel.t.Floater)
 							{
 								map.Empty(coord);
 								map.Regenerate();
@@ -136,7 +160,7 @@ namespace Lemma.Components
 						})
 					));
 				}
-				else if (id == Map.t.Expander)
+				else if (id == Voxel.t.Expander)
 				{
 					// Expander. Expand the block after a delay.
 					const int expandLength = 6;
@@ -149,7 +173,7 @@ namespace Lemma.Components
 						new Animation.Delay(1.5f),
 						new Animation.Execute(delegate()
 						{
-							if (map[coord].ID == Map.t.Expander)
+							if (map[coord].ID == Voxel.t.Expander)
 							{
 								Direction normal = dir.GetReverse();
 								Direction right = normal == Direction.PositiveY ? Direction.PositiveX : normal.Cross(Direction.PositiveY);
@@ -157,13 +181,13 @@ namespace Lemma.Components
 								pos = map.GetAbsolutePosition(coord);
 								WorldFactory.Instance.Get<Propagator>().Sparks(map.GetAbsolutePosition(coord), Propagator.Spark.Expander);
 								List<EffectBlockFactory.BlockBuildOrder> buildCoords = new List<EffectBlockFactory.BlockBuildOrder>();
-								foreach (Map.Coordinate c in coord.Move(right, -expandWidth).Move(ortho, -expandWidth).CoordinatesBetween(coord.Move(right, expandWidth).Move(ortho, expandWidth).Move(normal, expandLength).Move(1, 1, 1)))
+								foreach (Voxel.Coord c in coord.Move(right, -expandWidth).Move(ortho, -expandWidth).CoordinatesBetween(coord.Move(right, expandWidth).Move(ortho, expandWidth).Move(normal, expandLength).Move(1, 1, 1)))
 								{
 									if (map[c].ID == 0)
 									{
 										buildCoords.Add(new EffectBlockFactory.BlockBuildOrder
 										{
-											Map = map,
+											Voxel = map,
 											Coordinate = c,
 											State = expander,
 										});
@@ -181,37 +205,21 @@ namespace Lemma.Components
 
 		public void Update(float dt)
 		{
-			Map oldMap = this.groundRaycast.Map;
-			Map.Coordinate? oldCoord = this.groundRaycast.Coordinate;
+			Voxel oldMap = this.groundRaycast.Voxel;
+			Voxel.Coord? oldCoord = this.groundRaycast.Coordinate;
 			
 			Direction direction;
 
 			// Wall-run code will call our WalkedOn event for us, so only worry about this stuff if we're walking normally
 			if (this.WallRunState == WallRun.State.None)
 			{
-				groundRaycast = Map.GlobalRaycast(this.Position, Vector3.Down, this.CharacterHeight.Value * 0.5f + this.SupportHeight + 1.1f);
-				direction = groundRaycast.Normal.GetReverse();
+				this.groundRaycast = Voxel.GlobalRaycast(this.Position, Vector3.Down, this.CharacterHeight.Value * 0.5f + this.SupportHeight + 1.1f);
+				direction = this.groundRaycast.Normal.GetReverse();
 
-				if (groundRaycast.Map != null &&
-					(groundRaycast.Map != oldMap || oldCoord == null || !oldCoord.Value.Equivalent(groundRaycast.Coordinate.Value)))
+				if (this.groundRaycast.Voxel != null &&
+					(this.groundRaycast.Voxel != oldMap || oldCoord == null || !oldCoord.Value.Equivalent(this.groundRaycast.Coordinate.Value)))
 				{
-					this.WalkedOn.Execute(groundRaycast.Map, groundRaycast.Coordinate.Value, direction);
-
-					this.walkedOnCount++;
-					if (this.walkedOnCount >= 3)
-					{
-						// Every 3 tiles, save off the location for the auto-respawn system
-						this.RespawnLocations.Add(new RespawnLocation
-						{
-							Coordinate = this.groundRaycast.Coordinate.Value,
-							Map = this.groundRaycast.Map.Entity,
-							Rotation = this.Rotation,
-							OriginalPosition = this.groundRaycast.Map.GetAbsolutePosition(this.groundRaycast.Coordinate.Value),
-						});
-						while (this.RespawnLocations.Count > GameMain.RespawnMemoryLength)
-							this.RespawnLocations.RemoveAt(0);
-						this.walkedOnCount = 0;
-					}
+					this.WalkedOn.Execute(this.groundRaycast.Voxel, this.groundRaycast.Coordinate.Value, direction);
 				}
 			}
 

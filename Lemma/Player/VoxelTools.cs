@@ -18,35 +18,35 @@ namespace Lemma.Components
 
 		private Random random = new Random();
 
-		private Map.CellState temporary;
+		private Voxel.State temporary;
 
 		public override void Awake()
 		{
 			base.Awake();
 			this.Serialize = false;
-			this.temporary = Map.States[Map.t.Temporary];
+			this.temporary = Voxel.States[Voxel.t.Temporary];
 		}
 
-		public void BuildFloor(Map floorMap, Map.Coordinate floorCoordinate, Direction forwardDir, Direction rightDir)
+		public void BuildFloor(Voxel floorMap, Voxel.Coord floorCoordinate, Direction forwardDir, Direction rightDir)
 		{
 			List<EffectBlockFactory.BlockBuildOrder> buildCoords = new List<EffectBlockFactory.BlockBuildOrder>();
 
-			Map.Coordinate newFloorCoordinate = floorMap.GetCoordinate(this.Position);
+			Voxel.Coord newFloorCoordinate = floorMap.GetCoordinate(this.Position);
 			floorCoordinate.SetComponent(rightDir, newFloorCoordinate.GetComponent(rightDir));
 			floorCoordinate.SetComponent(forwardDir, newFloorCoordinate.GetComponent(forwardDir));
 
 			const int radius = 3;
-			for (Map.Coordinate x = floorCoordinate.Move(rightDir, -radius); x.GetComponent(rightDir) < floorCoordinate.GetComponent(rightDir) + radius; x = x.Move(rightDir))
+			for (Voxel.Coord x = floorCoordinate.Move(rightDir, -radius); x.GetComponent(rightDir) < floorCoordinate.GetComponent(rightDir) + radius; x = x.Move(rightDir))
 			{
 				int dx = x.GetComponent(rightDir) - floorCoordinate.GetComponent(rightDir);
-				for (Map.Coordinate y = x.Move(forwardDir, -radius); y.GetComponent(forwardDir) < floorCoordinate.GetComponent(forwardDir) + radius; y = y.Move(forwardDir))
+				for (Voxel.Coord y = x.Move(forwardDir, -radius); y.GetComponent(forwardDir) < floorCoordinate.GetComponent(forwardDir) + radius; y = y.Move(forwardDir))
 				{
 					int dy = y.GetComponent(forwardDir) - floorCoordinate.GetComponent(forwardDir);
 					if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && floorMap[y].ID == 0)
 					{
 						buildCoords.Add(new EffectBlockFactory.BlockBuildOrder
 						{
-							Map = floorMap,
+							Voxel = floorMap,
 							Coordinate = y,
 							State = this.temporary,
 						});
@@ -62,22 +62,22 @@ namespace Lemma.Components
 			Vector3 pos = this.Position + new Vector3(0, 0.1f + (this.Height * -0.5f) - this.SupportHeight, 0) + forward * -1.0f;
 			Vector3 basePos = pos;
 			bool broke = false;
-			foreach (Map map in Map.ActivePhysicsMaps.ToList())
+			foreach (Voxel map in Voxel.ActivePhysicsVoxels.ToList())
 			{
-				List<Map.Coordinate> removals = new List<Map.Coordinate>();
+				List<Voxel.Coord> removals = new List<Voxel.Coord>();
 				Quaternion mapQuaternion = map.Entity.Get<Transform>().Quaternion;
 				pos = basePos;
 				for (int i = 0; i < 5; i++)
 				{
-					Map.Coordinate center = map.GetCoordinate(pos);
-					Map.Coordinate top = map.GetCoordinate(basePos + new Vector3(0, this.Height + this.SupportHeight + 0.5f, 0));
+					Voxel.Coord center = map.GetCoordinate(pos);
+					Voxel.Coord top = map.GetCoordinate(basePos + new Vector3(0, this.Height + this.SupportHeight + 0.5f, 0));
 					Direction upDir = map.GetRelativeDirection(Vector3.Up);
 					Direction rightDir = map.GetRelativeDirection(right);
-					for (Map.Coordinate y = center.Move(upDir.GetReverse(), breakFloor ? 2 : 0); y.GetComponent(upDir) <= top.GetComponent(upDir); y = y.Move(upDir))
+					for (Voxel.Coord y = center.Move(upDir.GetReverse(), breakFloor ? 2 : 0); y.GetComponent(upDir) <= top.GetComponent(upDir); y = y.Move(upDir))
 					{
-						for (Map.Coordinate z = y.Move(rightDir.GetReverse(), 1); z.GetComponent(rightDir) < center.GetComponent(rightDir) + 2; z = z.Move(rightDir))
+						for (Voxel.Coord z = y.Move(rightDir.GetReverse(), 1); z.GetComponent(rightDir) < center.GetComponent(rightDir) + 2; z = z.Move(rightDir))
 						{
-							Map.CellState state = map[z];
+							Voxel.State state = map[z];
 							if (state.ID != 0 && !state.Permanent && !state.Hard && !removals.Contains(z))
 							{
 								broke = true;
