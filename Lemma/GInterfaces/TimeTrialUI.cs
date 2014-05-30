@@ -17,11 +17,15 @@ namespace Lemma.GInterfaces
 {
 	public class TimeTrialUI : Component<GameMain>, IUpdateableComponent
 	{
-		public PanelView RootTimeTrialView;
+		public PanelView RootTimePanelView;
 		public TextView TimeTrialCurTimeView;
 		public TextView TimeTrialBestTimeView;
 
+		public PanelView RootTimeEndView;
+		private PanelView EndViewTime;
+
 		public SpriteFont MainFont;
+		public SpriteFont BiggerFont;
 
 		public float ElapsedTime = 0;
 
@@ -30,26 +34,48 @@ namespace Lemma.GInterfaces
 
 		public Property<bool> TimeTrialTicking = new Property<bool>() { Value = true };
 
+		//Stupid little "bruteforce"
+		public int Seconds_FirstPlace = 0;
+		public int Seconds_SecondPlace = 0;
+		public int Seconds_ThirdPlace = 0;
+
+		public override void delete()
+		{
+			if(RootTimePanelView != null && RootTimePanelView.ParentView != null)
+				RootTimePanelView.ParentView.RemoveChild(RootTimePanelView);
+
+			if (RootTimeEndView != null && RootTimeEndView.ParentView != null)
+				RootTimeEndView.ParentView.RemoveChild(RootTimeEndView);
+
+			base.delete();
+		}
+
 		public override void Awake()
 		{
 			MainFont = main.Content.Load<SpriteFont>("Font");
+			BiggerFont = main.Content.Load<SpriteFont>("TimeFont");
 
-			RootTimeTrialView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);
-			RootTimeTrialView.AnchorPoint.Value = new Vector2(1.0f, 0f);
-			RootTimeTrialView.Add(new Binding<Vector2, Point>(RootTimeTrialView.Position, point => new Vector2(point.X - 30, 30), main.ScreenSize));
-			RootTimeTrialView.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
+			RootTimePanelView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);
+			RootTimePanelView.AnchorPoint.Value = new Vector2(1.0f, 0f);
+			RootTimePanelView.Add(new Binding<Vector2, Point>(RootTimePanelView.Position, point => new Vector2(point.X - 30, 30), main.ScreenSize));
+			RootTimePanelView.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
+			RootTimePanelView.Width.Value = 200;
+			RootTimePanelView.Height.Value = 70;
 
-			RootTimeTrialView.UnselectedNinepatch = RootTimeTrialView.SelectedNinepatch = GeeUIMain.NinePatchBtnDefault;
+			RootTimeEndView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);
+			RootTimeEndView.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
+			RootTimeEndView.Add(new Binding<Vector2, Point>(RootTimePanelView.Position, point => new Vector2(point.X/2f, point.Y/2f), main.ScreenSize));
+			RootTimeEndView.Width.Value = 300;
+			RootTimeEndView.Height.Value = 300;
 
-			TimeTrialCurTimeView = new TextView(main.GeeUI, RootTimeTrialView, "Time: 00:00.00", Vector2.Zero, MainFont);
-			TimeTrialBestTimeView = new TextView(main.GeeUI, RootTimeTrialView, "Best: 00:00.00", Vector2.Zero, MainFont);
+			RootTimePanelView.UnselectedNinepatch = RootTimePanelView.SelectedNinepatch = GeeUIMain.NinePatchBtnDefault;
 
-			RootTimeTrialView.Width.Value = 200;
-			RootTimeTrialView.Height.Value = 70;
+			TimeTrialCurTimeView = new TextView(main.GeeUI, RootTimePanelView, "Time: 00:00.00", Vector2.Zero, BiggerFont);
+			TimeTrialBestTimeView = new TextView(main.GeeUI, RootTimePanelView, "Best: 00:00.00", Vector2.Zero, MainFont);
 
-			TimeTrialCurTimeView.TextScale.Value = 2f;
 
-			RootTimeTrialView.Active.Value = false;
+			RootTimePanelView.Active.Value = false;
+			RootTimeEndView.Active.Value = false;
 			AnimateOut();
 
 			this.Add(new NotifyBinding(() =>
@@ -66,12 +92,13 @@ namespace Lemma.GInterfaces
 
 			base.Awake();
 		}
+		
 		private void AnimateIn()
 		{
 			this.main.AddComponent(
 				new Animation(
-					new Animation.Set<bool>(RootTimeTrialView.Active, true),
-					new Animation.Vector2MoveTo(RootTimeTrialView.Position, new Vector2(main.ScreenSize.Value.X - 30, 30), 0.2f)
+					new Animation.Set<bool>(RootTimePanelView.Active, true),
+					new Animation.Vector2MoveTo(RootTimePanelView.Position, new Vector2(main.ScreenSize.Value.X - 30, 30), 0.2f)
 				)
 			);
 			this.ElapsedTime = 0f;
@@ -81,8 +108,8 @@ namespace Lemma.GInterfaces
 		{
 			this.main.AddComponent(
 				new Animation(
-					new Animation.Vector2MoveTo(RootTimeTrialView.Position, new Vector2(main.ScreenSize.Value.X + RootTimeTrialView.Width, 30), 0.2f),
-					new Animation.Set<bool>(RootTimeTrialView.Active, false)
+					new Animation.Vector2MoveTo(RootTimePanelView.Position, new Vector2(main.ScreenSize.Value.X + RootTimePanelView.Width, 30), 0.2f),
+					new Animation.Set<bool>(RootTimePanelView.Active, false)
 				)
 			);
 		}
