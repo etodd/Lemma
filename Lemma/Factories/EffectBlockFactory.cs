@@ -71,7 +71,7 @@ namespace Lemma.Factories
 
 			Property<Entity.Handle> voxel = entity.GetOrMakeProperty<Entity.Handle>("TargetVoxel");
 			Property<Voxel.Coord> coord = entity.GetOrMakeProperty<Voxel.Coord>("TargetCoord");
-			Property<Voxel.t> stateId = entity.GetOrMakeProperty<Voxel.t>("TargetCellStateID");
+			Property<Voxel.t> stateId = entity.GetOrMakeProperty<Voxel.t>("TargetVoxelState");
 
 			Property<float> totalLifetime = entity.GetOrMakeProperty<float>("TotalLifetime");
 			Property<float> lifetime = entity.GetOrMakeProperty<float>("Lifetime");
@@ -252,9 +252,9 @@ namespace Lemma.Factories
 
 		public void Setup(Entity entity, Entity map, Voxel.Coord c, Voxel.t s)
 		{
-			Property<Entity.Handle> mapHandle = entity.GetOrMakeProperty<Entity.Handle>("TargetMap");
+			Property<Entity.Handle> mapHandle = entity.GetOrMakeProperty<Entity.Handle>("TargetVoxel");
 			Property<Voxel.Coord> coord = entity.GetOrMakeProperty<Voxel.Coord>("TargetCoord");
-			Property<Voxel.t> stateId = entity.GetOrMakeProperty<Voxel.t>("TargetCellStateID");
+			Property<Voxel.t> stateId = entity.GetOrMakeProperty<Voxel.t>("TargetVoxelState");
 			mapHandle.InternalValue = map;
 			coord.InternalValue = c;
 			stateId.InternalValue = s;

@@ -122,6 +122,7 @@ namespace Lemma.Components
 
 		private void vault(Voxel map, Voxel.Coord coord)
 		{
+			bool topOut = this.WallRunState.Value != WallRun.State.None;
 			this.DeactivateWallRun.Execute();
 			this.CurrentState.Value = State.Straight;
 
@@ -162,7 +163,7 @@ namespace Lemma.Components
 			this.AllowUncrouch.Value = false;
 
 			Session.Recorder.Event(main, "Vault");
-			this.Model.StartClip("Vault", 4, false, 0.1f);
+			this.Model.StartClip(topOut ? "TopOut" : "Mantle", 4, false, 0.1f);
 
 			if (this.random.NextDouble() > 0.5)
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, this.Entity);
@@ -306,6 +307,8 @@ namespace Lemma.Components
 							// to keep the player moving forward over the wall
 							this.movingForward = true;
 							this.moveForwardStartTime = this.vaultTime;
+							this.Model.Stop("Mantle", "TopOut");
+							this.Model.StartClip("Vault", 4, false, 0.0f);
 						}
 						else
 						{

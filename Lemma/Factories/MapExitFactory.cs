@@ -41,8 +41,8 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
-			this.SetMain(entity, main);
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
+			this.SetMain(entity, main);
 			Property<string> nextMap = entity.GetOrMakeProperty<string>("NextMap", true);
 			Property<string> startSpawnPoint = entity.GetOrMakeProperty<string>("SpawnPoint", true);
 
@@ -56,6 +56,7 @@ namespace Lemma.Factories
 
 				Animation anim = new Animation
 				(
+					main.Spawner.FlashAnimation(),
 					new Animation.Execute(delegate()
 					{
 						notification.Tint.Value = Microsoft.Xna.Framework.Color.Black;

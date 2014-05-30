@@ -1163,7 +1163,7 @@ namespace Lemma.Components
 				this.DataBoxes.Clear();
 				this.DataBoxes = null;
 
-				if (!this.Voxel.main.EditorEnabled && !this.Voxel.EnablePhysics)
+				if (!this.Voxel.main.EditorEnabled && !this.Voxel.Mutable)
 				{
 					this.freeData();
 					foreach (Box box in this.Boxes)
@@ -1713,6 +1713,7 @@ namespace Lemma.Components
 		public Property<Vector3> Offset = new Property<Vector3> { Editable = false };
 
 		public Property<bool> EnablePhysics = new Property<bool> { Editable = true, Value = true };
+		public Property<bool> Mutable = new Property<bool> { Editable = true, Value = true };
 
 		[DefaultValueAttribute(0)]
 		public int OffsetX { get; set; }
@@ -2264,7 +2265,7 @@ namespace Lemma.Components
 		/// <param name="z"></param>
 		public bool Fill(int x, int y, int z, State state, bool notify = true)
 		{
-			if (state == Voxel.EmptyState || (!this.main.EditorEnabled && !this.EnablePhysics))
+			if (state == Voxel.EmptyState || (!this.main.EditorEnabled && !this.Mutable))
 				return false;
 
 			bool filled = false;
@@ -2325,7 +2326,7 @@ namespace Lemma.Components
 
 		public bool Empty(IEnumerable<Coord> coords, bool force = false, bool forceHard = true, Voxel transferringToNewMap = null, bool notify = true)
 		{
-			if (!this.main.EditorEnabled && !this.EnablePhysics)
+			if (!this.main.EditorEnabled && !this.Mutable)
 				return false;
 
 			bool modified = false;
@@ -2337,7 +2338,7 @@ namespace Lemma.Components
 				{
 					Chunk chunk = this.GetChunk(coord.X, coord.Y, coord.Z, false);
 
-					if (chunk == null || (!this.main.EditorEnabled && !this.EnablePhysics))
+					if (chunk == null)
 						continue;
 
 					Box box = chunk.Data[coord.X - chunk.X, coord.Y - chunk.Y, coord.Z - chunk.Z];
@@ -2473,13 +2474,16 @@ namespace Lemma.Components
 		/// <param name="z"></param>
 		public bool Empty(int x, int y, int z, bool force = false, bool forceHard = true, Voxel transferringToNewMap = null, bool notify = true)
 		{
+			if (!this.main.EditorEnabled && !this.Mutable)
+				return false;
+
 			bool modified = false;
 			Voxel.Coord coord = new Coord { X = x, Y = y, Z = z, };
 			lock (this.MutationLock)
 			{
 				Chunk chunk = this.GetChunk(x, y, z, false);
 
-				if (chunk == null || (!this.main.EditorEnabled && !this.EnablePhysics))
+				if (chunk == null)
 					return false;
 
 				Box box = chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];
@@ -3235,7 +3239,7 @@ namespace Lemma.Components
 		{
 			List<DynamicVoxel> spawnedMaps = new List<DynamicVoxel>();
 
-			if (!this.main.EditorEnabled && !this.EnablePhysics)
+			if (!this.main.EditorEnabled && !this.Mutable)
 				return;
 			List<Chunk> chunks;
 			lock (this.MutationLock)
@@ -4687,9 +4691,6 @@ namespace Lemma.Components
 		{
 			get
 			{
-				if (!this.main.EditorEnabled && !this.EnablePhysics)
-					return Voxel.EmptyState;
-
 				Chunk chunk = this.GetChunk(x, y, z, false);
 				if (chunk == null)
 					return Voxel.EmptyState;

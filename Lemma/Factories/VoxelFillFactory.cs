@@ -61,7 +61,7 @@ namespace Lemma.Factories
 							z.Data = y.Data;
 							return new CoordinateEntry { Coord = z, };
 						}))
-							coords.Add(e);
+						coords.Add(e);
 					}
 				}
 			};
@@ -140,18 +140,9 @@ namespace Lemma.Factories
 				}
 			};
 
-			entity.Add("Fill", new Command
-			{
-				Action = fill
-			});
-
-			entity.Add("Trigger", new Command
-			{
-				Action = delegate()
-				{
-					fill();
-				}
-			});
+			Command cmd = new Command { Action = fill };
+			entity.Add("Fill", cmd);
+			entity.Add("Trigger", cmd);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

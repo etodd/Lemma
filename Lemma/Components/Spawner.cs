@@ -13,8 +13,8 @@ namespace Lemma.Components
 	{
 		public bool CanSpawn = true;
 
-		private const float startGamma = 10.0f;
-		private static Vector3 startTint = new Vector3(2.0f);
+		private const float StartGamma = 10.0f;
+		private static Vector3 StartTint = new Vector3(2.0f);
 
 		public Property<string> StartSpawnPoint = new Property<string>();
 
@@ -58,13 +58,23 @@ namespace Lemma.Components
 				else
 				{
 					this.CanSpawn = true;
-					this.main.Renderer.InternalGamma.Value = Spawner.startGamma;
+					this.main.Renderer.InternalGamma.Value = Spawner.StartGamma;
 					this.main.Renderer.Brightness.Value = 1.0f;
 				}
 
 				this.respawnTimer = -1.0f;
 				this.mapJustLoaded = true;
 			}));
+		}
+
+		public Animation.Parallel FlashAnimation()
+		{
+			return new Animation.Parallel
+			(
+				new Animation.Vector3MoveTo(this.main.Renderer.Tint, Spawner.StartTint, 0.5f),
+				new Animation.FloatMoveTo(this.main.Renderer.InternalGamma, Spawner.StartGamma, 0.5f),
+				new Animation.FloatMoveTo(this.main.Renderer.Brightness, 1.0f, 0.5f)
+			);
 		}
 
 		public void Update(float dt)
@@ -112,17 +122,7 @@ namespace Lemma.Components
 				else if (createPlayer)
 				{
 					if (this.respawnTimer <= 0)
-					{
-						this.main.AddComponent(new Animation
-						(
-							new Animation.Parallel
-							(
-								new Animation.Vector3MoveTo(this.main.Renderer.Tint, Spawner.startTint, 0.5f),
-								new Animation.FloatMoveTo(this.main.Renderer.InternalGamma, Spawner.startGamma, 0.5f),
-								new Animation.FloatMoveTo(this.main.Renderer.Brightness, 1.0f, 0.5f)
-							)
-						));
-					}
+						this.main.AddComponent(new Animation(this.FlashAnimation()));
 
 					if (this.respawnTimer > this.RespawnInterval || this.respawnTimer < 0)
 					{
