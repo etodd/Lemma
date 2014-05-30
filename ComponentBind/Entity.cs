@@ -103,7 +103,7 @@ namespace ComponentBind
 
 		[XmlIgnore]
 		public bool Active = true;
-		
+
 		[XmlAttribute]
 		public string Type;
 
@@ -136,7 +136,7 @@ namespace ComponentBind
 
 		[XmlIgnore]
 		public bool CannotSuspendByDistance;
-		
+
 		private BaseMain main;
 		private Dictionary<string, IComponent> components = new Dictionary<string, IComponent>();
 		private Dictionary<Type, IComponent> componentsByType = new Dictionary<Type, IComponent>();
@@ -268,7 +268,9 @@ namespace ComponentBind
 			set
 			{
 				for (int i = 0; i < value.Length; i++)
+				{
 					this.properties.Add((string)value[i].Key, (IProperty)value[i].Value);
+				}
 			}
 		}
 

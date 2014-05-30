@@ -69,7 +69,7 @@
       </Property>
       <Property>
         <Key xsi:type="xsd:string">AdditionalMaterials</Key>
-        <Value xsi:type="ArrayOfCellState" />
+        <Value xsi:type="ArrayOfState" />
       </Property>
       <Property>
         <Key xsi:type="xsd:string">ReverbAmount</Key>
@@ -155,7 +155,7 @@
       </Property>
     </Properties>
   </Entity>
-  <Entity Type="Map">
+  <Entity Type="Voxel">
     <Components>
       <Component>
         <Key xsi:type="xsd:string">Transform</Key>
@@ -181,8 +181,8 @@
         </Value>
       </Component>
       <Component>
-        <Key xsi:type="xsd:string">Map</Key>
-        <Value xsi:type="Map">
+        <Key xsi:type="xsd:string">Voxel</Key>
+        <Value xsi:type="Voxel">
           <Enabled Editable="false">
             <Value>true</Value>
           </Enabled>
@@ -208,7 +208,7 @@
       </Property>
     </Properties>
   </Entity>
-  <Entity Type="FillMap">
+  <Entity Type="VoxelFill">
     <Components>
       <Component>
         <Key xsi:type="xsd:string">Transform</Key>
@@ -234,8 +234,8 @@
         </Value>
       </Component>
       <Component>
-        <Key xsi:type="xsd:string">Map</Key>
-        <Value xsi:type="Map">
+        <Key xsi:type="xsd:string">Voxel</Key>
+        <Value xsi:type="Voxel">
           <Enabled Editable="false">
             <Value>true</Value>
           </Enabled>
