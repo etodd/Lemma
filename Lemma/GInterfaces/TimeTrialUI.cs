@@ -110,7 +110,6 @@ namespace Lemma.GInterfaces
 			);
 		}
 
-
 		public void StartTicking()
 		{
 			TimeTrialTicking.Value = true;

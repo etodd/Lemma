@@ -482,7 +482,7 @@ namespace Lemma
 		public void SaveAnalytics()
 		{
 			string map = this.MapFile;
-			string filename = GameMain.Build.ToString() + "-" + (string.IsNullOrEmpty(map) ? "null" : Path.GetFileName(map)) + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml";
+			string filename = Build + "-" + (string.IsNullOrEmpty(map) ? "null" : Path.GetFileName(map)) + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml";
 			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, filename), map, this.TotalTime);
 		}
 
@@ -824,7 +824,7 @@ namespace Lemma
 #else
 					// Main menu
 
-					this.MapFile.Value = GameMain.MenuMap;
+					this.MapFile.Value = MenuMap;
 					this.Menu.Pause();
 #endif
 

@@ -1421,7 +1421,7 @@ namespace Lemma.Components
 			// Pause on window lost focus
 			this.main.Deactivated += delegate(object sender, EventArgs e)
 			{
-				if (!this.main.Paused && this.main.MapFile.Value != GameMain.MenuMap && !this.main.EditorEnabled)
+				if (!this.main.Paused && this.main.MapFile.Value != Main.MenuMap && !this.main.EditorEnabled)
 				{
 					this.main.Paused.Value = true;
 					this.savePausedSettings();
