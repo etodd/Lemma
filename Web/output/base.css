@@ -44,7 +44,7 @@ header
 {
 	width: 100%;
 	background-image: url(graphics/header.svg);
-	background-size: 60%;
+	background-size: 80%;
 	background-position: center center;
 	background-repeat: no-repeat;
 	height: 100px;
@@ -166,8 +166,10 @@ footer
 	header
 	{
 		height: 138px;
+		background-size: 60%;
 	}
 }
+
 @media screen and (min-width: 780px)
 {
 	.content
