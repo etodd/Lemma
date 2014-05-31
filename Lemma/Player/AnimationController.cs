@@ -116,6 +116,8 @@ namespace Lemma.Components
 			Vector2 mouse = this.Mouse;
 			if (this.WallRunState == WallRun.State.None)
 			{
+				if (this.model.IsPlaying("WallSlideDown", "WallSlideReverse"))
+					AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
 				this.model.Stop
 				(
 					"WallRunLeft",
@@ -257,6 +259,10 @@ namespace Lemma.Components
 						"WallSlideReverse"
 					);
 					this.model.StartClip(wallRunAnimation, 0, true, 0.1f);
+					if (wallRunAnimation == "WallSlideDown" || wallRunAnimation == "WallSlideReverse")
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE_LOOP, this.Entity);
+					else
+						AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
 				}
 
 				if (wallRunAnimation != null)
@@ -312,6 +318,7 @@ namespace Lemma.Components
 				}
 			}
 			this.breathing = newBreathing;
+			AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_PLAYER_SLIDE, MathHelper.Clamp(this.LinearVelocity.Value.Length() / 8.0f, 0.0f, 1.0f));
 		}
 	}
 }

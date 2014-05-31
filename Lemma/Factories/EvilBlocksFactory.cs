@@ -37,15 +37,9 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
-			AkSoundEngine.PostEvent("Play_evil_cubes", entity);
-
-			// TODO: Figure out Wwise volume property
-			/*
-			Property<float> volume = sound.GetProperty("Volume");
-
-			const float defaultVolume = 0.5f;
-			volume.Value = defaultVolume;
-			*/
+			AkGameObjectTracker.Attach(entity);
+			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_EVIL_CUBES, entity);
+			SoundKiller.Add(entity, AK.EVENTS.STOP_EVIL_CUBES);
 
 			AI ai = entity.GetOrCreate<AI>();
 
@@ -56,8 +50,6 @@ namespace Lemma.Factories
 					case "Alert":
 						return new Vector3(1.5f, 1.5f, 0.5f);
 					case "Chase":
-						return new Vector3(1.5f, 0.5f, 0.5f);
-					case "Levitating":
 						return new Vector3(2.0f, 1.0f, 0.5f);
 					default:
 						return new Vector3(1.0f, 1.0f, 1.0f);
@@ -170,6 +162,10 @@ namespace Lemma.Factories
 			ai.Add(new AI.AIState
 			{
 				Name = "Idle",
+				Enter = delegate(AI.AIState previous)
+				{
+					AkSoundEngine.PostEvent(AK.EVENTS.EVIL_CUBES_IDLE, entity);
+				},
 				Tasks = new[]
 				{ 
 					checkOperationalRadius,
@@ -203,11 +199,11 @@ namespace Lemma.Factories
 				Name = "Alert",
 				Enter = delegate(AI.AIState previous)
 				{
-					//volume.Value = 0.0f;
+					AkSoundEngine.PostEvent(AK.EVENTS.STOP_EVIL_CUBES, entity);
 				},
 				Exit = delegate(AI.AIState next)
 				{
-					//volume.Value = defaultVolume;
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_EVIL_CUBES, entity);
 				},
 				Tasks = new[]
 				{ 
@@ -253,6 +249,10 @@ namespace Lemma.Factories
 			ai.Add(new AI.AIState
 			{
 				Name = "Chase",
+				Enter = delegate(AI.AIState previous)
+				{
+					AkSoundEngine.PostEvent(AK.EVENTS.EVIL_CUBES_CHASE, entity);
+				},
 				Tasks = new[]
 				{
 					checkOperationalRadius,
@@ -267,72 +267,8 @@ namespace Lemma.Factories
 					},
 					updatePosition,
 					dragBlocks,
-					new AI.Task
-					{
-						Interval = 0.1f,
-						Action = delegate()
-						{
-							Entity target = targetAgent.Value.Target;
-							Vector3 targetPosition = target.Get<Transform>().Position;
-							if ((targetPosition - transform.Position).Length() < 10.0f)
-								ai.CurrentState.Value = "Levitating";
-						}
-					}
 				},
 			});
-
-			Property<Vector3> lastPosition = entity.GetOrMakeProperty<Vector3>("LastPosition");
-			Property<Vector3> nextPosition = entity.GetOrMakeProperty<Vector3>("NextPosition");
-			Property<float> positionBlend = entity.GetOrMakeProperty<float>("PositionBlend");
-
-			Action findNextPosition = delegate()
-			{
-				lastPosition.Value = transform.Position.Value;
-				nextPosition.Value = targetAgent.Value.Target.Get<Transform>().Position + new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble(), (float)this.random.NextDouble() - 0.5f) * 5.0f;
-				positionBlend.Value = 0.0f;
-			};
-
-			ai.Add(new AI.AIState
-			{
-				Name = "Levitating",
-				Enter = delegate(AI.AIState previous)
-				{
-					findNextPosition();
-				},
-				Exit = delegate(AI.AIState next)
-				{
-					Voxel map = raycastAI.Voxel.Value.Target.Get<Voxel>();
-					Voxel.Coord currentCoord = map.GetCoordinate(transform.Position);
-					Voxel.Coord? closest = map.FindClosestFilledCell(currentCoord, 10);
-					if (closest.HasValue)
-						raycastAI.MoveTo(closest.Value);
-					//volume.Value = defaultVolume;
-				},
-				Tasks = new[]
-				{ 
-					checkTargetAgent,
-					new AI.Task
-					{
-						Action = delegate()
-						{
-							//volume.Value = 1.0f;
-							if (ai.TimeInCurrentState.Value > 8.0f)
-							{
-								ai.CurrentState.Value = "Alert";
-								return;
-							}
-
-							positionBlend.Value += (main.ElapsedTime.Value / 1.0f);
-							if (positionBlend > 1.0f)
-								findNextPosition();
-
-							transform.Position.Value = Vector3.Lerp(lastPosition, nextPosition, positionBlend);
-						},
-					},
-					dragBlocks,
-				},
-			});
-
 
 			this.SetMain(entity, main);
 		}

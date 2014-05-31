@@ -294,6 +294,8 @@ namespace Lemma
 			this.PauseAudioEffect.Value = 0.0f;
 			this.Camera.Angles.Value = Vector3.Zero;
 			this.Menu.ClearMessages();
+
+			AkSoundEngine.SetState(AK.STATES.WATER.GROUP, AK.STATES.WATER.STATE.NORMAL);
 		}
 
 		public Command ReloadedContent = new Command();

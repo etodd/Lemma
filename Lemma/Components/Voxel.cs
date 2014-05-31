@@ -173,7 +173,7 @@ namespace Lemma.Components
 					Density = 2,
 					DiffuseMap = "Textures\\dirty",
 					NormalMap = "Textures\\dirty-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 					Materials = new[]
 					{
 						new Model.Material
@@ -232,7 +232,7 @@ namespace Lemma.Components
 					Density = 2,
 					DiffuseMap = "Textures\\danger",
 					NormalMap = "Textures\\plain-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 					Materials = new[]
 					{
 						new Model.Material
@@ -419,7 +419,7 @@ namespace Lemma.Components
 					Density = 0.5f,
 					DiffuseMap = "Textures\\white",
 					NormalMap = "Textures\\plain-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 					Materials = new[]
 					{
 						Model.Material.Unlit,
@@ -434,7 +434,7 @@ namespace Lemma.Components
 					Density = 1,
 					DiffuseMap = "Textures\\metal-channels2",
 					NormalMap = "Textures\\metal-channels2-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 					Materials = new[]
 					{
 						new Model.Material
@@ -459,7 +459,7 @@ namespace Lemma.Components
 					Density = 1,
 					DiffuseMap = "Textures\\metal-swirl",
 					NormalMap = "Textures\\metal-swirl-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 					Materials = new[]
 					{
 						new Model.Material
@@ -499,7 +499,7 @@ namespace Lemma.Components
 					Density = 0.5f,
 					DiffuseMap = "Textures\\white",
 					NormalMap = "Textures\\plain-normal",
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 					Materials = new[]
 					{
 						Model.Material.Unlit,
@@ -512,7 +512,7 @@ namespace Lemma.Components
 					Supported = true,
 					Hard = true,
 					Density = 1,
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 					DiffuseMap = "Textures\\switch",
 					NormalMap = "Textures\\switch-normal",
 					Materials = new[]
@@ -538,7 +538,7 @@ namespace Lemma.Components
 					Supported = true,
 					Hard = true,
 					Density = 1,
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 					DiffuseMap = "Textures\\powered-switch",
 					NormalMap = "Textures\\switch-normal",
 					Materials = new[]
@@ -677,7 +677,7 @@ namespace Lemma.Components
 					},
 					Tiling = 3.0f,
 					Tint = new Vector3(0.0f, 0.8f, 1.0f),
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 				},
 				new State
 				{
@@ -699,7 +699,7 @@ namespace Lemma.Components
 					},
 					Tiling = 3.0f,
 					Tint = new Vector3(0.3f, 0.9f, 1.25f),
-					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 				}
 			);
 		}

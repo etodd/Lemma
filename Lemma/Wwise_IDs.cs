@@ -2,8 +2,12 @@ public class AK
 {
     public class EVENTS
     {
+        public static uint EVIL_CUBES_CHASE = 654471079U;
+        public static uint EVIL_CUBES_IDLE = 1697385721U;
         public static uint FOOTSTEP_PLAY = 1531891632U;
+        public static uint PLAY_BLOCK_BUILD = 1262469596U;
         public static uint PLAY_BLUE_BURN = 216387374U;
+        public static uint PLAY_EVIL_CUBES = 1708164667U;
         public static uint PLAY_EXTERIOR_WIND = 2186390081U;
         public static uint PLAY_GLOWSQUARE = 2925563572U;
         public static uint PLAY_GLOWSQUARE_CHARGE = 4039403831U;
@@ -32,6 +36,7 @@ public class AK
         public static uint PLAY_WATER_SPLASH = 1591852251U;
         public static uint PLAY_WATER_SPLASH_HEAVY = 1166068147U;
         public static uint PLAY_WHITE_LIGHT = 3583610488U;
+        public static uint STOP_EVIL_CUBES = 3034540413U;
         public static uint STOP_EXTERIOR_WIND = 4269705691U;
         public static uint STOP_GLOWSQUARE_CHARGE = 3861030501U;
         public static uint STOP_MUSIC_AMBIENT = 3815910684U;
@@ -43,6 +48,21 @@ public class AK
         public static uint STOP_WHITE_LIGHT = 2253775078U;
     } // public class EVENTS
 
+    public class STATES
+    {
+        public class WATER
+        {
+            public static uint GROUP = 2654748154U;
+
+            public class STATE
+            {
+                public static uint NORMAL = 1160234136U;
+                public static uint UNDERWATER = 2213237662U;
+            } // public class STATE
+        } // public class WATER
+
+    } // public class STATES
+
     public class SWITCHES
     {
         public class FOOTSTEP_MATERIAL
@@ -52,6 +72,7 @@ public class AK
             public class SWITCH
             {
                 public static uint GRAVEL = 2185786256U;
+                public static uint METAL = 2473969246U;
                 public static uint SAND = 803837735U;
                 public static uint STONE = 1216965916U;
                 public static uint WOOD = 2058049674U;
@@ -64,8 +85,8 @@ public class AK
     {
         public static uint MUSIC_AMBIENT_PROGRESS = 2736694343U;
         public static uint PAUSE_PARAMETER = 2977051669U;
-        public static uint SFX_PLAYER_BREATHING_VOLUME = 854169122U;
         public static uint SFX_PLAYER_FALL = 1894448894U;
+        public static uint SFX_PLAYER_SLIDE = 4199053580U;
         public static uint SLOWMOTION = 340593036U;
         public static uint VOLUME_MUSIC = 3891337659U;
         public static uint VOLUME_SFX = 3673881719U;

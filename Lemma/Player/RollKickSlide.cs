@@ -95,7 +95,7 @@ namespace Lemma.Components
 
 				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height + MathHelper.Clamp(this.LinearVelocity.Value.Y * -0.2f, 0.0f, 4.0f));
 
-				bool nearGround = this.LinearVelocity.Value.Y < this.SupportVelocity.Value.Y + 0.1f && (this.IsSupported || floorRaycast.Voxel != null);
+				bool nearGround = this.LinearVelocity.Value.Y < this.SupportVelocity.Value.Y + 0.1f && floorRaycast.Voxel != null;
 
 				bool instantiatedBlockPossibility = false;
 

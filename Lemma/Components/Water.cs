@@ -90,6 +90,8 @@ namespace Lemma.Components
 		private RenderParameters parameters;
 		private Camera camera;
 
+		private bool underwater;
+
 		[XmlIgnore]
 		public Util.CustomFluidVolume Fluid;
 
@@ -345,8 +347,6 @@ namespace Lemma.Components
 			Vector3 cameraPos = p.Camera.Position;
 			Vector3 pos = this.Position;
 
-			bool underwater = this.Fluid.BoundingBox.Contains(cameraPos) != ContainmentType.Disjoint;
-			
 			RasterizerState originalState = this.main.GraphicsDevice.RasterizerState;
 			this.main.GraphicsDevice.RasterizerState = new RasterizerState { CullMode = CullMode.None };
 
@@ -361,8 +361,8 @@ namespace Lemma.Components
 			this.effect.Parameters["Frame" + Model.SamplerPostfix].SetValue(p.FrameBuffer);
 
 			// Draw surface
-			this.effect.Parameters["Clearness"].SetValue(underwater ? 1.0f : this.Clearness);
-			this.effect.CurrentTechnique = this.effect.Techniques[underwater || !this.EnableReflection ? "Surface" : "SurfaceReflection"];
+			this.effect.Parameters["Clearness"].SetValue(this.underwater ? 1.0f : this.Clearness);
+			this.effect.CurrentTechnique = this.effect.Techniques[this.underwater || !this.EnableReflection ? "Surface" : "SurfaceReflection"];
 			this.effect.CurrentTechnique.Passes[0].Apply();
 			this.main.GraphicsDevice.SetVertexBuffer(this.surfaceVertexBuffer);
 			this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
@@ -373,7 +373,7 @@ namespace Lemma.Components
 
 			p.Camera.FarPlaneDistance.Value = oldFarPlane;
 
-			if (underwater)
+			if (this.underwater)
 			{
 				// Draw underwater stuff
 				this.effect.Parameters["Clearness"].SetValue(this.Clearness);
@@ -424,6 +424,11 @@ namespace Lemma.Components
 		{
 			if (this.main.Paused)
 				return;
+
+			bool newUnderwater = this.Fluid.BoundingBox.Contains(main.Camera.Position) != ContainmentType.Disjoint;
+			if (newUnderwater != this.underwater)
+				AkSoundEngine.SetState(AK.STATES.WATER.GROUP, newUnderwater ? AK.STATES.WATER.STATE.UNDERWATER : AK.STATES.WATER.STATE.NORMAL);
+			this.underwater = newUnderwater;
 
 			float waterHeight = this.Position.Value.Y;
 

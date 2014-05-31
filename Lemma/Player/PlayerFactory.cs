@@ -155,6 +155,7 @@ namespace Lemma.Factories
 			rollKickSlide.Add(new CommandBinding(rollKickSlide.DeactivateWallRun, (Action)wallRun.Deactivate));
 			rollKickSlide.Add(new CommandBinding(rollKickSlide.Footstep, footsteps.Footstep));
 			rollKickSlide.Add(new CommandBinding(rollKickSlide.LockRotation, (Action)rotation.Lock));
+			SoundKiller.Add(entity, AK.EVENTS.STOP_PLAYER_SLIDE_LOOP);
 
 			vault.Add(new Binding<Vector3>(vault.Position, transform.Position));
 			vault.Add(new Binding<Vector3>(vault.FloorPosition, floor));

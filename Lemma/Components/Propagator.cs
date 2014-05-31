@@ -193,7 +193,7 @@ namespace Lemma.Components
 						AkSoundEngine.PostEvent("Play_white_shatter", pos);
 						for (int i = 0; i < 50; i++)
 						{
-							Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
+							Vector3 offset = new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble() - 0.5f);
 							shatter.AddParticle(pos + offset, offset);
 						}
 					}
@@ -300,7 +300,7 @@ namespace Lemma.Components
 							{
 								generations[new EffectBlockFactory.BlockEntry { Voxel = map, Coordinate = c }] = entry.Generation;
 								map.Empty(c);
-								this.Sparks(map.GetAbsolutePosition(c), Spark.Burn);
+								this.sparksLowPriority(map.GetAbsolutePosition(c), Spark.Burn);
 								regenerate = true;
 							}
 						}
@@ -320,7 +320,7 @@ namespace Lemma.Components
 									{
 										map.Empty(c);
 										map.Fill(c, powered);
-										this.Sparks(map.GetAbsolutePosition(c), Spark.Normal);
+										this.sparksLowPriority(map.GetAbsolutePosition(c), Spark.Normal);
 										regenerate = true;
 									}
 									else if (adjacentID == Voxel.t.Neutral && entry.Generation < maxGenerations)
@@ -328,7 +328,7 @@ namespace Lemma.Components
 										map.Empty(adjacent);
 										generations[new EffectBlockFactory.BlockEntry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
 										map.Fill(adjacent, temporary);
-										this.Sparks(map.GetAbsolutePosition(adjacent), Spark.Normal);
+										this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 										regenerate = true;
 									}
 								}
@@ -343,7 +343,7 @@ namespace Lemma.Components
 									{
 										map.Empty(adjacent);
 										map.Fill(adjacent, neutral);
-										this.Sparks(map.GetAbsolutePosition(adjacent), Spark.Normal);
+										this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 										regenerate = true;
 									}
 								}
@@ -359,14 +359,14 @@ namespace Lemma.Components
 									{
 										map.Empty(adjacent);
 										map.Fill(adjacent, powered);
-										this.Sparks(map.GetAbsolutePosition(adjacent), Spark.Normal);
+										this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 										regenerate = true;
 									}
 									else if (adjacentID == Voxel.t.Switch)
 									{
 										map.Empty(adjacent, true);
 										map.Fill(adjacent, poweredSwitch);
-										this.Sparks(map.GetAbsolutePosition(adjacent), Spark.Normal);
+										this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 										regenerate = true;
 									}
 									else if (adjacentID == Voxel.t.Critical)
@@ -387,7 +387,7 @@ namespace Lemma.Components
 										map.Empty(adjacent);
 										generations[new EffectBlockFactory.BlockEntry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
 										map.Fill(adjacent, infected);
-										this.Sparks(map.GetAbsolutePosition(adjacent), Spark.Dangerous);
+										this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Dangerous);
 										regenerate = true;
 									}
 									else if (adjacentID == Voxel.t.Critical)
@@ -407,15 +407,25 @@ namespace Lemma.Components
 			}
 		}
 
+		public void sparksLowPriority(Vector3 pos, Spark type)
+		{
+			this.sparks(pos, type, this.random.Next(0, 2) == 0, this.random.Next(0, 2) == 0);
+		}
+
 		public void Sparks(Vector3 pos, Spark type)
+		{
+			this.sparks(pos, type, true, true);
+		}
+
+		private void sparks(Vector3 pos, Spark type, bool showLight, bool playSound)
 		{
 			for (int j = 0; j < 40; j++)
 			{
-				Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
+				Vector3 offset = new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble() - 0.5f);
 				this.particles.AddParticle(pos + offset, offset);
 			}
 
-			if (this.random.Next(0, 2) == 0)
+			if (showLight)
 			{
 				PointLight light;
 				if (this.activeSparkLights < Propagator.maxSparkLights)
@@ -435,7 +445,7 @@ namespace Lemma.Components
 
 				light.Attenuation.Value = type == Spark.Expander ? 10.0f : 5.0f;
 
-				if (this.random.Next(0, 2) == 0)
+				if (playSound)
 				{
 					uint sound;
 					switch (type)

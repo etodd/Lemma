@@ -28,6 +28,8 @@ namespace Lemma.Factories
 
 		private Dictionary<BlockEntry, bool> animatingBlocks = new Dictionary<BlockEntry, bool>();
 
+		private Random random = new Random();
+
 		public bool IsAnimating(BlockEntry block)
 		{
 			return this.animatingBlocks.ContainsKey(block);
@@ -150,7 +152,8 @@ namespace Lemma.Factories
 											m.Empty(coord);
 										m.Fill(coord, Voxel.States[stateId]);
 										m.Regenerate();
-										AkSoundEngine.PostEvent("Play_build_block", entity);
+										if (this.random.Next(0, 4) == 0)
+											AkSoundEngine.PostEvent(AK.EVENTS.PLAY_BLOCK_BUILD, entity);
 										entity.Delete.Execute();
 										return;
 									}
