@@ -301,6 +301,11 @@ namespace Lemma.Components
 			}
 		}
 
+		public int GetBoneIndex(string bone)
+		{
+			return this.skinningData.BoneMap[bone];
+		}
+
 		public Property<Matrix> GetWorldBoneTransform(string bone)
 		{
 			Property<Matrix> property = null;

@@ -164,7 +164,7 @@ namespace Lemma.Factories
 			vault.Add(new CommandBinding(vault.DeactivateWallRun, (Action)wallRun.Deactivate));
 			vault.Add(new CommandBinding<WallRun.State>(vault.ActivateWallRun, delegate(WallRun.State state) { wallRun.Activate(state); }));
 			vault.Add(new TwoWayBinding<float>(player.Character.LastSupportedSpeed, vault.LastSupportedSpeed));
-			vault.Model = model;
+			vault.Bind(model);
 			vault.Predictor = predictor;
 			vault.Add(new TwoWayBinding<float>(rotation.Rotation, vault.Rotation));
 			vault.Add(new TwoWayBinding<bool>(player.Character.IsSupported, vault.IsSupported));

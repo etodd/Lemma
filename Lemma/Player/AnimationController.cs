@@ -133,10 +133,7 @@ namespace Lemma.Components
 						"JumpLeft",
 						"JumpBackward",
 						"JumpRight",
-						"Fall",
-						"Vault",
-						"VaultLeft",
-						"VaultRight"
+						"Fall"
 					);
 
 					Vector2 dir = this.Movement;
@@ -222,10 +219,7 @@ namespace Lemma.Components
 					"JumpLeft",
 					"JumpBackward",
 					"JumpRight",
-					"Fall",
-					"Vault",
-					"VaultLeft",
-					"VaultRight"
+					"Fall"
 				);
 				foreach (string anim in movementAnimations.Keys)
 					this.model.Stop(anim);

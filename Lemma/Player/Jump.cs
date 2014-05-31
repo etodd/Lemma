@@ -308,8 +308,8 @@ namespace Lemma.Components
 				this.Model.Stop
 				(
 					"Vault",
-					"VaultLeft",
-					"VaultRight",
+					"Mantle",
+					"TopOut",
 					"Jump",
 					"JumpLeft",
 					"JumpRight",

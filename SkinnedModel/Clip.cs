@@ -129,6 +129,11 @@ namespace SkinnedModel
 			}
 		}
 
+		public Channel GetChannel(int boneIndex)
+		{
+			return this.channels.Find(x => x.BoneIndex == boneIndex);
+		}
+
 		[ContentSerializerIgnore]
 		public bool Stopping;
 
@@ -201,7 +206,11 @@ namespace SkinnedModel
 						Vector3 translation2;
 						bone2.Decompose(out scale2, out quat2, out translation2);
 
-						channel.CurrentMatrix = Matrix.CreateScale(Vector3.Lerp(scale1, scale2, blend)) * Matrix.CreateFromQuaternion(Quaternion.Lerp(quat1, quat2, blend)) * Matrix.CreateTranslation(Vector3.Lerp(translation1, translation2, blend));
+						Matrix m = Matrix.CreateScale(Vector3.Lerp(scale1, scale2, blend)) * Matrix.CreateFromQuaternion(Quaternion.Lerp(quat1, quat2, blend)) * Matrix.CreateTranslation(Vector3.Lerp(translation1, translation2, blend));
+						if (channel.Filter == null)
+							channel.CurrentMatrix = m;
+						else
+							channel.CurrentMatrix = channel.Filter(m);
 					}
 				}
 			}

@@ -31,7 +31,7 @@ namespace Lemma.Components
 		public Property<float> LastSupportedSpeed = new Property<float>();
 		public Command DeactivateWallRun = new Command();
 		public Command<WallRun.State> ActivateWallRun = new Command<WallRun.State>();
-		public AnimatedModel Model;
+		private AnimatedModel model;
 
 		// Input/output
 		public BlockPredictor Predictor;
@@ -46,6 +46,7 @@ namespace Lemma.Components
 		private float vaultTime;
 
 		private bool vaultOver;
+		private bool isTopOut;
 		
 		private float moveForwardStartTime;
 		private bool movingForward;
@@ -56,6 +57,37 @@ namespace Lemma.Components
 		private Vector3 forward;
 		private Voxel map;
 		private Voxel.Coord coord;
+
+		const float topOutVerticalSpeed = 5.0f;
+		const float mantleVaultVerticalSpeed = 8.0f;
+		const float maxVaultTime = 1.25f;
+		const int searchUpDistance = 2;
+		const int searchDownDistance = 4;
+
+		public void Bind(AnimatedModel model)
+		{
+			this.model = model;
+
+			// Filters are in Blender's Z-up coordinate system
+
+			this.model["Mantle"].Speed = 1.3f;
+			this.model["Mantle"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
+			{
+				m.Translation = new Vector3(0.0f, 0.0f, 2.0f);
+				return m;
+			};
+			this.model["TopOut"].Speed = 1.3f;
+			this.model["TopOut"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
+			{
+				m.Translation = new Vector3(m.Translation.X, m.Translation.Y + 0.25f, m.Translation.Z * 0.5f);
+				return m;
+			};
+			this.model["Vault"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
+			{
+				m.Translation = new Vector3(0.0f, 0.0f, 1.0f);
+				return m;
+			};
+		}
 
 		public override void Awake()
 		{
@@ -71,12 +103,11 @@ namespace Lemma.Components
 				Direction up = map.GetRelativeDirection(Direction.PositiveY);
 				Direction right = map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
 				Vector3 pos = this.Position + rotationMatrix.Forward * -1.75f;
-				Voxel.Coord baseCoord = map.GetCoordinate(pos).Move(up, 1);
-				int verticalSearchDistance = this.IsSupported ? 2 : 3;
+				Voxel.Coord baseCoord = map.GetCoordinate(pos).Move(up, searchUpDistance);
 				foreach (int x in new[] { 0, -1, 1 })
 				{
 					Voxel.Coord coord = baseCoord.Move(right, x);
-					for (int i = 0; i < verticalSearchDistance; i++)
+					for (int i = 0; i < searchDownDistance; i++)
 					{
 						Voxel.Coord downCoord = coord.Move(up.GetReverse());
 
@@ -99,11 +130,11 @@ namespace Lemma.Components
 				Direction up = possibility.Map.GetRelativeDirection(Direction.PositiveY);
 				Direction right = possibility.Map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
 				Vector3 pos = this.Position + rotationMatrix.Forward * -1.75f;
-				Voxel.Coord baseCoord = possibility.Map.GetCoordinate(pos).Move(up, 1);
+				Voxel.Coord baseCoord = possibility.Map.GetCoordinate(pos).Move(up, searchUpDistance);
 				foreach (int x in new[] { 0, -1, 1 })
 				{
 					Voxel.Coord coord = baseCoord.Move(right, x);
-					for (int i = 0; i < 4; i++)
+					for (int i = 0; i < searchDownDistance; i++)
 					{
 						Voxel.Coord downCoord = coord.Move(up.GetReverse());
 						if (!coord.Between(possibility.StartCoord, possibility.EndCoord) && downCoord.Between(possibility.StartCoord, possibility.EndCoord))
@@ -122,19 +153,26 @@ namespace Lemma.Components
 
 		private void vault(Voxel map, Voxel.Coord coord)
 		{
-			bool topOut = this.WallRunState.Value != WallRun.State.None;
 			this.DeactivateWallRun.Execute();
 			this.CurrentState.Value = State.Straight;
 
 			this.coord = coord;
-			const float vaultVerticalSpeed = 8.0f;
 
 			Vector3 coordPosition = map.GetAbsolutePosition(coord);
 			this.forward = coordPosition - this.Position;
+
+			this.isTopOut = forward.Y > 2.0f;
+
 			this.forward.Y = 0.0f;
 			this.forward.Normalize();
 
-			this.vaultVelocity = new Vector3(0, vaultVerticalSpeed, 0);
+			// If there's nothing on the other side of the wall (it's a one-block-wide wall)
+			// then vault over it rather than standing on top of it
+			this.vaultOver = map[coordPosition + this.forward + Vector3.Down].ID == 0;
+			if (this.vaultOver)
+				this.isTopOut = false; // Don't do a top out animation if we're going to vault over it
+
+			this.vaultVelocity = new Vector3(0, this.isTopOut ? topOutVerticalSpeed : mantleVaultVerticalSpeed, 0);
 
 			this.map = map;
 
@@ -145,10 +183,6 @@ namespace Lemma.Components
 				Vector3 supportLocation = this.FloorPosition;
 				this.vaultVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
 			}
-
-			// If there's nothing on the other side of the wall (it's a one-block-wide wall)
-			// then vault over it rather than standing on top of it
-			this.vaultOver = map[coordPosition + this.forward + Vector3.Down].ID == 0;
 
 			this.LinearVelocity.Value = this.vaultVelocity;
 			this.IsSupported.Value = false;
@@ -163,7 +197,7 @@ namespace Lemma.Components
 			this.AllowUncrouch.Value = false;
 
 			Session.Recorder.Event(main, "Vault");
-			this.Model.StartClip(topOut ? "TopOut" : "Mantle", 4, false, 0.1f);
+			this.model.StartClip(this.vaultOver ? "Vault" : (this.isTopOut ? "TopOut" : "Mantle"), 4, false, AnimatedModel.DefaultBlendTime);
 
 			if (this.random.NextDouble() > 0.5)
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, this.Entity);
@@ -229,9 +263,6 @@ namespace Lemma.Components
 
 		public void Update(float dt)
 		{
-			const float vaultVerticalSpeed = -8.0f;
-			const float maxVaultTime = 0.5f;
-
 			if (this.CurrentState == State.Down)
 			{
 				this.vaultTime += dt;
@@ -248,7 +279,7 @@ namespace Lemma.Components
 
 					if (this.walkOffEdgeTimer > 0.1f)
 					{
-						this.LinearVelocity.Value = new Vector3(0, vaultVerticalSpeed, 0);
+						this.LinearVelocity.Value = new Vector3(0, -mantleVaultVerticalSpeed, 0);
 
 						if (this.Position.Value.Y < this.originalPosition.Y - 3.0f)
 							delete = true;
@@ -296,7 +327,7 @@ namespace Lemma.Components
 				{
 					// We're still going up.
 					if (this.IsSupported || this.vaultTime > maxVaultTime || this.LinearVelocity.Value.Y < 0.0f
-						|| (this.FloorPosition.Value.Y > this.map.GetAbsolutePosition(this.coord).Y + 0.1f)) // Move forward
+						|| (this.FloorPosition.Value.Y > this.map.GetAbsolutePosition(this.coord).Y + (this.vaultOver ? 0.2f : 0.1f))) // Move forward
 					{
 						// We've reached the top of the vault. Start moving forward.
 						// Max vault time ensures we never get stuck
@@ -307,8 +338,6 @@ namespace Lemma.Components
 							// to keep the player moving forward over the wall
 							this.movingForward = true;
 							this.moveForwardStartTime = this.vaultTime;
-							this.Model.Stop("Mantle", "TopOut");
-							this.Model.StartClip("Vault", 4, false, 0.0f);
 						}
 						else
 						{

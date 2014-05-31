@@ -15,15 +15,18 @@ namespace SkinnedModel
 		}
 
 		[ContentSerializerIgnore]
-		public int CurrentKeyframeIndex { get; set; }
+		public int CurrentKeyframeIndex;
 
 		[ContentSerializerIgnore]
-		public int LastKeyframeIndex { get; set; }
+		public int LastKeyframeIndex;
 
 		[ContentSerializerIgnore]
 		public Matrix CurrentMatrix;
 
+		[ContentSerializerIgnore]
+		public Func<Matrix, Matrix> Filter;
+
 		[ContentSerializer]
-		public int BoneIndex { get; set; }
+		public int BoneIndex;
 	}
 }
