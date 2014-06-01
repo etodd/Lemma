@@ -52,6 +52,7 @@ namespace Lemma.Components
 		public Command DeactivateWallRun = new Command();
 		public Command Footstep = new Command();
 		public Command LockRotation = new Command();
+		public Command<float> Rumble = new Command<float>();
 		public AnimatedModel Model;
 		public VoxelTools VoxelTools;
 
@@ -66,6 +67,7 @@ namespace Lemma.Components
 		private Voxel.Coord floorCoordinate;
 		private bool shouldBuildFloor;
 		private bool shouldBreakFloor;
+		private bool kickWasInitiallySupported;
 		private Vector3 velocity;
 
 		public override void Awake()
@@ -88,6 +90,8 @@ namespace Lemma.Components
 			this.forward = -rotationMatrix.Forward;
 			this.right = rotationMatrix.Right;
 
+			bool instantiatedBlockPossibility = false;
+
 			if (this.EnableCrouch && this.EnableRoll && !this.IsSwimming && (!this.EnableKick || !this.IsSupported || this.LinearVelocity.Value.Length() < 2.0f))
 			{
 				// Try to roll
@@ -96,8 +100,6 @@ namespace Lemma.Components
 				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height + MathHelper.Clamp(this.LinearVelocity.Value.Y * -0.2f, 0.0f, 4.0f));
 
 				bool nearGround = this.LinearVelocity.Value.Y < this.SupportVelocity.Value.Y + 0.1f && floorRaycast.Voxel != null;
-
-				bool instantiatedBlockPossibility = false;
 
 				this.floorCoordinate = new Voxel.Coord();
 				this.floorMap = null;
@@ -121,8 +123,9 @@ namespace Lemma.Components
 									break; // If the top coord is intersecting the possible block, we're too far down into the block. Need to be at the top.
 								this.Predictor.InstantiatePossibility(block);
 								instantiatedBlockPossibility = true;
-								floorMap = block.Map;
-								floorCoordinate = coord;
+								this.floorMap = block.Map;
+								this.floorCoordinate = coord;
+								this.shouldBuildFloor = true;
 								nearGround = true;
 								break;
 							}
@@ -202,16 +205,25 @@ namespace Lemma.Components
 
 				this.shouldBuildFloor = false;
 				this.shouldBreakFloor = false;
+				this.kickWasInitiallySupported = false;
 
 				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height);
 				this.floorMap = floorRaycast.Voxel;
-				if (floorRaycast.Voxel == null)
+
+				if (instantiatedBlockPossibility)
+				{
+					this.shouldBreakFloor = false;
+					this.shouldBuildFloor = true;
+					this.kickWasInitiallySupported = true;
+				}
+				else if (floorRaycast.Voxel == null)
 				{
 					this.shouldBreakFloor = true;
 					this.floorCoordinate = new Voxel.Coord();
 				}
 				else
 				{
+					this.kickWasInitiallySupported = true;
 					this.floorCoordinate = floorRaycast.Coordinate.Value;
 					if (this.EnableEnhancedRollSlide)
 					{
@@ -229,11 +241,8 @@ namespace Lemma.Components
 				this.forwardDir = Direction.None;
 				this.rightDir = Direction.None;
 
-				if (this.shouldBuildFloor)
-				{
-					this.forwardDir = floorRaycast.Voxel.GetRelativeDirection(this.forward);
-					this.rightDir = floorRaycast.Voxel.GetRelativeDirection(this.right);
-				}
+				this.forwardDir = floorRaycast.Voxel.GetRelativeDirection(this.forward);
+				this.rightDir = floorRaycast.Voxel.GetRelativeDirection(this.right);
 
 				this.rollKickTime = 0.0f;
 				this.firstTimeBreak = true;
@@ -260,7 +269,13 @@ namespace Lemma.Components
 					if (this.VoxelTools.BreakWalls(this.forward, this.right, false))
 					{
 						if (this.firstTimeBreak)
+						{
+							// If we break through a wall, the player can't know what's on the other side.
+							// So cut them some slack and build a floor beneath them.
+							this.shouldBuildFloor = true; 
+							this.Rumble.Execute(0.5f);
 							AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WALL_BREAK_01, this.Entity);
+						}
 						this.firstTimeBreak = false;
 					}
 
@@ -295,7 +310,17 @@ namespace Lemma.Components
 				if (this.VoxelTools.BreakWalls(this.forward, this.right, this.shouldBreakFloor))
 				{
 					if (this.firstTimeBreak)
+					{
+						if (this.kickWasInitiallySupported)
+						{
+							// If we break through a wall, the player can't know what's on the other side.
+							// So cut them some slack and build a floor beneath them.
+							this.shouldBuildFloor = true;
+							this.shouldBreakFloor = false;
+						}
+						this.Rumble.Execute(0.5f);
 						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WALL_BREAK_01, this.Entity);
+					}
 					this.firstTimeBreak = false;
 				}
 				if (this.shouldBuildFloor)

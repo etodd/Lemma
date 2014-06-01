@@ -18,6 +18,9 @@ namespace Lemma.Components
 		public Command<float> Apply = new Command<float>();
 		public Command<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection> Collided = new Command<BEPUphysics.BroadPhaseEntries.Collidable,ContactCollection>();
 
+		// Output commands
+		public Command<float> Rumble = new Command<float>();
+
 		// Input properties
 		public Property<bool> IsSupported = new Property<bool>();
 		private bool lastSupported;
@@ -44,7 +47,8 @@ namespace Lemma.Components
 				float v = rolling ? RollingDamageVelocity : DamageVelocity;
 				if (verticalAcceleration < v)
 				{
-					this.Health.Value += (verticalAcceleration - v) * 0.2f;
+					float damage = (verticalAcceleration - v) * 0.2f;
+					this.Health.Value += damage;
 					if (this.Health.Value == 0.0f)
 					{
 						main.Spawner.RespawnDistance = Spawner.DefaultRespawnDistance;
@@ -60,7 +64,10 @@ namespace Lemma.Components
 					}
 				}
 				else if (verticalAcceleration < GruntVelocity)
+				{
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_LAND, this.Entity);
+					this.Rumble.Execute(0.2f);
+				}
 			};
 
 			// Damage the player if they hit something too hard

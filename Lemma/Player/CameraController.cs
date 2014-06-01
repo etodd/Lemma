@@ -24,7 +24,6 @@ namespace Lemma.Components
 		// Input properties
 		[XmlIgnore]
 		public Property<float> BaseCameraShakeAmount = new Property<float>();
-
 		public Property<float> CameraShakeAmount = new Property<float>();
 		[XmlIgnore]
 		public Property<Matrix> CameraBone = new Property<Matrix>();
@@ -44,6 +43,9 @@ namespace Lemma.Components
 		public Property<float> Lean = new Property<float>();
 		[XmlIgnore]
 		public Vector3 Offset;
+
+		// Output properties
+		public Property<float> TotalCameraShake = new Property<float>();
 
 		public override void Awake()
 		{
@@ -87,6 +89,7 @@ namespace Lemma.Components
 			else
 				this.shakeAmount = 0.0f;
 
+			this.TotalCameraShake.Value = finalShakeAmount;
 			if (finalShakeAmount > 0.0f)
 			{
 				float offset = main.TotalTime * 15.0f;

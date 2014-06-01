@@ -82,6 +82,8 @@ namespace Lemma.Factories
 			VoxelTools voxelTools = entity.GetOrCreate<VoxelTools>("VoxelTools");
 			Footsteps footsteps = entity.GetOrCreate<Footsteps>("Footsteps");
 			FallDamage fallDamage = entity.GetOrCreate<FallDamage>("FallDamage");
+			CameraController cameraControl = entity.GetOrCreate<CameraController>("CameraControl");
+			Rumble rumble = entity.GetOrCreate<Rumble>("Rumble");
 
 			Property<Vector3> floor = new Property<Vector3>();
 			transform.Add(new Binding<Vector3>(floor, () => transform.Position + new Vector3(0, player.Character.Height * -0.5f, 0), transform.Position, player.Character.Height));
@@ -204,6 +206,65 @@ namespace Lemma.Factories
 				)
 			);
 			anim.Bind(model);
+
+			// Camera control
+			model.UpdateWorldTransforms();
+
+			cameraControl.Add(new Binding<Vector2>(cameraControl.Mouse, input.Mouse));
+			cameraControl.Add(new Binding<float>(cameraControl.Lean, x => x * (float)Math.PI * 0.05f, anim.Lean));
+			cameraControl.Add(new Binding<Vector3>(cameraControl.LinearVelocity, player.Character.LinearVelocity));
+			cameraControl.Add(new Binding<float>(cameraControl.MaxSpeed, player.Character.MaxSpeed));
+			cameraControl.Add(new Binding<Matrix>(cameraControl.CameraBone, model.GetBoneTransform("Camera")));
+			cameraControl.Add(new Binding<Matrix>(cameraControl.HeadBone, model.GetBoneTransform("ORG-head")));
+			cameraControl.Add(new Binding<Matrix>(cameraControl.ModelTransform, model.Transform));
+			cameraControl.Add(new Binding<float>(cameraControl.BaseCameraShakeAmount, () => MathHelper.Clamp((player.Character.LinearVelocity.Value.Length() - (player.Character.MaxSpeed * 2.5f)) / (player.Character.MaxSpeed * 4.0f), 0, 1), player.Character.LinearVelocity, player.Character.MaxSpeed));
+			cameraControl.Offset = model.GetBoneTransform("Camera").Value.Translation - model.GetBoneTransform("ORG-head").Value.Translation;
+
+			rumble.Add(new Binding<float>(rumble.CameraShake, cameraControl.TotalCameraShake));
+			rumble.Add(new CommandBinding<float>(fallDamage.Rumble, rumble.Go));
+			rumble.Add(new CommandBinding<float>(player.Rumble, rumble.Go));
+			rumble.Add(new CommandBinding<float>(rollKickSlide.Rumble, rumble.Go));
+
+#if DEVELOPMENT
+			input.Add(new CommandBinding(input.GetKeyDown(Keys.C), delegate() { cameraControl.ThirdPerson.Value = !cameraControl.ThirdPerson; }));
+
+			firstPersonModel.Add(new Binding<bool>(firstPersonModel.Enabled, x => !x, cameraControl.ThirdPerson));
+
+			model.Add(new NotifyBinding(delegate()
+			{
+				if (cameraControl.ThirdPerson)
+				{
+					model.UnsupportedTechniques.Remove(Technique.Clip);
+					model.UnsupportedTechniques.Remove(Technique.Render);
+				}
+				else
+				{
+					model.UnsupportedTechniques.Add(Technique.Clip);
+					model.UnsupportedTechniques.Add(Technique.Render);
+				}
+			}, cameraControl.ThirdPerson));
+
+			ModelAlpha debugCylinder = new ModelAlpha();
+			debugCylinder.Filename.Value = "Models\\alpha-cylinder";
+			debugCylinder.Add(new Binding<Matrix>(debugCylinder.Transform, transform.Matrix));
+			debugCylinder.Serialize = false;
+			debugCylinder.Editable = false;
+			debugCylinder.Alpha.Value = 0.25f;
+			debugCylinder.Add(new Binding<bool>(debugCylinder.Enabled, cameraControl.ThirdPerson));
+			debugCylinder.Add(new Binding<Vector3>(debugCylinder.Scale, delegate()
+			{
+				return new Vector3(player.Character.Radius * 2.0f, player.Character.Height, player.Character.Radius * 2.0f);
+			}, player.Character.Height, player.Character.Radius));
+			entity.Add(debugCylinder);
+
+			input.Add(new CommandBinding(input.GetKeyUp(Keys.T), delegate()
+			{
+				if (main.TimeMultiplier < 1.0f)
+					main.TimeMultiplier.Value = 1.0f;
+				else
+					main.TimeMultiplier.Value = 0.25f;
+			}));
+#endif
 
 			// When rotation is locked, we want to make sure the player can't turn their head
 			// 180 degrees from the direction they're facing
@@ -396,22 +457,6 @@ namespace Lemma.Factories
 					jump.Go();
 			});
 
-			input.Bind(settings.SpecialAbility, PCInput.InputState.Down, delegate()
-			{
-				if (player.EnableSlowMotion)
-				{
-					player.SlowMotion.Value = true;
-					predictor.ClearPossibilities();
-					predictor.PredictPlatforms();
-					predictor.PredictWalls();
-				}
-			});
-
-			input.Bind(settings.SpecialAbility, PCInput.InputState.Up, delegate()
-			{
-				player.SlowMotion.Value = false;
-			});
-
 			// Wall-run, vault, predictive
 			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
 			{
@@ -440,10 +485,22 @@ namespace Lemma.Factories
 				}
 
 				if (!didSomething)
-					vault.TryVaultDown();
+					didSomething = vault.TryVaultDown();
+
+				if (!didSomething && player.EnableSlowMotion)
+				{
+					player.SlowMotion.Value = true;
+					predictor.ClearPossibilities();
+					predictor.PredictPlatforms();
+					predictor.PredictWalls();
+				}
 			});
 
-			input.Bind(settings.Parkour, PCInput.InputState.Up, wallRun.Deactivate);
+			input.Bind(settings.Parkour, PCInput.InputState.Up, delegate()
+			{
+				wallRun.Deactivate();
+				player.SlowMotion.Value = false;
+			});
 
 			input.Bind(settings.RollKick, PCInput.InputState.Down, rollKickSlide.Go);
 
@@ -452,61 +509,6 @@ namespace Lemma.Factories
 				if (!rollKickSlide.Rolling && !rollKickSlide.Kicking)
 					player.Character.AllowUncrouch.Value = true;
 			});
-
-			// Camera control
-			model.UpdateWorldTransforms();
-
-			CameraController cameraControl = entity.GetOrCreate<CameraController>();
-			cameraControl.Add(new Binding<Vector2>(cameraControl.Mouse, input.Mouse));
-			cameraControl.Add(new Binding<float>(cameraControl.Lean, x => x * (float)Math.PI * 0.05f, anim.Lean));
-			cameraControl.Add(new Binding<Vector3>(cameraControl.LinearVelocity, player.Character.LinearVelocity));
-			cameraControl.Add(new Binding<float>(cameraControl.MaxSpeed, player.Character.MaxSpeed));
-			cameraControl.Add(new Binding<Matrix>(cameraControl.CameraBone, model.GetBoneTransform("Camera")));
-			cameraControl.Add(new Binding<Matrix>(cameraControl.HeadBone, model.GetBoneTransform("ORG-head")));
-			cameraControl.Add(new Binding<Matrix>(cameraControl.ModelTransform, model.Transform));
-			cameraControl.Add(new Binding<float>(cameraControl.BaseCameraShakeAmount, () => MathHelper.Clamp((player.Character.LinearVelocity.Value.Length() - (player.Character.MaxSpeed * 2.5f)) / (player.Character.MaxSpeed * 4.0f), 0, 1), player.Character.LinearVelocity, player.Character.MaxSpeed));
-			cameraControl.Offset = model.GetBoneTransform("Camera").Value.Translation - model.GetBoneTransform("ORG-head").Value.Translation;
-
-#if DEVELOPMENT
-			input.Add(new CommandBinding(input.GetKeyDown(Keys.C), delegate() { cameraControl.ThirdPerson.Value = !cameraControl.ThirdPerson; }));
-
-			firstPersonModel.Add(new Binding<bool>(firstPersonModel.Enabled, x => !x, cameraControl.ThirdPerson));
-
-			model.Add(new NotifyBinding(delegate()
-			{
-				if (cameraControl.ThirdPerson)
-				{
-					model.UnsupportedTechniques.Remove(Technique.Clip);
-					model.UnsupportedTechniques.Remove(Technique.Render);
-				}
-				else
-				{
-					model.UnsupportedTechniques.Add(Technique.Clip);
-					model.UnsupportedTechniques.Add(Technique.Render);
-				}
-			}, cameraControl.ThirdPerson));
-
-			ModelAlpha debugCylinder = new ModelAlpha();
-			debugCylinder.Filename.Value = "Models\\alpha-cylinder";
-			debugCylinder.Add(new Binding<Matrix>(debugCylinder.Transform, transform.Matrix));
-			debugCylinder.Serialize = false;
-			debugCylinder.Editable = false;
-			debugCylinder.Alpha.Value = 0.25f;
-			debugCylinder.Add(new Binding<bool>(debugCylinder.Enabled, cameraControl.ThirdPerson));
-			debugCylinder.Add(new Binding<Vector3>(debugCylinder.Scale, delegate()
-			{
-				return new Vector3(player.Character.Radius * 2.0f, player.Character.Height, player.Character.Radius * 2.0f);
-			}, player.Character.Height, player.Character.Radius));
-			entity.Add(debugCylinder);
-
-			input.Add(new CommandBinding(input.GetKeyUp(Keys.T), delegate()
-			{
-				if (main.TimeMultiplier < 1.0f)
-					main.TimeMultiplier.Value = 1.0f;
-				else
-					main.TimeMultiplier.Value = 0.25f;
-			}));
-#endif
 
 			// Player data bindings
 

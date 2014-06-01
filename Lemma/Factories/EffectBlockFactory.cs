@@ -111,7 +111,7 @@ namespace Lemma.Factories
 								{
 									Voxel.Coord adjacent = c.Move(dir);
 									Voxel.t adjacentID = m[adjacent].ID;
-									if (adjacentID != 0 && (!avoid || adjacentID != Voxel.t.AvoidAI))
+									if (adjacentID != 0 && (!avoid || (adjacentID != Voxel.t.Infected && adjacentID != Voxel.t.InfectedCritical)))
 									{
 										foundAdjacentCell = true;
 										break;

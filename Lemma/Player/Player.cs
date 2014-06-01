@@ -35,6 +35,9 @@ namespace Lemma.Components
 		private float damageTimer = 0.0f;
 		public Property<float> Health = new Property<float> { Value = 1.0f, Editable = false };
 
+		[XmlIgnore]
+		public Command<float> Rumble = new Command<float>();
+
 		private const float healthRegenerateDelay = 4.0f;
 		private const float healthRegenerateRate = 0.1f;
 
@@ -47,14 +50,13 @@ namespace Lemma.Components
 			this.Character.Body.Tag = this;
 			this.main.Space.Add(this.Character);
 
-			float lastDamagedHealthValue = this.Health;
 			this.Health.Set = delegate(float value)
 			{
 				if (value < this.Health.InternalValue && this.damageTimer > 0.4f)
 				{
-					AkSoundEngine.PostEvent(value < lastDamagedHealthValue - 0.2f ? AK.EVENTS.PLAY_PLAYER_HURT : AK.EVENTS.PLAY_PLAYER_HURT, this.Entity);
-					lastDamagedHealthValue = value;
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_HURT, this.Entity);
 					this.damageTimer = 0.0f;
+					this.Rumble.Execute(Math.Min(0.3f, (this.Health.InternalValue - value) * 2.0f));
 				}
 				this.Health.InternalValue = Math.Min(1.0f, Math.Max(0.0f, value));
 				if (this.Health.InternalValue == 0.0f)
@@ -75,9 +77,8 @@ namespace Lemma.Components
 		{
 			if (this.Health < 1.0f)
 			{
-				if (this.damageTimer < Player.healthRegenerateDelay)
-					this.damageTimer += dt;
-				else
+				this.damageTimer += dt;
+				if (this.damageTimer > Player.healthRegenerateDelay)
 					this.Health.Value += Player.healthRegenerateRate * dt;
 			}
 

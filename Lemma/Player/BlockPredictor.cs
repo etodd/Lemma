@@ -37,6 +37,10 @@ namespace Lemma.Components
 		private const float blockPossibilityFadeInTime = 0.075f;
 		private const float blockPossibilityTotalLifetime = 2.0f;
 		private const float blockPossibilityInitialAlpha = 0.5f;
+		private const int searchDistance = 15;
+		private const int platformSize = 3;
+		private const int additionalWallDistance = 6;
+
 
 		private float blockPossibilityLifetime = 0.0f;
 
@@ -169,9 +173,6 @@ namespace Lemma.Components
 		// Function for finding a platform to build for the player
 		public Possibility FindPlatform(Vector3 position)
 		{
-			const int searchDistance = 20;
-			const int platformSize = 3;
-
 			int shortestDistance = searchDistance;
 			Direction relativeShortestDirection = Direction.None, absoluteShortestDirection = Direction.None;
 			Voxel.Coord shortestCoordinate = new Voxel.Coord();
@@ -198,7 +199,7 @@ namespace Lemma.Components
 						if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Voxel = map, Coordinate = coord, }))
 						{
 							// Check we're not in a no-build zone
-							if (state.ID != Voxel.t.AvoidAI && Zone.CanBuild(map.GetAbsolutePosition(coord)))
+							if (state.ID != Voxel.t.Infected && state.ID != Voxel.t.InfectedCritical && Zone.CanBuild(map.GetAbsolutePosition(coord)))
 							{
 								shortestDistance = i;
 								relativeShortestDirection = relativeDir;
@@ -234,9 +235,6 @@ namespace Lemma.Components
 		// Function for finding a wall to build for the player
 		public Possibility FindWall(Vector3 position, Vector2 direction)
 		{
-			const int searchDistance = 20;
-			const int additionalDistance = 6;
-
 			Voxel shortestMap = null;
 			Voxel.Coord shortestPlayerCoord = new Voxel.Coord();
 			Direction shortestWallDirection = Direction.None;
@@ -286,8 +284,8 @@ namespace Lemma.Components
 				// Found something to build a wall on.
 				Direction dirU = shortestBuildDirection;
 				Direction dirV = dirU.Cross(shortestWallDirection);
-				Voxel.Coord startCoord = shortestPlayerCoord.Move(dirU, shortestDistance).Move(dirV, additionalDistance);
-				Voxel.Coord endCoord = shortestPlayerCoord.Move(dirU, -additionalDistance).Move(dirV, -additionalDistance).Move(shortestWallDirection);
+				Voxel.Coord startCoord = shortestPlayerCoord.Move(dirU, shortestDistance).Move(dirV, additionalWallDistance);
+				Voxel.Coord endCoord = shortestPlayerCoord.Move(dirU, -additionalWallDistance).Move(dirV, -additionalWallDistance).Move(shortestWallDirection);
 				return new Possibility
 				{
 					Map = shortestMap,
