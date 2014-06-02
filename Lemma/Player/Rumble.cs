@@ -29,15 +29,15 @@ namespace Lemma.Components
 			this.Serialize = false;
 			this.Add(new NotifyBinding(delegate()
 			{
-				float amount = MathHelper.Clamp(this.BaseAmount + this.CameraShake + this.internalAmount, 0.0f, 1.0f);
-				GamePad.SetVibration(PlayerIndex.One, amount, amount);
-			}, this.BaseAmount, this.CameraShake, this.internalAmount));
+				float a = main.Paused ? 0.0f : MathHelper.Clamp(this.BaseAmount + this.CameraShake + this.internalAmount, 0.0f, 1.0f);
+				GamePad.SetVibration(PlayerIndex.One, a, a);
+			}, this.BaseAmount, this.CameraShake, this.internalAmount, main.Paused));
 		}
 
 		public override void delete()
 		{
 			base.delete();
-			GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
+			Rumble.Reset();
 		}
 
 		public void Update(float dt)
@@ -45,6 +45,11 @@ namespace Lemma.Components
 			float a = this.internalAmount;
 			if (a > 0.0f)
 				this.internalAmount.Value = MathHelper.Clamp(a - dt / fadeTime, 0.0f, 1.0f);
+		}
+
+		public static void Reset()
+		{
+			GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
 		}
 	}
 }

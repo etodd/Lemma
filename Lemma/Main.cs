@@ -546,6 +546,8 @@ namespace Lemma
 				// So it has to terminate after sound engine does.
 				AkCallbackManager.Term();
 			}
+
+			Rumble.Reset();
 		}
 
 		protected bool firstLoadContentCall = true;
