@@ -343,7 +343,6 @@ namespace Lemma
 			this.Camera = new Camera();
 			this.AddComponent(this.Camera);
 
-			this.IsMouseVisible.Value = false;
 			this.IsMouseVisible.Set = delegate(bool value)
 			{
 				base.IsMouseVisible = value;

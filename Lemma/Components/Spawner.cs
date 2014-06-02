@@ -20,7 +20,7 @@ namespace Lemma.Components
 
 		public Command PlayerSpawned = new Command();
 
-		private float respawnTimer = -1.0f;
+		private float respawnTimer;
 
 		public const int RespawnMemoryLength = 200;
 		public const float DefaultRespawnDistance = 0.0f;
@@ -62,7 +62,7 @@ namespace Lemma.Components
 					this.main.Renderer.Brightness.Value = 1.0f;
 				}
 
-				this.respawnTimer = -1.0f;
+				this.respawnTimer = 0.0f;
 				this.mapJustLoaded = true;
 			}));
 		}
@@ -121,10 +121,10 @@ namespace Lemma.Components
 				}
 				else if (createPlayer)
 				{
-					if (this.respawnTimer <= 0)
+					if (this.respawnTimer == 0)
 						this.main.AddComponent(new Animation(this.FlashAnimation()));
 
-					if (this.respawnTimer > this.RespawnInterval || this.respawnTimer < 0)
+					if (this.respawnTimer > this.RespawnInterval)
 					{
 						if (createPlayer)
 						{
@@ -181,11 +181,13 @@ namespace Lemma.Components
 							}
 						}
 
+						const float spawnHeightOffset = 3;
+
 						if (spawnFound)
 						{
 							// Spawn at an autosaved location
 							Vector3 absolutePos = foundSpawnLocation.Map.Target.Get<Voxel>().GetAbsolutePosition(foundSpawnLocation.Coordinate);
-							PlayerFactory.Instance.Get<Transform>().Position.Value = this.main.Camera.Position.Value = absolutePos + new Vector3(0, 3, 0);
+							PlayerFactory.Instance.Get<Transform>().Position.Value = this.main.Camera.Position.Value = absolutePos + new Vector3(0, spawnHeightOffset, 0);
 
 							FPSInput.RecenterMouse();
 							PlayerFactory.Instance.Get<FPSInput>().Mouse.Value = new Vector2(foundSpawnLocation.Rotation, 0);
@@ -211,13 +213,30 @@ namespace Lemma.Components
 							}
 
 							if (spawnEntity != null)
-								PlayerFactory.Instance.Get<Transform>().Position.Value = this.main.Camera.Position.Value = spawnEntity.Get<Transform>().Position;
-
-							if (spawn != null)
 							{
-								spawn.IsActivated.Value = true;
-								FPSInput.RecenterMouse();
-								PlayerFactory.Instance.Get<FPSInput>().Mouse.Value = new Vector2(spawn.Rotation, 0);
+								Vector3 pos = spawnEntity.Get<Transform>().Position;
+								main.Camera.Position.Value = pos;
+								WorldFactory.Instance.GetCommand("UpdateZones").Execute();
+								Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(pos + new Vector3(0, 2, 0), Vector3.Down, 8, false, true);
+								if (hit.Voxel == null)
+								{
+									// There is nowhere to spawn. Reload the map.
+									this.respawnTimer = 0;
+									main.MapFile.Reset();
+									return;
+								}
+								else
+								{
+									pos = hit.Position + new Vector3(0, spawnHeightOffset, 0);
+									PlayerFactory.Instance.Get<Transform>().Position.Value = this.main.Camera.Position.Value = pos;
+
+									if (spawn != null)
+									{
+										spawn.IsActivated.Value = true;
+										FPSInput.RecenterMouse();
+										PlayerFactory.Instance.Get<FPSInput>().Mouse.Value = new Vector2(spawn.Rotation, 0);
+									}
+								}
 							}
 						}
 

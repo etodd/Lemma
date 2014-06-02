@@ -67,7 +67,6 @@ namespace Lemma.Components
 		private Voxel.Coord floorCoordinate;
 		private bool shouldBuildFloor;
 		private bool shouldBreakFloor;
-		private bool kickWasInitiallySupported;
 		private Vector3 velocity;
 
 		public override void Awake()
@@ -205,7 +204,6 @@ namespace Lemma.Components
 
 				this.shouldBuildFloor = false;
 				this.shouldBreakFloor = false;
-				this.kickWasInitiallySupported = false;
 
 				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height);
 				this.floorMap = floorRaycast.Voxel;
@@ -214,16 +212,14 @@ namespace Lemma.Components
 				{
 					this.shouldBreakFloor = false;
 					this.shouldBuildFloor = true;
-					this.kickWasInitiallySupported = true;
 				}
-				else if (floorRaycast.Voxel == null)
+				else if (this.floorMap == null)
 				{
 					this.shouldBreakFloor = true;
 					this.floorCoordinate = new Voxel.Coord();
 				}
 				else
 				{
-					this.kickWasInitiallySupported = true;
 					this.floorCoordinate = floorRaycast.Coordinate.Value;
 					if (this.EnableEnhancedRollSlide)
 					{
@@ -241,8 +237,11 @@ namespace Lemma.Components
 				this.forwardDir = Direction.None;
 				this.rightDir = Direction.None;
 
-				this.forwardDir = floorRaycast.Voxel.GetRelativeDirection(this.forward);
-				this.rightDir = floorRaycast.Voxel.GetRelativeDirection(this.right);
+				if (this.floorMap != null)
+				{
+					this.forwardDir = this.floorMap.GetRelativeDirection(this.forward);
+					this.rightDir = this.floorMap.GetRelativeDirection(this.right);
+				}
 
 				this.rollKickTime = 0.0f;
 				this.firstTimeBreak = true;
@@ -272,7 +271,8 @@ namespace Lemma.Components
 						{
 							// If we break through a wall, the player can't know what's on the other side.
 							// So cut them some slack and build a floor beneath them.
-							this.shouldBuildFloor = true; 
+							if (this.EnableEnhancedRollSlide)
+								this.shouldBuildFloor = true; 
 							this.Rumble.Execute(0.5f);
 							AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WALL_BREAK_01, this.Entity);
 						}
@@ -311,12 +311,12 @@ namespace Lemma.Components
 				{
 					if (this.firstTimeBreak)
 					{
-						if (this.kickWasInitiallySupported)
+						if (this.floorMap != null)
 						{
 							// If we break through a wall, the player can't know what's on the other side.
-							// So cut them some slack and build a floor beneath them.
-							this.shouldBuildFloor = true;
-							this.shouldBreakFloor = false;
+							// So cut them some slack and build a floor beneath them, even if we normally wouldn't.
+							if (this.EnableEnhancedRollSlide)
+								this.shouldBuildFloor = true;
 						}
 						this.Rumble.Execute(0.5f);
 						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WALL_BREAK_01, this.Entity);

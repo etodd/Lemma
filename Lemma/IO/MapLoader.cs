@@ -17,6 +17,23 @@ namespace Lemma.IO
 		public const string MapDirectory = "Content\\Game";
 		public const string MapExtension = "map";
 
+		private static string[] persistentTypes = new[] { "PlayerData", };
+		private static string[] attachedTypes = new string[] { };
+
+		private static bool entityIsPersistent(Entity entity)
+		{
+			if (MapLoader.persistentTypes.Contains(entity.Type))
+				return true;
+
+			if (MapLoader.attachedTypes.Contains(entity.Type))
+			{
+				Property<bool> attached = entity.GetProperty<bool>("Attached");
+				if (attached != null && attached)
+					return true;
+			}
+			return false;
+		}
+
 		public static Type[] IncludedTypes = new[]
 		{
 			typeof(PlayerTrigger),
@@ -150,27 +167,82 @@ namespace Lemma.IO
 			MapLoader.Serializer.Serialize(stream, main.Entities.Where(x => x.Serialize && x.Active).ToList());
 		}
 
-		public static void Reload(Main main, bool deleteEditor = true)
+		public static void Transition(Main main, string nextMap, string spawn = null)
 		{
-			main.LoadingMap.Execute(main.MapFile);
-			using (Stream stream = new MemoryStream())
-			{
-				MapLoader.Serializer.Serialize(stream, main.Entities.Where(x => x.Serialize).ToList());
+			Container notification = new Container();
+			TextElement notificationText = new TextElement();
 
-				main.ClearEntities(deleteEditor);
+			Stream stream = new MemoryStream();
 
-				stream.Seek(0, SeekOrigin.Begin);
-
-				List<Entity> entities = (List<Entity>)Serializer.Deserialize(stream);
-
-				foreach (Entity entity in entities)
+			Animation anim = new Animation
+			(
+				main.Spawner.FlashAnimation(),
+				new Animation.Execute(delegate()
 				{
-					Factory<Main> factory = Factory<Main>.Get(entity.Type);
-					factory.Bind(entity, main);
-					main.Add(entity);
-				}
-			}
-			main.MapLoaded.Execute();
+					notification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+					notification.Opacity.Value = 0.5f;
+					notificationText.Name.Value = "Text";
+					notificationText.FontFile.Value = "Font";
+					notificationText.Text.Value = "Loading...";
+					notification.Children.Add(notificationText);
+					main.UI.Root.GetChildByName("Notifications").Children.Add(notification);
+				}),
+				new Animation.Delay(0.01f),
+				new Animation.Execute(delegate()
+				{
+					// We are exiting the map; just save the state of the map without the player.
+					ListProperty<RespawnLocation> respawnLocations = PlayerDataFactory.Instance.Get<PlayerData>().RespawnLocations;
+					respawnLocations.Clear();
+
+					List<Entity> persistentEntities = main.Entities.Where((Func<Entity, bool>)MapLoader.entityIsPersistent).ToList();
+
+					IO.MapLoader.Serializer.Serialize(stream, persistentEntities);
+
+					foreach (Entity e in persistentEntities)
+						e.Delete.Execute();
+
+					main.Spawner.StartSpawnPoint.Value = spawn;
+
+					if (PlayerFactory.Instance != null)
+						PlayerFactory.Instance.Delete.Execute();
+
+					main.SaveCurrentMap();
+					main.MapFile.Value = nextMap;
+
+					notification.Visible.Value = false;
+					stream.Seek(0, SeekOrigin.Begin);
+					List<Entity> entities = (List<Entity>)IO.MapLoader.Serializer.Deserialize(stream);
+					foreach (Entity e in entities)
+					{
+						Factory<Main> factory = Factory<Main>.Get(e.Type);
+						factory.Bind(e, main);
+						main.Add(e);
+					}
+					stream.Dispose();
+				}),
+				new Animation.Delay(1.5f),
+				new Animation.Execute(delegate()
+				{
+					main.Screenshot.Take(main.ScreenSize);
+				}),
+				new Animation.Delay(0.01f),
+				new Animation.Set<string>(notificationText.Text, "Saving..."),
+				new Animation.Set<bool>(notification.Visible, true),
+				new Animation.Delay(0.01f),
+				new Animation.Execute(delegate()
+				{
+					main.SaveOverwrite();
+				}),
+				new Animation.Set<string>(notificationText.Text, "Saved"),
+				new Animation.Parallel
+				(
+					new Animation.FloatMoveTo(notification.Opacity, 0.0f, 1.0f),
+					new Animation.FloatMoveTo(notificationText.Opacity, 0.0f, 1.0f)
+				),
+				new Animation.Execute(notification.Delete)
+			);
+			anim.EnabledWhenPaused = false;
+			main.AddComponent(anim);
 		}
 	}
 }

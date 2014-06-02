@@ -31,6 +31,7 @@ namespace Lemma.Components
 		public Property<float> LastSupportedSpeed = new Property<float>();
 		public Command DeactivateWallRun = new Command();
 		public Command<WallRun.State> ActivateWallRun = new Command<WallRun.State>();
+		public Command<float> FallDamage = new Command<float>();
 		private AnimatedModel model;
 
 		// Input/output
@@ -93,6 +94,7 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.Serialize = false;
+			this.EnabledWhenPaused = false;
 		}
 
 		public bool Go()
@@ -153,6 +155,20 @@ namespace Lemma.Components
 
 		private void vault(Voxel map, Voxel.Coord coord)
 		{
+			DynamicVoxel dynamicMap = map as DynamicVoxel;
+			Vector3 supportVelocity = Vector3.Zero;
+
+			if (dynamicMap != null)
+			{
+				BEPUphysics.Entities.Entity supportEntity = dynamicMap.PhysicsEntity;
+				Vector3 supportLocation = this.FloorPosition;
+				supportVelocity = supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
+			}
+
+			this.FallDamage.Execute(this.LinearVelocity.Value.Y - supportVelocity.Y);
+			if (!this.Active) // We died from fall damage
+				return;
+
 			this.DeactivateWallRun.Execute();
 			this.CurrentState.Value = State.Straight;
 
@@ -172,17 +188,9 @@ namespace Lemma.Components
 			if (this.vaultOver)
 				this.isTopOut = false; // Don't do a top out animation if we're going to vault over it
 
-			this.vaultVelocity = new Vector3(0, this.isTopOut ? topOutVerticalSpeed : mantleVaultVerticalSpeed, 0);
+			this.vaultVelocity = supportVelocity + new Vector3(0, this.isTopOut ? topOutVerticalSpeed : mantleVaultVerticalSpeed, 0);
 
 			this.map = map;
-
-			DynamicVoxel dynamicMap = map as DynamicVoxel;
-			if (dynamicMap != null)
-			{
-				BEPUphysics.Entities.Entity supportEntity = dynamicMap.PhysicsEntity;
-				Vector3 supportLocation = this.FloorPosition;
-				this.vaultVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
-			}
 
 			this.LinearVelocity.Value = this.vaultVelocity;
 			this.IsSupported.Value = false;
@@ -197,6 +205,16 @@ namespace Lemma.Components
 			this.AllowUncrouch.Value = false;
 
 			Session.Recorder.Event(main, "Vault");
+			this.model.Stop
+			(
+				"Vault",
+				"Mantle",
+				"TopOut",
+				"Jump",
+				"JumpLeft",
+				"JumpRight",
+				"JumpBackward"
+			);
 			this.model.StartClip(this.vaultOver ? "Vault" : (this.isTopOut ? "TopOut" : "Mantle"), 4, false, AnimatedModel.DefaultBlendTime);
 
 			if (this.random.NextDouble() > 0.5)

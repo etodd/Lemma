@@ -1570,14 +1570,20 @@ namespace Lemma.Components
 			public float Distance;
 		}
 
-		public static GlobalRaycastResult GlobalRaycast(Vector3 start, Vector3 ray, float length, bool includeScenery = false)
+		public static GlobalRaycastResult GlobalRaycast(Vector3 start, Vector3 ray, float length, bool includeScenery = false, bool includeInactive = false)
 		{
 			// Voxel raycasting
 			GlobalRaycastResult result = new GlobalRaycastResult();
 			result.Distance = length;
 			result.Position = start + ray * length;
 
-			IEnumerable<Voxel> maps = includeScenery ? Voxel.ActiveVoxels : Voxel.ActivePhysicsVoxels;
+			IEnumerable<Voxel> maps = Voxel.Voxels.Where(x => x.Active);
+
+			if (!includeInactive)
+				maps = maps.Where(x => !x.Suspended);
+
+			if (!includeScenery)
+				maps = maps.Where(x => x.EnablePhysics && x.Scale == 1.0f);
 
 			foreach (Voxel map in maps)
 			{
