@@ -1340,8 +1340,7 @@ namespace Lemma.Factories
 							yankBuffer = null;
 						}
 						yankBuffer = new MemoryStream();
-						XmlSerializer serializer = new XmlSerializer(typeof(List<Entity>));
-						serializer.Serialize(yankBuffer, editor.SelectedEntities.ToList());
+						IO.MapLoader.Serializer.Serialize(yankBuffer, editor.SelectedEntities.ToList());
 					}
 				}
 			);
@@ -1356,8 +1355,7 @@ namespace Lemma.Factories
 					Action = delegate()
 					{
 						yankBuffer.Seek(0, SeekOrigin.Begin);
-						XmlSerializer serializer = new XmlSerializer(typeof(List<Entity>));
-						List<Entity> entities = (List<Entity>)serializer.Deserialize(yankBuffer);
+						List<Entity> entities = (List<Entity>)IO.MapLoader.Serializer.Deserialize(yankBuffer);
 
 						foreach (Entity e in entities)
 						{

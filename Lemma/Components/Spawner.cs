@@ -31,6 +31,8 @@ namespace Lemma.Components
 		public float RespawnDistance = DefaultRespawnDistance;
 		public float RespawnInterval = DefaultRespawnInterval;
 
+		private const float spawnHeightOffset = 2;
+
 		private Vector3 lastPlayerPosition;
 
 		private Entity editor;
@@ -180,8 +182,6 @@ namespace Lemma.Components
 								}
 							}
 						}
-
-						const float spawnHeightOffset = 3;
 
 						if (spawnFound)
 						{
