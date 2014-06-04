@@ -11,9 +11,9 @@ namespace Lemma.Components
 {
 	public class PlayerSpawn : Component<Main>
 	{
-		public Property<bool> IsActivated = new Property<bool> { Editable = true };
-		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
-		public Property<float> Rotation = new Property<float> { Editable = false };
+		public EditorProperty<bool> IsActivated = new EditorProperty<bool>();
+		public Property<Vector3> Position = new Property<Vector3>();
+		public Property<float> Rotation = new Property<float>();
 
 		[XmlIgnore]
 		public Command Activate = new Command();

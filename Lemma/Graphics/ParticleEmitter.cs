@@ -28,12 +28,12 @@ namespace Lemma.Components
 				return this.particleSystem;
 			}
 		}
-		public Property<string> ParticleType = new Property<string> { Editable = true };
-		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
-		public Property<Vector3> Jitter = new Property<Vector3> { Editable = true };
+		public EditorProperty<string> ParticleType = new EditorProperty<string>();
+		public Property<Vector3> Position = new Property<Vector3>();
+		public EditorProperty<Vector3> Jitter = new EditorProperty<Vector3>();
 		protected bool lastPositionSet = false;
 		protected Vector3 lastPosition;
-		public Property<int> ParticlesPerSecond = new Property<int> { Value = 10, Editable = true };
+		public EditorProperty<int> ParticlesPerSecond = new EditorProperty<int> { Value = 10 };
 		[XmlIgnore]
 		public Action<Vector3, Vector3> AddParticle;
 

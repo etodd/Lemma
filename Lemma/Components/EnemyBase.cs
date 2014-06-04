@@ -10,11 +10,11 @@ namespace Lemma.Components
 {
 	public class EnemyBase : Component<Main>
 	{
-		public Property<Matrix> Transform = new Property<Matrix> { Editable = false };
-		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
-		public Property<float> Offset = new Property<float> { Editable = true, Value = 4.0f };
-		public Property<Entity.Handle> Voxel = new Property<Entity.Handle> { Editable = false };
-		public ListProperty<Voxel.Box> BaseBoxes = new ListProperty<Voxel.Box> { Editable = false };
+		public Property<Matrix> Transform = new Property<Matrix>();
+		public Property<Vector3> Position = new Property<Vector3>();
+		public EditorProperty<float> Offset = new EditorProperty<float> { Value = 4.0f };
+		public Property<Entity.Handle> Voxel = new Property<Entity.Handle>();
+		public ListProperty<Voxel.Box> BaseBoxes = new ListProperty<Voxel.Box>();
 
 		private CommandBinding<IEnumerable<Voxel.Coord>, Voxel> cellEmptiedBinding;
 

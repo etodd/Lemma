@@ -12,7 +12,7 @@ namespace Lemma.Components
 	/// </summary>
 	public class ParticleSystem : Component<Main>, IUpdateableComponent, IDrawablePostAlphaComponent, IDrawableAlphaComponent, IDrawableComponent
 	{
-		public Property<int> DrawOrder { get; set; }
+		public EditorProperty<int> DrawOrder { get; set; }
 
 		public bool IsVisible(BoundingFrustum frustum)
 		{
@@ -557,7 +557,7 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.EnabledWhenPaused = true;
-			this.DrawOrder = new Property<int> { Editable = true, Value = 11 };
+			this.DrawOrder = new EditorProperty<int> { Value = 11 };
 			this.Settings.Get = delegate()
 			{
 				return this.settings;

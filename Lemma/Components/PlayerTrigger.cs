@@ -14,10 +14,10 @@ namespace Lemma.Components
 {
 	public class PlayerTrigger : Component<Main>, IUpdateableComponent
 	{
-		public Property<float> Radius = new Property<float> { Value = 10.0f };
-		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
-		public Property<bool> IsTriggered = new Property<bool> { Editable = false };
-		public Property<Entity.Handle> Player = new Property<Entity.Handle> { Editable = false };
+		public EditorProperty<float> Radius = new EditorProperty<float> { Value = 10.0f };
+		public Property<Vector3> Position = new Property<Vector3>();
+		public Property<bool> IsTriggered = new Property<bool>();
+		public Property<Entity.Handle> Player = new Property<Entity.Handle>();
 
 		[XmlIgnore]
 		public Command PlayerEntered = new Command();

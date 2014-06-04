@@ -84,8 +84,8 @@ namespace Lemma.Factories
 			entity.Add("EditorModel", model);
 			model.Add(new Binding<Matrix, Vector3>(model.Transform, x => Matrix.CreateTranslation(x), transform.Position));
 
-			Property<Vector3> corner1 = new Property<Vector3> { Editable = false, Serialize = false, Value = zone.BoundingBox.Value.Min };
-			Property<Vector3> corner2 = new Property<Vector3> { Editable = false, Serialize = false, Value = zone.BoundingBox.Value.Max };
+			Property<Vector3> corner1 = new Property<Vector3> { Serialize = false, Value = zone.BoundingBox.Value.Min };
+			Property<Vector3> corner2 = new Property<Vector3> { Serialize = false, Value = zone.BoundingBox.Value.Max };
 
 			entity.Add(new Binding<BoundingBox>(zone.BoundingBox, delegate()
 			{

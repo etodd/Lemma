@@ -10,11 +10,11 @@ namespace Lemma.Components
 {
 	public class Sprite : UIComponent
 	{
-		public Property<string> Image = new Property<string> { Editable = true };
-		public Property<bool> IsStandardImage = new Property<bool> { Value = false, Editable = true };
-		public Property<Color> Tint = new Property<Color> { Value = new Color(255, 255, 255, 255), Editable = true };
-		public Property<float> Opacity = new Property<float> { Value = 1.0f, Editable = true };
-		public Property<SpriteEffects> Effects = new Property<SpriteEffects> { Value = SpriteEffects.None, Editable = true };
+		public Property<string> Image = new Property<string>();
+		public Property<bool> IsStandardImage = new Property<bool>();
+		public Property<Color> Tint = new Property<Color> { Value = new Color(255, 255, 255, 255) };
+		public Property<float> Opacity = new Property<float> { Value = 1.0f };
+		public Property<SpriteEffects> Effects = new Property<SpriteEffects> { Value = SpriteEffects.None };
 		private Texture2D texture;
 
 		public override void Awake()

@@ -16,7 +16,7 @@ namespace ComponentBind
 		bool Serialize { get; set; }
 		bool Editable { get; set; }
 		void SetMain(BaseMain main);
-		Property<bool> Enabled { get; }
+		EditorProperty<bool> Enabled { get; }
 		bool EnabledInEditMode { get; }
 		bool EnabledWhenPaused { get; }
 		Property<bool> Suspended { get; }
@@ -46,7 +46,7 @@ namespace ComponentBind
 		[DefaultValue(true)]
 		public bool Editable { get; set; }
 
-		public Property<bool> Enabled { get; set; }
+		public EditorProperty<bool> Enabled { get; set; }
 
 		[XmlIgnore]
 		public Property<bool> Suspended { get; set; }
@@ -102,8 +102,8 @@ namespace ComponentBind
 			this.Serialize = true;
 			this.Active = true;
 			this.Editable = true;
-			this.Enabled = new Property<bool> { Value = true, Editable = false };
-			this.Suspended = new Property<bool> { Value = false, Editable = false };
+			this.Enabled = new EditorProperty<bool> { Value = true };
+			this.Suspended = new Property<bool> { Value = false };
 			this.EnabledInEditMode = true;
 			this.EnabledWhenPaused = true;
 			this.Delete.Action = delegate()

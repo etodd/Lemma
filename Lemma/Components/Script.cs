@@ -52,9 +52,9 @@ namespace Lemma.GameScripts
 		}
 
 		[XmlIgnore]
-		public Property<string> Errors = new Property<string> { Editable = true };
+		public EditorProperty<string> Errors = new EditorProperty<string>();
 
-		public Property<string> Name = new Property<string> { Editable = true };
+		public EditorProperty<string> Name = new EditorProperty<string>();
 
 		[XmlIgnore]
 		public Command Execute = new Command { ShowInEditor = true };

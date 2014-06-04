@@ -153,9 +153,10 @@ namespace ComponentBind
 		private void createIdProperty()
 		{
 			this._idProperty = this.GetProperty<string>("ID");
+			this._idProperty.Editable = true;
 			if (this._idProperty == null)
 			{
-				this._idProperty = new Property<string> { Editable = true, Value = Entity.GenerateID(this, this.main) };
+				this._idProperty = new EditorProperty<string> { Value = Entity.GenerateID(this, this.main) };
 				this.Add("ID", this._idProperty);
 			}
 			this._idProperty.Set = delegate(string value)
@@ -316,7 +317,7 @@ namespace ComponentBind
 			// Called by a Factory
 			this.Serialize = true;
 			this.Type = _type;
-			this.Add("ID", new Property<string> { Editable = true, Value = Entity.GenerateID(this, _main) });
+			this.Add("ID", new EditorProperty<string> { Value = Entity.GenerateID(this, _main) });
 		}
 
 		public void SetMain(BaseMain _main)
@@ -484,9 +485,13 @@ namespace ComponentBind
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				result = new Property<T> { Value = value, Editable = editable };
+				if (editable)
+					result = new EditorProperty<T> { Value = value };
+				else
+					result = new Property<T> { Value = value };
 				this.Add(name, result);
 			}
+			result.Editable = editable;
 			return (Property<T>)result;
 		}
 

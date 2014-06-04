@@ -20,8 +20,8 @@ namespace Lemma.Components
 		public Property<bool> EnableStamina = new Property<bool> { Value = enabled };
 		public Property<bool> EnableMoves = new Property<bool> { Value = true };
 		public Property<bool> EnablePhone = new Property<bool> { Value = enabled };
-		public Property<float> MaxSpeed = new Property<float> { Value = Character.DefaultMaxSpeed, Editable = false };
-		public Property<float> GameTime = new Property<float> { Editable = false };
+		public Property<float> MaxSpeed = new Property<float> { Value = Character.DefaultMaxSpeed };
+		public Property<float> GameTime = new Property<float>();
 		public ListProperty<RespawnLocation> RespawnLocations = new ListProperty<RespawnLocation>();
 		public Property<bool> PhoneActive = new Property<bool>();
 		public Property<bool> NoteActive = new Property<bool>();

@@ -1626,9 +1626,9 @@ namespace Lemma.Components
 		}
 
 		[XmlIgnore]
-		public Property<Matrix> Transform = new Property<Matrix> { Editable = false, Value = Matrix.Identity };
+		public Property<Matrix> Transform = new Property<Matrix> { Value = Matrix.Identity };
 
-		public Property<string> Data = new Property<string> { Editable = false };
+		public Property<string> Data = new Property<string>();
 
 		protected int minX;
 		protected int minY;
@@ -1718,8 +1718,8 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Vector3> Offset = new Property<Vector3> { Editable = false };
 
-		public Property<bool> EnablePhysics = new Property<bool> { Editable = true, Value = true };
-		public Property<bool> Mutable = new Property<bool> { Editable = true, Value = true };
+		public EditorProperty<bool> EnablePhysics = new EditorProperty<bool> { Value = true };
+		public EditorProperty<bool> Mutable = new EditorProperty<bool> { Value = true };
 
 		[DefaultValueAttribute(0)]
 		public int OffsetX { get; set; }
@@ -1728,7 +1728,7 @@ namespace Lemma.Components
 		[DefaultValueAttribute(0)]
 		public int OffsetZ { get; set; }
 
-		public Property<float> Scale = new Property<float> { Editable = true, Value = 1.0f };
+		public EditorProperty<float> Scale = new EditorProperty<float> { Value = 1.0f };
 
 		[XmlIgnore]
 		public Func<Vector3, Vector3, State, DynamicModel<Voxel.Vertex>> CreateModel;
@@ -4829,15 +4829,15 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command<Collidable, ContactCollection> Collided = new Command<Collidable, ContactCollection>();
 
-		public Property<Vector3> LinearVelocity = new Property<Vector3> { Editable = false };
+		public Property<Vector3> LinearVelocity = new Property<Vector3>();
 
-		public Property<bool> IsAffectedByGravity = new Property<bool> { Editable = true, Value = true };
+		public EditorProperty<bool> IsAffectedByGravity = new EditorProperty<bool> { Value = true };
 
-		public Property<bool> IsAlwaysActive = new Property<bool> { Editable = true, Value = false };
+		public EditorProperty<bool> IsAlwaysActive = new EditorProperty<bool> { Value = false };
 
-		public Property<float> KineticFriction = new Property<float> { Editable = true, Value = 0.0f };
+		public EditorProperty<float> KineticFriction = new EditorProperty<float> { Value = 0.0f };
 
-		public Property<float> StaticFriction = new Property<float> { Editable = true, Value = 0.0f };
+		public EditorProperty<float> StaticFriction = new EditorProperty<float> { Value = 0.0f };
 
 		private bool firstPhysicsUpdate = true;
 		private bool physicsDirty;

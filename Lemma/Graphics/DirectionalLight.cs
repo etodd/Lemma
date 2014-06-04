@@ -10,9 +10,9 @@ namespace Lemma.Components
 	{
 		public static readonly List<DirectionalLight> All = new List<DirectionalLight>();
 
-		public Property<Vector3> Color = new Property<Vector3> { Value = Vector3.One, Editable = true };
-		public Property<Vector3> Direction = new Property<Vector3> { Value = Vector3.Left, Editable = true };
-		public Property<bool> Shadowed = new Property<bool> { Editable = true };
+		public EditorProperty<Vector3> Color = new EditorProperty<Vector3> { Value = Vector3.One };
+		public EditorProperty<Vector3> Direction = new EditorProperty<Vector3> { Value = Vector3.Left };
+		public EditorProperty<bool> Shadowed = new EditorProperty<bool>();
 
 		public DirectionalLight()
 		{

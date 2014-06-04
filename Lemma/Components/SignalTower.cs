@@ -17,8 +17,8 @@ namespace Lemma.Components
 {
 	public class SignalTower : Component<Main>
 	{
-		public Property<string> Initial = new Property<string> { Editable = true };
-		public Property<Entity.Handle> Player = new Property<Entity.Handle> { Editable = false };
+		public EditorProperty<string> Initial = new EditorProperty<string>();
+		public Property<Entity.Handle> Player = new Property<Entity.Handle>();
 
 		private const float messageDelay = 2.0f;
 

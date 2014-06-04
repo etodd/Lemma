@@ -14,10 +14,10 @@ namespace Lemma.Components
 {
 	public class Trigger : Component<Main>, IUpdateableComponent
 	{
-		public Property<float> Radius = new Property<float> { Value = 10.0f };
-		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
-		public Property<bool> IsTriggered = new Property<bool> { Editable = false };
-		public Property<Entity.Handle> Target = new Property<Entity.Handle> { Editable = false };
+		public EditorProperty<float> Radius = new EditorProperty<float> { Value = 10.0f };
+		public Property<Vector3> Position = new Property<Vector3>();
+		public Property<bool> IsTriggered = new Property<bool>();
+		public Property<Entity.Handle> Target = new Property<Entity.Handle>();
 
 		[XmlIgnore]
 		public Command Entered = new Command();
@@ -29,7 +29,6 @@ namespace Lemma.Components
 		{
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
-			this.Enabled.Editable = true;
 		}
 
 		public override void Awake()

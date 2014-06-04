@@ -14,15 +14,21 @@ namespace Lemma.Components
 {
 	public class Rift : Component<Main>, IUpdateableComponent
 	{
+		public enum Style
+		{
+			In, Up
+		}
+
 		private const float damageTime = 1.0f; // How long the player can stand in a rift before they die
 		private const float interval = 0.015f; // A coordinate is emptied every x seconds
-		public Property<int> Radius = new Property<int> { Value = 10 };
-		public Property<float> CurrentRadius = new Property<float> { Editable = false };
-		public Property<int> CurrentIndex = new Property<int> { Editable = false };
-		public Property<Entity.Handle> Voxel = new Property<Entity.Handle> { Editable = false };
-		public Property<Voxel.Coord> Coordinate = new Property<Voxel.Coord> { Editable = false };
-		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
-		public ListProperty<Voxel.Coord> Coords = new ListProperty<Voxel.Coord> { Editable = false };
+		public EditorProperty<int> Radius = new EditorProperty<int> { Value = 10 };
+		public Property<float> CurrentRadius = new Property<float>();
+		public Property<int> CurrentIndex = new Property<int>();
+		public Property<Entity.Handle> Voxel = new Property<Entity.Handle>();
+		public Property<Voxel.Coord> Coordinate = new Property<Voxel.Coord>();
+		public Property<Vector3> Position = new Property<Vector3>();
+		public ListProperty<Voxel.Coord> Coords = new ListProperty<Voxel.Coord>();
+		public EditorProperty<Style> Type = new EditorProperty<Style>();
 
 		private Voxel voxel;
 		private float intervalTimer;
@@ -37,7 +43,7 @@ namespace Lemma.Components
 				if (this.Coords.Count == 0)
 				{
 					if (PlayerFactory.Instance != null)
-						PlayerFactory.Instance.Get<CameraController>().Shake.Execute(this.Position, 50.0f);
+						PlayerFactory.Instance.Get<CameraController>().Shake.Execute(this.Position, 30.0f);
 					Entity voxelEntity = this.Voxel.Value.Target;
 					if (voxelEntity != null && voxelEntity.Active)
 					{
@@ -89,7 +95,10 @@ namespace Lemma.Components
 						{
 							this.voxel.Empty(c, true, true);
 							regenerate = true;
-							this.blockFactory.Implode(main, this.voxel, c, state, this.Position);
+							if (this.Type == Style.In)
+								this.blockFactory.Implode(main, this.voxel, c, state, this.Position);
+							else
+								this.blockFactory.BlowAway(main, this.voxel, c, state);
 						}
 						this.CurrentIndex.Value++;
 						this.intervalTimer -= interval;
@@ -99,8 +108,10 @@ namespace Lemma.Components
 						this.voxel.Regenerate();
 				}
 				else
-					this.voxel = null;
+					this.Entity.Delete.Execute();
 			}
+			else
+				this.Entity.Delete.Execute();
 
 			Entity player = PlayerFactory.Instance;
 			if (player != null && (player.Get<Transform>().Position.Value - this.Position.Value).Length() <= this.CurrentRadius)

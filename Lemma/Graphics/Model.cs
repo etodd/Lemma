@@ -49,15 +49,15 @@ namespace Lemma.Components
 
 		protected Microsoft.Xna.Framework.Graphics.Model model;
 
-		public Property<string> Filename = new Property<string> { Editable = true };
-		public Property<string> EffectFile = new Property<string> { Editable = true };
-		public Property<string> TechniquePostfix = new Property<string> { Editable = true, Value = "" };
+		public EditorProperty<string> Filename = new EditorProperty<string> { Editable = true };
+		public EditorProperty<string> EffectFile = new EditorProperty<string> { Editable = true };
+		public EditorProperty<string> TechniquePostfix = new EditorProperty<string> { Editable = true, Value = "" };
 		protected Matrix lastWorldViewProjection;
 		protected Matrix lastTransform;
 		[XmlIgnore]
-		public Property<Matrix> Transform = new Property<Matrix> { Editable = false, Value = Matrix.Identity };
-		public Property<Vector3> Scale = new Property<Vector3> { Editable = true, Value = Vector3.One };
-		public Property<Vector3> Color = new Property<Vector3> { Editable = true, Value = Vector3.One };
+		public Property<Matrix> Transform = new Property<Matrix> { Value = Matrix.Identity };
+		public EditorProperty<Vector3> Scale = new EditorProperty<Vector3> { Value = Vector3.One };
+		public EditorProperty<Vector3> Color = new EditorProperty<Vector3> { Value = Vector3.One };
 
 		public struct Material
 		{
@@ -76,27 +76,27 @@ namespace Lemma.Components
 		};
 		private int[] materialIds = new int[2];
 
-		public Property<bool> IsInstanced = new Property<bool> { Editable = false };
-		public Property<bool> DisableCulling = new Property<bool> { Editable = true };
+		public Property<bool> IsInstanced = new Property<bool>();
+		public EditorProperty<bool> DisableCulling = new EditorProperty<bool>();
 
 		[XmlIgnore]
-		public Property<bool> IsValid = new Property<bool> { Editable = false };
+		public Property<bool> IsValid = new Property<bool>();
 
-		public Property<bool> MapContent = new Property<bool> { Editable = false };
+		public Property<bool> MapContent = new Property<bool>();
 
 		protected Texture2D normalMap;
-		public Property<string> NormalMap = new Property<string> { Editable = true };
+		public EditorProperty<string> NormalMap = new EditorProperty<string>();
 
 		[XmlIgnore]
-		public Property<BoundingBox> BoundingBox = new Property<BoundingBox> { Editable = false };
+		public Property<BoundingBox> BoundingBox = new Property<BoundingBox>();
 		private bool boundingBoxValid = false;
-		public Property<bool> CullBoundingBox = new Property<bool> { Editable = true, Value = true };
+		public EditorProperty<bool> CullBoundingBox = new EditorProperty<bool> { Value = true };
 
 		protected Texture2D diffuseTexture;
-		public Property<string> DiffuseTexture = new Property<string> { Editable = true };
+		public EditorProperty<string> DiffuseTexture = new EditorProperty<string>();
 
 		[XmlIgnore]
-		public ListProperty<Matrix> Instances = new ListProperty<Matrix> { Editable = false };
+		public ListProperty<Matrix> Instances = new ListProperty<Matrix>();
 
 		private bool instancesChanged = true;
 		private bool lastInstancesChanged;
@@ -360,7 +360,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<bool> property = new Property<bool> { Editable = false };
+				Property<bool> property = new Property<bool>();
 				property.Set = delegate(bool value)
 				{
 					property.InternalValue = value;
@@ -382,7 +382,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<bool[]> property = new Property<bool[]> { Editable = false };
+				Property<bool[]> property = new Property<bool[]>();
 				property.Set = delegate(bool[] value)
 				{
 					property.InternalValue = value;
@@ -404,7 +404,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<int> property = new Property<int> { Editable = false };
+				Property<int> property = new Property<int>();
 				property.Set = delegate(int value)
 				{
 					property.InternalValue = value;
@@ -426,7 +426,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<int[]> property = new Property<int[]> { Editable = false };
+				Property<int[]> property = new Property<int[]>();
 				property.Set = delegate(int[] value)
 				{
 					property.InternalValue = value;
@@ -448,7 +448,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<float> property = new Property<float> { Editable = false };
+				Property<float> property = new Property<float>();
 				property.Set = delegate(float value)
 				{
 					property.InternalValue = value;
@@ -470,7 +470,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<float[]> property = new Property<float[]> { Editable = false };
+				Property<float[]> property = new Property<float[]>();
 				property.Set = delegate(float[] value)
 				{
 					property.InternalValue = value;
@@ -492,7 +492,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<Vector2> property = new Property<Vector2> { Editable = false };
+				Property<Vector2> property = new Property<Vector2>();
 				property.Set = delegate(Vector2 value)
 				{
 					property.InternalValue = value;
@@ -514,7 +514,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<Vector2[]> property = new Property<Vector2[]> { Editable = false };
+				Property<Vector2[]> property = new Property<Vector2[]>();
 				property.Set = delegate(Vector2[] value)
 				{
 					property.InternalValue = value;
@@ -558,7 +558,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<Vector3[]> property = new Property<Vector3[]> { Editable = false };
+				Property<Vector3[]> property = new Property<Vector3[]>();
 				property.Set = delegate(Vector3[] value)
 				{
 					property.InternalValue = value;
@@ -580,7 +580,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<Vector4> property = new Property<Vector4> { Editable = false };
+				Property<Vector4> property = new Property<Vector4>();
 				property.Set = delegate(Vector4 value)
 				{
 					property.InternalValue = value;
@@ -602,7 +602,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<Vector4[]> property = new Property<Vector4[]> { Editable = false };
+				Property<Vector4[]> property = new Property<Vector4[]>();
 				property.Set = delegate(Vector4[] value)
 				{
 					property.InternalValue = value;
@@ -624,7 +624,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<Matrix> property = new Property<Matrix> { Editable = false };
+				Property<Matrix> property = new Property<Matrix>();
 				property.Set = delegate(Matrix value)
 				{
 					property.InternalValue = value;
@@ -646,7 +646,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<Matrix[]> property = new Property<Matrix[]> { Editable = false };
+				Property<Matrix[]> property = new Property<Matrix[]>();
 				property.Set = delegate(Matrix[] value)
 				{
 					property.InternalValue = value;
@@ -668,7 +668,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<Texture2D> property = new Property<Texture2D> { Editable = false };
+				Property<Texture2D> property = new Property<Texture2D>();
 				property.Set = delegate(Texture2D value)
 				{
 					property.InternalValue = value;
@@ -690,7 +690,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<RenderTarget2D> property = new Property<RenderTarget2D> { Editable = false };
+				Property<RenderTarget2D> property = new Property<RenderTarget2D>();
 				property.Set = delegate(RenderTarget2D value)
 				{
 					property.InternalValue = value;
@@ -925,15 +925,16 @@ namespace Lemma.Components
 	public class ModelAlpha : Model, IDrawableAlphaComponent
 	{
 		public Property<float> Alpha = null;
-		public Property<int> DrawOrder { get; set; }
-		public Property<bool> Distortion = new Property<bool>();
+		public EditorProperty<int> DrawOrder { get; set; }
+		public EditorProperty<bool> Distortion = new EditorProperty<bool>();
 
 		public ModelAlpha()
 		{
 			this.Alpha = this.GetFloatParameter("Alpha");
+			this.Alpha.Editable = true;
 			this.Alpha.Value = 1.0f;
 			this.Alpha.Editable = true;
-			this.DrawOrder = new Property<int> { Editable = true };
+			this.DrawOrder = new EditorProperty<int>();
 		}
 
 		public override void Awake()

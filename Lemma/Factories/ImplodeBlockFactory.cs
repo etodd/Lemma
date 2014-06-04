@@ -26,7 +26,8 @@ namespace Lemma.Factories
 			return new Entity(main, "ImplodeBlock");
 		}
 
-		private const float totalLifetime = 0.4f;
+		private const float totalLifetimeIn = 0.4f;
+		private const float totalLifetimeUp = 2.0f;
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
@@ -65,6 +66,8 @@ namespace Lemma.Factories
 
 			Property<float> lifetime = entity.GetOrMakeProperty<float>("Lifetime");
 
+			Property<Rift.Style> style = entity.GetOrMakeProperty<Rift.Style>("Style");
+
 			Updater update = null;
 			update = new Updater
 			{
@@ -72,7 +75,7 @@ namespace Lemma.Factories
 				{
 					lifetime.Value += dt;
 
-					float blend = lifetime / totalLifetime;
+					float blend = lifetime / (style == Rift.Style.In ? totalLifetimeIn : totalLifetimeUp);
 
 					if (blend > 1.0f)
 					{
@@ -109,9 +112,27 @@ namespace Lemma.Factories
 			block.GetOrMakeProperty<Vector3>("StartPosition").Value = v.GetAbsolutePosition(coord);
 			Matrix orientation = v.Transform;
 			orientation.Translation = Vector3.Zero;
+			block.GetOrMakeProperty<Rift.Style>("Style").Value = Rift.Style.In;
 			block.GetOrMakeProperty<Matrix>("StartOrientation").Value = orientation;
 			block.GetOrMakeProperty<Matrix>("EndOrientation").Value = Matrix.CreateRotationX((float)this.random.NextDouble() * (float)Math.PI * 2.0f) * Matrix.CreateRotationY((float)this.random.NextDouble() * (float)Math.PI * 2.0f);
 			block.GetOrMakeProperty<Vector3>("EndPosition").Value = target;
+			main.Add(block);
+		}
+
+		public void BlowAway(Main main, Voxel v, Voxel.Coord coord, Voxel.State state)
+		{
+			Entity block = this.CreateAndBind(main);
+			state.ApplyToEffectBlock(block.Get<ModelInstance>());
+			block.GetOrMakeProperty<Vector3>("Offset").Value = v.GetRelativePosition(coord);
+
+			Vector3 start = v.GetAbsolutePosition(coord);
+			block.GetOrMakeProperty<Vector3>("StartPosition").Value = start;
+			Matrix orientation = v.Transform;
+			orientation.Translation = Vector3.Zero;
+			block.GetOrMakeProperty<Rift.Style>("Style").Value = Rift.Style.Up;
+			block.GetOrMakeProperty<Matrix>("StartOrientation").Value = orientation;
+			block.GetOrMakeProperty<Matrix>("EndOrientation").Value = Matrix.CreateRotationX((float)this.random.NextDouble() * (float)Math.PI * 2.0f) * Matrix.CreateRotationY((float)this.random.NextDouble() * (float)Math.PI * 2.0f);
+			block.GetOrMakeProperty<Vector3>("EndPosition").Value = start + new Vector3(10, 20, 10);
 			main.Add(block);
 		}
 	}

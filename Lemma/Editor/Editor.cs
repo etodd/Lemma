@@ -41,36 +41,35 @@ namespace Lemma.Components
 			};
 		}
 
-		public Property<PlayerIndex> PlayerIndex = new Property<PlayerIndex> { Editable = false };
-		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
-		public Property<Matrix> Orientation = new Property<Matrix> { Editable = false };
-		public Property<bool> MovementEnabled = new Property<bool> { Editable = false };
+		public Property<Vector3> Position = new Property<Vector3>();
+		public Property<Matrix> Orientation = new Property<Matrix>();
+		public Property<bool> MovementEnabled = new Property<bool>();
 		public ListProperty<Entity> SelectedEntities = new ListProperty<Entity>();
-		public Property<Transform> SelectedTransform = new Property<Transform> { Editable = false };
-		public Property<string> Brush = new Property<string> { Editable = true };
-		public Property<Voxel.Coord> Jitter = new Property<Voxel.Coord> { Editable = true };
-		public Property<Voxel.Coord> JitterOctave = new Property<Voxel.Coord> { Value = new Voxel.Coord { X = 1, Y = 1, Z = 1 }, Editable = true };
-		public Property<float> JitterOctaveMultiplier = new Property<float> { Value = 10.0f, Editable = true };
-		public Property<int> BrushSize = new Property<int> { Editable = true };
-		public Property<string> MapFile = new Property<string> { Editable = true };
-		public Property<bool> NeedsSave = new Property<bool> { Editable = false };
+		public Property<Transform> SelectedTransform = new Property<Transform>();
+		public EditorProperty<string> Brush = new EditorProperty<string>();
+		public EditorProperty<Voxel.Coord> Jitter = new EditorProperty<Voxel.Coord>();
+		public EditorProperty<Voxel.Coord> JitterOctave = new EditorProperty<Voxel.Coord> { Value = new Voxel.Coord { X = 1, Y = 1, Z = 1 } };
+		public EditorProperty<float> JitterOctaveMultiplier = new EditorProperty<float> { Value = 10.0f };
+		public EditorProperty<int> BrushSize = new EditorProperty<int>();
+		public EditorProperty<string> MapFile = new EditorProperty<string>();
+		public Property<bool> NeedsSave = new Property<bool>();
 
 		// Input properties
-		public Property<bool> VoxelEditMode = new Property<bool> { Editable = false };
-		public Property<Vector2> Movement = new Property<Vector2> { Editable = false };
-		public Property<Vector2> Mouse = new Property<Vector2> { Editable = false };
-		public Property<bool> Up = new Property<bool> { Editable = false };
-		public Property<bool> Down = new Property<bool> { Editable = false };
-		public Property<bool> SpeedMode = new Property<bool> { Editable = false };
-		public Property<bool> Extend = new Property<bool> { Editable = false };
-		public Property<bool> Empty = new Property<bool> { Editable = false };
-		public Property<bool> Fill = new Property<bool> { Editable = false };
-		public Property<bool> EditSelection = new Property<bool> { Editable = false };
-		public Property<Voxel.Coord> VoxelSelectionStart = new Property<Voxel.Coord> { Editable = false };
-		public Property<Voxel.Coord> VoxelSelectionEnd = new Property<Voxel.Coord> { Editable = false };
-		public Property<bool> VoxelSelectionActive = new Property<bool> { Editable = false };
+		public Property<bool> VoxelEditMode = new Property<bool>();
+		public Property<Vector2> Movement = new Property<Vector2>();
+		public Property<Vector2> Mouse = new Property<Vector2>();
+		public Property<bool> Up = new Property<bool>();
+		public Property<bool> Down = new Property<bool>();
+		public Property<bool> SpeedMode = new Property<bool>();
+		public Property<bool> Extend = new Property<bool>();
+		public Property<bool> Empty = new Property<bool>();
+		public Property<bool> Fill = new Property<bool>();
+		public Property<bool> EditSelection = new Property<bool>();
+		public Property<Voxel.Coord> VoxelSelectionStart = new Property<Voxel.Coord>();
+		public Property<Voxel.Coord> VoxelSelectionEnd = new Property<Voxel.Coord>();
+		public Property<bool> VoxelSelectionActive = new Property<bool>();
 
-		public Property<float> CameraDistance = new Property<float> { Value = 10.0f, Editable = false };
+		public Property<float> CameraDistance = new Property<float> { Value = 10.0f };
 
 		public Command<string> Spawn = new Command<string>();
 		public Command Save = new Command();
@@ -78,9 +77,9 @@ namespace Lemma.Components
 		public Command DeleteSelected = new Command();
 
 		public enum TransformModes { None, Translate, Rotate };
-		public Property<TransformModes> TransformMode = new Property<TransformModes> { Value = TransformModes.None, Editable = false };
+		public Property<TransformModes> TransformMode = new Property<TransformModes> { Value = TransformModes.None };
 		public enum TransformAxes { All, X, Y, Z };
-		public Property<TransformAxes> TransformAxis = new Property<TransformAxes> { Value = TransformAxes.All, Editable = false };
+		public Property<TransformAxes> TransformAxis = new Property<TransformAxes> { Value = TransformAxes.All };
 		protected Vector3 transformCenter;
 		protected Vector2 originalTransformMouse;
 		protected List<Matrix> offsetTransforms = new List<Matrix>();
@@ -113,7 +112,7 @@ namespace Lemma.Components
 		private ProceduralGenerator generator;
 		private float movementInterval;
 
-		public Property<Voxel.Coord> Coordinate = new Property<Voxel.Coord> { Editable = true }; // Readonly, for displaying to the UI
+		public EditorProperty<Voxel.Coord> Coordinate = new EditorProperty<Voxel.Coord>(); // Readonly, for displaying to the UI
 
 		private bool justCommitedOrRevertedVoxelOperation;
 

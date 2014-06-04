@@ -10,9 +10,9 @@ namespace Lemma.Components
 	public class Timer : Component<Main>, IUpdateableComponent
 	{
 		protected float time = 0.0f;
-		public Property<bool> Repeat = new Property<bool> { Editable = true };
-		public Property<float> Interval = new Property<float> { Editable = true, Value = 1.0f };
-		public Property<bool> ResetOnEnable = new Property<bool> { Editable = true };
+		public EditorProperty<bool> Repeat = new EditorProperty<bool>();
+		public EditorProperty<float> Interval = new EditorProperty<float> { Value = 1.0f };
+		public EditorProperty<bool> ResetOnEnable = new EditorProperty<bool>();
 		[XmlIgnore]
 		public Command Command = new Command();
 		[XmlIgnore]

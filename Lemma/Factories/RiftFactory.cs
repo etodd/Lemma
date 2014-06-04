@@ -11,7 +11,7 @@ namespace Lemma.Factories
 	{
 		public RiftFactory()
 		{
-			this.Color = new Vector3(0.4f, 0.4f, 1.0f);
+			this.Color = new Vector3(0.4f, 1.0f, 0.4f);
 		}
 
 		public override Entity Create(Main main)
@@ -27,7 +27,6 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Position");
 			Rift rift = entity.GetOrCreate<Rift>("Rift");
-			rift.Enabled.Editable = true;
 			this.SetMain(entity, main);
 
 			Property<Matrix> targetTransform = new Property<Matrix>();

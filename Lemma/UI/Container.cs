@@ -9,14 +9,14 @@ namespace Lemma.Components
 {
 	public class Container : UIComponent
 	{
-		public Property<float> PaddingLeft = new Property<float> { Value = 4.0f, Editable = true };
-		public Property<float> PaddingRight = new Property<float> { Value = 4.0f, Editable = true };
-		public Property<float> PaddingBottom = new Property<float> { Value = 4.0f, Editable = true };
-		public Property<float> PaddingTop = new Property<float> { Value = 4.0f, Editable = true };
-		public Property<Color> Tint = new Property<Color> { Value = new Color(255, 255, 255, 255), Editable = true };
-		public Property<float> Opacity = new Property<float> { Value = 1.0f, Editable = true };
-		public Property<bool> ResizeHorizontal = new Property<bool> { Value = true, Editable = true };
-		public Property<bool> ResizeVertical = new Property<bool> { Value = true, Editable = true };
+		public Property<float> PaddingLeft = new Property<float> { Value = 4.0f };
+		public Property<float> PaddingRight = new Property<float> { Value = 4.0f };
+		public Property<float> PaddingBottom = new Property<float> { Value = 4.0f };
+		public Property<float> PaddingTop = new Property<float> { Value = 4.0f };
+		public Property<Color> Tint = new Property<Color> { Value = new Color(255, 255, 255, 255) };
+		public Property<float> Opacity = new Property<float> { Value = 1.0f };
+		public Property<bool> ResizeHorizontal = new Property<bool> { Value = true };
+		public Property<bool> ResizeVertical = new Property<bool> { Value = true };
 
 		private static Texture2D texture;
 		private NotifyBinding binding;

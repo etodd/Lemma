@@ -10,7 +10,7 @@ namespace Lemma.Components
 	{
 		public static readonly List<AmbientLight> All = new List<AmbientLight>();
 
-		public Property<Vector3> Color = new Property<Vector3> { Editable = true };
+		public EditorProperty<Vector3> Color = new EditorProperty<Vector3>();
 
 		public AmbientLight()
 		{

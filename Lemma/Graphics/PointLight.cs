@@ -11,12 +11,12 @@ namespace Lemma.Components
 	{
 		public static readonly List<PointLight> All = new List<PointLight>();
 
-		public Property<Vector3> Color = new Property<Vector3> { Value = Vector3.One, Editable = true };
-		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
-		public Property<float> Attenuation = new Property<float> { Value = 10.0f, Editable = true };
+		public EditorProperty<Vector3> Color = new EditorProperty<Vector3> { Value = Vector3.One };
+		public Property<Vector3> Position = new Property<Vector3>();
+		public EditorProperty<float> Attenuation = new EditorProperty<float> { Value = 10.0f };
 
 		[XmlIgnore]
-		public Property<BoundingSphere> BoundingSphere = new Property<BoundingSphere> { Editable = false };
+		public Property<BoundingSphere> BoundingSphere = new Property<BoundingSphere>();
 
 		public override void Awake()
 		{

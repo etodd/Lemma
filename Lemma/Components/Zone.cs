@@ -16,23 +16,19 @@ namespace Lemma.Components
 
 		public ListProperty<Entity.Handle> ConnectedEntities = new ListProperty<Entity.Handle>();
 
-		public Property<Entity.Handle> Parent = new Property<Entity.Handle> { Editable = false, Serialize = true };
+		public Property<Entity.Handle> Parent = new Property<Entity.Handle> { Serialize = true };
 
-		public Property<Matrix> Transform = new Property<Matrix> { Editable = false };
+		public Property<Matrix> Transform = new Property<Matrix>();
 
-		public Property<BoundingBox> BoundingBox = new Property<BoundingBox> { Editable = false, Value = new BoundingBox(new Vector3(-5.0f), new Vector3(5.0f)) };
+		public Property<BoundingBox> BoundingBox = new Property<BoundingBox> { Value = new BoundingBox(new Vector3(-5.0f), new Vector3(5.0f)) };
 
-		public Property<float> ReverbAmount = new Property<float> { Value = 0.0f, Editable = true };
+		public EditorProperty<bool> Exclusive = new EditorProperty<bool> { Value = true };
 
-		public Property<float> ReverbSize = new Property<float> { Value = 0.0f, Editable = true };
+		public EditorProperty<int> Priority = new EditorProperty<int> { Value = 0 };
 
-		public Property<bool> Exclusive = new Property<bool> { Value = true, Editable = true };
+		public EditorProperty<BuildMode> Build = new EditorProperty<BuildMode> { Value = BuildMode.CanBuild };
 
-		public Property<int> Priority = new Property<int> { Value = 0, Editable = true };
-
-		public Property<BuildMode> Build = new Property<BuildMode> { Value = BuildMode.CanBuild, Editable = true };
-
-		public Property<bool> DetailedShadows = new Property<bool> { Value = true, Editable = true };
+		public EditorProperty<bool> DetailedShadows = new EditorProperty<bool> { Value = true };
 
 		public static IEnumerable<Zone> GetConnectedZones(Zone zone)
 		{
@@ -70,9 +66,9 @@ namespace Lemma.Components
 					{
 						parentBindings = new IBinding[]
 						{
-							new TwoWayBinding<float>(z.ReverbAmount, this.ReverbAmount),
-							new TwoWayBinding<float>(z.ReverbSize, this.ReverbSize),
 							new TwoWayBinding<bool>(z.Exclusive, this.Exclusive),
+							new TwoWayBinding<bool>(z.DetailedShadows, this.DetailedShadows),
+							new TwoWayBinding<BuildMode>(z.Build, this.Build),
 						};
 						foreach (IBinding binding in parentBindings)
 							this.Add(binding);

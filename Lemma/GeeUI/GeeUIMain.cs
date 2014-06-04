@@ -69,7 +69,7 @@ namespace GeeUI
 		private int LastScrollValue = 0;
 		private const int OneScrollValue = 120;
 
-		public Property<int> DrawOrder { get; private set; }
+		public EditorProperty<int> DrawOrder { get; private set; }
 
 		/// <summary>
 		/// Will be true if the latest click within the game bounds resided within an active direct child of the root view.
@@ -114,7 +114,7 @@ namespace GeeUI
 
 		public void Initialize(Game theGame)
 		{
-			this.DrawOrder = new Property<int>() { Editable = false, Value = 0 };
+			this.DrawOrder = new EditorProperty<int>() { Editable = false, Value = 0 };
 
 			TheGame = theGame;
 			White = new Texture2D(theGame.GraphicsDevice, 1, 1);

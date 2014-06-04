@@ -39,7 +39,7 @@ namespace Lemma.Components
 			}
 		}
 
-		public Property<int> DrawOrder { get; set; }
+		public EditorProperty<int> DrawOrder { get; set; }
 
 		private VertexBuffer surfaceVertexBuffer;
 		private VertexBuffer underwaterVertexBuffer;
@@ -70,19 +70,19 @@ namespace Lemma.Components
 			}
 		}
 
-		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
-		public Property<Vector3> Color = new Property<Vector3> { Value = new Vector3(0.7f, 0.9f, 1.0f), Editable = true };
-		public Property<Vector3> UnderwaterColor = new Property<Vector3> { Value = new Vector3(0.0f, 0.07f, 0.13f), Editable = true };
-		public Property<float> Fresnel = new Property<float> { Value = 0.6f, Editable = true };
-		public Property<float> Speed = new Property<float> { Value = 0.075f, Editable = true };
-		public Property<float> RippleDensity = new Property<float> { Value = 1.0f, Editable = true };
-		public Property<bool> EnableReflection = new Property<bool> { Value = true, Editable = false };
-		public Property<float> Distortion = new Property<float> { Value = 0.25f, Editable = true };
-		public Property<float> Brightness = new Property<float> { Value = 0.1f, Editable = true };
-		public Property<float> Clearness = new Property<float> { Value = 0.25f, Editable = true };
-		public Property<float> Depth = new Property<float> { Value = 100.0f, Editable = true };
-		public Property<float> Refraction = new Property<float> { Value = 0.0f, Editable = true };
-		public Property<Vector2> Scale = new Property<Vector2> { Value = new Vector2(100.0f, 100.0f), Editable = true };
+		public Property<Vector3> Position = new Property<Vector3>();
+		public EditorProperty<Vector3> Color = new EditorProperty<Vector3> { Value = new Vector3(0.7f, 0.9f, 1.0f) };
+		public EditorProperty<Vector3> UnderwaterColor = new EditorProperty<Vector3> { Value = new Vector3(0.0f, 0.07f, 0.13f) };
+		public EditorProperty<float> Fresnel = new EditorProperty<float> { Value = 0.6f };
+		public EditorProperty<float> Speed = new EditorProperty<float> { Value = 0.075f };
+		public EditorProperty<float> RippleDensity = new EditorProperty<float> { Value = 1.0f };
+		public EditorProperty<bool> EnableReflection = new EditorProperty<bool> { Value = true };
+		public EditorProperty<float> Distortion = new EditorProperty<float> { Value = 0.25f };
+		public EditorProperty<float> Brightness = new EditorProperty<float> { Value = 0.1f };
+		public EditorProperty<float> Clearness = new EditorProperty<float> { Value = 0.25f };
+		public EditorProperty<float> Depth = new EditorProperty<float> { Value = 100.0f };
+		public EditorProperty<float> Refraction = new EditorProperty<float> { Value = 0.0f };
+		public EditorProperty<Vector2> Scale = new EditorProperty<Vector2> { Value = new Vector2(100.0f, 100.0f) };
 
 		private Renderer renderer;
 		private RenderTarget2D buffer;
@@ -101,7 +101,7 @@ namespace Lemma.Components
 
 		public Water()
 		{
-			this.DrawOrder = new Property<int> { Editable = true, Value = 10 };
+			this.DrawOrder = new EditorProperty<int> { Value = 10 };
 		}
 
 		private const float resolutionRatio = 0.25f;

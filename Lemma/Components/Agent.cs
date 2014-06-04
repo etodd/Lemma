@@ -51,7 +51,7 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command Die = new Command();
 
-		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
+		public Property<Vector3> Position = new Property<Vector3>();
 
 		public Property<float> Health = new Property<float> { Value = 1.0f };
 

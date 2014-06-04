@@ -27,7 +27,7 @@ namespace Lemma.Components
 			}
 		}
 
-		public Property<int> DrawOrder { get; set; }
+		public EditorProperty<int> DrawOrder { get; set; }
 
 		private VertexBuffer vertexBuffer;
 
@@ -55,7 +55,7 @@ namespace Lemma.Components
 
 		public FullscreenQuad()
 		{
-			this.DrawOrder = new Property<int> { Editable = false };
+			this.DrawOrder = new EditorProperty<int>();
 		}
 
 		public virtual void LoadContent(bool reload)

@@ -11,14 +11,14 @@ namespace Lemma.Components
 	public class TextElement : UIComponent
 	{
 		protected string fontFile;
-		public Property<string> FontFile = new Property<string> { Editable = true };
-		public Property<string> Text = new Property<string> { Editable = true, Value = "" };
-		public Property<Color> Tint = new Property<Color> { Editable = true, Value = Color.White };
-		public Property<float> Opacity = new Property<float> { Editable = true, Value = 1.0f };
-		public Property<float> WrapWidth = new Property<float> { Editable = true, Value = 0.0f };
+		public Property<string> FontFile = new Property<string>();
+		public Property<string> Text = new Property<string> { Value = "" };
+		public Property<Color> Tint = new Property<Color> { Value = Color.White };
+		public Property<float> Opacity = new Property<float> { Value = 1.0f };
+		public Property<float> WrapWidth = new Property<float> { Value = 0.0f };
 		private SpriteFont font;
 
-		private Property<string> internalText = new Property<string> { Editable = false, Value = "" };
+		private Property<string> internalText = new Property<string> { Value = "" };
 		private Binding<string> internalTextBinding;
 		private NotifyBinding languageBinding;
 

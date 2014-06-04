@@ -135,14 +135,14 @@ namespace Lemma.Components
 		public class ModelInstanceSystemAlpha : ModelInstanceSystem, IDrawableAlphaComponent
 		{
 			public Property<float> Alpha = null;
-			public Property<int> DrawOrder { get; set; }
+			public EditorProperty<int> DrawOrder { get; set; }
 
 			public ModelInstanceSystemAlpha()
 			{
 				this.Alpha = this.GetFloatParameter("Alpha");
 				this.Alpha.Value = 1.0f;
 				this.Alpha.Editable = true;
-				this.DrawOrder = new Property<int> { Editable = true };
+				this.DrawOrder = new EditorProperty<int>();
 			}
 
 			public override void Draw(GameTime time, RenderParameters parameters)
@@ -169,20 +169,20 @@ namespace Lemma.Components
 
 		protected Dictionary<string, IProperty> parameters = new Dictionary<string, IProperty>();
 
-		public Property<string> Filename = new Property<string> { Editable = true };
+		public EditorProperty<string> Filename = new EditorProperty<string>();
 		
-		public Property<Matrix> Transform = new Property<Matrix> { Editable = false, Value = Matrix.Identity };
+		public Property<Matrix> Transform = new Property<Matrix> { Value = Matrix.Identity };
 
-		public Property<bool> EnableAlpha = new Property<bool> { Editable = true, Value = false };
+		public EditorProperty<bool> EnableAlpha = new EditorProperty<bool> { Value = false };
 
-		public Property<Vector3> Scale = new Property<Vector3> { Editable = false, Value = Vector3.One };
+		public Property<Vector3> Scale = new Property<Vector3> { Value = Vector3.One };
 
-		protected Property<Matrix> transform = new Property<Matrix> { Editable = false };
+		protected Property<Matrix> transform = new Property<Matrix>();
 
-		public Property<int> InstanceKey = new Property<int> { Editable = true };
+		public EditorProperty<int> InstanceKey = new EditorProperty<int>();
 
 		[XmlIgnore]
-		public Property<string> FullInstanceKey = new Property<string> { Editable = false };
+		public Property<string> FullInstanceKey = new Property<string>();
 
 		[XmlArray("Parameters")]
 		[XmlArrayItem("Parameter", Type = typeof(DictionaryEntry))]
@@ -314,7 +314,7 @@ namespace Lemma.Components
 			if (this.parameters.TryGetValue(name, out test))
 				return (Property<bool>)test;
 
-			Property<bool> result = new Property<bool> { Editable = false };
+			Property<bool> result = new Property<bool>();
 			this.parameters.Add(name, result);
 
 			IPropertyBinding parameter = this.model.AddInstanceBoolParameter(name);
@@ -332,7 +332,7 @@ namespace Lemma.Components
 			if (this.parameters.TryGetValue(name, out test))
 				return (Property<int>)test;
 
-			Property<int> result = new Property<int> { Editable = false };
+			Property<int> result = new Property<int>();
 			this.parameters.Add(name, result);
 
 			IPropertyBinding parameter = this.model.AddInstanceIntParameter(name);
@@ -350,7 +350,7 @@ namespace Lemma.Components
 			if (this.parameters.TryGetValue(name, out test))
 				return (Property<float>)test;
 
-			Property<float> result = new Property<float> { Editable = false };
+			Property<float> result = new Property<float>();
 			this.parameters.Add(name, result);
 
 			IPropertyBinding parameter = this.model.AddInstanceFloatParameter(name);
@@ -368,7 +368,7 @@ namespace Lemma.Components
 			if (this.parameters.TryGetValue(name, out test))
 				return (Property<Vector3>)test;
 
-			Property<Vector3> result = new Property<Vector3> { Editable = false };
+			Property<Vector3> result = new Property<Vector3>();
 			this.parameters.Add(name, result);
 
 			IPropertyBinding parameter = this.model.AddInstanceVector3Parameter(name);
@@ -386,7 +386,7 @@ namespace Lemma.Components
 			if (this.parameters.TryGetValue(name, out test))
 				return (Property<Matrix>)test;
 
-			Property<Matrix> result = new Property<Matrix> { Editable = false };
+			Property<Matrix> result = new Property<Matrix>();
 			this.parameters.Add(name, result);
 
 			IPropertyBinding parameter = this.model.AddInstanceMatrixParameter(name);

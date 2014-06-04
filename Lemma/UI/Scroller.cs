@@ -10,19 +10,19 @@ namespace Lemma.Components
 {
 	public class Scroller : UIComponent
 	{
-		public Property<float> ScrollAmount = new Property<float> { Editable = false, Value = 30.0f };
+		public Property<float> ScrollAmount = new Property<float> { Value = 30.0f };
 
-		public Property<bool> EnableScroll = new Property<bool> { Editable = false, Value = true };
+		public Property<bool> EnableScroll = new Property<bool> { Value = true };
 
-		public Property<bool> DefaultScrollHorizontal = new Property<bool> { Editable = false, Value = false };
+		public Property<bool> DefaultScrollHorizontal = new Property<bool>();
 
-		public Property<bool> ResizeHorizontal = new Property<bool> { Editable = false, Value = false };
+		public Property<bool> ResizeHorizontal = new Property<bool>();
 
-		public Property<float> MaxHorizontalSize = new Property<float> { Editable = false, Value = 0 };
+		public Property<float> MaxHorizontalSize = new Property<float>();
 
-		public Property<bool> ResizeVertical = new Property<bool> { Editable = false, Value = false };
+		public Property<bool> ResizeVertical = new Property<bool>();
 
-		public Property<float> MaxVerticalSize = new Property<float> { Editable = false, Value = 0 };
+		public Property<float> MaxVerticalSize = new Property<float>();
 
 		private NotifyBinding binding = null;
 

@@ -9,16 +9,16 @@ namespace ComponentBind
 {
 	public class Transform : Component<BaseMain>
 	{
-		public Property<Vector3> Position = new Property<Vector3> { Editable = true };
-		public Property<Quaternion> Quaternion = new Property<Quaternion> { Editable = true };
+		public EditorProperty<Vector3> Position = new EditorProperty<Vector3>();
+		public EditorProperty<Quaternion> Quaternion = new EditorProperty<Quaternion>();
 
 		[XmlIgnore]
-		public Property<Matrix> Orientation = new Property<Matrix> { Editable = false };
+		public Property<Matrix> Orientation = new Property<Matrix>();
 		[XmlIgnore]
-		public Property<Vector3> Forward = new Property<Vector3> { Editable = false };
+		public Property<Vector3> Forward = new Property<Vector3>();
 
 		[XmlIgnore]
-		public Property<Matrix> Matrix = new Property<Matrix> { Editable = false };
+		public Property<Matrix> Matrix = new Property<Matrix>();
 
 		public Transform()
 		{

@@ -29,37 +29,37 @@ namespace Lemma.Components
 			}
 		}
 
-		public Property<object> UserData = new Property<object> { Editable = false };
-		public Property<Vector2> AnchorPoint = new Property<Vector2> { Value = Vector2.Zero, Editable = true };
-		public Property<Vector2> Position = new Property<Vector2> { Value = Vector2.Zero, Editable = true };
-		public Property<Vector2> Size = new Property<Vector2> { Value = Vector2.Zero, Editable = true };
-		public Property<Vector2> Scale = new Property<Vector2> { Value = Vector2.One, Editable = true };
-		public Property<float> Rotation = new Property<float> { Value = 0.0f, Editable = true };
-		public Property<bool> Visible = new Property<bool> { Value = true, Editable = true };
-		public Property<bool> EnableScissor = new Property<bool> { Value = false, Editable = true };
-		public Property<bool> SwallowMouseEvents = new Property<bool> { Value = false, Editable = false };
-		public Property<string> Name = new Property<string> { Editable = false };
-		public Property<int> DrawOrder = new Property<int> { Value = 0, Editable = false };
+		public Property<object> UserData = new Property<object>();
+		public Property<Vector2> AnchorPoint = new Property<Vector2>();
+		public Property<Vector2> Position = new Property<Vector2>();
+		public Property<Vector2> Size = new Property<Vector2>();
+		public Property<Vector2> Scale = new Property<Vector2> { Value = Vector2.One };
+		public Property<float> Rotation = new Property<float>();
+		public Property<bool> Visible = new Property<bool> { Value = true };
+		public Property<bool> EnableScissor = new Property<bool>();
+		public Property<bool> SwallowMouseEvents = new Property<bool>();
+		public Property<string> Name = new Property<string>();
+		public Property<int> DrawOrder = new Property<int>();
 		public Property<bool> EnableInput = new Property<bool> { Value = true };
 
 		protected bool requiresNewBatch = false;
 
 		[XmlIgnore]
-		public Property<Vector2> ScaledSize = new Property<Vector2> { Editable = false };
+		public Property<Vector2> ScaledSize = new Property<Vector2>();
 		[XmlIgnore]
-		public Property<Vector2> InverseAnchorPoint = new Property<Vector2> { Value = new Vector2(0.5f, 0.5f), Editable = false };
+		public Property<Vector2> InverseAnchorPoint = new Property<Vector2> { Value = new Vector2(0.5f, 0.5f) };
 		[XmlIgnore]
-		public Property<Rectangle> Rectangle = new Property<Rectangle> { Editable = false };
+		public Property<Rectangle> Rectangle = new Property<Rectangle>();
 		[XmlIgnore]
-		public Property<Rectangle> ScaledRectangle = new Property<Rectangle> { Editable = false };
+		public Property<Rectangle> ScaledRectangle = new Property<Rectangle>();
 		[XmlIgnore]
-		public Property<bool> Highlighted = new Property<bool> { Editable = false };
+		public Property<bool> Highlighted = new Property<bool>();
 		[XmlIgnore]
-		public Property<UIComponent> Parent = new Property<UIComponent> { Editable = false };
+		public Property<UIComponent> Parent = new Property<UIComponent>();
 		[XmlIgnore]
-		public Property<Matrix> Transform = new Property<Matrix> { Value = Matrix.Identity, Editable = false };
+		public Property<Matrix> Transform = new Property<Matrix> { Value = Matrix.Identity };
 		[XmlIgnore]
-		public Property<bool> MouseLocked = new Property<bool> { Value = false, Editable = false };
+		public Property<bool> MouseLocked = new Property<bool>();
 
 		[XmlIgnore]
 		public Command MouseOver = new Command();

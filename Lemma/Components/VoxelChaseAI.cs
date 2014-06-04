@@ -33,24 +33,24 @@ namespace Lemma.Factories
 			return cell == Cell.Penetrable || cell == Cell.Filled;
 		}
 
-		public Property<bool> EnableMovement = new Property<bool> { Value = true, Editable = false };
-		public Property<Entity.Handle> Voxel = new Property<Entity.Handle> { Editable = false };
-		public Property<Voxel.Coord> LastCoord = new Property<Voxel.Coord> { Editable = false };
-		public Property<float> Blend = new Property<float> { Editable = false };
-		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord> { Editable = false };
-		public Property<Direction> Direction = new Property<Direction> { Editable = false };
-		public ListProperty<Voxel.Coord> History = new ListProperty<Voxel.Coord> { Editable = false };
-		public Property<bool> EnablePathfinding = new Property<bool> { Value = true, Editable = false };
-		public Property<float> Speed = new Property<float> { Value = 8.0f, Editable = false };
+		public Property<bool> EnableMovement = new Property<bool> { Value = true };
+		public Property<Entity.Handle> Voxel = new Property<Entity.Handle>();
+		public Property<Voxel.Coord> LastCoord = new Property<Voxel.Coord>();
+		public Property<float> Blend = new Property<float>();
+		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
+		public Property<Direction> Direction = new Property<Direction>();
+		public ListProperty<Voxel.Coord> History = new ListProperty<Voxel.Coord>();
+		public Property<bool> EnablePathfinding = new Property<bool> { Value = true };
+		public Property<float> Speed = new Property<float> { Value = 8.0f };
 
 		[XmlIgnore]
 		public Func<Voxel.State, Cell> Filter = VoxelChaseAI.filter;
 		[XmlIgnore]
 		public Command<Voxel, Voxel.Coord> Moved = new Command<Voxel, Voxel.Coord>();
 
-		public Property<bool> TargetActive = new Property<bool> { Editable = false };
-		public Property<Vector3> Target = new Property<Vector3> { Editable = false };
-		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
+		public Property<bool> TargetActive = new Property<bool>();
+		public Property<Vector3> Target = new Property<Vector3>();
+		public Property<Vector3> Position = new Property<Vector3>();
 
 		public override void Awake()
 		{

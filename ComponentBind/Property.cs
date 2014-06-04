@@ -44,21 +44,6 @@ namespace ComponentBind
 		}
 		protected List<IPropertyBinding> bindings = new List<IPropertyBinding>();
 
-		protected bool editable = true;
-		[XmlAttribute]
-		[DefaultValue(true)]
-		public bool Editable
-		{
-			get
-			{
-				return this.editable;
-			}
-			set
-			{
-				this.editable = value;
-			}
-		}
-
 		protected bool serialize = true;
 		[XmlIgnore]
 		[DefaultValue(true)]
@@ -136,6 +121,17 @@ namespace ComponentBind
 		public override string ToString()
 		{
 			return this.Value.ToString();
+		}
+		
+		[XmlIgnore]
+		public bool Editable { get; set; }
+	}
+
+	public class EditorProperty<Type> : Property<Type>
+	{
+		public EditorProperty()
+		{
+			this.Editable = true;
 		}
 	}
 

@@ -21,19 +21,19 @@ namespace Lemma.Components
 		public Character Character;
 
 		[XmlIgnore]
-		public Property<bool> EnableCrouch = new Property<bool> { Value = false, Editable = false };
+		public Property<bool> EnableCrouch = new Property<bool>();
 		[XmlIgnore]
-		public Property<bool> EnableSlowMotion = new Property<bool> { Value = false, Editable = false };
+		public Property<bool> EnableSlowMotion = new Property<bool>();
 		[XmlIgnore]
-		public Property<bool> EnableMoves = new Property<bool> { Editable = false, Value = true };
+		public Property<bool> EnableMoves = new Property<bool> { Value = true };
 		[XmlIgnore]
-		public Property<bool> SlowMotion = new Property<bool> { Editable = false };
+		public Property<bool> SlowMotion = new Property<bool>();
 
 		[XmlIgnore]
 		public Command HealthDepleted = new Command();
 
 		private float damageTimer = 0.0f;
-		public Property<float> Health = new Property<float> { Value = 1.0f, Editable = false };
+		public Property<float> Health = new Property<float> { Value = 1.0f };
 
 		[XmlIgnore]
 		public Command<float> Rumble = new Command<float>();

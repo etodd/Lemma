@@ -9,16 +9,16 @@ namespace Lemma.Components
 {
 	public class PID : Component<Main>, IUpdateableComponent
 	{
-		public Property<float> Input = new Property<float> { Editable = false };
-		public Property<float> Target = new Property<float> { Editable = false };
-		public Property<float> Output = new Property<float> { Editable = false };
+		public Property<float> Input = new Property<float>();
+		public Property<float> Target = new Property<float>();
+		public Property<float> Output = new Property<float>();
 
-		public Property<float> P = new Property<float> { Editable = true, Value = 1.0f };
-		public Property<float> I = new Property<float> { Editable = true, Value = 1.0f };
-		public Property<float> D = new Property<float> { Editable = true, Value = 1.0f };
+		public EditorProperty<float> P = new EditorProperty<float> { Value = 1.0f };
+		public EditorProperty<float> I = new EditorProperty<float> { Value = 1.0f };
+		public EditorProperty<float> D = new EditorProperty<float> { Value = 1.0f };
 
-		public Property<float> PreviousError = new Property<float> { Editable = false };
-		public Property<float> Integral = new Property<float> { Editable = false };
+		public Property<float> PreviousError = new Property<float>();
+		public Property<float> Integral = new Property<float>();
 
 		public override void Awake()
 		{

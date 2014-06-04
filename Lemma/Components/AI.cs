@@ -62,9 +62,9 @@ namespace Lemma.Components
 			}
 		}
 
-		public Property<string> CurrentState = new Property<string> { Serialize = true, Editable = false };
+		public Property<string> CurrentState = new Property<string>();
 
-		public Property<float> TimeInCurrentState = new Property<float> { Serialize = true, Editable = false };
+		public Property<float> TimeInCurrentState = new Property<float>();
 
 		private Dictionary<string, AIState> states = new Dictionary<string, AIState>();
 

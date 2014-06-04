@@ -120,28 +120,28 @@ namespace Lemma.Components
 		}
 
 		[XmlIgnore]
-		public ListProperty<UIComponent> UIElements = new ListProperty<UIComponent> { Editable = false };
+		public ListProperty<UIComponent> UIElements = new ListProperty<UIComponent>();
 		[XmlIgnore]
-		public ListProperty<Entity> SelectedEntities = new ListProperty<Entity> { Editable = false };
+		public ListProperty<Entity> SelectedEntities = new ListProperty<Entity>();
 		[XmlIgnore]
-		public Property<bool> MapEditMode = new Property<bool> { Editable = false };
+		public Property<bool> MapEditMode = new Property<bool>();
 		[XmlIgnore]
-		public Property<bool> EnablePrecision = new Property<bool> { Editable = false };
+		public Property<bool> EnablePrecision = new Property<bool>();
 
 		[XmlIgnore]
-		public Property<bool> PopupVisible = new Property<bool> { Editable = false };
+		public Property<bool> PopupVisible = new Property<bool>();
 		[XmlIgnore]
-		public Property<string> PopupSearchText = new Property<string> { Editable = false, Value = "" };
+		public Property<string> PopupSearchText = new Property<string> { Value = "" };
 		[XmlIgnore]
 		public ListProperty<PopupCommand> PopupCommands = new ListProperty<PopupCommand>();
 		[XmlIgnore]
-		public ListProperty<UIComponent> PopupElements = new ListProperty<UIComponent> { Editable = false };
+		public ListProperty<UIComponent> PopupElements = new ListProperty<UIComponent>();
 
 		[XmlIgnore]
 		public Property<bool> NeedsSave = new Property<bool>();
 
 		[XmlIgnore]
-		public Property<bool> StringPropertyLocked = new Property<bool> { Editable = false };
+		public Property<bool> StringPropertyLocked = new Property<bool>();
 
 		protected Keys[] lastPressedKeys = new Keys[] { };
 		private IProperty selectedStringProperty;
@@ -769,9 +769,9 @@ namespace Lemma.Components
 			else
 			{
 				this.NeedsSave.Value = true;
-				if (this.selectedStringProperty.GetType().Equals(typeof(Property<string>)))
+				if (typeof(Property<string>).IsAssignableFrom(selectedStringProperty.GetType()))
 					((Property<string>)this.selectedStringProperty).Value = this.selectedStringValue;
-				else if (this.selectedStringProperty.GetType().Equals(typeof(Property<Entity.Handle>)))
+				else if (typeof(Property<Entity.Handle>).IsAssignableFrom(selectedStringProperty.GetType()))
 					((Property<Entity.Handle>)this.selectedStringProperty).Value = new Entity.Handle { ID = this.selectedStringValue };
 			}
 

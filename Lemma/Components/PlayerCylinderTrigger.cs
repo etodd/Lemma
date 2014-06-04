@@ -14,12 +14,12 @@ namespace Lemma.Components
 {
 	public class PlayerCylinderTrigger : Component<Main>, IUpdateableComponent
 	{
-		public Property<float> Radius = new Property<float> { Value = 5.0f };
-		public Property<float> Top = new Property<float> { Value = 10.0f };
-		public Property<float> Bottom = new Property<float> { Value = 0.0f };
-		public Property<Matrix> Transform = new Property<Matrix> { Editable = false };
-		public Property<bool> IsTriggered = new Property<bool> { Editable = false };
-		public Property<Entity.Handle> Player = new Property<Entity.Handle> { Editable = false };
+		public EditorProperty<float> Radius = new EditorProperty<float> { Value = 5.0f };
+		public EditorProperty<float> Top = new EditorProperty<float> { Value = 10.0f };
+		public EditorProperty<float> Bottom = new EditorProperty<float> { Value = 0.0f };
+		public Property<Matrix> Transform = new Property<Matrix>();
+		public Property<bool> IsTriggered = new Property<bool>();
+		public Property<Entity.Handle> Player = new Property<Entity.Handle>();
 
 		[XmlIgnore]
 		public Command PlayerEntered = new Command();

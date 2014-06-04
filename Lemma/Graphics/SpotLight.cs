@@ -12,29 +12,29 @@ namespace Lemma.Components
 	{
 		public static readonly List<SpotLight> All = new List<SpotLight>();
 
-		public Property<Vector3> Color = new Property<Vector3> { Value = Vector3.One, Editable = true };
-		public Property<Quaternion> Orientation = new Property<Quaternion> { Editable = false };
-		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
-		public Property<bool> Shadowed = new Property<bool> { Editable = true, Value = true };
-		public Property<float> FieldOfView = new Property<float> { Value = (float)Math.PI * 0.25f, Editable = true };
-		public Property<float> Attenuation = new Property<float> { Value = 10.0f, Editable = true };
+		public EditorProperty<Vector3> Color = new EditorProperty<Vector3> { Value = Vector3.One };
+		public Property<Quaternion> Orientation = new Property<Quaternion>();
+		public Property<Vector3> Position = new Property<Vector3>();
+		public EditorProperty<bool> Shadowed = new EditorProperty<bool> { Value = true };
+		public EditorProperty<float> FieldOfView = new EditorProperty<float> { Value = (float)Math.PI * 0.25f };
+		public EditorProperty<float> Attenuation = new EditorProperty<float> { Value = 10.0f };
 
 		[XmlIgnore]
-		public Property<BoundingFrustum> BoundingFrustum = new Property<BoundingFrustum> { Editable = false };
+		public Property<BoundingFrustum> BoundingFrustum = new Property<BoundingFrustum>();
 
 		[XmlIgnore]
-		public Property<Matrix> ViewProjection = new Property<Matrix> { Editable = false };
+		public Property<Matrix> ViewProjection = new Property<Matrix>();
 
 		[XmlIgnore]
-		public Property<Matrix> View = new Property<Matrix> { Editable = false };
+		public Property<Matrix> View = new Property<Matrix>();
 
 		[XmlIgnore]
-		public Property<Matrix> Projection = new Property<Matrix> { Editable = false };
+		public Property<Matrix> Projection = new Property<Matrix>();
 
-		public Property<string> CookieTextureFile = new Property<string> { Editable = true, Value = "Images\\default-cookie" };
+		public EditorProperty<string> CookieTextureFile = new EditorProperty<string> { Value = "Images\\default-cookie" };
 
 		[XmlIgnore]
-		public Property<Texture2D> CookieTexture = new Property<Texture2D> { Editable = false };
+		public Property<Texture2D> CookieTexture = new Property<Texture2D>();
 
 		public override void Awake()
 		{

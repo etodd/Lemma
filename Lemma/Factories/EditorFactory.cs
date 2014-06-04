@@ -138,7 +138,7 @@ namespace Lemma.Factories
 			entity.Add("UIRenderer", uiRenderer);
 			entity.Add("Model", model);
 			entity.Add("Input", input);
-			entity.Add("StartSpawnPoint", new Property<string>());
+			entity.Add("StartSpawnPoint", new EditorProperty<string>());
 			entity.Add("ProceduralGenerator", new ProceduralGenerator());
 
 			ModelAlpha radiusVisual = new ModelAlpha();

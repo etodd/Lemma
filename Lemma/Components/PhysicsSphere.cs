@@ -16,11 +16,11 @@ namespace Lemma.Components
 {
 	public class PhysicsSphere : Component<Main>, IUpdateableComponent
 	{
-		public Property<Matrix> Transform = new Property<Matrix> { Editable = false };
-		public Property<float> Mass = new Property<float> { Editable = true, Value = 0.25f };
-		public Property<float> Radius = new Property<float> { Editable = true, Value = 0.5f };
-		public Property<Vector3> LinearVelocity = new Property<Vector3> { Editable = false };
-		public Property<Vector3> AngularVelocity = new Property<Vector3> { Editable = false };
+		public Property<Matrix> Transform = new Property<Matrix>();
+		public EditorProperty<float> Mass = new EditorProperty<float> { Value = 0.25f };
+		public EditorProperty<float> Radius = new EditorProperty<float> { Value = 0.5f };
+		public Property<Vector3> LinearVelocity = new Property<Vector3>();
+		public Property<Vector3> AngularVelocity = new Property<Vector3>();
 
 		[XmlIgnore]
 		public Command<Collidable, ContactCollection> Collided = new Command<Collidable, ContactCollection>();

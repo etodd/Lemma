@@ -23,6 +23,8 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Position");
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
+			trigger.Radius.Editable = true;
+			trigger.Enabled.Editable = true;
 			this.SetMain(entity, main);
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))

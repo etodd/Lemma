@@ -11,16 +11,16 @@ namespace Lemma.Components
 {
 	public class RaycastAI : Component<Main>
 	{
-		public Property<Entity.Handle> Voxel = new Property<Entity.Handle> { Editable = false };
-		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord> { Editable = false };
-		public Property<Entity.Handle> LastVoxel = new Property<Entity.Handle> { Editable = false };
-		public Property<Voxel.Coord> LastCoord = new Property<Voxel.Coord> { Editable = false };
-		public Property<Direction> Normal = new Property<Direction> { Editable = false };
-		public Property<float> Blend = new Property<float> { Editable = false, Value = 1.0f };
-		public Property<float> BlendTime = new Property<float> { Editable = false, Value = 0.1f };
-		public Property<float> MovementDistance = new Property<float> { Editable = false, Value = 15.0f };
-		public Property<Vector3> Position = new Property<Vector3> { Editable = false };
-		public Property<Matrix> Orientation = new Property<Matrix> { Editable = false };
+		public Property<Entity.Handle> Voxel = new Property<Entity.Handle>();
+		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
+		public Property<Entity.Handle> LastVoxel = new Property<Entity.Handle>();
+		public Property<Voxel.Coord> LastCoord = new Property<Voxel.Coord>();
+		public Property<Direction> Normal = new Property<Direction>();
+		public Property<float> Blend = new Property<float> { Value = 1.0f };
+		public Property<float> BlendTime = new Property<float> { Value = 0.1f };
+		public Property<float> MovementDistance = new Property<float> { Value = 15.0f };
+		public Property<Vector3> Position = new Property<Vector3>();
+		public Property<Matrix> Orientation = new Property<Matrix>();
 
 		private Random random = new Random();
 
