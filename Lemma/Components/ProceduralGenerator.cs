@@ -163,31 +163,31 @@ namespace Lemma.Components
 			return value;
 		}
 
-		public Property<int> Ceiling = new Property<int> { Value = 80 };
+		public Property<int> Ceiling = new Property<int> { Value = 80, Editable = true };
 
-		public Property<int> Floor = new Property<int> { Value = 0 };
+		public Property<int> Floor = new Property<int> { Value = 0, Editable = true };
 
-		public Property<int> FloorDepth = new Property<int> { Value = 10 };
+		public Property<int> FloorDepth = new Property<int> { Value = 10, Editable = true };
 
-		public Property<float> PrimaryOctave1 = new Property<float> { Value = 50.0f };
+		public Property<float> PrimaryOctave1 = new Property<float> { Value = 50.0f, Editable = true };
 
-		public Property<float> PrimaryOctave2 = new Property<float> { Value = 20.0f };
+		public Property<float> PrimaryOctave2 = new Property<float> { Value = 20.0f, Editable = true };
 
-		public Property<float> PrimaryOctave3 = new Property<float> { Value = 10.0f };
+		public Property<float> PrimaryOctave3 = new Property<float> { Value = 10.0f, Editable = true };
 
-		public Property<float> SecondaryOctave = new Property<float> { Value = 30.0f };
+		public Property<float> SecondaryOctave = new Property<float> { Value = 30.0f, Editable = true };
 
-		public Property<float> HeightOctave = new Property<float> { Value = 20.0f };
+		public Property<float> HeightOctave = new Property<float> { Value = 20.0f, Editable = true };
 
 		private Voxel.State primaryFillValue;
-		public Property<Voxel.t> PrimaryFillValue = new Property<Voxel.t> { Value = Voxel.t.Rock };
+		public Property<Voxel.t> PrimaryFillValue = new Property<Voxel.t> { Value = Voxel.t.Rock, Editable = true };
 
 		private Voxel.State secondaryFillValue;
-		public Property<Voxel.t> SecondaryFillValue = new Property<Voxel.t> { Value = Voxel.t.Rock };
+		public Property<Voxel.t> SecondaryFillValue = new Property<Voxel.t> { Value = Voxel.t.Rock, Editable = true };
 
-		public Property<float> PrimaryFillThreshold = new Property<float> { Value = 0.0f };
+		public Property<float> PrimaryFillThreshold = new Property<float> { Value = 0.0f, Editable = true };
 
-		public Property<float> SecondaryFillThreshold = new Property<float> { Value = 0.2f };
+		public Property<float> SecondaryFillThreshold = new Property<float> { Value = 0.2f, Editable = true };
 
 		public float Sample(Vector3 vector)
 		{

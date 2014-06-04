@@ -125,16 +125,17 @@ namespace Lemma.Components
 			if (!this.states.ContainsKey(this.CurrentState))
 				this.CurrentState.Value = this.states.Keys.First();
 
+			bool initializing = true;
 			this.CurrentState.Set = delegate(string value)
 			{
 				if (this.switching)
 					throw new Exception("Cannot switch states from inside a state exit function.");
-				if ((value == this.CurrentState.InternalValue && !this.CurrentState.IsInitializing) || value == null || main.EditorEnabled)
+				if ((value == this.CurrentState.InternalValue && !initializing) || value == null || main.EditorEnabled)
 					return;
 				this.CurrentState.InternalValue = value;
 				AIState oldState = this.currentState;
 				this.currentState = this.states[value];
-				if (!this.CurrentState.IsInitializing || this.TimeInCurrentState == 0.0f)
+				if (!initializing || this.TimeInCurrentState == 0.0f)
 				{
 					this.TimeInCurrentState.Value = 0.0f;
 					this.switching = true;
@@ -147,6 +148,7 @@ namespace Lemma.Components
 						this.currentState.Enter(oldState);
 				}
 			};
+			initializing = false;
 		}
 
 		public void Update(float elapsedTime)

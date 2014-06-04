@@ -1905,9 +1905,6 @@ namespace Lemma.Components
 						{
 							foreach (Box adjacent in box.Adjacent)
 							{
-								if (box.Type.Supported && adjacent.Type.Supported)
-									continue;
-
 								BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
 								BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
 								if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
@@ -3068,8 +3065,6 @@ namespace Lemma.Components
 		protected bool regenerateSurfaces(Box box, bool firstTime = false)
 		{
 			bool permanent = box.Type.Permanent;
-			if (permanent && !firstTime && box.Added && !main.EditorEnabled)
-				return false;
 			int x, y, z;
 			Surface surface;
 
@@ -3092,7 +3087,7 @@ namespace Lemma.Components
 					for (z = box.Z; z < box.Z + box.Depth; )
 					{
 						Box adjacent = this.GetBox(x, y, z);
-						if (adjacent == null || adjacent.Type.AllowAlpha || (permanent && !adjacent.Type.Permanent))
+						if (adjacent == null || adjacent.Type.AllowAlpha)
 						{
 							surface.MinV = Math.Min(surface.MinV, z);
 							surface.MaxV = Math.Max(surface.MaxV, z + 1);
@@ -3125,7 +3120,7 @@ namespace Lemma.Components
 					for (z = box.Z; z < box.Z + box.Depth; )
 					{
 						Box adjacent = this.GetBox(x, y, z);
-						if (adjacent == null || adjacent.Type.AllowAlpha || (permanent && !adjacent.Type.Permanent))
+						if (adjacent == null || adjacent.Type.AllowAlpha)
 						{
 							surface.MinV = Math.Min(surface.MinV, z);
 							surface.MaxV = Math.Max(surface.MaxV, z + 1);
@@ -3158,7 +3153,7 @@ namespace Lemma.Components
 					for (x = box.X; x < box.X + box.Width; )
 					{
 						Box adjacent = this.GetBox(x, y, z);
-						if (adjacent == null || adjacent.Type.AllowAlpha || (permanent && !adjacent.Type.Permanent))
+						if (adjacent == null || adjacent.Type.AllowAlpha)
 						{
 							surface.MinU = Math.Min(surface.MinU, x);
 							surface.MaxU = Math.Max(surface.MaxU, x + 1);
@@ -3296,13 +3291,7 @@ namespace Lemma.Components
 					if (box.Active && !regenerated.ContainsKey(box))
 						regenerated[box] = this.regenerateSurfaces(box);
 
-					IEnumerable<Box> adjacentBoxes;
-
-					if (box.Type.Supported) // We probably don't have any adjacency info for it.
-						adjacentBoxes = this.getAdjacentBoxes(box);
-					else
-						adjacentBoxes = box.Adjacent;
-					foreach (Box adjacent in adjacentBoxes)
+					foreach (Box adjacent in box.Adjacent)
 					{
 						if (adjacent.Active && !regenerated.ContainsKey(adjacent))
 							regenerated[adjacent] = this.regenerateSurfaces(adjacent);
@@ -3419,28 +3408,14 @@ namespace Lemma.Components
 				if (b.Type == state)
 				{
 					result.Add(b);
-					if (b.Type.Supported) // We probably don't have any adjacency info for it.
+					lock (b.Adjacent)
 					{
-						foreach (Box adjacent in this.getAdjacentBoxes(b))
+						foreach (Box adjacent in b.Adjacent)
 						{
 							if (!alreadyVisited.ContainsKey(adjacent))
 							{
 								boxes.Enqueue(adjacent);
 								alreadyVisited.Add(adjacent, true);
-							}
-						}
-					}
-					else
-					{
-						lock (b.Adjacent)
-						{
-							foreach (Box adjacent in b.Adjacent)
-							{
-								if (!alreadyVisited.ContainsKey(adjacent))
-								{
-									boxes.Enqueue(adjacent);
-									alreadyVisited.Add(adjacent, true);
-								}
 							}
 						}
 					}
@@ -3454,7 +3429,7 @@ namespace Lemma.Components
 		{
 			List<Dictionary<Box, bool>> lists = new List<Dictionary<Box, bool>>();
 
-			bool foundPermanentBlock = false;
+			bool foundSupportedBlock = false;
 
 			// Build adjacency lists
 			foreach (Coord removal in removals)
@@ -3480,15 +3455,15 @@ namespace Lemma.Components
 					if (alreadyFound)
 						continue;
 					Dictionary<Box, bool> newList = new Dictionary<Box, bool>();
-					bool permanent = this.buildAdjacency(box, newList);
-					foundPermanentBlock |= permanent;
-					if (!permanent && newList.Count > 0)
+					bool supported = this.buildAdjacency(box, newList);
+					foundSupportedBlock |= supported;
+					if (!supported && newList.Count > 0)
 						lists.Add(newList);
 				}
 			}
 
 			// Spawn the dynamic maps
-			if (foundPermanentBlock)
+			if (foundSupportedBlock)
 				islands = lists.Select(x => x.Keys);
 			else if (lists.Count > 1)
 			{

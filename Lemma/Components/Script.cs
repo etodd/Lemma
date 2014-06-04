@@ -59,6 +59,8 @@ namespace Lemma.GameScripts
 		[XmlIgnore]
 		public Command Execute = new Command { ShowInEditor = true };
 
+		public ListProperty<Entity.Handle> ConnectedEntities = new ListProperty<Entity.Handle>();
+
 		private MethodInfo scriptMethod;
 
 		/// <summary>

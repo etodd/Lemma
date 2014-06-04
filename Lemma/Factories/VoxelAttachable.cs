@@ -11,13 +11,17 @@ namespace Lemma.Factories
 	{
 		public static void MakeAttachable(Entity entity, Main main, bool deleteIfRemoved = true, bool deleteIfMoved = false, Command deleteCommand = null)
 		{
-			Transform transform = entity.Get<Transform>();
 			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
 			Property<Entity.Handle> voxel = entity.GetOrMakeProperty<Entity.Handle>("AttachedVoxel");
 			Property<Voxel.Coord> coord = entity.GetOrMakeProperty<Voxel.Coord>("AttachedCoordinate");
 
 			if (main.EditorEnabled)
 				return;
+
+			Transform transform = entity.Get<Transform>();
+
+			if (deleteCommand == null)
+				deleteCommand = entity.Delete;
 
 			Binding<Matrix> attachmentBinding = null;
 			CommandBinding<IEnumerable<Voxel.Coord>, Voxel> cellEmptiedBinding = null;
@@ -37,9 +41,6 @@ namespace Lemma.Factories
 
 				attachmentBinding = new Binding<Matrix>(transform.Matrix, () => offset * Matrix.CreateTranslation(m.Offset) * m.Transform, m.Transform, m.Offset);
 				entity.Add(attachmentBinding);
-
-				if (deleteCommand == null)
-					deleteCommand = entity.Delete;
 
 				cellEmptiedBinding = new CommandBinding<IEnumerable<Voxel.Coord>, Voxel>(m.CellsEmptied, delegate(IEnumerable<Voxel.Coord> coords, Voxel newMap)
 				{
@@ -100,6 +101,20 @@ namespace Lemma.Factories
 						voxel.Reset();
 				}
 			});
+		}
+
+		public static void BindTarget(Entity entity, Property<Vector3> target)
+		{
+			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
+			Transform transform = entity.Get<Transform>();
+			entity.Add(new Binding<Vector3>(target, () => Vector3.Transform(new Vector3(0, 0, attachOffset), transform.Matrix), attachOffset, transform.Matrix));
+		}
+
+		public static void BindTarget(Entity entity, Property<Matrix> target)
+		{
+			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
+			Transform transform = entity.Get<Transform>();
+			entity.Add(new Binding<Matrix>(target, () => Matrix.CreateTranslation(0, 0, attachOffset) * transform.Matrix, attachOffset, transform.Matrix));
 		}
 
 		public static void AttachEditorComponents(Entity entity, Main main, Property<Vector3> color = null)

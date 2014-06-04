@@ -41,7 +41,7 @@ namespace Lemma.Factories
 				entity.CannotSuspendByDistance = !is3D;
 			}, is3D));
 
-			if (entity.GetOrMakeProperty<bool>("Attachable", true))
+			if (entity.GetOrMakeProperty<bool>("Attach", true))
 				VoxelAttachable.MakeAttachable(entity, main);
 
 			if (!main.EditorEnabled)

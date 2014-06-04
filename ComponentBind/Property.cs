@@ -25,9 +25,6 @@ namespace ComponentBind
 		public Type InternalValue;
 
 		[XmlIgnore]
-		public bool IsInitializing;
-
-		[XmlIgnore]
 		public Func<Type> Get;
 
 		protected Action<Type> set;
@@ -40,11 +37,9 @@ namespace ComponentBind
 			}
 			set
 			{
-				this.IsInitializing = true;
 				this.set = value;
 				if (this.InternalValue != null && !this.InternalValue.Equals(default(Type)))
 					this.set(this.InternalValue);
-				this.IsInitializing = false;
 			}
 		}
 		protected List<IPropertyBinding> bindings = new List<IPropertyBinding>();

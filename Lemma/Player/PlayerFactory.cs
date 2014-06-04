@@ -151,6 +151,7 @@ namespace Lemma.Factories
 			rollKickSlide.Add(new TwoWayBinding<bool>(player.Character.Crouched, rollKickSlide.Crouched));
 			rollKickSlide.Add(new TwoWayBinding<bool>(player.Character.EnableWalking, rollKickSlide.EnableWalking));
 			rollKickSlide.Add(new TwoWayBinding<Vector3>(player.Character.LinearVelocity, rollKickSlide.LinearVelocity));
+			rollKickSlide.Add(new TwoWayBinding<Vector3>(transform.Position, rollKickSlide.Position));
 			rollKickSlide.Predictor = predictor;
 			rollKickSlide.Model = model;
 			rollKickSlide.VoxelTools = voxelTools;

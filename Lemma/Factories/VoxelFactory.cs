@@ -40,7 +40,7 @@ namespace Lemma.Factories
 		public Entity CreateAndBind(Main main, int offsetX, int offsetY, int offsetZ)
 		{
 			Entity entity = this.Create(main, offsetX, offsetY, offsetZ);
-			this.InternalBind(entity, main, true);
+			this.Bind(entity, main, true);
 			return entity;
 		}
 
@@ -166,17 +166,22 @@ namespace Lemma.Factories
 			base.Bind(entity, main, creating);
 			DynamicVoxel map = entity.Get<DynamicVoxel>();
 
-			const float volumeMultiplier = 0.002f;
+			const float volumeMultiplier = 0.005f;
 
+			float lastCollision = 0.0f;
 			map.Add(new CommandBinding<Collidable, ContactCollection>(map.Collided, delegate(Collidable collidable, ContactCollection contacts)
 			{
 				ContactInformation contact = contacts[contacts.Count - 1];
 				float volume = contact.NormalImpulse * volumeMultiplier;
-				if (volume > 0.1f)
+				float now = main.TotalTime;
+				if (volume > 0.1f && now > lastCollision + 0.3f)
 				{
 					// TODO: figure out Wwise volume parameter
 					uint cue = map[contact.Contact.Position - (contact.Contact.Normal * 0.25f)].RubbleEvent;
 					AkSoundEngine.PostEvent(cue, entity);
+					lastCollision = now;
+					if (PlayerFactory.Instance != null)
+						PlayerFactory.Instance.Get<CameraController>().Shake.Execute(contact.Contact.Position, volume);
 				}
 			}));
 		}

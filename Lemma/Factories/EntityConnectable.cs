@@ -57,7 +57,8 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.Get<Transform>();
 
-			Property<bool> selected = entity.GetOrMakeProperty<bool>("EditorSelected");
+			Property<bool> selected = entity.GetOrMakeProperty<bool>("EditorSelected", false);
+			selected.Serialize = false;
 
 			Command<Entity> toggleEntityConnected = new Command<Entity>
 			{

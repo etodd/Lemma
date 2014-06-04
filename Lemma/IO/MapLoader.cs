@@ -78,6 +78,7 @@ namespace Lemma.IO
 			typeof(Propagator),
 			typeof(RotationController),
 			typeof(PlayerData),
+			typeof(Rift),
 		};
 
 		public static XmlSerializer Serializer;

@@ -532,7 +532,7 @@ namespace Lemma.Components
 			// HACK
 			// Increase the far plane to prevent clipping back faces of huge lights
 			float originalFarPlane = parameters.Camera.FarPlaneDistance;
-			parameters.Camera.FarPlaneDistance.Value *= 3.0f;
+			parameters.Camera.FarPlaneDistance.Value *= 4.0f;
 			parameters.Camera.SetParameters(Renderer.pointLightEffect);
 			parameters.Camera.SetParameters(Renderer.spotLightEffect);
 			parameters.Camera.FarPlaneDistance.Value = originalFarPlane;

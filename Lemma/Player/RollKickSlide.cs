@@ -44,6 +44,7 @@ namespace Lemma.Components
 		public Property<bool> EnableWalking = new Property<bool>();
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
 		public BlockPredictor Predictor;
+		public Property<Vector3> Position = new Property<Vector3>();
 
 		// Output
 		public Property<bool> Rolling = new Property<bool>();
@@ -124,6 +125,7 @@ namespace Lemma.Components
 								instantiatedBlockPossibility = true;
 								this.floorMap = block.Map;
 								this.floorCoordinate = coord;
+								this.Position.Value += new Vector3(0, this.floorMap.GetAbsolutePosition(coord).Y + 2 - this.FloorPosition.Value.Y, 0);
 								this.shouldBuildFloor = true;
 								nearGround = true;
 								break;
@@ -190,16 +192,6 @@ namespace Lemma.Components
 				this.Crouched.Value = true;
 				this.AllowUncrouch.Value = false;
 
-				this.LinearVelocity.Value += this.forward * Math.Max(4.0f, Vector3.Dot(this.forward, this.LinearVelocity) * 0.5f) + new Vector3(0, this.JumpSpeed * 0.25f, 0);
-
-				this.velocity = this.LinearVelocity;
-
-				this.Entity.Add(new Animation
-				(
-					new Animation.Delay(0.25f),
-					new Animation.Execute(delegate() { AkSoundEngine.PostEvent("Kick_Play", this.Entity); })
-				));
-
 				Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
 
 				this.shouldBuildFloor = false;
@@ -208,10 +200,13 @@ namespace Lemma.Components
 				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height);
 				this.floorMap = floorRaycast.Voxel;
 
+				this.velocity = this.LinearVelocity.Value + this.forward * Math.Max(4.0f, Vector3.Dot(this.forward, this.LinearVelocity) * 0.5f) + new Vector3(0, this.JumpSpeed * 0.25f, 0);
+
 				if (instantiatedBlockPossibility)
 				{
 					this.shouldBreakFloor = false;
 					this.shouldBuildFloor = true;
+					this.velocity.Y = 0.0f;
 				}
 				else if (this.floorMap == null)
 				{
@@ -228,6 +223,8 @@ namespace Lemma.Components
 							this.shouldBuildFloor = true;
 					}
 				}
+
+				this.LinearVelocity.Value = this.velocity;
 
 				this.Model.StartClip(this.shouldBreakFloor ? "Kick" : "Slide", 5, false, AnimatedModel.DefaultBlendTime);
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE, this.Entity);
@@ -287,16 +284,25 @@ namespace Lemma.Components
 			{
 				this.rollKickTime += dt;
 
-				if (this.shouldBreakFloor && !this.IsSupported) // We weren't supported when we started kicking. We're flying.
+				if (!this.IsSupported) 
 				{
-					// Roll if we hit the ground while kicking mid-air
-					Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
-					Voxel.GlobalRaycastResult r = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height);
-					if (r.Voxel != null)
+					if (this.shouldBreakFloor)
 					{
-						this.StopKick();
-						this.Go();
-						return;
+						// We weren't supported when we started kicking. We're flying.
+						// Roll if we hit the ground while kicking mid-air
+						Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
+						Voxel.GlobalRaycastResult r = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height);
+						if (r.Voxel != null)
+						{
+							this.StopKick();
+							this.Go();
+							return;
+						}
+					}
+					else
+					{
+						// We started out on the ground, but we kicked of an edge.
+						AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
 					}
 				}
 

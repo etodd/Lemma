@@ -27,7 +27,7 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
-			Property<Entity.Handle> map = entity.GetOrMakeProperty<Entity.Handle>("AttachedMap");
+			Property<Entity.Handle> map = entity.GetOrMakeProperty<Entity.Handle>("AttachedVoxel");
 			Property<Voxel.Coord> coord = entity.GetOrMakeProperty<Voxel.Coord>("AttachedCoordinate");
 
 			Property<bool> on = entity.GetOrMakeProperty<bool>("On");

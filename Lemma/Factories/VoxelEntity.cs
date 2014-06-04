@@ -13,7 +13,7 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.Get<Transform>();
 			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
-			Property<Entity.Handle> map = entity.GetOrMakeProperty<Entity.Handle>("AttachedMap");
+			Property<Entity.Handle> map = entity.GetOrMakeProperty<Entity.Handle>("AttachedVoxel");
 			Property<Voxel.Coord> coord = entity.GetOrMakeProperty<Voxel.Coord>("AttachedCoordinate");
 
 			if (main.EditorEnabled)

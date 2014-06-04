@@ -63,11 +63,11 @@ namespace Lemma.Factories
 				transform.Position.Value = value;
 			};
 			Property<Matrix> startOrientation = entity.GetOrMakeProperty<Matrix>("StartOrientation");
-			Vector3 startEuler = Vector3.Zero;
+			Quaternion startQuat = Quaternion.Identity;
 			startOrientation.Set = delegate(Matrix value)
 			{
 				startOrientation.InternalValue = value;
-				startEuler = Quaternion.CreateFromRotationMatrix(startOrientation).ToEuler();
+				startQuat = Quaternion.CreateFromRotationMatrix(startOrientation);
 				transform.Orientation.Value = value;
 			};
 
@@ -178,9 +178,9 @@ namespace Lemma.Factories
 							model.Scale.Value = new Vector3(1.0f);
 						Matrix finalOrientation = m.Transform;
 						finalOrientation.Translation = Vector3.Zero;
-						Vector3 finalEuler = Quaternion.CreateFromRotationMatrix(finalOrientation).ToEuler();
-						finalEuler = Vector3.Lerp(startEuler, finalEuler, blend);
-						transform.Orientation.Value = Matrix.CreateFromYawPitchRoll(finalEuler.X, finalEuler.Y, finalEuler.Z);
+						Quaternion finalQuat = Quaternion.CreateFromRotationMatrix(finalOrientation);
+						finalQuat = Quaternion.Lerp(startQuat, finalQuat, blend);
+						transform.Orientation.Value = Matrix.CreateFromQuaternion(finalQuat);
 
 						Vector3 finalPosition = m.GetAbsolutePosition(coord);
 						float distance = (finalPosition - start).Length() * 0.1f * Math.Max(0.0f, 0.5f - Math.Abs(blend - 0.5f));
@@ -229,13 +229,12 @@ namespace Lemma.Factories
 		public void Build(Main main, IEnumerable<BlockBuildOrder> blocks, bool fake, Vector3 center, float delayMultiplier = 0.05f)
 		{
 			int index = 0;
-			EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
 			foreach (BlockBuildOrder entry in blocks)
 			{
-				if (factory.IsAnimating(new EffectBlockFactory.BlockEntry { Voxel = entry.Voxel, Coordinate = entry.Coordinate }))
+				if (this.IsAnimating(new EffectBlockFactory.BlockEntry { Voxel = entry.Voxel, Coordinate = entry.Coordinate }))
 					continue;
 
-				Entity block = factory.CreateAndBind(main);
+				Entity block = this.CreateAndBind(main);
 				entry.State.ApplyToEffectBlock(block.Get<ModelInstance>());
 				block.GetOrMakeProperty<Vector3>("Offset").Value = entry.Voxel.GetRelativePosition(entry.Coordinate);
 
@@ -246,7 +245,7 @@ namespace Lemma.Factories
 				block.GetOrMakeProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * (distance + index)) * Matrix.CreateRotationY(0.15f * (distance + index));
 				block.GetOrMakeProperty<float>("TotalLifetime").Value = Math.Max(delayMultiplier, distance * delayMultiplier);
 				block.GetOrMakeProperty<bool>("CheckAdjacent").Value = true;
-				factory.Setup(block, entry.Voxel.Entity, entry.Coordinate, fake ? 0 : entry.State.ID);
+				this.Setup(block, entry.Voxel.Entity, entry.Coordinate, fake ? 0 : entry.State.ID);
 				main.Add(block);
 				index++;
 			}

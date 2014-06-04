@@ -32,6 +32,7 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			entity.CannotSuspendByDistance = true;
+			entity.GetOrCreate<Transform>("Transform");
 
 			const float kernelSpacing = 8.0f;
 			const int kernelSize = 10;
@@ -43,7 +44,6 @@ namespace Lemma.Factories
 
 			ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("Emitter");
 			emitter.Jitter.Value = new Vector3(kernelSpacing * kernelSize * 0.5f, 0.0f, kernelSpacing * kernelSize * 0.5f);
-			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			if (!main.EditorEnabled)
 				AkSoundEngine.PostEvent("Play_rain", entity);
@@ -211,6 +211,7 @@ namespace Lemma.Factories
 			base.AttachEditorComponents(entity, main);
 
 			Property<bool> selected = entity.GetOrMakeProperty<bool>("EditorSelected");
+			selected.Serialize = false;
 
 			Components.DirectionalLight lightning = entity.Get<Components.DirectionalLight>("Lightning");
 			lightning.Add(new Binding<bool>(lightning.Enabled, selected));

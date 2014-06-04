@@ -151,13 +151,15 @@ namespace Lemma.Factories
 			radiusVisual.DisableCulling.Value = true;
 			entity.Add(radiusVisual);
 			radiusVisual.Add(new Binding<Matrix, Vector3>(radiusVisual.Transform, x => Matrix.CreateTranslation(x), editor.Position));
-			radiusVisual.Add(new Binding<Vector3, int>(radiusVisual.Scale, delegate(int brushSize)
+			Action refreshRadius = delegate()
 			{
 				float s = 1.0f;
 				if (editor.VoxelEditMode)
 					s = editor.SelectedEntities[0].Get<Voxel>().Scale;
-				return new Vector3(s * brushSize);
-			}, editor.BrushSize));
+				radiusVisual.Scale.Value = new Vector3(s * editor.BrushSize);
+			};
+			radiusVisual.Add(new NotifyBinding(refreshRadius, editor.BrushSize));
+			radiusVisual.Add(new ListNotifyBinding<Entity>(refreshRadius, editor.SelectedEntities));
 			radiusVisual.Add(new Binding<bool>(radiusVisual.Enabled, () => editor.BrushSize > 1 && editor.VoxelEditMode, editor.BrushSize, editor.VoxelEditMode));
 			radiusVisual.CullBoundingBox.Value = false;
 
