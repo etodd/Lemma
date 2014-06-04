@@ -5,10 +5,16 @@ using System.Text;
 
 namespace ComponentBind
 {
-	public abstract class BaseCommandBinding : IBinding
+	public interface ICommandBinding : IBinding
 	{
-		protected Command source;
-		protected Command[] destinations;
+
+	}
+
+	public abstract class BaseCommandBinding<CommandType> : ICommandBinding
+		where CommandType : BaseCommand
+	{
+		protected CommandType source;
+		protected CommandType[] destinations;
 		protected Func<bool> enabled;
 
 		public bool Enabled { get; set; }
@@ -28,7 +34,7 @@ namespace ComponentBind
 		}
 	}
 
-	public class CommandBinding : BaseCommandBinding
+	public class CommandBinding : BaseCommandBinding<Command>
 	{
 		public CommandBinding(Command _source, params Command[] _destinations)
 			: this(_source, () => true, _destinations)
@@ -70,7 +76,7 @@ namespace ComponentBind
 		}
 	}
 
-	public class CommandBinding<Type> : BaseCommandBinding
+	public class CommandBinding<Type> : BaseCommandBinding<Command<Type>>
 	{
 		public CommandBinding(Command<Type> _source, params Command<Type>[] _destinations)
 			: this(_source, () => true, _destinations)
@@ -109,7 +115,7 @@ namespace ComponentBind
 		}
 	}
 
-	public class CommandBinding<Type, Type2> : BaseCommandBinding
+	public class CommandBinding<Type, Type2> : BaseCommandBinding<Command<Type, Type2>>
 	{
 		public CommandBinding(Command<Type, Type2> _source, params Command<Type, Type2>[] _destinations)
 			: this(_source, () => true, _destinations)
@@ -148,7 +154,7 @@ namespace ComponentBind
 		}
 	}
 
-	public class CommandBinding<Type, Type2, Type3> : BaseCommandBinding
+	public class CommandBinding<Type, Type2, Type3> : BaseCommandBinding<Command<Type, Type2, Type3>>
 	{
 		public CommandBinding(Command<Type, Type2, Type3> _source, params Command<Type, Type2, Type3>[] _destinations)
 			: this(_source, () => true, _destinations)
@@ -187,7 +193,7 @@ namespace ComponentBind
 		}
 	}
 
-	public class CommandBinding<Type, Type2, Type3, Type4> : BaseCommandBinding
+	public class CommandBinding<Type, Type2, Type3, Type4> : BaseCommandBinding<Command<Type, Type2, Type3, Type4>>
 	{
 		public CommandBinding(Command<Type, Type2, Type3, Type4> _source, params Command<Type, Type2, Type3, Type4>[] _destinations)
 			: this(_source, () => true, _destinations)

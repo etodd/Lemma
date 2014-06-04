@@ -184,7 +184,7 @@ namespace ComponentBind
 		}
 
 		[XmlIgnore]
-		private Dictionary<string, Command> commands = new Dictionary<string, Command>();
+		private Dictionary<string, BaseCommand> commands = new Dictionary<string, BaseCommand>();
 
 		public IEnumerable<IComponent> ComponentList
 		{
@@ -343,7 +343,7 @@ namespace ComponentBind
 			}
 		}
 
-		public void Add(string name, Command cmd)
+		public void Add(string name, BaseCommand cmd)
 		{
 			this.commands.Add(name, cmd);
 		}
@@ -558,28 +558,28 @@ namespace ComponentBind
 
 		public Command GetCommand(string name)
 		{
-			Command result = null;
+			BaseCommand result = null;
 			this.commands.TryGetValue(name, out result);
-			return result;
+			return (Command)result;
 		}
 
 		public Command<T> GetCommand<T>(string name)
 		{
-			Command result = null;
+			BaseCommand result = null;
 			this.commands.TryGetValue(name, out result);
 			return (Command<T>)result;
 		}
 
 		public Command<T, T2> GetCommand<T, T2>(string name)
 		{
-			Command result = null;
+			BaseCommand result = null;
 			this.commands.TryGetValue(name, out result);
 			return (Command<T, T2>)result;
 		}
 
 		public Command<T, T2, T3> GetCommand<T, T2, T3>(string name)
 		{
-			Command result = null;
+			BaseCommand result = null;
 			this.commands.TryGetValue(name, out result);
 			return (Command<T, T2, T3>)result;
 		}
