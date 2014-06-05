@@ -252,7 +252,7 @@ namespace Lemma
 			this.componentsToRemove.Clear();
 		}
 
-		public virtual void ClearEntities(bool deleteEditor)
+		public void ClearEntities(bool deleteEditor)
 		{
 			if (this.MapContent != null)
 				this.MapContent.Unload();
@@ -295,6 +295,7 @@ namespace Lemma
 			this.Camera.Angles.Value = Vector3.Zero;
 			this.Menu.ClearMessages();
 
+			AkSoundEngine.PostEvent(AK.EVENTS.STOP_ALL);
 			AkSoundEngine.SetState(AK.STATES.WATER.GROUP, AK.STATES.WATER.STATE.NORMAL);
 		}
 

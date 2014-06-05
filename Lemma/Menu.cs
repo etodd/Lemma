@@ -303,7 +303,7 @@ namespace Lemma.Components
 						new Animation.Parallel
 						(
 							new Animation.Vector2MoveToSpeed(this.pauseMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
-							new Animation.FloatMoveToSpeed(this.main.PauseAudioEffect, 1.0f, Menu.animationSpeed)
+							new Animation.FloatMoveToSpeed(this.main.PauseAudioEffect, this.main.MapFile == Main.MenuMap ? 0.0f : 1.0f, Menu.animationSpeed)
 						),
 						Animation.Ease.Type.OutExponential
 					)

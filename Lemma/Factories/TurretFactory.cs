@@ -241,14 +241,14 @@ namespace Lemma.Factories
 				Name = "Firing",
 				Enter = delegate(AI.AIState last)
 				{
-					AkSoundEngine.PostEvent("Play_turret_charge", entity);
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_CHARGE, entity);
 				},
 				Exit = delegate(AI.AIState next)
 				{
 					if (rayHit.Voxel != null && (rayHit.Position - transform.Position).Length() < 8.0f)
 						return; // Danger close, cease fire!
 
-					AkSoundEngine.PostEvent("Play_turret_fire", entity);
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_FIRE, entity);
 
 					Entity target = targetAgent.Value.Target;
 					if (target != null && target.Active)
@@ -259,7 +259,7 @@ namespace Lemma.Factories
 						{
 							float distance = toTarget.Length();
 							if (distance < rayHit.Distance)
-								AkSoundEngine.PostEvent("Play_turret_miss", transform.Position + toReticle * distance);
+								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_MISS, transform.Position + toReticle * distance);
 						}
 					}
 

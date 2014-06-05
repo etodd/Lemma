@@ -36,6 +36,12 @@ namespace Lemma.Factories
 			Property<Entity.Handle> voxel = entity.GetOrMakeProperty<Entity.Handle>("AttachedVoxel");
 			Property<Voxel.Coord> coord = entity.GetOrMakeProperty<Voxel.Coord>("AttachedCoordinate");
 
+			PointLight light = entity.GetOrCreate<PointLight>();
+			light.Color.Value = new Vector3(1.2f, 1.4f, 1.6f);
+			light.Add(new Binding<Vector3>(light.Position, rift.Position));
+			light.Add(new Binding<bool>(light.Enabled, () => rift.Type == Rift.Style.In && rift.Enabled, rift.Type, rift.Enabled));
+			light.Add(new Binding<float>(light.Attenuation, x => x * 2.0f, rift.CurrentRadius));
+
 			rift.Add(new Binding<Entity.Handle>(rift.Voxel, voxel));
 			rift.Add(new Binding<Voxel.Coord>(rift.Coordinate, coord));
 

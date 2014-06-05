@@ -43,6 +43,9 @@ public class AK
         public static uint PLAY_SIGNAL_TOWER_LOOP = 1879386073U;
         public static uint PLAY_SNAKE_MOVE = 3676437670U;
         public static uint PLAY_THUNDER = 3870462868U;
+        public static uint PLAY_TURRET_CHARGE = 3393910755U;
+        public static uint PLAY_TURRET_FIRE = 3057469883U;
+        public static uint PLAY_TURRET_MISS = 187900779U;
         public static uint PLAY_UI_CLICK = 1749424733U;
         public static uint PLAY_UI_MOUSEOVER = 808445146U;
         public static uint PLAY_WALL_BREAK_01 = 2635525752U;
@@ -51,6 +54,7 @@ public class AK
         public static uint PLAY_WATER_SPLASH_HEAVY = 1166068147U;
         public static uint PLAY_WATER_SPLASH_OUT = 332641338U;
         public static uint PLAY_WHITE_LIGHT = 3583610488U;
+        public static uint STOP_ALL = 452547817U;
         public static uint STOP_DAWN_AMBIENT = 672119035U;
         public static uint STOP_EVIL_CUBES = 3034540413U;
         public static uint STOP_EXTERIOR_WIND = 4269705691U;
