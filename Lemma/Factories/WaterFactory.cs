@@ -30,22 +30,6 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			Water water = entity.GetOrCreate<Water>("Water");
 
-			if (!main.EditorEnabled)
-				AkSoundEngine.PostEvent("Play_water", entity);
-
-			entity.Add(new Updater
-			{
-				delegate(float dt)
-				{
-					Vector3 pos = main.Camera.Position;
-					BoundingBox box = water.Fluid.BoundingBox;
-					pos.X = Math.Max(box.Min.X, Math.Min(pos.X, box.Max.X));
-					pos.Y = transform.Position.Value.Y;
-					pos.Z = Math.Max(box.Min.Z, Math.Min(pos.Z, box.Max.Z));
-					// TODO: Figure out how to update Wwise position
-				}
-			});
-
 			this.SetMain(entity, main);
 
 			water.Add(new TwoWayBinding<Vector3>(water.Position, transform.Position));

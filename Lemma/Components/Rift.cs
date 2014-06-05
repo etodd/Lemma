@@ -21,6 +21,7 @@ namespace Lemma.Components
 
 		private const float damageTime = 1.0f; // How long the player can stand in a rift before they die
 		private const float interval = 0.015f; // A coordinate is emptied every x seconds
+		private const float particleInterval = 0.015f; // A particle is emitted every x seconds
 		public EditorProperty<int> Radius = new EditorProperty<int> { Value = 10 };
 		public Property<float> CurrentRadius = new Property<float>();
 		public Property<int> CurrentIndex = new Property<int>();
@@ -32,10 +33,13 @@ namespace Lemma.Components
 
 		private Voxel voxel;
 		private float intervalTimer;
+		private float particleIntervalTimer;
+		private ParticleSystem particles;
 
 		public override void Awake()
 		{
 			base.Awake();
+			this.particles = ParticleSystem.Get(this.main, "Rift");
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
 			this.Add(new CommandBinding(this.OnEnabled, delegate()
@@ -86,6 +90,17 @@ namespace Lemma.Components
 				else if (this.voxel.Active)
 				{
 					this.intervalTimer += dt;
+
+					if (this.Type == Style.In)
+					{
+						this.particleIntervalTimer += dt;
+						while (this.particleIntervalTimer > particleInterval)
+						{
+							this.particleIntervalTimer -= particleInterval;
+							this.particles.AddParticle(this.Position, Vector3.Zero, -1.0f, this.CurrentRadius * 2.0f);
+						}
+					}
+
 					bool regenerate = false;
 					while (this.intervalTimer > interval && this.CurrentIndex < this.Coords.Count)
 					{

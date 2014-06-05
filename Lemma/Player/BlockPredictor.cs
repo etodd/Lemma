@@ -167,7 +167,7 @@ namespace Lemma.Components
 				}
 			}
 
-			AkSoundEngine.PostEvent("Play_block_instantiate", 0.5f * (block.Map.GetAbsolutePosition(block.StartCoord) + block.Map.GetAbsolutePosition(block.EndCoord)));
+			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_BLOCK_APPEAR, 0.5f * (block.Map.GetAbsolutePosition(block.StartCoord) + block.Map.GetAbsolutePosition(block.EndCoord)));
 		}
 
 		// Function for finding a platform to build for the player

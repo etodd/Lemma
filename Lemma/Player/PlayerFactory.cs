@@ -339,7 +339,7 @@ namespace Lemma.Factories
 			entity.Add(new CommandBinding(player.HealthDepleted, delegate()
 			{
 				Session.Recorder.Event(main, "DieFromHealth");
-				AkSoundEngine.PostEvent("Play_death", entity);
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_DEATH, entity);
 				main.Spawner.RespawnDistance = Spawner.KilledRespawnDistance;
 				main.Spawner.RespawnInterval = Spawner.KilledRespawnInterval;
 			}));

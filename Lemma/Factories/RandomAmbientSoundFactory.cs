@@ -28,13 +28,17 @@ namespace Lemma.Factories
 
 			Property<bool> is3D = entity.GetOrMakeProperty<bool>("Is3D", true);
 
-			Property<string> cue = entity.GetOrMakeProperty<string>("Cue", true);
+			Property<string> cue = entity.GetOrMakeProperty<string>("Play", true);
+			Property<string> stop = entity.GetOrMakeProperty<string>("Stop", true);
 
 			entity.CannotSuspendByDistance = !is3D;
 			entity.Add(new NotifyBinding(delegate()
 			{
 				entity.CannotSuspendByDistance = !is3D;
 			}, is3D));
+
+			if (!main.EditorEnabled)
+				SoundKiller.Add(entity, stop);
 
 			Property<float> min = entity.GetOrMakeProperty<float>("MinimumInterval", true, 10.0f);
 			Property<float> max = entity.GetOrMakeProperty<float>("MaximumInterval", true, 20.0f);
@@ -45,6 +49,7 @@ namespace Lemma.Factories
 			{
 				delegate(float dt)
 				{
+					interval -= dt;
 					if (interval <= 0)
 					{
 						AkSoundEngine.PostEvent(cue, entity);

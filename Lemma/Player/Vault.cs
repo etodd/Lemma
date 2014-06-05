@@ -219,6 +219,8 @@ namespace Lemma.Components
 
 			if (this.random.NextDouble() > 0.5)
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, this.Entity);
+			if (this.random.NextDouble() > 0.5)
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_VAULT, this.Entity);
 
 			this.vaultTime = 0.0f;
 			this.moveForwardStartTime = 0.0f;

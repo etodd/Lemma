@@ -21,7 +21,6 @@ float4 MaxColor;
 // The actual value is chosen differently for each particle,
 // interpolating between x and y by some random amount.
 float2 RotateSpeed;
-float2 StartSize;
 float2 EndSize;
 
 // Particle texture and sampler.
@@ -62,6 +61,7 @@ struct VertexShaderInput
 	float4 Random : COLOR0;
 	float Time : TEXCOORD0;
 	float Lifetime : TEXCOORD1;
+	float StartSize : TEXCOORD2;
 };
 
 // Vertex shader output structure specifies the position and color of the particle.
@@ -104,10 +104,9 @@ float3 ComputeParticlePosition(float3 position, float3 velocity, float age, floa
 }
 
 // Vertex shader helper for computing the size of a particle.
-float ComputeParticleSize(float randomValue, float normalizedAge)
+float ComputeParticleSize(float startSize, float randomValue, float normalizedAge)
 {
 	// Apply a random factor to make each particle a slightly different size.
-	float startSize = lerp(StartSize.x, StartSize.y, randomValue);
 	float endSize = lerp(EndSize.x, EndSize.y, randomValue);
 	
 	// Compute the actual size based on the age of the particle.
@@ -124,7 +123,7 @@ float4 ComputeParticleColor(float4 projectedPosition,
 	// Apply a random factor to make each particle a slightly different color.
 	float4 color = lerp(MinColor, MaxColor, randomValue);
 	
-	color.a *= normalizedAge < 0.05f ? normalizedAge / 0.05f : 1.0f - normalizedAge;
+	color.a *= normalizedAge < 0.1f ? normalizedAge / 0.1f : 1.0f - normalizedAge;
    
 	return color;
 }
@@ -135,7 +134,7 @@ float2x2 ComputeParticleRotation(float randomValue, float age)
 	// Apply a random factor to make each particle rotate at a different speed.
 	float rotateSpeed = lerp(RotateSpeed.x, RotateSpeed.y, randomValue);
 	
-	float rotation = rotateSpeed * (2 + age);
+	float rotation = randomValue * 3.1415 * 2.0 + (rotateSpeed * age);
 
 	// Compute a 2x2 rotation matrix.
 	float c = cos(rotation);
@@ -163,7 +162,7 @@ void ParticleVS(in VertexShaderInput input, out VertexShaderOutput output)
 	output.ViewSpacePosition = viewSpacePosition;
 	float4 pos = mul(viewSpacePosition, Projection);
 
-	float size = ComputeParticleSize(input.Random.y, normalizedAge);
+	float size = ComputeParticleSize(input.StartSize, input.Random.y, normalizedAge);
 	float2x2 rotation = ComputeParticleRotation(input.Random.w, age);
 
 	pos.xy += mul(input.Corner, rotation) * size * ViewportScale;

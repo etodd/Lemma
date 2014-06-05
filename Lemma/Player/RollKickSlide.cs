@@ -150,7 +150,7 @@ namespace Lemma.Components
 					this.LockRotation.Execute();
 
 					this.Footstep.Execute(); // We just landed; play a footstep sound
-					AkSoundEngine.PostEvent("Skill_Roll_Play", this.Entity);
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_ROLL, this.Entity);
 
 					this.Model.StartClip("Roll", 5, false, AnimatedModel.DefaultBlendTime);
 

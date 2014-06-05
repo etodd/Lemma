@@ -471,7 +471,7 @@ namespace Lemma.Components
 					new Animation.Ease(new Animation.Vector2MoveTo(lastMessage.Size, originalSize, 0.5f), Animation.Ease.Type.OutExponential)
 				));
 
-				AkSoundEngine.PostEvent("Phone_Play", entity);
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PHONE_VIBRATE, entity);
 				if (togglePhoneMessage == null && phone.Schedules.Count == 0 && phone.ActiveAnswers.Count == 0) // No more messages incoming, and no more answers to give
 					togglePhoneMessage = main.Menu.ShowMessage(entity, "[{{TogglePhone}}]");
 			}));

@@ -48,6 +48,8 @@ namespace Lemma.Components
 			// Lifetime (in seconds) of this particle.
 			public float Lifetime;
 
+			public float StartSize;
+
 			// Describe the layout of this vertex structure.
 			public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration
 			(
@@ -56,12 +58,13 @@ namespace Lemma.Components
 				new VertexElement(16, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0),
 				new VertexElement(28, VertexElementFormat.Color, VertexElementUsage.Color, 0),
 				new VertexElement(32, VertexElementFormat.Single, VertexElementUsage.TextureCoordinate, 0),
-				new VertexElement(36, VertexElementFormat.Single, VertexElementUsage.TextureCoordinate, 1)
+				new VertexElement(36, VertexElementFormat.Single, VertexElementUsage.TextureCoordinate, 1),
+				new VertexElement(40, VertexElementFormat.Single, VertexElementUsage.TextureCoordinate, 2)
 			);
 
 
 			// Describe the size of this vertex structure.
-			public const int SizeInBytes = 40;
+			public const int SizeInBytes = 44;
 		}
 		#endregion
 
@@ -279,6 +282,31 @@ namespace Lemma.Components
 				MaxStartSize = 1.0f,
 				MinEndSize = 2.0f,
 				MaxEndSize = 4.0f,
+				BlendState = BlendState.AlphaBlend,
+				MinColor = new Vector4(1.2f, 1.4f, 1.6f, 1.0f),
+				MaxColor = new Vector4(1.2f, 1.4f, 1.6f, 1.0f),
+				PostAlpha = true,
+			});
+
+			ParticleSystem.add(main, "Rift",
+			new ParticleSystem.ParticleSettings
+			{
+				TextureName = "Particles\\rift",
+				EffectFile = "Effects\\ParticleFrameBufferDistortion",
+				MaxParticles = 1000,
+				DrawOrder = 0,
+				Duration = TimeSpan.FromSeconds(0.6f),
+				MinHorizontalVelocity = 0.0f,
+				MaxHorizontalVelocity = 0.0f,
+				MinVerticalVelocity = 0.0f,
+				MaxVerticalVelocity = 0.0f,
+				Gravity = new Vector3(0.0f, 0.0f, 0.0f),
+				MinRotateSpeed = 0.0f,
+				MaxRotateSpeed = 0.0f,
+				MinStartSize = 8.0f,
+				MaxStartSize = 8.0f,
+				MinEndSize = 0.0f,
+				MaxEndSize = 0.0f,
 				BlendState = BlendState.AlphaBlend,
 				MinColor = new Vector4(1.2f, 1.4f, 1.6f, 1.0f),
 				MaxColor = new Vector4(1.2f, 1.4f, 1.6f, 1.0f),
@@ -944,10 +972,13 @@ namespace Lemma.Components
 		/// <summary>
 		/// Adds a new particle to the system.
 		/// </summary>
-		public void AddParticle(Vector3 position, Vector3 velocity, float lifetime = -1.0f, float prePrime = 0.0f)
+		public void AddParticle(Vector3 position, Vector3 velocity, float lifetime = -1.0f, float size = -1.0f, float prePrime = 0.0f)
 		{
 			if (lifetime == -1.0f)
 				lifetime = (float)this.settings.Duration.TotalSeconds;
+			
+			if (size == -1.0f)
+				size = this.settings.MinStartSize + (float)ParticleSystem.random.NextDouble() * (this.settings.MaxStartSize - this.settings.MinStartSize);
 
 			// Figure out where in the circular queue to allocate the new particle.
 			int nextFreeParticle = this.firstFreeParticle + 1;
@@ -994,6 +1025,7 @@ namespace Lemma.Components
 				v.Random = randomValues;
 				v.Time = currentTime - prePrime;
 				v.Lifetime = lifetime;
+				v.StartSize = size;
 				this.particles[this.firstFreeParticle * 4 + i] = v;
 			}
 

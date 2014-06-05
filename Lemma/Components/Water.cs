@@ -195,6 +195,8 @@ namespace Lemma.Components
 			this.resize();
 		}
 
+		private Property<Vector3> soundPosition = new Property<Vector3>();
+
 		public override void Awake()
 		{
 			base.Awake();
@@ -297,6 +299,20 @@ namespace Lemma.Components
 			};
 
 			instances.Add(this);
+
+			this.Add(new Binding<Vector3>(this.soundPosition,
+			delegate(Vector3 pos)
+			{
+				BoundingBox box = this.Fluid.BoundingBox;
+				pos.X = Math.Max(box.Min.X, Math.Min(pos.X, box.Max.X));
+				pos.Y = this.Position.Value.Y;
+				pos.Z = Math.Max(box.Min.Z, Math.Min(pos.Z, box.Max.Z));
+				return pos;
+			}, this.main.Camera.Position));
+			AkGameObjectTracker.Attach(this.Entity, this.soundPosition);
+
+			if (!this.main.EditorEnabled)
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_LOOP, this.Entity);
 		}
 
 		private void updatePhysics()
@@ -449,15 +465,10 @@ namespace Lemma.Components
 						float volume = Math.Min(speed * collidable.Entity.Mass / 50.0f, 1.0f);
 						if (volume > 0.25f && !this.submerged.ContainsKey(collidable))
 						{
-							if (collidable.Entity.LinearVelocity.Y > 0.0f)
-								AkSoundEngine.PostEvent("Play_Splash_Out", collidable.Entity.Position);
+							if (collidable.Entity.Mass > 40.0f)
+								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH_HEAVY, collidable.Entity.Position);
 							else
-							{
-								if (collidable.Entity.Mass > 40.0f)
-									AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH_HEAVY, collidable.Entity.Position);
-								else
-									AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH, collidable.Entity.Position);
-							}
+								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH, collidable.Entity.Position);
 						}
 					}
 
@@ -494,7 +505,7 @@ namespace Lemma.Components
 						ParticleEmitter.Emit(this.main, "BigSplash", particlePositions);
 					}
 
-					this.submerged[collidable] = 10;
+					this.submerged[collidable] = 8;
 				}
 				this.Fluid.NotifyEntries.Clear();
 			}
@@ -502,7 +513,11 @@ namespace Lemma.Components
 			foreach (KeyValuePair<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable, int> p in this.submerged.ToList())
 			{
 				if (p.Value <= 0)
+				{
+					if (p.Key.Entity.LinearVelocity.Y > 2.0f)
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH_OUT, p.Key.Entity.Position);
 					this.submerged.Remove(p.Key);
+				}
 			}
 		}
 
@@ -518,6 +533,7 @@ namespace Lemma.Components
 				this.main.Space.Remove(this.Fluid);
 			instances.Remove(this);
 			base.delete();
+			AkSoundEngine.PostEvent(AK.EVENTS.STOP_WATER_LOOP, this.Entity);
 		}
 	}
 }
