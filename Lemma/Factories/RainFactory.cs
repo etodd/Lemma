@@ -46,7 +46,7 @@ namespace Lemma.Factories
 			emitter.Jitter.Value = new Vector3(kernelSpacing * kernelSize * 0.5f, 0.0f, kernelSpacing * kernelSize * 0.5f);
 
 			if (!main.EditorEnabled)
-				AkSoundEngine.PostEvent("Play_rain", entity);
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_RAIN, entity);
 
 			Components.DirectionalLight lightning = entity.GetOrCreate<Components.DirectionalLight>("Lightning");
 			lightning.Enabled.Value = false;
@@ -96,8 +96,7 @@ namespace Lemma.Factories
 								averageHeight += Math.Max(cameraPos.Y, Math.Min(height, cameraPos.Y + rainStartHeight)) * audioKernel[x, y];
 							}
 						}
-						// TODO: Figure out Wwise volume parameter
-						//rainSoundVolume.Value = 1.0f - ((averageHeight - cameraPos.Y) / rainStartHeight);
+						AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.RAIN_VOLUME, 1.0f - ((averageHeight - cameraPos.Y) / rainStartHeight));
 					}
 				}
 			};
@@ -154,16 +153,13 @@ namespace Lemma.Factories
 					new Animation.Delay((1.0f - volume) * thunderMaxDelay),
 					new Animation.Execute(delegate()
 					{
-						AkSoundEngine.PostEvent("Play_thunder", main.Camera.Position + Vector3.Normalize(new Vector3(2.0f * ((float)random.NextDouble() - 0.5f), 1.0f, 2.0f * ((float)random.NextDouble() - 0.5f))) * 1000.0f);
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_THUNDER, main.Camera.Position + Vector3.Normalize(new Vector3(2.0f * ((float)random.NextDouble() - 0.5f), 1.0f, 2.0f * ((float)random.NextDouble() - 0.5f))) * 1000.0f);
 					})
 				));
 				timer.Interval.Value = thunderIntervalMin + ((float)random.NextDouble() * (thunderIntervalMax - thunderIntervalMin));
 			}));
 
-			entity.Add(new CommandBinding(entity.Delete, delegate()
-			{
-				AkSoundEngine.PostEvent("Stop_thunder", entity);
-			}));
+			SoundKiller.Add(entity, AK.EVENTS.STOP_RAIN);
 
 			if (ParticleSystem.Get(main, "Rain") == null)
 			{

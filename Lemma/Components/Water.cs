@@ -208,12 +208,17 @@ namespace Lemma.Components
 			{
 				if (this.Fluid.Space != null)
 					this.main.Space.Remove(this.Fluid);
+				AkSoundEngine.PostEvent(AK.EVENTS.STOP_WATER_LOOP, this.Entity);
 			};
 
 			Action addFluid = delegate()
 			{
 				if (this.Fluid.Space == null && this.Enabled && !this.Suspended)
+				{
 					this.main.Space.Add(this.Fluid);
+					if (!this.main.EditorEnabled)
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_LOOP, this.Entity);
+				}
 			};
 
 			this.Add(new CommandBinding(this.OnSuspended, removeFluid));
@@ -311,7 +316,7 @@ namespace Lemma.Components
 			}, this.main.Camera.Position));
 			AkGameObjectTracker.Attach(this.Entity, this.soundPosition);
 
-			if (!this.main.EditorEnabled)
+			if (!this.main.EditorEnabled && this.Enabled && !this.Suspended)
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_LOOP, this.Entity);
 		}
 
