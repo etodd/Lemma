@@ -27,8 +27,8 @@ namespace Lemma.Components
 			{ "start", "\\map apartment" },
 			{ "rain", "\\map rain" },
 			{ "dawn", "\\map dawn" },
-			{ "monolith", "\\map monolith" },
 			{ "forest", "\\map forest" },
+			{ "monolith", "\\map monolith" },
 			{ "valley", "\\map valley" },
 		};
 

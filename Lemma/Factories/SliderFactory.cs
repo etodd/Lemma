@@ -148,7 +148,7 @@ namespace Lemma.Factories
 				b = entity2;
 				Vector3 originalPos = entity1.Position;
 				entity1.Position = pos;
-				joint = new PrismaticJoint(entity1, entity2, pos, -direction, pos);
+				joint = new PrismaticJoint(entity2, entity1, pos, direction, pos);
 				entity1.Position = originalPos;
 				setLimits();
 				setLocked();

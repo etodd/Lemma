@@ -16,6 +16,7 @@ namespace Lemma.Components
 		public Property<Color> Tint = new Property<Color> { Value = Color.White };
 		public Property<float> Opacity = new Property<float> { Value = 1.0f };
 		public Property<float> WrapWidth = new Property<float> { Value = 0.0f };
+		public Property<bool> Interpolation = new Property<bool> { Value = true };
 		private SpriteFont font;
 
 		private Property<string> internalText = new Property<string> { Value = "" };
@@ -99,100 +100,109 @@ namespace Lemma.Components
 			{
 				this.Text.InternalValue = value;
 
-				List<IProperty> dependencies = new List<IProperty>();
-
-				bool dependsOnLanguage = false;
-
-				StringBuilder builder;
-				if (value != null && value.Length > 0 && value[0] == '\\')
-				{
-					string key = value.Substring(1);
-					string translated = this.main.Strings.Get(key);
-					if (translated == null)
-						translated = key;
-					builder = new StringBuilder(translated);
-					dependsOnLanguage = true;
-				}
-				else
-					builder = new StringBuilder(value);
-
-				for (int i = 0; i < builder.Length; i++)
-				{
-					if (builder[i] == '{' && builder[i + 1] == '{')
-					{
-						// Grab the key
-						string key = null;
-						StringBuilder keyBuilder = new StringBuilder();
-						for (int j = i + 2; j < builder.Length; j++)
-						{
-							if (builder[j] == '}' && builder[j + 1] == '}')
-							{
-								key = keyBuilder.ToString();
-								break;
-							}
-							else
-								keyBuilder.Append(builder[j]);
-						}
-						if (key != null)
-						{
-							IProperty property;
-							if (TextElement.BindableProperties.TryGetValue(key, out property))
-							{
-								string oldKey = string.Format("{{{{{0}}}}}", key);
-								string argumentIndexKey = string.Format("{{{0}}}", dependencies.Count);
-								builder.Replace(oldKey, argumentIndexKey, i, key.Length + 4);
-								dependencies.Add(property);
-								i += argumentIndexKey.Length - 1;
-							}
-						}
-					}
-				}
-
 				if (this.internalTextBinding != null)
 					this.Remove(this.internalTextBinding);
 
 				if (this.languageBinding != null)
 					this.Remove(this.languageBinding);
 
-				if (dependencies.Count > 0)
+				if (this.Interpolation)
 				{
-					dependsOnLanguage = true;
-					string format = builder.ToString();
-					IProperty[] dependenciesArray = dependencies.ToArray();
-					this.internalTextBinding = new Binding<string>(this.internalText, delegate()
+					List<IProperty> dependencies = new List<IProperty>();
+
+					bool dependsOnLanguage = false;
+
+					StringBuilder builder;
+					if (value != null && value.Length > 0 && value[0] == '\\')
 					{
-						string[] strings = new string[dependenciesArray.Length];
-						for (int i = 0; i < dependenciesArray.Length; i++)
+						string key = value.Substring(1);
+						string translated = this.main.Strings.Get(key);
+						if (translated == null)
+							translated = key;
+						builder = new StringBuilder(translated);
+						dependsOnLanguage = true;
+					}
+					else
+						builder = new StringBuilder(value);
+
+					for (int i = 0; i < builder.Length; i++)
+					{
+						if (builder[i] == '{' && builder[i + 1] == '{')
 						{
-							string dependency = dependenciesArray[i].ToString();
-							if (dependency[0] == '\\')
+							// Grab the key
+							string key = null;
+							StringBuilder keyBuilder = new StringBuilder();
+							for (int j = i + 2; j < builder.Length; j++)
 							{
-								string key = dependency.Substring(1);
-								dependency = this.main.Strings.Get(key);
-								if (dependency == null)
-									dependency = key;
+								if (builder[j] == '}' && builder[j + 1] == '}')
+								{
+									key = keyBuilder.ToString();
+									break;
+								}
+								else
+									keyBuilder.Append(builder[j]);
 							}
-							strings[i] = dependency;
+							if (key != null)
+							{
+								IProperty property;
+								if (TextElement.BindableProperties.TryGetValue(key, out property))
+								{
+									string oldKey = string.Format("{{{{{0}}}}}", key);
+									string argumentIndexKey = string.Format("{{{0}}}", dependencies.Count);
+									builder.Replace(oldKey, argumentIndexKey, i, key.Length + 4);
+									dependencies.Add(property);
+									i += argumentIndexKey.Length - 1;
+								}
+							}
 						}
-						return string.Format(CultureInfo.CurrentCulture, format, strings);
-					}, dependenciesArray);
-					this.Add(this.internalTextBinding);
+					}
+
+					if (dependencies.Count > 0)
+					{
+						dependsOnLanguage = true;
+						string format = builder.ToString();
+						IProperty[] dependenciesArray = dependencies.ToArray();
+						this.internalTextBinding = new Binding<string>(this.internalText, delegate()
+						{
+							string[] strings = new string[dependenciesArray.Length];
+							for (int i = 0; i < dependenciesArray.Length; i++)
+							{
+								string dependency = dependenciesArray[i].ToString();
+								if (dependency[0] == '\\')
+								{
+									string key = dependency.Substring(1);
+									dependency = this.main.Strings.Get(key);
+									if (dependency == null)
+										dependency = key;
+								}
+								strings[i] = dependency;
+							}
+							return string.Format(CultureInfo.CurrentCulture, format, strings);
+						}, dependenciesArray);
+						this.Add(this.internalTextBinding);
+					}
+					else
+					{
+						this.internalTextBinding = null;
+						this.internalText.Value = builder.ToString();
+					}
+
+					if (dependsOnLanguage)
+					{
+						this.languageBinding = new NotifyBinding(this.Text.Reset, this.main.Strings.Language);
+						this.Add(this.languageBinding);
+					}
+					else
+						this.languageBinding = null;
 				}
 				else
 				{
 					this.internalTextBinding = null;
-					this.internalText.Value = builder.ToString();
-				}
-
-				if (dependsOnLanguage)
-				{
-					this.languageBinding = new NotifyBinding(this.Text.Reset, this.main.Strings.Language);
-					this.Add(this.languageBinding);
-				}
-				else
 					this.languageBinding = null;
+					this.internalText.Value = value;
+				}
 			};
-
+			this.Add(new NotifyBinding(this.Text.Reset, this.Interpolation));
 		}
 
 		public override void LoadContent(bool reload)

@@ -238,6 +238,7 @@ namespace Lemma.Components
 				TextElement description = new TextElement();
 				description.Name.Value = "Description";
 				description.FontFile.Value = "Font";
+				description.Interpolation.Value = false;
 				description.Text.Value = command.Description;
 				descriptionContainer.Children.Add(description);
 
@@ -247,6 +248,7 @@ namespace Lemma.Components
 					chordContainer.Opacity.Value = 0.0f;
 					layout.Children.Add(chordContainer);
 					TextElement chord = new TextElement();
+					chord.Interpolation.Value = false;
 					chord.FontFile.Value = "Font";
 					if (command.Chord.Modifier != Keys.None)
 						chord.Text.Value = command.Chord.Modifier.ToString() + " " + command.Chord.Key.ToString();
@@ -265,6 +267,7 @@ namespace Lemma.Components
 			container.Tint.Value = Color.Black;
 			container.Opacity.Value = 0.2f;
 			TextElement display = new TextElement();
+			display.Interpolation.Value = true;
 			display.FontFile.Value = "Font";
 			display.Text.Value = text;
 			container.Children.Add(display);
@@ -325,6 +328,7 @@ namespace Lemma.Components
 					keyContainer.ResizeHorizontal.Value = false;
 					keyContainer.Size.Value = new Vector2(128.0f, 0.0f);
 					TextElement keyText = new TextElement();
+					keyText.Interpolation.Value = false;
 					keyText.FontFile.Value = "Font";
 					keyText.Text.Value = property.Key.ToString();
 					keyContainer.Children.Add(keyText);
@@ -372,6 +376,7 @@ namespace Lemma.Components
 
 			TextElement textField = new TextElement();
 			textField.FontFile.Value = "Font";
+			textField.Interpolation.Value = false;
 			textField.Text.Value = label;
 			textField.Tint.Value = color;
 			field.Children.Add(textField);
@@ -493,6 +498,7 @@ namespace Lemma.Components
 
 			TextElement textField = new TextElement();
 			textField.FontFile.Value = "Font";
+			textField.Interpolation.Value = false;
 			field.Children.Add(textField);
 			
 			field.Add(new CommandBinding(field.MouseLeftDown, delegate()
@@ -627,6 +633,7 @@ namespace Lemma.Components
 
 				TextElement textField = new TextElement();
 				textField.FontFile.Value = "Font";
+				textField.Interpolation.Value = false;
 				field.Children.Add(textField);
 			
 				if (!propertyInfo.PropertyType.Equals(typeof(string)))

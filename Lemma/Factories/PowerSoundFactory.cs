@@ -8,16 +8,16 @@ using Lemma.Util;
 
 namespace Lemma.Factories
 {
-	public class AmbientSoundFactory : Factory<Main>
+	public class PowerSoundFactory : Factory<Main>
 	{
-		public AmbientSoundFactory()
+		public PowerSoundFactory()
 		{
 			this.Color = new Vector3(1.0f, 0.4f, 0.4f);
 		}
 
 		public override Entity Create(Main main)
 		{
-			Entity entity = new Entity(main, "AmbientSound");
+			Entity entity = new Entity(main, "PowerSound");
 
 			entity.Add("Transform", new Transform());
 
@@ -30,25 +30,15 @@ namespace Lemma.Factories
 
 			Transform transform = entity.Get<Transform>();
 
-			Property<bool> is3D = entity.GetOrMakeProperty<bool>("Is3D", true);
-
-			Property<string> play = entity.GetOrMakeProperty<string>("Play", true);
-			Property<string> stop = entity.GetOrMakeProperty<string>("Stop", true);
-
-			entity.CannotSuspendByDistance = !is3D;
-			entity.Add(new NotifyBinding(delegate()
-			{
-				entity.CannotSuspendByDistance = !is3D;
-			}, is3D));
-
-			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				VoxelAttachable.MakeAttachable(entity, main);
+			VoxelAttachable.MakeAttachable(entity, main);
 
 			if (!main.EditorEnabled)
 			{
-				AkGameObjectTracker.Attach(entity);
-				AkSoundEngine.PostEvent(play, entity);
-				SoundKiller.Add(entity, stop);
+				Property<Vector3> soundPosition = new Property<Vector3>();
+				VoxelAttachable.BindTarget(entity, soundPosition);
+				AkGameObjectTracker.Attach(entity, soundPosition);
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WHITE_LIGHT, entity);
+				SoundKiller.Add(entity, AK.EVENTS.STOP_WHITE_LIGHT);
 			}
 		}
 

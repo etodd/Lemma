@@ -100,7 +100,7 @@ namespace Lemma.Components
 				Voxel.t id = state.ID;
 				if (id == Voxel.t.Neutral)
 				{
-					map.Empty(coord);
+					map.Empty(coord, false, true, map);
 					map.Fill(coord, temporary);
 					map.Regenerate();
 					WorldFactory.Instance.Get<Propagator>().Sparks(map.GetAbsolutePosition(coord), Propagator.Spark.Normal);
@@ -126,7 +126,7 @@ namespace Lemma.Components
 									queue.Enqueue(adjacentCoord);
 								else if (adjacentID == Voxel.t.Infected || adjacentID == Voxel.t.Temporary)
 								{
-									map.Empty(adjacentCoord);
+									map.Empty(adjacentCoord, false, true, map);
 									map.Fill(adjacentCoord, neutral);
 									regenerate = true;
 								}

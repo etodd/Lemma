@@ -120,6 +120,7 @@
     <Compile Include="Console\ConVar.cs" />
     <Compile Include="Console\ConCommand.cs" />
     <Compile Include="Components\Propagator.cs" />
+    <Compile Include="Factories\PowerSoundFactory.cs" />
     <Compile Include="Factories\RotatorFactory.cs" />
     <Compile Include="Factories\ImplodeBlockFactory.cs" />
     <Compile Include="Factories\RiftFactory.cs" />

@@ -222,10 +222,10 @@ namespace Lemma.Components
 			{
 				focus = camera.Position;
 				focus = new Vector3((float)Math.Round(focus.X / LightingManager.globalShadowFocusInterval), (float)Math.Round(focus.Y / LightingManager.globalShadowFocusInterval), (float)Math.Round(focus.Z / LightingManager.globalShadowFocusInterval)) * LightingManager.globalShadowFocusInterval;
-				shadowCameraOffset = this.globalShadowLight.Direction.Value * -camera.FarPlaneDistance;
+				shadowCameraOffset = this.globalShadowLight.Direction.Value * size * -1.25f;
 				this.shadowCamera.View.Value = Matrix.CreateLookAt(focus + shadowCameraOffset, focus, Vector3.Up);
 
-				this.shadowCamera.SetOrthographicProjection(size, size, 1.0f, size * 2.0f);
+				this.shadowCamera.SetOrthographicProjection(size, size, 1.0f, size * 2.5f);
 
 				this.main.GraphicsDevice.SetRenderTarget(this.GlobalShadowMap);
 				this.main.GraphicsDevice.Clear(new Color(0, 0, 0));

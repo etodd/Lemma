@@ -9,6 +9,7 @@ using System.IO.IsolatedStorage;
 using Lemma.Components;
 using System.Xml.Serialization;
 using Lemma.Factories;
+using Lemma.Util;
 
 namespace Lemma.IO
 {
@@ -67,14 +68,22 @@ namespace Lemma.IO
 			typeof(PID3),
 			typeof(RespawnLocation),
 			typeof(ListProperty<RespawnLocation>),
+			typeof(EditorProperty<RespawnLocation>),
 			typeof(VoxelChaseAI),
 			typeof(VoxelFillFactory.CoordinateEntry),
 			typeof(ListProperty<VoxelFillFactory.CoordinateEntry>),
+			typeof(EditorProperty<VoxelFillFactory.CoordinateEntry>),
 			typeof(Phone),
 			typeof(RaycastAI),
 			typeof(SignalTower),
 			typeof(Property<int>),
+			typeof(EditorProperty<int>),
+			typeof(Property<float>),
+			typeof(EditorProperty<float>),
+			typeof(Property<Direction>),
+			typeof(EditorProperty<Direction>),
 			typeof(Property<UInt32>),
+			typeof(EditorProperty<UInt32>),
 			typeof(Propagator),
 			typeof(RotationController),
 			typeof(PlayerData),
