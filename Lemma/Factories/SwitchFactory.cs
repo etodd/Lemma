@@ -38,7 +38,7 @@ namespace Lemma.Factories
 
 			entity.Add(new NotifyBinding(delegate()
 			{
-				AkSoundEngine.PostEvent(on ? "Play_switch_on" : "Play_switch_off", light.Position);
+				AkSoundEngine.PostEvent(on ? AK.EVENTS.PLAY_SWITCH_ON : AK.EVENTS.PLAY_SWITCH_OFF, light.Position);
 				foreach (Entity.Handle targetHandle in targets)
 				{
 					Entity target = targetHandle.Target;

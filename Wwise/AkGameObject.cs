@@ -19,7 +19,11 @@ public class AkGameObject : ComponentBind.Component<BaseMain>
 
 		// Register a Game Object in the sound engine, with its name.		
 		AkSoundEngine.RegisterGameObj(this.Entity, this.Entity.ID);
+		this.Update();
+	}
 
+	public virtual void Update()
+	{
 		Transform transform = this.Entity.Get<Transform>();
 		if (transform != null)
 		{

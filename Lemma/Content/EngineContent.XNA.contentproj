@@ -333,6 +333,13 @@
       <ProcessorParameters_DiffuseTexture>joan.png</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_NormalMapTexture>joan-normal.png</ProcessorParameters_NormalMapTexture>
     </Compile>
+    <Compile Include="Models\note.fbx">
+      <Name>note</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_EffectFileName>..\Effects\Default.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_RotationX>-90</ProcessorParameters_RotationX>
+    </Compile>
     <None Include="Strings.xlsx">
       <Name>Strings</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

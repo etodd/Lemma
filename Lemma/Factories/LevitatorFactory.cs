@@ -323,7 +323,7 @@ namespace Lemma.Factories
 							if (spawnedMap[center].ID != 0)
 							{
 								levitatingVoxel.Value = spawnedMap.Entity;
-								AkSoundEngine.PostEvent("Play_infected_shatter", entity);
+								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_INFECTED_CRITICAL_SHATTER, entity);
 								break;
 							}
 						}

@@ -53,10 +53,9 @@ public class AkGameObjectTracker : AkGameObject
 	{
 		base.Awake();
 		this.Add(new NotifyBinding(this.Update, this.Matrix));
-		this.Update();
 	}
 
-	public void Update()
+	public override void Update()
 	{
 		Matrix m = this.Matrix;
 		Vector3 pos = m.Translation;
@@ -72,15 +71,15 @@ public class AkGameObjectTracker : AkGameObject
 		this.hasMoved = true;
 
 		// Update position
-		AkSoundEngine.SetObjectPosition(
+		AkSoundEngine.SetObjectPosition
+		(
 			this.Entity, 
 			pos.X, 
 			pos.Y, 
 			pos.Z, 
 			forward.X,
 			forward.Y, 
-			forward.Z);
-
-		// Update Object-Listener distance RTPC, if needed. (TODO)
+			forward.Z
+		);
 	}
 }

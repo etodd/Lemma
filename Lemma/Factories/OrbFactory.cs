@@ -35,16 +35,18 @@ namespace Lemma.Factories
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
 			if (!main.EditorEnabled)
-				AkSoundEngine.PostEvent("Play_cube_drone", entity);
-
-			// TODO: figure out Wwise volume parameter
-			/*
-			Property<float> volume = sound.GetProperty("Volume");
-			Property<float> pitch = sound.GetProperty("Pitch");
-
-			const float defaultVolume = 0.5f;
-			volume.Value = defaultVolume;
-			*/
+			{
+				AkGameObjectTracker.Attach(entity);
+				SoundKiller.Add(entity, AK.EVENTS.STOP_GLOWSQUARE);
+				entity.Add(new PostInitialization
+				{
+					delegate()
+					{
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_GLOWSQUARE, entity);
+						AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_GLOWSQUARE_PITCH, -1.0f, entity);
+					}
+				});
+			}
 
 			AI ai = entity.GetOrCreate<AI>("AI");
 
@@ -131,7 +133,7 @@ namespace Lemma.Factories
 				Name = "Idle",
 				Enter = delegate(AI.AIState previous)
 				{
-					//pitch.Value = -0.5f;
+					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_GLOWSQUARE_PITCH, -1.0f, entity);
 				},
 				Tasks = new[]
 				{ 
@@ -165,11 +167,11 @@ namespace Lemma.Factories
 				Name = "Alert",
 				Enter = delegate(AI.AIState previous)
 				{
-					//volume.Value = 0.0f;
+					AkSoundEngine.PostEvent(AK.EVENTS.STOP_GLOWSQUARE, entity);
 				},
 				Exit = delegate(AI.AIState next)
 				{
-					//volume.Value = defaultVolume;
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_GLOWSQUARE, entity);
 				},
 				Tasks = new[]
 				{ 
@@ -214,7 +216,7 @@ namespace Lemma.Factories
 				Name = "Chase",
 				Enter = delegate(AI.AIState previous)
 				{
-					//pitch.Value = 0.0f;
+					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_GLOWSQUARE_PITCH, 0.0f, entity);
 				},
 				Exit = delegate(AI.AIState next)
 				{
@@ -296,7 +298,6 @@ namespace Lemma.Factories
 				Exit = delegate(AI.AIState next)
 				{
 					coordQueue.Clear();
-					//volume.Value = defaultVolume;
 				},
 				Tasks = new[]
 				{ 
@@ -337,8 +338,7 @@ namespace Lemma.Factories
 					{
 						Action = delegate()
 						{
-							//volume.Value = MathHelper.Lerp(defaultVolume, 1.0f, ai.TimeInCurrentState.Value / 2.0f);
-							//pitch.Value = MathHelper.Lerp(0.0f, 0.5f, ai.TimeInCurrentState.Value / 2.0f);
+							AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_GLOWSQUARE_PITCH, MathHelper.Lerp(0.0f, 1.0f, ai.TimeInCurrentState.Value / 2.0f), entity);
 							if (coordQueue.Count == 0)
 							{
 								// Explode
@@ -358,12 +358,12 @@ namespace Lemma.Factories
 				Enter = delegate(AI.AIState previous)
 				{
 					exploded.Value = false;
-					AkSoundEngine.PostEvent("Stop_cube_drone", entity);
+					AkSoundEngine.PostEvent(AK.EVENTS.STOP_GLOWSQUARE, entity);
 				},
 				Exit = delegate(AI.AIState next)
 				{
 					exploded.Value = false;
-					AkSoundEngine.PostEvent("Play_cube_drone", entity);
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_GLOWSQUARE, entity);
 				},
 				Tasks = new[]
 				{

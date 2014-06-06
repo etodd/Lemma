@@ -32,6 +32,8 @@ namespace Lemma.Factories
 
 			ModelAlpha skybox = entity.Get<ModelAlpha>("Skybox");
 			skybox.MapContent.Value = true;
+			skybox.MapContent.Editable = false;
+			skybox.TechniquePostfix.Editable = false;
 			base.Bind(entity, main, creating);
 			entity.CannotSuspendByDistance = true;
 
