@@ -18,14 +18,19 @@ namespace Lemma.GInterfaces
 	public class TimeTrialUI : Component<Main>, IUpdateableComponent, IGraphicsComponent
 	{
 		public PanelView RootTimePanelView;
-		public TextView TimeTrialCurTimeView;
-		public TextView TimeTrialBestTimeView;
+		private TextView TimeTrialCurTimeView;
+		private TextView TimeTrialBestTimeView;
 
 		public PanelView RootTimeEndView;
-		private PanelView EndViewTime;
+		private TextView EndTimeTextView;
+		private TextView EndTimeCollectiblesTextView;
+		private ButtonView RetryMapButton;
+		private ButtonView MainMenuButton;
 
 		public SpriteFont MainFont;
 		public SpriteFont BiggerFont;
+
+		public Action<bool> EndPanelClosed;
 
 		public Property<float> ElapsedTime = new Property<float>();
 
@@ -46,6 +51,12 @@ namespace Lemma.GInterfaces
 		{
 			this.EnabledWhenPaused = false;
 
+			this.EndPanelClosed = shouldRetry =>
+			{
+				if (shouldRetry)
+					main.MapFile = main.MapFile;
+			};
+
 			RootTimePanelView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);
 			RootTimePanelView.AnchorPoint.Value = new Vector2(1.0f, 0f);
 			RootTimePanelView.Add(new Binding<Vector2, Point>(RootTimePanelView.Position, point => new Vector2(point.X - 30, 30), main.ScreenSize));
@@ -55,9 +66,10 @@ namespace Lemma.GInterfaces
 
 			RootTimeEndView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);
 			RootTimeEndView.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
-			RootTimeEndView.Add(new Binding<Vector2, Point>(RootTimePanelView.Position, point => new Vector2(point.X / 2f, point.Y / 2f), main.ScreenSize));
-			RootTimeEndView.Width.Value = 300;
+			RootTimeEndView.Add(new Binding<Vector2, Point>(RootTimeEndView.Position, point => new Vector2(point.X / 2f, point.Y / 2f), main.ScreenSize));
+			RootTimeEndView.Width.Value = 400;
 			RootTimeEndView.Height.Value = 300;
+			RootTimePanelView.Draggable = RootTimeEndView.Draggable = false;
 
 			RootTimePanelView.UnselectedNinepatch = RootTimePanelView.SelectedNinepatch = GeeUIMain.NinePatchBtnDefault;
 
@@ -120,6 +132,13 @@ namespace Lemma.GInterfaces
 			TimeTrialTicking.Value = false;
 		}
 
+		public void ShowEndPanel()
+		{
+			RootTimeEndView.Active.Value = true;
+			AnimateOut();
+			StopTicking();
+		}
+
 		public string SecondsToTimeString(float seconds)
 		{
 			int decimalValue = (int)Math.Round((seconds - Math.Floor(seconds)) * 100, 2);
@@ -139,6 +158,18 @@ namespace Lemma.GInterfaces
 		{
 			if (TimeTrialTicking.Value)
 				this.ElapsedTime.Value += dt;
+		}
+
+		private int NumCollectiblesPickedUp()
+		{
+			List<Entity> notes = main.Get("Note").ToList();
+			return notes.Count(x => x.GetOrMakeProperty<bool>("Collected"));
+		}
+
+		private int NumCollectiblesTotal()
+		{
+			List<Entity> notes = main.Get("Note").ToList();
+			return notes != null ? notes.Count : 0;
 		}
 	}
 }

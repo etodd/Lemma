@@ -88,8 +88,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3D2D163E-393B-4AFD-997B-143E909AC653}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{3D2D163E-393B-4AFD-997B-143E909AC653}.Debug|Mixed Platforms.ActiveCfg = Development|x86
-		{3D2D163E-393B-4AFD-997B-143E909AC653}.Debug|Mixed Platforms.Build.0 = Development|x86
+		{3D2D163E-393B-4AFD-997B-143E909AC653}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{3D2D163E-393B-4AFD-997B-143E909AC653}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{3D2D163E-393B-4AFD-997B-143E909AC653}.Debug|Win32.ActiveCfg = Debug|x86
 		{3D2D163E-393B-4AFD-997B-143E909AC653}.Debug|x64.ActiveCfg = Debug|x86
 		{3D2D163E-393B-4AFD-997B-143E909AC653}.Debug|x86.ActiveCfg = Debug|x86

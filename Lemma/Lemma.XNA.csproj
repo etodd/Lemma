@@ -110,6 +110,7 @@
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Analytics.cs" />
     <Compile Include="Components\PlayerData.cs" />
+    <Compile Include="Components\Collectible.cs" />
     <Compile Include="Components\Rift.cs" />
     <Compile Include="Components\Spawner.cs" />
     <Compile Include="Console\AutoConCommand.cs" />
@@ -122,6 +123,7 @@
     <Compile Include="Factories\RotatorFactory.cs" />
     <Compile Include="Factories\ImplodeBlockFactory.cs" />
     <Compile Include="Factories\RiftFactory.cs" />
+    <Compile Include="Factories\CollectibleFactory.cs" />
     <Compile Include="GeeUI\GeeUIMain.cs" />
     <Compile Include="GeeUI\Managers\ConversionManager.cs" />
     <Compile Include="GeeUI\Managers\DrawManager.cs" />

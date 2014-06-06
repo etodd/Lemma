@@ -154,7 +154,7 @@ namespace Lemma.Util
 			string[] cheevoNames = new string[] { "perverse", "win_the_game", "100_blocks", "250_blocks",
 				"500_blocks", "1000_blocks", "10000_blocks", "cheating_jerk", "5_minutes_played", 
 				"30_minutes_played", "120_minutes_played", "300_minutes_played", "600_minutes_played" };
-			string[] statNames = new string[] { "time_played", "blocks_created", "distance_traveled", "times_died", "time_perverse" };
+			string[] statNames = new string[] { "time_played", "blocks_created", "distance_traveled", "times_died", "time_perverse", "orbs_collected" };
 
 			foreach (var cheevo in cheevoNames)
 			{
