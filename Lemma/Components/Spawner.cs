@@ -176,9 +176,12 @@ namespace Lemma.Components
 										}
 									}
 									if (supportedLocations >= 40 || (spawnFound && (foundSpawnAbsolutePosition - this.lastPlayerPosition).Length() > this.RespawnDistance))
-										break;
-									else
-										respawnLocations.RemoveAt(respawnLocations.Count - 1);
+									{
+										if (supportedLocations > 3) // We should try to spawn the player back at least a few steps
+											break;
+									}
+
+									respawnLocations.RemoveAt(respawnLocations.Count - 1);
 								}
 							}
 						}

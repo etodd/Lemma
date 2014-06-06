@@ -126,7 +126,7 @@ namespace Lemma.Components
 					{
 						ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
 						Vector3 pos = map.GetAbsolutePosition(coord);
-						AkSoundEngine.PostEvent("Play_infected_shatter", pos);
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_INFECTED_CRITICAL_SHATTER, pos);
 						for (int i = 0; i < 50; i++)
 						{
 							Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
@@ -190,7 +190,7 @@ namespace Lemma.Components
 					{
 						ParticleSystem shatter = ParticleSystem.Get(main, "WhiteShatter");
 						Vector3 pos = map.GetAbsolutePosition(coord);
-						AkSoundEngine.PostEvent("Play_white_shatter", pos);
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WHITE_SHATTER, pos);
 						for (int i = 0; i < 50; i++)
 						{
 							Vector3 offset = new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble() - 0.5f);

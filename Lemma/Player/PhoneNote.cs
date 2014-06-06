@@ -185,19 +185,16 @@ namespace Lemma.Components
 			UIRenderer noteUi = entity.GetOrCreate<UIRenderer>("NoteUI");
 
 			const float noteWidth = 400.0f;
-			const float noteScale = 0.0009f;
 
-			noteUi.RenderTargetBackground.Value = new Microsoft.Xna.Framework.Color(1.0f, 0.95f, 0.9f);
+			noteUi.RenderTargetBackground.Value = new Microsoft.Xna.Framework.Color(0.8f, 0.75f, 0.7f);
 			noteUi.RenderTargetSize.Value = new Point((int)noteWidth, (int)(noteWidth * 1.29f)); // 8.5x11 aspect ratio
 			noteUi.Serialize = false;
 			noteUi.Enabled.Value = false;
 
 			Model noteModel = entity.GetOrCreate<Model>("Note");
-			noteModel.Filename.Value = "Models\\plane";
-			noteModel.EffectFile.Value = "Effects\\Default";
+			noteModel.Filename.Value = "Models\\note";
 			noteModel.Add(new Binding<Microsoft.Xna.Framework.Graphics.RenderTarget2D>(noteModel.GetRenderTarget2DParameter("Diffuse" + Model.SamplerPostfix), noteUi.RenderTarget));
 			noteModel.Add(new Binding<Matrix>(noteModel.Transform, x => Matrix.CreateTranslation(-0.005f, 0.05f, 0.08f) * x, phoneModel.Transform));
-			noteModel.Scale.Value = new Vector3(1.0f, (float)noteUi.RenderTargetSize.Value.Y * noteScale, (float)noteUi.RenderTargetSize.Value.X * noteScale);
 			noteModel.Serialize = false;
 			noteModel.Enabled.Value = false;
 			Property<Entity.Handle> note = entity.GetOrMakeProperty<Entity.Handle>("Note");
@@ -264,6 +261,7 @@ namespace Lemma.Components
 						noteUiImage.Image.Value = noteEntity.GetOrMakeProperty<string>("Image");
 						noteUiText.Text.Value = noteEntity.GetOrMakeProperty<string>("Text");
 						model.StartClip("Note", 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_NOTE_PICKUP, entity);
 						float startRotationY = input.Mouse.Value.Y;
 						// Level the player's view
 						entity.Add(new Animation
@@ -280,6 +278,7 @@ namespace Lemma.Components
 					}
 					else
 					{
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_NOTE_DROP, entity);
 						Property<bool> collected = noteEntity.GetOrMakeProperty<bool>("Collected");
 						if (!collected)
 							collected.Value = true;

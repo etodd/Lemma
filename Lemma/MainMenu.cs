@@ -34,8 +34,7 @@ namespace Lemma.GameScripts
 			if (main.Spawner.StartSpawnPoint.Value == "end")
 			{
 				// End game
-				AkSoundEngine.PostEvent("Play_theme");
-				SoundKiller.Add(script, "Stop_theme");
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_MUSIC_THEME);
 				main.Renderer.InternalGamma.Value = 0.0f;
 				main.Renderer.Brightness.Value = 0.0f;
 				main.Renderer.BackgroundColor.Value = Renderer.DefaultBackgroundColor;

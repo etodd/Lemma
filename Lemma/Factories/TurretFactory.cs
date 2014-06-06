@@ -54,7 +54,7 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					AkSoundEngine.PostEvent("Play_infected_shatter", entity);
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_DEATH, entity);
 					ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
 					Random random = new Random();
 					for (int i = 0; i < 50; i++)
