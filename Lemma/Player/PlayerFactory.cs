@@ -501,7 +501,8 @@ namespace Lemma.Factories
 			input.Bind(settings.Parkour, PCInput.InputState.Up, delegate()
 			{
 				wallRun.Deactivate();
-				player.SlowMotion.Value = false;
+				if (player.EnableSlowMotion)
+					player.SlowMotion.Value = false;
 			});
 
 			input.Bind(settings.RollKick, PCInput.InputState.Down, rollKickSlide.Go);
