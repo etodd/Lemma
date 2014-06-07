@@ -40,6 +40,8 @@ namespace Lemma.Factories
 				});
 			}
 
+			entity.Add("Trigger", script.Execute);
+
 			Property<bool> deleteOnExecute = entity.GetOrMakeProperty<bool>("DeleteOnExecute", true, false);
 			if (deleteOnExecute)
 				entity.Add(new CommandBinding(script.Execute, entity.Delete));

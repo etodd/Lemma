@@ -30,6 +30,14 @@ namespace Lemma.Factories
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
 				VoxelAttachable.MakeAttachable(entity, main);
 
+			entity.Add("Trigger", new Command
+			{
+				Action = delegate()
+				{
+					light.Enabled.Value = true;
+				},
+			});
+
 			this.SetMain(entity, main);
 		}
 

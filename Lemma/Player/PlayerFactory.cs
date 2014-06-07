@@ -227,9 +227,6 @@ namespace Lemma.Factories
 			rumble.Add(new CommandBinding<float>(player.Rumble, rumble.Go));
 			rumble.Add(new CommandBinding<float>(rollKickSlide.Rumble, rumble.Go));
 
-#if DEVELOPMENT
-			input.Add(new CommandBinding(input.GetKeyDown(Keys.C), delegate() { cameraControl.ThirdPerson.Value = !cameraControl.ThirdPerson; }));
-
 			firstPersonModel.Add(new Binding<bool>(firstPersonModel.Enabled, x => !x, cameraControl.ThirdPerson));
 
 			model.Add(new NotifyBinding(delegate()
@@ -245,6 +242,9 @@ namespace Lemma.Factories
 					model.UnsupportedTechniques.Add(Technique.Render);
 				}
 			}, cameraControl.ThirdPerson));
+
+#if DEVELOPMENT
+			input.Add(new CommandBinding(input.GetKeyDown(Keys.C), delegate() { cameraControl.ThirdPerson.Value = !cameraControl.ThirdPerson; }));
 
 			ModelAlpha debugCylinder = new ModelAlpha();
 			debugCylinder.Filename.Value = "Models\\alpha-cylinder";

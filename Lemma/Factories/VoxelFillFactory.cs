@@ -40,6 +40,7 @@ namespace Lemma.Factories
 			Property<Entity.Handle> target = entity.GetOrMakeProperty<Entity.Handle>("Target");
 
 			Voxel map = entity.Get<Voxel>();
+			map.Editable = false;
 
 			Property<float> intervalMultiplier = entity.GetOrMakeProperty<float>("IntervalMultiplier", true, 1.0f);
 

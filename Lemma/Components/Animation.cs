@@ -257,6 +257,37 @@ namespace Lemma.Components
 			}
 		}
 
+		public class QuaternionMoveTo : Move<Quaternion>
+		{
+			public QuaternionMoveTo(Property<Quaternion> p, Quaternion t, float duration)
+				: base(p, t, duration)
+			{
+
+			}
+
+			public override void UpdateInterval(float x)
+			{
+				this.property.Value = Quaternion.Lerp(this.start, this.parameter, x);
+			}
+		}
+
+		public class QuaternionMoveToSpeed : QuaternionMoveTo
+		{
+			private float speed;
+
+			public QuaternionMoveToSpeed(Property<Quaternion> p, Quaternion t, float speed)
+				: base(p, t, 1.0f)
+			{
+				this.speed = speed;
+			}
+
+			public override void Reset()
+			{
+				base.Reset();
+				this.Duration = (this.parameter - this.start).Length() / this.speed;
+			}
+		}
+
 		public class ColorMoveTo : Move<Color>
 		{
 			public ColorMoveTo(Property<Color> p, Color t, float duration)
@@ -636,14 +667,20 @@ namespace Lemma.Components
 		{
 			public enum Type
 			{
+				None,
+				Linear,
 				InQuadratic,
 				OutQuadratic,
+				InOutQuadratic,
 				InCubic,
 				OutCubic,
+				InOutCubic,
 				InSin,
 				OutSin,
+				InOutSin,
 				InExponential,
 				OutExponential,
+				InOutExponential,
 			}
 
 			private Interval interval;
@@ -667,11 +704,27 @@ namespace Lemma.Components
 			{
 				switch (this.type)
 				{
+					case Type.None:
+						this.interval.UpdateInterval(x < 1.0f ? 0.0f : 1.0f);
+						break;
+					case Type.Linear:
+						this.interval.UpdateInterval(x);
+						break;
 					case Type.InQuadratic:
 						this.interval.UpdateInterval(x * x);
 						break;
 					case Type.OutQuadratic:
 						this.interval.UpdateInterval(-1 * x * (x - 2));
+						break;
+					case Type.InOutQuadratic:
+						x *= 2;
+						if (x < 1)
+							this.interval.UpdateInterval(0.5f * x * x);
+						else
+						{
+							x--;
+							this.interval.UpdateInterval(-0.5f * (x * (x - 2) - 1));
+						}
 						break;
 					case Type.InCubic:
 						this.interval.UpdateInterval(x * x * x);
@@ -680,17 +733,40 @@ namespace Lemma.Components
 						x--;
 						this.interval.UpdateInterval(x * x * x + 1);
 						break;
+					case Type.InOutCubic:
+						x *= 2;
+						if (x < 1)
+							this.interval.UpdateInterval(0.5f * x * x * x);
+						else
+						{
+							x -= 2;
+							this.interval.UpdateInterval(0.5f * (x * x * x + 2));
+						}
+						break;
 					case Type.InSin:
 						this.interval.UpdateInterval((float)-Math.Cos(x * Math.PI * 0.5) + 1.0f);
 						break;
 					case Type.OutSin:
 						this.interval.UpdateInterval((float)Math.Sin(x * Math.PI * 0.5));
 						break;
+					case Type.InOutSin:
+						this.interval.UpdateInterval(-0.5f * ((float)Math.Cos(Math.PI * x) - 1.0f));
+						break;
 					case Type.InExponential:
 						this.interval.UpdateInterval((float)Math.Pow(2, 10 * (x - 1.0)));
 						break;
 					case Type.OutExponential:
 						this.interval.UpdateInterval((float)-Math.Pow(2, -10 * x) + 1.0f);
+						break;
+					case Type.InOutExponential:
+						x *= 2;
+						if (x < 1)
+							this.interval.UpdateInterval(0.5f * (float)Math.Pow(2, 10 * (x - 1)));
+						else
+						{
+							x--;
+							this.interval.UpdateInterval(0.5f * ((float)-Math.Pow(2, -10 * x) + 2));
+						}
 						break;
 				}
 			}

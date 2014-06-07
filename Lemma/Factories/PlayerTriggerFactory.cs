@@ -27,8 +27,7 @@ namespace Lemma.Factories
 			trigger.Enabled.Editable = true;
 			this.SetMain(entity, main);
 
-			if (entity.GetOrMakeProperty<bool>("DeleteOnTrigger", true))
-				entity.Add(new CommandBinding(trigger.PlayerEntered, entity.Delete));
+			Property<bool> delete = entity.GetOrMakeProperty<bool>("DeleteOnTrigger", true);
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
 				VoxelAttachable.MakeAttachable(entity, main);
@@ -42,6 +41,8 @@ namespace Lemma.Factories
 					if (t != null && t.Active)
 						t.GetCommand("Trigger").Execute();
 				}
+				if (delete) // Make sure other command bindings have a chance to execute
+					entity.Add(new Animation(new Animation.Execute(entity.Delete)));
 			}));
 
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));

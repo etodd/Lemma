@@ -109,6 +109,7 @@
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Analytics.cs" />
+    <Compile Include="Components\CameraStop.cs" />
     <Compile Include="Components\PlayerData.cs" />
     <Compile Include="Components\Collectible.cs" />
     <Compile Include="Components\Rift.cs" />
@@ -120,6 +121,7 @@
     <Compile Include="Console\ConVar.cs" />
     <Compile Include="Console\ConCommand.cs" />
     <Compile Include="Components\Propagator.cs" />
+    <Compile Include="Factories\CameraStopFactory.cs" />
     <Compile Include="Factories\PowerSoundFactory.cs" />
     <Compile Include="Factories\RotatorFactory.cs" />
     <Compile Include="Factories\ImplodeBlockFactory.cs" />

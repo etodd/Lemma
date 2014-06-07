@@ -88,7 +88,8 @@ namespace Lemma.IO
 			typeof(RotationController),
 			typeof(PlayerData),
 			typeof(Rift),
-			typeof(Collectible)
+			typeof(Collectible),
+			typeof(CameraStop),
 		};
 
 		public static XmlSerializer Serializer;
