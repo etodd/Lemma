@@ -108,6 +108,7 @@
     <Compile Include="ComponentInterfaces.cs" />
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
+    <Compile Include="Components\AmbientSound.cs" />
     <Compile Include="Components\Analytics.cs" />
     <Compile Include="Components\CameraStop.cs" />
     <Compile Include="Components\PlayerData.cs" />

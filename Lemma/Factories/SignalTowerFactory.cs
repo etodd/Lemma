@@ -29,10 +29,10 @@ namespace Lemma.Factories
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
 				VoxelAttachable.MakeAttachable(entity, main);
-			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
 			
 			trigger.Editable = true;
-			trigger.Add(new Binding<Vector3>(trigger.Position, () => Vector3.Transform(new Vector3(0.0f, 0.0f, attachOffset), transform.Matrix), attachOffset, transform.Matrix));
+			trigger.Enabled.Editable = false;
+			VoxelAttachable.BindTarget(entity, trigger.Position);
 
 			PointLight light = entity.GetOrCreate<PointLight>();
 			light.Add(new Binding<Vector3>(light.Position, trigger.Position));

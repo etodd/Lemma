@@ -41,7 +41,16 @@ namespace Lemma.Components
 						new Animation.Execute(this.Entity.Delete.Execute)
 					)
 				);
-				//Increment collectibles picked up or summat
+
+				// Increment collectibles picked up or summat
+				int collectibles = ++PlayerDataFactory.Instance.Get<PlayerData>().Collectibles.Value;
+
+				this.main.Menu.HideMessage
+				(
+					WorldFactory.Instance,
+					this.main.Menu.ShowMessageFormat(WorldFactory.Instance, "\\orbs collected", collectibles),
+					4.0f
+				);
 			};
 		}
 	}

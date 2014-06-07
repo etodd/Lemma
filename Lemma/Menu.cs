@@ -125,6 +125,24 @@ namespace Lemma.Components
 			return container;
 		}
 
+		public Container ShowMessageFormat(Entity entity, string text, params object[] properties)
+		{
+			if (text[0] == '\\')
+			{
+				return this.ShowMessage
+				(
+					entity,
+					delegate()
+					{
+						return string.Format(main.Strings.Get(text.Substring(1)), properties);
+					},
+					this.main.Strings.Language
+				);
+			}
+			else
+				return this.ShowMessage(entity, string.Format(text, properties));
+		}
+
 		public void HideMessage(Entity entity, Container container, float delay = 0.0f)
 		{
 			if (container != null && container.Active)

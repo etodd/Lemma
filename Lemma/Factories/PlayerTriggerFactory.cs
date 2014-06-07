@@ -45,6 +45,8 @@ namespace Lemma.Factories
 					entity.Add(new Animation(new Animation.Execute(entity.Delete)));
 			}));
 
+			entity.Add("Trigger", trigger.PlayerEntered);
+
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 		}
 

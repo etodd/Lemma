@@ -15,7 +15,9 @@ public class AK
         public static uint PLAY_EXTERIOR_WIND = 2186390081U;
         public static uint PLAY_GLOWSQUARE = 2925563572U;
         public static uint PLAY_INFECTED_CRITICAL_SHATTER = 3904887748U;
-        public static uint PLAY_LEVEL_LOWER = 2897680458U;
+        public static uint PLAY_MONOLITH_FALL = 868874094U;
+        public static uint PLAY_MONOLITH_LOOP = 1920428907U;
+        public static uint PLAY_MONOLITH_POWERUP = 1490340003U;
         public static uint PLAY_MUSIC_AMBIENT = 2712742350U;
         public static uint PLAY_MUSIC_AMBIENT_02 = 62078239U;
         public static uint PLAY_MUSIC_STINGER = 1904807532U;
@@ -43,6 +45,8 @@ public class AK
         public static uint PLAY_PLAYER_VAULT = 1447419404U;
         public static uint PLAY_RAIN = 2838936948U;
         public static uint PLAY_RED_BURN = 472607653U;
+        public static uint PLAY_RIFT = 2887989871U;
+        public static uint PLAY_RIFT_OPEN = 2529943266U;
         public static uint PLAY_SIGNAL_TOWER_ACTIVATE = 2645903392U;
         public static uint PLAY_SIGNAL_TOWER_LOOP = 1879386073U;
         public static uint PLAY_SNAKE_MOVE = 3676437670U;

@@ -49,12 +49,13 @@ namespace Lemma.GInterfaces
 
 		public override void Awake()
 		{
+			this.Serialize = false;
 			this.EnabledWhenPaused = false;
 
 			this.EndPanelClosed = shouldRetry =>
 			{
 				if (shouldRetry)
-					main.MapFile = main.MapFile;
+					main.MapFile.Reset();
 			};
 
 			RootTimePanelView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);

@@ -38,16 +38,13 @@ namespace Lemma.Factories
 				if (collected)
 				{
 					List<Entity> notes = main.Get("Note").ToList();
-					Container msg = main.Menu.ShowMessage
+					int notesCollected = notes.Where(x => x.GetOrMakeProperty<bool>("Collected")).Count();
+					int total = notes.Count;
+					Container msg = main.Menu.ShowMessageFormat
 					(
 						entity,
-						delegate()
-						{
-							int notesCollected = notes.Where(x => x.GetOrMakeProperty<bool>("Collected")).Count();
-							int total = notes.Count;
-							return string.Format(main.Strings.Get("notes read"), notesCollected, total);
-						},
-						main.Strings.Language
+						"\\notes read",
+						notesCollected, total
 					);
 					main.Menu.HideMessage(entity, msg, 4.0f);
 				}

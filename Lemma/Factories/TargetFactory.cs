@@ -59,6 +59,8 @@ namespace Lemma.Factories
 				));
 			}));
 
+			entity.Add("Trigger", trigger.PlayerEntered);
+
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
 				VoxelAttachable.MakeAttachable(entity, main);
 		}

@@ -17,39 +17,28 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity entity = new Entity(main, "AmbientSound");
-
-			entity.Add("Transform", new Transform());
-
-			return entity;
+			return new Entity(main, "AmbientSound");
 		}
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
+
+			AmbientSound ambientSound = entity.GetOrCreate<AmbientSound>("AmbientSound");
+			VoxelAttachable.BindTarget(entity, ambientSound.Position);
+
 			this.SetMain(entity, main);
-
-			Transform transform = entity.Get<Transform>();
-
-			Property<bool> is3D = entity.GetOrMakeProperty<bool>("Is3D", true);
-
-			Property<string> play = entity.GetOrMakeProperty<string>("Play", true);
-			Property<string> stop = entity.GetOrMakeProperty<string>("Stop", true);
-
-			entity.CannotSuspendByDistance = !is3D;
-			entity.Add(new NotifyBinding(delegate()
-			{
-				entity.CannotSuspendByDistance = !is3D;
-			}, is3D));
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
 				VoxelAttachable.MakeAttachable(entity, main);
-
-			if (!main.EditorEnabled)
+			
+			entity.Add("Trigger", new Command
 			{
-				AkGameObjectTracker.Attach(entity);
-				AkSoundEngine.PostEvent(play, entity);
-				SoundKiller.Add(entity, stop);
-			}
+				Action = delegate()
+				{
+					ambientSound.Enabled.Value = true;
+				},
+			});
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

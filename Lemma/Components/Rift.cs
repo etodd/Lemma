@@ -22,6 +22,7 @@ namespace Lemma.Components
 		private const float damageTime = 1.0f; // How long the player can stand in a rift before they die
 		private const float interval = 0.015f; // A coordinate is emptied every x seconds
 		private const float particleInterval = 0.015f; // A particle is emitted every x seconds
+		private const float soundInterval = 0.25f; // A sound is played every x seconds
 		public EditorProperty<int> Radius = new EditorProperty<int> { Value = 10 };
 		public Property<float> CurrentRadius = new Property<float>();
 		public Property<int> CurrentIndex = new Property<int>();
@@ -34,11 +35,13 @@ namespace Lemma.Components
 		private Voxel voxel;
 		private float intervalTimer;
 		private float particleIntervalTimer;
+		private float soundIntervalTimer;
 		private ParticleSystem particles;
 
 		public override void Awake()
 		{
 			base.Awake();
+			AkGameObjectTracker.Attach(this.Entity, this.Position);
 			this.particles = ParticleSystem.Get(this.main, "Rift");
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
@@ -46,6 +49,7 @@ namespace Lemma.Components
 			{
 				if (this.Coords.Count == 0)
 				{
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_RIFT_OPEN, this.Entity);
 					if (PlayerFactory.Instance != null)
 						PlayerFactory.Instance.Get<CameraController>().Shake.Execute(this.Position, 30.0f);
 					Entity voxelEntity = this.Voxel.Value.Target;
@@ -98,6 +102,13 @@ namespace Lemma.Components
 						{
 							this.particleIntervalTimer -= particleInterval;
 							this.particles.AddParticle(this.Position, Vector3.Zero, -1.0f, this.CurrentRadius * 2.0f);
+						}
+
+						this.soundIntervalTimer += dt;
+						while (this.soundIntervalTimer > soundInterval)
+						{
+							this.soundIntervalTimer -= soundInterval;
+							AkSoundEngine.PostEvent(AK.EVENTS.PLAY_RIFT, this.Entity);
 						}
 					}
 
