@@ -33,6 +33,7 @@ namespace Lemma.Factories
 			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
 			
 			trigger.Editable = true;
+			trigger.Radius.Value = 3;
 			trigger.Add(new Binding<Vector3>(trigger.Position, () => Vector3.Transform(new Vector3(0.0f, 0.0f, attachOffset), transform.Matrix), attachOffset, transform.Matrix));
 
 			Collectible collectible = entity.GetOrCreate<Collectible>("Collectible");
@@ -54,6 +55,13 @@ namespace Lemma.Factories
 			purpleEmitter.ParticleType.Value = "Purple";
 			purpleEmitter.ParticlesPerSecond.Value = 30;
 			purpleEmitter.Jitter.Value = new Vector3(0.5f);
+
+			Model model = entity.GetOrCreate<Model>("Model");
+			model.MapContent.Value = true;
+			model.Filename.Value = "Models\\sphere";
+			model.Editable = false;
+			model.Serialize = false;
+			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
