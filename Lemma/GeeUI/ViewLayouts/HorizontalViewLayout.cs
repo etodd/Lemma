@@ -30,12 +30,12 @@ namespace GeeUI.ViewLayouts
         private void NoWrap(View parentView)
         {
             Rectangle container = parentView.ContentBoundBox;
-            int xDone = container.Left - parentView.X;
+            int xDone = container.Left - parentView.RealX;
             foreach (View v in parentView.Children)
             {
                 v.Position.Value = Vector2.Zero;
                 if (ExcludedChildren.Contains(v)) continue;
-                v.Position.Value = new Vector2(xDone, container.Top);
+                v.Position.Value = new Vector2(xDone, container.Top - parentView.RealY);
                 xDone += v.BoundBox.Width + _paddingBetweenHorizontal;
             }
         }
@@ -43,8 +43,8 @@ namespace GeeUI.ViewLayouts
         private void Wrap(View parentView)
         {
             Rectangle container = parentView.ContentBoundBox;
-            int xDone = container.Left - parentView.X;
-            int yDone = container.Top - parentView.Y;
+            int xDone = container.Left - parentView.RealX;
+            int yDone = container.Top - parentView.RealY;
             View tallestChild = null;
 			bool nullify = false;
 			int furthestDown = 0;

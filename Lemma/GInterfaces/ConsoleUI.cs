@@ -27,7 +27,7 @@ namespace Lemma.GInterfaces
 		[AutoConVar("console_showing", "If true, the console is showing")]
 		public static Property<bool> Showing = new Property<bool>();
 
-		private Property<bool> _animating = new Property<bool>() { Value = false}; 
+		private Property<bool> _animating = new Property<bool>() { Value = false };
 
 		public override void Awake()
 		{

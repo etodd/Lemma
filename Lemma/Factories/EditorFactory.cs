@@ -1,4 +1,5 @@
-﻿using System; using ComponentBind;
+﻿using System;
+using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -88,6 +89,7 @@ namespace Lemma.Factories
 
 			Editor editor = new Editor();
 			EditorUI ui = new EditorUI { Editable = false };
+			EditorGeeUI gui = new EditorGeeUI() { Editable = false };
 			Model model = new Model { Editable = false };
 			model.Filename.Value = "Models\\selector";
 			model.Scale.Value = new Vector3(0.5f);
@@ -134,7 +136,8 @@ namespace Lemma.Factories
 			popupScroller.Children.Add(popupList);
 
 			entity.Add("Editor", editor);
-			entity.Add("UI", ui);
+			//entity.Add("UI", ui);
+			entity.Add("GUI", gui);
 			entity.Add("UIRenderer", uiRenderer);
 			entity.Add("Model", model);
 			entity.Add("Input", input);
@@ -265,6 +268,10 @@ namespace Lemma.Factories
 
 			uiRenderer.Add(new ListBinding<UIComponent>(uiRenderer.Root.GetChildByName("PropertyList").Children, ui.UIElements));
 			ui.Add(new ListBinding<Entity>(ui.SelectedEntities, editor.SelectedEntities));
+			gui.Add(new ListBinding<Entity>(gui.SelectedEntities, editor.SelectedEntities));
+			gui.Add(new Binding<bool>(gui.MapEditMode, editor.VoxelEditMode));
+			gui.Add(new Binding<bool>(gui.EnablePrecision, x => !x, input.GetKey(Keys.LeftShift)));
+			gui.Add(new TwoWayBinding<bool>(editor.NeedsSave, gui.NeedsSave));
 			ui.Add(new Binding<bool>(ui.MapEditMode, editor.VoxelEditMode));
 			ui.Add(new Binding<bool>(ui.EnablePrecision, x => !x, input.GetKey(Keys.LeftShift)));
 			editor.Add(new Binding<bool>(editor.MovementEnabled, () => !ui.StringPropertyLocked && (input.MiddleMouseButton || editor.VoxelEditMode), ui.StringPropertyLocked, input.MiddleMouseButton, editor.VoxelEditMode));
@@ -346,7 +353,7 @@ namespace Lemma.Factories
 			Property<float> playbackLocation = new Property<float>();
 
 			const float timelineHeight = 32.0f;
-			
+
 			Scroller timelineScroller = new Scroller();
 			timelineScroller.ScrollAmount.Value = 60.0f;
 			timelineScroller.EnableScissor.Value = false;
@@ -941,7 +948,7 @@ namespace Lemma.Factories
 				allSessions.Value = false;
 				allProperties.Value = false;
 				analyticsEnable.Value = false;
-				
+
 				analyticsActiveEvents.Clear();
 				analyticsActiveSessions.Clear();
 				analyticsActiveProperties.Clear();
@@ -1387,6 +1394,7 @@ namespace Lemma.Factories
 				() => editor.TransformMode.Value != Editor.TransformModes.None,
 				editor.RevertTransform
 			));
+			main.MapFile.Value = "monolith";
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

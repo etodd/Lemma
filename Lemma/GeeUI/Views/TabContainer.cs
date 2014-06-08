@@ -99,7 +99,6 @@ namespace GeeUI.Views
         public override void Update(float dt)
         {
             //setChildrenWidth();
-			Height.Value = 10000;
             Width = ParentView.Width;
 			Height.Value = 0;
 

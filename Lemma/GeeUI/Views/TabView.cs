@@ -67,7 +67,7 @@ namespace GeeUI.Views
             NinePatchDefault = GeeUIMain.NinePatchTabDefault;
             NinePatchSelected = GeeUIMain.NinePatchTabSelected;
 			this.Height.Value = 25;
-            new TextView(GeeUI, this, "", Vector2.Zero, font) { TextJustification = TextJustification.Center };
+            new TextView(GeeUI, this, "", Vector2.Zero, font) {  };
         }
 
         public override void OnMClick(Vector2 position, bool fromChild = false)
@@ -95,6 +95,7 @@ namespace GeeUI.Views
         {
 			TabTextView.Width.Value = Width - CurNinepatch.LeftWidth - CurNinepatch.RightWidth;
 			if (Width >= ParentView.Width) Width.Value = ParentView.Width - 1;
+	        TabTextView.X = CurNinepatch.LeftWidth;
             base.Update(dt);
         }
 

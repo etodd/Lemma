@@ -47,6 +47,7 @@ namespace GeeUI.Views
 			TextColor = GeeUI.TextColorDefault;
 
 			Text.AddBinding(new NotifyBinding(HandleResize, () => AutoSize.Value, Text));
+			if(AutoSize.Value) HandleResize();
 		}
 
 		private void HandleResize()

@@ -41,6 +41,18 @@ namespace GeeUI.Views
 			return index >= Children.Length ? null : Children[index];
 		}
 
+
+		public void RemoveAllTabs()
+		{
+			foreach (var child in TabContainerView.Children)
+				TabContainerView.RemoveChild(child);
+			foreach (var child in Children)
+			{
+				if (child == TabContainerView) continue;
+				RemoveChild(child);
+			}
+		}
+
 		public void AddTab(string tabText, View newTab)
 		{
 			TabContainerView.AddTab(tabText, newTab);
@@ -91,7 +103,7 @@ namespace GeeUI.Views
 			{
 				Children[i].Position.Value = new Vector2(0, TabContainerView.BoundBox.Height);
 				Children[i].Width = Width;
-				Children[i].Height.Value = Height.Value - TabContainerView.BoundBox.Height;
+				Children[i].Height.Value = Height.Value - TabContainerView.BoundBox.Height - 10;
 			}
 			base.Update(dt);
 		}

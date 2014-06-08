@@ -225,7 +225,7 @@ namespace GeeUI
 			bool didLower = false;
 			foreach (View child in sortedChildren)
 			{
-				if (!child.AbsoluteBoundBox.Contains(mousePos) || !child.Active) continue;
+				if (!child.AbsoluteBoundBox.Contains(mousePos) || !child.Active || !child.AllowMouseEvents) continue;
 				if (view == RootView) LastClickCaptured = true;
 				HandleClick(child, mousePos);
 				didLower = true;
@@ -258,7 +258,7 @@ namespace GeeUI
 			}
 			foreach (View child in sortedChildren)
 			{
-				if (!child.AbsoluteBoundBox.Contains(mousePos) || !child.Active) continue;
+				if (!child.AbsoluteBoundBox.Contains(mousePos) || !child.Active || !child.AllowMouseEvents) continue;
 				HandleMouseMovement(child, mousePos);
 				didLower = true;
 				child.MouseOver = true;
@@ -314,27 +314,6 @@ namespace GeeUI
 			return scissor;
 		}
 
-		internal Rectangle GetGoodAbsoluteScissor(View view)
-		{
-			if (view.ParentView == null)
-				return view.AbsoluteBoundBox;
-			
-			if (view.ParentView.ParentView == null)
-				return view.ParentView.AbsoluteBoundBox;
-
-			View parent = view.ParentView;
-			View grandParent = parent.ParentView;
-			if (!grandParent.AbsoluteBoundBox.Contains(parent.AbsoluteBoundBox))
-			{
-				return grandParent.AbsoluteBoundBox;
-			}
-			else if (grandParent.AbsoluteBoundBox.Intersects(parent.AbsoluteBoundBox))
-			{
-				return grandParent.AbsoluteBoundBox;
-			}
-			return GetGoodAbsoluteScissor(parent);
-		}
-
 		internal void DrawChildren(View toDrawParent, SpriteBatch spriteBatch, Rectangle origParentScissor)
 		{
 			View[] sortedChildren = toDrawParent.Children;
@@ -351,9 +330,13 @@ namespace GeeUI
 				{
 					if (!drawing.Active || parentScissor.Height <= 0 || parentScissor.Width <= 0) continue;
 
-					spriteBatch.End();
-					spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, this.RasterizerState, null, Matrix.Identity);
-					this.main.GraphicsDevice.ScissorRectangle = parentScissor;
+					if (drawing.EnabledScissor)
+					{
+						spriteBatch.End();
+						spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None,
+							this.RasterizerState, null, Matrix.Identity);
+						this.main.GraphicsDevice.ScissorRectangle = parentScissor;
+					}
 
 					drawing.Draw(spriteBatch);
 					if (drawing.ContentMustBeScissored)

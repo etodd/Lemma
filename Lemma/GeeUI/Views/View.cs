@@ -26,13 +26,15 @@ namespace GeeUI.Views
 		public List<ViewLayout> ChildrenLayouts = new List<ViewLayout>();
 
 		public Property<int> ChildrenDepth = new Property<int>() { Value = 0 };
-		public Property<int> ThisDepth = new Property<int>() {Value = 0};
+		public Property<int> ThisDepth = new Property<int>() { Value = 0 };
 
 		public Property<bool> IgnoreParentBounds = new Property<bool>() { Value = true };
 		public Property<bool> Selected = new Property<bool>() { Value = false };
 		public Property<bool> Active = new Property<bool>() { Value = true };
 		public Property<bool> EnabledScissor = new Property<bool>() { Value = true };
 		public Property<bool> ContentMustBeScissored = new Property<bool>() { Value = false };
+
+		public Property<bool> AllowMouseEvents = new Property<bool>() { Value = true };
 
 		public Property<bool> EnforceRootAttachment = new Property<bool>() { Value = true };
 
@@ -195,7 +197,7 @@ namespace GeeUI.Views
 			}
 		}
 
-		public Property<int> Width = new Property<int>() {Value = 0};
+		public Property<int> Width = new Property<int>() { Value = 0 };
 		public Property<int> Height = new Property<int>() { Value = 0 };
 
 		protected List<View> _children = new List<View>();
@@ -430,7 +432,7 @@ namespace GeeUI.Views
 		{
 			foreach (var layout in ChildrenLayouts)
 			{
-				if(layout != null)
+				if (layout != null)
 					OrderChildren(layout);
 			}
 
