@@ -434,17 +434,6 @@ namespace Lemma.Factories
 			player.Character.Crouched.Value = true;
 			player.Character.AllowUncrouch.Value = true;
 
-			player.Add(new NotifyBinding(delegate()
-			{
-				if (!player.EnableMoves || !player.Character.EnableWalking)
-				{
-					wallRun.Deactivate();
-					rollKickSlide.StopKick();
-					player.SlowMotion.Value = false;
-					predictor.ClearPossibilities();
-				}
-			}, player.EnableMoves, player.Character.EnableWalking));
-
 			// Fall damage
 			fallDamage.Add(new Binding<bool>(fallDamage.IsSupported, player.Character.IsSupported));
 			fallDamage.Add(new TwoWayBinding<Vector3>(player.Character.LinearVelocity, fallDamage.LinearVelocity));
