@@ -266,6 +266,9 @@ namespace Lemma.Factories
 				else
 					main.TimeMultiplier.Value = 0.25f;
 			}));
+#else
+			// Disable the player model in third person in Release mode
+			model.Add(new Binding<bool>(model.Enabled, x => !x, cameraControl.ThirdPerson));
 #endif
 
 			// When rotation is locked, we want to make sure the player can't turn their head
@@ -433,21 +436,22 @@ namespace Lemma.Factories
 
 			player.Add(new NotifyBinding(delegate()
 			{
-				if (!player.EnableMoves)
+				if (!player.EnableMoves || !player.Character.EnableWalking)
 				{
 					wallRun.Deactivate();
 					rollKickSlide.StopKick();
 					player.SlowMotion.Value = false;
 					predictor.ClearPossibilities();
 				}
-			}, player.EnableMoves));
+			}, player.EnableMoves, player.Character.EnableWalking));
 
 			// Fall damage
 			fallDamage.Add(new Binding<bool>(fallDamage.IsSupported, player.Character.IsSupported));
 			fallDamage.Add(new TwoWayBinding<Vector3>(player.Character.LinearVelocity, fallDamage.LinearVelocity));
 			fallDamage.Add(new TwoWayBinding<float>(player.Health, fallDamage.Health));
 			fallDamage.Add(new CommandBinding<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection>(player.Character.Collided, fallDamage.Collided));
-			fallDamage.Model = model;
+			fallDamage.Add(new TwoWayBinding<bool>(player.Character.EnableWalking, fallDamage.EnableWalking));
+			fallDamage.Bind(model);
 
 			// Jumping
 			input.Bind(settings.Jump, PCInput.InputState.Down, delegate()
@@ -462,7 +466,7 @@ namespace Lemma.Factories
 			// Wall-run, vault, predictive
 			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
 			{
-				if (!player.EnableMoves || (player.Character.Crouched && player.Character.IsSupported) || vault.CurrentState.Value != Vault.State.None)
+				if (!player.EnableMoves || !player.Character.EnableWalking || (player.Character.Crouched && player.Character.IsSupported) || vault.CurrentState.Value != Vault.State.None)
 					return;
 
 				bool didSomething = false;

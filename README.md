@@ -1,7 +1,7 @@
 Lemma
 =====
 
-[![Lemma](http://i.imgur.com/ztNwGTjl.png)](http://lemmagame.com)
+[![Lemma](http://i.imgur.com/aP7jtXo.png)](http://lemmagame.com)
 
 [**Lemma**](http://lemmagame.com) is an **immersive first-person parkour** game.
 Every parkour move has the potential to **modify the environment**.

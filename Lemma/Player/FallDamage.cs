@@ -26,10 +26,21 @@ namespace Lemma.Components
 		private bool lastSupported;
 
 		// Animated model
-		public AnimatedModel Model;
+		public void Bind(AnimatedModel m)
+		{
+			this.model = m;
+			this.landAnimation = m["Land"];
+			this.landAnimation.Speed = 1.5f;
+		}
+
+		private AnimatedModel model;
+		private SkinnedModel.Clip landAnimation;
 
 		// Output properties
 		public Property<float> Health = new Property<float>();
+		public Property<bool> EnableWalking = new Property<bool>();
+
+		private bool walkingDisabled;
 
 		// Input/output properties
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
@@ -43,7 +54,7 @@ namespace Lemma.Components
 			this.EnabledWhenPaused = false;
 			this.Apply.Action = delegate(float verticalAcceleration)
 			{
-				bool rolling = this.Model.IsPlaying("Roll");
+				bool rolling = this.model.IsPlaying("Roll");
 				float v = rolling ? RollingDamageVelocity : DamageVelocity;
 				if (verticalAcceleration < v)
 				{
@@ -59,7 +70,9 @@ namespace Lemma.Components
 						this.LinearVelocity.Value = new Vector3(0, this.LinearVelocity.Value.Y, 0);
 						if (!rolling)
 						{
-							this.Model.StartClip("Land", 1, false, 0.1f);
+							this.model.StartClip("Land", 0, false, 0.1f);
+							this.EnableWalking.Value = false;
+							this.walkingDisabled = true;
 						}
 					}
 				}
@@ -93,6 +106,15 @@ namespace Lemma.Components
 				float accel = this.lastLinearVelocity.Y - this.LinearVelocity.Value.Y;
 				this.Apply.Execute(accel);
 			}
+
+			if (this.walkingDisabled && (!this.landAnimation.Active || this.landAnimation.CurrentTime.TotalSeconds > 1.0f))
+			{
+				// We disabled walking while the land animation was playing.
+				// Now re-enable it
+				this.walkingDisabled = false;
+				this.EnableWalking.Value = true;
+			}
+
 			this.lastSupported = this.IsSupported;
 			this.lastLinearVelocity = this.LinearVelocity;
 		}

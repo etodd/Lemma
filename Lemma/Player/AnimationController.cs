@@ -71,7 +71,7 @@ namespace Lemma.Components
 			{ "Run", new AnimationInfo { Priority = 0 } },
 			{ "RunBackward", new AnimationInfo { Priority = 0 } },
 			{ "RunLeft", new AnimationInfo { Priority = 0 } },
-			// { "RunRight", new AnimationInfo { Priority = 0 } }, // TODO: Uncomment once the animation is in
+			{ "RunRight", new AnimationInfo { Priority = 0 } },
 			{ "RunLeftForward", new AnimationInfo { Priority = 0 } },
 			{ "RunRightForward", new AnimationInfo { Priority = 0 } },
 			{ "Sprint", new AnimationInfo { Priority = 1 } },
@@ -80,7 +80,7 @@ namespace Lemma.Components
 		// Split the unit circle into 8 pie slices, starting with positive X
 		private static string[] directions = new[]
 		{
-			"RunRightForward", // TODO: Switch to RunRight once the animation is in
+			"RunRight",
 			"RunRightForward",
 			"Run",
 			"RunLeftForward",

@@ -59,7 +59,7 @@ namespace Lemma.Components
 		private Voxel map;
 		private Voxel.Coord coord;
 
-		const float topOutVerticalSpeed = 5.0f;
+		const float topOutVerticalSpeed = 4.0f;
 		const float mantleVaultVerticalSpeed = 8.0f;
 		const float maxVaultTime = 1.25f;
 		const int searchUpDistance = 2;

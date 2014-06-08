@@ -136,8 +136,8 @@ namespace Lemma.Factories
 			popupScroller.Children.Add(popupList);
 
 			entity.Add("Editor", editor);
-			//entity.Add("UI", ui);
-			entity.Add("GUI", gui);
+			entity.Add("UI", ui);
+			//entity.Add("GUI", gui);
 			entity.Add("UIRenderer", uiRenderer);
 			entity.Add("Model", model);
 			entity.Add("Input", input);
@@ -274,7 +274,12 @@ namespace Lemma.Factories
 			gui.Add(new TwoWayBinding<bool>(editor.NeedsSave, gui.NeedsSave));
 			ui.Add(new Binding<bool>(ui.MapEditMode, editor.VoxelEditMode));
 			ui.Add(new Binding<bool>(ui.EnablePrecision, x => !x, input.GetKey(Keys.LeftShift)));
-			editor.Add(new Binding<bool>(editor.MovementEnabled, () => !ui.StringPropertyLocked && (input.MiddleMouseButton || editor.VoxelEditMode), ui.StringPropertyLocked, input.MiddleMouseButton, editor.VoxelEditMode));
+
+			Property<bool> movementEnabled = new Property<bool>();
+			Property<bool> capslockKey = input.GetKey(Keys.CapsLock);
+			entity.Add(new Binding<bool>(movementEnabled, () => input.MiddleMouseButton || capslockKey, input.MiddleMouseButton, capslockKey));
+			
+			editor.Add(new Binding<bool>(editor.MovementEnabled, () => !ui.StringPropertyLocked && (movementEnabled || editor.VoxelEditMode), ui.StringPropertyLocked, movementEnabled, editor.VoxelEditMode));
 			ui.Add(new TwoWayBinding<bool>(editor.NeedsSave, ui.NeedsSave));
 
 			editor.Add(new Binding<Vector2>(editor.Movement, input.Movement));
@@ -284,7 +289,7 @@ namespace Lemma.Factories
 			editor.Add(new Binding<bool>(editor.SpeedMode, input.GetKey(Keys.LeftShift)));
 			editor.Add(new Binding<bool>(editor.Extend, input.GetKey(Keys.F)));
 			editor.Add(new Binding<bool>(editor.Fill, input.LeftMouseButton));
-			editor.Add(new Binding<bool>(editor.EditSelection, () => input.MiddleMouseButton && editor.VoxelEditMode, input.MiddleMouseButton, editor.VoxelEditMode));
+			editor.Add(new Binding<bool>(editor.EditSelection, () => movementEnabled && editor.VoxelEditMode, movementEnabled, editor.VoxelEditMode));
 
 			addCommand("Delete", new PCInput.Chord { Key = Keys.X }, () => !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None && editor.SelectedEntities.Count > 0, editor.DeleteSelected);
 			addCommand("Duplicate", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.D }, () => !editor.MovementEnabled && editor.SelectedEntities.Count > 0, editor.Duplicate);
@@ -1141,7 +1146,7 @@ namespace Lemma.Factories
 				else
 					editor.CameraDistance.Value = Math.Max(1, editor.CameraDistance.Value + delta * -2.0f);
 			}));
-			input.Add(new Binding<bool>(input.EnableLook, () => editor.VoxelEditMode || (input.MiddleMouseButton && editor.TransformMode.Value == Editor.TransformModes.None), input.MiddleMouseButton, editor.VoxelEditMode, editor.TransformMode));
+			input.Add(new Binding<bool>(input.EnableLook, () => editor.VoxelEditMode || (movementEnabled && editor.TransformMode.Value == Editor.TransformModes.None), movementEnabled, editor.VoxelEditMode, editor.TransformMode));
 			input.Add(new Binding<Vector3, Vector2>(camera.Angles, x => new Vector3(-x.Y, x.X, 0.0f), input.Mouse, () => input.EnableLook));
 			input.Add(new Binding<bool>(main.IsMouseVisible, x => !x, input.EnableLook));
 			editor.Add(new Binding<Vector3>(camera.Position, () => editor.Position.Value - (camera.Forward.Value * editor.CameraDistance), editor.Position, camera.Forward, editor.CameraDistance));
@@ -1394,7 +1399,7 @@ namespace Lemma.Factories
 				() => editor.TransformMode.Value != Editor.TransformModes.None,
 				editor.RevertTransform
 			));
-			main.MapFile.Value = "monolith";
+			//main.MapFile.Value = "monolith";
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
