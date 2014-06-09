@@ -92,6 +92,11 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>
+    <Compile Include="EditorFont.spritefont">
+      <Name>EditorFont</Name>
+      <Importer>FontDescriptionImporter</Importer>
+      <Processor>FontDescriptionProcessor</Processor>
+    </Compile>
     <None Include="Effects\ClipCommon.fxh">
       <Name>ClipCommon</Name>
       <Importer>EffectImporter</Importer>

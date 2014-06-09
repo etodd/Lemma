@@ -32,6 +32,7 @@ namespace Lemma.Console
 			if (parsed.ParsedResult.Length == 0 || !IsConVarOrCmd(parsed.ParsedResult[0].Value))
 			{
 				Log("Incorrect input");
+				return;
 			}
 			string ConObject = parsed.ParsedResult[0].Value;
 			if (IsConCommand(ConObject))
@@ -370,6 +371,7 @@ namespace Lemma.Console
 			object propertyValue = value;
 			var binding = new NotifyBinding(() =>
 			{
+				if (propertyValue == null || propertyValue.GetType().GetProperty("Value") == null || propertyValue.GetType().GetProperty("Value").GetValue(propertyValue, null) == null) return;
 				GetConVar(name).Value.Value =
 					propertyValue.GetType().GetProperty("Value").GetValue(propertyValue, null).ToString();
 			});

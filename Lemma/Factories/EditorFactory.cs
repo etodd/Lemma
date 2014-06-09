@@ -136,8 +136,8 @@ namespace Lemma.Factories
 			popupScroller.Children.Add(popupList);
 
 			entity.Add("Editor", editor);
-			entity.Add("UI", ui);
-			//entity.Add("GUI", gui);
+			//entity.Add("UI", ui);
+			entity.Add("GUI", gui);
 			entity.Add("UIRenderer", uiRenderer);
 			entity.Add("Model", model);
 			entity.Add("Input", input);

@@ -96,6 +96,7 @@ namespace GeeUI.Views
 			TabTextView.Width.Value = Width - CurNinepatch.LeftWidth - CurNinepatch.RightWidth;
 			if (Width >= ParentView.Width) Width.Value = ParentView.Width - 1;
 	        TabTextView.X = CurNinepatch.LeftWidth;
+	        TabTextView.Y = CurNinepatch.TopHeight;
             base.Update(dt);
         }
 

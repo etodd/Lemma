@@ -171,7 +171,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			MainFont = main.Content.Load<SpriteFont>("Font");
+			MainFont = main.Content.Load<SpriteFont>("EditorFont");
 
 			this.RootEditorView = new View(main.GeeUI, main.GeeUI.RootView);
 			this.ComponentTabViews = new TabHost(main.GeeUI, RootEditorView, Vector2.Zero, MainFont);
@@ -293,7 +293,8 @@ namespace Lemma.Components
 					else
 					{
 						// It's a property
-						row.Children.Add(this.BuildValueField((IProperty)property.Value));
+						containerLabel.AddChild(BuildValueView((IProperty)property.Value));
+						//row.Children.Add(this.BuildValueField((IProperty)property.Value));
 					}
 
 					propertyList.Children.Add(row);
@@ -570,6 +571,118 @@ namespace Lemma.Components
 			}
 
 			return field;
+		}
+
+		public View BuildValueView(IProperty property)
+		{
+			View ret = new View(main.GeeUI, null);
+			ret.ChildrenLayouts.Add(new HorizontalViewLayout(4));
+			ret.ChildrenLayouts.Add(new ExpandToFitLayout());
+
+			PropertyInfo propertyInfo = property.GetType().GetProperty("Value");
+			if (propertyInfo.PropertyType.Equals(typeof(Vector2)))
+			{
+
+			}
+			else if (propertyInfo.PropertyType.Equals(typeof(Vector3)) || propertyInfo.PropertyType.Equals(typeof(Voxel.Coord)))
+			{
+
+			}
+			else if (propertyInfo.PropertyType.Equals(typeof(Vector4)) || propertyInfo.PropertyType.Equals(typeof(Quaternion)) ||
+					 propertyInfo.PropertyType.Equals(typeof(Color)))
+			{
+
+			}
+			else
+			{
+				TextFieldView view = new TextFieldView(main.GeeUI, ret, Vector2.Zero, MainFont);
+				view.Width.Value = 70;
+				view.Height.Value = 15;
+				view.Text = "abc";
+				view.MultiLine = false;
+
+				if (propertyInfo.PropertyType.Equals(typeof(int)))
+				{
+					Property<int> socket = (Property<int>)property;
+					view.Text = socket.Value.ToString();
+					socket.AddBinding(new NotifyBinding(() =>
+					{
+						view.Text = socket.Value.ToString();
+					}, socket));
+					Action onChanged = () =>
+					{
+						int value;
+						if (int.TryParse(view.Text, out value))
+						{
+							socket.Value = value;
+						}
+						view.Text = socket.Value.ToString();
+						view.Selected.Value = false;
+					};
+					view.ValidationRegex = "^\\d+$";
+					view.OnTextSubmitted = onChanged;
+				}
+				else if (propertyInfo.PropertyType.Equals(typeof(float)))
+				{
+					Property<float> socket = (Property<float>)property;
+					view.Text = socket.Value.ToString("F");
+					socket.AddBinding(new NotifyBinding(() =>
+					{
+						view.Text = socket.Value.ToString();
+					}, socket));
+					Action onChanged = () =>
+					{
+						float value;
+						if (float.TryParse(view.Text, out value))
+						{
+							socket.Value = value;
+						}
+						view.Text = socket.Value.ToString("F");
+						view.Selected.Value = false;
+					};
+					view.ValidationRegex = "^\\d+(\\.\\d+)?$";
+					view.OnTextSubmitted = onChanged;
+				}
+				else if (propertyInfo.PropertyType.Equals(typeof(bool)))
+				{
+					//No need for a textfield!
+					ret.RemoveChild(view);
+					CheckBoxView checkBox = new CheckBoxView(main.GeeUI, ret, Vector2.Zero, "", MainFont);
+					Property<bool> socket = (Property<bool>)property;
+					checkBox.IsChecked.Value = socket.Value;
+					checkBox.Add(new NotifyBinding(() =>
+					{
+						this.NeedsSave.Value = true;
+						socket.Value = checkBox.IsChecked.Value;
+					}, checkBox.IsChecked));
+				}
+				else if (propertyInfo.PropertyType.Equals(typeof(string)))
+				{
+					Property<string> socket = (Property<string>)property;
+
+					if (socket.Value == null) view.Text = "";
+					else view.Text = socket.Value;
+
+					socket.AddBinding(new NotifyBinding(() =>
+					{
+						var text = socket.Value;
+						if (text == null) text = "";
+						view.Text = text;
+					}, socket));
+
+					//Vast majority of strings won't be multiline.
+					if (socket.Value != null)
+						view.MultiLine = socket.Value.Contains("\n");
+					Action onChanged = () =>
+					{
+						if (socket.Value != view.Text)
+							socket.Value = view.Text;
+						view.Selected.Value = false;
+					};
+					view.OnTextSubmitted = onChanged;
+				}
+			}
+			return ret;
 		}
 
 		public UIComponent BuildValueField(IProperty property)
