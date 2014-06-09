@@ -356,7 +356,7 @@ namespace Lemma.Components
 						// We've reached the top of the vault. Start moving forward.
 						// Max vault time ensures we never get stuck
 
-						// If we're vaulting over a 1-block-wide wall, we need to keep the vaultMover alive for a while
+						// We need to keep the vault mover alive for a while
 						// to keep the player moving forward over the wall
 						this.movingForward = true;
 						this.moveForwardStartTime = this.vaultTime;
