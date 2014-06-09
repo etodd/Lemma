@@ -32,6 +32,7 @@ namespace Lemma.Console
 			if (parsed.ParsedResult.Length == 0 || !IsConVarOrCmd(parsed.ParsedResult[0].Value))
 			{
 				Log("Incorrect input");
+				return;
 			}
 			string ConObject = parsed.ParsedResult[0].Value;
 			if (IsConCommand(ConObject))

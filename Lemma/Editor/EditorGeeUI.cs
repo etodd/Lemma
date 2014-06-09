@@ -617,6 +617,7 @@ namespace Lemma.Components
 							socket.Value = value;
 						}
 						view.Text = socket.Value.ToString();
+						view.Selected.Value = false;
 					};
 					view.ValidationRegex = "^\\d+$";
 					view.OnTextSubmitted = onChanged;
@@ -637,6 +638,7 @@ namespace Lemma.Components
 							socket.Value = value;
 						}
 						view.Text = socket.Value.ToString("F");
+						view.Selected.Value = false;
 					};
 					view.ValidationRegex = "^\\d+(\\.\\d+)?$";
 					view.OnTextSubmitted = onChanged;
@@ -675,6 +677,7 @@ namespace Lemma.Components
 					{
 						if (socket.Value != view.Text)
 							socket.Value = view.Text;
+						view.Selected.Value = false;
 					};
 					view.OnTextSubmitted = onChanged;
 				}
