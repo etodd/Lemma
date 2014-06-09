@@ -62,6 +62,13 @@ namespace Lemma.Components
 			this.clavicleRight = m.GetBoneTransform("ORG-shoulder_R");
 			this.relativeUpperLeftArm = m.GetRelativeBoneTransform("ORG-upper_arm_L");
 			this.relativeUpperRightArm = m.GetRelativeBoneTransform("ORG-upper_arm_R");
+
+			Matrix correction = Matrix.CreateTranslation(0, 1.0f, 0);
+			Func<Matrix, Matrix> correct = delegate(Matrix hips)
+			{
+				return hips * correction;
+			};
+			m["WallRunStraight"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = correct;
 		}
 
 		// Animations and their priorities

@@ -8,6 +8,7 @@ public class AK
         public static uint PLAY_BLOCK_APPEAR = 2520143079U;
         public static uint PLAY_BLOCK_BUILD = 1262469596U;
         public static uint PLAY_BLUE_BURN = 216387374U;
+        public static uint PLAY_COLLECTIBLE = 661747096U;
         public static uint PLAY_DAWN_AMBIENT = 1175888809U;
         public static uint PLAY_DOOR_OPEN = 1660008929U;
         public static uint PLAY_EVIL_CUBES = 1708164667U;

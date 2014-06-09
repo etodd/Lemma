@@ -26,6 +26,7 @@ namespace Lemma.Components
 
 			PlayerTouched.Action = delegate
 			{
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_COLLECTIBLE, this.Entity);
 				float originalGamma = main.Renderer.InternalGamma.Value;
 				float originalBrightness = main.Renderer.Brightness.Value;
 				this.Entity.Add(
