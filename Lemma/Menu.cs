@@ -1097,6 +1097,7 @@ namespace Lemma.Components
 				this.resizeToMenu(button);
 				cheatList.Children.Add(button);
 			}
+#if STEAMWORKS
 			Container cheatIncrementTimePlayed = this.main.UIFactory.CreateButton("+60s", delegate()
 			{
 				SteamWorker.IncrementStat("stat_time_played", 60);
@@ -1125,6 +1126,7 @@ namespace Lemma.Components
 			});
 			this.resizeToMenu(cheatResetCheevos);
 			cheatMenu.Children.Add(cheatResetCheevos);
+#endif
 
 			Scroller cheatScroller = new Scroller();
 			cheatScroller.Children.Add(cheatList);

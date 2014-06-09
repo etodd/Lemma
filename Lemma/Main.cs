@@ -38,8 +38,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 8;
-		public const int MapVersion = 353;
-		public const int Build = 353;
+		public const int MapVersion = 571;
+		public const int Build = 571;
 
 		public static Config.Lang[] Languages = new[] { Config.Lang.en, Config.Lang.ru };
 
@@ -1112,8 +1112,6 @@ namespace Lemma
 			timer.Stop();
 			this.physicsSum = Math.Max(this.physicsSum, timer.Elapsed.TotalSeconds);
 
-			AkSoundEngine.RenderAudio();
-
 			this.frameSum++;
 			this.performanceInterval += (float)this.GameTime.ElapsedGameTime.TotalSeconds;
 			if (this.performanceInterval > Main.performanceUpdateTime)
@@ -1145,9 +1143,11 @@ namespace Lemma
 			}
 #endif
 
+			AkSoundEngine.RenderAudio();
+
 			TotalGameTime.Value += this.ElapsedTime.Value;
-			SteamWorker.SetStat("stat_time_played", (int)TotalGameTime.Value);
 #if STEAMWORKS
+			SteamWorker.SetStat("stat_time_played", (int)TotalGameTime.Value);
 			SteamWorker.Update();
 #endif
 		}

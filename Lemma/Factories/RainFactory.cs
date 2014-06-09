@@ -45,9 +45,6 @@ namespace Lemma.Factories
 			ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("Emitter");
 			emitter.Jitter.Value = new Vector3(kernelSpacing * kernelSize * 0.5f, 0.0f, kernelSpacing * kernelSize * 0.5f);
 
-			if (!main.EditorEnabled)
-				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_RAIN, entity);
-
 			Components.DirectionalLight lightning = entity.GetOrCreate<Components.DirectionalLight>("Lightning");
 			lightning.Enabled.Value = false;
 			Vector3 originalLightningColor = lightning.Color;
@@ -109,6 +106,9 @@ namespace Lemma.Factories
 			{
 				delegate()
 				{
+					if (!main.EditorEnabled)
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_RAIN, entity);
+
 					Entity skyboxEntity = main.Get("Skybox").FirstOrDefault();
 					if (skyboxEntity != null)
 					{

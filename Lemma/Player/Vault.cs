@@ -338,7 +338,7 @@ namespace Lemma.Components
 				{
 					if (this.vaultOver && this.vaultTime - this.moveForwardStartTime > 0.25f)
 						delete = true; // Done moving forward
-					else if (!this.vaultOver && !this.model.IsPlaying("TopOut", "Mantle"))
+					else if (this.isTopOut && !this.model.IsPlaying("TopOut"))
 						delete = true;
 					else
 					{
@@ -356,10 +356,20 @@ namespace Lemma.Components
 						// We've reached the top of the vault. Start moving forward.
 						// Max vault time ensures we never get stuck
 
-						// We need to keep the vault mover alive for a while
-						// to keep the player moving forward over the wall
-						this.movingForward = true;
-						this.moveForwardStartTime = this.vaultTime;
+						if (this.isTopOut || this.vaultOver)
+						{
+							// We need to keep the vault mover alive for a while
+							// to keep the player moving forward over the wall
+							this.movingForward = true;
+							this.moveForwardStartTime = this.vaultTime;
+						}
+						else
+						{
+							// It's just a mantle, we're done
+							this.LinearVelocity.Value = this.forward * this.MaxSpeed;
+							this.LastSupportedSpeed.Value = this.MaxSpeed;
+							delete = true;
+						}
 					}
 					else // We're still going up.
 						this.LinearVelocity.Value = vaultVelocity;
