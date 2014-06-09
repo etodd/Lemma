@@ -370,6 +370,7 @@ namespace Lemma.Console
 			object propertyValue = value;
 			var binding = new NotifyBinding(() =>
 			{
+				if (propertyValue == null || propertyValue.GetType().GetProperty("Value") == null || propertyValue.GetType().GetProperty("Value").GetValue(propertyValue, null) == null) return;
 				GetConVar(name).Value.Value =
 					propertyValue.GetType().GetProperty("Value").GetValue(propertyValue, null).ToString();
 			});

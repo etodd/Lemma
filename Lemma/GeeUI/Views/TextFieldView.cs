@@ -19,7 +19,7 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				return new Rectangle(X, Y, Width, Height);
+				return new Rectangle(RealX, RealY, Width, Height);
 			}
 		}
 
@@ -28,7 +28,7 @@ namespace GeeUI.Views
 			get
 			{
 				var patch = Selected ? NinePatchSelected : NinePatchDefault;
-				return new Rectangle(X, Y, Width + patch.LeftWidth + patch.RightWidth, Height + patch.TopHeight + patch.BottomHeight);
+				return new Rectangle(RealX - patch.LeftWidth, RealY - patch.TopHeight, Width + patch.LeftWidth + patch.RightWidth, Height + patch.TopHeight + patch.BottomHeight);
 			}
 		}
 
@@ -594,8 +594,12 @@ namespace GeeUI.Views
 
 		public override void OnMClickAway(bool fromChild = false)
 		{
+			bool oldSelected = Selected.Value;
 			Selected.Value = false;
 			_selectionEnd = _selectionStart = new Vector2(-1);
+			if (OnTextSubmitted != null && oldSelected && !Selected.Value)
+				OnTextSubmitted();
+			base.OnMClickAway();
 		}
 
 		public override void OnMOver(bool fromChild = false)
@@ -693,7 +697,7 @@ namespace GeeUI.Views
 			}
 			patch.Draw(spriteBatch, AbsolutePosition, Width, Height, 0f, EffectiveOpacity);
 
-			
+
 			base.Draw(spriteBatch);
 		}
 
@@ -749,7 +753,9 @@ namespace GeeUI.Views
 
 			if (_doingDelimiter && Selected && _selectionEnd == _selectionStart && Editable)
 			{
-				spriteBatch.DrawString(TextInputFont, "|", new Vector2(xDrawPos - 1, yDrawPos), TextColor * EffectiveOpacity);
+				float height = TextInputFont.MeasureString("|").Y;
+				DrawManager.DrawBox(new Vector2(xDrawPos, yDrawPos), new Vector2(xDrawPos + 1, yDrawPos + height), TextColor * EffectiveOpacity, spriteBatch  );
+				//spriteBatch.DrawString(TextInputFont, "|", new Vector2(xDrawPos - 1, yDrawPos), TextColor * EffectiveOpacity);
 			}
 			base.DrawContent(spriteBatch);
 		}

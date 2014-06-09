@@ -341,7 +341,8 @@ namespace GeeUI
 					drawing.Draw(spriteBatch);
 					if (drawing.ContentMustBeScissored)
 					{
-						var newScissor = CorrectScissor(drawing.ContentBoundBox, main.ScreenSize);
+						var newScissor = CorrectScissor(drawing.AbsoluteContentBoundBox, main.ScreenSize);
+						if (newScissor.Width <= 0 || newScissor.Height <= 0) continue;
 						spriteBatch.End();
 						spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, this.RasterizerState, null, Matrix.Identity);
 						this.main.GraphicsDevice.ScissorRectangle = newScissor;
