@@ -61,7 +61,8 @@ namespace Lemma.Components
 
 		const float topOutVerticalSpeed = 4.0f;
 		const float mantleVaultVerticalSpeed = 8.0f;
-		const float maxVaultTime = 1.25f;
+		const float maxVaultTime = 1.0f;
+		const float maxTopoutTime = 2.0f;
 		const int searchUpDistance = 2;
 		const int searchDownDistance = 4;
 
@@ -77,10 +78,11 @@ namespace Lemma.Components
 				m.Translation = new Vector3(0.0f, 0.0f, 2.0f);
 				return m;
 			};
-			this.model["TopOut"].Speed = 1.3f;
+			this.model["TopOut"].Speed = 2.0f;
 			this.model["TopOut"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
-				m.Translation = new Vector3(m.Translation.X, m.Translation.Y + 0.25f, m.Translation.Z * 0.5f);
+				Vector3 diff = this.originalPosition - this.Position;
+				m.Translation += Vector3.Transform(diff, Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f) * Matrix.CreateTranslation(0, -0.5f, 0.5f));
 				return m;
 			};
 			this.model["Vault"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
@@ -289,7 +291,7 @@ namespace Lemma.Components
 
 				bool delete = false;
 
-				if (this.vaultTime > maxVaultTime) // Max vault time ensures we never get stuck
+				if (this.vaultTime > (this.isTopOut ? maxTopoutTime : maxVaultTime)) // Max vault time ensures we never get stuck
 					delete = true;
 				else if (this.walkOffEdgeTimer > 0.2f && this.IsSupported)
 					delete = true; // We went over the edge and hit the ground. Stop.
@@ -334,8 +336,10 @@ namespace Lemma.Components
 
 				if (this.movingForward)
 				{
-					if (this.vaultTime - this.moveForwardStartTime > 0.25f)
+					if (this.vaultOver && this.vaultTime - this.moveForwardStartTime > 0.25f)
 						delete = true; // Done moving forward
+					else if (!this.vaultOver && !this.model.IsPlaying("TopOut", "Mantle"))
+						delete = true;
 					else
 					{
 						// Still moving forward
@@ -346,27 +350,16 @@ namespace Lemma.Components
 				else
 				{
 					// We're still going up.
-					if (this.IsSupported || this.vaultTime > maxVaultTime || this.LinearVelocity.Value.Y < 0.0f
+					if (this.IsSupported || this.vaultTime > (this.isTopOut ? maxTopoutTime : maxVaultTime) || this.LinearVelocity.Value.Y < 0.0f
 						|| (this.FloorPosition.Value.Y > this.map.GetAbsolutePosition(this.coord).Y + (this.vaultOver ? 0.2f : 0.1f))) // Move forward
 					{
 						// We've reached the top of the vault. Start moving forward.
 						// Max vault time ensures we never get stuck
 
-						if (this.vaultOver)
-						{
-							// If we're vaulting over a 1-block-wide wall, we need to keep the vaultMover alive for a while
-							// to keep the player moving forward over the wall
-							this.movingForward = true;
-							this.moveForwardStartTime = this.vaultTime;
-						}
-						else
-						{
-							// We're not vaulting over a 1-block-wide wall
-							// So just stop
-							this.LinearVelocity.Value = forward * this.MaxSpeed;
-							this.LastSupportedSpeed.Value = this.MaxSpeed;
-							delete = true;
-						}
+						// If we're vaulting over a 1-block-wide wall, we need to keep the vaultMover alive for a while
+						// to keep the player moving forward over the wall
+						this.movingForward = true;
+						this.moveForwardStartTime = this.vaultTime;
 					}
 					else // We're still going up.
 						this.LinearVelocity.Value = vaultVelocity;
