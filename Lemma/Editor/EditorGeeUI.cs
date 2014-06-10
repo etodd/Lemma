@@ -573,6 +573,198 @@ namespace Lemma.Components
 			return field;
 		}
 
+		public void BuildValueFieldView(View parent, Type type, IProperty property, VectorElement element, int width = 30)
+		{
+			TextFieldView textField = new TextFieldView(main.GeeUI, parent, Vector2.Zero, MainFont);
+			textField.Height.Value = 15;
+			textField.Width.Value = width;
+			textField.MultiLine = false;
+
+			if (type.Equals(typeof(Vector2)))
+			{
+				Property<Vector2> socket = (Property<Vector2>)property;
+				textField.Text = socket.Value.GetElement(element).ToString("F");
+				socket.AddBinding(new NotifyBinding(() =>
+				{
+					textField.Text = socket.Value.GetElement(element).ToString("F");
+				}, socket));
+
+				Action onChanged = () =>
+				{
+					float value;
+					if (float.TryParse(textField.Text, out value))
+					{
+						socket.Value = socket.Value.SetElement(element, value);
+					}
+					textField.Text = socket.Value.GetElement(element).ToString("F");
+					textField.Selected.Value = false;
+				};
+				textField.ValidationRegex = "^\\d+(\\.\\d+)?$";
+				textField.OnTextSubmitted = onChanged;
+			}
+			else if (type.Equals(typeof(Vector3)))
+			{
+				Property<Vector3> socket = (Property<Vector3>)property;
+				textField.Text = socket.Value.GetElement(element).ToString("F");
+				socket.AddBinding(new NotifyBinding(() =>
+				{
+					textField.Text = socket.Value.GetElement(element).ToString("F");
+				}, socket));
+
+				Action onChanged = () =>
+				{
+					float value;
+					if (float.TryParse(textField.Text, out value))
+					{
+						socket.Value = socket.Value.SetElement(element, value);
+					}
+					textField.Text = socket.Value.GetElement(element).ToString("F");
+					textField.Selected.Value = false;
+				};
+				textField.ValidationRegex = "^\\d+(\\.\\d+)?$";
+				textField.OnTextSubmitted = onChanged;
+			}
+			else if (type.Equals(typeof(Voxel.Coord)))
+			{
+				Property<Voxel.Coord> socket = (Property<Voxel.Coord>)property;
+
+				Direction dir;
+				switch (element)
+				{
+					case VectorElement.X:
+						dir = Direction.PositiveX;
+						break;
+					case VectorElement.Y:
+						dir = Direction.PositiveY;
+						break;
+					default:
+						dir = Direction.PositiveZ;
+						break;
+				}
+
+				textField.Text = socket.Value.GetComponent(dir).ToString();
+				socket.AddBinding(new NotifyBinding(() =>
+				{
+					textField.Text = socket.Value.GetComponent(dir).ToString();
+				}, socket));
+
+
+				Action onChanged = () =>
+				{
+					int value;
+					if (int.TryParse(textField.Text, out value))
+					{
+						Voxel.Coord c = socket.Value;
+						c.SetComponent(dir, value);
+						socket.Value = c;
+					}
+					textField.Text = socket.Value.GetComponent(dir).ToString();
+					textField.Selected.Value = false;
+				};
+				textField.ValidationRegex = "^\\d+$";
+				textField.OnTextSubmitted = onChanged;
+				/*
+				Property<Voxel.Coord> socket = (Property<Voxel.Coord>)property;
+				Direction dir;
+				switch (element)
+				{
+					case VectorElement.X:
+						dir = Direction.PositiveX;
+						break;
+					case VectorElement.Y:
+						dir = Direction.PositiveY;
+						break;
+					default:
+						dir = Direction.PositiveZ;
+						break;
+				}
+
+				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
+				{
+					this.NeedsSave.Value = true;
+					int delta = scroll * (this.EnablePrecision ? 1 : 10);
+					Voxel.Coord c = socket.Value;
+					c.SetComponent(dir, c.GetComponent(dir) + delta);
+					socket.Value = c;
+				}));
+				textField.Add(new Binding<string, Voxel.Coord>(textField.Text, x => x.GetComponent(dir).ToString(), socket));*/
+			}
+			else if (type.Equals(typeof(Vector4)))
+			{
+				Property<Vector4> socket = (Property<Vector4>)property;
+				textField.Text = socket.Value.GetElement(element).ToString("F");
+				socket.AddBinding(new NotifyBinding(() =>
+				{
+					textField.Text = socket.Value.GetElement(element).ToString("F");
+				}, socket));
+
+				Action onChanged = () =>
+				{
+					float value;
+					if (float.TryParse(textField.Text, out value))
+					{
+						socket.Value = socket.Value.SetElement(element, value);
+					}
+					textField.Text = socket.Value.GetElement(element).ToString("F");
+					textField.Selected.Value = false;
+				};
+				textField.ValidationRegex = "^\\d+(\\.\\d+)?$";
+				textField.OnTextSubmitted = onChanged;
+			}
+			else if (type.Equals(typeof(Quaternion)))
+			{
+				Property<Quaternion> socket = (Property<Quaternion>)property;
+				textField.Text = socket.Value.GetElement(element).ToString("F");
+				socket.AddBinding(new NotifyBinding(() =>
+				{
+					textField.Text = socket.Value.GetElement(element).ToString("F");
+				}, socket));
+
+				Action onChanged = () =>
+				{
+					float value;
+					if (float.TryParse(textField.Text, out value))
+					{
+						socket.Value = socket.Value.SetElement(element, value);
+					}
+					textField.Text = socket.Value.GetElement(element).ToString("F");
+					textField.Selected.Value = false;
+				};
+				textField.ValidationRegex = "^\\d+(\\.\\d+)?$";
+				textField.OnTextSubmitted = onChanged;
+				/*Property<Quaternion> socket = (Property<Quaternion>)property;
+				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
+				{
+					this.NeedsSave.Value = true;
+					float delta = scroll * (this.EnablePrecision ? EditorGeeUI.precisionDelta : EditorGeeUI.normalDelta);
+					socket.Value = socket.Value.SetElement(element, socket.Value.GetElement(element) + delta);
+				}));
+				textField.Add(new Binding<string, Quaternion>(textField.Text, x => x.GetElement(element).ToString("F"), socket));*/
+			}
+			else if (type.Equals(typeof(Color)))
+			{
+				Property<Color> socket = (Property<Color>)property;
+				textField.Text = socket.Value.GetElement(element).ToString("F");
+				socket.AddBinding(new NotifyBinding(() =>
+				{
+					textField.Text = socket.Value.GetElement(element).ToString("F");
+				}, socket));
+
+				Action onChanged = () =>
+				{
+					byte value;
+					if (byte.TryParse(textField.Text, out value))
+					{
+						socket.Value = socket.Value.SetElement(element, value);
+					}
+					textField.Text = socket.Value.GetElement(element).ToString("F");
+					textField.Selected.Value = false;
+				};
+				textField.ValidationRegex = "^\\d+$";
+				textField.OnTextSubmitted = onChanged;
+			}
+		}
+
 		public View BuildValueView(IProperty property)
 		{
 			View ret = new View(main.GeeUI, null);
@@ -582,18 +774,21 @@ namespace Lemma.Components
 			PropertyInfo propertyInfo = property.GetType().GetProperty("Value");
 			if (propertyInfo.PropertyType.Equals(typeof(Vector2)))
 			{
-
+				foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y })
+					this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field);
 			}
 			else if (propertyInfo.PropertyType.Equals(typeof(Vector3)) || propertyInfo.PropertyType.Equals(typeof(Voxel.Coord)))
 			{
-
+				foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z })
+					this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field);
 			}
 			else if (propertyInfo.PropertyType.Equals(typeof(Vector4)) || propertyInfo.PropertyType.Equals(typeof(Quaternion)) ||
 					 propertyInfo.PropertyType.Equals(typeof(Color)))
 			{
-
+				foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z, VectorElement.W })
+					this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field);
 			}
-			else
+			else 
 			{
 				TextFieldView view = new TextFieldView(main.GeeUI, ret, Vector2.Zero, MainFont);
 				view.Width.Value = 70;
