@@ -560,6 +560,19 @@ namespace ComponentBind
 			}
 			return (T)result;
 		}
+		public T GetOrCreate<T>(string name, out bool created) where T : IComponent, new()
+		{
+			IComponent result = null;
+			this.components.TryGetValue(name, out result);
+			created = false;
+			if (result == null)
+			{
+				created = true;
+				result = new T();
+				this.Add(name, result);
+			}
+			return (T)result;
+		}
 
 		public Command GetCommand(string name)
 		{

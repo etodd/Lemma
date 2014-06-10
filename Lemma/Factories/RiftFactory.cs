@@ -1,4 +1,5 @@
-﻿using System; using ComponentBind;
+﻿using System;
+using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,6 +21,10 @@ namespace Lemma.Factories
 			Rift rift = new Rift();
 			rift.Enabled.Value = false;
 			entity.Add("Rift", rift);
+			PlayerTrigger trigger = new PlayerTrigger();
+			trigger.Enabled.Value = false;
+			trigger.Radius.Value = 0;
+			entity.Add("PlayerTrigger", trigger);
 			return entity;
 		}
 
@@ -27,6 +32,7 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Position");
 			Rift rift = entity.GetOrCreate<Rift>("Rift");
+			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
 			this.SetMain(entity, main);
 
 			Property<Matrix> targetTransform = new Property<Matrix>();
@@ -45,6 +51,8 @@ namespace Lemma.Factories
 			rift.Add(new Binding<Entity.Handle>(rift.Voxel, voxel));
 			rift.Add(new Binding<Voxel.Coord>(rift.Coordinate, coord));
 
+			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
+
 			entity.Add("Trigger", new Command
 			{
 				Action = delegate()
@@ -52,6 +60,8 @@ namespace Lemma.Factories
 					rift.Enabled.Value = true;
 				}
 			});
+
+			trigger.Add(new CommandBinding(trigger.PlayerEntered, entity.GetCommand("Trigger")));
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
@@ -59,6 +69,7 @@ namespace Lemma.Factories
 			base.AttachEditorComponents(entity, main);
 
 			Rift.AttachEditorComponents(entity, main, this.Color);
+			PlayerTrigger.AttachEditorComponents(entity, main, new Vector3(0.4f, 0.4f, 1.0f));
 
 			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
