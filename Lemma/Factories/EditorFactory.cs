@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Windows.Forms;
 using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Lemma.Components;
-using Microsoft.Xna.Framework.Input;
 using BEPUphysics;
 using System.Xml.Serialization;
 using System.IO;
+using Keys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace Lemma.Factories
 {
@@ -135,6 +136,8 @@ namespace Lemma.Factories
 			popupList.Name.Value = "PopupList";
 			popupScroller.Children.Add(popupList);
 
+			gui.Add(new ListBinding<Lemma.Components.EditorUI.PopupCommand>(gui.PopupCommands, ui.PopupCommands));
+
 			entity.Add("Editor", editor);
 			//entity.Add("UI", ui);
 			entity.Add("GUI", gui);
@@ -235,6 +238,7 @@ namespace Lemma.Factories
 
 			input.Add(new CommandBinding(input.GetKeyUp(Keys.Space), () => !editor.VoxelEditMode && !ui.StringPropertyLocked && !editor.MovementEnabled, delegate()
 			{
+				if (entity.Get<EditorUI>("ui") == null) return;
 				Vector2 pos = input.Mouse;
 				pos.X = Math.Min(main.ScreenSize.Value.X - popup.Size.Value.X, pos.X);
 				pos.Y = Math.Min(main.ScreenSize.Value.Y - popup.Size.Value.Y, pos.Y);

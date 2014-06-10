@@ -150,6 +150,7 @@
     <Compile Include="GeeUI\ViewLayouts\SpinViewLayout.cs" />
     <Compile Include="GeeUI\ViewLayouts\VerticalViewLayout.cs" />
     <Compile Include="GeeUI\ViewLayouts\ViewLayout.cs" />
+    <Compile Include="GeeUI\Views\DropDownView.cs" />
     <Compile Include="GeeUI\Views\ListView.cs" />
     <Compile Include="GeeUI\Views\EmptyView.cs" />
     <Compile Include="GeeUI\Views\ButtonView.cs" />

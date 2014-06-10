@@ -27,7 +27,7 @@ namespace Lemma.Components
 			Keys.Delete, Keys.CapsLock,
 		};
 
-		private struct Chord
+		public struct Chord
 		{
 			public Keys Keys;
 			public bool Shift;

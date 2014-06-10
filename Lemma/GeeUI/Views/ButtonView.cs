@@ -45,6 +45,8 @@ namespace GeeUI.Views
                 if (!(Children[0] is TextView)) return;
                 var c = (TextView)Children[0];
                 c.Text.Value = value;
+				Width.Value = (int)c.Font.MeasureString(c.Text.Value).X + NinePatchNormal.LeftWidth + NinePatchNormal.RightWidth;
+				Height.Value = (int)c.Font.MeasureString(c.Text.Value).Y + NinePatchNormal.TopHeight + NinePatchNormal.BottomHeight;
             }
         }
 
@@ -90,7 +92,7 @@ namespace GeeUI.Views
         }
         public override void OnMClickAway(bool fromChild = false)
         {
-            //base.onMClickAway();
+            base.OnMClickAway();
         }
 
         public override void OnMOver(bool fromChild = false)

@@ -175,7 +175,7 @@ namespace GeeUI
 
 			InputManager.BindMouse(() =>
 			{
-				HandleClick(RootView, InputManager.GetMousePos());
+				HandleClick(RootView, InputManager.GetMousePos(), new List<View>());
 				//When we click, we want to re-evaluate what control the mouse is over.
 				HandleMouseMovement(RootView, InputManager.GetMousePos());
 			}, MouseButton.Left);
@@ -213,7 +213,7 @@ namespace GeeUI
 			view.OnMScroll(ConversionManager.PtoV(mousePos), scrollDelta);
 		}
 
-		internal void HandleClick(View view, Point mousePos)
+		internal void HandleClick(View view, Point mousePos, List<View> DidClick )
 		{
 			if (!view.Active)
 				return;
@@ -227,7 +227,8 @@ namespace GeeUI
 			{
 				if (!child.AbsoluteBoundBox.Contains(mousePos) || !child.Active || !child.AllowMouseEvents) continue;
 				if (view == RootView) LastClickCaptured = true;
-				HandleClick(child, mousePos);
+				DidClick.Add(child);
+				HandleClick(child, mousePos, DidClick);
 				didLower = true;
 				break;
 			}
@@ -235,7 +236,7 @@ namespace GeeUI
 			List<View> allOthers = GetAllViews(RootView);
 			foreach (View t in allOthers)
 			{
-				if (t != view)
+				if (t != view && !DidClick.Contains(t))
 					t.OnMClickAway();
 			}
 			view.OnMClick(ConversionManager.PtoV(mousePos));

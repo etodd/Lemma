@@ -20,7 +20,7 @@ namespace GeeUI.Views
 			get
 			{
 				View highest = null;
-				foreach(var child in Children)
+				foreach (var child in Children)
 					if (highest == null || child.AbsoluteBoundBox.Top < highest.AbsoluteBoundBox.Top) highest = child;
 				return highest;
 			}
@@ -51,7 +51,7 @@ namespace GeeUI.Views
 			}
 		}
 
-		private Rectangle ChildrenBoundBox
+		public Rectangle ChildrenBoundBox
 		{
 			get
 			{

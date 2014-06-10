@@ -17,6 +17,7 @@ namespace GeeUI.Views
 		public delegate void MouseOffEventHandler(object sender, EventArgs e);
 
 		public event MouseClickEventHandler OnMouseClick;
+		public event MouseClickEventHandler OnMouseClickAway;
 		public event MouseOverEventHandler OnMouseOver;
 		public event MouseOffEventHandler OnMouseOff;
 
@@ -238,6 +239,12 @@ namespace GeeUI.Views
 			_children.Add(child);
 		}
 
+
+		public void RemoveAllChildren()
+		{
+			foreach(var child in Children) RemoveChild(child);
+		}
+		
 		public void RemoveChild(View child)
 		{
 			_children.Remove(child);
@@ -345,7 +352,7 @@ namespace GeeUI.Views
 
 
 
-		private bool AttachedToRoot(View parent)
+		public bool AttachedToRoot(View parent)
 		{
 			if (this == ParentGeeUI.RootView) return true;
 			else if (parent == ParentGeeUI.RootView) return true;
@@ -411,7 +418,9 @@ namespace GeeUI.Views
 
 		public virtual void OnMClickAway(bool fromChild = false)
 		{
-
+			if(OnMouseClickAway != null)
+				OnMouseClickAway(this, new EventArgs());
+			if(ParentView != null) ParentView.OnMClickAway(true);
 		}
 
 		public virtual void OnMOver(bool fromChild = false)

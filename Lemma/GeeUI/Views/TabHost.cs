@@ -80,7 +80,7 @@ namespace GeeUI.Views
 		}
 		public override void OnMClickAway(bool fromChild = false)
 		{
-			//base.onMClickAway();
+			base.OnMClickAway();
 		}
 
 		public override void OnMOver(bool fromChild = false)

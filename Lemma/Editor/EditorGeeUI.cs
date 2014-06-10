@@ -31,97 +31,67 @@ namespace Lemma.Components
 			Keys.Delete, Keys.CapsLock,
 		};
 
-		private struct Chord
-		{
-			public Keys Keys;
-			public bool Shift;
-
-			public override bool Equals(object obj)
-			{
-				if (obj is Chord)
-				{
-					Chord c = (Chord)obj;
-					return c.Keys == this.Keys && c.Shift == this.Shift;
-				}
-				else
-					return false;
-			}
-
-			public override int GetHashCode()
-			{
-				return (int)this.Keys | (this.Shift ? 1 << 32 : 0);
-			}
-		}
-
-		public struct PopupCommand
-		{
-			public string Description;
-			public PCInput.Chord Chord;
-			public Command Action;
-			public Func<bool> Enabled;
-		}
-
-		private static Dictionary<Chord, string> inputKeyMappings = new Dictionary<Chord, string>();
+		private static Dictionary<Lemma.Components.EditorUI.Chord, string> inputKeyMappings = new Dictionary<Lemma.Components.EditorUI.Chord, string>();
 		static EditorGeeUI()
 		{
 
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemBackslash }, "\\");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemBackslash, Shift = true }, "|");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemPipe }, "\\");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemPipe, Shift = true }, "|");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemPeriod }, ".");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemPeriod, Shift = true }, ">");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemComma }, ",");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemComma, Shift = true }, "<");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemQuestion }, "/");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemQuestion, Shift = true }, "?");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemQuotes }, "'");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemQuotes, Shift = true }, "\"");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemSemicolon }, ";");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemSemicolon, Shift = true }, ":");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemOpenBrackets }, "[");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemOpenBrackets, Shift = true }, "{");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemCloseBrackets }, "]");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemCloseBrackets, Shift = true }, "}");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemPlus }, "=");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemPlus, Shift = true }, "+");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemMinus }, "-");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemMinus, Shift = true }, "_");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemTilde }, "`");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.OemTilde, Shift = true }, "~");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D0 }, "0");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D1 }, "1");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D2 }, "2");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D3 }, "3");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D4 }, "4");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D5 }, "5");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D6 }, "6");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D7 }, "7");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D8 }, "8");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D9 }, "9");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad0 }, "0");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad1 }, "1");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad2 }, "2");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad3 }, "3");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad4 }, "4");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad5 }, "5");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad6 }, "6");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad7 }, "7");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad8 }, "8");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.NumPad9 }, "9");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D0, Shift = true }, ")");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D1, Shift = true }, "!");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D2, Shift = true }, "@");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D3, Shift = true }, "#");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D4, Shift = true }, "$");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D5, Shift = true }, "%");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D6, Shift = true }, "^");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D7, Shift = true }, "&");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D8, Shift = true }, "*");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.D9, Shift = true }, "(");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.Space }, " ");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.Space, Shift = true }, " ");
-			EditorGeeUI.inputKeyMappings.Add(new Chord { Keys = Keys.Enter }, "\n");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemBackslash }, "\\");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemBackslash, Shift = true }, "|");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemPipe }, "\\");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemPipe, Shift = true }, "|");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemPeriod }, ".");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemPeriod, Shift = true }, ">");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemComma }, ",");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemComma, Shift = true }, "<");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemQuestion }, "/");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemQuestion, Shift = true }, "?");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemQuotes }, "'");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemQuotes, Shift = true }, "\"");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemSemicolon }, ";");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemSemicolon, Shift = true }, ":");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemOpenBrackets }, "[");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemOpenBrackets, Shift = true }, "{");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemCloseBrackets }, "]");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemCloseBrackets, Shift = true }, "}");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemPlus }, "=");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemPlus, Shift = true }, "+");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemMinus }, "-");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemMinus, Shift = true }, "_");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemTilde }, "`");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemTilde, Shift = true }, "~");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D0 }, "0");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D1 }, "1");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D2 }, "2");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D3 }, "3");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D4 }, "4");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D5 }, "5");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D6 }, "6");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D7 }, "7");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D8 }, "8");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D9 }, "9");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad0 }, "0");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad1 }, "1");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad2 }, "2");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad3 }, "3");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad4 }, "4");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad5 }, "5");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad6 }, "6");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad7 }, "7");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad8 }, "8");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad9 }, "9");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D0, Shift = true }, ")");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D1, Shift = true }, "!");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D2, Shift = true }, "@");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D3, Shift = true }, "#");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D4, Shift = true }, "$");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D5, Shift = true }, "%");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D6, Shift = true }, "^");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D7, Shift = true }, "&");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D8, Shift = true }, "*");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D9, Shift = true }, "(");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.Space }, " ");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.Space, Shift = true }, " ");
+			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.Enter }, "\n");
 		}
 
 		[XmlIgnore]
@@ -134,6 +104,9 @@ namespace Lemma.Components
 		public PanelView ActionsPanelView;
 
 		[XmlIgnore]
+		public DropDownView CreateDropDownView;
+
+		[XmlIgnore]
 		public ListProperty<Entity> SelectedEntities = new ListProperty<Entity>();
 		[XmlIgnore]
 		public Property<bool> MapEditMode = new Property<bool>();
@@ -141,7 +114,7 @@ namespace Lemma.Components
 		public Property<bool> EnablePrecision = new Property<bool>();
 
 		[XmlIgnore]
-		public ListProperty<PopupCommand> PopupCommands = new ListProperty<PopupCommand>();
+		public ListProperty<EditorUI.PopupCommand> PopupCommands = new ListProperty<EditorUI.PopupCommand>();
 
 		[XmlIgnore]
 		public Property<bool> NeedsSave = new Property<bool>();
@@ -176,6 +149,13 @@ namespace Lemma.Components
 			this.RootEditorView = new View(main.GeeUI, main.GeeUI.RootView);
 			this.ComponentTabViews = new TabHost(main.GeeUI, RootEditorView, Vector2.Zero, MainFont);
 			this.ActionsPanelView = new PanelView(main.GeeUI, RootEditorView, Vector2.Zero);
+			var dropDownPlusLabel = new View(main.GeeUI, ActionsPanelView);
+			dropDownPlusLabel.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
+			dropDownPlusLabel.ChildrenLayouts.Add(new ExpandToFitLayout());
+			dropDownPlusLabel.X = 20;
+			dropDownPlusLabel.Y = 5;
+			new TextView(main.GeeUI, dropDownPlusLabel, "Actions:", Vector2.Zero, MainFont);
+			this.CreateDropDownView = new DropDownView(main.GeeUI, dropDownPlusLabel, Vector2.Zero, MainFont);
 			ActionsPanelView.Draggable = false;
 
 			RootEditorView.Add(new Binding<int, Point>(RootEditorView.Width, point => point.X, main.ScreenSize));
@@ -202,6 +182,41 @@ namespace Lemma.Components
 			this.SelectedEntities.Cleared += new ListProperty<ComponentBind.Entity>.ClearEventHandler(this.refresh);
 			this.Add(new NotifyBinding(this.refresh, this.MapEditMode));
 
+			this.PopupCommands.ItemAdded += (index, command) =>
+			{
+				RecomputePopupCommands();
+			};
+			this.PopupCommands.ItemChanged += (index, old, value) =>
+			{
+				RecomputePopupCommands();
+			};
+			this.PopupCommands.ItemRemoved += (index, command) =>
+			{
+				RecomputePopupCommands();
+				
+			};
+		}
+
+		private void RecomputePopupCommands()
+		{
+			this.CreateDropDownView.RemoveAllOptions();
+			foreach (var dropDown in PopupCommands)
+			{
+				string text = dropDown.Description;
+				if (dropDown.Chord.Key != Keys.None)
+				{
+					if (dropDown.Chord.Modifier != Keys.None)
+						text += " (" + dropDown.Chord.Modifier.ToString() + "+" + dropDown.Chord.Key.ToString() + ")";
+					else
+					{
+						text += " (" + dropDown.Chord.Key.ToString() + ")";
+					}
+				}
+				CreateDropDownView.AddOption(text, () =>
+				{
+					dropDown.Action.Execute();
+				});
+			}
 		}
 
 		private Container addText(string text)
@@ -327,38 +342,6 @@ namespace Lemma.Components
 			//b.ChildrenLayouts.Add(new ExpandToFitLayout());
 			return b;
 		}
-
-		public UIComponent BuildButton2(Command command, string label, Color color = default(Color))
-		{
-			Container field = (Container)this.BuildLabel(label, color);
-
-			field.Add(new Binding<float, bool>(field.Opacity, x => x ? 1.0f : 0.5f, field.Highlighted));
-
-			field.Add(new CommandBinding(field.MouseLeftUp, command));
-			field.SwallowMouseEvents.Value = true;
-
-			return field;
-		}
-
-		public UIComponent BuildLabel(string label, Color color = default(Color))
-		{
-			if (color.A == 0)
-				color = Color.White;
-
-			Container field = new Container();
-			field.Tint.Value = Color.Black;
-			field.Opacity.Value = 0.5f;
-
-			TextElement textField = new TextElement();
-			textField.FontFile.Value = "Font";
-			textField.Interpolation.Value = false;
-			textField.Text.Value = label;
-			textField.Tint.Value = color;
-			field.Children.Add(textField);
-
-			return field;
-		}
-
 		private void refresh()
 		{
 			//this.UIElements.Clear();
@@ -451,7 +434,7 @@ namespace Lemma.Components
 					if (!EditorGeeUI.ignoredKeys.Contains(key))
 					{
 						this.selectedStringIndex++;
-						Chord chord = new Chord { Keys = key, Shift = caps };
+						Lemma.Components.EditorUI.Chord chord = new Lemma.Components.EditorUI.Chord { Keys = key, Shift = caps };
 						if (EditorGeeUI.inputKeyMappings.ContainsKey(chord))
 							this.selectedStringValue = this.selectedStringValue.Insert(this.selectedStringIndex - 1, EditorGeeUI.inputKeyMappings[chord]);
 						else
@@ -463,114 +446,6 @@ namespace Lemma.Components
 			}
 			this.lastPressedKeys = unfilteredKeys;
 			this.selectedStringNavigateInterval += dt;
-		}
-
-		public UIComponent BuildValueMemberField(Type type, IProperty property, VectorElement element)
-		{
-			Container field = new Container();
-			field.Tint.Value = Color.Black;
-
-			field.Add(new Binding<float, bool>(field.Opacity, x => x ? 1.0f : 0.5f, field.Highlighted));
-
-			TextElement textField = new TextElement();
-			textField.FontFile.Value = "Font";
-			textField.Interpolation.Value = false;
-			field.Children.Add(textField);
-
-			field.Add(new CommandBinding(field.MouseLeftDown, delegate()
-			{
-				field.SwallowMouseEvents.Value = true;
-				field.MouseLocked.Value = true;
-			}));
-			field.Add(new CommandBinding(field.MouseLeftUp, delegate()
-			{
-				field.SwallowMouseEvents.Value = false;
-				field.MouseLocked.Value = false;
-			}));
-
-			if (type.Equals(typeof(Vector2)))
-			{
-				Property<Vector2> socket = (Property<Vector2>)property;
-				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
-				{
-					this.NeedsSave.Value = true;
-					float delta = scroll * (this.EnablePrecision ? EditorGeeUI.precisionDelta : EditorGeeUI.normalDelta);
-					socket.Value = socket.Value.SetElement(element, socket.Value.GetElement(element) + delta);
-				}));
-				textField.Add(new Binding<string, Vector2>(textField.Text, x => x.GetElement(element).ToString("F"), socket));
-			}
-			else if (type.Equals(typeof(Vector3)))
-			{
-				Property<Vector3> socket = (Property<Vector3>)property;
-				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
-				{
-					this.NeedsSave.Value = true;
-					float delta = scroll * (this.EnablePrecision ? EditorGeeUI.precisionDelta : EditorGeeUI.normalDelta);
-					socket.Value = socket.Value.SetElement(element, socket.Value.GetElement(element) + delta);
-				}));
-				textField.Add(new Binding<string, Vector3>(textField.Text, x => x.GetElement(element).ToString("F"), socket));
-			}
-			else if (type.Equals(typeof(Voxel.Coord)))
-			{
-				Property<Voxel.Coord> socket = (Property<Voxel.Coord>)property;
-				Direction dir;
-				switch (element)
-				{
-					case VectorElement.X:
-						dir = Direction.PositiveX;
-						break;
-					case VectorElement.Y:
-						dir = Direction.PositiveY;
-						break;
-					default:
-						dir = Direction.PositiveZ;
-						break;
-				}
-
-				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
-				{
-					this.NeedsSave.Value = true;
-					int delta = scroll * (this.EnablePrecision ? 1 : 10);
-					Voxel.Coord c = socket.Value;
-					c.SetComponent(dir, c.GetComponent(dir) + delta);
-					socket.Value = c;
-				}));
-				textField.Add(new Binding<string, Voxel.Coord>(textField.Text, x => x.GetComponent(dir).ToString(), socket));
-			}
-			else if (type.Equals(typeof(Vector4)))
-			{
-				Property<Vector4> socket = (Property<Vector4>)property;
-				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
-				{
-					this.NeedsSave.Value = true;
-					float delta = scroll * (this.EnablePrecision ? EditorGeeUI.precisionDelta : EditorGeeUI.normalDelta);
-					socket.Value = socket.Value.SetElement(element, socket.Value.GetElement(element) + delta);
-				}));
-				textField.Add(new Binding<string, Vector4>(textField.Text, x => x.GetElement(element).ToString("F"), socket));
-			}
-			else if (type.Equals(typeof(Quaternion)))
-			{
-				Property<Quaternion> socket = (Property<Quaternion>)property;
-				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
-				{
-					this.NeedsSave.Value = true;
-					float delta = scroll * (this.EnablePrecision ? EditorGeeUI.precisionDelta : EditorGeeUI.normalDelta);
-					socket.Value = socket.Value.SetElement(element, socket.Value.GetElement(element) + delta);
-				}));
-				textField.Add(new Binding<string, Quaternion>(textField.Text, x => x.GetElement(element).ToString("F"), socket));
-			}
-			else if (type.Equals(typeof(Color)))
-			{
-				Property<Color> socket = (Property<Color>)property;
-				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
-				{
-					this.NeedsSave.Value = true;
-					socket.Value = socket.Value.SetElement(element, (byte)Math.Max(0, Math.Min(255, socket.Value.GetElement(element) + scroll * (this.EnablePrecision ? 1 : 10))));
-				}));
-				textField.Add(new Binding<string, Color>(textField.Text, x => x.GetElement(element).ToString(), socket));
-			}
-
-			return field;
 		}
 
 		public void BuildValueFieldView(View parent, Type type, IProperty property, VectorElement element, int width = 30)
@@ -663,31 +538,6 @@ namespace Lemma.Components
 				};
 				textField.ValidationRegex = "^\\d+$";
 				textField.OnTextSubmitted = onChanged;
-				/*
-				Property<Voxel.Coord> socket = (Property<Voxel.Coord>)property;
-				Direction dir;
-				switch (element)
-				{
-					case VectorElement.X:
-						dir = Direction.PositiveX;
-						break;
-					case VectorElement.Y:
-						dir = Direction.PositiveY;
-						break;
-					default:
-						dir = Direction.PositiveZ;
-						break;
-				}
-
-				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
-				{
-					this.NeedsSave.Value = true;
-					int delta = scroll * (this.EnablePrecision ? 1 : 10);
-					Voxel.Coord c = socket.Value;
-					c.SetComponent(dir, c.GetComponent(dir) + delta);
-					socket.Value = c;
-				}));
-				textField.Add(new Binding<string, Voxel.Coord>(textField.Text, x => x.GetComponent(dir).ToString(), socket));*/
 			}
 			else if (type.Equals(typeof(Vector4)))
 			{
@@ -732,14 +582,6 @@ namespace Lemma.Components
 				};
 				textField.ValidationRegex = "^\\d+(\\.\\d+)?$";
 				textField.OnTextSubmitted = onChanged;
-				/*Property<Quaternion> socket = (Property<Quaternion>)property;
-				field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
-				{
-					this.NeedsSave.Value = true;
-					float delta = scroll * (this.EnablePrecision ? EditorGeeUI.precisionDelta : EditorGeeUI.normalDelta);
-					socket.Value = socket.Value.SetElement(element, socket.Value.GetElement(element) + delta);
-				}));
-				textField.Add(new Binding<string, Quaternion>(textField.Text, x => x.GetElement(element).ToString("F"), socket));*/
 			}
 			else if (type.Equals(typeof(Color)))
 			{
@@ -788,7 +630,7 @@ namespace Lemma.Components
 				foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z, VectorElement.W })
 					this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field);
 			}
-			else 
+			else
 			{
 				TextFieldView view = new TextFieldView(main.GeeUI, ret, Vector2.Zero, MainFont);
 				view.Width.Value = 70;
@@ -879,150 +721,6 @@ namespace Lemma.Components
 			}
 			return ret;
 		}
-
-		public UIComponent BuildValueField(IProperty property)
-		{
-			PropertyInfo propertyInfo = property.GetType().GetProperty("Value");
-			if (propertyInfo.PropertyType.Equals(typeof(Vector2)))
-			{
-				ListContainer elementList = new ListContainer();
-				elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
-				foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y })
-					elementList.Children.Add(this.BuildValueMemberField(propertyInfo.PropertyType, property, field));
-				return elementList;
-			}
-			else if (propertyInfo.PropertyType.Equals(typeof(Vector3)) || propertyInfo.PropertyType.Equals(typeof(Voxel.Coord)))
-			{
-				ListContainer elementList = new ListContainer();
-				elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
-				foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z })
-					elementList.Children.Add(this.BuildValueMemberField(propertyInfo.PropertyType, property, field));
-				return elementList;
-			}
-			else if (propertyInfo.PropertyType.Equals(typeof(Vector4)) || propertyInfo.PropertyType.Equals(typeof(Quaternion)) || propertyInfo.PropertyType.Equals(typeof(Color)))
-			{
-				ListContainer elementList = new ListContainer();
-				elementList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
-				foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z, VectorElement.W })
-					elementList.Children.Add(this.BuildValueMemberField(propertyInfo.PropertyType, property, field));
-				return elementList;
-			}
-			else
-			{
-				Container field = new Container();
-				field.Tint.Value = Color.Black;
-
-				field.Add(new Binding<float, bool>(field.Opacity, x => x ? 1.0f : 0.5f, field.Highlighted));
-
-				TextElement textField = new TextElement();
-				textField.FontFile.Value = "Font";
-				textField.Interpolation.Value = false;
-				field.Children.Add(textField);
-
-				if (!propertyInfo.PropertyType.Equals(typeof(string)))
-				{
-					// Some kind of float, int, or bool
-					field.Add(new CommandBinding(field.MouseLeftDown, delegate()
-					{
-						field.SwallowMouseEvents.Value = true;
-						field.MouseLocked.Value = true;
-					}));
-					field.Add(new CommandBinding(field.MouseLeftUp, delegate()
-					{
-						field.SwallowMouseEvents.Value = false;
-						field.MouseLocked.Value = false;
-					}));
-				}
-
-				if (propertyInfo.PropertyType.Equals(typeof(int)))
-				{
-					Property<int> socket = (Property<int>)property;
-					field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
-					{
-						this.NeedsSave.Value = true;
-						socket.Value += scroll * (this.EnablePrecision ? 1 : 10);
-					}));
-					textField.Add(new Binding<string, int>(textField.Text, x => x.ToString(), socket));
-				}
-				else if (propertyInfo.PropertyType.Equals(typeof(float)))
-				{
-					Property<float> socket = (Property<float>)property;
-					field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
-					{
-						this.NeedsSave.Value = true;
-						socket.Value += scroll * (this.EnablePrecision ? EditorGeeUI.precisionDelta : EditorGeeUI.normalDelta); ;
-					}));
-					textField.Add(new Binding<string, float>(textField.Text, x => x.ToString("F"), socket));
-				}
-				else if (propertyInfo.PropertyType.Equals(typeof(bool)))
-				{
-					Property<bool> socket = (Property<bool>)property;
-					field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
-					{
-						this.NeedsSave.Value = true;
-						socket.Value = !socket;
-					}));
-					textField.Add(new Binding<string, bool>(textField.Text, x => x.ToString(), socket));
-				}
-				else if (typeof(Enum).IsAssignableFrom(propertyInfo.PropertyType))
-				{
-					int numFields = propertyInfo.PropertyType.GetFields(BindingFlags.Static | BindingFlags.Public).Length;
-					field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
-					{
-						this.NeedsSave.Value = true;
-						int i = (int)propertyInfo.GetValue(property, null);
-						i += scroll;
-						if (i < 0)
-							i = numFields - 1;
-						else if (i >= numFields)
-							i = 0;
-						propertyInfo.SetValue(property, Enum.ToObject(propertyInfo.PropertyType, i), null);
-					}));
-					textField.Add(new Binding<string>(textField.Text, () => propertyInfo.GetValue(property, null).ToString(), (IProperty)property));
-				}
-				else if (propertyInfo.PropertyType.Equals(typeof(string)))
-				{
-					Property<string> socket = (Property<string>)property;
-					textField.Add(new Binding<float, Point>(textField.WrapWidth, x => x.X * 0.5f, this.main.ScreenSize));
-					Binding<string> binding = new Binding<string>(textField.Text, socket);
-					textField.Add(binding);
-					field.Add(new CommandBinding(field.MouseLeftUp, delegate()
-					{
-						if (this.selectedStringProperty != socket)
-						{
-							if (this.selectedStringProperty != null)
-								this.revertStringProperty();
-							this.selectedStringProperty = socket;
-							this.selectedStringDisplayProperty = textField.Text;
-							binding.Enabled = false;
-							this.selectedStringBinding = binding;
-							this.selectedStringValue = socket.Value ?? "";
-							this.selectedStringIndex = this.selectedStringValue.Length;
-							this.selectedStringAllowMultiline = true;
-							this.selectedStringDisplayProperty.Value = this.selectedStringValue.Insert(this.selectedStringIndex, "_");
-							this.StringPropertyLocked.Value = true;
-						}
-					}));
-				}
-				else if (propertyInfo.PropertyType.Equals(typeof(Entity.Handle)))
-				{
-					Property<Entity.Handle> socket = (Property<Entity.Handle>)property;
-					Binding<string> binding = new Binding<string>(textField.Text, () => socket.Value.ID, socket);
-					textField.Add(binding);
-					field.Add(new CommandBinding(field.MouseLeftUp, delegate()
-					{
-						this.lockStringProperty(textField.Text, socket, socket.Value.ID ?? "", binding, true);
-					}));
-				}
-				else if (propertyInfo.PropertyType.Equals(typeof(Matrix)))
-					textField.Text.Value = "[matrix]";
-				else if (propertyInfo.PropertyType.Equals(typeof(Voxel.Coord)))
-					textField.Add(new Binding<string, Voxel.Coord>(textField.Text, x => "X:" + x.X.ToString() + " Y:" + x.Y.ToString() + " Z:" + x.Z.ToString(), (Property<Voxel.Coord>)property));
-
-				return field;
-			}
-		}
-
 		public void delete()
 		{
 			RootEditorView.ParentView.RemoveChild(RootEditorView);
@@ -1050,33 +748,7 @@ namespace Lemma.Components
 
 		private void commitStringProperty()
 		{
-			/*if (this.selectedStringDisplayProperty == this.PopupSearchText)
-			{
-				this.PopupSearchText.Value = this.PopupSearchText.Value.TrimEnd('_');
-				this.PopupVisible.Value = false;
-				UIComponent popupElement = this.PopupElements.FirstOrDefault(x => x.Visible);
-				if (popupElement != null)
-				{
-					PopupCommand command = (PopupCommand)popupElement.UserData.Value;
-					command.Action.Execute();
-				}
-			}
-			else
-			{
-				this.NeedsSave.Value = true;
-				if (typeof(Property<string>).IsAssignableFrom(selectedStringProperty.GetType()))
-					((Property<string>)this.selectedStringProperty).Value = this.selectedStringValue;
-				else if (typeof(Property<Entity.Handle>).IsAssignableFrom(selectedStringProperty.GetType()))
-					((Property<Entity.Handle>)this.selectedStringProperty).Value = new Entity.Handle { ID = this.selectedStringValue };
-			}
-
-			if (this.selectedStringBinding != null)
-				this.selectedStringBinding.Enabled = true;
-			this.selectedStringBinding = null;
-			this.selectedStringValue = null;
-			this.selectedStringProperty = null;
-			this.selectedStringDisplayProperty = null;
-			this.StringPropertyLocked.Value = false;*/
+	
 		}
 
 		private void revertStringProperty()
