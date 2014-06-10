@@ -54,6 +54,7 @@ namespace Lemma.Components
 
 		private float walkOffEdgeTimer;
 		private Vector3 originalPosition;
+		private Vector3 relativeOriginalPosition;
 		private Vector3 vaultVelocity;
 		private Vector3 forward;
 		private Voxel map;
@@ -81,7 +82,7 @@ namespace Lemma.Components
 			this.model["TopOut"].Speed = 2.0f;
 			this.model["TopOut"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
-				Vector3 diff = this.originalPosition - this.Position;
+				Vector3 diff = Vector3.Transform(this.relativeOriginalPosition, this.map.Transform) - this.Position;
 				m.Translation += Vector3.Transform(diff, Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f) * Matrix.CreateTranslation(0, -0.5f, 0.5f));
 				return m;
 			};
@@ -228,6 +229,7 @@ namespace Lemma.Components
 			this.moveForwardStartTime = 0.0f;
 			this.movingForward = false;
 			this.originalPosition = this.Position;
+			this.relativeOriginalPosition = Vector3.Transform(this.originalPosition, Matrix.Invert(this.map.Transform));
 		}
 
 		private void vaultDown(Vector3 forward)
@@ -246,6 +248,7 @@ namespace Lemma.Components
 			this.CurrentState.Value = State.Down;
 
 			this.originalPosition = this.Position;
+			this.relativeOriginalPosition = Vector3.Transform(this.originalPosition, Matrix.Invert(this.map.Transform));
 		}
 
 		public bool TryVaultDown()

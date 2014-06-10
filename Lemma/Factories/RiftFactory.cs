@@ -23,7 +23,6 @@ namespace Lemma.Factories
 			entity.Add("Rift", rift);
 			PlayerTrigger trigger = new PlayerTrigger();
 			trigger.Enabled.Value = false;
-			trigger.Radius.Value = 0;
 			entity.Add("PlayerTrigger", trigger);
 			return entity;
 		}
@@ -32,7 +31,11 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Position");
 			Rift rift = entity.GetOrCreate<Rift>("Rift");
-			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
+			bool createdTrigger = false;
+			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger", out createdTrigger);
+			if (createdTrigger)
+				trigger.Enabled.Value = false;
+
 			this.SetMain(entity, main);
 
 			Property<Matrix> targetTransform = new Property<Matrix>();
@@ -51,7 +54,7 @@ namespace Lemma.Factories
 			rift.Add(new Binding<Entity.Handle>(rift.Voxel, voxel));
 			rift.Add(new Binding<Voxel.Coord>(rift.Coordinate, coord));
 
-			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
+			trigger.Add(new Binding<Vector3>(trigger.Position, rift.Position));
 
 			entity.Add("Trigger", new Command
 			{

@@ -79,11 +79,12 @@ namespace Lemma.Components
 			model.Alpha.Value = 0.15f;
 			model.Color.Value = color;
 			model.DisableCulling.Value = true;
-			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(x), entity.Get<PlayerTrigger>().Radius));
+			PlayerTrigger trigger = entity.Get<PlayerTrigger>();
+			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(x), trigger.Radius));
 			model.Editable = false;
 			model.Serialize = false;
 			model.DrawOrder.Value = 11; // In front of water
-			model.Add(new Binding<bool>(model.Enabled, selected));
+			model.Add(new Binding<bool>(model.Enabled, () => trigger.Enabled && selected, trigger.Enabled, selected));
 
 			entity.Add(model);
 
