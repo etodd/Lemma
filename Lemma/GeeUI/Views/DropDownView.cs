@@ -21,6 +21,7 @@ namespace GeeUI.Views
 			public string Text;
 			public SpriteFont Font;
 			public Action OnClicked;
+			public object Related;
 		}
 
 		private PanelView DropDownPanelView;
@@ -134,6 +135,12 @@ namespace GeeUI.Views
 			return -1;
 		}
 
+		public DropDownOption GetSelectedOption()
+		{
+			if (LastItemSelected.Value == -1) return null;
+			return DropDownOptions[LastItemSelected.Value];
+		}
+
 		public void SetSelectedOption(string optionName, bool callOnSelected = true)
 		{
 			int optionIndex = GetOptionIndex(optionName);
@@ -148,14 +155,15 @@ namespace GeeUI.Views
 			this.LastItemSelected.Value = GetOptionIndex(option.Text);
 		}
 
-		public void AddOption(string name, Action action, SpriteFont fontString = null)
+		public void AddOption(string name, Action action, SpriteFont fontString = null, object related = null)
 		{
 			if (fontString == null) fontString = mainFont;
 			var dropDownOption = new DropDownOption()
 			{
 				Font = fontString,
 				Text = name,
-				OnClicked = action
+				OnClicked = action,
+				Related = null
 			};
 			DropDownOptions.Add(dropDownOption);
 
@@ -167,6 +175,7 @@ namespace GeeUI.Views
 
 			if (DropDownOptions.Count == 1)
 			{
+				this.LastItemSelected.Value = 0;
 				((ButtonView)FindFirstChildByName("button")).Text = name;
 			}
 		}
@@ -189,6 +198,8 @@ namespace GeeUI.Views
 			{
 				DropDownListView.Height.Value -= (DropDownListView.AbsoluteBoundBox.Bottom - ParentGeeUI.RootView.Height);
 			}
+			if(DropDownShowing)
+				DropDownPanelView.ParentView.BringChildToFront(DropDownPanelView);
 			base.Update(dt);
 		}
 

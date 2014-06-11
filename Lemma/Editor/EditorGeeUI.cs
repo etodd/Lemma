@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using GeeUI.Managers;
 using GeeUI.ViewLayouts;
 using GeeUI.Views;
 using Microsoft.Xna.Framework;
@@ -45,9 +46,14 @@ namespace Lemma.Components
 		public DropDownView CreateDropDownView;
 
 		[XmlIgnore]
+		public PanelView LinkerView;
+
+		[XmlIgnore]
 		public ListProperty<Entity> SelectedEntities = new ListProperty<Entity>();
+
 		[XmlIgnore]
 		public Property<bool> MapEditMode = new Property<bool>();
+
 		[XmlIgnore]
 		public Property<bool> EnablePrecision = new Property<bool>();
 
@@ -59,17 +65,6 @@ namespace Lemma.Components
 
 
 		private SpriteFont MainFont;
-
-		public bool AnyTextFieldViewsSelected()
-		{
-			var views = main.GeeUI.GetAllViews(RootEditorView);
-			foreach (var view in views)
-			{
-				if (!(view is TextFieldView)) continue;
-				if (view.Selected.Value) return true;
-			}
-			return false;
-		}
 
 		public override void Awake()
 		{
@@ -92,6 +87,41 @@ namespace Lemma.Components
 			ComponentTabViews.Add(new Binding<int, int>(ComponentTabViews.Width, i => i / 2, RootEditorView.Width));
 			ActionsPanelView.Add(new Binding<int, int>(ActionsPanelView.Width, i => i / 2, RootEditorView.Width));
 			ActionsPanelView.Add(new Binding<Vector2, int>(ActionsPanelView.Position, i => new Vector2(i / 2f, 25), RootEditorView.Width));
+
+			LinkerView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);
+			LinkerView.Width.Value = 320;
+			LinkerView.Height.Value = 400;
+			LinkerView.Draggable = false;
+
+			var SourceLayout = new View(main.GeeUI, LinkerView) { Name = "SourceLayout" };
+			SourceLayout.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
+			SourceLayout.ChildrenLayouts.Add(new ExpandToFitLayout());
+			new TextView(main.GeeUI, SourceLayout, "Source command:", Vector2.Zero, MainFont);
+			new DropDownView(main.GeeUI, SourceLayout, new Vector2(), MainFont)
+			{
+				Name = "SourceDropDown"
+			};
+
+			var DestLayout = new View(main.GeeUI, LinkerView) { Name = "DestLayout" };
+			DestLayout.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
+			DestLayout.ChildrenLayouts.Add(new ExpandToFitLayout());
+			new TextView(main.GeeUI, DestLayout, "Destination entity:", Vector2.Zero, MainFont);
+			new DropDownView(main.GeeUI, DestLayout, new Vector2(), MainFont)
+			{
+				Name = "DestEntityDropDown"
+			};
+			//Padding
+			new View(main.GeeUI, DestLayout).Height.Value = 20;
+			new TextView(main.GeeUI, DestLayout, "Destination command:", Vector2.Zero, MainFont);
+			new DropDownView(main.GeeUI, DestLayout, new Vector2(), MainFont)
+			{
+				Name = "DestCommandDropDown"
+			};
+
+			SourceLayout.Position.Value = new Vector2(20, 20);
+			DestLayout.Position.Value = new Vector2(160, 20);
+
+			HideLinkerView();
 
 			RootEditorView.Height.Value = 160;
 			ComponentTabViews.Height.Value = 160;
@@ -126,6 +156,99 @@ namespace Lemma.Components
 			};
 		}
 
+		public void HideLinkerView()
+		{
+			LinkerView.Active.Value = false;
+		}
+
+		public void ShowLinkerView()
+		{
+			if (SelectedEntities.Count != 1) return;
+			LinkerView.Active.Value = true;
+			LinkerView.Position.Value = InputManager.GetMousePosV();
+			BindLinker(SelectedEntities[0]);
+		}
+
+		public void BindLinker(Entity e)
+		{
+			var sourceDrop = ((DropDownView)LinkerView.FindFirstChildByName("SourceDropDown"));
+			var destEntityDrop = ((DropDownView)LinkerView.FindFirstChildByName("DestEntityDropDown"));
+			var destCommDrop = ((DropDownView)LinkerView.FindFirstChildByName("DestCommandDropDown"));
+
+			sourceDrop.RemoveAllOptions();
+			destEntityDrop.RemoveAllOptions();
+			destCommDrop.RemoveAllOptions();
+
+			#region Actions
+			Action fillDestEntity = () =>
+			{
+				foreach (var ent in main.Entities)
+				{
+					//IDK this seems like a good one to use!
+					if (ent.EditorCanDelete)
+					{
+						destEntityDrop.AddOption(ent.ID + "[" + ent.GUID + "]", () => { }, null, ent);
+					}
+				}
+			};
+
+			Action<Entity> fillDestCommand = (ent) =>
+			{
+				if (ent == null) return;
+				foreach (var comm in ent.Commands)
+				{
+					var c = comm.Value as Command;
+					if (c == null) continue;
+					destCommDrop.AddOption(comm.Key.ToString(), () => { }, null, c);
+				}
+			};
+
+			Action<bool, bool, bool> recompute = (sourceChanged, destEntityChanged, destCommChanged) =>
+			{
+				if (sourceChanged)
+				{
+					destEntityDrop.RemoveAllOptions();
+					destCommDrop.RemoveAllOptions();
+					fillDestEntity();
+				}
+
+				if (destEntityChanged)
+				{
+					destCommDrop.RemoveAllOptions();
+					var selected = destEntityDrop.GetSelectedOption();
+					if (selected == null) return;
+					fillDestCommand(selected.Related as Entity);
+				}
+
+				destEntityDrop.Enabled.Value = sourceDrop.LastItemSelected.Value != -1;
+				destCommDrop.Enabled.Value = destEntityDrop.LastItemSelected.Value != -1 && destCommDrop.Enabled;
+			};
+			#endregion
+
+			sourceDrop.Add(new NotifyBinding(() => recompute(true, false, false), sourceDrop.LastItemSelected));
+			destEntityDrop.Add(new NotifyBinding(() => recompute(false, true, false), destEntityDrop.LastItemSelected));
+			destCommDrop.Add(new NotifyBinding(() => recompute(false, false, true), destCommDrop.LastItemSelected));
+
+			foreach (var command in GetCommands(e))
+			{
+				var comm = command.Value as Command;
+				var name = command.Key as string;
+
+				sourceDrop.AddOption(name, () => { }, null, comm);
+			}
+
+		}
+
+		private IEnumerable<DictionaryEntry> GetCommands(Entity e)
+		{
+			foreach (var comm in e.Commands)
+			{
+				var value = comm.Value as Command;
+				if (value != null)
+					yield return comm;
+			}
+		}
+
 		private void RecomputePopupCommands()
 		{
 			this.CreateDropDownView.RemoveAllOptions();
@@ -150,7 +273,8 @@ namespace Lemma.Components
 
 		private void show(Entity entity)
 		{
-			foreach (DictionaryEntry entry in new DictionaryEntry[] { new DictionaryEntry("[" + entity.Type.ToString() + " entity]", new [] { new DictionaryEntry("ID", entity.ID) }.Concat(entity.Properties).Concat(entity.Commands)) }
+			ShowLinkerView();
+			foreach (DictionaryEntry entry in new DictionaryEntry[] { new DictionaryEntry("[" + entity.Type.ToString() + " entity]", new[] { new DictionaryEntry("ID", entity.ID) }.Concat(entity.Properties).Concat(entity.Commands)) }
 				.Union(entity.Components.Where(x => ((IComponent)x.Value).Editable)))
 			{
 				IEnumerable<DictionaryEntry> properties = null;
@@ -178,7 +302,7 @@ namespace Lemma.Components
 				foreach (DictionaryEntry propEntry in properties)
 				{
 					DictionaryEntry property = propEntry;
-		
+
 					View containerLabel = BuildContainerLabel(property.Key.ToString());
 					if (property.Value.GetType() == typeof(Command))
 					{
@@ -198,6 +322,17 @@ namespace Lemma.Components
 				//if (typeof(IEditorGeeUIComponent).IsAssignableFrom(entry.Value.GetType()))
 				//((IEditorGeeUIComponent)entry.Value).AddEditorElements(propertyList, this);
 			}
+		}
+
+		public bool AnyTextFieldViewsSelected()
+		{
+			var views = main.GeeUI.GetAllViews(RootEditorView);
+			foreach (var view in views)
+			{
+				if (!(view is TextFieldView)) continue;
+				if (view.Selected.Value) return true;
+			}
+			return false;
 		}
 
 		public View BuildContainerLabel(string label)
@@ -230,7 +365,7 @@ namespace Lemma.Components
 			else if (this.SelectedEntities.Count == 1)
 				this.show(this.SelectedEntities.First());
 			//else
-				///this.addText("[" + this.SelectedEntities.Count.ToString() + " entities]"); //TODO: make this do something
+			///this.addText("[" + this.SelectedEntities.Count.ToString() + " entities]"); //TODO: make this do something
 		}
 
 		public void BuildValueFieldView(View parent, Type type, IProperty property, VectorElement element, int width = 30)

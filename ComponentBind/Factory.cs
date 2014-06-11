@@ -83,7 +83,11 @@ namespace ComponentBind
 			this.SpawnIndex++;
 			entity.SetMain(main);
 			if (main.EditorEnabled)
+			{
+				
 				this.AttachEditorComponents(entity, main);
+			}
+				
 		}
 
 		public virtual void Bind(Entity entity, MainClass main, bool creating = false)
