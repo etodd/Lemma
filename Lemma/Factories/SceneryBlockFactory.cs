@@ -34,20 +34,7 @@ namespace Lemma.Factories
 
 			physics.Add(new TwoWayBinding<Matrix>(transform.Matrix, physics.Transform));
 
-			Property<uint> soundCue = entity.GetOrMakeProperty<uint>("CollisionSoundCue", false);
-			soundCue.Serialize = false;
-
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
-
-			const float volumeMultiplier = 0.1f;
-
-			physics.Add(new CommandBinding<Collidable, ContactCollection>(physics.Collided, delegate(Collidable collidable, ContactCollection contacts)
-			{
-				// TODO: figure out Wwise volume parameter
-				float volume = contacts[contacts.Count - 1].NormalImpulse * volumeMultiplier;
-				if (volume > 0.1f)
-					AkSoundEngine.PostEvent(soundCue, entity);
-			}));
 
 			this.SetMain(entity, main);
 

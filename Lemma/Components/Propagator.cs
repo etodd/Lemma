@@ -43,7 +43,7 @@ namespace Lemma.Components
 		private int activeSparkLights = 0;
 		private int oldestSparkLight = 0;
 		private ParticleSystem particles;
-		private Dictionary<EffectBlockFactory.BlockEntry, int> generations = new Dictionary<EffectBlockFactory.BlockEntry, int>();
+		private Dictionary<EffectBlock.Entry, int> generations = new Dictionary<EffectBlock.Entry, int>();
 		private Voxel.State neutral;
 		private Voxel.State powered;
 		private Voxel.State temporary;
@@ -93,7 +93,7 @@ namespace Lemma.Components
 							Voxel.Coord newCoord = c;
 							newCoord.Data = Voxel.EmptyState;
 							int generation;
-							EffectBlockFactory.BlockEntry generationsKey = new EffectBlockFactory.BlockEntry { Voxel = map, Coordinate = newCoord };
+							EffectBlock.Entry generationsKey = new EffectBlock.Entry { Voxel = map, Coordinate = newCoord };
 							if (generations.TryGetValue(generationsKey, out generation))
 								generations.Remove(generationsKey);
 							this.BlockQueue.Add(new ScheduledBlock
@@ -137,7 +137,7 @@ namespace Lemma.Components
 							int generation;
 							Voxel.Coord c = coord;
 							c.Data = Voxel.EmptyState;
-							EffectBlockFactory.BlockEntry generationKey = new EffectBlockFactory.BlockEntry { Voxel = map, Coordinate = c };
+							EffectBlock.Entry generationKey = new EffectBlock.Entry { Voxel = map, Coordinate = c };
 							if (generations.TryGetValue(generationKey, out generation))
 								generations.Remove(generationKey);
 
@@ -298,7 +298,7 @@ namespace Lemma.Components
 							}
 							else if (entry.Generation > 0 && (isTemporary || isInfected || isPowered || id == Voxel.t.Neutral || id == Voxel.t.Floater))
 							{
-								generations[new EffectBlockFactory.BlockEntry { Voxel = map, Coordinate = c }] = entry.Generation;
+								generations[new EffectBlock.Entry { Voxel = map, Coordinate = c }] = entry.Generation;
 								map.Empty(c);
 								this.sparksLowPriority(map.GetAbsolutePosition(c), Spark.Burn);
 								regenerate = true;
@@ -326,7 +326,7 @@ namespace Lemma.Components
 									else if (adjacentID == Voxel.t.Neutral && entry.Generation < maxGenerations)
 									{
 										map.Empty(adjacent, false, true, map);
-										generations[new EffectBlockFactory.BlockEntry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
+										generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
 										map.Fill(adjacent, temporary);
 										this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 										regenerate = true;
@@ -385,7 +385,7 @@ namespace Lemma.Components
 									if (adjacentID == Voxel.t.Neutral && entry.Generation < maxGenerations)
 									{
 										map.Empty(adjacent, false, true, map);
-										generations[new EffectBlockFactory.BlockEntry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
+										generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
 										map.Fill(adjacent, infected);
 										this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Dangerous);
 										regenerate = true;

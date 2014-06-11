@@ -193,7 +193,7 @@ namespace Lemma.Components
 										});
 									}
 								}
-								Factory.Get<EffectBlockFactory>().Build(main, buildCoords, false, pos, 0.15f);
+								Factory.Get<EffectBlockFactory>().Build(main, buildCoords, pos, 0.15f);
 							}
 						})
 					));

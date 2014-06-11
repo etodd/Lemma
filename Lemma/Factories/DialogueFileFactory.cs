@@ -31,7 +31,6 @@ namespace Lemma.Factories
 			entity.CannotSuspend = true;
 
 			DialogueFile file = entity.GetOrCreate<DialogueFile>("DialogueFile");
-			file.Name.Value = entity.GetOrMakeProperty<string>("Name", true);
 		}
 	}
 }

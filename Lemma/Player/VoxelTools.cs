@@ -53,7 +53,7 @@ namespace Lemma.Components
 					}
 				}
 			}
-			Factory.Get<EffectBlockFactory>().Build(this.main, buildCoords, false, this.Position);
+			Factory.Get<EffectBlockFactory>().Build(this.main, buildCoords, this.Position);
 		}
 
 		public bool BreakWalls(Vector3 forward, Vector3 right, bool breakFloor)

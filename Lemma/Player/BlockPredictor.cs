@@ -196,7 +196,7 @@ namespace Lemma.Components
 						Voxel.Coord coord = playerCoord.Move(relativeDir, i);
 						Voxel.State state = map[coord];
 
-						if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Voxel = map, Coordinate = coord, }))
+						if (state.ID != 0 || EffectBlock.IsAnimating(new EffectBlock.Entry { Voxel = map, Coordinate = coord, }))
 						{
 							// Check we're not in a no-build zone
 							if (state.ID != Voxel.t.Infected && state.ID != Voxel.t.InfectedCritical && Zone.CanBuild(map.GetAbsolutePosition(coord)))
@@ -259,7 +259,7 @@ namespace Lemma.Components
 								Voxel.Coord c = coord.Move(dir, i);
 								Voxel.State state = map[c];
 
-								if (state.ID != 0 || blockFactory.IsAnimating(new EffectBlockFactory.BlockEntry { Voxel = map, Coordinate = c, }))
+								if (state.ID != 0 || EffectBlock.IsAnimating(new EffectBlock.Entry { Voxel = map, Coordinate = c, }))
 								{
 									// Check we're not in a no-build zone
 									if (state.ID != Voxel.t.AvoidAI && Zone.CanBuild(map.GetAbsolutePosition(c)))

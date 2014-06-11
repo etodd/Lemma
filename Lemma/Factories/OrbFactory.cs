@@ -313,23 +313,24 @@ namespace Lemma.Factories
 
 								coordQueue.RemoveAt(0);
 
-								Entity block = factory.CreateAndBind(main);
-								infectedState.ApplyToEffectBlock(block.Get<ModelInstance>());
+								Entity blockEntity = factory.CreateAndBind(main);
+								infectedState.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
 
 								Entity mapEntity = raycastAI.Voxel.Value.Target;
 								if (mapEntity != null && mapEntity.Active)
 								{
+									EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
 									Voxel m = raycastAI.Voxel.Value.Target.Get<Voxel>();
 
-									block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(raycastAI.Coord);
+									effectBlock.Offset.Value = m.GetRelativePosition(raycastAI.Coord);
 
 									Vector3 absolutePos = m.GetAbsolutePosition(raycastAI.Coord);
 
-									block.GetProperty<Vector3>("StartPosition").Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f);
-									block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f) * Matrix.CreateRotationY(0.15f);
-									block.GetProperty<float>("TotalLifetime").Value = 0.05f;
-									factory.Setup(block, raycastAI.Voxel.Value.Target, raycastAI.Coord, Voxel.t.Infected);
-									main.Add(block);
+									effectBlock.StartPosition.Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f);
+									effectBlock.StartOrientation.Value = Matrix.CreateRotationX(0.15f) * Matrix.CreateRotationY(0.15f);
+									effectBlock.TotalLifetime.Value = 0.05f;
+									effectBlock.Setup(raycastAI.Voxel.Value.Target, raycastAI.Coord, Voxel.t.Infected);
+									main.Add(blockEntity);
 								}
 							}
 						}

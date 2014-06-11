@@ -150,14 +150,15 @@ namespace Lemma.Factories
 							{
 								if (m[c].ID == 0)
 								{
-									Entity block = factory.CreateAndBind(main);
-									c.Data.ApplyToEffectBlock(block.Get<ModelInstance>());
-									block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(c);
-									block.GetProperty<Vector3>("StartPosition").Value = m.GetAbsolutePosition(c) + new Vector3(0.25f, 0.5f, 0.25f) * index;
-									block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
-									block.GetProperty<float>("TotalLifetime").Value = 0.05f + (index * rebuildTimeMultiplier * rebuildTime);
-									factory.Setup(block, targetMap, c, c.Data.ID);
-									main.Add(block);
+									Entity blockEntity = factory.CreateAndBind(main);
+									EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
+									c.Data.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
+									effectBlock.Offset.Value = m.GetRelativePosition(c);
+									effectBlock.StartPosition.Value = m.GetAbsolutePosition(c) + new Vector3(0.25f, 0.5f, 0.25f) * index;
+									effectBlock.StartOrientation.Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
+									effectBlock.TotalLifetime.Value = 0.05f + (index * rebuildTimeMultiplier * rebuildTime);
+									effectBlock.Setup(targetMap, c, c.Data.ID);
+									main.Add(blockEntity);
 									index++;
 									baseCenter += new Vector3(c.X, c.Y, c.Z);
 								}
@@ -186,23 +187,24 @@ namespace Lemma.Factories
 
 								foreach (Voxel.Coord c in coords.OrderBy(x => (new Vector3(x.X, x.Y, x.Z) - baseCenter).LengthSquared()))
 								{
-									Entity block = factory.CreateAndBind(main);
-									c.Data.ApplyToEffectBlock(block.Get<ModelInstance>());
-									block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(c);
-									block.GetProperty<bool>("Scale").Value = dynamicMapComponent == null;
+									Entity blockEntity = factory.CreateAndBind(main);
+									c.Data.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
+									EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
+									effectBlock.Offset.Value = m.GetRelativePosition(c);
+									effectBlock.DoScale.Value = dynamicMapComponent == null;
 									if (dynamicMapComponent != null && dynamicMapComponent[c].ID == c.Data.ID)
 									{
-										block.GetProperty<Vector3>("StartPosition").Value = dynamicMapComponent.GetAbsolutePosition(c);
-										block.GetProperty<Matrix>("StartOrientation").Value = orientation;
+										effectBlock.StartPosition.Value = dynamicMapComponent.GetAbsolutePosition(c);
+										effectBlock.StartOrientation.Value = orientation;
 									}
 									else
 									{
-										block.GetProperty<Vector3>("StartPosition").Value = m.GetAbsolutePosition(c) + new Vector3(0.25f, 0.5f, 0.25f) * index;
-										block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
+										effectBlock.StartPosition.Value = m.GetAbsolutePosition(c) + new Vector3(0.25f, 0.5f, 0.25f) * index;
+										effectBlock.StartOrientation.Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
 									}
-									block.GetProperty<float>("TotalLifetime").Value = 0.05f + (index * rebuildTimeMultiplier * rebuildTime);
-									factory.Setup(block, targetMap, c, c.Data.ID);
-									main.Add(block);
+									effectBlock.TotalLifetime.Value = 0.05f + (index * rebuildTimeMultiplier * rebuildTime);
+									effectBlock.Setup(targetMap, c, c.Data.ID);
+									main.Add(blockEntity);
 									index++;
 								}
 								dynamicMap.Delete.Execute();

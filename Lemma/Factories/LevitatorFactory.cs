@@ -404,15 +404,16 @@ namespace Lemma.Factories
 						targetCoord = targetCoord.Move(closestCoord.X, closestCoord.Y, closestCoord.Z);
 						if (closestMap[targetCoord].ID == 0)
 						{
-							Entity block = blockFactory.CreateAndBind(main);
-							c.Data.ApplyToEffectBlock(block.Get<ModelInstance>());
-							block.GetProperty<Vector3>("Offset").Value = closestMap.GetRelativePosition(targetCoord);
-							block.GetProperty<bool>("Scale").Value = false;
-							block.GetProperty<Vector3>("StartPosition").Value = dynamicMap.GetAbsolutePosition(c);
-							block.GetProperty<Matrix>("StartOrientation").Value = orientation;
-							block.GetProperty<float>("TotalLifetime").Value = 0.05f + (index * 0.0075f);
-							blockFactory.Setup(block, closestMap.Entity, targetCoord, c.Data.ID);
-							main.Add(block);
+							Entity blockEntity = blockFactory.CreateAndBind(main);
+							c.Data.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
+							EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
+							effectBlock.Offset.Value = closestMap.GetRelativePosition(targetCoord);
+							effectBlock.DoScale.Value = false;
+							effectBlock.StartPosition.Value = dynamicMap.GetAbsolutePosition(c);
+							effectBlock.StartOrientation.Value = orientation;
+							effectBlock.TotalLifetime.Value = 0.05f + (index * 0.0075f);
+							effectBlock.Setup(closestMap.Entity, targetCoord, c.Data.ID);
+							main.Add(blockEntity);
 							index++;
 						}
 					}
