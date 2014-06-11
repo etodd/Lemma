@@ -206,11 +206,8 @@ namespace Lemma.Factories
 		{
 			base.AttachEditorComponents(entity, main);
 
-			Property<bool> selected = entity.GetOrMakeProperty<bool>("EditorSelected");
-			selected.Serialize = false;
-
 			Components.DirectionalLight lightning = entity.Get<Components.DirectionalLight>("Lightning");
-			lightning.Add(new Binding<bool>(lightning.Enabled, selected));
+			lightning.Add(new Binding<bool>(lightning.Enabled, entity.EditorSelected));
 		}
 	}
 }

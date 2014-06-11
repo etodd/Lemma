@@ -37,9 +37,7 @@ namespace Lemma.Factories
 			base.AttachEditorComponents(entity, main);
 			Model editorModel = entity.Get<Model>("EditorModel");
 			ParticleEmitter emitter = entity.Get<ParticleEmitter>();
-			Property<bool> editorSelected = entity.GetOrMakeProperty<bool>("EditorSelected");
-			editorSelected.Serialize = false;
-			editorModel.Add(new Binding<bool>(editorModel.Enabled, () => !editorSelected || emitter.ParticleType.Value == null, editorSelected, emitter.ParticleType));
+			editorModel.Add(new Binding<bool>(editorModel.Enabled, () => !entity.EditorSelected || emitter.ParticleType.Value == null, entity.EditorSelected, emitter.ParticleType));
 
 			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}

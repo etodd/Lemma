@@ -73,9 +73,7 @@ namespace Lemma.Factories
 		{
 			base.AttachEditorComponents(entity, main);
 			Model editorModel = entity.Get<Model>("EditorModel");
-			Property<bool> editorSelected = entity.GetOrMakeProperty<bool>("EditorSelected", false);
-			editorSelected.Serialize = false;
-			editorModel.Add(new Binding<bool>(editorModel.Enabled, () => !editorSelected, editorSelected));
+			editorModel.Add(new Binding<bool>(editorModel.Enabled, () => !entity.EditorSelected, entity.EditorSelected));
 
 			VoxelAttachable.AttachEditorComponents(entity, main, editorModel.Color);
 			PlayerTrigger.AttachEditorComponents(entity, main, editorModel.Color);

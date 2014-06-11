@@ -87,12 +87,9 @@ namespace Lemma.Factories
 			offsetModel.Filename.Value = "Models\\cone";
 			offsetModel.Add(new Binding<Vector3>(offsetModel.Color, model.Color));
 
-			Property<bool> editorSelected = entity.GetOrMakeProperty<bool>("EditorSelected");
-			editorSelected.Serialize = false;
-
 			CameraStop cameraStop = entity.Get<CameraStop>();
 
-			offsetModel.Add(new Binding<bool>(offsetModel.Enabled, () => editorSelected && cameraStop.Offset != 0, editorSelected, cameraStop.Offset));
+			offsetModel.Add(new Binding<bool>(offsetModel.Enabled, () => entity.EditorSelected && cameraStop.Offset != 0, entity.EditorSelected, cameraStop.Offset));
 			offsetModel.Add(new Binding<Vector3, float>(offsetModel.Scale, x => new Vector3(1, 1, x), cameraStop.Offset));
 			offsetModel.Add(new Binding<Matrix>(offsetModel.Transform, model.Transform));
 			offsetModel.Serialize = false;

@@ -234,18 +234,14 @@ namespace Lemma.Components
 
 			this.SelectedEntities.ItemAdded += delegate(int index, Entity t)
 			{
-				Property<bool> selected = t.GetProperty<bool>("EditorSelected");
-				if (selected != null)
-					selected.Value = true;
+				t.EditorSelected.Value = true;
 				this.VoxelSelectionEnd.Value = this.VoxelSelectionStart.Value;
 				this.SelectedTransform.Value = null;
 			};
 
 			this.SelectedEntities.ItemRemoved += delegate(int index, Entity t)
 			{
-				Property<bool> selected = t.GetProperty<bool>("EditorSelected");
-				if (selected != null)
-					selected.Value = false;
+				t.EditorSelected.Value = false;
 				this.VoxelSelectionEnd.Value = this.VoxelSelectionStart.Value;
 				this.SelectedTransform.Value = null;
 			};
@@ -253,11 +249,7 @@ namespace Lemma.Components
 			this.SelectedEntities.Clearing += delegate()
 			{
 				foreach (Entity e in this.SelectedEntities)
-				{
-					Property<bool> selected = e.GetProperty<bool>("EditorSelected");
-					if (selected != null)
-						selected.Value = false;
-				}
+					e.EditorSelected.Value = false;
 				this.VoxelSelectionEnd.Value = this.VoxelSelectionStart.Value;
 				this.SelectedTransform.Value = null;
 			};

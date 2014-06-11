@@ -13,23 +13,16 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.Get<Transform>();
 
-			Property<bool> selected = entity.GetOrMakeProperty<bool>("EditorSelected");
-			selected.Serialize = false;
-
-			Command<Entity> toggleEntityConnected = new Command<Entity>
+			entity.Add(new CommandBinding<Entity>(entity.ToggleEntityConnection, delegate(Entity other)
 			{
-				Action = delegate(Entity other)
-				{
-					if (target.Value.Target == other)
-						target.Value = null;
-					else if (entity != other)
-						target.Value = other;
-				}
-			};
-			entity.Add("ToggleEntityConnected", toggleEntityConnected);
+				if (target.Value.Target == other)
+					target.Value = null;
+				else if (entity != other)
+					target.Value = other;
+			}));
 
 			LineDrawer connectionLines = new LineDrawer { Serialize = false };
-			connectionLines.Add(new Binding<bool>(connectionLines.Enabled, selected));
+			connectionLines.Add(new Binding<bool>(connectionLines.Enabled, entity.EditorSelected));
 
 			Color connectionLineColor = new Color(1.0f, 1.0f, 1.0f, 0.5f);
 
@@ -48,7 +41,7 @@ namespace Lemma.Factories
 						}
 					);
 				}
-			}, transform.Position, target, selected));
+			}, transform.Position, target, entity.EditorSelected));
 
 			entity.Add(connectionLines);
 		}
@@ -57,23 +50,16 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.Get<Transform>();
 
-			Property<bool> selected = entity.GetOrMakeProperty<bool>("EditorSelected", false);
-			selected.Serialize = false;
-
-			Command<Entity> toggleEntityConnected = new Command<Entity>
+			entity.Add(new CommandBinding<Entity>(entity.ToggleEntityConnection, delegate(Entity other)
 			{
-				Action = delegate(Entity other)
-				{
-					if (target.Contains(other))
-						target.Remove(other);
-					else if (entity != other)
-						target.Add(other);
-				}
-			};
-			entity.Add("ToggleEntityConnected", toggleEntityConnected);
+				if (target.Contains(other))
+					target.Remove(other);
+				else if (entity != other)
+					target.Add(other);
+			}));
 
 			LineDrawer connectionLines = new LineDrawer { Serialize = false };
-			connectionLines.Add(new Binding<bool>(connectionLines.Enabled, selected));
+			connectionLines.Add(new Binding<bool>(connectionLines.Enabled, entity.EditorSelected));
 
 			Color connectionLineColor = new Color(1.0f, 1.0f, 1.0f, 0.5f);
 			ListBinding<LineDrawer.Line, Entity.Handle> connectionBinding = new ListBinding<LineDrawer.Line, Entity.Handle>(connectionLines.Lines, target, delegate(Entity.Handle other)
@@ -84,8 +70,8 @@ namespace Lemma.Factories
 					B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(other.Target.Get<Transform>().Position, connectionLineColor)
 				};
 			}, x => x.Target != null && x.Target.Active);
-			entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, selected));
-			entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, () => selected, transform.Position));
+			entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, entity.EditorSelected));
+			entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, () => entity.EditorSelected, transform.Position));
 			connectionLines.Add(connectionBinding);
 			entity.Add(connectionLines);
 		}

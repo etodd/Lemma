@@ -69,7 +69,7 @@ namespace Lemma.Factories
 			model.Filename.Value = "Models\\cone";
 			if (color != null)
 				model.Add(new Binding<Vector3>(model.Color, color));
-			model.Add(new Binding<bool>(model.Enabled, entity.GetOrMakeProperty<bool>("EditorSelected")));
+			model.Add(new Binding<bool>(model.Enabled, entity.EditorSelected));
 			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(1.0f, 1.0f, x), entity.GetOrMakeProperty<float>("AttachmentOffset", true)));
 			model.Editable = false;
 			model.Serialize = false;

@@ -124,13 +124,10 @@ namespace Lemma.Factories
 			if (color != null)
 				model.Add(new Binding<Vector3>(model.Color, color));
 
-			Property<bool> editorSelected = entity.GetOrMakeProperty<bool>("EditorSelected");
-			editorSelected.Serialize = false;
-
 			Property<float> attachmentOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
 
 			Model editorModel = entity.Get<Model>("EditorModel");
-			model.Add(new Binding<bool>(model.Enabled, () => editorSelected && attachmentOffset > 0, editorSelected, attachmentOffset));
+			model.Add(new Binding<bool>(model.Enabled, () => entity.EditorSelected && attachmentOffset > 0, entity.EditorSelected, attachmentOffset));
 			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(1.0f, 1.0f, x), attachmentOffset));
 			model.Editable = false;
 			model.Serialize = false;

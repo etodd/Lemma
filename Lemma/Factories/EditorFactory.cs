@@ -1110,12 +1110,8 @@ namespace Lemma.Factories
 					{
 						// The user is trying to connect the two entities
 						Entity selectedEntity = editor.SelectedEntities.First();
-						Command<Entity> toggleConnection = selectedEntity.GetCommand<Entity>("ToggleEntityConnected");
-						if (toggleConnection != null)
-						{
-							toggleConnection.Execute(closestEntity);
-							editor.NeedsSave.Value = true;
-						}
+						selectedEntity.ToggleEntityConnection.Execute(closestEntity);
+						editor.NeedsSave.Value = true;
 						return;
 					}
 

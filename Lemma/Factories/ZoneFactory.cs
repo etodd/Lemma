@@ -52,14 +52,11 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.Get<Transform>();
 
-			Property<bool> selected = entity.GetOrMakeProperty<bool>("EditorSelected");
-			selected.Serialize = false;
-
 			Zone zone = entity.Get<Zone>();
 
 			EntityConnectable.AttachEditorComponents(entity, zone.ConnectedEntities);
 
-			zone.Add(new CommandBinding<Entity>(entity.GetCommand<Entity>("ToggleEntityConnected"), delegate(Entity other)
+			zone.Add(new CommandBinding<Entity>(entity.ToggleEntityConnection, delegate(Entity other)
 			{
 				if (zone.ConnectedEntities.Contains(other))
 				{
@@ -93,7 +90,7 @@ namespace Lemma.Factories
 				return new BoundingBox(new Vector3(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Min(a.Z, b.Z)), new Vector3(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y), Math.Max(a.Z, b.Z)));
 			}, corner1, corner2));
 
-			Transform cornerTransform1 = this.addCornerModel(entity, selected);
+			Transform cornerTransform1 = this.addCornerModel(entity, entity.EditorSelected);
 			cornerTransform1.Add(new TwoWayBinding<Vector3, Vector3>
 			(
 				corner1,
@@ -104,7 +101,7 @@ namespace Lemma.Factories
 				new[] { transform.Matrix }
 			));
 
-			Transform cornerTransform2 = this.addCornerModel(entity, selected);
+			Transform cornerTransform2 = this.addCornerModel(entity, entity.EditorSelected);
 			cornerTransform2.Add(new TwoWayBinding<Vector3, Vector3>
 			(
 				corner2,
@@ -129,7 +126,7 @@ namespace Lemma.Factories
 				BoundingBox b = zone.BoundingBox;
 				return Matrix.CreateScale(b.Max - b.Min) * Matrix.CreateTranslation((b.Min + b.Max) * 0.5f) * transform.Matrix;
 			}, zone.BoundingBox, transform.Matrix));
-			box.Add(new Binding<bool>(box.Enabled, selected));
+			box.Add(new Binding<bool>(box.Enabled, entity.EditorSelected));
 			box.Add(new Binding<BoundingBox>(box.BoundingBox, zone.BoundingBox));
 			box.CullBoundingBox.Value = false;
 		}

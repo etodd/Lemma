@@ -72,9 +72,6 @@ namespace Lemma.Components
 
 		public static void AttachEditorComponents(Entity entity, Main main, Vector3 color)
 		{
-			Property<bool> selected = entity.GetOrMakeProperty<bool>("EditorSelected");
-			selected.Serialize = false;
-
 			PlayerCylinderTrigger trigger = entity.Get<PlayerCylinderTrigger>();
 
 			ModelAlpha model = new ModelAlpha();
@@ -85,7 +82,7 @@ namespace Lemma.Components
 			model.Add(new Binding<Vector3>(model.Scale, () => new Vector3(trigger.Radius, trigger.Top - trigger.Bottom, trigger.Radius), trigger.Top, trigger.Bottom, trigger.Radius));
 			model.Editable = false;
 			model.Serialize = false;
-			model.Add(new Binding<bool>(model.Enabled, selected));
+			model.Add(new Binding<bool>(model.Enabled, entity.EditorSelected));
 
 			entity.Add(model);
 

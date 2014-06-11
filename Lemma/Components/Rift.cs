@@ -146,9 +146,6 @@ namespace Lemma.Components
 
 		public static void AttachEditorComponents(Entity entity, Main main, Vector3 color)
 		{
-			Property<bool> selected = entity.GetOrMakeProperty<bool>("EditorSelected");
-			selected.Serialize = false;
-
 			Rift rift = entity.Get<Rift>();
 
 			ModelAlpha model = new ModelAlpha();
@@ -160,7 +157,7 @@ namespace Lemma.Components
 			model.Editable = false;
 			model.Serialize = false;
 			model.DrawOrder.Value = 11; // In front of water
-			model.Add(new Binding<bool>(model.Enabled, selected));
+			model.Add(new Binding<bool>(model.Enabled, entity.EditorSelected));
 
 			entity.Add(model);
 
