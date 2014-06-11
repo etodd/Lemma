@@ -38,21 +38,7 @@ namespace Lemma.Factories
 
 			this.SetMain(entity, main);
 
-			Property<bool> valid = entity.GetOrMakeProperty<bool>("Valid", false);
-			valid.Serialize = false;
-
-			Property<Voxel.t> type = entity.GetOrMakeProperty<Voxel.t>("Type", true);
-			type.Set = delegate(Voxel.t value)
-			{
-				if (value == Voxel.t.Empty)
-					valid.Value = false;
-				else
-				{
-					Voxel.States[value].ApplyToBlock(entity);
-					valid.Value = true;
-				}
-				type.InternalValue = value;
-			};
+			SceneryBlock sceneryBlock = entity.GetOrCreate<SceneryBlock>("SceneryBlock");
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
