@@ -28,6 +28,9 @@ namespace GeeUI.Views
 		private List<DropDownOption> DropDownOptions = new List<DropDownOption>();
 		private SpriteFont mainFont;
 
+		public Property<int> LastItemSelected = new Property<int>() { Value = -1 };
+		public Property<bool> AllowRightClickExecute = new Property<bool>() { Value = true };
+
 		private bool DropDownShowing
 		{
 			get { return !(DropDownPanelView == null || !DropDownPanelView.Active); }
@@ -43,6 +46,11 @@ namespace GeeUI.Views
 			button.Add(new Binding<int>(this.Height, button.Height));
 			button.OnMouseClick += (sender, args) => ToggleDropDown();
 			button.OnMouseClickAway += (sender, args) => { HideDropDown(); };
+			button.OnMouseRightClick += (sender, args) =>
+			{
+				if (AllowRightClickExecute)
+					ExecuteLast();
+			};
 			button.Name = "button";
 
 			this.DropDownPanelView = new PanelView(theGeeUI, theGeeUI.RootView, Vector2.Zero);
@@ -62,6 +70,23 @@ namespace GeeUI.Views
 				if (!this.AttachedToRoot(this.ParentView))
 					DropDownPanelView.ParentView.RemoveChild(DropDownPanelView);
 			};
+		}
+
+		public void ExecuteLast()
+		{
+			if (LastItemSelected.Value < 0)
+			{
+				LastItemSelected.Value = -1;
+				return;
+			}
+			if (LastItemSelected.Value >= DropDownOptions.Count)
+			{
+				LastItemSelected.Value = -1;
+				return;
+			}
+			var oc = DropDownOptions[LastItemSelected.Value].OnClicked;
+			if (oc == null) return;
+			oc();
 		}
 
 		public int GetOptionIndex(string optionName)
@@ -86,6 +111,7 @@ namespace GeeUI.Views
 		{
 			((ButtonView)this.Children[0]).Text = option.Text;
 			if (option.OnClicked != null && call) option.OnClicked();
+			this.LastItemSelected.Value = GetOptionIndex(option.Text);
 		}
 
 		public void AddOption(string name, Action action, SpriteFont fontString = null)
@@ -116,6 +142,7 @@ namespace GeeUI.Views
 			((ButtonView)FindFirstChildByName("button")).Text = "";
 			DropDownOptions.Clear();
 			DropDownListView.RemoveAllChildren();
+			this.LastItemSelected.Value = -1;
 		}
 
 		public override void Update(float dt)

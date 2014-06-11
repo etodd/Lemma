@@ -24,12 +24,6 @@ namespace Lemma.Components
 		private const float normalDelta = 1.0f;
 		private const float stringNavigateInterval = 0.08f;
 
-		private static Keys[] ignoredKeys = new Keys[]
-		{ 
-			Keys.Escape, Keys.LeftShift, Keys.RightShift, Keys.LeftControl, Keys.RightControl, Keys.LeftAlt, Keys.RightAlt, Keys.Tab, Keys.Back, Keys.Left, Keys.Right, Keys.Up, Keys.Down,
-			Keys.F1, Keys.F2, Keys.F3, Keys.F4, Keys.F5, Keys.F6, Keys.F7, Keys.F8, Keys.F9, Keys.F10, Keys.F11, Keys.F12,
-			Keys.Delete, Keys.CapsLock,
-		};
 
 		private static Dictionary<Lemma.Components.EditorUI.Chord, string> inputKeyMappings = new Dictionary<Lemma.Components.EditorUI.Chord, string>();
 		static EditorGeeUI()
@@ -119,28 +113,8 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<bool> NeedsSave = new Property<bool>();
 
-		[XmlIgnore]
-		public Property<bool> StringPropertyLocked = new Property<bool>();
-
-		protected Keys[] lastPressedKeys = new Keys[] { };
-		private IProperty selectedStringProperty;
-		private Binding<string> selectedStringBinding;
-		private Property<string> selectedStringDisplayProperty;
-		private string selectedStringValue;
-		private bool selectedStringAllowMultiline;
-		private bool selectedStringAllowEscape;
-		private int selectedStringIndex;
-		private float selectedStringNavigateInterval;
 
 		private SpriteFont MainFont;
-
-		public void ClearSelectedStringProperty()
-		{
-			this.selectedStringIndex = 0;
-			this.selectedStringValue = "";
-			this.selectedStringDisplayProperty.Value = "_";
-		}
-
 		public override void Awake()
 		{
 			base.Awake();
@@ -193,7 +167,6 @@ namespace Lemma.Components
 			this.PopupCommands.ItemRemoved += (index, command) =>
 			{
 				RecomputePopupCommands();
-
 			};
 		}
 
@@ -206,10 +179,10 @@ namespace Lemma.Components
 				if (dropDown.Chord.Key != Keys.None)
 				{
 					if (dropDown.Chord.Modifier != Keys.None)
-						text += " (" + dropDown.Chord.Modifier.ToString() + "+" + dropDown.Chord.Key.ToString() + ")";
+						text += " [" + dropDown.Chord.Modifier.ToString() + "+" + dropDown.Chord.Key.ToString() + "]";
 					else
 					{
-						text += " (" + dropDown.Chord.Key.ToString() + ")";
+						text += " [" + dropDown.Chord.Key.ToString() + "]";
 					}
 				}
 				CreateDropDownView.AddOption(text, () =>
@@ -229,7 +202,6 @@ namespace Lemma.Components
 			display.FontFile.Value = "Font";
 			display.Text.Value = text;
 			container.Children.Add(display);
-			//this.UIElements.Add(container);
 			return container;
 		}
 
@@ -344,7 +316,6 @@ namespace Lemma.Components
 		}
 		private void refresh()
 		{
-			//this.UIElements.Clear();
 			this.ComponentTabViews.RemoveAllTabs();
 
 			if (this.SelectedEntities.Count == 0 || this.MapEditMode)
@@ -352,100 +323,12 @@ namespace Lemma.Components
 			else if (this.SelectedEntities.Count == 1)
 				this.show(this.SelectedEntities.First());
 			else
-				this.addText("[" + this.SelectedEntities.Count.ToString() + " entities]");
+				this.addText("[" + this.SelectedEntities.Count.ToString() + " entities]"); //TODO: make this do something
 		}
 
 		void IUpdateableComponent.Update(float dt)
 		{
-			KeyboardState keyboard = this.main.KeyboardState;
-			Keys[] unfilteredKeys = keyboard.GetPressedKeys();
-			Keys[] keys = unfilteredKeys.Except(this.lastPressedKeys).ToArray();
-			if (this.StringPropertyLocked && unfilteredKeys.Length > 0)
-			{
-				if (this.selectedStringNavigateInterval > EditorGeeUI.stringNavigateInterval)
-				{
-					if (unfilteredKeys.Contains(Keys.Back))
-					{
-						this.selectedStringNavigateInterval = 0.0f;
-						if (this.selectedStringValue.Length > 0 && this.selectedStringIndex > 0)
-						{
-							this.selectedStringValue = this.selectedStringValue.Remove(this.selectedStringIndex - 1, 1);
-							this.selectedStringIndex--;
-						}
-					}
-					else if (unfilteredKeys.Contains(Keys.Delete))
-					{
-						this.selectedStringNavigateInterval = 0.0f;
-						if (this.selectedStringIndex < this.selectedStringValue.Length)
-							this.selectedStringValue = this.selectedStringValue.Remove(this.selectedStringIndex, 1);
-					}
-					else if (unfilteredKeys.Contains(Keys.Down))
-					{
-						this.selectedStringNavigateInterval = 0.0f;
-						if (this.selectedStringValue.Length > 0 && this.selectedStringAllowMultiline)
-						{
-							int index = this.selectedStringValue.IndexOf('\n', this.selectedStringIndex + 1);
-							if (index == -1)
-								this.selectedStringIndex = this.selectedStringValue.Length - 1;
-							else
-								this.selectedStringIndex = index;
-						}
-					}
-					else if (unfilteredKeys.Contains(Keys.Up))
-					{
-						this.selectedStringNavigateInterval = 0.0f;
-						if (this.selectedStringValue.Length > 0 && this.selectedStringAllowMultiline)
-						{
-							int index = this.selectedStringValue.Substring(0, Math.Max(0, this.selectedStringIndex - 1)).LastIndexOf('\n');
-							if (index == -1)
-								this.selectedStringIndex = 0;
-							else
-								this.selectedStringIndex = index;
-						}
-					}
-					else if (unfilteredKeys.Contains(Keys.Left) || unfilteredKeys.Contains(Keys.Right))
-					{
-						this.selectedStringNavigateInterval = 0.0f;
-						if (this.selectedStringValue.Length > 0)
-						{
-							this.selectedStringIndex += unfilteredKeys.Contains(Keys.Right) ? 1 : -1;
-							if (this.selectedStringIndex < 0)
-								this.selectedStringIndex = Math.Max(0, this.selectedStringValue.Length);
-							else if (this.selectedStringIndex > this.selectedStringValue.Length)
-								this.selectedStringIndex = 0;
-						}
-					}
-				}
-
-				if (unfilteredKeys.Contains(Keys.Tab) || (unfilteredKeys.Contains(Keys.Enter) && !this.selectedStringAllowMultiline))
-				{
-					this.commitStringProperty();
-					return;
-				}
-				else if (unfilteredKeys.Contains(Keys.Escape) && !this.selectedStringAllowEscape)
-				{
-					this.revertStringProperty();
-					return;
-				}
-
-				bool caps = unfilteredKeys.Contains(Keys.LeftShift) || unfilteredKeys.Contains(Keys.RightShift);
-				foreach (Keys key in keys)
-				{
-					if (!EditorGeeUI.ignoredKeys.Contains(key))
-					{
-						this.selectedStringIndex++;
-						Lemma.Components.EditorUI.Chord chord = new Lemma.Components.EditorUI.Chord { Keys = key, Shift = caps };
-						if (EditorGeeUI.inputKeyMappings.ContainsKey(chord))
-							this.selectedStringValue = this.selectedStringValue.Insert(this.selectedStringIndex - 1, EditorGeeUI.inputKeyMappings[chord]);
-						else
-							this.selectedStringValue = this.selectedStringValue.Insert(this.selectedStringIndex - 1, caps ? key.ToString().ToUpper() : key.ToString().ToLower());
-					}
-				}
-
-				this.selectedStringDisplayProperty.Value = this.selectedStringValue.Insert(this.selectedStringIndex, "_");
-			}
-			this.lastPressedKeys = unfilteredKeys;
-			this.selectedStringNavigateInterval += dt;
+			//NOTHING to DO
 		}
 
 		public void BuildValueFieldView(View parent, Type type, IProperty property, VectorElement element, int width = 30)
@@ -649,18 +532,6 @@ namespace Lemma.Components
 				{
 					drop.SetSelectedOption(propertyInfo.GetValue(property, null).ToString(), false);
 				}, (IProperty)property));
-				/*field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
-				{
-					this.NeedsSave.Value = true;
-					int i = (int)propertyInfo.GetValue(property, null);
-					i += scroll;
-					if (i < 0)
-						i = numFields - 1;
-					else if (i >= numFields)
-						i = 0;
-					propertyInfo.SetValue(property, Enum.ToObject(propertyInfo.PropertyType, i), null);
-				}));*/
-				//textField.Add(new Binding<string>(textField.Text, () => propertyInfo.GetValue(property, null).ToString(), (IProperty)property));
 			}
 			else
 			{
@@ -758,43 +629,5 @@ namespace Lemma.Components
 			RootEditorView.ParentView.RemoveChild(RootEditorView);
 		}
 
-		private void lockStringProperty(Property<string> displayProperty, IProperty targetProperty, string initialValue, Binding<string> binding, bool allowMultiline = true, bool allowEscape = false)
-		{
-			if (targetProperty == null || this.selectedStringProperty != targetProperty)
-			{
-				if (this.selectedStringProperty != null)
-					this.revertStringProperty();
-				this.selectedStringProperty = targetProperty;
-				this.selectedStringDisplayProperty = displayProperty;
-				if (binding != null)
-					binding.Enabled = false;
-				this.selectedStringBinding = binding;
-				this.selectedStringValue = initialValue;
-				this.selectedStringIndex = this.selectedStringValue.Length;
-				this.selectedStringDisplayProperty.Value = this.selectedStringValue.Insert(this.selectedStringIndex, "_");
-				this.selectedStringAllowMultiline = allowMultiline;
-				this.selectedStringAllowEscape = allowEscape;
-				this.StringPropertyLocked.Value = true;
-			}
-		}
-
-		private void commitStringProperty()
-		{
-
-		}
-
-		private void revertStringProperty()
-		{
-			//if (this.selectedStringDisplayProperty == this.PopupSearchText)
-			//this.PopupSearchText.Value = this.PopupSearchText.Value.TrimEnd('_');
-
-			if (this.selectedStringBinding != null)
-				this.selectedStringBinding.Enabled = true;
-			this.selectedStringBinding = null;
-			this.selectedStringValue = null;
-			this.selectedStringProperty = null;
-			this.selectedStringDisplayProperty = null;
-			this.StringPropertyLocked.Value = false;
-		}
 	}
 }

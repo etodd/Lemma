@@ -175,10 +175,18 @@ namespace GeeUI
 
 			InputManager.BindMouse(() =>
 			{
-				HandleClick(RootView, InputManager.GetMousePos(), new List<View>());
+				HandleClick(RootView, InputManager.GetMousePos(), new List<View>(), false);
 				//When we click, we want to re-evaluate what control the mouse is over.
 				HandleMouseMovement(RootView, InputManager.GetMousePos());
 			}, MouseButton.Left);
+
+			InputManager.BindMouse(() =>
+			{
+				HandleClick(RootView, InputManager.GetMousePos(), new List<View>(), true);
+				//When we click, we want to re-evaluate what control the mouse is over.
+				HandleMouseMovement(RootView, InputManager.GetMousePos());
+			}, MouseButton.Right);
+
 			InputManager.BindMouse(() => HandleMouseMovement(RootView, InputManager.GetMousePos()), MouseButton.Movement);
 
 			InputManager.BindMouse(() =>
@@ -213,7 +221,7 @@ namespace GeeUI
 			view.OnMScroll(ConversionManager.PtoV(mousePos), scrollDelta);
 		}
 
-		internal void HandleClick(View view, Point mousePos, List<View> DidClick )
+		internal void HandleClick(View view, Point mousePos, List<View> didClick, bool rightClick)
 		{
 			if (!view.Active)
 				return;
@@ -227,8 +235,8 @@ namespace GeeUI
 			{
 				if (!child.AbsoluteBoundBox.Contains(mousePos) || !child.Active || !child.AllowMouseEvents) continue;
 				if (view == RootView) LastClickCaptured = true;
-				DidClick.Add(child);
-				HandleClick(child, mousePos, DidClick);
+				didClick.Add(child);
+				HandleClick(child, mousePos, didClick, rightClick);
 				didLower = true;
 				break;
 			}
@@ -236,10 +244,13 @@ namespace GeeUI
 			List<View> allOthers = GetAllViews(RootView);
 			foreach (View t in allOthers)
 			{
-				if (t != view && !DidClick.Contains(t))
+				if (t != view && !didClick.Contains(t) && !rightClick)
 					t.OnMClickAway();
 			}
-			view.OnMClick(ConversionManager.PtoV(mousePos));
+			if (rightClick)
+				view.OnMRightClick(ConversionManager.PtoV(mousePos));
+			else
+				view.OnMClick(ConversionManager.PtoV(mousePos));
 		}
 
 		internal void HandleMouseMovement(View view, Point mousePos)

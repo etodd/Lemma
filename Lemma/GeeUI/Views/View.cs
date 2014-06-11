@@ -17,6 +17,7 @@ namespace GeeUI.Views
 		public delegate void MouseOffEventHandler(object sender, EventArgs e);
 
 		public event MouseClickEventHandler OnMouseClick;
+		public event MouseClickEventHandler OnMouseRightClick;
 		public event MouseClickEventHandler OnMouseClickAway;
 		public event MouseOverEventHandler OnMouseOver;
 		public event MouseOffEventHandler OnMouseOff;
@@ -407,6 +408,13 @@ namespace GeeUI.Views
 		public virtual void OnMScroll(Vector2 position, int scrollDelta, bool fromChild = false)
 		{
 			if (ParentView != null) ParentView.OnMScroll(position, scrollDelta, true);
+		}
+
+		public virtual void OnMRightClick(Vector2 position, bool fromChild = false)
+		{
+			if(OnMouseRightClick != null)
+				OnMouseRightClick(this, new EventArgs());
+			if (ParentView != null) ParentView.OnMRightClick(position, true);
 		}
 
 		public virtual void OnMClick(Vector2 position, bool fromChild = false)
