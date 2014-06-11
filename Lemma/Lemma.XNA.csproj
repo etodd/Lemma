@@ -134,11 +134,7 @@
     <Compile Include="Factories\RiftFactory.cs" />
     <Compile Include="Factories\CollectibleFactory.cs" />
     <Compile Include="Factories\CounterFactory.cs" />
-    <Compile Include="Factories\Setters\BoolSetterFactory.cs" />
-    <Compile Include="Factories\Setters\StringSetterFactory.cs" />
-    <Compile Include="Factories\Setters\DoubleSetterFactory.cs" />
-    <Compile Include="Factories\Setters\FloatSetterFactory.cs" />
-    <Compile Include="Factories\Setters\IntSetterFactory.cs" />
+    <Compile Include="Factories\SetterFactories.cs" />
     <Compile Include="Factories\TickerFactory.cs" />
     <Compile Include="GeeUI\GeeUIMain.cs" />
     <Compile Include="GeeUI\Managers\ConversionManager.cs" />

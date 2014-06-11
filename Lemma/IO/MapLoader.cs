@@ -95,9 +95,13 @@ namespace Lemma.IO
 			typeof(Ticker),
 			typeof(Setter<int>),
 			typeof(Setter<float>),
-			typeof(Setter<double>),
-			typeof(Setter<string>),
 			typeof(Setter<bool>),
+			typeof(Setter<Direction>),
+			typeof(Setter<string>),
+			typeof(Setter<Vector2>),
+			typeof(Setter<Vector3>),
+			typeof(Setter<Vector4>),
+			typeof(Setter<Voxel.Coord>),
 		};
 
 		public static XmlSerializer Serializer;
