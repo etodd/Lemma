@@ -98,6 +98,8 @@ namespace Lemma.IO
 			typeof(Cloud),
 			typeof(DialogueFile),
 			typeof(EffectBlock),
+			typeof(EvilBlocks),
+			typeof(SceneryBlock),
 		};
 
 		public static XmlSerializer Serializer;

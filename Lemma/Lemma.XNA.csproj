@@ -113,10 +113,12 @@
     <Compile Include="Components\CameraStop.cs" />
     <Compile Include="Components\DialogueFile.cs" />
     <Compile Include="Components\EffectBlock.cs" />
+    <Compile Include="Components\EvilBlocks.cs" />
     <Compile Include="Components\Note.cs" />
     <Compile Include="Components\PlayerData.cs" />
     <Compile Include="Components\Collectible.cs" />
     <Compile Include="Components\Rift.cs" />
+    <Compile Include="Components\SceneryBlock.cs" />
     <Compile Include="Components\Scriptlike\Scriptlike.cs" />
     <Compile Include="Components\Scriptlike\Counter.cs" />
     <Compile Include="Components\Scriptlike\Setter.cs" />

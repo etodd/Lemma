@@ -28,8 +28,7 @@ namespace Lemma.Factories
 			PointLight light = entity.GetOrCreate<PointLight>("PointLight");
 			light.Serialize = false;
 
-			ListProperty<Entity.Handle> blockEntities = entity.GetOrMakeListProperty<Entity.Handle>("Blocks");
-			List<PhysicsBlock> blocks = new List<PhysicsBlock>();
+			EvilBlocks evilBlocks = entity.GetOrCreate<EvilBlocks>("EvilBlocks");
 
 			const float defaultLightAttenuation = 15.0f;
 			light.Attenuation.Value = defaultLightAttenuation;
@@ -63,38 +62,14 @@ namespace Lemma.Factories
 			raycastAI.Add(new TwoWayBinding<Vector3>(transform.Position, raycastAI.Position));
 			raycastAI.Add(new Binding<Matrix>(transform.Orientation, raycastAI.Orientation));
 
-			Property<int> operationalRadius = entity.GetOrMakeProperty<int>("OperationalRadius", true, 100);
-
-			entity.Add(new PostInitialization
-			{
-				delegate()
-				{
-					if (!main.EditorEnabled)
-					{
-						SceneryBlockFactory factory = Factory.Get<SceneryBlockFactory>();
-						Random random = new Random();
-						Vector3 scale = new Vector3(0.6f);
-						Vector3 blockSpawnPoint = transform.Position;
-						for (int i = 0; i < 30; i++)
-						{
-							Entity block = factory.CreateAndBind(main);
-							block.Get<Transform>().Position.Value = blockSpawnPoint + new Vector3(((float)this.random.NextDouble() - 0.5f) * 2.0f, ((float)this.random.NextDouble() - 0.5f) * 2.0f, ((float)this.random.NextDouble() - 0.5f) * 2.0f);
-							block.Get<PhysicsBlock>().Size.Value = scale;
-							block.Get<ModelInstance>().Scale.Value = scale;
-							block.GetOrMakeProperty<Voxel.t>("Type").Value = Voxel.t.Black;
-							blockEntities.Add(block);
-							main.Add(block);
-						}
-					}
-				}
-			});
+			evilBlocks.Add(new Binding<Vector3>(evilBlocks.Position, transform.Position));
 
 			AI.Task checkOperationalRadius = new AI.Task
 			{
 				Interval = 2.0f,
 				Action = delegate()
 				{
-					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < operationalRadius;
+					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < evilBlocks.OperationalRadius;
 					if (shouldBeActive && ai.CurrentState == "Suspended")
 						ai.CurrentState.Value = "Idle";
 					else if (!shouldBeActive && ai.CurrentState != "Suspended")
@@ -114,39 +89,6 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					if (blocks.Count < blockEntities.Count)
-					{
-						foreach (Entity.Handle e in blockEntities)
-						{
-							PhysicsBlock block = e.Target.Get<PhysicsBlock>();
-							if (!blocks.Contains(block))
-							{
-								block.Add(new CommandBinding<BEPUphysics.BroadPhaseEntries.Collidable, BEPUphysics.NarrowPhaseSystems.Pairs.ContactCollection>(block.Collided, delegate(BEPUphysics.BroadPhaseEntries.Collidable other, BEPUphysics.NarrowPhaseSystems.Pairs.ContactCollection contacts)
-								{
-									if (other.Tag != null && other.Tag.GetType().IsAssignableFrom(typeof(Character)))
-									{
-										// Damage the player
-										Entity p = PlayerFactory.Instance;
-										if (p != null && p.Active)
-											p.Get<Player>().Health.Value -= 0.1f;
-									}
-								}));
-								blocks.Add(block);
-							}
-						}
-					}
-
-					foreach (PhysicsBlock block in blocks)
-					{
-						if (!block.Suspended)
-						{
-							Vector3 toCenter = transform.Position - block.Box.Position;
-							if (toCenter.Length() > 10.0f)
-								block.Box.Position = transform.Position + Vector3.Normalize(toCenter) * -10.0f;
-							Vector3 force = toCenter * main.ElapsedTime * 4.0f;
-							block.Box.ApplyLinearImpulse(ref force);
-						}
-					}
 				}
 			};
 
@@ -192,8 +134,6 @@ namespace Lemma.Factories
 				},
 			});
 
-			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
-
 			ai.Add(new AI.AIState
 			{
 				Name = "Alert",
@@ -222,7 +162,7 @@ namespace Lemma.Factories
 								Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
 								if (a != null)
 								{
-									targetAgent.Value = a.Entity;
+									evilBlocks.TargetAgent.Value = a.Entity;
 									ai.CurrentState.Value = "Chase";
 								}
 							}
@@ -235,10 +175,10 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					Entity target = targetAgent.Value.Target;
+					Entity target = evilBlocks.TargetAgent.Value.Target;
 					if (target == null || !target.Active)
 					{
-						targetAgent.Value = null;
+						evilBlocks.TargetAgent.Value = null;
 						ai.CurrentState.Value = "Idle";
 					}
 				},
@@ -262,7 +202,7 @@ namespace Lemma.Factories
 						Interval = 0.35f,
 						Action = delegate()
 						{
-							raycastAI.Move(targetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
+							raycastAI.Move(evilBlocks.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
 						}
 					},
 					updatePosition,

@@ -5,6 +5,7 @@ using System.Text;
 using Lemma.Components;
 using Microsoft.Xna.Framework;
 using Lemma.Factories;
+using Lemma.Console;
 
 namespace Lemma.GameScripts
 {
@@ -91,6 +92,15 @@ namespace Lemma.GameScripts
 			else
 				callbacks = new[] { callback };
 			triggerEntity.Add(new CommandBinding(trigger.PlayerExited, callbacks));
+		}
+		
+		protected static void consoleCommand(ConCommand conCommand)
+		{
+			Lemma.Console.Console.AddConCommand(conCommand);
+			WorldFactory.Instance.Add(new CommandBinding(WorldFactory.Instance.Delete, delegate()
+			{
+				Lemma.Console.Console.RemoveConCommand(conCommand.Name);
+			}));
 		}
 	}
 }
