@@ -802,12 +802,14 @@ namespace Lemma
 					this.Renderer.BlurAmount.Value = 0.0f;
 					this.Renderer.Tint.Value = new Vector3(1.0f);
 				});
+				this.MapFile.Value = MenuMap;
+				this.Menu.Pause();
 
+				//Editor is an external option mate
 #if !DEVELOPMENT
 					// Main menu
 
-					this.MapFile.Value = MenuMap;
-					this.Menu.Pause();
+					
 #endif
 
 #if ANALYTICS

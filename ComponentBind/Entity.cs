@@ -279,7 +279,7 @@ namespace ComponentBind
 			if (!string.IsNullOrEmpty(this.ID))
 				Entity.idTable.Add(this.ID, this);
 
-			if (_main.EditorEnabled)
+			if (_main.EditorEnabled || true)
 			{
 				this.OnSave = new Command();
 				this.ToggleEntityConnection = new Command<Entity>();
