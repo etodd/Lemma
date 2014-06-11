@@ -91,6 +91,8 @@ namespace Lemma.IO
 			typeof(Collectible),
 			typeof(CameraStop),
 			typeof(AmbientSound),
+			typeof(Counter),
+			typeof(Ticker)
 		};
 
 		public static XmlSerializer Serializer;

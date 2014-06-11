@@ -192,19 +192,6 @@ namespace Lemma.Components
 			}
 		}
 
-		private Container addText(string text)
-		{
-			Container container = new Container();
-			container.Tint.Value = Color.Black;
-			container.Opacity.Value = 0.2f;
-			TextElement display = new TextElement();
-			display.Interpolation.Value = true;
-			display.FontFile.Value = "Font";
-			display.Text.Value = text;
-			container.Children.Add(display);
-			return container;
-		}
-
 		private void show(Entity entity)
 		{
 			foreach (DictionaryEntry entry in new DictionaryEntry[] { new DictionaryEntry("[" + entity.Type.ToString() + " entity]", entity.Properties.Concat(entity.Commands)) }
@@ -232,44 +219,10 @@ namespace Lemma.Components
 				rootEntityView.ChildrenLayouts.Add(new VerticalViewLayout(4, true, 6));
 				this.ComponentTabViews.AddTab(entry.Key.ToString(), rootEntityView);
 
-				Container label = this.addText(entry.Key.ToString());
-
-				Container propertyListContainer = new Container();
-				propertyListContainer.PaddingLeft.Value = 10.0f;
-				propertyListContainer.PaddingRight.Value = 0.0f;
-				propertyListContainer.PaddingBottom.Value = 0.0f;
-				propertyListContainer.PaddingTop.Value = 0.0f;
-				propertyListContainer.Opacity.Value = 0.0f;
-				//this.UIElements.Add(propertyListContainer);
-
-				ListContainer propertyList = new ListContainer();
-				propertyListContainer.Children.Add(propertyList);
-
-				label.Add(new Binding<float, bool>(label.Opacity, x => x ? 1.0f : 0.5f, label.Highlighted));
-
-				label.Add(new CommandBinding(label.MouseLeftUp, delegate()
-				{
-					propertyListContainer.Visible.Value = !propertyListContainer.Visible;
-				}));
-
 				foreach (DictionaryEntry propEntry in properties)
 				{
 					DictionaryEntry property = propEntry;
-					ListContainer row = new ListContainer();
-					row.Orientation.Value = ListContainer.ListOrientation.Horizontal;
-
-					Container keyContainer = new Container();
-					keyContainer.Tint.Value = Color.Black;
-					keyContainer.Opacity.Value = 0.5f;
-					keyContainer.ResizeHorizontal.Value = false;
-					keyContainer.Size.Value = new Vector2(128.0f, 0.0f);
-					TextElement keyText = new TextElement();
-					keyText.Interpolation.Value = false;
-					keyText.FontFile.Value = "Font";
-					keyText.Text.Value = property.Key.ToString();
-					keyContainer.Children.Add(keyText);
-					row.Children.Add(keyContainer);
-
+		
 					View containerLabel = BuildContainerLabel(property.Key.ToString());
 					if (property.Value.GetType() == typeof(Command))
 					{
@@ -283,8 +236,6 @@ namespace Lemma.Components
 						containerLabel.AddChild(BuildValueView((IProperty)property.Value));
 						//row.Children.Add(this.BuildValueField((IProperty)property.Value));
 					}
-
-					propertyList.Children.Add(row);
 					rootEntityView.AddChild(containerLabel);
 				}
 
@@ -322,8 +273,8 @@ namespace Lemma.Components
 				this.show(this.Entity);
 			else if (this.SelectedEntities.Count == 1)
 				this.show(this.SelectedEntities.First());
-			else
-				this.addText("[" + this.SelectedEntities.Count.ToString() + " entities]"); //TODO: make this do something
+			//else
+				///this.addText("[" + this.SelectedEntities.Count.ToString() + " entities]"); //TODO: make this do something
 		}
 
 		void IUpdateableComponent.Update(float dt)
@@ -518,6 +469,7 @@ namespace Lemma.Components
 				var fields = propertyInfo.PropertyType.GetFields(BindingFlags.Static | BindingFlags.Public);
 				int numFields = fields.Length;
 				var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero, MainFont);
+				drop.AllowRightClickExecute.Value = false;
 				for (int i = 0; i < numFields; i++)
 				{
 					int i1 = i;
@@ -624,7 +576,7 @@ namespace Lemma.Components
 			}
 			return ret;
 		}
-		public void delete()
+		public override void delete()
 		{
 			RootEditorView.ParentView.RemoveChild(RootEditorView);
 		}
