@@ -30,31 +30,8 @@ namespace Lemma.Factories
 			this.SetMain(entity, main);
 			entity.CannotSuspend = true;
 
-			Property<string> name = entity.GetOrMakeProperty<string>("Name", true);
-
-			if (!main.EditorEnabled)
-			{
-				entity.Add(new PostInitialization
-				{
-					delegate()
-					{
-						if (!string.IsNullOrEmpty(name))
-						{
-							Phone phone = PlayerDataFactory.Instance.GetOrCreate<Phone>("Phone");
-							try
-							{
-								DialogueForest forest = WorldFactory.Instance.Get<World>().DialogueForest;
-								IEnumerable<DialogueForest.Node> nodes = forest.Load(File.ReadAllText(Path.Combine(main.Content.RootDirectory, "Game", name + ".dlz")));
-								phone.Load(forest, nodes);
-							}
-							catch (IOException)
-							{
-								Log.d("Failed to load dialogue file: " + name);
-							}
-						}
-					}
-				});
-			}
+			DialogueFile file = entity.GetOrCreate<DialogueFile>("DialogueFile");
+			file.Name.Value = entity.GetOrMakeProperty<string>("Name", true);
 		}
 	}
 }

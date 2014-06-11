@@ -96,6 +96,7 @@ namespace Lemma.IO
 			typeof(Note),
 			typeof(VoxelAttachable),
 			typeof(Cloud),
+			typeof(DialogueFile),
 		};
 
 		public static XmlSerializer Serializer;
