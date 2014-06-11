@@ -152,7 +152,6 @@ namespace Lemma.Factories
 		{
 			Entity entity = base.Create(main, offsetX, offsetY, offsetZ);
 			entity.Type = "DynamicVoxel";
-			entity.ID = Entity.GenerateID(entity, main);
 			return entity;
 		}
 

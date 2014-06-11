@@ -18,75 +18,19 @@ using View = GeeUI.Views.View;
 
 namespace Lemma.Components
 {
-	public class EditorGeeUI : Component<Main>, IUpdateableComponent
+	public class EditorGeeUI : Component<Main>
 	{
+		public struct PopupCommand
+		{
+			public string Description;
+			public PCInput.Chord Chord;
+			public Command Action;
+			public Func<bool> Enabled;
+		}
+
 		private const float precisionDelta = 0.025f;
 		private const float normalDelta = 1.0f;
 		private const float stringNavigateInterval = 0.08f;
-
-
-		private static Dictionary<Lemma.Components.EditorUI.Chord, string> inputKeyMappings = new Dictionary<Lemma.Components.EditorUI.Chord, string>();
-		static EditorGeeUI()
-		{
-
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemBackslash }, "\\");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemBackslash, Shift = true }, "|");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemPipe }, "\\");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemPipe, Shift = true }, "|");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemPeriod }, ".");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemPeriod, Shift = true }, ">");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemComma }, ",");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemComma, Shift = true }, "<");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemQuestion }, "/");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemQuestion, Shift = true }, "?");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemQuotes }, "'");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemQuotes, Shift = true }, "\"");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemSemicolon }, ";");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemSemicolon, Shift = true }, ":");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemOpenBrackets }, "[");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemOpenBrackets, Shift = true }, "{");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemCloseBrackets }, "]");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemCloseBrackets, Shift = true }, "}");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemPlus }, "=");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemPlus, Shift = true }, "+");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemMinus }, "-");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemMinus, Shift = true }, "_");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemTilde }, "`");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.OemTilde, Shift = true }, "~");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D0 }, "0");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D1 }, "1");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D2 }, "2");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D3 }, "3");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D4 }, "4");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D5 }, "5");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D6 }, "6");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D7 }, "7");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D8 }, "8");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D9 }, "9");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad0 }, "0");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad1 }, "1");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad2 }, "2");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad3 }, "3");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad4 }, "4");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad5 }, "5");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad6 }, "6");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad7 }, "7");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad8 }, "8");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.NumPad9 }, "9");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D0, Shift = true }, ")");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D1, Shift = true }, "!");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D2, Shift = true }, "@");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D3, Shift = true }, "#");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D4, Shift = true }, "$");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D5, Shift = true }, "%");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D6, Shift = true }, "^");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D7, Shift = true }, "&");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D8, Shift = true }, "*");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.D9, Shift = true }, "(");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.Space }, " ");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.Space, Shift = true }, " ");
-			EditorGeeUI.inputKeyMappings.Add(new Lemma.Components.EditorUI.Chord { Keys = Keys.Enter }, "\n");
-		}
 
 		[XmlIgnore]
 		public View RootEditorView;
@@ -108,7 +52,7 @@ namespace Lemma.Components
 		public Property<bool> EnablePrecision = new Property<bool>();
 
 		[XmlIgnore]
-		public ListProperty<EditorUI.PopupCommand> PopupCommands = new ListProperty<EditorUI.PopupCommand>();
+		public ListProperty<PopupCommand> PopupCommands = new ListProperty<PopupCommand>();
 
 		[XmlIgnore]
 		public Property<bool> NeedsSave = new Property<bool>();
@@ -207,7 +151,7 @@ namespace Lemma.Components
 
 		private void show(Entity entity)
 		{
-			foreach (DictionaryEntry entry in new DictionaryEntry[] { new DictionaryEntry("[" + entity.Type.ToString() + " entity]", entity.Properties.Concat(entity.Commands)) }
+			foreach (DictionaryEntry entry in new DictionaryEntry[] { new DictionaryEntry("[" + entity.Type.ToString() + " entity]", new [] { new DictionaryEntry("ID", entity.ID) }.Concat(entity.Properties).Concat(entity.Commands)) }
 				.Union(entity.Components.Where(x => ((IComponent)x.Value).Editable)))
 			{
 				IEnumerable<DictionaryEntry> properties = null;
@@ -324,11 +268,6 @@ namespace Lemma.Components
 				this.show(this.SelectedEntities.First());
 			else
 				this.addText("[" + this.SelectedEntities.Count.ToString() + " entities]"); //TODO: make this do something
-		}
-
-		void IUpdateableComponent.Update(float dt)
-		{
-			//NOTHING to DO
 		}
 
 		public void BuildValueFieldView(View parent, Type type, IProperty property, VectorElement element, int width = 30)
@@ -624,10 +563,11 @@ namespace Lemma.Components
 			}
 			return ret;
 		}
-		public void delete()
+
+		public override void delete()
 		{
+			base.delete();
 			RootEditorView.ParentView.RemoveChild(RootEditorView);
 		}
-
 	}
 }

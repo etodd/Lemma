@@ -12,11 +12,6 @@ using ComponentBind;
 
 namespace Lemma.Components
 {
-	public interface IEditorUIComponent : IComponent
-	{
-		void AddEditorElements(UIComponent propertyList, EditorUI ui);
-	}
-
 	public class Editor : Component<Main>, IUpdateableComponent
 	{
 		static Editor()
@@ -52,6 +47,7 @@ namespace Lemma.Components
 		public EditorProperty<float> JitterOctaveMultiplier = new EditorProperty<float> { Value = 10.0f };
 		public EditorProperty<int> BrushSize = new EditorProperty<int>();
 		public EditorProperty<string> MapFile = new EditorProperty<string>();
+		public EditorProperty<string> StartSpawnPoint = new EditorProperty<string>();
 		public Property<bool> NeedsSave = new Property<bool>();
 
 		// Input properties
@@ -180,6 +176,7 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.generator = this.Entity.GetOrCreate<ProceduralGenerator>();
+			this.generator.Editable = false;
 
 			this.Spawn.Action = delegate(string type)
 			{
@@ -220,8 +217,6 @@ namespace Lemma.Components
 				}
 				this.StartTranslation.Execute();
 			};
-
-			this.Brush.Value = "(Procedural)";
 
 			this.VoxelEditMode.Set = delegate(bool value)
 			{
@@ -691,86 +686,63 @@ namespace Lemma.Components
 				if (this.TransformMode.Value == TransformModes.None && (this.Fill || this.Empty || this.Extend) && !this.justCommitedOrRevertedVoxelOperation)
 				{
 					this.NeedsSave.Value = true;
-					if (this.Brush == "(Procedural)")
+					if (this.Fill)
 					{
-						if (this.Fill)
-						{
-							if (this.VoxelSelectionActive)
-							{
-								foreach (Voxel.Coord c in this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd))
-									map.Fill(c, this.generator.GetValue(map, c));
-							}
-							else
-								this.brushStroke(map, coord, this.BrushSize, x => this.generator.GetValue(map, x), true, false);
-						}
-						else if (this.Empty)
-						{
-							if (this.VoxelSelectionActive)
-								map.Empty(this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd).Where(x => this.generator.GetValue(map, x).ID == 0), true);
-							else
-								this.brushStroke(map, coord, this.BrushSize, x => this.generator.GetValue(map, x), false, true);
-						}
-					}
-					else
-					{
-						if (this.Fill)
-						{
-							Voxel.State material = this.getBrush();
-							if (material != Voxel.EmptyState)
-							{
-								if (this.VoxelSelectionActive)
-								{
-									if (this.Jitter.Value.Equivalent(new Voxel.Coord { X = 0, Y = 0, Z = 0 }) || this.BrushSize <= 1)
-										map.Fill(this.VoxelSelectionStart, this.VoxelSelectionEnd, material);
-									else
-									{
-										Voxel.Coord start = this.VoxelSelectionStart;
-										Voxel.Coord end = this.VoxelSelectionEnd;
-										int size = this.BrushSize;
-										int halfSize = size / 2;
-										for (int x = start.X + size - 1; x < end.X - size + 1; x += halfSize)
-										{
-											for (int y = start.Y + size - 1; y < end.Y - size + 1; y += halfSize)
-											{
-												for (int z = start.Z + size - 1; z < end.Z - size + 1; z += halfSize)
-												{
-													this.brushStroke(map, new Voxel.Coord { X = x, Y = y, Z = z }, size, material);
-												}
-											}
-										}
-									}
-								}
-								else
-									this.brushStroke(map, coord, this.BrushSize, material);
-							}
-						}
-						else if (this.Empty)
+						Voxel.State material = this.getBrush();
+						if (material != Voxel.EmptyState)
 						{
 							if (this.VoxelSelectionActive)
 							{
 								if (this.Jitter.Value.Equivalent(new Voxel.Coord { X = 0, Y = 0, Z = 0 }) || this.BrushSize <= 1)
-									map.Empty(this.VoxelSelectionStart, this.VoxelSelectionEnd, true);
+									map.Fill(this.VoxelSelectionStart, this.VoxelSelectionEnd, material);
 								else
 								{
 									Voxel.Coord start = this.VoxelSelectionStart;
 									Voxel.Coord end = this.VoxelSelectionEnd;
 									int size = this.BrushSize;
 									int halfSize = size / 2;
-									for (int x = start.X + size - 2; x < end.X - size; x += halfSize)
+									for (int x = start.X + size - 1; x < end.X - size + 1; x += halfSize)
 									{
-										for (int y = start.Y + size - 2; y < end.Y - size; y += halfSize)
+										for (int y = start.Y + size - 1; y < end.Y - size + 1; y += halfSize)
 										{
-											for (int z = start.Z + size - 2; z < end.Z - size; z += halfSize)
+											for (int z = start.Z + size - 1; z < end.Z - size + 1; z += halfSize)
 											{
-												this.brushStroke(map, new Voxel.Coord { X = x, Y = y, Z = z }, size, new Voxel.State());
+												this.brushStroke(map, new Voxel.Coord { X = x, Y = y, Z = z }, size, material);
 											}
 										}
 									}
 								}
 							}
 							else
-								this.brushStroke(map, coord, this.BrushSize, new Voxel.State());
+								this.brushStroke(map, coord, this.BrushSize, material);
 						}
+					}
+					else if (this.Empty)
+					{
+						if (this.VoxelSelectionActive)
+						{
+							if (this.Jitter.Value.Equivalent(new Voxel.Coord { X = 0, Y = 0, Z = 0 }) || this.BrushSize <= 1)
+								map.Empty(this.VoxelSelectionStart, this.VoxelSelectionEnd, true);
+							else
+							{
+								Voxel.Coord start = this.VoxelSelectionStart;
+								Voxel.Coord end = this.VoxelSelectionEnd;
+								int size = this.BrushSize;
+								int halfSize = size / 2;
+								for (int x = start.X + size - 2; x < end.X - size; x += halfSize)
+								{
+									for (int y = start.Y + size - 2; y < end.Y - size; y += halfSize)
+									{
+										for (int z = start.Z + size - 2; z < end.Z - size; z += halfSize)
+										{
+											this.brushStroke(map, new Voxel.Coord { X = x, Y = y, Z = z }, size, new Voxel.State());
+										}
+									}
+								}
+							}
+						}
+						else
+							this.brushStroke(map, coord, this.BrushSize, new Voxel.State());
 					}
 
 					if (this.Extend && !this.coord.Equivalent(this.lastCoord))

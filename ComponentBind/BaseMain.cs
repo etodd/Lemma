@@ -69,7 +69,12 @@ namespace ComponentBind
 
 		public Entity GetByID(string id)
 		{
-			return this.Entities.FirstOrDefault(x => x.ID == id);
+			return Entity.GetByID(id);
+		}
+
+		public Entity GetByGUID(ulong id)
+		{
+			return Entity.GetByGUID(id);
 		}
 	}
 }

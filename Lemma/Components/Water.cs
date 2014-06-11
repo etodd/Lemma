@@ -113,7 +113,7 @@ namespace Lemma.Components
 			size.Y = (int)((float)size.Y * Water.resolutionRatio);
 			if (this.renderer == null)
 			{
-				this.renderer = new Renderer(this.main, size, false, false, false, false);
+				this.renderer = new Renderer(this.main, size, false, false, false, false, false);
 				this.renderer.MotionBlurAmount.Value = 0.0f;
 				this.renderer.LightRampTexture.Value = "Images\\default-ramp";
 				this.main.AddComponent(this.renderer);

@@ -582,7 +582,7 @@ namespace Lemma
 				// Create the renderer.
 				this.LightingManager = new LightingManager();
 				this.AddComponent(this.LightingManager);
-				this.Renderer = new Renderer(this, this.ScreenSize, true, true, true, true);
+				this.Renderer = new Renderer(this, this.ScreenSize, true, true, true, true, true);
 
 				this.AddComponent(this.Renderer);
 				this.renderParameters = new RenderParameters
@@ -803,29 +803,7 @@ namespace Lemma
 					this.Renderer.Tint.Value = new Vector3(1.0f);
 				});
 
-#if DEVELOPMENT
-				// Editor instructions
-				Container editorMsgBackground = new Container();
-				this.UI.Root.Children.Add(editorMsgBackground);
-				editorMsgBackground.Tint.Value = Color.Black;
-				editorMsgBackground.Opacity.Value = 0.2f;
-				editorMsgBackground.AnchorPoint.Value = new Vector2(0.5f, 0.0f);
-				editorMsgBackground.Add(new Binding<Vector2, Point>(editorMsgBackground.Position, x => new Vector2(x.X * 0.5f, 30.0f), this.ScreenSize));
-				TextElement editorMsg = new TextElement();
-				editorMsg.FontFile.Value = "Font";
-				editorMsg.Text.Value = "\\editor menu";
-				editorMsgBackground.Children.Add(editorMsg);
-				this.AddComponent(new Animation
-				(
-					new Animation.Delay(4.0f),
-					new Animation.Parallel
-					(
-						new Animation.FloatMoveTo(editorMsgBackground.Opacity, 0.0f, 2.0f),
-						new Animation.FloatMoveTo(editorMsg.Opacity, 0.0f, 2.0f)
-					),
-					new Animation.Execute(delegate() { this.UI.Root.Children.Remove(editorMsgBackground); })
-				));
-#else
+#if !DEVELOPMENT
 					// Main menu
 
 					this.MapFile.Value = MenuMap;
@@ -877,9 +855,10 @@ namespace Lemma
 				existingEntity.Get<Script>().Execute.Execute();
 			else
 			{
-				Entity scriptEntity = Factory.Get<ScriptFactory>().CreateAndBind(this);
-				scriptEntity.ID = id;
-				scriptEntity.Serialize = true;
+				Entity scriptEntity = Factory.Get<ScriptFactory>().Create(this);
+				scriptEntity.ID.Value = id;
+				Factory.Get<ScriptFactory>().Bind(scriptEntity, this, true);
+				scriptEntity.Serialize = false;
 				this.Add(scriptEntity);
 				scriptEntity.GetProperty<bool>("ExecuteOnLoad").Value = false;
 				Script script = scriptEntity.Get<Script>();

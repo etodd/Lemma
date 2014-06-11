@@ -45,7 +45,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -71,7 +71,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -97,7 +97,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -122,7 +122,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -358,7 +358,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -384,7 +384,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -410,7 +410,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -436,7 +436,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -462,7 +462,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -487,7 +487,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -512,7 +512,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -538,7 +538,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -564,7 +564,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -590,7 +590,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -616,7 +616,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -641,7 +641,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -666,7 +666,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -691,7 +691,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -716,7 +716,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -741,7 +741,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -772,7 +772,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -797,7 +797,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -822,7 +822,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -847,7 +847,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -878,7 +878,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -903,7 +903,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -928,7 +928,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -953,7 +953,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -978,7 +978,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1003,7 +1003,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1028,7 +1028,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1053,7 +1053,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1100,7 +1100,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1144,7 +1144,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1169,7 +1169,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1194,7 +1194,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1219,7 +1219,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1244,7 +1244,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 		}
 		else
 		{
@@ -1270,7 +1270,7 @@ public class AkSoundEngine {
 		uint tempin_GameObjectID;
 		if ( in_GameObjectID != null )
 		{
-			tempin_GameObjectID = (uint)in_GameObjectID.ID.GetHashCode();
+			tempin_GameObjectID = getGameObjectID(in_GameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_GameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1295,7 +1295,7 @@ public class AkSoundEngine {
 		uint tempin_GameObjectID;
 		if ( in_GameObjectID != null )
 		{
-			tempin_GameObjectID = (uint)in_GameObjectID.ID.GetHashCode();
+			tempin_GameObjectID = getGameObjectID(in_GameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_GameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1320,7 +1320,7 @@ public class AkSoundEngine {
 		uint tempin_GameObjectID;
 		if ( in_GameObjectID != null )
 		{
-			tempin_GameObjectID = (uint)in_GameObjectID.ID.GetHashCode();
+			tempin_GameObjectID = getGameObjectID(in_GameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_GameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1681,7 +1681,7 @@ public class AkSoundEngine {
 		uint tempin_GameObjectID;
 		if ( in_GameObjectID != null )
 		{
-			tempin_GameObjectID = (uint)in_GameObjectID.ID.GetHashCode();
+			tempin_GameObjectID = getGameObjectID(in_GameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_GameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1724,7 +1724,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1749,7 +1749,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1774,7 +1774,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1805,7 +1805,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1830,7 +1830,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1855,7 +1855,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1886,7 +1886,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1911,7 +1911,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1936,7 +1936,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1967,7 +1967,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -1992,7 +1992,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2017,7 +2017,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2048,7 +2048,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2073,7 +2073,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2098,7 +2098,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2123,7 +2123,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2160,7 +2160,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2185,7 +2185,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2228,7 +2228,7 @@ public class AkSoundEngine {
 		uint tempin_ObjectID;
 		if ( in_ObjectID != null )
 		{
-			tempin_ObjectID = (uint)in_ObjectID.ID.GetHashCode();
+			tempin_ObjectID = getGameObjectID(in_ObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_ObjectID.Get<AkGameObject>() == null)
 			{
@@ -2337,7 +2337,7 @@ public class AkSoundEngine {
 		uint tempin_GameObjectID;
 		if ( in_GameObjectID != null )
 		{
-			tempin_GameObjectID = (uint)in_GameObjectID.ID.GetHashCode();
+			tempin_GameObjectID = getGameObjectID(in_GameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_GameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2362,7 +2362,7 @@ public class AkSoundEngine {
 		uint tempin_GameObjectID;
 		if ( in_GameObjectID != null )
 		{
-			tempin_GameObjectID = (uint)in_GameObjectID.ID.GetHashCode();
+			tempin_GameObjectID = getGameObjectID(in_GameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_GameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2399,7 +2399,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2424,7 +2424,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2449,7 +2449,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2474,7 +2474,7 @@ public class AkSoundEngine {
 		uint tempin_GameObj;
 		if ( in_GameObj != null )
 		{
-			tempin_GameObj = (uint)in_GameObj.ID.GetHashCode();
+			tempin_GameObj = getGameObjectID(in_GameObj);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_GameObj.Get<AkGameObject>() == null)
 			{
@@ -2511,7 +2511,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2536,7 +2536,7 @@ public class AkSoundEngine {
 		uint tempin_gameObjectID;
 		if ( in_gameObjectID != null )
 		{
-			tempin_gameObjectID = (uint)in_gameObjectID.ID.GetHashCode();
+			tempin_gameObjectID = getGameObjectID(in_gameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_gameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2561,7 +2561,7 @@ public class AkSoundEngine {
 		uint tempin_ObjectID;
 		if ( in_ObjectID != null )
 		{
-			tempin_ObjectID = (uint)in_ObjectID.ID.GetHashCode();
+			tempin_ObjectID = getGameObjectID(in_ObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_ObjectID.Get<AkGameObject>() == null)
 			{
@@ -2604,7 +2604,7 @@ public class AkSoundEngine {
 		uint tempin_GameObjId;
 		if ( in_GameObjId != null )
 		{
-			tempin_GameObjId = (uint)in_GameObjId.ID.GetHashCode();
+			tempin_GameObjId = getGameObjectID(in_GameObjId);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_GameObjId.Get<AkGameObject>() == null)
 			{
@@ -2629,7 +2629,7 @@ public class AkSoundEngine {
 		uint tempin_GameObjId;
 		if ( in_GameObjId != null )
 		{
-			tempin_GameObjId = (uint)in_GameObjId.ID.GetHashCode();
+			tempin_GameObjId = getGameObjectID(in_GameObjId);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_GameObjId.Get<AkGameObject>() == null)
 			{
@@ -2662,7 +2662,7 @@ public class AkSoundEngine {
 		uint tempin_GameObjId;
 		if ( in_GameObjId != null )
 		{
-			tempin_GameObjId = (uint)in_GameObjId.ID.GetHashCode();
+			tempin_GameObjId = getGameObjectID(in_GameObjId);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_GameObjId.Get<AkGameObject>() == null)
 			{
@@ -2814,12 +2814,17 @@ public class AkSoundEngine {
 	return ret;
   }
 
+  private static uint getGameObjectID(ComponentBind.Entity entity)
+  {
+	  return (uint)(entity.GUID & 0xffffffff);
+  }
+
   public static AKRESULT SetObjectPosition(ComponentBind.Entity in_GameObjectID, float PosX, float PosY, float PosZ, float OrientationX, float OrientationY, float OrientationZ) {
 	
 		uint tempin_GameObjectID;
 		if ( in_GameObjectID != null )
 		{
-			tempin_GameObjectID = (uint)in_GameObjectID.ID.GetHashCode();
+			tempin_GameObjectID = getGameObjectID(in_GameObjectID);
 			// Note: if AkGameObjectTracker is already attached, the following code will be bypassed.
 			if (in_GameObjectID.Get<AkGameObject>() == null)
 			{
@@ -2863,8 +2868,8 @@ public class AkSoundEngine {
 
   public static uint PostEvent(string e, Vector3 pos)
   {
-	uint id = ComponentBind.Entity.CurrentID;
-	ComponentBind.Entity.CurrentID++;
+	uint id = (uint)(ComponentBind.Entity.CurrentGUID & 0xffffffff);
+	ComponentBind.Entity.CurrentGUID++;
 	AkSoundEnginePINVOKE.CSharp_RegisterGameObj__SWIG_1(id);
 	AkSoundEnginePINVOKE.CSharp_SetObjectPosition(id, pos.X, pos.Y, pos.Z, 0.0f, 0.0f, 1.0f);
 	uint result = AkSoundEnginePINVOKE.CSharp_PostEvent__SWIG_11(e, id);
@@ -2874,8 +2879,8 @@ public class AkSoundEngine {
 
   public static uint PostEvent(uint e, Vector3 pos)
   {
-	uint id = ComponentBind.Entity.CurrentID;
-	ComponentBind.Entity.CurrentID++;
+	uint id = (uint)(ComponentBind.Entity.CurrentGUID & 0xffffffff);
+	ComponentBind.Entity.CurrentGUID++;
 	AkSoundEnginePINVOKE.CSharp_RegisterGameObj__SWIG_1(id);
 	AkSoundEnginePINVOKE.CSharp_SetObjectPosition(id, pos.X, pos.Y, pos.Z, 0.0f, 0.0f, 1.0f);
 	uint result = AkSoundEnginePINVOKE.CSharp_PostEvent__SWIG_5(e, id);

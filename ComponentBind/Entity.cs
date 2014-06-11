@@ -20,19 +20,11 @@ namespace ComponentBind
 	{
 		public struct Handle
 		{
-			private string id;
+			private ulong guid;
+
 			[XmlAttribute]
-			public string ID
-			{
-				get
-				{
-					return this.target != null ? this.target.ID : this.id;
-				}
-				set
-				{
-					this.id = value;
-				}
-			}
+			[DefaultValue(0)]
+			public ulong GUID;
 
 			private Entity target;
 
@@ -41,19 +33,14 @@ namespace ComponentBind
 			{
 				get
 				{
-					if (string.IsNullOrEmpty(this.ID))
-						this.target = null;
-					else if (this.target == null || !this.target.Active || this.target.ID != this.ID)
-					{
-						if (!Entity.entities.TryGetValue(this.ID, out this.target))
-							this.target = null;
-					}
+					if (this.target == null || this.target.GUID != this.GUID)
+						Entity.guidTable.TryGetValue(this.GUID, out this.target);
 					return this.target;
 				}
 				set
 				{
 					this.target = value;
-					this.ID = this.target == null ? null : this.target.ID;
+					this.GUID = this.target == null ? 0 : this.target.GUID;
 				}
 			}
 
@@ -64,41 +51,40 @@ namespace ComponentBind
 
 			public static implicit operator Handle(Entity obj)
 			{
-				return new Handle { Target = obj, ID = obj == null ? null : obj.ID };
+				return new Handle { Target = obj, GUID = obj == null ? 0 : obj.GUID };
 			}
 
 			public override bool Equals(object obj)
 			{
 				if (obj is Handle)
-					return ((Handle)obj).ID == this.ID;
+					return ((Handle)obj).GUID == this.GUID;
+				else if (obj is Entity)
+					return ((Entity)obj).GUID == this.GUID;
 				else
 					return false;
 			}
 
 			public override int GetHashCode()
 			{
-				if (this.ID == null)
-					return 0;
-				byte[] hashValue = new MD5CryptoServiceProvider().ComputeHash(new UnicodeEncoding().GetBytes(this.ID));
-				return (int)hashValue[0] | ((int)hashValue[1] >> 8) | ((int)hashValue[2] >> 16) | ((int)hashValue[3] >> 24);
+				return (int)(this.GUID & 0xffffffff);
 			}
 		}
 
-		private static Dictionary<string, Entity> entities = new Dictionary<string, Entity>();
-
-		public static string GenerateID(Entity entity, BaseMain main)
+		private static Dictionary<ulong, Entity> guidTable = new Dictionary<ulong, Entity>();
+		private static Dictionary<string, Entity> idTable = new Dictionary<string, Entity>();
+		
+		public static Entity GetByID(string id)
 		{
-			string baseId = char.ToLower(entity.Type[0]) + entity.Type.Substring(1);
-			Factory factory = Factory.Get(entity.Type);
-			for (int i = factory.SpawnIndex; ; i++)
-			{
-				string id = baseId + i.ToString();
-				if (main.GetByID(id) == null)
-				{
-					factory.SpawnIndex = i;
-					return id;
-				}
-			}
+			Entity result;
+			Entity.idTable.TryGetValue(id, out result);
+			return result;
+		}
+
+		public static Entity GetByGUID(ulong id)
+		{
+			Entity result;
+			Entity.guidTable.TryGetValue(id, out result);
+			return result;
 		}
 
 		[XmlIgnore]
@@ -110,22 +96,14 @@ namespace ComponentBind
 		[XmlIgnore]
 		public bool EditorCanDelete = true;
 
-		[XmlIgnore]
-		public string ID
-		{
-			get
-			{
-				return this.idProperty.Value;
-			}
-			set
-			{
-				this.idProperty.Value = value;
-			}
-		}
+		public EditorProperty<string> ID = new EditorProperty<string>();
 
 		public override string ToString()
 		{
-			return this.Type + " " + this.ID;
+			if (!string.IsNullOrEmpty(this.ID))
+				return this.ID.Value;
+			else
+				return string.Format("{0} {1}", this.Type, this.GUID);
 		}
 
 		[XmlIgnore]
@@ -145,44 +123,10 @@ namespace ComponentBind
 
 		private Property<string> _idProperty;
 
-		public static uint CurrentID;
+		public static ulong CurrentGUID = 1;
 
-		[XmlIgnore]
-		public uint InternalID;
-
-		private void createIdProperty()
-		{
-			this._idProperty = this.GetProperty<string>("ID");
-			this._idProperty.Editable = true;
-			if (this._idProperty == null)
-			{
-				this._idProperty = new EditorProperty<string> { Value = Entity.GenerateID(this, this.main) };
-				this.Add("ID", this._idProperty);
-			}
-			this._idProperty.Set = delegate(string value)
-			{
-				try
-				{
-					Entity.entities.Remove(this._idProperty.InternalValue);
-				}
-				catch (KeyNotFoundException)
-				{
-
-				}
-				this._idProperty.InternalValue = value;
-				Entity.entities.Add(value, this);
-			};
-		}
-
-		private Property<string> idProperty
-		{
-			get
-			{
-				if (this._idProperty == null)
-					this.createIdProperty();
-				return this._idProperty;
-			}
-		}
+		[XmlAttribute]
+		public ulong GUID;
 
 		[XmlIgnore]
 		private Dictionary<string, BaseCommand> commands = new Dictionary<string, BaseCommand>();
@@ -297,8 +241,6 @@ namespace ComponentBind
 		{
 			// Called by XmlSerializer
 			this.Delete.Action = (Action)this.delete;
-			this.InternalID = Entity.CurrentID;
-			Entity.CurrentID++;
 		}
 
 		[XmlIgnore]
@@ -315,19 +257,36 @@ namespace ComponentBind
 			: this()
 		{
 			// Called by a Factory
-			this.Serialize = true;
 			this.Type = _type;
-			this.Add("ID", new EditorProperty<string> { Value = Entity.GenerateID(this, _main) });
 		}
 
 		public void SetMain(BaseMain _main)
 		{
-			this.main = _main;
-			if (_main.EditorEnabled)
-				this.OnSave = new Command();
+			if (this.GUID == 0)
+				this.GUID = Entity.CurrentGUID;
 
-			if (this._idProperty == null)
-				this.createIdProperty();
+			Entity.CurrentGUID = Math.Max(Entity.CurrentGUID, this.GUID + 1);
+			Entity.guidTable.Add(this.GUID, this);
+
+			this.main = _main;
+
+			if (!string.IsNullOrEmpty(this.ID))
+				Entity.idTable.Add(this.ID, this);
+
+			if (_main.EditorEnabled)
+			{
+				this.OnSave = new Command();
+				string oldId = this.ID;
+				this.Add(new NotifyBinding(delegate()
+				{
+					if (!string.IsNullOrEmpty(oldId))
+						Entity.idTable.Remove(oldId);
+					if (!string.IsNullOrEmpty(this.ID))
+						Entity.idTable.Add(this.ID, this);
+					oldId = this.ID;
+				}, this.ID));
+			}
+
 			foreach (IComponent c in this.components.Values.ToList())
 			{
 				c.Entity = this;
@@ -617,7 +576,9 @@ namespace ComponentBind
 				this.bindings.Clear();
 				this.commands.Clear();
 				this.main.Remove(this);
-				Entity.entities.Remove(this.ID);
+				Entity.guidTable.Remove(this.GUID);
+				if (!string.IsNullOrEmpty(this.ID))
+					Entity.idTable.Remove(this.ID);
 			}
 		}
 	}

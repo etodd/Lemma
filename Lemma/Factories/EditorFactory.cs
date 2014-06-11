@@ -87,9 +87,9 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			this.SetMain(entity, main);
+			entity.ID.Editable = false;
 
 			Editor editor = new Editor();
-			EditorUI ui = new EditorUI { Editable = false };
 			EditorGeeUI gui = new EditorGeeUI() { Editable = false };
 			Model model = new Model { Editable = false };
 			model.Filename.Value = "Models\\selector";
@@ -98,55 +98,12 @@ namespace Lemma.Factories
 			UIRenderer uiRenderer = new UIRenderer { Editable = false };
 			FPSInput input = new FPSInput { Editable = false };
 			input.EnabledWhenPaused = true;
-			Scroller scroller = new Scroller();
-			scroller.Position.Value = new Vector2(10, 10);
-			scroller.AnchorPoint.Value = new Vector2(0, 0);
-			scroller.ResizeHorizontal.Value = true;
-			scroller.Name.Value = "Scroller";
-			uiRenderer.Root.Children.Add(scroller);
-
-			ListContainer uiList = new ListContainer();
-			uiList.Name.Value = "PropertyList";
-			uiList.AnchorPoint.Value = new Vector2(0, 0);
-			scroller.Children.Add(uiList);
-
-			Container popup = new Container();
-			popup.Name.Value = "Popup";
-			popup.Opacity.Value = 0.5f;
-			popup.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-			uiRenderer.Root.Children.Add(popup);
-
-			ListContainer popupLayout = new ListContainer();
-			popup.Children.Add(popupLayout);
-
-			Container popupSearchContainer = new Container();
-			popupSearchContainer.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-			popupLayout.Children.Add(popupSearchContainer);
-
-			TextElement popupSearch = new TextElement();
-			popupSearch.Name.Value = "PopupSearch";
-			popupSearch.FontFile.Value = "Font";
-			popupSearchContainer.Children.Add(popupSearch);
-
-			Scroller popupScroller = new Scroller();
-			popupScroller.Size.Value = new Vector2(200.0f, 300.0f);
-			popupLayout.Children.Add(popupScroller);
-
-			ListContainer popupList = new ListContainer();
-			popupList.Name.Value = "PopupList";
-			popupScroller.Children.Add(popupList);
-
-			gui.Add(new ListBinding<Lemma.Components.EditorUI.PopupCommand>(gui.PopupCommands, ui.PopupCommands));
 
 			entity.Add("Editor", editor);
-			//entity.Add("UI", ui);
 			entity.Add("GUI", gui);
 			entity.Add("UIRenderer", uiRenderer);
 			entity.Add("Model", model);
 			entity.Add("Input", input);
-			entity.Add("StartSpawnPoint", new EditorProperty<string>());
-			entity.Add("ProceduralGenerator", new ProceduralGenerator());
-
 			ModelAlpha radiusVisual = new ModelAlpha();
 			radiusVisual.Filename.Value = "Models\\alpha-sphere";
 			radiusVisual.Color.Value = new Vector3(1.0f);
@@ -190,14 +147,14 @@ namespace Lemma.Factories
 
 			Action<string, PCInput.Chord, Func<bool>, Command> addCommand = delegate(string description, PCInput.Chord chord, Func<bool> enabled, Command action)
 			{
-				ui.PopupCommands.Add(new EditorUI.PopupCommand { Description = description, Chord = chord, Enabled = enabled, Action = action });
+				gui.PopupCommands.Add(new EditorGeeUI.PopupCommand { Description = description, Chord = chord, Enabled = enabled, Action = action });
 
 				if (chord.Modifier != Keys.None)
-					input.Add(new CommandBinding(input.GetChord(chord), () => enabled() && !ui.StringPropertyLocked, action));
+					input.Add(new CommandBinding(input.GetChord(chord), enabled, action));
 				else
-					input.Add(new CommandBinding(input.GetKeyDown(chord.Key), () => enabled() && !ui.StringPropertyLocked, action));
+					input.Add(new CommandBinding(input.GetKeyDown(chord.Key), enabled, action));
 
-				ui.Add(new CommandBinding(action, delegate()
+				gui.Add(new CommandBinding(action, delegate()
 				{
 					Container container = new Container();
 					container.Tint.Value = Microsoft.Xna.Framework.Color.Black;
@@ -227,7 +184,7 @@ namespace Lemma.Factories
 				Factory factory = Factory.Get(entityType);
 				if (factory.EditorCanSpawn)
 				{
-					ui.PopupCommands.Add(new EditorUI.PopupCommand
+					gui.PopupCommands.Add(new EditorGeeUI.PopupCommand
 					{
 						Description = "Add " + entityType,
 						Enabled = () => editor.SelectedEntities.Count == 0 && !editor.VoxelEditMode,
@@ -236,55 +193,23 @@ namespace Lemma.Factories
 				}
 			}
 
-			input.Add(new CommandBinding(input.GetKeyUp(Keys.Space), () => !editor.VoxelEditMode && !ui.StringPropertyLocked && !editor.MovementEnabled, delegate()
-			{
-				if (entity.Get<EditorUI>("ui") == null) return;
-				Vector2 pos = input.Mouse;
-				pos.X = Math.Min(main.ScreenSize.Value.X - popup.Size.Value.X, pos.X);
-				pos.Y = Math.Min(main.ScreenSize.Value.Y - popup.Size.Value.Y, pos.Y);
-				popup.Position.Value = pos;
-				ui.PopupVisible.Value = true;
-			}));
-
-			input.Add(new CommandBinding(input.GetKeyUp(Keys.Escape), () => ui.PopupVisible, delegate()
-			{
-				if (ui.PopupSearchText.Value == "_")
-					ui.PopupVisible.Value = false;
-				else
-					ui.ClearSelectedStringProperty();
-			}));
-
-			input.Add(new CommandBinding(input.RightMouseButtonUp, () => ui.PopupVisible, delegate()
-			{
-				ui.PopupVisible.Value = false;
-			}));
-
-			uiRenderer.Add(new Binding<bool>(popup.Visible, ui.PopupVisible));
-			uiRenderer.Add(new Binding<string>(((TextElement)popup.GetChildByName("PopupSearch")).Text, ui.PopupSearchText));
-			uiRenderer.Add(new ListBinding<UIComponent>(popupList.Children, ui.PopupElements));
-
 			model.Add(new Binding<bool>(model.Enabled, editor.VoxelEditMode));
 			model.Add(new Binding<Matrix>(model.Transform, () => editor.Orientation.Value * Matrix.CreateTranslation(editor.Position), editor.Position, editor.Orientation));
 
 			editor.Add(new TwoWayBinding<string>(main.MapFile, editor.MapFile));
 
-			entity.Add(new TwoWayBinding<string>(main.Spawner.StartSpawnPoint, entity.GetProperty<string>("StartSpawnPoint")));
+			entity.Add(new TwoWayBinding<string>(main.Spawner.StartSpawnPoint, editor.StartSpawnPoint));
 
-			uiRenderer.Add(new ListBinding<UIComponent>(uiRenderer.Root.GetChildByName("PropertyList").Children, ui.UIElements));
-			ui.Add(new ListBinding<Entity>(ui.SelectedEntities, editor.SelectedEntities));
 			gui.Add(new ListBinding<Entity>(gui.SelectedEntities, editor.SelectedEntities));
 			gui.Add(new Binding<bool>(gui.MapEditMode, editor.VoxelEditMode));
 			gui.Add(new Binding<bool>(gui.EnablePrecision, x => !x, input.GetKey(Keys.LeftShift)));
 			gui.Add(new TwoWayBinding<bool>(editor.NeedsSave, gui.NeedsSave));
-			ui.Add(new Binding<bool>(ui.MapEditMode, editor.VoxelEditMode));
-			ui.Add(new Binding<bool>(ui.EnablePrecision, x => !x, input.GetKey(Keys.LeftShift)));
 
 			Property<bool> movementEnabled = new Property<bool>();
 			Property<bool> capslockKey = input.GetKey(Keys.CapsLock);
 			entity.Add(new Binding<bool>(movementEnabled, () => input.MiddleMouseButton || capslockKey, input.MiddleMouseButton, capslockKey));
 			
-			editor.Add(new Binding<bool>(editor.MovementEnabled, () => !ui.StringPropertyLocked && (movementEnabled || editor.VoxelEditMode), ui.StringPropertyLocked, movementEnabled, editor.VoxelEditMode));
-			ui.Add(new TwoWayBinding<bool>(editor.NeedsSave, ui.NeedsSave));
+			editor.Add(new Binding<bool>(editor.MovementEnabled, () => movementEnabled || editor.VoxelEditMode, movementEnabled, editor.VoxelEditMode));
 
 			editor.Add(new Binding<Vector2>(editor.Movement, input.Movement));
 			editor.Add(new Binding<bool>(editor.Up, input.GetKey(Keys.Space)));
@@ -375,8 +300,6 @@ namespace Lemma.Factories
 			timelineScroller.Add(new Binding<bool>(timelineScroller.EnableScroll, x => !x, input.GetKey(Keys.LeftAlt)));
 			uiRenderer.Root.Children.Add(timelineScroller);
 
-			scroller.Add(new Binding<Vector2>(scroller.Size, () => new Vector2(scroller.Size.Value.X, main.ScreenSize.Value.Y - 20 - timelineScroller.ScaledSize.Value.Y), main.ScreenSize, timelineScroller.ScaledSize));
-
 			ListContainer timelines = new ListContainer();
 			timelines.Alignment.Value = ListContainer.ListAlignment.Min;
 			timelines.Orientation.Value = ListContainer.ListOrientation.Vertical;
@@ -390,7 +313,7 @@ namespace Lemma.Factories
 			timeline.ResizeVertical.Value = false;
 			timelines.Children.Add(timeline);
 
-			ui.PopupCommands.Add(new EditorUI.PopupCommand
+			gui.PopupCommands.Add(new EditorGeeUI.PopupCommand
 			{
 				Description = "Load analytics data",
 				Enabled = () => editor.SelectedEntities.Count == 0 && !editor.VoxelEditMode && !analyticsEnable,
@@ -1100,14 +1023,11 @@ namespace Lemma.Factories
 				int foundIndex = Voxel.StateList.FindIndex(x => x.ToString() == editor.Brush);
 				if (foundIndex != -1)
 					brush = foundIndex;
-				int stateCount = Voxel.States.Count + 1;
+				int stateCount = Voxel.States.Count;
 				brush = 1 + ((brush - 1 + delta) % (stateCount - 1));
 				if (brush < 1)
 					brush = stateCount + ((brush - 1) % stateCount);
-				if (brush == stateCount - 1)
-					editor.Brush.Value = "(Procedural)";
-				else
-					editor.Brush.Value = Voxel.StateList[brush].ToString();
+				editor.Brush.Value = Voxel.StateList[brush].ToString();
 			};
 			entity.Add(new CommandBinding(input.GetKeyDown(Keys.Q), () => editor.VoxelEditMode, delegate()
 			{
@@ -1136,7 +1056,6 @@ namespace Lemma.Factories
 
 			Camera camera = main.Camera;
 
-			scroller.Add(new Binding<bool>(scroller.EnableScroll, x => !x, input.GetKey(Keys.LeftAlt)));
 			input.Add(new CommandBinding<int>(input.MouseScrolled, () => input.GetKey(Keys.LeftAlt), delegate(int delta)
 			{
 				if (timelineScroller.Highlighted && !editor.VoxelEditMode)
@@ -1163,14 +1082,14 @@ namespace Lemma.Factories
 			editorLight.Add(new Binding<Vector3>(editorLight.Position, main.Camera.Position));
 			editorLight.Enabled.Value = false;
 
-			ui.PopupCommands.Add(new EditorUI.PopupCommand
+			gui.PopupCommands.Add(new EditorGeeUI.PopupCommand
 			{
 				Description = "Toggle editor light",
 				Enabled = () => editor.SelectedEntities.Count == 0 && !editor.VoxelEditMode,
 				Action = new Command { Action = () => editorLight.Enabled.Value = !editorLight.Enabled },
 			});
 
-			editor.Add(new CommandBinding(input.RightMouseButtonDown, () => !ui.PopupVisible && !editor.VoxelEditMode && !input.EnableLook && editor.TransformMode.Value == Editor.TransformModes.None, delegate()
+			editor.Add(new CommandBinding(input.RightMouseButtonDown, () => !editor.VoxelEditMode && !input.EnableLook && editor.TransformMode.Value == Editor.TransformModes.None, delegate()
 			{
 				// We're not editing a voxel
 				// And we're not transforming entities
@@ -1231,7 +1150,7 @@ namespace Lemma.Factories
 
 			addCommand("Toggle voxel edit", new PCInput.Chord { Key = Keys.Tab }, delegate()
 			{
-				if (editor.TransformMode.Value != Editor.TransformModes.None || ui.StringPropertyLocked)
+				if (editor.TransformMode.Value != Editor.TransformModes.None)
 					return false;
 
 				if (editor.VoxelEditMode)
@@ -1377,7 +1296,6 @@ namespace Lemma.Factories
 
 						foreach (Entity e in entities)
 						{
-							e.ID = Entity.GenerateID(e, main);
 							Factory<Main> factory = Factory<Main>.Get(e.Type);
 							factory.Bind(e, main);
 							main.Add(e);

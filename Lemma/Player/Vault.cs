@@ -79,7 +79,7 @@ namespace Lemma.Components
 				m.Translation = new Vector3(0.0f, 0.0f, 2.0f);
 				return m;
 			};
-			this.model["TopOut"].Speed = 2.0f;
+			this.model["TopOut"].Speed = 1.8f;
 			this.model["TopOut"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
 				Vector3 diff = Vector3.Transform(this.relativeOriginalPosition, this.map.Transform) - this.Position;

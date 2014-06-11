@@ -110,12 +110,13 @@ namespace Lemma.Components
 		private RenderTarget2D halfBuffer2;
 		private RenderTarget2D halfDepthBuffer;
 		private Texture2D ssaoRandomTexture;
-		private bool allowSSAO;
 		private RenderTarget2D normalBufferLastFrame;
-		private bool allowBloom;
-		private bool allowPostAlphaDrawables;
 		private SpriteBatch spriteBatch;
 
+		private bool allowSSAO;
+		private bool allowBloom;
+		private bool allowPostAlphaDrawables;
+		private bool allowToneMapping;
 		private bool justReallocatedBuffers;
 
 		/// <summary>
@@ -123,11 +124,12 @@ namespace Lemma.Components
 		/// </summary>
 		/// <param name="graphicsDevice">The GraphicsDevice to use for rendering</param>
 		/// <param name="contentManager">The ContentManager from which to load Effects</param>
-		public Renderer(Main main, Point size, bool allowHdr, bool allowBloom, bool allowSSAO, bool allowPostAlphaDrawables)
+		public Renderer(Main main, Point size, bool allowHdr, bool allowBloom, bool allowToneMapping, bool allowSSAO, bool allowPostAlphaDrawables)
 		{
 			this.allowBloom = allowBloom;
 			this.allowSSAO = allowSSAO;
 			this.allowPostAlphaDrawables = allowPostAlphaDrawables;
+			this.allowToneMapping = allowToneMapping;
 			this.hdr = allowHdr;
 			this.lightingManager = main.LightingManager;
 			this.screenSize = size;
@@ -512,7 +514,7 @@ namespace Lemma.Components
 			string globalLightTechnique = "GlobalLight";
 			if (this.lightingManager.EnableGlobalShadowMap && this.lightingManager.HasGlobalShadowLight)
 			{
-				if (this.lightingManager.EnableDetailGlobalShadowMap)
+				if (parameters.IsMainRender && this.lightingManager.EnableDetailGlobalShadowMap)
 					globalLightTechnique = "GlobalLightDetailShadow";
 				else
 					globalLightTechnique = "GlobalLightShadow";
@@ -592,7 +594,7 @@ namespace Lemma.Components
 
 			// Swap the color buffers
 			colorSource = this.hdrBuffer2;
-			colorDestination = this.hdrBuffer1;
+			colorDestination = enableBloom || this.allowToneMapping || enableBlur || enableMotionBlur ? this.hdrBuffer1 : result;
 
 			parameters.DepthBuffer = this.depthBuffer;
 			parameters.FrameBuffer = colorSource;
@@ -636,17 +638,21 @@ namespace Lemma.Components
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["Composite"];
 				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.halfBuffer1 }, new RenderTarget2D[] { enableBlur || enableMotionBlur ? this.colorBuffer2 : result }, this.bloomEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
+
+				// Swap the color buffers
+				colorDestination = this.colorBuffer1;
+				colorSource = this.colorBuffer2;
 			}
-			else
+			else if (this.allowToneMapping)
 			{
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["ToneMapOnly"];
 				this.preparePostProcess(new RenderTarget2D[] { colorSource, }, new RenderTarget2D[] { enableBlur || enableMotionBlur ? this.colorBuffer2 : result }, this.bloomEffect);
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
-			}
 
-			// Swap the color buffers
-			colorDestination = this.colorBuffer1;
-			colorSource = this.colorBuffer2;
+				// Swap the color buffers
+				colorDestination = this.colorBuffer1;
+				colorSource = this.colorBuffer2;
+			}
 
 			// Motion blur
 			if (enableMotionBlur)

@@ -38,7 +38,7 @@ namespace Lemma.Factories
 				{
 					Action = delegate()
 					{
-						string id = entity.ID;
+						ulong id = entity.GUID;
 						Editor editor = main.Get("Editor").First().Get<Editor>();
 						if (editor.NeedsSave)
 							editor.Save.Execute();
@@ -56,7 +56,7 @@ namespace Lemma.Factories
 							{
 								// We have to squirrel away the ID and get a new entity
 								// becuase OUR entity got wiped out by the MapLoader.
-								main.GetByID(id).Get<CameraStop>().Animate();
+								main.GetByGUID(id).Get<CameraStop>().Animate();
 							}
 						});
 					},
