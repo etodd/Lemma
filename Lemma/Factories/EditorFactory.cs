@@ -220,7 +220,7 @@ namespace Lemma.Factories
 			editor.Add(new Binding<bool>(editor.Fill, input.LeftMouseButton));
 			editor.Add(new Binding<bool>(editor.EditSelection, () => movementEnabled && editor.VoxelEditMode, movementEnabled, editor.VoxelEditMode));
 
-			addCommand("Delete", new PCInput.Chord { Key = Keys.X }, () => !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None && editor.SelectedEntities.Count > 0, editor.DeleteSelected);
+			addCommand("Delete", new PCInput.Chord { Key = Keys.X }, () => !gui.AnyTextFieldViewsSelected() && !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None && editor.SelectedEntities.Count > 0, editor.DeleteSelected);
 			addCommand("Duplicate", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.D }, () => !editor.MovementEnabled && editor.SelectedEntities.Count > 0, editor.Duplicate);
 
 			// Start playing
@@ -1171,63 +1171,63 @@ namespace Lemma.Factories
 			(
 				"Grab (move)",
 				new PCInput.Chord { Key = Keys.G },
-				() => editor.SelectedEntities.Count > 0 && !input.EnableLook && !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None,
+				() => !gui.AnyTextFieldViewsSelected() && editor.SelectedEntities.Count > 0 && !input.EnableLook && !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None,
 				editor.StartTranslation
 			);
 			addCommand
 			(
 				"Grab (move)",
 				new PCInput.Chord { Key = Keys.G },
-				() => editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
+				() => !gui.AnyTextFieldViewsSelected() && editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
 				editor.StartVoxelTranslation
 			);
 			addCommand
 			(
 				"Voxel duplicate",
 				new PCInput.Chord { Key = Keys.C },
-				() => editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
+				() => !gui.AnyTextFieldViewsSelected() && editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
 				editor.VoxelDuplicate
 			);
 			addCommand
 			(
 				"Voxel yank",
 				new PCInput.Chord { Key = Keys.Y },
-				() => editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
+				() => !gui.AnyTextFieldViewsSelected() && editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
 				editor.VoxelCopy
 			);
 			addCommand
 			(
 				"Voxel paste",
 				new PCInput.Chord { Key = Keys.P },
-				() => editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None,
+				() => !gui.AnyTextFieldViewsSelected() && editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None,
 				editor.VoxelPaste
 			);
 			addCommand
 			(
 				"Rotate",
 				new PCInput.Chord { Key = Keys.R },
-				() => editor.SelectedEntities.Count > 0 && !editor.VoxelEditMode && !input.EnableLook && editor.TransformMode.Value == Editor.TransformModes.None,
+				() => !gui.AnyTextFieldViewsSelected() && editor.SelectedEntities.Count > 0 && !editor.VoxelEditMode && !input.EnableLook && editor.TransformMode.Value == Editor.TransformModes.None,
 				editor.StartRotation
 			);
 			addCommand
 			(
 				"Lock X axis",
 				new PCInput.Chord { Key = Keys.X },
-				() => !editor.VoxelEditMode && editor.TransformMode.Value != Editor.TransformModes.None,
+				() => !gui.AnyTextFieldViewsSelected() && !editor.VoxelEditMode && editor.TransformMode.Value != Editor.TransformModes.None,
 				new Command { Action = () => editor.TransformAxis.Value = Editor.TransformAxes.X }
 			);
 			addCommand
 			(
 				"Lock Y axis",
 				new PCInput.Chord { Key = Keys.Y },
-				() => !editor.VoxelEditMode && editor.TransformMode.Value != Editor.TransformModes.None,
+				() => !gui.AnyTextFieldViewsSelected() && !editor.VoxelEditMode && editor.TransformMode.Value != Editor.TransformModes.None,
 				new Command { Action = () => editor.TransformAxis.Value = Editor.TransformAxes.Y }
 			);
 			addCommand
 			(
 				"Lock Z axis",
 				new PCInput.Chord { Key = Keys.Z },
-				() => !editor.VoxelEditMode && editor.TransformMode.Value != Editor.TransformModes.None,
+				() => !gui.AnyTextFieldViewsSelected() && !editor.VoxelEditMode && editor.TransformMode.Value != Editor.TransformModes.None,
 				new Command { Action = () => editor.TransformAxis.Value = Editor.TransformAxes.Z }
 			);
 
@@ -1266,7 +1266,7 @@ namespace Lemma.Factories
 			(
 				"Yank",
 				new PCInput.Chord { Key = Keys.Y },
-				() => !editor.VoxelEditMode && !input.EnableLook && editor.SelectedEntities.Count > 0 && editor.TransformMode.Value == Editor.TransformModes.None,
+				() => !gui.AnyTextFieldViewsSelected() && !editor.VoxelEditMode && !input.EnableLook && editor.SelectedEntities.Count > 0 && editor.TransformMode.Value == Editor.TransformModes.None,
 				new Command
 				{
 					Action = delegate()
@@ -1286,7 +1286,7 @@ namespace Lemma.Factories
 			(
 				"Paste",
 				new PCInput.Chord { Key = Keys.P },
-				() => !editor.VoxelEditMode && !input.EnableLook && yankBuffer != null,
+				() => !gui.AnyTextFieldViewsSelected() && !editor.VoxelEditMode && !input.EnableLook && yankBuffer != null,
 				new Command
 				{
 					Action = delegate()

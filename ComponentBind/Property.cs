@@ -11,6 +11,8 @@ namespace ComponentBind
 {
 	public interface IProperty
 	{
+		[XmlIgnore]
+		string Description { get; set; }
 		bool Editable { get; set; }
 		bool Serialize { get; set; }
 		void AddBinding(IPropertyBinding binding);
@@ -57,6 +59,15 @@ namespace ComponentBind
 			{
 				this.serialize = value;
 			}
+		}
+
+		protected string description = "";
+		[XmlIgnore]
+		[DefaultValue("")]
+		public string Description
+		{
+			get { return description; }
+			set { description = value; }
 		}
 
 		public void AddBinding(IPropertyBinding binding)
@@ -112,7 +123,7 @@ namespace ComponentBind
 		{
 			return this.Get != null ? this.Get() : this.InternalValue;
 		}
-		
+
 		public static implicit operator Type(Property<Type> obj)
 		{
 			return obj.Value;
@@ -122,7 +133,7 @@ namespace ComponentBind
 		{
 			return this.Value.ToString();
 		}
-		
+
 		[XmlIgnore]
 		public bool Editable { get; set; }
 	}
@@ -161,6 +172,15 @@ namespace ComponentBind
 			}
 		}
 
+		protected string description = "";
+		[XmlIgnore]
+		[DefaultValue("")]
+		public string Description
+		{
+			get { return description; }
+			set { description = value; }
+		}
+
 		protected bool serialize = true;
 		[XmlIgnore]
 		public bool Serialize
@@ -193,7 +213,7 @@ namespace ComponentBind
 
 		public void Reset()
 		{
-			
+
 		}
 
 		public List<Type> InternalList = new List<Type>();
