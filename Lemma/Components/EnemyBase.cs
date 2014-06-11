@@ -117,33 +117,30 @@ namespace Lemma.Components
 				this.Add(new NotifyBinding(setupMap, this.Voxel));
 				if (this.Voxel.Value.Target != null)
 					setupMap();
+			}
+		}
 
-				this.main.AddComponent(new PostInitialization
+		public override void Start()
+		{
+			if (!this.main.EditorEnabled && (this.Voxel.Value.Target == null || !this.Voxel.Value.Target.Active))
+			{
+				this.BaseBoxes.Clear();
+
+				bool found = false;
+				foreach (Voxel m in Lemma.Components.Voxel.Voxels)
 				{
-					delegate()
+					Voxel.Box box = m.GetBox(this.Position);
+					if (box != null && box.Type.ID == Components.Voxel.t.InfectedCritical)
 					{
-						if (this.Voxel.Value.Target == null || !this.Voxel.Value.Target.Active)
-						{
-							this.BaseBoxes.Clear();
-
-							bool found = false;
-							foreach (Voxel m in Lemma.Components.Voxel.Voxels)
-							{
-								Voxel.Box box = m.GetBox(this.Position);
-								if (box != null && box.Type.ID == Components.Voxel.t.InfectedCritical)
-								{
-									foreach (Voxel.Box b in m.GetContiguousByType(new[] { box }))
-										this.BaseBoxes.Add(b);
-									this.Voxel.Value = m.Entity;
-									found = true;
-									break;
-								}
-							}
-							if (!found)
-								this.Delete.Execute();
-						}
+						foreach (Voxel.Box b in m.GetContiguousByType(new[] { box }))
+							this.BaseBoxes.Add(b);
+						this.Voxel.Value = m.Entity;
+						found = true;
+						break;
 					}
-				});
+				}
+				if (!found)
+					this.Delete.Execute();
 			}
 		}
 	}

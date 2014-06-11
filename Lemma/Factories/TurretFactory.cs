@@ -32,6 +32,23 @@ namespace Lemma.Factories
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 			light.Add(new Binding<Quaternion>(light.Orientation, transform.Quaternion));
 
+			Command die = new Command
+			{
+				Action = delegate()
+				{
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_DEATH, entity);
+					ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
+					Random random = new Random();
+					for (int i = 0; i < 50; i++)
+					{
+						Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
+						shatter.AddParticle(transform.Position + offset, offset);
+					}
+					entity.Delete.Execute();
+				}
+			};
+			VoxelAttachable.MakeAttachable(entity, main, true, true, die);
+
 			PointLight pointLight = entity.GetOrCreate<PointLight>();
 			pointLight.Serialize = false;
 			pointLight.Editable = false;
@@ -49,24 +66,6 @@ namespace Lemma.Factories
 			model.Filename.Value = "Models\\pyramid";
 			model.Editable = false;
 			model.Serialize = false;
-
-			Command die = new Command
-			{
-				Action = delegate()
-				{
-					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_DEATH, entity);
-					ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
-					Random random = new Random();
-					for (int i = 0; i < 50; i++)
-					{
-						Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
-						shatter.AddParticle(transform.Position + offset, offset);
-					}
-					entity.Delete.Execute();
-				}
-			};
-
-			VoxelAttachable.MakeAttachable(entity, main, true, true, die);
 
 			const float defaultModelScale = 0.75f;
 			model.Scale.Value = new Vector3(defaultModelScale);

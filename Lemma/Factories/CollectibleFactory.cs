@@ -23,16 +23,12 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			// Shamefully ripped STRAIGHT from SignalTower
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
 			trigger.Serialize = false;
+
+			VoxelAttachable.MakeAttachable(entity, main);
 			this.SetMain(entity, main);
-
-			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				VoxelAttachable.MakeAttachable(entity, main);
-
-			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
 			
 			trigger.Editable = false;
 			trigger.Radius.Value = 3;

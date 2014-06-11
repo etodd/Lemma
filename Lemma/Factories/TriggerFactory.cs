@@ -23,10 +23,10 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Position");
 			Trigger trigger = entity.GetOrCreate<Trigger>("Trigger");
-			this.SetMain(entity, main);
 
-			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				VoxelAttachable.MakeAttachable(entity, main);
+			VoxelAttachable.MakeAttachable(entity, main);
+
+			this.SetMain(entity, main);
 
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 		}

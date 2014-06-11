@@ -33,8 +33,8 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			this.InternalBind(entity, main, creating, null, true);
-			if (entity.GetOrMakeProperty<bool>("Attached", true))
-				VoxelAttachable.MakeAttachable(entity, main);
+
+			VoxelAttachable.MakeAttachable(entity, main);
 
 			Property<Entity.Handle> target = entity.GetOrMakeProperty<Entity.Handle>("Target");
 

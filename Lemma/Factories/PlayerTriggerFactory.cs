@@ -25,12 +25,12 @@ namespace Lemma.Factories
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
 			trigger.Radius.Editable = true;
 			trigger.Enabled.Editable = true;
+
+			VoxelAttachable.MakeAttachable(entity, main);
+
 			this.SetMain(entity, main);
 
 			Property<bool> delete = entity.GetOrMakeProperty<bool>("DeleteOnTrigger", true);
-
-			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				VoxelAttachable.MakeAttachable(entity, main);
 
 			ListProperty<Entity.Handle> targets = entity.GetOrMakeListProperty<Entity.Handle>("Targets");
 			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()

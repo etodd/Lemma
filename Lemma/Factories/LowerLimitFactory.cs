@@ -25,11 +25,12 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
-			this.SetMain(entity, main);
+
 			entity.CannotSuspendByDistance = true;
 			transform.Editable = true;
-			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				VoxelAttachable.MakeAttachable(entity, main);
+			VoxelAttachable.MakeAttachable(entity, main);
+
+			this.SetMain(entity, main);
 			
 			entity.Add(new Updater
 			{

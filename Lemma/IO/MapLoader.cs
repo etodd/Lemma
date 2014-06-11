@@ -19,20 +19,10 @@ namespace Lemma.IO
 		public const string MapExtension = "map";
 
 		private static string[] persistentTypes = new[] { "PlayerData", };
-		private static string[] attachedTypes = new string[] { };
 
 		private static bool entityIsPersistent(Entity entity)
 		{
-			if (MapLoader.persistentTypes.Contains(entity.Type))
-				return true;
-
-			if (MapLoader.attachedTypes.Contains(entity.Type))
-			{
-				Property<bool> attached = entity.GetProperty<bool>("Attached");
-				if (attached != null && attached)
-					return true;
-			}
-			return false;
+			return MapLoader.persistentTypes.Contains(entity.Type);
 		}
 
 		public static Type[] IncludedTypes = new[]
@@ -104,6 +94,7 @@ namespace Lemma.IO
 			typeof(Setter<Voxel.Coord>),
 			typeof(World),
 			typeof(Note),
+			typeof(VoxelAttachable),
 		};
 
 		public static XmlSerializer Serializer;

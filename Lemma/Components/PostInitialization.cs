@@ -7,7 +7,7 @@ using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class PostInitialization : Component<Main>, IEnumerable<Action>, IUpdateableComponent
+	public class PostInitialization : Component<Main>, IEnumerable<Action>
 	{
 		protected List<Action> actions = new List<Action>();
 
@@ -49,7 +49,7 @@ namespace Lemma.Components
 			this.actions.Add(action);
 		}
 
-		public void Update(float elapsedTime)
+		public override void Start()
 		{
 			foreach (Action action in this.actions)
 				action();

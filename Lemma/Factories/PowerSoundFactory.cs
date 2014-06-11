@@ -17,20 +17,16 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity entity = new Entity(main, "PowerSound");
-
-			entity.Add("Transform", new Transform());
-
-			return entity;
+			return new Entity(main, "PowerSound");
 		}
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(entity, main);
-
-			Transform transform = entity.Get<Transform>();
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			VoxelAttachable.MakeAttachable(entity, main);
+
+			this.SetMain(entity, main);
 
 			if (!main.EditorEnabled)
 			{

@@ -24,8 +24,7 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			SpotLight spotLight = entity.GetOrCreate<SpotLight>("SpotLight");
 
-			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				VoxelAttachable.MakeAttachable(entity, main);
+			VoxelAttachable.MakeAttachable(entity, main);
 
 			this.SetMain(entity, main);
 

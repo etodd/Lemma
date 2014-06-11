@@ -379,7 +379,7 @@ namespace ComponentBind
 
 		public void RemoveComponent(string name)
 		{
-			IComponent c = null;
+			IComponent c;
 			this.components.TryGetValue(name, out c);
 			if (c != null)
 			{

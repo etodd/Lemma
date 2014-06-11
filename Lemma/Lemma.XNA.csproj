@@ -217,7 +217,6 @@
     <Compile Include="Factories\EntityConnectable.cs" />
     <Compile Include="Factories\VoxelFillFactory.cs" />
     <Compile Include="Factories\TriggerFactory.cs" />
-    <Compile Include="Factories\VoxelEntity.cs" />
     <Compile Include="Factories\SmokeFactory.cs" />
     <Compile Include="Factories\LevitatorFactory.cs" />
     <Compile Include="Factories\Explosion.cs" />

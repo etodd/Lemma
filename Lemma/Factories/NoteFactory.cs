@@ -24,6 +24,9 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>();
 			Model model = entity.GetOrCreate<Model>("Model");
+
+			VoxelAttachable.MakeAttachable(entity, main);
+
 			this.SetMain(entity, main);
 			model.Serialize = false;
 			model.Filename.Value = "Models\\papers";
@@ -62,9 +65,6 @@ namespace Lemma.Factories
 				if (PlayerFactory.Instance != null)
 					PlayerFactory.Instance.Get<Player>().Note.Value = null;
 			}));
-
-			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				VoxelAttachable.MakeAttachable(entity, main);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
