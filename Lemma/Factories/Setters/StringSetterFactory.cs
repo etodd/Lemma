@@ -17,7 +17,7 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity entity = new Entity(main, "Counter");
+			Entity entity = new Entity(main, "Setter");
 			Setter<string> setter = entity.GetOrCreate<Setter<string>>("Setter");
 			Transform transform = entity.GetOrCreate<Transform>("Position");
 			return entity;
