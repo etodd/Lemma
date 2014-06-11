@@ -243,9 +243,9 @@ namespace GeeUI.Views
 
 		public void RemoveAllChildren()
 		{
-			foreach(var child in Children) RemoveChild(child);
+			foreach (var child in Children) RemoveChild(child);
 		}
-		
+
 		public void RemoveChild(View child)
 		{
 			_children.Remove(child);
@@ -262,14 +262,15 @@ namespace GeeUI.Views
 		public View[] FindChildrenByName(string name, int depth = -1)
 		{
 			bool infinite = depth == -1;
+			if (!infinite) depth--;
 			List<View> ret = new List<View>();
-			while (depth-- >= 0 || infinite)
+			if (depth >= 0 || infinite)
 			{
 				foreach (var c in Children)
 				{
 					if (c.Name == name)
 						ret.Add(c);
-					foreach (var find in c.FindChildrenByName(name, infinite ? -1 : depth - 1))
+					foreach (var find in c.FindChildrenByName(name, infinite ? -1 : depth))
 						ret.Add(find);
 				}
 			}
@@ -279,14 +280,15 @@ namespace GeeUI.Views
 		public View FindFirstChildByName(string name, int depth = -1)
 		{
 			bool infinite = depth == -1;
+			if (!infinite) depth--;
 
-			while (depth-- >= 0 || infinite)
+			if (depth >= 0 || infinite)
 			{
 				foreach (var c in Children)
 				{
 					if (c.Name == name)
 						return c;
-					foreach (var find in c.FindChildrenByName(name, infinite ? -1 : depth - 1))
+					foreach (var find in c.FindChildrenByName(name, infinite ? -1 : depth))
 						return find;
 				}
 			}
@@ -412,7 +414,7 @@ namespace GeeUI.Views
 
 		public virtual void OnMRightClick(Vector2 position, bool fromChild = false)
 		{
-			if(OnMouseRightClick != null)
+			if (OnMouseRightClick != null)
 				OnMouseRightClick(this, new EventArgs());
 			if (ParentView != null) ParentView.OnMRightClick(position, true);
 		}
@@ -426,9 +428,9 @@ namespace GeeUI.Views
 
 		public virtual void OnMClickAway(bool fromChild = false)
 		{
-			if(OnMouseClickAway != null)
+			if (OnMouseClickAway != null)
 				OnMouseClickAway(this, new EventArgs());
-			if(ParentView != null) ParentView.OnMClickAway(true);
+			if (ParentView != null) ParentView.OnMClickAway(true);
 		}
 
 		public virtual void OnMOver(bool fromChild = false)

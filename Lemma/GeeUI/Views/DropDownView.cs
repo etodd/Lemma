@@ -27,9 +27,12 @@ namespace GeeUI.Views
 		private ListView DropDownListView;
 		private List<DropDownOption> DropDownOptions = new List<DropDownOption>();
 		private SpriteFont mainFont;
+		private TextFieldView FilterView;
 
 		public Property<int> LastItemSelected = new Property<int>() { Value = -1 };
 		public Property<bool> AllowRightClickExecute = new Property<bool>() { Value = true };
+		public Property<bool> AllowFilterText = new Property<bool>() { Value = true };
+		public Property<int> FilterThreshhold = new Property<int>() { Value = 15 };
 
 		private bool DropDownShowing
 		{
@@ -54,8 +57,21 @@ namespace GeeUI.Views
 			button.Name = "button";
 
 			this.DropDownPanelView = new PanelView(theGeeUI, theGeeUI.RootView, Vector2.Zero);
+			DropDownPanelView.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
 			this.DropDownPanelView.Draggable = false;
 			this.DropDownPanelView.SelectedNinepatch = this.DropDownPanelView.UnselectedNinepatch;
+
+			FilterView = new TextFieldView(theGeeUI, DropDownPanelView, Vector2.Zero, mainFont);
+			FilterView.Height.Value = 20;
+			FilterView.MultiLine = false;
+			FilterView.Add(new Binding<int>(FilterView.Width, DropDownPanelView.Width));
+			FilterView.OnTextChanged = () =>
+			{
+				if (FilterView.Active && DropDownPanelView.Active && AllowFilterText)
+				{
+					Refilter();
+				}
+			};
 
 			DropDownListView = new ListView(theGeeUI, DropDownPanelView);
 			DropDownListView.ChildrenLayouts.Add(new VerticalViewLayout(1, false));
@@ -63,13 +79,31 @@ namespace GeeUI.Views
 			DropDownPanelView.Add(new Binding<int>(DropDownPanelView.Width, DropDownListView.Width));
 
 			DropDownListView.Name = "DropList";
-			DropDownPanelView.Add(new Binding<int>(DropDownPanelView.Height, DropDownListView.Height));
+			DropDownPanelView.Add(new Binding<int>(DropDownPanelView.Height, (i1) => i1 + 2 + ((AllowFilterText && FilterView.Active) ? FilterView.BoundBox.Height : 0), DropDownListView.Height));
 
 			DropDownPanelView.PostUpdate = f =>
 			{
 				if (!this.AttachedToRoot(this.ParentView))
 					DropDownPanelView.ParentView.RemoveChild(DropDownPanelView);
 			};
+		}
+
+		public void Refilter()
+		{
+			string text = FilterView.Text;
+			DropDownOption[] goodOptions = (from op in DropDownOptions
+											where op.Text.ToLower().Contains(text.ToLower()) || text == ""
+											select op).ToArray();
+
+			DropDownListView.RemoveAllChildren();
+			foreach (var option in goodOptions)
+			{
+				var dropButton = new ButtonView(this.ParentGeeUI, DropDownListView, option.Text, Vector2.Zero, option.Font);
+				dropButton.OnMouseClick += (sender, args) =>
+				{
+					OnOptionSelected(option);
+				};
+			}
 		}
 
 		public void ExecuteLast()
@@ -181,11 +215,16 @@ namespace GeeUI.Views
 		{
 			if (!DropDownShowing) return;
 			DropDownPanelView.Active.Value = false;
+			FilterView.Selected.Value = FilterView.Active.Value = false;
+			FilterView.ClearText();
+			Refilter();
 		}
 
 		public void ShowDropDown()
 		{
 			if (DropDownPanelView == null) return;
+			FilterView.ClearText();
+			FilterView.Active.Value = FilterView.Selected.Value = AllowFilterText && FilterThreshhold.Value <= DropDownOptions.Count;
 			DropDownPanelView.Active.Value = true;
 			DropDownPanelView.ParentView.BringChildToFront(DropDownPanelView);
 			DropDownPanelView.FindFirstChildByName("DropList").SetContentOffset(Vector2.Zero);

@@ -34,6 +34,7 @@ namespace GeeUI.ViewLayouts
 			int yDone = container.Top - parentView.RealY;
 			foreach (View v in parentView.Children)
 			{
+				if (!v.Active) continue;
 				v.Position.Value = Vector2.Zero;
 				if (ExcludedChildren.Contains(v)) continue;
 				v.Position.Value = new Vector2(container.Left - parentView.RealX, yDone);
@@ -51,6 +52,7 @@ namespace GeeUI.ViewLayouts
 			int furthestRight = 0;
 			foreach (View v in parentView.Children)
 			{
+				if (!v.Active) continue;
 				if (nullify)
 				{
 					widestChild = null; //this is per-column
