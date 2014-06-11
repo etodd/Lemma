@@ -266,6 +266,20 @@ namespace ComponentBind
 			this.Type = _type;
 		}
 
+		public void ClearGUID()
+		{
+			if (this.GUID != 0)
+				Entity.guidTable.Remove(this.GUID);
+		}
+
+		public void NewGUID()
+		{
+			this.ClearGUID();
+			this.GUID = Entity.CurrentGUID;
+			Entity.CurrentGUID = Math.Max(Entity.CurrentGUID, this.GUID + 1);
+			Entity.guidTable.Add(this.GUID, this);
+		}
+
 		public void SetMain(BaseMain _main)
 		{
 			if (this.GUID == 0)
@@ -584,7 +598,7 @@ namespace ComponentBind
 				this.bindings.Clear();
 				this.commands.Clear();
 				this.main.Remove(this);
-				Entity.guidTable.Remove(this.GUID);
+				this.ClearGUID();
 				if (!string.IsNullOrEmpty(this.ID))
 					Entity.idTable.Remove(this.ID);
 			}

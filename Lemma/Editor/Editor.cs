@@ -14,7 +14,7 @@ namespace Lemma.Components
 {
 	public class Editor : Component<Main>, IUpdateableComponent
 	{
-		static Editor()
+		public static void SetupDefaultEditorComponents()
 		{
 			Factory<Main>.DefaultEditorComponents = delegate(Factory<Main> factory, Entity entity, Main main)
 			{

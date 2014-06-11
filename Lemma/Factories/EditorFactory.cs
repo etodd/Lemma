@@ -197,6 +197,17 @@ namespace Lemma.Factories
 			model.Add(new Binding<Matrix>(model.Transform, () => editor.Orientation.Value * Matrix.CreateTranslation(editor.Position), editor.Position, editor.Orientation));
 
 			editor.Add(new TwoWayBinding<string>(main.MapFile, editor.MapFile));
+			// When transferring between maps we need to clear our GUID to make way for the entities on the new map,
+			// then assign ourselves a new GUID.
+			entity.Add(new CommandBinding<string>(main.LoadingMap, delegate(string map)
+			{
+				editor.SelectedEntities.Clear();
+				if (editor.VoxelEditMode)
+					editor.VoxelEditMode.Value = false;
+				editor.TransformMode.Value = Editor.TransformModes.None;
+				entity.ClearGUID();
+			}));
+			entity.Add(new CommandBinding(main.MapLoaded, (Action)entity.NewGUID));
 
 			entity.Add(new TwoWayBinding<string>(main.Spawner.StartSpawnPoint, editor.StartSpawnPoint));
 
