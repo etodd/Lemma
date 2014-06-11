@@ -92,7 +92,12 @@ namespace Lemma.IO
 			typeof(CameraStop),
 			typeof(AmbientSound),
 			typeof(Counter),
-			typeof(Ticker)
+			typeof(Ticker),
+			typeof(Setter<int>),
+			typeof(Setter<float>),
+			typeof(Setter<double>),
+			typeof(Setter<string>),
+			typeof(Setter<bool>),
 		};
 
 		public static XmlSerializer Serializer;

@@ -23,7 +23,6 @@ namespace Lemma.Components
 			model.DisableCulling.Value = true;
 			model.Editable = false;
 			model.Serialize = false;
-			model.Add(new Binding<bool>(model.Enabled, selected));
 
 			entity.Add(model);
 

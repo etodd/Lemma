@@ -115,6 +115,18 @@ namespace Lemma.Components
 
 
 		private SpriteFont MainFont;
+
+		public bool AnyTextFieldViewsSelected()
+		{
+			var views = main.GeeUI.GetAllViews(RootEditorView);
+			foreach (var view in views)
+			{
+				if (!(view is TextFieldView)) continue;
+				if (view.Selected.Value) return true;
+			}
+			return false;
+		}
+
 		public override void Awake()
 		{
 			base.Awake();

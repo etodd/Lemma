@@ -116,6 +116,7 @@
     <Compile Include="Components\Rift.cs" />
     <Compile Include="Components\Scriptlike\Scriptlike.cs" />
     <Compile Include="Components\Scriptlike\Counter.cs" />
+    <Compile Include="Components\Scriptlike\Setter.cs" />
     <Compile Include="Components\Scriptlike\Ticker.cs" />
     <Compile Include="Components\Spawner.cs" />
     <Compile Include="Console\AutoConCommand.cs" />
@@ -133,6 +134,10 @@
     <Compile Include="Factories\RiftFactory.cs" />
     <Compile Include="Factories\CollectibleFactory.cs" />
     <Compile Include="Factories\CounterFactory.cs" />
+    <Compile Include="Factories\Setters\StringSetterFactory.cs" />
+    <Compile Include="Factories\Setters\DoubleSetterFactory.cs" />
+    <Compile Include="Factories\Setters\FloatSetterFactory.cs" />
+    <Compile Include="Factories\Setters\IntSetterFactory.cs" />
     <Compile Include="Factories\TickerFactory.cs" />
     <Compile Include="GeeUI\GeeUIMain.cs" />
     <Compile Include="GeeUI\Managers\ConversionManager.cs" />
