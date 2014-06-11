@@ -119,6 +119,7 @@
     <Compile Include="Components\Scriptlike\Setter.cs" />
     <Compile Include="Components\Scriptlike\Ticker.cs" />
     <Compile Include="Components\Spawner.cs" />
+    <Compile Include="Components\World.cs" />
     <Compile Include="Console\AutoConCommand.cs" />
     <Compile Include="Console\AutoConVar.cs" />
     <Compile Include="Console\Console.cs" />

@@ -78,7 +78,7 @@ namespace Lemma.Components
 
 			this.Add(new NotifyBinding(delegate()
 			{
-				Lemma.Factories.WorldFactory.Instance.GetCommand("UpdateZones").Execute();
+				Lemma.Factories.WorldFactory.Instance.Get<World>().UpdateZones();
 			}, this.Parent, this.Exclusive, this.BoundingBox, this.Transform));
 
 			this.main.AddComponent(new PostInitialization

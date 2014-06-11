@@ -219,7 +219,7 @@ namespace Lemma.Components
 							{
 								Vector3 pos = spawnEntity.Get<Transform>().Position;
 								main.Camera.Position.Value = pos;
-								WorldFactory.Instance.GetCommand("UpdateZones").Execute();
+								WorldFactory.Instance.Get<World>().UpdateZones();
 								Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(pos + new Vector3(0, 2, 0), Vector3.Down, 8, false, true);
 								if (hit.Voxel == null)
 								{

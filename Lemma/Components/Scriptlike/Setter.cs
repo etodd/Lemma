@@ -59,41 +59,25 @@ namespace Lemma.Components
 				Entity entity = handle.Target;
 				if (entity != null && entity.Active)
 				{
-					if (component == "self")
+					var comp = entity.Get<ComponentBind.IComponent>(component);
+					if (comp == null)
 					{
-						var prop = entity.GetProperty<T>(property);
-						if (prop == null)
-						{
-							Log.d("Cannot find property " + component + "." + property + " in Setter " + Entity.ID);
-							continue;
-						}
-						else
-						{
-							_allProperties.Add(prop);
-						}
+						Log.d("Cannot find component " + component + " in Setter " + Entity.ID);
+						continue;
 					}
-					else
+					var t = comp.GetType();
+					foreach (FieldInfo p in t.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
 					{
-						var comp = entity.Get<ComponentBind.IComponent>(component);
-						if (comp == null)
+						if (p.Name == property)
 						{
-							Log.d("Cannot find component " + component + " in Setter " + Entity.ID);
-							continue;
-						}
-						var t = comp.GetType();
-						foreach (FieldInfo p in t.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-						{
-							if (p.Name == property)
+							if (p.FieldType == typeof(EditorProperty<T>) || (p.FieldType == typeof(Property<T>) && ((Property<T>)p.GetValue(comp)).Editable))
 							{
-								if (p.FieldType == typeof(EditorProperty<T>) || (p.FieldType == typeof(Property<T>) && ((Property<T>)p.GetValue(comp)).Editable))
+								Property<T> prop = (Property<T>)p.GetValue(comp);
+								if(prop != null)
+									_allProperties.Add(prop);
+								else
 								{
-									Property<T> prop = (Property<T>)p.GetValue(comp);
-									if(prop != null)
-										_allProperties.Add(prop);
-									else
-									{
-										Log.d("Property is null in Setter " + Entity.ID);
-									}
+									Log.d("Property is null in Setter " + Entity.ID);
 								}
 							}
 						}

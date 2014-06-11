@@ -43,7 +43,7 @@ namespace Lemma.Factories
 							Phone phone = PlayerDataFactory.Instance.GetOrCreate<Phone>("Phone");
 							try
 							{
-								DialogueForest forest = WorldFactory.Instance.GetProperty<DialogueForest>();
+								DialogueForest forest = WorldFactory.Instance.Get<World>().DialogueForest;
 								IEnumerable<DialogueForest.Node> nodes = forest.Load(File.ReadAllText(Path.Combine(main.Content.RootDirectory, "Game", name + ".dlz")));
 								phone.Load(forest, nodes);
 							}

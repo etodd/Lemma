@@ -36,7 +36,7 @@ namespace Lemma.Components
 
 				if (!string.IsNullOrEmpty(this.Initial))
 				{
-					DialogueForest forest = WorldFactory.Instance.GetProperty<DialogueForest>();
+					DialogueForest forest = WorldFactory.Instance.Get<World>().DialogueForest;
 					DialogueForest.Node n = forest.GetByName(this.Initial);
 					if (n == null)
 						Log.d(string.Format("Could not find dialogue node {0}", this.Initial));
