@@ -1187,7 +1187,6 @@ namespace Lemma.Components
 			this.resizeToMenu(settingsButton);
 			this.pauseMenu.Children.Add(settingsButton);
 
-#if DEVELOPMENT
 			// Edit mode toggle button
 			Container switchToEditMode = this.main.UIFactory.CreateButton("\\edit mode", delegate()
 			{
@@ -1204,6 +1203,8 @@ namespace Lemma.Components
 			});
 			this.resizeToMenu(switchToEditMode);
 			this.pauseMenu.Children.Add(switchToEditMode);
+#if DEVELOPMENT
+
 #endif
 
 			// Credits window
