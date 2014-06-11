@@ -4,117 +4,147 @@ using System.Linq;
 using System.Text;
 using Lemma.Components;
 using Microsoft.Xna.Framework;
+using System.Xml.Serialization;
 
 namespace Lemma.Factories
 {
-	public static class VoxelAttachable
+	public class VoxelAttachable : Component<Main>
 	{
-		public static void MakeAttachable(Entity entity, Main main, bool deleteIfRemoved = true, bool deleteIfMoved = false, Command deleteCommand = null)
+		public EditorProperty<float> Offset = new EditorProperty<float>();
+		public Property<Entity.Handle> AttachedVoxel = new Property<Entity.Handle>();
+		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
+
+		[XmlIgnore]
+		public Property<Matrix> Transform = new Property<Matrix>();
+
+		private bool detachIfRemoved;
+		private bool detachIfMoved;
+
+		[XmlIgnore]
+		public Command Detach = new Command();
+
+		public VoxelAttachable()
 		{
-			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
-			Property<Entity.Handle> voxel = entity.GetOrMakeProperty<Entity.Handle>("AttachedVoxel");
-			Property<Voxel.Coord> coord = entity.GetOrMakeProperty<Voxel.Coord>("AttachedCoordinate");
+			this.Enabled.Value = false;
+		}
+
+		public static VoxelAttachable MakeAttachable(Entity entity, Main main, bool detachIfRemoved = true, bool detachIfMoved = false, Command detachCommand = null)
+		{
+			VoxelAttachable attachable = entity.GetOrCreate<VoxelAttachable>("VoxelAttachable");
+			attachable.detachIfRemoved = detachIfRemoved;
+			attachable.detachIfMoved = detachIfMoved;
 
 			if (main.EditorEnabled)
-				return;
+				return attachable;
 
 			Transform transform = entity.Get<Transform>();
 
-			if (deleteCommand == null)
-				deleteCommand = entity.Delete;
+			if (detachCommand == null)
+				detachCommand = entity.Delete;
+			
+			attachable.Add(new CommandBinding(attachable.Detach, detachCommand));
+			attachable.Add(new TwoWayBinding<Matrix>(transform.Matrix, attachable.Transform));
+			return attachable;
+		}
 
+		public override void Awake()
+		{
+			base.Awake();
 			Binding<Matrix> attachmentBinding = null;
 			CommandBinding<IEnumerable<Voxel.Coord>, Voxel> cellEmptiedBinding = null;
 
-			entity.Add(new NotifyBinding(delegate()
+			this.Add(new NotifyBinding(delegate()
 			{
 				if (attachmentBinding != null)
 				{
-					entity.Remove(attachmentBinding);
-					entity.Remove(cellEmptiedBinding);
+					this.Remove(attachmentBinding);
+					this.Remove(cellEmptiedBinding);
 				}
 
-				Voxel m = voxel.Value.Target.Get<Voxel>();
-				coord.Value = m.GetCoordinate(Vector3.Transform(new Vector3(0, 0, attachOffset), transform.Matrix));
-
-				Matrix offset = transform.Matrix * Matrix.Invert(Matrix.CreateTranslation(m.Offset) * m.Transform);
-
-				attachmentBinding = new Binding<Matrix>(transform.Matrix, () => offset * Matrix.CreateTranslation(m.Offset) * m.Transform, m.Transform, m.Offset);
-				entity.Add(attachmentBinding);
-
-				cellEmptiedBinding = new CommandBinding<IEnumerable<Voxel.Coord>, Voxel>(m.CellsEmptied, delegate(IEnumerable<Voxel.Coord> coords, Voxel newMap)
+				if (this.AttachedVoxel.Value.Target != null)
 				{
-					foreach (Voxel.Coord c in coords)
-					{
-						if (c.Equivalent(coord))
-						{
-							if (newMap == null)
-							{
-								if (deleteIfRemoved)
-									deleteCommand.Execute();
-							}
-							else
-							{
-								if (deleteIfMoved)
-									deleteCommand.Execute();
-								else
-									voxel.Value = newMap.Entity;
-							}
-							break;
-						}
-					}
-				});
-				entity.Add(cellEmptiedBinding);
-			}, voxel));
+					Voxel m = this.AttachedVoxel.Value.Target.Get<Voxel>();
+					this.Coord.Value = m.GetCoordinate(Vector3.Transform(new Vector3(0, 0, this.Offset), this.Transform));
 
-			entity.Add(new PostInitialization
-			{
-				delegate()
-				{
-					if (voxel.Value.Target == null)
+					Matrix offset = this.Transform * Matrix.Invert(Matrix.CreateTranslation(m.Offset) * m.Transform);
+
+					attachmentBinding = new Binding<Matrix>(this.Transform, () => offset * Matrix.CreateTranslation(m.Offset) * m.Transform, m.Transform, m.Offset);
+					this.Add(attachmentBinding);
+
+					cellEmptiedBinding = new CommandBinding<IEnumerable<Voxel.Coord>, Voxel>(m.CellsEmptied, delegate(IEnumerable<Voxel.Coord> coords, Voxel newMap)
 					{
-						Voxel closestMap = null;
-						int closestDistance = 3;
-						float closestFloatDistance = 3.0f;
-						Vector3 target = Vector3.Transform(new Vector3(0, 0, attachOffset), transform.Matrix);
-						foreach (Voxel m in Voxel.Voxels)
+						foreach (Voxel.Coord c in coords)
 						{
-							Voxel.Coord targetCoord = m.GetCoordinate(target);
-							Voxel.Coord? c = m.FindClosestFilledCell(targetCoord, closestDistance);
-							if (c.HasValue)
+							if (c.Equivalent(this.Coord))
 							{
-								float distance = (m.GetRelativePosition(c.Value) - m.GetRelativePosition(targetCoord)).Length();
-								if (distance < closestFloatDistance)
+								if (newMap == null)
 								{
-									closestFloatDistance = distance;
-									closestDistance = (int)Math.Floor(distance);
-									closestMap = m;
+									if (this.detachIfRemoved)
+										this.Detach.Execute();
 								}
+								else
+								{
+									if (this.detachIfMoved)
+										this.Detach.Execute();
+									else
+										this.AttachedVoxel.Value = newMap.Entity;
+								}
+								break;
 							}
 						}
-						if (closestMap == null)
-							deleteCommand.Execute();
-						else
-							voxel.Value = closestMap.Entity;
-					}
-					else
-						voxel.Reset();
+					});
+					this.Add(cellEmptiedBinding);
 				}
-			});
+			}, this.AttachedVoxel));
+		}
+
+		public override void Start()
+		{
+			if (this.Enabled && !this.main.EditorEnabled)
+			{
+				if (this.AttachedVoxel.Value.Target == null)
+				{
+					Voxel closestMap = null;
+					int closestDistance = 3;
+					float closestFloatDistance = 3.0f;
+					Vector3 target = Vector3.Transform(new Vector3(0, 0, this.Offset), this.Transform);
+					foreach (Voxel m in Voxel.Voxels)
+					{
+						Voxel.Coord targetCoord = m.GetCoordinate(target);
+						Voxel.Coord? c = m.FindClosestFilledCell(targetCoord, closestDistance);
+						if (c.HasValue)
+						{
+							float distance = (m.GetRelativePosition(c.Value) - m.GetRelativePosition(targetCoord)).Length();
+							if (distance < closestFloatDistance)
+							{
+								closestFloatDistance = distance;
+								closestDistance = (int)Math.Floor(distance);
+								closestMap = m;
+							}
+						}
+					}
+					if (closestMap == null)
+						this.Detach.Execute();
+					else
+						this.AttachedVoxel.Value = closestMap.Entity;
+				}
+				else
+					this.AttachedVoxel.Reset();
+			}
 		}
 
 		public static void BindTarget(Entity entity, Property<Vector3> target)
 		{
-			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
+			VoxelAttachable attachable = entity.Get<VoxelAttachable>();
 			Transform transform = entity.Get<Transform>();
-			entity.Add(new Binding<Vector3>(target, () => Vector3.Transform(new Vector3(0, 0, attachOffset), transform.Matrix), attachOffset, transform.Matrix));
+			entity.Add(new Binding<Vector3>(target, () => Vector3.Transform(new Vector3(0, 0, attachable.Offset), transform.Matrix), attachable.Offset, transform.Matrix));
 		}
 
 		public static void BindTarget(Entity entity, Property<Matrix> target)
 		{
-			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
+			VoxelAttachable attachable = entity.Get<VoxelAttachable>();
 			Transform transform = entity.Get<Transform>();
-			entity.Add(new Binding<Matrix>(target, () => Matrix.CreateTranslation(0, 0, attachOffset) * transform.Matrix, attachOffset, transform.Matrix));
+			entity.Add(new Binding<Matrix>(target, () => Matrix.CreateTranslation(0, 0, attachable.Offset) * transform.Matrix, attachable.Offset, transform.Matrix));
 		}
 
 		public static void AttachEditorComponents(Entity entity, Main main, Property<Vector3> color = null)
@@ -124,11 +154,11 @@ namespace Lemma.Factories
 			if (color != null)
 				model.Add(new Binding<Vector3>(model.Color, color));
 
-			Property<float> attachmentOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
+			VoxelAttachable attachable = entity.GetOrCreate<VoxelAttachable>("VoxelAttachable");
 
 			Model editorModel = entity.Get<Model>("EditorModel");
-			model.Add(new Binding<bool>(model.Enabled, () => entity.EditorSelected && attachmentOffset > 0, entity.EditorSelected, attachmentOffset));
-			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(1.0f, 1.0f, x), attachmentOffset));
+			model.Add(new Binding<bool>(model.Enabled, () => entity.EditorSelected && attachable.Offset > 0, entity.EditorSelected, attachable.Offset));
+			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(1.0f, 1.0f, x), attachable.Offset));
 			model.Editable = false;
 			model.Serialize = false;
 

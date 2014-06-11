@@ -25,11 +25,11 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
+
+			VoxelAttachable.MakeAttachable(entity, main);
+			
 			this.SetMain(entity, main);
 
-			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				VoxelAttachable.MakeAttachable(entity, main);
-			
 			trigger.Editable = true;
 			trigger.Enabled.Editable = false;
 			VoxelAttachable.BindTarget(entity, trigger.Position);

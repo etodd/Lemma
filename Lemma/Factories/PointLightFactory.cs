@@ -27,8 +27,7 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			light.Add(new TwoWayBinding<Vector3>(light.Position, transform.Position));
 
-			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				VoxelAttachable.MakeAttachable(entity, main);
+			VoxelAttachable.MakeAttachable(entity, main);
 
 			entity.Add("Trigger", new Command
 			{

@@ -29,6 +29,8 @@ namespace Lemma.Factories
 
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");
 
+			VoxelAttachable.MakeAttachable(entity, main);
+
 			base.Bind(entity, main, creating);
 
 			TargetFactory.Positions.Add(transform);
@@ -60,9 +62,6 @@ namespace Lemma.Factories
 			}));
 
 			entity.Add("Trigger", trigger.PlayerEntered);
-
-			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				VoxelAttachable.MakeAttachable(entity, main);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

@@ -22,7 +22,6 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			entity.GetOrCreate<Transform>("Transform").Editable = true;
-			this.SetMain(entity, main);
 
 			Command detach = new Command
 			{
@@ -31,10 +30,9 @@ namespace Lemma.Factories
 					entity.Delete.Execute();
 				},
 			};
-			entity.Add("Detach", detach);
+			VoxelAttachable.MakeAttachable(entity, main, true, false, detach);
 
-			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				VoxelAttachable.MakeAttachable(entity, main, true, false, detach);
+			this.SetMain(entity, main);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

@@ -26,13 +26,10 @@ namespace Lemma.Factories
 			PointLight light = entity.GetOrCreate<PointLight>("PointLight");
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			Property<float> attachOffset = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
-			Property<Entity.Handle> map = entity.GetOrMakeProperty<Entity.Handle>("AttachedVoxel");
-			Property<Voxel.Coord> coord = entity.GetOrMakeProperty<Voxel.Coord>("AttachedCoordinate");
-
+			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);
 			Property<bool> on = entity.GetOrMakeProperty<bool>("On");
 
-			light.Add(new Binding<Vector3>(light.Position, () => Vector3.Transform(new Vector3(0, 0, attachOffset), transform.Matrix), attachOffset, transform.Matrix));
+			light.Add(new Binding<Vector3>(light.Position, () => Vector3.Transform(new Vector3(0, 0, attachable.Offset), transform.Matrix), attachable.Offset, transform.Matrix));
 
 			ListProperty<Entity.Handle> targets = entity.GetOrMakeListProperty<Entity.Handle>("Targets");
 
@@ -64,39 +61,21 @@ namespace Lemma.Factories
 			else
 			{
 				light.Add(new Binding<bool>(light.Enabled, on));
-				Binding<Matrix> attachmentBinding = null;
-				CommandBinding deleteBinding = null;
 				CommandBinding<IEnumerable<Voxel.Coord>, Voxel> cellFilledBinding = null;
 
 				Voxel.State poweredState = Voxel.States[Voxel.t.PoweredSwitch];
 
 				entity.Add(new NotifyBinding(delegate()
 				{
-					if (attachmentBinding != null)
-					{
-						entity.Remove(attachmentBinding);
-						entity.Remove(deleteBinding);
+					Voxel m = attachable.AttachedVoxel.Value.Target.Get<Voxel>();
+					if (cellFilledBinding != null)
 						entity.Remove(cellFilledBinding);
-					}
-
-					Voxel m = map.Value.Target.Get<Voxel>();
-					coord.Value = m.GetCoordinate(Vector3.Transform(new Vector3(0, 0, attachOffset), transform.Matrix));
-
-					on.Value = m[coord] == poweredState;
-
-					Matrix offset = transform.Matrix * Matrix.Invert(Matrix.CreateTranslation(m.Offset) * m.Transform);
-
-					attachmentBinding = new Binding<Matrix>(transform.Matrix, () => offset * Matrix.CreateTranslation(m.Offset) * m.Transform, m.Transform, m.Offset);
-					entity.Add(attachmentBinding);
-
-					deleteBinding = new CommandBinding(m.Delete, entity.Delete);
-					entity.Add(deleteBinding);
 
 					cellFilledBinding = new CommandBinding<IEnumerable<Voxel.Coord>, Voxel>(m.CellsFilled, delegate(IEnumerable<Voxel.Coord> coords, Voxel newMap)
 					{
 						foreach (Voxel.Coord c in coords)
 						{
-							if (c.Equivalent(coord))
+							if (c.Equivalent(attachable.Coord))
 							{
 								on.Value = c.Data == poweredState;
 								break;
@@ -104,42 +83,7 @@ namespace Lemma.Factories
 						}
 					});
 					entity.Add(cellFilledBinding);
-				}, map));
-
-				entity.Add(new PostInitialization
-				{
-					delegate()
-					{
-						if (map.Value.Target == null)
-						{
-							Voxel closestMap = null;
-							int closestDistance = 3;
-							float closestFloatDistance = 3.0f;
-							Vector3 target = Vector3.Transform(new Vector3(0, 0, attachOffset), transform.Matrix);
-							foreach (Voxel m in Voxel.Voxels)
-							{
-								Voxel.Coord targetCoord = m.GetCoordinate(target);
-								Voxel.Coord? c = m.FindClosestFilledCell(targetCoord, closestDistance);
-								if (c.HasValue)
-								{
-									float distance = (m.GetRelativePosition(c.Value) - m.GetRelativePosition(targetCoord)).Length();
-									if (distance < closestFloatDistance)
-									{
-										closestFloatDistance = distance;
-										closestDistance = (int)Math.Floor(distance);
-										closestMap = m;
-									}
-								}
-							}
-							if (closestMap == null)
-								entity.Delete.Execute();
-							else
-								map.Value = closestMap.Entity;
-						}
-						else
-							map.Reset();
-					}
-				});
+				}, attachable.AttachedVoxel));
 			}
 
 			this.SetMain(entity, main);

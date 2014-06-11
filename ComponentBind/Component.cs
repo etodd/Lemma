@@ -22,6 +22,7 @@ namespace ComponentBind
 		Property<bool> Suspended { get; }
 		Command Delete { get; }
 		void OnSave();
+		void Start();
 		void delete();
 		void Awake();
 	}
@@ -117,6 +118,11 @@ namespace ComponentBind
 		}
 
 		public virtual void OnSave()
+		{
+
+		}
+
+		public virtual void Start()
 		{
 
 		}

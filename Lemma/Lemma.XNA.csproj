@@ -176,6 +176,7 @@
     <Compile Include="GeeUI\Views\WindowView.cs" />
     <Compile Include="GInterfaces\ConsoleUI.cs" />
     <Compile Include="GInterfaces\TimeTrialUI.cs" />
+    <Compile Include="Graphics\Cloud.cs" />
     <Compile Include="MainMenu.cs" />
     <Compile Include="Player\BlockPredictor.cs" />
     <Compile Include="Player\Jump.cs" />
@@ -206,7 +207,6 @@
     <Compile Include="ErrorForm.designer.cs">
       <DependentUpon>ErrorForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Factories\AnimatedPropFactory.cs" />
     <Compile Include="Factories\CloudFactory.cs" />
     <Compile Include="Factories\LowerLimitFactory.cs" />
     <Compile Include="Factories\DialogueFileFactory.cs" />
@@ -217,7 +217,6 @@
     <Compile Include="Factories\EntityConnectable.cs" />
     <Compile Include="Factories\VoxelFillFactory.cs" />
     <Compile Include="Factories\TriggerFactory.cs" />
-    <Compile Include="Factories\VoxelEntity.cs" />
     <Compile Include="Factories\SmokeFactory.cs" />
     <Compile Include="Factories\LevitatorFactory.cs" />
     <Compile Include="Factories\Explosion.cs" />

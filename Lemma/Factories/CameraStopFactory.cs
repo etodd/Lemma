@@ -23,8 +23,7 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			if (entity.GetOrMakeProperty<bool>("Attach", true))
-				VoxelAttachable.MakeAttachable(entity, main);
+			VoxelAttachable.MakeAttachable(entity, main);
 			
 			CameraStop cameraStop = entity.GetOrCreate<CameraStop>("CameraStop");
 

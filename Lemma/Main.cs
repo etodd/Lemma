@@ -203,6 +203,7 @@ namespace Lemma
 			for (int i = 0; i < this.componentsToAdd.Count; i++)
 			{
 				IComponent c = this.componentsToAdd[i];
+				c.Start();
 				Type t = c.GetType();
 				if (typeof(IDrawableComponent).IsAssignableFrom(t))
 					this.drawables.Add((IDrawableComponent)c);
