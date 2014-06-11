@@ -1192,6 +1192,11 @@ namespace Lemma.Components
 			{
 				this.pauseMenu.Visible.Value = false;
 				this.main.EditorEnabled.Value = true;
+
+				//Force the static constructor
+				var editor = new Editor();
+				editor = null;
+
 				this.main.Paused.Value = false;
 				if (this.pauseAnimation != null)
 				{

@@ -16,8 +16,23 @@ namespace ComponentBind
 	[XmlInclude(typeof(ListProperty<Entity.Handle>))]
 	[XmlInclude(typeof(ListProperty<string>))]
 	[XmlInclude(typeof(Transform))]
+	[XmlInclude(typeof(Entity.CommandLink))]
+	[XmlInclude(typeof(List<Entity.CommandLink>))]
 	public class Entity
 	{
+		public struct CommandLink
+		{
+			public Handle TargetEntity;
+
+			[XmlAttribute]
+			[DefaultValue("")]
+			public string TargetCommand;
+
+			[XmlAttribute]
+			[DefaultValue("")]
+			public string SourceCommand;
+		}
+
 		public struct Handle
 		{
 			private ulong guid;
@@ -72,7 +87,7 @@ namespace ComponentBind
 
 		private static Dictionary<ulong, Entity> guidTable = new Dictionary<ulong, Entity>();
 		private static Dictionary<string, Entity> idTable = new Dictionary<string, Entity>();
-		
+
 		public static Entity GetByID(string id)
 		{
 			Entity result;
@@ -149,6 +164,10 @@ namespace ComponentBind
 
 		[XmlIgnore]
 		public Command Delete = new Command();
+
+		[XmlArray("LinkedCommands")]
+		[XmlArrayItem("CommandLink", typeof(CommandLink))]
+		public List<CommandLink> LinkedCommands = new List<CommandLink>();
 
 		[XmlArray("Components")]
 		[XmlArrayItem("Component", Type = typeof(DictionaryEntry))]
@@ -245,7 +264,7 @@ namespace ComponentBind
 
 		[XmlIgnore]
 		public Command OnSave;
-	
+
 		[XmlIgnore]
 		public Command<Entity> ToggleEntityConnection;
 

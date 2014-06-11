@@ -95,6 +95,7 @@ namespace Lemma.IO
 			typeof(World),
 			typeof(Note),
 			typeof(VoxelAttachable),
+			//typeof(Entity.CommandLink)
 		};
 
 		public static XmlSerializer Serializer;
