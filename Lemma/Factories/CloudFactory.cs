@@ -34,24 +34,17 @@ namespace Lemma.Factories
 			base.Bind(entity, main, creating);
 			entity.CannotSuspendByDistance = true;
 
+			Cloud settings = entity.GetOrCreate<Cloud>("Settings");
+
 			ModelAlpha clouds = entity.Get<ModelAlpha>("Clouds");
 			clouds.CullBoundingBox.Value = false;
 			clouds.DisableCulling.Value = true;
 
-			Property<float> height = entity.GetOrMakeProperty<float>("Height", true, 1.0f);
-			entity.Add(new Binding<float>(clouds.GetFloatParameter("Height"), height));
+			clouds.Add(new Binding<float>(clouds.GetFloatParameter("Height"), settings.Height));
 
-			Property<Vector2> velocity = entity.GetOrMakeProperty<Vector2>("Velocity", true, Vector2.One);
-			entity.Add(new Binding<Vector2>(clouds.GetVector2Parameter("Velocity"), x => x * (1.0f / 60.0f), velocity));
+			clouds.Add(new Binding<Vector2>(clouds.GetVector2Parameter("Velocity"), x => x * (1.0f / 60.0f), settings.Velocity));
 
-			entity.Add(new CommandBinding(main.ReloadedContent, delegate()
-			{
-				height.Reset();
-				velocity.Reset();
-			}));
-
-			Property<float> startDistance = entity.GetOrMakeProperty<float>("StartDistance", true, 50);
-			clouds.Add(new Binding<float>(clouds.GetFloatParameter("StartDistance"), startDistance));
+			clouds.Add(new Binding<float>(clouds.GetFloatParameter("StartDistance"), settings.StartDistance));
 		}
 	}
 }

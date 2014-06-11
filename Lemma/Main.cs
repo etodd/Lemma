@@ -264,21 +264,7 @@ namespace Lemma
 			{
 				foreach (Entity entity in this.Entities.ToList())
 				{
-					if (entity.Type == "Editor")
-					{
-						if (deleteEditor)
-							this.Remove(entity);
-						else
-						{
-							// Deselect all entities, since they'll be gone anyway
-							Editor editor = entity.Get<Editor>();
-							editor.SelectedEntities.Clear();
-							if (editor.VoxelEditMode)
-								editor.VoxelEditMode.Value = false;
-							editor.TransformMode.Value = Editor.TransformModes.None;
-						}
-					}
-					else
+					if (deleteEditor || entity.Type != "Editor")
 						this.Remove(entity);
 				}
 			}
@@ -307,6 +293,7 @@ namespace Lemma
 		public Main()
 		{
 			Factory<Main>.Initialize();
+			Editor.SetupDefaultEditorComponents();
 
 #if STEAMWORKS
 			SteamWorker.Init();
@@ -804,13 +791,8 @@ namespace Lemma
 					this.Renderer.Tint.Value = new Vector3(1.0f);
 				});
 				this.MapFile.Value = MenuMap;
-				this.Menu.Pause();
-
-				//Editor is an external option mate
 #if !DEVELOPMENT
-					// Main menu
-
-					
+				this.Menu.Pause();
 #endif
 
 #if ANALYTICS

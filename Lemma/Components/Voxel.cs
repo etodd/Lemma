@@ -841,7 +841,6 @@ namespace Lemma.Components
 
 			public void ApplyToBlock(ComponentBind.Entity block)
 			{
-				block.GetProperty<uint>("CollisionSoundCue").Value = this.RubbleEvent;
 				block.Get<PhysicsBlock>().Box.Mass = this.Density;
 				this.ApplyToEffectBlock(block.Get<ModelInstance>());
 			}

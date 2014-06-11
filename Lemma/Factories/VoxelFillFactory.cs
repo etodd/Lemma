@@ -89,18 +89,19 @@ namespace Lemma.Factories
 							Voxel m = targetEntity.Get<Voxel>();
 							
 							CoordinateEntry entry = coords[index];
-							Entity block = factory.CreateAndBind(main);
-							entry.Coord.Data.ApplyToEffectBlock(block.Get<ModelInstance>());
-							block.GetProperty<bool>("CheckAdjacent").Value = false;
-							block.GetProperty<Vector3>("Offset").Value = m.GetRelativePosition(entry.Coord);
-							block.GetProperty<bool>("Scale").Value = true;
+							Entity blockEntity = factory.CreateAndBind(main);
+							EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
+							entry.Coord.Data.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
+							effectBlock.CheckAdjacent.Value = false;
+							effectBlock.Offset.Value = m.GetRelativePosition(entry.Coord);
+							effectBlock.DoScale.Value = true;
 
-							block.GetProperty<Vector3>("StartPosition").Value = entry.Position + new Vector3(8.0f, 20.0f, 8.0f) * blockLifetime.Value;
-							block.GetProperty<Matrix>("StartOrientation").Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
+							effectBlock.StartPosition.Value = entry.Position + new Vector3(8.0f, 20.0f, 8.0f) * blockLifetime.Value;
+							effectBlock.StartOrientation.Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
 
-							block.GetProperty<float>("TotalLifetime").Value = blockLifetime;
-							factory.Setup(block, targetEntity, entry.Coord, entry.Coord.Data.ID);
-							main.Add(block);
+							effectBlock.TotalLifetime.Value = blockLifetime;
+							effectBlock.Setup(targetEntity, entry.Coord, entry.Coord.Data.ID);
+							main.Add(blockEntity);
 
 							index.Value++;
 							intervalTimer -= interval;

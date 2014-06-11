@@ -343,7 +343,7 @@ namespace Lemma.Components
 							}
 						}
 					}
-					Factory.Get<EffectBlockFactory>().Build(main, buildCoords, false, this.Position);
+					Factory.Get<EffectBlockFactory>().Build(main, buildCoords, this.Position);
 				}
 				else if (wallType.ID == 0 && wallInstantiationTimer == 0.0f) // We ran out of wall to walk on
 				{
