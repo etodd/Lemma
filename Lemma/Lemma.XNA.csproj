@@ -180,6 +180,7 @@
     <Compile Include="GeeUI\Views\WindowView.cs" />
     <Compile Include="GInterfaces\ConsoleUI.cs" />
     <Compile Include="GInterfaces\TimeTrialUI.cs" />
+    <Compile Include="Graphics\Cloud.cs" />
     <Compile Include="MainMenu.cs" />
     <Compile Include="Player\BlockPredictor.cs" />
     <Compile Include="Player\Jump.cs" />
