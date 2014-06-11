@@ -193,7 +193,7 @@ namespace Lemma.Components
 			this.PopupCommands.ItemRemoved += (index, command) =>
 			{
 				RecomputePopupCommands();
-				
+
 			};
 		}
 
@@ -630,6 +630,38 @@ namespace Lemma.Components
 				foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z, VectorElement.W })
 					this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field);
 			}
+			else if (typeof(Enum).IsAssignableFrom(propertyInfo.PropertyType))
+			{
+				var fields = propertyInfo.PropertyType.GetFields(BindingFlags.Static | BindingFlags.Public);
+				int numFields = fields.Length;
+				var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero, MainFont);
+				for (int i = 0; i < numFields; i++)
+				{
+					int i1 = i;
+					Action onClick = () =>
+					{
+						propertyInfo.SetValue(property, Enum.ToObject(propertyInfo.PropertyType, i1), null);
+					};
+					drop.AddOption(fields[i].Name, onClick);
+				}
+				drop.SetSelectedOption(propertyInfo.GetValue(property, null).ToString(), false);
+				drop.Add(new NotifyBinding(() =>
+				{
+					drop.SetSelectedOption(propertyInfo.GetValue(property, null).ToString(), false);
+				}, (IProperty)property));
+				/*field.Add(new CommandBinding<int>(field.MouseScrolled, () => this.selectedStringProperty == null && field.MouseLocked, delegate(int scroll)
+				{
+					this.NeedsSave.Value = true;
+					int i = (int)propertyInfo.GetValue(property, null);
+					i += scroll;
+					if (i < 0)
+						i = numFields - 1;
+					else if (i >= numFields)
+						i = 0;
+					propertyInfo.SetValue(property, Enum.ToObject(propertyInfo.PropertyType, i), null);
+				}));*/
+				//textField.Add(new Binding<string>(textField.Text, () => propertyInfo.GetValue(property, null).ToString(), (IProperty)property));
+			}
 			else
 			{
 				TextFieldView view = new TextFieldView(main.GeeUI, ret, Vector2.Zero, MainFont);
@@ -748,7 +780,7 @@ namespace Lemma.Components
 
 		private void commitStringProperty()
 		{
-	
+
 		}
 
 		private void revertStringProperty()

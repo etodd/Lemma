@@ -59,15 +59,33 @@ namespace GeeUI.Views
 
 			DropDownPanelView.PostUpdate = f =>
 			{
-				if(!this.AttachedToRoot(this.ParentView)) 
+				if (!this.AttachedToRoot(this.ParentView))
 					DropDownPanelView.ParentView.RemoveChild(DropDownPanelView);
 			};
 		}
 
-		public void OnOptionSelected(DropDownOption option)
+		public int GetOptionIndex(string optionName)
+		{
+			int i = -1;
+			foreach (var dropdown in DropDownOptions)
+			{
+				i++;
+				if (dropdown.Text.Equals(optionName)) return i;
+			}
+			return -1;
+		}
+
+		public void SetSelectedOption(string optionName, bool callOnSelected = true)
+		{
+			int optionIndex = GetOptionIndex(optionName);
+			if (optionIndex == -1) return;
+			OnOptionSelected(DropDownOptions[optionIndex], callOnSelected);
+		}
+
+		public void OnOptionSelected(DropDownOption option, bool call = true)
 		{
 			((ButtonView)this.Children[0]).Text = option.Text;
-			if (option.OnClicked != null) option.OnClicked();
+			if (option.OnClicked != null && call) option.OnClicked();
 		}
 
 		public void AddOption(string name, Action action, SpriteFont fontString = null)
@@ -89,7 +107,7 @@ namespace GeeUI.Views
 
 			if (DropDownOptions.Count == 1)
 			{
-				((ButtonView) FindFirstChildByName("button")).Text = name;
+				((ButtonView)FindFirstChildByName("button")).Text = name;
 			}
 		}
 
@@ -117,7 +135,7 @@ namespace GeeUI.Views
 		{
 			if (!DropDownShowing) return;
 			if (DropDownPanelView.AbsoluteBoundBox.Contains(InputManager.GetMousePos()) ||
-			    Children[0].AbsoluteBoundBox.Contains(InputManager.GetMousePos())) return;
+				Children[0].AbsoluteBoundBox.Contains(InputManager.GetMousePos())) return;
 			HideDropDown();
 		}
 
