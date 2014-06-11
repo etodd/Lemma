@@ -103,6 +103,7 @@ namespace Lemma.IO
 			typeof(Setter<Vector4>),
 			typeof(Setter<Voxel.Coord>),
 			typeof(World),
+			typeof(Note),
 		};
 
 		public static XmlSerializer Serializer;

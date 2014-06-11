@@ -10,11 +10,9 @@ namespace Lemma.Components
 {
 	public class PhoneNote
 	{
-		public static void Attach(Main main, Entity entity, AnimatedModel model, FPSInput input, Phone phone, Property<bool> enableWalking, Property<bool> enableMoves, Property<bool> phoneActive, Property<bool> noteActive)
+		public static void Attach(Main main, Entity entity, Player player, AnimatedModel model, FPSInput input, Phone phone, Property<bool> enableWalking, Property<bool> enableMoves, Property<bool> phoneActive, Property<bool> noteActive)
 		{
 			UIRenderer phoneUi = entity.GetOrCreate<UIRenderer>("PhoneUI");
-
-			Property<Entity.Handle> signalTower = entity.GetOrMakeProperty<Entity.Handle>("SignalTower");
 
 			const float phoneWidth = 200.0f;
 
@@ -111,8 +109,8 @@ namespace Lemma.Components
 			noService.Text.Value = "\\no service";
 			phoneTopBar.Children.Add(noService);
 
-			signalIcon.Add(new Binding<bool, Entity.Handle>(signalIcon.Visible, x => x.Target != null && x.Target.Active, signalTower));
-			noService.Add(new Binding<bool, Entity.Handle>(noService.Visible, x => x.Target == null || !x.Target.Active, signalTower));
+			signalIcon.Add(new Binding<bool, Entity.Handle>(signalIcon.Visible, x => x.Target != null && x.Target.Active, player.SignalTower));
+			noService.Add(new Binding<bool, Entity.Handle>(noService.Visible, x => x.Target == null || !x.Target.Active, player.SignalTower));
 
 			ListContainer phoneLayout = new ListContainer();
 			phoneLayout.Spacing.Value = padding;
@@ -197,14 +195,13 @@ namespace Lemma.Components
 			noteModel.Add(new Binding<Matrix>(noteModel.Transform, x => Matrix.CreateTranslation(-0.005f, 0.05f, 0.08f) * x, phoneModel.Transform));
 			noteModel.Serialize = false;
 			noteModel.Enabled.Value = false;
-			Property<Entity.Handle> note = entity.GetOrMakeProperty<Entity.Handle>("Note");
 
 			Container togglePhoneMessage = null;
 
 			entity.Add(new NotifyBinding(delegate()
 			{
-				bool hasNoteOrSignalTower = (note.Value.Target != null && note.Value.Target.Active)
-					|| (signalTower.Value.Target != null && signalTower.Value.Target.Active && !string.IsNullOrEmpty(signalTower.Value.Target.Get<SignalTower>().Initial));
+				bool hasNoteOrSignalTower = (player.Note.Value.Target != null && player.Note.Value.Target.Active)
+					|| (player.SignalTower.Value.Target != null && player.SignalTower.Value.Target.Active && !string.IsNullOrEmpty(player.SignalTower.Value.Target.Get<SignalTower>().Initial));
 
 				if (togglePhoneMessage == null && hasNoteOrSignalTower)
 					togglePhoneMessage = main.Menu.ShowMessage(entity, "[{{TogglePhone}}]");
@@ -213,7 +210,7 @@ namespace Lemma.Components
 					main.Menu.HideMessage(entity, togglePhoneMessage);
 					togglePhoneMessage = null;
 				}
-			}, note, signalTower));
+			}, player.Note, player.SignalTower));
 
 			entity.Add(new CommandBinding(entity.Delete, delegate()
 			{
@@ -253,13 +250,14 @@ namespace Lemma.Components
 				noteUi.Enabled.Value = noteActive;
 
 				model.Stop("Phone", "Note");
-				Entity noteEntity = note.Value.Target;
+				Entity noteEntity = player.Note.Value.Target;
 				if (noteEntity != null && noteEntity.Active)
 				{
+					Note note = noteEntity.Get<Note>();
 					if (noteActive)
 					{
-						noteUiImage.Image.Value = noteEntity.GetOrMakeProperty<string>("Image");
-						noteUiText.Text.Value = noteEntity.GetOrMakeProperty<string>("Text");
+						noteUiImage.Image.Value = note.Image;
+						noteUiText.Text.Value = note.Text;
 						model.StartClip("Note", 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
 						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_NOTE_PICKUP, entity);
 						float startRotationY = input.Mouse.Value.Y;
@@ -279,9 +277,8 @@ namespace Lemma.Components
 					else
 					{
 						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_NOTE_DROP, entity);
-						Property<bool> collected = noteEntity.GetOrMakeProperty<bool>("Collected");
-						if (!collected)
-							collected.Value = true;
+						if (!note.Collected)
+							note.Collected.Value = true;
 					}
 				}
 			};
@@ -350,7 +347,7 @@ namespace Lemma.Components
 			{
 				if (noteActive || phoneActive || phone.CanReceiveMessages)
 				{
-					if (!phoneActive && (noteActive || note.Value.Target != null && note.Value.Target.Active))
+					if (!phoneActive && (noteActive || player.Note.Value.Target != null))
 						showNote(!noteActive);
 					else if (phone.Enabled)
 						showPhone(!phoneActive);
@@ -430,8 +427,8 @@ namespace Lemma.Components
 						phone.Answer(answer);
 						
 						// Disable the signal tower
-						Entity s = signalTower.Value.Target;
-						if (s != null && s.Active)
+						Entity s = player.SignalTower.Value.Target;
+						if (s != null)
 							s.Get<SignalTower>().Initial.Value = null;
 
 						scrollToBottom();

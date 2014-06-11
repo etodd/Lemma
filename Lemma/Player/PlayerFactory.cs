@@ -545,9 +545,7 @@ namespace Lemma.Factories
 						)
 					);
 
-					Property<bool> phoneActive = dataEntity.GetOrMakeProperty<bool>("PhoneActive");
-					Property<bool> noteActive = dataEntity.GetOrMakeProperty<bool>("NoteActive");
-					PhoneNote.Attach(main, entity, model, input, phone, player.Character.EnableWalking, player.EnableMoves, phoneActive, noteActive);
+					PhoneNote.Attach(main, entity, player, model, input, phone, player.Character.EnableWalking, player.EnableMoves, playerData.PhoneActive, playerData.NoteActive);
 				}
 			});
 		}

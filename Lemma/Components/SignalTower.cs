@@ -60,7 +60,7 @@ namespace Lemma.Components
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SIGNAL_TOWER_ACTIVATE, this.Entity);
 				}
 
-				PlayerFactory.Instance.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = this.Entity;
+				PlayerFactory.Instance.Get<Player>().SignalTower.Value = this.Entity;
 			};
 
 			this.PlayerExitedRange.Action = delegate()
@@ -70,7 +70,7 @@ namespace Lemma.Components
 				phone.ActiveAnswers.Clear();
 
 				if (PlayerFactory.Instance != null)
-					PlayerFactory.Instance.GetOrMakeProperty<Entity.Handle>("SignalTower").Value = null;
+					PlayerFactory.Instance.Get<Player>().SignalTower.Value = null;
 			};
 
 			if (!this.main.EditorEnabled)
@@ -83,7 +83,7 @@ namespace Lemma.Components
 			Entity player = this.Player.Value.Target;
 			if (player != null && player.Active)
 			{
-				Property<Entity.Handle> signalTowerHandle = player.GetOrMakeProperty<Entity.Handle>("SignalTower");
+				Property<Entity.Handle> signalTowerHandle = player.Get<Player>().SignalTower;
 				if (signalTowerHandle.Value.Target == this.Entity)
 					signalTowerHandle.Value = null;
 			}

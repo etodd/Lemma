@@ -111,6 +111,7 @@
     <Compile Include="Components\AmbientSound.cs" />
     <Compile Include="Components\Analytics.cs" />
     <Compile Include="Components\CameraStop.cs" />
+    <Compile Include="Components\Note.cs" />
     <Compile Include="Components\PlayerData.cs" />
     <Compile Include="Components\Collectible.cs" />
     <Compile Include="Components\Rift.cs" />

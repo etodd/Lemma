@@ -29,6 +29,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<bool> SlowMotion = new Property<bool>();
 
+		public Property<ComponentBind.Entity.Handle> Note = new Property<ComponentBind.Entity.Handle>();
+		public Property<ComponentBind.Entity.Handle> SignalTower = new Property<ComponentBind.Entity.Handle>();
+
 		[XmlIgnore]
 		public Command HealthDepleted = new Command();
 

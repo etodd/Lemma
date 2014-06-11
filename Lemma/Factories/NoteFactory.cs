@@ -29,16 +29,14 @@ namespace Lemma.Factories
 			model.Filename.Value = "Models\\papers";
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 
-			Property<string> text = entity.GetOrMakeProperty<string>("Text", true);
-			Property<string> image = entity.GetOrMakeProperty<string>("Image", true);
+			Note note = entity.GetOrCreate<Note>("Note");
 
-			Property<bool> collected = entity.GetOrMakeProperty<bool>("Collected");
 			entity.Add(new NotifyBinding(delegate()
 			{
-				if (collected)
+				if (note.Collected)
 				{
 					List<Entity> notes = main.Get("Note").ToList();
-					int notesCollected = notes.Where(x => x.GetOrMakeProperty<bool>("Collected")).Count();
+					int notesCollected = notes.Where(x => x.Get<Note>().Collected).Count();
 					int total = notes.Count;
 					Container msg = main.Menu.ShowMessageFormat
 					(
@@ -48,7 +46,7 @@ namespace Lemma.Factories
 					);
 					main.Menu.HideMessage(entity, msg, 4.0f);
 				}
-			}, collected));
+			}, note.Collected));
 
 			trigger.Serialize = false;
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
@@ -56,13 +54,13 @@ namespace Lemma.Factories
 
 			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
 			{
-				PlayerFactory.Instance.GetOrMakeProperty<Entity.Handle>("Note").Value = entity;
+				PlayerFactory.Instance.Get<Player>().Note.Value = entity;
 			}));
 
 			trigger.Add(new CommandBinding(trigger.PlayerExited, delegate()
 			{
 				if (PlayerFactory.Instance != null)
-					PlayerFactory.Instance.GetOrMakeProperty<Entity.Handle>("Note").Value = null;
+					PlayerFactory.Instance.Get<Player>().Note.Value = null;
 			}));
 
 			if (entity.GetOrMakeProperty<bool>("Attach", true))
