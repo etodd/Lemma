@@ -8,9 +8,9 @@ using Lemma.Components;
 
 namespace Lemma.Factories
 {
-	public class IntSetterFactory : Factory<Main>
+	public class BoolSetterFactory : Factory<Main>
 	{
-		public IntSetterFactory()
+		public BoolSetterFactory()
 		{
 			this.Color = new Vector3(0.0f, 1f, 0.0f);
 		}
@@ -18,7 +18,7 @@ namespace Lemma.Factories
 		public override Entity Create(Main main)
 		{
 			Entity entity = new Entity(main, "Setter");
-			Setter<int> setter = entity.GetOrCreate<Setter<int>>("Setter");
+			Setter<bool> setter = entity.GetOrCreate<Setter<bool>>("Setter");
 			Transform transform = entity.GetOrCreate<Transform>("Position");
 			return entity;
 		}
@@ -33,7 +33,7 @@ namespace Lemma.Factories
 			base.AttachEditorComponents(entity, main);
 
 			Scriptlike.AttachEditorComponents(entity, main, this.Color);
-			EntityConnectable.AttachEditorComponents(entity, entity.Get<Setter<int>>().ConnectedEntities);
+			EntityConnectable.AttachEditorComponents(entity, entity.Get<Setter<bool>>().ConnectedEntities);
 		}
 	}
 }
