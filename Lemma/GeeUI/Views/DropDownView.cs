@@ -163,7 +163,7 @@ namespace GeeUI.Views
 				Font = fontString,
 				Text = name,
 				OnClicked = action,
-				Related = null
+				Related = related
 			};
 			DropDownOptions.Add(dropDownOption);
 

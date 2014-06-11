@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Windows.Forms;
 using GeeUI.Managers;
@@ -15,6 +16,7 @@ using System.Xml.Serialization;
 using Lemma.Util;
 using ComponentBind;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
+using ListView = GeeUI.Views.ListView;
 using View = GeeUI.Views.View;
 
 namespace Lemma.Components
@@ -81,6 +83,15 @@ namespace Lemma.Components
 			dropDownPlusLabel.Y = 5;
 			new TextView(main.GeeUI, dropDownPlusLabel, "Actions:", Vector2.Zero, MainFont);
 			this.CreateDropDownView = new DropDownView(main.GeeUI, dropDownPlusLabel, Vector2.Zero, MainFont);
+			var openLinkerButton = new ButtonView(main.GeeUI, dropDownPlusLabel, "Command Linker", Vector2.Zero, MainFont)
+			{
+				Name = "LinkerButton"
+			};
+			openLinkerButton.OnMouseClick += (sender, args) =>
+			{
+				ShowLinkerView();
+			};
+			openLinkerButton.Active.Value = false;
 			ActionsPanelView.Draggable = false;
 
 			RootEditorView.Add(new Binding<int, Point>(RootEditorView.Width, point => point.X, main.ScreenSize));
@@ -89,9 +100,11 @@ namespace Lemma.Components
 			ActionsPanelView.Add(new Binding<Vector2, int>(ActionsPanelView.Position, i => new Vector2(i / 2f, 25), RootEditorView.Width));
 
 			LinkerView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);
-			LinkerView.Width.Value = 320;
+			LinkerView.Width.Value = 420;
 			LinkerView.Height.Value = 400;
 			LinkerView.Draggable = false;
+
+			var addButton = new ButtonView(main.GeeUI, LinkerView, "Add", Vector2.Zero, MainFont) { Name = "AddButton" };
 
 			var SourceLayout = new View(main.GeeUI, LinkerView) { Name = "SourceLayout" };
 			SourceLayout.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
@@ -118,8 +131,34 @@ namespace Lemma.Components
 				Name = "DestCommandDropDown"
 			};
 
+			var ListLayout = new View(main.GeeUI, LinkerView);
+			ListLayout.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
+			new TextView(main.GeeUI, ListLayout, "Linked commands:", Vector2.Zero, MainFont);
+			var container = new PanelView(main.GeeUI, ListLayout, Vector2.Zero);
+			var list = new ListView(main.GeeUI, container) { Name = "CurLinksList" };
+			list.Position.Value = new Vector2(5);
+
+
+			list.ChildrenLayouts.Add(new VerticalViewLayout(1, false));
+			ListLayout.Add(new Binding<int>(ListLayout.Width, LinkerView.Width));
+			container.Add(new Binding<int>(container.Width, (i) => i - 8, ListLayout.Width));
+			list.Add(new Binding<int>(list.Width, container.Width));
+
+			ListLayout.Position.Value = new Vector2(5, 150);
+
+			ListLayout.Height.Value = container.Height.Value = list.Height.Value = (LinkerView.Height.Value - ListLayout.Y) - 3;
 			SourceLayout.Position.Value = new Vector2(20, 20);
-			DestLayout.Position.Value = new Vector2(160, 20);
+			DestLayout.Position.Value = new Vector2(260, 20);
+
+			addButton.AnchorPoint.Value = new Vector2(0, 1);
+			addButton.Position.Value = new Vector2(20, 130);
+			addButton.Active.Value = false;
+
+			LinkerView.OnMouseClickAway += (sender, args) =>
+			{
+				if (!LinkerView.AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
+					HideLinkerView();
+			};
 
 			HideLinkerView();
 
@@ -174,6 +213,10 @@ namespace Lemma.Components
 			var sourceDrop = ((DropDownView)LinkerView.FindFirstChildByName("SourceDropDown"));
 			var destEntityDrop = ((DropDownView)LinkerView.FindFirstChildByName("DestEntityDropDown"));
 			var destCommDrop = ((DropDownView)LinkerView.FindFirstChildByName("DestCommandDropDown"));
+			var addButton = ((ButtonView)LinkerView.FindFirstChildByName("AddButton"));
+			var listView = ((ListView)LinkerView.FindFirstChildByName("CurLinksList"));
+
+			addButton.ResetOnMouseClick();
 
 			sourceDrop.RemoveAllOptions();
 			destEntityDrop.RemoveAllOptions();
@@ -184,6 +227,7 @@ namespace Lemma.Components
 			{
 				foreach (var ent in main.Entities)
 				{
+					if (ent == e) continue;
 					//IDK this seems like a good one to use!
 					if (ent.EditorCanDelete)
 					{
@@ -220,14 +264,75 @@ namespace Lemma.Components
 					fillDestCommand(selected.Related as Entity);
 				}
 
-				destEntityDrop.Enabled.Value = sourceDrop.LastItemSelected.Value != -1;
-				destCommDrop.Enabled.Value = destEntityDrop.LastItemSelected.Value != -1 && destCommDrop.Enabled;
+				destEntityDrop.Active.Value = sourceDrop.LastItemSelected.Value != -1;
+				destCommDrop.Active.Value = destEntityDrop.LastItemSelected.Value != -1 && destEntityDrop.Active;
+				addButton.Active.Value = destCommDrop.Active && destCommDrop.LastItemSelected.Value != -1;
+			};
+
+			Action populateList = null;
+			populateList = () =>
+			{
+				listView.RemoveAllChildren();
+				listView.ContentOffset.Value = Vector2.Zero;
+				List<Entity.CommandLink> toRemove = new List<Entity.CommandLink>();
+				foreach (var link in e.LinkedCommands)
+				{
+					Entity target = link.TargetEntity.Target;
+					if (target == null)
+					{
+						toRemove.Add(link);
+						continue;
+					}
+					View container = new View(main.GeeUI, listView);
+					container.ChildrenLayouts.Add(new HorizontalViewLayout(4));
+					container.ChildrenLayouts.Add(new ExpandToFitLayout());
+					var sourceView = new TextView(main.GeeUI, container, link.SourceCommand, Vector2.Zero, MainFont);
+					var entView = new TextView(main.GeeUI, container, target.ID + " [" + target.GUID + "]", Vector2.Zero, MainFont);
+					var destView = new TextView(main.GeeUI, container, link.TargetCommand, Vector2.Zero, MainFont);
+
+					sourceView.AutoSize.Value = false;
+					entView.AutoSize.Value = false;
+					destView.AutoSize.Value = false;
+
+					sourceView.Width.Value = entView.Width.Value = destView.Width.Value = 125;
+					sourceView.TextJustification = TextJustification.Left;
+					entView.TextJustification = TextJustification.Center;
+					destView.TextJustification = TextJustification.Right;
+
+					var button = new ButtonView(main.GeeUI, container, "-", Vector2.Zero, MainFont);
+					button.OnMouseClick += (sender, args) =>
+					{
+						e.LinkedCommands.Remove(link);
+						populateList();
+						this.NeedsSave.Value = true;
+					};
+				}
+				foreach (var remove in toRemove)
+					e.LinkedCommands.Remove(remove);
+			};
+
+			Action addItem = () =>
+			{
+				if (!addButton.Active) return;
+				Entity.CommandLink link = new Entity.CommandLink();
+				var entity = ((Entity)destEntityDrop.GetSelectedOption().Related);
+				link.TargetEntity = new Entity.Handle() { Target = entity };
+				link.TargetCommand = destCommDrop.GetSelectedOption().Text;
+				link.SourceCommand = sourceDrop.GetSelectedOption().Text;
+				e.LinkedCommands.Add(link);
+				populateList();
+				addButton.Active.Value = false;
+				sourceDrop.LastItemSelected.Value = -1;
+				this.NeedsSave.Value = true;
 			};
 			#endregion
 
 			sourceDrop.Add(new NotifyBinding(() => recompute(true, false, false), sourceDrop.LastItemSelected));
 			destEntityDrop.Add(new NotifyBinding(() => recompute(false, true, false), destEntityDrop.LastItemSelected));
 			destCommDrop.Add(new NotifyBinding(() => recompute(false, false, true), destCommDrop.LastItemSelected));
+
+			addButton.OnMouseClick += (sender, args) => addItem();
+
 
 			foreach (var command in GetCommands(e))
 			{
@@ -236,6 +341,8 @@ namespace Lemma.Components
 
 				sourceDrop.AddOption(name, () => { }, null, comm);
 			}
+
+			populateList();
 
 		}
 
@@ -273,7 +380,7 @@ namespace Lemma.Components
 
 		private void show(Entity entity)
 		{
-			ShowLinkerView();
+			ActionsPanelView.FindFirstChildByName("LinkerButton").Active.Value = true;
 			foreach (DictionaryEntry entry in new DictionaryEntry[] { new DictionaryEntry("[" + entity.Type.ToString() + " entity]", new[] { new DictionaryEntry("ID", entity.ID) }.Concat(entity.Properties).Concat(entity.Commands)) }
 				.Union(entity.Components.Where(x => ((IComponent)x.Value).Editable)))
 			{
@@ -326,7 +433,7 @@ namespace Lemma.Components
 
 		public bool AnyTextFieldViewsSelected()
 		{
-			var views = main.GeeUI.GetAllViews(RootEditorView);
+			var views = main.GeeUI.GetAllViews(main.GeeUI.RootView);
 			foreach (var view in views)
 			{
 				if (!(view is TextFieldView)) continue;
@@ -358,6 +465,8 @@ namespace Lemma.Components
 		}
 		private void refresh()
 		{
+			HideLinkerView();
+			ActionsPanelView.FindFirstChildByName("LinkerButton").Active.Value = false;
 			this.ComponentTabViews.RemoveAllTabs();
 
 			if (this.SelectedEntities.Count == 0 || this.MapEditMode)

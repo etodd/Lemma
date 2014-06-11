@@ -33,8 +33,10 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Position");
 			Setter<T> setter = entity.GetOrCreate<Setter<T>>("Setter");
+			BindCommand(entity, setter.Set, "Set");
+
 			base.Bind(entity, main, creating);
-			
+
 		}
 	}
 

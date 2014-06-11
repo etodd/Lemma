@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ComponentBind;
 using Lemma;
+using Lemma.Components;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using GeeUI.Structs;
@@ -397,6 +398,11 @@ namespace GeeUI.Views
 		}
 
 		#endregion
+
+		public void ResetOnMouseClick()
+		{
+			OnMouseClick = null;
+		}
 
 		#region Virtual methods/events
 

@@ -28,6 +28,8 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Position");
 			Ticker ticker = entity.GetOrCreate<Ticker>("Ticker");
 			this.SetMain(entity, main);
+
+			BindCommand(entity, ticker.OnFire, "OnFire");
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

@@ -472,7 +472,7 @@ namespace GeeUI.Views
 			{
 				if (y != 0) before += "\n";
 				var xUnder = (y == beforeEndY) ? beforeEndX : TextLines[y].Length;
-				for (int x = 0; x < xUnder; x++)
+				for (int x = 0; x < xUnder && x < TextLines[y].Length; x++)
 				{
 					before += TextLines[y][x];
 				}

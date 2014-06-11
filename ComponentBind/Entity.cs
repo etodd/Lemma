@@ -20,7 +20,9 @@ namespace ComponentBind
 	[XmlInclude(typeof(List<Entity.CommandLink>))]
 	public class Entity
 	{
-		public struct CommandLink
+
+		//This is a class because PASS-BY-REFERENCE
+		public class CommandLink
 		{
 			public Handle TargetEntity;
 
@@ -31,6 +33,12 @@ namespace ComponentBind
 			[XmlAttribute]
 			[DefaultValue("")]
 			public string SourceCommand;
+
+			[XmlIgnore]
+			public Command LinkedTargetCmd;
+
+			[XmlIgnore]
+			public Command LinkedSourceCmd;
 		}
 
 		public struct Handle
@@ -344,9 +352,35 @@ namespace ComponentBind
 			}
 		}
 
+		public void LinkedCommandCall(CommandLink link)
+		{
+			if (link == null || link.LinkedSourceCmd == null) return;
+			if (link.TargetEntity.Target == null) return;
+			if (link.LinkedTargetCmd == null)
+			{
+				Command destCommand = link.TargetEntity.Target.GetCommand(link.TargetCommand);
+				if (destCommand == null) return;
+				link.LinkedTargetCmd = destCommand;
+			}
+			link.LinkedTargetCmd.Execute();
+		}
+
 		public void Add(string name, BaseCommand cmd)
 		{
 			this.commands.Add(name, cmd);
+			foreach (var link in LinkedCommands)
+			{
+				CommandLink link1 = link;
+				if (link.LinkedSourceCmd != null) continue;
+				if (name != link.SourceCommand) continue;
+				var realCmd = cmd as Command;
+				if (realCmd == null) continue;
+				link.LinkedSourceCmd = realCmd;
+				link.LinkedSourceCmd.AddBinding(new CommandBinding(link.LinkedSourceCmd, () =>
+				{
+					LinkedCommandCall(link1);
+				}));
+			}
 		}
 
 		public void Add(string name, IComponent component)

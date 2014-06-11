@@ -149,6 +149,11 @@ namespace ComponentBind
 
 			return dest;
 		}
+
+		public void BindCommand(Entity e, Command c, string name)
+		{
+			e.Add(name, c);
+		}
 	}
 
 }
