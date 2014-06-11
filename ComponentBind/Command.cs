@@ -41,6 +41,7 @@ namespace ComponentBind
 		}
 
 		public bool ShowInEditor = false;
+		public bool AllowLinking = false;
 
 		public void AddBinding(ICommandBinding binding)
 		{
