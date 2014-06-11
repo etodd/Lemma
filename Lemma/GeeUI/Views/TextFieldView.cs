@@ -42,7 +42,7 @@ namespace GeeUI.Views
 		public SpriteFont TextInputFont;
 
 		public bool MultiLine = true;
-		public bool Editable = true;
+		public new bool Editable = true;
 
 		private string _text = "";
 
@@ -220,7 +220,10 @@ namespace GeeUI.Views
 				switch (key)
 				{
 					case Keys.Back:
-						BackSpace();
+						erase(false);
+						break;
+					case Keys.Delete:
+						erase(true);
 						break;
 					case Keys.Left:
 						SelectionArrowKeys();
@@ -273,7 +276,7 @@ namespace GeeUI.Views
 			_selectionEnd = _selectionStart = new Vector2(-1);
 		}
 
-		private void BackSpace()
+		private void erase(bool forward)
 		{
 			if (_selectionStart == _selectionEnd || _selectionEnd == new Vector2(-1))
 			{
@@ -284,11 +287,15 @@ namespace GeeUI.Views
 					var lineL = lines[i] + (i < _cursorY ? "\n" : "");
 					curPos += lineL.Length;
 				}
-				if (curPos > 0)
+
+				if (forward && curPos < Text.Length)
+					Text = Text.Remove(curPos, 1);
+				else if (!forward && curPos > 0)
 				{
 					Text = Text.Remove(curPos - 1, 1);
 					_cursorX--;
 				}
+
 				if (_cursorX < 0)
 				{
 					_cursorX = lines[_cursorY - 1].Length;

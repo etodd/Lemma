@@ -31,10 +31,6 @@ namespace Lemma.Factories
 		public static VoxelAttachable MakeAttachable(Entity entity, Main main, bool detachIfRemoved = true, bool detachIfMoved = false, Command detachCommand = null)
 		{
 			VoxelAttachable attachable = entity.GetOrCreate<VoxelAttachable>("VoxelAttachable");
-			attachable.Enabled.Value = entity.GetOrMakeProperty<bool>("Attach", true);
-			attachable.Offset.Value = entity.GetOrMakeProperty<float>("AttachmentOffset", true);
-			attachable.AttachedVoxel.Value = entity.GetOrMakeProperty<Entity.Handle>("AttachedVoxel");
-			attachable.Coord.Value = entity.GetOrMakeProperty<Voxel.Coord>("AttachedCoordinate");
 			attachable.detachIfRemoved = detachIfRemoved;
 			attachable.detachIfMoved = detachIfMoved;
 
