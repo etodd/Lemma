@@ -87,6 +87,8 @@ namespace GeeUI.Views
 				if (!this.AttachedToRoot(this.ParentView))
 					DropDownPanelView.ParentView.RemoveChild(DropDownPanelView);
 			};
+
+			DropDownPanelView.Active.Value = false;
 		}
 
 		public void Refilter()

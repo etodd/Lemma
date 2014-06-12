@@ -61,6 +61,8 @@ namespace GeeUI.Views
 			}
 		}
 
+		public int ShownWidth = 0;
+
 		//Avoid infinite recursion
 		private bool _callingOnChanged = false;
 
@@ -86,6 +88,9 @@ namespace GeeUI.Views
 		private const float DelimiterLimit = 0.7f;
 		bool _doingDelimiter;
 
+		private float _dragOffInterval = 0.015f;
+		private float _dragOffTimer = 0f;
+
 		public string OffsetText
 		{
 			get
@@ -107,6 +112,7 @@ namespace GeeUI.Views
 						}
 						curLineRet += curLine[iX];
 					}
+					ShownWidth = curLineRet.Length;
 					var retTest = ret + curLineRet + (iY + 1 != lines.Length ? "\n" : "");
 					var maxHeight = (int)TextInputFont.MeasureString(retTest).Y;
 					ret += curLineRet + (iY + 1 != lines.Length ? "\n" : "");
@@ -395,6 +401,17 @@ namespace GeeUI.Views
 			ReEvaluateOffset();
 		}
 
+		private void MoveOffsetX(int xMovement, bool moveSelection)
+		{
+			if (_offsetX + xMovement > (TextLines[_cursorY].Length - ShownWidth)) xMovement = (TextLines[_cursorY].Length - ShownWidth) - _offsetX;
+			if (_offsetX + xMovement < 0) xMovement = -_offsetX;
+			_offsetX += xMovement;
+			if (moveSelection)
+			{
+				_selectionEnd.X += xMovement;
+			}
+		}
+
 		private void ReEvaluateOffset()
 		{
 			if (_selectionStart == _selectionEnd)
@@ -620,12 +637,9 @@ namespace GeeUI.Views
 			}
 			base.OnMOver();
 		}
+
 		public override void OnMOff(bool fromChild = false)
 		{
-			if (Selected && InputManager.IsMousePressed(MouseButton.Left))
-			{
-
-			}
 			base.OnMOff();
 		}
 
@@ -666,6 +680,26 @@ namespace GeeUI.Views
 
 		public override void Update(float dt)
 		{
+
+			Vector2 pos = InputManager.GetMousePosV();
+			if (Selected && InputManager.IsMousePressed(MouseButton.Left) && !AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
+			{
+				_dragOffTimer += dt;
+				if (_dragOffTimer >= _dragOffInterval)
+				{
+					_dragOffTimer -= _dragOffInterval;
+					if (pos.X > AbsoluteBoundBox.Right)
+					{
+						MoveOffsetX(1, true);
+					}
+					else if (pos.X < AbsoluteBoundBox.Left)
+					{
+						MoveOffsetX(-1, true);
+					}
+				}
+				
+			}
+
 			if (InputManager.IsKeyPressed(_buttonHeld))
 			{
 				_buttonHeldTimePreRepeat += dt;

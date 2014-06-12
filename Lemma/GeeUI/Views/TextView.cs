@@ -29,7 +29,7 @@ namespace GeeUI.Views
 						return new Vector2(0, 0);
 
 					case TextJustification.Center:
-						return new Vector2((Width / 2) - (width / 2), (Height / 2) - (height / 2)) * -1;
+						return new Vector2((Width.Value/2) - (width/2), (Height.Value/2) - (height/2))*new Vector2(-1, -1);
 
 					case TextJustification.Right:
 						return new Vector2(Width.Value - width, 0) * -1;

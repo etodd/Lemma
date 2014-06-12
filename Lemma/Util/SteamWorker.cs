@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Lemma.Console;
@@ -73,6 +74,52 @@ namespace Lemma.Util
 #endif
 		}
 
+		public static bool WriteFileUGC(string path, string steamPath)
+		{
+			if (!SteamInitialized) return false;
+			if (!File.Exists(path)) return false;
+			byte[] data = File.ReadAllBytes(path);
+			return SteamRemoteStorage.FileWrite(steamPath, data, data.Length);
+		}
+
+		public static void ShareFileUGC(string path, Action<bool, UGCHandle_t> onShare = null)
+		{
+			new CallResult<RemoteStorageFileShareResult_t>((result, failure) =>
+			{
+				if (result.m_eResult == EResult.k_EResultOK)
+				{
+					if (onShare != null)
+						onShare(true, result.m_hFile);
+				}
+				else
+				{
+					if (onShare != null)
+						onShare(false, result.m_hFile);
+				}
+			}, SteamRemoteStorage.FileShare(path));
+
+		}
+
+		public static void UploadWorkShop(string mapFile, string imageFile, string title, string description, Action<bool, bool, PublishedFileId_t> onDone)
+		{
+			var call = SteamRemoteStorage.PublishWorkshopFile(mapFile, imageFile, new AppId_t(300340), title, description,
+				ERemoteStoragePublishedFileVisibility.k_ERemoteStoragePublishedFileVisibilityPublic, new List<string>(),
+				EWorkshopFileType.k_EWorkshopFileTypeCommunity);
+
+			new CallResult<RemoteStoragePublishFileResult_t>((result, failure) =>
+			{
+				if (result.m_eResult == EResult.k_EResultOK)
+				{
+					onDone(true, result.m_bUserNeedsToAcceptWorkshopLegalAgreement, result.m_nPublishedFileId);
+				}
+				else
+				{
+					onDone(false, result.m_bUserNeedsToAcceptWorkshopLegalAgreement, result.m_nPublishedFileId);
+				}
+			}, call);
+
+		}
+
 		[AutoConCommand("set_stat", "Set a Steam stat")]
 		public static void SetStat(string name, int newVal)
 		{
@@ -144,6 +191,17 @@ namespace Lemma.Util
 		}
 
 		#region Callbacks
+
+		private static void OnPublishedFile(RemoteStoragePublishFileResult_t result)
+		{
+
+		}
+
+		private static void OnSharedFile(RemoteStorageFileShareResult_t result)
+		{
+
+		}
+
 		private static void OnUserStatsReceived(UserStatsReceived_t pCallback)
 		{
 			if (!SteamInitialized) return;

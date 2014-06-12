@@ -1017,10 +1017,10 @@ namespace Lemma.Factories
 			entity.Add(timelineUpdate);
 
 			// Save
-			addCommand("Save", new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.S }, () => !editor.MovementEnabled, editor.Save);
+			addCommand("Save", new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.S }, () => !editor.MovementEnabled && !gui.AnyTextFieldViewsSelected(), editor.Save);
 
 			// Deselect all entities
-			addCommand("Deselect all", new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.A }, () => !editor.MovementEnabled, new Command
+			addCommand("Deselect all", new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.A }, () => !editor.MovementEnabled && !gui.AnyTextFieldViewsSelected(), new Command
 			{
 				Action = delegate()
 				{

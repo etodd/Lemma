@@ -180,6 +180,7 @@
     <Compile Include="GeeUI\Views\WindowView.cs" />
     <Compile Include="GInterfaces\ConsoleUI.cs" />
     <Compile Include="GInterfaces\TimeTrialUI.cs" />
+    <Compile Include="GInterfaces\WorkShopInterface.cs" />
     <Compile Include="Graphics\Cloud.cs" />
     <Compile Include="MainMenu.cs" />
     <Compile Include="Player\BlockPredictor.cs" />
@@ -349,6 +350,10 @@
     <ProjectReference Include="..\Newtonsoft.Json\Newtonsoft.Json.Net40.csproj">
       <Project>{A9AE40FF-1A21-414A-9FE7-3BE13644CC6D}</Project>
       <Name>Newtonsoft.Json.Net40</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SharpZipLib\src\ICSharpCode.SharpZLib.csproj">
+      <Project>{0e7413ff-eb9e-4714-acf2-be3a6a7b2ffd}</Project>
+      <Name>ICSharpCode.SharpZLib</Name>
     </ProjectReference>
     <ProjectReference Include="..\SkinnedModel\SkinnedModelContent.csproj">
       <Project>{882A32E7-CB48-4E63-8180-0D1859575723}</Project>

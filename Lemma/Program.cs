@@ -6,11 +6,14 @@ using System.Diagnostics;
 
 namespace Lemma
 {
+	
 	public static class Program
 	{
+		
 		/// <summary>
 		/// The main entry point for the application.
 		/// </summary>
+	    [STAThread]
 		public static void Main(string[] args)
 		{
 			string error = null;

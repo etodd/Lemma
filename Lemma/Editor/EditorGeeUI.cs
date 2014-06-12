@@ -91,6 +91,7 @@ namespace Lemma.Components
 			{
 				ShowLinkerView();
 			};
+
 			openLinkerButton.Active.Value = false;
 			ActionsPanelView.Draggable = false;
 
@@ -103,6 +104,7 @@ namespace Lemma.Components
 			LinkerView.Width.Value = 420;
 			LinkerView.Height.Value = 400;
 			LinkerView.Draggable = false;
+			LinkerView.Active.Value = false;
 
 			var addButton = new ButtonView(main.GeeUI, LinkerView, "Add", Vector2.Zero, MainFont) { Name = "AddButton" };
 
