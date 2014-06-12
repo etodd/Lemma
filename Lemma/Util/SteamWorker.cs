@@ -84,6 +84,10 @@ namespace Lemma.Util
 		public static void RemoveWSTemp()
 		{
 			string tempDirectory = Directory.GetCurrentDirectory() + "\\WSTemp\\";
+			if (!Directory.Exists(tempDirectory))
+			{
+				Directory.CreateDirectory(tempDirectory);
+			}
 			foreach (var dir in Directory.GetDirectories(tempDirectory))
 			{
 				Directory.Delete(dir, true);
