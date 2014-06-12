@@ -34,12 +34,6 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
-			// TODO: Figure out Wwise volume parameter
-			/*
-			const float defaultVolume = 0.5f;
-			volume.Value = defaultVolume;
-			*/
-
 			AI ai = entity.GetOrCreate<AI>();
 
 			ModelAlpha model = entity.GetOrCreate<ModelAlpha>();
@@ -48,6 +42,9 @@ namespace Lemma.Factories
 			model.Editable = false;
 			model.Serialize = false;
 			model.DrawOrder.Value = 15;
+
+			RaycastAIMovement movement = entity.GetOrCreate<RaycastAIMovement>("Movement");
+			Levitator levitator = entity.GetOrCreate<Levitator>("Levitator");
 
 			const float defaultModelScale = 1.0f;
 			model.Scale.Value = new Vector3(defaultModelScale);
@@ -86,14 +83,12 @@ namespace Lemma.Factories
 			raycastAI.Add(new TwoWayBinding<Vector3>(transform.Position, raycastAI.Position));
 			raycastAI.Add(new Binding<Matrix>(transform.Orientation, raycastAI.Orientation));
 
-			Property<int> operationalRadius = entity.GetOrMakeProperty<int>("OperationalRadius", true, 100);
-
 			AI.Task checkOperationalRadius = new AI.Task
 			{
 				Interval = 2.0f,
 				Action = delegate()
 				{
-					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < operationalRadius;
+					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < movement.OperationalRadius;
 					if (shouldBeActive && ai.CurrentState == "Suspended")
 						ai.CurrentState.Value = "Idle";
 					else if (!shouldBeActive && ai.CurrentState != "Suspended")
@@ -154,8 +149,6 @@ namespace Lemma.Factories
 				},
 			});
 
-			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
-
 			ai.Add(new AI.AIState
 			{
 				Name = "Alert",
@@ -183,7 +176,7 @@ namespace Lemma.Factories
 								Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
 								if (a != null)
 								{
-									targetAgent.Value = a.Entity;
+									movement.TargetAgent.Value = a.Entity;
 									ai.CurrentState.Value = "Chase";
 								}
 							}
@@ -196,19 +189,16 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					Entity target = targetAgent.Value.Target;
+					Entity target = movement.TargetAgent.Value.Target;
 					if (target == null || !target.Active)
 					{
-						targetAgent.Value = null;
+						movement.TargetAgent.Value = null;
 						ai.CurrentState.Value = "Idle";
 					}
 				},
 			};
 
 			// Levitate
-
-			Property<Entity.Handle> levitatingVoxel = entity.GetOrMakeProperty<Entity.Handle>("LevitatingVoxel");
-			Property<Voxel.Coord> grabCoord = entity.GetOrMakeProperty<Voxel.Coord>("GrabCoord");
 
 			const int levitateRipRadius = 4;
 
@@ -322,14 +312,14 @@ namespace Lemma.Factories
 						{
 							if (spawnedMap[center].ID != 0)
 							{
-								levitatingVoxel.Value = spawnedMap.Entity;
+								levitator.LevitatingVoxel.Value = spawnedMap.Entity;
 								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_INFECTED_CRITICAL_SHATTER, entity);
 								break;
 							}
 						}
 					});
 
-					grabCoord.Value = center;
+					levitator.GrabCoord.Value = center;
 					return true;
 				}
 				return false;
@@ -337,7 +327,7 @@ namespace Lemma.Factories
 
 			Action delevitateMap = delegate()
 			{
-				Entity levitatingMapEntity = levitatingVoxel.Value.Target;
+				Entity levitatingMapEntity = levitator.LevitatingVoxel.Value.Target;
 				if (levitatingMapEntity == null || !levitatingMapEntity.Active)
 					return;
 
@@ -437,7 +427,7 @@ namespace Lemma.Factories
 						Interval = 0.35f,
 						Action = delegate()
 						{
-							raycastAI.Move(targetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
+							raycastAI.Move(movement.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
 						}
 					},
 					updatePosition,
@@ -446,9 +436,9 @@ namespace Lemma.Factories
 						Interval = 0.1f,
 						Action = delegate()
 						{
-							Entity target = targetAgent.Value.Target;
+							Entity target = movement.TargetAgent.Value.Target;
 							Vector3 targetPosition = target.Get<Transform>().Position;
-							Entity levitatingMapEntity = levitatingVoxel.Value.Target;
+							Entity levitatingMapEntity = levitator.LevitatingVoxel.Value.Target;
 							if ((targetPosition - transform.Position).Length() < 10.0f && (levitatingMapEntity == null || !levitatingMapEntity.Active))
 							{
 								if (tryLevitate())
@@ -459,15 +449,11 @@ namespace Lemma.Factories
 				},
 			});
 
-			Property<Vector3> lastPosition = entity.GetOrMakeProperty<Vector3>("LastPosition");
-			Property<Vector3> nextPosition = entity.GetOrMakeProperty<Vector3>("NextPosition");
-			Property<float> positionBlend = entity.GetOrMakeProperty<float>("PositionBlend");
-
 			Action findNextPosition = delegate()
 			{
-				lastPosition.Value = transform.Position.Value;
-				nextPosition.Value = targetAgent.Value.Target.Get<Transform>().Position + new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble(), (float)this.random.NextDouble() - 0.5f) * 5.0f;
-				positionBlend.Value = 0.0f;
+				movement.LastPosition.Value = transform.Position.Value;
+				movement.NextPosition.Value = movement.TargetAgent.Value.Target.Get<Transform>().Position + new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble(), (float)this.random.NextDouble() - 0.5f) * 5.0f;
+				movement.PositionBlend.Value = 0.0f;
 			};
 
 			ai.Add(new AI.AIState
@@ -480,7 +466,7 @@ namespace Lemma.Factories
 				Exit = delegate(AI.AIState next)
 				{
 					delevitateMap();
-					levitatingVoxel.Value = null;
+					levitator.LevitatingVoxel.Value = null;
 
 					Voxel map = raycastAI.Voxel.Value.Target.Get<Voxel>();
 					Voxel.Coord currentCoord = map.GetCoordinate(transform.Position);
@@ -499,7 +485,7 @@ namespace Lemma.Factories
 						{
 							//volume.Value = 1.0f;
 							//pitch.Value = 1.0f;
-							Entity levitatingMapEntity = levitatingVoxel.Value.Target;
+							Entity levitatingMapEntity = levitator.LevitatingVoxel.Value.Target;
 							if (levitatingMapEntity == null || !levitatingMapEntity.Active || ai.TimeInCurrentState.Value > 8.0f)
 							{
 								ai.CurrentState.Value = "Alert";
@@ -508,13 +494,13 @@ namespace Lemma.Factories
 
 							DynamicVoxel dynamicMap = levitatingMapEntity.Get<DynamicVoxel>();
 
-							positionBlend.Value += (main.ElapsedTime.Value / 1.0f);
-							if (positionBlend > 1.0f)
+							movement.PositionBlend.Value += (main.ElapsedTime.Value / 1.0f);
+							if (movement.PositionBlend > 1.0f)
 								findNextPosition();
 
-							transform.Position.Value = Vector3.Lerp(lastPosition, nextPosition, positionBlend);
+							transform.Position.Value = Vector3.Lerp(movement.LastPosition, movement.NextPosition, movement.PositionBlend);
 
-							Vector3 grabPoint = dynamicMap.GetAbsolutePosition(grabCoord);
+							Vector3 grabPoint = dynamicMap.GetAbsolutePosition(levitator.GrabCoord);
 							Vector3 diff = transform.Position.Value - grabPoint;
 							if (diff.Length() > 15.0f)
 							{

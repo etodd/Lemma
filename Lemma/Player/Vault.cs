@@ -248,7 +248,6 @@ namespace Lemma.Components
 			this.CurrentState.Value = State.Down;
 
 			this.originalPosition = this.Position;
-			this.relativeOriginalPosition = Vector3.Transform(this.originalPosition, Matrix.Invert(this.map.Transform));
 		}
 
 		public bool TryVaultDown()

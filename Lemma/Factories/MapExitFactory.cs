@@ -27,14 +27,11 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
 			this.SetMain(entity, main);
-			Property<string> nextMap = entity.GetOrMakeProperty<string>("NextMap", true);
-			Property<string> startSpawnPoint = entity.GetOrMakeProperty<string>("SpawnPoint", true);
+
+			MapExit mapExit = entity.GetOrCreate<MapExit>("MapExit");
 
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
-			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
-			{
-				MapLoader.Transition(main, nextMap, startSpawnPoint);
-			}));
+			trigger.Add(new CommandBinding(trigger.PlayerEntered, (Action)mapExit.Go));
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

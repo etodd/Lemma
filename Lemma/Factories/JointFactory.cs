@@ -27,18 +27,16 @@ namespace Lemma.Factories
 
 			DynamicVoxel map = entity.Get<DynamicVoxel>();
 
-			Property<Entity.Handle> parentMap = entity.GetOrMakeProperty<Entity.Handle>("Parent");
-			Property<Voxel.Coord> coord = entity.GetOrMakeProperty<Voxel.Coord>("Coord");
-			Property<Direction> dir = entity.GetOrMakeProperty<Direction>("Direction", true);
+			Components.Joint jointData = entity.GetOrCreate<Components.Joint>("Joint");
 
 			Action refreshMapTransform = delegate()
 			{
-				Entity parent = parentMap.Value.Target;
+				Entity parent = jointData.Parent.Value.Target;
 				if (parent != null && parent.Active)
 				{
 					Voxel staticMap = parent.Get<Voxel>();
-					coord.Value = staticMap.GetCoordinate(transform.Position);
-					mapTransform.Position.Value = staticMap.GetAbsolutePosition(staticMap.GetRelativePosition(coord) - new Vector3(0.5f) + staticMap.Offset + map.Offset.Value);
+					jointData.Coord.Value = staticMap.GetCoordinate(transform.Position);
+					mapTransform.Position.Value = staticMap.GetAbsolutePosition(staticMap.GetRelativePosition(jointData.Coord) - new Vector3(0.5f) + staticMap.Offset + map.Offset.Value);
 					if (!allowRotation)
 					{
 						Matrix parentOrientation = staticMap.Transform;
@@ -49,6 +47,7 @@ namespace Lemma.Factories
 				else
 					mapTransform.Matrix.Value = transform.Matrix;
 			};
+
 			if (main.EditorEnabled)
 				entity.Add(new NotifyBinding(refreshMapTransform, transform.Matrix, map.Offset));
 
@@ -80,7 +79,7 @@ namespace Lemma.Factories
 					joint = null;
 				}
 
-				Entity parent = parentMap.Value.Target;
+				Entity parent = jointData.Parent.Value.Target;
 
 				if (main.EditorEnabled)
 					refreshMapTransform();
@@ -92,12 +91,12 @@ namespace Lemma.Factories
 					if (!allowRotation)
 						map.PhysicsEntity.Orientation = mapTransform.Quaternion;
 
-					if (dir != Direction.None)
+					if (jointData.Direction != Direction.None)
 					{
-						Vector3 relativeLineAnchor = parentStaticMap.GetRelativePosition(coord) - new Vector3(0.5f) + parentStaticMap.Offset + map.Offset;
+						Vector3 relativeLineAnchor = parentStaticMap.GetRelativePosition(jointData.Coord) - new Vector3(0.5f) + parentStaticMap.Offset + map.Offset;
 						Vector3 lineAnchor = parentStaticMap.GetAbsolutePosition(relativeLineAnchor);
 						DynamicVoxel parentDynamicMap = parent.Get<DynamicVoxel>();
-						joint = createJoint(map.PhysicsEntity, parentDynamicMap == null ? null : parentDynamicMap.PhysicsEntity, lineAnchor, parentStaticMap.GetAbsoluteVector(dir.Value.GetVector()), parentStaticMap.GetAbsolutePosition(coord));
+						joint = createJoint(map.PhysicsEntity, parentDynamicMap == null ? null : parentDynamicMap.PhysicsEntity, lineAnchor, parentStaticMap.GetAbsoluteVector(jointData.Direction.Value.GetVector()), parentStaticMap.GetAbsolutePosition(jointData.Coord));
 						main.Space.Add(joint);
 						map.PhysicsEntity.ActivityInformation.Activate();
 
@@ -111,7 +110,7 @@ namespace Lemma.Factories
 						{
 							jointDeleteBinding = new CommandBinding(parent.Delete, delegate()
 							{
-								parentMap.Value = null;
+								jointData.Parent.Value = null;
 							});
 							entity.Add(jointDeleteBinding);
 						}
@@ -119,7 +118,7 @@ namespace Lemma.Factories
 				}
 			};
 			entity.Add(new CommandBinding(map.PhysicsUpdated, updateJoint));
-			entity.Add(new NotifyBinding(rebuildJoint, parentMap));
+			entity.Add(new NotifyBinding(rebuildJoint, jointData.Parent));
 			entity.Add(new CommandBinding(entity.Delete, delegate()
 			{
 				if (joint != null && joint.Space != null)
@@ -155,27 +154,25 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.Get<Transform>();
 
-			Property<Entity.Handle> parentMap = entity.GetOrMakeProperty<Entity.Handle>("Parent");
-
-			EntityConnectable.AttachEditorComponents(entity, parentMap);
+			Components.Joint joint = entity.Get<Components.Joint>();
+			EntityConnectable.AttachEditorComponents(entity, joint.Parent);
 			Model model = new Model();
 			model.Filename.Value = "Models\\cone";
 			model.Editable = false;
 			model.Serialize = false;
 			entity.Add("DirectionModel", model);
 
-			Property<Direction> dir = entity.GetProperty<Direction>("Direction");
 			Transform mapTransform = entity.Get<Transform>("MapTransform");
 			model.Add(new Binding<Matrix>(model.Transform, delegate()
 			{
 				Matrix m = Matrix.Identity;
 				m.Translation = transform.Position;
 
-				if (dir == Direction.None)
+				if (joint.Direction == Direction.None)
 					m.Forward = m.Right = m.Up = Vector3.Zero;
 				else
 				{
-					Vector3 normal = Vector3.TransformNormal(dir.Value.GetVector(), mapTransform.Matrix);
+					Vector3 normal = Vector3.TransformNormal(joint.Direction.Value.GetVector(), mapTransform.Matrix);
 
 					m.Forward = -normal;
 					if (normal.Equals(Vector3.Up))

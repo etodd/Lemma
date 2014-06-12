@@ -26,79 +26,29 @@ namespace Lemma.Factories
 			return new Entity(main, "ImplodeBlock");
 		}
 
-		private const float totalLifetimeIn = 0.4f;
-		private const float totalLifetimeUp = 2.0f;
-
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			entity.CannotSuspend = true;
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			ModelInstance model = entity.GetOrCreate<ModelInstance>("Model");
+			ImplodeBlock implodeBlock = entity.GetOrCreate<ImplodeBlock>("ImplodeBlock");
 
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 			model.Scale.Value = Vector3.Zero;
+			model.Add(new Binding<Vector3>(model.Scale, implodeBlock.Scale));
+			model.Add(new Binding<Vector3>(transform.Position, implodeBlock.Position));
+			model.Add(new Binding<Quaternion>(transform.Quaternion, implodeBlock.Orientation));
 
-			Property<bool> scale = entity.GetOrMakeProperty<bool>("Scale", false, true);
-			Property<Vector3> start = entity.GetOrMakeProperty<Vector3>("StartPosition");
-			start.Set = delegate(Vector3 value)
-			{
-				start.InternalValue = value;
-				transform.Position.Value = value;
-			};
-			Property<Vector3> end = entity.GetOrMakeProperty<Vector3>("EndPosition");
-			Property<Matrix> startOrientation = entity.GetOrMakeProperty<Matrix>("StartOrientation");
-			Quaternion startQuat = Quaternion.Identity;
-			startOrientation.Set = delegate(Matrix value)
-			{
-				startOrientation.InternalValue = value;
-				startQuat = Quaternion.CreateFromRotationMatrix(startOrientation);
-				transform.Orientation.Value = value;
-			};
-
-			Property<Matrix> endOrientation = entity.GetOrMakeProperty<Matrix>("EndOrientation");
-			Quaternion endQuat = Quaternion.Identity;
-			endOrientation.Set = delegate(Matrix value)
-			{
-				endOrientation.InternalValue = value;
-				endQuat = Quaternion.CreateFromRotationMatrix(endOrientation);
-				transform.Orientation.Value = value;
-			};
-
-			Property<float> lifetime = entity.GetOrMakeProperty<float>("Lifetime");
-
-			Property<Rift.Style> style = entity.GetOrMakeProperty<Rift.Style>("Style");
-
-			Updater update = null;
-			update = new Updater
-			{
-				delegate(float dt)
-				{
-					lifetime.Value += dt;
-
-					float blend = lifetime / (style == Rift.Style.In ? totalLifetimeIn : totalLifetimeUp);
-
-					if (blend > 1.0f)
-					{
-						entity.Delete.Execute();
-					}
-					else
-					{
-						model.Scale.Value = new Vector3(1.0f - blend);
-						transform.Orientation.Value = Matrix.CreateFromQuaternion(Quaternion.Lerp(startQuat, endQuat, blend));
-						transform.Position.Value = Vector3.Lerp(start, end, blend);
-					}
-				},
-			};
-
-			entity.Add(update);
+			implodeBlock.Add(new CommandBinding(implodeBlock.Delete, entity.Delete));
 
 			this.SetMain(entity, main);
+
 			IBinding offsetBinding = null;
 			model.Add(new NotifyBinding(delegate()
 			{
 				if (offsetBinding != null)
 					model.Remove(offsetBinding);
-				offsetBinding = new Binding<Vector3>(model.GetVector3Parameter("Offset"), entity.GetOrMakeProperty<Vector3>("Offset"));
+				offsetBinding = new Binding<Vector3>(model.GetVector3Parameter("Offset"), implodeBlock.Offset);
 				model.Add(offsetBinding);
 			}, model.FullInstanceKey));
 		}
@@ -106,33 +56,35 @@ namespace Lemma.Factories
 		public void Implode(Main main, Voxel v, Voxel.Coord coord, Voxel.State state, Vector3 target)
 		{
 			Entity block = this.CreateAndBind(main);
+			ImplodeBlock implodeBlock = block.Get<ImplodeBlock>();
 			state.ApplyToEffectBlock(block.Get<ModelInstance>());
-			block.GetOrMakeProperty<Vector3>("Offset").Value = v.GetRelativePosition(coord);
+			implodeBlock.Offset.Value = v.GetRelativePosition(coord);
 
-			block.GetOrMakeProperty<Vector3>("StartPosition").Value = v.GetAbsolutePosition(coord);
+			implodeBlock.StartPosition.Value = v.GetAbsolutePosition(coord);
 			Matrix orientation = v.Transform;
 			orientation.Translation = Vector3.Zero;
-			block.GetOrMakeProperty<Rift.Style>("Style").Value = Rift.Style.In;
-			block.GetOrMakeProperty<Matrix>("StartOrientation").Value = orientation;
-			block.GetOrMakeProperty<Matrix>("EndOrientation").Value = Matrix.CreateRotationX((float)this.random.NextDouble() * (float)Math.PI * 2.0f) * Matrix.CreateRotationY((float)this.random.NextDouble() * (float)Math.PI * 2.0f);
-			block.GetOrMakeProperty<Vector3>("EndPosition").Value = target;
+			implodeBlock.Type.Value = Rift.Style.In;
+			implodeBlock.StartOrientation.Value = orientation;
+			implodeBlock.EndOrientation.Value = Matrix.CreateRotationX((float)this.random.NextDouble() * (float)Math.PI * 2.0f) * Matrix.CreateRotationY((float)this.random.NextDouble() * (float)Math.PI * 2.0f);
+			implodeBlock.EndPosition.Value = target;
 			main.Add(block);
 		}
 
 		public void BlowAway(Main main, Voxel v, Voxel.Coord coord, Voxel.State state)
 		{
 			Entity block = this.CreateAndBind(main);
+			ImplodeBlock implodeBlock = block.Get<ImplodeBlock>();
 			state.ApplyToEffectBlock(block.Get<ModelInstance>());
-			block.GetOrMakeProperty<Vector3>("Offset").Value = v.GetRelativePosition(coord);
+			implodeBlock.Offset.Value = v.GetRelativePosition(coord);
 
 			Vector3 start = v.GetAbsolutePosition(coord);
-			block.GetOrMakeProperty<Vector3>("StartPosition").Value = start;
+			implodeBlock.StartPosition.Value = start;
 			Matrix orientation = v.Transform;
 			orientation.Translation = Vector3.Zero;
-			block.GetOrMakeProperty<Rift.Style>("Style").Value = Rift.Style.Up;
-			block.GetOrMakeProperty<Matrix>("StartOrientation").Value = orientation;
-			block.GetOrMakeProperty<Matrix>("EndOrientation").Value = Matrix.CreateRotationX((float)this.random.NextDouble() * (float)Math.PI * 2.0f) * Matrix.CreateRotationY((float)this.random.NextDouble() * (float)Math.PI * 2.0f);
-			block.GetOrMakeProperty<Vector3>("EndPosition").Value = start + new Vector3(10, 20, 10);
+			implodeBlock.Type.Value = Rift.Style.Up;
+			implodeBlock.StartOrientation.Value = orientation;
+			implodeBlock.EndOrientation.Value = Matrix.CreateRotationX((float)this.random.NextDouble() * (float)Math.PI * 2.0f) * Matrix.CreateRotationY((float)this.random.NextDouble() * (float)Math.PI * 2.0f);
+			implodeBlock.EndPosition.Value = start + new Vector3(10, 20, 10);
 			main.Add(block);
 		}
 	}

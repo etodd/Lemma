@@ -100,6 +100,14 @@ namespace Lemma.IO
 			typeof(EffectBlock),
 			typeof(EvilBlocks),
 			typeof(SceneryBlock),
+			typeof(FallingTower),
+			typeof(Joint),
+			typeof(Slider),
+			typeof(Spinner),
+			typeof(Levitator),
+			typeof(RaycastAIMovement),
+			typeof(Orb),
+			typeof(MapExit),
 		};
 
 		public static XmlSerializer Serializer;
