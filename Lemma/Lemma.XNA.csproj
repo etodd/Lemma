@@ -114,6 +114,7 @@
     <Compile Include="Components\DialogueFile.cs" />
     <Compile Include="Components\EffectBlock.cs" />
     <Compile Include="Components\EvilBlocks.cs" />
+    <Compile Include="Components\FallingTower.cs" />
     <Compile Include="Components\Note.cs" />
     <Compile Include="Components\PlayerData.cs" />
     <Compile Include="Components\Collectible.cs" />
