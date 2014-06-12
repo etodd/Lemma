@@ -71,7 +71,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Development|x86'">
     <OutputPath>bin\x86\Development\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS;ANALYTICS;CHEAT;STEAMWORKS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS;ANALYTICS;CHEAT;STEAMWORKS;DEVELOPMENT</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <NoStdLib>true</NoStdLib>
