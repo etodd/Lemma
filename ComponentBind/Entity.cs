@@ -376,10 +376,7 @@ namespace ComponentBind
 				var realCmd = cmd as Command;
 				if (realCmd == null) continue;
 				link.LinkedSourceCmd = realCmd;
-				link.LinkedSourceCmd.AddBinding(new CommandBinding(link.LinkedSourceCmd, () =>
-				{
-					LinkedCommandCall(link1);
-				}));
+				this.Add(new CommandBinding(link.LinkedSourceCmd, () => LinkedCommandCall(link1)));
 			}
 		}
 

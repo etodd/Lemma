@@ -1,4 +1,5 @@
-﻿using System; using ComponentBind;
+﻿using System;
+using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,9 +34,21 @@ namespace Lemma.Factories
 
 			ListProperty<Entity.Handle> targets = entity.GetOrMakeListProperty<Entity.Handle>("Targets");
 
+			Command OnPowerOn = new Command();
+			OnPowerOn.ShowInEditor = true;
+			Command OnPowerOff = new Command();
+			OnPowerOff.ShowInEditor = true;
+			BindCommand(entity, OnPowerOn, "OnPowered");
+			BindCommand(entity, OnPowerOn, "OnPoweredOff");
 			entity.Add(new NotifyBinding(delegate()
 			{
+				if (on)
+					OnPowerOn.Execute();
+				else
+					OnPowerOff.Execute();
 				AkSoundEngine.PostEvent(on ? AK.EVENTS.PLAY_SWITCH_ON : AK.EVENTS.PLAY_SWITCH_OFF, light.Position);
+
+				//TODO: Remove this. Not obvious to editors.
 				foreach (Entity.Handle targetHandle in targets)
 				{
 					Entity target = targetHandle.Target;
