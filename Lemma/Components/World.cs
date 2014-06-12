@@ -11,7 +11,7 @@ namespace Lemma.Components
 {
 	public class World : Component<Main>, IUpdateableComponent
 	{
-		private static readonly Color defaultBackgroundColor = new Color(16.0f / 255.0f, 26.0f / 255.0f, 38.0f / 255.0f, 1.0f);
+		public static readonly Color DefaultBackgroundColor = new Color(16.0f / 255.0f, 26.0f / 255.0f, 38.0f / 255.0f, 1.0f);
 
 		[XmlIgnore]
 		public DialogueForest DialogueForest = new DialogueForest();
@@ -19,7 +19,7 @@ namespace Lemma.Components
 		public EditorProperty<string> LightRampTexture = new EditorProperty<string> { Value = "Images\\default-ramp" };
 		public EditorProperty<string> EnvironmentMap = new EditorProperty<string> { Value = "Images\\env0" };
 		public EditorProperty<Vector3> EnvironmentColor = new EditorProperty<Vector3> { Value = Vector3.One };
-		public EditorProperty<Color> BackgroundColor = new EditorProperty<Color> { Value = World.defaultBackgroundColor };
+		public EditorProperty<Color> BackgroundColor = new EditorProperty<Color> { Value = World.DefaultBackgroundColor };
 		public EditorProperty<float> FarPlaneDistance = new EditorProperty<float> { Value = 100.0f };
 		public EditorProperty<Vector3> Gravity = new EditorProperty<Vector3> { Value = new Vector3(0.0f, -18.0f, -0.0f) };
 
@@ -35,10 +35,10 @@ namespace Lemma.Components
 			this.EnabledInEditMode = true;
 			this.EnabledWhenPaused = false;
 
-			this.Add(new TwoWayBinding<string>(this.LightRampTexture, this.main.Renderer.LightRampTexture));
-			this.Add(new TwoWayBinding<string>(this.EnvironmentMap, this.main.Renderer.EnvironmentMap));
-			this.Add(new TwoWayBinding<Vector3>(this.EnvironmentColor, this.main.Renderer.EnvironmentColor));
-			this.Add(new TwoWayBinding<Color>(this.BackgroundColor, this.main.Renderer.BackgroundColor));
+			this.Add(new Binding<string>(this.main.Renderer.LightRampTexture, this.LightRampTexture));
+			this.Add(new Binding<string>(this.main.LightingManager.EnvironmentMap, this.EnvironmentMap));
+			this.Add(new Binding<Vector3>(this.main.LightingManager.EnvironmentColor, this.EnvironmentColor));
+			this.Add(new Binding<Color>(this.main.LightingManager.BackgroundColor, this.BackgroundColor));
 			this.Add(new Binding<float>(this.main.Camera.FarPlaneDistance, this.FarPlaneDistance));
 
 			this.Gravity.Set = delegate(Vector3 value)

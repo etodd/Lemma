@@ -751,7 +751,7 @@ namespace Lemma
 				};
 
 				this.Renderer.LightRampTexture.Value = "Images\\default-ramp";
-				this.Renderer.EnvironmentMap.Value = "Images\\env0";
+				this.LightingManager.EnvironmentMap.Value = "Images\\env0";
 
 				this.Settings.SoundEffectVolume.Set = delegate(float value)
 				{
@@ -1204,6 +1204,9 @@ namespace Lemma
 
 		public void DrawScene(RenderParameters parameters)
 		{
+			if (parameters.Technique != Technique.Shadow)
+				this.LightingManager.ClearMaterials();
+
 			RasterizerState originalState = this.GraphicsDevice.RasterizerState;
 			RasterizerState reverseCullState = null;
 
@@ -1226,6 +1229,9 @@ namespace Lemma
 
 			if (reverseCullState != null)
 				this.GraphicsDevice.RasterizerState = originalState;
+
+			if (parameters.Technique != Technique.Shadow)
+				this.LightingManager.SetMaterials();
 		}
 
 		public void DrawAlphaComponents(RenderParameters parameters)

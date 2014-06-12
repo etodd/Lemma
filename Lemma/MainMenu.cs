@@ -37,7 +37,7 @@ namespace Lemma.GameScripts
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_MUSIC_THEME);
 				main.Renderer.InternalGamma.Value = 0.0f;
 				main.Renderer.Brightness.Value = 0.0f;
-				main.Renderer.BackgroundColor.Value = Renderer.DefaultBackgroundColor;
+				main.LightingManager.BackgroundColor.Value = World.DefaultBackgroundColor;
 				main.IsMouseVisible.Value = true;
 
 				ListContainer list = new ListContainer();
