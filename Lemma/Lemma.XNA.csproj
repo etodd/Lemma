@@ -117,6 +117,7 @@
     <Compile Include="Components\FallingTower.cs" />
     <Compile Include="Components\ImplodeBlock.cs" />
     <Compile Include="Components\Joint.cs" />
+    <Compile Include="Components\MapExit.cs" />
     <Compile Include="Components\Orb.cs" />
     <Compile Include="Components\RaycastAIMovement.cs" />
     <Compile Include="Components\Levitator.cs" />

@@ -107,6 +107,7 @@ namespace Lemma.IO
 			typeof(Levitator),
 			typeof(RaycastAIMovement),
 			typeof(Orb),
+			typeof(MapExit),
 		};
 
 		public static XmlSerializer Serializer;
