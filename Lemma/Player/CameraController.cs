@@ -118,13 +118,11 @@ namespace Lemma.Components
 				Matrix camera = this.CameraBone.Value * Matrix.CreateRotationY(mouse.X + shake.X);
 
 				Matrix rot = Matrix.Identity;
-				rot.Forward = Vector3.TransformNormal(new Vector3(0, 1.0f, 0), camera);
-				rot.Up = Vector3.TransformNormal(new Vector3(0.0f, 0, 1.0f), camera);
+				rot.Forward = Vector3.Normalize(Vector3.TransformNormal(new Vector3(0, 1.0f, 0), camera));
+				rot.Up = Vector3.Normalize(Vector3.TransformNormal(new Vector3(0.0f, 0, 1.0f), camera));
 				rot.Right = Vector3.Normalize(Vector3.Cross(rot.Forward, rot.Up));
 
-				Vector3 right = Vector3.Cross(rot.Forward, Vector3.Up);
-
-				main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shake.Z + this.Lean) * Matrix.CreateFromAxisAngle(right, -mouse.Y + shake.Y);
+				main.Camera.RotationMatrix.Value = rot * Matrix.CreateFromAxisAngle(rot.Forward, shake.Z + this.Lean) * Matrix.CreateFromAxisAngle(rot.Right, -mouse.Y + shake.Y);
 			}
 
 			float minBlur = 4.0f;

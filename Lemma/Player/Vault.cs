@@ -54,7 +54,7 @@ namespace Lemma.Components
 
 		private float walkOffEdgeTimer;
 		private Vector3 originalPosition;
-		private Vector3 relativeOriginalPosition;
+		private Vector3 relativeVaultStartPosition;
 		private Vector3 vaultVelocity;
 		private Vector3 forward;
 		private Voxel map;
@@ -79,10 +79,10 @@ namespace Lemma.Components
 				m.Translation = new Vector3(0.0f, 0.0f, 2.0f);
 				return m;
 			};
-			this.model["TopOut"].Speed = 1.8f;
+			this.model["TopOut"].Speed = 1.7f;
 			this.model["TopOut"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
-				Vector3 diff = Vector3.Transform(this.relativeOriginalPosition, this.map.Transform) - this.Position;
+				Vector3 diff = Vector3.Transform(this.relativeVaultStartPosition, this.map.Transform) - this.Position;
 				m.Translation += Vector3.Transform(diff, Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f) * Matrix.CreateTranslation(0, -0.5f, 0.5f));
 				return m;
 			};
@@ -199,8 +199,9 @@ namespace Lemma.Components
 			this.IsSupported.Value = false;
 			this.HasTraction.Value = false;
 
-			Vector3 dir = map.GetAbsoluteVector(map.GetRelativeDirection(this.forward).GetVector());
-			this.Rotation.Value = (float)Math.Atan2(dir.X, dir.Z);
+			Direction relativeDir = map.GetRelativeDirection(this.forward);
+			Vector3 absoluteDirVector = map.GetAbsoluteVector(relativeDir.GetVector());
+			this.Rotation.Value = (float)Math.Atan2(absoluteDirVector.X, absoluteDirVector.Z);
 			this.LockRotation.Execute();
 
 			this.EnableWalking.Value = false;
@@ -229,7 +230,15 @@ namespace Lemma.Components
 			this.moveForwardStartTime = 0.0f;
 			this.movingForward = false;
 			this.originalPosition = this.Position;
-			this.relativeOriginalPosition = Vector3.Transform(this.originalPosition, Matrix.Invert(this.map.Transform));
+
+			// If this is a top-out, we have to make sure the animation lines up perfectly
+			if (this.isTopOut)
+			{
+				Direction up = map.GetRelativeDirection(Direction.PositiveY);
+				this.relativeVaultStartPosition = map.GetRelativePosition(coord.Move(relativeDir, -2)) + up.GetVector() * -3.7f;
+			}
+			else
+				this.relativeVaultStartPosition = Vector3.Transform(this.originalPosition, Matrix.Invert(this.map.Transform));
 		}
 
 		private void vaultDown(Vector3 forward)

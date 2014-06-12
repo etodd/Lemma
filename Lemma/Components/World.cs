@@ -39,7 +39,7 @@ namespace Lemma.Components
 			this.Add(new TwoWayBinding<string>(this.EnvironmentMap, this.main.Renderer.EnvironmentMap));
 			this.Add(new TwoWayBinding<Vector3>(this.EnvironmentColor, this.main.Renderer.EnvironmentColor));
 			this.Add(new TwoWayBinding<Color>(this.BackgroundColor, this.main.Renderer.BackgroundColor));
-			this.Add(new TwoWayBinding<float>(this.FarPlaneDistance, this.main.Camera.FarPlaneDistance));
+			this.Add(new Binding<float>(this.main.Camera.FarPlaneDistance, this.FarPlaneDistance));
 
 			this.Gravity.Set = delegate(Vector3 value)
 			{

@@ -64,7 +64,8 @@ namespace Lemma.Components
 
 			Voxel.State temporary = Voxel.States[Voxel.t.Temporary],
 				expander = Voxel.States[Voxel.t.Expander],
-				neutral = Voxel.States[Voxel.t.Neutral];
+				neutral = Voxel.States[Voxel.t.Neutral],
+				powered = Voxel.States[Voxel.t.Powered];
 
 			this.Add(new CommandBinding<Voxel, Voxel.Coord, Direction>(this.WalkedOn, delegate(Voxel map, Voxel.Coord coord, Direction dir)
 			{
@@ -101,7 +102,18 @@ namespace Lemma.Components
 				if (id == Voxel.t.Neutral)
 				{
 					map.Empty(coord, false, true, map);
-					map.Fill(coord, temporary);
+					bool isPowered = false;
+					foreach (Direction adjacentDirection in DirectionExtensions.Directions)
+					{
+						Voxel.Coord adjacentCoord = coord.Move(adjacentDirection);
+						Voxel.t adjacentId = map[coord].ID;
+						if (adjacentId == Voxel.t.Powered || adjacentId == Voxel.t.PermanentPowered || adjacentId == Voxel.t.PoweredSwitch || adjacentId == Voxel.t.HardPowered)
+						{
+							isPowered = true;
+							break;
+						}
+					}
+					map.Fill(coord, isPowered ? powered : temporary);
 					map.Regenerate();
 					WorldFactory.Instance.Get<Propagator>().Sparks(map.GetAbsolutePosition(coord), Propagator.Spark.Normal);
 				}

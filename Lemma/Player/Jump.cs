@@ -47,6 +47,7 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.Serialize = false;
+			this.EnabledWhenPaused = false;
 			this.temporary = Voxel.States[Voxel.t.Temporary];
 			this.Add(new NotifyBinding(delegate()
 			{

@@ -27,6 +27,7 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.Serialize = false;
+			this.EnabledWhenPaused = false;
 			this.Add(new NotifyBinding(delegate()
 			{
 				float a = main.Paused ? 0.0f : MathHelper.Clamp(this.BaseAmount + this.CameraShake + this.internalAmount, 0.0f, 1.0f);
