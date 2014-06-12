@@ -27,6 +27,12 @@ namespace Lemma.Components
 
 		private static Random random = new Random();
 
+		public override void Awake()
+		{
+			base.Awake();
+			this.EnabledWhenPaused = false;
+		}
+
 		public override void Start()
 		{
 			if (!main.EditorEnabled && this.Blocks.Count < totalBlocks)

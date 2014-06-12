@@ -2,6 +2,7 @@
 <ArrayOfEntity xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Entity Type="World" GUID="6">
     <ID />
+    <LinkedCommands />
     <Components>
       <Component>
         <Key xsi:type="xsd:string">Transform</Key>
@@ -157,6 +158,7 @@
   </Entity>
   <Entity Type="AmbientLight" GUID="7">
     <ID />
+    <LinkedCommands />
     <Components>
       <Component>
         <Key xsi:type="xsd:string">Transform</Key>
@@ -208,6 +210,7 @@
   </Entity>
   <Entity Type="Voxel" GUID="8">
     <ID />
+    <LinkedCommands />
     <Components>
       <Component>
         <Key xsi:type="xsd:string">Transform</Key>
@@ -267,6 +270,7 @@
     <ID>
       <Value>fillMap1</Value>
     </ID>
+    <LinkedCommands />
     <Components>
       <Component>
         <Key xsi:type="xsd:string">Transform</Key>
@@ -385,6 +389,7 @@
   </Entity>
   <Entity Type="PointLight" GUID="10">
     <ID />
+    <LinkedCommands />
     <Components>
       <Component>
         <Key xsi:type="xsd:string">Transform</Key>
@@ -481,6 +486,7 @@
     <ID>
       <Value>camera</Value>
     </ID>
+    <LinkedCommands />
     <Components>
       <Component>
         <Key xsi:type="xsd:string">Transform</Key>
@@ -550,6 +556,7 @@
   </Entity>
   <Entity Type="Script" GUID="12">
     <ID />
+    <LinkedCommands />
     <Components>
       <Component>
         <Key xsi:type="xsd:string">Transform</Key>
@@ -610,6 +617,7 @@
   </Entity>
   <Entity Type="Water" GUID="13">
     <ID />
+    <LinkedCommands />
     <Components>
       <Component>
         <Key xsi:type="xsd:string">Transform</Key>
@@ -717,6 +725,7 @@
   </Entity>
   <Entity Type="PointLight" GUID="14">
     <ID />
+    <LinkedCommands />
     <Components>
       <Component>
         <Key xsi:type="xsd:string">Transform</Key>
@@ -811,6 +820,7 @@
   </Entity>
   <Entity Type="PointLight" GUID="15">
     <ID />
+    <LinkedCommands />
     <Components>
       <Component>
         <Key xsi:type="xsd:string">Transform</Key>
@@ -905,6 +915,7 @@
   </Entity>
   <Entity Type="PointLight" GUID="16">
     <ID />
+    <LinkedCommands />
     <Components>
       <Component>
         <Key xsi:type="xsd:string">Transform</Key>

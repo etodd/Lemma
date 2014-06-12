@@ -116,6 +116,7 @@
     <Compile Include="Components\EvilBlocks.cs" />
     <Compile Include="Components\FallingTower.cs" />
     <Compile Include="Components\ImplodeBlock.cs" />
+    <Compile Include="Components\Joint.cs" />
     <Compile Include="Components\Note.cs" />
     <Compile Include="Components\PlayerData.cs" />
     <Compile Include="Components\Collectible.cs" />
@@ -125,6 +126,8 @@
     <Compile Include="Components\Scriptlike\Counter.cs" />
     <Compile Include="Components\Scriptlike\Setter.cs" />
     <Compile Include="Components\Scriptlike\Ticker.cs" />
+    <Compile Include="Components\Spinner.cs" />
+    <Compile Include="Components\Slider.cs" />
     <Compile Include="Components\Spawner.cs" />
     <Compile Include="Components\World.cs" />
     <Compile Include="Console\AutoConCommand.cs" />

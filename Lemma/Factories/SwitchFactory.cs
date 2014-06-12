@@ -35,9 +35,7 @@ namespace Lemma.Factories
 			ListProperty<Entity.Handle> targets = entity.GetOrMakeListProperty<Entity.Handle>("Targets");
 
 			Command OnPowerOn = new Command();
-			OnPowerOn.ShowInEditor = true;
 			Command OnPowerOff = new Command();
-			OnPowerOff.ShowInEditor = true;
 			BindCommand(entity, OnPowerOn, "OnPowered");
 			BindCommand(entity, OnPowerOn, "OnPoweredOff");
 			entity.Add(new NotifyBinding(delegate()
