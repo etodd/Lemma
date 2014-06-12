@@ -99,6 +99,18 @@ namespace GeeUI.Views
 											select op).ToArray();
 
 			DropDownListView.RemoveAllChildren();
+			FilterView.SubmitOnClickAway = false;
+			if (goodOptions.Length > 0)
+				FilterView.OnTextSubmitted = () =>
+				{
+					if (text != "")
+					{
+						HideDropDown();
+						this.OnOptionSelected(goodOptions[0]);
+					}
+
+				};
+
 			foreach (var option in goodOptions)
 			{
 				var dropButton = new ButtonView(this.ParentGeeUI, DropDownListView, option.Text, Vector2.Zero, option.Font);
@@ -200,7 +212,7 @@ namespace GeeUI.Views
 			{
 				DropDownListView.Height.Value -= (DropDownListView.AbsoluteBoundBox.Bottom - ParentGeeUI.RootView.Height);
 			}
-			if(DropDownShowing)
+			if (DropDownShowing)
 				DropDownPanelView.ParentView.BringChildToFront(DropDownPanelView);
 			base.Update(dt);
 		}

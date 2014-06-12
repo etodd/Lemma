@@ -1,4 +1,5 @@
-﻿using System; using ComponentBind;
+﻿using System;
+using ComponentBind;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -135,6 +136,27 @@ namespace Lemma.IO
 				filename = Path.Combine(directory, filename);
 
 			filename += "." + MapLoader.MapExtension;
+
+
+			Stream str = null;
+			//HACKERERER
+			try
+			{
+				str = TitleContainer.OpenStream(filename);
+			}
+			catch (Exception e)
+			{
+				//Holy hacks batman, what did I do to deserve this?
+				if (e.Message == "Invalid filename. TitleContainer.OpenStream requires a relative URI.")
+				{
+					inAppPackage = false;
+				}
+			}
+			finally
+			{
+				if (str != null)
+					str.Close();
+			}
 
 			using (Stream stream = inAppPackage ? TitleContainer.OpenStream(filename) : File.OpenRead(filename))
 				MapLoader.Load(main, stream, deleteEditor);

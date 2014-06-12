@@ -190,7 +190,6 @@ namespace Lemma.Components
 					this.main.Add(entity);
 					this.SelectedEntities.Clear();
 					this.SelectedEntities.Add(entity);
-					this.StartTranslation.Execute();
 				}
 			};
 

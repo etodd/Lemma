@@ -3,12 +3,13 @@ using System;
 using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using ComponentBind;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using GeeUI.Structs;
 using GeeUI.Managers;
+using Keys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace GeeUI.Views
 {
@@ -62,6 +63,8 @@ namespace GeeUI.Views
 		}
 
 		public int ShownWidth = 0;
+
+		public bool SubmitOnClickAway = true;
 
 		//Avoid infinite recursion
 		private bool _callingOnChanged = false;
@@ -215,6 +218,9 @@ namespace GeeUI.Views
 						break;
 
 					case Keys.V:
+						string text = Clipboard.GetText();
+						if(!String.IsNullOrEmpty(text))
+							AppendTextCursor(text);
 						break;
 
 					case Keys.Back:
@@ -621,7 +627,7 @@ namespace GeeUI.Views
 			bool oldSelected = Selected.Value;
 			Selected.Value = false;
 			_selectionEnd = _selectionStart = new Vector2(-1);
-			if (OnTextSubmitted != null && oldSelected && !Selected.Value)
+			if (OnTextSubmitted != null && oldSelected && !Selected.Value && SubmitOnClickAway)
 				OnTextSubmitted();
 			base.OnMClickAway();
 		}

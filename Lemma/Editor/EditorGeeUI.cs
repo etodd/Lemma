@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using GeeUI.Managers;
 using GeeUI.ViewLayouts;
 using GeeUI.Views;
+using Lemma.GInterfaces;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
@@ -167,6 +168,12 @@ namespace Lemma.Components
 			RootEditorView.Height.Value = 160;
 			ComponentTabViews.Height.Value = 160;
 			ActionsPanelView.Height.Value = 125;
+
+			var workshopButton = new ButtonView(main.GeeUI, dropDownPlusLabel, "Upload to Workshop", Vector2.Zero, MainFont);
+			workshopButton.OnMouseClick += (sender, args) =>
+			{
+				main.AddComponent(new WorkShopInterface("content/game/" + main.MapFile.Value + ".map"));
+			};
 
 			this.SelectedEntities.ItemAdded += new ListProperty<Entity>.ItemAddedEventHandler(delegate(int index, Entity item)
 			{

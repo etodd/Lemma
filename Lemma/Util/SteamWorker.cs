@@ -10,6 +10,9 @@ namespace Lemma.Util
 {
 	public static class SteamWorker
 	{
+		private static uint ugcPage = 0;
+		private static UGCHandle_t ugcHandle;
+
 		private static Dictionary<string, bool> _achievementDictionary;
 		private static Dictionary<string, int> _statDictionary;
 
@@ -32,8 +35,11 @@ namespace Lemma.Util
 		private static bool Init_SteamGame()
 		{
 			//Getting here means Steamworks MUST have initialized successfully. Oh, && operator!
-
+			RemoveWSTemp();
+			new Callback<SteamUGCQueryCompleted_t>(OnUGCQueryReturn);
 			new Callback<UserStatsReceived_t>(OnUserStatsReceived);
+			new Callback<RemoteStoragePublishedFileSubscribed_t>(OnSubscribed);
+			QuerySubscribed();
 			if (!SteamUserStats.RequestCurrentStats()) return false;
 			_achievementDictionary = new Dictionary<string, bool>();
 			_statDictionary = new Dictionary<string, int>();
@@ -72,6 +78,20 @@ namespace Lemma.Util
 			if (SteamInitialized)
 				SteamAPI.RunCallbacks();
 #endif
+		}
+
+
+		public static void RemoveWSTemp()
+		{
+			string tempDirectory = Directory.GetCurrentDirectory() + "\\WSTemp\\";
+			foreach (var dir in Directory.GetDirectories(tempDirectory))
+			{
+				Directory.Delete(dir, true);
+			}
+			foreach (var file in Directory.GetFiles(tempDirectory))
+			{
+				File.Delete(file);
+			}
 		}
 
 		public static bool WriteFileUGC(string path, string steamPath)
@@ -190,16 +210,110 @@ namespace Lemma.Util
 			StatsInitialized = false;
 		}
 
-		#region Callbacks
-
-		private static void OnPublishedFile(RemoteStoragePublishFileResult_t result)
+		private static void DownloadLevel(PublishedFileId_t file)
 		{
+			var publishedCall = SteamRemoteStorage.GetPublishedFileDetails(file, 0);
+
+			string tempDirectory = Directory.GetCurrentDirectory() + "\\WSTemp\\";
+			string completedDirectory = Directory.GetCurrentDirectory() + "\\WSFiles\\";
+			if (!Directory.Exists(tempDirectory)) Directory.CreateDirectory(tempDirectory);
+			if (!Directory.Exists(completedDirectory)) Directory.CreateDirectory(completedDirectory);
+
+			string tempDirectoryNew = tempDirectory + file.m_PublishedFileId + "\\";
+			string completedDirectoryNew = completedDirectory + file.m_PublishedFileId + "\\";
+			if (Directory.Exists(completedDirectoryNew))
+			{
+				return;
+			}
+			if (!Directory.Exists(tempDirectoryNew)) Directory.CreateDirectory(tempDirectoryNew);
+			if (!Directory.Exists(completedDirectoryNew)) Directory.CreateDirectory(completedDirectoryNew);
+
+			new CallResult<RemoteStorageGetPublishedFileDetailsResult_t>((t, failure) =>
+			{
+				if (!failure && t.m_eResult == EResult.k_EResultOK)
+				{
+					string mapFileTemp = tempDirectoryNew + file.m_PublishedFileId.ToString() + ".map";
+					string imageFileTemp = tempDirectoryNew + file.m_PublishedFileId.ToString() + ".png";
+					var downloadMapCall = SteamRemoteStorage.UGCDownloadToLocation(t.m_hFile, mapFileTemp, 1);
+					new CallResult<RemoteStorageDownloadUGCResult_t>((resultT, ioFailure) =>
+					{
+						if (ioFailure)
+						{
+
+						}
+						else
+						{
+							var downloadImageCall = SteamRemoteStorage.UGCDownloadToLocation(t.m_hPreviewFile, imageFileTemp, 1);
+							new CallResult<RemoteStorageDownloadUGCResult_t>((resultT2, ioFailure2) =>
+							{
+								if (ioFailure2)
+								{
+
+
+								}
+								else
+								{
+									string mapFileNew = mapFileTemp.Replace(tempDirectoryNew, completedDirectoryNew);
+									string imageFileNew = imageFileTemp.Replace(tempDirectoryNew, completedDirectoryNew);
+									File.Move(mapFileTemp, mapFileNew);
+									File.Move(imageFileTemp, imageFileNew);
+								}
+							}, downloadImageCall);
+						}
+					}, downloadMapCall);
+				}
+			}, publishedCall);
+		}
+
+		private static void QuerySubscribed()
+		{
+			ugcPage++;
+
+			var query = SteamUGC.CreateQueryUserUGCRequest(SteamUser.GetSteamID().GetAccountID(),
+			   EUserUGCList.k_EUserUGCList_Subscribed, EUGCMatchingUGCType.k_EUGCMatchingUGCType_UsableInGame,
+			   EUserUGCListSortOrder.k_EUserUGCListSortOrder_SubscriptionDateDesc, new AppId_t(300340), new AppId_t(300340),
+			   ugcPage);
+
+			var call = SteamUGC.SendQueryUGCRequest(query);
+
+			new CallResult<SteamUGCQueryCompleted_t>((t, failure) =>
+			{
+				OnUGCQueryReturn(t);
+			}, call);
 
 		}
 
-		private static void OnSharedFile(RemoteStorageFileShareResult_t result)
-		{
+		#region Callbacks
 
+		private static void OnUGCQueryReturn(SteamUGCQueryCompleted_t handle)
+		{
+			int blah = 0;
+			for (uint i = 0; i < handle.m_unNumResultsReturned; i++)
+			{
+				var deets = new SteamUGCDetails_t();
+				if (SteamUGC.GetQueryUGCResult(handle.m_handle, i, ref deets))
+				{
+					if (deets.m_nConsumerAppID.m_AppId == 300340 && deets.m_eFileType == EWorkshopFileType.k_EWorkshopFileTypeCommunity)
+					{
+						DownloadLevel(deets.m_nPublishedFileId);
+					}
+				}
+			}
+			if (handle.m_unTotalMatchingResults > handle.m_unNumResultsReturned && handle.m_unNumResultsReturned != 0)
+			{
+				QuerySubscribed();
+			}
+
+		}
+
+		private static void OnSubscribed(RemoteStoragePublishedFileSubscribed_t subscribed)
+		{
+			if (!SteamInitialized) return;
+
+			//Because Steam can be an idiot sometimes!
+			if (subscribed.m_nAppID.m_AppId != 300340) return;
+
+			DownloadLevel(subscribed.m_nPublishedFileId);
 		}
 
 		private static void OnUserStatsReceived(UserStatsReceived_t pCallback)

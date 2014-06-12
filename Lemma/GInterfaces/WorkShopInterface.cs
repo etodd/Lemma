@@ -31,6 +31,17 @@ namespace Lemma.GInterfaces
 
 		private Property<string> StatusString = new Property<string>() { Value = "" };
 
+		private string MapPath = "";
+		public WorkShopInterface()
+		{
+			this.MapPath = "";
+		}
+
+		public WorkShopInterface(string path)
+		{
+			MapPath = path;
+		}
+
 		public override void Awake()
 		{
 			MainFont = main.Content.Load<SpriteFont>("EditorFont");
@@ -97,6 +108,8 @@ namespace Lemma.GInterfaces
 			};
 
 			this.Add(new Binding<string>(statusString.Text, StatusString));
+
+			MapFilePath.Text = MapPath;
 			base.Awake();
 		}
 
