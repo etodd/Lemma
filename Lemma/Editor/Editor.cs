@@ -167,7 +167,7 @@ namespace Lemma.Components
 		private Voxel.State getBrush()
 		{
 			Voxel.State result = Voxel.StateList.FirstOrDefault(x => x.ID.ToString() == this.Brush);
-			if (result.ID == Voxel.t.Empty)
+			if (result == null)
 				return Voxel.EmptyState;
 			return result;
 		}

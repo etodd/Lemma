@@ -20,10 +20,17 @@ namespace Lemma.Components
 
 		// Output commands
 		public Command<float> Rumble = new Command<float>();
+		public Command LockRotation = new Command();
+		public Property<bool> Landing = new Property<bool>();
 
 		// Input properties
 		public Property<bool> IsSupported = new Property<bool>();
+
 		private bool lastSupported;
+
+		private float landingTimer;
+
+		private const float landingTime = 0.75f;
 
 		// Animated model
 		public void Bind(AnimatedModel m)
@@ -70,6 +77,9 @@ namespace Lemma.Components
 						this.LinearVelocity.Value = new Vector3(0, this.LinearVelocity.Value.Y, 0);
 						if (!rolling)
 						{
+							this.Landing.Value = true;
+							this.LockRotation.Execute();
+							this.landingTimer = 0;
 							this.model.StartClip("Land", 0, false, 0.1f);
 							this.EnableWalking.Value = false;
 							this.walkingDisabled = true;
@@ -100,6 +110,13 @@ namespace Lemma.Components
 
 		public void Update(float dt)
 		{
+			if (this.Landing)
+			{
+				this.landingTimer += dt;
+				if (this.landingTimer > landingTime)
+					this.Landing.Value = false;
+			}
+
 			if (!this.lastSupported && this.IsSupported)
 			{
 				// Damage the player if they fall too hard and they're not smashing or rolling

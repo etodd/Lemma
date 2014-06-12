@@ -187,7 +187,7 @@ technique ClipGodRays
 		DestBlend = InvSrcAlpha;
 	
 		VertexShader = compile vs_3_0 RenderVS();
-		PixelShader = compile ps_3_0 SkyboxNormalGodRayPS();
+		PixelShader = compile ps_3_0 SkyboxNormalPS();
 	}
 }
 
@@ -247,6 +247,6 @@ technique ClipVerticalGodRays
 		DestBlend = InvSrcAlpha;
 	
 		VertexShader = compile vs_3_0 RenderVS();
-		PixelShader = compile ps_3_0 SkyboxVerticalGodRayPS();
+		PixelShader = compile ps_3_0 SkyboxVerticalPS();
 	}
 }

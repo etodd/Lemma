@@ -20,6 +20,8 @@ namespace Lemma.Components
 		public Property<bool> Rolling = new Property<bool>();
 		[XmlIgnore]
 		public Property<bool> Kicking = new Property<bool>();
+		[XmlIgnore]
+		public Property<bool> Landing = new Property<bool>();
 
 		// Input/output properties
 		public Property<float> Rotation = new Property<float>();
@@ -43,7 +45,8 @@ namespace Lemma.Components
 					this.Mouse.Value += new Vector2(value - this.Rotation.InternalValue, 0);
 				this.Rotation.InternalValue = value;
 			};
-			this.Add(new NotifyBinding(this.Unlock, this.Locked, this.WallRunState, this.Kicking, this.Rolling, this.VaultState));
+			this.Add(new NotifyBinding(this.Unlock, this.Locked, this.WallRunState, this.Kicking, this.Rolling, this.VaultState, this.Landing));
+			this.EnabledWhenPaused = false;
 		}
 
 		public void Lock()
@@ -58,7 +61,7 @@ namespace Lemma.Components
 
 		public void Unlock()
 		{
-			if (this.Locked && this.WallRunState.Value == WallRun.State.None && !this.Kicking && !this.Rolling && this.VaultState.Value == Vault.State.None)
+			if (this.Locked && this.WallRunState.Value == WallRun.State.None && !this.Kicking && !this.Rolling && this.VaultState.Value == Vault.State.None && !this.Landing)
 			{
 				this.rotationLockBlending = 0.0f;
 				this.Locked.Value = false;

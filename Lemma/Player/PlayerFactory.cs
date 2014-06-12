@@ -440,6 +440,8 @@ namespace Lemma.Factories
 			fallDamage.Add(new TwoWayBinding<float>(player.Health, fallDamage.Health));
 			fallDamage.Add(new CommandBinding<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection>(player.Character.Collided, fallDamage.Collided));
 			fallDamage.Add(new TwoWayBinding<bool>(player.Character.EnableWalking, fallDamage.EnableWalking));
+			fallDamage.Add(new TwoWayBinding<bool>(fallDamage.Landing, rotation.Landing));
+			fallDamage.Add(new CommandBinding(fallDamage.LockRotation, (Action)rotation.Lock));
 			fallDamage.Bind(model);
 
 			// Jumping

@@ -96,13 +96,16 @@ namespace Lemma.Components
 							EffectBlock.Entry generationsKey = new EffectBlock.Entry { Voxel = map, Coordinate = newCoord };
 							if (generations.TryGetValue(generationsKey, out generation))
 								generations.Remove(generationsKey);
-							this.BlockQueue.Add(new ScheduledBlock
+							if (!this.isInQueue(map.Entity, newCoord, false))
 							{
-								Voxel = map.Entity,
-								Coordinate = newCoord,
-								Time = propagateDelay,
-								Generation = generation,
-							});
+								this.BlockQueue.Add(new ScheduledBlock
+								{
+									Voxel = map.Entity,
+									Coordinate = newCoord,
+									Time = propagateDelay,
+									Generation = generation,
+								});
+							}
 						}
 					}
 				}));

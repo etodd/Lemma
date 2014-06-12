@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Lemma.Components;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma.Components
 {
@@ -44,11 +45,32 @@ namespace Lemma.Components
 
 		public Property<bool> HasGlobalShadowLight = new Property<bool>();
 
+		public Property<string> EnvironmentMap = new Property<string>();
+		public Property<Vector3> EnvironmentColor = new Property<Vector3>();
+		public Property<Color> BackgroundColor = new Property<Color>();
+
 		public Property<DynamicShadowSetting> DynamicShadows = new Property<DynamicShadowSetting> { Value = DynamicShadowSetting.Off };
+
+		private TextureCube environmentMap;
+
+		private void loadEnvironmentMap(string file)
+		{
+			this.environmentMap = file == null ? (TextureCube)null : this.main.Content.Load<TextureCube>(file);
+		}
 
 		public override void Awake()
 		{
 			base.Awake();
+
+			this.EnvironmentMap.Set = delegate(string file)
+			{
+				if (this.EnvironmentMap.InternalValue != file)
+				{
+					this.EnvironmentMap.InternalValue = file;
+					this.loadEnvironmentMap(file);
+				}
+			};
+
 			this.shadowCamera = new Camera();
 			this.main.AddComponent(this.shadowCamera);
 			this.DynamicShadows.Set = delegate(DynamicShadowSetting value)
@@ -150,13 +172,20 @@ namespace Lemma.Components
 		private Dictionary<Model.Material, int> materials = new Dictionary<Model.Material, int>();
 		private Vector2[] materialData = new Vector2[LightingManager.maxMaterials];
 
-		public void UpdateGlobalLights()
+		public void ClearMaterials()
+		{
+			this.materials.Clear();
+			this.materials[new Model.Material()] = 0; // Material with no lighting
+		}
+
+		public void SetMaterials()
 		{
 			foreach (KeyValuePair<Model.Material, int> pair in this.materials)
 				this.materialData[pair.Value] = new Vector2(pair.Key.SpecularPower, pair.Key.SpecularIntensity);
-			this.materials.Clear();
-			this.materials[new Model.Material()] = 0; // Material with no lighting
+		}
 
+		public void UpdateGlobalLights()
+		{
 			this.globalShadowLight = null;
 			int directionalLightIndex = 0;
 			foreach (DirectionalLight light in DirectionalLight.All.Where(x => x.Enabled && !x.Suspended).Take(LightingManager.maxDirectionalLights))
@@ -236,19 +265,22 @@ namespace Lemma.Components
 			}
 
 			// Detail map
-			focus = camera.Position;
-			focus = new Vector3((float)Math.Round(focus.X / LightingManager.detailGlobalShadowFocusInterval), (float)Math.Round(focus.Y / LightingManager.detailGlobalShadowFocusInterval), (float)Math.Round(focus.Z / LightingManager.detailGlobalShadowFocusInterval)) * LightingManager.detailGlobalShadowFocusInterval;
-			shadowCameraOffset = this.globalShadowLight.Direction.Value * -camera.FarPlaneDistance;
-			this.shadowCamera.View.Value = Matrix.CreateLookAt(focus + shadowCameraOffset, focus, Vector3.Up);
+			if (this.EnableDetailGlobalShadowMap)
+			{
+				focus = camera.Position;
+				focus = new Vector3((float)Math.Round(focus.X / LightingManager.detailGlobalShadowFocusInterval), (float)Math.Round(focus.Y / LightingManager.detailGlobalShadowFocusInterval), (float)Math.Round(focus.Z / LightingManager.detailGlobalShadowFocusInterval)) * LightingManager.detailGlobalShadowFocusInterval;
+				shadowCameraOffset = this.globalShadowLight.Direction.Value * -camera.FarPlaneDistance;
+				this.shadowCamera.View.Value = Matrix.CreateLookAt(focus + shadowCameraOffset, focus, Vector3.Up);
 
-			float detailSize = size * LightingManager.detailGlobalShadowSizeRatio;
-			this.shadowCamera.SetOrthographicProjection(detailSize, detailSize, 1.0f, size * 2.0f);
+				float detailSize = size * LightingManager.detailGlobalShadowSizeRatio;
+				this.shadowCamera.SetOrthographicProjection(detailSize, detailSize, 1.0f, size * 2.0f);
 
-			this.main.GraphicsDevice.SetRenderTarget(this.DetailGlobalShadowMap);
-			this.main.GraphicsDevice.Clear(new Color(0, 0, 0));
-			this.main.DrawScene(new RenderParameters { Camera = this.shadowCamera, Technique = Technique.Shadow });
+				this.main.GraphicsDevice.SetRenderTarget(this.DetailGlobalShadowMap);
+				this.main.GraphicsDevice.Clear(new Color(0, 0, 0));
+				this.main.DrawScene(new RenderParameters { Camera = this.shadowCamera, Technique = Technique.Shadow });
 
-			this.DetailGlobalShadowViewProjection.Value = this.shadowCamera.ViewProjection;
+				this.DetailGlobalShadowViewProjection.Value = this.shadowCamera.ViewProjection;
+			}
 		}
 
 		public void RenderSpotShadowMap(SpotLight light, int index)
@@ -298,15 +330,20 @@ namespace Lemma.Components
 		{
 			effect.Parameters["DirectionalLightDirections"].SetValue(this.directionalLightDirections);
 			effect.Parameters["DirectionalLightColors"].SetValue(this.directionalLightColors);
+			effect.Parameters["EnvironmentColor"].SetValue(this.EnvironmentColor);
+			effect.Parameters["Environment" + Model.SamplerPostfix].SetValue(this.environmentMap);
 			if (this.EnableGlobalShadowMap)
 			{
 				effect.Parameters["ShadowViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * this.GlobalShadowViewProjection);
 				effect.Parameters["ShadowMapSize"].SetValue(this.globalShadowMapSize);
 				effect.Parameters["ShadowMap" + Model.SamplerPostfix].SetValue(this.GlobalShadowMap);
 
-				effect.Parameters["DetailShadowViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * this.DetailGlobalShadowViewProjection);
-				effect.Parameters["DetailShadowMapSize"].SetValue(this.detailGlobalShadowMapSize);
-				effect.Parameters["DetailShadowMap" + Model.SamplerPostfix].SetValue(this.DetailGlobalShadowMap);
+				if (this.EnableDetailGlobalShadowMap)
+				{
+					effect.Parameters["DetailShadowViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * this.DetailGlobalShadowViewProjection);
+					effect.Parameters["DetailShadowMapSize"].SetValue(this.detailGlobalShadowMapSize);
+					effect.Parameters["DetailShadowMap" + Model.SamplerPostfix].SetValue(this.DetailGlobalShadowMap);
+				}
 			}
 		}
 

@@ -74,6 +74,7 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.Serialize = false;
+			this.EnabledWhenPaused = false;
 			this.Add(new NotifyBinding(delegate()
 			{
 				if (this.IsSupported)
