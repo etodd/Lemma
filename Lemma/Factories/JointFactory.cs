@@ -29,10 +29,6 @@ namespace Lemma.Factories
 
 			Components.Joint jointData = entity.GetOrCreate<Components.Joint>("Joint");
 
-			jointData.Parent.Value = entity.GetOrMakeProperty<Entity.Handle>("Parent");
-			jointData.Coord.Value = entity.GetOrMakeProperty<Voxel.Coord>("Coord");
-			jointData.Direction.Value = entity.GetOrMakeProperty<Direction>("Direction", true);
-
 			Action refreshMapTransform = delegate()
 			{
 				Entity parent = jointData.Parent.Value.Target;

@@ -92,14 +92,15 @@ namespace Lemma.Factories
 			Agent agent = entity.GetOrCreate<Agent>();
 			agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
 
-			Property<int> operationalRadius = entity.GetOrMakeProperty<int>("OperationalRadius", true, 100);
+			RaycastAIMovement movement = entity.GetOrCreate<RaycastAIMovement>("Movement");
+			Orb orb = entity.GetOrCreate<Orb>("Orb");
 
 			AI.Task checkOperationalRadius = new AI.Task
 			{
 				Interval = 2.0f,
 				Action = delegate()
 				{
-					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < operationalRadius;
+					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < movement.OperationalRadius;
 					if (shouldBeActive && ai.CurrentState == "Suspended")
 						ai.CurrentState.Value = "Idle";
 					else if (!shouldBeActive && ai.CurrentState != "Suspended")
@@ -160,8 +161,6 @@ namespace Lemma.Factories
 				},
 			});
 
-			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
-
 			ai.Add(new AI.AIState
 			{
 				Name = "Alert",
@@ -189,7 +188,7 @@ namespace Lemma.Factories
 								Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
 								if (a != null)
 								{
-									targetAgent.Value = a.Entity;
+									movement.TargetAgent.Value = a.Entity;
 									ai.CurrentState.Value = "Chase";
 								}
 							}
@@ -202,10 +201,10 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					Entity target = targetAgent.Value.Target;
+					Entity target = movement.TargetAgent.Value.Target;
 					if (target == null || !target.Active)
 					{
-						targetAgent.Value = null;
+						movement.TargetAgent.Value = null;
 						ai.CurrentState.Value = "Idle";
 					}
 				},
@@ -231,24 +230,20 @@ namespace Lemma.Factories
 						Interval = 0.35f,
 						Action = delegate()
 						{
-							raycastAI.Move(targetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
+							raycastAI.Move(movement.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
 						}
 					},
 					new AI.Task
 					{
 						Action = delegate()
 						{
-							if ((targetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position).Length() < 10.0f)
+							if ((movement.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position).Length() < 10.0f)
 								ai.CurrentState.Value = "Explode";
 						}
 					},
 					updatePosition,
 				},
 			});
-
-			ListProperty<Voxel.Coord> coordQueue = entity.GetOrMakeListProperty<Voxel.Coord>("CoordQueue");
-
-			Property<Voxel.Coord> explosionOriginalCoord = entity.GetOrMakeProperty<Voxel.Coord>("ExplosionOriginalCoord");
 
 			EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
 			Voxel.State infectedState = Voxel.States[Voxel.t.Infected];
@@ -258,7 +253,7 @@ namespace Lemma.Factories
 				Name = "Explode",
 				Enter = delegate(AI.AIState previous)
 				{
-					coordQueue.Clear();
+					orb.CoordQueue.Clear();
 					
 					Voxel m = raycastAI.Voxel.Value.Target.Get<Voxel>();
 
@@ -277,7 +272,7 @@ namespace Lemma.Factories
 
 					Direction up = toSupport.GetReverse();
 
-					explosionOriginalCoord.Value = raycastAI.Coord;
+					orb.ExplosionOriginalCoord.Value = raycastAI.Coord;
 
 					Direction right;
 					if (up.IsParallel(Direction.PositiveX))
@@ -291,13 +286,13 @@ namespace Lemma.Factories
 						for (Voxel.Coord x = y.Clone(); x.GetComponent(right) < c.GetComponent(right) + 2; x = x.Move(right))
 						{
 							for (Voxel.Coord z = x.Clone(); z.GetComponent(forward) < c.GetComponent(forward) + 2; z = z.Move(forward))
-								coordQueue.Add(z);
+								orb.CoordQueue.Add(z);
 						}
 					}
 				},
 				Exit = delegate(AI.AIState next)
 				{
-					coordQueue.Clear();
+					orb.CoordQueue.Clear();
 				},
 				Tasks = new[]
 				{ 
@@ -307,11 +302,11 @@ namespace Lemma.Factories
 						Interval = 0.2f,
 						Action = delegate()
 						{
-							if (coordQueue.Count > 0)
+							if (orb.CoordQueue.Count > 0)
 							{
-								raycastAI.MoveTo(coordQueue[0]);
+								raycastAI.MoveTo(orb.CoordQueue[0]);
 
-								coordQueue.RemoveAt(0);
+								orb.CoordQueue.RemoveAt(0);
 
 								Entity blockEntity = factory.CreateAndBind(main);
 								infectedState.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
@@ -340,7 +335,7 @@ namespace Lemma.Factories
 						Action = delegate()
 						{
 							AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_GLOWSQUARE_PITCH, MathHelper.Lerp(0.0f, 1.0f, ai.TimeInCurrentState.Value / 2.0f), entity);
-							if (coordQueue.Count == 0)
+							if (orb.CoordQueue.Count == 0)
 							{
 								// Explode
 								ai.CurrentState.Value = "Exploding";
@@ -351,19 +346,17 @@ namespace Lemma.Factories
 				},
 			});
 
-			Property<bool> exploded = entity.GetOrMakeProperty<bool>("Exploded");
-
 			ai.Add(new AI.AIState
 			{
 				Name = "Exploding",
 				Enter = delegate(AI.AIState previous)
 				{
-					exploded.Value = false;
+					orb.Exploded.Value = false;
 					AkSoundEngine.PostEvent(AK.EVENTS.STOP_GLOWSQUARE, entity);
 				},
 				Exit = delegate(AI.AIState next)
 				{
-					exploded.Value = false;
+					orb.Exploded.Value = false;
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_GLOWSQUARE, entity);
 				},
 				Tasks = new[]
@@ -376,13 +369,13 @@ namespace Lemma.Factories
 							const int radius = 9;
 
 							float timeInCurrentState = ai.TimeInCurrentState;
-							if (timeInCurrentState > 1.0f && !exploded)
+							if (timeInCurrentState > 1.0f && !orb.Exploded)
 							{
 								Entity mapEntity = raycastAI.Voxel.Value.Target;
 								if (mapEntity != null && mapEntity.Active)
 									Explosion.Explode(main, raycastAI.Voxel.Value.Target.Get<Voxel>(), raycastAI.Coord, radius, 18.0f);
 
-								exploded.Value = true;
+								orb.Exploded.Value = true;
 							}
 
 							if (timeInCurrentState > 2.0f)

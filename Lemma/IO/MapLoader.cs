@@ -104,6 +104,9 @@ namespace Lemma.IO
 			typeof(Joint),
 			typeof(Slider),
 			typeof(Spinner),
+			typeof(Levitator),
+			typeof(RaycastAIMovement),
+			typeof(Orb),
 		};
 
 		public static XmlSerializer Serializer;
