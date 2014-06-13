@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
@@ -1857,162 +1858,16 @@ namespace Lemma.Components
 
 			this.Data.Get = delegate()
 			{
-				List<int> result = new List<int>();
-				lock (this.MutationLock)
-				{
-					List<Box> boxes = this.Chunks.Where(x => x.Data != null).SelectMany(x => x.Boxes).ToList();
-					bool[] modifications = this.simplify(boxes);
-					this.simplify(boxes, modifications);
-					this.applyChanges(boxes, modifications);
-					this.updateGraphics(this.Chunks);
-
-					boxes = this.Chunks.SelectMany(x => x.Boxes).ToList();
-
-					result.Add(boxes.Count);
-
-					Dictionary<Box, int> indexLookup = new Dictionary<Box, int>();
-
-					int index = 0;
-					foreach (Box box in boxes)
-					{
-						result.Add(box.X);
-						result.Add(box.Y);
-						result.Add(box.Z);
-						result.Add(box.Width);
-						result.Add(box.Height);
-						result.Add(box.Depth);
-						result.Add((int)box.Type.ID);
-						for (int i = 0; i < 6; i++)
-						{
-							Surface surface = box.Surfaces[i];
-							result.Add(surface.MinU);
-							result.Add(surface.MinV);
-							result.Add(surface.MaxU);
-							result.Add(surface.MaxV);
-						}
-						indexLookup.Add(box, index);
-						index++;
-					}
-
-					Dictionary<BoxRelationship, bool> relationships = new Dictionary<BoxRelationship, bool>();
-					index = 0;
-					foreach (Box box in boxes)
-					{
-						if (box.Adjacent == null)
-							continue;
-						lock (box.Adjacent)
-						{
-							foreach (Box adjacent in box.Adjacent)
-							{
-								BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
-								BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
-								if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
-								{
-									relationships[relationship1] = true;
-									result.Add(index);
-									result.Add(indexLookup[adjacent]);
-								}
-							}
-						}
-						index++;
-					}
-				}
-
-				return Voxel.serializeData(result.ToArray());
+				return GetData_New();
 			};
 
 			this.Data.Set = delegate(string value)
 			{
-				int[] data = Voxel.deserializeData(value);
-
-				int boxCount = data[0];
-
-				Box[] boxes = new Box[boxCount];
-
-				const int boxDataSize = 31;
-
-				for (int i = 0; i < boxCount; i++)
-				{
-					// Format:
-					// x
-					// y
-					// z
-					// width
-					// height
-					// depth
-					// type
-					// MinU, MinV, MaxU, MaxV for each of six surfaces
-					int index = 1 + (i * boxDataSize);
-					if (data[index + 6] != 0)
-					{
-						int x = data[index], y = data[index + 1], z = data[index + 2], w = data[index + 3], h = data[index + 4], d = data[index + 5];
-						int v = data[index + 6];
-						State state = Voxel.States[(t)v];
-						int chunkX = this.minX + ((x - this.minX) / this.chunkSize) * this.chunkSize, chunkY = this.minY + ((y - this.minY) / this.chunkSize) * this.chunkSize, chunkZ = this.minZ + ((z - this.minZ) / this.chunkSize) * this.chunkSize;
-						int nextChunkX = this.minX + ((x + w - this.minX) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ) / this.chunkSize) * this.chunkSize;
-						for (int ix = chunkX; ix <= nextChunkX; ix += this.chunkSize)
-						{
-							for (int iy = chunkY; iy <= nextChunkY; iy += this.chunkSize)
-							{
-								for (int iz = chunkZ; iz <= nextChunkZ; iz += this.chunkSize)
-								{
-									int bx = Math.Max(ix, x), by = Math.Max(iy, y), bz = Math.Max(iz, z);
-									Box box = new Box
-									{
-										X = bx,
-										Y = by,
-										Z = bz,
-										Width = Math.Min(x + w, ix + this.chunkSize) - bx,
-										Height = Math.Min(y + h, iy + this.chunkSize) - by,
-										Depth = Math.Min(z + d, iz + this.chunkSize) - bz,
-										Type = state,
-										Active = true,
-									};
-									if (box.Width > 0 && box.Height > 0 && box.Depth > 0)
-									{
-										boxes[i] = box;
-										Chunk chunk = this.GetChunk(bx, by, bz);
-										if (chunk.DataBoxes == null)
-											chunk.DataBoxes = new List<Box>();
-										chunk.DataBoxes.Add(box);
-										box.Chunk = chunk;
-										for (int x1 = box.X - chunk.X; x1 < box.X + box.Width - chunk.X; x1++)
-										{
-											for (int y1 = box.Y - chunk.Y; y1 < box.Y + box.Height - chunk.Y; y1++)
-											{
-												for (int z1 = box.Z - chunk.Z; z1 < box.Z + box.Depth - chunk.Z; z1++)
-													chunk.Data[x1, y1, z1] = box;
-											}
-										}
-										for (int j = 0; j < 6; j++)
-										{
-											int baseIndex = index + (j * 4) + 7;
-											Surface surface = box.Surfaces[j];
-											surface.MinU = data[baseIndex + 0];
-											surface.MinV = data[baseIndex + 1];
-											surface.MaxU = data[baseIndex + 2];
-											surface.MaxV = data[baseIndex + 3];
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-
-				for (int i = 1 + (boxCount * boxDataSize); i < data.Length; i += 2)
-				{
-					Box box1 = boxes[data[i]], box2 = boxes[data[i + 1]];
-					if (box1 != null && box2 != null)
-					{
-						box1.Adjacent.Add(box2);
-						box2.Adjacent.Add(box1);
-					}
-				}
-
-				this.postDeserialization();
+				SetData_New(value);
 			};
+
 			Voxel.Voxels.Add(this);
+
 		}
 
 		public IEnumerable<Chunk> GetChunksBetween(Voxel.Coord a, Voxel.Coord b)
@@ -2041,6 +1896,374 @@ namespace Lemma.Components
 					}
 				}
 			}
+		}
+
+		protected void SetData_New(string str)
+		{
+			int[] data = Voxel.deserializeData(str);
+
+			int boxCount = data[0];
+
+			Box[] boxes = new Box[boxCount];
+
+			const int boxDataSize = 13;
+
+			for (int i = 0; i < boxCount; i++)
+			{
+				// Format:
+				// x
+				// y
+				// z
+				// width-height-depth-type IN ONE INT
+				// MinU, MinV, MaxU, MaxV for each of six surfaces, PACKED.
+				int index = 1 + (i * boxDataSize);
+				int x = data[index], y = data[index + 1], z = data[index + 2];
+					int packedData = data[index + 3];
+					int w = packedData.ExtractBits(0, 8), h = packedData.ExtractBits(8, 8), d = packedData.ExtractBits(16, 8);
+					int v = packedData.ExtractBits(24, 8);
+				if (v != 0)
+				{
+					State state = Voxel.States[(t)v];
+					int chunkX = this.minX + ((x - this.minX) / this.chunkSize) * this.chunkSize, chunkY = this.minY + ((y - this.minY) / this.chunkSize) * this.chunkSize, chunkZ = this.minZ + ((z - this.minZ) / this.chunkSize) * this.chunkSize;
+					int nextChunkX = this.minX + ((x + w - this.minX) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ) / this.chunkSize) * this.chunkSize;
+					for (int ix = chunkX; ix <= nextChunkX; ix += this.chunkSize)
+					{
+						for (int iy = chunkY; iy <= nextChunkY; iy += this.chunkSize)
+						{
+							for (int iz = chunkZ; iz <= nextChunkZ; iz += this.chunkSize)
+							{
+								int bx = Math.Max(ix, x), by = Math.Max(iy, y), bz = Math.Max(iz, z);
+								Box box = new Box
+								{
+									X = bx,
+									Y = by,
+									Z = bz,
+									Width = Math.Min(x + w, ix + this.chunkSize) - bx,
+									Height = Math.Min(y + h, iy + this.chunkSize) - by,
+									Depth = Math.Min(z + d, iz + this.chunkSize) - bz,
+									Type = state,
+									Active = true,
+								};
+								if (box.Width > 0 && box.Height > 0 && box.Depth > 0)
+								{
+									boxes[i] = box;
+									Chunk chunk = this.GetChunk(bx, by, bz);
+									if (chunk.DataBoxes == null)
+										chunk.DataBoxes = new List<Box>();
+									chunk.DataBoxes.Add(box);
+									box.Chunk = chunk;
+									for (int x1 = box.X - chunk.X; x1 < box.X + box.Width - chunk.X; x1++)
+									{
+										for (int y1 = box.Y - chunk.Y; y1 < box.Y + box.Height - chunk.Y; y1++)
+										{
+											for (int z1 = box.Z - chunk.Z; z1 < box.Z + box.Depth - chunk.Z; z1++)
+												chunk.Data[x1, y1, z1] = box;
+										}
+									}
+									List<int> packed = new List<int>();
+									for (int j = index + 4; j < index + 4 + 9; j++)
+									{
+										packed.Add(data[j]);
+									}
+									int[] unPacked = BitWorker.UnPackInts(11, -1, packed.ToArray());
+									for (int j = 0; j < 6; j++)
+									{
+										int baseIndex = (j*4);
+										Surface surface = box.Surfaces[j];
+										surface.MinU = unPacked[baseIndex + 0];
+										surface.MinV = unPacked[baseIndex + 1];
+										surface.MaxU = unPacked[baseIndex + 2];
+										surface.MaxV = unPacked[baseIndex + 3];
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			List<int> packedBoxes = new List<int>();
+			for (int i = 1 + (boxCount*boxDataSize); i < data.Length; i++)
+			{
+				packedBoxes.Add(data[i]);
+			}
+
+			int[] unPackedBoxes = BitWorker.UnPackInts(17, -1, packedBoxes.ToArray());
+
+			for (int i = 0; i < unPackedBoxes.Length- 1; i += 2)
+			{
+				Box box1 = boxes[unPackedBoxes[i]], box2 = boxes[unPackedBoxes[i + 1]];
+				if (box1 != null && box2 != null)
+				{
+					box1.Adjacent.Add(box2);
+					box2.Adjacent.Add(box1);
+				}
+			}
+
+			this.postDeserialization();
+		}
+
+		protected void SetData_Old(string str)
+		{
+			int[] data = Voxel.deserializeData(str);
+
+			int boxCount = data[0];
+
+			Box[] boxes = new Box[boxCount];
+
+			const int boxDataSize = 31;
+
+			int minnestU = 10000;
+			int minnestV = 10000;
+			int maxestU = -10000;
+			int maxestV = -10000;
+
+			for (int i = 0; i < boxCount; i++)
+			{
+				// Format:
+				// x
+				// y
+				// z
+				// width
+				// height
+				// depth
+				// type
+				// MinU, MinV, MaxU, MaxV for each of six surfaces
+				int index = 1 + (i * boxDataSize);
+				if (data[index + 6] != 0)
+				{
+					int x = data[index], y = data[index + 1], z = data[index + 2], w = data[index + 3], h = data[index + 4], d = data[index + 5];
+					int v = data[index + 6];
+					State state = Voxel.States[(t)v];
+					int chunkX = this.minX + ((x - this.minX) / this.chunkSize) * this.chunkSize, chunkY = this.minY + ((y - this.minY) / this.chunkSize) * this.chunkSize, chunkZ = this.minZ + ((z - this.minZ) / this.chunkSize) * this.chunkSize;
+					int nextChunkX = this.minX + ((x + w - this.minX) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ) / this.chunkSize) * this.chunkSize;
+					for (int ix = chunkX; ix <= nextChunkX; ix += this.chunkSize)
+					{
+						for (int iy = chunkY; iy <= nextChunkY; iy += this.chunkSize)
+						{
+							for (int iz = chunkZ; iz <= nextChunkZ; iz += this.chunkSize)
+							{
+								int bx = Math.Max(ix, x), by = Math.Max(iy, y), bz = Math.Max(iz, z);
+								Box box = new Box
+								{
+									X = bx,
+									Y = by,
+									Z = bz,
+									Width = Math.Min(x + w, ix + this.chunkSize) - bx,
+									Height = Math.Min(y + h, iy + this.chunkSize) - by,
+									Depth = Math.Min(z + d, iz + this.chunkSize) - bz,
+									Type = state,
+									Active = true,
+								};
+								if (box.Width > 0 && box.Height > 0 && box.Depth > 0)
+								{
+									boxes[i] = box;
+									Chunk chunk = this.GetChunk(bx, by, bz);
+									if (chunk.DataBoxes == null)
+										chunk.DataBoxes = new List<Box>();
+									chunk.DataBoxes.Add(box);
+									box.Chunk = chunk;
+									for (int x1 = box.X - chunk.X; x1 < box.X + box.Width - chunk.X; x1++)
+									{
+										for (int y1 = box.Y - chunk.Y; y1 < box.Y + box.Height - chunk.Y; y1++)
+										{
+											for (int z1 = box.Z - chunk.Z; z1 < box.Z + box.Depth - chunk.Z; z1++)
+												chunk.Data[x1, y1, z1] = box;
+										}
+									}
+									for (int j = 0; j < 6; j++)
+									{
+										int baseIndex = index + (j * 4) + 7;
+										Surface surface = box.Surfaces[j];
+										surface.MinU = data[baseIndex + 0];
+										surface.MinV = data[baseIndex + 1];
+										surface.MaxU = data[baseIndex + 2];
+										surface.MaxV = data[baseIndex + 3];
+
+										if (surface.MinU < minnestU) minnestU = surface.MinU;
+										if (surface.MinV < minnestV) minnestV = surface.MinV;
+										if (surface.MaxU > maxestU) maxestU = surface.MaxU;
+										if (surface.MaxV > maxestV) maxestV = surface.MaxV;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			int numConnections = (data.Length - (1 + (boxCount * boxDataSize))) / 2;
+
+			for (int i = 1 + (boxCount * boxDataSize); i < data.Length; i += 2)
+			{
+				Box box1 = boxes[data[i]], box2 = boxes[data[i + 1]];
+				if (box1 != null && box2 != null)
+				{
+					box1.Adjacent.Add(box2);
+					box2.Adjacent.Add(box1);
+				}
+			}
+
+			this.postDeserialization();
+		}
+
+		protected string GetData_New()
+		{
+			List<int> result = new List<int>();
+			lock (this.MutationLock)
+			{
+				List<Box> boxes = this.Chunks.Where(x => x.Data != null).SelectMany(x => x.Boxes).ToList();
+				bool[] modifications = this.simplify(boxes);
+				this.simplify(boxes, modifications);
+				this.applyChanges(boxes, modifications);
+				this.updateGraphics(this.Chunks);
+
+				boxes = this.Chunks.SelectMany(x => x.Boxes).ToList();
+
+				result.Add(boxes.Count);
+
+				Dictionary<Box, int> indexLookup = new Dictionary<Box, int>();
+
+				int index = 0;
+				foreach (Box box in boxes)
+				{
+					result.Add(box.X);
+					result.Add(box.Y);
+					result.Add(box.Z);
+					int packedData = 0;
+					int ID = (int)box.Type.ID;
+					/*Store the data in a packed integer*/
+					packedData = packedData.StoreByte((byte)box.Width);
+					packedData = packedData.StoreByte((byte)box.Height, 8);
+					packedData = packedData.StoreByte((byte)box.Depth, 16);
+					packedData = packedData.StoreByte((byte)ID, 24);
+					result.Add(packedData);
+
+					//We need to use 11 bits to store each value.
+					//So pack it all up nice and tidy. This will store them in 9 ints, as opposed to 24. Nice.
+					List<int> surfaceInfo = new List<int>();
+					for (int i = 0; i < 6; i++)
+					{
+						Surface surface = box.Surfaces[i];
+						surfaceInfo.Add(surface.MinU);
+						surfaceInfo.Add(surface.MinV);
+						surfaceInfo.Add(surface.MaxU);
+						surfaceInfo.Add(surface.MaxV);
+					}
+					int[] packedSurfaceData = BitWorker.PackInts(11, surfaceInfo.ToArray());
+					int[] unPackedSurfaceData = BitWorker.UnPackInts(11, 24, packedSurfaceData);
+					for (int i = 0; i < surfaceInfo.Count; i++)
+					{
+						if(surfaceInfo[i] != unPackedSurfaceData[i])
+							Debugger.Break();
+					}
+					result.AddRange(packedSurfaceData);
+					indexLookup.Add(box, index);
+					index++;
+				}
+
+				Dictionary<BoxRelationship, bool> relationships = new Dictionary<BoxRelationship, bool>();
+				index = 0;
+				List<int> indexData = new List<int>();
+				foreach (Box box in boxes)
+				{
+					if (box.Adjacent == null)
+						continue;
+					lock (box.Adjacent)
+					{
+						foreach (Box adjacent in box.Adjacent)
+						{
+							BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
+							BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
+							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
+							{
+								relationships[relationship1] = true;
+								indexData.Add(index);
+								indexData.Add(indexLookup[adjacent]);
+							}
+						}
+					}
+					index++;
+				}
+				int[] packedIndexData = BitWorker.PackInts(17, indexData.ToArray());
+				int[] unPackedData = BitWorker.UnPackInts(17, -1, packedIndexData);
+				for (int i = 0; i < indexData.Count; i++)
+				{
+					if (unPackedData[i] != indexData[i])
+					{
+						unPackedData[i] = 0;
+					}
+				}
+				result.AddRange(packedIndexData);
+			}
+			//return GetData_Old();
+			return Voxel.serializeData(result.ToArray());
+		}
+
+		protected string GetData_Old()
+		{
+			List<int> result = new List<int>();
+			lock (this.MutationLock)
+			{
+				List<Box> boxes = this.Chunks.Where(x => x.Data != null).SelectMany(x => x.Boxes).ToList();
+				bool[] modifications = this.simplify(boxes);
+				this.simplify(boxes, modifications);
+				this.applyChanges(boxes, modifications);
+				this.updateGraphics(this.Chunks);
+
+				boxes = this.Chunks.SelectMany(x => x.Boxes).ToList();
+
+				result.Add(boxes.Count);
+
+				Dictionary<Box, int> indexLookup = new Dictionary<Box, int>();
+
+				int index = 0;
+				foreach (Box box in boxes)
+				{
+					result.Add(box.X);
+					result.Add(box.Y);
+					result.Add(box.Z);
+					result.Add(box.Width);
+					result.Add(box.Height);
+					result.Add(box.Depth);
+					result.Add((int)box.Type.ID);
+					for (int i = 0; i < 6; i++)
+					{
+						Surface surface = box.Surfaces[i];
+						result.Add(surface.MinU);
+						result.Add(surface.MinV);
+						result.Add(surface.MaxU);
+						result.Add(surface.MaxV);
+					}
+					indexLookup.Add(box, index);
+					index++;
+				}
+
+				Dictionary<BoxRelationship, bool> relationships = new Dictionary<BoxRelationship, bool>();
+				index = 0;
+				foreach (Box box in boxes)
+				{
+					if (box.Adjacent == null)
+						continue;
+					lock (box.Adjacent)
+					{
+						foreach (Box adjacent in box.Adjacent)
+						{
+							BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
+							BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
+							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
+							{
+								relationships[relationship1] = true;
+								result.Add(index);
+								result.Add(indexLookup[adjacent]);
+							}
+						}
+					}
+					index++;
+				}
+			}
+
+			return Voxel.serializeData(result.ToArray());
 		}
 
 		protected virtual void postDeserialization()
