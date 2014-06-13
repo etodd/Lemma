@@ -40,7 +40,15 @@ namespace Lemma.Factories
 			Transform transform = entity.Get<Transform>();
 
 			if (detachCommand == null)
-				detachCommand = entity.Delete;
+			{
+				detachCommand = new Command
+				{
+					Action = delegate()
+					{
+						entity.Add(new Animation(new Animation.Execute(entity.Delete)));
+					}
+				};
+			}
 			
 			attachable.Add(new CommandBinding(attachable.Detach, detachCommand));
 			attachable.Add(new TwoWayBinding<Matrix>(transform.Matrix, attachable.Transform));

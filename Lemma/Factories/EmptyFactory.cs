@@ -23,14 +23,7 @@ namespace Lemma.Factories
 		{
 			entity.GetOrCreate<Transform>("Transform").Editable = true;
 
-			Command detach = new Command
-			{
-				Action = delegate()
-				{
-					entity.Delete.Execute();
-				},
-			};
-			VoxelAttachable.MakeAttachable(entity, main, true, false, detach);
+			VoxelAttachable.MakeAttachable(entity, main, true, false);
 
 			this.SetMain(entity, main);
 		}
