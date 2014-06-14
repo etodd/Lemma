@@ -11,6 +11,7 @@ using Lemma.Components;
 using System.Xml.Serialization;
 using Lemma.Factories;
 using Lemma.Util;
+using ICSharpCode.SharpZipLib.GZip;
 
 namespace Lemma.IO
 {
@@ -127,40 +128,15 @@ namespace Lemma.IO
 			// HACK HACK HACK
 			main.MapFile.InternalValue = filename;
 
-			bool inAppPackage = false;
-
 			if (directory == null)
-			{
-				inAppPackage = true;
 				filename = Path.Combine(MapLoader.MapDirectory, filename);
-			}
 			else
 				filename = Path.Combine(directory, filename);
 
 			filename += "." + MapLoader.MapExtension;
 
-
-			Stream str = null;
-			//HACKERERER
-			try
-			{
-				str = TitleContainer.OpenStream(filename);
-			}
-			catch (Exception e)
-			{
-				//Holy hacks batman, what did I do to deserve this?
-				if (e.Message == "Invalid filename. TitleContainer.OpenStream requires a relative URI.")
-				{
-					inAppPackage = false;
-				}
-			}
-			finally
-			{
-				if (str != null)
-					str.Close();
-			}
-
-			using (Stream stream = inAppPackage ? TitleContainer.OpenStream(filename) : File.OpenRead(filename))
+			using (Stream fs = File.OpenRead(filename))
+			using (Stream stream = new GZipInputStream(fs))
 				MapLoader.Load(main, stream, deleteEditor);
 		}
 
@@ -206,7 +182,8 @@ namespace Lemma.IO
 				{
 					MapLoader.Save(main, ms);
 					ms.Seek(0, SeekOrigin.Begin);
-					using (Stream stream = new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.None))
+					using (Stream fs = new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.None))
+					using (Stream stream = new GZipOutputStream(fs))
 						ms.CopyTo(stream);
 				}
 			}

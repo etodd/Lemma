@@ -26,7 +26,6 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			entity.RemoveComponent("PlayerTrigger"); // Deprecate PlayerTrigger
 			Transform transform = entity.GetOrCreate<Transform>("Position");
 			Rift rift = entity.GetOrCreate<Rift>("Rift");
 

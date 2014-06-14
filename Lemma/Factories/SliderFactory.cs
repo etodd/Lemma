@@ -28,9 +28,10 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			Slider slider = entity.GetOrCreate<Slider>("Slider");
-			slider.Add(new Binding<Direction>(slider.Direction, entity.Get<Components.Joint>().Direction));
 
 			JointFactory.Bind(entity, main, slider.CreateJoint, false, creating);
+
+			slider.Add(new Binding<Direction>(slider.Direction, entity.GetOrCreate<Components.Joint>("Joint").Direction));
 
 			entity.Add("Forward", new Command { Action = delegate() { slider.Move(slider.Maximum); } });
 			entity.Add("Trigger", new Command { Action = delegate() { slider.Move(slider.Maximum); } });

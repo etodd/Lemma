@@ -1863,6 +1863,7 @@ namespace Lemma.Components
 
 			this.Data.Set = delegate(string value)
 			{
+				//SetData_Old(value);
 				SetData_New(value);
 			};
 
