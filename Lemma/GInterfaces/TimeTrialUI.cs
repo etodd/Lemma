@@ -33,7 +33,6 @@ namespace Lemma.GInterfaces
 		public Action<bool> EndPanelClosed;
 
 		public Property<float> ElapsedTime = new Property<float>();
-
 		public Property<bool> TimeTrialTicking = new Property<bool>() { Value = true };
 
 		//Stupid little "bruteforce"
@@ -60,7 +59,8 @@ namespace Lemma.GInterfaces
 
 			RootTimePanelView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);
 			RootTimePanelView.AnchorPoint.Value = new Vector2(1.0f, 0f);
-			RootTimePanelView.Add(new Binding<Vector2, Point>(RootTimePanelView.Position, point => new Vector2(point.X - 30, 30), main.ScreenSize));
+			RootTimePanelView.Add(new Binding<Vector2, Point>(RootTimePanelView.Position, point => this.RootTimePanelView.Active ? new Vector2(point.X - 30, 30) :
+				new Vector2(main.ScreenSize.Value.X + RootTimePanelView.Width.Value, 30), main.ScreenSize));
 			RootTimePanelView.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
 			RootTimePanelView.Width.Value = 200;
 			RootTimePanelView.Height.Value = 70;
@@ -82,7 +82,7 @@ namespace Lemma.GInterfaces
 
 			this.TimeTrialCurTimeView.Add(new Binding<string, float>(TimeTrialCurTimeView.Text, x => "Time: " + SecondsToTimeString(x), this.ElapsedTime));
 
-			this.AnimateIn();
+			this.AnimateOut();
 
 			base.Awake();
 		}
@@ -93,7 +93,7 @@ namespace Lemma.GInterfaces
 			BiggerFont = main.Content.Load<SpriteFont>("TimeFont");
 		}
 
-		private void AnimateIn()
+		public void AnimateIn()
 		{
 			this.main.AddComponent(
 				new Animation(
@@ -104,7 +104,7 @@ namespace Lemma.GInterfaces
 			this.ElapsedTime.Value = 0f;
 		}
 
-		private void AnimateOut(bool remove = false)
+		public void AnimateOut(bool remove = false)
 		{
 			this.main.AddComponent(
 				new Animation(

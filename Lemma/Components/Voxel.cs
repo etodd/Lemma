@@ -1875,7 +1875,7 @@ namespace Lemma.Components
 			a.X = Math.Max(this.minX, a.X);
 			b.X = Math.Min(this.maxX - 1, b.X);
 			a.Y = Math.Max(this.minY, a.Y);
-			b.Y = Math.Min(this.maxY - 1, b.Y);
+			b.Y = Math.Min(this.maxY - 1, b.Y);	
 			a.Z = Math.Max(this.minX, a.Z);
 			b.Z = Math.Min(this.maxX - 1, b.Z);
 			if (b.X > a.X && b.Y > a.Y && b.Z > a.Z)
