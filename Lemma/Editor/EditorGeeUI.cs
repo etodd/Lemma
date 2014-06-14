@@ -512,7 +512,7 @@ namespace Lemma.Components
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
 				};
-				textField.ValidationRegex = "^\\d+(\\.\\d+)?$";
+				textField.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
 				textField.OnTextSubmitted = onChanged;
 			}
 			else if (type.Equals(typeof(Vector3)))
@@ -534,7 +534,7 @@ namespace Lemma.Components
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
 				};
-				textField.ValidationRegex = "^\\d+(\\.\\d+)?$";
+				textField.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
 				textField.OnTextSubmitted = onChanged;
 			}
 			else if (type.Equals(typeof(Voxel.Coord)))
@@ -574,7 +574,7 @@ namespace Lemma.Components
 					textField.Text = socket.Value.GetComponent(dir).ToString();
 					textField.Selected.Value = false;
 				};
-				textField.ValidationRegex = "^\\d+$";
+				textField.ValidationRegex = "^-?\\d+$";
 				textField.OnTextSubmitted = onChanged;
 			}
 			else if (type.Equals(typeof(Vector4)))
@@ -596,7 +596,7 @@ namespace Lemma.Components
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
 				};
-				textField.ValidationRegex = "^\\d+(\\.\\d+)?$";
+				textField.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
 				textField.OnTextSubmitted = onChanged;
 			}
 			else if (type.Equals(typeof(Quaternion)))
@@ -618,7 +618,7 @@ namespace Lemma.Components
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
 				};
-				textField.ValidationRegex = "^\\d+(\\.\\d+)?$";
+				textField.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
 				textField.OnTextSubmitted = onChanged;
 			}
 			else if (type.Equals(typeof(Color)))
@@ -640,7 +640,7 @@ namespace Lemma.Components
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
 				};
-				textField.ValidationRegex = "^\\d+$";
+				textField.ValidationRegex = "^-?\\d+$";
 				textField.OnTextSubmitted = onChanged;
 			}
 		}
@@ -715,7 +715,7 @@ namespace Lemma.Components
 						view.Text = socket.Value.ToString();
 						view.Selected.Value = false;
 					};
-					view.ValidationRegex = "^\\d+$";
+					view.ValidationRegex = "^-?\\d+$";
 					view.OnTextSubmitted = onChanged;
 				}
 				else if (propertyInfo.PropertyType.Equals(typeof(float)))
@@ -736,7 +736,7 @@ namespace Lemma.Components
 						view.Text = socket.Value.ToString("F");
 						view.Selected.Value = false;
 					};
-					view.ValidationRegex = "^\\d+(\\.\\d+)?$";
+					view.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
 					view.OnTextSubmitted = onChanged;
 				}
 				else if (propertyInfo.PropertyType.Equals(typeof(bool)))
