@@ -114,7 +114,8 @@ namespace Lemma.IO
 			typeof(Orb),
 			typeof(MapExit),
 			typeof(ImplodeBlock),
-			typeof(TimeTrial)
+			typeof(TimeTrial),
+			typeof(Rain),
 		};
 
 		public static XmlSerializer Serializer;
@@ -186,8 +187,11 @@ namespace Lemma.IO
 			foreach (Entity entity in entities)
 			{
 				Factory<Main> factory = Factory<Main>.Get(entity.Type);
-				factory.Bind(entity, main);
-				main.Add(entity);
+				if (factory != null)
+				{
+					factory.Bind(entity, main);
+					main.Add(entity);
+				}
 			}
 
 			main.IsLoadingMap = false;

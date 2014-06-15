@@ -150,7 +150,7 @@ namespace ComponentBind
 			return dest;
 		}
 
-		public void BindCommand(Entity e, Command c, string name, bool executable = true, bool linkable = true)
+		public void BindCommand(Entity e, Command c, string name, bool executable = false, bool linkable = true)
 		{
 			c.ShowInEditor = executable || linkable;
 			c.AllowLinking = linkable;

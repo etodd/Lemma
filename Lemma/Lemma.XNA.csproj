@@ -108,6 +108,7 @@
     <Compile Include="ComponentInterfaces.cs" />
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
+    <Compile Include="Components\Sound.cs" />
     <Compile Include="Components\AmbientSound.cs" />
     <Compile Include="Components\Analytics.cs" />
     <Compile Include="Components\CameraStop.cs" />
@@ -119,6 +120,7 @@
     <Compile Include="Components\Joint.cs" />
     <Compile Include="Components\MapExit.cs" />
     <Compile Include="Components\Orb.cs" />
+    <Compile Include="Components\Rain.cs" />
     <Compile Include="Components\RaycastAIMovement.cs" />
     <Compile Include="Components\Levitator.cs" />
     <Compile Include="Components\Note.cs" />
@@ -129,6 +131,7 @@
     <Compile Include="Components\Scriptlike\Scriptlike.cs" />
     <Compile Include="Components\Scriptlike\Counter.cs" />
     <Compile Include="Components\Scriptlike\Setter.cs" />
+    <Compile Include="Components\Scriptlike\RandomTicker.cs" />
     <Compile Include="Components\Scriptlike\Ticker.cs" />
     <Compile Include="Components\Spinner.cs" />
     <Compile Include="Components\Slider.cs" />
@@ -144,6 +147,7 @@
     <Compile Include="Components\Propagator.cs" />
     <Compile Include="Editor\EditorGeeUI.cs" />
     <Compile Include="Factories\CameraStopFactory.cs" />
+    <Compile Include="Factories\RandomTickerFactory.cs" />
     <Compile Include="Factories\TimeTrialFactory.cs" />
     <Compile Include="Factories\PowerSoundFactory.cs" />
     <Compile Include="Factories\RotatorFactory.cs" />
@@ -253,7 +257,7 @@
     <Compile Include="Factories\FallingTowerFactory.cs" />
     <Compile Include="Factories\MapExitFactory.cs" />
     <Compile Include="Factories\PropFactory.cs" />
-    <Compile Include="Factories\RandomAmbientSoundFactory.cs" />
+    <Compile Include="Factories\SoundFactory.cs" />
     <Compile Include="Components\VoxelChaseAI.cs" />
     <Compile Include="Graphics\DynamicModel.cs" />
     <Compile Include="Graphics\LineDrawer.cs" />
@@ -346,7 +350,6 @@
     <ProjectReference Include="..\BEPUphysics\BEPUphysics.csproj">
       <Project>{2A9D2227-78D7-4804-B6D1-560BB43AE911}</Project>
       <Name>BEPUphysics</Name>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
     <ProjectReference Include="..\BEPUutilities\BEPUutilities.csproj">
       <Project>{E3AAEB61-D7DF-4E7E-A75B-B5282D2FF3F5}</Project>

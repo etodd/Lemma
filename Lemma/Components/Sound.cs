@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace Lemma.Components
 {
-	public class AmbientSound : Component<Main>
+	public class Sound : Component<Main>
 	{
 		public EditorProperty<string> PlayCue = new EditorProperty<string>();
 		public EditorProperty<string> StopCue = new EditorProperty<string>();
@@ -26,21 +26,17 @@ namespace Lemma.Components
 				this.Entity.CannotSuspendByDistance = !this.Is3D;
 			}, this.Is3D));
 
-			this.Add(new CommandBinding(this.OnEnabled, (Action)this.play));
-			this.Add(new CommandBinding(this.OnResumed, (Action)this.play));
-			this.Add(new CommandBinding(this.OnDisabled, (Action)this.stop));
-			this.Add(new CommandBinding(this.OnSuspended, (Action)this.stop));
-
-			this.play();
+			this.Add(new CommandBinding(this.OnDisabled, (Action)this.Stop));
+			this.Add(new CommandBinding(this.OnSuspended, (Action)this.Stop));
 		}
 
-		private void play()
+		public void Play()
 		{
 			if (!string.IsNullOrEmpty(this.PlayCue) && this.Enabled && !this.Suspended && !this.main.EditorEnabled)
 				AkSoundEngine.PostEvent(this.PlayCue, this.Entity);
 		}
 
-		private void stop()
+		public void Stop()
 		{
 			if (!string.IsNullOrEmpty(this.StopCue))
 				AkSoundEngine.PostEvent(this.StopCue, this.Entity);
@@ -49,7 +45,7 @@ namespace Lemma.Components
 		public override void delete()
 		{
 			base.delete();
-			this.stop();
+			this.Stop();
 		}
 	}
 }

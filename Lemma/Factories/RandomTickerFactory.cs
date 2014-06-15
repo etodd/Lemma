@@ -1,28 +1,29 @@
-﻿using System; using ComponentBind;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
+using ComponentBind;
 using Lemma.Components;
+using Microsoft.Xna.Framework;
 
 namespace Lemma.Factories
 {
-	public class TickerFactory : Factory<Main>
+	public class RandomTickerFactory : Factory<Main>
 	{
-		public TickerFactory()
+		public RandomTickerFactory()
 		{
 			this.Color = new Vector3(0.4f, 0.4f, 1.0f);
 		}
 
 		public override Entity Create(Main main)
 		{
-			return new Entity(main, "Ticker");
+			return new Entity(main, "RandomTicker");
 		}
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Position");
-			Ticker ticker = entity.GetOrCreate<Ticker>("Ticker");
+			RandomTicker ticker = entity.GetOrCreate<RandomTicker>("Ticker");
 			this.SetMain(entity, main);
 
 			BindCommand(entity, ticker.OnFire, "OnFire");
