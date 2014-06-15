@@ -48,6 +48,7 @@ namespace Lemma.Factories
 			{
 				transform.Position.Value = effectBlock.StartPosition;
 			}, effectBlock.StartPosition));
+			entity.Add(new CommandBinding(effectBlock.Delete, entity.Delete));
 
 			entity.Add(new NotifyBinding(delegate()
 			{

@@ -321,7 +321,7 @@ namespace Lemma.Components
 				}
 
 				this.LinearVelocity.Value = new Vector3(this.velocity.X, this.LinearVelocity.Value.Y, this.velocity.Z);
-				if (this.VoxelTools.BreakWalls(this.forward, this.right, this.shouldBreakFloor))
+				if (this.VoxelTools.BreakWalls(this.forward, this.right, this.shouldBreakFloor && !this.shouldBuildFloor))
 				{
 					if (this.firstTimeBreak)
 					{
