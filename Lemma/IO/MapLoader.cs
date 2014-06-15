@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Linq.Expressions;
+using BEPUphysics.UpdateableSystems.ForceFields;
 using ComponentBind;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Linq;
+using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Xna.Framework;
 using System.Reflection;
 using System.IO.IsolatedStorage;
@@ -135,9 +138,33 @@ namespace Lemma.IO
 
 			filename += "." + MapLoader.MapExtension;
 
+			//Need to test to see if we can load this using gzip.
+			//If we can't, it's an old map, so load it using the straight filesystem.
+			//Need to do this so that we don't break dudes' maps. Can remove in a short amount of time after pushed to Steam.
 			using (Stream fs = File.OpenRead(filename))
-			using (Stream stream = new GZipInputStream(fs))
+			{
+				Stream stream;
+				GZipInputStream gzip = null;
+				try
+				{
+					gzip = new GZipInputStream(File.OpenRead(filename));
+					gzip.ReadByte();
+					gzip.Close();
+					//No exception, so we're good.
+
+					stream = new GZipInputStream(fs);
+				}
+				catch (GZipException)
+				{
+					stream = fs;
+				}
+				finally
+				{
+					if (gzip != null && gzip.CanRead) gzip.Close();
+				}
 				MapLoader.Load(main, stream, deleteEditor);
+				stream.Close();
+			}
 		}
 
 		private static void Load(Main main, Stream stream, bool deleteEditor = true)
