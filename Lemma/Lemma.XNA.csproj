@@ -346,6 +346,7 @@
     <ProjectReference Include="..\BEPUphysics\BEPUphysics.csproj">
       <Project>{2A9D2227-78D7-4804-B6D1-560BB43AE911}</Project>
       <Name>BEPUphysics</Name>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
     <ProjectReference Include="..\BEPUutilities\BEPUutilities.csproj">
       <Project>{E3AAEB61-D7DF-4E7E-A75B-B5282D2FF3F5}</Project>
