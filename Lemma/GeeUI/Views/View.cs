@@ -229,7 +229,7 @@ namespace GeeUI.Views
 
 		public virtual void AddChild(View child)
 		{
-
+			if (child == null) return;
 			if (Children.Length + 1 > NumChildrenAllowed && NumChildrenAllowed != -1)
 				throw new Exception("You have attempted to add too many child Views to this View.");
 			//Ensure that a child can only belong to one View ever.

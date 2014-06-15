@@ -26,6 +26,9 @@ namespace Lemma.Factories
 			trigger.Radius.Editable = true;
 			trigger.Enabled.Editable = true;
 
+			BindCommand(entity, trigger.PlayerEntered, "PlayerEnter", false, true);
+			BindCommand(entity, trigger.PlayerExited, "PlayerExit", false, true);
+
 			VoxelAttachable.MakeAttachable(entity, main);
 
 			this.SetMain(entity, main);

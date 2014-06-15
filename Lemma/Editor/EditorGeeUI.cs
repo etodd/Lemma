@@ -233,16 +233,16 @@ namespace Lemma.Components
 			LinkerView.Active.Value = false;
 		}
 
-		public void ShowLinkerView()
+		public void ShowLinkerView(Command select)
 		{
 			if (SelectedEntities.Count != 1) return;
 			LinkerView.Active.Value = true;
 			LinkerView.Position.Value = new Vector2(PropertiesView.AbsoluteBoundBox.Right, InputManager.GetMousePosV().Y);
 			LinkerView.ParentView.BringChildToFront(LinkerView);
-			BindLinker(SelectedEntities[0]);
+			BindLinker(SelectedEntities[0], select);
 		}
 
-		public void BindLinker(Entity e)
+		public void BindLinker(Entity e, Command selectedCommand)
 		{
 			var sourceDrop = ((DropDownView)LinkerView.FindFirstChildByName("SourceDropDown"));
 			var destEntityDrop = ((DropDownView)LinkerView.FindFirstChildByName("DestEntityDropDown"));
@@ -376,6 +376,18 @@ namespace Lemma.Components
 				sourceDrop.AddOption(name, () => { }, null, comm);
 			}
 
+			foreach (var command in GetCommands(e))
+			{
+				var comm = command.Value as Command;
+				var name = command.Key as string;
+
+				if (comm == selectedCommand)
+				{
+					sourceDrop.SetSelectedOption(name);
+					break;
+				}
+			}
+
 			populateList();
 
 		}
@@ -465,6 +477,8 @@ namespace Lemma.Components
 			rootEntityView.ContentOffset.Value = new Vector2(0);
 			rootEntityView.RemoveAllChildren();
 
+			int i = 0;
+
 			foreach (DictionaryEntry entry in new DictionaryEntry[] { new DictionaryEntry("[" + entity.Type.ToString() + " entity]", new[] { new DictionaryEntry("ID", entity.ID) }.Concat(entity.Properties).Concat(entity.Commands)) }
 				.Union(entity.Components.Where(x => ((IComponent)x.Value).Editable)))
 			{
@@ -487,14 +501,16 @@ namespace Lemma.Components
 				categoryView.AutoSize.Value = false;
 				categoryView.TextJustification = TextJustification.Center;
 				categoryView.Add(new Binding<int>(categoryView.Width, rootEntityView.Width));
+				i++;
 
 				foreach (DictionaryEntry propEntry in properties)
 				{
 					DictionaryEntry property = propEntry;
 
 					View containerLabel;
-					if (property.Value.GetType() == typeof(Command))
+					if (property.Value.GetType() == typeof(Command)) //Only show commands from the root entity
 					{
+						if (i != 1) continue;
 						containerLabel = BuildContainerLabel(property.Key.ToString(), false);
 						containerLabel.AddChild(BuildButton((Command)property.Value, "[Execute]"));
 					}
@@ -541,21 +557,29 @@ namespace Lemma.Components
 
 		public View BuildButton(Command command, string label, Color color = default(Color))
 		{
+			if (!command.ShowInEditor) return null;
+
 			var container = new View(main.GeeUI, null);
 			container.ChildrenLayouts.Add(new HorizontalViewLayout());
 			container.ChildrenLayouts.Add(new ExpandToFitLayout());
 
-			var b = new ButtonView(main.GeeUI, container, label, Vector2.Zero, MainFont);
-			b.OnMouseClick += (sender, args) =>
+			if (command.AllowExecuting)
 			{
-				if (command != null)
-					command.Execute();
-			};
-			var link = new ButtonView(main.GeeUI, container, "Link", Vector2.Zero, MainFont);
-			link.OnMouseClick += (sender, args) =>
+				var b = new ButtonView(main.GeeUI, container, label, Vector2.Zero, MainFont);
+				b.OnMouseClick += (sender, args) =>
+				{
+					if (command != null)
+						command.Execute();
+				};
+			}
+			if (command.AllowLinking)
 			{
-				ShowLinkerView();
-			};
+				var link = new ButtonView(main.GeeUI, container, "Link", Vector2.Zero, MainFont);
+				link.OnMouseClick += (sender, args) =>
+				{
+					ShowLinkerView(command);
+				};
+			}
 			return container;
 		}
 		private void refresh()
@@ -654,7 +678,7 @@ namespace Lemma.Components
 						break;
 				}
 
-				textField.Width.Value =  (int)(textField.Width.Value * 1.25);
+				textField.Width.Value = (int)(textField.Width.Value * 1.25);
 
 				textField.Text = socket.Value.GetComponent(dir).ToString();
 				socket.AddBinding(new NotifyBinding(() =>

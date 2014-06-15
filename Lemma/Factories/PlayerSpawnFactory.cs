@@ -49,6 +49,8 @@ namespace Lemma.Factories
 						IO.MapLoader.Load(main, null, main.MapFile);
 					},
 					ShowInEditor = true,
+					AllowExecuting = true,
+					AllowLinking = true
 				});
 			}
 

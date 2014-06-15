@@ -172,6 +172,7 @@ namespace GeeUI.Views
 
 		public override void AddChild(View child)
 		{
+			if (child == null) return;
 			if (!(child is TabContainer) && TabContainerView.Children.Length != Children.Length) return;
 			base.AddChild(child);
 		}
