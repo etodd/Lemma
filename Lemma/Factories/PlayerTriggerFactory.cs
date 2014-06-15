@@ -33,9 +33,6 @@ namespace Lemma.Factories
 
 			this.SetMain(entity, main);
 
-			entity.Add("PlayerEntered", trigger.PlayerEntered);
-			entity.Add("PlayerExited", trigger.PlayerExited);
-
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 		}
 

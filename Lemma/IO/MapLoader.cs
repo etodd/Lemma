@@ -114,7 +114,8 @@ namespace Lemma.IO
 			typeof(Orb),
 			typeof(MapExit),
 			typeof(ImplodeBlock),
-			typeof(TimeTrial)
+			typeof(TimeTrial),
+			typeof(Rain),
 		};
 
 		public static XmlSerializer Serializer;

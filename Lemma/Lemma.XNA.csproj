@@ -119,6 +119,7 @@
     <Compile Include="Components\Joint.cs" />
     <Compile Include="Components\MapExit.cs" />
     <Compile Include="Components\Orb.cs" />
+    <Compile Include="Components\Rain.cs" />
     <Compile Include="Components\RaycastAIMovement.cs" />
     <Compile Include="Components\Levitator.cs" />
     <Compile Include="Components\Note.cs" />
@@ -346,7 +347,6 @@
     <ProjectReference Include="..\BEPUphysics\BEPUphysics.csproj">
       <Project>{2A9D2227-78D7-4804-B6D1-560BB43AE911}</Project>
       <Name>BEPUphysics</Name>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
     <ProjectReference Include="..\BEPUutilities\BEPUutilities.csproj">
       <Project>{E3AAEB61-D7DF-4E7E-A75B-B5282D2FF3F5}</Project>
