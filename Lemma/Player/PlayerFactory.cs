@@ -153,7 +153,7 @@ namespace Lemma.Factories
 			rollKickSlide.Add(new TwoWayBinding<Vector3>(player.Character.LinearVelocity, rollKickSlide.LinearVelocity));
 			rollKickSlide.Add(new TwoWayBinding<Vector3>(transform.Position, rollKickSlide.Position));
 			rollKickSlide.Predictor = predictor;
-			rollKickSlide.Model = model;
+			rollKickSlide.Bind(model);
 			rollKickSlide.VoxelTools = voxelTools;
 			rollKickSlide.Add(new CommandBinding(rollKickSlide.DeactivateWallRun, (Action)wallRun.Deactivate));
 			rollKickSlide.Add(new CommandBinding(rollKickSlide.Footstep, footsteps.Footstep));

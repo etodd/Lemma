@@ -16,7 +16,7 @@ namespace Lemma.Components
 			{
 				this.Kicking.Value = false;
 				AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
-				this.Model.Stop("Kick", "Slide");
+				this.model.Stop("Kick", "Slide");
 				this.EnableWalking.Value = true;
 				if (!this.RollKickButton)
 					this.AllowUncrouch.Value = true;
@@ -54,7 +54,7 @@ namespace Lemma.Components
 		public Command Footstep = new Command();
 		public Command LockRotation = new Command();
 		public Command<float> Rumble = new Command<float>();
-		public AnimatedModel Model;
+		private AnimatedModel model;
 		public VoxelTools VoxelTools;
 
 		public Property<bool> CanKick = new Property<bool>();
@@ -80,6 +80,13 @@ namespace Lemma.Components
 				if (this.IsSupported)
 					this.CanKick.Value = true;
 			}, this.IsSupported));
+		}
+
+		public void Bind(AnimatedModel model)
+		{
+			this.model = model;
+			model["Slide"].Speed = 1.5f;
+			model["Roll"].Speed = 1.75f;
 		}
 
 		public void Go()
@@ -153,7 +160,7 @@ namespace Lemma.Components
 					this.Footstep.Execute(); // We just landed; play a footstep sound
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_ROLL, this.Entity);
 
-					this.Model.StartClip("Roll", 5, false, AnimatedModel.DefaultBlendTime);
+					this.model.StartClip("Roll", 5, false, AnimatedModel.DefaultBlendTime);
 
 					Voxel.State floorState = floorRaycast.Voxel == null ? Voxel.EmptyState : floorRaycast.Coordinate.Value.Data;
 					this.shouldBuildFloor = false;
@@ -227,7 +234,7 @@ namespace Lemma.Components
 
 				this.LinearVelocity.Value = this.velocity;
 
-				this.Model.StartClip(this.shouldBreakFloor ? "Kick" : "Slide", 5, false, AnimatedModel.DefaultBlendTime);
+				this.model.StartClip(this.shouldBreakFloor ? "Kick" : "Slide", 5, false, AnimatedModel.DefaultBlendTime);
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE, this.Entity);
 				if (!this.shouldBreakFloor) // We're sliding on the floor
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE_LOOP, this.Entity);

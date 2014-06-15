@@ -343,7 +343,7 @@ namespace Lemma.Components
 						break;
 				}
 				this.Model.StartClip(animation, 4, false);
-				this.Model[animation].CurrentTime = TimeSpan.FromSeconds(0.25);
+				this.Model[animation].CurrentTime = TimeSpan.FromSeconds(0.2);
 
 				// Deactivate any wall-running we're doing
 				this.DeactivateWallRun.Execute();

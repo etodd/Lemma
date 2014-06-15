@@ -12,7 +12,7 @@ namespace Lemma.Components
 	{
 		public const float DamageVelocity = -20.0f; // Vertical velocity below which damage occurs
 		public const float RollingDamageVelocity = -28.0f; // Damage velocity when rolling
-		public const float GruntVelocity = -11.0f; // Vertical velocity below which grunting occurs
+		public const float GruntVelocity = -13.0f; // Vertical velocity below which grunting occurs
 
 		// Input commands
 		public Command<float> Apply = new Command<float>();
@@ -36,7 +36,8 @@ namespace Lemma.Components
 		public void Bind(AnimatedModel m)
 		{
 			this.model = m;
-			this.landAnimation = m["Land"];
+			m["Land"].Strength = m["Land"].TargetStrength = 0.7f;
+			this.landAnimation = m["LandHard"];
 			this.landAnimation.Speed = 1.5f;
 		}
 
@@ -80,7 +81,7 @@ namespace Lemma.Components
 							this.Landing.Value = true;
 							this.LockRotation.Execute();
 							this.landingTimer = 0;
-							this.model.StartClip("Land", 0, false, 0.1f);
+							this.model.StartClip("LandHard", 0, false, 0.1f);
 							this.EnableWalking.Value = false;
 							this.walkingDisabled = true;
 						}
@@ -89,6 +90,7 @@ namespace Lemma.Components
 				else if (verticalAcceleration < GruntVelocity)
 				{
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_LAND, this.Entity);
+					this.model.StartClip("Land", 4);
 					this.Rumble.Execute(0.2f);
 				}
 			};
