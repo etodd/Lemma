@@ -601,12 +601,16 @@ namespace GeeUI.Views
 
 		public override void OnMScroll(Vector2 position, int scrollDelta, bool fromChild = false)
 		{
-			if (!Selected) return;
+			if (!Selected || !MultiLine)
+			{
+				base.OnMScroll(position, scrollDelta, fromChild);
+				return;
+			}
 			_offsetY -= scrollDelta;
 			if (_offsetY < 0) _offsetY = 0;
 			if (_offsetY >= TextLines.Length) _offsetY = TextLines.Length - 1;
 
-			base.OnMScroll(position, scrollDelta, fromChild);
+			
 		}
 
 		public override void OnMClick(Vector2 mousePosition, bool fromChild = false)

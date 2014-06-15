@@ -270,7 +270,7 @@ namespace Lemma.Components
 								{
 									input.Mouse.Value = new Vector2(input.Mouse.Value.X, startRotationY * (1.0f - x));
 								}, 0.5f),
-								Animation.Ease.Type.OutQuadratic
+								Animation.Ease.EaseType.OutQuadratic
 							)
 						));
 					}
@@ -336,7 +336,7 @@ namespace Lemma.Components
 								{
 									input.Mouse.Value = new Vector2(input.Mouse.Value.X, startRotationY * (1.0f - x));
 								}, 0.5f),
-								Animation.Ease.Type.OutQuadratic
+								Animation.Ease.EaseType.OutQuadratic
 							)
 						));
 					}
@@ -464,7 +464,7 @@ namespace Lemma.Components
 				lastMessage.Size.Value = new Vector2(0, originalSize.Y);
 				main.AddComponent(new Animation
 				(
-					new Animation.Ease(new Animation.Vector2MoveTo(lastMessage.Size, originalSize, 0.5f), Animation.Ease.Type.OutExponential)
+					new Animation.Ease(new Animation.Vector2MoveTo(lastMessage.Size, originalSize, 0.5f), Animation.Ease.EaseType.OutExponential)
 				));
 
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PHONE_VIBRATE, entity);

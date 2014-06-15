@@ -1,7 +1,9 @@
 ﻿using System.Linq;
+using GeeUI.Managers;
 using GeeUI.ViewLayouts;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace GeeUI.Views
 {
@@ -26,6 +28,21 @@ namespace GeeUI.Views
 			}
 		}
 
+		private View ActiveView
+		{
+			get
+			{
+				if (this.Children.Length == 1) return null;
+				foreach (var child in Children)
+				{
+					if (child == TabContainerView) continue;
+					if (child.Active) return child;
+				}
+				return null;
+			}
+		}
+
+		private int CtrlTabIndex = 0;
 
 		public TabHost(GeeUIMain GeeUI, View rootView, Vector2 position, SpriteFont font)
 			: base(GeeUI, rootView)
@@ -33,12 +50,39 @@ namespace GeeUI.Views
 			Position.Value = position;
 			TabContainerView = new TabContainer(GeeUI, this, font);
 			TabContainerView.ChildrenLayouts.Add(new HorizontalViewLayout(1, true));
+
+			InputManager.BindKey(TabTab, Keys.Tab);
+		}
+
+		private void TabTab()
+		{
+			if (this.Children.Length == 1 || !this.ActiveView.Selected || !InputManager.IsKeyPressed(Keys.LeftControl)) return;
+			CtrlTabIndex++;
+			if (CtrlTabIndex >= this.Children.Length - 1)
+			{
+				CtrlTabIndex = 0;
+			}
+			this.SetActiveTab(CtrlTabIndex);
 		}
 
 		internal View TabViewToView(TabView v)
 		{
 			int index = TabContainerView.Children.ToList().IndexOf(v) + 1;
 			return index >= Children.Length ? null : Children[index];
+		}
+
+		public int TabIndex(string name)
+		{
+			for (int i = 0; i < TabContainerView.Children.Length; i++)
+			{
+				var tab = TabContainerView.Children[i] as TabView;
+				if (tab == null) continue;
+				if (tab.TabText == name)
+				{
+					return i;
+				}
+			}
+			return -1;
 		}
 
 
@@ -50,6 +94,23 @@ namespace GeeUI.Views
 			{
 				if (child == TabContainerView) continue;
 				RemoveChild(child);
+			}
+		}
+
+		public void RemoveTab(string text)
+		{
+			for (int i = 0; i < TabContainerView.Children.Length; i++)
+			{
+				var tab = TabContainerView.Children[i] as TabView;
+				if (tab == null) continue;
+				if (tab.TabText == text)
+				{
+					this.RemoveChild(this.Children[i + 1]);
+					this.TabContainerView.RemoveChild(tab);
+					i--;
+					if (this.Children.Length != 1)
+						this.SetActiveTab(i);
+				}
 			}
 		}
 
@@ -72,6 +133,7 @@ namespace GeeUI.Views
 			}
 			Children[index + 1].Active.Value = true;
 			Children[index + 1].Selected.Value = true;
+			CtrlTabIndex = index;
 		}
 
 		public override void OnMClick(Vector2 position, bool fromChild = false)

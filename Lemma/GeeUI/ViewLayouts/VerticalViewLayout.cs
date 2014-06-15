@@ -55,13 +55,13 @@ namespace GeeUI.ViewLayouts
 				if (!v.Active) continue;
 				if (nullify)
 				{
-					widestChild = null; //this is per-column
+					//widestChild = null; //this is per-column
 					nullify = false;
 				}
 				v.Position.Value = Vector2.Zero;
 				if (ExcludedChildren.Contains(v)) continue;
 
-				if (widestChild == null || v.BoundBox.Width > widestChild.BoundBox.Width)
+				if (widestChild == null)
 				{
 					widestChild = v;
 				}
@@ -82,11 +82,19 @@ namespace GeeUI.ViewLayouts
 					}
 					xDone += addWidth;
 					nullify = true;
+					widestChild = v;
+				}
+				else
+				{
+					if (v.BoundBox.Width > widestChild.BoundBox.Width)
+					{
+						widestChild = v;
+					}
 				}
 
 				v.Position.Value = new Vector2(xDone, yDone);
 				yDone += v.BoundBox.Height + _paddingBetweenVertical;
-				if(widestChild == v)
+				if (widestChild == v)
 					furthestRight = v.AbsoluteBoundBox.Right - parentView.AbsoluteContentBoundBox.Left;
 			}
 

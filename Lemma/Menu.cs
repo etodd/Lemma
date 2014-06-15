@@ -101,7 +101,7 @@ namespace Lemma.Components
 
 			Animation anim = new Animation
 			(
-				new Animation.Ease(new Animation.Vector2MoveTo(container.Size, originalSize, messageFadeTime), Animation.Ease.Type.OutExponential),
+				new Animation.Ease(new Animation.Vector2MoveTo(container.Size, originalSize, messageFadeTime), Animation.Ease.EaseType.OutExponential),
 				new Animation.Set<bool>(container.ResizeVertical, true)
 			);
 
@@ -152,7 +152,7 @@ namespace Lemma.Components
 				(
 					new Animation.Delay(delay),
 					new Animation.Set<bool>(container.ResizeVertical, false),
-					new Animation.Ease(new Animation.Vector2MoveTo(container.Size, new Vector2(container.Size.Value.X, 0), messageFadeTime), Animation.Ease.Type.OutExponential),
+					new Animation.Ease(new Animation.Vector2MoveTo(container.Size, new Vector2(container.Size.Value.X, 0), messageFadeTime), Animation.Ease.EaseType.OutExponential),
 					new Animation.Execute(container.Delete)
 				);
 
@@ -280,7 +280,7 @@ namespace Lemma.Components
 			this.pauseMenu.Visible.Value = true;
 			if (this.pauseAnimation != null)
 				this.pauseAnimation.Delete.Execute();
-			this.pauseAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(this.pauseMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.Type.OutExponential));
+			this.pauseAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(this.pauseMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.EaseType.OutExponential));
 			this.main.AddComponent(this.pauseAnimation);
 			this.currentMenu.Value = this.pauseMenu;
 		}
@@ -323,7 +323,7 @@ namespace Lemma.Components
 							new Animation.Vector2MoveToSpeed(this.pauseMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
 							new Animation.FloatMoveToSpeed(this.main.PauseAudioEffect, this.main.MapFile == Main.MenuMap ? 0.0f : 1.0f, Menu.animationSpeed)
 						),
-						Animation.Ease.Type.OutExponential
+						Animation.Ease.EaseType.OutExponential
 					)
 				)
 			);
@@ -976,7 +976,7 @@ namespace Lemma.Components
 					this.loadSaveMenu.Visible.Value = true;
 					if (this.loadSaveAnimation != null)
 						this.loadSaveAnimation.Delete.Execute();
-					this.loadSaveAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(this.loadSaveMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.Type.OutExponential));
+					this.loadSaveAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(this.loadSaveMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.EaseType.OutExponential));
 					this.main.AddComponent(this.loadSaveAnimation);
 
 					this.loadSaveShown = true;
@@ -997,7 +997,7 @@ namespace Lemma.Components
 				this.loadSaveMenu.Visible.Value = true;
 				if (this.loadSaveAnimation != null)
 					this.loadSaveAnimation.Delete.Execute();
-				this.loadSaveAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(this.loadSaveMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.Type.OutExponential));
+				this.loadSaveAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(this.loadSaveMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.EaseType.OutExponential));
 				this.main.AddComponent(this.loadSaveAnimation);
 
 				this.loadSaveShown = true;
@@ -1141,7 +1141,7 @@ namespace Lemma.Components
 				cheatMenu.Visible.Value = true;
 				if (cheatAnimation != null)
 					cheatAnimation.Delete.Execute();
-				cheatAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(cheatMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.Type.OutExponential));
+				cheatAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(cheatMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.EaseType.OutExponential));
 				this.main.AddComponent(cheatAnimation);
 
 				cheatShown = true;
@@ -1160,7 +1160,7 @@ namespace Lemma.Components
 				controlsMenu.Visible.Value = true;
 				if (controlsAnimation != null)
 					controlsAnimation.Delete.Execute();
-				controlsAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(controlsMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.Type.OutExponential));
+				controlsAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(controlsMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.EaseType.OutExponential));
 				this.main.AddComponent(controlsAnimation);
 
 				controlsShown = true;
@@ -1177,7 +1177,7 @@ namespace Lemma.Components
 				settingsMenu.Visible.Value = true;
 				if (settingsAnimation != null)
 					settingsAnimation.Delete.Execute();
-				settingsAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(settingsMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.Type.OutExponential));
+				settingsAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(settingsMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.EaseType.OutExponential));
 				this.main.AddComponent(settingsAnimation);
 
 				settingsShown = true;
@@ -1281,7 +1281,7 @@ namespace Lemma.Components
 				creditsMenu.Visible.Value = true;
 				if (creditsAnimation != null)
 					creditsAnimation.Delete.Execute();
-				creditsAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(creditsMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.Type.OutExponential));
+				creditsAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(creditsMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.EaseType.OutExponential));
 				this.main.AddComponent(creditsAnimation);
 
 				creditsShown = true;

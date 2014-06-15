@@ -15,7 +15,7 @@ namespace Lemma.Components
 
 		public Property<Entity.Handle> Next = new Property<Entity.Handle>();
 
-		public EditorProperty<Animation.Ease.Type> Blend = new EditorProperty<Animation.Ease.Type>();
+		public EditorProperty<Animation.Ease.EaseType> Blend = new EditorProperty<Animation.Ease.EaseType>();
 
 		public EditorProperty<float> Duration = new EditorProperty<float>();
 
@@ -51,7 +51,7 @@ namespace Lemma.Components
 				Entity next = currentStop.Next.Value.Target;
 				CameraStop nextStop = next == null ? null : next.Get<CameraStop>();
 
-				if (currentStop.Blend != Animation.Ease.Type.None && next != null)
+				if (currentStop.Blend != Animation.Ease.EaseType.None && next != null)
 				{
 					Transform nextTransform = next.Get<Transform>();
 					animations.Add

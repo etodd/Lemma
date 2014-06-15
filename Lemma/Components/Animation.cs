@@ -318,6 +318,59 @@ namespace Lemma.Components
 			}
 		}
 
+		public class IntMoveTo : Move<int>
+		{
+			public IntMoveTo(Property<int> p, int t, float duration)
+				: base(p, t, duration)
+			{
+
+			}
+
+			public override void UpdateInterval(float x)
+			{
+				this.property.Value = (int)(this.start + (this.parameter - this.start) * x);
+			}
+		}
+
+		public class IntMoveToSpeed : IntMoveTo
+		{
+			private float speed;
+			public IntMoveToSpeed(Property<int> p, int t, float speed)
+				: base(p, t, 1.0f)
+			{
+				this.speed = speed;
+			}
+
+			public override void Reset()
+			{
+				base.Reset();
+				this.Duration = Math.Abs(this.parameter - this.start) / this.speed;
+			}
+		}
+
+		public class IntMoveBy : Move<int>
+		{
+			public IntMoveBy(Property<int> p, int t, float duration)
+				: base(p, t, duration)
+			{
+
+			}
+
+			public override void UpdateInterval(float x)
+			{
+				this.property.Value = (int)(this.start + this.parameter * x);
+			}
+		}
+
+		public class IntMoveBySpeed : IntMoveBy
+		{
+			public IntMoveBySpeed(Property<int> p, int t, float speed)
+				: base(p, t, Math.Abs(t / speed))
+			{
+
+			}
+		}
+
 		public class FloatMoveTo : Move<float>
 		{
 			public FloatMoveTo(Property<float> p, float t, float duration)
@@ -665,7 +718,7 @@ namespace Lemma.Components
 
 		public class Ease : Interval
 		{
-			public enum Type
+			public enum EaseType
 			{
 				None,
 				Linear,
@@ -684,13 +737,13 @@ namespace Lemma.Components
 			}
 
 			private Interval interval;
-			private Type type;
+			private EaseType _easeType;
 			
-			public Ease(Interval interval, Type type = Type.InQuadratic)
+			public Ease(Interval interval, EaseType _easeType = EaseType.InQuadratic)
 				: base(interval.Duration)
 			{
 				this.interval = interval;
-				this.type = type;
+				this._easeType = _easeType;
 			}
 
 			public override void Reset()
@@ -702,21 +755,21 @@ namespace Lemma.Components
 
 			public override void UpdateInterval(float x)
 			{
-				switch (this.type)
+				switch (this._easeType)
 				{
-					case Type.None:
+					case EaseType.None:
 						this.interval.UpdateInterval(x < 1.0f ? 0.0f : 1.0f);
 						break;
-					case Type.Linear:
+					case EaseType.Linear:
 						this.interval.UpdateInterval(x);
 						break;
-					case Type.InQuadratic:
+					case EaseType.InQuadratic:
 						this.interval.UpdateInterval(x * x);
 						break;
-					case Type.OutQuadratic:
+					case EaseType.OutQuadratic:
 						this.interval.UpdateInterval(-1 * x * (x - 2));
 						break;
-					case Type.InOutQuadratic:
+					case EaseType.InOutQuadratic:
 						x *= 2;
 						if (x < 1)
 							this.interval.UpdateInterval(0.5f * x * x);
@@ -726,14 +779,14 @@ namespace Lemma.Components
 							this.interval.UpdateInterval(-0.5f * (x * (x - 2) - 1));
 						}
 						break;
-					case Type.InCubic:
+					case EaseType.InCubic:
 						this.interval.UpdateInterval(x * x * x);
 						break;
-					case Type.OutCubic:
+					case EaseType.OutCubic:
 						x--;
 						this.interval.UpdateInterval(x * x * x + 1);
 						break;
-					case Type.InOutCubic:
+					case EaseType.InOutCubic:
 						x *= 2;
 						if (x < 1)
 							this.interval.UpdateInterval(0.5f * x * x * x);
@@ -743,22 +796,22 @@ namespace Lemma.Components
 							this.interval.UpdateInterval(0.5f * (x * x * x + 2));
 						}
 						break;
-					case Type.InSin:
+					case EaseType.InSin:
 						this.interval.UpdateInterval((float)-Math.Cos(x * Math.PI * 0.5) + 1.0f);
 						break;
-					case Type.OutSin:
+					case EaseType.OutSin:
 						this.interval.UpdateInterval((float)Math.Sin(x * Math.PI * 0.5));
 						break;
-					case Type.InOutSin:
+					case EaseType.InOutSin:
 						this.interval.UpdateInterval(-0.5f * ((float)Math.Cos(Math.PI * x) - 1.0f));
 						break;
-					case Type.InExponential:
+					case EaseType.InExponential:
 						this.interval.UpdateInterval((float)Math.Pow(2, 10 * (x - 1.0)));
 						break;
-					case Type.OutExponential:
+					case EaseType.OutExponential:
 						this.interval.UpdateInterval((float)-Math.Pow(2, -10 * x) + 1.0f);
 						break;
-					case Type.InOutExponential:
+					case EaseType.InOutExponential:
 						x *= 2;
 						if (x < 1)
 							this.interval.UpdateInterval(0.5f * (float)Math.Pow(2, 10 * (x - 1)));
