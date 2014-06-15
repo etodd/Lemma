@@ -106,16 +106,6 @@ namespace Lemma.Components
 
 			new TextView(main.GeeUI, dropDownPlusLabel, "Actions:", Vector2.Zero, MainFont);
 			this.CreateDropDownView = new DropDownView(main.GeeUI, dropDownPlusLabel, Vector2.Zero, MainFont);
-			var openLinkerButton = new ButtonView(main.GeeUI, dropDownPlusLabel, "Command Linker", Vector2.Zero, MainFont)
-			{
-				Name = "LinkerButton"
-			};
-			openLinkerButton.OnMouseClick += (sender, args) =>
-			{
-				ShowLinkerView();
-			};
-
-			openLinkerButton.Active.Value = false;
 
 			this.PropertiesView = new PanelView(main.GeeUI, main.GeeUI.RootView, new Vector2(5, 5));
 			var ListPropertiesView = new ListView(main.GeeUI, PropertiesView) { Name = "PropertiesList" };
@@ -246,7 +236,8 @@ namespace Lemma.Components
 		{
 			if (SelectedEntities.Count != 1) return;
 			LinkerView.Active.Value = true;
-			LinkerView.Position.Value = InputManager.GetMousePosV();
+			LinkerView.Position.Value = new Vector2(PropertiesView.AbsoluteBoundBox.Right, InputManager.GetMousePosV().Y);
+			LinkerView.ParentView.BringChildToFront(LinkerView);
 			BindLinker(SelectedEntities[0]);
 		}
 
@@ -469,7 +460,6 @@ namespace Lemma.Components
 			rootEntityView.ContentOffset.Value = new Vector2(0);
 			rootEntityView.RemoveAllChildren();
 
-			main.GeeUI.RootView.FindFirstChildByName("LinkerButton").Active.Value = true;
 			foreach (DictionaryEntry entry in new DictionaryEntry[] { new DictionaryEntry("[" + entity.Type.ToString() + " entity]", new[] { new DictionaryEntry("ID", entity.ID) }.Concat(entity.Properties).Concat(entity.Commands)) }
 				.Union(entity.Components.Where(x => ((IComponent)x.Value).Editable)))
 			{
@@ -546,20 +536,27 @@ namespace Lemma.Components
 
 		public View BuildButton(Command command, string label, Color color = default(Color))
 		{
-			var b = new ButtonView(main.GeeUI, null, label, Vector2.Zero, MainFont);
+			var container = new View(main.GeeUI, null);
+			container.ChildrenLayouts.Add(new HorizontalViewLayout());
+			container.ChildrenLayouts.Add(new ExpandToFitLayout());
+
+			var b = new ButtonView(main.GeeUI, container, label, Vector2.Zero, MainFont);
 			b.OnMouseClick += (sender, args) =>
 			{
 				if (command != null)
 					command.Execute();
 			};
-			//b.ChildrenLayouts.Add(new ExpandToFitLayout());
-			return b;
+			var link = new ButtonView(main.GeeUI, container, "Link", Vector2.Zero, MainFont);
+			link.OnMouseClick += (sender, args) =>
+			{
+				ShowLinkerView();
+			};
+			return container;
 		}
 		private void refresh()
 		{
 			TabViews.RemoveTab("Entity");
 			HideLinkerView();
-			main.GeeUI.RootView.FindFirstChildByName("LinkerButton").Active.Value = false;
 
 			if (this.SelectedEntities.Count == 0 || this.MapEditMode)
 				this.show(this.Entity);
