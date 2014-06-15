@@ -30,22 +30,8 @@ namespace Lemma.Factories
 
 			this.SetMain(entity, main);
 
-			Property<bool> delete = entity.GetOrMakeProperty<bool>("DeleteOnTrigger", true);
-
-			ListProperty<Entity.Handle> targets = entity.GetOrMakeListProperty<Entity.Handle>("Targets");
-			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
-			{
-				foreach (Entity.Handle target in targets)
-				{
-					Entity t = target.Target;
-					if (t != null && t.Active)
-						t.GetCommand("Trigger").Execute();
-				}
-				if (delete) // Make sure other command bindings have a chance to execute
-					entity.Add(new Animation(new Animation.Execute(entity.Delete)));
-			}));
-
-			entity.Add("Trigger", trigger.PlayerEntered);
+			entity.Add("PlayerEntered", trigger.PlayerEntered);
+			entity.Add("PlayerExited", trigger.PlayerExited);
 
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 		}
@@ -57,8 +43,6 @@ namespace Lemma.Factories
 			PlayerTrigger.AttachEditorComponents(entity, main, this.Color);
 
 			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
-
-			EntityConnectable.AttachEditorComponents(entity, entity.GetOrMakeListProperty<Entity.Handle>("Targets"));
 		}
 	}
 }

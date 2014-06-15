@@ -18,6 +18,7 @@ namespace Lemma.Components
 		public Property<Vector3> Position = new Property<Vector3>();
 		public Property<bool> IsTriggered = new Property<bool>();
 		public Property<Entity.Handle> Player = new Property<Entity.Handle>();
+		public EditorProperty<bool> DeleteOnTrigger = new EditorProperty<bool>();
 
 		[XmlIgnore]
 		public Command PlayerEntered = new Command();
@@ -42,6 +43,11 @@ namespace Lemma.Components
 			};
 			this.Add(new CommandBinding(this.OnSuspended, clear));
 			this.Add(new CommandBinding(this.OnDisabled, clear));
+			this.Add(new CommandBinding(this.PlayerEntered, delegate()
+			{
+				if (this.DeleteOnTrigger) // Make sure other command bindings have a chance to execute
+					this.Entity.Add(new Animation(new Animation.Execute(this.Entity.Delete)));
+			}));
 		}
 
 		public void Update(float elapsedTime)

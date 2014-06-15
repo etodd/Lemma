@@ -9,3 +9,8 @@
 *.blend2
 Thumbs.db
 /packages
+Steam/*.manifest
+Steam/*.manifest.txt
+Steam/*.log
+Steam/*.csd
+Steam/*.csm
