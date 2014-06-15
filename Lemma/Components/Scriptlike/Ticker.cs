@@ -10,13 +10,13 @@ namespace Lemma.Components
 {
 	public class Ticker : Component<Main>, IUpdateableComponent
 	{
-		public EditorProperty<float> Interval = new EditorProperty<float>() {Description = "Will fire every X seconds."};
-		public EditorProperty<float> NumToFire = new EditorProperty<float>() {Description = "Fires X times. -1 is infinite."};
+		public EditorProperty<float> Interval = new EditorProperty<float>() { Description = "Will fire every X seconds.", Value = 1 };
+		public EditorProperty<int> NumToFire = new EditorProperty<int>() { Description = "Fires X times. -1 is infinite.", Value = -1 };
 
 		[XmlIgnore]
 		public Command OnFire = new Command();
 
-		private Property<float>  _internalTimer = new Property<float>(){Value = 0};
+		public Property<float> Timer = new Property<float>();
 
 		public Ticker()
 		{
@@ -27,12 +27,15 @@ namespace Lemma.Components
 
 		public void Update(float dt)
 		{
-			_internalTimer.Value += dt;
-			if (Interval.Value < 0) Interval.Value = 0;
-			if (_internalTimer.Value >= Interval.Value && Interval.Value > 0)
+			if (this.NumToFire != 0)
 			{
-				_internalTimer.Value -= Interval.Value;
-				OnFire.Execute();
+				this.Timer.Value += dt;
+				if (this.Interval.Value > 0 && this.Timer > this.Interval.Value)
+				{
+					this.Timer.Value -= this.Interval.Value;
+					this.NumToFire.Value--;
+					this.OnFire.Execute();
+				}
 			}
 		}
 	}

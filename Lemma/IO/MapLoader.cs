@@ -187,8 +187,11 @@ namespace Lemma.IO
 			foreach (Entity entity in entities)
 			{
 				Factory<Main> factory = Factory<Main>.Get(entity.Type);
-				factory.Bind(entity, main);
-				main.Add(entity);
+				if (factory != null)
+				{
+					factory.Bind(entity, main);
+					main.Add(entity);
+				}
 			}
 
 			main.IsLoadingMap = false;

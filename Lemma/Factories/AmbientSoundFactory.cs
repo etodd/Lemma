@@ -29,14 +29,6 @@ namespace Lemma.Factories
 			VoxelAttachable.BindTarget(entity, ambientSound.Position);
 
 			this.SetMain(entity, main);
-			
-			entity.Add("Trigger", new Command
-			{
-				Action = delegate()
-				{
-					ambientSound.Enabled.Value = true;
-				},
-			});
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

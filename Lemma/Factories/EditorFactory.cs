@@ -206,7 +206,7 @@ namespace Lemma.Factories
 					gui.AddEntityCommands.Add(new EditorGeeUI.PopupCommand
 					{
 						Description = "Add " + entityType,
-						Enabled = () => editor.SelectedEntities.Count == 0 && !editor.VoxelEditMode,
+						Enabled = () => true,
 						Action = new Command { Action = () => editor.Spawn.Execute(entityType) },
 					});
 				}
