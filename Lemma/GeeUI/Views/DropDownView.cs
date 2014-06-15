@@ -26,7 +26,7 @@ namespace GeeUI.Views
 
 		private PanelView DropDownPanelView;
 		private ListView DropDownListView;
-		private List<DropDownOption> DropDownOptions = new List<DropDownOption>();
+		public List<DropDownOption> DropDownOptions = new List<DropDownOption>();
 		private SpriteFont mainFont;
 		private TextFieldView FilterView;
 

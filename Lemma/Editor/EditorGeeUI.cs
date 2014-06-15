@@ -196,6 +196,7 @@ namespace Lemma.Components
 			this.SelectedEntities.Cleared += this.refresh;
 
 			this.Add(new NotifyBinding(this.refresh, this.MapEditMode));
+			this.Add(new NotifyBinding(this.refresh, Entity.Get<Editor>().VoxelEditMode));
 
 			this.EntityCommands.ItemAdded += (index, command) => RecomputeEntityCommands();
 			this.EntityCommands.ItemChanged += (index, old, value) => RecomputeEntityCommands();
@@ -394,6 +395,7 @@ namespace Lemma.Components
 			EntityPanelView.RemoveAllChildren();
 			foreach (var dropDown in EntityCommands)
 			{
+				if (!dropDown.Enabled()) continue;
 				string text = dropDown.Description;
 				if (dropDown.Chord.Key != Keys.None)
 				{
@@ -416,6 +418,7 @@ namespace Lemma.Components
 			MapPanelView.AddChild(CreateDropDownView.ParentView);
 			foreach (var dropDown in MapCommands)
 			{
+				if (!dropDown.Enabled()) continue;
 				string text = dropDown.Description;
 				if (dropDown.Chord.Key != Keys.None)
 				{
@@ -437,6 +440,7 @@ namespace Lemma.Components
 			this.CreateDropDownView.RemoveAllOptions();
 			foreach (var dropDown in AddEntityCommands)
 			{
+				if (!dropDown.Enabled()) continue;
 				string text = dropDown.Description;
 				if (dropDown.Chord.Key != Keys.None)
 				{
@@ -452,6 +456,7 @@ namespace Lemma.Components
 					dropDown.Action.Execute();
 				});
 			}
+			CreateDropDownView.ParentView.Active.Value = CreateDropDownView.DropDownOptions.Count > 0;
 		}
 
 		private void show(Entity entity)
@@ -555,6 +560,9 @@ namespace Lemma.Components
 		}
 		private void refresh()
 		{
+			RecomputeAddCommands();
+			RecomputeEntityCommands();
+			RecomputeMapCommands();
 			TabViews.RemoveTab("Entity");
 			HideLinkerView();
 
