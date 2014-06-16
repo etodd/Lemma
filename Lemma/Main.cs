@@ -845,7 +845,7 @@ namespace Lemma
 				Factory.Get<ScriptFactory>().Bind(scriptEntity, this, true);
 				scriptEntity.Serialize = false;
 				this.Add(scriptEntity);
-				scriptEntity.GetProperty<bool>("ExecuteOnLoad").Value = false;
+				scriptEntity.Get<Script>().ExecuteOnLoad.Value = false;
 				Script script = scriptEntity.Get<Script>();
 				script.Name.Value = scriptName;
 				if (!string.IsNullOrEmpty(script.Errors))
@@ -860,7 +860,7 @@ namespace Lemma
 			Entity scriptEntity = Factory.Get<ScriptFactory>().CreateAndBind(this);
 			scriptEntity.Serialize = false;
 			this.Add(scriptEntity);
-			scriptEntity.GetProperty<bool>("ExecuteOnLoad").Value = false;
+			scriptEntity.Get<Script>().ExecuteOnLoad.Value = false;
 			Script script = scriptEntity.Get<Script>();
 			script.Name.Value = scriptName;
 			if (!string.IsNullOrEmpty(script.Errors))

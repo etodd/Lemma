@@ -35,7 +35,7 @@ namespace Lemma.Factories
 			Voxel map = entity.Get<Voxel>();
 			map.Editable = false;
 
-			BindCommand(entity, voxelFill.OnEnabled, "Enable");
+			BindCommand(entity, voxelFill.Enable, "Enable");
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
@@ -43,8 +43,6 @@ namespace Lemma.Factories
 			base.AttachEditorComponents(entity, main);
 
 			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
-
-			EntityConnectable.AttachEditorComponents(entity, entity.GetOrMakeProperty<Entity.Handle>("Target"));
 		}
 	}
 }

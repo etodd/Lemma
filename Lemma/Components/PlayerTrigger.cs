@@ -42,7 +42,7 @@ namespace Lemma.Components
 				this.Player.Value = null;
 			};
 			this.Add(new CommandBinding(this.OnSuspended, clear));
-			this.Add(new CommandBinding(this.OnDisabled, clear));
+			this.Add(new CommandBinding(this.Disable, clear));
 			this.Add(new CommandBinding(this.PlayerEntered, delegate()
 			{
 				if (this.DeleteOnTrigger) // Make sure other command bindings have a chance to execute

@@ -83,6 +83,7 @@ namespace Lemma.Components
 		public EditorProperty<float> Depth = new EditorProperty<float> { Value = 100.0f };
 		public EditorProperty<float> Refraction = new EditorProperty<float> { Value = 0.0f };
 		public EditorProperty<Vector2> Scale = new EditorProperty<Vector2> { Value = new Vector2(100.0f, 100.0f) };
+		public EditorProperty<bool> CannotSuspendByDistance = new EditorProperty<bool> { Value = true };
 
 		private Renderer renderer;
 		private RenderTarget2D buffer;
@@ -201,6 +202,13 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.EnabledWhenPaused = true;
+
+			this.CannotSuspendByDistance.Set = delegate(bool value)
+			{
+				this.CannotSuspendByDistance.InternalValue = value;
+				this.Entity.CannotSuspendByDistance = value;
+			};
+
 			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.main.ScreenSize));
 			this.Add(new Binding<bool>(this.EnableReflection, this.main.Settings.EnableReflections));
 
@@ -222,9 +230,9 @@ namespace Lemma.Components
 			};
 
 			this.Add(new CommandBinding(this.OnSuspended, removeFluid));
-			this.Add(new CommandBinding(this.OnDisabled, removeFluid));
+			this.Add(new CommandBinding(this.Disable, removeFluid));
 			this.Add(new CommandBinding(this.OnResumed, addFluid));
-			this.Add(new CommandBinding(this.OnEnabled, addFluid));
+			this.Add(new CommandBinding(this.Enable, addFluid));
 
 			this.camera = new Camera();
 			this.main.AddComponent(this.camera);

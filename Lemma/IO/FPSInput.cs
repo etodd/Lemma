@@ -43,11 +43,11 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.Add(new CommandBinding(this.OnEnabled, delegate()
+			this.Add(new CommandBinding(this.Enable, delegate()
 			{
 				FPSInput.RecenterMouse();
 			}));
-			this.Add(new CommandBinding(this.OnDisabled, delegate()
+			this.Add(new CommandBinding(this.Disable, delegate()
 			{
 				if (!this.Movement.Value.Equals(Vector2.Zero))
 					this.Movement.Value = Vector2.Zero;

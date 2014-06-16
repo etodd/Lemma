@@ -45,7 +45,7 @@ namespace Lemma.Components
 			this.particles = ParticleSystem.Get(this.main, "Rift");
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
-			this.Add(new CommandBinding(this.OnEnabled, delegate()
+			this.Add(new CommandBinding(this.Enable, delegate()
 			{
 				if (this.Coords.Count == 0)
 				{
@@ -59,7 +59,7 @@ namespace Lemma.Components
 						Voxel.Coord center = this.Coordinate;
 						Vector3 pos = v.GetRelativePosition(center);
 						int radius = this.Radius;
-						List<VoxelFillFactory.CoordinateEntry> coords = new List<VoxelFillFactory.CoordinateEntry>();
+						List<VoxelFill.CoordinateEntry> coords = new List<VoxelFill.CoordinateEntry>();
 						for (Voxel.Coord x = center.Move(Direction.NegativeX, radius); x.X < center.X + radius; x.X++)
 						{
 							for (Voxel.Coord y = x.Move(Direction.NegativeY, radius); y.Y < center.Y + radius; y.Y++)
@@ -68,11 +68,11 @@ namespace Lemma.Components
 								{
 									float distance = (pos - v.GetRelativePosition(z)).Length();
 									if (distance <= radius && v[z] != Components.Voxel.EmptyState)
-										coords.Add(new VoxelFillFactory.CoordinateEntry { Coord = z.Clone(), Distance = distance });
+										coords.Add(new VoxelFill.CoordinateEntry { Coord = z.Clone(), Distance = distance });
 								}
 							}
 						}
-						coords.Sort(new LambdaComparer<VoxelFillFactory.CoordinateEntry>((x, y) => x.Distance.CompareTo(y.Distance)));
+						coords.Sort(new LambdaComparer<VoxelFill.CoordinateEntry>((x, y) => x.Distance.CompareTo(y.Distance)));
 						this.Coords.AddAll(coords.Select(x => x.Coord));
 					}
 				}

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 using ComponentBind;
 using Lemma.Factories;
 using Lemma.Util;
@@ -9,6 +10,9 @@ using Microsoft.Xna.Framework;
 
 namespace Lemma.Components
 {
+	[XmlInclude(typeof(CoordinateEntry))]
+	[XmlInclude(typeof(Property<CoordinateEntry>))]
+	[XmlInclude(typeof(ListProperty<CoordinateEntry>))]
 	public class VoxelFill : Component<Main>, IUpdateableComponent
 	{
 		public class CoordinateEntry
@@ -33,39 +37,32 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
+			this.EnabledWhenPaused = false;
+			this.EnabledInEditMode = false;
+
 			if (this.main.EditorEnabled)
 				this.Coords.Clear();
 
-			this.Add(new CommandBinding(this.OnEnabled, delegate()
+			this.Add(new CommandBinding(this.Enable, delegate()
 			{
 				if (this.Index > 0)
 					return; // We're already filling
 
-				Entity targetEntity = this.Target.Value.Target;
-				if (targetEntity != null && targetEntity.Active)
-				{
-					this.populateCoords();
-					Voxel m = targetEntity.Get<Voxel>();
-					Vector3 focusPoint = this.main.Camera.Position;
-					foreach (CoordinateEntry entry in this.Coords)
-					{
-						entry.Position = m.GetAbsolutePosition(entry.Coord);
-						entry.Distance = (focusPoint - entry.Position).LengthSquared();
-					}
-
-					List<CoordinateEntry> coordList = this.Coords.ToList();
-					this.Coords.Clear();
-					coordList.Sort(new LambdaComparer<CoordinateEntry>((x, y) => x.Distance.CompareTo(y.Distance)));
-					foreach (CoordinateEntry e in coordList)
-						this.Coords.Add(e);
-				}
+				this.populateCoords();
+				this.sortCoords();
 			}));
 		}
 
 		public override void Start()
 		{
 			if (!this.main.EditorEnabled)
+			{
+				bool go = this.Coords.Count == 0;
 				this.populateCoords();
+
+				if (this.Enabled && go)
+					this.sortCoords();
+			}
 		}
 
 		private void populateCoords()
@@ -85,6 +82,27 @@ namespace Lemma.Components
 					}))
 					this.Coords.Add(e);
 				}
+			}
+		}
+
+		private void sortCoords()
+		{
+			Entity targetEntity = this.Target.Value.Target;
+			if (targetEntity != null && targetEntity.Active)
+			{
+				Voxel m = targetEntity.Get<Voxel>();
+				Vector3 focusPoint = this.main.Camera.Position;
+				foreach (CoordinateEntry entry in this.Coords)
+				{
+					entry.Position = m.GetAbsolutePosition(entry.Coord);
+					entry.Distance = (focusPoint - entry.Position).LengthSquared();
+				}
+
+				List<CoordinateEntry> coordList = this.Coords.ToList();
+				this.Coords.Clear();
+				coordList.Sort(new LambdaComparer<CoordinateEntry>((x, y) => x.Distance.CompareTo(y.Distance)));
+				foreach (CoordinateEntry e in coordList)
+					this.Coords.Add(e);
 			}
 		}
 

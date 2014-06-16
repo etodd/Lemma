@@ -164,7 +164,7 @@ namespace Lemma.GInterfaces
 		private int NumCollectiblesPickedUp()
 		{
 			List<Entity> notes = main.Get("Note").ToList();
-			return notes.Count(x => x.GetOrMakeProperty<bool>("Collected"));
+			return notes.Count(x => x.Get<Note>().Collected);
 		}
 
 		private int NumCollectiblesTotal()

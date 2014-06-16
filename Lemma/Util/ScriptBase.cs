@@ -66,6 +66,18 @@ namespace Lemma.GameScripts
 			triggerEntity.Add(new CommandBinding(trigger.Exited, callbacks));
 		}
 
+		protected static Property<T> property<T>(Entity script, string name, T defaultValue = default(T))
+		{
+			Data data = script.GetOrCreate<Data>("Data");
+			return data.Property<T>(name, defaultValue);
+		}
+
+		protected static ListProperty<T> listProperty<T>(Entity script, string name)
+		{
+			Data data = script.GetOrCreate<Data>("Data");
+			return data.ListProperty<T>(name);
+		}
+		
 		protected static void bindPlayerTrigger(string id, Action callback, bool oneTimeOnly = true)
 		{
 			Entity triggerEntity = ScriptBase.get(id);

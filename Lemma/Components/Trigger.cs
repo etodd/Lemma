@@ -39,7 +39,7 @@ namespace Lemma.Components
 				this.IsTriggered.Value = false;
 			};
 			this.Add(new CommandBinding(this.OnSuspended, clear));
-			this.Add(new CommandBinding(this.OnDisabled, clear));
+			this.Add(new CommandBinding(this.Disable, clear));
 		}
 
 		public void Update(float elapsedTime)

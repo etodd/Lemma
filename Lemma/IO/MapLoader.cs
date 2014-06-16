@@ -65,9 +65,6 @@ namespace Lemma.IO
 			typeof(ListProperty<RespawnLocation>),
 			typeof(EditorProperty<RespawnLocation>),
 			typeof(VoxelChaseAI),
-			typeof(VoxelFillFactory.CoordinateEntry),
-			typeof(ListProperty<VoxelFillFactory.CoordinateEntry>),
-			typeof(EditorProperty<VoxelFillFactory.CoordinateEntry>),
 			typeof(Phone),
 			typeof(RaycastAI),
 			typeof(SignalTower),
@@ -123,6 +120,7 @@ namespace Lemma.IO
 			typeof(Switch),
 			typeof(Turret),
 			typeof(VoxelFill),
+			typeof(Data),
 		};
 
 		public static XmlSerializer Serializer;

@@ -28,6 +28,9 @@ namespace Lemma.Factories
 			VoxelAttachable.MakeAttachable(entity, main);
 			VoxelAttachable.BindTarget(entity, ambientSound.Position);
 
+			BindCommand(entity, ambientSound.Enable, "Play");
+			BindCommand(entity, ambientSound.Disable, "Stop");
+
 			this.SetMain(entity, main);
 		}
 

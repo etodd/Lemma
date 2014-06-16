@@ -36,7 +36,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.Add(new CommandBinding(this.OnDisabled, delegate() { this.IsTriggered.Value = false; }));
+			this.Add(new CommandBinding(this.Disable, delegate() { this.IsTriggered.Value = false; }));
 		}
 
 		public void Update(float elapsedTime)

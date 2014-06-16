@@ -53,7 +53,7 @@ namespace Lemma.Components
 			this.EnabledWhenPaused = false;
 			this.Serialize = false;
 			this.noise = this.Entity.GetOrCreate<ProceduralGenerator>();
-			this.Add(new CommandBinding(this.OnDisabled, delegate()
+			this.Add(new CommandBinding(this.Disable, delegate()
 			{
 				this.main.Renderer.SpeedBlurAmount.Value = 0;
 			}));

@@ -95,7 +95,7 @@ namespace Lemma.Components
 				if (this.Sphere.Space != null)
 					this.main.Space.Remove(this.Sphere);
 			};
-			this.Add(new CommandBinding(this.OnDisabled, remove));
+			this.Add(new CommandBinding(this.Disable, remove));
 			this.Add(new CommandBinding(this.OnSuspended, remove));
 
 			Action add = delegate()
@@ -104,7 +104,7 @@ namespace Lemma.Components
 				if (this.Sphere.Space == null && this.Enabled && !this.Suspended)
 					this.main.Space.Add(this.Sphere);
 			};
-			this.Add(new CommandBinding(this.OnEnabled, add));
+			this.Add(new CommandBinding(this.Enable, add));
 			this.Add(new CommandBinding(this.OnResumed, add));
 
 			this.main.Space.Add(this.Sphere);
