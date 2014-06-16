@@ -264,6 +264,11 @@ namespace GeeUI.Views
 			ReOrderChildrenDepth();
 		}
 
+		public void OrderChildren()
+		{
+			foreach(var layout in ChildrenLayouts)
+				OrderChildren(layout);
+		}
 		public virtual void OrderChildren(ViewLayout layout)
 		{
 			if (layout != null)

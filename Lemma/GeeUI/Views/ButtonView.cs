@@ -71,9 +71,9 @@ namespace GeeUI.Views
 			Position.Value = position;
 
             //Make the TextView for the text
-            new TextView(this.ParentGeeUI, this, text, new Vector2(0, 0), font) {TextJustification = TextJustification.Left};
-			Width.Value = (int)font.MeasureString(text).X + NinePatchNormal.LeftWidth + NinePatchNormal.RightWidth;
-			Height.Value = (int)font.MeasureString(text).Y + NinePatchNormal.TopHeight + NinePatchNormal.BottomHeight;
+            var textV = new TextView(this.ParentGeeUI, this, text, new Vector2(0, 0), font) {TextJustification = TextJustification.Left};
+			Width.Value = (textV.Width.Value = (int)font.MeasureString(text).X) + NinePatchNormal.LeftWidth + NinePatchNormal.RightWidth;
+			Height.Value = (textV.Height.Value = (int)font.MeasureString(text).Y) + NinePatchNormal.TopHeight + NinePatchNormal.BottomHeight;
         }
 
 		public ButtonView(GeeUIMain GeeUI, View rootview, View contentView, Vector2 position)
