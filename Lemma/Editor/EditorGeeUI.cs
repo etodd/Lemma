@@ -48,6 +48,9 @@ namespace Lemma.Components
 		public DropDownView CreateDropDownView;
 
 		[XmlIgnore]
+		public DropDownView SelectDropDownView;
+
+		[XmlIgnore]
 		public PanelView PropertiesView;
 
 		[XmlIgnore]
@@ -99,6 +102,8 @@ namespace Lemma.Components
 
 			this.CreateDropDownView = new DropDownView(main.GeeUI, MapPanelView, Vector2.Zero, MainFont);
 			this.CreateDropDownView.Label.Value = "Add";
+			this.SelectDropDownView = new DropDownView(main.GeeUI, MapPanelView, Vector2.Zero, MainFont);
+			SelectDropDownView.Label.Value = "Select";
 
 			this.ShowAddMenu.Action = delegate()
 			{
@@ -110,10 +115,11 @@ namespace Lemma.Components
 			var ListPropertiesView = new ListView(main.GeeUI, PropertiesView) { Name = "PropertiesList" };
 			ListPropertiesView.Position.Value = new Vector2(5, 5);
 			ListPropertiesView.ChildrenLayouts.Add(new VerticalViewLayout(4, false));
-			ListPropertiesView.ChildrenLayouts.Add(new ExpandToFitLayout(false, true));
+			ListPropertiesView.ChildrenLayouts.Add(new ExpandToFitLayout(false, true) { ExtraWidth = 5 });
 
 			ListPropertiesView.Add(new Binding<int>(ListPropertiesView.Height, PropertiesView.Height));
-			PropertiesView.Add(new Binding<int>(PropertiesView.Width, ListPropertiesView.Width));
+
+			PropertiesView.ChildrenLayouts.Add(new ExpandToFitLayout(false, true));
 
 			RootEditorView.Add(new Binding<int, Point>(RootEditorView.Width, point => point.X, main.ScreenSize));
 			TabViews.Add(new Binding<int, int>(TabViews.Width, i => i, RootEditorView.Width));
@@ -208,6 +214,28 @@ namespace Lemma.Components
 			this.AddEntityCommands.ItemAdded += (index, command) => RecomputeAddCommands();
 			this.AddEntityCommands.ItemChanged += (index, old, value) => RecomputeAddCommands();
 			this.AddEntityCommands.ItemRemoved += (index, command) => RecomputeAddCommands();
+
+			this.Add(new CommandBinding<Entity>(main.EntityAdded, e => RebuildSelectDropDown()));
+			this.Add(new CommandBinding<Entity>(main.EntityRemoved, e => RebuildSelectDropDown()));
+		}
+
+		public void RebuildSelectDropDown()
+		{
+			this.SelectDropDownView.RemoveAllOptions();
+			foreach (var ent in main.Entities)
+			{
+				if (ent.EditorCanDelete)
+				{
+					Entity ent1 = ent;
+					SelectDropDownView.AddOption((ent.ID.Value ?? "") + " [" + ent.GUID + "] [" + ent.Type + "]", () =>
+					{
+						Editor editor = Entity.Get<Editor>();
+						for (int i = 0; i < editor.SelectedEntities.Count; i++)
+							editor.SelectedEntities.RemoveAt(0);
+						editor.SelectedEntities.Add(ent1);
+					}, MainFont, ent);
+				}
+			}
 		}
 
 
@@ -390,6 +418,7 @@ namespace Lemma.Components
 		{
 			MapPanelView.RemoveAllChildren();
 			MapPanelView.AddChild(CreateDropDownView);
+			MapPanelView.AddChild(SelectDropDownView);
 			foreach (var dropDown in MapCommands)
 			{
 				if (!dropDown.Enabled()) continue;
@@ -431,8 +460,8 @@ namespace Lemma.Components
 			TextView categoryView = new TextView(main.GeeUI, rootEntityView, "[" + entity.Type + "]", new Vector2(0, 0), MainFont);
 			categoryView.AutoSize.Value = false;
 			categoryView.TextJustification = TextJustification.Center;
-			categoryView.Add(new Binding<int>(categoryView.Width, rootEntityView.Width));
-			
+			categoryView.Add(new Binding<int>(categoryView.Width, i => { return (int)Math.Max(i, categoryView.TextWidth); }, rootEntityView.Width));
+
 			foreach (KeyValuePair<string, Command.Entry> cmd in entity.Commands)
 			{
 				View containerLabel = BuildContainerLabel(cmd.Key.ToString(), false);

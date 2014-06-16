@@ -627,6 +627,8 @@ namespace Lemma.Factories
 
 							foreach (Entity e in entities)
 							{
+								e.ClearGUID();
+								e.ID.Value = "";
 								Factory<Main> factory = Factory<Main>.Get(e.Type);
 								factory.Bind(e, main);
 								main.Add(e);
