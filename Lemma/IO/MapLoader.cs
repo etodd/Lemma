@@ -142,7 +142,8 @@ namespace Lemma.IO
 			else
 				filename = Path.Combine(directory, filename);
 
-			filename += "." + MapLoader.MapExtension;
+			if (!filename.EndsWith("." + MapLoader.MapExtension))
+				filename += "." + MapLoader.MapExtension;
 
 			//Need to test to see if we can load this using gzip.
 			//If we can't, it's an old map, so load it using the straight filesystem.
