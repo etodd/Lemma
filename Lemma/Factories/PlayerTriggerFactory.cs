@@ -24,14 +24,16 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Position");
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
 
-			VoxelAttachable.MakeAttachable(entity, main);
-
 			this.SetMain(entity, main);
+
+			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
 
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 
 			entity.Add("PlayerEntered", trigger.PlayerEntered);
 			entity.Add("PlayerExited", trigger.PlayerExited);
+			entity.Add("Radius", trigger.Radius);
+			entity.Add("DeleteOnTrigger", trigger.DeleteOnTrigger);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

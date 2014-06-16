@@ -166,7 +166,7 @@ namespace Lemma.Factories
 					{
 						var dialog = new System.Windows.Forms.OpenFileDialog();
 						dialog.Filter = "Map files|*.map";
-						dialog.InitialDirectory = Directory.GetCurrentDirectory();
+						dialog.InitialDirectory = Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory);
 						var result = dialog.ShowDialog();
 						string file = result == DialogResult.OK ? dialog.FileName : "";
 						if (file != "") IO.MapLoader.Load(main, "", file);
@@ -590,8 +590,8 @@ namespace Lemma.Factories
 			(
 				entity,
 				main,
-				"Yank",
-				new PCInput.Chord { Key = Keys.Y },
+				"Copy",
+				new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.C },
 				() => !gui.AnyTextFieldViewsSelected() && !editor.VoxelEditMode && !input.EnableLook && editor.SelectedEntities.Count > 0 && editor.TransformMode.Value == Editor.TransformModes.None,
 				new Command
 				{
@@ -614,7 +614,7 @@ namespace Lemma.Factories
 				entity,
 				main,
 				"Paste",
-				new PCInput.Chord { Key = Keys.P },
+				new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.V },
 				() => !gui.AnyTextFieldViewsSelected() && !editor.VoxelEditMode && !input.EnableLook,
 				new Command
 				{

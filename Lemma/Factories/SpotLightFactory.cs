@@ -24,9 +24,9 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			SpotLight spotLight = entity.GetOrCreate<SpotLight>("SpotLight");
 
-			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
-
 			this.SetMain(entity, main);
+
+			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
 
 			spotLight.Add(new TwoWayBinding<Vector3>(spotLight.Position, transform.Position));
 			spotLight.Add(new TwoWayBinding<Quaternion>(spotLight.Orientation, transform.Quaternion));

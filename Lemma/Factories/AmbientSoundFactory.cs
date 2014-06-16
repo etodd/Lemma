@@ -25,10 +25,11 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			AmbientSound ambientSound = entity.GetOrCreate<AmbientSound>("AmbientSound");
-			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
-			VoxelAttachable.BindTarget(entity, ambientSound.Position);
 
 			this.SetMain(entity, main);
+
+			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
+			VoxelAttachable.BindTarget(entity, ambientSound.Position);
 
 			entity.Add("Play", ambientSound.Enable);
 			entity.Add("Stop", ambientSound.Disable);
