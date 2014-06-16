@@ -40,10 +40,6 @@ namespace ComponentBind
 			}
 		}
 
-		public bool ShowInEditor = false;
-		public bool AllowLinking = false;
-		public bool AllowExecuting = false;
-
 		public void AddBinding(ICommandBinding binding)
 		{
 			if (this.executeLevel == 0)
@@ -64,6 +60,14 @@ namespace ComponentBind
 
 	public class Command : BaseCommand
 	{
+		public enum Perms { Linkable, Executable, LinkableAndExecutable }
+
+		public class Entry
+		{
+			public Command Command;
+			public Perms Permissions;
+		}
+
 		public Action Action;
 
 		public void Execute()

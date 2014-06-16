@@ -24,7 +24,7 @@ namespace Lemma.Components
 		public EditorProperty<string> Name = new EditorProperty<string>();
 
 		[XmlIgnore]
-		public Command Execute = new Command { ShowInEditor = true };
+		public Command Execute = new Command();
 
 		public EditorProperty<bool> ExecuteOnLoad = new EditorProperty<bool> { Value = true };
 

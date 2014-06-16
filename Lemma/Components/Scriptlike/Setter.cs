@@ -30,7 +30,6 @@ namespace Lemma.Components
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
 			this.Enabled.Editable = true;
-			Set.ShowInEditor = true;
 			this.Set.Action = () =>
 			{
 				string[] split = TargetProperty.Value.Split('.');

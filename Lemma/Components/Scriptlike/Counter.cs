@@ -69,7 +69,6 @@ namespace Lemma.Components
 					}
 				}
 			};
-			this.Reset.ShowInEditor = true;
 		}
 	}
 }

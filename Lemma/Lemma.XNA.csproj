@@ -153,6 +153,7 @@
     <Compile Include="Console\ConVar.cs" />
     <Compile Include="Console\ConCommand.cs" />
     <Compile Include="Components\Propagator.cs" />
+    <Compile Include="Editor\AnalyticsViewer.cs" />
     <Compile Include="Editor\EditorGeeUI.cs" />
     <Compile Include="Factories\CameraStopFactory.cs" />
     <Compile Include="Factories\RandomTickerFactory.cs" />

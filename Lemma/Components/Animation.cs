@@ -584,6 +584,15 @@ namespace Lemma.Components
 				this.intervals = intervals;
 			}
 
+			public void Add(Interval interval)
+			{
+				Interval[] newIntervals = new Interval[this.intervals.Length + 1];
+				Array.Copy(this.intervals, newIntervals, this.intervals.Length);
+				newIntervals[newIntervals.Length - 1] = interval;
+				this.intervals = newIntervals;
+				this.Duration += interval.Duration;
+			}
+
 			public override void Reset()
 			{
 				base.Reset();

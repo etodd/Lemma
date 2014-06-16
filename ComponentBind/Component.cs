@@ -116,14 +116,14 @@ namespace ComponentBind
 				}
 			};
 
-			this.Add(new CommandBinding(Enable, () =>
-			{
-				return !Enabled;
-			}, () =>
+			this.Add(new CommandBinding(Enable, () => !Enabled, delegate()
 			{
 				Enabled.Value = true;
 			}));
-			this.Add(new CommandBinding(Disable, () => Enabled, () => { Enabled.Value = false; }));
+			this.Add(new CommandBinding(Disable, () => Enabled, delegate()
+			{
+				Enabled.Value = false;
+			}));
 		}
 
 		public virtual void OnSave()

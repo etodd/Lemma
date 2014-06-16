@@ -16,6 +16,7 @@ namespace GeeUI.Views
 	public class TextFieldView : View
 	{
 
+		public static Color DefaultSelectionColor = new Color(13.0f / 255.0f, 103.0f / 255.0f, 172.0f / 255.0f);
 		public override Rectangle ContentBoundBox
 		{
 			get
@@ -796,7 +797,7 @@ namespace GeeUI.Views
 					}
 					if (y == 0) endDrawY += 1;
 
-					DrawManager.DrawBox(new Vector2(startDrawX, startDrawY), new Vector2(endDrawX, endDrawY), Color.Blue * EffectiveOpacity, spriteBatch, 0f, 20);
+					DrawManager.DrawBox(new Vector2(startDrawX, startDrawY), new Vector2(endDrawX, endDrawY), DefaultSelectionColor * EffectiveOpacity, spriteBatch, 0f, 20);
 				}
 			}
 

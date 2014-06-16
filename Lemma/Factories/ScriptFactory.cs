@@ -28,7 +28,7 @@ namespace Lemma.Factories
 			Script script = entity.GetOrCreate<Script>("Script");
 			script.Add(new CommandBinding(script.Delete, entity.Delete));
 
-			BindCommand(entity, script.Execute, "Execute", true);
+			BindCommand(entity, script.Execute, "Execute", Command.Perms.LinkableAndExecutable);
 
 			this.SetMain(entity, main);
 		}

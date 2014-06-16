@@ -36,7 +36,6 @@ namespace Lemma.Factories
 			BindCommand(entity, setter.Set, "Set");
 
 			base.Bind(entity, main, creating);
-
 		}
 	}
 

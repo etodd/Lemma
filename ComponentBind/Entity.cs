@@ -20,7 +20,6 @@ namespace ComponentBind
 	[XmlInclude(typeof(List<Entity.CommandLink>))]
 	public class Entity
 	{
-
 		//This is a class because PASS-BY-REFERENCE
 		public class CommandLink
 		{
@@ -149,7 +148,7 @@ namespace ComponentBind
 		public ulong GUID;
 
 		[XmlIgnore]
-		private Dictionary<string, BaseCommand> commands = new Dictionary<string, BaseCommand>();
+		private Dictionary<string, Command.Entry> commands = new Dictionary<string, Command.Entry>();
 
 		public IEnumerable<IComponent> ComponentList
 		{
@@ -317,29 +316,30 @@ namespace ComponentBind
 
 		public void LinkedCommandCall(CommandLink link)
 		{
-			if (link == null || link.LinkedSourceCmd == null) return;
-			if (link.TargetEntity.Target == null) return;
-			if (link.LinkedTargetCmd == null)
+			if (link.LinkedTargetCmd != null)
+				link.LinkedTargetCmd.Execute();
+			else if (link.TargetEntity.Target != null)
 			{
 				Command destCommand = link.TargetEntity.Target.getCommand(link.TargetCommand);
-				if (destCommand == null) return;
-				link.LinkedTargetCmd = destCommand;
+				if (destCommand != null)
+				{
+					link.LinkedTargetCmd = destCommand;
+					destCommand.Execute();
+				}
 			}
-			link.LinkedTargetCmd.Execute();
 		}
 
-		public void Add(string name, BaseCommand cmd)
+		public void Add(string name, Command.Entry cmd)
 		{
 			this.commands.Add(name, cmd);
 			foreach (var link in LinkedCommands)
 			{
 				CommandLink link1 = link;
-				if (link.LinkedSourceCmd != null) continue;
-				if (name != link.SourceCommand) continue;
-				var realCmd = cmd as Command;
-				if (realCmd == null) continue;
-				link.LinkedSourceCmd = realCmd;
-				this.Add(new CommandBinding(link.LinkedSourceCmd, () => LinkedCommandCall(link1)));
+				if (link.LinkedSourceCmd == null && name == link.SourceCommand)
+				{
+					link.LinkedSourceCmd = cmd.Command;
+					this.Add(new CommandBinding(link.LinkedSourceCmd, () => LinkedCommandCall(link1)));
+				}
 			}
 		}
 
@@ -510,9 +510,12 @@ namespace ComponentBind
 
 		private Command getCommand(string name)
 		{
-			BaseCommand result = null;
+			Command.Entry result = null;
 			this.commands.TryGetValue(name, out result);
-			return (Command)result;
+			if (result != null)
+				return result.Command;
+			else
+				return null;
 		}
 
 		protected void delete()

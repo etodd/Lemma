@@ -135,12 +135,13 @@ namespace ComponentBind
 			return dest;
 		}
 
-		public void BindCommand(Entity e, Command c, string name, bool executable = false, bool linkable = true)
+		public void BindCommand(Entity e, Command c, string name, Command.Perms perms = Command.Perms.Linkable)
 		{
-			c.ShowInEditor = executable || linkable;
-			c.AllowLinking = linkable;
-			c.AllowExecuting = executable;
-			e.Add(name, c);
+			e.Add(name, new Command.Entry
+			{
+				Command = c,
+				Permissions = perms,
+			});
 		}
 	}
 

@@ -205,6 +205,14 @@ namespace GeeUI.Views
 
 		protected List<View> _children = new List<View>();
 
+		public int ChildCount
+		{
+			get
+			{
+				return _children.Count;
+			}
+		}
+
 		public View[] Children
 		{
 			get
@@ -244,7 +252,9 @@ namespace GeeUI.Views
 
 		public void RemoveAllChildren()
 		{
-			foreach (var child in Children) RemoveChild(child);
+			foreach (var child in Children)
+				child.ParentView = null;
+			_children.Clear();
 		}
 
 		public void RemoveChild(View child)
@@ -411,6 +421,7 @@ namespace GeeUI.Views
 			Active.Value = false;
 			foreach (var child in Children)
 				child.OnDelete();
+			this.delete();
 		}
 
 		public virtual void OnMScroll(Vector2 position, int scrollDelta, bool fromChild = false)

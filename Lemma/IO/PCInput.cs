@@ -161,6 +161,27 @@ namespace Lemma.Components
 				this.Key = key;
 				this.Modifier = modifier;
 			}
+
+			public override string ToString()
+			{
+				if (this.Modifier == Keys.None)
+					return this.Key.ToString();
+				else
+				{
+					string modifier;
+					if (this.Modifier == Keys.LeftControl)
+						modifier = "Ctrl";
+					else if (this.Modifier == Keys.LeftAlt)
+						modifier = "Alt";
+					else if (this.Modifier == Keys.LeftShift)
+						modifier = "Shift";
+					else if (this.Modifier == Keys.LeftWindows)
+						modifier = "Windows";
+					else
+						modifier = this.Modifier.ToString();
+					return modifier + "+" + this.Key.ToString();
+				}
+			}
 		}
 
 		protected Dictionary<Chord, Command> chords = new Dictionary<Chord, Command>();

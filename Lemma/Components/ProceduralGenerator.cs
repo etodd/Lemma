@@ -52,7 +52,7 @@ namespace Lemma.Components
 				this.permutations[i] = random.Next(256);
 		}
 
-		public Command Reseed = new Command { ShowInEditor = true };
+		public Command Reseed = new Command();
 
 		// Get a pseudo-random gradient for the given 2D cell
 		private Vector2 gradientAtCell2d(int x, int y)

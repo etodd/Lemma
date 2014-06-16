@@ -37,7 +37,8 @@ namespace Lemma.Factories
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
 			AkGameObjectTracker.Attach(entity);
-			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_EVIL_CUBES, entity);
+			if (!main.EditorEnabled)
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_EVIL_CUBES, entity);
 			SoundKiller.Add(entity, AK.EVENTS.STOP_EVIL_CUBES);
 
 			AI ai = entity.GetOrCreate<AI>();

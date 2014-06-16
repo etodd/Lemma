@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 using ComponentBind;
 using GeeUI;
 using GeeUI.Managers;
@@ -10,6 +9,7 @@ using GeeUI.ViewLayouts;
 using GeeUI.Views;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using View = GeeUI.Views.View;
 
 namespace GeeUI.Views
@@ -30,6 +30,7 @@ namespace GeeUI.Views
 		private SpriteFont mainFont;
 		private TextFieldView FilterView;
 
+		public Property<string> Label = new Property<string>();
 		public Property<int> LastItemSelected = new Property<int>() { Value = -1 };
 		public Property<bool> AllowRightClickExecute = new Property<bool>() { Value = true };
 		public Property<bool> AllowFilterText = new Property<bool>() { Value = true };
@@ -45,6 +46,7 @@ namespace GeeUI.Views
 		{
 			this.NumChildrenAllowed.Value = 1;
 			this.mainFont = font;
+			ParentGeeUI.OnKeyPressedHandler += this.keyPressedHandler;
 			var button = new ButtonView(theGeeUI, this, "", Vector2.Zero, font);
 			button.Add(new Binding<int>(this.Width, button.Width));
 			button.Add(new Binding<int>(this.Height, button.Height));
@@ -65,7 +67,7 @@ namespace GeeUI.Views
 			FilterView = new TextFieldView(theGeeUI, DropDownPanelView, Vector2.Zero, mainFont);
 			FilterView.Height.Value = 20;
 			FilterView.MultiLine = false;
-			FilterView.Add(new Binding<int>(FilterView.Width, DropDownPanelView.Width));
+			FilterView.Add(new Binding<int>(FilterView.Width, x => x - 8, DropDownPanelView.Width));
 			FilterView.OnTextChanged = () =>
 			{
 				if (FilterView.Active && DropDownPanelView.Active && AllowFilterText)
@@ -77,7 +79,7 @@ namespace GeeUI.Views
 			DropDownListView = new ListView(theGeeUI, DropDownPanelView);
 			DropDownListView.ChildrenLayouts.Add(new VerticalViewLayout(1, false));
 			DropDownListView.ScrollMultiplier = 20;
-			DropDownPanelView.Add(new Binding<int>(DropDownPanelView.Width, DropDownListView.Width));
+			DropDownPanelView.Add(new Binding<int>(DropDownPanelView.Width, x => Math.Max(200, x), DropDownListView.Width));
 
 			DropDownListView.Name = "DropList";
 			DropDownPanelView.Add(new Binding<int>(DropDownPanelView.Height, (i1) => i1 + 2 + ((AllowFilterText && FilterView.Active) ? FilterView.BoundBox.Height : 0), DropDownListView.Height));
@@ -89,6 +91,18 @@ namespace GeeUI.Views
 			};
 
 			DropDownPanelView.Active.Value = false;
+
+			this.Label.Set = delegate(string value)
+			{
+				this.Label.InternalValue = value;
+				((ButtonView)FindFirstChildByName("button")).Text = value;
+			};
+		}
+
+		private void keyPressedHandler(string keyPressed, Keys key)
+		{
+			if (key == Keys.Escape && this.DropDownShowing)
+				this.HideDropDown();
 		}
 
 		public void Refilter()
@@ -164,7 +178,8 @@ namespace GeeUI.Views
 
 		public void OnOptionSelected(DropDownOption option, bool call = true)
 		{
-			((ButtonView)this.Children[0]).Text = option.Text;
+			if (string.IsNullOrEmpty(this.Label.Value))
+				((ButtonView)FindFirstChildByName("button")).Text = option.Text;
 			if (option.OnClicked != null && call) option.OnClicked();
 			this.LastItemSelected.Value = GetOptionIndex(option.Text);
 		}
@@ -187,7 +202,7 @@ namespace GeeUI.Views
 				OnOptionSelected(dropDownOption);
 			};
 
-			if (DropDownOptions.Count == 1)
+			if (DropDownOptions.Count == 1 && string.IsNullOrEmpty(this.Label))
 			{
 				this.LastItemSelected.Value = 0;
 				((ButtonView)FindFirstChildByName("button")).Text = name;
@@ -196,7 +211,8 @@ namespace GeeUI.Views
 
 		public void RemoveAllOptions()
 		{
-			((ButtonView)FindFirstChildByName("button")).Text = "";
+			if (string.IsNullOrEmpty(this.Label))
+				((ButtonView)FindFirstChildByName("button")).Text = "";
 			DropDownOptions.Clear();
 			DropDownListView.RemoveAllChildren();
 			this.LastItemSelected.Value = -1;
@@ -217,9 +233,10 @@ namespace GeeUI.Views
 			base.Update(dt);
 		}
 
+		private Point mouse;
 		public void ComputeMouse()
 		{
-			if (!DropDownShowing) return;
+			if (!DropDownShowing || this.mouse == InputManager.GetMousePos()) return;
 			if (DropDownPanelView.AbsoluteBoundBox.Contains(InputManager.GetMousePos()) ||
 				Children[0].AbsoluteBoundBox.Contains(InputManager.GetMousePos())) return;
 			HideDropDown();
@@ -248,6 +265,7 @@ namespace GeeUI.Views
 		public void ShowDropDown()
 		{
 			if (DropDownPanelView == null) return;
+			this.mouse = InputManager.GetMousePos();
 			FilterView.ClearText();
 			FilterView.Active.Value = FilterView.Selected.Value = AllowFilterText && FilterThreshhold.Value <= DropDownOptions.Count;
 			DropDownPanelView.Active.Value = true;
@@ -255,10 +273,11 @@ namespace GeeUI.Views
 			DropDownPanelView.FindFirstChildByName("DropList").SetContentOffset(Vector2.Zero);
 		}
 
-		public override void delete()
+		public override void OnDelete()
 		{
+			ParentGeeUI.OnKeyPressedHandler -= this.keyPressedHandler;
 			DropDownPanelView.ParentView.RemoveChild(DropDownPanelView);
-			base.delete();
+			base.OnDelete();
 		}
 	}
 }

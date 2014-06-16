@@ -59,7 +59,7 @@ namespace Lemma.Factories
 							}
 						});
 					},
-				}, "Start", true, false);
+				}, "Start", Command.Perms.Executable);
 			}
 
 			BindCommand(entity, cameraStop.Go, "Go");

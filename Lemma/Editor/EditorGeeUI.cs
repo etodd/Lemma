@@ -32,10 +32,6 @@ namespace Lemma.Components
 			public Func<bool> Enabled;
 		}
 
-		private const float precisionDelta = 0.025f;
-		private const float normalDelta = 1.0f;
-		private const float stringNavigateInterval = 0.08f;
-
 		[XmlIgnore]
 		public View RootEditorView;
 
@@ -81,6 +77,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<bool> NeedsSave = new Property<bool>();
 
+		[XmlIgnore]
+		public Command ShowAddMenu = new Command();
+
 		private SpriteFont MainFont;
 
 		public override void Awake()
@@ -98,14 +97,14 @@ namespace Lemma.Components
 
 			TabViews.AddTab("Map", MapPanelView);
 
-			var dropDownPlusLabel = new View(main.GeeUI, MapPanelView);
-			dropDownPlusLabel.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
-			dropDownPlusLabel.ChildrenLayouts.Add(new ExpandToFitLayout());
-			dropDownPlusLabel.X = 20;
-			dropDownPlusLabel.Y = 5;
+			this.CreateDropDownView = new DropDownView(main.GeeUI, MapPanelView, Vector2.Zero, MainFont);
+			this.CreateDropDownView.Label.Value = "Add";
 
-			new TextView(main.GeeUI, dropDownPlusLabel, "Actions:", Vector2.Zero, MainFont);
-			this.CreateDropDownView = new DropDownView(main.GeeUI, dropDownPlusLabel, Vector2.Zero, MainFont);
+			this.ShowAddMenu.Action = delegate()
+			{
+				this.TabViews.SetActiveTab(this.TabViews.TabIndex("Map"));
+				this.CreateDropDownView.ShowDropDown();
+			};
 
 			this.PropertiesView = new PanelView(main.GeeUI, main.GeeUI.RootView, new Vector2(5, 5));
 			var ListPropertiesView = new ListView(main.GeeUI, PropertiesView) { Name = "PropertiesList" };
@@ -207,26 +206,10 @@ namespace Lemma.Components
 			this.MapCommands.ItemRemoved += (index, command) => RecomputeMapCommands();
 
 			this.AddEntityCommands.ItemAdded += (index, command) => RecomputeAddCommands();
-			this.AddEntityCommands.ItemChanged += (index, old, value) => RecomputeMapCommands();
-			this.AddEntityCommands.ItemRemoved += (index, command) => RecomputeMapCommands();
+			this.AddEntityCommands.ItemChanged += (index, old, value) => RecomputeAddCommands();
+			this.AddEntityCommands.ItemRemoved += (index, command) => RecomputeAddCommands();
 		}
 
-		public void AnimateInProperties()
-		{
-			main.AddComponent(new Animation(
-					new Animation.Execute(() => { PropertiesView.Active.Value = true; }),
-					new Animation.Ease(new Animation.IntMoveTo(PropertiesView.Height, main.ScreenSize.Value.Y - PropertiesView.AbsoluteBoundBox.Top - 15, 0.5f), Animation.Ease.EaseType.InOutQuadratic)
-				));
-		}
-
-		public void AnimateOutProperties(Action post = null)
-		{
-			main.AddComponent(new Animation(
-					new Animation.Ease(new Animation.IntMoveTo(PropertiesView.Height, 0, 0.2f), Animation.Ease.EaseType.InOutQuadratic),
-					new Animation.Execute(() => { PropertiesView.Active.Value = false; }),
-					new Animation.Execute(post)
-				));
-		}
 
 		public void HideLinkerView()
 		{
@@ -261,12 +244,8 @@ namespace Lemma.Components
 			{
 				foreach (var ent in main.Entities)
 				{
-					if (ent == e) continue;
-					//IDK this seems like a good one to use!
-					if (ent.EditorCanDelete)
-					{
+					if (ent != e)
 						destEntityDrop.AddOption(ent.ID + "[" + ent.GUID + "]", () => { }, null, ent);
-					}
 				}
 			};
 
@@ -275,8 +254,7 @@ namespace Lemma.Components
 				if (ent == null) return;
 				foreach (var comm in ent.Commands)
 				{
-					var c = comm.Value as Command;
-					if (c == null) continue;
+					var c = (Command.Entry)comm.Value;
 					destCommDrop.AddOption(comm.Key.ToString(), () => { }, null, c);
 				}
 			};
@@ -405,19 +383,13 @@ namespace Lemma.Components
 		private void RecomputeEntityCommands()
 		{
 			EntityPanelView.RemoveAllChildren();
+
 			foreach (var dropDown in EntityCommands)
 			{
 				if (!dropDown.Enabled()) continue;
 				string text = dropDown.Description;
 				if (dropDown.Chord.Key != Keys.None)
-				{
-					if (dropDown.Chord.Modifier != Keys.None)
-						text += " [" + dropDown.Chord.Modifier.ToString().Replace("Left", "").Replace("Control", "Ctrl") + "+" + dropDown.Chord.Key.ToString() + "]";
-					else
-					{
-						text += " [" + dropDown.Chord.Key.ToString() + "]";
-					}
-				}
+					text += " [" + dropDown.Chord.ToString() + "]";
 				var button = new ButtonView(main.GeeUI, EntityPanelView, text, Vector2.Zero, MainFont);
 				PopupCommand down = dropDown;
 				button.OnMouseClick += (sender, args) => down.Action.Execute();
@@ -427,20 +399,13 @@ namespace Lemma.Components
 		private void RecomputeMapCommands()
 		{
 			MapPanelView.RemoveAllChildren();
-			MapPanelView.AddChild(CreateDropDownView.ParentView);
+			MapPanelView.AddChild(CreateDropDownView);
 			foreach (var dropDown in MapCommands)
 			{
 				if (!dropDown.Enabled()) continue;
 				string text = dropDown.Description;
 				if (dropDown.Chord.Key != Keys.None)
-				{
-					if (dropDown.Chord.Modifier != Keys.None)
-						text += " [" + dropDown.Chord.Modifier.ToString().Replace("Left", "").Replace("Control", "Ctrl") + "+" + dropDown.Chord.Key.ToString() + "]";
-					else
-					{
-						text += " [" + dropDown.Chord.Key.ToString() + "]";
-					}
-				}
+					text += " [" + dropDown.Chord.ToString() + "]";
 				var button = new ButtonView(main.GeeUI, MapPanelView, text, Vector2.Zero, MainFont);
 				PopupCommand down = dropDown;
 				button.OnMouseClick += (sender, args) => down.Action.Execute();
@@ -455,20 +420,13 @@ namespace Lemma.Components
 				if (!dropDown.Enabled()) continue;
 				string text = dropDown.Description;
 				if (dropDown.Chord.Key != Keys.None)
-				{
-					if (dropDown.Chord.Modifier != Keys.None)
-						text += " [" + dropDown.Chord.Modifier.ToString() + "+" + dropDown.Chord.Key.ToString() + "]";
-					else
-					{
-						text += " [" + dropDown.Chord.Key.ToString() + "]";
-					}
-				}
+					text += " [" + dropDown.Chord.ToString() + "]";
 				CreateDropDownView.AddOption(text, () =>
 				{
 					dropDown.Action.Execute();
 				});
 			}
-			CreateDropDownView.ParentView.Active.Value = CreateDropDownView.DropDownOptions.Count > 0;
+			CreateDropDownView.Active.Value = CreateDropDownView.DropDownOptions.Count > 0;
 		}
 
 		private void show(Entity entity)
@@ -477,9 +435,12 @@ namespace Lemma.Components
 			rootEntityView.ContentOffset.Value = new Vector2(0);
 			rootEntityView.RemoveAllChildren();
 
+			if (entity == null)
+				return;
+
 			int i = 0;
 
-			foreach (DictionaryEntry entry in new DictionaryEntry[] { new DictionaryEntry("[" + entity.Type.ToString() + " entity]", new[] { new DictionaryEntry("ID", entity.ID) }.Concat(entity.Commands)) }
+			foreach (DictionaryEntry entry in new DictionaryEntry[] { new DictionaryEntry(entity.Type.ToString(), new[] { new DictionaryEntry("ID", entity.ID) }.Concat(entity.Commands)) }
 				.Union(entity.Components.Where(x => ((IComponent)x.Value).Editable)))
 			{
 				IEnumerable<DictionaryEntry> properties = null;
@@ -492,7 +453,7 @@ namespace Lemma.Components
 				else
 					properties = (IEnumerable<DictionaryEntry>)entry.Value;
 				properties = properties.Where(x => x.Value != null
-					&& ((x.Value.GetType() == typeof(Command) && ((Command)x.Value).ShowInEditor)
+					&& ((x.Value.GetType() == typeof(Command.Entry))
 					|| (typeof(IProperty).IsAssignableFrom(x.Value.GetType()) && !typeof(IListProperty).IsAssignableFrom(x.Value.GetType()) && (bool)x.Value.GetType().GetProperty("Editable").GetValue(x.Value, null))));
 
 				if (properties.FirstOrDefault().Value == null)
@@ -508,11 +469,10 @@ namespace Lemma.Components
 					DictionaryEntry property = propEntry;
 
 					View containerLabel;
-					if (property.Value.GetType() == typeof(Command)) //Only show commands from the root entity
+					if (property.Value.GetType() == typeof(Command.Entry))
 					{
-						if (i != 1) continue;
 						containerLabel = BuildContainerLabel(property.Key.ToString(), false);
-						containerLabel.AddChild(BuildButton((Command)property.Value, "[Execute]"));
+						containerLabel.AddChild(BuildButton((Command.Entry)property.Value, "Execute"));
 					}
 					else
 					{
@@ -524,11 +484,7 @@ namespace Lemma.Components
 					}
 					rootEntityView.AddChild(containerLabel);
 				}
-
-				//if (typeof(IEditorGeeUIComponent).IsAssignableFrom(entry.Value.GetType()))
-				//((IEditorGeeUIComponent)entry.Value).AddEditorElements(propertyList, this);
 			}
-			//AnimateOutProperties(AnimateInProperties);
 		}
 
 		public bool AnyTextFieldViewsSelected()
@@ -555,29 +511,29 @@ namespace Lemma.Components
 			return ret;
 		}
 
-		public View BuildButton(Command command, string label, Color color = default(Color))
+		public View BuildButton(Command.Entry entry, string label, Color color = default(Color))
 		{
-			if (!command.ShowInEditor) return null;
-
 			var container = new View(main.GeeUI, null);
 			container.ChildrenLayouts.Add(new HorizontalViewLayout());
 			container.ChildrenLayouts.Add(new ExpandToFitLayout());
 
-			if (command.AllowExecuting)
+			if (entry.Permissions == Command.Perms.Executable
+				|| entry.Permissions == Command.Perms.LinkableAndExecutable)
 			{
 				var b = new ButtonView(main.GeeUI, container, label, Vector2.Zero, MainFont);
 				b.OnMouseClick += (sender, args) =>
 				{
-					if (command != null)
-						command.Execute();
+					if (entry != null)
+						entry.Command.Execute();
 				};
 			}
-			if (command.AllowLinking)
+			if (entry.Permissions == Command.Perms.Linkable
+				|| entry.Permissions == Command.Perms.LinkableAndExecutable)
 			{
 				var link = new ButtonView(main.GeeUI, container, "Link", Vector2.Zero, MainFont);
 				link.OnMouseClick += (sender, args) =>
 				{
-					ShowLinkerView(command);
+					ShowLinkerView(entry.Command);
 				};
 			}
 			return container;
@@ -591,18 +547,16 @@ namespace Lemma.Components
 			HideLinkerView();
 
 			if (this.SelectedEntities.Count == 0 || this.MapEditMode)
-				this.show(this.Entity);
-			else if (this.SelectedEntities.Count == 1)
+				this.show(null);
+			else
 			{
-				if (this.SelectedEntities.First() != this.Entity)
-				{
-					TabViews.AddTab("Entity", EntityPanelView);
-					TabViews.SetActiveTab(TabViews.TabIndex("Entity"));
-				}
-				this.show(this.SelectedEntities.First());
+				TabViews.AddTab("Entity", EntityPanelView);
+				TabViews.SetActiveTab(TabViews.TabIndex("Entity"));
+				if (this.SelectedEntities.Count == 1)
+					this.show(this.SelectedEntities.First());
+				else
+					this.show(null);
 			}
-			//else
-			///this.addText("[" + this.SelectedEntities.Count.ToString() + " entities]"); //TODO: make this do something
 		}
 
 		public void BuildValueFieldView(View parent, Type type, IProperty property, VectorElement element, int width = 30)

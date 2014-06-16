@@ -48,10 +48,7 @@ namespace Lemma.Factories
 						main.EditorEnabled.Value = false;
 						IO.MapLoader.Load(main, null, main.MapFile);
 					},
-					ShowInEditor = true,
-					AllowExecuting = true,
-					AllowLinking = true
-				}, "Spawn Here", true, false);
+				}, "Spawn Here", Command.Perms.Executable);
 			}
 
 			PlayerSpawn spawn = entity.GetOrCreate<PlayerSpawn>("PlayerSpawn");
