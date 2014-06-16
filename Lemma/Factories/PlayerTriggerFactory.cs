@@ -30,8 +30,12 @@ namespace Lemma.Factories
 
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 
+			entity.Add("Enable", trigger.Enable);
+			entity.Add("Disable", trigger.Disable);
 			entity.Add("PlayerEntered", trigger.PlayerEntered);
 			entity.Add("PlayerExited", trigger.PlayerExited);
+
+			entity.Add("Enabled", trigger.Enabled);
 			entity.Add("Radius", trigger.Radius);
 			entity.Add("DeleteOnTrigger", trigger.DeleteOnTrigger);
 		}

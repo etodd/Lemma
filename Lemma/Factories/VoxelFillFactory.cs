@@ -36,7 +36,6 @@ namespace Lemma.Factories
 
 			entity.Add("Enable", voxelFill.Enable);
 			entity.Add("Disable", voxelFill.Disable);
-			entity.Add("Enabled", voxelFill.Enabled);
 			entity.Add("IntervalMultiplier", voxelFill.IntervalMultiplier);
 			entity.Add("BlockLifetime", voxelFill.BlockLifetime);
 		}

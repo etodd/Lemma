@@ -36,7 +36,7 @@ namespace GeeUI.Views
 		public Property<bool> AllowFilterText = new Property<bool>() { Value = true };
 		public Property<int> FilterThreshhold = new Property<int>() { Value = 15 };
 
-		private bool DropDownShowing
+		public bool DropDownShowing
 		{
 			get { return !(DropDownPanelView == null || !DropDownPanelView.Active); }
 		}

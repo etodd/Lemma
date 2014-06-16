@@ -31,6 +31,8 @@ namespace Lemma.Factories
 			this.SetMain(entity, main);
 
 			entity.Add("Execute", script.Execute, Command.Perms.LinkableAndExecutable);
+			entity.Add("Name", script.Name);
+			entity.Add("DeleteOnExecute", script.DeleteOnExecute);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

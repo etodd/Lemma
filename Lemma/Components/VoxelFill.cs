@@ -56,13 +56,7 @@ namespace Lemma.Components
 		public override void Start()
 		{
 			if (!this.main.EditorEnabled)
-			{
-				bool go = this.Coords.Count == 0;
 				this.populateCoords();
-
-				if (this.Enabled && go)
-					this.sortCoords();
-			}
 		}
 
 		private void populateCoords()

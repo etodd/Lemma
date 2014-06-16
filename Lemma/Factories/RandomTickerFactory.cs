@@ -26,6 +26,14 @@ namespace Lemma.Factories
 			RandomTicker ticker = entity.GetOrCreate<RandomTicker>("Ticker");
 			this.SetMain(entity, main);
 
+			entity.Add("MaxInterval", ticker.MaxInterval);
+			entity.Add("MinInterval", ticker.MinInterval);
+			entity.Add("NumToFire", ticker.NumToFire);
+			entity.Add("Enabled", ticker.Enabled);
+
+			entity.Add("Disable", ticker.Disable);
+			entity.Add("Enable", ticker.Enable);
+			entity.Add("Disable", ticker.Disable);
 			entity.Add("OnFire", ticker.OnFire);
 		}
 

@@ -107,8 +107,11 @@ namespace Lemma.Components
 
 			this.ShowAddMenu.Action = delegate()
 			{
-				this.TabViews.SetActiveTab(this.TabViews.TabIndex("Map"));
-				this.CreateDropDownView.ShowDropDown();
+				if (!this.CreateDropDownView.DropDownShowing)
+				{
+					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Map"));
+					this.CreateDropDownView.ShowDropDown();
+				}
 			};
 
 			this.PropertiesView = new PanelView(main.GeeUI, main.GeeUI.RootView, new Vector2(5, 5));
@@ -462,19 +465,19 @@ namespace Lemma.Components
 			categoryView.TextJustification = TextJustification.Center;
 			categoryView.Add(new Binding<int>(categoryView.Width, i => { return (int)Math.Max(i, categoryView.TextWidth); }, rootEntityView.Width));
 
-			foreach (KeyValuePair<string, Command.Entry> cmd in entity.Commands)
-			{
-				View containerLabel = BuildContainerLabel(cmd.Key.ToString(), false);
-				containerLabel.AddChild(BuildButton(cmd.Value, "Execute"));
-				rootEntityView.AddChild(containerLabel);
-			}
-
 			foreach (KeyValuePair<string, PropertyEntry> prop in entity.Properties)
 			{
 				bool sameLine;
 				var child = BuildValueView(prop.Value, out sameLine);
 				View containerLabel = BuildContainerLabel(prop.Key.ToString(), sameLine);
 				containerLabel.AddChild(child);
+				rootEntityView.AddChild(containerLabel);
+			}
+
+			foreach (KeyValuePair<string, Command.Entry> cmd in entity.Commands)
+			{
+				View containerLabel = BuildContainerLabel(cmd.Key.ToString(), false);
+				containerLabel.AddChild(BuildButton(cmd.Value, "Execute"));
 				rootEntityView.AddChild(containerLabel);
 			}
 		}

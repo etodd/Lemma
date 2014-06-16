@@ -26,6 +26,11 @@ namespace Lemma.Factories
 			this.SetMain(entity, main);
 
 			entity.Add("OnFire", ticker.OnFire);
+			entity.Add("Disable", ticker.Disable);
+			entity.Add("Enable", ticker.Enable);
+			entity.Add("Enabled", ticker.Enabled);
+			entity.Add("Interval", ticker.Interval);
+			entity.Add("NumToFire", ticker.NumToFire);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
