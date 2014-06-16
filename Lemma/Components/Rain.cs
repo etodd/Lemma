@@ -36,9 +36,9 @@ namespace Lemma.Components
 		private static Random random = new Random();
 
 		// Input properties
-		public EditorProperty<float> ThunderIntervalMin = new EditorProperty<float> { Value = 12.0f };
-		public EditorProperty<float> ThunderIntervalMax = new EditorProperty<float> { Value = 36.0f };
-		public EditorProperty<float> ThunderMaxDelay = new EditorProperty<float> { Value = 5.0f };
+		public Property<float> ThunderIntervalMin = new Property<float> { Value = 12.0f };
+		public Property<float> ThunderIntervalMax = new Property<float> { Value = 36.0f };
+		public Property<float> ThunderMaxDelay = new Property<float> { Value = 5.0f };
 
 		// Output properties
 		public Property<Vector3> Jitter = new Property<Vector3>();

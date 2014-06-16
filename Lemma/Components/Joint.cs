@@ -11,6 +11,6 @@ namespace Lemma.Components
 	{
 		public Property<Entity.Handle> Parent = new Property<Entity.Handle>();
 		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
-		public EditorProperty<Direction> Direction = new EditorProperty<Direction>();
+		public Property<Direction> Direction = new Property<Direction>();
 	}
 }

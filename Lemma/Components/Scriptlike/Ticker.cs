@@ -10,8 +10,8 @@ namespace Lemma.Components
 {
 	public class Ticker : Component<Main>, IUpdateableComponent
 	{
-		public EditorProperty<float> Interval = new EditorProperty<float>() { Description = "Will fire every X seconds.", Value = 1 };
-		public EditorProperty<int> NumToFire = new EditorProperty<int>() { Description = "Fires X times. -1 is infinite.", Value = -1 };
+		public Property<float> Interval = new Property<float> { Value = 1 };
+		public Property<int> NumToFire = new Property<int> { Value = -1 };
 
 		[XmlIgnore]
 		public Command OnFire = new Command();
@@ -22,7 +22,6 @@ namespace Lemma.Components
 		{
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
-			this.Enabled.Editable = true;
 		}
 
 		public void Update(float dt)

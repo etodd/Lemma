@@ -31,14 +31,13 @@ namespace Lemma.Factories
 
 		private Transform addCornerModel(Entity entity, Property<bool> selected)
 		{
-			Transform transform = new Transform { Serialize = false, Editable = false };
+			Transform transform = new Transform { Serialize = false };
 			entity.AddWithoutOverwriting(transform);
 
 			Model cornerModel1 = new Model();
 			cornerModel1.Filename.Value = "Models\\sphere";
 			cornerModel1.Color.Value = this.Color;
 			cornerModel1.Scale.Value = new Vector3(0.5f);
-			cornerModel1.Editable = false;
 			cornerModel1.Serialize = false;
 			entity.Add(cornerModel1);
 
@@ -76,13 +75,12 @@ namespace Lemma.Factories
 			model.Filename.Value = "Models\\sphere";
 			model.Color.Value = this.Color;
 			model.Scale.Value = new Vector3(0.5f);
-			model.Editable = false;
 			model.Serialize = false;
 			entity.Add("EditorModel", model);
 			model.Add(new Binding<Matrix, Vector3>(model.Transform, x => Matrix.CreateTranslation(x), transform.Position));
 
-			Property<Vector3> corner1 = new Property<Vector3> { Serialize = false, Value = zone.BoundingBox.Value.Min };
-			Property<Vector3> corner2 = new Property<Vector3> { Serialize = false, Value = zone.BoundingBox.Value.Max };
+			Property<Vector3> corner1 = new Property<Vector3> { Value = zone.BoundingBox.Value.Min };
+			Property<Vector3> corner2 = new Property<Vector3> { Value = zone.BoundingBox.Value.Max };
 
 			entity.Add(new Binding<BoundingBox>(zone.BoundingBox, delegate()
 			{
@@ -116,7 +114,6 @@ namespace Lemma.Factories
 			box.Filename.Value = "Models\\alpha-box";
 			box.Color.Value = new Vector3(this.Color.X, this.Color.Y, this.Color.Z);
 			box.Alpha.Value = 0.125f;
-			box.Editable = false;
 			box.Serialize = false;
 			box.DrawOrder.Value = 11; // In front of water
 			box.DisableCulling.Value = true;

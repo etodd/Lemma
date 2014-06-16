@@ -11,13 +11,13 @@ namespace Lemma.Components
 {
 	public class CameraStop : Component<Main>
 	{
-		public EditorProperty<float> Offset = new EditorProperty<float>();
+		public Property<float> Offset = new Property<float>();
 
 		public Property<Entity.Handle> Next = new Property<Entity.Handle>();
 
-		public EditorProperty<Animation.Ease.EaseType> Blend = new EditorProperty<Animation.Ease.EaseType>();
+		public Property<Animation.Ease.EaseType> Blend = new Property<Animation.Ease.EaseType>();
 
-		public EditorProperty<float> Duration = new EditorProperty<float>();
+		public Property<float> Duration = new Property<float>();
 
 		[XmlIgnore]
 		public Command OnDone = new Command();
@@ -28,7 +28,6 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.Enabled.Editable = false;
 			this.Go.Action = (Action)this.animate;
 		}
 

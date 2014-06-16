@@ -14,11 +14,11 @@ namespace Lemma.Components
 {
 	public class PlayerTrigger : Component<Main>, IUpdateableComponent
 	{
-		public EditorProperty<float> Radius = new EditorProperty<float> { Value = 10.0f };
+		public Property<float> Radius = new Property<float> { Value = 10.0f };
 		public Property<Vector3> Position = new Property<Vector3>();
 		public Property<bool> IsTriggered = new Property<bool>();
 		public Property<Entity.Handle> Player = new Property<Entity.Handle>();
-		public EditorProperty<bool> DeleteOnTrigger = new EditorProperty<bool>();
+		public Property<bool> DeleteOnTrigger = new Property<bool>();
 
 		[XmlIgnore]
 		public Command PlayerEntered = new Command();
@@ -30,7 +30,6 @@ namespace Lemma.Components
 		{
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
-			this.Enabled.Editable = true;
 		}
 
 		public override void Awake()
@@ -84,8 +83,6 @@ namespace Lemma.Components
 			model.DisableCulling.Value = true;
 			PlayerTrigger trigger = entity.Get<PlayerTrigger>();
 			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(x), trigger.Radius));
-			model.Editable = false;
-			model.Serialize = false;
 			model.DrawOrder.Value = 11; // In front of water
 			model.Add(new Binding<bool>(model.Enabled, () => trigger.Enabled && entity.EditorSelected, trigger.Enabled, entity.EditorSelected));
 

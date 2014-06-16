@@ -17,12 +17,12 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Direction> Direction = new Property<Direction>();
 
-		public EditorProperty<float> Minimum = new EditorProperty<float>();
-		public EditorProperty<float> Maximum = new EditorProperty<float>();
-		public EditorProperty<bool> Locked = new EditorProperty<bool>();
-		public EditorProperty<float> Speed = new EditorProperty<float>();
-		public EditorProperty<float> Goal = new EditorProperty<float>();
-		public EditorProperty<bool> Servo = new EditorProperty<bool>();
+		public Property<float> Minimum = new Property<float>();
+		public Property<float> Maximum = new Property<float>();
+		public Property<bool> Locked = new Property<bool>();
+		public Property<float> Speed = new Property<float>();
+		public Property<float> Goal = new Property<float>();
+		public Property<bool> Servo = new Property<bool>();
 
 		[XmlIgnore]
 		public Command On = new Command();

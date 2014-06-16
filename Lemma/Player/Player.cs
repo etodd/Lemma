@@ -47,7 +47,6 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.Editable = false;
 			this.EnabledWhenPaused = false;
 			this.Character = new Character(this.main, Vector3.Zero);
 			this.Character.Body.Tag = this;

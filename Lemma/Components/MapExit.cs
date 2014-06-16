@@ -9,8 +9,8 @@ namespace Lemma.Components
 {
 	public class MapExit : Component<Main>
 	{
-		public EditorProperty<string> NextMap = new EditorProperty<string>();
-		public EditorProperty<string> StartSpawnPoint = new EditorProperty<string>();
+		public Property<string> NextMap = new Property<string>();
+		public Property<string> StartSpawnPoint = new Property<string>();
 
 		public void Go()
 		{

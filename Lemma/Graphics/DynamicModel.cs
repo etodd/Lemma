@@ -197,14 +197,14 @@ namespace Lemma.Components
 		where Vertex : struct
 	{
 		public Property<float> Alpha = null;
-		public EditorProperty<int> DrawOrder { get; set; }
+		public Property<int> DrawOrder { get; set; }
 
 		public DynamicModelAlpha(VertexDeclaration declaration)
 			: base(declaration)
 		{
 			this.Alpha = this.GetFloatParameter("Alpha");
 			this.Alpha.Value = 1.0f;
-			this.DrawOrder = new EditorProperty<int>();
+			this.DrawOrder = new Property<int>();
 		}
 
 		public override void Draw(GameTime time, RenderParameters parameters)

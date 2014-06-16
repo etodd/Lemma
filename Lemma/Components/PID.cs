@@ -13,9 +13,9 @@ namespace Lemma.Components
 		public Property<float> Target = new Property<float>();
 		public Property<float> Output = new Property<float>();
 
-		public EditorProperty<float> P = new EditorProperty<float> { Value = 1.0f };
-		public EditorProperty<float> I = new EditorProperty<float> { Value = 1.0f };
-		public EditorProperty<float> D = new EditorProperty<float> { Value = 1.0f };
+		public Property<float> P = new Property<float> { Value = 1.0f };
+		public Property<float> I = new Property<float> { Value = 1.0f };
+		public Property<float> D = new Property<float> { Value = 1.0f };
 
 		public Property<float> PreviousError = new Property<float>();
 		public Property<float> Integral = new Property<float>();
@@ -39,16 +39,16 @@ namespace Lemma.Components
 
 	public class PID3 : Component<Main>, IUpdateableComponent
 	{
-		public Property<Vector3> Input = new Property<Vector3> { Editable = false };
-		public Property<Vector3> Target = new Property<Vector3> { Editable = false };
-		public Property<Vector3> Output = new Property<Vector3> { Editable = false };
+		public Property<Vector3> Input = new Property<Vector3>();
+		public Property<Vector3> Target = new Property<Vector3>();
+		public Property<Vector3> Output = new Property<Vector3>();
 
-		public Property<float> P = new Property<float> { Editable = true };
-		public Property<float> I = new Property<float> { Editable = true };
-		public Property<float> D = new Property<float> { Editable = true };
+		public Property<float> P = new Property<float>();
+		public Property<float> I = new Property<float>();
+		public Property<float> D = new Property<float>();
 
-		public Property<Vector3> PreviousError = new Property<Vector3> { Editable = false };
-		public Property<Vector3> Integral = new Property<Vector3> { Editable = false };
+		public Property<Vector3> PreviousError = new Property<Vector3>();
+		public Property<Vector3> Integral = new Property<Vector3>();
 
 		public override void Awake()
 		{

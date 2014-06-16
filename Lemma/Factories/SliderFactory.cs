@@ -33,10 +33,10 @@ namespace Lemma.Factories
 
 			slider.Add(new Binding<Direction>(slider.Direction, entity.GetOrCreate<Components.Joint>("Joint").Direction));
 
-			BindCommand(entity, slider.Forward, "Forward");
-			BindCommand(entity, slider.Backward, "Backward");
-			BindCommand(entity, slider.HitMax, "HitMax");
-			BindCommand(entity, slider.HitMin, "HitMin");
+			entity.Add("Forward", slider.Forward);
+			entity.Add("Backward", slider.Backward);
+			entity.Add("HitMax", slider.HitMax);
+			entity.Add("HitMin", slider.HitMin);
 		}
 	}
 }

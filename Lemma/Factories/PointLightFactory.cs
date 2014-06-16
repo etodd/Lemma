@@ -29,9 +29,9 @@ namespace Lemma.Factories
 
 			VoxelAttachable.MakeAttachable(entity, main);
 
-			BindCommand(entity, light.Enable, "Enable");
-
 			this.SetMain(entity, main);
+
+			entity.Add("Enable", light.Enable);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

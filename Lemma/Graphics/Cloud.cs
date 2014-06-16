@@ -9,10 +9,10 @@ namespace Lemma.Components
 {
 	public class Cloud : Component<Main>
 	{
-		public EditorProperty<float> Height = new EditorProperty<float> { Value = 1.0f };
+		public Property<float> Height = new Property<float> { Value = 1.0f };
 
-		public EditorProperty<Vector2> Velocity = new EditorProperty<Vector2> { Value = Vector2.One };
+		public Property<Vector2> Velocity = new Property<Vector2> { Value = Vector2.One };
 
-		public EditorProperty<float> StartDistance = new EditorProperty<float> { Value = 50 };
+		public Property<float> StartDistance = new Property<float> { Value = 50 };
 	}
 }

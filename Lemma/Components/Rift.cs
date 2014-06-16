@@ -23,14 +23,14 @@ namespace Lemma.Components
 		private const float interval = 0.015f; // A coordinate is emptied every x seconds
 		private const float particleInterval = 0.015f; // A particle is emitted every x seconds
 		private const float soundInterval = 0.25f; // A sound is played every x seconds
-		public EditorProperty<int> Radius = new EditorProperty<int> { Value = 10 };
+		public Property<int> Radius = new Property<int> { Value = 10 };
 		public Property<float> CurrentRadius = new Property<float>();
 		public Property<int> CurrentIndex = new Property<int>();
 		public Property<Entity.Handle> Voxel = new Property<Entity.Handle>();
 		public Property<Voxel.Coord> Coordinate = new Property<Voxel.Coord>();
 		public Property<Vector3> Position = new Property<Vector3>();
 		public ListProperty<Voxel.Coord> Coords = new ListProperty<Voxel.Coord>();
-		public EditorProperty<Style> Type = new EditorProperty<Style>();
+		public Property<Style> Type = new Property<Style>();
 
 		private Voxel voxel;
 		private float intervalTimer;
@@ -154,7 +154,6 @@ namespace Lemma.Components
 			model.Color.Value = color;
 			model.DisableCulling.Value = true;
 			model.Add(new Binding<Vector3, int>(model.Scale, x => new Vector3(x), rift.Radius));
-			model.Editable = false;
 			model.Serialize = false;
 			model.DrawOrder.Value = 11; // In front of water
 			model.Add(new Binding<bool>(model.Enabled, entity.EditorSelected));

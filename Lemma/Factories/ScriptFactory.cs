@@ -28,9 +28,9 @@ namespace Lemma.Factories
 			Script script = entity.GetOrCreate<Script>("Script");
 			script.Add(new CommandBinding(script.Delete, entity.Delete));
 
-			BindCommand(entity, script.Execute, "Execute", Command.Perms.LinkableAndExecutable);
-
 			this.SetMain(entity, main);
+
+			entity.Add("Execute", script.Execute, Command.Perms.LinkableAndExecutable);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

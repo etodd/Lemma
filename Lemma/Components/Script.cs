@@ -19,16 +19,16 @@ namespace Lemma.Components
 		public const string BinaryExtension = "dll";
 
 		[XmlIgnore]
-		public EditorProperty<string> Errors = new EditorProperty<string>();
+		public Property<string> Errors = new Property<string>();
 
-		public EditorProperty<string> Name = new EditorProperty<string>();
+		public Property<string> Name = new Property<string>();
 
 		[XmlIgnore]
 		public Command Execute = new Command();
 
-		public EditorProperty<bool> ExecuteOnLoad = new EditorProperty<bool> { Value = true };
+		public Property<bool> ExecuteOnLoad = new Property<bool> { Value = true };
 
-		public EditorProperty<bool> DeleteOnExecute = new EditorProperty<bool>();
+		public Property<bool> DeleteOnExecute = new Property<bool>();
 
 		public ListProperty<Entity.Handle> ConnectedEntities = new ListProperty<Entity.Handle>();
 

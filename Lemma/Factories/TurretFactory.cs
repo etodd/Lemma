@@ -22,7 +22,6 @@ namespace Lemma.Factories
 		{
 			SpotLight light = entity.GetOrCreate<SpotLight>();
 			light.Serialize = false;
-			light.Editable = false;
 			light.Enabled.Value = !main.EditorEnabled;
 
 			light.FieldOfView.Value = 1.0f;
@@ -53,7 +52,6 @@ namespace Lemma.Factories
 
 			PointLight pointLight = entity.GetOrCreate<PointLight>();
 			pointLight.Serialize = false;
-			pointLight.Editable = false;
 			pointLight.Add(new Binding<Vector3>(pointLight.Position, transform.Position));
 
 			LineDrawer laser = new LineDrawer { Serialize = false };
@@ -64,7 +62,6 @@ namespace Lemma.Factories
 			Model model = entity.GetOrCreate<Model>();
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 			model.Filename.Value = "Models\\pyramid";
-			model.Editable = false;
 			model.Serialize = false;
 
 			const float defaultModelScale = 0.75f;

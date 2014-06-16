@@ -16,12 +16,12 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public DialogueForest DialogueForest = new DialogueForest();
 
-		public EditorProperty<string> LightRampTexture = new EditorProperty<string> { Value = "Images\\default-ramp" };
-		public EditorProperty<string> EnvironmentMap = new EditorProperty<string> { Value = "Images\\env0" };
-		public EditorProperty<Vector3> EnvironmentColor = new EditorProperty<Vector3> { Value = Vector3.One };
-		public EditorProperty<Color> BackgroundColor = new EditorProperty<Color> { Value = World.DefaultBackgroundColor };
-		public EditorProperty<float> FarPlaneDistance = new EditorProperty<float> { Value = 100.0f };
-		public EditorProperty<Vector3> Gravity = new EditorProperty<Vector3> { Value = new Vector3(0.0f, -18.0f, -0.0f) };
+		public Property<string> LightRampTexture = new Property<string> { Value = "Images\\default-ramp" };
+		public Property<string> EnvironmentMap = new Property<string> { Value = "Images\\env0" };
+		public Property<Vector3> EnvironmentColor = new Property<Vector3> { Value = Vector3.One };
+		public Property<Color> BackgroundColor = new Property<Color> { Value = World.DefaultBackgroundColor };
+		public Property<float> FarPlaneDistance = new Property<float> { Value = 100.0f };
+		public Property<Vector3> Gravity = new Property<Vector3> { Value = new Vector3(0.0f, -18.0f, -0.0f) };
 
 		private Vector3 lastUpdatedCameraPosition = new Vector3(float.MinValue);
 		private bool lastFrameUpdated = false;

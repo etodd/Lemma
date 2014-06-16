@@ -37,8 +37,6 @@ namespace Lemma.Factories
 			Rain rain = entity.GetOrCreate<Rain>("Rain");
 
 			ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("Emitter");
-			emitter.Jitter.Editable = false;
-			emitter.ParticleType.Editable = false;
 			emitter.Add(new Binding<Vector3>(emitter.Jitter, rain.Jitter));
 
 			Components.DirectionalLight lightning = entity.GetOrCreate<Components.DirectionalLight>("Lightning");

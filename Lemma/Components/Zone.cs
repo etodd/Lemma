@@ -16,19 +16,19 @@ namespace Lemma.Components
 
 		public ListProperty<Entity.Handle> ConnectedEntities = new ListProperty<Entity.Handle>();
 
-		public Property<Entity.Handle> Parent = new Property<Entity.Handle> { Serialize = true };
+		public Property<Entity.Handle> Parent = new Property<Entity.Handle>();
 
 		public Property<Matrix> Transform = new Property<Matrix>();
 
 		public Property<BoundingBox> BoundingBox = new Property<BoundingBox> { Value = new BoundingBox(new Vector3(-5.0f), new Vector3(5.0f)) };
 
-		public EditorProperty<bool> Exclusive = new EditorProperty<bool> { Value = true };
+		public Property<bool> Exclusive = new Property<bool> { Value = true };
 
-		public EditorProperty<int> Priority = new EditorProperty<int> { Value = 0 };
+		public Property<int> Priority = new Property<int> { Value = 0 };
 
-		public EditorProperty<BuildMode> Build = new EditorProperty<BuildMode> { Value = BuildMode.CanBuild };
+		public Property<BuildMode> Build = new Property<BuildMode> { Value = BuildMode.CanBuild };
 
-		public EditorProperty<bool> DetailedShadows = new EditorProperty<bool> { Value = true };
+		public Property<bool> DetailedShadows = new Property<bool> { Value = true };
 
 		public static IEnumerable<Zone> GetConnectedZones(Zone zone)
 		{

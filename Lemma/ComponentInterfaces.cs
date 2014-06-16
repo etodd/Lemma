@@ -18,13 +18,13 @@ namespace Lemma
 	public interface IDrawableAlphaComponent : IGraphicsComponent
 	{
 		void DrawAlpha(GameTime time, RenderParameters parameters);
-		EditorProperty<int> DrawOrder { get; }
+		Property<int> DrawOrder { get; }
 	}
 
 	public interface IDrawablePostAlphaComponent : IGraphicsComponent
 	{
 		void DrawPostAlpha(GameTime time, RenderParameters parameters);
-		EditorProperty<int> DrawOrder { get; }
+		Property<int> DrawOrder { get; }
 	}
 
 	public interface IDrawablePreFrameComponent : IGraphicsComponent
@@ -35,6 +35,6 @@ namespace Lemma
 	public interface INonPostProcessedDrawableComponent : IGraphicsComponent
 	{
 		void DrawNonPostProcessed(GameTime time, RenderParameters parameters);
-		EditorProperty<int> DrawOrder { get; }
+		Property<int> DrawOrder { get; }
 	}
 }

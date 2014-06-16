@@ -33,9 +33,6 @@ namespace Lemma.Factories
 
 			Switch sw = entity.GetOrCreate<Switch>("Switch");
 
-			BindCommand(entity, sw.OnPowerOn, "OnPowerOn");
-			BindCommand(entity, sw.OnPowerOff, "OnPowerOff");
-
 			if (main.EditorEnabled)
 				light.Enabled.Value = true;
 			else
@@ -67,6 +64,9 @@ namespace Lemma.Factories
 			}
 
 			this.SetMain(entity, main);
+
+			entity.Add("OnPowerOn", sw.OnPowerOn);
+			entity.Add("OnPowerOff", sw.OnPowerOff);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

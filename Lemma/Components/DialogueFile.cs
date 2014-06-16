@@ -11,7 +11,7 @@ namespace Lemma.Components
 {
 	public class DialogueFile : Component<Main>
 	{
-		public EditorProperty<string> Name = new EditorProperty<string>();
+		public Property<string> Name = new Property<string>();
 
 		public override void Start()
 		{

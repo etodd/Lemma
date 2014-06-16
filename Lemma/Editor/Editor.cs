@@ -27,7 +27,6 @@ namespace Lemma.Components
 				model.Color.Value = new Vector3(factory.Color.X, factory.Color.Y, factory.Color.Z);
 				model.IsInstanced.Value = false;
 				model.Scale.Value = new Vector3(0.5f);
-				model.Editable = false;
 				model.Serialize = false;
 
 				entity.Add("EditorModel", model);
@@ -41,13 +40,13 @@ namespace Lemma.Components
 		public Property<bool> MovementEnabled = new Property<bool>();
 		public ListProperty<Entity> SelectedEntities = new ListProperty<Entity>();
 		public Property<Transform> SelectedTransform = new Property<Transform>();
-		public EditorProperty<string> Brush = new EditorProperty<string>();
-		public EditorProperty<Voxel.Coord> Jitter = new EditorProperty<Voxel.Coord>();
-		public EditorProperty<Voxel.Coord> JitterOctave = new EditorProperty<Voxel.Coord> { Value = new Voxel.Coord { X = 1, Y = 1, Z = 1 } };
-		public EditorProperty<float> JitterOctaveMultiplier = new EditorProperty<float> { Value = 10.0f };
-		public EditorProperty<int> BrushSize = new EditorProperty<int>();
-		public EditorProperty<string> MapFile = new EditorProperty<string>();
-		public EditorProperty<string> StartSpawnPoint = new EditorProperty<string>();
+		public Property<string> Brush = new Property<string>();
+		public Property<Voxel.Coord> Jitter = new Property<Voxel.Coord>();
+		public Property<Voxel.Coord> JitterOctave = new Property<Voxel.Coord> { Value = new Voxel.Coord { X = 1, Y = 1, Z = 1 } };
+		public Property<float> JitterOctaveMultiplier = new Property<float> { Value = 10.0f };
+		public Property<int> BrushSize = new Property<int>();
+		public Property<string> MapFile = new Property<string>();
+		public Property<string> StartSpawnPoint = new Property<string>();
 		public Property<bool> NeedsSave = new Property<bool>();
 
 		// Input properties
@@ -108,7 +107,7 @@ namespace Lemma.Components
 		private ProceduralGenerator generator;
 		private float movementInterval;
 
-		public EditorProperty<Voxel.Coord> Coordinate = new EditorProperty<Voxel.Coord>(); // Readonly, for displaying to the UI
+		public Property<Voxel.Coord> Coordinate = new Property<Voxel.Coord>(); // Readonly, for displaying to the UI
 
 		private bool justCommitedOrRevertedVoxelOperation;
 
@@ -176,7 +175,6 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.generator = this.Entity.GetOrCreate<ProceduralGenerator>();
-			this.generator.Editable = false;
 
 			this.Spawn.Action = delegate(string type)
 			{

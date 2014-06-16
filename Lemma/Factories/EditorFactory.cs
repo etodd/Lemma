@@ -100,16 +100,15 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			this.SetMain(entity, main);
-			entity.ID.Editable = false;
 
 			Editor editor = new Editor();
-			EditorGeeUI gui = new EditorGeeUI() { Editable = false };
-			Model model = new Model { Editable = false };
+			EditorGeeUI gui = new EditorGeeUI();
+			Model model = new Model();
 			model.Filename.Value = "Models\\selector";
 			model.Scale.Value = new Vector3(0.5f);
 
-			UIRenderer uiRenderer = new UIRenderer { Editable = false };
-			FPSInput input = new FPSInput { Editable = false };
+			UIRenderer uiRenderer = new UIRenderer();
+			FPSInput input = new FPSInput();
 			input.EnabledWhenPaused = true;
 
 			entity.Add("Editor", editor);
@@ -121,7 +120,6 @@ namespace Lemma.Factories
 			radiusVisual.Filename.Value = "Models\\alpha-sphere";
 			radiusVisual.Color.Value = new Vector3(1.0f);
 			radiusVisual.Alpha.Value = 0.1f;
-			radiusVisual.Editable = false;
 			radiusVisual.Serialize = false;
 			radiusVisual.DrawOrder.Value = 11; // In front of water
 			radiusVisual.DisableCulling.Value = true;
@@ -143,7 +141,6 @@ namespace Lemma.Factories
 			selection.Filename.Value = "Models\\alpha-box";
 			selection.Color.Value = new Vector3(1.0f, 0.7f, 0.4f);
 			selection.Alpha.Value = 0.25f;
-			selection.Editable = false;
 			selection.Serialize = false;
 			selection.DrawOrder.Value = 12; // In front of water and radius visualizer
 			selection.DisableCulling.Value = true;
@@ -365,7 +362,6 @@ namespace Lemma.Factories
 
 			PointLight editorLight = entity.GetOrCreate<PointLight>("EditorLight");
 			editorLight.Serialize = false;
-			editorLight.Editable = false;
 			editorLight.Add(new Binding<float>(editorLight.Attenuation, main.Camera.FarPlaneDistance));
 			editorLight.Color.Value = new Vector3(1.5f, 1.5f, 1.5f);
 			editorLight.Add(new Binding<Vector3>(editorLight.Position, main.Camera.Position));

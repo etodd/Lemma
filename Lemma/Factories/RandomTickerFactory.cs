@@ -26,7 +26,7 @@ namespace Lemma.Factories
 			RandomTicker ticker = entity.GetOrCreate<RandomTicker>("Ticker");
 			this.SetMain(entity, main);
 
-			BindCommand(entity, ticker.OnFire, "OnFire");
+			entity.Add("OnFire", ticker.OnFire);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

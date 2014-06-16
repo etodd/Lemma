@@ -14,7 +14,7 @@ namespace Lemma.Components
 	{
 		public ListProperty<Entity.Handle> Blocks = new ListProperty<Entity.Handle>();
 		
-		public EditorProperty<int> OperationalRadius = new EditorProperty<int> { Value = 100 };
+		public Property<int> OperationalRadius = new Property<int> { Value = 100 };
 
 		[XmlIgnore]
 		public Property<Vector3> Position = new Property<Vector3>();

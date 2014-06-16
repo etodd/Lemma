@@ -163,31 +163,31 @@ namespace Lemma.Components
 			return value;
 		}
 
-		public EditorProperty<int> Ceiling = new EditorProperty<int> { Value = 80 };
+		public Property<int> Ceiling = new Property<int> { Value = 80 };
 
-		public EditorProperty<int> Floor = new EditorProperty<int> { Value = 0 };
+		public Property<int> Floor = new Property<int> { Value = 0 };
 
-		public EditorProperty<int> FloorDepth = new EditorProperty<int> { Value = 10 };
+		public Property<int> FloorDepth = new Property<int> { Value = 10 };
 
-		public EditorProperty<float> PrimaryOctave1 = new EditorProperty<float> { Value = 50.0f };
+		public Property<float> PrimaryOctave1 = new Property<float> { Value = 50.0f };
 
-		public EditorProperty<float> PrimaryOctave2 = new EditorProperty<float> { Value = 20.0f };
+		public Property<float> PrimaryOctave2 = new Property<float> { Value = 20.0f };
 
-		public EditorProperty<float> PrimaryOctave3 = new EditorProperty<float> { Value = 10.0f };
+		public Property<float> PrimaryOctave3 = new Property<float> { Value = 10.0f };
 
-		public EditorProperty<float> SecondaryOctave = new EditorProperty<float> { Value = 30.0f };
+		public Property<float> SecondaryOctave = new Property<float> { Value = 30.0f };
 
-		public EditorProperty<float> HeightOctave = new EditorProperty<float> { Value = 20.0f };
+		public Property<float> HeightOctave = new Property<float> { Value = 20.0f };
 
 		private Voxel.State primaryFillValue;
-		public EditorProperty<Voxel.t> PrimaryFillValue = new EditorProperty<Voxel.t> { Value = Voxel.t.Rock };
+		public Property<Voxel.t> PrimaryFillValue = new Property<Voxel.t> { Value = Voxel.t.Rock };
 
 		private Voxel.State secondaryFillValue;
-		public EditorProperty<Voxel.t> SecondaryFillValue = new EditorProperty<Voxel.t> { Value = Voxel.t.Rock };
+		public Property<Voxel.t> SecondaryFillValue = new Property<Voxel.t> { Value = Voxel.t.Rock };
 
-		public EditorProperty<float> PrimaryFillThreshold = new EditorProperty<float> { Value = 0.0f };
+		public Property<float> PrimaryFillThreshold = new Property<float> { Value = 0.0f };
 
-		public EditorProperty<float> SecondaryFillThreshold = new EditorProperty<float> { Value = 0.2f };
+		public Property<float> SecondaryFillThreshold = new Property<float> { Value = 0.2f };
 
 		public float Sample(Vector3 vector)
 		{

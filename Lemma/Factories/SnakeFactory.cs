@@ -96,7 +96,6 @@ namespace Lemma.Factories
 				}, ai.CurrentState));
 				entity.Add("PositionLight", positionLight);
 				ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("Particles");
-				emitter.Editable = false;
 				emitter.Serialize = false;
 				emitter.ParticlesPerSecond.Value = 100;
 				emitter.ParticleType.Value = "SnakeSparks";

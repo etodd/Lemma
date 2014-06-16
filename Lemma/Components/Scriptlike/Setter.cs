@@ -5,81 +5,118 @@ using System.Reflection;
 using System.Text;
 using System.Xml.Serialization;
 using ComponentBind;
+using Lemma.Util;
+using Microsoft.Xna.Framework;
 
 namespace Lemma.Components
 {
-	public class Setter<T> : Component<Main>
+	public class Setter : Component<Main>
 	{
-		public EditorProperty<T> NewVal = new EditorProperty<T>() { Description = "New value of the property" };
+		public enum Type { Bool, Int, Float, Direction, String, Vector2, Vector3, Vector4, Coord }
+		public Property<bool> Bool = new Property<bool>();
+		public Property<int> Int = new Property<int>();
+		public Property<float> Float = new Property<float>();
+		public Property<Direction> Direction = new Property<Direction>();
+		public Property<string> String = new Property<string>();
+		public Property<Vector2> Vector2 = new Property<Vector2>();
+		public Property<Vector3> Vector3 = new Property<Vector3>();
+		public Property<Vector4> Vector4 = new Property<Vector4>();
+		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
+		public Property<Type> PropertyType = new Property<Type>();
 
-		public ListProperty<Entity.Handle> ConnectedEntities = new ListProperty<Entity.Handle>();
-		public EditorProperty<string> TargetProperty = new EditorProperty<string>();
+		public Property<Entity.Handle> Target = new Property<Entity.Handle>();
+
+		public Property<string> TargetProperty = new Property<string>();
 
 		[XmlIgnore]
 		public Command Set = new Command();
 
-		private List<Property<T>> _allProperties = null;
-
-		public Setter()
-		{
-		}
+		private IProperty targetProperty;
 
 		public override void Awake()
 		{
-			this._allProperties = new List<Property<T>>();
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
-			this.Enabled.Editable = true;
 			this.Set.Action = () =>
 			{
-				string[] split = TargetProperty.Value.Split('.');
-				if (split.Length != 2)
+				if (this.targetProperty != null)
 				{
-					Log.d("Incorrect TargetProperty in Setter " + Entity.ID);
-					return;
-				}
-				string targetComponent = split[0];
-				string targetProperty = split[1];
-				FindProperties(targetComponent, targetProperty);
-				foreach (var prop in _allProperties)
-				{
-					if (prop == null) continue;
-					prop.Value = NewVal.Value;
+					switch (this.PropertyType.Value)
+					{
+						case Type.Bool:
+							((Property<bool>)this.targetProperty).Value = this.Bool;
+							break;
+						case Type.Int:
+							((Property<int>)this.targetProperty).Value = this.Int;
+							break;
+						case Type.Float:
+							((Property<float>)this.targetProperty).Value = this.Float;
+							break;
+						case Type.Vector2:
+							((Property<Vector2>)this.targetProperty).Value = this.Vector2;
+							break;
+						case Type.Vector3:
+							((Property<Vector3>)this.targetProperty).Value = this.Vector3;
+							break;
+						case Type.Vector4:
+							((Property<Vector4>)this.targetProperty).Value = this.Vector4;
+							break;
+						case Type.Coord:
+							((Property<Voxel.Coord>)this.targetProperty).Value = this.Coord;
+							break;
+						case Type.Direction:
+							((Property<Direction>)this.targetProperty).Value = this.Direction;
+							break;
+						case Type.String:
+							((Property<string>)this.targetProperty).Value = this.String;
+							break;
+					}
 				}
 			};
 			base.Awake();
 		}
 
+		public override void Start()
+		{
+			
+		}
+
 		public void FindProperties(string component, string property)
 		{
-			if (_allProperties.Count != 0) return;
-			foreach (var handle in ConnectedEntities)
+			if (this.targetProperty == null)
 			{
-				Entity entity = handle.Target;
+				Entity entity = this.Target.Value.Target;
 				if (entity != null && entity.Active)
 				{
-					var comp = entity.Get<ComponentBind.IComponent>(component);
-					if (comp == null)
+					switch (this.PropertyType.Value)
 					{
-						Log.d("Cannot find component " + component + " in Setter " + Entity.ID);
-						continue;
-					}
-					var t = comp.GetType();
-					foreach (FieldInfo p in t.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-					{
-						if (p.Name == property)
-						{
-							if (p.FieldType == typeof(EditorProperty<T>) || (p.FieldType == typeof(Property<T>) && ((Property<T>)p.GetValue(comp)).Editable))
-							{
-								Property<T> prop = (Property<T>)p.GetValue(comp);
-								if(prop != null)
-									_allProperties.Add(prop);
-								else
-								{
-									Log.d("Property is null in Setter " + Entity.ID);
-								}
-							}
-						}
+						case Type.Bool:
+							this.targetProperty = entity.GetProperty<bool>(this.TargetProperty);
+							break;
+						case Type.Int:
+							this.targetProperty = entity.GetProperty<int>(this.TargetProperty);
+							break;
+						case Type.Float:
+							this.targetProperty = entity.GetProperty<float>(this.TargetProperty);
+							break;
+						case Type.Vector2:
+							this.targetProperty = entity.GetProperty<Vector2>(this.TargetProperty);
+							break;
+						case Type.Vector3:
+							this.targetProperty = entity.GetProperty<Vector3>(this.TargetProperty);
+							break;
+						case Type.Vector4:
+							this.targetProperty = entity.GetProperty<Vector4>(this.TargetProperty);
+							break;
+						case Type.Coord:
+							this.targetProperty = entity.GetProperty<Voxel.Coord>(this.TargetProperty);
+							break;
+						case Type.Direction:
+							this.targetProperty = entity.GetProperty<Direction>(this.TargetProperty);
+							break;
+						case Type.String:
+							this.targetProperty = entity.GetProperty<string>(this.TargetProperty);
+							break;
 					}
 				}
 			}

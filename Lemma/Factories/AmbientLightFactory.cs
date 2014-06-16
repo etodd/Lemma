@@ -20,9 +20,6 @@ namespace Lemma.Factories
 			Entity entity = new Entity(main, "AmbientLight");
 
 			entity.Add("Transform", new Transform());
-			AmbientLight ambientLight = new AmbientLight();
-			ambientLight.Color.Value = Vector3.One;
-			entity.Add("AmbientLight", ambientLight);
 
 			return entity;
 		}
@@ -30,7 +27,9 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			this.SetMain(entity, main);
+			AmbientLight ambientLight = entity.GetOrCreate<AmbientLight>("AmbientLight");
 			entity.CannotSuspendByDistance = true;
+			entity.Add("Color", ambientLight.Color);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
@@ -39,7 +38,6 @@ namespace Lemma.Factories
 			model.Filename.Value = "Models\\sphere";
 			model.Add(new Binding<Vector3>(model.Color, entity.Get<AmbientLight>().Color));
 			model.Scale.Value = new Vector3(0.5f);
-			model.Editable = false;
 			model.Serialize = false;
 
 			entity.Add("EditorModel", model);

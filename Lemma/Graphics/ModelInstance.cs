@@ -135,14 +135,13 @@ namespace Lemma.Components
 		public class ModelInstanceSystemAlpha : ModelInstanceSystem, IDrawableAlphaComponent
 		{
 			public Property<float> Alpha = null;
-			public EditorProperty<int> DrawOrder { get; set; }
+			public Property<int> DrawOrder { get; set; }
 
 			public ModelInstanceSystemAlpha()
 			{
 				this.Alpha = this.GetFloatParameter("Alpha");
 				this.Alpha.Value = 1.0f;
-				this.Alpha.Editable = true;
-				this.DrawOrder = new EditorProperty<int>();
+				this.DrawOrder = new Property<int>();
 			}
 
 			public override void Draw(GameTime time, RenderParameters parameters)
@@ -169,17 +168,17 @@ namespace Lemma.Components
 
 		protected Dictionary<string, IProperty> parameters = new Dictionary<string, IProperty>();
 
-		public EditorProperty<string> Filename = new EditorProperty<string>();
+		public Property<string> Filename = new Property<string>();
 		
 		public Property<Matrix> Transform = new Property<Matrix> { Value = Matrix.Identity };
 
-		public EditorProperty<bool> EnableAlpha = new EditorProperty<bool> { Value = false };
+		public Property<bool> EnableAlpha = new Property<bool> { Value = false };
 
 		public Property<Vector3> Scale = new Property<Vector3> { Value = Vector3.One };
 
 		protected Property<Matrix> transform = new Property<Matrix>();
 
-		public EditorProperty<int> InstanceKey = new EditorProperty<int>();
+		public Property<int> InstanceKey = new Property<int>();
 
 		[XmlIgnore]
 		public Property<string> FullInstanceKey = new Property<string>();
@@ -191,7 +190,7 @@ namespace Lemma.Components
 		{
 			get
 			{
-				return this.parameters.Where(x => x.Value.Serialize).Select(x => new DictionaryEntry(x.Key, x.Value)).ToArray();
+				return this.parameters.Select(x => new DictionaryEntry(x.Key, x.Value)).ToArray();
 			}
 			set
 			{
@@ -225,7 +224,7 @@ namespace Lemma.Components
 
 				if (!foundExistingModel)
 				{
-					newModel = this.EnableAlpha ? new ModelInstanceSystemAlpha { Editable = false } : new ModelInstanceSystem { Editable = false };
+					newModel = this.EnableAlpha ? new ModelInstanceSystemAlpha() : new ModelInstanceSystem();
 					newModel.Filename.Value = this.Filename.InternalValue;
 					newModel.Key = key;
 					world.Add(key, newModel);
@@ -264,7 +263,6 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.Enabled.Editable = true;
 
 			this.Filename.Set = delegate(string value)
 			{

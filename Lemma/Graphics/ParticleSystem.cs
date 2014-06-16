@@ -12,7 +12,7 @@ namespace Lemma.Components
 	/// </summary>
 	public class ParticleSystem : Component<Main>, IUpdateableComponent, IDrawablePostAlphaComponent, IDrawableAlphaComponent, IDrawableComponent
 	{
-		public EditorProperty<int> DrawOrder { get; set; }
+		public Property<int> DrawOrder { get; set; }
 
 		public bool IsVisible(BoundingFrustum frustum)
 		{
@@ -451,10 +451,10 @@ namespace Lemma.Components
 
 		private static Dictionary<string, ParticleSystem> systems = null;
 
-		public Property<string> Type = new Property<string> { Editable = false };
+		public Property<string> Type = new Property<string>();
 
 		// Settings class controls the appearance and animation of this particle system.
-		public Property<ParticleSettings> Settings = new Property<ParticleSettings> { Editable = false };
+		public Property<ParticleSettings> Settings = new Property<ParticleSettings>();
 		private ParticleSettings settings;
 
 		// Custom effect for drawing particles. This computes the particle
@@ -585,7 +585,7 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.EnabledWhenPaused = true;
-			this.DrawOrder = new EditorProperty<int> { Value = 11 };
+			this.DrawOrder = new Property<int> { Value = 11 };
 			this.Settings.Get = delegate()
 			{
 				return this.settings;

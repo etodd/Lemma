@@ -23,7 +23,7 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			VoxelAttachable.MakeAttachable(entity, main);
+			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
 			
 			CameraStop cameraStop = entity.GetOrCreate<CameraStop>("CameraStop");
 
@@ -33,7 +33,7 @@ namespace Lemma.Factories
 
 			if (main.EditorEnabled)
 			{
-				BindCommand(entity, new Command
+				entity.Add("Preview", new Command
 				{
 					Action = delegate()
 					{
@@ -59,10 +59,10 @@ namespace Lemma.Factories
 							}
 						});
 					},
-				}, "Start", Command.Perms.Executable);
+				}, Command.Perms.Executable);
 			}
 
-			BindCommand(entity, cameraStop.Go, "Go");
+			entity.Add("Go", cameraStop.Go);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
@@ -70,7 +70,6 @@ namespace Lemma.Factories
 			Model model = new Model();
 			model.Filename.Value = "Models\\light";
 			model.Color.Value = this.Color;
-			model.Editable = false;
 			model.Serialize = false;
 			model.Scale.Value = new Vector3(1, 1, -1);
 			model.Add(new Binding<Matrix>(model.Transform, entity.Get<Transform>().Matrix));
@@ -88,7 +87,6 @@ namespace Lemma.Factories
 			offsetModel.Add(new Binding<Vector3, float>(offsetModel.Scale, x => new Vector3(1, 1, x), cameraStop.Offset));
 			offsetModel.Add(new Binding<Matrix>(offsetModel.Transform, model.Transform));
 			offsetModel.Serialize = false;
-			offsetModel.Editable = false;
 			entity.Add("EditorModel3", offsetModel);
 
 			EntityConnectable.AttachEditorComponents(entity, cameraStop.Next);

@@ -346,18 +346,18 @@ namespace Lemma.Components
 			addButton.OnMouseClick += (sender, args) => addItem();
 
 
-			foreach (var command in GetCommands(e))
+			foreach (var command in e.Commands)
 			{
-				var comm = command.Value as Command;
-				var name = command.Key as string;
+				var comm = command.Value.Command;
+				var name = command.Key;
 
 				sourceDrop.AddOption(name, () => { }, null, comm);
 			}
 
-			foreach (var command in GetCommands(e))
+			foreach (var command in e.Commands)
 			{
-				var comm = command.Value as Command;
-				var name = command.Key as string;
+				var comm = command.Value.Command;
+				var name = command.Key;
 
 				if (comm == selectedCommand)
 				{
@@ -368,16 +368,6 @@ namespace Lemma.Components
 
 			populateList();
 
-		}
-
-		private IEnumerable<DictionaryEntry> GetCommands(Entity e)
-		{
-			foreach (var comm in e.Commands)
-			{
-				var value = comm.Value as Command;
-				if (value != null)
-					yield return comm;
-			}
 		}
 
 		private void RecomputeEntityCommands()
@@ -438,52 +428,25 @@ namespace Lemma.Components
 			if (entity == null)
 				return;
 
-			int i = 0;
-
-			foreach (DictionaryEntry entry in new DictionaryEntry[] { new DictionaryEntry(entity.Type.ToString(), new[] { new DictionaryEntry("ID", entity.ID) }.Concat(entity.Commands)) }
-				.Union(entity.Components.Where(x => ((IComponent)x.Value).Editable)))
+			TextView categoryView = new TextView(main.GeeUI, rootEntityView, "[" + entity.Type + "]", new Vector2(0, 0), MainFont);
+			categoryView.AutoSize.Value = false;
+			categoryView.TextJustification = TextJustification.Center;
+			categoryView.Add(new Binding<int>(categoryView.Width, rootEntityView.Width));
+			
+			foreach (KeyValuePair<string, Command.Entry> cmd in entity.Commands)
 			{
-				IEnumerable<DictionaryEntry> properties = null;
-				if (typeof(IComponent).IsAssignableFrom(entry.Value.GetType()))
-					properties = entry.Value.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance)
-						.Select(x => new DictionaryEntry(x.Name, x.GetValue(entry.Value)))
-						.Concat(entry.Value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
-						.Where(y => y.GetIndexParameters().Length == 0)
-						.Select(z => new DictionaryEntry(z.Name, z.GetValue(entry.Value, null))));
-				else
-					properties = (IEnumerable<DictionaryEntry>)entry.Value;
-				properties = properties.Where(x => x.Value != null
-					&& ((x.Value.GetType() == typeof(Command.Entry))
-					|| (typeof(IProperty).IsAssignableFrom(x.Value.GetType()) && !typeof(IListProperty).IsAssignableFrom(x.Value.GetType()) && (bool)x.Value.GetType().GetProperty("Editable").GetValue(x.Value, null))));
+				View containerLabel = BuildContainerLabel(cmd.Key.ToString(), false);
+				containerLabel.AddChild(BuildButton(cmd.Value, "Execute"));
+				rootEntityView.AddChild(containerLabel);
+			}
 
-				if (properties.FirstOrDefault().Value == null)
-					continue;
-				TextView categoryView = new TextView(main.GeeUI, rootEntityView, "- " + entry.Key + " -", new Vector2(0, 0), MainFont);
-				categoryView.AutoSize.Value = false;
-				categoryView.TextJustification = TextJustification.Center;
-				categoryView.Add(new Binding<int>(categoryView.Width, rootEntityView.Width));
-				i++;
-
-				foreach (DictionaryEntry propEntry in properties)
-				{
-					DictionaryEntry property = propEntry;
-
-					View containerLabel;
-					if (property.Value.GetType() == typeof(Command.Entry))
-					{
-						containerLabel = BuildContainerLabel(property.Key.ToString(), false);
-						containerLabel.AddChild(BuildButton((Command.Entry)property.Value, "Execute"));
-					}
-					else
-					{
-						bool sameLine = false;
-
-						var child = BuildValueView((IProperty)property.Value, out sameLine);
-						containerLabel = BuildContainerLabel(property.Key.ToString(), sameLine);
-						containerLabel.AddChild(child);
-					}
-					rootEntityView.AddChild(containerLabel);
-				}
+			foreach (KeyValuePair<string, PropertyEntry> prop in entity.Properties)
+			{
+				bool sameLine;
+				var child = BuildValueView(prop.Value, out sameLine);
+				View containerLabel = BuildContainerLabel(prop.Key.ToString(), sameLine);
+				containerLabel.AddChild(child);
+				rootEntityView.AddChild(containerLabel);
 			}
 		}
 
@@ -492,8 +455,8 @@ namespace Lemma.Components
 			var views = main.GeeUI.GetAllViews(main.GeeUI.RootView);
 			foreach (var view in views)
 			{
-				if (!(view is TextFieldView)) continue;
-				if (view.Selected.Value) return true;
+				if (view is TextFieldView && view.Selected)
+					return true;
 			}
 			return false;
 		}
@@ -726,8 +689,9 @@ namespace Lemma.Components
 			}
 		}
 
-		public View BuildValueView(IProperty property, out bool shouldSameLine)
+		public View BuildValueView(PropertyEntry entry, out bool shouldSameLine)
 		{
+			IProperty property = entry.Property;
 			shouldSameLine = false;
 			View ret = new View(main.GeeUI, null);
 			ret.ChildrenLayouts.Add(new HorizontalViewLayout(4));

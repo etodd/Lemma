@@ -27,11 +27,13 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			entity.CannotSuspendByDistance = true;
-			transform.Editable = true;
-			VoxelAttachable.MakeAttachable(entity, main);
+			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);
 
 			this.SetMain(entity, main);
 			
+			transform.EditorProperties();
+			attachable.EditorProperties();
+
 			entity.Add(new Updater
 			{
 				delegate(float dt)

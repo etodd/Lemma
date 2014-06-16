@@ -118,7 +118,7 @@ namespace ComponentBind
 		[XmlIgnore]
 		public bool EditorCanDelete = true;
 
-		public EditorProperty<string> ID = new EditorProperty<string>();
+		public Property<string> ID = new Property<string>();
 
 		public override string ToString()
 		{
@@ -147,8 +147,9 @@ namespace ComponentBind
 		[XmlAttribute]
 		public ulong GUID;
 
-		[XmlIgnore]
 		private Dictionary<string, Command.Entry> commands = new Dictionary<string, Command.Entry>();
+
+		private Dictionary<string, PropertyEntry> properties = new Dictionary<string, PropertyEntry>();
 
 		public IEnumerable<IComponent> ComponentList
 		{
@@ -218,11 +219,20 @@ namespace ComponentBind
 		}
 
 		[XmlIgnore]
-		public DictionaryEntry[] Commands
+		public IEnumerable<KeyValuePair<string, Command.Entry>> Commands
 		{
 			get
 			{
-				return this.commands.Select(x => new DictionaryEntry(x.Key, x.Value)).ToArray();
+				return this.commands;
+			}
+		}
+
+		[XmlIgnore]
+		public IEnumerable<KeyValuePair<string, PropertyEntry>> Properties
+		{
+			get
+			{
+				return this.properties;
 			}
 		}
 
@@ -329,15 +339,18 @@ namespace ComponentBind
 			}
 		}
 
-		public void Add(string name, Command.Entry cmd)
+		public void Add(string name, Command cmd, Command.Perms perms = Command.Perms.Linkable, string description = null)
 		{
-			this.commands.Add(name, cmd);
+			Command.Entry entry = new Command.Entry { Command = cmd, Permissions = perms };
+			if (this.main.EditorEnabled)
+				entry.Description = description;
+			this.commands.Add(name, entry);
 			foreach (var link in LinkedCommands)
 			{
 				CommandLink link1 = link;
 				if (link.LinkedSourceCmd == null && name == link.SourceCommand)
 				{
-					link.LinkedSourceCmd = cmd.Command;
+					link.LinkedSourceCmd = cmd;
 					this.Add(new CommandBinding(link.LinkedSourceCmd, () => LinkedCommandCall(link1)));
 				}
 			}
@@ -382,6 +395,24 @@ namespace ComponentBind
 		{
 			component.Serialize = false;
 			this.Add(Guid.NewGuid().ToString(), component);
+		}
+
+		public void Add(string name, IProperty prop, string description = null)
+		{
+			PropertyEntry entry = new PropertyEntry { Property = prop };
+			if (this.main.EditorEnabled)
+				entry.Description = description;
+			this.properties.Add(name, entry);
+		}
+
+		public Property<T> GetProperty<T>(string name)
+		{
+			PropertyEntry result;
+			this.properties.TryGetValue(name, out result);
+			if (result == null)
+				return null;
+			else
+				return (Property<T>)result.Property;
 		}
 
 		public void AddWithoutOverwriting(IComponent component)
@@ -510,7 +541,7 @@ namespace ComponentBind
 
 		private Command getCommand(string name)
 		{
-			Command.Entry result = null;
+			Command.Entry result;
 			this.commands.TryGetValue(name, out result);
 			if (result != null)
 				return result.Command;

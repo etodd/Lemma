@@ -18,7 +18,7 @@ namespace Lemma.Components
 		{
 			get
 			{
-				return this.properties.Where(x => x.Value.Serialize).Select(x => new DictionaryEntry(x.Key, x.Value)).ToArray();
+				return this.properties.Select(x => new DictionaryEntry(x.Key, x.Value)).ToArray();
 			}
 			set
 			{

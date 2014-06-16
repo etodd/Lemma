@@ -21,11 +21,12 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			entity.GetOrCreate<Transform>("Transform").Editable = true;
-
-			VoxelAttachable.MakeAttachable(entity, main, true, false);
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			this.SetMain(entity, main);
+
+			VoxelAttachable.MakeAttachable(entity, main, true, false).EditorProperties();
+			transform.EditorProperties();
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

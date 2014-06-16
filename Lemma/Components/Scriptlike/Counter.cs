@@ -11,15 +11,12 @@ namespace Lemma.Components
 {
 	public class Counter : Component<Main>
 	{
-		public EditorProperty<float> IncrementBy = new EditorProperty<float>() { Description = "Will increment by this when fired" };
-		public EditorProperty<float> StartingValue = new EditorProperty<float>() { Description = "On map load and on reset, will set internal counter to this value" };
+		public Property<float> IncrementBy = new Property<float>();
+		public Property<float> StartingValue = new Property<float>();
 
-		public EditorProperty<float> ExecuteAt = new EditorProperty<float>()
-		{
-			Description = "Will fire an event when the counter goes past this number."
-		};
+		public Property<float> ExecuteAt = new Property<float>();
 
-		public EditorProperty<bool> ResetOnExecute = new EditorProperty<bool>() { Description = "Will reset the counter when exceeding a threshhold" };
+		public Property<bool> ResetOnExecute = new Property<bool>();
 
 		[XmlIgnore]
 		public Command Increment = new Command();
@@ -36,7 +33,6 @@ namespace Lemma.Components
 		{
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
-			this.Enabled.Editable = true;
 			this.Reset.Action = () =>
 			{
 				_internalCount.Value = StartingValue.Value;

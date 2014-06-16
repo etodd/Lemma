@@ -8,8 +8,8 @@ namespace Lemma.Components
 {
 	public class Note : Component<Main>
 	{
-		public EditorProperty<string> Text = new EditorProperty<string>();
-		public EditorProperty<string> Image = new EditorProperty<string>();
+		public Property<string> Text = new Property<string>();
+		public Property<string> Image = new Property<string>();
 		public Property<bool> Collected = new Property<bool>();
 	}
 }

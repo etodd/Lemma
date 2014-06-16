@@ -12,7 +12,7 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<bool> Valid = new Property<bool>();
 
-		public EditorProperty<Voxel.t> Type = new EditorProperty<Voxel.t>();
+		public Property<Voxel.t> Type = new Property<Voxel.t>();
 
 		public override void Awake()
 		{

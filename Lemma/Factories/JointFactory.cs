@@ -153,7 +153,6 @@ namespace Lemma.Factories
 			EntityConnectable.AttachEditorComponents(entity, joint.Parent);
 			Model model = new Model();
 			model.Filename.Value = "Models\\cone";
-			model.Editable = false;
 			model.Serialize = false;
 			entity.Add("DirectionModel", model);
 

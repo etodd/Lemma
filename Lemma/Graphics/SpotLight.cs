@@ -12,12 +12,12 @@ namespace Lemma.Components
 	{
 		public static readonly List<SpotLight> All = new List<SpotLight>();
 
-		public EditorProperty<Vector3> Color = new EditorProperty<Vector3> { Value = Vector3.One };
+		public Property<Vector3> Color = new Property<Vector3> { Value = Vector3.One };
 		public Property<Quaternion> Orientation = new Property<Quaternion>();
 		public Property<Vector3> Position = new Property<Vector3>();
-		public EditorProperty<bool> Shadowed = new EditorProperty<bool> { Value = true };
-		public EditorProperty<float> FieldOfView = new EditorProperty<float> { Value = (float)Math.PI * 0.25f };
-		public EditorProperty<float> Attenuation = new EditorProperty<float> { Value = 10.0f };
+		public Property<bool> Shadowed = new Property<bool> { Value = true };
+		public Property<float> FieldOfView = new Property<float> { Value = (float)Math.PI * 0.25f };
+		public Property<float> Attenuation = new Property<float> { Value = 10.0f };
 
 		[XmlIgnore]
 		public Property<BoundingFrustum> BoundingFrustum = new Property<BoundingFrustum>();
@@ -31,7 +31,7 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Matrix> Projection = new Property<Matrix>();
 
-		public EditorProperty<string> CookieTextureFile = new EditorProperty<string> { Value = "Images\\default-cookie" };
+		public Property<string> CookieTextureFile = new Property<string> { Value = "Images\\default-cookie" };
 
 		[XmlIgnore]
 		public Property<Texture2D> CookieTexture = new Property<Texture2D>();
@@ -74,8 +74,6 @@ namespace Lemma.Components
 				}, this.CookieTextureFile));
 
 			this.Add(new Binding<BoundingFrustum, Matrix>(this.BoundingFrustum, x => new BoundingFrustum(x), this.ViewProjection));
-
-			this.Enabled.Editable = true;
 
 			SpotLight.All.Add(this);
 		}

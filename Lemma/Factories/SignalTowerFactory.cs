@@ -30,8 +30,6 @@ namespace Lemma.Factories
 			
 			this.SetMain(entity, main);
 
-			trigger.Editable = true;
-			trigger.Enabled.Editable = false;
 			VoxelAttachable.BindTarget(entity, trigger.Position);
 
 			PointLight light = entity.GetOrCreate<PointLight>();

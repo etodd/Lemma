@@ -23,18 +23,11 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			TimeTrial trial = entity.GetOrCreate<TimeTrial>("TimeTrial");
-			BindCommand(entity, trial.EndTimeTrial, "EndTimeTrial");
-			BindCommand(entity, trial.StartTimeTrial, "StartTimeTrial");
-			BindCommand(entity, trial.PauseTimer, "Pause");
-			BindCommand(entity, trial.ResumeTimer, "Resume");
 			SetMain(entity, main);
+			entity.Add("EndTimeTrial", trial.EndTimeTrial);
+			entity.Add("StartTimeTrial", trial.StartTimeTrial);
+			entity.Add("Pause", trial.PauseTimer);
+			entity.Add("Resume", trial.ResumeTimer);
 		}
-
-		public override void AttachEditorComponents(Entity entity, Main main)
-		{
-			base.AttachEditorComponents(entity, main);
-			
-		}
-
 	}
 }

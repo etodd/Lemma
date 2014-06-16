@@ -25,7 +25,7 @@ namespace Lemma.Factories
 			Ticker ticker = entity.GetOrCreate<Ticker>("Ticker");
 			this.SetMain(entity, main);
 
-			BindCommand(entity, ticker.OnFire, "OnFire");
+			entity.Add("OnFire", ticker.OnFire);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

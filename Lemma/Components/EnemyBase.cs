@@ -12,7 +12,7 @@ namespace Lemma.Components
 	{
 		public Property<Matrix> Transform = new Property<Matrix>();
 		public Property<Vector3> Position = new Property<Vector3>();
-		public EditorProperty<float> Offset = new EditorProperty<float> { Value = 4.0f };
+		public Property<float> Offset = new Property<float> { Value = 4.0f };
 		public Property<Entity.Handle> Voxel = new Property<Entity.Handle>();
 		public ListProperty<Voxel.Box> BaseBoxes = new ListProperty<Voxel.Box>();
 
@@ -80,7 +80,6 @@ namespace Lemma.Components
 			model.Color.Value = color;
 			model.IsInstanced.Value = false;
 			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(1.0f, 1.0f, x), offset));
-			model.Editable = false;
 			model.Serialize = false;
 
 			entity.Add("EditorModel2", model);

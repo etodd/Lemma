@@ -37,7 +37,7 @@ namespace Lemma.Factories
 
 			if (main.EditorEnabled)
 			{
-				BindCommand(entity, new Command
+				entity.Add("Spawn Here", new Command
 				{
 					Action = delegate()
 					{
@@ -48,7 +48,7 @@ namespace Lemma.Factories
 						main.EditorEnabled.Value = false;
 						IO.MapLoader.Load(main, null, main.MapFile);
 					},
-				}, "Spawn Here", Command.Perms.Executable);
+				}, Command.Perms.Executable);
 			}
 
 			PlayerSpawn spawn = entity.GetOrCreate<PlayerSpawn>("PlayerSpawn");
@@ -56,7 +56,6 @@ namespace Lemma.Factories
 			spawn.Add(new Binding<float, Vector3>(spawn.Rotation, x => ((float)Math.PI * -0.5f) - (float)Math.Atan2(x.Z, x.X), transform.Forward));
 
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");
-			trigger.Enabled.Editable = true;
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate() { spawn.Activate.Execute(); }));
 		}
@@ -66,7 +65,6 @@ namespace Lemma.Factories
 			Model model = new Model();
 			model.Filename.Value = "Models\\light";
 			model.Color.Value = this.Color;
-			model.Editable = false;
 			model.Serialize = false;
 
 			entity.Add("EditorModel", model);

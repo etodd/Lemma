@@ -36,12 +36,12 @@ namespace Lemma.Factories
 
 			JointFactory.Bind(entity, main, spinner.CreateJoint, true, creating);
 
-			BindCommand(entity, spinner.On, "On");
-			BindCommand(entity, spinner.Off, "Off");
-			BindCommand(entity, spinner.Forward, "Forward");
-			BindCommand(entity, spinner.Backward, "Backward");
-			BindCommand(entity, spinner.HitMax, "HitMax");
-			BindCommand(entity, spinner.HitMin, "HitMin");
+			entity.Add("On", spinner.On);
+			entity.Add("Off", spinner.Off);
+			entity.Add("Forward", spinner.Forward);
+			entity.Add("Backward", spinner.Backward);
+			entity.Add("HitMax", spinner.HitMax);
+			entity.Add("HitMin", spinner.HitMin);
 		}
 	}
 }

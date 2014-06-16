@@ -28,9 +28,9 @@ namespace Lemma.Factories
 		{
 			base.Bind(entity, main, creating);
 			Counter c = entity.GetOrCreate<Counter>("Counter");
-			BindCommand(entity, c.OnTargetHit, "OnTargetHit");
-			BindCommand(entity, c.Increment, "Increment");
-			BindCommand(entity, c.Reset, "Reset");
+			entity.Add("OnTargetHit", c.OnTargetHit);
+			entity.Add("Increment", c.Increment);
+			entity.Add("Reset", c.Reset);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

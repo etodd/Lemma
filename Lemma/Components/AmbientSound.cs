@@ -9,9 +9,9 @@ namespace Lemma.Components
 {
 	public class AmbientSound : Component<Main>
 	{
-		public EditorProperty<string>  PlayCue = new EditorProperty<string>();
-		public EditorProperty<string> StopCue = new EditorProperty<string>();
-		public EditorProperty<bool> Is3D = new EditorProperty<bool>();
+		public Property<string>  PlayCue = new Property<string>();
+		public Property<string> StopCue = new Property<string>();
+		public Property<bool> Is3D = new Property<bool>();
 		public Property<Vector3> Position = new Property<Vector3>();
 
 		public override void Awake()

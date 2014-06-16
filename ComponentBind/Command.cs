@@ -66,6 +66,7 @@ namespace ComponentBind
 		{
 			public Command Command;
 			public Perms Permissions;
+			public string Description;
 		}
 
 		public Action Action;

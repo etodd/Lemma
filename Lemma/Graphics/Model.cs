@@ -49,15 +49,15 @@ namespace Lemma.Components
 
 		protected Microsoft.Xna.Framework.Graphics.Model model;
 
-		public EditorProperty<string> Filename = new EditorProperty<string> { Editable = true };
-		public EditorProperty<string> EffectFile = new EditorProperty<string> { Editable = true };
-		public EditorProperty<string> TechniquePostfix = new EditorProperty<string> { Editable = true, Value = "" };
+		public Property<string> Filename = new Property<string>();
+		public Property<string> EffectFile = new Property<string>();
+		public Property<string> TechniquePostfix = new Property<string> { Value = "" };
 		protected Matrix lastWorldViewProjection;
 		protected Matrix lastTransform;
 		[XmlIgnore]
 		public Property<Matrix> Transform = new Property<Matrix> { Value = Matrix.Identity };
-		public EditorProperty<Vector3> Scale = new EditorProperty<Vector3> { Value = Vector3.One };
-		public EditorProperty<Vector3> Color = new EditorProperty<Vector3> { Value = Vector3.One };
+		public Property<Vector3> Scale = new Property<Vector3> { Value = Vector3.One };
+		public Property<Vector3> Color = new Property<Vector3> { Value = Vector3.One };
 
 		public struct Material
 		{
@@ -77,7 +77,7 @@ namespace Lemma.Components
 		private int[] materialIds = new int[2];
 
 		public Property<bool> IsInstanced = new Property<bool>();
-		public EditorProperty<bool> DisableCulling = new EditorProperty<bool>();
+		public Property<bool> DisableCulling = new Property<bool>();
 
 		[XmlIgnore]
 		public Property<bool> IsValid = new Property<bool>();
@@ -85,15 +85,15 @@ namespace Lemma.Components
 		public Property<bool> MapContent = new Property<bool>();
 
 		protected Texture2D normalMap;
-		public EditorProperty<string> NormalMap = new EditorProperty<string>();
+		public Property<string> NormalMap = new Property<string>();
 
 		[XmlIgnore]
 		public Property<BoundingBox> BoundingBox = new Property<BoundingBox>();
 		private bool boundingBoxValid = false;
-		public EditorProperty<bool> CullBoundingBox = new EditorProperty<bool> { Value = true };
+		public Property<bool> CullBoundingBox = new Property<bool> { Value = true };
 
 		protected Texture2D diffuseTexture;
-		public EditorProperty<string> DiffuseTexture = new EditorProperty<string>();
+		public Property<string> DiffuseTexture = new Property<string>();
 
 		[XmlIgnore]
 		public ListProperty<Matrix> Instances = new ListProperty<Matrix>();
@@ -138,7 +138,6 @@ namespace Lemma.Components
 
 		public Model()
 		{
-			this.Enabled.Editable = true;
 			this.EnabledWhenPaused = true;
 		}
 
@@ -536,7 +535,7 @@ namespace Lemma.Components
 			IProperty result = null;
 			if (!this.properties.TryGetValue(name, out result))
 			{
-				Property<Vector3> property = new Property<Vector3> { Editable = false };
+				Property<Vector3> property = new Property<Vector3>();
 				property.Set = delegate(Vector3 value)
 				{
 					property.InternalValue = value;
@@ -925,16 +924,14 @@ namespace Lemma.Components
 	public class ModelAlpha : Model, IDrawableAlphaComponent
 	{
 		public Property<float> Alpha = null;
-		public EditorProperty<int> DrawOrder { get; set; }
-		public EditorProperty<bool> Distortion = new EditorProperty<bool>();
+		public Property<int> DrawOrder { get; set; }
+		public Property<bool> Distortion = new Property<bool>();
 
 		public ModelAlpha()
 		{
 			this.Alpha = this.GetFloatParameter("Alpha");
-			this.Alpha.Editable = true;
 			this.Alpha.Value = 1.0f;
-			this.Alpha.Editable = true;
-			this.DrawOrder = new EditorProperty<int>();
+			this.DrawOrder = new Property<int>();
 		}
 
 		public override void Awake()

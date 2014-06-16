@@ -190,7 +190,6 @@ namespace Lemma.Components
 
 		public PCInput()
 		{
-			this.Editable = false;
 			this.Serialize = false;
 		}
 

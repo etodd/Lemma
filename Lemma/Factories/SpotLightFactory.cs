@@ -24,7 +24,7 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			SpotLight spotLight = entity.GetOrCreate<SpotLight>("SpotLight");
 
-			VoxelAttachable.MakeAttachable(entity, main);
+			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
 
 			this.SetMain(entity, main);
 
@@ -38,7 +38,6 @@ namespace Lemma.Factories
 			model.Filename.Value = "Models\\light";
 			Property<Vector3> color = entity.Get<SpotLight>().Color;
 			model.Add(new Binding<Vector3>(model.Color, color));
-			model.Editable = false;
 			model.Serialize = false;
 
 			entity.Add("EditorModel", model);

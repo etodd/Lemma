@@ -63,11 +63,9 @@ namespace Lemma.Factories
 			AnimatedModel model = entity.GetOrCreate<AnimatedModel>("Model");
 			model.Serialize = false;
 
-			model.Editable = false;
 			model.Filename.Value = "Models\\joan";
 			model.CullBoundingBox.Value = false;
 
-			firstPersonModel.Editable = false;
 			firstPersonModel.Filename.Value = "Models\\joan-firstperson";
 			firstPersonModel.CullBoundingBox.Value = false;
 
@@ -250,7 +248,6 @@ namespace Lemma.Factories
 			debugCylinder.Filename.Value = "Models\\alpha-cylinder";
 			debugCylinder.Add(new Binding<Matrix>(debugCylinder.Transform, transform.Matrix));
 			debugCylinder.Serialize = false;
-			debugCylinder.Editable = false;
 			debugCylinder.Alpha.Value = 0.25f;
 			debugCylinder.Add(new Binding<bool>(debugCylinder.Enabled, cameraControl.ThirdPerson));
 			debugCylinder.Add(new Binding<Vector3>(debugCylinder.Scale, delegate()

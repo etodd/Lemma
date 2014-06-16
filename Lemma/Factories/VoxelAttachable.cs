@@ -10,7 +10,7 @@ namespace Lemma.Factories
 {
 	public class VoxelAttachable : Component<Main>
 	{
-		public EditorProperty<float> Offset = new EditorProperty<float>();
+		public Property<float> Offset = new Property<float>();
 		public Property<Entity.Handle> AttachedVoxel = new Property<Entity.Handle>();
 		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
 
@@ -52,7 +52,14 @@ namespace Lemma.Factories
 			
 			attachable.Add(new CommandBinding(attachable.Detach, detachCommand));
 			attachable.Add(new TwoWayBinding<Matrix>(transform.Matrix, attachable.Transform));
+
 			return attachable;
+		}
+
+		public void EditorProperties()
+		{
+			this.Entity.Add("AttachOffset", this.Offset);
+			this.Entity.Add("Attach", this.Enabled);
 		}
 
 		public override void Awake()
@@ -167,7 +174,6 @@ namespace Lemma.Factories
 			Model editorModel = entity.Get<Model>("EditorModel");
 			model.Add(new Binding<bool>(model.Enabled, () => entity.EditorSelected && attachable.Offset > 0, entity.EditorSelected, attachable.Offset));
 			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(1.0f, 1.0f, x), attachable.Offset));
-			model.Editable = false;
 			model.Serialize = false;
 
 			entity.Add("EditorModel2", model);

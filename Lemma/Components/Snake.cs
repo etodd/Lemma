@@ -8,7 +8,7 @@ namespace Lemma.Components
 {
 	public class Snake : Component<Main>
 	{
-		public EditorProperty<float> OperationalRadius = new EditorProperty<float> { Value = 100.0f };
+		public Property<float> OperationalRadius = new Property<float> { Value = 100.0f };
 
 		public ListProperty<Voxel.Coord> Path = new ListProperty<Voxel.Coord>();
 

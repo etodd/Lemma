@@ -1716,10 +1716,10 @@ namespace Lemma.Components
 		protected List<Coord> removalCoords = new List<Coord>();
 
 		[XmlIgnore]
-		public Property<Vector3> Offset = new Property<Vector3> { Editable = false };
+		public Property<Vector3> Offset = new Property<Vector3>();
 
-		public EditorProperty<bool> EnablePhysics = new EditorProperty<bool> { Value = true };
-		public EditorProperty<bool> Mutable = new EditorProperty<bool> { Value = true };
+		public Property<bool> EnablePhysics = new Property<bool> { Value = true };
+		public Property<bool> Mutable = new Property<bool> { Value = true };
 
 		[DefaultValueAttribute(0)]
 		public int OffsetX { get; set; }
@@ -1728,7 +1728,7 @@ namespace Lemma.Components
 		[DefaultValueAttribute(0)]
 		public int OffsetZ { get; set; }
 
-		public EditorProperty<float> Scale = new EditorProperty<float> { Value = 1.0f };
+		public Property<float> Scale = new Property<float> { Value = 1.0f };
 
 		[XmlIgnore]
 		public Func<Vector3, Vector3, State, DynamicModel<Voxel.Vertex>> CreateModel;
@@ -5054,13 +5054,13 @@ namespace Lemma.Components
 
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
 
-		public EditorProperty<bool> IsAffectedByGravity = new EditorProperty<bool> { Value = true };
+		public Property<bool> IsAffectedByGravity = new Property<bool> { Value = true };
 
-		public EditorProperty<bool> IsAlwaysActive = new EditorProperty<bool> { Value = false };
+		public Property<bool> IsAlwaysActive = new Property<bool> { Value = false };
 
-		public EditorProperty<float> KineticFriction = new EditorProperty<float> { Value = 0.0f };
+		public Property<float> KineticFriction = new Property<float> { Value = 0.0f };
 
-		public EditorProperty<float> StaticFriction = new EditorProperty<float> { Value = 0.0f };
+		public Property<float> StaticFriction = new Property<float> { Value = 0.0f };
 
 		private bool firstPhysicsUpdate = true;
 		private bool physicsDirty;

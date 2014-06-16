@@ -16,7 +16,7 @@ namespace Lemma.Components
 			public VertexPositionColor B;
 		}
 
-		public EditorProperty<int> DrawOrder { get; set; }
+		public Property<int> DrawOrder { get; set; }
 
 		[XmlIgnore]
 		public ListProperty<Line> Lines = new ListProperty<Line>();
@@ -31,7 +31,7 @@ namespace Lemma.Components
 
 		public LineDrawer()
 		{
-			this.DrawOrder = new EditorProperty<int> { Value = 11 };
+			this.DrawOrder = new Property<int> { Value = 11 };
 		}
 
 		public void LoadContent(bool reload)

@@ -11,9 +11,9 @@ namespace Lemma.Components
 	public class RandomTicker : Component<Main>, IUpdateableComponent
 	{
 		private static Random random = new Random();
-		public EditorProperty<float> MaxInterval = new EditorProperty<float>() { Description = "Maximum time between firing (seconds).", Value = 2 };
-		public EditorProperty<float> MinInterval = new EditorProperty<float>() { Description = "Minimum time between firing (seconds).", Value = 1 };
-		public EditorProperty<int> NumToFire = new EditorProperty<int>() { Description = "Fires X times. -1 is infinite.", Value = -1 };
+		public Property<float> MaxInterval = new Property<float> { Value = 2 };
+		public Property<float> MinInterval = new Property<float> { Value = 1 };
+		public Property<int> NumToFire = new Property<int> { Value = -1 };
 
 		[XmlIgnore]
 		public Command OnFire = new Command();
@@ -24,7 +24,6 @@ namespace Lemma.Components
 		{
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
-			this.Enabled.Editable = true;
 		}
 		
 		public override void Awake()

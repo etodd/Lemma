@@ -11,7 +11,7 @@ namespace Lemma.Components
 {
 	public class PlayerSpawn : Component<Main>
 	{
-		public EditorProperty<bool> IsActivated = new EditorProperty<bool>();
+		public Property<bool> IsActivated = new Property<bool>();
 		public Property<Vector3> Position = new Property<Vector3>();
 		public Property<float> Rotation = new Property<float>();
 

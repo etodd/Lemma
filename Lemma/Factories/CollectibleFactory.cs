@@ -30,7 +30,6 @@ namespace Lemma.Factories
 			VoxelAttachable.MakeAttachable(entity, main);
 			this.SetMain(entity, main);
 			
-			trigger.Editable = false;
 			trigger.Radius.Value = 3;
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
 
@@ -57,7 +56,6 @@ namespace Lemma.Factories
 			Model model = entity.GetOrCreate<Model>("Model");
 			model.MapContent.Value = true;
 			model.Filename.Value = "Models\\sphere";
-			model.Editable = false;
 			model.Serialize = false;
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 		}

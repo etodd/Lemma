@@ -28,9 +28,7 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			PhysicsBlock physics = entity.GetOrCreate<PhysicsBlock>("Physics");
 			physics.Size.Value = Vector3.One;
-			physics.Editable = false;
 			ModelInstance model = entity.GetOrCreate<ModelInstance>("Model");
-			model.Editable = false;
 
 			physics.Add(new TwoWayBinding<Matrix>(transform.Matrix, physics.Transform));
 

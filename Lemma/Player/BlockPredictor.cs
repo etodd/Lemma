@@ -98,7 +98,6 @@ namespace Lemma.Components
 				box.Distortion.Value = true;
 				box.Color.Value = new Vector3(2.8f, 3.0f, 3.2f);
 				box.Alpha.Value = blockPossibilityInitialAlpha;
-				box.Editable = false;
 				box.Serialize = false;
 				box.DrawOrder.Value = 11; // In front of water
 				box.BoundingBox.Value = new BoundingBox(new Vector3(-0.5f), new Vector3(0.5f));

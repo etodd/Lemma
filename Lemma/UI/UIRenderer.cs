@@ -20,7 +20,7 @@ namespace Lemma.Components
 			}
 		}
 
-		public EditorProperty<int> DrawOrder { get; set; }
+		public Property<int> DrawOrder { get; set; }
 
 		public void Setup3D(Property<Matrix> transform)
 		{
@@ -104,7 +104,7 @@ namespace Lemma.Components
 
 		public UIRenderer()
 		{
-			this.DrawOrder = new EditorProperty<int> { Editable = false, Value = 0 };
+			this.DrawOrder = new Property<int> { Value = 0 };
 			this.RasterizerState = new RasterizerState { ScissorTestEnable = true, CullMode = CullMode.None };
 			this.Root = new RootUIComponent(this);
 			this.Root.AnchorPoint.Value = Vector2.Zero;

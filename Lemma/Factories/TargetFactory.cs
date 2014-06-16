@@ -24,8 +24,6 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
-			transform.Editable = true;
-			transform.Enabled.Editable = true;
 
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");
 
@@ -39,7 +37,6 @@ namespace Lemma.Factories
 				TargetFactory.Positions.Remove(transform);
 			}));
 
-			trigger.Enabled.Editable = false;
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
 
 			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
@@ -47,7 +44,7 @@ namespace Lemma.Factories
 				entity.Add(new Animation(new Animation.Execute(entity.Delete)));
 			}));
 
-			BindCommand(entity, trigger.PlayerEntered, "Reached");
+			entity.Add("Reached", trigger.PlayerEntered);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
@@ -60,7 +57,6 @@ namespace Lemma.Factories
 			model.Filename.Value = "Models\\sphere";
 			model.Color.Value = this.Color;
 			model.Scale.Value = new Vector3(0.5f);
-			model.Editable = false;
 			model.Serialize = false;
 
 			entity.Add("EditorModel3", model);

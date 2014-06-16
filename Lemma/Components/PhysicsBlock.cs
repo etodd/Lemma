@@ -16,9 +16,9 @@ namespace Lemma.Components
 {
 	public class PhysicsBlock : Component<Main>, IUpdateableComponent
 	{
-		public Property<Matrix> Transform = new Property<Matrix> { Editable = false };
-		public EditorProperty<float> Mass = new EditorProperty<float> { Value = 0.25f };
-		public EditorProperty<Vector3> Size = new EditorProperty<Vector3> { Value = new Vector3(0.5f) };
+		public Property<Matrix> Transform = new Property<Matrix>();
+		public Property<float> Mass = new Property<float> { Value = 0.25f };
+		public Property<Vector3> Size = new Property<Vector3> { Value = new Vector3(0.5f) };
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
 		public Property<Vector3> AngularVelocity = new Property<Vector3>();
 

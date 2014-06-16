@@ -10,14 +10,9 @@ namespace Lemma.Components
 	{
 		public static readonly List<DirectionalLight> All = new List<DirectionalLight>();
 
-		public EditorProperty<Vector3> Color = new EditorProperty<Vector3> { Value = Vector3.One };
-		public EditorProperty<Vector3> Direction = new EditorProperty<Vector3> { Value = Vector3.Left };
-		public EditorProperty<bool> Shadowed = new EditorProperty<bool>();
-
-		public DirectionalLight()
-		{
-			this.Enabled.Editable = true;
-		}
+		public Property<Vector3> Color = new Property<Vector3> { Value = Vector3.One };
+		public Property<Vector3> Direction = new Property<Vector3> { Value = Vector3.Left };
+		public Property<bool> Shadowed = new Property<bool>();
 
 		public override void Awake()
 		{

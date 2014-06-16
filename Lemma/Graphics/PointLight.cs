@@ -11,9 +11,9 @@ namespace Lemma.Components
 	{
 		public static readonly List<PointLight> All = new List<PointLight>();
 
-		public EditorProperty<Vector3> Color = new EditorProperty<Vector3> { Value = Vector3.One };
+		public Property<Vector3> Color = new Property<Vector3> { Value = Vector3.One };
 		public Property<Vector3> Position = new Property<Vector3>();
-		public EditorProperty<float> Attenuation = new EditorProperty<float> { Value = 10.0f };
+		public Property<float> Attenuation = new Property<float> { Value = 10.0f };
 
 		[XmlIgnore]
 		public Property<BoundingSphere> BoundingSphere = new Property<BoundingSphere>();
@@ -22,7 +22,6 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.Add(new Binding<BoundingSphere>(this.BoundingSphere, () => new BoundingSphere(this.Position, this.Attenuation), this.Position, this.Attenuation));
-			this.Enabled.Editable = true;
 			PointLight.All.Add(this);
 		}
 

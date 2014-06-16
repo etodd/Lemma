@@ -24,11 +24,11 @@ namespace Lemma.Components
 
 		public Property<Entity.Handle> Target = new Property<Entity.Handle>();
 
-		public EditorProperty<float> IntervalMultiplier = new EditorProperty<float> { Value = 1.0f };
+		public Property<float> IntervalMultiplier = new Property<float> { Value = 1.0f };
 
 		public Property<int> Index = new Property<int>();
 
-		public EditorProperty<float> BlockLifetime = new EditorProperty<float> { Value = 0.25f };
+		public Property<float> BlockLifetime = new Property<float> { Value = 0.25f };
 
 		public ListProperty<CoordinateEntry> Coords = new ListProperty<CoordinateEntry>();
 

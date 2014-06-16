@@ -31,7 +31,7 @@ namespace Lemma.Factories
 
 			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main, false, false, null);
 			attachable.Enabled.Value = true;
-			attachable.Enabled.Editable = false;
+			entity.Add("AttachOffset", attachable.Offset);
 			VoxelAttachable.BindTarget(entity, rift.Position);
 
 			this.SetMain(entity, main);
@@ -45,7 +45,7 @@ namespace Lemma.Factories
 			rift.Add(new Binding<Entity.Handle>(rift.Voxel, attachable.AttachedVoxel));
 			rift.Add(new Binding<Voxel.Coord>(rift.Coordinate, attachable.Coord));
 
-			BindCommand(entity, rift.Enable, "Enable");
+			entity.Add("Enable", rift.Enable);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

@@ -118,8 +118,6 @@ namespace ComponentBind
 						if (!typeof(IProperty).IsAssignableFrom(field.FieldType) || field.GetCustomAttributes(true).FirstOrDefault(x => typeof(XmlIgnoreAttribute).IsAssignableFrom(x.GetType())) != null)
 							continue;
 						IProperty destProperty = (IProperty)field.GetValue(destComponent);
-						if (!destProperty.Serialize)
-							continue;
 						IProperty srcProperty = (IProperty)field.GetValue(pair.Value);
 						if (typeof(IListProperty).IsAssignableFrom(destProperty.GetType()))
 							((IListProperty)srcProperty).CopyTo((IListProperty)destProperty);
@@ -134,15 +132,5 @@ namespace ComponentBind
 
 			return dest;
 		}
-
-		public void BindCommand(Entity e, Command c, string name, Command.Perms perms = Command.Perms.Linkable)
-		{
-			e.Add(name, new Command.Entry
-			{
-				Command = c,
-				Permissions = perms,
-			});
-		}
 	}
-
 }

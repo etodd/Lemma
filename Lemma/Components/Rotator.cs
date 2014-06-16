@@ -9,7 +9,7 @@ namespace Lemma.Components
 {
 	public class Rotator : Component<Main>, IUpdateableComponent
 	{
-		public EditorProperty<Vector3> Velocity = new EditorProperty<Vector3>();
+		public Property<Vector3> Velocity = new Property<Vector3>();
 		public ListProperty<Entity.Handle> Targets = new ListProperty<Entity.Handle>();
 
 		private List<Transform> transforms = new List<Transform>();

@@ -14,9 +14,9 @@ namespace Lemma.Components
 {
 	public class PlayerCylinderTrigger : Component<Main>, IUpdateableComponent
 	{
-		public EditorProperty<float> Radius = new EditorProperty<float> { Value = 5.0f };
-		public EditorProperty<float> Top = new EditorProperty<float> { Value = 10.0f };
-		public EditorProperty<float> Bottom = new EditorProperty<float> { Value = 0.0f };
+		public Property<float> Radius = new Property<float> { Value = 5.0f };
+		public Property<float> Top = new Property<float> { Value = 10.0f };
+		public Property<float> Bottom = new Property<float> { Value = 0.0f };
 		public Property<Matrix> Transform = new Property<Matrix>();
 		public Property<bool> IsTriggered = new Property<bool>();
 		public Property<Entity.Handle> Player = new Property<Entity.Handle>();
@@ -80,7 +80,6 @@ namespace Lemma.Components
 			model.Color.Value = color;
 			model.DisableCulling.Value = true;
 			model.Add(new Binding<Vector3>(model.Scale, () => new Vector3(trigger.Radius, trigger.Top - trigger.Bottom, trigger.Radius), trigger.Top, trigger.Bottom, trigger.Radius));
-			model.Editable = false;
 			model.Serialize = false;
 			model.Add(new Binding<bool>(model.Enabled, entity.EditorSelected));
 

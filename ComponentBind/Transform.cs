@@ -9,8 +9,8 @@ namespace ComponentBind
 {
 	public class Transform : Component<BaseMain>
 	{
-		public EditorProperty<Vector3> Position = new EditorProperty<Vector3>();
-		public EditorProperty<Quaternion> Quaternion = new EditorProperty<Quaternion>();
+		public Property<Vector3> Position = new Property<Vector3>();
+		public Property<Quaternion> Quaternion = new Property<Quaternion>();
 
 		[XmlIgnore]
 		public Property<Matrix> Orientation = new Property<Matrix>();
@@ -23,7 +23,12 @@ namespace ComponentBind
 		public Transform()
 		{
 			this.Matrix.Value = Microsoft.Xna.Framework.Matrix.Identity;
-			this.Editable = false;
+		}
+
+		public void EditorProperties()
+		{
+			this.Entity.Add("Position", this.Position);
+			this.Entity.Add("Quaternion", this.Quaternion);
 		}
 
 		public override void Awake()

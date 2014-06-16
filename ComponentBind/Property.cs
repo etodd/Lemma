@@ -11,18 +11,21 @@ namespace ComponentBind
 {
 	public interface IProperty
 	{
-		[XmlIgnore]
-		string Description { get; set; }
-		bool Editable { get; set; }
-		bool Serialize { get; set; }
 		void AddBinding(IPropertyBinding binding);
 		void RemoveBinding(IPropertyBinding binding);
 		void Reset();
 	}
 
+	public class PropertyEntry
+	{
+		public IProperty Property;
+		public string Description;
+	}
+
 	[DebuggerDisplay("Property {Value}")]
 	public class Property<Type> : IProperty
 	{
+
 		[XmlIgnore]
 		public Type InternalValue;
 
@@ -45,30 +48,6 @@ namespace ComponentBind
 			}
 		}
 		protected List<IPropertyBinding> bindings = new List<IPropertyBinding>();
-
-		protected bool serialize = true;
-		[XmlIgnore]
-		[DefaultValue(true)]
-		public bool Serialize
-		{
-			get
-			{
-				return this.serialize;
-			}
-			set
-			{
-				this.serialize = value;
-			}
-		}
-
-		protected string description = "";
-		[XmlIgnore]
-		[DefaultValue("")]
-		public string Description
-		{
-			get { return description; }
-			set { description = value; }
-		}
 
 		public void AddBinding(IPropertyBinding binding)
 		{
@@ -132,17 +111,6 @@ namespace ComponentBind
 		public override string ToString()
 		{
 			return this.Value.ToString();
-		}
-
-		[XmlIgnore]
-		public bool Editable { get; set; }
-	}
-
-	public class EditorProperty<Type> : Property<Type>
-	{
-		public EditorProperty()
-		{
-			this.Editable = true;
 		}
 	}
 

@@ -54,7 +54,6 @@ namespace Lemma.Factories
 			Model model = new Model();
 			model.Filename.Value = "Models\\light";
 			model.Add(new Binding<Vector3>(model.Color, entity.Get<DirectionalLight>().Color));
-			model.Editable = false;
 			model.Serialize = false;
 
 			entity.Add("EditorModel", model);

@@ -14,8 +14,8 @@ namespace Lemma.Components
 		public ListProperty<Entity.Handle> DynamicVoxels = new ListProperty<Entity.Handle>();
 		public Property<float> TimeUntilRebuild = new Property<float>();
 		public Property<float> TimeUntilRebuildComplete = new Property<float>();
-		public EditorProperty<float> RebuildDelay = new EditorProperty<float> { Value = 3.0f };
-		public EditorProperty<float> RebuildTime = new EditorProperty<float> { Value = 1.0f };
+		public Property<float> RebuildDelay = new Property<float> { Value = 3.0f };
+		public Property<float> RebuildTime = new Property<float> { Value = 1.0f };
 		public Property<bool> IsTriggered = new Property<bool>();
 
 		public EnemyBase Base;

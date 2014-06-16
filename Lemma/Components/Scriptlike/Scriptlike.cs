@@ -18,7 +18,6 @@ namespace Lemma.Components
 			model.Filename.Value = "Models\\pyramid";
 			model.Color.Value = color;
 			model.DisableCulling.Value = true;
-			model.Editable = false;
 			model.Serialize = false;
 
 			entity.Add(model);
