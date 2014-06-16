@@ -42,6 +42,13 @@ namespace Lemma.Factories
 			entity.Add("Backward", spinner.Backward);
 			entity.Add("HitMax", spinner.HitMax);
 			entity.Add("HitMin", spinner.HitMin);
+
+			entity.Add("Minimum", spinner.Minimum);
+			entity.Add("Maximum", spinner.Maximum);
+			entity.Add("Locked", spinner.Locked);
+			entity.Add("Speed", spinner.Speed);
+			entity.Add("Goal", spinner.Goal);
+			entity.Add("Servo", spinner.Servo);
 		}
 	}
 }

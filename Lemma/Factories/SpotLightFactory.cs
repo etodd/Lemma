@@ -30,6 +30,13 @@ namespace Lemma.Factories
 
 			spotLight.Add(new TwoWayBinding<Vector3>(spotLight.Position, transform.Position));
 			spotLight.Add(new TwoWayBinding<Quaternion>(spotLight.Orientation, transform.Quaternion));
+
+			entity.Add("Enable", spotLight.Enable);
+			entity.Add("Disable", spotLight.Disable);
+			entity.Add("Color", spotLight.Color);
+			entity.Add("FieldOfView", spotLight.FieldOfView);
+			entity.Add("Attenuation", spotLight.Attenuation);
+			entity.Add("Shadowed", spotLight.Shadowed);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

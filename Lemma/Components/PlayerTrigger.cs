@@ -32,6 +32,11 @@ namespace Lemma.Components
 			this.EnabledWhenPaused = false;
 		}
 
+		public void EditorProperties()
+		{
+			this.Entity.Add("Radius", this.Radius);
+		}
+
 		public override void Awake()
 		{
 			base.Awake();

@@ -26,10 +26,10 @@ namespace Lemma.Components
 		public Property<bool> StartAtMinimum = new Property<bool>();
 
 		[XmlIgnore]
-		public Command HitMin = new Command();
+		public Command OnHitMin = new Command();
 
 		[XmlIgnore]
-		public Command HitMax = new Command();
+		public Command OnHitMax = new Command();
 
 		[XmlIgnore]
 		public Command Forward = new Command();
@@ -171,13 +171,13 @@ namespace Lemma.Components
 				if (x > this.Maximum - 0.5f)
 				{
 					if (lastX <= this.Maximum - 0.5f)
-						this.HitMax.Execute();
+						this.OnHitMax.Execute();
 				}
 				
 				if (x < this.Minimum + 0.5f)
 				{
 					if (lastX >= this.Minimum + 0.5f)
-						this.HitMin.Execute();
+						this.OnHitMin.Execute();
 				}
 
 				lastX = x;

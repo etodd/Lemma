@@ -29,7 +29,11 @@ namespace Lemma.Factories
 			this.SetMain(entity, main);
 			AmbientLight ambientLight = entity.GetOrCreate<AmbientLight>("AmbientLight");
 			entity.CannotSuspendByDistance = true;
+
+			entity.Add("Enable", ambientLight.Enable);
+			entity.Add("Disable", ambientLight.Disable);
 			entity.Add("Color", ambientLight.Color);
+			entity.Add("Enabled", ambientLight.Enabled);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

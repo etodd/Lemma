@@ -35,8 +35,16 @@ namespace Lemma.Factories
 
 			entity.Add("Forward", slider.Forward);
 			entity.Add("Backward", slider.Backward);
-			entity.Add("HitMax", slider.HitMax);
-			entity.Add("HitMin", slider.HitMin);
+			entity.Add("OnHitMax", slider.OnHitMax);
+			entity.Add("OnHitMin", slider.OnHitMin);
+
+			entity.Add("Minimum", slider.Minimum);
+			entity.Add("Maximum", slider.Maximum);
+			entity.Add("Locked", slider.Locked);
+			entity.Add("Speed", slider.Speed);
+			entity.Add("Goal", slider.Goal);
+			entity.Add("Servo", slider.Servo);
+			entity.Add("StartAtMinimum", slider.StartAtMinimum);
 		}
 	}
 }

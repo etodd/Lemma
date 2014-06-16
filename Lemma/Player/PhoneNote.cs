@@ -277,8 +277,8 @@ namespace Lemma.Components
 					else
 					{
 						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_NOTE_DROP, entity);
-						if (!note.Collected)
-							note.Collected.Value = true;
+						if (!note.IsCollected)
+							note.IsCollected.Value = true;
 					}
 				}
 			};

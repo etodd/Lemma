@@ -45,6 +45,7 @@ namespace Lemma.Factories
 			rift.Add(new Binding<Voxel.Coord>(rift.Coordinate, attachable.Coord));
 
 			entity.Add("Enable", rift.Enable);
+			entity.Add("Disable", rift.Disable);
 			entity.Add("AttachOffset", attachable.Offset);
 			entity.Add("Enabled", rift.Enabled);
 			entity.Add("Radius", rift.Radius);

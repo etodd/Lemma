@@ -26,7 +26,7 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
 
-			VoxelAttachable.MakeAttachable(entity, main);
+			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);
 			
 			this.SetMain(entity, main);
 
@@ -83,6 +83,10 @@ namespace Lemma.Factories
 			purpleEmitter.ParticleType.Value = "Purple";
 			purpleEmitter.ParticlesPerSecond.Value = 30;
 			purpleEmitter.Jitter.Value = new Vector3(0.5f);
+
+			entity.Add("AttachOffset", attachable.Offset);
+			trigger.EditorProperties();
+			entity.Add("Initial", tower.Initial);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

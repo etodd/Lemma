@@ -43,6 +43,9 @@ namespace Lemma.Factories
 			entity.Add(new CommandBinding(trigger.PlayerEntered, fallingTower.Fall));
 
 			this.SetMain(entity, main);
+
+			entity.Add("Fall", fallingTower.Fall);
+			trigger.EditorProperties();
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

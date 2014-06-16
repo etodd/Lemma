@@ -39,6 +39,13 @@ namespace Lemma.Components
 			this.Add(new CommandBinding(this.Disable, delegate() { this.IsTriggered.Value = false; }));
 		}
 
+		public void EditorProperties()
+		{
+			this.Entity.Add("Radius", this.Radius);
+			this.Entity.Add("Top", this.Top);
+			this.Entity.Add("Bottom", this.Bottom);
+		}
+
 		public void Update(float elapsedTime)
 		{
 			bool playerFound = false;

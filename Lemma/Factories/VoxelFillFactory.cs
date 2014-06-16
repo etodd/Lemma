@@ -35,6 +35,10 @@ namespace Lemma.Factories
 			Voxel map = entity.Get<Voxel>();
 
 			entity.Add("Enable", voxelFill.Enable);
+			entity.Add("Disable", voxelFill.Disable);
+			entity.Add("Enabled", voxelFill.Enabled);
+			entity.Add("IntervalMultiplier", voxelFill.IntervalMultiplier);
+			entity.Add("BlockLifetime", voxelFill.BlockLifetime);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

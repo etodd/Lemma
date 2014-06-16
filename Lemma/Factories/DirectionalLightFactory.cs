@@ -47,6 +47,12 @@ namespace Lemma.Factories
 					return matrix;
 				}
 			));
+
+			entity.Add("Enable", directionalLight.Enable);
+			entity.Add("Disable", directionalLight.Disable);
+			entity.Add("Enabled", directionalLight.Enabled);
+			entity.Add("Color", directionalLight.Color);
+			entity.Add("Shadowed", directionalLight.Shadowed);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

@@ -348,6 +348,8 @@ namespace Lemma.Factories
 			);
 
 			this.SetMain(entity, main);
+
+			entity.Add("OperationalRadius", snake.OperationalRadius);
 		}
 	}
 }

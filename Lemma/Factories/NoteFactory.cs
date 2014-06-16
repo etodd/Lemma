@@ -34,23 +34,6 @@ namespace Lemma.Factories
 
 			Note note = entity.GetOrCreate<Note>("Note");
 
-			entity.Add(new NotifyBinding(delegate()
-			{
-				if (note.Collected)
-				{
-					List<Entity> notes = main.Get("Note").ToList();
-					int notesCollected = notes.Where(x => x.Get<Note>().Collected).Count();
-					int total = notes.Count;
-					Container msg = main.Menu.ShowMessageFormat
-					(
-						entity,
-						"\\notes read",
-						notesCollected, total
-					);
-					main.Menu.HideMessage(entity, msg, 4.0f);
-				}
-			}, note.Collected));
-
 			trigger.Serialize = false;
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
 			trigger.Radius.Value = 3.5f;
@@ -65,6 +48,10 @@ namespace Lemma.Factories
 				if (PlayerFactory.Instance != null)
 					PlayerFactory.Instance.Get<Player>().Note.Value = null;
 			}));
+
+			entity.Add("Collected", note.Collected);
+			entity.Add("Text", note.Text);
+			entity.Add("Image", note.Image);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

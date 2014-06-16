@@ -27,11 +27,15 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			light.Add(new TwoWayBinding<Vector3>(light.Position, transform.Position));
 
-			VoxelAttachable.MakeAttachable(entity, main);
-
 			this.SetMain(entity, main);
 
+			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
+
 			entity.Add("Enable", light.Enable);
+			entity.Add("Disable", light.Disable);
+			entity.Add("Enabled", light.Enabled);
+			entity.Add("Color", light.Color);
+			entity.Add("Attenuation", light.Attenuation);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

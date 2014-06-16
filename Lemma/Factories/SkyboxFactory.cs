@@ -61,6 +61,13 @@ namespace Lemma.Factories
 			model.GetTexture2DParameter("Random" + Lemma.Components.Model.SamplerPostfix).Value = main.Content.Load<Texture2D>("Images\\random");
 
 			model.Add(new Binding<float>(model.GetFloatParameter("StartDistance"), skybox.StartDistance));
+
+			entity.Add("Color", model.Color);
+			entity.Add("VerticalSize", skybox.VerticalSize);
+			entity.Add("VerticalCenter", skybox.VerticalCenter);
+			entity.Add("GodRays", skybox.GodRays);
+			entity.Add("GodRayExtinction", skybox.GodRayExtinction);
+			entity.Add("StartDistance", skybox.StartDistance);
 		}
 	}
 }

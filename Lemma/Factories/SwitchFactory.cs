@@ -67,6 +67,7 @@ namespace Lemma.Factories
 
 			entity.Add("OnPowerOn", sw.OnPowerOn);
 			entity.Add("OnPowerOff", sw.OnPowerOff);
+			entity.Add("On", sw.On);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
