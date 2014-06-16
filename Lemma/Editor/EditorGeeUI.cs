@@ -136,10 +136,7 @@ namespace Lemma.Components
 			SourceLayout.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
 			SourceLayout.ChildrenLayouts.Add(new ExpandToFitLayout());
 			new TextView(main.GeeUI, SourceLayout, "Source command:", Vector2.Zero, MainFont);
-			new DropDownView(main.GeeUI, SourceLayout, new Vector2(), MainFont)
-			{
-				Name = "SourceDropDown"
-			};
+			new TextView(main.GeeUI, SourceLayout, "", Vector2.Zero, MainFont) { Name = "SourceCommand" };
 
 			var DestLayout = new View(main.GeeUI, LinkerView) { Name = "DestLayout" };
 			DestLayout.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
@@ -224,7 +221,7 @@ namespace Lemma.Components
 			this.SelectDropDownView.RemoveAllOptions();
 			foreach (var ent in main.Entities)
 			{
-				if (ent.EditorCanDelete)
+				if (ent.EditorCanDelete && ent != this.Entity)
 				{
 					Entity ent1 = ent;
 					SelectDropDownView.AddOption((ent.ID.Value ?? "") + " [" + ent.GUID + "] [" + ent.Type + "]", () =>
@@ -244,7 +241,7 @@ namespace Lemma.Components
 			LinkerView.Active.Value = false;
 		}
 
-		public void ShowLinkerView(Command select)
+		public void ShowLinkerView(Command.Entry select)
 		{
 			if (SelectedEntities.Count != 1) return;
 			LinkerView.Active.Value = true;
@@ -253,9 +250,9 @@ namespace Lemma.Components
 			BindLinker(SelectedEntities[0], select);
 		}
 
-		public void BindLinker(Entity e, Command selectedCommand)
+		public void BindLinker(Entity e, Command.Entry selectedCommand)
 		{
-			var sourceDrop = ((DropDownView)LinkerView.FindFirstChildByName("SourceDropDown"));
+			var sourceText = ((TextView) LinkerView.FindFirstChildByName("SourceCommand"));
 			var destEntityDrop = ((DropDownView)LinkerView.FindFirstChildByName("DestEntityDropDown"));
 			var destCommDrop = ((DropDownView)LinkerView.FindFirstChildByName("DestCommandDropDown"));
 			var addButton = ((ButtonView)LinkerView.FindFirstChildByName("AddButton"));
@@ -263,7 +260,6 @@ namespace Lemma.Components
 
 			addButton.ResetOnMouseClick();
 
-			sourceDrop.RemoveAllOptions();
 			destEntityDrop.RemoveAllOptions();
 			destCommDrop.RemoveAllOptions();
 
@@ -287,15 +283,8 @@ namespace Lemma.Components
 				}
 			};
 
-			Action<bool, bool, bool> recompute = (sourceChanged, destEntityChanged, destCommChanged) =>
+			Action<bool, bool> recompute = (destEntityChanged, destCommChanged) =>
 			{
-				if (sourceChanged)
-				{
-					destEntityDrop.RemoveAllOptions();
-					destCommDrop.RemoveAllOptions();
-					fillDestEntity();
-				}
-
 				if (destEntityChanged)
 				{
 					destCommDrop.RemoveAllOptions();
@@ -304,7 +293,7 @@ namespace Lemma.Components
 					fillDestCommand(selected.Related as Entity);
 				}
 
-				destEntityDrop.Active.Value = sourceDrop.LastItemSelected.Value != -1;
+				destEntityDrop.Active.Value = true;
 				destCommDrop.Active.Value = destEntityDrop.LastItemSelected.Value != -1 && destEntityDrop.Active;
 				addButton.Active.Value = destCommDrop.Active && destCommDrop.LastItemSelected.Value != -1;
 			};
@@ -317,6 +306,7 @@ namespace Lemma.Components
 				List<Entity.CommandLink> toRemove = new List<Entity.CommandLink>();
 				foreach (var link in e.LinkedCommands)
 				{
+					if(link.SourceCommand != selectedCommand.Key) continue;
 					Entity target = link.TargetEntity.Target;
 					if (target == null)
 					{
@@ -326,20 +316,17 @@ namespace Lemma.Components
 					View container = new View(main.GeeUI, listView);
 					container.ChildrenLayouts.Add(new HorizontalViewLayout(4));
 					container.ChildrenLayouts.Add(new ExpandToFitLayout());
-					var sourceView = new TextView(main.GeeUI, container, link.SourceCommand, Vector2.Zero, MainFont);
 					var entView = new TextView(main.GeeUI, container, target.ID + " [" + target.GUID + "]", Vector2.Zero, MainFont);
 					var destView = new TextView(main.GeeUI, container, link.TargetCommand, Vector2.Zero, MainFont);
 
-					sourceView.AutoSize.Value = false;
 					entView.AutoSize.Value = false;
 					destView.AutoSize.Value = false;
 
-					sourceView.Width.Value = entView.Width.Value = destView.Width.Value = 125;
-					sourceView.TextJustification = TextJustification.Left;
-					entView.TextJustification = TextJustification.Center;
+					entView.Width.Value = destView.Width.Value = 185;
+					entView.TextJustification = TextJustification.Left;
 					destView.TextJustification = TextJustification.Right;
 
-					var button = new ButtonView(main.GeeUI, container, "-", Vector2.Zero, MainFont);
+					var button = new ButtonView(main.GeeUI, container, "[-]", Vector2.Zero, MainFont);
 					button.OnMouseClick += (sender, args) =>
 					{
 						e.LinkedCommands.Remove(link);
@@ -358,42 +345,22 @@ namespace Lemma.Components
 				var entity = ((Entity)destEntityDrop.GetSelectedOption().Related);
 				link.TargetEntity = new Entity.Handle() { Target = entity };
 				link.TargetCommand = destCommDrop.GetSelectedOption().Text;
-				link.SourceCommand = sourceDrop.GetSelectedOption().Text;
+				link.SourceCommand = selectedCommand.Key;
 				e.LinkedCommands.Add(link);
 				populateList();
 				addButton.Active.Value = false;
-				sourceDrop.LastItemSelected.Value = -1;
 				this.NeedsSave.Value = true;
 			};
 			#endregion
 
-			sourceDrop.Add(new NotifyBinding(() => recompute(true, false, false), sourceDrop.LastItemSelected));
-			destEntityDrop.Add(new NotifyBinding(() => recompute(false, true, false), destEntityDrop.LastItemSelected));
-			destCommDrop.Add(new NotifyBinding(() => recompute(false, false, true), destCommDrop.LastItemSelected));
+			destEntityDrop.Add(new NotifyBinding(() => recompute(true, false), destEntityDrop.LastItemSelected));
+			destCommDrop.Add(new NotifyBinding(() => recompute(false, true), destCommDrop.LastItemSelected));
 
 			addButton.OnMouseClick += (sender, args) => addItem();
 
+			sourceText.Text.Value = selectedCommand.Key;
 
-			foreach (var command in e.Commands)
-			{
-				var comm = command.Value.Command;
-				var name = command.Key;
-
-				sourceDrop.AddOption(name, () => { }, null, comm);
-			}
-
-			foreach (var command in e.Commands)
-			{
-				var comm = command.Value.Command;
-				var name = command.Key;
-
-				if (comm == selectedCommand)
-				{
-					sourceDrop.SetSelectedOption(name);
-					break;
-				}
-			}
-
+			fillDestEntity();
 			populateList();
 
 		}
@@ -525,7 +492,7 @@ namespace Lemma.Components
 				var link = new ButtonView(main.GeeUI, container, "Link", Vector2.Zero, MainFont);
 				link.OnMouseClick += (sender, args) =>
 				{
-					ShowLinkerView(entry.Command);
+					ShowLinkerView(entry);
 				};
 			}
 			return container;
