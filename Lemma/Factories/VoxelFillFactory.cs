@@ -16,13 +16,6 @@ namespace Lemma.Factories
 {
 	public class VoxelFillFactory : VoxelFactory
 	{
-		public class CoordinateEntry
-		{
-			public Voxel.Coord Coord;
-			public Vector3 Position;
-			public float Distance;
-		}
-
 		public override Entity Create(Main main, int offsetX, int offsetY, int offsetZ)
 		{
 			Entity entity = base.Create(main, offsetX, offsetY, offsetZ);
@@ -36,114 +29,13 @@ namespace Lemma.Factories
 
 			VoxelAttachable.MakeAttachable(entity, main);
 
-			Property<Entity.Handle> target = entity.GetOrMakeProperty<Entity.Handle>("Target");
+			VoxelFill voxelFill = entity.GetOrCreate<VoxelFill>("VoxelFill");
+			voxelFill.Add(new CommandBinding(voxelFill.Delete, entity.Delete));
 
 			Voxel map = entity.Get<Voxel>();
 			map.Editable = false;
 
-			Property<float> intervalMultiplier = entity.GetOrMakeProperty<float>("IntervalMultiplier", true, 1.0f);
-
-			ListProperty<CoordinateEntry> coords = entity.GetOrMakeListProperty<CoordinateEntry>("Coordinates");
-
-			Property<int> index = entity.GetOrMakeProperty<int>("FillIndex");
-
-			Action populateCoords = delegate()
-			{
-				if (coords.Count == 0)
-				{
-					Entity targetEntity = target.Value.Target;
-					if (targetEntity != null && targetEntity.Active)
-					{
-						Voxel m = targetEntity.Get<Voxel>();
-						foreach (CoordinateEntry e in map.Chunks.SelectMany(c => c.Boxes.SelectMany(x => x.GetCoords())).Select(delegate(Voxel.Coord y)
-						{
-							Voxel.Coord z = m.GetCoordinate(map.GetAbsolutePosition(y));
-							z.Data = y.Data;
-							return new CoordinateEntry { Coord = z, };
-						}))
-						coords.Add(e);
-					}
-				}
-			};
-
-			if (main.EditorEnabled)
-				coords.Clear();
-			else
-				entity.Add(new PostInitialization { populateCoords });
-
-			Property<float> blockLifetime = entity.GetOrMakeProperty<float>("BlockLifetime", true, 0.25f);
-
-			float intervalTimer = 0.0f;
-			Updater update = new Updater
-			{
-				delegate(float dt)
-				{
-					intervalTimer += dt;
-					Entity targetEntity = target.Value.Target;
-					if (targetEntity != null && targetEntity.Active && index < coords.Count)
-					{
-						float interval = 0.03f * intervalMultiplier;
-						while (intervalTimer > interval && index < coords.Count)
-						{
-							EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
-							Voxel m = targetEntity.Get<Voxel>();
-							
-							CoordinateEntry entry = coords[index];
-							Entity blockEntity = factory.CreateAndBind(main);
-							EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
-							entry.Coord.Data.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
-							effectBlock.CheckAdjacent.Value = false;
-							effectBlock.Offset.Value = m.GetRelativePosition(entry.Coord);
-							effectBlock.DoScale.Value = true;
-
-							effectBlock.StartPosition.Value = entry.Position + new Vector3(8.0f, 20.0f, 8.0f) * blockLifetime.Value;
-							effectBlock.StartOrientation.Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
-
-							effectBlock.TotalLifetime.Value = blockLifetime;
-							effectBlock.Setup(targetEntity, entry.Coord, entry.Coord.Data.ID);
-							main.Add(blockEntity);
-
-							index.Value++;
-							intervalTimer -= interval;
-						}
-					}
-					else
-						entity.Delete.Execute();
-				}
-			};
-			update.Enabled.Value = index > 0;
-			entity.Add("Update", update);
-
-			Action fill = delegate()
-			{
-				if (index > 0 || update.Enabled)
-					return; // We're already filling
-
-				Entity targetEntity = target.Value.Target;
-				if (targetEntity != null && targetEntity.Active)
-				{
-					populateCoords();
-					Voxel m = targetEntity.Get<Voxel>();
-					Vector3 focusPoint = main.Camera.Position;
-					foreach (CoordinateEntry entry in coords)
-					{
-						entry.Position = m.GetAbsolutePosition(entry.Coord);
-						entry.Distance = (focusPoint - entry.Position).LengthSquared();
-					}
-
-					List<CoordinateEntry> coordList = coords.ToList();
-					coords.Clear();
-					coordList.Sort(new LambdaComparer<CoordinateEntry>((x, y) => x.Distance.CompareTo(y.Distance)));
-					foreach (CoordinateEntry e in coordList)
-						coords.Add(e);
-
-					update.Enabled.Value = true;
-				}
-			};
-
-			Command cmd = new Command { Action = fill };
-			entity.Add("Fill", cmd);
-			entity.Add("Trigger", cmd);
+			BindCommand(entity, voxelFill.OnEnabled, "Enable");
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

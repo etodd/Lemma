@@ -45,7 +45,7 @@ namespace Lemma.Factories
 		{
 			base.AttachEditorComponents(entity, main);
 
-			entity.Add(new Binding<bool>(entity.Get<Model>("EditorModel").Enabled, x => !x, entity.GetOrMakeProperty<bool>("Valid")));
+			entity.Add(new Binding<bool>(entity.Get<Model>("EditorModel").Enabled, x => !x, entity.Get<SceneryBlock>().Valid));
 		}
 	}
 }

@@ -28,50 +28,19 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);
-			Property<bool> on = entity.GetOrMakeProperty<bool>("On");
 
 			light.Add(new Binding<Vector3>(light.Position, () => Vector3.Transform(new Vector3(0, 0, attachable.Offset), transform.Matrix), attachable.Offset, transform.Matrix));
 
-			ListProperty<Entity.Handle> targets = entity.GetOrMakeListProperty<Entity.Handle>("Targets");
+			Switch sw = entity.GetOrCreate<Switch>("Switch");
 
-			Command OnPowerOn = new Command();
-			Command OnPowerOff = new Command();
-			BindCommand(entity, OnPowerOn, "OnPowered");
-			BindCommand(entity, OnPowerOn, "OnPoweredOff");
-			entity.Add(new NotifyBinding(delegate()
-			{
-				if (on)
-					OnPowerOn.Execute();
-				else
-					OnPowerOff.Execute();
-				AkSoundEngine.PostEvent(on ? AK.EVENTS.PLAY_SWITCH_ON : AK.EVENTS.PLAY_SWITCH_OFF, light.Position);
-
-				//TODO: Remove this. Not obvious to editors.
-				foreach (Entity.Handle targetHandle in targets)
-				{
-					Entity target = targetHandle.Target;
-					if (target != null && target.Active)
-					{
-						if (on)
-						{
-							Command triggerCommand = target.GetCommand("Trigger");
-							if (triggerCommand != null)
-								triggerCommand.Execute();
-						}
-
-						if (target.Type == "Spinner")
-							target.GetProperty<float>("Goal").Value = target.GetProperty<float>(on ? "Maximum" : "Minimum").Value;
-						else if (target.Type == "Slider")
-							target.GetProperty<int>("Goal").Value = target.GetProperty<int>(on ? "Maximum" : "Minimum").Value;
-					}
-				}
-			}, on));
+			BindCommand(entity, sw.OnPowerOn, "OnPowerOn");
+			BindCommand(entity, sw.OnPowerOff, "OnPowerOff");
 
 			if (main.EditorEnabled)
 				light.Enabled.Value = true;
 			else
 			{
-				light.Add(new Binding<bool>(light.Enabled, on));
+				light.Add(new Binding<bool>(light.Enabled, sw.On));
 				CommandBinding<IEnumerable<Voxel.Coord>, Voxel> cellFilledBinding = null;
 
 				Voxel.State poweredState = Voxel.States[Voxel.t.PoweredSwitch];
@@ -88,7 +57,7 @@ namespace Lemma.Factories
 						{
 							if (c.Equivalent(attachable.Coord))
 							{
-								on.Value = c.Data == poweredState;
+								sw.On.Value = c.Data == poweredState;
 								break;
 							}
 						}
@@ -103,7 +72,6 @@ namespace Lemma.Factories
 		public override void AttachEditorComponents(Entity entity, Main main)
 		{
 			base.AttachEditorComponents(entity, main);
-			EntityConnectable.AttachEditorComponents(entity, entity.GetOrMakeListProperty<Entity.Handle>("Targets"));
 			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}
 	}

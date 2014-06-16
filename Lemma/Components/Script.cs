@@ -18,39 +18,6 @@ namespace Lemma.Components
 		public const string ScriptExtension = "cs";
 		public const string BinaryExtension = "dll";
 
-		private const string scriptPrefix =
-@"
-using System; using ComponentBind;
-using Microsoft.Xna.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Lemma.Util;
-using Lemma.Components;
-using Lemma.Factories;
-
-namespace Lemma.GameScripts
-{
-	public class Script : ScriptBase
-	{
-		public static Entity script;
-		public static void Run()
-		{
-";
-
-		private const string scriptPostfix =
-@"
-		}
-	}
-}
-";
-
-		private static int lineNumberOffset;
-		static Script()
-		{
-			lineNumberOffset = Script.scriptPrefix.Count(x => x == '\n');
-		}
-
 		[XmlIgnore]
 		public EditorProperty<string> Errors = new EditorProperty<string>();
 
@@ -58,6 +25,10 @@ namespace Lemma.GameScripts
 
 		[XmlIgnore]
 		public Command Execute = new Command { ShowInEditor = true };
+
+		public EditorProperty<bool> ExecuteOnLoad = new EditorProperty<bool>();
+
+		public EditorProperty<bool> DeleteOnExecute = new EditorProperty<bool>();
 
 		public ListProperty<Entity.Handle> ConnectedEntities = new ListProperty<Entity.Handle>();
 
@@ -138,7 +109,7 @@ namespace Lemma.GameScripts
 						cp.ReferencedAssemblies.Add(Assembly.Load(assemblyName).Location);
 
 					// Invoke compilation of the source file.
-					CompilerResults cr = provider.CompileAssemblyFromSource(cp, Script.scriptPrefix + reader.ReadToEnd() + Script.scriptPostfix);
+					CompilerResults cr = provider.CompileAssemblyFromSource(cp, reader.ReadToEnd());
 
 					if (cr.Errors.Count > 0)
 					{
@@ -147,7 +118,7 @@ namespace Lemma.GameScripts
 						foreach (CompilerError ce in cr.Errors)
 						{
 							builder.Append("Line ");
-							builder.Append((ce.Line - Script.lineNumberOffset).ToString());
+							builder.Append(ce.Line.ToString());
 							builder.Append(": ");
 							builder.Append(ce.ErrorNumber);
 							builder.Append(": ");
@@ -201,9 +172,24 @@ namespace Lemma.GameScripts
 					Lemma.GameScripts.ScriptBase.main = main;
 					Lemma.GameScripts.ScriptBase.renderer = main.Renderer;
 				}
+
 				if (this.scriptMethod != null)
 					this.scriptMethod.Invoke(null, null);
+
+				if (this.DeleteOnExecute)
+				{
+					if (this.Entity != null)
+						this.Entity.Add(new Animation(new Animation.Execute(this.Delete)));
+					else
+						this.main.AddComponent(new Animation(new Animation.Execute(this.Delete)));
+				}
 			};
+		}
+
+		public override void Start()
+		{
+			if (this.ExecuteOnLoad)
+				this.Execute.Execute();
 		}
 
 		public static void ConsoleInit()

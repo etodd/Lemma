@@ -22,57 +22,16 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			entity.GetOrCreate<Transform>("Transform");
+			Rotator rotator = entity.GetOrCreate<Rotator>("Rotator");
+			rotator.Add(new CommandBinding(rotator.Delete, entity.Delete));
 			this.SetMain(entity, main);
-
-			Property<Vector3> velocity = entity.GetOrMakeProperty<Vector3>("Velocity", true);
-
-			ListProperty<Entity.Handle> targets = entity.GetOrMakeListProperty<Entity.Handle>("Targets");
-
-			List<Transform> transforms = new List<Transform>();
-			entity.Add(new PostInitialization
-			{
-				delegate()
-				{
-					foreach (Entity.Handle handle in targets)
-					{
-						Entity e = handle.Target;
-						if (e != null && e.Active)
-							transforms.Add(e.Get<Transform>());
-					}
-				}
-			});
-
-			entity.Add(new Updater
-			{
-				delegate(float dt)
-				{
-					if (transforms.Count == 0)
-						entity.Delete.Execute();
-					else
-					{
-						Vector3 v = velocity.Value * dt;
-						Quaternion diff = Microsoft.Xna.Framework.Quaternion.CreateFromYawPitchRoll(v.X, v.Y, v.Z);
-						for (int i = 0; i < transforms.Count; i++)
-						{
-							Transform t = transforms[i];
-							if (t.Active)
-								t.Quaternion.Value *= diff;
-							else
-							{
-								transforms.RemoveAt(i);
-								i--;
-							}
-						}
-					}
-				}
-			});
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
 		{
 			base.AttachEditorComponents(entity, main);
 
-			EntityConnectable.AttachEditorComponents(entity, entity.GetOrMakeListProperty<Entity.Handle>("Targets"));
+			EntityConnectable.AttachEditorComponents(entity, entity.Get<Rotator>().Targets);
 		}
 	}
 }

@@ -26,25 +26,9 @@ namespace Lemma.Factories
 			entity.CannotSuspend = true;
 
 			Script script = entity.GetOrCreate<Script>("Script");
-
-			Property<bool> executeOnLoad = entity.GetOrMakeProperty<bool>("ExecuteOnLoad", true, true);
-			if (executeOnLoad && !main.EditorEnabled)
-			{
-				entity.Add("Executor", new PostInitialization
-				{
-					delegate()
-					{
-						if (executeOnLoad)
-							script.Execute.Execute();
-					}
-				});
-			}
+			script.Add(new CommandBinding(script.Delete, entity.Delete));
 
 			entity.Add("Trigger", script.Execute);
-
-			Property<bool> deleteOnExecute = entity.GetOrMakeProperty<bool>("DeleteOnExecute", true, false);
-			if (deleteOnExecute)
-				entity.Add(new CommandBinding(script.Execute, entity.Delete));
 
 			this.SetMain(entity, main);
 		}

@@ -45,14 +45,10 @@ namespace Lemma.Factories
 				});
 			}
 
+			Snake snake = entity.GetOrCreate<Snake>("Snake");
+
 			entity.CannotSuspendByDistance = true;
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
-
-			Property<float> operationalRadius = entity.GetOrMakeProperty<float>("OperationalRadius", true, 100.0f);
-
-			ListProperty<Voxel.Coord> path = entity.GetOrMakeListProperty<Voxel.Coord>("PathCoordinates");
-
-			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
 
 			AI ai = entity.GetOrCreate<AI>("AI");
 
@@ -78,13 +74,12 @@ namespace Lemma.Factories
 			entity.Add(new CommandBinding(chase.Delete, entity.Delete));
 
 			PointLight positionLight = null;
-			Property<float> positionLightRadius = entity.GetOrMakeProperty<float>("PositionLightRadius", true, 20.0f);
 			if (!main.EditorEnabled)
 			{
 				positionLight = new PointLight();
 				positionLight.Serialize = false;
 				positionLight.Color.Value = new Vector3(1.5f, 0.5f, 0.5f);
-				positionLight.Add(new Binding<float>(positionLight.Attenuation, positionLightRadius));
+				positionLight.Attenuation.Value = 20.0f;
 				positionLight.Add(new Binding<bool, string>(positionLight.Enabled, x => x != "Suspended", ai.CurrentState));
 				positionLight.Add(new Binding<Vector3, string>(positionLight.Color, delegate(string state)
 				{
@@ -128,7 +123,7 @@ namespace Lemma.Factories
 				Interval = 2.0f,
 				Action = delegate()
 				{
-					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < operationalRadius;
+					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < snake.OperationalRadius;
 					if (shouldBeActive && ai.CurrentState == "Suspended")
 						ai.CurrentState.Value = "Idle";
 					else if (!shouldBeActive && ai.CurrentState != "Suspended")
@@ -140,10 +135,10 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					Entity target = targetAgent.Value.Target;
+					Entity target = snake.TargetAgent.Value.Target;
 					if (target == null || !target.Active)
 					{
-						targetAgent.Value = null;
+						snake.TargetAgent.Value = null;
 						ai.CurrentState.Value = "Idle";
 					}
 				},
@@ -163,15 +158,13 @@ namespace Lemma.Factories
 					}
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SNAKE_MOVE, entity);
 
-					if (path.Count > 0)
+					if (snake.Path.Count > 0)
 					{
-						chase.Coord.Value = path[0];
-						path.RemoveAt(0);
+						chase.Coord.Value = snake.Path[0];
+						snake.Path.RemoveAt(0);
 					}
 				}
 			}));
-
-			Property<Voxel.Coord> crushCoordinate = entity.GetOrMakeProperty<Voxel.Coord>("CrushCoordinate");
 
 			ai.Setup
 			(
@@ -226,7 +219,7 @@ namespace Lemma.Factories
 									Agent a = Agent.Query(transform.Position, 50.0f, 30.0f, x => x.Entity.Type == "Player");
 									if (a != null)
 									{
-										targetAgent.Value = a.Entity;
+										snake.TargetAgent.Value = a.Entity;
 										ai.CurrentState.Value = "Chase";
 									}
 								}
@@ -257,7 +250,7 @@ namespace Lemma.Factories
 							Interval = 0.07f,
 							Action = delegate()
 							{
-								Vector3 targetPosition = targetAgent.Value.Target.Get<Agent>().Position;
+								Vector3 targetPosition = snake.TargetAgent.Value.Target.Get<Agent>().Position;
 
 								float targetDistance = (targetPosition - transform.Position).Length();
 
@@ -279,7 +272,7 @@ namespace Lemma.Factories
 					Enter = delegate(AI.AIState lastState)
 					{
 						// Set up cage
-						Voxel.Coord center = chase.Voxel.Value.Target.Get<Voxel>().GetCoordinate(targetAgent.Value.Target.Get<Agent>().Position);
+						Voxel.Coord center = chase.Voxel.Value.Target.Get<Voxel>().GetCoordinate(snake.TargetAgent.Value.Target.Get<Agent>().Position);
 
 						int radius = 1;
 
@@ -287,7 +280,7 @@ namespace Lemma.Factories
 						for (int x = center.X - radius; x <= center.X + radius; x++)
 						{
 							for (int z = center.Z - radius; z <= center.Z + radius; z++)
-								path.Add(new Voxel.Coord { X = x, Y = center.Y - 4, Z = z });
+								snake.Path.Add(new Voxel.Coord { X = x, Y = center.Y - 4, Z = z });
 						}
 
 						// Outer shell
@@ -296,39 +289,39 @@ namespace Lemma.Factories
 						{
 							// Left
 							for (int z = center.Z - radius; z <= center.Z + radius; z++)
-								path.Add(new Voxel.Coord { X = center.X - radius, Y = y, Z = z });
+								snake.Path.Add(new Voxel.Coord { X = center.X - radius, Y = y, Z = z });
 
 							// Right
 							for (int z = center.Z - radius; z <= center.Z + radius; z++)
-								path.Add(new Voxel.Coord { X = center.X + radius, Y = y, Z = z });
+								snake.Path.Add(new Voxel.Coord { X = center.X + radius, Y = y, Z = z });
 
 							// Backward
 							for (int x = center.X - radius; x <= center.X + radius; x++)
-								path.Add(new Voxel.Coord { X = x, Y = y, Z = center.Z - radius });
+								snake.Path.Add(new Voxel.Coord { X = x, Y = y, Z = center.Z - radius });
 
 							// Forward
 							for (int x = center.X - radius; x <= center.X + radius; x++)
-								path.Add(new Voxel.Coord { X = x, Y = y, Z = center.Z + radius });
+								snake.Path.Add(new Voxel.Coord { X = x, Y = y, Z = center.Z + radius });
 						}
 
 						// Top
 						for (int x = center.X - radius; x <= center.X + radius; x++)
 						{
 							for (int z = center.Z - radius; z <= center.Z + radius; z++)
-								path.Add(new Voxel.Coord { X = x, Y = center.Y + 3, Z = z });
+								snake.Path.Add(new Voxel.Coord { X = x, Y = center.Y + 3, Z = z });
 						}
 
 						chase.EnablePathfinding.Value = false;
 						chase.Speed.Value = crushSpeed;
 
-						crushCoordinate.Value = chase.Coord;
+						snake.CrushCoordinate.Value = chase.Coord;
 					},
 					Exit = delegate(AI.AIState nextState)
 					{
 						chase.EnablePathfinding.Value = true;
 						chase.Speed.Value = defaultSpeed;
-						chase.Coord.Value = chase.LastCoord.Value = crushCoordinate;
-						path.Clear();
+						chase.Coord.Value = chase.LastCoord.Value = snake.CrushCoordinate;
+						snake.Path.Clear();
 					},
 					Tasks = new[]
 					{
@@ -340,7 +333,7 @@ namespace Lemma.Factories
 							Interval = 0.01f,
 							Action = delegate()
 							{
-								Agent a = targetAgent.Value.Target.Get<Agent>();
+								Agent a = snake.TargetAgent.Value.Target.Get<Agent>();
 								a.Health.Value -= 0.01f / 1.5f; // seconds to kill
 								if (!a.Active)
 									ai.CurrentState.Value = "Alert";

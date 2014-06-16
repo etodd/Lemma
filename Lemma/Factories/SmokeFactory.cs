@@ -9,46 +9,38 @@ namespace Lemma.Factories
 {
 	public class SmokeFactory : Factory<Main>
 	{
-		private Random random = new Random();
+		private static Random random = new Random();
+
 		public SmokeFactory()
 		{
 			this.Color = new Vector3(0.8f, 0.8f, 0.8f);
+			this.EditorCanSpawn = false;
 		}
+
+		const float speed = 20.0f;
 
 		public override Entity Create(Main main)
 		{
-			return new Entity(main, "Smoke");
+			Entity entity = new Entity(main, "Smoke");
+			Smoke smoke = new Smoke();
+			smoke.Velocity.Value = speed * Vector3.Normalize(new Vector3(((float)random.NextDouble() - 0.5f) * 2.0f, (float)random.NextDouble(), ((float)random.NextDouble() - 0.5f) * 2.0f));
+			entity.Add("Smoke", smoke);
+
+			return entity;
 		}
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			entity.Serialize = false;
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
-
-			const float speed = 20.0f;
-
-			Property<Vector3> velocity = entity.GetOrMakeProperty<Vector3>("Velocity");
-			velocity.Value = speed * Vector3.Normalize(new Vector3(((float)this.random.NextDouble() - 0.5f) * 2.0f, (float)this.random.NextDouble(), ((float)this.random.NextDouble() - 0.5f) * 2.0f));
-			Property<float> lifetime = entity.GetOrMakeProperty<float>("Lifetime");
+			Smoke smoke = entity.GetOrCreate<Smoke>("Smoke");
+			smoke.Add(new TwoWayBinding<Vector3>(transform.Position, smoke.Position));
+			smoke.Add(new CommandBinding(smoke.Delete, entity.Delete));
 
 			ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("Emitter");
 			emitter.Add(new Binding<Vector3>(emitter.Position, transform.Position));
 			emitter.ParticlesPerSecond.Value = 35;
 			emitter.ParticleType.Value = "Smoke";
-			entity.Add(new Updater
-			{
-				delegate(float dt)
-				{
-					lifetime.Value += dt;
-					if (lifetime > 1.0f)
-						entity.Delete.Execute();
-					else
-					{
-						velocity.Value += new Vector3(0, dt * -11.0f, 0);
-						transform.Position.Value += velocity.Value * dt;
-					}
-				}
-			});
 
 			this.SetMain(entity, main);
 		}

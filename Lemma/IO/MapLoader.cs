@@ -116,6 +116,13 @@ namespace Lemma.IO
 			typeof(ImplodeBlock),
 			typeof(TimeTrial),
 			typeof(Rain),
+			typeof(Rotator),
+			typeof(Skybox),
+			typeof(Smoke),
+			typeof(Snake),
+			typeof(Switch),
+			typeof(Turret),
+			typeof(VoxelFill),
 		};
 
 		public static XmlSerializer Serializer;

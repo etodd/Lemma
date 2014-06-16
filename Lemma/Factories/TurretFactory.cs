@@ -32,6 +32,8 @@ namespace Lemma.Factories
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 			light.Add(new Binding<Quaternion>(light.Orientation, transform.Quaternion));
 
+			Turret turret = entity.GetOrCreate<Turret>("Turret");
+
 			Command die = new Command
 			{
 				Action = delegate()
@@ -56,8 +58,6 @@ namespace Lemma.Factories
 
 			LineDrawer laser = new LineDrawer { Serialize = false };
 			entity.Add(laser);
-
-			Property<Vector3> reticle = entity.GetOrMakeProperty<Vector3>("Reticle");
 
 			AI ai = entity.GetOrCreate<AI>();
 
@@ -109,7 +109,7 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					toReticle = Vector3.Normalize(reticle.Value - transform.Position.Value);
+					toReticle = Vector3.Normalize(turret.Reticle.Value - transform.Position.Value);
 					rayHit = Voxel.GlobalRaycast(transform.Position, toReticle, 300.0f);
 					laser.Lines.Clear();
 
@@ -151,8 +151,6 @@ namespace Lemma.Factories
 				},
 			});
 
-			Property<Entity.Handle> targetAgent = entity.GetOrMakeProperty<Entity.Handle>("TargetAgent");
-
 			ai.Add(new AI.AIState
 			{
 				Name = "Alert",
@@ -172,7 +170,7 @@ namespace Lemma.Factories
 								Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
 								if (a != null)
 								{
-									targetAgent.Value = a.Entity;
+									turret.TargetAgent.Value = a.Entity;
 									ai.CurrentState.Value = "Aggressive";
 								}
 							}
@@ -185,10 +183,10 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					Entity target = targetAgent.Value.Target;
+					Entity target = turret.TargetAgent.Value.Target;
 					if (target == null || !target.Active)
 					{
-						targetAgent.Value = null;
+						turret.TargetAgent.Value = null;
 						ai.CurrentState.Value = "Idle";
 					}
 				},
@@ -207,8 +205,8 @@ namespace Lemma.Factories
 					{
 						Action = delegate()
 						{
-							Entity target = targetAgent.Value.Target;
-							reticle.Value += (target.Get<Transform>().Position - reticle.Value) * Math.Min(2.0f * main.ElapsedTime, 1.0f);
+							Entity target = turret.TargetAgent.Value.Target;
+							turret.Reticle.Value += (target.Get<Transform>().Position - turret.Reticle.Value) * Math.Min(2.0f * main.ElapsedTime, 1.0f);
 						}
 					},
 					new AI.Task
@@ -216,7 +214,7 @@ namespace Lemma.Factories
 						Interval = 0.1f,
 						Action = delegate()
 						{
-							if (Agent.Query(transform.Position, sightDistance, hearingDistance, targetAgent.Value.Target.Get<Agent>()))
+							if (Agent.Query(transform.Position, sightDistance, hearingDistance, turret.TargetAgent.Value.Target.Get<Agent>()))
 								lastSpotted = main.TotalTime;
 
 							if (ai.TimeInCurrentState.Value > 2.0f)
@@ -225,7 +223,7 @@ namespace Lemma.Factories
 									ai.CurrentState.Value = "Alert";
 								else
 								{
-									Vector3 toTarget = Vector3.Normalize(targetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position.Value);
+									Vector3 toTarget = Vector3.Normalize(turret.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position.Value);
 									if (Vector3.Dot(toReticle, toTarget) > 0.95f)
 										ai.CurrentState.Value = "Firing";
 								}
@@ -249,7 +247,7 @@ namespace Lemma.Factories
 
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_FIRE, entity);
 
-					Entity target = targetAgent.Value.Target;
+					Entity target = turret.TargetAgent.Value.Target;
 					if (target != null && target.Active)
 					{
 						Vector3 targetPos = target.Get<Transform>().Position;

@@ -30,41 +30,39 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			ModelAlpha skybox = entity.Get<ModelAlpha>("Skybox");
-			skybox.MapContent.Value = true;
-			skybox.MapContent.Editable = false;
-			skybox.TechniquePostfix.Editable = false;
+			Skybox skybox = entity.GetOrCreate<Skybox>("Settings");
+
+			ModelAlpha model = entity.Get<ModelAlpha>("Skybox");
+			model.MapContent.Value = true;
+			model.MapContent.Editable = false;
+			model.TechniquePostfix.Editable = false;
 			base.Bind(entity, main, creating);
 			entity.CannotSuspendByDistance = true;
 
-			skybox.DisableCulling.Value = true;
-			skybox.CullBoundingBox.Value = false;
-			skybox.Add(new Binding<Matrix>(skybox.Transform, transform.Matrix));
-			skybox.DrawOrder.Value = -10;
+			model.DisableCulling.Value = true;
+			model.CullBoundingBox.Value = false;
+			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
+			model.DrawOrder.Value = -10;
 
-			Property<bool> vertical = entity.GetOrMakeProperty<bool>("VerticalLimit", true);
-			Property<float> godRays = entity.GetOrMakeProperty<float>("GodRays", true, 0.25f);
-			skybox.Add
+			model.Add
 			(
 				new Binding<string>
 				(
-					skybox.TechniquePostfix,
-					() => (vertical ? "Vertical" : "") + (main.LightingManager.HasGlobalShadowLight && godRays > 0.0f && main.Settings.EnableGodRays ? "GodRays" : ""),
-					vertical, main.LightingManager.HasGlobalShadowLight, godRays, main.Settings.EnableGodRays
+					model.TechniquePostfix,
+					() => (skybox.Vertical ? "Vertical" : "") + (main.LightingManager.HasGlobalShadowLight && skybox.GodRays > 0.0f && main.Settings.EnableGodRays ? "GodRays" : ""),
+					skybox.Vertical, main.LightingManager.HasGlobalShadowLight, skybox.GodRays, main.Settings.EnableGodRays
 				)
 			);
-			skybox.Add(new Binding<float>(skybox.GetFloatParameter("VerticalSize"), entity.GetOrMakeProperty<float>("VerticalSize", true, 10.0f)));
-			Property<float> verticalCenter = entity.GetOrMakeProperty<float>("VerticalCenter", true);
-			skybox.Add(new Binding<float>(skybox.GetFloatParameter("VerticalCenter"), verticalCenter));
-			skybox.Add(new Binding<float>(skybox.GetFloatParameter("GodRayStrength"), godRays));
-			skybox.Add(new Binding<float>(skybox.GetFloatParameter("GodRayExtinction"), entity.GetOrMakeProperty<float>("GodRayExtinction", true, 1.0f)));
-			skybox.Add(new Binding<Vector3>(skybox.GetVector3Parameter("CameraPosition"), main.Camera.Position));
-			skybox.Add(new Binding<RenderTarget2D>(skybox.GetRenderTarget2DParameter("ShadowMap" + Components.Model.SamplerPostfix), () => main.LightingManager.GlobalShadowMap, main.LightingManager.GlobalShadowMap, main.ScreenSize));
-			skybox.Add(new Binding<Matrix>(skybox.GetMatrixParameter("ShadowViewProjectionMatrix"), main.LightingManager.GlobalShadowViewProjection));
-			skybox.GetTexture2DParameter("Random" + Lemma.Components.Model.SamplerPostfix).Value = main.Content.Load<Texture2D>("Images\\random");
+			model.Add(new Binding<float>(model.GetFloatParameter("VerticalSize"), skybox.VerticalSize));
+			model.Add(new Binding<float>(model.GetFloatParameter("VerticalCenter"), skybox.VerticalCenter));
+			model.Add(new Binding<float>(model.GetFloatParameter("GodRayStrength"), skybox.GodRays));
+			model.Add(new Binding<float>(model.GetFloatParameter("GodRayExtinction"), skybox.GodRayExtinction));
+			model.Add(new Binding<Vector3>(model.GetVector3Parameter("CameraPosition"), main.Camera.Position));
+			model.Add(new Binding<RenderTarget2D>(model.GetRenderTarget2DParameter("ShadowMap" + Components.Model.SamplerPostfix), () => main.LightingManager.GlobalShadowMap, main.LightingManager.GlobalShadowMap, main.ScreenSize));
+			model.Add(new Binding<Matrix>(model.GetMatrixParameter("ShadowViewProjectionMatrix"), main.LightingManager.GlobalShadowViewProjection));
+			model.GetTexture2DParameter("Random" + Lemma.Components.Model.SamplerPostfix).Value = main.Content.Load<Texture2D>("Images\\random");
 
-			Property<float> startDistance = entity.GetOrMakeProperty<float>("StartDistance", true, 50);
-			skybox.Add(new Binding<float>(skybox.GetFloatParameter("StartDistance"), startDistance));
+			model.Add(new Binding<float>(model.GetFloatParameter("StartDistance"), skybox.StartDistance));
 		}
 	}
 }
