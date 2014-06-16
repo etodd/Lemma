@@ -378,7 +378,7 @@ namespace Lemma.Factories
 				gui.MapCommands
 			);
 
-			editor.Add(new CommandBinding(input.RightMouseButtonDown, () => !editor.VoxelEditMode && !input.EnableLook && editor.TransformMode.Value == Editor.TransformModes.None, delegate()
+			editor.Add(new CommandBinding(input.RightMouseButtonDown, () => !editor.VoxelEditMode && !input.EnableLook && editor.TransformMode.Value == Editor.TransformModes.None && !main.GeeUI.LastClickCaptured, delegate()
 			{
 				// We're not editing a voxel
 				// And we're not transforming entities
@@ -645,13 +645,13 @@ namespace Lemma.Factories
 			editor.Add(new CommandBinding
 			(
 				input.LeftMouseButtonDown,
-				() => editor.TransformMode.Value != Editor.TransformModes.None,
+				() => editor.TransformMode.Value != Editor.TransformModes.None && !main.GeeUI.LastClickCaptured,
 				editor.CommitTransform
 			));
 			editor.Add(new CommandBinding
 			(
 				input.RightMouseButtonDown,
-				() => editor.TransformMode.Value != Editor.TransformModes.None,
+				() => editor.TransformMode.Value != Editor.TransformModes.None && !main.GeeUI.LastClickCaptured,
 				editor.RevertTransform
 			));
 			
