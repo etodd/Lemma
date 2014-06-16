@@ -54,7 +54,7 @@ namespace GeeUI.Views
         {
             get
             {
-                if (MouseOver)
+                if (MouseOver || Selected)
                 {
                     return InputManager.IsMousePressed(MouseButton.Left) ? NinePatchClicked : NinePatchHover;
                 }

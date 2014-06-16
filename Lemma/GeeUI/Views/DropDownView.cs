@@ -27,6 +27,7 @@ namespace GeeUI.Views
 		private PanelView DropDownPanelView;
 		private ListView DropDownListView;
 		public List<DropDownOption> DropDownOptions = new List<DropDownOption>();
+		private List<DropDownOption> DisplayingOptions = new List<DropDownOption>();
 		private SpriteFont mainFont;
 		private TextFieldView FilterView;
 
@@ -35,6 +36,8 @@ namespace GeeUI.Views
 		public Property<bool> AllowRightClickExecute = new Property<bool>() { Value = true };
 		public Property<bool> AllowFilterText = new Property<bool>() { Value = true };
 		public Property<int> FilterThreshhold = new Property<int>() { Value = 15 };
+
+		private int _arrowKeysIndex = 0;
 
 		private bool DropDownShowing
 		{
@@ -57,6 +60,7 @@ namespace GeeUI.Views
 				if (AllowRightClickExecute)
 					ExecuteLast();
 			};
+
 			button.Name = "button";
 
 			this.DropDownPanelView = new PanelView(theGeeUI, theGeeUI.RootView, Vector2.Zero);
@@ -103,14 +107,52 @@ namespace GeeUI.Views
 		{
 			if (key == Keys.Escape && this.DropDownShowing)
 				this.HideDropDown();
+			if (key == Keys.Down && this.DropDownShowing)
+			{
+				this._arrowKeysIndex++;
+			}
+			if (key == Keys.Up && this.DropDownShowing)
+			{
+				this._arrowKeysIndex--;
+			}
+			if (key == Keys.Enter && this.DropDownShowing)
+			{
+				int index = _arrowKeysIndex;
+				if (index < 0) index = 0;
+				if (index >= DisplayingOptions.Count) index = 0;
+				if (DisplayingOptions.Count == 0) return;
+
+				var option = DisplayingOptions[index];
+				this.OnOptionSelected(option);
+				HideDropDown();
+			}
+
+			ArrowKeysHandle();
+		}
+
+		private void ArrowKeysHandle()
+		{
+			if (DropDownListView.Children.Length == 0)
+			{
+				_arrowKeysIndex = 0;
+				return;
+			}
+
+			foreach (var child in DropDownListView.Children)
+				child.Selected.Value = false;
+			if (_arrowKeysIndex >= DropDownListView.Children.Length)
+				_arrowKeysIndex = 0;
+			DropDownListView.Children[_arrowKeysIndex].Selected.Value = true;
 		}
 
 		public void Refilter()
 		{
+			this._arrowKeysIndex = 0;
 			string text = FilterView.Text;
 			DropDownOption[] goodOptions = (from op in DropDownOptions
 											where op.Text.ToLower().Contains(text.ToLower()) || text == ""
 											select op).ToArray();
+			DisplayingOptions = goodOptions.ToList();
 
 			DropDownListView.RemoveAllChildren();
 			FilterView.SubmitOnClickAway = false;
@@ -120,7 +162,6 @@ namespace GeeUI.Views
 					if (text != "")
 					{
 						HideDropDown();
-						this.OnOptionSelected(goodOptions[0]);
 					}
 
 				};
@@ -133,6 +174,9 @@ namespace GeeUI.Views
 					OnOptionSelected(option);
 				};
 			}
+
+			ArrowKeysHandle();
+
 		}
 
 		public void ExecuteLast()
