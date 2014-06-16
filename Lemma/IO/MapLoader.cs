@@ -211,7 +211,8 @@ namespace Lemma.IO
 			else
 				filename = Path.Combine(directory, filename);
 
-			filename += "." + MapLoader.MapExtension;
+			if (!filename.EndsWith("." + MapLoader.MapExtension))
+				filename += "." + MapLoader.MapExtension;
 
 			try
 			{
