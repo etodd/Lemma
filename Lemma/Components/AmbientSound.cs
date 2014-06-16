@@ -9,7 +9,7 @@ namespace Lemma.Components
 {
 	public class AmbientSound : Component<Main>
 	{
-		public EditorProperty<string> PlayCue = new EditorProperty<string>();
+		public EditorProperty<string>  PlayCue = new EditorProperty<string>();
 		public EditorProperty<string> StopCue = new EditorProperty<string>();
 		public EditorProperty<bool> Is3D = new EditorProperty<bool>();
 		public Property<Vector3> Position = new Property<Vector3>();
@@ -26,9 +26,9 @@ namespace Lemma.Components
 				this.Entity.CannotSuspendByDistance = !this.Is3D;
 			}, this.Is3D));
 
-			this.Add(new CommandBinding(this.OnEnabled, (Action)this.play));
+			this.Add(new CommandBinding(this.Enable, (Action)this.play));
 			this.Add(new CommandBinding(this.OnResumed, (Action)this.play));
-			this.Add(new CommandBinding(this.OnDisabled, (Action)this.stop));
+			this.Add(new CommandBinding(this.Disable, (Action)this.stop));
 			this.Add(new CommandBinding(this.OnSuspended, (Action)this.stop));
 
 			this.play();

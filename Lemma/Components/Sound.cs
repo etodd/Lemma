@@ -26,7 +26,7 @@ namespace Lemma.Components
 				this.Entity.CannotSuspendByDistance = !this.Is3D;
 			}, this.Is3D));
 
-			this.Add(new CommandBinding(this.OnDisabled, (Action)this.Stop));
+			this.Add(new CommandBinding(this.Disable, (Action)this.Stop));
 			this.Add(new CommandBinding(this.OnSuspended, (Action)this.Stop));
 		}
 

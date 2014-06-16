@@ -51,7 +51,7 @@ namespace Lemma.Factories
 				foreach (Entity.Handle target in targets)
 				{
 					Entity t = target.Target;
-					if (t != null && t.Active)
+					if (t != null && t.Active && t.GetCommand("Trigger") != null)
 						t.GetCommand("Trigger").Execute();
 				}
 				entity.Add(new Animation
@@ -61,7 +61,8 @@ namespace Lemma.Factories
 				));
 			}));
 
-			entity.Add("Trigger", trigger.PlayerEntered);
+			BindCommand(entity, trigger.PlayerEntered, "OnReached", false, true);
+
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

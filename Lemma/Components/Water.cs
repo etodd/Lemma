@@ -222,9 +222,9 @@ namespace Lemma.Components
 			};
 
 			this.Add(new CommandBinding(this.OnSuspended, removeFluid));
-			this.Add(new CommandBinding(this.OnDisabled, removeFluid));
+			this.Add(new CommandBinding(this.Disable, removeFluid));
 			this.Add(new CommandBinding(this.OnResumed, addFluid));
-			this.Add(new CommandBinding(this.OnEnabled, addFluid));
+			this.Add(new CommandBinding(this.Enable, addFluid));
 
 			this.camera = new Camera();
 			this.main.AddComponent(this.camera);

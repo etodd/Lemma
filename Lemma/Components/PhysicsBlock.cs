@@ -97,7 +97,7 @@ namespace Lemma.Components
 				if (this.Box.Space != null)
 					this.main.Space.Remove(this.Box);
 			};
-			this.Add(new CommandBinding(this.OnDisabled, remove));
+			this.Add(new CommandBinding(this.Disable, remove));
 			this.Add(new CommandBinding(this.OnSuspended, remove));
 
 			if (!this.Enabled)
@@ -109,7 +109,7 @@ namespace Lemma.Components
 				if (this.Box.Space == null && this.Enabled && !this.Suspended)
 					this.main.Space.Add(this.Box);
 			};
-			this.Add(new CommandBinding(this.OnEnabled, add));
+			this.Add(new CommandBinding(this.Enable, add));
 			this.Add(new CommandBinding(this.OnResumed, add));
 
 			this.main.Space.Add(this.Box);

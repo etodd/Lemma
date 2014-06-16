@@ -62,10 +62,10 @@ namespace ComponentBind
 		}
 
 		[XmlIgnore]
-		public Command OnEnabled = new Command();
+		public Command Enable = new Command();
 
 		[XmlIgnore]
-		public Command OnDisabled = new Command();
+		public Command Disable = new Command();
 
 		[XmlIgnore]
 		public Command OnSuspended = new Command();
@@ -115,6 +115,15 @@ namespace ComponentBind
 					this.main.RemoveComponent(this);
 				}
 			};
+
+			this.Add(new CommandBinding(Enable, () =>
+			{
+				return !Enabled;
+			}, () =>
+			{
+				Enabled.Value = true;
+			}));
+			this.Add(new CommandBinding(Disable, () => Enabled, () => { Enabled.Value = false; }));
 		}
 
 		public virtual void OnSave()
@@ -134,9 +143,9 @@ namespace ComponentBind
 				bool oldValue = this.Enabled.InternalValue;
 				this.Enabled.InternalValue = value;
 				if (!oldValue && value)
-					this.OnEnabled.Execute();
+					this.Enable.Execute();
 				else if (oldValue && !value)
-					this.OnDisabled.Execute();
+					this.Disable.Execute();
 			};
 			this.Suspended.Set = delegate(bool value)
 			{

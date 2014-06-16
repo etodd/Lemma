@@ -24,7 +24,7 @@ namespace Lemma.Components
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
 
-			this.Add(new CommandBinding(this.OnEnabled, delegate()
+			this.Add(new CommandBinding(this.Enable, delegate()
 			{
 				if (this.ResetOnEnable)
 					this.Reset.Execute();

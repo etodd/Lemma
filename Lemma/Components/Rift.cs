@@ -45,7 +45,7 @@ namespace Lemma.Components
 			this.particles = ParticleSystem.Get(this.main, "Rift");
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
-			this.Add(new CommandBinding(this.OnEnabled, delegate()
+			this.Add(new CommandBinding(this.Enable, delegate()
 			{
 				if (this.Coords.Count == 0)
 				{

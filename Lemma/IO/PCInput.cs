@@ -179,7 +179,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.Add(new CommandBinding(this.OnDisabled, delegate()
+			this.Add(new CommandBinding(this.Disable, delegate()
 			{
 				// Release all the keys
 				foreach (KeyValuePair<Keys, Property<bool>> pair in this.keyProperties)
@@ -215,7 +215,7 @@ namespace Lemma.Components
 				}
 			}));
 
-			this.Add(new CommandBinding(this.OnEnabled, delegate()
+			this.Add(new CommandBinding(this.Enable, delegate()
 			{
 				// Don't send key-down events for the first frame after we're enabled.
 				this.preventKeyDownEvents = true;
