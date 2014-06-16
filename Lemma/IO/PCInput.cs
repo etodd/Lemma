@@ -149,6 +149,18 @@ namespace Lemma.Components
 		public struct Chord
 		{
 			public Keys Modifier, Key;
+
+			public Chord(Keys key)
+			{
+				this.Key = key;
+				this.Modifier = Keys.None;
+			}
+
+			public Chord(Keys key, Keys modifier)
+			{
+				this.Key = key;
+				this.Modifier = modifier;
+			}
 		}
 
 		protected Dictionary<Chord, Command> chords = new Dictionary<Chord, Command>();

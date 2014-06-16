@@ -181,6 +181,21 @@ namespace Lemma.Factories
 				}));
 			};
 
+			addCommand("Open", new PCInput.Chord(Keys.O, Keys.LeftControl), () =>
+				!gui.AnyTextFieldViewsSelected() && !input.EnableLook && !editor.VoxelEditMode &&
+				editor.TransformMode.Value == Editor.TransformModes.None, new Command()
+				{
+					Action = () =>
+					{
+						var dialog = new System.Windows.Forms.OpenFileDialog();
+						dialog.Filter = "Map files|*.map";
+						dialog.InitialDirectory = Directory.GetCurrentDirectory();
+						var result = dialog.ShowDialog();
+						string file = result == DialogResult.OK ? dialog.FileName : "";
+						if (file != "") IO.MapLoader.Load(main, "", file);
+					}
+				}, gui.MapCommands);
+
 			addCommand("Workshop Publish", new PCInput.Chord()
 			{
 				Key = Keys.W,
