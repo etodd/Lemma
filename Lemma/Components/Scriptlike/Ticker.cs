@@ -32,7 +32,8 @@ namespace Lemma.Components
 				if (this.Interval.Value > 0 && this.Timer > this.Interval.Value)
 				{
 					this.Timer.Value -= this.Interval.Value;
-					this.NumToFire.Value--;
+					if (this.NumToFire > 0)
+						this.NumToFire.Value--;
 					this.OnFire.Execute();
 				}
 			}

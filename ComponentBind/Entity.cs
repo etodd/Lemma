@@ -527,6 +527,14 @@ namespace ComponentBind
 			}
 			return (T)result;
 		}
+
+		public T Create<T>(string name) where T : IComponent, new()
+		{
+			T result = new T();
+			this.Add(name, result);
+			return (T)result;
+		}
+
 		public T GetOrCreate<T>(string name, out bool created) where T : IComponent, new()
 		{
 			IComponent result = null;

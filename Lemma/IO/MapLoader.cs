@@ -113,6 +113,7 @@ namespace Lemma.IO
 			typeof(Turret),
 			typeof(VoxelFill),
 			typeof(Data),
+			typeof(Starter),
 		};
 
 		public static XmlSerializer Serializer;

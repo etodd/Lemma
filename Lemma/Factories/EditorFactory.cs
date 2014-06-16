@@ -185,7 +185,7 @@ namespace Lemma.Factories
 				{
 					Action = delegate()
 					{
-						main.AddComponent(new WorkShopInterface("content/game/" + main.MapFile.Value + ".map"));
+						main.AddComponent(new WorkShopInterface(Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory) + main.MapFile.Value + ".map"));
 					}
 				},
 				gui.MapCommands

@@ -41,6 +41,9 @@ namespace Lemma.Components
 				PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = false;
 			}
 
+			this.main.Camera.RotationMatrix.Value = this.Entity.Get<Transform>().Orientation;
+			this.main.Camera.Position.Value = Vector3.Transform(new Vector3(0, 0, this.Offset), this.Entity.Get<Transform>().Matrix);
+
 			List<Animation.Interval> animations = new List<Animation.Interval>();
 			Entity current = this.Entity;
 			while (current != null)
@@ -70,9 +73,9 @@ namespace Lemma.Components
 									Vector3 pos = Vector3.Lerp(currentTransform.Position, nextTransform.Position, x);
 
 									Matrix rotationMatrix = Matrix.CreateFromQuaternion(q);
-									main.Camera.RotationMatrix.Value = rotationMatrix;
+									this.main.Camera.RotationMatrix.Value = rotationMatrix;
 									Matrix m = rotationMatrix * Matrix.CreateTranslation(pos);
-									main.Camera.Position.Value = Vector3.Transform(new Vector3(0, 0, offset), m);
+									this.main.Camera.Position.Value = Vector3.Transform(new Vector3(0, 0, offset), m);
 								},
 								currentStop.Duration
 							),
@@ -88,8 +91,8 @@ namespace Lemma.Components
 						(
 							delegate(float x)
 							{
-								main.Camera.RotationMatrix.Value = currentTransform.Orientation;
-								main.Camera.Position.Value = Vector3.Transform(new Vector3(0, 0, currentStop.Offset), currentTransform.Matrix);
+								this.main.Camera.RotationMatrix.Value = currentTransform.Orientation;
+								this.main.Camera.Position.Value = Vector3.Transform(new Vector3(0, 0, currentStop.Offset), currentTransform.Matrix);
 							},
 							currentStop.Duration
 						)

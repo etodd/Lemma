@@ -164,7 +164,6 @@ namespace Lemma.Components
 			var list = new ListView(main.GeeUI, container) { Name = "CurLinksList" };
 			list.Position.Value = new Vector2(5);
 
-
 			list.ChildrenLayouts.Add(new VerticalViewLayout(1, false));
 			ListLayout.Add(new Binding<int>(ListLayout.Width, LinkerView.Width));
 			container.Add(new Binding<int>(container.Width, (i) => i - 8, ListLayout.Width));
@@ -282,7 +281,8 @@ namespace Lemma.Components
 				foreach (var comm in ent.Commands)
 				{
 					var c = (Command.Entry)comm.Value;
-					destCommDrop.AddOption(comm.Key.ToString(), () => { }, null, c);
+					if (c.Permissions == Command.Perms.Linkable || c.Permissions == Command.Perms.LinkableAndExecutable)
+						destCommDrop.AddOption(comm.Key.ToString(), () => { }, null, c);
 				}
 			};
 

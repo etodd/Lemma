@@ -63,6 +63,9 @@ namespace Lemma.Factories
 			}
 
 			entity.Add("Go", cameraStop.Go);
+			entity.Add("Offset", cameraStop.Offset);
+			entity.Add("Blend", cameraStop.Blend);
+			entity.Add("Duration", cameraStop.Duration);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

@@ -24,9 +24,12 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			VoxelAttachable.MakeAttachable(entity, main);
-
 			this.SetMain(entity, main);
+
+			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);
+			attachable.Enabled.Value = true;
+
+			entity.Add("AttachOffset", attachable.Offset);
 
 			if (!main.EditorEnabled)
 			{

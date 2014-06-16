@@ -25,10 +25,6 @@ namespace Lemma.GameScripts
 				new Animation.Vector3MoveTo(main.Renderer.Tint, new Vector3(1.0f), 0.2f)
 			));
 
-			Transform camera = get("camera").Get<Transform>();
-			main.Camera.Position.Value = camera.Position;
-			main.Camera.RotationMatrix.Value = camera.Orientation;
-
 			if (main.Spawner.StartSpawnPoint.Value == "end")
 			{
 				// End game

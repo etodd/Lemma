@@ -20,6 +20,7 @@ namespace Lemma.Factories
 		{
 			Entity entity = base.Create(main, offsetX, offsetY, offsetZ);
 			entity.Type = "VoxelFill";
+			entity.Create<VoxelFill>("VoxelFill").Enabled.Value = false;
 			return entity;
 		}
 
