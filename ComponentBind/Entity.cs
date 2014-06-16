@@ -343,7 +343,7 @@ namespace ComponentBind
 
 		public void Add(string name, Command cmd, Command.Perms perms = Command.Perms.Linkable, string description = null)
 		{
-			Command.Entry entry = new Command.Entry { Command = cmd, Permissions = perms };
+			Command.Entry entry = new Command.Entry { Command = cmd, Permissions = perms, Key = name };
 			if (this.main.EditorEnabled)
 				entry.Description = description;
 			this.commands.Add(name, entry);
