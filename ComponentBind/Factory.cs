@@ -107,21 +107,6 @@ namespace ComponentBind
 		{
 			Entity dest = ((Factory<MainClass>)Factory.factories[source.Type]).CreateAndBind(main);
 
-			Dictionary<string, IProperty> destProperties = dest.PropertyDictionary;
-			foreach (KeyValuePair<string, IProperty> pair in source.PropertyDictionary.Where(x => x.Key != "ID"))
-			{
-				IProperty destProperty;
-				if (!destProperties.TryGetValue(pair.Key, out destProperty))
-					continue;
-				if (typeof(IListProperty).IsAssignableFrom(destProperty.GetType()))
-					((IListProperty)pair.Value).CopyTo((IListProperty)destProperty);
-				else
-				{
-					PropertyInfo prop = destProperty.GetType().GetProperty("Value");
-					prop.SetValue(destProperty, prop.GetValue(pair.Value, null), null);
-				}
-			}
-
 			Dictionary<string, IComponent> destComponents = dest.ComponentDictionary;
 			foreach (KeyValuePair<string, IComponent> pair in source.ComponentDictionary)
 			{

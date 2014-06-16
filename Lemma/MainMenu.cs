@@ -29,8 +29,6 @@ namespace Lemma.GameScripts
 			main.Camera.Position.Value = camera.Position;
 			main.Camera.RotationMatrix.Value = camera.Orientation;
 
-			get("fillMap1").GetCommand("Fill").Execute();
-
 			if (main.Spawner.StartSpawnPoint.Value == "end")
 			{
 				// End game

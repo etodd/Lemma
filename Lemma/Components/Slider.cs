@@ -31,6 +31,12 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command HitMax = new Command();
 
+		[XmlIgnore]
+		public Command Forward = new Command();
+
+		[XmlIgnore]
+		public Command Backward = new Command();
+
 		private PrismaticJoint joint = null;
 		private float lastX;
 
@@ -134,6 +140,9 @@ namespace Lemma.Components
 			this.Add(new NotifyBinding(this.setLocked, this.Locked));
 			this.Add(new NotifyBinding(this.setGoal, this.Goal));
 			this.Add(new NotifyBinding(this.setMode, this.Servo));
+
+			this.Forward.Action = delegate() { this.Move(this.Maximum); };
+			this.Backward.Action = delegate() { this.Move(this.Minimum); };
 
 			this.lastX = this.Minimum + (this.Maximum - this.Minimum) * 0.5f;
 

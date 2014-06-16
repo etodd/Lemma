@@ -26,7 +26,7 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command Execute = new Command { ShowInEditor = true };
 
-		public EditorProperty<bool> ExecuteOnLoad = new EditorProperty<bool>();
+		public EditorProperty<bool> ExecuteOnLoad = new EditorProperty<bool> { Value = true };
 
 		public EditorProperty<bool> DeleteOnExecute = new EditorProperty<bool>();
 
@@ -188,7 +188,7 @@ namespace Lemma.Components
 
 		public override void Start()
 		{
-			if (this.ExecuteOnLoad)
+			if (!this.main.EditorEnabled && this.ExecuteOnLoad)
 				this.Execute.Execute();
 		}
 

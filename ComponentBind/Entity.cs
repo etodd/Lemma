@@ -141,10 +141,7 @@ namespace ComponentBind
 		private BaseMain main;
 		private Dictionary<string, IComponent> components = new Dictionary<string, IComponent>();
 		private Dictionary<Type, IComponent> componentsByType = new Dictionary<Type, IComponent>();
-		private Dictionary<string, IProperty> properties = new Dictionary<string, IProperty>();
 		private List<IBinding> bindings = new List<IBinding>();
-
-		private Property<string> _idProperty;
 
 		public static ulong CurrentGUID = 1;
 
@@ -159,14 +156,6 @@ namespace ComponentBind
 			get
 			{
 				return this.components.Values;
-			}
-		}
-
-		public IEnumerable<IProperty> PropertyList
-		{
-			get
-			{
-				return this.properties.Values;
 			}
 		}
 
@@ -229,38 +218,12 @@ namespace ComponentBind
 			}
 		}
 
-		[XmlArray("Properties")]
-		[XmlArrayItem("Property", Type = typeof(DictionaryEntry))]
-		public DictionaryEntry[] Properties
-		{
-			get
-			{
-				return this.properties.Where(x => x.Value.Serialize).Select(x => new DictionaryEntry(x.Key, x.Value)).ToArray();
-			}
-			set
-			{
-				for (int i = 0; i < value.Length; i++)
-				{
-					this.properties.Add((string)value[i].Key, (IProperty)value[i].Value);
-				}
-			}
-		}
-
 		[XmlIgnore]
 		public DictionaryEntry[] Commands
 		{
 			get
 			{
 				return this.commands.Select(x => new DictionaryEntry(x.Key, x.Value)).ToArray();
-			}
-		}
-
-		[XmlIgnore]
-		public Dictionary<string, IProperty> PropertyDictionary
-		{
-			get
-			{
-				return this.properties;
 			}
 		}
 
@@ -358,7 +321,7 @@ namespace ComponentBind
 			if (link.TargetEntity.Target == null) return;
 			if (link.LinkedTargetCmd == null)
 			{
-				Command destCommand = link.TargetEntity.Target.GetCommand(link.TargetCommand);
+				Command destCommand = link.TargetEntity.Target.getCommand(link.TargetCommand);
 				if (destCommand == null) return;
 				link.LinkedTargetCmd = destCommand;
 			}
@@ -431,16 +394,6 @@ namespace ComponentBind
 			this.bindings.Add(binding);
 		}
 
-		public void Add(string name, IProperty property)
-		{
-			this.properties.Add(name, property);
-		}
-
-		public void RemoveProperty(string name)
-		{
-			this.properties.Remove(name);
-		}
-
 		public void RemoveComponent(string name)
 		{
 			IComponent c;
@@ -499,56 +452,6 @@ namespace ComponentBind
 			while (type.Assembly != Entity.componentBindAssembly);
 		}
 
-		public Property<T> GetProperty<T>()
-		{
-			return this.properties.Values.OfType<Property<T>>().FirstOrDefault();
-		}
-
-		public Property<T> GetProperty<T>(string name)
-		{
-			IProperty result = null;
-			this.properties.TryGetValue(name, out result);
-			return (Property<T>)result;
-		}
-
-		public Property<T> GetOrMakeProperty<T>(string name, bool editable = false, T value = default(T))
-		{
-			IProperty result = null;
-			if (!this.properties.TryGetValue(name, out result))
-			{
-				if (editable)
-					result = new EditorProperty<T> { Value = value };
-				else
-					result = new Property<T> { Value = value };
-				this.Add(name, result);
-			}
-			result.Editable = editable;
-			return (Property<T>)result;
-		}
-
-		public ListProperty<T> GetOrMakeListProperty<T>(string name)
-		{
-			IProperty result = null;
-			if (!this.properties.TryGetValue(name, out result))
-			{
-				result = new ListProperty<T>();
-				this.Add(name, result);
-			}
-			return (ListProperty<T>)result;
-		}
-
-		public ListProperty<T> GetListProperty<T>()
-		{
-			return this.properties.Values.OfType<ListProperty<T>>().FirstOrDefault();
-		}
-
-		public ListProperty<T> GetListProperty<T>(string name)
-		{
-			IProperty result = null;
-			this.properties.TryGetValue(name, out result);
-			return (ListProperty<T>)result;
-		}
-
 		public T Get<T>() where T : IComponent
 		{
 			IComponent result = null;
@@ -605,32 +508,11 @@ namespace ComponentBind
 			return (T)result;
 		}
 
-		public Command GetCommand(string name)
+		private Command getCommand(string name)
 		{
 			BaseCommand result = null;
 			this.commands.TryGetValue(name, out result);
 			return (Command)result;
-		}
-
-		public Command<T> GetCommand<T>(string name)
-		{
-			BaseCommand result = null;
-			this.commands.TryGetValue(name, out result);
-			return (Command<T>)result;
-		}
-
-		public Command<T, T2> GetCommand<T, T2>(string name)
-		{
-			BaseCommand result = null;
-			this.commands.TryGetValue(name, out result);
-			return (Command<T, T2>)result;
-		}
-
-		public Command<T, T2, T3> GetCommand<T, T2, T3>(string name)
-		{
-			BaseCommand result = null;
-			this.commands.TryGetValue(name, out result);
-			return (Command<T, T2, T3>)result;
 		}
 
 		protected void delete()
