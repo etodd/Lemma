@@ -23,14 +23,14 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
-			
 			CameraStop cameraStop = entity.GetOrCreate<CameraStop>("CameraStop");
 
 			entity.CannotSuspendByDistance = true;
 
 			this.SetMain(entity, main);
 
+			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
+			
 			if (main.EditorEnabled)
 			{
 				entity.Add("Preview", new Command

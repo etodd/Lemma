@@ -575,6 +575,7 @@ namespace Lemma.Components
 					if (float.TryParse(textField.Text, out value))
 					{
 						socket.Value = socket.Value.SetElement(element, value);
+						this.NeedsSave.Value = true;
 					}
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
@@ -599,6 +600,7 @@ namespace Lemma.Components
 					if (float.TryParse(textField.Text, out value))
 					{
 						socket.Value = socket.Value.SetElement(element, value);
+						this.NeedsSave.Value = true;
 					}
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
@@ -641,6 +643,7 @@ namespace Lemma.Components
 						Voxel.Coord c = socket.Value;
 						c.SetComponent(dir, value);
 						socket.Value = c;
+						this.NeedsSave.Value = true;
 					}
 					textField.Text = socket.Value.GetComponent(dir).ToString();
 					textField.Selected.Value = false;
@@ -663,6 +666,7 @@ namespace Lemma.Components
 					if (float.TryParse(textField.Text, out value))
 					{
 						socket.Value = socket.Value.SetElement(element, value);
+						this.NeedsSave.Value = true;
 					}
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
@@ -685,6 +689,7 @@ namespace Lemma.Components
 					if (float.TryParse(textField.Text, out value))
 					{
 						socket.Value = socket.Value.SetElement(element, value);
+						this.NeedsSave.Value = true;
 					}
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
@@ -709,6 +714,7 @@ namespace Lemma.Components
 					if (byte.TryParse(textField.Text, out value))
 					{
 						socket.Value = socket.Value.SetElement(element, value);
+						this.NeedsSave.Value = true;
 					}
 					textField.Text = socket.Value.GetElement(element).ToString();
 					textField.Selected.Value = false;
@@ -755,6 +761,7 @@ namespace Lemma.Components
 					Action onClick = () =>
 					{
 						propertyInfo.SetValue(property, Enum.ToObject(propertyInfo.PropertyType, i1), null);
+						this.NeedsSave.Value = true;
 					};
 					drop.AddOption(fields[i].Name, onClick);
 				}
@@ -786,6 +793,7 @@ namespace Lemma.Components
 						if (int.TryParse(view.Text, out value))
 						{
 							socket.Value = value;
+							this.NeedsSave.Value = true;
 						}
 						view.Text = socket.Value.ToString();
 						view.Selected.Value = false;
@@ -807,6 +815,7 @@ namespace Lemma.Components
 						if (float.TryParse(view.Text, out value))
 						{
 							socket.Value = value;
+							this.NeedsSave.Value = true;
 						}
 						view.Text = socket.Value.ToString("F");
 						view.Selected.Value = false;
@@ -850,7 +859,10 @@ namespace Lemma.Components
 					Action onChanged = () =>
 					{
 						if (socket.Value != view.Text)
+						{
 							socket.Value = view.Text;
+							this.NeedsSave.Value = true;
+						}
 						view.Selected.Value = false;
 					};
 					view.OnTextSubmitted = onChanged;

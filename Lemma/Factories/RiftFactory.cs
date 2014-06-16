@@ -29,15 +29,11 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Position");
 			Rift rift = entity.GetOrCreate<Rift>("Rift");
 
-			this.SetMain(entity, main);
-
 			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main, false, false, null);
 			attachable.Enabled.Value = true;
-			entity.Add("AttachOffset", attachable.Offset);
-			entity.Add("Radius", rift.Radius);
 			VoxelAttachable.BindTarget(entity, rift.Position);
 
-			
+			this.SetMain(entity, main);
 
 			PointLight light = entity.GetOrCreate<PointLight>();
 			light.Color.Value = new Vector3(1.2f, 1.4f, 1.6f);
@@ -49,6 +45,10 @@ namespace Lemma.Factories
 			rift.Add(new Binding<Voxel.Coord>(rift.Coordinate, attachable.Coord));
 
 			entity.Add("Enable", rift.Enable);
+			entity.Add("AttachOffset", attachable.Offset);
+			entity.Add("Enabled", rift.Enabled);
+			entity.Add("Radius", rift.Radius);
+			entity.Add("Style", rift.Type);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
