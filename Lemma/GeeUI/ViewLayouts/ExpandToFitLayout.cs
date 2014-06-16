@@ -7,6 +7,9 @@ namespace GeeUI.ViewLayouts
 		public bool ExpandVertical = true;
 		public bool ExpandHorizontal = true;
 
+		public int ExtraWidth = 0;
+		public int ExtraHeight = 0;
+
 		public ExpandToFitLayout()
 			: this(true, true)
 		{
@@ -22,6 +25,9 @@ namespace GeeUI.ViewLayouts
 		public override void OrderChildren(View parentView)
 		{
 			int leftX = 0, rightX = 0, topY = 0, bottomY = 0;
+			int parentLeft = parentView.AbsoluteBoundBox.Left;
+			int parentTop = parentView.AbsoluteBoundBox.Top;
+
 			foreach (var child in parentView.Children)
 			{
 				if (child.AbsoluteBoundBox.Left < leftX || leftX == 0) leftX = child.AbsoluteBoundBox.Left;
@@ -30,9 +36,9 @@ namespace GeeUI.ViewLayouts
 				if (child.AbsoluteBoundBox.Right > rightX || rightX == 0) rightX = child.AbsoluteBoundBox.Right;
 			}
 			if (ExpandHorizontal)
-				parentView.Width.Value = (rightX - leftX);
+				parentView.Width.Value = rightX - parentLeft;
 			if (ExpandVertical)
-				parentView.Height.Value = (bottomY - topY);
+				parentView.Height.Value = bottomY - parentTop;
 		}
 	}
 }

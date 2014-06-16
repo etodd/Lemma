@@ -17,6 +17,14 @@ namespace GeeUI.Views
 
 		public Property<float> TextScale = new Property<float>() { Value = 1f };
 
+		public float TextWidth
+		{
+			get
+			{
+				return (Font.MeasureString(Text).X * TextScale.Value);
+			}
+		}
+
 		private Vector2 TextOrigin
 		{
 			get
