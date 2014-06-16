@@ -37,7 +37,7 @@ namespace Lemma.Factories
 
 			if (main.EditorEnabled)
 			{
-				entity.Add("Spawn Here", new Command
+				BindCommand(entity, new Command
 				{
 					Action = delegate()
 					{
@@ -51,7 +51,7 @@ namespace Lemma.Factories
 					ShowInEditor = true,
 					AllowExecuting = true,
 					AllowLinking = true
-				});
+				}, "Spawn Here", true, false);
 			}
 
 			PlayerSpawn spawn = entity.GetOrCreate<PlayerSpawn>("PlayerSpawn");

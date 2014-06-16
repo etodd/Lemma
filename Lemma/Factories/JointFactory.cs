@@ -140,11 +140,6 @@ namespace Lemma.Factories
 			}));
 			
 			entity.Add(new PostInitialization { rebuildJoint });
-			Command rebuildJointCommand = new Command
-			{
-				Action = rebuildJoint,
-			};
-			entity.Add("RebuildJoint", rebuildJointCommand);
 
 			if (main.EditorEnabled)
 				JointFactory.attachEditorComponents(entity, main);

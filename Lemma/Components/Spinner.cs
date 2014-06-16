@@ -25,18 +25,30 @@ namespace Lemma.Components
 		public EditorProperty<bool> Servo = new EditorProperty<bool>();
 
 		[XmlIgnore]
+		public Command On = new Command();
+
+		[XmlIgnore]
+		public Command Off = new Command();
+
+		[XmlIgnore]
+		public Command Forward = new Command();
+
+		[XmlIgnore]
+		public Command Backward = new Command();
+
+		[XmlIgnore]
 		public Command HitMin = new Command();
 
 		[XmlIgnore]
 		public Command HitMax = new Command();
 
-		public void On()
+		private void on()
 		{
 			if (this.joint != null && this.Locked)
 				this.Servo.Value = false;
 		}
 
-		public void Off()
+		private void off()
 		{
 			if (joint != null && this.Locked)
 			{
@@ -57,13 +69,13 @@ namespace Lemma.Components
 			}
 		}
 
-		public void Forward()
+		private void forward()
 		{
 			if (joint != null && this.Locked)
 				joint.Motor.Settings.Servo.Goal = this.Maximum;
 		}
 
-		public void Backward()
+		private void backward()
 		{
 			if (joint != null && this.Locked)
 				joint.Motor.Settings.Servo.Goal = this.Minimum;
@@ -147,6 +159,11 @@ namespace Lemma.Components
 			this.Add(new NotifyBinding(this.setLocked, this.Locked));
 			this.Add(new NotifyBinding(this.setGoal, this.Goal));
 			this.Add(new NotifyBinding(this.setMode, this.Servo));
+
+			this.Forward.Action = (Action)this.forward;
+			this.Backward.Action = (Action)this.backward;
+			this.On.Action = (Action)this.on;
+			this.Off.Action = (Action)this.off;
 
 			this.lastX = this.Minimum + (this.Maximum - this.Minimum) * 0.5f;
 

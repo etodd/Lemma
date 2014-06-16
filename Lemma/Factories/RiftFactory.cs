@@ -45,13 +45,7 @@ namespace Lemma.Factories
 			rift.Add(new Binding<Entity.Handle>(rift.Voxel, attachable.AttachedVoxel));
 			rift.Add(new Binding<Voxel.Coord>(rift.Coordinate, attachable.Coord));
 
-			entity.Add("Trigger", new Command
-			{
-				Action = delegate()
-				{
-					rift.Enabled.Value = true;
-				}
-			});
+			BindCommand(entity, rift.Enable, "Enable");
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

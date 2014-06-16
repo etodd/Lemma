@@ -33,7 +33,7 @@ namespace Lemma.Factories
 
 			if (main.EditorEnabled)
 			{
-				entity.Add("Start", new Command
+				BindCommand(entity, new Command
 				{
 					Action = delegate()
 					{
@@ -55,18 +55,14 @@ namespace Lemma.Factories
 							{
 								// We have to squirrel away the ID and get a new entity
 								// becuase OUR entity got wiped out by the MapLoader.
-								main.GetByGUID(id).Get<CameraStop>().Animate();
+								main.GetByGUID(id).Get<CameraStop>().Go.Execute();
 							}
 						});
 					},
-					ShowInEditor = true,
-				});
+				}, "Start", true, false);
 			}
 
-			entity.Add("Trigger", new Command
-			{
-				Action = cameraStop.Animate,
-			});
+			BindCommand(entity, cameraStop.Go, "Go");
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

@@ -29,13 +29,7 @@ namespace Lemma.Factories
 
 			VoxelAttachable.MakeAttachable(entity, main);
 
-			entity.Add("Trigger", new Command
-			{
-				Action = delegate()
-				{
-					light.Enabled.Value = true;
-				},
-			});
+			BindCommand(entity, light.Enable, "Enable");
 
 			this.SetMain(entity, main);
 		}

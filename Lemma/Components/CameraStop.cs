@@ -20,15 +20,19 @@ namespace Lemma.Components
 		public EditorProperty<float> Duration = new EditorProperty<float>();
 
 		[XmlIgnore]
-		public Command Done = new Command();
+		public Command OnDone = new Command();
+
+		[XmlIgnore]
+		public Command Go = new Command();
 
 		public override void Awake()
 		{
 			base.Awake();
 			this.Enabled.Editable = false;
+			this.Go.Action = (Action)this.animate;
 		}
 
-		public void Animate()
+		private void animate()
 		{
 			if (PlayerFactory.Instance != null)
 			{
@@ -93,7 +97,7 @@ namespace Lemma.Components
 					);
 				}
 
-				animations.Add(new Animation.Execute(currentStop.Done));
+				animations.Add(new Animation.Execute(currentStop.OnDone));
 
 				current = next;
 			}
