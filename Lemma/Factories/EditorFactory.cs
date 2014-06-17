@@ -212,7 +212,6 @@ namespace Lemma.Factories
 			model.Add(new Binding<bool>(model.Enabled, editor.VoxelEditMode));
 			model.Add(new Binding<Matrix>(model.Transform, () => editor.Orientation.Value * Matrix.CreateTranslation(editor.Position), editor.Position, editor.Orientation));
 
-			editor.Add(new TwoWayBinding<string>(main.MapFile, editor.MapFile));
 			// When transferring between maps we need to clear our GUID to make way for the entities on the new map,
 			// then assign ourselves a new GUID.
 			entity.Add(new CommandBinding<string>(main.LoadingMap, delegate(string map)
@@ -225,10 +224,8 @@ namespace Lemma.Factories
 			}));
 			entity.Add(new CommandBinding(main.MapLoaded, (Action)entity.NewGUID));
 
-			entity.Add(new TwoWayBinding<string>(main.Spawner.StartSpawnPoint, editor.StartSpawnPoint));
-
 			gui.Add(new ListBinding<Entity>(gui.SelectedEntities, editor.SelectedEntities));
-			gui.Add(new Binding<bool>(gui.MapEditMode, editor.VoxelEditMode));
+			gui.Add(new Binding<bool>(gui.VoxelEditMode, editor.VoxelEditMode));
 			gui.Add(new Binding<bool>(gui.EnablePrecision, x => !x, input.GetKey(Keys.LeftShift)));
 			gui.Add(new TwoWayBinding<bool>(editor.NeedsSave, gui.NeedsSave));
 
@@ -312,38 +309,79 @@ namespace Lemma.Factories
 				}
 			}, gui.MapCommands);
 
-			int brush = 1;
+			entity.Add(new CommandBinding<int>(input.MouseScrolled, () => editor.VoxelEditMode && !input.GetKey(Keys.LeftAlt), delegate(int delta)
+			{
+				editor.BrushSize.Value = Math.Max(1, editor.BrushSize.Value + delta);
+			}));
+
+			AddCommand(entity, main, "Voxel edit mode", new PCInput.Chord { Key = Keys.Tab }, delegate()
+			{
+				if (editor.TransformMode.Value != Editor.TransformModes.None)
+					return false;
+
+				if (input.GetKey(Keys.LeftControl))
+					return false;
+
+				if (gui.AnyTextFieldViewsSelected())
+					return false;
+
+				if (editor.VoxelEditMode)
+					return true;
+				else
+					return editor.SelectedEntities.Count == 1 && editor.SelectedEntities[0].Get<Voxel>() != null;
+			},
+			new Command
+			{
+				Action = delegate()
+				{
+					editor.VoxelEditMode.Value = !editor.VoxelEditMode;
+					model.Scale.Value = new Vector3(editor.SelectedEntities[0].Get<Voxel>().Scale * 0.5f);
+				}
+			}, gui.VoxelCommands);
+
+			int brush = 0;
 			Action<int> changeBrush = delegate(int delta)
 			{
-				int foundIndex = Voxel.StateList.FindIndex(x => x.ToString() == editor.Brush);
+				int foundIndex = Voxel.StateList.FindIndex(x => x.ID == editor.Brush);
 				if (foundIndex != -1)
 					brush = foundIndex;
 				int stateCount = Voxel.States.Count;
 				brush = 1 + ((brush - 1 + delta) % (stateCount - 1));
 				if (brush < 1)
 					brush = stateCount + ((brush - 1) % stateCount);
-				editor.Brush.Value = Voxel.StateList[brush].ToString();
+				editor.Brush.Value = Voxel.StateList[brush].ID;
 			};
-			entity.Add(new CommandBinding(input.GetKeyDown(Keys.Q), () => editor.VoxelEditMode, delegate()
+			AddCommand(entity, main, "Previous material", new PCInput.Chord { Key = Keys.Q }, () => editor.VoxelEditMode, new Command
 			{
-				changeBrush(-1);
-			}));
-			entity.Add(new CommandBinding(input.GetKeyDown(Keys.E), () => editor.VoxelEditMode && !input.GetKey(Keys.LeftShift), delegate()
-			{
-				changeBrush(1);
-			}));
-			entity.Add(new CommandBinding<int>(input.MouseScrolled, () => editor.VoxelEditMode && !input.GetKey(Keys.LeftAlt), delegate(int delta)
-			{
-				editor.BrushSize.Value = Math.Max(1, editor.BrushSize.Value + delta);
-			}));
+				Action = delegate()
+				{
+					changeBrush(-1);
+				}
+			}, gui.VoxelCommands);
 
-			AddCommand(entity, main, "Propagate current material", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.E }, () => editor.VoxelEditMode, editor.PropagateMaterial, gui.VoxelCommands);
-			AddCommand(entity, main, "Intersect current material with selection", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.I }, () => editor.VoxelEditMode, editor.IntersectMaterial, gui.VoxelCommands);
-			AddCommand(entity, main, "Propagate current material to selected box", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.R }, () => editor.VoxelEditMode, editor.PropagateMaterialBox, gui.VoxelCommands);
-			AddCommand(entity, main, "Propagate current material (non-contiguous)", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.T }, () => editor.VoxelEditMode, editor.PropagateMaterialAll, gui.VoxelCommands);
-			AddCommand(entity, main, "Sample current material", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.Q }, () => editor.VoxelEditMode, editor.SampleMaterial, gui.VoxelCommands);
-			AddCommand(entity, main, "Delete current material", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.X }, () => editor.VoxelEditMode, editor.DeleteMaterial, gui.VoxelCommands);
-			AddCommand(entity, main, "Delete current material (non-contiguous)", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.Z }, () => editor.VoxelEditMode, editor.DeleteMaterialAll, gui.VoxelCommands);
+			AddCommand(entity, main, "Next material", new PCInput.Chord { Key = Keys.E }, () => editor.VoxelEditMode, new Command
+			{
+				Action = delegate()
+				{
+					if (!input.GetKey(Keys.LeftShift))
+						changeBrush(1);
+				}
+			}, gui.VoxelCommands);
+
+			AddCommand(entity, main, "Propagate", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.E }, () => editor.VoxelEditMode, editor.PropagateMaterial, gui.VoxelCommands);
+			AddCommand(entity, main, "Intersect with selection", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.I }, () => editor.VoxelEditMode, editor.IntersectMaterial, gui.VoxelCommands);
+			AddCommand(entity, main, "Propagate to selected box", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.R }, () => editor.VoxelEditMode, editor.PropagateMaterialBox, gui.VoxelCommands);
+			AddCommand(entity, main, "Propagate non-contiguous", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.T }, () => editor.VoxelEditMode, editor.PropagateMaterialAll, gui.VoxelCommands);
+			AddCommand(entity, main, "Sample", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.Q }, () => editor.VoxelEditMode, editor.SampleMaterial, gui.VoxelCommands);
+			AddCommand(entity, main, "Delete", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.X }, () => editor.VoxelEditMode, editor.DeleteMaterial, gui.VoxelCommands);
+			AddCommand(entity, main, "Delete non-contiguous", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.Z }, () => editor.VoxelEditMode, editor.DeleteMaterialAll, gui.VoxelCommands);
+
+			gui.VoxelProperties.Add("Brush", new PropertyEntry { Property = editor.Brush });
+			gui.VoxelProperties.Add("Jitter", new PropertyEntry { Property = editor.Jitter });
+			gui.VoxelProperties.Add("JitterOctave", new PropertyEntry { Property = editor.JitterOctave });
+			gui.VoxelProperties.Add("JitterOctaveMultiplier", new PropertyEntry { Property = editor.JitterOctaveMultiplier });
+			gui.VoxelProperties.Add("BrushSize [scrollwheel]", new PropertyEntry { Property = editor.BrushSize });
+			gui.VoxelProperties.Add("Coordinate", new PropertyEntry { Property = editor.Coordinate });
 
 			editor.Add(new Binding<Vector2>(editor.Mouse, input.Mouse, () => !input.EnableLook));
 
@@ -433,31 +471,6 @@ namespace Lemma.Factories
 					editor.VoxelEditMode.Value = false;
 			}));
 
-			AddCommand(entity, main, "Toggle voxel edit", new PCInput.Chord { Key = Keys.Tab }, delegate()
-			{
-				if (editor.TransformMode.Value != Editor.TransformModes.None)
-					return false;
-
-				if (input.GetKey(Keys.LeftControl))
-					return false;
-
-				if (gui.AnyTextFieldViewsSelected())
-					return false;
-
-				if (editor.VoxelEditMode)
-					return true;
-				else
-					return editor.SelectedEntities.Count == 1 && editor.SelectedEntities[0].Get<Voxel>() != null;
-			},
-			new Command
-			{
-				Action = delegate()
-				{
-					editor.VoxelEditMode.Value = !editor.VoxelEditMode;
-					model.Scale.Value = new Vector3(editor.SelectedEntities[0].Get<Voxel>().Scale * 0.5f);
-				}
-			}, gui.VoxelCommands);
-
 			AddCommand
 			(
 				entity,
@@ -474,7 +487,7 @@ namespace Lemma.Factories
 				main,
 				"Voxel Grab (move)",
 				new PCInput.Chord { Key = Keys.G },
-				() => !gui.AnyTextFieldViewsSelected() && editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
+				() => !gui.AnyTextFieldViewsSelected() && editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None,
 				editor.StartVoxelTranslation,
 				gui.VoxelCommands
 			);
@@ -484,7 +497,7 @@ namespace Lemma.Factories
 				main,
 				"Voxel duplicate",
 				new PCInput.Chord { Key = Keys.C },
-				() => !gui.AnyTextFieldViewsSelected() && editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
+				() => !gui.AnyTextFieldViewsSelected() && editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None,
 				editor.VoxelDuplicate,
 				gui.VoxelCommands
 			);
@@ -492,9 +505,9 @@ namespace Lemma.Factories
 			(
 				entity,
 				main,
-				"Voxel yank",
+				"Voxel copy",
 				new PCInput.Chord { Key = Keys.Y },
-				() => !gui.AnyTextFieldViewsSelected() && editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
+				() => !gui.AnyTextFieldViewsSelected() && editor.VoxelEditMode,
 				editor.VoxelCopy,
 				gui.VoxelCommands
 			);
@@ -504,7 +517,7 @@ namespace Lemma.Factories
 				main,
 				"Voxel paste",
 				new PCInput.Chord { Key = Keys.P },
-				() => !gui.AnyTextFieldViewsSelected() && editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None,
+				() => !gui.AnyTextFieldViewsSelected() && editor.VoxelEditMode,
 				editor.VoxelPaste,
 				gui.VoxelCommands
 			);

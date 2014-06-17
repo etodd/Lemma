@@ -63,13 +63,16 @@ namespace Lemma.Components
 		public ListProperty<Entity> SelectedEntities = new ListProperty<Entity>();
 
 		[XmlIgnore]
-		public Property<bool> MapEditMode = new Property<bool>();
+		public Property<bool> VoxelEditMode = new Property<bool>();
 
 		[XmlIgnore]
 		public Property<bool> EnablePrecision = new Property<bool>();
 
 		[XmlIgnore]
 		public ListProperty<PopupCommand> EntityCommands = new ListProperty<PopupCommand>();
+
+		[XmlIgnore]
+		public Dictionary<string, PropertyEntry> VoxelProperties = new Dictionary<string, PropertyEntry>();
 
 		[XmlIgnore]
 		public ListProperty<PopupCommand> MapCommands = new ListProperty<PopupCommand>();
@@ -93,15 +96,18 @@ namespace Lemma.Components
 			base.Awake();
 			MainFont = main.Content.Load<SpriteFont>("EditorFont");
 
-			this.RootEditorView = new View(main.GeeUI, main.GeeUI.RootView);
-			this.TabViews = new TabHost(main.GeeUI, RootEditorView, Vector2.Zero, MainFont);
-			this.MapPanelView = new PanelView(main.GeeUI, null, Vector2.Zero);
-			MapPanelView.ChildrenLayouts.Add(new VerticalViewLayout(4, true, 4));
+			this.RootEditorView = new View(this.main.GeeUI, this.main.GeeUI.RootView);
+			this.TabViews = new TabHost(this.main.GeeUI, this.RootEditorView, Vector2.Zero, this.MainFont);
+			this.MapPanelView = new PanelView(this.main.GeeUI, null, Vector2.Zero);
+			this.MapPanelView.ChildrenLayouts.Add(new VerticalViewLayout(4, true, 4));
 
-			this.EntityPanelView = new PanelView(main.GeeUI, null, Vector2.Zero);
-			EntityPanelView.ChildrenLayouts.Add(new VerticalViewLayout(4, true, 4));
+			this.EntityPanelView = new PanelView(this.main.GeeUI, null, Vector2.Zero);
+			this.EntityPanelView.ChildrenLayouts.Add(new VerticalViewLayout(4, true, 4));
 
-			TabViews.AddTab("Map", MapPanelView);
+			this.VoxelPanelView = new PanelView(this.main.GeeUI, null, Vector2.Zero);
+			this.VoxelPanelView.ChildrenLayouts.Add(new VerticalViewLayout(4, true, 4));
+
+			TabViews.AddTab("Map", this.MapPanelView);
 
 			this.CreateDropDownView = new DropDownView(main.GeeUI, MapPanelView, Vector2.Zero, MainFont);
 			this.CreateDropDownView.Label.Value = "Add";
@@ -203,7 +209,7 @@ namespace Lemma.Components
 			this.SelectedEntities.ItemChanged += (index, old, newValue) => this.refresh();
 			this.SelectedEntities.Cleared += this.refresh;
 
-			this.Add(new NotifyBinding(this.refresh, this.MapEditMode));
+			this.Add(new NotifyBinding(this.refresh, this.VoxelEditMode));
 			this.Add(new NotifyBinding(this.refresh, Entity.Get<Editor>().VoxelEditMode));
 
 			this.EntityCommands.ItemAdded += (index, command) => RecomputeEntityCommands();
@@ -380,7 +386,29 @@ namespace Lemma.Components
 
 		private void RecomputeVoxelCommands()
 		{
+			VoxelPanelView.RemoveAllChildren();
 
+			foreach (KeyValuePair<string, PropertyEntry> prop in this.VoxelProperties)
+			{
+				bool sameLine;
+				var child = BuildValueView(prop.Value, out sameLine);
+				View containerLabel = BuildContainerLabel(prop.Key, sameLine);
+				containerLabel.AddChild(child);
+				this.VoxelPanelView.AddChild(containerLabel);
+				containerLabel.OrderChildren();
+				child.OrderChildren();
+			}
+
+			foreach (var cmd in VoxelCommands)
+			{
+				if (!cmd.Enabled()) continue;
+				string text = cmd.Description;
+				if (cmd.Chord.Key != Keys.None)
+					text += " [" + cmd.Chord.ToString() + "]";
+				var button = new ButtonView(main.GeeUI, VoxelPanelView, text, Vector2.Zero, MainFont);
+				PopupCommand down = cmd;
+				button.OnMouseClick += (sender, args) => down.Action.Execute();
+			}
 		}
 
 		private void RecomputeEntityCommands()
@@ -528,17 +556,29 @@ namespace Lemma.Components
 			RecomputeAddCommands();
 			RecomputeEntityCommands();
 			RecomputeMapCommands();
+			RecomputeVoxelCommands();
 			TabViews.RemoveTab("Entity");
+			TabViews.RemoveTab("Voxel");
 			HideLinkerView(true);
 
-			if (this.SelectedEntities.Count == 0 || this.MapEditMode)
+			if (this.SelectedEntities.Count == 0)
 				this.show(null);
 			else
 			{
 				TabViews.AddTab("Entity", EntityPanelView);
 				TabViews.SetActiveTab(TabViews.TabIndex("Entity"));
 				if (this.SelectedEntities.Count == 1)
-					this.show(this.SelectedEntities.First());
+				{
+					if (this.SelectedEntities[0].Get<Voxel>() != null)
+					{
+						this.TabViews.AddTab("Voxel", this.VoxelPanelView);
+						this.TabViews.SetActiveTab(TabViews.TabIndex("Voxel"));
+					}
+					if (this.VoxelEditMode)
+						this.show(null);
+					else
+						this.show(this.SelectedEntities.First());
+				}
 				else
 					this.show(null);
 			}

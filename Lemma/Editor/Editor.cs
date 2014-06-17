@@ -40,13 +40,11 @@ namespace Lemma.Components
 		public Property<bool> MovementEnabled = new Property<bool>();
 		public ListProperty<Entity> SelectedEntities = new ListProperty<Entity>();
 		public Property<Transform> SelectedTransform = new Property<Transform>();
-		public Property<string> Brush = new Property<string>();
+		public Property<Voxel.t> Brush = new Property<Voxel.t>();
 		public Property<Voxel.Coord> Jitter = new Property<Voxel.Coord>();
 		public Property<Voxel.Coord> JitterOctave = new Property<Voxel.Coord> { Value = new Voxel.Coord { X = 1, Y = 1, Z = 1 } };
 		public Property<float> JitterOctaveMultiplier = new Property<float> { Value = 10.0f };
 		public Property<int> BrushSize = new Property<int>();
-		public Property<string> MapFile = new Property<string>();
-		public Property<string> StartSpawnPoint = new Property<string>();
 		public Property<bool> NeedsSave = new Property<bool>();
 
 		// Input properties
@@ -165,7 +163,7 @@ namespace Lemma.Components
 
 		private Voxel.State getBrush()
 		{
-			Voxel.State result = Voxel.StateList.FirstOrDefault(x => x.ID.ToString() == this.Brush);
+			Voxel.State result = Voxel.StateList.FirstOrDefault(x => x.ID == this.Brush);
 			if (result == null)
 				return Voxel.EmptyState;
 			return result;
@@ -269,7 +267,7 @@ namespace Lemma.Components
 
 			this.VoxelCopy.Action = delegate()
 			{
-				if (this.VoxelEditMode && this.VoxelSelectionActive)
+				if (this.VoxelEditMode && this.VoxelSelectionActive && this.TransformMode.Value == Editor.TransformModes.None)
 				{
 					Voxel m = this.SelectedEntities[0].Get<Voxel>();
 					this.originalSelectionStart = this.VoxelSelectionStart;
@@ -445,7 +443,7 @@ namespace Lemma.Components
 				if (selectedBox == null)
 					return;
 
-				this.Brush.Value = selectedBox.Type.ID.ToString();
+				this.Brush.Value = selectedBox.Type.ID;
 			};
 
 			this.DeleteMaterial.Action = delegate()
