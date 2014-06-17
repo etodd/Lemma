@@ -442,7 +442,7 @@ namespace Lemma.Components
 			if (entity == null)
 				return;
 
-			TextView categoryView = new TextView(main.GeeUI, rootEntityView, "[" + entity.Type + "]", new Vector2(0, 0), MainFont);
+			TextView categoryView = new TextView(main.GeeUI, rootEntityView, string.Format("{0} [{1}]", entity.Type, entity.GUID), new Vector2(0, 0), MainFont);
 			categoryView.AutoSize.Value = false;
 			categoryView.TextJustification = TextJustification.Center;
 			categoryView.Add(new Binding<int>(categoryView.Width, i => { return (int)Math.Max(i, categoryView.TextWidth); }, rootEntityView.Width));

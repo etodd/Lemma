@@ -45,6 +45,12 @@ namespace Lemma.Factories
 			clouds.Add(new Binding<Vector2>(clouds.GetVector2Parameter("Velocity"), x => x * (1.0f / 60.0f), settings.Velocity));
 
 			clouds.Add(new Binding<float>(clouds.GetFloatParameter("StartDistance"), settings.StartDistance));
+
+			entity.Add("Height", settings.Height);
+			entity.Add("Velocity", settings.Velocity);
+			entity.Add("StartDistance", settings.StartDistance);
+			entity.Add("Color", clouds.Color);
+			entity.Add("Alpha", clouds.Alpha);
 		}
 	}
 }

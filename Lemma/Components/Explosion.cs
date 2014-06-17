@@ -5,11 +5,32 @@ using System.Text;
 using Lemma.Components;
 using Microsoft.Xna.Framework;
 using Lemma.Util;
+using Lemma.Factories;
+using System.Xml.Serialization;
 
-namespace Lemma.Factories
+namespace Lemma.Components
 {
-	public static class Explosion
+	public class Explosion : Component<Main>
 	{
+		[XmlIgnore]
+		public Property<Vector3> Position = new Property<Vector3>();
+
+		[XmlIgnore]
+		public Command Go = new Command();
+
+		public Property<bool> DeleteAfter = new Property<bool> { Value = true };
+
+		public override void Awake()
+		{
+			base.Awake();
+			this.Go.Action = delegate()
+			{
+				Explosion.Explode(this.main, this.Position);
+				if (this.DeleteAfter)
+					this.Delete.Execute();
+			};
+		}
+
 		public static void Explode(Main main, Vector3 pos, int radius = 8, float physicsRadius = 12.0f)
 		{
 			Explosion.explode(main, null, new Voxel.Coord(), pos, radius, physicsRadius);

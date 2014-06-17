@@ -57,7 +57,10 @@ namespace Lemma.Factories
 
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
-			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate() { spawn.Activate.Execute(); }));
+			trigger.Add(new CommandBinding(trigger.PlayerEntered, spawn.Activate));
+
+			entity.Add("IsActivated", spawn.IsActivated);
+			trigger.EditorProperties();
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

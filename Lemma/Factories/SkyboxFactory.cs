@@ -68,6 +68,7 @@ namespace Lemma.Factories
 			entity.Add("GodRays", skybox.GodRays);
 			entity.Add("GodRayExtinction", skybox.GodRayExtinction);
 			entity.Add("StartDistance", skybox.StartDistance);
+			entity.Add("Image", model.DiffuseTexture);
 		}
 	}
 }
