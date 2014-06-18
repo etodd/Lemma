@@ -25,11 +25,13 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			VoxelAttachable.MakeAttachable(entity, main);
-
 			this.SetMain(entity, main);
+
+			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
+
 			ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("ParticleEmitter");
 			emitter.Add(new Binding<Vector3>(emitter.Position, transform.Position));
+			emitter.EditorProperties();
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

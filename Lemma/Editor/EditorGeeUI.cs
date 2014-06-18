@@ -56,8 +56,6 @@ namespace Lemma.Components
 
 		public Property<Editor.TransformModes> TransformMode = new Property<Editor.TransformModes>();
 
-		public Property<bool> EnablePrecision = new Property<bool>();
-
 		public ListProperty<EditorCommand> EntityCommands = new ListProperty<EditorCommand>();
 
 		public Dictionary<string, PropertyEntry> VoxelProperties = new Dictionary<string, PropertyEntry>();
@@ -419,7 +417,7 @@ namespace Lemma.Components
 					child.OrderChildren();
 				}
 
-				foreach (var cmd in VoxelCommands)
+				foreach (var cmd in this.VoxelCommands)
 				{
 					if (!cmd.Enabled()) continue;
 					string text = cmd.Description;
@@ -429,6 +427,8 @@ namespace Lemma.Components
 					EditorCommand down = cmd;
 					button.OnMouseClick += (sender, args) => down.Action.Execute();
 				}
+				if (this.VoxelEditMode)
+					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Voxel"));
 			}
 		}
 
@@ -491,7 +491,8 @@ namespace Lemma.Components
 			if (entity == null)
 				return;
 
-			TextView categoryView = new TextView(main.GeeUI, rootEntityView, this.entityString(entity), new Vector2(0, 0), MainFont);
+			TextView categoryView = new TextView(main.GeeUI, rootEntityView, "", new Vector2(0, 0), MainFont);
+			categoryView.Add(new Binding<string>(categoryView.Text, () => this.entityString(entity), entity.ID));
 			categoryView.AutoSize.Value = false;
 			categoryView.TextJustification = TextJustification.Center;
 			categoryView.Add(new Binding<int>(categoryView.Width, i => { return (int)Math.Max(i, categoryView.TextWidth); }, rootEntityView.Width));
@@ -575,10 +576,6 @@ namespace Lemma.Components
 
 		private void refresh()
 		{
-			RecomputeAddCommands();
-			RecomputeEntityCommands();
-			RecomputeMapCommands();
-			RecomputeVoxelCommands();
 			TabViews.RemoveTab("Entity");
 			TabViews.RemoveTab("Voxel");
 			HideLinkerView();
@@ -604,6 +601,11 @@ namespace Lemma.Components
 				else
 					this.show(null);
 			}
+
+			RecomputeAddCommands();
+			RecomputeEntityCommands();
+			RecomputeMapCommands();
+			RecomputeVoxelCommands();
 		}
 
 		public void BuildValueFieldView(View parent, Type type, IProperty property, VectorElement element, int width = 30)

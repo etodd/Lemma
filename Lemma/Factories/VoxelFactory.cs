@@ -47,6 +47,10 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			this.InternalBind(entity, main, creating);
+			Voxel voxel = entity.Get<Voxel>();
+			entity.Add("Scale", voxel.Scale);
+			entity.Add("EnablePhysics", voxel.EnablePhysics);
+			entity.Add("Mutable", voxel.Mutable);
 		}
 
 		public void InternalBind(Entity entity, Main main, bool creating = false, Transform transform = null, bool dataOnly = false)
@@ -164,6 +168,9 @@ namespace Lemma.Factories
 		{
 			base.Bind(entity, main, creating);
 			DynamicVoxel map = entity.Get<DynamicVoxel>();
+
+			entity.Add("IsAffectedByGravity", map.IsAffectedByGravity);
+			entity.Add("IsAlwaysActive", map.IsAlwaysActive);
 
 			const float volumeMultiplier = 0.005f;
 

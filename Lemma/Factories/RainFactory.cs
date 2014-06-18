@@ -59,6 +59,13 @@ namespace Lemma.Factories
 
 			this.SetMain(entity, main);
 			emitter.ParticleType.Value = "Rain";
+
+			entity.Add("ThunderIntervalMin", rain.ThunderIntervalMin);
+			entity.Add("ThunderIntervalMax", rain.ThunderIntervalMax);
+			entity.Add("ThunderMaxDelay", rain.ThunderMaxDelay);
+			entity.Add("ParticlesPerSecond", emitter.ParticlesPerSecond);
+			entity.Add("LightningShadowed", lightning.Shadowed);
+			entity.Add("LightningColor", lightning.Color);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

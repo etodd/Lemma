@@ -27,6 +27,20 @@ namespace Lemma.Factories
 			this.SetMain(entity, main);
 
 			water.Add(new TwoWayBinding<Vector3>(water.Position, transform.Position));
+			entity.Add("Color", water.Color);
+			entity.Add("UnderwaterColor", water.UnderwaterColor);
+			entity.Add("Fresnel", water.Fresnel);
+			entity.Add("Speed", water.Speed);
+			entity.Add("RippleDensity", water.RippleDensity);
+			entity.Add("EnableReflection", water.EnableReflection);
+			entity.Add("Distortion", water.Distortion);
+			entity.Add("Brightness", water.Brightness);
+			entity.Add("Clearness", water.Clearness);
+			entity.Add("Depth", water.Depth);
+			entity.Add("Refraction", water.Refraction);
+			entity.Add("Scale", water.Scale);
+			entity.Add("CannotSuspendByDistance", water.CannotSuspendByDistance);
+			entity.Add("DrawOrder", water.DrawOrder);
 		}
 	}
 }

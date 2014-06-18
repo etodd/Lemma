@@ -26,9 +26,11 @@ namespace Lemma.Factories
 			Model model = entity.GetOrCreate<Model>("Model");
 			model.MapContent.Value = true;
 
-			VoxelAttachable.MakeAttachable(entity, main);
-
 			this.SetMain(entity, main);
+
+			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
+
+			model.EditorProperties();
 
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 		}

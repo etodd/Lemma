@@ -59,6 +59,14 @@ namespace Lemma.Components
 		public Property<Vector3> Scale = new Property<Vector3> { Value = Vector3.One };
 		public Property<Vector3> Color = new Property<Vector3> { Value = Vector3.One };
 
+		public virtual void EditorProperties()
+		{
+			this.Entity.Add("Filename", this.Filename);
+			this.Entity.Add("Scale", this.Scale);
+			this.Entity.Add("Color", this.Color);
+			this.Entity.Add("DiffuseTexture", this.DiffuseTexture);
+		}
+
 		public struct Material
 		{
 			public static Material Unlit = new Material();
@@ -932,6 +940,13 @@ namespace Lemma.Components
 			this.Alpha = this.GetFloatParameter("Alpha");
 			this.Alpha.Value = 1.0f;
 			this.DrawOrder = new Property<int>();
+		}
+
+		public override void EditorProperties()
+		{
+			base.EditorProperties();
+			this.Entity.Add("Alpha", this.Alpha);
+			this.Entity.Add("DrawOrder", this.DrawOrder);
 		}
 
 		public override void Awake()

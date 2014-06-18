@@ -27,6 +27,13 @@ namespace Lemma.Components
 			return PlayerSpawn.spawns.FirstOrDefault(x => x.IsActivated);
 		}
 
+		public void EditorProperties()
+		{
+			this.Entity.Add("IsActivated", this.IsActivated);
+			this.Entity.Add("Activate", this.Activate);
+			this.Entity.Add("Deactivate", this.Deactivate);
+		}
+
 		public override void Awake()
 		{
 			base.Awake();

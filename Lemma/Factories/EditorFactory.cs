@@ -239,7 +239,6 @@ namespace Lemma.Factories
 
 			gui.Add(new ListBinding<Entity>(gui.SelectedEntities, editor.SelectedEntities));
 			gui.Add(new Binding<bool>(gui.VoxelEditMode, editor.VoxelEditMode));
-			gui.Add(new Binding<bool>(gui.EnablePrecision, x => !x, input.GetKey(Keys.LeftShift)));
 			gui.Add(new TwoWayBinding<bool>(editor.NeedsSave, gui.NeedsSave));
 			gui.Add(new Binding<Editor.TransformModes>(gui.TransformMode, editor.TransformMode));
 

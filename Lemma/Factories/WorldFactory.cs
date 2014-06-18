@@ -63,6 +63,13 @@ namespace Lemma.Factories
 			this.SetMain(entity, main);
 			WorldFactory.instance = entity;
 			AkSoundEngine.DefaultGameObject = entity;
+
+			entity.Add("LightRampTexture", world.LightRampTexture);
+			entity.Add("EnvironmentMap", world.EnvironmentMap);
+			entity.Add("EnvironmentColor", world.EnvironmentColor);
+			entity.Add("BackgroundColor", world.BackgroundColor);
+			entity.Add("FarPlaneDistance", world.FarPlaneDistance);
+			entity.Add("Gravity", world.Gravity);
 		}
 	}
 }

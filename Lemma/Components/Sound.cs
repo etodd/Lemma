@@ -30,6 +30,16 @@ namespace Lemma.Components
 			this.Add(new CommandBinding(this.OnSuspended, (Action)this.Stop));
 		}
 
+		public void EditorProperties()
+		{
+			this.Entity.Add("Enabled", this.Enabled);
+			this.Entity.Add("Enable", this.Enable);
+			this.Entity.Add("Disable", this.Disable);
+			this.Entity.Add("PlayCue", this.PlayCue);
+			this.Entity.Add("StopCue", this.StopCue);
+			this.Entity.Add("Is3D", this.Is3D);
+		}
+
 		public void Play()
 		{
 			if (!string.IsNullOrEmpty(this.PlayCue) && this.Enabled && !this.Suspended && !this.main.EditorEnabled)

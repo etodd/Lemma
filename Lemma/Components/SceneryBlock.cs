@@ -14,6 +14,11 @@ namespace Lemma.Components
 
 		public Property<Voxel.t> Type = new Property<Voxel.t>();
 
+		public void EditorProperties()
+		{
+			this.Entity.Add("Type", this.Type);
+		}
+
 		public override void Awake()
 		{
 			base.Awake();

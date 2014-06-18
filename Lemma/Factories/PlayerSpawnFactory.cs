@@ -16,24 +16,18 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity entity = new Entity(main, "PlayerSpawn");
-
-			PlayerTrigger trigger = new PlayerTrigger();
-			trigger.Enabled.Value = false;
-			entity.Add("Trigger", trigger);
-
-			return entity;
+			return new Entity(main, "PlayerSpawn");
 		}
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			VoxelAttachable.MakeAttachable(entity, main);
-
 			entity.CannotSuspendByDistance = true;
 
 			this.SetMain(entity, main);
+
+			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
 
 			if (main.EditorEnabled)
 			{
@@ -54,12 +48,13 @@ namespace Lemma.Factories
 			PlayerSpawn spawn = entity.GetOrCreate<PlayerSpawn>("PlayerSpawn");
 			spawn.Add(new TwoWayBinding<Vector3>(transform.Position, spawn.Position));
 			spawn.Add(new Binding<float, Vector3>(spawn.Rotation, x => ((float)Math.PI * -0.5f) - (float)Math.Atan2(x.Z, x.X), transform.Forward));
+			spawn.EditorProperties();
 
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");
+			trigger.Enabled.Value = true;
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 			trigger.Add(new CommandBinding(trigger.PlayerEntered, spawn.Activate));
 
-			entity.Add("IsActivated", spawn.IsActivated);
 			trigger.EditorProperties();
 		}
 

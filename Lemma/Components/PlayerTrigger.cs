@@ -89,7 +89,7 @@ namespace Lemma.Components
 			PlayerTrigger trigger = entity.Get<PlayerTrigger>();
 			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(x), trigger.Radius));
 			model.DrawOrder.Value = 11; // In front of water
-			model.Add(new Binding<bool>(model.Enabled, () => trigger.Enabled && entity.EditorSelected, trigger.Enabled, entity.EditorSelected));
+			model.Add(new Binding<bool>(model.Enabled, () => entity.EditorSelected, entity.EditorSelected));
 
 			entity.Add(model);
 

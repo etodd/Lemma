@@ -203,7 +203,7 @@ namespace Lemma.IO
 			if (directory == null)
 				filename = Path.Combine(MapLoader.MapDirectory, filename);
 			else
-				filename = Path.Combine(directory, filename);
+				filename = Path.Combine(directory, Path.GetFileName(filename));
 
 			if (!filename.EndsWith("." + MapLoader.MapExtension))
 				filename += "." + MapLoader.MapExtension;

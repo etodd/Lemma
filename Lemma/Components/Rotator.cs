@@ -12,6 +12,11 @@ namespace Lemma.Components
 		public Property<Vector3> Velocity = new Property<Vector3>();
 		public ListProperty<Entity.Handle> Targets = new ListProperty<Entity.Handle>();
 
+		public void EditorProperties()
+		{
+			this.Entity.Add("Velocity", this.Velocity);
+		}
+
 		private List<Transform> transforms = new List<Transform>();
 		public override void Start()
 		{

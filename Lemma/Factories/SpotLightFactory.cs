@@ -33,6 +33,7 @@ namespace Lemma.Factories
 
 			entity.Add("Enable", spotLight.Enable);
 			entity.Add("Disable", spotLight.Disable);
+			entity.Add("Enabled", spotLight.Enabled);
 			entity.Add("Color", spotLight.Color);
 			entity.Add("FieldOfView", spotLight.FieldOfView);
 			entity.Add("Attenuation", spotLight.Attenuation);

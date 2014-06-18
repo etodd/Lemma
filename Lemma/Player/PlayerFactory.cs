@@ -241,9 +241,16 @@ namespace Lemma.Factories
 				}
 			}, cameraControl.ThirdPerson));
 
-#if DEVELOPMENT
-			input.Add(new CommandBinding(input.GetKeyDown(Keys.C), delegate() { cameraControl.ThirdPerson.Value = !cameraControl.ThirdPerson; }));
+			Lemma.Console.Console.AddConCommand(new Console.ConCommand("third_person", "Toggle third-person view (WARNING: EXPERIMENTAL)", delegate(Console.ConCommand.ArgCollection args)
+			{
+				cameraControl.ThirdPerson.Value = !cameraControl.ThirdPerson;
+			}));
+			entity.Add(new CommandBinding(entity.Delete, delegate()
+			{
+				Lemma.Console.Console.RemoveConCommand("third_person");
+			}));
 
+#if DEVELOPMENT
 			ModelAlpha debugCylinder = new ModelAlpha();
 			debugCylinder.Filename.Value = "Models\\alpha-cylinder";
 			debugCylinder.Add(new Binding<Matrix>(debugCylinder.Transform, transform.Matrix));
@@ -255,17 +262,6 @@ namespace Lemma.Factories
 				return new Vector3(player.Character.Radius * 2.0f, player.Character.Height, player.Character.Radius * 2.0f);
 			}, player.Character.Height, player.Character.Radius));
 			entity.Add(debugCylinder);
-
-			input.Add(new CommandBinding(input.GetKeyUp(Keys.T), delegate()
-			{
-				if (main.TimeMultiplier < 1.0f)
-					main.TimeMultiplier.Value = 1.0f;
-				else
-					main.TimeMultiplier.Value = 0.25f;
-			}));
-#else
-			// Disable the player model in third person in Release mode
-			model.Add(new Binding<bool>(model.Enabled, x => !x, cameraControl.ThirdPerson));
 #endif
 
 			// When rotation is locked, we want to make sure the player can't turn their head

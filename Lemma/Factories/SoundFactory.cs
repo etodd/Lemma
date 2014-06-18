@@ -27,6 +27,7 @@ namespace Lemma.Factories
 			this.SetMain(entity, main);
 
 			Sound sound = entity.GetOrCreate<Sound>("Sound");
+			sound.EditorProperties();
 		}
 	}
 }

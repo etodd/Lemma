@@ -405,6 +405,8 @@ namespace Lemma.Factories
 			});
 
 			this.SetMain(entity, main);
+
+			entity.Add("OperationalRadius", movement.OperationalRadius);
 		}
 	}
 }

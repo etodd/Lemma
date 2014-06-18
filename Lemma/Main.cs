@@ -178,6 +178,7 @@ namespace Lemma
 		public Property<bool> GamePadConnected = new Property<bool>();
 
 		public Property<float> TimeMultiplier = new Property<float> { Value = 1.0f };
+		public Property<float> BaseTimeMultiplier = new Property<float> { Value = 1.0f };
 		public Property<float> PauseAudioEffect = new Property<float> { Value = 0.0f };
 
 		[AutoConVar("game_time", "Total time the game has been played")]
@@ -278,6 +279,7 @@ namespace Lemma
 			this.Renderer.Brightness.Value = 0.0f;
 			this.Renderer.SpeedBlurAmount.Value = 0.0f;
 			this.TimeMultiplier.Value = 1.0f;
+			this.BaseTimeMultiplier.Value = 1.0f;
 			this.PauseAudioEffect.Value = 0.0f;
 			this.Camera.Angles.Value = Vector3.Zero;
 			this.Menu.ClearMessages();
@@ -341,11 +343,20 @@ namespace Lemma
 				return base.IsMouseVisible;
 			};
 
-			this.TimeMultiplier.Set = delegate(float value)
+			new NotifyBinding
+			(
+				delegate()
+				{
+					float value = this.TimeMultiplier * this.BaseTimeMultiplier;
+					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SLOWMOTION, Math.Min(1.0f, (1.0f - value) / 0.6f));
+				},
+				this.BaseTimeMultiplier, this.TimeMultiplier
+			);
+
+			Lemma.Console.Console.AddConVar(new ConVar("time_scale", "Time scale (percentage).", s =>
 			{
-				this.TimeMultiplier.InternalValue = value;
-				AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SLOWMOTION, Math.Min(1.0f, (1.0f - value) / 0.6f));
-			};
+				this.BaseTimeMultiplier.Value = float.Parse(s) / 100.0f;
+			}, "100") { TypeConstraint = typeof(int), Validate = o => (int)o > 0 && (int)o <= 400 });
 
 			this.PauseAudioEffect.Set = delegate(float value)
 			{
@@ -978,7 +989,7 @@ namespace Lemma
 			if (gameTime.ElapsedGameTime.TotalSeconds > 0.1f)
 				gameTime = new GameTime(gameTime.TotalGameTime, new TimeSpan((long)(0.1f * (float)TimeSpan.TicksPerSecond)), true);
 			this.GameTime = gameTime;
-			this.ElapsedTime.Value = (float)gameTime.ElapsedGameTime.TotalSeconds * this.TimeMultiplier;
+			this.ElapsedTime.Value = (float)gameTime.ElapsedGameTime.TotalSeconds * this.TimeMultiplier * this.BaseTimeMultiplier;
 			if (!this.Paused)
 				this.TotalTime.Value += this.ElapsedTime;
 

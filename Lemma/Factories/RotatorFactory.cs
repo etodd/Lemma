@@ -25,6 +25,7 @@ namespace Lemma.Factories
 			Rotator rotator = entity.GetOrCreate<Rotator>("Rotator");
 			rotator.Add(new CommandBinding(rotator.Delete, entity.Delete));
 			this.SetMain(entity, main);
+			rotator.EditorProperties();
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

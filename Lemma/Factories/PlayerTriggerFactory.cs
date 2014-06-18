@@ -32,10 +32,10 @@ namespace Lemma.Factories
 
 			entity.Add("Enable", trigger.Enable);
 			entity.Add("Disable", trigger.Disable);
+			entity.Add("Enabled", trigger.Enabled);
 			entity.Add("PlayerEntered", trigger.PlayerEntered);
 			entity.Add("PlayerExited", trigger.PlayerExited);
 
-			entity.Add("Enabled", trigger.Enabled);
 			entity.Add("Radius", trigger.Radius);
 			entity.Add("DeleteOnTrigger", trigger.DeleteOnTrigger);
 		}

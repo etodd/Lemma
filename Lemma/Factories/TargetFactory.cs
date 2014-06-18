@@ -43,8 +43,14 @@ namespace Lemma.Factories
 			{
 				entity.Add(new Animation(new Animation.Execute(entity.Delete)));
 			}));
+			trigger.Add(new Binding<bool>(trigger.Enabled, transform.Enabled));
+			trigger.EditorProperties();
 
 			entity.Add("Reached", trigger.PlayerEntered);
+			entity.Add("Enabled", transform.Enabled);
+
+			entity.Add("Enable", transform.Enable);
+			entity.Add("Disable", transform.Disable);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

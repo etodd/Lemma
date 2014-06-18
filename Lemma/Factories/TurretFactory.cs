@@ -48,7 +48,7 @@ namespace Lemma.Factories
 					entity.Delete.Execute();
 				}
 			};
-			VoxelAttachable.MakeAttachable(entity, main, true, true, die);
+			VoxelAttachable.MakeAttachable(entity, main, true, true, die).Enabled.Value = true;
 
 			PointLight pointLight = entity.GetOrCreate<PointLight>();
 			pointLight.Serialize = false;

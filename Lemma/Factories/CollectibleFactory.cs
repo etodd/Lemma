@@ -58,6 +58,8 @@ namespace Lemma.Factories
 			model.Filename.Value = "Models\\sphere";
 			model.Serialize = false;
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
+
+			entity.Add("Collected", collectible.PlayerTouched);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

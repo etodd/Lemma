@@ -47,6 +47,13 @@ namespace Lemma.Components
 			};
 		}
 
+		public void EditorProperties()
+		{
+			this.Entity.Add("ParticleType", this.ParticleType);
+			this.Entity.Add("Jitter", this.Jitter);
+			this.Entity.Add("ParticlesPerSecond", this.ParticlesPerSecond);
+		}
+
 		public override void Awake()
 		{
 			base.Awake();

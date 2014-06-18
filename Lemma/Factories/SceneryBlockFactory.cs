@@ -37,6 +37,7 @@ namespace Lemma.Factories
 			this.SetMain(entity, main);
 
 			SceneryBlock sceneryBlock = entity.GetOrCreate<SceneryBlock>("SceneryBlock");
+			sceneryBlock.EditorProperties();
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

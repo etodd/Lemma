@@ -28,6 +28,12 @@ namespace Lemma.Factories
 
 			this.SetMain(entity, main);
 
+			trigger.EditorProperties();
+			entity.Add("Enable", trigger.Enable);
+			entity.Add("Disable", trigger.Disable);
+			entity.Add("Entered", trigger.Entered);
+			entity.Add("Exited", trigger.Exited);
+
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 		}
 

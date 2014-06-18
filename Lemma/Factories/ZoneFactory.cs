@@ -27,6 +27,11 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			zone.Add(new Binding<Matrix>(zone.Transform, transform.Matrix));
 			this.SetMain(entity, main);
+
+			entity.Add("Exclusive", zone.Exclusive);
+			entity.Add("Priority", zone.Priority);
+			entity.Add("Build", zone.Build);
+			entity.Add("DetailedShadows", zone.DetailedShadows);
 		}
 
 		private Transform addCornerModel(Entity entity, Property<bool> selected)

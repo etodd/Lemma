@@ -13,20 +13,22 @@ namespace Lemma.Components
 		public Property<string> Image = new Property<string>();
 		public Property<bool> IsCollected = new Property<bool>();
 
+		private static List<Note> notes = new List<Note>();
+
 		[XmlIgnore]
 		public Command Collected = new Command();
 
 		public override void Awake()
 		{
 			base.Awake();
-			List<Entity> notes = this.main.Get("Note").ToList();
-			int notesCollected = notes.Where(x => x.Get<Note>().IsCollected).Count();
-			int total = notes.Count;
-
+			Note.notes.Add(this);
 			this.Add(new NotifyBinding(delegate()
 			{
 				if (this.IsCollected)
 				{
+					int notesCollected = Note.notes.Where(x => x.IsCollected).Count();
+					int total = Note.notes.Count;
+
 					Container msg = this.main.Menu.ShowMessageFormat
 					(
 						this.Entity,
@@ -37,6 +39,12 @@ namespace Lemma.Components
 					this.Collected.Execute();
 				}
 			}, this.IsCollected));
+		}
+
+		public override void delete()
+		{
+			base.delete();
+			Note.notes.Remove(this);
 		}
 	}
 }
