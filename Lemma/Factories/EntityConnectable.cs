@@ -24,7 +24,7 @@ namespace Lemma.Factories
 			LineDrawer connectionLines = new LineDrawer { Serialize = false };
 			connectionLines.Add(new Binding<bool>(connectionLines.Enabled, entity.EditorSelected));
 
-			Color connectionLineColor = new Color(1.0f, 1.0f, 1.0f, 0.5f);
+			Color connectionLineColor = new Color(1.0f, 1.0f, 0.0f, 0.5f);
 
 			connectionLines.Add(new NotifyBinding(delegate()
 			{
@@ -61,7 +61,7 @@ namespace Lemma.Factories
 			LineDrawer connectionLines = new LineDrawer { Serialize = false };
 			connectionLines.Add(new Binding<bool>(connectionLines.Enabled, entity.EditorSelected));
 
-			Color connectionLineColor = new Color(1.0f, 1.0f, 1.0f, 0.5f);
+			Color connectionLineColor = new Color(1.0f, 1.0f, 0.0f, 0.5f);
 			ListBinding<LineDrawer.Line, Entity.Handle> connectionBinding = new ListBinding<LineDrawer.Line, Entity.Handle>(connectionLines.Lines, target, delegate(Entity.Handle other)
 			{
 				return new LineDrawer.Line

@@ -33,6 +33,30 @@ namespace Lemma.Components
 
 				model.Add(new Binding<Matrix, Vector3>(model.Transform, x => Matrix.CreateTranslation(x), transform.Position));
 			};
+
+			Factory<Main>.GlobalEditorComponents = delegate(Entity entity, Main main)
+			{
+				Transform transform = entity.Get<Transform>();
+				if (transform != null)
+				{
+					LineDrawer connectionLines = new LineDrawer { Serialize = false };
+					connectionLines.Add(new Binding<bool>(connectionLines.Enabled, entity.EditorSelected));
+
+					Color connectionLineColor = new Color(1.0f, 1.0f, 1.0f, 0.5f);
+					ListBinding<LineDrawer.Line, Entity.CommandLink> connectionBinding = new ListBinding<LineDrawer.Line, Entity.CommandLink>(connectionLines.Lines, entity.LinkedCommands, delegate(Entity.CommandLink link)
+					{
+						return new LineDrawer.Line
+						{
+							A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, connectionLineColor),
+							B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(link.TargetEntity.Target.Get<Transform>().Position, connectionLineColor)
+						};
+					}, x => x.TargetEntity.Target != null && x.TargetEntity.Target.Active);
+					entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, entity.EditorSelected));
+					entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, () => entity.EditorSelected, transform.Position));
+					connectionLines.Add(connectionBinding);
+					entity.Add(connectionLines);
+				}
+			};
 		}
 
 		public Property<Vector3> Position = new Property<Vector3>();

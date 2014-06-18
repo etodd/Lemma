@@ -16,8 +16,6 @@ namespace ComponentBind
 	[XmlInclude(typeof(ListProperty<Entity.Handle>))]
 	[XmlInclude(typeof(ListProperty<string>))]
 	[XmlInclude(typeof(Transform))]
-	[XmlInclude(typeof(Entity.CommandLink))]
-	[XmlInclude(typeof(List<Entity.CommandLink>))]
 	public class Entity
 	{
 		//This is a class because PASS-BY-REFERENCE
@@ -164,7 +162,7 @@ namespace ComponentBind
 
 		[XmlArray("LinkedCommands")]
 		[XmlArrayItem("CommandLink", typeof(CommandLink))]
-		public List<CommandLink> LinkedCommands = new List<CommandLink>();
+		public ListProperty<CommandLink> LinkedCommands = new ListProperty<CommandLink>();
 
 		[XmlArray("Components")]
 		[XmlArrayItem("Component", Type = typeof(DictionaryEntry))]

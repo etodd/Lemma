@@ -31,8 +31,6 @@ namespace ComponentBind
 		public Vector3 Color = Vector3.One;
 
 		public bool EditorCanSpawn = true;
-
-		public int SpawnIndex = 1;
 	}
 
 	public class Factory<MainClass> : Factory
@@ -80,14 +78,12 @@ namespace ComponentBind
 
 		public void SetMain(Entity entity, MainClass main)
 		{
-			this.SpawnIndex++;
 			entity.SetMain(main);
 			if (main.EditorEnabled)
 			{
-				
+				Factory<MainClass>.GlobalEditorComponents(entity, main);
 				this.AttachEditorComponents(entity, main);
 			}
-				
 		}
 
 		public virtual void Bind(Entity entity, MainClass main, bool creating = false)
@@ -96,11 +92,11 @@ namespace ComponentBind
 		}
 
 		public static Action<Factory<MainClass>, Entity, MainClass> DefaultEditorComponents;
+		public static Action<Entity, MainClass> GlobalEditorComponents;
 
 		public virtual void AttachEditorComponents(Entity entity, MainClass main)
 		{
-			if (Factory<MainClass>.DefaultEditorComponents != null)
-				Factory<MainClass>.DefaultEditorComponents(this, entity, main);
+			Factory<MainClass>.DefaultEditorComponents(this, entity, main);
 		}
 
 		public static Entity Duplicate(MainClass main, Entity source)
