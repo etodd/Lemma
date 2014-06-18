@@ -90,7 +90,7 @@ namespace Lemma.Components
 		public Property<bool> NeedsSave = new Property<bool>();
 
 		[XmlIgnore]
-		public Command ShowAddMenu = new Command();
+		public Command ShowContextMenu = new Command();
 
 		private SpriteFont MainFont;
 
@@ -119,9 +119,14 @@ namespace Lemma.Components
 			this.SelectDropDownView.FilterThreshhold.Value = 0;
 			this.SelectDropDownView.Label.Value = "Select";
 
-			this.ShowAddMenu.Action = delegate()
+			this.ShowContextMenu.Action = delegate()
 			{
-				if (!this.CreateDropDownView.DropDownShowing)
+				if (this.TabViews.GetActiveTab() == "Voxel")
+				{
+					if (this.voxelMaterialDropDown != null && !this.voxelMaterialDropDown.DropDownShowing)
+						this.voxelMaterialDropDown.ShowDropDown();
+				}
+				else if (!this.CreateDropDownView.DropDownShowing)
 				{
 					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Map"));
 					this.CreateDropDownView.ShowDropDown();
@@ -269,7 +274,7 @@ namespace Lemma.Components
 				if (LinkerView.Active && !LinkerView.AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
 				{
 					int links = (from l in e.LinkedCommands where l.SourceCommand == selectedCommand.Key select l).Count();
-					button.Text = string.Format("Link ({0})", links);
+					button.Text = string.Format("Link [{0}]", links);
 					HideLinkerView();
 				}
 			};
@@ -358,7 +363,7 @@ namespace Lemma.Components
 				foreach (var remove in toRemove)
 					e.LinkedCommands.Remove(remove);
 				
-				button.Text = string.Format("Link ({0}) ->", count);
+				button.Text = string.Format("Link [{0}] ->", count);
 			};
 
 			Action addItem = () =>
@@ -386,30 +391,37 @@ namespace Lemma.Components
 
 		}
 
+		private DropDownView voxelMaterialDropDown;
 		private void RecomputeVoxelCommands()
 		{
 			VoxelPanelView.RemoveAllChildren();
+			this.voxelMaterialDropDown = null;
 
-			foreach (KeyValuePair<string, PropertyEntry> prop in this.VoxelProperties)
+			if (this.SelectedEntities.Count == 1 && this.SelectedEntities[0].Get<Voxel>() != null)
 			{
-				bool sameLine;
-				var child = BuildValueView(prop.Value, out sameLine);
-				View containerLabel = BuildContainerLabel(prop.Key, sameLine);
-				containerLabel.AddChild(child);
-				this.VoxelPanelView.AddChild(containerLabel);
-				containerLabel.OrderChildren();
-				child.OrderChildren();
-			}
+				foreach (KeyValuePair<string, PropertyEntry> prop in this.VoxelProperties)
+				{
+					bool sameLine;
+					var child = BuildValueView(prop.Value, out sameLine);
+					if (prop.Value.Property is Property<Voxel.t>)
+						this.voxelMaterialDropDown = (DropDownView)child.FindFirstChildByName("Dropdown");
+					View containerLabel = BuildContainerLabel(prop.Key, sameLine);
+					containerLabel.AddChild(child);
+					this.VoxelPanelView.AddChild(containerLabel);
+					containerLabel.OrderChildren();
+					child.OrderChildren();
+				}
 
-			foreach (var cmd in VoxelCommands)
-			{
-				if (!cmd.Enabled()) continue;
-				string text = cmd.Description;
-				if (cmd.Chord.Exists)
-					text += " [" + cmd.Chord.ToString() + "]";
-				var button = new ButtonView(main.GeeUI, VoxelPanelView, text, Vector2.Zero, MainFont);
-				EditorCommand down = cmd;
-				button.OnMouseClick += (sender, args) => down.Action.Execute();
+				foreach (var cmd in VoxelCommands)
+				{
+					if (!cmd.Enabled()) continue;
+					string text = cmd.Description;
+					if (cmd.Chord.Exists)
+						text += " [" + cmd.Chord.ToString() + "]";
+					var button = new ButtonView(main.GeeUI, VoxelPanelView, text, Vector2.Zero, MainFont);
+					EditorCommand down = cmd;
+					button.OnMouseClick += (sender, args) => down.Action.Execute();
+				}
 			}
 		}
 
@@ -545,15 +557,15 @@ namespace Lemma.Components
 			{
 				int links = (from l in ent.LinkedCommands where l.SourceCommand == entry.Key select l).Count();
 
-				var link = new ButtonView(main.GeeUI, container, "Link (" + links + ")", Vector2.Zero, MainFont);
+				var link = new ButtonView(main.GeeUI, container, string.Format("Link [{0}]", links), Vector2.Zero, MainFont);
 				link.OnMouseClick += (sender, args) =>
 				{
-					link.Text = "Link ->";
 					ShowLinkerView(link, entry);
 				};
 			}
 			return container;
 		}
+
 		private void refresh()
 		{
 			RecomputeAddCommands();
@@ -789,7 +801,7 @@ namespace Lemma.Components
 			{
 				var fields = propertyInfo.PropertyType.GetFields(BindingFlags.Static | BindingFlags.Public);
 				int numFields = fields.Length;
-				var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero, MainFont);
+				var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero, MainFont) { Name = "Dropdown" };
 				drop.AllowRightClickExecute.Value = false;
 				for (int i = 0; i < numFields; i++)
 				{

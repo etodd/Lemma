@@ -124,6 +124,17 @@ namespace GeeUI.Views
 			TabContainerView.TabClicked((TabView)TabContainerView.Children[index]);
 		}
 
+		public string GetActiveTab()
+		{
+			for (int i = 0; i < TabContainerView.Children.Length; i++)
+			{
+				var tab = TabContainerView.Children[i] as TabView;
+				if (tab != null && tab.Selected)
+					return tab.TabText;
+			}
+			return null;
+		}
+
 		internal void TabClicked(int index)
 		{
 			for (int i = 1; i < Children.Length; i++)
