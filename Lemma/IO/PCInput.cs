@@ -149,22 +149,52 @@ namespace Lemma.Components
 		public struct Chord
 		{
 			public Keys Modifier, Key;
+			public MouseButton Mouse;
+			
+			public bool Exists
+			{
+				get
+				{
+					return this.Key != Keys.None || this.Mouse != MouseButton.None;
+				}
+			}
 
 			public Chord(Keys key)
 			{
 				this.Key = key;
 				this.Modifier = Keys.None;
+				this.Mouse = MouseButton.None;
 			}
 
 			public Chord(Keys key, Keys modifier)
 			{
 				this.Key = key;
 				this.Modifier = modifier;
+				this.Mouse = MouseButton.None;
+			}
+
+			public Chord(MouseButton mouse)
+			{
+				this.Key = Keys.None;
+				this.Modifier = Keys.None;
+				this.Mouse = mouse;
 			}
 
 			public override string ToString()
 			{
-				if (this.Modifier == Keys.None)
+				if (this.Mouse != MouseButton.None)
+				{
+					switch (this.Mouse)
+					{
+						case MouseButton.RightMouseButton:
+							return "Right-click";
+						case MouseButton.MiddleMouseButton:
+							return "Middle-click";
+						default:
+							return "Left-click";
+					}
+				}
+				else if (this.Modifier == Keys.None)
 					return this.Key.ToString();
 				else
 				{
@@ -179,7 +209,7 @@ namespace Lemma.Components
 						modifier = "Windows";
 					else
 						modifier = this.Modifier.ToString();
-					return modifier + "+" + this.Key.ToString();
+					return string.Format("{0}+{1}", modifier, this.Key);
 				}
 			}
 		}
@@ -408,14 +438,14 @@ namespace Lemma.Components
 
 		public Command GetChord(Chord chord)
 		{
-			if (this.chords.ContainsKey(chord))
-				return this.chords[chord];
-			else
+			Command output;
+			if (!this.chords.TryGetValue(chord, out output))
 			{
 				Command cmd = new Command();
 				this.chords.Add(chord, cmd);
-				return cmd;
+				output = cmd;
 			}
+			return output;
 		}
 
 		private void notifyNextInputListeners(PCInput.PCInputBinding input)
@@ -448,13 +478,13 @@ namespace Lemma.Components
 						if (newValue)
 						{
 							Command command;
-							if (keyDownCommands.TryGetValue(pair.Key, out command))
+							if (this.keyDownCommands.TryGetValue(pair.Key, out command))
 								command.Execute();
 						}
 						else
 						{
 							Command command;
-							if (keyUpCommands.TryGetValue(pair.Key, out command))
+							if (this.keyUpCommands.TryGetValue(pair.Key, out command))
 								command.Execute();
 						}
 					}
@@ -556,7 +586,7 @@ namespace Lemma.Components
 						if (newValue)
 						{
 							Command command;
-							if (keyDownCommands.TryGetValue(pair.Key, out command))
+							if (this.keyDownCommands.TryGetValue(pair.Key, out command))
 								command.Execute();
 						}
 						else
@@ -585,9 +615,11 @@ namespace Lemma.Components
 						chord.Modifier = keys[0];
 						chord.Key = keys[1];
 					}
-					if (this.chords.ContainsKey(chord))
+
+					Command chordCommand;
+					if (this.chords.TryGetValue(chord, out chordCommand))
 					{
-						this.chords[chord].Execute();
+						chordCommand.Execute();
 						this.chordActivated = true;
 					}
 				}

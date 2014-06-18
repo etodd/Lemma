@@ -47,6 +47,8 @@ namespace Lemma.Components
 		public Property<int> BrushSize = new Property<int>();
 		public Property<bool> NeedsSave = new Property<bool>();
 
+		public Func<bool> EnableCommands = () => true;
+
 		// Input properties
 		public Property<bool> VoxelEditMode = new Property<bool>();
 		public Property<Vector2> Movement = new Property<Vector2>();
@@ -173,6 +175,8 @@ namespace Lemma.Components
 
 			this.Spawn.Action = delegate(string type)
 			{
+				if (!this.EnableCommands())
+					return;
 				if (Factory<Main>.Get(type) != null)
 				{
 					Entity entity = Factory<Main>.Get(type).CreateAndBind(this.main);
@@ -188,12 +192,17 @@ namespace Lemma.Components
 
 			this.Save.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				IO.MapLoader.Save(this.main, null, this.main.MapFile);
 				this.NeedsSave.Value = false;
 			};
 
 			this.Duplicate.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
+
 				this.NeedsSave.Value = true;
 
 				if (this.TransformMode.Value != TransformModes.None)
@@ -264,6 +273,8 @@ namespace Lemma.Components
 
 			this.VoxelCopy.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				if (this.VoxelEditMode && this.VoxelSelectionActive && this.TransformMode.Value == Editor.TransformModes.None)
 				{
 					Voxel m = this.SelectedEntities[0].Get<Voxel>();
@@ -279,6 +290,8 @@ namespace Lemma.Components
 
 			this.VoxelPaste.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				if (this.VoxelEditMode && this.mapState != null)
 				{
 					Voxel m = this.SelectedEntities[0].Get<Voxel>();
@@ -295,6 +308,8 @@ namespace Lemma.Components
 
 			this.StartVoxelTranslation.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				if (this.VoxelEditMode && this.VoxelSelectionActive)
 				{
 					this.VoxelCopy.Execute();
@@ -304,6 +319,8 @@ namespace Lemma.Components
 
 			this.VoxelDuplicate.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				if (this.VoxelEditMode && this.VoxelSelectionActive)
 				{
 					this.StartVoxelTranslation.Execute();
@@ -313,6 +330,8 @@ namespace Lemma.Components
 
 			this.PropagateMaterial.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				if (!this.VoxelEditMode)
 					return;
 
@@ -347,6 +366,8 @@ namespace Lemma.Components
 
 			this.IntersectMaterial.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				if (!this.VoxelEditMode)
 					return;
 
@@ -373,6 +394,8 @@ namespace Lemma.Components
 			// Propagate to all cells of a certain type, including non-contiguous ones
 			this.PropagateMaterialAll.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				if (!this.VoxelEditMode)
 					return;
 
@@ -398,6 +421,8 @@ namespace Lemma.Components
 
 			this.PropagateMaterialBox.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				if (!this.VoxelEditMode)
 					return;
 
@@ -432,6 +457,8 @@ namespace Lemma.Components
 
 			this.SampleMaterial.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				if (!this.VoxelEditMode)
 					return;
 
@@ -445,6 +472,8 @@ namespace Lemma.Components
 
 			this.DeleteMaterial.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				if (!this.VoxelEditMode)
 					return;
 
@@ -471,6 +500,8 @@ namespace Lemma.Components
 			// Delete all cells of a certain type in the current map, including non-contiguous ones
 			this.DeleteMaterialAll.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				if (!this.VoxelEditMode)
 					return;
 
@@ -516,16 +547,22 @@ namespace Lemma.Components
 
 			this.StartTranslation.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				startTransform(TransformModes.Translate);
 			};
 
 			this.StartRotation.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				startTransform(TransformModes.Rotate);
 			};
 
 			this.CommitTransform.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				this.NeedsSave.Value = true;
 				this.TransformMode.Value = TransformModes.None;
 				this.TransformAxis.Value = TransformAxes.All;
@@ -536,6 +573,8 @@ namespace Lemma.Components
 
 			this.RevertTransform.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				this.TransformMode.Value = TransformModes.None;
 				if (this.VoxelEditMode)
 				{
@@ -569,6 +608,8 @@ namespace Lemma.Components
 
 			this.DeleteSelected.Action = delegate()
 			{
+				if (!this.EnableCommands())
+					return;
 				this.NeedsSave.Value = true;
 				this.TransformMode.Value = TransformModes.None;
 				this.TransformAxis.Value = TransformAxes.All;

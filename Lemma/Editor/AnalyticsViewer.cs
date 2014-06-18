@@ -83,7 +83,7 @@ namespace Lemma.Factories
 			timeline.ResizeVertical.Value = false;
 			timelines.Children.Add(timeline);
 
-			gui.MapCommands.Add(new EditorGeeUI.PopupCommand
+			gui.MapCommands.Add(new EditorGeeUI.EditorCommand
 			{
 				Description = "Load analytics data",
 				Enabled = () => editor.SelectedEntities.Count == 0 && !editor.VoxelEditMode && !analyticsEnable,

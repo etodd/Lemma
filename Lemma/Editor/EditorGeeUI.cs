@@ -24,7 +24,7 @@ namespace Lemma.Components
 {
 	public class EditorGeeUI : Component<Main>
 	{
-		public struct PopupCommand
+		public struct EditorCommand
 		{
 			public string Description;
 			public PCInput.Chord Chord;
@@ -66,22 +66,25 @@ namespace Lemma.Components
 		public Property<bool> VoxelEditMode = new Property<bool>();
 
 		[XmlIgnore]
+		public Property<Editor.TransformModes> TransformMode = new Property<Editor.TransformModes>();
+
+		[XmlIgnore]
 		public Property<bool> EnablePrecision = new Property<bool>();
 
 		[XmlIgnore]
-		public ListProperty<PopupCommand> EntityCommands = new ListProperty<PopupCommand>();
+		public ListProperty<EditorCommand> EntityCommands = new ListProperty<EditorCommand>();
 
 		[XmlIgnore]
 		public Dictionary<string, PropertyEntry> VoxelProperties = new Dictionary<string, PropertyEntry>();
 
 		[XmlIgnore]
-		public ListProperty<PopupCommand> MapCommands = new ListProperty<PopupCommand>();
+		public ListProperty<EditorCommand> MapCommands = new ListProperty<EditorCommand>();
 
 		[XmlIgnore]
-		public ListProperty<PopupCommand> VoxelCommands = new ListProperty<PopupCommand>();
+		public ListProperty<EditorCommand> VoxelCommands = new ListProperty<EditorCommand>();
 
 		[XmlIgnore]
-		public ListProperty<PopupCommand> AddEntityCommands = new ListProperty<PopupCommand>();
+		public ListProperty<EditorCommand> AddEntityCommands = new ListProperty<EditorCommand>();
 
 		[XmlIgnore]
 		public Property<bool> NeedsSave = new Property<bool>();
@@ -111,8 +114,10 @@ namespace Lemma.Components
 
 			this.CreateDropDownView = new DropDownView(main.GeeUI, MapPanelView, Vector2.Zero, MainFont);
 			this.CreateDropDownView.Label.Value = "Add";
+			this.CreateDropDownView.FilterThreshhold.Value = 0;
 			this.SelectDropDownView = new DropDownView(main.GeeUI, MapPanelView, Vector2.Zero, MainFont);
-			SelectDropDownView.Label.Value = "Select";
+			this.SelectDropDownView.FilterThreshhold.Value = 0;
+			this.SelectDropDownView.Label.Value = "Select";
 
 			this.ShowAddMenu.Action = delegate()
 			{
@@ -137,30 +142,25 @@ namespace Lemma.Components
 			TabViews.Add(new Binding<int, int>(TabViews.Width, i => i, RootEditorView.Width));
 
 			LinkerView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);
-			LinkerView.Width.Value = 420;
-			LinkerView.Height.Value = 400;
+			LinkerView.Width.Value = 300;
+			LinkerView.Height.Value = 300;
 			LinkerView.Draggable = false;
 			LinkerView.Active.Value = false;
 
-			var addButton = new ButtonView(main.GeeUI, LinkerView, "Add", Vector2.Zero, MainFont) { Name = "AddButton" };
-
-			var SourceLayout = new View(main.GeeUI, LinkerView) { Name = "SourceLayout" };
-			SourceLayout.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
-			SourceLayout.ChildrenLayouts.Add(new ExpandToFitLayout());
-			new TextView(main.GeeUI, SourceLayout, "Source command:", Vector2.Zero, MainFont);
-			new TextView(main.GeeUI, SourceLayout, "", Vector2.Zero, MainFont) { Name = "SourceCommand" };
+			var addButton = new ButtonView(main.GeeUI, LinkerView, "[+]", Vector2.Zero, MainFont) { Name = "AddButton" };
 
 			var DestLayout = new View(main.GeeUI, LinkerView) { Name = "DestLayout" };
 			DestLayout.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
 			DestLayout.ChildrenLayouts.Add(new ExpandToFitLayout());
-			new TextView(main.GeeUI, DestLayout, "Destination entity:", Vector2.Zero, MainFont);
-			new DropDownView(main.GeeUI, DestLayout, new Vector2(), MainFont)
+			new TextView(main.GeeUI, DestLayout, "Target:", Vector2.Zero, MainFont);
+			var destEntityDropDown = new DropDownView(main.GeeUI, DestLayout, new Vector2(), MainFont)
 			{
 				Name = "DestEntityDropDown"
 			};
+			destEntityDropDown.FilterThreshhold.Value = 0;
 			//Padding
-			new View(main.GeeUI, DestLayout).Height.Value = 20;
-			new TextView(main.GeeUI, DestLayout, "Destination command:", Vector2.Zero, MainFont);
+			new View(main.GeeUI, DestLayout).Height.Value = 5;
+			new TextView(main.GeeUI, DestLayout, "Command:", Vector2.Zero, MainFont);
 			new DropDownView(main.GeeUI, DestLayout, new Vector2(), MainFont)
 			{
 				Name = "DestCommandDropDown"
@@ -171,17 +171,16 @@ namespace Lemma.Components
 			list.Position.Value = new Vector2(5);
 
 			list.ChildrenLayouts.Add(new VerticalViewLayout(1, false));
-			container.Add(new Binding<int>(container.Width, (i) => i - 8, LinkerView.Width));
+			container.Add(new Binding<int>(container.Width, (i) => i - 10, LinkerView.Width));
 			list.Add(new Binding<int>(list.Width, container.Width));
 
-			container.Position.Value = new Vector2(5, 150);
+			container.Position.Value = new Vector2(5, 110);
 
-			container.Height.Value = list.Height.Value = (LinkerView.Height.Value - container.Y) - 3;
-			SourceLayout.Position.Value = new Vector2(20, 20);
-			DestLayout.Position.Value = new Vector2(260, 20);
+			container.Height.Value = list.Height.Value = (LinkerView.Height.Value - container.Y) - 5;
+			DestLayout.Position.Value = new Vector2(10, 10);
 
-			addButton.AnchorPoint.Value = new Vector2(0, 1);
-			addButton.Position.Value = new Vector2(20, 130);
+			addButton.AnchorPoint.Value = new Vector2(1, 1);
+			addButton.Position.Value = new Vector2(LinkerView.Width - 10, container.Y - 10);
 			addButton.Active.Value = false;
 
 			HideLinkerView();
@@ -198,8 +197,8 @@ namespace Lemma.Components
 			this.SelectedEntities.ItemChanged += (index, old, newValue) => this.refresh();
 			this.SelectedEntities.Cleared += this.refresh;
 
-			this.Add(new NotifyBinding(this.refresh, this.VoxelEditMode));
-			this.Add(new NotifyBinding(this.refresh, Entity.Get<Editor>().VoxelEditMode));
+			this.Add(new NotifyBinding(this.RecomputeEntityCommands, this.VoxelEditMode, this.TransformMode));
+			this.Add(new NotifyBinding(this.RecomputeVoxelCommands, this.VoxelEditMode, this.TransformMode));
 
 			this.EntityCommands.ItemAdded += (index, command) => RecomputeEntityCommands();
 			this.EntityCommands.ItemChanged += (index, old, value) => RecomputeEntityCommands();
@@ -225,7 +224,7 @@ namespace Lemma.Components
 				if (ent.EditorCanDelete && ent != this.Entity)
 				{
 					Entity ent1 = ent;
-					SelectDropDownView.AddOption((ent.ID.Value ?? "") + " [" + ent.GUID + "] [" + ent.Type + "]", () =>
+					SelectDropDownView.AddOption(string.Format("{0} [{1}]", ent.ID.Value ?? ent.GUID.ToString(), ent.Type), () =>
 					{
 						Editor editor = Entity.Get<Editor>();
 						for (int i = 0; i < editor.SelectedEntities.Count; i++)
@@ -258,7 +257,6 @@ namespace Lemma.Components
 		private View.MouseClickEventHandler currentLinkerViewClickAwayHandler;
 		public void BindLinker(ButtonView button, Entity e, Command.Entry selectedCommand)
 		{
-			var sourceText = ((TextView)LinkerView.FindFirstChildByName("SourceCommand"));
 			var destEntityDrop = ((DropDownView)LinkerView.FindFirstChildByName("DestEntityDropDown"));
 			var destCommDrop = ((DropDownView)LinkerView.FindFirstChildByName("DestCommandDropDown"));
 			var addButton = ((ButtonView)LinkerView.FindFirstChildByName("AddButton"));
@@ -288,7 +286,7 @@ namespace Lemma.Components
 				foreach (var ent in main.Entities)
 				{
 					if (ent != e)
-						destEntityDrop.AddOption(ent.ID + "[" + ent.GUID + "]", () => { }, null, ent);
+						destEntityDrop.AddOption(string.Format("{0} [{1}]", ent.ID.Value ?? ent.GUID.ToString(), ent.Type), () => { }, null, ent);
 				}
 			};
 
@@ -337,13 +335,13 @@ namespace Lemma.Components
 					View container = new View(main.GeeUI, listView);
 					container.ChildrenLayouts.Add(new HorizontalViewLayout(4));
 					container.ChildrenLayouts.Add(new ExpandToFitLayout());
-					var entView = new TextView(main.GeeUI, container, target.ID + " [" + target.GUID + "]", Vector2.Zero, MainFont);
+					var entView = new TextView(main.GeeUI, container, string.Format("{0} [{1}]", target.ID ?? target.GUID.ToString(), target.Type), Vector2.Zero, MainFont);
 					var destView = new TextView(main.GeeUI, container, link.TargetCommand, Vector2.Zero, MainFont);
 
 					entView.AutoSize.Value = false;
 					destView.AutoSize.Value = false;
 
-					entView.Width.Value = destView.Width.Value = 185;
+					entView.Width.Value = destView.Width.Value = 100;
 					entView.TextJustification = TextJustification.Left;
 					destView.TextJustification = TextJustification.Right;
 
@@ -383,8 +381,6 @@ namespace Lemma.Components
 
 			addButton.OnMouseClick += (sender, args) => addItem();
 
-			sourceText.Text.Value = selectedCommand.Key;
-
 			fillDestEntity();
 			populateList();
 
@@ -409,10 +405,10 @@ namespace Lemma.Components
 			{
 				if (!cmd.Enabled()) continue;
 				string text = cmd.Description;
-				if (cmd.Chord.Key != Keys.None)
+				if (cmd.Chord.Exists)
 					text += " [" + cmd.Chord.ToString() + "]";
 				var button = new ButtonView(main.GeeUI, VoxelPanelView, text, Vector2.Zero, MainFont);
-				PopupCommand down = cmd;
+				EditorCommand down = cmd;
 				button.OnMouseClick += (sender, args) => down.Action.Execute();
 			}
 		}
@@ -425,10 +421,10 @@ namespace Lemma.Components
 			{
 				if (!dropDown.Enabled()) continue;
 				string text = dropDown.Description;
-				if (dropDown.Chord.Key != Keys.None)
+				if (dropDown.Chord.Exists)
 					text += " [" + dropDown.Chord.ToString() + "]";
 				var button = new ButtonView(main.GeeUI, EntityPanelView, text, Vector2.Zero, MainFont);
-				PopupCommand down = dropDown;
+				EditorCommand down = dropDown;
 				button.OnMouseClick += (sender, args) => down.Action.Execute();
 			}
 		}
@@ -442,10 +438,10 @@ namespace Lemma.Components
 			{
 				if (!dropDown.Enabled()) continue;
 				string text = dropDown.Description;
-				if (dropDown.Chord.Key != Keys.None)
+				if (dropDown.Chord.Exists)
 					text += " [" + dropDown.Chord.ToString() + "]";
 				var button = new ButtonView(main.GeeUI, MapPanelView, text, Vector2.Zero, MainFont);
-				PopupCommand down = dropDown;
+				EditorCommand down = dropDown;
 				button.OnMouseClick += (sender, args) => down.Action.Execute();
 			}
 		}
@@ -457,7 +453,7 @@ namespace Lemma.Components
 			{
 				if (!dropDown.Enabled()) continue;
 				string text = dropDown.Description;
-				if (dropDown.Chord.Key != Keys.None)
+				if (dropDown.Chord.Exists)
 					text += " [" + dropDown.Chord.ToString() + "]";
 				CreateDropDownView.AddOption(text, () =>
 				{
