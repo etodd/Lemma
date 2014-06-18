@@ -442,7 +442,9 @@ namespace Lemma.Factories
 				Transform closestTransform;
 				this.raycast(main, ray, out closestEntity, out closestTransform);
 
-				if (closestEntity != null)
+				if (gui.PickNextEntity)
+					gui.EntityPicked.Execute(closestEntity);
+				else if (closestEntity != null)
 				{
 					if (editor.SelectedEntities.Count == 1 && input.GetKey(Keys.LeftControl).Value)
 					{
@@ -450,10 +452,8 @@ namespace Lemma.Factories
 						Entity selectedEntity = editor.SelectedEntities.First();
 						selectedEntity.ToggleEntityConnection.Execute(closestEntity);
 						editor.NeedsSave.Value = true;
-						return;
 					}
-
-					if (multiselect)
+					else if (multiselect)
 					{
 						if (editor.SelectedEntities.Contains(closestEntity))
 							editor.SelectedEntities.Remove(closestEntity);

@@ -32,65 +32,49 @@ namespace Lemma.Components
 			public Func<bool> Enabled;
 		}
 
-		[XmlIgnore]
-		public View RootEditorView;
+		private View RootEditorView;
 
-		[XmlIgnore]
-		public TabHost TabViews;
+		private TabHost TabViews;
 
-		[XmlIgnore]
 		public PanelView MapPanelView;
 
-		[XmlIgnore]
-		public PanelView EntityPanelView;
+		private PanelView EntityPanelView;
 
-		[XmlIgnore]
-		public PanelView VoxelPanelView;
+		private PanelView VoxelPanelView;
 
-		[XmlIgnore]
-		public DropDownView CreateDropDownView;
+		private DropDownView CreateDropDownView;
 
-		[XmlIgnore]
-		public DropDownView SelectDropDownView;
+		private DropDownView SelectDropDownView;
 
-		[XmlIgnore]
-		public PanelView PropertiesView;
+		private PanelView PropertiesView;
 
-		[XmlIgnore]
-		public PanelView LinkerView;
+		private PanelView LinkerView;
 
-		[XmlIgnore]
 		public ListProperty<Entity> SelectedEntities = new ListProperty<Entity>();
 
-		[XmlIgnore]
 		public Property<bool> VoxelEditMode = new Property<bool>();
 
-		[XmlIgnore]
 		public Property<Editor.TransformModes> TransformMode = new Property<Editor.TransformModes>();
 
-		[XmlIgnore]
 		public Property<bool> EnablePrecision = new Property<bool>();
 
-		[XmlIgnore]
 		public ListProperty<EditorCommand> EntityCommands = new ListProperty<EditorCommand>();
 
-		[XmlIgnore]
 		public Dictionary<string, PropertyEntry> VoxelProperties = new Dictionary<string, PropertyEntry>();
 
-		[XmlIgnore]
 		public ListProperty<EditorCommand> MapCommands = new ListProperty<EditorCommand>();
 
-		[XmlIgnore]
 		public ListProperty<EditorCommand> VoxelCommands = new ListProperty<EditorCommand>();
 
-		[XmlIgnore]
 		public ListProperty<EditorCommand> AddEntityCommands = new ListProperty<EditorCommand>();
 
-		[XmlIgnore]
 		public Property<bool> NeedsSave = new Property<bool>();
 
-		[XmlIgnore]
 		public Command ShowContextMenu = new Command();
+
+		public Property<bool> PickNextEntity = new Property<bool>();
+
+		public Command<Entity> EntityPicked = new Command<Entity>();
 
 		private SpriteFont MainFont;
 
@@ -158,11 +142,29 @@ namespace Lemma.Components
 			DestLayout.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
 			DestLayout.ChildrenLayouts.Add(new ExpandToFitLayout());
 			new TextView(main.GeeUI, DestLayout, "Target:", Vector2.Zero, MainFont);
-			var destEntityDropDown = new DropDownView(main.GeeUI, DestLayout, new Vector2(), MainFont)
+			var entityDropDownLayout = new View(main.GeeUI, DestLayout);
+			entityDropDownLayout.ChildrenLayouts.Add(new HorizontalViewLayout());
+			entityDropDownLayout.ChildrenLayouts.Add(new ExpandToFitLayout());
+			var destEntityDropDown = new DropDownView(main.GeeUI, entityDropDownLayout, new Vector2(), MainFont)
 			{
 				Name = "DestEntityDropDown"
 			};
 			destEntityDropDown.FilterThreshhold.Value = 0;
+
+			var selectButton = new ButtonView(main.GeeUI, entityDropDownLayout, "Select", Vector2.Zero, MainFont);
+			selectButton.OnMouseClick += delegate(object sender, EventArgs e)
+			{
+				this.LinkerView.Active.Value = false;
+				this.PickNextEntity.Value = true;
+			};
+			this.EntityPicked.Action = delegate(Entity e)
+			{
+				if (e != null)
+					destEntityDropDown.SetSelectedOption(this.entityString(e));
+				this.PickNextEntity.Value = false;
+				this.LinkerView.Active.Value = true;
+			};
+
 			//Padding
 			new View(main.GeeUI, DestLayout).Height.Value = 5;
 			new TextView(main.GeeUI, DestLayout, "Command:", Vector2.Zero, MainFont);
@@ -221,6 +223,11 @@ namespace Lemma.Components
 			this.Add(new CommandBinding<Entity>(main.EntityRemoved, e => RebuildSelectDropDown()));
 		}
 
+		private string entityString(Entity e)
+		{
+			return string.Format("{0} [{1}]", e.ID.Value ?? e.GUID.ToString(), e.Type);
+		}
+
 		public void RebuildSelectDropDown()
 		{
 			this.SelectDropDownView.RemoveAllOptions();
@@ -229,7 +236,7 @@ namespace Lemma.Components
 				if (ent.EditorCanDelete && ent != this.Entity)
 				{
 					Entity ent1 = ent;
-					SelectDropDownView.AddOption(string.Format("{0} [{1}]", ent.ID.Value ?? ent.GUID.ToString(), ent.Type), () =>
+					SelectDropDownView.AddOption(this.entityString(ent), () =>
 					{
 						Editor editor = Entity.Get<Editor>();
 						for (int i = 0; i < editor.SelectedEntities.Count; i++)
@@ -291,7 +298,7 @@ namespace Lemma.Components
 				foreach (var ent in main.Entities)
 				{
 					if (ent != e)
-						destEntityDrop.AddOption(string.Format("{0} [{1}]", ent.ID.Value ?? ent.GUID.ToString(), ent.Type), () => { }, null, ent);
+						destEntityDrop.AddOption(this.entityString(ent), () => { }, null, ent);
 				}
 			};
 
@@ -340,7 +347,7 @@ namespace Lemma.Components
 					View container = new View(main.GeeUI, listView);
 					container.ChildrenLayouts.Add(new HorizontalViewLayout(4));
 					container.ChildrenLayouts.Add(new ExpandToFitLayout());
-					var entView = new TextView(main.GeeUI, container, string.Format("{0} [{1}]", target.ID ?? target.GUID.ToString(), target.Type), Vector2.Zero, MainFont);
+					var entView = new TextView(main.GeeUI, container, this.entityString(target), Vector2.Zero, MainFont);
 					var destView = new TextView(main.GeeUI, container, link.TargetCommand, Vector2.Zero, MainFont);
 
 					entView.AutoSize.Value = false;
@@ -484,7 +491,7 @@ namespace Lemma.Components
 			if (entity == null)
 				return;
 
-			TextView categoryView = new TextView(main.GeeUI, rootEntityView, string.Format("{0} [{1}]", entity.Type, entity.GUID), new Vector2(0, 0), MainFont);
+			TextView categoryView = new TextView(main.GeeUI, rootEntityView, this.entityString(entity), new Vector2(0, 0), MainFont);
 			categoryView.AutoSize.Value = false;
 			categoryView.TextJustification = TextJustification.Center;
 			categoryView.Add(new Binding<int>(categoryView.Width, i => { return (int)Math.Max(i, categoryView.TextWidth); }, rootEntityView.Width));
