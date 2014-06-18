@@ -163,10 +163,7 @@ namespace Lemma.Components
 
 		private Voxel.State getBrush()
 		{
-			Voxel.State result = Voxel.StateList.FirstOrDefault(x => x.ID == this.Brush);
-			if (result == null)
-				return Voxel.EmptyState;
-			return result;
+			return Voxel.States[this.Brush];
 		}
 
 		public override void Awake()

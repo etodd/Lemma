@@ -166,22 +166,17 @@ namespace Lemma.Components
 				Name = "DestCommandDropDown"
 			};
 
-			var ListLayout = new View(main.GeeUI, LinkerView);
-			ListLayout.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
-			new TextView(main.GeeUI, ListLayout, "Linked commands:", Vector2.Zero, MainFont);
-			var container = new PanelView(main.GeeUI, ListLayout, Vector2.Zero);
+			var container = new PanelView(main.GeeUI, LinkerView, Vector2.Zero);
 			var list = new ListView(main.GeeUI, container) { Name = "CurLinksList" };
 			list.Position.Value = new Vector2(5);
 
-
 			list.ChildrenLayouts.Add(new VerticalViewLayout(1, false));
-			ListLayout.Add(new Binding<int>(ListLayout.Width, LinkerView.Width));
-			container.Add(new Binding<int>(container.Width, (i) => i - 8, ListLayout.Width));
+			container.Add(new Binding<int>(container.Width, (i) => i - 8, LinkerView.Width));
 			list.Add(new Binding<int>(list.Width, container.Width));
 
-			ListLayout.Position.Value = new Vector2(5, 150);
+			container.Position.Value = new Vector2(5, 150);
 
-			ListLayout.Height.Value = container.Height.Value = list.Height.Value = (LinkerView.Height.Value - ListLayout.Y) - 3;
+			container.Height.Value = list.Height.Value = (LinkerView.Height.Value - container.Y) - 3;
 			SourceLayout.Position.Value = new Vector2(20, 20);
 			DestLayout.Position.Value = new Vector2(260, 20);
 
@@ -189,13 +184,7 @@ namespace Lemma.Components
 			addButton.Position.Value = new Vector2(20, 130);
 			addButton.Active.Value = false;
 
-			LinkerView.OnMouseClickAway += (sender, args) =>
-			{
-				if (!LinkerView.AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
-					HideLinkerView(false);
-			};
-
-			HideLinkerView(true);
+			HideLinkerView();
 
 			RootEditorView.Height.Value = 160;
 			TabViews.Height.Value = 160;
@@ -248,33 +237,45 @@ namespace Lemma.Components
 		}
 
 
-		public void HideLinkerView(bool fromShow)
+		public void HideLinkerView()
 		{
 			LinkerView.Active.Value = false;
-			if(!fromShow)
-				refresh();
 		}
 
-		public void ShowLinkerView(Command.Entry select)
+		public void ShowLinkerView(ButtonView button, Command.Entry select)
 		{
 			if (SelectedEntities.Count != 1) return;
 			LinkerView.Active.Value = true;
 			LinkerView.Position.Value = new Vector2(PropertiesView.AbsoluteBoundBox.Right, InputManager.GetMousePosV().Y);
 			LinkerView.ParentView.BringChildToFront(LinkerView);
-			BindLinker(SelectedEntities[0], select);
+			BindLinker(button, SelectedEntities[0], select);
 			if (LinkerView.AbsoluteBoundBox.Bottom > main.GeeUI.RootView.AbsoluteBoundBox.Bottom)
 			{
 				LinkerView.Y -= (LinkerView.AbsoluteBoundBox.Bottom - main.GeeUI.RootView.AbsoluteBoundBox.Bottom);
 			}
 		}
 
-		public void BindLinker(Entity e, Command.Entry selectedCommand)
+		private View.MouseClickEventHandler currentLinkerViewClickAwayHandler;
+		public void BindLinker(ButtonView button, Entity e, Command.Entry selectedCommand)
 		{
 			var sourceText = ((TextView)LinkerView.FindFirstChildByName("SourceCommand"));
 			var destEntityDrop = ((DropDownView)LinkerView.FindFirstChildByName("DestEntityDropDown"));
 			var destCommDrop = ((DropDownView)LinkerView.FindFirstChildByName("DestCommandDropDown"));
 			var addButton = ((ButtonView)LinkerView.FindFirstChildByName("AddButton"));
 			var listView = ((ListView)LinkerView.FindFirstChildByName("CurLinksList"));
+
+			LinkerView.OnMouseClickAway -= this.currentLinkerViewClickAwayHandler;
+
+			this.currentLinkerViewClickAwayHandler = (sender, args) =>
+			{
+				if (LinkerView.Active && !LinkerView.AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
+				{
+					int links = (from l in e.LinkedCommands where l.SourceCommand == selectedCommand.Key select l).Count();
+					button.Text = string.Format("Link ({0})", links);
+					HideLinkerView();
+				}
+			};
+			LinkerView.OnMouseClickAway += this.currentLinkerViewClickAwayHandler;
 
 			addButton.ResetOnMouseClick();
 
@@ -322,12 +323,13 @@ namespace Lemma.Components
 			{
 				listView.RemoveAllChildren();
 				listView.ContentOffset.Value = Vector2.Zero;
+				int count = 0;
 				List<Entity.CommandLink> toRemove = new List<Entity.CommandLink>();
 				foreach (var link in e.LinkedCommands)
 				{
 					if (link.SourceCommand != selectedCommand.Key) continue;
 					Entity target = link.TargetEntity.Target;
-					if (target == null)
+					if (target == null || !target.Active)
 					{
 						toRemove.Add(link);
 						continue;
@@ -345,16 +347,20 @@ namespace Lemma.Components
 					entView.TextJustification = TextJustification.Left;
 					destView.TextJustification = TextJustification.Right;
 
-					var button = new ButtonView(main.GeeUI, container, "[-]", Vector2.Zero, MainFont);
-					button.OnMouseClick += (sender, args) =>
+					var removeButton = new ButtonView(main.GeeUI, container, "[-]", Vector2.Zero, MainFont);
+					removeButton.OnMouseClick += (sender, args) =>
 					{
 						e.LinkedCommands.Remove(link);
 						populateList();
 						this.NeedsSave.Value = true;
 					};
+
+					count++;
 				}
 				foreach (var remove in toRemove)
 					e.LinkedCommands.Remove(remove);
+				
+				button.Text = string.Format("Link ({0}) ->", count);
 			};
 
 			Action addItem = () =>
@@ -546,7 +552,8 @@ namespace Lemma.Components
 				var link = new ButtonView(main.GeeUI, container, "Link (" + links + ")", Vector2.Zero, MainFont);
 				link.OnMouseClick += (sender, args) =>
 				{
-					ShowLinkerView(entry);
+					link.Text = "Link ->";
+					ShowLinkerView(link, entry);
 				};
 			}
 			return container;
@@ -559,7 +566,7 @@ namespace Lemma.Components
 			RecomputeVoxelCommands();
 			TabViews.RemoveTab("Entity");
 			TabViews.RemoveTab("Voxel");
-			HideLinkerView(true);
+			HideLinkerView();
 
 			if (this.SelectedEntities.Count == 0)
 				this.show(null);
