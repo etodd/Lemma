@@ -180,9 +180,27 @@ namespace Lemma.Factories
 						var dialog = new System.Windows.Forms.OpenFileDialog();
 						dialog.Filter = "Map files|*.map";
 						dialog.InitialDirectory = Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory);
-						var result = dialog.ShowDialog();
-						string file = result == DialogResult.OK ? dialog.FileName : "";
-						if (file != "") IO.MapLoader.Load(main, "", file);
+						if (dialog.ShowDialog() == DialogResult.OK)
+							IO.MapLoader.Load(main, null, dialog.FileName);
+					}
+				},
+				gui.MapCommands
+			);
+
+			AddCommand
+			(
+				entity, main, "New", new PCInput.Chord(Keys.N, Keys.LeftControl),
+				() => !input.EnableLook && !editor.VoxelEditMode
+				&& editor.TransformMode.Value == Editor.TransformModes.None,
+				new Command
+				{
+					Action = () =>
+					{
+						var dialog = new System.Windows.Forms.SaveFileDialog();
+						dialog.Filter = "Map files|*.map";
+						dialog.InitialDirectory = Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory);
+						if (dialog.ShowDialog() == DialogResult.OK)
+							IO.MapLoader.New(main, dialog.FileName);
 					}
 				},
 				gui.MapCommands

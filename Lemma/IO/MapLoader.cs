@@ -168,6 +168,35 @@ namespace Lemma.IO
 			}
 		}
 
+		public static void New(Main main, string filename)
+		{
+			main.LoadingMap.Execute(filename);
+
+			// HACK HACK HACK
+			main.MapFile.InternalValue = filename;
+
+			if (!filename.EndsWith("." + MapLoader.MapExtension))
+				filename += "." + MapLoader.MapExtension;
+
+			main.ClearEntities(false);
+
+			// Create a new map
+			Entity world = Factory.Get<WorldFactory>().CreateAndBind(main);
+			world.Get<Transform>().Position.Value = new Vector3(0, 3, 0);
+			main.Add(world);
+
+			Entity ambientLight = Factory.Get<AmbientLightFactory>().CreateAndBind(main);
+			ambientLight.Get<Transform>().Position.Value = new Vector3(0, 5.0f, 0);
+			ambientLight.Get<AmbientLight>().Color.Value = new Vector3(0.25f, 0.25f, 0.25f);
+			main.Add(ambientLight);
+
+			Entity map = Factory.Get<VoxelFactory>().CreateAndBind(main);
+			map.Get<Transform>().Position.Value = new Vector3(0, 1, 0);
+			main.Add(map);
+
+			main.MapLoaded.Execute();
+		}
+
 		private static void Load(Main main, Stream stream, bool deleteEditor = true)
 		{
 			main.Camera.Position.Value = new Vector3(0, -10000, 0);

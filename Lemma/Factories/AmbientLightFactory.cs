@@ -26,9 +26,10 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			this.SetMain(entity, main);
 			AmbientLight ambientLight = entity.GetOrCreate<AmbientLight>("AmbientLight");
 			entity.CannotSuspendByDistance = true;
+
+			this.SetMain(entity, main);
 
 			entity.Add("Enable", ambientLight.Enable);
 			entity.Add("Disable", ambientLight.Disable);

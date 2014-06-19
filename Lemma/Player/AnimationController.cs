@@ -118,6 +118,9 @@ namespace Lemma.Components
 			"CrouchWalkBackward",
 		};
 
+		const float sprintRange = 1.0f;
+		const float sprintThreshold = Character.DefaultMaxSpeed - sprintRange;
+
 		public void Update(float dt)
 		{
 			Vector2 mouse = this.Mouse;
@@ -184,19 +187,17 @@ namespace Lemma.Components
 					foreach (KeyValuePair<string, AnimationInfo> animation in this.Crouched ? crouchMovementAnimations : movementAnimations)
 					{
 						if (animation.Key != "Idle" && animation.Key != "CrouchIdle")
-							this.model[animation.Key].Speed = this.Crouched ? (speed / 2.2f) : (speed / 6.5f);
+							this.model[animation.Key].Speed = this.Crouched ? (speed / 2.2f) : (speed / 6.0f);
 						this.model[animation.Key].TargetStrength = animation.Key == movementAnimation ? 1.0f : animation.Value.DefaultStrength;
 					}
 
 					if (movementAnimation == "Run")
 					{
-						const float sprintRange = 1.0f;
-						const float sprintThreshold = Character.DefaultMaxSpeed - sprintRange;
 						this.sprintAnimation.TargetStrength = MathHelper.Clamp((speed - sprintThreshold) / sprintRange, 0.0f, 1.0f);
-						this.runAnimation.TargetStrength = Math.Min(MathHelper.Clamp(speed / 4.0f, 0.0f, 1.0f), 1.0f - this.sprintAnimation.TargetStrength);
+						this.runAnimation.TargetStrength = Math.Min(MathHelper.Clamp(speed / sprintThreshold, 0.0f, 1.0f), 1.0f - this.sprintAnimation.TargetStrength);
 					}
 					else if (movementAnimation != "Idle" && movementAnimation != "CrouchIdle")
-						this.model[movementAnimation].TargetStrength = MathHelper.Clamp(this.Crouched ? speed / 2.0f : speed / 4.0f, 0.0f, 1.0f);
+						this.model[movementAnimation].TargetStrength = MathHelper.Clamp(this.Crouched ? speed / 2.0f : speed / sprintThreshold, 0.0f, 1.0f);
 
 					if (!this.model.IsPlaying(movementAnimation))
 					{

@@ -725,39 +725,13 @@ namespace Lemma
 				this.MapFile.Set = delegate(string value)
 				{
 					if (string.IsNullOrEmpty(value))
-					{
 						this.MapFile.InternalValue = null;
-						return;
-					}
-
-					try
+					else
 					{
 						string directory = this.CurrentSave.Value == null ? null : Path.Combine(this.SaveDirectory, this.CurrentSave);
 						if (value == Main.MenuMap)
 							directory = null; // Don't try to load the menu from a save game
 						IO.MapLoader.Load(this, directory, value, false);
-					}
-					catch (FileNotFoundException)
-					{
-						this.MapFile.InternalValue = value;
-
-						this.ClearEntities(false);
-
-						// Create a new map
-						Entity world = Factory.Get<WorldFactory>().CreateAndBind(this);
-						world.Get<Transform>().Position.Value = new Vector3(0, 3, 0);
-						this.Add(world);
-
-						Entity ambientLight = Factory.Get<AmbientLightFactory>().CreateAndBind(this);
-						ambientLight.Get<Transform>().Position.Value = new Vector3(0, 5.0f, 0);
-						ambientLight.Get<AmbientLight>().Color.Value = new Vector3(0.25f, 0.25f, 0.25f);
-						this.Add(ambientLight);
-
-						Entity map = Factory.Get<VoxelFactory>().CreateAndBind(this);
-						map.Get<Transform>().Position.Value = new Vector3(0, 1, 0);
-						this.Add(map);
-
-						this.MapLoaded.Execute();
 					}
 				};
 
