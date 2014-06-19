@@ -74,7 +74,13 @@ namespace Lemma.Components
 
 		public Command<Entity> EntityPicked = new Command<Entity>();
 
+		private DropDownView entityPickerDropDown;
+		private View reactivateViewAfterPickingEntity;
+		private ButtonView resetSelectButtonAfterPickingEntity;
+
 		private SpriteFont MainFont;
+
+		private TextView selectPrompt;
 
 		public override void Awake()
 		{
@@ -82,6 +88,11 @@ namespace Lemma.Components
 			MainFont = main.Content.Load<SpriteFont>("EditorFont");
 
 			this.RootEditorView = new View(this.main.GeeUI, this.main.GeeUI.RootView);
+
+			this.selectPrompt = new TextView(this.main.GeeUI, this.main.GeeUI.RootView, "Select an entity", Vector2.Zero, this.MainFont);
+			this.selectPrompt.Add(new Binding<Vector2, MouseState>(this.selectPrompt.Position, x => new Vector2(x.X + 16, x.Y + 16), this.main.MouseState));
+			this.selectPrompt.Add(new Binding<bool>(this.selectPrompt.Active, this.PickNextEntity));
+
 			this.TabViews = new TabHost(this.main.GeeUI, this.RootEditorView, Vector2.Zero, this.MainFont);
 			this.MapPanelView = new PanelView(this.main.GeeUI, null, Vector2.Zero);
 			this.MapPanelView.ChildrenLayouts.Add(new VerticalViewLayout(4, true, 4));
@@ -148,19 +159,33 @@ namespace Lemma.Components
 				Name = "DestEntityDropDown"
 			};
 			destEntityDropDown.FilterThreshhold.Value = 0;
+			destEntityDropDown.AllowRightClickExecute.Value = false;
 
 			var selectButton = new ButtonView(main.GeeUI, entityDropDownLayout, "Select", Vector2.Zero, MainFont);
 			selectButton.OnMouseClick += delegate(object sender, EventArgs e)
 			{
 				this.LinkerView.Active.Value = false;
 				this.PickNextEntity.Value = true;
+				this.entityPickerDropDown = destEntityDropDown;
+				this.reactivateViewAfterPickingEntity = this.LinkerView;
+				selectButton.Text = "Select ->";
+				this.resetSelectButtonAfterPickingEntity = selectButton;
 			};
 			this.EntityPicked.Action = delegate(Entity e)
 			{
 				if (e != null)
-					destEntityDropDown.SetSelectedOption(this.entityString(e));
+					this.entityPickerDropDown.SetSelectedOption(this.entityString(e));
 				this.PickNextEntity.Value = false;
-				this.LinkerView.Active.Value = true;
+				if (this.reactivateViewAfterPickingEntity != null)
+				{
+					this.reactivateViewAfterPickingEntity.Active.Value = true;
+					this.reactivateViewAfterPickingEntity = null;
+				}
+				if (this.resetSelectButtonAfterPickingEntity != null)
+				{
+					this.resetSelectButtonAfterPickingEntity.Text = "Select";
+					this.resetSelectButtonAfterPickingEntity = null;
+				}
 			};
 
 			//Padding
@@ -406,7 +431,7 @@ namespace Lemma.Components
 				foreach (KeyValuePair<string, PropertyEntry> prop in this.VoxelProperties)
 				{
 					bool sameLine;
-					var child = BuildValueView(prop.Value, out sameLine);
+					var child = BuildValueView(this.SelectedEntities[0], prop.Value, out sameLine);
 					if (prop.Value.Property is Property<Voxel.t>)
 						this.voxelMaterialDropDown = (DropDownView)child.FindFirstChildByName("Dropdown");
 					View containerLabel = BuildContainerLabel(prop.Key, sameLine);
@@ -499,7 +524,7 @@ namespace Lemma.Components
 			foreach (KeyValuePair<string, PropertyEntry> prop in entity.Properties)
 			{
 				bool sameLine;
-				var child = BuildValueView(prop.Value, out sameLine);
+				var child = BuildValueView(entity, prop.Value, out sameLine);
 				View containerLabel = BuildContainerLabel(prop.Key, sameLine);
 				containerLabel.AddChild(child);
 				rootEntityView.AddChild(containerLabel);
@@ -780,7 +805,7 @@ namespace Lemma.Components
 			}
 		}
 
-		public View BuildValueView(PropertyEntry entry, out bool shouldSameLine)
+		public View BuildValueView(Entity entity, PropertyEntry entry, out bool shouldSameLine)
 		{
 			IProperty property = entry.Property;
 			shouldSameLine = false;
@@ -788,137 +813,183 @@ namespace Lemma.Components
 			ret.ChildrenLayouts.Add(new HorizontalViewLayout(4));
 			ret.ChildrenLayouts.Add(new ExpandToFitLayout());
 
-			PropertyInfo propertyInfo = property.GetType().GetProperty("Value");
-			if (propertyInfo.PropertyType.Equals(typeof(Vector2)))
+			if (typeof(IListProperty).IsAssignableFrom(property.GetType()))
 			{
-				foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y })
-					this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field);
-			}
-			else if (propertyInfo.PropertyType.Equals(typeof(Vector3)) || propertyInfo.PropertyType.Equals(typeof(Voxel.Coord)))
-			{
-				foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z })
-					this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field);
-			}
-			else if (propertyInfo.PropertyType.Equals(typeof(Vector4)) || propertyInfo.PropertyType.Equals(typeof(Quaternion)) ||
-					 propertyInfo.PropertyType.Equals(typeof(Color)))
-			{
-				foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z, VectorElement.W })
-					this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field);
-			}
-			else if (typeof(Enum).IsAssignableFrom(propertyInfo.PropertyType))
-			{
-				var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero, MainFont) { Name = "Dropdown" };
-				drop.AllowRightClickExecute.Value = false;
-				foreach (object o in Enum.GetValues(propertyInfo.PropertyType))
-				{
-					Action onClick = () =>
-					{
-						propertyInfo.SetValue(property, o, null);
-						this.NeedsSave.Value = true;
-					};
-					drop.AddOption(o.ToString(), onClick);
-				}
-				drop.SetSelectedOption(propertyInfo.GetValue(property, null).ToString(), false);
-				drop.Add(new NotifyBinding(() =>
-				{
-					drop.SetSelectedOption(propertyInfo.GetValue(property, null).ToString(), false);
-				}, (IProperty)property));
+				// TODO: handle ListProperty<Entity.Handle>
 			}
 			else
 			{
-				TextFieldView view = new TextFieldView(main.GeeUI, ret, Vector2.Zero, MainFont);
-				view.Width.Value = 130;
-				view.Height.Value = 15;
-				view.Text = "abc";
-				view.MultiLine = false;
-
-				if (propertyInfo.PropertyType.Equals(typeof(int)))
+				PropertyInfo propertyInfo = property.GetType().GetProperty("Value");
+				if (propertyInfo.PropertyType.Equals(typeof(Vector2)))
 				{
-					Property<int> socket = (Property<int>)property;
-					view.Text = socket.Value.ToString();
-					socket.AddBinding(new NotifyBinding(() =>
-					{
-						view.Text = socket.Value.ToString();
-					}, socket));
-					Action onChanged = () =>
-					{
-						int value;
-						if (int.TryParse(view.Text, out value))
-						{
-							socket.Value = value;
-							this.NeedsSave.Value = true;
-						}
-						view.Text = socket.Value.ToString();
-						view.Selected.Value = false;
-					};
-					view.ValidationRegex = "^-?\\d+$";
-					view.OnTextSubmitted = onChanged;
+					foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y })
+						this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field);
 				}
-				else if (propertyInfo.PropertyType.Equals(typeof(float)))
+				else if (propertyInfo.PropertyType.Equals(typeof(Vector3)) || propertyInfo.PropertyType.Equals(typeof(Voxel.Coord)))
 				{
-					Property<float> socket = (Property<float>)property;
-					view.Text = socket.Value.ToString("F");
-					socket.AddBinding(new NotifyBinding(() =>
+					foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z })
+						this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field);
+				}
+				else if (propertyInfo.PropertyType.Equals(typeof(Vector4)) || propertyInfo.PropertyType.Equals(typeof(Quaternion)) ||
+						 propertyInfo.PropertyType.Equals(typeof(Color)))
+				{
+					foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z, VectorElement.W })
+						this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field);
+				}
+				else if (typeof(Enum).IsAssignableFrom(propertyInfo.PropertyType))
+				{
+					var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero, MainFont) { Name = "Dropdown" };
+					drop.AllowRightClickExecute.Value = false;
+					foreach (object o in Enum.GetValues(propertyInfo.PropertyType))
 					{
-						view.Text = socket.Value.ToString();
-					}, socket));
-					Action onChanged = () =>
-					{
-						float value;
-						if (float.TryParse(view.Text, out value))
+						Action onClick = () =>
 						{
-							socket.Value = value;
+							propertyInfo.SetValue(property, o, null);
 							this.NeedsSave.Value = true;
+						};
+						drop.AddOption(o.ToString(), onClick);
+					}
+					drop.SetSelectedOption(propertyInfo.GetValue(property, null).ToString(), false);
+					drop.Add(new NotifyBinding(() =>
+					{
+						drop.SetSelectedOption(propertyInfo.GetValue(property, null).ToString(), false);
+					}, (IProperty)property));
+				}
+				else if (propertyInfo.PropertyType.Equals(typeof(Entity.Handle)))
+				{
+					Property<Entity.Handle> socket = (Property<Entity.Handle>)property;
+					var entityDropDownLayout = new View(main.GeeUI, ret);
+					entityDropDownLayout.ChildrenLayouts.Add(new HorizontalViewLayout());
+					entityDropDownLayout.ChildrenLayouts.Add(new ExpandToFitLayout());
+					var entityDropDown = new DropDownView(main.GeeUI, entityDropDownLayout, new Vector2(), MainFont)
+					{
+						Name = "DropDown"
+					};
+					entityDropDown.AllowRightClickExecute.Value = false;
+					entityDropDown.FilterThreshhold.Value = 0;
+					foreach (Entity e in main.Entities)
+					{
+						if (e != entity)
+						{
+							entityDropDown.AddOption(this.entityString(e), delegate()
+							{
+								socket.Value = e;
+								this.NeedsSave.Value = true;
+							});
 						}
+					}
+					entityDropDown.SetSelectedOption(this.entityString(socket.Value.Target), false);
+					entityDropDown.Add(new NotifyBinding(() =>
+					{
+						entityDropDown.SetSelectedOption(this.entityString(socket.Value.Target), false);
+					}, (IProperty)property));
+
+					var selectButton = new ButtonView(main.GeeUI, entityDropDownLayout, "Select", Vector2.Zero, MainFont);
+					selectButton.OnMouseClick += delegate(object sender, EventArgs e)
+					{
+						this.PickNextEntity.Value = true;
+						this.entityPickerDropDown = entityDropDown;
+						this.reactivateViewAfterPickingEntity = null;
+						selectButton.Text = "Select ->";
+						this.resetSelectButtonAfterPickingEntity = selectButton;
+					};
+				}
+				else
+				{
+					TextFieldView view = new TextFieldView(main.GeeUI, ret, Vector2.Zero, MainFont);
+					view.Width.Value = 130;
+					view.Height.Value = 15;
+					view.Text = "abc";
+					view.MultiLine = false;
+
+					if (propertyInfo.PropertyType.Equals(typeof(int)))
+					{
+						Property<int> socket = (Property<int>)property;
+						view.Text = socket.Value.ToString();
+						socket.AddBinding(new NotifyBinding(() =>
+						{
+							view.Text = socket.Value.ToString();
+						}, socket));
+						Action onChanged = () =>
+						{
+							int value;
+							if (int.TryParse(view.Text, out value))
+							{
+								socket.Value = value;
+								this.NeedsSave.Value = true;
+							}
+							view.Text = socket.Value.ToString();
+							view.Selected.Value = false;
+						};
+						view.ValidationRegex = "^-?\\d+$";
+						view.OnTextSubmitted = onChanged;
+					}
+					else if (propertyInfo.PropertyType.Equals(typeof(float)))
+					{
+						Property<float> socket = (Property<float>)property;
 						view.Text = socket.Value.ToString("F");
-						view.Selected.Value = false;
-					};
-					view.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
-					view.OnTextSubmitted = onChanged;
-				}
-				else if (propertyInfo.PropertyType.Equals(typeof(bool)))
-				{
-					shouldSameLine = true;
-					//No need for a textfield!
-					ret.RemoveChild(view);
-					CheckBoxView checkBox = new CheckBoxView(main.GeeUI, ret, Vector2.Zero, "", MainFont);
-					Property<bool> socket = (Property<bool>)property;
-					checkBox.IsChecked.Value = socket.Value;
-					checkBox.Add(new NotifyBinding(() =>
-					{
-						this.NeedsSave.Value = true;
-						socket.Value = checkBox.IsChecked.Value;
-					}, checkBox.IsChecked));
-				}
-				else if (propertyInfo.PropertyType.Equals(typeof(string)))
-				{
-					Property<string> socket = (Property<string>)property;
-
-					if (socket.Value == null) view.Text = "";
-					else view.Text = socket.Value;
-
-					socket.AddBinding(new NotifyBinding(() =>
-					{
-						var text = socket.Value;
-						if (text == null) text = "";
-						view.Text = text;
-					}, socket));
-
-					//Vast majority of strings won't be multiline.
-					if (socket.Value != null)
-						view.MultiLine = socket.Value.Contains("\n");
-					if (view.MultiLine)
-						view.Height.Value = 100;
-					Action onChanged = () =>
-					{
-						if (socket.Value != view.Text)
+						socket.AddBinding(new NotifyBinding(() =>
 						{
-							socket.Value = view.Text;
+							view.Text = socket.Value.ToString();
+						}, socket));
+						Action onChanged = () =>
+						{
+							float value;
+							if (float.TryParse(view.Text, out value))
+							{
+								socket.Value = value;
+								this.NeedsSave.Value = true;
+							}
+							view.Text = socket.Value.ToString("F");
+							view.Selected.Value = false;
+						};
+						view.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
+						view.OnTextSubmitted = onChanged;
+					}
+					else if (propertyInfo.PropertyType.Equals(typeof(bool)))
+					{
+						shouldSameLine = true;
+						//No need for a textfield!
+						ret.RemoveChild(view);
+						CheckBoxView checkBox = new CheckBoxView(main.GeeUI, ret, Vector2.Zero, "", MainFont);
+						Property<bool> socket = (Property<bool>)property;
+						checkBox.IsChecked.Value = socket.Value;
+						checkBox.Add(new NotifyBinding(() =>
+						{
 							this.NeedsSave.Value = true;
-						}
-						view.Selected.Value = false;
-					};
-					view.OnTextSubmitted = onChanged;
+							socket.Value = checkBox.IsChecked.Value;
+						}, checkBox.IsChecked));
+					}
+					else if (propertyInfo.PropertyType.Equals(typeof(string)))
+					{
+						Property<string> socket = (Property<string>)property;
+
+						if (socket.Value == null) view.Text = "";
+						else view.Text = socket.Value;
+
+						socket.AddBinding(new NotifyBinding(() =>
+						{
+							var text = socket.Value;
+							if (text == null) text = "";
+							view.Text = text;
+						}, socket));
+
+						//Vast majority of strings won't be multiline.
+						if (socket.Value != null)
+							view.MultiLine = socket.Value.Contains("\n");
+						if (view.MultiLine)
+							view.Height.Value = 100;
+						Action onChanged = () =>
+						{
+							if (socket.Value != view.Text)
+							{
+								socket.Value = view.Text;
+								this.NeedsSave.Value = true;
+							}
+							view.Selected.Value = false;
+						};
+						view.OnTextSubmitted = onChanged;
+					}
 				}
 			}
 			return ret;
@@ -927,8 +998,9 @@ namespace Lemma.Components
 		public override void delete()
 		{
 			base.delete();
-			RootEditorView.ParentView.RemoveChild(RootEditorView);
-			main.GeeUI.RootView.RemoveChild(PropertiesView);
+			this.main.GeeUI.RootView.RemoveChild(this.RootEditorView);
+			this.main.GeeUI.RootView.RemoveChild(this.selectPrompt);
+			this.main.GeeUI.RootView.RemoveChild(this.PropertiesView);
 		}
 	}
 }

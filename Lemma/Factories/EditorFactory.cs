@@ -466,14 +466,7 @@ namespace Lemma.Factories
 					gui.EntityPicked.Execute(closestEntity);
 				else if (closestEntity != null)
 				{
-					if (editor.SelectedEntities.Count == 1 && input.GetKey(Keys.LeftControl).Value)
-					{
-						// The user is trying to connect the two entities
-						Entity selectedEntity = editor.SelectedEntities.First();
-						selectedEntity.ToggleEntityConnection.Execute(closestEntity);
-						editor.NeedsSave.Value = true;
-					}
-					else if (multiselect)
+					if (multiselect)
 					{
 						if (editor.SelectedEntities.Contains(closestEntity))
 							editor.SelectedEntities.Remove(closestEntity);
@@ -500,6 +493,8 @@ namespace Lemma.Factories
 					editor.RevertTransform.Execute();
 				else if (editor.VoxelEditMode)
 					editor.VoxelEditMode.Value = false;
+				else if (gui.PickNextEntity)
+					gui.EntityPicked.Execute(null);
 			}));
 
 			AddCommand

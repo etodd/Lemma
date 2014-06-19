@@ -244,9 +244,6 @@ namespace ComponentBind
 		public Command OnSave;
 
 		[XmlIgnore]
-		public Command<Entity> ToggleEntityConnection;
-
-		[XmlIgnore]
 		public Property<bool> EditorSelected;
 
 		private static Assembly componentBindAssembly;
@@ -293,7 +290,6 @@ namespace ComponentBind
 			if (_main.EditorEnabled)
 			{
 				this.OnSave = new Command();
-				this.ToggleEntityConnection = new Command<Entity>();
 				this.EditorSelected = new Property<bool>();
 				string oldId = this.ID;
 				this.Add(new NotifyBinding(delegate()

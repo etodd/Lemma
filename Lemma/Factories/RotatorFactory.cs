@@ -32,7 +32,7 @@ namespace Lemma.Factories
 		{
 			base.AttachEditorComponents(entity, main);
 
-			EntityConnectable.AttachEditorComponents(entity, entity.Get<Rotator>().Targets);
+			EntityConnectable.AttachEditorComponents(entity, "Targets", entity.Get<Rotator>().Targets);
 		}
 	}
 }

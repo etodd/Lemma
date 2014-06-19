@@ -92,7 +92,7 @@ namespace Lemma.Factories
 			offsetModel.Serialize = false;
 			entity.Add("EditorModel3", offsetModel);
 
-			EntityConnectable.AttachEditorComponents(entity, cameraStop.Next);
+			EntityConnectable.AttachEditorComponents(entity, "Next", cameraStop.Next);
 		}
 	}
 }

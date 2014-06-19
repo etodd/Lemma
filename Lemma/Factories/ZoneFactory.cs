@@ -58,23 +58,8 @@ namespace Lemma.Factories
 
 			Zone zone = entity.Get<Zone>();
 
-			EntityConnectable.AttachEditorComponents(entity, zone.ConnectedEntities);
-
-			zone.Add(new CommandBinding<Entity>(entity.ToggleEntityConnection, delegate(Entity other)
-			{
-				if (zone.ConnectedEntities.Contains(other))
-				{
-					Zone z = other.Get<Zone>();
-					if (z != null)
-						z.Parent.Value = null;
-				}
-				else
-				{
-					Zone z = other.Get<Zone>();
-					if (z != null)
-						z.Parent.Value = entity;
-				}
-			}));
+			EntityConnectable.AttachEditorComponents(entity, "ConnectedEntities", zone.ConnectedEntities);
+			EntityConnectable.AttachEditorComponents(entity, "Parent", zone.Parent);
 
 			Model model = new Model();
 			model.Filename.Value = "Models\\sphere";

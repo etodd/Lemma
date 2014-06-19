@@ -26,7 +26,7 @@ namespace Lemma.Factories
 			base.AttachEditorComponents(entity, main);
 
 			Scriptlike.AttachEditorComponents(entity, main, this.Color);
-			EntityConnectable.AttachEditorComponents(entity, entity.Get<Setter>().Target);
+			EntityConnectable.AttachEditorComponents(entity, "Target", entity.Get<Setter>().Target);
 		}
 
 		public override void Bind(Entity entity, Main main, bool creating = false)

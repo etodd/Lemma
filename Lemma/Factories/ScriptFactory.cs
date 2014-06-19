@@ -43,7 +43,7 @@ namespace Lemma.Factories
 			Model model = entity.Get<Model>("EditorModel");
 			model.Add(new Binding<Vector3, string>(model.Color, x => string.IsNullOrEmpty(x) ? Vector3.One : new Vector3(1.0f, 0.0f, 0.0f), entity.Get<Script>().Errors));
 
-			EntityConnectable.AttachEditorComponents(entity, entity.Get<Script>().ConnectedEntities);
+			EntityConnectable.AttachEditorComponents(entity, "ConnectedEntities", entity.Get<Script>().ConnectedEntities);
 		}
 	}
 }

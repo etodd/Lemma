@@ -45,7 +45,7 @@ namespace Lemma.Factories
 
 			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 
-			EntityConnectable.AttachEditorComponents(entity, entity.Get<Trigger>().Target);
+			EntityConnectable.AttachEditorComponents(entity, "Target", entity.Get<Trigger>().Target);
 		}
 	}
 }

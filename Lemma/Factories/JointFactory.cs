@@ -151,7 +151,7 @@ namespace Lemma.Factories
 			Transform transform = entity.Get<Transform>();
 
 			Components.Joint joint = entity.Get<Components.Joint>();
-			EntityConnectable.AttachEditorComponents(entity, joint.Parent);
+			EntityConnectable.AttachEditorComponents(entity, "Parent", joint.Parent);
 			Model model = new Model();
 			model.Filename.Value = "Models\\cone";
 			model.Serialize = false;

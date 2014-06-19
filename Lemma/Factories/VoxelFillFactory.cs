@@ -44,10 +44,15 @@ namespace Lemma.Factories
 					if (parent != null && parent.Active)
 					{
 						Voxel staticMap = parent.Get<Voxel>();
-						mapTransform.Position.Value = staticMap.GetAbsolutePosition(staticMap.GetRelativePosition(staticMap.GetCoordinate(transform.Matrix.Value.Translation)) - new Vector3(0.5f) + staticMap.Offset + voxel.Offset.Value);
-						Matrix parentOrientation = staticMap.Transform;
-						parentOrientation.Translation = Vector3.Zero;
-						mapTransform.Orientation.Value = parentOrientation;
+						if (staticMap == null)
+							mapTransform.Matrix.Value = transform.Matrix;
+						else
+						{
+							mapTransform.Position.Value = staticMap.GetAbsolutePosition(staticMap.GetRelativePosition(staticMap.GetCoordinate(transform.Matrix.Value.Translation)) - new Vector3(0.5f) + staticMap.Offset + voxel.Offset.Value);
+							Matrix parentOrientation = staticMap.Transform;
+							parentOrientation.Translation = Vector3.Zero;
+							mapTransform.Orientation.Value = parentOrientation;
+						}
 					}
 					else
 						mapTransform.Matrix.Value = transform.Matrix;
@@ -69,7 +74,7 @@ namespace Lemma.Factories
 
 			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 
-			EntityConnectable.AttachEditorComponents(entity, entity.Get<VoxelFill>().Target);
+			EntityConnectable.AttachEditorComponents(entity, "Target", entity.Get<VoxelFill>().Target);
 		}
 	}
 }
