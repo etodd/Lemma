@@ -184,7 +184,7 @@ namespace Lemma.Components
 				}
 			}
 
-			if (!this.Rolling && this.EnableKick && this.CanKick && !this.Kicking)
+			if (!this.Rolling && this.EnableKick && this.CanKick && !this.Kicking && Vector3.Dot(this.LinearVelocity, this.forward) > 0.05f)
 			{
 				// Kick
 				this.Kicking.Value = true;
