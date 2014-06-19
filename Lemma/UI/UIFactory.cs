@@ -34,9 +34,9 @@ namespace Lemma.Components
 			return element;
 		}
 
-		public Container CreateMenuButton<Type>(string label, Property<Type> property)
+		public Container CreateScrollButton<Type>(string label, Property<Type> property, Action<int> scrolled)
 		{
-			return this.CreateMenuButton<Type>(label, property, x => x.ToString());
+			return this.CreateScrollButton<Type>(label, property, x => x.ToString(), scrolled);
 		}
 
 		public TextElement CreateLabel(string label = null)
@@ -48,7 +48,12 @@ namespace Lemma.Components
 			return text;
 		}
 
-		public Container CreateMenuButton<Type>(string label, Property<Type> property, Func<Type, string> conversion)
+		public Container CreatePropertyButton<Type>(string label, Property<Type> property)
+		{
+			return this.CreatePropertyButton<Type>(label, property, x => x.ToString());
+		}
+
+		public Container CreatePropertyButton<Type>(string label, Property<Type> property, Func<Type, string> conversion)
 		{
 			Container result = this.CreateButton();
 
@@ -60,6 +65,56 @@ namespace Lemma.Components
 			value.AnchorPoint.Value = new Vector2(1, 0);
 			value.Add(new Binding<string, Type>(value.Text, conversion, property));
 			result.Children.Add(value);
+
+			return result;
+		}
+
+		public Container CreateScrollButton<Type>(string label, Property<Type> property, Func<Type, string> conversion, Action<int> scrolled)
+		{
+			Container result = this.CreateButton();
+
+			TextElement text = this.CreateLabel(label);
+			result.Children.Add(text);
+
+			ListContainer valueList = new ListContainer();
+			valueList.Orientation.Value = ListContainer.ListOrientation.Horizontal;
+			valueList.Add(new Binding<Vector2>(valueList.Position, () => new Vector2(result.Size.Value.X - result.PaddingRight.Value, valueList.Position.Value.Y), result.Size, result.PaddingRight));
+			valueList.AnchorPoint.Value = new Vector2(1, 0);
+			result.Children.Add(valueList);
+
+			Container left = this.CreateButton("<");
+			left.Name.Value = "<";
+			valueList.Children.Add(left);
+
+			Container valueContainer = new Container();
+			valueContainer.Opacity.Value = 0.0f;
+			valueContainer.ResizeHorizontal.Value = false;
+			valueContainer.Size.Value = new Vector2(80.0f, 0.0f);
+			valueList.Children.Add(valueContainer);
+
+			TextElement value = this.CreateLabel();
+			value.Add(new Binding<string, Type>(value.Text, conversion, property));
+			value.AnchorPoint.Value = new Vector2(0.5f);
+			value.Add(new Binding<Vector2>(value.Position, x => x * 0.5f, valueContainer.Size));
+			valueContainer.Children.Add(value);
+
+			Container right = this.CreateButton(">");
+			right.Name.Value = ">";
+			valueList.Children.Add(right);
+
+			result.Add(new CommandBinding<int>(result.MouseScrolled, scrolled));
+
+			left.Add(new CommandBinding(left.MouseLeftUp, delegate()
+			{
+				scrolled(-1);
+			}));
+
+			right.Add(new CommandBinding(right.MouseLeftUp, delegate()
+			{
+				scrolled(1);
+			}));
+
+			result.SwallowMouseEvents.Value = true;
 
 			return result;
 		}

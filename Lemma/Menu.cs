@@ -643,142 +643,96 @@ namespace Lemma.Components
 			this.resizeToMenu(settingsBack);
 			settingsMenu.Children.Add(settingsBack);
 
-			Container fullscreenResolution = this.main.UIFactory.CreateMenuButton<Point>("\\fullscreen resolution", this.main.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString());
-			this.resizeToMenu(fullscreenResolution);
-
-			Action<int> changeFullscreenResolution = delegate(int scroll)
+			Container fullscreenResolution = this.main.UIFactory.CreateScrollButton<Point>("\\fullscreen resolution", this.main.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString(), delegate(int delta)
 			{
-				displayModeIndex = (displayModeIndex + scroll) % this.supportedDisplayModes.Count();
+				displayModeIndex = (displayModeIndex + delta) % this.supportedDisplayModes.Count();
 				while (displayModeIndex < 0)
 					displayModeIndex += this.supportedDisplayModes.Count();
 				DisplayMode mode = this.supportedDisplayModes.ElementAt(displayModeIndex);
 				this.main.Settings.FullscreenResolution.Value = new Point(mode.Width, mode.Height);
-			};
-
-			fullscreenResolution.Add(new CommandBinding(fullscreenResolution.MouseLeftUp, delegate()
-			{
-				changeFullscreenResolution(1);
-			}));
-			fullscreenResolution.Add(new CommandBinding<int>(fullscreenResolution.MouseScrolled, delegate(int scroll)
-			{
-				changeFullscreenResolution(scroll);
-			}));
+			});
+			this.resizeToMenu(fullscreenResolution);
 			settingsMenu.Children.Add(fullscreenResolution);
 
-			Container vsyncEnabled = this.main.UIFactory.CreateMenuButton<bool>("\\vsync", this.main.Settings.EnableVsync, boolDisplay);
+			Container vsyncEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\vsync", this.main.Settings.EnableVsync, boolDisplay, delegate(int delta)
+			{
+				this.main.Settings.EnableVsync.Value = !this.main.Settings.EnableVsync;
+			});
 			this.resizeToMenu(vsyncEnabled);
-			vsyncEnabled.Add(new CommandBinding<int>(vsyncEnabled.MouseScrolled, delegate(int scroll)
-			{
-				this.main.Settings.EnableVsync.Value = !this.main.Settings.EnableVsync;
-			}));
-			vsyncEnabled.Add(new CommandBinding(vsyncEnabled.MouseLeftUp, delegate()
-			{
-				this.main.Settings.EnableVsync.Value = !this.main.Settings.EnableVsync;
-			}));
 			settingsMenu.Children.Add(vsyncEnabled);
 
-			Container gamma = this.main.UIFactory.CreateMenuButton<float>("\\gamma", this.main.Renderer.Gamma, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
-			this.resizeToMenu(gamma);
-			gamma.Add(new CommandBinding<int>(gamma.MouseScrolled, delegate(int scroll)
+			Container gamma = this.main.UIFactory.CreateScrollButton<float>("\\gamma", this.main.Renderer.Gamma, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
 			{
-				this.main.Renderer.Gamma.Value = Math.Max(0, Math.Min(2, this.main.Renderer.Gamma + (scroll * 0.1f)));
-			}));
+				this.main.Renderer.Gamma.Value = Math.Max(0, Math.Min(2, this.main.Renderer.Gamma + (delta * 0.1f)));
+			});
+			this.resizeToMenu(gamma);
 			settingsMenu.Children.Add(gamma);
 
-			Container fieldOfView = this.main.UIFactory.CreateMenuButton<float>("\\field of view", this.main.Camera.FieldOfView, x => ((int)Math.Round(MathHelper.ToDegrees(this.main.Camera.FieldOfView))).ToString() + "°");
-			this.resizeToMenu(fieldOfView);
-			fieldOfView.Add(new CommandBinding<int>(fieldOfView.MouseScrolled, delegate(int scroll)
+			Container fieldOfView = this.main.UIFactory.CreateScrollButton<float>("\\field of view", this.main.Camera.FieldOfView, x => ((int)Math.Round(MathHelper.ToDegrees(this.main.Camera.FieldOfView))).ToString() + "°", delegate(int delta)
 			{
-				this.main.Camera.FieldOfView.Value = Math.Max(MathHelper.ToRadians(60.0f), Math.Min(MathHelper.ToRadians(120.0f), this.main.Camera.FieldOfView + MathHelper.ToRadians(scroll)));
-			}));
+				this.main.Camera.FieldOfView.Value = Math.Max(MathHelper.ToRadians(60.0f), Math.Min(MathHelper.ToRadians(120.0f), this.main.Camera.FieldOfView + MathHelper.ToRadians(delta)));
+			});
+			this.resizeToMenu(fieldOfView);
 			settingsMenu.Children.Add(fieldOfView);
 
-			Container motionBlurAmount = this.main.UIFactory.CreateMenuButton<float>("\\motion blur amount", this.main.Renderer.MotionBlurAmount, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
-			this.resizeToMenu(motionBlurAmount);
-			motionBlurAmount.Add(new CommandBinding<int>(motionBlurAmount.MouseScrolled, delegate(int scroll)
+			Container motionBlurAmount = this.main.UIFactory.CreateScrollButton<float>("\\motion blur amount", this.main.Renderer.MotionBlurAmount, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
 			{
-				this.main.Renderer.MotionBlurAmount.Value = Math.Max(0, Math.Min(1, this.main.Renderer.MotionBlurAmount + (scroll * 0.1f)));
-			}));
+				this.main.Renderer.MotionBlurAmount.Value = Math.Max(0, Math.Min(1, this.main.Renderer.MotionBlurAmount + (delta * 0.1f)));
+			});
+			this.resizeToMenu(motionBlurAmount);
 			settingsMenu.Children.Add(motionBlurAmount);
 
-			Container reflectionsEnabled = this.main.UIFactory.CreateMenuButton<bool>("\\reflections", this.main.Settings.EnableReflections, boolDisplay);
+			Container reflectionsEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\reflections", this.main.Settings.EnableReflections, boolDisplay, delegate(int delta)
+			{
+				this.main.Settings.EnableReflections.Value = !this.main.Settings.EnableReflections;
+			});
 			this.resizeToMenu(reflectionsEnabled);
-			reflectionsEnabled.Add(new CommandBinding<int>(reflectionsEnabled.MouseScrolled, delegate(int scroll)
-			{
-				this.main.Settings.EnableReflections.Value = !this.main.Settings.EnableReflections;
-			}));
-			reflectionsEnabled.Add(new CommandBinding(reflectionsEnabled.MouseLeftUp, delegate()
-			{
-				this.main.Settings.EnableReflections.Value = !this.main.Settings.EnableReflections;
-			}));
 			settingsMenu.Children.Add(reflectionsEnabled);
 
-			Container ssaoEnabled = this.main.UIFactory.CreateMenuButton<bool>("\\ambient occlusion", this.main.Settings.EnableSSAO, boolDisplay);
+			Container ssaoEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\ambient occlusion", this.main.Settings.EnableSSAO, boolDisplay, delegate(int delta)
+			{
+				this.main.Settings.EnableSSAO.Value = !this.main.Settings.EnableSSAO;
+			});
 			this.resizeToMenu(ssaoEnabled);
-			ssaoEnabled.Add(new CommandBinding<int>(ssaoEnabled.MouseScrolled, delegate(int scroll)
-			{
-				this.main.Settings.EnableSSAO.Value = !this.main.Settings.EnableSSAO;
-			}));
-			ssaoEnabled.Add(new CommandBinding(ssaoEnabled.MouseLeftUp, delegate()
-			{
-				this.main.Settings.EnableSSAO.Value = !this.main.Settings.EnableSSAO;
-			}));
 			settingsMenu.Children.Add(ssaoEnabled);
 
-			Container godRaysEnabled = this.main.UIFactory.CreateMenuButton<bool>("\\god rays", this.main.Settings.EnableGodRays, boolDisplay);
+			Container godRaysEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\god rays", this.main.Settings.EnableGodRays, boolDisplay, delegate(int delta)
+			{
+				this.main.Settings.EnableGodRays.Value = !this.main.Settings.EnableGodRays;
+			});
 			this.resizeToMenu(godRaysEnabled);
-			godRaysEnabled.Add(new CommandBinding<int>(godRaysEnabled.MouseScrolled, delegate(int scroll)
-			{
-				this.main.Settings.EnableGodRays.Value = !this.main.Settings.EnableGodRays;
-			}));
-			godRaysEnabled.Add(new CommandBinding(godRaysEnabled.MouseLeftUp, delegate()
-			{
-				this.main.Settings.EnableGodRays.Value = !this.main.Settings.EnableGodRays;
-			}));
 			settingsMenu.Children.Add(godRaysEnabled);
 
-			Container bloomEnabled = this.main.UIFactory.CreateMenuButton<bool>("\\bloom", this.main.Renderer.EnableBloom, boolDisplay);
+			Container bloomEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\bloom", this.main.Renderer.EnableBloom, boolDisplay, delegate(int delta)
+			{
+				this.main.Renderer.EnableBloom.Value = !this.main.Renderer.EnableBloom;
+			});
 			this.resizeToMenu(bloomEnabled);
-			bloomEnabled.Add(new CommandBinding<int>(bloomEnabled.MouseScrolled, delegate(int scroll)
-			{
-				this.main.Renderer.EnableBloom.Value = !this.main.Renderer.EnableBloom;
-			}));
-			bloomEnabled.Add(new CommandBinding(bloomEnabled.MouseLeftUp, delegate()
-			{
-				this.main.Renderer.EnableBloom.Value = !this.main.Renderer.EnableBloom;
-			}));
 			settingsMenu.Children.Add(bloomEnabled);
 
-			Container dynamicShadows = this.main.UIFactory.CreateMenuButton<LightingManager.DynamicShadowSetting>("\\dynamic shadows", this.main.LightingManager.DynamicShadows, x => "\\" + x.ToString().ToLower());
-			this.resizeToMenu(dynamicShadows);
 			int numDynamicShadowSettings = typeof(LightingManager.DynamicShadowSetting).GetFields(BindingFlags.Static | BindingFlags.Public).Length;
-			dynamicShadows.Add(new CommandBinding<int>(dynamicShadows.MouseScrolled, delegate(int scroll)
+			Container dynamicShadows = this.main.UIFactory.CreateScrollButton<LightingManager.DynamicShadowSetting>("\\dynamic shadows", this.main.LightingManager.DynamicShadows, x => "\\" + x.ToString().ToLower(), delegate(int delta)
 			{
-				int newValue = ((int)this.main.LightingManager.DynamicShadows.Value) + scroll;
+				int newValue = ((int)this.main.LightingManager.DynamicShadows.Value) + delta;
 				while (newValue < 0)
 					newValue += numDynamicShadowSettings;
 				this.main.LightingManager.DynamicShadows.Value = (LightingManager.DynamicShadowSetting)Enum.ToObject(typeof(LightingManager.DynamicShadowSetting), newValue % numDynamicShadowSettings);
-			}));
-			dynamicShadows.Add(new CommandBinding(dynamicShadows.MouseLeftUp, delegate()
-			{
-				this.main.LightingManager.DynamicShadows.Value = (LightingManager.DynamicShadowSetting)Enum.ToObject(typeof(LightingManager.DynamicShadowSetting), (((int)this.main.LightingManager.DynamicShadows.Value) + 1) % numDynamicShadowSettings);
-			}));
+			});
+			this.resizeToMenu(dynamicShadows);
 			settingsMenu.Children.Add(dynamicShadows);
 
-			Container soundEffectVolume = this.main.UIFactory.CreateMenuButton<float>("\\sound effect volume", this.main.Settings.SoundEffectVolume, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
-			this.resizeToMenu(soundEffectVolume);
-			soundEffectVolume.Add(new CommandBinding<int>(soundEffectVolume.MouseScrolled, delegate(int scroll)
+			Container soundEffectVolume = this.main.UIFactory.CreateScrollButton<float>("\\sound effect volume", this.main.Settings.SoundEffectVolume, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
 			{
-				this.main.Settings.SoundEffectVolume.Value = MathHelper.Clamp(this.main.Settings.SoundEffectVolume.Value + (scroll * 0.1f), 0, 1);
-			}));
+				this.main.Settings.SoundEffectVolume.Value = MathHelper.Clamp(this.main.Settings.SoundEffectVolume.Value + (delta * 0.1f), 0, 1);
+			});
+			this.resizeToMenu(soundEffectVolume);
 			settingsMenu.Children.Add(soundEffectVolume);
 
-			Container musicVolume = this.main.UIFactory.CreateMenuButton<float>("\\music volume", this.main.Settings.MusicVolume, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
-			this.resizeToMenu(musicVolume);
-			musicVolume.Add(new CommandBinding<int>(musicVolume.MouseScrolled, delegate(int scroll)
+			Container musicVolume = this.main.UIFactory.CreateScrollButton<float>("\\music volume", this.main.Settings.MusicVolume, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
 			{
-				this.main.Settings.MusicVolume.Value = MathHelper.Clamp(this.main.Settings.MusicVolume.Value + (scroll * 0.1f), 0, 1);
-			}));
+				this.main.Settings.MusicVolume.Value = MathHelper.Clamp(this.main.Settings.MusicVolume.Value + (delta * 0.1f), 0, 1);
+			});
+			this.resizeToMenu(musicVolume);
 			settingsMenu.Children.Add(musicVolume);
 
 			// Controls menu
@@ -839,43 +793,31 @@ namespace Lemma.Components
 			controlsScroller.Children.Add(controlsList);
 			controlsMenu.Children.Add(controlsScroller);
 
-			Container invertMouseX = this.main.UIFactory.CreateMenuButton<bool>("\\invert look x", this.main.Settings.InvertMouseX);
+			Container invertMouseX = this.main.UIFactory.CreateScrollButton<bool>("\\invert look x", this.main.Settings.InvertMouseX, boolDisplay, delegate(int delta)
+			{
+				this.main.Settings.InvertMouseX.Value = !this.main.Settings.InvertMouseX;
+			});
 			this.resizeToMenu(invertMouseX);
-			invertMouseX.Add(new CommandBinding<int>(invertMouseX.MouseScrolled, delegate(int scroll)
-			{
-				this.main.Settings.InvertMouseX.Value = !this.main.Settings.InvertMouseX;
-			}));
-			invertMouseX.Add(new CommandBinding(invertMouseX.MouseLeftUp, delegate()
-			{
-				this.main.Settings.InvertMouseX.Value = !this.main.Settings.InvertMouseX;
-			}));
 			controlsList.Children.Add(invertMouseX);
 
-			Container invertMouseY = this.main.UIFactory.CreateMenuButton<bool>("\\invert look y", this.main.Settings.InvertMouseY);
+			Container invertMouseY = this.main.UIFactory.CreateScrollButton<bool>("\\invert look y", this.main.Settings.InvertMouseY, boolDisplay, delegate(int delta)
+			{
+				this.main.Settings.InvertMouseY.Value = !this.main.Settings.InvertMouseY;
+			});
 			this.resizeToMenu(invertMouseY);
-			invertMouseY.Add(new CommandBinding<int>(invertMouseY.MouseScrolled, delegate(int scroll)
-			{
-				this.main.Settings.InvertMouseY.Value = !this.main.Settings.InvertMouseY;
-			}));
-			invertMouseY.Add(new CommandBinding(invertMouseY.MouseLeftUp, delegate()
-			{
-				this.main.Settings.InvertMouseY.Value = !this.main.Settings.InvertMouseY;
-			}));
 			controlsList.Children.Add(invertMouseY);
 
-			Container mouseSensitivity = this.main.UIFactory.CreateMenuButton<float>("\\look sensitivity", this.main.Settings.MouseSensitivity, x => ((int)Math.Round(x * 100.0f)).ToString() + "%");
-			this.resizeToMenu(mouseSensitivity);
-			mouseSensitivity.SwallowMouseEvents.Value = true;
-			mouseSensitivity.Add(new CommandBinding<int>(mouseSensitivity.MouseScrolled, delegate(int scroll)
+			Container mouseSensitivity = this.main.UIFactory.CreateScrollButton<float>("\\look sensitivity", this.main.Settings.MouseSensitivity, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
 			{
-				this.main.Settings.MouseSensitivity.Value = Math.Max(0, Math.Min(5, this.main.Settings.MouseSensitivity + (scroll * 0.1f)));
-			}));
+				this.main.Settings.MouseSensitivity.Value = Math.Max(0, Math.Min(5, this.main.Settings.MouseSensitivity + (delta * 0.1f)));
+			});
+			this.resizeToMenu(mouseSensitivity);
 			controlsList.Children.Add(mouseSensitivity);
 
 			Action<Property<PCInput.PCInputBinding>, string, bool, bool> addInputSetting = delegate(Property<PCInput.PCInputBinding> setting, string display, bool allowGamepad, bool allowMouse)
 			{
 				this.inputBindings.Add(setting);
-				Container button = this.main.UIFactory.CreateMenuButton<PCInput.PCInputBinding>(display, setting);
+				Container button = this.main.UIFactory.CreatePropertyButton<PCInput.PCInputBinding>(display, setting);
 				this.resizeToMenu(button);
 				button.Add(new CommandBinding(button.MouseLeftUp, delegate()
 				{
@@ -1467,7 +1409,7 @@ namespace Lemma.Components
 
 			Func<UIComponent, bool> isButton = delegate(UIComponent item)
 			{
-				return item.Visible && item.GetType() == typeof(Container) && (item.MouseLeftUp.HasBindings || item.MouseScrolled.HasBindings);
+				return item.Visible && item.GetType() == typeof(Container) && item.MouseLeftUp.HasBindings;
 			};
 
 			Func<UIComponent, bool> isScrollButton = delegate(UIComponent item)
@@ -1486,7 +1428,7 @@ namespace Lemma.Components
 					int i = 0;
 					foreach (UIComponent item in menu.Children)
 					{
-						if (isButton(item))
+						if (isButton(item) || isScrollButton(item))
 						{
 							item.Highlighted.Value = true;
 							selected = i;
@@ -1518,7 +1460,7 @@ namespace Lemma.Components
 					while (true)
 					{
 						UIComponent item = menu.Children[i];
-						if (isButton(item))
+						if (isButton(item) || isScrollButton(item))
 						{
 							selected = i;
 							break;
