@@ -47,6 +47,7 @@ namespace Lemma.Components
 		// Output properties
 		public Property<float> Health = new Property<float>();
 		public Property<bool> EnableWalking = new Property<bool>();
+		public Property<bool> EnableMoves = new Property<bool>();
 
 		private bool walkingDisabled;
 
@@ -83,6 +84,7 @@ namespace Lemma.Components
 							this.landingTimer = 0;
 							this.model.StartClip("LandHard", 0, false, 0.1f);
 							this.EnableWalking.Value = false;
+							this.EnableMoves.Value = false;
 							this.walkingDisabled = true;
 						}
 					}
@@ -132,6 +134,7 @@ namespace Lemma.Components
 				// Now re-enable it
 				this.walkingDisabled = false;
 				this.EnableWalking.Value = true;
+				this.EnableMoves.Value = true;
 			}
 
 			this.lastSupported = this.IsSupported;

@@ -33,6 +33,7 @@ namespace Lemma.Components
 		public Command<WallRun.State> ActivateWallRun = new Command<WallRun.State>();
 		public Command<float> FallDamage = new Command<float>();
 		private AnimatedModel model;
+		public Property<float> LastVaultStarted = new Property<float> { Value = -1.0f };
 
 		// Input/output
 		public BlockPredictor Predictor;
@@ -102,6 +103,9 @@ namespace Lemma.Components
 
 		public bool Go()
 		{
+			if (this.main.TotalTime - this.LastVaultStarted < vaultCoolDown)
+				return false;
+
 			Matrix rotationMatrix = Matrix.CreateRotationY(this.Rotation);
 			foreach (Voxel map in Voxel.ActivePhysicsVoxels)
 			{
@@ -239,6 +243,8 @@ namespace Lemma.Components
 			}
 			else
 				this.relativeVaultStartPosition = Vector3.Transform(this.originalPosition, Matrix.Invert(this.map.Transform));
+			
+			this.LastVaultStarted.Value = this.main.TotalTime;
 		}
 
 		private void vaultDown(Vector3 forward)
@@ -257,11 +263,14 @@ namespace Lemma.Components
 			this.CurrentState.Value = State.Down;
 
 			this.originalPosition = this.Position;
+			this.LastVaultStarted.Value = this.main.TotalTime;
 		}
+
+		private const float vaultCoolDown = 0.5f;
 
 		public bool TryVaultDown()
 		{
-			if (this.Crouched || !this.IsSupported)
+			if (this.Crouched || !this.IsSupported || this.main.TotalTime - this.LastVaultStarted < vaultCoolDown)
 				return false;
 
 			Matrix rotationMatrix = Matrix.CreateRotationY(this.Rotation);

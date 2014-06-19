@@ -49,7 +49,8 @@ namespace Lemma.Components
 		// Output
 		public Property<bool> Rolling = new Property<bool>();
 		public Property<bool> Kicking = new Property<bool>();
-		public Property<float> LastRollEnded = new Property<float>();
+		public Property<float> LastRollEnded = new Property<float> { Value = -1.0f };
+		public Property<float> LastRollStarted = new Property<float> { Value = -1.0f };
 		public Command DeactivateWallRun = new Command();
 		public Command Footstep = new Command();
 		public Command LockRotation = new Command();
@@ -89,6 +90,8 @@ namespace Lemma.Components
 			model["Roll"].Speed = 1.75f;
 		}
 
+		private const float rollCoolDown = 0.8f;
+
 		public void Go()
 		{
 			if (this.Rolling || this.Kicking)
@@ -100,7 +103,9 @@ namespace Lemma.Components
 
 			bool instantiatedBlockPossibility = false;
 
-			if (this.EnableCrouch && this.EnableRoll && !this.IsSwimming && (!this.EnableKick || !this.IsSupported || this.LinearVelocity.Value.Length() < 2.0f))
+			if (this.EnableCrouch && this.EnableRoll && !this.IsSwimming
+				&& (!this.EnableKick || !this.IsSupported || this.LinearVelocity.Value.Length() < 2.0f)
+				&& this.main.TotalTime - this.LastRollStarted > rollCoolDown)
 			{
 				// Try to roll
 				Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
@@ -181,6 +186,7 @@ namespace Lemma.Components
 
 					this.rollKickTime = 0.0f;
 					this.firstTimeBreak = true;
+					this.LastRollStarted.Value = this.main.TotalTime;
 				}
 			}
 

@@ -39,6 +39,7 @@ namespace Lemma.Components
 		public Property<Direction> LastWallDirection = new Property<Direction>();
 		public Property<bool> CanKick = new Property<bool>();
 		public Property<float> LastWallJump = new Property<float> { Value = -1.0f };
+		public Property<float> LastJump = new Property<float> { Value = -1.0f };
 		public Property<float> LastSupportedSpeed = new Property<float>();
 
 		private Voxel.State temporary;
@@ -59,8 +60,13 @@ namespace Lemma.Components
 		private int wallJumpCount;
 		private Vector3 wallJumpChainStart;
 
+		private const float jumpCoolDown = 0.3f;
+
 		public bool Go()
 		{
+			if (this.main.TotalTime - this.LastJump < jumpCoolDown)
+				return false;
+
 			bool supported = this.IsSupported;
 
 			WallRun.State wallRunState = this.WallRunState;
@@ -351,6 +357,7 @@ namespace Lemma.Components
 				// Play a footstep sound since we're jumping off the ground
 				AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, this.Entity);
 
+				this.LastJump.Value = this.main.TotalTime;
 				return true;
 			}
 

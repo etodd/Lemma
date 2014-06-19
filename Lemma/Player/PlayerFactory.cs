@@ -390,7 +390,7 @@ namespace Lemma.Factories
 				WallRun.State.Straight,
 				WallRun.State.None,
 			};
-			footsteps.Add(new Binding<bool>(footsteps.SoundEnabled, () => footstepWallrunStates.Contains(wallRun.CurrentState) || (player.Character.IsSupported && player.Character.EnableWalking), player.Character.IsSupported, player.Character.EnableWalking, wallRun.CurrentState));
+			footsteps.Add(new Binding<bool>(footsteps.SoundEnabled, () => !player.Character.Crouched && footstepWallrunStates.Contains(wallRun.CurrentState) || (player.Character.IsSupported && player.Character.EnableWalking), player.Character.IsSupported, player.Character.EnableWalking, wallRun.CurrentState, player.Character.Crouched));
 			footsteps.Add(new Binding<Vector3>(footsteps.Position, transform.Position));
 			footsteps.Add(new Binding<float>(footsteps.Rotation, rotation.Rotation));
 			footsteps.Add(new Binding<float>(footsteps.CharacterHeight, player.Character.Height));
@@ -433,6 +433,7 @@ namespace Lemma.Factories
 			fallDamage.Add(new TwoWayBinding<float>(player.Health, fallDamage.Health));
 			fallDamage.Add(new CommandBinding<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection>(player.Character.Collided, fallDamage.Collided));
 			fallDamage.Add(new TwoWayBinding<bool>(player.Character.EnableWalking, fallDamage.EnableWalking));
+			fallDamage.Add(new TwoWayBinding<bool>(player.EnableMoves, fallDamage.EnableMoves));
 			fallDamage.Add(new TwoWayBinding<bool>(fallDamage.Landing, rotation.Landing));
 			fallDamage.Add(new CommandBinding(fallDamage.LockRotation, (Action)rotation.Lock));
 			fallDamage.Bind(model);
