@@ -68,7 +68,7 @@ namespace Lemma.Components
 		private Voxel floorMap;
 		private Voxel.Coord floorCoordinate;
 		private bool shouldBuildFloor;
-		private bool shouldBreakFloor;
+		private bool sliding;
 		private Vector3 velocity;
 
 		public override void Awake()
@@ -209,7 +209,7 @@ namespace Lemma.Components
 				Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
 
 				this.shouldBuildFloor = false;
-				this.shouldBreakFloor = false;
+				this.sliding = false;
 
 				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height);
 				this.floorMap = floorRaycast.Voxel;
@@ -218,13 +218,13 @@ namespace Lemma.Components
 
 				if (instantiatedBlockPossibility)
 				{
-					this.shouldBreakFloor = false;
+					this.sliding = true;
 					this.shouldBuildFloor = true;
 					this.velocity.Y = 0.0f;
 				}
 				else if (this.floorMap == null)
 				{
-					this.shouldBreakFloor = true;
+					this.sliding = false;
 					this.floorCoordinate = new Voxel.Coord();
 				}
 				else
@@ -236,13 +236,14 @@ namespace Lemma.Components
 						if (floorType != Voxel.t.Temporary && floorType != Voxel.t.Powered)
 							this.shouldBuildFloor = true;
 					}
+					this.sliding = true;
 				}
 
 				this.LinearVelocity.Value = this.velocity;
 
-				this.model.StartClip(this.shouldBreakFloor ? "Kick" : "Slide", 5, false, AnimatedModel.DefaultBlendTime);
+				this.model.StartClip(this.sliding ? "Slide" : "Kick", 5, false, AnimatedModel.DefaultBlendTime);
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE, this.Entity);
-				if (!this.shouldBreakFloor) // We're sliding on the floor
+				if (this.sliding) // We're sliding on the floor
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE_LOOP, this.Entity);
 
 				this.forwardDir = Direction.None;
@@ -276,7 +277,7 @@ namespace Lemma.Components
 				else
 				{
 					this.LinearVelocity.Value = new Vector3(this.velocity.X, this.LinearVelocity.Value.Y, this.velocity.Z);
-					if (this.VoxelTools.BreakWalls(this.forward, this.right, false))
+					if (this.VoxelTools.BreakWalls(this.forward, this.right))
 					{
 						if (this.firstTimeBreak)
 						{
@@ -300,7 +301,12 @@ namespace Lemma.Components
 
 				if (!this.IsSupported) 
 				{
-					if (this.shouldBreakFloor)
+					if (this.sliding)
+					{
+						// We started out on the ground, but we kicked of an edge.
+						AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
+					}
+					else
 					{
 						// We weren't supported when we started kicking. We're flying.
 						// Roll if we hit the ground while kicking mid-air
@@ -313,11 +319,6 @@ namespace Lemma.Components
 							return;
 						}
 					}
-					else
-					{
-						// We started out on the ground, but we kicked of an edge.
-						AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
-					}
 				}
 
 				if (this.rollKickTime > 0.75f || this.LinearVelocity.Value.Length() < 0.1f)
@@ -327,7 +328,7 @@ namespace Lemma.Components
 				}
 
 				this.LinearVelocity.Value = new Vector3(this.velocity.X, this.LinearVelocity.Value.Y, this.velocity.Z);
-				if (this.VoxelTools.BreakWalls(this.forward, this.right, this.shouldBreakFloor && !this.shouldBuildFloor))
+				if (this.VoxelTools.BreakWalls(this.forward, this.right))
 				{
 					if (this.firstTimeBreak)
 					{
