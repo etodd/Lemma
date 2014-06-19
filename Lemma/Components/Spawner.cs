@@ -49,6 +49,7 @@ namespace Lemma.Components
 			this.EnabledWhenPaused = false;
 			base.Awake();
 
+			string lastMap = this.main.MapFile;
 			this.Add(new CommandBinding(this.main.MapLoaded, delegate()
 			{
 				if (this.main.MapFile.Value == Main.MenuMap)
@@ -62,6 +63,14 @@ namespace Lemma.Components
 					this.CanSpawn = true;
 					this.main.Renderer.InternalGamma.Value = Spawner.StartGamma;
 					this.main.Renderer.Brightness.Value = 1.0f;
+				}
+
+				if (this.main.MapFile != lastMap)
+				{
+					this.lastEditorPosition = Vector3.Zero;
+					this.lastEditorMouse = Vector2.Zero;
+					this.lastEditorSpawnPoint = null;
+					lastMap = this.main.MapFile;
 				}
 
 				this.respawnTimer = 0.0f;

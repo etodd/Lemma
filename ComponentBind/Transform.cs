@@ -20,6 +20,9 @@ namespace ComponentBind
 		[XmlIgnore]
 		public Property<Matrix> Matrix = new Property<Matrix>();
 
+		[XmlIgnore]
+		public Property<bool> Selectable = new Property<bool> { Value = true };
+
 		public Transform()
 		{
 			this.Matrix.Value = Microsoft.Xna.Framework.Matrix.Identity;

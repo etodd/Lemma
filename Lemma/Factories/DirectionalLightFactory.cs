@@ -24,29 +24,9 @@ namespace Lemma.Factories
 			entity.CannotSuspendByDistance = true;
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			DirectionalLight directionalLight = entity.GetOrCreate<DirectionalLight>("DirectionalLight");
+			directionalLight.Add(new Binding<Matrix>(directionalLight.Orientation, transform.Orientation));
 
 			this.SetMain(entity, main);
-
-			directionalLight.Add(new TwoWayBinding<Vector3, Matrix>
-			(
-				directionalLight.Direction,
-				delegate(Matrix x)
-				{
-					Vector3 y = Vector3.Normalize(-x.Forward);
-					if (Vector3.Dot(y, directionalLight.Direction) > 0.0f)
-						return y;
-					return -y;
-				},
-				transform.Orientation,
-				delegate(Vector3 x)
-				{
-					Matrix matrix = Matrix.Identity;
-					matrix.Forward = Vector3.Normalize(-x);
-					matrix.Left = x.Equals(Vector3.Up) ? Vector3.Left : Vector3.Normalize(Vector3.Cross(x, Vector3.Up));
-					matrix.Up = Vector3.Normalize(Vector3.Cross(matrix.Left, matrix.Forward));
-					return matrix;
-				}
-			));
 
 			entity.Add("Enable", directionalLight.Enable);
 			entity.Add("Disable", directionalLight.Disable);

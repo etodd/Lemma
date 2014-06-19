@@ -22,7 +22,7 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			Transform transform = entity.GetOrCreate<Transform>("Position");
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			RandomTicker ticker = entity.GetOrCreate<RandomTicker>("Ticker");
 			this.SetMain(entity, main);
 

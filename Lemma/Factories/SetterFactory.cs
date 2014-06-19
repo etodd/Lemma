@@ -31,7 +31,7 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			Transform transform = entity.GetOrCreate<Transform>("Position");
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			Setter setter = entity.GetOrCreate<Setter>("Setter");
 
 			base.Bind(entity, main, creating);

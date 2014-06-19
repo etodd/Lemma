@@ -20,6 +20,7 @@ namespace Lemma.Factories
 		public static void Bind(Entity entity, Main main, Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint, bool allowRotation, bool creating = false)
 		{
 			Transform mapTransform = entity.GetOrCreate<Transform>("MapTransform");
+			mapTransform.Selectable.Value = false;
 
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
@@ -35,7 +36,7 @@ namespace Lemma.Factories
 				if (parent != null && parent.Active)
 				{
 					Voxel staticMap = parent.Get<Voxel>();
-					jointData.Coord.Value = staticMap.GetCoordinate(transform.Position);
+					jointData.Coord.Value = staticMap.GetCoordinate(transform.Matrix.Value.Translation);
 					mapTransform.Position.Value = staticMap.GetAbsolutePosition(staticMap.GetRelativePosition(jointData.Coord) - new Vector3(0.5f) + staticMap.Offset + map.Offset.Value);
 					if (!allowRotation)
 					{
@@ -49,7 +50,7 @@ namespace Lemma.Factories
 			};
 
 			if (main.EditorEnabled)
-				entity.Add(new NotifyBinding(refreshMapTransform, transform.Matrix, map.Offset));
+				entity.Add(new NotifyBinding(refreshMapTransform, transform.Matrix, map.Offset, jointData.Parent));
 
 			ISpaceObject joint = null;
 			CommandBinding jointDeleteBinding = null, parentPhysicsUpdateBinding = null;

@@ -26,14 +26,36 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
+			Transform mapTransform = entity.GetOrCreate<Transform>("MapTransform");
+			mapTransform.Selectable.Value = false;
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			VoxelFill voxelFill = entity.GetOrCreate<VoxelFill>("VoxelFill");
 			voxelFill.Add(new CommandBinding(voxelFill.Delete, entity.Delete));
 
-			this.InternalBind(entity, main, creating, null, true);
+			this.InternalBind(entity, main, creating, mapTransform, true);
 
-			VoxelAttachable.MakeAttachable(entity, main);
+			if (main.EditorEnabled)
+			{
+				Voxel voxel = entity.Get<Voxel>();
 
-			Voxel map = entity.Get<Voxel>();
+				Action refreshMapTransform = delegate()
+				{
+					Entity parent = voxelFill.Target.Value.Target;
+					if (parent != null && parent.Active)
+					{
+						Voxel staticMap = parent.Get<Voxel>();
+						mapTransform.Position.Value = staticMap.GetAbsolutePosition(staticMap.GetRelativePosition(staticMap.GetCoordinate(transform.Matrix.Value.Translation)) - new Vector3(0.5f) + staticMap.Offset + voxel.Offset.Value);
+						Matrix parentOrientation = staticMap.Transform;
+						parentOrientation.Translation = Vector3.Zero;
+						mapTransform.Orientation.Value = parentOrientation;
+					}
+					else
+						mapTransform.Matrix.Value = transform.Matrix;
+				};
+
+				entity.Add(new NotifyBinding(refreshMapTransform, transform.Matrix, voxel.Offset, voxelFill.Target));
+				refreshMapTransform();
+			}
 
 			entity.Add("Enable", voxelFill.Enable);
 			entity.Add("Disable", voxelFill.Disable);

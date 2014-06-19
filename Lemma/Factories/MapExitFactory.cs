@@ -32,6 +32,13 @@ namespace Lemma.Factories
 
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 			trigger.Add(new CommandBinding(trigger.PlayerEntered, (Action)mapExit.Go));
+
+			trigger.EditorProperties();
+			entity.Add("Enable", trigger.Enable);
+			entity.Add("Enabled", trigger.Enabled);
+			entity.Add("Disable", trigger.Disable);
+			entity.Add("NextMap", mapExit.NextMap);
+			entity.Add("StartSpawnPoint", mapExit.StartSpawnPoint);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

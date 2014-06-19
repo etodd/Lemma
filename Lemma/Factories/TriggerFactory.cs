@@ -21,7 +21,7 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			Transform transform = entity.GetOrCreate<Transform>("Position");
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			Trigger trigger = entity.GetOrCreate<Trigger>("Trigger");
 
 			VoxelAttachable.MakeAttachable(entity, main);

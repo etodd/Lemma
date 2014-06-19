@@ -231,14 +231,13 @@ namespace Lemma.Components
 			this.SelectDropDownView.RemoveAllOptions();
 			foreach (var ent in main.Entities)
 			{
-				if (ent.EditorCanDelete && ent != this.Entity)
+				if (ent != this.Entity)
 				{
 					Entity ent1 = ent;
 					SelectDropDownView.AddOption(this.entityString(ent), () =>
 					{
 						Editor editor = Entity.Get<Editor>();
-						for (int i = 0; i < editor.SelectedEntities.Count; i++)
-							editor.SelectedEntities.RemoveAt(0);
+						editor.SelectedEntities.Clear();
 						editor.SelectedEntities.Add(ent1);
 					}, MainFont, ent);
 				}
@@ -808,19 +807,16 @@ namespace Lemma.Components
 			}
 			else if (typeof(Enum).IsAssignableFrom(propertyInfo.PropertyType))
 			{
-				var fields = propertyInfo.PropertyType.GetFields(BindingFlags.Static | BindingFlags.Public);
-				int numFields = fields.Length;
 				var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero, MainFont) { Name = "Dropdown" };
 				drop.AllowRightClickExecute.Value = false;
-				for (int i = 0; i < numFields; i++)
+				foreach (object o in Enum.GetValues(propertyInfo.PropertyType))
 				{
-					int i1 = i;
 					Action onClick = () =>
 					{
-						propertyInfo.SetValue(property, Enum.ToObject(propertyInfo.PropertyType, i1), null);
+						propertyInfo.SetValue(property, o, null);
 						this.NeedsSave.Value = true;
 					};
-					drop.AddOption(fields[i].Name, onClick);
+					drop.AddOption(o.ToString(), onClick);
 				}
 				drop.SetSelectedOption(propertyInfo.GetValue(property, null).ToString(), false);
 				drop.Add(new NotifyBinding(() =>

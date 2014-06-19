@@ -201,7 +201,7 @@ namespace Lemma.Components
 					index = 0;
 					this.globalShadowLight = light;
 				}
-				this.directionalLightDirections[index] = light.Direction;
+				this.directionalLightDirections[index] = -light.Orientation.Value.Forward;
 				this.directionalLightColors[index] = light.Color;
 				directionalLightIndex++;
 			}
@@ -251,7 +251,7 @@ namespace Lemma.Components
 			{
 				focus = camera.Position;
 				focus = new Vector3((float)Math.Round(focus.X / LightingManager.globalShadowFocusInterval), (float)Math.Round(focus.Y / LightingManager.globalShadowFocusInterval), (float)Math.Round(focus.Z / LightingManager.globalShadowFocusInterval)) * LightingManager.globalShadowFocusInterval;
-				shadowCameraOffset = this.globalShadowLight.Direction.Value * size * -1.25f;
+				shadowCameraOffset = this.globalShadowLight.Orientation.Value.Forward * size * 1.25f;
 				this.shadowCamera.View.Value = Matrix.CreateLookAt(focus + shadowCameraOffset, focus, Vector3.Up);
 
 				this.shadowCamera.SetOrthographicProjection(size, size, 1.0f, size * 2.5f);
@@ -269,7 +269,7 @@ namespace Lemma.Components
 			{
 				focus = camera.Position;
 				focus = new Vector3((float)Math.Round(focus.X / LightingManager.detailGlobalShadowFocusInterval), (float)Math.Round(focus.Y / LightingManager.detailGlobalShadowFocusInterval), (float)Math.Round(focus.Z / LightingManager.detailGlobalShadowFocusInterval)) * LightingManager.detailGlobalShadowFocusInterval;
-				shadowCameraOffset = this.globalShadowLight.Direction.Value * -camera.FarPlaneDistance;
+				shadowCameraOffset = this.globalShadowLight.Orientation.Value.Forward * camera.FarPlaneDistance;
 				this.shadowCamera.View.Value = Matrix.CreateLookAt(focus + shadowCameraOffset, focus, Vector3.Up);
 
 				float detailSize = size * LightingManager.detailGlobalShadowSizeRatio;

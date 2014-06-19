@@ -18,7 +18,7 @@ namespace Lemma.Factories
 		{
 			Entity entity = new Entity(main, "Counter");
 			Counter counter = entity.GetOrCreate<Counter>("Counter");
-			Transform transform = entity.GetOrCreate<Transform>("Position");
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			counter.StartingValue.Value = 0f;
 			counter.IncrementBy.Value = 1f;
 			return entity;

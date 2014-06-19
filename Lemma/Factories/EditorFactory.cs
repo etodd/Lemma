@@ -40,14 +40,17 @@ namespace Lemma.Factories
 			{
 				foreach (Transform transform in entity.GetAll<Transform>())
 				{
-					Vector3 entityPos = transform.Position;
-					float distance = (entityPos - rayStart).Length();
-					Vector3 closestToEntity = rayStart + ray * distance;
-					if ((distance < closestEntityDistance) && (closestToEntity - entityPos).Length() < 0.5f)
+					if (transform.Selectable)
 					{
-						closestEntityDistance = distance;
-						closestEntity = entity;
-						closestTransform = transform;
+						Vector3 entityPos = transform.Position;
+						float distance = (entityPos - rayStart).Length();
+						Vector3 closestToEntity = rayStart + ray * distance;
+						if ((distance < closestEntityDistance) && (closestToEntity - entityPos).Length() < 0.5f)
+						{
+							closestEntityDistance = distance;
+							closestEntity = entity;
+							closestTransform = transform;
+						}
 					}
 				}
 			}

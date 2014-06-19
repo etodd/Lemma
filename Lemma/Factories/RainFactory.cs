@@ -32,7 +32,7 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			entity.CannotSuspendByDistance = true;
-			entity.GetOrCreate<Transform>("Transform");
+			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			Rain rain = entity.GetOrCreate<Rain>("Rain");
 
@@ -40,6 +40,7 @@ namespace Lemma.Factories
 			emitter.Add(new Binding<Vector3>(emitter.Jitter, rain.Jitter));
 
 			Components.DirectionalLight lightning = entity.GetOrCreate<Components.DirectionalLight>("Lightning");
+			lightning.Add(new Binding<Matrix>(lightning.Orientation, transform.Orientation));
 			lightning.Enabled.Value = false;
 
 			lightning.Add(new TwoWayBinding<Vector3>(lightning.Color, rain.LightningColor));

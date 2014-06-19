@@ -526,6 +526,18 @@ namespace ComponentBind
 			return (T)result;
 		}
 
+		public T GetOrCreateWithoutOverwriting<T>(string name) where T : IComponent, new()
+		{
+			IComponent result = null;
+			this.components.TryGetValue(name, out result);
+			if (result == null)
+			{
+				result = new T();
+				this.AddWithoutOverwriting(name, result);
+			}
+			return (T)result;
+		}
+
 		public T Create<T>(string name) where T : IComponent, new()
 		{
 			T result = new T();

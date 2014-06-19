@@ -155,6 +155,7 @@ namespace Lemma.Components
 			{
 				this.StartAtMinimum.Value = false;
 				Transform transform = this.Entity.GetOrCreate<Transform>("MapTransform");
+				transform.Selectable.Value = false;
 				DynamicVoxel map = this.Entity.Get<DynamicVoxel>();
 				transform.Position.Value = map.GetAbsolutePosition(new Voxel.Coord().Move(this.Direction, this.Minimum));
 			}

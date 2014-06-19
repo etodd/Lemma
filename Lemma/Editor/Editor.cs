@@ -18,7 +18,7 @@ namespace Lemma.Components
 		{
 			Factory<Main>.DefaultEditorComponents = delegate(Factory<Main> factory, Entity entity, Main main)
 			{
-				Transform transform = entity.Get<Transform>();
+				Transform transform = entity.Get<Transform>("Transform");
 				if (transform == null)
 					return;
 
@@ -36,7 +36,7 @@ namespace Lemma.Components
 
 			Factory<Main>.GlobalEditorComponents = delegate(Entity entity, Main main)
 			{
-				Transform transform = entity.Get<Transform>();
+				Transform transform = entity.Get<Transform>("Transform");
 				if (transform != null)
 				{
 					LineDrawer connectionLines = new LineDrawer { Serialize = false };
@@ -48,7 +48,7 @@ namespace Lemma.Components
 						return new LineDrawer.Line
 						{
 							A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, connectionLineColor),
-							B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(link.TargetEntity.Target.Get<Transform>().Position, connectionLineColor)
+							B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(link.TargetEntity.Target.Get<Transform>("Transform").Position, connectionLineColor)
 						};
 					}, x => x.TargetEntity.Target != null && x.TargetEntity.Target.Active);
 					entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, entity.EditorSelected));
@@ -199,12 +199,10 @@ namespace Lemma.Components
 
 			this.Spawn.Action = delegate(string type)
 			{
-				if (!this.EnableCommands())
-					return;
 				if (Factory<Main>.Get(type) != null)
 				{
 					Entity entity = Factory<Main>.Get(type).CreateAndBind(this.main);
-					Transform position = entity.Get<Transform>();
+					Transform position = entity.Get<Transform>("Transform");
 					if (position != null)
 						position.Position.Value = this.Position;
 					this.NeedsSave.Value = true;
@@ -249,7 +247,7 @@ namespace Lemma.Components
 				this.VoxelEditMode.InternalValue = value;
 				if (value && !oldValue)
 				{
-					this.Orientation.Value = this.SelectedEntities[0].Get<Transform>().Orientation;
+					this.Orientation.Value = this.SelectedEntities[0].Get<Transform>("Transform").Orientation;
 					this.lastCoord = this.coord = this.SelectedEntities[0].Get<Voxel>().GetCoordinate(this.Position);
 					this.Coordinate.Value = this.coord;
 				}
@@ -557,7 +555,7 @@ namespace Lemma.Components
 					int entityCount = 0;
 					foreach (Entity entity in this.SelectedEntities)
 					{
-						Transform transform = entity.Get<Transform>();
+						Transform transform = entity.Get<Transform>("Transform");
 						if (transform != null)
 						{
 							this.offsetTransforms.Add(transform.Matrix);
@@ -618,7 +616,7 @@ namespace Lemma.Components
 						int i = 0;
 						foreach (Entity entity in this.SelectedEntities)
 						{
-							Transform transform = entity.Get<Transform>();
+							Transform transform = entity.Get<Transform>("Transform");
 							if (transform != null)
 							{
 								transform.Matrix.Value = this.offsetTransforms[i];
@@ -874,7 +872,7 @@ namespace Lemma.Components
 					int i = 0;
 					foreach (Entity entity in this.SelectedEntities)
 					{
-						Transform transform = entity.Get<Transform>();
+						Transform transform = entity.Get<Transform>("Transform");
 						if (transform != null)
 						{
 							Matrix originalTransform = this.offsetTransforms[i];
@@ -919,7 +917,7 @@ namespace Lemma.Components
 					int i = 0;
 					foreach (Entity entity in this.SelectedEntities)
 					{
-						Transform transform = entity.Get<Transform>();
+						Transform transform = entity.Get<Transform>("Transform");
 						if (transform != null)
 						{
 							Matrix originalTransform = this.offsetTransforms[i];
