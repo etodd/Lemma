@@ -33,6 +33,7 @@ namespace Lemma.Components
 		private AnimatedModel model;
 		private SkinnedModel.Clip sprintAnimation;
 		private SkinnedModel.Clip runAnimation;
+		private SkinnedModel.Clip fallAnimation;
 		private Property<Matrix> relativeHeadBone;
 		private Property<Matrix> relativeUpperLeftArm;
 		private Property<Matrix> relativeUpperRightArm;
@@ -57,6 +58,7 @@ namespace Lemma.Components
 			this.model = m;
 			this.sprintAnimation = m["Sprint"];
 			this.runAnimation = m["Run"];
+			this.fallAnimation = m["Fall"];
 			this.relativeHeadBone = m.GetRelativeBoneTransform("ORG-head");
 			this.clavicleLeft = m.GetBoneTransform("ORG-shoulder_L");
 			this.clavicleRight = m.GetBoneTransform("ORG-shoulder_R");
@@ -219,6 +221,8 @@ namespace Lemma.Components
 
 					if (!this.model.IsPlaying("Fall"))
 						this.model.StartClip("Fall", 0, true, AnimatedModel.DefaultBlendTime);
+
+					this.fallAnimation.Speed = MathHelper.Clamp(this.LinearVelocity.Value.Length() * (1.0f / 20.0f), 0, 2);
 				}
 			}
 			else
@@ -266,7 +270,7 @@ namespace Lemma.Components
 						"WallRunRight",
 						"WallSlideReverse"
 					);
-					this.model.StartClip(wallRunAnimation, 0, true, 0.1f);
+					this.model.StartClip(wallRunAnimation, 0, true);
 					if (wallRunAnimation == "WallSlideDown" || wallRunAnimation == "WallSlideReverse")
 						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE_LOOP, this.Entity);
 					else
