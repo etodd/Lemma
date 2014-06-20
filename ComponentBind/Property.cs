@@ -19,7 +19,9 @@ namespace ComponentBind
 	public class PropertyEntry
 	{
 		public IProperty Property;
+		public Property<bool> Visible;
 		public string Description;
+		public IListProperty Options;
 	}
 
 	[DebuggerDisplay("Property {Value}")]

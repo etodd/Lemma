@@ -706,6 +706,8 @@ namespace Lemma.Components
 				containerLabel.AddChild(child);
 				rootEntityView.AddChild(containerLabel);
 				containerLabel.OrderChildren();
+				if (prop.Value.Visible != null)
+					containerLabel.Add(new Binding<bool>(containerLabel.Active, prop.Value.Visible));
 				child.OrderChildren();
 			}
 
@@ -1078,6 +1080,32 @@ namespace Lemma.Components
 						selectButton.Text = "Select ->";
 						this.resetSelectButtonAfterPickingEntity = selectButton;
 					};
+				}
+				else if (entry.Options != null && propertyInfo.PropertyType.Equals(typeof(string)))
+				{
+					ListProperty<string> options = (ListProperty<string>)entry.Options;
+					var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero, MainFont) { Name = "Dropdown" };
+					drop.AllowRightClickExecute.Value = false;
+					Action populate = delegate()
+					{
+						drop.RemoveAllOptions();
+						foreach (string o in options)
+						{
+							Action onClick = () =>
+							{
+								propertyInfo.SetValue(property, o, null);
+								this.NeedsSave.Value = true;
+							};
+							drop.AddOption(o, onClick);
+						}
+						drop.SetSelectedOption((string)propertyInfo.GetValue(property, null), false);
+						if (drop.DropDownOptions.Count > 0)
+							propertyInfo.SetValue(property, drop.GetSelectedOption().Text, null);
+						else
+							propertyInfo.SetValue(property, null, null);
+					};
+					populate();
+					drop.Add(new ListNotifyBinding<string>(populate, options));
 				}
 				else
 				{

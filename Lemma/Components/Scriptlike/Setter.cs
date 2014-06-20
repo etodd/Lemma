@@ -12,7 +12,7 @@ namespace Lemma.Components
 {
 	public class Setter : Component<Main>
 	{
-		public enum Type { Bool, Int, Float, Direction, String, Vector2, Vector3, Vector4, Coord }
+		public enum PropType { Bool, Int, Float, Direction, String, Vector2, Vector3, Vector4, Coord }
 		public Property<bool> Bool = new Property<bool>();
 		public Property<int> Int = new Property<int>();
 		public Property<float> Float = new Property<float>();
@@ -22,7 +22,20 @@ namespace Lemma.Components
 		public Property<Vector3> Vector3 = new Property<Vector3>();
 		public Property<Vector4> Vector4 = new Property<Vector4>();
 		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
-		public Property<Type> PropertyType = new Property<Type>();
+		public Property<PropType> PropertyType = new Property<PropType>();
+
+		public static Dictionary<PropType, Type> TypeMapping = new Dictionary<PropType,Type>
+		{
+			{ PropType.Bool, typeof(bool) },
+			{ PropType.Int, typeof(int) },
+			{ PropType.Float, typeof(float) },
+			{ PropType.Direction, typeof(Direction) },
+			{ PropType.String, typeof(string) },
+			{ PropType.Vector2, typeof(Vector2) },
+			{ PropType.Vector3, typeof(Vector3) },
+			{ PropType.Vector4, typeof(Vector4) },
+			{ PropType.Coord, typeof(Voxel.Coord) },
+		};
 
 		public Property<Entity.Handle> Target = new Property<Entity.Handle>();
 
@@ -39,35 +52,36 @@ namespace Lemma.Components
 			this.EnabledWhenPaused = false;
 			this.Set.Action = () =>
 			{
+				this.FindProperties();
 				if (this.targetProperty != null)
 				{
 					switch (this.PropertyType.Value)
 					{
-						case Type.Bool:
+						case PropType.Bool:
 							((Property<bool>)this.targetProperty).Value = this.Bool;
 							break;
-						case Type.Int:
+						case PropType.Int:
 							((Property<int>)this.targetProperty).Value = this.Int;
 							break;
-						case Type.Float:
+						case PropType.Float:
 							((Property<float>)this.targetProperty).Value = this.Float;
 							break;
-						case Type.Vector2:
+						case PropType.Vector2:
 							((Property<Vector2>)this.targetProperty).Value = this.Vector2;
 							break;
-						case Type.Vector3:
+						case PropType.Vector3:
 							((Property<Vector3>)this.targetProperty).Value = this.Vector3;
 							break;
-						case Type.Vector4:
+						case PropType.Vector4:
 							((Property<Vector4>)this.targetProperty).Value = this.Vector4;
 							break;
-						case Type.Coord:
+						case PropType.Coord:
 							((Property<Voxel.Coord>)this.targetProperty).Value = this.Coord;
 							break;
-						case Type.Direction:
+						case PropType.Direction:
 							((Property<Direction>)this.targetProperty).Value = this.Direction;
 							break;
-						case Type.String:
+						case PropType.String:
 							((Property<string>)this.targetProperty).Value = this.String;
 							break;
 					}
@@ -78,10 +92,10 @@ namespace Lemma.Components
 
 		public override void Start()
 		{
-			
+			this.FindProperties();
 		}
 
-		public void FindProperties(string component, string property)
+		public void FindProperties()
 		{
 			if (this.targetProperty == null)
 			{
@@ -90,31 +104,31 @@ namespace Lemma.Components
 				{
 					switch (this.PropertyType.Value)
 					{
-						case Type.Bool:
+						case PropType.Bool:
 							this.targetProperty = entity.GetProperty<bool>(this.TargetProperty);
 							break;
-						case Type.Int:
+						case PropType.Int:
 							this.targetProperty = entity.GetProperty<int>(this.TargetProperty);
 							break;
-						case Type.Float:
+						case PropType.Float:
 							this.targetProperty = entity.GetProperty<float>(this.TargetProperty);
 							break;
-						case Type.Vector2:
+						case PropType.Vector2:
 							this.targetProperty = entity.GetProperty<Vector2>(this.TargetProperty);
 							break;
-						case Type.Vector3:
+						case PropType.Vector3:
 							this.targetProperty = entity.GetProperty<Vector3>(this.TargetProperty);
 							break;
-						case Type.Vector4:
+						case PropType.Vector4:
 							this.targetProperty = entity.GetProperty<Vector4>(this.TargetProperty);
 							break;
-						case Type.Coord:
+						case PropType.Coord:
 							this.targetProperty = entity.GetProperty<Voxel.Coord>(this.TargetProperty);
 							break;
-						case Type.Direction:
+						case PropType.Direction:
 							this.targetProperty = entity.GetProperty<Direction>(this.TargetProperty);
 							break;
-						case Type.String:
+						case PropType.String:
 							this.targetProperty = entity.GetProperty<string>(this.TargetProperty);
 							break;
 					}

@@ -391,11 +391,15 @@ namespace ComponentBind
 			this.Add(Guid.NewGuid().ToString(), component);
 		}
 
-		public void Add(string name, IProperty prop, string description = null)
+		public void Add(string name, IProperty prop, string description = null, Property<bool> visible = null, IListProperty options = null)
 		{
 			PropertyEntry entry = new PropertyEntry { Property = prop };
 			if (this.main.EditorEnabled)
+			{
 				entry.Description = description;
+				entry.Visible = visible;
+				entry.Options = options;
+			}
 			this.properties.Add(name, entry);
 		}
 
