@@ -1,34 +1,38 @@
-==========================================
-
-
-Most of this stuff by Evan Todd -- http://et1337.com
-
+Created, coded, and designed by Evan Todd
+http://et1337.com
 
 ==========================================
 
-
-Music and some sounds by Jack Menhorn -- http://jackmenhorn.com
-
+Josh Coffey -- Programming and design
+http://geel.io
 
 ==========================================
 
+Jack Menhorn -- Music and sound
+http://jackmenhorn.com
+
+==========================================
+
+Naila Burney -- Sound and voice acting
+https://www.behance.net/nailaburney
+
+==========================================
+
+Antonio Yáñez -- Animation
+http://vimeo.com/ayaba
+
+==========================================
 
 Human model, texture, and rig adapted from MakeHuman -- http://makehuman.org/
 
-
 ==========================================
 
-
-skybox-night.jpg generated with Spacescape -- http://alexcpeterson.com/spacescape
 skybox-sunset.jpg, skybox1.jpg, skybox2.jpg by Tim Heldna -- http://www.garagegames.com/community/blogs/view/12655
 foliage.png based on Leaves-4145.jpg by David R. Tribble -- http://commons.wikimedia.org/wiki/File:Leaves-4146.jpg
 
-
 ==========================================
 
-
 Audio source material pulled from FreeSound -- http://freesound.org
-
 
 S: Metal Lever 1.aif by timgormly -- http://www.freesound.org/people/timgormly/sounds/151271/ -- License: Creative Commons 0
 drone0006.flac by Trebblofang -- http://www.freesound.org/people/Trebblofang/sounds/172672/ -- License: Creative Commons 0

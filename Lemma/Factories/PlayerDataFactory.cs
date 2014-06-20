@@ -22,17 +22,15 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity entity = new Entity(main, "PlayerData");
-
-			entity.Add("Data", new PlayerData());
-			entity.Add("Phone", new Phone());
-
-			return entity;
+			return new Entity(main, "PlayerData");
 		}
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			base.Bind(entity, main, creating);
+			entity.GetOrCreate<PlayerData>("Data");
+			entity.GetOrCreate<Data>("OpaqueData");
+			entity.GetOrCreate<Phone>("Phone");
 			instance = entity;
 
 			entity.CannotSuspend = true;

@@ -16,18 +16,17 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity entity = new Entity(main, "Counter");
-			Counter counter = entity.GetOrCreate<Counter>("Counter");
-			Transform transform = entity.GetOrCreate<Transform>("Transform");
-			counter.StartingValue.Value = 0f;
-			counter.IncrementBy.Value = 1f;
-			return entity;
+			return new Entity(main, "Counter");
 		}
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			base.Bind(entity, main, creating);
+			entity.GetOrCreate<Transform>("Transform");
 			Counter c = entity.GetOrCreate<Counter>("Counter");
+			entity.Add("StartingValue", c.StartingValue);
+			entity.Add("Target", c.Target);
+			entity.Add("IncrementBy", c.IncrementBy);
 			entity.Add("OnTargetHit", c.OnTargetHit);
 			entity.Add("Increment", c.Increment);
 			entity.Add("Reset", c.Reset);

@@ -22,6 +22,7 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
+			entity.CannotSuspendByDistance = true;
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			RandomTicker ticker = entity.GetOrCreate<RandomTicker>("Ticker");
 			this.SetMain(entity, main);
@@ -33,7 +34,6 @@ namespace Lemma.Factories
 
 			entity.Add("Disable", ticker.Disable);
 			entity.Add("Enable", ticker.Enable);
-			entity.Add("Disable", ticker.Disable);
 			entity.Add("OnFire", ticker.OnFire);
 		}
 

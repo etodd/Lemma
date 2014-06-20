@@ -57,10 +57,10 @@ with.
         <End>&#126;</End>
       </CharacterRegion>
 
-      <!-- Extended latin characters -->
+      <!-- Extended latin characters and Spanish -->
       <CharacterRegion>
         <Start>&#160;</Start>
-        <End>&#191;</End>
+        <End>&#253;</End>
       </CharacterRegion>
 
       <!-- Punctuation -->
@@ -68,7 +68,7 @@ with.
         <Start>&#8208;</Start>
         <End>&#8231;</End>
       </CharacterRegion>
-      
+
       <!-- Cyrillic -->
       <CharacterRegion>
         <Start>&#1024;</Start>

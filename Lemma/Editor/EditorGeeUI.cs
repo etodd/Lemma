@@ -149,7 +149,7 @@ namespace Lemma.Components
 				LinkerView.Draggable = false;
 				LinkerView.Active.Value = false;
 
-				var addButton = new ButtonView(main.GeeUI, LinkerView, "[+]", Vector2.Zero, MainFont) { Name = "AddButton" };
+				var addButton = new ButtonView(main.GeeUI, LinkerView, "Link", Vector2.Zero, MainFont) { Name = "AddButton" };
 
 				var DestLayout = new View(main.GeeUI, LinkerView) { Name = "DestLayout" };
 				DestLayout.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
@@ -375,7 +375,7 @@ namespace Lemma.Components
 			{
 				foreach (var ent in main.Entities)
 				{
-					if (ent != e && ent != this.Entity)
+					if (ent != this.Entity)
 						destEntityDrop.AddOption(this.entityString(ent), () => { }, null, ent);
 				}
 			};
@@ -436,7 +436,7 @@ namespace Lemma.Components
 					entView.TextJustification = TextJustification.Left;
 					destView.TextJustification = TextJustification.Right;
 
-					var removeButton = new ButtonView(main.GeeUI, container, "[-]", Vector2.Zero, MainFont);
+					var removeButton = new ButtonView(main.GeeUI, container, "-", Vector2.Zero, MainFont);
 					removeButton.OnMouseClick += (sender, args) =>
 					{
 						e.LinkedCommands.Remove(link);
