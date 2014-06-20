@@ -35,8 +35,7 @@ namespace Lemma.Factories
 			entity.Add("Enabled", trigger.Enabled);
 			entity.Add("PlayerEntered", trigger.PlayerEntered);
 			entity.Add("PlayerExited", trigger.PlayerExited);
-
-			entity.Add("Radius", trigger.Radius);
+			entity.Add("Radius", trigger.Radius, "Radius of the trigger");
 			entity.Add("DeleteOnTrigger", trigger.DeleteOnTrigger);
 		}
 

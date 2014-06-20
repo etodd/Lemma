@@ -599,6 +599,8 @@ namespace Lemma.Components
 					this.VoxelPanelView.AddChild(containerLabel);
 					containerLabel.OrderChildren();
 					child.OrderChildren();
+
+					containerLabel.SetToolTipText(prop.Value.Description, MainFont);
 				}
 
 				foreach (var cmd in this.VoxelCommands)
@@ -645,7 +647,7 @@ namespace Lemma.Components
 					text += " [" + dropDown.Chord.ToString() + "]";
 				var button = new ButtonView(main.GeeUI, MapPanelView, text, Vector2.Zero, MainFont);
 				EditorCommand down = dropDown;
-				button.OnMouseClick += (sender, args) => down.Action.Execute();
+				button.OnMouseClick += (sender, args) => down.Action.Execute(); 
 			}
 		}
 
@@ -684,7 +686,7 @@ namespace Lemma.Components
 			// ID property
 			{
 				bool sameLine;
-				var child = this.BuildValueView(entity, new PropertyEntry { Property = entity.ID }, out sameLine);
+				var child = this.BuildValueView(entity, new PropertyEntry(entity.ID, "ID"), out sameLine);
 				TextFieldView textField = (TextFieldView)child.FindFirstChildByName("TextField");
 				textField.Validator = delegate(string x)
 				{
@@ -709,6 +711,8 @@ namespace Lemma.Components
 				if (prop.Value.Visible != null)
 					containerLabel.Add(new Binding<bool>(containerLabel.Active, prop.Value.Visible));
 				child.OrderChildren();
+
+				containerLabel.SetToolTipText(prop.Value.Description, MainFont);
 			}
 
 			foreach (KeyValuePair<string, Command.Entry> cmd in entity.Commands)
@@ -717,6 +721,8 @@ namespace Lemma.Components
 				containerLabel.AddChild(BuildButton(entity, cmd.Value, "Execute"));
 				rootEntityView.AddChild(containerLabel);
 				containerLabel.OrderChildren();
+
+				containerLabel.SetToolTipText(cmd.Value.Description, MainFont);
 			}
 
 			PropertiesView.OrderChildren();

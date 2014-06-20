@@ -421,12 +421,12 @@ namespace Lemma.Factories
 			AddCommand(entity, main, "Delete", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.X }, () => editor.VoxelEditMode, editor.DeleteMaterial, gui.VoxelCommands);
 			AddCommand(entity, main, "Delete non-contiguous", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.Z }, () => editor.VoxelEditMode, editor.DeleteMaterialAll, gui.VoxelCommands);
 
-			gui.VoxelProperties.Add("Brush", new PropertyEntry { Property = editor.Brush });
-			gui.VoxelProperties.Add("Jitter", new PropertyEntry { Property = editor.Jitter });
-			gui.VoxelProperties.Add("JitterOctave", new PropertyEntry { Property = editor.JitterOctave });
-			gui.VoxelProperties.Add("JitterOctaveMultiplier", new PropertyEntry { Property = editor.JitterOctaveMultiplier });
-			gui.VoxelProperties.Add("BrushSize [scrollwheel]", new PropertyEntry { Property = editor.BrushSize });
-			gui.VoxelProperties.Add("Coordinate", new PropertyEntry { Property = editor.Coordinate });
+			gui.VoxelProperties.Add("Brush", new PropertyEntry(editor.Brush, "Brush"));
+			gui.VoxelProperties.Add("Jitter", new PropertyEntry(editor.Jitter, "Jitter"));
+			gui.VoxelProperties.Add("JitterOctave", new PropertyEntry(editor.JitterOctave, "Jitter Octave"));
+			gui.VoxelProperties.Add("JitterOctaveMultiplier", new PropertyEntry(editor.JitterOctaveMultiplier, "Octave Multiplier"));
+			gui.VoxelProperties.Add("BrushSize [scrollwheel]", new PropertyEntry(editor.BrushSize, "Brush size"));
+			gui.VoxelProperties.Add("Coordinate", new PropertyEntry(editor.Coordinate, "Editor Coordinate"));
 
 			editor.Add(new Binding<Vector2>(editor.Mouse, input.Mouse, () => !input.EnableLook));
 
@@ -714,7 +714,7 @@ namespace Lemma.Factories
 				editor.RevertTransform,
 				gui.EntityCommands
 			);
-			
+
 #if DEVELOPMENT
 			AnalyticsViewer.Bind(entity, main);
 #endif

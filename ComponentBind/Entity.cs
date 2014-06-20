@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
 using System.Collections;
 using System.ComponentModel;
-using System.Security.Cryptography;
 using System.Reflection;
 
 namespace ComponentBind
@@ -147,7 +144,7 @@ namespace ComponentBind
 
 		private Dictionary<string, Command.Entry> commands = new Dictionary<string, Command.Entry>();
 
-		private Dictionary<string, PropertyEntry> properties = new Dictionary<string, PropertyEntry>();
+		private readonly Dictionary<string, PropertyEntry> properties = new Dictionary<string, PropertyEntry>();
 
 		public IEnumerable<IComponent> ComponentList
 		{
@@ -393,10 +390,9 @@ namespace ComponentBind
 
 		public void Add(string name, IProperty prop, string description = null, Property<bool> visible = null, IListProperty options = null)
 		{
-			PropertyEntry entry = new PropertyEntry { Property = prop };
+			PropertyEntry entry = new PropertyEntry(prop, description);
 			if (this.main.EditorEnabled)
 			{
-				entry.Description = description;
 				entry.Visible = visible;
 				entry.Options = options;
 			}
