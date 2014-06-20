@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 using ComponentBind;
 using Microsoft.Xna.Framework;
 
@@ -13,6 +14,9 @@ namespace Lemma.Components
 		public Property<string> StopCue = new Property<string>();
 		public Property<bool> Is3D = new Property<bool>();
 		public Property<Vector3> Position = new Property<Vector3>();
+
+		[XmlIgnore]
+		public Command Play = new Command();
 
 		public override void Awake()
 		{
@@ -26,27 +30,26 @@ namespace Lemma.Components
 				this.Entity.CannotSuspendByDistance = !this.Is3D;
 			}, this.Is3D));
 
-			this.Add(new CommandBinding(this.Disable, (Action)this.Stop));
-			this.Add(new CommandBinding(this.OnSuspended, (Action)this.Stop));
+			this.Play.Action = this.play;
+			this.Add(new CommandBinding(this.Disable, (Action)this.stop));
+			this.Add(new CommandBinding(this.OnSuspended, (Action)this.stop));
 		}
 
 		public void EditorProperties()
 		{
-			this.Entity.Add("Enabled", this.Enabled);
-			this.Entity.Add("Enable", this.Enable);
-			this.Entity.Add("Disable", this.Disable);
+			this.Entity.Add("Play", this.Play);
 			this.Entity.Add("PlayCue", this.PlayCue);
 			this.Entity.Add("StopCue", this.StopCue);
 			this.Entity.Add("Is3D", this.Is3D);
 		}
 
-		public void Play()
+		private void play()
 		{
 			if (!string.IsNullOrEmpty(this.PlayCue) && this.Enabled && !this.Suspended && !this.main.EditorEnabled)
 				AkSoundEngine.PostEvent(this.PlayCue, this.Entity);
 		}
 
-		public void Stop()
+		private void stop()
 		{
 			if (!string.IsNullOrEmpty(this.StopCue))
 				AkSoundEngine.PostEvent(this.StopCue, this.Entity);
@@ -55,7 +58,7 @@ namespace Lemma.Components
 		public override void delete()
 		{
 			base.delete();
-			this.Stop();
+			this.stop();
 		}
 	}
 }

@@ -11,12 +11,12 @@ namespace Lemma.Components
 {
 	public class Counter : Component<Main>
 	{
-		public Property<float> IncrementBy = new Property<float>();
-		public Property<float> StartingValue = new Property<float>();
+		public Property<int> IncrementBy = new Property<int> { Value = 1 };
+		public Property<int> StartingValue = new Property<int>();
 
-		public Property<float> ExecuteAt = new Property<float>();
+		public Property<int> Target = new Property<int> { Value = 4 };
 
-		public Property<bool> ResetOnExecute = new Property<bool>();
+		public Property<int> Count = new Property<int>();
 
 		[XmlIgnore]
 		public Command Increment = new Command();
@@ -27,44 +27,35 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command OnTargetHit = new Command();
 
-		private Property<float> _internalCount = new Property<float>() { Value = 0 };
-
-		public Counter()
+		public override void Awake()
 		{
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
 			this.Reset.Action = () =>
 			{
-				_internalCount.Value = StartingValue.Value;
+				this.Count.Value = this.StartingValue.Value;
 			};
 			this.Increment.Action = () =>
 			{
-				_internalCount.Value += IncrementBy.Value;
+				int oldCount = this.Count;
+				this.Count.Value += this.IncrementBy.Value;
 				bool execute = false;
-				if (IncrementBy.Value < 0)
+				if (this.IncrementBy.Value < 0)
 				{
-					if (_internalCount.Value < ExecuteAt.Value)
-					{
+					if (this.Count <= this.Target && oldCount > this.Target)
 						execute = true;
-					}
 				}
-				if (IncrementBy.Value > 0)
+				if (this.IncrementBy.Value > 0)
 				{
-					if (_internalCount.Value > ExecuteAt.Value)
-					{
+					if (this.Count >= this.Target && oldCount < this.Target)
 						execute = true;
-					}
 				}
 
 				if (execute)
-				{
-					OnTargetHit.Execute();
-					if (ResetOnExecute.Value)
-					{
-						this.Reset.Execute();
-					}
-				}
+					this.OnTargetHit.Execute();
 			};
+			if (this.main.EditorEnabled)
+				this.Add(new Binding<int>(this.Count, this.StartingValue));
 		}
 	}
 }

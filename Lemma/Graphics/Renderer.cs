@@ -428,6 +428,14 @@ namespace Lemma.Components
 
 		public void SetRenderTargets(RenderParameters p)
 		{
+			if (this.lightingBuffer.IsDisposed
+				|| this.specularBuffer.IsDisposed
+				|| this.depthBuffer.IsDisposed
+				|| this.normalBuffer.IsDisposed
+				|| this.colorBuffer1.IsDisposed
+				|| this.colorBuffer2.IsDisposed)
+				this.ReallocateBuffers(this.screenSize);
+
 			p.Camera.ViewportSize.Value = this.screenSize;
 			this.main.GraphicsDevice.SetRenderTargets(this.colorBuffer1, this.depthBuffer, this.normalBuffer);
 			Color color = this.lightingManager.BackgroundColor;
@@ -444,6 +452,14 @@ namespace Lemma.Components
 
 		public void PostProcess(RenderTarget2D result, RenderParameters parameters)
 		{
+			if (this.lightingBuffer.IsDisposed
+				|| this.specularBuffer.IsDisposed
+				|| this.depthBuffer.IsDisposed
+				|| this.normalBuffer.IsDisposed
+				|| this.colorBuffer1.IsDisposed
+				|| this.colorBuffer2.IsDisposed)
+				return;
+
 			Vector3 originalCameraPosition = parameters.Camera.Position;
 			Matrix originalViewMatrix = parameters.Camera.View;
 			BoundingFrustum originalBoundingFrustum = parameters.Camera.BoundingFrustum;
