@@ -22,6 +22,12 @@ namespace ComponentBind
 		public Property<bool> Visible;
 		public string Description;
 		public IListProperty Options;
+
+		public PropertyEntry(IProperty property, string description)
+		{
+			this.Property = property;
+			this.Description = description;
+		}
 	}
 
 	[DebuggerDisplay("Property {Value}")]

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ComponentBind;
 using Lemma;
 using Lemma.Components;
+using Lemma.GeeUI.Composites;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using GeeUI.Structs;
@@ -44,6 +45,11 @@ namespace GeeUI.Views
 		public Action<float> PostUpdate = null;
 		public Action PostDraw = null;
 
+		public ToolTip ToolTipView;
+		private Property<string> _toolTipText = new Property<string>() { Value = "" };
+		private SpriteFont _toolTipFont;
+		private float _toolTipTimer;
+
 		public Property<float> MyOpacity = new Property<float>() { Value = 1f };
 		public float EffectiveOpacity
 		{
@@ -59,6 +65,7 @@ namespace GeeUI.Views
 		public string Name = "";
 
 		protected bool _mouseOver;
+		
 		public bool MouseOver
 		{
 			get
@@ -135,8 +142,6 @@ namespace GeeUI.Views
 				Position.Value = new Vector2(X, value);
 			}
 		}
-
-
 
 		public int RealX
 		{
@@ -249,7 +254,6 @@ namespace GeeUI.Views
 			_children.Add(child);
 		}
 
-
 		public void RemoveAllChildren()
 		{
 			foreach (var child in Children)
@@ -266,9 +270,10 @@ namespace GeeUI.Views
 
 		public void OrderChildren()
 		{
-			foreach(var layout in ChildrenLayouts)
+			foreach (var layout in ChildrenLayouts)
 				OrderChildren(layout);
 		}
+		
 		public virtual void OrderChildren(ViewLayout layout)
 		{
 			if (layout != null)
@@ -309,6 +314,30 @@ namespace GeeUI.Views
 				}
 			}
 			return null;
+		}
+
+		public void RemoveToolTip()
+		{
+			_toolTipTimer = 0f;
+			if (this.ToolTipView != null)
+			{
+				this.ToolTipView.ParentView.RemoveChild(ToolTipView);
+				this.ToolTipView.OnDelete();
+				this.ToolTipView = null;
+			}
+		}
+
+		public void SetToolTipText(string text, SpriteFont font)
+		{
+			if (text == null) return;
+			this._toolTipText.Value = text;
+			this._toolTipFont = font;
+		}
+
+		private void ShowToolTip()
+		{
+			RemoveToolTip();
+			this.ToolTipView = new ToolTip(ParentGeeUI, ParentGeeUI.RootView, this, this._toolTipText, _toolTipFont);
 		}
 
 		#endregion
@@ -457,6 +486,7 @@ namespace GeeUI.Views
 
 		public virtual void OnMOver(bool fromChild = false)
 		{
+			RemoveToolTip();
 			if (OnMouseOver != null)
 				OnMouseOver(this, new EventArgs());
 			if (ParentView != null) ParentView.OnMOver(true);
@@ -464,6 +494,7 @@ namespace GeeUI.Views
 
 		public virtual void OnMOff(bool fromChild = false)
 		{
+			RemoveToolTip();
 			if (OnMouseOff != null)
 				OnMouseOff(this, new EventArgs());
 			if (ParentView != null) ParentView.OnMOff(true);
@@ -477,7 +508,15 @@ namespace GeeUI.Views
 					OrderChildren(layout);
 			}
 
-			CheckAttachmentToRoot();
+			if (MouseOver && _toolTipText.Value != "")
+			{
+				_toolTipTimer += dt;
+				if (_toolTipTimer >= 1f && _toolTipFont != null && ToolTipView == null)
+				{
+					ShowToolTip();
+				}
+			}
+
 
 			if (ParentView == null || IgnoreParentBounds)
 			{
