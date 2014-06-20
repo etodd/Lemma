@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ComponentBind;
+using GeeUI.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -345,6 +346,7 @@ namespace Lemma.Components
 
 			input.Bind(main.Settings.TogglePhone, PCInput.InputState.Down, delegate()
 			{
+				if (InputManager.IsKeyPressed(Keys.LeftShift)) return;
 				if (noteActive || phoneActive || phone.CanReceiveMessages)
 				{
 					if (!phoneActive && (noteActive || player.Note.Value.Target != null))

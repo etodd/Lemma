@@ -366,6 +366,9 @@ namespace Lemma.Factories
 				if (editor.TransformMode.Value != Editor.TransformModes.None)
 					return false;
 
+				if (InputManager.IsKeyPressed(Keys.LeftShift))
+					return false;
+
 				if (editor.VoxelEditMode)
 					return true;
 				else
