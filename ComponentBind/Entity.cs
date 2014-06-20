@@ -307,8 +307,6 @@ namespace ComponentBind
 				c.Entity = this;
 				this.main.AddComponent(c);
 			}
-
-			this.Add("ID", this.ID);
 		}
 
 		public void SetSuspended(bool suspended)

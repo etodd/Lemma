@@ -43,6 +43,7 @@ namespace Lemma.Factories
 			entity.Add("HitMax", spinner.HitMax);
 			entity.Add("HitMin", spinner.HitMin);
 
+			entity.Add("Direction", joint.Direction);
 			entity.Add("Minimum", spinner.Minimum);
 			entity.Add("Maximum", spinner.Maximum);
 			entity.Add("Locked", spinner.Locked);

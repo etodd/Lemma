@@ -28,6 +28,7 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);
+			attachable.Enabled.Value = true;
 
 			light.Add(new Binding<Vector3>(light.Position, () => Vector3.Transform(new Vector3(0, 0, attachable.Offset), transform.Matrix), attachable.Offset, transform.Matrix));
 
@@ -65,6 +66,7 @@ namespace Lemma.Factories
 
 			this.SetMain(entity, main);
 
+			entity.Add("AttachOffset", attachable.Offset);
 			entity.Add("OnPowerOn", sw.OnPowerOn);
 			entity.Add("OnPowerOff", sw.OnPowerOff);
 			entity.Add("On", sw.On);

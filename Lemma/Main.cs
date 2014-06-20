@@ -668,7 +668,7 @@ namespace Lemma
 				addCounter("Draw calls", this.drawCalls);
 				addCounter("Triangles", this.triangles);
 
-				input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.P }), delegate()
+				Lemma.Console.Console.AddConCommand(new ConCommand("perf", "Toggle the performance monitor", delegate(ConCommand.ArgCollection args)
 				{
 					this.performanceMonitor.Visible.Value = !this.performanceMonitor.Visible;
 				}));

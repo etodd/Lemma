@@ -31,13 +31,15 @@ namespace Lemma.Factories
 
 			JointFactory.Bind(entity, main, slider.CreateJoint, false, creating);
 
-			slider.Add(new Binding<Direction>(slider.Direction, entity.GetOrCreate<Components.Joint>("Joint").Direction));
+			Components.Joint joint = entity.GetOrCreate<Components.Joint>("Joint");
+			slider.Add(new Binding<Direction>(slider.Direction, joint.Direction));
 
 			entity.Add("Forward", slider.Forward);
 			entity.Add("Backward", slider.Backward);
 			entity.Add("OnHitMax", slider.OnHitMax);
 			entity.Add("OnHitMin", slider.OnHitMin);
 
+			entity.Add("Direction", joint.Direction);
 			entity.Add("Minimum", slider.Minimum);
 			entity.Add("Maximum", slider.Maximum);
 			entity.Add("Locked", slider.Locked);

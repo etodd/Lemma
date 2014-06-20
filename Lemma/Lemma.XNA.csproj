@@ -59,7 +59,7 @@
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\x86\Release</OutputPath>
-    <DefineConstants>WINDOWS;ANALYTICS;CHEAT;STEAMWORKS</DefineConstants>
+    <DefineConstants>WINDOWS;ANALYTICS;CHEAT;STEAMWORKS;PERFORMANCE_MONITOR</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
