@@ -681,6 +681,23 @@ namespace Lemma.Components
 			categoryView.TextJustification = TextJustification.Center;
 			categoryView.Add(new Binding<int>(categoryView.Width, i => { return (int)Math.Max(i, categoryView.TextWidth); }, rootEntityView.Width));
 
+			// ID property
+			{
+				bool sameLine;
+				var child = this.BuildValueView(entity, new PropertyEntry { Property = entity.ID }, out sameLine);
+				TextFieldView textField = (TextFieldView)child.FindFirstChildByName("TextField");
+				textField.Validator = delegate(string x)
+				{
+					Entity e = Entity.GetByID(x);
+					return e == null || e == entity;
+				};
+				View containerLabel = BuildContainerLabel("ID", sameLine);
+				containerLabel.AddChild(child);
+				rootEntityView.AddChild(containerLabel);
+				containerLabel.OrderChildren();
+				child.OrderChildren();
+			}
+
 			foreach (KeyValuePair<string, PropertyEntry> prop in entity.Properties)
 			{
 				bool sameLine;
@@ -1067,7 +1084,7 @@ namespace Lemma.Components
 					TextFieldView view = new TextFieldView(main.GeeUI, ret, Vector2.Zero, MainFont);
 					view.Width.Value = 130;
 					view.Height.Value = 15;
-					view.Text = "abc";
+					view.Name = "TextField";
 					view.MultiLine = false;
 
 					if (propertyInfo.PropertyType.Equals(typeof(int)))

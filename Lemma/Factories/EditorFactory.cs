@@ -184,7 +184,7 @@ namespace Lemma.Factories
 						dialog.Filter = "Map files|*.map";
 						dialog.InitialDirectory = Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory);
 						if (dialog.ShowDialog() == DialogResult.OK)
-							IO.MapLoader.Load(main, null, dialog.FileName);
+							IO.MapLoader.Load(main, null, dialog.FileName, false);
 					}
 				},
 				gui.MapCommands
@@ -219,7 +219,12 @@ namespace Lemma.Factories
 				{
 					Action = delegate()
 					{
-						main.AddComponent(new WorkShopInterface(Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory) + main.MapFile.Value + ".map"));
+						string f = main.MapFile;
+						if (Path.GetExtension(f) != ".map")
+							f += ".map";
+						if (!Path.IsPathRooted(f))
+							f = Path.GetFullPath(Path.Combine(IO.MapLoader.MapDirectory, f));
+						main.AddComponent(new WorkShopInterface(f));
 					}
 				},
 				gui.MapCommands
@@ -331,6 +336,14 @@ namespace Lemma.Factories
 				}
 			}, gui.MapCommands);
 
+			AddCommand(entity, main, "Help", new PCInput.Chord(), () => true, new Command
+			{
+				Action = delegate()
+				{
+					UIFactory.OpenURL("http://steamcommunity.com/sharedfiles/filedetails/?id=273022369");
+				}
+			}, gui.MapCommands);
+
 			// Save
 			AddCommand(entity, main, "Save", new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.S }, () => !editor.MovementEnabled, editor.Save, gui.MapCommands);
 
@@ -386,7 +399,8 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					changeBrush(-1);
+					if (!input.GetKey(Keys.LeftShift))
+						changeBrush(-1);
 				}
 			}, gui.VoxelCommands);
 

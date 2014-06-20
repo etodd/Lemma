@@ -159,6 +159,8 @@ namespace GeeUI.Views
 			}
 		}
 
+		public Func<string, bool> Validator;
+
 		public TextFieldView(GeeUIMain GeeUI, View rootView, Vector2 position, SpriteFont textFont)
 			: base(GeeUI, rootView)
 		{
@@ -257,7 +259,7 @@ namespace GeeUI.Views
 					case Keys.Enter:
 						if (MultiLine)
 							AppendTextCursor("\n");
-						else if (Text.Length != 0 && OnTextSubmitted != null)
+						else if (Text.Length != 0 && OnTextSubmitted != null && this.Validate())
 							OnTextSubmitted();
 						break;
 					case Keys.Space:
@@ -539,15 +541,15 @@ namespace GeeUI.Views
 			ReEvaluateOffset();
 		}
 
-		public bool RegexValidate()
+		public bool Validate()
 		{
-			if (!MustRegexValidate()) return true;
-			return _validationRegex.IsMatch(Text);
+			if (!MustValidate()) return true;
+			return this.Validator != null ? this.Validator(this.Text) : _validationRegex.IsMatch(Text);
 		}
 
-		public bool MustRegexValidate()
+		public bool MustValidate()
 		{
-			return !(ValidationRegex == "" || _validationRegex == null);
+			return this.Validator != null || !(ValidationRegex == "" || _validationRegex == null);
 		}
 
 		public Vector2 GetMouseTextPos(Vector2 pos)
@@ -632,7 +634,7 @@ namespace GeeUI.Views
 			bool oldSelected = Selected.Value;
 			Selected.Value = false;
 			_selectionEnd = _selectionStart = new Vector2(-1);
-			if (OnTextSubmitted != null && oldSelected && !Selected.Value && SubmitOnClickAway)
+			if (OnTextSubmitted != null && oldSelected && !Selected.Value && SubmitOnClickAway && this.Validate())
 				OnTextSubmitted();
 			base.OnMClickAway();
 		}
@@ -743,9 +745,9 @@ namespace GeeUI.Views
 			var yDrawPos = drawPos.Y;
 
 			var patch = Selected ? NinePatchSelected : NinePatchDefault;
-			if (MustRegexValidate() && Text.Length > 0)
+			if (MustValidate() && Text.Length > 0)
 			{
-				patch = Selected ? (RegexValidate() ? NinePatchRegexGood : NinePatchRegexBad) : patch;
+				patch = Selected ? (Validate() ? NinePatchRegexGood : NinePatchRegexBad) : patch;
 			}
 			patch.Draw(spriteBatch, AbsolutePosition, Width, Height, 0f, EffectiveOpacity);
 
@@ -760,9 +762,9 @@ namespace GeeUI.Views
 			var yDrawPos = drawPos.Y;
 
 			var patch = Selected ? NinePatchSelected : NinePatchDefault;
-			if (MustRegexValidate() && Text.Length > 0)
+			if (MustValidate() && Text.Length > 0)
 			{
-				patch = Selected ? (RegexValidate() ? NinePatchRegexGood : NinePatchRegexBad) : patch;
+				patch = Selected ? (Validate() ? NinePatchRegexGood : NinePatchRegexBad) : patch;
 			}
 			if (_selectionStart != _selectionEnd && _selectionEnd != new Vector2(-1))
 			{

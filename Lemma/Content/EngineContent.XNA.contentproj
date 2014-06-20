@@ -488,7 +488,7 @@
       <Name>skybox</Name>
       <Importer>FbxImporter</Importer>
       <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_DiffuseTexture>skybox-night.jpg</ProcessorParameters_DiffuseTexture>
+      <ProcessorParameters_DiffuseTexture>skybox-sun.jpg</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_EffectFileName>..\Effects\Skybox.fx</ProcessorParameters_EffectFileName>
     </Compile>
     <Compile Include="Models\light.fbx">

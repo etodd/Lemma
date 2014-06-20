@@ -227,7 +227,7 @@ Objects:  {
 			Property: "LastFrame", "int", "",0
 			Property: "Width", "int", "",0
 			Property: "Height", "int", "",0
-			Property: "Path", "charptr", "", "skybox-night.jpg"
+			Property: "Path", "charptr", "", "skybox-sun.jpg"
 			Property: "StartFrame", "int", "",0
 			Property: "StopFrame", "int", "",0
 			Property: "PlaySpeed", "double", "",1
@@ -238,8 +238,8 @@ Objects:  {
 			Property: "AccessMode", "enum", "",0
 		}
 		UseMipMap: 0
-		Filename: "skybox-night.jpg"
-		RelativeFilename: "skybox-night.jpg"
+		Filename: "skybox-sun.jpg"
+		RelativeFilename: "skybox-sun.jpg"
 	}
 	Texture: "Texture::skybox_jpg", "TextureVideoClip" {
 		Type: "TextureVideoClip"
@@ -263,8 +263,8 @@ Objects:  {
 			Property: "VideoProperty", "object", ""
 		}
 		Media: "Video::skybox_jpg"
-		FileName: "skybox-night.jpg"
-		RelativeFilename: "skybox-night.jpg"
+		FileName: "skybox-sun.jpg"
+		RelativeFilename: "skybox-sun.jpg"
 		ModelUVTranslation: 0,0
 		ModelUVScaling: 1,1
 		Texture_Alpha_Source: "None"

@@ -9,6 +9,15 @@ namespace Lemma.Components
 {
 	public class UIFactory : Component<Main>
 	{
+		public static void OpenURL(string url)
+		{
+#if STEAMWORKS
+				Steamworks.SteamFriends.ActivateGameOverlayToWebPage(url);
+#else
+				System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url));
+#endif
+		}
+
 		public TextElement CreateLink(string text, string url)
 		{
 			System.Windows.Forms.Form winForm = (System.Windows.Forms.Form)System.Windows.Forms.Form.FromHandle(this.main.Window.Handle);
@@ -19,8 +28,7 @@ namespace Lemma.Components
 			element.Add(new Binding<Color, bool>(element.Tint, x => x ? new Color(1.0f, 0.0f, 0.0f) : new Color(0.0f, 0.0f, 0.0f), element.Highlighted));
 			element.Add(new CommandBinding(element.MouseLeftUp, delegate()
 			{
-				//this.main.ExitFullscreen();
-				System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url));
+				UIFactory.OpenURL(url);
 			}));
 			element.Add(new CommandBinding(element.MouseOver, delegate()
 			{

@@ -99,12 +99,20 @@ namespace Lemma.GInterfaces
 
 			MapOpenPath.OnMouseClick += (sender, args) =>
 			{
-				MapFilePath.Text = DoFileDialogue("Map Files|*.map");
+				var dialog = new System.Windows.Forms.OpenFileDialog();
+				dialog.Filter = "Map Files|*.map";
+				var result = dialog.ShowDialog();
+				if (result == DialogResult.OK)
+					this.MapFilePath.Text = dialog.FileName;
 			};
 
 			OpenImagePath.OnMouseClick += (sender, args) =>
 			{
-				MapImagePath.Text = DoFileDialogue("Image Files |*.png");
+				var dialog = new System.Windows.Forms.OpenFileDialog();
+				dialog.Filter = "Image Files |*.png";
+				var result = dialog.ShowDialog();
+				if (result == DialogResult.OK)
+					this.MapImagePath.Text = dialog.FileName;
 			};
 
 			this.Add(new Binding<string>(statusString.Text, StatusString));
@@ -199,14 +207,6 @@ namespace Lemma.GInterfaces
 			bool multiLine = view.MultiLine;
 			view.Width.Value = multiLine ? 380 : 340;
 			view.Height.Value = multiLine ? 200 : 16;
-		}
-
-		public string DoFileDialogue(string filter)
-		{
-			var dialog = new System.Windows.Forms.OpenFileDialog();
-			dialog.Filter = filter;
-			var result = dialog.ShowDialog();
-			return result == DialogResult.OK ? dialog.FileName : "";
 		}
 
 		public override void delete()
