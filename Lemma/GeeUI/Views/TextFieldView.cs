@@ -778,7 +778,7 @@ namespace GeeUI.Views
 					end = store;
 				}
 
-				for (int y = (int)start.Y; y <= end.Y; y++)
+				for (int y = (int)Math.Max(0, start.Y); y <= Math.Min(end.Y, TextLines.Length - 1); y++)
 				{
 					string line = TextLines[y];
 					if (line == "") line = " ";

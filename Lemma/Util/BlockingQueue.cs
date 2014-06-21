@@ -31,11 +31,13 @@ namespace Lemma.Util
 				while (this.queue.Count >= this.maxSize)
 					Monitor.Wait(this.queue);
 				if (!this.queue.Contains(item))
-					this.queue.Enqueue(item);
-				if (this.queue.Count == 1)
 				{
-					// wake up any blocked dequeue
-					Monitor.PulseAll(this.queue);
+					this.queue.Enqueue(item);
+					if (this.queue.Count == 1)
+					{
+						// wake up any blocked dequeue
+						Monitor.PulseAll(this.queue);
+					}
 				}
 			}
 		}

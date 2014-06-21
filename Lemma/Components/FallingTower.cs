@@ -40,12 +40,16 @@ namespace Lemma.Components
 			if (this.TimeUntilRebuild.Value > 0 || this.TimeUntilRebuildComplete.Value > 0)
 				return;
 
+			Entity targetVoxel = this.TargetVoxel.Value.Target;
+			if (targetVoxel == null || !targetVoxel.Active)
+				return;
+
 			// Disable the cell-emptied notification.
 			// This way, we won't think that the base has been destroyed by the player.
 			// We are not in fact dying, we're just destroying the base so we can fall over.
 			this.Base.EnableCellEmptyBinding = false;
 
-			Voxel m = this.TargetVoxel.Value.Target.Get<Voxel>();
+			Voxel m = targetVoxel.Get<Voxel>();
 
 			m.Empty(this.Base.BaseBoxes.SelectMany(x => x.GetCoords()));
 

@@ -254,7 +254,14 @@ namespace Lemma.Factories
 				{
 					orb.CoordQueue.Clear();
 					
-					Voxel m = raycastAI.Voxel.Value.Target.Get<Voxel>();
+					Entity voxelEntity = raycastAI.Voxel.Value.Target;
+					if (voxelEntity == null || !voxelEntity.Active)
+					{
+						ai.CurrentState.Value = "Alert";
+						return;
+					}
+						
+					Voxel m = voxelEntity.Get<Voxel>();
 
 					Voxel.Coord c = raycastAI.Coord.Value;
 

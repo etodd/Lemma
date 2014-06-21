@@ -247,6 +247,7 @@ namespace Lemma.Components
 					light.Color.Value = new Vector3(a);
 			}
 
+			List<Voxel> toRegenerate = new List<Voxel>();
 			for (int i = 0; i < this.BlockQueue.Count; i++)
 			{
 				ScheduledBlock entry = this.BlockQueue[i];
@@ -403,11 +404,12 @@ namespace Lemma.Components
 						}
 
 						if (regenerate)
-							map.Regenerate();
+							toRegenerate.Add(map);
 					}
 				}
-				i++;
 			}
+			foreach (Voxel v in toRegenerate)
+				v.Regenerate();
 		}
 
 		public void sparksLowPriority(Vector3 pos, Spark type)

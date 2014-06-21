@@ -3432,12 +3432,12 @@ namespace Lemma.Components
 
 		public void Regenerate(Action<List<DynamicVoxel>> callback = null)
 		{
-			workQueue.Enqueue(new WorkItem { Map = this, Callback = callback });
+			workQueue.Enqueue(new WorkItem { Voxel = this, Callback = callback });
 		}
 
 		private struct WorkItem
 		{
-			public Voxel Map;
+			public Voxel Voxel;
 			public Action<List<DynamicVoxel>> Callback;
 		}
 
@@ -3448,7 +3448,7 @@ namespace Lemma.Components
 			while (true)
 			{
 				WorkItem item = Voxel.workQueue.Dequeue();
-				item.Map.RegenerateImmediately(item.Callback);
+				item.Voxel.RegenerateImmediately(item.Callback);
 			}
 		}
 
