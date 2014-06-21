@@ -27,8 +27,7 @@ namespace Lemma.Factories
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
 			trigger.Serialize = false;
 
-			VoxelAttachable.MakeAttachable(entity, main);
-			this.SetMain(entity, main);
+			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);
 			
 			trigger.Radius.Value = 3;
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
@@ -39,6 +38,12 @@ namespace Lemma.Factories
 
 			AkGameObjectTracker.Attach(entity, trigger.Position);
 
+			PointLight light = entity.Create<PointLight>();
+			light.Serialize = false;
+			light.Attenuation.Value = 10.0f;
+			light.Color.Value = new Vector3(1.25f, 1.75f, 2.0f);
+			light.Add(new Binding<Vector3>(light.Position, transform.Position));
+
 			ParticleEmitter distortionEmitter = entity.GetOrCreate<ParticleEmitter>("DistortionEmitter");
 			distortionEmitter.Serialize = false;
 			distortionEmitter.Add(new Binding<Vector3>(distortionEmitter.Position, trigger.Position));
@@ -46,26 +51,22 @@ namespace Lemma.Factories
 			distortionEmitter.ParticlesPerSecond.Value = 4;
 			distortionEmitter.Jitter.Value = new Vector3(0.5f);
 
-			ParticleEmitter purpleEmitter = entity.GetOrCreate<ParticleEmitter>("PurpleEmitter");
-			purpleEmitter.Serialize = false;
-			purpleEmitter.Add(new Binding<Vector3>(purpleEmitter.Position, trigger.Position));
-			purpleEmitter.ParticleType.Value = "Purple";
-			purpleEmitter.ParticlesPerSecond.Value = 30;
-			purpleEmitter.Jitter.Value = new Vector3(0.5f);
-
 			Model model = entity.GetOrCreate<Model>("Model");
 			model.MapContent.Value = true;
 			model.Filename.Value = "Models\\sphere";
 			model.Serialize = false;
+			model.Scale.Value = new Vector3(0.5f);
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 
+			this.SetMain(entity, main);
+
+			attachable.EditorProperties();
 			entity.Add("Collected", collectible.PlayerTouched);
 		}
 
+
 		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(entity, main);
-
 			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 			PlayerTrigger.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
 		}

@@ -63,7 +63,7 @@ namespace Lemma.GInterfaces
 			new TextView(main.GeeUI, MainView, "Map File:", new Vector2(10, 8), MainFont);
 			this.MapFilePath = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 25), MainFont) { MultiLine = false, Editable = false };
 			this.MapOpenPath = new ButtonView(main.GeeUI, MainView, "...", new Vector2(360, 25), MainFont);
-			new TextView(main.GeeUI, MainView, "Image File (widthXheight):", new Vector2(10, 48), MainFont);
+			new TextView(main.GeeUI, MainView, "Thumbnail File:", new Vector2(10, 48), MainFont);
 			this.MapImagePath = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 65), MainFont) { MultiLine = false, Editable = false };
 			this.OpenImagePath = new ButtonView(main.GeeUI, MainView, "...", new Vector2(360, 65), MainFont);
 			new TextView(main.GeeUI, MainView, "Name:", new Vector2(10, 88), MainFont);
