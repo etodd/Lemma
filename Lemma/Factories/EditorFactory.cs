@@ -245,7 +245,7 @@ namespace Lemma.Factories
 				}
 			}
 
-			input.Add(new CommandBinding(input.GetKeyUp(Keys.Space), () => !editor.MovementEnabled, gui.ShowContextMenu));
+			input.Add(new CommandBinding(input.GetKeyUp(Keys.Space), () => !editor.MovementEnabled && !gui.AnyTextFieldViewsSelected(), gui.ShowContextMenu));
 			editor.Add(new Binding<bool>(main.GeeUI.KeyboardEnabled, () => !editor.VoxelEditMode && !editor.MovementEnabled, editor.VoxelEditMode, editor.MovementEnabled));
 
 			model.Add(new Binding<bool>(model.Enabled, editor.VoxelEditMode));
@@ -352,7 +352,8 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					editor.SelectedEntities.Clear();
+					if (!gui.AnyTextFieldViewsSelected())
+						editor.SelectedEntities.Clear();
 				}
 			}, gui.MapCommands);
 
