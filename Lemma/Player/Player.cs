@@ -35,7 +35,8 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command HealthDepleted = new Command();
 
-		private float damageTimer = 0.0f;
+		private const float damageSoundInterval = 0.4f;
+		private float damageTimer = damageSoundInterval + 1.0f;
 		public Property<float> Health = new Property<float> { Value = 1.0f };
 
 		[XmlIgnore]
@@ -54,7 +55,7 @@ namespace Lemma.Components
 
 			this.Health.Set = delegate(float value)
 			{
-				if (value < this.Health.InternalValue && this.damageTimer > 0.4f)
+				if (value < this.Health.InternalValue && this.damageTimer > damageSoundInterval)
 				{
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_HURT, this.Entity);
 					this.damageTimer = 0.0f;
@@ -77,9 +78,9 @@ namespace Lemma.Components
 
 		public void Update(float dt)
 		{
+			this.damageTimer += dt;
 			if (this.Health < 1.0f)
 			{
-				this.damageTimer += dt;
 				if (this.damageTimer > Player.healthRegenerateDelay)
 					this.Health.Value += Player.healthRegenerateRate * dt;
 			}

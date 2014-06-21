@@ -47,7 +47,9 @@ namespace Lemma.Components
 		private Voxel.GlobalRaycastResult groundRaycast;
 		private bool lastSupported;
 
-		private int walkedOnCount = 0;
+		private int walkedOnCount;
+		private float lastFootstepSound = -1.0f;
+		private const float footstepSoundInterval = 0.1f;
 		private bool infectedDamage;
 
 		public override void Awake()
@@ -58,8 +60,11 @@ namespace Lemma.Components
 	
 			this.Footstep.Action = delegate()
 			{
-				if (this.SoundEnabled)
+				if (this.SoundEnabled && this.main.TotalTime - this.lastFootstepSound > footstepSoundInterval)
+				{
 					AkSoundEngine.PostEvent(AK.EVENTS.FOOTSTEP_PLAY, this.Entity);
+					this.lastFootstepSound = this.main.TotalTime;
+				}
 			};
 
 			Voxel.State temporary = Voxel.States[Voxel.t.Temporary],
