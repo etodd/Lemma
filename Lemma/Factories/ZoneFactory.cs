@@ -59,7 +59,6 @@ namespace Lemma.Factories
 			Zone zone = entity.Get<Zone>();
 
 			EntityConnectable.AttachEditorComponents(entity, "ConnectedEntities", zone.ConnectedEntities);
-			EntityConnectable.AttachEditorComponents(entity, "Parent", zone.Parent);
 
 			Model model = new Model();
 			model.Filename.Value = "Models\\sphere";

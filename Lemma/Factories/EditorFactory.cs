@@ -55,7 +55,7 @@ namespace Lemma.Factories
 				}
 			}
 
-			Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(rayStart, ray, closestEntityDistance, true);
+			Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(rayStart, ray, closestEntityDistance, null, true);
 			if (hit.Coordinate != null)
 			{
 				closestEntity = hit.Voxel.Entity;

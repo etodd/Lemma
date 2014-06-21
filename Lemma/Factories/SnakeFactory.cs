@@ -184,7 +184,7 @@ namespace Lemma.Factories
 							Interval = 1.0f,
 							Action = delegate()
 							{
-								Agent a = Agent.Query(transform.Position, 50.0f, 20.0f, x => x.Entity.Type == "Player");
+								Agent a = Agent.Query(transform.Position, 50.0f, snake.EnableHearing ? 20.0f : 0.0f, x => x.Entity.Type == "Player");
 								if (a != null)
 									ai.CurrentState.Value = "Alert";
 							},
@@ -208,7 +208,7 @@ namespace Lemma.Factories
 						checkOperationalRadius,
 						new AI.Task
 						{
-							Interval = 1.0f,
+							Interval = 0.4f,
 							Action = delegate()
 							{
 								if (ai.TimeInCurrentState > 3.0f)
@@ -350,6 +350,7 @@ namespace Lemma.Factories
 			this.SetMain(entity, main);
 
 			entity.Add("OperationalRadius", snake.OperationalRadius);
+			entity.Add("EnableHearing", snake.EnableHearing);
 		}
 	}
 }

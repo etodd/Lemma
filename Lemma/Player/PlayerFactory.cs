@@ -330,7 +330,7 @@ namespace Lemma.Factories
 			agent.Add(new TwoWayBinding<float>(player.Health, agent.Health));
 			agent.Add(new Binding<Vector3>(agent.Position, () => transform.Position.Value + new Vector3(0, player.Character.Height * -0.5f, 0), transform.Position, player.Character.Height));
 			agent.Add(new CommandBinding(agent.Die, entity.Delete));
-			agent.Add(new Binding<bool>(agent.Loud, x => !x, player.Character.Crouched));
+			agent.Add(new Binding<bool>(agent.Loud, () => player.Character.MovementDirection.Value.LengthSquared() > 0 && !player.Character.Crouched, player.Character.Crouched));
 
 			entity.Add(new CommandBinding(player.HealthDepleted, delegate()
 			{

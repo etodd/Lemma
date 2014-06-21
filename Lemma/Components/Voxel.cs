@@ -1570,7 +1570,7 @@ namespace Lemma.Components
 			public float Distance;
 		}
 
-		public static GlobalRaycastResult GlobalRaycast(Vector3 start, Vector3 ray, float length, bool includeScenery = false, bool includeInactive = false)
+		public static GlobalRaycastResult GlobalRaycast(Vector3 start, Vector3 ray, float length, Func<int, t, bool> filter = null, bool includeScenery = false, bool includeInactive = false)
 		{
 			// Voxel raycasting
 			GlobalRaycastResult result = new GlobalRaycastResult();
@@ -1587,32 +1587,7 @@ namespace Lemma.Components
 
 			foreach (Voxel map in maps)
 			{
-				RaycastResult hit = map.Raycast(start, ray, result.Distance);
-				if (hit.Coordinate != null && hit.Distance < result.Distance)
-				{
-					result.Voxel = map;
-					result.Coordinate = hit.Coordinate;
-					result.Normal = hit.Normal;
-					result.Position = hit.Position;
-					result.Distance = hit.Distance;
-				}
-			}
-			return result;
-		}
-
-		public static GlobalRaycastResult GlobalRaycast(Vector3 start, Vector3 ray, float length, Func<Voxel, bool> filter, bool includeScenery = false)
-		{
-			// Voxel raycasting
-			GlobalRaycastResult result = new GlobalRaycastResult();
-			result.Distance = length;
-
-			IEnumerable<Voxel> maps = includeScenery ? Voxel.ActiveVoxels : Voxel.ActivePhysicsVoxels;
-
-			foreach (Voxel map in maps)
-			{
-				if (!filter(map))
-					continue;
-				RaycastResult hit = map.Raycast(start, ray, result.Distance);
+				RaycastResult hit = map.Raycast(start, ray, result.Distance, filter);
 				if (hit.Coordinate != null && hit.Distance < result.Distance)
 				{
 					result.Voxel = map;
@@ -4471,14 +4446,14 @@ namespace Lemma.Components
 			return modified;
 		}
 
-		public RaycastResult Raycast(Coord start, Direction dir, int length)
+		public RaycastResult Raycast(Coord start, Direction dir, int length, Func<int, t, bool> filter = null)
 		{
-			return this.Raycast(start, start.Move(dir, length));
+			return this.Raycast(start, start.Move(dir, length), filter);
 		}
 
-		public RaycastResult Raycast(Coord start, Coord end)
+		public RaycastResult Raycast(Coord start, Coord end, Func<int, t, bool> filter = null)
 		{
-			return this.Raycast(this.GetRelativePosition(start), this.GetRelativePosition(end));
+			return this.Raycast(this.GetRelativePosition(start), this.GetRelativePosition(end), filter);
 		}
 
 		private Coord getChunkCoordinateFromCoordinate(Coord coord)
@@ -4629,7 +4604,7 @@ namespace Lemma.Components
 			}
 		}
 
-		public RaycastResult Raycast(Vector3 start, Vector3 end)
+		public RaycastResult Raycast(Vector3 start, Vector3 end, Func<int, t, bool> filter = null)
 		{
 			if (!this.main.EditorEnabled && !this.EnablePhysics)
 				return new RaycastResult();
@@ -4778,7 +4753,7 @@ namespace Lemma.Components
 						intersections[0] = tmp;
 					}
 
-					RaycastResult result = this.raycastChunk(intersections[0], intersections[1], c);
+					RaycastResult result = this.raycastChunk(intersections[0], intersections[1], c, filter);
 					if (result.Coordinate != null)
 					{
 						result.Distance = (result.Position - absoluteStart).Length();
@@ -4790,8 +4765,11 @@ namespace Lemma.Components
 			return new RaycastResult { Coordinate = null };
 		}
 
-		private RaycastResult raycastChunk(Vector3 start, Vector3 end, Chunk c)
+		private RaycastResult raycastChunk(Vector3 start, Vector3 end, Chunk c, Func<int, t, bool> filter)
 		{
+			if (filter == null)
+				filter = (x, y) => true;
+
 			Vector3 actualStart = start, actualEnd = end;
 
 			start -= new Vector3(c.X, c.Y, c.Z);
@@ -4823,6 +4801,8 @@ namespace Lemma.Components
 			Direction yDirection = dy > 0 ? Direction.NegativeY : (dy < 0 ? Direction.PositiveY : Direction.None);
 			Direction zDirection = dz > 0 ? Direction.NegativeZ : (dz < 0 ? Direction.PositiveZ : Direction.None);
 
+			int i = 0;
+
 			for (; ; )
 			{
 				if (coord.X >= 0 && coord.X < this.chunkSize
@@ -4830,7 +4810,7 @@ namespace Lemma.Components
 					&& coord.Z >= 0 && coord.Z < this.chunkSize)
 				{
 					Box box = c.Data[coord.X, coord.Y, coord.Z];
-					if (box != null)
+					if (box != null && filter(i, box.Type.ID))
 					{
 						Coord actualCoord = coord.Move(c.X, c.Y, c.Z);
 						actualCoord.Data = box.Type;
@@ -4874,13 +4854,14 @@ namespace Lemma.Components
 					coord.Z += dz;
 					normal = zDirection;
 				}
+				i++;
 			}
 			return new RaycastResult { Coordinate = null };
 		}
 
-		public RaycastResult Raycast(Vector3 rayStart, Vector3 ray, float length)
+		public RaycastResult Raycast(Vector3 rayStart, Vector3 ray, float length, Func<int, t, bool> filter = null)
 		{
-			return this.Raycast(rayStart, rayStart + (ray * length));
+			return this.Raycast(rayStart, rayStart + (ray * length), filter);
 		}
 
 		public State this[Coord coord]

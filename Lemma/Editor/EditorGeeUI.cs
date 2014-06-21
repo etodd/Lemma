@@ -304,7 +304,7 @@ namespace Lemma.Components
 
 		private string entityString(Entity e)
 		{
-			return e == null ? null : string.Format("{0} [{1}]", e.ID.Value ?? e.GUID.ToString(), e.Type);
+			return e == null ? "[null]" : string.Format("{0} [{1}]", e.ID.Value ?? e.GUID.ToString(), e.Type);
 		}
 
 		public void RebuildSelectDropDown()
@@ -1060,9 +1060,14 @@ namespace Lemma.Components
 					};
 					entityDropDown.AllowRightClickExecute.Value = false;
 					entityDropDown.FilterThreshhold.Value = 0;
+					entityDropDown.AddOption("[null]", delegate()
+					{
+						socket.Value = null;
+						this.NeedsSave.Value = true;
+					});
 					foreach (Entity e in main.Entities)
 					{
-						if (e != entity)
+						if (e != entity && e != this.Entity)
 						{
 							entityDropDown.AddOption(this.entityString(e), delegate()
 							{

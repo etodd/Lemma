@@ -39,7 +39,12 @@ namespace Lemma.Components
 					{
 						distance = (float)Math.Sqrt(distance);
 						toAgent /= distance;
-						Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(pos + toAgent * 4.0f, toAgent, distance);
+						Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(pos, toAgent, distance, delegate(int i, Voxel.t t)
+						{
+							if (i < 5 && (t == Voxel.t.Neutral || t == Voxel.t.Infected))
+								return false;
+							return true;
+						});
 						if (hit.Voxel == null || hit.Voxel.Entity == agent.Entity)
 							return agent;
 					}
