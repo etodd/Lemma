@@ -287,6 +287,7 @@ namespace Lemma.Components
 
 		public void Pause()
 		{
+			this.main.GeeUI.LastClickCaptured = false;
 			this.savePausedSettings();
 		}
 

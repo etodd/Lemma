@@ -222,6 +222,7 @@
     <Compile Include="Player\WallRun.cs" />
     <Compile Include="UI\UIFactory.cs" />
     <Compile Include="Util\BitWorker.cs" />
+    <Compile Include="Util\BSpline.cs" />
     <Compile Include="Util\DialogueForest.cs" />
     <Compile Include="Components\SoundKiller.cs" />
     <Compile Include="Components\SignalTower.cs" />

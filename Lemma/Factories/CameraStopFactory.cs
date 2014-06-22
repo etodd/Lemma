@@ -63,6 +63,7 @@ namespace Lemma.Factories
 			}
 
 			entity.Add("Go", cameraStop.Go);
+			entity.Add("OnDone", cameraStop.OnDone);
 			entity.Add("Offset", cameraStop.Offset);
 			entity.Add("Blend", cameraStop.Blend);
 			entity.Add("Duration", cameraStop.Duration);

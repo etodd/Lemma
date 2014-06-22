@@ -7,6 +7,40 @@ using ComponentBind;
 
 namespace Lemma.Components
 {
+	public static class EaseTypeExtensions
+	{
+		public static bool IsIn(this Animation.Ease.EaseType type)
+		{
+			return type == Animation.Ease.EaseType.None
+				|| type == Animation.Ease.EaseType.InQuadratic
+				|| type == Animation.Ease.EaseType.InOutQuadratic
+				|| type == Animation.Ease.EaseType.InCubic
+				|| type == Animation.Ease.EaseType.InOutCubic
+				|| type == Animation.Ease.EaseType.InSin
+				|| type == Animation.Ease.EaseType.InOutSin
+				|| type == Animation.Ease.EaseType.InExponential
+				|| type == Animation.Ease.EaseType.InOutExponential;
+		}
+
+		public static bool IsOut(this Animation.Ease.EaseType type)
+		{
+			return type == Animation.Ease.EaseType.None
+				|| type == Animation.Ease.EaseType.OutQuadratic
+				|| type == Animation.Ease.EaseType.InOutQuadratic
+				|| type == Animation.Ease.EaseType.OutCubic
+				|| type == Animation.Ease.EaseType.InOutCubic
+				|| type == Animation.Ease.EaseType.OutSin
+				|| type == Animation.Ease.EaseType.InOutSin
+				|| type == Animation.Ease.EaseType.OutExponential
+				|| type == Animation.Ease.EaseType.InOutExponential;
+		}
+
+		public static bool BlendsInto(this Animation.Ease.EaseType type, Animation.Ease.EaseType other)
+		{
+			return (!IsOut(type) && !IsIn(other));
+		}
+	}
+
 	public class Animation : Component<Main>, IUpdateableComponent
 	{
 		public abstract class Base
