@@ -596,6 +596,8 @@ namespace Lemma.Components
 						this.voxelMaterialDropDown = (DropDownView)child.FindFirstChildByName("Dropdown");
 					View containerLabel = BuildContainerLabel(prop.Key, sameLine);
 					containerLabel.AddChild(child);
+					if (prop.Value.Visible != null)
+						containerLabel.Add(new Binding<bool>(containerLabel.Active, prop.Value.Visible));
 					this.VoxelPanelView.AddChild(containerLabel);
 					containerLabel.OrderChildren();
 					child.OrderChildren();
@@ -998,7 +1000,13 @@ namespace Lemma.Components
 			ret.ChildrenLayouts.Add(new HorizontalViewLayout(4));
 			ret.ChildrenLayouts.Add(new ExpandToFitLayout());
 
-			if (typeof(IListProperty).IsAssignableFrom(property.GetType()))
+			if (entry.Readonly)
+			{
+				PropertyInfo propertyInfo = property.GetType().GetProperty("Value");
+				TextView label = new TextView(main.GeeUI, ret, propertyInfo.GetValue(property, null).ToString(), Vector2.Zero, MainFont);
+				label.Add(new Binding<string>(label.Text, () => propertyInfo.GetValue(property, null).ToString(), property));
+			}
+			else if (typeof(IListProperty).IsAssignableFrom(property.GetType()))
 			{
 				if (property.GetType().GetGenericArguments().First().Equals(typeof(Entity.Handle)))
 				{

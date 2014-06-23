@@ -22,8 +22,9 @@ namespace ComponentBind
 		public Property<bool> Visible;
 		public string Description;
 		public IListProperty Options;
+		public bool Readonly;
 
-		public PropertyEntry(IProperty property, string description)
+		public PropertyEntry(IProperty property, string description = null)
 		{
 			this.Property = property;
 			this.Description = description;

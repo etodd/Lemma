@@ -430,7 +430,7 @@ namespace Lemma.Factories
 			gui.VoxelProperties.Add("JitterOctave", new PropertyEntry(editor.JitterOctave, "Jitter Octave"));
 			gui.VoxelProperties.Add("JitterOctaveMultiplier", new PropertyEntry(editor.JitterOctaveMultiplier, "Octave Multiplier"));
 			gui.VoxelProperties.Add("BrushSize [scrollwheel]", new PropertyEntry(editor.BrushSize, "Brush size"));
-			gui.VoxelProperties.Add("Coordinate", new PropertyEntry(editor.Coordinate, "Editor Coordinate"));
+			gui.VoxelProperties.Add("Coordinate", new PropertyEntry(editor.Coordinate, "Editor Coordinate") { Readonly = true, Visible = editor.VoxelEditMode });
 
 			editor.Add(new Binding<Vector2>(editor.Mouse, input.Mouse, () => !input.EnableLook));
 

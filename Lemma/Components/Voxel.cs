@@ -1431,6 +1431,11 @@ namespace Lemma.Components
 						break;
 				}
 			}
+
+			public override string ToString()
+			{
+				return string.Format("[{0},{1},{2}]", this.X, this.Y, this.Z);
+			}
 		}
 
 		public class Box
