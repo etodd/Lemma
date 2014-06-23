@@ -247,6 +247,7 @@ namespace Lemma.Components
 										spawn.IsActivated.Value = true;
 										FPSInput.RecenterMouse();
 										PlayerFactory.Instance.Get<FPSInput>().Mouse.Value = new Vector2(spawn.Rotation, 0);
+										spawn.OnSpawn.Execute();
 									}
 								}
 							}

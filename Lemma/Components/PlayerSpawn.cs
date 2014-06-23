@@ -19,6 +19,8 @@ namespace Lemma.Components
 		public Command Activate = new Command();
 		[XmlIgnore]
 		public Command Deactivate = new Command();
+		[XmlIgnore]
+		public Command OnSpawn = new Command();
 
 		private static List<PlayerSpawn> spawns = new List<PlayerSpawn>();
 
@@ -32,6 +34,7 @@ namespace Lemma.Components
 			this.Entity.Add("IsActivated", this.IsActivated);
 			this.Entity.Add("Activate", this.Activate);
 			this.Entity.Add("Deactivate", this.Deactivate);
+			this.Entity.Add("OnSpawn", this.OnSpawn);
 		}
 
 		public override void Awake()
