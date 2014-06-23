@@ -31,6 +31,7 @@ namespace Lemma.Factories
 			spotLight.Add(new TwoWayBinding<Vector3>(spotLight.Position, transform.Position));
 			spotLight.Add(new TwoWayBinding<Quaternion>(spotLight.Orientation, transform.Quaternion));
 
+			entity.Add("Cookie", spotLight.CookieTextureFile, null, null, FileFilter.Get(main, main.Content.RootDirectory, new[] { "Cookies" }));
 			entity.Add("Enable", spotLight.Enable);
 			entity.Add("Disable", spotLight.Disable);
 			entity.Add("Enabled", spotLight.Enabled);

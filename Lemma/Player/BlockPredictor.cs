@@ -94,7 +94,7 @@ namespace Lemma.Components
 				Matrix matrix = Matrix.CreateScale(scale) * Matrix.CreateTranslation(new Vector3(-0.5f) + (start + end) * 0.5f);
 
 				ModelAlpha box = new ModelAlpha();
-				box.Filename.Value = "Models\\distortion-box";
+				box.Filename.Value = "AlphaModels\\distortion-box";
 				box.Distortion.Value = true;
 				box.Color.Value = new Vector3(2.8f, 3.0f, 3.2f);
 				box.Alpha.Value = blockPossibilityInitialAlpha;

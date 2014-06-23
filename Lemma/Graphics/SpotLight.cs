@@ -31,7 +31,7 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Matrix> Projection = new Property<Matrix>();
 
-		public Property<string> CookieTextureFile = new Property<string> { Value = "Images\\default-cookie" };
+		public Property<string> CookieTextureFile = new Property<string> { Value = "Cookies\\default" };
 
 		[XmlIgnore]
 		public Property<Texture2D> CookieTexture = new Property<Texture2D>();
