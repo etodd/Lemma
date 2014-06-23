@@ -37,7 +37,7 @@ namespace Lemma.Factories
 			entity.Add("Enable", trigger.Enable);
 			entity.Add("Enabled", trigger.Enabled);
 			entity.Add("Disable", trigger.Disable);
-			entity.Add("NextMap", mapExit.NextMap);
+			entity.Add("NextMap", mapExit.NextMap, null, null, FileFilter.Get(main, Path.Combine(main.Content.RootDirectory, MapLoader.MapDirectory), null, MapLoader.MapExtension));
 			entity.Add("StartSpawnPoint", mapExit.StartSpawnPoint);
 		}
 

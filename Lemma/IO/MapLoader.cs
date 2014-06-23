@@ -20,8 +20,8 @@ namespace Lemma.IO
 {
 	public class MapLoader
 	{
-		public const string MapDirectory = "Content\\Game";
-		public const string MapExtension = "map";
+		public const string MapDirectory = "Game";
+		public const string MapExtension = ".map";
 
 		private static string[] persistentTypes = new[] { "PlayerData", };
 
@@ -134,12 +134,12 @@ namespace Lemma.IO
 			main.MapFile.InternalValue = filename;
 
 			if (directory == null)
-				filename = Path.Combine(MapLoader.MapDirectory, filename);
+				filename = Path.Combine(main.Content.RootDirectory, MapLoader.MapDirectory, filename);
 			else
 				filename = Path.Combine(directory, filename);
 
-			if (!filename.EndsWith("." + MapLoader.MapExtension))
-				filename += "." + MapLoader.MapExtension;
+			if (!filename.EndsWith(MapLoader.MapExtension))
+				filename += MapLoader.MapExtension;
 
 			//Need to test to see if we can load this using gzip.
 			//If we can't, it's an old map, so load it using the straight filesystem.
@@ -177,8 +177,8 @@ namespace Lemma.IO
 			// HACK HACK HACK
 			main.MapFile.InternalValue = filename;
 
-			if (!filename.EndsWith("." + MapLoader.MapExtension))
-				filename += "." + MapLoader.MapExtension;
+			if (!filename.EndsWith(MapLoader.MapExtension))
+				filename += MapLoader.MapExtension;
 
 			main.ClearEntities(false);
 
@@ -232,12 +232,12 @@ namespace Lemma.IO
 		public static void Save(Main main, string directory, string filename)
 		{
 			if (directory == null)
-				filename = Path.Combine(MapLoader.MapDirectory, filename);
+				filename = Path.Combine(main.Content.RootDirectory, MapLoader.MapDirectory, filename);
 			else
 				filename = Path.Combine(directory, Path.GetFileName(filename));
 
-			if (!filename.EndsWith("." + MapLoader.MapExtension))
-				filename += "." + MapLoader.MapExtension;
+			if (!filename.EndsWith(MapLoader.MapExtension))
+				filename += MapLoader.MapExtension;
 
 			try
 			{

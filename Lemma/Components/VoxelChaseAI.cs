@@ -396,7 +396,7 @@ namespace Lemma.Factories
 											Matrix matrix = Matrix.CreateScale(Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y), Math.Abs(end.Z - start.Z)) * Matrix.CreateTranslation(new Vector3(-0.5f) + (start + end) * 0.5f);
 
 											ModelAlpha model = new ModelAlpha();
-											model.Filename.Value = "Models\\alpha-box";
+											model.Filename.Value = "AlphaModels\\box";
 											model.Color.Value = new Vector3((float)i / (float)path.Count);
 											model.Alpha.Value = 1.0f;
 											model.IsInstanced.Value = false;

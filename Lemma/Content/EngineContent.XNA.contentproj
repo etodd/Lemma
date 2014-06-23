@@ -97,6 +97,40 @@
       <Importer>FontDescriptionImporter</Importer>
       <Processor>FontDescriptionProcessor</Processor>
     </Compile>
+    <Compile Include="AlphaModels\box.fbx">
+      <Name>box</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
+    </Compile>
+    <Compile Include="AlphaModels\clouds.fbx">
+      <Name>clouds</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
+      <ProcessorParameters_DiffuseTexture>clouds.png</ProcessorParameters_DiffuseTexture>
+      <ProcessorParameters_EffectFileName>..\Effects\Clouds.fx</ProcessorParameters_EffectFileName>
+    </Compile>
+    <Compile Include="AlphaModels\cylinder.fbx">
+      <Name>cylinder</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
+    </Compile>
+    <Compile Include="AlphaModels\distortion-box.fbx">
+      <Name>distortion-box</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
+      <ProcessorParameters_DiffuseTexture>..\Textures\water-normal.jpg</ProcessorParameters_DiffuseTexture>
+      <ProcessorParameters_EffectFileName>..\Effects\Distortion.fx</ProcessorParameters_EffectFileName>
+    </Compile>
+    <Compile Include="AlphaModels\sphere.fbx">
+      <Name>sphere</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
+    </Compile>
     <None Include="Effects\ClipCommon.fxh">
       <Name>ClipCommon</Name>
       <Importer>EffectImporter</Importer>
@@ -235,6 +269,12 @@
       <Importer>FontDescriptionImporter</Importer>
       <Processor>FontDescriptionProcessor</Processor>
     </Compile>
+    <Compile Include="InstancedModels\block.fbx">
+      <Name>block</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_EffectFileName>..\Effects\EnvironmentBlock.fx</ProcessorParameters_EffectFileName>
+    </Compile>
     <None Include="menu.map">
       <Name>menu</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -251,38 +291,12 @@
       <Importer>FbxImporter</Importer>
       <Processor>ModelProcessor</Processor>
     </Compile>
-    <Compile Include="Models\alpha-box.fbx">
-      <Name>alpha-box</Name>
-      <Importer>FbxImporter</Importer>
-      <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
-    </Compile>
-    <Compile Include="Models\alpha-sphere.fbx">
-      <Name>alpha-sphere</Name>
-      <Importer>FbxImporter</Importer>
-      <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
-    </Compile>
     <Compile Include="Models\cone.fbx">
       <Name>cone</Name>
       <Importer>FbxImporter</Importer>
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\UnlitSolidColor.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_SwapWindingOrder>True</ProcessorParameters_SwapWindingOrder>
-    </Compile>
-    <Compile Include="Models\alpha-cylinder.fbx">
-      <Name>alpha-cylinder</Name>
-      <Importer>FbxImporter</Importer>
-      <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
-    </Compile>
-    <Compile Include="Models\clouds.fbx">
-      <Name>clouds</Name>
-      <Importer>FbxImporter</Importer>
-      <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\Clouds.fx</ProcessorParameters_EffectFileName>
-      <ProcessorParameters_DiffuseTexture>clouds.png</ProcessorParameters_DiffuseTexture>
-      <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
     </Compile>
     <Compile Include="Models\position-model.fbx">
       <Name>position-model</Name>
@@ -312,13 +326,6 @@
       <Importer>FbxImporter</Importer>
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\UnlitSolidColor.fx</ProcessorParameters_EffectFileName>
-    </Compile>
-    <Compile Include="Models\distortion-box.fbx">
-      <Name>distortion-box</Name>
-      <Importer>FbxImporter</Importer>
-      <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_NormalMapTexture>..\Images\water-normal.jpg</ProcessorParameters_NormalMapTexture>
-      <ProcessorParameters_EffectFileName>..\Effects\Distortion.fx</ProcessorParameters_EffectFileName>
     </Compile>
     <Compile Include="Models\joan.fbx">
       <Name>joan</Name>
@@ -478,17 +485,10 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\UnlitSolidColor.fx</ProcessorParameters_EffectFileName>
     </Compile>
-    <Compile Include="Models\block.fbx">
-      <Name>block</Name>
-      <Importer>FbxImporter</Importer>
-      <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\EnvironmentBlock.fx</ProcessorParameters_EffectFileName>
-    </Compile>
     <Compile Include="Models\skybox.fbx">
       <Name>skybox</Name>
       <Importer>FbxImporter</Importer>
       <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_DiffuseTexture>skybox-sun.jpg</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_EffectFileName>..\Effects\Skybox.fx</ProcessorParameters_EffectFileName>
     </Compile>
     <Compile Include="Models\light.fbx">
@@ -529,11 +529,12 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Images\water-normal.jpg">
+    <Compile Include="Textures\water-normal.jpg">
       <Name>water-normal</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
+      <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -586,33 +587,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\skybox-sunset.jpg">
-      <Name>skybox-sunset</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Models\skybox1.jpg">
-      <Name>skybox1</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Models\skybox2.jpg">
-      <Name>skybox2</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Models\skybox-sunrise.jpg">
-      <Name>skybox-sunrise</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Images\random.jpg">
+    <Compile Include="Textures\random.jpg">
       <Name>random</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
@@ -624,13 +599,6 @@
       <Project>{4636C7E1-B845-4B83-B96D-64A11B8A4515}</Project>
       <Name>PipelineExtensions.XNA</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Images\env0.jpg">
-      <Name>env0</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>CubemapProcessor</Processor>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Images\target.png">
@@ -768,13 +736,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\skybox-sun.jpg">
-      <Name>skybox-sun</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Textures\switch.png">
       <Name>switch</Name>
       <Importer>TextureImporter</Importer>
@@ -880,30 +841,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Images\default-ramp.png">
-      <Name>default-ramp</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-      <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Images\bright-ramp.png">
-      <Name>bright-ramp</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-      <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Images\ultrabright-ramp.png">
-      <Name>ultrabright-ramp</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-      <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Particles\big-splash.png">
       <Name>big-splash</Name>
       <Importer>TextureImporter</Importer>
@@ -919,6 +856,70 @@
       <Processor>TextureProcessor</Processor>
       <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
       <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Skyboxes\skybox-sun.jpg">
+      <Name>skybox-sun</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
+      <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
+    </Compile>
+    <Compile Include="Skyboxes\skybox-sunrise.jpg">
+      <Name>skybox-sunrise</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
+      <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
+    </Compile>
+    <Compile Include="Skyboxes\skybox-sunset.jpg">
+      <Name>skybox-sunset</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
+      <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
+    </Compile>
+    <Compile Include="Skyboxes\skybox1.jpg">
+      <Name>skybox1</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
+      <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
+    </Compile>
+    <Compile Include="Skyboxes\skybox2.jpg">
+      <Name>skybox2</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
+      <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="LightRamps\bright.png">
+      <Name>bright</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
+    </Compile>
+    <Compile Include="LightRamps\default.png">
+      <Name>default</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
+    </Compile>
+    <Compile Include="LightRamps\ultrabright.png">
+      <Name>ultrabright</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="EnvironmentMaps\env0.jpg">
+      <Name>env0</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>CubemapProcessor</Processor>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />

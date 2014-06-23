@@ -116,7 +116,7 @@ namespace Lemma.Components
 			{
 				this.renderer = new Renderer(this.main, size, false, false, false, false, false);
 				this.renderer.MotionBlurAmount.Value = 0.0f;
-				this.renderer.LightRampTexture.Value = "Images\\default-ramp";
+				this.renderer.LightRampTexture.Value = "LightRamps\\default";
 				this.main.AddComponent(this.renderer);
 			}
 			else
@@ -132,7 +132,7 @@ namespace Lemma.Components
 		public void LoadContent(bool reload)
 		{
 			this.effect = this.main.Content.Load<Effect>("Effects\\Water").Clone();
-			this.effect.Parameters["NormalMap" + Model.SamplerPostfix].SetValue(this.main.Content.Load<Texture2D>("Images\\water-normal"));
+			this.effect.Parameters["NormalMap" + Model.SamplerPostfix].SetValue(this.main.Content.Load<Texture2D>("Textures\\water-normal"));
 
 			this.Color.Reset();
 			this.Fresnel.Reset();

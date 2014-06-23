@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Lemma.Components;
+using System.IO;
+using Lemma.IO;
 
 namespace Lemma.Factories
 {
@@ -51,7 +53,7 @@ namespace Lemma.Factories
 
 			entity.Add("Collected", note.Collected);
 			entity.Add("Text", note.Text);
-			entity.Add("Image", note.Image);
+			entity.Add("Image", note.Image, null, null, FileFilter.Get(main, main.Content.RootDirectory, new[] { "Images", Path.Combine(MapLoader.MapDirectory, "Images") }));
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

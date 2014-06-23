@@ -848,7 +848,7 @@ namespace Lemma.Components
 
 			public void ApplyToEffectBlock(ModelInstance modelInstance)
 			{
-				modelInstance.Setup("Models\\block", (int)this.ID);
+				modelInstance.Setup("InstancedModels\\block", (int)this.ID);
 				if (modelInstance.IsFirstInstance)
 				{
 					Model model = modelInstance.Model;

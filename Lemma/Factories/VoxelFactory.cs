@@ -106,7 +106,7 @@ namespace Lemma.Factories
 					debug.Alpha.Value = 0.01f;
 					debug.DrawOrder.Value = 11; // In front of water
 					debug.Color.Value = new Vector3(1.0f, 0.8f, 0.6f);
-					debug.Filename.Value = "Models\\alpha-box";
+					debug.Filename.Value = "AlphaModels\\box";
 					debug.CullBoundingBox.Value = false;
 					debug.DisableCulling.Value = true;
 					debug.Add(new Binding<Matrix>(debug.Transform, delegate()

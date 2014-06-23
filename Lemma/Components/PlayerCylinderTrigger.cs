@@ -82,7 +82,7 @@ namespace Lemma.Components
 			PlayerCylinderTrigger trigger = entity.Get<PlayerCylinderTrigger>();
 
 			ModelAlpha model = new ModelAlpha();
-			model.Filename.Value = "Models\\alpha-cylinder";
+			model.Filename.Value = "AlphaModels\\cylinder";
 			model.Alpha.Value = 0.15f;
 			model.Color.Value = color;
 			model.DisableCulling.Value = true;

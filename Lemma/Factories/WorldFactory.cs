@@ -64,8 +64,8 @@ namespace Lemma.Factories
 			WorldFactory.instance = entity;
 			AkSoundEngine.DefaultGameObject = entity;
 
-			entity.Add("LightRampTexture", world.LightRampTexture);
-			entity.Add("EnvironmentMap", world.EnvironmentMap);
+			entity.Add("LightRampTexture", world.LightRampTexture, null, null, FileFilter.Get(main, main.Content.RootDirectory, new[] { "LightRamps" }));
+			entity.Add("EnvironmentMap", world.EnvironmentMap, null, null, FileFilter.Get(main, main.Content.RootDirectory, new[] { "EnvironmentMaps" }));
 			entity.Add("EnvironmentColor", world.EnvironmentColor);
 			entity.Add("BackgroundColor", world.BackgroundColor);
 			entity.Add("FarPlaneDistance", world.FarPlaneDistance);

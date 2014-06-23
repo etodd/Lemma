@@ -223,7 +223,7 @@ namespace Lemma.Components
 
 			this.downsampleEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Downsample").Clone();
 			this.ssaoEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\SSAO").Clone();
-			this.ssaoRandomTexture = this.main.Content.Load<Texture2D>("Images\\random");
+			this.ssaoRandomTexture = this.main.Content.Load<Texture2D>("Textures\\random");
 			this.ssaoEffect.Parameters["Random" + Model.SamplerPostfix].SetValue(this.ssaoRandomTexture);
 
 			this.bloomEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Bloom").Clone();

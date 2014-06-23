@@ -16,29 +16,23 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			Entity entity = new Entity(main, "Cloud");
-
-			Transform transform = new Transform();
-			entity.Add("Transform", transform);
-
-			ModelAlpha clouds = new ModelAlpha();
-			clouds.Filename.Value = "Models\\clouds";
-			clouds.DrawOrder.Value = -9;
-			entity.Add("Clouds", clouds);
-
-			return entity;
+			return new Entity(main, "Cloud");
 		}
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			base.Bind(entity, main, creating);
+			entity.GetOrCreate<Transform>("Transform");
 			entity.CannotSuspendByDistance = true;
 
 			Cloud settings = entity.GetOrCreate<Cloud>("Settings");
 
-			ModelAlpha clouds = entity.Get<ModelAlpha>("Clouds");
+			ModelAlpha clouds = entity.GetOrCreate<ModelAlpha>("Clouds");
+			clouds.Filename.Value = "AlphaModels\\clouds";
+			clouds.DrawOrder.Value = -9;
 			clouds.CullBoundingBox.Value = false;
 			clouds.DisableCulling.Value = true;
+
+			base.Bind(entity, main, creating);
 
 			clouds.Add(new Binding<float>(clouds.GetFloatParameter("Height"), settings.Height));
 

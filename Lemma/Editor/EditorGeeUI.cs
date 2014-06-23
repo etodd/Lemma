@@ -70,6 +70,8 @@ namespace Lemma.Components
 
 		public Property<bool> NeedsSave = new Property<bool>();
 
+		public Property<bool> Visible = new Property<bool>();
+
 		public Command ShowContextMenu = new Command();
 
 		public Property<bool> PickNextEntity = new Property<bool>();
@@ -90,6 +92,7 @@ namespace Lemma.Components
 			MainFont = main.Content.Load<SpriteFont>("EditorFont");
 
 			this.RootEditorView = new View(this.main.GeeUI, this.main.GeeUI.RootView);
+			this.Add(new Binding<bool>(this.RootEditorView.Active, this.Visible));
 
 			this.selectPrompt = new TextView(this.main.GeeUI, this.main.GeeUI.RootView, "Select an entity", Vector2.Zero, this.MainFont);
 			this.selectPrompt.Add(new Binding<Vector2, MouseState>(this.selectPrompt.Position, x => new Vector2(x.X + 16, x.Y + 16), this.main.MouseState));
@@ -1115,11 +1118,11 @@ namespace Lemma.Components
 								propertyInfo.SetValue(property, o, null);
 								this.NeedsSave.Value = true;
 							};
-							drop.AddOption(o, onClick);
+							drop.AddOption(o ?? "[null]", onClick, null, o);
 						}
 						drop.SetSelectedOption((string)propertyInfo.GetValue(property, null), false);
 						if (drop.DropDownOptions.Count > 0)
-							propertyInfo.SetValue(property, drop.GetSelectedOption().Text, null);
+							propertyInfo.SetValue(property, drop.GetSelectedOption().Related, null);
 						else
 							propertyInfo.SetValue(property, null, null);
 					};

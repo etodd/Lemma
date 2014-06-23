@@ -72,7 +72,7 @@ namespace Lemma.Components
 			Transform transform = entity.Get<Transform>();
 
 			ModelAlpha model = new ModelAlpha();
-			model.Filename.Value = "Models\\alpha-sphere";
+			model.Filename.Value = "AlphaModels\\sphere";
 			model.Alpha.Value = 0.15f;
 			model.Color.Value = color;
 			model.DisableCulling.Value = true;

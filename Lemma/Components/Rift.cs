@@ -149,7 +149,7 @@ namespace Lemma.Components
 			Rift rift = entity.Get<Rift>();
 
 			ModelAlpha model = new ModelAlpha();
-			model.Filename.Value = "Models\\alpha-sphere";
+			model.Filename.Value = "AlphaModels\\sphere";
 			model.Alpha.Value = 0.15f;
 			model.Color.Value = color;
 			model.DisableCulling.Value = true;

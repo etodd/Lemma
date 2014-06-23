@@ -252,7 +252,7 @@ namespace Lemma.Factories
 
 #if DEVELOPMENT
 			ModelAlpha debugCylinder = new ModelAlpha();
-			debugCylinder.Filename.Value = "Models\\alpha-cylinder";
+			debugCylinder.Filename.Value = "AlphaModels\\cylinder";
 			debugCylinder.Add(new Binding<Matrix>(debugCylinder.Transform, transform.Matrix));
 			debugCylinder.Serialize = false;
 			debugCylinder.Alpha.Value = 0.25f;

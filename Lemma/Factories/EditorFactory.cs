@@ -116,6 +116,7 @@ namespace Lemma.Factories
 
 			Editor editor = new Editor();
 			EditorGeeUI gui = new EditorGeeUI();
+			gui.Add(new Binding<bool>(gui.Visible, x => !x, ConsoleUI.Showing));
 
 			editor.EnableCommands = () => !gui.AnyTextFieldViewsSelected();
 
@@ -133,7 +134,7 @@ namespace Lemma.Factories
 			entity.Add("Model", model);
 			entity.Add("Input", input);
 			ModelAlpha radiusVisual = new ModelAlpha();
-			radiusVisual.Filename.Value = "Models\\alpha-sphere";
+			radiusVisual.Filename.Value = "AlphaModels\\sphere";
 			radiusVisual.Color.Value = new Vector3(1.0f);
 			radiusVisual.Alpha.Value = 0.1f;
 			radiusVisual.Serialize = false;
@@ -154,7 +155,7 @@ namespace Lemma.Factories
 			radiusVisual.CullBoundingBox.Value = false;
 
 			ModelAlpha selection = new ModelAlpha();
-			selection.Filename.Value = "Models\\alpha-box";
+			selection.Filename.Value = "AlphaModels\\box";
 			selection.Color.Value = new Vector3(1.0f, 0.7f, 0.4f);
 			selection.Alpha.Value = 0.25f;
 			selection.Serialize = false;
@@ -223,7 +224,7 @@ namespace Lemma.Factories
 						if (Path.GetExtension(f) != ".map")
 							f += ".map";
 						if (!Path.IsPathRooted(f))
-							f = Path.GetFullPath(Path.Combine(IO.MapLoader.MapDirectory, f));
+							f = Path.GetFullPath(Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory, f));
 						main.AddComponent(new WorkShopInterface(f));
 					}
 				},

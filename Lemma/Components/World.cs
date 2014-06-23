@@ -16,8 +16,8 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public DialogueForest DialogueForest = new DialogueForest();
 
-		public Property<string> LightRampTexture = new Property<string> { Value = "Images\\default-ramp" };
-		public Property<string> EnvironmentMap = new Property<string> { Value = "Images\\env0" };
+		public Property<string> LightRampTexture = new Property<string> { Value = "LightRamps\\default" };
+		public Property<string> EnvironmentMap = new Property<string> { Value = "EnvironmentMaps\\env0" };
 		public Property<Vector3> EnvironmentColor = new Property<Vector3> { Value = Vector3.One };
 		public Property<Color> BackgroundColor = new Property<Color> { Value = World.DefaultBackgroundColor };
 		public Property<float> FarPlaneDistance = new Property<float> { Value = 100.0f };

@@ -100,7 +100,7 @@ namespace Lemma.Factories
 			));
 
 			ModelAlpha box = new ModelAlpha();
-			box.Filename.Value = "Models\\alpha-box";
+			box.Filename.Value = "AlphaModels\\box";
 			box.Color.Value = new Vector3(this.Color.X, this.Color.Y, this.Color.Z);
 			box.Alpha.Value = 0.125f;
 			box.Serialize = false;

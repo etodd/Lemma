@@ -38,7 +38,7 @@ namespace Lemma.Factories
 
 			ModelAlpha model = entity.GetOrCreate<ModelAlpha>();
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
-			model.Filename.Value = "Models\\alpha-box";
+			model.Filename.Value = "AlphaModels\\box";
 			model.Serialize = false;
 			model.DrawOrder.Value = 15;
 

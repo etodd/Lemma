@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using ComponentBind;
 using Lemma.Factories;
+using Lemma.IO;
 using Lemma.Util;
 
 namespace Lemma.Components
@@ -21,7 +22,7 @@ namespace Lemma.Components
 				try
 				{
 					DialogueForest forest = WorldFactory.Instance.Get<World>().DialogueForest;
-					IEnumerable<DialogueForest.Node> nodes = forest.Load(File.ReadAllText(Path.Combine(main.Content.RootDirectory, "Game", this.Name + ".dlz")));
+					IEnumerable<DialogueForest.Node> nodes = forest.Load(File.ReadAllText(Path.Combine(this.main.Content.RootDirectory, this.Name + ".dlz")));
 					phone.Load(forest, nodes);
 				}
 				catch (IOException)
@@ -29,6 +30,11 @@ namespace Lemma.Components
 					Log.d("Failed to load dialogue file: " + this.Name);
 				}
 			}
+		}
+
+		public void EditorProperties()
+		{
+			this.Entity.Add("Name", this.Name, null, null, FileFilter.Get(this.main, Path.Combine(this.main.Content.RootDirectory), new[] { MapLoader.MapDirectory }, ".dlz"));
 		}
 	}
 }

@@ -7,6 +7,9 @@ using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
 using Lemma.Util;
 using Microsoft.Xna.Framework.Content;
+using Lemma.Factories;
+using Lemma.IO;
+using System.IO;
 
 namespace Lemma.Components
 {
@@ -61,10 +64,9 @@ namespace Lemma.Components
 
 		public virtual void EditorProperties()
 		{
-			this.Entity.Add("Filename", this.Filename);
 			this.Entity.Add("Scale", this.Scale);
 			this.Entity.Add("Color", this.Color);
-			this.Entity.Add("DiffuseTexture", this.DiffuseTexture);
+			this.Entity.Add("Filename", this.Filename, null, null, FileFilter.Get(main, main.Content.RootDirectory, new[] { "Models", Path.Combine(MapLoader.MapDirectory, "Models") }));
 		}
 
 		public struct Material
@@ -167,7 +169,14 @@ namespace Lemma.Components
 			this.DiffuseTexture.Set = delegate(string value)
 			{
 				this.DiffuseTexture.InternalValue = value;
-				this.diffuseTexture = string.IsNullOrEmpty(value) ? null : (this.MapContent ? this.main.MapContent : this.main.Content).Load<Texture2D>(value);
+				try
+				{
+					this.diffuseTexture = string.IsNullOrEmpty(value) ? null : (this.MapContent ? this.main.MapContent : this.main.Content).Load<Texture2D>(value);
+				}
+				catch (ContentLoadException)
+				{
+					this.diffuseTexture = null;
+				}
 				if (this.effect != null && this.diffuseTexture != null)
 				{
 					EffectParameter param = this.effect.Parameters["Diffuse" + Model.SamplerPostfix];
@@ -944,7 +953,9 @@ namespace Lemma.Components
 
 		public override void EditorProperties()
 		{
-			base.EditorProperties();
+			this.Entity.Add("Scale", this.Scale);
+			this.Entity.Add("Color", this.Color);
+			this.Entity.Add("Filename", this.Filename, null, null, FileFilter.Get(main, main.Content.RootDirectory, new[] { "AlphaModels", Path.Combine(MapLoader.MapDirectory, "AlphaModels") }));
 			this.Entity.Add("Alpha", this.Alpha);
 			this.Entity.Add("DrawOrder", this.DrawOrder);
 		}

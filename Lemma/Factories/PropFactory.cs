@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Lemma.Components;
+using System.IO;
+using Lemma.IO;
 
 namespace Lemma.Factories
 {
@@ -33,6 +35,10 @@ namespace Lemma.Factories
 			model.EditorProperties();
 
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
+
+			entity.Add("Enabled", model.Enabled);
+			entity.Add("Enable", model.Enable);
+			entity.Add("Disable", model.Disable);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

@@ -259,7 +259,7 @@ namespace Lemma
 			if (this.MapContent != null)
 				this.MapContent.Unload();
 			this.MapContent = new ContentManager(this.Services);
-			this.MapContent.RootDirectory = "Content";
+			this.MapContent.RootDirectory = this.Content.RootDirectory;
 
 			while (this.Entities.Count > (deleteEditor ? 0 : 1))
 			{
@@ -735,8 +735,8 @@ namespace Lemma
 					}
 				};
 
-				this.Renderer.LightRampTexture.Value = "Images\\default-ramp";
-				this.LightingManager.EnvironmentMap.Value = "Images\\env0";
+				this.Renderer.LightRampTexture.Value = "LightRamps\\default";
+				this.LightingManager.EnvironmentMap.Value = "EnvironmentMaps\\env0";
 
 				this.Settings.SoundEffectVolume.Set = delegate(float value)
 				{
@@ -860,7 +860,7 @@ namespace Lemma
 			string newSave = DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss");
 			if (newSave != this.CurrentSave)
 			{
-				this.copySave(this.CurrentSave.Value == null ? IO.MapLoader.MapDirectory : Path.Combine(this.SaveDirectory, this.CurrentSave), Path.Combine(this.SaveDirectory, newSave));
+				this.copySave(this.CurrentSave.Value == null ? Path.Combine(this.Content.RootDirectory, IO.MapLoader.MapDirectory) : Path.Combine(this.SaveDirectory, this.CurrentSave), Path.Combine(this.SaveDirectory, newSave));
 				this.CurrentSave.Value = newSave;
 			}
 		}
