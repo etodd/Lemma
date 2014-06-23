@@ -87,9 +87,10 @@ namespace Lemma.Components
 				m.Translation += Vector3.Transform(diff, Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f) * Matrix.CreateTranslation(0, 0.0f, 0.535f));
 				return m;
 			};
+			this.model["Vault"].Speed = 1.3f;
 			this.model["Vault"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
-				m.Translation = new Vector3(0.0f, 0.0f, 1.0f);
+				m.Translation += (Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f) * Matrix.CreateTranslation(0, -1.0f, -0.3f)).Translation;
 				return m;
 			};
 		}
@@ -397,7 +398,6 @@ namespace Lemma.Components
 
 				if (delete)
 				{
-					this.map = null;
 					this.CurrentState.Value = State.None;
 					this.EnableWalking.Value = true;
 					this.Entity.Add(new Animation
@@ -407,6 +407,8 @@ namespace Lemma.Components
 					));
 				}
 			}
+			else if (this.map != null && !this.model.IsPlaying("Vault", "TopOut", "Mantle"))
+				this.map = null;
 		}
 	}
 }

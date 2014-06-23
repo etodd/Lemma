@@ -38,8 +38,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 8;
-		public const int MapVersion = 630;
-		public const int Build = 630;
+		public const int MapVersion = 702;
+		public const int Build = 702;
 
 		public static Config.Lang[] Languages = new[] { Config.Lang.en, Config.Lang.ru };
 

@@ -18,6 +18,7 @@ namespace Lemma.Components
 
 		// Input properties
 		public Property<bool> IsSupported = new Property<bool>();
+		public Property<bool> IsSwimming = new Property<bool>();
 		public Property<WallRun.State> WallRunState = new Property<WallRun.State>();
 		public Property<bool> EnableWalking = new Property<bool>();
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
@@ -64,6 +65,7 @@ namespace Lemma.Components
 			this.clavicleRight = m.GetBoneTransform("ORG-shoulder_R");
 			this.relativeUpperLeftArm = m.GetRelativeBoneTransform("ORG-upper_arm_L");
 			this.relativeUpperRightArm = m.GetRelativeBoneTransform("ORG-upper_arm_R");
+			m["Swim"].Speed = 2.0f;
 
 			Matrix correction = Matrix.CreateTranslation(0, 1.0f, 0);
 			Func<Matrix, Matrix> correct = delegate(Matrix hips)
@@ -219,8 +221,18 @@ namespace Lemma.Components
 					foreach (string anim in crouchMovementAnimations.Keys)
 						this.model.Stop(anim);
 
-					if (!this.model.IsPlaying("Fall"))
-						this.model.StartClip("Fall", 0, true, AnimatedModel.DefaultBlendTime);
+					if (this.IsSwimming)
+					{
+						this.model.Stop("Fall");
+						if (!this.model.IsPlaying("Swim"))
+							this.model.StartClip("Swim", 0, true, AnimatedModel.DefaultBlendTime);
+					}
+					else
+					{
+						this.model.Stop("Swim");
+						if (!this.model.IsPlaying("Fall"))
+							this.model.StartClip("Fall", 0, true, AnimatedModel.DefaultBlendTime);
+					}
 
 					this.fallAnimation.Speed = MathHelper.Clamp(this.LinearVelocity.Value.Length() * (1.0f / 20.0f), 0, 2);
 				}

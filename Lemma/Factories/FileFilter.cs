@@ -28,36 +28,41 @@ namespace Lemma.Factories
 				setupBinding = true;
 			}
 
-			Entry entry = new Entry { Root = root, Directories = directories, Extension = extension };
-			ListProperty<string> result;
-			if (!cache.TryGetValue(entry, out result))
+			if (main.EditorEnabled)
 			{
-				result = cache[entry] = new ListProperty<string>();
-				result.Add(null);
-				int contentRootDirectoryIndex = root.Length + 1;
-				if (directories == null)
-					directories = new[] { "" };
-				foreach (string dir in directories)
+				Entry entry = new Entry { Root = root, Directories = directories, Extension = extension };
+				ListProperty<string> result;
+				if (!cache.TryGetValue(entry, out result))
 				{
-					string fullDir = Path.Combine(root ?? "", dir);
-					if (Directory.Exists(fullDir))
+					result = cache[entry] = new ListProperty<string>();
+					result.Add(null);
+					int contentRootDirectoryIndex = root.Length + 1;
+					if (directories == null)
+						directories = new[] { "" };
+					foreach (string dir in directories)
 					{
-						foreach (string f in Directory.GetFiles(fullDir))
+						string fullDir = Path.Combine(root ?? "", dir);
+						if (Directory.Exists(fullDir))
 						{
-							int extensionIndex = f.LastIndexOf('.');
-							string ext = f.Substring(extensionIndex);
-							if (extension == null || ext == extension)
+							foreach (string f in Directory.GetFiles(fullDir))
 							{
-								// Remove content root directory and extension
-								string stripped = f.Substring(contentRootDirectoryIndex, extensionIndex - contentRootDirectoryIndex);
-								if (ext != ".xnb" || !stripped.EndsWith("_0")) // Exclude subordinate xnb files
-									result.Add(stripped);
+								int extensionIndex = f.LastIndexOf('.');
+								string ext = f.Substring(extensionIndex);
+								if (extension == null || ext == extension)
+								{
+									// Remove content root directory and extension
+									string stripped = f.Substring(contentRootDirectoryIndex, extensionIndex - contentRootDirectoryIndex);
+									if (ext != ".xnb" || !stripped.EndsWith("_0")) // Exclude subordinate xnb files
+										result.Add(stripped);
+								}
 							}
 						}
 					}
 				}
+				return result;
 			}
-			return result;
+			else
+				return null;
 		}
 	}
 }
