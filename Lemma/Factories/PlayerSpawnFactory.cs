@@ -27,9 +27,11 @@ namespace Lemma.Factories
 
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");
 			PlayerSpawn spawn = entity.GetOrCreate<PlayerSpawn>("PlayerSpawn");
-			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
+			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);
 
 			this.SetMain(entity, main);
+
+			attachable.EditorProperties();
 
 			if (main.EditorEnabled)
 			{
