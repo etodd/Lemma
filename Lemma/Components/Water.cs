@@ -454,7 +454,7 @@ namespace Lemma.Components
 			if (this.main.Paused)
 				return;
 
-			bool newUnderwater = this.Fluid.BoundingBox.Contains(main.Camera.Position) != ContainmentType.Disjoint;
+			bool newUnderwater = this.Fluid.BoundingBox.Contains(this.main.Camera.Position) != ContainmentType.Disjoint;
 			if (newUnderwater != this.underwater)
 				AkSoundEngine.SetState(AK.STATES.WATER.GROUP, newUnderwater ? AK.STATES.WATER.STATE.UNDERWATER : AK.STATES.WATER.STATE.NORMAL);
 			this.underwater = newUnderwater;
@@ -527,7 +527,7 @@ namespace Lemma.Components
 			{
 				if (p.Value <= 0)
 				{
-					if (p.Key.Entity.LinearVelocity.Y > 2.0f)
+					if (p.Key.Entity != null && p.Key.Entity.LinearVelocity.Y > 2.0f)
 						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH_OUT, p.Key.Entity.Position);
 					this.submerged.Remove(p.Key);
 				}
