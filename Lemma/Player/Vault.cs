@@ -90,7 +90,7 @@ namespace Lemma.Components
 			this.model["Vault"].Speed = 1.3f;
 			this.model["Vault"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
-				m.Translation += (Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f) * Matrix.CreateTranslation(0, -1.0f, -0.3f)).Translation;
+				m.Translation += (Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f) * Matrix.CreateTranslation(0, -1.0f, -0.2f)).Translation;
 				return m;
 			};
 		}

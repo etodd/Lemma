@@ -155,7 +155,7 @@ namespace Lemma.Components
 				}
 
 				// Lava. Damage the player character if it steps on lava.
-				bool isInfected = id == Voxel.t.Infected || id == Voxel.t.InfectedCritical;
+				bool isInfected = id == Voxel.t.Infected || id == Voxel.t.HardInfected;
 				if (isInfected)
 					this.Health.Value -= 0.2f;
 				else if (id == Voxel.t.Floater)

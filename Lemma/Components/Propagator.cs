@@ -124,7 +124,7 @@ namespace Lemma.Components
 
 						if (id == Voxel.t.Critical) // Critical. Explodes when destroyed.
 							Explosion.Explode(main, map, coord);
-						else if (id == Voxel.t.InfectedCritical) // Infected. Shatter effects.
+						else if (id == Voxel.t.HardInfected) // Infected. Shatter effects.
 						{
 							ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
 							Vector3 pos = map.GetAbsolutePosition(coord);
@@ -266,7 +266,7 @@ namespace Lemma.Components
 
 						bool isTemporary = id == Voxel.t.Temporary;
 						bool isNeutral = id == Voxel.t.Neutral;
-						bool isInfected = id == Voxel.t.Infected || id == Voxel.t.InfectedCritical;
+						bool isInfected = id == Voxel.t.Infected || id == Voxel.t.HardInfected;
 						bool isPowered = id == Voxel.t.Powered || id == Voxel.t.PermanentPowered || id == Voxel.t.HardPowered || id == Voxel.t.PoweredSwitch;
 
 						bool regenerate = false;

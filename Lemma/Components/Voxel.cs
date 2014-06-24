@@ -78,7 +78,7 @@ namespace Lemma.Components
 			PoweredSwitch = 37,
 			Powered = 38,
 			PermanentPowered = 39,
-			InfectedCritical = 40,
+			HardInfected = 40,
 			Infected = 41,
 			Black = 42,
 			Slider = 43,
@@ -595,23 +595,23 @@ namespace Lemma.Components
 				},
 				new State
 				{
-					ID = t.InfectedCritical,
+					ID = t.HardInfected,
 					Permanent = false,
 					Supported = false,
 					Hard = true,
 					Density = 3,
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					DiffuseMap = "Textures\\white",
+					DiffuseMap = "Textures\\infected-hard",
 					NormalMap = "Textures\\temporary-normal",
 					Materials = new[]
 					{
+						Model.Material.Unlit,
 						new Model.Material
 						{
-							SpecularPower = 200.0f,
-							SpecularIntensity = 0.4f,
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
 						},
 					},
-					Tint = new Vector3(0.4f, 0.0f, 0.0f),
 				},
 				new State
 				{

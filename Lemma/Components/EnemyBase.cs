@@ -47,7 +47,7 @@ namespace Lemma.Components
 				{
 					foreach (Voxel.Coord coord in box.GetCoords())
 					{
-						if (m[coord].ID == Components.Voxel.t.InfectedCritical)
+						if (m[coord].ID == Components.Voxel.t.HardInfected)
 						{
 							found = true;
 							break;
@@ -129,7 +129,7 @@ namespace Lemma.Components
 				foreach (Voxel m in Lemma.Components.Voxel.Voxels)
 				{
 					Voxel.Box box = m.GetBox(this.Position);
-					if (box != null && box.Type.ID == Components.Voxel.t.InfectedCritical)
+					if (box != null && box.Type.ID == Components.Voxel.t.HardInfected)
 					{
 						foreach (Voxel.Box b in m.GetContiguousByType(new[] { box }))
 							this.BaseBoxes.Add(b);

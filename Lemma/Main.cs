@@ -32,6 +32,7 @@ namespace Lemma
 		public const string InitialMap = "start";
 
 		public const string MenuMap = "..\\menu";
+		public const string TemplateMap = "..\\template";
 
 		public class ExitException : Exception
 		{
@@ -163,7 +164,6 @@ namespace Lemma
 
 		private Point? resize;
 
-		[AutoConVar("map_file", "Game Map File")]
 		public Property<string> MapFile = new Property<string>();
 
 		public Spawner Spawner;
@@ -181,7 +181,6 @@ namespace Lemma
 		public Property<float> BaseTimeMultiplier = new Property<float> { Value = 1.0f };
 		public Property<float> PauseAudioEffect = new Property<float> { Value = 0.0f };
 
-		[AutoConVar("game_time", "Total time the game has been played")]
 		public static Property<float> TotalGameTime = new Property<float>(); 
 
 		public Strings Strings = new Strings();
@@ -355,7 +354,9 @@ namespace Lemma
 
 			Lemma.Console.Console.AddConVar(new ConVar("time_scale", "Time scale (percentage).", s =>
 			{
-				this.BaseTimeMultiplier.Value = float.Parse(s) / 100.0f;
+				float result;
+				if (float.TryParse(s, out result))
+					this.BaseTimeMultiplier.Value = result / 100.0f;
 			}, "100") { TypeConstraint = typeof(int), Validate = o => (int)o > 0 && (int)o <= 400 });
 
 			this.PauseAudioEffect.Set = delegate(float value)
@@ -722,19 +723,6 @@ namespace Lemma
 				});
 #endif
 
-				this.MapFile.Set = delegate(string value)
-				{
-					if (string.IsNullOrEmpty(value))
-						this.MapFile.InternalValue = null;
-					else
-					{
-						string directory = this.CurrentSave.Value == null ? null : Path.Combine(this.SaveDirectory, this.CurrentSave);
-						if (value == Main.MenuMap)
-							directory = null; // Don't try to load the menu from a save game
-						IO.MapLoader.Load(this, directory, value, false);
-					}
-				};
-
 				this.Renderer.LightRampTexture.Value = "LightRamps\\default";
 				this.LightingManager.EnvironmentMap.Value = "EnvironmentMaps\\env0";
 
@@ -775,8 +763,10 @@ namespace Lemma
 					this.Renderer.BlurAmount.Value = 0.0f;
 					this.Renderer.Tint.Value = new Vector3(1.0f);
 				});
-				this.MapFile.Value = MenuMap;
-#if !DEVELOPMENT
+#if DEVELOPMENT
+				IO.MapLoader.Load(this, TemplateMap);
+#else
+				IO.MapLoader.Load(this, MenuMap);
 				this.Menu.Pause();
 #endif
 

@@ -34,9 +34,10 @@ namespace Lemma.Factories
 
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 
+			SceneryBlock sceneryBlock = entity.GetOrCreate<SceneryBlock>("SceneryBlock");
+
 			this.SetMain(entity, main);
 
-			SceneryBlock sceneryBlock = entity.GetOrCreate<SceneryBlock>("SceneryBlock");
 			sceneryBlock.EditorProperties();
 		}
 

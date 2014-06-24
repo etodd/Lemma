@@ -215,12 +215,7 @@ namespace Lemma.Components
 					velocity.X = 0;
 					velocity.Z = 0;
 					if (addInitialVelocity)
-					{
-						if (this.IsSupported)
-							velocity.Y = this.JumpSpeed * 1.3f;
-						else
-							velocity.Y = this.LinearVelocity.Value.Y + this.JumpSpeed * 0.75f;
-					}
+						velocity.Y = Math.Max(this.JumpSpeed * 1.3f, this.LinearVelocity.Value.Y + this.JumpSpeed * 0.75f);
 					else
 						velocity.Y = this.LinearVelocity.Value.Y;
 

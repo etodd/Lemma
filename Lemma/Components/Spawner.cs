@@ -17,6 +17,7 @@ namespace Lemma.Components
 		private static Vector3 StartTint = new Vector3(2.0f);
 
 		public Property<string> StartSpawnPoint = new Property<string>();
+		public Property<ulong> StartSpawnPointGUID = new Property<ulong>();
 
 		public Command PlayerSpawned = new Command();
 
@@ -40,6 +41,7 @@ namespace Lemma.Components
 		private Vector3 lastEditorPosition;
 		private Vector2 lastEditorMouse;
 		private string lastEditorSpawnPoint;
+		private ulong lastEditorSpawnPointGUID;
 
 		private bool mapJustLoaded = false;
 
@@ -70,6 +72,7 @@ namespace Lemma.Components
 					this.lastEditorPosition = Vector3.Zero;
 					this.lastEditorMouse = Vector2.Zero;
 					this.lastEditorSpawnPoint = null;
+					this.lastEditorSpawnPointGUID = 0;
 					lastMap = this.main.MapFile;
 				}
 
@@ -102,6 +105,7 @@ namespace Lemma.Components
 					this.editor.Get<Editor>().Position.Value = this.lastEditorPosition;
 					this.editor.Get<FPSInput>().Mouse.Value = this.lastEditorMouse;
 					this.StartSpawnPoint.Value = this.lastEditorSpawnPoint;
+					this.StartSpawnPointGUID.Value = this.lastEditorSpawnPointGUID;
 					this.main.Add(this.editor);
 				}
 				else
@@ -148,7 +152,7 @@ namespace Lemma.Components
 						RespawnLocation foundSpawnLocation = default(RespawnLocation);
 						Vector3 foundSpawnAbsolutePosition = Vector3.Zero;
 
-						if (string.IsNullOrEmpty(this.StartSpawnPoint.Value))
+						if (string.IsNullOrEmpty(this.StartSpawnPoint) && this.StartSpawnPointGUID == 0)
 						{
 							// Look for an autosaved spawn point
 							Entity playerData = PlayerDataFactory.Instance;
@@ -209,7 +213,15 @@ namespace Lemma.Components
 							// Spawn at a spawn point
 							PlayerSpawn spawn = null;
 							Entity spawnEntity = null;
-							if (!string.IsNullOrEmpty(this.StartSpawnPoint.Value))
+							if (this.StartSpawnPointGUID != 0)
+							{
+								spawnEntity = this.main.GetByGUID(this.StartSpawnPointGUID);
+								if (spawnEntity != null)
+									spawn = spawnEntity.Get<PlayerSpawn>();
+								this.lastEditorSpawnPointGUID = this.StartSpawnPointGUID;
+								this.StartSpawnPointGUID.Value = 0;
+							}
+							else if (!string.IsNullOrEmpty(this.StartSpawnPoint.Value))
 							{
 								spawnEntity = this.main.GetByID(this.StartSpawnPoint);
 								if (spawnEntity != null)
@@ -234,7 +246,7 @@ namespace Lemma.Components
 								{
 									// There is nowhere to spawn. Reload the map.
 									this.respawnTimer = 0;
-									main.MapFile.Reset();
+									IO.MapLoader.Load(this.main, this.main.MapFile);
 									return;
 								}
 								else

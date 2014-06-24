@@ -152,8 +152,6 @@ namespace Lemma.Components
 				LinkerView.Draggable = false;
 				LinkerView.Active.Value = false;
 
-				var addButton = new ButtonView(main.GeeUI, LinkerView, "Link", Vector2.Zero, MainFont) { Name = "AddButton" };
-
 				var DestLayout = new View(main.GeeUI, LinkerView) { Name = "DestLayout" };
 				DestLayout.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
 				DestLayout.ChildrenLayouts.Add(new ExpandToFitLayout());
@@ -200,6 +198,7 @@ namespace Lemma.Components
 				container.Height.Value = list.Height.Value = (LinkerView.Height.Value - container.Y) - 5;
 				DestLayout.Position.Value = new Vector2(10, 10);
 
+				var addButton = new ButtonView(main.GeeUI, LinkerView, "Link", Vector2.Zero, MainFont) { Name = "AddButton" };
 				addButton.AnchorPoint.Value = new Vector2(1, 1);
 				addButton.Position.Value = new Vector2(LinkerView.Width - 10, container.Y - 10);
 				addButton.Active.Value = false;
@@ -231,8 +230,6 @@ namespace Lemma.Components
 				EntityListView.Height.Value = 300;
 				EntityListView.Draggable = false;
 				EntityListView.Active.Value = false;
-
-				var addButton = new ButtonView(main.GeeUI, EntityListView, "[+]", Vector2.Zero, MainFont) { Name = "AddButton" };
 
 				var entityDropDownLayout = new View(main.GeeUI, EntityListView);
 				entityDropDownLayout.ChildrenLayouts.Add(new HorizontalViewLayout());
@@ -268,6 +265,7 @@ namespace Lemma.Components
 				container.Height.Value = list.Height.Value = (EntityListView.Height.Value - container.Y) - 5;
 				entityDropDownLayout.Position.Value = new Vector2(10, 10);
 
+				var addButton = new ButtonView(main.GeeUI, EntityListView, "[+]", Vector2.Zero, MainFont) { Name = "AddButton" };
 				addButton.AnchorPoint.Value = new Vector2(1, 1);
 				addButton.Position.Value = new Vector2(EntityListView.Width - 10, container.Y - 10);
 

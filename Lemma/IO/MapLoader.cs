@@ -126,12 +126,13 @@ namespace Lemma.IO
 			MapLoader.Serializer = new XmlSerializer(typeof(List<Entity>), MapLoader.IncludedTypes);
 		}
 
-		public static void Load(Main main, string directory, string filename, bool deleteEditor = true)
+		public static void Load(Main main, string filename, bool deleteEditor = true)
 		{
+			// Don't try to load the menu from a save game
+			string directory = main.CurrentSave.Value == null || filename == Main.MenuMap ? null : Path.Combine(main.SaveDirectory, main.CurrentSave);
 			main.LoadingMap.Execute(filename);
 
-			// HACK HACK HACK
-			main.MapFile.InternalValue = filename;
+			main.MapFile.Value = filename;
 
 			if (directory == null)
 				filename = Path.Combine(main.Content.RootDirectory, MapLoader.MapDirectory, filename);
@@ -152,8 +153,7 @@ namespace Lemma.IO
 		{
 			main.LoadingMap.Execute(filename);
 
-			// HACK HACK HACK
-			main.MapFile.InternalValue = filename;
+			main.MapFile.Value = filename;
 
 			if (!filename.EndsWith(MapLoader.MapExtension))
 				filename += MapLoader.MapExtension;
@@ -279,7 +279,7 @@ namespace Lemma.IO
 						PlayerFactory.Instance.Delete.Execute();
 
 					main.SaveCurrentMap();
-					main.MapFile.Value = nextMap;
+					MapLoader.Load(main, nextMap);
 
 					notification.Visible.Value = false;
 					stream.Seek(0, SeekOrigin.Begin);

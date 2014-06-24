@@ -198,7 +198,7 @@ namespace Lemma.Components
 						if (state.ID != 0 || EffectBlock.IsAnimating(new EffectBlock.Entry { Voxel = map, Coordinate = coord, }))
 						{
 							// Check we're not in a no-build zone
-							if (state.ID != Voxel.t.Infected && state.ID != Voxel.t.InfectedCritical && Zone.CanBuild(map.GetAbsolutePosition(coord)))
+							if (state.ID != Voxel.t.Infected && state.ID != Voxel.t.HardInfected && Zone.CanBuild(map.GetAbsolutePosition(coord)))
 							{
 								shortestDistance = i;
 								relativeShortestDirection = relativeDir;

@@ -42,7 +42,7 @@ namespace Lemma.Factories
 						if (editor.NeedsSave)
 							editor.Save.Execute();
 						main.EditorEnabled.Value = false;
-						IO.MapLoader.Load(main, null, main.MapFile);
+						IO.MapLoader.Load(main, main.MapFile);
 
 						main.Spawner.CanSpawn = false;
 						main.Renderer.Brightness.Value = 0.0f;

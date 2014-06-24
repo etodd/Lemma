@@ -11,8 +11,6 @@ namespace Lemma.Factories
 {
 	public class SkyboxFactory : Factory<Main>
 	{
-		private static ListProperty<string> skyboxes = null;
-
 		public SkyboxFactory()
 		{
 			this.Color = new Vector3(0.8f, 0.6f, 0.4f);
@@ -28,11 +26,6 @@ namespace Lemma.Factories
 			entity.Add("Skybox", skybox);
 
 			return entity;
-		}
-
-		private void enumerateSkyboxes(Main main)
-		{
-			skyboxes = new ListProperty<string>();
 		}
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
@@ -72,13 +65,12 @@ namespace Lemma.Factories
 			model.Add(new Binding<float>(model.GetFloatParameter("StartDistance"), skybox.StartDistance));
 
 			entity.Add("Color", model.Color);
+			entity.Add("Vertical", skybox.Vertical);
 			entity.Add("VerticalSize", skybox.VerticalSize);
 			entity.Add("VerticalCenter", skybox.VerticalCenter);
 			entity.Add("GodRays", skybox.GodRays);
 			entity.Add("GodRayExtinction", skybox.GodRayExtinction);
 			entity.Add("StartDistance", skybox.StartDistance);
-			if (skyboxes == null && main.EditorEnabled)
-				this.enumerateSkyboxes(main);
 			entity.Add("Image", model.DiffuseTexture, null, null, FileFilter.Get(main, main.Content.RootDirectory, new[] { "Skyboxes" }));
 		}
 	}

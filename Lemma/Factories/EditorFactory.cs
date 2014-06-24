@@ -185,7 +185,7 @@ namespace Lemma.Factories
 						dialog.Filter = "Map files|*.map";
 						dialog.InitialDirectory = Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory);
 						if (dialog.ShowDialog() == DialogResult.OK)
-							IO.MapLoader.Load(main, null, dialog.FileName, false);
+							IO.MapLoader.Load(main, dialog.FileName, false);
 					}
 				},
 				gui.MapCommands
@@ -295,7 +295,7 @@ namespace Lemma.Factories
 					if (editor.NeedsSave)
 						editor.Save.Execute();
 					main.EditorEnabled.Value = false;
-					IO.MapLoader.Load(main, null, main.MapFile);
+					IO.MapLoader.Load(main, main.MapFile);
 				}
 			}, gui.MapCommands);
 

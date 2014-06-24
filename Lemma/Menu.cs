@@ -241,7 +241,7 @@ namespace Lemma.Components
 					this.main.Paused.Value = false;
 					this.restorePausedSettings();
 					this.main.CurrentSave.Value = timestamp;
-					this.main.MapFile.Value = info.MapFile;
+					IO.MapLoader.Load(this.main, info.MapFile);
 				}
 			}));
 
@@ -1134,7 +1134,6 @@ namespace Lemma.Components
 			Container switchToEditMode = this.main.UIFactory.CreateButton("\\edit mode", delegate()
 			{
 				this.pauseMenu.Visible.Value = false;
-				this.main.EditorEnabled.Value = true;
 
 				this.main.Paused.Value = false;
 				if (this.pauseAnimation != null)
@@ -1142,14 +1141,15 @@ namespace Lemma.Components
 					this.pauseAnimation.Delete.Execute();
 					this.pauseAnimation = null;
 				}
+				this.main.EditorEnabled.Value = true;
 				this.main.CurrentSave.Value = null;
-				IO.MapLoader.Load(this.main, null, this.main.MapFile, true);
+				if (this.main.MapFile == Main.MenuMap)
+					IO.MapLoader.Load(this.main, Main.TemplateMap);
+				else
+					IO.MapLoader.Load(this.main, this.main.MapFile);
 			});
 			this.resizeToMenu(switchToEditMode);
 			this.pauseMenu.Children.Add(switchToEditMode);
-#if DEVELOPMENT
-
-#endif
 
 			// Credits window
 			Animation creditsAnimation = null;
@@ -1239,7 +1239,7 @@ namespace Lemma.Components
 					delegate()
 					{
 						this.main.CurrentSave.Value = null;
-						this.main.MapFile.Value = Main.MenuMap;
+						IO.MapLoader.Load(this.main, Main.MenuMap);
 						this.main.Paused.Value = false;
 					}
 				);

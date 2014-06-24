@@ -39,12 +39,12 @@ namespace Lemma.Factories
 				{
 					Action = delegate()
 					{
-						main.Spawner.StartSpawnPoint.Value = entity.ID;
+						main.Spawner.StartSpawnPointGUID.Value = entity.GUID;
 						Editor editor = main.Get("Editor").First().Get<Editor>();
 						if (editor.NeedsSave)
 							editor.Save.Execute();
 						main.EditorEnabled.Value = false;
-						IO.MapLoader.Load(main, null, main.MapFile);
+						IO.MapLoader.Load(main, main.MapFile);
 					},
 				}, Command.Perms.Executable);
 			}

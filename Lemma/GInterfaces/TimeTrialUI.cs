@@ -54,7 +54,7 @@ namespace Lemma.GInterfaces
 			this.EndPanelClosed = shouldRetry =>
 			{
 				if (shouldRetry)
-					main.MapFile.Reset();
+					IO.MapLoader.Load(this.main, this.main.MapFile);
 			};
 
 			RootTimePanelView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);

@@ -176,7 +176,11 @@ namespace Lemma.Console
 		public static void SetConVarValue(string name, string value)
 		{
 			var convar = GetConVar(name);
-			if (convar == null || !convar.IsGoodValue(value)) return;
+			if (convar == null || !convar.IsGoodValue(value))
+			{
+				Log("Incorrect input");
+				return;
+			}
 
 			convar.Value.Value = value;
 			if (convar.OnChanged.Value != null)

@@ -62,7 +62,7 @@ namespace Lemma.Console
 			{
 				return typeConverter.ConvertFromString(toConvert);
 			}
-			return default(object);
+			return null;
 		}
 
 		public bool IsGoodValue(string input)
@@ -70,7 +70,13 @@ namespace Lemma.Console
 			Type T = TypeConstraint;
 			if (T == null) return true;
 			var typeConverter = TypeDescriptor.GetConverter(T);
-			return typeConverter.CanConvertFrom(typeof(string)) && IsGood(T, input) && Validate(GetCastedValue(input));
+			if (typeConverter.CanConvertFrom(typeof(string)) && IsGood(T, input))
+			{
+				object castedValue = GetCastedValue(input);
+				if (castedValue != null)
+					return Validate(castedValue);
+			}
+			return false;
 		}
 
 		public bool IsGood(Type T, string input)
