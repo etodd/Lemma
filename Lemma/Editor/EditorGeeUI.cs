@@ -58,6 +58,8 @@ namespace Lemma.Components
 
 		public Property<Editor.TransformModes> TransformMode = new Property<Editor.TransformModes>();
 
+		public Property<bool> VoxelSelectionActive = new Property<bool>();
+
 		public ListProperty<EditorCommand> EntityCommands = new ListProperty<EditorCommand>();
 
 		public Dictionary<string, PropertyEntry> VoxelProperties = new Dictionary<string, PropertyEntry>();
@@ -285,7 +287,7 @@ namespace Lemma.Components
 			this.SelectedEntities.Cleared += this.refresh;
 
 			this.Add(new NotifyBinding(this.RecomputeEntityCommands, this.VoxelEditMode, this.TransformMode));
-			this.Add(new NotifyBinding(this.RecomputeVoxelCommands, this.VoxelEditMode, this.TransformMode));
+			this.Add(new NotifyBinding(this.RecomputeVoxelCommands, this.VoxelEditMode, this.TransformMode, this.VoxelSelectionActive));
 
 			this.EntityCommands.ItemAdded += (index, command) => RecomputeEntityCommands();
 			this.EntityCommands.ItemChanged += (index, old, value) => RecomputeEntityCommands();
