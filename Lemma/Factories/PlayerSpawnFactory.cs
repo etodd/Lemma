@@ -25,9 +25,11 @@ namespace Lemma.Factories
 
 			entity.CannotSuspendByDistance = true;
 
-			this.SetMain(entity, main);
-
+			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");
+			PlayerSpawn spawn = entity.GetOrCreate<PlayerSpawn>("PlayerSpawn");
 			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
+
+			this.SetMain(entity, main);
 
 			if (main.EditorEnabled)
 			{
@@ -45,12 +47,10 @@ namespace Lemma.Factories
 				}, Command.Perms.Executable);
 			}
 
-			PlayerSpawn spawn = entity.GetOrCreate<PlayerSpawn>("PlayerSpawn");
 			spawn.Add(new TwoWayBinding<Vector3>(transform.Position, spawn.Position));
 			spawn.Add(new Binding<float, Vector3>(spawn.Rotation, x => ((float)Math.PI * -0.5f) - (float)Math.Atan2(x.Z, x.X), transform.Forward));
 			spawn.EditorProperties();
 
-			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");
 			trigger.Enabled.Value = true;
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 			trigger.Add(new CommandBinding(trigger.PlayerEntered, spawn.Activate));
