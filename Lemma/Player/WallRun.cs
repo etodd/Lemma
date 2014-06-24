@@ -37,7 +37,7 @@ namespace Lemma.Components
 		public Command Vault = new Command();
 		public Command<Voxel, Voxel.Coord, Direction> WalkedOn = new Command<Voxel, Voxel.Coord, Direction>();
 		public Property<State> CurrentState = new Property<State>();
-		public Property<Voxel> WallRunMap = new Property<Voxel>();
+		public Property<Voxel> WallRunVoxel = new Property<Voxel>();
 		public Property<Direction> WallDirection = new Property<Direction>();
 		public Property<Direction> WallRunDirection = new Property<Direction>();
 
@@ -116,34 +116,45 @@ namespace Lemma.Components
 			Vector3 pos = this.Position + new Vector3(0, this.Height * -0.5f, 0);
 
 			// Attempt to wall-run on an existing map
-			bool activate = false, addInitialVelocity = false;
-			foreach (Voxel map in Voxel.ActivePhysicsVoxels)
+			bool addInitialVelocity = false;
+			Voxel closestVoxel = null;
+			Voxel.Coord closestCoord = default(Voxel.Coord);
+			const int maxWallDistance = 4;
+			int closestDistance = maxWallDistance;
+			Direction closestDir = Direction.None;
+			foreach (Voxel voxel in Voxel.ActivePhysicsVoxels)
 			{
-				Voxel.Coord coord = map.GetCoordinate(pos);
-				Direction dir = map.GetRelativeDirection(wallVector);
-				Direction up = map.GetRelativeDirection(Direction.PositiveY);
-				for (int i = 1; i < 4; i++)
+				Voxel.Coord coord = voxel.GetCoordinate(pos);
+				Direction dir = voxel.GetRelativeDirection(wallVector);
+				Direction up = voxel.GetRelativeDirection(Direction.PositiveY);
+				for (int i = 1; i < maxWallDistance; i++)
 				{
 					Voxel.Coord wallCoord = coord.Move(dir, i);
-					if (map[coord.Move(dir, i - 1)].ID != 0
-						|| map[coord.Move(dir, i - 1).Move(up, 1)].ID != 0
-						|| map[coord.Move(dir, i - 1).Move(up, 2)].ID != 0)
+					if (voxel[coord.Move(dir, i - 1)].ID != 0
+						|| voxel[coord.Move(dir, i - 1).Move(up, 1)].ID != 0
+						|| voxel[coord.Move(dir, i - 1).Move(up, 2)].ID != 0)
 					{
 						// Blocked
 						break;
 					}
 
 					// Need at least two blocks to consider it a wall
-					if (map[wallCoord].ID != 0 && map[wallCoord.Move(up)].ID != 0)
+					if (voxel[wallCoord].ID != 0 && voxel[wallCoord.Move(up)].ID != 0)
 					{
-						bool differentWall = map != this.LastWallRunMap.Value || dir != this.LastWallDirection.Value;
-						activate = differentWall || wallRunJumpDelayPassed;
-						addInitialVelocity = differentWall || wallRunDelayPassed;
+						bool differentWall = voxel != this.LastWallRunMap.Value || dir != this.LastWallDirection.Value;
+						if ((differentWall || wallRunJumpDelayPassed) && i < closestDistance)
+						{
+							closestVoxel = voxel;
+							closestDistance = i;
+							closestCoord = coord;
+							closestDir = dir;
+							addInitialVelocity = differentWall || wallRunDelayPassed;
+						}
 					}
 					else
 					{
 						// Check block possibilities
-						List<BlockPredictor.Possibility> mapBlockPossibilities = this.Predictor.GetPossibilities(map);
+						List<BlockPredictor.Possibility> mapBlockPossibilities = this.Predictor.GetPossibilities(voxel);
 						if (mapBlockPossibilities != null)
 						{
 							foreach (BlockPredictor.Possibility block in mapBlockPossibilities)
@@ -152,7 +163,10 @@ namespace Lemma.Components
 								{
 									this.Predictor.InstantiatePossibility(block);
 									this.Predictor.ClearPossibilities();
-									activate = true;
+									closestVoxel = voxel;
+									closestDistance = i;
+									closestCoord = coord;
+									closestDir = dir;
 									addInitialVelocity = true;
 									wallInstantiationTimer = 0.25f;
 									break;
@@ -160,30 +174,24 @@ namespace Lemma.Components
 							}
 						}
 					}
-
-					if (activate)
-					{
-						// Move so the player is exactly two coordinates away from the wall
-						this.Position.Value = map.GetAbsolutePosition(coord.Move(dir, i - 2)) + new Vector3(0, this.Height * 0.5f, 0);
-						break;
-					}
-				}
-
-				if (activate)
-				{
-					this.setup(map, dir, state, forwardVector, addInitialVelocity);
-					break;
 				}
 			}
-			return activate;
+
+			if (closestVoxel != null)
+			{
+				this.Position.Value = closestVoxel.GetAbsolutePosition(closestCoord.Move(closestDir, closestDistance - 2)) + new Vector3(0, this.Height * 0.5f, 0);
+				this.setup(closestVoxel, closestDir, state, forwardVector, addInitialVelocity);
+				return true;
+			}
+			return false;
 		}
 
-		private void setup(Voxel map, Direction dir, State state, Vector3 forwardVector, bool addInitialVelocity)
+		private void setup(Voxel voxel, Direction dir, State state, Vector3 forwardVector, bool addInitialVelocity)
 		{
 			this.StopKick.Execute();
 			this.AllowUncrouch.Value = true;
 
-			this.WallRunMap.Value = this.LastWallRunMap.Value = map;
+			this.WallRunVoxel.Value = this.LastWallRunMap.Value = voxel;
 			this.WallDirection.Value = this.LastWallDirection.Value = dir;
 
 			if (state == State.Straight)
@@ -197,7 +205,7 @@ namespace Lemma.Components
 
 			Session.Recorder.Event(main, "WallRun", this.CurrentState.Value.ToString());
 
-			this.WallRunDirection.Value = state == State.Straight ? map.GetRelativeDirection(Vector3.Up) : (state == State.Down ? map.GetRelativeDirection(Vector3.Down) : dir.Cross(map.GetRelativeDirection(Vector3.Up)));
+			this.WallRunDirection.Value = state == State.Straight ? voxel.GetRelativeDirection(Vector3.Up) : (state == State.Down ? voxel.GetRelativeDirection(Vector3.Down) : dir.Cross(voxel.GetRelativeDirection(Vector3.Up)));
 
 			if (state == State.Straight || state == State.Down || state == State.Reverse)
 			{
@@ -220,7 +228,7 @@ namespace Lemma.Components
 					this.IsSupported.Value = false;
 					this.HasTraction.Value = false;
 				}
-				Vector3 wallVector = this.WallRunMap.Value.GetAbsoluteVector(this.WallDirection.Value.GetVector());
+				Vector3 wallVector = this.WallRunVoxel.Value.GetAbsoluteVector(this.WallDirection.Value.GetVector());
 
 				if (state == State.Reverse)
 					wallVector = -wallVector;
@@ -233,7 +241,7 @@ namespace Lemma.Components
 			{
 				this.IsSupported.Value = false;
 				this.HasTraction.Value = false;
-				Vector3 velocity = map.GetAbsoluteVector(this.WallRunDirection.Value.GetVector());
+				Vector3 velocity = voxel.GetAbsoluteVector(this.WallRunDirection.Value.GetVector());
 				if (Vector3.Dot(velocity, forwardVector) < 0.0f)
 				{
 					velocity = -velocity;
@@ -271,7 +279,7 @@ namespace Lemma.Components
 			if (this.CurrentState.Value != State.None)
 				this.lastWallRunEnded = main.TotalTime; // Prevent the player from repeatedly wall-running and wall-jumping ad infinitum.
 
-			this.WallRunMap.Value = null;
+			this.WallRunVoxel.Value = null;
 			this.WallDirection.Value = Direction.None;
 			this.WallRunDirection.Value = Direction.None;
 			this.CurrentState.Value = State.None;
@@ -286,13 +294,15 @@ namespace Lemma.Components
 				if (this.CurrentState.Value == State.None) // We vaulted
 					return;
 
-				if (!this.WallRunMap.Value.Active || this.IsSupported)
+				if (!this.WallRunVoxel.Value.Active || this.IsSupported)
 				{
 					this.Deactivate();
 					return;
 				}
 
-				float wallRunSpeed = Vector3.Dot(this.LinearVelocity.Value, this.WallRunMap.Value.GetAbsoluteVector(this.WallRunDirection.Value.GetVector()));
+				Vector3 wallRunVector = this.WallRunVoxel.Value.GetAbsoluteVector(this.WallRunDirection.Value.GetVector());
+				float wallRunSpeed = Vector3.Dot(this.LinearVelocity.Value, wallRunVector);
+				Vector3 pos = this.Position + new Vector3(0, this.Height * -0.5f, 0);
 
 				if (wallRunState == State.Straight)
 				{
@@ -310,17 +320,32 @@ namespace Lemma.Components
 						this.Deactivate();
 						return;
 					}
+					else
+					{
+						// Check if we should switch to another wall
+						Vector3 wallVector = this.WallRunVoxel.Value.GetAbsoluteVector(this.WallDirection.Value.GetVector());
+						Voxel.GlobalRaycastResult result = Voxel.GlobalRaycast(pos, wallRunVector + wallVector, 2.0f);
+						if (result.Voxel != null && result.Voxel != this.WallRunVoxel.Value)
+						{
+							float dot = Vector3.Dot(result.Voxel.GetAbsoluteVector(result.Normal.GetReverse().GetVector()), wallVector);
+							if (dot > 0.75f)
+							{
+								Matrix matrix = Matrix.CreateRotationY(this.Rotation);
+								Vector3 forwardVector = -matrix.Forward;
+								this.setup(result.Voxel, result.Normal.GetReverse(), wallRunState, forwardVector, false);
+							}
+						}
+					}
 				}
 
-				Vector3 pos = this.Position + new Vector3(0, this.Height * -0.5f, 0);
-				Voxel.Coord coord = this.WallRunMap.Value.GetCoordinate(pos);
+				Voxel.Coord coord = this.WallRunVoxel.Value.GetCoordinate(pos);
 				Voxel.Coord wallCoord = coord.Move(this.WallDirection, 2);
-				Voxel.State wallType = this.WallRunMap.Value[wallCoord];
-				this.WalkedOn.Execute(this.WallRunMap, wallCoord, this.WallDirection);
+				Voxel.State wallType = this.WallRunVoxel.Value[wallCoord];
+				this.WalkedOn.Execute(this.WallRunVoxel, wallCoord, this.WallDirection);
 
 				if (this.EnableEnhancedWallRun && (wallRunState == State.Left || wallRunState == State.Right))
 				{
-					Direction up = this.WallRunMap.Value.GetRelativeDirection(Direction.PositiveY);
+					Direction up = this.WallRunVoxel.Value.GetRelativeDirection(Direction.PositiveY);
 					Direction right = this.WallDirection.Value.Cross(up);
 
 					List<EffectBlockFactory.BlockBuildOrder> buildCoords = new List<EffectBlockFactory.BlockBuildOrder>();
@@ -333,11 +358,11 @@ namespace Lemma.Components
 						for (Voxel.Coord y = x.Move(up, -radius); y.GetComponent(up) < wallCoord.GetComponent(up) + upwardRadius; y = y.Move(up))
 						{
 							int dy = y.GetComponent(up) - wallCoord.GetComponent(up);
-							if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && this.WallRunMap.Value[y].ID == 0)
+							if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && this.WallRunVoxel.Value[y].ID == 0)
 							{
 								buildCoords.Add(new EffectBlockFactory.BlockBuildOrder
 								{
-									Voxel = this.WallRunMap,
+									Voxel = this.WallRunVoxel,
 									Coordinate = y,
 									State = temporary,
 								});
@@ -352,14 +377,14 @@ namespace Lemma.Components
 					return;
 				}
 
-				if (this.WallRunMap.Value == null || !this.WallRunMap.Value.Active)
+				if (this.WallRunVoxel.Value == null || !this.WallRunVoxel.Value.Active)
 					return;
 
 				wallInstantiationTimer = Math.Max(0.0f, wallInstantiationTimer - dt);
 
-				Vector3 coordPos = this.WallRunMap.Value.GetAbsolutePosition(coord);
+				Vector3 coordPos = this.WallRunVoxel.Value.GetAbsolutePosition(coord);
 
-				Vector3 normal = this.WallRunMap.Value.GetAbsoluteVector(this.WallDirection.Value.GetVector());
+				Vector3 normal = this.WallRunVoxel.Value.GetAbsoluteVector(this.WallDirection.Value.GetVector());
 				// Equation of a plane
 				// normal (dot) point = d
 				float d = Vector3.Dot(normal, coordPos);

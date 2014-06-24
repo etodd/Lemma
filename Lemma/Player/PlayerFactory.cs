@@ -107,7 +107,7 @@ namespace Lemma.Factories
 			jump.Add(new Binding<float>(jump.JumpSpeed, player.Character.JumpSpeed));
 			jump.Add(new Binding<float>(jump.Mass, player.Character.Mass));
 			jump.Add(new Binding<float>(jump.LastRollEnded, rollKickSlide.LastRollEnded));
-			jump.Add(new Binding<Voxel>(jump.WallRunMap, wallRun.WallRunMap));
+			jump.Add(new Binding<Voxel>(jump.WallRunMap, wallRun.WallRunVoxel));
 			jump.Add(new Binding<Direction>(jump.WallDirection, wallRun.WallDirection));
 			jump.Add(new CommandBinding<Voxel, Voxel.Coord, Direction>(jump.WalkedOn, footsteps.WalkedOn));
 			jump.Add(new CommandBinding(jump.DeactivateWallRun, (Action)wallRun.Deactivate));
@@ -194,7 +194,7 @@ namespace Lemma.Factories
 			anim.Add(new Binding<Vector3>(anim.LinearVelocity, player.Character.LinearVelocity));
 			anim.Add(new Binding<Vector2>(anim.Movement, input.Movement));
 			anim.Add(new Binding<Vector2>(anim.Mouse, input.Mouse));
-			anim.Add(new Binding<Voxel>(anim.WallRunMap, wallRun.WallRunMap));
+			anim.Add(new Binding<Voxel>(anim.WallRunMap, wallRun.WallRunVoxel));
 			anim.Add(new Binding<Direction>(anim.WallDirection, wallRun.WallDirection));
 			anim.Add(new Binding<bool>(anim.IsSwimming, player.Character.IsSwimming));
 			anim.Add
