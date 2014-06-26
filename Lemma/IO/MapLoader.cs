@@ -117,6 +117,7 @@ namespace Lemma.IO
 			typeof(Data),
 			typeof(Starter),
 			typeof(Explosion),
+			typeof(Lemma.Components.Binder)
 		};
 
 		public static XmlSerializer Serializer;

@@ -110,6 +110,7 @@
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Data.cs" />
     <Compile Include="Components\Rotator.cs" />
+    <Compile Include="Components\Scriptlike\Binder.cs" />
     <Compile Include="Components\Skybox.cs" />
     <Compile Include="Components\Smoke.cs" />
     <Compile Include="Components\Snake.cs" />
@@ -158,6 +159,7 @@
     <Compile Include="Editor\EditorGeeUI.cs" />
     <Compile Include="Factories\ExplosionFactory.cs" />
     <Compile Include="Factories\FileFilter.cs" />
+    <Compile Include="Factories\BinderFactory.cs" />
     <Compile Include="Factories\StarterFactory.cs" />
     <Compile Include="Factories\CameraStopFactory.cs" />
     <Compile Include="Factories\RandomTickerFactory.cs" />

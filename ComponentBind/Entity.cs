@@ -403,6 +403,7 @@ namespace ComponentBind
 
 		public Property<T> GetProperty<T>(string name)
 		{
+			if (name == null) return null;
 			PropertyEntry result;
 			this.properties.TryGetValue(name, out result);
 			if (result == null)
