@@ -40,6 +40,7 @@ namespace Lemma.Factories
 
 			entity.Add("Bind", binder.Bind);
 			entity.Add("Unbind", binder.UnBind);
+			entity.Add("Two-way", binder.TwoWay);
 			entity.Add("Type", binder.PropertyType);
 
 			if (main.EditorEnabled)
