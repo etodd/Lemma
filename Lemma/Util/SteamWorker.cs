@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using ComponentBind;
 using Lemma.Console;
 using Steamworks;
 
@@ -24,6 +25,15 @@ namespace Lemma.Util
 
 		public static bool StatsInitialized { get; private set; }
 
+		public static Property<bool> OverlayActive = new Property<bool>() { Value = false };
+
+		public static bool OverlaySafelyGone
+		{
+			get { return _overlayTimer <= 0; }
+		}
+
+		private static float _overlayTimer = 0f;
+
 		public static bool Initialized
 		{
 			get
@@ -39,6 +49,8 @@ namespace Lemma.Util
 			new Callback<SteamUGCQueryCompleted_t>(OnUGCQueryReturn);
 			new Callback<UserStatsReceived_t>(OnUserStatsReceived);
 			new Callback<RemoteStoragePublishedFileSubscribed_t>(OnSubscribed);
+			new Callback<GameOverlayActivated_t>(OnOverlayActivated);
+
 			QuerySubscribed();
 			if (!SteamUserStats.RequestCurrentStats()) return false;
 			_achievementDictionary = new Dictionary<string, bool>();
@@ -72,11 +84,13 @@ namespace Lemma.Util
 #endif
 		}
 
-		public static void Update()
+		public static void Update(float dt)
 		{
 #if STEAMWORKS
 			if (SteamInitialized)
 				SteamAPI.RunCallbacks();
+			if (_overlayTimer > 0)
+				_overlayTimer -= dt;
 #endif
 		}
 
@@ -288,6 +302,12 @@ namespace Lemma.Util
 		}
 
 		#region Callbacks
+
+		private static void OnOverlayActivated(GameOverlayActivated_t callback)
+		{
+			OverlayActive.Value = callback.m_bActive != 0;
+			if (!OverlayActive) _overlayTimer = 0.2f;
+		}
 
 		private static void OnUGCQueryReturn(SteamUGCQueryCompleted_t handle)
 		{

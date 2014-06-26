@@ -1311,6 +1311,9 @@ namespace Lemma.Components
 			// Otherwise we could save the current map without the player. And that would be awkward.
 			Func<bool> canPause = delegate()
 			{
+				if (SteamWorker.OverlayActive || !SteamWorker.OverlaySafelyGone)
+					return false;
+
 				if (this.main.EditorEnabled)
 					return false;
 
