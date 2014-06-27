@@ -51,7 +51,7 @@ namespace Lemma.Factories
 							mapTransform.Position.Value = staticMap.GetAbsolutePosition(staticMap.GetRelativePosition(staticMap.GetCoordinate(transform.Matrix.Value.Translation)) - new Vector3(0.5f) + staticMap.Offset + voxel.Offset.Value);
 							Matrix parentOrientation = staticMap.Transform;
 							parentOrientation.Translation = Vector3.Zero;
-							mapTransform.Orientation.Value = parentOrientation;
+							mapTransform.Quaternion.Value = Quaternion.CreateFromRotationMatrix(parentOrientation);
 						}
 					}
 					else

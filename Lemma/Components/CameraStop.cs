@@ -44,7 +44,7 @@ namespace Lemma.Components
 				PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = false;
 			}
 
-			this.main.Camera.RotationMatrix.Value = this.Entity.Get<Transform>().Orientation;
+			this.main.Camera.RotationMatrix.Value = Matrix.CreateFromQuaternion(this.Entity.Get<Transform>().Quaternion);
 			this.main.Camera.Position.Value = Vector3.Transform(new Vector3(0, 0, this.Offset), this.Entity.Get<Transform>().Matrix);
 
 			List<Animation.Interval> animations = new List<Animation.Interval>();
@@ -103,7 +103,7 @@ namespace Lemma.Components
 						(
 							delegate(float x)
 							{
-								this.main.Camera.RotationMatrix.Value = currentTransform.Orientation;
+								this.main.Camera.RotationMatrix.Value = Matrix.CreateFromQuaternion(currentTransform.Quaternion);
 								this.main.Camera.Position.Value = Vector3.Transform(new Vector3(0, 0, currentStop.Offset), currentTransform.Matrix);
 							},
 							currentStop.Duration

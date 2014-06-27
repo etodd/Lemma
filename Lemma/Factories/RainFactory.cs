@@ -40,7 +40,7 @@ namespace Lemma.Factories
 			emitter.Add(new Binding<Vector3>(emitter.Jitter, rain.Jitter));
 
 			Components.DirectionalLight lightning = entity.GetOrCreate<Components.DirectionalLight>("Lightning");
-			lightning.Add(new Binding<Matrix>(lightning.Orientation, transform.Orientation));
+			lightning.Add(new Binding<Quaternion>(lightning.Quaternion, transform.Quaternion));
 			lightning.Enabled.Value = false;
 
 			lightning.Add(new TwoWayBinding<Vector3>(lightning.Color, rain.LightningColor));

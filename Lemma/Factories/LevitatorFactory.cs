@@ -80,7 +80,7 @@ namespace Lemma.Factories
 
 			RaycastAI raycastAI = entity.GetOrCreate<RaycastAI>("RaycastAI");
 			raycastAI.Add(new TwoWayBinding<Vector3>(transform.Position, raycastAI.Position));
-			raycastAI.Add(new Binding<Matrix>(transform.Orientation, raycastAI.Orientation));
+			raycastAI.Add(new Binding<Quaternion>(transform.Quaternion, raycastAI.Orientation));
 
 			AI.Task checkOperationalRadius = new AI.Task
 			{
@@ -377,8 +377,7 @@ namespace Lemma.Factories
 					Vector3 toLevitatingMap = dynamicMap.Transform.Value.Translation - closestMap.GetAbsolutePosition(closestCoord);
 					offset = offset.Move(dynamicMap.GetRelativeDirection(-toLevitatingMap));
 
-					Matrix orientation = dynamicMap.Transform.Value;
-					orientation.Translation = Vector3.Zero;
+					Quaternion orientation = Quaternion.CreateFromRotationMatrix(dynamicMap.Transform.Value);
 
 					EffectBlockFactory blockFactory = Factory.Get<EffectBlockFactory>();
 

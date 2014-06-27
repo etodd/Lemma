@@ -61,7 +61,7 @@ namespace Lemma.Factories
 
 			RaycastAI raycastAI = entity.GetOrCreate<RaycastAI>("RaycastAI");
 			raycastAI.Add(new TwoWayBinding<Vector3>(transform.Position, raycastAI.Position));
-			raycastAI.Add(new Binding<Matrix>(transform.Orientation, raycastAI.Orientation));
+			raycastAI.Add(new Binding<Quaternion>(transform.Quaternion, raycastAI.Orientation));
 
 			evilBlocks.Add(new Binding<Vector3>(evilBlocks.Position, transform.Position));
 

@@ -106,15 +106,16 @@ namespace ComponentBind
 			Dictionary<string, IComponent> destComponents = dest.ComponentDictionary;
 			foreach (KeyValuePair<string, IComponent> pair in source.ComponentDictionary)
 			{
-				if (pair.Value.Serialize)
+				IComponent srcComponent = pair.Value;
+				if (srcComponent.Serialize)
 				{
 					IComponent destComponent = destComponents[pair.Key];
-					foreach (FieldInfo field in pair.Value.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance))
+					foreach (FieldInfo field in srcComponent.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance))
 					{
 						if (!typeof(IProperty).IsAssignableFrom(field.FieldType) || field.GetCustomAttributes(true).FirstOrDefault(x => typeof(XmlIgnoreAttribute).IsAssignableFrom(x.GetType())) != null)
 							continue;
 						IProperty destProperty = (IProperty)field.GetValue(destComponent);
-						IProperty srcProperty = (IProperty)field.GetValue(pair.Value);
+						IProperty srcProperty = (IProperty)field.GetValue(srcComponent);
 						if (typeof(IListProperty).IsAssignableFrom(destProperty.GetType()))
 							((IListProperty)srcProperty).CopyTo((IListProperty)destProperty);
 						else

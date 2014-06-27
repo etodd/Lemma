@@ -13,7 +13,7 @@ namespace Lemma.Components
 
 		public Property<Vector3> Color = new Property<Vector3> { Value = Vector3.One };
 		[XmlIgnore]
-		public Property<Matrix> Orientation = new Property<Matrix> { Value = Matrix.Identity };
+		public Property<Quaternion> Quaternion = new Property<Quaternion> { Value = Microsoft.Xna.Framework.Quaternion.Identity };
 		public Property<bool> Shadowed = new Property<bool>();
 
 		public override void Awake()

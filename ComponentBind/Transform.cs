@@ -13,20 +13,10 @@ namespace ComponentBind
 		public Property<Quaternion> Quaternion = new Property<Quaternion>();
 
 		[XmlIgnore]
-		public Property<Matrix> Orientation = new Property<Matrix>();
-		[XmlIgnore]
-		public Property<Vector3> Forward = new Property<Vector3>();
-
-		[XmlIgnore]
-		public Property<Matrix> Matrix = new Property<Matrix>();
+		public Property<Matrix> Matrix = new Property<Matrix> { Value = Microsoft.Xna.Framework.Matrix.Identity };
 
 		[XmlIgnore]
 		public Property<bool> Selectable = new Property<bool> { Value = true };
-
-		public Transform()
-		{
-			this.Matrix.Value = Microsoft.Xna.Framework.Matrix.Identity;
-		}
 
 		public void EditorProperties()
 		{
@@ -53,36 +43,21 @@ namespace ComponentBind
 
 			this.Add(new TwoWayBinding<Quaternion, Matrix>(
 				this.Quaternion,
-				x => Microsoft.Xna.Framework.Quaternion.CreateFromRotationMatrix(x),
-				this.Orientation,
-				x => Microsoft.Xna.Framework.Matrix.CreateFromQuaternion(x)));
-
-			this.Add(new TwoWayBinding<Matrix, Matrix>(
-				this.Orientation,
 				delegate(Matrix value)
 				{
 					Vector3 scale, translation;
 					Quaternion rotation;
 					value.Decompose(out scale, out rotation, out translation);
-					return Microsoft.Xna.Framework.Matrix.CreateFromQuaternion(rotation);
+					return rotation;
 				},
 				this.Matrix,
-				delegate(Matrix value)
+				delegate(Quaternion value)
 				{
 					Matrix original = this.Matrix;
-					Matrix result = Microsoft.Xna.Framework.Matrix.Identity;
-					result.Forward = Vector3.Normalize(value.Forward) * original.Forward.Length();
-					result.Up = Vector3.Normalize(value.Up) * original.Up.Length();
-					result.Left = Vector3.Normalize(value.Left) * original.Left.Length();
+					Matrix result = Microsoft.Xna.Framework.Matrix.CreateFromQuaternion(value);
 					result.Translation = original.Translation;
 					return result;
 				}));
-
-			this.Add(new TwoWayBinding<Matrix, Vector3>(
-				this.Orientation,
-				x => Microsoft.Xna.Framework.Matrix.CreateLookAt(Vector3.Zero, x, Vector3.Up),
-				this.Forward,
-				x => Vector3.TransformNormal(Vector3.Forward, x)));
 		}
 	}
 }

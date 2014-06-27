@@ -112,17 +112,21 @@ namespace Lemma.Components
 			{
 				Direction up = map.GetRelativeDirection(Direction.PositiveY);
 				Direction right = map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
-				Vector3 pos = this.Position + rotationMatrix.Forward * -1.75f;
+				Vector3 pos = this.Position + rotationMatrix.Forward * (this.WallRunState == WallRun.State.Straight ? -1.75f : -1.25f);
 				Voxel.Coord baseCoord = map.GetCoordinate(pos).Move(up, searchUpDistance);
 				foreach (int x in new[] { 0, -1, 1 })
 				{
 					Voxel.Coord coord = baseCoord.Move(right, x);
+					bool conflict = false;
 					for (int i = 0; i < searchDownDistance; i++)
 					{
 						Voxel.Coord downCoord = coord.Move(up.GetReverse());
 
 						if (map[coord].ID != 0)
+						{
+							conflict = true;
 							break;
+						}
 						else if (map[downCoord].ID != 0)
 						{
 							// Vault
@@ -131,6 +135,8 @@ namespace Lemma.Components
 						}
 						coord = coord.Move(up.GetReverse());
 					}
+					if (conflict)
+						break;
 				}
 			}
 
@@ -139,7 +145,7 @@ namespace Lemma.Components
 			{
 				Direction up = possibility.Map.GetRelativeDirection(Direction.PositiveY);
 				Direction right = possibility.Map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
-				Vector3 pos = this.Position + rotationMatrix.Forward * -1.75f;
+				Vector3 pos = this.Position + rotationMatrix.Forward * (this.WallRunState == WallRun.State.Straight ? -1.75f : -1.25f);
 				Voxel.Coord baseCoord = possibility.Map.GetCoordinate(pos).Move(up, searchUpDistance);
 				foreach (int x in new[] { 0, -1, 1 })
 				{
@@ -185,7 +191,7 @@ namespace Lemma.Components
 			Vector3 coordPosition = map.GetAbsolutePosition(coord);
 			this.forward = coordPosition - this.Position;
 
-			this.isTopOut = forward.Y > 2.0f;
+			this.isTopOut = forward.Y > 1.75f;
 
 			this.forward.Y = 0.0f;
 			this.forward.Normalize();

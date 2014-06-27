@@ -28,7 +28,7 @@ public class AkGameObject : ComponentBind.Component<BaseMain>
 		if (transform != null)
 		{
 			Vector3 position = transform.Position;
-			Vector3 forward = transform.Forward;
+			Vector3 forward = Vector3.Transform(Vector3.Forward, transform.Quaternion);
 				
 			// Set the original position
 			AkSoundEngine.SetObjectPosition

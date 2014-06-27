@@ -52,7 +52,7 @@ namespace Lemma.Factories
 
 			entity.Add(new NotifyBinding(delegate()
 			{
-				transform.Orientation.Value = effectBlock.StartOrientation;
+				transform.Quaternion.Value = effectBlock.StartOrientation;
 			}, effectBlock.StartOrientation));
 
 			model.Add(new Binding<Vector3>(model.Scale, effectBlock.Scale));
@@ -88,7 +88,7 @@ namespace Lemma.Factories
 
 				float distance = (absolutePos - center).Length();
 				effectBlock.StartPosition.Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f) * distance;
-				effectBlock.StartOrientation.Value = Matrix.CreateRotationX(0.15f * (distance + index)) * Matrix.CreateRotationY(0.15f * (distance + index));
+				effectBlock.StartOrientation.Value = Quaternion.CreateFromYawPitchRoll(0.15f * (distance + index), 0.15f * (distance + index), 0);
 				effectBlock.TotalLifetime.Value = Math.Max(delayMultiplier, distance * delayMultiplier);
 				effectBlock.CheckAdjacent.Value = true;
 				effectBlock.Setup(entry.Voxel.Entity, entry.Coordinate, entry.State.ID);

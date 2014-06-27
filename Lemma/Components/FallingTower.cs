@@ -134,7 +134,7 @@ namespace Lemma.Components
 							c.Data.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
 							effectBlock.Offset.Value = m.GetRelativePosition(c);
 							effectBlock.StartPosition.Value = m.GetAbsolutePosition(c) + new Vector3(0.25f, 0.5f, 0.25f) * index;
-							effectBlock.StartOrientation.Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
+							effectBlock.StartOrientation.Value = Quaternion.CreateFromYawPitchRoll(0.15f * index, 0.15f * index, 0);
 							effectBlock.TotalLifetime.Value = 0.05f + (index * rebuildTimeMultiplier * this.RebuildTime);
 							effectBlock.Setup(targetMap, c, c.Data.ID);
 							main.Add(blockEntity);
@@ -153,8 +153,7 @@ namespace Lemma.Components
 						if (dynamicMap == null || !dynamicMap.Active)
 							continue;
 
-						Matrix orientation = dynamicMapComponent.Transform.Value;
-						orientation.Translation = Vector3.Zero;
+						Quaternion orientation = Quaternion.CreateFromRotationMatrix(dynamicMapComponent.Transform.Value);
 
 						List<Voxel.Coord> coords = new List<Voxel.Coord>();
 
@@ -179,7 +178,7 @@ namespace Lemma.Components
 							else
 							{
 								effectBlock.StartPosition.Value = m.GetAbsolutePosition(c) + new Vector3(0.25f, 0.5f, 0.25f) * index;
-								effectBlock.StartOrientation.Value = Matrix.CreateRotationX(0.15f * index) * Matrix.CreateRotationY(0.15f * index);
+								effectBlock.StartOrientation.Value = Quaternion.CreateFromYawPitchRoll(0.15f * index, 0.15f * index, 0);
 							}
 							effectBlock.TotalLifetime.Value = 0.05f + (index * rebuildTimeMultiplier * this.RebuildTime);
 							effectBlock.Setup(targetMap, c, c.Data.ID);

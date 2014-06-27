@@ -121,7 +121,7 @@ namespace Lemma.Components
 					effectBlock.DoScale.Value = true;
 
 					effectBlock.StartPosition.Value = entry.Position + new Vector3(8.0f, 20.0f, 8.0f) * this.BlockLifetime.Value;
-					effectBlock.StartOrientation.Value = Matrix.CreateRotationX(0.15f * this.Index) * Matrix.CreateRotationY(0.15f * this.Index);
+					effectBlock.StartOrientation.Value = Quaternion.CreateFromYawPitchRoll(0.15f * this.Index, 0.15f * this.Index, 0);
 
 					effectBlock.TotalLifetime.Value = this.BlockLifetime;
 					effectBlock.Setup(targetEntity, entry.Coord, entry.Coord.Data.ID);

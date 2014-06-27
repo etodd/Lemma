@@ -621,17 +621,17 @@ namespace Lemma.Components
 					Hard = false,
 					Density = 3,
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
-					DiffuseMap = "Textures\\white",
+					DiffuseMap = "Textures\\infected",
 					NormalMap = "Textures\\temporary-normal",
 					Materials = new[]
 					{
+						Model.Material.Unlit,
 						new Model.Material
 						{
 							SpecularPower = 200.0f,
 							SpecularIntensity = 0.4f,
 						},
 					},
-					Tint = new Vector3(0.8f, 0.1f, 0.1f),
 				},
 				new State
 				{

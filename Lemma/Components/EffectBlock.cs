@@ -25,7 +25,7 @@ namespace Lemma.Components
 
 		public Property<bool> DoScale = new Property<bool> { Value = true };
 		public Property<Vector3> StartPosition = new Property<Vector3>();
-		public Property<Matrix> StartOrientation = new Property<Matrix>();
+		public Property<Quaternion> StartOrientation = new Property<Quaternion>();
 		public Property<Entity.Handle> TargetVoxel = new Property<Entity.Handle>();
 		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
 		public Property<Voxel.t> StateId = new Property<Voxel.t>();
@@ -46,10 +46,10 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.EnabledWhenPaused = false;
-			this.StartOrientation.Set = delegate(Matrix value)
+			this.StartOrientation.Set = delegate(Quaternion value)
 			{
 				this.StartOrientation.InternalValue = value;
-				this.startQuat = Quaternion.CreateFromRotationMatrix(value);
+				this.startQuat = value;
 			};
 
 			Entry entry = new Entry();

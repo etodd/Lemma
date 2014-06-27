@@ -24,7 +24,7 @@ namespace Lemma.Factories
 			entity.CannotSuspendByDistance = true;
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			DirectionalLight directionalLight = entity.GetOrCreate<DirectionalLight>("DirectionalLight");
-			directionalLight.Add(new Binding<Matrix>(directionalLight.Orientation, transform.Orientation));
+			directionalLight.Add(new Binding<Quaternion>(directionalLight.Quaternion, transform.Quaternion));
 
 			this.SetMain(entity, main);
 

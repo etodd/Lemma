@@ -201,7 +201,7 @@ namespace Lemma.Components
 					index = 0;
 					this.globalShadowLight = light;
 				}
-				this.directionalLightDirections[index] = -light.Orientation.Value.Forward;
+				this.directionalLightDirections[index] = Vector3.Transform(new Vector3(0, 0, 1), light.Quaternion);
 				this.directionalLightColors[index] = light.Color;
 				directionalLightIndex++;
 			}
@@ -245,13 +245,15 @@ namespace Lemma.Components
 			Vector3 shadowCameraOffset;
 			float size = camera.FarPlaneDistance;
 
+			Vector3 globalShadowLightForward = Vector3.Transform(Vector3.Forward, this.globalShadowLight.Quaternion);
+
 			if (this.globalShadowMapRenderedLastFrame)
 				this.globalShadowMapRenderedLastFrame = false;
 			else
 			{
 				focus = camera.Position;
 				focus = new Vector3((float)Math.Round(focus.X / LightingManager.globalShadowFocusInterval), (float)Math.Round(focus.Y / LightingManager.globalShadowFocusInterval), (float)Math.Round(focus.Z / LightingManager.globalShadowFocusInterval)) * LightingManager.globalShadowFocusInterval;
-				shadowCameraOffset = this.globalShadowLight.Orientation.Value.Forward * size * 1.25f;
+				shadowCameraOffset = globalShadowLightForward * size * 1.25f;
 				this.shadowCamera.View.Value = Matrix.CreateLookAt(focus + shadowCameraOffset, focus, Vector3.Up);
 
 				this.shadowCamera.SetOrthographicProjection(size, size, 1.0f, size * 2.5f);
@@ -269,7 +271,7 @@ namespace Lemma.Components
 			{
 				focus = camera.Position;
 				focus = new Vector3((float)Math.Round(focus.X / LightingManager.detailGlobalShadowFocusInterval), (float)Math.Round(focus.Y / LightingManager.detailGlobalShadowFocusInterval), (float)Math.Round(focus.Z / LightingManager.detailGlobalShadowFocusInterval)) * LightingManager.detailGlobalShadowFocusInterval;
-				shadowCameraOffset = this.globalShadowLight.Orientation.Value.Forward * camera.FarPlaneDistance;
+				shadowCameraOffset = globalShadowLightForward * camera.FarPlaneDistance;
 				this.shadowCamera.View.Value = Matrix.CreateLookAt(focus + shadowCameraOffset, focus, Vector3.Up);
 
 				float detailSize = size * LightingManager.detailGlobalShadowSizeRatio;

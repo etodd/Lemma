@@ -42,7 +42,7 @@ namespace Lemma.Factories
 					{
 						Matrix parentOrientation = staticMap.Transform;
 						parentOrientation.Translation = Vector3.Zero;
-						mapTransform.Orientation.Value = parentOrientation;
+						mapTransform.Quaternion.Value = Quaternion.CreateFromRotationMatrix(parentOrientation);
 					}
 				}
 				else

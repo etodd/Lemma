@@ -50,7 +50,11 @@ namespace Lemma.Factories
 			}
 
 			spawn.Add(new TwoWayBinding<Vector3>(transform.Position, spawn.Position));
-			spawn.Add(new Binding<float, Vector3>(spawn.Rotation, x => ((float)Math.PI * -0.5f) - (float)Math.Atan2(x.Z, x.X), transform.Forward));
+			spawn.Add(new Binding<float, Quaternion>(spawn.Rotation, delegate(Quaternion value)
+			{
+				Vector3 x = Vector3.Transform(Vector3.Forward, value);
+				return ((float)Math.PI * -0.5f) - (float)Math.Atan2(x.Z, x.X);
+			}, transform.Quaternion));
 			spawn.EditorProperties();
 
 			trigger.Enabled.Value = true;

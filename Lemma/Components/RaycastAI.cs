@@ -20,7 +20,7 @@ namespace Lemma.Components
 		public Property<float> BlendTime = new Property<float> { Value = 0.1f };
 		public Property<float> MovementDistance = new Property<float> { Value = 15.0f };
 		public Property<Vector3> Position = new Property<Vector3>();
-		public Property<Matrix> Orientation = new Property<Matrix>();
+		public Property<Quaternion> Orientation = new Property<Quaternion>();
 
 		private Random random = new Random();
 
@@ -36,12 +36,12 @@ namespace Lemma.Components
 				{
 					Voxel lastM = lastMapEntity.Get<Voxel>();
 					this.Position.Value = Vector3.Lerp(lastM.GetAbsolutePosition(this.LastCoord), currentPosition, this.Blend);
-					this.Orientation.Value = Matrix.Lerp(lastM.Transform, currentMap.Transform, this.Blend);
+					this.Orientation.Value = Quaternion.Lerp(Quaternion.CreateFromRotationMatrix(lastM.Transform), Quaternion.CreateFromRotationMatrix(currentMap.Transform), this.Blend);
 				}
 				else
 				{
 					this.Position.Value = currentPosition;
-					this.Orientation.Value = currentMap.Transform;
+					this.Orientation.Value = Quaternion.CreateFromRotationMatrix(currentMap.Transform);
 				}
 				this.Blend.Value += this.main.ElapsedTime.Value / this.BlendTime;
 			}

@@ -252,7 +252,7 @@ namespace Lemma.Factories
 			editor.Add(new Binding<bool>(main.GeeUI.KeyboardEnabled, () => !editor.VoxelEditMode && !editor.MovementEnabled, editor.VoxelEditMode, editor.MovementEnabled));
 
 			model.Add(new Binding<bool>(model.Enabled, editor.VoxelEditMode));
-			model.Add(new Binding<Matrix>(model.Transform, () => editor.Orientation.Value * Matrix.CreateTranslation(editor.Position), editor.Position, editor.Orientation));
+			model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateFromQuaternion(editor.Orientation) * Matrix.CreateTranslation(editor.Position), editor.Position, editor.Orientation));
 
 			// When transferring between maps we need to clear our GUID to make way for the entities on the new map,
 			// then assign ourselves a new GUID.
@@ -445,7 +445,16 @@ namespace Lemma.Factories
 
 			input.Add(new CommandBinding<int>(input.MouseScrolled, () => input.GetKey(Keys.LeftAlt), delegate(int delta)
 			{
-				editor.CameraDistance.Value = Math.Max(1, editor.CameraDistance.Value + delta * -2.0f);
+				if (input.GetKey(Keys.LeftShift))
+				{
+					Voxel.Coord j = editor.Jitter;
+					j.X = Math.Max(j.X + delta, 0);
+					j.Y = Math.Max(j.Y + delta, 0);
+					j.Z = Math.Max(j.Z + delta, 0);
+					editor.Jitter.Value = j;
+				}
+				else
+					editor.CameraDistance.Value = Math.Max(1, editor.CameraDistance.Value + delta * -2.0f);
 			}));
 			input.Add(new Binding<bool>(input.EnableLook, () => editor.VoxelEditMode || (movementEnabled && editor.TransformMode.Value == Editor.TransformModes.None), movementEnabled, editor.VoxelEditMode, editor.TransformMode));
 			input.Add(new Binding<Vector3, Vector2>(camera.Angles, x => new Vector3(-x.Y, x.X, 0.0f), input.Mouse, () => input.EnableLook));
@@ -623,7 +632,7 @@ namespace Lemma.Factories
 					Action = delegate()
 					{
 						foreach (Entity e in editor.SelectedEntities)
-							e.Get<Transform>().Orientation.Value = Matrix.Identity;
+							e.Get<Transform>().Quaternion.Value = Quaternion.Identity;
 					}
 				},
 				gui.EntityCommands

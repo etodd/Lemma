@@ -60,7 +60,7 @@ namespace Lemma.Components
 		}
 
 		public Property<Vector3> Position = new Property<Vector3>();
-		public Property<Matrix> Orientation = new Property<Matrix>();
+		public Property<Quaternion> Orientation = new Property<Quaternion>();
 		public Property<bool> MovementEnabled = new Property<bool>();
 		public ListProperty<Entity> SelectedEntities = new ListProperty<Entity>();
 		public Property<Transform> SelectedTransform = new Property<Transform>();
@@ -141,7 +141,7 @@ namespace Lemma.Components
 		{
 			this.BrushSize.Value = 1;
 			this.MovementEnabled.Value = true;
-			this.Orientation.Value = Matrix.Identity;
+			this.Orientation.Value = Quaternion.Identity;
 		}
 
 		private void restoreVoxel(Voxel.Coord start, Voxel.Coord end, bool eraseOriginal, int offsetX = 0, int offsetY = 0, int offsetZ = 0)
@@ -249,12 +249,12 @@ namespace Lemma.Components
 				this.VoxelEditMode.InternalValue = value;
 				if (value && !oldValue)
 				{
-					this.Orientation.Value = this.SelectedEntities[0].Get<Transform>("Transform").Orientation;
+					this.Orientation.Value = this.SelectedEntities[0].Get<Transform>("Transform").Quaternion;
 					this.lastCoord = this.coord = this.SelectedEntities[0].Get<Voxel>().GetCoordinate(this.Position);
 					this.Coordinate.Value = this.coord;
 				}
 				else if (!value && oldValue)
-					this.Orientation.Value = Matrix.Identity;
+					this.Orientation.Value = Quaternion.Identity;
 			};
 
 			this.SelectedEntities.ItemAdded += delegate(int index, Entity t)

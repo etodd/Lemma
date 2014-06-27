@@ -109,7 +109,7 @@ namespace Lemma.Factories
 
 			RaycastAI raycastAI = entity.GetOrCreate<RaycastAI>("RaycastAI");
 			raycastAI.Add(new TwoWayBinding<Vector3>(transform.Position, raycastAI.Position));
-			raycastAI.Add(new Binding<Matrix>(transform.Orientation, raycastAI.Orientation));
+			raycastAI.Add(new Binding<Quaternion>(transform.Quaternion, raycastAI.Orientation));
 
 			AI.Task updatePosition = new AI.Task
 			{
@@ -328,7 +328,7 @@ namespace Lemma.Factories
 									Vector3 absolutePos = m.GetAbsolutePosition(raycastAI.Coord);
 
 									effectBlock.StartPosition.Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f);
-									effectBlock.StartOrientation.Value = Matrix.CreateRotationX(0.15f) * Matrix.CreateRotationY(0.15f);
+									effectBlock.StartOrientation.Value = Quaternion.CreateFromYawPitchRoll(0.15f, 0.15f, 0);
 									effectBlock.TotalLifetime.Value = 0.05f;
 									effectBlock.Setup(raycastAI.Voxel.Value.Target, raycastAI.Coord, Voxel.t.Infected);
 									main.Add(blockEntity);
