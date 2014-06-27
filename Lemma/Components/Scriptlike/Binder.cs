@@ -22,12 +22,16 @@ namespace Lemma.Components
 		public Property<string> TargetOutProperty = new Property<string>();
 
 		public Property<bool> TwoWay = new Property<bool>();
+		public Property<bool> SetOnBind = new Property<bool>();
 
 		[XmlIgnore]
 		public Command Bind = new Command();
 
 		[XmlIgnore]
 		public Command UnBind = new Command();
+
+		[XmlIgnore]
+		public Command Set = new Command();
 
 		private IProperty targetInProperty;
 		private IProperty targetOutProperty;
@@ -47,6 +51,7 @@ namespace Lemma.Components
 					if (this._inChanged == null)
 						_inChanged = new NotifyBinding(InChanged, this.Enabled, targetInProperty);
 					this.Add(_inChanged);
+					if (SetOnBind) InChanged();
 				}
 
 				if (this.targetOutProperty != null && this.TwoWay)
@@ -61,6 +66,15 @@ namespace Lemma.Components
 			{
 				if (this._inChanged != null) this.Remove(_inChanged);
 				if (this._outChanged != null) this.Remove(_outChanged);
+			};
+
+			this.Set.Action = () =>
+			{
+				this.FindProperties();
+				if (this.targetInProperty != null)
+				{
+					InChanged();
+				}
 			};
 			base.Awake();
 		}

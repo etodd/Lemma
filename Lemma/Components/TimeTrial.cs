@@ -25,6 +25,11 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command ResumeTimer = new Command();
 
+		public Property<float> ParTime = new Property<float>();
+
+		//Gold medal time
+		public Property<float> KourTime = new Property<float>();
+
 		public override void Awake()
 		{
 			this.theUI = new TimeTrialUI();

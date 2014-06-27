@@ -62,7 +62,9 @@ namespace Lemma.GeeUI.Composites
 		{
 			if (realParent == null || !realParent.Active || !this.Active)
 			{
+				if (this.Active)
 				this.Active.Value = false;
+
 				if (this.ParentView != null)
 					ParentView.RemoveChild(this);
 			}
@@ -70,7 +72,9 @@ namespace Lemma.GeeUI.Composites
 			{
 				if (!realParent.AttachedToRoot(realParent.ParentView))
 				{
-					this.Active.Value = false;
+					if (this.Active)
+						this.Active.Value = false;
+
 					if (this.ParentView != null)
 						ParentView.RemoveChild(this);
 				}
@@ -80,6 +84,12 @@ namespace Lemma.GeeUI.Composites
 		private void AnimateIn()
 		{
 			this.Active.Value = true;
+		}
+
+		public override void Update(float dt)
+		{
+			CheckActive();
+			base.Update(dt);
 		}
 
 		public override void Draw(SpriteBatch spriteBatch)

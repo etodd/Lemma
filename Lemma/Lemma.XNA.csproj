@@ -111,6 +111,7 @@
     <Compile Include="Components\Data.cs" />
     <Compile Include="Components\Rotator.cs" />
     <Compile Include="Components\Scriptlike\Binder.cs" />
+    <Compile Include="Components\Scriptlike\Constant.cs" />
     <Compile Include="Components\Skybox.cs" />
     <Compile Include="Components\Smoke.cs" />
     <Compile Include="Components\Snake.cs" />
@@ -157,6 +158,7 @@
     <Compile Include="Components\Propagator.cs" />
     <Compile Include="Editor\AnalyticsViewer.cs" />
     <Compile Include="Editor\EditorGeeUI.cs" />
+    <Compile Include="Factories\ConstantFactory.cs" />
     <Compile Include="Factories\ExplosionFactory.cs" />
     <Compile Include="Factories\FileFilter.cs" />
     <Compile Include="Factories\BinderFactory.cs" />
@@ -337,6 +339,7 @@
     <Compile Include="Util\PriorityQueue.cs" />
     <Compile Include="Util\ScriptBase.cs" />
     <Compile Include="Util\SteamWorker.cs" />
+    <Compile Include="Util\TimeTrialManifest.cs" />
     <Compile Include="Util\VectorExtensions.cs" />
     <Compile Include="Graphics\AnimatedModel.cs" />
     <Compile Include="Graphics\FullscreenQuad.cs" />

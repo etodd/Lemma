@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography;
 using ComponentBind;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,9 +39,11 @@ namespace Lemma.Factories
 
 			base.Bind(entity, main, creating);
 
-			entity.Add("Bind", binder.Bind);
-			entity.Add("Unbind", binder.UnBind);
-			entity.Add("Two-way", binder.TwoWay);
+			entity.Add("Bind", binder.Bind, description: "Link values together");
+			entity.Add("Unbind", binder.UnBind, description: "Unlink values");
+			entity.Add("Set", binder.Set, description: "Transfer value without binding");
+			entity.Add("Two-way", binder.TwoWay, "Out property will also affect in property.");
+			entity.Add("Set On Bind", binder.SetOnBind, "Value will be immediately transferred upon binding");
 			entity.Add("Type", binder.PropertyType);
 
 			if (main.EditorEnabled)
