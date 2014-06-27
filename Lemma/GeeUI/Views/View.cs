@@ -400,12 +400,14 @@ namespace GeeUI.Views
 
 
 
-		public bool AttachedToRoot(View parent)
+		public bool AttachedToRoot(View parent, View root = null)
 		{
-			if (this == ParentGeeUI.RootView) return true;
-			else if (parent == ParentGeeUI.RootView) return true;
+			if (root == null) root = ParentGeeUI.RootView;
+
+			if (this == root) return true;
+			else if (parent == root) return true;
 			else if (parent == null) return false;
-			return AttachedToRoot(parent.ParentView);
+			return AttachedToRoot(parent.ParentView, root);
 		}
 
 		#endregion

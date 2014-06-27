@@ -62,18 +62,24 @@ namespace Lemma.GeeUI.Composites
 		{
 			if (realParent == null || !realParent.Active || !this.Active)
 			{
+				this.Active.Value = false;
 				if (this.ParentView != null)
 					ParentView.RemoveChild(this);
+			}
+			if (realParent != null)
+			{
+				if (!realParent.AttachedToRoot(realParent.ParentView))
+				{
+					this.Active.Value = false;
+					if (this.ParentView != null)
+						ParentView.RemoveChild(this);
+				}
 			}
 		}
 
 		private void AnimateIn()
 		{
 			this.Active.Value = true;
-			//ParentGeeUI.AddComponent(new Animation(
-			//new Animation.Ease(new Animation.FloatMoveTo(this.MyOpacity, 1.0f, 0.3f), Animation.Ease.EaseType.InCubic)
-			//)
-			//);
 		}
 
 		public override void Draw(SpriteBatch spriteBatch)
