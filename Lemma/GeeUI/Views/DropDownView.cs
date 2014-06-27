@@ -142,6 +142,7 @@ namespace GeeUI.Views
 				child.Selected.Value = false;
 			if (_arrowKeysIndex >= DropDownListView.Children.Length)
 				_arrowKeysIndex = 0;
+			if (_arrowKeysIndex < 0) return;
 			DropDownListView.Children[_arrowKeysIndex].Selected.Value = true;
 		}
 
