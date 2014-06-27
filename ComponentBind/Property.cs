@@ -23,11 +23,19 @@ namespace ComponentBind
 		public string Description;
 		public IListProperty Options;
 		public bool Readonly;
+		public EditorData Data = new EditorData();
 
 		public PropertyEntry(IProperty property, string description = null)
 		{
 			this.Property = property;
 			this.Description = description;
+		}
+
+		public class EditorData
+		{
+			public int IChangeBy = 1;
+			public float FChangeBy = 1f;
+			public byte BChangeBy = 1;
 		}
 	}
 

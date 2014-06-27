@@ -822,7 +822,7 @@ namespace Lemma.Components
 			RecomputeVoxelCommands();
 		}
 
-		public void BuildValueFieldView(View parent, Type type, IProperty property, VectorElement element, int width = 30)
+		public void BuildValueFieldView(View parent, Type type, IProperty property, VectorElement element, PropertyEntry entry, int width = 30)
 		{
 			TextFieldView textField = new TextFieldView(main.GeeUI, parent, Vector2.Zero, MainFont);
 			textField.Height.Value = 15;
@@ -853,6 +853,7 @@ namespace Lemma.Components
 				};
 				textField.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
 				textField.OnTextSubmitted = onChanged;
+				BindScrollWheel(socket, element, entry, textField);
 			}
 			else if (type.Equals(typeof(Vector3)))
 			{
@@ -878,6 +879,7 @@ namespace Lemma.Components
 				};
 				textField.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
 				textField.OnTextSubmitted = onChanged;
+				BindScrollWheel(socket, element, entry, textField);
 			}
 			else if (type.Equals(typeof(Voxel.Coord)))
 			{
@@ -944,6 +946,7 @@ namespace Lemma.Components
 				};
 				textField.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
 				textField.OnTextSubmitted = onChanged;
+				BindScrollWheel(socket, element, entry, textField);
 			}
 			else if (type.Equals(typeof(Quaternion)))
 			{
@@ -967,6 +970,7 @@ namespace Lemma.Components
 				};
 				textField.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
 				textField.OnTextSubmitted = onChanged;
+				BindScrollWheel(socket, element, entry, textField);
 			}
 			else if (type.Equals(typeof(Color)))
 			{
@@ -992,6 +996,7 @@ namespace Lemma.Components
 				};
 				textField.ValidationRegex = "^?\\d+$";
 				textField.OnTextSubmitted = onChanged;
+				BindScrollWheel(socket, element, entry, textField);
 			}
 		}
 
@@ -1027,18 +1032,18 @@ namespace Lemma.Components
 				if (propertyInfo.PropertyType.Equals(typeof(Vector2)))
 				{
 					foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y })
-						this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field);
+						this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field, entry);
 				}
 				else if (propertyInfo.PropertyType.Equals(typeof(Vector3)) || propertyInfo.PropertyType.Equals(typeof(Voxel.Coord)))
 				{
 					foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z })
-						this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field);
+						this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field, entry);
 				}
 				else if (propertyInfo.PropertyType.Equals(typeof(Vector4)) || propertyInfo.PropertyType.Equals(typeof(Quaternion)) ||
 						 propertyInfo.PropertyType.Equals(typeof(Color)))
 				{
 					foreach (VectorElement field in new[] { VectorElement.X, VectorElement.Y, VectorElement.Z, VectorElement.W })
-						this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field);
+						this.BuildValueFieldView(ret, propertyInfo.PropertyType, property, field, entry);
 				}
 				else if (typeof(Enum).IsAssignableFrom(propertyInfo.PropertyType))
 				{
@@ -1158,6 +1163,7 @@ namespace Lemma.Components
 						};
 						view.ValidationRegex = "^-?\\d+$";
 						view.OnTextSubmitted = onChanged;
+						BindScrollWheel(socket, entry, view);
 					}
 					else if (propertyInfo.PropertyType.Equals(typeof(float)))
 					{
@@ -1165,7 +1171,7 @@ namespace Lemma.Components
 						view.Text = socket.Value.ToString("F");
 						socket.AddBinding(new NotifyBinding(() =>
 						{
-							view.Text = socket.Value.ToString();
+							view.Text = socket.Value.ToString("F");
 						}, socket));
 						Action onChanged = () =>
 						{
@@ -1180,6 +1186,7 @@ namespace Lemma.Components
 						};
 						view.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
 						view.OnTextSubmitted = onChanged;
+						BindScrollWheel(socket, entry, view);
 					}
 					else if (propertyInfo.PropertyType.Equals(typeof(bool)))
 					{
@@ -1229,6 +1236,89 @@ namespace Lemma.Components
 			}
 			return ret;
 		}
+
+		#region Scrollwheel binding
+		public void BindScrollWheel(Property<Color> property, VectorElement element, PropertyEntry entry, TextFieldView view)
+		{
+			view.ResetOnMouseScroll();
+			view.OnMouseScroll += delta =>
+			{
+				if (property == null || !view.Active || !view.Selected) return;
+				int val = property.Value.GetElement(element);
+				val += ((sbyte)entry.Data.BChangeBy * (sbyte)delta);
+				property.Value = property.Value.SetElement(element, (byte)val);
+			};
+		}
+
+		public void BindScrollWheel(Property<Quaternion> property, VectorElement element, PropertyEntry entry, TextFieldView view)
+		{
+			view.ResetOnMouseScroll();
+			view.OnMouseScroll += delta =>
+			{
+				if (property == null || !view.Active || !view.Selected) return;
+				float val = property.Value.GetElement(element);
+				val += (entry.Data.FChangeBy * delta);
+				property.Value = property.Value.SetElement(element, val);
+			};
+		}
+
+		public void BindScrollWheel(Property<Vector4> property, VectorElement element, PropertyEntry entry, TextFieldView view)
+		{
+			view.ResetOnMouseScroll();
+			view.OnMouseScroll += delta =>
+			{
+				if (property == null || !view.Active || !view.Selected) return;
+				float val = property.Value.GetElement(element);
+				val += (entry.Data.FChangeBy * delta);
+				property.Value = property.Value.SetElement(element, val);
+			};
+		}
+
+		public void BindScrollWheel(Property<Vector3> property, VectorElement element, PropertyEntry entry, TextFieldView view)
+		{
+			view.ResetOnMouseScroll();
+			view.OnMouseScroll += delta =>
+			{
+				if (property == null || !view.Active || !view.Selected) return;
+				float val = property.Value.GetElement(element);
+				val += (entry.Data.FChangeBy * delta);
+				property.Value = property.Value.SetElement(element, val);
+			};
+		}
+
+		public void BindScrollWheel(Property<Vector2> property, VectorElement element, PropertyEntry entry, TextFieldView view)
+		{
+			view.ResetOnMouseScroll();
+			view.OnMouseScroll += delta =>
+			{
+				if (property == null || !view.Active || !view.Selected) return;
+				float val = property.Value.GetElement(element);
+				val += (entry.Data.FChangeBy*delta);
+				property.Value = property.Value.SetElement(element, val);
+			};
+		}
+
+		public void BindScrollWheel(Property<float> property, PropertyEntry entry, TextFieldView view)
+		{
+			view.ResetOnMouseScroll();
+			view.OnMouseScroll += delta =>
+			{
+				if (property == null || !view.Active || !view.Selected) return;
+				property.Value += (entry.Data.FChangeBy * delta);
+			};
+		}
+		
+		public void BindScrollWheel(Property<int> property, PropertyEntry entry, TextFieldView view)
+		{
+			view.ResetOnMouseScroll();
+			view.OnMouseScroll += delta =>
+			{
+				if (property == null || !view.Active || !view.Selected) return;
+				property.Value += (entry.Data.IChangeBy * delta);
+			};
+		}
+
+		#endregion
 
 		public override void delete()
 		{

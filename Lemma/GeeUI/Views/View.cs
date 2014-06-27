@@ -17,12 +17,14 @@ namespace GeeUI.Views
 		public delegate void MouseClickEventHandler(object sender, EventArgs e);
 		public delegate void MouseOverEventHandler(object sender, EventArgs e);
 		public delegate void MouseOffEventHandler(object sender, EventArgs e);
+		public delegate void MouseScrollEventHandler(int delta);
 
 		public event MouseClickEventHandler OnMouseClick;
 		public event MouseClickEventHandler OnMouseRightClick;
 		public event MouseClickEventHandler OnMouseClickAway;
 		public event MouseOverEventHandler OnMouseOver;
 		public event MouseOffEventHandler OnMouseOff;
+		public event MouseScrollEventHandler OnMouseScroll;
 
 		public GeeUIMain ParentGeeUI;
 		public View ParentView;
@@ -450,6 +452,11 @@ namespace GeeUI.Views
 			OnMouseClick = null;
 		}
 
+		public void ResetOnMouseScroll()
+		{
+			OnMouseScroll = null;
+		}
+
 		#region Virtual methods/events
 
 		public virtual void OnDelete()
@@ -463,6 +470,8 @@ namespace GeeUI.Views
 		public virtual void OnMScroll(Vector2 position, int scrollDelta, bool fromChild = false)
 		{
 			if (ParentView != null) ParentView.OnMScroll(position, scrollDelta, true);
+			if (OnMouseScroll != null)
+				OnMouseScroll(scrollDelta);
 		}
 
 		public virtual void OnMRightClick(Vector2 position, bool fromChild = false)
