@@ -14,7 +14,7 @@ namespace Lemma.Factories
 	{
 		public MessageDisplayerFactory()
 		{
-			this.Color = new Vector3(0.0f, 1f, 0.0f);
+			this.Color = new Vector3(0.57f, 0.87f, 0.75f);
 		}
 
 		public override Entity Create(Main main)

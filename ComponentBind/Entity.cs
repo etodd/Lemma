@@ -412,6 +412,17 @@ namespace ComponentBind
 				return (Property<T>)result.Property;
 		}
 
+		public IProperty GetProperty(string name)
+		{
+			if (name == null) return null;
+			PropertyEntry result;
+			this.properties.TryGetValue(name, out result);
+			if (result == null)
+				return null;
+			else
+				return result.Property;
+		}
+
 		public void AddWithoutOverwriting(IComponent component)
 		{
 			this.AddWithoutOverwriting(Guid.NewGuid().ToString(), component);

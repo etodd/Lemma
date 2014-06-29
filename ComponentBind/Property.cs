@@ -14,6 +14,7 @@ namespace ComponentBind
 		void AddBinding(IPropertyBinding binding);
 		void RemoveBinding(IPropertyBinding binding);
 		void Reset();
+		Type PropertyType();
 	}
 
 	public class PropertyEntry
@@ -98,6 +99,11 @@ namespace ComponentBind
 		public void Reset()
 		{
 			this.InternalSet(this.InternalGet(null), null);
+		}
+
+		public System.Type PropertyType()
+		{
+			return typeof(Type);
 		}
 
 		public void InternalSet(Type obj, IPropertyBinding binding)
@@ -199,6 +205,11 @@ namespace ComponentBind
 		public void Reset()
 		{
 
+		}
+
+		public System.Type PropertyType()
+		{
+			return typeof (Type);
 		}
 
 		public List<Type> InternalList = new List<Type>();

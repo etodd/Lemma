@@ -14,7 +14,7 @@ namespace Lemma.Factories
 	{
 		public ConstantFactory()
 		{
-			this.Color = new Vector3(0.0f, 1f, 0.0f);
+			this.Color = new Vector3(1.55f, 0.34f, 0.57f);
 		}
 
 		public override Entity Create(Main main)
