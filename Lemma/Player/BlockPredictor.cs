@@ -41,7 +41,6 @@ namespace Lemma.Components
 		private const int platformSize = 3;
 		private const int additionalWallDistance = 6;
 
-
 		private float blockPossibilityLifetime = 0.0f;
 
 		private Dictionary<Voxel, List<Possibility>> possibilities = new Dictionary<Voxel, List<Possibility>>();
@@ -195,17 +194,13 @@ namespace Lemma.Components
 						Voxel.Coord coord = playerCoord.Move(relativeDir, i);
 						Voxel.State state = map[coord];
 
-						if (state.ID != 0 || EffectBlock.IsAnimating(new EffectBlock.Entry { Voxel = map, Coordinate = coord, }))
+						if (state.ID == Voxel.t.Neutral && Zone.CanBuild(map.GetAbsolutePosition(coord)))
 						{
-							// Check we're not in a no-build zone
-							if (state.ID != Voxel.t.Infected && state.ID != Voxel.t.HardInfected && Zone.CanBuild(map.GetAbsolutePosition(coord)))
-							{
-								shortestDistance = i;
-								relativeShortestDirection = relativeDir;
-								absoluteShortestDirection = absoluteDir;
-								shortestCoordinate = playerCoord;
-								shortestMap = map;
-							}
+							shortestDistance = i;
+							relativeShortestDirection = relativeDir;
+							absoluteShortestDirection = absoluteDir;
+							shortestCoordinate = playerCoord;
+							shortestMap = map;
 							break;
 						}
 					}
@@ -258,18 +253,13 @@ namespace Lemma.Components
 								Voxel.Coord c = coord.Move(dir, i);
 								Voxel.State state = map[c];
 
-								if (state.ID != 0 || EffectBlock.IsAnimating(new EffectBlock.Entry { Voxel = map, Coordinate = c, }))
+								if (state.ID == Voxel.t.Neutral && Zone.CanBuild(map.GetAbsolutePosition(c)))
 								{
-									// Check we're not in a no-build zone
-									if (state.ID != Voxel.t.AvoidAI && Zone.CanBuild(map.GetAbsolutePosition(c)))
-									{
-										shortestMap = map;
-										shortestBuildDirection = dir;
-										shortestWallDirection = relativeWallDir;
-										shortestDistance = i;
-										shortestPlayerCoord = coord;
-									}
-
+									shortestMap = map;
+									shortestBuildDirection = dir;
+									shortestWallDirection = relativeWallDir;
+									shortestDistance = i;
+									shortestPlayerCoord = coord;
 									break;
 								}
 							}

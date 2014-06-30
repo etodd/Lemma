@@ -38,6 +38,12 @@ namespace Lemma.Components
 			this.model = m;
 			m["Land"].Strength = m["Land"].TargetStrength = 0.7f;
 			this.landAnimation = m["LandHard"];
+			this.landAnimation.GetChannel(m.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix hips)
+			{
+				float t = (float)this.landAnimation.CurrentTime.TotalSeconds;
+				hips.Translation += new Vector3(0, Math.Max(0.0f, 1.0f - (t > 0.75f ? t - 0.75f : 0)), 0);
+				return hips;
+			};
 			this.landAnimation.Speed = 1.5f;
 		}
 

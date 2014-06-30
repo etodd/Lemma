@@ -37,10 +37,6 @@ namespace Lemma.Components
 		private SkinnedModel.Clip runAnimation;
 		private SkinnedModel.Clip fallAnimation;
 		private Property<Matrix> relativeHeadBone;
-		private Property<Matrix> relativeUpperLeftArm;
-		private Property<Matrix> relativeUpperRightArm;
-		private Property<Matrix> clavicleLeft;
-		private Property<Matrix> clavicleRight;
 
 		private float lastRotation;
 
@@ -66,38 +62,46 @@ namespace Lemma.Components
 			this.sprintAnimation = m["Sprint"];
 			this.runAnimation = m["Run"];
 			this.fallAnimation = m["Fall"];
+
 			m["Idle"].GetChannel(m.GetBoneIndex("ORG-spine")).Filter = delegate(Matrix spine)
 			{
-				float x;
-				if (this.idleRotationBlend < 1.0f)
-					x = (this.Rotation - this.idleRotation.ClosestAngle(this.Rotation)) * Math.Max(0.0f, 1.0f - this.idleRotationBlend);
+				if (this.idling)
+				{
+					float x;
+					if (this.idleRotationBlend < 1.0f)
+						x = (this.Rotation - this.idleRotation.ClosestAngle(this.Rotation)) * Math.Max(0.0f, 1.0f - this.idleRotationBlend);
+					else
+						x = this.Rotation - this.idleRotation.ClosestAngle(this.Rotation);
+					return spine * Matrix.CreateRotationY(x);
+				}
 				else
-					x = this.Rotation - this.idleRotation.ClosestAngle(this.Rotation);
-				return spine * Matrix.CreateRotationY(x);
+					return spine;
 			};
+
 			m["Idle"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix hips)
 			{
-				float x;
-				if (this.idleRotationBlend < 1.0f)
-					x = (this.idleRotation.ClosestAngle(this.Rotation) - this.Rotation) * Math.Max(0.0f, 1.0f - this.idleRotationBlend);
+				if (this.idling)
+				{
+					float x;
+					if (this.idleRotationBlend < 1.0f)
+						x = (this.idleRotation.ClosestAngle(this.Rotation) - this.Rotation) * Math.Max(0.0f, 1.0f - this.idleRotationBlend);
+					else
+						x = this.idleRotation.ClosestAngle(this.Rotation) - this.Rotation;
+					return hips * Matrix.CreateRotationZ(x);
+				}
 				else
-					x = this.idleRotation.ClosestAngle(this.Rotation) - this.Rotation;
-				return hips * Matrix.CreateRotationZ(x);
+					return hips;
 			};
+
 			this.relativeHeadBone = m.GetRelativeBoneTransform("ORG-head");
-			this.clavicleLeft = m.GetBoneTransform("ORG-shoulder_L");
-			this.clavicleRight = m.GetBoneTransform("ORG-shoulder_R");
-			this.relativeUpperLeftArm = m.GetRelativeBoneTransform("ORG-upper_arm_L");
-			this.relativeUpperRightArm = m.GetRelativeBoneTransform("ORG-upper_arm_R");
 			m["Swim"].Speed = 2.0f;
 			m["Turn"].Speed = 2.0f;
 
-			Matrix correction = Matrix.CreateTranslation(0, 1.0f, 0);
-			Func<Matrix, Matrix> correct = delegate(Matrix hips)
+			m["WallRunStraight"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix hips)
 			{
-				return hips * correction;
+				hips.Translation += new Vector3(0, 1, 0);
+				return hips;
 			};
-			m["WallRunStraight"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = correct;
 		}
 
 		// Animations and their priorities
@@ -242,7 +246,7 @@ namespace Lemma.Components
 								if (this.idleRotationBlend >= 1.0f)
 									this.idleRotation = this.Rotation; // We're done blending
 							}
-							else if (Math.Abs(this.Rotation - this.idleRotation) > Math.PI * 0.25)
+							else if (Math.Abs(this.Rotation - this.idleRotation.ClosestAngle(this.Rotation)) > Math.PI * 0.25)
 							{
 								this.idleRotationBlend = 0.0f; // Start blending to new rotation
 								this.model.StartClip("Turn", 1);
@@ -357,21 +361,8 @@ namespace Lemma.Components
 				}
 			}
 
-			// Rotate head and arms to match mouse
-			this.model.UpdateWorldTransforms();
+			// Rotate head to match mouse
 			this.relativeHeadBone.Value *= Matrix.CreateRotationX(mouse.Y * 0.6f);
-			this.model.UpdateWorldTransforms();
-
-			Matrix r = Matrix.CreateRotationX(mouse.Y * 0.6f * (this.runAnimation.TotalStrength + this.sprintAnimation.TotalStrength));
-
-			Matrix parent = this.clavicleLeft;
-			parent.Translation = Vector3.Zero;
-			this.relativeUpperLeftArm.Value *= parent * r * Matrix.Invert(parent);
-
-			parent = this.clavicleRight;
-			parent.Translation = Vector3.Zero;
-			this.relativeUpperRightArm.Value *= parent * r * Matrix.Invert(parent);
-
 			this.model.UpdateWorldTransforms();
 
 			float l = 0.0f;

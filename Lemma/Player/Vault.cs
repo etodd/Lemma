@@ -83,14 +83,14 @@ namespace Lemma.Components
 			this.model["TopOut"].Speed = 1.7f;
 			this.model["TopOut"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
-				Vector3 diff = Vector3.Transform(this.relativeVaultStartPosition, this.map.Transform) - this.Position;
-				m.Translation += Vector3.Transform(diff, Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f) * Matrix.CreateTranslation(0, 0.0f, 0.535f));
+				Vector3 diff = Vector3.Transform(this.relativeVaultStartPosition, this.map.Transform) + new Vector3(0, 0.535f, 0) - this.Position;
+				m.Translation += Vector3.Transform(diff, Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f));
 				return m;
 			};
 			this.model["Vault"].Speed = 1.3f;
 			this.model["Vault"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
-				m.Translation += (Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f) * Matrix.CreateTranslation(0, -1.0f, -0.2f)).Translation;
+				m.Translation += (Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f) * Matrix.CreateTranslation(0, -1.5f + (this.vaultTime * 1.5f), 0.5f - this.vaultTime * 2.0f)).Translation;
 				return m;
 			};
 		}

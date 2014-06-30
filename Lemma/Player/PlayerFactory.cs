@@ -58,6 +58,8 @@ namespace Lemma.Factories
 			input.EnabledWhenPaused = false;
 			entity.Add("Input", input);
 
+			Player player = entity.GetOrCreate<Player>("Player");
+
 			AnimatedModel firstPersonModel = entity.GetOrCreate<AnimatedModel>("FirstPersonModel");
 			firstPersonModel.Serialize = false;
 			AnimatedModel model = entity.GetOrCreate<AnimatedModel>("Model");
@@ -70,7 +72,6 @@ namespace Lemma.Factories
 			firstPersonModel.CullBoundingBox.Value = false;
 
 			AnimationController anim = entity.GetOrCreate<AnimationController>("AnimationController");
-			Player player = entity.GetOrCreate<Player>("Player");
 			RotationController rotation = entity.GetOrCreate<RotationController>("Rotation");
 			BlockPredictor predictor = entity.GetOrCreate<BlockPredictor>("BlockPredictor");
 			Jump jump = entity.GetOrCreate<Jump>("Jump");
