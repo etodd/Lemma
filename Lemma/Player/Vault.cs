@@ -111,32 +111,29 @@ namespace Lemma.Components
 			foreach (Voxel map in Voxel.ActivePhysicsVoxels)
 			{
 				Direction up = map.GetRelativeDirection(Direction.PositiveY);
-				Direction right = map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
+				Direction backward = map.GetRelativeDirection(rotationMatrix.Forward);
+				Direction right = up.Cross(backward);
 				Vector3 pos = this.Position + rotationMatrix.Forward * (this.WallRunState == WallRun.State.Straight ? -1.75f : -1.25f);
 				Voxel.Coord baseCoord = map.GetCoordinate(pos).Move(up, searchUpDistance);
 				foreach (int x in new[] { 0, -1, 1 })
 				{
 					Voxel.Coord coord = baseCoord.Move(right, x);
-					bool conflict = false;
+					if (map[coord.Move(up)] != Voxel.EmptyState
+						|| map[coord.Move(up, 2)] != Voxel.EmptyState
+						|| map[coord.Move(up).Move(backward)] != Voxel.EmptyState
+						|| map[coord.Move(up, 2).Move(backward)] != Voxel.EmptyState)
+						break; // Conflict
+
 					for (int i = 0; i < searchDownDistance; i++)
 					{
-						Voxel.Coord downCoord = coord.Move(up.GetReverse());
-
-						if (map[coord].ID != 0)
-						{
-							conflict = true;
-							break;
-						}
-						else if (map[downCoord].ID != 0)
+						if (map[coord] != Voxel.EmptyState)
 						{
 							// Vault
-							this.vault(map, coord);
+							this.vault(map, coord.Move(up));
 							return true;
 						}
 						coord = coord.Move(up.GetReverse());
 					}
-					if (conflict)
-						break;
 				}
 			}
 
@@ -194,7 +191,14 @@ namespace Lemma.Components
 			this.isTopOut = forward.Y > 1.75f;
 
 			this.forward.Y = 0.0f;
-			this.forward.Normalize();
+			float horizontalDistanceToCoord = this.forward.Length();
+			this.forward /= horizontalDistanceToCoord;
+			if (horizontalDistanceToCoord < Character.DefaultRadius + 1.0f)
+			{
+				Vector3 pos = coordPosition + this.forward * (Character.DefaultRadius + 1.0f);
+				pos.Y = this.Position.Value.Y;
+				this.Position.Value = pos;
+			}
 
 			// If there's nothing on the other side of the wall (it's a one-block-wide wall)
 			// then vault over it rather than standing on top of it
@@ -234,8 +238,6 @@ namespace Lemma.Components
 
 			if (this.random.NextDouble() > 0.5)
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, this.Entity);
-			if (this.random.NextDouble() > 0.5)
-				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_VAULT, this.Entity);
 
 			this.vaultTime = 0.0f;
 			this.moveForwardStartTime = 0.0f;
@@ -377,7 +379,12 @@ namespace Lemma.Components
 				else
 				{
 					// We're still going up.
-					if (this.IsSupported || this.vaultTime > (this.isTopOut ? maxTopoutTime : maxVaultTime) || this.LinearVelocity.Value.Y < 0.0f
+					if (this.LinearVelocity.Value.Y < 0.0f)
+					{
+						// We hit something above us.
+						delete = true;
+					}
+					else if (this.IsSupported || this.vaultTime > (this.isTopOut ? maxTopoutTime : maxVaultTime)
 						|| (this.FloorPosition.Value.Y > this.map.GetAbsolutePosition(this.coord).Y + (this.vaultOver ? 0.2f : 0.1f))) // Move forward
 					{
 						// We've reached the top of the vault. Start moving forward.

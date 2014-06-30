@@ -53,7 +53,7 @@ namespace PipelineExtensions
 			// Read the bind pose and skeleton hierarchy data.
 			IList<BoneContent> bones = MeshHelper.FlattenSkeleton(skeleton);
 
-			const int maxBones = 78;
+			const int maxBones = 67;
 			if (bones.Count > maxBones)
 				throw new InvalidContentException(string.Format("Skeleton has {0} bones, but the maximum supported is {1}.", bones.Count, maxBones));
 

@@ -1,6 +1,6 @@
 #include "RenderCommon.fxh"
 
-float4x3 Bones[76];
+float4x3 Bones[67];
 
 struct RenderVSInput
 {

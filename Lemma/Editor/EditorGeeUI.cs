@@ -673,61 +673,71 @@ namespace Lemma.Components
 			CreateDropDownView.Active.Value = CreateDropDownView.DropDownOptions.Count > 0;
 		}
 
-		private void show(Entity entity)
+		private void show(IEnumerable<Entity> entities)
 		{
 			ListView rootEntityView = (ListView)PropertiesView.FindFirstChildByName("PropertiesList");
 			rootEntityView.ContentOffset.Value = new Vector2(0);
 			rootEntityView.RemoveAllChildren();
 
-			if (entity == null)
-				return;
-
-			TextView categoryView = new TextView(main.GeeUI, rootEntityView, "", new Vector2(0, 0), MainFont);
-			categoryView.Add(new Binding<string>(categoryView.Text, () => this.entityString(entity), entity.ID));
-			categoryView.AutoSize.Value = false;
-			categoryView.TextJustification = TextJustification.Center;
-			categoryView.Add(new Binding<int>(categoryView.Width, i => { return (int)Math.Max(i, categoryView.TextWidth); }, rootEntityView.Width));
-
-			// ID property
+			int count = entities != null ? entities.Count() : 0;
+			if (count > 1)
 			{
-				bool sameLine;
-				var child = this.BuildValueView(entity, new PropertyEntry(entity.ID, "ID"), out sameLine);
-				TextFieldView textField = (TextFieldView)child.FindFirstChildByName("TextField");
-				textField.Validator = delegate(string x)
+				foreach (Entity e in entities)
 				{
-					Entity e = Entity.GetByID(x);
-					return e == null || e == entity;
-				};
-				View containerLabel = BuildContainerLabel("ID", sameLine);
-				containerLabel.AddChild(child);
-				rootEntityView.AddChild(containerLabel);
-				containerLabel.OrderChildren();
-				child.OrderChildren();
+					TextView categoryView = new TextView(main.GeeUI, rootEntityView, "", new Vector2(0, 0), MainFont);
+					categoryView.Add(new Binding<string>(categoryView.Text, () => this.entityString(e), e.ID));
+				}
 			}
-
-			foreach (KeyValuePair<string, PropertyEntry> prop in entity.Properties)
+			else if (count == 1)
 			{
-				bool sameLine;
-				var child = BuildValueView(entity, prop.Value, out sameLine);
-				View containerLabel = BuildContainerLabel(prop.Key, sameLine);
-				containerLabel.AddChild(child);
-				rootEntityView.AddChild(containerLabel);
-				containerLabel.OrderChildren();
-				if (prop.Value.Visible != null)
-					containerLabel.Add(new Binding<bool>(containerLabel.Active, prop.Value.Visible));
-				child.OrderChildren();
+				Entity entity = entities.First();
+				TextView categoryView = new TextView(main.GeeUI, rootEntityView, "", new Vector2(0, 0), MainFont);
+				categoryView.Add(new Binding<string>(categoryView.Text, () => this.entityString(entity), entity.ID));
+				categoryView.AutoSize.Value = false;
+				categoryView.TextJustification = TextJustification.Center;
+				categoryView.Add(new Binding<int>(categoryView.Width, i => { return (int)Math.Max(i, categoryView.TextWidth); }, rootEntityView.Width));
 
-				containerLabel.SetToolTipText(prop.Value.Description, MainFont);
-			}
+				// ID property
+				{
+					bool sameLine;
+					var child = this.BuildValueView(entity, new PropertyEntry(entity.ID, "ID"), out sameLine);
+					TextFieldView textField = (TextFieldView)child.FindFirstChildByName("TextField");
+					textField.Validator = delegate(string x)
+					{
+						Entity e = Entity.GetByID(x);
+						return e == null || e == entity;
+					};
+					View containerLabel = BuildContainerLabel("ID", sameLine);
+					containerLabel.AddChild(child);
+					rootEntityView.AddChild(containerLabel);
+					containerLabel.OrderChildren();
+					child.OrderChildren();
+				}
 
-			foreach (KeyValuePair<string, Command.Entry> cmd in entity.Commands)
-			{
-				View containerLabel = BuildContainerLabel(cmd.Key, false);
-				containerLabel.AddChild(BuildButton(entity, cmd.Value, "Execute"));
-				rootEntityView.AddChild(containerLabel);
-				containerLabel.OrderChildren();
+				foreach (KeyValuePair<string, PropertyEntry> prop in entity.Properties)
+				{
+					bool sameLine;
+					var child = BuildValueView(entity, prop.Value, out sameLine);
+					View containerLabel = BuildContainerLabel(prop.Key, sameLine);
+					containerLabel.AddChild(child);
+					rootEntityView.AddChild(containerLabel);
+					containerLabel.OrderChildren();
+					if (prop.Value.Visible != null)
+						containerLabel.Add(new Binding<bool>(containerLabel.Active, prop.Value.Visible));
+					child.OrderChildren();
 
-				containerLabel.SetToolTipText(cmd.Value.Description, MainFont);
+					containerLabel.SetToolTipText(prop.Value.Description, MainFont);
+				}
+
+				foreach (KeyValuePair<string, Command.Entry> cmd in entity.Commands)
+				{
+					View containerLabel = BuildContainerLabel(cmd.Key, false);
+					containerLabel.AddChild(BuildButton(entity, cmd.Value, "Execute"));
+					rootEntityView.AddChild(containerLabel);
+					containerLabel.OrderChildren();
+
+					containerLabel.SetToolTipText(cmd.Value.Description, MainFont);
+				}
 			}
 
 			PropertiesView.OrderChildren();
@@ -810,10 +820,10 @@ namespace Lemma.Components
 					if (this.VoxelEditMode)
 						this.show(null);
 					else
-						this.show(this.SelectedEntities.First());
+						this.show(this.SelectedEntities);
 				}
 				else
-					this.show(null);
+					this.show(this.SelectedEntities);
 			}
 
 			RecomputeAddCommands();

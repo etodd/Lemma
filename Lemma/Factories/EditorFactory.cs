@@ -281,10 +281,12 @@ namespace Lemma.Factories
 			editor.Add(new Binding<Vector2>(editor.Movement, input.Movement));
 			editor.Add(new Binding<bool>(editor.Up, input.GetKey(Keys.Space)));
 			editor.Add(new Binding<bool>(editor.Down, input.GetKey(Keys.LeftControl)));
-			editor.Add(new Binding<bool>(editor.Empty, input.RightMouseButton));
 			editor.Add(new Binding<bool>(editor.SpeedMode, input.GetKey(Keys.LeftShift)));
 			editor.Add(new Binding<bool>(editor.Extend, input.GetKey(Keys.F)));
-			editor.Add(new Binding<bool>(editor.Fill, input.LeftMouseButton));
+			editor.Add(new CommandBinding(input.LeftMouseButtonDown, editor.StartFill));
+			editor.Add(new CommandBinding(input.LeftMouseButtonUp, editor.StopFill));
+			editor.Add(new CommandBinding(input.RightMouseButtonDown, editor.StartEmpty));
+			editor.Add(new CommandBinding(input.RightMouseButtonUp, editor.StopEmpty));
 			editor.Add(new Binding<bool>(editor.EditSelection, () => movementEnabled && editor.VoxelEditMode, movementEnabled, editor.VoxelEditMode));
 
 			AddCommand(entity, main, "Delete", new PCInput.Chord { Key = Keys.X }, () => !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None && editor.SelectedEntities.Count > 0, editor.DeleteSelected, gui.EntityCommands);
