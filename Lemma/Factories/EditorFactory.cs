@@ -735,6 +735,22 @@ namespace Lemma.Factories
 
 #if DEVELOPMENT
 			AnalyticsViewer.Bind(entity, main);
+
+			AddCommand
+			(
+				entity, main, "Rebuild voxel adjacency",
+				new PCInput.Chord(),
+				() => editor.SelectedEntities.Count == 0,
+				new Command
+				{
+					Action = delegate()
+					{
+						foreach (Voxel v in Voxel.Voxels)
+							v.RebuildAdjacency();
+					}
+				},
+				gui.MapCommands
+			);
 #endif
 		}
 

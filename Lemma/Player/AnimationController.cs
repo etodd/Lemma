@@ -191,7 +191,7 @@ namespace Lemma.Components
 					foreach (KeyValuePair<string, AnimationInfo> animation in this.Crouched ? crouchMovementAnimations : movementAnimations)
 					{
 						if (animation.Key != "Idle" && animation.Key != "CrouchIdle")
-							this.model[animation.Key].Speed = this.Crouched ? (speed / 2.2f) : (speed / 6.0f);
+							this.model[animation.Key].Speed = this.Crouched ? (speed / 2.2f) : Math.Min(speed / 4.5f, 1.4f);
 						this.model[animation.Key].TargetStrength = animation.Key == movementAnimation ? 1.0f : animation.Value.DefaultStrength;
 					}
 

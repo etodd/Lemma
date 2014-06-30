@@ -68,17 +68,15 @@ void ShadowVS (	in float4 in_Position			: POSITION,
 				out ShadowVSOutput vs,
 				out ShadowPSInput output)
 {
-	// Calculate shadow-space position
 	float4x3 skinning = 0;
 
 	[unroll]
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 4; i++)
 		skinning += Bones[in_Indices[i]] * in_Weights[i];
+
 	float4 pos = float4(mul(in_Position, skinning), in_Position.w);
-	
-	// Calculate shadow-space position
 	float4 worldPosition = mul(pos, WorldMatrix);
-	output.worldPosition = worldPosition.xyz;
+	output.worldPosition = worldPosition;
 	vs.position = mul(worldPosition, ViewProjectionMatrix);
 	output.clipSpacePosition = vs.position;
 }
