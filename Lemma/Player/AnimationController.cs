@@ -367,7 +367,7 @@ namespace Lemma.Components
 
 			float l = 0.0f;
 			if (this.EnableLean)
-				l = this.LinearVelocity.Value.Length() * (this.lastRotation.ClosestAngle(this.Rotation) - this.Rotation);
+				l = this.LinearVelocity.Value.Length() * (this.lastRotation.ClosestAngle(this.Rotation) - this.Rotation) * (1.0f / 60.0f) / dt;
 			this.lastRotation = this.Rotation;
 			this.Lean.Value += (l - this.Lean) * 20.0f * dt;
 
