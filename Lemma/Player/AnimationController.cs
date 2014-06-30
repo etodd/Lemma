@@ -25,6 +25,7 @@ namespace Lemma.Components
 		public Property<Vector2> Movement = new Property<Vector2>();
 		public Property<bool> Crouched = new Property<bool>();
 		public Property<Vector2> Mouse = new Property<Vector2>();
+		public Property<float> Rotation = new Property<float>();
 		public Property<bool> EnableLean = new Property<bool>();
 		public Property<Voxel> WallRunMap = new Property<Voxel>();
 		public Property<Direction> WallDirection = new Property<Direction>();
@@ -45,12 +46,17 @@ namespace Lemma.Components
 
 		private float breathing;
 
+		private float idleRotation;
+		private bool idling;
+		private float idleRotationBlend = 1.0f;
+		private const float idleRotationBlendTime = 0.3f;
+
 		public override void Awake()
 		{
 			base.Awake();
 			this.EnabledWhenPaused = false;
 			this.Serialize = false;
-			this.lastRotation = this.Mouse.Value.X;
+			this.lastRotation = this.idleRotation = this.Rotation;
 			SoundKiller.Add(this.Entity, AK.EVENTS.STOP_PLAYER_BREATHING_SOFT);
 		}
 
@@ -60,12 +66,31 @@ namespace Lemma.Components
 			this.sprintAnimation = m["Sprint"];
 			this.runAnimation = m["Run"];
 			this.fallAnimation = m["Fall"];
+			m["Idle"].GetChannel(m.GetBoneIndex("ORG-spine")).Filter = delegate(Matrix spine)
+			{
+				float x;
+				if (this.idleRotationBlend < 1.0f)
+					x = (this.Rotation - this.idleRotation.ClosestAngle(this.Rotation)) * Math.Max(0.0f, 1.0f - this.idleRotationBlend);
+				else
+					x = this.Rotation - this.idleRotation.ClosestAngle(this.Rotation);
+				return spine * Matrix.CreateRotationY(x);
+			};
+			m["Idle"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix hips)
+			{
+				float x;
+				if (this.idleRotationBlend < 1.0f)
+					x = (this.idleRotation.ClosestAngle(this.Rotation) - this.Rotation) * Math.Max(0.0f, 1.0f - this.idleRotationBlend);
+				else
+					x = this.idleRotation.ClosestAngle(this.Rotation) - this.Rotation;
+				return hips * Matrix.CreateRotationZ(x);
+			};
 			this.relativeHeadBone = m.GetRelativeBoneTransform("ORG-head");
 			this.clavicleLeft = m.GetBoneTransform("ORG-shoulder_L");
 			this.clavicleRight = m.GetBoneTransform("ORG-shoulder_R");
 			this.relativeUpperLeftArm = m.GetRelativeBoneTransform("ORG-upper_arm_L");
 			this.relativeUpperRightArm = m.GetRelativeBoneTransform("ORG-upper_arm_R");
 			m["Swim"].Speed = 2.0f;
+			m["Turn"].Speed = 2.0f;
 
 			Matrix correction = Matrix.CreateTranslation(0, 1.0f, 0);
 			Func<Matrix, Matrix> correct = delegate(Matrix hips)
@@ -195,6 +220,7 @@ namespace Lemma.Components
 						this.model[animation.Key].TargetStrength = animation.Key == movementAnimation ? 1.0f : animation.Value.DefaultStrength;
 					}
 
+					bool nowIdling = false;
 					if (movementAnimation == "Run")
 					{
 						this.sprintAnimation.TargetStrength = MathHelper.Clamp((speed - sprintThreshold) / sprintRange, 0.0f, 1.0f);
@@ -202,6 +228,38 @@ namespace Lemma.Components
 					}
 					else if (movementAnimation != "Idle" && movementAnimation != "CrouchIdle")
 						this.model[movementAnimation].TargetStrength = MathHelper.Clamp(this.Crouched ? speed / 2.0f : speed / sprintThreshold, 0.0f, 1.0f);
+					else if (movementAnimation == "Idle")
+						nowIdling = true;
+
+					if (nowIdling)
+					{
+						if (this.idling)
+						{
+							// We're already idling. Blend to new idle rotation if necessary
+							if (this.idleRotationBlend < 1.0f)
+							{
+								this.idleRotationBlend += dt / idleRotationBlendTime;
+								if (this.idleRotationBlend >= 1.0f)
+									this.idleRotation = this.Rotation; // We're done blending
+							}
+							else if (Math.Abs(this.Rotation - this.idleRotation) > Math.PI * 0.25)
+							{
+								this.idleRotationBlend = 0.0f; // Start blending to new rotation
+								this.model.StartClip("Turn", 1);
+							}
+						}
+						else // We just started idling. Save the current rotation.
+							this.idleRotation = this.Rotation;
+					}
+					else
+					{
+						if (this.idling) // We're just now coming out of idle state
+						{
+							if (this.idleRotationBlend > 1.0f)
+								this.idleRotationBlend = 0.0f;
+						}
+					}
+					this.idling = nowIdling;
 
 					if (!this.model.IsPlaying(movementAnimation))
 					{
@@ -216,6 +274,7 @@ namespace Lemma.Components
 				}
 				else
 				{
+					this.idling = false;
 					foreach (string anim in movementAnimations.Keys)
 						this.model.Stop(anim);
 					foreach (string anim in crouchMovementAnimations.Keys)
@@ -239,6 +298,7 @@ namespace Lemma.Components
 			}
 			else
 			{
+				this.idling = false;
 				this.model.Stop
 				(
 					"Jump",
@@ -316,8 +376,8 @@ namespace Lemma.Components
 
 			float l = 0.0f;
 			if (this.EnableLean)
-				l = this.LinearVelocity.Value.Length() * (this.lastRotation.ClosestAngle(mouse.X) - mouse.X);
-			this.lastRotation = mouse.X;
+				l = this.LinearVelocity.Value.Length() * (this.lastRotation.ClosestAngle(this.Rotation) - this.Rotation);
+			this.lastRotation = this.Rotation;
 			this.Lean.Value += (l - this.Lean) * 20.0f * dt;
 
 			const float timeScale = 5.0f;

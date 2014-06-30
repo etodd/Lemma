@@ -194,6 +194,7 @@ namespace Lemma.Factories
 			anim.Add(new Binding<Vector3>(anim.LinearVelocity, player.Character.LinearVelocity));
 			anim.Add(new Binding<Vector2>(anim.Movement, input.Movement));
 			anim.Add(new Binding<Vector2>(anim.Mouse, input.Mouse));
+			anim.Add(new Binding<float>(anim.Rotation, rotation.Rotation));
 			anim.Add(new Binding<Voxel>(anim.WallRunMap, wallRun.WallRunVoxel));
 			anim.Add(new Binding<Direction>(anim.WallDirection, wallRun.WallDirection));
 			anim.Add(new Binding<bool>(anim.IsSwimming, player.Character.IsSwimming));
