@@ -556,7 +556,7 @@ namespace Lemma.Factories
 				entity,
 				main,
 				"Voxel duplicate",
-				new PCInput.Chord { Key = Keys.C },
+				new PCInput.Chord { Key = Keys.V },
 				() => editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
 				editor.VoxelDuplicate,
 				gui.VoxelCommands
@@ -566,7 +566,7 @@ namespace Lemma.Factories
 				entity,
 				main,
 				"Voxel copy",
-				new PCInput.Chord { Key = Keys.Y },
+				new PCInput.Chord { Key = Keys.C },
 				() => editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode == Editor.TransformModes.None,
 				editor.VoxelCopy,
 				gui.VoxelCommands
@@ -733,6 +733,39 @@ namespace Lemma.Factories
 				() => editor.TransformMode.Value != Editor.TransformModes.None,
 				editor.RevertTransform,
 				gui.EntityCommands
+			);
+
+			AddCommand
+			(
+				entity,
+				main,
+				"Voxel Rotate X",
+				new PCInput.Chord { Key = Keys.X },
+				() => editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
+				editor.VoxelRotateX,
+				gui.VoxelCommands
+			);
+
+			AddCommand
+			(
+				entity,
+				main,
+				"Voxel Rotate Y",
+				new PCInput.Chord { Key = Keys.Y },
+				() => editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
+				editor.VoxelRotateY,
+				gui.VoxelCommands
+			);
+
+			AddCommand
+			(
+				entity,
+				main,
+				"Voxel Rotate Z",
+				new PCInput.Chord { Key = Keys.Z },
+				() => editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
+				editor.VoxelRotateZ,
+				gui.VoxelCommands
 			);
 
 #if DEVELOPMENT

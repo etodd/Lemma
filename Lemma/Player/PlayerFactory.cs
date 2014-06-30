@@ -409,6 +409,7 @@ namespace Lemma.Factories
 			model.Trigger("WallRunRight", 0.58f, footsteps.Footstep);
 			model.Trigger("WallRunStraight", 0.16f, footsteps.Footstep);
 			model.Trigger("WallRunStraight", 0.58f, footsteps.Footstep);
+			model.Trigger("Turn", 0.15f, footsteps.Footstep);
 
 			main.IsMouseVisible.Value = false;
 

@@ -89,6 +89,9 @@ namespace Lemma.Components
 		public Property<Voxel.Coord> VoxelSelectionStart = new Property<Voxel.Coord>();
 		public Property<Voxel.Coord> VoxelSelectionEnd = new Property<Voxel.Coord>();
 		public Property<bool> VoxelSelectionActive = new Property<bool>();
+		public Command VoxelRotateX = new Command();
+		public Command VoxelRotateY = new Command();
+		public Command VoxelRotateZ = new Command();
 
 		public Property<float> CameraDistance = new Property<float> { Value = 10.0f };
 
@@ -188,6 +191,30 @@ namespace Lemma.Components
 							desiredState = this.mapState[new Voxel.Coord { X = x + offsetX, Y = y + offsetY, Z = z + offsetZ }];
 						if (desiredState != null && map[x, y, z] != desiredState)
 							map.Fill(x, y, z, desiredState);
+					}
+				}
+			}
+			map.Regenerate();
+		}
+
+		private void restoreVoxel(Voxel.Coord start, Voxel.Coord end, Direction dx, Direction dy, Direction dz)
+		{
+			Voxel map = this.SelectedEntities[0].Get<Voxel>();
+			List<Voxel.Coord> removals = new List<Voxel.Coord>();
+
+			for (int x = start.X; x < end.X; x++)
+			{
+				for (int y = start.Y; y < end.Y; y++)
+				{
+					for (int z = start.Z; z < end.Z; z++)
+					{
+						Voxel.Coord c = new Voxel.Coord { X = x, Y = y, Z = z };
+						Voxel.State desiredState = this.mapState[c];
+						if (desiredState != null)
+						{
+							c = c.Minus(this.coord).Reorient(dx, dy, dz).Plus(this.coord);
+							map.Fill(c.X, c.Y, c.Z, desiredState);
+						}
 					}
 				}
 			}
@@ -507,6 +534,54 @@ namespace Lemma.Components
 				this.Fill.Value = this.Fill == FillMode.ForceFill ? FillMode.Fill : FillMode.None;
 			};
 
+			Action<Direction, Direction, Direction, Voxel.Coord> rotate = delegate(Direction x, Direction y, Direction z, Voxel.Coord selectionOffset)
+			{
+				this.VoxelCopy.Execute();
+				this.NeedsSave.Value = true;
+
+				Voxel.Coord oldSelectionStart = this.VoxelSelectionStart;
+				Voxel.Coord oldSelectionEnd = this.VoxelSelectionEnd;
+				Voxel.Coord newSelectionStart = this.VoxelSelectionStart.Value.Minus(this.coord).Reorient(x, y, z).Plus(this.coord).Plus(selectionOffset);
+				Voxel.Coord newSelectionEnd = this.VoxelSelectionEnd.Value.Minus(this.coord).Reorient(x, y, z).Plus(this.coord).Plus(selectionOffset);
+				this.VoxelSelectionStart.Value = new Voxel.Coord
+				{
+					X = Math.Min(newSelectionStart.X, newSelectionEnd.X),
+					Y = Math.Min(newSelectionStart.Y, newSelectionEnd.Y),
+					Z = Math.Min(newSelectionStart.Z, newSelectionEnd.Z),
+				};
+				this.VoxelSelectionEnd.Value = new Voxel.Coord
+				{
+					X = Math.Max(newSelectionStart.X, newSelectionEnd.X),
+					Y = Math.Max(newSelectionStart.Y, newSelectionEnd.Y),
+					Z = Math.Max(newSelectionStart.Z, newSelectionEnd.Z),
+				};
+
+				Voxel map = this.SelectedEntities[0].Get<Voxel>();
+				Dictionary<Voxel.Coord, bool> removals = new Dictionary<Voxel.Coord, bool>();
+				foreach (Voxel.Coord c in oldSelectionStart.CoordinatesBetween(oldSelectionEnd))
+					removals[c] = true;
+				foreach (Voxel.Coord c in this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd))
+					removals[c] = true;
+				map.Empty(removals.Keys, true);
+
+				this.restoreVoxel(oldSelectionStart, oldSelectionEnd, x, y, z);
+			};
+
+			this.VoxelRotateX.Action = delegate()
+			{
+				rotate(Direction.PositiveX, Direction.PositiveZ, Direction.NegativeY, new Voxel.Coord { X = 0, Y = 1, Z = 0 });
+			};
+
+			this.VoxelRotateY.Action = delegate()
+			{
+				rotate(Direction.NegativeZ, Direction.PositiveY, Direction.PositiveX, new Voxel.Coord { X = 0, Y = 0, Z = 1 });
+			};
+
+			this.VoxelRotateZ.Action = delegate()
+			{
+				rotate(Direction.NegativeY, Direction.PositiveX, Direction.PositiveZ, new Voxel.Coord { X = 0, Y = 1, Z = 0 });
+			};
+
 			this.SampleMaterial.Action = delegate()
 			{
 				if (!this.EnableCommands())
@@ -777,7 +852,19 @@ namespace Lemma.Components
 						if (this.VoxelSelectionActive)
 						{
 							if (this.Jitter.Value.Equivalent(new Voxel.Coord { X = 0, Y = 0, Z = 0 }) || this.BrushSize <= 1)
-								map.Fill(this.VoxelSelectionStart, this.VoxelSelectionEnd, this.getBrush());
+							{
+								switch (this.Fill.Value)
+								{
+									case FillMode.Fill:
+										map.Fill(this.VoxelSelectionStart, this.VoxelSelectionEnd, this.getBrush());
+										break;
+									case FillMode.Empty:
+										map.Empty(this.VoxelSelectionStart, this.VoxelSelectionEnd, true);
+										break;
+									default:
+										break;
+								}
+							}
 							else
 							{
 								Voxel.Coord start = this.VoxelSelectionStart;
@@ -958,6 +1045,10 @@ namespace Lemma.Components
 			if (size > 1)
 				center = this.jitter(map, center);
 
+			Voxel.State state = this.getBrush();
+			if (this.Fill == FillMode.Empty)
+				state = Voxel.EmptyState;
+
 			BrushShapes shape = this.BrushShape;
 			Vector3 pos = map.GetRelativePosition(center);
 			List<Voxel.Coord> coords = new List<Voxel.Coord>();
@@ -967,13 +1058,13 @@ namespace Lemma.Components
 				{
 					for (Voxel.Coord z = y.Move(Direction.NegativeZ, size - 1); z.Z < center.Z + size; z.Z++)
 					{
-						if (shape == BrushShapes.Cube || (pos - map.GetRelativePosition(z)).Length() <= size)
+						if ((shape == BrushShapes.Cube || (pos - map.GetRelativePosition(z)).Length() <= size)
+							&& map[z] != state)
 							coords.Add(z);
 					}
 				}
 			}
 
-			Voxel.State state = this.getBrush();
 			switch (this.Fill.Value)
 			{
 				case FillMode.Empty:

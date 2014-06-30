@@ -1366,6 +1366,15 @@ namespace Lemma.Components
 				return hash;
 			}
 
+			public Coord Reorient(Direction x, Direction y, Direction z)
+			{
+				Coord c = new Coord();
+				c.SetComponent(x, this.X);
+				c.SetComponent(y, this.Y);
+				c.SetComponent(z, this.Z);
+				return c;
+			}
+
 			public override bool Equals(object obj)
 			{
 				if (obj.GetType() == typeof(Voxel.Coord))
