@@ -113,7 +113,6 @@ namespace Lemma
 		protected RenderParameters renderParameters;
 		public RenderTarget2D RenderTarget;
 
-#if PERFORMANCE_MONITOR
 		private const float performanceUpdateTime = 0.5f;
 		private float performanceInterval;
 
@@ -139,7 +138,6 @@ namespace Lemma
 		private int drawCallCounter;
 		private Property<int> triangles = new Property<int>();
 		private int triangleCounter;
-#endif
 
 		public Property<Point> ScreenSize = new Property<Point>();
 
@@ -630,7 +628,6 @@ namespace Lemma
 				}));
 #endif
 
-#if PERFORMANCE_MONITOR
 				this.performanceMonitor = new ListContainer();
 				this.performanceMonitor.Add(new Binding<Vector2, Point>(performanceMonitor.Position, x => new Vector2(0, x.Y), this.ScreenSize));
 				this.performanceMonitor.AnchorPoint.Value = new Vector2(0, 1);
@@ -673,7 +670,6 @@ namespace Lemma
 				{
 					this.performanceMonitor.Visible.Value = !this.performanceMonitor.Visible;
 				}));
-#endif
 
 				try
 				{
@@ -720,6 +716,16 @@ namespace Lemma
 						return p.Get<Player>().Health;
 					else
 						return 0.0f;
+				});
+
+				this.SessionRecorder.Add("Framerate", delegate()
+				{
+					return this.frameRate;
+				});
+
+				this.SessionRecorder.Add("WorkingSet", delegate()
+				{
+					return (float)(Environment.WorkingSet / (long)1048576);
 				});
 #endif
 
@@ -982,10 +988,8 @@ namespace Lemma
 			if (this.GamePadState.Value.IsConnected != this.GamePadConnected)
 				this.GamePadConnected.Value = this.GamePadState.Value.IsConnected;
 
-#if PERFORMANCE_MONITOR
 			Stopwatch timer = new Stopwatch();
 			timer.Start();
-#endif
 			for (int i = 0; i < this.updateables.Count; i++)
 			{
 				IUpdateableComponent c = this.updateables[i];
@@ -1039,15 +1043,12 @@ namespace Lemma
 				this.resize = null;
 			}
 
-#if PERFORMANCE_MONITOR
 			timer.Stop();
 			this.updateSum = Math.Max(this.updateSum, timer.Elapsed.TotalSeconds);
 
 			timer.Restart();
-#endif
 			if (!this.Paused && !this.EditorEnabled)
 				this.Space.Update(this.ElapsedTime);
-#if PERFORMANCE_MONITOR
 			timer.Stop();
 			this.physicsSum = Math.Max(this.physicsSum, timer.Elapsed.TotalSeconds);
 
@@ -1055,9 +1056,9 @@ namespace Lemma
 			this.performanceInterval += (float)this.GameTime.ElapsedGameTime.TotalSeconds;
 			if (this.performanceInterval > Main.performanceUpdateTime)
 			{
+				this.frameRate.Value = this.frameSum / this.performanceInterval;
 				if (this.performanceMonitor.Visible)
 				{
-					this.frameRate.Value = this.frameSum / this.performanceInterval;
 					this.physicsTime.Value = this.physicsSum;
 					this.updateTime.Value = this.updateSum;
 					this.preframeTime.Value = this.preframeSum;
@@ -1080,7 +1081,6 @@ namespace Lemma
 				this.frameSum = 0;
 				this.performanceInterval = 0;
 			}
-#endif
 
 			AkSoundEngine.RenderAudio();
 
@@ -1099,10 +1099,8 @@ namespace Lemma
 			Lemma.Components.Model.DrawCallCounter = 0;
 			Lemma.Components.Model.TriangleCounter = 0;
 
-#if PERFORMANCE_MONITOR
 			Stopwatch timer = new Stopwatch();
 			timer.Start();
-#endif
 			this.renderParameters.Technique = Technique.Render;
 
 			foreach (IDrawablePreFrameComponent c in this.preframeDrawables)
@@ -1110,39 +1108,29 @@ namespace Lemma
 				if (this.componentEnabled(c))
 					c.DrawPreFrame(gameTime, this.renderParameters);
 			}
-#if PERFORMANCE_MONITOR
 			timer.Stop();
 			this.preframeSum = Math.Max(timer.Elapsed.TotalSeconds, this.preframeSum);
-#endif
 
 			this.Renderer.SetRenderTargets(this.renderParameters);
 
-#if PERFORMANCE_MONITOR
 			timer.Restart();
-#endif
 			this.DrawScene(this.renderParameters);
-#if PERFORMANCE_MONITOR
 			timer.Stop();
 			this.rawRenderSum = Math.Max(this.rawRenderSum, timer.Elapsed.TotalSeconds);
 
 			timer.Restart();
-#endif
 			this.LightingManager.UpdateGlobalLights();
 			this.LightingManager.RenderShadowMaps(this.Camera);
-#if PERFORMANCE_MONITOR
 			timer.Stop();
 			this.shadowRenderSum = Math.Max(this.shadowRenderSum, timer.Elapsed.TotalSeconds);
 
 			timer.Restart();
-#endif
 			this.Renderer.PostProcess(this.RenderTarget, this.renderParameters);
 
-#if PERFORMANCE_MONITOR
 			timer.Stop();
 			this.postProcessSum = Math.Max(this.postProcessSum, timer.Elapsed.TotalSeconds);
 
 			timer.Restart();
-#endif
 
 			foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
 			{
@@ -1150,12 +1138,10 @@ namespace Lemma
 					c.DrawNonPostProcessed(gameTime, this.renderParameters);
 			}
 
-#if PERFORMANCE_MONITOR
 			timer.Stop();
 			this.unPostProcessedSum = Math.Max(this.unPostProcessedSum, timer.Elapsed.TotalSeconds);
 			this.drawCallCounter = Math.Max(this.drawCallCounter, Lemma.Components.Model.DrawCallCounter);
 			this.triangleCounter = Math.Max(this.triangleCounter, Lemma.Components.Model.TriangleCounter);
-#endif
 
 			if (this.RenderTarget != null)
 			{
@@ -1171,10 +1157,6 @@ namespace Lemma
 
 				this.RenderTarget = null;
 			}
-			//SpriteBatch GeeUISpriteBatch = new SpriteBatch(this.GraphicsDevice);
-			//GeeUISpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
-			//GeeUI.GeeUI.Draw(GeeUISpriteBatch);
-			//GeeUISpriteBatch.End();
 		}
 
 		public void DrawScene(RenderParameters parameters)
@@ -1264,6 +1246,10 @@ namespace Lemma
 				this.Settings.FullscreenResolution.Value = new Point(width, height);
 			else
 				this.Settings.Size.Value = new Point(width, height);
+#if ANALYTICS
+			if (this.SessionRecorder != null)
+				this.SessionRecorder.RecordEvent("ResizedViewport", string.Format("{0}x{1} {2}", width, height, fullscreen ? "fullscreen" : "windowed"));
+#endif
 			this.SaveSettings();
 		}
 	}

@@ -8,6 +8,7 @@ using System.IO;
 using System.Collections.Specialized;
 using System.Net;
 using ComponentBind;
+using System.Management;
 
 namespace Lemma.Components
 {
@@ -275,6 +276,20 @@ namespace Lemma.Components
 
 		public string UUID;
 
+		public string OS;
+
+		public string CPU;
+
+		public string GPU;
+
+		public bool Is64BitOS;
+
+		public Point ScreenSize;
+
+		public bool IsFullscreen;
+
+		public int Memory;
+
 		public class Recorder : Component<Main>, IUpdateableComponent
 		{
 			public static void Event(Main main, string name, string data = null)
@@ -302,13 +317,37 @@ namespace Lemma.Components
 				this.data.Date = DateTime.Now;
 				this.data.Interval = Interval;
 				this.data.Build = Main.Build;
+				this.data.OS = Environment.OSVersion.VersionString;
+				this.data.Is64BitOS = Environment.Is64BitOperatingSystem;
+
+#if WINDOWS
+				this.data.Memory = (int)(new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory / (ulong)1048576);
+				ManagementObject cpu = new ManagementObjectSearcher("select * from Win32_Processor").Get().Cast<ManagementObject>().First();
+				this.data.CPU = string.Format("{0} {1}", cpu["Name"], cpu["Caption"]);
+				ManagementObjectSearcher searcher = new ManagementObjectSearcher("select * from Win32_DisplayConfiguration");
+				foreach (ManagementObject mo in searcher.Get())
+				{
+					foreach (PropertyData property in mo.Properties)
+					{
+						if (property.Name == "Description")
+						{
+							this.data.GPU = property.Value.ToString();
+							break;
+						}
+					}
+				}
+#endif
+				this.EnabledWhenPaused = true;
+				this.EnabledInEditMode = true;
 			}
 
 			public void Save(string path, string map, float totalTime)
 			{
-				this.data.UUID = this.main.Settings.UUID;
 				this.data.TotalTime = totalTime;
 				this.data.Map = map;
+				this.data.UUID = this.main.Settings.UUID;
+				this.data.ScreenSize = this.main.ScreenSize;
+				this.data.IsFullscreen = this.main.Graphics.IsFullScreen;
 				using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
 					new XmlSerializer(typeof(Session)).Serialize(stream, this.data);
 			}

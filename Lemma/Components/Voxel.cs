@@ -842,7 +842,7 @@ namespace Lemma.Components
 
 			public void ApplyToBlock(ComponentBind.Entity block)
 			{
-				block.Get<PhysicsBlock>().Box.Mass = this.Density;
+				block.Get<PhysicsBlock>().Box.Mass = this.Density * 0.5f * 0.5f * 0.5f;
 				this.ApplyToEffectBlock(block.Get<ModelInstance>());
 			}
 

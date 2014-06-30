@@ -68,7 +68,7 @@ namespace Lemma
 			{
 #if ANALYTICS // Just to prevent compile errors
 				BackgroundWorker worker = sender as BackgroundWorker;
-				string[] sessionFiles = this.main.AnalyticsSessionFiles;
+				string[] sessionFiles = this.main != null ? this.main.AnalyticsSessionFiles : new string[] {};
 				int i = 0;
 				foreach (string file in sessionFiles)
 				{

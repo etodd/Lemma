@@ -43,38 +43,33 @@ namespace Lemma
 						error = e.ToString();
 				}
 			}
+
 			if (main != null)
+			{
 				main.Cleanup();
 #if ANALYTICS
-			if (main.MapFile.Value == null || main.EditorEnabled)
-				main.SessionRecorder.Reset();
-			if (error == null)
-				main.SessionRecorder.RecordEvent("Exit");
-			else
-				main.SessionRecorder.RecordEvent("Crash", error);
-			main.SaveAnalytics();
+				if (error == null)
+					main.SessionRecorder.RecordEvent("Exit");
+				else
+					main.SessionRecorder.RecordEvent("Crash", error);
+				main.SaveAnalytics();
+			}
 
-#if MONOGAME
-			// TODO: MonoGame analytics form
-#else
 			System.Windows.Forms.Application.EnableVisualStyles();
 			string anonymousId = "";
-			if (main.Settings != null)
+			if (main != null && main.Settings != null)
 				anonymousId = main.Settings.UUID;
 			AnalyticsForm analyticsForm = new AnalyticsForm(main, anonymousId, error);
 			System.Windows.Forms.Application.Run(analyticsForm);
-#endif
 #else
-#if MONOGAME
-			// TODO: MonoGame error form
-#else
+			}
+
 			if (error != null)
 			{
 				System.Windows.Forms.Application.EnableVisualStyles();
 				ErrorForm errorForm = new ErrorForm(error);
 				System.Windows.Forms.Application.Run(errorForm);
 			}
-#endif
 #endif
 		}
 	}

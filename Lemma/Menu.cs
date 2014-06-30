@@ -51,7 +51,7 @@ namespace Lemma.Components
 
 		private int displayModeIndex;
 
-		private DisplayModeCollection supportedDisplayModes;
+		public DisplayModeCollection SupportedDisplayModes;
 
 		Property<UIComponent> currentMenu = new Property<UIComponent> { Value = null };
 
@@ -294,6 +294,9 @@ namespace Lemma.Components
 		// Pause
 		private void savePausedSettings()
 		{
+#if ANALYTICS
+			this.main.SessionRecorder.RecordEvent("Pause");
+#endif
 			// Take screenshot
 			this.main.Screenshot.Take(this.main.ScreenSize);
 
@@ -336,6 +339,9 @@ namespace Lemma.Components
 		// Unpause
 		private void restorePausedSettings()
 		{
+#if ANALYTICS
+			this.main.SessionRecorder.RecordEvent("Unpause");
+#endif
 			if (this.pauseAnimation != null && this.pauseAnimation.Active)
 				this.pauseAnimation.Delete.Execute();
 
@@ -455,7 +461,7 @@ namespace Lemma.Components
 
 		public void SetupDisplayModes(DisplayModeCollection supportedDisplayModes, int displayModeIndex)
 		{
-			this.supportedDisplayModes = supportedDisplayModes;
+			this.SupportedDisplayModes = supportedDisplayModes;
 			this.displayModeIndex = displayModeIndex;
 		}
 
@@ -646,10 +652,10 @@ namespace Lemma.Components
 
 			Container fullscreenResolution = this.main.UIFactory.CreateScrollButton<Point>("\\fullscreen resolution", this.main.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString(), delegate(int delta)
 			{
-				displayModeIndex = (displayModeIndex + delta) % this.supportedDisplayModes.Count();
+				displayModeIndex = (displayModeIndex + delta) % this.SupportedDisplayModes.Count();
 				while (displayModeIndex < 0)
-					displayModeIndex += this.supportedDisplayModes.Count();
-				DisplayMode mode = this.supportedDisplayModes.ElementAt(displayModeIndex);
+					displayModeIndex += this.SupportedDisplayModes.Count();
+				DisplayMode mode = this.SupportedDisplayModes.ElementAt(displayModeIndex);
 				this.main.Settings.FullscreenResolution.Value = new Point(mode.Width, mode.Height);
 			});
 			this.resizeToMenu(fullscreenResolution);

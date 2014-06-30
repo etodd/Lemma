@@ -203,19 +203,32 @@ namespace Lemma.Components
 
 			this.spriteBatch = new SpriteBatch(this.main.GraphicsDevice);
 
-			if (Renderer.globalLightEffect == null || reload)
-			{
-				Renderer.globalLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\GlobalLight");
-				Renderer.pointLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\PointLight");
-				Renderer.spotLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\SpotLight");
-			}
-
 			if (Renderer.pointLightModel == null || reload)
 			{
 				// Load light models
 				Renderer.pointLightModel = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>("Models\\pointlight");
 				Renderer.spotLightModel = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>("Models\\spotlight");
 			}
+
+			// Initialize our buffers
+			this.ReallocateBuffers(this.screenSize);
+		}
+
+		private bool hdr;
+
+		private SurfaceFormat hdrSurfaceFormat
+		{
+			get
+			{
+				return this.hdr ? SurfaceFormat.HdrBlendable : SurfaceFormat.Color;
+			}
+		}
+
+		public void ReallocateBuffers(Point size)
+		{
+			Renderer.globalLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\GlobalLight").Clone();
+			Renderer.pointLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\PointLight").Clone();
+			Renderer.spotLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\SpotLight").Clone();
 
 			this.compositeEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Composite").Clone();
 			this.compositeEffect.CurrentTechnique = this.compositeEffect.Techniques["Composite"];
@@ -234,23 +247,8 @@ namespace Lemma.Components
 
 			this.motionBlurEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\MotionBlur").Clone();
 
-			// Initialize our buffers
-			this.ReallocateBuffers(this.screenSize);
-		}
-
-		private bool hdr;
-
-		private SurfaceFormat hdrSurfaceFormat
-		{
-			get
-			{
-				return this.hdr ? SurfaceFormat.HdrBlendable : SurfaceFormat.Color;
-			}
-		}
-
-		public void ReallocateBuffers(Point size)
-		{
 			this.screenSize = size;
+
 			// Lighting buffer
 			if (this.lightingBuffer != null && !this.lightingBuffer.IsDisposed)
 				this.lightingBuffer.Dispose();
@@ -428,12 +426,7 @@ namespace Lemma.Components
 
 		public void SetRenderTargets(RenderParameters p)
 		{
-			if (this.lightingBuffer.IsDisposed
-				|| this.specularBuffer.IsDisposed
-				|| this.depthBuffer.IsDisposed
-				|| this.normalBuffer.IsDisposed
-				|| this.colorBuffer1.IsDisposed
-				|| this.colorBuffer2.IsDisposed)
+			if (this.needBufferReallocation())
 				this.ReallocateBuffers(this.screenSize);
 
 			p.Camera.ViewportSize.Value = this.screenSize;
@@ -450,14 +443,25 @@ namespace Lemma.Components
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 		}
 
-		public void PostProcess(RenderTarget2D result, RenderParameters parameters)
+		private bool needBufferReallocation()
 		{
-			if (this.lightingBuffer.IsDisposed
+			return this.lightingBuffer.IsDisposed
 				|| this.specularBuffer.IsDisposed
 				|| this.depthBuffer.IsDisposed
 				|| this.normalBuffer.IsDisposed
 				|| this.colorBuffer1.IsDisposed
-				|| this.colorBuffer2.IsDisposed)
+				|| this.colorBuffer2.IsDisposed
+				|| (this.halfBuffer1 != null && this.halfBuffer1.IsDisposed)
+				|| (this.halfBuffer2 != null && this.halfBuffer2.IsDisposed)
+				|| (this.halfDepthBuffer != null && this.halfDepthBuffer.IsDisposed)
+				|| (this.hdrBuffer1 != null && this.hdrBuffer1.IsDisposed)
+				|| (this.hdrBuffer2 != null && this.hdrBuffer2.IsDisposed)
+				|| (this.normalBufferLastFrame != null && this.normalBufferLastFrame.IsDisposed);
+		}
+
+		public void PostProcess(RenderTarget2D result, RenderParameters parameters)
+		{
+			if (this.needBufferReallocation())
 				return;
 
 			Vector3 originalCameraPosition = parameters.Camera.Position;

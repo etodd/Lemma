@@ -691,7 +691,7 @@ namespace Lemma.Components
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
-						if (param != null)
+						if (param != null && (value == null || !value.IsDisposed))
 							param.SetValue(value);
 					}
 				};
@@ -713,7 +713,7 @@ namespace Lemma.Components
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
-						if (param != null)
+						if (param != null && (value == null || !value.IsDisposed))
 							param.SetValue(value);
 					}
 				};

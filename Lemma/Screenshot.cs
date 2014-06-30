@@ -26,14 +26,19 @@ namespace Lemma
 
 		public void Take(Point size, Action callback = null)
 		{
-			this.Size = size;
-			Point screenSize = this.main.ScreenSize;
-			if (this.Size.X > screenSize.X || this.Size.Y > screenSize.Y)
-				this.main.Renderer.ReallocateBuffers(size);
-			this.Buffer = new RenderTarget2D(this.main.GraphicsDevice, this.Size.X, this.Size.Y, false, SurfaceFormat.Color, DepthFormat.Depth16);
-			this.main.RenderTarget = this.Buffer;
-			this.take = true;
-			this.callback = callback;
+			if (size.X > 0 && size.Y > 0)
+			{
+				this.Size = size;
+				Point screenSize = this.main.ScreenSize;
+				if (this.Size.X > screenSize.X || this.Size.Y > screenSize.Y)
+					this.main.Renderer.ReallocateBuffers(size);
+				this.Buffer = new RenderTarget2D(this.main.GraphicsDevice, this.Size.X, this.Size.Y, false, SurfaceFormat.Color, DepthFormat.Depth16);
+				this.main.RenderTarget = this.Buffer;
+				this.take = true;
+				this.callback = callback;
+			}
+			else if (callback != null)
+				callback();
 		}
 
 		public void Update(float dt)

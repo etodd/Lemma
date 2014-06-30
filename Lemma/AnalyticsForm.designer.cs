@@ -88,9 +88,9 @@
 			this.label4.Location = new System.Drawing.Point(12, 77);
 			this.label4.MaximumSize = new System.Drawing.Size(260, 0);
 			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(102, 13);
+			this.label4.Size = new System.Drawing.Size(94, 13);
 			this.label4.TabIndex = 10;
-			this.label4.Text = "- Date and timezone";
+			this.label4.Text = "- Basic system info";
 			// 
 			// label5
 			// 
