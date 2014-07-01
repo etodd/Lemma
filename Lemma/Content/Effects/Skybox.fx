@@ -7,6 +7,7 @@ float VerticalCenter;
 float3 CameraPosition;
 float GodRayStrength;
 float GodRayExtinction;
+float WaterHeight;
 
 float4x4 ShadowViewProjectionMatrix;
 
@@ -50,7 +51,8 @@ void SkyboxPS(in RenderPSInput input,
 						in TexturePSInput tex,
 						out float4 output : COLOR0,
 						uniform bool vertical,
-						uniform bool shadow)
+						uniform bool shadow,
+						uniform bool water)
 {
 	float2 uv = (0.5f * alpha.clipSpacePosition.xy / alpha.clipSpacePosition.w) + float2(0.5f, 0.5f);
 	uv.y = 1.0f - uv.y;
@@ -58,9 +60,16 @@ void SkyboxPS(in RenderPSInput input,
 
 	float depth = tex2D(DepthSampler, uv).r;
 
-	float blend = clamp(lerp(0, 1, (depth - StartDistance) / (FarPlaneDistance - StartDistance)), 0, 1);
-
 	float3 viewRay = normalize(input.position);
+
+	if (water)
+	{
+		float waterDepth = (WaterHeight - CameraPosition.y) / viewRay.y;
+		if (waterDepth > 0)
+			depth = min(depth, waterDepth);
+	}
+
+	float blend = clamp(lerp(0, 1, (depth - StartDistance) / (FarPlaneDistance - StartDistance)), 0, 1);
 
 	if (vertical)
 		blend = min(1.0f, blend + max(0, 1.0f - ((CameraPosition + viewRay * depth).y - VerticalCenter) / VerticalSize));
@@ -102,7 +111,7 @@ void SkyboxNormalPS(in RenderPSInput input,
 						in TexturePSInput tex,
 						out float4 output : COLOR0)
 {
-	SkyboxPS(input, alpha, tex, output, false, false);
+	SkyboxPS(input, alpha, tex, output, false, false, false);
 }
 
 void SkyboxVerticalPS(in RenderPSInput input,
@@ -110,7 +119,7 @@ void SkyboxVerticalPS(in RenderPSInput input,
 						in TexturePSInput tex,
 						out float4 output : COLOR0)
 {
-	SkyboxPS(input, alpha, tex, output, true, false);
+	SkyboxPS(input, alpha, tex, output, true, false, false);
 }
 
 void SkyboxNormalGodRayPS(in RenderPSInput input,
@@ -118,7 +127,7 @@ void SkyboxNormalGodRayPS(in RenderPSInput input,
 						in TexturePSInput tex,
 						out float4 output : COLOR0)
 {
-	SkyboxPS(input, alpha, tex, output, false, true);
+	SkyboxPS(input, alpha, tex, output, false, true, false);
 }
 
 void SkyboxVerticalGodRayPS(in RenderPSInput input,
@@ -126,7 +135,23 @@ void SkyboxVerticalGodRayPS(in RenderPSInput input,
 						in TexturePSInput tex,
 						out float4 output : COLOR0)
 {
-	SkyboxPS(input, alpha, tex, output, true, true);
+	SkyboxPS(input, alpha, tex, output, true, true, false);
+}
+
+void SkyboxWaterPS(in RenderPSInput input,
+						in AlphaPSInput alpha,
+						in TexturePSInput tex,
+						out float4 output : COLOR0)
+{
+	SkyboxPS(input, alpha, tex, output, false, false, true);
+}
+
+void SkyboxWaterGodRayPS(in RenderPSInput input,
+						in AlphaPSInput alpha,
+						in TexturePSInput tex,
+						out float4 output : COLOR0)
+{
+	SkyboxPS(input, alpha, tex, output, false, true, true);
 }
 
 // No shadow technique. We don't want the skybox casting shadows.
@@ -248,5 +273,65 @@ technique ClipVerticalGodRays
 	
 		VertexShader = compile vs_3_0 RenderVS();
 		PixelShader = compile ps_3_0 SkyboxVerticalPS();
+	}
+}
+
+technique RenderWater
+{
+	pass p0
+	{
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+	
+		VertexShader = compile vs_3_0 RenderVS();
+		PixelShader = compile ps_3_0 SkyboxWaterPS();
+	}
+}
+
+technique ClipWater
+{
+	pass p0
+	{
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+
+		VertexShader = compile vs_3_0 RenderVS();
+		PixelShader = compile ps_3_0 SkyboxNormalPS();
+	}
+}
+
+technique RenderWaterGodRays
+{
+	pass p0
+	{
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+	
+		VertexShader = compile vs_3_0 RenderVS();
+		PixelShader = compile ps_3_0 SkyboxWaterGodRayPS();
+	}
+}
+
+technique ClipWaterGodRays
+{
+	pass p0
+	{
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+	
+		VertexShader = compile vs_3_0 RenderVS();
+		PixelShader = compile ps_3_0 SkyboxNormalPS();
 	}
 }

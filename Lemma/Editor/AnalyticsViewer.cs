@@ -86,7 +86,7 @@ namespace Lemma.Factories
 			gui.MapCommands.Add(new EditorGeeUI.EditorCommand
 			{
 				Description = "Load analytics data",
-				Enabled = () => editor.SelectedEntities.Count == 0 && !editor.VoxelEditMode && !analyticsEnable,
+				Enabled = () => !analyticsEnable,
 				Action = new Command
 				{
 					Action = delegate()

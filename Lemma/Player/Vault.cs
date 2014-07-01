@@ -57,6 +57,7 @@ namespace Lemma.Components
 		private Vector3 originalPosition;
 		private Vector3 relativeVaultStartPosition;
 		private Vector3 vaultVelocity;
+		private float initialVerticalDifference;
 		private Vector3 forward;
 		private Voxel map;
 		private Voxel.Coord coord;
@@ -90,7 +91,7 @@ namespace Lemma.Components
 			this.model["Vault"].Speed = 1.3f;
 			this.model["Vault"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
-				m.Translation += (Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f) * Matrix.CreateTranslation(0, -1.5f + (this.vaultTime * 1.5f), 0.5f - this.vaultTime * 2.0f)).Translation;
+				m.Translation += (Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f) * Matrix.CreateTranslation(0, -1.0f + this.vaultTime * 1.0f, this.initialVerticalDifference - 2.0f - this.vaultTime * 3.0f)).Translation;
 				return m;
 			};
 		}
@@ -187,10 +188,12 @@ namespace Lemma.Components
 
 			Vector3 coordPosition = map.GetAbsolutePosition(coord);
 			this.forward = coordPosition - this.Position;
+			this.initialVerticalDifference = forward.Y;
 
-			this.isTopOut = forward.Y > 1.75f;
+			this.isTopOut = this.initialVerticalDifference > 1.75f;
 
 			this.forward.Y = 0.0f;
+
 			float horizontalDistanceToCoord = this.forward.Length();
 			this.forward /= horizontalDistanceToCoord;
 			if (horizontalDistanceToCoord < Character.DefaultRadius + 1.0f)

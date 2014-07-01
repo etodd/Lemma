@@ -210,7 +210,10 @@ namespace Lemma.Components
 				this.directionalLightColors[directionalLightIndex] = Vector3.Zero;
 				directionalLightIndex++;
 			}
-			this.HasGlobalShadowLight.Value = this.globalShadowLight != null;
+
+			bool hasGlobalLight = this.globalShadowLight != null;
+			if (this.HasGlobalShadowLight != hasGlobalLight)
+				this.HasGlobalShadowLight.Value = hasGlobalLight;
 
 			this.ambientLightColor = Vector3.Zero;
 			foreach (AmbientLight light in AmbientLight.All.Where(x => x.Enabled))

@@ -95,7 +95,8 @@ namespace Lemma.Components
 
 			this.relativeHeadBone = m.GetRelativeBoneTransform("ORG-head");
 			m["Swim"].Speed = 2.0f;
-			m["Turn"].Speed = 2.0f;
+			m["TurnLeft"].Speed = 2.0f;
+			m["TurnRight"].Speed = 2.0f;
 
 			m["WallRunStraight"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix hips)
 			{
@@ -246,10 +247,14 @@ namespace Lemma.Components
 								if (this.idleRotationBlend >= 1.0f)
 									this.idleRotation = this.Rotation; // We're done blending
 							}
-							else if (Math.Abs(this.Rotation - this.idleRotation.ClosestAngle(this.Rotation)) > Math.PI * 0.25)
+							else
 							{
-								this.idleRotationBlend = 0.0f; // Start blending to new rotation
-								this.model.StartClip("Turn", 1);
+								float rotationDiff = this.Rotation - this.idleRotation.ClosestAngle(this.Rotation);
+								if (Math.Abs(rotationDiff) > Math.PI * 0.25)
+								{
+									this.idleRotationBlend = 0.0f; // Start blending to new rotation
+									this.model.StartClip(rotationDiff > 0.0f ? "TurnLeft" : "TurnRight", 1);
+								}
 							}
 						}
 						else // We just started idling. Save the current rotation.

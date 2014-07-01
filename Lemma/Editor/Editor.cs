@@ -66,8 +66,7 @@ namespace Lemma.Components
 		public Property<Transform> SelectedTransform = new Property<Transform>();
 		public Property<Voxel.t> Brush = new Property<Voxel.t>();
 		public Property<Voxel.Coord> Jitter = new Property<Voxel.Coord>();
-		public Property<Voxel.Coord> JitterOctave = new Property<Voxel.Coord> { Value = new Voxel.Coord { X = 1, Y = 1, Z = 1 } };
-		public Property<float> JitterOctaveMultiplier = new Property<float> { Value = 10.0f };
+		public Property<float> JitterOctave = new Property<float> { Value = 10.0f };
 		public Property<int> BrushSize = new Property<int>();
 		public Property<bool> NeedsSave = new Property<bool>();
 
@@ -789,7 +788,7 @@ namespace Lemma.Components
 						this.movementInterval = 0.5f; 
 
 					Voxel map = this.SelectedEntities[0].Get<Voxel>();
-					if (this.movementInterval > (this.SpeedMode ? 0.5f : 1.0f) / this.CameraDistance)
+					if (this.movementInterval > (this.SpeedMode ? 0.5f : 1.0f) * map.Scale / this.CameraDistance)
 					{
 						if (moving)
 							this.movementInterval = 0.0f;
@@ -1027,15 +1026,11 @@ namespace Lemma.Components
 
 		protected Voxel.Coord jitter(Voxel map, Voxel.Coord coord)
 		{
-			Voxel.Coord octave = this.JitterOctave;
 			Voxel.Coord jitter = this.Jitter;
 			Voxel.Coord sample = coord.Clone();
-			sample.X *= octave.X;
-			sample.Y *= octave.Y;
-			sample.Z *= octave.Z;
-			coord.X += (int)Math.Round(this.generator.Sample(map, sample.Move(0, 0, map.ChunkSize * 2), this.JitterOctaveMultiplier) * jitter.X);
-			coord.Y += (int)Math.Round(this.generator.Sample(map, sample.Move(map.ChunkSize * 2, 0, 0), this.JitterOctaveMultiplier) * jitter.Y);
-			coord.Z += (int)Math.Round(this.generator.Sample(map, sample.Move(0, map.ChunkSize * 2, 0), this.JitterOctaveMultiplier) * jitter.Z);
+			coord.X += (int)Math.Round(this.generator.Sample(map, sample.Move(0, 0, map.ChunkSize * 2), this.JitterOctave) * jitter.X);
+			coord.Y += (int)Math.Round(this.generator.Sample(map, sample.Move(map.ChunkSize * 2, 0, 0), this.JitterOctave) * jitter.Y);
+			coord.Z += (int)Math.Round(this.generator.Sample(map, sample.Move(0, map.ChunkSize * 2, 0), this.JitterOctave) * jitter.Z);
 			return coord;
 		}
 

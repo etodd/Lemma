@@ -409,7 +409,8 @@ namespace Lemma.Factories
 			model.Trigger("WallRunRight", 0.58f, footsteps.Footstep);
 			model.Trigger("WallRunStraight", 0.16f, footsteps.Footstep);
 			model.Trigger("WallRunStraight", 0.58f, footsteps.Footstep);
-			model.Trigger("Turn", 0.15f, footsteps.Footstep);
+			model.Trigger("TurnLeft", 0.15f, footsteps.Footstep);
+			model.Trigger("TurnRight", 0.15f, footsteps.Footstep);
 
 			main.IsMouseVisible.Value = false;
 
@@ -449,7 +450,7 @@ namespace Lemma.Factories
 				if (!player.EnableMoves)
 					return;
 
-				if (vault.CurrentState.Value == Vault.State.None)
+				if (vault.CurrentState.Value == Vault.State.None && !rollKickSlide.Rolling && !rollKickSlide.Kicking)
 					jump.Go();
 			});
 

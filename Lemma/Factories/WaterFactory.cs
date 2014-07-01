@@ -39,8 +39,7 @@ namespace Lemma.Factories
 			entity.Add("Depth", water.Depth);
 			entity.Add("Refraction", water.Refraction);
 			entity.Add("Scale", water.Scale);
-			entity.Add("CannotSuspendByDistance", water.CannotSuspendByDistance);
-			entity.Add("DrawOrder", water.DrawOrder);
+			entity.Add("Big", water.CannotSuspendByDistance);
 		}
 	}
 }

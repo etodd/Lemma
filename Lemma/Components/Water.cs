@@ -70,6 +70,8 @@ namespace Lemma.Components
 			}
 		}
 
+		public static Property<bool> BigWaterShader = new Property<bool>();
+		public static Property<float> BigWaterHeight = new Property<float>();
 		public Property<Vector3> Position = new Property<Vector3>();
 		public Property<Vector3> Color = new Property<Vector3> { Value = new Vector3(0.7f, 0.9f, 1.0f) };
 		public Property<Vector3> UnderwaterColor = new Property<Vector3> { Value = new Vector3(0.0f, 0.07f, 0.13f) };
@@ -83,7 +85,7 @@ namespace Lemma.Components
 		public Property<float> Depth = new Property<float> { Value = 100.0f };
 		public Property<float> Refraction = new Property<float> { Value = 0.0f };
 		public Property<Vector2> Scale = new Property<Vector2> { Value = new Vector2(100.0f, 100.0f) };
-		public Property<bool> CannotSuspendByDistance = new Property<bool> { Value = true };
+		public Property<bool> CannotSuspendByDistance = new Property<bool>();
 
 		private Renderer renderer;
 		private RenderTarget2D buffer;
@@ -302,6 +304,8 @@ namespace Lemma.Components
 			{
 				this.Position.InternalValue = value;
 				this.effect.Parameters["Position"].SetValue(this.Position);
+				if (this.CannotSuspendByDistance)
+					Water.BigWaterHeight.Value = value.Y;
 				this.updatePhysics();
 			};
 
@@ -459,6 +463,12 @@ namespace Lemma.Components
 				AkSoundEngine.SetState(AK.STATES.WATER.GROUP, newUnderwater ? AK.STATES.WATER.STATE.UNDERWATER : AK.STATES.WATER.STATE.NORMAL);
 			this.underwater = newUnderwater;
 
+			int drawOrder = this.CannotSuspendByDistance && newUnderwater ? 10 : -15;
+			if (this.DrawOrder != drawOrder)
+				this.DrawOrder.Value = drawOrder;
+
+			Water.BigWaterShader.Value = this.CannotSuspendByDistance && !newUnderwater;
+
 			float waterHeight = this.Position.Value.Y;
 
 			foreach (BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable c in this.submerged.Keys.ToList())
@@ -547,6 +557,7 @@ namespace Lemma.Components
 			instances.Remove(this);
 			base.delete();
 			AkSoundEngine.PostEvent(AK.EVENTS.STOP_WATER_LOOP, this.Entity);
+			Water.BigWaterShader.Value = false;
 		}
 	}
 }
