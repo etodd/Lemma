@@ -72,7 +72,7 @@ namespace Lemma.Components
 			base.Awake();
 			this.Serialize = false;
 			this.EnabledWhenPaused = false;
-			this.temporary = Voxel.States[Voxel.t.Temporary];
+			this.temporary = Voxel.States[Voxel.t.Blue];
 			this.particleSystem = ParticleSystem.Get(main, "Distortion");
 		}
 

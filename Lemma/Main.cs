@@ -39,8 +39,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 8;
-		public const int MapVersion = 702;
-		public const int Build = 702;
+		public const int MapVersion = 733;
+		public const int Build = 733;
 
 		public static Config.Lang[] Languages = new[] { Config.Lang.en, Config.Lang.ru };
 
@@ -768,6 +768,7 @@ namespace Lemma
 				{
 					this.Renderer.BlurAmount.Value = 0.0f;
 					this.Renderer.Tint.Value = new Vector3(1.0f);
+					this.GeeUI.LastClickCaptured = false;
 				});
 #if DEVELOPMENT
 				IO.MapLoader.Load(this, TemplateMap);

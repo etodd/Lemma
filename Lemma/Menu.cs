@@ -29,7 +29,7 @@ namespace Lemma.Components
 			{ "dawn", "\\map dawn" },
 			{ "forest", "\\map forest" },
 			{ "monolith", "\\map monolith" },
-			{ "valley", "\\map valley" },
+			//{ "valley", "\\map valley" }, // Temporarily disabled
 		};
 
 		private const float messageFadeTime = 0.75f;
@@ -378,6 +378,8 @@ namespace Lemma.Components
 			this.main.Screenshot.Clear();
 
 			this.currentMenu.Value = null;
+
+			this.main.GeeUI.LastClickCaptured = false;
 		}
 
 		private void resizeToMenu(Container c)
@@ -894,7 +896,10 @@ namespace Lemma.Components
 					this.main.AddComponent(new Animation
 					(
 						new Animation.Delay(0.2f),
-						new Animation.Set<string>(this.main.MapFile, Main.InitialMap)
+						new Animation.Execute(delegate()
+						{
+							IO.MapLoader.Load(this.main, Main.InitialMap);
+						})
 					));
 				});
 			});
@@ -968,7 +973,10 @@ namespace Lemma.Components
 					this.main.AddComponent(new Animation
 					(
 						new Animation.Delay(0.2f),
-						new Animation.Set<string>(this.main.MapFile, "sandbox")
+						new Animation.Execute(delegate()
+						{
+							IO.MapLoader.Load(this.main, "sandbox");
+						})
 					));
 				});
 			});

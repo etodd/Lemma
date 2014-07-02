@@ -94,7 +94,7 @@ namespace Lemma.Factories
 				effectBlock.Setup(entry.Voxel.Entity, entry.Coordinate, entry.State.ID);
 				main.Add(entity);
 				index++;
-				if (entry.State.ID == Voxel.t.Temporary)
+				if (entry.State.ID == Voxel.t.Blue)
 					playerCreatedBlocks++;
 			}
 			SteamWorker.IncrementStat("stat_blocks_created", playerCreatedBlocks);

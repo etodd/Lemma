@@ -109,7 +109,7 @@ namespace Lemma.Components
 					bool foundAdjacentCell = false;
 					if (this.CheckAdjacent)
 					{
-						bool avoid = this.StateId == Voxel.t.Temporary;
+						bool avoid = this.StateId == Voxel.t.Blue;
 						foreach (Direction dir in DirectionExtensions.Directions)
 						{
 							Voxel.Coord adjacent = c.Move(dir);

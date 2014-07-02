@@ -169,7 +169,7 @@ namespace Lemma.Components
 
 					Voxel.State floorState = floorRaycast.Voxel == null ? Voxel.EmptyState : floorRaycast.Coordinate.Value.Data;
 					this.shouldBuildFloor = false;
-					if (this.EnableEnhancedRollSlide && (instantiatedBlockPossibility || (floorState.ID != 0 && floorState.ID != Voxel.t.Temporary && floorState.ID != Voxel.t.Powered)))
+					if (this.EnableEnhancedRollSlide && (instantiatedBlockPossibility || (floorState.ID != 0 && floorState.ID != Voxel.t.Blue && floorState.ID != Voxel.t.Powered)))
 						this.shouldBuildFloor = true;
 					
 					// If the player is not yet supported, that means they're just about to land.
@@ -233,7 +233,7 @@ namespace Lemma.Components
 					if (this.EnableEnhancedRollSlide)
 					{
 						Voxel.t floorType = floorRaycast.Coordinate.Value.Data.ID;
-						if (floorType != Voxel.t.Temporary && floorType != Voxel.t.Powered)
+						if (floorType != Voxel.t.Blue && floorType != Voxel.t.Powered)
 							this.shouldBuildFloor = true;
 					}
 					this.sliding = true;

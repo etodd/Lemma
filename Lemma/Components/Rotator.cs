@@ -12,6 +12,12 @@ namespace Lemma.Components
 		public Property<Vector3> Velocity = new Property<Vector3>();
 		public ListProperty<Entity.Handle> Targets = new ListProperty<Entity.Handle>();
 
+		public Rotator()
+		{
+			this.EnabledInEditMode = false;
+			this.EnabledWhenPaused = false;
+		}
+
 		public void EditorProperties()
 		{
 			this.Entity.Add("Velocity", this.Velocity);
@@ -20,11 +26,14 @@ namespace Lemma.Components
 		private List<Transform> transforms = new List<Transform>();
 		public override void Start()
 		{
-			foreach (Entity.Handle handle in this.Targets)
+			if (!this.main.EditorEnabled)
 			{
-				Entity e = handle.Target;
-				if (e != null && e.Active)
-					transforms.Add(e.Get<Transform>());
+				foreach (Entity.Handle handle in this.Targets)
+				{
+					Entity e = handle.Target;
+					if (e != null && e.Active)
+						this.transforms.Add(e.Get<Transform>());
+				}
 			}
 		}
 

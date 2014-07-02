@@ -25,7 +25,7 @@ namespace Lemma.Components
 			base.Awake();
 			this.Serialize = false;
 			this.EnabledWhenPaused = false;
-			this.temporary = Voxel.States[Voxel.t.Temporary];
+			this.temporary = Voxel.States[Voxel.t.Blue];
 		}
 
 		public void BuildFloor(Voxel floorMap, Voxel.Coord floorCoordinate, Direction forwardDir, Direction rightDir)

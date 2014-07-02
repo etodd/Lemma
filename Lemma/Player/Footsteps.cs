@@ -67,7 +67,7 @@ namespace Lemma.Components
 				}
 			};
 
-			Voxel.State temporary = Voxel.States[Voxel.t.Temporary],
+			Voxel.State temporary = Voxel.States[Voxel.t.Blue],
 				expander = Voxel.States[Voxel.t.Expander],
 				neutral = Voxel.States[Voxel.t.Neutral],
 				powered = Voxel.States[Voxel.t.Powered];
@@ -141,7 +141,7 @@ namespace Lemma.Components
 								Voxel.t adjacentID = map[adjacentCoord].ID;
 								if (adjacentID == Voxel.t.Reset)
 									queue.Enqueue(adjacentCoord);
-								else if (adjacentID == Voxel.t.Infected || adjacentID == Voxel.t.Temporary)
+								else if (adjacentID == Voxel.t.Infected || adjacentID == Voxel.t.Blue || adjacentID == Voxel.t.Powered)
 								{
 									map.Empty(adjacentCoord, false, true, map);
 									map.Fill(adjacentCoord, neutral);

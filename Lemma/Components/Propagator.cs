@@ -63,7 +63,7 @@ namespace Lemma.Components
 
 			this.neutral = Voxel.States[Voxel.t.Neutral];
 			this.powered = Voxel.States[Voxel.t.Powered];
-			this.temporary = Voxel.States[Voxel.t.Temporary];
+			this.temporary = Voxel.States[Voxel.t.Blue];
 			this.infected = Voxel.States[Voxel.t.Infected];
 			this.poweredSwitch = Voxel.States[Voxel.t.PoweredSwitch];
 			this.permanentPowered = Voxel.States[Voxel.t.PermanentPowered];
@@ -88,7 +88,7 @@ namespace Lemma.Components
 					foreach (Voxel.Coord c in coords)
 					{
 						Voxel.t id = c.Data.ID;
-						if (id == Voxel.t.Temporary || id == Voxel.t.Powered || id == Voxel.t.PoweredSwitch || id == Voxel.t.Infected || id == Voxel.t.Neutral)
+						if (id == Voxel.t.Blue || id == Voxel.t.Powered || id == Voxel.t.PoweredSwitch || id == Voxel.t.Infected || id == Voxel.t.Neutral)
 						{
 							Voxel.Coord newCoord = c;
 							newCoord.Data = Voxel.EmptyState;
@@ -135,7 +135,7 @@ namespace Lemma.Components
 								shatter.AddParticle(pos + offset, offset);
 							}
 						}
-						else if (id == Voxel.t.Powered || id == Voxel.t.Temporary || id == Voxel.t.Neutral || id == Voxel.t.Infected || id == Voxel.t.Floater)
+						else if (id == Voxel.t.Powered || id == Voxel.t.Blue || id == Voxel.t.Neutral || id == Voxel.t.Infected || id == Voxel.t.Floater)
 						{
 							int generation;
 							Voxel.Coord c = coord;
@@ -169,7 +169,7 @@ namespace Lemma.Components
 										bool adjacentIsFloater = adjacentID == Voxel.t.Floater;
 										if (dir != down || adjacentIsFloater)
 										{
-											if (adjacentID == Voxel.t.Powered || adjacentID == Voxel.t.Temporary || adjacentID == Voxel.t.Neutral || adjacentID == Voxel.t.Infected || adjacentIsFloater)
+											if (adjacentID == Voxel.t.Powered || adjacentID == Voxel.t.Blue || adjacentID == Voxel.t.Neutral || adjacentID == Voxel.t.Infected || adjacentIsFloater)
 											{
 												if (!this.isInQueue(map.Entity, adjacent, true))
 												{
@@ -264,7 +264,7 @@ namespace Lemma.Components
 						Voxel.Coord c = entry.Coordinate;
 						Voxel.t id = map[c].ID;
 
-						bool isTemporary = id == Voxel.t.Temporary;
+						bool isTemporary = id == Voxel.t.Blue;
 						bool isNeutral = id == Voxel.t.Neutral;
 						bool isInfected = id == Voxel.t.Infected || id == Voxel.t.HardInfected;
 						bool isPowered = id == Voxel.t.Powered || id == Voxel.t.PermanentPowered || id == Voxel.t.HardPowered || id == Voxel.t.PoweredSwitch;
@@ -283,7 +283,7 @@ namespace Lemma.Components
 									bool adjacentIsFloater = adjacentID == Voxel.t.Floater;
 									if (dir != down || adjacentIsFloater)
 									{
-										if (adjacentID == Voxel.t.Powered || adjacentID == Voxel.t.Temporary || adjacentID == Voxel.t.Neutral || adjacentID == Voxel.t.Infected || adjacentIsFloater)
+										if (adjacentID == Voxel.t.Powered || adjacentID == Voxel.t.Blue || adjacentID == Voxel.t.Neutral || adjacentID == Voxel.t.Infected || adjacentIsFloater)
 										{
 											if (!this.isInQueue(map.Entity, adjacent, true))
 											{
@@ -343,7 +343,7 @@ namespace Lemma.Components
 								{
 									Voxel.Coord adjacent = c.Move(dir);
 									Voxel.t adjacentID = map[adjacent].ID;
-									if (adjacentID == Voxel.t.Infected || adjacentID == Voxel.t.Temporary)
+									if (adjacentID == Voxel.t.Infected || adjacentID == Voxel.t.Blue || adjacentID == Voxel.t.Powered)
 									{
 										map.Empty(adjacent, false, true, map);
 										map.Fill(adjacent, neutral);
@@ -359,7 +359,7 @@ namespace Lemma.Components
 									Voxel.Coord adjacent = c.Move(dir);
 									Voxel.t adjacentID = map[adjacent].ID;
 
-									if (adjacentID == Voxel.t.Temporary)
+									if (adjacentID == Voxel.t.Blue)
 									{
 										map.Empty(adjacent, false, true, map);
 										map.Fill(adjacent, powered);

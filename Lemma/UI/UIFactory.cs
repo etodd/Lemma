@@ -25,7 +25,7 @@ namespace Lemma.Components
 			TextElement element = new TextElement();
 			element.FontFile.Value = "Font";
 			element.Text.Value = text;
-			element.Add(new Binding<Color, bool>(element.Tint, x => x ? new Color(1.0f, 1.0f, 1.0f) : new Color(0.5f, 0.0f, 0.0f), element.Highlighted));
+			element.Add(new Binding<Color, bool>(element.Tint, x => x ? new Color(1.0f, 1.0f, 1.0f) : new Color(1.0f, 0.0f, 0.0f), element.Highlighted));
 			element.Add(new CommandBinding(element.MouseLeftUp, delegate()
 			{
 				UIFactory.OpenURL(url);

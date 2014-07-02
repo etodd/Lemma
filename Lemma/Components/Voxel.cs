@@ -56,7 +56,7 @@ namespace Lemma.Components
 		{
 			Empty = 0,
 			Rock = 1,
-			Temporary = 2,
+			Blue = 2,
 			AvoidAI = 3,
 			Dirt = 4,
 			Reset = 5,
@@ -147,7 +147,7 @@ namespace Lemma.Components
 				},
 				new State
 				{
-					ID = t.Temporary,
+					ID = t.Blue,
 					Permanent = false,
 					Supported = false,
 					Hard = false,
