@@ -129,9 +129,28 @@ namespace Lemma.Components
 			// Damage the player
 			if (player != null && player.Active)
 			{
-				float d = (player.Get<Transform>().Position - pos).Length();
+				Vector3 toPlayer = player.Get<Transform>().Position - pos;
+				float d = toPlayer.Length();
 				if (d < physicsRadius)
-					player.Get<Player>().Health.Value -= minPlayerDamage + (1.0f - (d / physicsRadius)) * playerDamageMultiplier;
+				{
+					float attenuation = 1.0f;
+					Voxel.GlobalRaycast(pos, toPlayer / d, d, delegate(int x, Voxel.t c)
+					{
+						Voxel.State s = Voxel.States[c];
+						if (s.Permanent)
+						{
+							attenuation = 0.0f;
+							return true;
+						}
+						else if (s.Hard)
+							attenuation -= 0.6f;
+						else
+							attenuation -= 0.35f;
+						return false;
+					});
+					attenuation = Math.Max(0, attenuation);
+					player.Get<Player>().Health.Value -= attenuation * (minPlayerDamage + (1.0f - (d / physicsRadius)) * playerDamageMultiplier);
+				}
 			}
 		
 			// Apply impulse to dynamic maps
