@@ -151,6 +151,10 @@ namespace Lemma.IO
 				using (Stream stream = new GZipInputStream(fs))
 					MapLoader.Load(main, stream, deleteEditor);
 			}
+
+			MapManifest manifest = MapManifest.FromMapPath(filename);
+			manifest.TimesPlayed++;
+			manifest.Save();
 		}
 
 		public static void New(Main main, string filename)

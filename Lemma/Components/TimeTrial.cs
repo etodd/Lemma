@@ -42,6 +42,7 @@ namespace Lemma.Components
 			this.Add(new CommandBinding(EndTimeTrial, () =>
 			{
 				theUI.AnimateOut(true);
+				theUI.ShowEndPanel();
 			}));
 			this.Add(new CommandBinding(PauseTimer, () =>
 			{
