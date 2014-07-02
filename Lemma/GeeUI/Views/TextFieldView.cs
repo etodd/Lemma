@@ -44,7 +44,7 @@ namespace GeeUI.Views
 		public SpriteFont TextInputFont;
 
 		public bool MultiLine = true;
-		public new bool Editable = true;
+		public bool Editable = true;
 
 		private string _text = "";
 

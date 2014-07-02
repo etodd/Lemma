@@ -81,7 +81,7 @@ namespace Lemma.Components
 				m.Translation = new Vector3(0.0f, 0.0f, 2.0f);
 				return m;
 			};
-			this.model["TopOut"].Speed = 1.7f;
+			this.model["TopOut"].Speed = 1.8f;
 			this.model["TopOut"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
 				Vector3 diff = Vector3.Transform(this.relativeVaultStartPosition, this.map.Transform) + new Vector3(0, 0.535f, 0) - this.Position;
@@ -114,21 +114,24 @@ namespace Lemma.Components
 				Direction up = map.GetRelativeDirection(Direction.PositiveY);
 				Direction backward = map.GetRelativeDirection(rotationMatrix.Forward);
 				Direction right = up.Cross(backward);
-				Vector3 pos = this.Position + rotationMatrix.Forward * (this.WallRunState == WallRun.State.Straight ? -1.75f : -1.25f);
+				Vector3 pos = this.Position + rotationMatrix.Forward * -1.75f;
 				Voxel.Coord baseCoord = map.GetCoordinate(pos).Move(up, searchUpDistance);
 				foreach (int x in new[] { 0, -1, 1 })
 				{
 					Voxel.Coord coord = baseCoord.Move(right, x);
-					if (map[coord.Move(up)] != Voxel.EmptyState
-						|| map[coord.Move(up, 2)] != Voxel.EmptyState
-						|| map[coord.Move(up).Move(backward)] != Voxel.EmptyState
-						|| map[coord.Move(up, 2).Move(backward)] != Voxel.EmptyState)
-						break; // Conflict
-
 					for (int i = 0; i < searchDownDistance; i++)
 					{
 						if (map[coord] != Voxel.EmptyState)
 						{
+							if (map[coord.Move(backward)] != Voxel.EmptyState
+								|| map[coord.Move(up)] != Voxel.EmptyState
+								|| map[coord.Move(up, 2)] != Voxel.EmptyState
+								|| map[coord.Move(up, 3)] != Voxel.EmptyState
+								|| map[coord.Move(up).Move(backward)] != Voxel.EmptyState
+								|| map[coord.Move(up, 2).Move(backward)] != Voxel.EmptyState
+								|| map[coord.Move(up, 3).Move(backward)] != Voxel.EmptyState)
+								break; // Conflict
+
 							// Vault
 							this.vault(map, coord.Move(up));
 							return true;
@@ -177,7 +180,8 @@ namespace Lemma.Components
 				supportVelocity = supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
 			}
 
-			this.FallDamage.Execute(this.LinearVelocity.Value.Y - supportVelocity.Y);
+			float verticalVelocityChange = this.LinearVelocity.Value.Y - supportVelocity.Y;
+			this.FallDamage.Execute(verticalVelocityChange);
 			if (!this.Active) // We died from fall damage
 				return;
 
@@ -191,6 +195,12 @@ namespace Lemma.Components
 			this.initialVerticalDifference = forward.Y;
 
 			this.isTopOut = this.initialVerticalDifference > 1.75f;
+
+			// Grunt if we're going up
+			// If we're falling down, don't grunt because we might already be grunting from the fall damage
+			// That would just be awkward
+			if (this.random.NextDouble() > 0.5 && verticalVelocityChange >= 0)
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, this.Entity);
 
 			this.forward.Y = 0.0f;
 
@@ -238,9 +248,6 @@ namespace Lemma.Components
 				"JumpBackward"
 			);
 			this.model.StartClip(this.vaultOver ? "Vault" : (this.isTopOut ? "TopOut" : "Mantle"), 4, false, AnimatedModel.DefaultBlendTime);
-
-			if (this.random.NextDouble() > 0.5)
-				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, this.Entity);
 
 			this.vaultTime = 0.0f;
 			this.moveForwardStartTime = 0.0f;
@@ -375,7 +382,7 @@ namespace Lemma.Components
 					else
 					{
 						// Still moving forward
-						this.LinearVelocity.Value = this.forward * this.MaxSpeed;
+						this.LinearVelocity.Value = this.forward * (this.isTopOut ? this.MaxSpeed * 0.5f : this.MaxSpeed);
 						this.LastSupportedSpeed.Value = this.MaxSpeed;
 					}
 				}

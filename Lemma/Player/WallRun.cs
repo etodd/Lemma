@@ -64,6 +64,12 @@ namespace Lemma.Components
 			this.temporary = Voxel.States[Voxel.t.Temporary];
 		}
 
+		public override void delete()
+		{
+			base.delete();
+			AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
+		}
+
 		public bool Activate(State state)
 		{
 			if (!this.EnableWallRun)
@@ -267,6 +273,8 @@ namespace Lemma.Components
 					}
 				}
 			}
+			if (this.CurrentState != State.Straight)
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE_LOOP, this.Entity);
 		}
 
 		public void Deactivate()
@@ -278,6 +286,7 @@ namespace Lemma.Components
 			this.WallDirection.Value = Direction.None;
 			this.WallRunDirection.Value = Direction.None;
 			this.CurrentState.Value = State.None;
+			AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
 		}
 
 		public void Update(float dt)
@@ -305,6 +314,7 @@ namespace Lemma.Components
 					{
 						// Start sliding down
 						this.CurrentState.Value = wallRunState = State.Down;
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE_LOOP, this.Entity);
 					}
 				}
 				else if (wallRunState == State.Left || wallRunState == State.Right)

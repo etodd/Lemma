@@ -17,6 +17,8 @@ namespace Lemma.Components
 		}
 
 		// Input properties
+		public Property<Vector3> SupportVelocity = new Property<Vector3>();
+		public Property<bool> Kicking = new Property<bool>();
 		public Property<bool> IsSupported = new Property<bool>();
 		public Property<bool> IsSwimming = new Property<bool>();
 		public Property<WallRun.State> WallRunState = new Property<WallRun.State>();
@@ -158,10 +160,13 @@ namespace Lemma.Components
 		public void Update(float dt)
 		{
 			Vector2 mouse = this.Mouse;
+
+			Vector3 relativeVelocity = this.LinearVelocity.Value - this.SupportVelocity.Value;
+			relativeVelocity.Y = 0;
+			float speed = relativeVelocity.Length();
+
 			if (this.WallRunState == WallRun.State.None)
 			{
-				if (this.model.IsPlaying("WallSlideDown", "WallSlideReverse"))
-					AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
 				this.model.Stop
 				(
 					"WallRunLeft",
@@ -188,10 +193,6 @@ namespace Lemma.Components
 						angle += (float)Math.PI * 2.0f;
 
 					string movementAnimation;
-
-					Vector3 velocity = this.LinearVelocity;
-					velocity.Y = 0;
-					float speed = velocity.Length();
 
 					if (this.EnableWalking)
 					{
@@ -352,16 +353,12 @@ namespace Lemma.Components
 						"WallSlideReverse"
 					);
 					this.model.StartClip(wallRunAnimation, 0, true);
-					if (wallRunAnimation == "WallSlideDown" || wallRunAnimation == "WallSlideReverse")
-						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE_LOOP, this.Entity);
-					else
-						AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
 				}
 
 				if (wallRunAnimation != null)
 				{
 					Vector3 wallNormal = this.WallRunMap.Value.GetAbsoluteVector(this.WallDirection.Value.GetVector());
-					float animationSpeed = (this.LinearVelocity.Value - wallNormal * Vector3.Dot(this.LinearVelocity.Value, wallNormal)).Length();
+					float animationSpeed = (relativeVelocity - wallNormal * Vector3.Dot(relativeVelocity, wallNormal)).Length();
 					this.model[wallRunAnimation].Speed = Math.Min(1.5f, animationSpeed / 6.0f);
 				}
 			}
@@ -372,14 +369,14 @@ namespace Lemma.Components
 
 			float l = 0.0f;
 			if (this.EnableLean)
-				l = this.LinearVelocity.Value.Length() * (this.lastRotation.ClosestAngle(this.Rotation) - this.Rotation) * (1.0f / 60.0f) / dt;
+				l = speed * (this.lastRotation.ClosestAngle(this.Rotation) - this.Rotation) * (1.0f / 60.0f) / dt;
 			this.lastRotation = this.Rotation;
 			this.Lean.Value += (l - this.Lean) * 20.0f * dt;
 
 			const float timeScale = 5.0f;
 			const float softBreathingThresholdPercentage = 0.75f;
 			float newBreathing;
-			if (!this.Crouched && this.Movement.Value.LengthSquared() > 0.0f && this.LinearVelocity.Value.Length() > Character.DefaultMaxSpeed * 0.75f)
+			if (!this.Crouched && this.Movement.Value.LengthSquared() > 0.0f && speed > Character.DefaultMaxSpeed * 0.75f)
 			{
 				newBreathing = Math.Min(this.breathing + (dt / timeScale), 1.0f);
 				if (this.breathing < softBreathingThresholdPercentage && newBreathing > softBreathingThresholdPercentage)
@@ -398,7 +395,7 @@ namespace Lemma.Components
 				}
 			}
 			this.breathing = newBreathing;
-			AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_PLAYER_SLIDE, MathHelper.Clamp(this.LinearVelocity.Value.Length() / 8.0f, 0.0f, 1.0f));
+			AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_PLAYER_SLIDE, MathHelper.Clamp((this.LinearVelocity.Value - this.SupportVelocity.Value).Length() / 8.0f, 0.0f, 1.0f) * (this.Kicking ? 1.0f : 0.25f));
 		}
 	}
 }

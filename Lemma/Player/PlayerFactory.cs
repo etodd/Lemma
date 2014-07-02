@@ -199,6 +199,8 @@ namespace Lemma.Factories
 			anim.Add(new Binding<Voxel>(anim.WallRunMap, wallRun.WallRunVoxel));
 			anim.Add(new Binding<Direction>(anim.WallDirection, wallRun.WallDirection));
 			anim.Add(new Binding<bool>(anim.IsSwimming, player.Character.IsSwimming));
+			anim.Add(new Binding<bool>(anim.Kicking, rollKickSlide.Kicking));
+			anim.Add(new Binding<Vector3>(anim.SupportVelocity, player.Character.SupportVelocity));
 			anim.Add
 			(
 				new Binding<bool>
@@ -411,6 +413,13 @@ namespace Lemma.Factories
 			model.Trigger("WallRunStraight", 0.58f, footsteps.Footstep);
 			model.Trigger("TurnLeft", 0.15f, footsteps.Footstep);
 			model.Trigger("TurnRight", 0.15f, footsteps.Footstep);
+			model.Trigger("TopOut", 1.0f, new Command
+			{
+				Action = delegate()
+				{
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, entity);
+				}
+			});
 
 			main.IsMouseVisible.Value = false;
 

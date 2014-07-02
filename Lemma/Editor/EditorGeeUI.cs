@@ -24,6 +24,7 @@ namespace Lemma.Components
 {
 	public class EditorGeeUI : Component<Main>
 	{
+		private const int TextFieldHeight = 19;
 		public struct EditorCommand
 		{
 			public string Description;
@@ -287,6 +288,7 @@ namespace Lemma.Components
 			this.SelectedEntities.Cleared += this.refresh;
 
 			this.Add(new NotifyBinding(this.RecomputeEntityCommands, this.VoxelEditMode, this.TransformMode));
+			this.Add(new Binding<bool>(this.PropertiesView.Active, x => !x, this.VoxelEditMode));
 			this.Add(new NotifyBinding(this.RecomputeVoxelCommands, this.VoxelEditMode, this.TransformMode, this.VoxelSelectionActive));
 
 			this.EntityCommands.ItemAdded += (index, command) => RecomputeEntityCommands();
@@ -835,7 +837,7 @@ namespace Lemma.Components
 		public void BuildValueFieldView(View parent, Type type, IProperty property, VectorElement element, PropertyEntry entry, int width = 30)
 		{
 			TextFieldView textField = new TextFieldView(main.GeeUI, parent, Vector2.Zero, MainFont);
-			textField.Height.Value = 15;
+			textField.Height.Value = TextFieldHeight;
 			textField.Width.Value = width;
 			textField.MultiLine = false;
 
@@ -1148,7 +1150,7 @@ namespace Lemma.Components
 				{
 					TextFieldView view = new TextFieldView(main.GeeUI, ret, Vector2.Zero, MainFont);
 					view.Width.Value = 130;
-					view.Height.Value = 15;
+					view.Height.Value = TextFieldHeight;
 					view.Name = "TextField";
 					view.MultiLine = false;
 

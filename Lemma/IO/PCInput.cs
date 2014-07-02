@@ -194,22 +194,76 @@ namespace Lemma.Components
 							return "Left-click";
 					}
 				}
-				else if (this.Modifier == Keys.None)
-					return this.Key.ToString();
 				else
 				{
-					string modifier;
-					if (this.Modifier == Keys.LeftControl)
-						modifier = "Ctrl";
-					else if (this.Modifier == Keys.LeftAlt)
-						modifier = "Alt";
-					else if (this.Modifier == Keys.LeftShift)
-						modifier = "Shift";
-					else if (this.Modifier == Keys.LeftWindows)
-						modifier = "Windows";
+					string key;
+					switch (this.Key)
+					{
+						case Keys.OemPeriod:
+							key = ".";
+							break;
+						case Keys.OemComma:
+							key = ",";
+							break;
+						case Keys.D0:
+							key = "0";
+							break;
+						case Keys.D1:
+							key = "1";
+							break;
+						case Keys.D2:
+							key = "2";
+							break;
+						case Keys.D3:
+							key = "3";
+							break;
+						case Keys.D4:
+							key = "4";
+							break;
+						case Keys.D5:
+							key = "5";
+							break;
+						case Keys.D6:
+							key = "6";
+							break;
+						case Keys.D7:
+							key = "7";
+							break;
+						case Keys.D8:
+							key = "8";
+							break;
+						case Keys.D9:
+							key = "9";
+							break;
+						default:
+							key = this.Key.ToString(); // That's all I feel like doing for now
+							break;
+					}
+					if (this.Modifier == Keys.None)
+						return key;
 					else
-						modifier = this.Modifier.ToString();
-					return string.Format("{0}+{1}", modifier, this.Key);
+					{
+						string modifier;
+						switch (this.Modifier)
+						{
+							case Keys.LeftControl:
+								modifier = "Ctrl";
+								break;
+							case Keys.LeftAlt:
+								modifier = "Alt";
+								break;
+							case Keys.LeftShift:
+								modifier = "Shift";
+								break;
+							case Keys.LeftWindows:
+								modifier = "Windows";
+								break;
+							default:
+								modifier = this.Modifier.ToString();
+								break;
+						}
+						return string.Format("{0}+{1}", modifier, key);
+					}
 				}
 			}
 		}
