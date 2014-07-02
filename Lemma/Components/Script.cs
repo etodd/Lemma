@@ -17,6 +17,7 @@ namespace Lemma.Components
 	{
 		public const string ScriptExtension = "cs";
 		public const string BinaryExtension = "dll";
+		public const string ScriptNamespace = "Lemma.GameScripts";
 
 		[XmlIgnore]
 		public Property<string> Errors = new Property<string>();
@@ -44,14 +45,13 @@ namespace Lemma.Components
 		/// <returns></returns>
 		private static MethodInfo GetInternalScriptRunMethod(Main main, string name, Entity scriptEntity, out string errors)
 		{
-			string neededNameSpace = "Lemma.GameScripts";
 			errors = null;
 			Assembly assembly = Assembly.GetExecutingAssembly();
 			foreach (var type in assembly.GetTypes())
 			{
-				if (type.Namespace == neededNameSpace)
+				if (type.Namespace == Script.ScriptNamespace)
 				{
-					if (type.IsClass && type.Name == name)
+					if (type.IsClass && type.BaseType == typeof(GameScripts.ScriptBase) && type.Name == name)
 					{
 						MethodInfo ret = type.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
 						if (ret == null)

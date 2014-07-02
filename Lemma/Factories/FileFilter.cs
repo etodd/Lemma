@@ -20,7 +20,7 @@ namespace Lemma.Factories
 
 		private static bool setupBinding = false;
 
-		public static ListProperty<string> Get(Main main, string root, string[] directories, string extension = null)
+		public static ListProperty<string> Get(Main main, string root, string[] directories, string extension = null, Func<IEnumerable<string>> extras = null)
 		{
 			if (!setupBinding)
 			{
@@ -58,6 +58,8 @@ namespace Lemma.Factories
 							}
 						}
 					}
+					if (extras != null)
+						result.AddAll(extras());
 				}
 				return result;
 			}

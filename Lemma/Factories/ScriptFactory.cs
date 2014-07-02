@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Lemma.Components;
+using System.IO;
+using System.Reflection;
 
 namespace Lemma.Factories
 {
@@ -32,7 +34,17 @@ namespace Lemma.Factories
 
 			entity.Add("ExecuteOnLoad", script.ExecuteOnLoad);
 			entity.Add("Execute", script.Execute, Command.Perms.LinkableAndExecutable);
-			entity.Add("Name", script.Name);
+			entity.Add("Script", script.Name, null, null, FileFilter.Get(main, Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory), null, ".cs", delegate()
+			{
+				List<string> scripts = new List<string>();
+				Assembly assembly = Assembly.GetExecutingAssembly();
+				foreach (Type type in assembly.GetTypes())
+				{
+					if (type.Namespace == Script.ScriptNamespace && type.IsClass && type.BaseType == typeof(GameScripts.ScriptBase))
+						scripts.Add(type.Name);
+				}
+				return scripts;
+			}));
 			entity.Add("DeleteOnExecute", script.DeleteOnExecute);
 		}
 
