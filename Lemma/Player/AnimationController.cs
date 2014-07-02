@@ -162,8 +162,9 @@ namespace Lemma.Components
 			Vector2 mouse = this.Mouse;
 
 			Vector3 relativeVelocity = this.LinearVelocity.Value - this.SupportVelocity.Value;
-			relativeVelocity.Y = 0;
-			float speed = relativeVelocity.Length();
+			Vector3 horizontalRelativeVelocity = relativeVelocity;
+			horizontalRelativeVelocity.Y = 0;
+			float horizontalSpeed = horizontalRelativeVelocity.Length();
 
 			if (this.WallRunState == WallRun.State.None)
 			{
@@ -222,18 +223,18 @@ namespace Lemma.Components
 					foreach (KeyValuePair<string, AnimationInfo> animation in this.Crouched ? crouchMovementAnimations : movementAnimations)
 					{
 						if (animation.Key != "Idle" && animation.Key != "CrouchIdle")
-							this.model[animation.Key].Speed = this.Crouched ? (speed / 2.2f) : Math.Min(speed / 4.5f, 1.4f);
+							this.model[animation.Key].Speed = this.Crouched ? (horizontalSpeed / 2.2f) : Math.Min(horizontalSpeed / 4.5f, 1.4f);
 						this.model[animation.Key].TargetStrength = animation.Key == movementAnimation ? 1.0f : animation.Value.DefaultStrength;
 					}
 
 					bool nowIdling = false;
 					if (movementAnimation == "Run")
 					{
-						this.sprintAnimation.TargetStrength = MathHelper.Clamp((speed - sprintThreshold) / sprintRange, 0.0f, 1.0f);
-						this.runAnimation.TargetStrength = Math.Min(MathHelper.Clamp(speed / sprintThreshold, 0.0f, 1.0f), 1.0f - this.sprintAnimation.TargetStrength);
+						this.sprintAnimation.TargetStrength = MathHelper.Clamp((horizontalSpeed - sprintThreshold) / sprintRange, 0.0f, 1.0f);
+						this.runAnimation.TargetStrength = Math.Min(MathHelper.Clamp(horizontalSpeed / sprintThreshold, 0.0f, 1.0f), 1.0f - this.sprintAnimation.TargetStrength);
 					}
 					else if (movementAnimation != "Idle" && movementAnimation != "CrouchIdle")
-						this.model[movementAnimation].TargetStrength = MathHelper.Clamp(this.Crouched ? speed / 2.0f : speed / sprintThreshold, 0.0f, 1.0f);
+						this.model[movementAnimation].TargetStrength = MathHelper.Clamp(this.Crouched ? horizontalSpeed / 2.0f : horizontalSpeed / sprintThreshold, 0.0f, 1.0f);
 					else if (movementAnimation == "Idle")
 						nowIdling = true;
 
@@ -369,14 +370,14 @@ namespace Lemma.Components
 
 			float l = 0.0f;
 			if (this.EnableLean)
-				l = speed * (this.lastRotation.ClosestAngle(this.Rotation) - this.Rotation) * (1.0f / 60.0f) / dt;
+				l = horizontalSpeed * (this.lastRotation.ClosestAngle(this.Rotation) - this.Rotation) * (1.0f / 60.0f) / dt;
 			this.lastRotation = this.Rotation;
 			this.Lean.Value += (l - this.Lean) * 20.0f * dt;
 
 			const float timeScale = 5.0f;
 			const float softBreathingThresholdPercentage = 0.75f;
 			float newBreathing;
-			if (!this.Crouched && this.Movement.Value.LengthSquared() > 0.0f && speed > Character.DefaultMaxSpeed * 0.75f)
+			if (!this.Crouched && this.Movement.Value.LengthSquared() > 0.0f && horizontalSpeed > Character.DefaultMaxSpeed * 0.75f)
 			{
 				newBreathing = Math.Min(this.breathing + (dt / timeScale), 1.0f);
 				if (this.breathing < softBreathingThresholdPercentage && newBreathing > softBreathingThresholdPercentage)
@@ -395,7 +396,7 @@ namespace Lemma.Components
 				}
 			}
 			this.breathing = newBreathing;
-			AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_PLAYER_SLIDE, MathHelper.Clamp((this.LinearVelocity.Value - this.SupportVelocity.Value).Length() / 8.0f, 0.0f, 1.0f) * (this.Kicking ? 1.0f : 0.25f));
+			AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_PLAYER_SLIDE, MathHelper.Clamp(relativeVelocity.Length() / 8.0f, 0.0f, 1.0f) * (this.Kicking ? 1.0f : 0.25f));
 		}
 	}
 }

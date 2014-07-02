@@ -1048,7 +1048,10 @@ namespace Lemma.Components
 					this.main.AddComponent(new Animation
 					(
 						new Animation.Delay(0.2f),
-						new Animation.Set<string>(this.main.MapFile, m)
+						new Animation.Execute(delegate()
+						{
+							IO.MapLoader.Load(this.main, m);
+						})
 					));
 				});
 				this.resizeToMenu(button);
