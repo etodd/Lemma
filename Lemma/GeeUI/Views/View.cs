@@ -528,13 +528,13 @@ namespace GeeUI.Views
 				}
 			}
 
-
 			if (ParentView == null || IgnoreParentBounds)
 			{
 				if (PostUpdate != null)
 					PostUpdate(dt);
 				return;
 			}
+
 			var curBB = AbsoluteBoundBox;
 			var parentBB = ParentView.AbsoluteContentBoundBox;
 			var xOffset = curBB.Right - parentBB.Right;

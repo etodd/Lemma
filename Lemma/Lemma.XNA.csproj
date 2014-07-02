@@ -345,7 +345,7 @@
     <Compile Include="Util\PriorityQueue.cs" />
     <Compile Include="Util\ScriptBase.cs" />
     <Compile Include="Util\SteamWorker.cs" />
-    <Compile Include="Util\TimeTrialManifest.cs" />
+    <Compile Include="Util\MapManifest.cs" />
     <Compile Include="Util\VectorExtensions.cs" />
     <Compile Include="Graphics\AnimatedModel.cs" />
     <Compile Include="Graphics\FullscreenQuad.cs" />

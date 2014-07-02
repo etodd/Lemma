@@ -10,6 +10,7 @@ using GeeUI.ViewLayouts;
 using GeeUI.Views;
 using Lemma.Components;
 using Lemma.Console;
+using Lemma.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -84,6 +85,10 @@ namespace Lemma.GInterfaces
 
 			this.AnimateOut();
 
+			MapManifest manifest = MapManifest.FromMapPath(main.MapFile);
+			float bestTime = manifest.BestPersonalTimeTrialTime;
+			TimeTrialBestTimeView.Text.Value = "Best: " + SecondsToTimeString(bestTime);
+
 			base.Awake();
 		}
 
@@ -138,6 +143,14 @@ namespace Lemma.GInterfaces
 			RootTimeEndView.Active.Value = true;
 			AnimateOut();
 			StopTicking();
+			MapManifest manifest = MapManifest.FromMapPath(main.MapFile);
+			float bestTime = manifest.BestPersonalTimeTrialTime;
+			manifest.LastPersonalTimeTrialTime = ElapsedTime;
+			if (this.ElapsedTime < bestTime || bestTime <= 0)
+			{
+				manifest.BestPersonalTimeTrialTime = ElapsedTime;
+			}
+			manifest.Save();
 		}
 
 		public string SecondsToTimeString(float seconds)
