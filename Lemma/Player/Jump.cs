@@ -10,6 +10,8 @@ namespace Lemma.Components
 {
 	public class Jump : Component<Main>
 	{
+		private Random random = new Random();
+
 		// Input/output properties
 		public Property<bool> IsSupported = new Property<bool>();
 		public Property<bool> HasTraction = new Property<bool>();
@@ -61,6 +63,18 @@ namespace Lemma.Components
 		private Vector3 wallJumpChainStart;
 
 		private const float jumpCoolDown = 0.3f;
+
+		private string randomJumpAnimation()
+		{
+			switch (this.random.Next(3))
+			{
+				case 1:
+					return "Jump02";
+				case 2:
+					return "Jump03";
+			}
+			return "Jump";
+		}
 
 		public bool Go()
 		{
@@ -318,6 +332,8 @@ namespace Lemma.Components
 					"Mantle",
 					"TopOut",
 					"Jump",
+					"Jump02",
+					"Jump03",
 					"JumpLeft",
 					"JumpRight",
 					"JumpBackward"
@@ -342,10 +358,10 @@ namespace Lemma.Components
 						animation = "JumpRight";
 						break;
 					case Direction.PositiveZ:
-						animation = wallJumping ? "JumpBackward" : "Jump";
+						animation = wallJumping ? "JumpBackward" : this.randomJumpAnimation();
 						break;
 					default:
-						animation = "Jump";
+						animation = this.randomJumpAnimation();
 						break;
 				}
 				this.Model.StartClip(animation, 4, false);

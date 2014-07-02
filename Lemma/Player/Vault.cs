@@ -243,6 +243,8 @@ namespace Lemma.Components
 				"Mantle",
 				"TopOut",
 				"Jump",
+				"Jump02",
+				"Jump03",
 				"JumpLeft",
 				"JumpRight",
 				"JumpBackward"

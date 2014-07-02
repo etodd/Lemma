@@ -182,6 +182,8 @@ namespace Lemma.Components
 					this.model.Stop
 					(
 						"Jump",
+						"Jump02",
+						"Jump03",
 						"JumpLeft",
 						"JumpBackward",
 						"JumpRight",
@@ -313,6 +315,8 @@ namespace Lemma.Components
 				this.model.Stop
 				(
 					"Jump",
+					"Jump02",
+					"Jump03",
 					"JumpLeft",
 					"JumpBackward",
 					"JumpRight",
