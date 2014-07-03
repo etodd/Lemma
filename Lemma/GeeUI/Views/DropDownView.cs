@@ -7,6 +7,7 @@ using GeeUI;
 using GeeUI.Managers;
 using GeeUI.ViewLayouts;
 using GeeUI.Views;
+using Lemma.GeeUI.Composites;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -24,7 +25,7 @@ namespace GeeUI.Views
 			public object Related;
 		}
 
-		private PanelView DropDownPanelView;
+		private DropDownPanelView DropDownPanelView;
 		private ListView DropDownListView;
 		public List<DropDownOption> DropDownOptions = new List<DropDownOption>();
 		private List<DropDownOption> DisplayingOptions = new List<DropDownOption>();
@@ -63,7 +64,7 @@ namespace GeeUI.Views
 
 			button.Name = "button";
 
-			this.DropDownPanelView = new PanelView(theGeeUI, theGeeUI.RootView, Vector2.Zero);
+			this.DropDownPanelView = new DropDownPanelView(theGeeUI, this);
 			DropDownPanelView.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
 			this.DropDownPanelView.Draggable = false;
 			this.DropDownPanelView.SelectedNinepatch = this.DropDownPanelView.UnselectedNinepatch;
@@ -103,6 +104,7 @@ namespace GeeUI.Views
 				this.Label.InternalValue = value;
 				((ButtonView)FindFirstChildByName("button")).Text = value;
 			};
+
 		}
 
 		private void keyPressedHandler(string keyPressed, Keys key)

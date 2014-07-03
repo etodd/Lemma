@@ -241,6 +241,7 @@ namespace Lemma.Components
 				{
 					Name = "EntityDropDown"
 				};
+
 				entityDropDown.FilterThreshhold.Value = 0;
 				entityDropDown.AllowRightClickExecute.Value = false;
 
@@ -1367,6 +1368,8 @@ namespace Lemma.Components
 			this.main.GeeUI.RootView.RemoveChild(this.RootEditorView);
 			this.main.GeeUI.RootView.RemoveChild(this.selectPrompt);
 			this.main.GeeUI.RootView.RemoveChild(this.PropertiesView);
+			this.main.GeeUI.RootView.RemoveChild(this.LinkerView);
+			this.main.GeeUI.RootView.RemoveChild(this.EntityListView);
 		}
 	}
 }
