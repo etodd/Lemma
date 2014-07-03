@@ -23,7 +23,7 @@ namespace GeeUI.Views
 					AddChild(value);
 					return;
 				}
-				this._children[0] = value;
+				this.Children[0] = value;
 			}
 		}
 

@@ -280,7 +280,6 @@ namespace Lemma.Components
 
 			PropertiesView.Add(new Binding<Vector2, int>(PropertiesView.Position, i => new Vector2(0, i - 3), TabViews.Height));
 			PropertiesView.Add(new Binding<int, Point>(PropertiesView.Height, point => point.Y - PropertiesView.AbsoluteBoundBox.Top - 15, main.ScreenSize));
-			PropertiesView.Height.Value = main.ScreenSize.Value.Y - PropertiesView.AbsoluteBoundBox.Top - 15;
 
 			this.SelectedEntities.ItemAdded += (index, item) => this.refresh();
 			this.SelectedEntities.ItemRemoved += (index, item) => this.refresh();
@@ -610,8 +609,6 @@ namespace Lemma.Components
 					if (entry.Data.Visible != null)
 						containerLabel.Add(new Binding<bool>(containerLabel.Active, entry.Data.Visible));
 					this.VoxelPanelView.AddChild(containerLabel);
-					containerLabel.OrderChildren();
-					child.OrderChildren();
 
 					containerLabel.SetToolTipText(entry.Data.Description, MainFont);
 				}
@@ -718,8 +715,6 @@ namespace Lemma.Components
 					View containerLabel = BuildContainerLabel("ID", sameLine);
 					containerLabel.AddChild(child);
 					rootEntityView.AddChild(containerLabel);
-					containerLabel.OrderChildren();
-					child.OrderChildren();
 				}
 
 				foreach (KeyValuePair<string, PropertyEntry> prop in entity.Properties)
@@ -730,10 +725,8 @@ namespace Lemma.Components
 					View containerLabel = BuildContainerLabel(prop.Key, sameLine);
 					containerLabel.AddChild(child);
 					rootEntityView.AddChild(containerLabel);
-					containerLabel.OrderChildren();
 					if (entry.Data.Visible != null)
 						containerLabel.Add(new Binding<bool>(containerLabel.Active, entry.Data.Visible));
-					child.OrderChildren();
 
 					containerLabel.SetToolTipText(entry.Data.Description, MainFont);
 				}
@@ -743,14 +736,10 @@ namespace Lemma.Components
 					View containerLabel = BuildContainerLabel(cmd.Key, false);
 					containerLabel.AddChild(BuildButton(entity, cmd.Value, "Execute"));
 					rootEntityView.AddChild(containerLabel);
-					containerLabel.OrderChildren();
 
 					containerLabel.SetToolTipText(cmd.Value.Description, MainFont);
 				}
 			}
-
-			PropertiesView.OrderChildren();
-			rootEntityView.OrderChildren();
 		}
 
 		public bool AnyTextFieldViewsSelected()

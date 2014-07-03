@@ -44,11 +44,11 @@ namespace GeeUI.Views
 		public Property<bool> EnforceRootAttachment = new Property<bool>() { Value = true };
 
 		public ToolTip ToolTipView;
-		private Property<string> _toolTipText = new Property<string>() { Value = "" };
+		private Property<string> _toolTipText = new Property<string>();
 		private SpriteFont _toolTipFont;
 		private float _toolTipTimer;
 
-		public Property<float> MyOpacity = new Property<float>() { Value = 1f };
+		public Property<float> MyOpacity = new Property<float> { Value = 1f };
 
 		public Property<bool> Attached = new Property<bool>();
 
@@ -63,7 +63,7 @@ namespace GeeUI.Views
 
 		public Property<int> NumChildrenAllowed = new Property<int>() { Value = -1 };
 
-		public string Name = "";
+		public string Name;
 
 		protected bool _mouseOver;
 		
@@ -209,15 +209,7 @@ namespace GeeUI.Views
 		public Property<int> Width = new Property<int>() { Value = 0 };
 		public Property<int> Height = new Property<int>() { Value = 0 };
 
-		protected List<View> _children = new List<View>();
-
-		public ReadOnlyCollection<View> Children
-		{
-			get
-			{
-				return _children.AsReadOnly();
-			}
-		}
+		public ListProperty<View> Children = new ListProperty<View>();
 
 		internal View(GeeUIMain theGeeUI)
 		{
@@ -226,7 +218,7 @@ namespace GeeUI.Views
 			this.Attached.Set = delegate(bool value)
 			{
 				this.Attached.InternalValue = value;
-				foreach (View v in this._children)
+				foreach (View v in this.Children)
 					v.Attached.Value = value;
 			};
 
@@ -235,6 +227,13 @@ namespace GeeUI.Views
 				this.ParentView.InternalValue = v;
 				this.Attached.Value = v == null ? false : v.Attached;
 			};
+
+			this.Add(new NotifyBinding(delegate()
+			{
+				View parent = this.ParentView;
+				if (parent != null)
+					parent.dirty = true;
+			}, this.Position, this.Active, this.Width, this.Height));
 		}
 
 		public View(GeeUIMain theGeeUI, View parentView)
@@ -256,50 +255,48 @@ namespace GeeUI.Views
 				child.ParentView.Value.RemoveChild(child);
 			child.ParentView.Value = this;
 			child.ParentGeeUI = ParentGeeUI;
-			_children.Add(child);
+			Children.Add(child);
+			this.dirty = true;
 		}
 
 		public void RemoveAllChildren()
 		{
 			foreach (var child in Children)
 				child.ParentView.Value = null;
-			_children.Clear();
+			Children.Clear();
+			this.dirty = true;
 		}
 
 		public void RemoveChild(View child)
 		{
-			_children.Remove(child);
+			Children.Remove(child);
 			child.ParentView.Value = null;
+			this.dirty = true;
 		}
 
 		public void OrderChildren()
 		{
 			foreach (var layout in ChildrenLayouts)
-				OrderChildren(layout);
+				layout.OrderChildren(this);
+			this.dirty = false;
 		}
 		
-		public virtual void OrderChildren(ViewLayout layout)
+		public List<View> FindChildrenByName(string name, int depth = -1, List<View> list = null)
 		{
-			if (layout != null)
-				layout.OrderChildren(this);
-		}
-
-		public View[] FindChildrenByName(string name, int depth = -1)
-		{
+			if (list == null)
+				list = new List<View>();
 			bool infinite = depth == -1;
 			if (!infinite) depth--;
-			List<View> ret = new List<View>();
 			if (depth >= 0 || infinite)
 			{
 				foreach (var c in Children)
 				{
 					if (c.Name == name)
-						ret.Add(c);
-					foreach (var find in c.FindChildrenByName(name, infinite ? -1 : depth))
-						ret.Add(find);
+						list.Add(c);
+					c.FindChildrenByName(name, infinite ? -1 : depth, list);
 				}
 			}
-			return ret.ToArray();
+			return list;
 		}
 
 		public View FindFirstChildByName(string name, int depth = -1)
@@ -395,10 +392,11 @@ namespace GeeUI.Views
 
 		public virtual void BringChildToFront(View view)
 		{
-			if (_children[_children.Count - 1] != view)
+			if (Children[Children.Count - 1] != view)
 			{
-				_children.Remove(view);
-				_children.Add(view);
+				Children.Remove(view);
+				Children.Add(view);
+				this.dirty = true;
 			}
 		}
 
@@ -468,14 +466,10 @@ namespace GeeUI.Views
 			if (ParentView.Value != null) ParentView.Value.OnMOff(true);
 		}
 
+		protected bool dirty;
+
 		public virtual void Update(float dt)
 		{
-			foreach (var layout in ChildrenLayouts)
-			{
-				if (layout != null)
-					OrderChildren(layout);
-			}
-
 			if (MouseOver && !string.IsNullOrEmpty(_toolTipText.Value))
 			{
 				_toolTipTimer += dt;
@@ -505,6 +499,16 @@ namespace GeeUI.Views
 				yOffset = curBB.Top - parentBB.Top;
 				if (yOffset < 0)
 					Y -= yOffset;
+			}
+		}
+
+		public void PostUpdate()
+		{
+			if (this.dirty)
+			{
+				foreach (var layout in ChildrenLayouts)
+					layout.OrderChildren(this);
+				this.dirty = false;
 			}
 		}
 

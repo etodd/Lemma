@@ -278,8 +278,6 @@ namespace GeeUI.Views
 			{
 				DropDownListView.Height.Value -= (DropDownListView.AbsoluteBoundBox.Bottom - ParentGeeUI.RootView.Height);
 			}
-			if (DropDownShowing)
-				DropDownPanelView.ParentView.Value.BringChildToFront(DropDownPanelView);
 			base.Update(dt);
 		}
 
@@ -321,6 +319,7 @@ namespace GeeUI.Views
 			DropDownPanelView.Active.Value = true;
 			DropDownPanelView.ParentView.Value.BringChildToFront(DropDownPanelView);
 			DropDownPanelView.FindFirstChildByName("DropList").SetContentOffset(Vector2.Zero);
+			DropDownPanelView.ParentView.Value.BringChildToFront(DropDownPanelView);
 		}
 
 		public override void OnDelete()

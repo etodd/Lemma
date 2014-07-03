@@ -296,7 +296,6 @@ namespace GeeUI
 		public void Update(float dt)
 		{
 			_inputManager.Update(dt, this);
-			RootView.Update(dt);
 			UpdateView(RootView, dt);
 		}
 
@@ -307,13 +306,15 @@ namespace GeeUI
 
 		internal void UpdateView(View toUpdate, float dt)
 		{
+			toUpdate.Update(dt);
 			for (int i = 0; i < toUpdate.Children.Count; i++)
 			{
 				View updating = toUpdate.Children[i];
-				if (!updating.Active) continue;
-				updating.Update(dt);
+				if (!updating.Active)
+					continue;
 				UpdateView(updating, dt);
 			}
+			toUpdate.PostUpdate();
 		}
 
 		internal Rectangle CorrectScissor(Rectangle scissor, Point screenSize)
@@ -389,15 +390,15 @@ namespace GeeUI
 
 		public View FindViewByName(string name)
 		{
-			if (RootView == null) return null;
-			var finds = RootView.FindChildrenByName(name);
-			if (finds == null || finds.Length == 0) return null;
-			return finds[0];
+			if (RootView == null)
+				return null;
+			return RootView.FindFirstChildByName(name);
 		}
 
-		public View[] FindViewsByName(string name)
+		public List<View> FindViewsByName(string name)
 		{
-			if (RootView == null) return new View[0];
+			if (RootView == null)
+				return new List<View>();
 			return RootView.FindChildrenByName(name);
 		}
 

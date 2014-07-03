@@ -46,7 +46,7 @@ namespace GeeUI.Views
 			}
 			child.Selected.Value = true;
 			var host = (TabHost) ParentView;
-			host.TabClicked(_children.IndexOf(child));
+			host.TabClicked(Children.InternalList.IndexOf(child));
 		}
 
 		public TabView AddTab(string tabText, View tabChild)

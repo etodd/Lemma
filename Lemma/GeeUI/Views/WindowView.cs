@@ -35,7 +35,7 @@ namespace GeeUI.Views
 					AddChild(value);
 					return;
 				}
-				_children[0] = value;
+				Children[0] = value;
 			}
 		}
 
