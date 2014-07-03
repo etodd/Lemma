@@ -14,17 +14,16 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				return Children.Length == 0 ? null : (TabContainer)Children[0];
+				return Children.Count == 0 ? null : (TabContainer)Children[0];
 			}
 			set
 			{
-				if (Children.Length == 0)
+				if (Children.Count == 0)
 				{
 					AddChild(value);
 					return;
 				}
 				this._children[0] = value;
-				ReOrderChildrenDepth();
 			}
 		}
 
@@ -32,7 +31,7 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				if (this.Children.Length == 1) return null;
+				if (this.Children.Count == 1) return null;
 				foreach (var child in Children)
 				{
 					if (child == TabContainerView) continue;
@@ -56,9 +55,9 @@ namespace GeeUI.Views
 
 		private void TabTab()
 		{
-			if (this.Children.Length == 1 || !this.ActiveView.Selected || !InputManager.IsKeyPressed(Keys.LeftControl)) return;
+			if (this.Children.Count == 1 || !this.ActiveView.Selected || !InputManager.IsKeyPressed(Keys.LeftControl)) return;
 			CtrlTabIndex++;
-			if (CtrlTabIndex >= this.Children.Length - 1)
+			if (CtrlTabIndex >= this.Children.Count - 1)
 			{
 				CtrlTabIndex = 0;
 			}
@@ -68,12 +67,12 @@ namespace GeeUI.Views
 		internal View TabViewToView(TabView v)
 		{
 			int index = TabContainerView.Children.ToList().IndexOf(v) + 1;
-			return index >= Children.Length ? null : Children[index];
+			return index >= Children.Count ? null : Children[index];
 		}
 
 		public int TabIndex(string name)
 		{
-			for (int i = 0; i < TabContainerView.Children.Length; i++)
+			for (int i = 0; i < TabContainerView.Children.Count; i++)
 			{
 				var tab = TabContainerView.Children[i] as TabView;
 				if (tab == null) continue;
@@ -99,7 +98,7 @@ namespace GeeUI.Views
 
 		public void RemoveTab(string text)
 		{
-			for (int i = 0; i < TabContainerView.Children.Length; i++)
+			for (int i = 0; i < TabContainerView.Children.Count; i++)
 			{
 				var tab = TabContainerView.Children[i] as TabView;
 				if (tab == null) continue;
@@ -108,7 +107,7 @@ namespace GeeUI.Views
 					this.RemoveChild(this.Children[i + 1]);
 					this.TabContainerView.RemoveChild(tab);
 					i--;
-					if (this.Children.Length != 1)
+					if (this.Children.Count != 1)
 						this.SetActiveTab(i);
 				}
 			}
@@ -126,7 +125,7 @@ namespace GeeUI.Views
 
 		public string GetActiveTab()
 		{
-			for (int i = 0; i < TabContainerView.Children.Length; i++)
+			for (int i = 0; i < TabContainerView.Children.Count; i++)
 			{
 				var tab = TabContainerView.Children[i] as TabView;
 				if (tab != null && tab.Selected)
@@ -137,7 +136,7 @@ namespace GeeUI.Views
 
 		internal void TabClicked(int index)
 		{
-			for (int i = 1; i < Children.Length; i++)
+			for (int i = 1; i < Children.Count; i++)
 			{
 				Children[i].Active.Value = false;
 				Children[i].Selected.Value = false;
@@ -172,7 +171,7 @@ namespace GeeUI.Views
 
 		public override void Update(float dt)
 		{
-			for (int i = 1; i < Children.Length; i++)
+			for (int i = 1; i < Children.Count; i++)
 			{
 				Children[i].Position.Value = new Vector2(0, TabContainerView.BoundBox.Height);
 				Children[i].Width = Width;
@@ -184,7 +183,7 @@ namespace GeeUI.Views
 		public override void AddChild(View child)
 		{
 			if (child == null) return;
-			if (!(child is TabContainer) && TabContainerView.Children.Length != Children.Length) return;
+			if (!(child is TabContainer) && TabContainerView.Children.Count != Children.Count) return;
 			base.AddChild(child);
 		}
 

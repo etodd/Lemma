@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using ComponentBind;
 using Lemma;
@@ -9,6 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 using GeeUI.Structs;
 using GeeUI.ViewLayouts;
 using Newtonsoft.Json.Schema;
+using System.Collections.ObjectModel;
 
 namespace GeeUI.Views
 {
@@ -27,16 +29,13 @@ namespace GeeUI.Views
 		public event MouseScrollEventHandler OnMouseScroll;
 
 		public GeeUIMain ParentGeeUI;
-		public View ParentView;
+		public Property<View> ParentView = new Property<View>();
 
 		public List<ViewLayout> ChildrenLayouts = new List<ViewLayout>();
 
-		public Property<int> ChildrenDepth = new Property<int>() { Value = 0 };
-		public Property<int> ThisDepth = new Property<int>() { Value = 0 };
-
 		public Property<bool> IgnoreParentBounds = new Property<bool>() { Value = true };
 		public Property<bool> Selected = new Property<bool>() { Value = false };
-		public Property<bool> Active = new Property<bool>() { Value = true };
+		public new Property<bool> Active = new Property<bool>() { Value = true };
 		public Property<bool> EnabledScissor = new Property<bool>() { Value = true };
 		public Property<bool> ContentMustBeScissored = new Property<bool>() { Value = false };
 
@@ -44,21 +43,21 @@ namespace GeeUI.Views
 
 		public Property<bool> EnforceRootAttachment = new Property<bool>() { Value = true };
 
-		public Action<float> PostUpdate = null;
-		public Action PostDraw = null;
-
 		public ToolTip ToolTipView;
 		private Property<string> _toolTipText = new Property<string>() { Value = "" };
 		private SpriteFont _toolTipFont;
 		private float _toolTipTimer;
 
 		public Property<float> MyOpacity = new Property<float>() { Value = 1f };
+
+		public Property<bool> Attached = new Property<bool>();
+
 		public float EffectiveOpacity
 		{
 			get
 			{
-				if (ParentView == null) return MyOpacity;
-				return MyOpacity * ParentView.EffectiveOpacity;
+				if (ParentView.Value == null) return MyOpacity;
+				return MyOpacity * ParentView.Value.EffectiveOpacity;
 			}
 		}
 
@@ -96,7 +95,7 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				if (ParentView == null) return BoundBox;
+				if (ParentView.Value == null) return BoundBox;
 				Rectangle curBB = BoundBox;
 				return new Rectangle(AbsoluteX, AbsoluteY, curBB.Width, curBB.Height);
 			}
@@ -114,7 +113,7 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				if (ParentView == null) return ContentBoundBox;
+				if (ParentView.Value == null) return ContentBoundBox;
 				Rectangle curBB = ContentBoundBox;
 				curBB.X += AbsoluteX - RealX;
 				curBB.Y += AbsoluteY - RealY;
@@ -149,8 +148,8 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				if (ParentView == null) return X - (int)AnchorOffset.X;
-				return X - (int)ParentView.ContentOffset.Value.X - (int)AnchorOffset.X;
+				if (ParentView.Value == null) return X - (int)AnchorOffset.X;
+				return X - (int)ParentView.Value.ContentOffset.Value.X - (int)AnchorOffset.X;
 			}
 		}
 
@@ -158,8 +157,8 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				if (ParentView == null) return Y - (int)AnchorOffset.Y;
-				return Y - (int)ParentView.ContentOffset.Value.Y - (int)AnchorOffset.Y;
+				if (ParentView.Value == null) return Y - (int)AnchorOffset.Y;
+				return Y - (int)ParentView.Value.ContentOffset.Value.Y - (int)AnchorOffset.Y;
 			}
 		}
 
@@ -202,8 +201,8 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				if (ParentView == null) return RealPosition;
-				return RealPosition + ParentView.AbsolutePosition;
+				if (ParentView.Value == null) return RealPosition;
+				return RealPosition + ParentView.Value.AbsolutePosition;
 			}
 		}
 
@@ -212,25 +211,30 @@ namespace GeeUI.Views
 
 		protected List<View> _children = new List<View>();
 
-		public int ChildCount
+		public ReadOnlyCollection<View> Children
 		{
 			get
 			{
-				return _children.Count;
-			}
-		}
-
-		public View[] Children
-		{
-			get
-			{
-				return _children.ToArray();
+				return _children.AsReadOnly();
 			}
 		}
 
 		internal View(GeeUIMain theGeeUI)
 		{
 			ParentGeeUI = theGeeUI;
+
+			this.Attached.Set = delegate(bool value)
+			{
+				this.Attached.InternalValue = value;
+				foreach (View v in this._children)
+					v.Attached.Value = value;
+			};
+
+			this.ParentView.Set = delegate(View v)
+			{
+				this.ParentView.InternalValue = v;
+				this.Attached.Value = v == null ? false : v.Attached;
+			};
 		}
 
 		public View(GeeUIMain theGeeUI, View parentView)
@@ -245,13 +249,12 @@ namespace GeeUI.Views
 		public virtual void AddChild(View child)
 		{
 			if (child == null) return;
-			if (Children.Length + 1 > NumChildrenAllowed && NumChildrenAllowed != -1)
+			if (Children.Count + 1 > NumChildrenAllowed && NumChildrenAllowed != -1)
 				throw new Exception("You have attempted to add too many child Views to this View.");
 			//Ensure that a child can only belong to one View ever.
-			if (child.ParentView != null)
-				child.ParentView.RemoveChild(child);
-			child.ParentView = this;
-			child.ThisDepth.Value = ChildrenDepth.Value++;
+			if (child.ParentView.Value != null)
+				child.ParentView.Value.RemoveChild(child);
+			child.ParentView.Value = this;
 			child.ParentGeeUI = ParentGeeUI;
 			_children.Add(child);
 		}
@@ -259,15 +262,14 @@ namespace GeeUI.Views
 		public void RemoveAllChildren()
 		{
 			foreach (var child in Children)
-				child.ParentView = null;
+				child.ParentView.Value = null;
 			_children.Clear();
 		}
 
 		public void RemoveChild(View child)
 		{
 			_children.Remove(child);
-			child.ParentView = null;
-			ReOrderChildrenDepth();
+			child.ParentView.Value = null;
 		}
 
 		public void OrderChildren()
@@ -323,7 +325,7 @@ namespace GeeUI.Views
 			_toolTipTimer = 0f;
 			if (this.ToolTipView != null)
 			{
-				this.ToolTipView.ParentView.RemoveChild(ToolTipView);
+				this.ToolTipView.ParentView.Value.RemoveChild(ToolTipView);
 				this.ToolTipView.OnDelete();
 				this.ToolTipView = null;
 			}
@@ -382,34 +384,9 @@ namespace GeeUI.Views
 
 		public void SetParent(View parent)
 		{
-			if (ParentView != null)
-			{
-				ParentView.RemoveChild(this);
-			}
+			if (ParentView.Value != null)
+				ParentView.Value.RemoveChild(this);
 			parent.AddChild(this);
-		}
-
-		private void CheckAttachmentToRoot()
-		{
-			if (!EnforceRootAttachment) return;
-
-			//We're not attached to root anymore--someone removed us from the hierarchy. We should clean up.
-			if (!AttachedToRoot(ParentView))
-			{
-				OnDelete();
-			}
-		}
-
-
-
-		public bool AttachedToRoot(View parent, View root = null)
-		{
-			if (root == null) root = ParentGeeUI.RootView;
-
-			if (this == root) return true;
-			else if (parent == root) return true;
-			else if (parent == null) return false;
-			return AttachedToRoot(parent.ParentView, root);
 		}
 
 		#endregion
@@ -418,30 +395,10 @@ namespace GeeUI.Views
 
 		public virtual void BringChildToFront(View view)
 		{
-			_children.Remove(view);
-			var sortedChildren = _children;
-			sortedChildren.Sort(ViewDepthComparer.CompareDepthsInverse);
-			sortedChildren.Add(view);
-			_children = sortedChildren;
-			ChildrenDepth.Value = 0;
-			for (var i = 0; i < _children.Count; i++)
+			if (_children[_children.Count - 1] != view)
 			{
-				_children[i].ThisDepth.Value = i;
-				ChildrenDepth.Value++;
-			}
-
-		}
-
-		public void ReOrderChildrenDepth()
-		{
-			View[] sortedChildren = Children;
-			Array.Sort(sortedChildren, ViewDepthComparer.CompareDepths);
-			ChildrenDepth.Value = 0;
-
-			for (int i = 0; i < sortedChildren.Length; i++)
-			{
-				Children[i].ThisDepth.Value = i;
-				ChildrenDepth.Value++;
+				_children.Remove(view);
+				_children.Add(view);
 			}
 		}
 
@@ -469,7 +426,7 @@ namespace GeeUI.Views
 
 		public virtual void OnMScroll(Vector2 position, int scrollDelta, bool fromChild = false)
 		{
-			if (ParentView != null) ParentView.OnMScroll(position, scrollDelta, true);
+			if (ParentView.Value != null) ParentView.Value.OnMScroll(position, scrollDelta, true);
 			if (OnMouseScroll != null)
 				OnMouseScroll(scrollDelta);
 		}
@@ -478,21 +435,21 @@ namespace GeeUI.Views
 		{
 			if (OnMouseRightClick != null)
 				OnMouseRightClick(this, new EventArgs());
-			if (ParentView != null) ParentView.OnMRightClick(position, true);
+			if (ParentView.Value != null) ParentView.Value.OnMRightClick(position, true);
 		}
 
 		public virtual void OnMClick(Vector2 position, bool fromChild = false)
 		{
 			if (OnMouseClick != null)
 				OnMouseClick(this, new EventArgs());
-			if (ParentView != null) ParentView.OnMClick(position, true);
+			if (ParentView.Value != null) ParentView.Value.OnMClick(position, true);
 		}
 
 		public virtual void OnMClickAway(bool fromChild = false)
 		{
 			if (OnMouseClickAway != null)
 				OnMouseClickAway(this, new EventArgs());
-			if (ParentView != null) ParentView.OnMClickAway(true);
+			if (ParentView.Value != null) ParentView.Value.OnMClickAway(true);
 		}
 
 		public virtual void OnMOver(bool fromChild = false)
@@ -500,7 +457,7 @@ namespace GeeUI.Views
 			RemoveToolTip();
 			if (OnMouseOver != null)
 				OnMouseOver(this, new EventArgs());
-			if (ParentView != null) ParentView.OnMOver(true);
+			if (ParentView.Value != null) ParentView.Value.OnMOver(true);
 		}
 
 		public virtual void OnMOff(bool fromChild = false)
@@ -508,7 +465,7 @@ namespace GeeUI.Views
 			RemoveToolTip();
 			if (OnMouseOff != null)
 				OnMouseOff(this, new EventArgs());
-			if (ParentView != null) ParentView.OnMOff(true);
+			if (ParentView.Value != null) ParentView.Value.OnMOff(true);
 		}
 
 		public virtual void Update(float dt)
@@ -519,24 +476,18 @@ namespace GeeUI.Views
 					OrderChildren(layout);
 			}
 
-			if (MouseOver && _toolTipText.Value != "")
+			if (MouseOver && !string.IsNullOrEmpty(_toolTipText.Value))
 			{
 				_toolTipTimer += dt;
 				if (_toolTipTimer >= 1f && _toolTipFont != null && ToolTipView == null)
-				{
 					ShowToolTip();
-				}
 			}
 
-			if (ParentView == null || IgnoreParentBounds)
-			{
-				if (PostUpdate != null)
-					PostUpdate(dt);
+			if (ParentView.Value == null || IgnoreParentBounds)
 				return;
-			}
 
 			var curBB = AbsoluteBoundBox;
-			var parentBB = ParentView.AbsoluteContentBoundBox;
+			var parentBB = ParentView.Value.AbsoluteContentBoundBox;
 			var xOffset = curBB.Right - parentBB.Right;
 			var yOffset = curBB.Bottom - parentBB.Bottom;
 			if (xOffset > 0)
@@ -555,17 +506,10 @@ namespace GeeUI.Views
 				if (yOffset < 0)
 					Y -= yOffset;
 			}
-
-			if (PostUpdate != null)
-				PostUpdate(dt);
-
-
 		}
 
 		public virtual void Draw(SpriteBatch spriteBatch)
 		{
-			if (PostDraw != null)
-				PostDraw();
 		}
 
 		/// <summary>

@@ -90,8 +90,8 @@ namespace GeeUI.Views
 			SelectedOffChildren = !fromChild;
 			Selected.Value = true;
 			MouseSelectedOffset = position - Position;
-			if (ParentView != null)
-				ParentView.BringChildToFront(this);
+			if (ParentView.Value != null)
+				ParentView.Value.BringChildToFront(this);
 
 			Vector2 corner = new Vector2(BoundBox.Right, BoundBox.Bottom);
 			Vector2 click = position;

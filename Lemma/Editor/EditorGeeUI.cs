@@ -114,7 +114,7 @@ namespace Lemma.Components
 			TabViews.AddTab("Map", this.MapPanelView);
 
 			this.CreateDropDownView = new DropDownView(main.GeeUI, MapPanelView, Vector2.Zero, MainFont);
-			this.CreateDropDownView.Label.Value = "Add";
+			this.CreateDropDownView.Label.Value = "Add [Space]";
 			this.CreateDropDownView.FilterThreshhold.Value = 0;
 			this.SelectDropDownView = new DropDownView(main.GeeUI, MapPanelView, Vector2.Zero, MainFont);
 			this.SelectDropDownView.FilterThreshhold.Value = 0;
@@ -341,7 +341,7 @@ namespace Lemma.Components
 			if (SelectedEntities.Count != 1) return;
 			LinkerView.Active.Value = true;
 			LinkerView.Position.Value = new Vector2(PropertiesView.AbsoluteBoundBox.Right, InputManager.GetMousePosV().Y);
-			LinkerView.ParentView.BringChildToFront(LinkerView);
+			LinkerView.ParentView.Value.BringChildToFront(LinkerView);
 			BindLinker(button, SelectedEntities[0], select);
 			if (LinkerView.AbsoluteBoundBox.Bottom > main.GeeUI.RootView.AbsoluteBoundBox.Bottom)
 			{
@@ -487,7 +487,7 @@ namespace Lemma.Components
 			if (SelectedEntities.Count != 1) return;
 			EntityListView.Active.Value = true;
 			EntityListView.Position.Value = new Vector2(PropertiesView.AbsoluteBoundBox.Right, InputManager.GetMousePosV().Y);
-			EntityListView.ParentView.BringChildToFront(EntityListView);
+			EntityListView.ParentView.Value.BringChildToFront(EntityListView);
 			BindEntityListView(button, SelectedEntities[0], entry);
 			if (EntityListView.AbsoluteBoundBox.Bottom > main.GeeUI.RootView.AbsoluteBoundBox.Bottom)
 				EntityListView.Y -= (EntityListView.AbsoluteBoundBox.Bottom - main.GeeUI.RootView.AbsoluteBoundBox.Bottom);

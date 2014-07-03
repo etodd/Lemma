@@ -55,7 +55,7 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				if (Children.Length == 0) return new Rectangle(RealX, RealY, 0, 0);
+				if (Children.Count == 0) return new Rectangle(RealX, RealY, 0, 0);
 				View firstChild = HighestChild;
 				View lastChild = LowestChild;
 				View widestChild = WidestChild;

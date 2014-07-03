@@ -110,8 +110,6 @@ namespace Lemma.Components
 			right.Name.Value = ">";
 			valueList.Children.Add(right);
 
-			result.Add(new CommandBinding<int>(result.MouseScrolled, scrolled));
-
 			left.Add(new CommandBinding(left.MouseLeftUp, delegate()
 			{
 				scrolled(-1);
@@ -121,8 +119,6 @@ namespace Lemma.Components
 			{
 				scrolled(1);
 			}));
-
-			result.SwallowMouseEvents.Value = true;
 
 			return result;
 		}

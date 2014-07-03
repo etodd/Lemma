@@ -44,7 +44,7 @@ namespace Lemma.GInterfaces
 
 		public override void Awake()
 		{
-			MainFont = main.Content.Load<SpriteFont>("EditorFont");
+			MainFont = main.Content.Load<SpriteFont>("Font");
 
 			//This is to make it so nothing else can be interacted with.
 			this.EncompassingView = new View(main.GeeUI, main.GeeUI.RootView);

@@ -12,6 +12,8 @@ using Microsoft.Xna.Framework.Input;
 using GeeUI.Views;
 using GeeUI.Structs;
 using GeeUI.Managers;
+using System.Linq;
+
 namespace GeeUI
 {
 	public delegate void OnKeyPressed(string keyPressed, Keys key);
@@ -137,6 +139,7 @@ namespace GeeUI
 			RootView = new View(this);
 			RootView.Width.Value = theGame.Window.ClientBounds.Width;
 			RootView.Height.Value = theGame.Window.ClientBounds.Height;
+			RootView.Attached.Value = true;
 
 			Texture2D textFieldDefault = ConversionManager.BitmapToTexture(Resource1.textfield_default_9, theGame.GraphicsDevice);
 			Texture2D textFieldSelected = ConversionManager.BitmapToTexture(Resource1.textfield_selected_9, theGame.GraphicsDevice);
@@ -218,11 +221,10 @@ namespace GeeUI
 			if (!view.Active)
 				return;
 
-			View[] sortedChildren = view.Children;
-			Array.Sort(sortedChildren, ViewDepthComparer.CompareDepths);
 			bool didLower = false;
-			foreach (View child in sortedChildren)
+			for (int i = 0; i < view.Children.Count; i++)
 			{
+				View child = view.Children[i];
 				if (!child.AbsoluteBoundBox.Contains(mousePos) || !child.Active) continue;
 				HandleScroll(child, mousePos, scrollDelta);
 				didLower = true;
@@ -239,11 +241,10 @@ namespace GeeUI
 
 			if (view == RootView) LastClickCaptured = false;
 
-			View[] sortedChildren = view.Children;
-			Array.Sort(sortedChildren, ViewDepthComparer.CompareDepths);
 			bool didLower = false;
-			foreach (View child in sortedChildren)
+			for (int i = 0; i < view.Children.Count; i++)
 			{
+				View child = view.Children[i];
 				if (!child.AbsoluteBoundBox.Contains(mousePos) || !child.Active || !child.AllowMouseEvents) continue;
 				if (view == RootView) LastClickCaptured = true;
 				didClick.Add(child);
@@ -267,10 +268,8 @@ namespace GeeUI
 		internal void HandleMouseMovement(View view, Point mousePos)
 		{
 			if (!view.Active) return;
-			View[] sortedChildren = view.Children;
-			Array.Sort(sortedChildren, ViewDepthComparer.CompareDepths);
 			bool didLower = false;
-			if (view.ParentView == null)
+			if (view.ParentView.Value == null)
 			{
 				//The first call
 				List<View> allViews = GetAllViews(RootView);
@@ -279,8 +278,9 @@ namespace GeeUI
 					t.MouseOver = false;
 				}
 			}
-			foreach (View child in sortedChildren)
+			for (int i = 0; i < view.Children.Count; i++)
 			{
+				View child = view.Children[i];
 				if (!child.AbsoluteBoundBox.Contains(mousePos) || !child.Active || !child.AllowMouseEvents) continue;
 				HandleMouseMovement(child, mousePos);
 				didLower = true;
@@ -307,9 +307,9 @@ namespace GeeUI
 
 		internal void UpdateView(View toUpdate, float dt)
 		{
-			View[] sortedChildren = toUpdate.Children;
-			foreach (View updating in sortedChildren)
+			for (int i = 0; i < toUpdate.Children.Count; i++)
 			{
+				View updating = toUpdate.Children[i];
 				if (!updating.Active) continue;
 				updating.Update(dt);
 				UpdateView(updating, dt);
@@ -339,9 +339,6 @@ namespace GeeUI
 
 		internal void DrawChildren(View toDrawParent, SpriteBatch spriteBatch, Rectangle origParentScissor)
 		{
-			View[] sortedChildren = toDrawParent.Children;
-			Array.Sort(sortedChildren, ViewDepthComparer.CompareDepthsInverse);
-
 			//Intersect the parent scissor with the current scissor.
 			//This will ensure that we can ONLY constrict the scissor...
 			//This solves the problem where a parent can be outside of the bounds of HIS parent, etc. etc., but his children only adhere to HIS boundbox, so they still get drawn.
@@ -349,8 +346,9 @@ namespace GeeUI
 			parentScissor = CorrectScissor(parentScissor, main.ScreenSize);
 			if (parentScissor.Height > 0 && parentScissor.Width > 0)
 			{
-				foreach (View drawing in sortedChildren)
+				for (int i = 0; i < toDrawParent.Children.Count; i++)
 				{
+					View drawing = toDrawParent.Children[i];
 					if (!drawing.Active || parentScissor.Height <= 0 || parentScissor.Width <= 0) continue;
 
 					if (drawing.EnabledScissor)

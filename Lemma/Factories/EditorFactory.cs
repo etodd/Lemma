@@ -176,6 +176,17 @@ namespace Lemma.Factories
 
 			AddCommand
 			(
+				entity, main, "Menu", new PCInput.Chord(Keys.F1),
+				() => true,
+				new Command
+				{
+					Action = main.Menu.Show,
+				},
+				gui.MapCommands
+			);
+
+			AddCommand
+			(
 				entity, main, "Open", new PCInput.Chord(Keys.O, Keys.LeftControl),
 				() => !input.EnableLook && !editor.VoxelEditMode
 				&& editor.TransformMode.Value == Editor.TransformModes.None,

@@ -195,7 +195,6 @@
     <Compile Include="GeeUI\Structs\DropDownItem.cs" />
     <Compile Include="GeeUI\Structs\NinePatch.cs" />
     <Compile Include="GeeUI\Structs\RadioButtonGroup.cs" />
-    <Compile Include="GeeUI\Structs\ViewDepthComparer.cs" />
     <Compile Include="GeeUI\ViewLayouts\BorderViewLayout.cs" />
     <Compile Include="GeeUI\ViewLayouts\ExpandToFitLayout.cs" />
     <Compile Include="GeeUI\ViewLayouts\HorizontalViewLayout.cs" />

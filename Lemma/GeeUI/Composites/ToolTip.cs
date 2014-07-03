@@ -51,6 +51,11 @@ namespace Lemma.GeeUI.Composites
 
 			this.realParent = linkedTo;
 
+			if (this.realParent != null)
+				this.Add(new NotifyBinding(this.CheckActive, this.realParent.Active, this.realParent.Attached));
+			
+			this.Add(new NotifyBinding(this.CheckActive, this.Active));
+
 			this.AnchorPoint.Value = new Vector2(0f, 1f);
 			this.Position.Value = InputManager.GetMousePosV();
 
@@ -65,18 +70,18 @@ namespace Lemma.GeeUI.Composites
 				if (this.Active)
 				this.Active.Value = false;
 
-				if (this.ParentView != null)
-					ParentView.RemoveChild(this);
+				if (this.ParentView.Value != null)
+					ParentView.Value.RemoveChild(this);
 			}
 			if (realParent != null)
 			{
-				if (!realParent.AttachedToRoot(realParent.ParentView))
+				if (!realParent.Attached)
 				{
 					if (this.Active)
 						this.Active.Value = false;
 
-					if (this.ParentView != null)
-						ParentView.RemoveChild(this);
+					if (this.ParentView.Value != null)
+						ParentView.Value.RemoveChild(this);
 				}
 			}
 		}
@@ -84,12 +89,6 @@ namespace Lemma.GeeUI.Composites
 		private void AnimateIn()
 		{
 			this.Active.Value = true;
-		}
-
-		public override void Update(float dt)
-		{
-			CheckActive();
-			base.Update(dt);
 		}
 
 		public override void Draw(SpriteBatch spriteBatch)

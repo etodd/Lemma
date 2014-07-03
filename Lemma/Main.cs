@@ -418,6 +418,7 @@ namespace Lemma
 			TextElement.BindableProperties.Add("RollKick", this.Settings.RollKick);
 			TextElement.BindableProperties.Add("TogglePhone", this.Settings.TogglePhone);
 			TextElement.BindableProperties.Add("QuickSave", this.Settings.QuickSave);
+			TextElement.BindableProperties.Add("ToggleConsole", this.Settings.ToggleConsole);
 			TextElement.BindableProperties.Add("ToggleFullscreen", this.Settings.ToggleFullscreen);
 
 			if (this.Settings.FullscreenResolution.Value.X == 0)

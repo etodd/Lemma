@@ -285,18 +285,11 @@ namespace Lemma.Components
 			this.currentMenu.Value = this.pauseMenu;
 		}
 
-		public void Pause()
-		{
-			this.main.GeeUI.LastClickCaptured = false;
-			this.savePausedSettings();
-		}
-
 		// Pause
 		private void savePausedSettings()
 		{
-#if ANALYTICS
-			this.main.SessionRecorder.RecordEvent("Pause");
-#endif
+			Session.Recorder.Event(main, "Pause");
+
 			// Take screenshot
 			this.main.Screenshot.Take(this.main.ScreenSize);
 
@@ -334,14 +327,14 @@ namespace Lemma.Components
 			this.main.AddComponent(this.pauseAnimation);
 
 			this.currentMenu.Value = this.pauseMenu;
+
+			this.main.GeeUI.LastClickCaptured = false;
 		}
 
 		// Unpause
 		private void restorePausedSettings()
 		{
-#if ANALYTICS
-			this.main.SessionRecorder.RecordEvent("Unpause");
-#endif
+			Session.Recorder.Event(main, "Unpause");
 			if (this.pauseAnimation != null && this.pauseAnimation.Active)
 				this.pauseAnimation.Delete.Execute();
 
@@ -652,6 +645,14 @@ namespace Lemma.Components
 			this.resizeToMenu(settingsBack);
 			settingsMenu.Children.Add(settingsBack);
 
+			ListContainer settingsList = new ListContainer();
+			settingsList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+			Scroller settingsScroller = new Scroller();
+			settingsScroller.Add(new Binding<Vector2>(settingsScroller.Size, () => new Vector2(settingsList.Size.Value.X, this.main.ScreenSize.Value.Y * 0.5f), settingsList.Size, this.main.ScreenSize));
+			settingsScroller.Children.Add(settingsList);
+			settingsMenu.Children.Add(settingsScroller);
+
 			Container fullscreenResolution = this.main.UIFactory.CreateScrollButton<Point>("\\fullscreen resolution", this.main.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString(), delegate(int delta)
 			{
 				displayModeIndex = (displayModeIndex + delta) % this.SupportedDisplayModes.Count();
@@ -661,63 +662,63 @@ namespace Lemma.Components
 				this.main.Settings.FullscreenResolution.Value = new Point(mode.Width, mode.Height);
 			});
 			this.resizeToMenu(fullscreenResolution);
-			settingsMenu.Children.Add(fullscreenResolution);
+			settingsList.Children.Add(fullscreenResolution);
 
 			Container vsyncEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\vsync", this.main.Settings.EnableVsync, boolDisplay, delegate(int delta)
 			{
 				this.main.Settings.EnableVsync.Value = !this.main.Settings.EnableVsync;
 			});
 			this.resizeToMenu(vsyncEnabled);
-			settingsMenu.Children.Add(vsyncEnabled);
+			settingsList.Children.Add(vsyncEnabled);
 
 			Container gamma = this.main.UIFactory.CreateScrollButton<float>("\\gamma", this.main.Renderer.Gamma, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
 			{
 				this.main.Renderer.Gamma.Value = Math.Max(0, Math.Min(2, this.main.Renderer.Gamma + (delta * 0.1f)));
 			});
 			this.resizeToMenu(gamma);
-			settingsMenu.Children.Add(gamma);
+			settingsList.Children.Add(gamma);
 
 			Container fieldOfView = this.main.UIFactory.CreateScrollButton<float>("\\field of view", this.main.Camera.FieldOfView, x => ((int)Math.Round(MathHelper.ToDegrees(this.main.Camera.FieldOfView))).ToString() + "°", delegate(int delta)
 			{
 				this.main.Camera.FieldOfView.Value = Math.Max(MathHelper.ToRadians(60.0f), Math.Min(MathHelper.ToRadians(120.0f), this.main.Camera.FieldOfView + MathHelper.ToRadians(delta)));
 			});
 			this.resizeToMenu(fieldOfView);
-			settingsMenu.Children.Add(fieldOfView);
+			settingsList.Children.Add(fieldOfView);
 
 			Container motionBlurAmount = this.main.UIFactory.CreateScrollButton<float>("\\motion blur amount", this.main.Renderer.MotionBlurAmount, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
 			{
 				this.main.Renderer.MotionBlurAmount.Value = Math.Max(0, Math.Min(1, this.main.Renderer.MotionBlurAmount + (delta * 0.1f)));
 			});
 			this.resizeToMenu(motionBlurAmount);
-			settingsMenu.Children.Add(motionBlurAmount);
+			settingsList.Children.Add(motionBlurAmount);
 
 			Container reflectionsEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\reflections", this.main.Settings.EnableReflections, boolDisplay, delegate(int delta)
 			{
 				this.main.Settings.EnableReflections.Value = !this.main.Settings.EnableReflections;
 			});
 			this.resizeToMenu(reflectionsEnabled);
-			settingsMenu.Children.Add(reflectionsEnabled);
+			settingsList.Children.Add(reflectionsEnabled);
 
 			Container ssaoEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\ambient occlusion", this.main.Settings.EnableSSAO, boolDisplay, delegate(int delta)
 			{
 				this.main.Settings.EnableSSAO.Value = !this.main.Settings.EnableSSAO;
 			});
 			this.resizeToMenu(ssaoEnabled);
-			settingsMenu.Children.Add(ssaoEnabled);
+			settingsList.Children.Add(ssaoEnabled);
 
 			Container godRaysEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\god rays", this.main.Settings.EnableGodRays, boolDisplay, delegate(int delta)
 			{
 				this.main.Settings.EnableGodRays.Value = !this.main.Settings.EnableGodRays;
 			});
 			this.resizeToMenu(godRaysEnabled);
-			settingsMenu.Children.Add(godRaysEnabled);
+			settingsList.Children.Add(godRaysEnabled);
 
 			Container bloomEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\bloom", this.main.Renderer.EnableBloom, boolDisplay, delegate(int delta)
 			{
 				this.main.Renderer.EnableBloom.Value = !this.main.Renderer.EnableBloom;
 			});
 			this.resizeToMenu(bloomEnabled);
-			settingsMenu.Children.Add(bloomEnabled);
+			settingsList.Children.Add(bloomEnabled);
 
 			int numDynamicShadowSettings = typeof(LightingManager.DynamicShadowSetting).GetFields(BindingFlags.Static | BindingFlags.Public).Length;
 			Container dynamicShadows = this.main.UIFactory.CreateScrollButton<LightingManager.DynamicShadowSetting>("\\dynamic shadows", this.main.LightingManager.DynamicShadows, x => "\\" + x.ToString().ToLower(), delegate(int delta)
@@ -728,28 +729,28 @@ namespace Lemma.Components
 				this.main.LightingManager.DynamicShadows.Value = (LightingManager.DynamicShadowSetting)Enum.ToObject(typeof(LightingManager.DynamicShadowSetting), newValue % numDynamicShadowSettings);
 			});
 			this.resizeToMenu(dynamicShadows);
-			settingsMenu.Children.Add(dynamicShadows);
+			settingsList.Children.Add(dynamicShadows);
 
 			Container soundEffectVolume = this.main.UIFactory.CreateScrollButton<float>("\\sound effect volume", this.main.Settings.SoundEffectVolume, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
 			{
 				this.main.Settings.SoundEffectVolume.Value = MathHelper.Clamp(this.main.Settings.SoundEffectVolume.Value + (delta * 0.1f), 0, 1);
 			});
 			this.resizeToMenu(soundEffectVolume);
-			settingsMenu.Children.Add(soundEffectVolume);
+			settingsList.Children.Add(soundEffectVolume);
 
 			Container musicVolume = this.main.UIFactory.CreateScrollButton<float>("\\music volume", this.main.Settings.MusicVolume, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
 			{
 				this.main.Settings.MusicVolume.Value = MathHelper.Clamp(this.main.Settings.MusicVolume.Value + (delta * 0.1f), 0, 1);
 			});
 			this.resizeToMenu(musicVolume);
-			settingsMenu.Children.Add(musicVolume);
+			settingsList.Children.Add(musicVolume);
 
 			Container settingsReset = this.main.UIFactory.CreateButton("\\reset options", delegate()
 			{
 				this.ShowDialog("\\reset options?", "\\reset", this.main.ResetToFactoryDefaults);
 			});
 			this.resizeToMenu(settingsReset);
-			settingsMenu.Children.Add(settingsReset);
+			settingsList.Children.Add(settingsReset);
 
 			// Controls menu
 			Animation controlsAnimation = null;
@@ -888,6 +889,7 @@ namespace Lemma.Components
 			addInputSetting(this.main.Settings.SpecialAbility, "\\special ability", true, true);
 			addInputSetting(this.main.Settings.TogglePhone, "\\toggle phone", true, true);
 			addInputSetting(this.main.Settings.QuickSave, "\\quicksave", true, true);
+			addInputSetting(this.main.Settings.ToggleConsole, "\\toggle console", true, true);
 
 			// Mapping LMB to toggle fullscreen makes it impossible to change any other settings.
 			// So don't allow it.
@@ -945,7 +947,7 @@ namespace Lemma.Components
 				}
 			});
 			this.resizeToMenu(saveButton);
-			saveButton.Add(new Binding<bool>(saveButton.Visible, () => this.main.MapFile != Main.MenuMap, this.main.MapFile));
+			saveButton.Add(new Binding<bool>(saveButton.Visible, () => this.main.MapFile != Main.MenuMap && !this.main.EditorEnabled, this.main.MapFile, this.main.EditorEnabled));
 
 			this.pauseMenu.Children.Add(saveButton);
 
@@ -1172,6 +1174,7 @@ namespace Lemma.Components
 				else
 					IO.MapLoader.Load(this.main, this.main.MapFile);
 			});
+			switchToEditMode.Add(new Binding<bool>(switchToEditMode.Visible, x => !x, this.main.EditorEnabled));
 			this.resizeToMenu(switchToEditMode);
 			this.pauseMenu.Children.Add(switchToEditMode);
 
@@ -1335,14 +1338,14 @@ namespace Lemma.Components
 			// Otherwise we could save the current map without the player. And that would be awkward.
 			Func<bool> canPause = delegate()
 			{
+				if (this.main.Paused)
+					return this.main.MapFile.Value != Main.MenuMap; // Only allow pausing on the menu map, don't allow unpausing
+
 				if (SteamWorker.OverlayActive || !SteamWorker.OverlaySafelyGone)
 					return false;
 
 				if (this.main.EditorEnabled)
 					return false;
-
-				if (this.main.MapFile.Value == Main.MenuMap)
-					return !this.main.Paused; // Only allow pausing, don't allow unpausing
 
 				return true;
 			};
@@ -1400,10 +1403,11 @@ namespace Lemma.Components
 			};
 
 			this.input.Bind(this.main.Settings.ToggleConsole, PCInput.InputState.Down, delegate()
-							{
-								if (canPause() && ConsoleUI.Showing.Value == main.Paused.Value) togglePause();
-								ConsoleUI.Showing.Value = !ConsoleUI.Showing.Value;
-							});
+			{
+				if (canPause() && ConsoleUI.Showing.Value == main.Paused.Value)
+					togglePause();
+				ConsoleUI.Showing.Value = !ConsoleUI.Showing.Value;
+			});
 
 			this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), () => canPause() || this.dialog != null, togglePause));
 			this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.Start), canPause, togglePause));
@@ -1595,6 +1599,15 @@ namespace Lemma.Components
 
 				foreach (Property<PCInput.PCInputBinding> binding in this.inputBindings)
 					binding.Reset();
+			}
+		}
+
+		public void Show()
+		{
+			if (!this.main.Paused)
+			{
+				this.main.Paused.Value = true;
+				this.savePausedSettings();
 			}
 		}
 	}

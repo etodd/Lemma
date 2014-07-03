@@ -22,17 +22,16 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				return Children.Length == 0 ? null : Children[0];
+				return Children.Count == 0 ? null : Children[0];
 			}
 			set
 			{
-				if (Children.Length == 0)
+				if (Children.Count == 0)
 				{
 					AddChild(value);
 					return;
 				}
 				_children[0] = value;
-				ReOrderChildrenDepth();
 			}
 		}
 

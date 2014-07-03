@@ -88,11 +88,13 @@ namespace GeeUI.Views
 			DropDownListView.Name = "DropList";
 			DropDownPanelView.Add(new Binding<int>(DropDownPanelView.Height, (i1) => i1 + 2 + ((AllowFilterText && FilterView.Active) ? FilterView.BoundBox.Height : 0), DropDownListView.Height));
 
-			DropDownPanelView.PostUpdate = f =>
+			this.Add(new NotifyBinding(delegate()
 			{
-				if (!this.AttachedToRoot(this.ParentView))
-					DropDownPanelView.ParentView.RemoveChild(DropDownPanelView);
-			};
+				if (this.Attached && !this.DropDownPanelView.Attached)
+					theGeeUI.RootView.AddChild(this.DropDownPanelView);
+				else if (!this.Attached && this.DropDownPanelView.Attached)
+					theGeeUI.RootView.RemoveChild(this.DropDownPanelView);
+			}, this.Attached));
 
 			DropDownPanelView.Active.Value = false;
 
@@ -132,7 +134,7 @@ namespace GeeUI.Views
 
 		private void ArrowKeysHandle()
 		{
-			if (DropDownListView.Children.Length == 0)
+			if (DropDownListView.Children.Count == 0)
 			{
 				_arrowKeysIndex = 0;
 				return;
@@ -140,10 +142,10 @@ namespace GeeUI.Views
 
 			foreach (var child in DropDownListView.Children)
 				child.Selected.Value = false;
-			if (_arrowKeysIndex >= DropDownListView.Children.Length)
+			if (_arrowKeysIndex >= DropDownListView.Children.Count)
 				_arrowKeysIndex = 0;
 			if (_arrowKeysIndex < 0)
-				_arrowKeysIndex = DropDownListView.Children.Length - 1;
+				_arrowKeysIndex = DropDownListView.Children.Count - 1;
 			DropDownListView.Children[_arrowKeysIndex].Selected.Value = true;
 		}
 
@@ -159,6 +161,7 @@ namespace GeeUI.Views
 			DropDownListView.RemoveAllChildren();
 			FilterView.SubmitOnClickAway = false;
 			if (goodOptions.Length > 0)
+			{
 				FilterView.OnTextSubmitted = () =>
 				{
 					if (text != "")
@@ -167,6 +170,7 @@ namespace GeeUI.Views
 					}
 
 				};
+			}
 
 			foreach (var option in goodOptions)
 			{
@@ -275,7 +279,7 @@ namespace GeeUI.Views
 				DropDownListView.Height.Value -= (DropDownListView.AbsoluteBoundBox.Bottom - ParentGeeUI.RootView.Height);
 			}
 			if (DropDownShowing)
-				DropDownPanelView.ParentView.BringChildToFront(DropDownPanelView);
+				DropDownPanelView.ParentView.Value.BringChildToFront(DropDownPanelView);
 			base.Update(dt);
 		}
 
@@ -315,14 +319,14 @@ namespace GeeUI.Views
 			FilterView.ClearText();
 			FilterView.Active.Value = FilterView.Selected.Value = AllowFilterText && FilterThreshhold.Value <= DropDownOptions.Count;
 			DropDownPanelView.Active.Value = true;
-			DropDownPanelView.ParentView.BringChildToFront(DropDownPanelView);
+			DropDownPanelView.ParentView.Value.BringChildToFront(DropDownPanelView);
 			DropDownPanelView.FindFirstChildByName("DropList").SetContentOffset(Vector2.Zero);
 		}
 
 		public override void OnDelete()
 		{
 			ParentGeeUI.OnKeyPressedHandler -= this.keyPressedHandler;
-			DropDownPanelView.ParentView.RemoveChild(DropDownPanelView);
+			DropDownPanelView.ParentView.Value.RemoveChild(DropDownPanelView);
 			base.OnDelete();
 		}
 	}
