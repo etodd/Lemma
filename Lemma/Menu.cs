@@ -744,6 +744,13 @@ namespace Lemma.Components
 			this.resizeToMenu(musicVolume);
 			settingsMenu.Children.Add(musicVolume);
 
+			Container settingsReset = this.main.UIFactory.CreateButton("\\reset options", delegate()
+			{
+				this.ShowDialog("\\reset options?", "\\reset", this.main.ResetToFactoryDefaults);
+			});
+			this.resizeToMenu(settingsReset);
+			settingsMenu.Children.Add(settingsReset);
+
 			// Controls menu
 			Animation controlsAnimation = null;
 

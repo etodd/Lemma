@@ -476,6 +476,12 @@ namespace Lemma
 				this.copySave(path, Path.Combine(dst, Path.GetFileName(path)));
 		}
 
+		public void ResetToFactoryDefaults()
+		{
+			File.Delete(this.settingsFile);
+			throw new ExitException();
+		}
+
 #if ANALYTICS
 		public Session.Recorder SessionRecorder;
 
