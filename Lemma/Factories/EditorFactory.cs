@@ -373,7 +373,7 @@ namespace Lemma.Factories
 				if (editor.TransformMode.Value != Editor.TransformModes.None)
 					return false;
 
-				if (InputManager.IsKeyPressed(Keys.LeftShift))
+				if (input.GetKey(Keys.LeftShift))
 					return false;
 
 				if (editor.VoxelEditMode)
@@ -451,12 +451,12 @@ namespace Lemma.Factories
 
 			Camera camera = main.Camera;
 
-			input.Add(new CommandBinding<int>(input.MouseScrolled, () => input.GetKey(Keys.LeftAlt), delegate(int delta)
+			input.Add(new CommandBinding<int>(input.MouseScrolled, () => input.GetKey(Keys.LeftAlt) && editor.EnableCameraDistanceScroll, delegate(int delta)
 			{
 				editor.CameraDistance.Value = Math.Max(1, editor.CameraDistance.Value + delta * -2.0f);
 			}));
 
-			input.Add(new CommandBinding<int>(input.MouseScrolled, () => input.GetKey(Keys.LeftShift), delegate(int delta)
+			input.Add(new CommandBinding<int>(input.MouseScrolled, () => input.GetKey(Keys.LeftShift) && editor.EnableCameraDistanceScroll, delegate(int delta)
 			{
 				Voxel.Coord j = editor.Jitter;
 				j.X = Math.Max(j.X + delta, 0);

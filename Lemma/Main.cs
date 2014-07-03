@@ -488,7 +488,7 @@ namespace Lemma
 		public void SaveAnalytics()
 		{
 			string map = this.MapFile;
-			string filename = Build + "-" + (string.IsNullOrEmpty(map) ? "null" : Path.GetFileName(map)) + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml";
+			string filename = Build + "-" + (string.IsNullOrEmpty(map) ? "null" : Path.GetFileNameWithoutExtension(map)) + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml";
 			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, filename), map, this.TotalTime);
 		}
 
@@ -503,18 +503,24 @@ namespace Lemma
 
 		public List<Session> LoadAnalytics(string map)
 		{
+			map = Path.GetFileNameWithoutExtension(map);
 			List<Session> result = new List<Session>();
 			foreach (string file in Directory.GetFiles(this.analyticsDirectory, "*", SearchOption.TopDirectoryOnly))
 			{
 				Session s;
-				try
-				{
+				if (Debugger.IsAttached)
 					s = Session.Load(file);
-				}
-				catch (Exception)
+				else
 				{
-					Log.d("Error loading analytics file " + file);
-					continue;
+					try
+					{
+						s = Session.Load(file);
+					}
+					catch (Exception)
+					{
+						Log.d("Error loading analytics file " + file);
+						continue;
+					}
 				}
 
 				if (s.Build == Main.Build)

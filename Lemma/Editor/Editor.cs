@@ -92,6 +92,7 @@ namespace Lemma.Components
 		public Command VoxelRotateY = new Command();
 		public Command VoxelRotateZ = new Command();
 
+		public Property<bool> EnableCameraDistanceScroll = new Property<bool> { Value = true };
 		public Property<float> CameraDistance = new Property<float> { Value = 10.0f };
 
 		public Command<string> Spawn = new Command<string>();

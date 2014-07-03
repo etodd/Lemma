@@ -92,11 +92,6 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>
-    <Compile Include="EditorFont.spritefont">
-      <Name>EditorFont</Name>
-      <Importer>FontDescriptionImporter</Importer>
-      <Processor>FontDescriptionProcessor</Processor>
-    </Compile>
     <Compile Include="AlphaModels\box.fbx">
       <Name>box</Name>
       <Importer>FbxImporter</Importer>

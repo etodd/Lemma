@@ -70,11 +70,26 @@ namespace Lemma.Factories
 			timelineScroller.Add(new Binding<bool>(timelineScroller.EnableScroll, x => !x, input.GetKey(Keys.LeftAlt)));
 			uiRenderer.Root.Children.Add(timelineScroller);
 
+			timelineScroller.Add(new Binding<bool>(editor.EnableCameraDistanceScroll, () => !timelineScroller.Highlighted || editor.VoxelEditMode, timelineScroller.Highlighted, editor.VoxelEditMode));
+			timelineScroller.Add(new CommandBinding(timelineScroller.Delete, delegate()
+			{
+				editor.EnableCameraDistanceScroll.Value = true;
+			}));
+
 			ListContainer timelines = new ListContainer();
 			timelines.Alignment.Value = ListContainer.ListAlignment.Min;
 			timelines.Orientation.Value = ListContainer.ListOrientation.Vertical;
 			timelines.Reversed.Value = true;
 			timelineScroller.Children.Add(timelines);
+
+			input.Add(new CommandBinding<int>(input.MouseScrolled, () => input.GetKey(Keys.LeftAlt) && timelineScroller.Highlighted && !editor.VoxelEditMode, delegate(int delta)
+			{
+				float newScale = Math.Max(timelines.Scale.Value.X + delta * 6.0f, timelineScroller.Size.Value.X / timelines.Size.Value.X);
+				Matrix absoluteTransform = timelines.GetAbsoluteTransform();
+				float x = input.Mouse.Value.X + ((absoluteTransform.Translation.X - input.Mouse.Value.X) * (newScale / timelines.Scale.Value.X));
+				timelines.Position.Value = new Vector2(x, 0.0f);
+				timelines.Scale.Value = new Vector2(newScale, 1.0f);
+			}));
 
 			Container timeline = new Container();
 			timeline.Size.Value = new Vector2(0, timelineHeight);
@@ -388,7 +403,7 @@ namespace Lemma.Factories
 								if (i.IsFirstInstance)
 									i.Model.Color.Value = new Vector3(color.X, color.Y, color.Z);
 								i.Scale.Value = new Vector3(0.25f);
-								i.Transform.Value = Matrix.CreateTranslation(positionProperty[e.Time]);
+								i.Transform.Value = Matrix.CreateTranslation(positionProperty.GetLastRecordedPosition(e.Time));
 								models.Add(i);
 								entity.Add(i);
 							}
@@ -430,8 +445,10 @@ namespace Lemma.Factories
 			propertyTimelines.Orientation.Value = ListContainer.ListOrientation.Vertical;
 			timelines.Children.Add(propertyTimelines);
 
-			Action<LineDrawer2D> refreshPropertyGraph = delegate(LineDrawer2D lines)
+			Action<Container> refreshPropertyGraph = delegate(Container container)
 			{
+				TextElement label = (TextElement)container.GetChildByName("Label");
+				LineDrawer2D lines = (LineDrawer2D)container.GetChildByName("Graph");
 				string propertyName = ((PropertyEntry)lines.UserData.Value).Name;
 				lines.Lines.Clear();
 				float time = 0.0f, lastTime = 0.0f;
@@ -503,13 +520,14 @@ namespace Lemma.Factories
 						else
 							lines.Position.Value = new Vector2(0, timelineHeight * 0.5f);
 					}
+					label.Text.Value = max.ToString("F");
 				}
 			};
 
 			Action refreshPropertyGraphs = delegate()
 			{
-				foreach (LineDrawer2D line in propertyTimelines.Children.Select(x => x.Children.First()))
-					refreshPropertyGraph(line);
+				foreach (Container propertyTimeline in propertyTimelines.Children)
+					refreshPropertyGraph(propertyTimeline);
 			};
 
 			propertyTimelines.Add(new ListBinding<UIComponent, PropertyEntry>(propertyTimelines.Children, analyticsActiveProperties, delegate(PropertyEntry e)
@@ -522,11 +540,20 @@ namespace Lemma.Factories
 				propertyTimeline.ResizeVertical.Value = false;
 
 				LineDrawer2D line = new LineDrawer2D();
+				line.Name.Value = "Graph";
 				line.Color.Value = colorHash(e.Name);
 				line.UserData.Value = e;
 				propertyTimeline.Children.Add(line);
 
-				refreshPropertyGraph(line);
+				TextElement label = new TextElement();
+				label.FontFile.Value = "Font";
+				label.Name.Value = "Label";
+				label.Add(new Binding<Vector2>(label.Scale, x => new Vector2(1.0f / x.X, 1.0f / x.Y), timelines.Scale));
+				label.AnchorPoint.Value = new Vector2(0, 0);
+				label.Position.Value = new Vector2(0, 0);
+				propertyTimeline.Children.Add(label);
+
+				refreshPropertyGraph(propertyTimeline);
 
 				return propertyTimeline;
 			}));
@@ -549,7 +576,7 @@ namespace Lemma.Factories
 							if (i.IsFirstInstance)
 								i.Model.Color.Value = new Vector3(color.X, color.Y, color.Z);
 							i.Scale.Value = new Vector3(0.25f);
-							i.Transform.Value = Matrix.CreateTranslation(positionProperty[e.Time]);
+							i.Transform.Value = Matrix.CreateTranslation(positionProperty.GetLastRecordedPosition(e.Time));
 							entity.Add(i);
 							models.Add(i);
 						}
@@ -731,7 +758,6 @@ namespace Lemma.Factories
 
 						if (descriptionContainer == null && timeline.Highlighted)
 						{
-							bool stop = false;
 							foreach (UIComponent component in timeline.Children)
 							{
 								LineDrawer2D lines = component as LineDrawer2D;
@@ -739,29 +765,38 @@ namespace Lemma.Factories
 								if (lines == null)
 									continue;
 
-								foreach (LineDrawer2D.Line line in lines.Lines)
+								Session.EventList el = lines.UserData.Value as Session.EventList;
+								if (el != null)
 								{
-									Session.EventList el = lines.UserData.Value as Session.EventList;
-									if (el != null && (float)Math.Abs(line.A.Position.X - mouseRelative) < threshold)
+									bool stop = false;
+									foreach (Session.Event e in el.Events)
 									{
-										descriptionContainer = new Container();
-										descriptionContainer.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
-										descriptionContainer.Position.Value = new Vector2(line.A.Position.X, 0.0f);
-										descriptionContainer.Opacity.Value = 1.0f;
-										descriptionContainer.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-										descriptionContainer.Add(new Binding<Vector2>(descriptionContainer.Scale, x => new Vector2(1.0f / x.X, 1.0f / x.Y), timelines.Scale));
-										timeline.Children.Add(descriptionContainer);
-										TextElement description = new TextElement();
-										description.WrapWidth.Value = 256;
-										description.Text.Value = el.Name;
-										description.FontFile.Value = "Font";
-										descriptionContainer.Children.Add(description);
-										stop = true;
-										break;
+										if (el != null && (float)Math.Abs(e.Time - mouseRelative) < threshold)
+										{
+											descriptionContainer = new Container();
+											descriptionContainer.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
+											descriptionContainer.Position.Value = new Vector2(e.Time, 0.0f);
+											descriptionContainer.Opacity.Value = 1.0f;
+											descriptionContainer.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+											descriptionContainer.Add(new Binding<Vector2>(descriptionContainer.Scale, x => new Vector2(1.0f / x.X, 1.0f / x.Y), timelines.Scale));
+											timeline.Children.Add(descriptionContainer);
+											TextElement description = new TextElement();
+											description.WrapWidth.Value = 256;
+
+											if (string.IsNullOrEmpty(e.Data))
+												description.Text.Value = el.Name;
+											else
+												description.Text.Value = string.Format("{0}\n{1}", el.Name, e.Data);
+
+											description.FontFile.Value = "Font";
+											descriptionContainer.Children.Add(description);
+											stop = true;
+											break;
+										}
 									}
+									if (stop)
+										break;
 								}
-								if (stop)
-									break;
 							}
 						}
 					}

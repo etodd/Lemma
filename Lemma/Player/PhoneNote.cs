@@ -257,6 +257,7 @@ namespace Lemma.Components
 					Note note = noteEntity.Get<Note>();
 					if (noteActive)
 					{
+						Session.Recorder.Event(main, "Note", note.Text);
 						noteUiImage.Image.Value = note.Image;
 						noteUiText.Text.Value = note.Text;
 						model.StartClip("Note", 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
@@ -277,6 +278,7 @@ namespace Lemma.Components
 					}
 					else
 					{
+						Session.Recorder.Event(main, "NoteEnd");
 						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_NOTE_DROP, entity);
 						if (!note.IsCollected)
 							note.IsCollected.Value = true;
@@ -317,6 +319,7 @@ namespace Lemma.Components
 					model.Stop("Phone", "Note");
 					if (phoneActive)
 					{
+						Session.Recorder.Event(main, "Phone");
 						if (!phone.TutorialShown)
 						{
 							phone.TutorialShown.Value = true;
@@ -341,12 +344,16 @@ namespace Lemma.Components
 							)
 						));
 					}
+					else
+						Session.Recorder.Event(main, "PhoneEnd");
 				}
 			};
 
 			input.Bind(main.Settings.TogglePhone, PCInput.InputState.Down, delegate()
 			{
-				if (InputManager.IsKeyPressed(Keys.LeftShift)) return;
+				if (main.Settings.TogglePhone.Value.Key == Keys.Tab && input.GetKey(Keys.LeftShift))
+					return;
+
 				if (noteActive || phoneActive || phone.CanReceiveMessages)
 				{
 					if (!phoneActive && (noteActive || player.Note.Value.Target != null))

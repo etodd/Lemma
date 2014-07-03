@@ -173,6 +173,12 @@ namespace Lemma.Components
 				}
 			}
 
+			public Vector3 GetLastRecordedPosition(float time)
+			{
+				int index = (int)Math.Floor(time / this.interval);
+				return this[index];
+			}
+
 			public void Record(Vector3 value)
 			{
 				this.coordinates[0].Record(value.X);

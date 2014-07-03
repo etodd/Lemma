@@ -92,7 +92,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			MainFont = main.Content.Load<SpriteFont>("EditorFont");
+			MainFont = main.Content.Load<SpriteFont>("Font");
 
 			this.RootEditorView = new View(this.main.GeeUI, this.main.GeeUI.RootView);
 			this.Add(new Binding<bool>(this.RootEditorView.Active, this.Visible));

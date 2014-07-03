@@ -65,16 +65,15 @@ namespace Lemma.Components
 		private static Microsoft.Xna.Framework.Graphics.Model spotLightModel;
 
 		public Property<float> BlurAmount = new Property<float>();
-		public Property<float> SpeedBlurAmount = new Property<float> { Value = 0.0f };
+		public Property<float> SpeedBlurAmount = new Property<float>();
 		public Property<Vector3> Tint = new Property<Vector3> { Value = Vector3.One };
-		public Property<float> InternalGamma = new Property<float> { Value = 0.0f };
+		public Property<float> InternalGamma = new Property<float>();
 		public Property<float> Gamma = new Property<float> { Value = 1.0f };
-		public Property<float> Brightness = new Property<float> { Value = 0.0f };
+		public Property<float> Brightness = new Property<float>();
 		public Property<float> MotionBlurAmount = new Property<float> { Value = 1.0f };
 		private Texture2D lightRampTexture;
 		public Property<string> LightRampTexture = new Property<string>();
 		public Property<bool> EnableBloom = new Property<bool> { Value = true };
-		public Property<bool> EnableHighResLighting = new Property<bool> { Value = true };
 		public Property<bool> EnableSSAO = new Property<bool> { Value = true };
 
 		private Point screenSize;
@@ -420,6 +419,15 @@ namespace Lemma.Components
 					0,
 					RenderTargetUsage.DiscardContents);
 			}
+
+			this.BlurAmount.Reset();
+			this.SpeedBlurAmount.Reset();
+			this.Tint.Reset();
+			this.InternalGamma.Reset();
+			this.Gamma.Reset();
+			this.Brightness.Reset();
+			this.MotionBlurAmount.Reset();
+			this.LightRampTexture.Reset();
 
 			this.justReallocatedBuffers = true;
 		}
