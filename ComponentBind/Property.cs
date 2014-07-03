@@ -20,20 +20,28 @@ namespace ComponentBind
 	public class PropertyEntry
 	{
 		public IProperty Property;
-		public Property<bool> Visible;
-		public string Description;
-		public IListProperty Options;
-		public bool Readonly;
-		public EditorData Data = new EditorData();
+		public EditorData Data;
 
-		public PropertyEntry(IProperty property, string description = null)
+		public PropertyEntry(IProperty property, string description)
 		{
 			this.Property = property;
-			this.Description = description;
+			this.Data = new EditorData();
+			this.Data.Description = description;
+		}
+
+		public PropertyEntry(IProperty property, EditorData data)
+		{
+			this.Property = property;
+			this.Data = data;
 		}
 
 		public class EditorData
 		{
+			public Property<bool> Visible;
+			public string Description;
+			public IListProperty Options;
+			public bool Readonly;
+			public bool RefreshOnChange;
 			public int IChangeBy = 1;
 			public float FChangeBy = 1f;
 			public byte BChangeBy = 1;
@@ -43,7 +51,6 @@ namespace ComponentBind
 	[DebuggerDisplay("Property {Value}")]
 	public class Property<Type> : IProperty
 	{
-
 		[XmlIgnore]
 		public Type InternalValue;
 

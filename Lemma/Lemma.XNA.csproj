@@ -231,6 +231,7 @@
     <Compile Include="Player\Vault.cs" />
     <Compile Include="Player\VoxelTools.cs" />
     <Compile Include="Player\WallRun.cs" />
+    <Compile Include="Scripts\Abilities.cs" />
     <Compile Include="UI\UIFactory.cs" />
     <Compile Include="Util\BitWorker.cs" />
     <Compile Include="Util\BSpline.cs" />

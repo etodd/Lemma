@@ -34,7 +34,10 @@ namespace Lemma.Components
 
 		public void EditorProperties()
 		{
-			this.Entity.Add("Name", this.Name, null, null, FileFilter.Get(this.main, Path.Combine(this.main.Content.RootDirectory), new[] { MapLoader.MapDirectory }, ".dlz"));
+			this.Entity.Add("Name", this.Name, new PropertyEntry.EditorData
+			{
+				Options = FileFilter.Get(this.main, Path.Combine(this.main.Content.RootDirectory), new[] { MapLoader.MapDirectory }, ".dlz"),
+			});
 		}
 	}
 }

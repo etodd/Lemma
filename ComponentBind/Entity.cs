@@ -388,17 +388,33 @@ namespace ComponentBind
 			this.Add(Guid.NewGuid().ToString(), component);
 		}
 
-		public void Add(string name, IProperty prop, string description = null, Property<bool> visible = null, IListProperty options = null, bool readOnly = false)
+		public void Add(string name, IProperty prop, PropertyEntry.EditorData editorData)
 		{
-			PropertyEntry entry = new PropertyEntry(prop);
+			this.properties.Add(name, new PropertyEntry(prop, this.main.EditorEnabled ? editorData : null));
+		}
+
+		public void Add(string name, IProperty prop, string description = null, bool readOnly = false)
+		{
+			PropertyEntry.EditorData data = null;
 			if (this.main.EditorEnabled)
 			{
-				entry.Readonly = readOnly;
-				entry.Description = description;
-				entry.Visible = visible;
-				entry.Options = options;
+				data = new PropertyEntry.EditorData();
+				data.Readonly = readOnly;
+				data.Description = description;
 			}
-			this.properties.Add(name, entry);
+			this.properties.Add(name, new PropertyEntry(prop, data));
+		}
+
+		public void RemoveProperty(string name)
+		{
+			try
+			{
+				this.properties.Remove(name);
+			}
+			catch (KeyNotFoundException)
+			{
+
+			}
 		}
 
 		public Property<T> GetProperty<T>(string name)

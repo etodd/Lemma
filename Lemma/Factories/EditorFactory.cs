@@ -431,12 +431,19 @@ namespace Lemma.Factories
 			AddCommand(entity, main, "Delete non-contiguous", new PCInput.Chord { Key = Keys.OemPeriod }, () => editor.VoxelEditMode && editor.TransformMode == Editor.TransformModes.None, editor.DeleteMaterialAll, gui.VoxelCommands);
 			AddCommand(entity, main, "Intersect", new PCInput.Chord { Key = Keys.I }, () => editor.VoxelEditMode && editor.TransformMode == Editor.TransformModes.None, editor.IntersectMaterial, gui.VoxelCommands);
 
-			gui.VoxelProperties.Add("Brush", new PropertyEntry(editor.Brush));
+			gui.VoxelProperties.Add("Brush", new PropertyEntry(editor.Brush, new PropertyEntry.EditorData()));
 			gui.VoxelProperties.Add("BrushSize", new PropertyEntry(editor.BrushSize, "[Scrollwheel]"));
-			gui.VoxelProperties.Add("BrushShape", new PropertyEntry(editor.BrushShape));
+			gui.VoxelProperties.Add("BrushShape", new PropertyEntry(editor.BrushShape, new PropertyEntry.EditorData()));
 			gui.VoxelProperties.Add("Jitter", new PropertyEntry(editor.Jitter, "[Shift+Scrollwheel]"));
-			gui.VoxelProperties.Add("JitterOctave", new PropertyEntry(editor.JitterOctave));
-			gui.VoxelProperties.Add("Coordinate", new PropertyEntry(editor.Coordinate) { Readonly = true, Visible = editor.VoxelEditMode });
+			gui.VoxelProperties.Add("JitterOctave", new PropertyEntry(editor.JitterOctave, new PropertyEntry.EditorData()));
+			gui.VoxelProperties.Add("Coordinate", new PropertyEntry(editor.Coordinate, new PropertyEntry.EditorData())
+			{
+				Data = new PropertyEntry.EditorData
+				{
+					Readonly = true,
+					Visible = editor.VoxelEditMode,
+				}
+			});
 
 			editor.Add(new Binding<Vector2>(editor.Mouse, input.Mouse, () => !input.EnableLook));
 

@@ -69,7 +69,7 @@ namespace Lemma.Factories
 			entity.Add("AttachOffset", attachable.Offset);
 			entity.Add("OnPowerOn", sw.OnPowerOn);
 			entity.Add("OnPowerOff", sw.OnPowerOff);
-			entity.Add("On", sw.On, null, null, null, true);
+			entity.Add("On", sw.On, null, true);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

@@ -66,7 +66,10 @@ namespace Lemma.Components
 		{
 			this.Entity.Add("Scale", this.Scale);
 			this.Entity.Add("Color", this.Color);
-			this.Entity.Add("Filename", this.Filename, null, null, FileFilter.Get(main, main.Content.RootDirectory, new[] { "Models", Path.Combine(MapLoader.MapDirectory, "Models") }));
+			this.Entity.Add("Filename", this.Filename, new PropertyEntry.EditorData
+			{
+				Options = FileFilter.Get(main, main.Content.RootDirectory, new[] { "Models", Path.Combine(MapLoader.MapDirectory, "Models") }),
+			});
 		}
 
 		public struct Material
@@ -955,7 +958,10 @@ namespace Lemma.Components
 		{
 			this.Entity.Add("Scale", this.Scale);
 			this.Entity.Add("Color", this.Color);
-			this.Entity.Add("Filename", this.Filename, null, null, FileFilter.Get(main, main.Content.RootDirectory, new[] { "AlphaModels", Path.Combine(MapLoader.MapDirectory, "AlphaModels") }));
+			this.Entity.Add("Filename", this.Filename, new PropertyEntry.EditorData
+			{
+				Options = FileFilter.Get(main, main.Content.RootDirectory, new[] { "AlphaModels", Path.Combine(MapLoader.MapDirectory, "AlphaModels") }),
+			});
 			this.Entity.Add("Alpha", this.Alpha);
 			this.Entity.Add("DrawOrder", this.DrawOrder);
 		}

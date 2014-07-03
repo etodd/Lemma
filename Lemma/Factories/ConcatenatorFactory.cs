@@ -73,8 +73,14 @@ namespace Lemma.Factories
 
 				entity.Add(new NotifyBinding(populateOptions, concatenator.PrefixEntity, concatenator.SuffixEntity));
 				entity.Add(new PostInitialization {populateOptions});
-				entity.Add("PrefixProperty", concatenator.PrefixProperty, null, null, inTargetOptions);
-				entity.Add("SuffixProperty", concatenator.SuffixProperty, null, null, outTargetOptions);
+				entity.Add("PrefixProperty", concatenator.PrefixProperty, new PropertyEntry.EditorData
+				{
+					Options = inTargetOptions,
+				});
+				entity.Add("SuffixProperty", concatenator.SuffixProperty, new PropertyEntry.EditorData
+				{
+					Options = outTargetOptions,
+				});
 			}
 			entity.Add("Concatenated", concatenator.Concatenated, "The concatenated string");
 		}

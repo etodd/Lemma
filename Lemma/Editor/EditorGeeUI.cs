@@ -482,20 +482,21 @@ namespace Lemma.Components
 
 		}
 
-		public void ShowEntityListView(ButtonView button, ListProperty<Entity.Handle> property)
+		public void ShowEntityListView(ButtonView button, PropertyEntry entry)
 		{
 			if (SelectedEntities.Count != 1) return;
 			EntityListView.Active.Value = true;
 			EntityListView.Position.Value = new Vector2(PropertiesView.AbsoluteBoundBox.Right, InputManager.GetMousePosV().Y);
 			EntityListView.ParentView.BringChildToFront(EntityListView);
-			BindEntityListView(button, SelectedEntities[0], property);
+			BindEntityListView(button, SelectedEntities[0], entry);
 			if (EntityListView.AbsoluteBoundBox.Bottom > main.GeeUI.RootView.AbsoluteBoundBox.Bottom)
 				EntityListView.Y -= (EntityListView.AbsoluteBoundBox.Bottom - main.GeeUI.RootView.AbsoluteBoundBox.Bottom);
 		}
 
 		private View.MouseClickEventHandler currentEntityListViewClickAwayHandler;
-		public void BindEntityListView(ButtonView button, Entity e, ListProperty<Entity.Handle> property)
+		public void BindEntityListView(ButtonView button, Entity e, PropertyEntry entry)
 		{
+			ListProperty<Entity.Handle> property = (ListProperty<Entity.Handle>)entry.Property;
 			var entityDrop = ((DropDownView)EntityListView.FindFirstChildByName("EntityDropDown"));
 			var addButton = ((ButtonView)EntityListView.FindFirstChildByName("AddButton"));
 			var listView = ((ListView)EntityListView.FindFirstChildByName("EntityList"));
@@ -558,6 +559,8 @@ namespace Lemma.Components
 						populateList();
 						fillDestEntity();
 						this.NeedsSave.Value = true;
+						if (entry.Data.RefreshOnChange)
+							this.show(this.SelectedEntities);
 					};
 
 					count++;
@@ -576,6 +579,8 @@ namespace Lemma.Components
 				populateList();
 				fillDestEntity();
 				this.NeedsSave.Value = true;
+				if (entry.Data.RefreshOnChange)
+					this.show(this.SelectedEntities);
 			};
 			#endregion
 
@@ -595,19 +600,20 @@ namespace Lemma.Components
 			{
 				foreach (KeyValuePair<string, PropertyEntry> prop in this.VoxelProperties)
 				{
+					PropertyEntry entry = prop.Value;
 					bool sameLine;
-					var child = BuildValueView(this.SelectedEntities[0], prop.Value, out sameLine);
-					if (prop.Value.Property is Property<Voxel.t>)
+					var child = BuildValueView(this.SelectedEntities[0], entry, out sameLine);
+					if (entry.Property is Property<Voxel.t>)
 						this.voxelMaterialDropDown = (DropDownView)child.FindFirstChildByName("Dropdown");
 					View containerLabel = BuildContainerLabel(prop.Key, sameLine);
 					containerLabel.AddChild(child);
-					if (prop.Value.Visible != null)
-						containerLabel.Add(new Binding<bool>(containerLabel.Active, prop.Value.Visible));
+					if (entry.Data.Visible != null)
+						containerLabel.Add(new Binding<bool>(containerLabel.Active, entry.Data.Visible));
 					this.VoxelPanelView.AddChild(containerLabel);
 					containerLabel.OrderChildren();
 					child.OrderChildren();
 
-					containerLabel.SetToolTipText(prop.Value.Description, MainFont);
+					containerLabel.SetToolTipText(entry.Data.Description, MainFont);
 				}
 
 				foreach (var cmd in this.VoxelCommands)
@@ -702,7 +708,7 @@ namespace Lemma.Components
 				// ID property
 				{
 					bool sameLine;
-					var child = this.BuildValueView(entity, new PropertyEntry(entity.ID, "ID"), out sameLine);
+					var child = this.BuildValueView(entity, new PropertyEntry(entity.ID, new PropertyEntry.EditorData()), out sameLine);
 					TextFieldView textField = (TextFieldView)child.FindFirstChildByName("TextField");
 					textField.Validator = delegate(string x)
 					{
@@ -718,17 +724,18 @@ namespace Lemma.Components
 
 				foreach (KeyValuePair<string, PropertyEntry> prop in entity.Properties)
 				{
+					PropertyEntry entry = prop.Value;
 					bool sameLine;
-					var child = BuildValueView(entity, prop.Value, out sameLine);
+					var child = BuildValueView(entity, entry, out sameLine);
 					View containerLabel = BuildContainerLabel(prop.Key, sameLine);
 					containerLabel.AddChild(child);
 					rootEntityView.AddChild(containerLabel);
 					containerLabel.OrderChildren();
-					if (prop.Value.Visible != null)
-						containerLabel.Add(new Binding<bool>(containerLabel.Active, prop.Value.Visible));
+					if (entry.Data.Visible != null)
+						containerLabel.Add(new Binding<bool>(containerLabel.Active, entry.Data.Visible));
 					child.OrderChildren();
 
-					containerLabel.SetToolTipText(prop.Value.Description, MainFont);
+					containerLabel.SetToolTipText(entry.Data.Description, MainFont);
 				}
 
 				foreach (KeyValuePair<string, Command.Entry> cmd in entity.Commands)
@@ -859,6 +866,8 @@ namespace Lemma.Components
 					{
 						socket.Value = socket.Value.SetElement(element, value);
 						this.NeedsSave.Value = true;
+						if (entry.Data.RefreshOnChange)
+							this.show(this.SelectedEntities);
 					}
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
@@ -885,6 +894,8 @@ namespace Lemma.Components
 					{
 						socket.Value = socket.Value.SetElement(element, value);
 						this.NeedsSave.Value = true;
+						if (entry.Data.RefreshOnChange)
+							this.show(this.SelectedEntities);
 					}
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
@@ -929,6 +940,8 @@ namespace Lemma.Components
 						c.SetComponent(dir, value);
 						socket.Value = c;
 						this.NeedsSave.Value = true;
+						if (entry.Data.RefreshOnChange)
+							this.show(this.SelectedEntities);
 					}
 					textField.Text = socket.Value.GetComponent(dir).ToString();
 					textField.Selected.Value = false;
@@ -952,6 +965,8 @@ namespace Lemma.Components
 					{
 						socket.Value = socket.Value.SetElement(element, value);
 						this.NeedsSave.Value = true;
+						if (entry.Data.RefreshOnChange)
+							this.show(this.SelectedEntities);
 					}
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
@@ -976,6 +991,8 @@ namespace Lemma.Components
 					{
 						socket.Value = socket.Value.SetElement(element, value);
 						this.NeedsSave.Value = true;
+						if (entry.Data.RefreshOnChange)
+							this.show(this.SelectedEntities);
 					}
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
@@ -1002,6 +1019,8 @@ namespace Lemma.Components
 					{
 						socket.Value = socket.Value.SetElement(element, value);
 						this.NeedsSave.Value = true;
+						if (entry.Data.RefreshOnChange)
+							this.show(this.SelectedEntities);
 					}
 					textField.Text = socket.Value.GetElement(element).ToString();
 					textField.Selected.Value = false;
@@ -1020,11 +1039,16 @@ namespace Lemma.Components
 			ret.ChildrenLayouts.Add(new HorizontalViewLayout(4));
 			ret.ChildrenLayouts.Add(new ExpandToFitLayout());
 
-			if (entry.Readonly)
+			if (entry.Data.Readonly)
 			{
 				PropertyInfo propertyInfo = property.GetType().GetProperty("Value");
-				TextView label = new TextView(main.GeeUI, ret, propertyInfo.GetValue(property, null).ToString(), Vector2.Zero, MainFont);
-				label.Add(new Binding<string>(label.Text, () => propertyInfo.GetValue(property, null).ToString(), property));
+				Func<string> getStringValue = delegate()
+				{
+					object value = propertyInfo.GetValue(property, null);
+					return value == null ? "[null]" : value.ToString();
+				};
+				TextView label = new TextView(main.GeeUI, ret, getStringValue(), Vector2.Zero, MainFont);
+				label.Add(new Binding<string>(label.Text, getStringValue, property));
 			}
 			else if (typeof(IListProperty).IsAssignableFrom(property.GetType()))
 			{
@@ -1034,7 +1058,7 @@ namespace Lemma.Components
 					var edit = new ButtonView(main.GeeUI, ret, string.Format("Edit [{0}]", socket.Count), Vector2.Zero, MainFont);
 					edit.OnMouseClick += (sender, args) =>
 					{
-						ShowEntityListView(edit, socket);
+						ShowEntityListView(edit, entry);
 					};
 				}
 			}
@@ -1067,6 +1091,8 @@ namespace Lemma.Components
 						{
 							propertyInfo.SetValue(property, o, null);
 							this.NeedsSave.Value = true;
+							if (entry.Data.RefreshOnChange)
+								this.show(this.SelectedEntities);
 						};
 						drop.AddOption(o.ToString(), onClick);
 					}
@@ -1092,6 +1118,8 @@ namespace Lemma.Components
 					{
 						socket.Value = null;
 						this.NeedsSave.Value = true;
+						if (entry.Data.RefreshOnChange)
+							this.show(this.SelectedEntities);
 					});
 					foreach (Entity e in main.Entities)
 					{
@@ -1101,6 +1129,8 @@ namespace Lemma.Components
 							{
 								socket.Value = e;
 								this.NeedsSave.Value = true;
+								if (entry.Data.RefreshOnChange)
+									this.show(this.SelectedEntities);
 							});
 						}
 					}
@@ -1120,9 +1150,9 @@ namespace Lemma.Components
 						this.resetSelectButtonAfterPickingEntity = selectButton;
 					};
 				}
-				else if (entry.Options != null && propertyInfo.PropertyType.Equals(typeof(string)))
+				else if (entry.Data.Options != null && propertyInfo.PropertyType.Equals(typeof(string)))
 				{
-					ListProperty<string> options = (ListProperty<string>)entry.Options;
+					ListProperty<string> options = (ListProperty<string>)entry.Data.Options;
 					var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero, MainFont) { Name = "Dropdown" };
 					drop.AllowRightClickExecute.Value = false;
 					Action populate = delegate()
@@ -1134,6 +1164,8 @@ namespace Lemma.Components
 							{
 								propertyInfo.SetValue(property, o, null);
 								this.NeedsSave.Value = true;
+								if (entry.Data.RefreshOnChange)
+									this.show(this.SelectedEntities);
 							};
 							drop.AddOption(o ?? "[null]", onClick, null, o);
 						}
@@ -1169,6 +1201,8 @@ namespace Lemma.Components
 							{
 								socket.Value = value;
 								this.NeedsSave.Value = true;
+								if (entry.Data.RefreshOnChange)
+									this.show(this.SelectedEntities);
 							}
 							view.Text = socket.Value.ToString();
 							view.Selected.Value = false;
@@ -1192,6 +1226,8 @@ namespace Lemma.Components
 							{
 								socket.Value = value;
 								this.NeedsSave.Value = true;
+								if (entry.Data.RefreshOnChange)
+									this.show(this.SelectedEntities);
 							}
 							view.Text = socket.Value.ToString("F");
 							view.Selected.Value = false;
@@ -1212,6 +1248,8 @@ namespace Lemma.Components
 						{
 							this.NeedsSave.Value = true;
 							socket.Value = checkBox.IsChecked.Value;
+							if (entry.Data.RefreshOnChange)
+								this.show(this.SelectedEntities);
 						}, checkBox.IsChecked));
 					}
 					else if (propertyInfo.PropertyType.Equals(typeof(string)))
@@ -1239,6 +1277,8 @@ namespace Lemma.Components
 							{
 								socket.Value = view.Text;
 								this.NeedsSave.Value = true;
+								if (entry.Data.RefreshOnChange)
+									this.show(this.SelectedEntities);
 							}
 							view.Selected.Value = false;
 						};

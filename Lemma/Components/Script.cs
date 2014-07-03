@@ -33,7 +33,13 @@ namespace Lemma.Components
 
 		public ListProperty<Entity.Handle> ConnectedEntities = new ListProperty<Entity.Handle>();
 
-		private MethodInfo scriptMethod;
+		private struct ScriptMethods
+		{
+			public MethodInfo Run;
+			public MethodInfo EditorProperties;
+		}
+
+		private ScriptMethods methods;
 
 		/// <summary>
 		/// Tries to use reflection to load 
@@ -43,7 +49,7 @@ namespace Lemma.Components
 		/// <param name="scriptEntity"></param>
 		/// <param name="errors"></param>
 		/// <returns></returns>
-		private static MethodInfo GetInternalScriptRunMethod(Main main, string name, Entity scriptEntity, out string errors)
+		private static ScriptMethods GetInternalScriptMethods(Main main, string name, Entity scriptEntity, out string errors)
 		{
 			errors = null;
 			Assembly assembly = Assembly.GetExecutingAssembly();
@@ -53,24 +59,24 @@ namespace Lemma.Components
 				{
 					if (type.IsClass && type.BaseType == typeof(GameScripts.ScriptBase) && type.Name == name)
 					{
-						MethodInfo ret = type.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
-						if (ret == null)
-						{
+						MethodInfo run = type.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
+						if (run == null)
 							errors = "Could not find public static method Run in " + name;
-							return null;
-						}
 
 						type.GetField("script", BindingFlags.Static | BindingFlags.Public).SetValue(null, scriptEntity);
-						return ret;
+						return new ScriptMethods
+						{
+							Run = run,
+							EditorProperties = type.GetMethod("EditorProperties", BindingFlags.Static | BindingFlags.Public),
+						};
 					}
 				}
 			}
 			errors = "Could not find class " + name;
-			return null;
-
+			return new ScriptMethods();
 		}
 
-		public static MethodInfo GetScriptRunMethod(Main main, string name, Entity scriptEntity, out string errors)
+		private static ScriptMethods GetScriptMethods(Main main, string name, Entity scriptEntity, out string errors)
 		{
 			Assembly assembly = null;
 
@@ -138,10 +144,48 @@ namespace Lemma.Components
 			{
 				Type t = assembly.GetType("Lemma.GameScripts.Script");
 				t.GetField("script", BindingFlags.Static | BindingFlags.Public).SetValue(null, scriptEntity);
-				return t.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
+				return new ScriptMethods
+				{
+					Run = t.GetMethod("Run", BindingFlags.Static | BindingFlags.Public),
+					EditorProperties = t.GetMethod("EditorProperties", BindingFlags.Static | BindingFlags.Public),
+				};
 			}
 			else
-				return GetInternalScriptRunMethod(main, name, scriptEntity, out errors);
+				return GetInternalScriptMethods(main, name, scriptEntity, out errors);
+		}
+
+		private IEnumerable<string> editorProperties;
+
+		private void load(string name)
+		{
+			this.Name.InternalValue = name;
+			if (this.editorProperties != null)
+			{
+				foreach (string prop in this.editorProperties)
+					this.Entity.RemoveProperty(prop);
+				this.editorProperties = null;
+			}
+			this.methods = new ScriptMethods();
+			this.Errors.Value = null;
+			if (!string.IsNullOrEmpty(name))
+			{
+				try
+				{
+					string errors;
+					this.methods = GetScriptMethods(this.main, name, this.Entity, out errors);
+					this.Errors.Value = errors;
+					if (this.methods.EditorProperties != null)
+					{
+						object result = this.methods.EditorProperties.Invoke(null, null);
+						this.editorProperties = result as IEnumerable<string>;
+					}
+				}
+				catch (Exception e)
+				{
+					this.Errors.Value = e.ToString();
+					Log.d(this.Errors);
+				}
+			}
 		}
 
 		public override void Awake()
@@ -150,20 +194,10 @@ namespace Lemma.Components
 			this.Errors.Value = null;
 			this.Name.Set = delegate(string value)
 			{
-				this.Name.InternalValue = value;
-				this.scriptMethod = null;
-				this.Errors.Value = null;
-				try
-				{
-					string errors;
-					this.scriptMethod = GetScriptRunMethod(this.main, this.Name, this.Entity, out errors);
-					this.Errors.Value = errors;
-				}
-				catch (Exception e)
-				{
-					this.Errors.Value = e.ToString();
-				}
+				if (value != this.Name.InternalValue)
+					this.load(value);
 			};
+			this.load(this.Name);
 
 			this.Execute.Action = delegate()
 			{
@@ -173,8 +207,8 @@ namespace Lemma.Components
 					Lemma.GameScripts.ScriptBase.renderer = main.Renderer;
 				}
 
-				if (this.scriptMethod != null)
-					this.scriptMethod.Invoke(null, null);
+				if (this.methods.Run != null)
+					this.methods.Run.Invoke(null, null);
 
 				if (this.DeleteOnExecute)
 				{

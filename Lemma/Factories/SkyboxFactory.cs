@@ -83,7 +83,10 @@ namespace Lemma.Factories
 			entity.Add("GodRays", skybox.GodRays);
 			entity.Add("GodRayExtinction", skybox.GodRayExtinction);
 			entity.Add("StartDistance", skybox.StartDistance);
-			entity.Add("Image", model.DiffuseTexture, null, null, FileFilter.Get(main, main.Content.RootDirectory, new[] { "Skyboxes" }));
+			entity.Add("Image", model.DiffuseTexture, new PropertyEntry.EditorData
+			{
+				Options = FileFilter.Get(main, main.Content.RootDirectory, new[] { "Skyboxes" }),
+			});
 		}
 	}
 }

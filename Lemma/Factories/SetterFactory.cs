@@ -66,7 +66,10 @@ namespace Lemma.Factories
 				};
 				entity.Add(new NotifyBinding(populateOptions, setter.Target, setter.PropertyType));
 				entity.Add(new PostInitialization { populateOptions });
-				entity.Add("TargetProperty", setter.TargetProperty, null, null, targetOptions);
+				entity.Add("TargetProperty", setter.TargetProperty, new PropertyEntry.EditorData
+				{
+					Options = targetOptions,
+				});
 
 				entity.Add("Bool", setter.Bool, null, visible(Setter.PropType.Bool));
 				entity.Add("Int", setter.Int, null, visible(Setter.PropType.Int));

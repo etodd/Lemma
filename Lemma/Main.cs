@@ -922,7 +922,7 @@ namespace Lemma
 			try
 			{
 				using (Stream stream = new FileStream(Path.Combine(currentSaveDirectory, "save.xml"), FileMode.Create, FileAccess.Write, FileShare.None))
-					new XmlSerializer(typeof(Main.SaveInfo)).Serialize(stream, new Main.SaveInfo { MapFile = this.MapFile, Version = Main.MapVersion });
+					new XmlSerializer(typeof(Main.SaveInfo)).Serialize(stream, new Main.SaveInfo { MapFile = Path.GetFileNameWithoutExtension(this.MapFile), Version = Main.MapVersion });
 			}
 			catch (InvalidOperationException e)
 			{
