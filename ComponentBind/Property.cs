@@ -299,6 +299,11 @@ namespace ComponentBind
 				this.ItemAdded(this.InternalList.Count - 1, t);
 		}
 
+		public int IndexOf(Type t)
+		{
+			return this.InternalList.IndexOf(t);
+		}
+
 		public void AddAll(IEnumerable<Type> items)
 		{
 			foreach (Type t in items)

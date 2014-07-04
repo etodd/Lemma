@@ -116,10 +116,7 @@ namespace ComponentBind
 
 		public override string ToString()
 		{
-			if (!string.IsNullOrEmpty(this.ID))
-				return this.ID.Value;
-			else
-				return string.Format("{0} {1}", this.Type, this.GUID);
+			return string.Format("{0} [{1}]", string.IsNullOrEmpty(this.ID.Value) ? this.GUID.ToString() : this.ID.Value, this.Type);
 		}
 
 		[XmlIgnore]

@@ -7,6 +7,7 @@ using GeeUI;
 using GeeUI.Managers;
 using GeeUI.ViewLayouts;
 using GeeUI.Views;
+using Lemma.GeeUI.Composites;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -259,25 +260,25 @@ namespace GeeUI.Views
 			this.LastItemSelected.Value = -1;
 		}
 
+		private Point mouse;
 		public override void Update(float dt)
 		{
-			ComputeMouse();
-			DropDownPanelView.Position.Value = new Vector2(AbsoluteX, this.AbsoluteBoundBox.Bottom);
-			if (DropDownListView.AbsoluteBoundBox.Bottom > ParentGeeUI.RootView.Height)
-				DropDownListView.Height.Value -= (DropDownListView.AbsoluteBoundBox.Bottom - ParentGeeUI.RootView.Height);
-			base.Update(dt);
-		}
-
-		private Point mouse;
-		public void ComputeMouse()
-		{
-			if (this.DropDownShowing
-				&& this.mouse != InputManager.GetMousePos()
-				&& !DropDownPanelView.AbsoluteBoundBox.Contains(InputManager.GetMousePos())
-				&& !Children[0].AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
+			if (this.DropDownShowing)
 			{
-				HideDropDown();
+				if (this.mouse != InputManager.GetMousePos()
+					&& !DropDownPanelView.AbsoluteBoundBox.Contains(InputManager.GetMousePos())
+					&& !Children[0].AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
+				{
+					this.HideDropDown();
+				}
+				else
+				{
+					DropDownPanelView.Position.Value = new Vector2(AbsoluteX, this.AbsoluteBoundBox.Bottom);
+					if (DropDownListView.AbsoluteBoundBox.Bottom > ParentGeeUI.RootView.Height)
+						DropDownListView.Height.Value -= (DropDownListView.AbsoluteBoundBox.Bottom - ParentGeeUI.RootView.Height);
+				}
 			}
+			base.Update(dt);
 		}
 
 		public void ToggleDropDown()
@@ -312,7 +313,7 @@ namespace GeeUI.Views
 		public override void OnDelete()
 		{
 			ParentGeeUI.OnKeyPressedHandler -= this.keyPressedHandler;
-			DropDownPanelView.ParentView.Value.Children.Remove(DropDownPanelView);
+			this.DropDownPanelView.RemoveFromParent();
 			base.OnDelete();
 		}
 	}

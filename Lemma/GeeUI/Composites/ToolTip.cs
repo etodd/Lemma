@@ -65,24 +65,11 @@ namespace Lemma.GeeUI.Composites
 
 		private void CheckActive()
 		{
-			if (realParent == null || !realParent.Active || !this.Active)
+			if (realParent == null || !realParent.Active || !realParent.Attached || !this.Active)
 			{
 				if (this.Active)
-				this.Active.Value = false;
-
-				if (this.ParentView.Value != null)
-					ParentView.Value.Children.Remove(this);
-			}
-			if (realParent != null)
-			{
-				if (!realParent.Attached)
-				{
-					if (this.Active)
-						this.Active.Value = false;
-
-					if (this.ParentView.Value != null)
-						ParentView.Value.Children.Remove(this);
-				}
+					this.Active.Value = false;
+				this.RemoveFromParent();
 			}
 		}
 

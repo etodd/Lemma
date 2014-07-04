@@ -241,6 +241,7 @@ namespace Lemma.Components
 				{
 					Name = "EntityDropDown"
 				};
+
 				entityDropDown.FilterThreshhold.Value = 0;
 				entityDropDown.AllowRightClickExecute.Value = false;
 
@@ -316,7 +317,7 @@ namespace Lemma.Components
 
 		private string entityString(Entity e)
 		{
-			return e == null ? "[null]" : string.Format("{0} [{1}]", e.ID.Value ?? e.GUID.ToString(), e.Type);
+			return e == null ? "[null]" : e.ToString();
 		}
 
 		public void RebuildSelectDropDown()
@@ -329,9 +330,8 @@ namespace Lemma.Components
 					Entity ent1 = ent;
 					SelectDropDownView.AddOption(this.entityString(ent), () =>
 					{
-						Editor editor = Entity.Get<Editor>();
-						editor.SelectedEntities.Clear();
-						editor.SelectedEntities.Add(ent1);
+						this.SelectedEntities.Clear();
+						this.SelectedEntities.Add(ent1);
 					}, MainFont, ent);
 				}
 			}
@@ -345,7 +345,6 @@ namespace Lemma.Components
 
 		public void ShowLinkerView(ButtonView button, Command.Entry select)
 		{
-			if (SelectedEntities.Count != 1) return;
 			LinkerView.Active.Value = true;
 			LinkerView.Position.Value = new Vector2(PropertiesView.AbsoluteBoundBox.Right, InputManager.GetMousePosV().Y);
 			LinkerView.ParentView.Value.BringChildToFront(LinkerView);
@@ -491,7 +490,6 @@ namespace Lemma.Components
 
 		public void ShowEntityListView(ButtonView button, PropertyEntry entry)
 		{
-			if (SelectedEntities.Count != 1) return;
 			EntityListView.Active.Value = true;
 			EntityListView.Position.Value = new Vector2(PropertiesView.AbsoluteBoundBox.Right, InputManager.GetMousePosV().Y);
 			EntityListView.ParentView.Value.BringChildToFront(EntityListView);
@@ -1337,9 +1335,11 @@ namespace Lemma.Components
 		public override void delete()
 		{
 			base.delete();
-			this.main.GeeUI.RootView.Children.Remove(this.RootEditorView);
-			this.main.GeeUI.RootView.Children.Remove(this.selectPrompt);
-			this.main.GeeUI.RootView.Children.Remove(this.PropertiesView);
+			this.RootEditorView.RemoveFromParent();
+			this.selectPrompt.RemoveFromParent();
+			this.PropertiesView.RemoveFromParent();
+			this.LinkerView.RemoveFromParent();
+			this.EntityListView.RemoveFromParent();
 		}
 	}
 }

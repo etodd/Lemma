@@ -251,8 +251,7 @@ namespace GeeUI.Views
 				if (this.numChildrenAllowed != -1 && this.Children.Count > this.numChildrenAllowed)
 					throw new Exception("GeeUI view exceeded max number of allowed children");
 
-				if (child.ParentView.Value != null)
-					child.ParentView.Value.Children.Remove(child);
+				child.RemoveFromParent();
 				child.ParentView.Value = this;
 				child.ParentGeeUI = ParentGeeUI;
 				this.dirty = true;
@@ -336,8 +335,7 @@ namespace GeeUI.Views
 			_toolTipTimer = 0f;
 			if (this.ToolTipView != null)
 			{
-				this.ToolTipView.ParentView.Value.Children.Remove(ToolTipView);
-				this.ToolTipView.OnDelete();
+				this.ToolTipView.RemoveFromParent();
 				this.ToolTipView = null;
 			}
 		}
@@ -391,7 +389,14 @@ namespace GeeUI.Views
 
 		#endregion
 
-		public virtual void BringChildToFront(View view)
+		public void BringToFront()
+		{
+			View p = this.ParentView;
+			if (p != null)
+				p.BringChildToFront(this);
+		}
+
+		public void BringChildToFront(View view)
 		{
 			if (this.Children[this.Children.Count - 1] != view)
 			{
@@ -399,6 +404,13 @@ namespace GeeUI.Views
 				this.Children.Add(view);
 				this.dirty = true;
 			}
+		}
+
+		public void RemoveFromParent()
+		{
+			View p = this.ParentView;
+			if (p != null)
+				p.Children.Remove(this);
 		}
 
 		public void ResetOnMouseClick()

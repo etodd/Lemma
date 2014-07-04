@@ -118,11 +118,11 @@ namespace Lemma.GInterfaces
 					new Animation.Execute(() =>
 					{
 						if (!remove) return;
-						if (RootTimePanelView != null && RootTimePanelView.ParentView.Value != null)
-							RootTimePanelView.ParentView.Value.Children.Remove(RootTimePanelView);
+						if (RootTimePanelView != null)
+							RootTimePanelView.RemoveFromParent();
 
-						if (RootTimeEndView != null && RootTimeEndView.ParentView.Value != null)
-							RootTimeEndView.ParentView.Value.Children.Remove(RootTimeEndView);
+						if (RootTimeEndView != null)
+							RootTimeEndView.RemoveFromParent();
 					})
 				)
 			);

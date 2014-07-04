@@ -518,7 +518,7 @@ namespace Lemma.Components
 					new Animation.FloatMoveTo(msgBackground.Opacity, 0.0f, 2.0f),
 					new Animation.FloatMoveTo(msg.Opacity, 0.0f, 2.0f)
 				),
-				new Animation.Execute(delegate() { this.main.UI.Root.Children.Remove(msgBackground); })
+				new Animation.Execute(delegate() { msgBackground.Delete.Execute(); })
 			));
 
 			// Pause menu
