@@ -15,7 +15,6 @@ namespace ComponentBind
 	[XmlInclude(typeof(Transform))]
 	public class Entity
 	{
-		//This is a class because PASS-BY-REFERENCE
 		public class CommandLink
 		{
 			public Handle TargetEntity;
@@ -132,6 +131,9 @@ namespace ComponentBind
 		[XmlIgnore]
 		public bool CannotSuspendByDistance;
 
+		[XmlIgnore]
+		public bool Added;
+
 		private BaseMain main;
 		private Dictionary<string, IComponent> components = new Dictionary<string, IComponent>();
 		private Dictionary<Type, IComponent> componentsByType = new Dictionary<Type, IComponent>();
@@ -145,14 +147,6 @@ namespace ComponentBind
 		private Dictionary<string, Command.Entry> commands = new Dictionary<string, Command.Entry>();
 
 		private readonly Dictionary<string, PropertyEntry> properties = new Dictionary<string, PropertyEntry>();
-
-		public IEnumerable<IComponent> ComponentList
-		{
-			get
-			{
-				return this.components.Values;
-			}
-		}
 
 		[XmlIgnore]
 		public Command Delete = new Command();

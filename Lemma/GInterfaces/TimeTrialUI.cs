@@ -119,10 +119,10 @@ namespace Lemma.GInterfaces
 					{
 						if (!remove) return;
 						if (RootTimePanelView != null && RootTimePanelView.ParentView.Value != null)
-							RootTimePanelView.ParentView.Value.RemoveChild(RootTimePanelView);
+							RootTimePanelView.ParentView.Value.Children.Remove(RootTimePanelView);
 
 						if (RootTimeEndView != null && RootTimeEndView.ParentView.Value != null)
-							RootTimeEndView.ParentView.Value.RemoveChild(RootTimeEndView);
+							RootTimeEndView.ParentView.Value.Children.Remove(RootTimeEndView);
 					})
 				)
 			);

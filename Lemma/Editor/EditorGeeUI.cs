@@ -113,10 +113,10 @@ namespace Lemma.Components
 
 			TabViews.AddTab("Map", this.MapPanelView);
 
-			this.CreateDropDownView = new DropDownView(main.GeeUI, MapPanelView, Vector2.Zero, MainFont);
+			this.CreateDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero, MainFont);
 			this.CreateDropDownView.Label.Value = "Add [Space]";
 			this.CreateDropDownView.FilterThreshhold.Value = 0;
-			this.SelectDropDownView = new DropDownView(main.GeeUI, MapPanelView, Vector2.Zero, MainFont);
+			this.SelectDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero, MainFont);
 			this.SelectDropDownView.FilterThreshhold.Value = 0;
 			this.SelectDropDownView.Label.Value = "Select";
 
@@ -286,17 +286,13 @@ namespace Lemma.Components
 			this.SelectedEntities.ItemChanged += (index, old, newValue) => this.refresh();
 			this.SelectedEntities.Cleared += this.refresh;
 
-			this.Add(new NotifyBinding(this.RecomputeEntityCommands, this.VoxelEditMode, this.TransformMode));
 			this.Add(new Binding<bool>(this.PropertiesView.Active, x => !x, this.VoxelEditMode));
 			this.Add(new NotifyBinding(this.RecomputeVoxelCommands, this.VoxelEditMode, this.TransformMode, this.VoxelSelectionActive));
 
-			this.EntityCommands.ItemAdded += (index, command) => RecomputeEntityCommands();
-			this.EntityCommands.ItemChanged += (index, old, value) => RecomputeEntityCommands();
-			this.EntityCommands.ItemRemoved += (index, command) => RecomputeEntityCommands();
-
-			this.MapCommands.ItemAdded += (index, command) => RecomputeMapCommands();
-			this.MapCommands.ItemChanged += (index, old, value) => RecomputeMapCommands();
-			this.MapCommands.ItemRemoved += (index, command) => RecomputeMapCommands();
+			this.Add(new ListBinding<View, EditorCommand>(this.EntityPanelView.Children, this.EntityCommands, this.buildCommandButton));
+			this.Add(new ListBinding<View, EditorCommand>(this.MapPanelView.Children, this.MapCommands, this.buildCommandButton));
+			this.MapPanelView.Children.Add(this.CreateDropDownView);
+			this.MapPanelView.Children.Add(this.SelectDropDownView);
 
 			this.AddEntityCommands.ItemAdded += (index, command) => RecomputeAddCommands();
 			this.AddEntityCommands.ItemChanged += (index, old, value) => RecomputeAddCommands();
@@ -304,6 +300,18 @@ namespace Lemma.Components
 
 			this.Add(new CommandBinding<Entity>(main.EntityAdded, e => RebuildSelectDropDown()));
 			this.Add(new CommandBinding<Entity>(main.EntityRemoved, e => RebuildSelectDropDown()));
+		}
+
+		private View buildCommandButton(EditorCommand cmd)
+		{
+			string text;
+			if (cmd.Chord.Exists)
+				text = string.Format("{0} [{1}]", cmd.Description, cmd.Chord);
+			else
+				text = cmd.Description;
+			var button = new ButtonView(main.GeeUI, null, text, Vector2.Zero, MainFont);
+			button.OnMouseClick += (sender, args) => cmd.Action.Execute();
+			return button;
 		}
 
 		private string entityString(Entity e)
@@ -413,7 +421,7 @@ namespace Lemma.Components
 			Action populateList = null;
 			populateList = () =>
 			{
-				listView.RemoveAllChildren();
+				listView.Children.Clear();
 				listView.ContentOffset.Value = Vector2.Zero;
 				int count = 0;
 				List<Entity.CommandLink> toRemove = new List<Entity.CommandLink>();
@@ -529,7 +537,7 @@ namespace Lemma.Components
 			Action populateList = null;
 			populateList = () =>
 			{
-				listView.RemoveAllChildren();
+				listView.Children.Clear();
 				listView.ContentOffset.Value = Vector2.Zero;
 				int count = 0;
 				List<Entity.Handle> toRemove = new List<Entity.Handle>();
@@ -592,7 +600,7 @@ namespace Lemma.Components
 		private DropDownView voxelMaterialDropDown;
 		private void RecomputeVoxelCommands()
 		{
-			VoxelPanelView.RemoveAllChildren();
+			VoxelPanelView.Children.Clear();
 			this.voxelMaterialDropDown = null;
 
 			if (this.SelectedEntities.Count == 1 && this.SelectedEntities[0].Get<Voxel>() != null)
@@ -605,10 +613,10 @@ namespace Lemma.Components
 					if (entry.Property is Property<Voxel.t>)
 						this.voxelMaterialDropDown = (DropDownView)child.FindFirstChildByName("Dropdown");
 					View containerLabel = BuildContainerLabel(prop.Key, sameLine);
-					containerLabel.AddChild(child);
+					containerLabel.Children.Add(child);
 					if (entry.Data.Visible != null)
 						containerLabel.Add(new Binding<bool>(containerLabel.Active, entry.Data.Visible));
-					this.VoxelPanelView.AddChild(containerLabel);
+					this.VoxelPanelView.Children.Add(containerLabel);
 
 					containerLabel.SetToolTipText(entry.Data.Description, MainFont);
 				}
@@ -625,39 +633,6 @@ namespace Lemma.Components
 				}
 				if (this.VoxelEditMode)
 					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Voxel"));
-			}
-		}
-
-		private void RecomputeEntityCommands()
-		{
-			EntityPanelView.RemoveAllChildren();
-
-			foreach (var dropDown in EntityCommands)
-			{
-				if (!dropDown.Enabled()) continue;
-				string text = dropDown.Description;
-				if (dropDown.Chord.Exists)
-					text += " [" + dropDown.Chord.ToString() + "]";
-				var button = new ButtonView(main.GeeUI, EntityPanelView, text, Vector2.Zero, MainFont);
-				EditorCommand down = dropDown;
-				button.OnMouseClick += (sender, args) => down.Action.Execute();
-			}
-		}
-
-		private void RecomputeMapCommands()
-		{
-			MapPanelView.RemoveAllChildren();
-			MapPanelView.AddChild(CreateDropDownView);
-			MapPanelView.AddChild(SelectDropDownView);
-			foreach (var dropDown in MapCommands)
-			{
-				if (!dropDown.Enabled()) continue;
-				string text = dropDown.Description;
-				if (dropDown.Chord.Exists)
-					text += " [" + dropDown.Chord.ToString() + "]";
-				var button = new ButtonView(main.GeeUI, MapPanelView, text, Vector2.Zero, MainFont);
-				EditorCommand down = dropDown;
-				button.OnMouseClick += (sender, args) => down.Action.Execute(); 
 			}
 		}
 
@@ -682,7 +657,7 @@ namespace Lemma.Components
 		{
 			ListView rootEntityView = (ListView)PropertiesView.FindFirstChildByName("PropertiesList");
 			rootEntityView.ContentOffset.Value = new Vector2(0);
-			rootEntityView.RemoveAllChildren();
+			rootEntityView.Children.Clear();
 
 			int count = entities != null ? entities.Count() : 0;
 			if (count > 1)
@@ -713,8 +688,8 @@ namespace Lemma.Components
 						return e == null || e == entity;
 					};
 					View containerLabel = BuildContainerLabel("ID", sameLine);
-					containerLabel.AddChild(child);
-					rootEntityView.AddChild(containerLabel);
+					containerLabel.Children.Add(child);
+					rootEntityView.Children.Add(containerLabel);
 				}
 
 				foreach (KeyValuePair<string, PropertyEntry> prop in entity.Properties)
@@ -723,8 +698,8 @@ namespace Lemma.Components
 					bool sameLine;
 					var child = BuildValueView(entity, entry, out sameLine);
 					View containerLabel = BuildContainerLabel(prop.Key, sameLine);
-					containerLabel.AddChild(child);
-					rootEntityView.AddChild(containerLabel);
+					containerLabel.Children.Add(child);
+					rootEntityView.Children.Add(containerLabel);
 					if (entry.Data.Visible != null)
 						containerLabel.Add(new Binding<bool>(containerLabel.Active, entry.Data.Visible));
 
@@ -734,8 +709,8 @@ namespace Lemma.Components
 				foreach (KeyValuePair<string, Command.Entry> cmd in entity.Commands)
 				{
 					View containerLabel = BuildContainerLabel(cmd.Key, false);
-					containerLabel.AddChild(BuildButton(entity, cmd.Value, "Execute"));
-					rootEntityView.AddChild(containerLabel);
+					containerLabel.Children.Add(BuildButton(entity, cmd.Value, "Execute"));
+					rootEntityView.Children.Add(containerLabel);
 
 					containerLabel.SetToolTipText(cmd.Value.Description, MainFont);
 				}
@@ -825,8 +800,6 @@ namespace Lemma.Components
 			}
 
 			RecomputeAddCommands();
-			RecomputeEntityCommands();
-			RecomputeMapCommands();
 			RecomputeVoxelCommands();
 		}
 
@@ -1229,7 +1202,7 @@ namespace Lemma.Components
 					{
 						shouldSameLine = true;
 						//No need for a textfield!
-						ret.RemoveChild(view);
+						ret.Children.Remove(view);
 						CheckBoxView checkBox = new CheckBoxView(main.GeeUI, ret, Vector2.Zero, "", MainFont);
 						Property<bool> socket = (Property<bool>)property;
 						checkBox.IsChecked.Value = socket.Value;
@@ -1364,9 +1337,9 @@ namespace Lemma.Components
 		public override void delete()
 		{
 			base.delete();
-			this.main.GeeUI.RootView.RemoveChild(this.RootEditorView);
-			this.main.GeeUI.RootView.RemoveChild(this.selectPrompt);
-			this.main.GeeUI.RootView.RemoveChild(this.PropertiesView);
+			this.main.GeeUI.RootView.Children.Remove(this.RootEditorView);
+			this.main.GeeUI.RootView.Children.Remove(this.selectPrompt);
+			this.main.GeeUI.RootView.Children.Remove(this.PropertiesView);
 		}
 	}
 }

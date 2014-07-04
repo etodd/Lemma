@@ -427,7 +427,7 @@ namespace Lemma.Factories
 						eventPositionModels.Remove(pair.Key);
 					}
 				}
-				timeline.Children.Remove(timeline.Children.Where(x => x.UserData.Value != null && ((Session.EventList)x.UserData.Value).Name == e.Name).ToList());
+				timeline.Children.RemoveAll(timeline.Children.Where(x => x.UserData.Value != null && ((Session.EventList)x.UserData.Value).Name == e.Name).ToList());
 			};
 
 			analyticsActiveProperties.ItemAdded += delegate(int index, PropertyEntry e)
@@ -614,7 +614,7 @@ namespace Lemma.Factories
 
 				sessionPositionModels.Remove(s.Session);
 				s.Active.Value = false;
-				timeline.Children.Remove(timeline.Children.Where(x => x.UserData.Value != null && ((Session.EventList)x.UserData.Value).Session == s.Session).ToList());
+				timeline.Children.RemoveAll(timeline.Children.Where(x => x.UserData.Value != null && ((Session.EventList)x.UserData.Value).Session == s.Session).ToList());
 
 				refreshPropertyGraphs();
 			};

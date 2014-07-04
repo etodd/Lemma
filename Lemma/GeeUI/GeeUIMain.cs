@@ -73,6 +73,13 @@ namespace GeeUI
 
 		public Property<int> DrawOrder { get; private set; }
 
+		private List<View> potentiallyDetachedViews = new List<View>();
+
+		public void PotentiallyDetached(View v)
+		{
+			this.potentiallyDetachedViews.Add(v);
+		}
+
 		/// <summary>
 		/// Will be true if the latest click within the game bounds resided within an active direct child of the root view.
 		/// </summary>
@@ -189,14 +196,14 @@ namespace GeeUI
 
 			InputManager.BindMouse(() =>
 			{
-				HandleClick(RootView, InputManager.GetMousePos(), new List<View>(), false);
+				HandleClick(RootView, InputManager.GetMousePos(), false);
 				//When we click, we want to re-evaluate what control the mouse is over.
 				HandleMouseMovement(RootView, InputManager.GetMousePos());
 			}, MouseButton.Left);
 
 			InputManager.BindMouse(() =>
 			{
-				HandleClick(RootView, InputManager.GetMousePos(), new List<View>(), true);
+				HandleClick(RootView, InputManager.GetMousePos(), true);
 				//When we click, we want to re-evaluate what control the mouse is over.
 				HandleMouseMovement(RootView, InputManager.GetMousePos());
 			}, MouseButton.Right);
@@ -218,85 +225,89 @@ namespace GeeUI
 
 		internal void HandleScroll(View view, Point mousePos, int scrollDelta)
 		{
-			if (!view.Active)
-				return;
-
 			bool didLower = false;
-			for (int i = 0; i < view.Children.Count; i++)
+			for (int i = view.Children.Count - 1; i >= 0; i--)
 			{
 				View child = view.Children[i];
-				if (!child.AbsoluteBoundBox.Contains(mousePos) || !child.Active) continue;
-				HandleScroll(child, mousePos, scrollDelta);
-				didLower = true;
-				break;
+				if (child.Active && child.AllowMouseEvents && child.AbsoluteBoundBox.Contains(mousePos))
+				{
+					HandleScroll(child, mousePos, scrollDelta);
+					didLower = true;
+					break;
+				}
 			}
-			if (didLower) return;
-			view.OnMScroll(ConversionManager.PtoV(mousePos), scrollDelta);
+
+			if (!didLower)
+				view.OnMScroll(ConversionManager.PtoV(mousePos), scrollDelta);
 		}
 
-		internal void HandleClick(View view, Point mousePos, List<View> didClick, bool rightClick)
+		internal void HandleClick(View view, Point mousePos, bool rightClick)
 		{
-			if (!view.Active)
-				return;
-
-			if (view == RootView) LastClickCaptured = false;
+			if (view == RootView)
+				LastClickCaptured = false;
 
 			bool didLower = false;
-			for (int i = 0; i < view.Children.Count; i++)
+			for (int i = view.Children.Count - 1; i >= 0; i--)
 			{
 				View child = view.Children[i];
-				if (!child.AbsoluteBoundBox.Contains(mousePos) || !child.Active || !child.AllowMouseEvents) continue;
-				if (view == RootView) LastClickCaptured = true;
-				didClick.Add(child);
-				HandleClick(child, mousePos, didClick, rightClick);
-				didLower = true;
-				break;
+				if (child.Active && child.AllowMouseEvents && child.AbsoluteBoundBox.Contains(mousePos))
+				{
+					if (view == RootView)
+						LastClickCaptured = true;
+					HandleClick(child, mousePos, rightClick);
+					didLower = true;
+					break;
+				}
 			}
-			if (didLower) return;
-			List<View> allOthers = GetAllViews(RootView);
-			foreach (View t in allOthers)
+
+			if (view == RootView)
 			{
-				if (t != view && !didClick.Contains(t) && !rightClick)
-					t.OnMClickAway();
+				foreach (View t in GetAllViews(RootView))
+				{
+					if (!t.MouseOver)
+						t.OnMClickAway();
+				}
 			}
-			if (rightClick)
-				view.OnMRightClick(ConversionManager.PtoV(mousePos));
-			else
-				view.OnMClick(ConversionManager.PtoV(mousePos));
+
+			if (!didLower)
+			{
+				if (rightClick)
+					view.OnMRightClick(ConversionManager.PtoV(mousePos));
+				else
+					view.OnMClick(ConversionManager.PtoV(mousePos));
+			}
 		}
 
 		internal void HandleMouseMovement(View view, Point mousePos)
 		{
-			if (!view.Active) return;
 			bool didLower = false;
-			if (view.ParentView.Value == null)
-			{
-				//The first call
-				List<View> allViews = GetAllViews(RootView);
-				foreach (View t in allViews)
-				{
-					t.MouseOver = false;
-				}
-			}
-			for (int i = 0; i < view.Children.Count; i++)
+			for (int i = view.Children.Count - 1; i >= 0; i--)
 			{
 				View child = view.Children[i];
-				if (!child.AbsoluteBoundBox.Contains(mousePos) || !child.Active || !child.AllowMouseEvents) continue;
-				HandleMouseMovement(child, mousePos);
-				didLower = true;
-				child.MouseOver = true;
-				break;
+				if (!child.Active || !child.AllowMouseEvents || !child.AbsoluteBoundBox.Contains(mousePos))
+					child.MouseOver = false;
+				else
+				{
+					HandleMouseMovement(child, mousePos);
+					didLower = true;
+					child.MouseOver = true;
+				}
 			}
 			if (!didLower)
-			{
 				view.MouseOver = true;
-			}
 		}
 
 		public void Update(float dt)
 		{
 			_inputManager.Update(dt, this);
 			UpdateView(RootView, dt);
+			for (int i = 0; i < this.potentiallyDetachedViews.Count; i++)
+			{
+				View v = this.potentiallyDetachedViews[i];
+				if (v.ParentView.Value == null)
+					v.OnDelete();
+			}
+			this.potentiallyDetachedViews.Clear();
 		}
 
 		public void Draw(SpriteBatch spriteBatch)
@@ -314,7 +325,7 @@ namespace GeeUI
 					continue;
 				UpdateView(updating, dt);
 			}
-			toUpdate.PostUpdate();
+			toUpdate.PostUpdate(dt);
 		}
 
 		internal Rectangle CorrectScissor(Rectangle scissor, Point screenSize)
@@ -376,16 +387,17 @@ namespace GeeUI
 			}
 		}
 
-		internal List<View> GetAllViews(View rootView)
+		internal IEnumerable<View> GetAllViews(View rootView)
 		{
-			var ret = new List<View>();
-			if (!rootView.Active) return ret;
-			ret.Add(rootView);
-			foreach (View child in rootView.Children)
+			if (rootView.Active)
 			{
-				ret.AddRange(GetAllViews(child));
+				yield return rootView;
+				foreach (View child in rootView.Children)
+				{
+					foreach (View v in this.GetAllViews(child))
+						yield return v;
+				}
 			}
-			return ret;
 		}
 
 		public View FindViewByName(string name)

@@ -31,12 +31,10 @@ namespace GeeUI.Views
 			}
 			set
 			{
-				if (Children.Count == 0)
-				{
-					AddChild(value);
-					return;
-				}
-				Children[0] = value;
+				if (this.Children.Count == 0)
+					this.Children.Add(value);
+				else
+					this.Children[0] = value;
 			}
 		}
 
@@ -61,7 +59,7 @@ namespace GeeUI.Views
 		{
 			Position.Value = position;
 			TabFont = font;
-			NumChildrenAllowed.Value = 1;
+			this.numChildrenAllowed = 1;
 
 			NinePatchDefault = GeeUIMain.NinePatchTabDefault;
 			NinePatchSelected = GeeUIMain.NinePatchTabSelected;

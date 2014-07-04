@@ -30,12 +30,10 @@ namespace GeeUI.Views
 			}
 			set
 			{
-				if (Children.Count == 0)
-				{
-					AddChild(value);
-					return;
-				}
-				Children[0] = value;
+				if (this.Children.Count == 0)
+					this.Children.Add(value);
+				else
+					this.Children[0] = value;
 			}
 		}
 

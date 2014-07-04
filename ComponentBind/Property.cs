@@ -332,6 +332,7 @@ namespace ComponentBind
 		public bool Remove(Type t)
 		{
 			int index = this.InternalList.IndexOf(t);
+
 			this.InternalList.RemoveAt(index);
 			this.Size.Value = this.InternalList.Count;
 			if (this.ItemRemoved != null)
@@ -339,23 +340,22 @@ namespace ComponentBind
 
 			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
 				this.bindings[j].Remove(t, this);
-
+			
 			return true;
 		}
 
-		public bool RemoveWithoutNotifying(Type t)
+		public void RemoveWithoutNotifying(Type t)
 		{
 			int index = this.InternalList.IndexOf(t);
+
 			this.InternalList.RemoveAt(index);
 			this.Size.Value = this.InternalList.Count;
 
 			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
 				this.bindings[j].Remove(t, this);
-
-			return true;
 		}
 
-		public void Remove(IEnumerable<Type> items)
+		public void RemoveAll(IEnumerable<Type> items)
 		{
 			foreach (Type t in items)
 				this.Remove(t);

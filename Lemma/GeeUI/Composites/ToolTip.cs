@@ -71,7 +71,7 @@ namespace Lemma.GeeUI.Composites
 				this.Active.Value = false;
 
 				if (this.ParentView.Value != null)
-					ParentView.Value.RemoveChild(this);
+					ParentView.Value.Children.Remove(this);
 			}
 			if (realParent != null)
 			{
@@ -81,7 +81,7 @@ namespace Lemma.GeeUI.Composites
 						this.Active.Value = false;
 
 					if (this.ParentView.Value != null)
-						ParentView.Value.RemoveChild(this);
+						ParentView.Value.Children.Remove(this);
 				}
 			}
 		}

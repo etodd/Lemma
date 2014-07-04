@@ -171,7 +171,6 @@ namespace GeeUI.Views
 
 			Position.Value = position;
 			TextInputFont = textFont;
-			NumChildrenAllowed.Value = -1;
 
 			GeeUI.OnKeyPressedHandler += keyPressedHandler;
 			GeeUI.OnKeyReleasedHandler += keyReleasedHandler;

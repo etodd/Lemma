@@ -19,11 +19,9 @@ namespace GeeUI.Views
 			set
 			{
 				if (Children.Count == 0)
-				{
-					AddChild(value);
-					return;
-				}
-				this.Children[0] = value;
+					this.Children.Add(value);
+				else
+					this.Children[0] = value;
 			}
 		}
 
@@ -87,12 +85,11 @@ namespace GeeUI.Views
 
 		public void RemoveAllTabs()
 		{
-			foreach (var child in TabContainerView.Children)
-				TabContainerView.RemoveChild(child);
+			TabContainerView.Children.Clear();
 			foreach (var child in Children)
 			{
 				if (child == TabContainerView) continue;
-				RemoveChild(child);
+				this.Children.Remove(child);
 			}
 		}
 
@@ -104,11 +101,12 @@ namespace GeeUI.Views
 				if (tab == null) continue;
 				if (tab.TabText == text)
 				{
-					this.RemoveChild(this.Children[i + 1]);
-					this.TabContainerView.RemoveChild(tab);
+					this.Children.RemoveAt(i + 1);
+					this.TabContainerView.Children.Remove(tab);
 					i--;
 					if (this.Children.Count != 1)
 						this.SetActiveTab(i);
+					break;
 				}
 			}
 		}
@@ -178,13 +176,6 @@ namespace GeeUI.Views
 				Children[i].Height.Value = Height.Value - TabContainerView.BoundBox.Height - 10;
 			}
 			base.Update(dt);
-		}
-
-		public override void AddChild(View child)
-		{
-			if (child == null) return;
-			if (!(child is TabContainer) && TabContainerView.Children.Count != Children.Count) return;
-			base.AddChild(child);
 		}
 
 		public override void Draw(SpriteBatch spriteBatch)

@@ -26,12 +26,10 @@ namespace GeeUI.Views
 			}
 			set
 			{
-				if (Children.Count == 0)
-				{
-					AddChild(value);
-					return;
-				}
-				Children[0] = value;
+				if (this.Children.Count == 0)
+					this.Children.Add(value);
+				else
+					this.Children[0] = value;
 			}
 		}
 
@@ -89,7 +87,7 @@ namespace GeeUI.Views
 			: base(GeeUI, rootView)
 		{
 			Position.Value = position;
-			NumChildrenAllowed.Value = 1;
+			this.numChildrenAllowed = 1;
 
 			new TextView(GeeUI, this, label, Vector2.Zero, labelFont);
 

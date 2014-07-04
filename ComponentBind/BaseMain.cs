@@ -20,15 +20,16 @@ namespace ComponentBind
 
 		public GameTime GameTime;
 
-		public List<Entity> Entities;
+		public ListProperty<Entity> Entities;
 
 		protected List<IComponent> componentsToRemove = new List<IComponent>();
 		protected List<IComponent> componentsToAdd = new List<IComponent>();
 
 		public void Add(Entity entity)
 		{
-			if (entity.Active)
+			if (entity.Active && !entity.Added)
 			{
+				entity.Added = true;
 				this.Entities.Add(entity);
 				this.EntityAdded.Execute(entity);
 			}
@@ -56,10 +57,17 @@ namespace ComponentBind
 		public void Remove(Entity entity)
 		{
 			if (entity.Active)
+			{
+				// Trigger all delete commands
+				// then call this Remove function again, but this time the entity will be inactive.
 				entity.Delete.Execute();
-			else
+			}
+			else if (entity.Added)
+			{
+				entity.Added = false;
 				this.Entities.Remove(entity);
-			this.EntityRemoved.Execute(entity);
+				this.EntityRemoved.Execute(entity);
+			}
 		}
 
 		public IEnumerable<Entity> Get(string type)

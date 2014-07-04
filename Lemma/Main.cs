@@ -326,7 +326,7 @@ namespace Lemma
 			this.Content = new ContentManager(this.Services);
 			this.Content.RootDirectory = "Content";
 
-			this.Entities = new List<Entity>();
+			this.Entities = new ListProperty<Entity>();
 
 			this.Camera = new Camera();
 			this.AddComponent(this.Camera);

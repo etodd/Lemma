@@ -211,7 +211,7 @@ namespace Lemma.GInterfaces
 
 		public override void delete()
 		{
-			main.GeeUI.RootView.RemoveChild(EncompassingView);
+			main.GeeUI.RootView.Children.Remove(EncompassingView);
 			base.delete();
 		}
 
