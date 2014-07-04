@@ -53,13 +53,8 @@ namespace GeeUI.Views
 
 		private void TabTab()
 		{
-			if (this.Children.Count == 1 || !this.ActiveView.Selected || !InputManager.IsKeyPressed(Keys.LeftControl)) return;
-			CtrlTabIndex++;
-			if (CtrlTabIndex >= this.Children.Count - 1)
-			{
-				CtrlTabIndex = 0;
-			}
-			this.SetActiveTab(CtrlTabIndex);
+			if (this.Children.Count > 1 && this.ActiveView.Selected && InputManager.IsKeyPressed(Keys.LeftControl))
+				CtrlTabIndex = this.SetActiveTab(CtrlTabIndex + 1);
 		}
 
 		internal View TabViewToView(TabView v)
@@ -93,19 +88,43 @@ namespace GeeUI.Views
 			}
 		}
 
+		public void HideTab(string text)
+		{
+			for (int i = 0; i < TabContainerView.Children.Count; i++)
+			{
+				var tab = TabContainerView.Children[i] as TabView;
+				if (tab.TabText == text)
+				{
+					tab.Active.Value = false;
+					this.SetActiveTab(i - 1);
+					break;
+				}
+			}
+		}
+
+		public void ShowTab(string text)
+		{
+			for (int i = 0; i < TabContainerView.Children.Count; i++)
+			{
+				var tab = TabContainerView.Children[i] as TabView;
+				if (tab.TabText == text)
+				{
+					tab.Active.Value = true;
+					break;
+				}
+			}
+		}
+
 		public void RemoveTab(string text)
 		{
 			for (int i = 0; i < TabContainerView.Children.Count; i++)
 			{
 				var tab = TabContainerView.Children[i] as TabView;
-				if (tab == null) continue;
 				if (tab.TabText == text)
 				{
 					this.Children.RemoveAt(i + 1);
 					this.TabContainerView.Children.Remove(tab);
-					i--;
-					if (this.Children.Count != 1)
-						this.SetActiveTab(i);
+					this.SetActiveTab(i - 1);
 					break;
 				}
 			}
@@ -116,9 +135,22 @@ namespace GeeUI.Views
 			TabContainerView.AddTab(tabText, newTab);
 		}
 
-		public void SetActiveTab(int index)
+		public int SetActiveTab(int index)
 		{
+			for (int i = 0; i < this.TabContainerView.Children.Count; i++)
+			{
+				if (index > TabContainerView.Children.Count - 1)
+					index = 0;
+				else if (index < 0)
+					index = TabContainerView.Children.Count - 1;
+
+				if (TabContainerView.Children[index].Active)
+					break;
+
+				index++;
+			}
 			TabContainerView.TabClicked((TabView)TabContainerView.Children[index]);
+			return index;
 		}
 
 		public string GetActiveTab()
@@ -144,24 +176,6 @@ namespace GeeUI.Views
 			CtrlTabIndex = index;
 		}
 
-		public override void OnMClick(Vector2 position, bool fromChild = false)
-		{
-			base.OnMClick(position);
-		}
-		public override void OnMClickAway(bool fromChild = false)
-		{
-			base.OnMClickAway();
-		}
-
-		public override void OnMOver(bool fromChild = false)
-		{
-			base.OnMOver();
-		}
-		public override void OnMOff(bool fromChild = false)
-		{
-			base.OnMOff();
-		}
-
 		public override void Update(float dt)
 		{
 			for (int i = 1; i < Children.Count; i++)
@@ -171,11 +185,6 @@ namespace GeeUI.Views
 				Children[i].Height.Value = Height.Value - TabContainerView.BoundBox.Height - 10;
 			}
 			base.Update(dt);
-		}
-
-		public override void Draw(SpriteBatch spriteBatch)
-		{
-			base.Draw(spriteBatch);
 		}
 	}
 }

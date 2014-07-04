@@ -112,6 +112,11 @@ namespace Lemma.Components
 			this.VoxelPanelView.ChildrenLayouts.Add(new VerticalViewLayout(4, true, 4));
 
 			TabViews.AddTab("Map", this.MapPanelView);
+			TabViews.AddTab("Entity", this.EntityPanelView);
+			TabViews.HideTab("Entity");
+			TabViews.AddTab("Voxel", this.VoxelPanelView);
+			TabViews.HideTab("Voxel");
+			TabViews.SetActiveTab(TabViews.TabIndex("Map"));
 
 			this.CreateDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero, MainFont);
 			this.CreateDropDownView.Label.Value = "Add [Space]";
@@ -771,21 +776,21 @@ namespace Lemma.Components
 
 		private void refresh()
 		{
-			TabViews.RemoveTab("Entity");
-			TabViews.RemoveTab("Voxel");
+			TabViews.HideTab("Entity");
+			TabViews.HideTab("Voxel");
 			HideLinkerView();
 
 			if (this.SelectedEntities.Count == 0)
 				this.show(null);
 			else
 			{
-				TabViews.AddTab("Entity", EntityPanelView);
+				TabViews.ShowTab("Entity");
 				TabViews.SetActiveTab(TabViews.TabIndex("Entity"));
 				if (this.SelectedEntities.Count == 1)
 				{
 					if (this.SelectedEntities[0].Get<Voxel>() != null)
 					{
-						this.TabViews.AddTab("Voxel", this.VoxelPanelView);
+						this.TabViews.ShowTab("Voxel");
 						this.TabViews.SetActiveTab(TabViews.TabIndex("Voxel"));
 					}
 					if (this.VoxelEditMode)
