@@ -787,7 +787,7 @@ namespace Lemma
 				IO.MapLoader.Load(this, TemplateMap);
 #else
 				IO.MapLoader.Load(this, MenuMap);
-				this.Menu.Pause();
+				//this.Menu.Show();
 #endif
 
 #if ANALYTICS

@@ -249,6 +249,10 @@ namespace Lemma.Components
 			this.loadSaveScroll.ScrollToTop();
 		}
 
+		private ListContainer challengeMenu;
+		private ListContainer officialChallengeMenu;
+		private ListContainer workshopChallengeMenu;
+
 		private ListContainer pauseMenu;
 		private ListContainer notifications;
 
@@ -1155,6 +1159,13 @@ namespace Lemma.Components
 			});
 			this.resizeToMenu(settingsButton);
 			this.pauseMenu.Children.Add(settingsButton);
+
+			Container challengeButton = this.main.UIFactory.CreateButton("\\challenge levels", delegate()
+			{
+				this.hidePauseMenu();
+				
+
+			});
 
 			// Edit mode toggle button
 			Container switchToEditMode = this.main.UIFactory.CreateButton("\\edit mode", delegate()
