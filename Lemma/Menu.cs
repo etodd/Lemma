@@ -1600,11 +1600,7 @@ namespace Lemma.Components
 
 		public void Show()
 		{
-			if (!this.main.Paused)
-			{
-				this.main.Paused.Value = true;
-				this.savePausedSettings();
-			}
+			this.savePausedSettings();
 		}
 	}
 }
