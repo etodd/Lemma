@@ -48,12 +48,24 @@ namespace GeeUI.Views
 			TabContainerView = new TabContainer(GeeUI, this, font);
 			TabContainerView.ChildrenLayouts.Add(new HorizontalViewLayout(1, true));
 
-			InputManager.BindKey(TabTab, Keys.Tab);
+			GeeUI.OnKeyPressedHandler += keyPressedHandler;
+		}
+
+		public override void delete()
+		{
+			this.ParentGeeUI.OnKeyPressedHandler -= keyPressedHandler;
+			base.delete();
+		}
+
+		void keyPressedHandler(string keyPressed, Keys key)
+		{
+			if (key == Keys.Tab && InputManager.IsKeyPressed(Keys.LeftControl))
+				this.TabTab();
 		}
 
 		private void TabTab()
 		{
-			if (this.Children.Length > 1 && this.ActiveView.Selected && InputManager.IsKeyPressed(Keys.LeftControl))
+			if (this.Children.Length > 1 && this.ActiveView.Selected)
 				this.SetActiveTab(CtrlTabIndex + 1);
 		}
 

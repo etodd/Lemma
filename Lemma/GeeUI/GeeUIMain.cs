@@ -226,7 +226,7 @@ namespace GeeUI
 		internal void HandleScroll(View view, Point mousePos, int scrollDelta)
 		{
 			bool didLower = false;
-			for (int i = view.Children.Length - 1; i >= 0; i--)
+			for (int i = view.Children.Length - 1; i >= 0 && i < view.Children.Length; i--)
 			{
 				View child = view.Children[i];
 				if (child.Active && child.AllowMouseEvents && child.AbsoluteBoundBox.Contains(mousePos))
@@ -248,7 +248,7 @@ namespace GeeUI
 
 			if (view.Active && view.AllowMouseEvents)
 			{
-				for (int i = view.Children.Length - 1; i >= 0; i--)
+				for (int i = view.Children.Length - 1; i >= 0 && i < view.Children.Length; i--)
 				{
 					View child = view.Children[i];
 					bool childFiredClick = HandleClick(child, mousePos, rightClick, shouldFireClick);
@@ -281,7 +281,7 @@ namespace GeeUI
 		internal void HandleMouseMovement(View view, Point mousePos)
 		{
 			bool didLower = false;
-			for (int i = view.Children.Length - 1; i >= 0; i--)
+			for (int i = view.Children.Length - 1; i >= 0 && i < view.Children.Length; i--)
 			{
 				View child = view.Children[i];
 				if (child.Active && child.AllowMouseEvents && child.AbsoluteBoundBox.Contains(mousePos))

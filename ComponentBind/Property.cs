@@ -291,10 +291,11 @@ namespace ComponentBind
 		{
 			this.list.Add(t);
 
+			this.Length.Value = this.list.Count;
+
 			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
 				this.bindings[j].Add(t, this);
 
-			this.Length.Value = this.list.Count;
 			if (this.ItemAdded != null)
 				this.ItemAdded(this.list.Count - 1, t);
 		}
@@ -314,10 +315,11 @@ namespace ComponentBind
 		{
 			this.list.Insert(index, t);
 
+			this.Length.Value = this.list.Count;
+
 			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
 				this.bindings[j].Add(t, this);
 
-			this.Length.Value = this.list.Count;
 			if (this.ItemAdded != null)
 				this.ItemAdded(index, t);
 		}
