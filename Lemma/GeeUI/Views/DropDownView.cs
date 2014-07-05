@@ -57,8 +57,17 @@ namespace GeeUI.Views
 			var button = new ButtonView(theGeeUI, this, "", Vector2.Zero, font);
 			button.Add(new Binding<int>(this.Width, button.Width));
 			button.Add(new Binding<int>(this.Height, button.Height));
-			button.OnMouseClick += (sender, args) => ToggleDropDown();
-			button.OnMouseClickAway += (sender, args) => HideDropDown();
+			button.OnMouseClick += delegate(object sender, EventArgs e)
+			{
+				ToggleDropDown();
+				this.FilterView.TemporarilyIgnoreMouseClickAway = true;
+			};
+
+			button.OnMouseClickAway += delegate(object sender, EventArgs args)
+			{
+				HideDropDown();
+			};
+
 			button.OnMouseRightClick += (sender, args) =>
 			{
 				if (AllowRightClickExecute)
@@ -69,7 +78,6 @@ namespace GeeUI.Views
 
 			this.DropDownPanelView = new PanelView(theGeeUI, theGeeUI.RootView, Vector2.Zero);
 			DropDownPanelView.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
-			this.DropDownPanelView.Draggable = false;
 			this.DropDownPanelView.SelectedNinepatch = this.DropDownPanelView.UnselectedNinepatch;
 
 			FilterView = new TextFieldView(theGeeUI, DropDownPanelView, Vector2.Zero, mainFont);
@@ -305,7 +313,7 @@ namespace GeeUI.Views
 			this.mouse = InputManager.GetMousePos();
 			DropDownPanelView.Active.Value = true;
 			DropDownPanelView.FindFirstChildByName("DropList").SetContentOffset(Vector2.Zero);
-			DropDownPanelView.ParentView.Value.BringChildToFront(DropDownPanelView);
+			DropDownPanelView.BringToFront();
 			FilterView.ClearText();
 			FilterView.Active.Value = FilterView.Selected.Value = AllowFilterText && FilterThreshhold.Value <= DropDownOptions.Count;
 		}

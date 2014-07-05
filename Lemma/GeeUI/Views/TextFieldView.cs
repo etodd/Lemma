@@ -620,7 +620,7 @@ namespace GeeUI.Views
 			}
 		}
 
-		public override void OnMClick(Vector2 mousePosition, bool fromChild = false)
+		public override void OnMClick(Vector2 mousePosition, bool fromChild)
 		{
 			Selected.Value = true;
 
@@ -630,10 +630,10 @@ namespace GeeUI.Views
 
 			_selectionStart = clickPos;
 
-			base.OnMClick(mousePosition);
+			base.OnMClick(mousePosition, fromChild);
 		}
 
-		public override void OnMClickAway(bool fromChild = false)
+		public override void OnMClickAway()
 		{
 			bool oldSelected = Selected.Value;
 			Selected.Value = false;
@@ -643,7 +643,7 @@ namespace GeeUI.Views
 			base.OnMClickAway();
 		}
 
-		public override void OnMOver(bool fromChild = false)
+		public override void OnMOver()
 		{
 			if (Selected && InputManager.IsMousePressed(MouseButton.Left))
 			{
@@ -653,11 +653,6 @@ namespace GeeUI.Views
 				_cursorY = (int)clickPos.Y;
 			}
 			base.OnMOver();
-		}
-
-		public override void OnMOff(bool fromChild = false)
-		{
-			base.OnMOff();
 		}
 
 		private Vector2 GetDrawPosForCursorPos(int cursorX, int cursorY)

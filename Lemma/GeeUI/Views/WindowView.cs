@@ -107,7 +107,7 @@ namespace GeeUI.Views
 			base.Update(dt);
 		}
 
-		public override void OnMClick(Vector2 position, bool fromChild = false)
+		public override void OnMClick(Vector2 position, bool fromChild)
 		{
 			SelectedOffChildren = !fromChild;
 			Selected.Value = true;
@@ -115,29 +115,28 @@ namespace GeeUI.Views
 			LastMousePosition = position;
 			MouseSelectedOffset = position - Position;
 
-			if (ParentView.Value != null)
-				ParentView.Value.BringChildToFront(this);
+			this.BringToFront();
 			FollowMouse();
-			base.OnMClick(position, true);
+			base.OnMClick(position, fromChild);
 		}
 
-		public override void OnMClickAway(bool fromChild = false)
+		public override void OnMClickAway()
 		{
 			SelectedOffChildren = false;
 			Selected.Value = false;
 			WindowContentView.Selected.Value = false;
-			base.OnMClickAway(true);
+			base.OnMClickAway();
 		}
-		public override void OnMOff(bool fromChild = false)
+		public override void OnMOff()
 		{
 			FollowMouse();
-			base.OnMOff(true);
+			base.OnMOff();
 		}
 
-		public override void OnMOver(bool fromChild = false)
+		public override void OnMOver()
 		{
 			FollowMouse();
-			base.OnMOver(fromChild);
+			base.OnMOver();
 		}
 	}
 }

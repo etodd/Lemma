@@ -327,8 +327,6 @@ namespace Lemma.Components
 			this.main.AddComponent(this.pauseAnimation);
 
 			this.currentMenu.Value = this.pauseMenu;
-
-			this.main.GeeUI.LastClickCaptured = false;
 		}
 
 		// Unpause
@@ -371,8 +369,6 @@ namespace Lemma.Components
 			this.main.Screenshot.Clear();
 
 			this.currentMenu.Value = null;
-
-			this.main.GeeUI.LastClickCaptured = false;
 		}
 
 		private void resizeToMenu(Container c)

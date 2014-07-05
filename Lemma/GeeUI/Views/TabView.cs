@@ -67,25 +67,12 @@ namespace GeeUI.Views
 			new TextView(GeeUI, this, "", Vector2.Zero, font) {  };
 		}
 
-		public override void OnMClick(Vector2 position, bool fromChild = false)
+		public override void OnMClick(Vector2 position, bool fromChild)
 		{
 			var p = (TabContainer)ParentView;
 			p.TabClicked(this);
 
-			base.OnMClick(position);
-		}
-		public override void OnMClickAway(bool fromChild = false)
-		{
-			base.OnMClickAway();
-		}
-
-		public override void OnMOver(bool fromChild = false)
-		{
-			base.OnMOver();
-		}
-		public override void OnMOff(bool fromChild = false)
-		{
-			base.OnMOff();
+			base.OnMClick(position, fromChild);
 		}
 
 		public override void Update(float dt)

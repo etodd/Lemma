@@ -67,24 +67,6 @@ namespace GeeUI.Views
 			TabFont = font;
 		}
 
-		public override void OnMClick(Vector2 position, bool fromChild = false)
-		{
-			base.OnMClick(position);
-		}
-		public override void OnMClickAway(bool fromChild = false)
-		{
-			base.OnMClickAway();
-		}
-
-		public override void OnMOver(bool fromChild = false)
-		{
-			base.OnMOver();
-		}
-		public override void OnMOff(bool fromChild = false)
-		{
-			base.OnMOff();
-		}
-
 		private void setChildrenWidth()
 		{
 			var maxWidth = 0;

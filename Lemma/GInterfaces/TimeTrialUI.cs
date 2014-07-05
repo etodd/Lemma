@@ -71,7 +71,6 @@ namespace Lemma.GInterfaces
 			RootTimeEndView.Add(new Binding<Vector2, Point>(RootTimeEndView.Position, point => new Vector2(point.X / 2f, point.Y / 2f), main.ScreenSize));
 			RootTimeEndView.Width.Value = 400;
 			RootTimeEndView.Height.Value = 300;
-			RootTimePanelView.Draggable = RootTimeEndView.Draggable = false;
 
 			RootTimePanelView.UnselectedNinepatch = RootTimePanelView.SelectedNinepatch = GeeUIMain.NinePatchBtnDefault;
 

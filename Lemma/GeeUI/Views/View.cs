@@ -43,6 +43,8 @@ namespace GeeUI.Views
 
 		public Property<bool> EnforceRootAttachment = new Property<bool>() { Value = true };
 
+		public bool TemporarilyIgnoreMouseClickAway;
+
 		protected int numChildrenAllowed = -1;
 
 		public ToolTip ToolTipView;
@@ -80,10 +82,12 @@ namespace GeeUI.Views
 				if (!old && value)
 					OnMOver();
 				else if (old && !value)
+					OnMOff();
+
+				if (!value)
 				{
 					for (int i = 0; i < this.Children.Length; i++)
 						this.Children[i].MouseOver = false;
-					OnMOff();
 				}
 			}
 		}
@@ -433,48 +437,49 @@ namespace GeeUI.Views
 			this.delete();
 		}
 
-		public virtual void OnMScroll(Vector2 position, int scrollDelta, bool fromChild = false)
+		public virtual void OnMScroll(Vector2 position, int scrollDelta, bool fromChild)
 		{
 			if (ParentView.Value != null) ParentView.Value.OnMScroll(position, scrollDelta, true);
 			if (OnMouseScroll != null)
 				OnMouseScroll(scrollDelta);
 		}
 
-		public virtual void OnMRightClick(Vector2 position, bool fromChild = false)
+		public virtual void OnMRightClick(Vector2 position, bool fromChild)
 		{
 			if (OnMouseRightClick != null)
 				OnMouseRightClick(this, new EventArgs());
 			if (ParentView.Value != null) ParentView.Value.OnMRightClick(position, true);
 		}
 
-		public virtual void OnMClick(Vector2 position, bool fromChild = false)
+		public virtual void OnMClick(Vector2 position, bool fromChild)
 		{
 			if (OnMouseClick != null)
 				OnMouseClick(this, new EventArgs());
 			if (ParentView.Value != null) ParentView.Value.OnMClick(position, true);
 		}
 
-		public virtual void OnMClickAway(bool fromChild = false)
+		public virtual void OnMClickAway()
 		{
-			if (OnMouseClickAway != null)
+			if (this.TemporarilyIgnoreMouseClickAway)
+				this.TemporarilyIgnoreMouseClickAway = false;
+			else if (OnMouseClickAway != null)
 				OnMouseClickAway(this, new EventArgs());
-			if (ParentView.Value != null) ParentView.Value.OnMClickAway(true);
 		}
 
-		public virtual void OnMOver(bool fromChild = false)
+		public virtual void OnMOver()
 		{
 			RemoveToolTip();
 			if (OnMouseOver != null)
 				OnMouseOver(this, new EventArgs());
-			if (ParentView.Value != null) ParentView.Value.OnMOver(true);
+			if (ParentView.Value != null) ParentView.Value.OnMOver();
 		}
 
-		public virtual void OnMOff(bool fromChild = false)
+		public virtual void OnMOff()
 		{
 			RemoveToolTip();
 			if (OnMouseOff != null)
 				OnMouseOff(this, new EventArgs());
-			if (ParentView.Value != null) ParentView.Value.OnMOff(true);
+			if (ParentView.Value != null) ParentView.Value.OnMOff();
 		}
 
 		protected bool dirty;

@@ -59,30 +59,11 @@ namespace GeeUI.Views
 				this.ContentOffset.Value = new Vector2(this.ContentOffset.Value.X, 0);
 		}
 
-		public override void OnMScroll(Vector2 position, int scrollDelta, bool fromChild = false)
+		public override void OnMScroll(Vector2 position, int scrollDelta, bool fromChild)
 		{
 			this.ContentOffset.Value -= new Vector2(0, scrollDelta * ScrollMultiplier);
 			RecomputeOffset();
-			base.OnMScroll(position, scrollDelta, fromChild);
-		}
-
-		public override void OnMClick(Vector2 position, bool fromChild = false)
-		{
-			base.OnMClick(position);
-		}
-
-		public override void OnMClickAway(bool fromChild = false)
-		{
-			base.OnMClickAway();
-		}
-
-		public override void OnMOver(bool fromChild = false)
-		{
-			base.OnMOver();
-		}
-		public override void OnMOff(bool fromChild = false)
-		{
-			base.OnMOff();
+			base.OnMScroll(position, scrollDelta, true);
 		}
 
 		public override void Draw(SpriteBatch spriteBatch)

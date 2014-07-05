@@ -49,7 +49,6 @@ namespace Lemma.GInterfaces
 			//This is to make it so nothing else can be interacted with.
 			this.EncompassingView = new View(main.GeeUI, main.GeeUI.RootView);
 			this.MainView = new PanelView(main.GeeUI, EncompassingView, Vector2.Zero);
-			MainView.Draggable = false;
 			MainView.Resizeable = false;
 			MainView.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
 			MainView.Width.Value = 400;

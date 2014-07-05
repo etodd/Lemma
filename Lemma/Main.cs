@@ -781,7 +781,6 @@ namespace Lemma
 				{
 					this.Renderer.BlurAmount.Value = 0.0f;
 					this.Renderer.Tint.Value = new Vector3(1.0f);
-					this.GeeUI.LastClickCaptured = false;
 				});
 #if DEVELOPMENT
 				IO.MapLoader.Load(this, TemplateMap);

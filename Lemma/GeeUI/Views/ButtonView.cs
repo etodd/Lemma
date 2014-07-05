@@ -83,24 +83,6 @@ namespace GeeUI.Views
 			ButtonContentview = contentView;
 		}
 
-		public override void OnMClick(Vector2 position, bool fromChild = false)
-		{
-			base.OnMClick(position);
-		}
-		public override void OnMClickAway(bool fromChild = false)
-		{
-			base.OnMClickAway();
-		}
-
-		public override void OnMOver(bool fromChild = false)
-		{
-			base.OnMOver();
-		}
-		public override void OnMOff(bool fromChild = false)
-		{
-			base.OnMOff();
-		}
-
 		public override void Draw(SpriteBatch spriteBatch)
 		{
 			NinePatch patch = CurrentNinepatch;

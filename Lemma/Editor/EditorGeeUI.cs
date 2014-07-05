@@ -156,7 +156,6 @@ namespace Lemma.Components
 				LinkerView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);
 				LinkerView.Width.Value = 400;
 				LinkerView.Height.Value = 300;
-				LinkerView.Draggable = false;
 				LinkerView.Active.Value = false;
 
 				var DestLayout = new View(main.GeeUI, LinkerView) { Name = "DestLayout" };
@@ -235,7 +234,6 @@ namespace Lemma.Components
 				EntityListView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);
 				EntityListView.Width.Value = 400;
 				EntityListView.Height.Value = 300;
-				EntityListView.Draggable = false;
 				EntityListView.Active.Value = false;
 
 				var entityDropDownLayout = new View(main.GeeUI, EntityListView);
@@ -383,7 +381,7 @@ namespace Lemma.Components
 		{
 			LinkerView.Active.Value = true;
 			LinkerView.Position.Value = new Vector2(PropertiesView.AbsoluteBoundBox.Right, InputManager.GetMousePosV().Y);
-			LinkerView.ParentView.Value.BringChildToFront(LinkerView);
+			LinkerView.BringToFront();
 			BindLinker(button, SelectedEntities[0], select);
 			if (LinkerView.AbsoluteBoundBox.Bottom > main.GeeUI.RootView.AbsoluteBoundBox.Bottom)
 			{
@@ -528,7 +526,7 @@ namespace Lemma.Components
 		{
 			EntityListView.Active.Value = true;
 			EntityListView.Position.Value = new Vector2(PropertiesView.AbsoluteBoundBox.Right, InputManager.GetMousePosV().Y);
-			EntityListView.ParentView.Value.BringChildToFront(EntityListView);
+			EntityListView.BringToFront();
 			BindEntityListView(button, SelectedEntities[0], entry);
 			if (EntityListView.AbsoluteBoundBox.Bottom > main.GeeUI.RootView.AbsoluteBoundBox.Bottom)
 				EntityListView.Y -= (EntityListView.AbsoluteBoundBox.Bottom - main.GeeUI.RootView.AbsoluteBoundBox.Bottom);
@@ -699,6 +697,9 @@ namespace Lemma.Components
 					containerLabel.SetToolTipText(cmd.Value.Description, MainFont);
 				}
 			}
+
+			EntityListView.BringToFront();
+			LinkerView.BringToFront();
 		}
 
 		public bool AnyTextFieldViewsSelected()

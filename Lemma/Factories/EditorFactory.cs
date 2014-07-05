@@ -861,8 +861,8 @@ namespace Lemma.Factories
 				new PCInput.Chord { Mouse = PCInput.MouseButton.LeftMouseButton },
 				editor.CommitTransform,
 				gui.EntityCommands,
-				() => editor.TransformMode.Value != Editor.TransformModes.None,
-				editor.TransformMode
+				() => editor.TransformMode.Value != Editor.TransformModes.None && !main.GeeUI.LastClickCaptured,
+				editor.TransformMode, main.GeeUI.LastClickCaptured
 			);
 
 			AddCommand

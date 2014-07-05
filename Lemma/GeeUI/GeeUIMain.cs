@@ -83,7 +83,7 @@ namespace GeeUI
 		/// <summary>
 		/// Will be true if the latest click within the game bounds resided within an active direct child of the root view.
 		/// </summary>
-		public bool LastClickCaptured = false;
+		public Property<bool> LastClickCaptured = new Property<bool>();
 
 		public Property<bool> KeyboardEnabled = new Property<bool> { Value = true };
 
@@ -238,44 +238,41 @@ namespace GeeUI
 			}
 
 			if (!didLower)
-				view.OnMScroll(ConversionManager.PtoV(mousePos), scrollDelta);
+				view.OnMScroll(ConversionManager.PtoV(mousePos), scrollDelta, false);
 		}
 
-		internal void HandleClick(View view, Point mousePos, bool rightClick)
+		internal bool HandleClick(View view, Point mousePos, bool rightClick)
 		{
-			if (view == RootView)
-				LastClickCaptured = false;
+			bool didFireClick = false;
 
-			bool didLower = false;
-			for (int i = view.Children.Length - 1; i >= 0; i--)
+			if (view.Active && view.AllowMouseEvents)
 			{
-				View child = view.Children[i];
-				if (child.Active && child.AllowMouseEvents && child.AbsoluteBoundBox.Contains(mousePos))
+				for (int i = view.Children.Length - 1; i >= 0; i--)
 				{
-					if (view == RootView)
-						LastClickCaptured = true;
-					HandleClick(child, mousePos, rightClick);
-					didLower = true;
-					break;
+					View child = view.Children[i];
+					didFireClick |= HandleClick(child, mousePos, rightClick);
 				}
-			}
 
-			if (view == RootView)
-			{
-				foreach (View t in GetAllViews(RootView))
+				if (view.AbsoluteBoundBox.Contains(mousePos))
 				{
-					if (!t.MouseOver)
-						t.OnMClickAway();
+					if (!didFireClick)
+					{
+						if (rightClick)
+							view.OnMRightClick(ConversionManager.PtoV(mousePos), false);
+						else
+							view.OnMClick(ConversionManager.PtoV(mousePos), false);
+
+						if (view != RootView)
+							LastClickCaptured.Value = true;
+
+						didFireClick = true;
+					}
 				}
+				else if (!rightClick)
+					view.OnMClickAway();
 			}
 
-			if (!didLower)
-			{
-				if (rightClick)
-					view.OnMRightClick(ConversionManager.PtoV(mousePos));
-				else
-					view.OnMClick(ConversionManager.PtoV(mousePos));
-			}
+			return didFireClick;
 		}
 
 		internal void HandleMouseMovement(View view, Point mousePos)
@@ -284,21 +281,22 @@ namespace GeeUI
 			for (int i = view.Children.Length - 1; i >= 0; i--)
 			{
 				View child = view.Children[i];
-				if (!child.Active || !child.AllowMouseEvents || !child.AbsoluteBoundBox.Contains(mousePos))
-					child.MouseOver = false;
-				else
+				if (child.Active && child.AllowMouseEvents && child.AbsoluteBoundBox.Contains(mousePos))
 				{
 					HandleMouseMovement(child, mousePos);
 					didLower = true;
-					child.MouseOver = true;
 				}
+				else
+					child.MouseOver = false;
 			}
-			if (!didLower)
+			if (!didLower) // If it was lowered, OnMOver already bubbled it up
 				view.MouseOver = true;
 		}
 
 		public void Update(float dt)
 		{
+			if (LastClickCaptured)
+				LastClickCaptured.Value = false;
 			_inputManager.Update(dt, this);
 			UpdateView(RootView, dt);
 			for (int i = 0; i < this.potentiallyDetachedViews.Count; i++)
