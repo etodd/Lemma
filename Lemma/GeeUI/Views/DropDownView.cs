@@ -34,7 +34,7 @@ namespace GeeUI.Views
 
 		public Property<string> Label = new Property<string>();
 		public Property<int> LastItemSelected = new Property<int>() { Value = -1 };
-		public Property<bool> AllowRightClickExecute = new Property<bool>() { Value = true };
+		public Property<bool> AllowRightClickExecute = new Property<bool>();
 		public Property<bool> AllowFilterText = new Property<bool>() { Value = true };
 		public Property<int> FilterThreshhold = new Property<int>() { Value = 15 };
 
@@ -216,7 +216,7 @@ namespace GeeUI.Views
 
 		public DropDownOption GetSelectedOption()
 		{
-			if (LastItemSelected.Value == -1)
+			if (LastItemSelected.Value == -1 || LastItemSelected.Value > DropDownOptions.Count - 1)
 				return null;
 			return DropDownOptions[LastItemSelected.Value];
 		}
@@ -242,6 +242,13 @@ namespace GeeUI.Views
 		{
 			if (fontString == null)
 				fontString = mainFont;
+			
+			if (this.LastItemSelected == -1)
+			{
+				if (string.IsNullOrEmpty(this.Label))
+					((ButtonView)FindFirstChildByName("button")).Text = name;
+				this.LastItemSelected.Value = this.DropDownOptions.Count;
+			}
 
 			var dropDownOption = new DropDownOption()
 			{

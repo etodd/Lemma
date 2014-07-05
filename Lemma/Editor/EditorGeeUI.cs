@@ -117,6 +117,7 @@ namespace Lemma.Components
 			this.CreateDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero, MainFont);
 			this.CreateDropDownView.Label.Value = "Add [Space]";
 			this.CreateDropDownView.FilterThreshhold.Value = 0;
+			this.CreateDropDownView.AllowRightClickExecute.Value = true;
 			this.SelectDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero, MainFont);
 			this.SelectDropDownView.FilterThreshhold.Value = 0;
 			this.SelectDropDownView.Label.Value = "Select";
@@ -170,7 +171,6 @@ namespace Lemma.Components
 					Name = "DestEntityDropDown"
 				};
 				destEntityDropDown.FilterThreshhold.Value = 0;
-				destEntityDropDown.AllowRightClickExecute.Value = false;
 
 				var selectButton = new ButtonView(main.GeeUI, entityDropDownLayout, "Select", Vector2.Zero, MainFont);
 				selectButton.OnMouseClick += delegate(object sender, EventArgs e)
@@ -245,7 +245,6 @@ namespace Lemma.Components
 				};
 
 				entityDropDown.FilterThreshhold.Value = 0;
-				entityDropDown.AllowRightClickExecute.Value = false;
 
 				var selectButton = new ButtonView(main.GeeUI, entityDropDownLayout, "Select", Vector2.Zero, MainFont);
 				selectButton.OnMouseClick += delegate(object sender, EventArgs e)
@@ -602,7 +601,6 @@ namespace Lemma.Components
 
 			Action addItem = () =>
 			{
-				if (!addButton.Active) return;
 				Entity.Handle handle = (Entity)entityDrop.GetSelectedOption().Related;
 				property.Add(handle);
 				populateList();
@@ -1020,7 +1018,6 @@ namespace Lemma.Components
 				else if (typeof(Enum).IsAssignableFrom(propertyInfo.PropertyType))
 				{
 					var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero, MainFont) { Name = "Dropdown" };
-					drop.AllowRightClickExecute.Value = false;
 					foreach (object o in Enum.GetValues(propertyInfo.PropertyType))
 					{
 						Action onClick = () =>
@@ -1048,7 +1045,6 @@ namespace Lemma.Components
 					{
 						Name = "DropDown"
 					};
-					entityDropDown.AllowRightClickExecute.Value = false;
 					entityDropDown.FilterThreshhold.Value = 0;
 					entityDropDown.AddOption("[null]", delegate()
 					{
@@ -1090,7 +1086,6 @@ namespace Lemma.Components
 				{
 					ListProperty<string> options = (ListProperty<string>)entry.Data.Options;
 					var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero, MainFont) { Name = "Dropdown" };
-					drop.AllowRightClickExecute.Value = false;
 					Action populate = delegate()
 					{
 						drop.RemoveAllOptions();

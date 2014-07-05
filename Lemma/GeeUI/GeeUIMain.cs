@@ -196,14 +196,14 @@ namespace GeeUI
 
 			InputManager.BindMouse(() =>
 			{
-				HandleClick(RootView, InputManager.GetMousePos(), false);
+				HandleClick(RootView, InputManager.GetMousePos(), false, true);
 				//When we click, we want to re-evaluate what control the mouse is over.
 				HandleMouseMovement(RootView, InputManager.GetMousePos());
 			}, MouseButton.Left);
 
 			InputManager.BindMouse(() =>
 			{
-				HandleClick(RootView, InputManager.GetMousePos(), true);
+				HandleClick(RootView, InputManager.GetMousePos(), true, true);
 				//When we click, we want to re-evaluate what control the mouse is over.
 				HandleMouseMovement(RootView, InputManager.GetMousePos());
 			}, MouseButton.Right);
@@ -241,8 +241,9 @@ namespace GeeUI
 				view.OnMScroll(ConversionManager.PtoV(mousePos), scrollDelta, false);
 		}
 
-		internal bool HandleClick(View view, Point mousePos, bool rightClick)
+		internal bool HandleClick(View view, Point mousePos, bool rightClick, bool shouldFireClick)
 		{
+			bool originalShouldFireClick = shouldFireClick;
 			bool didFireClick = false;
 
 			if (view.Active && view.AllowMouseEvents)
@@ -250,10 +251,12 @@ namespace GeeUI
 				for (int i = view.Children.Length - 1; i >= 0; i--)
 				{
 					View child = view.Children[i];
-					didFireClick |= HandleClick(child, mousePos, rightClick);
+					bool childFiredClick = HandleClick(child, mousePos, rightClick, shouldFireClick);
+					didFireClick |= childFiredClick;
+					shouldFireClick &= !childFiredClick;
 				}
 
-				if (view.AbsoluteBoundBox.Contains(mousePos))
+				if (originalShouldFireClick && view.AbsoluteBoundBox.Contains(mousePos))
 				{
 					if (!didFireClick)
 					{

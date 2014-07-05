@@ -643,18 +643,6 @@ namespace GeeUI.Views
 			base.OnMClickAway();
 		}
 
-		public override void OnMOver()
-		{
-			if (Selected && InputManager.IsMousePressed(MouseButton.Left))
-			{
-				var clickPos = GetMouseTextPos(InputManager.GetMousePosV());
-				_selectionEnd = clickPos;
-				_cursorX = (int)clickPos.X;
-				_cursorY = (int)clickPos.Y;
-			}
-			base.OnMOver();
-		}
-
 		private Vector2 GetDrawPosForCursorPos(int cursorX, int cursorY)
 		{
 			var patch = Selected ? NinePatchSelected : NinePatchDefault;
@@ -692,24 +680,31 @@ namespace GeeUI.Views
 
 		public override void Update(float dt)
 		{
-
 			Vector2 pos = InputManager.GetMousePosV();
-			if (Selected && InputManager.IsMousePressed(MouseButton.Left) && !AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
+			if (Selected && InputManager.IsMousePressed(MouseButton.Left))
 			{
-				_dragOffTimer += dt;
-				if (_dragOffTimer >= _dragOffInterval)
+				if (!AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
 				{
-					_dragOffTimer -= _dragOffInterval;
-					if (pos.X > AbsoluteBoundBox.Right)
+					_dragOffTimer += dt;
+					if (_dragOffTimer >= _dragOffInterval)
 					{
-						MoveOffsetX(1, true);
+						_dragOffTimer -= _dragOffInterval;
+						if (pos.X > AbsoluteBoundBox.Right)
+						{
+							MoveOffsetX(1, true);
+						}
+						else if (pos.X < AbsoluteBoundBox.Left)
+						{
+							MoveOffsetX(-1, true);
+						}
 					}
-					else if (pos.X < AbsoluteBoundBox.Left)
-					{
-						MoveOffsetX(-1, true);
-					}
+					
 				}
-				
+
+				var clickPos = GetMouseTextPos(InputManager.GetMousePosV());
+				_selectionEnd = clickPos;
+				_cursorX = (int)clickPos.X;
+				_cursorY = (int)clickPos.Y;
 			}
 
 			if (InputManager.IsKeyPressed(_buttonHeld))
