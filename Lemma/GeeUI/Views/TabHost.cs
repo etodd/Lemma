@@ -54,7 +54,7 @@ namespace GeeUI.Views
 		private void TabTab()
 		{
 			if (this.Children.Length > 1 && this.ActiveView.Selected && InputManager.IsKeyPressed(Keys.LeftControl))
-				CtrlTabIndex = this.SetActiveTab(CtrlTabIndex + 1);
+				this.SetActiveTab(CtrlTabIndex + 1);
 		}
 
 		internal View TabViewToView(TabView v)
@@ -88,33 +88,6 @@ namespace GeeUI.Views
 			}
 		}
 
-		public void HideTab(string text)
-		{
-			for (int i = 0; i < TabContainerView.Children.Length; i++)
-			{
-				var tab = TabContainerView.Children[i] as TabView;
-				if (tab.TabText == text)
-				{
-					tab.Active.Value = false;
-					this.SetActiveTab(i - 1);
-					break;
-				}
-			}
-		}
-
-		public void ShowTab(string text)
-		{
-			for (int i = 0; i < TabContainerView.Children.Length; i++)
-			{
-				var tab = TabContainerView.Children[i] as TabView;
-				if (tab.TabText == text)
-				{
-					tab.Active.Value = true;
-					break;
-				}
-			}
-		}
-
 		public void RemoveTab(string text)
 		{
 			for (int i = 0; i < TabContainerView.Children.Length; i++)
@@ -135,7 +108,7 @@ namespace GeeUI.Views
 			TabContainerView.AddTab(tabText, newTab);
 		}
 
-		public int SetActiveTab(int index)
+		public void SetActiveTab(int index)
 		{
 			for (int i = 0; i < this.TabContainerView.Children.Length; i++)
 			{
@@ -150,7 +123,6 @@ namespace GeeUI.Views
 				index++;
 			}
 			TabContainerView.TabClicked((TabView)TabContainerView.Children[index]);
-			return index;
 		}
 
 		public string GetActiveTab()
@@ -185,6 +157,26 @@ namespace GeeUI.Views
 				Children[i].Height.Value = Height.Value - TabContainerView.BoundBox.Height - 10;
 			}
 			base.Update(dt);
+		}
+
+		public override void OnMClick(Vector2 position, bool fromChild = false)
+		{
+			base.OnMClick(position);
+		}
+
+		public override void OnMClickAway(bool fromChild = false)
+		{
+			base.OnMClickAway();
+		}
+
+		public override void OnMOver(bool fromChild = false)
+		{
+			base.OnMOver();
+		}
+
+		public override void OnMOff(bool fromChild = false)
+		{
+			base.OnMOff();
 		}
 	}
 }

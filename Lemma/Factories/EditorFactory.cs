@@ -68,6 +68,8 @@ namespace Lemma.Factories
 			EditorGeeUI.EditorCommand cmd = new EditorGeeUI.EditorCommand { Description = description, Chord = chord, Action = action, Enabled = new Property<bool> { Value = true } };
 			if (enabled != null)
 				entity.Add(new Binding<bool>(cmd.Enabled, enabled, dependencies));
+			else
+				enabled = () => true;
 
 			list.Add(cmd);
 
@@ -123,7 +125,7 @@ namespace Lemma.Factories
 
 			gui.SetVoxelProperties(new Dictionary<string, PropertyEntry>
 			{
-				{ "Brush", new PropertyEntry(editor.Brush, new PropertyEntry.EditorData()) },
+				{ "Brush [Space]", new PropertyEntry(editor.Brush, new PropertyEntry.EditorData()) },
 				{ "BrushSize", new PropertyEntry(editor.BrushSize, "[Scrollwheel]") },
 				{ "BrushShape", new PropertyEntry(editor.BrushShape, new PropertyEntry.EditorData()) },
 				{ "Jitter", new PropertyEntry(editor.Jitter, "[Shift+Scrollwheel]") },

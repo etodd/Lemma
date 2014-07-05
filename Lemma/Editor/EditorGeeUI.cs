@@ -121,6 +121,9 @@ namespace Lemma.Components
 			this.SelectDropDownView.FilterThreshhold.Value = 0;
 			this.SelectDropDownView.Label.Value = "Select";
 
+			this.CreateDropDownView.Add(new Binding<bool>(this.CreateDropDownView.Active, this.main.GeeUI.KeyboardEnabled));
+			this.SelectDropDownView.Add(new Binding<bool>(this.SelectDropDownView.Active, this.main.GeeUI.KeyboardEnabled));
+
 			this.ShowContextMenu.Action = delegate()
 			{
 				if (this.TabViews.GetActiveTab() == "Voxel")
@@ -288,7 +291,7 @@ namespace Lemma.Components
 			this.SelectedEntities.ItemChanged += (index, old, newValue) => this.refresh();
 			this.SelectedEntities.Cleared += this.refresh;
 
-			this.Add(new Binding<bool>(this.PropertiesView.Active, x => !x, this.VoxelEditMode));
+			this.Add(new Binding<bool>(this.PropertiesView.Active, () => this.SelectedEntities.Length > 0 && !this.VoxelEditMode, this.VoxelEditMode, this.SelectedEntities.Length));
 
 			this.Add(new ListBinding<View, EditorCommand>(this.EntityPanelView.Children, this.EntityCommands, this.buildCommandButton));
 			this.Add(new ListBinding<View, EditorCommand>(this.MapPanelView.Children, this.MapCommands, this.buildCommandButton));
@@ -370,7 +373,6 @@ namespace Lemma.Components
 				}
 			}
 		}
-
 
 		public void HideLinkerView()
 		{
@@ -758,21 +760,29 @@ namespace Lemma.Components
 			HideLinkerView();
 
 			if (this.SelectedEntities.Length == 0)
+			{
+				this.TabViews.SetActiveTab(TabViews.TabIndex("Entity"));
 				this.show(null);
+			}
 			else
 			{
 				if (this.SelectedEntities.Length == 1)
 				{
-					if (this.VoxelEditMode)
-					{
+					if (this.SelectedEntities[0].Get<Voxel>() != null)
 						this.TabViews.SetActiveTab(TabViews.TabIndex("Voxel"));
+					else
+						this.TabViews.SetActiveTab(TabViews.TabIndex("Entity"));
+
+					if (this.VoxelEditMode)
 						this.show(null);
-					}
 					else
 						this.show(this.SelectedEntities);
 				}
 				else
+				{
+					this.TabViews.SetActiveTab(TabViews.TabIndex("Entity"));
 					this.show(this.SelectedEntities);
+				}
 			}
 		}
 

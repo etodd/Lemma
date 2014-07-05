@@ -197,7 +197,7 @@ namespace ComponentBind
 		{
 			get
 			{
-				return this.InternalList.Count;
+				return this.list.Count;
 			}
 		}
 
@@ -219,7 +219,7 @@ namespace ComponentBind
 			return typeof (Type);
 		}
 
-		public List<Type> InternalList = new List<Type>();
+		private List<Type> list = new List<Type>();
 		protected List<IListBinding<Type>> bindings = new List<IListBinding<Type>>();
 
 		public void AddBinding(IPropertyBinding binding)
@@ -243,29 +243,29 @@ namespace ComponentBind
 
 		public bool Contains(Type t)
 		{
-			return this.InternalList.Contains(t);
+			return this.list.Contains(t);
 		}
 
 		public void CopyTo(Type[] array, int arrayIndex)
 		{
-			this.InternalList.CopyTo(array, arrayIndex);
+			this.list.CopyTo(array, arrayIndex);
 		}
 
 		IEnumerator<Type> IEnumerable<Type>.GetEnumerator()
 		{
-			return this.InternalList.GetEnumerator();
+			return this.list.GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return this.InternalList.GetEnumerator();
+			return this.list.GetEnumerator();
 		}
 
 		public Type this[int i]
 		{
 			get
 			{
-				return this.InternalList[i];
+				return this.list[i];
 			}
 			set
 			{
@@ -289,19 +289,19 @@ namespace ComponentBind
 
 		public void Add(Type t)
 		{
-			this.InternalList.Add(t);
+			this.list.Add(t);
 
 			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
 				this.bindings[j].Add(t, this);
 
-			this.Length.Value = this.InternalList.Count;
+			this.Length.Value = this.list.Count;
 			if (this.ItemAdded != null)
-				this.ItemAdded(this.InternalList.Count - 1, t);
+				this.ItemAdded(this.list.Count - 1, t);
 		}
 
 		public int IndexOf(Type t)
 		{
-			return this.InternalList.IndexOf(t);
+			return this.list.IndexOf(t);
 		}
 
 		public void AddAll(IEnumerable<Type> items)
@@ -312,21 +312,21 @@ namespace ComponentBind
 
 		public void Insert(int index, Type t)
 		{
-			this.InternalList.Insert(index, t);
+			this.list.Insert(index, t);
 
 			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
 				this.bindings[j].Add(t, this);
 
-			this.Length.Value = this.InternalList.Count;
+			this.Length.Value = this.list.Count;
 			if (this.ItemAdded != null)
 				this.ItemAdded(index, t);
 		}
 
 		public void RemoveAt(int index)
 		{
-			Type t = this.InternalList[index];
-			this.InternalList.RemoveAt(index);
-			this.Length.Value = this.InternalList.Count;
+			Type t = this.list[index];
+			this.list.RemoveAt(index);
+			this.Length.Value = this.list.Count;
 			if (this.ItemRemoved != null)
 				this.ItemRemoved(index, t);
 
@@ -336,10 +336,10 @@ namespace ComponentBind
 
 		public bool Remove(Type t)
 		{
-			int index = this.InternalList.IndexOf(t);
+			int index = this.list.IndexOf(t);
 
-			this.InternalList.RemoveAt(index);
-			this.Length.Value = this.InternalList.Count;
+			this.list.RemoveAt(index);
+			this.Length.Value = this.list.Count;
 			if (this.ItemRemoved != null)
 				this.ItemRemoved(index, t);
 
@@ -351,10 +351,10 @@ namespace ComponentBind
 
 		public void RemoveWithoutNotifying(Type t)
 		{
-			int index = this.InternalList.IndexOf(t);
+			int index = this.list.IndexOf(t);
 
-			this.InternalList.RemoveAt(index);
-			this.Length.Value = this.InternalList.Count;
+			this.list.RemoveAt(index);
+			this.Length.Value = this.list.Count;
 
 			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
 				this.bindings[j].Remove(t, this);
@@ -368,8 +368,8 @@ namespace ComponentBind
 
 		public void Changed(Type from, Type to)
 		{
-			int i = this.InternalList.IndexOf(from);
-			this.InternalList[i] = to;
+			int i = this.list.IndexOf(from);
+			this.list[i] = to;
 			if (this.ItemChanged != null)
 				this.ItemChanged(i, from, to);
 
@@ -379,8 +379,8 @@ namespace ComponentBind
 
 		public void Changed(int i, Type to)
 		{
-			Type from = this.InternalList[i];
-			this.InternalList[i] = to;
+			Type from = this.list[i];
+			this.list[i] = to;
 			if (this.ItemChanged != null)
 				this.ItemChanged(i, from, to);
 
@@ -390,12 +390,12 @@ namespace ComponentBind
 
 		public void Clear()
 		{
-			bool notify = this.InternalList.Count > 0;
+			bool notify = this.list.Count > 0;
 
 			if (notify && this.Clearing != null)
 				this.Clearing();
 
-			this.InternalList.Clear();
+			this.list.Clear();
 			this.Length.Value = 0;
 
 			if (notify)
@@ -412,7 +412,7 @@ namespace ComponentBind
 		{
 			if (this.ItemChanged != null)
 			{
-				int i = this.InternalList.IndexOf(t);
+				int i = this.list.IndexOf(t);
 				this.ItemChanged(i, t, t);
 			}
 
