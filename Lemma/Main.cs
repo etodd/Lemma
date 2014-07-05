@@ -782,12 +782,6 @@ namespace Lemma
 					this.Renderer.BlurAmount.Value = 0.0f;
 					this.Renderer.Tint.Value = new Vector3(1.0f);
 				});
-#if DEVELOPMENT
-				IO.MapLoader.Load(this, TemplateMap);
-#else
-				IO.MapLoader.Load(this, MenuMap);
-				//this.Menu.Show();
-#endif
 
 #if ANALYTICS
 				bool editorLastEnabled = this.EditorEnabled;
@@ -801,6 +795,13 @@ namespace Lemma
 					this.SessionRecorder.Reset();
 					editorLastEnabled = this.EditorEnabled;
 				});
+#endif
+
+#if DEVELOPMENT
+				IO.MapLoader.Load(this, TemplateMap);
+#else
+				IO.MapLoader.Load(this, MenuMap);
+				this.Menu.Show();
 #endif
 			}
 			else
