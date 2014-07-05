@@ -149,7 +149,7 @@ namespace Lemma.Components
 
 		private void msg(string id, string text)
 		{
-			if (this.Messages.Count >= 256)
+			if (this.Messages.Length >= 256)
 				this.Messages.RemoveAt(0);
 			this.Messages.Add(new Message { Incoming = true, ID = id, Text = text });
 			this.MessageReceived.Execute();
@@ -175,9 +175,9 @@ namespace Lemma.Components
 
 		public string LastMessageID()
 		{
-			if (this.Messages.Count > 0)
+			if (this.Messages.Length > 0)
 			{
-				Message msg = this.Messages[this.Messages.Count - 1];
+				Message msg = this.Messages[this.Messages.Length - 1];
 				return msg.ID;
 			}
 			return null;

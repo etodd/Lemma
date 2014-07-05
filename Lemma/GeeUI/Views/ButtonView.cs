@@ -15,11 +15,11 @@ namespace GeeUI.Views
 		public View ButtonContentview
 		{
 			get {
-				return Children.Count == 0 ? null : Children[0];
+				return Children.Length == 0 ? null : Children[0];
 			}
 			set
 			{
-				if (this.Children.Count == 0)
+				if (this.Children.Length == 0)
 					this.Children.Add(value);
 				else
 					this.Children[0] = value;

@@ -81,7 +81,7 @@ namespace GeeUI.Views
 					OnMOver();
 				else if (old && !value)
 				{
-					for (int i = 0; i < this.Children.Count; i++)
+					for (int i = 0; i < this.Children.Length; i++)
 						this.Children[i].MouseOver = false;
 					OnMOff();
 				}
@@ -248,7 +248,7 @@ namespace GeeUI.Views
 
 			this.Children.ItemAdded += delegate(int index, View child)
 			{
-				if (this.numChildrenAllowed != -1 && this.Children.Count > this.numChildrenAllowed)
+				if (this.numChildrenAllowed != -1 && this.Children.Length > this.numChildrenAllowed)
 					throw new Exception("GeeUI view exceeded max number of allowed children");
 
 				child.RemoveFromParent();
@@ -398,7 +398,7 @@ namespace GeeUI.Views
 
 		public void BringChildToFront(View view)
 		{
-			if (this.Children[this.Children.Count - 1] != view)
+			if (this.Children[this.Children.Length - 1] != view)
 			{
 				this.Children.Remove(view);
 				this.Children.Add(view);

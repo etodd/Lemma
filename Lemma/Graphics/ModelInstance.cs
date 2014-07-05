@@ -98,7 +98,7 @@ namespace Lemma.Components
 			public void Remove(ModelInstance instance)
 			{
 				this.instances.Remove(instance);
-				if (this.instances.Count > 0)
+				if (this.instances.Length > 0)
 				{
 					foreach (IPropertyBinding parameter in this.parameters.Values)
 						this.ParameterChanged(parameter);
@@ -118,7 +118,7 @@ namespace Lemma.Components
 					foreach (IPropertyBinding binding in this.modifiedParameters)
 						binding.OnChanged(null);
 					this.modifiedParameters.Clear();
-					for (int i = 0; i < this.instances.Count; i++)
+					for (int i = 0; i < this.instances.Length; i++)
 						this.instances.Changed(i, this.instances[i]);
 				}
 				base.drawInstances(parameters, transform);

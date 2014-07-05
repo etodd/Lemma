@@ -936,7 +936,7 @@ namespace Lemma.Components
 				this.Boxes.ItemRemoved += delegate(int index, Box t)
 				{
 					t.Added = false;
-					for (int i = index; i < this.Boxes.Count; i++)
+					for (int i = index; i < this.Boxes.Length; i++)
 						this.Boxes[i].ChunkIndex = i;
 				};
 			}

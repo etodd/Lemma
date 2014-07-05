@@ -135,16 +135,16 @@ namespace GeeUI.Views
 
 		private void ArrowKeysHandle()
 		{
-			if (DropDownListView.Children.Count == 0)
+			if (DropDownListView.Children.Length == 0)
 				_arrowKeysIndex = 0;
 			else
 			{
 				foreach (var child in DropDownListView.Children)
 					child.Selected.Value = false;
-				if (_arrowKeysIndex >= DropDownListView.Children.Count)
+				if (_arrowKeysIndex >= DropDownListView.Children.Length)
 					_arrowKeysIndex = 0;
 				if (_arrowKeysIndex < 0)
-					_arrowKeysIndex = DropDownListView.Children.Count - 1;
+					_arrowKeysIndex = DropDownListView.Children.Length - 1;
 				DropDownListView.Children[_arrowKeysIndex].Selected.Value = true;
 			}
 		}

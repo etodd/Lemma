@@ -226,7 +226,7 @@ namespace GeeUI
 		internal void HandleScroll(View view, Point mousePos, int scrollDelta)
 		{
 			bool didLower = false;
-			for (int i = view.Children.Count - 1; i >= 0; i--)
+			for (int i = view.Children.Length - 1; i >= 0; i--)
 			{
 				View child = view.Children[i];
 				if (child.Active && child.AllowMouseEvents && child.AbsoluteBoundBox.Contains(mousePos))
@@ -247,7 +247,7 @@ namespace GeeUI
 				LastClickCaptured = false;
 
 			bool didLower = false;
-			for (int i = view.Children.Count - 1; i >= 0; i--)
+			for (int i = view.Children.Length - 1; i >= 0; i--)
 			{
 				View child = view.Children[i];
 				if (child.Active && child.AllowMouseEvents && child.AbsoluteBoundBox.Contains(mousePos))
@@ -281,7 +281,7 @@ namespace GeeUI
 		internal void HandleMouseMovement(View view, Point mousePos)
 		{
 			bool didLower = false;
-			for (int i = view.Children.Count - 1; i >= 0; i--)
+			for (int i = view.Children.Length - 1; i >= 0; i--)
 			{
 				View child = view.Children[i];
 				if (!child.Active || !child.AllowMouseEvents || !child.AbsoluteBoundBox.Contains(mousePos))
@@ -318,7 +318,7 @@ namespace GeeUI
 		internal void UpdateView(View toUpdate, float dt)
 		{
 			toUpdate.Update(dt);
-			for (int i = 0; i < toUpdate.Children.Count; i++)
+			for (int i = 0; i < toUpdate.Children.Length; i++)
 			{
 				View updating = toUpdate.Children[i];
 				if (!updating.Active)
@@ -358,7 +358,7 @@ namespace GeeUI
 			parentScissor = CorrectScissor(parentScissor, main.ScreenSize);
 			if (parentScissor.Height > 0 && parentScissor.Width > 0)
 			{
-				for (int i = 0; i < toDrawParent.Children.Count; i++)
+				for (int i = 0; i < toDrawParent.Children.Length; i++)
 				{
 					View drawing = toDrawParent.Children[i];
 					if (!drawing.Active || parentScissor.Height <= 0 || parentScissor.Width <= 0) continue;

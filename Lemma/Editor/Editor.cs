@@ -645,7 +645,7 @@ namespace Lemma.Components
 
 			Action<TransformModes> startTransform = delegate(TransformModes mode)
 			{
-				if (this.SelectedEntities.Count == 0)
+				if (this.SelectedEntities.Length == 0)
 					return;
 
 				this.TransformMode.Value = mode;

@@ -29,7 +29,7 @@ namespace GeeUI.ViewLayouts
         {
             timeStep += step;
             double angle = timeStep % 360;
-            double angleStep = (360/parentView.Children.Count);
+            double angleStep = (360/parentView.Children.Length);
 
             Vector2 center = new Vector2(parentView.ContentBoundBox.Width / 2, parentView.ContentBoundBox.Height / 2);
 

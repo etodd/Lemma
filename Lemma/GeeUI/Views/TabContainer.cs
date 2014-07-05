@@ -22,8 +22,8 @@ namespace GeeUI.Views
 		public int AllTabsWidth
 		{
 			get {
-				if (Children.Count == 0) return 0;
-				View last = Children[Children.Count - 1];
+				if (Children.Length == 0) return 0;
+				View last = Children[Children.Length - 1];
 				return (int)last.Position.Value.X + last.BoundBox.Width;
 			}
 		}

@@ -201,7 +201,7 @@ namespace ComponentBind
 			}
 		}
 
-		public Property<int> Size = new Property<int>();
+		public Property<int> Length = new Property<int>();
 
 		public event ItemAddedEventHandler ItemAdded;
 		public event ItemRemovedEventHandler ItemRemoved;
@@ -294,7 +294,7 @@ namespace ComponentBind
 			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
 				this.bindings[j].Add(t, this);
 
-			this.Size.Value = this.InternalList.Count;
+			this.Length.Value = this.InternalList.Count;
 			if (this.ItemAdded != null)
 				this.ItemAdded(this.InternalList.Count - 1, t);
 		}
@@ -317,7 +317,7 @@ namespace ComponentBind
 			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
 				this.bindings[j].Add(t, this);
 
-			this.Size.Value = this.InternalList.Count;
+			this.Length.Value = this.InternalList.Count;
 			if (this.ItemAdded != null)
 				this.ItemAdded(index, t);
 		}
@@ -326,7 +326,7 @@ namespace ComponentBind
 		{
 			Type t = this.InternalList[index];
 			this.InternalList.RemoveAt(index);
-			this.Size.Value = this.InternalList.Count;
+			this.Length.Value = this.InternalList.Count;
 			if (this.ItemRemoved != null)
 				this.ItemRemoved(index, t);
 
@@ -339,7 +339,7 @@ namespace ComponentBind
 			int index = this.InternalList.IndexOf(t);
 
 			this.InternalList.RemoveAt(index);
-			this.Size.Value = this.InternalList.Count;
+			this.Length.Value = this.InternalList.Count;
 			if (this.ItemRemoved != null)
 				this.ItemRemoved(index, t);
 
@@ -354,7 +354,7 @@ namespace ComponentBind
 			int index = this.InternalList.IndexOf(t);
 
 			this.InternalList.RemoveAt(index);
-			this.Size.Value = this.InternalList.Count;
+			this.Length.Value = this.InternalList.Count;
 
 			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
 				this.bindings[j].Remove(t, this);
@@ -396,7 +396,7 @@ namespace ComponentBind
 				this.Clearing();
 
 			this.InternalList.Clear();
-			this.Size.Value = 0;
+			this.Length.Value = 0;
 
 			if (notify)
 			{

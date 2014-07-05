@@ -1430,7 +1430,7 @@ namespace Lemma.Components
 
 			Func<UIComponent, int, int, int> nextMenuItem = delegate(UIComponent menu, int current, int delta)
 			{
-				int end = menu.Children.Count;
+				int end = menu.Children.Length;
 				int newValue = current + delta;
 				if (newValue < 0)
 					return end - 1;
@@ -1487,7 +1487,7 @@ namespace Lemma.Components
 					}
 
 					Container button;
-					if (selected < menu.Children.Count)
+					if (selected < menu.Children.Length)
 					{
 						button = (Container)menu.Children[selected];
 						button.Highlighted.Value = false;

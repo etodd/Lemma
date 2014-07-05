@@ -31,7 +31,7 @@ namespace Lemma.Components
 		public bool IsPlaying(params string[] clipNames)
 		{
 			if (clipNames.Length == 0)
-				return this.CurrentClips.Count > 0;
+				return this.CurrentClips.Length > 0;
 			foreach (string clipName in clipNames)
 			{
 				SkinnedModel.Clip clip;
@@ -142,7 +142,7 @@ namespace Lemma.Components
 				i++;
 			}
 
-			for (i = 0; i < this.CurrentClips.Count; i++)
+			for (i = 0; i < this.CurrentClips.Length; i++)
 			{
 				SkinnedModel.Clip clip = this.CurrentClips[i];
 				TimeSpan newTime = clip.CurrentTime + new TimeSpan((long)((float)elapsedTime.Ticks * clip.Speed));

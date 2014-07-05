@@ -30,7 +30,7 @@ namespace Lemma.Components
 			public string Description;
 			public PCInput.Chord Chord;
 			public Command Action;
-			public Func<bool> Enabled;
+			public Property<bool> Enabled;
 		}
 
 		private View RootEditorView;
@@ -62,8 +62,6 @@ namespace Lemma.Components
 		public Property<bool> VoxelSelectionActive = new Property<bool>();
 
 		public ListProperty<EditorCommand> EntityCommands = new ListProperty<EditorCommand>();
-
-		public Dictionary<string, PropertyEntry> VoxelProperties = new Dictionary<string, PropertyEntry>();
 
 		public ListProperty<EditorCommand> MapCommands = new ListProperty<EditorCommand>();
 
@@ -113,9 +111,7 @@ namespace Lemma.Components
 
 			TabViews.AddTab("Map", this.MapPanelView);
 			TabViews.AddTab("Entity", this.EntityPanelView);
-			TabViews.HideTab("Entity");
 			TabViews.AddTab("Voxel", this.VoxelPanelView);
-			TabViews.HideTab("Voxel");
 			TabViews.SetActiveTab(TabViews.TabIndex("Map"));
 
 			this.CreateDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero, MainFont);
@@ -134,7 +130,7 @@ namespace Lemma.Components
 				}
 				else if (!this.CreateDropDownView.DropDownShowing)
 				{
-					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Map"));
+					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Entity"));
 					this.CreateDropDownView.ShowDropDown();
 				}
 			};
@@ -293,12 +289,13 @@ namespace Lemma.Components
 			this.SelectedEntities.Cleared += this.refresh;
 
 			this.Add(new Binding<bool>(this.PropertiesView.Active, x => !x, this.VoxelEditMode));
-			this.Add(new NotifyBinding(this.RecomputeVoxelCommands, this.VoxelEditMode, this.TransformMode, this.VoxelSelectionActive));
 
 			this.Add(new ListBinding<View, EditorCommand>(this.EntityPanelView.Children, this.EntityCommands, this.buildCommandButton));
 			this.Add(new ListBinding<View, EditorCommand>(this.MapPanelView.Children, this.MapCommands, this.buildCommandButton));
-			this.MapPanelView.Children.Add(this.CreateDropDownView);
-			this.MapPanelView.Children.Add(this.SelectDropDownView);
+			this.EntityPanelView.Children.Add(this.CreateDropDownView);
+			this.EntityPanelView.Children.Add(this.SelectDropDownView);
+
+			this.Add(new ListBinding<View, EditorCommand>(this.VoxelPanelView.Children, this.VoxelCommands, this.buildCommandButton));
 
 			this.AddEntityCommands.ItemAdded += (index, command) => RecomputeAddCommands();
 			this.AddEntityCommands.ItemChanged += (index, old, value) => RecomputeAddCommands();
@@ -306,6 +303,37 @@ namespace Lemma.Components
 
 			this.Add(new CommandBinding<Entity>(main.EntityAdded, e => RebuildSelectDropDown()));
 			this.Add(new CommandBinding<Entity>(main.EntityRemoved, e => RebuildSelectDropDown()));
+
+			this.Add(new NotifyBinding(delegate()
+			{
+				if (this.VoxelEditMode)
+					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Voxel"));
+			}, this.VoxelEditMode));
+		}
+
+		private DropDownView voxelMaterialDropDown;
+
+		public void SetVoxelProperties(Dictionary<string, PropertyEntry> props)
+		{
+			foreach (KeyValuePair<string, PropertyEntry> prop in props)
+			{
+				View view = this.buildProperty(prop.Key, prop.Value);
+				if (prop.Value.Property is Property<Voxel.t>)
+					this.voxelMaterialDropDown = (DropDownView)view.FindFirstChildByName("Dropdown");
+				this.VoxelPanelView.Children.Add(view);
+			}
+		}
+
+		private View buildProperty(string name, PropertyEntry entry)
+		{
+			bool sameLine;
+			var child = BuildValueView(entry, out sameLine);
+			View containerLabel = BuildContainerLabel(name, sameLine);
+			containerLabel.Children.Add(child);
+			if (entry.Data.Visible != null)
+				containerLabel.Add(new Binding<bool>(containerLabel.Active, entry.Data.Visible));
+			containerLabel.SetToolTipText(entry.Data.Description, MainFont);
+			return containerLabel;
 		}
 
 		private View buildCommandButton(EditorCommand cmd)
@@ -317,6 +345,7 @@ namespace Lemma.Components
 				text = cmd.Description;
 			var button = new ButtonView(main.GeeUI, null, text, Vector2.Zero, MainFont);
 			button.OnMouseClick += (sender, args) => cmd.Action.Execute();
+			button.Add(new Binding<bool>(button.Active, cmd.Enabled));
 			return button;
 		}
 
@@ -517,7 +546,7 @@ namespace Lemma.Components
 			{
 				if (EntityListView.Active && !EntityListView.AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
 				{
-					button.Text = string.Format("Edit [{0}]", property.Count);
+					button.Text = string.Format("Edit [{0}]", property.Length);
 					this.EntityListView.Active.Value = false;
 				}
 			};
@@ -600,51 +629,12 @@ namespace Lemma.Components
 			populateList();
 		}
 
-		private DropDownView voxelMaterialDropDown;
-		private void RecomputeVoxelCommands()
-		{
-			VoxelPanelView.Children.Clear();
-			this.voxelMaterialDropDown = null;
-
-			if (this.SelectedEntities.Count == 1 && this.SelectedEntities[0].Get<Voxel>() != null)
-			{
-				foreach (KeyValuePair<string, PropertyEntry> prop in this.VoxelProperties)
-				{
-					PropertyEntry entry = prop.Value;
-					bool sameLine;
-					var child = BuildValueView(this.SelectedEntities[0], entry, out sameLine);
-					if (entry.Property is Property<Voxel.t>)
-						this.voxelMaterialDropDown = (DropDownView)child.FindFirstChildByName("Dropdown");
-					View containerLabel = BuildContainerLabel(prop.Key, sameLine);
-					containerLabel.Children.Add(child);
-					if (entry.Data.Visible != null)
-						containerLabel.Add(new Binding<bool>(containerLabel.Active, entry.Data.Visible));
-					this.VoxelPanelView.Children.Add(containerLabel);
-
-					containerLabel.SetToolTipText(entry.Data.Description, MainFont);
-				}
-
-				foreach (var cmd in this.VoxelCommands)
-				{
-					if (!cmd.Enabled()) continue;
-					string text = cmd.Description;
-					if (cmd.Chord.Exists)
-						text += " [" + cmd.Chord.ToString() + "]";
-					var button = new ButtonView(main.GeeUI, VoxelPanelView, text, Vector2.Zero, MainFont);
-					EditorCommand down = cmd;
-					button.OnMouseClick += (sender, args) => down.Action.Execute();
-				}
-				if (this.VoxelEditMode)
-					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Voxel"));
-			}
-		}
-
 		private void RecomputeAddCommands()
 		{
 			this.CreateDropDownView.RemoveAllOptions();
 			foreach (var dropDown in AddEntityCommands)
 			{
-				if (!dropDown.Enabled()) continue;
+				if (!dropDown.Enabled) continue;
 				string text = dropDown.Description;
 				if (dropDown.Chord.Exists)
 					text += " [" + dropDown.Chord.ToString() + "]";
@@ -683,7 +673,7 @@ namespace Lemma.Components
 				// ID property
 				{
 					bool sameLine;
-					var child = this.BuildValueView(entity, new PropertyEntry(entity.ID, new PropertyEntry.EditorData()), out sameLine);
+					var child = this.BuildValueView(new PropertyEntry(entity.ID, new PropertyEntry.EditorData()), out sameLine);
 					TextFieldView textField = (TextFieldView)child.FindFirstChildByName("TextField");
 					textField.Validator = delegate(string x)
 					{
@@ -696,18 +686,7 @@ namespace Lemma.Components
 				}
 
 				foreach (KeyValuePair<string, PropertyEntry> prop in entity.Properties)
-				{
-					PropertyEntry entry = prop.Value;
-					bool sameLine;
-					var child = BuildValueView(entity, entry, out sameLine);
-					View containerLabel = BuildContainerLabel(prop.Key, sameLine);
-					containerLabel.Children.Add(child);
-					rootEntityView.Children.Add(containerLabel);
-					if (entry.Data.Visible != null)
-						containerLabel.Add(new Binding<bool>(containerLabel.Active, entry.Data.Visible));
-
-					containerLabel.SetToolTipText(entry.Data.Description, MainFont);
-				}
+					rootEntityView.Children.Add(this.buildProperty(prop.Key, prop.Value));
 
 				foreach (KeyValuePair<string, Command.Entry> cmd in entity.Commands)
 				{
@@ -776,34 +755,25 @@ namespace Lemma.Components
 
 		private void refresh()
 		{
-			TabViews.HideTab("Entity");
-			TabViews.HideTab("Voxel");
 			HideLinkerView();
 
-			if (this.SelectedEntities.Count == 0)
+			if (this.SelectedEntities.Length == 0)
 				this.show(null);
 			else
 			{
-				TabViews.ShowTab("Entity");
-				TabViews.SetActiveTab(TabViews.TabIndex("Entity"));
-				if (this.SelectedEntities.Count == 1)
+				if (this.SelectedEntities.Length == 1)
 				{
-					if (this.SelectedEntities[0].Get<Voxel>() != null)
-					{
-						this.TabViews.ShowTab("Voxel");
-						this.TabViews.SetActiveTab(TabViews.TabIndex("Voxel"));
-					}
 					if (this.VoxelEditMode)
+					{
+						this.TabViews.SetActiveTab(TabViews.TabIndex("Voxel"));
 						this.show(null);
+					}
 					else
 						this.show(this.SelectedEntities);
 				}
 				else
 					this.show(this.SelectedEntities);
 			}
-
-			RecomputeAddCommands();
-			RecomputeVoxelCommands();
 		}
 
 		public void BuildValueFieldView(View parent, Type type, IProperty property, VectorElement element, PropertyEntry entry, int width = 30)
@@ -996,7 +966,7 @@ namespace Lemma.Components
 			}
 		}
 
-		public View BuildValueView(Entity entity, PropertyEntry entry, out bool shouldSameLine)
+		public View BuildValueView(PropertyEntry entry, out bool shouldSameLine)
 		{
 			IProperty property = entry.Property;
 			shouldSameLine = false;
@@ -1020,7 +990,7 @@ namespace Lemma.Components
 				if (property.GetType().GetGenericArguments().First().Equals(typeof(Entity.Handle)))
 				{
 					ListProperty<Entity.Handle> socket = (ListProperty<Entity.Handle>)property;
-					var edit = new ButtonView(main.GeeUI, ret, string.Format("Edit [{0}]", socket.Count), Vector2.Zero, MainFont);
+					var edit = new ButtonView(main.GeeUI, ret, string.Format("Edit [{0}]", socket.Length), Vector2.Zero, MainFont);
 					edit.OnMouseClick += (sender, args) =>
 					{
 						ShowEntityListView(edit, entry);
@@ -1088,7 +1058,7 @@ namespace Lemma.Components
 					});
 					foreach (Entity e in main.Entities)
 					{
-						if (e != entity && e != this.Entity)
+						if (e != this.Entity)
 						{
 							entityDropDown.AddOption(this.entityString(e), delegate()
 							{

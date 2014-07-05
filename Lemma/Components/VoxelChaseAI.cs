@@ -471,7 +471,7 @@ namespace Lemma.Factories
 
 						this.History.Add(this.Coord);
 
-						while (this.History.Count > historySize)
+						while (this.History.Length > historySize)
 							this.History.RemoveAt(0);
 					}
 				}

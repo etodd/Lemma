@@ -22,7 +22,7 @@ namespace GeeUI.Views
 		public override void OrderChildren()
 		{
 			base.OrderChildren();
-			if (Children.Count == 0)
+			if (Children.Length == 0)
 				this.ChildrenBoundBox.Value = new Rectangle(RealX, RealY, 0, 0);
 			Point max = new Point(int.MinValue, int.MinValue);
 			Point min = new Point(int.MaxValue, int.MaxValue);

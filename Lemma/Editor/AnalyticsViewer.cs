@@ -98,11 +98,10 @@ namespace Lemma.Factories
 			timeline.ResizeVertical.Value = false;
 			timelines.Children.Add(timeline);
 
-			gui.MapCommands.Add(new EditorGeeUI.EditorCommand
-			{
-				Description = "Load analytics data",
-				Enabled = () => !analyticsEnable,
-				Action = new Command
+			EditorFactory.AddCommand
+			(
+				entity, main, "Load analytics data", new PCInput.Chord(),
+				new Command
 				{
 					Action = delegate()
 					{
@@ -136,7 +135,10 @@ namespace Lemma.Factories
 						}
 					}
 				},
-			});
+				gui.MapCommands,
+				() => !analyticsEnable,
+				analyticsEnable
+			);
 
 			ListContainer sessionsSidebar = new ListContainer();
 			sessionsSidebar.AnchorPoint.Value = new Vector2(1, 1);
@@ -621,7 +623,7 @@ namespace Lemma.Factories
 
 			playbackLocation.Set = delegate(float value)
 			{
-				if (analyticsActiveSessions.Count == 0)
+				if (analyticsActiveSessions.Length == 0)
 					return;
 
 				value = Math.Max(0.0f, value);
@@ -695,21 +697,30 @@ namespace Lemma.Factories
 				playbackLocation.Value = 0.0f;
 			}, main.MapFile));
 
-			EditorFactory.AddCommand(entity, main, "Toggle analytics playback", new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.A }, () => analyticsEnable && !editor.MovementEnabled && analyticsActiveSessions.Count > 0, new Command
-			{
-				Action = delegate()
+			EditorFactory.AddCommand
+			(
+				entity, main, "Toggle analytics playback", new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.A },  new Command
 				{
-					analyticsPlaying.Value = !analyticsPlaying;
-				}
-			}, gui.MapCommands);
+					Action = delegate()
+					{
+						analyticsPlaying.Value = !analyticsPlaying;
+					}
+				},
+				gui.MapCommands,
+				() => analyticsEnable && !editor.MovementEnabled && analyticsActiveSessions.Length > 0,
+				analyticsEnable, editor.MovementEnabled, analyticsActiveSessions.Length
+			);
 
-			EditorFactory.AddCommand(entity, main, "Stop analytics playback", new PCInput.Chord { Key = Keys.Escape }, () => analyticsPlaying, new Command
-			{
-				Action = delegate()
+			EditorFactory.AddCommand
+			(
+				entity, main, "Stop analytics playback", new PCInput.Chord { Key = Keys.Escape }, new Command
 				{
-					analyticsPlaying.Value = false;
-				}
-			}, gui.MapCommands);
+					Action = delegate()
+					{
+						analyticsPlaying.Value = false;
+					}
+				}, gui.MapCommands, () => analyticsPlaying, analyticsPlaying
+			);
 
 			Container playbackContainer = new Container();
 			playbackContainer.Tint.Value = Microsoft.Xna.Framework.Color.Black;
@@ -803,7 +814,7 @@ namespace Lemma.Factories
 
 					if (analyticsPlaying && !setTimelinePosition)
 					{
-						if (analyticsActiveSessions.Count == 0)
+						if (analyticsActiveSessions.Length == 0)
 							analyticsPlaying.Value = false;
 						else
 							playbackLocation.Value += dt * playbackSpeed;

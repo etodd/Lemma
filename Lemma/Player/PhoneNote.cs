@@ -304,7 +304,7 @@ namespace Lemma.Components
 					phoneTutorialMessage = null;
 				}
 
-				if (show || (phone.Schedules.Count == 0 && !phone.WaitForAnswer))
+				if (show || (phone.Schedules.Length == 0 && !phone.WaitForAnswer))
 				{
 					phoneActive.Value = show;
 					input.EnableLook.Value = input.EnableMouse.Value = !phoneActive;
@@ -385,9 +385,9 @@ namespace Lemma.Components
 					answerList.Children[selectedAnswer].Highlighted.Value = false;
 					selectedAnswer += delta;
 					while (selectedAnswer < 0)
-						selectedAnswer += answerList.Children.Count;
-					while (selectedAnswer > answerList.Children.Count - 1)
-						selectedAnswer -= answerList.Children.Count;
+						selectedAnswer += answerList.Children.Length;
+					while (selectedAnswer > answerList.Children.Length - 1)
+						selectedAnswer -= answerList.Children.Length;
 					answerList.Children[selectedAnswer].Highlighted.Value = true;
 				}
 				else
@@ -441,7 +441,7 @@ namespace Lemma.Components
 							s.Get<SignalTower>().Initial.Value = null;
 
 						scrollToBottom();
-						if (togglePhoneMessage == null && phone.Schedules.Count == 0) // No more messages incoming
+						if (togglePhoneMessage == null && phone.Schedules.Length == 0) // No more messages incoming
 							togglePhoneMessage = main.Menu.ShowMessage(entity, "[{{TogglePhone}}]");
 					}));
 					return button;
@@ -450,7 +450,7 @@ namespace Lemma.Components
 
 			Action refreshComposeButtonVisibility = delegate()
 			{
-				bool show = phone.ActiveAnswers.Count > 0 && phone.Schedules.Count == 0;
+				bool show = phone.ActiveAnswers.Length > 0 && phone.Schedules.Length == 0;
 				answerContainer.Visible.Value &= show;
 				composeButton.Visible.Value = show;
 				selectedAnswer = 0;
@@ -467,7 +467,7 @@ namespace Lemma.Components
 					showPhone(true);
 				
 				// Animate the new message
-				Container lastMessage = (Container)msgList.Children[msgList.Children.Count - 1].Children[0];
+				Container lastMessage = (Container)msgList.Children[msgList.Children.Length - 1].Children[0];
 				lastMessage.CheckLayout();
 				Vector2 originalSize = lastMessage.Size;
 				lastMessage.Size.Value = new Vector2(0, originalSize.Y);
@@ -477,7 +477,7 @@ namespace Lemma.Components
 				));
 
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PHONE_VIBRATE, entity);
-				if (togglePhoneMessage == null && phone.Schedules.Count == 0 && phone.ActiveAnswers.Count == 0) // No more messages incoming, and no more answers to give
+				if (togglePhoneMessage == null && phone.Schedules.Length == 0 && phone.ActiveAnswers.Length == 0) // No more messages incoming, and no more answers to give
 					togglePhoneMessage = main.Menu.ShowMessage(entity, "[{{TogglePhone}}]");
 			}));
 

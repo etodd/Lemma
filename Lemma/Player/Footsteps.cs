@@ -95,7 +95,7 @@ namespace Lemma.Components
 									Rotation = this.Rotation,
 									OriginalPosition = map.GetAbsolutePosition(coord),
 								});
-								while (this.RespawnLocations.Count > Spawner.RespawnMemoryLength)
+								while (this.RespawnLocations.Length > Spawner.RespawnMemoryLength)
 									this.RespawnLocations.RemoveAt(0);
 								this.walkedOnCount = 0;
 							}

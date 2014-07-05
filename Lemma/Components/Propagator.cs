@@ -248,7 +248,7 @@ namespace Lemma.Components
 			}
 
 			List<Voxel> toRegenerate = new List<Voxel>();
-			for (int i = 0; i < this.BlockQueue.Count; i++)
+			for (int i = 0; i < this.BlockQueue.Length; i++)
 			{
 				ScheduledBlock entry = this.BlockQueue[i];
 				entry.Time -= dt;

@@ -258,7 +258,7 @@ namespace Lemma
 			this.MapContent = new ContentManager(this.Services);
 			this.MapContent.RootDirectory = this.Content.RootDirectory;
 
-			while (this.Entities.Count > (deleteEditor ? 0 : 1))
+			while (this.Entities.Length > (deleteEditor ? 0 : 1))
 			{
 				foreach (Entity entity in this.Entities.ToList())
 				{

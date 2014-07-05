@@ -45,7 +45,7 @@ namespace Lemma.Components
 						if (n.type == DialogueForest.Node.Type.Choice)
 							throw new Exception("Cannot start dialogue tree with a choice");
 						phone.Execute(forest, n);
-						if (phone.Schedules.Count == 0)
+						if (phone.Schedules.Length == 0)
 						{
 							// If there are choices available, they will initiate a conversation.
 							// The player should be able to pull up the phone, see the choices, and walk away without picking any of them.
@@ -54,7 +54,7 @@ namespace Lemma.Components
 						}
 					}
 
-					if (phone.Schedules.Count > 0) // We sent a message. That means this signal tower cannot execute again.
+					if (phone.Schedules.Length > 0) // We sent a message. That means this signal tower cannot execute again.
 						this.Initial.Value = null;
 					
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SIGNAL_TOWER_ACTIVATE, this.Entity);

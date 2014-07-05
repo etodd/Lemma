@@ -389,7 +389,7 @@ namespace ComponentBind
 			{
 				Type y = this.transform(x);
 				this.destination.Add(y);
-				this.mapping.Add((Type2)x, new Entry { Index = this.destination.Count - 1 });
+				this.mapping.Add((Type2)x, new Entry { Index = this.destination.Length - 1 });
 			}
 		}
 
@@ -436,7 +436,7 @@ namespace ComponentBind
 				{
 					Type newValue = this.transform((Type2)to);
 					this.destination.Add(newValue);
-					this.mapping.Add((Type2)to, new Entry { Index = this.destination.Count - 1 });
+					this.mapping.Add((Type2)to, new Entry { Index = this.destination.Length - 1 });
 				}
 				else if (originallyIncluded && !nowIncluded)
 				{
