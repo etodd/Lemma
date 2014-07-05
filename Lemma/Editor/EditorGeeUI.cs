@@ -415,40 +415,26 @@ namespace Lemma.Components
 			destEntityDrop.RemoveAllOptions();
 			destCommDrop.RemoveAllOptions();
 
-			#region Actions
-			Action fillDestEntity = () =>
-			{
-				foreach (var ent in main.Entities)
-				{
-					if (ent != this.Entity)
-						destEntityDrop.AddOption(this.entityString(ent), () => { }, null, ent);
-				}
-			};
-
-			Action<Entity> fillDestCommand = (ent) =>
-			{
-				if (ent == null) return;
-				foreach (var comm in ent.Commands)
-				{
-					var c = (Command.Entry)comm.Value;
-					if (c.Permissions == Command.Perms.Linkable || c.Permissions == Command.Perms.LinkableAndExecutable)
-						destCommDrop.AddOption(comm.Key.ToString(), () => { }, null, c);
-				}
-			};
-
 			Action<bool, bool> recompute = (destEntityChanged, destCommChanged) =>
 			{
 				if (destEntityChanged)
 				{
 					destCommDrop.RemoveAllOptions();
 					var selected = destEntityDrop.GetSelectedOption();
-					if (selected == null) return;
-					fillDestCommand(selected.Related as Entity);
+					if (selected != null)
+					{
+						Entity destEntity = selected.Related as Entity;
+						foreach (var comm in destEntity.Commands)
+						{
+							var c = (Command.Entry)comm.Value;
+							if (c.Permissions == Command.Perms.Linkable || c.Permissions == Command.Perms.LinkableAndExecutable)
+								destCommDrop.AddOption(comm.Key.ToString(), () => { }, null, c);
+						}
+					}
 				}
 
-				destEntityDrop.Active.Value = true;
-				destCommDrop.Active.Value = destEntityDrop.LastItemSelected.Value != -1 && destEntityDrop.Active;
-				addButton.Active.Value = destCommDrop.Active && destCommDrop.LastItemSelected.Value != -1;
+				destCommDrop.Active.Value = destEntityDrop.LastItemSelected.Value != -1;
+				addButton.Active.Value = destEntityDrop.LastItemSelected.Value != -1 && destCommDrop.LastItemSelected.Value != -1;
 			};
 
 			Action populateList = null;
@@ -510,14 +496,18 @@ namespace Lemma.Components
 				addButton.Active.Value = false;
 				this.NeedsSave.Value = true;
 			};
-			#endregion
 
 			destEntityDrop.Add(new NotifyBinding(() => recompute(true, false), destEntityDrop.LastItemSelected));
 			destCommDrop.Add(new NotifyBinding(() => recompute(false, true), destCommDrop.LastItemSelected));
 
 			addButton.OnMouseClick += (sender, args) => addItem();
 
-			fillDestEntity();
+			foreach (var ent in main.Entities)
+			{
+				if (ent != this.Entity)
+					destEntityDrop.AddOption(this.entityString(ent), () => { }, null, ent);
+			}
+
 			populateList();
 
 		}

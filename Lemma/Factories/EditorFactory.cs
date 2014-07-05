@@ -85,33 +85,29 @@ namespace Lemma.Factories
 			else
 				input.Add(new CommandBinding(input.GetKeyDown(chord.Key), enabled, action));
 
-			Func<bool> editorCommandsEnabled = entity.Get<Editor>().EnableCommands;
-			entity.Add(new CommandBinding(action, delegate()
+			entity.Add(new CommandBinding(action, entity.Get<Editor>().EnableCommands, delegate()
 			{
-				if (editorCommandsEnabled())
-				{
-					Container container = new Container();
-					container.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-					container.Opacity.Value = 0.2f;
-					container.AnchorPoint.Value = new Vector2(1.0f, 0.0f);
-					container.Add(new Binding<Vector2, Point>(container.Position, x => new Vector2(x.X - 10.0f, 10.0f), main.ScreenSize));
-					TextElement display = new TextElement();
-					display.FontFile.Value = "Font";
-					display.Text.Value = description;
-					container.Children.Add(display);
+				Container container = new Container();
+				container.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+				container.Opacity.Value = 0.2f;
+				container.AnchorPoint.Value = new Vector2(1.0f, 0.0f);
+				container.Add(new Binding<Vector2, Point>(container.Position, x => new Vector2(x.X - 10.0f, 10.0f), main.ScreenSize));
+				TextElement display = new TextElement();
+				display.FontFile.Value = "Font";
+				display.Text.Value = description;
+				container.Children.Add(display);
 
-					UIRenderer uiRenderer = entity.Get<UIRenderer>();
-					uiRenderer.Root.Children.Add(container);
-					main.AddComponent(new Animation
+				UIRenderer uiRenderer = entity.Get<UIRenderer>();
+				uiRenderer.Root.Children.Add(container);
+				main.AddComponent(new Animation
+				(
+					new Animation.Parallel
 					(
-						new Animation.Parallel
-						(
-							new Animation.FloatMoveTo(container.Opacity, 0.0f, 1.0f),
-							new Animation.FloatMoveTo(display.Opacity, 0.0f, 1.0f)
-						),
-						new Animation.Execute(delegate() { uiRenderer.Root.Children.Remove(container); })
-					));
-				}
+						new Animation.FloatMoveTo(container.Opacity, 0.0f, 1.0f),
+						new Animation.FloatMoveTo(display.Opacity, 0.0f, 1.0f)
+					),
+					new Animation.Execute(delegate() { uiRenderer.Root.Children.Remove(container); })
+				));
 			}));
 		}
 
