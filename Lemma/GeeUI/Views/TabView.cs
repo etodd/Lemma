@@ -27,16 +27,14 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				return Children.Count == 0 ? null : (TextView)Children[0];
+				return Children.Length == 0 ? null : (TextView)Children[0];
 			}
 			set
 			{
-				if (Children.Count == 0)
-				{
-					AddChild(value);
-					return;
-				}
-				Children[0] = value;
+				if (this.Children.Length == 0)
+					this.Children.Add(value);
+				else
+					this.Children[0] = value;
 			}
 		}
 
@@ -61,7 +59,7 @@ namespace GeeUI.Views
 		{
 			Position.Value = position;
 			TabFont = font;
-			NumChildrenAllowed.Value = 1;
+			this.numChildrenAllowed = 1;
 
 			NinePatchDefault = GeeUIMain.NinePatchTabDefault;
 			NinePatchSelected = GeeUIMain.NinePatchTabSelected;
@@ -69,25 +67,12 @@ namespace GeeUI.Views
 			new TextView(GeeUI, this, "", Vector2.Zero, font) {  };
 		}
 
-		public override void OnMClick(Vector2 position, bool fromChild = false)
+		public override void OnMClick(Vector2 position, bool fromChild)
 		{
 			var p = (TabContainer)ParentView;
 			p.TabClicked(this);
 
-			base.OnMClick(position);
-		}
-		public override void OnMClickAway(bool fromChild = false)
-		{
-			base.OnMClickAway();
-		}
-
-		public override void OnMOver(bool fromChild = false)
-		{
-			base.OnMOver();
-		}
-		public override void OnMOff(bool fromChild = false)
-		{
-			base.OnMOff();
+			base.OnMClick(position, fromChild);
 		}
 
 		public override void Update(float dt)

@@ -157,7 +157,7 @@ namespace Lemma.Factories
 					}
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SNAKE_MOVE, entity);
 
-					if (snake.Path.Count > 0)
+					if (snake.Path.Length > 0)
 					{
 						chase.Coord.Value = snake.Path[0];
 						snake.Path.RemoveAt(0);

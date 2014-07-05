@@ -171,7 +171,6 @@ namespace GeeUI.Views
 
 			Position.Value = position;
 			TextInputFont = textFont;
-			NumChildrenAllowed.Value = -1;
 
 			GeeUI.OnKeyPressedHandler += keyPressedHandler;
 			GeeUI.OnKeyReleasedHandler += keyReleasedHandler;
@@ -621,7 +620,7 @@ namespace GeeUI.Views
 			}
 		}
 
-		public override void OnMClick(Vector2 mousePosition, bool fromChild = false)
+		public override void OnMClick(Vector2 mousePosition, bool fromChild)
 		{
 			Selected.Value = true;
 
@@ -631,10 +630,10 @@ namespace GeeUI.Views
 
 			_selectionStart = clickPos;
 
-			base.OnMClick(mousePosition);
+			base.OnMClick(mousePosition, fromChild);
 		}
 
-		public override void OnMClickAway(bool fromChild = false)
+		public override void OnMClickAway()
 		{
 			bool oldSelected = Selected.Value;
 			Selected.Value = false;
@@ -642,23 +641,6 @@ namespace GeeUI.Views
 			if (OnTextSubmitted != null && oldSelected && !Selected.Value && SubmitOnClickAway && this.Validate())
 				OnTextSubmitted();
 			base.OnMClickAway();
-		}
-
-		public override void OnMOver(bool fromChild = false)
-		{
-			if (Selected && InputManager.IsMousePressed(MouseButton.Left))
-			{
-				var clickPos = GetMouseTextPos(InputManager.GetMousePosV());
-				_selectionEnd = clickPos;
-				_cursorX = (int)clickPos.X;
-				_cursorY = (int)clickPos.Y;
-			}
-			base.OnMOver();
-		}
-
-		public override void OnMOff(bool fromChild = false)
-		{
-			base.OnMOff();
 		}
 
 		private Vector2 GetDrawPosForCursorPos(int cursorX, int cursorY)
@@ -698,24 +680,31 @@ namespace GeeUI.Views
 
 		public override void Update(float dt)
 		{
-
 			Vector2 pos = InputManager.GetMousePosV();
-			if (Selected && InputManager.IsMousePressed(MouseButton.Left) && !AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
+			if (Selected && InputManager.IsMousePressed(MouseButton.Left))
 			{
-				_dragOffTimer += dt;
-				if (_dragOffTimer >= _dragOffInterval)
+				if (!AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
 				{
-					_dragOffTimer -= _dragOffInterval;
-					if (pos.X > AbsoluteBoundBox.Right)
+					_dragOffTimer += dt;
+					if (_dragOffTimer >= _dragOffInterval)
 					{
-						MoveOffsetX(1, true);
+						_dragOffTimer -= _dragOffInterval;
+						if (pos.X > AbsoluteBoundBox.Right)
+						{
+							MoveOffsetX(1, true);
+						}
+						else if (pos.X < AbsoluteBoundBox.Left)
+						{
+							MoveOffsetX(-1, true);
+						}
 					}
-					else if (pos.X < AbsoluteBoundBox.Left)
-					{
-						MoveOffsetX(-1, true);
-					}
+					
 				}
-				
+
+				var clickPos = GetMouseTextPos(InputManager.GetMousePosV());
+				_selectionEnd = clickPos;
+				_cursorX = (int)clickPos.X;
+				_cursorY = (int)clickPos.Y;
 			}
 
 			if (InputManager.IsKeyPressed(_buttonHeld))

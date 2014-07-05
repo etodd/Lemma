@@ -12,7 +12,7 @@ namespace Lemma.Components
 	{
 		// Information about the currently playing animation clips.
 		[XmlIgnore]
-		public ListProperty<SkinnedModel.Clip> CurrentClips = new ListProperty<SkinnedModel.Clip>();
+		private List<SkinnedModel.Clip> CurrentClips = new List<SkinnedModel.Clip>();
 
 		// Animation blending data
 
@@ -72,8 +72,7 @@ namespace Lemma.Components
 			if (!this.CurrentClips.Contains(clip))
 				this.CurrentClips.Add(clip);
 
-			this.CurrentClips.InternalList.Sort(new Util.LambdaComparer<SkinnedModel.Clip>((x, y) => x.Priority - y.Priority));
-			this.CurrentClips.Changed();
+			this.CurrentClips.Sort(new Util.LambdaComparer<SkinnedModel.Clip>((x, y) => x.Priority - y.Priority));
 		}
 
 		public void Stop(params string[] clips)

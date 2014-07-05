@@ -80,23 +80,6 @@ namespace GeeUI.Views
 			return cur + (cur.Length != input.Length ? ellipsis : "");
 		}
 
-		public override void OnMClick(Vector2 position, bool fromChild = false)
-		{
-			base.OnMClick(position);
-		}
-		public override void OnMClickAway(bool fromChild = false)
-		{
-		}
-
-		public override void OnMOver(bool fromChild = false)
-		{
-			base.OnMOver();
-		}
-		public override void OnMOff(bool fromChild = false)
-		{
-			base.OnMOff();
-		}
-
 		public override void Draw(SpriteBatch spriteBatch)
 		{
 			spriteBatch.DrawString(Font, Text, AbsolutePosition, TextColor * EffectiveOpacity, 0f, TextOrigin, TextScale.Value, SpriteEffects.None, 0f);

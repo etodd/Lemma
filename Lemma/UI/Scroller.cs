@@ -36,7 +36,7 @@ namespace Lemma.Components
 			base.Awake();
 			new CommandBinding<int>(this.MouseScrolled, delegate(int delta)
 			{
-				if (this.Children.Count == 1 && this.EnableScroll)
+				if (this.Children.Length == 1 && this.EnableScroll)
 				{
 					UIComponent child = this.Children.First();
 					bool horizontalScroll = this.main.KeyboardState.Value.IsKeyDown(Keys.LeftShift);
@@ -68,7 +68,7 @@ namespace Lemma.Components
 		{
 			if (this.binding == null)
 			{
-				if (this.Children.Count == 1)
+				if (this.Children.Length == 1)
 				{
 					UIComponent child = this.Children.First();
 					this.binding = new NotifyBinding(delegate() { this.layoutDirty = true; }, this.Size, child.ScaledSize);
@@ -76,7 +76,7 @@ namespace Lemma.Components
 				}
 			}
 
-			if (this.Children.Count == 1)
+			if (this.Children.Length == 1)
 			{
 				UIComponent child = this.Children.First();
 				Vector2 newPosition = child.Position;
@@ -106,7 +106,7 @@ namespace Lemma.Components
 
 		public void ScrollToBottom()
 		{
-			if (this.Children.Count == 1)
+			if (this.Children.Length == 1)
 			{
 				UIComponent child = this.Children.First();
 
@@ -118,7 +118,7 @@ namespace Lemma.Components
 
 		public void ScrollTo(UIComponent target)
 		{
-			if (this.Children.Count == 1)
+			if (this.Children.Length == 1)
 			{
 				UIComponent child = this.Children.First();
 
@@ -138,7 +138,7 @@ namespace Lemma.Components
 
 		public void ScrollToTop()
 		{
-			if (this.Children.Count == 1)
+			if (this.Children.Length == 1)
 			{
 				UIComponent child = this.Children.First();
 

@@ -160,9 +160,9 @@ namespace Lemma.Components
 							{
 								ListProperty<RespawnLocation> respawnLocations = playerData.Get<PlayerData>().RespawnLocations;
 								int supportedLocations = 0;
-								while (respawnLocations.Count > 0)
+								while (respawnLocations.Length > 0)
 								{
-									RespawnLocation respawnLocation = respawnLocations[respawnLocations.Count - 1];
+									RespawnLocation respawnLocation = respawnLocations[respawnLocations.Length - 1];
 									Entity respawnMapEntity = respawnLocation.Map.Target;
 									if (respawnMapEntity != null && respawnMapEntity.Active)
 									{
@@ -194,7 +194,7 @@ namespace Lemma.Components
 											break;
 									}
 
-									respawnLocations.RemoveAt(respawnLocations.Count - 1);
+									respawnLocations.RemoveAt(respawnLocations.Length - 1);
 								}
 							}
 						}

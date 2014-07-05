@@ -258,7 +258,7 @@ namespace Lemma
 			this.MapContent = new ContentManager(this.Services);
 			this.MapContent.RootDirectory = this.Content.RootDirectory;
 
-			while (this.Entities.Count > (deleteEditor ? 0 : 1))
+			while (this.Entities.Length > (deleteEditor ? 0 : 1))
 			{
 				foreach (Entity entity in this.Entities.ToList())
 				{
@@ -326,7 +326,7 @@ namespace Lemma
 			this.Content = new ContentManager(this.Services);
 			this.Content.RootDirectory = "Content";
 
-			this.Entities = new List<Entity>();
+			this.Entities = new ListProperty<Entity>();
 
 			this.Camera = new Camera();
 			this.AddComponent(this.Camera);
@@ -781,7 +781,6 @@ namespace Lemma
 				{
 					this.Renderer.BlurAmount.Value = 0.0f;
 					this.Renderer.Tint.Value = new Vector3(1.0f);
-					this.GeeUI.LastClickCaptured = false;
 				});
 #if DEVELOPMENT
 				IO.MapLoader.Load(this, TemplateMap);

@@ -71,7 +71,6 @@ namespace Lemma.GInterfaces
 			RootTimeEndView.Add(new Binding<Vector2, Point>(RootTimeEndView.Position, point => new Vector2(point.X / 2f, point.Y / 2f), main.ScreenSize));
 			RootTimeEndView.Width.Value = 400;
 			RootTimeEndView.Height.Value = 300;
-			RootTimePanelView.Draggable = RootTimeEndView.Draggable = false;
 
 			RootTimePanelView.UnselectedNinepatch = RootTimePanelView.SelectedNinepatch = GeeUIMain.NinePatchBtnDefault;
 
@@ -118,11 +117,11 @@ namespace Lemma.GInterfaces
 					new Animation.Execute(() =>
 					{
 						if (!remove) return;
-						if (RootTimePanelView != null && RootTimePanelView.ParentView.Value != null)
-							RootTimePanelView.ParentView.Value.RemoveChild(RootTimePanelView);
+						if (RootTimePanelView != null)
+							RootTimePanelView.RemoveFromParent();
 
-						if (RootTimeEndView != null && RootTimeEndView.ParentView.Value != null)
-							RootTimeEndView.ParentView.Value.RemoveChild(RootTimeEndView);
+						if (RootTimeEndView != null)
+							RootTimeEndView.RemoveFromParent();
 					})
 				)
 			);

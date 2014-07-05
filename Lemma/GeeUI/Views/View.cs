@@ -43,6 +43,10 @@ namespace GeeUI.Views
 
 		public Property<bool> EnforceRootAttachment = new Property<bool>() { Value = true };
 
+		public bool TemporarilyIgnoreMouseClickAway;
+
+		protected int numChildrenAllowed = -1;
+
 		public ToolTip ToolTipView;
 		private Property<string> _toolTipText = new Property<string>();
 		private SpriteFont _toolTipFont;
@@ -61,8 +65,6 @@ namespace GeeUI.Views
 			}
 		}
 
-		public Property<int> NumChildrenAllowed = new Property<int>() { Value = -1 };
-
 		public string Name;
 
 		protected bool _mouseOver;
@@ -75,11 +77,18 @@ namespace GeeUI.Views
 			}
 			set
 			{
+				bool old = _mouseOver;
 				_mouseOver = value;
-				if (value)
+				if (!old && value)
 					OnMOver();
-				else
+				else if (old && !value)
 					OnMOff();
+
+				if (!value)
+				{
+					for (int i = 0; i < this.Children.Length; i++)
+						this.Children[i].MouseOver = false;
+				}
 			}
 		}
 
@@ -225,7 +234,13 @@ namespace GeeUI.Views
 			this.ParentView.Set = delegate(View v)
 			{
 				this.ParentView.InternalValue = v;
-				this.Attached.Value = v == null ? false : v.Attached;
+				if (v == null)
+				{
+					this.Attached.Value = false;
+					this.ParentGeeUI.PotentiallyDetached(this);
+				}
+				else
+					this.Attached.Value = v.Attached;
 			};
 
 			this.Add(new NotifyBinding(delegate()
@@ -234,47 +249,49 @@ namespace GeeUI.Views
 				if (parent != null)
 					parent.dirty = true;
 			}, this.Position, this.Active, this.Width, this.Height));
+
+			this.Children.ItemAdded += delegate(int index, View child)
+			{
+				if (this.numChildrenAllowed != -1 && this.Children.Length > this.numChildrenAllowed)
+					throw new Exception("GeeUI view exceeded max number of allowed children");
+
+				child.RemoveFromParent();
+				child.ParentView.Value = this;
+				child.ParentGeeUI = ParentGeeUI;
+				this.dirty = true;
+			};
+
+			this.Children.ItemRemoved += delegate(int index, View child)
+			{
+				child.ParentView.Value = null;
+				this.dirty = true;
+			};
+
+			this.Children.Clearing += delegate()
+			{
+				foreach (var child in this.Children)
+					child.ParentView.Value = null;
+				this.dirty = true;
+			};
+
+			this.Children.ItemChanged += delegate(int index, View old, View newValue)
+			{
+				old.ParentView.Value = null;
+				newValue.ParentView.Value = this;
+				this.dirty = true;
+			};
 		}
 
-		public View(GeeUIMain theGeeUI, View parentView)
-			: this(theGeeUI)
+		public View(GeeUIMain geeUi, View parent)
+			: this(geeUi)
 		{
-			if (parentView != null)
-				parentView.AddChild(this);
+			if (parent != null)
+				parent.Children.Add(this);
 		}
 
 		#region Child management
 
-		public virtual void AddChild(View child)
-		{
-			if (child == null) return;
-			if (Children.Count + 1 > NumChildrenAllowed && NumChildrenAllowed != -1)
-				throw new Exception("You have attempted to add too many child Views to this View.");
-			//Ensure that a child can only belong to one View ever.
-			if (child.ParentView.Value != null)
-				child.ParentView.Value.RemoveChild(child);
-			child.ParentView.Value = this;
-			child.ParentGeeUI = ParentGeeUI;
-			Children.Add(child);
-			this.dirty = true;
-		}
-
-		public void RemoveAllChildren()
-		{
-			foreach (var child in Children)
-				child.ParentView.Value = null;
-			Children.Clear();
-			this.dirty = true;
-		}
-
-		public void RemoveChild(View child)
-		{
-			Children.Remove(child);
-			child.ParentView.Value = null;
-			this.dirty = true;
-		}
-
-		public void OrderChildren()
+		public virtual void OrderChildren()
 		{
 			foreach (var layout in ChildrenLayouts)
 				layout.OrderChildren(this);
@@ -322,8 +339,7 @@ namespace GeeUI.Views
 			_toolTipTimer = 0f;
 			if (this.ToolTipView != null)
 			{
-				this.ToolTipView.ParentView.Value.RemoveChild(ToolTipView);
-				this.ToolTipView.OnDelete();
+				this.ToolTipView.RemoveFromParent();
 				this.ToolTipView = null;
 			}
 		}
@@ -377,30 +393,29 @@ namespace GeeUI.Views
 
 		#endregion
 
-		#region Parent management
-
-		public void SetParent(View parent)
+		public void BringToFront()
 		{
-			if (ParentView.Value != null)
-				ParentView.Value.RemoveChild(this);
-			parent.AddChild(this);
+			View p = this.ParentView;
+			if (p != null)
+				p.BringChildToFront(this);
 		}
 
-		#endregion
-
-		#region Child depth ordering
-
-		public virtual void BringChildToFront(View view)
+		public void BringChildToFront(View view)
 		{
-			if (Children[Children.Count - 1] != view)
+			if (this.Children[this.Children.Length - 1] != view)
 			{
-				Children.Remove(view);
-				Children.Add(view);
+				this.Children.Remove(view);
+				this.Children.Add(view);
 				this.dirty = true;
 			}
 		}
 
-		#endregion
+		public void RemoveFromParent()
+		{
+			View p = this.ParentView;
+			if (p != null)
+				p.Children.Remove(this);
+		}
 
 		public void ResetOnMouseClick()
 		{
@@ -422,53 +437,58 @@ namespace GeeUI.Views
 			this.delete();
 		}
 
-		public virtual void OnMScroll(Vector2 position, int scrollDelta, bool fromChild = false)
+		public virtual void OnMScroll(Vector2 position, int scrollDelta, bool fromChild)
 		{
 			if (ParentView.Value != null) ParentView.Value.OnMScroll(position, scrollDelta, true);
 			if (OnMouseScroll != null)
 				OnMouseScroll(scrollDelta);
 		}
 
-		public virtual void OnMRightClick(Vector2 position, bool fromChild = false)
+		public virtual void OnMRightClick(Vector2 position, bool fromChild)
 		{
 			if (OnMouseRightClick != null)
 				OnMouseRightClick(this, new EventArgs());
 			if (ParentView.Value != null) ParentView.Value.OnMRightClick(position, true);
 		}
 
-		public virtual void OnMClick(Vector2 position, bool fromChild = false)
+		public virtual void OnMClick(Vector2 position, bool fromChild)
 		{
 			if (OnMouseClick != null)
 				OnMouseClick(this, new EventArgs());
 			if (ParentView.Value != null) ParentView.Value.OnMClick(position, true);
 		}
 
-		public virtual void OnMClickAway(bool fromChild = false)
+		public virtual void OnMClickAway()
 		{
-			if (OnMouseClickAway != null)
+			if (this.TemporarilyIgnoreMouseClickAway)
+				this.TemporarilyIgnoreMouseClickAway = false;
+			else if (OnMouseClickAway != null)
 				OnMouseClickAway(this, new EventArgs());
-			if (ParentView.Value != null) ParentView.Value.OnMClickAway(true);
 		}
 
-		public virtual void OnMOver(bool fromChild = false)
+		public virtual void OnMOver()
 		{
 			RemoveToolTip();
 			if (OnMouseOver != null)
 				OnMouseOver(this, new EventArgs());
-			if (ParentView.Value != null) ParentView.Value.OnMOver(true);
+			if (ParentView.Value != null) ParentView.Value.OnMOver();
 		}
 
-		public virtual void OnMOff(bool fromChild = false)
+		public virtual void OnMOff()
 		{
 			RemoveToolTip();
 			if (OnMouseOff != null)
 				OnMouseOff(this, new EventArgs());
-			if (ParentView.Value != null) ParentView.Value.OnMOff(true);
+			if (ParentView.Value != null) ParentView.Value.OnMOff();
 		}
 
 		protected bool dirty;
 
 		public virtual void Update(float dt)
+		{
+		}
+
+		public void PostUpdate(float dt)
 		{
 			if (MouseOver && !string.IsNullOrEmpty(_toolTipText.Value))
 			{
@@ -477,39 +497,8 @@ namespace GeeUI.Views
 					ShowToolTip();
 			}
 
-			if (ParentView.Value == null || IgnoreParentBounds)
-				return;
-
-			var curBB = AbsoluteBoundBox;
-			var parentBB = ParentView.Value.AbsoluteContentBoundBox;
-			var xOffset = curBB.Right - parentBB.Right;
-			var yOffset = curBB.Bottom - parentBB.Bottom;
-			if (xOffset > 0)
-				X -= xOffset;
-			else
-			{
-				xOffset = curBB.Left - parentBB.Left;
-				if (xOffset < 0)
-					X -= xOffset;
-			}
-			if (yOffset > 0)
-				Y -= yOffset;
-			else
-			{
-				yOffset = curBB.Top - parentBB.Top;
-				if (yOffset < 0)
-					Y -= yOffset;
-			}
-		}
-
-		public void PostUpdate()
-		{
 			if (this.dirty)
-			{
-				foreach (var layout in ChildrenLayouts)
-					layout.OrderChildren(this);
-				this.dirty = false;
-			}
+				this.OrderChildren();
 		}
 
 		public virtual void Draw(SpriteBatch spriteBatch)

@@ -180,7 +180,6 @@
     <Compile Include="Factories\CounterFactory.cs" />
     <Compile Include="Factories\SetterFactory.cs" />
     <Compile Include="Factories\TickerFactory.cs" />
-    <Compile Include="GeeUI\Composites\DropDownPanelView.cs" />
     <Compile Include="GeeUI\Composites\ToolTip.cs" />
     <Compile Include="GeeUI\GeeUIMain.cs" />
     <Compile Include="GeeUI\Managers\ConversionManager.cs" />

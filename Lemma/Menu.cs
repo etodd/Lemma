@@ -331,8 +331,6 @@ namespace Lemma.Components
 			this.main.AddComponent(this.pauseAnimation);
 
 			this.currentMenu.Value = this.pauseMenu;
-
-			this.main.GeeUI.LastClickCaptured = false;
 		}
 
 		// Unpause
@@ -375,8 +373,6 @@ namespace Lemma.Components
 			this.main.Screenshot.Clear();
 
 			this.currentMenu.Value = null;
-
-			this.main.GeeUI.LastClickCaptured = false;
 		}
 
 		private void resizeToMenu(Container c)
@@ -522,7 +518,7 @@ namespace Lemma.Components
 					new Animation.FloatMoveTo(msgBackground.Opacity, 0.0f, 2.0f),
 					new Animation.FloatMoveTo(msg.Opacity, 0.0f, 2.0f)
 				),
-				new Animation.Execute(delegate() { this.main.UI.Root.Children.Remove(msgBackground); })
+				new Animation.Execute(delegate() { msgBackground.Delete.Execute(); })
 			));
 
 			// Pause menu
@@ -1441,7 +1437,7 @@ namespace Lemma.Components
 
 			Func<UIComponent, int, int, int> nextMenuItem = delegate(UIComponent menu, int current, int delta)
 			{
-				int end = menu.Children.Count;
+				int end = menu.Children.Length;
 				int newValue = current + delta;
 				if (newValue < 0)
 					return end - 1;
@@ -1498,7 +1494,7 @@ namespace Lemma.Components
 					}
 
 					Container button;
-					if (selected < menu.Children.Count)
+					if (selected < menu.Children.Length)
 					{
 						button = (Container)menu.Children[selected];
 						button.Highlighted.Value = false;

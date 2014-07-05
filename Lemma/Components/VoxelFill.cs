@@ -61,7 +61,7 @@ namespace Lemma.Components
 
 		private void populateCoords()
 		{
-			if (this.Coords.Count == 0)
+			if (this.Coords.Length == 0)
 			{
 				Voxel map = this.Entity.Get<Voxel>();
 				Entity targetEntity = this.Target.Value.Target;
@@ -104,10 +104,10 @@ namespace Lemma.Components
 		{
 			intervalTimer += dt;
 			Entity targetEntity = this.Target.Value.Target;
-			if (targetEntity != null && targetEntity.Active && this.Index < this.Coords.Count)
+			if (targetEntity != null && targetEntity.Active && this.Index < this.Coords.Length)
 			{
 				float interval = 0.03f * this.IntervalMultiplier;
-				while (intervalTimer > interval && this.Index < this.Coords.Count)
+				while (intervalTimer > interval && this.Index < this.Coords.Length)
 				{
 					EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
 					Voxel m = targetEntity.Get<Voxel>();

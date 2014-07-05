@@ -308,7 +308,7 @@ namespace Lemma.Factories
 						Interval = 0.2f,
 						Action = delegate()
 						{
-							if (orb.CoordQueue.Count > 0)
+							if (orb.CoordQueue.Length > 0)
 							{
 								raycastAI.MoveTo(orb.CoordQueue[0]);
 
@@ -341,7 +341,7 @@ namespace Lemma.Factories
 						Action = delegate()
 						{
 							AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_GLOWSQUARE_PITCH, MathHelper.Lerp(0.0f, 1.0f, ai.TimeInCurrentState.Value / 2.0f), entity);
-							if (orb.CoordQueue.Count == 0)
+							if (orb.CoordQueue.Length == 0)
 							{
 								// Explode
 								ai.CurrentState.Value = "Exploding";

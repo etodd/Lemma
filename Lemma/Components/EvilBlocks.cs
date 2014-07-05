@@ -35,7 +35,7 @@ namespace Lemma.Components
 
 		public override void Start()
 		{
-			if (!main.EditorEnabled && this.Blocks.Count < totalBlocks)
+			if (!main.EditorEnabled && this.Blocks.Length < totalBlocks)
 			{
 				SceneryBlockFactory factory = Factory.Get<SceneryBlockFactory>();
 				Random random = new Random();
@@ -56,7 +56,7 @@ namespace Lemma.Components
 
 		public void Update(float dt)
 		{
-			if (this.blocks.Count < this.Blocks.Count)
+			if (this.blocks.Count < this.Blocks.Length)
 			{
 				foreach (Entity.Handle e in this.Blocks)
 				{

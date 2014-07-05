@@ -47,7 +47,7 @@ namespace Lemma.Components
 			this.EnabledWhenPaused = false;
 			this.Add(new CommandBinding(this.Enable, delegate()
 			{
-				if (this.Coords.Count == 0)
+				if (this.Coords.Length == 0)
 				{
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_RIFT_OPEN, this.Entity);
 					if (PlayerFactory.Instance != null)
@@ -83,7 +83,7 @@ namespace Lemma.Components
 
 		public void Update(float dt)
 		{
-			if (this.CurrentIndex < this.Coords.Count)
+			if (this.CurrentIndex < this.Coords.Length)
 			{
 				if (this.voxel == null)
 				{
@@ -113,7 +113,7 @@ namespace Lemma.Components
 					}
 
 					bool regenerate = false;
-					while (this.intervalTimer > interval && this.CurrentIndex < this.Coords.Count)
+					while (this.intervalTimer > interval && this.CurrentIndex < this.Coords.Length)
 					{
 						Voxel.Coord c = this.Coords[this.CurrentIndex];
 						Voxel.State state;

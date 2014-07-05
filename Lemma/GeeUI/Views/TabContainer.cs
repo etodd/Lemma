@@ -22,8 +22,8 @@ namespace GeeUI.Views
 		public int AllTabsWidth
 		{
 			get {
-				if (Children.Count == 0) return 0;
-				View last = Children[Children.Count - 1];
+				if (Children.Length == 0) return 0;
+				View last = Children[Children.Length - 1];
 				return (int)last.Position.Value.X + last.BoundBox.Width;
 			}
 		}
@@ -46,13 +46,13 @@ namespace GeeUI.Views
 			}
 			child.Selected.Value = true;
 			var host = (TabHost) ParentView;
-			host.TabClicked(Children.InternalList.IndexOf(child));
+			host.TabClicked(Children.IndexOf(child));
 		}
 
 		public TabView AddTab(string tabText, View tabChild)
 		{
 			var ret = new TabView(ParentGeeUI, this, new Vector2(AllTabsWidth, 0), TabFont) { TabText = tabText };
-			ParentView.Value.AddChild(tabChild);
+			ParentView.Value.Children.Add(tabChild);
 			if (ActiveTabView == null)
 				TabClicked(ret);
 			else 
@@ -65,24 +65,6 @@ namespace GeeUI.Views
 		{
 			Position.Value = Vector2.Zero;
 			TabFont = font;
-		}
-
-		public override void OnMClick(Vector2 position, bool fromChild = false)
-		{
-			base.OnMClick(position);
-		}
-		public override void OnMClickAway(bool fromChild = false)
-		{
-			base.OnMClickAway();
-		}
-
-		public override void OnMOver(bool fromChild = false)
-		{
-			base.OnMOver();
-		}
-		public override void OnMOff(bool fromChild = false)
-		{
-			base.OnMOff();
 		}
 
 		private void setChildrenWidth()

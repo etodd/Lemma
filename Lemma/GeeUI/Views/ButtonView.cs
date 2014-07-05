@@ -15,16 +15,14 @@ namespace GeeUI.Views
 		public View ButtonContentview
 		{
 			get {
-				return Children.Count == 0 ? null : Children[0];
+				return Children.Length == 0 ? null : Children[0];
 			}
 			set
 			{
-				if (Children.Count == 0)
-				{
-					AddChild(value);
-					return;
-				}
-				Children[0] = value;
+				if (this.Children.Length == 0)
+					this.Children.Add(value);
+				else
+					this.Children[0] = value;
 			}
 		}
 
@@ -83,24 +81,6 @@ namespace GeeUI.Views
 			NinePatchClicked = GeeUIMain.NinePatchBtnClicked;
 			Position.Value = position;
 			ButtonContentview = contentView;
-		}
-
-		public override void OnMClick(Vector2 position, bool fromChild = false)
-		{
-			base.OnMClick(position);
-		}
-		public override void OnMClickAway(bool fromChild = false)
-		{
-			base.OnMClickAway();
-		}
-
-		public override void OnMOver(bool fromChild = false)
-		{
-			base.OnMOver();
-		}
-		public override void OnMOff(bool fromChild = false)
-		{
-			base.OnMOff();
 		}
 
 		public override void Draw(SpriteBatch spriteBatch)

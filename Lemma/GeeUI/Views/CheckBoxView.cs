@@ -22,16 +22,14 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				return Children.Count == 0 ? null : Children[0];
+				return Children.Length == 0 ? null : Children[0];
 			}
 			set
 			{
-				if (Children.Count == 0)
-				{
-					AddChild(value);
-					return;
-				}
-				Children[0] = value;
+				if (this.Children.Length == 0)
+					this.Children.Add(value);
+				else
+					this.Children[0] = value;
 			}
 		}
 
@@ -89,7 +87,7 @@ namespace GeeUI.Views
 			: base(GeeUI, rootView)
 		{
 			Position.Value = position;
-			NumChildrenAllowed.Value = 1;
+			this.numChildrenAllowed = 1;
 
 			new TextView(GeeUI, this, label, Vector2.Zero, labelFont);
 
@@ -99,26 +97,18 @@ namespace GeeUI.Views
 			TextureDefaultSelected = GeeUIMain.TextureCheckBoxSelected;
 		}
 
-		public override void OnMClick(Vector2 position, bool fromChild = false)
+		public override void OnMClick(Vector2 position, bool fromChild)
 		{
 			if (AllowLabelClicking || fromChild == false)
 				IsChecked.Value = !IsChecked.Value;
-			base.OnMClick(position);
-		}
-		public override void OnMClickAway(bool fromChild = false)
-		{
-			base.OnMClickAway();
+			base.OnMClick(position, fromChild);
 		}
 
-		public override void OnMOver(bool fromChild = false)
+		public override void OnMOver()
 		{
 			if (!AllowLabelClicking && !CheckBoundBox.Contains(InputManager.GetMousePos()))
 				_mouseOver = false;
 			base.OnMOver();
-		}
-		public override void OnMOff(bool fromChild = false)
-		{
-			base.OnMOff();
 		}
 
 		public override void Draw(SpriteBatch spriteBatch)

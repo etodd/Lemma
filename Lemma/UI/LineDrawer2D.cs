@@ -41,16 +41,16 @@ namespace Lemma.Components
 
 		protected override void draw(GameTime time, Matrix parent, Matrix transform)
 		{
-			if (this.Lines.Count == 0)
+			if (this.Lines.Length == 0)
 				return;
 
-			if (this.vertexBuffer == null || this.vertexBuffer.IsContentLost || this.Lines.Count * 2 > this.vertexBuffer.VertexCount || this.changed)
+			if (this.vertexBuffer == null || this.vertexBuffer.IsContentLost || this.Lines.Length * 2 > this.vertexBuffer.VertexCount || this.changed)
 			{
 				this.changed = false;
 				if (this.vertexBuffer != null)
 					this.vertexBuffer.Dispose();
 
-				this.vertexBuffer = new DynamicVertexBuffer(this.main.GraphicsDevice, VertexPositionColor.VertexDeclaration, (this.Lines.Count * 2) + 8, BufferUsage.WriteOnly);
+				this.vertexBuffer = new DynamicVertexBuffer(this.main.GraphicsDevice, VertexPositionColor.VertexDeclaration, (this.Lines.Length * 2) + 8, BufferUsage.WriteOnly);
 
 				VertexPositionColor[] data = new VertexPositionColor[this.vertexBuffer.VertexCount];
 				int i = 0;
@@ -60,7 +60,7 @@ namespace Lemma.Components
 					data[i + 1] = line.B;
 					i += 2;
 				}
-				this.vertexBuffer.SetData<VertexPositionColor>(data, 0, this.Lines.Count * 2, SetDataOptions.Discard);
+				this.vertexBuffer.SetData<VertexPositionColor>(data, 0, this.Lines.Length * 2, SetDataOptions.Discard);
 			}
 
 			Viewport viewport = this.main.GraphicsDevice.Viewport;
@@ -81,9 +81,9 @@ namespace Lemma.Components
 
 			this.effect.CurrentTechnique.Passes[0].Apply();
 			this.main.GraphicsDevice.SetVertexBuffer(this.vertexBuffer);
-			this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.LineList, 0, this.Lines.Count);
+			this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.LineList, 0, this.Lines.Length);
 			Model.DrawCallCounter++;
-			Model.TriangleCounter += this.Lines.Count;
+			Model.TriangleCounter += this.Lines.Length;
 		}
 
 		public override void delete()

@@ -14,7 +14,7 @@ namespace GeeUI.Views
 		/// <summary>
 		/// If true, the panel can be dragged by the user.
 		/// </summary>
-		public bool Draggable = true;
+		public bool Draggable;
 
 		/// <summary>
 		/// If true, the panel can be resized by the user.
@@ -84,14 +84,13 @@ namespace GeeUI.Views
 			}
 		}
 
-
-		public override void OnMClick(Vector2 position, bool fromChild = false)
+		public override void OnMClick(Vector2 position, bool fromChild)
 		{
 			SelectedOffChildren = !fromChild;
 			Selected.Value = true;
 			MouseSelectedOffset = position - Position;
-			if (ParentView.Value != null)
-				ParentView.Value.BringChildToFront(this);
+			if (this.Draggable)
+				this.BringToFront();
 
 			Vector2 corner = new Vector2(BoundBox.Right, BoundBox.Bottom);
 			Vector2 click = position;
@@ -99,27 +98,27 @@ namespace GeeUI.Views
 			Resizing = Vector2.Distance(corner, click) <= 20 && !fromChild && click.X <= corner.X && click.Y <= corner.Y;
 
 			FollowMouse();
-			base.OnMClick(position, true);
+			base.OnMClick(position, fromChild);
 		}
 
-		public override void OnMClickAway(bool fromChild = false)
+		public override void OnMClickAway()
 		{
 			SelectedOffChildren = false;
 			Selected.Value = false;
 			Resizing = false;
-			base.OnMClickAway(true);
+			base.OnMClickAway();
 		}
 
-		public override void OnMOver(bool fromChild = false)
+		public override void OnMOver()
 		{
 			FollowMouse();
-			base.OnMOver(true);
+			base.OnMOver();
 		}
 
-		public override void OnMOff(bool fromChild = false)
+		public override void OnMOff()
 		{
 			FollowMouse();
-			base.OnMOff(true);
+			base.OnMOff();
 		}
 	}
 }

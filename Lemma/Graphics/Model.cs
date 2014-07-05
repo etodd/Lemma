@@ -277,7 +277,7 @@ namespace Lemma.Components
 			{
 				if (this.instanceVertexData != null)
 				{
-					for (int i = index; i < Math.Min(this.Instances.Count, this.instanceVertexData.Length) - 1; i++)
+					for (int i = index; i < Math.Min(this.Instances.Length, this.instanceVertexData.Length) - 1; i++)
 						this.instanceVertexData[i] = this.instanceVertexData[i + 1];
 				}
 				this.instancesChanged = true;
@@ -835,19 +835,19 @@ namespace Lemma.Components
 		/// <param name="instances"></param>
 		protected virtual void drawInstances(RenderParameters parameters, Matrix transform)
 		{
-			if (this.Instances.Count == 0)
+			if (this.Instances.Length == 0)
 				return;
 
 			bool recalculate = this.instanceVertexBuffer == null || this.instanceVertexBuffer.IsContentLost || (parameters.IsMainRender && (this.instancesChanged || this.lastInstancesChanged));
 			if (recalculate)
 			{
 				// If we have more instances than room in our vertex buffer, grow it to the neccessary size.
-				if (this.instanceVertexBuffer == null || this.instanceVertexBuffer.IsContentLost || this.Instances.Count > this.instanceVertexBuffer.VertexCount)
+				if (this.instanceVertexBuffer == null || this.instanceVertexBuffer.IsContentLost || this.Instances.Length > this.instanceVertexBuffer.VertexCount)
 				{
 					if (this.instanceVertexBuffer != null)
 						this.instanceVertexBuffer.Dispose();
 
-					int bufferSize = (int)Math.Pow(2.0, Math.Ceiling(Math.Log(this.Instances.Count, 2.0)));
+					int bufferSize = (int)Math.Pow(2.0, Math.Ceiling(Math.Log(this.Instances.Length, 2.0)));
 
 					this.instanceVertexBuffer = new DynamicVertexBuffer
 					(
@@ -861,13 +861,13 @@ namespace Lemma.Components
 					if (this.instanceVertexData != null)
 					{
 						Array.Copy(this.instanceVertexData, newData, Math.Min(bufferSize, this.instanceVertexData.Length));
-						for (int i = this.instanceVertexData.Length; i < this.Instances.Count; i++)
+						for (int i = this.instanceVertexData.Length; i < this.Instances.Length; i++)
 							newData[i].LastTransform = this.Instances[i];
 					}
 					this.instanceVertexData = newData;
 				}
 			
-				for (int i = 0; i < this.Instances.Count; i++)
+				for (int i = 0; i < this.Instances.Length; i++)
 				{
 					this.instanceVertexData[i].LastTransform = this.instanceVertexData[i].Transform;
 					this.instanceVertexData[i].Transform = this.Instances[i];
@@ -875,7 +875,7 @@ namespace Lemma.Components
 				}
 
 				// Transfer the latest instance transform matrices into the instanceVertexBuffer.
-				this.instanceVertexBuffer.SetData<InstanceVertex>(this.instanceVertexData, 0, this.Instances.Count, SetDataOptions.Discard);
+				this.instanceVertexBuffer.SetData<InstanceVertex>(this.instanceVertexData, 0, this.Instances.Length, SetDataOptions.Discard);
 
 				this.lastInstancesChanged = this.instancesChanged;
 				this.instancesChanged = false;
@@ -921,10 +921,10 @@ namespace Lemma.Components
 							meshPart.NumVertices,
 							meshPart.StartIndex,
 							meshPart.PrimitiveCount,
-							this.Instances.Count
+							this.Instances.Length
 						);
 						Model.DrawCallCounter++;
-						Model.TriangleCounter += meshPart.PrimitiveCount * this.Instances.Count;
+						Model.TriangleCounter += meshPart.PrimitiveCount * this.Instances.Length;
 					}
 				}
 
