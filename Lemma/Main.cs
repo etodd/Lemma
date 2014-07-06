@@ -950,6 +950,12 @@ namespace Lemma
 				new XmlSerializer(typeof(Config)).Serialize(stream, this.Settings);
 		}
 
+		[AutoConCommand("load_map", "Loads the specific map")]
+		public void LoadMap(string name)
+		{
+			IO.MapLoader.Load(this, name, false);
+		}
+
 		public void EnterFullscreen()
 		{
 			if (!this.Graphics.IsFullScreen)
