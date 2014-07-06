@@ -208,11 +208,21 @@ namespace Lemma.Factories
 				{
 					Action = () =>
 					{
+						bool isFS = main.Graphics.IsFullScreen;
+						if (isFS)
+						{
+							main.ExitFullscreen();
+						}
 						var dialog = new System.Windows.Forms.OpenFileDialog();
 						dialog.Filter = "Map files|*.map";
 						dialog.InitialDirectory = Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory);
 						if (dialog.ShowDialog() == DialogResult.OK)
 							IO.MapLoader.Load(main, dialog.FileName, false);
+						if (isFS)
+						{
+							//this causes a crash oh lawdy
+							//main.EnterFullscreen();
+						}
 					}
 				},
 				gui.MapCommands,
