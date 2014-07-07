@@ -37,6 +37,7 @@ namespace Lemma.Components
 		public Property<float> CharacterHeight = new Property<float>();
 		public Property<float> SupportHeight = new Property<float>();
 		public Property<bool> IsSupported = new Property<bool>();
+		public Property<bool> IsSwimming = new Property<bool>();
 
 		// Output properties
 		public ListProperty<RespawnLocation> RespawnLocations = new ListProperty<RespawnLocation>();
@@ -82,7 +83,7 @@ namespace Lemma.Components
 
 					if (this.WallRunState.Value == WallRun.State.None)
 					{
-						if (map.GetAbsoluteDirection(dir) == Direction.NegativeY)
+						if (map.GetAbsoluteDirection(dir) == Direction.NegativeY && !this.IsSwimming)
 						{
 							this.walkedOnCount++;
 							if (this.walkedOnCount >= 2)

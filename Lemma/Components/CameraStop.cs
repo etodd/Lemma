@@ -35,19 +35,29 @@ namespace Lemma.Components
 		private void animate()
 		{
 			bool originallyThirdPerson = false;
-			if (PlayerFactory.Instance != null)
-			{
-				CameraController cameraController = PlayerFactory.Instance.Get<CameraController>();
-				originallyThirdPerson = cameraController.ThirdPerson;
-				cameraController.ThirdPerson.Value = true;
-				cameraController.Enabled.Value = false;
-				PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = false;
-			}
-
-			this.main.Camera.RotationMatrix.Value = Matrix.CreateFromQuaternion(this.Entity.Get<Transform>().Quaternion);
-			this.main.Camera.Position.Value = Vector3.Transform(new Vector3(0, 0, this.Offset), this.Entity.Get<Transform>().Matrix);
 
 			List<Animation.Interval> animations = new List<Animation.Interval>();
+
+			animations.Add(new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.Zero, 0.5f));
+
+			animations.Add(new Animation.Execute(delegate()
+			{
+				if (PlayerFactory.Instance != null)
+				{
+					CameraController cameraController = PlayerFactory.Instance.Get<CameraController>();
+					originallyThirdPerson = cameraController.ThirdPerson;
+					cameraController.ThirdPerson.Value = true;
+					cameraController.Enabled.Value = false;
+					PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = false;
+				}
+			}));
+
+			animations.Add(new Animation.Set<Matrix>(this.main.Camera.RotationMatrix, Matrix.CreateFromQuaternion(this.Entity.Get<Transform>().Quaternion)));
+			animations.Add(new Animation.Set<Vector3>(this.main.Camera.Position, Vector3.Transform(new Vector3(0, 0, this.Offset), this.Entity.Get<Transform>().Matrix)));
+
+			Animation.Sequence sequence = new Animation.Sequence();
+			animations.Add(new Animation.Parallel(sequence, new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.One, 0.5f)));
+
 			Animation.Ease.EaseType lastEase = Animation.Ease.EaseType.None;
 			BSpline spline = null;
 			Entity current = this.Entity;
@@ -74,7 +84,7 @@ namespace Lemma.Components
 					BSpline currentSpline = spline;
 					currentSpline.Add(currentTransform.Position, currentTransform.Quaternion, currentStop.Offset);
 					Transform nextTransform = next.Get<Transform>();
-					animations.Add
+					sequence.Add
 					(
 						new Animation.Ease
 						(
@@ -97,7 +107,7 @@ namespace Lemma.Components
 				}
 				else
 				{
-					animations.Add
+					sequence.Add
 					(
 						new Animation.Custom
 						(
@@ -111,11 +121,13 @@ namespace Lemma.Components
 					);
 				}
 
-				animations.Add(new Animation.Execute(currentStop.OnDone));
+				sequence.Add(new Animation.Execute(currentStop.OnDone));
 
 				lastEase = currentStop.Blend;
 				current = next;
 			}
+
+			animations.Add(new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.Zero, 0.5f));
 
 			animations.Add(new Animation.Execute(delegate()
 			{
@@ -127,6 +139,8 @@ namespace Lemma.Components
 					PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = true;
 				}
 			}));
+
+			animations.Add(new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.One, 0.5f));
 
 			Animation anim = new Animation(animations.ToArray());
 			anim.EnabledWhenPaused = false;

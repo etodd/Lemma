@@ -401,6 +401,7 @@ namespace Lemma.Factories
 			footsteps.Add(new Binding<float>(footsteps.CharacterHeight, player.Character.Height));
 			footsteps.Add(new Binding<float>(footsteps.SupportHeight, player.Character.SupportHeight));
 			footsteps.Add(new Binding<bool>(footsteps.IsSupported, player.Character.IsSupported));
+			footsteps.Add(new Binding<bool>(footsteps.IsSwimming, player.Character.IsSwimming));
 			footsteps.Add(new TwoWayBinding<float>(player.Health, footsteps.Health));
 			footsteps.Add(new CommandBinding<Voxel, Voxel.Coord, Direction>(wallRun.WalkedOn, footsteps.WalkedOn));
 			model.Trigger("Run", 0.16f, footsteps.Footstep);

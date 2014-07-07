@@ -313,22 +313,26 @@ namespace Lemma.Components
 
 		protected virtual void loadEffect(string file)
 		{
-			if (this.effect != null && !this.effect.IsDisposed)
-				this.effect.Dispose();
+			this.effect = null;
 			if (file == null)
 			{
 				if (this.model != null)
+				{
 					this.effect = this.model.Meshes.FirstOrDefault().Effects.FirstOrDefault().Clone();
-				else
-					this.effect = null;
+					if (this.effect.IsDisposed)
+						this.effect = null;
+				}
 			}
 			else
 				this.effect = this.main.Content.Load<Effect>(file).Clone();
-			foreach (IProperty property in this.properties.Values)
-				property.Reset();
+
 			if (this.effect != null)
 			{
 				// Reset parameters
+
+				foreach (IProperty property in this.properties.Values)
+					property.Reset();
+
 				this.Color.Reset();
 				this.DiffuseTexture.Reset();
 				this.NormalMap.Reset();
