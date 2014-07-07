@@ -205,7 +205,7 @@ namespace Lemma.GInterfaces
 		{
 			bool multiLine = view.MultiLine;
 			view.Width.Value = multiLine ? 380 : 340;
-			view.Height.Value = multiLine ? 200 : 16;
+			view.Height.Value = multiLine ? 200 : 20;
 		}
 
 		public override void delete()
