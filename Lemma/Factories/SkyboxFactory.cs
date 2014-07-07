@@ -76,7 +76,7 @@ namespace Lemma.Factories
 
 			model.Add(new Binding<float>(model.GetFloatParameter("StartDistance"), skybox.StartDistance));
 
-			entity.Add("Color", model.Color);
+			entity.Add("Color", model.Color, new PropertyEntry.EditorData(){FChangeBy = 0.1f});
 			entity.Add("Vertical", skybox.Vertical);
 			entity.Add("VerticalSize", skybox.VerticalSize);
 			entity.Add("VerticalCenter", skybox.VerticalCenter);

@@ -33,7 +33,7 @@ namespace Lemma.Factories
 
 			entity.Add("Enable", ambientLight.Enable);
 			entity.Add("Disable", ambientLight.Disable);
-			entity.Add("Color", ambientLight.Color);
+			entity.Add("Color", ambientLight.Color, new PropertyEntry.EditorData() { FChangeBy = 0.1f });
 			entity.Add("Enabled", ambientLight.Enabled);
 		}
 
