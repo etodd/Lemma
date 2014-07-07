@@ -11,7 +11,7 @@ namespace Lemma.Components
 {
 	public class PhoneNote
 	{
-		public static void Attach(Main main, Entity entity, Player player, AnimatedModel model, FPSInput input, Phone phone, Property<bool> enableWalking, Property<bool> enableMoves, Property<bool> phoneActive, Property<bool> noteActive)
+		public static void Attach(Main main, Entity entity, Player player, AnimatedModel model, FPSInput input, Phone phone, Property<bool> enableWalking, Property<bool> phoneActive, Property<bool> noteActive)
 		{
 			UIRenderer phoneUi = entity.GetOrCreate<UIRenderer>("PhoneUI");
 
@@ -246,7 +246,7 @@ namespace Lemma.Components
 				noteActive.Value = show;
 				input.EnableLook.Value = input.EnableMouse.Value = !noteActive;
 				main.IsMouseVisible.Value = false;
-				enableWalking.Value = enableMoves.Value = !noteActive;
+				enableWalking.Value = !noteActive;
 				noteModel.Enabled.Value = noteActive;
 				noteUi.Enabled.Value = noteActive;
 
@@ -309,7 +309,7 @@ namespace Lemma.Components
 					phoneActive.Value = show;
 					input.EnableLook.Value = input.EnableMouse.Value = !phoneActive;
 					main.IsMouseVisible.Value = phoneActive;
-					enableWalking.Value = enableMoves.Value = !phoneActive;
+					enableWalking.Value = !phoneActive;
 					phoneModel.Enabled.Value = phoneActive;
 					screen.Enabled.Value = phoneActive;
 					phoneUi.Enabled.Value = phoneActive;

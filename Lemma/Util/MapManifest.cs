@@ -48,7 +48,7 @@ namespace Lemma.Util
 
 			if (values == null)
 			{
-				values = new MapManifest { MapName = mapFile.Name.Replace(".map", ""), MapPath = mapFile, MetaPath = new FileInfo(metaPath)};
+				values = new MapManifest { MapName = Path.GetFileNameWithoutExtension(mapFile.Name), MapPath = mapFile, MetaPath = new FileInfo(metaPath)};
 			}
 			values.Save();
 			return values;

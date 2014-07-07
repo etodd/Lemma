@@ -168,7 +168,10 @@ namespace Lemma.Components
 		void INonPostProcessedDrawableComponent.DrawNonPostProcessed(GameTime time, RenderParameters parameters)
 		{
 			if (this.RenderTarget.Value == null)
-				this.draw(time, this.main.ScreenSize);
+			{
+				Viewport vp = this.main.GraphicsDevice.Viewport;
+				this.draw(time, new Point(vp.Width, vp.Height));
+			}
 		}
 
 		void IDrawablePreFrameComponent.DrawPreFrame(GameTime time, RenderParameters parameters)

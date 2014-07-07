@@ -62,7 +62,7 @@ namespace Lemma.Components
 		private Voxel map;
 		private Voxel.Coord coord;
 
-		const float topOutVerticalSpeed = 4.0f;
+		const float topOutVerticalSpeed = 4.5f;
 		const float mantleVaultVerticalSpeed = 8.0f;
 		const float maxVaultTime = 1.0f;
 		const float maxTopoutTime = 2.0f;
@@ -194,7 +194,7 @@ namespace Lemma.Components
 			this.forward = coordPosition - this.Position;
 			this.initialVerticalDifference = forward.Y;
 
-			this.isTopOut = this.initialVerticalDifference > 1.75f;
+			this.isTopOut = this.initialVerticalDifference > 1.75f || verticalVelocityChange < Lemma.Components.FallDamage.DamageVelocity;
 
 			// Grunt if we're going up
 			// If we're falling down, don't grunt because we might already be grunting from the fall damage

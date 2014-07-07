@@ -90,6 +90,8 @@ namespace Lemma.Components
 		public virtual void DrawAlpha(GameTime time, RenderParameters p)
 		{
 			// Set the vertex buffer and declaration
+			if (this.vertexBuffer.IsDisposed)
+				this.LoadContent(true);
 			this.main.GraphicsDevice.SetVertexBuffer(this.vertexBuffer);
 
 			// Draw primitives

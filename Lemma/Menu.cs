@@ -251,8 +251,6 @@ namespace Lemma.Components
 		}
 
 		private ListContainer challengeMenu;
-		private ListContainer officialChallengeMenu;
-		private ListContainer workshopChallengeMenu;
 
 		private ListContainer pauseMenu;
 		private ListContainer notifications;
@@ -464,7 +462,6 @@ namespace Lemma.Components
 
 		private Animation challengeAnimation = null;
 		private Animation officialAnimation = null;
-		private Animation workshopAnimation = null;
 		private bool challengeMenuShown = false;
 		private Action<bool> hideChallenge = null;
 		public void ConstructChallengeMenu()
@@ -625,29 +622,31 @@ namespace Lemma.Components
 			officialMapsMenu.Children.Add(officialMapScroller);
 
 			DirectoryInfo dir = new DirectoryInfo("Content\\Game\\Challenge\\");
-			if (!dir.Exists) return;
-			foreach (var file in dir.GetFiles("*.map"))
+			if (dir.Exists)
 			{
-				Container button = this.main.UIFactory.CreateButton(file.Name, delegate()
+				foreach (var file in dir.GetFiles("*.map"))
 				{
-					hideOfficialMenu(false);
-					hidePauseMenu();
-					this.restorePausedSettings();
-					this.main.CurrentSave.Value = null;
-					this.main.AddComponent(new Animation
-					(
-						new Animation.Delay(0.2f),
-						new Animation.Execute(delegate()
-						{
-							IO.MapLoader.Load(this.main, file.FullName);
-						})
-					));
-				});
-				this.resizeToMenu(button);
-				officialMapsList.Children.Add(button);
+					Container button = this.main.UIFactory.CreateButton(Path.GetFileNameWithoutExtension(file.Name), delegate()
+					{
+						hideOfficialMenu(false);
+						hidePauseMenu();
+						this.restorePausedSettings();
+						this.main.CurrentSave.Value = null;
+						this.main.AddComponent(new Animation
+						(
+							new Animation.Delay(0.2f),
+							new Animation.Execute(delegate()
+							{
+								IO.MapLoader.Load(this.main, file.FullName);
+							})
+						));
+					});
+					this.resizeToMenu(button);
+					officialMapsList.Children.Add(button);
+				}
 			}
 
-			Container officialMaps = this.main.UIFactory.CreateButton("Official Levels", delegate()
+			Container officialMaps = this.main.UIFactory.CreateButton("\\official levels", delegate()
 			{
 				hideChallengeMenu(false);
 				showOfficialMenu();
@@ -735,37 +734,42 @@ namespace Lemma.Components
 			{
 				workshopMapsList.Children.Clear();
 				DirectoryInfo workshopDir = SteamWorker.DownloadedMaps;
-				if (!workshopDir.Exists) return;
-				foreach (var subDir in workshopDir.GetDirectories())
+				if (workshopDir.Exists)
 				{
-					if (subDir.GetFiles(subDir.Name + ".map").Length != 1) continue;
-					if (subDir.GetFiles(subDir.Name + ".png").Length != 1) continue;
-					if (subDir.GetFiles(subDir.Name + ".meta").Length != 1) continue;
-					string mapPath = subDir.GetFiles(subDir.Name + ".map")[0].FullName;
-					MapManifest mapManifest = MapManifest.FromMapPath(mapPath);
-					if (mapManifest == null || string.IsNullOrEmpty(mapManifest.MapName)) continue;
-
-					Container button = this.main.UIFactory.CreateButton(mapManifest.MapName, delegate()
+					foreach (var subDir in workshopDir.GetDirectories())
 					{
-						hideWorkshopMenu(false);
-						hidePauseMenu();
-						this.restorePausedSettings();
-						this.main.CurrentSave.Value = null;
-						this.main.AddComponent(new Animation
-							(
-							new Animation.Delay(0.2f),
-							new Animation.Execute(delegate()
+						if (subDir.GetFiles(subDir.Name + ".map").Length == 1
+							&& subDir.GetFiles(subDir.Name + ".png").Length == 1
+							&& subDir.GetFiles(subDir.Name + ".meta").Length == 1)
+						{
+							string mapPath = subDir.GetFiles(subDir.Name + ".map")[0].FullName;
+							MapManifest mapManifest = MapManifest.FromMapPath(mapPath);
+							if (mapManifest != null && !string.IsNullOrEmpty(mapManifest.MapName))
 							{
-								IO.MapLoader.Load(this.main, mapPath);
-							})
-							));
-					});
-					this.resizeToMenu(button);
-					workshopMapsList.Children.Add(button);
+								Container button = this.main.UIFactory.CreateButton(mapManifest.MapName, delegate()
+								{
+									hideWorkshopMenu(false);
+									hidePauseMenu();
+									this.restorePausedSettings();
+									this.main.CurrentSave.Value = null;
+									this.main.AddComponent(new Animation
+										(
+										new Animation.Delay(0.2f),
+										new Animation.Execute(delegate()
+										{
+											IO.MapLoader.Load(this.main, mapPath);
+										})
+										));
+								});
+								this.resizeToMenu(button);
+								workshopMapsList.Children.Add(button);
+							}
+						}
+					}
 				}
 			};
 
-			Container workshopMaps = this.main.UIFactory.CreateButton("Workshop Levels", delegate()
+			Container workshopMaps = this.main.UIFactory.CreateButton("\\workshop levels", delegate()
 			{
 				reloadMaps();
 				hideChallengeMenu(false);

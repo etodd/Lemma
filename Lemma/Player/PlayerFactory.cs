@@ -456,49 +456,51 @@ namespace Lemma.Factories
 			// Jumping
 			input.Bind(settings.Jump, PCInput.InputState.Down, delegate()
 			{
-				if (!player.EnableMoves)
-					return;
-
-				if (vault.CurrentState.Value == Vault.State.None && !rollKickSlide.Rolling && !rollKickSlide.Kicking)
+				if (player.EnableMoves && player.Character.EnableWalking
+					&& vault.CurrentState.Value == Vault.State.None
+					&& !rollKickSlide.Rolling && !rollKickSlide.Kicking)
 					jump.Go();
 			});
 
 			// Wall-run, vault, predictive
 			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
 			{
-				if (!player.EnableMoves || !player.Character.EnableWalking || (player.Character.Crouched && player.Character.IsSupported) || vault.CurrentState.Value != Vault.State.None)
-					return;
-
-				bool didSomething = false;
-
-				if (predictor.PossibilityCount > 0)
+				if (player.EnableMoves
+					&& player.Character.EnableWalking
+					&& !(player.Character.Crouched && player.Character.IsSupported)
+					&& vault.CurrentState.Value == Vault.State.None)
 				{
-					// In slow motion, prefer left and right wall-running
-					if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
-						if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
-							if (!(didSomething = vault.Go()))
-								if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
-									didSomething = wallRun.Activate(WallRun.State.Reverse);
-				}
-				else
-				{
-					// In normal mode, prefer straight wall-running
-					if (!(didSomething = vault.Go()))
-						if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
-							if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
-								if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
-									didSomething = wallRun.Activate(WallRun.State.Reverse);
-				}
+					bool didSomething = false;
 
-				if (!didSomething)
-					didSomething = vault.TryVaultDown();
+					if (predictor.PossibilityCount > 0)
+					{
+						// In slow motion, prefer left and right wall-running
+						if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
+							if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
+								if (!(didSomething = vault.Go()))
+									if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
+										didSomething = wallRun.Activate(WallRun.State.Reverse);
+					}
+					else
+					{
+						// In normal mode, prefer straight wall-running
+						if (!(didSomething = vault.Go()))
+							if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
+								if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
+									if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
+										didSomething = wallRun.Activate(WallRun.State.Reverse);
+					}
 
-				if (!didSomething && player.EnableSlowMotion)
-				{
-					player.SlowMotion.Value = true;
-					predictor.ClearPossibilities();
-					predictor.PredictPlatforms();
-					predictor.PredictWalls();
+					if (!didSomething)
+						didSomething = vault.TryVaultDown();
+
+					if (!didSomething && player.EnableSlowMotion)
+					{
+						player.SlowMotion.Value = true;
+						predictor.ClearPossibilities();
+						predictor.PredictPlatforms();
+						predictor.PredictWalls();
+					}
 				}
 			});
 
@@ -509,7 +511,11 @@ namespace Lemma.Factories
 					player.SlowMotion.Value = false;
 			});
 
-			input.Bind(settings.RollKick, PCInput.InputState.Down, rollKickSlide.Go);
+			input.Bind(settings.RollKick, PCInput.InputState.Down, delegate()
+			{
+				if (player.EnableMoves && player.Character.EnableWalking)
+					rollKickSlide.Go();
+			});
 
 			input.Bind(settings.RollKick, PCInput.InputState.Up, delegate()
 			{
@@ -556,7 +562,7 @@ namespace Lemma.Factories
 						)
 					);
 
-					PhoneNote.Attach(main, entity, player, model, input, phone, player.Character.EnableWalking, player.EnableMoves, playerData.PhoneActive, playerData.NoteActive);
+					PhoneNote.Attach(main, entity, player, model, input, phone, player.Character.EnableWalking, playerData.PhoneActive, playerData.NoteActive);
 				}
 			});
 		}

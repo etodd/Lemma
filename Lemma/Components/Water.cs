@@ -131,7 +131,7 @@ namespace Lemma.Components
 			this.needResize = false;
 		}
 
-		public void LoadContent(bool reload)
+		private void loadEffectAndVertexBuffers()
 		{
 			this.effect = this.main.Content.Load<Effect>("Effects\\Water").Clone();
 			this.effect.Parameters["NormalMap" + Model.SamplerPostfix].SetValue(this.main.Content.Load<Texture2D>("Textures\\water-normal"));
@@ -194,7 +194,11 @@ namespace Lemma.Components
 			underwaterData[0].Normal = underwaterData[1].Normal = underwaterData[2].Normal = underwaterData[3].Normal = new Vector3(0, 0, -1);
 
 			this.underwaterVertexBuffer.SetData(underwaterData);
+		}
 
+		public void LoadContent(bool reload)
+		{
+			this.loadEffectAndVertexBuffers();
 			this.resize();
 		}
 
@@ -397,6 +401,10 @@ namespace Lemma.Components
 			this.effect.Parameters["Clearness"].SetValue(this.underwater ? 1.0f : this.Clearness);
 			this.effect.CurrentTechnique = this.effect.Techniques[this.underwater || !this.EnableReflection ? "Surface" : "SurfaceReflection"];
 			this.effect.CurrentTechnique.Passes[0].Apply();
+
+			if (this.surfaceVertexBuffer.IsDisposed)
+				this.loadEffectAndVertexBuffers();
+
 			this.main.GraphicsDevice.SetVertexBuffer(this.surfaceVertexBuffer);
 			this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
 			Model.DrawCallCounter++;
@@ -419,6 +427,9 @@ namespace Lemma.Components
 				this.effect.Parameters["CameraPosition"].SetValue(cameraPos);
 
 				this.effect.CurrentTechnique.Passes[0].Apply();
+
+				if (this.surfaceVertexBuffer.IsDisposed)
+					this.loadEffectAndVertexBuffers();
 				this.main.GraphicsDevice.SetVertexBuffer(this.underwaterVertexBuffer);
 				this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
 				Model.DrawCallCounter++;
