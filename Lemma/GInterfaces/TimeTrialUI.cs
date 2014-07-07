@@ -24,7 +24,6 @@ namespace Lemma.GInterfaces
 
 		public PanelView RootTimeEndView;
 		private TextView EndTimeTextView;
-		private TextView EndTimeCollectiblesTextView;
 		private ButtonView RetryMapButton;
 		private ButtonView MainMenuButton;
 
@@ -72,6 +71,8 @@ namespace Lemma.GInterfaces
 			RootTimeEndView.Width.Value = 400;
 			RootTimeEndView.Height.Value = 300;
 
+			//EndTimeTextView = new TextView(main.GeeUI, RootTimeEndView, );
+
 			RootTimePanelView.UnselectedNinepatch = RootTimePanelView.SelectedNinepatch = GeeUIMain.NinePatchBtnDefault;
 
 			TimeTrialCurTimeView = new TextView(main.GeeUI, RootTimePanelView, "Time: 00:00.00", Vector2.Zero, BiggerFont);
@@ -87,6 +88,12 @@ namespace Lemma.GInterfaces
 			MapManifest manifest = MapManifest.FromMapPath(main.MapFile);
 			float bestTime = manifest.BestPersonalTimeTrialTime;
 			TimeTrialBestTimeView.Text.Value = "Best: " + SecondsToTimeString(bestTime);
+
+			this.TimeTrialBestTimeView.Add(new Binding<string, float>(TimeTrialBestTimeView.Text, x =>
+			{
+				if (bestTime != 0) x = bestTime - x;
+				return "Best: " + SecondsToTimeString(x);
+			}, this.ElapsedTime));
 
 			base.Awake();
 		}
@@ -154,6 +161,8 @@ namespace Lemma.GInterfaces
 
 		public string SecondsToTimeString(float seconds)
 		{
+			bool negative = seconds < 0;
+			if (negative) seconds *= -1;
 			int decimalValue = (int)Math.Round((seconds - Math.Floor(seconds)) * 100, 2);
 			int minutes = (int)(seconds / 60f);
 			int leftOverSeconds = (int)Math.Floor(seconds - (minutes * 60));
@@ -164,7 +173,7 @@ namespace Lemma.GInterfaces
 			if (sMinutes.Length == 1) sMinutes = "0" + sMinutes;
 			if (sSeconds.Length == 1) sSeconds = "0" + sSeconds;
 			if (sMs.Length == 1) sMs = "0" + sMs;
-			return sMinutes + ":" + sSeconds + "." + sMs;
+			return (negative ? "-" : "") + sMinutes + ":" + sSeconds + "." + sMs;
 		}
 
 		public void Update(float dt)
