@@ -717,10 +717,15 @@ namespace Lemma.Components
 				this.main.AddComponent(officialAnimation);
 				this.currentMenu.Value = workshopMapsMenu;
 			};
+			Container workshopGetMore = this.main.UIFactory.CreateButton("Get More",
+				() => UIFactory.OpenURL("http://steamcommunity.com/workshop/browse?appid=300340"));
+			this.resizeToMenu(workshopGetMore);
+			workshopMapsMenu.Children.Add(workshopGetMore);
 
 			Container workshopBack = this.main.UIFactory.CreateButton("\\back", () => hideWorkshopMenu(true));
 			this.resizeToMenu(workshopBack);
 			workshopMapsMenu.Children.Add(workshopBack);
+
 
 			ListContainer workshopMapsList = new ListContainer();
 			workshopMapsList.Orientation.Value = ListContainer.ListOrientation.Vertical;
