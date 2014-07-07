@@ -57,6 +57,14 @@ namespace Lemma.Components
 			Factory.Get<EffectBlockFactory>().Build(this.main, buildCoords, this.Position);
 		}
 
+		private IEnumerable<Voxel.Coord> spreadFromCenter(Voxel.Coord center, Direction dir)
+		{
+			for (Voxel.Coord z = center.Move(dir, -1); z.GetComponent(dir) > center.GetComponent(dir) - 3; z = z.Move(dir.GetReverse()))
+				yield return z;
+			for (Voxel.Coord z = center.Clone(); z.GetComponent(dir) < center.GetComponent(dir) + 3; z = z.Move(dir))
+				yield return z;
+		}
+
 		public bool BreakWalls(Vector3 forward, Vector3 right)
 		{
 			BlockFactory blockFactory = Factory.Get<BlockFactory>();
@@ -71,35 +79,54 @@ namespace Lemma.Components
 				Direction rightDir = map.GetRelativeDirection(right);
 				Direction forwardDir = map.GetRelativeDirection(forward);
 				Voxel.Coord center = map.GetCoordinate(basePos);
+				bool stop = false;
 				for (int i = 0; i < 4; i++)
 				{
 					for (Voxel.Coord y = center.Clone(); y.GetComponent(upDir) <= top.GetComponent(upDir); y = y.Move(upDir))
 					{
-						for (Voxel.Coord z = y.Move(rightDir.GetReverse(), 2); z.GetComponent(rightDir) < center.GetComponent(rightDir) + 3; z = z.Move(rightDir))
+						int minZ = center.GetComponent(rightDir) - 10;
+						foreach (Voxel.Coord z in this.spreadFromCenter(y, rightDir))
 						{
 							Voxel.State state = map[z];
-							if (state.ID != 0 && !state.Permanent && !state.Hard && !removals.Contains(z))
+							int zRightDimension = z.GetComponent(rightDir);
+							if (zRightDimension > minZ && state.ID != 0 && !removals.Contains(z))
 							{
-								broke = true;
-								removals.Add(z);
-								Vector3 cellPos = map.GetAbsolutePosition(z);
-								Vector3 toCell = cellPos - basePos;
-								Entity block = blockFactory.CreateAndBind(this.main);
-								Transform blockTransform = block.Get<Transform>();
-								blockTransform.Position.Value = cellPos;
-								blockTransform.Quaternion.Value = mapQuaternion;
-								state.ApplyToBlock(block);
-								toCell += forward * 4.0f;
-								toCell.Normalize();
-								PhysicsBlock physicsBlock = block.Get<PhysicsBlock>();
-								physicsBlock.LinearVelocity.Value = toCell * 15.0f;
-								physicsBlock.AngularVelocity.Value = new Vector3(((float)this.random.NextDouble() - 0.5f) * 2.0f, ((float)this.random.NextDouble() - 0.5f) * 2.0f, ((float)this.random.NextDouble() - 0.5f) * 2.0f);
-								main.Add(block);
+								if (state.Permanent || state.Hard)
+								{
+									stop = true;
+									if (zRightDimension >= center.GetComponent(rightDir))
+										break;
+									else
+										minZ = zRightDimension;
+								}
+								else
+								{
+									broke = true;
+									removals.Add(z);
+									Vector3 cellPos = map.GetAbsolutePosition(z);
+									Vector3 toCell = cellPos - basePos;
+									Entity block = blockFactory.CreateAndBind(this.main);
+									Transform blockTransform = block.Get<Transform>();
+									blockTransform.Position.Value = cellPos;
+									blockTransform.Quaternion.Value = mapQuaternion;
+									state.ApplyToBlock(block);
+									toCell += forward * 4.0f;
+									toCell.Normalize();
+									PhysicsBlock physicsBlock = block.Get<PhysicsBlock>();
+									physicsBlock.LinearVelocity.Value = toCell * 15.0f;
+									physicsBlock.AngularVelocity.Value = new Vector3(((float)this.random.NextDouble() - 0.5f) * 2.0f, ((float)this.random.NextDouble() - 0.5f) * 2.0f, ((float)this.random.NextDouble() - 0.5f) * 2.0f);
+									main.Add(block);
+								}
 							}
 						}
 					}
-					center = center.Move(forwardDir);
+
+					if (stop)
+						break;
+					else
+						center = center.Move(forwardDir);
 				}
+
 				if (removals.Count > 0)
 				{
 					map.Empty(removals);

@@ -18,7 +18,6 @@ namespace Lemma.Components
 		public Property<int> Target = new Property<int> { Value = 4 };
 
 		public Property<int> Count = new Property<int>();
-		public Property<float> FloatCount = new Property<float>();
 
 		[XmlIgnore]
 		public Command Increment = new Command();
@@ -56,8 +55,6 @@ namespace Lemma.Components
 				if (execute)
 					this.OnTargetHit.Execute();
 			};
-
-			this.Add(new Binding<float, int>(FloatCount, i => i, Count));
 
 			if (this.main.EditorEnabled)
 				this.Add(new Binding<int>(this.Count, this.StartingValue));

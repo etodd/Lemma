@@ -32,7 +32,6 @@ namespace Lemma.Factories
 			entity.Add("Increment", c.Increment);
 			entity.Add("Reset", c.Reset);
 			entity.Add("Value", c.Count, readOnly:true);
-			entity.Add("FValue", c.FloatCount, readOnly: true);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
