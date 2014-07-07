@@ -357,6 +357,30 @@ namespace Lemma
 					this.BaseTimeMultiplier.Value = result / 100.0f;
 			}, "100") { TypeConstraint = typeof(int), Validate = o => (int)o > 0 && (int)o <= 400 });
 
+			Lemma.Console.Console.AddConCommand(new ConCommand("moves", "Enable all parkour moves.", delegate(ConCommand.ArgCollection args)
+			{
+				if (PlayerDataFactory.Instance != null)
+				{
+					PlayerData playerData = PlayerDataFactory.Instance.Get<PlayerData>();
+					playerData.EnableRoll.Value = true;
+					playerData.EnableKick.Value = true;
+					playerData.EnableWallRun.Value = true;
+					playerData.EnableWallRunHorizontal.Value = true;
+					playerData.EnableMoves.Value = true;
+					playerData.EnableCrouch.Value = true;
+				}
+			}));
+
+			Lemma.Console.Console.AddConCommand(new ConCommand("specials", "Enable all special abilities.", delegate(ConCommand.ArgCollection args)
+			{
+				if (PlayerDataFactory.Instance != null)
+				{
+					PlayerData playerData = PlayerDataFactory.Instance.Get<PlayerData>();
+					playerData.EnableSlowMotion.Value = true;
+					playerData.EnableEnhancedWallRun.Value = true;
+				}
+			}));
+
 			this.PauseAudioEffect.Set = delegate(float value)
 			{
 				value = MathHelper.Clamp(value, 0.0f, 1.0f);

@@ -38,11 +38,18 @@ namespace Lemma.Components
 			screen.Serialize = false;
 			screen.Enabled.Value = false;
 
-			PointLight phoneLight = entity.GetOrCreate<PointLight>("PhoneLight");
+			PointLight phoneLight = entity.Create<PointLight>();
 			phoneLight.Serialize = false;
 			phoneLight.Enabled.Value = false;
 			phoneLight.Attenuation.Value = 0.5f;
 			phoneLight.Add(new Binding<Vector3, Matrix>(phoneLight.Position, x => x.Translation, screen.Transform));
+
+			PointLight noteLight = entity.Create<PointLight>();
+			noteLight.Serialize = false;
+			noteLight.Enabled.Value = false;
+			noteLight.Attenuation.Value = 1.0f;
+			noteLight.Color.Value = new Vector3(0.3f);
+			noteLight.Add(new Binding<Vector3>(noteLight.Position, () => Vector3.Transform(new Vector3(0.25f, 0.0f, 0.0f), phoneBone.Value * model.Transform), phoneBone, model.Transform));
 
 			const float screenScale = 0.0007f;
 			screen.Scale.Value = new Vector3(1.0f, (float)phoneUi.RenderTargetSize.Value.Y * screenScale, (float)phoneUi.RenderTargetSize.Value.X * screenScale);
@@ -249,6 +256,7 @@ namespace Lemma.Components
 				enableWalking.Value = !noteActive;
 				noteModel.Enabled.Value = noteActive;
 				noteUi.Enabled.Value = noteActive;
+				noteLight.Enabled.Value = noteActive;
 
 				model.Stop("Phone", "Note");
 				Entity noteEntity = player.Note.Value.Target;

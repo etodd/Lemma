@@ -19,17 +19,15 @@ namespace Lemma.GameScripts
 		{
 			PlayerData playerData = PlayerDataFactory.Instance.Get<PlayerData>();
 
-			playerData.EnableRoll.Value = property<bool>(script, "Roll");
-			playerData.EnableCrouch.Value = property<bool>(script, "Crouch");
-			playerData.EnableKick.Value = property<bool>(script, "Kick");
-			playerData.EnableWallRun.Value = property<bool>(script, "WallRun");
-			playerData.EnableWallRunHorizontal.Value = property<bool>(script, "WallRunHorizontal");
-			playerData.EnableEnhancedWallRun.Value = property<bool>(script, "EnhancedWallRun");
-			playerData.EnableSlowMotion.Value = property<bool>(script, "SlowMotion");
-			playerData.EnableMoves.Value = property<bool>(script, "Moves");
-			playerData.EnablePhone.Value = property<bool>(script, "Phone");
-
-			script.Delete.Execute();
+			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Roll"), playerData.EnableCrouch));
+			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Crouch"), playerData.EnableCrouch));
+			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Kick"), playerData.EnableKick));
+			script.Add(new TwoWayBinding<bool>(property<bool>(script, "WallRun"), playerData.EnableWallRun));
+			script.Add(new TwoWayBinding<bool>(property<bool>(script, "WallRunHorizontal"), playerData.EnableWallRunHorizontal));
+			script.Add(new TwoWayBinding<bool>(property<bool>(script, "EnhancedWallRun"), playerData.EnableEnhancedWallRun));
+			script.Add(new TwoWayBinding<bool>(property<bool>(script, "SlowMotion"), playerData.EnableSlowMotion));
+			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Moves"), playerData.EnableMoves));
+			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Phone"), playerData.EnablePhone));
 		}
 
 		public static IEnumerable<string> EditorProperties()
