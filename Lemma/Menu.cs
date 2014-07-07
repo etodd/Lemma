@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ComponentBind;
+using GeeUI.Views;
 using Lemma.Console;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -458,6 +459,327 @@ namespace Lemma.Components
 		{
 			this.SupportedDisplayModes = supportedDisplayModes;
 			this.displayModeIndex = displayModeIndex;
+		}
+
+
+		private Animation challengeAnimation = null;
+		private Animation officialAnimation = null;
+		private Animation workshopAnimation = null;
+		private bool challengeMenuShown = false;
+		private Action<bool> hideChallenge = null;
+		public void ConstructChallengeMenu()
+		{
+			#region Root Cheat Menu
+			challengeMenu = new ListContainer();
+			challengeMenu.Visible.Value = false;
+			challengeMenu.Add(new Binding<Vector2, Point>(challengeMenu.Position, x => new Vector2(0, x.Y * 0.5f), this.main.ScreenSize));
+			challengeMenu.AnchorPoint.Value = new Vector2(1, 0.5f);
+			this.main.UI.Root.Children.Add(challengeMenu);
+			challengeMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+			Container labelPadding = this.main.UIFactory.CreateContainer();
+			this.resizeToMenu(labelPadding);
+			challengeMenu.Children.Add(labelPadding);
+
+			ListContainer challengeLabelContainer = new ListContainer();
+			challengeLabelContainer.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			labelPadding.Children.Add(challengeLabelContainer);
+
+			TextElement challengeLabel = new TextElement();
+			challengeLabel.FontFile.Value = "Font";
+			challengeLabel.Text.Value = "\\challenge title";
+			challengeLabelContainer.Children.Add(challengeLabel);
+
+			TextElement challengeScrollLabel = new TextElement();
+			challengeScrollLabel.FontFile.Value = "Font";
+			challengeScrollLabel.Text.Value = "\\scroll for more";
+			challengeLabelContainer.Children.Add(challengeScrollLabel);
+
+			Action<bool> hideChallengeMenu = delegate(bool showPrev)
+			{
+				if (showPrev)
+					this.showPauseMenu();
+
+				if (challengeAnimation != null)
+					challengeAnimation.Delete.Execute();
+				challengeAnimation = new Animation
+				(
+					new Animation.Vector2MoveToSpeed(challengeMenu.AnchorPoint, new Vector2(1, 0.5f), Menu.hideAnimationSpeed),
+					new Animation.Set<bool>(challengeMenu.Visible, false)
+				);
+				this.main.AddComponent(challengeAnimation);
+				this.challengeMenuShown = false;
+			};
+
+			this.hideChallenge = hideChallengeMenu;
+
+			Action showChallengeMenu = delegate()
+			{
+				this.hidePauseMenu();
+
+				challengeMenuShown = true;
+
+				challengeMenu.Visible.Value = true;
+				if (challengeAnimation != null)
+					challengeAnimation.Delete.Execute();
+				challengeAnimation =
+					new Animation(
+						new Animation.Ease(
+							new Animation.Vector2MoveToSpeed(challengeMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
+							Animation.Ease.EaseType.OutExponential));
+				this.main.AddComponent(challengeAnimation);
+				this.currentMenu.Value = challengeMenu;
+			};
+
+			Container challengeBack = this.main.UIFactory.CreateButton("\\back", () => hideChallengeMenu(true));
+			this.resizeToMenu(challengeBack);
+			challengeMenu.Children.Add(challengeBack);
+
+			ListContainer cheatList = new ListContainer();
+			cheatList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+			Scroller cheatScroller = new Scroller();
+			cheatScroller.Children.Add(cheatList);
+			cheatScroller.Add(new Binding<Vector2>(cheatScroller.Size, () => new Vector2(cheatList.Size.Value.X, this.main.ScreenSize.Value.Y * 0.0f), cheatList.Size, this.main.ScreenSize));
+			challengeMenu.Children.Add(cheatScroller);
+
+			// Challenge levels
+			Container challengeButton = this.main.UIFactory.CreateButton("\\challenge levels", showChallengeMenu);
+			this.resizeToMenu(challengeButton);
+			challengeButton.Add(new Binding<bool, string>(challengeButton.Visible, x => x == Main.MenuMap, this.main.MapFile));
+			this.pauseMenu.Children.Add(challengeButton);
+
+			#endregion
+
+			#region Official Maps
+			ListContainer officialMapsMenu = new ListContainer();
+			officialMapsMenu.Visible.Value = false;
+			officialMapsMenu.Add(new Binding<Vector2, Point>(officialMapsMenu.Position, x => new Vector2(0, x.Y * 0.5f), this.main.ScreenSize));
+			officialMapsMenu.AnchorPoint.Value = new Vector2(1, 0.5f);
+			this.main.UI.Root.Children.Add(officialMapsMenu);
+			officialMapsMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+			Container officialLabelPadding = this.main.UIFactory.CreateContainer();
+			this.resizeToMenu(officialLabelPadding);
+			officialMapsMenu.Children.Add(officialLabelPadding);
+
+			ListContainer officialLabelContainer = new ListContainer();
+			officialLabelContainer.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			officialLabelPadding.Children.Add(officialLabelContainer);
+
+			TextElement officialLabel = new TextElement();
+			officialLabel.FontFile.Value = "Font";
+			officialLabel.Text.Value = "\\challenge title";
+			officialLabelContainer.Children.Add(officialLabel);
+
+			TextElement officialScrollLabel = new TextElement();
+			officialScrollLabel.FontFile.Value = "Font";
+			officialScrollLabel.Text.Value = "\\scroll for more";
+			officialLabelContainer.Children.Add(officialScrollLabel);
+
+			Action<bool> hideOfficialMenu = delegate(bool showPrev)
+			{
+				if (showPrev)
+					this.showPauseMenu();
+
+				if (officialAnimation != null)
+					officialAnimation.Delete.Execute();
+				officialAnimation = new Animation
+				(
+					new Animation.Vector2MoveToSpeed(officialMapsMenu.AnchorPoint, new Vector2(1, 0.5f), Menu.hideAnimationSpeed),
+					new Animation.Set<bool>(officialMapsMenu.Visible, false)
+				);
+				this.main.AddComponent(officialAnimation);
+				this.challengeMenuShown = showPrev;
+				this.hideChallenge = hideChallengeMenu;
+			};
+
+			Action showOfficialMenu = delegate()
+			{
+				this.hidePauseMenu();
+
+				challengeMenuShown = true;
+
+				officialMapsMenu.Visible.Value = true;
+				if (officialAnimation != null)
+					officialAnimation.Delete.Execute();
+				officialAnimation =
+					new Animation(
+						new Animation.Ease(
+							new Animation.Vector2MoveToSpeed(officialMapsMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
+							Animation.Ease.EaseType.OutExponential));
+				this.main.AddComponent(officialAnimation);
+				this.currentMenu.Value = officialMapsMenu;
+			};
+
+			Container officialBack = this.main.UIFactory.CreateButton("\\back", () => hideOfficialMenu(true));
+			this.resizeToMenu(officialBack);
+			officialMapsMenu.Children.Add(officialBack);
+
+			ListContainer officialMapsList = new ListContainer();
+			officialMapsList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+			Scroller officialMapScroller = new Scroller();
+			officialMapScroller.Children.Add(officialMapsList);
+			officialMapScroller.Add(new Binding<Vector2>(officialMapScroller.Size, () => new Vector2(officialMapsList.Size.Value.X, this.main.ScreenSize.Value.Y * 0.5f), officialMapsList.Size, this.main.ScreenSize));
+			officialMapsMenu.Children.Add(officialMapScroller);
+
+			DirectoryInfo dir = new DirectoryInfo("Content\\Game\\Challenge\\");
+			if (!dir.Exists) return;
+			foreach (var file in dir.GetFiles("*.map"))
+			{
+				Container button = this.main.UIFactory.CreateButton(file.Name, delegate()
+				{
+					hideOfficialMenu(false);
+					hidePauseMenu();
+					this.restorePausedSettings();
+					this.main.CurrentSave.Value = null;
+					this.main.AddComponent(new Animation
+					(
+						new Animation.Delay(0.2f),
+						new Animation.Execute(delegate()
+						{
+							IO.MapLoader.Load(this.main, file.FullName);
+						})
+					));
+				});
+				this.resizeToMenu(button);
+				officialMapsList.Children.Add(button);
+			}
+
+			Container officialMaps = this.main.UIFactory.CreateButton("Official Levels", delegate()
+			{
+				hideChallengeMenu(false);
+				showOfficialMenu();
+				this.hideChallenge = hideOfficialMenu;
+			});
+			this.resizeToMenu(officialMaps);
+			challengeMenu.Children.Add(officialMaps);
+
+			#endregion
+
+			#region Workshop Maps
+			ListContainer workshopMapsMenu = new ListContainer();
+			workshopMapsMenu.Visible.Value = false;
+			workshopMapsMenu.Add(new Binding<Vector2, Point>(workshopMapsMenu.Position, x => new Vector2(0, x.Y * 0.5f), this.main.ScreenSize));
+			workshopMapsMenu.AnchorPoint.Value = new Vector2(1, 0.5f);
+			this.main.UI.Root.Children.Add(workshopMapsMenu);
+			workshopMapsMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+			Container workshopLabelPadding = this.main.UIFactory.CreateContainer();
+			this.resizeToMenu(workshopLabelPadding);
+			workshopMapsMenu.Children.Add(workshopLabelPadding);
+
+			ListContainer workshopLabelContainer = new ListContainer();
+			workshopLabelContainer.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			workshopLabelPadding.Children.Add(workshopLabelContainer);
+
+			TextElement workshopLabel = new TextElement();
+			workshopLabel.FontFile.Value = "Font";
+			workshopLabel.Text.Value = "\\challenge title";
+			workshopLabelContainer.Children.Add(workshopLabel);
+
+			TextElement workshopScrollLabel = new TextElement();
+			workshopScrollLabel.FontFile.Value = "Font";
+			workshopScrollLabel.Text.Value = "\\scroll for more";
+			workshopLabelContainer.Children.Add(workshopScrollLabel);
+
+			Action<bool> hideWorkshopMenu = delegate(bool showPrev)
+			{
+				if (showPrev)
+					this.showPauseMenu();
+
+				if (officialAnimation != null)
+					officialAnimation.Delete.Execute();
+				officialAnimation = new Animation
+				(
+					new Animation.Vector2MoveToSpeed(workshopMapsMenu.AnchorPoint, new Vector2(1, 0.5f), Menu.hideAnimationSpeed),
+					new Animation.Set<bool>(workshopMapsMenu.Visible, false)
+				);
+				this.main.AddComponent(officialAnimation);
+				this.challengeMenuShown = showPrev;
+				this.hideChallenge = hideChallengeMenu;
+			};
+
+			Action showWorkshopMenu = delegate()
+			{
+				this.hidePauseMenu();
+
+				challengeMenuShown = true;
+
+				workshopMapsMenu.Visible.Value = true;
+				if (officialAnimation != null)
+					officialAnimation.Delete.Execute();
+				officialAnimation =
+					new Animation(
+						new Animation.Ease(
+							new Animation.Vector2MoveToSpeed(workshopMapsMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
+							Animation.Ease.EaseType.OutExponential));
+				this.main.AddComponent(officialAnimation);
+				this.currentMenu.Value = workshopMapsMenu;
+			};
+
+			Container workshopBack = this.main.UIFactory.CreateButton("\\back", () => hideWorkshopMenu(true));
+			this.resizeToMenu(workshopBack);
+			workshopMapsMenu.Children.Add(workshopBack);
+
+			ListContainer workshopMapsList = new ListContainer();
+			workshopMapsList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+			Scroller workshopMapsScroller = new Scroller();
+			workshopMapsScroller.Children.Add(workshopMapsList);
+			workshopMapsScroller.Add(new Binding<Vector2>(workshopMapsScroller.Size, () => new Vector2(workshopMapsList.Size.Value.X, this.main.ScreenSize.Value.Y * 0.5f), workshopMapsList.Size, this.main.ScreenSize));
+			workshopMapsMenu.Children.Add(workshopMapsScroller);
+
+			Action reloadMaps = delegate()
+			{
+				workshopMapsList.Children.Clear();
+				DirectoryInfo workshopDir = SteamWorker.DownloadedMaps;
+				if (!workshopDir.Exists) return;
+				foreach (var subDir in workshopDir.GetDirectories())
+				{
+					if (subDir.GetFiles(subDir.Name + ".map").Length != 1) continue;
+					if (subDir.GetFiles(subDir.Name + ".png").Length != 1) continue;
+					if (subDir.GetFiles(subDir.Name + ".meta").Length != 1) continue;
+					string mapPath = subDir.GetFiles(subDir.Name + ".map")[0].FullName;
+					MapManifest mapManifest = MapManifest.FromMapPath(mapPath);
+					if (mapManifest == null || string.IsNullOrEmpty(mapManifest.MapName)) continue;
+
+					Container button = this.main.UIFactory.CreateButton(mapManifest.MapName, delegate()
+					{
+						hideWorkshopMenu(false);
+						hidePauseMenu();
+						this.restorePausedSettings();
+						this.main.CurrentSave.Value = null;
+						this.main.AddComponent(new Animation
+							(
+							new Animation.Delay(0.2f),
+							new Animation.Execute(delegate()
+							{
+								IO.MapLoader.Load(this.main, mapPath);
+							})
+							));
+					});
+					this.resizeToMenu(button);
+					workshopMapsList.Children.Add(button);
+				}
+			};
+
+			Container workshopMaps = this.main.UIFactory.CreateButton("Workshop Levels", delegate()
+			{
+				reloadMaps();
+				hideChallengeMenu(false);
+				showWorkshopMenu();
+				this.hideChallenge = hideWorkshopMenu;
+			});
+			this.resizeToMenu(workshopMaps);
+			challengeMenu.Children.Add(workshopMaps);
+			#endregion
+		}
+
+		private void ConstructOfficialMaps()
+		{
+
 		}
 
 		public override void Awake()
@@ -993,6 +1315,8 @@ namespace Lemma.Components
 			this.pauseMenu.Children.Add(sandbox);
 			sandbox.Add(new Binding<bool, string>(sandbox.Visible, x => x == Main.MenuMap, this.main.MapFile));
 
+			ConstructChallengeMenu();
+
 			// Cheat menu
 #if CHEAT
 			Animation cheatAnimation = null;
@@ -1156,12 +1480,7 @@ namespace Lemma.Components
 			this.resizeToMenu(settingsButton);
 			this.pauseMenu.Children.Add(settingsButton);
 
-			Container challengeButton = this.main.UIFactory.CreateButton("\\challenge levels", delegate()
-			{
-				this.hidePauseMenu();
-				
 
-			});
 
 			// Edit mode toggle button
 			Container switchToEditMode = this.main.UIFactory.CreateButton("\\edit mode", delegate()
@@ -1392,6 +1711,11 @@ namespace Lemma.Components
 					return;
 				}
 #endif
+				else if (challengeMenuShown)
+				{
+					this.hideChallenge(false);
+					return;
+				}
 
 				if (this.main.MapFile.Value == Main.MenuMap)
 				{

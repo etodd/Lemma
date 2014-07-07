@@ -11,6 +11,16 @@ namespace Lemma.Util
 {
 	public static class SteamWorker
 	{
+		public static DirectoryInfo DownloadedMaps
+		{
+			get
+			{
+				string completedDirectory = Directory.GetCurrentDirectory() + "\\WSFiles\\";
+				if (!Directory.Exists(completedDirectory)) Directory.CreateDirectory(completedDirectory);
+				return new DirectoryInfo(completedDirectory);
+			}
+		}
+
 		private static uint ugcPage = 0;
 		private static UGCHandle_t ugcHandle;
 
@@ -275,6 +285,9 @@ namespace Lemma.Util
 									string imageFileNew = imageFileTemp.Replace(tempDirectoryNew, completedDirectoryNew);
 									File.Move(mapFileTemp, mapFileNew);
 									File.Move(imageFileTemp, imageFileNew);
+									MapManifest manifest = MapManifest.FromMapPath(mapFileNew);
+									manifest.MapName = t.m_rgchTitle;
+									manifest.Save();
 								}
 							}, downloadImageCall);
 						}
