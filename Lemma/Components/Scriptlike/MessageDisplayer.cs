@@ -8,7 +8,7 @@ using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class MessageDisplayer : Component<Main>
+	public class MessageDisplayer : Component<Main>, IUpdateableComponent
 	{
 		public Property<string> Message = new Property<string>();
 		public Property<float> DisplayLength = new Property<float>();
@@ -21,14 +21,18 @@ namespace Lemma.Components
 
 		private Container messageContainer = null;
 
+		private float _timer = 0;
+		private bool _displaying = false;
 		public MessageDisplayer()
 		{
 			this.Display.Action = () =>
 			{
+				if (_displaying) return;
+				_displaying = true;
 				messageContainer = main.Menu.ShowMessage(Entity, () => Message.Value, Message);
 				if (DisplayLength.Value > 0)
 				{
-					main.Menu.HideMessage(Entity, messageContainer, DisplayLength.Value);
+					_timer = DisplayLength;
 				}
 			};
 
@@ -36,7 +40,22 @@ namespace Lemma.Components
 			{
 				if (messageContainer == null) return;
 				main.Menu.HideMessage(Entity, messageContainer);
+				_displaying = false;
 			};
+		}
+
+		public void Update(float dt)
+		{
+			if (!_displaying) return;
+			_timer -= dt;
+			if (_timer <= 0)
+			{
+				_timer = 0;
+				if (DisplayLength > 0)
+				{
+					this.Hide.Execute();
+				}
+			}
 		}
 	}
 }

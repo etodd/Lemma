@@ -843,7 +843,7 @@ namespace Lemma.Factories
 							Vector3 pos = editor.Position;
 							foreach (Entity e in entities)
 							{
-								e.ClearGUID();
+								e.NewGUID();
 								e.ID.Value = "";
 								Factory<Main> factory = Factory<Main>.Get(e.Type);
 								factory.Bind(e, main);
