@@ -840,12 +840,16 @@ namespace Lemma.Factories
 							yankBuffer.Seek(0, SeekOrigin.Begin);
 							List<Entity> entities = (List<Entity>)IO.MapLoader.Serializer.Deserialize(yankBuffer);
 
+							Vector3 pos = editor.Position;
 							foreach (Entity e in entities)
 							{
 								e.ClearGUID();
 								e.ID.Value = "";
 								Factory<Main> factory = Factory<Main>.Get(e.Type);
 								factory.Bind(e, main);
+								Transform t = e.Get<Transform>();
+								if (t != null && entities.Count == 1)
+									t.Position.Value = pos;
 								main.Add(e);
 							}
 
