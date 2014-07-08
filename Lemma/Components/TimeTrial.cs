@@ -30,9 +30,11 @@ namespace Lemma.Components
 		//Gold medal time
 		public Property<float> KourTime = new Property<float>();
 
+		public Property<string> NextMap = new Property<string>();
+
 		public override void Awake()
 		{
-			this.theUI = new TimeTrialUI();
+			this.theUI = new TimeTrialUI(this);
 			main.AddComponent(theUI);
 			this.Add(new CommandBinding(StartTimeTrial, () =>
 			{
@@ -41,8 +43,8 @@ namespace Lemma.Components
 			}));
 			this.Add(new CommandBinding(EndTimeTrial, () =>
 			{
-				theUI.AnimateOut(true);
-				theUI.ShowEndPanel();
+				theUI.AnimateOut(false);
+				theUI.ShowEndPanel(true);
 			}));
 			this.Add(new CommandBinding(PauseTimer, () =>
 			{

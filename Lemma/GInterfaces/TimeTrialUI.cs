@@ -10,6 +10,7 @@ using GeeUI.ViewLayouts;
 using GeeUI.Views;
 using Lemma.Components;
 using Lemma.Console;
+using Lemma.Factories;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -24,21 +25,30 @@ namespace Lemma.GInterfaces
 
 		public PanelView RootTimeEndView;
 		private TextView EndTimeTextView;
+		private TextView EndTimeBestView;
+		private TextView EndTimeTitleView;
+		private TextView EndParTimeView;
+		private TextView EndKourTimeView;
 		private ButtonView RetryMapButton;
+		private ButtonView NextMapButton;
 		private ButtonView MainMenuButton;
 
 		public SpriteFont MainFont;
 		public SpriteFont BiggerFont;
+		public SpriteFont YourTimeFont;
+		public SpriteFont BestTimeFont;
 
 		public Action<bool> EndPanelClosed;
 
 		public Property<float> ElapsedTime = new Property<float>();
 		public Property<bool> TimeTrialTicking = new Property<bool>() { Value = true };
 
-		//Stupid little "bruteforce"
-		public int Seconds_FirstPlace = 0;
-		public int Seconds_SecondPlace = 0;
-		public int Seconds_ThirdPlace = 0;
+		private TimeTrial theTimeTrial;
+
+		public TimeTrialUI(TimeTrial tT)
+		{
+			this.theTimeTrial = tT;
+		}
 
 		public override void delete()
 		{
@@ -71,7 +81,24 @@ namespace Lemma.GInterfaces
 			RootTimeEndView.Width.Value = 400;
 			RootTimeEndView.Height.Value = 300;
 
-			//EndTimeTextView = new TextView(main.GeeUI, RootTimeEndView, );
+			EndTimeTitleView = new TextView(main.GeeUI, RootTimeEndView, "Map Title", Vector2.Zero, BiggerFont);
+			EndTimeTitleView.TextJustification = TextJustification.Center;
+			EndTimeTitleView.AutoSize.Value = false;
+			EndTimeTitleView.Width.AddBinding(new Binding<int>(EndTimeTitleView.Width, RootTimeEndView.Width));
+
+			EndTimeTextView = new TextView(main.GeeUI, RootTimeEndView, "Your time: ", new Vector2(0, 70), YourTimeFont);
+			EndTimeTextView.TextJustification = TextJustification.Center;
+			EndTimeTextView.AutoSize.Value = false;
+			EndTimeTextView.Width.AddBinding(new Binding<int>(EndTimeTextView.Width, RootTimeEndView.Width));
+
+			EndTimeBestView = new TextView(main.GeeUI, RootTimeEndView, "Best time: ", new Vector2(0, 100), BestTimeFont);
+			EndTimeBestView.TextJustification = TextJustification.Center;
+			EndTimeBestView.AutoSize.Value = false;
+			EndTimeBestView.Width.AddBinding(new Binding<int>(EndTimeBestView.Width, RootTimeEndView.Width));
+
+			RetryMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Retry", new Vector2(30, 250), MainFont );
+			NextMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Next Map", new Vector2(80, 250), MainFont);
+			MainMenuButton = new ButtonView(main.GeeUI, RootTimeEndView, "Back", new Vector2(160, 250), MainFont);
 
 			RootTimePanelView.UnselectedNinepatch = RootTimePanelView.SelectedNinepatch = GeeUIMain.NinePatchBtnDefault;
 
@@ -95,6 +122,9 @@ namespace Lemma.GInterfaces
 				return "Best: " + SecondsToTimeString(x);
 			}, this.ElapsedTime));
 
+
+			EndTimeTitleView.Text.Value = manifest.MapName;
+
 			base.Awake();
 		}
 
@@ -102,6 +132,8 @@ namespace Lemma.GInterfaces
 		{
 			MainFont = main.Content.Load<SpriteFont>("Font");
 			BiggerFont = main.Content.Load<SpriteFont>("TimeFont");
+			YourTimeFont = main.Content.Load<SpriteFont>("TimeYourTimeFont");
+			BestTimeFont = main.Content.Load<SpriteFont>("TimeBestTimeFont");
 		}
 
 		public void AnimateIn()
@@ -144,19 +176,32 @@ namespace Lemma.GInterfaces
 			TimeTrialTicking.Value = false;
 		}
 
-		public void ShowEndPanel()
+		public void ShowEndPanel(bool success)
 		{
+			PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = false;
+			main.IsMouseVisible.Value = true;
 			RootTimeEndView.Active.Value = true;
 			AnimateOut();
 			StopTicking();
-			MapManifest manifest = MapManifest.FromMapPath(main.MapFile);
-			float bestTime = manifest.BestPersonalTimeTrialTime;
-			manifest.LastPersonalTimeTrialTime = ElapsedTime;
-			if (this.ElapsedTime < bestTime || bestTime <= 0)
+
+			if (success)
 			{
-				manifest.BestPersonalTimeTrialTime = ElapsedTime;
+				MapManifest manifest = MapManifest.FromMapPath(main.MapFile);
+				float bestTime = manifest.BestPersonalTimeTrialTime;
+				manifest.LastPersonalTimeTrialTime = ElapsedTime;
+				if (this.ElapsedTime < bestTime || bestTime <= 0)
+				{
+					manifest.BestPersonalTimeTrialTime = ElapsedTime;
+				}
+				manifest.Save();
+
+				EndTimeTextView.Text.Value = "Time: " + SecondsToTimeString(ElapsedTime);
+				EndTimeBestView.Text.Value = "Best: " + SecondsToTimeString(bestTime);
+				if (bestTime >= ElapsedTime)
+				{
+					EndTimeBestView.Text.Value += " Record!";
+				}
 			}
-			manifest.Save();
 		}
 
 		public string SecondsToTimeString(float seconds)
@@ -180,18 +225,6 @@ namespace Lemma.GInterfaces
 		{
 			if (TimeTrialTicking.Value)
 				this.ElapsedTime.Value += dt;
-		}
-
-		private int NumCollectiblesPickedUp()
-		{
-			List<Entity> notes = main.Get("Note").ToList();
-			return notes.Count(x => x.Get<Note>().IsCollected);
-		}
-
-		private int NumCollectiblesTotal()
-		{
-			List<Entity> notes = main.Get("Note").ToList();
-			return notes != null ? notes.Count : 0;
 		}
 	}
 }

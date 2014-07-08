@@ -30,6 +30,7 @@ namespace Lemma.Factories
 			entity.Add("Resume", trial.ResumeTimer);
 			entity.Add("ParTime", trial.ParTime, "Base par time");
 			entity.Add("KourTime", trial.KourTime, "Gold medal time");
+			entity.Add("Next Map", trial.NextMap);
 		}
 	}
 }
