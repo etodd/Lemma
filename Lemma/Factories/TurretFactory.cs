@@ -59,9 +59,9 @@ namespace Lemma.Factories
 
 			AI ai = entity.GetOrCreate<AI>();
 
-			Model model = entity.GetOrCreate<Model>();
+			ModelAlpha model = entity.GetOrCreate<ModelAlpha>();
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
-			model.Filename.Value = "Models\\pyramid";
+			model.Filename.Value = "AlphaModels\\pyramid";
 			model.Serialize = false;
 
 			const float defaultModelScale = 0.75f;

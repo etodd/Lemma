@@ -22,8 +22,8 @@ namespace Lemma.Components
 				if (transform == null)
 					return;
 
-				Model model = new Model();
-				model.Filename.Value = "Models\\sphere";
+				ModelAlpha model = new ModelAlpha();
+				model.Filename.Value = "AlphaModels\\sphere";
 				model.Color.Value = new Vector3(factory.Color.X, factory.Color.Y, factory.Color.Z);
 				model.IsInstanced.Value = false;
 				model.Scale.Value = new Vector3(0.5f);

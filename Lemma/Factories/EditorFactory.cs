@@ -141,8 +141,8 @@ namespace Lemma.Factories
 
 			editor.EnableCommands = () => !gui.AnyTextFieldViewsSelected();
 
-			Model model = new Model();
-			model.Filename.Value = "Models\\selector";
+			ModelAlpha model = new ModelAlpha();
+			model.Filename.Value = "AlphaModels\\selector";
 			model.Scale.Value = new Vector3(0.5f);
 			model.Serialize = false;
 			entity.Add(model);

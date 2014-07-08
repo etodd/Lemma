@@ -205,8 +205,8 @@ namespace Lemma.Components
 			if (Renderer.pointLightModel == null || reload)
 			{
 				// Load light models
-				Renderer.pointLightModel = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>("Models\\pointlight");
-				Renderer.spotLightModel = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>("Models\\spotlight");
+				Renderer.pointLightModel = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>("InternalModels\\pointlight");
+				Renderer.spotLightModel = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>("InternalModels\\spotlight");
 			}
 
 			// Initialize our buffers

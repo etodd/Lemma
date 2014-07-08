@@ -71,8 +71,8 @@ namespace Lemma.Factories
 
 		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			Model model = new Model();
-			model.Filename.Value = "Models\\light";
+			ModelAlpha model = new ModelAlpha();
+			model.Filename.Value = "AlphaModels\\light";
 			model.Color.Value = this.Color;
 			model.Serialize = false;
 			model.Scale.Value = new Vector3(1, 1, -1);
@@ -81,8 +81,8 @@ namespace Lemma.Factories
 
 			VoxelAttachable.AttachEditorComponents(entity, main);
 
-			Model offsetModel = new Model();
-			offsetModel.Filename.Value = "Models\\cone";
+			ModelAlpha offsetModel = new ModelAlpha();
+			offsetModel.Filename.Value = "AlphaModels\\cone";
 			offsetModel.Add(new Binding<Vector3>(offsetModel.Color, model.Color));
 
 			CameraStop cameraStop = entity.Get<CameraStop>();

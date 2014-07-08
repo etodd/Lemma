@@ -39,8 +39,8 @@ namespace Lemma.Factories
 
 		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			Model model = new Model();
-			model.Filename.Value = "Models\\sphere";
+			ModelAlpha model = new ModelAlpha();
+			model.Filename.Value = "AlphaModels\\sphere";
 			model.Add(new Binding<Vector3>(model.Color, entity.Get<AmbientLight>().Color));
 			model.Scale.Value = new Vector3(0.5f);
 			model.Serialize = false;

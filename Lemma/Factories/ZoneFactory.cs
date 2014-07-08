@@ -39,8 +39,8 @@ namespace Lemma.Factories
 			Transform transform = new Transform { Serialize = false };
 			entity.AddWithoutOverwriting(transform);
 
-			Model cornerModel1 = new Model();
-			cornerModel1.Filename.Value = "Models\\sphere";
+			ModelAlpha cornerModel1 = new ModelAlpha();
+			cornerModel1.Filename.Value = "AlphaModels\\sphere";
 			cornerModel1.Color.Value = this.Color;
 			cornerModel1.Scale.Value = new Vector3(0.5f);
 			cornerModel1.Serialize = false;
@@ -60,8 +60,8 @@ namespace Lemma.Factories
 
 			EntityConnectable.AttachEditorComponents(entity, "ConnectedEntities", zone.ConnectedEntities);
 
-			Model model = new Model();
-			model.Filename.Value = "Models\\sphere";
+			ModelAlpha model = new ModelAlpha();
+			model.Filename.Value = "AlphaModels\\sphere";
 			model.Color.Value = this.Color;
 			model.Scale.Value = new Vector3(0.5f);
 			model.Serialize = false;

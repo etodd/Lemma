@@ -401,7 +401,7 @@ namespace Lemma.Factories
 							{
 								ModelInstance i = new ModelInstance();
 								i.Serialize = false;
-								i.Setup("Models\\position-model", hash);
+								i.Setup("InstancedModels\\position-model", hash);
 								if (i.IsFirstInstance)
 									i.Model.Color.Value = new Vector3(color.X, color.Y, color.Z);
 								i.Scale.Value = new Vector3(0.25f);
@@ -574,7 +574,7 @@ namespace Lemma.Factories
 						{
 							ModelInstance i = new ModelInstance();
 							i.Serialize = false;
-							i.Setup("Models\\position-model", hash);
+							i.Setup("InstancedModels\\position-model", hash);
 							if (i.IsFirstInstance)
 								i.Model.Color.Value = new Vector3(color.X, color.Y, color.Z);
 							i.Scale.Value = new Vector3(0.25f);
@@ -587,7 +587,7 @@ namespace Lemma.Factories
 				}
 
 				ModelInstance instance = new ModelInstance();
-				instance.Setup("Models\\position-model", 0);
+				instance.Setup("InstancedModels\\position-model", 0);
 				instance.Serialize = false;
 				instance.Scale.Value = new Vector3(0.25f);
 				entity.Add(instance);
