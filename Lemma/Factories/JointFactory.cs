@@ -152,8 +152,8 @@ namespace Lemma.Factories
 
 			Components.Joint joint = entity.Get<Components.Joint>();
 			EntityConnectable.AttachEditorComponents(entity, "Parent", joint.Parent);
-			Model model = new Model();
-			model.Filename.Value = "Models\\cone";
+			ModelAlpha model = new ModelAlpha();
+			model.Filename.Value = "AlphaModels\\cone";
 			model.Serialize = false;
 			entity.Add("DirectionModel", model);
 

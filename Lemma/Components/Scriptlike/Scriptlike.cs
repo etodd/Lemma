@@ -14,8 +14,8 @@ namespace Lemma.Components
 		{
 			Transform transform = entity.Get<Transform>();
 
-			Model model = new Model();
-			model.Filename.Value = "Models\\pyramid";
+			ModelAlpha model = new ModelAlpha();
+			model.Filename.Value = "AlphaModels\\pyramid";
 			model.Color.Value = color;
 			model.DisableCulling.Value = true;
 			model.Serialize = false;

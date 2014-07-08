@@ -59,8 +59,8 @@ namespace Lemma.Factories
 
 			PlayerTrigger.AttachEditorComponents(entity, main, this.Color);
 
-			Model model = new Model();
-			model.Filename.Value = "Models\\sphere";
+			ModelAlpha model = new ModelAlpha();
+			model.Filename.Value = "AlphaModels\\sphere";
 			model.Color.Value = this.Color;
 			model.Scale.Value = new Vector3(0.5f);
 			model.Serialize = false;

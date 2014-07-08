@@ -21,7 +21,6 @@ namespace Lemma.Factories
 			Entity entity = new Entity(main, "Skybox");
 
 			ModelAlpha skybox = new ModelAlpha();
-			skybox.Filename.Value = "Models\\skybox";
 			skybox.DiffuseTexture.Value = "Skyboxes\\skybox-sun";
 			entity.Add("Skybox", skybox);
 
@@ -35,6 +34,7 @@ namespace Lemma.Factories
 			Skybox skybox = entity.GetOrCreate<Skybox>("Settings");
 
 			ModelAlpha model = entity.Get<ModelAlpha>("Skybox");
+			model.Filename.Value = "InternalModels\\skybox";
 			model.MapContent.Value = true;
 			base.Bind(entity, main, creating);
 			entity.CannotSuspendByDistance = true;

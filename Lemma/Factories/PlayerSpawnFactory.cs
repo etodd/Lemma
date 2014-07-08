@@ -66,8 +66,8 @@ namespace Lemma.Factories
 
 		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			Model model = new Model();
-			model.Filename.Value = "Models\\light";
+			ModelAlpha model = new ModelAlpha();
+			model.Filename.Value = "AlphaModels\\light";
 			model.Color.Value = this.Color;
 			model.Serialize = false;
 

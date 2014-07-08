@@ -141,8 +141,8 @@ namespace Lemma.Factories
 
 			editor.EnableCommands = () => !gui.AnyTextFieldViewsSelected();
 
-			Model model = new Model();
-			model.Filename.Value = "Models\\selector";
+			ModelAlpha model = new ModelAlpha();
+			model.Filename.Value = "AlphaModels\\selector";
 			model.Scale.Value = new Vector3(0.5f);
 			model.Serialize = false;
 			entity.Add(model);
@@ -840,7 +840,8 @@ namespace Lemma.Factories
 							yankBuffer.Seek(0, SeekOrigin.Begin);
 							List<Entity> entities = (List<Entity>)IO.MapLoader.Serializer.Deserialize(yankBuffer);
 
-							Vector3 pos = editor.Position;
+							Vector3 center = Vector3.Zero;
+							int entitiesWithTransforms = 0;
 							foreach (Entity e in entities)
 							{
 								e.NewGUID();
@@ -848,14 +849,26 @@ namespace Lemma.Factories
 								Factory<Main> factory = Factory<Main>.Get(e.Type);
 								factory.Bind(e, main);
 								Transform t = e.Get<Transform>();
-								if (t != null && entities.Count == 1)
-									t.Position.Value = pos;
+								if (t != null)
+								{
+									center += t.Position;
+									entitiesWithTransforms++;
+								}
 								main.Add(e);
 							}
 
-							editor.SelectedEntities.Clear();
+							center /= entitiesWithTransforms;
+
+							// Recenter entities around the editor
 							foreach (Entity e in entities)
-								editor.SelectedEntities.Add(e);
+							{
+								Transform t = e.Get<Transform>();
+								if (t != null)
+									t.Position.Value += editor.Position - center;
+							}
+
+							editor.SelectedEntities.Clear();
+							editor.SelectedEntities.AddAll(entities);
 							editor.StartTranslation.Execute();
 						}
 					}

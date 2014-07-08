@@ -75,8 +75,8 @@ namespace Lemma.Components
 		{
 			Property<float> offset = entity.Get<EnemyBase>().Offset;
 
-			Model model = new Model();
-			model.Filename.Value = "Models\\cone";
+			ModelAlpha model = new ModelAlpha();
+			model.Filename.Value = "AlphaModels\\cone";
 			model.Color.Value = color;
 			model.IsInstanced.Value = false;
 			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(1.0f, 1.0f, x), offset));

@@ -164,8 +164,8 @@ namespace Lemma.Factories
 
 		public static void AttachEditorComponents(Entity entity, Main main, Property<Vector3> color = null)
 		{
-			Model model = new Model();
-			model.Filename.Value = "Models\\cone";
+			ModelAlpha model = new ModelAlpha();
+			model.Filename.Value = "AlphaModels\\cone";
 			if (color != null)
 				model.Add(new Binding<Vector3>(model.Color, color));
 
