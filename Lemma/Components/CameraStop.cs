@@ -40,16 +40,18 @@ namespace Lemma.Components
 
 			animations.Add(new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.Zero, 0.5f));
 
+			bool originallyCanSpawn = main.Spawner.CanSpawn;
 			animations.Add(new Animation.Execute(delegate()
 			{
-				if (PlayerFactory.Instance != null)
+				Entity p = PlayerFactory.Instance;
+				if (p != null)
 				{
-					CameraController cameraController = PlayerFactory.Instance.Get<CameraController>();
-					originallyThirdPerson = cameraController.ThirdPerson;
-					cameraController.ThirdPerson.Value = true;
-					cameraController.Enabled.Value = false;
-					PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = false;
+					p.Get<Model>("FirstPersonModel").Enabled.Value = false;
+					p.Get<Model>("Model").Enabled.Value = false;
+					p.Get<CameraController>().Enabled.Value = false;
+					p.Get<FPSInput>().Enabled.Value = false;
 				}
+				main.Spawner.CanSpawn = false;
 			}));
 
 			animations.Add(new Animation.Set<Matrix>(this.main.Camera.RotationMatrix, Matrix.CreateFromQuaternion(this.Entity.Get<Transform>().Quaternion)));
@@ -131,13 +133,16 @@ namespace Lemma.Components
 
 			animations.Add(new Animation.Execute(delegate()
 			{
-				if (PlayerFactory.Instance != null)
+				Entity p = PlayerFactory.Instance;
+				if (p != null)
 				{
-					CameraController cameraController = PlayerFactory.Instance.Get<CameraController>();
-					cameraController.ThirdPerson.Value = originallyThirdPerson;
-					cameraController.Enabled.Value = true;
-					PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = true;
+					p.Get<Model>("FirstPersonModel").Enabled.Value = true;
+					p.Get<Model>("Model").Enabled.Value = true;
+					p.Get<CameraController>().Enabled.Value = true;
+					p.Get<FPSInput>().Enabled.Value = true;
 				}
+				if (originallyCanSpawn)
+					main.Spawner.CanSpawn = true;
 			}));
 
 			animations.Add(new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.One, 0.5f));
