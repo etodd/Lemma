@@ -29,7 +29,11 @@ namespace Lemma
 {
 	public class Main : BaseMain
 	{
+#if DEMO
+		public const string InitialMap = "smallrain";
+#else
 		public const string InitialMap = "start";
+#endif
 
 		public const string MenuMap = "..\\menu";
 		public const string TemplateMap = "..\\template";

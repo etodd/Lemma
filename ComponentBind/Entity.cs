@@ -258,7 +258,7 @@ namespace ComponentBind
 		{
 			this.ClearGUID();
 			this.GUID = Entity.CurrentGUID;
-			Entity.CurrentGUID = Math.Max(Entity.CurrentGUID, this.GUID + 1);
+			Entity.CurrentGUID++;
 			Entity.guidTable.Add(this.GUID, this);
 		}
 

@@ -1226,6 +1226,29 @@ namespace Lemma.Components
 			// So don't allow it.
 			addInputSetting(this.main.Settings.ToggleFullscreen, "\\toggle fullscreen", true, false);
 
+			// Demo button
+#if DEMO
+			Container demo = this.main.UIFactory.CreateButton("\\demo", delegate()
+			{
+				this.ShowDialog("\\alpha disclaimer", "\\play", delegate()
+				{
+					this.restorePausedSettings();
+					this.main.CurrentSave.Value = null;
+					this.main.AddComponent(new Animation
+					(
+						new Animation.Delay(0.2f),
+						new Animation.Execute(delegate()
+						{
+							IO.MapLoader.Load(this.main, Main.InitialMap);
+						})
+					));
+				});
+			});
+			this.resizeToMenu(demo);
+			this.pauseMenu.Children.Add(demo);
+			demo.Add(new Binding<bool, string>(demo.Visible, x => x == Main.MenuMap, this.main.MapFile));
+#endif
+
 			// Start new button
 			Container startNew = this.main.UIFactory.CreateButton("\\new game", delegate()
 			{
@@ -1302,27 +1325,6 @@ namespace Lemma.Components
 			Container load = this.main.UIFactory.CreateButton("\\load", showLoad);
 			this.resizeToMenu(load);
 			this.pauseMenu.Children.Add(load);
-
-			// Sandbox button
-			Container sandbox = this.main.UIFactory.CreateButton("\\sandbox", delegate()
-			{
-				this.ShowDialog("\\sandbox disclaimer", "\\play anyway", delegate()
-				{
-					this.restorePausedSettings();
-					this.main.CurrentSave.Value = null;
-					this.main.AddComponent(new Animation
-					(
-						new Animation.Delay(0.2f),
-						new Animation.Execute(delegate()
-						{
-							IO.MapLoader.Load(this.main, "sandbox");
-						})
-					));
-				});
-			});
-			this.resizeToMenu(sandbox);
-			this.pauseMenu.Children.Add(sandbox);
-			sandbox.Add(new Binding<bool, string>(sandbox.Visible, x => x == Main.MenuMap, this.main.MapFile));
 
 			ConstructChallengeMenu();
 
@@ -1601,6 +1603,7 @@ namespace Lemma.Components
 					delegate()
 					{
 						this.main.CurrentSave.Value = null;
+						this.main.EditorEnabled.Value = false;
 						IO.MapLoader.Load(this.main, Main.MenuMap);
 						this.main.Paused.Value = false;
 					}

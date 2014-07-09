@@ -34,13 +34,9 @@ namespace Lemma.Components
 
 		private void animate()
 		{
-			bool originallyThirdPerson = false;
-
 			List<Animation.Interval> animations = new List<Animation.Interval>();
 
-			animations.Add(new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.Zero, 0.5f));
-
-			bool originallyCanSpawn = main.Spawner.CanSpawn;
+			bool originalCanSpawn = main.Spawner.CanSpawn;
 			animations.Add(new Animation.Execute(delegate()
 			{
 				Entity p = PlayerFactory.Instance;
@@ -58,11 +54,11 @@ namespace Lemma.Components
 			animations.Add(new Animation.Set<Vector3>(this.main.Camera.Position, Vector3.Transform(new Vector3(0, 0, this.Offset), this.Entity.Get<Transform>().Matrix)));
 
 			Animation.Sequence sequence = new Animation.Sequence();
-			animations.Add(new Animation.Parallel(sequence, new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.One, 0.5f)));
 
 			Animation.Ease.EaseType lastEase = Animation.Ease.EaseType.None;
 			BSpline spline = null;
 			Entity current = this.Entity;
+			float totalDuration = 0.0f;
 			while (current != null)
 			{
 				CameraStop currentStop = current.Get<CameraStop>();
@@ -80,6 +76,7 @@ namespace Lemma.Components
 
 				float currentTime = spline.Duration;
 				spline.Duration += currentStop.Duration;
+				totalDuration += currentStop.Duration;
 
 				if (currentStop.Blend != Animation.Ease.EaseType.None && next != null)
 				{
@@ -129,9 +126,7 @@ namespace Lemma.Components
 				current = next;
 			}
 
-			animations.Add(new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.Zero, 0.5f));
-
-			animations.Add(new Animation.Execute(delegate()
+			Action done = delegate()
 			{
 				Entity p = PlayerFactory.Instance;
 				if (p != null)
@@ -141,11 +136,23 @@ namespace Lemma.Components
 					p.Get<CameraController>().Enabled.Value = true;
 					p.Get<FPSInput>().Enabled.Value = true;
 				}
-				if (originallyCanSpawn)
-					main.Spawner.CanSpawn = true;
-			}));
-
-			animations.Add(new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.One, 0.5f));
+				main.Spawner.CanSpawn = originalCanSpawn;
+			};
+			
+			if (totalDuration > 0.0f) // Fade in and out
+			{
+				animations.Add(new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.Zero, 0.5f));
+				animations.Add(new Animation.Parallel(sequence, new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.One, 0.5f)));
+				animations.Add(new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.Zero, 0.5f));
+				animations.Add(new Animation.Execute(done));
+				animations.Add(new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.One, 0.5f));
+			}
+			else
+			{
+				// Just do it
+				animations.Add(sequence); 
+				animations.Add(new Animation.Execute(done));
+			}
 
 			Animation anim = new Animation(animations.ToArray());
 			anim.EnabledWhenPaused = false;

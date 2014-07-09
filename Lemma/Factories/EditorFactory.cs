@@ -844,7 +844,7 @@ namespace Lemma.Factories
 							int entitiesWithTransforms = 0;
 							foreach (Entity e in entities)
 							{
-								e.NewGUID();
+								e.ClearGUID();
 								e.ID.Value = "";
 								Factory<Main> factory = Factory<Main>.Get(e.Type);
 								factory.Bind(e, main);
