@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Lemma.Components;
+using System.IO;
 
 namespace Lemma.Factories
 {
@@ -30,7 +31,10 @@ namespace Lemma.Factories
 			entity.Add("Resume", trial.ResumeTimer);
 			entity.Add("ParTime", trial.ParTime, "Base par time");
 			entity.Add("KourTime", trial.KourTime, "Gold medal time");
-			entity.Add("Next Map", trial.NextMap);
+			entity.Add("NextMap", trial.NextMap, new PropertyEntry.EditorData
+			{
+				Options = FileFilter.Get(main, Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory), new string[] { "", "Challenge" }, IO.MapLoader.MapExtension),
+			});
 		}
 	}
 }
