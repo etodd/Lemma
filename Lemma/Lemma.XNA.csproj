@@ -473,7 +473,6 @@
     <Content Include="GeeUI\Resources\checkbox_checked_selected.png" />
     <Content Include="GeeUI\Resources\checkbox_default.png" />
     <Content Include="GeeUI\Resources\checkbox_default_selected.png" />
-    <None Include="GeeUI\Resources\imageview.png" />
     <None Include="GeeUI\Resources\panel_selected.png" />
     <None Include="GeeUI\Resources\panel_unselected.png" />
     <None Include="GeeUI\Resources\slider.png" />
@@ -486,10 +485,12 @@
     <None Include="GeeUI\Resources\textfield_selected_wrong.9.png" />
     <None Include="GeeUI\Resources\window_selected.9.png" />
     <None Include="GeeUI\Resources\window_unselected.9.png" />
+    <None Include="GeeUI\Resources\dropdown.png" />
     <Content Include="icon.ico" />
     <Content Include="README.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\dropdown.bmp" />
     <Content Include="steam_appid.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -503,7 +504,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GeeUI\Resource1.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resource1.Designer.cs</LastGenOutput>
+      <LastGenOutput>Resource11.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

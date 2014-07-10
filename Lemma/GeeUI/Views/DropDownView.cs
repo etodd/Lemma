@@ -78,7 +78,7 @@ namespace GeeUI.Views
 
 			this.DropDownPanelView = new PanelView(theGeeUI, theGeeUI.RootView, Vector2.Zero);
 			DropDownPanelView.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
-			this.DropDownPanelView.SelectedNinepatch = this.DropDownPanelView.UnselectedNinepatch;
+			this.DropDownPanelView.SelectedNinepatch = this.DropDownPanelView.UnselectedNinepatch = GeeUIMain.NinePatchDropDown;
 
 			FilterView = new TextFieldView(theGeeUI, DropDownPanelView, Vector2.Zero, mainFont);
 			FilterView.Height.Value = 20;

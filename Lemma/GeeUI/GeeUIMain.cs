@@ -50,6 +50,8 @@ namespace GeeUI
 		public static NinePatch NinePatchPanelSelected = new NinePatch();
 		public static NinePatch NinePatchPanelUnselected = new NinePatch();
 
+		public static NinePatch NinePatchDropDown = new NinePatch();
+
 		public static Texture2D TextureCheckBoxDefault;
 		public static Texture2D TextureCheckBoxSelected;
 		public static Texture2D TextureCheckBoxDefaultChecked;
@@ -159,6 +161,8 @@ namespace GeeUI
 			Texture2D panelSelected = ConversionManager.BitmapToTexture(Resource1.panel_selected_9, theGame.GraphicsDevice);
 			Texture2D panelUnselected = ConversionManager.BitmapToTexture(Resource1.panel_unselected_9, theGame.GraphicsDevice);
 
+			Texture2D dropdown = ConversionManager.BitmapToTexture(Resource1.dropdown, theGame.GraphicsDevice);
+
 			Texture2D btnDefault = ConversionManager.BitmapToTexture(Resource1.btn_default_9, theGame.GraphicsDevice);
 			Texture2D btnClicked = ConversionManager.BitmapToTexture(Resource1.btn_clicked_9, theGame.GraphicsDevice);
 			Texture2D btnHover = ConversionManager.BitmapToTexture(Resource1.btn_hover_9, theGame.GraphicsDevice);
@@ -184,6 +188,8 @@ namespace GeeUI
 
 			NinePatchPanelUnselected.LoadFromTexture(panelUnselected);
 			NinePatchPanelSelected.LoadFromTexture(panelSelected);
+
+			NinePatchDropDown.LoadFromTexture(dropdown);
 
 			NinePatchBtnDefault.LoadFromTexture(btnDefault);
 			NinePatchBtnClicked.LoadFromTexture(btnClicked);
