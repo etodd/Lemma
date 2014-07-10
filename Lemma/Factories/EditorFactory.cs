@@ -273,7 +273,7 @@ namespace Lemma.Factories
 			AddCommand
 			(
 				entity, main, "Workshop Update",
-				new PCInput.Chord(), 
+				new PCInput.Chord(),
 				new Command
 				{
 					Action = delegate()
@@ -407,6 +407,57 @@ namespace Lemma.Factories
 				},
 				gui.VoxelCommands,
 				() => !editor.VoxelEditMode && editor.SelectedEntities.Length == 2 && editor.SelectedEntities[0].Get<Voxel>() != null && editor.SelectedEntities[1].Get<Voxel>() != null,
+				editor.VoxelEditMode, editor.SelectedEntities.Length
+			);
+
+			AddCommand
+			(
+				entity, main, "Create VoxelFill", new PCInput.Chord(),
+				new Command
+				{
+					Action = delegate()
+					{
+						Entity currentVoxel = editor.SelectedEntities[0];
+						Voxel map1 = currentVoxel.Get<Voxel>();
+						Voxel map2;
+
+						Entity voxelFill = Factory<Main>.Get("VoxelFill").CreateAndBind(main);
+						Transform position = voxelFill.Get<Transform>("Transform");
+						if (position != null)
+							position.Position.Value = editor.Position;
+						entity.NewGUID();
+						main.Add(entity);
+
+						map2 = voxelFill.Get<Voxel>();
+
+						foreach (Voxel.Chunk chunk in map1.Chunks)
+						{
+							foreach (Voxel.Box box in chunk.Boxes)
+							{
+								foreach (Voxel.Coord coord in box.GetCoords())
+									map2.Fill(map1.GetAbsolutePosition(coord), box.Type, false);
+							}
+						}
+						map2.Regenerate();
+
+						List<Voxel.Coord> toRemove = new List<Voxel.Coord>();
+						foreach (Voxel.Chunk chunk in map1.Chunks)
+						{
+							foreach (Voxel.Box box in chunk.Boxes)
+							{
+								foreach (Voxel.Coord coord in box.GetCoords())
+									toRemove.Add(coord);
+							}
+						}
+						map1.Empty(toRemove, true, notify: false);
+						map1.Regenerate();
+
+						editor.NeedsSave.Value = true;
+						voxelFill.Get<VoxelFill>().Target.Value = new Entity.Handle() { Target = map1.Entity };
+					}
+				},
+				gui.VoxelCommands,
+				() => !editor.VoxelEditMode && editor.SelectedEntities.Length == 1 && editor.SelectedEntities[0].Type == "Voxel",
 				editor.VoxelEditMode, editor.SelectedEntities.Length
 			);
 
@@ -574,7 +625,7 @@ namespace Lemma.Factories
 			);
 			AddCommand
 			(
-				entity, main, "Delete", new PCInput.Chord { Key = Keys.OemComma },  editor.DeleteMaterial, gui.VoxelCommands,
+				entity, main, "Delete", new PCInput.Chord { Key = Keys.OemComma }, editor.DeleteMaterial, gui.VoxelCommands,
 				() => editor.VoxelEditMode && editor.TransformMode == Editor.TransformModes.None,
 				editor.VoxelEditMode, editor.TransformMode
 			);
