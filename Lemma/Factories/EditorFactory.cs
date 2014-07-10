@@ -262,7 +262,28 @@ namespace Lemma.Factories
 							f += ".map";
 						if (!Path.IsPathRooted(f))
 							f = Path.GetFullPath(Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory, f));
-						main.AddComponent(new WorkShopInterface(f));
+						main.AddComponent(new WorkShopInterface());
+					}
+				},
+				gui.MapCommands,
+				() => !input.EnableLook && !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None,
+				input.EnableLook, editor.VoxelEditMode, editor.TransformMode
+			);
+
+			AddCommand
+			(
+				entity, main, "Workshop Update",
+				new PCInput.Chord(), 
+				new Command
+				{
+					Action = delegate()
+					{
+						string f = main.MapFile;
+						if (Path.GetExtension(f) != ".map")
+							f += ".map";
+						if (!Path.IsPathRooted(f))
+							f = Path.GetFullPath(Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory, f));
+						main.AddComponent(new UpdateWorkShopInterface());
 					}
 				},
 				gui.MapCommands,

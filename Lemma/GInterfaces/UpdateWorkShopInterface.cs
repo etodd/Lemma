@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
@@ -8,42 +10,33 @@ using ICSharpCode.SharpZipLib.Tar;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Steamworks;
 using Point = Microsoft.Xna.Framework.Point;
 using View = GeeUI.Views.View;
 
 namespace Lemma.GInterfaces
 {
-	public class WorkShopInterface : Component<Main>
+	public class UpdateWorkShopInterface : Component<Main>
 	{
 		public SpriteFont MainFont;
 
 		private View EncompassingView;
 		private PanelView MainView;
-		private PanelView NewMapView;
-		private PanelView UpdateMapView;
 		private TextFieldView MapFilePath;
 		private ButtonView MapOpenPath;
-		private TextFieldView MapImagePath;
-		private ButtonView OpenImagePath;
-		private TextFieldView NameView;
-		private TextFieldView DescriptionView;
+		private DropDownView SelectFile;
+
+		private SteamUGCDetails_t currentPublishedFile;
 
 		private ButtonView UploadButton;
 		private ButtonView CancelButton;
 
-		private ButtonView UpdateInstead;
-
 		private Property<string> StatusString = new Property<string>() { Value = "" };
 
 		private string MapPath = "";
-		public WorkShopInterface()
+		public UpdateWorkShopInterface()
 		{
 			this.MapPath = "";
-		}
-
-		public WorkShopInterface(string path)
-		{
-			MapPath = path;
 		}
 
 		public override void Awake()
@@ -56,28 +49,52 @@ namespace Lemma.GInterfaces
 			MainView.Resizeable = false;
 			MainView.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
 			MainView.Width.Value = 400;
-			MainView.Height.Value = 400;
+			MainView.Height.Value = 155;
 
 			this.EncompassingView.Add(new Binding<int, Point>(EncompassingView.Height, (p) => p.Y, main.ScreenSize));
 			this.EncompassingView.Add(new Binding<int, Point>(EncompassingView.Width, (p) => p.X, main.ScreenSize));
 			this.MainView.Add(new Binding<Vector2, int>(MainView.Position, i => new Vector2(i / 2f, MainView.Y), EncompassingView.Width));
 			this.MainView.Add(new Binding<Vector2, int>(MainView.Position, i => new Vector2(MainView.X, i / 2f), EncompassingView.Height));
 
-			new TextView(main.GeeUI, MainView, "Map File:", new Vector2(10, 8), MainFont);
-			this.MapFilePath = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 25), MainFont) { MultiLine = false, Editable = false };
-			this.MapOpenPath = new ButtonView(main.GeeUI, MainView, "...", new Vector2(360, 25), MainFont);
-			new TextView(main.GeeUI, MainView, "Thumbnail File:", new Vector2(10, 48), MainFont);
-			this.MapImagePath = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 65), MainFont) { MultiLine = false, Editable = false };
-			this.OpenImagePath = new ButtonView(main.GeeUI, MainView, "...", new Vector2(360, 65), MainFont);
-			new TextView(main.GeeUI, MainView, "Name:", new Vector2(10, 88), MainFont);
-			this.NameView = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 105), MainFont) { MultiLine = false };
-			new TextView(main.GeeUI, MainView, "Description:", new Vector2(10, 128), MainFont);
-			this.DescriptionView = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 145), MainFont);
+			new TextView(main.GeeUI, MainView, "Current Workshop Entry:", new Vector2(10, 8), MainFont);
+			this.SelectFile = new DropDownView(main.GeeUI, MainView, new Vector2(10, 35), MainFont);
+			SelectFile.AddOption("Fetching...", null);
+			this.SelectFile.Position.Value = new Vector2(10, 30);
 
-			this.UploadButton = new ButtonView(main.GeeUI, MainView, "Upload", new Vector2(50, 360), MainFont);
-			this.CancelButton = new ButtonView(main.GeeUI, MainView, "Cancel", new Vector2(300, 360), MainFont);
+			new TextView(main.GeeUI, MainView, "New Map File:", new Vector2(10, 68), MainFont);
+			this.MapFilePath = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 85), MainFont) { MultiLine = false, Editable = false };
+			this.MapOpenPath = new ButtonView(main.GeeUI, MainView, "...", new Vector2(360, 85), MainFont);
 
-			var statusString = new TextView(main.GeeUI, MainView, "Waiting", new Vector2(110, 365), MainFont)
+			SteamWorker.GetCreatedWorkShopEntries((entries) =>
+			{
+				SelectFile.RemoveAllOptions();
+				if (entries == null)
+				{
+					SelectFile.AddOption("Error fetching entries", null);
+					return;
+				}
+				var listEntries = entries as List<SteamUGCDetails_t>;
+				if (listEntries == null || listEntries.Count == 0)
+				{
+					SelectFile.AddOption("Error fetching entries", null);
+					return;
+				}
+				foreach (var entry in listEntries)
+				{
+					SteamUGCDetails_t entry1 = entry;
+					var button = SelectFile.AddOption(entry.m_rgchTitle, () =>
+					{
+						this.currentPublishedFile = entry1;
+						this.UploadButton.AllowMouseEvents.Value = true;
+						this.CancelButton.AllowMouseEvents.Value = true;
+					}, related:entry);
+				}
+			});
+
+			this.UploadButton = new ButtonView(main.GeeUI, MainView, "Upload", new Vector2(50, 125), MainFont);
+			this.CancelButton = new ButtonView(main.GeeUI, MainView, "Cancel", new Vector2(300, 125), MainFont);
+
+			var statusString = new TextView(main.GeeUI, MainView, "Waiting", new Vector2(110, 130), MainFont)
 			{
 				TextJustification = TextJustification.Center,
 			};
@@ -85,10 +102,7 @@ namespace Lemma.GInterfaces
 			statusString.AutoSize.Value = false;
 			statusString.Width.Value = 190;
 
-			ConfigureTextField(MapImagePath);
 			ConfigureTextField(MapFilePath);
-			ConfigureTextField(NameView);
-			ConfigureTextField(DescriptionView);
 
 			UploadButton.OnMouseClick += (sender, args) =>
 			{
@@ -109,15 +123,6 @@ namespace Lemma.GInterfaces
 					this.MapFilePath.Text = dialog.FileName;
 			};
 
-			OpenImagePath.OnMouseClick += (sender, args) =>
-			{
-				var dialog = new System.Windows.Forms.OpenFileDialog();
-				dialog.Filter = "Image Files |*.png";
-				var result = dialog.ShowDialog();
-				if (result == DialogResult.OK)
-					this.MapImagePath.Text = dialog.FileName;
-			};
-
 			this.Add(new Binding<string>(statusString.Text, StatusString));
 
 			MapFilePath.Text = MapPath;
@@ -126,35 +131,16 @@ namespace Lemma.GInterfaces
 
 		public void DoUpload()
 		{
-			if (MapFilePath.Text.Length == 0 || MapImagePath.Text.Length == 0 || NameView.Text.Length == 0 ||
-				DescriptionView.Text.Length == 0) return;
+			if (MapFilePath.Text.Length == 0) return;
 
 			CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = false;
 
 			string filePath = MapFilePath.Text;
-			string imagePath = MapImagePath.Text;
-			string description = DescriptionView.Text;
-			string name = NameView.Text;
 
 			string steamFilePath = "workshop/maps/" + MD5(filePath) + ".map";
-			string steamImagePath = "workshop/maps/" + MD5(imagePath) + ".png";
 
 			StatusString.Value = "Storing map...";
-			if (SteamWorker.WriteFileUGC(filePath, steamFilePath))
-			{
-				StatusString.Value = "Storing image...";
-				if (SteamWorker.WriteFileUGC(imagePath, steamImagePath))
-				{
-
-				}
-				else
-				{
-					StatusString.Value = "Failed to store image.";
-					CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
-					return;
-				}
-			}
-			else
+			if (!SteamWorker.WriteFileUGC(filePath, steamFilePath))
 			{
 				CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
 				StatusString.Value = "Failed to store map.";
@@ -162,37 +148,26 @@ namespace Lemma.GInterfaces
 			}
 
 			StatusString.Value = "Uploading map...";
-			SteamWorker.ShareFileUGC(steamFilePath, (b, t) =>
+			SteamWorker.ShareFileUGC(steamFilePath, (mapSuccess, t) =>
 			{
-				if (b)
+				if (mapSuccess)
 				{
-					StatusString.Value = "Uploading image...";
-					SteamWorker.ShareFileUGC(steamImagePath, (b1, handleT) =>
+					StatusString.Value = "Finalizing Entry...";
+					SteamWorker.UpdateWorkshopMap(currentPublishedFile.m_nPublishedFileId, steamFilePath, publishSuccess =>
 					{
-						if (b1)
+						if (publishSuccess)
 						{
-							StatusString.Value = "Finalizing Entry...";
-							SteamWorker.UploadWorkShop(steamFilePath, steamImagePath, name, description, (publishSuccess, needsAcceptEULA, publishedFile) =>
-							{
-								if (publishSuccess)
-								{
-									StatusString.Value = "Success!";
-									MapImagePath.ClearText();
-									MapFilePath.ClearText();
-									DescriptionView.ClearText();
-									NameView.ClearText();
-									CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
-								}
-								else
-								{
-									StatusString.Value = "Failed publishing";
-									CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
-								}
-							});
+							StatusString.Value = "Success!";
+							MapFilePath.ClearText();
+							CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
+
+							//Delete the old map
+							bool deleteGood = SteamRemoteStorage.FileDelete(currentPublishedFile.m_pchFileName);
+							deleteGood = !deleteGood;
 						}
 						else
 						{
-							StatusString.Value = "Failed to upload image.";
+							StatusString.Value = "Failed publishing";
 							CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
 						}
 					});

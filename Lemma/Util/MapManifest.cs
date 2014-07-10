@@ -10,6 +10,7 @@ namespace Lemma.Util
 		public float LastPersonalTimeTrialTime { get; set; }
 		public int TimesPlayed { get; set; }
 		public string MapName { get; set; }
+		public string MapPchName { get; set; }
 
 		private FileInfo MapPath;
 		private FileInfo MetaPath;

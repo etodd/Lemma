@@ -218,6 +218,7 @@
     <Compile Include="GeeUI\Views\WindowView.cs" />
     <Compile Include="GInterfaces\ConsoleUI.cs" />
     <Compile Include="GInterfaces\TimeTrialUI.cs" />
+    <Compile Include="GInterfaces\UpdateWorkShopInterface.cs" />
     <Compile Include="GInterfaces\WorkShopInterface.cs" />
     <Compile Include="Graphics\Cloud.cs" />
     <Compile Include="MainMenu.cs" />

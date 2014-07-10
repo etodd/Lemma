@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -148,6 +149,18 @@ namespace Lemma.Util
 
 		}
 
+		public static void UpdateWorkshopMap(PublishedFileId_t workshop, string pchFile, Action<bool> onDone)
+		{
+			var updateHandle = SteamRemoteStorage.CreatePublishedFileUpdateRequest(workshop);
+			SteamRemoteStorage.UpdatePublishedFileFile(updateHandle, pchFile);
+			var call = SteamRemoteStorage.CommitPublishedFileUpdate(updateHandle);
+			new CallResult<RemoteStorageUpdatePublishedFileResult_t>((result, failure) =>
+			{
+				if (onDone == null) return;
+				onDone(result.m_eResult == EResult.k_EResultOK && !failure);
+			}, call);
+		}
+
 		public static void UploadWorkShop(string mapFile, string imageFile, string title, string description, Action<bool, bool, PublishedFileId_t> onDone)
 		{
 			var call = SteamRemoteStorage.PublishWorkshopFile(mapFile, imageFile, new AppId_t(300340), title, description,
@@ -249,10 +262,19 @@ namespace Lemma.Util
 
 			string tempDirectoryNew = tempDirectory + file.m_PublishedFileId + "\\";
 			string completedDirectoryNew = completedDirectory + file.m_PublishedFileId + "\\";
+
+			MapManifest checkAgainst = null;
 			if (Directory.Exists(completedDirectoryNew))
 			{
-				return;
+				string mapPath = completedDirectoryNew + file.m_PublishedFileId + ".map";
+				checkAgainst = MapManifest.FromMapPath(mapPath);
+				if (checkAgainst == null)
+				{
+					Directory.Delete(completedDirectoryNew, true);
+				}
 			}
+
+			bool doImg = checkAgainst == null;
 			if (!Directory.Exists(tempDirectoryNew)) Directory.CreateDirectory(tempDirectoryNew);
 			if (!Directory.Exists(completedDirectoryNew)) Directory.CreateDirectory(completedDirectoryNew);
 
@@ -260,6 +282,17 @@ namespace Lemma.Util
 			{
 				if (!failure && t.m_eResult == EResult.k_EResultOK)
 				{
+					if (checkAgainst != null)
+					{
+						if (!String.Equals(checkAgainst.MapPchName, t.m_pchFileName))
+						{
+							File.Delete(completedDirectoryNew + file.m_PublishedFileId + ".map");
+						}
+						else
+						{
+							return;
+						}
+					}
 					string mapFileTemp = tempDirectoryNew + file.m_PublishedFileId.ToString() + ".map";
 					string imageFileTemp = tempDirectoryNew + file.m_PublishedFileId.ToString() + ".png";
 					var downloadMapCall = SteamRemoteStorage.UGCDownloadToLocation(t.m_hFile, mapFileTemp, 1);
@@ -271,8 +304,7 @@ namespace Lemma.Util
 						}
 						else
 						{
-							var downloadImageCall = SteamRemoteStorage.UGCDownloadToLocation(t.m_hPreviewFile, imageFileTemp, 1);
-							new CallResult<RemoteStorageDownloadUGCResult_t>((resultT2, ioFailure2) =>
+							Action<RemoteStorageDownloadUGCResult_t, bool> onImgDownloaded = (resultT2, ioFailure2) =>
 							{
 								if (ioFailure2)
 								{
@@ -282,14 +314,28 @@ namespace Lemma.Util
 								else
 								{
 									string mapFileNew = mapFileTemp.Replace(tempDirectoryNew, completedDirectoryNew);
-									string imageFileNew = imageFileTemp.Replace(tempDirectoryNew, completedDirectoryNew);
 									File.Move(mapFileTemp, mapFileNew);
-									File.Move(imageFileTemp, imageFileNew);
+									if (doImg)
+									{
+										string imageFileNew = imageFileTemp.Replace(tempDirectoryNew, completedDirectoryNew);
+										File.Move(imageFileTemp, imageFileNew);
+									}
 									MapManifest manifest = MapManifest.FromMapPath(mapFileNew);
 									manifest.MapName = t.m_rgchTitle;
+									manifest.MapPchName = resultT.m_pchFileName;
 									manifest.Save();
 								}
-							}, downloadImageCall);
+							};
+							if (doImg)
+							{
+								var downloadImageCall = SteamRemoteStorage.UGCDownloadToLocation(t.m_hPreviewFile, imageFileTemp, 1);
+								new CallResult<RemoteStorageDownloadUGCResult_t>(
+									(ugcResultT, bIoFailure) => onImgDownloaded(ugcResultT, bIoFailure), downloadImageCall);
+							}
+							else
+							{
+								onImgDownloaded(new RemoteStorageDownloadUGCResult_t(), false);
+							}
 						}
 					}, downloadMapCall);
 				}
@@ -314,6 +360,38 @@ namespace Lemma.Util
 
 		}
 
+		public static void GetCreatedWorkShopEntries(Action<IEnumerable<SteamUGCDetails_t>> onResult)
+		{
+			var query = SteamUGC.CreateQueryUserUGCRequest(SteamUser.GetSteamID().GetAccountID(),
+			   EUserUGCList.k_EUserUGCList_Published, EUGCMatchingUGCType.k_EUGCMatchingUGCType_UsableInGame,
+			   EUserUGCListSortOrder.k_EUserUGCListSortOrder_LastUpdatedDesc, new AppId_t(300340), new AppId_t(300340),
+			   1);
+
+			var call = SteamUGC.SendQueryUGCRequest(query);
+
+			new CallResult<SteamUGCQueryCompleted_t>((t, failure) =>
+			{
+				if (onResult == null)
+					return;
+
+				List<SteamUGCDetails_t> ret = new List<SteamUGCDetails_t>();
+
+				for (uint i = 0; i < t.m_unNumResultsReturned; i++)
+				{
+					var deets = new SteamUGCDetails_t();
+					if (SteamUGC.GetQueryUGCResult(t.m_handle, i, ref deets))
+					{
+						if (deets.m_nConsumerAppID.m_AppId == 300340 && deets.m_eFileType == EWorkshopFileType.k_EWorkshopFileTypeCommunity)
+						{
+							ret.Add(deets);
+						}
+					}
+				}
+
+				onResult(ret);
+			}, call);
+		}
+
 		#region Callbacks
 
 		private static void OnOverlayActivated(GameOverlayActivated_t callback)
@@ -322,14 +400,25 @@ namespace Lemma.Util
 			if (!OverlayActive) _overlayTimer = 0.2f;
 		}
 
+		private static List<string> directories = new List<string>();
 		private static void OnUGCQueryReturn(SteamUGCQueryCompleted_t handle)
 		{
+			if (ugcPage == 1)
+			{
+				directories.Clear();
+				foreach (var s in SteamWorker.DownloadedMaps.GetDirectories())
+				{
+					directories.Add(s.Name);
+				}
+			}
+			
 			int blah = 0;
 			for (uint i = 0; i < handle.m_unNumResultsReturned; i++)
 			{
 				var deets = new SteamUGCDetails_t();
 				if (SteamUGC.GetQueryUGCResult(handle.m_handle, i, ref deets))
 				{
+					directories.Remove(deets.m_nPublishedFileId.m_PublishedFileId.ToString());
 					if (deets.m_nConsumerAppID.m_AppId == 300340 && deets.m_eFileType == EWorkshopFileType.k_EWorkshopFileTypeCommunity)
 					{
 						DownloadLevel(deets.m_nPublishedFileId);
@@ -340,7 +429,15 @@ namespace Lemma.Util
 			{
 				QuerySubscribed();
 			}
-
+			else
+			{
+				//This whole ordeal deletes folders in here that are not currently-subscribed workshop maps.
+				foreach (var dir in directories)
+				{
+					Directory.Delete(DownloadedMaps.FullName + dir, true);
+				}
+			}
+			
 		}
 
 		private static void OnSubscribed(RemoteStoragePublishedFileSubscribed_t subscribed)
