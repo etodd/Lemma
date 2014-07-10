@@ -14,7 +14,7 @@ using System.Collections.ObjectModel;
 
 namespace GeeUI.Views
 {
-	public class View : Component<Main>
+	public class View : Bindable
 	{
 		public delegate void MouseClickEventHandler(object sender, EventArgs e);
 		public delegate void MouseOverEventHandler(object sender, EventArgs e);

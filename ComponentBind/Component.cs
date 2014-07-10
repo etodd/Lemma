@@ -8,7 +8,12 @@ using System.ComponentModel;
 
 namespace ComponentBind
 {
-	public interface IComponent
+	public interface IBindable
+	{
+		void delete();
+	}
+
+	public interface IComponent : IBindable
 	{
 		Entity Entity { get; set; }
 		bool NeedsAdded { get; }
@@ -22,7 +27,6 @@ namespace ComponentBind
 		Command Delete { get; }
 		void OnSave();
 		void Start();
-		void delete();
 		void Awake();
 	}
 
@@ -36,7 +40,37 @@ namespace ComponentBind
 		void Update(float dt);
 	}
 
-	public class Component<MainClass> : IComponent
+	public class Bindable : IBindable
+	{
+		private List<IBinding> bindings = new List<IBinding>();
+
+		public void Add(IBinding binding)
+		{
+			this.bindings.Add(binding);
+		}
+
+		public void Remove(IBinding binding)
+		{
+			binding.Delete();
+			this.bindings.Remove(binding);
+		}
+
+		public void RemoveAllBindings()
+		{
+			foreach (IBinding binding in this.bindings)
+				binding.Delete();
+			this.bindings.Clear();
+		}
+
+		public virtual void delete()
+		{
+			foreach (IBinding binding in this.bindings)
+				binding.Delete();
+			this.bindings.Clear();
+		}
+	}
+
+	public class Component<MainClass> : Bindable, IComponent
 		where MainClass : BaseMain
 	{
 		[XmlIgnore]
@@ -83,8 +117,6 @@ namespace ComponentBind
 		[XmlIgnore]
 		public bool EnabledWhenPaused { get; set; }
 
-		private List<IBinding> bindings = new List<IBinding>();
-
 		protected MainClass main;
 
 		[XmlIgnore]
@@ -114,6 +146,7 @@ namespace ComponentBind
 			{
 				Enabled.Value = true;
 			}));
+
 			this.Add(new CommandBinding(Disable, () => Enabled, delegate()
 			{
 				Enabled.Value = false;
@@ -152,36 +185,16 @@ namespace ComponentBind
 			};
 		}
 
-		public void Add(IBinding binding)
-		{
-			this.bindings.Add(binding);
-		}
-
-		public void Remove(IBinding binding)
-		{
-			binding.Delete();
-			this.bindings.Remove(binding);
-		}
-
-		public void RemoveAllBindings()
-		{
-			foreach (IBinding binding in this.bindings)
-				binding.Delete();
-			this.bindings.Clear();
-		}
-
 		public void SetMain(BaseMain _main)
 		{
 			this.main = (MainClass)_main;
 		}
 
-		public virtual void delete()
+		public override void delete()
 		{
 			if (this.Entity != null)
 				this.Entity.Remove(this);
-			foreach (IBinding binding in this.bindings)
-				binding.Delete();
-			this.bindings.Clear();
+			base.delete();
 		}
 	}
 }
