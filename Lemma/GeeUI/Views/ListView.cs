@@ -39,31 +39,33 @@ namespace GeeUI.Views
 		public ListView(GeeUIMain GeeUI, View rootView)
 			: base(GeeUI, rootView)
 		{
-			this.Add(new NotifyBinding(this.RecomputeOffset, this.ChildrenBoundBox, this.Width, this.Height));
+			this.Add(new NotifyBinding(delegate()
+			{
+				this.recomputeOffset(0);
+			}, this.ChildrenBoundBox, this.Width, this.Height));
 		}
 
-
-		private void RecomputeOffset()
+		private void recomputeOffset(int scroll)
 		{
-			this.ContentOffset.Value = new Vector2(0, this.ContentOffset.Value.Y);
-			if (ChildrenBoundBox.Value.Height <= this.AbsoluteBoundBox.Height)
+			int offsetY = (int)this.ContentOffset.Value.Y + scroll;
+			Rectangle childBoundBox = ChildrenBoundBox;
+			if (childBoundBox.Height <= this.Height)
+				offsetY = 0;
+			else
 			{
-				this.ContentOffset.Value = new Vector2(this.ContentOffset.Value.X, 0);
-				return;
+				offsetY = Math.Max(offsetY, 0);
+				offsetY = Math.Min(offsetY, childBoundBox.Height - this.Height);
 			}
-			if (ChildrenBoundBox.Value.Bottom < AbsoluteBoundBox.Bottom)
-			{
-				this.ContentOffset.Value += new Vector2(0, ChildrenBoundBox.Value.Bottom - AbsoluteBoundBox.Bottom);
-			}
-			if (ChildrenBoundBox.Value.Top > AbsoluteBoundBox.Top)
-				this.ContentOffset.Value = new Vector2(this.ContentOffset.Value.X, 0);
+
+			Vector2 target = new Vector2(0, offsetY);
+			if (this.ContentOffset != target)
+				this.ContentOffset.Value = target;
 		}
 
 		public override void OnMScroll(Vector2 position, int scrollDelta, bool fromChild)
 		{
-			this.ContentOffset.Value -= new Vector2(0, scrollDelta * ScrollMultiplier);
-			RecomputeOffset();
-			base.OnMScroll(position, scrollDelta, true);
+			this.recomputeOffset(scrollDelta * -ScrollMultiplier);
+			base.OnMScroll(position, scrollDelta, fromChild);
 		}
 
 		public override void Draw(SpriteBatch spriteBatch)
