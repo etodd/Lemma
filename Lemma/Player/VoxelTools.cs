@@ -79,25 +79,26 @@ namespace Lemma.Components
 				Direction rightDir = map.GetRelativeDirection(right);
 				Direction forwardDir = map.GetRelativeDirection(forward);
 				Voxel.Coord center = map.GetCoordinate(basePos);
-				bool stop = false;
-				for (int i = 0; i < 4; i++)
+				for (Voxel.Coord y = center.Clone(); y.GetComponent(upDir) <= top.GetComponent(upDir); y = y.Move(upDir))
 				{
-					for (Voxel.Coord y = center.Clone(); y.GetComponent(upDir) <= top.GetComponent(upDir); y = y.Move(upDir))
+					int minZ = center.GetComponent(rightDir) - 10;
+					int maxZ = minZ + 20;
+					foreach (Voxel.Coord x in this.spreadFromCenter(y, rightDir))
 					{
-						int minZ = center.GetComponent(rightDir) - 10;
-						foreach (Voxel.Coord z in this.spreadFromCenter(y, rightDir))
+						Voxel.Coord z = x.Clone();
+						for (int i = 0; i < 4; i++)
 						{
 							Voxel.State state = map[z];
 							int zRightDimension = z.GetComponent(rightDir);
-							if (zRightDimension > minZ && state.ID != 0 && !removals.Contains(z))
+							if (zRightDimension > minZ && zRightDimension < maxZ && state.ID != 0 && !removals.Contains(z))
 							{
 								if (state.Permanent || state.Hard)
 								{
-									stop = true;
 									if (zRightDimension >= center.GetComponent(rightDir))
-										break;
+										maxZ = zRightDimension;
 									else
 										minZ = zRightDimension;
+									break;
 								}
 								else
 								{
@@ -118,13 +119,9 @@ namespace Lemma.Components
 									main.Add(block);
 								}
 							}
+							z = z.Move(forwardDir);
 						}
 					}
-
-					if (stop)
-						break;
-					else
-						center = center.Move(forwardDir);
 				}
 
 				if (removals.Count > 0)

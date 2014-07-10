@@ -34,10 +34,10 @@ namespace Lemma.Components
 
 		private void animate()
 		{
-			List<Animation.Interval> animations = new List<Animation.Interval>();
+			Animation.Sequence sequence = new Animation.Sequence();
 
 			bool originalCanSpawn = main.Spawner.CanSpawn;
-			animations.Add(new Animation.Execute(delegate()
+			sequence.Add(new Animation.Execute(delegate()
 			{
 				Entity p = PlayerFactory.Instance;
 				if (p != null)
@@ -50,10 +50,8 @@ namespace Lemma.Components
 				main.Spawner.CanSpawn = false;
 			}));
 
-			animations.Add(new Animation.Set<Matrix>(this.main.Camera.RotationMatrix, Matrix.CreateFromQuaternion(this.Entity.Get<Transform>().Quaternion)));
-			animations.Add(new Animation.Set<Vector3>(this.main.Camera.Position, Vector3.Transform(new Vector3(0, 0, this.Offset), this.Entity.Get<Transform>().Matrix)));
-
-			Animation.Sequence sequence = new Animation.Sequence();
+			sequence.Add(new Animation.Set<Matrix>(this.main.Camera.RotationMatrix, Matrix.CreateFromQuaternion(this.Entity.Get<Transform>().Quaternion)));
+			sequence.Add(new Animation.Set<Vector3>(this.main.Camera.Position, Vector3.Transform(new Vector3(0, 0, this.Offset), this.Entity.Get<Transform>().Matrix)));
 
 			Animation.Ease.EaseType lastEase = Animation.Ease.EaseType.None;
 			BSpline spline = null;
@@ -138,23 +136,28 @@ namespace Lemma.Components
 				}
 				main.Spawner.CanSpawn = originalCanSpawn;
 			};
-			
+
+			Animation anim;
 			if (totalDuration > 0.0f) // Fade in and out
 			{
-				animations.Add(new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.Zero, 0.5f));
-				animations.Add(new Animation.Parallel(sequence, new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.One, 0.5f)));
-				animations.Add(new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.Zero, 0.5f));
-				animations.Add(new Animation.Execute(done));
-				animations.Add(new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.One, 0.5f));
+				anim = new Animation
+				(
+					new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.Zero, 0.5f),
+					new Animation.Parallel(sequence, new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.One, 0.5f)),
+					new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.Zero, 0.5f),
+					new Animation.Execute(done),
+					new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.One, 0.5f)
+				);
 			}
 			else
 			{
 				// Just do it
-				animations.Add(sequence); 
-				animations.Add(new Animation.Execute(done));
+				anim = new Animation
+				(
+					sequence,
+					new Animation.Execute(done)
+				);
 			}
-
-			Animation anim = new Animation(animations.ToArray());
 			anim.EnabledWhenPaused = false;
 			WorldFactory.Instance.Add(anim);
 		}
