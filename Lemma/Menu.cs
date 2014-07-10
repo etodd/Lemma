@@ -774,6 +774,8 @@ namespace Lemma.Components
 				}
 			};
 
+			this.Add(new CommandBinding(SteamWorker.OnLevelDownloaded, reloadMaps));
+
 			Container workshopMaps = this.main.UIFactory.CreateButton("\\workshop levels", delegate()
 			{
 				reloadMaps();

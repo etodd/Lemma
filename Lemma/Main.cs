@@ -299,7 +299,7 @@ namespace Lemma
 			Editor.SetupDefaultEditorComponents();
 
 #if STEAMWORKS
-			SteamWorker.Init();
+			SteamWorker.Init(this);
 #endif
 
 			this.Space = new Space();
