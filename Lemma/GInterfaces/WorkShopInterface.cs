@@ -19,8 +19,6 @@ namespace Lemma.GInterfaces
 
 		private View EncompassingView;
 		private PanelView MainView;
-		private PanelView NewMapView;
-		private PanelView UpdateMapView;
 		private TextFieldView MapFilePath;
 		private ButtonView MapOpenPath;
 		private TextFieldView MapImagePath;
@@ -30,8 +28,6 @@ namespace Lemma.GInterfaces
 
 		private ButtonView UploadButton;
 		private ButtonView CancelButton;
-
-		private ButtonView UpdateInstead;
 
 		private Property<string> StatusString = new Property<string>() { Value = "" };
 

@@ -101,7 +101,7 @@ namespace Lemma.Console
 				{
 					Name = arg.Name,
 					CommandType = arg.CommandType,
-					StrValue = arg.DefaultVal.ToString(),
+					StrValue = arg.DefaultVal == null ? null : arg.DefaultVal.ToString(),
 					Value = arg.DefaultVal
 				};
 				curArg++;

@@ -13,10 +13,11 @@ using Lemma.Factories;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace Lemma.GInterfaces
 {
-	public class ConsoleUI : Component<Main>, IUpdateableComponent
+	public class ConsoleUI : Component<Main>
 	{
 		public View RootConsoleView;
 		public TextFieldView ConsoleLogView;
@@ -53,13 +54,61 @@ namespace Lemma.GInterfaces
 
 				this.Add(new NotifyBinding(HandleResize, main.ScreenSize)); //Supercool~
 				this.Add(new NotifyBinding(HandleToggle, Showing));
+
+				this.main.GeeUI.OnKeyPressedHandler += this.keyPressedHandler;
 			}
 			Showing.Value = false;
 		}
 
+		public override void delete()
+		{
+			base.delete();
+			this.main.GeeUI.OnKeyPressedHandler -= this.keyPressedHandler;
+		}
+
+		private int historyIndex = -1;
+		private void keyPressedHandler(string keyPressed, Keys key)
+		{
+			if (Showing)
+			{
+				Console.Console console = Console.Console.Instance;
+				if (console.History.Count > 0)
+				{
+					bool doHistory = false;
+					if (key == Keys.Down)
+					{
+						doHistory = true;
+						if (this.historyIndex == -1)
+							this.historyIndex = 0;
+						else
+							this.historyIndex++;
+					}
+					else if (key == Keys.Up)
+					{
+						doHistory = true;
+						if (this.historyIndex == -1)
+							this.historyIndex = console.History.Count - 1;
+						else
+							this.historyIndex--;
+					}
+
+					if (doHistory)
+					{
+						if (this.historyIndex >= console.History.Count)
+							this.historyIndex = 0;
+						else if (this.historyIndex < 0)
+							this.historyIndex = console.History.Count - 1;
+						
+						ConsoleInputView.Text = console.History[this.historyIndex];
+						ConsoleInputView.SetCursorPos(ConsoleInputView.Text.Length, 0);
+					}
+				}
+			}
+		}
 
 		public void OnTextSubmitted()
 		{
+			this.historyIndex = -1;
 			main.Console.ConsoleUserInput(ConsoleInputView.Text);
 			ConsoleInputView.ClearText();
 		}
@@ -75,7 +124,9 @@ namespace Lemma.GInterfaces
 
 		public void HandleToggle()
 		{
-			if (_animating.Value) return;
+			if (_animating.Value)
+				return;
+
 			float scrollTime = 0.15f;
 			float fadeTime = 0.1f;
 			_animating.Value = true;
@@ -123,12 +174,6 @@ namespace Lemma.GInterfaces
 			ConsoleLogView.SetCursorPos(0, newY);
 		}
 
-		public void Update(float dt)
-		{
-
-		}
-
-
 		public static void ConsoleInit()
 		{
 			Console.Console.AddConVar(new ConVar("player_speed", "Player speed.", s =>
@@ -138,16 +183,16 @@ namespace Lemma.GInterfaces
 					playerData.Get<PlayerData>().MaxSpeed.Value = (float)Console.Console.GetConVar("player_speed").GetCastedValue();
 			}, "10") { TypeConstraint = typeof(float), Validate = o => (float)o > 0 && (float)o < 200 });
 
-			Console.Console.AddConCommand(new ConCommand("help", "Recursion~~",
-				collection => Console.Console.Instance.PrintConCommandDescription((string)collection.Get("command")),
-				new ConCommand.CommandArgument() { Name = "command" }));
-
-			Console.Console.AddConCommand(new ConCommand("show_window", "Shows a messagebox with title + description",
-				collection =>
-				{
-					System.Windows.Forms.MessageBox.Show((string)collection.Get("Message"), (string)collection.Get("Title"));
-				},
-				new ConCommand.CommandArgument() { Name = "Message" }, new ConCommand.CommandArgument() { Name = "Title", Optional = true, DefaultVal = "A title" }));
+			Console.Console.AddConCommand(new ConCommand("help", "List all commands or get info about a specific command.",
+			delegate(ConCommand.ArgCollection args)
+			{
+				string cmd = (string)args.Get("command");
+				if (string.IsNullOrEmpty(cmd))
+					Console.Console.Instance.ListAllConsoleStuff();
+				else
+					Console.Console.Instance.PrintConCommandDescription(cmd);
+			},
+			new ConCommand.CommandArgument() { Name = "command", Optional = true }));
 		}
 	}
 }

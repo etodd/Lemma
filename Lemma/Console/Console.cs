@@ -14,19 +14,23 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma.Console
 {
-	public class Console : Component<Main>, IUpdateableComponent
+	public class Console : Component<Main>
 	{
 		public static List<ConVar> ConVars = new List<ConVar>();
 		public static List<ConCommand> Commands = new List<ConCommand>();
 
-		private static List<string> _queuedRemovalCmd = new List<string>();
-		private static List<string> _queuedRemovalVar = new List<string>();
-		private static bool _canRemove = false;
+		private const int MaxHistory = 100;
+		public List<string> History = new List<string>();
 
 		public static Console Instance;
 
 		public void ConsoleUserInput(string input)
 		{
+			if (this.History.Count == 0 || input != this.History[this.History.Count - 1])
+				this.History.Add(input);
+			while (this.History.Count > MaxHistory)
+				this.History.RemoveAt(0);
+
 			ConsoleParser.ParseResult parsed = ConsoleParser.Parse(input);
 			Log(">" + input);
 			if (parsed.ParsedResult.Length == 0 || !IsConVarOrCmd(parsed.ParsedResult[0].Value))
@@ -128,7 +132,6 @@ namespace Lemma.Console
 			}
 		}
 
-		[AutoConCommand("list", "Lists all console commands and variables")]
 		public void ListAllConsoleStuff()
 		{
 			foreach (var command in Commands)
@@ -210,26 +213,14 @@ namespace Lemma.Console
 			return (from convar in ConVars where convar.Name == name select convar).Any();
 		}
 
-		public static void RemoveConVar(string name, bool force = false)
+		public static void RemoveConVar(string name)
 		{
-			if (!_queuedRemovalVar.Contains(name) && !force)
-			{
-				_queuedRemovalVar.Add(name);
-				return;
-			}
-			if (_canRemove || force)
-				ConVars.Remove(GetConVar(name));
+			ConVars.Remove(GetConVar(name));
 		}
 
-		public static void RemoveConCommand(string name, bool force = false)
+		public static void RemoveConCommand(string name)
 		{
-			if (!_queuedRemovalCmd.Contains(name) && !force)
-			{
-				_queuedRemovalCmd.Add(name);
-				return;
-			}
-			if (_canRemove || force)
-				Commands.Remove(GetConCommand(name));
+			Commands.Remove(GetConCommand(name));
 		}
 
 		public static void AddConVar(ConVar c)
@@ -327,7 +318,7 @@ namespace Lemma.Console
 				});
 			}
 			if (instantiated)
-				RemoveConCommand(command.ConVarName, true);
+				RemoveConCommand(command.ConVarName);
 			AddConCommand(new ConCommand(command.ConVarName, command.ConVarDesc, collection =>
 			{
 				if (instantiated && instance == null)
@@ -394,7 +385,7 @@ namespace Lemma.Console
 
 
 			if (instantiated)
-				RemoveConVar(name, true);
+				RemoveConVar(name);
 
 			if (!isProperty)
 			{
@@ -466,22 +457,6 @@ namespace Lemma.Console
 
 
 			Console.Instance = this;
-		}
-
-		public void Update(float dt)
-		{
-			_canRemove = true;
-
-			foreach (var remove in _queuedRemovalCmd)
-				RemoveConCommand(remove);
-			foreach (var remove in _queuedRemovalVar)
-				RemoveConVar(remove);
-
-			_canRemove = false;
-
-			_queuedRemovalCmd.Clear();
-			_queuedRemovalVar.Clear();
-
 		}
 	}
 }

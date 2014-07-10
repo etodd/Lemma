@@ -116,31 +116,34 @@ namespace GeeUI.Views
 
 		private void keyPressedHandler(string keyPressed, Keys key)
 		{
-			if (key == Keys.Escape && this.DropDownShowing)
-				this.HideDropDown();
-			if (key == Keys.Down && this.DropDownShowing)
+			if (this.DropDownShowing)
 			{
-				this._arrowKeysIndex++;
-			}
-			if (key == Keys.Up && this.DropDownShowing)
-			{
-				this._arrowKeysIndex--;
-			}
-			if (key == Keys.Enter && this.DropDownShowing)
-			{
-				if (DisplayingOptions.Count != 0)
+				if (key == Keys.Escape)
+					this.HideDropDown();
+				else if (key == Keys.Down)
 				{
-					int index = _arrowKeysIndex;
-					if (index < 0 || index >= DisplayingOptions.Count)
-						index = 0;
+					this._arrowKeysIndex++;
+					this.ArrowKeysHandle();
+				}
+				else if (key == Keys.Up)
+				{
+					this._arrowKeysIndex--;
+					this.ArrowKeysHandle();
+				}
+				else if (key == Keys.Enter)
+				{
+					if (DisplayingOptions.Count != 0)
+					{
+						int index = _arrowKeysIndex;
+						if (index < 0 || index >= DisplayingOptions.Count)
+							index = 0;
 
-					var option = DisplayingOptions[index];
-					this.OnOptionSelected(option);
-					HideDropDown();
+						var option = DisplayingOptions[index];
+						this.OnOptionSelected(option);
+						HideDropDown();
+					}
 				}
 			}
-
-			ArrowKeysHandle();
 		}
 
 		private void ArrowKeysHandle()
