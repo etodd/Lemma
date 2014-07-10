@@ -152,7 +152,7 @@ namespace Lemma.IO
 					MapLoader.Load(main, stream, deleteEditor);
 			}
 
-			MapManifest manifest = MapManifest.FromMapPath(filename);
+			MapManifest manifest = MapManifest.FromAbsolutePath(filename);
 			manifest.TimesPlayed++;
 			manifest.Save();
 		}

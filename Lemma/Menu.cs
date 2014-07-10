@@ -623,7 +623,7 @@ namespace Lemma.Components
 			officialMapScroller.Add(new Binding<Vector2>(officialMapScroller.Size, () => new Vector2(officialMapsList.Size.Value.X, this.main.ScreenSize.Value.Y * 0.5f), officialMapsList.Size, this.main.ScreenSize));
 			officialMapsMenu.Children.Add(officialMapScroller);
 
-			DirectoryInfo dir = new DirectoryInfo("Content\\Game\\Challenge\\");
+			DirectoryInfo dir = new DirectoryInfo(Path.Combine(this.main.Content.RootDirectory, IO.MapLoader.MapDirectory, "Challenge"));
 			if (dir.Exists)
 			{
 				foreach (var file in dir.GetFiles("*.map"))
@@ -750,7 +750,7 @@ namespace Lemma.Components
 							&& subDir.GetFiles(subDir.Name + ".meta").Length == 1)
 						{
 							string mapPath = subDir.GetFiles(subDir.Name + ".map")[0].FullName;
-							MapManifest mapManifest = MapManifest.FromMapPath(mapPath);
+							MapManifest mapManifest = MapManifest.FromAbsolutePath(mapPath);
 							if (mapManifest != null && !string.IsNullOrEmpty(mapManifest.MapName))
 							{
 								Container button = this.main.UIFactory.CreateButton(mapManifest.MapName, delegate()

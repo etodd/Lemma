@@ -14,6 +14,7 @@ using Lemma.Factories;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.IO;
 
 namespace Lemma.GInterfaces
 {
@@ -27,8 +28,6 @@ namespace Lemma.GInterfaces
 		private TextView EndTimeTextView;
 		private TextView EndTimeBestView;
 		private TextView EndTimeTitleView;
-		private TextView EndParTimeView;
-		private TextView EndKourTimeView;
 		private ButtonView RetryMapButton;
 		private ButtonView NextMapButton;
 		private ButtonView MainMenuButton;
@@ -96,9 +95,28 @@ namespace Lemma.GInterfaces
 			EndTimeBestView.AutoSize.Value = false;
 			EndTimeBestView.Width.AddBinding(new Binding<int>(EndTimeBestView.Width, RootTimeEndView.Width));
 
-			RetryMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Retry", new Vector2(30, 250), MainFont );
+			RetryMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Retry", new Vector2(30, 250), MainFont);
+			RetryMapButton.OnMouseClick += delegate(object sender, EventArgs e)
+			{
+				this.main.CurrentSave.Value = null;
+				this.main.EditorEnabled.Value = false;
+				IO.MapLoader.Load(this.main, this.main.MapFile);
+			};
 			NextMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Next Map", new Vector2(80, 250), MainFont);
+			NextMapButton.Active.Value = !string.IsNullOrEmpty(this.theTimeTrial.NextMap.Value);
+			NextMapButton.OnMouseClick += delegate(object sender, EventArgs e)
+			{
+				this.main.CurrentSave.Value = null;
+				this.main.EditorEnabled.Value = false;
+				IO.MapLoader.Load(this.main, this.theTimeTrial.NextMap);
+			};
 			MainMenuButton = new ButtonView(main.GeeUI, RootTimeEndView, "Back", new Vector2(160, 250), MainFont);
+			MainMenuButton.OnMouseClick += delegate(object sender, EventArgs e)
+			{
+				this.main.CurrentSave.Value = null;
+				this.main.EditorEnabled.Value = false;
+				IO.MapLoader.Load(this.main, Main.MenuMap);
+			};
 
 			RootTimePanelView.UnselectedNinepatch = RootTimePanelView.SelectedNinepatch = GeeUIMain.NinePatchBtnDefault;
 
@@ -112,8 +130,12 @@ namespace Lemma.GInterfaces
 
 			this.AnimateOut();
 
-			MapManifest manifest = MapManifest.FromMapPath(main.MapFile);
-			float bestTime = manifest.BestPersonalTimeTrialTime;
+			MapManifest manifest = MapManifest.FromMapPath(main, main.MapFile);
+			float bestTime;
+			if (manifest == null)
+				bestTime = 0;
+			else
+				bestTime = manifest.BestPersonalTimeTrialTime;
 			TimeTrialBestTimeView.Text.Value = "Best: " + SecondsToTimeString(bestTime);
 
 			this.TimeTrialBestTimeView.Add(new Binding<string, float>(TimeTrialBestTimeView.Text, x =>
@@ -122,8 +144,7 @@ namespace Lemma.GInterfaces
 				return "Best: " + SecondsToTimeString(x);
 			}, this.ElapsedTime));
 
-
-			EndTimeTitleView.Text.Value = manifest.MapName;
+			EndTimeTitleView.Text.Value = Path.GetFileNameWithoutExtension(main.MapFile);
 
 			base.Awake();
 		}
@@ -186,7 +207,7 @@ namespace Lemma.GInterfaces
 
 			if (success)
 			{
-				MapManifest manifest = MapManifest.FromMapPath(main.MapFile);
+				MapManifest manifest = MapManifest.FromMapPath(main, main.MapFile);
 				float bestTime = manifest.BestPersonalTimeTrialTime;
 				manifest.LastPersonalTimeTrialTime = ElapsedTime;
 				if (this.ElapsedTime < bestTime || bestTime <= 0)

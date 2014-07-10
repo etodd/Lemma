@@ -271,7 +271,7 @@ namespace Lemma.Util
 			if (Directory.Exists(completedDirectoryNew))
 			{
 				string mapPath = completedDirectoryNew + file.m_PublishedFileId + ".map";
-				checkAgainst = MapManifest.FromMapPath(mapPath);
+				checkAgainst = MapManifest.FromAbsolutePath(mapPath);
 				if (checkAgainst == null)
 				{
 					Directory.Delete(completedDirectoryNew, true);
@@ -322,7 +322,7 @@ namespace Lemma.Util
 										string imageFileNew = imageFileTemp.Replace(tempDirectoryNew, completedDirectoryNew);
 										File.Move(imageFileTemp, imageFileNew);
 									}
-									MapManifest manifest = MapManifest.FromMapPath(mapFileNew);
+									MapManifest manifest = MapManifest.FromAbsolutePath(mapFileNew);
 									manifest.MapName = t.m_rgchTitle;
 									manifest.MapPchName = resultT.m_pchFileName;
 									manifest.Save();
