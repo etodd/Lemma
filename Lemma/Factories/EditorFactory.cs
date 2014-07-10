@@ -419,16 +419,16 @@ namespace Lemma.Factories
 					{
 						Entity currentVoxel = editor.SelectedEntities[0];
 						Voxel map1 = currentVoxel.Get<Voxel>();
-						Voxel map2;
 
-						Entity voxelFill = Factory<Main>.Get("VoxelFill").CreateAndBind(main);
+						Entity voxelFill = Factory<Main>.Get<VoxelFillFactory>().CreateAndBind(main);
+						Transform oldPosition = currentVoxel.Get<Transform>("Transform");
 						Transform position = voxelFill.Get<Transform>("Transform");
-						if (position != null)
-							position.Position.Value = editor.Position;
-						entity.NewGUID();
-						main.Add(entity);
+						position.Position.Value = oldPosition.Position.Value;
+						position.Quaternion.Value = oldPosition.Quaternion.Value;
+						voxelFill.Get<VoxelFill>().Target.Value = map1.Entity;
+						main.Add(voxelFill);
 
-						map2 = voxelFill.Get<Voxel>();
+						Voxel map2 = voxelFill.Get<Voxel>();
 
 						foreach (Voxel.Chunk chunk in map1.Chunks)
 						{
@@ -453,7 +453,8 @@ namespace Lemma.Factories
 						map1.Regenerate();
 
 						editor.NeedsSave.Value = true;
-						voxelFill.Get<VoxelFill>().Target.Value = new Entity.Handle() { Target = map1.Entity };
+						editor.SelectedEntities.Clear();
+						editor.SelectedEntities.Add(voxelFill);
 					}
 				},
 				gui.VoxelCommands,
