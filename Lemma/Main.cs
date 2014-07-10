@@ -299,7 +299,7 @@ namespace Lemma
 			Editor.SetupDefaultEditorComponents();
 
 #if STEAMWORKS
-			SteamWorker.Init(this);
+			SteamWorker.Init();
 #endif
 
 			this.Space = new Space();
@@ -631,6 +631,8 @@ namespace Lemma
 				};
 				this.firstLoadContentCall = false;
 
+				// Load strings
+				this.Strings.Load(Path.Combine(this.Content.RootDirectory, "Strings.xlsx"));
 
 				this.UI = new UIRenderer();
 				this.AddComponent(this.UI);
@@ -795,9 +797,6 @@ namespace Lemma
 				new TwoWayBinding<bool>(this.Settings.EnableBloom, this.Renderer.EnableBloom);
 				new TwoWayBinding<bool>(this.Settings.EnableSSAO, this.Renderer.EnableSSAO);
 				new TwoWayBinding<float>(this.Settings.FieldOfView, this.Camera.FieldOfView);
-
-				// Load strings
-				this.Strings.Load(Path.Combine(this.Content.RootDirectory, "Strings.xlsx"));
 
 				foreach (string file in Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "Game"), "*.xlsx", SearchOption.TopDirectoryOnly))
 					this.Strings.Load(file);

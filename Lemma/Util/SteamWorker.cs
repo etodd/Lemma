@@ -31,8 +31,6 @@ namespace Lemma.Util
 
 		private static DateTime _statsLastUploaded = DateTime.Now;
 
-		private static Main main;
-
 		private static bool _anythingChanged = false;
 
 		public static bool SteamInitialized { get; private set; }
@@ -73,9 +71,8 @@ namespace Lemma.Util
 			return true;
 		}
 
-		public static bool Init(Main main)
+		public static bool Init()
 		{
-			SteamWorker.main = main;
 			try
 			{
 #if STEAMWORKS
@@ -256,8 +253,7 @@ namespace Lemma.Util
 		}
 
 
-		private static int numDownloading = 0;
-		private static Container downloadingMsg = null;
+		public static Property<int> Downloading = new Property<int>();
 		public static Command OnLevelDownloaded = new Command();
 		private static void DownloadLevel(PublishedFileId_t file)
 		{
@@ -286,25 +282,6 @@ namespace Lemma.Util
 			if (!Directory.Exists(tempDirectoryNew)) Directory.CreateDirectory(tempDirectoryNew);
 			if (!Directory.Exists(completedDirectoryNew)) Directory.CreateDirectory(completedDirectoryNew);
 
-			Action minusMessage = delegate()
-			{
-				numDownloading--;
-				if (numDownloading < 0) numDownloading = 0;
-				if (numDownloading == 0)
-				{
-					main.Menu.HideMessage(null, downloadingMsg);
-				}
-				else
-				{
-					string text = "Downloading " + numDownloading + " map(s)...";
-					if (downloadingMsg != null)
-					{
-						TextElement textElement = (TextElement)downloadingMsg.Children[0];
-						textElement.Text.Value = text;
-					}
-				}
-			};
-
 			new CallResult<RemoteStorageGetPublishedFileDetailsResult_t>((t, failure) =>
 			{
 				if (!failure && t.m_eResult == EResult.k_EResultOK)
@@ -320,25 +297,7 @@ namespace Lemma.Util
 							return;
 						}
 					}
-					numDownloading++;
-					string text = "Downloading " + numDownloading + " map(s)...";
-
-					if (downloadingMsg != null && numDownloading > 1)
-					{
-						if (numDownloading == 1)
-						{
-							downloadingMsg = main.Menu.ShowMessage(null, text);
-						}
-						else
-						{
-							TextElement textElement = (TextElement)downloadingMsg.Children[0];
-							textElement.Text.Value = text;
-						}
-					}
-					else
-					{
-						downloadingMsg = main.Menu.ShowMessage(null, text);
-					}
+					Downloading.Value++;
 
 					string mapFileTemp = tempDirectoryNew + file.m_PublishedFileId.ToString() + ".map";
 					string imageFileTemp = tempDirectoryNew + file.m_PublishedFileId.ToString() + ".png";
@@ -347,17 +306,14 @@ namespace Lemma.Util
 					{
 						if (ioFailure)
 						{
-							minusMessage();
+							Downloading.Value = Math.Max(0, Downloading - 1);
 						}
 						else
 						{
 							Action<RemoteStorageDownloadUGCResult_t, bool> onImgDownloaded = (resultT2, ioFailure2) =>
 							{
-								if (ioFailure2)
-								{
-									minusMessage();
-								}
-								else
+								Downloading.Value = Math.Max(0, Downloading - 1);
+								if (!ioFailure2)
 								{
 									string mapFileNew = mapFileTemp.Replace(tempDirectoryNew, completedDirectoryNew);
 									File.Move(mapFileTemp, mapFileNew);
@@ -370,7 +326,6 @@ namespace Lemma.Util
 									manifest.MapName = t.m_rgchTitle;
 									manifest.MapPchName = resultT.m_pchFileName;
 									manifest.Save();
-									minusMessage();
 									OnLevelDownloaded.Execute();
 								}
 							};

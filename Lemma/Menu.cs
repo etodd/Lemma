@@ -70,8 +70,6 @@ namespace Lemma.Components
 		{
 			Container msgBackground = new Container();
 
-			this.messages.Children.Add(msgBackground);
-
 			msgBackground.Tint.Value = Color.Black;
 			msgBackground.Opacity.Value = messageBackgroundOpacity;
 			TextElement msg = new TextElement();
@@ -86,6 +84,8 @@ namespace Lemma.Components
 			Container container = this.buildMessage();
 			TextElement textElement = (TextElement)container.Children[0];
 			textElement.Add(new Binding<string>(textElement.Text, text, properties));
+
+			this.messages.Children.Add(container);
 
 			this.animateMessage(entity, container);
 
@@ -120,6 +120,8 @@ namespace Lemma.Components
 			Container container = this.buildMessage();
 			TextElement textElement = (TextElement)container.Children[0];
 			textElement.Text.Value = text;
+
+			this.messages.Children.Add(container);
 
 			this.animateMessage(entity, container);
 
@@ -774,7 +776,12 @@ namespace Lemma.Components
 				}
 			};
 
-			this.Add(new CommandBinding(SteamWorker.OnLevelDownloaded, reloadMaps));
+			this.Add(new CommandBinding(SteamWorker.OnLevelDownloaded, delegate()
+			{
+				if (SteamWorker.Downloading == 0)
+					this.HideMessage(null, this.ShowMessage(null, "\\workshop downloads complete"), 3.0f);
+				reloadMaps();
+			}));
 
 			Container workshopMaps = this.main.UIFactory.CreateButton("\\workshop levels", delegate()
 			{
@@ -824,6 +831,24 @@ namespace Lemma.Components
 			this.messages.Reversed.Value = true;
 			this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * 0.9f, x.Y * 0.9f), this.main.ScreenSize));
 			this.main.UI.Root.Children.Add(this.messages);
+
+			{
+				Container downloading = this.buildMessage();
+				downloading.AnchorPoint.Value = new Vector2(1.0f, 0.0f);
+				downloading.Add(new Binding<Vector2, Point>(downloading.Position, x => new Vector2(x.X * 0.9f, x.Y * 0.1f), this.main.ScreenSize));
+				TextElement downloadingLabel = (TextElement)downloading.Children[0];
+				downloading.Add(new Binding<bool>(downloading.Visible, () => this.main.MapFile == Main.MenuMap && SteamWorker.Downloading > 0, this.main.MapFile, SteamWorker.Downloading));
+				downloadingLabel.Add(new Binding<string>
+				(
+					downloadingLabel.Text,
+					delegate()
+					{
+						return string.Format(main.Strings.Get("downloading workshop maps"), SteamWorker.Downloading.Value);
+					},
+					this.main.Strings.Language, SteamWorker.Downloading
+				));
+				this.main.UI.Root.Children.Add(downloading);
+			}
 
 			this.notifications = new ListContainer();
 			this.notifications.Alignment.Value = ListContainer.ListAlignment.Max;
