@@ -32,6 +32,8 @@ namespace GeeUI.Views
 		private SpriteFont mainFont;
 		private TextFieldView FilterView;
 
+		public Command OnShowing = new Command();
+
 		public Property<string> Label = new Property<string>();
 		public Property<int> LastItemSelected = new Property<int>() { Value = -1 };
 		public Property<bool> AllowRightClickExecute = new Property<bool>();
@@ -238,7 +240,7 @@ namespace GeeUI.Views
 			this.HideDropDown();
 		}
 
-		public void AddOption(string name, Action action, SpriteFont fontString = null, object related = null)
+		public ButtonView AddOption(string name, Action action, SpriteFont fontString = null, object related = null)
 		{
 			if (fontString == null)
 				fontString = mainFont;
@@ -264,6 +266,7 @@ namespace GeeUI.Views
 			{
 				OnOptionSelected(dropDownOption);
 			};
+			return dropButton;
 		}
 
 		public void RemoveAllOptions()
@@ -288,7 +291,9 @@ namespace GeeUI.Views
 				}
 				else
 				{
-					DropDownPanelView.Position.Value = new Vector2(AbsoluteX, this.AbsoluteBoundBox.Bottom);
+					Vector2 target = new Vector2(AbsoluteX, this.AbsoluteBoundBox.Bottom);
+					if (DropDownPanelView.Position != target)
+						DropDownPanelView.Position.Value = target;
 					if (DropDownListView.AbsoluteBoundBox.Bottom > ParentGeeUI.RootView.Height)
 						DropDownListView.Height.Value -= (DropDownListView.AbsoluteBoundBox.Bottom - ParentGeeUI.RootView.Height);
 				}
@@ -317,6 +322,7 @@ namespace GeeUI.Views
 
 		public void ShowDropDown()
 		{
+			this.OnShowing.Execute();
 			this.mouse = InputManager.GetMousePos();
 			DropDownPanelView.Active.Value = true;
 			DropDownPanelView.FindFirstChildByName("DropList").SetContentOffset(Vector2.Zero);

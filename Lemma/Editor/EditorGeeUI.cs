@@ -297,12 +297,20 @@ namespace Lemma.Components
 
 			this.Add(new ListBinding<View, EditorCommand>(this.VoxelPanelView.Children, this.VoxelCommands, this.buildCommandButton));
 
-			this.AddEntityCommands.ItemAdded += (index, command) => RecomputeAddCommands();
-			this.AddEntityCommands.ItemChanged += (index, old, value) => RecomputeAddCommands();
-			this.AddEntityCommands.ItemRemoved += (index, command) => RecomputeAddCommands();
+			// We only ever add commands to this list. I don't feel like doing an actual binding right now.
+			this.AddEntityCommands.ItemAdded += delegate(int index, EditorCommand cmd)
+			{
+				string text = cmd.Description;
+				if (cmd.Chord.Exists)
+					text += " [" + cmd.Chord.ToString() + "]";
+				ButtonView option = CreateDropDownView.AddOption(text, () =>
+				{
+					cmd.Action.Execute();
+				});
+				option.Add(new Binding<bool>(option.Active, cmd.Enabled));
+			};
 
-			this.Add(new CommandBinding<Entity>(main.EntityAdded, e => RebuildSelectDropDown()));
-			this.Add(new CommandBinding<Entity>(main.EntityRemoved, e => RebuildSelectDropDown()));
+			this.SelectDropDownView.Add(new CommandBinding(this.SelectDropDownView.OnShowing, (Action)this.RebuildSelectDropDown));
 
 			this.Add(new NotifyBinding(delegate()
 			{
@@ -615,23 +623,6 @@ namespace Lemma.Components
 
 			fillDestEntity();
 			populateList();
-		}
-
-		private void RecomputeAddCommands()
-		{
-			this.CreateDropDownView.RemoveAllOptions();
-			foreach (var dropDown in AddEntityCommands)
-			{
-				if (!dropDown.Enabled) continue;
-				string text = dropDown.Description;
-				if (dropDown.Chord.Exists)
-					text += " [" + dropDown.Chord.ToString() + "]";
-				CreateDropDownView.AddOption(text, () =>
-				{
-					dropDown.Action.Execute();
-				});
-			}
-			CreateDropDownView.Active.Value = CreateDropDownView.DropDownOptions.Count > 0;
 		}
 
 		private void show(IEnumerable<Entity> entities)
