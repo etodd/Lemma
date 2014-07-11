@@ -98,9 +98,7 @@ namespace Lemma.GInterfaces
 			RetryMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Retry", new Vector2(30, 250), MainFont);
 			RetryMapButton.OnMouseClick += delegate(object sender, EventArgs e)
 			{
-				this.main.CurrentSave.Value = null;
-				this.main.EditorEnabled.Value = false;
-				IO.MapLoader.Load(this.main, this.main.MapFile);
+				this.retry();
 			};
 			NextMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Next Map", new Vector2(80, 250), MainFont);
 			NextMapButton.Active.Value = !string.IsNullOrEmpty(this.theTimeTrial.NextMap.Value);
@@ -116,6 +114,7 @@ namespace Lemma.GInterfaces
 				this.main.CurrentSave.Value = null;
 				this.main.EditorEnabled.Value = false;
 				IO.MapLoader.Load(this.main, Main.MenuMap);
+				this.main.Menu.Show();
 			};
 
 			RootTimePanelView.UnselectedNinepatch = RootTimePanelView.SelectedNinepatch = GeeUIMain.NinePatchBtnDefault;
@@ -146,7 +145,19 @@ namespace Lemma.GInterfaces
 
 			EndTimeTitleView.Text.Value = Path.GetFileNameWithoutExtension(main.MapFile);
 
+			this.Add(new CommandBinding(this.main.Spawner.PlayerSpawned, delegate()
+			{
+				PlayerFactory.Instance.Add(new CommandBinding(PlayerFactory.Instance.Get<Player>().Die, (Action)this.retry));
+			}));
+
 			base.Awake();
+		}
+
+		private void retry()
+		{
+			this.main.CurrentSave.Value = null;
+			this.main.EditorEnabled.Value = false;
+			IO.MapLoader.Load(this.main, this.main.MapFile);
 		}
 
 		public void LoadContent(bool reload)

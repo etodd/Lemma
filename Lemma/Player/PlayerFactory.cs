@@ -345,9 +345,7 @@ namespace Lemma.Factories
 				main.Spawner.RespawnInterval = Spawner.KilledRespawnInterval;
 			}));
 
-			entity.Add(new CommandBinding(player.HealthDepleted, entity.Delete));
-
-			entity.Add(new CommandBinding(entity.Delete, delegate()
+			entity.Add(new CommandBinding(player.Die, delegate()
 			{
 				Session.Recorder.Event(main, "Die");
 				if (Agent.Query(transform.Position, 0.0f, 10.0f, x => x != agent) != null)
@@ -355,6 +353,11 @@ namespace Lemma.Factories
 					main.Spawner.RespawnDistance = Spawner.KilledRespawnDistance;
 					main.Spawner.RespawnInterval = Spawner.KilledRespawnInterval;
 				}
+			}));
+
+			entity.Add(new CommandBinding(player.Die, delegate()
+			{
+				entity.Add(new Animation(new Animation.Execute(entity.Delete)));
 			}));
 
 			player.EnabledInEditMode = false;

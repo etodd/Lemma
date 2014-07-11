@@ -35,6 +35,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command HealthDepleted = new Command();
 
+		[XmlIgnore]
+		public Command Die = new Command();
+
 		private const float damageSoundInterval = 0.4f;
 		private float damageTimer = damageSoundInterval + 1.0f;
 		public Property<float> Health = new Property<float> { Value = 1.0f };
@@ -52,6 +55,8 @@ namespace Lemma.Components
 			this.Character = new Character(this.main, Vector3.Zero);
 			this.Character.Body.Tag = this;
 			this.main.Space.Add(this.Character);
+
+			this.Add(new CommandBinding(this.HealthDepleted, this.Die));
 
 			this.Health.Set = delegate(float value)
 			{
