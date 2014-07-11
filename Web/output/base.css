@@ -1,10 +1,3 @@
-@font-face
-{
-	font-family: Signika;
-	src: url('assets/Signika-Bold.otf') format('opentype');
-	font-weight: bold;
-}
-
 ::selection
 {
 	background-color: #5bafcd;
