@@ -257,6 +257,7 @@ namespace Lemma
 		{
 			if (this.MapContent != null)
 				this.MapContent.Unload();
+			ParticleSystem.Reset();
 			this.MapContent = new ContentManager(this.Services);
 			this.MapContent.RootDirectory = this.Content.RootDirectory;
 

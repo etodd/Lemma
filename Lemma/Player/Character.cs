@@ -349,7 +349,7 @@ namespace Lemma.Util
 					RayCastResult rayHit;
 					Vector3 rayStart = supportLocation;
 					rayStart.Y = pos.Y + (this.Body.Height * 0.5f) - 1.0f;
-					if (this.main.Space.RayCast(new Ray(rayStart, Vector3.Up), 1.0f, x => x.CollisionRules.Group != Character.CharacterGroup && x.CollisionRules.Group != Character.NoCollideGroup, out rayHit))
+					if (this.main.Space.RayCast(new Ray(rayStart, Vector3.Up), 1.0f, Character.raycastFilter, out rayHit))
 					{
 						offset.Normalize();
 						Vector2 velocity = new Vector2(this.Body.LinearVelocity.X, this.Body.LinearVelocity.Z);
@@ -487,6 +487,35 @@ namespace Lemma.Util
 			}
 		}
 
+		private static Func<BEPUphysics.BroadPhaseEntries.BroadPhaseEntry, bool> raycastFilter = a => a.CollisionRules.Group != Character.CharacterGroup && a.CollisionRules.Group != Character.NoCollideGroup;
+
+		private bool slide(ref Vector2 movement, Vector3 wallRay)
+		{
+			RayCastResult rayHit;
+			if (this.main.Space.RayCast(new Ray(this.Body.Position, wallRay), this.Radius + 0.25f, Character.raycastFilter, out rayHit)
+				|| this.main.Space.RayCast(new Ray(this.Body.Position + new Vector3(0, 1, 0), wallRay), this.Radius + 0.25f, Character.raycastFilter, out rayHit)
+				|| this.main.Space.RayCast(new Ray(this.Body.Position + new Vector3(0, -1, 0), wallRay), this.Radius + 0.25f, Character.raycastFilter, out rayHit))
+			{
+				Vector3 orthogonal = Vector3.Cross(rayHit.HitData.Normal, wallRay);
+				Vector3 newMovement3 = Vector3.Cross(rayHit.HitData.Normal, orthogonal);
+				Vector2 newMovement = new Vector2(newMovement3.X, newMovement3.Z);
+				newMovement.Normalize();
+				if (Vector2.Dot(newMovement, movement) < 0)
+					newMovement *= -1.0f;
+
+				if (Vector2.Dot(newMovement, movement) > 0.5f) // The new direction is similar to what we want. Go ahead.
+				{
+					newMovement *= movement.Length();
+					movement = newMovement;
+					return true;
+				}
+				else
+					return false; // New direction is too different. Continue in the old direction.
+			}
+			else
+				return false;
+		}
+
 		/// <summary>
 		/// Manages movement acceleration, deceleration, and sliding.
 		/// </summary>
@@ -501,7 +530,16 @@ namespace Lemma.Util
 				// Identify a coordinate system that uses the support normal as Y.
 				// X is the axis point along the left (negative) and right (positive) relative to the movement direction.
 				// Z points forward (positive) and backward (negative) in the movement direction modified to be parallel to the surface.
-				Vector3 horizontal = new Vector3(this.MovementDirection.Value.X, 0, this.MovementDirection.Value.Y);
+
+				Vector2 movement = this.MovementDirection;
+				if (!this.slide(ref movement, new Vector3(movement.X, 0, movement.Y)))
+				{
+					float angle = (float)Math.Atan2(movement.Y, movement.X);
+					if (!this.slide(ref movement, new Vector3((float)Math.Cos(angle + (float)Math.PI * 0.25f), 0, (float)Math.Sin(angle + (float)Math.PI * 0.25f))))
+						this.slide(ref movement, new Vector3((float)Math.Cos(angle - (float)Math.PI * 0.25f), 0, (float)Math.Sin(angle - (float)Math.PI * 0.25f)));
+				}
+
+				Vector3 horizontal = new Vector3(movement.X, 0, movement.Y);
 				Vector3 x = Vector3.Normalize(Vector3.Cross(horizontal, supportNormal));
 				Vector3 z = Vector3.Normalize(Vector3.Cross(supportNormal, x)) * horizontal.Length();
 

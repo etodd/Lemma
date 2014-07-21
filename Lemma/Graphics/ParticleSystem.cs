@@ -192,6 +192,20 @@ namespace Lemma.Components
 			return system;
 		}
 
+		public static void Reset()
+		{
+			if (ParticleSystem.systems != null)
+			{
+				foreach (ParticleSystem p in ParticleSystem.systems.Values)
+				{
+					p.firstActiveParticle = 0;
+					p.firstFreeParticle = 0;
+					p.firstNewParticle = 0;
+					p.firstRetiredParticle = 0;
+				}
+			}
+		}
+
 		private static void initialize(Main main)
 		{
 			ParticleSystem.systems = new Dictionary<string, ParticleSystem>();
@@ -245,7 +259,7 @@ namespace Lemma.Components
 			{
 				TextureName = "Particles\\debug",
 				MaxParticles = 10000,
-				Duration = TimeSpan.FromSeconds(1.0f),
+				Duration = TimeSpan.FromSeconds(10.0f),
 				MinHorizontalVelocity = 0.0f,
 				MaxHorizontalVelocity = 0.0f,
 				MinVerticalVelocity = 0.0f,
@@ -744,7 +758,7 @@ namespace Lemma.Components
 					break;
 
 				// Remember the time at which we retired this particle.
-				this.particles[firstActiveParticle * 4].Time = this.drawCounter;
+				this.particles[this.firstActiveParticle * 4].Time = this.drawCounter;
 
 				// Move the particle from the active to the retired queue.
 				this.firstActiveParticle++;
