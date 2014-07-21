@@ -9,6 +9,8 @@ namespace Lemma.Factories
 {
 	public class LowerLimitFactory : Factory<Main>
 	{
+		private List<Property<Vector3>> positions = new List<Property<Vector3>>();
+
 		public LowerLimitFactory()
 		{
 			this.Color = new Vector3(0.4f, 0.4f, 0.4f);
@@ -22,9 +24,23 @@ namespace Lemma.Factories
 		const float absoluteLimit = -20.0f;
 		const float velocityThreshold = -40.0f;
 
+		public float GetLowerLimit()
+		{
+			float limit = float.MinValue;
+			foreach (Property<Vector3> pos in this.positions)
+				limit = Math.Max(limit, pos.Value.Y);
+			return limit;
+		}
+
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
+
+			this.positions.Add(transform.Position);
+			transform.Add(new CommandBinding(transform.Delete, delegate()
+			{
+				this.positions.Remove(transform.Position);
+			}));
 
 			entity.CannotSuspendByDistance = true;
 			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);

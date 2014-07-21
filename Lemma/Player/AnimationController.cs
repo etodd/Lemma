@@ -49,6 +49,10 @@ namespace Lemma.Components
 		private float idleRotationBlend = 1.0f;
 		private const float idleRotationBlendTime = 0.3f;
 
+		private const float animationSpeedCoefficient = 1.0f / 4.5f;
+		private const float maxAnimationSpeed = 1.5f;
+		private const float animationSpeedCoefficientCrouched = 1.0f / 2.2f;
+
 		public override void Awake()
 		{
 			base.Awake();
@@ -225,7 +229,7 @@ namespace Lemma.Components
 					foreach (KeyValuePair<string, AnimationInfo> animation in this.Crouched ? crouchMovementAnimations : movementAnimations)
 					{
 						if (animation.Key != "Idle" && animation.Key != "CrouchIdle")
-							this.model[animation.Key].Speed = this.Crouched ? (horizontalSpeed / 2.2f) : Math.Min(horizontalSpeed / 4.5f, 1.4f);
+							this.model[animation.Key].Speed = Math.Min(horizontalSpeed * (this.Crouched ? animationSpeedCoefficientCrouched : animationSpeedCoefficient), maxAnimationSpeed);
 						this.model[animation.Key].TargetStrength = animation.Key == movementAnimation ? 1.0f : animation.Value.DefaultStrength;
 					}
 
@@ -340,9 +344,6 @@ namespace Lemma.Components
 					case WallRun.State.Right:
 						wallRunAnimation = "WallRunRight";
 						break;
-					case WallRun.State.Reverse:
-						wallRunAnimation = "WallSlideReverse";
-						break;
 					default:
 						wallRunAnimation = null;
 						break;
@@ -364,7 +365,7 @@ namespace Lemma.Components
 				{
 					Vector3 wallNormal = this.WallRunMap.Value.GetAbsoluteVector(this.WallDirection.Value.GetVector());
 					float animationSpeed = (relativeVelocity - wallNormal * Vector3.Dot(relativeVelocity, wallNormal)).Length();
-					this.model[wallRunAnimation].Speed = Math.Min(1.5f, animationSpeed / 6.0f);
+					this.model[wallRunAnimation].Speed = Math.Min(maxAnimationSpeed, animationSpeed * animationSpeedCoefficient);
 				}
 			}
 

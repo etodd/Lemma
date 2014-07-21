@@ -482,8 +482,7 @@ namespace Lemma.Factories
 						if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
 							if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
 								if (!(didSomething = vault.Go()))
-									if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
-										didSomething = wallRun.Activate(WallRun.State.Reverse);
+									didSomething = wallRun.Activate(WallRun.State.Straight);
 					}
 					else
 					{
@@ -491,12 +490,8 @@ namespace Lemma.Factories
 						if (!(didSomething = vault.Go()))
 							if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
 								if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
-									if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
-										didSomething = wallRun.Activate(WallRun.State.Reverse);
+									didSomething = wallRun.Activate(WallRun.State.Right);
 					}
-
-					if (!didSomething)
-						didSomething = vault.TryVaultDown();
 
 					if (!didSomething && player.EnableSlowMotion)
 					{

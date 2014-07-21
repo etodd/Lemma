@@ -1011,6 +1011,27 @@ namespace Lemma.Components
 			settingsScroller.Children.Add(settingsList);
 			settingsMenu.Children.Add(settingsScroller);
 
+			Container soundEffectVolume = this.main.UIFactory.CreateScrollButton<float>("\\sound effect volume", this.main.Settings.SoundEffectVolume, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
+			{
+				this.main.Settings.SoundEffectVolume.Value = MathHelper.Clamp(this.main.Settings.SoundEffectVolume.Value + (delta * 0.1f), 0, 1);
+			});
+			this.resizeToMenu(soundEffectVolume);
+			settingsList.Children.Add(soundEffectVolume);
+
+			Container musicVolume = this.main.UIFactory.CreateScrollButton<float>("\\music volume", this.main.Settings.MusicVolume, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
+			{
+				this.main.Settings.MusicVolume.Value = MathHelper.Clamp(this.main.Settings.MusicVolume.Value + (delta * 0.1f), 0, 1);
+			});
+			this.resizeToMenu(musicVolume);
+			settingsList.Children.Add(musicVolume);
+
+			Container reticleEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\reticle", this.main.Settings.EnableReticle, boolDisplay, delegate(int delta)
+			{
+				this.main.Settings.EnableReticle.Value = !this.main.Settings.EnableReticle;
+			});
+			this.resizeToMenu(reticleEnabled);
+			settingsList.Children.Add(reticleEnabled);
+
 			Container fullscreenResolution = this.main.UIFactory.CreateScrollButton<Point>("\\fullscreen resolution", this.main.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString(), delegate(int delta)
 			{
 				displayModeIndex = (displayModeIndex + delta) % this.SupportedDisplayModes.Count();
@@ -1088,20 +1109,6 @@ namespace Lemma.Components
 			});
 			this.resizeToMenu(dynamicShadows);
 			settingsList.Children.Add(dynamicShadows);
-
-			Container soundEffectVolume = this.main.UIFactory.CreateScrollButton<float>("\\sound effect volume", this.main.Settings.SoundEffectVolume, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
-			{
-				this.main.Settings.SoundEffectVolume.Value = MathHelper.Clamp(this.main.Settings.SoundEffectVolume.Value + (delta * 0.1f), 0, 1);
-			});
-			this.resizeToMenu(soundEffectVolume);
-			settingsList.Children.Add(soundEffectVolume);
-
-			Container musicVolume = this.main.UIFactory.CreateScrollButton<float>("\\music volume", this.main.Settings.MusicVolume, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
-			{
-				this.main.Settings.MusicVolume.Value = MathHelper.Clamp(this.main.Settings.MusicVolume.Value + (delta * 0.1f), 0, 1);
-			});
-			this.resizeToMenu(musicVolume);
-			settingsList.Children.Add(musicVolume);
 
 			Container settingsReset = this.main.UIFactory.CreateButton("\\reset options", delegate()
 			{
@@ -1266,7 +1273,7 @@ namespace Lemma.Components
 						new Animation.Delay(0.2f),
 						new Animation.Execute(delegate()
 						{
-							IO.MapLoader.Load(this.main, Main.InitialMap);
+							IO.MapLoader.Load(this.main, Main.DemoMap);
 						})
 					));
 				});
@@ -1763,12 +1770,11 @@ namespace Lemma.Components
 				}
 				else
 				{
-					this.main.Paused.Value = !this.main.Paused;
-
-					if (this.main.Paused)
+					if (this.currentMenu.Value == null)
 						this.savePausedSettings();
 					else
 						this.restorePausedSettings();
+					this.main.Paused.Value = this.currentMenu.Value != null;
 				}
 			};
 
@@ -1781,7 +1787,7 @@ namespace Lemma.Components
 
 			this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), () => canPause() || this.dialog != null, togglePause));
 			this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.Start), canPause, togglePause));
-			this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.B), () => canPause() || this.dialog != null, togglePause));
+			this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.B), () => this.currentMenu.Value != null || this.dialog != null, togglePause));
 
 #if !DEVELOPMENT
 			// Pause on window lost focus
@@ -1817,7 +1823,7 @@ namespace Lemma.Components
 
 			Func<UIComponent, bool> isScrollButton = delegate(UIComponent item)
 			{
-				return item.Visible && item.GetType() == typeof(Container) && item.MouseScrolled.HasBindings;
+				return item.Visible && item.GetType() == typeof(Container) && item.GetChildByName("<") != null;
 			};
 
 			this.input.Add(new NotifyBinding(delegate()
@@ -1889,7 +1895,7 @@ namespace Lemma.Components
 
 			Func<bool> enableGamepad = delegate()
 			{
-				return this.main.Paused || this.main.MapFile.Value == Main.MenuMap;
+				return this.currentMenu.Value != null;
 			};
 
 			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickUp), enableGamepad, delegate()
@@ -1922,7 +1928,9 @@ namespace Lemma.Components
 					if (menu != null && menu != creditsDisplay)
 					{
 						UIComponent selectedItem = menu.Children[selected];
-						if (isButton(selectedItem) && selectedItem.Highlighted)
+						if (isScrollButton(selectedItem) && selectedItem.Highlighted)
+							selectedItem.GetChildByName(">").MouseLeftUp.Execute();
+						else if (isButton(selectedItem) && selectedItem.Highlighted)
 							selectedItem.MouseLeftUp.Execute();
 					}
 				}
@@ -1935,7 +1943,7 @@ namespace Lemma.Components
 				{
 					UIComponent selectedItem = menu.Children[selected];
 					if (isScrollButton(selectedItem) && selectedItem.Highlighted)
-						selectedItem.MouseScrolled.Execute(delta);
+						selectedItem.GetChildByName(delta > 0 ? ">" : "<").MouseLeftUp.Execute();
 				}
 			};
 

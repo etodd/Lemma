@@ -29,11 +29,8 @@ namespace Lemma
 {
 	public class Main : BaseMain
 	{
-#if DEMO
-		public const string InitialMap = "smallrain";
-#else
+		public const string DemoMap = "smallrain";
 		public const string InitialMap = "start";
-#endif
 
 		public const string MenuMap = "..\\menu";
 		public const string TemplateMap = "..\\template";
@@ -70,6 +67,7 @@ namespace Lemma
 			public Property<LightingManager.DynamicShadowSetting> DynamicShadows = new Property<LightingManager.DynamicShadowSetting> { Value = LightingManager.DynamicShadowSetting.High };
 			public Property<bool> InvertMouseX = new Property<bool> { Value = false };
 			public Property<bool> InvertMouseY = new Property<bool> { Value = false };
+			public Property<bool> EnableReticle = new Property<bool> { Value = false };
 			public Property<float> MouseSensitivity = new Property<float> { Value = 1.0f };
 			public Property<float> FieldOfView = new Property<float> { Value = MathHelper.ToRadians(80.0f) };
 			public Property<bool> EnableVsync = new Property<bool> { Value = false };

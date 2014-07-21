@@ -160,6 +160,7 @@ namespace Lemma.Components
 							{
 								ListProperty<RespawnLocation> respawnLocations = playerData.Get<PlayerData>().RespawnLocations;
 								int supportedLocations = 0;
+								float lowerLimit = Factory.Get<LowerLimitFactory>().GetLowerLimit();
 								while (respawnLocations.Length > 0)
 								{
 									RespawnLocation respawnLocation = respawnLocations[respawnLocations.Length - 1];
@@ -169,6 +170,7 @@ namespace Lemma.Components
 										Voxel respawnMap = respawnMapEntity.Get<Voxel>();
 										Vector3 absolutePos = respawnMap.GetAbsolutePosition(respawnLocation.Coordinate);
 										if (respawnMap.Active
+											&& absolutePos.Y > lowerLimit
 											&& respawnMap[respawnLocation.Coordinate] != Voxel.EmptyState
 											&& respawnMap.GetAbsoluteVector(respawnMap.GetRelativeDirection(Direction.PositiveY).GetVector()).Y > 0.5f
 											&& Agent.Query(absolutePos, 0.0f, 20.0f) == null)

@@ -11,7 +11,7 @@ namespace Lemma.Components
 {
 	public class WallRun : Component<Main>, IUpdateableComponent
 	{
-		public enum State { None, Left, Right, Straight, Down, Reverse }
+		public enum State { None, Left, Right, Straight, Down }
 
 		// Input/output properties
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
@@ -109,10 +109,6 @@ namespace Lemma.Components
 					if (!this.EnableWallRunHorizontal)
 						return false;
 					wallVector = -matrix.Right;
-					break;
-				case State.Reverse:
-					wallVector = -forwardVector;
-					wallInstantiationTimer = 0.25f;
 					break;
 				default:
 					wallVector = Vector3.Zero;
@@ -213,7 +209,7 @@ namespace Lemma.Components
 
 			this.WallRunDirection.Value = state == State.Straight ? voxel.GetRelativeDirection(Vector3.Up) : (state == State.Down ? voxel.GetRelativeDirection(Vector3.Down) : dir.Cross(voxel.GetRelativeDirection(Vector3.Up)));
 
-			if (state == State.Straight || state == State.Down || state == State.Reverse)
+			if (state == State.Straight || state == State.Down)
 			{
 				if (state == State.Straight)
 				{
@@ -230,9 +226,6 @@ namespace Lemma.Components
 					this.HasTraction.Value = false;
 				}
 				Vector3 wallVector = this.WallRunVoxel.Value.GetAbsoluteVector(this.WallDirection.Value.GetVector());
-
-				if (state == State.Reverse)
-					wallVector = -wallVector;
 
 				// Make sure we lock in the correct rotation value
 				this.Rotation.Value = (float)Math.Atan2(wallVector.X, wallVector.Z);
@@ -263,7 +256,7 @@ namespace Lemma.Components
 						currentHorizontalVelocity.Y = 0.0f;
 						velocity *= Math.Min(this.MaxSpeed * 2.0f, Math.Max(currentHorizontalVelocity.Length() * 1.25f, 6.0f));
 
-						if (state != State.Straight && state != State.Reverse && Vector3.Dot(this.LinearVelocity, forwardVector) < 0.0f)
+						if (state != State.Straight && Vector3.Dot(this.LinearVelocity, forwardVector) < 0.0f)
 							velocity = Vector3.Normalize(velocity) * (minWallRunSpeed + 1.0f);
 
 						float currentVerticalSpeed = this.LinearVelocity.Value.Y;
@@ -356,7 +349,7 @@ namespace Lemma.Components
 					List<EffectBlockFactory.BlockBuildOrder> buildCoords = new List<EffectBlockFactory.BlockBuildOrder>();
 
 					const int radius = 5;
-					int upwardRadius = wallRunState == State.Down || wallRunState == State.Reverse ? 0 : radius;
+					int upwardRadius = wallRunState == State.Down ? 0 : radius;
 					for (Voxel.Coord x = wallCoord.Move(right, -radius); x.GetComponent(right) < wallCoord.GetComponent(right) + radius; x = x.Move(right))
 					{
 						int dx = x.GetComponent(right) - wallCoord.GetComponent(right);

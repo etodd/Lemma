@@ -14,7 +14,6 @@ namespace Lemma.Components
 		{
 			None,
 			Straight,
-			Down,
 		}
 
 		private Random random = new Random();
@@ -268,108 +267,11 @@ namespace Lemma.Components
 			this.LastVaultStarted.Value = this.main.TotalTime;
 		}
 
-		private void vaultDown(Vector3 forward)
-		{
-			this.forward = forward;
-			this.vaultVelocity = this.forward * this.MaxSpeed;
-			this.vaultVelocity.Y = this.LinearVelocity.Value.Y;
-			this.LinearVelocity.Value = this.vaultVelocity;
-			this.LockRotation.Execute();
-			this.EnableWalking.Value = false;
-			this.Crouched.Value = true;
-			this.AllowUncrouch.Value = false;
-			this.walkOffEdgeTimer = 0.0f;
-
-			this.vaultTime = 0.0f;
-			this.CurrentState.Value = State.Down;
-
-			this.originalPosition = this.Position;
-			this.LastVaultStarted.Value = this.main.TotalTime;
-		}
-
 		private const float vaultCoolDown = 0.5f;
-
-		public bool TryVaultDown()
-		{
-			if (this.Crouched || !this.IsSupported || this.main.TotalTime - this.LastVaultStarted < vaultCoolDown)
-				return false;
-
-			Matrix rotationMatrix = Matrix.CreateRotationY(this.Rotation);
-			bool foundObstacle = false;
-			foreach (Voxel map in Voxel.ActivePhysicsVoxels)
-			{
-				Direction down = map.GetRelativeDirection(Direction.NegativeY);
-				Vector3 pos = this.Position + rotationMatrix.Forward * -1.75f;
-				Voxel.Coord coord = map.GetCoordinate(pos);
-
-				for (int i = 0; i < 5; i++)
-				{
-					if (map[coord].ID != 0)
-					{
-						foundObstacle = true;
-						break;
-					}
-					coord = coord.Move(down);
-				}
-
-				if (foundObstacle)
-					break;
-			}
-
-			if (!foundObstacle)
-			{
-				// Vault
-				this.vaultDown(-rotationMatrix.Forward);
-			}
-			return !foundObstacle;
-		}
 
 		public void Update(float dt)
 		{
-			if (this.CurrentState == State.Down)
-			{
-				this.vaultTime += dt;
-
-				bool delete = false;
-
-				if (this.vaultTime > (this.isTopOut ? maxTopoutTime : maxVaultTime)) // Max vault time ensures we never get stuck
-					delete = true;
-				else if (this.walkOffEdgeTimer > 0.2f && this.IsSupported)
-					delete = true; // We went over the edge and hit the ground. Stop.
-				else if (!this.IsSupported) // We hit the edge, go down it
-				{
-					this.walkOffEdgeTimer += dt;
-
-					if (this.walkOffEdgeTimer > 0.1f)
-					{
-						this.LinearVelocity.Value = new Vector3(0, -mantleVaultVerticalSpeed, 0);
-
-						if (this.Position.Value.Y < this.originalPosition.Y - 3.0f)
-							delete = true;
-						else
-						{
-							this.ActivateWallRun.Execute(WallRun.State.Reverse);
-							if (this.WallRunState.Value == WallRun.State.Reverse)
-								delete = true;
-						}
-					}
-				}
-
-				if (this.walkOffEdgeTimer < 0.1f)
-				{
-					Vector3 velocity = this.forward * this.MaxSpeed;
-					velocity.Y = this.LinearVelocity.Value.Y;
-					this.LinearVelocity.Value = velocity;
-				}
-
-				if (delete)
-				{
-					this.AllowUncrouch.Value = true;
-					this.EnableWalking.Value = true;
-					this.CurrentState.Value = State.None;
-				}
-			}
-			else if (this.CurrentState != State.None)
+			if (this.CurrentState != State.None)
 			{
 				this.vaultTime += dt;
 
