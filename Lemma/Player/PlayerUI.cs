@@ -41,7 +41,6 @@ namespace Lemma.Factories
 			{
 				Sprite sprite = new Sprite();
 				sprite.Image.Value = "Images\\target";
-				sprite.Opacity.Value = 0.5f;
 				sprite.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
 				sprite.Add(new Binding<bool>(sprite.Visible, target.Enabled));
 				sprite.Add(new Binding<Vector2>(sprite.Position, delegate()

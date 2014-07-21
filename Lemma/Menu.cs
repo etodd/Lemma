@@ -826,10 +826,10 @@ namespace Lemma.Components
 
 			// Message list
 			this.messages = new ListContainer();
-			this.messages.Alignment.Value = ListContainer.ListAlignment.Max;
-			this.messages.AnchorPoint.Value = new Vector2(1.0f, 1.0f);
+			this.messages.Alignment.Value = ListContainer.ListAlignment.Min;
+			this.messages.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
 			this.messages.Reversed.Value = true;
-			this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * 0.9f, x.Y * 0.9f), this.main.ScreenSize));
+			this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.9f), this.main.ScreenSize));
 			this.main.UI.Root.Children.Add(this.messages);
 
 			{

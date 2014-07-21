@@ -205,9 +205,9 @@ namespace Lemma.Components
 
 			float horizontalDistanceToCoord = this.forward.Length();
 			this.forward /= horizontalDistanceToCoord;
-			if (horizontalDistanceToCoord < Character.DefaultRadius + 1.2f)
+			if (horizontalDistanceToCoord < Character.DefaultRadius + 1.0f)
 			{
-				Vector3 pos = coordPosition + this.forward * (Character.DefaultRadius + 1.2f);
+				Vector3 pos = coordPosition + this.forward * (Character.DefaultRadius + 1.0f);
 				pos.Y = this.Position.Value.Y;
 				this.Position.Value = pos;
 			}
@@ -301,7 +301,7 @@ namespace Lemma.Components
 						this.map = null;
 					}
 					else if (this.IsSupported || this.vaultTime > (this.isTopOut ? maxTopoutTime : maxVaultTime)
-						|| (this.FloorPosition.Value.Y > this.map.GetAbsolutePosition(this.coord).Y + 0.2f)) // Move forward
+						|| (this.FloorPosition.Value.Y > this.map.GetAbsolutePosition(this.coord).Y + (this.vaultOver ? 0.2f : 0.1f))) // Move forward
 					{
 						// We've reached the top of the vault. Start moving forward.
 						// Max vault time ensures we never get stuck
