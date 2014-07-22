@@ -177,6 +177,7 @@ namespace Lemma.Factories
 			vault.Add(new TwoWayBinding<bool>(player.Character.EnableWalking, vault.EnableWalking));
 			vault.Add(new TwoWayBinding<bool>(player.Character.AllowUncrouch, vault.AllowUncrouch));
 			vault.Add(new TwoWayBinding<bool>(player.Character.Crouched, vault.Crouched));
+			vault.Add(new Binding<float>(vault.Radius, player.Character.Radius));
 
 			rotation.Add(new TwoWayBinding<Vector2>(rotation.Mouse, input.Mouse));
 			rotation.Add(new Binding<bool>(rotation.Rolling, rollKickSlide.Rolling));

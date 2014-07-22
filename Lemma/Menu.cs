@@ -1531,7 +1531,7 @@ namespace Lemma.Components
 			Container switchToEditMode = this.main.UIFactory.CreateButton("\\edit mode", delegate()
 			{
 				this.pauseMenu.Visible.Value = false;
-
+				this.currentMenu.Value = null;
 				this.main.Paused.Value = false;
 				if (this.pauseAnimation != null)
 				{

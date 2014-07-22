@@ -23,6 +23,7 @@ namespace Lemma.Components
 		public Property<Vector3> FloorPosition = new Property<Vector3>();
 		public Property<float> MaxSpeed = new Property<float>();
 		public Property<WallRun.State> WallRunState = new Property<WallRun.State>();
+		public Property<float> Radius = new Property<float>();
 
 		// Output
 		public Property<State> CurrentState = new Property<State>();
@@ -52,7 +53,6 @@ namespace Lemma.Components
 		private float moveForwardStartTime;
 		private bool movingForward;
 
-		private float walkOffEdgeTimer;
 		private Vector3 originalPosition;
 		private Vector3 relativeVaultStartPosition;
 		private Vector3 vaultVelocity;
@@ -67,6 +67,7 @@ namespace Lemma.Components
 		const float maxTopoutTime = 2.0f;
 		const int searchUpDistance = 2;
 		const int searchDownDistance = 4;
+		const int searchForwardDistance = 2;
 
 		public void Bind(AnimatedModel model)
 		{
@@ -113,29 +114,59 @@ namespace Lemma.Components
 				Direction up = map.GetRelativeDirection(Direction.PositiveY);
 				Direction backward = map.GetRelativeDirection(rotationMatrix.Forward);
 				Direction right = up.Cross(backward);
-				Vector3 pos = this.Position + rotationMatrix.Forward * -1.75f;
-				Voxel.Coord baseCoord = map.GetCoordinate(pos).Move(up, searchUpDistance);
-				foreach (int x in new[] { 0, -1, 1 })
+				Vector3 pos = this.Position + rotationMatrix.Forward * -(this.Radius + 0.4f);
+				for (int j = 0; j < searchForwardDistance; j++)
 				{
-					Voxel.Coord coord = baseCoord.Move(right, x);
-					for (int i = 0; i < searchDownDistance; i++)
+					Voxel.Coord baseCoord = map.GetCoordinate(pos + (rotationMatrix.Forward * -j)).Move(up, searchUpDistance);
+					foreach (int x in new[] { 0, -1, 1 })
 					{
-						if (map[coord] != Voxel.EmptyState)
+						Voxel.Coord coord = baseCoord.Move(right, x);
+						for (int i = 0; i < searchDownDistance; i++)
 						{
-							if (map[coord.Move(backward)] != Voxel.EmptyState
-								|| map[coord.Move(up)] != Voxel.EmptyState
-								|| map[coord.Move(up, 2)] != Voxel.EmptyState
-								|| map[coord.Move(up, 3)] != Voxel.EmptyState
-								|| map[coord.Move(up).Move(backward)] != Voxel.EmptyState
-								|| map[coord.Move(up, 2).Move(backward)] != Voxel.EmptyState
-								|| map[coord.Move(up, 3).Move(backward)] != Voxel.EmptyState)
-								break; // Conflict
+							if (map[coord] != Voxel.EmptyState)
+							{
+								if (map[coord.Move(backward)] != Voxel.EmptyState
+									|| map[coord.Move(up)] != Voxel.EmptyState
+									|| map[coord.Move(up, 2)] != Voxel.EmptyState
+									|| map[coord.Move(up, 3)] != Voxel.EmptyState
+									|| map[coord.Move(up).Move(backward)] != Voxel.EmptyState
+									|| map[coord.Move(up, 2).Move(backward)] != Voxel.EmptyState
+									|| map[coord.Move(up, 3).Move(backward)] != Voxel.EmptyState)
+									break; // Conflict
+								
+								bool conflict = false;
+								// Check other voxels for conflicts
+								foreach (Voxel v in Voxel.ActivePhysicsVoxels)
+								{
+									if (v != map)
+									{
+										Direction up2 = v.GetRelativeDirection(Direction.PositiveY);
+										Direction backward2 = v.GetRelativeDirection(rotationMatrix.Forward);
+										Direction right2 = up2.Cross(backward2);
 
-							// Vault
-							this.vault(map, coord.Move(up));
-							return true;
+										Voxel.Coord coord2 = v.GetCoordinate(map.GetAbsolutePosition(coord));
+										if (v[coord2.Move(backward2)] != Voxel.EmptyState
+											|| v[coord2.Move(up2)] != Voxel.EmptyState
+											|| v[coord2.Move(up2, 2)] != Voxel.EmptyState
+											|| v[coord2.Move(up2, 3)] != Voxel.EmptyState
+											|| v[coord2.Move(up2).Move(backward2)] != Voxel.EmptyState
+											|| v[coord2.Move(up2, 2).Move(backward2)] != Voxel.EmptyState
+											|| v[coord2.Move(up2, 3).Move(backward2)] != Voxel.EmptyState)
+										{
+											conflict = true;
+											break;
+										}
+									}
+								}
+								if (conflict)
+									break;
+
+								// Vault
+								this.vault(map, coord.Move(up));
+								return true;
+							}
+							coord = coord.Move(up.GetReverse());
 						}
-						coord = coord.Move(up.GetReverse());
 					}
 				}
 			}
