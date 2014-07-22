@@ -36,13 +36,33 @@ namespace Lemma.Components
 		public Command DeactivateWallRun = new Command();
 		public Command<float> FallDamage = new Command<float>();
 		public BlockPredictor Predictor;
-		public AnimatedModel Model;
+
 		public Property<Voxel> LastWallRunMap = new Property<Voxel>();
 		public Property<Direction> LastWallDirection = new Property<Direction>();
 		public Property<bool> CanKick = new Property<bool>();
 		public Property<float> LastWallJump = new Property<float> { Value = -1.0f };
 		public Property<float> LastJump = new Property<float> { Value = -1.0f };
 		public Property<float> LastSupportedSpeed = new Property<float>();
+
+
+		private AnimatedModel model;
+
+		public void Bind(AnimatedModel m)
+		{
+			Func<Matrix, Matrix> filter = delegate(Matrix mat)
+			{
+				mat.Translation = new Vector3(0.0f, 0.0f, 2.0f);
+				return mat;
+			};
+			m["Jump"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = filter;
+			m["Jump02"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = filter;
+			m["Jump03"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = filter;
+			m["JumpLeft"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = filter;
+			m["JumpRight"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = filter;
+			m["JumpBackward"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = filter;
+			m["Fall"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = filter;
+			this.model = m;
+		}
 
 		private Voxel.State temporary;
 
@@ -326,7 +346,7 @@ namespace Lemma.Components
 
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_JUMP, this.Entity);
 
-				this.Model.Stop
+				this.model.Stop
 				(
 					"Vault",
 					"Mantle",
@@ -364,8 +384,8 @@ namespace Lemma.Components
 						animation = this.randomJumpAnimation();
 						break;
 				}
-				this.Model.StartClip(animation, 4, false);
-				this.Model[animation].CurrentTime = TimeSpan.FromSeconds(0.2);
+				this.model.StartClip(animation, 4, false);
+				this.model[animation].CurrentTime = TimeSpan.FromSeconds(0.2);
 
 				// Deactivate any wall-running we're doing
 				this.DeactivateWallRun.Execute();
