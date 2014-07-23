@@ -1,3 +1,13 @@
+var fs = null;
+addEventListener('app-ready', function(e)
+{
+	// We're running inside app.js
+	fs = require('fs');
+	$('#import').hide();
+	$('#export').hide();
+	$('#export-game').hide();
+});
+
 var graph = new joint.dia.Graph();
 
 var defaultLink = new joint.dia.Link(
@@ -505,7 +515,20 @@ function offerDownload(name, data)
 
 function promptFilename()
 {
-	filename = prompt('Filename', defaultFilename);
+	if (fs)
+	{
+		filename = null;
+		window.frame.openDialog(
+		{
+			type: 'save',
+		}, function(err, files)
+		{
+			if (!err && files.length == 1)
+				filename = files[0];
+		});
+	}
+	else
+		filename = prompt('Filename', defaultFilename);
 }
 
 function applyTextFields()
@@ -520,34 +543,70 @@ function save()
 		promptFilename();
 	if (filename)
 	{
-		if (!localStorage[filename])
-			addFileEntry(filename);
-		localStorage[filename] = JSON.stringify(graph);
+		if (fs)
+		{
+			fs.writeFileSync(filename, JSON.stringify(graph), 'utf8');
+			fs.writeFileSync(gameFilenameFromNormalFilename(filename), JSON.stringify(gameData()), 'utf8');
+		}
+		else
+		{
+			if (!localStorage[filename])
+				addFileEntry(filename);
+			localStorage[filename] = JSON.stringify(graph);
+		}
 		flash('Saved ' + filename);
 	}
 }
 
 function load()
 {
-	$('#menu').show();
+	if (fs)
+	{
+		window.frame.openDialog(
+		{
+			type: 'open',
+			multiSelect: false,
+		}, function(err, files)
+		{
+			if (!err && files.length == 1)
+			{
+				graph.clear();
+				filename = files[0];
+				graph.fromJSON(JSON.parse(fs.readFileSync(filename, 'utf8')));
+			}
+		});
+	}
+	else
+		$('#menu').show();
 }
 
 function exportFile()
 {
-	applyTextFields();
-	offerDownload(filename ? filename : defaultFilename, graph);
+	if (!fs)
+	{
+		applyTextFields();
+		offerDownload(filename ? filename : defaultFilename, graph);
+	}
+}
+
+function gameFilenameFromNormalFilename(f)
+{
+	return f.substring(0, f.length - 2) + 'dlz';
 }
 
 function exportGameFile()
 {
-	applyTextFields();
-	var f = filename ? filename : defaultFilename;
-	offerDownload(f.substring(0, f.length - 2) + 'dlz', gameData());
+	if (!fs)
+	{
+		applyTextFields();
+		offerDownload(gameFilenameFromNormalFilename(filename ? filename : defaultFilename), gameData());
+	}
 }
 
 function importFile()
 {
-	$('#file').click();
+	if (!fs)
+		$('#file').click();
 }
 
 function add(constructor)
@@ -664,14 +723,21 @@ $('body').on('drop', function(e)
 $(window).on('keydown', function(event)
 {
 	// Catch Ctrl-S or key code 19 on Mac (Cmd-S)
-	if ((event.ctrlKey && String.fromCharCode(event.which).toLowerCase() == 's') || event.which == 19)
+	if (((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() == 's') || event.which == 19)
 	{
 		event.stopPropagation();
 		event.preventDefault();
 		save();
 		return false;
 	}
-	else if (event.ctrlKey && String.fromCharCode(event.which).toLowerCase() == 'e')
+	else if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() == 'o')
+	{
+		event.stopPropagation();
+		event.preventDefault();
+		load();
+		return false;
+	}
+	else if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() == 'e')
 	{
 		event.stopPropagation();
 		event.preventDefault();
@@ -686,12 +752,12 @@ $(window).resize(function()
 	applyTextFields();
 	var $window = $(window);
 	var $container = $('#container');
-    $container.height($window.innerHeight());
-    $container.width($window.innerWidth());
-    var $menu = $('#menu');
-    $menu.css('top', Math.max(0, (($window.height() - $menu.outerHeight()) / 2)) + 'px');
-    $menu.css('left', Math.max(0, (($window.width() - $menu.outerWidth()) / 2)) + 'px');
-    return this;
+		$container.height($window.innerHeight());
+		$container.width($window.innerWidth());
+		var $menu = $('#menu');
+		$menu.css('top', Math.max(0, (($window.height() - $menu.outerHeight()) / 2)) + 'px');
+		$menu.css('left', Math.max(0, (($window.width() - $menu.outerWidth()) / 2)) + 'px');
+		return this;
 });
 
 function addFileEntry(name)
@@ -744,9 +810,9 @@ $('#paper').contextmenu(
 		{ type: 'splitLine' },
 		{ text: 'Save', alias: '2-1', action: save },
 		{ text: 'Load', alias: '2-2', action: load },
-		{ text: 'Import', alias: '2-3', action: importFile },
+		{ text: 'Import', id: 'import', alias: '2-3', action: importFile },
 		{ text: 'New', alias: '2-4', action: clear },
-		{ text: 'Export', alias: '2-5', action: exportFile },
-		{ text: 'Export game file', alias: '2-6', action: exportGameFile },
+		{ text: 'Export', id: 'export', alias: '2-5', action: exportFile },
+		{ text: 'Export game file', id: 'export-game', alias: '2-6', action: exportGameFile },
 	]
 });

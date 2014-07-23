@@ -29,6 +29,8 @@
             T.innerHTML = itemTpl.replace(/\$\[([^\]]+)\]/g, function() {
                 return obj[arguments[1]];
             });
+            if (obj.id)
+                T.setAttribute('id', obj.id);
             if (obj.disable) {
                 T.disable = obj.disable;
                 T.className = "b-m-idisable";
