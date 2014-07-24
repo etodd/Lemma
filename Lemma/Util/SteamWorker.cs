@@ -24,7 +24,6 @@ namespace Lemma.Util
 		}
 
 		private static uint ugcPage = 0;
-		private static UGCHandle_t ugcHandle;
 
 		private static Dictionary<string, bool> _achievementDictionary;
 		private static Dictionary<string, int> _statDictionary;
@@ -415,7 +414,6 @@ namespace Lemma.Util
 				}
 			}
 
-			int blah = 0;
 			for (uint i = 0; i < handle.m_unNumResultsReturned; i++)
 			{
 				var deets = new SteamUGCDetails_t();

@@ -35,7 +35,7 @@ namespace GeeUI.Views
 
 		public Property<bool> IgnoreParentBounds = new Property<bool>() { Value = true };
 		public Property<bool> Selected = new Property<bool>() { Value = false };
-		public new Property<bool> Active = new Property<bool>() { Value = true };
+		public Property<bool> Active = new Property<bool>() { Value = true };
 		public Property<bool> EnabledScissor = new Property<bool>() { Value = true };
 		public Property<bool> ContentMustBeScissored = new Property<bool>() { Value = false };
 

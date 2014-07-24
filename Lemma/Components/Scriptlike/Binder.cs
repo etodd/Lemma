@@ -86,31 +86,22 @@ namespace Lemma.Components
 			{
 				case Setter.PropType.Bool:
 					return ((Property<bool>)prop).Value;
-					break;
 				case Setter.PropType.Int:
 					return ((Property<int>)prop).Value;
-					break;
 				case Setter.PropType.Float:
 					return ((Property<float>)prop).Value;
-					break;
 				case Setter.PropType.Vector2:
 					return ((Property<Vector2>)prop).Value;
-					break;
 				case Setter.PropType.Vector3:
 					return ((Property<Vector3>)prop).Value;
-					break;
 				case Setter.PropType.Vector4:
 					return ((Property<Vector4>)prop).Value;
-					break;
 				case Setter.PropType.Coord:
 					return ((Property<Voxel.Coord>)prop).Value;
-					break;
 				case Setter.PropType.Direction:
 					return ((Property<Direction>)prop).Value;
-					break;
 				case Setter.PropType.String:
 					return ((Property<string>)prop).Value;
-					break;
 				default:
 					return null;
 			}

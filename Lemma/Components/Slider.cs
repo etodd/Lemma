@@ -145,8 +145,6 @@ namespace Lemma.Components
 			this.Backward.Action = delegate() { this.Move(this.Minimum); };
 
 			this.lastX = this.Minimum + (this.Maximum - this.Minimum) * 0.5f;
-
-			BEPUphysics.Entities.Entity a = null, b = null;
 		}
 
 		public override void Start()

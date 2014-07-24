@@ -166,8 +166,6 @@ namespace Lemma.Components
 			this.Off.Action = (Action)this.off;
 
 			this.lastX = this.Minimum + (this.Maximum - this.Minimum) * 0.5f;
-
-			BEPUphysics.Entities.Entity a = null, b = null;
 		}
 
 		private bool lastLimitExceeded;
