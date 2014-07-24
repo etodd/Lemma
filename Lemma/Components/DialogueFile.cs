@@ -22,8 +22,8 @@ namespace Lemma.Components
 				try
 				{
 					DialogueForest forest = WorldFactory.Instance.Get<World>().DialogueForest;
-					IEnumerable<DialogueForest.Node> nodes = forest.Load(File.ReadAllText(Path.Combine(this.main.Content.RootDirectory, this.Name + ".dlz")));
-					phone.Load(forest, nodes);
+					forest.Load(File.ReadAllText(Path.Combine(this.main.Content.RootDirectory, this.Name + ".dlz")));
+					phone.Bind(forest);
 				}
 				catch (IOException)
 				{

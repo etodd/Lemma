@@ -296,20 +296,12 @@ namespace Lemma.Components
 
 			// Toggle phone
 
-			Container phoneTutorialMessage = null;
-
 			Action<bool> showPhone = delegate(bool show)
 			{
 				if (togglePhoneMessage != null)
 				{
 					main.Menu.HideMessage(entity, togglePhoneMessage);
 					togglePhoneMessage = null;
-				}
-
-				if (phoneTutorialMessage != null)
-				{
-					main.Menu.HideMessage(entity, phoneTutorialMessage);
-					phoneTutorialMessage = null;
 				}
 
 				if (show || (phone.Schedules.Length == 0 && !phone.WaitForAnswer))
@@ -328,11 +320,6 @@ namespace Lemma.Components
 					if (phoneActive)
 					{
 						Session.Recorder.Event(main, "Phone");
-						if (!phone.TutorialShown)
-						{
-							phone.TutorialShown.Value = true;
-							phoneTutorialMessage = main.Menu.ShowMessage(entity, "\\scroll for more");
-						}
 						phoneScroll.CheckLayout();
 						scrollToBottom();
 
@@ -428,7 +415,7 @@ namespace Lemma.Components
 				phone.Messages,
 				delegate(Phone.Message msg)
 				{
-					return makeAlign(makeButton(msg.Incoming ? incomingColor : outgoingColor, "\\" + (msg.Text == null ? msg.ID : msg.Text), messageWidth - padding * 2.0f), !msg.Incoming);
+					return makeAlign(makeButton(msg.Incoming ? incomingColor : outgoingColor, "\\" + msg.Name, messageWidth - padding * 2.0f), !msg.Incoming);
 				}
 			));
 
@@ -438,7 +425,7 @@ namespace Lemma.Components
 				phone.ActiveAnswers,
 				delegate(Phone.Ans answer)
 				{
-					UIComponent button = makeButton(outgoingColor, "\\" + (answer.Text == null ? answer.ID : answer.Text), messageWidth - padding * 4.0f);
+					UIComponent button = makeButton(outgoingColor, "\\" + answer.Name, messageWidth - padding * 4.0f);
 					button.Add(new CommandBinding(button.MouseLeftUp, delegate()
 					{
 						phone.Answer(answer);

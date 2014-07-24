@@ -44,7 +44,7 @@ namespace Lemma.Components
 					{
 						if (n.type == DialogueForest.Node.Type.Choice)
 							throw new Exception("Cannot start dialogue tree with a choice");
-						phone.Execute(forest, n);
+						phone.Execute(n);
 						if (phone.Schedules.Length == 0)
 						{
 							// If there are choices available, they will initiate a conversation.

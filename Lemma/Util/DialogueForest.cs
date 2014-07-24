@@ -12,8 +12,8 @@ namespace Lemma.Util
 	{
 		public interface IListener
 		{
-			void Text(string text, int level);
-			void Choice(string parent, IEnumerable<string> choices);
+			void Text(Node node, int level);
+			void Choice(Node node, IEnumerable<Node> choices);
 			void Set(string key, string value);
 			string Get(string key);
 		}
@@ -92,13 +92,13 @@ namespace Lemma.Util
 			{
 				case DialogueForest.Node.Type.Node:
 					if (node.choices != null && node.choices.Count > 0)
-						listener.Choice(node.name, node.choices.Select(x => this[x].name));
+						listener.Choice(node, node.choices.Select(x => this[x]));
 					next = node.next;
 					break;
 				case DialogueForest.Node.Type.Text:
-					listener.Text(node.name, textLevel);
+					listener.Text(node, textLevel);
 					if (node.choices != null && node.choices.Count > 0)
-						listener.Choice(node.name, node.choices.Select(x => this[x].name));
+						listener.Choice(node, node.choices.Select(x => this[x]));
 					next = node.next;
 					textLevel++;
 					break;

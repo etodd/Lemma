@@ -374,6 +374,21 @@ namespace Lemma
 				}
 			}));
 
+			Lemma.Console.Console.AddConCommand(new ConCommand("diavar", "Set a dialogue variable.", delegate(ConCommand.ArgCollection args)
+			{
+				if (args.ParsedArgs.Length == 2)
+				{
+					if (PlayerDataFactory.Instance != null)
+					{
+						Phone phone = PlayerDataFactory.Instance.Get<Phone>();
+						phone[args.ParsedArgs[0].StrValue] = args.ParsedArgs[1].StrValue;
+					}
+				}
+			},
+			new ConCommand.CommandArgument { Name = "variable", CommandType = typeof(string), Optional = false, },
+			new ConCommand.CommandArgument { Name = "value", CommandType = typeof(string), Optional = false }
+			));
+
 			Lemma.Console.Console.AddConCommand(new ConCommand("specials", "Enable all special abilities.", delegate(ConCommand.ArgCollection args)
 			{
 				if (PlayerDataFactory.Instance != null)

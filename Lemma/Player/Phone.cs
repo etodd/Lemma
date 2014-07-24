@@ -23,7 +23,7 @@ namespace Lemma.Components
 		{
 			public bool Incoming;
 			public string ID;
-			public string Text;
+			public string Name;
 		}
 
 		public class Schedule
@@ -34,10 +34,7 @@ namespace Lemma.Components
 
 		public class Ans
 		{
-			public string ID;
-
-			[DefaultValue(null)]
-			public string Text;
+			public string Name;
 
 			[DefaultValue(true)]
 			public bool Exclusive = true;
@@ -45,15 +42,17 @@ namespace Lemma.Components
 			[DefaultValue(null)]
 			public string ParentID;
 
+			public string ID;
+
 			public Ans()
-				: this(null)
+				: this(null, null)
 			{
 			}
 
-			public Ans(string id, string text = null, bool exclusive = true)
+			public Ans(string name, string id = null, bool exclusive = true)
 			{
 				this.ID = id;
-				this.Text = text;
+				this.Name = name;
 				this.Exclusive = exclusive;
 			}
 		}
@@ -104,8 +103,6 @@ namespace Lemma.Components
 
 		public Property<bool> CanReceiveMessages = new Property<bool>();
 
-		public Property<bool> TutorialShown = new Property<bool>();
-
 		public Property<bool> WaitForAnswer = new Property<bool>();
 
 		[XmlIgnore]
@@ -125,49 +122,45 @@ namespace Lemma.Components
 				this.Schedules.Remove(s);
 
 			foreach (Schedule s in removals)
-				this.msg(s.Message.ID, s.Message.Text);
+				this.Msg(s.Message);
 		}
 
-		public void Delay(float delay, string id, string text = null)
+		public void Delay(float delay, string name, string id = null)
 		{
 			Schedule s = new Schedule
 			{
 				Delay = delay,
 				Message = new Message
 				{
+					Name = name,
 					ID = id,
-					Text = text,
+					Incoming = true,
 				},
 			};
 			this.Schedules.Add(s);
 		}
 
-		public void Msg(string id, string text = null)
-		{
-			this.msg(id, text);
-		}
-
-		private void msg(string id, string text)
+		public void Msg(Message msg)
 		{
 			if (this.Messages.Length >= 256)
 				this.Messages.RemoveAt(0);
-			this.Messages.Add(new Message { Incoming = true, ID = id, Text = text });
+			this.Messages.Add(msg);
 			this.MessageReceived.Execute();
 
 			Action callback;
-			this.messageCallbacks.TryGetValue(id, out callback);
+			this.messageCallbacks.TryGetValue(msg.Name, out callback);
 			if (callback != null)
 				callback();
 		}
 
-		public void ArchivedMsg(string id, string text = null)
+		public void ArchivedMsg(string name, string text = null)
 		{
-			this.Messages.Add(new Message { Incoming = true, ID = id, Text = text });
+			this.Messages.Add(new Message { Incoming = true, Name = name, });
 		}
 
-		public void ArchivedAns(string id, string text = null)
+		public void ArchivedAns(string name)
 		{
-			this.Messages.Add(new Message { Incoming = false, ID = id, Text = text });
+			this.Messages.Add(new Message { Incoming = false, Name = name, });
 		}
 
 		private Dictionary<string, Action> messageCallbacks = new Dictionary<string, Action>();
@@ -192,7 +185,7 @@ namespace Lemma.Components
 			else
 				messageID = answer.ParentID;
 
-			this.Messages.Add(new Message { Incoming = false, ID = answer.ID, Text = answer.Text });
+			this.Messages.Add(new Message { Incoming = false, Name = answer.Name, });
 			if (answer.Exclusive)
 				this.ActiveAnswers.Clear();
 			else
@@ -205,7 +198,15 @@ namespace Lemma.Components
 				Action<string> callback;
 				this.answerCallbacks.TryGetValue(messageID, out callback);
 				if (callback != null)
-					callback(answer.ID);
+					callback(answer.Name);
+
+				DialogueForest.Node selectedChoice = this.forest[answer.ID];
+				if (selectedChoice != null)
+				{
+					DialogueForest.Node next = selectedChoice.next != null ? forest[selectedChoice.next] : null;
+					if (next != null)
+						this.Execute(next);
+				}
 			}
 		}
 
@@ -241,38 +242,27 @@ namespace Lemma.Components
 			}
 		}
 
-		public void Load(DialogueForest forest, IEnumerable<DialogueForest.Node> nodes)
+		private DialogueForest forest;
+		public void Bind(DialogueForest forest)
 		{
-			foreach (DialogueForest.Node node in nodes)
-			{
-				if (node.choices != null && node.choices.Count > 0)
-				{
-					this.OnAnswer(node.name, delegate(string c)
-					{
-						DialogueForest.Node selectedChoice = forest.GetByName(c);
-						DialogueForest.Node next = selectedChoice.next != null ? forest[selectedChoice.next] : null;
-						if (next != null)
-							this.Execute(forest, next);
-					});
-				}
-			}
+			this.forest = forest;
 		}
 
-		public void Execute(DialogueForest forest, DialogueForest.Node node)
+		public void Execute(DialogueForest.Node node)
 		{
-			forest.Execute(node, this);
+			this.forest.Execute(node, this);
 		}
 
-		void DialogueForest.IListener.Text(string text, int level)
+		void DialogueForest.IListener.Text(DialogueForest.Node node, int level)
 		{
-			this.Delay(messageDelay * level, text);
+			this.Delay(messageDelay * level, node.name, node.id);
 		}
 
 		private const float messageDelay = 2.0f; // 2 seconds in between each message
-		void DialogueForest.IListener.Choice(string node, IEnumerable<string> choices)
+		void DialogueForest.IListener.Choice(DialogueForest.Node node, IEnumerable<DialogueForest.Node> choices)
 		{
 			this.ActiveAnswers.Clear();
-			this.ActiveAnswers.AddAll(choices.Select(x => new Ans { ParentID = node, ID = x }));
+			this.ActiveAnswers.AddAll(choices.Select(x => new Ans { ParentID = node.id, ID = x.id, Name = x.name }));
 			this.WaitForAnswer.Value = true;
 		}
 
