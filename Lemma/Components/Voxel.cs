@@ -42,6 +42,11 @@ namespace Lemma.Components
 	[XmlInclude(typeof(ListProperty<t>))]
 	public class Voxel : ComponentBind.Component<Main>
 	{
+		private static LargeObjectHeap<Box[, ,]> boxHeap = LargeObjectHeap<Box[, ,]>.Get(x => new Box[x, x, x], y => y * y * y * IntPtr.Size >= 85000);
+		private static LargeObjectHeap<Chunk[, ,]> chunkHeap = LargeObjectHeap<Chunk[, ,]>.Get(x => new Chunk[x, x, x], y => y * y * y * IntPtr.Size >= 85000);
+		private static LargeObjectHeap<Vertex[]> vertexHeap = LargeObjectHeap<Vertex[]>.Get(x => new Vertex[x], y => y * Vertex.SizeInBytes >= 85000);
+		private static LargeObjectHeap<Vector3[]> physicsVertexHeap = LargeObjectHeap<Vector3[]>.Get(x => new Vector3[x], y => y * sizeof(float) * 3 >= 85000);
+
 		public static Command<Voxel, IEnumerable<Coord>, Voxel> GlobalCellsEmptied = new Command<Voxel, IEnumerable<Coord>, Voxel>();
 
 		public static Command<Voxel, IEnumerable<Coord>, Voxel> GlobalCellsFilled = new Command<Voxel, IEnumerable<Coord>, Voxel>();
@@ -743,7 +748,7 @@ namespace Lemma.Components
 					{
 						this.chunks.Add(chunk);
 
-						Box[, ,] d = LargeObjectHeap<Box[, ,]>.Get(this.map.chunkSize, x => new Box[x, x, x]);
+						Box[, ,] d = Voxel.boxHeap.Get(this.map.chunkSize);
 						for (int u = 0; u < this.map.chunkSize; u++)
 						{
 							for (int v = 0; v < this.map.chunkSize; v++)
@@ -769,7 +774,7 @@ namespace Lemma.Components
 								d[u, v, w] = null;
 						}
 					}
-					LargeObjectHeap<Box[, ,]>.Free(this.map.chunkSize, d);
+					Voxel.boxHeap.Free(this.map.chunkSize, d);
 				}
 				this.data.Clear();
 			}
@@ -973,10 +978,10 @@ namespace Lemma.Components
 						if (surfaces > 0)
 						{
 							if (model != null)
-								vertices = LargeObjectHeap<Vertex[]>.Get((int)Math.Pow(2.0, Math.Ceiling(Math.Log(surfaces * 4, 2.0))), x => new Vertex[x]);
+								vertices = Voxel.vertexHeap.Get((int)Math.Pow(2.0, Math.Ceiling(Math.Log(surfaces * 4, 2.0))));
 
 							if (this.Static && !type.Fake)
-								physicsVertices = LargeObjectHeap<Vector3[]>.Get((int)Math.Pow(2.0, Math.Ceiling(Math.Log(surfaces * 4, 2.0))), x => new Vector3[x]);
+								physicsVertices = Voxel.physicsVertexHeap.Get((int)Math.Pow(2.0, Math.Ceiling(Math.Log(surfaces * 4, 2.0))));
 
 							uint vertexIndex = 0;
 							foreach (Box box in boxes)
@@ -1104,7 +1109,7 @@ namespace Lemma.Components
 						Vertex[] verticesCopy = null;
 						if (vertices != null)
 						{
-							verticesCopy = LargeObjectHeap<Vertex[]>.Get(vertices.Length, x => new Vertex[x]);
+							verticesCopy = Voxel.vertexHeap.Get(vertices.Length);
 							Array.Copy(vertices, verticesCopy, surfaces * 4);
 						}
 
@@ -1115,7 +1120,7 @@ namespace Lemma.Components
 						}
 
 						if (vertices != null)
-							LargeObjectHeap<Vertex[]>.Free(vertices.Length, vertices);
+							Voxel.vertexHeap.Free(vertices.Length, vertices);
 
 						StaticMesh oldMesh = null;
 						if (entry.Mesh != null && entry.Added)
@@ -1124,7 +1129,7 @@ namespace Lemma.Components
 						if (physicsVertices != null)
 						{
 							Matrix transform = this.Voxel.Transform;
-							Vector3[] physicsVerticesCopy = LargeObjectHeap<Vector3[]>.Get(physicsVertices.Length, x => new Vector3[x]);
+							Vector3[] physicsVerticesCopy = Voxel.physicsVertexHeap.Get(physicsVertices.Length);
 							Array.Copy(physicsVertices, physicsVerticesCopy, surfaces * 4);
 							StaticMesh mesh = new StaticMesh(physicsVerticesCopy, DynamicModel<Vertex>.GetIndices(surfaces * 6), surfaces * 6, new BEPUutilities.AffineTransform(BEPUutilities.Matrix3x3.CreateFromMatrix(transform), transform.Translation));
 							mesh.Material.KineticFriction = type.KineticFriction;
@@ -1137,7 +1142,7 @@ namespace Lemma.Components
 								entry.Added = true;
 								this.Voxel.main.Space.SpaceObjectBuffer.Add(mesh);
 							}
-							LargeObjectHeap<Vector3[]>.Free(physicsVertices.Length, physicsVertices);
+							Voxel.physicsVertexHeap.Free(physicsVertices.Length, physicsVertices);
 						}
 						else
 							entry.Mesh = null;
@@ -1231,7 +1236,7 @@ namespace Lemma.Components
 							this.Data[u, v, w] = null;
 					}
 				}
-				LargeObjectHeap<Box[, ,]>.Free(this.Voxel.chunkSize, this.Data);
+				Voxel.boxHeap.Free(this.Voxel.chunkSize, this.Data);
 				this.Data = null;
 			}
 
@@ -2166,7 +2171,8 @@ namespace Lemma.Components
 					}
 				}
 
-				LargeObjectHeap<Chunk[, ,]>.Free(this.maxChunks, this.chunks);
+				Voxel.chunkHeap.Free(this.maxChunks, this.chunks);
+				this.chunks = null;
 			}
 			Voxel.Voxels.Remove(this);
 		}
@@ -2187,7 +2193,7 @@ namespace Lemma.Components
 					this.maxChunks *= 2;
 					int newMin = this.maxChunks / -2;
 
-					Chunk[, ,] newChunks = LargeObjectHeap<Chunk[, ,]>.Get(this.maxChunks, a => new Chunk[a, a, a]);
+					Chunk[, ,] newChunks = Voxel.chunkHeap.Get(this.maxChunks);
 
 					for (int i = oldMin; i < oldMax; i++)
 					{
@@ -2202,7 +2208,7 @@ namespace Lemma.Components
 						}
 					}
 
-					LargeObjectHeap<Chunk[, ,]>.Free(originalChunkArraySize, this.chunks);
+					Voxel.chunkHeap.Free(originalChunkArraySize, this.chunks);
 
 					this.chunks = newChunks;
 					this.updateBounds();
@@ -2220,7 +2226,7 @@ namespace Lemma.Components
 				chunk.X = this.minX + (ix * this.chunkSize);
 				chunk.Y = this.minY + (iy * this.chunkSize);
 				chunk.Z = this.minZ + (iz * this.chunkSize);
-				chunk.Data = LargeObjectHeap<Box[, ,]>.Get(this.chunkSize, a => new Box[a, a, a]);
+				chunk.Data = Voxel.boxHeap.Get(this.chunkSize);
 				chunk.IndexX = ix;
 				chunk.IndexY = iy;
 				chunk.IndexZ = iz;

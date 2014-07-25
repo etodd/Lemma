@@ -7,25 +7,53 @@ namespace Lemma.Util
 {
 	public class LargeObjectHeap<Type>
 	{
-		private static Dictionary<int, Queue<Type>> free = new Dictionary<int, Queue<Type>>();
+		private Dictionary<int, Queue<Type>> free = new Dictionary<int, Queue<Type>>();
 
-		public static Type Get(int size, Func<int, Type> constructor)
+		private static LargeObjectHeap<Type> instance;
+
+		public static LargeObjectHeap<Type> Get(Func<int, Type> constructor)
+		{
+			return LargeObjectHeap<Type>.Get(constructor, x => x > 1000);
+		}
+
+		public static LargeObjectHeap<Type> Get(Func<int, Type> constructor, Func<int, bool> reuse)
+		{
+			if (LargeObjectHeap<Type>.instance == null)
+			{
+				LargeObjectHeap<Type>.instance = new LargeObjectHeap<Type>();
+				LargeObjectHeap<Type>.instance.constructor = constructor;
+				LargeObjectHeap<Type>.instance.reuse = reuse;
+			}
+			return LargeObjectHeap<Type>.instance;
+		}
+			
+		private Func<int, Type> constructor;
+		private Func<int, bool> reuse;
+
+		private LargeObjectHeap()
+		{
+		}
+
+		public Type Get(int size)
 		{
 			Type t;
 			Queue<Type> queue;
-			if (LargeObjectHeap<Type>.free.TryGetValue(size, out queue) && queue.Count > 0)
+			if (reuse(size) && this.free.TryGetValue(size, out queue) && queue.Count > 0)
 				t = queue.Dequeue();
 			else
-				t = constructor(size);
+				t = this.constructor(size);
 			return t;
 		}
 
-		public static void Free(int size, Type t)
+		public void Free(int size, Type t)
 		{
-			Queue<Type> queue;
-			if (!LargeObjectHeap<Type>.free.TryGetValue(size, out queue))
-				queue = LargeObjectHeap<Type>.free[size] = new Queue<Type>();
-			queue.Enqueue(t);
+			if (this.reuse(size))
+			{
+				Queue<Type> queue;
+				if (!this.free.TryGetValue(size, out queue))
+					queue = this.free[size] = new Queue<Type>();
+				queue.Enqueue(t);
+			}
 		}
 	}
 }
