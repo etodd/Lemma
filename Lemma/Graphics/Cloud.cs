@@ -14,5 +14,7 @@ namespace Lemma.Components
 		public Property<Vector2> Velocity = new Property<Vector2> { Value = Vector2.One };
 
 		public Property<float> StartDistance = new Property<float> { Value = 50 };
+
+		public Property<bool> Infinite = new Property<bool> { Value = true };
 	}
 }

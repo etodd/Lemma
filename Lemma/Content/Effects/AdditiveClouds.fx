@@ -12,8 +12,23 @@ technique Render
 		SrcBlend = SrcAlpha;
 		DestBlend = One;
 	
-		VertexShader = compile vs_3_0 RenderVS();
-		PixelShader = compile ps_3_0 CloudPS();
+		VertexShader = compile vs_3_0 RenderVS(false);
+		PixelShader = compile ps_3_0 CloudPS(false);
+	}
+}
+
+technique RenderInfinite
+{
+	pass p0
+	{
+		ZEnable = true;
+		ZWriteEnable = false;
+		AlphaBlendEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = One;
+	
+		VertexShader = compile vs_3_0 RenderVS(true);
+		PixelShader = compile ps_3_0 CloudPS(true);
 	}
 }
 
@@ -27,7 +42,22 @@ technique Clip
 		SrcBlend = SrcAlpha;
 		DestBlend = One;
 
-		VertexShader = compile vs_3_0 RenderVS();
-		PixelShader = compile ps_3_0 CloudPS();
+		VertexShader = compile vs_3_0 RenderVS(false);
+		PixelShader = compile ps_3_0 CloudPS(false);
+	}
+}
+
+technique ClipInfinite
+{
+	pass p0
+	{
+		ZEnable = true;
+		ZWriteEnable = false;
+		AlphaBlendEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = One;
+
+		VertexShader = compile vs_3_0 RenderVS(true);
+		PixelShader = compile ps_3_0 CloudPS(true);
 	}
 }

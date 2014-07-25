@@ -217,7 +217,7 @@ namespace Lemma.Components
 					velocity.X = 0;
 					velocity.Z = 0;
 					if (addInitialVelocity)
-						velocity.Y = Math.Max(this.JumpSpeed * 1.3f, this.LinearVelocity.Value.Y + this.JumpSpeed * 0.75f);
+						velocity.Y = Math.Max(this.JumpSpeed * 1.3f, (this.LinearVelocity.Value.Y * 1.4f) + this.JumpSpeed * 0.5f);
 					else
 						velocity.Y = this.LinearVelocity.Value.Y;
 
@@ -254,13 +254,14 @@ namespace Lemma.Components
 
 						Vector3 currentHorizontalVelocity = this.LinearVelocity;
 						currentHorizontalVelocity.Y = 0.0f;
-						velocity *= Math.Min(this.MaxSpeed * 2.0f, Math.Max(currentHorizontalVelocity.Length() * 1.25f, 6.0f));
+						float horizontalSpeed = currentHorizontalVelocity.Length();
+						velocity *= Math.Min(this.MaxSpeed * 2.0f, Math.Max(horizontalSpeed * 1.25f, 6.0f));
 
 						if (state != State.Straight && Vector3.Dot(this.LinearVelocity, forwardVector) < 0.0f)
 							velocity = Vector3.Normalize(velocity) * (minWallRunSpeed + 1.0f);
 
 						float currentVerticalSpeed = this.LinearVelocity.Value.Y;
-						velocity.Y = (currentVerticalSpeed > -3.0f ? Math.Max(currentVerticalSpeed * 0.7f, 0.0f) : currentVerticalSpeed * 0.5f) + 5.0f;
+						velocity.Y = (currentVerticalSpeed > -10.0f ? Math.Max(currentVerticalSpeed * 0.5f, 0.0f) + velocity.Length() * 0.6f : currentVerticalSpeed * 0.5f + 3.0f);
 
 						this.LinearVelocity.Value = velocity;
 					}
