@@ -226,12 +226,6 @@ namespace Lemma.Components
 
 			this.isTopOut = this.initialVerticalDifference > 1.75f || verticalVelocityChange < Lemma.Components.FallDamage.DamageVelocity;
 
-			// Grunt if we're going up
-			// If we're falling down, don't grunt because we might already be grunting from the fall damage
-			// That would just be awkward
-			if (this.random.NextDouble() > 0.5 && verticalVelocityChange >= 0)
-				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, this.Entity);
-
 			this.forward.Y = 0.0f;
 
 			float horizontalDistanceToCoord = this.forward.Length();
@@ -248,6 +242,12 @@ namespace Lemma.Components
 			this.vaultOver = map[coordPosition + this.forward + Vector3.Down].ID == 0;
 			if (this.vaultOver)
 				this.isTopOut = false; // Don't do a top out animation if we're going to vault over it
+
+			// Grunt if we're going up
+			// If we're falling down, don't grunt because we might already be grunting from the fall damage
+			// That would just be awkward
+			if (this.random.NextDouble() > 0.5 && verticalVelocityChange >= 0 && !this.isTopOut)
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_GRUNT, this.Entity);
 
 			this.vaultVelocity = supportVelocity + new Vector3(0, this.isTopOut ? topOutVerticalSpeed : mantleVaultVerticalSpeed, 0);
 
