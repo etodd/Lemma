@@ -46,6 +46,8 @@ namespace Lemma.Components
 					p.Get<Model>("Model").Enabled.Value = false;
 					p.Get<CameraController>().Enabled.Value = false;
 					p.Get<FPSInput>().Enabled.Value = false;
+					p.Get<UIRenderer>().Enabled.Value = false;
+					AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_BREATHING_SOFT, p);
 				}
 				main.Spawner.CanSpawn = false;
 			}));
@@ -133,6 +135,7 @@ namespace Lemma.Components
 					p.Get<Model>("Model").Enabled.Value = true;
 					p.Get<CameraController>().Enabled.Value = true;
 					p.Get<FPSInput>().Enabled.Value = true;
+					p.Get<UIRenderer>().Enabled.Value = true;
 				}
 				main.Spawner.CanSpawn = originalCanSpawn;
 			};

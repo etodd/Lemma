@@ -82,9 +82,9 @@ namespace Lemma.Components
 					}
 					else
 					{
-						this.LinearVelocity.Value = new Vector3(0, this.LinearVelocity.Value.Y, 0);
 						if (!rolling)
 						{
+							this.LinearVelocity.Value = new Vector3(0, this.LinearVelocity.Value.Y, 0);
 							this.Landing.Value = true;
 							this.LockRotation.Execute();
 							this.landingTimer = 0;

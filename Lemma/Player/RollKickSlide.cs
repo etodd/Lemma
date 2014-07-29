@@ -260,6 +260,28 @@ namespace Lemma.Components
 			}
 		}
 
+		private void checkShouldBuildFloor()
+		{
+			if (this.EnableEnhancedRollSlide)
+			{
+				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(this.Position, Vector3.Down, this.Height);
+				if (floorRaycast.Voxel != null)
+				{
+					Voxel.t t = floorRaycast.Voxel[floorRaycast.Coordinate.Value].ID;
+					if (t != Voxel.t.Blue && t != Voxel.t.Powered)
+					{
+						this.floorCoordinate = floorRaycast.Coordinate.Value;
+						this.shouldBuildFloor = true;
+						if (this.Kicking)
+						{
+							this.sliding = true;
+							AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_SLIDE_LOOP, this.Entity);
+						}
+					}
+				}
+			}
+		}
+
 		public void Update(float dt)
 		{
 			if (this.Rolling)
@@ -293,6 +315,8 @@ namespace Lemma.Components
 
 					if (this.shouldBuildFloor)
 						this.VoxelTools.BuildFloor(this.floorMap, this.floorCoordinate, this.forwardDir, this.rightDir);
+					else
+						this.checkShouldBuildFloor();
 				}
 			}
 			else if (this.Kicking)
@@ -346,6 +370,8 @@ namespace Lemma.Components
 				}
 				if (this.shouldBuildFloor)
 					this.VoxelTools.BuildFloor(this.floorMap, this.floorCoordinate, this.forwardDir, this.rightDir);
+				else if (this.sliding)
+					this.checkShouldBuildFloor();
 			}
 		}
 	}

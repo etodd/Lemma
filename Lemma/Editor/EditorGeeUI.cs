@@ -55,6 +55,8 @@ namespace Lemma.Components
 
 		public ListProperty<Entity> SelectedEntities = new ListProperty<Entity>();
 
+		public Command<Entity> SelectEntity = new Command<Entity>();
+
 		public Property<bool> VoxelEditMode = new Property<bool>();
 
 		public Property<Editor.TransformModes> TransformMode = new Property<Editor.TransformModes>();
@@ -77,6 +79,8 @@ namespace Lemma.Components
 
 		public Property<bool> PickNextEntity = new Property<bool>();
 
+		public Property<bool> MovementEnabled = new Property<bool>();
+
 		public Command<Entity> EntityPicked = new Command<Entity>();
 
 		private DropDownView entityPickerDropDown;
@@ -97,7 +101,7 @@ namespace Lemma.Components
 
 			this.selectPrompt = new TextView(this.main.GeeUI, this.main.GeeUI.RootView, "Select an entity", Vector2.Zero, this.MainFont);
 			this.selectPrompt.Add(new Binding<Vector2, MouseState>(this.selectPrompt.Position, x => new Vector2(x.X + 16, x.Y + 16), this.main.MouseState));
-			this.selectPrompt.Add(new Binding<bool>(this.selectPrompt.Active, this.PickNextEntity));
+			this.selectPrompt.Add(new Binding<bool>(this.selectPrompt.Active, () => this.PickNextEntity && !this.MovementEnabled, this.PickNextEntity, this.MovementEnabled));
 
 			this.TabViews = new TabHost(this.main.GeeUI, this.RootEditorView, Vector2.Zero, this.MainFont);
 			this.MapPanelView = new PanelView(this.main.GeeUI, null, Vector2.Zero);
@@ -372,8 +376,7 @@ namespace Lemma.Components
 					Entity ent1 = ent;
 					SelectDropDownView.AddOption(this.entityString(ent), () =>
 					{
-						this.SelectedEntities.Clear();
-						this.SelectedEntities.Add(ent1);
+						this.SelectEntity.Execute(ent1);
 					}, MainFont, ent);
 				}
 			}

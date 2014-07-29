@@ -118,6 +118,7 @@ namespace Lemma.Factories
 			Editor editor = entity.GetOrCreate<Editor>();
 			EditorGeeUI gui = entity.Create<EditorGeeUI>();
 			gui.Add(new Binding<bool>(gui.Visible, x => !x, ConsoleUI.Showing));
+			gui.Add(new Binding<bool>(gui.MovementEnabled, editor.MovementEnabled));
 
 			gui.SetVoxelProperties(new Dictionary<string, PropertyEntry>
 			{
@@ -159,7 +160,6 @@ namespace Lemma.Factories
 			brushVisual.DrawOrder.Value = 11; // In front of water
 			brushVisual.DisableCulling.Value = true;
 			entity.Add(brushVisual);
-			brushVisual.Add(new Binding<Matrix, Vector3>(brushVisual.Transform, x => Matrix.CreateTranslation(x), editor.Position));
 			brushVisual.Add(new NotifyBinding(delegate()
 			{
 				float s = 1.0f;
@@ -311,6 +311,7 @@ namespace Lemma.Factories
 
 			model.Add(new Binding<bool>(model.Enabled, editor.VoxelEditMode));
 			model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateFromQuaternion(editor.Orientation) * Matrix.CreateTranslation(editor.Position), editor.Position, editor.Orientation));
+			brushVisual.Add(new Binding<Matrix>(brushVisual.Transform, model.Transform));
 
 			// When transferring between maps we need to clear our GUID to make way for the entities on the new map,
 			// then assign ourselves a new GUID.
@@ -325,6 +326,11 @@ namespace Lemma.Factories
 			entity.Add(new CommandBinding(main.MapLoaded, (Action)entity.NewGUID));
 
 			gui.Add(new ListBinding<Entity>(gui.SelectedEntities, editor.SelectedEntities));
+			gui.Add(new CommandBinding<Entity>(gui.SelectEntity, delegate(Entity e)
+			{
+				editor.SelectedEntities.Clear();
+				editor.SelectedEntities.Add(e);
+			}));
 			gui.Add(new Binding<bool>(gui.VoxelEditMode, editor.VoxelEditMode));
 			gui.Add(new TwoWayBinding<bool>(editor.NeedsSave, gui.NeedsSave));
 			gui.Add(new Binding<Editor.TransformModes>(gui.TransformMode, editor.TransformMode));
@@ -507,7 +513,7 @@ namespace Lemma.Factories
 			// Deselect all entities
 			AddCommand
 			(
-				entity, main, "Deselect all", new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.A },
+				entity, main, "Deselect all", new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.D },
 				new Command
 				{
 					Action = delegate()
@@ -533,11 +539,8 @@ namespace Lemma.Factories
 				{
 					Action = delegate()
 					{
-						if (!input.GetKey(Keys.LeftControl))
-						{
-							editor.VoxelEditMode.Value = !editor.VoxelEditMode;
-							model.Scale.Value = new Vector3(editor.SelectedEntities[0].Get<Voxel>().Scale * 0.5f);
-						}
+						editor.VoxelEditMode.Value = !editor.VoxelEditMode;
+						model.Scale.Value = new Vector3(editor.SelectedEntities[0].Get<Voxel>().Scale * 0.5f);
 					}
 				},
 				gui.VoxelCommands,
@@ -546,7 +549,10 @@ namespace Lemma.Factories
 					if (editor.TransformMode.Value != Editor.TransformModes.None)
 						return false;
 
-					if (input.GetKey(Keys.LeftShift))
+					if (input.GetKey(Keys.LeftShift) || input.GetKey(Keys.LeftControl))
+						return false;
+					
+					if (gui.PickNextEntity)
 						return false;
 
 					if (editor.VoxelEditMode)
@@ -554,7 +560,7 @@ namespace Lemma.Factories
 					else
 						return editor.SelectedEntities.Length == 1 && editor.SelectedEntities[0].Get<Voxel>() != null;
 				},
-				editor.TransformMode, input.GetKey(Keys.LeftShift), editor.VoxelEditMode, editor.SelectedEntities.Length
+				editor.TransformMode, input.GetKey(Keys.LeftShift), input.GetKey(Keys.LeftControl), editor.VoxelEditMode, editor.SelectedEntities.Length, gui.PickNextEntity
 			);
 
 			int brush = 0;

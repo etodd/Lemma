@@ -239,7 +239,9 @@ namespace Lemma.Components
 
 			// If there's nothing on the other side of the wall (it's a one-block-wide wall)
 			// then vault over it rather than standing on top of it
-			this.vaultOver = map[coordPosition + this.forward + Vector3.Down].ID == 0;
+			this.vaultOver = map[coordPosition + this.forward + new Vector3(0, -1, 0)].ID == Voxel.t.Empty
+				&& map[coordPosition + this.forward + new Vector3(0, -2, 0)].ID == Voxel.t.Empty;
+
 			if (this.vaultOver)
 				this.isTopOut = false; // Don't do a top out animation if we're going to vault over it
 
