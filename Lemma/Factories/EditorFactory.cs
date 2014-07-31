@@ -120,6 +120,8 @@ namespace Lemma.Factories
 			gui.Add(new Binding<bool>(gui.Visible, x => !x, ConsoleUI.Showing));
 			gui.Add(new Binding<bool>(gui.MovementEnabled, editor.MovementEnabled));
 
+			Property<bool> coordinateVisible = new Property<bool>();
+			gui.Add(new Binding<bool>(coordinateVisible, () => editor.VoxelEditMode && !editor.VoxelSelectionActive, editor.VoxelEditMode, editor.VoxelSelectionActive));
 			gui.SetVoxelProperties(new Dictionary<string, PropertyEntry>
 			{
 				{ "Brush [Space]", new PropertyEntry(editor.Brush, new PropertyEntry.EditorData()) },
@@ -134,7 +136,18 @@ namespace Lemma.Factories
 						editor.Coordinate, new PropertyEntry.EditorData
 						{
 							Readonly = true,
-							Visible = editor.VoxelEditMode,
+							Visible = coordinateVisible,
+						}
+					)
+				},
+				{
+					"Selection",
+					new PropertyEntry
+					(
+						editor.VoxelSelectionSize, new PropertyEntry.EditorData
+						{
+							Readonly = true,
+							Visible = editor.VoxelSelectionActive,
 						}
 					)
 				},

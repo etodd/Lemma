@@ -98,7 +98,8 @@ namespace Lemma.Components
 				else if (verticalAcceleration < GruntVelocity)
 				{
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_LAND, this.Entity);
-					this.model.StartClip("Land", 4);
+					if (!rolling)
+						this.model.StartClip("Land", 4);
 					this.Rumble.Execute(0.2f);
 				}
 			};

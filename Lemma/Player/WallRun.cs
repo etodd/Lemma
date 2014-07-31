@@ -327,7 +327,7 @@ namespace Lemma.Components
 						if (result.Voxel != null && result.Voxel != this.WallRunVoxel.Value)
 						{
 							float dot = Vector3.Dot(result.Voxel.GetAbsoluteVector(result.Normal.GetReverse().GetVector()), wallVector);
-							if (dot > 0.75f)
+							if (dot > 0.7f)
 							{
 								Matrix matrix = Matrix.CreateRotationY(this.Rotation);
 								Vector3 forwardVector = -matrix.Forward;

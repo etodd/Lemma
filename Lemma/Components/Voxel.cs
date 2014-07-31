@@ -1278,6 +1278,8 @@ namespace Lemma.Components
 			public int Z;
 			public State Data;
 
+			public static readonly int SizeInBytes = 3 * sizeof(int) + IntPtr.Size;
+
 			public Coord Move(Direction dir, int amount)
 			{
 				int x = this.X, y = this.Y, z = this.Z;

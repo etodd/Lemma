@@ -142,6 +142,7 @@ namespace Lemma.Components
 		private float movementInterval;
 
 		public Property<Voxel.Coord> Coordinate = new Property<Voxel.Coord>(); // Readonly, for displaying to the UI
+		public Property<Voxel.Coord> VoxelSelectionSize = new Property<Voxel.Coord>(); // Readonly, for displaying to the UI
 
 		private bool justCommitedOrRevertedVoxelOperation;
 
@@ -357,8 +358,6 @@ namespace Lemma.Components
 					Voxel.Coord newSelectionStart = this.coord.Plus(this.originalSelectionStart.Minus(this.originalSelectionCoord));
 					this.VoxelSelectionStart.Value = newSelectionStart;
 					this.VoxelSelectionEnd.Value = this.coord.Plus(this.originalSelectionEnd.Minus(this.originalSelectionCoord));
-
-					this.mapState.Add(this.VoxelSelectionStart, this.VoxelSelectionEnd);
 
 					Voxel.Coord offset = this.originalSelectionStart.Minus(newSelectionStart);
 					this.restoreVoxel(newSelectionStart, this.VoxelSelectionEnd, false, offset.X, offset.Y, offset.Z);
@@ -765,6 +764,12 @@ namespace Lemma.Components
 				if (this.VoxelSelectionActive != active)
 					this.VoxelSelectionActive.Value = active;
 			}, this.VoxelEditMode, this.VoxelSelectionStart, this.VoxelSelectionEnd));
+
+			this.Add(new Binding<Voxel.Coord>(this.VoxelSelectionSize, delegate()
+			{
+				Voxel.Coord a = this.VoxelSelectionStart, b = this.VoxelSelectionEnd;
+				return new Voxel.Coord { X = b.X - a.X, Y = b.Y - a.Y, Z = b.Z - a.Z };
+			}, this.VoxelSelectionStart, this.VoxelSelectionEnd));
 		}
 
 		public void Update(float elapsedTime)
@@ -1038,8 +1043,7 @@ namespace Lemma.Components
 		protected void brushStroke(Voxel map, Voxel.Coord center)
 		{
 			int size = this.BrushSize;
-			if (size > 1)
-				center = this.jitter(map, center);
+			center = this.jitter(map, center);
 
 			Voxel.State state = this.getBrush();
 			if (this.Fill == FillMode.Empty)
