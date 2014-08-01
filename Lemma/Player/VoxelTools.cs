@@ -35,13 +35,18 @@ namespace Lemma.Components
 			Voxel.Coord newFloorCoordinate = floorMap.GetCoordinate(this.Position);
 			floorCoordinate.SetComponent(rightDir, newFloorCoordinate.GetComponent(rightDir));
 			floorCoordinate.SetComponent(forwardDir, newFloorCoordinate.GetComponent(forwardDir));
+			Direction upDir = floorMap.GetRelativeDirection(Direction.PositiveY);
 
 			const int radius = 3;
-			for (Voxel.Coord x = floorCoordinate.Move(rightDir, -radius); x.GetComponent(rightDir) < floorCoordinate.GetComponent(rightDir) + radius; x = x.Move(rightDir))
+			foreach (Voxel.Coord x in this.spreadFromCenter(floorCoordinate, rightDir))
 			{
+				if (floorMap[x.Move(upDir)].Hard)
+					break;
 				int dx = x.GetComponent(rightDir) - floorCoordinate.GetComponent(rightDir);
 				for (Voxel.Coord y = x.Move(forwardDir, -radius); y.GetComponent(forwardDir) < floorCoordinate.GetComponent(forwardDir) + radius; y = y.Move(forwardDir))
 				{
+					if (floorMap[y.Move(upDir)].Hard)
+						break;
 					int dy = y.GetComponent(forwardDir) - floorCoordinate.GetComponent(forwardDir);
 					if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && floorMap[y].ID == 0)
 					{

@@ -44,14 +44,13 @@ namespace Lemma.Components
 		public Property<float> LastJump = new Property<float> { Value = -1.0f };
 		public Property<float> LastSupportedSpeed = new Property<float>();
 
-
 		private AnimatedModel model;
 
 		public void Bind(AnimatedModel m)
 		{
 			Func<Matrix, Matrix> filter = delegate(Matrix mat)
 			{
-				mat.Translation = new Vector3(0.0f, 0.0f, 2.0f);
+				mat.Translation = new Vector3(0.0f, 0.2f, 2.0f);
 				return mat;
 			};
 			m["Jump"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = filter;

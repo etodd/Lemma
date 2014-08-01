@@ -246,7 +246,7 @@ namespace Lemma.Components
 		{
 			Vector3 focus;
 			Vector3 shadowCameraOffset;
-			float size = camera.FarPlaneDistance;
+			float size = camera.FarPlaneDistance * 1.5f;
 
 			Vector3 globalShadowLightForward = Vector3.Transform(Vector3.Forward, this.globalShadowLight.Quaternion);
 

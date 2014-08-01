@@ -16,6 +16,7 @@ namespace Lemma.Components
 		public const float RaycastHeight = 30.0f;
 		public const float RaycastInterval = 0.25f;
 		public const float MaxLifetime = 5.0f;
+		public const float MaxWindLifetime = 8.0f;
 		public const float StartHeight = 30.0f;
 
 		[XmlIgnore]
@@ -67,6 +68,29 @@ namespace Lemma.Components
 					BlendState = BlendState.Opaque,
 					Material = new Components.Model.Material { SpecularIntensity = 0.0f, SpecularPower = 1.0f },
 				});
+				ParticleSystem.Add(main, "Wind",
+				new ParticleSystem.ParticleSettings
+				{
+					TextureName = "Particles\\wind",
+					EffectFile = "Effects\\Particle",
+					MaxParticles = 10000,
+					Duration = TimeSpan.FromSeconds(Snow.MaxWindLifetime),
+					MinHorizontalVelocity = -1.0f,
+					MaxHorizontalVelocity = 1.0f,
+					MinVerticalVelocity = -1.0f,
+					MaxVerticalVelocity = 1.0f,
+					Gravity = new Vector3(0.0f, 0.0f, 0.0f),
+					MinRotateSpeed = -1.0f,
+					MaxRotateSpeed = 1.0f,
+					MinStartSize = 15.0f,
+					MaxStartSize = 25.0f,
+					MinEndSize = 25.0f,
+					MaxEndSize = 40.0f,
+					MinColor = new Vector4(1.0f, 1.0f, 1.0f, 0.25f),
+					MaxColor = new Vector4(1.0f, 1.0f, 1.0f, 0.25f),
+					EmitterVelocitySensitivity = 1.0f,
+					BlendState = BlendState.AlphaBlend,
+				});
 			}
 		}
 
@@ -84,7 +108,7 @@ namespace Lemma.Components
 					{
 						Vector3 pos = this.KernelOffset + Vector3.Transform(new Vector3(x * KernelSpacing, 0, y * KernelSpacing), this.Orientation);
 						Voxel.GlobalRaycastResult raycast = Voxel.GlobalRaycast(pos, dir, (StartHeight * 2.0f) + RaycastHeight, (index, type) => type != Voxel.t.Invisible);
-						this.RaycastDistances[x, y] = raycast.Voxel == null ? float.MinValue : raycast.Distance - RaycastHeight;
+						this.RaycastDistances[x, y] = raycast.Voxel == null ? float.MaxValue : raycast.Distance - RaycastHeight;
 					}
 				}
 			}
