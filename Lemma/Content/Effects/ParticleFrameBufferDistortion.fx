@@ -42,7 +42,7 @@ technique RenderAdditiveParticles
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 ParticleVS();
+		VertexShader = compile vs_3_0 ParticleVS(true);
 		PixelShader = compile ps_3_0 ParticlePS();
 		AlphaBlendEnable = true;
 		SrcBlend = One;
@@ -57,7 +57,7 @@ technique RenderAlphaParticles
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 ParticleVS();
+		VertexShader = compile vs_3_0 ParticleVS(true);
 		PixelShader = compile ps_3_0 ParticlePS();
 		AlphaBlendEnable = true;
 		SrcBlend = SrcAlpha;
@@ -72,7 +72,7 @@ technique ClipAdditiveParticles
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 ClipParticleVS();
+		VertexShader = compile vs_3_0 ClipParticleVS(true);
 		PixelShader = compile ps_3_0 ClipParticlePS();
 		AlphaBlendEnable = true;
 		SrcBlend = One;
@@ -87,7 +87,7 @@ technique ClipAlphaParticles
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 ClipParticleVS();
+		VertexShader = compile vs_3_0 ClipParticleVS(true);
 		PixelShader = compile ps_3_0 ClipParticlePS();
 		AlphaBlendEnable = true;
 		SrcBlend = SrcAlpha;

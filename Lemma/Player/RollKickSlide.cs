@@ -104,7 +104,7 @@ namespace Lemma.Components
 			bool instantiatedBlockPossibility = false;
 
 			if (this.EnableCrouch && this.EnableRoll && !this.IsSwimming
-				&& (!this.EnableKick || !this.IsSupported || this.LinearVelocity.Value.Length() < 2.0f)
+				&& (!this.EnableKick || !this.IsSupported || this.LinearVelocity.Value.Length() < 4.0f)
 				&& this.main.TotalTime - this.LastRollStarted > rollCoolDown)
 			{
 				// Try to roll

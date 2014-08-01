@@ -118,12 +118,15 @@ float ComputeParticleSize(float startSize, float randomValue, float normalizedAg
 
 // Vertex shader helper for computing the color of a particle.
 float4 ComputeParticleColor(float4 projectedPosition,
-							float randomValue, float normalizedAge)
+							float randomValue, float normalizedAge, uniform bool fade)
 {
 	// Apply a random factor to make each particle a slightly different color.
 	float4 color = lerp(MinColor, MaxColor, randomValue);
 	
-	color.a *= normalizedAge < 0.1f ? normalizedAge / 0.1f : 1.0f - normalizedAge;
+	if (fade)
+		color.a *= normalizedAge < 0.1f ? normalizedAge / 0.1f : 1.0f - normalizedAge;
+	else
+		color.a = normalizedAge < 1.0f;
    
 	return color;
 }
@@ -144,7 +147,7 @@ float2x2 ComputeParticleRotation(float randomValue, float age)
 }
 
 // Custom vertex shader animates particles entirely on the GPU.
-void ParticleVS(in VertexShaderInput input, out VertexShaderOutput output)
+void ParticleVS(in VertexShaderInput input, out VertexShaderOutput output, uniform bool fade)
 {	
 	// Compute the age of the particle.
 	float age = CurrentTime - input.Time;
@@ -167,13 +170,13 @@ void ParticleVS(in VertexShaderInput input, out VertexShaderOutput output)
 
 	pos.xy += mul(input.Corner, rotation) * size * ViewportScale;
 	
-	output.Color = ComputeParticleColor(output.Position, input.Random.z, normalizedAge);
+	output.Color = ComputeParticleColor(output.Position, input.Random.z, normalizedAge, fade);
 	output.TextureCoordinate = (input.Corner + 1) / 2;
 	output.Position = output.ClipSpacePosition = pos;
 }
 
-void ClipParticleVS(in VertexShaderInput input, out VertexShaderOutput output, out ClipPSInput clipData)
+void ClipParticleVS(in VertexShaderInput input, out VertexShaderOutput output, out ClipPSInput clipData, uniform bool fade)
 {
-	ParticleVS(input, output);
+	ParticleVS(input, output, fade);
 	clipData = GetClipData(float4(output.WorldSpacePosition, 1));
 }

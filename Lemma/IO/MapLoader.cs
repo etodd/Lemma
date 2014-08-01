@@ -120,7 +120,8 @@ namespace Lemma.IO
 			typeof(Lemma.Components.Binder),
 			typeof(Constant),
 			typeof(MessageDisplayer),
-			typeof(Concatenator)
+			typeof(Concatenator),
+			typeof(Snow),
 		};
 
 		public static XmlSerializer Serializer;

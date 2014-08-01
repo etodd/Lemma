@@ -71,7 +71,9 @@ namespace Lemma.Components
 			Floater = 9,
 			Expander = 10,
 			Wood = 11,
+			Snow = 12,
 			HardPowered = 13,
+			Ice = 14,
 			Neutral = 18,
 			RockChunky = 23,
 			White = 30,
@@ -705,6 +707,56 @@ namespace Lemma.Components
 					},
 					Tiling = 3.0f,
 					Tint = new Vector3(0.3f, 0.9f, 1.25f),
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
+				},
+				new State
+				{
+					ID = t.Snow,
+					Permanent = false,
+					Supported = false,
+					Hard = false,
+					Density = 0.5f,
+					Tiling = 0.5f,
+					DiffuseMap = "Textures\\snow",
+					NormalMap = "Textures\\snow-normal",
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 10.0f,
+							SpecularIntensity = 0.3f,
+						},
+						new Model.Material
+						{
+							SpecularPower = 50.0f,
+							SpecularIntensity = 0.6f,
+						},
+					},
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.GRAVEL,
+				},
+				new State
+				{
+					ID = t.Ice,
+					Permanent = false,
+					Supported = false,
+					Hard = true,
+					Density = 0.5f,
+					Tiling = 0.5f,
+					DiffuseMap = "Textures\\ice",
+					NormalMap = "Textures\\ice-normal",
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 100.0f,
+							SpecularIntensity = 0.5f,
+						},
+						new Model.Material
+						{
+							SpecularPower = 200.0f,
+							SpecularIntensity = 0.8f,
+						},
+					},
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 				}
 			);

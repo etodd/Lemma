@@ -101,7 +101,7 @@ namespace Lemma.Components
 			// where the flames continue to move in the same direction as the source
 			// projectile. The projectile trail particles, on the other hand, set this
 			// value very low so they are less affected by the velocity of the projectile.
-			public float EmitterVelocitySensitivity = 0.0f;
+			public float EmitterVelocitySensitivity = 0.5f;
 
 
 			// Range of values controlling how much X and Z axis velocity to give each
@@ -394,6 +394,7 @@ namespace Lemma.Components
 				BlendState = Microsoft.Xna.Framework.Graphics.BlendState.AlphaBlend,
 				MinColor = new Vector4(1.0f, 1.0f, 1.0f, 0.8f),
 				MaxColor = new Vector4(1.0f, 1.0f, 1.0f, 0.8f),
+				EmitterVelocitySensitivity = 0.2f,
 			});
 
 			ParticleSystem.add(main, "InfectedShatter",

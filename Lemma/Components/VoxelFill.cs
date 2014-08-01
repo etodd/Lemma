@@ -79,6 +79,8 @@ namespace Lemma.Components
 			}
 		}
 
+		private static List<CoordinateEntry> coordSortCache = new List<CoordinateEntry>();
+
 		private void sortCoords()
 		{
 			Entity targetEntity = this.Target.Value.Target;
@@ -92,11 +94,13 @@ namespace Lemma.Components
 					entry.Distance = (focusPoint - entry.Position).LengthSquared();
 				}
 
-				List<CoordinateEntry> coordList = this.Coords.ToList();
+				List<CoordinateEntry> coordList = VoxelFill.coordSortCache;
+				coordList.AddRange(this.Coords);
 				this.Coords.Clear();
 				coordList.Sort(new LambdaComparer<CoordinateEntry>((x, y) => x.Distance.CompareTo(y.Distance)));
 				foreach (CoordinateEntry e in coordList)
 					this.Coords.Add(e);
+				coordList.Clear();
 			}
 		}
 

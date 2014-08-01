@@ -130,9 +130,9 @@ namespace Lemma.Components
 					for (int y = 0; y < KernelSize; y++)
 					{
 						Vector3 pos = KernelOffset + new Vector3(x * KernelSpacing, 0, y * KernelSpacing);
-						Voxel.GlobalRaycastResult raycast = Voxel.GlobalRaycast(pos, Vector3.Down, StartHeight + RaycastHeight + (VerticalSpeed * MaxLifetime));
+						Voxel.GlobalRaycastResult raycast = Voxel.GlobalRaycast(pos, Vector3.Down, StartHeight + RaycastHeight + (VerticalSpeed * MaxLifetime), (index, type) => type != Voxel.t.Invisible);
 						float height = raycast.Voxel == null ? float.MinValue : raycast.Position.Y;
-						RaycastHeights[x, y] = height;
+						this.RaycastHeights[x, y] = height;
 						averageHeight += Math.Max(cameraPos.Y, Math.Min(height, cameraPos.Y + StartHeight)) * audioKernel[x, y];
 					}
 				}

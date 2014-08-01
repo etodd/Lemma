@@ -38,6 +38,8 @@ namespace Lemma.Components
 		private float soundIntervalTimer;
 		private ParticleSystem particles;
 
+		private static List<VoxelFill.CoordinateEntry> coordSortCache = new List<VoxelFill.CoordinateEntry>();
+
 		public override void Awake()
 		{
 			base.Awake();
@@ -59,7 +61,7 @@ namespace Lemma.Components
 						Voxel.Coord center = this.Coordinate;
 						Vector3 pos = v.GetRelativePosition(center);
 						int radius = this.Radius;
-						List<VoxelFill.CoordinateEntry> coords = new List<VoxelFill.CoordinateEntry>();
+						List<VoxelFill.CoordinateEntry> coords = Rift.coordSortCache;
 						for (Voxel.Coord x = center.Move(Direction.NegativeX, radius); x.X < center.X + radius; x.X++)
 						{
 							for (Voxel.Coord y = x.Move(Direction.NegativeY, radius); y.Y < center.Y + radius; y.Y++)
@@ -74,6 +76,7 @@ namespace Lemma.Components
 						}
 						coords.Sort(new LambdaComparer<VoxelFill.CoordinateEntry>((x, y) => x.Distance.CompareTo(y.Distance)));
 						this.Coords.AddAll(coords.Select(x => x.Coord));
+						coords.Clear();
 					}
 				}
 			}));
