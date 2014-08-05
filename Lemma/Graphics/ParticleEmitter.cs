@@ -94,7 +94,7 @@ namespace Lemma.Components
 		/// </summary>
 		public void Update(float elapsedTime)
 		{
-			if (elapsedTime == 0 || this.particleSystem == null)
+			if (elapsedTime == 0 || this.particleSystem == null || this.timeBetweenParticles == 0)
 				return;
 
 			// Set the initial "last position" so we don't add particles between (0, 0, 0) and our initial location

@@ -76,6 +76,7 @@ namespace Lemma.Components
 			Ice = 14,
 			Neutral = 18,
 			RockChunky = 23,
+			RockRed = 24,
 			White = 30,
 			Metal = 31,
 			MetalSwirl = 32,
@@ -416,6 +417,26 @@ namespace Lemma.Components
 					},
 					Tiling = 0.25f,
 					Tint = new Vector3(0.88f, 0.89f, 0.9f),
+				},
+				new State
+				{
+					ID = t.RockRed,
+					Permanent = true,
+					Supported = true,
+					Hard = true,
+					Density = 2,
+					DiffuseMap = "Textures\\red-rock",
+					NormalMap = "Textures\\red-rock-normal",
+					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+					Tiling = 0.5f,
+					Materials = new[]
+					{
+						new Model.Material
+						{
+							SpecularPower = 1.0f,
+							SpecularIntensity = 0.0f,
+						}
+					},
 				},
 				new State
 				{

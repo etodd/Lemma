@@ -111,7 +111,7 @@
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Data.cs" />
-    <Compile Include="Components\Snow.cs" />
+    <Compile Include="Components\ParticleWind.cs" />
     <Compile Include="Components\Rotator.cs" />
     <Compile Include="Components\Scriptlike\Binder.cs" />
     <Compile Include="Components\Scriptlike\Concatenator.cs" />

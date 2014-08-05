@@ -121,7 +121,7 @@ namespace Lemma.IO
 			typeof(Constant),
 			typeof(MessageDisplayer),
 			typeof(Concatenator),
-			typeof(Snow),
+			typeof(ParticleWind),
 		};
 
 		public static XmlSerializer Serializer;
