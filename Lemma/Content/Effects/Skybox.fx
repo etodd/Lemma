@@ -9,6 +9,16 @@ float GodRayStrength;
 float GodRayExtinction;
 float WaterHeight;
 
+sampler2D SkyboxSampler = sampler_state
+{
+	Texture = <DiffuseTexture>;
+	MinFilter = linear;
+	MagFilter = linear;
+	MipFilter = linear;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
 float4x4 ShadowViewProjectionMatrix;
 
 float4x4 ViewMatrixRotationOnly;
@@ -74,7 +84,7 @@ void SkyboxPS(in RenderPSInput input,
 	if (vertical)
 		blend = min(1.0f, blend + max(0, 1.0f - ((CameraPosition + viewRay * depth).y - VerticalCenter) / VerticalSize));
 
-	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates);
+	float4 color = tex2D(SkyboxSampler, tex.uvCoordinates);
 
 	float interval = (depth - StartDistance) / FOG_SHADOW_SAMPLES;
 

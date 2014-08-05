@@ -116,28 +116,31 @@ namespace Lemma.Components
 			this.originalLightningColor = this.LightningColor;
 		}
 
+		public void Update()
+		{
+			this.raycastTimer = 0.0f;
+			Vector3 cameraPos = main.Camera.Position;
+			float averageHeight = 0.0f;
+			this.KernelOffset.Value = main.Camera.Position + new Vector3(KernelSize * KernelSpacing * -0.5f, RaycastHeight + StartHeight, KernelSize * KernelSpacing * -0.5f);
+			for (int x = 0; x < KernelSize; x++)
+			{
+				for (int y = 0; y < KernelSize; y++)
+				{
+					Vector3 pos = KernelOffset + new Vector3(x * KernelSpacing, 0, y * KernelSpacing);
+					Voxel.GlobalRaycastResult raycast = Voxel.GlobalRaycast(pos, Vector3.Down, StartHeight + RaycastHeight + (VerticalSpeed * MaxLifetime), (index, type) => type != Voxel.t.Invisible);
+					float height = raycast.Voxel == null ? float.MinValue : raycast.Position.Y;
+					this.RaycastHeights[x, y] = height;
+					averageHeight += Math.Max(cameraPos.Y, Math.Min(height, cameraPos.Y + StartHeight)) * audioKernel[x, y];
+				}
+			}
+			AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.RAIN_VOLUME, 1.0f - ((averageHeight - cameraPos.Y) / StartHeight));
+		}
+
 		public void Update(float dt)
 		{
-			raycastTimer += dt;
-			if (raycastTimer > RaycastInterval)
-			{
-				raycastTimer = 0.0f;
-				Vector3 cameraPos = main.Camera.Position;
-				float averageHeight = 0.0f;
-				this.KernelOffset.Value = main.Camera.Position + new Vector3(KernelSize * KernelSpacing * -0.5f, RaycastHeight + StartHeight, KernelSize * KernelSpacing * -0.5f);
-				for (int x = 0; x < KernelSize; x++)
-				{
-					for (int y = 0; y < KernelSize; y++)
-					{
-						Vector3 pos = KernelOffset + new Vector3(x * KernelSpacing, 0, y * KernelSpacing);
-						Voxel.GlobalRaycastResult raycast = Voxel.GlobalRaycast(pos, Vector3.Down, StartHeight + RaycastHeight + (VerticalSpeed * MaxLifetime), (index, type) => type != Voxel.t.Invisible);
-						float height = raycast.Voxel == null ? float.MinValue : raycast.Position.Y;
-						this.RaycastHeights[x, y] = height;
-						averageHeight += Math.Max(cameraPos.Y, Math.Min(height, cameraPos.Y + StartHeight)) * audioKernel[x, y];
-					}
-				}
-				AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.RAIN_VOLUME, 1.0f - ((averageHeight - cameraPos.Y) / StartHeight));
-			}
+			this.raycastTimer += dt;
+			if (this.raycastTimer > RaycastInterval)
+				this.Update();
 
 			if (!this.main.EditorEnabled)
 			{

@@ -67,7 +67,7 @@ namespace Lemma.Factories
 				new ParticleSystem.ParticleSettings
 				{
 					TextureName = "Particles\\wind",
-					EffectFile = "Effects\\Particle",
+					EffectFile = "Effects\\ParticleVolume",
 					MaxParticles = 10000,
 					Duration = TimeSpan.FromSeconds(SnowFactory.MaxWindLifetime),
 					MinHorizontalVelocity = -1.0f,
@@ -91,35 +91,43 @@ namespace Lemma.Factories
 			entity.CannotSuspendByDistance = true;
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			ParticleWind snow = entity.GetOrCreate<ParticleWind>("Wind");
+			ParticleWind wind = entity.GetOrCreate<ParticleWind>("Wind");
 
 			ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("Emitter");
-			emitter.Add(new Binding<Vector3>(emitter.Jitter, snow.Jitter));
+			emitter.Add(new Binding<Vector3>(emitter.Jitter, wind.Jitter));
 
 			ParticleEmitter windEmitter = entity.GetOrCreate<ParticleEmitter>("WindEmitter");
-			windEmitter.Add(new Binding<Vector3>(windEmitter.Jitter, snow.Jitter));
+			windEmitter.Add(new Binding<Vector3>(windEmitter.Jitter, wind.Jitter));
 
 			Property<Vector3> dir = new Property<Vector3>();
 			transform.Add(new Binding<Vector3, Quaternion>(dir, x => Vector3.Transform(Vector3.Down, x), transform.Quaternion));
-			snow.Add(new Binding<Quaternion>(snow.Orientation, transform.Quaternion));
+			wind.Add(new Binding<Quaternion>(wind.Orientation, transform.Quaternion));
 
 			emitter.Position.Value = new Vector3(0, ParticleWind.StartHeight, 0);
 			windEmitter.Position.Value = new Vector3(0, ParticleWind.StartHeight * 2, 0);
 
-			emitter.AddParticle = delegate(Vector3 position, Vector3 velocity)
+			emitter.AddParticle = delegate(Vector3 position, Vector3 velocity, float prime)
 			{
-				Vector3 kernelCoord = (position + snow.Jitter) / ParticleWind.KernelSpacing;
-				float distance = snow.RaycastDistances[Math.Max(0, Math.Min(ParticleWind.KernelSize - 1, (int)kernelCoord.X)), Math.Max(0, Math.Min(ParticleWind.KernelSize - 1, (int)kernelCoord.Z))];
+				Vector3 kernelCoord = (position + wind.Jitter) / ParticleWind.KernelSpacing;
+				float distance = wind.RaycastDistances[Math.Max(0, Math.Min(ParticleWind.KernelSize - 1, (int)kernelCoord.X)), Math.Max(0, Math.Min(ParticleWind.KernelSize - 1, (int)kernelCoord.Z))];
 				if (distance > 0)
-					emitter.ParticleSystem.AddParticle(main.Camera.Position + Vector3.Transform(position, transform.Quaternion), dir.Value * snow.Speed.Value, Math.Min(distance / snow.Speed, SnowFactory.MaxLifetime));
+				{
+					float lifetime = Math.Min(distance / wind.Speed, SnowFactory.MaxLifetime);
+					if (lifetime > prime)
+						emitter.ParticleSystem.AddParticle(main.Camera.Position + Vector3.Transform(position, transform.Quaternion), dir.Value * wind.Speed.Value, lifetime, -1.0f, prime);
+				}
 			};
 			
-			windEmitter.AddParticle = delegate(Vector3 position, Vector3 velocity)
+			windEmitter.AddParticle = delegate(Vector3 position, Vector3 velocity, float prime)
 			{
-				Vector3 kernelCoord = (position + snow.Jitter) / ParticleWind.KernelSpacing;
-				float distance = snow.RaycastDistances[Math.Max(0, Math.Min(ParticleWind.KernelSize - 1, (int)kernelCoord.X)), Math.Max(0, Math.Min(ParticleWind.KernelSize - 1, (int)kernelCoord.Z))];
+				Vector3 kernelCoord = (position + wind.Jitter) / ParticleWind.KernelSpacing;
+				float distance = wind.RaycastDistances[Math.Max(0, Math.Min(ParticleWind.KernelSize - 1, (int)kernelCoord.X)), Math.Max(0, Math.Min(ParticleWind.KernelSize - 1, (int)kernelCoord.Z))];
 				if (distance > 0)
-					windEmitter.ParticleSystem.AddParticle(main.Camera.Position + Vector3.Transform(position, transform.Quaternion), dir.Value * snow.Speed.Value, Math.Min((distance + ParticleWind.StartHeight) / snow.Speed, SnowFactory.MaxWindLifetime));
+				{
+					float lifetime = Math.Min((distance + ParticleWind.StartHeight) / wind.Speed, SnowFactory.MaxWindLifetime);
+					if (lifetime > prime)
+						windEmitter.ParticleSystem.AddParticle(main.Camera.Position + Vector3.Transform(position, transform.Quaternion), dir.Value * wind.Speed.Value, lifetime, -1.0f, prime);
+				}
 			};
 
 			this.SetMain(entity, main);
@@ -128,7 +136,17 @@ namespace Lemma.Factories
 
 			entity.Add("ParticlesPerSecond", emitter.ParticlesPerSecond);
 			entity.Add("WindParticlesPerSecond", windEmitter.ParticlesPerSecond);
-			entity.Add("Wind", snow.Speed);
+			entity.Add("Wind", wind.Speed);
+
+			entity.Add(new PostInitialization
+			{
+				delegate()
+				{
+					wind.Update();
+					emitter.Prime(Vector3.Zero);
+					windEmitter.Prime(Vector3.Zero);
+				}
+			});
 		}
 	}
 }

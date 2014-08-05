@@ -27,7 +27,11 @@ Human model, texture, and rig adapted from MakeHuman -- http://makehuman.org/
 
 ==========================================
 
-skybox-sunset.jpg, skybox1.jpg, skybox2.jpg by Tim Heldna -- http://www.garagegames.com/community/blogs/view/12655
+Skyboxes by:
+Tim Heldna -- http://www.garagegames.com/community/blogs/view/12655
+Jockum Skoglund aka hipshot -- http://www.zfight.com
+Colin Lowndes -- http://www.3delyvisions.com
+'The Mighty Pete' -- http://www.petesoasis.com
 foliage.png based on Leaves-4145.jpg by David R. Tribble -- http://commons.wikimedia.org/wiki/File:Leaves-4146.jpg
 
 ==========================================

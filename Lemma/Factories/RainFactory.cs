@@ -48,12 +48,12 @@ namespace Lemma.Factories
 			if (!main.EditorEnabled)
 				lightning.Add(new Binding<bool>(lightning.Enabled, rain.LightningEnabled));
 
-			emitter.AddParticle = delegate(Vector3 position, Vector3 velocity) 
+			emitter.AddParticle = delegate(Vector3 position, Vector3 velocity, float prime) 
 			{
 				Vector3 kernelCoord = (position - rain.KernelOffset) / Rain.KernelSpacing;
 				float height = rain.RaycastHeights[Math.Max(0, Math.Min(Rain.KernelSize - 1, (int)kernelCoord.X)), Math.Max(0, Math.Min(Rain.KernelSize - 1, (int)kernelCoord.Z))];
 				if (height < position.Y)
-					emitter.ParticleSystem.AddParticle(position, Vector3.Zero, Math.Min((position.Y - height) / Rain.VerticalSpeed, Rain.MaxLifetime));
+					emitter.ParticleSystem.AddParticle(position, Vector3.Zero, Math.Min((position.Y - height) / Rain.VerticalSpeed, Rain.MaxLifetime), -1.0f, prime);
 			};
 
 			emitter.Add(new Binding<Vector3>(emitter.Position, x => x + new Vector3(0.0f, Rain.StartHeight, 0.0f), main.Camera.Position));
@@ -67,6 +67,15 @@ namespace Lemma.Factories
 			entity.Add("ParticlesPerSecond", emitter.ParticlesPerSecond);
 			entity.Add("LightningShadowed", lightning.Shadowed);
 			entity.Add("LightningColor", lightning.Color);
+
+			entity.Add(new PostInitialization
+			{
+				delegate()
+				{
+					rain.Update();
+					emitter.Prime(Vector3.Zero);
+				}
+			});
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

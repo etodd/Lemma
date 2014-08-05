@@ -35,15 +35,15 @@ namespace Lemma.Components
 		protected Vector3 lastPosition;
 		public Property<int> ParticlesPerSecond = new Property<int> { Value = 10 };
 		[XmlIgnore]
-		public Action<Vector3, Vector3> AddParticle;
+		public Action<Vector3, Vector3, float> AddParticle;
 
 		private static Random random = new Random();
 
 		public ParticleEmitter()
 		{
-			this.AddParticle = delegate(Vector3 position, Vector3 velocity)
+			this.AddParticle = delegate(Vector3 position, Vector3 velocity, float prime)
 			{
-				this.particleSystem.AddParticle(position, velocity);
+				this.particleSystem.AddParticle(position, velocity, -1.0f, -1.0f, prime);
 			};
 		}
 
@@ -84,6 +84,24 @@ namespace Lemma.Components
 			ParticleSystem particleSystem = ParticleSystem.Get(main, type);
 			foreach (Vector3 pos in positions)
 				particleSystem.AddParticle(pos, Vector3.Zero);
+		}
+
+		public void Prime(Vector3 velocity)
+		{
+			this.ParticleSystem.Prime();
+			float duration = (float)this.particleSystem.Settings.Value.Duration.TotalSeconds;
+			int particles = Math.Min((int)(this.ParticlesPerSecond * duration), this.particleSystem.Settings.Value.MaxParticles);
+			float interval = duration / particles;
+			Vector3 jitter = this.Jitter;
+			float prime = duration;
+			for (int i = 0; i < particles; i++)
+			{
+				Vector3 position = this.Position + new Vector3(2.0f * ((float)random.NextDouble() - 0.5f) * jitter.X, 2.0f * ((float)random.NextDouble() - 0.5f) * jitter.Y, 2.0f * ((float)random.NextDouble() - 0.5f) * jitter.Z);
+
+				// Create the particle.
+				this.AddParticle(position, velocity, prime);
+				prime -= interval;
+			}
 		}
 
 		protected float timeLeftOver;
@@ -131,7 +149,7 @@ namespace Lemma.Components
 				position += new Vector3(2.0f * ((float)random.NextDouble() - 0.5f) * jitter.X, 2.0f * ((float)random.NextDouble() - 0.5f) * jitter.Y, 2.0f * ((float)random.NextDouble() - 0.5f) * jitter.Z);
 
 				// Create the particle.
-				this.AddParticle(position, velocity);
+				this.AddParticle(position, velocity, 0);
 			}
 
 			// Store any time we didn't use, so it can be part of the next update.

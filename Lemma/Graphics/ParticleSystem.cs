@@ -202,6 +202,7 @@ namespace Lemma.Components
 					p.firstFreeParticle = 0;
 					p.firstNewParticle = 0;
 					p.firstRetiredParticle = 0;
+					p.currentTime = 0;
 				}
 			}
 		}
@@ -394,6 +395,7 @@ namespace Lemma.Components
 				BlendState = Microsoft.Xna.Framework.Graphics.BlendState.AlphaBlend,
 				MinColor = new Vector4(1.0f, 1.0f, 1.0f, 0.8f),
 				MaxColor = new Vector4(1.0f, 1.0f, 1.0f, 0.8f),
+				EffectFile = "Effects\\ParticleVolume",
 				EmitterVelocitySensitivity = 0.2f,
 			});
 
@@ -736,6 +738,15 @@ namespace Lemma.Components
 
 			if (this.firstRetiredParticle == this.firstActiveParticle)
 				this.drawCounter = 0;
+		}
+
+		public void Prime()
+		{
+			this.firstActiveParticle = 0;
+			this.firstFreeParticle = 0;
+			this.firstNewParticle = 0;
+			this.firstRetiredParticle = 0;
+			this.currentTime = (float)this.settings.Duration.TotalSeconds;
 		}
 
 
