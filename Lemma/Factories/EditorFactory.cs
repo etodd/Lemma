@@ -209,7 +209,7 @@ namespace Lemma.Factories
 				entity, main, "Menu", new PCInput.Chord(Keys.F1),
 				new Command
 				{
-					Action = main.Menu.Show,
+					Action = main.Menu.Toggle,
 				},
 				gui.MapCommands
 			);

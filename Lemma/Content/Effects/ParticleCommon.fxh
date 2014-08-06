@@ -124,7 +124,7 @@ float4 ComputeParticleColor(float4 projectedPosition,
 	float4 color = lerp(MinColor, MaxColor, randomValue);
 	
 	if (fade)
-		color.a *= normalizedAge < 0.1f ? normalizedAge / 0.1f : 1.0f - normalizedAge;
+		color.a *= normalizedAge < 0.1f ? normalizedAge / 0.1f : 1.0f - ((normalizedAge - 0.1f) * (1.0f / 0.9f));
 	else
 		color.a = normalizedAge < 1.0f;
    

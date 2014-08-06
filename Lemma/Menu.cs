@@ -30,6 +30,7 @@ namespace Lemma.Components
 			{ "dawn", "\\map dawn" },
 			{ "forest", "\\map forest" },
 			{ "monolith", "\\map monolith" },
+			{ "fracture1", "\\map fracture" },
 			//{ "valley", "\\map valley" }, // Temporarily disabled
 		};
 
@@ -1717,7 +1718,7 @@ namespace Lemma.Components
 					return false;
 
 				if (this.main.EditorEnabled)
-					return false;
+					return this.currentMenu.Value != null;
 
 				return true;
 			};
@@ -1980,9 +1981,26 @@ namespace Lemma.Components
 			}
 		}
 
+		public bool Showing
+		{
+			get
+			{
+				return this.currentMenu.Value != null;
+			}
+		}
+
 		public void Show()
 		{
-			this.savePausedSettings();
+			if (!this.Showing)
+				this.savePausedSettings();
+		}
+
+		public void Toggle()
+		{
+			if (this.Showing)
+				this.restorePausedSettings();
+			else
+				this.savePausedSettings();
 		}
 	}
 }

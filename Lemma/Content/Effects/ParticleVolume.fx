@@ -12,7 +12,7 @@ float4 ParticlePS(VertexShaderOutput input) : COLOR0
 	clip(depthDiff);
 
 	float4 color = tex2D(Sampler, input.TextureCoordinate) * input.Color;
-	color.a *= min(1, depth * 0.1f) * min(1, depthDiff * 0.5f);
+	color.a *= min(1, depth * 0.05f) * min(1, depthDiff * 0.2f);
 	return color;
 }
 
