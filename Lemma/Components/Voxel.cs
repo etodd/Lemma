@@ -4861,6 +4861,8 @@ namespace Lemma.Components
 
 		public Property<float> StaticFriction = new Property<float> { Value = 0.0f };
 
+		public Property<bool> CannotSuspendByDistance = new Property<bool>();
+
 		private bool firstPhysicsUpdate = true;
 		private bool physicsDirty;
 
@@ -4974,6 +4976,12 @@ namespace Lemma.Components
 					chunk.Activate();
 				this.PhysicsEntity.ActivityInformation.Activate();
 			}));
+
+			this.CannotSuspendByDistance.Set = delegate(bool value)
+			{
+				this.CannotSuspendByDistance.InternalValue = value;
+				this.Entity.CannotSuspendByDistance = value;
+			};
 		}
 
 		void Events_ContactCreated(EntityCollidable sender, Collidable other, BEPUphysics.NarrowPhaseSystems.Pairs.CollidablePairHandler pair, ContactData contact)

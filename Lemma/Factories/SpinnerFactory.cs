@@ -50,6 +50,7 @@ namespace Lemma.Factories
 			entity.Add("Speed", spinner.Speed);
 			entity.Add("Goal", spinner.Goal);
 			entity.Add("Servo", spinner.Servo);
+			entity.Add("CannotSuspendByDistance", entity.Get<DynamicVoxel>().CannotSuspendByDistance);
 		}
 	}
 }

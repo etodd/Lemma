@@ -408,6 +408,25 @@ namespace ComponentBind
 			}
 		}
 
+		public void RemoveCommand(string name)
+		{
+			try
+			{
+				this.commands.Remove(name);
+			}
+			catch (KeyNotFoundException)
+			{
+
+			}
+
+			for (int i = this.LinkedCommands.Length; i >= 0; i--)
+			{
+				CommandLink link = this.LinkedCommands[i];
+				if (link.SourceCommand == name)
+					this.LinkedCommands.RemoveAt(i);
+			}
+		}
+
 		public Property<T> GetProperty<T>(string name)
 		{
 			if (name == null) return null;

@@ -75,6 +75,7 @@ namespace Lemma.Components
 						map.Fill(c, desired);
 					map.Regenerate();
 				}
+				map.PhysicsEntity.ActivityInformation.Activate();
 			}
 		}
 
@@ -85,6 +86,7 @@ namespace Lemma.Components
 				this.joint.Motor.Settings.Servo.BaseCorrectiveSpeed = this.Speed;
 				this.joint.Motor.Settings.VelocityMotor.GoalVelocity = this.Speed;
 			}
+			this.updateMaterial();
 		}
 
 		private void setLocked()
@@ -128,6 +130,7 @@ namespace Lemma.Components
 			this.setGoal();
 			this.setMode();
 			this.joint.Motor.Settings.Servo.SpringSettings.StiffnessConstant = 0.03f;
+			this.joint.Limit.Update(0.0f);
 			return this.joint;
 		}
 
@@ -143,8 +146,6 @@ namespace Lemma.Components
 
 			this.Forward.Action = delegate() { this.Move(this.Maximum); };
 			this.Backward.Action = delegate() { this.Move(this.Minimum); };
-
-			this.lastX = this.Minimum + (this.Maximum - this.Minimum) * 0.5f;
 		}
 
 		public override void Start()
@@ -169,17 +170,17 @@ namespace Lemma.Components
 
 				if (x > this.Maximum - 0.5f)
 				{
-					if (lastX <= this.Maximum - 0.5f)
+					if (this.lastX <= this.Maximum - 0.5f)
 						this.OnHitMax.Execute();
 				}
 				
 				if (x < this.Minimum + 0.5f)
 				{
-					if (lastX >= this.Minimum + 0.5f)
+					if (this.lastX >= this.Minimum + 0.5f)
 						this.OnHitMin.Execute();
 				}
 
-				lastX = x;
+				this.lastX = x;
 			}
 		}
 	}

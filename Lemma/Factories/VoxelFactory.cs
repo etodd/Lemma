@@ -171,6 +171,7 @@ namespace Lemma.Factories
 
 			entity.Add("IsAffectedByGravity", map.IsAffectedByGravity);
 			entity.Add("IsAlwaysActive", map.IsAlwaysActive);
+			entity.Add("CannotSuspendByDistance", map.CannotSuspendByDistance);
 
 			const float volumeMultiplier = 0.005f;
 

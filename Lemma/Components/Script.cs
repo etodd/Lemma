@@ -31,12 +31,11 @@ namespace Lemma.Components
 
 		public Property<bool> DeleteOnExecute = new Property<bool>();
 
-		public ListProperty<Entity.Handle> ConnectedEntities = new ListProperty<Entity.Handle>();
-
 		private struct ScriptMethods
 		{
 			public MethodInfo Run;
 			public MethodInfo EditorProperties;
+			public MethodInfo Commands;
 		}
 
 		private ScriptMethods methods;
@@ -68,6 +67,7 @@ namespace Lemma.Components
 						{
 							Run = run,
 							EditorProperties = type.GetMethod("EditorProperties", BindingFlags.Static | BindingFlags.Public),
+							Commands = type.GetMethod("Commands", BindingFlags.Static | BindingFlags.Public),
 						};
 					}
 				}
@@ -148,6 +148,7 @@ namespace Lemma.Components
 				{
 					Run = t.GetMethod("Run", BindingFlags.Static | BindingFlags.Public),
 					EditorProperties = t.GetMethod("EditorProperties", BindingFlags.Static | BindingFlags.Public),
+					Commands = t.GetMethod("Commands", BindingFlags.Static | BindingFlags.Public),
 				};
 			}
 			else
@@ -155,6 +156,7 @@ namespace Lemma.Components
 		}
 
 		private IEnumerable<string> editorProperties;
+		private IEnumerable<string> commands;
 
 		private void load(string name)
 		{
@@ -164,6 +166,12 @@ namespace Lemma.Components
 				foreach (string prop in this.editorProperties)
 					this.Entity.RemoveProperty(prop);
 				this.editorProperties = null;
+			}
+			if (this.commands != null)
+			{
+				foreach (string cmd in this.commands)
+					this.Entity.RemoveCommand(cmd);
+				this.commands = null;
 			}
 			this.methods = new ScriptMethods();
 			this.Errors.Value = null;
@@ -178,6 +186,11 @@ namespace Lemma.Components
 					{
 						object result = this.methods.EditorProperties.Invoke(null, null);
 						this.editorProperties = result as IEnumerable<string>;
+					}
+					if (this.methods.Commands != null)
+					{
+						object result = this.methods.Commands.Invoke(null, null);
+						this.commands = result as IEnumerable<string>;
 					}
 				}
 				catch (Exception e)

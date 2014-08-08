@@ -47,6 +47,7 @@ namespace Lemma.Factories
 			entity.Add("Goal", slider.Goal);
 			entity.Add("Servo", slider.Servo);
 			entity.Add("StartAtMinimum", slider.StartAtMinimum);
+			entity.Add("CannotSuspendByDistance", entity.Get<DynamicVoxel>().CannotSuspendByDistance);
 		}
 	}
 }

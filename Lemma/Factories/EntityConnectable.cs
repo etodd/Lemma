@@ -14,51 +14,57 @@ namespace Lemma.Factories
 		public static void AttachEditorComponents(Entity entity, string name, Property<Entity.Handle> target)
 		{
 			entity.Add(name, target);
-			Transform transform = entity.Get<Transform>("Transform");
-
-			LineDrawer connectionLines = new LineDrawer { Serialize = false };
-			connectionLines.Add(new Binding<bool>(connectionLines.Enabled, entity.EditorSelected));
-
-			connectionLines.Add(new NotifyBinding(delegate()
+			if (entity.EditorSelected != null)
 			{
-				connectionLines.Lines.Clear();
-				Entity targetEntity = target.Value.Target;
-				if (targetEntity != null)
-				{
-					connectionLines.Lines.Add
-					(
-						new LineDrawer.Line
-						{
-							A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, connectionLineColor),
-							B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(targetEntity.Get<Transform>("Transform").Position, connectionLineColor)
-						}
-					);
-				}
-			}, transform.Position, target, entity.EditorSelected));
+				Transform transform = entity.Get<Transform>("Transform");
 
-			entity.Add(connectionLines);
+				LineDrawer connectionLines = new LineDrawer { Serialize = false };
+				connectionLines.Add(new Binding<bool>(connectionLines.Enabled, entity.EditorSelected));
+
+				connectionLines.Add(new NotifyBinding(delegate()
+				{
+					connectionLines.Lines.Clear();
+					Entity targetEntity = target.Value.Target;
+					if (targetEntity != null)
+					{
+						connectionLines.Lines.Add
+						(
+							new LineDrawer.Line
+							{
+								A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, connectionLineColor),
+								B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(targetEntity.Get<Transform>("Transform").Position, connectionLineColor)
+							}
+						);
+					}
+				}, transform.Position, target, entity.EditorSelected));
+
+				entity.Add(connectionLines);
+			}
 		}
 
 		public static void AttachEditorComponents(Entity entity, string name, ListProperty<Entity.Handle> target)
 		{
 			entity.Add(name, target);
-			Transform transform = entity.Get<Transform>("Transform");
-
-			LineDrawer connectionLines = new LineDrawer { Serialize = false };
-			connectionLines.Add(new Binding<bool>(connectionLines.Enabled, entity.EditorSelected));
-
-			ListBinding<LineDrawer.Line, Entity.Handle> connectionBinding = new ListBinding<LineDrawer.Line, Entity.Handle>(connectionLines.Lines, target, delegate(Entity.Handle other)
+			if (entity.EditorSelected != null)
 			{
-				return new LineDrawer.Line
+				Transform transform = entity.Get<Transform>("Transform");
+
+				LineDrawer connectionLines = new LineDrawer { Serialize = false };
+				connectionLines.Add(new Binding<bool>(connectionLines.Enabled, entity.EditorSelected));
+
+				ListBinding<LineDrawer.Line, Entity.Handle> connectionBinding = new ListBinding<LineDrawer.Line, Entity.Handle>(connectionLines.Lines, target, delegate(Entity.Handle other)
 				{
-					A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, connectionLineColor),
-					B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(other.Target.Get<Transform>("Transform").Position, connectionLineColor)
-				};
-			}, x => x.Target != null && x.Target.Active);
-			entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, entity.EditorSelected));
-			entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, () => entity.EditorSelected, transform.Position));
-			connectionLines.Add(connectionBinding);
-			entity.Add(connectionLines);
+					return new LineDrawer.Line
+					{
+						A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, connectionLineColor),
+						B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(other.Target.Get<Transform>("Transform").Position, connectionLineColor)
+					};
+				}, x => x.Target != null && x.Target.Active);
+				entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, entity.EditorSelected));
+				entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, () => entity.EditorSelected, transform.Position));
+				connectionLines.Add(connectionBinding);
+				entity.Add(connectionLines);
+			}
 		}
 	}
 }

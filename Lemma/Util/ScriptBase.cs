@@ -77,6 +77,12 @@ namespace Lemma.GameScripts
 			Data data = script.GetOrCreate<Data>("Data");
 			return data.ListProperty<T>(name);
 		}
+
+		protected static Command command(Entity script, string name)
+		{
+			Data data = script.GetOrCreate<Data>("Data");
+			return data.Command(name);
+		}
 		
 		protected static void bindPlayerTrigger(string id, Action callback, bool oneTimeOnly = true)
 		{
