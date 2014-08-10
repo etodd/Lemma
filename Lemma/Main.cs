@@ -1208,14 +1208,15 @@ namespace Lemma
 			{
 				// We just rendered to a target other than the screen.
 				// So make it so we're rendering to the screen again, then copy the render target to the screen.
-
 				this.GraphicsDevice.SetRenderTarget(null);
 
-				SpriteBatch spriteBatch = new SpriteBatch(this.GraphicsDevice);
-				spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
-				spriteBatch.Draw(this.RenderTarget, Vector2.Zero, Color.White);
-				spriteBatch.End();
-
+				if (!this.RenderTarget.IsDisposed)
+				{
+					SpriteBatch spriteBatch = new SpriteBatch(this.GraphicsDevice);
+					spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
+					spriteBatch.Draw(this.RenderTarget, Vector2.Zero, Color.White);
+					spriteBatch.End();
+				}
 				this.RenderTarget = null;
 			}
 		}

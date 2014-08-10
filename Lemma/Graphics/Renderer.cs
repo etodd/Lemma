@@ -432,6 +432,14 @@ namespace Lemma.Components
 			this.justReallocatedBuffers = true;
 		}
 
+		private RenderTarget2D[] sources0 = new RenderTarget2D[0];
+		private RenderTarget2D[] sources1 = new RenderTarget2D[1];
+		private RenderTarget2D[] sources2 = new RenderTarget2D[2];
+		private RenderTarget2D[] sources3 = new RenderTarget2D[3];
+		private RenderTarget2D[] sources4 = new RenderTarget2D[4];
+		private RenderTarget2D[] destinations1 = new RenderTarget2D[1];
+		private RenderTarget2D[] destinations2 = new RenderTarget2D[2];
+
 		public void SetRenderTargets(RenderParameters p)
 		{
 			if (this.needBufferReallocation())
@@ -441,7 +449,8 @@ namespace Lemma.Components
 			this.main.GraphicsDevice.SetRenderTargets(this.colorBuffer1, this.depthBuffer, this.normalBuffer);
 			Color color = this.lightingManager.BackgroundColor;
 			p.Camera.SetParameters(this.clearEffect);
-			this.setTargetParameters(new RenderTarget2D[] { }, new RenderTarget2D[] { this.colorBuffer1 }, this.clearEffect);
+			this.destinations1[0] = this.colorBuffer1;
+			this.setTargetParameters(this.sources0, this.destinations1, this.clearEffect);
 			this.clearEffect.Parameters["BackgroundColor"].SetValue(new Vector3((float)color.R / 255.0f, (float)color.G / 255.0f, (float)color.B / 255.0f));
 			this.main.GraphicsDevice.SamplerStates[1] = SamplerState.PointClamp;
 			this.main.GraphicsDevice.SamplerStates[2] = SamplerState.PointClamp;
@@ -467,6 +476,8 @@ namespace Lemma.Components
 				|| (this.normalBufferLastFrame != null && this.normalBufferLastFrame.IsDisposed);
 		}
 
+		private RasterizerState reverseCullState = new RasterizerState { CullMode = CullMode.CullClockwiseFace };
+
 		public void PostProcess(RenderTarget2D result, RenderParameters parameters)
 		{
 			if (this.needBufferReallocation())
@@ -482,7 +493,6 @@ namespace Lemma.Components
 			parameters.Camera.View.Value = newViewMatrix;
 
 			RasterizerState originalState = this.main.GraphicsDevice.RasterizerState;
-			RasterizerState reverseCullState = new RasterizerState { CullMode = CullMode.CullClockwiseFace };
 
 			bool enableSSAO = this.allowSSAO && this.EnableSSAO;
 
@@ -490,27 +500,47 @@ namespace Lemma.Components
 			{
 				// Down-sample depth buffer
 				this.downsampleEffect.CurrentTechnique = this.downsampleEffect.Techniques["DownsampleDepth"];
-				this.preparePostProcess(new[] { this.depthBuffer, this.normalBuffer }, new[] { this.halfDepthBuffer, this.halfBuffer1 }, this.downsampleEffect);
+				this.sources2[0] = this.depthBuffer;
+				this.sources2[1] = this.normalBuffer;
+				this.destinations2[0] = this.halfDepthBuffer;
+				this.destinations2[1] = this.halfBuffer1;
+				if (!this.preparePostProcess(this.sources2, this.destinations2, this.downsampleEffect))
+					return;
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				// Compute SSAO
 				parameters.Camera.SetParameters(this.ssaoEffect);
 				this.ssaoEffect.CurrentTechnique = this.ssaoEffect.Techniques["SSAO"];
-				this.preparePostProcess(new[] { this.halfDepthBuffer, this.halfBuffer1 }, new[] { this.halfBuffer2 }, this.ssaoEffect);
+				this.sources2[0] = this.halfDepthBuffer;
+				this.sources2[1] = this.halfBuffer1;
+				this.destinations1[0] = this.halfBuffer2;
+				if (!this.preparePostProcess(this.sources2, this.destinations1, this.ssaoEffect))
+					return;
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				// Blur
 				this.ssaoEffect.CurrentTechnique = this.ssaoEffect.Techniques["BlurHorizontal"];
-				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer2, this.halfDepthBuffer }, new RenderTarget2D[] { this.halfBuffer1 }, this.ssaoEffect);
+				this.sources2[0] = this.halfBuffer2;
+				this.sources2[1] = this.halfDepthBuffer;
+				this.destinations1[0] = this.halfBuffer1;
+				if (!this.preparePostProcess(this.sources2, this.destinations1, this.ssaoEffect))
+					return;
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				this.ssaoEffect.CurrentTechnique = this.ssaoEffect.Techniques["Composite"];
-				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer1, this.halfDepthBuffer }, new RenderTarget2D[] { this.halfBuffer2 }, this.ssaoEffect);
+				this.sources2[0] = this.halfBuffer1;
+				this.sources2[1] = this.halfDepthBuffer;
+				this.destinations1[0] = this.halfBuffer2;
+				if (!this.preparePostProcess(this.sources2, this.destinations1, this.ssaoEffect))
+					return;
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 			}
 
 			// Global lighting
-			this.setTargets(this.lightingBuffer, this.specularBuffer);
+			this.destinations2[0] = this.lightingBuffer;
+			this.destinations2[1] = this.specularBuffer;
+			if (!this.setTargets(this.destinations2))
+				return;
 			string globalLightTechnique = "GlobalLight";
 			if (this.lightingManager.EnableGlobalShadowMap && this.lightingManager.HasGlobalShadowLight)
 			{
@@ -523,13 +553,18 @@ namespace Lemma.Components
 			parameters.Camera.SetParameters(Renderer.globalLightEffect);
 			this.lightingManager.SetGlobalLightParameters(Renderer.globalLightEffect, parameters.Camera, originalCameraPosition);
 			this.lightingManager.SetMaterialParameters(Renderer.globalLightEffect);
-			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.globalLightEffect);
+			this.sources3[0] = this.depthBuffer;
+			this.sources3[1] = this.normalBuffer;
+			this.sources3[2] = this.colorBuffer1;
+			this.destinations2[0] = this.lightingBuffer;
+			this.destinations2[1] = this.specularBuffer;
+			this.setTargetParameters(this.sources3, this.destinations2, Renderer.globalLightEffect);
 			this.applyEffect(Renderer.globalLightEffect);
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 			// Spot and point lights
 			if (!parameters.ReverseCullOrder)
-				this.main.GraphicsDevice.RasterizerState = reverseCullState;
+				this.main.GraphicsDevice.RasterizerState = this.reverseCullState;
 
 			// HACK
 			// Increase the far plane to prevent clipping back faces of huge lights
@@ -541,7 +576,7 @@ namespace Lemma.Components
 
 			// Spot lights
 			this.lightingManager.SetMaterialParameters(Renderer.spotLightEffect);
-			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.spotLightEffect);
+			this.setTargetParameters(this.sources3, this.destinations2, Renderer.spotLightEffect);
 			for (int i = 0; i < SpotLight.All.Count; i++)
 			{
 				SpotLight light = SpotLight.All[i];
@@ -555,7 +590,7 @@ namespace Lemma.Components
 
 			// Point lights
 			this.lightingManager.SetMaterialParameters(Renderer.pointLightEffect);
-			this.setTargetParameters(new RenderTarget2D[] { this.depthBuffer, this.normalBuffer, this.colorBuffer1 }, new RenderTarget2D[] { this.lightingBuffer, this.specularBuffer }, Renderer.pointLightEffect);
+			this.setTargetParameters(this.sources3, this.destinations2, Renderer.pointLightEffect);
 			for (int i = 0; i < PointLight.All.Count; i++)
 			{
 				PointLight light = PointLight.All[i];
@@ -578,14 +613,24 @@ namespace Lemma.Components
 			this.lightingManager.SetCompositeParameters(this.compositeEffect);
 			parameters.Camera.SetParameters(this.compositeEffect);
 			this.lightingManager.SetMaterialParameters(this.compositeEffect);
-			this.preparePostProcess
-			(
-				enableSSAO
-				? new RenderTarget2D[] { colorSource, this.lightingBuffer, this.specularBuffer, this.halfBuffer2 }
-				: new RenderTarget2D[] { colorSource, this.lightingBuffer, this.specularBuffer },
-				new RenderTarget2D[] { colorDestination },
-				this.compositeEffect
-			);
+			RenderTarget2D[] compositeSources;
+			if (enableSSAO)
+			{
+				compositeSources = this.sources4;
+				compositeSources[3] = this.halfBuffer2;
+			}
+			else
+				compositeSources = this.sources3;
+
+			compositeSources[0] = colorSource;
+			compositeSources[1] = this.lightingBuffer;
+			compositeSources[2] = this.specularBuffer;
+
+			this.destinations1[0] = colorDestination;
+
+			if (!this.preparePostProcess(compositeSources, this.destinations1, this.compositeEffect))
+				return;
+
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 			bool enableBloom = this.allowBloom && this.EnableBloom;
@@ -602,7 +647,9 @@ namespace Lemma.Components
 			// Alpha components
 
 			// Drawing to the color destination
-			this.setTargets(colorDestination);
+			this.destinations1[0] = colorDestination;
+			if (!this.setTargets(this.destinations1))
+				return;
 
 			// Copy the color source to the destination
 			this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.None, originalState);
@@ -624,19 +671,32 @@ namespace Lemma.Components
 			if (enableBloom)
 			{
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["Downsample"];
-				this.preparePostProcess(new[] { colorSource }, new[] { this.halfBuffer1 }, this.bloomEffect);
+				this.sources1[0] = colorSource;
+				this.destinations1[0] = this.halfBuffer1;
+				if (!this.preparePostProcess(this.sources1, this.destinations1, this.bloomEffect))
+					return;
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["BlurHorizontal"];
-				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer1 }, new RenderTarget2D[] { this.halfBuffer2 }, this.bloomEffect);
+				this.sources1[0] = this.halfBuffer1;
+				this.destinations1[0] = this.halfBuffer2;
+				if (!this.preparePostProcess(this.sources1, this.destinations1, this.bloomEffect))
+					return;
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["BlurVertical"];
-				this.preparePostProcess(new RenderTarget2D[] { this.halfBuffer2 }, new RenderTarget2D[] { this.halfBuffer1 }, this.bloomEffect);
+				this.sources1[0] = this.halfBuffer2;
+				this.destinations1[0] = this.halfBuffer1;
+				if (!this.preparePostProcess(this.sources1, this.destinations1, this.bloomEffect))
+					return;
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["Composite"];
-				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.halfBuffer1 }, new RenderTarget2D[] { enableBlur || enableMotionBlur ? this.colorBuffer2 : result }, this.bloomEffect);
+				this.sources2[0] = colorSource;
+				this.sources2[1] = this.halfBuffer1;
+				this.destinations1[0] = enableBlur || enableMotionBlur ? this.colorBuffer2 : result;
+				if (!this.preparePostProcess(this.sources2, this.destinations1, this.bloomEffect))
+					return;
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				// Swap the color buffers
@@ -646,7 +706,10 @@ namespace Lemma.Components
 			else if (this.allowToneMapping)
 			{
 				this.bloomEffect.CurrentTechnique = this.bloomEffect.Techniques["ToneMapOnly"];
-				this.preparePostProcess(new RenderTarget2D[] { colorSource, }, new RenderTarget2D[] { enableBlur || enableMotionBlur ? this.colorBuffer2 : result }, this.bloomEffect);
+				this.sources1[0] = colorSource;
+				this.destinations1[0] = enableBlur || enableMotionBlur ? this.colorBuffer2 : result;
+				if (!this.preparePostProcess(this.sources1, this.destinations1, this.bloomEffect))
+					return;
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				// Swap the color buffers
@@ -661,7 +724,12 @@ namespace Lemma.Components
 				parameters.Camera.SetParameters(this.motionBlurEffect);
 
 				// If we just reallocated our buffers, don't use the velocity buffer from the last frame because it will be empty
-				this.preparePostProcess(new RenderTarget2D[] { colorSource, this.normalBuffer, this.justReallocatedBuffers ? this.normalBuffer : this.normalBufferLastFrame }, new RenderTarget2D[] { enableBlur ? colorDestination : result }, this.motionBlurEffect);
+				this.sources3[0] = colorSource;
+				this.sources3[1] = this.normalBuffer;
+				this.sources3[2] = this.justReallocatedBuffers ? this.normalBuffer : this.normalBufferLastFrame;
+				this.destinations1[0] = enableBlur ? colorDestination : result;
+				if (!this.preparePostProcess(this.sources3, this.destinations1, this.motionBlurEffect))
+					return;
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 				// Swap the velocity buffers
@@ -680,7 +748,10 @@ namespace Lemma.Components
 				// Blur
 				this.blurEffect.CurrentTechnique = this.blurEffect.Techniques["BlurHorizontal"];
 				parameters.Camera.SetParameters(this.blurEffect);
-				this.preparePostProcess(new RenderTarget2D[] { colorSource }, new RenderTarget2D[] { colorDestination }, this.blurEffect);
+				this.sources1[0] = colorSource;
+				this.destinations1[0] = colorDestination;
+				if (!this.preparePostProcess(this.sources1, this.destinations1, this.blurEffect))
+					return;
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 				this.blurEffect.CurrentTechnique = this.blurEffect.Techniques["Composite"];
 
@@ -689,7 +760,10 @@ namespace Lemma.Components
 				colorDestination = colorSource;
 				colorSource = colorTemp;
 
-				this.preparePostProcess(new RenderTarget2D[] { colorSource }, new RenderTarget2D[] { result }, this.blurEffect);
+				this.sources1[0] = colorSource;
+				this.destinations1[0] = result;
+				if (!this.preparePostProcess(this.sources1, this.destinations1, this.blurEffect))
+					return;
 				Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 			}
 
@@ -717,21 +791,44 @@ namespace Lemma.Components
 			}
 		}
 
-		private void setTargets(params RenderTarget2D[] results)
+		private RenderTargetBinding[] bindingsCache = new RenderTargetBinding[2];
+		private bool setTargets(RenderTarget2D[] results)
 		{
 			if (results == null)
+			{
 				this.main.GraphicsDevice.SetRenderTarget(null);
+				return true;
+			}
 			else if (results.Length == 1)
+			{
+				if (results[0] != null && results[0].IsDisposed)
+					return false;
 				this.main.GraphicsDevice.SetRenderTarget(results[0]);
+				return true;
+			}
+			else if (results.Length == 2)
+			{
+				foreach (RenderTarget2D target in results)
+				{
+					if (target.IsDisposed)
+						return false;
+				}
+				this.bindingsCache[0] = results[0];
+				this.bindingsCache[1] = results[1];
+				this.main.GraphicsDevice.SetRenderTargets(this.bindingsCache);
+				return true;
+			}
 			else
-				this.main.GraphicsDevice.SetRenderTargets(results.Select(x => new RenderTargetBinding(x)).ToArray());
+				throw new Exception("Divide by cucumber error. Please reboot universe.");
 		}
 
-		private void preparePostProcess(RenderTarget2D[] sources, RenderTarget2D[] results, Effect effect)
+		private bool preparePostProcess(RenderTarget2D[] sources, RenderTarget2D[] results, Effect effect)
 		{
-			this.setTargets(results);
+			if (!this.setTargets(results))
+				return false;
 			this.setTargetParameters(sources, results, effect);
 			this.applyEffect(effect);
+			return true;
 		}
 
 		private void setTargetParameters(RenderTarget2D[] sources, RenderTarget2D[] results, Effect effect)
