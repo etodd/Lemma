@@ -1044,12 +1044,34 @@ namespace Lemma.Components
 			this.resizeToMenu(fullscreenResolution);
 			settingsList.Children.Add(fullscreenResolution);
 
+			Container borderless = this.main.UIFactory.CreateScrollButton<bool>("\\borderless", this.main.Settings.Borderless, boolDisplay, delegate(int delta)
+			{
+				Point res = this.main.ScreenSize;
+				this.main.ResizeViewport(res.X, res.Y, this.main.Settings.Fullscreen, !this.main.Settings.Borderless);
+			});
+			this.resizeToMenu(borderless);
+			settingsList.Children.Add(borderless);
+
 			Container vsyncEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\vsync", this.main.Settings.EnableVsync, boolDisplay, delegate(int delta)
 			{
 				this.main.Settings.EnableVsync.Value = !this.main.Settings.EnableVsync;
 			});
 			this.resizeToMenu(vsyncEnabled);
 			settingsList.Children.Add(vsyncEnabled);
+
+			Container applyResolution = this.main.UIFactory.CreateButton(null, delegate()
+			{
+				if (this.main.Settings.Fullscreen)
+				{
+					Point res = this.main.Settings.FullscreenResolution;
+					this.main.ResizeViewport(res.X, res.Y, true, this.main.Settings.Borderless);
+				}
+				else
+					this.main.EnterFullscreen();
+			});
+			applyResolution.Add(new Binding<string, bool>(((TextElement)applyResolution.GetChildByName("Text")).Text, x => x ? "\\apply resolution" : "\\enter fullscreen", this.main.Settings.Fullscreen));
+			this.resizeToMenu(applyResolution);
+			settingsList.Children.Add(applyResolution);
 
 			Container gamma = this.main.UIFactory.CreateScrollButton<float>("\\gamma", this.main.Renderer.Gamma, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
 			{

@@ -49,12 +49,9 @@ namespace Lemma
 		{
 			public enum Lang { en, ru }
 			public Property<Lang> Language = new Property<Lang>();
-#if DEVELOPMENT
-			public Property<bool> Fullscreen = new Property<bool> { Value = false };
-#else
 			public Property<bool> Fullscreen = new Property<bool> { Value = true };
-#endif
 			public Property<Point> Size = new Property<Point> { Value = new Point(1280, 720) };
+			public Property<bool> Borderless = new Property<bool> { Value = true };
 			public Property<Point> FullscreenResolution = new Property<Point> { Value = Point.Zero };
 			public Property<float> MotionBlurAmount = new Property<float> { Value = 0.5f };
 			public Property<float> Gamma = new Property<float> { Value = 1.0f };
@@ -290,8 +287,6 @@ namespace Lemma
 
 		public ContentManager MapContent;
 		
-		private System.Windows.Forms.Form windowsForm;
-
 		public Main()
 		{
 			Factory<Main>.Initialize();
@@ -322,8 +317,6 @@ namespace Lemma
 					this.resize = new Point(bounds.Width, bounds.Height);
 				}
 			});
-			System.Windows.Forms.Control control = System.Windows.Forms.Control.FromHandle(this.Window.Handle);
-			this.windowsForm = control.FindForm();
 
 			this.Graphics = new GraphicsDeviceManager(this);
 			this.Graphics.SynchronizeWithVerticalRetrace = false;
@@ -499,9 +492,9 @@ namespace Lemma
 			}, this.Settings.EnableVsync);
 
 			if (this.Settings.Fullscreen)
-				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true);
+				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true, this.Settings.Borderless);
 			else
-				this.ResizeViewport(this.Settings.Size.Value.X, this.Settings.Size.Value.Y, false, false);
+				this.ResizeViewport(this.Settings.Size.Value.X, this.Settings.Size.Value.Y, false, this.Settings.Borderless, false);
 		}
 
 		private void copySave(string src, string dst)
@@ -1005,7 +998,7 @@ namespace Lemma
 			if (!this.Settings.Fullscreen)
 			{
 				Point res = this.Settings.FullscreenResolution;
-				this.ResizeViewport(res.X, res.Y, true);
+				this.ResizeViewport(res.X, res.Y, true, this.Settings.Borderless);
 			}
 		}
 
@@ -1014,7 +1007,7 @@ namespace Lemma
 			if (this.Settings.Fullscreen)
 			{
 				Point res = this.Settings.Size;
-				this.ResizeViewport(res.X, res.Y, false);
+				this.ResizeViewport(res.X, res.Y, false, this.Settings.Borderless);
 			}
 		}
 
@@ -1103,7 +1096,7 @@ namespace Lemma
 
 			if (this.resize != null && this.resize.Value.X > 0 && this.resize.Value.Y > 0)
 			{
-				this.ResizeViewport(this.resize.Value.X, this.resize.Value.Y, false);
+				this.ResizeViewport(this.resize.Value.X, this.resize.Value.Y, false, false);
 				this.resize = null;
 			}
 
@@ -1274,11 +1267,14 @@ namespace Lemma
 			}
 		}
 
-		public void ResizeViewport(int width, int height, bool fullscreen, bool applyChanges = true)
+		public void ResizeViewport(int width, int height, bool fullscreen, bool borderless, bool applyChanges = true)
 		{
 			bool needApply = false;
 			if (this.Settings.Fullscreen != fullscreen)
 				needApply = true;
+			if (fullscreen && this.Settings.Borderless != borderless)
+				needApply = true;
+			this.Graphics.IsFullScreen = fullscreen && !borderless;
 			if (this.Graphics.PreferredBackBufferWidth != width)
 			{
 				this.Graphics.PreferredBackBufferWidth = width;
@@ -1304,14 +1300,18 @@ namespace Lemma
 			}
 
 			this.Settings.Fullscreen.Value = fullscreen;
+			this.Settings.Borderless.Value = borderless;
+
 			if (fullscreen)
 				this.Settings.FullscreenResolution.Value = new Point(width, height);
 			else
 				this.Settings.Size.Value = new Point(width, height);
 
-			this.windowsForm.FormBorderStyle = fullscreen ? System.Windows.Forms.FormBorderStyle.None : System.Windows.Forms.FormBorderStyle.Sizable;
-			if (fullscreen)
-				this.windowsForm.Location = new System.Drawing.Point(0, 0);
+			System.Windows.Forms.Control control = System.Windows.Forms.Control.FromHandle(this.Window.Handle);
+			System.Windows.Forms.Form form = control.FindForm();
+			form.FormBorderStyle = fullscreen || borderless ? System.Windows.Forms.FormBorderStyle.None : System.Windows.Forms.FormBorderStyle.Sizable;
+			if (fullscreen && borderless)
+				form.Location = new System.Drawing.Point(0, 0);
 
 #if ANALYTICS
 			if (this.SessionRecorder != null)

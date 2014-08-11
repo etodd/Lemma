@@ -60,6 +60,9 @@ namespace Lemma.Components
 
 		public virtual void LoadContent(bool reload)
 		{
+			if (this.vertexBuffer != null && !this.vertexBuffer.IsDisposed)
+				this.vertexBuffer.Dispose();
+
 			// Create a vertex buffer for the quad, and fill it in
 			this.vertexBuffer = new VertexBuffer(this.main.GraphicsDevice, typeof(QuadVertex), FullscreenQuad.VertexDeclaration.VertexStride * 4, BufferUsage.None);
 			QuadVertex[] vbData = new QuadVertex[4];
