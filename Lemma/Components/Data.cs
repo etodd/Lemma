@@ -32,34 +32,25 @@ namespace Lemma.Components
 
 		public Property<T> Property<T>(string name, T defaultValue = default(T))
 		{
-			IProperty result = null;
+			IProperty result;
 			if (!this.properties.TryGetValue(name, out result))
-			{
-				result = new Property<T> { Value = defaultValue };
-				this.properties[name] = result;
-			}
+				this.properties[name] = result = new Property<T> { Value = defaultValue };
 			return (Property<T>)result;
 		}
 
 		public ListProperty<T> ListProperty<T>(string name)
 		{
-			IProperty result = null;
+			IProperty result;
 			if (!this.properties.TryGetValue(name, out result))
-			{
-				result = new ListProperty<T>();
-				this.properties[name] = result;
-			}
+				this.properties[name] = result = new ListProperty<T>();
 			return (ListProperty<T>)result;
 		}
 
 		public Command Command(string name)
 		{
-			Command result = null;
+			Command result;
 			if (!this.commands.TryGetValue(name, out result))
-			{
-				result = new Command();
-				this.commands[name] = result;
-			}
+				this.commands[name] = result = new Command();
 			return result;
 		}
 	}

@@ -54,8 +54,6 @@ namespace Lemma
 #else
 			public Property<bool> Fullscreen = new Property<bool> { Value = true };
 #endif
-			public Property<bool> Maximized = new Property<bool> { Value = false };
-			public Property<Point> Origin = new Property<Point> { Value = new Point(50, 50) };
 			public Property<Point> Size = new Property<Point> { Value = new Point(1280, 720) };
 			public Property<Point> FullscreenResolution = new Property<Point> { Value = Point.Zero };
 			public Property<float> MotionBlurAmount = new Property<float> { Value = 0.5f };
@@ -291,6 +289,8 @@ namespace Lemma
 		public Command ReloadedContent = new Command();
 
 		public ContentManager MapContent;
+		
+		private System.Windows.Forms.Form windowsForm;
 
 		public Main()
 		{
@@ -315,13 +315,15 @@ namespace Lemma
 			this.Window.AllowUserResizing = true;
 			this.Window.ClientSizeChanged += new EventHandler<EventArgs>(delegate(object obj, EventArgs e)
 			{
-				if (!this.Graphics.IsFullScreen)
+				if (!this.Settings.Fullscreen)
 				{
 					Rectangle bounds = this.Window.ClientBounds;
 					this.ScreenSize.Value = new Point(bounds.Width, bounds.Height);
 					this.resize = new Point(bounds.Width, bounds.Height);
 				}
 			});
+			System.Windows.Forms.Control control = System.Windows.Forms.Control.FromHandle(this.Window.Handle);
+			this.windowsForm = control.FindForm();
 
 			this.Graphics = new GraphicsDeviceManager(this);
 			this.Graphics.SynchronizeWithVerticalRetrace = false;
@@ -495,6 +497,7 @@ namespace Lemma
 				this.Graphics.SynchronizeWithVerticalRetrace = this.Settings.EnableVsync;
 				this.Graphics.ApplyChanges();
 			}, this.Settings.EnableVsync);
+
 			if (this.Settings.Fullscreen)
 				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true);
 			else
@@ -999,7 +1002,7 @@ namespace Lemma
 
 		public void EnterFullscreen()
 		{
-			if (!this.Graphics.IsFullScreen)
+			if (!this.Settings.Fullscreen)
 			{
 				Point res = this.Settings.FullscreenResolution;
 				this.ResizeViewport(res.X, res.Y, true);
@@ -1008,7 +1011,7 @@ namespace Lemma
 
 		public void ExitFullscreen()
 		{
-			if (this.Graphics.IsFullScreen)
+			if (this.Settings.Fullscreen)
 			{
 				Point res = this.Settings.Size;
 				this.ResizeViewport(res.X, res.Y, false);
@@ -1274,11 +1277,8 @@ namespace Lemma
 		public void ResizeViewport(int width, int height, bool fullscreen, bool applyChanges = true)
 		{
 			bool needApply = false;
-			if (this.Graphics.IsFullScreen != fullscreen)
-			{
-				this.Graphics.IsFullScreen = fullscreen;
+			if (this.Settings.Fullscreen != fullscreen)
 				needApply = true;
-			}
 			if (this.Graphics.PreferredBackBufferWidth != width)
 			{
 				this.Graphics.PreferredBackBufferWidth = width;
@@ -1308,6 +1308,11 @@ namespace Lemma
 				this.Settings.FullscreenResolution.Value = new Point(width, height);
 			else
 				this.Settings.Size.Value = new Point(width, height);
+
+			this.windowsForm.FormBorderStyle = fullscreen ? System.Windows.Forms.FormBorderStyle.None : System.Windows.Forms.FormBorderStyle.Sizable;
+			if (fullscreen)
+				this.windowsForm.Location = new System.Drawing.Point(0, 0);
+
 #if ANALYTICS
 			if (this.SessionRecorder != null)
 				this.SessionRecorder.RecordEvent("ResizedViewport", string.Format("{0}x{1} {2}", width, height, fullscreen ? "fullscreen" : "windowed"));

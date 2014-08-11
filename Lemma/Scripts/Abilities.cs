@@ -13,9 +13,7 @@ namespace Lemma.GameScripts
 {
 	public class Abilities : ScriptBase
 	{
-		public static Entity script;
-
-		public static void Run()
+		public static void Run(Entity script)
 		{
 			PlayerData playerData = PlayerDataFactory.Instance.Get<PlayerData>();
 
@@ -30,7 +28,7 @@ namespace Lemma.GameScripts
 			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Phone"), playerData.EnablePhone));
 		}
 
-		public static IEnumerable<string> EditorProperties()
+		public static IEnumerable<string> EditorProperties(Entity script)
 		{
 			script.Add("Roll", property<bool>(script, "Roll"));
 			script.Add("Crouch", property<bool>(script, "Crouch"));

@@ -353,7 +353,7 @@ namespace Lemma.Components
 				this.data.Map = map;
 				this.data.UUID = this.main.Settings.UUID;
 				this.data.ScreenSize = this.main.ScreenSize;
-				this.data.IsFullscreen = this.main.Graphics.IsFullScreen;
+				this.data.IsFullscreen = this.main.Settings.Fullscreen;
 				using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
 					new XmlSerializer(typeof(Session)).Serialize(stream, this.data);
 			}

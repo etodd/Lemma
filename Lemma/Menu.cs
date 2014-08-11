@@ -811,7 +811,7 @@ namespace Lemma.Components
 			// Toggle fullscreen
 			this.input.Bind(this.main.Settings.ToggleFullscreen, PCInput.InputState.Down, delegate()
 			{
-				if (this.main.Graphics.IsFullScreen) // Already fullscreen. Go to windowed mode.
+				if (this.main.Settings.Fullscreen) // Already fullscreen. Go to windowed mode.
 					this.main.ExitFullscreen();
 				else // In windowed mode. Go to fullscreen.
 					this.main.EnterFullscreen();

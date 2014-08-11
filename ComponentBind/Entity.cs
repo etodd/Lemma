@@ -599,8 +599,7 @@ namespace ComponentBind
 		private Command getCommand(string name)
 		{
 			Command.Entry result;
-			this.commands.TryGetValue(name, out result);
-			if (result != null)
+			if (this.commands.TryGetValue(name, out result))
 				return result.Command;
 			else
 				return null;

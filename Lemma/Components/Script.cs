@@ -62,7 +62,6 @@ namespace Lemma.Components
 						if (run == null)
 							errors = "Could not find public static method Run in " + name;
 
-						type.GetField("script", BindingFlags.Static | BindingFlags.Public).SetValue(null, scriptEntity);
 						return new ScriptMethods
 						{
 							Run = run,
@@ -184,12 +183,12 @@ namespace Lemma.Components
 					this.Errors.Value = errors;
 					if (this.methods.EditorProperties != null)
 					{
-						object result = this.methods.EditorProperties.Invoke(null, null);
+						object result = this.methods.EditorProperties.Invoke(null, this.parameters);
 						this.editorProperties = result as IEnumerable<string>;
 					}
 					if (this.methods.Commands != null)
 					{
-						object result = this.methods.Commands.Invoke(null, null);
+						object result = this.methods.Commands.Invoke(null, this.parameters);
 						this.commands = result as IEnumerable<string>;
 					}
 				}
@@ -201,9 +200,12 @@ namespace Lemma.Components
 			}
 		}
 
+		private object[] parameters;
+
 		public override void Awake()
 		{
 			base.Awake();
+			this.parameters = new object[] { this.Entity };
 			this.Errors.Value = null;
 			this.Name.Set = delegate(string value)
 			{
@@ -221,7 +223,7 @@ namespace Lemma.Components
 				}
 
 				if (this.methods.Run != null)
-					this.methods.Run.Invoke(null, null);
+					this.methods.Run.Invoke(null, this.parameters);
 
 				if (this.DeleteOnExecute)
 				{
