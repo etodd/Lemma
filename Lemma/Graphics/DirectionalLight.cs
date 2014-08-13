@@ -16,6 +16,10 @@ namespace Lemma.Components
 		public Property<Quaternion> Quaternion = new Property<Quaternion> { Value = Microsoft.Xna.Framework.Quaternion.Identity };
 		public Property<bool> Shadowed = new Property<bool>();
 
+		public Property<float> CloudShadow = new Property<float>();
+
+		public Property<Vector2> CloudVelocity = new Property<Vector2>();
+
 		public override void Awake()
 		{
 			base.Awake();

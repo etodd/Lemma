@@ -419,6 +419,29 @@ namespace Lemma.Components
 				}
 			));
 
+			Action<Container> animateMessage = delegate(Container msg)
+			{
+				msg.CheckLayout();
+				Vector2 originalSize = msg.Size;
+				msg.Size.Value = new Vector2(0, originalSize.Y);
+				entity.Add(new Animation
+				(
+					new Animation.Ease(new Animation.Vector2MoveTo(msg.Size, originalSize, 0.5f), Animation.Ease.EaseType.OutExponential)
+				));
+			};
+
+			Container typingIndicator = null;
+
+			Action showTypingIndicator = delegate()
+			{
+				typingIndicator = makeAlign(makeButton(incomingColor, "\\...", messageWidth - padding * 2.0f), false);
+				msgList.Children.Add(typingIndicator);
+				animateMessage(typingIndicator);
+			};
+
+			if (phone.Schedules.Length > 0)
+				showTypingIndicator();
+
 			answerList.Add(new ListBinding<UIComponent, Phone.Ans>
 			(
 				answerList.Children,
@@ -436,8 +459,16 @@ namespace Lemma.Components
 							s.Get<SignalTower>().Initial.Value = null;
 
 						scrollToBottom();
-						if (togglePhoneMessage == null && phone.Schedules.Length == 0) // No more messages incoming
-							togglePhoneMessage = main.Menu.ShowMessage(entity, "[{{TogglePhone}}]");
+						if (phone.Schedules.Length == 0) // No more messages incoming
+						{
+							if (togglePhoneMessage == null)
+								togglePhoneMessage = main.Menu.ShowMessage(entity, "[{{TogglePhone}}]");
+						}
+						else
+						{
+							// More messages incoming
+							showTypingIndicator();
+						}
 					}));
 					return button;
 				}
@@ -456,20 +487,22 @@ namespace Lemma.Components
 
 			entity.Add(new CommandBinding(phone.MessageReceived, delegate()
 			{
+				if (typingIndicator != null)
+				{
+					typingIndicator.Delete.Execute();
+					typingIndicator = null;
+				}
+				
+				// Animate the new message
+				animateMessage((Container)msgList.Children[msgList.Children.Length - 1].Children[0]);
+
+				if (phone.Schedules.Length > 0)
+					showTypingIndicator();
+
 				if (phoneActive)
 					scrollToBottom();
 				else
 					showPhone(true);
-				
-				// Animate the new message
-				Container lastMessage = (Container)msgList.Children[msgList.Children.Length - 1].Children[0];
-				lastMessage.CheckLayout();
-				Vector2 originalSize = lastMessage.Size;
-				lastMessage.Size.Value = new Vector2(0, originalSize.Y);
-				main.AddComponent(new Animation
-				(
-					new Animation.Ease(new Animation.Vector2MoveTo(lastMessage.Size, originalSize, 0.5f), Animation.Ease.EaseType.OutExponential)
-				));
 
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PHONE_VIBRATE, entity);
 				if (togglePhoneMessage == null && phone.Schedules.Length == 0 && phone.ActiveAnswers.Length == 0) // No more messages incoming, and no more answers to give

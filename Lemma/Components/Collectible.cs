@@ -14,45 +14,56 @@ namespace Lemma.Components
 {
 	public class Collectible : Component<Main>
 	{
+		private static List<Collectible> collectibles = new List<Collectible>();
 
 		[XmlIgnore]
 		public Command PlayerTouched = new Command();
 
 		public Property<bool> PickedUp = new Property<bool>(); 
 
+		public static int Count
+		{
+			get
+			{
+				return Collectible.collectibles.Count;
+			}
+		}
+
 		public override void Awake()
 		{
 			base.Awake();
+			Collectible.collectibles.Add(this);
 
 			PlayerTouched.Action = delegate
 			{
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_COLLECTIBLE, this.Entity);
 				float originalGamma = main.Renderer.InternalGamma.Value;
 				float originalBrightness = main.Renderer.Brightness.Value;
-				this.Entity.Add(
-					new Animation(
-						new Animation.Parallel(
-							new Animation.FloatMoveTo(main.Renderer.InternalGamma, 10.0f, 0.2f)
-							//new Animation.FloatMoveTo(main.Renderer.Brightness, 1.0f, 0.3f)
-						),
-						new Animation.Parallel(
-							new Animation.FloatMoveTo(main.Renderer.InternalGamma, originalGamma, 0.4f)
-							//new Animation.FloatMoveTo(main.Renderer.Brightness, originalBrightness, 1.0f)
-						),
-						new Animation.Execute(this.Entity.Delete.Execute)
+				this.Entity.Add
+				(
+					new Animation
+					(
+						new Animation.FloatMoveTo(main.Renderer.InternalGamma, 10.0f, 0.2f),
+						new Animation.FloatMoveTo(main.Renderer.InternalGamma, originalGamma, 0.4f),
+						new Animation.Execute(this.Entity.Delete)
 					)
 				);
 
-				// Increment collectibles picked up or summat
 				int collectibles = ++PlayerDataFactory.Instance.Get<PlayerData>().Collectibles.Value;
 
 				this.main.Menu.HideMessage
 				(
 					WorldFactory.Instance,
-					this.main.Menu.ShowMessageFormat(WorldFactory.Instance, "\\orbs collected", collectibles),
+					this.main.Menu.ShowMessageFormat(WorldFactory.Instance, collectibles == 1 ? "\\one orb collected" : "\\orbs collected", collectibles),
 					4.0f
 				);
 			};
+		}
+
+		public override void delete()
+		{
+			base.delete();
+			Collectible.collectibles.Remove(this);
 		}
 	}
 }

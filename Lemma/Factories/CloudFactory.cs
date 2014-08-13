@@ -52,7 +52,6 @@ namespace Lemma.Factories
 			entity.Add("Color", clouds.Color);
 			entity.Add("Alpha", clouds.Alpha);
 			entity.Add("Infinite", settings.Infinite);
-			entity.Add("Shadowed", settings.Shadowed);
 		}
 	}
 }

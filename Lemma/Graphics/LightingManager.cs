@@ -26,6 +26,8 @@ namespace Lemma.Components
 
 		private Vector3[] directionalLightDirections = new Vector3[LightingManager.maxDirectionalLights];
 		private Vector3[] directionalLightColors = new Vector3[LightingManager.maxDirectionalLights];
+		private float directionalLightCloudShadow;
+		private Vector2 directionalLightCloudVelocity;
 
 		private Vector3 ambientLightColor = Vector3.Zero;
 
@@ -44,6 +46,7 @@ namespace Lemma.Components
 		public Property<bool> EnableDetailGlobalShadowMap = new Property<bool> { Value = true };
 
 		public Property<bool> HasGlobalShadowLight = new Property<bool>();
+		public Property<bool> HasGlobalShadowLightClouds = new Property<bool>();
 
 		public Property<string> EnvironmentMap = new Property<string>();
 		public Property<Vector3> EnvironmentColor = new Property<Vector3>();
@@ -198,6 +201,8 @@ namespace Lemma.Components
 					// By convention the first light is the shadow-caster, if there are any shadow-casting lights.
 					this.directionalLightDirections[index] = this.directionalLightDirections[0];
 					this.directionalLightColors[index] = this.directionalLightColors[0];
+					this.directionalLightCloudShadow = light.CloudShadow;
+					this.directionalLightCloudVelocity = light.CloudVelocity;
 					index = 0;
 					this.globalShadowLight = light;
 				}
@@ -214,6 +219,10 @@ namespace Lemma.Components
 			bool hasGlobalLight = this.globalShadowLight != null;
 			if (this.HasGlobalShadowLight != hasGlobalLight)
 				this.HasGlobalShadowLight.Value = hasGlobalLight;
+
+			bool hasClouds = hasGlobalLight && this.directionalLightCloudShadow > 0;
+			if (this.HasGlobalShadowLightClouds != hasClouds)
+				this.HasGlobalShadowLightClouds.Value = hasClouds;
 
 			this.ambientLightColor = Vector3.Zero;
 			foreach (AmbientLight light in AmbientLight.All.Where(x => x.Enabled))
@@ -337,6 +346,10 @@ namespace Lemma.Components
 			effect.Parameters["DirectionalLightColors"].SetValue(this.directionalLightColors);
 			effect.Parameters["EnvironmentColor"].SetValue(this.EnvironmentColor);
 			effect.Parameters["Environment" + Model.SamplerPostfix].SetValue(this.environmentMap);
+			effect.Parameters["CloudShadow"].SetValue(this.directionalLightCloudShadow);
+			effect.Parameters["CloudOffset"].SetValue(this.directionalLightCloudVelocity * (this.main.TotalTime / 60.0f));
+			effect.Parameters["CameraPosition"].SetValue(cameraPos);
+
 			if (this.EnableGlobalShadowMap)
 			{
 				effect.Parameters["ShadowViewProjectionMatrix"].SetValue(Matrix.CreateTranslation(cameraPos) * this.GlobalShadowViewProjection);

@@ -228,6 +228,7 @@ namespace Lemma.Components
 			Renderer.globalLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\GlobalLight").Clone();
 			Renderer.pointLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\PointLight").Clone();
 			Renderer.spotLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\SpotLight").Clone();
+			Renderer.globalLightEffect.Parameters["Cloud" + Model.SamplerPostfix].SetValue(this.main.Content.Load<Texture2D>("AlphaModels\\cloud_texture"));
 
 			this.compositeEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Composite").Clone();
 			this.compositeEffect.CurrentTechnique = this.compositeEffect.Techniques["Composite"];
@@ -544,8 +545,23 @@ namespace Lemma.Components
 			string globalLightTechnique = "GlobalLight";
 			if (this.lightingManager.EnableGlobalShadowMap && this.lightingManager.HasGlobalShadowLight)
 			{
-				if (parameters.IsMainRender && this.lightingManager.EnableDetailGlobalShadowMap)
-					globalLightTechnique = "GlobalLightDetailShadow";
+				if (parameters.IsMainRender)
+				{
+					if (this.lightingManager.HasGlobalShadowLightClouds)
+					{
+						if (this.lightingManager.EnableDetailGlobalShadowMap)
+							globalLightTechnique = "GlobalLightDetailShadowClouds";
+						else
+							globalLightTechnique = "GlobalLightShadowClouds";
+					}
+					else
+					{
+						if (this.lightingManager.EnableDetailGlobalShadowMap)
+							globalLightTechnique = "GlobalLightDetailShadow";
+						else
+							globalLightTechnique = "GlobalLightShadow";
+					}
+				}
 				else
 					globalLightTechnique = "GlobalLightShadow";
 			}

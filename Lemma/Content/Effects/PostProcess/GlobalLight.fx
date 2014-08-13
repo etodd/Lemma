@@ -13,6 +13,11 @@ float3 EnvironmentColor = float3(1, 1, 1);
 
 float2 Materials[16];
 
+float CloudShadow;
+float2 CloudOffset;
+float3 CameraPosition;
+const float CloudUVMultiplier = 0.003f;
+
 textureCUBE EnvironmentTexture;
 samplerCUBE EnvironmentSampler = sampler_state
 {
@@ -20,6 +25,18 @@ samplerCUBE EnvironmentSampler = sampler_state
 	MinFilter = linear;
 	MagFilter = linear;
 	MipFilter = linear;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
+texture2D CloudTexture;
+sampler2D CloudSampler = sampler_state
+{
+	Texture = <CloudTexture>;
+	MinFilter = linear;
+	MagFilter = linear;
+	MipFilter = linear;
+	MaxAnisotropy = 1;
 	AddressU = WRAP;
 	AddressV = WRAP;
 };
@@ -47,7 +64,8 @@ void GlobalLightPS(	in PostProcessPSInput input,
 					out float4 lighting : COLOR0,
 					out float4 specular : COLOR1,
 					uniform bool shadow,
-					uniform bool detail)
+					uniform bool detail,
+					uniform bool clouds)
 {
 	float2 depthValue = tex2D(SourceSampler0, input.texCoord).xy;
 	float4 normalValue = tex2D(SourceSampler1, input.texCoord);
@@ -88,6 +106,16 @@ void GlobalLightPS(	in PostProcessPSInput input,
 		else
 			shadowValue = GetShadowValue(shadowPos);
 
+		if (clouds)
+		{
+			float3 worldPosWithCamera = worldPos + CameraPosition;
+
+			float t = -worldPosWithCamera.y / DirectionalLightDirections[0].y;
+			float2 p = worldPosWithCamera.xz + t * DirectionalLightDirections[0].xz;
+
+			shadowValue -= tex2D(CloudSampler, p * CloudUVMultiplier + CloudOffset).a * CloudShadow;
+		}
+
 		output.lighting += shadowLight.lighting * shadowValue;
 		output.specular += shadowLight.specular * shadowValue;
 	}
@@ -118,21 +146,35 @@ void GlobalLightUnshadowedPS(	in PostProcessPSInput input,
 					out float4 lighting : COLOR0,
 					out float4 specular : COLOR1)
 {
-	GlobalLightPS(input, lighting, specular, false, false);
+	GlobalLightPS(input, lighting, specular, false, false, false);
 }
 
 void GlobalLightShadowedPS(	in PostProcessPSInput input,
 					out float4 lighting : COLOR0,
 					out float4 specular : COLOR1)
 {
-	GlobalLightPS(input, lighting, specular, true, false);
+	GlobalLightPS(input, lighting, specular, true, false, false);
 }
 
 void GlobalLightDetailShadowedPS(	in PostProcessPSInput input,
 					out float4 lighting : COLOR0,
 					out float4 specular : COLOR1)
 {
-	GlobalLightPS(input, lighting, specular, true, true);
+	GlobalLightPS(input, lighting, specular, true, true, false);
+}
+
+void GlobalLightShadowedCloudsPS(	in PostProcessPSInput input,
+					out float4 lighting : COLOR0,
+					out float4 specular : COLOR1)
+{
+	GlobalLightPS(input, lighting, specular, true, false, true);
+}
+
+void GlobalLightDetailShadowedCloudsPS(	in PostProcessPSInput input,
+					out float4 lighting : COLOR0,
+					out float4 specular : COLOR1)
+{
+	GlobalLightPS(input, lighting, specular, true, true, true);
 }
 
 technique GlobalLightDetailShadow
@@ -154,6 +196,32 @@ technique GlobalLightShadow
 	{
 		VertexShader = compile vs_3_0 PostProcessVS();
 		PixelShader = compile ps_3_0 GlobalLightShadowedPS();
+		
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = false;
+	}
+}
+
+technique GlobalLightDetailShadowClouds
+{
+	pass p0
+	{
+		VertexShader = compile vs_3_0 PostProcessVS();
+		PixelShader = compile ps_3_0 GlobalLightDetailShadowedCloudsPS();
+		
+		ZEnable = false;
+		ZWriteEnable = false;
+		AlphaBlendEnable = false;
+	}
+}
+
+technique GlobalLightShadowClouds
+{
+	pass p0
+	{
+		VertexShader = compile vs_3_0 PostProcessVS();
+		PixelShader = compile ps_3_0 GlobalLightShadowedCloudsPS();
 		
 		ZEnable = false;
 		ZWriteEnable = false;

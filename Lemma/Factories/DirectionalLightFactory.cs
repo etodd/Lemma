@@ -33,6 +33,8 @@ namespace Lemma.Factories
 			entity.Add("Enabled", directionalLight.Enabled);
 			entity.Add("Color", directionalLight.Color);
 			entity.Add("Shadowed", directionalLight.Shadowed);
+			entity.Add("Clouds", directionalLight.CloudShadow);
+			entity.Add("CloudVelocity", directionalLight.CloudVelocity);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

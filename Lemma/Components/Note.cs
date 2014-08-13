@@ -18,6 +18,14 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command Collected = new Command();
 
+		public static int UncollectedCount
+		{
+			get
+			{
+				return Note.notes.Where(x => !x.IsCollected).Count();
+			}
+		}
+
 		public override void Awake()
 		{
 			base.Awake();

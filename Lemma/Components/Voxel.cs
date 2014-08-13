@@ -627,7 +627,7 @@ namespace Lemma.Components
 					Permanent = false,
 					Supported = false,
 					Hard = true,
-					Density = 3,
+					Density = 0.5f,
 					FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 					DiffuseMap = "Textures\\infected-hard",
 					NormalMap = "Textures\\temporary-normal",

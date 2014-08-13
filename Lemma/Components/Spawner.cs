@@ -267,7 +267,27 @@ namespace Lemma.Components
 							}
 						}
 
-						this.main.AddComponent(new Animation
+						// When the player teleports to a new map, show the number of orbs and notes on that map
+						// If mapJustLoaded is true, we just loaded a save game
+						if (this.main.TotalTime < Spawner.DefaultRespawnInterval * 2 && !this.mapJustLoaded)
+						{
+							WorldFactory.Instance.Add(new Animation
+							(
+								new Animation.Delay(1.5f),
+								new Animation.Execute(delegate()
+								{
+									int notes = Note.UncollectedCount;
+									if (notes > 0)
+										this.main.Menu.HideMessage(WorldFactory.Instance, this.main.Menu.ShowMessageFormat(WorldFactory.Instance, notes == 1 ? "\\one note" : "\\note count", notes), 3.0f);
+
+									int orbs = Collectible.Count;
+									if (orbs > 0)
+										this.main.Menu.HideMessage(WorldFactory.Instance, this.main.Menu.ShowMessageFormat(WorldFactory.Instance, orbs == 1 ? "\\one orb" : "\\orb count", orbs), 3.0f);
+								})
+							));
+						}
+
+						WorldFactory.Instance.Add(new Animation
 						(
 							new Animation.Parallel
 							(

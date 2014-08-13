@@ -16,7 +16,5 @@ namespace Lemma.Components
 		public Property<float> StartDistance = new Property<float> { Value = 50 };
 
 		public Property<bool> Infinite = new Property<bool> { Value = true };
-
-		public Property<bool> Shadowed = new Property<bool>();
 	}
 }
