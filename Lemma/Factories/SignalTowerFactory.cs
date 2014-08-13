@@ -27,6 +27,7 @@ namespace Lemma.Factories
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
 
 			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);
+			attachable.Enabled.Value = true;
 			
 			this.SetMain(entity, main);
 
