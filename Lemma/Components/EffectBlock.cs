@@ -109,15 +109,24 @@ namespace Lemma.Components
 					bool foundAdjacentCell = false;
 					if (this.CheckAdjacent)
 					{
-						bool avoid = this.StateId == Voxel.t.Blue;
+						bool blue = this.StateId == Voxel.t.Blue;
 						foreach (Direction dir in DirectionExtensions.Directions)
 						{
 							Voxel.Coord adjacent = c.Move(dir);
 							Voxel.t adjacentID = m[adjacent].ID;
-							if (adjacentID != 0 && (!avoid || (adjacentID != Voxel.t.Infected && adjacentID != Voxel.t.HardInfected)))
+							if (adjacentID != Voxel.t.Empty && (!blue || (adjacentID != Voxel.t.Infected && adjacentID != Voxel.t.HardInfected)))
 							{
 								foundAdjacentCell = true;
-								break;
+								if (blue)
+								{
+									if (adjacentID == Voxel.t.Reset)
+									{
+										this.StateId.Value = Voxel.t.Neutral;
+										break;
+									}
+								}
+								else
+									break;
 							}
 						}
 					}

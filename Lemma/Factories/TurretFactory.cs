@@ -258,7 +258,7 @@ namespace Lemma.Factories
 					}
 
 					if (rayHit.Voxel != null)
-						Explosion.Explode(main, rayHit.Voxel, rayHit.Coordinate.Value, 6, 8.0f);
+						Explosion.Explode(main, rayHit.Position + rayHit.Voxel.GetAbsoluteVector(rayHit.Normal.GetVector()) * 0.5f, 6, 8.0f);
 					else if (target != null && target.Active)
 					{
 						Vector3 targetPos = target.Get<Transform>().Position;

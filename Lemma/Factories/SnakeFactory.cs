@@ -55,7 +55,9 @@ namespace Lemma.Factories
 			Agent agent = entity.GetOrCreate<Agent>("Agent");
 
 			Voxel.State infectedState = Voxel.States[Voxel.t.Infected],
-				neutralState = Voxel.States[Voxel.t.Neutral];
+				neutralState = Voxel.States[Voxel.t.Neutral],
+				hardState = Voxel.States[Voxel.t.Hard],
+				hardInfectedState = Voxel.States[Voxel.t.HardInfected];
 
 			const float defaultSpeed = 5.0f;
 			const float chaseSpeed = 18.0f;
@@ -67,7 +69,7 @@ namespace Lemma.Factories
 			chase.Speed.Value = defaultSpeed;
 			chase.Filter = delegate(Voxel.State state)
 			{
-				if (state == infectedState || state == neutralState)
+				if (state == infectedState || state == neutralState || state == hardState || state == hardInfectedState)
 					return VoxelChaseAI.Cell.Penetrable;
 				return VoxelChaseAI.Cell.Avoid;
 			};
@@ -150,10 +152,24 @@ namespace Lemma.Factories
 					string currentState = ai.CurrentState.Value;
 					if ((currentState == "Chase" || currentState == "Crush"))
 					{
-						bool regenerate = m.Empty(c);
-						regenerate |= m.Fill(c, infectedState);
-						if (regenerate)
+						Voxel.t id = m[c].ID;
+						if (id == Voxel.t.Hard)
+						{
+							m.Empty(c);
+							m.Fill(c, hardInfectedState);
 							m.Regenerate();
+						}
+						else if (id == Voxel.t.Neutral)
+						{
+							m.Empty(c);
+							m.Fill(c, infectedState);
+							m.Regenerate();
+						}
+						else if (id == Voxel.t.Empty)
+						{
+							m.Fill(c, infectedState);
+							m.Regenerate();
+						}
 					}
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SNAKE_MOVE, entity);
 

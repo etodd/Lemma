@@ -52,6 +52,7 @@ namespace Lemma.Components
 		private Voxel.State permanentPowered;
 		private Voxel.State switchState;
 		private Voxel.State hard;
+		private Voxel.State hardInfected;
 		private Voxel.State hardPowered;
 
 		public override void Awake()
@@ -71,6 +72,7 @@ namespace Lemma.Components
 			this.permanentPowered = Voxel.States[Voxel.t.PermanentPowered];
 			this.switchState = Voxel.States[Voxel.t.Switch];
 			this.hard = Voxel.States[Voxel.t.Hard];
+			this.hardInfected = Voxel.States[Voxel.t.HardInfected];
 			this.hardPowered = Voxel.States[Voxel.t.HardPowered];
 
 			this.particles = ParticleSystem.Get(main, "WhiteShatter");
@@ -92,14 +94,14 @@ namespace Lemma.Components
 					foreach (Voxel.Coord c in coords)
 					{
 						Voxel.t id = c.Data.ID;
-						if (id == Voxel.t.Blue || id == Voxel.t.Powered || id == Voxel.t.PoweredSwitch || id == Voxel.t.Infected || id == Voxel.t.Neutral || id == Voxel.t.HardPowered)
+						if (id == Voxel.t.Blue || id == Voxel.t.Powered || id == Voxel.t.PoweredSwitch || id == Voxel.t.Infected || id == Voxel.t.Neutral || id == Voxel.t.HardPowered || id == Voxel.t.Hard)
 						{
 							Voxel.Coord newCoord = c;
 							newCoord.Data = Voxel.EmptyState;
 							int generation;
 							EffectBlock.Entry generationsKey = new EffectBlock.Entry { Voxel = map, Coordinate = newCoord };
-							if (generations.TryGetValue(generationsKey, out generation))
-								generations.Remove(generationsKey);
+							if (this.generations.TryGetValue(generationsKey, out generation))
+								this.generations.Remove(generationsKey);
 							if (!this.isInQueue(map.Entity, newCoord, false))
 							{
 								this.BlockQueue.Add(new ScheduledBlock
@@ -145,8 +147,8 @@ namespace Lemma.Components
 							Voxel.Coord c = coord;
 							c.Data = Voxel.EmptyState;
 							EffectBlock.Entry generationKey = new EffectBlock.Entry { Voxel = map, Coordinate = c };
-							if (generations.TryGetValue(generationKey, out generation))
-								generations.Remove(generationKey);
+							if (this.generations.TryGetValue(generationKey, out generation))
+								this.generations.Remove(generationKey);
 
 							if (generation == 0)
 							{
@@ -238,6 +240,7 @@ namespace Lemma.Components
 			return false;
 		}
 
+		private List<Voxel> toRegenerate = new List<Voxel>();
 		public void Update(float dt)
 		{
 			float sparkLightFade = sparkLightBrightness * dt / sparkLightFadeTime;
@@ -258,7 +261,6 @@ namespace Lemma.Components
 					light.Color.Value = new Vector3(a);
 			}
 
-			List<Voxel> toRegenerate = new List<Voxel>();
 			for (int i = 0; i < this.BlockQueue.Length; i++)
 			{
 				ScheduledBlock entry = this.BlockQueue[i];
@@ -274,11 +276,6 @@ namespace Lemma.Components
 						Voxel map = mapEntity.Get<Voxel>();
 						Voxel.Coord c = entry.Coordinate;
 						Voxel.t id = map[c].ID;
-
-						bool isTemporary = id == Voxel.t.Blue;
-						bool isNeutral = id == Voxel.t.Neutral;
-						bool isInfected = id == Voxel.t.Infected || id == Voxel.t.HardInfected;
-						bool isPowered = id == Voxel.t.Powered || id == Voxel.t.PermanentPowered || id == Voxel.t.HardPowered || id == Voxel.t.PoweredSwitch;
 
 						bool regenerate = false;
 
@@ -311,123 +308,133 @@ namespace Lemma.Components
 									}
 								}
 							}
-							else if (entry.Generation > 0 && (isTemporary || isInfected || isPowered || id == Voxel.t.Neutral || id == Voxel.t.Floater))
+							else if (entry.Generation > 0 && (id == Voxel.t.Blue || id == Voxel.t.Infected || id == Voxel.t.Powered || id == Voxel.t.PermanentPowered || id == Voxel.t.HardPowered || id == Voxel.t.PoweredSwitch || id == Voxel.t.Neutral || id == Voxel.t.Floater))
 							{
-								generations[new EffectBlock.Entry { Voxel = map, Coordinate = c }] = entry.Generation;
+								this.generations[new EffectBlock.Entry { Voxel = map, Coordinate = c }] = entry.Generation;
 								map.Empty(c);
 								this.sparksLowPriority(map.GetAbsolutePosition(c), Spark.Burn);
 								regenerate = true;
 							}
 						}
-						else if (isTemporary
-							|| isInfected
-							|| isPowered
-							|| isNeutral)
+						else if (id == Voxel.t.Blue)
 						{
-							if (isTemporary)
+							foreach (Direction dir in DirectionExtensions.Directions)
 							{
-								foreach (Direction dir in DirectionExtensions.Directions)
-								{
-									Voxel.Coord adjacent = c.Move(dir);
-									Voxel.t adjacentID = map[adjacent].ID;
+								Voxel.Coord adjacent = c.Move(dir);
+								Voxel.t adjacentID = map[adjacent].ID;
 
-									if (adjacentID == Voxel.t.Powered || adjacentID == Voxel.t.PermanentPowered || adjacentID == Voxel.t.HardPowered || adjacentID == Voxel.t.PoweredSwitch)
-									{
-										map.Empty(c, false, true, map);
-										map.Fill(c, powered);
-										this.sparksLowPriority(map.GetAbsolutePosition(c), Spark.Normal);
-										regenerate = true;
-									}
-									else if (adjacentID == Voxel.t.Neutral && entry.Generation < maxGenerations)
-									{
-										map.Empty(adjacent, false, true, map);
-										generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
-										map.Fill(adjacent, blue);
-										this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
-										regenerate = true;
-									}
+								if (adjacentID == Voxel.t.Powered || adjacentID == Voxel.t.PermanentPowered || adjacentID == Voxel.t.HardPowered || adjacentID == Voxel.t.PoweredSwitch)
+								{
+									map.Empty(c, false, true, map);
+									map.Fill(c, powered);
+									this.sparksLowPriority(map.GetAbsolutePosition(c), Spark.Normal);
+									regenerate = true;
+								}
+								else if (adjacentID == Voxel.t.Neutral && entry.Generation < maxGenerations)
+								{
+									map.Empty(adjacent, false, true, map);
+									this.generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
+									map.Fill(adjacent, blue);
+									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									regenerate = true;
 								}
 							}
-							else if (isNeutral)
+						}
+						else if (id == Voxel.t.Neutral || id == Voxel.t.Hard)
+						{
+							foreach (Direction dir in DirectionExtensions.Directions)
 							{
-								foreach (Direction dir in DirectionExtensions.Directions)
+								Voxel.Coord adjacent = c.Move(dir);
+								Voxel.t adjacentID = map[adjacent].ID;
+								if (adjacentID == Voxel.t.Infected || adjacentID == Voxel.t.Blue || adjacentID == Voxel.t.Powered)
 								{
-									Voxel.Coord adjacent = c.Move(dir);
-									Voxel.t adjacentID = map[adjacent].ID;
-									if (adjacentID == Voxel.t.Infected || adjacentID == Voxel.t.Blue || adjacentID == Voxel.t.Powered)
-									{
-										map.Empty(adjacent, false, true, map);
-										map.Fill(adjacent, neutral);
-										this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
-										regenerate = true;
-									}
+									map.Empty(adjacent, false, true, map);
+									map.Fill(adjacent, neutral);
+									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									regenerate = true;
+								}
+								else if (adjacentID == Voxel.t.HardInfected)
+								{
+									map.Empty(adjacent, false, true, map);
+									map.Fill(adjacent, hard);
+									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									regenerate = true;
 								}
 							}
-							else if (isPowered)
+						}
+						else if (id == Voxel.t.Powered || id == Voxel.t.PermanentPowered || id == Voxel.t.HardPowered || id == Voxel.t.PoweredSwitch)
+						{
+							foreach (Direction dir in DirectionExtensions.Directions)
 							{
-								foreach (Direction dir in DirectionExtensions.Directions)
-								{
-									Voxel.Coord adjacent = c.Move(dir);
-									Voxel.t adjacentID = map[adjacent].ID;
+								Voxel.Coord adjacent = c.Move(dir);
+								Voxel.t adjacentID = map[adjacent].ID;
 
-									if (adjacentID == Voxel.t.Blue)
-									{
-										map.Empty(adjacent, false, true, map);
-										map.Fill(adjacent, this.powered);
-										this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
-										regenerate = true;
-									}
-									else if (adjacentID == Voxel.t.Switch)
-									{
-										map.Empty(adjacent, true, true, map);
-										map.Fill(adjacent, this.poweredSwitch);
-										this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
-										regenerate = true;
-									}
-									else if (adjacentID == Voxel.t.Hard)
-									{
-										map.Empty(adjacent, true, true, map);
-										map.Fill(adjacent, this.hardPowered);
-										this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
-										regenerate = true;
-									}
-									else if (adjacentID == Voxel.t.Critical)
-									{
-										map.Empty(adjacent);
-										regenerate = true;
-									}
+								if (adjacentID == Voxel.t.Blue)
+								{
+									map.Empty(adjacent, false, true, map);
+									map.Fill(adjacent, this.powered);
+									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									regenerate = true;
+								}
+								else if (adjacentID == Voxel.t.Switch)
+								{
+									map.Empty(adjacent, true, true, map);
+									map.Fill(adjacent, this.poweredSwitch);
+									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									regenerate = true;
+								}
+								else if (adjacentID == Voxel.t.Hard)
+								{
+									map.Empty(adjacent, true, true, map);
+									map.Fill(adjacent, this.hardPowered);
+									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									regenerate = true;
+								}
+								else if (adjacentID == Voxel.t.Critical)
+								{
+									map.Empty(adjacent);
+									regenerate = true;
 								}
 							}
-							else if (isInfected)
+						}
+						else if (id == Voxel.t.Infected || id == Voxel.t.HardInfected)
+						{
+							foreach (Direction dir in DirectionExtensions.Directions)
 							{
-								foreach (Direction dir in DirectionExtensions.Directions)
+								Voxel.Coord adjacent = c.Move(dir);
+								Voxel.t adjacentID = map[adjacent].ID;
+								if (adjacentID == Voxel.t.Neutral && entry.Generation < maxGenerations)
 								{
-									Voxel.Coord adjacent = c.Move(dir);
-									Voxel.t adjacentID = map[adjacent].ID;
-									if (adjacentID == Voxel.t.Neutral && entry.Generation < maxGenerations)
-									{
-										map.Empty(adjacent, false, true, map);
-										generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
-										map.Fill(adjacent, infected);
-										this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Dangerous);
-										regenerate = true;
-									}
-									else if (adjacentID == Voxel.t.Critical)
-									{
-										map.Empty(adjacent);
-										regenerate = true;
-									}
+									map.Empty(adjacent, false, true, map);
+									this.generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
+									map.Fill(adjacent, infected);
+									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Dangerous);
+									regenerate = true;
+								}
+								else if (adjacentID == Voxel.t.Hard && entry.Generation < maxGenerations)
+								{
+									map.Empty(adjacent, false, true, map);
+									this.generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
+									map.Fill(adjacent, hardInfected);
+									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Dangerous);
+									regenerate = true;
+								}
+								else if (adjacentID == Voxel.t.Critical)
+								{
+									map.Empty(adjacent);
+									regenerate = true;
 								}
 							}
 						}
 
 						if (regenerate)
-							toRegenerate.Add(map);
+							this.toRegenerate.Add(map);
 					}
 				}
 			}
-			foreach (Voxel v in toRegenerate)
+			foreach (Voxel v in this.toRegenerate)
 				v.Regenerate();
+			this.toRegenerate.Clear();
 		}
 
 		public void sparksLowPriority(Vector3 pos, Spark type)

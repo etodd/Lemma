@@ -2128,7 +2128,6 @@ namespace Lemma.Components
 					index++;
 				}
 
-				Dictionary<BoxRelationship, bool> relationships = new Dictionary<BoxRelationship, bool>();
 				index = 0;
 				List<int> indexData = new List<int>();
 				foreach (Box box in boxes)
@@ -2141,9 +2140,9 @@ namespace Lemma.Components
 						{
 							BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
 							BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
-							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
+							if (!this.relationshipCache.ContainsKey(relationship1) && !this.relationshipCache.ContainsKey(relationship2))
 							{
-								relationships[relationship1] = true;
+								this.relationshipCache[relationship1] = true;
 								indexData.Add(index);
 								indexData.Add(indexLookup[adjacent]);
 							}
@@ -2151,6 +2150,7 @@ namespace Lemma.Components
 					}
 					index++;
 				}
+				this.relationshipCache.Clear();
 				int[] packedIndexData = BitWorker.PackInts(17, indexData.ToArray());
 				int[] unPackedData = BitWorker.UnPackInts(17, -1, packedIndexData);
 				for (int i = 0; i < indexData.Count; i++)
@@ -2751,13 +2751,12 @@ namespace Lemma.Components
 			}
 		}
 
+		private Dictionary<Box, bool> adjacentCache = new Dictionary<Box, bool>();
 		protected void addBox(Box box)
 		{
 			this.addBoxWithoutAdjacency(box);
 
 			this.additions.Add(box);
-
-			Dictionary<Box, bool> adjacents = new Dictionary<Box, bool>();
 
 			// Front face
 			for (int x = box.X; x < box.X + box.Width; x++)
@@ -2767,9 +2766,9 @@ namespace Lemma.Components
 					Box adjacent = this.GetBox(x, y, box.Z + box.Depth);
 					if (adjacent != null)
 					{
-						if (!adjacents.ContainsKey(adjacent))
+						if (!this.adjacentCache.ContainsKey(adjacent))
 						{
-							adjacents[adjacent] = true;
+							this.adjacentCache[adjacent] = true;
 							lock (box.Adjacent)
 								box.Adjacent.Add(adjacent);
 							lock (adjacent.Adjacent)
@@ -2790,9 +2789,9 @@ namespace Lemma.Components
 					Box adjacent = this.GetBox(x, y, box.Z - 1);
 					if (adjacent != null)
 					{
-						if (!adjacents.ContainsKey(adjacent))
+						if (!this.adjacentCache.ContainsKey(adjacent))
 						{
-							adjacents[adjacent] = true;
+							this.adjacentCache[adjacent] = true;
 							lock (box.Adjacent)
 								box.Adjacent.Add(adjacent);
 							lock (adjacent.Adjacent)
@@ -2813,9 +2812,9 @@ namespace Lemma.Components
 					Box adjacent = this.GetBox(box.X + box.Width, y, z);
 					if (adjacent != null)
 					{
-						if (!adjacents.ContainsKey(adjacent))
+						if (!this.adjacentCache.ContainsKey(adjacent))
 						{
-							adjacents[adjacent] = true;
+							this.adjacentCache[adjacent] = true;
 							lock (box.Adjacent)
 								box.Adjacent.Add(adjacent);
 							lock (adjacent.Adjacent)
@@ -2836,9 +2835,9 @@ namespace Lemma.Components
 					Box adjacent = this.GetBox(box.X - 1, y, z);
 					if (adjacent != null)
 					{
-						if (!adjacents.ContainsKey(adjacent))
+						if (!this.adjacentCache.ContainsKey(adjacent))
 						{
-							adjacents[adjacent] = true;
+							this.adjacentCache[adjacent] = true;
 							lock (box.Adjacent)
 								box.Adjacent.Add(adjacent);
 							lock (adjacent.Adjacent)
@@ -2859,9 +2858,9 @@ namespace Lemma.Components
 					Box adjacent = this.GetBox(x, box.Y + box.Height, z);
 					if (adjacent != null)
 					{
-						if (!adjacents.ContainsKey(adjacent))
+						if (!this.adjacentCache.ContainsKey(adjacent))
 						{
-							adjacents[adjacent] = true;
+							this.adjacentCache[adjacent] = true;
 							lock (box.Adjacent)
 								box.Adjacent.Add(adjacent);
 							lock (adjacent.Adjacent)
@@ -2882,9 +2881,9 @@ namespace Lemma.Components
 					Box adjacent = this.GetBox(x, box.Y - 1, z);
 					if (adjacent != null)
 					{
-						if (!adjacents.ContainsKey(adjacent))
+						if (!this.adjacentCache.ContainsKey(adjacent))
 						{
-							adjacents[adjacent] = true;
+							this.adjacentCache[adjacent] = true;
 							lock (box.Adjacent)
 								box.Adjacent.Add(adjacent);
 							lock (adjacent.Adjacent)
@@ -2896,6 +2895,8 @@ namespace Lemma.Components
 						z++;
 				}
 			}
+
+			this.adjacentCache.Clear();
 		}
 
 		public void RebuildAdjacency()
@@ -2904,12 +2905,16 @@ namespace Lemma.Components
 				c.RebuildAdjacency();
 		}
 
+		private Dictionary<BoxRelationship, bool> relationshipCache = new Dictionary<BoxRelationship, bool>();
 		protected void calculateAdjacency(IEnumerable<Box> boxes)
 		{
 			foreach (Box box in boxes)
-				box.Adjacent = new List<Box>();
-
-			Dictionary<BoxRelationship, bool> relationships = new Dictionary<BoxRelationship, bool>();
+			{
+				if (box.Adjacent == null)
+					box.Adjacent = new List<Box>();
+				else
+					box.Adjacent.Clear();
+			}
 
 			foreach (Box box in boxes)
 			{
@@ -2924,9 +2929,9 @@ namespace Lemma.Components
 						{
 							BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
 							BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
-							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
+							if (!this.relationshipCache.ContainsKey(relationship1) && !this.relationshipCache.ContainsKey(relationship2))
 							{
-								relationships[relationship1] = true;
+								this.relationshipCache[relationship1] = true;
 								lock (box.Adjacent)
 									box.Adjacent.Add(adjacent);
 								lock (adjacent.Adjacent)
@@ -2949,9 +2954,9 @@ namespace Lemma.Components
 						{
 							BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
 							BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
-							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
+							if (!this.relationshipCache.ContainsKey(relationship1) && !this.relationshipCache.ContainsKey(relationship2))
 							{
-								relationships[relationship1] = true;
+								this.relationshipCache[relationship1] = true;
 								lock (box.Adjacent)
 									box.Adjacent.Add(adjacent);
 								lock (adjacent.Adjacent)
@@ -2974,9 +2979,9 @@ namespace Lemma.Components
 						{
 							BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
 							BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
-							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
+							if (!this.relationshipCache.ContainsKey(relationship1) && !this.relationshipCache.ContainsKey(relationship2))
 							{
-								relationships[relationship1] = true;
+								this.relationshipCache[relationship1] = true;
 								lock (box.Adjacent)
 									box.Adjacent.Add(adjacent);
 								lock (adjacent.Adjacent)
@@ -2999,9 +3004,9 @@ namespace Lemma.Components
 						{
 							BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
 							BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
-							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
+							if (!this.relationshipCache.ContainsKey(relationship1) && !this.relationshipCache.ContainsKey(relationship2))
 							{
-								relationships[relationship1] = true;
+								this.relationshipCache[relationship1] = true;
 								lock (box.Adjacent)
 									box.Adjacent.Add(adjacent);
 								lock (adjacent.Adjacent)
@@ -3024,9 +3029,9 @@ namespace Lemma.Components
 						{
 							BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
 							BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
-							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
+							if (!this.relationshipCache.ContainsKey(relationship1) && !this.relationshipCache.ContainsKey(relationship2))
 							{
-								relationships[relationship1] = true;
+								this.relationshipCache[relationship1] = true;
 								lock (box.Adjacent)
 									box.Adjacent.Add(adjacent);
 								lock (adjacent.Adjacent)
@@ -3049,9 +3054,9 @@ namespace Lemma.Components
 						{
 							BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
 							BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
-							if (!relationships.ContainsKey(relationship1) && !relationships.ContainsKey(relationship2))
+							if (!this.relationshipCache.ContainsKey(relationship1) && !this.relationshipCache.ContainsKey(relationship2))
 							{
-								relationships[relationship1] = true;
+								this.relationshipCache[relationship1] = true;
 								lock (box.Adjacent)
 									box.Adjacent.Add(adjacent);
 								lock (adjacent.Adjacent)
@@ -3064,6 +3069,8 @@ namespace Lemma.Components
 					}
 				}
 			}
+
+			this.relationshipCache.Clear();
 		}
 
 		protected bool regenerateSurfaces(Box box)
@@ -3237,6 +3244,8 @@ namespace Lemma.Components
 
 		public object MutationLock = new object();
 
+		private Dictionary<Box, bool> regeneratedCache = new Dictionary<Box, bool>();
+
 		/// <summary>
 		/// Applies any changes made to the map.
 		/// </summary>
@@ -3288,14 +3297,13 @@ namespace Lemma.Components
 				// Figure out which blocks need updating
 
 				// Update graphics
-				Dictionary<Box, bool> regenerated = new Dictionary<Box, bool>();
 
 				foreach (Box box in this.removals)
 				{
 					foreach (Box adjacent in box.Adjacent)
 					{
-						if (adjacent.Active && adjacent.Type == box.Type && !regenerated.ContainsKey(adjacent))
-							regenerated[adjacent] = this.regenerateSurfaces(adjacent);
+						if (adjacent.Active && adjacent.Type == box.Type && !this.regeneratedCache.ContainsKey(adjacent))
+							this.regeneratedCache[adjacent] = this.regenerateSurfaces(adjacent);
 					}
 				}
 
@@ -3303,20 +3311,21 @@ namespace Lemma.Components
 				{
 					if (box.Active)
 					{
-						if (!regenerated.ContainsKey(box))
-							regenerated[box] = this.regenerateSurfaces(box);
+						if (!this.regeneratedCache.ContainsKey(box))
+							this.regeneratedCache[box] = this.regenerateSurfaces(box);
 
 						foreach (Box adjacent in box.Adjacent)
 						{
-							if (adjacent.Active && adjacent.Type == box.Type && !regenerated.ContainsKey(adjacent))
-								regenerated[adjacent] = this.regenerateSurfaces(adjacent);
+							if (adjacent.Active && adjacent.Type == box.Type && !this.regeneratedCache.ContainsKey(adjacent))
+								this.regeneratedCache[adjacent] = this.regenerateSurfaces(adjacent);
 						}
 					}
 				}
 
-				List<Box> boxes = regenerated.Keys.ToList();
+				List<Box> boxes = this.regeneratedCache.Keys.ToList();
 
-				bool[] modifications = regenerated.Values.ToArray();
+				bool[] modifications = this.regeneratedCache.Values.ToArray();
+				this.regeneratedCache.Clear();
 				this.simplify(boxes, modifications);
 				this.simplify(boxes, modifications);
 

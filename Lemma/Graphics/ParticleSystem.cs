@@ -1049,7 +1049,7 @@ namespace Lemma.Components
 				v.Position = position;
 				v.Velocity = velocity;
 				v.Random = randomValues;
-				v.Time = currentTime - prePrime;
+				v.Time = this.currentTime - prePrime;
 				v.Lifetime = lifetime;
 				v.StartSize = size;
 				this.particles[this.firstFreeParticle * 4 + i] = v;
