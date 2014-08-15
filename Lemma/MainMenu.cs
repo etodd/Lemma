@@ -13,8 +13,7 @@ namespace Lemma.GameScripts
 {
 	public class MainMenu : ScriptBase
 	{
-		public static Entity script;
-		public static void Run()
+		public static void Run(Entity script)
 		{
 			const float fadeTime = 1.0f;
 

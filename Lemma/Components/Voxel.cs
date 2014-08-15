@@ -3833,128 +3833,9 @@ namespace Lemma.Components
 			return closestCoord;
 		}
 
-		private class AStarEntry
-		{
-			public AStarEntry Parent;
-			public float SoFar;
-			public float ToGoal;
-			public Coord Coordinate;
-		}
-
-		private List<Coord> constructPath(AStarEntry entry)
-		{
-			List<Coord> result = new List<Coord>();
-			result.Add(entry.Coordinate);
-			while (entry.Parent != null)
-			{
-				entry = entry.Parent;
-				result.Insert(0, entry.Coordinate);
-			}
-			return result;
-		}
-
-		// This isn't really A* at all. But whatevs.
-		public List<Coord> CustomAStar(Coord start, Coord end, int iterationLimit = 200)
-		{
-			Dictionary<Coord, bool> closed = new Dictionary<Coord, bool>();
-			Dictionary<Coord, AStarEntry> queueReverseLookup = new Dictionary<Coord, AStarEntry>();
-
-			Coord? closestStart = this.FindClosestAStarCell(start, 10);
-			Coord? closestEnd = this.FindClosestFilledCell(end);
-
-			if (!closestStart.HasValue || !closestEnd.HasValue)
-				return null;
-			else
-			{
-				start = closestStart.Value;
-				end = closestEnd.Value;
-			}
-
-			Vector3 endPos = this.GetRelativePosition(end);
-
-			PriorityQueue<AStarEntry> queue = new PriorityQueue<AStarEntry>(new LambdaComparer<AStarEntry>((x, y) => x.ToGoal.CompareTo(y.ToGoal)));
-			AStarEntry firstEntry = new AStarEntry { Coordinate = start, SoFar = 0, ToGoal = (this.GetRelativePosition(start) - endPos).Length() };
-			queue.Push(firstEntry);
-			queueReverseLookup.Add(start, firstEntry);
-			int iteration = 0;
-			while (queue.Count > 0)
-			{
-				AStarEntry entry = queue.Pop();
-
-				if (iteration == iterationLimit
-					|| (Math.Abs(entry.Coordinate.X - end.X) <= 1
-					&& Math.Abs(entry.Coordinate.Y - end.Y) <= 1
-					&& Math.Abs(entry.Coordinate.Z - end.Z) <= 1))
-					return this.constructPath(entry);
-
-				queueReverseLookup.Remove(entry.Coordinate);
-				try
-				{
-					closed.Add(entry.Coordinate, true);
-				}
-				catch (ArgumentException)
-				{
-					continue;
-				}
-
-				foreach (Direction d in DirectionExtensions.Directions)
-				{
-					Coord next = entry.Coordinate.Move(d);
-					if ((entry.Parent == null || !next.Equivalent(entry.Parent.Coordinate)) && !closed.ContainsKey(next))
-					{
-						State state = this[next];
-						if (state.ID == 0)
-						{
-							// This is an empty cell
-							// We can still use it if it's adjacent to a full cell
-							if (this[next.Move(0, 0, 1)].ID == 0
-								&& this[next.Move(0, 1, 0)].ID == 0
-								&& this[next.Move(0, 1, 1)].ID == 0
-								&& this[next.Move(1, 0, 0)].ID == 0
-								&& this[next.Move(1, 0, 1)].ID == 0
-								&& this[next.Move(1, 1, 0)].ID == 0
-								&& this[next.Move(1, 1, 1)].ID == 0
-								&& this[next.Move(0, 0, -1)].ID == 0
-								&& this[next.Move(0, -1, 0)].ID == 0
-								&& this[next.Move(0, -1, -1)].ID == 0
-								&& this[next.Move(-1, 0, 0)].ID == 0
-								&& this[next.Move(-1, 0, 1)].ID == 0
-								&& this[next.Move(-1, -1, 0)].ID == 0
-								&& this[next.Move(-1, -1, -1)].ID == 0)
-								continue;
-						}
-						else if (state.Permanent)
-							continue;
-
-						float tentativeGScore = entry.SoFar + 1;
-
-						AStarEntry newEntry;
-						if (queueReverseLookup.TryGetValue(next, out newEntry))
-						{
-							if (newEntry.SoFar < tentativeGScore)
-								continue;
-						}
-
-						if (newEntry == null)
-						{
-							newEntry = new AStarEntry { Coordinate = next, Parent = entry, SoFar = tentativeGScore, ToGoal = (this.GetRelativePosition(next) - endPos).Length() };
-							queue.Push(newEntry);
-							queueReverseLookup.Add(next, newEntry);
-						}
-						else
-							newEntry.SoFar = tentativeGScore;
-					}
-				}
-				iteration++;
-			}
-
-			return null;
-		}
-
+		private Queue<Box> boxAdjacencyCache = new Queue<Box>();
 		private bool buildAdjacency(Box box, Dictionary<Box, bool> list, Func<State, bool> filter, State search)
 		{
-			Queue<Box> boxes = new Queue<Box>();
-
 			if (box.Type.ID == search.ID)
 			{
 				list.Add(box, true);
@@ -3963,13 +3844,13 @@ namespace Lemma.Components
 
 			if (filter(box.Type) && !list.ContainsKey(box))
 			{
-				boxes.Enqueue(box);
+				this.boxAdjacencyCache.Enqueue(box);
 				list.Add(box, true);
 			}
 
-			while (boxes.Count > 0)
+			while (this.boxAdjacencyCache.Count > 0)
 			{
-				Box b = boxes.Dequeue();
+				Box b = this.boxAdjacencyCache.Dequeue();
 
 				lock (b.Adjacent)
 				{
@@ -3978,34 +3859,40 @@ namespace Lemma.Components
 						if (!list.ContainsKey(adjacent))
 						{
 							if (adjacent.Type.ID == search.ID)
+							{
+								this.boxAdjacencyCache.Clear();
 								return true;
+							}
 							else if (filter(adjacent.Type))
 							{
-								boxes.Enqueue(adjacent);
+								this.boxAdjacencyCache.Enqueue(adjacent);
 								list.Add(adjacent, true);
 							}
 						}
 					}
 				}
 			}
+			this.boxAdjacencyCache.Clear();
 			return false;
 		}
 
 		private bool buildAdjacency(Box box, Dictionary<Box, bool> list)
 		{
-			Queue<Box> boxes = new Queue<Box>();
 			if (!list.ContainsKey(box))
 			{
-				boxes.Enqueue(box);
+				this.boxAdjacencyCache.Enqueue(box);
 				list.Add(box, true);
 			}
 
-			while (boxes.Count > 0)
+			while (this.boxAdjacencyCache.Count > 0)
 			{
-				Box b = boxes.Dequeue();
+				Box b = this.boxAdjacencyCache.Dequeue();
 
 				if (b.Type.Supported)
+				{
+					this.boxAdjacencyCache.Clear();
 					return true;
+				}
 
 				lock (b.Adjacent)
 				{
@@ -4013,12 +3900,13 @@ namespace Lemma.Components
 					{
 						if (!list.ContainsKey(adjacent))
 						{
-							boxes.Enqueue(adjacent);
+							this.boxAdjacencyCache.Enqueue(adjacent);
 							list.Add(adjacent, true);
 						}
 					}
 				}
 			}
+			this.boxAdjacencyCache.Clear();
 			return false;
 		}
 

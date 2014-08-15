@@ -94,7 +94,7 @@ namespace Lemma.Components
 					foreach (Voxel.Coord c in coords)
 					{
 						Voxel.t id = c.Data.ID;
-						if (id == Voxel.t.Blue || id == Voxel.t.Powered || id == Voxel.t.PoweredSwitch || id == Voxel.t.Infected || id == Voxel.t.Neutral || id == Voxel.t.HardPowered || id == Voxel.t.Hard)
+						if (id == Voxel.t.Blue || id == Voxel.t.Powered || id == Voxel.t.PoweredSwitch || id == Voxel.t.Infected || id == Voxel.t.Neutral || id == Voxel.t.HardPowered || id == Voxel.t.Hard || id == Voxel.t.HardInfected)
 						{
 							Voxel.Coord newCoord = c;
 							newCoord.Data = Voxel.EmptyState;

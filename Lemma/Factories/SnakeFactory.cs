@@ -18,6 +18,8 @@ namespace Lemma.Factories
 			return new Entity(main, "Snake");
 		}
 
+		private Random random = new Random();
+
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			if (ParticleSystem.Get(main, "SnakeSparks") == null)
@@ -67,11 +69,12 @@ namespace Lemma.Factories
 			VoxelChaseAI chase = entity.GetOrCreate<VoxelChaseAI>("VoxelChaseAI");
 			chase.Add(new TwoWayBinding<Vector3>(transform.Position, chase.Position));
 			chase.Speed.Value = defaultSpeed;
+			chase.EnablePathfinding.Value = ai.CurrentState.Value == "Chase";
 			chase.Filter = delegate(Voxel.State state)
 			{
 				if (state == infectedState || state == neutralState || state == hardState || state == hardInfectedState)
-					return VoxelChaseAI.Cell.Penetrable;
-				return VoxelChaseAI.Cell.Avoid;
+					return true;
+				return false;
 			};
 			entity.Add(new CommandBinding(chase.Delete, entity.Delete));
 
@@ -145,6 +148,33 @@ namespace Lemma.Factories
 				},
 			};
 
+			Func<Voxel, Direction> randomValidDirection = delegate(Voxel m)
+			{
+				Voxel.Coord c = chase.Coord;
+				Direction[] dirs = new Direction[6];
+				Array.Copy(DirectionExtensions.Directions, dirs, 6);
+
+				// Shuffle directions
+				int i = 5;
+				while (i > 0)
+				{
+					int k = this.random.Next(i);
+					Direction temp = dirs[i];
+					dirs[i] = dirs[k];
+					dirs[k] = temp;
+					i--;
+				}
+
+				foreach (Direction dir in dirs)
+				{
+					if (chase.Filter(m[c.Move(dir)]))
+						return dir;
+				}
+				return Direction.None;
+			};
+
+			Direction currentDir = Direction.None;
+
 			chase.Add(new CommandBinding<Voxel, Voxel.Coord>(chase.Moved, delegate(Voxel m, Voxel.Coord c)
 			{
 				if (chase.Active)
@@ -173,7 +203,13 @@ namespace Lemma.Factories
 					}
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SNAKE_MOVE, entity);
 
-					if (snake.Path.Length > 0)
+					if (currentState == "Idle")
+					{
+						if (currentDir == Direction.None || !chase.Filter(m[chase.Coord.Value.Move(currentDir)]) || this.random.Next(8) == 0)
+							currentDir = randomValidDirection(m);
+						chase.Coord.Value = chase.Coord.Value.Move(currentDir);
+					}
+					else if (snake.Path.Length > 0)
 					{
 						chase.Coord.Value = snake.Path[0];
 						snake.Path.RemoveAt(0);
@@ -191,6 +227,17 @@ namespace Lemma.Factories
 				new AI.AIState
 				{
 					Name = "Idle",
+					Enter = delegate(AI.AIState previous)
+					{
+						Entity voxelEntity = chase.Voxel.Value.Target;
+						if (voxelEntity != null)
+						{
+							Voxel m = voxelEntity.Get<Voxel>();
+							if (currentDir == Direction.None || !chase.Filter(m[chase.Coord.Value.Move(currentDir)]))
+								currentDir = randomValidDirection(m);
+							chase.Coord.Value = chase.Coord.Value.Move(currentDir);
+						}
+					},
 					Tasks = new[]
 					{
 						checkMap,
@@ -247,12 +294,12 @@ namespace Lemma.Factories
 					Name = "Chase",
 					Enter = delegate(AI.AIState previousState)
 					{
-						chase.TargetActive.Value = true;
+						chase.EnablePathfinding.Value = true;
 						chase.Speed.Value = chaseSpeed;
 					},
 					Exit = delegate(AI.AIState nextState)
 					{
-						chase.TargetActive.Value = false;
+						chase.EnablePathfinding.Value = false;
 						chase.Speed.Value = defaultSpeed;
 					},
 					Tasks = new[]
@@ -271,7 +318,7 @@ namespace Lemma.Factories
 
 								chase.Speed.Value = targetDistance < 15.0f ? closeChaseSpeed : chaseSpeed;
 
-								if (targetDistance > 50.0f || ai.TimeInCurrentState > 40.0f) // He got away
+								if (targetDistance > 50.0f || ai.TimeInCurrentState > 30.0f) // He got away
 									ai.CurrentState.Value = "Alert";
 								else if (targetDistance < 5.0f) // We got 'im
 									ai.CurrentState.Value = "Crush";
@@ -333,7 +380,6 @@ namespace Lemma.Factories
 					},
 					Exit = delegate(AI.AIState nextState)
 					{
-						chase.EnablePathfinding.Value = true;
 						chase.Speed.Value = defaultSpeed;
 						chase.Coord.Value = chase.LastCoord.Value = snake.CrushCoordinate;
 						snake.Path.Clear();

@@ -13,24 +13,9 @@ namespace Lemma.Factories
 	{
 		private Random random = new Random();
 
-		public enum Cell
+		private static bool filter(Voxel.State state)
 		{
-			Empty, Penetrable, Filled, Avoid
-		}
-
-		private static Cell filter(Voxel.State state)
-		{
-			return state.ID == 0 ? Cell.Empty : Cell.Filled;
-		}
-
-		private static bool penetrable(Cell cell)
-		{
-			return cell == Cell.Penetrable || cell == Cell.Empty;
-		}
-
-		private static bool supported(Cell cell)
-		{
-			return cell == Cell.Penetrable || cell == Cell.Filled;
+			return state != Components.Voxel.EmptyState && !state.Hard;
 		}
 
 		public Property<bool> EnableMovement = new Property<bool> { Value = true };
@@ -38,17 +23,23 @@ namespace Lemma.Factories
 		public Property<Voxel.Coord> LastCoord = new Property<Voxel.Coord>();
 		public Property<float> Blend = new Property<float>();
 		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
-		public Property<Direction> Direction = new Property<Direction>();
 		public ListProperty<Voxel.Coord> History = new ListProperty<Voxel.Coord>();
 		public Property<bool> EnablePathfinding = new Property<bool> { Value = true };
 		public Property<float> Speed = new Property<float> { Value = 8.0f };
 
+		public bool HasPath
+		{
+			get
+			{
+				return this.broadphasePath.Count > 0 || this.narrowphasePath.Count > 0;
+			}
+		}
+
 		[XmlIgnore]
-		public Func<Voxel.State, Cell> Filter = VoxelChaseAI.filter;
+		public Func<Voxel.State, bool> Filter = VoxelChaseAI.filter;
 		[XmlIgnore]
 		public Command<Voxel, Voxel.Coord> Moved = new Command<Voxel, Voxel.Coord>();
 
-		public Property<bool> TargetActive = new Property<bool>();
 		public Property<Vector3> Target = new Property<Vector3>();
 		public Property<Vector3> Position = new Property<Vector3>();
 
@@ -60,117 +51,11 @@ namespace Lemma.Factories
 			this.Serialize = true;
 		}
 
-		private class AStarEntry
-		{
-			public AStarEntry Parent;
-			public Voxel.Box Box;
-			public int G;
-			public float F;
-			public int BoxSize;
-			public int PathIndex;
-		}
-
-		private static Stack<Voxel.Box> reconstructPath(AStarEntry entry)
-		{
-			Stack<Voxel.Box> result = new Stack<Voxel.Box>();
-			while (entry != null)
-			{
-				result.Push(entry.Box);
-				entry = entry.Parent;
-			}
-			return result;
-		}
-
-		public static Stack<Voxel.Box> AStar(Voxel m, Voxel.Box start, Vector3 target)
-		{
-			Dictionary<Voxel.Box, int> closed = new Dictionary<Voxel.Box, int>();
-
-			PriorityQueue<AStarEntry> queue = new PriorityQueue<AStarEntry>(new LambdaComparer<AStarEntry>((x, y) => x.F.CompareTo(y.F)));
-
-			Dictionary<Voxel.Box, AStarEntry> queueLookup = new Dictionary<Voxel.Box, AStarEntry>();
-
-			AStarEntry startEntry = new AStarEntry
-			{
-				Parent = null,
-				Box = start,
-				G = 0,
-				F = (target - start.GetCenter()).Length(),
-				BoxSize = Math.Max(start.Width, Math.Max(start.Height, start.Depth)),
-				PathIndex = 0,
-			};
-			queue.Push(startEntry);
-			queueLookup[start] = startEntry;
-
-			const int iterationLimit = 50;
-
-			int iteration = 0;
-			while (queue.Count > 0)
-			{
-				AStarEntry entry = queue.Pop();
-
-				if (iteration >= iterationLimit || entry.F < entry.BoxSize)
-					return VoxelChaseAI.reconstructPath(entry);
-
-				iteration++;
-
-				queueLookup.Remove(entry.Box);
-
-				closed[entry.Box] = entry.G;
-				lock (entry.Box.Adjacent)
-				{
-					foreach (Voxel.Box adjacent in entry.Box.Adjacent)
-					{
-						if (adjacent == null)
-							continue;
-
-						int boxSize = (int)((adjacent.Width + adjacent.Height + adjacent.Depth) / 3.0f);
-
-						int tentativeGScore = entry.G + boxSize;
-
-						int previousGScore;
-						bool hasPreviousGScore = closed.TryGetValue(adjacent, out previousGScore);
-
-						if (hasPreviousGScore && tentativeGScore > previousGScore)
-							continue;
-
-						AStarEntry alreadyInQueue;
-						bool throwaway = queueLookup.TryGetValue(adjacent, out alreadyInQueue);
-
-						if (alreadyInQueue == null || tentativeGScore < previousGScore)
-						{
-							AStarEntry newEntry = alreadyInQueue != null ? alreadyInQueue : new AStarEntry();
-
-							newEntry.Parent = entry;
-							newEntry.G = tentativeGScore;
-							newEntry.F = tentativeGScore + (target - adjacent.GetCenter()).Length();
-							newEntry.PathIndex = entry.PathIndex + 1;
-
-							if (alreadyInQueue == null)
-							{
-								newEntry.Box = adjacent;
-								newEntry.BoxSize = boxSize;
-								queue.Push(newEntry);
-								queueLookup[adjacent] = newEntry;
-							}
-						}
-					}
-				}
-			}
-			return new Stack<Voxel.Box>();
-		}
-
-		public void ChangeDirection()
-		{
-			this.oddsOfChangingDirection = 1;
-		}
-
-		private const int normalOddsOfChangingDirection = 6;
-		private int oddsOfChangingDirection = VoxelChaseAI.normalOddsOfChangingDirection;
-
+		private Stack<Voxel.Box> broadphasePath = new Stack<Voxel.Box>();
+		private Stack<Voxel.Coord> narrowphasePath = new Stack<Voxel.Coord>();
+		private float lastPathCalculation;
 		public void Update(float dt)
 		{
-			const int historySize = 5;
-
 			Entity mapEntity = this.Voxel.Value.Target;
 			if (mapEntity == null || !mapEntity.Active)
 			{
@@ -184,11 +69,8 @@ namespace Lemma.Factories
 					if (c.HasValue)
 					{
 						mapEntity = m.Entity;
-						Voxel.Coord cValue = c.Value;
-
-						Direction dir = DirectionExtensions.GetDirectionFromVector(new Vector3(mCoord.X - cValue.X, mCoord.Y - cValue.Y, mCoord.Z - cValue.Z));
-						newCoord = cValue.Move(dir);
-						closest = Math.Min(Math.Abs(mCoord.X - cValue.X), Math.Min(Math.Abs(mCoord.Y - cValue.Y), Math.Abs(mCoord.Z - cValue.Z)));
+						newCoord = c.Value;
+						closest = Math.Min(Math.Abs(mCoord.X - newCoord.X), Math.Min(Math.Abs(mCoord.Y - newCoord.Y), Math.Abs(mCoord.Z - newCoord.Z)));
 					}
 				}
 				if (mapEntity == null)
@@ -200,8 +82,7 @@ namespace Lemma.Factories
 					this.Blend.Value = 1.0f;
 				}
 			}
-
-			if (mapEntity != null && mapEntity.Active)
+			else
 			{
 				Voxel m = mapEntity.Get<Voxel>();
 
@@ -211,6 +92,7 @@ namespace Lemma.Factories
 				if (this.Blend > 1.0f)
 				{
 					this.Blend.Value = 0.0f;
+
 					Voxel.Coord c = this.Coord.Value;
 
 					this.Moved.Execute(m, c);
@@ -219,265 +101,113 @@ namespace Lemma.Factories
 
 					if (this.EnablePathfinding)
 					{
-						Cell[, ,] cells = new Cell[3, 3, 3];
-
-						// Negative X
-						cells[0, 0, 1] = this.Filter(m[c.X - 1, c.Y - 1, c.Z + 0]);
-						cells[0, 1, 1] = this.Filter(m[c.X - 1, c.Y + 0, c.Z + 0]);
-						cells[0, 2, 1] = this.Filter(m[c.X - 1, c.Y + 1, c.Z + 0]);
-
-						cells[0, 1, 0] = this.Filter(m[c.X - 1, c.Y + 0, c.Z - 1]);
-						cells[0, 1, 2] = this.Filter(m[c.X - 1, c.Y + 0, c.Z + 1]);
-
-						// Positive X
-						cells[2, 0, 1] = this.Filter(m[c.X + 1, c.Y - 1, c.Z + 0]);
-						cells[2, 1, 1] = this.Filter(m[c.X + 1, c.Y + 0, c.Z + 0]);
-						cells[2, 2, 1] = this.Filter(m[c.X + 1, c.Y + 1, c.Z + 0]);
-
-						cells[2, 1, 0] = this.Filter(m[c.X + 1, c.Y + 0, c.Z - 1]);
-						cells[2, 1, 2] = this.Filter(m[c.X + 1, c.Y + 0, c.Z + 1]);
-
-						// Negative Y
-						cells[1, 0, 0] = this.Filter(m[c.X + 0, c.Y - 1, c.Z - 1]);
-						cells[1, 0, 1] = this.Filter(m[c.X + 0, c.Y - 1, c.Z + 0]);
-						cells[1, 0, 2] = this.Filter(m[c.X + 0, c.Y - 1, c.Z + 1]);
-
-						cells[0, 0, 1] = this.Filter(m[c.X - 1, c.Y - 1, c.Z + 0]);
-						cells[2, 0, 1] = this.Filter(m[c.X + 1, c.Y - 1, c.Z + 0]);
-
-						// Positive Y
-						cells[1, 2, 0] = this.Filter(m[c.X + 0, c.Y + 1, c.Z - 1]);
-						cells[1, 2, 1] = this.Filter(m[c.X + 0, c.Y + 1, c.Z + 0]);
-						cells[1, 2, 2] = this.Filter(m[c.X + 0, c.Y + 1, c.Z + 1]);
-
-						cells[0, 2, 1] = this.Filter(m[c.X - 1, c.Y + 1, c.Z + 0]);
-						cells[2, 2, 1] = this.Filter(m[c.X + 1, c.Y + 1, c.Z + 0]);
-
-						// Negative Z
-						cells[0, 1, 0] = this.Filter(m[c.X - 1, c.Y + 0, c.Z - 1]);
-						cells[1, 1, 0] = this.Filter(m[c.X + 0, c.Y + 0, c.Z - 1]);
-						cells[2, 1, 0] = this.Filter(m[c.X + 1, c.Y + 0, c.Z - 1]);
-
-						cells[1, 0, 0] = this.Filter(m[c.X + 0, c.Y - 1, c.Z - 1]);
-						cells[1, 2, 0] = this.Filter(m[c.X + 0, c.Y + 1, c.Z - 1]);
-
-						// Positive Z
-						cells[0, 1, 2] = this.Filter(m[c.X - 1, c.Y + 0, c.Z + 1]);
-						cells[1, 1, 2] = this.Filter(m[c.X + 0, c.Y + 0, c.Z + 1]);
-						cells[2, 1, 2] = this.Filter(m[c.X + 1, c.Y + 0, c.Z + 1]);
-
-						cells[1, 0, 2] = this.Filter(m[c.X + 0, c.Y - 1, c.Z + 1]);
-						cells[1, 2, 2] = this.Filter(m[c.X + 0, c.Y + 1, c.Z + 1]);
-
-						List<Direction> directions = new List<Direction>();
-
-						bool xMiddle = supported(cells[1, 0, 1])
-							|| supported(cells[1, 2, 1])
-							|| supported(cells[1, 1, 0])
-							|| supported(cells[1, 1, 2]);
-
-						if (penetrable(cells[0, 1, 1])
-						&& (
-							xMiddle
-							|| supported(cells[0, 0, 1])
-							|| supported(cells[0, 2, 1])
-							|| supported(cells[0, 1, 0])
-							|| supported(cells[0, 1, 2])
-						))
-							directions.Add(Lemma.Util.Direction.NegativeX);
-
-						if (penetrable(cells[2, 1, 1])
-						&& (
-							xMiddle
-							|| supported(cells[2, 0, 1])
-							|| supported(cells[2, 2, 1])
-							|| supported(cells[2, 1, 0])
-							|| supported(cells[2, 1, 2])
-						))
-							directions.Add(Lemma.Util.Direction.PositiveX);
-
-						bool yMiddle = supported(cells[1, 1, 0])
-							|| supported(cells[1, 1, 2])
-							|| supported(cells[0, 1, 1])
-							|| supported(cells[2, 1, 1]);
-
-						if (penetrable(cells[1, 0, 1])
-						&& (
-							yMiddle
-							|| supported(cells[1, 0, 0])
-							|| supported(cells[1, 0, 2])
-							|| supported(cells[0, 0, 1])
-							|| supported(cells[2, 0, 1])
-						))
-							directions.Add(Lemma.Util.Direction.NegativeY);
-
-						if (penetrable(cells[1, 2, 1])
-						&& (
-							yMiddle
-							|| supported(cells[1, 2, 0])
-							|| supported(cells[1, 2, 2])
-							|| supported(cells[0, 2, 1])
-							|| supported(cells[2, 2, 1])
-						))
-							directions.Add(Lemma.Util.Direction.PositiveY);
-
-						bool zMiddle = supported(cells[0, 1, 1])
-							|| supported(cells[2, 1, 1])
-							|| supported(cells[1, 0, 1])
-							|| supported(cells[1, 2, 1]);
-
-						if (penetrable(cells[1, 1, 0])
-						&& (
-							zMiddle
-							|| supported(cells[0, 1, 0])
-							|| supported(cells[2, 1, 0])
-							|| supported(cells[1, 0, 0])
-							|| supported(cells[1, 2, 0])
-						))
-							directions.Add(Lemma.Util.Direction.NegativeZ);
-
-						if (penetrable(cells[1, 1, 2])
-						&& (
-							zMiddle
-							|| supported(cells[0, 1, 2])
-							|| supported(cells[2, 1, 2])
-							|| supported(cells[1, 0, 2])
-							|| supported(cells[1, 2, 2])
-						))
-							directions.Add(Lemma.Util.Direction.PositiveZ);
-
-						if (directions.Count == 0)
+						if (this.broadphasePath.Count == 0 || this.main.TotalTime - this.lastPathCalculation > 1.0f)
 						{
-							this.Delete.Execute();
-							return;
+							this.lastPathCalculation = this.main.TotalTime;
+							Voxel.Coord? targetCoord = m.FindClosestFilledCell(m.GetCoordinate(this.Target));
+							if (targetCoord.HasValue)
+							{
+								this.narrowphasePath.Clear();
+								this.broadphasePath.Clear();
+								Voxel.Box box = m.GetBox(c);
+								VoxelAStar.Broadphase(m, box, targetCoord.Value, this.Filter, this.broadphasePath);
+								if (this.broadphasePath.Count > 0)
+									this.broadphasePath.Pop(); // First box is the current one
+								//this.debugBroadphase(m, this.broadphasePath);
+							}
 						}
 
-						Vector3 toTarget = this.Target - this.Position.Value;
-						float distanceToTarget = toTarget.Length();
-
-						// The higher the number, the less likely we are to change direction
-
-						if (!directions.Contains(this.Direction) || (this.oddsOfChangingDirection > 0 && this.random.Next(this.oddsOfChangingDirection) == 0))
+						if (this.narrowphasePath.Count == 0 && this.broadphasePath.Count > 0)
 						{
-							this.oddsOfChangingDirection = VoxelChaseAI.normalOddsOfChangingDirection;
-							bool randomDirection = false;
-							Direction randomDirectionOtherThan = Lemma.Util.Direction.None;
+							VoxelAStar.Narrowphase(m, this.Coord, this.broadphasePath.Pop(), this.narrowphasePath);
+							if (this.narrowphasePath.Count <= 1)
+							{
+								this.broadphasePath.Clear();
+								this.narrowphasePath.Clear();
+								this.Blend.Value = 1.0f;
+							}
+							else
+								this.narrowphasePath.Pop(); // First coordinate is the current one
+							//this.debugNarrowphase(m, this.narrowphasePath);
+						}
 
-							if (!this.TargetActive)
-								randomDirection = true;
+						if (this.narrowphasePath.Count > 0)
+						{
+							Voxel.Coord newCoord = this.narrowphasePath.Pop();
+							if (this.Filter(m[newCoord]))
+								this.Coord.Value = newCoord;
 							else
 							{
-								if (distanceToTarget > 10.0f)
-								{
-									Direction supportedDirection = Lemma.Util.Direction.None;
-									foreach (Direction dir in DirectionExtensions.Directions)
-									{
-										Voxel.Coord cellLookup = dir.GetCoordinate();
-										if (supported(cells[cellLookup.X + 1, cellLookup.Y + 1, cellLookup.Z + 1]))
-										{
-											supportedDirection = dir;
-											break;
-										}
-									}
-
-									if (supportedDirection != Lemma.Util.Direction.None)
-									{
-										Voxel.Box box = m.GetBox(c.Move(supportedDirection));
-
-										Stack<Voxel.Box> path = VoxelChaseAI.AStar(m, box, this.Target);
-
-										// Debug visualization
-										/*
-										int i = 0;
-										foreach (Map.Box b in path)
-										{
-											Vector3 start = m.GetRelativePosition(b.X, b.Y, b.Z) - new Vector3(0.1f), end = m.GetRelativePosition(b.X + b.Width, b.Y + b.Height, b.Z + b.Depth) + new Vector3(0.1f);
-
-											Matrix matrix = Matrix.CreateScale(Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y), Math.Abs(end.Z - start.Z)) * Matrix.CreateTranslation(new Vector3(-0.5f) + (start + end) * 0.5f);
-
-											ModelAlpha model = new ModelAlpha();
-											model.Filename.Value = "AlphaModels\\box";
-											model.Color.Value = new Vector3((float)i / (float)path.Count);
-											model.Alpha.Value = 1.0f;
-											model.IsInstanced.Value = false;
-											model.Editable = false;
-											model.Serialize = false;
-											model.DrawOrder.Value = 11; // In front of water
-											model.CullBoundingBox.Value = false;
-											model.DisableCulling.Value = true;
-											model.Add(new Binding<Matrix>(model.Transform, () => matrix * Matrix.CreateTranslation(-m.Offset.Value) * m.Transform, m.Transform, m.Offset));
-											this.main.AddComponent(model);
-
-											this.main.AddComponent(new Animation
-											(
-												new Animation.FloatMoveTo(model.Alpha, 0.0f, 3.0f),
-												new Animation.Execute(model.Delete)
-											));
-											i++;
-										}
-										*/
-
-										if (path.Count > 1)
-										{
-											path.Pop();
-											toTarget = m.GetAbsolutePosition(path.Peek().GetCenter()) - this.Position;
-										}
-									}
-								}
-								
-								Direction closestDir = Lemma.Util.Direction.None;
-								float closestDot = -2.0f;
-								foreach (Direction dir in directions)
-								{
-									float dot = Vector3.Dot(m.GetAbsoluteVector(dir.GetVector()), toTarget);
-									if (dot > closestDot)
-									{
-										closestDir = dir;
-										closestDot = dot;
-									}
-								}
-
-								Voxel.Coord nextCoord = c.Move(closestDir);
-								if (this.History.Contains(nextCoord))
-								{
-									randomDirection = true;
-									randomDirectionOtherThan = closestDir;
-								}
-								else
-									this.Direction.Value = closestDir;
+								this.broadphasePath.Clear();
+								this.narrowphasePath.Clear();
+								this.Blend.Value = 1.0f;
 							}
-
-							if (randomDirection)
-							{
-								if (directions.Count == 1)
-									this.Direction.Value = directions[0];
-								else
-								{
-									while (true)
-									{
-										Direction dir = directions[new Random().Next(directions.Count)];
-										if (dir != randomDirectionOtherThan)
-										{
-											this.Direction.Value = dir;
-											break;
-										}
-									}
-								}
-							}
-
 						}
-
-						this.Coord.Value = c.Move(this.Direction);
-
-						this.History.Add(this.Coord);
-
-						while (this.History.Length > historySize)
-							this.History.RemoveAt(0);
 					}
 				}
 
 				Vector3 last = m.GetAbsolutePosition(this.LastCoord), current = m.GetAbsolutePosition(this.Coord);
 				this.Position.Value = Vector3.Lerp(last, current, this.Blend);
+			}
+		}
+
+		private void debugBroadphase(Voxel m, Stack<Voxel.Box> path)
+		{
+			int i = 0;
+			foreach (Voxel.Box b in path)
+			{
+				Vector3 start = m.GetRelativePosition(b.X, b.Y, b.Z) - new Vector3(0.1f), end = m.GetRelativePosition(b.X + b.Width, b.Y + b.Height, b.Z + b.Depth) + new Vector3(0.1f);
+
+				Matrix matrix = Matrix.CreateScale(Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y), Math.Abs(end.Z - start.Z)) * Matrix.CreateTranslation(new Vector3(-0.5f) + (start + end) * 0.5f);
+
+				ModelAlpha model = new ModelAlpha();
+				model.Filename.Value = "AlphaModels\\box";
+				model.Color.Value = new Vector3((float)i / (float)path.Count);
+				model.Alpha.Value = 1.0f;
+				model.IsInstanced.Value = false;
+				model.Serialize = false;
+				model.DrawOrder.Value = 11; // In front of water
+				model.CullBoundingBox.Value = false;
+				model.DisableCulling.Value = true;
+				model.Add(new Binding<Matrix>(model.Transform, () => matrix * Matrix.CreateTranslation(-m.Offset.Value) * m.Transform, m.Transform, m.Offset));
+				this.main.AddComponent(model);
+
+				this.main.AddComponent(new Animation
+				(
+					new Animation.FloatMoveTo(model.Alpha, 0.0f, 3.0f),
+					new Animation.Execute(model.Delete)
+				));
+				i++;
+			}
+		}
+
+		private void debugNarrowphase(Voxel m, Stack<Voxel.Coord> path)
+		{
+			int i = 0;
+			foreach (Voxel.Coord b in path)
+			{
+				Vector3 start = m.GetRelativePosition(b.X, b.Y, b.Z) - new Vector3(0.1f), end = m.GetRelativePosition(b.X + 1, b.Y + 1, b.Z + 1) + new Vector3(0.1f);
+
+				Matrix matrix = Matrix.CreateScale(Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y), Math.Abs(end.Z - start.Z)) * Matrix.CreateTranslation(new Vector3(-0.5f) + (start + end) * 0.5f);
+
+				ModelAlpha model = new ModelAlpha();
+				model.Filename.Value = "AlphaModels\\box";
+				model.Color.Value = new Vector3((float)i / (float)path.Count);
+				model.Alpha.Value = 1.0f;
+				model.IsInstanced.Value = false;
+				model.Serialize = false;
+				model.DrawOrder.Value = 11; // In front of water
+				model.CullBoundingBox.Value = false;
+				model.DisableCulling.Value = true;
+				model.Add(new Binding<Matrix>(model.Transform, () => matrix * Matrix.CreateTranslation(-m.Offset.Value) * m.Transform, m.Transform, m.Offset));
+				this.main.AddComponent(model);
+
+				this.main.AddComponent(new Animation
+				(
+					new Animation.FloatMoveTo(model.Alpha, 0.0f, 3.0f),
+					new Animation.Execute(model.Delete)
+				));
+				i++;
 			}
 		}
 	}

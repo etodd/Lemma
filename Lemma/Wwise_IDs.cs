@@ -5,6 +5,7 @@ public class AK
         public static uint EVIL_CUBES_CHASE = 654471079U;
         public static uint EVIL_CUBES_IDLE = 1697385721U;
         public static uint FOOTSTEP_PLAY = 1531891632U;
+        public static uint PLAY_BIG_WIND = 217752029U;
         public static uint PLAY_BLOCK_APPEAR = 2520143079U;
         public static uint PLAY_BLOCK_BUILD = 1262469596U;
         public static uint PLAY_BLUE_BURN = 216387374U;
