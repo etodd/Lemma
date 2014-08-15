@@ -169,6 +169,7 @@
     <Compile Include="Factories\ExplosionFactory.cs" />
     <Compile Include="Factories\FileFilter.cs" />
     <Compile Include="Factories\BinderFactory.cs" />
+    <Compile Include="Factories\WaterfallFactory.cs" />
     <Compile Include="Factories\SnowFactory.cs" />
     <Compile Include="Factories\StarterFactory.cs" />
     <Compile Include="Factories\CameraStopFactory.cs" />

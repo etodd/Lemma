@@ -44,7 +44,7 @@ namespace Lemma.Components
 
 		public bool IsVisible(BoundingFrustum frustum)
 		{
-			return !this.boundingBoxValid || !this.CullBoundingBox || frustum.Intersects(this.BoundingBox.Value.Transform(this.Transform));
+			return !this.boundingBoxValid || !this.CullBoundingBox || frustum.Intersects(this.BoundingBox.Value.Transform(Matrix.CreateScale(this.Scale) * this.Transform));
 		}
 
 		public static int DrawCallCounter;
@@ -968,6 +968,7 @@ namespace Lemma.Components
 			});
 			this.Entity.Add("Alpha", this.Alpha);
 			this.Entity.Add("DrawOrder", this.DrawOrder);
+			this.Entity.Add("Distortion", this.Distortion);
 		}
 
 		public override void Awake()

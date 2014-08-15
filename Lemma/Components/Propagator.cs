@@ -84,7 +84,7 @@ namespace Lemma.Components
 				light.Color.Value = new Vector3(1.0f);
 				light.Enabled.Value = false;
 				this.Entity.Add(light);
-				sparkLights.Add(light);
+				this.sparkLights.Add(light);
 			}
 
 			if (!this.main.EditorEnabled)
@@ -246,14 +246,14 @@ namespace Lemma.Components
 			float sparkLightFade = sparkLightBrightness * dt / sparkLightFadeTime;
 			for (int i = 0; i < activeSparkLights; i++)
 			{
-				PointLight light = sparkLights[i];
+				PointLight light = this.sparkLights[i];
 				float a = light.Color.Value.X - sparkLightFade;
 				if (a < 0.0f)
 				{
 					light.Enabled.Value = false;
-					PointLight swap = sparkLights[activeSparkLights - 1];
-					sparkLights[i] = swap;
-					sparkLights[activeSparkLights - 1] = light;
+					PointLight swap = this.sparkLights[activeSparkLights - 1];
+					this.sparkLights[i] = swap;
+					this.sparkLights[activeSparkLights - 1] = light;
 					activeSparkLights--;
 					oldestSparkLight = activeSparkLights;
 				}

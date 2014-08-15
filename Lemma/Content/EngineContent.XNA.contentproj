@@ -97,6 +97,8 @@
       <Importer>FbxImporter</Importer>
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
+      <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
     </Compile>
     <Compile Include="AlphaModels\clouds.fbx">
       <Name>clouds</Name>
@@ -105,26 +107,32 @@
       <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
       <ProcessorParameters_DiffuseTexture>clouds.png</ProcessorParameters_DiffuseTexture>
       <ProcessorParameters_EffectFileName>..\Effects\Clouds.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
     </Compile>
     <Compile Include="AlphaModels\cylinder.fbx">
       <Name>cylinder</Name>
       <Importer>FbxImporter</Importer>
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
+      <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
     </Compile>
     <Compile Include="AlphaModels\distortion-box.fbx">
       <Name>distortion-box</Name>
       <Importer>FbxImporter</Importer>
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
-      <ProcessorParameters_EffectFileName>..\Effects\Distortion.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_EffectFileName>..\Effects\DistortionBox.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_NormalMapTexture>..\Textures\water-normal.jpg</ProcessorParameters_NormalMapTexture>
+      <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
     </Compile>
     <Compile Include="AlphaModels\sphere.fbx">
       <Name>sphere</Name>
       <Importer>FbxImporter</Importer>
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
+      <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
     </Compile>
     <Compile Include="AlphaModels\cone.fbx">
       <Name>cone</Name>
@@ -132,6 +140,7 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
+      <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
     </Compile>
     <Compile Include="AlphaModels\light.fbx">
       <Name>light</Name>
@@ -139,6 +148,7 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
       <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
     </Compile>
     <Compile Include="AlphaModels\pyramid.fbx">
       <Name>pyramid</Name>
@@ -146,6 +156,7 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
       <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
     </Compile>
     <Compile Include="AlphaModels\selector.fbx">
       <Name>selector</Name>
@@ -153,6 +164,16 @@
       <Processor>CustomModelProcessor</Processor>
       <ProcessorParameters_EffectFileName>..\Effects\DefaultSolidColorAlpha.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
+      <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
+    </Compile>
+    <Compile Include="AlphaModels\waterfall.fbx">
+      <Name>waterfall</Name>
+      <Importer>FbxImporter</Importer>
+      <Processor>CustomModelProcessor</Processor>
+      <ProcessorParameters_NormalMapTexture>..\Textures\water-normal.jpg</ProcessorParameters_NormalMapTexture>
+      <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
+      <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
+      <ProcessorParameters_EffectFileName>..\Effects\Waterfall.fx</ProcessorParameters_EffectFileName>
     </Compile>
     <None Include="Effects\ClipCommon.fxh">
       <Name>ClipCommon</Name>
@@ -224,8 +245,8 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </None>
-    <Compile Include="Effects\Distortion.fx">
-      <Name>Distortion</Name>
+    <Compile Include="Effects\DistortionBox.fx">
+      <Name>DistortionBox</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>
@@ -1090,6 +1111,13 @@
       <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
       <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
       <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Waterfall.fx">
+      <Name>Waterfall</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
