@@ -81,7 +81,9 @@ namespace Lemma.Factories
 		public override void AttachEditorComponents(Entity entity, Main main)
 		{
 			base.AttachEditorComponents(entity, main);
-			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>("EditorModel").Color);
+			Model editorModel = entity.Get<Model>("EditorModel");
+			editorModel.Add(new Binding<bool>(editorModel.Enabled, () => !entity.EditorSelected, entity.EditorSelected));
+			VoxelAttachable.AttachEditorComponents(entity, main, editorModel.Color);
 		}
 	}
 }

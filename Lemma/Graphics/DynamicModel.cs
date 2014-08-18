@@ -47,6 +47,8 @@ namespace Lemma.Components
 			if (reload)
 			{
 				this.loadEffect(this.EffectFile);
+				if (this.vertexBuffer != null && !this.vertexBuffer.IsDisposed)
+					this.vertexBuffer.Dispose();
 				this.vertexBuffer = null;
 			}
 		}
@@ -190,6 +192,13 @@ namespace Lemma.Components
 		protected override void drawInstances(RenderParameters parameters, Matrix transform)
 		{
 			throw new NotSupportedException("Instancing not supported for dynamic models.");
+		}
+
+		public override void delete()
+		{
+			base.delete();
+			if (this.vertexBuffer != null && !this.vertexBuffer.IsDisposed)
+				this.vertexBuffer.Dispose();
 		}
 	}
 

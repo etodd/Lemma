@@ -35,7 +35,7 @@ void RenderVS(	in RenderVSInput input,
 	vs.position = mul(viewSpacePosition, ProjectionMatrix);
 	output.viewSpacePosition = viewSpacePosition;
 	alpha.clipSpacePosition = vs.position;
-	tex.uvCoordinates = (input.uv * UVScale) + Offset;
+	tex.uvCoordinates = input.uv * UVScale;
 }
 
 void ClipVS(	in RenderVSInput input,
@@ -62,12 +62,12 @@ void DistortionPS(
 	float depth = length(input.viewSpacePosition);
 	clip(tex2D(DepthSampler, uv).r - depth);
 
-	float4 t = tex2D(NormalMapSampler, tex.uvCoordinates);
+	float4 t = tex2D(NormalMapSampler, tex.uvCoordinates + Offset);
 	
 	float2 distortion = ((t.xy * 2.0f) - 1.0f) * t.a * 0.1f * (1.0f - (depth / FarPlaneDistance));
 
 	float3 color = tex2D(FrameSampler, uv + distortion).rgb * DiffuseColor.rgb;
-	output = float4(lerp(color, DiffuseColor.rgb, t.x * 0.25f), t.a * Alpha);
+	output = float4(lerp(color, DiffuseColor.rgb, t.x * 0.25f), saturate((1.0f - tex.uvCoordinates.y * 0.5f) * Alpha));
 }
 
 void ClipDistortionPS(in RenderPSInput input,
