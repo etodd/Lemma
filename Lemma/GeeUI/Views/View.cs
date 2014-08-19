@@ -9,7 +9,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using GeeUI.Structs;
 using GeeUI.ViewLayouts;
-using Newtonsoft.Json.Schema;
 using System.Collections.ObjectModel;
 
 namespace GeeUI.Views

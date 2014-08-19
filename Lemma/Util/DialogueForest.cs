@@ -34,16 +34,6 @@ namespace Lemma.Util
 			public Type type;
 		}
 
-		static DialogueForest()
-		{
-			JsonConvert.DefaultSettings = delegate()
-			{
-				JsonSerializerSettings settings = new JsonSerializerSettings();
-				settings.Converters.Add(new StringEnumConverter());
-				return settings;
-			};
-		}
-
 		private Dictionary<string, Node> nodes = new Dictionary<string, Node>();
 		private Dictionary<string, Node> nodesByName = new Dictionary<string, Node>();
 

@@ -14,6 +14,7 @@ using System.Xml.Serialization;
 using Lemma.Util;
 using Lemma.GInterfaces;
 using Lemma.Factories;
+using Newtonsoft.Json;
 
 namespace Lemma.Components
 {
@@ -31,6 +32,7 @@ namespace Lemma.Components
 			{ "forest", "\\map forest" },
 			{ "monolith", "\\map monolith" },
 			{ "fracture1", "\\map fracture" },
+			{ "nexus", "\\map nexus" },
 			//{ "valley", "\\map valley" }, // Temporarily disabled
 		};
 
@@ -183,8 +185,7 @@ namespace Lemma.Components
 			string thumbnailPath = null;
 			try
 			{
-				using (Stream stream = new FileStream(Path.Combine(this.main.SaveDirectory, timestamp, "save.xml"), FileMode.Open, FileAccess.Read, FileShare.None))
-					info = (Main.SaveInfo)new XmlSerializer(typeof(Main.SaveInfo)).Deserialize(stream);
+				info = JsonConvert.DeserializeObject<Main.SaveInfo>(File.ReadAllText(Path.Combine(this.main.SaveDirectory, timestamp, "save.json")));
 				if (info.Version != Main.MapVersion)
 					throw new Exception();
 				thumbnailPath = Path.Combine(this.main.SaveDirectory, timestamp, "thumbnail.jpg");
@@ -721,7 +722,7 @@ namespace Lemma.Components
 				this.currentMenu.Value = workshopMapsMenu;
 			};
 			Container workshopGetMore = this.main.UIFactory.CreateButton("Get More",
-				() => UIFactory.OpenURL("http://steamcommunity.com/workshop/browse?appid=300340"));
+				() => UIFactory.OpenURL(string.Format("http://steamcommunity.com/workshop/browse?appid={0}", Main.SteamAppID)));
 			this.resizeToMenu(workshopGetMore);
 			workshopMapsMenu.Children.Add(workshopGetMore);
 
@@ -746,32 +747,36 @@ namespace Lemma.Components
 				{
 					foreach (var subDir in workshopDir.GetDirectories())
 					{
-						if (subDir.GetFiles(subDir.Name + ".map").Length == 1
-							&& subDir.GetFiles(subDir.Name + ".png").Length == 1
-							&& subDir.GetFiles(subDir.Name + ".meta").Length == 1)
+						SteamWorker.WorkshopMapMetadata	metadata = null;
+						try
 						{
-							string mapPath = subDir.GetFiles(subDir.Name + ".map")[0].FullName;
-							MapManifest mapManifest = MapManifest.FromAbsolutePath(mapPath);
-							if (mapManifest != null && !string.IsNullOrEmpty(mapManifest.MapName))
+							metadata = JsonConvert.DeserializeObject<SteamWorker.WorkshopMapMetadata>(File.ReadAllText(Path.Combine(subDir.FullName, "meta.json")));
+						}
+						catch (Exception)
+						{
+
+						}
+
+						if (metadata != null)
+						{
+							string mapPath = subDir.GetFiles(subDir.Name + IO.MapLoader.MapExtension)[0].FullName;
+							Container button = this.main.UIFactory.CreateButton(metadata.Title, delegate()
 							{
-								Container button = this.main.UIFactory.CreateButton(mapManifest.MapName, delegate()
-								{
-									hideWorkshopMenu(false);
-									hidePauseMenu();
-									this.restorePausedSettings();
-									this.main.CurrentSave.Value = null;
-									this.main.AddComponent(new Animation
-										(
-										new Animation.Delay(0.2f),
-										new Animation.Execute(delegate()
-										{
-											IO.MapLoader.Load(this.main, mapPath);
-										})
-										));
-								});
-								this.resizeToMenu(button);
-								workshopMapsList.Children.Add(button);
-							}
+								hideWorkshopMenu(false);
+								hidePauseMenu();
+								this.restorePausedSettings();
+								this.main.CurrentSave.Value = null;
+								this.main.AddComponent(new Animation
+								(
+									new Animation.Delay(0.2f),
+									new Animation.Execute(delegate()
+									{
+										IO.MapLoader.Load(this.main, mapPath);
+									})
+								));
+							});
+							this.resizeToMenu(button);
+							workshopMapsList.Children.Add(button);
 						}
 					}
 				}

@@ -7,6 +7,7 @@ using System.Text;
 using ComponentBind;
 using Lemma.Components;
 using Lemma.Console;
+using Newtonsoft.Json;
 using Steamworks;
 
 namespace Lemma.Util
@@ -163,7 +164,7 @@ namespace Lemma.Util
 
 		public static void UploadWorkShop(string mapFile, string imageFile, string title, string description, Action<bool, bool, PublishedFileId_t> onDone)
 		{
-			var call = SteamRemoteStorage.PublishWorkshopFile(mapFile, imageFile, new AppId_t(300340), title, description,
+			var call = SteamRemoteStorage.PublishWorkshopFile(mapFile, imageFile, new AppId_t(Main.SteamAppID), title, description,
 				ERemoteStoragePublishedFileVisibility.k_ERemoteStoragePublishedFileVisibilityPublic, new List<string>(),
 				EWorkshopFileType.k_EWorkshopFileTypeCommunity);
 
@@ -251,6 +252,11 @@ namespace Lemma.Util
 			StatsInitialized = false;
 		}
 
+		public class WorkshopMapMetadata
+		{
+			public string PchFileName;
+			public string Title;
+		}
 
 		public static Property<int> Downloading = new Property<int>();
 		public static Command OnLevelDownloaded = new Command();
@@ -266,80 +272,67 @@ namespace Lemma.Util
 			string tempDirectoryNew = tempDirectory + file.m_PublishedFileId + "\\";
 			string completedDirectoryNew = completedDirectory + file.m_PublishedFileId + "\\";
 
-			MapManifest checkAgainst = null;
-			if (Directory.Exists(completedDirectoryNew))
-			{
-				string mapPath = completedDirectoryNew + file.m_PublishedFileId + ".map";
-				checkAgainst = MapManifest.FromAbsolutePath(mapPath);
-				if (checkAgainst == null)
-				{
-					Directory.Delete(completedDirectoryNew, true);
-				}
-			}
-
-			bool doImg = checkAgainst == null;
 			if (!Directory.Exists(tempDirectoryNew)) Directory.CreateDirectory(tempDirectoryNew);
 			if (!Directory.Exists(completedDirectoryNew)) Directory.CreateDirectory(completedDirectoryNew);
+
+			string metadataPath = Path.Combine(completedDirectoryNew, "meta.json");
+			WorkshopMapMetadata metadata = null;
+			try
+			{
+				metadata = JsonConvert.DeserializeObject<WorkshopMapMetadata>(File.ReadAllText(metadataPath));
+			}
+			catch (Exception)
+			{
+
+			}
 
 			new CallResult<RemoteStorageGetPublishedFileDetailsResult_t>((t, failure) =>
 			{
 				if (!failure && t.m_eResult == EResult.k_EResultOK)
 				{
-					if (checkAgainst != null)
+					if (metadata == null || metadata.PchFileName != t.m_pchFileName)
 					{
-						if (!String.Equals(checkAgainst.MapPchName, t.m_pchFileName))
-						{
-							File.Delete(completedDirectoryNew + file.m_PublishedFileId + ".map");
-						}
-						else
-						{
-							return;
-						}
-					}
-					Downloading.Value++;
+						Downloading.Value++;
 
-					string mapFileTemp = tempDirectoryNew + file.m_PublishedFileId.ToString() + ".map";
-					string imageFileTemp = tempDirectoryNew + file.m_PublishedFileId.ToString() + ".png";
-					var downloadMapCall = SteamRemoteStorage.UGCDownloadToLocation(t.m_hFile, mapFileTemp, 1);
-					new CallResult<RemoteStorageDownloadUGCResult_t>((resultT, ioFailure) =>
-					{
-						if (ioFailure)
+						string mapFileTemp = tempDirectoryNew + file.m_PublishedFileId.ToString() + ".map";
+						string imageFileTemp = tempDirectoryNew + file.m_PublishedFileId.ToString() + ".png";
+						var downloadMapCall = SteamRemoteStorage.UGCDownloadToLocation(t.m_hFile, mapFileTemp, 1);
+						new CallResult<RemoteStorageDownloadUGCResult_t>((resultT, ioFailure) =>
 						{
-							Downloading.Value = Math.Max(0, Downloading - 1);
-						}
-						else
-						{
-							Action<RemoteStorageDownloadUGCResult_t, bool> onImgDownloaded = (resultT2, ioFailure2) =>
+							if (ioFailure)
 							{
 								Downloading.Value = Math.Max(0, Downloading - 1);
-								if (!ioFailure2)
-								{
-									string mapFileNew = mapFileTemp.Replace(tempDirectoryNew, completedDirectoryNew);
-									File.Move(mapFileTemp, mapFileNew);
-									if (doImg)
-									{
-										string imageFileNew = imageFileTemp.Replace(tempDirectoryNew, completedDirectoryNew);
-										File.Move(imageFileTemp, imageFileNew);
-									}
-									MapManifest manifest = MapManifest.FromAbsolutePath(mapFileNew);
-									manifest.MapName = t.m_rgchTitle;
-									manifest.MapPchName = resultT.m_pchFileName;
-									manifest.Save();
-									OnLevelDownloaded.Execute();
-								}
-							};
-							if (doImg)
+							}
+							else
 							{
+								Action<RemoteStorageDownloadUGCResult_t, bool> onImgDownloaded = (resultT2, ioFailure2) =>
+								{
+									Downloading.Value = Math.Max(0, Downloading - 1);
+									if (!ioFailure2)
+									{
+										string mapFileNew = mapFileTemp.Replace(tempDirectoryNew, completedDirectoryNew);
+										if (File.Exists(mapFileNew))
+											File.Delete(mapFileNew);
+										File.Move(mapFileTemp, mapFileNew);
+										string imageFileNew = imageFileTemp.Replace(tempDirectoryNew, completedDirectoryNew);
+										if (File.Exists(imageFileNew))
+											File.Delete(imageFileNew);
+										File.Move(imageFileTemp, imageFileNew);
+										File.WriteAllText(metadataPath, JsonConvert.SerializeObject(new WorkshopMapMetadata { PchFileName = t.m_pchFileName, Title = t.m_rgchTitle }));
+										OnLevelDownloaded.Execute();
+									}
+								};
 								var downloadImageCall = SteamRemoteStorage.UGCDownloadToLocation(t.m_hPreviewFile, imageFileTemp, 1);
 								new CallResult<RemoteStorageDownloadUGCResult_t>(
 									(ugcResultT, bIoFailure) => onImgDownloaded(ugcResultT, bIoFailure), downloadImageCall);
 							}
-							else
-							{
-								onImgDownloaded(new RemoteStorageDownloadUGCResult_t(), false);
-							}
-						}
-					}, downloadMapCall);
+						}, downloadMapCall);
+					}
+					else if (metadata.Title != t.m_rgchTitle)
+					{
+						metadata.Title = t.m_rgchTitle;
+						File.WriteAllText(metadataPath, JsonConvert.SerializeObject(metadata));
+					}
 				}
 			}, publishedCall);
 		}
@@ -350,7 +343,7 @@ namespace Lemma.Util
 
 			var query = SteamUGC.CreateQueryUserUGCRequest(SteamUser.GetSteamID().GetAccountID(),
 			   EUserUGCList.k_EUserUGCList_Subscribed, EUGCMatchingUGCType.k_EUGCMatchingUGCType_UsableInGame,
-			   EUserUGCListSortOrder.k_EUserUGCListSortOrder_SubscriptionDateDesc, new AppId_t(300340), new AppId_t(300340),
+			   EUserUGCListSortOrder.k_EUserUGCListSortOrder_SubscriptionDateDesc, new AppId_t(Main.SteamAppID), new AppId_t(Main.SteamAppID),
 			   ugcPage);
 
 			var call = SteamUGC.SendQueryUGCRequest(query);
@@ -366,7 +359,7 @@ namespace Lemma.Util
 		{
 			var query = SteamUGC.CreateQueryUserUGCRequest(SteamUser.GetSteamID().GetAccountID(),
 			   EUserUGCList.k_EUserUGCList_Published, EUGCMatchingUGCType.k_EUGCMatchingUGCType_UsableInGame,
-			   EUserUGCListSortOrder.k_EUserUGCListSortOrder_LastUpdatedDesc, new AppId_t(300340), new AppId_t(300340),
+			   EUserUGCListSortOrder.k_EUserUGCListSortOrder_LastUpdatedDesc, new AppId_t(Main.SteamAppID), new AppId_t(Main.SteamAppID),
 			   1);
 
 			var call = SteamUGC.SendQueryUGCRequest(query);
@@ -383,7 +376,7 @@ namespace Lemma.Util
 					var deets = new SteamUGCDetails_t();
 					if (SteamUGC.GetQueryUGCResult(t.m_handle, i, ref deets))
 					{
-						if (deets.m_nConsumerAppID.m_AppId == 300340 && deets.m_eFileType == EWorkshopFileType.k_EWorkshopFileTypeCommunity)
+						if (deets.m_nConsumerAppID.m_AppId == Main.SteamAppID && deets.m_eFileType == EWorkshopFileType.k_EWorkshopFileTypeCommunity)
 						{
 							ret.Add(deets);
 						}
@@ -420,7 +413,7 @@ namespace Lemma.Util
 				if (SteamUGC.GetQueryUGCResult(handle.m_handle, i, ref deets))
 				{
 					directories.Remove(deets.m_nPublishedFileId.m_PublishedFileId.ToString());
-					if (deets.m_nConsumerAppID.m_AppId == 300340 && deets.m_eFileType == EWorkshopFileType.k_EWorkshopFileTypeCommunity)
+					if (deets.m_nConsumerAppID.m_AppId == Main.SteamAppID && deets.m_eFileType == EWorkshopFileType.k_EWorkshopFileTypeCommunity)
 					{
 						DownloadLevel(deets.m_nPublishedFileId);
 					}
@@ -446,7 +439,7 @@ namespace Lemma.Util
 			if (!SteamInitialized) return;
 
 			//Because Steam can be an idiot sometimes!
-			if (subscribed.m_nAppID.m_AppId != 300340) return;
+			if (subscribed.m_nAppID.m_AppId != Main.SteamAppID) return;
 
 			DownloadLevel(subscribed.m_nPublishedFileId);
 		}
@@ -455,7 +448,7 @@ namespace Lemma.Util
 		{
 			if (!SteamInitialized) return;
 
-			if (pCallback.m_nGameID != 300340 || pCallback.m_eResult != EResult.k_EResultOK) return;
+			if (pCallback.m_nGameID != Main.SteamAppID || pCallback.m_eResult != EResult.k_EResultOK) return;
 
 			//I'm sorry, Evan. We'll need to find somewhere nice to put this part.
 			string[] cheevoNames = new string[] { "perverse", "win_the_game", "100_blocks", "250_blocks",

@@ -55,6 +55,8 @@ namespace Lemma.GInterfaces
 			base.delete();
 		}
 
+		private Property<float> bestTime = new Property<float>();
+
 		public override void Awake()
 		{
 			this.Serialize = false;
@@ -129,19 +131,15 @@ namespace Lemma.GInterfaces
 
 			this.AnimateOut();
 
-			MapManifest manifest = MapManifest.FromMapPath(main, main.MapFile);
-			float bestTime;
-			if (manifest == null)
-				bestTime = 0;
-			else
-				bestTime = manifest.BestPersonalTimeTrialTime;
-			TimeTrialBestTimeView.Text.Value = "Best: " + SecondsToTimeString(bestTime);
+			this.bestTime.Value = this.main.GetMapTime(WorldFactory.Instance.Get<World>().UUID);
 
-			this.TimeTrialBestTimeView.Add(new Binding<string, float>(TimeTrialBestTimeView.Text, x =>
+			this.TimeTrialBestTimeView.Add(new Binding<string>(TimeTrialBestTimeView.Text, () =>
 			{
-				if (bestTime != 0) x = bestTime - x;
-				return "Best: " + SecondsToTimeString(x);
-			}, this.ElapsedTime));
+				if (this.bestTime == 0) 
+					return "Best: n/a";
+				else
+					return string.Format("Best: {0}", SecondsToTimeString(this.bestTime - this.ElapsedTime));
+			}, this.ElapsedTime, this.bestTime));
 
 			EndTimeTitleView.Text.Value = Path.GetFileNameWithoutExtension(main.MapFile);
 
@@ -170,8 +168,10 @@ namespace Lemma.GInterfaces
 
 		public void AnimateIn()
 		{
-			this.main.AddComponent(
-				new Animation(
+			this.main.AddComponent
+			(
+				new Animation
+				(
 					new Animation.Set<bool>(RootTimePanelView.Active, true),
 					new Animation.Vector2MoveTo(RootTimePanelView.Position, new Vector2(main.ScreenSize.Value.X - 30, 30), 0.2f)
 				)
@@ -181,8 +181,10 @@ namespace Lemma.GInterfaces
 
 		public void AnimateOut(bool remove = false)
 		{
-			this.main.AddComponent(
-				new Animation(
+			this.main.AddComponent
+			(
+				new Animation
+				(
 					new Animation.Vector2MoveTo(RootTimePanelView.Position, new Vector2(main.ScreenSize.Value.X + RootTimePanelView.Width, 30), 0.2f),
 					new Animation.Set<bool>(RootTimePanelView.Active, false),
 					new Animation.Execute(() =>
@@ -218,21 +220,12 @@ namespace Lemma.GInterfaces
 
 			if (success)
 			{
-				MapManifest manifest = MapManifest.FromMapPath(main, main.MapFile);
-				float bestTime = manifest.BestPersonalTimeTrialTime;
-				manifest.LastPersonalTimeTrialTime = ElapsedTime;
-				if (this.ElapsedTime < bestTime || bestTime <= 0)
-				{
-					manifest.BestPersonalTimeTrialTime = ElapsedTime;
-				}
-				manifest.Save();
+				this.bestTime.Value = this.main.SaveMapTime(WorldFactory.Instance.Get<World>().UUID, this.ElapsedTime);
 
 				EndTimeTextView.Text.Value = "Time: " + SecondsToTimeString(ElapsedTime);
-				EndTimeBestView.Text.Value = "Best: " + SecondsToTimeString(bestTime);
-				if (bestTime >= ElapsedTime)
-				{
+				EndTimeBestView.Text.Value = "Best: " + SecondsToTimeString(this.bestTime);
+				if (this.bestTime == ElapsedTime)
 					EndTimeBestView.Text.Value += " Record!";
-				}
 			}
 		}
 

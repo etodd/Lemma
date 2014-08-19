@@ -25,11 +25,14 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
+			ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("ParticleEmitter");
+
+			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);
+
 			this.SetMain(entity, main);
 
-			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
+			attachable.EditorProperties();
 
-			ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("ParticleEmitter");
 			emitter.Add(new Binding<Vector3>(emitter.Position, transform.Position));
 			emitter.EditorProperties();
 		}
@@ -41,7 +44,7 @@ namespace Lemma.Factories
 			ParticleEmitter emitter = entity.Get<ParticleEmitter>();
 			editorModel.Add(new Binding<bool>(editorModel.Enabled, () => !entity.EditorSelected || emitter.ParticleType.Value == null, entity.EditorSelected, emitter.ParticleType));
 
-			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>().Color);
+			VoxelAttachable.AttachEditorComponents(entity, main, editorModel.Color);
 		}
 	}
 }

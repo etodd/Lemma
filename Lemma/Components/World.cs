@@ -22,6 +22,7 @@ namespace Lemma.Components
 		public Property<Color> BackgroundColor = new Property<Color> { Value = World.DefaultBackgroundColor };
 		public Property<float> FarPlaneDistance = new Property<float> { Value = 100.0f };
 		public Property<Vector3> Gravity = new Property<Vector3> { Value = new Vector3(0.0f, -18.0f, -0.0f) };
+		public Property<string> UUID = new Property<string>();
 
 		private Vector3 lastUpdatedCameraPosition = new Vector3(float.MinValue);
 		private bool lastFrameUpdated = false;
@@ -34,6 +35,9 @@ namespace Lemma.Components
 			base.Awake();
 			this.EnabledInEditMode = true;
 			this.EnabledWhenPaused = false;
+
+			if (this.UUID.Value == null)
+				this.UUID.Value = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
 			this.Add(new Binding<string>(this.main.Renderer.LightRampTexture, this.LightRampTexture));
 			this.Add(new Binding<string>(this.main.LightingManager.EnvironmentMap, this.EnvironmentMap));

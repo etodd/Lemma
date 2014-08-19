@@ -20,17 +20,31 @@ using Lemma.Factories;
 using Lemma.Util;
 using System.Linq;
 using BEPUphysics;
-using System.Xml.Serialization;
 using System.Reflection;
 using System.Globalization;
 using GeeUI;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using ICSharpCode.SharpZipLib.GZip;
 
 namespace Lemma
 {
 	public class Main : BaseMain
 	{
+		static Main()
+		{
+			JsonConvert.DefaultSettings = delegate()
+			{
+				JsonSerializerSettings settings = new JsonSerializerSettings();
+				settings.Converters.Add(new StringEnumConverter());
+				return settings;
+			};
+		}
+
 		public const string DemoMap = "smallrain";
 		public const string InitialMap = "start";
+
+		public const int SteamAppID = 300340;
 
 		public const string MenuMap = "..\\menu";
 		public const string TemplateMap = "..\\template";
@@ -192,6 +206,9 @@ namespace Lemma
 		protected bool postAlphaDrawablesModified;
 		protected NotifyBinding nonPostProcessedDrawableBinding;
 		protected bool nonPostProcessedDrawablesModified;
+
+		private Dictionary<string, float> times;
+		private string timesFile;
 
 		public void FlushComponents()
 		{
@@ -422,7 +439,7 @@ namespace Lemma
 			this.dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lemma");
 			if (!Directory.Exists(this.dataDirectory))
 				Directory.CreateDirectory(this.dataDirectory);
-			this.settingsFile = Path.Combine(this.dataDirectory, "settings.xml");
+			this.settingsFile = Path.Combine(this.dataDirectory, "settings.json");
 			this.SaveDirectory = Path.Combine(this.dataDirectory, "saves");
 			if (!Directory.Exists(this.SaveDirectory))
 				Directory.CreateDirectory(this.SaveDirectory);
@@ -430,11 +447,25 @@ namespace Lemma
 			if (!Directory.Exists(this.analyticsDirectory))
 				Directory.CreateDirectory(this.analyticsDirectory);
 
+			this.timesFile = Path.Combine(this.dataDirectory, "times.json");
+			try
+			{
+				using (Stream fs = new FileStream(this.timesFile, FileMode.Open, FileAccess.Read, FileShare.None))
+				using (Stream stream = new GZipInputStream(fs))
+				using (StreamReader reader = new StreamReader(stream))
+					this.times = JsonConvert.DeserializeObject<Dictionary<string, float>>(reader.ReadToEnd());
+			}
+			catch (Exception)
+			{
+			}
+
+			if (this.times == null)
+				this.times = new Dictionary<string, float>();
+
 			try
 			{
 				// Attempt to load previous window state
-				using (Stream stream = new FileStream(this.settingsFile, FileMode.Open, FileAccess.Read, FileShare.None))
-					this.Settings = (Config)new XmlSerializer(typeof(Config)).Deserialize(stream);
+				this.Settings = JsonConvert.DeserializeObject<Config>(File.ReadAllText(this.settingsFile));
 				if (this.Settings.Version != Main.ConfigVersion)
 					throw new Exception();
 			}
@@ -495,6 +526,43 @@ namespace Lemma
 				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true, this.Settings.Borderless);
 			else
 				this.ResizeViewport(this.Settings.Size.Value.X, this.Settings.Size.Value.Y, false, this.Settings.Borderless, false);
+		}
+
+		private void saveTimes()
+		{
+			using (Stream fs = new FileStream(this.timesFile, FileMode.Create, FileAccess.Write, FileShare.None))
+			using (Stream stream = new GZipOutputStream(fs))
+			using (StreamWriter writer = new StreamWriter(stream))
+				writer.Write(JsonConvert.SerializeObject(this.times));
+		}
+
+		public float GetMapTime(string uuid)
+		{
+			float existingTime = 0.0f;
+			this.times.TryGetValue(uuid, out existingTime);
+			return existingTime;
+		}
+
+		public float SaveMapTime(string uuid, float time)
+		{
+			float existingTime;
+			if (this.times.TryGetValue(uuid, out existingTime))
+			{
+				if (time < existingTime)
+				{
+					this.times[uuid] = time;
+					this.saveTimes();
+					return time;
+				}
+				else
+					return existingTime;
+			}
+			else
+			{
+				this.times[uuid] = time;
+				this.saveTimes();
+				return time;
+			}
 		}
 
 		private void copySave(string src, string dst)
@@ -971,8 +1039,7 @@ namespace Lemma
 
 			try
 			{
-				using (Stream stream = new FileStream(Path.Combine(currentSaveDirectory, "save.xml"), FileMode.Create, FileAccess.Write, FileShare.None))
-					new XmlSerializer(typeof(Main.SaveInfo)).Serialize(stream, new Main.SaveInfo { MapFile = Path.GetFileNameWithoutExtension(this.MapFile), Version = Main.MapVersion });
+				File.WriteAllText(Path.Combine(currentSaveDirectory, "save.json"), JsonConvert.SerializeObject(new Main.SaveInfo { MapFile = Path.GetFileNameWithoutExtension(this.MapFile), Version = Main.MapVersion }));
 			}
 			catch (InvalidOperationException e)
 			{
@@ -982,9 +1049,7 @@ namespace Lemma
 
 		public void SaveSettings()
 		{
-			// Save settings
-			using (Stream stream = new FileStream(this.settingsFile, FileMode.Create, FileAccess.Write, FileShare.None))
-				new XmlSerializer(typeof(Config)).Serialize(stream, this.Settings);
+			File.WriteAllText(this.settingsFile, JsonConvert.SerializeObject(this.Settings, Formatting.Indented));
 		}
 
 		[AutoConCommand("load_map", "Loads the specific map")]

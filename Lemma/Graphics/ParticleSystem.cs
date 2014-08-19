@@ -207,6 +207,14 @@ namespace Lemma.Components
 			}
 		}
 
+		public static IEnumerable<string> Types
+		{
+			get
+			{
+				return ParticleSystem.systems.Keys;
+			}
+		}
+
 		private static void initialize(Main main)
 		{
 			ParticleSystem.systems = new Dictionary<string, ParticleSystem>();

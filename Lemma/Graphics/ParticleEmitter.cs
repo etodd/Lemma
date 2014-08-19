@@ -47,9 +47,18 @@ namespace Lemma.Components
 			};
 		}
 
+		private static ListProperty<string> particleTypes;
 		public void EditorProperties()
 		{
-			this.Entity.Add("ParticleType", this.ParticleType);
+			if (this.main.EditorEnabled && ParticleEmitter.particleTypes == null)
+			{
+				ParticleEmitter.particleTypes = new ListProperty<string>();
+				ParticleEmitter.particleTypes.AddAll(ParticleSystem.Types);
+			}
+			this.Entity.Add("ParticleType", this.ParticleType, new PropertyEntry.EditorData
+			{
+				Options = ParticleEmitter.particleTypes,
+			});
 			this.Entity.Add("Jitter", this.Jitter);
 			this.Entity.Add("ParticlesPerSecond", this.ParticlesPerSecond);
 		}
