@@ -36,7 +36,7 @@ namespace ComponentBind
 				this.Matrix,
 				delegate(Vector3 value)
 				{
-					Matrix matrix = this.Matrix.InternalValue;
+					Matrix matrix = this.Matrix.Value;
 					matrix.Translation = value;
 					return matrix;
 				}));

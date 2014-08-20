@@ -68,17 +68,15 @@ namespace Lemma.Components
 			base.Awake();
 			this.EnabledWhenPaused = false;
 
-			this.ParticlesPerSecond.Set = delegate(int value)
+			this.Add(new SetBinding<int>(this.ParticlesPerSecond, delegate(int value)
 			{
-				this.ParticlesPerSecond.InternalValue = value;
 				this.timeBetweenParticles = value == 0 ? 0.0f : 1.0f / value;
-			};
+			}));
 
-			this.ParticleType.Set = delegate(string value)
+			this.Add(new SetBinding<string>(this.ParticleType, delegate(string value)
 			{
-				this.ParticleType.InternalValue = value;
 				this.particleSystem = value == null ? null : ParticleSystem.Get(this.main, value);
-			};
+			}));
 		}
 
 		public static void Emit(Main main, string type, Vector3 position, float jitter, int amount)

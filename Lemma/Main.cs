@@ -105,7 +105,15 @@ namespace Lemma
 		}
 
 		public Config Settings;
-		private string dataDirectory;
+
+		public static string DataDirectory
+		{
+			get
+			{
+				return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lemma");
+			}
+		}
+
 		public string SaveDirectory;
 		private string analyticsDirectory;
 		private string settingsFile;
@@ -346,14 +354,10 @@ namespace Lemma
 			this.Camera = new Camera();
 			this.AddComponent(this.Camera);
 
-			this.IsMouseVisible.Set = delegate(bool value)
+			new NotifyBinding(delegate()
 			{
-				base.IsMouseVisible = value;
-			};
-			this.IsMouseVisible.Get = delegate()
-			{
-				return base.IsMouseVisible;
-			};
+				base.IsMouseVisible = this.IsMouseVisible;
+			}, this.IsMouseVisible);
 
 			new NotifyBinding
 			(
@@ -411,12 +415,10 @@ namespace Lemma
 				}
 			}));
 
-			this.PauseAudioEffect.Set = delegate(float value)
+			new SetBinding<float>(this.PauseAudioEffect, delegate(float value)
 			{
-				value = MathHelper.Clamp(value, 0.0f, 1.0f);
-				this.PauseAudioEffect.InternalValue = value;
-				AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.PAUSE_PARAMETER, value);
-			};
+				AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.PAUSE_PARAMETER, MathHelper.Clamp(value, 0.0f, 1.0f));
+			});
 
 			new CommandBinding(this.MapLoaded, delegate()
 			{
@@ -436,18 +438,17 @@ namespace Lemma
 			this.EditorEnabled.Value = false;
 #endif
 
-			this.dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lemma");
-			if (!Directory.Exists(this.dataDirectory))
-				Directory.CreateDirectory(this.dataDirectory);
-			this.settingsFile = Path.Combine(this.dataDirectory, "settings.json");
-			this.SaveDirectory = Path.Combine(this.dataDirectory, "saves");
+			if (!Directory.Exists(Main.DataDirectory))
+				Directory.CreateDirectory(Main.DataDirectory);
+			this.settingsFile = Path.Combine(Main.DataDirectory, "settings.json");
+			this.SaveDirectory = Path.Combine(Main.DataDirectory, "saves");
 			if (!Directory.Exists(this.SaveDirectory))
 				Directory.CreateDirectory(this.SaveDirectory);
-			this.analyticsDirectory = Path.Combine(this.dataDirectory, "analytics");
+			this.analyticsDirectory = Path.Combine(Main.DataDirectory, "analytics");
 			if (!Directory.Exists(this.analyticsDirectory))
 				Directory.CreateDirectory(this.analyticsDirectory);
 
-			this.timesFile = Path.Combine(this.dataDirectory, "times.json");
+			this.timesFile = Path.Combine(Main.DataDirectory, "times.json");
 			try
 			{
 				using (Stream fs = new FileStream(this.timesFile, FileMode.Open, FileAccess.Read, FileShare.None))
@@ -853,21 +854,15 @@ namespace Lemma
 				this.Renderer.LightRampTexture.Value = "LightRamps\\default";
 				this.LightingManager.EnvironmentMap.Value = "EnvironmentMaps\\env0";
 
-				this.Settings.SoundEffectVolume.Set = delegate(float value)
+				new SetBinding<float>(this.Settings.SoundEffectVolume, delegate(float value)
 				{
-					value = MathHelper.Clamp(value, 0.0f, 1.0f);
-					this.Settings.SoundEffectVolume.InternalValue = value;
-					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.VOLUME_SFX, value);
-				};
-				this.Settings.SoundEffectVolume.Reset();
+					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.VOLUME_SFX, MathHelper.Clamp(value, 0.0f, 1.0f));
+				});
 
-				this.Settings.MusicVolume.Set = delegate(float value)
+				new SetBinding<float>(this.Settings.MusicVolume, delegate(float value)
 				{
-					value = MathHelper.Clamp(value, 0.0f, 1.0f);
-					this.Settings.MusicVolume.InternalValue = value;
-					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.VOLUME_MUSIC, value);
-				};
-				this.Settings.MusicVolume.Reset();
+					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.VOLUME_MUSIC, MathHelper.Clamp(value, 0.0f, 1.0f));
+				});
 
 				new TwoWayBinding<LightingManager.DynamicShadowSetting>(this.Settings.DynamicShadows, this.LightingManager.DynamicShadows);
 				new TwoWayBinding<float>(this.Settings.MotionBlurAmount, this.Renderer.MotionBlurAmount);

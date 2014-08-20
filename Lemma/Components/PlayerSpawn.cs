@@ -56,9 +56,8 @@ namespace Lemma.Components
 				this.IsActivated.Value = false;
 			};
 
-			this.IsActivated.Set = delegate(bool value)
+			this.Add(new SetBinding<bool>(this.IsActivated, delegate(bool value)
 			{
-				this.IsActivated.InternalValue = value;
 				if (value)
 				{
 					foreach (PlayerSpawn spawn in PlayerSpawn.spawns)
@@ -67,7 +66,7 @@ namespace Lemma.Components
 							spawn.Deactivate.Execute();
 					}
 				}
-			};
+			}));
 		}
 	}
 }

@@ -52,24 +52,23 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.EnabledWhenPaused = false;
-			this.Character = new Character(this.main, Vector3.Zero);
+			this.Character = new Character(this.main, this, Vector3.Zero);
 			this.Character.Body.Tag = this;
 			this.main.Space.Add(this.Character);
 
 			this.Add(new CommandBinding(this.HealthDepleted, this.Die));
 
-			this.Health.Set = delegate(float value)
+			this.Add(new ChangeBinding<float>(this.Health, delegate(float old, float value)
 			{
-				if (value < this.Health.InternalValue && this.damageTimer > damageSoundInterval)
+				if (value < old && this.damageTimer > damageSoundInterval)
 				{
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_HURT, this.Entity);
 					this.damageTimer = 0.0f;
-					this.Rumble.Execute(Math.Min(0.3f, (this.Health.InternalValue - value) * 2.0f));
+					this.Rumble.Execute(Math.Min(0.3f, (old - value) * 2.0f));
 				}
-				this.Health.InternalValue = Math.Min(1.0f, Math.Max(0.0f, value));
-				if (this.Health.InternalValue == 0.0f)
+				if (old > 0.0f && value <= 0.0f)
 					this.HealthDepleted.Execute();
-			};
+			}));
 
 			this.Add(new Binding<float>(this.main.TimeMultiplier, () => this.SlowMotion && !this.main.Paused ? 0.4f : 1.0f, this.SlowMotion, this.main.Paused));
 		}
@@ -103,8 +102,8 @@ namespace Lemma.Components
 			}
 			this.Character.IsSwimming.Value = swimming;
 
-			this.Character.Transform.Changed();
-			this.Character.LinearVelocity.Changed();
+			this.Character.Transform.Value = this.Character.Body.WorldTransform;
+			this.Character.LinearVelocity.Value = this.Character.Body.LinearVelocity;
 		}
 	}
 }

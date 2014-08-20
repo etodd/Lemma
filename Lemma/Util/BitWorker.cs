@@ -163,18 +163,18 @@ namespace Lemma.Util
 			return ret;
 		}
 
-		public static int[] PackInts(int numBitsPer, params int[] ints)
+		public static void PackInts(List<int> result, int numBitsPer, IList<int> ints)
 		{
-			int numBitsPerInt = 32;
-			if (numBitsPer > numBitsPerInt) throw new ArgumentException("You are an idiot.");
-			List<int> ret = new List<int>();
+			int numBitsPerInt = sizeof(int) * 8;
+			if (numBitsPer > numBitsPerInt)
+				throw new ArgumentException("You are an idiot.");
 			int currentInt = 0;
 			int currentIntIndex = 0;
 			int storingIntIndex = 0;
 			int storingInt = 0;
 			int i;
 
-			for (i = 0; i < ints.Length; i++)
+			for (i = 0; i < ints.Count; i++)
 			{
 				int theInt = ints[i];
 				if (theInt < 0)
@@ -190,10 +190,10 @@ namespace Lemma.Util
 			
 			while (true)
 			{
-				if (i >= ints.Length)
+				if (i >= ints.Count)
 				{
 					if (currentIntIndex != 0)
-						ret.Add(currentInt);
+						result.Add(currentInt);
 					break;
 				}
 				storingInt = ints[i];
@@ -211,7 +211,7 @@ namespace Lemma.Util
 					{
 						if (currentIntIndex >= numBitsPerInt)
 						{
-							ret.Add(currentInt);
+							result.Add(currentInt);
 							currentIntIndex = 0;
 							currentInt = 0;
 							incrementI = true;
@@ -221,7 +221,7 @@ namespace Lemma.Util
 				}
 				if (currentIntIndex >= numBitsPerInt)
 				{
-					ret.Add(currentInt);
+					result.Add(currentInt);
 					currentIntIndex = 0;
 					currentInt = 0;
 					incrementI = true;
@@ -232,18 +232,16 @@ namespace Lemma.Util
 					storingIntIndex = 0;
 				}
 			}
-
-			return ret.ToArray();
 		}
 
-		public static int[] UnPackInts(int numBitsPer, int numToPull = -1, params int[] ints)
+		public static int[] UnPackInts(int numBitsPer, int numToPull, IList<int> ints)
 		{
 			int numBitsPerInt = 32;
 			if (numBitsPer > numBitsPerInt) throw new ArgumentException("You are an idiot.");
 
 			if (numToPull == -1)
 			{
-				numToPull = (int)Math.Floor((float)(numBitsPerInt * ints.Length) / (float)numBitsPer);
+				numToPull = (int)Math.Floor((float)(numBitsPerInt * ints.Count) / (float)numBitsPer);
 			}
 
 			List<int> ret = new List<int>();
@@ -254,7 +252,7 @@ namespace Lemma.Util
 			int i = 0;
 			while (true)
 			{
-				if (i >= ints.Length)
+				if (i >= ints.Count)
 				{
 					if (currentIntIndex != 0)
 						ret.Add(currentInt);

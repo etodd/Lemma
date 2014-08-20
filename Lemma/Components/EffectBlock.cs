@@ -46,11 +46,10 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.EnabledWhenPaused = false;
-			this.StartOrientation.Set = delegate(Quaternion value)
+			this.Add(new SetBinding<Quaternion>(this.StartOrientation, delegate(Quaternion value)
 			{
-				this.StartOrientation.InternalValue = value;
 				this.startQuat = value;
-			};
+			}));
 
 			Entry entry = new Entry();
 			this.Add(new NotifyBinding(delegate()
@@ -78,10 +77,9 @@ namespace Lemma.Components
 
 		public void Setup(Entity map, Voxel.Coord c, Voxel.t s)
 		{
-			this.TargetVoxel.InternalValue = map;
-			this.Coord.InternalValue = c;
-			this.StateId.InternalValue = s;
-			this.StateId.Changed();
+			this.TargetVoxel.SetStealthy(map);
+			this.Coord.SetStealthy(c);
+			this.StateId.Value = s;
 		}
 
 		private static Random random = new Random();

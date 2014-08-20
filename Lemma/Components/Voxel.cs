@@ -963,7 +963,7 @@ namespace Lemma.Components
 			}
 
 			public bool Active = false;
-			public bool Static;
+			public bool EnablePhysics;
 			public Voxel Voxel;
 			public Box[, ,] Data;
 			public int X, Y, Z;
@@ -1053,7 +1053,7 @@ namespace Lemma.Components
 							if (model != null)
 								vertices = Voxel.vertexHeap.Get((int)Math.Pow(2.0, Math.Ceiling(Math.Log(surfaces * 4, 2.0))));
 
-							if (this.Static && !type.Fake)
+							if (this.EnablePhysics && !type.Fake)
 								physicsVertices = Voxel.physicsVertexHeap.Get((int)Math.Pow(2.0, Math.Ceiling(Math.Log(surfaces * 4, 2.0))));
 
 							uint vertexIndex = 0;
@@ -1264,7 +1264,7 @@ namespace Lemma.Components
 
 			public virtual void Activate()
 			{
-				if (!this.Active && this.Static)
+				if (!this.Active && this.EnablePhysics)
 				{
 					foreach (MeshEntry entry in this.meshes.Values)
 					{
@@ -1281,7 +1281,7 @@ namespace Lemma.Components
 
 			public virtual void Deactivate()
 			{
-				if (this.Active && this.Static)
+				if (this.Active && this.EnablePhysics)
 				{
 					foreach (MeshEntry entry in this.meshes.Values)
 					{
@@ -1315,7 +1315,7 @@ namespace Lemma.Components
 
 			public virtual void Delete()
 			{
-				if (this.Active && this.Static)
+				if (this.Active && this.EnablePhysics)
 				{
 					foreach (MeshEntry entry in this.meshes.Values)
 					{
@@ -1705,7 +1705,117 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Matrix> Transform = new Property<Matrix> { Value = Matrix.Identity };
 
-		public Property<string> Data = new Property<string>();
+		public class SerializedVoxelData
+		{
+			public string Value;
+		}
+
+		private static List<Box> boxCache = new List<Box>();
+		private static int[] surfaceCache = new int[4 * 6];
+
+		private int[] serializedVoxelData;
+		public SerializedVoxelData Data
+		{
+			get
+			{
+				List<int> result = new List<int>();
+				lock (this.MutationLock)
+				{
+					Voxel.boxCache.AddRange(this.Chunks.Where(x => x.Data != null).SelectMany(x => x.Boxes));
+					bool[] modifications = this.simplify(Voxel.boxCache);
+					this.simplify(Voxel.boxCache, modifications);
+					this.applyChanges(Voxel.boxCache, modifications);
+					this.updateGraphics(this.Chunks);
+
+					Voxel.boxCache.Clear();
+					Voxel.boxCache.AddRange(this.Chunks.SelectMany(x => x.Boxes));
+
+					result.Add(Voxel.boxCache.Count);
+
+					Dictionary<Box, int> indexLookup = new Dictionary<Box, int>();
+
+					int index = 0;
+					foreach (Box box in Voxel.boxCache)
+					{
+						result.Add(box.X);
+						result.Add(box.Y);
+						result.Add(box.Z);
+						int packedData = 0;
+						int ID = (int)box.Type.ID;
+						/*Store the data in a packed integer*/
+						packedData = packedData.StoreByte((byte)box.Width);
+						packedData = packedData.StoreByte((byte)box.Height, 8);
+						packedData = packedData.StoreByte((byte)box.Depth, 16);
+						packedData = packedData.StoreByte((byte)ID, 24);
+						result.Add(packedData);
+
+						//We need to use 11 bits to store each value.
+						//So pack it all up nice and tidy. This will store them in 9 ints, as opposed to 24. Nice.
+						Voxel.surfaceCache[0] = box.Surfaces[0].MinU;
+						Voxel.surfaceCache[1] = box.Surfaces[0].MinV;
+						Voxel.surfaceCache[2] = box.Surfaces[0].MaxU;
+						Voxel.surfaceCache[3] = box.Surfaces[0].MaxV;
+						Voxel.surfaceCache[4] = box.Surfaces[1].MinU;
+						Voxel.surfaceCache[5] = box.Surfaces[1].MinV;
+						Voxel.surfaceCache[6] = box.Surfaces[1].MaxU;
+						Voxel.surfaceCache[7] = box.Surfaces[1].MaxV;
+						Voxel.surfaceCache[8] = box.Surfaces[2].MinU;
+						Voxel.surfaceCache[9] = box.Surfaces[2].MinV;
+						Voxel.surfaceCache[10] = box.Surfaces[2].MaxU;
+						Voxel.surfaceCache[11] = box.Surfaces[2].MaxV;
+						Voxel.surfaceCache[12] = box.Surfaces[3].MinU;
+						Voxel.surfaceCache[13] = box.Surfaces[3].MinV;
+						Voxel.surfaceCache[14] = box.Surfaces[3].MaxU;
+						Voxel.surfaceCache[15] = box.Surfaces[3].MaxV;
+						Voxel.surfaceCache[16] = box.Surfaces[4].MinU;
+						Voxel.surfaceCache[17] = box.Surfaces[4].MinV;
+						Voxel.surfaceCache[18] = box.Surfaces[4].MaxU;
+						Voxel.surfaceCache[19] = box.Surfaces[4].MaxV;
+						Voxel.surfaceCache[20] = box.Surfaces[5].MinU;
+						Voxel.surfaceCache[21] = box.Surfaces[5].MinV;
+						Voxel.surfaceCache[22] = box.Surfaces[5].MaxU;
+						Voxel.surfaceCache[23] = box.Surfaces[5].MaxV;
+						BitWorker.PackInts(result, 11, Voxel.surfaceCache);
+						indexLookup.Add(box, index);
+						index++;
+					}
+
+					index = 0;
+					List<int> indexData = new List<int>();
+					foreach (Box box in Voxel.boxCache)
+					{
+						if (box.Adjacent == null)
+							continue;
+						lock (box.Adjacent)
+						{
+							foreach (Box adjacent in box.Adjacent)
+							{
+								BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
+								BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
+								if (!this.relationshipCache.ContainsKey(relationship1) && !this.relationshipCache.ContainsKey(relationship2))
+								{
+									this.relationshipCache[relationship1] = true;
+									indexData.Add(index);
+									indexData.Add(indexLookup[adjacent]);
+								}
+							}
+						}
+						index++;
+					}
+					this.relationshipCache.Clear();
+
+					BitWorker.PackInts(result, 17, indexData);
+					Voxel.boxCache.Clear();
+				}
+				return Voxel.serializeData(result);
+			}
+
+			set
+			{
+				this.serializedVoxelData = Voxel.deserializeData(value);
+
+			}
+		}
 
 		protected int minX;
 		protected int minY;
@@ -1916,7 +2026,7 @@ namespace Lemma.Components
 									newMapComponent.UpdatePhysicsImmediately();
 									spawn.Source.notifyEmptied(island.SelectMany(x => x.GetCoords()), newMapComponent);
 									newMapComponent.notifyFilled(island.SelectMany(x => x.GetCoords()), spawn.Source);
-									newMapComponent.Transform.Reset();
+									newMapComponent.Transform.Value = newMapComponent.PhysicsEntity.WorldTransform;
 									if (spawn.Source is DynamicVoxel)
 										newMapComponent.IsAffectedByGravity.Value = ((DynamicVoxel)spawn.Source).IsAffectedByGravity;
 									spawn.Source.main.Add(newMap);
@@ -1933,11 +2043,111 @@ namespace Lemma.Components
 				this.main.AddComponent(Voxel.spawner);
 			}
 
-			this.Data.Get = this.GetData;
-			this.Data.Set = this.SetData;
-
 			Voxel.Voxels.Add(this);
 
+			if (this.serializedVoxelData != null)
+			{
+				int[] data = this.serializedVoxelData;
+				this.serializedVoxelData = null;
+				int boxCount = data[0];
+
+				const int boxDataSize = 13;
+
+				for (int i = 0; i < boxCount; i++)
+				{
+					// Format:
+					// x
+					// y
+					// z
+					// width-height-depth-type IN ONE INT
+					// MinU, MinV, MaxU, MaxV for each of six surfaces, PACKED.
+					int index = 1 + (i * boxDataSize);
+					int x = data[index], y = data[index + 1], z = data[index + 2];
+						int packedData = data[index + 3];
+						int w = packedData.ExtractBits(0, 8), h = packedData.ExtractBits(8, 8), d = packedData.ExtractBits(16, 8);
+						int v = packedData.ExtractBits(24, 8);
+					if (v != 0)
+					{
+						State state = Voxel.States[(t)v];
+						int chunkX = this.minX + ((x - this.minX) / this.chunkSize) * this.chunkSize, chunkY = this.minY + ((y - this.minY) / this.chunkSize) * this.chunkSize, chunkZ = this.minZ + ((z - this.minZ) / this.chunkSize) * this.chunkSize;
+						int nextChunkX = this.minX + ((x + w - this.minX) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ) / this.chunkSize) * this.chunkSize;
+						for (int ix = chunkX; ix <= nextChunkX; ix += this.chunkSize)
+						{
+							for (int iy = chunkY; iy <= nextChunkY; iy += this.chunkSize)
+							{
+								for (int iz = chunkZ; iz <= nextChunkZ; iz += this.chunkSize)
+								{
+									int bx = Math.Max(ix, x), by = Math.Max(iy, y), bz = Math.Max(iz, z);
+									Box box = new Box
+									{
+										X = bx,
+										Y = by,
+										Z = bz,
+										Width = Math.Min(x + w, ix + this.chunkSize) - bx,
+										Height = Math.Min(y + h, iy + this.chunkSize) - by,
+										Depth = Math.Min(z + d, iz + this.chunkSize) - bz,
+										Type = state,
+										Active = true,
+									};
+									if (box.Width > 0 && box.Height > 0 && box.Depth > 0)
+									{
+										Voxel.boxCache.Add(box);
+										Chunk chunk = this.GetChunk(bx, by, bz);
+										if (chunk.DataBoxes == null)
+											chunk.DataBoxes = new List<Box>();
+										chunk.DataBoxes.Add(box);
+										box.Chunk = chunk;
+										for (int x1 = box.X - chunk.X; x1 < box.X + box.Width - chunk.X; x1++)
+										{
+											for (int y1 = box.Y - chunk.Y; y1 < box.Y + box.Height - chunk.Y; y1++)
+											{
+												for (int z1 = box.Z - chunk.Z; z1 < box.Z + box.Depth - chunk.Z; z1++)
+													chunk.Data[x1, y1, z1] = box;
+											}
+										}
+										int[] packed = new int[9];
+
+										for (int j = index + 4; j < index + 4 + 9; j++)
+											packed[j - (index + 4)] = data[j];
+
+										int[] unPacked = BitWorker.UnPackInts(11, -1, packed);
+										for (int j = 0; j < 6; j++)
+										{
+											int baseIndex = j * 4;
+											Surface surface = box.Surfaces[j];
+											surface.MinU = unPacked[baseIndex + 0];
+											surface.MinV = unPacked[baseIndex + 1];
+											surface.MaxU = unPacked[baseIndex + 2];
+											surface.MaxV = unPacked[baseIndex + 3];
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+
+				int packedBoxesStart = 1 + boxCount * boxDataSize;
+				int[] packedBoxes = new int[data.Length - packedBoxesStart];
+				for (int i = packedBoxesStart; i < data.Length; i++)
+					packedBoxes[i - packedBoxesStart] = data[i];
+
+				int[] unPackedBoxes = BitWorker.UnPackInts(17, -1, packedBoxes);
+
+				for (int i = 0; i < unPackedBoxes.Length- 1; i += 2)
+				{
+					Box box1 = Voxel.boxCache[unPackedBoxes[i]], box2 = Voxel.boxCache[unPackedBoxes[i + 1]];
+					if (box1 != null && box2 != null)
+					{
+						box1.Adjacent.Add(box2);
+						box2.Adjacent.Add(box1);
+					}
+				}
+
+				Voxel.boxCache.Clear();
+
+				this.postDeserialization();
+			}
 		}
 
 		public IEnumerable<Chunk> GetChunksBetween(Voxel.Coord a, Voxel.Coord b)
@@ -1968,204 +2178,6 @@ namespace Lemma.Components
 			}
 		}
 
-		protected void SetData(string str)
-		{
-			int[] data = Voxel.deserializeData(str);
-
-			int boxCount = data[0];
-
-			Box[] boxes = new Box[boxCount];
-
-			const int boxDataSize = 13;
-
-			for (int i = 0; i < boxCount; i++)
-			{
-				// Format:
-				// x
-				// y
-				// z
-				// width-height-depth-type IN ONE INT
-				// MinU, MinV, MaxU, MaxV for each of six surfaces, PACKED.
-				int index = 1 + (i * boxDataSize);
-				int x = data[index], y = data[index + 1], z = data[index + 2];
-					int packedData = data[index + 3];
-					int w = packedData.ExtractBits(0, 8), h = packedData.ExtractBits(8, 8), d = packedData.ExtractBits(16, 8);
-					int v = packedData.ExtractBits(24, 8);
-				if (v != 0)
-				{
-					State state = Voxel.States[(t)v];
-					int chunkX = this.minX + ((x - this.minX) / this.chunkSize) * this.chunkSize, chunkY = this.minY + ((y - this.minY) / this.chunkSize) * this.chunkSize, chunkZ = this.minZ + ((z - this.minZ) / this.chunkSize) * this.chunkSize;
-					int nextChunkX = this.minX + ((x + w - this.minX) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ) / this.chunkSize) * this.chunkSize;
-					for (int ix = chunkX; ix <= nextChunkX; ix += this.chunkSize)
-					{
-						for (int iy = chunkY; iy <= nextChunkY; iy += this.chunkSize)
-						{
-							for (int iz = chunkZ; iz <= nextChunkZ; iz += this.chunkSize)
-							{
-								int bx = Math.Max(ix, x), by = Math.Max(iy, y), bz = Math.Max(iz, z);
-								Box box = new Box
-								{
-									X = bx,
-									Y = by,
-									Z = bz,
-									Width = Math.Min(x + w, ix + this.chunkSize) - bx,
-									Height = Math.Min(y + h, iy + this.chunkSize) - by,
-									Depth = Math.Min(z + d, iz + this.chunkSize) - bz,
-									Type = state,
-									Active = true,
-								};
-								if (box.Width > 0 && box.Height > 0 && box.Depth > 0)
-								{
-									boxes[i] = box;
-									Chunk chunk = this.GetChunk(bx, by, bz);
-									if (chunk.DataBoxes == null)
-										chunk.DataBoxes = new List<Box>();
-									chunk.DataBoxes.Add(box);
-									box.Chunk = chunk;
-									for (int x1 = box.X - chunk.X; x1 < box.X + box.Width - chunk.X; x1++)
-									{
-										for (int y1 = box.Y - chunk.Y; y1 < box.Y + box.Height - chunk.Y; y1++)
-										{
-											for (int z1 = box.Z - chunk.Z; z1 < box.Z + box.Depth - chunk.Z; z1++)
-												chunk.Data[x1, y1, z1] = box;
-										}
-									}
-									List<int> packed = new List<int>();
-									for (int j = index + 4; j < index + 4 + 9; j++)
-									{
-										packed.Add(data[j]);
-									}
-									int[] unPacked = BitWorker.UnPackInts(11, -1, packed.ToArray());
-									for (int j = 0; j < 6; j++)
-									{
-										int baseIndex = (j*4);
-										Surface surface = box.Surfaces[j];
-										surface.MinU = unPacked[baseIndex + 0];
-										surface.MinV = unPacked[baseIndex + 1];
-										surface.MaxU = unPacked[baseIndex + 2];
-										surface.MaxV = unPacked[baseIndex + 3];
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-
-			List<int> packedBoxes = new List<int>();
-			for (int i = 1 + (boxCount*boxDataSize); i < data.Length; i++)
-			{
-				packedBoxes.Add(data[i]);
-			}
-
-			int[] unPackedBoxes = BitWorker.UnPackInts(17, -1, packedBoxes.ToArray());
-
-			for (int i = 0; i < unPackedBoxes.Length- 1; i += 2)
-			{
-				Box box1 = boxes[unPackedBoxes[i]], box2 = boxes[unPackedBoxes[i + 1]];
-				if (box1 != null && box2 != null)
-				{
-					box1.Adjacent.Add(box2);
-					box2.Adjacent.Add(box1);
-				}
-			}
-
-			this.postDeserialization();
-		}
-
-		protected string GetData()
-		{
-			List<int> result = new List<int>();
-			lock (this.MutationLock)
-			{
-				List<Box> boxes = this.Chunks.Where(x => x.Data != null).SelectMany(x => x.Boxes).ToList();
-				bool[] modifications = this.simplify(boxes);
-				this.simplify(boxes, modifications);
-				this.applyChanges(boxes, modifications);
-				this.updateGraphics(this.Chunks);
-
-				boxes = this.Chunks.SelectMany(x => x.Boxes).ToList();
-
-				result.Add(boxes.Count);
-
-				Dictionary<Box, int> indexLookup = new Dictionary<Box, int>();
-
-				int index = 0;
-				foreach (Box box in boxes)
-				{
-					result.Add(box.X);
-					result.Add(box.Y);
-					result.Add(box.Z);
-					int packedData = 0;
-					int ID = (int)box.Type.ID;
-					/*Store the data in a packed integer*/
-					packedData = packedData.StoreByte((byte)box.Width);
-					packedData = packedData.StoreByte((byte)box.Height, 8);
-					packedData = packedData.StoreByte((byte)box.Depth, 16);
-					packedData = packedData.StoreByte((byte)ID, 24);
-					result.Add(packedData);
-
-					//We need to use 11 bits to store each value.
-					//So pack it all up nice and tidy. This will store them in 9 ints, as opposed to 24. Nice.
-					List<int> surfaceInfo = new List<int>();
-					for (int i = 0; i < 6; i++)
-					{
-						Surface surface = box.Surfaces[i];
-						surfaceInfo.Add(surface.MinU);
-						surfaceInfo.Add(surface.MinV);
-						surfaceInfo.Add(surface.MaxU);
-						surfaceInfo.Add(surface.MaxV);
-					}
-					int[] packedSurfaceData = BitWorker.PackInts(11, surfaceInfo.ToArray());
-					int[] unPackedSurfaceData = BitWorker.UnPackInts(11, 24, packedSurfaceData);
-					for (int i = 0; i < surfaceInfo.Count; i++)
-					{
-						if(surfaceInfo[i] != unPackedSurfaceData[i])
-							Debugger.Break();
-					}
-					result.AddRange(packedSurfaceData);
-					indexLookup.Add(box, index);
-					index++;
-				}
-
-				index = 0;
-				List<int> indexData = new List<int>();
-				foreach (Box box in boxes)
-				{
-					if (box.Adjacent == null)
-						continue;
-					lock (box.Adjacent)
-					{
-						foreach (Box adjacent in box.Adjacent)
-						{
-							BoxRelationship relationship1 = new BoxRelationship { A = box, B = adjacent };
-							BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
-							if (!this.relationshipCache.ContainsKey(relationship1) && !this.relationshipCache.ContainsKey(relationship2))
-							{
-								this.relationshipCache[relationship1] = true;
-								indexData.Add(index);
-								indexData.Add(indexLookup[adjacent]);
-							}
-						}
-					}
-					index++;
-				}
-				this.relationshipCache.Clear();
-				int[] packedIndexData = BitWorker.PackInts(17, indexData.ToArray());
-				int[] unPackedData = BitWorker.UnPackInts(17, -1, packedIndexData);
-				for (int i = 0; i < indexData.Count; i++)
-				{
-					if (unPackedData[i] != indexData[i])
-					{
-						unPackedData[i] = 0;
-					}
-				}
-				result.AddRange(packedIndexData);
-			}
-			//return GetData_Old();
-			return Voxel.serializeData(result.ToArray());
-		}
-
 		protected virtual void postDeserialization()
 		{
 			foreach (Chunk c in this.Chunks)
@@ -2173,10 +2185,10 @@ namespace Lemma.Components
 			this.updatePhysics();
 		}
 
-		protected static string serializeData(int[] data)
+		protected static SerializedVoxelData serializeData(List<int> data)
 		{
-			byte[] result = new byte[data.Length * 4];
-			for (int i = 0; i < data.Length; i++)
+			byte[] result = new byte[data.Count * 4];
+			for (int i = 0; i < data.Count; i++)
 			{
 				int value = data[i];
 				int j = i * 4;
@@ -2185,12 +2197,12 @@ namespace Lemma.Components
 				result[j + 2] = (byte)(value >> 8);
 				result[j + 3] = (byte)value;
 			}
-			return System.Convert.ToBase64String(result);
+			return new SerializedVoxelData { Value = System.Convert.ToBase64String(result) };
 		}
 
-		protected static int[] deserializeData(string data)
+		protected static int[] deserializeData(SerializedVoxelData data)
 		{
-			byte[] temp = System.Convert.FromBase64String(data);
+			byte[] temp = System.Convert.FromBase64String(data.Value);
 			int[] result = new int[temp.Length / 4];
 			for (int i = 0; i < result.Length; i++)
 			{
@@ -2314,7 +2326,7 @@ namespace Lemma.Components
 
 		protected virtual Chunk newChunk()
 		{
-			Chunk chunk = new Chunk { Static = !this.main.EditorEnabled && this.EnablePhysics };
+			Chunk chunk = new Chunk { EnablePhysics = !this.main.EditorEnabled && this.EnablePhysics };
 			chunk.Voxel = this;
 			return chunk;
 		}
@@ -4796,7 +4808,7 @@ namespace Lemma.Components
 			base.Awake();
 
 			this.PhysicsEntity.IsAffectedByGravity = false;
-			this.IsAffectedByGravity.Set = delegate(bool value)
+			this.Add(new SetBinding<bool>(this.IsAffectedByGravity, delegate(bool value)
 			{
 				if (value)
 				{
@@ -4808,47 +4820,35 @@ namespace Lemma.Components
 					this.PhysicsEntity.LinearDamping = DynamicVoxel.floatingLinearDamping;
 					this.PhysicsEntity.AngularDamping = DynamicVoxel.floatingAngularDamping;
 				}
-				this.IsAffectedByGravity.InternalValue = value;
 				this.PhysicsEntity.IsAffectedByGravity = value;
 				this.PhysicsEntity.ActivityInformation.Activate();
-			};
+			}));
 
-			this.KineticFriction.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.KineticFriction, delegate(float value)
 			{
-				this.KineticFriction.InternalValue = value;
 				this.PhysicsEntity.Material.KineticFriction = value;
-			};
+			}));
 
-			this.StaticFriction.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.StaticFriction, delegate(float value)
 			{
-				this.StaticFriction.InternalValue = value;
 				this.PhysicsEntity.Material.StaticFriction = value;
-			};
+			}));
 
-			this.IsAlwaysActive.Set = delegate(bool value)
+			this.Add(new SetBinding<bool>(this.IsAlwaysActive, delegate(bool value)
 			{
-				this.IsAlwaysActive.InternalValue = value;
 				this.PhysicsEntity.ActivityInformation.IsAlwaysActive = value;
 				this.PhysicsEntity.ActivityInformation.Activate();
-			};
+			}));
 
-			this.Transform.Get = delegate()
-			{
-				return this.PhysicsEntity.WorldTransform;
-			};
-			this.Transform.Set = delegate(Matrix value)
+			this.Add(new SetBinding<Matrix>(this.Transform, delegate(Matrix value)
 			{
 				this.PhysicsEntity.WorldTransform = value;
-			};
+			}));
 
-			this.LinearVelocity.Get = delegate()
-			{
-				return this.PhysicsEntity.LinearVelocity;
-			};
-			this.LinearVelocity.Set = delegate(Vector3 value)
+			this.Add(new SetBinding<Vector3>(this.LinearVelocity, delegate(Vector3 value)
 			{
 				this.PhysicsEntity.LinearVelocity = value;
-			};
+			}));
 
 			this.Add(new CommandBinding(this.OnSuspended, delegate()
 			{
@@ -4874,11 +4874,10 @@ namespace Lemma.Components
 				this.PhysicsEntity.ActivityInformation.Activate();
 			}));
 
-			this.CannotSuspendByDistance.Set = delegate(bool value)
+			this.Add(new SetBinding<bool>(this.CannotSuspendByDistance, delegate(bool value)
 			{
-				this.CannotSuspendByDistance.InternalValue = value;
 				this.Entity.CannotSuspendByDistance = value;
-			};
+			}));
 		}
 
 		void Events_ContactCreated(EntityCollidable sender, Collidable other, BEPUphysics.NarrowPhaseSystems.Pairs.CollidablePairHandler pair, ContactData contact)
@@ -4969,8 +4968,8 @@ namespace Lemma.Components
 				this.firstPhysicsUpdate = false;
 			}
 
-			this.Transform.Changed();
-			this.LinearVelocity.Changed();
+			this.Transform.Value = this.PhysicsEntity.WorldTransform;
+			this.LinearVelocity.Value = this.PhysicsEntity.LinearVelocity;
 		}
 
 		public override void delete()

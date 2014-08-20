@@ -158,9 +158,8 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			// Make sure all the parameters come before the model and effect
-			this.NormalMap.Set = delegate(string value)
+			this.Add(new SetBinding<string>(this.NormalMap, delegate(string value)
 			{
-				this.NormalMap.InternalValue = value;
 				this.normalMap = string.IsNullOrEmpty(value) ? null : (this.MapContent ? this.main.MapContent : this.main.Content).Load<Texture2D>(value);
 				if (this.effect != null && this.normalMap != null)
 				{
@@ -168,10 +167,9 @@ namespace Lemma.Components
 					if (param != null)
 						param.SetValue(this.normalMap);
 				}
-			};
-			this.DiffuseTexture.Set = delegate(string value)
+			}));
+			this.Add(new SetBinding<string>(this.DiffuseTexture, delegate(string value)
 			{
-				this.DiffuseTexture.InternalValue = value;
 				try
 				{
 					this.diffuseTexture = string.IsNullOrEmpty(value) ? null : (this.MapContent ? this.main.MapContent : this.main.Content).Load<Texture2D>(value);
@@ -186,31 +184,28 @@ namespace Lemma.Components
 					if (param != null)
 						param.SetValue(this.diffuseTexture);
 				}
-			};
-			this.Color.Set = delegate(Vector3 value)
+			}));
+			this.Add(new SetBinding<Vector3>(this.Color, delegate(Vector3 value)
 			{
-				this.Color.InternalValue = value;
 				if (this.effect != null)
 				{
 					EffectParameter param = this.effect.Parameters["DiffuseColor"];
 					if (param != null)
 						param.SetValue(value);
 				}
-			};
+			}));
 
-			this.BoundingBox.Set = delegate(BoundingBox value)
+			this.Add(new SetBinding<BoundingBox>(this.BoundingBox, delegate(BoundingBox value)
 			{
-				this.BoundingBox.InternalValue = value;
 				this.boundingBoxValid = true;
-			};
+			}));
 
-			this.Filename.Set = delegate(string value)
+			this.Add(new ChangeBinding<string>(this.Filename, delegate(string old, string value)
 			{
-				if (value == this.Filename.InternalValue && this.model != null)
+				if (value == old && this.model != null)
 					return;
 				this.boundingBoxValid = false;
 				this.loadModel(value, false);
-				this.Filename.InternalValue = value;
 #if !MONOGAME
 				if (this.model != null)
 				{
@@ -263,15 +258,14 @@ namespace Lemma.Components
 					this.BoundingBox.Value = boundingBox;
 				}
 #endif
-			};
+			}));
 
-			this.EffectFile.Set = delegate(string value)
+			this.Add(new ChangeBinding<string>(this.EffectFile, delegate(string old, string value)
 			{
-				if (value == this.EffectFile.InternalValue && this.effect != null)
+				if (value == old && this.effect != null)
 					return;
-				this.EffectFile.InternalValue = value;
 				this.loadEffect(value);
-			};
+			}));
 
 			this.Instances.ItemRemoved += delegate(int index, Matrix matrix)
 			{
@@ -384,16 +378,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<bool> property = new Property<bool>();
-				property.Set = delegate(bool value)
+				this.Add(new SetBinding<bool>(property, delegate(bool value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null)
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -406,16 +399,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<bool[]> property = new Property<bool[]>();
-				property.Set = delegate(bool[] value)
+				this.Add(new SetBinding<bool[]>(property, delegate(bool[] value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null)
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -428,16 +420,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<int> property = new Property<int>();
-				property.Set = delegate(int value)
+				this.Add(new SetBinding<int>(property, delegate(int value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null)
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -450,16 +441,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<int[]> property = new Property<int[]>();
-				property.Set = delegate(int[] value)
+				this.Add(new SetBinding<int[]>(property, delegate(int[] value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null)
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -472,16 +462,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<float> property = new Property<float>();
-				property.Set = delegate(float value)
+				this.Add(new SetBinding<float>(property, delegate(float value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null)
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -494,16 +483,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<float[]> property = new Property<float[]>();
-				property.Set = delegate(float[] value)
+				this.Add(new SetBinding<float[]>(property, delegate(float[] value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null)
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -516,16 +504,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<Vector2> property = new Property<Vector2>();
-				property.Set = delegate(Vector2 value)
+				this.Add(new SetBinding<Vector2>(property, delegate(Vector2 value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null)
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -538,16 +525,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<Vector2[]> property = new Property<Vector2[]>();
-				property.Set = delegate(Vector2[] value)
+				this.Add(new SetBinding<Vector2[]>(property, delegate(Vector2[] value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null)
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -560,16 +546,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<Vector3> property = new Property<Vector3>();
-				property.Set = delegate(Vector3 value)
+				this.Add(new SetBinding<Vector3>(property, delegate(Vector3 value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null)
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -582,16 +567,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<Vector3[]> property = new Property<Vector3[]>();
-				property.Set = delegate(Vector3[] value)
+				this.Add(new SetBinding<Vector3[]>(property, delegate(Vector3[] value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null)
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -604,16 +588,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<Vector4> property = new Property<Vector4>();
-				property.Set = delegate(Vector4 value)
+				this.Add(new SetBinding<Vector4>(property, delegate(Vector4 value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null)
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -626,16 +609,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<Vector4[]> property = new Property<Vector4[]>();
-				property.Set = delegate(Vector4[] value)
+				this.Add(new SetBinding<Vector4[]>(property, delegate(Vector4[] value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null)
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -648,16 +630,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<Matrix> property = new Property<Matrix>();
-				property.Set = delegate(Matrix value)
+				this.Add(new SetBinding<Matrix>(property, delegate(Matrix value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null)
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -670,16 +651,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<Matrix[]> property = new Property<Matrix[]>();
-				property.Set = delegate(Matrix[] value)
+				this.Add(new SetBinding<Matrix[]>(property, delegate(Matrix[] value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null)
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -692,16 +672,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<Texture2D> property = new Property<Texture2D>();
-				property.Set = delegate(Texture2D value)
+				this.Add(new SetBinding<Texture2D>(property, delegate(Texture2D value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null && (value == null || !value.IsDisposed))
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}
@@ -714,16 +693,15 @@ namespace Lemma.Components
 			if (!this.properties.TryGetValue(name, out result))
 			{
 				Property<RenderTarget2D> property = new Property<RenderTarget2D>();
-				property.Set = delegate(RenderTarget2D value)
+				this.Add(new SetBinding<RenderTarget2D>(property, delegate(RenderTarget2D value)
 				{
-					property.InternalValue = value;
 					if (this.effect != null)
 					{
 						EffectParameter param = this.effect.Parameters[name];
 						if (param != null && (value == null || !value.IsDisposed))
 							param.SetValue(value);
 					}
-				};
+				}));
 				this.properties[name] = property;
 				result = property;
 			}

@@ -20,11 +20,10 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.Image.Set = delegate(string value)
+			this.Add(new SetBinding<string>(this.Image, delegate(string value)
 			{
-				this.Image.InternalValue = value;
 				this.loadTexture(value);
-			};
+			}));
 		}
 
 		public override void LoadContent(bool reload)

@@ -8,7 +8,6 @@ namespace ComponentBind
 	public interface IBinding
 	{
 		void Delete();
-		bool Enabled { get; set; }
 	}
 
 	public interface IPropertyBinding : IBinding
@@ -21,23 +20,6 @@ namespace ComponentBind
 		protected Property<Type> destination;
 		protected Func<Type> get;
 		protected IProperty[] sources;
-		protected Func<bool> enabled;
-
-		protected bool __enabled = true;
-		public virtual bool Enabled
-		{
-			get
-			{
-				return this.__enabled;
-			}
-			set
-			{
-				bool oldValue = this.__enabled;
-				this.__enabled = value;
-				if (value && !oldValue)
-					this.OnChanged(null);
-			}
-		}
 
 		protected Binding()
 		{
@@ -45,25 +27,17 @@ namespace ComponentBind
 		}
 
 		public Binding(Property<Type> _destination, Func<Type2, Type> transform, Property<Type2> _source)
-			: this(_destination, transform, _source, () => true)
-		{
-			
-		}
-
-		public Binding(Property<Type> _destination, Func<Type2, Type> transform, Property<Type2> _source, Func<bool> enabled)
 		{
 			this.destination = _destination;
 			_source.AddBinding(this);
-			this.get = () => transform(_source.InternalGet(this));
-			this.enabled = enabled;
+			this.get = () => transform(_source.Value);
 			this.sources = new IProperty[] { _source };
 			this.OnChanged(_source);
 		}
 
 		public virtual void OnChanged(IProperty changed)
 		{
-			if (this.Enabled && this.enabled())
-				this.destination.InternalSet(this.get(), this);
+			this.destination.InternalSet(this.get(), this);
 		}
 
 		public virtual void Delete()
@@ -72,8 +46,76 @@ namespace ComponentBind
 				property.RemoveBinding(this);
 			this.sources = null;
 			this.get = null;
-			this.enabled = null;
 			this.destination = null;
+		}
+	}
+
+	public class SetBinding<Type> : IPropertyBinding
+	{
+		protected Action<Type> notify;
+		protected Property<Type> source;
+
+		protected SetBinding()
+		{
+
+		}
+
+		public SetBinding(Property<Type> source, Action<Type> _notify)
+		{
+			this.notify = _notify;
+			this.source = source;
+			source.AddBinding(this);
+			Type v = this.source.Value;
+			if (v != null && !v.Equals(default(Type)))
+				this.notify(v);
+		}
+
+		public void OnChanged(IProperty changed)
+		{
+			this.notify(this.source.Value);
+		}
+
+		public void Delete()
+		{
+			this.source.RemoveBinding(this);
+			this.notify = null;
+			this.source = null;
+		}
+	}
+
+	public class ChangeBinding<Type> : IPropertyBinding
+	{
+		protected Action<Type, Type> notify;
+		protected Property<Type> source;
+		protected Type value;
+
+		protected ChangeBinding()
+		{
+
+		}
+
+		public ChangeBinding(Property<Type> source, Action<Type, Type> _notify)
+		{
+			this.notify = _notify;
+			this.source = source;
+			this.value = source.Value;
+			source.AddBinding(this);
+			if (this.value != null && !this.value.Equals(default(Type)))
+				this.notify(default(Type), this.value);
+		}
+
+		public void OnChanged(IProperty changed)
+		{
+			Type old = this.value;
+			this.value = this.source.Value;
+			this.notify(old, this.value);
+		}
+
+		public void Delete()
+		{
+			this.source.RemoveBinding(this);
+			this.notify = null;
+			this.source = null;
 		}
 	}
 
@@ -118,13 +160,13 @@ namespace ComponentBind
 				property.AddBinding(this);
 		}
 
-		public virtual void OnChanged(IProperty changed)
+		public void OnChanged(IProperty changed)
 		{
 			if (this.Enabled && this.enabled())
 				this.notify();
 		}
 
-		public virtual void Delete()
+		public void Delete()
 		{
 			foreach (IProperty property in this.sources)
 				property.RemoveBinding(this);
@@ -140,40 +182,22 @@ namespace ComponentBind
 		{
 		}
 
-		public Binding(Property<Type> _destination, Func<Type, Type> transform, Property<Type> _source)
-			: this(_destination, transform, _source, () => true)
-		{
-
-		}
-
 		public Binding(Property<Type> _destination, Property<Type> _source)
-			: this(_destination, _source, () => true)
+			: base(_destination, x => x, _source)
 		{
 
 		}
 
-		public Binding(Property<Type> _destination, Property<Type> _source, Func<bool> enabled)
-			: base(_destination, x => x, _source, enabled)
-		{
-
-		}
-
-		public Binding(Property<Type> _destination, Func<Type, Type> transform, Property<Type> _source, Func<bool> enabled)
-			: base(_destination, transform, _source, enabled)
+		public Binding(Property<Type> _destination, Func<Type, Type> transform, Property<Type> _source)
+			: base(_destination, transform, _source)
 		{
 
 		}
 
 		public Binding(Property<Type> _destination, Func<Type> _get, params IProperty[] _sources)
-			: this(_destination, _get, () => true, _sources)
-		{
-		}
-
-		public Binding(Property<Type> _destination, Func<Type> _get, Func<bool> enabled, params IProperty[] _sources)
 		{
 			this.destination = _destination;
 			this.get = _get;
-			this.enabled = enabled;
 			this.sources = _sources;
 			foreach (IProperty property in this.sources)
 				property.AddBinding(this);
@@ -202,37 +226,12 @@ namespace ComponentBind
 
 		}
 
-		public override bool Enabled
-		{
-			get
-			{
-				return this.__enabled;
-			}
-			set
-			{
-				bool oldValue = this.__enabled;
-				this.__enabled = value;
-				if (value && !oldValue)
-					this.OnChanged(this.property1);
-			}
-		}
-
 		public TwoWayBinding(
 			Property<Type> _property1,
 			Func<Type2, Type> _transform1,
 			Property<Type2> _property2,
 			Func<Type, Type2> _transform2)
-			: this(_property1, _transform1, _property2, _transform2, () => true)
-		{
-		}
-
-		public TwoWayBinding(
-			Property<Type> _property1,
-			Func<Type2, Type> _transform1,
-			Property<Type2> _property2,
-			Func<Type, Type2> _transform2,
-			Func<bool> enabled)
-			: this(_property1, _transform1, new IProperty[] { }, _property2, _transform2, new IProperty[] { }, enabled)
+			: this(_property1, _transform1, new IProperty[] { }, _property2, _transform2, new IProperty[] { })
 		{
 		}
 
@@ -243,20 +242,7 @@ namespace ComponentBind
 			Property<Type2> _property2,
 			Func<Type, Type2> _transform2,
 			IEnumerable<IProperty> _property2Sources)
-			: this(_property1, _transform1, _property1Sources, _property2, _transform2, _property2Sources, () => true)
 		{
-		}
-
-		public TwoWayBinding(
-			Property<Type> _property1,
-			Func<Type2, Type> _transform1,
-			IEnumerable<IProperty> _property1Sources,
-			Property<Type2> _property2,
-			Func<Type, Type2> _transform2,
-			IEnumerable<IProperty> _property2Sources,
-			Func<bool> enabled)
-		{
-			this.enabled = enabled;
 			this.property1 = _property1;
 			this.property2 = _property2;
 			this.property1Sources = _property1Sources.Union(new IProperty[] { this.property2 }).ToArray();
@@ -272,13 +258,13 @@ namespace ComponentBind
 
 		public void Reevaluate(IProperty destination)
 		{
-			if (this.Enabled && !this.reevaluating && this.enabled())
+			if (!this.reevaluating)
 			{
 				this.reevaluating = true;
 				if (destination == this.property1)
-					this.property1.InternalSet(this.transform1(this.property2.InternalGet(this)), this);
+					this.property1.InternalSet(this.transform1(this.property2.Value), this);
 				else if (destination == this.property2)
-					this.property2.InternalSet(this.transform2(this.property1.InternalGet(this)), this);
+					this.property2.InternalSet(this.transform2(this.property1.Value), this);
 				else
 					throw new ArgumentException("Binding received improper property change notification.");
 				this.reevaluating = false;
@@ -287,15 +273,12 @@ namespace ComponentBind
 
 		public override void OnChanged(IProperty changed)
 		{
-			if (this.Enabled && this.enabled())
-			{
-				if (this.property2Sources.Contains(changed))
-					this.property2.InternalSet(this.transform2(this.property1.InternalGet(this)), this);
-				else if (this.property1Sources.Contains(changed))
-					this.property1.InternalSet(this.transform1(this.property2.InternalGet(this)), this);
-				else
-					throw new ArgumentException("Binding received improper property change notification.");
-			}
+			if (this.property2Sources.Contains(changed))
+				this.property2.InternalSet(this.transform2(this.property1.Value), this);
+			else if (this.property1Sources.Contains(changed))
+				this.property1.InternalSet(this.transform1(this.property2.Value), this);
+			else
+				throw new ArgumentException("Binding received improper property change notification.");
 		}
 
 		public override void Delete()
@@ -308,7 +291,6 @@ namespace ComponentBind
 			this.property1Sources = null;
 			this.property2 = null;
 			this.property2Sources = null;
-			this.enabled = null;
 			this.transform1 = null;
 			this.transform2 = null;
 		}

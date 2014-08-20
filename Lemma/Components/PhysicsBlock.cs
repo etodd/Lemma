@@ -40,57 +40,32 @@ namespace Lemma.Components
 			else
 				this.Box = new Box(Vector3.Zero, this.Size.Value.X, this.Size.Value.Y, this.Size.Value.Z, this.Mass);
 			this.Box.CollisionInformation.Events.ContactCreated += new BEPUphysics.BroadPhaseEntries.Events.ContactCreatedEventHandler<EntityCollidable>(Events_ContactCreated);
-			this.Transform.Set = delegate(Matrix matrix)
+			this.Add(new SetBinding<Matrix>(this.Transform, delegate(Matrix matrix)
 			{
 				this.Box.WorldTransform = matrix;
-			};
+			}));
 
-			this.Transform.Get = delegate()
-			{
-				return this.Box.WorldTransform;
-			};
-
-			this.Mass.Set = delegate(float m)
+			this.Add(new SetBinding<float>(this.Mass, delegate(float m)
 			{
 				this.Box.Mass = m;
-			};
+			}));
 
-			this.Mass.Get = delegate()
-			{
-				return this.Box.Mass;
-			};
-
-			this.LinearVelocity.Get = delegate()
-			{
-				return this.Box.LinearVelocity;
-			};
-
-			this.LinearVelocity.Set = delegate(Vector3 value)
+			this.Add(new SetBinding<Vector3>(this.LinearVelocity, delegate(Vector3 value)
 			{
 				this.Box.LinearVelocity = value;
-			};
+			}));
 
-			this.AngularVelocity.Get = delegate()
-			{
-				return this.Box.AngularVelocity;
-			};
-
-			this.AngularVelocity.Set = delegate(Vector3 value)
+			this.Add(new SetBinding<Vector3>(this.AngularVelocity, delegate(Vector3 value)
 			{
 				this.Box.AngularVelocity = value;
-			};
+			}));
 
-			this.Size.Set = delegate(Vector3 s)
+			this.Add(new SetBinding<Vector3>(this.Size, delegate(Vector3 s)
 			{
 				this.Box.Width = s.X;
 				this.Box.Height = s.Y;
 				this.Box.Length = s.Z;
-			};
-
-			this.Size.Get = delegate()
-			{
-				return new Vector3(this.Box.Width, this.Box.Height, this.Box.Length);
-			};
+			}));
 
 			Action remove = delegate()
 			{
@@ -122,7 +97,9 @@ namespace Lemma.Components
 
 		void IUpdateableComponent.Update(float dt)
 		{
-			this.Transform.Changed();
+			this.Transform.Value = this.Box.WorldTransform;
+			this.LinearVelocity.Value = this.Box.LinearVelocity;
+			this.AngularVelocity.Value = this.Box.AngularVelocity;
 		}
 
 		public override void delete()

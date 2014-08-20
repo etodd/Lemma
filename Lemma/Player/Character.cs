@@ -156,7 +156,7 @@ namespace Lemma.Util
 		/// <param name="radius">The diameter of the character.</param>
 		/// <param name="supportHeight">The distance above the ground that the bottom of the character's body floats.</param>
 		/// <param name="mass">Total mass of the character.</param>
-		public Character(Main main, Vector3 position, float height = Character.DefaultHeight, float crouchedHeight = Character.DefaultCrouchedHeight, float radius = Character.DefaultRadius, float supportHeight = Character.DefaultSupportHeight, float crouchedSupportHeight = Character.DefaultCrouchedSupportHeight, float mass = Character.DefaultMass)
+		public Character(Main main, Bindable bindable, Vector3 position, float height = Character.DefaultHeight, float crouchedHeight = Character.DefaultCrouchedHeight, float radius = Character.DefaultRadius, float supportHeight = Character.DefaultSupportHeight, float crouchedSupportHeight = Character.DefaultCrouchedSupportHeight, float mass = Character.DefaultMass)
 		{
 			this.main = main;
 			this.Radius.Value = radius;
@@ -182,6 +182,34 @@ namespace Lemma.Util
 			this.Body.LocalInertiaTensorInverse = new BEPUutilities.Matrix3x3();
 			this.collisionPairCollector.LocalInertiaTensorInverse = new BEPUutilities.Matrix3x3();
 
+			bindable.Add(new ChangeBinding<bool>(this.Crouched, delegate(bool old, bool value)
+			{
+				if (value && !old)
+				{
+					this.Body.Position += new Vector3(0, (this.CrouchedSupportHeight - this.NormalSupportHeight) + 0.5f * (this.CrouchedHeight - this.NormalHeight), 0);
+					this.Body.Height = this.Height.Value = this.CrouchedHeight;
+					this.SupportHeight.Value = this.CrouchedSupportHeight;
+				}
+				else if (!value && old)
+				{
+					this.Body.Height = this.Height.Value = this.NormalHeight;
+					this.Body.Position += new Vector3(0, (this.NormalSupportHeight - this.CrouchedSupportHeight) + 0.5f * (this.NormalHeight - this.CrouchedHeight), 0);
+					this.SupportHeight.Value = this.NormalSupportHeight;
+				}
+				this.collisionPairCollector.Height = this.SupportHeight * 2;
+				this.Transform.Value = this.Body.WorldTransform;
+			}));
+
+			bindable.Add(new SetBinding<Matrix>(this.Transform, delegate(Matrix m)
+			{
+				this.Body.WorldTransform = m;
+			}));
+
+			bindable.Add(new SetBinding<Vector3>(this.LinearVelocity, delegate(Vector3 v)
+			{
+				this.Body.LinearVelocity = v;
+			}));
+
 			//Make the body slippery.
 			//Note that this will not make all collisions have zero friction;
 			//the friction coefficient between a pair of objects is based
@@ -189,44 +217,6 @@ namespace Lemma.Util
 			this.Body.Material.KineticFriction = 0.0f;
 			this.Body.Material.StaticFriction = 0.0f;
 			this.Body.Material.Bounciness = 0.0f;
-
-			this.Crouched.Set = delegate(bool value)
-			{
-				bool oldValue = this.Crouched.InternalValue;
-				this.Crouched.InternalValue = value;
-				if (value && !oldValue)
-				{
-					this.Body.Position += new Vector3(0, (this.CrouchedSupportHeight - this.NormalSupportHeight) + 0.5f * (this.CrouchedHeight - this.NormalHeight), 0);
-					this.Body.Height = this.Height.Value = this.CrouchedHeight;
-					this.SupportHeight.Value = this.CrouchedSupportHeight;
-				}
-				else if (!value && oldValue)
-				{
-					this.Body.Height = this.Height.Value = this.NormalHeight;
-					this.Body.Position += new Vector3(0, (this.NormalSupportHeight - this.CrouchedSupportHeight) + 0.5f * (this.NormalHeight - this.CrouchedHeight), 0);
-					this.SupportHeight.Value = this.NormalSupportHeight;
-				}
-				this.collisionPairCollector.Height = this.SupportHeight * 2;
-				this.Transform.Changed();
-			};
-
-			this.Transform.Set = delegate(Matrix value)
-			{
-				this.Body.WorldTransform = value;
-			};
-			this.Transform.Get = delegate()
-			{
-				return this.Body.WorldTransform;
-			};
-
-			this.LinearVelocity.Set = delegate(Vector3 value)
-			{
-				this.Body.LinearVelocity = value;
-			};
-			this.LinearVelocity.Get = delegate()
-			{
-				return this.Body.LinearVelocity;
-			};
 
 			const int rayChecks = 4;
 			float rayCheckRadius = radius - 0.1f;

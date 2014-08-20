@@ -17,23 +17,6 @@ namespace Lemma.Components
 			this.Serialize = false;
 		}
 
-		public override Entity Entity
-		{
-			get
-			{
-				return base.Entity;
-			}
-			set
-			{
-				base.Entity = value;
-				this.EnabledWhenPaused = false;
-				this.Suspended.Set = delegate(bool v)
-				{
-					this.Suspended.InternalValue = false;
-				};
-			}
-		}
-
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return this.actions.GetEnumerator();

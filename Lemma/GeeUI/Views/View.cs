@@ -223,16 +223,14 @@ namespace GeeUI.Views
 		{
 			ParentGeeUI = theGeeUI;
 
-			this.Attached.Set = delegate(bool value)
+			this.Add(new SetBinding<bool>(this.Attached, delegate(bool value)
 			{
-				this.Attached.InternalValue = value;
 				foreach (View v in this.Children)
 					v.Attached.Value = value;
-			};
+			}));
 
-			this.ParentView.Set = delegate(View v)
+			this.Add(new SetBinding<View>(this.ParentView, delegate(View v)
 			{
-				this.ParentView.InternalValue = v;
 				if (v == null)
 				{
 					this.Attached.Value = false;
@@ -240,7 +238,7 @@ namespace GeeUI.Views
 				}
 				else
 					this.Attached.Value = v.Attached;
-			};
+			}));
 
 			this.Add(new NotifyBinding(delegate()
 			{

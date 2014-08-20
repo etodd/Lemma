@@ -195,12 +195,12 @@ namespace Lemma.Factories
 			selection.DisableCulling.Value = true;
 			entity.Add(selection);
 			selection.Add(new Binding<bool>(selection.Enabled, editor.VoxelSelectionActive));
-			selection.Add(new Binding<Matrix>(selection.Transform, delegate()
+			selection.Add(new NotifyBinding(delegate()
 			{
 				const float padding = 0.1f;
 				Voxel map = editor.SelectedEntities[0].Get<Voxel>();
 				Vector3 start = map.GetRelativePosition(editor.VoxelSelectionStart) - new Vector3(0.5f), end = map.GetRelativePosition(editor.VoxelSelectionEnd) - new Vector3(0.5f);
-				return Matrix.CreateScale((end - start) + new Vector3(padding)) * Matrix.CreateTranslation((start + end) * 0.5f) * map.Transform;
+				selection.Transform.Value = Matrix.CreateScale((end - start) + new Vector3(padding)) * Matrix.CreateTranslation((start + end) * 0.5f) * map.Transform;
 			}, () => editor.VoxelSelectionActive, editor.VoxelSelectionActive, editor.VoxelSelectionStart, editor.VoxelSelectionEnd));
 			selection.CullBoundingBox.Value = false;
 
@@ -652,7 +652,7 @@ namespace Lemma.Factories
 				editor.VoxelEditMode, editor.TransformMode
 			);
 
-			editor.Add(new Binding<Vector2>(editor.Mouse, input.Mouse, () => !input.EnableLook));
+			editor.Add(new Binding<Vector2>(editor.Mouse, input.Mouse));
 
 			uiRenderer.Add(new CommandBinding(uiRenderer.SwallowMouseEvents, (Action)input.SwallowEvents));
 
@@ -673,7 +673,13 @@ namespace Lemma.Factories
 			}));
 
 			input.Add(new Binding<bool>(input.EnableLook, () => editor.VoxelEditMode || (movementEnabled && editor.TransformMode.Value == Editor.TransformModes.None), movementEnabled, editor.VoxelEditMode, editor.TransformMode));
-			input.Add(new Binding<Vector3, Vector2>(camera.Angles, x => new Vector3(-x.Y, x.X, 0.0f), input.Mouse, () => input.EnableLook));
+
+			input.Add(new NotifyBinding(delegate()
+			{
+				Vector2 x = input.Mouse;
+				camera.Angles.Value = new Vector3(-x.Y, x.X, 0.0f);
+			}, () => input.EnableLook, input.Mouse));
+
 			input.Add(new Binding<bool>(main.IsMouseVisible, x => !x, input.EnableLook));
 			editor.Add(new Binding<Vector3>(camera.Position, () => editor.Position.Value - (camera.Forward.Value * editor.CameraDistance), editor.Position, camera.Forward, editor.CameraDistance));
 

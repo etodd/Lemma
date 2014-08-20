@@ -159,7 +159,6 @@ namespace Lemma.Components
 
 		private void load(string name)
 		{
-			this.Name.InternalValue = name;
 			if (this.editorProperties != null)
 			{
 				foreach (string prop in this.editorProperties)
@@ -207,11 +206,11 @@ namespace Lemma.Components
 			base.Awake();
 			this.parameters = new object[] { this.Entity };
 			this.Errors.Value = null;
-			this.Name.Set = delegate(string value)
+			this.Add(new ChangeBinding<string>(this.Name, delegate(string old, string value)
 			{
-				if (value != this.Name.InternalValue)
+				if (value != old)
 					this.load(value);
-			};
+			}));
 			this.load(this.Name);
 
 			this.Execute.Action = delegate()

@@ -224,7 +224,7 @@ namespace Lemma.Components
 			}
 
 			foreach (KeyValuePair<int, Property<Matrix>> pair in this.relativeBoneTransformProperties)
-				pair.Value.Changed();
+				pair.Value.Value = this.boneTransforms[pair.Key];
 		}
 
 		/// <summary>
@@ -244,7 +244,7 @@ namespace Lemma.Components
 			}
 
 			foreach (KeyValuePair<int, Property<Matrix>> pair in this.boneTransformProperties)
-				pair.Value.Changed();
+				pair.Value.Value = this.worldTransforms[pair.Key];
 		}
 
 		private Dictionary<int, Property<Matrix>> boneTransformProperties = new Dictionary<int, Property<Matrix>>();
@@ -266,14 +266,10 @@ namespace Lemma.Components
 			{
 				property = new Property<Matrix>();
 				this.relativeBoneTransformProperties[index] = property;
-				property.Get = delegate()
-				{
-					return this.boneTransforms[index];
-				};
-				property.Set = delegate(Matrix value)
+				this.Add(new SetBinding<Matrix>(property, delegate(Matrix value)
 				{
 					this.boneTransforms[index] = value;
-				};
+				}));
 				return property;
 			}
 		}
@@ -288,14 +284,10 @@ namespace Lemma.Components
 			{
 				property = new Property<Matrix>();
 				this.boneTransformProperties[index] = property;
-				property.Get = delegate()
-				{
-					return this.worldTransforms[index];
-				};
-				property.Set = delegate(Matrix value)
+				this.Add(new SetBinding<Matrix>(property, delegate(Matrix value)
 				{
 					this.worldTransforms[index] = value;
-				};
+				}));
 				return property;
 			}
 		}

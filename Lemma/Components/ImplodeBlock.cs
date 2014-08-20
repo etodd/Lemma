@@ -34,24 +34,21 @@ namespace Lemma.Components
 			base.Awake();
 			this.EnabledWhenPaused = false;
 
-			this.StartPosition.Set = delegate(Vector3 value)
+			this.Add(new SetBinding<Vector3>(this.StartPosition, delegate(Vector3 value)
 			{
-				this.StartPosition.InternalValue = value;
 				this.Position.Value = value;
-			};
+			}));
 
-			this.StartOrientation.Set = delegate(Matrix value)
+			this.Add(new SetBinding<Matrix>(this.StartOrientation, delegate(Matrix value)
 			{
-				this.StartOrientation.InternalValue = value;
 				this.startQuat = Quaternion.CreateFromRotationMatrix(this.StartOrientation);
 				this.Orientation.Value = this.startQuat;
-			};
+			}));
 
-			this.EndOrientation.Set = delegate(Matrix value)
+			this.Add(new SetBinding<Matrix>(this.EndOrientation, delegate(Matrix value)
 			{
-				this.EndOrientation.InternalValue = value;
 				this.endQuat = Quaternion.CreateFromRotationMatrix(this.EndOrientation);
-			};
+			}));
 		}
 
 		public void Update(float dt)

@@ -52,11 +52,9 @@ namespace Lemma.Components
 				if (!this.Movement.Value.Equals(Vector2.Zero))
 					this.Movement.Value = Vector2.Zero;
 			}));
-			this.EnableLook.Set = delegate(bool value)
+			this.Add(new ChangeBinding<bool>(this.EnableLook, delegate(bool old, bool value)
 			{
-				bool oldValue = this.EnableLook.InternalValue;
-				this.EnableLook.InternalValue = value;
-				if (value && !oldValue)
+				if (value && !old)
 				{
 					this.Mouse.Value = this.lastMouseLook;
 					FPSInput.RecenterMouse();
@@ -64,30 +62,40 @@ namespace Lemma.Components
 					this.lastMouseNonLook = new Vector2(oldState.X, oldState.Y);
 					this.main.MouseState.Value = new MouseState(FPSInput.mouseCenterX, FPSInput.mouseCenterY, oldState.ScrollWheelValue, oldState.LeftButton, oldState.MiddleButton, oldState.RightButton, oldState.XButton1, oldState.XButton2);
 				}
-				else if (!value && oldValue)
+				else if (!value && old)
 				{
 					this.lastMouseLook = this.Mouse;
 					Microsoft.Xna.Framework.Input.Mouse.SetPosition((int)this.lastMouseNonLook.X, (int)this.lastMouseNonLook.Y);
 					if (this.EnableMouse)
 						this.Mouse.Value = this.lastMouseNonLook;
 				}
-			};
-			this.MinX.Set = delegate(float value)
+			}));
+
+			this.Add(new SetBinding<float>(this.MinX, delegate(float value)
 			{
-				this.MinX.InternalValue = value.ToAngleRange();
-			};
-			this.MaxX.Set = delegate(float value)
+				float v = value.ToAngleRange();
+				if (v != value)
+					this.MinX.Value = v;
+			}));
+
+			this.Add(new SetBinding<float>(this.MaxX, delegate(float value)
 			{
-				this.MaxX.InternalValue = value.ToAngleRange();
-			};
-			this.MinY.Set = delegate(float value)
+				float v = value.ToAngleRange();
+				if (v != value)
+					this.MaxX.Value = v;
+			}));
+			this.Add(new SetBinding<float>(this.MinY, delegate(float value)
 			{
-				this.MinY.InternalValue = value.ToAngleRange();
-			};
-			this.MaxY.Set = delegate(float value)
+				float v = value.ToAngleRange();
+				if (v != value)
+					this.MinY.Value = v;
+			}));
+			this.Add(new SetBinding<float>(this.MaxY, delegate(float value)
 			{
-				this.MaxY.InternalValue = value.ToAngleRange();
-			};
+				float v = value.ToAngleRange();
+				if (v != value)
+					this.MaxY.Value = v;
+			}));
 		}
 
 		public override void Update(float elapsedTime)

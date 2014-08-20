@@ -65,21 +65,17 @@ namespace Lemma.Components
 		{
 			base.Awake();
 
-			this.EnvironmentMap.Set = delegate(string file)
+			this.Add(new ChangeBinding<string>(this.EnvironmentMap, delegate(string old, string file)
 			{
-				if (this.EnvironmentMap.InternalValue != file)
-				{
-					this.EnvironmentMap.InternalValue = file;
+				if (old != file)
 					this.loadEnvironmentMap(file);
-				}
-			};
+			}));
 
 			this.shadowCamera = new Camera();
 			this.main.AddComponent(this.shadowCamera);
-			this.DynamicShadows.Set = delegate(DynamicShadowSetting value)
+			this.Add(new SetBinding<DynamicShadowSetting>(this.DynamicShadows, delegate(DynamicShadowSetting value)
 			{
 				this.shadowMapIndices.Clear();
-				this.DynamicShadows.InternalValue = value;
 				switch (value)
 				{
 					case DynamicShadowSetting.Off:
@@ -163,7 +159,7 @@ namespace Lemma.Components
 													0,
 													Microsoft.Xna.Framework.Graphics.RenderTargetUsage.DiscardContents);
 				}
-			};
+			}));
 		}
 
 		public void LoadContent(bool reload)

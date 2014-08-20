@@ -72,8 +72,7 @@ namespace Lemma.Factories
 					new IProperty[] { map.Scale },
 					map.Transform,
 					x => Matrix.CreateScale(map.Scale) * x,
-					new IProperty[] { map.Scale },
-					() => true
+					new IProperty[] { map.Scale }
 				));
 			}
 			else

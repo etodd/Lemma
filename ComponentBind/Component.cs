@@ -165,24 +165,20 @@ namespace ComponentBind
 
 		public virtual void Awake()
 		{
-			this.Enabled.Set = delegate(bool value)
+			this.Add(new ChangeBinding<bool>(this.Enabled, delegate(bool old, bool value)
 			{
-				bool oldValue = this.Enabled.InternalValue;
-				this.Enabled.InternalValue = value;
-				if (!oldValue && value)
+				if (!old && value)
 					this.Enable.Execute();
-				else if (oldValue && !value)
+				else if (old && !value)
 					this.Disable.Execute();
-			};
-			this.Suspended.Set = delegate(bool value)
+			}));
+			this.Add(new ChangeBinding<bool>(this.Suspended, delegate(bool old, bool value)
 			{
-				bool oldValue = this.Suspended.InternalValue;
-				this.Suspended.InternalValue = value;
-				if (!oldValue && value)
+				if (!old && value)
 					this.OnSuspended.Execute();
-				else if (oldValue && !value)
+				else if (old && !value)
 					this.OnResumed.Execute();
-			};
+			}));
 		}
 
 		public void SetMain(BaseMain _main)

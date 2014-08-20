@@ -419,7 +419,7 @@ namespace ComponentBind
 
 			}
 
-			for (int i = this.LinkedCommands.Length; i >= 0; i--)
+			for (int i = this.LinkedCommands.Length - 1; i >= 0; i--)
 			{
 				CommandLink link = this.LinkedCommands[i];
 				if (link.SourceCommand == name)

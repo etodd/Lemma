@@ -212,7 +212,7 @@ namespace Lemma.Components
 
 		protected void refreshModel()
 		{
-			if (!string.IsNullOrEmpty(this.Filename.InternalValue))
+			if (!string.IsNullOrEmpty(this.Filename))
 			{
 				string key = "InstanceSystem" + (this.EnableAlpha ? "Alpha" : "") + ":" + this.Filename.Value + "+" + this.InstanceKey.Value.ToString();
 
@@ -225,7 +225,7 @@ namespace Lemma.Components
 				if (!foundExistingModel)
 				{
 					newModel = this.EnableAlpha ? new ModelInstanceSystemAlpha() : new ModelInstanceSystem();
-					newModel.Filename.Value = this.Filename.InternalValue;
+					newModel.Filename.Value = this.Filename;
 					newModel.Key = key;
 					world.Add(key, newModel);
 				}
@@ -250,9 +250,9 @@ namespace Lemma.Components
 			refresh |= this.InstanceKey.Value != instanceKey;
 			if (refresh)
 			{
-				this.Filename.InternalValue = filename;
-				this.InstanceKey.InternalValue = instanceKey;
-				this.EnableAlpha.InternalValue = alpha;
+				this.Filename.SetStealthy(filename);
+				this.InstanceKey.SetStealthy(instanceKey);
+				this.EnableAlpha.SetStealthy(alpha);
 				this.refreshModel();
 				this.Filename.Changed();
 				this.InstanceKey.Changed();
@@ -264,21 +264,18 @@ namespace Lemma.Components
 		{
 			base.Awake();
 
-			this.Filename.Set = delegate(string value)
+			this.Add(new SetBinding<string>(this.Filename, delegate(string value)
 			{
-				this.Filename.InternalValue = value;
 				this.refreshModel();
-			};
-			this.InstanceKey.Set = delegate(int value)
+			}));
+			this.Add(new SetBinding<int>(this.InstanceKey, delegate(int value)
 			{
-				this.InstanceKey.InternalValue = value;
 				this.refreshModel();
-			};
-			this.EnableAlpha.Set = delegate(bool value)
+			}));
+			this.Add(new SetBinding<bool>(this.EnableAlpha, delegate(bool value)
 			{
-				this.EnableAlpha.InternalValue = value;
 				this.refreshModel();
-			};
+			}));
 
 			this.Add(new Binding<Matrix>(this.transform, () => Matrix.CreateScale(this.Scale) * this.Transform, this.Scale, this.Transform));
 
@@ -316,11 +313,10 @@ namespace Lemma.Components
 			this.parameters.Add(name, result);
 
 			IPropertyBinding parameter = this.model.AddInstanceBoolParameter(name);
-			result.Set = delegate(bool value)
+			this.Add(new SetBinding<bool>(result, delegate(bool value)
 			{
-				result.InternalValue = value;
 				this.model.ParameterChanged(parameter);
-			};
+			}));
 			return result;
 		}
 
@@ -334,11 +330,10 @@ namespace Lemma.Components
 			this.parameters.Add(name, result);
 
 			IPropertyBinding parameter = this.model.AddInstanceIntParameter(name);
-			result.Set = delegate(int value)
+			this.Add(new SetBinding<int>(result, delegate(int value)
 			{
-				result.InternalValue = value;
 				this.model.ParameterChanged(parameter);
-			};
+			}));
 			return result;
 		}
 
@@ -352,11 +347,10 @@ namespace Lemma.Components
 			this.parameters.Add(name, result);
 
 			IPropertyBinding parameter = this.model.AddInstanceFloatParameter(name);
-			result.Set = delegate(float value)
+			this.Add(new SetBinding<float>(result, delegate(float value)
 			{
-				result.InternalValue = value;
 				this.model.ParameterChanged(parameter);
-			};
+			}));
 			return result;
 		}
 
@@ -370,11 +364,10 @@ namespace Lemma.Components
 			this.parameters.Add(name, result);
 
 			IPropertyBinding parameter = this.model.AddInstanceVector3Parameter(name);
-			result.Set = delegate(Vector3 value)
+			this.Add(new SetBinding<Vector3>(result, delegate(Vector3 value)
 			{
-				result.InternalValue = value;
 				this.model.ParameterChanged(parameter);
-			};
+			}));
 			return result;
 		}
 
@@ -388,11 +381,10 @@ namespace Lemma.Components
 			this.parameters.Add(name, result);
 
 			IPropertyBinding parameter = this.model.AddInstanceMatrixParameter(name);
-			result.Set = delegate(Matrix value)
+			this.Add(new SetBinding<Matrix>(result, delegate(Matrix value)
 			{
-				result.InternalValue = value;
 				this.model.ParameterChanged(parameter);
-			};
+			}));
 			return result;
 		}
 

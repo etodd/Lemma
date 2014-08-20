@@ -621,24 +621,23 @@ namespace Lemma.Factories
 				refreshPropertyGraphs();
 			};
 
-			playbackLocation.Set = delegate(float value)
+			entity.Add(new SetBinding<float>(playbackLocation, delegate(float value)
 			{
 				if (analyticsActiveSessions.Length == 0)
 					return;
 
-				value = Math.Max(0.0f, value);
+				if (value < 0.0f)
+					playbackLocation.Value = 0.0f;
 				float end = analyticsActiveSessions.Max(x => x.Session.TotalTime);
 				if (value > end)
 				{
-					playbackLocation.InternalValue = end;
+					playbackLocation.Value = end;
 					analyticsPlaying.Value = false;
 				}
-				else
-					playbackLocation.InternalValue = value;
 
 				foreach (KeyValuePair<Session, ModelInstance> pair in sessionPositionModels)
 					pair.Value.Transform.Value = Matrix.CreateTranslation(pair.Key.PositionProperties[0][playbackLocation]);
-			};
+			}));
 
 			LineDrawer2D playbackLine = new LineDrawer2D();
 			playbackLine.Color.Value = Vector4.One;

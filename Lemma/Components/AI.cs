@@ -78,10 +78,10 @@ namespace Lemma.Components
 
 		public void Add(AIState state)
 		{
-			if (this.currentState == null && this.CurrentState.InternalValue == null)
+			if (this.currentState == null && this.CurrentState.Value == null)
 			{
 				this.currentState = state;
-				this.CurrentState.InternalValue = state.Name;
+				this.CurrentState.SetStealthy(state.Name);
 			}
 			AIState existingState = null;
 			if (this.states.TryGetValue(state.Name, out existingState))
@@ -126,13 +126,12 @@ namespace Lemma.Components
 				this.CurrentState.Value = this.states.Keys.First();
 
 			bool initializing = true;
-			this.CurrentState.Set = delegate(string value)
+			this.Add(new ChangeBinding<string>(this.CurrentState, delegate(string old, string value)
 			{
 				if (this.switching)
 					throw new Exception("Cannot switch states from inside a state exit function.");
-				if ((value == this.CurrentState.InternalValue && !initializing) || value == null || main.EditorEnabled)
+				if ((value == old && !initializing) || value == null || main.EditorEnabled)
 					return;
-				this.CurrentState.InternalValue = value;
 				AIState oldState = this.currentState;
 				this.currentState = this.states[value];
 				if (!initializing || this.TimeInCurrentState == 0.0f)
@@ -147,7 +146,7 @@ namespace Lemma.Components
 					if (this.currentState.Enter != null)
 						this.currentState.Enter(oldState);
 				}
-			};
+			}));
 			initializing = false;
 		}
 

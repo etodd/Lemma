@@ -23,7 +23,7 @@ namespace Lemma.Components
 		{
 			base.Awake();
 
-			this.Type.Set = delegate(Voxel.t value)
+			this.Add(new SetBinding<Voxel.t>(this.Type, delegate(Voxel.t value)
 			{
 				if (value == Voxel.t.Empty)
 					this.Valid.Value = false;
@@ -32,8 +32,7 @@ namespace Lemma.Components
 					Voxel.States[value].ApplyToBlock(this.Entity);
 					this.Valid.Value = true;
 				}
-				this.Type.InternalValue = value;
-			};
+			}));
 		}
 	}
 }

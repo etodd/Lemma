@@ -39,12 +39,11 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			this.Mouse.Value = new Vector2(this.Rotation, 0.0f);
-			this.Rotation.Set = delegate(float value)
+			this.Add(new ChangeBinding<float>(this.Rotation, delegate(float old, float value)
 			{
 				if (this.Locked)
-					this.Mouse.Value += new Vector2(value - this.Rotation.InternalValue, 0);
-				this.Rotation.InternalValue = value;
-			};
+					this.Mouse.Value += new Vector2(value - old, 0);
+			}));
 			this.Add(new NotifyBinding(this.Unlock, this.Locked, this.WallRunState, this.Kicking, this.Rolling, this.VaultState, this.Landing));
 			this.EnabledWhenPaused = false;
 		}

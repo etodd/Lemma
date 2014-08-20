@@ -279,19 +279,17 @@ namespace Lemma.Components
 				this.StartTranslation.Execute();
 			};
 
-			this.VoxelEditMode.Set = delegate(bool value)
+			this.Add(new ChangeBinding<bool>(this.VoxelEditMode, delegate(bool old, bool value)
 			{
-				bool oldValue = this.VoxelEditMode.InternalValue;
-				this.VoxelEditMode.InternalValue = value;
-				if (value && !oldValue)
+				if (value && !old)
 				{
 					this.Orientation.Value = this.SelectedEntities[0].Get<Transform>("Transform").Quaternion;
 					this.lastCoord = this.coord = this.SelectedEntities[0].Get<Voxel>().GetCoordinate(this.Position);
 					this.Coordinate.Value = this.coord;
 				}
-				else if (!value && oldValue)
+				else if (!value && old)
 					this.Orientation.Value = Quaternion.Identity;
-			};
+			}));
 
 			this.SelectedEntities.ItemAdded += delegate(int index, Entity t)
 			{
@@ -315,21 +313,20 @@ namespace Lemma.Components
 				this.SelectedTransform.Value = null;
 			};
 
-			this.EditSelection.Set = delegate(bool value)
+			this.Add(new ChangeBinding<bool>(this.EditSelection, delegate(bool old, bool value)
 			{
-				if (value && !this.EditSelection.InternalValue)
+				if (value && !old)
 				{
 					this.selectionStart = this.coord;
 					this.VoxelSelectionStart.Value = this.coord;
 					this.VoxelSelectionEnd.Value = this.coord.Move(1, 1, 1);
 				}
-				else if (!value && this.EditSelection.InternalValue)
+				else if (!value && old)
 				{
 					if (this.VoxelSelectionEnd.Value.Equivalent(this.VoxelSelectionStart.Value.Move(1, 1, 1)))
 						this.VoxelSelectionEnd.Value = this.VoxelSelectionStart.Value;
 				}
-				this.EditSelection.InternalValue = value;
-			};
+			}));
 
 			this.VoxelCopy.Action = delegate()
 			{

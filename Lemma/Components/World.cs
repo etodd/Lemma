@@ -45,14 +45,10 @@ namespace Lemma.Components
 			this.Add(new Binding<Color>(this.main.LightingManager.BackgroundColor, this.BackgroundColor));
 			this.Add(new Binding<float>(this.main.Camera.FarPlaneDistance, this.FarPlaneDistance));
 
-			this.Gravity.Set = delegate(Vector3 value)
+			this.Add(new SetBinding<Vector3>(this.Gravity, delegate(Vector3 value)
 			{
 				main.Space.ForceUpdater.Gravity = value;
-			};
-			this.Gravity.Get = delegate()
-			{
-				return main.Space.ForceUpdater.Gravity;
-			};
+			}));
 
 			this.Add(new CommandBinding<Entity>(this.main.EntityAdded, delegate(Entity e)
 			{

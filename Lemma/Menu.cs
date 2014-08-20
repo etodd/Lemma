@@ -463,7 +463,6 @@ namespace Lemma.Components
 			this.displayModeIndex = displayModeIndex;
 		}
 
-
 		private Animation challengeAnimation = null;
 		private Animation officialAnimation = null;
 		private bool challengeMenuShown = false;
@@ -801,11 +800,6 @@ namespace Lemma.Components
 			#endregion
 		}
 
-		private void ConstructOfficialMaps()
-		{
-
-		}
-
 		public override void Awake()
 		{
 			base.Awake();
@@ -882,7 +876,7 @@ namespace Lemma.Components
 					new Animation.FloatMoveTo(msgBackground.Opacity, 0.0f, 2.0f),
 					new Animation.FloatMoveTo(msg.Opacity, 0.0f, 2.0f)
 				),
-				new Animation.Execute(delegate() { msgBackground.Delete.Execute(); })
+				new Animation.Execute(msgBackground.Delete)
 			));
 
 			// Pause menu

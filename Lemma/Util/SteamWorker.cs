@@ -18,8 +18,9 @@ namespace Lemma.Util
 		{
 			get
 			{
-				string completedDirectory = Directory.GetCurrentDirectory() + "\\WSFiles\\";
-				if (!Directory.Exists(completedDirectory)) Directory.CreateDirectory(completedDirectory);
+				string completedDirectory = SteamWorker.WSFilesDirectory;
+				if (!Directory.Exists(completedDirectory))
+					Directory.CreateDirectory(completedDirectory);
 				return new DirectoryInfo(completedDirectory);
 			}
 		}
@@ -106,22 +107,33 @@ namespace Lemma.Util
 #endif
 		}
 
+		private static string WSFilesDirectory
+		{
+			get
+			{
+				return Path.Combine(Main.DataDirectory, "workshop");
+			}
+		}
+
+		private static string WSTempDirectory
+		{
+			get
+			{
+				return Path.Combine(Main.DataDirectory, "tmp");
+			}
+		}
 
 		public static void RemoveWSTemp()
 		{
-			string tempDirectory = Directory.GetCurrentDirectory() + "\\WSTemp\\";
+			string tempDirectory = SteamWorker.WSTempDirectory;
 			if (!Directory.Exists(tempDirectory))
-			{
 				Directory.CreateDirectory(tempDirectory);
-			}
+
 			foreach (var dir in Directory.GetDirectories(tempDirectory))
-			{
 				Directory.Delete(dir, true);
-			}
+
 			foreach (var file in Directory.GetFiles(tempDirectory))
-			{
 				File.Delete(file);
-			}
 		}
 
 		public static bool WriteFileUGC(string path, string steamPath)
@@ -264,16 +276,21 @@ namespace Lemma.Util
 		{
 			var publishedCall = SteamRemoteStorage.GetPublishedFileDetails(file, 0);
 
-			string tempDirectory = Directory.GetCurrentDirectory() + "\\WSTemp\\";
-			string completedDirectory = Directory.GetCurrentDirectory() + "\\WSFiles\\";
-			if (!Directory.Exists(tempDirectory)) Directory.CreateDirectory(tempDirectory);
-			if (!Directory.Exists(completedDirectory)) Directory.CreateDirectory(completedDirectory);
+			string tempDirectory = SteamWorker.WSTempDirectory;
+			string completedDirectory = SteamWorker.WSFilesDirectory;
 
-			string tempDirectoryNew = tempDirectory + file.m_PublishedFileId + "\\";
-			string completedDirectoryNew = completedDirectory + file.m_PublishedFileId + "\\";
+			if (!Directory.Exists(tempDirectory))
+				Directory.CreateDirectory(tempDirectory);
+			if (!Directory.Exists(completedDirectory))
+				Directory.CreateDirectory(completedDirectory);
 
-			if (!Directory.Exists(tempDirectoryNew)) Directory.CreateDirectory(tempDirectoryNew);
-			if (!Directory.Exists(completedDirectoryNew)) Directory.CreateDirectory(completedDirectoryNew);
+			string tempDirectoryNew = Path.Combine(tempDirectory, file.m_PublishedFileId.ToString());
+			string completedDirectoryNew = Path.Combine(completedDirectory, file.m_PublishedFileId.ToString());
+
+			if (!Directory.Exists(tempDirectoryNew))
+				Directory.CreateDirectory(tempDirectoryNew);
+			if (!Directory.Exists(completedDirectoryNew))
+				Directory.CreateDirectory(completedDirectoryNew);
 
 			string metadataPath = Path.Combine(completedDirectoryNew, "meta.json");
 			WorkshopMapMetadata metadata = null;
@@ -294,8 +311,8 @@ namespace Lemma.Util
 					{
 						Downloading.Value++;
 
-						string mapFileTemp = tempDirectoryNew + file.m_PublishedFileId.ToString() + ".map";
-						string imageFileTemp = tempDirectoryNew + file.m_PublishedFileId.ToString() + ".png";
+						string mapFileTemp = Path.Combine(tempDirectoryNew, file.m_PublishedFileId.ToString() + IO.MapLoader.MapExtension);
+						string imageFileTemp = Path.Combine(tempDirectoryNew, file.m_PublishedFileId.ToString() + ".png");
 						var downloadMapCall = SteamRemoteStorage.UGCDownloadToLocation(t.m_hFile, mapFileTemp, 1);
 						new CallResult<RemoteStorageDownloadUGCResult_t>((resultT, ioFailure) =>
 						{
@@ -428,7 +445,7 @@ namespace Lemma.Util
 				//This whole ordeal deletes folders in here that are not currently-subscribed workshop maps.
 				foreach (var dir in directories)
 				{
-					Directory.Delete(DownloadedMaps.FullName + dir, true);
+					Directory.Delete(Path.Combine(DownloadedMaps.FullName, dir), true);
 				}
 			}
 

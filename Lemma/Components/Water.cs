@@ -209,11 +209,10 @@ namespace Lemma.Components
 			base.Awake();
 			this.EnabledWhenPaused = true;
 
-			this.CannotSuspendByDistance.Set = delegate(bool value)
+			this.Add(new SetBinding<bool>(this.CannotSuspendByDistance, delegate(bool value)
 			{
-				this.CannotSuspendByDistance.InternalValue = value;
 				this.Entity.CannotSuspendByDistance = value;
-			};
+			}));
 
 			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.main.ScreenSize));
 			this.Add(new Binding<bool>(this.EnableReflection, this.main.Settings.EnableReflections));
@@ -249,75 +248,64 @@ namespace Lemma.Components
 				ReverseCullOrder = true,
 			};
 
-			this.Color.Set = delegate(Vector3 value)
+			this.Add(new SetBinding<Vector3>(this.Color, delegate(Vector3 value)
 			{
-				this.Color.InternalValue = value;
 				this.effect.Parameters["Color"].SetValue(value);
-			};
+			}));
 
-			this.Scale.Set = delegate(Vector2 value)
+			this.Add(new SetBinding<Vector2>(this.Scale, delegate(Vector2 value)
 			{
-				this.Scale.InternalValue = value;
 				this.effect.Parameters["Scale"].SetValue(value);
 				this.updatePhysics();
-			};
+			}));
 
-			this.UnderwaterColor.Set = delegate(Vector3 value)
+			this.Add(new SetBinding<Vector3>(this.UnderwaterColor, delegate(Vector3 value)
 			{
-				this.UnderwaterColor.InternalValue = value;
 				this.effect.Parameters["UnderwaterColor"].SetValue(value);
-			};
+			}));
 
-			this.Fresnel.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.Fresnel, delegate(float value)
 			{
-				this.Fresnel.InternalValue = value;
 				this.effect.Parameters["Fresnel"].SetValue(value);
-			};
+			}));
 
-			this.Speed.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.Speed, delegate(float value)
 			{
-				this.Speed.InternalValue = value;
 				this.effect.Parameters["Speed"].SetValue(value);
-			};
+			}));
 
-			this.RippleDensity.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.RippleDensity, delegate(float value)
 			{
-				this.RippleDensity.InternalValue = value;
 				this.effect.Parameters["RippleDensity"].SetValue(value);
-			};
+			}));
 
-			this.Distortion.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.Distortion, delegate(float value)
 			{
-				this.Distortion.InternalValue = value;
 				this.effect.Parameters["Distortion"].SetValue(value);
-			};
+			}));
 
-			this.Brightness.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.Brightness, delegate(float value)
 			{
-				this.Brightness.InternalValue = value;
 				this.effect.Parameters["Brightness"].SetValue(value);
-			};
+			}));
 
-			this.Refraction.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.Refraction, delegate(float value)
 			{
-				this.Refraction.InternalValue = value;
 				this.effect.Parameters["Refraction"].SetValue(value);
-			};
+			}));
 
-			this.Position.Set = delegate(Vector3 value)
+			this.Add(new SetBinding<Vector3>(this.Position, delegate(Vector3 value)
 			{
-				this.Position.InternalValue = value;
 				this.effect.Parameters["Position"].SetValue(this.Position);
 				if (this.CannotSuspendByDistance)
 					Water.BigWaterHeight.Value = value.Y;
 				this.updatePhysics();
-			};
+			}));
 
-			this.Depth.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.Depth, delegate(float value)
 			{
-				 this.Depth.InternalValue = value;
 				 this.updatePhysics();
-			};
+			}));
 
 			instances.Add(this);
 

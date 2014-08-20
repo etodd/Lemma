@@ -611,11 +611,7 @@ namespace Lemma.Components
 			base.Awake();
 			this.EnabledWhenPaused = true;
 			this.DrawOrder = new Property<int> { Value = 11 };
-			this.Settings.Get = delegate()
-			{
-				return this.settings;
-			};
-			this.Settings.Set = delegate(ParticleSettings value)
+			this.Add(new SetBinding<ParticleSettings>(this.Settings, delegate(ParticleSettings value)
 			{
 				this.settings = value;
 				if (this.main != null)
@@ -626,7 +622,7 @@ namespace Lemma.Components
 						this.indexBuffer.Dispose();
 					this.initialize(false);
 				}
-			};
+			}));
 		}
 
 		protected void initialize(bool reload)

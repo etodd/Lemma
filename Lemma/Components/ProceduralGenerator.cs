@@ -233,17 +233,15 @@ namespace Lemma.Components
 
 			this.Reseed.Action = this.reseed;
 
-			this.PrimaryFillValue.Set = delegate(Voxel.t value)
+			this.Add(new SetBinding<Voxel.t>(this.PrimaryFillValue, delegate(Voxel.t value)
 			{
 				this.primaryFillValue = Voxel.States[value];
-				this.PrimaryFillValue.InternalValue = value;
-			};
+			}));
 
-			this.SecondaryFillValue.Set = delegate(Voxel.t value)
+			this.Add(new SetBinding<Voxel.t>(this.SecondaryFillValue, delegate(Voxel.t value)
 			{
 				this.secondaryFillValue = Voxel.States[value];
-				this.SecondaryFillValue.InternalValue = value;
-			};
+			}));
 		}
 	}
 }

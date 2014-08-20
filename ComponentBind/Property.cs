@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using System.ComponentModel;
 using System.Collections;
 using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace ComponentBind
 {
@@ -14,7 +15,7 @@ namespace ComponentBind
 		void AddBinding(IPropertyBinding binding);
 		void RemoveBinding(IPropertyBinding binding);
 		void Reset();
-		Type PropertyType();
+		Type PropertyType { get; }
 	}
 
 	public class PropertyEntry
@@ -52,32 +53,14 @@ namespace ComponentBind
 	public class Property<Type> : IProperty
 	{
 		[XmlIgnore]
-		public Type InternalValue;
+		[JsonIgnore]
+		protected Type _value;
 
-		[XmlIgnore]
-		public Func<Type> Get;
-
-		protected Action<Type> set;
-		[XmlIgnore]
-		public Action<Type> Set
-		{
-			get
-			{
-				return this.set;
-			}
-			set
-			{
-				this.set = value;
-				if (this.InternalValue != null && !this.InternalValue.Equals(default(Type)))
-					this.set(this.InternalValue);
-			}
-		}
 		protected List<IPropertyBinding> bindings = new List<IPropertyBinding>();
 
 		public void AddBinding(IPropertyBinding binding)
 		{
-			if (!this.bindings.Contains(binding))
-				this.bindings.Add(binding);
+			this.bindings.Add(binding);
 		}
 
 		public void RemoveBinding(IPropertyBinding binding)
@@ -95,7 +78,7 @@ namespace ComponentBind
 		{
 			get
 			{
-				return this.InternalGet(null);
+				return this._value;
 			}
 			set
 			{
@@ -105,42 +88,47 @@ namespace ComponentBind
 
 		public void Reset()
 		{
-			this.InternalSet(this.InternalGet(null), null);
+			this.InternalSet(this._value, null);
 		}
 
-		public System.Type PropertyType()
+		public System.Type PropertyType
 		{
-			return typeof(Type);
-		}
-
-		public void InternalSet(Type obj, IPropertyBinding binding)
-		{
-			if (this.Set != null)
-				this.Set(obj);
-			else
-				this.InternalValue = obj;
-
-			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
+			get
 			{
-				IPropertyBinding b = this.bindings[j];
-				if (b != binding)
-					b.OnChanged(this);
+				return typeof(Type);
 			}
 		}
 
-		public Type InternalGet(IPropertyBinding binding)
+		public void SetStealthy(Type t)
 		{
-			return this.Get != null ? this.Get() : this.InternalValue;
+			this._value = t;
+		}
+
+		private bool setting;
+		public void InternalSet(Type obj, IPropertyBinding binding)
+		{
+			this._value = obj;
+			if (!this.setting)
+			{
+				this.setting = true;
+				for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
+				{
+					IPropertyBinding b = this.bindings[j];
+					if (b != binding)
+						b.OnChanged(this);
+				}
+				this.setting = false;
+			}
 		}
 
 		public static implicit operator Type(Property<Type> obj)
 		{
-			return obj.Value;
+			return obj._value;
 		}
 
 		public override string ToString()
 		{
-			return this.Value.ToString();
+			return this._value.ToString();
 		}
 	}
 
@@ -172,6 +160,7 @@ namespace ComponentBind
 
 		protected string description = "";
 		[XmlIgnore]
+		[JsonIgnore]
 		[DefaultValue("")]
 		public string Description
 		{
@@ -181,6 +170,7 @@ namespace ComponentBind
 
 		protected bool serialize = true;
 		[XmlIgnore]
+		[JsonIgnore]
 		public bool Serialize
 		{
 			get
@@ -214,9 +204,12 @@ namespace ComponentBind
 
 		}
 
-		public System.Type PropertyType()
+		public System.Type PropertyType
 		{
-			return typeof (Type);
+			get
+			{
+				return typeof (Type);
+			}
 		}
 
 		private List<Type> list = new List<Type>();

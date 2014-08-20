@@ -36,59 +36,34 @@ namespace Lemma.Components
 				this.Sphere = new Sphere(Vector3.Zero, this.Radius, this.Mass);
 			this.Sphere.CollisionInformation.Events.ContactCreated += new BEPUphysics.BroadPhaseEntries.Events.ContactCreatedEventHandler<EntityCollidable>(Events_ContactCreated);
 			this.Sphere.CollisionInformation.CollisionRules.Group = Util.Character.NoCollideGroup;
-			this.Transform.Set = delegate(Matrix matrix)
+			this.Add(new SetBinding<Matrix>(this.Transform, delegate(Matrix value)
 			{
-				this.Sphere.WorldTransform = matrix;
-			};
+				this.Sphere.WorldTransform = value;
+			}));
 
-			this.Transform.Get = delegate()
+			this.Add(new SetBinding<float>(this.Mass, delegate(float value)
 			{
-				return this.Sphere.WorldTransform;
-			};
+				this.Sphere.Mass = value;
+			}));
 
-			this.Mass.Set = delegate(float m)
-			{
-				this.Sphere.Mass = m;
-			};
-
-			this.Mass.Get = delegate()
-			{
-				return this.Sphere.Mass;
-			};
-
-			this.LinearVelocity.Get = delegate()
-			{
-				return this.Sphere.LinearVelocity;
-			};
-
-			this.LinearVelocity.Set = delegate(Vector3 value)
+			this.Add(new SetBinding<Vector3>(this.LinearVelocity, delegate(Vector3 value)
 			{
 				this.Sphere.LinearVelocity = value;
-			};
+			}));
 
-			this.AngularVelocity.Get = delegate()
-			{
-				return this.Sphere.AngularVelocity;
-			};
-
-			this.AngularVelocity.Set = delegate(Vector3 value)
+			this.Add(new SetBinding<Vector3>(this.AngularVelocity, delegate(Vector3 value)
 			{
 				this.Sphere.AngularVelocity = value;
-			};
+			}));
 
-			this.Radius.Set = delegate(float s)
+			this.Add(new SetBinding<float>(this.Radius, delegate(float s)
 			{
 				this.Sphere.Radius = s;
 				if (s < 0.5f)
 					this.Sphere.PositionUpdateMode = BEPUphysics.PositionUpdating.PositionUpdateMode.Continuous;
 				else
 					this.Sphere.PositionUpdateMode = BEPUphysics.PositionUpdating.PositionUpdateMode.Discrete;
-			};
-
-			this.Radius.Get = delegate()
-			{
-				return this.Sphere.Radius;
-			};
+			}));
 
 			Action remove = delegate()
 			{
@@ -117,7 +92,9 @@ namespace Lemma.Components
 
 		void IUpdateableComponent.Update(float dt)
 		{
-			this.Transform.Changed();
+			this.Transform.Value = this.Sphere.WorldTransform;
+			this.LinearVelocity.Value = this.Sphere.LinearVelocity;
+			this.AngularVelocity.Value = this.Sphere.AngularVelocity;
 		}
 
 		public override void delete()

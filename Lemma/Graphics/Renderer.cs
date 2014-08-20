@@ -132,53 +132,43 @@ namespace Lemma.Components
 		{
 			base.Awake();
 
-			this.BlurAmount.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.BlurAmount, delegate(float value)
 			{
-				this.BlurAmount.InternalValue = value;
 				this.blurEffect.Parameters["BlurAmount"].SetValue(value);
-			};
-			this.LightRampTexture.Set = delegate(string file)
+			}));
+			this.Add(new ChangeBinding<string>(this.LightRampTexture, delegate(string old, string file)
 			{
-				if (this.LightRampTexture.InternalValue != file)
-				{
-					this.LightRampTexture.InternalValue = file;
+				if (old != file)
 					this.loadLightRampTexture(file);
-				}
-			};
+			}));
 
-			this.InternalGamma.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.InternalGamma, delegate(float value)
 			{
-				this.InternalGamma.InternalValue = value;
 				this.Gamma.Reset();
-			};
+			}));
 
-			this.MotionBlurAmount.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.MotionBlurAmount, delegate(float value)
 			{
-				this.MotionBlurAmount.InternalValue = value;
 				this.motionBlurEffect.Parameters["MotionBlurAmount"].SetValue(value);
-			};
-			this.SpeedBlurAmount.Set = delegate(float value)
+			}));
+			this.Add(new SetBinding<float>(this.SpeedBlurAmount, delegate(float value)
 			{
-				this.SpeedBlurAmount.InternalValue = value;
 				this.motionBlurEffect.Parameters["SpeedBlurAmount"].SetValue(value);
-			};
+			}));
 			this.SpeedBlurAmount.Value = 0.0f;
 
-			this.Gamma.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.Gamma, delegate(float value)
 			{
-				this.Gamma.InternalValue = value;
 				this.bloomEffect.Parameters["Gamma"].SetValue(value + this.InternalGamma);
-			};
-			this.Tint.Set = delegate(Vector3 value)
+			}));
+			this.Add(new SetBinding<Vector3>(this.Tint, delegate(Vector3 value)
 			{
-				this.Tint.InternalValue = value;
 				this.bloomEffect.Parameters["Tint"].SetValue(value);
-			};
-			this.Brightness.Set = delegate(float value)
+			}));
+			this.Add(new SetBinding<float>(this.Brightness, delegate(float value)
 			{
-				this.Brightness.InternalValue = value;
 				this.bloomEffect.Parameters["Brightness"].SetValue(value);
-			};
+			}));
 		}
 
 		private void loadLightRampTexture(string file)

@@ -114,7 +114,6 @@
     <Compile Include="Components\ParticleWind.cs" />
     <Compile Include="Components\Rotator.cs" />
     <Compile Include="Components\Scriptlike\Binder.cs" />
-    <Compile Include="Components\Scriptlike\Concatenator.cs" />
     <Compile Include="Components\Scriptlike\Constant.cs" />
     <Compile Include="Components\Scriptlike\MessageDisplayer.cs" />
     <Compile Include="Components\Skybox.cs" />
@@ -163,7 +162,6 @@
     <Compile Include="Components\Propagator.cs" />
     <Compile Include="Editor\AnalyticsViewer.cs" />
     <Compile Include="Editor\EditorGeeUI.cs" />
-    <Compile Include="Factories\ConcatenatorFactory.cs" />
     <Compile Include="Factories\MessageDisplayerFactory.cs" />
     <Compile Include="Factories\ConstantFactory.cs" />
     <Compile Include="Factories\ExplosionFactory.cs" />

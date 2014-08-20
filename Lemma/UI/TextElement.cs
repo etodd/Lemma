@@ -10,7 +10,6 @@ namespace Lemma.Components
 {
 	public class TextElement : UIComponent
 	{
-		protected string fontFile;
 		public Property<string> FontFile = new Property<string>();
 		public Property<string> Text = new Property<string> { Value = "" };
 		public Property<Color> Tint = new Property<Color> { Value = Color.White };
@@ -72,34 +71,24 @@ namespace Lemma.Components
 		{
 			base.Awake();
 
-			this.FontFile.Get = delegate()
+			this.Add(new SetBinding<string>(this.FontFile, delegate(string value)
 			{
-				return this.fontFile;
-			};
-
-			this.FontFile.Set = delegate(string value)
-			{
-				this.fontFile = value;
 				if (this.main != null)
 					this.loadFont();
-			};
+			}));
 
-			this.internalText.Set = delegate(string value)
+			this.Add(new SetBinding<string>(this.internalText, delegate(string value)
 			{
-				this.internalText.InternalValue = value;
 				this.updateText();
-			};
+			}));
 
-			this.WrapWidth.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.WrapWidth, delegate(float value)
 			{
-				this.WrapWidth.InternalValue = value;
 				this.updateText();
-			};
+			}));
 
-			this.Text.Set = delegate(string value)
+			this.Add(new SetBinding<string>(this.Text, delegate(string value)
 			{
-				this.Text.InternalValue = value;
-
 				if (this.internalTextBinding != null)
 					this.Remove(this.internalTextBinding);
 
@@ -201,7 +190,7 @@ namespace Lemma.Components
 					this.languageBinding = null;
 					this.internalText.Value = value;
 				}
-			};
+			}));
 			this.Add(new NotifyBinding(this.Text.Reset, this.Interpolation));
 		}
 

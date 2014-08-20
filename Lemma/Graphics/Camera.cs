@@ -157,21 +157,21 @@ namespace Lemma.Components
 
 		public void SetPerspectiveProjection(float fov, Point viewportSize, float near, float far)
 		{
-			this.FieldOfView.InternalValue = fov;
-			this.ViewportSize.InternalValue = viewportSize;
-			this.AspectRatio.InternalValue = (float)viewportSize.X / (float)viewportSize.Y;
-			this.NearPlaneDistance.InternalValue = near;
-			this.FarPlaneDistance.InternalValue = far;
-			this.OrthographicProjection.InternalValue = false;
+			this.FieldOfView.SetStealthy(fov);
+			this.ViewportSize.SetStealthy(viewportSize);
+			this.AspectRatio.SetStealthy((float)viewportSize.X / (float)viewportSize.Y);
+			this.NearPlaneDistance.SetStealthy(near);
+			this.FarPlaneDistance.SetStealthy(far);
+			this.OrthographicProjection.SetStealthy(false);
 			this.Projection.Value = Matrix.CreatePerspectiveFieldOfView(fov, this.AspectRatio, near, far);
 		}
 
 		public void SetOrthographicProjection(float width, float height, float near, float far)
 		{
-			this.OrthographicSize.InternalValue = new Vector2(width, height);
-			this.NearPlaneDistance.InternalValue = near;
-			this.FarPlaneDistance.InternalValue = far;
-			this.OrthographicProjection.InternalValue = true;
+			this.OrthographicSize.SetStealthy(new Vector2(width, height));
+			this.NearPlaneDistance.SetStealthy(near);
+			this.FarPlaneDistance.SetStealthy(far);
+			this.OrthographicProjection.SetStealthy(true);
 			this.Projection.Value = Matrix.CreateOrthographic(width, height, near, far);
 		}
 

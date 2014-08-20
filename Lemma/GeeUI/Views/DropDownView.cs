@@ -107,11 +107,10 @@ namespace GeeUI.Views
 
 			DropDownPanelView.Active.Value = false;
 
-			this.Label.Set = delegate(string value)
+			this.Add(new SetBinding<string>(this.Label, delegate(string value)
 			{
-				this.Label.InternalValue = value;
 				((ButtonView)FindFirstChildByName("button")).Text = value;
-			};
+			}));
 		}
 
 		private void keyPressedHandler(string keyPressed, Keys key)

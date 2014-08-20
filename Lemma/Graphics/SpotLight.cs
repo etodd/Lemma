@@ -39,10 +39,11 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.FieldOfView.Set = delegate(float value)
+			this.Add(new SetBinding<float>(this.FieldOfView, delegate(float value)
 			{
-				this.FieldOfView.InternalValue = Math.Max(0.01f, Math.Min((float)Math.PI - 0.01f, value));
-			};
+				if (value < 0.01f || value > (float)Math.PI - 0.01f)
+					this.FieldOfView.Value = Math.Max(0.01f, Math.Min((float)Math.PI - 0.01f, value));
+			}));
 
 			this.Add(new Binding<Matrix>(this.View, delegate()
 			{
