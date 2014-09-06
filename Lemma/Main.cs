@@ -1361,6 +1361,12 @@ namespace Lemma
 			}
 
 #else
+			foreach (IDrawablePreFrameComponent c in this.preframeDrawables)
+			{
+				if (this.componentEnabled(c))
+					c.DrawPreFrame(gameTime, this.renderParameters);
+			}
+
 			this.Renderer.SetRenderTargets(this.renderParameters);
 
 			this.DrawScene(this.renderParameters);
@@ -1395,7 +1401,9 @@ namespace Lemma
 				this.RenderTarget = null;
 			}
 
+#if OCULUS
 			OVR.Hmd.WaitTillTime(frameTiming.TimewarpPointSeconds);
+#endif
 		}
 
 		protected override void EndDraw()
