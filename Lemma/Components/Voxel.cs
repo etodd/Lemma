@@ -1813,7 +1813,6 @@ namespace Lemma.Components
 			set
 			{
 				this.serializedVoxelData = Voxel.deserializeData(value);
-
 			}
 		}
 

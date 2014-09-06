@@ -273,7 +273,11 @@ namespace Lemma.Factories
 			// When rotation is locked, we want to make sure the player can't turn their head
 			// 180 degrees from the direction they're facing
 
+#if OCULUS
+			input.MaxY.Value = input.MinY.Value = 0;
+#else
 			input.Add(new Binding<float>(input.MaxY, () => rotation.Locked ? (float)Math.PI * 0.3f : (float)Math.PI * 0.4f, rotation.Locked));
+#endif
 			input.Add(new Binding<float>(input.MinX, () => rotation.Locked ? rotation.Rotation + ((float)Math.PI * -0.4f) : 0.0f, rotation.Rotation, rotation.Locked));
 			input.Add(new Binding<float>(input.MaxX, () => rotation.Locked ? rotation.Rotation + ((float)Math.PI * 0.4f) : 0.0f, rotation.Rotation, rotation.Locked));
 			input.Add(new NotifyBinding(delegate() { input.Mouse.Changed(); }, rotation.Locked)); // Make sure the rotation locking takes effect even if the player doesn't move the mouse
@@ -319,7 +323,7 @@ namespace Lemma.Factories
 			ui.EnabledWhenPaused = true;
 			ui.EnabledInEditMode = false;
 			entity.Add("UI", ui);
-			PlayerUI.Attach(main, ui, player.Health);
+			PlayerUI.Attach(main, entity, ui, player.Health, rotation.Rotation);
 
 			input.Add(new Binding<float>(input.MouseSensitivity, settings.MouseSensitivity));
 			input.Add(new Binding<bool>(input.InvertMouseX, settings.InvertMouseX));
@@ -362,8 +366,6 @@ namespace Lemma.Factories
 			}));
 
 			player.EnabledInEditMode = false;
-
-			input.MaxY.Value = (float)Math.PI * 0.35f;
 
 			Action updateFallSound = delegate()
 			{

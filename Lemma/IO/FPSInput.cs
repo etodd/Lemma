@@ -162,7 +162,7 @@ namespace Lemma.Components
 						minX = Math.Min(minX, maxX);
 						maxX = Math.Max(tempX, maxX);
 
-						if (minX < 0 && maxX > 0 && Math.Abs(minX + pi) + Math.Abs(maxX - pi) < Math.Abs(minX) + Math.Abs(maxX))
+						if (Math.Abs(minX + pi) + Math.Abs(maxX - pi) < Math.Abs(minX) + Math.Abs(maxX))
 						{
 							if (newValue.X < 0 && newValue.X > minX)
 								newValue.X = minX;
@@ -173,22 +173,19 @@ namespace Lemma.Components
 							newValue.X = Math.Min(maxX, Math.Max(minX, newValue.X));
 					}
 
-					if (!(minY == 0 && maxY == 0))
-					{
-						float tempY = minY;
-						minY = Math.Min(minY, maxY);
-						maxY = Math.Max(tempY, maxY);
+					float tempY = minY;
+					minY = Math.Min(minY, maxY);
+					maxY = Math.Max(tempY, maxY);
 
-						if (minY < 0 && maxY > 0 && Math.Abs(minY + pi) + Math.Abs(maxY - pi) < Math.Abs(minY) + Math.Abs(maxY))
-						{
-							if (newValue.Y < 0 && newValue.Y > minY)
-								newValue.Y = minY;
-							if (newValue.Y > 0 && newValue.Y < maxY)
-								newValue.Y = maxY;
-						}
-						else
-							newValue.Y = Math.Min(maxY, Math.Max(minY, newValue.Y));
+					if (minY < 0 && maxY > 0 && Math.Abs(minY + pi) + Math.Abs(maxY - pi) < Math.Abs(minY) + Math.Abs(maxY))
+					{
+						if (newValue.Y < 0 && newValue.Y > minY)
+							newValue.Y = minY;
+						if (newValue.Y > 0 && newValue.Y < maxY)
+							newValue.Y = maxY;
 					}
+					else
+						newValue.Y = Math.Min(maxY, Math.Max(minY, newValue.Y));
 
 					this.Mouse.Value = newValue;
 				}

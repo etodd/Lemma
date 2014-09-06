@@ -64,6 +64,7 @@ namespace Lemma.Components
 				this.shakeAmount = Math.Max(this.shakeAmount * this.blendShake(), targetShake);
 				this.shakeTime = totalShakeTime;
 			};
+
 #if OCULUS
 			this.main.Hmd.RecenterPose();
 #endif
@@ -116,30 +117,9 @@ namespace Lemma.Components
 			}
 			else
 			{
-				Matrix headTrackingOrientation = Matrix.Identity;
-				Vector3 headTrackingPosition = Vector3.Zero;
-#if OCULUS
-				OVR.ovrTrackingState ts = this.main.Hmd.GetTrackingState(OVR.Hmd.GetTimeInSeconds());
-				if ((ts.StatusFlags & ((uint)OVR.ovrStatusBits.ovrStatus_OrientationTracked | (uint)OVR.ovrStatusBits.ovrStatus_PositionTracked)) != 0)
-				{
-					OVR.ovrVector3f pos = ts.HeadPose.ThePose.Position;
-					OVR.ovrQuatf orientation = ts.HeadPose.ThePose.Orientation;
-
-					Quaternion quat = Quaternion.CreateFromYawPitchRoll(0, (float)Math.PI * 0.5f, 0)
-						* new Quaternion(orientation.x, orientation.y, orientation.z, orientation.w)
-						* Quaternion.CreateFromYawPitchRoll(0, (float)Math.PI * -0.5f, 0);
-
-					headTrackingOrientation = Matrix.CreateFromQuaternion(quat);
-
-					//headTrackingPosition = new Vector3(pos.x, pos.y, pos.z) * Main.VRUnitToWorldUnit * 10.0f;
-				}
-#endif
-
 				Matrix cameraOrientation = this.CameraBone.Value * Matrix.CreateRotationY(mouse.X + shake.X);
 
-				cameraOrientation = headTrackingOrientation * cameraOrientation;
-
-				main.Camera.Position.Value = cameraPosition + headTrackingPosition;
+				main.Camera.Position.Value = cameraPosition;
 
 				Matrix rot = Matrix.Identity;
 				rot.Forward = Vector3.Normalize(Vector3.TransformNormal(new Vector3(0, 1.0f, 0), cameraOrientation));

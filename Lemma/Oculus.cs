@@ -76,7 +76,6 @@ namespace Lemma
 			{
 				effect.Parameters["EyeToSourceUVScale"].SetValue(this.uvScale);
 				effect.Parameters["EyeToSourceUVOffset"].SetValue(this.uvOffset);
-				// TODO: causes an access violation
 				OVR.ovrMatrix4f[] timeWarpMatrices = this.hmd.ovrHmd_GetEyeTimewarpMatrices(this.eye, eyePose);
 				Matrix timeWarp1 = Oculus.MatrixOvrToXna(timeWarpMatrices[0]);
 				Matrix timeWarp2 = Oculus.MatrixOvrToXna(timeWarpMatrices[1]);
