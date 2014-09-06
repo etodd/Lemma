@@ -87,6 +87,11 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Func<MouseState, MouseState> MouseFilter = x => x;
 
+		[XmlIgnore]
+		public Property<Vector2> Mouse = new Property<Vector2>();
+
+		public Property<bool> IsMouseVisible = new Property<bool> { };
+
 		private MouseState lastMouseState;
 
 		private void resize()
@@ -96,19 +101,26 @@ namespace Lemma.Components
 			this.RenderTarget.Value = null;
 
 			Point size = this.RenderTargetSize;
+			Point screenSize = this.main.ScreenSize;
 			if (size.X > 0 && size.Y > 0)
 			{
 				this.RenderTarget.Value = new RenderTarget2D(this.main.GraphicsDevice, size.X, size.Y);
 				this.Root.Size.Value = new Vector2(size.X, size.Y);
 			}
 			else
-			{
-				Point screenSize = this.main.ScreenSize;
 				this.Root.Size.Value = new Vector2(screenSize.X, screenSize.Y);
-			}
+
+#if OCULUS
+			this.mousePos.X = screenSize.X / 2;
+			this.mousePos.Y = screenSize.Y / 2;
+#endif
 
 			this.needResize = false;
 		}
+
+#if OCULUS
+		public Sprite Reticle;
+#endif
 
 		public UIRenderer()
 		{
@@ -117,6 +129,29 @@ namespace Lemma.Components
 			this.Root = new RootUIComponent(this);
 			this.Root.AnchorPoint.Value = Vector2.Zero;
 			this.Serialize = false;
+
+#if OCULUS
+			this.Reticle = new Sprite();
+			this.Reticle.Image.Value = "Images\\reticle";
+			this.Reticle.AnchorPoint.Value = new Vector2(0.5f);
+			this.Root.Children.Add(this.Reticle);
+			this.Reticle.Add(new Binding<Vector2>(this.Reticle.Position, this.Mouse));
+			this.Reticle.Add(new Binding<bool>(this.Reticle.Visible, this.IsMouseVisible));
+			// HACK: Make sure reticle is always on top.
+			this.Root.Children.ItemAdded += delegate(int index, UIComponent c)
+			{
+				if (c != this.Reticle && this.Root.Children.Contains(this.Reticle))
+				{
+					this.Reticle.Detach();
+					this.Root.Children.Add(this.Reticle);
+				}
+			};
+#else
+			this.Add(new NotifyBinding(delegate()
+			{
+				this.main.IsMouseVisible = this.IsMouseVisible;
+			}, this.IsMouseVisible));
+#endif
 		}
 
 		private bool needResize = false;
@@ -142,11 +177,47 @@ namespace Lemma.Components
 			this.needResize = true;
 		}
 
+#if OCULUS
+		private Point mousePos;
+#endif
+
 		void IUpdateableComponent.Update(float dt)
 		{
 			if (this.main.IsActive && this.EnableMouse)
 			{
-				MouseState current = this.MouseFilter(this.main.MouseState), last = this.lastMouseState;
+				MouseState realMouseState = this.main.MouseState;
+#if OCULUS
+				Point lastMousePos = this.mousePos;
+				this.mousePos.X += realMouseState.X - FPSInput.MouseCenter.X;
+				this.mousePos.Y += realMouseState.Y - FPSInput.MouseCenter.Y;
+				FPSInput.RecenterMouse();
+				realMouseState = new MouseState
+				(
+					this.mousePos.X,
+					this.mousePos.Y,
+					realMouseState.ScrollWheelValue,
+					realMouseState.LeftButton,
+					realMouseState.MiddleButton,
+					realMouseState.RightButton,
+					realMouseState.XButton1,
+					realMouseState.XButton2
+				);
+#endif
+				MouseState current = this.MouseFilter(realMouseState), last = this.lastMouseState;
+
+#if OCULUS
+				Point size = this.RenderTargetSize;
+				if (current.X > size.X)
+					this.mousePos.X = Math.Min(this.mousePos.X, lastMousePos.X);
+				if (current.X < 0)
+					this.mousePos.X = Math.Max(this.mousePos.X, lastMousePos.X);
+				if (current.Y > size.Y)
+					this.mousePos.Y = Math.Min(this.mousePos.Y, lastMousePos.Y);
+				if (current.Y < 0)
+					this.mousePos.Y = Math.Max(this.mousePos.Y, lastMousePos.Y);
+#endif
+
+				this.Mouse.Value = new Vector2(current.X, current.Y);
 				if (current.LeftButton != last.LeftButton
 					|| current.RightButton != last.RightButton
 					|| current.MiddleButton != last.MiddleButton

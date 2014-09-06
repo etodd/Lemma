@@ -1137,8 +1137,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Effects\VirtualReticle.fx">
-      <Name>VirtualReticle</Name>
+    <Compile Include="Effects\VirtualUI.fx">
+      <Name>VirtualUI</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>

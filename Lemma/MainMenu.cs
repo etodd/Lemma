@@ -31,7 +31,7 @@ namespace Lemma.GameScripts
 				main.Renderer.InternalGamma.Value = 0.0f;
 				main.Renderer.Brightness.Value = 0.0f;
 				main.LightingManager.BackgroundColor.Value = World.DefaultBackgroundColor;
-				main.IsMouseVisible.Value = true;
+				main.UI.IsMouseVisible.Value = true;
 
 				ListContainer list = new ListContainer();
 				list.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
@@ -179,7 +179,9 @@ namespace Lemma.GameScripts
 				script.Add(new CommandBinding(script.Delete, logo.Delete, corner.Delete));
 			}
 
+#if !OCULUS
 			main.Renderer.BlurAmount.Value = 1.0f;
+#endif
 			main.Renderer.InternalGamma.Value = 0.0f;
 			main.Renderer.Brightness.Value = 0.0f;
 			main.Renderer.Tint.Value = new Vector3(0.0f);

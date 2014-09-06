@@ -31,12 +31,11 @@ namespace Lemma.Components
 		public Property<bool> InvertMouseX = new Property<bool> { Value = false };
 		public Property<bool> InvertMouseY = new Property<bool> { Value = false };
 
-		const int mouseCenterX = 400;
-		const int mouseCenterY = 400;
+		public static readonly Point MouseCenter = new Point(400, 400);
 
 		public static void RecenterMouse()
 		{
-			Microsoft.Xna.Framework.Input.Mouse.SetPosition(FPSInput.mouseCenterX, FPSInput.mouseCenterY);
+			Microsoft.Xna.Framework.Input.Mouse.SetPosition(FPSInput.MouseCenter.X, FPSInput.MouseCenter.Y);
 		}
 
 		protected Vector2 lastMouseLook, lastMouseNonLook;
@@ -60,7 +59,7 @@ namespace Lemma.Components
 					FPSInput.RecenterMouse();
 					MouseState oldState = this.main.MouseState;
 					this.lastMouseNonLook = new Vector2(oldState.X, oldState.Y);
-					this.main.MouseState.Value = new MouseState(FPSInput.mouseCenterX, FPSInput.mouseCenterY, oldState.ScrollWheelValue, oldState.LeftButton, oldState.MiddleButton, oldState.RightButton, oldState.XButton1, oldState.XButton2);
+					this.main.MouseState.Value = new MouseState(FPSInput.MouseCenter.X, FPSInput.MouseCenter.Y, oldState.ScrollWheelValue, oldState.LeftButton, oldState.MiddleButton, oldState.RightButton, oldState.XButton1, oldState.XButton2);
 				}
 				else if (!value && old)
 				{
@@ -134,7 +133,7 @@ namespace Lemma.Components
 			{
 				MouseState mouse = this.main.MouseState;
 
-				Vector2 mouseMovement = new Vector2(FPSInput.mouseCenterX - mouse.X, mouse.Y - FPSInput.mouseCenterY) * this.MouseSensitivity * FPSInput.sensitivityMultiplier;
+				Vector2 mouseMovement = new Vector2(FPSInput.MouseCenter.X - mouse.X, mouse.Y - FPSInput.MouseCenter.Y) * this.MouseSensitivity * FPSInput.sensitivityMultiplier;
 
 				GamePadState gamePad = this.main.GamePadState;
 				if (gamePad.IsConnected)

@@ -47,7 +47,7 @@ namespace Lemma.Factories
 						main.Spawner.CanSpawn = false;
 						main.Renderer.Brightness.Value = 0.0f;
 						main.Renderer.InternalGamma.Value = 0.0f;
-						main.IsMouseVisible.Value = false;
+						main.UI.IsMouseVisible.Value = false;
 						
 						main.AddComponent(new PostInitialization
 						{

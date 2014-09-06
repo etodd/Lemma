@@ -323,7 +323,6 @@ namespace Lemma.Factories
 			ui.EnabledWhenPaused = true;
 			ui.EnabledInEditMode = false;
 			entity.Add("UI", ui);
-			PlayerUI.Attach(main, entity, ui, player.Health, rotation.Rotation);
 
 			input.Add(new Binding<float>(input.MouseSensitivity, settings.MouseSensitivity));
 			input.Add(new Binding<bool>(input.InvertMouseX, settings.InvertMouseX));
@@ -428,7 +427,7 @@ namespace Lemma.Factories
 				}
 			});
 
-			main.IsMouseVisible.Value = false;
+			main.UI.IsMouseVisible.Value = false;
 
 			SkinnedModel.Clip sprintAnimation = model["Sprint"], runAnimation = model["Run"];
 
@@ -565,6 +564,8 @@ namespace Lemma.Factories
 					);
 
 					PhoneNote.Attach(main, entity, player, model, input, phone, player.Character.EnableWalking, playerData.PhoneActive, playerData.NoteActive);
+
+					PlayerUI.Attach(main, entity, ui, player.Health, rotation.Rotation, playerData.NoteActive, playerData.PhoneActive);
 				}
 			});
 		}

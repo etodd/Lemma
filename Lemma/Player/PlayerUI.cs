@@ -10,7 +10,7 @@ namespace Lemma.Factories
 {
 	public class PlayerUI
 	{
-		public static void Attach(Main main, Entity entity, UIRenderer ui, Property<float> health, Property<float> rotation)
+		public static void Attach(Main main, Entity entity, UIRenderer ui, Property<float> health, Property<float> rotation, Property<bool> noteActive, Property<bool> phoneActive)
 		{
 			Sprite damageOverlay = new Sprite();
 			damageOverlay.Image.Value = "Images\\damage";
@@ -28,9 +28,10 @@ namespace Lemma.Factories
 
 			ModelAlpha reticle = entity.Create<ModelAlpha>();
 			reticle.Filename.Value = "Models\\plane";
-			reticle.EffectFile.Value = "Effects\\VirtualReticle";
+			reticle.EffectFile.Value = "Effects\\VirtualUI";
 			reticle.DiffuseTexture.Value = "Images\\reticle";
 			reticle.Add(new Binding<Matrix>(reticle.Transform, reticleController.Transform));
+			reticle.Add(new Binding<bool>(reticle.Enabled, () => !main.Paused && !phoneActive && !noteActive, main.Paused, phoneActive, noteActive));
 #else
 			Sprite reticle = new Sprite();
 			reticle.Image.Value = "Images\\reticle";

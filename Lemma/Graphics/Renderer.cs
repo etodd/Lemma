@@ -652,7 +652,11 @@ namespace Lemma.Components
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 			bool enableBloom = this.allowBloom && this.EnableBloom;
+#if OCULUS
+			bool enableMotionBlur = false;
+#else
 			bool enableMotionBlur = this.MotionBlurAmount > 0.0f;
+#endif
 			bool enableBlur = this.BlurAmount > 0.0f;
 
 			// Swap the color buffers

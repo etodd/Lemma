@@ -21,6 +21,9 @@ namespace Lemma.Components
 			phoneUi.RenderTargetSize.Value = new Point((int)phoneWidth, (int)(phoneWidth * 2.0f));
 			phoneUi.Serialize = false;
 			phoneUi.Enabled.Value = false;
+#if OCULUS
+			phoneUi.Reticle.Tint.Value = new Color(0.0f, 0.0f, 0.0f);
+#endif
 
 			Model phoneModel = entity.GetOrCreate<Model>("PhoneModel");
 			phoneModel.Filename.Value = "Models\\phone";
@@ -252,7 +255,6 @@ namespace Lemma.Components
 			{
 				noteActive.Value = show;
 				input.EnableLook.Value = input.EnableMouse.Value = !noteActive;
-				main.IsMouseVisible.Value = false;
 				enableWalking.Value = !noteActive;
 				noteModel.Enabled.Value = noteActive;
 				noteUi.Enabled.Value = noteActive;
@@ -308,7 +310,7 @@ namespace Lemma.Components
 				{
 					phoneActive.Value = show;
 					input.EnableLook.Value = input.EnableMouse.Value = !phoneActive;
-					main.IsMouseVisible.Value = phoneActive;
+					phoneUi.IsMouseVisible.Value = phoneActive;
 					enableWalking.Value = !phoneActive;
 					phoneModel.Enabled.Value = phoneActive;
 					screen.Enabled.Value = phoneActive;

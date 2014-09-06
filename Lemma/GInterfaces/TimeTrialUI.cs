@@ -213,7 +213,7 @@ namespace Lemma.GInterfaces
 		public void ShowEndPanel(bool success)
 		{
 			PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = false;
-			main.IsMouseVisible.Value = true;
+			main.UI.IsMouseVisible.Value = true;
 			RootTimeEndView.Active.Value = true;
 			AnimateOut();
 			StopTicking();

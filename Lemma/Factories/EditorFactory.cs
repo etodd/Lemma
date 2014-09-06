@@ -680,7 +680,7 @@ namespace Lemma.Factories
 				camera.Angles.Value = new Vector3(-x.Y, x.X, 0.0f);
 			}, () => input.EnableLook, input.Mouse));
 
-			input.Add(new Binding<bool>(main.IsMouseVisible, x => !x, input.EnableLook));
+			input.Add(new Binding<bool>(main.UI.IsMouseVisible, x => !x, input.EnableLook));
 			editor.Add(new Binding<Vector3>(camera.Position, () => editor.Position.Value - (camera.Forward.Value * editor.CameraDistance), editor.Position, camera.Forward, editor.CameraDistance));
 
 			PointLight editorLight = entity.GetOrCreate<PointLight>("EditorLight");

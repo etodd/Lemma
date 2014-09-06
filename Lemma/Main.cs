@@ -181,7 +181,6 @@ namespace Lemma
 		public Property<MouseState> MouseState = new Property<MouseState>();
 		public Property<GamePadState> LastGamePadState = new Property<GamePadState>();
 		public Property<GamePadState> GamePadState = new Property<GamePadState>();
-		public new Property<bool> IsMouseVisible = new Property<bool> { };
 		public Property<bool> GamePadConnected = new Property<bool>();
 
 		public Property<float> TimeMultiplier = new Property<float> { Value = 1.0f };
@@ -362,11 +361,6 @@ namespace Lemma
 
 			this.Camera = new Camera();
 			this.AddComponent(this.Camera);
-
-			new NotifyBinding(delegate()
-			{
-				base.IsMouseVisible = this.IsMouseVisible;
-			}, this.IsMouseVisible);
 
 			new NotifyBinding
 			(
@@ -748,6 +742,8 @@ namespace Lemma
 
 				this.vrCamera = new Camera();
 				this.AddComponent(this.vrCamera);
+
+				this.Hmd.RecenterPose();
 #endif
 
 				this.AddComponent(this.Renderer);
@@ -856,7 +852,7 @@ namespace Lemma
 				this.Spawner = new Spawner();
 				this.AddComponent(this.Spawner);
 
-				this.IsMouseVisible.Value = true;
+				this.UI.IsMouseVisible.Value = true;
 
 				if (AkBankLoader.LoadBank("SFX_Bank_01.bnk") != AKRESULT.AK_Success)
 					Log.d("Failed to load sound bank");
@@ -929,7 +925,6 @@ namespace Lemma
 				});
 
 #if OCULUS
-				this.Renderer.MotionBlurAmount.Value = 0.0f;
 				Action loadVrEffect = delegate()
 				{
 					this.vrEffect = this.Content.Load<Effect>("Effects\\Oculus");
@@ -937,7 +932,21 @@ namespace Lemma
 				loadVrEffect();
 				new CommandBinding(this.ReloadedContent, loadVrEffect);
 
-				//this.UI.Add(new Binding<Point>(this.UI.RenderTargetSize, this.ScreenSize));
+				this.UI.Add(new Binding<Point>(this.UI.RenderTargetSize, this.ScreenSize));
+
+				Lemma.Components.ModelAlpha screen = new Lemma.Components.ModelAlpha();
+				screen.Filename.Value = "Models\\plane";
+				screen.EffectFile.Value = "Effects\\VirtualUI";
+				screen.Add(new Binding<Microsoft.Xna.Framework.Graphics.RenderTarget2D>(screen.GetRenderTarget2DParameter("Diffuse" + Lemma.Components.Model.SamplerPostfix), this.UI.RenderTarget));
+				screen.Add(new Binding<Matrix>(screen.Transform, delegate()
+				{
+					Matrix mat = this.Camera.RotationMatrix * Matrix.CreateRotationY((float)Math.PI * -0.5f) * Matrix.CreateScale(10);
+					mat.Translation = this.Camera.Position + this.Camera.Forward.Value * 5.0f;
+					return mat;
+				}, this.Camera.Position, this.Camera.RotationMatrix));
+				this.AddComponent(screen);
+
+				this.UI.Setup3D(screen.Transform);
 #endif
 
 #if ANALYTICS

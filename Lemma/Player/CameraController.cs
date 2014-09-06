@@ -64,10 +64,6 @@ namespace Lemma.Components
 				this.shakeAmount = Math.Max(this.shakeAmount * this.blendShake(), targetShake);
 				this.shakeTime = totalShakeTime;
 			};
-
-#if OCULUS
-			this.main.Hmd.RecenterPose();
-#endif
 		}
 
 		private float blendShake() // hehe
