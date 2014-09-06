@@ -264,7 +264,7 @@ namespace Lemma.Components
 				shadowCameraOffset = globalShadowLightForward * size * 1.25f;
 				this.shadowCamera.View.Value = Matrix.CreateLookAt(focus + shadowCameraOffset, focus, Vector3.Up);
 
-				this.shadowCamera.SetOrthographicProjection(size, size, 1.0f, size * 2.5f);
+				this.shadowCamera.SetOrthographicProjection(new Point((int)size, (int)size), 1.0f, size * 2.5f);
 
 				this.main.GraphicsDevice.SetRenderTarget(this.GlobalShadowMap);
 				this.main.GraphicsDevice.Clear(new Color(0, 0, 0));
@@ -283,7 +283,7 @@ namespace Lemma.Components
 				this.shadowCamera.View.Value = Matrix.CreateLookAt(focus + shadowCameraOffset, focus, Vector3.Up);
 
 				float detailSize = size * LightingManager.detailGlobalShadowSizeRatio;
-				this.shadowCamera.SetOrthographicProjection(detailSize, detailSize, 1.0f, size * 2.0f);
+				this.shadowCamera.SetOrthographicProjection(new Point((int)detailSize, (int)detailSize), 1.0f, size * 2.0f);
 
 				this.main.GraphicsDevice.SetRenderTarget(this.DetailGlobalShadowMap);
 				this.main.GraphicsDevice.Clear(new Color(0, 0, 0));

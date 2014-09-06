@@ -143,16 +143,6 @@ namespace Lemma
 		private Property<double> physicsTime = new Property<double>();
 		private double updateSum;
 		private Property<double> updateTime = new Property<double>();
-		private double preframeSum;
-		private Property<double> preframeTime = new Property<double>();
-		private double rawRenderSum;
-		private Property<double> rawRenderTime = new Property<double>();
-		private double shadowRenderSum;
-		private Property<double> shadowRenderTime = new Property<double>();
-		private double postProcessSum;
-		private Property<double> postProcessTime = new Property<double>();
-		private double unPostProcessedSum;
-		private Property<double> unPostProcessedTime = new Property<double>();
 		private Property<int> drawCalls = new Property<int>();
 		private int drawCallCounter;
 		private Property<int> triangles = new Property<int>();
@@ -217,6 +207,25 @@ namespace Lemma
 
 		private Dictionary<string, float> times;
 		private string timesFile;
+
+		private SpriteBatch spriteBatch;
+
+#if OCULUS
+		public const float VRUnitToWorldUnit = 0.5f;
+		public OVR.Hmd Hmd;
+
+		private RenderTarget2D vrLeftEyeTarget;
+		private RenderTarget2D vrRightEyeTarget;
+		private Point vrActualScreenSize;
+		private Effect vrEffect;
+		private Oculus.DistortionMesh vrLeftMesh = new Oculus.DistortionMesh();
+		private Oculus.DistortionMesh vrRightMesh = new Oculus.DistortionMesh();
+		private OVR.ovrFovPort vrLeftFov;
+		private OVR.ovrFovPort vrRightFov;
+		private OVR.ovrEyeRenderDesc vrLeftEyeRenderDesc;
+		private OVR.ovrEyeRenderDesc vrRightEyeRenderDesc;
+		private Camera vrCamera;
+#endif
 
 		public void FlushComponents()
 		{
@@ -520,7 +529,8 @@ namespace Lemma
 			new NotifyBinding(delegate()
 			{
 				this.Graphics.SynchronizeWithVerticalRetrace = this.Settings.EnableVsync;
-				this.Graphics.ApplyChanges();
+				if (this.Settings.Fullscreen)
+					this.Graphics.ApplyChanges();
 			}, this.Settings.EnableVsync);
 
 			if (this.Settings.Fullscreen)
@@ -667,6 +677,13 @@ namespace Lemma
 			}
 
 			Rumble.Reset();
+
+#if OCULUS
+			if (this.Hmd != null)
+				this.Hmd.Destroy();
+			this.Hmd = null;
+			OVR.Hmd.Shutdown();
+#endif
 		}
 
 		protected bool firstLoadContentCall = true;
@@ -675,6 +692,7 @@ namespace Lemma
 		{
 			if (this.firstLoadContentCall)
 			{
+				this.GraphicsDevice.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
 				this.GeeUI = new GeeUIMain();
 				this.AddComponent(GeeUI);
 
@@ -700,9 +718,41 @@ namespace Lemma
 				// Create the renderer.
 				this.LightingManager = new LightingManager();
 				this.AddComponent(this.LightingManager);
-				this.Renderer = new Renderer(this, this.ScreenSize, true, true, true, true, true);
+				this.Renderer = new Renderer(this, true, true, true, true, true);
+
+#if OCULUS
+				if (!OVR.Hmd.Initialize())
+					Log.d("Failed to initialize OVR.");
+				this.Hmd = OVR.Hmd.Create(0);
+				if (!this.Hmd.ConfigureTracking(
+					(uint)OVR.ovrTrackingCaps.ovrTrackingCap_Orientation
+					| (uint)OVR.ovrTrackingCaps.ovrTrackingCap_MagYawCorrection
+					| (uint)OVR.ovrTrackingCaps.ovrTrackingCap_Position, 0))
+					Log.d("Failed to configure head tracking.");
+				OVR.ovrHmdDesc hmdDesc = this.Hmd.GetDesc();
+				this.vrLeftFov = hmdDesc.DefaultEyeFov[0];
+				this.vrRightFov = hmdDesc.DefaultEyeFov[1];
+				OVR.ovrFovPort maxFov = new OVR.ovrFovPort();
+				maxFov.UpTan = Math.Max(this.vrLeftFov.UpTan, this.vrRightFov.UpTan);
+				maxFov.DownTan = Math.Max(this.vrLeftFov.DownTan, this.vrRightFov.DownTan);
+				maxFov.LeftTan = Math.Max(this.vrLeftFov.LeftTan, this.vrRightFov.LeftTan);
+				maxFov.RightTan = Math.Max(this.vrLeftFov.RightTan, this.vrRightFov.RightTan);
+				float combinedTanHalfFovHorizontal = Math.Max(maxFov.LeftTan, maxFov.RightTan);
+				float combinedTanHalfFovVertical = Math.Max(maxFov.UpTan, maxFov.DownTan);
+				this.vrLeftEyeRenderDesc = this.Hmd.GetRenderDesc(OVR.ovrEyeType.ovrEye_Left, this.vrLeftFov);
+				this.vrRightEyeRenderDesc = this.Hmd.GetRenderDesc(OVR.ovrEyeType.ovrEye_Right, this.vrRightFov);
+
+				this.vrLeftMesh.Load(this.GraphicsDevice, this.Hmd, OVR.ovrEyeType.ovrEye_Left, this.vrLeftFov, this.ScreenSize);
+				this.vrRightMesh.Load(this.GraphicsDevice, this.Hmd, OVR.ovrEyeType.ovrEye_Right, this.vrRightFov, this.ScreenSize);
+				this.reallocateVrTargets();
+
+				this.vrCamera = new Camera();
+				this.AddComponent(this.vrCamera);
+#endif
 
 				this.AddComponent(this.Renderer);
+				this.Renderer.ReallocateBuffers(this.ScreenSize);
+
 				this.renderParameters = new RenderParameters
 				{
 					Camera = this.Camera,
@@ -751,8 +801,8 @@ namespace Lemma
 #endif
 
 				this.performanceMonitor = new ListContainer();
-				this.performanceMonitor.Add(new Binding<Vector2, Point>(performanceMonitor.Position, x => new Vector2(0, x.Y), this.ScreenSize));
-				this.performanceMonitor.AnchorPoint.Value = new Vector2(0, 1);
+				this.performanceMonitor.Add(new Binding<Vector2, Point>(performanceMonitor.Position, x => new Vector2(x.X, 0), this.ScreenSize));
+				this.performanceMonitor.AnchorPoint.Value = new Vector2(1, 0);
 				this.performanceMonitor.Visible.Value = false;
 				this.performanceMonitor.Name.Value = "PerformanceMonitor";
 				this.UI.Root.Children.Add(this.performanceMonitor);
@@ -780,11 +830,6 @@ namespace Lemma
 
 				addTimer("Physics", this.physicsTime);
 				addTimer("Update", this.updateTime);
-				addTimer("Pre-frame", this.preframeTime);
-				addTimer("Raw render", this.rawRenderTime);
-				addTimer("Shadow render", this.shadowRenderTime);
-				addTimer("Post-process", this.postProcessTime);
-				addTimer("Non-post-processed", this.unPostProcessedTime);
 				addCounter("Draw calls", this.drawCalls);
 				addCounter("Triangles", this.triangles);
 
@@ -883,6 +928,16 @@ namespace Lemma
 					this.Renderer.Tint.Value = new Vector3(1.0f);
 				});
 
+#if OCULUS
+				this.Renderer.MotionBlurAmount.Value = 0.0f;
+				Action loadVrEffect = delegate()
+				{
+					this.vrEffect = this.Content.Load<Effect>("Effects\\Oculus");
+				};
+				loadVrEffect();
+				new CommandBinding(this.ReloadedContent, loadVrEffect);
+#endif
+
 #if ANALYTICS
 				bool editorLastEnabled = this.EditorEnabled;
 				new CommandBinding<string>(this.LoadingMap, delegate(string newMap)
@@ -920,6 +975,8 @@ namespace Lemma
 			}
 
 			this.GraphicsDevice.RasterizerState = new RasterizerState { MultiSampleAntiAlias = false };
+
+			this.spriteBatch = new SpriteBatch(this.GraphicsDevice);
 		}
 
 		private bool componentEnabled(IComponent c)
@@ -1154,12 +1211,6 @@ namespace Lemma
 				});
 			}
 
-			if (this.resize != null && this.resize.Value.X > 0 && this.resize.Value.Y > 0)
-			{
-				this.ResizeViewport(this.resize.Value.X, this.resize.Value.Y, false, false);
-				this.resize = null;
-			}
-
 			timer.Stop();
 			this.updateSum = Math.Max(this.updateSum, timer.Elapsed.TotalSeconds);
 
@@ -1178,11 +1229,6 @@ namespace Lemma
 				{
 					this.physicsTime.Value = this.physicsSum;
 					this.updateTime.Value = this.updateSum;
-					this.preframeTime.Value = this.preframeSum;
-					this.rawRenderTime.Value = this.rawRenderSum;
-					this.shadowRenderTime.Value = this.shadowRenderSum;
-					this.postProcessTime.Value = this.postProcessSum;
-					this.unPostProcessedTime.Value = this.unPostProcessedSum;
 					this.drawCalls.Value = this.drawCallCounter;
 					this.triangles.Value = this.triangleCounter;
 					this.drawCallCounter = 0;
@@ -1190,11 +1236,6 @@ namespace Lemma
 				}
 				this.physicsSum = 0;
 				this.updateSum = 0;
-				this.preframeSum = 0;
-				this.rawRenderSum = 0;
-				this.shadowRenderSum = 0;
-				this.postProcessSum = 0;
-				this.unPostProcessedSum = 0;
 				this.frameSum = 0;
 				this.performanceInterval = 0;
 			}
@@ -1206,6 +1247,12 @@ namespace Lemma
 			SteamWorker.SetStat("stat_time_played", (int)TotalGameTime.Value);
 			SteamWorker.Update(this.ElapsedTime);
 #endif
+
+			if (this.resize != null && this.resize.Value.X > 0 && this.resize.Value.Y > 0)
+			{
+				this.ResizeViewport(this.resize.Value.X, this.resize.Value.Y, false, false);
+				this.resize = null;
+			}
 		}
 
 		protected override void Draw(GameTime gameTime)
@@ -1216,8 +1263,6 @@ namespace Lemma
 			Lemma.Components.Model.DrawCallCounter = 0;
 			Lemma.Components.Model.TriangleCounter = 0;
 
-			Stopwatch timer = new Stopwatch();
-			timer.Start();
 			this.renderParameters.Technique = Technique.Render;
 
 			foreach (IDrawablePreFrameComponent c in this.preframeDrawables)
@@ -1225,29 +1270,66 @@ namespace Lemma
 				if (this.componentEnabled(c))
 					c.DrawPreFrame(gameTime, this.renderParameters);
 			}
-			timer.Stop();
-			this.preframeSum = Math.Max(timer.Elapsed.TotalSeconds, this.preframeSum);
+
+#if OCULUS
+			OVR.ovrFrameTiming frameTiming = this.Hmd.BeginFrameTiming(0);
+
+			Camera originalCamera = this.renderParameters.Camera;
+			this.vrCamera.SetFromCamera(originalCamera);
+			this.vrCamera.ProjectionType.Value = Camera.ProjectionMode.Custom;
+			this.renderParameters.Camera = this.vrCamera;
+
+			OVR.ovrPosef leftEyePose = this.Hmd.GetEyePose(OVR.ovrEyeType.ovrEye_Right);
+			OVR.ovrPosef rightEyePose = this.Hmd.GetEyePose(OVR.ovrEyeType.ovrEye_Right);
+
+			// Setup left eye view and projection
+			Quaternion quat = new Quaternion(leftEyePose.Orientation.x, leftEyePose.Orientation.y, leftEyePose.Orientation.z, leftEyePose.Orientation.w);
+			this.vrCamera.RotationMatrix.Value = Matrix.CreateFromQuaternion(quat) * originalCamera.RotationMatrix;
+			this.vrCamera.Position.Value = originalCamera.Position.Value + Vector3.TransformNormal(new Vector3(this.vrLeftEyeRenderDesc.ViewAdjust.x, this.vrLeftEyeRenderDesc.ViewAdjust.y, this.vrLeftEyeRenderDesc.ViewAdjust.z) * Main.VRUnitToWorldUnit, this.vrCamera.RotationMatrix);
+			OVR.ovrMatrix4f proj = OVR.Hmd.GetProjection(this.vrLeftFov, originalCamera.NearPlaneDistance, originalCamera.FarPlaneDistance, true);
+			this.vrCamera.Projection.Value = Oculus.MatrixOvrToXna(proj);
 
 			this.Renderer.SetRenderTargets(this.renderParameters);
 
-			timer.Restart();
 			this.DrawScene(this.renderParameters);
-			timer.Stop();
-			this.rawRenderSum = Math.Max(this.rawRenderSum, timer.Elapsed.TotalSeconds);
 
-			timer.Restart();
 			this.LightingManager.UpdateGlobalLights();
-			this.LightingManager.RenderShadowMaps(this.Camera);
-			timer.Stop();
-			this.shadowRenderSum = Math.Max(this.shadowRenderSum, timer.Elapsed.TotalSeconds);
+			this.LightingManager.RenderShadowMaps(originalCamera);
 
-			timer.Restart();
-			this.Renderer.PostProcess(this.RenderTarget, this.renderParameters);
+			this.Renderer.PostProcess(this.vrLeftEyeTarget, this.renderParameters);
 
-			timer.Stop();
-			this.postProcessSum = Math.Max(this.postProcessSum, timer.Elapsed.TotalSeconds);
+			// Setup right eye view and projection
+			quat = new Quaternion(rightEyePose.Orientation.x, rightEyePose.Orientation.y, rightEyePose.Orientation.z, rightEyePose.Orientation.w);
+			this.vrCamera.RotationMatrix.Value = Matrix.CreateFromQuaternion(quat) * originalCamera.RotationMatrix;
+			this.vrCamera.Position.Value = originalCamera.Position.Value + Vector3.TransformNormal(new Vector3(this.vrRightEyeRenderDesc.ViewAdjust.x, this.vrRightEyeRenderDesc.ViewAdjust.y, this.vrRightEyeRenderDesc.ViewAdjust.z) * Main.VRUnitToWorldUnit, this.vrCamera.RotationMatrix);
+			proj = OVR.Hmd.GetProjection(this.vrRightFov, originalCamera.NearPlaneDistance, originalCamera.FarPlaneDistance, true);
+			this.vrCamera.Projection.Value = Oculus.MatrixOvrToXna(proj);
 
-			timer.Restart();
+			this.Renderer.SetRenderTargets(this.renderParameters);
+
+			this.DrawScene(this.renderParameters);
+
+			this.Renderer.PostProcess(this.vrRightEyeTarget, this.renderParameters);
+
+			OVR.Hmd.WaitTillTime(frameTiming.TimewarpPointSeconds);
+
+			this.GraphicsDevice.SetRenderTarget(this.RenderTarget);
+			this.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Black);
+
+			// Render left and right frame buffers to the screen
+
+			/*
+			this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
+			this.spriteBatch.Draw(this.vrLeftEyeTarget, Vector2.Zero, Color.White);
+			this.spriteBatch.Draw(this.vrRightEyeTarget, new Vector2(this.vrLeftEyeTarget.Width, 0), Color.White);
+			this.spriteBatch.End();
+			*/
+
+			this.vrLeftMesh.Render(this.vrLeftEyeTarget, leftEyePose, this.vrEffect);
+
+			this.vrRightMesh.Render(this.vrRightEyeTarget, rightEyePose, this.vrEffect);
+
+			this.renderParameters.Camera = originalCamera;
 
 			foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
 			{
@@ -1255,8 +1337,23 @@ namespace Lemma
 					c.DrawNonPostProcessed(gameTime, this.renderParameters);
 			}
 
-			timer.Stop();
-			this.unPostProcessedSum = Math.Max(this.unPostProcessedSum, timer.Elapsed.TotalSeconds);
+#else
+			this.Renderer.SetRenderTargets(this.renderParameters);
+
+			this.DrawScene(this.renderParameters);
+
+			this.LightingManager.UpdateGlobalLights();
+			this.LightingManager.RenderShadowMaps(this.Camera);
+
+			this.Renderer.PostProcess(this.RenderTarget, this.renderParameters);
+
+			foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
+			{
+				if (this.componentEnabled(c))
+					c.DrawNonPostProcessed(gameTime, this.renderParameters);
+			}
+#endif
+
 			this.drawCallCounter = Math.Max(this.drawCallCounter, Lemma.Components.Model.DrawCallCounter);
 			this.triangleCounter = Math.Max(this.triangleCounter, Lemma.Components.Model.TriangleCounter);
 
@@ -1268,13 +1365,20 @@ namespace Lemma
 
 				if (!this.RenderTarget.IsDisposed)
 				{
-					SpriteBatch spriteBatch = new SpriteBatch(this.GraphicsDevice);
-					spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
-					spriteBatch.Draw(this.RenderTarget, Vector2.Zero, Color.White);
-					spriteBatch.End();
+					this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
+					this.spriteBatch.Draw(this.RenderTarget, Vector2.Zero, Color.White);
+					this.spriteBatch.End();
 				}
 				this.RenderTarget = null;
 			}
+		}
+
+		protected override void EndDraw()
+		{
+			base.EndDraw();
+#if OCULUS
+			this.Hmd.EndFrameTiming();
+#endif
 		}
 
 		public void DrawScene(RenderParameters parameters)
@@ -1327,6 +1431,35 @@ namespace Lemma
 			}
 		}
 
+#if OCULUS
+		private void reallocateVrTargets()
+		{
+			if (this.vrLeftEyeTarget != null)
+			{
+				this.vrLeftEyeTarget.Dispose();
+				this.vrRightEyeTarget.Dispose();
+			}
+
+			if (this.Hmd != null)
+			{
+				OVR.ovrSizei size = this.Hmd.GetFovTextureSize(OVR.ovrEyeType.ovrEye_Left, this.Hmd.GetDesc().DefaultEyeFov[0]);
+				Point renderTargetSize = new Point(size.w, size.h);
+
+				this.vrLeftEyeTarget = new RenderTarget2D(this.GraphicsDevice, renderTargetSize.X, renderTargetSize.Y, false, SurfaceFormat.Color, DepthFormat.None);
+				this.vrRightEyeTarget = new RenderTarget2D(this.GraphicsDevice, renderTargetSize.X, renderTargetSize.Y, false, SurfaceFormat.Color, DepthFormat.None);
+
+				this.ScreenSize.Value = renderTargetSize;
+
+				this.vrActualScreenSize = new Point(this.Graphics.PreferredBackBufferWidth, this.Graphics.PreferredBackBufferHeight);
+
+				if (this.Settings.Fullscreen)
+					this.Settings.FullscreenResolution.Value = this.vrActualScreenSize;
+				else
+					this.Settings.Size.Value = this.vrActualScreenSize;
+			}
+		}
+#endif
+
 		public void ResizeViewport(int width, int height, bool fullscreen, bool borderless, bool applyChanges = true)
 		{
 			bool needApply = false;
@@ -1345,13 +1478,12 @@ namespace Lemma
 				this.Graphics.PreferredBackBufferHeight = height;
 				needApply = true;
 			}
+
+			if (this.GraphicsDevice != null)
+				this.GraphicsDevice.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
+
 			if (applyChanges && needApply)
 				this.Graphics.ApplyChanges();
-
-			this.ScreenSize.Value = new Point(width, height);
-
-			if (this.Renderer != null)
-				this.Renderer.ReallocateBuffers(this.ScreenSize);
 
 			if (this.GeeUI != null)
 			{
@@ -1362,10 +1494,18 @@ namespace Lemma
 			this.Settings.Fullscreen.Value = fullscreen;
 			this.Settings.Borderless.Value = borderless;
 
+#if OCULUS
+			this.reallocateVrTargets();
+#else
+			this.ScreenSize.Value = new Point(width, height);
 			if (fullscreen)
 				this.Settings.FullscreenResolution.Value = new Point(width, height);
 			else
 				this.Settings.Size.Value = new Point(width, height);
+#endif
+
+			if (this.Renderer != null)
+				this.Renderer.ReallocateBuffers(this.ScreenSize);
 
 			System.Windows.Forms.Control control = System.Windows.Forms.Control.FromHandle(this.Window.Handle);
 			System.Windows.Forms.Form form = control.FindForm();

@@ -319,7 +319,8 @@ namespace GeeUI
 
 		public void Draw(SpriteBatch spriteBatch)
 		{
-			DrawChildren(RootView, spriteBatch, RootView.AbsoluteBoundBox);
+			Viewport vp = this.main.GraphicsDevice.Viewport;
+			DrawChildren(RootView, spriteBatch, new Rectangle(vp.X, vp.Y, vp.Width, vp.Height));
 		}
 
 		internal void UpdateView(View toUpdate, float dt)

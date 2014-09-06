@@ -95,12 +95,15 @@ namespace Lemma.Components
 			// Set the vertex buffer and declaration
 			if (this.vertexBuffer.IsDisposed)
 				this.LoadContent(true);
-			this.main.GraphicsDevice.SetVertexBuffer(this.vertexBuffer);
+			else
+			{
+				this.main.GraphicsDevice.SetVertexBuffer(this.vertexBuffer);
 
-			// Draw primitives
-			this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
-			Model.DrawCallCounter++;
-			Model.TriangleCounter += 2;
+				// Draw primitives
+				this.main.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+				Model.DrawCallCounter++;
+				Model.TriangleCounter += 2;
+			}
 		}
 	}
 }

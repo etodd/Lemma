@@ -84,7 +84,8 @@ namespace Lemma.Components
 
 		public Property<Vector2> OrthographicSize = new Property<Vector2> { Value = new Vector2(70.0f, 70.0f) };
 
-		public Property<bool> OrthographicProjection = new Property<bool>();
+		public enum ProjectionMode { Perspective, Orthographic, Custom }
+		public Property<ProjectionMode> ProjectionType = new Property<ProjectionMode>();
 
 		/// <summary>
 		/// Gets or sets camera's target.
@@ -96,11 +97,20 @@ namespace Lemma.Components
 			base.Awake();
 			this.Add(new Binding<float, Point>(this.AspectRatio, x => (float)x.X / (float)x.Y, this.ViewportSize));
 			
-			this.Add(new Binding<Matrix>(this.Projection,
-				() => this.OrthographicProjection
-					? Matrix.CreateOrthographic(this.OrthographicSize.Value.X, this.OrthographicSize.Value.Y, this.NearPlaneDistance, this.FarPlaneDistance)
-					: Matrix.CreatePerspectiveFieldOfView(this.FieldOfView, this.AspectRatio, this.NearPlaneDistance, this.FarPlaneDistance),
-					this.FieldOfView, this.AspectRatio, this.NearPlaneDistance, this.FarPlaneDistance, this.OrthographicSize, this.OrthographicProjection));
+			this.Add(new NotifyBinding(delegate()
+			{
+				switch (this.ProjectionType.Value)
+				{
+					case ProjectionMode.Orthographic:
+						this.Projection.Value = Matrix.CreateOrthographic(this.OrthographicSize.Value.X, this.OrthographicSize.Value.Y, this.NearPlaneDistance, this.FarPlaneDistance);
+						break;
+					case ProjectionMode.Perspective:
+						this.Projection.Value = Matrix.CreatePerspectiveFieldOfView(this.FieldOfView, this.AspectRatio, this.NearPlaneDistance, this.FarPlaneDistance);
+						break;
+					default:
+						break;
+				}
+			}, this.FieldOfView, this.AspectRatio, this.NearPlaneDistance, this.FarPlaneDistance, this.OrthographicSize, this.ProjectionType));
 
 			this.Add(new Binding<Matrix, Matrix>(this.InverseProjection, x => Matrix.Invert(x), this.Projection));
 			this.Add(new Binding<Matrix>(this.ViewProjection, () => this.View.Value * this.Projection, this.View, this.Projection));
@@ -155,6 +165,23 @@ namespace Lemma.Components
 				new IProperty[] { this.Position }));
 		}
 
+		public void SetFromCamera(Camera other)
+		{
+			this.Position.Value = other.Position;
+			this.RotationMatrix.Value = other.RotationMatrix;
+			this.View.Value = other.View;
+			this.ProjectionType.SetStealthy(other.ProjectionType);
+			this.FieldOfView.SetStealthy(other.FieldOfView);
+			this.ViewportSize.SetStealthy(other.ViewportSize);
+			this.AspectRatio.SetStealthy(other.AspectRatio);
+			this.NearPlaneDistance.SetStealthy(other.NearPlaneDistance);
+			this.FarPlaneDistance.SetStealthy(other.FarPlaneDistance);
+			this.Projection.Value = other.Projection;
+			this.LastView.Value = other.LastView;
+			this.LastViewProjection.Value = other.LastViewProjection;
+			this.LastProjection.Value = other.LastProjection;
+		}
+
 		public void SetPerspectiveProjection(float fov, Point viewportSize, float near, float far)
 		{
 			this.FieldOfView.SetStealthy(fov);
@@ -162,17 +189,18 @@ namespace Lemma.Components
 			this.AspectRatio.SetStealthy((float)viewportSize.X / (float)viewportSize.Y);
 			this.NearPlaneDistance.SetStealthy(near);
 			this.FarPlaneDistance.SetStealthy(far);
-			this.OrthographicProjection.SetStealthy(false);
+			this.ProjectionType.SetStealthy(ProjectionMode.Perspective);
 			this.Projection.Value = Matrix.CreatePerspectiveFieldOfView(fov, this.AspectRatio, near, far);
 		}
 
-		public void SetOrthographicProjection(float width, float height, float near, float far)
+		public void SetOrthographicProjection(Point viewportSize, float near, float far)
 		{
-			this.OrthographicSize.SetStealthy(new Vector2(width, height));
+			this.ViewportSize.SetStealthy(viewportSize);
+			this.OrthographicSize.SetStealthy(new Vector2(viewportSize.X, viewportSize.Y));
 			this.NearPlaneDistance.SetStealthy(near);
 			this.FarPlaneDistance.SetStealthy(far);
-			this.OrthographicProjection.SetStealthy(true);
-			this.Projection.Value = Matrix.CreateOrthographic(width, height, near, far);
+			this.ProjectionType.SetStealthy(ProjectionMode.Orthographic);
+			this.Projection.Value = Matrix.CreateOrthographic(viewportSize.X, viewportSize.Y, near, far);
 		}
 
 		void IUpdateableComponent.Update(float dt)

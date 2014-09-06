@@ -282,8 +282,8 @@ namespace Lemma.Factories
 					Action = delegate()
 					{
 						string f = main.MapFile;
-						if (Path.GetExtension(f) != ".map")
-							f += ".map";
+						if (Path.GetExtension(f) != IO.MapLoader.MapExtension)
+							f += IO.MapLoader.MapExtension;
 						if (!Path.IsPathRooted(f))
 							f = Path.GetFullPath(Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory, f));
 						main.AddComponent(new UpdateWorkShopInterface());

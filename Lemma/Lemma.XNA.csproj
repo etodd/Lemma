@@ -47,7 +47,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\x86\Debug</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS;DEVELOPMENT;CHEAT;STEAMWORKS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS;DEVELOPMENT;CHEAT;STEAMWORKS;OCULUS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -224,6 +224,8 @@
     <Compile Include="GInterfaces\WorkShopInterface.cs" />
     <Compile Include="Graphics\Cloud.cs" />
     <Compile Include="MainMenu.cs" />
+    <Compile Include="Oculus.cs" />
+    <Compile Include="OVRHmd.cs" />
     <Compile Include="Player\BlockPredictor.cs" />
     <Compile Include="Player\Jump.cs" />
     <Compile Include="Player\PhoneNote.cs" />
@@ -490,6 +492,9 @@
     <None Include="GeeUI\Resources\window_unselected.9.png" />
     <None Include="GeeUI\Resources\dropdown.png" />
     <Content Include="icon.ico" />
+    <Content Include="OculusPlugin.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="README.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

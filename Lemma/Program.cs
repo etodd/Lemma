@@ -27,7 +27,6 @@ namespace Lemma
 				}
 				catch (Main.ExitException)
 				{
-
 				}
 			}
 			else

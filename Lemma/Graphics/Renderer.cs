@@ -117,7 +117,7 @@ namespace Lemma.Components
 		/// </summary>
 		/// <param name="graphicsDevice">The GraphicsDevice to use for rendering</param>
 		/// <param name="contentManager">The ContentManager from which to load Effects</param>
-		public Renderer(Main main, Point size, bool allowHdr, bool allowBloom, bool allowToneMapping, bool allowSSAO, bool allowPostAlphaDrawables)
+		public Renderer(Main main, bool allowHdr, bool allowBloom, bool allowToneMapping, bool allowSSAO, bool allowPostAlphaDrawables)
 		{
 			this.allowBloom = allowBloom;
 			this.allowSSAO = allowSSAO;
@@ -125,7 +125,6 @@ namespace Lemma.Components
 			this.allowToneMapping = allowToneMapping;
 			this.hdr = allowHdr;
 			this.lightingManager = main.LightingManager;
-			this.screenSize = size;
 		}
 
 		public override void Awake()
@@ -169,6 +168,13 @@ namespace Lemma.Components
 			{
 				this.bloomEffect.Parameters["Brightness"].SetValue(value);
 			}));
+		}
+
+		public void Debug()
+		{
+			this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
+			this.spriteBatch.Draw(this.lightingBuffer, Vector2.Zero, Color.White);
+			this.spriteBatch.End();
 		}
 
 		private void loadLightRampTexture(string file)
@@ -215,10 +221,13 @@ namespace Lemma.Components
 
 		public void ReallocateBuffers(Point size)
 		{
-			Renderer.globalLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\GlobalLight").Clone();
-			Renderer.pointLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\PointLight").Clone();
-			Renderer.spotLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\SpotLight").Clone();
-			Renderer.globalLightEffect.Parameters["Cloud" + Model.SamplerPostfix].SetValue(this.main.Content.Load<Texture2D>("AlphaModels\\cloud_texture"));
+			if (Renderer.globalLightEffect == null || Renderer.globalLightEffect.IsDisposed)
+			{
+				Renderer.globalLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\GlobalLight").Clone();
+				Renderer.pointLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\PointLight").Clone();
+				Renderer.spotLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\SpotLight").Clone();
+				Renderer.globalLightEffect.Parameters["Cloud" + Model.SamplerPostfix].SetValue(this.main.Content.Load<Texture2D>("AlphaModels\\cloud_texture"));
+			}
 
 			this.compositeEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Composite").Clone();
 			this.compositeEffect.CurrentTechnique = this.compositeEffect.Techniques["Composite"];
@@ -239,176 +248,179 @@ namespace Lemma.Components
 
 			this.screenSize = size;
 
-			// Lighting buffer
-			if (this.lightingBuffer != null && !this.lightingBuffer.IsDisposed)
-				this.lightingBuffer.Dispose();
-			this.lightingBuffer = new RenderTarget2D(this.main.GraphicsDevice,
-												size.X,
-												size.Y,
-												false,
-												SurfaceFormat.Color,
-												DepthFormat.None,
-												0,
-												RenderTargetUsage.DiscardContents);
-
-			// Specular lighting buffer
-			if (this.specularBuffer != null && !this.specularBuffer.IsDisposed)
-				this.specularBuffer.Dispose();
-			this.specularBuffer = new RenderTarget2D(this.main.GraphicsDevice,
-												size.X,
-												size.Y,
-												false,
-												SurfaceFormat.Color,
-												DepthFormat.None,
-												0,
-												RenderTargetUsage.DiscardContents);
-
-			// Depth buffer
-			if (this.depthBuffer != null && !this.depthBuffer.IsDisposed)
-				this.depthBuffer.Dispose();
-			this.depthBuffer = new RenderTarget2D(this.main.GraphicsDevice,
-												size.X,
-												size.Y,
-												false,
-												SurfaceFormat.HalfVector2,
-												DepthFormat.Depth24,
-												0,
-												RenderTargetUsage.DiscardContents);
-
-			// Normal buffer
-			if (this.normalBuffer != null && !this.normalBuffer.IsDisposed)
-				this.normalBuffer.Dispose();
-			this.normalBuffer = new RenderTarget2D(this.main.GraphicsDevice,
-												size.X,
-												size.Y,
-												false,
-												SurfaceFormat.Color,
-												DepthFormat.None,
-												0,
-												RenderTargetUsage.DiscardContents);
-
-			// Color buffer 1
-			if (this.colorBuffer1 != null && !this.colorBuffer1.IsDisposed)
-				this.colorBuffer1.Dispose();
-			this.colorBuffer1 = new RenderTarget2D(this.main.GraphicsDevice,
-												size.X,
-												size.Y,
-												false,
-												SurfaceFormat.Color,
-												DepthFormat.Depth24,
-												0,
-												RenderTargetUsage.DiscardContents);
-
-			// Color buffer 2
-			if (this.colorBuffer2 != null && !this.colorBuffer2.IsDisposed)
-				this.colorBuffer2.Dispose();
-			this.colorBuffer2 = new RenderTarget2D(this.main.GraphicsDevice,
-												size.X,
-												size.Y,
-												false,
-												SurfaceFormat.Color,
-												DepthFormat.Depth24,
-												0,
-												RenderTargetUsage.DiscardContents);
-
-			if (this.hdr)
+			if (size.X > 0 && size.Y > 0)
 			{
-				// HDR buffer 1
-				if (this.hdrBuffer1 != null && !this.hdrBuffer1.IsDisposed)
-					this.hdrBuffer1.Dispose();
-				this.hdrBuffer1 = new RenderTarget2D(this.main.GraphicsDevice,
+				// Lighting buffer
+				if (this.lightingBuffer != null && !this.lightingBuffer.IsDisposed)
+					this.lightingBuffer.Dispose();
+				this.lightingBuffer = new RenderTarget2D(this.main.GraphicsDevice,
 													size.X,
 													size.Y,
 													false,
-													this.hdrSurfaceFormat,
+													SurfaceFormat.Color,
+													DepthFormat.None,
+													0,
+													RenderTargetUsage.DiscardContents);
+
+				// Specular lighting buffer
+				if (this.specularBuffer != null && !this.specularBuffer.IsDisposed)
+					this.specularBuffer.Dispose();
+				this.specularBuffer = new RenderTarget2D(this.main.GraphicsDevice,
+													size.X,
+													size.Y,
+													false,
+													SurfaceFormat.Color,
+													DepthFormat.None,
+													0,
+													RenderTargetUsage.DiscardContents);
+
+				// Depth buffer
+				if (this.depthBuffer != null && !this.depthBuffer.IsDisposed)
+					this.depthBuffer.Dispose();
+				this.depthBuffer = new RenderTarget2D(this.main.GraphicsDevice,
+													size.X,
+													size.Y,
+													false,
+													SurfaceFormat.HalfVector2,
 													DepthFormat.Depth24,
 													0,
 													RenderTargetUsage.DiscardContents);
 
-				// HDR buffer 2
-				if (this.hdrBuffer2 != null && !this.hdrBuffer2.IsDisposed)
-					this.hdrBuffer2.Dispose();
-				this.hdrBuffer2 = new RenderTarget2D(this.main.GraphicsDevice,
+				// Normal buffer
+				if (this.normalBuffer != null && !this.normalBuffer.IsDisposed)
+					this.normalBuffer.Dispose();
+				this.normalBuffer = new RenderTarget2D(this.main.GraphicsDevice,
 													size.X,
 													size.Y,
 													false,
-													this.hdrSurfaceFormat,
+													SurfaceFormat.Color,
 													DepthFormat.None,
 													0,
 													RenderTargetUsage.DiscardContents);
-			}
-			else
-			{
-				this.hdrBuffer1 = this.colorBuffer1;
-				this.hdrBuffer2 = this.colorBuffer2;
-			}
 
-			if (this.normalBufferLastFrame != null)
-			{
-				if (!this.normalBufferLastFrame.IsDisposed)
-					this.normalBufferLastFrame.Dispose();
-				this.normalBufferLastFrame = null;
-			}
+				// Color buffer 1
+				if (this.colorBuffer1 != null && !this.colorBuffer1.IsDisposed)
+					this.colorBuffer1.Dispose();
+				this.colorBuffer1 = new RenderTarget2D(this.main.GraphicsDevice,
+													size.X,
+													size.Y,
+													false,
+													SurfaceFormat.Color,
+													DepthFormat.Depth24,
+													0,
+													RenderTargetUsage.DiscardContents);
 
-			// Normal buffer from last frame
-			this.normalBufferLastFrame = new RenderTarget2D(this.main.GraphicsDevice,
-												size.X,
-												size.Y,
-												false,
-												SurfaceFormat.Color,
-												DepthFormat.None,
-												0,
-												RenderTargetUsage.DiscardContents);
+				// Color buffer 2
+				if (this.colorBuffer2 != null && !this.colorBuffer2.IsDisposed)
+					this.colorBuffer2.Dispose();
+				this.colorBuffer2 = new RenderTarget2D(this.main.GraphicsDevice,
+													size.X,
+													size.Y,
+													false,
+													SurfaceFormat.Color,
+													DepthFormat.Depth24,
+													0,
+													RenderTargetUsage.DiscardContents);
 
-			if (this.halfBuffer1 != null)
-			{
-				if (!this.halfBuffer1.IsDisposed)
-					this.halfBuffer1.Dispose();
-				this.halfBuffer1 = null;
-			}
-			if (this.halfBuffer2 != null)
-			{
-				if (!this.halfBuffer2.IsDisposed)
-					this.halfBuffer2.Dispose();
-				this.halfBuffer2 = null;
-			}
-			if (this.halfDepthBuffer != null)
-			{
-				if (!this.halfDepthBuffer.IsDisposed)
-					this.halfDepthBuffer.Dispose();
-				this.halfDepthBuffer = null;
-			}
+				if (this.hdr)
+				{
+					// HDR buffer 1
+					if (this.hdrBuffer1 != null && !this.hdrBuffer1.IsDisposed)
+						this.hdrBuffer1.Dispose();
+					this.hdrBuffer1 = new RenderTarget2D(this.main.GraphicsDevice,
+														size.X,
+														size.Y,
+														false,
+														this.hdrSurfaceFormat,
+														DepthFormat.Depth24,
+														0,
+														RenderTargetUsage.DiscardContents);
 
-			if (this.allowBloom || this.allowSSAO)
-			{
-				this.halfBuffer1 = new RenderTarget2D(this.main.GraphicsDevice,
-					size.X / 2,
-					size.Y / 2,
-					false,
-					SurfaceFormat.Color,
-					DepthFormat.None,
-					0,
-					RenderTargetUsage.DiscardContents);
-				this.halfBuffer2 = new RenderTarget2D(this.main.GraphicsDevice,
-					size.X / 2,
-					size.Y / 2,
-					false,
-					SurfaceFormat.Color,
-					DepthFormat.None,
-					0,
-					RenderTargetUsage.DiscardContents);
-			}
+					// HDR buffer 2
+					if (this.hdrBuffer2 != null && !this.hdrBuffer2.IsDisposed)
+						this.hdrBuffer2.Dispose();
+					this.hdrBuffer2 = new RenderTarget2D(this.main.GraphicsDevice,
+														size.X,
+														size.Y,
+														false,
+														this.hdrSurfaceFormat,
+														DepthFormat.None,
+														0,
+														RenderTargetUsage.DiscardContents);
+				}
+				else
+				{
+					this.hdrBuffer1 = this.colorBuffer1;
+					this.hdrBuffer2 = this.colorBuffer2;
+				}
 
-			if (this.allowSSAO)
-			{
-				this.halfDepthBuffer = new RenderTarget2D(this.main.GraphicsDevice,
-					size.X / 2,
-					size.Y / 2,
-					false,
-					SurfaceFormat.Single,
-					DepthFormat.None,
-					0,
-					RenderTargetUsage.DiscardContents);
+				if (this.normalBufferLastFrame != null)
+				{
+					if (!this.normalBufferLastFrame.IsDisposed)
+						this.normalBufferLastFrame.Dispose();
+					this.normalBufferLastFrame = null;
+				}
+
+				// Normal buffer from last frame
+				this.normalBufferLastFrame = new RenderTarget2D(this.main.GraphicsDevice,
+													size.X,
+													size.Y,
+													false,
+													SurfaceFormat.Color,
+													DepthFormat.None,
+													0,
+													RenderTargetUsage.DiscardContents);
+
+				if (this.halfBuffer1 != null)
+				{
+					if (!this.halfBuffer1.IsDisposed)
+						this.halfBuffer1.Dispose();
+					this.halfBuffer1 = null;
+				}
+				if (this.halfBuffer2 != null)
+				{
+					if (!this.halfBuffer2.IsDisposed)
+						this.halfBuffer2.Dispose();
+					this.halfBuffer2 = null;
+				}
+				if (this.halfDepthBuffer != null)
+				{
+					if (!this.halfDepthBuffer.IsDisposed)
+						this.halfDepthBuffer.Dispose();
+					this.halfDepthBuffer = null;
+				}
+
+				if (this.allowBloom || this.allowSSAO)
+				{
+					this.halfBuffer1 = new RenderTarget2D(this.main.GraphicsDevice,
+						size.X / 2,
+						size.Y / 2,
+						false,
+						SurfaceFormat.Color,
+						DepthFormat.None,
+						0,
+						RenderTargetUsage.DiscardContents);
+					this.halfBuffer2 = new RenderTarget2D(this.main.GraphicsDevice,
+						size.X / 2,
+						size.Y / 2,
+						false,
+						SurfaceFormat.Color,
+						DepthFormat.None,
+						0,
+						RenderTargetUsage.DiscardContents);
+				}
+
+				if (this.allowSSAO)
+				{
+					this.halfDepthBuffer = new RenderTarget2D(this.main.GraphicsDevice,
+						size.X / 2,
+						size.Y / 2,
+						false,
+						SurfaceFormat.Single,
+						DepthFormat.None,
+						0,
+						RenderTargetUsage.DiscardContents);
+				}
 			}
 
 			this.BlurAmount.Reset();
@@ -438,10 +450,10 @@ namespace Lemma.Components
 
 			p.Camera.ViewportSize.Value = this.screenSize;
 			this.main.GraphicsDevice.SetRenderTargets(this.colorBuffer1, this.depthBuffer, this.normalBuffer);
-			Color color = this.lightingManager.BackgroundColor;
 			p.Camera.SetParameters(this.clearEffect);
 			this.destinations1[0] = this.colorBuffer1;
 			this.setTargetParameters(this.sources0, this.destinations1, this.clearEffect);
+			Color color = this.lightingManager.BackgroundColor;
 			this.clearEffect.Parameters["BackgroundColor"].SetValue(new Vector3((float)color.R / 255.0f, (float)color.G / 255.0f, (float)color.B / 255.0f));
 			this.main.GraphicsDevice.SamplerStates[1] = SamplerState.PointClamp;
 			this.main.GraphicsDevice.SamplerStates[2] = SamplerState.PointClamp;
