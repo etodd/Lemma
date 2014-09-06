@@ -91,6 +91,16 @@ namespace Lemma.Components
 			);
 		}
 
+		public Animation.Parallel EndFlashAnimation()
+		{
+			return new Animation.Parallel
+			(
+				new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.One, 0.5f),
+				new Animation.FloatMoveTo(this.main.Renderer.InternalGamma, 0.0f, 0.5f),
+				new Animation.FloatMoveTo(this.main.Renderer.Brightness, 0.0f, 0.5f)
+			);
+		}
+
 		public void Update(float dt)
 		{
 			// Spawn an editor or a player if needed
@@ -287,15 +297,7 @@ namespace Lemma.Components
 							));
 						}
 
-						WorldFactory.Instance.Add(new Animation
-						(
-							new Animation.Parallel
-							(
-								new Animation.Vector3MoveTo(this.main.Renderer.Tint, Vector3.One, 0.5f),
-								new Animation.FloatMoveTo(this.main.Renderer.InternalGamma, 0.0f, 0.5f),
-								new Animation.FloatMoveTo(this.main.Renderer.Brightness, 0.0f, 0.5f)
-							)
-						));
+						WorldFactory.Instance.Add(new Animation(this.EndFlashAnimation()));
 						this.respawnTimer = 0;
 
 						this.PlayerSpawned.Execute();

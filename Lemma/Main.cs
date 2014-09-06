@@ -224,6 +224,7 @@ namespace Lemma
 		private OVR.ovrEyeRenderDesc vrLeftEyeRenderDesc;
 		private OVR.ovrEyeRenderDesc vrRightEyeRenderDesc;
 		private Camera vrCamera;
+		private Lemma.Components.ModelAlpha vrUi;
 #endif
 
 		public void FlushComponents()
@@ -934,19 +935,20 @@ namespace Lemma
 
 				this.UI.Add(new Binding<Point>(this.UI.RenderTargetSize, this.ScreenSize));
 
-				Lemma.Components.ModelAlpha screen = new Lemma.Components.ModelAlpha();
-				screen.Filename.Value = "Models\\plane";
-				screen.EffectFile.Value = "Effects\\VirtualUI";
-				screen.Add(new Binding<Microsoft.Xna.Framework.Graphics.RenderTarget2D>(screen.GetRenderTarget2DParameter("Diffuse" + Lemma.Components.Model.SamplerPostfix), this.UI.RenderTarget));
-				screen.Add(new Binding<Matrix>(screen.Transform, delegate()
+				this.vrUi = new Lemma.Components.ModelAlpha();
+				this.vrUi.Filename.Value = "Models\\plane";
+				this.vrUi.EffectFile.Value = "Effects\\VirtualUI";
+				this.vrUi.Add(new Binding<Microsoft.Xna.Framework.Graphics.RenderTarget2D>(this.vrUi.GetRenderTarget2DParameter("Diffuse" + Lemma.Components.Model.SamplerPostfix), this.UI.RenderTarget));
+				this.vrUi.Add(new Binding<Matrix>(this.vrUi.Transform, delegate()
 				{
-					Matrix mat = this.Camera.RotationMatrix * Matrix.CreateRotationY((float)Math.PI * -0.5f) * Matrix.CreateScale(10);
-					mat.Translation = this.Camera.Position + this.Camera.Forward.Value * 5.0f;
+					Matrix rot = this.Camera.RotationMatrix;
+					Matrix mat = rot * Matrix.CreateRotationY((float)Math.PI * -0.5f) * Matrix.CreateScale(10);
+					mat.Translation = this.Camera.Position + rot.Forward * 5.0f;
 					return mat;
 				}, this.Camera.Position, this.Camera.RotationMatrix));
-				this.AddComponent(screen);
+				this.AddComponent(this.vrUi);
 
-				this.UI.Setup3D(screen.Transform);
+				this.UI.Setup3D(this.vrUi.Transform);
 #endif
 
 #if ANALYTICS
