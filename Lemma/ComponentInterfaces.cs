@@ -10,6 +10,7 @@ namespace Lemma
 {
 	public interface IDrawableComponent : IGraphicsComponent
 	{
+		Property<string> OrderKey { get; }
 		void Draw(GameTime time, RenderParameters parameters);
 		bool IsVisible(BoundingFrustum frustum);
 		float GetDistance(Vector3 camera);

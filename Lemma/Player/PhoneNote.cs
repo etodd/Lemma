@@ -338,6 +338,7 @@ namespace Lemma.Components
 #if VR
 						if (main.VR)
 							phoneAnimation = "VRPhone";
+						else
 #endif
 							phoneAnimation = "Phone";
 

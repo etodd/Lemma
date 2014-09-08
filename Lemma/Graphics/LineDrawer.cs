@@ -42,6 +42,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
+			this.Add(new NotifyBinding(this.main.AlphaDrawablesModified, this.DrawOrder));
 			this.Add(new ListNotifyBinding<Line>(delegate() { this.changed = true; }, this.Lines));
 		}
 

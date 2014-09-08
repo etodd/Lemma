@@ -221,6 +221,12 @@ namespace Lemma.Components
 			this.DrawOrder = new Property<int>();
 		}
 
+		public override void Awake()
+		{
+			base.Awake();
+			this.Add(new NotifyBinding(main.AlphaDrawablesModified, this.DrawOrder));
+		}
+
 		public override void Draw(GameTime time, RenderParameters parameters)
 		{
 			

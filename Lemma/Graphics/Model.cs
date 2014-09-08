@@ -24,6 +24,9 @@ namespace Lemma.Components
 		public const string SamplerPostfix = "Texture";
 #endif
 
+		[XmlIgnore]
+		public Property<string> OrderKey { get; private set; }
+
 		protected struct InstanceVertex
 		{
 			public Matrix Transform;
@@ -303,6 +306,14 @@ namespace Lemma.Components
 					this.instanceVertexBuffer.Dispose();
 				this.instanceVertexBuffer = null;
 			}));
+
+			this.OrderKey = new Property<string>();
+			this.Add(new Binding<string>(this.OrderKey, delegate()
+			{
+				return string.Format("{0}|{1}|{2}", this.EffectFile.Value, this.TechniquePostfix.Value, this.DiffuseTexture.Value);
+			}, this.EffectFile, this.TechniquePostfix, this.DiffuseTexture));
+
+			this.Add(new NotifyBinding(this.main.DrawablesModified, this.OrderKey));
 		}
 
 		public virtual void LoadContent(bool reload)
@@ -969,6 +980,7 @@ namespace Lemma.Components
 			float alpha = this.Alpha;
 			this.Alpha = this.GetFloatParameter("Alpha");
 			this.Alpha.Value = alpha;
+			this.Add(new NotifyBinding(this.main.AlphaDrawablesModified, this.DrawOrder));
 		}
 
 		public override void Draw(GameTime time, RenderParameters parameters)

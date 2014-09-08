@@ -210,6 +210,8 @@ namespace Lemma.Components
 			base.Awake();
 			this.EnabledWhenPaused = true;
 
+			this.Add(new NotifyBinding(main.AlphaDrawablesModified, this.DrawOrder));
+
 			this.Add(new SetBinding<bool>(this.CannotSuspendByDistance, delegate(bool value)
 			{
 				this.Entity.CannotSuspendByDistance = value;

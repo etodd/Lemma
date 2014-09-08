@@ -837,11 +837,16 @@ namespace Lemma.Components
 			this.messages.Alignment.Value = ListContainer.ListAlignment.Min;
 			this.messages.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
 			this.messages.Reversed.Value = true;
+			Vector2 messagePlacement;
 #if VR
-			this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.7f), this.main.ScreenSize));
-#else
-			this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.9f), this.main.ScreenSize));
+			if (this.main.VR)
+				messagePlacement = new Vector2(0.5f, 0.7f);
+			else
 #endif
+				messagePlacement = new Vector2(0.5f, 0.9f);
+				
+			this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * messagePlacement.X, x.Y * messagePlacement.Y), this.main.ScreenSize));
+
 			this.main.UI.Root.Children.Add(this.messages);
 
 			{

@@ -198,11 +198,9 @@ namespace Lemma
 
 		public Command MapLoaded = new Command();
 
-		protected NotifyBinding alphaDrawableBinding;
+		protected bool drawablesModified;
 		protected bool alphaDrawablesModified;
-		protected NotifyBinding postAlphaDrawableBinding;
 		protected bool postAlphaDrawablesModified;
-		protected NotifyBinding nonPostProcessedDrawableBinding;
 		protected bool nonPostProcessedDrawablesModified;
 
 		private Dictionary<string, float> times;
@@ -239,30 +237,28 @@ namespace Lemma
 				if (typeof(IGraphicsComponent).IsAssignableFrom(t))
 					this.graphicsComponents.Add((IGraphicsComponent)c);
 				if (typeof(IDrawableComponent).IsAssignableFrom(t))
+				{
 					this.drawables.Add((IDrawableComponent)c);
+					this.drawablesModified = true;
+				}
 				if (typeof(IUpdateableComponent).IsAssignableFrom(t))
 					this.updateables.Add((IUpdateableComponent)c);
 				if (typeof(IDrawablePreFrameComponent).IsAssignableFrom(t))
 					this.preframeDrawables.Add((IDrawablePreFrameComponent)c);
 				if (typeof(INonPostProcessedDrawableComponent).IsAssignableFrom(t))
+				{
 					this.nonPostProcessedDrawables.Add((INonPostProcessedDrawableComponent)c);
+					this.nonPostProcessedDrawablesModified = true;
+				}
 				if (typeof(IDrawableAlphaComponent).IsAssignableFrom(t))
 				{
 					this.alphaDrawables.Add((IDrawableAlphaComponent)c);
-					if (this.alphaDrawableBinding != null)
-					{
-						this.alphaDrawableBinding.Delete();
-						this.alphaDrawableBinding = null;
-					}
+					this.alphaDrawablesModified = true;
 				}
 				if (typeof(IDrawablePostAlphaComponent).IsAssignableFrom(t))
 				{
 					this.postAlphaDrawables.Add((IDrawablePostAlphaComponent)c);
-					if (this.postAlphaDrawableBinding != null)
-					{
-						this.postAlphaDrawableBinding.Delete();
-						this.postAlphaDrawableBinding = null;
-					}
+					this.postAlphaDrawablesModified = true;
 				}
 			}
 			this.componentsToAdd.Clear();
@@ -1157,6 +1153,26 @@ namespace Lemma
 			}
 		}
 
+		public void DrawablesModified()
+		{
+			this.drawablesModified = true;
+		}
+
+		public void AlphaDrawablesModified()
+		{
+			this.alphaDrawablesModified = true;
+		}
+
+		public void PostAlphaDrawablesModified()
+		{
+			this.postAlphaDrawablesModified = true;
+		}
+
+		public void NonPostProcessedDrawablesModified()
+		{
+			this.nonPostProcessedDrawablesModified = true;
+		}
+
 		protected override void Update(GameTime gameTime)
 		{
 			if (gameTime.ElapsedGameTime.TotalSeconds > 0.1f)
@@ -1201,43 +1217,40 @@ namespace Lemma
 			}
 			this.FlushComponents();
 
-			if (this.alphaDrawableBinding == null)
+			if (this.drawablesModified)
 			{
-				this.alphaDrawableBinding = new NotifyBinding(delegate() { this.alphaDrawablesModified = true; }, this.alphaDrawables.Select(x => x.DrawOrder).ToArray());
-				this.alphaDrawablesModified = true;
+				this.drawables.InsertionSort(delegate(IDrawableComponent a, IDrawableComponent b)
+				{
+					return a.OrderKey.Value.CompareTo(b.OrderKey.Value);
+				});
+				this.drawablesModified = false;
 			}
+
 			if (this.alphaDrawablesModified)
 			{
 				this.alphaDrawables.InsertionSort(delegate(IDrawableAlphaComponent a, IDrawableAlphaComponent b)
 				{
 					return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
 				});
+				this.alphaDrawablesModified = false;
 			}
 
-			if (this.postAlphaDrawableBinding == null)
-			{
-				this.postAlphaDrawableBinding = new NotifyBinding(delegate() { this.postAlphaDrawablesModified = true; }, this.postAlphaDrawables.Select(x => x.DrawOrder).ToArray());
-				this.postAlphaDrawablesModified = true;
-			}
 			if (this.postAlphaDrawablesModified)
 			{
 				this.postAlphaDrawables.InsertionSort(delegate(IDrawablePostAlphaComponent a, IDrawablePostAlphaComponent b)
 				{
 					return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
 				});
+				this.postAlphaDrawablesModified = false;
 			}
 
-			if (this.nonPostProcessedDrawableBinding == null)
-			{
-				this.nonPostProcessedDrawableBinding = new NotifyBinding(delegate() { this.nonPostProcessedDrawablesModified = true; }, this.nonPostProcessedDrawables.Select(x => x.DrawOrder).ToArray());
-				this.nonPostProcessedDrawablesModified = true;
-			}
 			if (this.nonPostProcessedDrawablesModified)
 			{
 				this.nonPostProcessedDrawables.InsertionSort(delegate(INonPostProcessedDrawableComponent a, INonPostProcessedDrawableComponent b)
 				{
 					return a.DrawOrder.Value.CompareTo(b.DrawOrder.Value);
 				});
+				this.nonPostProcessedDrawablesModified = false;
 			}
 
 			timer.Stop();
@@ -1453,14 +1466,12 @@ namespace Lemma
 
 			Vector3 cameraPos = parameters.Camera.Position;
 			BoundingFrustum frustum = parameters.Camera.BoundingFrustum;
-			List<IDrawableComponent> drawables = this.drawables.Where(c => this.componentEnabled(c) && c.IsVisible(frustum)).ToList();
-			drawables.Sort(delegate(IDrawableComponent a, IDrawableComponent b)
-			{
-				return a.GetDistance(cameraPos).CompareTo(b.GetDistance(cameraPos));
-			});
 
-			foreach (IDrawableComponent c in drawables)
-				c.Draw(this.GameTime, parameters);
+			foreach (IDrawableComponent c in this.drawables)
+			{
+				if (this.componentEnabled(c) && c.IsVisible(frustum))
+					c.Draw(this.GameTime, parameters);
+			}
 
 			if (reverseCullState != null)
 				this.GraphicsDevice.RasterizerState = originalState;

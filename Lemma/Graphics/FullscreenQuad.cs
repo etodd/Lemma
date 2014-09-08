@@ -58,6 +58,12 @@ namespace Lemma.Components
 			this.DrawOrder = new Property<int>();
 		}
 
+		public override void Awake()
+		{
+			base.Awake();
+			this.Add(new NotifyBinding(this.main.AlphaDrawablesModified, this.DrawOrder));
+		}
+
 		public virtual void LoadContent(bool reload)
 		{
 			if (this.vertexBuffer != null && !this.vertexBuffer.IsDisposed)

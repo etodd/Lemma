@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 
 namespace Lemma.Components
 {
@@ -12,7 +13,11 @@ namespace Lemma.Components
 	/// </summary>
 	public class ParticleSystem : Component<Main>, IUpdateableComponent, IDrawablePostAlphaComponent, IDrawableAlphaComponent, IDrawableComponent
 	{
-		public Property<int> DrawOrder { get; set; }
+		[XmlIgnore]
+		public Property<string> OrderKey { get; private set; }
+
+		[XmlIgnore]
+		public Property<int> DrawOrder { get; private set; }
 
 		public bool IsVisible(BoundingFrustum frustum)
 		{
@@ -78,7 +83,7 @@ namespace Lemma.Components
 			// Name of the texture used by this particle system.
 			public string TextureName = null;
 
-			public string EffectFile = null;
+			public string EffectFile = "Effects\\Particle";
 
 			public int DrawOrder = 11; // In front of water and fog
 
@@ -610,7 +615,14 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.EnabledWhenPaused = true;
+
+			this.OrderKey = new Property<string>();
+			this.Add(new NotifyBinding(this.main.DrawablesModified, this.OrderKey));
+
 			this.DrawOrder = new Property<int> { Value = 11 };
+			this.Add(new NotifyBinding(this.main.AlphaDrawablesModified, this.DrawOrder));
+			this.Add(new NotifyBinding(this.main.PostAlphaDrawablesModified, this.DrawOrder));
+
 			this.Add(new SetBinding<ParticleSettings>(this.Settings, delegate(ParticleSettings value)
 			{
 				this.settings = value;
@@ -665,7 +677,7 @@ namespace Lemma.Components
 
 			if (this.particleEffect == null || reload)
 			{
-				Effect effect = this.main.Content.Load<Effect>(this.settings.EffectFile != null ? this.settings.EffectFile : "Effects\\Particle");
+				Effect effect = this.main.Content.Load<Effect>(this.settings.EffectFile);
 
 				// If we have several particle systems, the content manager will return
 				// a single shared effect instance to them all. But we want to preconfigure
@@ -715,6 +727,7 @@ namespace Lemma.Components
 			if (param != null)
 				param.SetValue(texture);
 
+			this.OrderKey.Value = string.Format("{0}|{1}", this.settings.EffectFile, this.settings.TextureName);
 			this.DrawOrder.Value = this.settings.DrawOrder;
 		}
 
