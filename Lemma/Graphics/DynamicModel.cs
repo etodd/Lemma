@@ -46,6 +46,11 @@ namespace Lemma.Components
 			base.LoadContent(reload);
 			if (reload)
 			{
+				if (DynamicModel<Vertex>.indexBuffer != null)
+				{
+					DynamicModel<Vertex>.indexBuffer.Dispose();
+					DynamicModel<Vertex>.indexBuffer = null;
+				}
 				this.loadEffect(this.EffectFile);
 				if (this.vertexBuffer != null && !this.vertexBuffer.IsDisposed)
 					this.vertexBuffer.Dispose();

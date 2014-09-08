@@ -160,12 +160,16 @@ namespace Lemma.Components
 													Microsoft.Xna.Framework.Graphics.RenderTargetUsage.DiscardContents);
 				}
 			}));
+
+			this.Add(new CommandBinding(this.main.ReloadedContent, delegate()
+			{
+				this.DynamicShadows.Reset();
+				this.loadEnvironmentMap(this.EnvironmentMap);
+			}));
 		}
 
 		public void LoadContent(bool reload)
 		{
-			if (reload)
-				this.DynamicShadows.Reset();
 		}
 
 		private Dictionary<Model.Material, int> materials = new Dictionary<Model.Material, int>();

@@ -1,4 +1,6 @@
-using System; using ComponentBind;
+using System;
+using ComponentBind;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using System.IO;
 using System.Reflection;
@@ -16,11 +18,12 @@ namespace Lemma
 	    [STAThread]
 		public static void Main(string[] args)
 		{
+			bool vr = args.Contains("-vr");
 			string error = null;
 			Main main = null;
 			if (Debugger.IsAttached)
 			{
-				main = new Main();
+				main = new Main(vr);
 				try
 				{
 					main.Run();
@@ -33,7 +36,7 @@ namespace Lemma
 			{
 				try
 				{
-					main = new Main();
+					main = new Main(vr);
 					main.Run();
 				}
 				catch (Exception e)
@@ -44,9 +47,11 @@ namespace Lemma
 			}
 
 			if (main != null)
-			{
 				main.Cleanup();
+
 #if ANALYTICS
+			if (main != null)
+			{
 				if (error == null)
 					main.SessionRecorder.RecordEvent("Exit");
 				else
@@ -61,8 +66,6 @@ namespace Lemma
 			AnalyticsForm analyticsForm = new AnalyticsForm(main, anonymousId, error);
 			System.Windows.Forms.Application.Run(analyticsForm);
 #else
-			}
-
 			if (error != null)
 			{
 				System.Windows.Forms.Application.EnableVisualStyles();

@@ -22,28 +22,33 @@ namespace Lemma.Factories
 			damageOverlay.Add(new Binding<Vector2>(damageOverlay.Scale, () => new Vector2(main.ScreenSize.Value.X / damageOverlay.Size.Value.X, main.ScreenSize.Value.Y / damageOverlay.Size.Value.Y), main.ScreenSize, damageOverlay.Size));
 			damageOverlay.Add(new Binding<float, float>(damageOverlay.Opacity, x => 1.0f - x, health));
 
-#if OCULUS
-			VirtualReticle reticleController = entity.GetOrCreate<VirtualReticle>();
-			reticleController.Add(new Binding<float>(reticleController.Rotation, rotation));
+#if VR
+			if (main.VR)
+			{
+				VirtualReticle reticleController = entity.GetOrCreate<VirtualReticle>();
+				reticleController.Add(new Binding<float>(reticleController.Rotation, rotation));
 
-			ModelAlpha reticle = entity.Create<ModelAlpha>();
-			reticle.Filename.Value = "Models\\plane";
-			reticle.EffectFile.Value = "Effects\\VirtualUI";
-			reticle.DiffuseTexture.Value = "Images\\reticle";
-			reticle.Add(new Binding<Matrix>(reticle.Transform, reticleController.Transform));
-			reticle.Add(new Binding<bool>(reticle.Enabled, () => !main.Paused && !phoneActive && !noteActive, main.Paused, phoneActive, noteActive));
-#else
-			Sprite reticle = new Sprite();
-			reticle.Image.Value = "Images\\reticle";
-			reticle.AnchorPoint.Value = new Vector2(0.5f);
-			reticle.Opacity.Value = 0.5f;
-			ui.Root.Children.Add(reticle);
-
-			reticle.Add(new Binding<bool>(reticle.Visible, main.Settings.EnableReticle));
-
-			// Center the reticle
-			reticle.Add(new Binding<Vector2, Point>(reticle.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
+				ModelAlpha reticle = entity.Create<ModelAlpha>();
+				reticle.Filename.Value = "Models\\plane";
+				reticle.EffectFile.Value = "Effects\\VirtualUI";
+				reticle.DiffuseTexture.Value = "Images\\reticle";
+				reticle.Add(new Binding<Matrix>(reticle.Transform, reticleController.Transform));
+				reticle.Add(new Binding<bool>(reticle.Enabled, () => !main.Paused && !phoneActive && !noteActive, main.Paused, phoneActive, noteActive));
+			}
+			else
 #endif
+			{
+				Sprite reticle = new Sprite();
+				reticle.Image.Value = "Images\\reticle";
+				reticle.AnchorPoint.Value = new Vector2(0.5f);
+				reticle.Opacity.Value = 0.5f;
+				ui.Root.Children.Add(reticle);
+
+				reticle.Add(new Binding<bool>(reticle.Visible, main.Settings.EnableReticle));
+
+				// Center the reticle
+				reticle.Add(new Binding<Vector2, Point>(reticle.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
+			}
 
 			UIComponent targets = new UIComponent();
 			ui.Root.Children.Add(targets);

@@ -293,13 +293,22 @@ namespace Lemma.Components
 			{
 				this.instancesChanged = true;
 			};
+			this.Add(new CommandBinding(this.main.ReloadingContent, delegate()
+			{
+				if (this.effect != null)
+					this.effect.Dispose();
+				this.effect = null;
+
+				if (this.instanceVertexBuffer != null)
+					this.instanceVertexBuffer.Dispose();
+				this.instanceVertexBuffer = null;
+			}));
 		}
 
 		public virtual void LoadContent(bool reload)
 		{
 			if (reload)
 			{
-				this.instanceVertexBuffer = null;
 				this.loadModel(this.Filename, true);
 				this.loadEffect(this.EffectFile);
 			}
@@ -325,7 +334,11 @@ namespace Lemma.Components
 				// Reset parameters
 
 				foreach (IProperty property in this.properties.Values)
-					property.Reset();
+				{
+					// Render targets should be reloaded from the source
+					if (property.GetType() != typeof(Property<RenderTarget2D>))
+						property.Reset();
+				}
 
 				this.Color.Reset();
 				this.DiffuseTexture.Reset();

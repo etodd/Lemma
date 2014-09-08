@@ -41,16 +41,14 @@ namespace Lemma
 			private Vector2 uvOffset;
 
 			private OVR.ovrEyeType eye;
-			private OVR.Hmd hmd;
-			private GraphicsDevice graphicsDevice;
+			private OVR.ovrFovPort fov;
+			private Main main;
 
-			public void Load(GraphicsDevice graphicsDevice, OVR.Hmd hmd, OVR.ovrEyeType eyeType, OVR.ovrFovPort fov, Point textureSize)
+			public void Reload()
 			{
-				this.hmd = hmd;
-				this.graphicsDevice = graphicsDevice;
-				this.eye = eyeType;
-				OVR.ovrDistortionMesh meshData = hmd.CreateDistortionMesh(eyeType, fov, hmd.GetDesc().DistortionCaps).Value;
-				OVR.ovrVector2f[] scaleAndOffset = hmd.GetRenderScaleAndOffset(fov, new OVR.ovrSizei(textureSize.X, textureSize.Y), new OVR.ovrRecti { Size = { w = textureSize.X, h = textureSize.Y } });
+				OVR.ovrDistortionMesh meshData = this.main.Hmd.CreateDistortionMesh(this.eye, this.fov, this.main.Hmd.GetDesc().DistortionCaps).Value;
+				Point textureSize = this.main.ScreenSize;
+				OVR.ovrVector2f[] scaleAndOffset = this.main.Hmd.GetRenderScaleAndOffset(this.fov, new OVR.ovrSizei(textureSize.X, textureSize.Y), new OVR.ovrRecti { Size = { w = textureSize.X, h = textureSize.Y } });
 				this.uvScale = new Vector2(scaleAndOffset[0].x, scaleAndOffset[0].y);
 				this.uvOffset = new Vector2(scaleAndOffset[1].x, scaleAndOffset[1].y);
 				Vertex[] vertices = new Vertex[meshData.VertexCount];
@@ -65,18 +63,26 @@ namespace Lemma
 					vertices[i].TanEyeAnglesB = new Vector2(v.TanEyeAnglesB.x, v.TanEyeAnglesB.y);
 				}
 
-				this.vb = new VertexBuffer(graphicsDevice, typeof(Vertex), (int)meshData.VertexCount, BufferUsage.WriteOnly);
+				this.vb = new VertexBuffer(this.main.GraphicsDevice, typeof(Vertex), (int)meshData.VertexCount, BufferUsage.WriteOnly);
 				this.vb.SetData<Vertex>(vertices);
 
-				this.ib = new IndexBuffer(graphicsDevice, IndexElementSize.SixteenBits, (int)meshData.IndexCount, BufferUsage.WriteOnly);
+				this.ib = new IndexBuffer(this.main.GraphicsDevice, IndexElementSize.SixteenBits, (int)meshData.IndexCount, BufferUsage.WriteOnly);
 				this.ib.SetData<short>(meshData.pIndexData);
+			}
+
+			public void Load(Main m, OVR.ovrEyeType eyeType, OVR.ovrFovPort fov)
+			{
+				this.main = m;
+				this.fov = fov;
+				this.eye = eyeType;
+				this.Reload();
 			}
 
 			public void Render(RenderTarget2D frameBuffer, OVR.ovrPosef eyePose, Effect effect)
 			{
 				effect.Parameters["EyeToSourceUVScale"].SetValue(this.uvScale);
 				effect.Parameters["EyeToSourceUVOffset"].SetValue(this.uvOffset);
-				OVR.ovrMatrix4f[] timeWarpMatrices = this.hmd.ovrHmd_GetEyeTimewarpMatrices(this.eye, eyePose);
+				OVR.ovrMatrix4f[] timeWarpMatrices = this.main.Hmd.ovrHmd_GetEyeTimewarpMatrices(this.eye, eyePose);
 				Matrix timeWarp1 = Oculus.MatrixOvrToXna(timeWarpMatrices[0]);
 				Matrix timeWarp2 = Oculus.MatrixOvrToXna(timeWarpMatrices[1]);
 				effect.Parameters["EyeRotationStart"].SetValue(timeWarp1);
@@ -84,11 +90,11 @@ namespace Lemma
 				effect.Parameters["FrameBuffer" + Lemma.Components.Model.SamplerPostfix].SetValue(frameBuffer);
 				effect.CurrentTechnique.Passes[0].Apply();
 
-				this.graphicsDevice.SetVertexBuffer(this.vb);
-				this.graphicsDevice.Indices = this.ib;
+				this.main.GraphicsDevice.SetVertexBuffer(this.vb);
+				this.main.GraphicsDevice.Indices = this.ib;
 
 				// Draw primitives
-				this.graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, this.vb.VertexCount, 0, this.ib.IndexCount / 3);
+				this.main.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, this.vb.VertexCount, 0, this.ib.IndexCount / 3);
 				Lemma.Components.Model.DrawCallCounter++;
 				Lemma.Components.Model.TriangleCounter += this.ib.IndexCount / 3;
 			}

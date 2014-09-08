@@ -111,6 +111,8 @@ namespace Lemma.Components
 		private bool allowPostAlphaDrawables;
 		private bool allowToneMapping;
 		private bool justReallocatedBuffers;
+		
+		private static bool staticReloadBound = false;
 
 		/// <summary>
 		/// The class constructor
@@ -183,27 +185,45 @@ namespace Lemma.Components
 			this.bloomEffect.Parameters["Ramp" + Model.SamplerPostfix].SetValue(this.lightRampTexture);
 		}
 
-		public void LoadContent(bool reload)
+		private static void reload(Main m)
 		{
 			// Load static resources
-			if (reload)
-				Renderer.quad.LoadContent(true);
-			else if (Renderer.quad == null)
+			if (Renderer.quad == null)
 			{
 				Renderer.quad = new FullscreenQuad();
-				Renderer.quad.SetMain(this.main);
+				Renderer.quad.SetMain(m);
 				Renderer.quad.LoadContent(false);
 				Renderer.quad.Awake();
 			}
+			else
+				Renderer.quad.LoadContent(true);
 
-			this.spriteBatch = new SpriteBatch(this.main.GraphicsDevice);
+			// Load light models
+			Renderer.pointLightModel = m.Content.Load<Microsoft.Xna.Framework.Graphics.Model>("InternalModels\\pointlight");
+			Renderer.spotLightModel = m.Content.Load<Microsoft.Xna.Framework.Graphics.Model>("InternalModels\\spotlight");
 
-			if (Renderer.pointLightModel == null || reload)
+			Renderer.globalLightEffect = m.Content.Load<Effect>("Effects\\PostProcess\\GlobalLight").Clone();
+			Renderer.pointLightEffect = m.Content.Load<Effect>("Effects\\PostProcess\\PointLight").Clone();
+			Renderer.spotLightEffect = m.Content.Load<Effect>("Effects\\PostProcess\\SpotLight").Clone();
+			Renderer.globalLightEffect.Parameters["Cloud" + Model.SamplerPostfix].SetValue(m.Content.Load<Texture2D>("AlphaModels\\cloud_texture"));
+		}
+
+		public void LoadContent(bool reload)
+		{
+			if (!Renderer.staticReloadBound)
 			{
-				// Load light models
-				Renderer.pointLightModel = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>("InternalModels\\pointlight");
-				Renderer.spotLightModel = this.main.Content.Load<Microsoft.Xna.Framework.Graphics.Model>("InternalModels\\spotlight");
+				Main m = this.main;
+				new CommandBinding(m.ReloadedContent, delegate()
+				{
+					Renderer.reload(m);
+				});
+				Renderer.staticReloadBound = true;
+				Renderer.reload(m);
 			}
+
+			if (this.spriteBatch != null)
+				this.spriteBatch.Dispose();
+			this.spriteBatch = new SpriteBatch(this.main.GraphicsDevice);
 
 			// Initialize our buffers
 			this.ReallocateBuffers(this.screenSize);
@@ -223,10 +243,6 @@ namespace Lemma.Components
 		{
 			if (Renderer.globalLightEffect == null || Renderer.globalLightEffect.IsDisposed)
 			{
-				Renderer.globalLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\GlobalLight").Clone();
-				Renderer.pointLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\PointLight").Clone();
-				Renderer.spotLightEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\SpotLight").Clone();
-				Renderer.globalLightEffect.Parameters["Cloud" + Model.SamplerPostfix].SetValue(this.main.Content.Load<Texture2D>("AlphaModels\\cloud_texture"));
 			}
 
 			this.compositeEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Composite").Clone();
@@ -652,11 +668,12 @@ namespace Lemma.Components
 			Renderer.quad.DrawAlpha(this.main.GameTime, RenderParameters.Default);
 
 			bool enableBloom = this.allowBloom && this.EnableBloom;
-#if OCULUS
-			bool enableMotionBlur = false;
-#else
 			bool enableMotionBlur = this.MotionBlurAmount > 0.0f;
+#if VR
+			if (this.main.VR)
+				enableMotionBlur = false;
 #endif
+
 			bool enableBlur = this.BlurAmount > 0.0f;
 
 			// Swap the color buffers

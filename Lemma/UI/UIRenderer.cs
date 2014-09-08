@@ -110,15 +110,18 @@ namespace Lemma.Components
 			else
 				this.Root.Size.Value = new Vector2(screenSize.X, screenSize.Y);
 
-#if OCULUS
-			this.mousePos.X = screenSize.X / 2;
-			this.mousePos.Y = screenSize.Y / 2;
+#if VR
+			if (this.main.VR)
+			{
+				this.mousePos.X = screenSize.X / 2;
+				this.mousePos.Y = screenSize.Y / 2;
+			}
 #endif
 
 			this.needResize = false;
 		}
 
-#if OCULUS
+#if VR
 		public Sprite Reticle;
 #endif
 
@@ -129,29 +132,6 @@ namespace Lemma.Components
 			this.Root = new RootUIComponent(this);
 			this.Root.AnchorPoint.Value = Vector2.Zero;
 			this.Serialize = false;
-
-#if OCULUS
-			this.Reticle = new Sprite();
-			this.Reticle.Image.Value = "Images\\reticle";
-			this.Reticle.AnchorPoint.Value = new Vector2(0.5f);
-			this.Root.Children.Add(this.Reticle);
-			this.Reticle.Add(new Binding<Vector2>(this.Reticle.Position, this.Mouse));
-			this.Reticle.Add(new Binding<bool>(this.Reticle.Visible, this.IsMouseVisible));
-			// HACK: Make sure reticle is always on top.
-			this.Root.Children.ItemAdded += delegate(int index, UIComponent c)
-			{
-				if (c != this.Reticle && this.Root.Children.Contains(this.Reticle))
-				{
-					this.Reticle.Detach();
-					this.Root.Children.Add(this.Reticle);
-				}
-			};
-#else
-			this.Add(new NotifyBinding(delegate()
-			{
-				this.main.IsMouseVisible = this.IsMouseVisible;
-			}, this.IsMouseVisible));
-#endif
 		}
 
 		private bool needResize = false;
@@ -164,6 +144,34 @@ namespace Lemma.Components
 			this.main.GraphicsDevice.DeviceReset += this.deviceReset;
 			this.main.AddComponent(this.Root);
 			this.Root.Add(new Binding<Vector2, Point>(this.Root.Size, x => new Vector2(x.X, x.Y), main.ScreenSize));
+
+#if VR
+			if (this.main.VR)
+			{
+				this.Reticle = new Sprite();
+				this.Reticle.Image.Value = "Images\\reticle";
+				this.Reticle.AnchorPoint.Value = new Vector2(0.5f);
+				this.Root.Children.Add(this.Reticle);
+				this.Reticle.Add(new Binding<Vector2>(this.Reticle.Position, this.Mouse));
+				this.Reticle.Add(new Binding<bool>(this.Reticle.Visible, this.IsMouseVisible));
+				// HACK: Make sure reticle is always on top.
+				this.Root.Children.ItemAdded += delegate(int index, UIComponent c)
+				{
+					if (c != this.Reticle && this.Root.Children.Contains(this.Reticle))
+					{
+						this.Reticle.Detach();
+						this.Root.Children.Add(this.Reticle);
+					}
+				};
+			}
+			else
+#endif
+			{
+				this.Add(new NotifyBinding(delegate()
+				{
+					this.main.IsMouseVisible = this.IsMouseVisible;
+				}, this.IsMouseVisible));
+			}
 		}
 
 		private void deviceReset(object sender, EventArgs e)
@@ -177,7 +185,7 @@ namespace Lemma.Components
 			this.needResize = true;
 		}
 
-#if OCULUS
+#if VR
 		private Point mousePos;
 #endif
 
@@ -186,35 +194,42 @@ namespace Lemma.Components
 			if (this.main.IsActive && this.EnableMouse)
 			{
 				MouseState realMouseState = this.main.MouseState;
-#if OCULUS
-				Point lastMousePos = this.mousePos;
-				this.mousePos.X += realMouseState.X - FPSInput.MouseCenter.X;
-				this.mousePos.Y += realMouseState.Y - FPSInput.MouseCenter.Y;
-				FPSInput.RecenterMouse();
-				realMouseState = new MouseState
-				(
-					this.mousePos.X,
-					this.mousePos.Y,
-					realMouseState.ScrollWheelValue,
-					realMouseState.LeftButton,
-					realMouseState.MiddleButton,
-					realMouseState.RightButton,
-					realMouseState.XButton1,
-					realMouseState.XButton2
-				);
+#if VR
+				Point lastMousePos = new Point();
+				if (this.main.VR)
+				{
+					lastMousePos = this.mousePos;
+					this.mousePos.X += realMouseState.X - FPSInput.MouseCenter.X;
+					this.mousePos.Y += realMouseState.Y - FPSInput.MouseCenter.Y;
+					FPSInput.RecenterMouse();
+					realMouseState = new MouseState
+					(
+						this.mousePos.X,
+						this.mousePos.Y,
+						realMouseState.ScrollWheelValue,
+						realMouseState.LeftButton,
+						realMouseState.MiddleButton,
+						realMouseState.RightButton,
+						realMouseState.XButton1,
+						realMouseState.XButton2
+					);
+				}
 #endif
 				MouseState current = this.MouseFilter(realMouseState), last = this.lastMouseState;
 
-#if OCULUS
-				Point size = this.RenderTargetSize;
-				if (current.X > size.X)
-					this.mousePos.X = Math.Min(this.mousePos.X, lastMousePos.X);
-				if (current.X < 0)
-					this.mousePos.X = Math.Max(this.mousePos.X, lastMousePos.X);
-				if (current.Y > size.Y)
-					this.mousePos.Y = Math.Min(this.mousePos.Y, lastMousePos.Y);
-				if (current.Y < 0)
-					this.mousePos.Y = Math.Max(this.mousePos.Y, lastMousePos.Y);
+#if VR
+				if (this.main.VR)
+				{
+					Point size = this.RenderTargetSize;
+					if (current.X > size.X)
+						this.mousePos.X = Math.Min(this.mousePos.X, lastMousePos.X);
+					if (current.X < 0)
+						this.mousePos.X = Math.Max(this.mousePos.X, lastMousePos.X);
+					if (current.Y > size.Y)
+						this.mousePos.Y = Math.Min(this.mousePos.Y, lastMousePos.Y);
+					if (current.Y < 0)
+						this.mousePos.Y = Math.Max(this.mousePos.Y, lastMousePos.Y);
+				}
 #endif
 
 				this.Mouse.Value = new Vector2(current.X, current.Y);

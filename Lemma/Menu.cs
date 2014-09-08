@@ -45,12 +45,6 @@ namespace Lemma.Components
 		private const float animationSpeed = 2.5f;
 		private const float hideAnimationSpeed = 5.0f;
 
-#if OCULUS
-		private const float blurAmount = 0.0f;
-#else
-		private const float blurAmount = 1.0f;
-#endif
-
 		private List<Property<PCInput.PCInputBinding>> inputBindings = new List<Property<PCInput.PCInputBinding>>();
 
 		private ListContainer messages;
@@ -321,11 +315,19 @@ namespace Lemma.Components
 			if (this.pauseAnimation != null && this.pauseAnimation.Active)
 				this.pauseAnimation.Delete.Execute();
 
+			float blurAmount;
+#if VR
+			if (this.main.VR)
+				blurAmount = 0.0f;
+			else
+#endif
+				blurAmount = 1.0f;
+
 			this.pauseAnimation = new Animation
 			(
 				new Animation.Parallel
 				(
-					new Animation.FloatMoveToSpeed(this.main.Renderer.BlurAmount, Menu.blurAmount, 1.0f),
+					new Animation.FloatMoveToSpeed(this.main.Renderer.BlurAmount, blurAmount, 1.0f),
 					new Animation.Ease
 					(
 						new Animation.Parallel
@@ -835,7 +837,7 @@ namespace Lemma.Components
 			this.messages.Alignment.Value = ListContainer.ListAlignment.Min;
 			this.messages.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
 			this.messages.Reversed.Value = true;
-#if OCULUS
+#if VR
 			this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.7f), this.main.ScreenSize));
 #else
 			this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.9f), this.main.ScreenSize));
@@ -1013,13 +1015,16 @@ namespace Lemma.Components
 			this.resizeToMenu(settingsBack);
 			settingsMenu.Children.Add(settingsBack);
 
-#if OCULUS
-			Container recenterVrPose = this.main.UIFactory.CreateButton("\\recenter pose", delegate()
+#if VR
+			if (this.main.VR)
 			{
-				this.main.Hmd.RecenterPose();
-			});
-			this.resizeToMenu(recenterVrPose);
-			settingsMenu.Children.Add(recenterVrPose);
+				Container recenterVrPose = this.main.UIFactory.CreateButton("\\recenter pose", delegate()
+				{
+					this.main.Hmd.RecenterPose();
+				});
+				this.resizeToMenu(recenterVrPose);
+				settingsMenu.Children.Add(recenterVrPose);
+			}
 #endif
 
 			ListContainer settingsList = new ListContainer();

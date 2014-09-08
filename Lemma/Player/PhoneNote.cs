@@ -21,8 +21,9 @@ namespace Lemma.Components
 			phoneUi.RenderTargetSize.Value = new Point((int)phoneWidth, (int)(phoneWidth * 2.0f));
 			phoneUi.Serialize = false;
 			phoneUi.Enabled.Value = false;
-#if OCULUS
-			phoneUi.Reticle.Tint.Value = new Color(0.0f, 0.0f, 0.0f);
+#if VR
+			if (main.VR)
+				phoneUi.Reticle.Tint.Value = new Color(0.0f, 0.0f, 0.0f);
 #endif
 
 			Model phoneModel = entity.GetOrCreate<Model>("PhoneModel");
@@ -270,11 +271,14 @@ namespace Lemma.Components
 						Session.Recorder.Event(main, "Note", note.Text);
 						noteUiImage.Image.Value = note.Image;
 						noteUiText.Text.Value = note.Text;
-#if OCULUS
-						const string noteAnimation = "VRNote";
-#else
-						const string noteAnimation = "Note";
+						string noteAnimation;
+#if VR
+						if (main.VR)
+							noteAnimation = "VRNote";
+						else
 #endif
+							noteAnimation = "Note";
+
 						model.StartClip(noteAnimation, 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
 						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_NOTE_PICKUP, entity);
 						float startRotationY = input.Mouse.Value.Y;
@@ -330,11 +334,13 @@ namespace Lemma.Components
 						phoneScroll.CheckLayout();
 						scrollToBottom();
 
-#if OCULUS
-						const string phoneAnimation = "VRPhone";
-#else
-						const string phoneAnimation = "Phone";
+						string phoneAnimation;
+#if VR
+						if (main.VR)
+							phoneAnimation = "VRPhone";
 #endif
+							phoneAnimation = "Phone";
+
 						model.StartClip(phoneAnimation, 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
 
 						// Level the player's view

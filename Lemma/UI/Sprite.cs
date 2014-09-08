@@ -57,12 +57,17 @@ namespace Lemma.Components
 		{
 			if (this.texture != null)
 			{
-				Vector2 position = Vector2.Transform(this.Position, parent);
-				float rotation = this.Rotation + (float)Math.Atan2(parent.M12, parent.M11);
-				Vector2 scale = this.Scale;
-				scale.X *= (float)Math.Sqrt((parent.M11 * parent.M11) + (parent.M12 * parent.M12));
-				scale.Y *= (float)Math.Sqrt((parent.M21 * parent.M21) + (parent.M22 * parent.M22));
-				this.renderer.Batch.Draw(this.texture, position, null, this.Tint.Value * this.Opacity.Value, rotation, this.AnchorPoint.Value * this.Size, scale, this.Effects, 0);
+				if (this.texture.IsDisposed)
+					this.loadTexture(this.Image);
+				else
+				{
+					Vector2 position = Vector2.Transform(this.Position, parent);
+					float rotation = this.Rotation + (float)Math.Atan2(parent.M12, parent.M11);
+					Vector2 scale = this.Scale;
+					scale.X *= (float)Math.Sqrt((parent.M11 * parent.M11) + (parent.M12 * parent.M12));
+					scale.Y *= (float)Math.Sqrt((parent.M21 * parent.M21) + (parent.M22 * parent.M22));
+					this.renderer.Batch.Draw(this.texture, position, null, this.Tint.Value * this.Opacity.Value, rotation, this.AnchorPoint.Value * this.Size, scale, this.Effects, 0);
+				}
 			}
 		}
 	}
