@@ -16,6 +16,10 @@ namespace Lemma.GameScripts
 		public static void Run(Entity script)
 		{
 			const float fadeTime = 1.0f;
+#if VR
+			// The logo is too bright in VR mode because of the light ramp
+			Color logoTint = new Color(0.55f, 0.55f, 0.55f);
+#endif
 
 			main.Spawner.CanSpawn = false;
 
@@ -44,6 +48,10 @@ namespace Lemma.GameScripts
 				Sprite logo = new Sprite();
 				logo.Image.Value = "Images\\logo";
 				logo.Opacity.Value = 0.0f;
+#if VR
+				if (main.VR)
+					logo.Tint.Value = logoTint;
+#endif
 				script.Add(new Animation
 				(
 					new Animation.FloatMoveTo(logo.Opacity, 1.0f, fadeTime)
@@ -106,6 +114,10 @@ namespace Lemma.GameScripts
 				logo.Image.Value = "Images\\logo";
 				logo.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
 				logo.Add(new Binding<Vector2, Point>(logo.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
+#if VR
+				if (main.VR)
+					logo.Tint.Value = logoTint;
+#endif
 				main.UI.Root.Children.Add(logo);
 
 				ListContainer corner = new ListContainer();
@@ -179,10 +191,11 @@ namespace Lemma.GameScripts
 				script.Add(new CommandBinding(script.Delete, logo.Delete, corner.Delete));
 			}
 
-#if !VR
+#if VR
 			if (!main.VR)
-				main.Renderer.BlurAmount.Value = 1.0f;
 #endif
+				main.Renderer.BlurAmount.Value = 1.0f;
+
 			main.Renderer.InternalGamma.Value = 0.0f;
 			main.Renderer.Brightness.Value = 0.0f;
 			main.Renderer.Tint.Value = new Vector3(0.0f);

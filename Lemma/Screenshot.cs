@@ -30,7 +30,12 @@ namespace Lemma
 			{
 				this.Size = size;
 				Point screenSize = this.main.ScreenSize;
-				if (!this.main.VR && (this.Size.X > screenSize.X || this.Size.Y > screenSize.Y))
+
+				if (
+#if VR
+				!this.main.VR &&
+#endif
+				(this.Size.X > screenSize.X || this.Size.Y > screenSize.Y))
 					this.main.Renderer.ReallocateBuffers(size);
 				this.Buffer = new RenderTarget2D(this.main.GraphicsDevice, this.Size.X, this.Size.Y, false, SurfaceFormat.Color, DepthFormat.Depth16);
 				this.main.RenderTarget = this.Buffer;
@@ -47,8 +52,14 @@ namespace Lemma
 			{
 				this.main.RenderTarget = null;
 				Point screenSize = this.main.ScreenSize;
-				if (!this.main.VR && (this.Size.X > screenSize.X || this.Size.Y > screenSize.Y))
+
+				if (
+#if VR
+				!this.main.VR &&
+#endif
+				(this.Size.X > screenSize.X || this.Size.Y > screenSize.Y))
 					this.main.Renderer.ReallocateBuffers(screenSize);
+
 				if (this.callback != null)
 					this.callback();
 				this.callback = null;

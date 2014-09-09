@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma
 {
+#if VR
 	public class Oculus
 	{
 		public static Matrix MatrixOvrToXna(OVR.ovrMatrix4f m)
@@ -127,4 +128,5 @@ namespace Lemma
 			}
 		}
 	}
+#endif
 }

@@ -32,7 +32,7 @@ namespace Lemma.Components
 			{ "forest", "\\map forest" },
 			{ "monolith", "\\map monolith" },
 			{ "fracture1", "\\map fracture" },
-			{ "nexus", "\\map nexus" },
+			//{ "nexus", "\\map nexus" },	// Temporarily disabled
 			//{ "valley", "\\map valley" }, // Temporarily disabled
 		};
 

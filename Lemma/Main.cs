@@ -54,8 +54,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 8;
-		public const int MapVersion = 823;
-		public const int Build = 823;
+		public const int MapVersion = 838;
+		public const int Build = 838;
 
 		public static Config.Lang[] Languages = new[] { Config.Lang.en, Config.Lang.ru };
 
@@ -327,9 +327,14 @@ namespace Lemma
 
 		public ContentManager MapContent;
 		
+#if VR
 		public Main(bool vr)
 		{
 			this.VR = vr;
+#else
+		public Main()
+		{
+#endif
 			Factory<Main>.Initialize();
 			Editor.SetupDefaultEditorComponents();
 

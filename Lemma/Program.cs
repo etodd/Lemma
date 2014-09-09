@@ -18,12 +18,18 @@ namespace Lemma
 	    [STAThread]
 		public static void Main(string[] args)
 		{
+#if VR
 			bool vr = args.Contains("-vr");
+#endif
 			string error = null;
 			Main main = null;
 			if (Debugger.IsAttached)
 			{
+#if VR
 				main = new Main(vr);
+#else
+				main = new Main();
+#endif
 				try
 				{
 					main.Run();
@@ -36,7 +42,11 @@ namespace Lemma
 			{
 				try
 				{
+#if VR
 					main = new Main(vr);
+#else
+					main = new Main();
+#endif
 					main.Run();
 				}
 				catch (Exception e)

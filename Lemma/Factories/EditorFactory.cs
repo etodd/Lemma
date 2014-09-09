@@ -222,7 +222,7 @@ namespace Lemma.Factories
 					{
 						main.AddComponent(new TextPrompt(delegate(string name)
 						{
-							IO.MapLoader.New(main, name);
+							IO.MapLoader.New(main, Path.Combine(main.CustomMapDirectory, name));
 						}, "", "Map name:", "New map"));
 					}
 				},
