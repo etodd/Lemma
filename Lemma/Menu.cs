@@ -298,7 +298,14 @@ namespace Lemma.Components
 			Session.Recorder.Event(main, "Pause");
 
 			// Take screenshot
-			this.main.Screenshot.Take(this.main.ScreenSize);
+			Point size;
+#if VR
+			if (this.main.VR)
+				size = this.main.VRActualScreenSize;
+			else
+#endif
+				size = this.main.ScreenSize;
+			this.main.Screenshot.Take(size);
 
 			this.originalMouseVisible = this.main.UI.IsMouseVisible;
 			this.main.UI.IsMouseVisible.Value = true;

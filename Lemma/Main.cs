@@ -217,7 +217,7 @@ namespace Lemma
 
 		private RenderTarget2D vrLeftEyeTarget;
 		private RenderTarget2D vrRightEyeTarget;
-		private Point vrActualScreenSize;
+		public Property<Point> VRActualScreenSize = new Property<Point>();
 		private Effect vrEffect;
 		private Oculus.DistortionMesh vrLeftMesh = new Oculus.DistortionMesh();
 		private Oculus.DistortionMesh vrRightMesh = new Oculus.DistortionMesh();
@@ -227,6 +227,7 @@ namespace Lemma
 		private OVR.ovrEyeRenderDesc vrRightEyeRenderDesc;
 		private Camera vrCamera;
 		public Lemma.Components.ModelAlpha VRUI;
+		public Property<Matrix> VRLastViewProjection = new Property<Matrix>();
 #endif
 
 		public void FlushComponents()
@@ -1106,7 +1107,17 @@ namespace Lemma
 			};
 
 			if (this.Screenshot.Buffer == null)
-				this.Screenshot.Take(this.ScreenSize, doSave);
+			{
+				Point size;
+#if VR
+				if (this.VR)
+					size = this.VRActualScreenSize;
+				else
+#endif
+					size = this.ScreenSize;
+
+				this.Screenshot.Take(size, doSave);
+			}
 			else
 				doSave();
 		}
@@ -1408,6 +1419,16 @@ namespace Lemma
 				rightEyePose = this.Hmd.GetEyePose(OVR.ovrEyeType.ovrEye_Right);
 				this.vrRightMesh.Render(this.vrRightEyeTarget, rightEyePose, this.vrEffect);
 
+				// Update view projection matrix
+				quat = new Quaternion(rightEyePose.Orientation.x, rightEyePose.Orientation.y, rightEyePose.Orientation.z, rightEyePose.Orientation.w);
+				this.vrCamera.RotationMatrix.Value = Matrix.CreateFromQuaternion(quat) * originalCamera.RotationMatrix;
+				viewAdjust = Vector3.TransformNormal(new Vector3(-this.vrRightEyeRenderDesc.ViewAdjust.x, -this.vrRightEyeRenderDesc.ViewAdjust.y, -this.vrRightEyeRenderDesc.ViewAdjust.z), this.vrCamera.RotationMatrix)
+					+ Vector3.TransformNormal(new Vector3(rightEyePose.Position.x, rightEyePose.Position.y, rightEyePose.Position.z), originalCamera.RotationMatrix);
+				this.vrCamera.Position.Value = originalCamera.Position.Value + viewAdjust * Main.VRUnitToWorldUnit;
+				proj = OVR.Hmd.GetProjection(this.vrRightFov, originalCamera.NearPlaneDistance, originalCamera.FarPlaneDistance, true);
+				this.vrCamera.Projection.Value = Oculus.MatrixOvrToXna(proj);
+				this.VRLastViewProjection.Value = this.vrCamera.ViewProjection;
+
 				this.renderParameters.Camera = originalCamera;
 			}
 			else
@@ -1535,12 +1556,12 @@ namespace Lemma
 
 				this.ScreenSize.Value = renderTargetSize;
 
-				this.vrActualScreenSize = new Point(this.Graphics.PreferredBackBufferWidth, this.Graphics.PreferredBackBufferHeight);
+				this.VRActualScreenSize.Value = new Point(this.Graphics.PreferredBackBufferWidth, this.Graphics.PreferredBackBufferHeight);
 
 				if (this.Settings.Fullscreen)
-					this.Settings.FullscreenResolution.Value = this.vrActualScreenSize;
+					this.Settings.FullscreenResolution.Value = this.VRActualScreenSize;
 				else
-					this.Settings.Size.Value = this.vrActualScreenSize;
+					this.Settings.Size.Value = this.VRActualScreenSize;
 			}
 		}
 #endif

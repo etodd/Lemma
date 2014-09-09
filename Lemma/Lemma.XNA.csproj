@@ -233,6 +233,7 @@
     <Compile Include="Player\RollKickSlide.cs" />
     <Compile Include="Player\RotationController.cs" />
     <Compile Include="Player\Rumble.cs" />
+    <Compile Include="Player\TargetUI.cs" />
     <Compile Include="Player\Vault.cs" />
     <Compile Include="Player\VirtualReticle.cs" />
     <Compile Include="Player\VoxelTools.cs" />

@@ -296,7 +296,15 @@ namespace Lemma.IO
 				new Animation.Delay(1.5f),
 				new Animation.Execute(delegate()
 				{
-					main.Screenshot.Take(main.ScreenSize);
+					Point size;
+#if VR
+					if (main.VR)
+						size = main.VRActualScreenSize;
+					else
+#endif
+						size = main.ScreenSize;
+
+					main.Screenshot.Take(size);
 				}),
 				new Animation.Delay(0.01f),
 				new Animation.Set<string>(notificationText.Text, "Saving..."),
