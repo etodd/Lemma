@@ -15,8 +15,6 @@ namespace Lemma.GInterfaces
 {
 	public class WorkShopInterface : Component<Main>
 	{
-		public SpriteFont MainFont;
-
 		private View EncompassingView;
 		private PanelView MainView;
 		private TextFieldView MapFilePath;
@@ -44,8 +42,6 @@ namespace Lemma.GInterfaces
 
 		public override void Awake()
 		{
-			MainFont = main.Content.Load<SpriteFont>("Font");
-
 			//This is to make it so nothing else can be interacted with.
 			this.EncompassingView = new View(main.GeeUI, main.GeeUI.RootView);
 			this.MainView = new PanelView(main.GeeUI, EncompassingView, Vector2.Zero);
@@ -59,21 +55,21 @@ namespace Lemma.GInterfaces
 			this.MainView.Add(new Binding<Vector2, int>(MainView.Position, i => new Vector2(i / 2f, MainView.Y), EncompassingView.Width));
 			this.MainView.Add(new Binding<Vector2, int>(MainView.Position, i => new Vector2(MainView.X, i / 2f), EncompassingView.Height));
 
-			new TextView(main.GeeUI, MainView, "Map File:", new Vector2(10, 8), MainFont);
-			this.MapFilePath = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 25), MainFont) { MultiLine = false, Editable = false };
-			this.MapOpenPath = new ButtonView(main.GeeUI, MainView, "...", new Vector2(360, 25), MainFont);
-			new TextView(main.GeeUI, MainView, "Thumbnail File:", new Vector2(10, 48), MainFont);
-			this.MapImagePath = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 65), MainFont) { MultiLine = false, Editable = false };
-			this.OpenImagePath = new ButtonView(main.GeeUI, MainView, "...", new Vector2(360, 65), MainFont);
-			new TextView(main.GeeUI, MainView, "Name:", new Vector2(10, 88), MainFont);
-			this.NameView = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 105), MainFont) { MultiLine = false };
-			new TextView(main.GeeUI, MainView, "Description:", new Vector2(10, 128), MainFont);
-			this.DescriptionView = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 145), MainFont);
+			new TextView(main.GeeUI, MainView, "Map File:", new Vector2(10, 8));
+			this.MapFilePath = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 25)) { MultiLine = false, Editable = false };
+			this.MapOpenPath = new ButtonView(main.GeeUI, MainView, "...", new Vector2(360, 25));
+			new TextView(main.GeeUI, MainView, "Thumbnail File:", new Vector2(10, 48));
+			this.MapImagePath = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 65)) { MultiLine = false, Editable = false };
+			this.OpenImagePath = new ButtonView(main.GeeUI, MainView, "...", new Vector2(360, 65));
+			new TextView(main.GeeUI, MainView, "Name:", new Vector2(10, 88));
+			this.NameView = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 105)) { MultiLine = false };
+			new TextView(main.GeeUI, MainView, "Description:", new Vector2(10, 128));
+			this.DescriptionView = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 145));
 
-			this.UploadButton = new ButtonView(main.GeeUI, MainView, "Upload", new Vector2(50, 360), MainFont);
-			this.CancelButton = new ButtonView(main.GeeUI, MainView, "Cancel", new Vector2(300, 360), MainFont);
+			this.UploadButton = new ButtonView(main.GeeUI, MainView, "Upload", new Vector2(50, 360));
+			this.CancelButton = new ButtonView(main.GeeUI, MainView, "Cancel", new Vector2(300, 360));
 
-			var statusString = new TextView(main.GeeUI, MainView, "Waiting", new Vector2(110, 365), MainFont)
+			var statusString = new TextView(main.GeeUI, MainView, "Waiting", new Vector2(110, 365))
 			{
 				TextJustification = TextJustification.Center,
 			};

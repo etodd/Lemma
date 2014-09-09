@@ -7,8 +7,6 @@ namespace GeeUI.Views
 {
 	public class TextView : View
 	{
-		public SpriteFont Font;
-
 		public Property<string> Text = new Property<string>() { Value = "" };
 
 		public Color TextColor;
@@ -21,7 +19,7 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				return (Font.MeasureString(Text).X * TextScale.Value);
+				return (GeeUIMain.Font.MeasureString(Text).X * TextScale.Value);
 			}
 		}
 
@@ -29,8 +27,8 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				var width = (int)(Font.MeasureString(Text).X * TextScale.Value);
-				var height = (int)(Font.MeasureString(Text).Y * TextScale.Value);
+				var width = (int)(GeeUIMain.Font.MeasureString(Text).X * TextScale.Value);
+				var height = (int)(GeeUIMain.Font.MeasureString(Text).Y * TextScale.Value);
 				switch (TextJustification)
 				{
 					default:
@@ -47,12 +45,11 @@ namespace GeeUI.Views
 
 		public Property<bool> AutoSize = new Property<bool>() { Value = true };
 
-		public TextView(GeeUIMain GeeUI, View rootView, string text, Vector2 position, SpriteFont font)
+		public TextView(GeeUIMain GeeUI, View rootView, string text, Vector2 position)
 			: base(GeeUI, rootView)
 		{
 			Text.Value = text;
 			Position.Value = position;
-			Font = font;
 			TextColor = GeeUI.TextColorDefault;
 
 			Text.AddBinding(new NotifyBinding(HandleResize, () => AutoSize.Value, Text));
@@ -61,18 +58,18 @@ namespace GeeUI.Views
 
 		private void HandleResize()
 		{
-			var width = (int)(Font.MeasureString(Text).X * TextScale.Value);
-			var height = (int)(Font.MeasureString(Text).Y * TextScale.Value);
+			var width = (int)(GeeUIMain.Font.MeasureString(Text).X * TextScale.Value);
+			var height = (int)(GeeUIMain.Font.MeasureString(Text).Y * TextScale.Value);
 			this.Width.Value = width;
 			this.Height.Value = height;
 		}
 
-		internal static string TruncateString(string input, SpriteFont font, int widthAllowed, string ellipsis = "...")
+		internal static string TruncateString(string input, int widthAllowed, string ellipsis = "...")
 		{
 			string cur = "";
 			foreach (char t in input)
 			{
-				float width = font.MeasureString(cur + t + ellipsis).X;
+				float width = GeeUIMain.Font.MeasureString(cur + t + ellipsis).X;
 				if (width > widthAllowed)
 					break;
 				cur += t;
@@ -82,7 +79,7 @@ namespace GeeUI.Views
 
 		public override void Draw(SpriteBatch spriteBatch)
 		{
-			spriteBatch.DrawString(Font, Text, AbsolutePosition, TextColor * EffectiveOpacity, 0f, TextOrigin, TextScale.Value, SpriteEffects.None, 0f);
+			spriteBatch.DrawString(GeeUIMain.Font, Text, AbsolutePosition, TextColor * EffectiveOpacity, 0f, TextOrigin, TextScale.Value, SpriteEffects.None, 0f);
 			base.Draw(spriteBatch);
 		}
 

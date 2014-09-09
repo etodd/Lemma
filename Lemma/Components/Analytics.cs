@@ -292,6 +292,8 @@ namespace Lemma.Components
 
 		public Point ScreenSize;
 
+		public bool VR;
+
 		public bool IsFullscreen;
 
 		public int Memory;
@@ -352,7 +354,16 @@ namespace Lemma.Components
 				this.data.TotalTime = totalTime;
 				this.data.Map = map;
 				this.data.UUID = this.main.Settings.UUID;
-				this.data.ScreenSize = this.main.ScreenSize;
+				Point screenSize;
+#if VR
+				this.data.VR = this.main.VR;
+				if (this.main.VR)
+					screenSize = this.main.VRActualScreenSize;
+				else
+#endif
+					screenSize = this.main.ScreenSize;
+
+				this.data.ScreenSize = screenSize;
 				this.data.IsFullscreen = this.main.Settings.Fullscreen;
 				using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
 					new XmlSerializer(typeof(Session)).Serialize(stream, this.data);

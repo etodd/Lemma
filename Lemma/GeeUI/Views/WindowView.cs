@@ -11,7 +11,6 @@ namespace GeeUI.Views
 		public NinePatch NinePatchNormal = new NinePatch();
 
 		public string WindowText = "Hello this is a VIEW!";
-		public SpriteFont WindowTextFont;
 
 		protected internal bool SelectedOffChildren;
 		protected internal Vector2 LastMousePosition = Vector2.Zero;
@@ -42,18 +41,17 @@ namespace GeeUI.Views
 			get
 			{
 				NinePatch patch = Selected ? NinePatchSelected : NinePatchNormal;
-				Vector2 windowTextSize = WindowTextFont.MeasureString(WindowText);
+				Vector2 windowTextSize = GeeUIMain.Font.MeasureString(WindowText);
 				var barHeight = (patch.TopHeight + patch.BottomHeight + windowTextSize.Y);
 				return new Rectangle(RealX, RealY + (int)barHeight, Width, Height - (int)barHeight);
 			}
 		}
 
 
-		public WindowView(GeeUIMain GeeUI, View rootView, Vector2 position, SpriteFont windowTextFont)
+		public WindowView(GeeUIMain GeeUI, View rootView, Vector2 position)
 			: base(GeeUI, rootView)
 		{
 			Position.Value = position;
-			WindowTextFont = windowTextFont;
 			NinePatchNormal = GeeUIMain.NinePatchWindowUnselected;
 			NinePatchSelected = GeeUIMain.NinePatchWindowSelected;
 		}
@@ -73,15 +71,15 @@ namespace GeeUI.Views
 		{
 			NinePatch patch = Selected ? NinePatchSelected : NinePatchNormal;
 
-			patch.Draw(spriteBatch, AbsolutePosition, Width - patch.LeftWidth - patch.RightWidth, (int)WindowTextFont.MeasureString(WindowText).Y, 0f, EffectiveOpacity);
+			patch.Draw(spriteBatch, AbsolutePosition, Width - patch.LeftWidth - patch.RightWidth, (int)GeeUIMain.Font.MeasureString(WindowText).Y, 0f, EffectiveOpacity);
 
-			string text = TextView.TruncateString(WindowText, WindowTextFont, WindowContentView.ContentBoundBox.Width);
-			spriteBatch.DrawString(WindowTextFont, text, AbsolutePosition + new Vector2(patch.LeftWidth, patch.TopHeight), Color.Black * EffectiveOpacity);
+			string text = TextView.TruncateString(WindowText, WindowContentView.ContentBoundBox.Width);
+			spriteBatch.DrawString(GeeUIMain.Font, text, AbsolutePosition + new Vector2(patch.LeftWidth, patch.TopHeight), Color.Black * EffectiveOpacity);
 
 			if(WindowContentView != null)
 			{
 				WindowContentView.Width = Width;
-				Vector2 windowTextSize = WindowTextFont.MeasureString(WindowText);
+				Vector2 windowTextSize = GeeUIMain.Font.MeasureString(WindowText);
 				var barHeight = (patch.TopHeight + patch.BottomHeight + windowTextSize.Y);
 				WindowContentView.Height.Value = Height.Value - (int)barHeight;
 			}
@@ -97,7 +95,7 @@ namespace GeeUI.Views
 				WindowContentView.IgnoreParentBounds.Value = true;
 
 				NinePatch patch = Selected ? NinePatchSelected : NinePatchNormal;
-				Vector2 windowTextSize = WindowTextFont.MeasureString(WindowText);
+				Vector2 windowTextSize = GeeUIMain.Font.MeasureString(WindowText);
 				var barHeight = (patch.TopHeight + patch.BottomHeight + windowTextSize.Y);
 
 				this.Width = WindowContentView.Width;

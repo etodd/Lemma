@@ -41,11 +41,11 @@ namespace GeeUI.Views
 
 		private int CtrlTabIndex = 0;
 
-		public TabHost(GeeUIMain GeeUI, View rootView, Vector2 position, SpriteFont font)
+		public TabHost(GeeUIMain GeeUI, View rootView, Vector2 position)
 			: base(GeeUI, rootView)
 		{
 			Position.Value = position;
-			TabContainerView = new TabContainer(GeeUI, this, font);
+			TabContainerView = new TabContainer(GeeUI, this);
 			TabContainerView.ChildrenLayouts.Add(new HorizontalViewLayout(1, true));
 
 			GeeUI.OnKeyPressedHandler += keyPressedHandler;

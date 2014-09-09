@@ -734,7 +734,7 @@ namespace Lemma.Components
 
 		protected virtual bool setParameters(Matrix transform, RenderParameters parameters)
 		{
-			if (this.UnsupportedTechniques.Contains(parameters.Technique))
+			if (this.effect == null || this.UnsupportedTechniques.Contains(parameters.Technique))
 				return false;
 
 			EffectTechnique technique = this.effect.Techniques[parameters.Technique.ToString() + this.TechniquePostfix];

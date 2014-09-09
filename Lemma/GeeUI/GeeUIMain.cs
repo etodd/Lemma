@@ -20,7 +20,7 @@ namespace GeeUI
 	public delegate void OnKeyReleased(string keyReleased, Keys key);
 	public delegate void OnKeyContinuallyPressed(string keyContinuallyPressed, Keys key);
 
-	public class GeeUIMain : Component<Main>
+	public class GeeUIMain : Component<Main>, IGraphicsComponent
 	{
 		public event OnKeyPressed OnKeyPressedHandler;
 		public event OnKeyReleased OnKeyReleasedHandler;
@@ -62,9 +62,9 @@ namespace GeeUI
 		public static Texture2D TextureSliderDefault;
 		public static NinePatch NinePatchSliderRange = new NinePatch();
 
-		private InputManager _inputManager = new InputManager();
+		public static SpriteFont Font;
 
-		public SpriteBatch Batch;
+		private InputManager _inputManager = new InputManager();
 
 		public RasterizerState RasterizerState;
 
@@ -130,100 +130,6 @@ namespace GeeUI
 					}
 				}, bind, true);
 			}
-		}
-
-		public void Initialize(Game theGame)
-		{
-			this.DrawOrder = new Property<int>() { Value = 0 };
-
-			White = new Texture2D(theGame.GraphicsDevice, 1, 1);
-			White.SetData(new Color[] { Color.White });
-
-
-			TextColorDefault = Color.White;
-
-			RootView = new View(this);
-			RootView.Width.Value = theGame.Window.ClientBounds.Width;
-			RootView.Height.Value = theGame.Window.ClientBounds.Height;
-			RootView.Attached.Value = true;
-
-			Texture2D textFieldDefault = ConversionManager.BitmapToTexture(Resource1.textfield_default_9, theGame.GraphicsDevice);
-			Texture2D textFieldSelected = ConversionManager.BitmapToTexture(Resource1.textfield_selected_9, theGame.GraphicsDevice);
-			Texture2D textFieldRight = ConversionManager.BitmapToTexture(Resource1.textfield_selected_right_9, theGame.GraphicsDevice);
-			Texture2D textFieldWrong = ConversionManager.BitmapToTexture(Resource1.textfield_selected_wrong_9, theGame.GraphicsDevice);
-
-			Texture2D windowSelected = ConversionManager.BitmapToTexture(Resource1.window_selected_9, theGame.GraphicsDevice);
-			Texture2D windowUnselected = ConversionManager.BitmapToTexture(Resource1.window_unselected_9, theGame.GraphicsDevice);
-
-			Texture2D panelSelected = ConversionManager.BitmapToTexture(Resource1.panel_selected_9, theGame.GraphicsDevice);
-			Texture2D panelUnselected = ConversionManager.BitmapToTexture(Resource1.panel_unselected_9, theGame.GraphicsDevice);
-
-			Texture2D dropdown = ConversionManager.BitmapToTexture(Resource1.dropdown, theGame.GraphicsDevice);
-
-			Texture2D btnDefault = ConversionManager.BitmapToTexture(Resource1.btn_default_9, theGame.GraphicsDevice);
-			Texture2D btnClicked = ConversionManager.BitmapToTexture(Resource1.btn_clicked_9, theGame.GraphicsDevice);
-			Texture2D btnHover = ConversionManager.BitmapToTexture(Resource1.btn_hover_9, theGame.GraphicsDevice);
-
-			Texture2D sliderRange = ConversionManager.BitmapToTexture(Resource1.sliderRange_9, theGame.GraphicsDevice);
-			TextureSliderDefault = ConversionManager.BitmapToTexture(Resource1.slider, theGame.GraphicsDevice);
-			TextureSliderSelected = ConversionManager.BitmapToTexture(Resource1.sliderSelected, theGame.GraphicsDevice);
-
-			NinePatchSliderRange.LoadFromTexture(sliderRange);
-
-			TextureCheckBoxDefault = ConversionManager.BitmapToTexture(Resource1.checkbox_default, theGame.GraphicsDevice);
-			TextureCheckBoxSelected = ConversionManager.BitmapToTexture(Resource1.checkbox_default_selected, theGame.GraphicsDevice);
-			TextureCheckBoxDefaultChecked = ConversionManager.BitmapToTexture(Resource1.checkbox_checked, theGame.GraphicsDevice);
-			TextureCheckBoxSelectedChecked = ConversionManager.BitmapToTexture(Resource1.checkbox_checked_selected, theGame.GraphicsDevice);
-
-			NinePatchTextFieldDefault.LoadFromTexture(textFieldDefault);
-			NinePatchTextFieldSelected.LoadFromTexture(textFieldSelected);
-			NinePatchTextFieldRight.LoadFromTexture(textFieldRight);
-			NinePatchTextFieldWrong.LoadFromTexture(textFieldWrong);
-
-			NinePatchWindowSelected.LoadFromTexture(windowSelected);
-			NinePatchWindowUnselected.LoadFromTexture(windowUnselected);
-
-			NinePatchPanelUnselected.LoadFromTexture(panelUnselected);
-			NinePatchPanelSelected.LoadFromTexture(panelSelected);
-
-			NinePatchDropDown.LoadFromTexture(dropdown);
-
-			NinePatchBtnDefault.LoadFromTexture(btnDefault);
-			NinePatchBtnClicked.LoadFromTexture(btnClicked);
-			NinePatchBtnHover.LoadFromTexture(btnHover);
-
-			NinePatchTabDefault.LoadFromTexture(btnDefault);
-			NinePatchTabSelected.LoadFromTexture(btnHover);
-
-			InitializeKeybindings();
-
-			InputManager.BindMouse(() =>
-			{
-				HandleClick(RootView, InputManager.GetMousePos(), false, true);
-				//When we click, we want to re-evaluate what control the mouse is over.
-				HandleMouseMovement(RootView, InputManager.GetMousePos());
-			}, MouseButton.Left);
-
-			InputManager.BindMouse(() =>
-			{
-				HandleClick(RootView, InputManager.GetMousePos(), true, true);
-				//When we click, we want to re-evaluate what control the mouse is over.
-				HandleMouseMovement(RootView, InputManager.GetMousePos());
-			}, MouseButton.Right);
-
-			InputManager.BindMouse(() => HandleMouseMovement(RootView, InputManager.GetMousePos()), MouseButton.Movement);
-
-			InputManager.BindMouse(() =>
-			{
-				int newScroll = _inputManager.GetScrollValue();
-				int delta = newScroll - LastScrollValue;
-				int numTimes = (delta / OneScrollValue);
-				HandleScroll(RootView, InputManager.GetMousePos(), numTimes);
-				LastScrollValue = newScroll;
-			}, MouseButton.Scroll);
-
-			this.RasterizerState = new RasterizerState() { ScissorTestEnable = true };
-
 		}
 
 		internal void HandleScroll(View view, Point mousePos, int scrollDelta)
@@ -421,12 +327,105 @@ namespace GeeUI
 
 		public void LoadContent(bool reload)
 		{
-			this.Batch = new SpriteBatch(this.main.GraphicsDevice);
+			Texture2D textFieldDefault = ConversionManager.BitmapToTexture(Resource1.textfield_default_9, this.main.GraphicsDevice);
+			Texture2D textFieldSelected = ConversionManager.BitmapToTexture(Resource1.textfield_selected_9, this.main.GraphicsDevice);
+			Texture2D textFieldRight = ConversionManager.BitmapToTexture(Resource1.textfield_selected_right_9, this.main.GraphicsDevice);
+			Texture2D textFieldWrong = ConversionManager.BitmapToTexture(Resource1.textfield_selected_wrong_9, this.main.GraphicsDevice);
+
+			Texture2D windowSelected = ConversionManager.BitmapToTexture(Resource1.window_selected_9, this.main.GraphicsDevice);
+			Texture2D windowUnselected = ConversionManager.BitmapToTexture(Resource1.window_unselected_9, this.main.GraphicsDevice);
+
+			Texture2D panelSelected = ConversionManager.BitmapToTexture(Resource1.panel_selected_9, this.main.GraphicsDevice);
+			Texture2D panelUnselected = ConversionManager.BitmapToTexture(Resource1.panel_unselected_9, this.main.GraphicsDevice);
+
+			Texture2D dropdown = ConversionManager.BitmapToTexture(Resource1.dropdown, this.main.GraphicsDevice);
+
+			Texture2D btnDefault = ConversionManager.BitmapToTexture(Resource1.btn_default_9, this.main.GraphicsDevice);
+			Texture2D btnClicked = ConversionManager.BitmapToTexture(Resource1.btn_clicked_9, this.main.GraphicsDevice);
+			Texture2D btnHover = ConversionManager.BitmapToTexture(Resource1.btn_hover_9, this.main.GraphicsDevice);
+
+			Texture2D sliderRange = ConversionManager.BitmapToTexture(Resource1.sliderRange_9, this.main.GraphicsDevice);
+			TextureSliderDefault = ConversionManager.BitmapToTexture(Resource1.slider, this.main.GraphicsDevice);
+			TextureSliderSelected = ConversionManager.BitmapToTexture(Resource1.sliderSelected, this.main.GraphicsDevice);
+
+			NinePatchSliderRange.LoadFromTexture(sliderRange);
+
+			TextureCheckBoxDefault = ConversionManager.BitmapToTexture(Resource1.checkbox_default, this.main.GraphicsDevice);
+			TextureCheckBoxSelected = ConversionManager.BitmapToTexture(Resource1.checkbox_default_selected, this.main.GraphicsDevice);
+			TextureCheckBoxDefaultChecked = ConversionManager.BitmapToTexture(Resource1.checkbox_checked, this.main.GraphicsDevice);
+			TextureCheckBoxSelectedChecked = ConversionManager.BitmapToTexture(Resource1.checkbox_checked_selected, this.main.GraphicsDevice);
+
+			NinePatchTextFieldDefault.LoadFromTexture(textFieldDefault);
+			NinePatchTextFieldSelected.LoadFromTexture(textFieldSelected);
+			NinePatchTextFieldRight.LoadFromTexture(textFieldRight);
+			NinePatchTextFieldWrong.LoadFromTexture(textFieldWrong);
+
+			NinePatchWindowSelected.LoadFromTexture(windowSelected);
+			NinePatchWindowUnselected.LoadFromTexture(windowUnselected);
+
+			NinePatchPanelUnselected.LoadFromTexture(panelUnselected);
+			NinePatchPanelSelected.LoadFromTexture(panelSelected);
+
+			NinePatchDropDown.LoadFromTexture(dropdown);
+
+			NinePatchBtnDefault.LoadFromTexture(btnDefault);
+			NinePatchBtnClicked.LoadFromTexture(btnClicked);
+			NinePatchBtnHover.LoadFromTexture(btnHover);
+
+			NinePatchTabDefault.LoadFromTexture(btnDefault);
+			NinePatchTabSelected.LoadFromTexture(btnHover);
+
+			foreach (View v in this.GetAllViews(this.RootView))
+				v.LoadContent(reload);
+
+			White = new Texture2D(this.main.GraphicsDevice, 1, 1);
+			White.SetData(new Color[] { Color.White });
+		}
+
+		public GeeUIMain()
+		{
+			RootView = new View(this);
+			RootView.Attached.Value = true;
+			this.DrawOrder = new Property<int>() { Value = 0 };
 		}
 
 		public override void Awake()
 		{
-			this.Initialize(main);
+			base.Awake();
+
+			RootView.Width.Value = this.main.Window.ClientBounds.Width;
+			RootView.Height.Value = this.main.Window.ClientBounds.Height;
+
+			TextColorDefault = Color.White;
+
+			InitializeKeybindings();
+
+			InputManager.BindMouse(() =>
+			{
+				HandleClick(RootView, InputManager.GetMousePos(), false, true);
+				//When we click, we want to re-evaluate what control the mouse is over.
+				HandleMouseMovement(RootView, InputManager.GetMousePos());
+			}, MouseButton.Left);
+
+			InputManager.BindMouse(() =>
+			{
+				HandleClick(RootView, InputManager.GetMousePos(), true, true);
+				//When we click, we want to re-evaluate what control the mouse is over.
+				HandleMouseMovement(RootView, InputManager.GetMousePos());
+			}, MouseButton.Right);
+
+			InputManager.BindMouse(() => HandleMouseMovement(RootView, InputManager.GetMousePos()), MouseButton.Movement);
+
+			InputManager.BindMouse(() =>
+			{
+				int newScroll = _inputManager.GetScrollValue();
+				int delta = newScroll - LastScrollValue;
+				int numTimes = (delta / OneScrollValue);
+				HandleScroll(RootView, InputManager.GetMousePos(), numTimes);
+				LastScrollValue = newScroll;
+			}, MouseButton.Scroll);
+
+			this.RasterizerState = new RasterizerState() { ScissorTestEnable = true };
 		}
 	}
 }

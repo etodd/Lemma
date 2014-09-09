@@ -28,20 +28,15 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				return _drawText && TextFont != null;
+				return _drawText;
 			}
 			set
 			{
 				//Only let text be drawn if the user has set the font.
-				_drawText = TextFont != null && value;
-				if (TextFont == null)
-				{
-					throw new Exception("Cannot set SliderView.drawText to true unless textFont is set.");
-				}       
+				_drawText = value;
 			}
 		}
 
-		public SpriteFont TextFont;
 		public Color TextColor = Color.Black;
 
 		public int CurrentValue
@@ -145,9 +140,9 @@ namespace GeeUI.Views
 			{
 				int drawX = AbsoluteX + (Width) / 2;
 				int drawY = AbsoluteY;
-				Vector2 offset = TextFont.MeasureString(CurrentValue.ToString());
+				Vector2 offset = GeeUIMain.Font.MeasureString(CurrentValue.ToString());
 				offset.X = (int)(offset.X / 2);
-				spriteBatch.DrawString(TextFont, CurrentValue.ToString(), new Vector2(drawX, drawY), TextColor * EffectiveOpacity, 0f, offset, 1f, SpriteEffects.None, 0f);
+				spriteBatch.DrawString(GeeUIMain.Font, CurrentValue.ToString(), new Vector2(drawX, drawY), TextColor * EffectiveOpacity, 0f, offset, 1f, SpriteEffects.None, 0f);
 			}
 			base.Draw(spriteBatch);
 		}

@@ -20,7 +20,6 @@ namespace GeeUI.Views
 		public class DropDownOption
 		{
 			public string Text;
-			public SpriteFont Font;
 			public Action OnClicked;
 			public object Related;
 		}
@@ -29,7 +28,6 @@ namespace GeeUI.Views
 		private ListView DropDownListView;
 		public List<DropDownOption> DropDownOptions = new List<DropDownOption>();
 		private List<DropDownOption> DisplayingOptions = new List<DropDownOption>();
-		private SpriteFont mainFont;
 		private TextFieldView FilterView;
 
 		public Command OnShowing = new Command();
@@ -50,13 +48,12 @@ namespace GeeUI.Views
 			}
 		}
 
-		public DropDownView(GeeUIMain theGeeUI, View parentView, Vector2 position, SpriteFont font)
+		public DropDownView(GeeUIMain theGeeUI, View parentView, Vector2 position)
 			: base(theGeeUI, parentView)
 		{
 			this.numChildrenAllowed = 1;
-			this.mainFont = font;
 			ParentGeeUI.OnKeyPressedHandler += this.keyPressedHandler;
-			var button = new ButtonView(theGeeUI, this, "", Vector2.Zero, font);
+			var button = new ButtonView(theGeeUI, this, "", Vector2.Zero);
 			button.Add(new Binding<int>(this.Width, button.Width));
 			button.Add(new Binding<int>(this.Height, button.Height));
 			button.OnMouseClick += delegate(object sender, EventArgs e)
@@ -82,7 +79,7 @@ namespace GeeUI.Views
 			DropDownPanelView.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
 			this.DropDownPanelView.SelectedNinepatch = this.DropDownPanelView.UnselectedNinepatch = GeeUIMain.NinePatchDropDown;
 
-			FilterView = new TextFieldView(theGeeUI, DropDownPanelView, Vector2.Zero, mainFont);
+			FilterView = new TextFieldView(theGeeUI, DropDownPanelView, Vector2.Zero);
 			FilterView.Height.Value = 20;
 			FilterView.MultiLine = false;
 			FilterView.Add(new Binding<int>(FilterView.Width, x => x - 8, DropDownPanelView.Width));
@@ -183,7 +180,7 @@ namespace GeeUI.Views
 
 			foreach (var option in goodOptions)
 			{
-				var dropButton = new ButtonView(this.ParentGeeUI, DropDownListView, option.Text, Vector2.Zero, option.Font);
+				var dropButton = new ButtonView(this.ParentGeeUI, DropDownListView, option.Text, Vector2.Zero);
 				dropButton.OnMouseClick += (sender, args) =>
 				{
 					OnOptionSelected(option);
@@ -242,11 +239,8 @@ namespace GeeUI.Views
 			this.HideDropDown();
 		}
 
-		public ButtonView AddOption(string name, Action action, SpriteFont fontString = null, object related = null)
+		public ButtonView AddOption(string name, Action action, object related = null)
 		{
-			if (fontString == null)
-				fontString = mainFont;
-			
 			if (this.LastItemSelected == -1)
 			{
 				if (string.IsNullOrEmpty(this.Label))
@@ -256,14 +250,13 @@ namespace GeeUI.Views
 
 			var dropDownOption = new DropDownOption()
 			{
-				Font = fontString,
 				Text = name,
 				OnClicked = action,
 				Related = related
 			};
 			DropDownOptions.Add(dropDownOption);
 
-			var dropButton = new ButtonView(this.ParentGeeUI, DropDownListView, name, Vector2.Zero, fontString);
+			var dropButton = new ButtonView(this.ParentGeeUI, DropDownListView, name, Vector2.Zero);
 			dropButton.OnMouseClick += (sender, args) =>
 			{
 				OnOptionSelected(dropDownOption);

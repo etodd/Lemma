@@ -18,7 +18,7 @@ using System.IO;
 
 namespace Lemma.GInterfaces
 {
-	public class TimeTrialUI : Component<Main>, IUpdateableComponent, IGraphicsComponent
+	public class TimeTrialUI : Component<Main>, IUpdateableComponent
 	{
 		public PanelView RootTimePanelView;
 		private TextView TimeTrialCurTimeView;
@@ -31,11 +31,6 @@ namespace Lemma.GInterfaces
 		private ButtonView RetryMapButton;
 		private ButtonView NextMapButton;
 		private ButtonView MainMenuButton;
-
-		public SpriteFont MainFont;
-		public SpriteFont BiggerFont;
-		public SpriteFont YourTimeFont;
-		public SpriteFont BestTimeFont;
 
 		public Action<bool> EndPanelClosed;
 
@@ -82,27 +77,27 @@ namespace Lemma.GInterfaces
 			RootTimeEndView.Width.Value = 400;
 			RootTimeEndView.Height.Value = 300;
 
-			EndTimeTitleView = new TextView(main.GeeUI, RootTimeEndView, "Map Title", Vector2.Zero, BiggerFont);
+			EndTimeTitleView = new TextView(main.GeeUI, RootTimeEndView, "Map Title", Vector2.Zero);
 			EndTimeTitleView.TextJustification = TextJustification.Center;
 			EndTimeTitleView.AutoSize.Value = false;
 			EndTimeTitleView.Width.AddBinding(new Binding<int>(EndTimeTitleView.Width, RootTimeEndView.Width));
 
-			EndTimeTextView = new TextView(main.GeeUI, RootTimeEndView, "Your time: ", new Vector2(0, 70), YourTimeFont);
+			EndTimeTextView = new TextView(main.GeeUI, RootTimeEndView, "Your time: ", new Vector2(0, 70));
 			EndTimeTextView.TextJustification = TextJustification.Center;
 			EndTimeTextView.AutoSize.Value = false;
 			EndTimeTextView.Width.AddBinding(new Binding<int>(EndTimeTextView.Width, RootTimeEndView.Width));
 
-			EndTimeBestView = new TextView(main.GeeUI, RootTimeEndView, "Best time: ", new Vector2(0, 100), BestTimeFont);
+			EndTimeBestView = new TextView(main.GeeUI, RootTimeEndView, "Best time: ", new Vector2(0, 100));
 			EndTimeBestView.TextJustification = TextJustification.Center;
 			EndTimeBestView.AutoSize.Value = false;
 			EndTimeBestView.Width.AddBinding(new Binding<int>(EndTimeBestView.Width, RootTimeEndView.Width));
 
-			RetryMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Retry", new Vector2(30, 250), MainFont);
+			RetryMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Retry", new Vector2(30, 250));
 			RetryMapButton.OnMouseClick += delegate(object sender, EventArgs e)
 			{
 				this.retry();
 			};
-			NextMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Next Map", new Vector2(80, 250), MainFont);
+			NextMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Next Map", new Vector2(80, 250));
 			NextMapButton.Active.Value = !string.IsNullOrEmpty(this.theTimeTrial.NextMap.Value);
 			NextMapButton.OnMouseClick += delegate(object sender, EventArgs e)
 			{
@@ -110,7 +105,7 @@ namespace Lemma.GInterfaces
 				this.main.EditorEnabled.Value = false;
 				IO.MapLoader.Load(this.main, this.theTimeTrial.NextMap);
 			};
-			MainMenuButton = new ButtonView(main.GeeUI, RootTimeEndView, "Back", new Vector2(160, 250), MainFont);
+			MainMenuButton = new ButtonView(main.GeeUI, RootTimeEndView, "Back", new Vector2(160, 250));
 			MainMenuButton.OnMouseClick += delegate(object sender, EventArgs e)
 			{
 				this.main.CurrentSave.Value = null;
@@ -121,8 +116,8 @@ namespace Lemma.GInterfaces
 
 			RootTimePanelView.UnselectedNinepatch = RootTimePanelView.SelectedNinepatch = GeeUIMain.NinePatchBtnDefault;
 
-			TimeTrialCurTimeView = new TextView(main.GeeUI, RootTimePanelView, "Time: 00:00.00", Vector2.Zero, BiggerFont);
-			TimeTrialBestTimeView = new TextView(main.GeeUI, RootTimePanelView, "Best: 00:00.00", Vector2.Zero, MainFont);
+			TimeTrialCurTimeView = new TextView(main.GeeUI, RootTimePanelView, "Time: 00:00.00", Vector2.Zero);
+			TimeTrialBestTimeView = new TextView(main.GeeUI, RootTimePanelView, "Best: 00:00.00", Vector2.Zero);
 
 			RootTimePanelView.Active.Value = false;
 			RootTimeEndView.Active.Value = false;
@@ -156,14 +151,6 @@ namespace Lemma.GInterfaces
 			this.main.CurrentSave.Value = null;
 			this.main.EditorEnabled.Value = false;
 			IO.MapLoader.Load(this.main, this.main.MapFile);
-		}
-
-		public void LoadContent(bool reload)
-		{
-			MainFont = main.Content.Load<SpriteFont>("Font");
-			BiggerFont = main.Content.Load<SpriteFont>("TimeFont");
-			YourTimeFont = main.Content.Load<SpriteFont>("TimeYourTimeFont");
-			BestTimeFont = main.Content.Load<SpriteFont>("TimeBestTimeFont");
 		}
 
 		public void AnimateIn()

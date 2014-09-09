@@ -48,7 +48,6 @@ namespace GeeUI.Views
 
 		public ToolTip ToolTipView;
 		private Property<string> _toolTipText = new Property<string>();
-		private SpriteFont _toolTipFont;
 		private float _toolTipTimer;
 
 		public Property<float> MyOpacity = new Property<float> { Value = 1f };
@@ -62,6 +61,11 @@ namespace GeeUI.Views
 				if (ParentView.Value == null) return MyOpacity;
 				return MyOpacity * ParentView.Value.EffectiveOpacity;
 			}
+		}
+
+		public virtual void LoadContent(bool reload)
+		{
+
 		}
 
 		public string Name;
@@ -341,17 +345,16 @@ namespace GeeUI.Views
 			}
 		}
 
-		public void SetToolTipText(string text, SpriteFont font)
+		public void SetToolTipText(string text)
 		{
 			if (text == null) return;
 			this._toolTipText.Value = text;
-			this._toolTipFont = font;
 		}
 
 		private void ShowToolTip()
 		{
 			RemoveToolTip();
-			this.ToolTipView = new ToolTip(ParentGeeUI, ParentGeeUI.RootView, this, this._toolTipText, _toolTipFont);
+			this.ToolTipView = new ToolTip(ParentGeeUI, ParentGeeUI.RootView, this, this._toolTipText);
 		}
 
 		#endregion
@@ -490,7 +493,7 @@ namespace GeeUI.Views
 			if (MouseOver && !string.IsNullOrEmpty(_toolTipText.Value))
 			{
 				_toolTipTimer += dt;
-				if (_toolTipTimer >= 1f && _toolTipFont != null && ToolTipView == null)
+				if (_toolTipTimer >= 1f && ToolTipView == null)
 					ShowToolTip();
 			}
 

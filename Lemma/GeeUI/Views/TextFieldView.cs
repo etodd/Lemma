@@ -41,8 +41,6 @@ namespace GeeUI.Views
 
 		public Color TextColor;
 
-		public SpriteFont TextInputFont;
-
 		public bool MultiLine = true;
 		public bool Editable = true;
 
@@ -109,7 +107,7 @@ namespace GeeUI.Views
 					var curLineRet = "";
 					for (int iX = _offsetX; iX < curLine.Length; iX++)
 					{
-						var lineWidth = (int)TextInputFont.MeasureString(curLineRet + curLine[iX]).X;
+						var lineWidth = (int)GeeUIMain.Font.MeasureString(curLineRet + curLine[iX]).X;
 						if (lineWidth >= allowedWidth)
 						{
 							break;
@@ -118,7 +116,7 @@ namespace GeeUI.Views
 					}
 					ShownWidth = curLineRet.Length;
 					var retTest = ret + curLineRet + (iY + 1 != lines.Length ? "\n" : "");
-					var maxHeight = (int)TextInputFont.MeasureString(retTest).Y;
+					var maxHeight = (int)GeeUIMain.Font.MeasureString(retTest).Y;
 					ret += curLineRet + (iY + 1 != lines.Length ? "\n" : "");
 					if (maxHeight >= allowedHeight)
 						break;
@@ -161,7 +159,7 @@ namespace GeeUI.Views
 
 		public Func<string, bool> Validator;
 
-		public TextFieldView(GeeUIMain GeeUI, View rootView, Vector2 position, SpriteFont textFont)
+		public TextFieldView(GeeUIMain GeeUI, View rootView, Vector2 position)
 			: base(GeeUI, rootView)
 		{
 			NinePatchDefault = GeeUIMain.NinePatchTextFieldDefault;
@@ -170,7 +168,6 @@ namespace GeeUI.Views
 			NinePatchRegexBad = GeeUIMain.NinePatchTextFieldWrong;
 
 			Position.Value = position;
-			TextInputFont = textFont;
 
 			GeeUI.OnKeyPressedHandler += keyPressedHandler;
 			GeeUI.OnKeyReleasedHandler += keyReleasedHandler;
@@ -444,7 +441,7 @@ namespace GeeUI.Views
 				var curLineRet = "";
 				for (var iX = _offsetX; iX < curLine.Length; iX++)
 				{
-					var lineWidth = (int)TextInputFont.MeasureString(curLineRet + curLine[iX]).X;
+					var lineWidth = (int)GeeUIMain.Font.MeasureString(curLineRet + curLine[iX]).X;
 					if (lineWidth >= allowedWidth)
 					{
 						break;
@@ -454,7 +451,7 @@ namespace GeeUI.Views
 						maxCharX++;
 				}
 				ret += curLineRet + (iY + 1 != lines.Length ? "\n" : "");
-				var lineHeight = (int)TextInputFont.MeasureString(ret).Y;
+				var lineHeight = (int)GeeUIMain.Font.MeasureString(ret).Y;
 				if (lineHeight >= allowedHeight)
 				{
 					break;
@@ -568,7 +565,7 @@ namespace GeeUI.Views
 			bool setX = false;
 			for (var iY = _offsetY; iY < lines.Length; iY++)
 			{
-				var textHeight = (int)TextInputFont.MeasureString(actualText + lines[iY]).Y;
+				var textHeight = (int)GeeUIMain.Font.MeasureString(actualText + lines[iY]).Y;
 				if (textHeight >= actualClickPos.Y)
 				{
 					ret.Y = iY;
@@ -582,7 +579,7 @@ namespace GeeUI.Views
 					for (int iX = _offsetX; iX < line.Length; iX++)
 					{
 						actualText += line[iX];
-						var textWidth = (int)TextInputFont.MeasureString(actualText).X;
+						var textWidth = (int)GeeUIMain.Font.MeasureString(actualText).X;
 						if (textWidth < actualClickPos.X) continue;
 						ret.X = iX;
 						setX = true;
@@ -659,12 +656,12 @@ namespace GeeUI.Views
 				totalLine += line;
 			}
 
-			var yDrawPos = (int)(AbsoluteY + patch.TopHeight + TextInputFont.MeasureString(totalLine).Y);
+			var yDrawPos = (int)(AbsoluteY + patch.TopHeight + GeeUIMain.Font.MeasureString(totalLine).Y);
 			var yDrawLine = lines[cursorY];
 			var cur = "";
 			for (var x = _offsetX; x < cursorX && x < yDrawLine.Length; x++)
 				cur += yDrawLine[x];
-			var xDrawPos = (int)TextInputFont.MeasureString(cur).X + (AbsoluteX + patch.LeftWidth);
+			var xDrawPos = (int)GeeUIMain.Font.MeasureString(cur).X + (AbsoluteX + patch.LeftWidth);
 
 			return new Vector2(xDrawPos, yDrawPos);
 		}
@@ -779,7 +776,7 @@ namespace GeeUI.Views
 					var startDrawX = patch.LeftWidth;
 					var startDrawY = GetDrawPosForCursorPos(0, y).Y;
 					var endDrawX = Width - patch.RightWidth;
-					var endDrawY = TextInputFont.MeasureString(line).Y + startDrawY - 1;
+					var endDrawY = GeeUIMain.Font.MeasureString(line).Y + startDrawY - 1;
 					startDrawX += AbsoluteX;
 					endDrawX += AbsoluteX;
 
@@ -797,13 +794,13 @@ namespace GeeUI.Views
 				}
 			}
 
-			spriteBatch.DrawString(TextInputFont, OffsetText, AbsolutePosition + new Vector2(patch.LeftWidth, patch.TopHeight), TextColor * EffectiveOpacity);
+			spriteBatch.DrawString(GeeUIMain.Font, OffsetText, AbsolutePosition + new Vector2(patch.LeftWidth, patch.TopHeight), TextColor * EffectiveOpacity);
 
 			if (_doingDelimiter && Selected && _selectionEnd == _selectionStart && Editable)
 			{
-				float height = TextInputFont.MeasureString("|").Y;
+				float height = GeeUIMain.Font.MeasureString("|").Y;
 				DrawManager.DrawBox(new Vector2(xDrawPos, yDrawPos), new Vector2(xDrawPos + 1, yDrawPos + height), TextColor * EffectiveOpacity, spriteBatch  );
-				//spriteBatch.DrawString(TextInputFont, "|", new Vector2(xDrawPos - 1, yDrawPos), TextColor * EffectiveOpacity);
+				//spriteBatch.DrawString(GeeUIMain.Font, "|", new Vector2(xDrawPos - 1, yDrawPos), TextColor * EffectiveOpacity);
 			}
 			base.DrawContent(spriteBatch);
 		}

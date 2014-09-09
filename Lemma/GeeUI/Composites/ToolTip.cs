@@ -39,13 +39,13 @@ namespace Lemma.GeeUI.Composites
 
 
 
-		public ToolTip(GeeUIMain theGeeUI, View parentView, View linkedTo, string text, SpriteFont textFont)
+		public ToolTip(GeeUIMain theGeeUI, View parentView, View linkedTo, string text)
 			: base(theGeeUI, parentView)
 		{
 			this.Patch = GeeUIMain.NinePatchPanelUnselected;
 
 			ToolTipText.Value = text;
-			TextView = new TextView(theGeeUI, this, text, Vector2.Zero, textFont);
+			TextView = new TextView(theGeeUI, this, text, Vector2.Zero);
 			this.ChildrenLayouts.Add(new ExpandToFitLayout());
 			this.ChildrenLayouts.Add(new VerticalViewLayout(0, false));
 

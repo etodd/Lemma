@@ -9,15 +9,13 @@ namespace GeeUI.Views
 		public NinePatch NinePatchSelected = new NinePatch();
 		public NinePatch NinePatchDefault = new NinePatch();
 
-		public SpriteFont TabFont;
-
 		public string TabText
 		{
 			get { return TabTextView.Text; }
 			set
 			{
 				TabTextView.Text.Value = value;
-				TabTextView.Width.Value = (int)TabFont.MeasureString(value).X;
+				TabTextView.Width.Value = (int)GeeUIMain.Font.MeasureString(value).X;
 				TabTextView.Height.Value = Height - CurNinepatch.TopHeight - CurNinepatch.BottomHeight;
 				this.Width.Value = TabTextView.Width + CurNinepatch.LeftWidth + CurNinepatch.RightWidth;
 			}
@@ -54,17 +52,16 @@ namespace GeeUI.Views
 			}
 		}
 
-		public TabView(GeeUIMain GeeUI, View rootView, Vector2 position, SpriteFont font)
+		public TabView(GeeUIMain GeeUI, View rootView, Vector2 position)
 			: base(GeeUI, rootView)
 		{
 			Position.Value = position;
-			TabFont = font;
 			this.numChildrenAllowed = 1;
 
 			NinePatchDefault = GeeUIMain.NinePatchTabDefault;
 			NinePatchSelected = GeeUIMain.NinePatchTabSelected;
 			this.Height.Value = 25;
-			new TextView(GeeUI, this, "", Vector2.Zero, font) {  };
+			new TextView(GeeUI, this, "", Vector2.Zero) {  };
 		}
 
 		public override void OnMClick(Vector2 position, bool fromChild)

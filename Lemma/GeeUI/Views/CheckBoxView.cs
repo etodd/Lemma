@@ -8,11 +8,6 @@ namespace GeeUI.Views
 {
 	public class CheckBoxView : View
 	{
-		public Texture2D TextureDefault;
-		public Texture2D TextureChecked;
-		public Texture2D TextureDefaultSelected;
-		public Texture2D TextureCheckedSelected;
-
 		public Property<bool> IsChecked = new Property<bool>() { Value = false };
 		public bool AllowLabelClicking = true;
 
@@ -38,8 +33,8 @@ namespace GeeUI.Views
 			get
 			{
 				if (Selected || MouseOver)
-					return IsChecked ? TextureCheckedSelected : TextureDefaultSelected;
-				return IsChecked ? TextureChecked : TextureDefault;
+					return IsChecked ? GeeUIMain.TextureCheckBoxSelectedChecked : GeeUIMain.TextureCheckBoxSelected;
+				return IsChecked ? GeeUIMain.TextureCheckBoxDefaultChecked : GeeUIMain.TextureCheckBoxDefault;
 			}
 		}
 
@@ -83,18 +78,13 @@ namespace GeeUI.Views
 			}
 		}
 
-		public CheckBoxView(GeeUIMain GeeUI, View rootView, Vector2 position, string label, SpriteFont labelFont)
+		public CheckBoxView(GeeUIMain GeeUI, View rootView, Vector2 position, string label)
 			: base(GeeUI, rootView)
 		{
 			Position.Value = position;
 			this.numChildrenAllowed = 1;
 
-			new TextView(GeeUI, this, label, Vector2.Zero, labelFont);
-
-			TextureChecked = GeeUIMain.TextureCheckBoxDefaultChecked;
-			TextureCheckedSelected = GeeUIMain.TextureCheckBoxSelectedChecked;
-			TextureDefault = GeeUIMain.TextureCheckBoxDefault;
-			TextureDefaultSelected = GeeUIMain.TextureCheckBoxSelected;
+			new TextView(GeeUI, this, label, Vector2.Zero);
 		}
 
 		public override void OnMClick(Vector2 position, bool fromChild)

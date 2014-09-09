@@ -42,8 +42,8 @@ namespace GeeUI.Views
 				if (!(Children[0] is TextView)) return;
 				var c = (TextView)Children[0];
 				c.Text.Value = value;
-				Width.Value = (int)c.Font.MeasureString(c.Text.Value).X + NinePatchNormal.LeftWidth + NinePatchNormal.RightWidth;
-				Height.Value = (int)c.Font.MeasureString(c.Text.Value).Y + NinePatchNormal.TopHeight + NinePatchNormal.BottomHeight;
+				Width.Value = (int)GeeUIMain.Font.MeasureString(c.Text.Value).X + NinePatchNormal.LeftWidth + NinePatchNormal.RightWidth;
+				Height.Value = (int)GeeUIMain.Font.MeasureString(c.Text.Value).Y + NinePatchNormal.TopHeight + NinePatchNormal.BottomHeight;
 			}
 		}
 
@@ -59,7 +59,7 @@ namespace GeeUI.Views
 			}
 		}
 
-		public ButtonView(GeeUIMain GeeUI, View rootView, string text, Vector2 position, SpriteFont font)
+		public ButtonView(GeeUIMain GeeUI, View rootView, string text, Vector2 position)
 			: base(GeeUI, rootView)
 		{
 			NinePatchNormal = GeeUIMain.NinePatchBtnDefault;
@@ -68,9 +68,9 @@ namespace GeeUI.Views
 			Position.Value = position;
 
 			//Make the TextView for the text
-			var textV = new TextView(this.ParentGeeUI, this, text, new Vector2(0, 0), font) {TextJustification = TextJustification.Left};
-			Width.Value = (textV.Width.Value = (int)font.MeasureString(text).X) + NinePatchNormal.LeftWidth + NinePatchNormal.RightWidth;
-			Height.Value = (textV.Height.Value = (int)font.MeasureString(text).Y) + NinePatchNormal.TopHeight + NinePatchNormal.BottomHeight;
+			var textV = new TextView(this.ParentGeeUI, this, text, new Vector2(0, 0)) {TextJustification = TextJustification.Left};
+			Width.Value = (textV.Width.Value = (int)GeeUIMain.Font.MeasureString(text).X) + NinePatchNormal.LeftWidth + NinePatchNormal.RightWidth;
+			Height.Value = (textV.Height.Value = (int)GeeUIMain.Font.MeasureString(text).Y) + NinePatchNormal.TopHeight + NinePatchNormal.BottomHeight;
 		}
 
 		public ButtonView(GeeUIMain GeeUI, View rootview, View contentView, Vector2 position)

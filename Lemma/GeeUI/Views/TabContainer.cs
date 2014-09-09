@@ -9,8 +9,6 @@ namespace GeeUI.Views
 {
 	internal class TabContainer : View
 	{
-		public SpriteFont TabFont;
-
 		public TabView ActiveTabView
 		{
 			get
@@ -51,7 +49,7 @@ namespace GeeUI.Views
 
 		public TabView AddTab(string tabText, View tabChild)
 		{
-			var ret = new TabView(ParentGeeUI, this, new Vector2(AllTabsWidth, 0), TabFont) { TabText = tabText };
+			var ret = new TabView(ParentGeeUI, this, new Vector2(AllTabsWidth, 0)) { TabText = tabText };
 			ParentView.Value.Children.Add(tabChild);
 			if (ActiveTabView == null)
 				TabClicked(ret);
@@ -60,11 +58,10 @@ namespace GeeUI.Views
 			return ret;
 		}
 
-		public TabContainer(GeeUIMain GeeUI, View rootView, SpriteFont font)
+		public TabContainer(GeeUIMain GeeUI, View rootView)
 			: base(GeeUI, rootView)
 		{
 			Position.Value = Vector2.Zero;
-			TabFont = font;
 		}
 
 		private void setChildrenWidth()

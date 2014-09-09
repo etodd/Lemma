@@ -699,6 +699,8 @@ namespace Lemma
 
 		protected override void LoadContent()
 		{
+			GeeUIMain.Font = this.Content.Load<SpriteFont>("Font");
+
 			if (this.firstLoadContentCall)
 			{
 				this.GraphicsDevice.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
@@ -1588,17 +1590,17 @@ namespace Lemma
 			if (this.GraphicsDevice != null)
 				this.GraphicsDevice.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
 
+			this.Settings.Fullscreen.Value = fullscreen;
+			this.Settings.Borderless.Value = borderless;
+
 			if (applyChanges && needApply)
 				this.Graphics.ApplyChanges();
 
 			if (this.GeeUI != null)
 			{
-				GeeUI.RootView.Width.Value = width;
-				GeeUI.RootView.Height.Value = height;
+				this.GeeUI.RootView.Width.Value = width;
+				this.GeeUI.RootView.Height.Value = height;
 			}
-
-			this.Settings.Fullscreen.Value = fullscreen;
-			this.Settings.Borderless.Value = borderless;
 
 #if VR
 			if (this.VR)
@@ -1616,11 +1618,15 @@ namespace Lemma
 			if (this.Renderer != null)
 				this.Renderer.ReallocateBuffers(this.ScreenSize);
 
-			System.Windows.Forms.Control control = System.Windows.Forms.Control.FromHandle(this.Window.Handle);
-			System.Windows.Forms.Form form = control.FindForm();
-			form.FormBorderStyle = fullscreen || borderless ? System.Windows.Forms.FormBorderStyle.None : System.Windows.Forms.FormBorderStyle.Sizable;
-			if (fullscreen && borderless)
-				form.Location = new System.Drawing.Point(0, 0);
+			if (!fullscreen || borderless)
+			{
+				System.Windows.Forms.Control control = System.Windows.Forms.Control.FromHandle(this.Window.Handle);
+				System.Windows.Forms.Form form = control.FindForm();
+				form.FormBorderStyle = fullscreen || borderless ? System.Windows.Forms.FormBorderStyle.None : System.Windows.Forms.FormBorderStyle.Sizable;
+				if (fullscreen && borderless)
+					form.Location = new System.Drawing.Point(0, 0);
+				this.resize = null;
+			}
 
 #if ANALYTICS
 			if (this.SessionRecorder != null)

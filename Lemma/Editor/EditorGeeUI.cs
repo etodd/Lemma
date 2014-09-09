@@ -92,23 +92,20 @@ namespace Lemma.Components
 		private View reactivateViewAfterPickingEntity;
 		private ButtonView resetSelectButtonAfterPickingEntity;
 
-		private SpriteFont MainFont;
-
 		private TextView selectPrompt;
 
 		public override void Awake()
 		{
 			base.Awake();
-			MainFont = main.Content.Load<SpriteFont>("Font");
 
 			this.RootEditorView = new View(this.main.GeeUI, this.main.GeeUI.RootView);
 			this.Add(new Binding<bool>(this.RootEditorView.Active, this.Visible));
 
-			this.selectPrompt = new TextView(this.main.GeeUI, this.main.GeeUI.RootView, "Select an entity", Vector2.Zero, this.MainFont);
+			this.selectPrompt = new TextView(this.main.GeeUI, this.main.GeeUI.RootView, "Select an entity", Vector2.Zero);
 			this.selectPrompt.Add(new Binding<Vector2, MouseState>(this.selectPrompt.Position, x => new Vector2(x.X + 16, x.Y + 16), this.main.MouseState));
 			this.selectPrompt.Add(new Binding<bool>(this.selectPrompt.Active, () => this.PickNextEntity && !this.MovementEnabled, this.PickNextEntity, this.MovementEnabled));
 
-			this.TabViews = new TabHost(this.main.GeeUI, this.RootEditorView, Vector2.Zero, this.MainFont);
+			this.TabViews = new TabHost(this.main.GeeUI, this.RootEditorView, Vector2.Zero);
 			this.MapPanelView = new PanelView(this.main.GeeUI, null, Vector2.Zero);
 			this.MapPanelView.ChildrenLayouts.Add(new VerticalViewLayout(4, true, 4));
 
@@ -123,15 +120,15 @@ namespace Lemma.Components
 			TabViews.AddTab("Voxel", this.VoxelPanelView);
 			TabViews.SetActiveTab(TabViews.TabIndex("Map"));
 
-			this.CreateDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero, MainFont);
+			this.CreateDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero);
 			this.CreateDropDownView.Label.Value = "Add [Space]";
 			this.CreateDropDownView.FilterThreshhold.Value = 0;
 			this.CreateDropDownView.AllowRightClickExecute.Value = true;
-			this.SelectDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero, MainFont);
+			this.SelectDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero);
 			this.SelectDropDownView.FilterThreshhold.Value = 0;
 			this.SelectDropDownView.Label.Value = "Select";
 
-			this.OpenDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero, MainFont);
+			this.OpenDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero);
 			this.OpenDropDownView.FilterThreshhold.Value = 0;
 			this.OpenDropDownView.Label.Value = "Open [Ctrl+O]";
 
@@ -185,17 +182,17 @@ namespace Lemma.Components
 				var DestLayout = new View(main.GeeUI, LinkerView) { Name = "DestLayout" };
 				DestLayout.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
 				DestLayout.ChildrenLayouts.Add(new ExpandToFitLayout());
-				new TextView(main.GeeUI, DestLayout, "Target:", Vector2.Zero, MainFont);
+				new TextView(main.GeeUI, DestLayout, "Target:", Vector2.Zero);
 				var entityDropDownLayout = new View(main.GeeUI, DestLayout);
 				entityDropDownLayout.ChildrenLayouts.Add(new HorizontalViewLayout());
 				entityDropDownLayout.ChildrenLayouts.Add(new ExpandToFitLayout());
-				var destEntityDropDown = new DropDownView(main.GeeUI, entityDropDownLayout, new Vector2(), MainFont)
+				var destEntityDropDown = new DropDownView(main.GeeUI, entityDropDownLayout, new Vector2())
 				{
 					Name = "DestEntityDropDown"
 				};
 				destEntityDropDown.FilterThreshhold.Value = 0;
 
-				var selectButton = new ButtonView(main.GeeUI, entityDropDownLayout, "Select", Vector2.Zero, MainFont);
+				var selectButton = new ButtonView(main.GeeUI, entityDropDownLayout, "Select", Vector2.Zero);
 				selectButton.OnMouseClick += delegate(object sender, EventArgs e)
 				{
 					this.LinkerView.Active.Value = false;
@@ -208,8 +205,8 @@ namespace Lemma.Components
 
 				//Padding
 				new View(main.GeeUI, DestLayout).Height.Value = 5;
-				new TextView(main.GeeUI, DestLayout, "Command:", Vector2.Zero, MainFont);
-				new DropDownView(main.GeeUI, DestLayout, new Vector2(), MainFont)
+				new TextView(main.GeeUI, DestLayout, "Command:", Vector2.Zero);
+				new DropDownView(main.GeeUI, DestLayout, new Vector2())
 				{
 					Name = "DestCommandDropDown"
 				};
@@ -227,7 +224,7 @@ namespace Lemma.Components
 				container.Height.Value = list.Height.Value = (LinkerView.Height.Value - container.Y) - 5;
 				DestLayout.Position.Value = new Vector2(10, 10);
 
-				var addButton = new ButtonView(main.GeeUI, LinkerView, "Link", Vector2.Zero, MainFont) { Name = "AddButton" };
+				var addButton = new ButtonView(main.GeeUI, LinkerView, "Link", Vector2.Zero) { Name = "AddButton" };
 				addButton.AnchorPoint.Value = new Vector2(1, 1);
 				addButton.Position.Value = new Vector2(LinkerView.Width - 10, container.Y - 10);
 				addButton.Active.Value = false;
@@ -262,14 +259,14 @@ namespace Lemma.Components
 				var entityDropDownLayout = new View(main.GeeUI, EntityListView);
 				entityDropDownLayout.ChildrenLayouts.Add(new HorizontalViewLayout());
 				entityDropDownLayout.ChildrenLayouts.Add(new ExpandToFitLayout());
-				var entityDropDown = new DropDownView(main.GeeUI, entityDropDownLayout, new Vector2(), MainFont)
+				var entityDropDown = new DropDownView(main.GeeUI, entityDropDownLayout, new Vector2())
 				{
 					Name = "EntityDropDown"
 				};
 
 				entityDropDown.FilterThreshhold.Value = 0;
 
-				var selectButton = new ButtonView(main.GeeUI, entityDropDownLayout, "Select", Vector2.Zero, MainFont);
+				var selectButton = new ButtonView(main.GeeUI, entityDropDownLayout, "Select", Vector2.Zero);
 				selectButton.OnMouseClick += delegate(object sender, EventArgs e)
 				{
 					this.EntityListView.Active.Value = false;
@@ -293,7 +290,7 @@ namespace Lemma.Components
 				container.Height.Value = list.Height.Value = (EntityListView.Height.Value - container.Y) - 5;
 				entityDropDownLayout.Position.Value = new Vector2(10, 10);
 
-				var addButton = new ButtonView(main.GeeUI, EntityListView, "[+]", Vector2.Zero, MainFont) { Name = "AddButton" };
+				var addButton = new ButtonView(main.GeeUI, EntityListView, "[+]", Vector2.Zero) { Name = "AddButton" };
 				addButton.AnchorPoint.Value = new Vector2(1, 1);
 				addButton.Position.Value = new Vector2(EntityListView.Width - 10, container.Y - 10);
 
@@ -365,7 +362,7 @@ namespace Lemma.Components
 			containerLabel.Children.Add(child);
 			if (entry.Data.Visible != null)
 				containerLabel.Add(new Binding<bool>(containerLabel.Active, entry.Data.Visible));
-			containerLabel.SetToolTipText(entry.Data.Description, MainFont);
+			containerLabel.SetToolTipText(entry.Data.Description);
 			return containerLabel;
 		}
 
@@ -376,7 +373,7 @@ namespace Lemma.Components
 				text = string.Format("{0} [{1}]", cmd.Description, cmd.Chord);
 			else
 				text = cmd.Description;
-			var button = new ButtonView(main.GeeUI, null, text, Vector2.Zero, MainFont);
+			var button = new ButtonView(main.GeeUI, null, text, Vector2.Zero);
 			button.OnMouseClick += (sender, args) => cmd.Action.Execute();
 			button.Add(new Binding<bool>(button.Active, cmd.Enabled));
 			return button;
@@ -398,7 +395,7 @@ namespace Lemma.Components
 					this.SelectDropDownView.AddOption(this.entityString(ent), () =>
 					{
 						this.SelectEntity.Execute(ent1);
-					}, MainFont, ent);
+					});
 				}
 			}
 		}
@@ -418,7 +415,7 @@ namespace Lemma.Components
 				this.OpenDropDownView.AddOption(Path.GetFileNameWithoutExtension(m), () =>
 				{
 					IO.MapLoader.Load(this.main, Path.GetFullPath(m), false);
-				}, MainFont);
+				});
 			}
 		}
 
@@ -478,7 +475,7 @@ namespace Lemma.Components
 						{
 							var c = (Command.Entry)comm.Value;
 							if (c.Permissions == Command.Perms.Linkable || c.Permissions == Command.Perms.LinkableAndExecutable)
-								destCommDrop.AddOption(comm.Key.ToString(), () => { }, null, c);
+								destCommDrop.AddOption(comm.Key.ToString(), () => { }, c);
 						}
 					}
 				}
@@ -506,8 +503,8 @@ namespace Lemma.Components
 					View container = new View(main.GeeUI, listView);
 					container.ChildrenLayouts.Add(new HorizontalViewLayout(4));
 					container.ChildrenLayouts.Add(new ExpandToFitLayout());
-					var entView = new TextView(main.GeeUI, container, this.entityString(target), Vector2.Zero, MainFont);
-					var destView = new TextView(main.GeeUI, container, link.TargetCommand, Vector2.Zero, MainFont);
+					var entView = new TextView(main.GeeUI, container, this.entityString(target), Vector2.Zero);
+					var destView = new TextView(main.GeeUI, container, link.TargetCommand, Vector2.Zero);
 
 					entView.AutoSize.Value = false;
 					destView.AutoSize.Value = false;
@@ -517,7 +514,7 @@ namespace Lemma.Components
 					entView.TextJustification = TextJustification.Left;
 					destView.TextJustification = TextJustification.Right;
 
-					var removeButton = new ButtonView(main.GeeUI, container, "-", Vector2.Zero, MainFont);
+					var removeButton = new ButtonView(main.GeeUI, container, "-", Vector2.Zero);
 					removeButton.OnMouseClick += (sender, args) =>
 					{
 						e.LinkedCommands.Remove(link);
@@ -555,7 +552,7 @@ namespace Lemma.Components
 			foreach (var ent in main.Entities)
 			{
 				if (ent != this.Entity)
-					destEntityDrop.AddOption(this.entityString(ent), () => { }, null, ent);
+					destEntityDrop.AddOption(this.entityString(ent), () => { }, ent);
 			}
 
 			populateList();
@@ -601,7 +598,7 @@ namespace Lemma.Components
 				foreach (var ent in main.Entities)
 				{
 					if (ent != e && !property.Contains(ent) && ent != this.Entity)
-						entityDrop.AddOption(this.entityString(ent), () => { }, null, ent);
+						entityDrop.AddOption(this.entityString(ent), () => { }, ent);
 				}
 				addButton.Active.Value = entityDrop.DropDownOptions.Count > 0;
 			};
@@ -624,14 +621,14 @@ namespace Lemma.Components
 					View container = new View(main.GeeUI, listView);
 					container.ChildrenLayouts.Add(new HorizontalViewLayout(4));
 					container.ChildrenLayouts.Add(new ExpandToFitLayout());
-					var entView = new TextView(main.GeeUI, container, this.entityString(target), Vector2.Zero, MainFont);
+					var entView = new TextView(main.GeeUI, container, this.entityString(target), Vector2.Zero);
 
 					entView.AutoSize.Value = false;
 
 					entView.Width.Value = 340;
 					entView.TextJustification = TextJustification.Left;
 
-					var removeButton = new ButtonView(main.GeeUI, container, "[-]", Vector2.Zero, MainFont);
+					var removeButton = new ButtonView(main.GeeUI, container, "[-]", Vector2.Zero);
 					removeButton.OnMouseClick += (sender, args) =>
 					{
 						property.Remove(handle);
@@ -679,14 +676,14 @@ namespace Lemma.Components
 			{
 				foreach (Entity e in entities)
 				{
-					TextView categoryView = new TextView(main.GeeUI, rootEntityView, "", new Vector2(0, 0), MainFont);
+					TextView categoryView = new TextView(main.GeeUI, rootEntityView, "", new Vector2(0, 0));
 					categoryView.Add(new Binding<string>(categoryView.Text, () => this.entityString(e), e.ID));
 				}
 			}
 			else if (count == 1)
 			{
 				Entity entity = entities.First();
-				TextView categoryView = new TextView(main.GeeUI, rootEntityView, "", new Vector2(0, 0), MainFont);
+				TextView categoryView = new TextView(main.GeeUI, rootEntityView, "", new Vector2(0, 0));
 				categoryView.Add(new Binding<string>(categoryView.Text, () => this.entityString(entity), entity.ID));
 				categoryView.AutoSize.Value = false;
 				categoryView.TextJustification = TextJustification.Center;
@@ -716,7 +713,7 @@ namespace Lemma.Components
 					containerLabel.Children.Add(BuildButton(entity, cmd.Value, "Execute"));
 					rootEntityView.Children.Add(containerLabel);
 
-					containerLabel.SetToolTipText(cmd.Value.Description, MainFont);
+					containerLabel.SetToolTipText(cmd.Value.Description);
 				}
 			}
 
@@ -744,7 +741,7 @@ namespace Lemma.Components
 				ret.ChildrenLayouts.Add(new VerticalViewLayout(2, false));
 			ret.ChildrenLayouts.Add(new ExpandToFitLayout());
 
-			new TextView(main.GeeUI, ret, label, Vector2.Zero, MainFont);
+			new TextView(main.GeeUI, ret, label, Vector2.Zero);
 			return ret;
 		}
 
@@ -757,7 +754,7 @@ namespace Lemma.Components
 			if (entry.Permissions == Command.Perms.Executable
 				|| entry.Permissions == Command.Perms.LinkableAndExecutable)
 			{
-				var b = new ButtonView(main.GeeUI, container, label, Vector2.Zero, MainFont);
+				var b = new ButtonView(main.GeeUI, container, label, Vector2.Zero);
 				b.OnMouseClick += (sender, args) =>
 				{
 					if (entry != null)
@@ -769,7 +766,7 @@ namespace Lemma.Components
 			{
 				int links = (from l in ent.LinkedCommands where l.SourceCommand == entry.Key select l).Count();
 
-				var link = new ButtonView(main.GeeUI, container, string.Format("Link [{0}]", links), Vector2.Zero, MainFont);
+				var link = new ButtonView(main.GeeUI, container, string.Format("Link [{0}]", links), Vector2.Zero);
 				link.OnMouseClick += (sender, args) =>
 				{
 					ShowLinkerView(link, entry);
@@ -811,7 +808,7 @@ namespace Lemma.Components
 
 		public void BuildValueFieldView(View parent, Type type, IProperty property, VectorElement element, PropertyEntry entry, int width = 30)
 		{
-			TextFieldView textField = new TextFieldView(main.GeeUI, parent, Vector2.Zero, MainFont);
+			TextFieldView textField = new TextFieldView(main.GeeUI, parent, Vector2.Zero);
 			textField.Height.Value = TextFieldHeight;
 			textField.Width.Value = width;
 			textField.MultiLine = false;
@@ -1015,7 +1012,7 @@ namespace Lemma.Components
 					object value = propertyInfo.GetValue(property, null);
 					return value == null ? "[null]" : value.ToString();
 				};
-				TextView label = new TextView(main.GeeUI, ret, getStringValue(), Vector2.Zero, MainFont);
+				TextView label = new TextView(main.GeeUI, ret, getStringValue(), Vector2.Zero);
 				label.Add(new Binding<string>(label.Text, getStringValue, property));
 			}
 			else if (typeof(IListProperty).IsAssignableFrom(property.GetType()))
@@ -1023,7 +1020,7 @@ namespace Lemma.Components
 				if (property.GetType().GetGenericArguments().First().Equals(typeof(Entity.Handle)))
 				{
 					ListProperty<Entity.Handle> socket = (ListProperty<Entity.Handle>)property;
-					var edit = new ButtonView(main.GeeUI, ret, string.Format("Edit [{0}]", socket.Length), Vector2.Zero, MainFont);
+					var edit = new ButtonView(main.GeeUI, ret, string.Format("Edit [{0}]", socket.Length), Vector2.Zero);
 					edit.OnMouseClick += (sender, args) =>
 					{
 						ShowEntityListView(edit, entry);
@@ -1051,7 +1048,7 @@ namespace Lemma.Components
 				}
 				else if (typeof(Enum).IsAssignableFrom(propertyInfo.PropertyType))
 				{
-					var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero, MainFont) { Name = "Dropdown" };
+					var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero) { Name = "Dropdown" };
 					foreach (object o in Enum.GetValues(propertyInfo.PropertyType))
 					{
 						Action onClick = () =>
@@ -1075,7 +1072,7 @@ namespace Lemma.Components
 					var entityDropDownLayout = new View(main.GeeUI, ret);
 					entityDropDownLayout.ChildrenLayouts.Add(new HorizontalViewLayout());
 					entityDropDownLayout.ChildrenLayouts.Add(new ExpandToFitLayout());
-					var entityDropDown = new DropDownView(main.GeeUI, entityDropDownLayout, new Vector2(), MainFont)
+					var entityDropDown = new DropDownView(main.GeeUI, entityDropDownLayout, new Vector2())
 					{
 						Name = "DropDown"
 					};
@@ -1106,7 +1103,7 @@ namespace Lemma.Components
 						entityDropDown.SetSelectedOption(this.entityString(socket.Value.Target), false);
 					}, (IProperty)property));
 
-					var selectButton = new ButtonView(main.GeeUI, entityDropDownLayout, "Select", Vector2.Zero, MainFont);
+					var selectButton = new ButtonView(main.GeeUI, entityDropDownLayout, "Select", Vector2.Zero);
 					selectButton.OnMouseClick += delegate(object sender, EventArgs e)
 					{
 						this.PickNextEntity.Value = true;
@@ -1119,7 +1116,7 @@ namespace Lemma.Components
 				else if (entry.Data.Options != null && propertyInfo.PropertyType.Equals(typeof(string)))
 				{
 					ListProperty<string> options = (ListProperty<string>)entry.Data.Options;
-					var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero, MainFont) { Name = "Dropdown" };
+					var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero) { Name = "Dropdown" };
 					Action populate = delegate()
 					{
 						drop.RemoveAllOptions();
@@ -1132,7 +1129,7 @@ namespace Lemma.Components
 								if (entry.Data.RefreshOnChange)
 									this.show(this.SelectedEntities);
 							};
-							drop.AddOption(o ?? "[null]", onClick, null, o);
+							drop.AddOption(o ?? "[null]", onClick, o);
 						}
 						drop.SetSelectedOption((string)propertyInfo.GetValue(property, null), false);
 						if (drop.DropDownOptions.Count > 0)
@@ -1145,7 +1142,7 @@ namespace Lemma.Components
 				}
 				else
 				{
-					TextFieldView view = new TextFieldView(main.GeeUI, ret, Vector2.Zero, MainFont);
+					TextFieldView view = new TextFieldView(main.GeeUI, ret, Vector2.Zero);
 					view.Width.Value = 130;
 					view.Height.Value = TextFieldHeight;
 					view.Name = "TextField";
@@ -1206,7 +1203,7 @@ namespace Lemma.Components
 						shouldSameLine = true;
 						//No need for a textfield!
 						ret.Children.Remove(view);
-						CheckBoxView checkBox = new CheckBoxView(main.GeeUI, ret, Vector2.Zero, "", MainFont);
+						CheckBoxView checkBox = new CheckBoxView(main.GeeUI, ret, Vector2.Zero, "");
 						Property<bool> socket = (Property<bool>)property;
 						checkBox.IsChecked.Value = socket.Value;
 						checkBox.Add(new NotifyBinding(() =>

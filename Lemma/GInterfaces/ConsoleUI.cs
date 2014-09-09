@@ -22,8 +22,6 @@ namespace Lemma.GInterfaces
 		public View RootConsoleView;
 		public TextFieldView ConsoleLogView;
 		public TextFieldView ConsoleInputView;
-		public SpriteFont MainFont;
-		public SpriteFont ConsoleFont;
 
 		[AutoConVar("console_showing", "If true, the console is showing")]
 		public static Property<bool> Showing = new Property<bool>();
@@ -35,16 +33,14 @@ namespace Lemma.GInterfaces
 			base.Awake();
 			if (RootConsoleView == null)
 			{
-				MainFont = main.Content.Load<SpriteFont>("Font");
-				ConsoleFont = main.Content.Load<SpriteFont>("ConsoleFont");
 				int width = main.ScreenSize.Value.X - 6;
 				int textBoxWidth = width - 0;
 				RootConsoleView = new View(main.GeeUI, main.GeeUI.RootView).SetWidth(width + 6).SetHeight(210);
 				ConsoleLogView =
-					(TextFieldView)new TextFieldView(main.GeeUI, RootConsoleView, new Vector2(0, 0), ConsoleFont).SetWidth(textBoxWidth)
+					(TextFieldView)new TextFieldView(main.GeeUI, RootConsoleView, new Vector2(0, 0)).SetWidth(textBoxWidth)
 						.SetHeight(175);
 				ConsoleInputView =
-					(TextFieldView)new TextFieldView(main.GeeUI, RootConsoleView, new Vector2(0, 0), MainFont).SetWidth(textBoxWidth).SetHeight(20);
+					(TextFieldView)new TextFieldView(main.GeeUI, RootConsoleView, new Vector2(0, 0)).SetWidth(textBoxWidth).SetHeight(20);
 
 				ConsoleLogView.Editable = false;
 				ConsoleInputView.OnTextSubmitted = OnTextSubmitted;

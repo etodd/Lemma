@@ -18,8 +18,6 @@ namespace Lemma.GInterfaces
 {
 	public class UpdateWorkShopInterface : Component<Main>
 	{
-		public SpriteFont MainFont;
-
 		private View EncompassingView;
 		private PanelView MainView;
 		private TextFieldView MapFilePath;
@@ -41,8 +39,6 @@ namespace Lemma.GInterfaces
 
 		public override void Awake()
 		{
-			MainFont = main.Content.Load<SpriteFont>("Font");
-
 			//This is to make it so nothing else can be interacted with.
 			this.EncompassingView = new View(main.GeeUI, main.GeeUI.RootView);
 			this.MainView = new PanelView(main.GeeUI, EncompassingView, Vector2.Zero);
@@ -56,14 +52,14 @@ namespace Lemma.GInterfaces
 			this.MainView.Add(new Binding<Vector2, int>(MainView.Position, i => new Vector2(i / 2f, MainView.Y), EncompassingView.Width));
 			this.MainView.Add(new Binding<Vector2, int>(MainView.Position, i => new Vector2(MainView.X, i / 2f), EncompassingView.Height));
 
-			new TextView(main.GeeUI, MainView, "Current Workshop Entry:", new Vector2(10, 8), MainFont);
-			this.SelectFile = new DropDownView(main.GeeUI, MainView, new Vector2(10, 35), MainFont);
+			new TextView(main.GeeUI, MainView, "Current Workshop Entry:", new Vector2(10, 8));
+			this.SelectFile = new DropDownView(main.GeeUI, MainView, new Vector2(10, 35));
 			SelectFile.AddOption("Fetching...", null);
 			this.SelectFile.Position.Value = new Vector2(10, 30);
 
-			new TextView(main.GeeUI, MainView, "New Map File:", new Vector2(10, 68), MainFont);
-			this.MapFilePath = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 85), MainFont) { MultiLine = false, Editable = false };
-			this.MapOpenPath = new ButtonView(main.GeeUI, MainView, "...", new Vector2(360, 85), MainFont);
+			new TextView(main.GeeUI, MainView, "New Map File:", new Vector2(10, 68));
+			this.MapFilePath = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 85)) { MultiLine = false, Editable = false };
+			this.MapOpenPath = new ButtonView(main.GeeUI, MainView, "...", new Vector2(360, 85));
 
 			SteamWorker.GetCreatedWorkShopEntries((entries) =>
 			{
@@ -91,10 +87,10 @@ namespace Lemma.GInterfaces
 				}
 			});
 
-			this.UploadButton = new ButtonView(main.GeeUI, MainView, "Upload", new Vector2(50, 125), MainFont);
-			this.CancelButton = new ButtonView(main.GeeUI, MainView, "Cancel", new Vector2(300, 125), MainFont);
+			this.UploadButton = new ButtonView(main.GeeUI, MainView, "Upload", new Vector2(50, 125));
+			this.CancelButton = new ButtonView(main.GeeUI, MainView, "Cancel", new Vector2(300, 125));
 
-			var statusString = new TextView(main.GeeUI, MainView, "Waiting", new Vector2(110, 130), MainFont)
+			var statusString = new TextView(main.GeeUI, MainView, "Waiting", new Vector2(110, 130))
 			{
 				TextJustification = TextJustification.Center,
 			};
