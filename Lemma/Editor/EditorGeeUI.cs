@@ -19,6 +19,7 @@ using ComponentBind;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
 using ListView = GeeUI.Views.ListView;
 using View = GeeUI.Views.View;
+using System.IO;
 
 namespace Lemma.Components
 {
@@ -46,6 +47,8 @@ namespace Lemma.Components
 		private DropDownView CreateDropDownView;
 
 		private DropDownView SelectDropDownView;
+
+		private DropDownView OpenDropDownView;
 
 		private PanelView PropertiesView;
 
@@ -76,6 +79,8 @@ namespace Lemma.Components
 		public Property<bool> Visible = new Property<bool>();
 
 		public Command ShowContextMenu = new Command();
+
+		public Command ShowOpenMenu = new Command();
 
 		public Property<bool> PickNextEntity = new Property<bool>();
 
@@ -126,8 +131,13 @@ namespace Lemma.Components
 			this.SelectDropDownView.FilterThreshhold.Value = 0;
 			this.SelectDropDownView.Label.Value = "Select";
 
+			this.OpenDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero, MainFont);
+			this.OpenDropDownView.FilterThreshhold.Value = 0;
+			this.OpenDropDownView.Label.Value = "Open [Ctrl+O]";
+
 			this.CreateDropDownView.Add(new Binding<bool>(this.CreateDropDownView.Active, this.main.GeeUI.KeyboardEnabled));
 			this.SelectDropDownView.Add(new Binding<bool>(this.SelectDropDownView.Active, this.main.GeeUI.KeyboardEnabled));
+			this.OpenDropDownView.Add(new Binding<bool>(this.OpenDropDownView.Active, this.main.GeeUI.KeyboardEnabled));
 
 			this.ShowContextMenu.Action = delegate()
 			{
@@ -140,6 +150,15 @@ namespace Lemma.Components
 				{
 					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Entity"));
 					this.CreateDropDownView.ShowDropDown();
+				}
+			};
+
+			this.ShowOpenMenu.Action = delegate()
+			{
+				if (!this.VoxelEditMode)
+				{
+					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Map"));
+					this.OpenDropDownView.ShowDropDown();
 				}
 			};
 
@@ -281,10 +300,13 @@ namespace Lemma.Components
 				this.EntityListView.Active.Value = false;
 			}
 
-			RootEditorView.Height.Value = 160;
-			TabViews.Height.Value = 160;
+#if VR
+			if (this.main.VR)
+				RootEditorView.Position.Value = new Vector2(0, 160);
+#endif
+			RootEditorView.Height.Value = TabViews.Height.Value = 160;
 
-			PropertiesView.Add(new Binding<Vector2, int>(PropertiesView.Position, i => new Vector2(0, i - 3), TabViews.Height));
+			PropertiesView.Add(new Binding<Vector2>(PropertiesView.Position, () => new Vector2(0, RootEditorView.Height + RootEditorView.Position.Value.Y), RootEditorView.Height, RootEditorView.Position));
 			PropertiesView.Add(new Binding<int, Point>(PropertiesView.Height, point => point.Y - PropertiesView.AbsoluteBoundBox.Top - 15, main.ScreenSize));
 
 			this.SelectedEntities.ItemAdded += (index, item) => this.refresh();
@@ -296,6 +318,7 @@ namespace Lemma.Components
 
 			this.Add(new ListBinding<View, EditorCommand>(this.EntityPanelView.Children, this.EntityCommands, this.buildCommandButton));
 			this.Add(new ListBinding<View, EditorCommand>(this.MapPanelView.Children, this.MapCommands, this.buildCommandButton));
+			this.MapPanelView.Children.Add(this.OpenDropDownView);
 			this.EntityPanelView.Children.Add(this.CreateDropDownView);
 			this.EntityPanelView.Children.Add(this.SelectDropDownView);
 
@@ -307,14 +330,12 @@ namespace Lemma.Components
 				string text = cmd.Description;
 				if (cmd.Chord.Exists)
 					text += " [" + cmd.Chord.ToString() + "]";
-				ButtonView option = CreateDropDownView.AddOption(text, () =>
-				{
-					cmd.Action.Execute();
-				});
+				ButtonView option = CreateDropDownView.AddOption(text, cmd.Action.Execute);
 				option.Add(new Binding<bool>(option.Active, cmd.Enabled));
 			};
 
 			this.SelectDropDownView.Add(new CommandBinding(this.SelectDropDownView.OnShowing, (Action)this.RebuildSelectDropDown));
+			this.OpenDropDownView.Add(new CommandBinding(this.OpenDropDownView.OnShowing, (Action)this.RebuildOpenDropDown));
 
 			this.Add(new NotifyBinding(delegate()
 			{
@@ -374,11 +395,30 @@ namespace Lemma.Components
 				if (ent != this.Entity)
 				{
 					Entity ent1 = ent;
-					SelectDropDownView.AddOption(this.entityString(ent), () =>
+					this.SelectDropDownView.AddOption(this.entityString(ent), () =>
 					{
 						this.SelectEntity.Execute(ent1);
 					}, MainFont, ent);
 				}
+			}
+		}
+
+		public void RebuildOpenDropDown()
+		{
+			this.OpenDropDownView.RemoveAllOptions();
+			IEnumerable<string> maps;
+#if DEVELOPMENT
+			maps = Directory.GetFiles(this.main.MapDirectory, "*" + IO.MapLoader.MapExtension)
+				.Concat(Directory.GetFiles(Path.Combine(this.main.MapDirectory, "Challenge"), "*" + IO.MapLoader.MapExtension));
+#else
+			maps = Directory.GetFiles(this.main.CustomMapDirectory, "*" + IO.MapLoader.MapExtension);
+#endif
+			foreach (string m in maps)
+			{
+				this.OpenDropDownView.AddOption(Path.GetFileNameWithoutExtension(m), () =>
+				{
+					IO.MapLoader.Load(this.main, Path.GetFullPath(m), false);
+				}, MainFont);
 			}
 		}
 

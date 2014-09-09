@@ -30,12 +30,11 @@ namespace Lemma.Factories
 			return entity;
 		}
 
-		private void raycast(Main main, Vector3 ray, out Entity closestEntity, out Transform closestTransform)
+		private void raycast(Main main, Vector3 rayStart, Vector3 ray, out Entity closestEntity, out Transform closestTransform)
 		{
 			closestEntity = null;
 			float closestEntityDistance = main.Camera.FarPlaneDistance;
 			closestTransform = null;
-			Vector3 rayStart = main.Camera.Position;
 			foreach (Entity entity in main.Entities)
 			{
 				foreach (Transform transform in entity.GetAll<Transform>())
@@ -97,8 +96,7 @@ namespace Lemma.Factories
 				display.Text.Value = description;
 				container.Children.Add(display);
 
-				UIRenderer uiRenderer = entity.Get<UIRenderer>();
-				uiRenderer.Root.Children.Add(container);
+				main.UI.Root.Children.Add(container);
 				main.AddComponent(new Animation
 				(
 					new Animation.Parallel
@@ -106,7 +104,7 @@ namespace Lemma.Factories
 						new Animation.FloatMoveTo(container.Opacity, 0.0f, 1.0f),
 						new Animation.FloatMoveTo(display.Opacity, 0.0f, 1.0f)
 					),
-					new Animation.Execute(delegate() { uiRenderer.Root.Children.Remove(container); })
+					new Animation.Execute(container.Delete)
 				));
 			}));
 		}
@@ -161,7 +159,6 @@ namespace Lemma.Factories
 			model.Serialize = false;
 			entity.Add(model);
 
-			UIRenderer uiRenderer = entity.Create<UIRenderer>();
 			FPSInput input = entity.Create<FPSInput>();
 			input.EnabledWhenPaused = true;
 
@@ -214,24 +211,7 @@ namespace Lemma.Factories
 				gui.MapCommands
 			);
 
-			AddCommand
-			(
-				entity, main, "Open", new PCInput.Chord(Keys.O, Keys.LeftControl),
-				new Command
-				{
-					Action = () =>
-					{
-						var dialog = new System.Windows.Forms.OpenFileDialog();
-						dialog.Filter = "Map files|*.map";
-						dialog.InitialDirectory = Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory);
-						if (dialog.ShowDialog() == DialogResult.OK)
-							IO.MapLoader.Load(main, dialog.FileName, false);
-					}
-				},
-				gui.MapCommands,
-				() => !input.EnableLook && !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None,
-				input.EnableLook, editor.VoxelEditMode, editor.TransformMode
-			);
+			input.Add(new CommandBinding(input.GetChord(new PCInput.Chord(Keys.O, Keys.LeftControl)), gui.ShowOpenMenu));
 
 			AddCommand
 			(
@@ -240,11 +220,10 @@ namespace Lemma.Factories
 				{
 					Action = () =>
 					{
-						var dialog = new System.Windows.Forms.SaveFileDialog();
-						dialog.Filter = "Map files|*.map";
-						dialog.InitialDirectory = Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory);
-						if (dialog.ShowDialog() == DialogResult.OK)
-							IO.MapLoader.New(main, dialog.FileName);
+						main.AddComponent(new TextPrompt(delegate(string name)
+						{
+							IO.MapLoader.New(main, name);
+						}, "", "Map name:", "New map"));
 					}
 				},
 				gui.MapCommands,
@@ -264,7 +243,7 @@ namespace Lemma.Factories
 						if (Path.GetExtension(f) != ".map")
 							f += ".map";
 						if (!Path.IsPathRooted(f))
-							f = Path.GetFullPath(Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory, f));
+							f = Path.GetFullPath(Path.Combine(main.MapDirectory, f));
 						main.AddComponent(new WorkShopInterface());
 					}
 				},
@@ -285,7 +264,7 @@ namespace Lemma.Factories
 						if (Path.GetExtension(f) != IO.MapLoader.MapExtension)
 							f += IO.MapLoader.MapExtension;
 						if (!Path.IsPathRooted(f))
-							f = Path.GetFullPath(Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory, f));
+							f = Path.GetFullPath(Path.Combine(main.MapDirectory, f));
 						main.AddComponent(new UpdateWorkShopInterface());
 					}
 				},
@@ -652,9 +631,9 @@ namespace Lemma.Factories
 				editor.VoxelEditMode, editor.TransformMode
 			);
 
-			editor.Add(new Binding<Vector2>(editor.Mouse, input.Mouse));
+			editor.Add(new Binding<Vector2>(editor.Mouse, main.UI.Mouse));
 
-			uiRenderer.Add(new CommandBinding(uiRenderer.SwallowMouseEvents, (Action)input.SwallowEvents));
+			input.Add(new CommandBinding(main.UI.SwallowMouseEvents, (Action)input.SwallowEvents));
 
 			Camera camera = main.Camera;
 
@@ -708,12 +687,33 @@ namespace Lemma.Factories
 				bool multiselect = input.GetKey(Keys.LeftShift);
 
 				Vector2 mouse = input.Mouse;
-				Microsoft.Xna.Framework.Graphics.Viewport viewport = main.GraphicsDevice.Viewport;
-				Vector3 ray = Vector3.Normalize(viewport.Unproject(new Vector3(mouse.X, mouse.Y, 1), camera.Projection, camera.View, Matrix.Identity) - viewport.Unproject(new Vector3(mouse.X, mouse.Y, 0), camera.Projection, camera.View, Matrix.Identity));
+				Vector3 rayStart;
+				Vector3 ray;
+#if VR
+				if (main.VR)
+				{
+					Vector2 size = main.UI.Root.Size;
+					mouse = main.UI.Mouse;
+					mouse.X /= size.X;
+					mouse.Y /= size.Y;
+					mouse *= 2.0f;
+					mouse -= new Vector2(1.0f);
+					mouse.Y *= -1.0f;
+					mouse *= 0.5f;
+					rayStart = main.Camera.Position;
+					ray = Vector3.Normalize(Vector3.Transform(new Vector3(0, mouse.Y, -mouse.X), main.VRUI.Transform) - camera.Position);
+				}
+				else
+#endif
+				{
+					Microsoft.Xna.Framework.Graphics.Viewport viewport = main.GraphicsDevice.Viewport;
+					rayStart = main.Camera.Position;
+					ray = Vector3.Normalize(viewport.Unproject(new Vector3(mouse.X, mouse.Y, 1), camera.Projection, camera.View, Matrix.Identity) - viewport.Unproject(new Vector3(mouse.X, mouse.Y, 0), camera.Projection, camera.View, Matrix.Identity));
+				}
 
 				Entity closestEntity;
 				Transform closestTransform;
-				this.raycast(main, ray, out closestEntity, out closestTransform);
+				this.raycast(main, rayStart, ray, out closestEntity, out closestTransform);
 
 				if (gui.PickNextEntity)
 					gui.EntityPicked.Execute(closestEntity);

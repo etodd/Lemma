@@ -116,6 +116,8 @@ namespace Lemma
 
 		public string SaveDirectory;
 		private string analyticsDirectory;
+		public string CustomMapDirectory;
+		public string MapDirectory;
 		private string settingsFile;
 
 		public Screenshot Screenshot;
@@ -224,7 +226,7 @@ namespace Lemma
 		private OVR.ovrEyeRenderDesc vrLeftEyeRenderDesc;
 		private OVR.ovrEyeRenderDesc vrRightEyeRenderDesc;
 		private Camera vrCamera;
-		private Lemma.Components.ModelAlpha vrUi;
+		public Lemma.Components.ModelAlpha VRUI;
 #endif
 
 		public void FlushComponents()
@@ -455,6 +457,10 @@ namespace Lemma
 			this.analyticsDirectory = Path.Combine(Main.DataDirectory, "analytics");
 			if (!Directory.Exists(this.analyticsDirectory))
 				Directory.CreateDirectory(this.analyticsDirectory);
+			this.CustomMapDirectory = Path.Combine(Main.DataDirectory, "maps");
+			if (!Directory.Exists(this.CustomMapDirectory))
+				Directory.CreateDirectory(this.CustomMapDirectory);
+			this.MapDirectory = Path.Combine(this.Content.RootDirectory, IO.MapLoader.MapDirectory);
 
 			this.timesFile = Path.Combine(Main.DataDirectory, "times.json");
 			try
@@ -775,6 +781,7 @@ namespace Lemma
 				this.Strings.Load(Path.Combine(this.Content.RootDirectory, "Strings.xlsx"));
 
 				this.UI = new UIRenderer();
+				this.UI.GeeUI = this.GeeUI;
 				this.AddComponent(this.UI);
 
 				PCInput input = new PCInput();
@@ -951,20 +958,25 @@ namespace Lemma
 
 					this.UI.Add(new Binding<Point>(this.UI.RenderTargetSize, this.ScreenSize));
 
-					this.vrUi = new Lemma.Components.ModelAlpha();
-					this.vrUi.Filename.Value = "Models\\plane";
-					this.vrUi.EffectFile.Value = "Effects\\VirtualUI";
-					this.vrUi.Add(new Binding<Microsoft.Xna.Framework.Graphics.RenderTarget2D>(this.vrUi.GetRenderTarget2DParameter("Diffuse" + Lemma.Components.Model.SamplerPostfix), this.UI.RenderTarget));
-					this.vrUi.Add(new Binding<Matrix>(this.vrUi.Transform, delegate()
+					this.VRUI = new Lemma.Components.ModelAlpha();
+					this.VRUI.DrawOrder.Value = 100000; // On top of everything
+					this.VRUI.Filename.Value = "Models\\plane";
+					this.VRUI.EffectFile.Value = "Effects\\VirtualUI";
+					this.VRUI.Add(new Binding<Microsoft.Xna.Framework.Graphics.RenderTarget2D>(this.VRUI.GetRenderTarget2DParameter("Diffuse" + Lemma.Components.Model.SamplerPostfix), this.UI.RenderTarget));
+					this.VRUI.Add(new Binding<Matrix>(this.VRUI.Transform, delegate()
 					{
 						Matrix rot = this.Camera.RotationMatrix;
-						Matrix mat = rot * Matrix.CreateRotationY((float)Math.PI * -0.5f) * Matrix.CreateScale(10);
+						Matrix mat = Matrix.Identity;
+						mat.Forward = rot.Right;
+						mat.Right = rot.Forward;
+						mat.Up = rot.Up;
+						mat *= Matrix.CreateScale(7);
 						mat.Translation = this.Camera.Position + rot.Forward * 5.0f;
 						return mat;
 					}, this.Camera.Position, this.Camera.RotationMatrix));
-					this.AddComponent(this.vrUi);
+					this.AddComponent(this.VRUI);
 
-					this.UI.Setup3D(this.vrUi.Transform);
+					this.UI.Setup3D(this.VRUI.Transform);
 				}
 #endif
 
@@ -1052,7 +1064,7 @@ namespace Lemma
 			string newSave = DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss");
 			if (newSave != this.CurrentSave)
 			{
-				this.copySave(this.CurrentSave.Value == null ? Path.Combine(this.Content.RootDirectory, IO.MapLoader.MapDirectory) : Path.Combine(this.SaveDirectory, this.CurrentSave), Path.Combine(this.SaveDirectory, newSave));
+				this.copySave(this.CurrentSave.Value == null ? this.MapDirectory : Path.Combine(this.SaveDirectory, this.CurrentSave), Path.Combine(this.SaveDirectory, newSave));
 				this.CurrentSave.Value = newSave;
 			}
 		}
@@ -1345,6 +1357,12 @@ namespace Lemma
 
 				this.Renderer.PostProcess(this.vrLeftEyeTarget, this.renderParameters);
 
+				foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
+				{
+					if (this.componentEnabled(c))
+						c.DrawNonPostProcessed(gameTime, this.renderParameters);
+				}
+
 				// Setup right eye view and projection
 				quat = new Quaternion(rightEyePose.Orientation.x, rightEyePose.Orientation.y, rightEyePose.Orientation.z, rightEyePose.Orientation.w);
 				this.vrCamera.RotationMatrix.Value = Matrix.CreateFromQuaternion(quat) * originalCamera.RotationMatrix;
@@ -1366,10 +1384,16 @@ namespace Lemma
 
 				this.Renderer.PostProcess(this.vrRightEyeTarget, this.renderParameters);
 
-				this.GraphicsDevice.SetRenderTarget(this.RenderTarget);
-				this.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Black);
+				foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
+				{
+					if (this.componentEnabled(c))
+						c.DrawNonPostProcessed(gameTime, this.renderParameters);
+				}
 
 				// Render left and right frame buffers to the screen
+
+				this.GraphicsDevice.SetRenderTarget(this.RenderTarget);
+				this.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Black);
 
 				/*
 				this.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
@@ -1385,12 +1409,6 @@ namespace Lemma
 				this.vrRightMesh.Render(this.vrRightEyeTarget, rightEyePose, this.vrEffect);
 
 				this.renderParameters.Camera = originalCamera;
-
-				foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
-				{
-					if (this.componentEnabled(c))
-						c.DrawNonPostProcessed(gameTime, this.renderParameters);
-				}
 			}
 			else
 #endif

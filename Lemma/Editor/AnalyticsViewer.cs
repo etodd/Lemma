@@ -39,7 +39,6 @@ namespace Lemma.Factories
 
 		public static void Bind(Entity entity, Main main)
 		{
-			UIRenderer uiRenderer = entity.Get<UIRenderer>();
 			PCInput input = entity.Get<PCInput>();
 			Editor editor = entity.Get<Editor>();
 			EditorGeeUI gui = entity.Get<EditorGeeUI>();
@@ -68,7 +67,8 @@ namespace Lemma.Factories
 			timelineScroller.Add(new Binding<Vector2, Point>(timelineScroller.Size, x => new Vector2(x.X, timelineHeight), main.ScreenSize));
 			timelineScroller.Add(new Binding<bool>(timelineScroller.Visible, analyticsEnable));
 			timelineScroller.Add(new Binding<bool>(timelineScroller.EnableScroll, x => !x, input.GetKey(Keys.LeftAlt)));
-			uiRenderer.Root.Children.Add(timelineScroller);
+			entity.Add(new CommandBinding(entity.Delete, timelineScroller.Delete));
+			main.UI.Root.Children.Add(timelineScroller);
 
 			timelineScroller.Add(new Binding<bool>(editor.EnableCameraDistanceScroll, () => !timelineScroller.Highlighted || editor.VoxelEditMode, timelineScroller.Highlighted, editor.VoxelEditMode));
 			timelineScroller.Add(new CommandBinding(timelineScroller.Delete, delegate()
@@ -146,7 +146,8 @@ namespace Lemma.Factories
 			sessionsSidebar.Add(new Binding<bool>(sessionsSidebar.Visible, analyticsEnable));
 			sessionsSidebar.Alignment.Value = ListContainer.ListAlignment.Max;
 			sessionsSidebar.Reversed.Value = true;
-			uiRenderer.Root.Children.Add(sessionsSidebar);
+			main.UI.Root.Children.Add(sessionsSidebar);
+			entity.Add(new CommandBinding(entity.Delete, sessionsSidebar.Delete));
 
 			Func<string, ListContainer> createCheckboxListItem = delegate(string text)
 			{

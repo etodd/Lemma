@@ -33,7 +33,7 @@ namespace Lemma.Factories
 			entity.Add("KourTime", trial.KourTime, "Gold medal time");
 			entity.Add("NextMap", trial.NextMap, new PropertyEntry.EditorData
 			{
-				Options = FileFilter.Get(main, Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory), new string[] { "", "Challenge" }, IO.MapLoader.MapExtension),
+				Options = FileFilter.Get(main, main.MapDirectory, new string[] { "", "Challenge" }, IO.MapLoader.MapExtension),
 			});
 		}
 	}

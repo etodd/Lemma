@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
+using GeeUI;
 
 namespace Lemma.Components
 {
@@ -26,7 +27,8 @@ namespace Lemma.Components
 		{
 			this.MouseFilter = delegate(MouseState mouse)
 			{
-				Microsoft.Xna.Framework.Graphics.Viewport viewport = main.GraphicsDevice.Viewport;
+				Point screenSize = this.main.ScreenSize;
+				Microsoft.Xna.Framework.Graphics.Viewport viewport = new Viewport(0, 0, screenSize.X, screenSize.Y);
 
 				Matrix inverseTransform = Matrix.Invert(transform);
 				Vector3 ray = Vector3.Normalize(viewport.Unproject(new Vector3(mouse.X, mouse.Y, 1), main.Camera.Projection, main.Camera.View, Matrix.Identity) - viewport.Unproject(new Vector3(mouse.X, mouse.Y, 0), main.Camera.Projection, main.Camera.View, Matrix.Identity));
@@ -61,6 +63,8 @@ namespace Lemma.Components
 				);
 			};
 		}
+
+		public GeeUIMain GeeUI;
 
 		[XmlIgnore]
 		public RasterizerState RasterizerState;
@@ -232,6 +236,9 @@ namespace Lemma.Components
 				}
 #endif
 
+				if (this.GeeUI != null)
+					this.GeeUI.Update(dt, this.main.KeyboardState, current);
+
 				this.Mouse.Value = new Vector2(current.X, current.Y);
 				if (current.LeftButton != last.LeftButton
 					|| current.RightButton != last.RightButton
@@ -252,10 +259,18 @@ namespace Lemma.Components
 		private void draw(GameTime time, Point screenSize)
 		{
 			this.Root.CheckLayout();
+
 			RasterizerState originalState = this.main.GraphicsDevice.RasterizerState;
+
 			this.Batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, this.RasterizerState, null, Matrix.Identity);
+
+			if (this.GeeUI != null)
+				this.GeeUI.Draw(this.Batch);
+
 			this.Root.Draw(time, Matrix.Identity, new Rectangle(0, 0, screenSize.X, screenSize.Y));
+
 			this.Batch.End();
+
 			this.main.GraphicsDevice.RasterizerState = originalState;
 		}
 

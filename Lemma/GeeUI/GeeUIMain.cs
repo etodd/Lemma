@@ -20,7 +20,7 @@ namespace GeeUI
 	public delegate void OnKeyReleased(string keyReleased, Keys key);
 	public delegate void OnKeyContinuallyPressed(string keyContinuallyPressed, Keys key);
 
-	public class GeeUIMain : Component<Main>, IUpdateableComponent, INonPostProcessedDrawableComponent
+	public class GeeUIMain : Component<Main>
 	{
 		public event OnKeyPressed OnKeyPressedHandler;
 		public event OnKeyReleased OnKeyReleasedHandler;
@@ -30,8 +30,6 @@ namespace GeeUI
 		public static Effect CircleShader;
 
 		public View RootView;
-
-		internal Game TheGame;
 
 		public Color TextColorDefault = Color.Black;
 
@@ -138,7 +136,6 @@ namespace GeeUI
 		{
 			this.DrawOrder = new Property<int>() { Value = 0 };
 
-			TheGame = theGame;
 			White = new Texture2D(theGame.GraphicsDevice, 1, 1);
 			White.SetData(new Color[] { Color.White });
 
@@ -302,11 +299,11 @@ namespace GeeUI
 				view.MouseOver = true;
 		}
 
-		public void Update(float dt)
+		public void Update(float dt, KeyboardState kb, MouseState mouse)
 		{
 			if (LastClickCaptured)
 				LastClickCaptured.Value = false;
-			_inputManager.Update(dt, this);
+			_inputManager.Update(kb, mouse);
 			UpdateView(RootView, dt);
 			for (int i = 0; i < this.potentiallyDetachedViews.Count; i++)
 			{
@@ -425,15 +422,6 @@ namespace GeeUI
 		public void LoadContent(bool reload)
 		{
 			this.Batch = new SpriteBatch(this.main.GraphicsDevice);
-		}
-
-		public void DrawNonPostProcessed(GameTime time, RenderParameters parameters)
-		{
-			var originalRasterizer = main.GraphicsDevice.RasterizerState;
-			Batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, this.RasterizerState, null, Matrix.Identity);
-			Draw(Batch);
-			Batch.End();
-			main.GraphicsDevice.RasterizerState = originalRasterizer;
 		}
 
 		public override void Awake()

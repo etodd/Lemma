@@ -44,77 +44,74 @@ namespace GeeUI.Managers
 			return new Vector2(GetMousePos().X, GetMousePos().Y);
 		}
 
-		public void Update(float dt, GeeUIMain GeeUI)
+		public void Update(KeyboardState kb, MouseState mouse)
 		{
-			_keyboardState = Keyboard.GetState();
-			_mouseState = Mouse.GetState();
+			_keyboardState = kb;
+			_mouseState = mouse;
 			int scroll = _mouseState.ScrollWheelValue - _scrollValue;
 			_scrollValue = _mouseState.ScrollWheelValue;
-			if (GeeUI.TheGame.IsActive)
+			foreach (CodeBoundMouse b in _boundMouse)
 			{
-				foreach (CodeBoundMouse b in _boundMouse)
+				switch (b.BoundMouseButton)
 				{
-					switch (b.BoundMouseButton)
-					{
-						case MouseButton.Left:
-							if (_mouseState.LeftButton != _oldMouseState.LeftButton || b.Constant)
-							{
-								if ((b.Press && _mouseState.LeftButton == ButtonState.Pressed) ||
-									(!b.Press && _mouseState.LeftButton == ButtonState.Released))
-									b.Lambda();
-							}
-							break;
-						case MouseButton.Middle:
-							if (_mouseState.MiddleButton != _oldMouseState.MiddleButton || b.Constant)
-							{
-								if ((b.Press && _mouseState.MiddleButton == ButtonState.Pressed) ||
-									(!b.Press && _mouseState.MiddleButton == ButtonState.Released))
-									b.Lambda();
-							}
-							break;
-
-						case MouseButton.Right:
-							if (_mouseState.RightButton != _oldMouseState.RightButton || b.Constant)
-							{
-								if ((b.Press && _mouseState.RightButton == ButtonState.Pressed) ||
-									(!b.Press && _mouseState.RightButton == ButtonState.Released))
-									b.Lambda();
-							}
-							break;
-
-						case MouseButton.Scroll:
-							if (scroll != 0)
+					case MouseButton.Left:
+						if (_mouseState.LeftButton != _oldMouseState.LeftButton || b.Constant)
+						{
+							if ((b.Press && _mouseState.LeftButton == ButtonState.Pressed) ||
+								(!b.Press && _mouseState.LeftButton == ButtonState.Released))
 								b.Lambda();
-							break;
+						}
+						break;
+					case MouseButton.Middle:
+						if (_mouseState.MiddleButton != _oldMouseState.MiddleButton || b.Constant)
+						{
+							if ((b.Press && _mouseState.MiddleButton == ButtonState.Pressed) ||
+								(!b.Press && _mouseState.MiddleButton == ButtonState.Released))
+								b.Lambda();
+						}
+						break;
 
-						case MouseButton.Scrolldown:
-							if (scroll < 0)
+					case MouseButton.Right:
+						if (_mouseState.RightButton != _oldMouseState.RightButton || b.Constant)
+						{
+							if ((b.Press && _mouseState.RightButton == ButtonState.Pressed) ||
+								(!b.Press && _mouseState.RightButton == ButtonState.Released))
 								b.Lambda();
-							break;
-						case MouseButton.Scrollup:
-							if (scroll > 0)
-								b.Lambda();
-							break;
+						}
+						break;
 
-						case MouseButton.Movement:
-							if (_mouseState.Y != _oldMouseState.Y || _mouseState.X != _oldMouseState.X)
-							{
-								b.Lambda();
-							}
-							break;
-					}
+					case MouseButton.Scroll:
+						if (scroll != 0)
+							b.Lambda();
+						break;
+
+					case MouseButton.Scrolldown:
+						if (scroll < 0)
+							b.Lambda();
+						break;
+					case MouseButton.Scrollup:
+						if (scroll > 0)
+							b.Lambda();
+						break;
+
+					case MouseButton.Movement:
+						if (_mouseState.Y != _oldMouseState.Y || _mouseState.X != _oldMouseState.X)
+						{
+							b.Lambda();
+						}
+						break;
 				}
+			}
 
-				foreach (CodeBoundKey b in _boundKey)
+			foreach (CodeBoundKey b in _boundKey)
+			{
+				Keys k = b.BoundKey;
+				bool newP = _keyboardState.IsKeyDown(k);
+				bool oldP = _oldKeyboardState.IsKeyDown(k);
+
+				if ((newP != oldP || b.Constant) && b.Press == newP)
 				{
-					Keys k = b.BoundKey;
-					bool newP = _keyboardState.IsKeyDown(k);
-					bool oldP = _oldKeyboardState.IsKeyDown(k);
-
-					if ((newP != oldP || b.Constant) && b.Press == newP)
-					{
-						b.Lambda();
-					}
+					b.Lambda();
 				}
 			}
 

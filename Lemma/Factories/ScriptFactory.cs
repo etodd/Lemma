@@ -37,7 +37,7 @@ namespace Lemma.Factories
 			entity.Add("DeleteOnExecute", script.DeleteOnExecute);
 			entity.Add("Script", script.Name, new PropertyEntry.EditorData
 			{
-				Options = FileFilter.Get(main, Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory), null, ".cs", delegate()
+				Options = FileFilter.Get(main, main.MapDirectory, null, ".cs", delegate()
 				{
 					List<string> scripts = new List<string>();
 					Assembly assembly = Assembly.GetExecutingAssembly();

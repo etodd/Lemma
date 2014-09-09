@@ -136,7 +136,7 @@ namespace Lemma.IO
 			main.MapFile.Value = filename;
 
 			if (directory == null)
-				filename = Path.Combine(main.Content.RootDirectory, MapLoader.MapDirectory, filename);
+				filename = Path.Combine(main.MapDirectory, filename);
 			else
 				filename = Path.Combine(directory, filename);
 
@@ -211,7 +211,7 @@ namespace Lemma.IO
 		public static void Save(Main main, string directory, string filename)
 		{
 			if (directory == null)
-				filename = Path.Combine(main.Content.RootDirectory, MapLoader.MapDirectory, filename);
+				filename = Path.Combine(main.MapDirectory, filename);
 			else
 				filename = Path.Combine(directory, Path.GetFileName(filename));
 

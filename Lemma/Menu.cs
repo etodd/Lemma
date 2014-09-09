@@ -632,7 +632,7 @@ namespace Lemma.Components
 			officialMapScroller.Add(new Binding<Vector2>(officialMapScroller.Size, () => new Vector2(officialMapsList.Size.Value.X, this.main.ScreenSize.Value.Y * 0.5f), officialMapsList.Size, this.main.ScreenSize));
 			officialMapsMenu.Children.Add(officialMapScroller);
 
-			DirectoryInfo dir = new DirectoryInfo(Path.Combine(this.main.Content.RootDirectory, IO.MapLoader.MapDirectory, "Challenge"));
+			DirectoryInfo dir = new DirectoryInfo(Path.Combine(this.main.MapDirectory, "Challenge"));
 			if (dir.Exists)
 			{
 				foreach (var file in dir.GetFiles("*.map"))

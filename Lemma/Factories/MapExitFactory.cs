@@ -39,7 +39,7 @@ namespace Lemma.Factories
 			entity.Add("Disable", trigger.Disable);
 			entity.Add("NextMap", mapExit.NextMap, new PropertyEntry.EditorData
 			{
-				Options = FileFilter.Get(main, Path.Combine(main.Content.RootDirectory, MapLoader.MapDirectory), null, MapLoader.MapExtension, delegate()
+				Options = FileFilter.Get(main, main.MapDirectory, null, MapLoader.MapExtension, delegate()
 				{
 					return new[] { Main.MenuMap };
 				}),

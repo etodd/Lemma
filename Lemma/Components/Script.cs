@@ -81,8 +81,8 @@ namespace Lemma.Components
 
 			errors = null;
 
-			string scriptPath = Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory, name + "." + Script.ScriptExtension);
-			string binaryPath = Path.Combine(main.Content.RootDirectory, IO.MapLoader.MapDirectory, name + "." + Script.BinaryExtension);
+			string scriptPath = Path.Combine(main.MapDirectory, name + "." + Script.ScriptExtension);
+			string binaryPath = Path.Combine(main.MapDirectory, name + "." + Script.BinaryExtension);
 
 			bool preferLocalScripts = (bool)Console.Console.GetConVar("prefer_local_scripts").GetCastedValue();
 
