@@ -2023,11 +2023,10 @@ namespace Lemma.Components
 									newMapComponent.Offset.Value = spawn.Source.Offset;
 									newMapComponent.BuildFromBoxes(island);
 									newMapComponent.UpdatePhysicsImmediately();
-									spawn.Source.notifyEmptied(island.SelectMany(x => x.GetCoords()), newMapComponent);
-									newMapComponent.notifyFilled(island.SelectMany(x => x.GetCoords()), spawn.Source);
 									newMapComponent.Transform.Value = newMapComponent.PhysicsEntity.WorldTransform;
 									if (spawn.Source is DynamicVoxel)
 										newMapComponent.IsAffectedByGravity.Value = ((DynamicVoxel)spawn.Source).IsAffectedByGravity;
+									spawn.Source.notifyEmptied(island.SelectMany(x => x.GetCoords()), newMapComponent);
 									spawn.Source.main.Add(newMap);
 									spawnedMaps.Add(newMapComponent);
 								}
