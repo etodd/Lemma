@@ -53,7 +53,7 @@ namespace Lemma
 		{
 		}
 
-		public const int ConfigVersion = 8;
+		public const int ConfigVersion = 9;
 		public const int MapVersion = 838;
 		public const int Build = 838;
 
@@ -63,39 +63,91 @@ namespace Lemma
 		{
 			public enum Lang { en, ru }
 			public Property<Lang> Language = new Property<Lang>();
-			public Property<bool> Fullscreen = new Property<bool> { Value = true };
-			public Property<Point> Size = new Property<Point> { Value = new Point(1280, 720) };
-			public Property<bool> Borderless = new Property<bool> { Value = true };
-			public Property<Point> FullscreenResolution = new Property<Point> { Value = Point.Zero };
-			public Property<float> MotionBlurAmount = new Property<float> { Value = 0.5f };
-			public Property<float> Gamma = new Property<float> { Value = 1.0f };
-			public Property<bool> EnableReflections = new Property<bool> { Value = true };
-			public Property<bool> EnableSSAO = new Property<bool> { Value = true };
-			public Property<bool> EnableGodRays = new Property<bool> { Value = true };
-			public Property<bool> EnableBloom = new Property<bool> { Value = true };
-			public Property<LightingManager.DynamicShadowSetting> DynamicShadows = new Property<LightingManager.DynamicShadowSetting> { Value = LightingManager.DynamicShadowSetting.High };
-			public Property<bool> InvertMouseX = new Property<bool> { Value = false };
-			public Property<bool> InvertMouseY = new Property<bool> { Value = false };
-			public Property<bool> EnableReticle = new Property<bool> { Value = false };
-			public Property<float> MouseSensitivity = new Property<float> { Value = 1.0f };
-			public Property<float> FieldOfView = new Property<float> { Value = MathHelper.ToRadians(80.0f) };
-			public Property<bool> EnableVsync = new Property<bool> { Value = false };
-			public int Version;
-			public string UUID;
-			public Property<PCInput.PCInputBinding> Forward = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.W } };
-			public Property<PCInput.PCInputBinding> Left = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.A } };
-			public Property<PCInput.PCInputBinding> Right = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.D } };
-			public Property<PCInput.PCInputBinding> Backward = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.S } };
-			public Property<PCInput.PCInputBinding> Jump = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Space, GamePadButton = Buttons.RightTrigger } };
-			public Property<PCInput.PCInputBinding> Parkour = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.LeftShift, GamePadButton = Buttons.LeftTrigger } };
-			public Property<PCInput.PCInputBinding> RollKick = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton, GamePadButton = Buttons.LeftStick } };
-			public Property<PCInput.PCInputBinding> SpecialAbility = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.RightMouseButton, GamePadButton = Buttons.RightStick } };
-			public Property<PCInput.PCInputBinding> TogglePhone = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.Tab, GamePadButton = Buttons.Y } };
-			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F5, GamePadButton = Buttons.Back } };
-			public Property<PCInput.PCInputBinding> ToggleFullscreen = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.F11 } };
-			public Property<PCInput.PCInputBinding> ToggleConsole = new Property<PCInput.PCInputBinding> { Value = new PCInput.PCInputBinding { Key = Keys.OemTilde } };
+			public Property<bool> Fullscreen = new Property<bool>();
+			public Property<Point> Size = new Property<Point>();
+			public Property<bool> Borderless = new Property<bool>();
+			public Property<Point> FullscreenResolution = new Property<Point>();
+			public Property<float> MotionBlurAmount = new Property<float>();
+			public Property<float> Gamma = new Property<float>();
+			public Property<bool> EnableReflections = new Property<bool>();
+			public Property<bool> EnableSSAO = new Property<bool>();
+			public Property<bool> EnableGodRays = new Property<bool>();
+			public Property<bool> EnableBloom = new Property<bool>();
+			public Property<LightingManager.DynamicShadowSetting> DynamicShadows = new Property<LightingManager.DynamicShadowSetting>();
+			public Property<bool> InvertMouseX = new Property<bool>();
+			public Property<bool> InvertMouseY = new Property<bool>();
+			public Property<bool> EnableReticle = new Property<bool>();
+			public Property<float> MouseSensitivity = new Property<float>();
+			public Property<float> FieldOfView = new Property<float>();
+			public Property<bool> EnableVsync = new Property<bool>();
 			public Property<float> SoundEffectVolume = new Property<float> { Value = 1.0f };
 			public Property<float> MusicVolume = new Property<float> { Value = 1.0f };
+			public int Version;
+			public string UUID;
+			public Property<PCInput.PCInputBinding> Forward = new Property<PCInput.PCInputBinding>();
+			public Property<PCInput.PCInputBinding> Left = new Property<PCInput.PCInputBinding>();
+			public Property<PCInput.PCInputBinding> Right = new Property<PCInput.PCInputBinding>();
+			public Property<PCInput.PCInputBinding> Backward = new Property<PCInput.PCInputBinding>();
+			public Property<PCInput.PCInputBinding> Jump = new Property<PCInput.PCInputBinding>();
+			public Property<PCInput.PCInputBinding> Parkour = new Property<PCInput.PCInputBinding>();
+			public Property<PCInput.PCInputBinding> RollKick = new Property<PCInput.PCInputBinding>();
+			public Property<PCInput.PCInputBinding> SpecialAbility = new Property<PCInput.PCInputBinding>();
+			public Property<PCInput.PCInputBinding> TogglePhone = new Property<PCInput.PCInputBinding>();
+			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding>();
+			public Property<PCInput.PCInputBinding> ToggleFullscreen = new Property<PCInput.PCInputBinding>();
+			public Property<PCInput.PCInputBinding> ToggleConsole = new Property<PCInput.PCInputBinding>();
+			public Property<PCInput.PCInputBinding> RecenterVRPose = new Property<PCInput.PCInputBinding>();
+
+			public Config()
+			{
+				this.FactoryDefaults();
+			}
+
+			public void FactoryDefaults()
+			{
+				this.Version = Main.ConfigVersion;
+				this.Language.Value = default(Lang);
+				this.Fullscreen.Value = true;
+				this.Size.Value = new Point(1280, 720);
+				this.Borderless.Value = true;
+
+				try
+				{
+					Microsoft.Xna.Framework.Graphics.DisplayMode display = Microsoft.Xna.Framework.Graphics.GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
+					this.FullscreenResolution.Value = new Point(display.Width, display.Height);
+				}
+				catch (Exception)
+				{
+					this.FullscreenResolution.Value = Point.Zero;
+				}
+
+				this.MotionBlurAmount.Value = 0.5f;
+				this.Gamma.Value = 1.0f;
+				this.EnableReflections.Value = true;
+				this.EnableGodRays.Value = true;
+				this.EnableBloom.Value = true;
+				this.DynamicShadows.Value = LightingManager.DynamicShadowSetting.High;
+				this.InvertMouseX.Value = false;
+				this.EnableReticle.Value = false;
+				this.MouseSensitivity.Value = 1.0f;
+				this.FieldOfView.Value = MathHelper.ToRadians(80.0f);
+				this.EnableVsync.Value = false;
+				this.SoundEffectVolume.Value = 1.0f;
+				this.MusicVolume.Value = 1.0f;
+				this.Forward.Value = new PCInput.PCInputBinding { Key = Keys.W };
+				this.Left.Value = new PCInput.PCInputBinding { Key = Keys.A };
+				this.Right.Value = new PCInput.PCInputBinding { Key = Keys.D };
+				this.Backward.Value = new PCInput.PCInputBinding { Key = Keys.S };
+				this.Jump.Value = new PCInput.PCInputBinding { Key = Keys.Space, GamePadButton = Buttons.RightTrigger };
+				this.Parkour.Value = new PCInput.PCInputBinding { Key = Keys.LeftShift, GamePadButton = Buttons.LeftTrigger };
+				this.RollKick.Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton, GamePadButton = Buttons.LeftStick };
+				this.SpecialAbility.Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.RightMouseButton, GamePadButton = Buttons.RightStick };
+				this.TogglePhone.Value = new PCInput.PCInputBinding { Key = Keys.Tab, GamePadButton = Buttons.Y };
+				this.QuickSave.Value = new PCInput.PCInputBinding { Key = Keys.F5 };
+				this.ToggleFullscreen.Value = new PCInput.PCInputBinding { Key = Keys.F11 };
+				this.ToggleConsole.Value = new PCInput.PCInputBinding { Key = Keys.OemTilde };
+				this.RecenterVRPose.Value = new PCInput.PCInputBinding { Key = Keys.F2, GamePadButton = Buttons.Back };
+			}
 		}
 
 		public class SaveInfo
@@ -212,7 +264,7 @@ namespace Lemma
 
 #if VR
 		public bool VR { get; private set; }
-		public const float VRUnitToWorldUnit = 1.8f;
+		public const float VRUnitToWorldUnit = 3.0f;
 		public OVR.Hmd Hmd;
 
 		private RenderTarget2D vrLeftEyeTarget;
@@ -492,7 +544,7 @@ namespace Lemma
 			}
 			catch (Exception) // File doesn't exist, there was a deserialization error, or we are on a new version. Use default window settings
 			{
-				this.Settings = new Config { Version = Main.ConfigVersion, };
+				this.Settings = new Config();
 			}
 
 			if (string.IsNullOrEmpty(this.Settings.UUID))
@@ -509,6 +561,7 @@ namespace Lemma
 			TextElement.BindableProperties.Add("QuickSave", this.Settings.QuickSave);
 			TextElement.BindableProperties.Add("ToggleConsole", this.Settings.ToggleConsole);
 			TextElement.BindableProperties.Add("ToggleFullscreen", this.Settings.ToggleFullscreen);
+			TextElement.BindableProperties.Add("RecenterVRPose", this.Settings.RecenterVRPose);
 
 			if (this.Settings.FullscreenResolution.Value.X == 0)
 			{
@@ -603,12 +656,6 @@ namespace Lemma
 
 			foreach (string path in Directory.GetDirectories(src))
 				this.copySave(path, Path.Combine(dst, Path.GetFileName(path)));
-		}
-
-		public void ResetToFactoryDefaults()
-		{
-			File.Delete(this.settingsFile);
-			throw new ExitException();
 		}
 
 #if ANALYTICS
@@ -770,8 +817,6 @@ namespace Lemma
 
 					this.vrCamera = new Camera();
 					this.AddComponent(this.vrCamera);
-
-					this.Hmd.RecenterPose();
 				}
 #endif
 
@@ -800,6 +845,25 @@ namespace Lemma
 				Lemma.Console.Console.BindType(null, Renderer);
 				Lemma.Console.Console.BindType(null, LightingManager);
 
+				// Toggle fullscreen
+				input.Bind(this.Settings.ToggleFullscreen, PCInput.InputState.Down, delegate()
+				{
+					if (this.Settings.Fullscreen) // Already fullscreen. Go to windowed mode.
+						this.ExitFullscreen();
+					else // In windowed mode. Go to fullscreen.
+						this.EnterFullscreen();
+				});
+
+#if VR
+				// Recenter VR pose
+				if (this.VR)
+				{
+					input.Bind(this.Settings.RecenterVRPose, PCInput.InputState.Down, delegate()
+					{
+						this.Hmd.RecenterPose();
+					});
+				}
+#endif
 
 #if DEVELOPMENT
 				input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.S }), delegate()
@@ -979,7 +1043,7 @@ namespace Lemma
 						mat.Right = rot.Forward;
 						mat.Up = rot.Up;
 						mat *= Matrix.CreateScale(7);
-						mat.Translation = this.Camera.Position + rot.Forward * 5.0f;
+						mat.Translation = this.Camera.Position + rot.Forward * 4.0f;
 						return mat;
 					}, this.Camera.Position, this.Camera.RotationMatrix));
 					this.AddComponent(this.VRUI);

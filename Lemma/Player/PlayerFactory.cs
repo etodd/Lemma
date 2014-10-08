@@ -226,6 +226,13 @@ namespace Lemma.Factories
 			cameraControl.Add(new Binding<float>(cameraControl.BaseCameraShakeAmount, () => MathHelper.Clamp((player.Character.LinearVelocity.Value.Length() - (player.Character.MaxSpeed * 2.5f)) / (player.Character.MaxSpeed * 4.0f), 0, 1), player.Character.LinearVelocity, player.Character.MaxSpeed));
 			cameraControl.Offset = model.GetBoneTransform("Camera").Value.Translation - model.GetBoneTransform("ORG-head").Value.Translation;
 
+			float heightOffset = 0.1f;
+#if VR
+			if (main.VR)
+				heightOffset = 0.4f;
+#endif
+			cameraControl.Offset += new Vector3(0, heightOffset, 0);
+
 			rumble.Add(new Binding<float>(rumble.CameraShake, cameraControl.TotalCameraShake));
 			rumble.Add(new CommandBinding<float>(fallDamage.Rumble, rumble.Go));
 			rumble.Add(new CommandBinding<float>(player.Rumble, rumble.Go));

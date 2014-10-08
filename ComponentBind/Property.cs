@@ -91,6 +91,8 @@ namespace ComponentBind
 			this.InternalSet(this._value, null);
 		}
 
+		[XmlIgnore]
+		[JsonIgnore]
 		public System.Type PropertyType
 		{
 			get

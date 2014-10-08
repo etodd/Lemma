@@ -101,6 +101,7 @@ namespace Lemma.Components
 
 			this.relativeHeadBone = m.GetRelativeBoneTransform("ORG-head");
 			m["Swim"].Speed = 2.0f;
+			m["SwimForward"].Speed = 2.0f;
 			m["TurnLeft"].Speed = 2.0f;
 			m["TurnRight"].Speed = 2.0f;
 
@@ -191,7 +192,9 @@ namespace Lemma.Components
 						"JumpLeft",
 						"JumpBackward",
 						"JumpRight",
-						"Fall"
+						"Fall",
+						"Swim",
+						"SwimForward"
 					);
 
 					Vector2 dir = this.Movement;
@@ -300,12 +303,22 @@ namespace Lemma.Components
 					if (this.IsSwimming)
 					{
 						this.model.Stop("Fall");
-						if (!this.model.IsPlaying("Swim"))
-							this.model.StartClip("Swim", 0, true, AnimatedModel.DefaultBlendTime);
+						if (this.Movement.Value.Y > 0.25f)
+						{
+							this.model.Stop("Swim");
+							if (!this.model.IsPlaying("SwimForward"))
+								this.model.StartClip("SwimForward", 0, true, AnimatedModel.DefaultBlendTime);
+						}
+						else
+						{
+							this.model.Stop("SwimForward");
+							if (!this.model.IsPlaying("Swim"))
+								this.model.StartClip("Swim", 0, true, AnimatedModel.DefaultBlendTime);
+						}
 					}
 					else
 					{
-						this.model.Stop("Swim");
+						this.model.Stop("SwimForward");
 						if (!this.model.IsPlaying("Fall"))
 							this.model.StartClip("Fall", 0, true, AnimatedModel.DefaultBlendTime);
 					}

@@ -822,15 +822,6 @@ namespace Lemma.Components
 			this.input = new PCInput();
 			this.main.AddComponent(this.input);
 
-			// Toggle fullscreen
-			this.input.Bind(this.main.Settings.ToggleFullscreen, PCInput.InputState.Down, delegate()
-			{
-				if (this.main.Settings.Fullscreen) // Already fullscreen. Go to windowed mode.
-					this.main.ExitFullscreen();
-				else // In windowed mode. Go to fullscreen.
-					this.main.EnterFullscreen();
-			});
-
 #if DEBUG
 			Log.Handler = delegate(string log)
 			{
@@ -840,21 +831,19 @@ namespace Lemma.Components
 #endif
 
 			// Message list
-			this.messages = new ListContainer();
-			this.messages.Alignment.Value = ListContainer.ListAlignment.Min;
-			this.messages.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
-			this.messages.Reversed.Value = true;
-			Vector2 messagePlacement;
+			{
+				bool messagesOnTop = false;
 #if VR
-			if (this.main.VR)
-				messagePlacement = new Vector2(0.5f, 0.7f);
-			else
+				if (this.main.VR)
+					messagesOnTop = true;
 #endif
-				messagePlacement = new Vector2(0.5f, 0.9f);
-				
-			this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * messagePlacement.X, x.Y * messagePlacement.Y), this.main.ScreenSize));
-
-			this.main.UI.Root.Children.Add(this.messages);
+				this.messages = new ListContainer();
+				this.messages.Alignment.Value = ListContainer.ListAlignment.Min;
+				this.messages.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
+				Vector2 messagePlacement = new Vector2(0.5f, messagesOnTop ? 0.55f : 0.9f);
+				this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * messagePlacement.X, x.Y * messagePlacement.Y), this.main.ScreenSize));
+				this.main.UI.Root.Children.Add(this.messages);
+			}
 
 			{
 				Container downloading = this.buildMessage();
@@ -1027,18 +1016,6 @@ namespace Lemma.Components
 			this.resizeToMenu(settingsBack);
 			settingsMenu.Children.Add(settingsBack);
 
-#if VR
-			if (this.main.VR)
-			{
-				Container recenterVrPose = this.main.UIFactory.CreateButton("\\recenter pose", delegate()
-				{
-					this.main.Hmd.RecenterPose();
-				});
-				this.resizeToMenu(recenterVrPose);
-				settingsMenu.Children.Add(recenterVrPose);
-			}
-#endif
-
 			ListContainer settingsList = new ListContainer();
 			settingsList.Orientation.Value = ListContainer.ListOrientation.Vertical;
 
@@ -1170,7 +1147,11 @@ namespace Lemma.Components
 
 			Container settingsReset = this.main.UIFactory.CreateButton("\\reset options", delegate()
 			{
-				this.ShowDialog("\\reset options?", "\\reset", this.main.ResetToFactoryDefaults);
+				this.ShowDialog("\\reset options?", "\\reset", delegate()
+				{
+					this.main.Settings.FactoryDefaults();
+					this.main.SaveSettings();
+				});
 			});
 			this.resizeToMenu(settingsReset);
 			settingsList.Children.Add(settingsReset);
@@ -1313,6 +1294,10 @@ namespace Lemma.Components
 			addInputSetting(this.main.Settings.TogglePhone, "\\toggle phone", true, true);
 			addInputSetting(this.main.Settings.QuickSave, "\\quicksave", true, true);
 			addInputSetting(this.main.Settings.ToggleConsole, "\\toggle console", true, true);
+#if VR
+			if (this.main.VR)
+				addInputSetting(this.main.Settings.RecenterVRPose, "\\recenter pose", true, true);
+#endif
 
 			// Mapping LMB to toggle fullscreen makes it impossible to change any other settings.
 			// So don't allow it.
@@ -1584,6 +1569,18 @@ namespace Lemma.Components
 			this.pauseMenu.Children.Add(settingsButton);
 
 
+#if VR
+			// Recenter VR pose button
+			if (this.main.VR)
+			{
+				Container recenterVrPose = this.main.UIFactory.CreateButton("\\recenter pose button", delegate()
+				{
+					this.main.Hmd.RecenterPose();
+				});
+				this.resizeToMenu(recenterVrPose);
+				pauseMenu.Children.Add(recenterVrPose);
+			}
+#endif
 
 			// Edit mode toggle button
 			Container switchToEditMode = this.main.UIFactory.CreateButton("\\edit mode", delegate()
