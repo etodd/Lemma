@@ -1316,6 +1316,7 @@ namespace Lemma.Components
 						new Animation.Delay(0.2f),
 						new Animation.Execute(delegate()
 						{
+							this.main.Settings.DefaultControls();
 							IO.MapLoader.Load(this.main, Main.DemoMap);
 						})
 					));
@@ -1656,9 +1657,14 @@ namespace Lemma.Components
 			this.resizeToMenu(creditsBack);
 			creditsMenu.Children.Add(creditsBack);
 
-			TextElement creditsDisplay = new TextElement();
-			creditsDisplay.FontFile.Value = "Font";
-			creditsDisplay.Text.Value = this.Credits = File.ReadAllText("attribution.txt");
+			Container creditsDisplay = new Container();
+			creditsDisplay.PaddingLeft.Value = Menu.menuButtonLeftPadding;
+			creditsDisplay.Opacity.Value = 0;
+
+			TextElement creditsText = new TextElement();
+			creditsText.FontFile.Value = "Font";
+			creditsText.Text.Value = this.Credits = File.ReadAllText("attribution.txt");
+			creditsDisplay.Children.Add(creditsText);
 
 			Scroller creditsScroller = new Scroller();
 			creditsScroller.Add(new Binding<Vector2>(creditsScroller.Size, () => new Vector2(creditsDisplay.Size.Value.X, this.main.ScreenSize.Value.Y * 0.5f), creditsDisplay.Size, this.main.ScreenSize));

@@ -103,6 +103,26 @@ namespace Lemma
 				this.FactoryDefaults();
 			}
 
+			public void DefaultControls()
+			{
+				this.Forward.Value = new PCInput.PCInputBinding { Key = Keys.W };
+				this.Left.Value = new PCInput.PCInputBinding { Key = Keys.A };
+				this.Right.Value = new PCInput.PCInputBinding { Key = Keys.D };
+				this.Backward.Value = new PCInput.PCInputBinding { Key = Keys.S };
+				this.Jump.Value = new PCInput.PCInputBinding { Key = Keys.Space, GamePadButton = Buttons.RightTrigger };
+				this.Parkour.Value = new PCInput.PCInputBinding { Key = Keys.LeftShift, GamePadButton = Buttons.LeftTrigger };
+				this.RollKick.Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton, GamePadButton = Buttons.LeftStick };
+				this.SpecialAbility.Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.RightMouseButton, GamePadButton = Buttons.RightStick };
+				this.TogglePhone.Value = new PCInput.PCInputBinding { Key = Keys.Tab, GamePadButton = Buttons.Y };
+				this.QuickSave.Value = new PCInput.PCInputBinding { Key = Keys.F5 };
+				this.ToggleFullscreen.Value = new PCInput.PCInputBinding { Key = Keys.F11 };
+				this.ToggleConsole.Value = new PCInput.PCInputBinding { Key = Keys.OemTilde };
+				this.RecenterVRPose.Value = new PCInput.PCInputBinding { Key = Keys.F2, GamePadButton = Buttons.Back };
+				this.InvertMouseX.Value = false;
+				this.InvertMouseY.Value = false;
+				this.MouseSensitivity.Value = 1.0f;
+			}
+
 			public void FactoryDefaults()
 			{
 				this.Version = Main.ConfigVersion;
@@ -127,26 +147,13 @@ namespace Lemma
 				this.EnableGodRays.Value = true;
 				this.EnableBloom.Value = true;
 				this.DynamicShadows.Value = LightingManager.DynamicShadowSetting.High;
-				this.InvertMouseX.Value = false;
 				this.EnableReticle.Value = false;
-				this.MouseSensitivity.Value = 1.0f;
 				this.FieldOfView.Value = MathHelper.ToRadians(80.0f);
 				this.EnableVsync.Value = false;
 				this.SoundEffectVolume.Value = 1.0f;
 				this.MusicVolume.Value = 1.0f;
-				this.Forward.Value = new PCInput.PCInputBinding { Key = Keys.W };
-				this.Left.Value = new PCInput.PCInputBinding { Key = Keys.A };
-				this.Right.Value = new PCInput.PCInputBinding { Key = Keys.D };
-				this.Backward.Value = new PCInput.PCInputBinding { Key = Keys.S };
-				this.Jump.Value = new PCInput.PCInputBinding { Key = Keys.Space, GamePadButton = Buttons.RightTrigger };
-				this.Parkour.Value = new PCInput.PCInputBinding { Key = Keys.LeftShift, GamePadButton = Buttons.LeftTrigger };
-				this.RollKick.Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton, GamePadButton = Buttons.LeftStick };
-				this.SpecialAbility.Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.RightMouseButton, GamePadButton = Buttons.RightStick };
-				this.TogglePhone.Value = new PCInput.PCInputBinding { Key = Keys.Tab, GamePadButton = Buttons.Y };
-				this.QuickSave.Value = new PCInput.PCInputBinding { Key = Keys.F5 };
-				this.ToggleFullscreen.Value = new PCInput.PCInputBinding { Key = Keys.F11 };
-				this.ToggleConsole.Value = new PCInput.PCInputBinding { Key = Keys.OemTilde };
-				this.RecenterVRPose.Value = new PCInput.PCInputBinding { Key = Keys.F2, GamePadButton = Buttons.Back };
+
+				this.DefaultControls();
 			}
 		}
 
