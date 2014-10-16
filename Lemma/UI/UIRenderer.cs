@@ -153,8 +153,8 @@ namespace Lemma.Components
 			if (this.main.VR)
 			{
 				this.Reticle = new Sprite();
-				this.Reticle.Image.Value = "Images\\reticle";
-				this.Reticle.AnchorPoint.Value = new Vector2(0.5f);
+				this.Reticle.Image.Value = "Images\\cursor";
+				this.Reticle.AnchorPoint.Value = new Vector2(0.0f, 0.0f);
 				this.Root.Children.Add(this.Reticle);
 				this.Reticle.Add(new Binding<Vector2>(this.Reticle.Position, this.Mouse));
 				this.Reticle.Add(new Binding<bool>(this.Reticle.Visible, this.IsMouseVisible));
