@@ -65,6 +65,8 @@ namespace Lemma.Components
 			base.loadEffect(file);
 		}
 
+		private static float growthFactor = 1.5f;
+
 		public static uint[] GetIndices(int size)
 		{
 			lock (DynamicModel<Vertex>.indicesLock)
@@ -72,7 +74,7 @@ namespace Lemma.Components
 				if (size <= DynamicModel<Vertex>.indices.Length)
 					return DynamicModel<Vertex>.indices;
 
-				int newBufferSize = (int)Math.Pow(2.0, Math.Ceiling(Math.Log(size, 2.0)));
+				int newBufferSize = (int)Math.Pow(DynamicModel<Vertex>.growthFactor, Math.Ceiling(Math.Log(size, DynamicModel<Vertex>.growthFactor)));
 
 				uint[] newIndices = new uint[newBufferSize];
 
@@ -127,7 +129,7 @@ namespace Lemma.Components
 						(
 							this.main.GraphicsDevice,
 							this.declaration,
-							(int)Math.Pow(2.0, Math.Ceiling(Math.Log(this.vertexCount, 2.0))),
+							(int)Math.Pow(DynamicModel<Vertex>.growthFactor, Math.Ceiling(Math.Log(this.vertexCount, DynamicModel<Vertex>.growthFactor))),
 							BufferUsage.WriteOnly
 						);
 

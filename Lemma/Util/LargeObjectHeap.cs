@@ -7,6 +7,8 @@ namespace Lemma.Util
 {
 	public class LargeObjectHeap<Type>
 	{
+		public static float GrowthFactor = 1.5f;
+
 		private Dictionary<int, Queue<Type>> free = new Dictionary<int, Queue<Type>>();
 
 		private static LargeObjectHeap<Type> instance;

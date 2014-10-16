@@ -1051,10 +1051,10 @@ namespace Lemma.Components
 						if (surfaces > 0)
 						{
 							if (model != null)
-								vertices = Voxel.vertexHeap.Get((int)Math.Pow(2.0, Math.Ceiling(Math.Log(surfaces * 4, 2.0))));
+								vertices = Voxel.vertexHeap.Get((int)Math.Pow(LargeObjectHeap<Vertex>.GrowthFactor, Math.Ceiling(Math.Log(surfaces * 4, LargeObjectHeap<Vertex>.GrowthFactor))));
 
 							if (this.EnablePhysics && !type.Fake)
-								physicsVertices = Voxel.physicsVertexHeap.Get((int)Math.Pow(2.0, Math.Ceiling(Math.Log(surfaces * 4, 2.0))));
+								physicsVertices = Voxel.physicsVertexHeap.Get((int)Math.Pow(LargeObjectHeap<Vertex>.GrowthFactor, Math.Ceiling(Math.Log(surfaces * 4, LargeObjectHeap<Vertex>.GrowthFactor))));
 
 							uint vertexIndex = 0;
 							foreach (Box box in boxes)
