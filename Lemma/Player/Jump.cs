@@ -27,7 +27,7 @@ namespace Lemma.Components
 		public Property<float> MaxSpeed = new Property<float>();
 		public Property<float> JumpSpeed = new Property<float>();
 		public Property<float> Mass = new Property<float>();
-		public Property<float> LastRollEnded = new Property<float>();
+		public Property<float> LastRollKickEnded = new Property<float>();
 		public Property<Voxel> WallRunMap = new Property<Voxel>();
 		public Property<Direction> WallDirection = new Property<Direction>();
 
@@ -315,8 +315,8 @@ namespace Lemma.Components
 
 				float verticalMultiplier = 1.0f;
 
-				if (main.TotalTime - this.LastRollEnded < 0.3f)
-					totalMultiplier *= 1.5f;
+				if (main.TotalTime - this.LastRollKickEnded < 0.3f)
+					totalMultiplier *= 1.25f;
 
 				float verticalJumpSpeed = this.JumpSpeed * verticalMultiplier;
 

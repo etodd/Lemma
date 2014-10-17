@@ -152,6 +152,7 @@
     <Compile Include="Components\TimeTrial.cs" />
     <Compile Include="Components\Turret.cs" />
     <Compile Include="Components\VoxelFill.cs" />
+    <Compile Include="Util\VoxelRip.cs" />
     <Compile Include="Components\World.cs" />
     <Compile Include="Console\AutoConCommand.cs" />
     <Compile Include="Console\AutoConVar.cs" />

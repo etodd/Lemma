@@ -61,7 +61,7 @@ namespace Lemma.Components
 			}
 		}
 
-		private Voxel.State temporary;
+		private Voxel.State blue;
 
 		private static Direction[] platformBuildableDirections = DirectionExtensions.HorizontalDirections.Union(new[] { Direction.NegativeY }).ToArray();
 
@@ -72,7 +72,7 @@ namespace Lemma.Components
 			base.Awake();
 			this.Serialize = false;
 			this.EnabledWhenPaused = false;
-			this.temporary = Voxel.States[Voxel.t.Blue];
+			this.blue = Voxel.States[Voxel.t.Blue];
 			this.particleSystem = ParticleSystem.Get(main, "Distortion");
 		}
 
@@ -126,7 +126,7 @@ namespace Lemma.Components
 		public void InstantiatePossibility(Possibility block)
 		{
 			block.Map.Empty(block.StartCoord.CoordinatesBetween(block.EndCoord), false, false);
-			block.Map.Fill(block.StartCoord, block.EndCoord, this.temporary);
+			block.Map.Fill(block.StartCoord, block.EndCoord, this.blue);
 			block.Map.Regenerate();
 			block.Model.Delete.Execute();
 			List<Possibility> mapList = possibilities[block.Map];
@@ -194,7 +194,7 @@ namespace Lemma.Components
 						Voxel.Coord coord = playerCoord.Move(relativeDir, i);
 						Voxel.State state = map[coord];
 
-						if (state.ID == Voxel.t.Neutral && Zone.CanBuild(map.GetAbsolutePosition(coord)))
+						if (state != Voxel.EmptyState && state != this.blue && Zone.CanBuild(map.GetAbsolutePosition(coord)))
 						{
 							shortestDistance = i;
 							relativeShortestDirection = relativeDir;
@@ -253,7 +253,7 @@ namespace Lemma.Components
 								Voxel.Coord c = coord.Move(dir, i);
 								Voxel.State state = map[c];
 
-								if (state.ID == Voxel.t.Neutral && Zone.CanBuild(map.GetAbsolutePosition(c)))
+								if (state != Voxel.EmptyState && state != this.blue && Zone.CanBuild(map.GetAbsolutePosition(c)))
 								{
 									shortestMap = map;
 									shortestBuildDirection = dir;
@@ -286,19 +286,23 @@ namespace Lemma.Components
 			return null;
 		}
 
-		private float getPredictionInterval()
+		private float getPredictionInterval(float speed)
 		{
 			// Interval is the time in seconds between locations where we will check for buildable platforms
 			return 0.3f * (8.0f / Math.Max(5.0f, this.LinearVelocity.Value.Length()));
 		}
 
-		private void predictJump(Queue<Prediction> predictions, Vector3 start, Vector3 v, float interval, int level)
+		private void predictJump(Queue<Prediction> predictions, Vector3 start, Vector3 v, int level)
 		{
-			for (float time = interval; time < (level == 0 ? 1.5f : 1.0f); time += interval)
+			float time = this.getPredictionInterval(v.Length());
+			while (time < (level == 0 ? 1.5f : 1.0f))
+			{
 				predictions.Enqueue(new Prediction { Position = start + (v * time) + (time * time * 0.5f * main.Space.ForceUpdater.Gravity), Time = time, Level = level });
+				time += this.getPredictionInterval((v + main.Space.ForceUpdater.Gravity * time).Length());
+			}
 		}
 
-		private Vector3 startSlowMo(Queue<Prediction> predictions, float interval)
+		private Vector3 startSlowMo(Queue<Prediction> predictions)
 		{
 			Vector3 straightAhead = Matrix.CreateRotationY(this.Rotation).Forward * -this.MaxSpeed;
 			Vector3 velocity;
@@ -319,7 +323,7 @@ namespace Lemma.Components
 					velocity += straightAhead * 0.5f;
 			}
 
-			this.predictJump(predictions, startPosition, velocity, interval, 0);
+			this.predictJump(predictions, startPosition, velocity, 0);
 
 			Vector3 jumpVelocity = velocity;
 			jumpVelocity.Y = this.JumpSpeed;
@@ -329,10 +333,10 @@ namespace Lemma.Components
 
 		public void PredictPlatforms()
 		{
-			float interval = this.getPredictionInterval();
-
 			Queue<Prediction> predictions = new Queue<Prediction>();
-			Vector3 jumpVelocity = this.startSlowMo(predictions, interval);
+			Vector3 jumpVelocity = this.startSlowMo(predictions);
+
+			float interval = this.getPredictionInterval(jumpVelocity.Length());
 
 			float[] lastPredictionHit = new float[] { 0.0f, 0.0f };
 
@@ -348,7 +352,7 @@ namespace Lemma.Components
 						lastPredictionHit[prediction.Level] = prediction.Time;
 						this.AddPossibility(possibility);
 						if (prediction.Level == 0)
-							this.predictJump(predictions, prediction.Position, jumpVelocity, interval, prediction.Level + 1);
+							this.predictJump(predictions, prediction.Position, jumpVelocity, prediction.Level + 1);
 					}
 				}
 			}
@@ -358,7 +362,7 @@ namespace Lemma.Components
 		{
 			// Predict block possibilities
 			Queue<Prediction> predictions = new Queue<Prediction>();
-			this.startSlowMo(predictions, this.getPredictionInterval());
+			this.startSlowMo(predictions);
 			Matrix rotationMatrix = Matrix.CreateRotationY(this.Rotation);
 			Vector2 direction = new Vector2(-rotationMatrix.Forward.X, -rotationMatrix.Forward.Z);
 

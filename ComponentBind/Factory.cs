@@ -112,17 +112,28 @@ namespace ComponentBind
 					IComponent destComponent = destComponents[pair.Key];
 					foreach (FieldInfo field in srcComponent.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance))
 					{
-						if (!typeof(IProperty).IsAssignableFrom(field.FieldType) || field.GetCustomAttributes(true).FirstOrDefault(x => typeof(XmlIgnoreAttribute).IsAssignableFrom(x.GetType())) != null)
-							continue;
-						IProperty destProperty = (IProperty)field.GetValue(destComponent);
-						IProperty srcProperty = (IProperty)field.GetValue(srcComponent);
-						if (typeof(IListProperty).IsAssignableFrom(destProperty.GetType()))
-							((IListProperty)srcProperty).CopyTo((IListProperty)destProperty);
-						else
+						if (field.GetCustomAttributes(true).FirstOrDefault(x => typeof(XmlIgnoreAttribute).IsAssignableFrom(x.GetType())) == null)
 						{
-							PropertyInfo prop = destProperty.GetType().GetProperty("Value");
-							prop.SetValue(destProperty, prop.GetValue(srcProperty, null), null);
+							if (typeof(IProperty).IsAssignableFrom(field.FieldType))
+							{
+								IProperty destProperty = (IProperty)field.GetValue(destComponent);
+								IProperty srcProperty = (IProperty)field.GetValue(srcComponent);
+								if (typeof(IListProperty).IsAssignableFrom(destProperty.GetType()))
+									((IListProperty)srcProperty).CopyTo((IListProperty)destProperty);
+								else
+								{
+									PropertyInfo prop = destProperty.GetType().GetProperty("Value");
+									prop.SetValue(destProperty, prop.GetValue(srcProperty, null), null);
+								}
+							}
+							else
+								field.SetValue(destComponent, field.GetValue(srcComponent));
 						}
+					}
+					foreach (PropertyInfo prop in srcComponent.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+					{
+						if (prop.GetSetMethod() != null && prop.GetCustomAttributes(true).FirstOrDefault(x => typeof(XmlIgnoreAttribute).IsAssignableFrom(x.GetType())) == null)
+							prop.SetValue(destComponent, prop.GetValue(srcComponent, null), null);
 					}
 				}
 			}

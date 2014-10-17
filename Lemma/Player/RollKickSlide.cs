@@ -14,6 +14,7 @@ namespace Lemma.Components
 		{
 			if (this.Kicking)
 			{
+				this.LastRollKickEnded.Value = main.TotalTime;
 				this.Kicking.Value = false;
 				AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
 				this.model.Stop("Kick", "Slide");
@@ -49,7 +50,7 @@ namespace Lemma.Components
 		// Output
 		public Property<bool> Rolling = new Property<bool>();
 		public Property<bool> Kicking = new Property<bool>();
-		public Property<float> LastRollEnded = new Property<float> { Value = -1.0f };
+		public Property<float> LastRollKickEnded = new Property<float> { Value = -1.0f };
 		public Property<float> LastRollStarted = new Property<float> { Value = -1.0f };
 		public Command DeactivateWallRun = new Command();
 		public Command Footstep = new Command();
@@ -294,7 +295,7 @@ namespace Lemma.Components
 					this.EnableWalking.Value = true;
 					if (!this.RollKickButton)
 						this.AllowUncrouch.Value = true;
-					this.LastRollEnded.Value = main.TotalTime;
+					this.LastRollKickEnded.Value = main.TotalTime;
 				}
 				else
 				{
@@ -327,7 +328,7 @@ namespace Lemma.Components
 				{
 					if (this.sliding)
 					{
-						// We started out on the ground, but we kicked of an edge.
+						// We started out on the ground, but we kicked off an edge.
 						AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
 					}
 					else

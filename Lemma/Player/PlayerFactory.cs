@@ -107,7 +107,7 @@ namespace Lemma.Factories
 			jump.Add(new Binding<float>(jump.MaxSpeed, player.Character.MaxSpeed));
 			jump.Add(new Binding<float>(jump.JumpSpeed, player.Character.JumpSpeed));
 			jump.Add(new Binding<float>(jump.Mass, player.Character.Mass));
-			jump.Add(new Binding<float>(jump.LastRollEnded, rollKickSlide.LastRollEnded));
+			jump.Add(new Binding<float>(jump.LastRollKickEnded, rollKickSlide.LastRollKickEnded));
 			jump.Add(new Binding<Voxel>(jump.WallRunMap, wallRun.WallRunVoxel));
 			jump.Add(new Binding<Direction>(jump.WallDirection, wallRun.WallDirection));
 			jump.Add(new CommandBinding<Voxel, Voxel.Coord, Direction>(jump.WalkedOn, footsteps.WalkedOn));
@@ -532,6 +532,26 @@ namespace Lemma.Factories
 				if (!rollKickSlide.Rolling && !rollKickSlide.Kicking)
 					player.Character.AllowUncrouch.Value = true;
 			});
+
+			// Special ability
+			/*
+			input.Bind(settings.SpecialAbility, PCInput.InputState.Down, delegate()
+			{
+				Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(main.Camera.Position, main.Camera.Forward, main.Camera.FarPlaneDistance, null);
+				if (hit.Voxel != null && hit.Voxel.GetType() != typeof(DynamicVoxel))
+				{
+					VoxelRip.Go(hit.Voxel, hit.Coordinate.Value, 7, delegate(List<DynamicVoxel> results)
+					{
+						foreach (DynamicVoxel v in results)
+						{
+							v.IsAffectedByGravity.Value = false;
+							v.LinearVelocity.Value = hit.Voxel.GetAbsoluteVector(hit.Normal.GetVector()) * 7.0f
+								+ new Vector3((float)this.random.NextDouble() * 2.0f - 1.0f, (float)this.random.NextDouble() * 2.0f - 1.0f, (float)this.random.NextDouble() * 2.0f - 1.0f);
+						}
+					});
+				}
+			});
+			*/
 
 			// Player data bindings
 

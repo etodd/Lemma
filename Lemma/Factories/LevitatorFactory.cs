@@ -209,118 +209,22 @@ namespace Lemma.Factories
 				if (!candidate.HasValue)
 					return false;
 
-				Voxel.Coord center = candidate.Value;
-				if (!map[center].Permanent)
+				if (VoxelRip.Go(map, candidate.Value, levitateRipRadius, delegate(List<DynamicVoxel> spawnedMaps)
 				{
-					// Break off a chunk of this map into a new DynamicMap.
-
-					List<Voxel.Coord> edges = new List<Voxel.Coord>();
-
-					Voxel.Coord ripStart = center.Move(-levitateRipRadius, -levitateRipRadius, -levitateRipRadius);
-					Voxel.Coord ripEnd = center.Move(levitateRipRadius, levitateRipRadius, levitateRipRadius);
-
-					Dictionary<Voxel.Box, bool> permanentBoxes = new Dictionary<Voxel.Box, bool>();
-					foreach (Voxel.Coord c in ripStart.CoordinatesBetween(ripEnd))
+					foreach (DynamicVoxel spawnedMap in spawnedMaps)
 					{
-						Voxel.Box box = map.GetBox(c);
-						if (box != null && box.Type.Permanent)
-							permanentBoxes[box] = true;
-					}
-
-					foreach (Voxel.Box b in permanentBoxes.Keys)
-					{
-						// Top and bottom
-						for (int x = b.X - 1; x <= b.X + b.Width; x++)
+						if (spawnedMap[candidate.Value] != Voxel.EmptyState)
 						{
-							for (int z = b.Z - 1; z <= b.Z + b.Depth; z++)
-							{
-								Voxel.Coord coord = new Voxel.Coord { X = x, Y = b.Y + b.Height, Z = z };
-								if (coord.Between(ripStart, ripEnd))
-									edges.Add(coord);
-
-								coord = new Voxel.Coord { X = x, Y = b.Y - 1, Z = z };
-								if (coord.Between(ripStart, ripEnd))
-									edges.Add(coord);
-							}
-						}
-
-						// Outer shell
-						for (int y = b.Y; y < b.Y + b.Height; y++)
-						{
-							// Left and right
-							for (int z = b.Z - 1; z <= b.Z + b.Depth; z++)
-							{
-								Voxel.Coord coord = new Voxel.Coord { X = b.X - 1, Y = y, Z = z };
-								if (coord.Between(ripStart, ripEnd))
-									edges.Add(coord);
-
-								coord = new Voxel.Coord { X = b.X + b.Width, Y = y, Z = z };
-								if (coord.Between(ripStart, ripEnd))
-									edges.Add(coord);
-							}
-
-							// Backward and forward
-							for (int x = b.X; x < b.X + b.Width; x++)
-							{
-								Voxel.Coord coord = new Voxel.Coord { X = x, Y = y, Z = b.Z - 1 };
-								if (coord.Between(ripStart, ripEnd))
-									edges.Add(coord);
-
-								coord = new Voxel.Coord { X = x, Y = y, Z = b.Z + b.Depth };
-								if (coord.Between(ripStart, ripEnd))
-									edges.Add(coord);
-							}
+							levitator.LevitatingVoxel.Value = spawnedMap.Entity;
+							break;
 						}
 					}
-
-					if (edges.Contains(center))
-						return false;
-
-					// Top and bottom
-					for (int x = ripStart.X; x <= ripEnd.X; x++)
-					{
-						for (int z = ripStart.Z; z <= ripEnd.Z; z++)
-						{
-							edges.Add(new Voxel.Coord { X = x, Y = ripStart.Y, Z = z });
-							edges.Add(new Voxel.Coord { X = x, Y = ripEnd.Y, Z = z });
-						}
-					}
-
-					// Sides
-					for (int y = ripStart.Y + 1; y <= ripEnd.Y - 1; y++)
-					{
-						// Left and right
-						for (int z = ripStart.Z; z <= ripEnd.Z; z++)
-						{
-							edges.Add(new Voxel.Coord { X = ripStart.X, Y = y, Z = z });
-							edges.Add(new Voxel.Coord { X = ripEnd.X, Y = y, Z = z });
-						}
-
-						// Backward and forward
-						for (int x = ripStart.X; x <= ripEnd.X; x++)
-						{
-							edges.Add(new Voxel.Coord { X = x, Y = y, Z = ripStart.Z });
-							edges.Add(new Voxel.Coord { X = x, Y = y, Z = ripEnd.Z });
-						}
-					}
-
-					map.Empty(edges);
-					map.Regenerate(delegate(List<DynamicVoxel> spawnedMaps)
-					{
-						foreach (DynamicVoxel spawnedMap in spawnedMaps)
-						{
-							if (spawnedMap[center].ID != 0)
-							{
-								levitator.LevitatingVoxel.Value = spawnedMap.Entity;
-								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_INFECTED_CRITICAL_SHATTER, entity);
-								break;
-							}
-						}
-					});
-
-					levitator.GrabCoord.Value = center;
+				}))
+				{
+					levitator.GrabCoord.Value = candidate.Value;
 					return true;
 				}
+
 				return false;
 			};
 
@@ -331,84 +235,7 @@ namespace Lemma.Factories
 					return;
 
 				DynamicVoxel dynamicMap = levitatingMapEntity.Get<DynamicVoxel>();
-
-				int maxDistance = levitateRipRadius + 7;
-				Voxel closestMap = null;
-				Voxel.Coord closestCoord = new Voxel.Coord();
-				foreach (Voxel m in Voxel.ActivePhysicsVoxels)
-				{
-					if (m == dynamicMap)
-						continue;
-
-					Voxel.Coord relativeCoord = m.GetCoordinate(dynamicMap.Transform.Value.Translation);
-					Voxel.Coord? closestFilled = m.FindClosestFilledCell(relativeCoord, maxDistance);
-					if (closestFilled != null)
-					{
-						maxDistance = Math.Min(Math.Abs(relativeCoord.X - closestFilled.Value.X), Math.Min(Math.Abs(relativeCoord.Y - closestFilled.Value.Y), Math.Abs(relativeCoord.Z - closestFilled.Value.Z)));
-						closestMap = m;
-						closestCoord = closestFilled.Value;
-					}
-				}
-				if (closestMap != null)
-				{
-					// Combine this map with the other one
-
-					Direction x = closestMap.GetRelativeDirection(dynamicMap.GetAbsoluteVector(Vector3.Right));
-					Direction y = closestMap.GetRelativeDirection(dynamicMap.GetAbsoluteVector(Vector3.Up));
-					Direction z = closestMap.GetRelativeDirection(dynamicMap.GetAbsoluteVector(Vector3.Backward));
-
-					if (x.IsParallel(y))
-						x = y.Cross(z);
-					else if (y.IsParallel(z))
-						y = x.Cross(z);
-
-					Voxel.Coord offset = new Voxel.Coord();
-					float closestCoordDistance = float.MaxValue;
-					Vector3 closestCoordPosition = closestMap.GetAbsolutePosition(closestCoord);
-					foreach (Voxel.Coord c in dynamicMap.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()))
-					{
-						float distance = (dynamicMap.GetAbsolutePosition(c) - closestCoordPosition).LengthSquared();
-						if (distance < closestCoordDistance)
-						{
-							closestCoordDistance = distance;
-							offset = c;
-						}
-					}
-					Vector3 toLevitatingMap = dynamicMap.Transform.Value.Translation - closestMap.GetAbsolutePosition(closestCoord);
-					offset = offset.Move(dynamicMap.GetRelativeDirection(-toLevitatingMap));
-
-					Quaternion orientation = Quaternion.CreateFromRotationMatrix(dynamicMap.Transform.Value);
-
-					EffectBlockFactory blockFactory = Factory.Get<EffectBlockFactory>();
-
-					int index = 0;
-					foreach (Voxel.Coord c in dynamicMap.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()).OrderBy(c2 => new Vector3(c2.X - offset.X, c2.Y - offset.Y, c2.Z - offset.Z).LengthSquared()))
-					{
-						Voxel.Coord offsetFromCenter = c.Move(-offset.X, -offset.Y, -offset.Z);
-						Voxel.Coord targetCoord = new Voxel.Coord();
-						targetCoord.SetComponent(x, offsetFromCenter.GetComponent(Direction.PositiveX));
-						targetCoord.SetComponent(y, offsetFromCenter.GetComponent(Direction.PositiveY));
-						targetCoord.SetComponent(z, offsetFromCenter.GetComponent(Direction.PositiveZ));
-						targetCoord = targetCoord.Move(closestCoord.X, closestCoord.Y, closestCoord.Z);
-						if (closestMap[targetCoord].ID == 0)
-						{
-							Entity blockEntity = blockFactory.CreateAndBind(main);
-							c.Data.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
-							EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
-							effectBlock.Offset.Value = closestMap.GetRelativePosition(targetCoord);
-							effectBlock.DoScale.Value = false;
-							effectBlock.StartPosition.Value = dynamicMap.GetAbsolutePosition(c);
-							effectBlock.StartOrientation.Value = orientation;
-							effectBlock.TotalLifetime.Value = 0.05f + (index * 0.0075f);
-							effectBlock.Setup(closestMap.Entity, targetCoord, c.Data.ID);
-							main.Add(blockEntity);
-							index++;
-						}
-					}
-
-					// Delete the map
-					levitatingMapEntity.Delete.Execute();
-				}
+				VoxelRip.Consolidate(main, dynamicMap);
 			};
 
 			// Chase AI state

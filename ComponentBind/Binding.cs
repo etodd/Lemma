@@ -66,7 +66,7 @@ namespace ComponentBind
 			this.source = source;
 			source.AddBinding(this);
 			Type v = this.source.Value;
-			if (v != null && !v.Equals(default(Type)))
+			if (v != null)
 				this.notify(v);
 		}
 

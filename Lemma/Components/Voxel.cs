@@ -1812,7 +1812,10 @@ namespace Lemma.Components
 
 			set
 			{
-				this.serializedVoxelData = Voxel.deserializeData(value);
+				if (this.awoken)
+					this.processSerializedData(Voxel.deserializeData(value));
+				else
+					this.serializedVoxelData = Voxel.deserializeData(value);
 			}
 		}
 
@@ -1972,6 +1975,7 @@ namespace Lemma.Components
 		}
 		private static List<SpawnGroup> spawns = new List<SpawnGroup>();
 
+		private bool awoken = false;
 		public override void Awake()
 		{
 			base.Awake();
@@ -2047,105 +2051,112 @@ namespace Lemma.Components
 			{
 				int[] data = this.serializedVoxelData;
 				this.serializedVoxelData = null;
-				int boxCount = data[0];
+				this.processSerializedData(data);
+			}
 
-				const int boxDataSize = 13;
+			this.awoken = true;
+		}
 
-				for (int i = 0; i < boxCount; i++)
+		private void processSerializedData(int[] data)
+		{
+			int boxCount = data[0];
+
+			const int boxDataSize = 13;
+
+			for (int i = 0; i < boxCount; i++)
+			{
+				// Format:
+				// x
+				// y
+				// z
+				// width-height-depth-type IN ONE INT
+				// MinU, MinV, MaxU, MaxV for each of six surfaces, PACKED.
+				int index = 1 + (i * boxDataSize);
+				int x = data[index], y = data[index + 1], z = data[index + 2];
+					int packedData = data[index + 3];
+					int w = packedData.ExtractBits(0, 8), h = packedData.ExtractBits(8, 8), d = packedData.ExtractBits(16, 8);
+					int v = packedData.ExtractBits(24, 8);
+				if (v != 0)
 				{
-					// Format:
-					// x
-					// y
-					// z
-					// width-height-depth-type IN ONE INT
-					// MinU, MinV, MaxU, MaxV for each of six surfaces, PACKED.
-					int index = 1 + (i * boxDataSize);
-					int x = data[index], y = data[index + 1], z = data[index + 2];
-						int packedData = data[index + 3];
-						int w = packedData.ExtractBits(0, 8), h = packedData.ExtractBits(8, 8), d = packedData.ExtractBits(16, 8);
-						int v = packedData.ExtractBits(24, 8);
-					if (v != 0)
+					State state = Voxel.States[(t)v];
+					int chunkX = this.minX + ((x - this.minX) / this.chunkSize) * this.chunkSize, chunkY = this.minY + ((y - this.minY) / this.chunkSize) * this.chunkSize, chunkZ = this.minZ + ((z - this.minZ) / this.chunkSize) * this.chunkSize;
+					int nextChunkX = this.minX + ((x + w - this.minX) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ) / this.chunkSize) * this.chunkSize;
+					for (int ix = chunkX; ix <= nextChunkX; ix += this.chunkSize)
 					{
-						State state = Voxel.States[(t)v];
-						int chunkX = this.minX + ((x - this.minX) / this.chunkSize) * this.chunkSize, chunkY = this.minY + ((y - this.minY) / this.chunkSize) * this.chunkSize, chunkZ = this.minZ + ((z - this.minZ) / this.chunkSize) * this.chunkSize;
-						int nextChunkX = this.minX + ((x + w - this.minX) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ) / this.chunkSize) * this.chunkSize;
-						for (int ix = chunkX; ix <= nextChunkX; ix += this.chunkSize)
+						for (int iy = chunkY; iy <= nextChunkY; iy += this.chunkSize)
 						{
-							for (int iy = chunkY; iy <= nextChunkY; iy += this.chunkSize)
+							for (int iz = chunkZ; iz <= nextChunkZ; iz += this.chunkSize)
 							{
-								for (int iz = chunkZ; iz <= nextChunkZ; iz += this.chunkSize)
+								int bx = Math.Max(ix, x), by = Math.Max(iy, y), bz = Math.Max(iz, z);
+								Box box = new Box
 								{
-									int bx = Math.Max(ix, x), by = Math.Max(iy, y), bz = Math.Max(iz, z);
-									Box box = new Box
+									X = bx,
+									Y = by,
+									Z = bz,
+									Width = Math.Min(x + w, ix + this.chunkSize) - bx,
+									Height = Math.Min(y + h, iy + this.chunkSize) - by,
+									Depth = Math.Min(z + d, iz + this.chunkSize) - bz,
+									Type = state,
+									Active = true,
+								};
+								if (box.Width > 0 && box.Height > 0 && box.Depth > 0)
+								{
+									Voxel.boxCache.Add(box);
+									Chunk chunk = this.GetChunk(bx, by, bz);
+									if (chunk.DataBoxes == null)
+										chunk.DataBoxes = new List<Box>();
+									chunk.DataBoxes.Add(box);
+									box.Chunk = chunk;
+									for (int x1 = box.X - chunk.X; x1 < box.X + box.Width - chunk.X; x1++)
 									{
-										X = bx,
-										Y = by,
-										Z = bz,
-										Width = Math.Min(x + w, ix + this.chunkSize) - bx,
-										Height = Math.Min(y + h, iy + this.chunkSize) - by,
-										Depth = Math.Min(z + d, iz + this.chunkSize) - bz,
-										Type = state,
-										Active = true,
-									};
-									if (box.Width > 0 && box.Height > 0 && box.Depth > 0)
+										for (int y1 = box.Y - chunk.Y; y1 < box.Y + box.Height - chunk.Y; y1++)
+										{
+											for (int z1 = box.Z - chunk.Z; z1 < box.Z + box.Depth - chunk.Z; z1++)
+												chunk.Data[x1, y1, z1] = box;
+										}
+									}
+									int[] packed = new int[9];
+
+									for (int j = index + 4; j < index + 4 + 9; j++)
+										packed[j - (index + 4)] = data[j];
+
+									int[] unPacked = BitWorker.UnPackInts(11, -1, packed);
+									for (int j = 0; j < 6; j++)
 									{
-										Voxel.boxCache.Add(box);
-										Chunk chunk = this.GetChunk(bx, by, bz);
-										if (chunk.DataBoxes == null)
-											chunk.DataBoxes = new List<Box>();
-										chunk.DataBoxes.Add(box);
-										box.Chunk = chunk;
-										for (int x1 = box.X - chunk.X; x1 < box.X + box.Width - chunk.X; x1++)
-										{
-											for (int y1 = box.Y - chunk.Y; y1 < box.Y + box.Height - chunk.Y; y1++)
-											{
-												for (int z1 = box.Z - chunk.Z; z1 < box.Z + box.Depth - chunk.Z; z1++)
-													chunk.Data[x1, y1, z1] = box;
-											}
-										}
-										int[] packed = new int[9];
-
-										for (int j = index + 4; j < index + 4 + 9; j++)
-											packed[j - (index + 4)] = data[j];
-
-										int[] unPacked = BitWorker.UnPackInts(11, -1, packed);
-										for (int j = 0; j < 6; j++)
-										{
-											int baseIndex = j * 4;
-											Surface surface = box.Surfaces[j];
-											surface.MinU = unPacked[baseIndex + 0];
-											surface.MinV = unPacked[baseIndex + 1];
-											surface.MaxU = unPacked[baseIndex + 2];
-											surface.MaxV = unPacked[baseIndex + 3];
-										}
+										int baseIndex = j * 4;
+										Surface surface = box.Surfaces[j];
+										surface.MinU = unPacked[baseIndex + 0];
+										surface.MinV = unPacked[baseIndex + 1];
+										surface.MaxU = unPacked[baseIndex + 2];
+										surface.MaxV = unPacked[baseIndex + 3];
 									}
 								}
 							}
 						}
 					}
 				}
-
-				int packedBoxesStart = 1 + boxCount * boxDataSize;
-				int[] packedBoxes = new int[data.Length - packedBoxesStart];
-				for (int i = packedBoxesStart; i < data.Length; i++)
-					packedBoxes[i - packedBoxesStart] = data[i];
-
-				int[] unPackedBoxes = BitWorker.UnPackInts(17, -1, packedBoxes);
-
-				for (int i = 0; i < unPackedBoxes.Length- 1; i += 2)
-				{
-					Box box1 = Voxel.boxCache[unPackedBoxes[i]], box2 = Voxel.boxCache[unPackedBoxes[i + 1]];
-					if (box1 != null && box2 != null)
-					{
-						box1.Adjacent.Add(box2);
-						box2.Adjacent.Add(box1);
-					}
-				}
-
-				Voxel.boxCache.Clear();
-
-				this.postDeserialization();
 			}
+
+			int packedBoxesStart = 1 + boxCount * boxDataSize;
+			int[] packedBoxes = new int[data.Length - packedBoxesStart];
+			for (int i = packedBoxesStart; i < data.Length; i++)
+				packedBoxes[i - packedBoxesStart] = data[i];
+
+			int[] unPackedBoxes = BitWorker.UnPackInts(17, -1, packedBoxes);
+
+			for (int i = 0; i < unPackedBoxes.Length- 1; i += 2)
+			{
+				Box box1 = Voxel.boxCache[unPackedBoxes[i]], box2 = Voxel.boxCache[unPackedBoxes[i + 1]];
+				if (box1 != null && box2 != null)
+				{
+					box1.Adjacent.Add(box2);
+					box2.Adjacent.Add(box1);
+				}
+			}
+
+			Voxel.boxCache.Clear();
+
+			this.postDeserialization();
 		}
 
 		public IEnumerable<Chunk> GetChunksBetween(Voxel.Coord a, Voxel.Coord b)
@@ -3464,8 +3475,6 @@ namespace Lemma.Components
 		{
 			List<Dictionary<Box, bool>> lists = new List<Dictionary<Box, bool>>();
 
-			bool foundSupportedBlock = false;
-
 			// Build adjacency lists
 			foreach (Coord removal in removals)
 			{
@@ -3491,34 +3500,13 @@ namespace Lemma.Components
 						continue;
 					Dictionary<Box, bool> newList = new Dictionary<Box, bool>();
 					bool supported = this.buildAdjacency(box, newList);
-					foundSupportedBlock |= supported;
 					if (!supported && newList.Count > 0)
 						lists.Add(newList);
 				}
 			}
 
 			// Spawn the dynamic maps
-			if (foundSupportedBlock)
-				islands = lists.Select(x => x.Keys);
-			else if (lists.Count > 1)
-			{
-				IEnumerable<Box> biggestList = null;
-				int biggestSize = 0;
-
-				foreach (IEnumerable<Box> list in lists.Select(x => x.Keys))
-				{
-					int size = list.Sum(x => x.Width * x.Height * x.Depth);
-					if (size > biggestSize)
-					{
-						biggestList = list;
-						biggestSize = size;
-					}
-				}
-
-				islands = lists.Select(x => x.Keys).Except(new[] { biggestList });
-			}
-			else
-				islands = new Box[][] { };
+			islands = lists.Select(x => x.Keys);
 		}
 
 		public IEnumerable<IEnumerable<Box>> GetAdjacentIslands(IEnumerable<Coord> removals, Func<State, bool> filter, Func<State, bool> search)

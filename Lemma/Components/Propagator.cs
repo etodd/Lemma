@@ -327,7 +327,7 @@ namespace Lemma.Components
 							{
 								this.generations[new EffectBlock.Entry { Voxel = map, Coordinate = c }] = entry.Generation;
 								map.Empty(c);
-								this.sparksLowPriority(map.GetAbsolutePosition(c), Spark.Burn);
+								this.SparksLowPriority(map.GetAbsolutePosition(c), Spark.Burn);
 								regenerate = true;
 							}
 						}
@@ -342,7 +342,7 @@ namespace Lemma.Components
 								{
 									map.Empty(c, false, true, map);
 									map.Fill(c, powered);
-									this.sparksLowPriority(map.GetAbsolutePosition(c), Spark.Normal);
+									this.SparksLowPriority(map.GetAbsolutePosition(c), Spark.Normal);
 									regenerate = true;
 								}
 								else if (adjacentID == Voxel.t.Neutral && entry.Generation < maxGenerations)
@@ -350,7 +350,7 @@ namespace Lemma.Components
 									map.Empty(adjacent, false, true, map);
 									this.generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
 									map.Fill(adjacent, blue);
-									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
 							}
@@ -365,14 +365,14 @@ namespace Lemma.Components
 								{
 									map.Empty(adjacent, false, true, map);
 									map.Fill(adjacent, neutral);
-									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
 								else if (adjacentID == Voxel.t.HardInfected)
 								{
 									map.Empty(adjacent, false, true, map);
 									map.Fill(adjacent, hard);
-									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
 							}
@@ -388,21 +388,21 @@ namespace Lemma.Components
 								{
 									map.Empty(adjacent, false, true, map);
 									map.Fill(adjacent, this.powered);
-									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
 								else if (adjacentID == Voxel.t.Switch)
 								{
 									map.Empty(adjacent, true, true, map);
 									map.Fill(adjacent, this.poweredSwitch);
-									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
 								else if (adjacentID == Voxel.t.Hard)
 								{
 									map.Empty(adjacent, true, true, map);
 									map.Fill(adjacent, this.hardPowered);
-									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
 								else if (adjacentID == Voxel.t.Critical)
@@ -423,7 +423,7 @@ namespace Lemma.Components
 									map.Empty(adjacent, false, true, map);
 									this.generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
 									map.Fill(adjacent, infected);
-									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Dangerous);
+									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Dangerous);
 									regenerate = true;
 								}
 								else if (adjacentID == Voxel.t.Hard && entry.Generation < maxGenerations)
@@ -431,7 +431,7 @@ namespace Lemma.Components
 									map.Empty(adjacent, false, true, map);
 									this.generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
 									map.Fill(adjacent, hardInfected);
-									this.sparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Dangerous);
+									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Dangerous);
 									regenerate = true;
 								}
 								else if (adjacentID == Voxel.t.Critical)
@@ -452,7 +452,7 @@ namespace Lemma.Components
 			this.toRegenerate.Clear();
 		}
 
-		public void sparksLowPriority(Vector3 pos, Spark type)
+		public void SparksLowPriority(Vector3 pos, Spark type)
 		{
 			this.sparks(pos, type, this.random.Next(0, 2) == 0, this.random.Next(0, 2) == 0);
 		}
