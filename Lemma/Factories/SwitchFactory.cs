@@ -61,8 +61,13 @@ namespace Lemma.Factories
 						}
 					});
 					entity.Add(cellFilledBinding);
+
+					sw.On.Value = m[attachable.Coord] == poweredState;
 				}, attachable.AttachedVoxel));
 			}
+
+			sw.Add(new Binding<Entity.Handle>(sw.AttachedVoxel, attachable.AttachedVoxel));
+			sw.Add(new Binding<Voxel.Coord>(sw.Coord, attachable.Coord));
 
 			this.SetMain(entity, main);
 

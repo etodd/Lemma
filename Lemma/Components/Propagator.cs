@@ -226,16 +226,14 @@ namespace Lemma.Components
 
 					if (handlePowered)
 					{
-						IEnumerable<IEnumerable<Voxel.Box>> poweredIslands = map.GetAdjacentIslands(coords.Where(x => x.Data.ID == Voxel.t.Powered), x => x.ID == Voxel.t.Powered || x.ID == Voxel.t.PoweredSwitch || x.ID == Voxel.t.HardPowered, permanentPowered);
+						IEnumerable<IEnumerable<Voxel.Box>> poweredIslands = map.GetAdjacentIslands(coords.Where(x => x.Data.ID == Voxel.t.Powered), x => x.ID == Voxel.t.Powered || x.ID == Voxel.t.HardPowered, x => x == this.permanentPowered || x == this.poweredSwitch);
 						List<Voxel.Coord> poweredCoords = poweredIslands.SelectMany(x => x).SelectMany(x => x.GetCoords()).ToList();
 						if (poweredCoords.Count > 0)
 						{
 							map.Empty(poweredCoords, true, true, map, false);
 							foreach (Voxel.Coord coord in poweredCoords)
 							{
-								if (coord.Data.ID == Voxel.t.PoweredSwitch )
-									map.Fill(coord, this.switchState);
-								else if (coord.Data.ID == Voxel.t.HardPowered)
+								if (coord.Data.ID == Voxel.t.HardPowered)
 									map.Fill(coord, this.hard);
 								else
 									map.Fill(coord, this.blue);

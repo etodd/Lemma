@@ -3521,7 +3521,7 @@ namespace Lemma.Components
 				islands = new Box[][] { };
 		}
 
-		public IEnumerable<IEnumerable<Box>> GetAdjacentIslands(IEnumerable<Coord> removals, Func<State, bool> filter, State search)
+		public IEnumerable<IEnumerable<Box>> GetAdjacentIslands(IEnumerable<Coord> removals, Func<State, bool> filter, Func<State, bool> search)
 		{
 			List<Dictionary<Box, bool>> lists = new List<Dictionary<Box, bool>>();
 
@@ -3537,7 +3537,7 @@ namespace Lemma.Components
 				{
 					Coord adjacentCoord = removal.Move(dir);
 					Box box = this.GetBox(adjacentCoord);
-					if (box == null || (!filter(box.Type) && box.Type.ID != search.ID))
+					if (box == null || (!filter(box.Type) && !search(box.Type)))
 						continue;
 					bool alreadyFound = false;
 					foreach (Dictionary<Box, bool> list in lists)
@@ -3844,9 +3844,9 @@ namespace Lemma.Components
 		}
 
 		private Queue<Box> boxAdjacencyCache = new Queue<Box>();
-		private bool buildAdjacency(Box box, Dictionary<Box, bool> list, Func<State, bool> filter, State search)
+		private bool buildAdjacency(Box box, Dictionary<Box, bool> list, Func<State, bool> filter, Func<State, bool> search)
 		{
-			if (box.Type.ID == search.ID)
+			if (search(box.Type))
 			{
 				list.Add(box, true);
 				return true;
@@ -3868,7 +3868,7 @@ namespace Lemma.Components
 					{
 						if (!list.ContainsKey(adjacent))
 						{
-							if (adjacent.Type.ID == search.ID)
+							if (search(adjacent.Type))
 							{
 								this.boxAdjacencyCache.Clear();
 								return true;
