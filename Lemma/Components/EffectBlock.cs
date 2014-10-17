@@ -29,6 +29,7 @@ namespace Lemma.Components
 		public Property<Entity.Handle> TargetVoxel = new Property<Entity.Handle>();
 		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
 		public Property<Voxel.t> StateId = new Property<Voxel.t>();
+		public Property<float> Delay = new Property<float>();
 
 		public Property<Vector3> Offset = new Property<Vector3>();
 		public Property<Vector3> Scale = new Property<Vector3>();
@@ -86,15 +87,21 @@ namespace Lemma.Components
 
 		public void Update(float dt)
 		{
-			this.Lifetime.Value += dt;
-
-			float blend = this.Lifetime / this.TotalLifetime;
-
 			if (this.TargetVoxel.Value.Target == null || !this.TargetVoxel.Value.Target.Active)
 			{
 				this.Delete.Execute();
 				return;
 			}
+
+			this.Lifetime.Value += dt;
+
+			if (this.Lifetime < this.Delay)
+			{
+				this.Scale.Value = Vector3.Zero;
+				return;
+			}
+
+			float blend = (this.Lifetime - this.Delay) / this.TotalLifetime;
 
 			Voxel m = this.TargetVoxel.Value.Target.Get<Voxel>();
 

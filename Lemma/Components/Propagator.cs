@@ -44,6 +44,7 @@ namespace Lemma.Components
 		private int oldestSparkLight = 0;
 		private ParticleSystem particles;
 		private Dictionary<EffectBlock.Entry, int> generations = new Dictionary<EffectBlock.Entry, int>();
+		private EffectBlockFactory blockFactory;
 		private Voxel.State neutral;
 		private Voxel.State powered;
 		private Voxel.State blue;
@@ -58,6 +59,8 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
+
+			this.blockFactory = Factory.Get<EffectBlockFactory>();
 
 			this.EnabledWhenPaused = false;
 
@@ -149,6 +152,20 @@ namespace Lemma.Components
 							EffectBlock.Entry generationKey = new EffectBlock.Entry { Voxel = map, Coordinate = c };
 							if (this.generations.TryGetValue(generationKey, out generation))
 								this.generations.Remove(generationKey);
+
+							if (id == Voxel.t.Floater)
+							{
+								Entity blockEntity = this.blockFactory.CreateAndBind(main);
+								EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
+								coord.Data.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
+								effectBlock.Delay.Value = 4.0f;
+								effectBlock.Offset.Value = map.GetRelativePosition(coord);
+								effectBlock.StartPosition.Value = map.GetAbsolutePosition(coord) + new Vector3(2.5f, 5.0f, 2.5f);
+								effectBlock.StartOrientation.Value = Quaternion.CreateFromYawPitchRoll(1.0f, 1.0f, 0);
+								effectBlock.TotalLifetime.Value = 0.5f;
+								effectBlock.Setup(map.Entity, coord, coord.Data.ID);
+								main.Add(blockEntity);
+							}
 
 							if (generation == 0)
 							{
