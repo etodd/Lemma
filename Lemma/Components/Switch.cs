@@ -47,8 +47,6 @@ namespace Lemma.Components
 			this.Add(new CommandBinding(this.OnPowerOn, delegate()
 			{
 				Voxel map = this.AttachedVoxel.Value.Target.Get<Voxel>();
-				Voxel.State neutral = Voxel.States[Voxel.t.Neutral];
-				Voxel.State unpowered = Voxel.States[Voxel.t.Switch];
 				bool regenerate = false;
 				foreach (Switch s in Switch.all)
 				{
@@ -63,7 +61,7 @@ namespace Lemma.Components
 						{
 							Voxel.Coord c = queue.Dequeue();
 							map.Empty(c, true, true, map);
-							map.Fill(c, unpowered);
+							map.Fill(c, Voxel.States.Switch);
 							regenerate = true;
 							visited[c] = true;
 							foreach (Direction adjacentDirection in DirectionExtensions.Directions)
@@ -74,10 +72,10 @@ namespace Lemma.Components
 									Voxel.t adjacentID = map[adjacentCoord].ID;
 									if (adjacentID == Voxel.t.PoweredSwitch)
 										queue.Enqueue(adjacentCoord);
-									else if (adjacentID == Voxel.t.Infected || adjacentID == Voxel.t.Blue || adjacentID == Voxel.t.Powered)
+									else if (adjacentID == Voxel.t.Blue || adjacentID == Voxel.t.Powered)
 									{
-										map.Empty(adjacentCoord, false, true, map);
-										map.Fill(adjacentCoord, neutral);
+										map.Empty(adjacentCoord, true, true, map);
+										map.Fill(adjacentCoord, Voxel.States.Neutral);
 										regenerate = true;
 									}
 								}

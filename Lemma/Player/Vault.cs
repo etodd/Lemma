@@ -123,15 +123,15 @@ namespace Lemma.Components
 						Voxel.Coord coord = baseCoord.Move(right, x);
 						for (int i = 0; i < searchDownDistance; i++)
 						{
-							if (map[coord] != Voxel.EmptyState)
+							if (map[coord] != Voxel.States.Empty)
 							{
-								if (map[coord.Move(backward)] != Voxel.EmptyState
-									|| map[coord.Move(up)] != Voxel.EmptyState
-									|| map[coord.Move(up, 2)] != Voxel.EmptyState
-									|| map[coord.Move(up, 3)] != Voxel.EmptyState
-									|| map[coord.Move(up).Move(backward)] != Voxel.EmptyState
-									|| map[coord.Move(up, 2).Move(backward)] != Voxel.EmptyState
-									|| map[coord.Move(up, 3).Move(backward)] != Voxel.EmptyState)
+								if (map[coord.Move(backward)] != Voxel.States.Empty
+									|| map[coord.Move(up)] != Voxel.States.Empty
+									|| map[coord.Move(up, 2)] != Voxel.States.Empty
+									|| map[coord.Move(up, 3)] != Voxel.States.Empty
+									|| map[coord.Move(up).Move(backward)] != Voxel.States.Empty
+									|| map[coord.Move(up, 2).Move(backward)] != Voxel.States.Empty
+									|| map[coord.Move(up, 3).Move(backward)] != Voxel.States.Empty)
 									break; // Conflict
 								
 								bool conflict = false;
@@ -145,13 +145,13 @@ namespace Lemma.Components
 										Direction right2 = up2.Cross(backward2);
 
 										Voxel.Coord coord2 = v.GetCoordinate(map.GetAbsolutePosition(coord));
-										if (v[coord2.Move(backward2)] != Voxel.EmptyState
-											|| v[coord2.Move(up2)] != Voxel.EmptyState
-											|| v[coord2.Move(up2, 2)] != Voxel.EmptyState
-											|| v[coord2.Move(up2, 3)] != Voxel.EmptyState
-											|| v[coord2.Move(up2).Move(backward2)] != Voxel.EmptyState
-											|| v[coord2.Move(up2, 2).Move(backward2)] != Voxel.EmptyState
-											|| v[coord2.Move(up2, 3).Move(backward2)] != Voxel.EmptyState)
+										if (v[coord2.Move(backward2)] != Voxel.States.Empty
+											|| v[coord2.Move(up2)] != Voxel.States.Empty
+											|| v[coord2.Move(up2, 2)] != Voxel.States.Empty
+											|| v[coord2.Move(up2, 3)] != Voxel.States.Empty
+											|| v[coord2.Move(up2).Move(backward2)] != Voxel.States.Empty
+											|| v[coord2.Move(up2, 2).Move(backward2)] != Voxel.States.Empty
+											|| v[coord2.Move(up2, 3).Move(backward2)] != Voxel.States.Empty)
 										{
 											conflict = true;
 											break;

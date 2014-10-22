@@ -63,14 +63,11 @@ namespace Lemma.Components
 			this.model = m;
 		}
 
-		private Voxel.State temporary;
-
 		public override void Awake()
 		{
 			base.Awake();
 			this.Serialize = false;
 			this.EnabledWhenPaused = false;
-			this.temporary = Voxel.States[Voxel.t.Blue];
 			this.Add(new NotifyBinding(delegate()
 			{
 				if (this.IsSupported)
@@ -123,8 +120,8 @@ namespace Lemma.Components
 				this.LastWallJump.Value = main.TotalTime;
 
 				Voxel.State wallType = wallJumpMap[wallCoordinate];
-				if (wallType == Voxel.EmptyState) // Empty. Must be a block possibility that hasn't been instantiated yet
-					wallType = this.temporary;
+				if (wallType == Voxel.States.Empty) // Empty. Must be a block possibility that hasn't been instantiated yet
+					wallType = Voxel.States.Blue;
 
 				this.WalkedOn.Execute(wallJumpMap, wallCoordinate, wallNormalDirection.GetReverse());
 

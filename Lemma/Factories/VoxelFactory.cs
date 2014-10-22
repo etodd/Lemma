@@ -51,6 +51,8 @@ namespace Lemma.Factories
 			entity.Add("Scale", voxel.Scale);
 			entity.Add("EnablePhysics", voxel.EnablePhysics);
 			entity.Add("Mutable", voxel.Mutable);
+			entity.Add("UVRotation", voxel.UVRotation);
+			entity.Add("UVOffset", voxel.UVOffset);
 		}
 
 		public void InternalBind(Entity entity, Main main, bool creating = false, Transform transform = null, bool dataOnly = false)
@@ -124,6 +126,19 @@ namespace Lemma.Factories
 					model.Add(new Binding<Vector3>(model.GetVector3Parameter("Offset"), map.Offset));
 
 					Voxel.State s = state;
+
+					model.Add(new Binding<Matrix>(model.GetMatrixParameter("UVScaleRotation"), delegate()
+					{
+						Matrix m = Matrix.CreateRotationZ(map.UVRotation * (float)Math.PI / 180.0f);
+						float scale = 0.075f * s.Tiling;
+						m.M11 *= scale;
+						m.M12 *= scale;
+						m.M21 *= scale;
+						m.M22 *= scale;
+						return m;
+					}, map.UVRotation));
+
+					model.Add(new Binding<Vector2>(model.GetVector2Parameter("UVOffset"), x => x * 0.075f * s.Tiling, map.UVOffset));
 
 					if (!s.ShadowCast)
 						model.UnsupportedTechniques.Add(Technique.Shadow);

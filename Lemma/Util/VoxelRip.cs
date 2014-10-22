@@ -88,11 +88,11 @@ namespace Lemma.Util
 					{
 						Voxel.Coord c = new Voxel.Coord { X = x, Y = ripStart.Y, Z = z };
 						Voxel.State s = voxel[c];
-						if (s != Voxel.EmptyState && !s.Permanent)
+						if (s != Voxel.States.Empty && !s.Permanent)
 							edges.Add(c);
 						c = new Voxel.Coord { X = x, Y = ripEnd.Y, Z = z };
 						s = voxel[c];
-						if (s != Voxel.EmptyState && !s.Permanent)
+						if (s != Voxel.States.Empty && !s.Permanent)
 							edges.Add(c);
 					}
 				}
@@ -105,11 +105,11 @@ namespace Lemma.Util
 					{
 						Voxel.Coord c = new Voxel.Coord { X = ripStart.X, Y = y, Z = z };
 						Voxel.State s = voxel[c];
-						if (s != Voxel.EmptyState && !s.Permanent)
+						if (s != Voxel.States.Empty && !s.Permanent)
 							edges.Add(c);
 						c = new Voxel.Coord { X = ripEnd.X, Y = y, Z = z };
 						s = voxel[c];
-						if (s != Voxel.EmptyState && !s.Permanent)
+						if (s != Voxel.States.Empty && !s.Permanent)
 							edges.Add(c);
 					}
 
@@ -118,11 +118,11 @@ namespace Lemma.Util
 					{
 						Voxel.Coord c = new Voxel.Coord { X = x, Y = y, Z = ripStart.Z };
 						Voxel.State s = voxel[c];
-						if (s != Voxel.EmptyState && !s.Permanent)
+						if (s != Voxel.States.Empty && !s.Permanent)
 							edges.Add(c);
 						c = new Voxel.Coord { X = x, Y = y, Z = ripEnd.Z };
 						s = voxel[c];
-						if (s != Voxel.EmptyState && !s.Permanent)
+						if (s != Voxel.States.Empty && !s.Permanent)
 							edges.Add(c);
 					}
 				}

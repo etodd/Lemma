@@ -548,14 +548,14 @@ namespace Lemma.Factories
 			int brush = 0;
 			Action<int> changeBrush = delegate(int delta)
 			{
-				int foundIndex = Voxel.StateList.FindIndex(x => x.ID == editor.Brush);
+				int foundIndex = Voxel.States.List.FindIndex(x => x.ID == editor.Brush);
 				if (foundIndex != -1)
 					brush = foundIndex;
-				int stateCount = Voxel.States.Count;
+				int stateCount = Voxel.States.List.Count;
 				brush = 1 + ((brush - 1 + delta) % (stateCount - 1));
 				if (brush < 1)
 					brush = stateCount + ((brush - 1) % stateCount);
-				editor.Brush.Value = Voxel.StateList[brush].ID;
+				editor.Brush.Value = Voxel.States.List[brush].ID;
 			};
 			AddCommand
 			(

@@ -15,7 +15,7 @@ namespace Lemma.Factories
 
 		private static bool filter(Voxel.State state)
 		{
-			return state != Components.Voxel.EmptyState && !state.Hard;
+			return state != Components.Voxel.States.Empty && !state.Hard;
 		}
 
 		public Property<bool> EnableMovement = new Property<bool> { Value = true };

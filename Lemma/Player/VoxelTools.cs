@@ -18,14 +18,11 @@ namespace Lemma.Components
 
 		private Random random = new Random();
 
-		private Voxel.State temporary;
-
 		public override void Awake()
 		{
 			base.Awake();
 			this.Serialize = false;
 			this.EnabledWhenPaused = false;
-			this.temporary = Voxel.States[Voxel.t.Blue];
 		}
 
 		public void BuildFloor(Voxel floorMap, Voxel.Coord floorCoordinate, Direction forwardDir, Direction rightDir)
@@ -54,7 +51,7 @@ namespace Lemma.Components
 						{
 							Voxel = floorMap,
 							Coordinate = y,
-							State = this.temporary,
+							State = Voxel.States.Blue,
 						});
 					}
 				}

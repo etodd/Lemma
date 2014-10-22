@@ -61,8 +61,6 @@ namespace Lemma.Components
 			}
 		}
 
-		private Voxel.State blue;
-
 		private static Direction[] platformBuildableDirections = DirectionExtensions.HorizontalDirections.Union(new[] { Direction.NegativeY }).ToArray();
 
 		private ParticleSystem particleSystem;
@@ -72,7 +70,6 @@ namespace Lemma.Components
 			base.Awake();
 			this.Serialize = false;
 			this.EnabledWhenPaused = false;
-			this.blue = Voxel.States[Voxel.t.Blue];
 			this.particleSystem = ParticleSystem.Get(main, "Distortion");
 		}
 
@@ -125,47 +122,65 @@ namespace Lemma.Components
 
 		public void InstantiatePossibility(Possibility block)
 		{
-			block.Map.Empty(block.StartCoord.CoordinatesBetween(block.EndCoord), false, false);
-			block.Map.Fill(block.StartCoord, block.EndCoord, this.blue);
-			block.Map.Regenerate();
 			block.Model.Delete.Execute();
 			List<Possibility> mapList = possibilities[block.Map];
 			mapList.Remove(block);
 			if (mapList.Count == 0)
 				possibilities.Remove(block.Map);
-			
-			const float prePrime = 2.0f;
-			// Front and back faces
-			for (int x = block.StartCoord.X; x < block.EndCoord.X; x++)
+
+			bool regenerate = block.Map.Empty(block.StartCoord.CoordinatesBetween(block.EndCoord), false, false);
+			foreach (Voxel.Coord c in block.StartCoord.CoordinatesBetween(block.EndCoord))
 			{
-				for (int y = block.StartCoord.Y; y < block.EndCoord.Y; y++)
+				Vector3 absolutePos = block.Map.GetAbsolutePosition(c);
+				bool foundConflict = false;
+				foreach (Voxel m2 in Voxel.ActivePhysicsVoxels)
 				{
-					particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, y, block.EndCoord.Z - 1), Vector3.Zero, -1.0f, prePrime);
-					particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, y, block.StartCoord.Z), Vector3.Zero, -1.0f, prePrime);
+					if (m2 != block.Map && m2[absolutePos].ID != 0)
+					{
+						foundConflict = true;
+						break;
+					}
 				}
+				if (!foundConflict)
+					regenerate |= block.Map.Fill(c, Voxel.States.Blue);
 			}
 
-			// Left and right faces
-			for (int z = block.StartCoord.Z; z < block.EndCoord.Z; z++)
+			if (regenerate)
 			{
-				for (int y = block.StartCoord.Y; y < block.EndCoord.Y; y++)
-				{
-					particleSystem.AddParticle(block.Map.GetAbsolutePosition(block.StartCoord.X, y, z), Vector3.Zero, -1.0f, prePrime);
-					particleSystem.AddParticle(block.Map.GetAbsolutePosition(block.EndCoord.X - 1, y, z), Vector3.Zero, -1.0f, prePrime);
-				}
-			}
-
-			// Top and bottom faces
-			for (int z = block.StartCoord.Z; z < block.EndCoord.Z; z++)
-			{
+				block.Map.Regenerate();
+				const float prePrime = 2.0f;
+				// Front and back faces
 				for (int x = block.StartCoord.X; x < block.EndCoord.X; x++)
 				{
-					particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, block.StartCoord.Y, z), Vector3.Zero, -1.0f, prePrime);
-					particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, block.EndCoord.Y - 1, z), Vector3.Zero, -1.0f, prePrime);
+					for (int y = block.StartCoord.Y; y < block.EndCoord.Y; y++)
+					{
+						particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, y, block.EndCoord.Z - 1), Vector3.Zero, -1.0f, prePrime);
+						particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, y, block.StartCoord.Z), Vector3.Zero, -1.0f, prePrime);
+					}
 				}
-			}
 
-			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_BLOCK_APPEAR, 0.5f * (block.Map.GetAbsolutePosition(block.StartCoord) + block.Map.GetAbsolutePosition(block.EndCoord)));
+				// Left and right faces
+				for (int z = block.StartCoord.Z; z < block.EndCoord.Z; z++)
+				{
+					for (int y = block.StartCoord.Y; y < block.EndCoord.Y; y++)
+					{
+						particleSystem.AddParticle(block.Map.GetAbsolutePosition(block.StartCoord.X, y, z), Vector3.Zero, -1.0f, prePrime);
+						particleSystem.AddParticle(block.Map.GetAbsolutePosition(block.EndCoord.X - 1, y, z), Vector3.Zero, -1.0f, prePrime);
+					}
+				}
+
+				// Top and bottom faces
+				for (int z = block.StartCoord.Z; z < block.EndCoord.Z; z++)
+				{
+					for (int x = block.StartCoord.X; x < block.EndCoord.X; x++)
+					{
+						particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, block.StartCoord.Y, z), Vector3.Zero, -1.0f, prePrime);
+						particleSystem.AddParticle(block.Map.GetAbsolutePosition(x, block.EndCoord.Y - 1, z), Vector3.Zero, -1.0f, prePrime);
+					}
+				}
+
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_BLOCK_APPEAR, 0.5f * (block.Map.GetAbsolutePosition(block.StartCoord) + block.Map.GetAbsolutePosition(block.EndCoord)));
+			}
 		}
 
 		// Function for finding a platform to build for the player
@@ -194,7 +209,7 @@ namespace Lemma.Components
 						Voxel.Coord coord = playerCoord.Move(relativeDir, i);
 						Voxel.State state = map[coord];
 
-						if (state != Voxel.EmptyState && state != this.blue && Zone.CanBuild(map.GetAbsolutePosition(coord)))
+						if (this.canBuild(state) && Zone.CanBuild(map.GetAbsolutePosition(coord)))
 						{
 							shortestDistance = i;
 							relativeShortestDirection = relativeDir;
@@ -226,6 +241,16 @@ namespace Lemma.Components
 			return null;
 		}
 
+		private bool canBuild(Voxel.State s)
+		{
+			return s != Voxel.States.Empty
+				&& s != Voxel.States.Blue
+				&& s != Voxel.States.Infected
+				&& s != Voxel.States.HardInfected
+				&& s != Voxel.States.SliderPowered
+				&& s != Voxel.States.Slider;
+		}
+
 		// Function for finding a wall to build for the player
 		public Possibility FindWall(Vector3 position, Vector2 direction)
 		{
@@ -253,7 +278,7 @@ namespace Lemma.Components
 								Voxel.Coord c = coord.Move(dir, i);
 								Voxel.State state = map[c];
 
-								if (state != Voxel.EmptyState && state != this.blue && Zone.CanBuild(map.GetAbsolutePosition(c)))
+								if (this.canBuild(state) && Zone.CanBuild(map.GetAbsolutePosition(c)))
 								{
 									shortestMap = map;
 									shortestBuildDirection = dir;

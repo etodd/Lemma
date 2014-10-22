@@ -168,7 +168,7 @@ namespace Lemma.Components
 
 					this.model.StartClip("Roll", 5, false, AnimatedModel.DefaultBlendTime);
 
-					Voxel.State floorState = floorRaycast.Voxel == null ? Voxel.EmptyState : floorRaycast.Coordinate.Value.Data;
+					Voxel.State floorState = floorRaycast.Voxel == null ? Voxel.States.Empty : floorRaycast.Coordinate.Value.Data;
 					this.shouldBuildFloor = false;
 					if (this.EnableEnhancedRollSlide && (instantiatedBlockPossibility || (floorState.ID != 0 && floorState.ID != Voxel.t.Blue && floorState.ID != Voxel.t.Powered)))
 						this.shouldBuildFloor = true;
@@ -289,7 +289,10 @@ namespace Lemma.Components
 			{
 				this.rollKickTime += dt;
 
-				if (this.rollKickTime > 0.1f && (this.rollKickTime > 1.0f || Vector3.Dot(this.LinearVelocity, this.forward) < 0.1f))
+				Vector3 originalVelocity = this.LinearVelocity;
+				this.LinearVelocity.Value = new Vector3(this.velocity.X, this.LinearVelocity.Value.Y, this.velocity.Z);
+
+				if (this.rollKickTime > 0.1f && (this.rollKickTime > 1.0f || Vector3.Dot(originalVelocity, this.forward) < 0.1f))
 				{
 					this.Rolling.Value = false;
 					this.EnableWalking.Value = true;
@@ -299,7 +302,6 @@ namespace Lemma.Components
 				}
 				else
 				{
-					this.LinearVelocity.Value = new Vector3(this.velocity.X, this.LinearVelocity.Value.Y, this.velocity.Z);
 					if (this.VoxelTools.BreakWalls(this.forward, this.right))
 					{
 						if (this.firstTimeBreak)
@@ -324,6 +326,9 @@ namespace Lemma.Components
 			{
 				this.rollKickTime += dt;
 
+				Vector3 originalVelocity = this.LinearVelocity;
+				this.LinearVelocity.Value = new Vector3(this.velocity.X, this.LinearVelocity.Value.Y, this.velocity.Z);
+
 				if (!this.IsSupported) 
 				{
 					if (this.sliding)
@@ -346,13 +351,14 @@ namespace Lemma.Components
 					}
 				}
 
-				if (this.rollKickTime > 0.75f || this.LinearVelocity.Value.Length() < 0.1f)
+				if (this.rollKickTime > 1.0f
+					|| (this.rollKickTime > 0.7f && !this.RollKickButton)
+					|| (this.rollKickTime > 0.25f && Vector3.Dot(originalVelocity, this.forward) < 0.1f))
 				{
 					this.StopKick();
 					return;
 				}
 
-				this.LinearVelocity.Value = new Vector3(this.velocity.X, this.LinearVelocity.Value.Y, this.velocity.Z);
 				if (this.VoxelTools.BreakWalls(this.forward, this.right))
 				{
 					if (this.firstTimeBreak)

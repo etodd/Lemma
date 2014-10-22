@@ -395,6 +395,7 @@ namespace Lemma
 		{
 #endif
 			Factory<Main>.Initialize();
+			Voxel.States.Init();
 			Editor.SetupDefaultEditorComponents();
 
 #if STEAMWORKS

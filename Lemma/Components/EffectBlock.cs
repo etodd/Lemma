@@ -167,7 +167,7 @@ namespace Lemma.Components
 							{
 								if (state.ID != 0)
 									m.Empty(this.Coord);
-								m.Fill(this.Coord, Voxel.States[this.StateId]);
+								m.Fill(this.Coord, Voxel.States.All[this.StateId]);
 								m.Regenerate();
 								if (EffectBlock.random.Next(0, 4) == 0)
 									AkSoundEngine.PostEvent(AK.EVENTS.PLAY_BLOCK_BUILD, this.Entity);

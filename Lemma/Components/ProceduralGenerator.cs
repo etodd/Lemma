@@ -235,12 +235,12 @@ namespace Lemma.Components
 
 			this.Add(new SetBinding<Voxel.t>(this.PrimaryFillValue, delegate(Voxel.t value)
 			{
-				this.primaryFillValue = Voxel.States[value];
+				this.primaryFillValue = Voxel.States.All[value];
 			}));
 
 			this.Add(new SetBinding<Voxel.t>(this.SecondaryFillValue, delegate(Voxel.t value)
 			{
-				this.secondaryFillValue = Voxel.States[value];
+				this.secondaryFillValue = Voxel.States.All[value];
 			}));
 		}
 	}

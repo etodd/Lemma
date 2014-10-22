@@ -245,7 +245,6 @@ namespace Lemma.Factories
 			});
 
 			EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
-			Voxel.State infectedState = Voxel.States[Voxel.t.Infected];
 
 			ai.Add(new AI.AIState
 			{
@@ -315,7 +314,7 @@ namespace Lemma.Factories
 								orb.CoordQueue.RemoveAt(0);
 
 								Entity blockEntity = factory.CreateAndBind(main);
-								infectedState.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
+								Voxel.States.Infected.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
 
 								Entity mapEntity = raycastAI.Voxel.Value.Target;
 								if (mapEntity != null && mapEntity.Active)

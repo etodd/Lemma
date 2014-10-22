@@ -56,11 +56,6 @@ namespace Lemma.Factories
 
 			Agent agent = entity.GetOrCreate<Agent>("Agent");
 
-			Voxel.State infectedState = Voxel.States[Voxel.t.Infected],
-				neutralState = Voxel.States[Voxel.t.Neutral],
-				hardState = Voxel.States[Voxel.t.Hard],
-				hardInfectedState = Voxel.States[Voxel.t.HardInfected];
-
 			const float defaultSpeed = 5.0f;
 			const float chaseSpeed = 18.0f;
 			const float closeChaseSpeed = 12.0f;
@@ -72,7 +67,7 @@ namespace Lemma.Factories
 			chase.EnablePathfinding.Value = ai.CurrentState.Value == "Chase";
 			chase.Filter = delegate(Voxel.State state)
 			{
-				if (state == infectedState || state == neutralState || state == hardState || state == hardInfectedState)
+				if (state == Voxel.States.Infected || state == Voxel.States.Neutral || state == Voxel.States.Hard || state == Voxel.States.HardInfected)
 					return true;
 				return false;
 			};
@@ -186,18 +181,18 @@ namespace Lemma.Factories
 						if (id == Voxel.t.Hard)
 						{
 							m.Empty(c);
-							m.Fill(c, hardInfectedState);
+							m.Fill(c, Voxel.States.HardInfected);
 							m.Regenerate();
 						}
 						else if (id == Voxel.t.Neutral)
 						{
 							m.Empty(c);
-							m.Fill(c, infectedState);
+							m.Fill(c, Voxel.States.Infected);
 							m.Regenerate();
 						}
 						else if (id == Voxel.t.Empty)
 						{
-							m.Fill(c, infectedState);
+							m.Fill(c, Voxel.States.Infected);
 							m.Regenerate();
 						}
 					}

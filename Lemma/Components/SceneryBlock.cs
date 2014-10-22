@@ -29,7 +29,7 @@ namespace Lemma.Components
 					this.Valid.Value = false;
 				else
 				{
-					Voxel.States[value].ApplyToBlock(this.Entity);
+					Voxel.States.All[value].ApplyToBlock(this.Entity);
 					this.Valid.Value = true;
 				}
 			}));

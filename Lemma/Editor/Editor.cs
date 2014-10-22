@@ -224,7 +224,7 @@ namespace Lemma.Components
 
 		private Voxel.State getBrush()
 		{
-			return Voxel.States[this.Brush];
+			return Voxel.States.All[this.Brush];
 		}
 
 		public override void Awake()
@@ -400,7 +400,7 @@ namespace Lemma.Components
 				bool selectionActive = this.VoxelSelectionActive;
 
 				Voxel.State material = this.getBrush();
-				if (material != Voxel.EmptyState)
+				if (material != Voxel.States.Empty)
 				{
 					if (material == selectedBox.Type)
 						return;
@@ -462,7 +462,7 @@ namespace Lemma.Components
 				Voxel.State oldMaterial = selectedBox.Type;
 
 				Voxel.State material = this.getBrush();
-				if (material != Voxel.EmptyState)
+				if (material != Voxel.States.Empty)
 				{
 					if (material == oldMaterial)
 						return;
@@ -491,7 +491,7 @@ namespace Lemma.Components
 				bool selectionActive = this.VoxelSelectionActive;
 
 				Voxel.State material = this.getBrush();
-				if (material != Voxel.EmptyState)
+				if (material != Voxel.States.Empty)
 				{
 					if (material == selectedBox.Type)
 						return;
@@ -1044,7 +1044,7 @@ namespace Lemma.Components
 
 			Voxel.State state = this.getBrush();
 			if (this.Fill == FillMode.Empty)
-				state = Voxel.EmptyState;
+				state = Voxel.States.Empty;
 
 			BrushShapes shape = this.BrushShape;
 			Vector3 pos = map.GetRelativePosition(center);

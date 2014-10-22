@@ -41,8 +41,6 @@ namespace Lemma.Factories
 				light.Add(new Binding<bool>(light.Enabled, sw.On));
 				CommandBinding<IEnumerable<Voxel.Coord>, Voxel> cellFilledBinding = null;
 
-				Voxel.State poweredState = Voxel.States[Voxel.t.PoweredSwitch];
-
 				entity.Add(new NotifyBinding(delegate()
 				{
 					Voxel m = attachable.AttachedVoxel.Value.Target.Get<Voxel>();
@@ -55,14 +53,14 @@ namespace Lemma.Factories
 						{
 							if (c.Equivalent(attachable.Coord))
 							{
-								sw.On.Value = c.Data == poweredState;
+								sw.On.Value = c.Data == Voxel.States.PoweredSwitch;
 								break;
 							}
 						}
 					});
 					entity.Add(cellFilledBinding);
 
-					sw.On.Value = m[attachable.Coord] == poweredState;
+					sw.On.Value = m[attachable.Coord] == Voxel.States.PoweredSwitch;
 				}, attachable.AttachedVoxel));
 			}
 

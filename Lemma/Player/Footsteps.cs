@@ -68,16 +68,11 @@ namespace Lemma.Components
 				}
 			};
 
-			Voxel.State temporary = Voxel.States[Voxel.t.Blue],
-				expander = Voxel.States[Voxel.t.Expander],
-				neutral = Voxel.States[Voxel.t.Neutral],
-				powered = Voxel.States[Voxel.t.Powered];
-
 			this.Add(new CommandBinding<Voxel, Voxel.Coord, Direction>(this.WalkedOn, delegate(Voxel map, Voxel.Coord coord, Direction dir)
 			{
 				Voxel.State state = map[coord];
 
-				if (state != Voxel.EmptyState)
+				if (state != Voxel.States.Empty)
 				{
 					AkSoundEngine.SetSwitch(AK.SWITCHES.FOOTSTEP_MATERIAL.GROUP, state.FootstepSwitch, this.Entity);
 
@@ -119,7 +114,7 @@ namespace Lemma.Components
 							break;
 						}
 					}
-					map.Fill(coord, isPowered ? powered : temporary);
+					map.Fill(coord, isPowered ? Voxel.States.Powered : Voxel.States.Blue);
 					map.Regenerate();
 					WorldFactory.Instance.Get<Propagator>().Sparks(map.GetAbsolutePosition(coord), Propagator.Spark.Normal);
 				}
@@ -145,7 +140,7 @@ namespace Lemma.Components
 								else if (adjacentID == Voxel.t.Infected || adjacentID == Voxel.t.Blue || adjacentID == Voxel.t.Powered)
 								{
 									map.Empty(adjacentCoord, false, true, map);
-									map.Fill(adjacentCoord, neutral);
+									map.Fill(adjacentCoord, Voxel.States.Neutral);
 									regenerate = true;
 								}
 							}
@@ -207,7 +202,7 @@ namespace Lemma.Components
 										{
 											Voxel = map,
 											Coordinate = c,
-											State = expander,
+											State = Voxel.States.Expander,
 										});
 									}
 								}

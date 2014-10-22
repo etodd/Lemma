@@ -41,8 +41,6 @@ namespace Lemma.Components
 		public Property<Direction> WallDirection = new Property<Direction>();
 		public Property<Direction> WallRunDirection = new Property<Direction>();
 
-		private Voxel.State temporary;
-
 		private const float minWallRunSpeed = 4.0f;
 
 		private float lastWallRunEnded = -1.0f;
@@ -61,7 +59,6 @@ namespace Lemma.Components
 			base.Awake();
 			this.Serialize = false;
 			this.EnabledWhenPaused = false;
-			this.temporary = Voxel.States[Voxel.t.Blue];
 		}
 
 		public override void delete()
@@ -363,7 +360,7 @@ namespace Lemma.Components
 								{
 									Voxel = this.WallRunVoxel,
 									Coordinate = y,
-									State = temporary,
+									State = Voxel.States.Blue,
 								});
 							}
 						}

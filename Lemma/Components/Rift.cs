@@ -69,7 +69,7 @@ namespace Lemma.Components
 								for (Voxel.Coord z = y.Move(Direction.NegativeZ, radius); z.Z < center.Z + radius; z.Z++)
 								{
 									float distance = (pos - v.GetRelativePosition(z)).Length();
-									if (distance <= radius && v[z] != Components.Voxel.EmptyState)
+									if (distance <= radius && v[z] != Components.Voxel.States.Empty)
 										coords.Add(new VoxelFill.CoordinateEntry { Coord = z.Clone(), Distance = distance });
 								}
 							}
@@ -120,7 +120,7 @@ namespace Lemma.Components
 					{
 						Voxel.Coord c = this.Coords[this.CurrentIndex];
 						Voxel.State state;
-						if ((state = this.voxel[c]) != Components.Voxel.EmptyState)
+						if ((state = this.voxel[c]) != Components.Voxel.States.Empty)
 						{
 							this.voxel.Empty(c, true, true);
 							regenerate = true;

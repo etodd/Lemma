@@ -63,9 +63,7 @@ namespace Lemma.Components
 			{
 				bool active = this.Locked && (!this.Servo || (this.Servo && this.Goal.Value != this.Minimum.Value));
 
-				Voxel.State slider = Voxel.States[Voxel.t.Slider];
-				Voxel.State powered = Voxel.States[Voxel.t.SliderPowered];
-				Voxel.State desired = active ? powered : slider;
+				Voxel.State desired = active ? Voxel.States.SliderPowered : Voxel.States.Slider;
 				Voxel.t currentID = map[0, 0, 0].ID;
 				if (currentID != desired.ID & (currentID == Voxel.t.Slider || currentID == Voxel.t.SliderPowered))
 				{

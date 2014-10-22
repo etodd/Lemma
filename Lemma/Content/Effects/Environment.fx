@@ -1,6 +1,7 @@
 #include "RenderCommon.fxh"
 
-float Tiling = 1.0f;
+float2x2 UVScaleRotation;
+float2 UVOffset;
 
 float3 Offset;
 
@@ -11,6 +12,13 @@ struct RenderVSInput
 	float3 binormal : BINORMAL0;
 	float3 tangent : TANGENT0;
 };
+
+float2 CalculateUVs(float3 pos, float3 normal)
+{
+	float diff = length(pos * normal) * 2;
+	float2 uv = float2(diff + pos.x + (pos.z * normal.x), diff - pos.y + (pos.z * normal.y));
+	return mul(uv, UVScaleRotation) + UVOffset;
+}
 
 void RenderVS(	in RenderVSInput input,
 				out RenderVSOutput vs,
@@ -30,9 +38,7 @@ void RenderVS(	in RenderVSInput input,
 	normalMap.tangentToWorld[1] = normalize(mul(input.binormal, WorldMatrix));
 	normalMap.tangentToWorld[2] = normalize(mul(input.normal, WorldMatrix));
 
-	float diff = length(input.position * input.normal) * 2;
-
-	tex.uvCoordinates = float2(diff + input.position.x + (input.position.z * input.normal.x), diff - input.position.y + (input.position.z * input.normal.y)) * 0.075f * Tiling;
+	tex.uvCoordinates = CalculateUVs(input.position, input.normal);
 	
 	// Pass along the current vertex position in clip-space,
 	// as well as the previous vertex position in clip-space
@@ -76,7 +82,7 @@ void ShadowAlphaVS(	in float3 inPosition : POSITION0,
 	vs.position = mul(worldPosition, ViewProjectionMatrix);
 	output.clipSpacePosition = vs.position;
 
-	tex.uvCoordinates = float2(localPosition.x + (localPosition.z * inNormal.x), localPosition.y + (localPosition.z * inNormal.y)) * 0.075f * Tiling;
+	tex.uvCoordinates = CalculateUVs(localPosition, inNormal);
 }
 
 // Regular techniques

@@ -213,7 +213,7 @@ namespace Lemma.Factories
 				{
 					foreach (DynamicVoxel spawnedMap in spawnedMaps)
 					{
-						if (spawnedMap[candidate.Value] != Voxel.EmptyState)
+						if (spawnedMap[candidate.Value] != Voxel.States.Empty)
 						{
 							levitator.LevitatingVoxel.Value = spawnedMap.Entity;
 							break;

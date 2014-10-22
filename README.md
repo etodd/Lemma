@@ -43,7 +43,20 @@ To make or edit models, you'll need [Blender](http://blender.org). The asset pip
 License
 =======
 
-The game content is closed-source, but everything you see in this repository is made available under the following license.
+The following textures are adapted from [CGTextures](http://www.cgtextures.com) source images, and are therefore only made available here for modding purposes:
+
+	Lemma/Content/Textures/red-rock.png
+	Lemma/Content/Textures/red-rock-normal.png
+	Lemma/Content/Textures/rock-grass.png
+	Lemma/Content/Textures/rock-grass-normal.png
+	Lemma/Content/Textures/hex.png
+	Lemma/Content/Textures/hex-normal.png
+	Lemma/Content/Textures/lattice.png
+	Lemma/Content/Textures/lattice-normal.png
+
+To use them for your own purposes, you must re-download them from CGTextures and follow their usage guidelines.
+
+The singleplayer game content lives in a closed-source Git submodule. However, everything in this repository not listed in the "Internet Credits" section of `attribution.txt` is made available under the following license:
 
 The MIT License (MIT)
 ---------------------

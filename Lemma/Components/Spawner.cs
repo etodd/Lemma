@@ -181,7 +181,7 @@ namespace Lemma.Components
 										Vector3 absolutePos = respawnMap.GetAbsolutePosition(respawnLocation.Coordinate);
 										if (respawnMap.Active
 											&& absolutePos.Y > lowerLimit
-											&& respawnMap[respawnLocation.Coordinate] != Voxel.EmptyState
+											&& respawnMap[respawnLocation.Coordinate] != Voxel.States.Empty
 											&& respawnMap.GetAbsoluteVector(respawnMap.GetRelativeDirection(Direction.PositiveY).GetVector()).Y > 0.5f
 											&& Agent.Query(absolutePos, 0.0f, 20.0f) == null)
 										{

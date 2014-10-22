@@ -3,7 +3,7 @@ http://et1337.com
 
 ==========================================
 
-Josh Coffey -- Programming and design
+Josh Coffey -- Programming
 http://geel.io
 
 ==========================================
@@ -28,7 +28,25 @@ http://makehuman.org/
 
 ==========================================
 
-Skyboxes by:
+INTERNET CREDITS
+
+==========================================
+
+CGTEXTURES SOURCE MATERIAL
+
+Lemma/Content/Textures/red-rock.png
+Lemma/Content/Textures/red-rock-normal.png
+Lemma/Content/Textures/rock-grass.png
+Lemma/Content/Textures/rock-grass-normal.png
+Lemma/Content/Textures/hex.png
+Lemma/Content/Textures/hex-normal.png
+Lemma/Content/Textures/lattice.png
+Lemma/Content/Textures/lattice-normal.png
+
+==========================================
+
+SKYBOXES
+
 Tim Heldna
 http://www.garagegames.com/community/blogs/view/12655
 Jockum Skoglund aka hipshot
@@ -37,6 +55,10 @@ Colin Lowndes
 http://www.3delyvisions.com
 'The Mighty Pete'
 http://www.petesoasis.com
+
+==========================================
+
+IMAGES / PHOTOS
 
 foliage.png based on Leaves-4145.jpg by David R. Tribble
 http://commons.wikimedia.org/wiki/File:Leaves-4146.jpg
@@ -47,7 +69,8 @@ http://commons.wikimedia.org/wiki/File:%C3%8Dndios_isolados_no_Acre_3.jpg
 
 ==========================================
 
-Audio source material pulled from FreeSound
+FREESOUND AUDIO SOURCE MATERIAL
+
 http://freesound.org
 
 lucid drone.wav by decembered -- License: Attribution
@@ -80,8 +103,6 @@ BreathOfDeath.aif by gabemiller74 -- License: Attribution
 http://www.freesound.org/people/gabemiller74/sounds/60571/ 
 Footsteps On Pipe.mp3 by nickb1608 -- License: Sampling+
 http://www.freesound.org/people/nickb1608/sounds/90916/ 
-Grass Falls by Project_Trident -- License: Attribution Noncommercial
-http://www.freesound.org/people/Project_Trident/sounds/140316/ 
 Splash 1.wav by FreqMan -- License: Attribution
 http://www.freesound.org/people/FreqMan/sounds/25819/ 
 Page_Turn_29.wav by Koops -- License: Attribution

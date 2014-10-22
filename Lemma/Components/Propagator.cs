@@ -45,16 +45,6 @@ namespace Lemma.Components
 		private ParticleSystem particles;
 		private Dictionary<EffectBlock.Entry, int> generations = new Dictionary<EffectBlock.Entry, int>();
 		private EffectBlockFactory blockFactory;
-		private Voxel.State neutral;
-		private Voxel.State powered;
-		private Voxel.State blue;
-		private Voxel.State infected;
-		private Voxel.State poweredSwitch;
-		private Voxel.State permanentPowered;
-		private Voxel.State switchState;
-		private Voxel.State hard;
-		private Voxel.State hardInfected;
-		private Voxel.State hardPowered;
 
 		public override void Awake()
 		{
@@ -66,17 +56,6 @@ namespace Lemma.Components
 
 			if (main.EditorEnabled)
 				this.BlockQueue.Clear();
-
-			this.neutral = Voxel.States[Voxel.t.Neutral];
-			this.powered = Voxel.States[Voxel.t.Powered];
-			this.blue = Voxel.States[Voxel.t.Blue];
-			this.infected = Voxel.States[Voxel.t.Infected];
-			this.poweredSwitch = Voxel.States[Voxel.t.PoweredSwitch];
-			this.permanentPowered = Voxel.States[Voxel.t.PermanentPowered];
-			this.switchState = Voxel.States[Voxel.t.Switch];
-			this.hard = Voxel.States[Voxel.t.Hard];
-			this.hardInfected = Voxel.States[Voxel.t.HardInfected];
-			this.hardPowered = Voxel.States[Voxel.t.HardPowered];
 
 			this.particles = ParticleSystem.Get(main, "WhiteShatter");
 
@@ -100,7 +79,7 @@ namespace Lemma.Components
 						if (id == Voxel.t.Blue || id == Voxel.t.Powered || id == Voxel.t.PoweredSwitch || id == Voxel.t.Infected || id == Voxel.t.Neutral || id == Voxel.t.HardPowered || id == Voxel.t.Hard || id == Voxel.t.HardInfected)
 						{
 							Voxel.Coord newCoord = c;
-							newCoord.Data = Voxel.EmptyState;
+							newCoord.Data = Voxel.States.Empty;
 							int generation;
 							EffectBlock.Entry generationsKey = new EffectBlock.Entry { Voxel = map, Coordinate = newCoord };
 							if (this.generations.TryGetValue(generationsKey, out generation))
@@ -148,7 +127,7 @@ namespace Lemma.Components
 						{
 							int generation;
 							Voxel.Coord c = coord;
-							c.Data = Voxel.EmptyState;
+							c.Data = Voxel.States.Empty;
 							EffectBlock.Entry generationKey = new EffectBlock.Entry { Voxel = map, Coordinate = c };
 							if (this.generations.TryGetValue(generationKey, out generation))
 								this.generations.Remove(generationKey);
@@ -226,7 +205,7 @@ namespace Lemma.Components
 
 					if (handlePowered)
 					{
-						IEnumerable<IEnumerable<Voxel.Box>> poweredIslands = map.GetAdjacentIslands(coords.Where(x => x.Data.ID == Voxel.t.Powered), x => x.ID == Voxel.t.Powered || x.ID == Voxel.t.HardPowered, x => x == this.permanentPowered || x == this.poweredSwitch);
+						IEnumerable<IEnumerable<Voxel.Box>> poweredIslands = map.GetAdjacentIslands(coords.Where(x => x.Data.ID == Voxel.t.Powered), x => x.ID == Voxel.t.Powered || x.ID == Voxel.t.HardPowered, x => x == Voxel.States.PermanentPowered || x == Voxel.States.PoweredSwitch);
 						List<Voxel.Coord> poweredCoords = poweredIslands.SelectMany(x => x).SelectMany(x => x.GetCoords()).ToList();
 						if (poweredCoords.Count > 0)
 						{
@@ -234,9 +213,9 @@ namespace Lemma.Components
 							foreach (Voxel.Coord coord in poweredCoords)
 							{
 								if (coord.Data.ID == Voxel.t.HardPowered)
-									map.Fill(coord, this.hard);
+									map.Fill(coord, Voxel.States.Hard);
 								else
-									map.Fill(coord, this.blue);
+									map.Fill(coord, Voxel.States.Blue);
 							}
 							map.Regenerate();
 						}
@@ -341,7 +320,7 @@ namespace Lemma.Components
 								if (adjacentID == Voxel.t.Powered || adjacentID == Voxel.t.PermanentPowered || adjacentID == Voxel.t.HardPowered || adjacentID == Voxel.t.PoweredSwitch)
 								{
 									map.Empty(c, false, true, map);
-									map.Fill(c, powered);
+									map.Fill(c, Voxel.States.Powered);
 									this.SparksLowPriority(map.GetAbsolutePosition(c), Spark.Normal);
 									regenerate = true;
 								}
@@ -349,7 +328,7 @@ namespace Lemma.Components
 								{
 									map.Empty(adjacent, false, true, map);
 									this.generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
-									map.Fill(adjacent, blue);
+									map.Fill(adjacent, Voxel.States.Blue);
 									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
@@ -364,14 +343,14 @@ namespace Lemma.Components
 								if (adjacentID == Voxel.t.Infected || adjacentID == Voxel.t.Blue || adjacentID == Voxel.t.Powered)
 								{
 									map.Empty(adjacent, false, true, map);
-									map.Fill(adjacent, neutral);
+									map.Fill(adjacent, Voxel.States.Neutral);
 									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
 								else if (adjacentID == Voxel.t.HardInfected)
 								{
 									map.Empty(adjacent, false, true, map);
-									map.Fill(adjacent, hard);
+									map.Fill(adjacent, Voxel.States.Hard);
 									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
@@ -387,21 +366,21 @@ namespace Lemma.Components
 								if (adjacentID == Voxel.t.Blue)
 								{
 									map.Empty(adjacent, false, true, map);
-									map.Fill(adjacent, this.powered);
+									map.Fill(adjacent, Voxel.States.Powered);
 									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
 								else if (adjacentID == Voxel.t.Switch)
 								{
 									map.Empty(adjacent, true, true, map);
-									map.Fill(adjacent, this.poweredSwitch);
+									map.Fill(adjacent, Voxel.States.PoweredSwitch);
 									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
 								else if (adjacentID == Voxel.t.Hard)
 								{
 									map.Empty(adjacent, true, true, map);
-									map.Fill(adjacent, this.hardPowered);
+									map.Fill(adjacent, Voxel.States.HardPowered);
 									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
@@ -422,7 +401,7 @@ namespace Lemma.Components
 								{
 									map.Empty(adjacent, false, true, map);
 									this.generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
-									map.Fill(adjacent, infected);
+									map.Fill(adjacent, Voxel.States.Infected);
 									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Dangerous);
 									regenerate = true;
 								}
@@ -430,7 +409,7 @@ namespace Lemma.Components
 								{
 									map.Empty(adjacent, false, true, map);
 									this.generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
-									map.Fill(adjacent, hardInfected);
+									map.Fill(adjacent, Voxel.States.HardInfected);
 									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Dangerous);
 									regenerate = true;
 								}

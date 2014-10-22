@@ -136,7 +136,7 @@ namespace Lemma.Components
 					float attenuation = 1.0f;
 					Voxel.GlobalRaycast(pos, toPlayer / d, d, delegate(int x, Voxel.t c)
 					{
-						Voxel.State s = Voxel.States[c];
+						Voxel.State s = Voxel.States.All[c];
 						if (s.Permanent)
 						{
 							attenuation = 0.0f;
