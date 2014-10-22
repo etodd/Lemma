@@ -513,7 +513,7 @@ function offerDownload(name, data)
 	a.remove();
 }
 
-function promptFilename()
+function promptFilename(callback)
 {
 	if (fs)
 	{
@@ -524,11 +524,17 @@ function promptFilename()
 		}, function(err, files)
 		{
 			if (!err && files.length == 1)
+			{
 				filename = files[0];
+				callback(filename);
+			}
 		});
 	}
 	else
+	{
 		filename = prompt('Filename', defaultFilename);
+		callback(filename);
+	}
 }
 
 function applyTextFields()
@@ -540,7 +546,13 @@ function save()
 {
 	applyTextFields();
 	if (!filename)
-		promptFilename();
+		promptFilename(doSave);
+	else
+		doSave();
+}
+
+function doSave()
+{
 	if (filename)
 	{
 		if (fs)

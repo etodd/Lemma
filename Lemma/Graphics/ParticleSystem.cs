@@ -314,6 +314,7 @@ namespace Lemma.Components
 				MinColor = new Vector4(1.2f, 1.4f, 1.6f, 1.0f),
 				MaxColor = new Vector4(1.2f, 1.4f, 1.6f, 1.0f),
 				PostAlpha = true,
+				EmitterVelocitySensitivity = 0.1f,
 			});
 
 			ParticleSystem.add(main, "Rift",
@@ -339,6 +340,7 @@ namespace Lemma.Components
 				MinColor = new Vector4(1.2f, 1.4f, 1.6f, 1.0f),
 				MaxColor = new Vector4(1.2f, 1.4f, 1.6f, 1.0f),
 				PostAlpha = true,
+				EmitterVelocitySensitivity = 0.0f,
 			});
 
 			ParticleSystem.Add(main, "Purple",
@@ -361,6 +363,7 @@ namespace Lemma.Components
 				BlendState = Microsoft.Xna.Framework.Graphics.BlendState.Additive,
 				MinColor = new Vector4(0.8f, 0.3f, 1.5f, 1.0f),
 				MaxColor = new Vector4(1.0f, 0.5f, 2.0f, 1.0f),
+				EmitterVelocitySensitivity = 0.1f,
 			});
 
 			ParticleSystem.add(main, "DistortionSmall",
@@ -386,6 +389,7 @@ namespace Lemma.Components
 				MinColor = new Vector4(1.2f, 1.4f, 1.6f, 1.0f),
 				MaxColor = new Vector4(1.2f, 1.4f, 1.6f, 1.0f),
 				PostAlpha = true,
+				EmitterVelocitySensitivity = 0.1f,
 			});
 
 			ParticleSystem.add(main, "Smoke",

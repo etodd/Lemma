@@ -137,7 +137,7 @@ namespace Lemma.Components
 								Entity blockEntity = this.blockFactory.CreateAndBind(main);
 								EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
 								coord.Data.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
-								effectBlock.Delay.Value = 4.0f;
+								effectBlock.Delay.Value = 6.0f;
 								effectBlock.Offset.Value = map.GetRelativePosition(coord);
 								effectBlock.StartPosition.Value = map.GetAbsolutePosition(coord) + new Vector3(2.5f, 5.0f, 2.5f);
 								effectBlock.StartOrientation.Value = Quaternion.CreateFromYawPitchRoll(1.0f, 1.0f, 0);

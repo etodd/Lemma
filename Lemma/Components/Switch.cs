@@ -56,23 +56,29 @@ namespace Lemma.Components
 
 						Dictionary<Voxel.Coord, bool> visited = new Dictionary<Voxel.Coord, bool>();
 						Queue<Voxel.Coord> queue = new Queue<Voxel.Coord>();
-						queue.Enqueue(s.Coord);
+						Voxel.Coord start = s.Coord;
+						start.Data = map[start];
+						queue.Enqueue(start);
 						while (queue.Count > 0)
 						{
 							Voxel.Coord c = queue.Dequeue();
 							map.Empty(c, true, true, map);
-							map.Fill(c, Voxel.States.Switch);
+							if (c.Data == Voxel.States.PoweredSwitch)
+								map.Fill(c, Voxel.States.Switch);
+							else
+								map.Fill(c, Voxel.States.Hard);
 							regenerate = true;
+							c.Data = null; // Ensure the visited dictionary works correctly
 							visited[c] = true;
 							foreach (Direction adjacentDirection in DirectionExtensions.Directions)
 							{
 								Voxel.Coord adjacentCoord = c.Move(adjacentDirection);
 								if (!visited.ContainsKey(adjacentCoord))
 								{
-									Voxel.t adjacentID = map[adjacentCoord].ID;
-									if (adjacentID == Voxel.t.PoweredSwitch)
+									adjacentCoord.Data = map[adjacentCoord];
+									if (adjacentCoord.Data == Voxel.States.PoweredSwitch || adjacentCoord.Data == Voxel.States.HardPowered)
 										queue.Enqueue(adjacentCoord);
-									else if (adjacentID == Voxel.t.Blue || adjacentID == Voxel.t.Powered)
+									else if (adjacentCoord.Data == Voxel.States.Blue || adjacentCoord.Data == Voxel.States.Powered)
 									{
 										map.Empty(adjacentCoord, true, true, map);
 										map.Fill(adjacentCoord, Voxel.States.Neutral);

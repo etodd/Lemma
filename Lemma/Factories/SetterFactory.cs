@@ -42,13 +42,6 @@ namespace Lemma.Factories
 
 			if (main.EditorEnabled)
 			{
-				Func<Setter.PropType, Property<bool>> visible = delegate(Setter.PropType t)
-				{
-					Property<bool> result = new Property<bool>();
-					entity.Add(new Binding<bool, Setter.PropType>(result, x => x == t, setter.PropertyType));
-					return result;
-				};
-
 				ListProperty<string> targetOptions = new ListProperty<string>();
 				Action populateOptions = delegate()
 				{
@@ -71,15 +64,49 @@ namespace Lemma.Factories
 					Options = targetOptions,
 				});
 
-				entity.Add("Bool", setter.Bool, null, visible(Setter.PropType.Bool));
-				entity.Add("Int", setter.Int, null, visible(Setter.PropType.Int));
-				entity.Add("Float", setter.Float, null, visible(Setter.PropType.Float));
-				entity.Add("Direction", setter.Direction, null, visible(Setter.PropType.Direction));
-				entity.Add("String", setter.String, null, visible(Setter.PropType.String));
-				entity.Add("Vector2", setter.Vector2, null, visible(Setter.PropType.Vector2));
-				entity.Add("Vector3", setter.Vector3, null, visible(Setter.PropType.Vector3));
-				entity.Add("Vector4", setter.Vector4, null, visible(Setter.PropType.Vector4));
-				entity.Add("Coord", setter.Coord, null, visible(Setter.PropType.Coord));
+				Func<Setter.PropType, Property<bool>> visible = delegate(Setter.PropType t)
+				{
+					Property<bool> result = new Property<bool>();
+					entity.Add(new Binding<bool, Setter.PropType>(result, x => x == t, setter.PropertyType));
+					return result;
+				};
+
+				entity.Add("Bool", setter.Bool, new PropertyEntry.EditorData
+				{
+					Visible = visible(Setter.PropType.Bool),
+				});
+				entity.Add("Int", setter.Int, new PropertyEntry.EditorData
+				{
+					Visible = visible(Setter.PropType.Int),
+				});
+				entity.Add("Float", setter.Float, new PropertyEntry.EditorData
+				{
+					Visible = visible(Setter.PropType.Float),
+				});
+				entity.Add("Direction", setter.Direction, new PropertyEntry.EditorData
+				{
+					Visible = visible(Setter.PropType.Direction),
+				});
+				entity.Add("String", setter.String, new PropertyEntry.EditorData
+				{
+					Visible = visible(Setter.PropType.String),
+				});
+				entity.Add("Vector2", setter.Vector2, new PropertyEntry.EditorData
+				{
+					Visible = visible(Setter.PropType.Vector2),
+				});
+				entity.Add("Vector3", setter.Vector3, new PropertyEntry.EditorData
+				{
+					Visible = visible(Setter.PropType.Vector3),
+				});
+				entity.Add("Vector4", setter.Vector4, new PropertyEntry.EditorData
+				{
+					Visible = visible(Setter.PropType.Vector4),
+				});
+				entity.Add("Coord", setter.Coord, new PropertyEntry.EditorData
+				{
+					Visible = visible(Setter.PropType.Coord),
+				});
 			}
 			else
 			{
