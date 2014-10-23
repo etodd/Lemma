@@ -102,7 +102,7 @@ namespace Lemma.Components
 
 		public enum TransformModes { None, Translate, Rotate };
 		public Property<TransformModes> TransformMode = new Property<TransformModes> { Value = TransformModes.None };
-		public enum TransformAxes { All, X, Y, Z };
+		public enum TransformAxes { All, X, Y, Z, LocalX, LocalY, LocalZ };
 		public Property<TransformAxes> TransformAxis = new Property<TransformAxes> { Value = TransformAxes.All };
 		public enum BrushShapes { Sphere, Cube }
 		public Property<BrushShapes> BrushShape = new Property<BrushShapes> { Value = BrushShapes.Sphere };
@@ -987,6 +987,7 @@ namespace Lemma.Components
 				Vector2 newOffset = new Vector2(this.Mouse.Value.X - screenSpaceCenter.X, this.Mouse.Value.Y - screenSpaceCenter.Y);
 				float newAngle = (float)Math.Atan2(newOffset.Y, newOffset.X);
 				Vector3 axis = this.main.Camera.Forward;
+				Matrix localRotation = this.offsetTransforms.Count == 1 ? this.offsetTransforms[0] : Matrix.Identity;
 				switch (this.TransformAxis.Value)
 				{
 					case TransformAxes.X:
@@ -997,6 +998,15 @@ namespace Lemma.Components
 						break;
 					case TransformAxes.Z:
 						axis = Vector3.Forward;
+						break;
+					case TransformAxes.LocalX:
+						axis = Vector3.Normalize(localRotation.Right);
+						break;
+					case TransformAxes.LocalY:
+						axis = Vector3.Normalize(localRotation.Up);
+						break;
+					case TransformAxes.LocalZ:
+						axis = Vector3.Normalize(localRotation.Forward);
 						break;
 				}
 				if (this.SelectedTransform.Value != null)

@@ -245,6 +245,7 @@ namespace Lemma.Components
 		{
 			return s != Voxel.States.Empty
 				&& s != Voxel.States.Blue
+				&& s != Voxel.States.Powered
 				&& s != Voxel.States.Infected
 				&& s != Voxel.States.HardInfected
 				&& s != Voxel.States.SliderPowered

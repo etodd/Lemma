@@ -121,7 +121,7 @@ namespace Lemma.Components
 			public static Dictionary<t, State> All = new Dictionary<t, State>();
 			public static List<State> List = new List<State>();
 
-			public static State Empty = new State
+			public static readonly State Empty = new State
 			{
 				ID = 0,
 				Fake = true,
@@ -130,7 +130,7 @@ namespace Lemma.Components
 				Hard = false,
 			};
 
-			public static State Rock = new State
+			public static readonly State Rock = new State
 			{
 				ID = t.Rock,
 				Permanent = true,
@@ -155,7 +155,7 @@ namespace Lemma.Components
 				},
 				Tint = new Vector3(0.88f, 0.89f, 0.9f),
 			};
-			public static State Blue = new State
+			public static readonly State Blue = new State
 			{
 				ID = t.Blue,
 				Permanent = false,
@@ -175,7 +175,7 @@ namespace Lemma.Components
 				},
 				Tint = new Vector3(0.3f, 0.5f, 0.7f),
 			};
-			public static State AvoidAI = new State
+			public static readonly State AvoidAI = new State
 			{
 				ID = t.AvoidAI,
 				Permanent = true,
@@ -195,7 +195,7 @@ namespace Lemma.Components
 				},
 				Tint = new Vector3(0.15f),
 			};
-			public static State Dirt = new State
+			public static readonly State Dirt = new State
 			{
 				ID = t.Dirt,
 				Permanent = false,
@@ -214,7 +214,7 @@ namespace Lemma.Components
 					}
 				},
 			};
-			public static State Reset = new State
+			public static readonly State Reset = new State
 			{
 				ID = t.Reset,
 				Permanent = false,
@@ -234,7 +234,7 @@ namespace Lemma.Components
 				},
 				Tint = new Vector3(0.0f, 0.6f, 0.0f),
 			};
-			public static State Critical = new State
+			public static readonly State Critical = new State
 			{
 				ID = t.Critical,
 				Permanent = false,
@@ -253,7 +253,7 @@ namespace Lemma.Components
 					}
 				},
 			};
-			public static State Foliage = new State
+			public static readonly State Foliage = new State
 			{
 				ID = t.Foliage,
 				Permanent = false,
@@ -279,7 +279,7 @@ namespace Lemma.Components
 				AllowAlpha = true,
 				Tiling = 3.0f,
 			};
-			public static State Hard = new State
+			public static readonly State Hard = new State
 			{
 				ID = t.Hard,
 				Permanent = false,
@@ -299,7 +299,7 @@ namespace Lemma.Components
 				},
 				Tint = new Vector3(0.55f, 0.47f, 0.4f),
 			};
-			public static State Floater = new State
+			public static readonly State Floater = new State
 			{
 				ID = t.Floater,
 				Permanent = false,
@@ -319,7 +319,7 @@ namespace Lemma.Components
 				},
 				Tint = new Vector3(0.9f, 0.3f, 0.0f),
 			};
-			public static State Expander = new State
+			public static readonly State Expander = new State
 			{
 				ID = t.Expander,
 				Permanent = false,
@@ -339,7 +339,7 @@ namespace Lemma.Components
 				},
 				Tint = new Vector3(0.8f, 0.5f, 0.9f),
 			};
-			public static State Wood = new State
+			public static readonly State Wood = new State
 			{
 				ID = t.Wood,
 				Permanent = false,
@@ -359,7 +359,7 @@ namespace Lemma.Components
 				},
 				Tiling = 1.5f,
 			};
-			public static State HardPowered = new State
+			public static readonly State HardPowered = new State
 			{
 				ID = t.HardPowered,
 				Permanent = false,
@@ -379,7 +379,7 @@ namespace Lemma.Components
 					},
 				},
 			};
-			public static State Neutral = new State
+			public static readonly State Neutral = new State
 			{
 				ID = t.Neutral,
 				Permanent = false,
@@ -399,7 +399,7 @@ namespace Lemma.Components
 				},
 				Tint = new Vector3(0.7f),
 			};
-			public static State RockGrassy = new State
+			public static readonly State RockGrassy = new State
 			{
 				ID = t.RockGrassy,
 				Permanent = true,
@@ -419,7 +419,7 @@ namespace Lemma.Components
 				},
 				Tiling = 0.7f,
 			};
-			public static State Brick = new State
+			public static readonly State Brick = new State
 			{
 				ID = t.Brick,
 				Permanent = true,
@@ -439,7 +439,7 @@ namespace Lemma.Components
 				},
 				Tiling = 1.25f,
 			};
-			public static State Lattice = new State
+			public static readonly State Lattice = new State
 			{
 				ID = t.Lattice,
 				Permanent = true,
@@ -458,7 +458,7 @@ namespace Lemma.Components
 					}
 				},
 			};
-			public static State RockChunky = new State
+			public static readonly State RockChunky = new State
 			{
 				ID = t.RockChunky,
 				Permanent = true,
@@ -479,7 +479,7 @@ namespace Lemma.Components
 				Tiling = 0.5f,
 				Tint = new Vector3(0.88f, 0.89f, 0.9f),
 			};
-			public static State RockRed = new State
+			public static readonly State RockRed = new State
 			{
 				ID = t.RockRed,
 				Permanent = true,
@@ -499,7 +499,7 @@ namespace Lemma.Components
 					}
 				},
 			};
-			public static State White = new State
+			public static readonly State White = new State
 			{
 				ID = t.White,
 				Permanent = false,
@@ -515,7 +515,7 @@ namespace Lemma.Components
 					Model.Material.Unlit,
 				},
 			};
-			public static State Metal = new State
+			public static readonly State Metal = new State
 			{
 				ID = t.Metal,
 				Permanent = true,
@@ -539,7 +539,7 @@ namespace Lemma.Components
 					},
 				},
 			};
-			public static State MetalSwirl = new State
+			public static readonly State MetalSwirl = new State
 			{
 				ID = t.MetalSwirl,
 				Permanent = true,
@@ -564,7 +564,7 @@ namespace Lemma.Components
 				},
 				Tint = new Vector3(0.21f, 0.22f, 0.23f),
 			};
-			public static State Hex = new State
+			public static readonly State Hex = new State
 			{
 				ID = t.Hex,
 				Permanent = true,
@@ -583,7 +583,7 @@ namespace Lemma.Components
 					},
 				},
 			};
-			public static State Invisible = new State
+			public static readonly State Invisible = new State
 			{
 				ID = t.Invisible,
 				Permanent = true,
@@ -597,7 +597,7 @@ namespace Lemma.Components
 				NormalMap = "Textures\\plain-normal",
 				Tint = new Vector3(0.5f),
 			};
-			public static State WhitePermanent = new State
+			public static readonly State WhitePermanent = new State
 			{
 				ID = t.WhitePermanent,
 				Permanent = true,
@@ -613,7 +613,7 @@ namespace Lemma.Components
 					Model.Material.Unlit,
 				},
 			};
-			public static State Switch = new State
+			public static readonly State Switch = new State
 			{
 				ID = t.Switch,
 				Permanent = true,
@@ -639,7 +639,7 @@ namespace Lemma.Components
 				Tiling = 3.0f,
 				Tint = new Vector3(0.3f, 0.6f, 0.8f),
 			};
-			public static State PoweredSwitch = new State
+			public static readonly State PoweredSwitch = new State
 			{
 				ID = t.PoweredSwitch,
 				Permanent = true,
@@ -660,7 +660,7 @@ namespace Lemma.Components
 				},
 				Tiling = 3.0f,
 			};
-			public static State Powered = new State
+			public static readonly State Powered = new State
 			{
 				ID = t.Powered,
 				Permanent = false,
@@ -680,7 +680,7 @@ namespace Lemma.Components
 					},
 				},
 			};
-			public static State PermanentPowered = new State
+			public static readonly State PermanentPowered = new State
 			{
 				ID = t.PermanentPowered,
 				Permanent = true,
@@ -700,7 +700,7 @@ namespace Lemma.Components
 					},
 				},
 			};
-			public static State HardInfected = new State
+			public static readonly State HardInfected = new State
 			{
 				ID = t.HardInfected,
 				Permanent = false,
@@ -720,7 +720,7 @@ namespace Lemma.Components
 					},
 				},
 			};
-			public static State Infected = new State
+			public static readonly State Infected = new State
 			{
 				ID = t.Infected,
 				Permanent = false,
@@ -740,7 +740,7 @@ namespace Lemma.Components
 					},
 				},
 			};
-			public static State Black = new State
+			public static readonly State Black = new State
 			{
 				ID = t.Black,
 				Permanent = true,
@@ -761,7 +761,7 @@ namespace Lemma.Components
 				},
 				Tint = Vector3.Zero,
 			};
-			public static State Slider = new State
+			public static readonly State Slider = new State
 			{
 				ID = t.Slider,
 				Permanent = true,
@@ -786,7 +786,7 @@ namespace Lemma.Components
 				Tiling = 2.0f,
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 			};
-			public static State SliderPowered = new State
+			public static readonly State SliderPowered = new State
 			{
 				ID = t.SliderPowered,
 				Permanent = true,
@@ -807,7 +807,7 @@ namespace Lemma.Components
 				Tiling = 2.0f,
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 			};
-			public static State Snow = new State
+			public static readonly State Snow = new State
 			{
 				ID = t.Snow,
 				Permanent = false,
@@ -832,7 +832,7 @@ namespace Lemma.Components
 				},
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.GRAVEL,
 			};
-			public static State Ice = new State
+			public static readonly State Ice = new State
 			{
 				ID = t.Ice,
 				Permanent = false,

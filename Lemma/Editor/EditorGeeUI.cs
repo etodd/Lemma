@@ -20,6 +20,7 @@ using Keys = Microsoft.Xna.Framework.Input.Keys;
 using ListView = GeeUI.Views.ListView;
 using View = GeeUI.Views.View;
 using System.IO;
+using Lemma.Console;
 
 namespace Lemma.Components
 {
@@ -76,7 +77,7 @@ namespace Lemma.Components
 
 		public Property<bool> NeedsSave = new Property<bool>();
 
-		public Property<bool> Visible = new Property<bool>();
+		public Property<bool> Visible = new Property<bool> { Value = true };
 
 		public Command ShowContextMenu = new Command();
 
@@ -98,8 +99,13 @@ namespace Lemma.Components
 		{
 			base.Awake();
 
+			Lemma.Console.Console.AddConVar(new ConVar("editor_ui", "Editor UI visibility", delegate(string value)
+			{
+				this.Visible.Value = (bool)Console.Console.GetConVar("editor_ui").GetCastedValue();
+			}, "true") { TypeConstraint = typeof(bool) });
+
 			this.RootEditorView = new View(this.main.GeeUI, this.main.GeeUI.RootView);
-			this.Add(new Binding<bool>(this.RootEditorView.Active, this.Visible));
+			this.Add(new Binding<bool>(this.RootEditorView.Active, () => this.Visible && !ConsoleUI.Showing, this.Visible, ConsoleUI.Showing));
 
 			this.selectPrompt = new TextView(this.main.GeeUI, this.main.GeeUI.RootView, "Select an entity", Vector2.Zero);
 			this.selectPrompt.Add(new Binding<Vector2, MouseState>(this.selectPrompt.Position, x => new Vector2(x.X + 16, x.Y + 16), this.main.MouseState));
@@ -339,6 +345,17 @@ namespace Lemma.Components
 				if (this.VoxelEditMode)
 					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Voxel"));
 			}, this.VoxelEditMode));
+		}
+
+		public override void delete()
+		{
+			base.delete();
+			Lemma.Console.Console.RemoveConVar("editor_ui");
+			this.RootEditorView.RemoveFromParent();
+			this.selectPrompt.RemoveFromParent();
+			this.PropertiesView.RemoveFromParent();
+			this.LinkerView.RemoveFromParent();
+			this.EntityListView.RemoveFromParent();
 		}
 
 		private DropDownView voxelMaterialDropDown;
@@ -1333,15 +1350,5 @@ namespace Lemma.Components
 		}
 
 		#endregion
-
-		public override void delete()
-		{
-			base.delete();
-			this.RootEditorView.RemoveFromParent();
-			this.selectPrompt.RemoveFromParent();
-			this.PropertiesView.RemoveFromParent();
-			this.LinkerView.RemoveFromParent();
-			this.EntityListView.RemoveFromParent();
-		}
 	}
 }

@@ -101,7 +101,7 @@ void SkyboxPS(in RenderPSInput input,
 		{
 			s += viewRay;
 			float4 shadowPos = mul(float4(s + tex2D(RandomSampler, s.xy), 1.0f), ShadowViewProjectionMatrix);
-			float v = GetShadowValueNoFilter(shadowPos);
+			float v = GetShadowValueRaw(shadowPos);
 			float newValue = 0.0f;
 			if (v > 0.0f)
 				newValue = 1.0f - min(v * GodRayExtinction, 1);

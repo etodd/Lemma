@@ -115,7 +115,7 @@ namespace Lemma.Factories
 
 			Editor editor = entity.GetOrCreate<Editor>();
 			EditorGeeUI gui = entity.Create<EditorGeeUI>();
-			gui.Add(new Binding<bool>(gui.Visible, x => !x, ConsoleUI.Showing));
+
 			gui.Add(new Binding<bool>(gui.MovementEnabled, editor.MovementEnabled));
 
 			Property<bool> coordinateVisible = new Property<bool>();
@@ -398,55 +398,115 @@ namespace Lemma.Factories
 				editor.VoxelEditMode, editor.SelectedEntities.Length
 			);
 
+			Action<Factory<Main>> convertVoxel = delegate(Factory<Main> voxelFactory)
+			{
+				Entity currentVoxel = editor.SelectedEntities[0];
+				Voxel map1 = currentVoxel.Get<Voxel>();
+
+				Entity voxelFill = voxelFactory.CreateAndBind(main);
+				Transform oldPosition = currentVoxel.Get<Transform>("Transform");
+				Transform position = voxelFill.Get<Transform>("Transform");
+				position.Position.Value = oldPosition.Position.Value;
+				position.Quaternion.Value = oldPosition.Quaternion.Value;
+				main.Add(voxelFill);
+				Voxel.Coord offset = new Voxel.Coord
+				{
+					X = -(int)map1.Offset.Value.X,
+					Y = -(int)map1.Offset.Value.Y,
+					Z = -(int)map1.Offset.Value.Z,
+				};
+
+				Voxel map2 = voxelFill.Get<Voxel>();
+
+				foreach (Voxel.Chunk chunk in map1.Chunks)
+				{
+					foreach (Voxel.Box box in chunk.Boxes)
+					{
+						foreach (Voxel.Coord coord in box.GetCoords())
+							map2.Fill(coord.Plus(offset), box.Type, notify: false);
+					}
+				}
+				map2.Regenerate();
+
+				editor.NeedsSave.Value = true;
+				editor.SelectedEntities.Clear();
+				editor.SelectedEntities.Add(voxelFill);
+
+				currentVoxel.Delete.Execute();
+			};
+
 			AddCommand
 			(
-				entity, main, "Create VoxelFill", new PCInput.Chord(),
+				entity, main, "Convert to DynamicVoxel", new PCInput.Chord(),
 				new Command
 				{
 					Action = delegate()
 					{
-						Entity currentVoxel = editor.SelectedEntities[0];
-						Voxel map1 = currentVoxel.Get<Voxel>();
-
-						Entity voxelFill = Factory<Main>.Get<VoxelFillFactory>().CreateAndBind(main);
-						Transform oldPosition = currentVoxel.Get<Transform>("Transform");
-						Transform position = voxelFill.Get<Transform>("Transform");
-						position.Position.Value = oldPosition.Position.Value;
-						position.Quaternion.Value = oldPosition.Quaternion.Value;
-						voxelFill.Get<VoxelFill>().Target.Value = map1.Entity;
-						main.Add(voxelFill);
-
-						Voxel map2 = voxelFill.Get<Voxel>();
-
-						foreach (Voxel.Chunk chunk in map1.Chunks)
-						{
-							foreach (Voxel.Box box in chunk.Boxes)
-							{
-								foreach (Voxel.Coord coord in box.GetCoords())
-									map2.Fill(map1.GetAbsolutePosition(coord), box.Type, false);
-							}
-						}
-						map2.Regenerate();
-
-						List<Voxel.Coord> toRemove = new List<Voxel.Coord>();
-						foreach (Voxel.Chunk chunk in map1.Chunks)
-						{
-							foreach (Voxel.Box box in chunk.Boxes)
-							{
-								foreach (Voxel.Coord coord in box.GetCoords())
-									toRemove.Add(coord);
-							}
-						}
-						map1.Empty(toRemove, true, notify: false);
-						map1.Regenerate();
-
-						editor.NeedsSave.Value = true;
-						editor.SelectedEntities.Clear();
-						editor.SelectedEntities.Add(voxelFill);
+						convertVoxel(Factory<Main>.Get<DynamicVoxelFactory>());
 					}
 				},
 				gui.VoxelCommands,
-				() => !editor.VoxelEditMode && editor.SelectedEntities.Length == 1 && editor.SelectedEntities[0].Type == "Voxel",
+				() => !editor.VoxelEditMode && editor.SelectedEntities.Length == 1 && editor.SelectedEntities[0].Get<Voxel>() != null && editor.SelectedEntities[0].Type != "DynamicVoxel",
+				editor.VoxelEditMode, editor.SelectedEntities.Length
+			);
+
+			AddCommand
+			(
+				entity, main, "Convert to Voxel", new PCInput.Chord(),
+				new Command
+				{
+					Action = delegate()
+					{
+						convertVoxel(Factory<Main>.Get<VoxelFactory>());
+					}
+				},
+				gui.VoxelCommands,
+				() => !editor.VoxelEditMode && editor.SelectedEntities.Length == 1 && editor.SelectedEntities[0].Get<Voxel>() != null && editor.SelectedEntities[0].Type != "Voxel",
+				editor.VoxelEditMode, editor.SelectedEntities.Length
+			);
+
+			AddCommand
+			(
+				entity, main, "Convert to Slider", new PCInput.Chord(),
+				new Command
+				{
+					Action = delegate()
+					{
+						convertVoxel(Factory<Main>.Get<SliderFactory>());
+					}
+				},
+				gui.VoxelCommands,
+				() => !editor.VoxelEditMode && editor.SelectedEntities.Length == 1 && editor.SelectedEntities[0].Get<Voxel>() != null && editor.SelectedEntities[0].Type != "Slider",
+				editor.VoxelEditMode, editor.SelectedEntities.Length
+			);
+
+			AddCommand
+			(
+				entity, main, "Convert to Spinner", new PCInput.Chord(),
+				new Command
+				{
+					Action = delegate()
+					{
+						convertVoxel(Factory<Main>.Get<SpinnerFactory>());
+					}
+				},
+				gui.VoxelCommands,
+				() => !editor.VoxelEditMode && editor.SelectedEntities.Length == 1 && editor.SelectedEntities[0].Get<Voxel>() != null && editor.SelectedEntities[0].Type != "Spinner",
+				editor.VoxelEditMode, editor.SelectedEntities.Length
+			);
+
+			AddCommand
+			(
+				entity, main, "Convert to VoxelFill", new PCInput.Chord(),
+				new Command
+				{
+					Action = delegate()
+					{
+						convertVoxel(Factory<Main>.Get<VoxelFillFactory>());
+					}
+				},
+				gui.VoxelCommands,
+				() => !editor.VoxelEditMode && editor.SelectedEntities.Length == 1 && editor.SelectedEntities[0].Get<Voxel>() != null && editor.SelectedEntities[0].Type != "VoxelFill",
 				editor.VoxelEditMode, editor.SelectedEntities.Length
 			);
 
@@ -822,7 +882,18 @@ namespace Lemma.Factories
 				main,
 				"Lock X axis",
 				new PCInput.Chord { Key = Keys.X },
-				new Command { Action = () => editor.TransformAxis.Value = Editor.TransformAxes.X },
+				new Command
+				{
+					Action = delegate()
+					{
+						if (editor.TransformAxis.Value == Editor.TransformAxes.X)
+							editor.TransformAxis.Value = Editor.TransformAxes.LocalX;
+						else if (editor.TransformAxis.Value == Editor.TransformAxes.LocalX)
+							editor.TransformAxis.Value = Editor.TransformAxes.All;
+						else
+							editor.TransformAxis.Value = Editor.TransformAxes.X;
+					}
+				},
 				gui.EntityCommands,
 				() => !editor.VoxelEditMode && editor.TransformMode.Value != Editor.TransformModes.None,
 				editor.VoxelEditMode, editor.TransformMode
@@ -833,7 +904,18 @@ namespace Lemma.Factories
 				main,
 				"Lock Y axis",
 				new PCInput.Chord { Key = Keys.Y },
-				new Command { Action = () => editor.TransformAxis.Value = Editor.TransformAxes.Y },
+				new Command
+				{
+					Action = delegate()
+					{
+						if (editor.TransformAxis.Value == Editor.TransformAxes.Y)
+							editor.TransformAxis.Value = Editor.TransformAxes.LocalY;
+						else if (editor.TransformAxis.Value == Editor.TransformAxes.LocalY)
+							editor.TransformAxis.Value = Editor.TransformAxes.All;
+						else
+							editor.TransformAxis.Value = Editor.TransformAxes.Y;
+					}
+				},
 				gui.EntityCommands,
 				() => !editor.VoxelEditMode && editor.TransformMode.Value != Editor.TransformModes.None,
 				editor.VoxelEditMode, editor.TransformMode
@@ -844,7 +926,18 @@ namespace Lemma.Factories
 				main,
 				"Lock Z axis",
 				new PCInput.Chord { Key = Keys.Z },
-				new Command { Action = () => editor.TransformAxis.Value = Editor.TransformAxes.Z },
+				new Command
+				{
+					Action = delegate()
+					{
+						if (editor.TransformAxis.Value == Editor.TransformAxes.Z)
+							editor.TransformAxis.Value = Editor.TransformAxes.LocalZ;
+						else if (editor.TransformAxis.Value == Editor.TransformAxes.LocalZ)
+							editor.TransformAxis.Value = Editor.TransformAxes.All;
+						else
+							editor.TransformAxis.Value = Editor.TransformAxes.Z;
+					}
+				},
 				gui.EntityCommands,
 				() => !editor.VoxelEditMode && editor.TransformMode.Value != Editor.TransformModes.None,
 				editor.VoxelEditMode, editor.TransformMode
