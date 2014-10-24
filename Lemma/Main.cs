@@ -54,8 +54,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 9;
-		public const int MapVersion = 838;
-		public const int Build = 838;
+		public const int MapVersion = 851;
+		public const int Build = 851;
 
 		public static Config.Lang[] Languages = new[] { Config.Lang.en, Config.Lang.ru };
 
@@ -1421,7 +1421,6 @@ namespace Lemma
 				this.renderParameters.Camera = this.vrCamera;
 
 				OVR.ovrPosef leftEyePose = this.Hmd.GetEyePose(OVR.ovrEyeType.ovrEye_Left);
-				OVR.ovrPosef rightEyePose = this.Hmd.GetEyePose(OVR.ovrEyeType.ovrEye_Right);
 
 				// Setup left eye view and projection
 				Quaternion quat = new Quaternion(leftEyePose.Orientation.x, leftEyePose.Orientation.y, leftEyePose.Orientation.z, leftEyePose.Orientation.w);
@@ -1453,6 +1452,7 @@ namespace Lemma
 						c.DrawNonPostProcessed(gameTime, this.renderParameters);
 				}
 
+				OVR.ovrPosef rightEyePose = this.Hmd.GetEyePose(OVR.ovrEyeType.ovrEye_Right);
 				// Setup right eye view and projection
 				quat = new Quaternion(rightEyePose.Orientation.x, rightEyePose.Orientation.y, rightEyePose.Orientation.z, rightEyePose.Orientation.w);
 				this.vrCamera.RotationMatrix.Value = Matrix.CreateFromQuaternion(quat) * originalCamera.RotationMatrix;

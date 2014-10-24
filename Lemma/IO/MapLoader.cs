@@ -118,6 +118,7 @@ namespace Lemma.IO
 			typeof(Constant),
 			typeof(MessageDisplayer),
 			typeof(ParticleWind),
+			typeof(VoxelSetter),
 		};
 
 		public static XmlSerializer Serializer;

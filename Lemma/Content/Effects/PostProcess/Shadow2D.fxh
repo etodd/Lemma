@@ -25,8 +25,8 @@ sampler2D DetailShadowMapSampler = sampler_state
 };
 float DetailShadowMapSize;
 
-const float NormalShadowBias = 0.25f;
-const float NormalDetailShadowBias = 0.04f;
+const float NormalShadowBias = 0.15f;
+const float NormalDetailShadowBias = 0.03f;
 
 // Shadow map sampling with simple filtering
 float GetShadowValueFromClip(float2 clipPos, float depth)
@@ -132,4 +132,5 @@ float GetShadowValueDetail(float4 detailPosition, float4 position)
 
 		return GetShadowValueFromClip(ShadowTexClipPosition, depth);
 	}
+
 }

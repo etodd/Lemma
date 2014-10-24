@@ -170,6 +170,13 @@ namespace Lemma.Components
 			this.Position.Value = other.Position;
 			this.RotationMatrix.Value = other.RotationMatrix;
 			this.View.Value = other.View;
+			this.LastView.Value = other.LastView;
+			this.LastViewProjection.Value = other.LastViewProjection;
+			this.SetProjectionFromCamera(other);
+		}
+		
+		public void SetProjectionFromCamera(Camera other)
+		{
 			this.ProjectionType.SetStealthy(other.ProjectionType);
 			this.FieldOfView.SetStealthy(other.FieldOfView);
 			this.ViewportSize.SetStealthy(other.ViewportSize);
@@ -177,8 +184,6 @@ namespace Lemma.Components
 			this.NearPlaneDistance.SetStealthy(other.NearPlaneDistance);
 			this.FarPlaneDistance.SetStealthy(other.FarPlaneDistance);
 			this.Projection.Value = other.Projection;
-			this.LastView.Value = other.LastView;
-			this.LastViewProjection.Value = other.LastViewProjection;
 			this.LastProjection.Value = other.LastProjection;
 		}
 

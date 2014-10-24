@@ -31,7 +31,7 @@ namespace Lemma.Factories
 			entity.GetOrCreate<PlayerData>("Data");
 			entity.GetOrCreate<Data>("OpaqueData");
 			entity.GetOrCreate<Phone>("Phone");
-			instance = entity;
+			PlayerDataFactory.instance = entity;
 
 			entity.CannotSuspend = true;
 		}
@@ -40,9 +40,9 @@ namespace Lemma.Factories
 		{
 			get
 			{
-				if (instance != null && !instance.Active)
-					instance = null;
-				return instance;
+				if (PlayerDataFactory.instance != null && !PlayerDataFactory.instance.Active)
+					PlayerDataFactory.instance = null;
+				return PlayerDataFactory.instance;
 			}
 		}
 

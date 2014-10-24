@@ -101,6 +101,12 @@ namespace Lemma.Components
 			);
 		}
 
+		private void spawn()
+		{
+			Factory.Get<PlayerFactory>().CreateAndBind(this.main);
+			this.main.Add(PlayerFactory.Instance);
+		}
+
 		public void Update(float dt)
 		{
 			// Spawn an editor or a player if needed
@@ -153,8 +159,6 @@ namespace Lemma.Components
 					{
 						if (createPlayer)
 						{
-							Factory.Get<PlayerFactory>().CreateAndBind(this.main);
-							this.main.Add(PlayerFactory.Instance);
 						}
 
 						bool spawnFound = false;
@@ -214,6 +218,8 @@ namespace Lemma.Components
 						if (spawnFound)
 						{
 							// Spawn at an autosaved location
+							if (createPlayer)
+								this.spawn();
 							Vector3 absolutePos = foundSpawnLocation.Map.Target.Get<Voxel>().GetAbsolutePosition(foundSpawnLocation.Coordinate);
 							PlayerFactory.Instance.Get<Transform>().Position.Value = this.main.Camera.Position.Value = absolutePos + new Vector3(0, spawnHeightOffset, 0);
 
@@ -263,6 +269,8 @@ namespace Lemma.Components
 								}
 								else
 								{
+									if (createPlayer)
+										this.spawn();
 									pos = hit.Position + new Vector3(0, spawnHeightOffset, 0);
 									PlayerFactory.Instance.Get<Transform>().Position.Value = this.main.Camera.Position.Value = pos;
 

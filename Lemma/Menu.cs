@@ -32,8 +32,8 @@ namespace Lemma.Components
 			{ "forest", "\\map forest" },
 			{ "monolith", "\\map monolith" },
 			{ "fracture1", "\\map fracture" },
-			//{ "nexus", "\\map nexus" },	// Temporarily disabled
-			//{ "valley", "\\map valley" }, // Temporarily disabled
+			{ "valley", "\\map valley" },
+			{ "nexus", "\\map nexus" },
 		};
 
 		private const float messageFadeTime = 0.75f;
@@ -1564,11 +1564,10 @@ namespace Lemma.Components
 
 				settingsShown = true;
 
-				this.currentMenu.Value = settingsMenu;
+				this.currentMenu.Value = settingsList;
 			});
 			this.resizeToMenu(settingsButton);
 			this.pauseMenu.Children.Add(settingsButton);
-
 
 #if VR
 			// Recenter VR pose button

@@ -16,10 +16,7 @@ namespace Lemma.GameScripts
 
 		protected static Entity get(string id)
 		{
-			Entity result = ScriptBase.main.GetByID(id);
-			if (result == null)
-				Log.d("Entity " + id + " not found!");
-			return result;
+			return ScriptBase.main.GetByID(id);
 		}
 
 		protected static Container showMessage(Func<string> text, params IProperty[] properties)
@@ -41,7 +38,10 @@ namespace Lemma.GameScripts
 		{
 			Entity triggerEntity = ScriptBase.get(id);
 			if (triggerEntity == null)
+			{
+				Log.d("Entity " + id + " not found!");
 				return;
+			}
 
 			Trigger trigger = triggerEntity.Get<Trigger>();
 			Action[] callbacks;
@@ -56,7 +56,10 @@ namespace Lemma.GameScripts
 		{
 			Entity triggerEntity = ScriptBase.get(id);
 			if (triggerEntity == null)
+			{
+				Log.d("Entity " + id + " not found!");
 				return;
+			}
 			Trigger trigger = triggerEntity.Get<Trigger>();
 			Action[] callbacks;
 			if (oneTimeOnly)
@@ -88,7 +91,10 @@ namespace Lemma.GameScripts
 		{
 			Entity triggerEntity = ScriptBase.get(id);
 			if (triggerEntity == null)
+			{
+				Log.d("Entity " + id + " not found!");
 				return;
+			}
 			PlayerTrigger trigger = triggerEntity.Get<PlayerTrigger>();
 			Action[] callbacks;
 			if (oneTimeOnly)
@@ -102,7 +108,10 @@ namespace Lemma.GameScripts
 		{
 			Entity triggerEntity = ScriptBase.get(id);
 			if (triggerEntity == null)
+			{
+				Log.d("Entity " + id + " not found!");
 				return;
+			}
 			PlayerTrigger trigger = triggerEntity.Get<PlayerTrigger>();
 			Action[] callbacks;
 			if (oneTimeOnly)

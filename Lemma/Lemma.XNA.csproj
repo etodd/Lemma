@@ -59,7 +59,7 @@
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\x86\Release</OutputPath>
-    <DefineConstants>WINDOWS;ANALYTICS;CHEAT;STEAMWORKS;VR</DefineConstants>
+    <DefineConstants>WINDOWS;ANALYTICS;CHEAT;STEAMWORKS;VR;DEMO</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -148,10 +148,12 @@
     <Compile Include="Components\Slider.cs" />
     <Compile Include="Components\Spawner.cs" />
     <Compile Include="Components\Starter.cs" />
+    <Compile Include="Components\VoxelSetter.cs" />
     <Compile Include="Components\Switch.cs" />
     <Compile Include="Components\TimeTrial.cs" />
     <Compile Include="Components\Turret.cs" />
     <Compile Include="Components\VoxelFill.cs" />
+    <Compile Include="Factories\VoxelSetterFactory.cs" />
     <Compile Include="Util\VoxelRip.cs" />
     <Compile Include="Components\World.cs" />
     <Compile Include="Console\AutoConCommand.cs" />

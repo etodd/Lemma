@@ -440,12 +440,12 @@ namespace Lemma.Components
 			if (p.Camera.Position.Value.Y > waterHeight)
 			{
 				this.parameters.ClipPlanes = new[] { new Plane(Vector3.Up, -waterHeight) };
-				this.renderer.SetRenderTargets(this.parameters);
-				this.camera.Position.Value = p.Camera.Position;
 				Matrix reflect = Matrix.CreateTranslation(0.0f, -waterHeight, 0.0f) * Matrix.CreateScale(1.0f, -1.0f, 1.0f) * Matrix.CreateTranslation(0.0f, waterHeight, 0.0f);
-				this.camera.Position.Value = Vector3.Transform(this.camera.Position, reflect);
+				this.camera.Position.Value = Vector3.Transform(p.Camera.Position, reflect);
 				this.camera.View.Value = reflect * p.Camera.View;
-				this.camera.SetPerspectiveProjection(p.Camera.FieldOfView, new Point(this.buffer.Width, this.buffer.Height), p.Camera.NearPlaneDistance, p.Camera.FarPlaneDistance);
+				this.camera.SetProjectionFromCamera(p.Camera);
+				//this.camera.SetPerspectiveProjection(p.Camera.FieldOfView, new Point(this.buffer.Width, this.buffer.Height), p.Camera.NearPlaneDistance, p.Camera.FarPlaneDistance);
+				this.renderer.SetRenderTargets(this.parameters);
 
 				this.main.DrawScene(this.parameters);
 
