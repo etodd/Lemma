@@ -80,7 +80,10 @@ namespace GeeUI.Views
 			this.DropDownPanelView.SelectedNinepatch = this.DropDownPanelView.UnselectedNinepatch = GeeUIMain.NinePatchDropDown;
 
 			FilterView = new TextFieldView(theGeeUI, DropDownPanelView, Vector2.Zero);
-			FilterView.Height.Value = 20;
+
+			// HACK
+			FilterView.Height.Value = (int)(20 * theGeeUI.Main.MainFontMultiplier);
+
 			FilterView.MultiLine = false;
 			FilterView.Add(new Binding<int>(FilterView.Width, x => x - 8, DropDownPanelView.Width));
 			FilterView.OnTextChanged = () =>

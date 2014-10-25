@@ -92,7 +92,7 @@ namespace Lemma.Factories
 				container.AnchorPoint.Value = new Vector2(1.0f, 0.0f);
 				container.Add(new Binding<Vector2, Point>(container.Position, x => new Vector2(x.X - 10.0f, 10.0f), main.ScreenSize));
 				TextElement display = new TextElement();
-				display.FontFile.Value = "Font";
+				display.FontFile.Value = main.MainFont;
 				display.Text.Value = description;
 				container.Children.Add(display);
 

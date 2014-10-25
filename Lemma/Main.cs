@@ -44,6 +44,32 @@ namespace Lemma
 		public const string DemoMap = "smallrain";
 		public const string InitialMap = "start";
 
+		public string MainFont
+		{
+			get
+			{
+#if VR
+				if (this.VR)
+					return "FontVR";
+				else
+#endif
+					return "Font";
+			}
+		}
+
+		public float MainFontMultiplier
+		{
+			get
+			{
+#if VR
+				if (this.VR)
+					return 16.0f / 11.0f;
+				else
+#endif
+					return 1.0f;
+			}
+		}
+
 		public const int SteamAppID = 300340;
 
 		public const string MenuMap = "..\\menu";
@@ -54,8 +80,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 9;
-		public const int MapVersion = 851;
-		public const int Build = 851;
+		public const int MapVersion = 852;
+		public const int Build = 852;
 
 		public static Config.Lang[] Languages = new[] { Config.Lang.en, Config.Lang.ru };
 
@@ -285,7 +311,7 @@ namespace Lemma
 		private OVR.ovrEyeRenderDesc vrLeftEyeRenderDesc;
 		private OVR.ovrEyeRenderDesc vrRightEyeRenderDesc;
 		private Camera vrCamera;
-		public Lemma.Components.ModelAlpha VRUI;
+		public Lemma.Components.ModelNonPostProcessed VRUI;
 		public Property<Matrix> VRLastViewProjection = new Property<Matrix>();
 #endif
 
@@ -759,7 +785,7 @@ namespace Lemma
 
 		protected override void LoadContent()
 		{
-			GeeUIMain.Font = this.Content.Load<SpriteFont>("Font");
+			GeeUIMain.Font = this.Content.Load<SpriteFont>(this.MainFont);
 
 			if (this.firstLoadContentCall)
 			{
@@ -908,7 +934,7 @@ namespace Lemma
 				Action<string, Property<double>> addTimer = delegate(string label, Property<double> property)
 				{
 					TextElement text = new TextElement();
-					text.FontFile.Value = "Font";
+					text.FontFile.Value = this.MainFont;
 					text.Add(new Binding<string, double>(text.Text, x => label + ": " + (x * 1000.0).ToString("F") + "ms", property));
 					this.performanceMonitor.Children.Add(text);
 				};
@@ -916,13 +942,13 @@ namespace Lemma
 				Action<string, Property<int>> addCounter = delegate(string label, Property<int> property)
 				{
 					TextElement text = new TextElement();
-					text.FontFile.Value = "Font";
+					text.FontFile.Value = this.MainFont;
 					text.Add(new Binding<string, int>(text.Text, x => label + ": " + x.ToString(), property));
 					this.performanceMonitor.Children.Add(text);
 				};
 
 				TextElement frameRateText = new TextElement();
-				frameRateText.FontFile.Value = "Font";
+				frameRateText.FontFile.Value = this.MainFont;
 				frameRateText.Add(new Binding<string, float>(frameRateText.Text, x => "FPS: " + x.ToString("0"), this.frameRate));
 				this.performanceMonitor.Children.Add(frameRateText);
 
@@ -1038,7 +1064,7 @@ namespace Lemma
 
 					this.UI.Add(new Binding<Point>(this.UI.RenderTargetSize, this.ScreenSize));
 
-					this.VRUI = new Lemma.Components.ModelAlpha();
+					this.VRUI = new Lemma.Components.ModelNonPostProcessed();
 					this.VRUI.DrawOrder.Value = 100000; // On top of everything
 					this.VRUI.Filename.Value = "Models\\plane";
 					this.VRUI.EffectFile.Value = "Effects\\VirtualUI";

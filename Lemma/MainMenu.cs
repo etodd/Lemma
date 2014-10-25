@@ -16,10 +16,6 @@ namespace Lemma.GameScripts
 		public static void Run(Entity script)
 		{
 			const float fadeTime = 1.0f;
-#if VR
-			// The logo is too bright in VR mode because of the light ramp
-			Color logoTint = new Color(0.55f, 0.55f, 0.55f);
-#endif
 
 			main.Spawner.CanSpawn = false;
 
@@ -48,10 +44,6 @@ namespace Lemma.GameScripts
 				Sprite logo = new Sprite();
 				logo.Image.Value = "Images\\logo";
 				logo.Opacity.Value = 0.0f;
-#if VR
-				if (main.VR)
-					logo.Tint.Value = logoTint;
-#endif
 				script.Add(new Animation
 				(
 					new Animation.FloatMoveTo(logo.Opacity, 1.0f, fadeTime)
@@ -61,7 +53,7 @@ namespace Lemma.GameScripts
 				Action<string> addText = delegate(string text)
 				{
 					TextElement element = new TextElement();
-					element.FontFile.Value = "Font";
+					element.FontFile.Value = main.MainFont;
 					element.Text.Value = text;
 					element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X, logo.ScaledSize));
 					element.Opacity.Value = 0.0f;
@@ -95,7 +87,7 @@ namespace Lemma.GameScripts
 				list.Children.Add(creditsScroll);
 
 				TextElement credits = new TextElement();
-				credits.FontFile.Value = "Font";
+				credits.FontFile.Value = main.MainFont;
 				credits.Text.Value = main.Menu.Credits;
 				credits.Add(new Binding<float, Vector2>(credits.WrapWidth, x => x.X, creditsScroll.Size));
 				credits.Position.Value = new Vector2(0, creditsScroll.ScaledSize.Value.Y * 1.5f);
@@ -114,10 +106,6 @@ namespace Lemma.GameScripts
 				logo.Image.Value = "Images\\logo";
 				logo.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
 				logo.Add(new Binding<Vector2, Point>(logo.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
-#if VR
-				if (main.VR)
-					logo.Tint.Value = logoTint;
-#endif
 				main.UI.Root.Children.Add(logo);
 
 				ListContainer corner = new ListContainer();
@@ -129,7 +117,7 @@ namespace Lemma.GameScripts
 				main.UI.Root.Children.Add(corner);
 
 				TextElement version = new TextElement();
-				version.FontFile.Value = "Font";
+				version.FontFile.Value = main.MainFont;
 				version.Text.Value = "Build " + Main.Build.ToString();
 				corner.Children.Add(version);
 

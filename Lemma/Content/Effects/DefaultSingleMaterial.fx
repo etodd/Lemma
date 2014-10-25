@@ -22,7 +22,7 @@ technique Render
 		AlphaBlendEnable = false;
 	
 		VertexShader = compile vs_3_0 RenderVS();
-		PixelShader = compile ps_3_0 RenderTextureFlatPlainPS();
+		PixelShader = compile ps_3_0 RenderTextureFlatPlainSingleMaterialPS();
 	}
 }
 
@@ -35,6 +35,6 @@ technique Clip
 		AlphaBlendEnable = false;
 
 		VertexShader = compile vs_3_0 ClipVS();
-		PixelShader = compile ps_3_0 ClipTextureFlatPlainPS();
+		PixelShader = compile ps_3_0 ClipTextureFlatPlainSingleMaterialPS();
 	}
 }

@@ -22,6 +22,15 @@ namespace GeeUI
 
 	public class GeeUIMain : Component<Main>, IGraphicsComponent
 	{
+		// HACK
+		public Main Main
+		{
+			get
+			{
+				return this.main;
+			}
+		}
+
 		public event OnKeyPressed OnKeyPressedHandler;
 		public event OnKeyReleased OnKeyReleasedHandler;
 		public event OnKeyContinuallyPressed OnKeyContinuallyPressedHandler;

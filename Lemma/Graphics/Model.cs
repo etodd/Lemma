@@ -1006,4 +1006,60 @@ namespace Lemma.Components
 			return result;
 		}
 	}
+
+	public class ModelNonPostProcessed : Model, INonPostProcessedDrawableComponent
+	{
+		public Property<float> Alpha = null;
+		public Property<int> DrawOrder { get; set; }
+		public Property<bool> Distortion = new Property<bool>();
+
+		public ModelNonPostProcessed()
+		{
+			this.Alpha = this.GetFloatParameter("Alpha");
+			this.Alpha.Value = 1.0f;
+			this.DrawOrder = new Property<int>();
+		}
+
+		public override void EditorProperties()
+		{
+			this.Entity.Add("Scale", this.Scale);
+			this.Entity.Add("Color", this.Color);
+			this.Entity.Add("Filename", this.Filename);
+			this.Entity.Add("Alpha", this.Alpha);
+			this.Entity.Add("DrawOrder", this.DrawOrder);
+			this.Entity.Add("Distortion", this.Distortion);
+		}
+
+		public override void Awake()
+		{
+			base.Awake();
+
+			float alpha = this.Alpha;
+			this.Alpha = this.GetFloatParameter("Alpha");
+			this.Alpha.Value = alpha;
+			this.Add(new NotifyBinding(this.main.NonPostProcessedDrawablesModified, this.DrawOrder));
+		}
+
+		public override void Draw(GameTime time, RenderParameters parameters)
+		{
+			
+		}
+
+		void INonPostProcessedDrawableComponent.DrawNonPostProcessed(GameTime time, RenderParameters parameters)
+		{
+			if (this.Alpha > 0.0f)
+				base.Draw(time, parameters);
+		}
+
+		protected override bool setParameters(Matrix transform, RenderParameters parameters)
+		{
+			bool result = base.setParameters(transform, parameters);
+			if (result)
+			{
+				if (this.Distortion)
+					this.effect.Parameters["Frame" + Model.SamplerPostfix].SetValue(parameters.FrameBuffer);
+			}
+			return result;
+		}
+	}
 }

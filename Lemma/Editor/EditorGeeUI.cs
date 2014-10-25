@@ -26,7 +26,7 @@ namespace Lemma.Components
 {
 	public class EditorGeeUI : Component<Main>
 	{
-		private const int TextFieldHeight = 19;
+		private const float TextFieldHeight = 19;
 		public struct EditorCommand
 		{
 			public string Description;
@@ -827,7 +827,7 @@ namespace Lemma.Components
 		public void BuildValueFieldView(View parent, Type type, IProperty property, VectorElement element, PropertyEntry entry, int width = 30)
 		{
 			TextFieldView textField = new TextFieldView(main.GeeUI, parent, Vector2.Zero);
-			textField.Height.Value = TextFieldHeight;
+			textField.Height.Value = (int)(TextFieldHeight * main.MainFontMultiplier);
 			textField.Width.Value = width;
 			textField.MultiLine = false;
 
@@ -1162,7 +1162,7 @@ namespace Lemma.Components
 				{
 					TextFieldView view = new TextFieldView(main.GeeUI, ret, Vector2.Zero);
 					view.Width.Value = 130;
-					view.Height.Value = TextFieldHeight;
+					view.Height.Value = (int)(TextFieldHeight * main.MainFontMultiplier);
 					view.Name = "TextField";
 					view.MultiLine = false;
 

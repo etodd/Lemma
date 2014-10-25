@@ -155,7 +155,7 @@ namespace Lemma.Factories
 				layout.Orientation.Value = ListContainer.ListOrientation.Horizontal;
 
 				TextElement label = new TextElement();
-				label.FontFile.Value = "Font";
+				label.FontFile.Value = main.MainFont;
 				label.Text.Value = text;
 				label.Name.Value = "Label";
 				layout.Children.Add(label);
@@ -549,7 +549,7 @@ namespace Lemma.Factories
 				propertyTimeline.Children.Add(line);
 
 				TextElement label = new TextElement();
-				label.FontFile.Value = "Font";
+				label.FontFile.Value = main.MainFont;
 				label.Name.Value = "Label";
 				label.Add(new Binding<Vector2>(label.Scale, x => new Vector2(1.0f / x.X, 1.0f / x.Y), timelines.Scale));
 				label.AnchorPoint.Value = new Vector2(0, 0);
@@ -732,7 +732,7 @@ namespace Lemma.Factories
 			}));
 
 			TextElement playbackLabel = new TextElement();
-			playbackLabel.FontFile.Value = "Font";
+			playbackLabel.FontFile.Value = main.MainFont;
 			playbackLabel.Add(new Binding<string>(playbackLabel.Text, delegate()
 			{
 				return playbackLocation.Value.ToString("F") + " " + (analyticsPlaying ? "Playing" : "Stopped") + " " + playbackSpeed.Value.ToString("F") + "x";
@@ -799,7 +799,7 @@ namespace Lemma.Factories
 											else
 												description.Text.Value = string.Format("{0}\n{1}", el.Name, e.Data);
 
-											description.FontFile.Value = "Font";
+											description.FontFile.Value = main.MainFont;
 											descriptionContainer.Children.Add(description);
 											stop = true;
 											break;

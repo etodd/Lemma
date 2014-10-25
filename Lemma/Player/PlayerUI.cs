@@ -28,7 +28,7 @@ namespace Lemma.Factories
 				VirtualReticle reticleController = entity.GetOrCreate<VirtualReticle>();
 				reticleController.Add(new Binding<float>(reticleController.Rotation, rotation));
 
-				ModelAlpha reticle = entity.Create<ModelAlpha>();
+				ModelNonPostProcessed reticle = entity.Create<ModelNonPostProcessed>();
 				reticle.Filename.Value = "Models\\plane";
 				reticle.EffectFile.Value = "Effects\\VirtualUI";
 				reticle.DiffuseTexture.Value = "Images\\reticle";

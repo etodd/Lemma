@@ -78,7 +78,7 @@ namespace Lemma.Components
 
 				TextElement msg = new TextElement();
 				msg.Name.Value = "Text";
-				msg.FontFile.Value = "Font";
+				msg.FontFile.Value = main.MainFont;
 				msg.Text.Value = text;
 				msg.WrapWidth.Value = width;
 				bg.Children.Add(msg);
@@ -117,7 +117,7 @@ namespace Lemma.Components
 			phoneTopBar.Children.Add(signalIcon);
 
 			TextElement noService = new TextElement();
-			noService.FontFile.Value = "Font";
+			noService.FontFile.Value = main.MainFont;
 			noService.Text.Value = "\\no service";
 			phoneTopBar.Children.Add(noService);
 
@@ -245,7 +245,7 @@ namespace Lemma.Components
 			noteLayout.Children.Add(noteUiImage);
 
 			TextElement noteUiText = new TextElement();
-			noteUiText.FontFile.Value = "Font";
+			noteUiText.FontFile.Value = main.MainFont;
 			noteUiText.Tint.Value = new Microsoft.Xna.Framework.Color(0.1f, 0.1f, 0.1f);
 			noteUiText.Add(new Binding<float, Vector2>(noteUiText.WrapWidth, x => x.X, noteLayout.Size));
 			noteLayout.Children.Add(noteUiText);

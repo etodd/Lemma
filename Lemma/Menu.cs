@@ -40,7 +40,6 @@ namespace Lemma.Components
 		private const float messageBackgroundOpacity = 0.75f;
 
 		private const float menuButtonWidth = 256.0f;
-		private const float menuButtonSettingOffset = 180.0f; // Horizontal offset for the value label on a settings menu item
 		private const float menuButtonLeftPadding = 40.0f;
 		private const float animationSpeed = 2.5f;
 		private const float hideAnimationSpeed = 5.0f;
@@ -76,7 +75,7 @@ namespace Lemma.Components
 			msgBackground.Tint.Value = Color.Black;
 			msgBackground.Opacity.Value = messageBackgroundOpacity;
 			TextElement msg = new TextElement();
-			msg.FontFile.Value = "Font";
+			msg.FontFile.Value = this.main.MainFont;
 			msg.WrapWidth.Value = 250.0f;
 			msgBackground.Children.Add(msg);
 			return msgBackground;
@@ -222,7 +221,7 @@ namespace Lemma.Components
 			layout.Children.Add(sprite);
 
 			TextElement label = new TextElement();
-			label.FontFile.Value = "Font";
+			label.FontFile.Value = this.main.MainFont;
 			label.Text.Value = timestamp;
 			layout.Children.Add(label);
 
@@ -396,7 +395,7 @@ namespace Lemma.Components
 		private void resizeToMenu(Container c)
 		{
 			c.ResizeHorizontal.Value = false;
-			c.Size.Value = new Vector2(Menu.menuButtonWidth + Menu.menuButtonLeftPadding + 4.0f, 0.0f);
+			c.Size.Value = new Vector2(Menu.menuButtonWidth * this.main.MainFontMultiplier + Menu.menuButtonLeftPadding + 4.0f, 0.0f);
 			c.PaddingLeft.Value = Menu.menuButtonLeftPadding;
 		}
 
@@ -420,7 +419,7 @@ namespace Lemma.Components
 			this.dialog.Children.Add(dialogLayout);
 
 			TextElement prompt = new TextElement();
-			prompt.FontFile.Value = "Font";
+			prompt.FontFile.Value = this.main.MainFont;
 			prompt.Text.Value = question;
 			dialogLayout.Children.Add(prompt);
 
@@ -501,12 +500,12 @@ namespace Lemma.Components
 			labelPadding.Children.Add(challengeLabelContainer);
 
 			TextElement challengeLabel = new TextElement();
-			challengeLabel.FontFile.Value = "Font";
+			challengeLabel.FontFile.Value = this.main.MainFont;
 			challengeLabel.Text.Value = "\\challenge title";
 			challengeLabelContainer.Children.Add(challengeLabel);
 
 			TextElement challengeScrollLabel = new TextElement();
-			challengeScrollLabel.FontFile.Value = "Font";
+			challengeScrollLabel.FontFile.Value = this.main.MainFont;
 			challengeScrollLabel.Text.Value = "\\scroll for more";
 			challengeLabelContainer.Children.Add(challengeScrollLabel);
 
@@ -583,12 +582,12 @@ namespace Lemma.Components
 			officialLabelPadding.Children.Add(officialLabelContainer);
 
 			TextElement officialLabel = new TextElement();
-			officialLabel.FontFile.Value = "Font";
+			officialLabel.FontFile.Value = this.main.MainFont;
 			officialLabel.Text.Value = "\\challenge title";
 			officialLabelContainer.Children.Add(officialLabel);
 
 			TextElement officialScrollLabel = new TextElement();
-			officialScrollLabel.FontFile.Value = "Font";
+			officialScrollLabel.FontFile.Value = this.main.MainFont;
 			officialScrollLabel.Text.Value = "\\scroll for more";
 			officialLabelContainer.Children.Add(officialScrollLabel);
 
@@ -692,12 +691,12 @@ namespace Lemma.Components
 			workshopLabelPadding.Children.Add(workshopLabelContainer);
 
 			TextElement workshopLabel = new TextElement();
-			workshopLabel.FontFile.Value = "Font";
+			workshopLabel.FontFile.Value = this.main.MainFont;
 			workshopLabel.Text.Value = "\\challenge title";
 			workshopLabelContainer.Children.Add(workshopLabel);
 
 			TextElement workshopScrollLabel = new TextElement();
-			workshopScrollLabel.FontFile.Value = "Font";
+			workshopScrollLabel.FontFile.Value = this.main.MainFont;
 			workshopScrollLabel.Text.Value = "\\scroll for more";
 			workshopLabelContainer.Children.Add(workshopScrollLabel);
 
@@ -832,15 +831,15 @@ namespace Lemma.Components
 
 			// Message list
 			{
-				bool messagesOnTop = false;
+				bool vrMessagePlacement = false;
 #if VR
 				if (this.main.VR)
-					messagesOnTop = true;
+					vrMessagePlacement = true;
 #endif
 				this.messages = new ListContainer();
 				this.messages.Alignment.Value = ListContainer.ListAlignment.Min;
 				this.messages.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
-				Vector2 messagePlacement = new Vector2(0.5f, messagesOnTop ? 0.55f : 0.9f);
+				Vector2 messagePlacement = new Vector2(0.5f, vrMessagePlacement ? 0.6f : 0.9f);
 				this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * messagePlacement.X, x.Y * messagePlacement.Y), this.main.ScreenSize));
 				this.main.UI.Root.Children.Add(this.messages);
 			}
@@ -878,7 +877,7 @@ namespace Lemma.Components
 			msgBackground.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
 			msgBackground.Add(new Binding<Vector2, Point>(msgBackground.Position, x => new Vector2(x.X * 0.5f, x.Y - 30.0f), this.main.ScreenSize));
 			TextElement msg = new TextElement();
-			msg.FontFile.Value = "Font";
+			msg.FontFile.Value = this.main.MainFont;
 			msg.Text.Value = "\\toggle fullscreen tooltip";
 			msgBackground.Children.Add(msg);
 			this.main.AddComponent(new Animation
@@ -917,17 +916,17 @@ namespace Lemma.Components
 			loadSavePadding.Children.Add(loadSaveLabelContainer);
 
 			TextElement loadSaveLabel = new TextElement();
-			loadSaveLabel.FontFile.Value = "Font";
+			loadSaveLabel.FontFile.Value = this.main.MainFont;
 			loadSaveLabel.Add(new Binding<string, bool>(loadSaveLabel.Text, x => x ? "S A V E" : "L O A D", this.saveMode));
 			loadSaveLabelContainer.Children.Add(loadSaveLabel);
 
 			TextElement loadSaveScrollLabel = new TextElement();
-			loadSaveScrollLabel.FontFile.Value = "Font";
+			loadSaveScrollLabel.FontFile.Value = this.main.MainFont;
 			loadSaveScrollLabel.Text.Value = "\\scroll for more";
 			loadSaveLabelContainer.Children.Add(loadSaveScrollLabel);
 
 			TextElement quickSaveLabel = new TextElement();
-			quickSaveLabel.FontFile.Value = "Font";
+			quickSaveLabel.FontFile.Value = this.main.MainFont;
 			quickSaveLabel.Add(new Binding<bool>(quickSaveLabel.Visible, this.saveMode));
 			quickSaveLabel.Text.Value = "\\quicksave instructions";
 			loadSaveLabelContainer.Children.Add(quickSaveLabel);
@@ -948,7 +947,7 @@ namespace Lemma.Components
 			this.loadSaveMenu.Children.Add(saveNewButton);
 
 			this.loadSaveScroll = new Scroller();
-			this.loadSaveScroll.Add(new Binding<Vector2, Point>(this.loadSaveScroll.Size, x => new Vector2(Menu.menuButtonWidth + Menu.menuButtonLeftPadding + 4.0f, x.Y * 0.5f), this.main.ScreenSize));
+			this.loadSaveScroll.Add(new Binding<Vector2, Point>(this.loadSaveScroll.Size, x => new Vector2(Menu.menuButtonWidth * this.main.MainFontMultiplier + Menu.menuButtonLeftPadding + 4.0f, x.Y * 0.5f), this.main.ScreenSize));
 			this.loadSaveMenu.Children.Add(this.loadSaveScroll);
 
 			this.loadSaveList = new ListContainer();
@@ -981,12 +980,12 @@ namespace Lemma.Components
 			settingsLabelPadding.Children.Add(settingsLabelContainer);
 
 			TextElement settingsLabel = new TextElement();
-			settingsLabel.FontFile.Value = "Font";
+			settingsLabel.FontFile.Value = this.main.MainFont;
 			settingsLabel.Text.Value = "\\options title";
 			settingsLabelContainer.Children.Add(settingsLabel);
 
 			TextElement settingsScrollLabel = new TextElement();
-			settingsScrollLabel.FontFile.Value = "Font";
+			settingsScrollLabel.FontFile.Value = this.main.MainFont;
 			settingsScrollLabel.Add(new Binding<string>(settingsScrollLabel.Text, delegate()
 			{
 				if (this.main.GamePadConnected)
@@ -1038,12 +1037,19 @@ namespace Lemma.Components
 			this.resizeToMenu(musicVolume);
 			settingsList.Children.Add(musicVolume);
 
-			Container reticleEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\reticle", this.main.Settings.EnableReticle, boolDisplay, delegate(int delta)
+#if VR
+			if (!this.main.VR)
 			{
-				this.main.Settings.EnableReticle.Value = !this.main.Settings.EnableReticle;
-			});
-			this.resizeToMenu(reticleEnabled);
-			settingsList.Children.Add(reticleEnabled);
+#endif
+				Container reticleEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\reticle", this.main.Settings.EnableReticle, boolDisplay, delegate(int delta)
+				{
+					this.main.Settings.EnableReticle.Value = !this.main.Settings.EnableReticle;
+				});
+				this.resizeToMenu(reticleEnabled);
+				settingsList.Children.Add(reticleEnabled);
+#if VR
+			}
+#endif
 
 			Container fullscreenResolution = this.main.UIFactory.CreateScrollButton<Point>("\\fullscreen resolution", this.main.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString(), delegate(int delta)
 			{
@@ -1092,12 +1098,19 @@ namespace Lemma.Components
 			this.resizeToMenu(gamma);
 			settingsList.Children.Add(gamma);
 
-			Container fieldOfView = this.main.UIFactory.CreateScrollButton<float>("\\field of view", this.main.Camera.FieldOfView, x => ((int)Math.Round(MathHelper.ToDegrees(this.main.Camera.FieldOfView))).ToString() + "°", delegate(int delta)
+#if VR
+			if (!this.main.VR)
 			{
-				this.main.Camera.FieldOfView.Value = Math.Max(MathHelper.ToRadians(60.0f), Math.Min(MathHelper.ToRadians(120.0f), this.main.Camera.FieldOfView + MathHelper.ToRadians(delta)));
-			});
-			this.resizeToMenu(fieldOfView);
-			settingsList.Children.Add(fieldOfView);
+#endif
+				Container fieldOfView = this.main.UIFactory.CreateScrollButton<float>("\\field of view", this.main.Camera.FieldOfView, x => ((int)Math.Round(MathHelper.ToDegrees(this.main.Camera.FieldOfView))).ToString() + "°", delegate(int delta)
+				{
+					this.main.Camera.FieldOfView.Value = Math.Max(MathHelper.ToRadians(60.0f), Math.Min(MathHelper.ToRadians(120.0f), this.main.Camera.FieldOfView + MathHelper.ToRadians(delta)));
+				});
+				this.resizeToMenu(fieldOfView);
+				settingsList.Children.Add(fieldOfView);
+#if VR
+			}
+#endif
 
 			Container motionBlurAmount = this.main.UIFactory.CreateScrollButton<float>("\\motion blur amount", this.main.Renderer.MotionBlurAmount, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
 			{
@@ -1175,12 +1188,12 @@ namespace Lemma.Components
 			controlsLabelPadding.Children.Add(controlsLabelContainer);
 
 			TextElement controlsLabel = new TextElement();
-			controlsLabel.FontFile.Value = "Font";
+			controlsLabel.FontFile.Value = this.main.MainFont;
 			controlsLabel.Text.Value = "\\controls title";
 			controlsLabelContainer.Children.Add(controlsLabel);
 
 			TextElement controlsScrollLabel = new TextElement();
-			controlsScrollLabel.FontFile.Value = "Font";
+			controlsScrollLabel.FontFile.Value = this.main.MainFont;
 			controlsScrollLabel.Text.Value = "\\scroll for more";
 			controlsLabelContainer.Children.Add(controlsScrollLabel);
 
@@ -1427,12 +1440,12 @@ namespace Lemma.Components
 			cheatLabelPadding.Children.Add(cheatLabelContainer);
 
 			TextElement cheatLabel = new TextElement();
-			cheatLabel.FontFile.Value = "Font";
+			cheatLabel.FontFile.Value = this.main.MainFont;
 			cheatLabel.Text.Value = "\\cheat title";
 			cheatLabelContainer.Children.Add(cheatLabel);
 
 			TextElement cheatScrollLabel = new TextElement();
-			cheatScrollLabel.FontFile.Value = "Font";
+			cheatScrollLabel.FontFile.Value = this.main.MainFont;
 			cheatScrollLabel.Text.Value = "\\scroll for more";
 			cheatLabelContainer.Children.Add(cheatScrollLabel);
 
@@ -1624,12 +1637,12 @@ namespace Lemma.Components
 			creditsLabelPadding.Children.Add(creditsLabelContainer);
 
 			TextElement creditsLabel = new TextElement();
-			creditsLabel.FontFile.Value = "Font";
+			creditsLabel.FontFile.Value = this.main.MainFont;
 			creditsLabel.Text.Value = "\\credits title";
 			creditsLabelContainer.Children.Add(creditsLabel);
 
 			TextElement creditsScrollLabel = new TextElement();
-			creditsScrollLabel.FontFile.Value = "Font";
+			creditsScrollLabel.FontFile.Value = this.main.MainFont;
 			creditsScrollLabel.Text.Value = "\\scroll for more";
 			creditsLabelContainer.Children.Add(creditsScrollLabel);
 
@@ -1661,7 +1674,7 @@ namespace Lemma.Components
 			creditsDisplay.Opacity.Value = 0;
 
 			TextElement creditsText = new TextElement();
-			creditsText.FontFile.Value = "Font";
+			creditsText.FontFile.Value = this.main.MainFont;
 			creditsText.Text.Value = this.Credits = File.ReadAllText("attribution.txt");
 			creditsDisplay.Children.Add(creditsText);
 
@@ -1739,7 +1752,7 @@ namespace Lemma.Components
 					notification.Opacity.Value = 0.5f;
 					TextElement notificationText = new TextElement();
 					notificationText.Name.Value = "Text";
-					notificationText.FontFile.Value = "Font";
+					notificationText.FontFile.Value = this.main.MainFont;
 					notificationText.Text.Value = "\\saving";
 					notification.Children.Add(notificationText);
 					this.main.UI.Root.GetChildByName("Notifications").Children.Add(notification);

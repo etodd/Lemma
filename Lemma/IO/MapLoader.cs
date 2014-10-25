@@ -256,7 +256,7 @@ namespace Lemma.IO
 					notification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
 					notification.Opacity.Value = 0.5f;
 					notificationText.Name.Value = "Text";
-					notificationText.FontFile.Value = "Font";
+					notificationText.FontFile.Value = main.MainFont;
 					notificationText.Text.Value = "Loading...";
 					notification.Children.Add(notificationText);
 					main.UI.Root.GetChildByName("Notifications").Children.Add(notification);

@@ -346,6 +346,11 @@
       <ProcessorParameters_PremultiplyTextureAlpha>False</ProcessorParameters_PremultiplyTextureAlpha>
       <ProcessorParameters_EffectFileName>..\Effects\InstancedSolidColor.fx</ProcessorParameters_EffectFileName>
     </Compile>
+    <Compile Include="FontVR.spritefont">
+      <Name>FontVR</Name>
+      <Importer>FontDescriptionImporter</Importer>
+      <Processor>FontDescriptionProcessor</Processor>
+    </Compile>
     <None Include="menu.map">
       <Name>menu</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -391,7 +396,7 @@
       <Name>note</Name>
       <Importer>FbxImporter</Importer>
       <Processor>CustomModelProcessor</Processor>
-      <ProcessorParameters_EffectFileName>..\Effects\Default.fx</ProcessorParameters_EffectFileName>
+      <ProcessorParameters_EffectFileName>..\Effects\DefaultSingleMaterial.fx</ProcessorParameters_EffectFileName>
       <ProcessorParameters_RotationX>-90</ProcessorParameters_RotationX>
     </Compile>
     <None Include="Strings.xlsx">
@@ -1248,6 +1253,20 @@
       <Processor>TextureProcessor</Processor>
       <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
       <ProcessorParameters_PremultiplyAlpha>False</ProcessorParameters_PremultiplyAlpha>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Effects\DefaultCommon.fxh">
+      <Name>DefaultCommon</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\DefaultSingleMaterial.fx">
+      <Name>DefaultSingleMaterial</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />

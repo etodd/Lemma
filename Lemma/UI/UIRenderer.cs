@@ -108,7 +108,7 @@ namespace Lemma.Components
 			Point screenSize = this.main.ScreenSize;
 			if (size.X > 0 && size.Y > 0)
 			{
-				this.RenderTarget.Value = new RenderTarget2D(this.main.GraphicsDevice, size.X, size.Y);
+				this.RenderTarget.Value = new RenderTarget2D(this.main.GraphicsDevice, size.X, size.Y, false, SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.DiscardContents);
 				this.Root.Size.Value = new Vector2(size.X, size.Y);
 			}
 			else

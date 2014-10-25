@@ -69,7 +69,8 @@ void RenderTextureFlatPS(in RenderPSInput input,
 						in FlatPSInput flat,
 						out RenderPSOutput output,
 						in MotionBlurPSInput motionBlurInput,
-						uniform bool clipAlpha)
+						uniform bool clipAlpha,
+						uniform bool multipleMaterials)
 {
 	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates);
 
@@ -79,7 +80,10 @@ void RenderTextureFlatPS(in RenderPSInput input,
 	float3 normal = normalize(flat.normal);
 	
 	output.color.rgb = DiffuseColor.rgb * color.rgb;
-	output.color.a = EncodeMaterial(Materials[(int)(color.a < MaterialAlphaThreshold)]);
+	if (multipleMaterials)
+		output.color.a = EncodeMaterial(Materials[(int)(color.a < MaterialAlphaThreshold)]);
+	else
+		output.color.a = EncodeMaterial(Materials[0]);
 	output.depth.x = length(input.viewSpacePosition);
 	output.normal.xy = EncodeNormal(normal.xy);
 	output.depth.y = normal.z;
@@ -93,7 +97,16 @@ void RenderTextureFlatPlainPS(in RenderPSInput input,
 						in MotionBlurPSInput motionBlurInput,
 						out RenderPSOutput output)
 {
-	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, false);
+	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, false, true);
+}
+
+void RenderTextureFlatPlainSingleMaterialPS(in RenderPSInput input,
+						in TexturePSInput tex,
+						in FlatPSInput flat,
+						in MotionBlurPSInput motionBlurInput,
+						out RenderPSOutput output)
+{
+	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, false, false);
 }
 
 void RenderTextureFlatClipAlphaPS(in RenderPSInput input,
@@ -102,7 +115,7 @@ void RenderTextureFlatClipAlphaPS(in RenderPSInput input,
 						in MotionBlurPSInput motionBlurInput,
 						out RenderPSOutput output)
 {
-	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, true);
+	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, true, true);
 }
 
 void ClipTextureFlatPS(in RenderPSInput input,
@@ -111,10 +124,21 @@ void ClipTextureFlatPS(in RenderPSInput input,
 						in ClipPSInput clipData,
 						out RenderPSOutput output,
 						in MotionBlurPSInput motionBlurInput,
-						uniform bool clipAlpha)
+						uniform bool clipAlpha,
+						uniform bool multipleMaterials)
 {
 	HandleClipPlanes(clipData.clipPlaneDistances);
-	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, clipAlpha);
+	RenderTextureFlatPS(input, tex, flat, output, motionBlurInput, clipAlpha, multipleMaterials);
+}
+
+void ClipTextureFlatPlainSingleMaterialPS(in RenderPSInput input,
+						in TexturePSInput tex,
+						in FlatPSInput flat,
+						in ClipPSInput clipData,
+						out RenderPSOutput output,
+						in MotionBlurPSInput motionBlurInput)
+{
+	ClipTextureFlatPS(input, tex, flat, clipData, output, motionBlurInput, false, false);
 }
 
 void ClipTextureFlatPlainPS(in RenderPSInput input,
@@ -124,7 +148,7 @@ void ClipTextureFlatPlainPS(in RenderPSInput input,
 						in MotionBlurPSInput motionBlurInput,
 						out RenderPSOutput output)
 {
-	ClipTextureFlatPS(input, tex, flat, clipData, output, motionBlurInput, false);
+	ClipTextureFlatPS(input, tex, flat, clipData, output, motionBlurInput, false, true);
 }
 
 void ClipTextureFlatClipAlphaPS(in RenderPSInput input,
@@ -134,7 +158,7 @@ void ClipTextureFlatClipAlphaPS(in RenderPSInput input,
 						in MotionBlurPSInput motionBlurInput,
 						out RenderPSOutput output)
 {
-	ClipTextureFlatPS(input, tex, flat, clipData, output, motionBlurInput, true);
+	ClipTextureFlatPS(input, tex, flat, clipData, output, motionBlurInput, true, true);
 }
 
 void RenderTextureNormalMapPS(	in RenderPSInput input,
