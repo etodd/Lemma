@@ -468,13 +468,18 @@ namespace Lemma.Factories
 			fallDamage.Add(new CommandBinding(fallDamage.LockRotation, (Action)rotation.Lock));
 			fallDamage.Bind(model);
 
+			// Swim up
+			input.Bind(player.Character.SwimUp, settings.Jump);
+
 			// Jumping
 			input.Bind(settings.Jump, PCInput.InputState.Down, delegate()
 			{
 				if (player.EnableMoves && player.Character.EnableWalking
 					&& vault.CurrentState.Value == Vault.State.None
 					&& !rollKickSlide.Rolling && !rollKickSlide.Kicking)
+				{
 					jump.Go();
+				}
 			});
 
 			// Wall-run, vault, predictive

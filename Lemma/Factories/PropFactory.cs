@@ -46,7 +46,7 @@ namespace Lemma.Factories
 			base.AttachEditorComponents(entity, main);
 			Model model = entity.Get<Model>("Model");
 			Model editorModel = entity.Get<Model>("EditorModel");
-			editorModel.Add(new Binding<bool>(editorModel.Enabled, () => !entity.EditorSelected || !model.IsValid, entity.EditorSelected, model.IsValid));
+			editorModel.Add(new Binding<bool>(editorModel.Enabled, () => Editor.EditorModelsVisible && (!entity.EditorSelected || !model.IsValid), entity.EditorSelected, model.IsValid, Editor.EditorModelsVisible));
 
 			VoxelAttachable.AttachEditorComponents(entity, main, editorModel.Color);
 		}

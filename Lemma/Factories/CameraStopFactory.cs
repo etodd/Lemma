@@ -78,6 +78,7 @@ namespace Lemma.Factories
 			model.Scale.Value = new Vector3(1, 1, -1);
 			model.Add(new Binding<Matrix>(model.Transform, entity.Get<Transform>().Matrix));
 			entity.Add("EditorModel", model);
+			model.Add(new Binding<bool>(model.Enabled, Editor.EditorModelsVisible));
 
 			VoxelAttachable.AttachEditorComponents(entity, main);
 
@@ -92,6 +93,7 @@ namespace Lemma.Factories
 			offsetModel.Add(new Binding<Matrix>(offsetModel.Transform, model.Transform));
 			offsetModel.Serialize = false;
 			entity.Add("EditorModel3", offsetModel);
+			offsetModel.Add(new Binding<bool>(offsetModel.Enabled, Editor.EditorModelsVisible));
 
 			EntityConnectable.AttachEditorComponents(entity, "Next", cameraStop.Next);
 		}

@@ -66,6 +66,7 @@ namespace Lemma.Factories
 			model.Scale.Value = new Vector3(0.5f);
 			model.Serialize = false;
 			entity.Add("EditorModel", model);
+			model.Add(new Binding<bool>(model.Enabled, Editor.EditorModelsVisible));
 			model.Add(new Binding<Matrix, Vector3>(model.Transform, x => Matrix.CreateTranslation(x), transform.Position));
 
 			Property<Vector3> corner1 = new Property<Vector3> { Value = zone.BoundingBox.Value.Min };

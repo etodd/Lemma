@@ -3376,7 +3376,7 @@ namespace Lemma.Components
 					// Spawn new maps for portions that have been cut off
 
 					IEnumerable<IEnumerable<Box>> islands;
-					this.GetAdjacentIslands(this.removalCoords, out islands);
+					this.getAdjacentIslands(this.removalCoords, out islands);
 
 					List<List<Box>> finalIslands = new List<List<Box>>();
 
@@ -3563,7 +3563,7 @@ namespace Lemma.Components
 			return result;
 		}
 
-		public void GetAdjacentIslands(IEnumerable<Coord> removals, out IEnumerable<IEnumerable<Box>> islands)
+		private void getAdjacentIslands(IEnumerable<Coord> removals, out IEnumerable<IEnumerable<Box>> islands)
 		{
 			List<Dictionary<Box, bool>> lists = new List<Dictionary<Box, bool>>();
 
@@ -3591,7 +3591,7 @@ namespace Lemma.Components
 					if (alreadyFound)
 						continue;
 					Dictionary<Box, bool> newList = new Dictionary<Box, bool>();
-					bool supported = this.buildAdjacency(box, newList);
+					bool supported = this.buildAdjacency(box, this.internalBoxAdjacencyCache, newList);
 					if (!supported && newList.Count > 0)
 						lists.Add(newList);
 				}
@@ -3631,7 +3631,7 @@ namespace Lemma.Components
 					if (alreadyFound)
 						continue;
 					Dictionary<Box, bool> newList = new Dictionary<Box, bool>();
-					bool found = this.buildAdjacency(box, newList, filter, search);
+					bool found = this.buildAdjacency(box, this.externalBoxAdjacencyCache, newList, filter, search);
 					foundSearchBlock |= found;
 					if (!found && newList.Count > 0)
 						lists.Add(newList);
@@ -3923,8 +3923,10 @@ namespace Lemma.Components
 			return closestCoord;
 		}
 
-		private Queue<Box> boxAdjacencyCache = new Queue<Box>();
-		private bool buildAdjacency(Box box, Dictionary<Box, bool> list, Func<State, bool> filter, Func<State, bool> search)
+		private Queue<Box> externalBoxAdjacencyCache = new Queue<Box>();
+		private Queue<Box> internalBoxAdjacencyCache = new Queue<Box>();
+
+		private bool buildAdjacency(Box box, Queue<Box> boxAdjacencyCache, Dictionary<Box, bool> list, Func<State, bool> filter, Func<State, bool> search)
 		{
 			if (search(box.Type))
 			{
@@ -3934,13 +3936,13 @@ namespace Lemma.Components
 
 			if (filter(box.Type) && !list.ContainsKey(box))
 			{
-				this.boxAdjacencyCache.Enqueue(box);
+				boxAdjacencyCache.Enqueue(box);
 				list.Add(box, true);
 			}
 
-			while (this.boxAdjacencyCache.Count > 0)
+			while (boxAdjacencyCache.Count > 0)
 			{
-				Box b = this.boxAdjacencyCache.Dequeue();
+				Box b = boxAdjacencyCache.Dequeue();
 
 				if (b.Adjacent != null)
 				{
@@ -3952,12 +3954,12 @@ namespace Lemma.Components
 							{
 								if (search(adjacent.Type))
 								{
-									this.boxAdjacencyCache.Clear();
+									boxAdjacencyCache.Clear();
 									return true;
 								}
 								else if (filter(adjacent.Type))
 								{
-									this.boxAdjacencyCache.Enqueue(adjacent);
+									boxAdjacencyCache.Enqueue(adjacent);
 									list.Add(adjacent, true);
 								}
 							}
@@ -3965,25 +3967,25 @@ namespace Lemma.Components
 					}
 				}
 			}
-			this.boxAdjacencyCache.Clear();
+			boxAdjacencyCache.Clear();
 			return false;
 		}
 
-		private bool buildAdjacency(Box box, Dictionary<Box, bool> list)
+		private bool buildAdjacency(Box box, Queue<Box> boxAdjacencyCache, Dictionary<Box, bool> list)
 		{
 			if (!list.ContainsKey(box))
 			{
-				this.boxAdjacencyCache.Enqueue(box);
+				boxAdjacencyCache.Enqueue(box);
 				list.Add(box, true);
 			}
 
-			while (this.boxAdjacencyCache.Count > 0)
+			while (boxAdjacencyCache.Count > 0)
 			{
-				Box b = this.boxAdjacencyCache.Dequeue();
+				Box b = boxAdjacencyCache.Dequeue();
 
 				if (b.Type.Supported)
 				{
-					this.boxAdjacencyCache.Clear();
+					boxAdjacencyCache.Clear();
 					return true;
 				}
 
@@ -3995,14 +3997,14 @@ namespace Lemma.Components
 						{
 							if (!list.ContainsKey(adjacent))
 							{
-								this.boxAdjacencyCache.Enqueue(adjacent);
+								boxAdjacencyCache.Enqueue(adjacent);
 								list.Add(adjacent, true);
 							}
 						}
 					}
 				}
 			}
-			this.boxAdjacencyCache.Clear();
+			boxAdjacencyCache.Clear();
 			return false;
 		}
 

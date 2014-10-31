@@ -68,6 +68,7 @@ namespace Lemma.Factories
 			entity.Add("EditorModel3", model);
 
 			model.Add(new Binding<Matrix>(model.Transform, entity.Get<Transform>().Matrix));
+			model.Add(new Binding<bool>(model.Enabled, Editor.EditorModelsVisible));
 
 			VoxelAttachable.AttachEditorComponents(entity, main);
 		}

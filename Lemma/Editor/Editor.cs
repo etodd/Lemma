@@ -14,6 +14,7 @@ namespace Lemma.Components
 {
 	public class Editor : Component<Main>, IUpdateableComponent
 	{
+		public static Property<bool> EditorModelsVisible = new Property<bool> { Value = true };
 		public static void SetupDefaultEditorComponents()
 		{
 			Factory<Main>.DefaultEditorComponents = delegate(Factory<Main> factory, Entity entity, Main main)
@@ -31,6 +32,7 @@ namespace Lemma.Components
 
 				entity.Add("EditorModel", model);
 
+				model.Add(new Binding<bool>(model.Enabled, Editor.EditorModelsVisible));
 				model.Add(new Binding<Matrix, Vector3>(model.Transform, x => Matrix.CreateTranslation(x), transform.Position));
 			};
 
@@ -283,7 +285,7 @@ namespace Lemma.Components
 			{
 				if (value && !old)
 				{
-					this.Orientation.Value = this.SelectedEntities[0].Get<Transform>("Transform").Quaternion;
+					this.Orientation.Value = Quaternion.CreateFromRotationMatrix(this.SelectedEntities[0].Get<Voxel>().Transform);
 					this.lastCoord = this.coord = this.SelectedEntities[0].Get<Voxel>().GetCoordinate(this.Position);
 					this.Coordinate.Value = this.coord;
 				}

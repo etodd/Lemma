@@ -103,6 +103,7 @@ namespace Lemma.Components
 			{
 				this.Visible.Value = (bool)Console.Console.GetConVar("editor_ui").GetCastedValue();
 			}, "true") { TypeConstraint = typeof(bool) });
+			this.Add(new Binding<bool>(Editor.EditorModelsVisible, this.Visible));
 
 			this.RootEditorView = new View(this.main.GeeUI, this.main.GeeUI.RootView);
 			this.Add(new Binding<bool>(this.RootEditorView.Active, () => this.Visible && !ConsoleUI.Showing, this.Visible, ConsoleUI.Showing));

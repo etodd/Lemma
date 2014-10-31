@@ -521,7 +521,14 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Game\*.cs" />
+    <Compile Include="Game\dawn.cs" />
+    <Compile Include="Game\dawn2.cs" />
+    <Compile Include="Game\forest.cs" />
+    <Compile Include="Game\FractureCommon.cs" />
+    <Compile Include="Game\monolith.cs" />
+    <Compile Include="Game\nexus.cs" />
+    <Compile Include="Game\rain.cs" />
+    <Compile Include="Game\start.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -2070,7 +2070,10 @@ namespace Lemma.Components
 		public void Toggle()
 		{
 			if (this.Showing)
-				this.restorePausedSettings();
+			{
+				if (this.currentMenu.Value == this.pauseMenu)
+					this.restorePausedSettings();
+			}
 			else
 				this.savePausedSettings();
 		}

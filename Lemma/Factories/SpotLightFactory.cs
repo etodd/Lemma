@@ -51,6 +51,7 @@ namespace Lemma.Factories
 			Property<Vector3> color = entity.Get<SpotLight>().Color;
 			model.Add(new Binding<Vector3>(model.Color, color));
 			model.Serialize = false;
+			model.Add(new Binding<bool>(model.Enabled, Editor.EditorModelsVisible));
 
 			entity.Add("EditorModel", model);
 

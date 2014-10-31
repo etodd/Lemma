@@ -45,6 +45,7 @@ namespace Lemma.Factories
 
 			Property<Vector3> color = entity.Get<PointLight>().Color;
 			model.Add(new Binding<Vector3>(model.Color, color));
+			model.Add(new Binding<bool>(model.Enabled, Editor.EditorModelsVisible));
 
 			VoxelAttachable.AttachEditorComponents(entity, main, color);
 		}

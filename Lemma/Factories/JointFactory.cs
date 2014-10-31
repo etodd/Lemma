@@ -155,6 +155,7 @@ namespace Lemma.Factories
 			ModelAlpha model = new ModelAlpha();
 			model.Filename.Value = "AlphaModels\\cone";
 			model.Serialize = false;
+			model.Add(new Binding<bool>(model.Enabled, Editor.EditorModelsVisible));
 			entity.Add("DirectionModel", model);
 
 			Transform mapTransform = entity.Get<Transform>("MapTransform");

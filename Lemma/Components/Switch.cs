@@ -41,11 +41,16 @@ namespace Lemma.Components
 					this.OnPowerOn.Execute();
 				else
 					this.OnPowerOff.Execute();
-				AkSoundEngine.PostEvent(this.On ? AK.EVENTS.PLAY_SWITCH_ON : AK.EVENTS.PLAY_SWITCH_OFF, this.Position);
 			}, this.On));
+
+			this.Add(new CommandBinding(this.OnPowerOff, delegate()
+			{
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SWITCH_OFF, this.Entity);
+			}));
 
 			this.Add(new CommandBinding(this.OnPowerOn, delegate()
 			{
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SWITCH_ON, this.Entity);
 				Voxel map = this.AttachedVoxel.Value.Target.Get<Voxel>();
 				bool regenerate = false;
 				foreach (Switch s in Switch.all)

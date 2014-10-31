@@ -89,6 +89,8 @@ namespace Lemma.Util
 		/// </summary>
 		public Property<Vector2> MovementDirection = new Property<Vector2> { Value = Vector2.Zero };
 
+		public Property<bool> SwimUp = new Property<bool>();
+
 		public Property<float> Height = new Property<float>();
 		public Property<float> Radius = new Property<float>();
 		public Property<float> Mass = new Property<float>();
@@ -300,9 +302,9 @@ namespace Lemma.Util
 				if (this.EnableWalking)
 				{
 					if (this.IsSwimming)
-						this.handleNoTraction(dt, 0.75f * this.TractionDeceleration, this.MaxSpeed * 0.5f);
+						this.handleNoTraction(dt, 0.75f * this.TractionDeceleration, this.MaxSpeed * 0.5f, this.SwimUp);
 					else
-						this.handleNoTraction(dt, 0.0f, this.LastSupportedSpeed);
+						this.handleNoTraction(dt, 0.0f, this.LastSupportedSpeed, false);
 				}
 			}
 
@@ -594,7 +596,7 @@ namespace Lemma.Util
 			this.VelocityAdjustments.Value = velocityAdjustment;
 		}
 
-		private void handleNoTraction(float dt, float tractionDeceleration, float maxSpeed)
+		private void handleNoTraction(float dt, float tractionDeceleration, float maxSpeed, bool swimUp)
 		{
 			Vector3 velocityAdjustment = new Vector3(0.0f);
 			if (this.MovementDirection != Vector2.Zero)
@@ -639,6 +641,10 @@ namespace Lemma.Util
 					velocityAdjustment -= velocityChange * horizontalDirection;
 				}
 			}
+
+			if (swimUp)
+				velocityAdjustment += new Vector3(0, 5.0f * dt, 0);
+
 			this.VelocityAdjustments.Value = velocityAdjustment;
 			this.Body.LinearVelocity += velocityAdjustment;
 		}

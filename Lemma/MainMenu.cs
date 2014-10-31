@@ -179,11 +179,6 @@ namespace Lemma.GameScripts
 				script.Add(new CommandBinding(script.Delete, logo.Delete, corner.Delete));
 			}
 
-#if VR
-			if (!main.VR)
-#endif
-				main.Renderer.BlurAmount.Value = 1.0f;
-
 			main.Renderer.InternalGamma.Value = 0.0f;
 			main.Renderer.Brightness.Value = 0.0f;
 			main.Renderer.Tint.Value = new Vector3(0.0f);
