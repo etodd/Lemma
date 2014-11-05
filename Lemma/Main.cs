@@ -1676,7 +1676,17 @@ namespace Lemma
 			bool needApply = false;
 			if (this.Settings.Fullscreen != fullscreen)
 				needApply = true;
-			if (fullscreen && this.Settings.Borderless != borderless)
+
+			bool currentlyBorderless = this.Settings.Borderless;
+#if VR
+			if (this.VR)
+			{
+				currentlyBorderless = false;
+				borderless = false;
+			}
+#endif
+
+			if (fullscreen && currentlyBorderless != borderless)
 				needApply = true;
 			this.Graphics.IsFullScreen = fullscreen && !borderless;
 			if (this.Graphics.PreferredBackBufferWidth != width)
@@ -1694,7 +1704,10 @@ namespace Lemma
 				this.GraphicsDevice.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
 
 			this.Settings.Fullscreen.Value = fullscreen;
-			this.Settings.Borderless.Value = borderless;
+#if VR
+			if (!this.VR)
+#endif
+				this.Settings.Borderless.Value = borderless;
 
 			if (applyChanges && needApply)
 				this.Graphics.ApplyChanges();

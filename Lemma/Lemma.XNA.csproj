@@ -111,6 +111,7 @@
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
     <Compile Include="Components\Data.cs" />
+    <Compile Include="Components\Scriptlike\ConsoleCommand.cs" />
     <Compile Include="Components\ParticleWind.cs" />
     <Compile Include="Components\Rotator.cs" />
     <Compile Include="Components\Scriptlike\Binder.cs" />
@@ -153,6 +154,7 @@
     <Compile Include="Components\TimeTrial.cs" />
     <Compile Include="Components\Turret.cs" />
     <Compile Include="Components\VoxelFill.cs" />
+    <Compile Include="Factories\ConsoleCommandFactory.cs" />
     <Compile Include="Factories\VoxelSetterFactory.cs" />
     <Compile Include="Util\VoxelRip.cs" />
     <Compile Include="Components\World.cs" />

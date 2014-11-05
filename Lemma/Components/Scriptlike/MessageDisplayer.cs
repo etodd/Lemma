@@ -12,6 +12,9 @@ namespace Lemma.Components
 	{
 		public Property<string> Message = new Property<string>();
 		public Property<float> DisplayLength = new Property<float>();
+		public Property<bool> OneTimeOnly = new Property<bool>();
+
+		private bool displayed;
  
 		[XmlIgnore]
 		public Command Display = new Command();
@@ -25,9 +28,13 @@ namespace Lemma.Components
 		{
 			this.Display.Action = () =>
 			{
-				this.messageContainer = this.main.Menu.ShowMessage(Entity, () => Message.Value, Message);
-				if (this.DisplayLength > 0)
-					this.main.Menu.HideMessage(this.Entity, this.messageContainer, this.DisplayLength);
+				if (!this.displayed || !this.OneTimeOnly)
+				{
+					this.displayed = true;
+					this.messageContainer = this.main.Menu.ShowMessage(Entity, () => Message.Value, Message);
+					if (this.DisplayLength > 0)
+						this.main.Menu.HideMessage(this.Entity, this.messageContainer, this.DisplayLength);
+				}
 			};
 
 			this.Hide.Action = () =>

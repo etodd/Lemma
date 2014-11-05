@@ -1062,13 +1062,20 @@ namespace Lemma.Components
 			this.resizeToMenu(fullscreenResolution);
 			settingsList.Children.Add(fullscreenResolution);
 
-			Container borderless = this.main.UIFactory.CreateScrollButton<bool>("\\borderless", this.main.Settings.Borderless, boolDisplay, delegate(int delta)
+#if VR
+			if (!this.main.VR)
 			{
-				Point res = this.main.ScreenSize;
-				this.main.ResizeViewport(res.X, res.Y, this.main.Settings.Fullscreen, !this.main.Settings.Borderless);
-			});
-			this.resizeToMenu(borderless);
-			settingsList.Children.Add(borderless);
+#endif
+				Container borderless = this.main.UIFactory.CreateScrollButton<bool>("\\borderless", this.main.Settings.Borderless, boolDisplay, delegate(int delta)
+				{
+					Point res = this.main.ScreenSize;
+					this.main.ResizeViewport(res.X, res.Y, this.main.Settings.Fullscreen, !this.main.Settings.Borderless);
+				});
+				this.resizeToMenu(borderless);
+				settingsList.Children.Add(borderless);
+#if VR
+			}
+#endif
 
 			Container vsyncEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\vsync", this.main.Settings.EnableVsync, boolDisplay, delegate(int delta)
 			{

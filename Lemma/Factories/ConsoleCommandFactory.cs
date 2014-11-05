@@ -10,37 +10,38 @@ using Lemma.Util;
 
 namespace Lemma.Factories
 {
-	public class MessageDisplayerFactory : Factory<Main>
+	public class ConsoleCommandFactory : Factory<Main>
 	{
-		public MessageDisplayerFactory()
+		public ConsoleCommandFactory()
 		{
-			this.Color = new Vector3(0.57f, 0.87f, 0.75f);
+			this.Color = new Vector3(0.0f, 1f, 0.0f);
 		}
 
 		public override Entity Create(Main main)
 		{
-			return new Entity(main, "MessageDisplayer");
+			return new Entity(main, "ConsoleCommand");
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
 		{
 			base.AttachEditorComponents(entity, main);
-
 			Scriptlike.AttachEditorComponents(entity, main, this.Color);
 		}
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
+			entity.CannotSuspend = true;
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
-			MessageDisplayer message = entity.GetOrCreate<MessageDisplayer>("MessageDisplayer");
+			ConsoleCommand cmd = entity.GetOrCreate<ConsoleCommand>("ConsoleCommand");
 
 			base.Bind(entity, main, creating);
 
-			entity.Add("Message", message.Message, "The message to display");
-			entity.Add("Display Time", message.DisplayLength, "The time to display the message. If 0, the message will stay until Hide is called.");
-			entity.Add("Display", message.Display);
-			entity.Add("One Time Only", message.OneTimeOnly, "If true, the message will only display once (resets on map reload)");
-			entity.Add("Hide", message.Hide);
+			entity.Add("Execute", cmd.Execute, description: "Execute console command");
+			entity.Add("Name", cmd.Name, description: "Name of the console command");
+			entity.Add("Description", cmd.Description, description: "Description to display in console help");
+#if DEVELOPMENT
+			entity.Add("EnabledInRelease", cmd.EnabledInRelease);
+#endif
 		}
 	}
 }

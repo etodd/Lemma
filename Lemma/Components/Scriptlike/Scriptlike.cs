@@ -23,6 +23,7 @@ namespace Lemma.Components
 			entity.Add(model);
 
 			model.Add(new Binding<Matrix, Vector3>(model.Transform, x => Matrix.CreateTranslation(x), transform.Position));
+			model.Add(new Binding<bool>(model.Enabled, Editor.EditorModelsVisible));
 		}
 	}
 }
