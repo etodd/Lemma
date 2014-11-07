@@ -1615,10 +1615,16 @@ namespace Lemma.Components
 				}
 				this.main.EditorEnabled.Value = true;
 				this.main.CurrentSave.Value = null;
-				if (this.main.MapFile == Main.MenuMap)
-					IO.MapLoader.Load(this.main, Main.TemplateMap);
-				else
+
+				bool allowEditingGameMaps = false;
+#if DEVELOPMENT
+				allowEditingGameMaps = true;
+#endif
+
+				if (allowEditingGameMaps || this.main.MapFile.Value.StartsWith(this.main.CustomMapDirectory))
 					IO.MapLoader.Load(this.main, this.main.MapFile);
+				else
+					IO.MapLoader.Load(this.main, null);
 			});
 			switchToEditMode.Add(new Binding<bool>(switchToEditMode.Visible, x => !x, this.main.EditorEnabled));
 			this.resizeToMenu(switchToEditMode);

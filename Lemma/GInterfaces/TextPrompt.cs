@@ -2,13 +2,13 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Windows.Forms;
 using ComponentBind;
 using GeeUI.Views;
 using ICSharpCode.SharpZipLib.Tar;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Point = Microsoft.Xna.Framework.Point;
 using View = GeeUI.Views.View;
 
@@ -56,6 +56,7 @@ namespace Lemma.GInterfaces
 			this.Text.Height.Value = 20;
 			this.Text.Width.Value = 340;
 			this.Text.Text = this.defaultText;
+			this.Text.Selected.Value = true;
 
 			this.Okay = new ButtonView(main.GeeUI, MainView, this.action, new Vector2(50, 60));
 			this.Cancel = new ButtonView(main.GeeUI, MainView, "Cancel", new Vector2(300, 60));
@@ -71,6 +72,14 @@ namespace Lemma.GInterfaces
 			};
 
 			base.Awake();
+
+			this.Text.ParentGeeUI.OnKeyPressedHandler += this.keyHandler;
+		}
+
+		private void keyHandler(string keyPressed, Keys key)
+		{
+			if (this.Text.Selected && key == Keys.Enter)
+				this.Go();
 		}
 
 		public void Go()
@@ -82,6 +91,7 @@ namespace Lemma.GInterfaces
 
 		public override void delete()
 		{
+			this.Text.ParentGeeUI.OnKeyPressedHandler -= this.keyHandler;
 			this.EncompassingView.RemoveFromParent();
 			base.delete();
 		}

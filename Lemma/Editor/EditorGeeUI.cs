@@ -139,7 +139,7 @@ namespace Lemma.Components
 			this.OpenDropDownView.FilterThreshhold.Value = 0;
 			this.OpenDropDownView.Label.Value = "Open [Ctrl+O]";
 
-			this.CreateDropDownView.Add(new Binding<bool>(this.CreateDropDownView.Active, this.main.GeeUI.KeyboardEnabled));
+			this.CreateDropDownView.Add(new Binding<bool>(this.CreateDropDownView.Active, () => this.main.GeeUI.KeyboardEnabled && !string.IsNullOrEmpty(this.main.MapFile), this.main.GeeUI.KeyboardEnabled, this.main.MapFile));
 			this.SelectDropDownView.Add(new Binding<bool>(this.SelectDropDownView.Active, this.main.GeeUI.KeyboardEnabled));
 			this.OpenDropDownView.Add(new Binding<bool>(this.OpenDropDownView.Active, this.main.GeeUI.KeyboardEnabled));
 
@@ -147,10 +147,10 @@ namespace Lemma.Components
 			{
 				if (this.TabViews.GetActiveTab() == "Voxel")
 				{
-					if (this.voxelMaterialDropDown != null && !this.voxelMaterialDropDown.DropDownShowing)
+					if (this.voxelMaterialDropDown != null && this.voxelMaterialDropDown.Active && !this.voxelMaterialDropDown.DropDownShowing)
 						this.voxelMaterialDropDown.ShowDropDown();
 				}
-				else if (!this.CreateDropDownView.DropDownShowing)
+				else if (this.CreateDropDownView.Active && !this.CreateDropDownView.DropDownShowing)
 				{
 					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Entity"));
 					this.CreateDropDownView.ShowDropDown();

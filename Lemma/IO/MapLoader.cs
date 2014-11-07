@@ -137,22 +137,27 @@ namespace Lemma.IO
 
 			main.MapFile.Value = filename;
 
-			if (directory == null)
-				filename = Path.Combine(main.MapDirectory, filename);
+			if (filename == null)
+				MapLoader.Load(main, (Stream)null, deleteEditor);
 			else
-				filename = Path.Combine(directory, filename);
-
-			if (!filename.EndsWith(MapLoader.MapExtension))
-				filename += MapLoader.MapExtension;
-
-			using (Stream fs = File.OpenRead(filename))
 			{
-				using (Stream stream = new GZipInputStream(fs))
-					MapLoader.Load(main, stream, deleteEditor);
+				if (directory == null)
+					filename = Path.Combine(main.MapDirectory, filename);
+				else
+					filename = Path.Combine(directory, filename);
+
+				if (!filename.EndsWith(MapLoader.MapExtension))
+					filename += MapLoader.MapExtension;
+
+				using (Stream fs = File.OpenRead(filename))
+				{
+					using (Stream stream = new GZipInputStream(fs))
+						MapLoader.Load(main, stream, deleteEditor);
+				}
 			}
 		}
 
-		public static void New(Main main, string filename)
+		public static void New(Main main, string filename, string templateMap)
 		{
 			main.LoadingMap.Execute(filename);
 
@@ -163,21 +168,14 @@ namespace Lemma.IO
 
 			main.ClearEntities(false);
 
-			// Create a new map
-			Entity world = Factory.Get<WorldFactory>().CreateAndBind(main);
-			world.Get<Transform>().Position.Value = new Vector3(0, 3, 0);
-			main.Add(world);
+			if (!templateMap.EndsWith(MapLoader.MapExtension))
+				templateMap += MapLoader.MapExtension;
 
-			Entity ambientLight = Factory.Get<AmbientLightFactory>().CreateAndBind(main);
-			ambientLight.Get<Transform>().Position.Value = new Vector3(0, 5.0f, 0);
-			ambientLight.Get<AmbientLight>().Color.Value = new Vector3(0.25f, 0.25f, 0.25f);
-			main.Add(ambientLight);
-
-			Entity map = Factory.Get<VoxelFactory>().CreateAndBind(main);
-			map.Get<Transform>().Position.Value = new Vector3(0, 1, 0);
-			main.Add(map);
-
-			main.MapLoaded.Execute();
+			using (Stream fs = File.OpenRead(templateMap))
+			{
+				using (Stream stream = new GZipInputStream(fs))
+					MapLoader.Load(main, stream, false);
+			}
 		}
 
 		private static void Load(Main main, Stream stream, bool deleteEditor = true)
@@ -186,23 +184,28 @@ namespace Lemma.IO
 			main.IsLoadingMap = true;
 			main.ClearEntities(deleteEditor);
 
-			List<Entity> entities = null;
-			try
+			if (stream == null)
+				main.DefaultLighting(); // There's no World entity to set the correct lighting, so set the defaults
+			else
 			{
-				entities = (List<Entity>)MapLoader.Serializer.Deserialize(stream);
-			}
-			catch (InvalidOperationException e)
-			{
-				throw new Exception("Failed to deserialize file stream.", e);
-			}
-
-			foreach (Entity entity in entities)
-			{
-				Factory<Main> factory = Factory<Main>.Get(entity.Type);
-				if (factory != null)
+				List<Entity> entities = null;
+				try
 				{
-					factory.Bind(entity, main);
-					main.Add(entity);
+					entities = (List<Entity>)MapLoader.Serializer.Deserialize(stream);
+				}
+				catch (InvalidOperationException e)
+				{
+					throw new Exception("Failed to deserialize file stream.", e);
+				}
+
+				foreach (Entity entity in entities)
+				{
+					Factory<Main> factory = Factory<Main>.Get(entity.Type);
+					if (factory != null)
+					{
+						factory.Bind(entity, main);
+						main.Add(entity);
+					}
 				}
 			}
 

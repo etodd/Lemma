@@ -136,8 +136,8 @@ namespace Lemma.Factories
 					}
 				},
 				gui.MapCommands,
-				() => !analyticsEnable,
-				analyticsEnable
+				() => !analyticsEnable && !string.IsNullOrEmpty(main.MapFile),
+				analyticsEnable, main.MapFile
 			);
 
 			ListContainer sessionsSidebar = new ListContainer();

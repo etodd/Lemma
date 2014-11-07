@@ -1020,8 +1020,7 @@ namespace Lemma
 				});
 #endif
 
-				this.Renderer.LightRampTexture.Value = "LightRamps\\default";
-				this.LightingManager.EnvironmentMap.Value = "EnvironmentMaps\\env0";
+				this.DefaultLighting();
 
 				new SetBinding<float>(this.Settings.SoundEffectVolume, delegate(float value)
 				{
@@ -1100,9 +1099,7 @@ namespace Lemma
 				});
 #endif
 
-#if DEVELOPMENT
-				IO.MapLoader.Load(this, TemplateMap);
-#else
+#if !DEVELOPMENT
 				IO.MapLoader.Load(this, MenuMap);
 				this.Menu.Show();
 #endif
@@ -1120,6 +1117,13 @@ namespace Lemma
 			if (this.spriteBatch != null)
 				this.spriteBatch.Dispose();
 			this.spriteBatch = new SpriteBatch(this.GraphicsDevice);
+		}
+
+		public void DefaultLighting()
+		{
+			this.Renderer.LightRampTexture.Value = "LightRamps\\default";
+			this.LightingManager.EnvironmentMap.Value = "EnvironmentMaps\\env0";
+			this.LightingManager.BackgroundColor.Value = new Color(32, 52, 76);
 		}
 
 		private bool componentEnabled(IComponent c)

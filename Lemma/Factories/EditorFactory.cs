@@ -222,7 +222,8 @@ namespace Lemma.Factories
 					{
 						main.AddComponent(new TextPrompt(delegate(string name)
 						{
-							IO.MapLoader.New(main, Path.Combine(main.CustomMapDirectory, name));
+							IO.MapLoader.New(main, Path.Combine(main.CustomMapDirectory, name), Path.Combine(main.MapDirectory, Main.TemplateMap));
+							editor.NeedsSave.Value = true;
 						}, "", "Map name:", "New map"));
 					}
 				},
@@ -248,8 +249,8 @@ namespace Lemma.Factories
 					}
 				},
 				gui.MapCommands,
-				() => !input.EnableLook && !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None,
-				input.EnableLook, editor.VoxelEditMode, editor.TransformMode
+				() => !input.EnableLook && !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None && !string.IsNullOrEmpty(main.MapFile),
+				input.EnableLook, editor.VoxelEditMode, editor.TransformMode, main.MapFile
 			);
 
 			AddCommand
@@ -269,8 +270,8 @@ namespace Lemma.Factories
 					}
 				},
 				gui.MapCommands,
-				() => !input.EnableLook && !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None,
-				input.EnableLook, editor.VoxelEditMode, editor.TransformMode
+				() => !input.EnableLook && !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None && !string.IsNullOrEmpty(main.MapFile),
+				input.EnableLook, editor.VoxelEditMode, editor.TransformMode, main.MapFile
 			);
 
 			foreach (string key in Factory.factories.Keys)
@@ -363,8 +364,8 @@ namespace Lemma.Factories
 					}
 				},
 				gui.MapCommands,
-				() => !editor.MovementEnabled,
-				editor.MovementEnabled
+				() => !editor.MovementEnabled && !string.IsNullOrEmpty(main.MapFile),
+				editor.MovementEnabled, main.MapFile
 			);
 
 			AddCommand
@@ -548,8 +549,8 @@ namespace Lemma.Factories
 			AddCommand
 			(
 				entity, main, "Save", new PCInput.Chord { Modifier = Keys.LeftControl, Key = Keys.S }, editor.Save, gui.MapCommands,
-				() => !editor.MovementEnabled,
-				editor.MovementEnabled
+				() => !editor.MovementEnabled && !string.IsNullOrEmpty(main.MapFile),
+				editor.MovementEnabled, main.MapFile
 			);
 
 			// Deselect all entities
@@ -720,13 +721,14 @@ namespace Lemma.Factories
 			}, () => input.EnableLook, input.Mouse));
 
 			input.Add(new Binding<bool>(main.UI.IsMouseVisible, x => !x, input.EnableLook));
-			editor.Add(new Binding<Vector3>(camera.Position, () => editor.Position.Value - (camera.Forward.Value * editor.CameraDistance), editor.Position, camera.Forward, editor.CameraDistance));
+			Property<Vector3> cameraPosition = new Property<Vector3>();
+			editor.Add(new Binding<Vector3>(cameraPosition, () => editor.Position.Value - (camera.Forward.Value * editor.CameraDistance), editor.Position, camera.Forward, editor.CameraDistance));
+			editor.Add(new Binding<Vector3>(camera.Position, cameraPosition));
 
-			PointLight editorLight = entity.GetOrCreate<PointLight>("EditorLight");
-			editorLight.Serialize = false;
-			editorLight.Add(new Binding<float>(editorLight.Attenuation, main.Camera.FarPlaneDistance));
+			PointLight editorLight = entity.Create<PointLight>();
+			editorLight.Add(new Binding<float>(editorLight.Attenuation, camera.FarPlaneDistance));
 			editorLight.Color.Value = new Vector3(1.5f, 1.5f, 1.5f);
-			editorLight.Add(new Binding<Vector3>(editorLight.Position, main.Camera.Position));
+			editorLight.Add(new Binding<Vector3>(editorLight.Position, cameraPosition));
 			editorLight.Enabled.Value = false;
 
 			AddCommand
@@ -736,7 +738,9 @@ namespace Lemma.Factories
 				{
 					Action = () => editorLight.Enabled.Value = !editorLight.Enabled
 				},
-				gui.MapCommands
+				gui.MapCommands,
+				() => !string.IsNullOrEmpty(main.MapFile),
+				main.MapFile
 			);
 
 			editor.Add(new CommandBinding(input.RightMouseButtonDown, () => !editor.VoxelEditMode && !input.EnableLook && editor.TransformMode.Value == Editor.TransformModes.None && !main.GeeUI.LastClickCaptured, delegate()
@@ -1055,8 +1059,8 @@ namespace Lemma.Factories
 					}
 				},
 				gui.EntityCommands,
-				() => !editor.VoxelEditMode && !input.EnableLook && editor.TransformMode == Editor.TransformModes.None,
-				editor.VoxelEditMode, input.EnableLook, editor.TransformMode
+				() => !editor.VoxelEditMode && !input.EnableLook && editor.TransformMode == Editor.TransformModes.None && !string.IsNullOrEmpty(main.MapFile),
+				editor.VoxelEditMode, input.EnableLook, editor.TransformMode, main.MapFile
 			);
 
 			AddCommand
@@ -1130,7 +1134,9 @@ namespace Lemma.Factories
 							v.RebuildAdjacency();
 					}
 				},
-				gui.MapCommands
+				gui.MapCommands,
+				() => !string.IsNullOrEmpty(main.MapFile),
+				main.MapFile
 			);
 #endif
 		}
