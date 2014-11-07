@@ -310,12 +310,10 @@ namespace Lemma.Components
 				if (jumpSpeed > 0)
 					jumpDirection *= (wallJumping ? this.MaxSpeed : velocity.Length()) / jumpSpeed;
 
-				float verticalMultiplier = 1.0f;
-
 				if (main.TotalTime - this.LastRollKickEnded < 0.3f)
-					totalMultiplier *= 1.25f;
+					totalMultiplier *= 1.2f;
 
-				float verticalJumpSpeed = this.JumpSpeed * verticalMultiplier;
+				float verticalJumpSpeed = this.JumpSpeed;
 
 				// If we're not instantiating a block possibility beneath us or we're not currently falling, incorporate some of our existing vertical velocity in our jump
 				if (instantiatedBlockPossibility == null || wallJumping || currentVerticalSpeed > 0.0f)

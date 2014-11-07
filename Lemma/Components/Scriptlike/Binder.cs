@@ -23,6 +23,7 @@ namespace Lemma.Components
 
 		public Property<bool> TwoWay = new Property<bool>();
 		public Property<bool> SetOnBind = new Property<bool>();
+		public Property<bool> BindImmediately = new Property<bool> { Value = true };
 
 		[XmlIgnore]
 		public Command Bind = new Command();
@@ -77,6 +78,9 @@ namespace Lemma.Components
 				}
 			};
 			base.Awake();
+
+			if (this.BindImmediately)
+				this.Bind.Execute();
 		}
 
 		private object GetPropertyValue(ref IProperty prop)

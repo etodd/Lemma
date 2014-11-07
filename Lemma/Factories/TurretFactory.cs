@@ -20,8 +20,7 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			SpotLight light = entity.GetOrCreate<SpotLight>();
-			light.Serialize = false;
+			SpotLight light = entity.Create<SpotLight>();
 			light.Enabled.Value = !main.EditorEnabled;
 
 			light.FieldOfView.Value = 1.0f;
@@ -57,12 +56,11 @@ namespace Lemma.Factories
 			LineDrawer laser = new LineDrawer { Serialize = false };
 			entity.Add(laser);
 
-			AI ai = entity.GetOrCreate<AI>();
+			AI ai = entity.GetOrCreate<AI>("AI");
 
-			ModelAlpha model = entity.GetOrCreate<ModelAlpha>();
+			ModelAlpha model = entity.Create<ModelAlpha>();
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
 			model.Filename.Value = "AlphaModels\\pyramid";
-			model.Serialize = false;
 
 			const float defaultModelScale = 0.75f;
 			model.Scale.Value = new Vector3(defaultModelScale);
@@ -77,10 +75,13 @@ namespace Lemma.Factories
 						return new Vector3(1.5f, 0.8f, 0.5f);
 					case "Firing":
 						return new Vector3(2.0f, 0.0f, 0.0f);
+					case "Disabled":
+						return new Vector3(0.0f, 2.0f, 0.0f);
 					default:
 						return new Vector3(1.0f, 1.0f, 1.0f);
 				}
 			}, ai.CurrentState));
+			laser.Add(new Binding<bool, string>(laser.Enabled, x => x != "Disabled" && x != "Suspended", ai.CurrentState));
 
 			light.Add(new Binding<Vector3>(light.Color, model.Color));
 			pointLight.Add(new Binding<Vector3>(pointLight.Color, model.Color));
@@ -102,6 +103,20 @@ namespace Lemma.Factories
 				},
 			};
 
+			turret.Add(new CommandBinding(turret.PowerOn, delegate()
+			{
+				if (ai.CurrentState == "Disabled")
+				{
+					ai.CurrentState.Value = "Suspended";
+					checkOperationalRadius.Action();
+				}
+			}));
+
+			turret.Add(new CommandBinding(turret.PowerOff, delegate()
+			{
+				ai.CurrentState.Value = "Disabled";
+			}));
+
 			AI.Task updateRay = new AI.Task
 			{
 				Action = delegate()
@@ -121,6 +136,12 @@ namespace Lemma.Factories
 
 			const float sightDistance = 100.0f;
 			const float hearingDistance = 20.0f;
+
+			ai.Add(new AI.AIState
+			{
+				Name = "Disabled",
+				Tasks = new AI.Task[] { },
+			});
 
 			ai.Add(new AI.AIState
 			{
@@ -283,6 +304,10 @@ namespace Lemma.Factories
 			});
 
 			this.SetMain(entity, main);
+
+			entity.Add("On", turret.On);
+			entity.Add("PowerOn", turret.PowerOn);
+			entity.Add("PowerOff", turret.PowerOff);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

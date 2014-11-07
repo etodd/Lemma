@@ -31,6 +31,7 @@ namespace Lemma.Components
 
 		public LineDrawer()
 		{
+			this.Serialize = false;
 			this.DrawOrder = new Property<int> { Value = 11 };
 		}
 

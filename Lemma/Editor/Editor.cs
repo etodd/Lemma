@@ -419,6 +419,7 @@ namespace Lemma.Components
 						m.Fill(c, material);
 					m.Regenerate();
 				}
+				this.NeedsSave.Value = true;
 			};
 
 			this.IntersectMaterial.Action = delegate()
@@ -446,6 +447,7 @@ namespace Lemma.Components
 				List<Voxel.Coord> coords = coordEnumerable.ToList();
 				m.Empty(coords, true);
 				m.Regenerate();
+				this.NeedsSave.Value = true;
 			};
 
 			// Propagate to all cells of a certain type, including non-contiguous ones
@@ -474,6 +476,7 @@ namespace Lemma.Components
 						m.Fill(c, material);
 					m.Regenerate();
 				}
+				this.NeedsSave.Value = true;
 			};
 
 			this.PropagateMaterialBox.Action = delegate()
@@ -509,6 +512,7 @@ namespace Lemma.Components
 					foreach (Voxel.Coord c in coords)
 						m.Fill(c, material);
 					m.Regenerate();
+					this.NeedsSave.Value = true;
 				}
 			};
 
@@ -563,6 +567,7 @@ namespace Lemma.Components
 				map.Empty(removals.Keys, true);
 
 				this.restoreVoxel(oldSelectionStart, oldSelectionEnd, x, y, z);
+				this.NeedsSave.Value = true;
 			};
 
 			this.VoxelRotateX.Action = delegate()
@@ -620,6 +625,7 @@ namespace Lemma.Components
 				List<Voxel.Coord> coords = coordEnumerable.ToList();
 				m.Empty(coords, true);
 				m.Regenerate();
+				this.NeedsSave.Value = true;
 			};
 
 			// Delete all cells of a certain type in the current map, including non-contiguous ones
@@ -639,6 +645,7 @@ namespace Lemma.Components
 
 				m.Empty(m.Chunks.SelectMany(x => x.Boxes).Where(x => x.Type == material).SelectMany(x => x.GetCoords()).ToList(), true);
 				m.Regenerate();
+				this.NeedsSave.Value = true;
 			};
 
 			Action<TransformModes> startTransform = delegate(TransformModes mode)

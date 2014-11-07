@@ -39,6 +39,7 @@ namespace Lemma.Factories
 
 			base.Bind(entity, main, creating);
 
+			entity.Add("Bind immediately", binder.BindImmediately, description: "Bind the properties on load");
 			entity.Add("Bind", binder.Bind, description: "Link values together");
 			entity.Add("Unbind", binder.UnBind, description: "Unlink values");
 			entity.Add("Set", binder.Set, description: "Transfer value without binding");

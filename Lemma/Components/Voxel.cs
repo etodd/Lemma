@@ -562,7 +562,6 @@ namespace Lemma.Components
 						SpecularIntensity = 0.15f,
 					},
 				},
-				Tint = new Vector3(0.21f, 0.22f, 0.23f),
 			};
 			public static readonly State Hex = new State
 			{

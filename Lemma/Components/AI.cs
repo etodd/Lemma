@@ -122,7 +122,9 @@ namespace Lemma.Components
 					this.states.Remove(s.Name);
 			}
 
-			if (!this.states.ContainsKey(this.CurrentState))
+			if (this.states.Count == 0)
+				this.CurrentState.Value = null;
+			else if (!this.states.ContainsKey(this.CurrentState))
 				this.CurrentState.Value = this.states.Keys.First();
 
 			bool initializing = true;

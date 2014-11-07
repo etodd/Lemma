@@ -215,7 +215,11 @@ namespace Lemma.Components
 				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height);
 				this.floorMap = floorRaycast.Voxel;
 
-				this.velocity = this.LinearVelocity.Value + this.forward * Math.Max(4.0f, Vector3.Dot(this.forward, this.LinearVelocity) * 0.5f) + new Vector3(0, this.JumpSpeed * 0.25f, 0);
+				float forwardSpeed = Vector3.Dot(this.forward, this.LinearVelocity);
+				if (forwardSpeed < this.MaxSpeed * 1.1f)
+					this.velocity = this.LinearVelocity.Value + this.forward * Math.Max(4.0f, forwardSpeed * 0.4f) + new Vector3(0, this.JumpSpeed * 0.2f, 0);
+				else
+					this.velocity = this.LinearVelocity;
 
 				if (instantiatedBlockPossibility)
 				{
