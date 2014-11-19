@@ -870,26 +870,31 @@ namespace Lemma.Components
 			this.main.UI.Root.Children.Add(this.notifications);
 
 			// Fullscreen message
-			Container msgBackground = new Container();
-			this.main.UI.Root.Children.Add(msgBackground);
-			msgBackground.Tint.Value = Color.Black;
-			msgBackground.Opacity.Value = 0.2f;
-			msgBackground.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
-			msgBackground.Add(new Binding<Vector2, Point>(msgBackground.Position, x => new Vector2(x.X * 0.5f, x.Y - 30.0f), this.main.ScreenSize));
-			TextElement msg = new TextElement();
-			msg.FontFile.Value = this.main.MainFont;
-			msg.Text.Value = "\\toggle fullscreen tooltip";
-			msgBackground.Children.Add(msg);
-			this.main.AddComponent(new Animation
-			(
-				new Animation.Delay(4.0f),
-				new Animation.Parallel
+#if VR
+			if (!this.main.VR)
+#endif
+			{
+				Container msgBackground = new Container();
+				this.main.UI.Root.Children.Add(msgBackground);
+				msgBackground.Tint.Value = Color.Black;
+				msgBackground.Opacity.Value = 0.2f;
+				msgBackground.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
+				msgBackground.Add(new Binding<Vector2, Point>(msgBackground.Position, x => new Vector2(x.X * 0.5f, x.Y - 30.0f), this.main.ScreenSize));
+				TextElement msg = new TextElement();
+				msg.FontFile.Value = this.main.MainFont;
+				msg.Text.Value = "\\toggle fullscreen tooltip";
+				msgBackground.Children.Add(msg);
+				this.main.AddComponent(new Animation
 				(
-					new Animation.FloatMoveTo(msgBackground.Opacity, 0.0f, 2.0f),
-					new Animation.FloatMoveTo(msg.Opacity, 0.0f, 2.0f)
-				),
-				new Animation.Execute(msgBackground.Delete)
-			));
+					new Animation.Delay(4.0f),
+					new Animation.Parallel
+					(
+						new Animation.FloatMoveTo(msgBackground.Opacity, 0.0f, 2.0f),
+						new Animation.FloatMoveTo(msg.Opacity, 0.0f, 2.0f)
+					),
+					new Animation.Execute(msgBackground.Delete)
+				));
+			}
 
 			// Pause menu
 			this.pauseMenu = new ListContainer();
@@ -1039,17 +1044,15 @@ namespace Lemma.Components
 
 #if VR
 			if (!this.main.VR)
-			{
 #endif
+			{
 				Container reticleEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\reticle", this.main.Settings.EnableReticle, boolDisplay, delegate(int delta)
 				{
 					this.main.Settings.EnableReticle.Value = !this.main.Settings.EnableReticle;
 				});
 				this.resizeToMenu(reticleEnabled);
 				settingsList.Children.Add(reticleEnabled);
-#if VR
 			}
-#endif
 
 			Container fullscreenResolution = this.main.UIFactory.CreateScrollButton<Point>("\\fullscreen resolution", this.main.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString(), delegate(int delta)
 			{
@@ -1064,8 +1067,8 @@ namespace Lemma.Components
 
 #if VR
 			if (!this.main.VR)
-			{
 #endif
+			{
 				Container borderless = this.main.UIFactory.CreateScrollButton<bool>("\\borderless", this.main.Settings.Borderless, boolDisplay, delegate(int delta)
 				{
 					Point res = this.main.ScreenSize;
@@ -1073,9 +1076,7 @@ namespace Lemma.Components
 				});
 				this.resizeToMenu(borderless);
 				settingsList.Children.Add(borderless);
-#if VR
 			}
-#endif
 
 			Container vsyncEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\vsync", this.main.Settings.EnableVsync, boolDisplay, delegate(int delta)
 			{
@@ -1107,24 +1108,27 @@ namespace Lemma.Components
 
 #if VR
 			if (!this.main.VR)
-			{
 #endif
+			{
 				Container fieldOfView = this.main.UIFactory.CreateScrollButton<float>("\\field of view", this.main.Camera.FieldOfView, x => ((int)Math.Round(MathHelper.ToDegrees(this.main.Camera.FieldOfView))).ToString() + "°", delegate(int delta)
 				{
 					this.main.Camera.FieldOfView.Value = Math.Max(MathHelper.ToRadians(60.0f), Math.Min(MathHelper.ToRadians(120.0f), this.main.Camera.FieldOfView + MathHelper.ToRadians(delta)));
 				});
 				this.resizeToMenu(fieldOfView);
 				settingsList.Children.Add(fieldOfView);
-#if VR
 			}
-#endif
 
-			Container motionBlurAmount = this.main.UIFactory.CreateScrollButton<float>("\\motion blur amount", this.main.Renderer.MotionBlurAmount, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
+#if VR
+			if (!this.main.VR)
+#endif
 			{
-				this.main.Renderer.MotionBlurAmount.Value = Math.Max(0, Math.Min(1, this.main.Renderer.MotionBlurAmount + (delta * 0.1f)));
-			});
-			this.resizeToMenu(motionBlurAmount);
-			settingsList.Children.Add(motionBlurAmount);
+				Container motionBlurAmount = this.main.UIFactory.CreateScrollButton<float>("\\motion blur amount", this.main.Renderer.MotionBlurAmount, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
+				{
+					this.main.Renderer.MotionBlurAmount.Value = Math.Max(0, Math.Min(1, this.main.Renderer.MotionBlurAmount + (delta * 0.1f)));
+				});
+				this.resizeToMenu(motionBlurAmount);
+				settingsList.Children.Add(motionBlurAmount);
+			}
 
 			Container reflectionsEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\reflections", this.main.Settings.EnableReflections, boolDisplay, delegate(int delta)
 			{
@@ -1321,7 +1325,12 @@ namespace Lemma.Components
 
 			// Mapping LMB to toggle fullscreen makes it impossible to change any other settings.
 			// So don't allow it.
-			addInputSetting(this.main.Settings.ToggleFullscreen, "\\toggle fullscreen", true, false);
+#if VR
+			if (!this.main.VR)
+#endif
+			{
+				addInputSetting(this.main.Settings.ToggleFullscreen, "\\toggle fullscreen", true, false);
+			}
 
 			// Demo button
 #if DEMO

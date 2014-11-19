@@ -156,6 +156,7 @@
     <Compile Include="Components\VoxelFill.cs" />
     <Compile Include="Factories\ConsoleCommandFactory.cs" />
     <Compile Include="Factories\VoxelSetterFactory.cs" />
+    <Compile Include="OvrCapi.cs" />
     <Compile Include="Util\VoxelRip.cs" />
     <Compile Include="Components\World.cs" />
     <Compile Include="Console\AutoConCommand.cs" />
@@ -231,7 +232,6 @@
     <Compile Include="Graphics\Cloud.cs" />
     <Compile Include="MainMenu.cs" />
     <Compile Include="Oculus.cs" />
-    <Compile Include="OVRHmd.cs" />
     <Compile Include="Player\BlockPredictor.cs" />
     <Compile Include="Player\Jump.cs" />
     <Compile Include="Player\PhoneNote.cs" />

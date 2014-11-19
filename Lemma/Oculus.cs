@@ -10,7 +10,7 @@ namespace Lemma
 #if VR
 	public class Oculus
 	{
-		public static Matrix MatrixOvrToXna(OVR.ovrMatrix4f m)
+		public static Matrix MatrixOvrToXna(Ovr.Matrix4f m)
 		{
 			return new Matrix
 			(
@@ -41,21 +41,21 @@ namespace Lemma
 			private Vector2 uvScale;
 			private Vector2 uvOffset;
 
-			private OVR.ovrEyeType eye;
-			private OVR.ovrFovPort fov;
+			private Ovr.Eye eye;
+			private Ovr.FovPort fov;
 			private Main main;
 
 			public void Reload()
 			{
-				OVR.ovrDistortionMesh meshData = this.main.Hmd.CreateDistortionMesh(this.eye, this.fov, this.main.Hmd.GetDesc().DistortionCaps).Value;
+				Ovr.DistortionMesh meshData = this.main.Hmd.CreateDistortionMesh(this.eye, this.fov, this.main.Hmd.GetDesc().DistortionCaps).Value;
 				Point textureSize = this.main.ScreenSize;
-				OVR.ovrVector2f[] scaleAndOffset = this.main.Hmd.GetRenderScaleAndOffset(this.fov, new OVR.ovrSizei(textureSize.X, textureSize.Y), new OVR.ovrRecti { Size = { w = textureSize.X, h = textureSize.Y } });
+				Ovr.Vector2f[] scaleAndOffset = this.main.Hmd.GetRenderScaleAndOffset(this.fov, new Ovr.Sizei(textureSize.X, textureSize.Y), new Ovr.Recti { Size = { w = textureSize.X, h = textureSize.Y } });
 				this.uvScale = new Vector2(scaleAndOffset[0].x, scaleAndOffset[0].y);
 				this.uvOffset = new Vector2(scaleAndOffset[1].x, scaleAndOffset[1].y);
 				Vertex[] vertices = new Vertex[meshData.VertexCount];
 				for (int i = 0; i < meshData.VertexCount; i++)
 				{
-					OVR.ovrDistortionVertex v = meshData.pVertexData[i];
+					Ovr.DistortionVertex v = meshData.pVertexData[i];
 					vertices[i].ScreenPosNDC = new Vector2(v.ScreenPosNDC.x, v.ScreenPosNDC.y);
 					vertices[i].TimeWarpFactor = v.TimeWarpFactor;
 					vertices[i].VignetteFactor = v.VignetteFactor;
@@ -71,7 +71,7 @@ namespace Lemma
 				this.ib.SetData<short>(meshData.pIndexData);
 			}
 
-			public void Load(Main m, OVR.ovrEyeType eyeType, OVR.ovrFovPort fov)
+			public void Load(Main m, Ovr.Eye eyeType, Ovr.FovPort fov)
 			{
 				this.main = m;
 				this.fov = fov;
@@ -79,11 +79,11 @@ namespace Lemma
 				this.Reload();
 			}
 
-			public void Render(RenderTarget2D frameBuffer, OVR.ovrPosef eyePose, Effect effect)
+			public void Render(RenderTarget2D frameBuffer, Ovr.Posef eyePose, Effect effect)
 			{
 				effect.Parameters["EyeToSourceUVScale"].SetValue(this.uvScale);
 				effect.Parameters["EyeToSourceUVOffset"].SetValue(this.uvOffset);
-				OVR.ovrMatrix4f[] timeWarpMatrices = this.main.Hmd.ovrHmd_GetEyeTimewarpMatrices(this.eye, eyePose);
+				Ovr.Matrix4f[] timeWarpMatrices = this.main.Hmd.GetEyeTimewarpMatrices(this.eye, eyePose);
 				Matrix timeWarp1 = Oculus.MatrixOvrToXna(timeWarpMatrices[0]);
 				Matrix timeWarp2 = Oculus.MatrixOvrToXna(timeWarpMatrices[1]);
 				effect.Parameters["EyeRotationStart"].SetValue(timeWarp1);
