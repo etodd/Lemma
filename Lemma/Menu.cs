@@ -1399,8 +1399,7 @@ namespace Lemma.Components
 				}
 			});
 			this.resizeToMenu(saveButton);
-			saveButton.Add(new Binding<bool>(saveButton.Visible, () => this.main.MapFile != Main.MenuMap && !this.main.EditorEnabled, this.main.MapFile, this.main.EditorEnabled));
-
+			saveButton.Add(new Binding<bool>(saveButton.Visible, () => this.main.MapFile != Main.MenuMap && !this.main.IsChallengeMap(this.main.MapFile) && !this.main.EditorEnabled, this.main.MapFile, this.main.EditorEnabled));
 			this.pauseMenu.Children.Add(saveButton);
 
 			Action showLoad = delegate()
@@ -1421,8 +1420,27 @@ namespace Lemma.Components
 
 			// Load button
 			Container load = this.main.UIFactory.CreateButton("\\load", showLoad);
+			load.Add(new Binding<bool>(load.Visible, () => !this.main.IsChallengeMap(this.main.MapFile) && !this.main.EditorEnabled, this.main.MapFile, this.main.EditorEnabled));
 			this.resizeToMenu(load);
 			this.pauseMenu.Children.Add(load);
+
+			// Retry button
+			Container retry = this.main.UIFactory.CreateButton("\\retry", delegate()
+			{
+				this.pauseMenu.Visible.Value = false;
+				this.currentMenu.Value = null;
+				this.main.Paused.Value = false;
+				if (this.pauseAnimation != null)
+				{
+					this.pauseAnimation.Delete.Execute();
+					this.pauseAnimation = null;
+				}
+
+				IO.MapLoader.Load(this.main, this.main.MapFile);
+			});
+			retry.Add(new Binding<bool, string>(retry.Visible, x => this.main.IsChallengeMap(x), this.main.MapFile));
+			this.resizeToMenu(retry);
+			this.pauseMenu.Children.Add(retry);
 
 			ConstructChallengeMenu();
 
@@ -1603,6 +1621,10 @@ namespace Lemma.Components
 #endif
 
 			// Edit mode toggle button
+			bool allowEditingGameMaps = false;
+#if DEVELOPMENT
+			allowEditingGameMaps = true;
+#endif
 			Container switchToEditMode = this.main.UIFactory.CreateButton("\\edit mode", delegate()
 			{
 				this.pauseMenu.Visible.Value = false;
@@ -1616,17 +1638,12 @@ namespace Lemma.Components
 				this.main.EditorEnabled.Value = true;
 				this.main.CurrentSave.Value = null;
 
-				bool allowEditingGameMaps = false;
-#if DEVELOPMENT
-				allowEditingGameMaps = true;
-#endif
-
-				if (allowEditingGameMaps || this.main.MapFile.Value.StartsWith(this.main.CustomMapDirectory))
+				if (allowEditingGameMaps || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory)
 					IO.MapLoader.Load(this.main, this.main.MapFile);
 				else
 					IO.MapLoader.Load(this.main, null);
 			});
-			switchToEditMode.Add(new Binding<bool>(switchToEditMode.Visible, x => !x, this.main.EditorEnabled));
+			switchToEditMode.Add(new Binding<bool>(switchToEditMode.Visible, () => !this.main.EditorEnabled && (allowEditingGameMaps || this.main.MapFile.Value == Main.MenuMap || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory), this.main.EditorEnabled, this.main.MapFile));
 			this.resizeToMenu(switchToEditMode);
 			this.pauseMenu.Children.Add(switchToEditMode);
 
@@ -1757,7 +1774,7 @@ namespace Lemma.Components
 			bool saving = false;
 			this.input.Bind(this.main.Settings.QuickSave, PCInput.InputState.Down, delegate()
 			{
-				if (!saving && !this.main.Paused && this.main.MapFile != Main.MenuMap && PlayerFactory.Instance != null)
+				if (!saving && !this.main.Paused && this.main.MapFile != Main.MenuMap && !this.main.IsChallengeMap(this.main.MapFile) && PlayerFactory.Instance != null)
 				{
 					saving = true;
 					Container notification = new Container();

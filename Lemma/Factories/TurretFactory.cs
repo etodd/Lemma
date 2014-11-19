@@ -241,8 +241,9 @@ namespace Lemma.Factories
 									ai.CurrentState.Value = "Alert";
 								else
 								{
-									Vector3 toTarget = Vector3.Normalize(turret.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position.Value);
-									if (Vector3.Dot(toReticle, toTarget) > 0.95f)
+									Vector3 targetPos = turret.TargetAgent.Value.Target.Get<Transform>().Position.Value;
+									Vector3 toTarget = Vector3.Normalize(targetPos - transform.Position.Value);
+									if (Vector3.Dot(toReticle, toTarget) > 0.95f && !Water.IsSubmerged(targetPos))
 										ai.CurrentState.Value = "Firing";
 								}
 							}

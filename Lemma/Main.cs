@@ -315,6 +315,11 @@ namespace Lemma
 		public Property<Matrix> VRLastViewProjection = new Property<Matrix>();
 #endif
 
+		public bool IsChallengeMap(string map)
+		{
+			return map != null && (Path.GetDirectoryName(map) == this.CustomMapDirectory || Path.GetDirectoryName(map) == Path.GetFullPath(Path.Combine(this.MapDirectory, "Challenge")));
+		}
+
 		public void FlushComponents()
 		{
 			for (int i = 0; i < this.componentsToAdd.Count; i++)

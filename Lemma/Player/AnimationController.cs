@@ -371,7 +371,7 @@ namespace Lemma.Components
 						"WallRunRight",
 						"WallSlideReverse"
 					);
-					this.model.StartClip(wallRunAnimation, 0, true);
+					this.model.StartClip(wallRunAnimation, 1, true);
 				}
 
 				if (wallRunAnimation != null)

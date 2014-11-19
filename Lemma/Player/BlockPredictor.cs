@@ -209,6 +209,9 @@ namespace Lemma.Components
 						Voxel.Coord coord = playerCoord.Move(relativeDir, i);
 						Voxel.State state = map[coord];
 
+						if (state == Voxel.States.Empty)
+							continue;
+
 						if (this.canBuild(state) && Zone.CanBuild(map.GetAbsolutePosition(coord)))
 						{
 							shortestDistance = i;
@@ -216,8 +219,8 @@ namespace Lemma.Components
 							absoluteShortestDirection = absoluteDir;
 							shortestCoordinate = playerCoord;
 							shortestMap = map;
-							break;
 						}
+						break;
 					}
 				}
 			}
@@ -243,8 +246,7 @@ namespace Lemma.Components
 
 		private bool canBuild(Voxel.State s)
 		{
-			return s != Voxel.States.Empty
-				&& s != Voxel.States.Blue
+			return s != Voxel.States.Blue
 				&& s != Voxel.States.Powered
 				&& s != Voxel.States.Infected
 				&& s != Voxel.States.HardInfected
@@ -279,6 +281,9 @@ namespace Lemma.Components
 								Voxel.Coord c = coord.Move(dir, i);
 								Voxel.State state = map[c];
 
+								if (state == Voxel.States.Empty)
+									continue;
+
 								if (this.canBuild(state) && Zone.CanBuild(map.GetAbsolutePosition(c)))
 								{
 									shortestMap = map;
@@ -286,8 +291,8 @@ namespace Lemma.Components
 									shortestWallDirection = relativeWallDir;
 									shortestDistance = i;
 									shortestPlayerCoord = coord;
-									break;
 								}
+								break;
 							}
 						}
 					}

@@ -2232,17 +2232,25 @@ namespace Lemma.Components
 
 			int[] unPackedBoxes = BitWorker.UnPackInts(17, -1, packedBoxes);
 
-			for (int i = 0; i < unPackedBoxes.Length- 1; i += 2)
+			try
 			{
-				Box box1 = Voxel.boxCache[unPackedBoxes[i]], box2 = Voxel.boxCache[unPackedBoxes[i + 1]];
-				if (box1 != null && box2 != null)
+				for (int i = 0; i < unPackedBoxes.Length- 1; i += 2)
 				{
-					box1.Adjacent.Add(box2);
-					box2.Adjacent.Add(box1);
+					Box box1 = Voxel.boxCache[unPackedBoxes[i]], box2 = Voxel.boxCache[unPackedBoxes[i + 1]];
+					if (box1 != null && box2 != null)
+					{
+						box1.Adjacent.Add(box2);
+						box2.Adjacent.Add(box1);
+					}
 				}
-			}
 
-			Voxel.boxCache.Clear();
+				Voxel.boxCache.Clear();
+			}
+			catch (Exception)
+			{
+				this.RebuildAdjacency();
+				Log.d("Error reading adjacency data. Rebuilding adjacency...");
+			}
 
 			this.postDeserialization();
 		}

@@ -285,7 +285,7 @@ namespace Lemma.Components
 			{
 				if (value && !old)
 				{
-					this.Orientation.Value = Quaternion.CreateFromRotationMatrix(this.SelectedEntities[0].Get<Voxel>().Transform);
+					this.Orientation.Value = Quaternion.Normalize(Quaternion.CreateFromRotationMatrix(this.SelectedEntities[0].Get<Voxel>().Transform));
 					this.lastCoord = this.coord = this.SelectedEntities[0].Get<Voxel>().GetCoordinate(this.Position);
 					this.Coordinate.Value = this.coord;
 				}
@@ -797,10 +797,10 @@ namespace Lemma.Components
 					// When the user lets go of the key, reset the timer
 					// That way they can hit the key faster than the 0.1 sec interval
 					if (!moving)
-						this.movementInterval = 0.5f; 
+						this.movementInterval = 100.0f;
 
 					Voxel map = this.SelectedEntities[0].Get<Voxel>();
-					if (this.movementInterval > (this.SpeedMode ? 0.5f : 1.0f) * map.Scale / this.CameraDistance)
+					if (this.movementInterval > (this.SpeedMode ? 0.5f : 1.0f) * Math.Min(0.15f, map.Scale / this.CameraDistance))
 					{
 						if (moving)
 							this.movementInterval = 0.0f;

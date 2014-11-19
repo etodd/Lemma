@@ -87,6 +87,16 @@ namespace Lemma.Components
 		public Property<Vector2> Scale = new Property<Vector2> { Value = new Vector2(100.0f, 100.0f) };
 		public Property<bool> CannotSuspendByDistance = new Property<bool>();
 
+		public static bool IsSubmerged(Vector3 pos)
+		{
+			foreach (Water w in Water.instances)
+			{
+				if (w.Fluid.BoundingBox.Contains(pos) != ContainmentType.Disjoint)
+					return true;
+			}
+			return false;
+		}
+
 		private Renderer renderer;
 		private RenderTarget2D buffer;
 		private Effect effect;
