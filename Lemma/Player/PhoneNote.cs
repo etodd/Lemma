@@ -251,61 +251,91 @@ namespace Lemma.Components
 			noteLayout.Children.Add(noteUiText);
 
 			// Toggle note
+			Animation noteAnim = null;
 
+			float startRotationY = 0;
 			Action<bool> showNote = delegate(bool show)
 			{
-				noteActive.Value = show;
-				input.EnableLook.Value = input.EnableMouse.Value = !noteActive;
-				enableWalking.Value = !noteActive;
-				noteModel.Enabled.Value = noteActive;
-				noteUi.Enabled.Value = noteActive;
-				noteLight.Enabled.Value = noteActive;
-
 				model.Stop("Phone", "Note", "VRPhone", "VRNote");
 				Entity noteEntity = player.Note.Value.Target;
-				if (noteEntity != null && noteEntity.Active)
+				noteActive.Value = show && noteEntity != null;
+				Note note = noteEntity != null ? noteEntity.Get<Note>() : null;
+				if (noteActive)
 				{
-					Note note = noteEntity.Get<Note>();
-					if (noteActive)
-					{
-						Session.Recorder.Event(main, "Note", note.Text);
-						noteUiImage.Image.Value = note.Image;
-						noteUiText.Text.Value = note.Text;
-						string noteAnimation;
+					input.EnableLook.Value = input.EnableMouse.Value = false;
+					enableWalking.Value = false;
+					noteModel.Enabled.Value = true;
+					noteUi.Enabled.Value = true;
+					noteLight.Enabled.Value = true;
+					Session.Recorder.Event(main, "Note", note.Text);
+					noteUiImage.Image.Value = note.Image;
+					noteUiText.Text.Value = note.Text;
+					string noteAnimation;
 #if VR
-						if (main.VR)
-							noteAnimation = "VRNote";
-						else
-#endif
-							noteAnimation = "Note";
-
-						model.StartClip(noteAnimation, 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
-						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_NOTE_PICKUP, entity);
-						float startRotationY = input.Mouse.Value.Y;
-						// Level the player's view
-						entity.Add(new Animation
-						(
-							new Animation.Ease
-							(
-								new Animation.Custom(delegate(float x)
-								{
-									input.Mouse.Value = new Vector2(input.Mouse.Value.X, startRotationY * (1.0f - x));
-								}, 0.5f),
-								Animation.Ease.EaseType.OutQuadratic
-							)
-						));
-					}
+					if (main.VR)
+						noteAnimation = "VRNote";
 					else
-					{
+#endif
+						noteAnimation = "Note";
+
+					model.StartClip(noteAnimation, 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_NOTE_PICKUP, entity);
+
+					if (noteAnim != null && noteAnim.Active)
+						noteAnim.Delete.Execute();
+					else
+						startRotationY = input.Mouse.Value.Y;
+					// Level the player's view
+					noteAnim = new Animation
+					(
+						new Animation.Ease
+						(
+							new Animation.Custom(delegate(float x)
+							{
+								input.Mouse.Value = new Vector2(input.Mouse.Value.X, startRotationY * (1.0f - x));
+							}, 0.5f),
+							Animation.Ease.EaseType.OutQuadratic
+						)
+					);
+					entity.Add(noteAnim);
+				}
+				else
+				{
+					enableWalking.Value = true;
+					if (note != null)
 						Session.Recorder.Event(main, "NoteEnd");
-						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_NOTE_DROP, entity);
-						if (!note.IsCollected)
-							note.IsCollected.Value = true;
-					}
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_NOTE_DROP, entity);
+					if (note != null && !note.IsCollected)
+						note.IsCollected.Value = true;
+
+					// Return the player's view
+					if (noteAnim != null && noteAnim.Active)
+						noteAnim.Delete.Execute();
+					noteAnim = new Animation
+					(
+						new Animation.Ease
+						(
+							new Animation.Custom(delegate(float x)
+							{
+								input.Mouse.Value = new Vector2(input.Mouse.Value.X, startRotationY * x);
+							}, 0.5f),
+							Animation.Ease.EaseType.OutQuadratic
+						),
+						new Animation.Execute(delegate()
+						{
+							noteModel.Enabled.Value = false;
+							noteUi.Enabled.Value = false;
+							noteLight.Enabled.Value = false;
+							input.EnableLook.Value = input.EnableMouse.Value = true;
+						})
+					);
+					entity.Add(noteAnim);
 				}
 			};
 
 			// Toggle phone
+
+			Animation phoneAnim = null;
 
 			Action<bool> showPhone = delegate(bool show)
 			{
@@ -318,18 +348,18 @@ namespace Lemma.Components
 				if (show || (phone.Schedules.Length == 0 && !phone.WaitForAnswer))
 				{
 					phoneActive.Value = show;
-					input.EnableLook.Value = input.EnableMouse.Value = !phoneActive;
-					phoneUi.IsMouseVisible.Value = phoneActive;
-					enableWalking.Value = !phoneActive;
-					phoneModel.Enabled.Value = phoneActive;
-					screen.Enabled.Value = phoneActive;
-					phoneUi.Enabled.Value = phoneActive;
-					phoneLight.Enabled.Value = phoneActive;
 					answerContainer.Visible.Value = false;
 
 					model.Stop("Phone", "Note", "VRPhone", "VRNote");
 					if (phoneActive)
 					{
+						phoneUi.IsMouseVisible.Value = true;
+						enableWalking.Value = false;
+						phoneModel.Enabled.Value = true;
+						screen.Enabled.Value = true;
+						phoneUi.Enabled.Value = true;
+						phoneLight.Enabled.Value = true;
+						input.EnableLook.Value = input.EnableMouse.Value = false;
 						Session.Recorder.Event(main, "Phone");
 						phoneScroll.CheckLayout();
 						scrollToBottom();
@@ -345,8 +375,11 @@ namespace Lemma.Components
 						model.StartClip(phoneAnimation, 6, true, AnimatedModel.DefaultBlendTime * 2.0f);
 
 						// Level the player's view
-						float startRotationY = input.Mouse.Value.Y;
-						entity.Add(new Animation
+						if (phoneAnim != null && phoneAnim.Active)
+							phoneAnim.Delete.Execute();
+						else
+							startRotationY = input.Mouse.Value.Y;
+						phoneAnim = new Animation
 						(
 							new Animation.Ease
 							(
@@ -356,10 +389,39 @@ namespace Lemma.Components
 								}, 0.5f),
 								Animation.Ease.EaseType.OutQuadratic
 							)
-						));
+						);
+						entity.Add(phoneAnim);
 					}
 					else
+					{
 						Session.Recorder.Event(main, "PhoneEnd");
+						enableWalking.Value = true;
+						phoneUi.IsMouseVisible.Value = false;
+
+						// Return the player's view
+						if (phoneAnim != null && phoneAnim.Active)
+							phoneAnim.Delete.Execute();
+						phoneAnim = new Animation
+						(
+							new Animation.Ease
+							(
+								new Animation.Custom(delegate(float x)
+								{
+									input.Mouse.Value = new Vector2(input.Mouse.Value.X, startRotationY * x);
+								}, 0.5f),
+								Animation.Ease.EaseType.OutQuadratic
+							),
+							new Animation.Execute(delegate()
+							{
+								phoneModel.Enabled.Value = false;
+								screen.Enabled.Value = false;
+								phoneUi.Enabled.Value = false;
+								phoneLight.Enabled.Value = false;
+								input.EnableLook.Value = input.EnableMouse.Value = true;
+							})
+						);
+						entity.Add(phoneAnim);
+					}
 				}
 			};
 
