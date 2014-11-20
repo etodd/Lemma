@@ -16,6 +16,7 @@ namespace Lemma.Components
 
 		// Input commands
 		public Command<float> Apply = new Command<float>();
+		public Command<float> ApplyJump = new Command<float>();
 		public Command<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection> Collided = new Command<BEPUphysics.BroadPhaseEntries.Collidable,ContactCollection>();
 
 		// Output commands
@@ -67,42 +68,8 @@ namespace Lemma.Components
 			base.Awake();
 			this.Serialize = false;
 			this.EnabledWhenPaused = false;
-			this.Apply.Action = delegate(float verticalAcceleration)
-			{
-				bool rolling = this.model.IsPlaying("Roll");
-				float v = rolling ? RollingDamageVelocity : DamageVelocity;
-				if (verticalAcceleration < v)
-				{
-					float damage = (verticalAcceleration - v) * 0.2f;
-					this.Health.Value += damage;
-					if (this.Health.Value == 0.0f)
-					{
-						main.Spawner.RespawnDistance = Spawner.DefaultRespawnDistance;
-						main.Spawner.RespawnInterval = Spawner.DefaultRespawnInterval;
-					}
-					else
-					{
-						if (!rolling)
-						{
-							this.LinearVelocity.Value = new Vector3(0, this.LinearVelocity.Value.Y, 0);
-							this.Landing.Value = true;
-							this.LockRotation.Execute();
-							this.landingTimer = 0;
-							this.model.StartClip("LandHard", 0, false, 0.1f);
-							this.EnableWalking.Value = false;
-							this.EnableMoves.Value = false;
-							this.walkingDisabled = true;
-						}
-					}
-				}
-				else if (verticalAcceleration < GruntVelocity)
-				{
-					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_LAND, this.Entity);
-					if (!rolling)
-						this.model.StartClip("Land", 4);
-					this.Rumble.Execute(0.2f);
-				}
-			};
+			this.ApplyJump.Action = delegate(float verticalAcceleration) { this.apply(verticalAcceleration, true); };
+			this.Apply.Action = delegate(float verticalAcceleration) { this.apply(verticalAcceleration, false); };
 
 			// Damage the player if they hit something too hard
 			this.Collided.Action = delegate(BEPUphysics.BroadPhaseEntries.Collidable other, ContactCollection contacts)
@@ -117,6 +84,44 @@ namespace Lemma.Components
 						this.Health.Value -= (force - threshold - playerLastSpeed) * 0.04f;
 				}
 			};
+		}
+
+		private void apply(float verticalAcceleration, bool jumping)
+		{
+			bool rolling = this.model.IsPlaying("Roll");
+			float v = rolling ? RollingDamageVelocity : DamageVelocity;
+			if (verticalAcceleration < v)
+			{
+				float damage = (verticalAcceleration - v) * 0.2f;
+				this.Health.Value += damage;
+				// Health component will take care of rumble
+				if (this.Health.Value == 0.0f)
+				{
+					main.Spawner.RespawnDistance = Spawner.DefaultRespawnDistance;
+					main.Spawner.RespawnInterval = Spawner.DefaultRespawnInterval;
+				}
+				else
+				{
+					if (!rolling && !jumping)
+					{
+						this.LinearVelocity.Value = new Vector3(0, this.LinearVelocity.Value.Y, 0);
+						this.Landing.Value = true;
+						this.LockRotation.Execute();
+						this.landingTimer = 0;
+						this.model.StartClip("LandHard", 0, false, 0.1f);
+						this.EnableWalking.Value = false;
+						this.EnableMoves.Value = false;
+						this.walkingDisabled = true;
+					}
+				}
+			}
+			else if (verticalAcceleration < GruntVelocity)
+			{
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_LAND, this.Entity);
+				if (!rolling)
+					this.model.StartClip("Land", 4);
+				this.Rumble.Execute(0.2f);
+			}
 		}
 
 		public void Update(float dt)

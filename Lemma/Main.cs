@@ -83,6 +83,12 @@ namespace Lemma
 		public const int MapVersion = 852;
 		public const int Build = 852;
 
+#if DEVELOPMENT
+		public static bool AllowEditingGameMaps = true;
+#else
+		public static bool AllowEditingGameMaps = false;
+#endif
+
 		public static Config.Lang[] Languages = new[] { Config.Lang.en, Config.Lang.ru };
 
 		public class Config

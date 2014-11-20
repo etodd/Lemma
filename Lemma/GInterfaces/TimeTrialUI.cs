@@ -28,11 +28,6 @@ namespace Lemma.GInterfaces
 		private TextView EndTimeTextView;
 		private TextView EndTimeBestView;
 		private TextView EndTimeTitleView;
-		private ButtonView RetryMapButton;
-		private ButtonView NextMapButton;
-		private ButtonView MainMenuButton;
-
-		public Action<bool> EndPanelClosed;
 
 		public Property<float> ElapsedTime = new Property<float>();
 		public Property<bool> TimeTrialTicking = new Property<bool>() { Value = true };
@@ -56,12 +51,6 @@ namespace Lemma.GInterfaces
 		{
 			this.Serialize = false;
 			this.EnabledWhenPaused = false;
-
-			this.EndPanelClosed = shouldRetry =>
-			{
-				if (shouldRetry)
-					IO.MapLoader.Load(this.main, this.main.MapFile);
-			};
 
 			RootTimePanelView = new PanelView(main.GeeUI, main.GeeUI.RootView, Vector2.Zero);
 			RootTimePanelView.AnchorPoint.Value = new Vector2(1.0f, 0f);
@@ -92,26 +81,37 @@ namespace Lemma.GInterfaces
 			EndTimeBestView.AutoSize.Value = false;
 			EndTimeBestView.Width.AddBinding(new Binding<int>(EndTimeBestView.Width, RootTimeEndView.Width));
 
-			RetryMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Retry", new Vector2(30, 250));
-			RetryMapButton.OnMouseClick += delegate(object sender, EventArgs e)
-			{
-				this.retry();
-			};
-			NextMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Next Map", new Vector2(80, 250));
-			NextMapButton.Active.Value = !string.IsNullOrEmpty(this.theTimeTrial.NextMap.Value);
-			NextMapButton.OnMouseClick += delegate(object sender, EventArgs e)
-			{
-				this.main.CurrentSave.Value = null;
-				this.main.EditorEnabled.Value = false;
-				IO.MapLoader.Load(this.main, this.theTimeTrial.NextMap);
-			};
-			MainMenuButton = new ButtonView(main.GeeUI, RootTimeEndView, "Back", new Vector2(160, 250));
+			ButtonView MainMenuButton = new ButtonView(main.GeeUI, RootTimeEndView, "Back", new Vector2(20, 250));
 			MainMenuButton.OnMouseClick += delegate(object sender, EventArgs e)
 			{
 				this.main.CurrentSave.Value = null;
 				this.main.EditorEnabled.Value = false;
 				IO.MapLoader.Load(this.main, Main.MenuMap);
 				this.main.Menu.Show();
+			};
+
+			ButtonView RetryMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Retry", new Vector2(70, 250));
+			RetryMapButton.OnMouseClick += delegate(object sender, EventArgs e)
+			{
+				this.retry();
+			};
+
+			ButtonView EditButton = new ButtonView(main.GeeUI, RootTimeEndView, "Edit", new Vector2(130, 250));
+			EditButton.OnMouseClick += delegate(object sender, EventArgs e)
+			{
+				this.main.CurrentSave.Value = null;
+				this.main.EditorEnabled.Value = true;
+				IO.MapLoader.Load(this.main, this.main.MapFile);
+			};
+			EditButton.Active.Value = Main.AllowEditingGameMaps || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory;
+
+			ButtonView NextMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Next map", new Vector2(180, 250));
+			NextMapButton.Active.Value = !string.IsNullOrEmpty(this.theTimeTrial.NextMap.Value);
+			NextMapButton.OnMouseClick += delegate(object sender, EventArgs e)
+			{
+				this.main.CurrentSave.Value = null;
+				this.main.EditorEnabled.Value = false;
+				IO.MapLoader.Load(this.main, this.theTimeTrial.NextMap);
 			};
 
 			RootTimePanelView.UnselectedNinepatch = RootTimePanelView.SelectedNinepatch = GeeUIMain.NinePatchBtnDefault;

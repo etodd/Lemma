@@ -112,7 +112,7 @@ namespace Lemma.Factories
 			jump.Add(new Binding<Direction>(jump.WallDirection, wallRun.WallDirection));
 			jump.Add(new CommandBinding<Voxel, Voxel.Coord, Direction>(jump.WalkedOn, footsteps.WalkedOn));
 			jump.Add(new CommandBinding(jump.DeactivateWallRun, (Action)wallRun.Deactivate));
-			jump.Add(new CommandBinding<float>(jump.FallDamage, fallDamage.Apply));
+			jump.Add(new CommandBinding<float>(jump.FallDamage, fallDamage.ApplyJump));
 			jump.Predictor = predictor;
 			jump.Bind(model);
 			jump.Add(new TwoWayBinding<Voxel>(wallRun.LastWallRunMap, jump.LastWallRunMap));
@@ -347,7 +347,6 @@ namespace Lemma.Factories
 			Agent agent = entity.GetOrCreate<Agent>();
 			agent.Add(new TwoWayBinding<float>(player.Health, agent.Health));
 			agent.Add(new Binding<Vector3>(agent.Position, () => transform.Position.Value + new Vector3(0, player.Character.Height * -0.5f, 0), transform.Position, player.Character.Height));
-			agent.Add(new CommandBinding(agent.Die, entity.Delete));
 			agent.Add(new Binding<bool>(agent.Loud, () => player.Character.MovementDirection.Value.LengthSquared() > 0 && !player.Character.Crouched, player.Character.Crouched));
 
 			entity.Add(new CommandBinding(player.HealthDepleted, delegate()
@@ -366,10 +365,6 @@ namespace Lemma.Factories
 					main.Spawner.RespawnDistance = Spawner.KilledRespawnDistance;
 					main.Spawner.RespawnInterval = Spawner.KilledRespawnInterval;
 				}
-			}));
-
-			entity.Add(new CommandBinding(player.Die, delegate()
-			{
 				entity.Add(new Animation(new Animation.Execute(entity.Delete)));
 			}));
 

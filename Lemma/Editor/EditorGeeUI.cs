@@ -422,13 +422,15 @@ namespace Lemma.Components
 		{
 			this.OpenDropDownView.RemoveAllOptions();
 			IEnumerable<string> maps;
-#if DEVELOPMENT
-			maps = Directory.GetFiles(this.main.MapDirectory, "*" + IO.MapLoader.MapExtension)
-				.Concat(Directory.GetFiles(Path.Combine(this.main.MapDirectory, "Challenge"), "*" + IO.MapLoader.MapExtension))
-				.Concat(Directory.GetFiles(this.main.Content.RootDirectory, "*" + IO.MapLoader.MapExtension));
-#else
-			maps = Directory.GetFiles(this.main.CustomMapDirectory, "*" + IO.MapLoader.MapExtension);
-#endif
+			if (Main.AllowEditingGameMaps)
+			{
+				maps = Directory.GetFiles(this.main.MapDirectory, "*" + IO.MapLoader.MapExtension)
+					.Concat(Directory.GetFiles(Path.Combine(this.main.MapDirectory, "Challenge"), "*" + IO.MapLoader.MapExtension))
+					.Concat(Directory.GetFiles(this.main.Content.RootDirectory, "*" + IO.MapLoader.MapExtension));
+			}
+			else
+				maps = Directory.GetFiles(this.main.CustomMapDirectory, "*" + IO.MapLoader.MapExtension);
+
 			foreach (string m in maps)
 			{
 				this.OpenDropDownView.AddOption(Path.GetFileNameWithoutExtension(m), () =>

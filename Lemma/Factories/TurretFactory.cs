@@ -266,6 +266,8 @@ namespace Lemma.Factories
 
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_FIRE, entity);
 
+					bool hitVoxel = true;
+
 					Entity target = turret.TargetAgent.Value.Target;
 					if (target != null && target.Active)
 					{
@@ -277,17 +279,17 @@ namespace Lemma.Factories
 							if (distance < rayHit.Distance)
 								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_MISS, transform.Position + toReticle * distance);
 						}
+
+						BEPUutilities.RayHit physicsHit;
+						if (target.Get<Player>().Character.Body.CollisionInformation.RayCast(new Ray(transform.Position, toReticle), rayHit.Voxel == null ? float.MaxValue : rayHit.Distance, out physicsHit))
+						{
+							Explosion.Explode(main, targetPos, 6, 8.0f);
+							hitVoxel = false;
+						}
 					}
 
-					if (rayHit.Voxel != null)
+					if (hitVoxel && rayHit.Voxel != null)
 						Explosion.Explode(main, rayHit.Position + rayHit.Voxel.GetAbsoluteVector(rayHit.Normal.GetVector()) * 0.5f, 6, 8.0f);
-					else if (target != null && target.Active)
-					{
-						Vector3 targetPos = target.Get<Transform>().Position;
-						BEPUutilities.RayHit physicsHit;
-						if (target.Get<Player>().Character.Body.CollisionInformation.RayCast(new Ray(transform.Position, toReticle), rayHit.Distance, out physicsHit))
-							Explosion.Explode(main, targetPos, 6, 8.0f);
-					}
 				},
 				Tasks = new[]
 				{
