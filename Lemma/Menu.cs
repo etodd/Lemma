@@ -504,7 +504,14 @@ namespace Lemma.Components
 			TextElement challengeLabel = new TextElement();
 			challengeLabel.FontFile.Value = this.main.MainFont;
 			challengeLabel.Text.Value = "\\challenge title";
+			challengeLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			challengeLabelContainer.Children.Add(challengeLabel);
+
+			TextElement challengeWarning = new TextElement();
+			challengeWarning.FontFile.Value = this.main.MainFont;
+			challengeWarning.Text.Value = "\\challenge warning";
+			challengeWarning.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
+			challengeLabelContainer.Children.Add(challengeWarning);
 
 			Action<bool> hideChallengeMenu = delegate(bool showPrev)
 			{
@@ -580,11 +587,13 @@ namespace Lemma.Components
 			TextElement officialLabel = new TextElement();
 			officialLabel.FontFile.Value = this.main.MainFont;
 			officialLabel.Text.Value = "\\challenge title";
+			officialLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			officialLabelContainer.Children.Add(officialLabel);
 
 			TextElement officialScrollLabel = new TextElement();
 			officialScrollLabel.FontFile.Value = this.main.MainFont;
 			officialScrollLabel.Text.Value = "\\scroll for more";
+			officialScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			officialLabelContainer.Children.Add(officialScrollLabel);
 
 			Action<bool> hideOfficialMenu = delegate(bool showPrev)
@@ -689,11 +698,13 @@ namespace Lemma.Components
 			TextElement workshopLabel = new TextElement();
 			workshopLabel.FontFile.Value = this.main.MainFont;
 			workshopLabel.Text.Value = "\\challenge title";
+			workshopLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			workshopLabelContainer.Children.Add(workshopLabel);
 
 			TextElement workshopScrollLabel = new TextElement();
 			workshopScrollLabel.FontFile.Value = this.main.MainFont;
 			workshopScrollLabel.Text.Value = "\\scroll for more";
+			workshopScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			workshopLabelContainer.Children.Add(workshopScrollLabel);
 
 			Action<bool> hideWorkshopMenu = delegate(bool showPrev)
@@ -918,18 +929,21 @@ namespace Lemma.Components
 
 			TextElement loadSaveLabel = new TextElement();
 			loadSaveLabel.FontFile.Value = this.main.MainFont;
-			loadSaveLabel.Add(new Binding<string, bool>(loadSaveLabel.Text, x => x ? "S A V E" : "L O A D", this.saveMode));
+			loadSaveLabel.Add(new Binding<string, bool>(loadSaveLabel.Text, x => x ? "\\save title" : "\\load title", this.saveMode));
+			loadSaveLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			loadSaveLabelContainer.Children.Add(loadSaveLabel);
 
 			TextElement loadSaveScrollLabel = new TextElement();
 			loadSaveScrollLabel.FontFile.Value = this.main.MainFont;
 			loadSaveScrollLabel.Text.Value = "\\scroll for more";
+			loadSaveScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			loadSaveLabelContainer.Children.Add(loadSaveScrollLabel);
 
 			TextElement quickSaveLabel = new TextElement();
 			quickSaveLabel.FontFile.Value = this.main.MainFont;
 			quickSaveLabel.Add(new Binding<bool>(quickSaveLabel.Visible, this.saveMode));
 			quickSaveLabel.Text.Value = "\\quicksave instructions";
+			quickSaveLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			loadSaveLabelContainer.Children.Add(quickSaveLabel);
 
 			Container loadSaveBack = this.main.UIFactory.CreateButton("\\back", this.hideLoadSave);
@@ -983,6 +997,7 @@ namespace Lemma.Components
 			TextElement settingsLabel = new TextElement();
 			settingsLabel.FontFile.Value = this.main.MainFont;
 			settingsLabel.Text.Value = "\\options title";
+			settingsLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			settingsLabelContainer.Children.Add(settingsLabel);
 
 			TextElement settingsScrollLabel = new TextElement();
@@ -994,6 +1009,7 @@ namespace Lemma.Components
 				else
 					return "\\modify setting";
 			}, this.main.GamePadConnected));
+			settingsScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			settingsLabelContainer.Children.Add(settingsScrollLabel);
 
 			Action hideSettings = delegate()
@@ -1197,11 +1213,13 @@ namespace Lemma.Components
 			TextElement controlsLabel = new TextElement();
 			controlsLabel.FontFile.Value = this.main.MainFont;
 			controlsLabel.Text.Value = "\\controls title";
+			controlsLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			controlsLabelContainer.Children.Add(controlsLabel);
 
 			TextElement controlsScrollLabel = new TextElement();
 			controlsScrollLabel.FontFile.Value = this.main.MainFont;
 			controlsScrollLabel.Text.Value = "\\scroll for more";
+			controlsScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			controlsLabelContainer.Children.Add(controlsScrollLabel);
 
 			bool controlsShown = false;
@@ -1472,11 +1490,13 @@ namespace Lemma.Components
 			TextElement cheatLabel = new TextElement();
 			cheatLabel.FontFile.Value = this.main.MainFont;
 			cheatLabel.Text.Value = "\\cheat title";
+			cheatLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			cheatLabelContainer.Children.Add(cheatLabel);
 
 			TextElement cheatScrollLabel = new TextElement();
 			cheatScrollLabel.FontFile.Value = this.main.MainFont;
 			cheatScrollLabel.Text.Value = "\\scroll for more";
+			cheatScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			cheatLabelContainer.Children.Add(cheatScrollLabel);
 
 			Action hideCheat = delegate()
@@ -1653,11 +1673,13 @@ namespace Lemma.Components
 			TextElement creditsLabel = new TextElement();
 			creditsLabel.FontFile.Value = this.main.MainFont;
 			creditsLabel.Text.Value = "\\credits title";
+			creditsLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			creditsLabelContainer.Children.Add(creditsLabel);
 
 			TextElement creditsScrollLabel = new TextElement();
 			creditsScrollLabel.FontFile.Value = this.main.MainFont;
 			creditsScrollLabel.Text.Value = "\\scroll for more";
+			creditsScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			creditsLabelContainer.Children.Add(creditsScrollLabel);
 
 			Action hideCredits = delegate()

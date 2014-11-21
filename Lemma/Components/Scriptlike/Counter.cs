@@ -15,6 +15,9 @@ namespace Lemma.Components
 		public Property<int> IncrementBy = new Property<int> { Value = 1 };
 		public Property<int> StartingValue = new Property<int>();
 
+		public Property<bool> OnlyOnce = new Property<bool>();
+		public Property<bool> HasHitTarget = new Property<bool>();
+
 		public Property<int> Target = new Property<int> { Value = 4 };
 
 		public Property<int> Count = new Property<int>();
@@ -35,25 +38,33 @@ namespace Lemma.Components
 			this.Reset.Action = () =>
 			{
 				this.Count.Value = this.StartingValue.Value;
+				this.HasHitTarget.Value = false;
 			};
 			this.Increment.Action = () =>
 			{
 				int oldCount = this.Count;
 				this.Count.Value += this.IncrementBy.Value;
-				bool execute = false;
-				if (this.IncrementBy.Value < 0)
+				
+				if (!this.OnlyOnce || !this.HasHitTarget)
 				{
-					if (this.Count <= this.Target && oldCount > this.Target)
-						execute = true;
-				}
-				if (this.IncrementBy.Value > 0)
-				{
-					if (this.Count >= this.Target && oldCount < this.Target)
-						execute = true;
-				}
+					bool execute = false;
+					if (this.IncrementBy.Value < 0)
+					{
+						if (this.Count <= this.Target && oldCount > this.Target)
+							execute = true;
+					}
+					if (this.IncrementBy.Value > 0)
+					{
+						if (this.Count >= this.Target && oldCount < this.Target)
+							execute = true;
+					}
 
-				if (execute)
-					this.OnTargetHit.Execute();
+					if (execute)
+					{
+						this.HasHitTarget.Value = true;
+						this.OnTargetHit.Execute();
+					}
+				}
 			};
 
 			if (this.main.EditorEnabled)

@@ -28,10 +28,12 @@ namespace Lemma.Factories
 			entity.Add("StartingValue", c.StartingValue);
 			entity.Add("Target", c.Target);
 			entity.Add("IncrementBy", c.IncrementBy);
+			entity.Add("OnlyTriggerOnce", c.OnlyOnce);
 			entity.Add("OnTargetHit", c.OnTargetHit);
 			entity.Add("Increment", c.Increment);
 			entity.Add("Reset", c.Reset);
-			entity.Add("Value", c.Count, readOnly:true);
+			entity.Add("Value", c.Count, readOnly: true);
+			entity.Add("HasHitTarget", c.HasHitTarget, readOnly: true);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

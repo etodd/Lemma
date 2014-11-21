@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using ComponentBind;
+using Lemma.Factories;
 using Lemma.GInterfaces;
 
 namespace Lemma.Components
@@ -44,7 +45,8 @@ namespace Lemma.Components
 			this.Add(new CommandBinding(EndTimeTrial, () =>
 			{
 				theUI.AnimateOut(false);
-				theUI.ShowEndPanel(true);
+				theUI.ShowEndPanel();
+				this.main.TimeMultiplier.Value = 0.0f;
 			}));
 			this.Add(new CommandBinding(PauseTimer, () =>
 			{
@@ -56,6 +58,26 @@ namespace Lemma.Components
 				theUI.TimeTrialTicking.Value = true;
 			}));
 			base.Awake();
+
+			this.Add(new CommandBinding(this.main.Spawner.PlayerSpawned, delegate()
+			{
+				PlayerFactory.Instance.Add(new CommandBinding(PlayerFactory.Instance.Get<Player>().Die, (Action)this.retry));
+			}));
+		}
+
+		private void retry()
+		{
+			this.main.Spawner.CanSpawn = false;
+			this.Entity.Add(new Animation
+			(
+				new Animation.Delay(0.5f),
+				new Animation.Execute(delegate()
+				{
+					this.main.CurrentSave.Value = null;
+					this.main.EditorEnabled.Value = false;
+					IO.MapLoader.Load(this.main, this.main.MapFile);
+				})
+			));
 		}
 
 		public override void delete()

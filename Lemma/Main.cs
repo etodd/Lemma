@@ -80,8 +80,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 9;
-		public const int MapVersion = 852;
-		public const int Build = 852;
+		public const int MapVersion = 861;
+		public const int Build = 861;
 
 #if DEVELOPMENT
 		public static bool AllowEditingGameMaps = true;
@@ -323,7 +323,13 @@ namespace Lemma
 
 		public bool IsChallengeMap(string map)
 		{
-			return map != null && (Path.GetDirectoryName(map) == this.CustomMapDirectory || Path.GetDirectoryName(map) == Path.GetFullPath(Path.Combine(this.MapDirectory, "Challenge")));
+			if (map == null)
+				return false;
+			else
+			{
+				string directory = Path.GetDirectoryName(Path.IsPathRooted(map) ? map : Path.GetFullPath(Path.Combine(this.MapDirectory, map)));
+				return directory == this.CustomMapDirectory || directory == Path.GetFullPath(Path.Combine(this.MapDirectory, "Challenge"));
+			}
 		}
 
 		public void FlushComponents()

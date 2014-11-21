@@ -38,6 +38,7 @@ namespace Lemma.Factories
 
 			entity.Add("AttachOffset", attachable.Offset);
 			entity.Add("State", voxelSetter.State);
+			entity.Add("Contiguous", voxelSetter.Contiguous);
 			entity.Add("Set", voxelSetter.Set);
 		}
 

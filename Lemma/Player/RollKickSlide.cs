@@ -215,17 +215,10 @@ namespace Lemma.Components
 				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height);
 				this.floorMap = floorRaycast.Voxel;
 
-				float forwardSpeed = Vector3.Dot(this.forward, this.LinearVelocity);
-				if (forwardSpeed < this.MaxSpeed * 1.1f)
-					this.velocity = this.LinearVelocity.Value + this.forward * Math.Max(4.0f, forwardSpeed * 0.4f) + new Vector3(0, this.JumpSpeed * 0.2f, 0);
-				else
-					this.velocity = this.LinearVelocity;
-
 				if (instantiatedBlockPossibility)
 				{
 					this.sliding = true;
 					this.shouldBuildFloor = true;
-					this.velocity.Y = 0.0f;
 				}
 				else if (this.floorMap == null)
 				{
@@ -243,6 +236,20 @@ namespace Lemma.Components
 					}
 					this.sliding = true;
 				}
+
+				float forwardSpeed = Vector3.Dot(this.forward, this.LinearVelocity);
+				if (forwardSpeed < this.MaxSpeed * 1.1f)
+				{
+					if (this.sliding)
+						this.velocity = this.LinearVelocity.Value + this.forward * (this.MaxSpeed - forwardSpeed);
+					else
+						this.velocity = this.LinearVelocity.Value + this.forward * Math.Max(4.0f, forwardSpeed * 0.4f) + new Vector3(0, this.JumpSpeed * 0.2f, 0);
+				}
+				else
+					this.velocity = this.LinearVelocity;
+
+				if (this.sliding)
+					this.velocity.Y = 0.0f;
 
 				this.LinearVelocity.Value = this.velocity;
 

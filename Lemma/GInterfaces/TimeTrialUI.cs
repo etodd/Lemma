@@ -138,11 +138,6 @@ namespace Lemma.GInterfaces
 
 			EndTimeTitleView.Text.Value = Path.GetFileNameWithoutExtension(main.MapFile);
 
-			this.Add(new CommandBinding(this.main.Spawner.PlayerSpawned, delegate()
-			{
-				PlayerFactory.Instance.Add(new CommandBinding(PlayerFactory.Instance.Get<Player>().Die, (Action)this.retry));
-			}));
-
 			base.Awake();
 		}
 
@@ -197,7 +192,7 @@ namespace Lemma.GInterfaces
 			TimeTrialTicking.Value = false;
 		}
 
-		public void ShowEndPanel(bool success)
+		public void ShowEndPanel()
 		{
 			PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = false;
 			main.UI.IsMouseVisible.Value = true;
@@ -205,15 +200,12 @@ namespace Lemma.GInterfaces
 			AnimateOut();
 			StopTicking();
 
-			if (success)
-			{
-				this.bestTime.Value = this.main.SaveMapTime(WorldFactory.Instance.Get<World>().UUID, this.ElapsedTime);
+			this.bestTime.Value = this.main.SaveMapTime(WorldFactory.Instance.Get<World>().UUID, this.ElapsedTime);
 
-				EndTimeTextView.Text.Value = "Time: " + SecondsToTimeString(ElapsedTime);
-				EndTimeBestView.Text.Value = "Best: " + SecondsToTimeString(this.bestTime);
-				if (this.bestTime == ElapsedTime)
-					EndTimeBestView.Text.Value += " Record!";
-			}
+			EndTimeTextView.Text.Value = "Time: " + SecondsToTimeString(ElapsedTime);
+			EndTimeBestView.Text.Value = "Best: " + SecondsToTimeString(this.bestTime);
+			if (this.bestTime == ElapsedTime)
+				EndTimeBestView.Text.Value += " Record!";
 		}
 
 		public string SecondsToTimeString(float seconds)

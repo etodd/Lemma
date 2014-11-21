@@ -347,7 +347,7 @@ namespace Lemma.Components
 									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
-								else if (adjacentID == Voxel.t.HardInfected)
+								else if (adjacentID == Voxel.t.HardInfected || adjacentID == Voxel.t.HardPowered)
 								{
 									map.Empty(adjacent, false, true, map);
 									map.Fill(adjacent, Voxel.States.Hard);

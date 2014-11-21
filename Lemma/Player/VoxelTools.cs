@@ -70,7 +70,7 @@ namespace Lemma.Components
 		public bool BreakWalls(Vector3 forward, Vector3 right)
 		{
 			BlockFactory blockFactory = Factory.Get<BlockFactory>();
-			Vector3 basePos = this.Position + new Vector3(0, 0.1f + (this.Height * -0.5f) - this.SupportHeight, 0) + forward * -1.0f;
+			Vector3 basePos = this.Position + new Vector3(0, 0.2f + (this.Height * -0.5f) - this.SupportHeight, 0) + forward * -1.0f;
 			bool broke = false;
 			foreach (Voxel map in Voxel.ActivePhysicsVoxels.ToList())
 			{
