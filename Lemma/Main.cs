@@ -237,6 +237,7 @@ namespace Lemma
 		private double updateSum;
 		private Property<double> updateTime = new Property<double>();
 		private Property<int> drawCalls = new Property<int>();
+		private Property<int> workingSet = new Property<int>();
 		private int drawCallCounter;
 		private Property<int> triangles = new Property<int>();
 		private int triangleCounter;
@@ -973,6 +974,7 @@ namespace Lemma
 				addTimer("Update", this.updateTime);
 				addCounter("Draw calls", this.drawCalls);
 				addCounter("Triangles", this.triangles);
+				addCounter("Working set", this.workingSet);
 
 				Lemma.Console.Console.AddConCommand(new ConCommand("perf", "Toggle the performance monitor", delegate(ConCommand.ArgCollection args)
 				{
@@ -1033,7 +1035,7 @@ namespace Lemma
 
 				this.SessionRecorder.Add("WorkingSet", delegate()
 				{
-					return (float)(Environment.WorkingSet / (long)1048576);
+					return this.workingSet;
 				});
 #endif
 
@@ -1429,6 +1431,7 @@ namespace Lemma
 				this.updateSum = 0;
 				this.frameSum = 0;
 				this.performanceInterval = 0;
+				this.workingSet.Value = (int)(Environment.WorkingSet / (long)1048576);
 			}
 
 			AkSoundEngine.RenderAudio();

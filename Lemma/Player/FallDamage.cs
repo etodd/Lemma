@@ -95,7 +95,7 @@ namespace Lemma.Components
 				float damage = (verticalAcceleration - v) * 0.2f;
 				this.Health.Value += damage;
 				// Health component will take care of rumble
-				if (this.Health.Value == 0.0f)
+				if (this.Health.Value <= 0.0f)
 				{
 					main.Spawner.RespawnDistance = Spawner.DefaultRespawnDistance;
 					main.Spawner.RespawnInterval = Spawner.DefaultRespawnInterval;
