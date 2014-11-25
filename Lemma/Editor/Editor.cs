@@ -559,12 +559,12 @@ namespace Lemma.Components
 				};
 
 				Voxel map = this.SelectedEntities[0].Get<Voxel>();
-				Dictionary<Voxel.Coord, bool> removals = new Dictionary<Voxel.Coord, bool>();
 				foreach (Voxel.Coord c in oldSelectionStart.CoordinatesBetween(oldSelectionEnd))
-					removals[c] = true;
+					Voxel.CoordDictionaryCache[c] = true;
 				foreach (Voxel.Coord c in this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd))
-					removals[c] = true;
-				map.Empty(removals.Keys, true);
+					Voxel.CoordDictionaryCache[c] = true;
+				map.Empty(Voxel.CoordDictionaryCache.Keys, true);
+				Voxel.CoordDictionaryCache.Clear();
 
 				this.restoreVoxel(oldSelectionStart, oldSelectionEnd, x, y, z);
 				this.NeedsSave.Value = true;

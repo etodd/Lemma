@@ -59,7 +59,6 @@ namespace Lemma.Components
 					{
 						// There can only be one active switch per map
 
-						Dictionary<Voxel.Coord, bool> visited = new Dictionary<Voxel.Coord, bool>();
 						Queue<Voxel.Coord> queue = new Queue<Voxel.Coord>();
 						Voxel.Coord start = s.Coord;
 						start.Data = map[start];
@@ -74,11 +73,11 @@ namespace Lemma.Components
 								map.Fill(c, Voxel.States.Hard);
 							regenerate = true;
 							c.Data = null; // Ensure the visited dictionary works correctly
-							visited[c] = true;
+							Voxel.CoordDictionaryCache[c] = true;
 							foreach (Direction adjacentDirection in DirectionExtensions.Directions)
 							{
 								Voxel.Coord adjacentCoord = c.Move(adjacentDirection);
-								if (!visited.ContainsKey(adjacentCoord))
+								if (!Voxel.CoordDictionaryCache.ContainsKey(adjacentCoord))
 								{
 									adjacentCoord.Data = map[adjacentCoord];
 									if (adjacentCoord.Data == Voxel.States.PoweredSwitch || adjacentCoord.Data == Voxel.States.HardPowered)
@@ -94,6 +93,7 @@ namespace Lemma.Components
 						}
 					}
 				}
+				Voxel.CoordDictionaryCache.Clear();
 				if (regenerate)
 					map.Regenerate();
 			}));

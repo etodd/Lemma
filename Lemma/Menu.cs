@@ -329,7 +329,12 @@ namespace Lemma.Components
 				blurAmount = 0.0f;
 			else
 #endif
-				blurAmount = 1.0f;
+			{
+				if (this.main.MapFile.Value == Main.MenuMap)
+					blurAmount = 0.0f;
+				else
+					blurAmount = 1.0f;
+			}
 
 			this.pauseAnimation = new Animation
 			(

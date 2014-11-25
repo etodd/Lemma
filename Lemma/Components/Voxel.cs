@@ -43,6 +43,8 @@ namespace Lemma.Components
 	[XmlInclude(typeof(ListProperty<t>))]
 	public class Voxel : ComponentBind.Component<Main>
 	{
+		public static Dictionary<Voxel.Coord, bool> CoordDictionaryCache = new Dictionary<Voxel.Coord, bool>();
+
 		private static LargeObjectHeap<Box[, ,]> boxHeap = LargeObjectHeap<Box[, ,]>.Get(x => new Box[x, x, x], y => y * y * y * IntPtr.Size >= 85000);
 		private static LargeObjectHeap<Chunk[, ,]> chunkHeap = LargeObjectHeap<Chunk[, ,]>.Get(x => new Chunk[x, x, x], y => y * y * y * IntPtr.Size >= 85000);
 		private static LargeObjectHeap<Vertex[]> vertexHeap = LargeObjectHeap<Vertex[]>.Get(x => new Vertex[x], y => y * Vertex.SizeInBytes >= 85000);
@@ -2243,14 +2245,15 @@ namespace Lemma.Components
 						box2.Adjacent.Add(box1);
 					}
 				}
-
 				Voxel.boxCache.Clear();
 			}
 			catch (Exception)
 			{
-				this.RebuildAdjacency();
 				Log.d("Error reading adjacency data. Rebuilding adjacency...");
+				Voxel.boxCache.Clear();
+				this.RebuildAdjacency();
 			}
+
 
 			this.postDeserialization();
 		}

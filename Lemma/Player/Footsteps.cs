@@ -122,17 +122,16 @@ namespace Lemma.Components
 				{
 					bool regenerate = false;
 
-					Dictionary<Voxel.Coord, bool> visited = new Dictionary<Voxel.Coord, bool>();
 					Queue<Voxel.Coord> queue = new Queue<Voxel.Coord>();
 					queue.Enqueue(coord);
 					while (queue.Count > 0)
 					{
 						Voxel.Coord c = queue.Dequeue();
-						visited[c] = true;
+						Voxel.CoordDictionaryCache[c] = true;
 						foreach (Direction adjacentDirection in DirectionExtensions.Directions)
 						{
 							Voxel.Coord adjacentCoord = c.Move(adjacentDirection);
-							if (!visited.ContainsKey(adjacentCoord))
+							if (!Voxel.CoordDictionaryCache.ContainsKey(adjacentCoord))
 							{
 								Voxel.t adjacentID = map[adjacentCoord].ID;
 								if (adjacentID == Voxel.t.Reset)
@@ -143,9 +142,16 @@ namespace Lemma.Components
 									map.Fill(adjacentCoord, Voxel.States.Neutral);
 									regenerate = true;
 								}
+								else if (adjacentID == Voxel.t.HardPowered || adjacentID == Voxel.t.HardInfected)
+								{
+									map.Empty(adjacentCoord, false, true, map);
+									map.Fill(adjacentCoord, Voxel.States.Hard);
+									regenerate = true;
+								}
 							}
 						}
 					}
+					Voxel.CoordDictionaryCache.Clear();
 					if (regenerate)
 						map.Regenerate();
 				}
