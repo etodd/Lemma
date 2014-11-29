@@ -34,6 +34,11 @@ namespace Lemma.Factories
 			Components.Joint joint = entity.GetOrCreate<Components.Joint>("Joint");
 			slider.Add(new Binding<Direction>(slider.Direction, joint.Direction));
 
+			DynamicVoxel voxel = entity.Get<DynamicVoxel>();
+
+			if (main.EditorEnabled)
+				entity.Add(new Binding<Matrix>(slider.OriginalTransform, voxel.Transform));
+
 			entity.Add("Forward", slider.Forward);
 			entity.Add("Backward", slider.Backward);
 			entity.Add("OnHitMax", slider.OnHitMax);
@@ -48,7 +53,6 @@ namespace Lemma.Factories
 			entity.Add("Servo", slider.Servo);
 			entity.Add("StartAtMinimum", slider.StartAtMinimum);
 
-			DynamicVoxel voxel = entity.Get<DynamicVoxel>();
 			entity.Add("UVRotation", voxel.UVRotation);
 			entity.Add("UVOffset", voxel.UVOffset);
 			entity.Add("CannotSuspendByDistance", voxel.CannotSuspendByDistance);

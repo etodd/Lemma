@@ -80,12 +80,12 @@ namespace Lemma.Components
 								if (!Voxel.CoordDictionaryCache.ContainsKey(adjacentCoord))
 								{
 									adjacentCoord.Data = map[adjacentCoord];
-									if (adjacentCoord.Data == Voxel.States.PoweredSwitch || adjacentCoord.Data == Voxel.States.HardPowered)
+									if (adjacentCoord.Data == Voxel.States.PoweredSwitch)
 										queue.Enqueue(adjacentCoord);
-									else if (adjacentCoord.Data == Voxel.States.Blue || adjacentCoord.Data == Voxel.States.Powered)
+									else if (adjacentCoord.Data == Voxel.States.Blue || adjacentCoord.Data == Voxel.States.Powered || adjacentCoord.Data == Voxel.States.HardPowered)
 									{
 										map.Empty(adjacentCoord, true, true, map);
-										map.Fill(adjacentCoord, Voxel.States.Neutral);
+										map.Fill(adjacentCoord, adjacentCoord.Data == Voxel.States.HardPowered ? Voxel.States.Hard : Voxel.States.Neutral);
 										regenerate = true;
 									}
 								}

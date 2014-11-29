@@ -119,7 +119,7 @@ namespace Lemma.Components
 						{
 							Voxel.Coord adjacent = c.Move(dir);
 							Voxel.t adjacentID = m[adjacent].ID;
-							if (adjacentID != Voxel.t.Empty && (!blue || (adjacentID != Voxel.t.Infected && adjacentID != Voxel.t.HardInfected)))
+							if (adjacentID != Voxel.t.Empty && (!blue || (adjacentID != Voxel.t.Infected && adjacentID != Voxel.t.HardInfected && adjacentID != Voxel.t.Slider && adjacentID != Voxel.t.SliderPowered)))
 							{
 								foundAdjacentCell = true;
 								if (blue)

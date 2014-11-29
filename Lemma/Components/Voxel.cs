@@ -219,22 +219,23 @@ namespace Lemma.Components
 			public static readonly State Reset = new State
 			{
 				ID = t.Reset,
-				Permanent = false,
-				Supported = false,
+				Permanent = true,
+				Supported = true,
 				Hard = true,
 				Density = 2,
-				DiffuseMap = "Textures\\white",
+				Tint = new Vector3(0.7f, 0.3f, 2.0f),
+				DiffuseMap = "Textures\\powered-permanent",
 				NormalMap = "Textures\\temporary-normal",
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 				Materials = new[]
 				{
+					Model.Material.Unlit,
 					new Model.Material
 					{
 						SpecularPower = 200.0f,
 						SpecularIntensity = 0.4f,
-					}
+					},
 				},
-				Tint = new Vector3(0.0f, 0.6f, 0.0f),
 			};
 			public static readonly State Critical = new State
 			{

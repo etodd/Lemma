@@ -25,6 +25,9 @@ namespace Lemma.Components
 		public Property<bool> Servo = new Property<bool>();
 		public Property<bool> StartAtMinimum = new Property<bool>();
 
+		// Original transform of the slider at spawn
+		public Property<Matrix> OriginalTransform = new Property<Matrix>();
+
 		[XmlIgnore]
 		public Command OnHitMin = new Command();
 

@@ -79,9 +79,13 @@ namespace Lemma.Factories
 				if (this.AttachedVoxel.Value.Target != null)
 				{
 					Voxel m = this.AttachedVoxel.Value.Target.Get<Voxel>();
-					this.Coord.Value = m.GetCoordinate(Vector3.Transform(new Vector3(0, 0, this.Offset), this.Transform));
+					Slider s = m.Entity.Get<Slider>();
+					Vector3 pos = Vector3.Transform(new Vector3(0, 0, this.Offset), this.Transform);
+					Matrix voxelTransform = s != null ? s.OriginalTransform : m.Transform;
+					Vector3 relativePos = Vector3.Transform(pos, Matrix.Invert(voxelTransform)) + m.Offset;
+					this.Coord.Value = m.GetCoordinateFromRelative(relativePos);
 
-					Matrix offset = this.Transform * Matrix.Invert(Matrix.CreateTranslation(m.Offset) * m.Transform);
+					Matrix offset = this.Transform * Matrix.Invert(Matrix.CreateTranslation(m.Offset) * voxelTransform);
 
 					attachmentBinding = new Binding<Matrix>(this.Transform, () => offset * Matrix.CreateTranslation(m.Offset) * m.Transform, m.Transform, m.Offset);
 					this.Add(attachmentBinding);
@@ -125,7 +129,9 @@ namespace Lemma.Factories
 					Vector3 target = Vector3.Transform(new Vector3(0, 0, this.Offset), this.Transform);
 					foreach (Voxel m in Voxel.Voxels)
 					{
-						Voxel.Coord targetCoord = m.GetCoordinate(target);
+						Slider s = m.Entity.Get<Slider>();
+						Vector3 relativeTarget = Vector3.Transform(target, Matrix.Invert(s != null ? s.OriginalTransform : m.Transform)) + m.Offset;
+						Voxel.Coord targetCoord = m.GetCoordinateFromRelative(relativeTarget);
 						Voxel.Coord? c = m.FindClosestFilledCell(targetCoord, closestDistance);
 						if (c.HasValue)
 						{
