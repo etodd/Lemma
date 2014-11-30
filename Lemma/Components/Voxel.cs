@@ -1062,6 +1062,19 @@ namespace Lemma.Components
 
 			protected Dictionary<t, MeshEntry> meshes = new Dictionary<t, MeshEntry>();
 
+			public void UpdateTransform()
+			{
+				Matrix transform = this.Voxel.Transform;
+				lock (this.meshes)
+				{
+					foreach (KeyValuePair<t, MeshEntry> pair in this.meshes)
+					{
+						if (pair.Value.Mesh != null)
+							pair.Value.Mesh.WorldTransform = new BEPUutilities.AffineTransform(BEPUutilities.Matrix3x3.CreateFromMatrix(transform), transform.Translation);
+					}
+				}
+			}
+
 			public void MarkDirty(Box box)
 			{
 				MeshEntry entry = null;
@@ -1792,6 +1805,12 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Matrix> Transform = new Property<Matrix> { Value = Matrix.Identity };
 
+		[XmlIgnore]
+		public Property<Vector3> LinearVelocity = new Property<Vector3>();
+
+		[XmlIgnore]
+		public Property<Vector3> AngularVelocity = new Property<Vector3>();
+
 		public class SerializedVoxelData
 		{
 			public string Value;
@@ -2066,10 +2085,23 @@ namespace Lemma.Components
 		}
 		private static List<SpawnGroup> spawns = new List<SpawnGroup>();
 
+		protected virtual void transformBinding()
+		{
+			if (this.EnablePhysics && !this.main.EditorEnabled)
+			{
+				this.Add(new ChangeBinding<Matrix>(this.Transform, delegate(Matrix old, Matrix value)
+				{
+					foreach (Chunk c in this.Chunks)
+						c.UpdateTransform();
+				}));
+			}
+		}
+
 		private bool awoken = false;
 		public override void Awake()
 		{
 			base.Awake();
+			this.transformBinding();
 			this.updateBounds();
 
 			if (Voxel.workThread == null)
@@ -4857,8 +4889,6 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command<Collidable, ContactCollection> Collided = new Command<Collidable, ContactCollection>();
 
-		public Property<Vector3> LinearVelocity = new Property<Vector3>();
-
 		public Property<bool> IsAffectedByGravity = new Property<bool> { Value = true };
 
 		public Property<bool> IsAlwaysActive = new Property<bool> { Value = false };
@@ -4947,6 +4977,11 @@ namespace Lemma.Components
 				this.PhysicsEntity.LinearVelocity = value;
 			}));
 
+			this.Add(new SetBinding<Vector3>(this.AngularVelocity, delegate(Vector3 value)
+			{
+				this.PhysicsEntity.AngularVelocity = value;
+			}));
+
 			this.Add(new CommandBinding(this.OnSuspended, delegate()
 			{
 				if (this.addedToSpace)
@@ -4991,6 +5026,11 @@ namespace Lemma.Components
 		public override void updatePhysics()
 		{
 			this.physicsDirty = true;
+		}
+
+		protected override void transformBinding()
+		{
+			// Disable chunk transform binding, we already handle it
 		}
 
 		private void updatePhysicsImmediately()
@@ -5067,6 +5107,7 @@ namespace Lemma.Components
 
 			this.Transform.Value = this.PhysicsEntity.WorldTransform;
 			this.LinearVelocity.Value = this.PhysicsEntity.LinearVelocity;
+			this.AngularVelocity.Value = this.PhysicsEntity.AngularVelocity;
 		}
 
 		public override void delete()

@@ -468,6 +468,21 @@ namespace Lemma.Factories
 
 			AddCommand
 			(
+				entity, main, "Convert to StaticSlider", new PCInput.Chord(),
+				new Command
+				{
+					Action = delegate()
+					{
+						convertVoxel(Factory<Main>.Get<StaticSliderFactory>());
+					}
+				},
+				gui.VoxelCommands,
+				() => !editor.VoxelEditMode && editor.SelectedEntities.Length == 1 && editor.SelectedEntities[0].Get<Voxel>() != null && editor.SelectedEntities[0].Type != "StaticSlider",
+				editor.VoxelEditMode, editor.SelectedEntities.Length
+			);
+
+			AddCommand
+			(
 				entity, main, "Convert to Slider", new PCInput.Chord(),
 				new Command
 				{

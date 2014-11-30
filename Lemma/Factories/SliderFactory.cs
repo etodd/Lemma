@@ -37,7 +37,7 @@ namespace Lemma.Factories
 			DynamicVoxel voxel = entity.Get<DynamicVoxel>();
 
 			if (main.EditorEnabled)
-				entity.Add(new Binding<Matrix>(slider.OriginalTransform, voxel.Transform));
+				entity.Add(new Binding<Matrix>(entity.GetOrCreate<SliderCommon>("SliderCommon").OriginalTransform, voxel.Transform));
 
 			entity.Add("Forward", slider.Forward);
 			entity.Add("Backward", slider.Backward);

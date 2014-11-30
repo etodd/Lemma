@@ -200,15 +200,10 @@ namespace Lemma.Components
 
 		private void vault(Voxel map, Voxel.Coord coord)
 		{
-			DynamicVoxel dynamicMap = map as DynamicVoxel;
 			Vector3 supportVelocity = Vector3.Zero;
 
-			if (dynamicMap != null)
-			{
-				BEPUphysics.Entities.Entity supportEntity = dynamicMap.PhysicsEntity;
-				Vector3 supportLocation = this.FloorPosition;
-				supportVelocity = supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
-			}
+			Vector3 supportLocation = this.FloorPosition;
+			supportVelocity = map.LinearVelocity + Vector3.Cross(map.AngularVelocity, supportLocation - map.Transform.Value.Translation);
 
 			float verticalVelocityChange = this.LinearVelocity.Value.Y - supportVelocity.Y;
 			this.FallDamage.Execute(verticalVelocityChange);

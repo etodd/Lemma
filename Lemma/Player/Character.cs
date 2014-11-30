@@ -302,7 +302,7 @@ namespace Lemma.Util
 				if (this.EnableWalking)
 				{
 					if (this.IsSwimming)
-						this.handleNoTraction(dt, 0.75f * this.TractionDeceleration, this.MaxSpeed * 0.5f, this.SwimUp);
+						this.handleNoTraction(dt, this.TractionDeceleration * 0.7f, this.MaxSpeed * 0.7f, this.SwimUp);
 					else
 						this.handleNoTraction(dt, 0.0f, this.LastSupportedSpeed, false);
 				}

@@ -120,6 +120,8 @@ namespace Lemma.IO
 			typeof(ParticleWind),
 			typeof(VoxelSetter),
 			typeof(ConsoleCommand),
+			typeof(SliderCommon),
+			typeof(StaticSlider),
 		};
 
 		public static XmlSerializer Serializer;

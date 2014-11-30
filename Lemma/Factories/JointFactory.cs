@@ -180,7 +180,7 @@ namespace Lemma.Factories
 					m.Up = Vector3.Cross(normal, m.Left);
 				}
 				return m;
-			}, transform.Matrix, mapTransform.Matrix));
+			}, transform.Matrix, mapTransform.Matrix, joint.Direction));
 		}
 	}
 }

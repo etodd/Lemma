@@ -79,7 +79,7 @@ namespace Lemma.Factories
 				if (this.AttachedVoxel.Value.Target != null)
 				{
 					Voxel m = this.AttachedVoxel.Value.Target.Get<Voxel>();
-					Slider s = m.Entity.Get<Slider>();
+					SliderCommon s = m.Entity.Get<SliderCommon>();
 					Vector3 pos = Vector3.Transform(new Vector3(0, 0, this.Offset), this.Transform);
 					Matrix voxelTransform = s != null ? s.OriginalTransform : m.Transform;
 					Vector3 relativePos = Vector3.Transform(pos, Matrix.Invert(voxelTransform)) + m.Offset;
@@ -129,7 +129,7 @@ namespace Lemma.Factories
 					Vector3 target = Vector3.Transform(new Vector3(0, 0, this.Offset), this.Transform);
 					foreach (Voxel m in Voxel.Voxels)
 					{
-						Slider s = m.Entity.Get<Slider>();
+						SliderCommon s = m.Entity.Get<SliderCommon>();
 						Vector3 relativeTarget = Vector3.Transform(target, Matrix.Invert(s != null ? s.OriginalTransform : m.Transform)) + m.Offset;
 						Voxel.Coord targetCoord = m.GetCoordinateFromRelative(relativeTarget);
 						Voxel.Coord? c = m.FindClosestFilledCell(targetCoord, closestDistance);

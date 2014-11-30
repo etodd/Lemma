@@ -152,13 +152,8 @@ namespace Lemma.Components
 					jumpDirection += wallJumpHorizontalVelocityAmount * 0.75f * wallNormal2;
 				}
 
-				DynamicVoxel dynamicMap = wallJumpMap as DynamicVoxel;
-				if (dynamicMap != null)
-				{
-					BEPUphysics.Entities.Entity supportEntity = dynamicMap.PhysicsEntity;
-					Vector3 supportLocation = this.FloorPosition;
-					baseVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
-				}
+				Vector3 supportLocation = this.FloorPosition;
+				baseVelocity += wallJumpMap.LinearVelocity + Vector3.Cross(wallJumpMap.AngularVelocity, supportLocation - wallJumpMap.Transform.Value.Translation);
 			};
 
 			if (!supported && wallRunState == WallRun.State.None
@@ -286,7 +281,11 @@ namespace Lemma.Components
 						if (supportEntity != null)
 						{
 							Vector3 supportLocation = this.FloorPosition;
-							baseVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
+							Voxel v = supportEntity.Tag as Voxel;
+							if (v != null)
+								baseVelocity += v.LinearVelocity + Vector3.Cross(v.AngularVelocity, supportLocation - v.Transform.Value.Translation);
+							else
+								baseVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
 						}
 					}
 					else
