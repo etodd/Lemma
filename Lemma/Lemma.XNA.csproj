@@ -110,6 +110,7 @@
     <Compile Include="ComponentInterfaces.cs" />
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
+    <Compile Include="Components\AnimatedProp.cs" />
     <Compile Include="Components\Data.cs" />
     <Compile Include="Components\SliderCommon.cs" />
     <Compile Include="Components\Scriptlike\ConsoleCommand.cs" />
@@ -157,6 +158,7 @@
     <Compile Include="Components\Turret.cs" />
     <Compile Include="Components\VoxelFill.cs" />
     <Compile Include="Factories\ConsoleCommandFactory.cs" />
+    <Compile Include="Factories\AnimatedPropFactory.cs" />
     <Compile Include="Factories\StaticSliderFactory.cs" />
     <Compile Include="Factories\VoxelSetterFactory.cs" />
     <Compile Include="OvrCapi.cs" />
@@ -526,14 +528,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Game\dawn.cs" />
-    <Compile Include="Game\dawn2.cs" />
-    <Compile Include="Game\forest.cs" />
-    <Compile Include="Game\FractureCommon.cs" />
-    <Compile Include="Game\monolith.cs" />
-    <Compile Include="Game\nexus.cs" />
-    <Compile Include="Game\rain.cs" />
-    <Compile Include="Game\start.cs" />
+    <Compile Include="Game\*.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

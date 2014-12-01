@@ -96,7 +96,7 @@ namespace Lemma.Components
 						this.Coord.Value = m.GetCoordinateFromRelative(relativePos);
 					}
 
-					attachmentBinding = new Binding<Matrix>(this.Transform, () => Matrix.CreateTranslation(m.GetRelativePosition(this.Coord) + this.Direction.Value.GetVector() * this.Position) * m.Transform, m.Transform, m.Offset, this.Direction, this.Coord, this.Position);
+					attachmentBinding = new Binding<Matrix>(this.Transform, () => Matrix.CreateTranslation(m.GetRelativePosition(this.Coord) - new Vector3(0.5f) + this.Direction.Value.GetVector() * this.Position) * m.Transform, m.Transform, m.Offset, this.Direction, this.Coord, this.Position);
 					this.Add(attachmentBinding);
 				}
 			}));

@@ -646,8 +646,8 @@ function clear()
 var paper = new joint.dia.Paper(
 {
 	el: $('#paper'),
-	width: 8000,
-	height: 6000,
+	width: 16000,
+	height: 8000,
 	model: graph,
 	gridSize: 1,
 	defaultLink: defaultLink,

@@ -62,11 +62,15 @@ namespace Lemma.Factories
 			this.Entity.Add("Attach", this.Enabled);
 		}
 
+		private bool isInitialAttachment;
+
 		public override void Awake()
 		{
 			base.Awake();
 			Binding<Matrix> attachmentBinding = null;
 			CommandBinding<IEnumerable<Voxel.Coord>, Voxel> cellEmptiedBinding = null;
+
+			this.isInitialAttachment = this.AttachedVoxel.Value.GUID != 0;
 
 			this.Add(new NotifyBinding(delegate()
 			{
@@ -81,9 +85,18 @@ namespace Lemma.Factories
 					Voxel m = this.AttachedVoxel.Value.Target.Get<Voxel>();
 					SliderCommon s = m.Entity.Get<SliderCommon>();
 					Vector3 pos = Vector3.Transform(new Vector3(0, 0, this.Offset), this.Transform);
-					Matrix voxelTransform = s != null ? s.OriginalTransform : m.Transform;
-					Vector3 relativePos = Vector3.Transform(pos, Matrix.Invert(voxelTransform)) + m.Offset;
-					this.Coord.Value = m.GetCoordinateFromRelative(relativePos);
+					Matrix voxelTransform;
+					if (this.isInitialAttachment)
+					{
+						voxelTransform = m.Transform;
+						this.isInitialAttachment = false;
+					}
+					else
+					{
+						voxelTransform = s != null ? s.OriginalTransform : m.Transform;
+						Vector3 relativePos = Vector3.Transform(pos, Matrix.Invert(voxelTransform)) + m.Offset;
+						this.Coord.Value = m.GetCoordinateFromRelative(relativePos);
+					}
 
 					Matrix offset = this.Transform * Matrix.Invert(Matrix.CreateTranslation(m.Offset) * voxelTransform);
 

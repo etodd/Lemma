@@ -29,6 +29,23 @@ namespace PipelineExtensions
 	[ContentProcessor(DisplayName = "Lemma Skinned Model Processor")]
 	public class SkinnedModelProcessor : CustomModelProcessor
 	{
+		private const int defaultMaxBones = 67;
+		[DisplayName("Max Bones")]
+		[Description("Max bone count.")]
+		[DefaultValue(67)]
+		public int MaxBones
+		{
+			get
+			{
+				return this.maxBones;
+			}
+			set
+			{
+				this.maxBones = value;
+			}
+		}
+		private int maxBones = defaultMaxBones;
+
 		/// <summary>
 		/// The main Process method converts an intermediate format content pipeline
 		/// NodeContent tree to a ModelContent object with embedded animation data.
@@ -53,9 +70,8 @@ namespace PipelineExtensions
 			// Read the bind pose and skeleton hierarchy data.
 			IList<BoneContent> bones = MeshHelper.FlattenSkeleton(skeleton);
 
-			const int maxBones = 67;
-			if (bones.Count > maxBones)
-				throw new InvalidContentException(string.Format("Skeleton has {0} bones, but the maximum supported is {1}.", bones.Count, maxBones));
+			if (bones.Count > this.maxBones)
+				throw new InvalidContentException(string.Format("Skeleton has {0} bones, but the maximum supported is {1}.", bones.Count, this.maxBones));
 
 			Dictionary<string, int> boneMap = new Dictionary<string, int>();
 			List<Matrix> bindPose = new List<Matrix>();

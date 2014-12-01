@@ -32,10 +32,8 @@ namespace Lemma.Components
 			{ "forest", "\\map forest" },
 			{ "monolith", "\\map monolith" },
 			{ "fracture1", "\\map fracture" },
-			/*
 			{ "valley", "\\map valley" },
 			{ "nexus", "\\map nexus" },
-			*/
 		};
 
 		private const float messageFadeTime = 0.75f;

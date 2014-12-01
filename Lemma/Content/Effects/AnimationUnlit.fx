@@ -1,18 +1,5 @@
 #include "AnimationCommon.fxh"
 
-technique Shadow
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 ShadowVS();
-		PixelShader = compile ps_3_0 ShadowPS();
-	}
-}
-
 technique Render
 {
 	pass p0
@@ -22,7 +9,7 @@ technique Render
 		AlphaBlendEnable = false;
 	
 		VertexShader = compile vs_3_0 RenderVS();
-		PixelShader = compile ps_3_0 RenderTextureFlatPlainPS();
+		PixelShader = compile ps_3_0 RenderTexturePlainPS();
 	}
 }
 
@@ -35,6 +22,6 @@ technique Clip
 		AlphaBlendEnable = false;
 
 		VertexShader = compile vs_3_0 ClipVS();
-		PixelShader = compile ps_3_0 ClipTextureFlatPlainPS();
+		PixelShader = compile ps_3_0 ClipTexturePlainPS();
 	}
 }

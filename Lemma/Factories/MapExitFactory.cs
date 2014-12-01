@@ -28,6 +28,8 @@ namespace Lemma.Factories
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
 			this.SetMain(entity, main);
 
+			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
+
 			MapExit mapExit = entity.GetOrCreate<MapExit>("MapExit");
 
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
@@ -51,6 +53,7 @@ namespace Lemma.Factories
 		{
 			base.AttachEditorComponents(entity, main);
 			PlayerTrigger.AttachEditorComponents(entity, main, this.Color);
+			VoxelAttachable.AttachEditorComponents(entity, main, entity.Get<Model>("EditorModel").Color);
 		}
 	}
 }

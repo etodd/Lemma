@@ -75,28 +75,39 @@ namespace Lemma.Util
 			}
 		}
 
+		public void Validate(Strings strings)
+		{
+#if DEBUG
+			foreach (Node n in this.nodes.Values)
+			{
+				if ((n.type == Node.Type.Choice || n.type == Node.Type.Text) && !strings.HasKey(n.name))
+					Log.d(string.Format("Invalid dialogue {0} \"{1}\"", n.type.ToString(), n.name));
+			}
+#endif
+		}
+
 		public void Execute(Node node, IListener listener, int textLevel = 1)
 		{
 			string next = null;
 			switch (node.type)
 			{
-				case DialogueForest.Node.Type.Node:
+				case Node.Type.Node:
 					if (node.choices != null && node.choices.Count > 0)
 						listener.Choice(node, node.choices.Select(x => this[x]));
 					next = node.next;
 					break;
-				case DialogueForest.Node.Type.Text:
+				case Node.Type.Text:
 					listener.Text(node, textLevel);
 					if (node.choices != null && node.choices.Count > 0)
 						listener.Choice(node, node.choices.Select(x => this[x]));
 					next = node.next;
 					textLevel++;
 					break;
-				case DialogueForest.Node.Type.Set:
+				case Node.Type.Set:
 					listener.Set(node.variable, node.value);
 					next = node.next;
 					break;
-				case DialogueForest.Node.Type.Branch:
+				case Node.Type.Branch:
 					string key = listener.Get(node.variable);
 					if (key == null || !node.branches.TryGetValue(key, out next))
 						node.branches.TryGetValue("_default", out next);

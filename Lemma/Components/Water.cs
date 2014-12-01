@@ -514,30 +514,23 @@ namespace Lemma.Components
 						Vector3 diff = boundingBox.Max - boundingBox.Min;
 						Vector3[] particlePositions = new Vector3[5 * (int)(diff.X * diff.Z)];
 
+						Voxel v = collidable.Tag as Voxel;
+						int particleIndex = 0;
 						for (int i = 0; i < particlePositions.Length; i++)
 						{
-							particlePositions[i] = new Vector3
+							Vector3 pos = particlePositions[particleIndex] = new Vector3
 							(
 								boundingBox.Min.X + ((float)this.random.NextDouble() * diff.X),
 								waterHeight,
 								boundingBox.Min.Z + ((float)this.random.NextDouble() * diff.Z)
 							);
+							if (v == null || v[pos] != Voxel.States.Empty)
+								particleIndex++;
 						}
 
-						ParticleEmitter.Emit(this.main, "Splash", particlePositions);
+						ParticleEmitter.Emit(this.main, "Splash", particlePositions.Take(particleIndex));
 
-						particlePositions = new Vector3[(int)(diff.X * diff.Z)];
-						for (int i = 0; i < particlePositions.Length; i++)
-						{
-							particlePositions[i] = new Vector3
-							(
-								boundingBox.Min.X + ((float)this.random.NextDouble() * diff.X),
-								waterHeight,
-								boundingBox.Min.Z + ((float)this.random.NextDouble() * diff.Z)
-							);
-						}
-
-						ParticleEmitter.Emit(this.main, "BigSplash", particlePositions);
+						ParticleEmitter.Emit(this.main, "BigSplash", particlePositions.Take(particleIndex / 5));
 					}
 
 					this.submerged[collidable] = 8;

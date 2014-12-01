@@ -66,5 +66,18 @@ namespace Lemma
 			language.TryGetValue(key, out result);
 			return result;
 		}
+
+		public bool HasKey(string key)
+		{
+			if (key == null)
+				return false;
+
+			Dictionary<string, string> language;
+			if (!this.data.TryGetValue(this.Language, out language))
+				return false;
+
+			string result;
+			return language.TryGetValue(key, out result);
+		}
 	}
 }

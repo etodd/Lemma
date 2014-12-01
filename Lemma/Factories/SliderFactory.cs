@@ -52,6 +52,7 @@ namespace Lemma.Factories
 			entity.Add("Goal", slider.Goal);
 			entity.Add("Servo", slider.Servo);
 			entity.Add("StartAtMinimum", slider.StartAtMinimum);
+			entity.Add("MaxForce", slider.MaxForce);
 
 			entity.Add("UVRotation", voxel.UVRotation);
 			entity.Add("UVOffset", voxel.UVOffset);

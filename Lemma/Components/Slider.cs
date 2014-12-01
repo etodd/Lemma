@@ -24,6 +24,7 @@ namespace Lemma.Components
 		public Property<int> Goal = new Property<int>();
 		public Property<bool> Servo = new Property<bool>();
 		public Property<bool> StartAtMinimum = new Property<bool>();
+		public Property<float> MaxForce = new Property<float>();
 
 		[XmlIgnore]
 		public Command OnHitMin = new Command();
@@ -108,6 +109,15 @@ namespace Lemma.Components
 			this.updateMaterial();
 		}
 
+		private void setMaxForce()
+		{
+			if (this.joint != null)
+			{
+				float f = this.MaxForce;
+				this.joint.Motor.Settings.MaximumForce = f == 0.0f ? float.MaxValue : f;
+			}
+		}
+
 		public void Move(int value)
 		{
 			if (this.Locked)
@@ -127,6 +137,7 @@ namespace Lemma.Components
 			this.setSpeed();
 			this.setGoal();
 			this.setMode();
+			this.setMaxForce();
 			this.joint.Motor.Settings.Servo.SpringSettings.StiffnessConstant = 0.03f;
 			this.joint.Limit.Update(0.0f);
 			return this.joint;
@@ -141,6 +152,7 @@ namespace Lemma.Components
 			this.Add(new NotifyBinding(this.setLocked, this.Locked));
 			this.Add(new NotifyBinding(this.setGoal, this.Goal));
 			this.Add(new NotifyBinding(this.setMode, this.Servo));
+			this.Add(new NotifyBinding(this.setMaxForce, this.MaxForce));
 
 			this.Forward.Action = delegate() { this.Move(this.Maximum); };
 			this.Backward.Action = delegate() { this.Move(this.Minimum); };

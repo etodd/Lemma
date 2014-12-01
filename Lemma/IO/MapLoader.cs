@@ -122,6 +122,7 @@ namespace Lemma.IO
 			typeof(ConsoleCommand),
 			typeof(SliderCommon),
 			typeof(StaticSlider),
+			typeof(AnimatedProp),
 		};
 
 		public static XmlSerializer Serializer;

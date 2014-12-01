@@ -14,6 +14,15 @@ namespace Lemma.Components
 		[XmlIgnore]
 		private List<SkinnedModel.Clip> CurrentClips = new List<SkinnedModel.Clip>();
 
+		[XmlIgnore]
+		public Dictionary<string, SkinnedModel.Clip> Clips
+		{
+			get
+			{
+				return this.skinningData.Clips;
+			}
+		}
+
 		// Animation blending data
 
 		// Current animation transform matrices.

@@ -175,6 +175,11 @@
       <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
       <ProcessorParameters_EffectFileName>..\Effects\Waterfall.fx</ProcessorParameters_EffectFileName>
     </Compile>
+    <None Include="Effects\AnimationNormalMapCommon.fxh">
+      <Name>AnimationNormalMapCommon</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </None>
     <None Include="Effects\ClipCommon.fxh">
       <Name>ClipCommon</Name>
       <Importer>EffectImporter</Importer>
@@ -250,8 +255,8 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>
-    <Compile Include="Effects\AnimationSolidColor.fx">
-      <Name>AnimationSolidColor</Name>
+    <Compile Include="Effects\AnimationUnlit.fx">
+      <Name>AnimationUnlit</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>
@@ -260,8 +265,8 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>
-    <None Include="Effects\AnimationNormalMapCommon.fxh">
-      <Name>AnimationNormalMapCommon</Name>
+    <None Include="Effects\AnimationCommon.fxh">
+      <Name>AnimationCommon</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </None>

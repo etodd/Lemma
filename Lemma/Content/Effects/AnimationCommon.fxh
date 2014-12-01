@@ -2,6 +2,8 @@
 
 float4x3 Bones[78];
 
+float2 UVOffset;
+
 struct RenderVSInput
 {
 	float4 position : POSITION0;
@@ -15,6 +17,7 @@ struct RenderVSInput
 void RenderVS (	in RenderVSInput input,
 					out RenderVSOutput vs,
 					out RenderPSInput output,
+					out TexturePSInput tex,
 					out FlatPSInput flat,
 					out MotionBlurPSInput motionBlur)
 {
@@ -32,6 +35,8 @@ void RenderVS (	in RenderVSInput input,
 	vs.position = mul(viewSpacePosition, ProjectionMatrix);
 	output.viewSpacePosition = viewSpacePosition;
 
+	tex.uvCoordinates = input.uvCoordinates + UVOffset;
+
 	flat.normal = mul(input.normal, WorldMatrix);
 
 	// Pass along the current vertex position in clip-space,
@@ -43,11 +48,12 @@ void RenderVS (	in RenderVSInput input,
 void ClipVS(	in RenderVSInput input,
 				out RenderVSOutput vs,
 				out RenderPSInput output,
+				out TexturePSInput tex,
 				out FlatPSInput flat,
 				out MotionBlurPSInput motionBlur,
 				out ClipPSInput clipData)
 {
-	RenderVS(input, vs, output, flat, motionBlur);
+	RenderVS(input, vs, output, tex, flat, motionBlur);
 	clipData = GetClipData(output.position);
 }
 
@@ -71,43 +77,4 @@ void ShadowVS (	in float4 in_Position			: POSITION,
 	output.worldPosition = worldPosition.xyz;
 	vs.position = mul(worldPosition, ViewProjectionMatrix);
 	output.clipSpacePosition = vs.position;
-}
-
-technique Shadow
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 ShadowVS();
-		PixelShader = compile ps_3_0 ShadowPS();
-	}
-}
-
-technique Render
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-	
-		VertexShader = compile vs_3_0 RenderVS();
-		PixelShader = compile ps_3_0 RenderFlatPS();
-	}
-}
-
-technique Clip
-{
-	pass p0
-	{
-		ZEnable = true;
-		ZWriteEnable = true;
-		AlphaBlendEnable = false;
-
-		VertexShader = compile vs_3_0 ClipVS();
-		PixelShader = compile ps_3_0 ClipFlatPS();
-	}
 }

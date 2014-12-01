@@ -9,7 +9,7 @@ namespace Lemma.Components
 {
 	public class AmbientSound : Component<Main>
 	{
-		public Property<string>  PlayCue = new Property<string>();
+		public Property<string> PlayCue = new Property<string>();
 		public Property<string> StopCue = new Property<string>();
 		public Property<bool> Is3D = new Property<bool>();
 		public Property<Vector3> Position = new Property<Vector3>();
