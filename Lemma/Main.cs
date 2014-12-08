@@ -305,7 +305,8 @@ namespace Lemma
 #if VR
 		public bool VR { get; private set; }
 		public const float VRUnitToWorldUnit = 3.0f;
-		public Ovr.Hmd Hmd;
+		public Ovr.Hmd VRHmd;
+		private Ovr.HmdDesc vrHmdDesc;
 
 		private RenderTarget2D vrLeftEyeTarget;
 		private RenderTarget2D vrRightEyeTarget;
@@ -469,7 +470,6 @@ namespace Lemma
 			});
 
 			this.Graphics = new GraphicsDeviceManager(this);
-			this.Graphics.SynchronizeWithVerticalRetrace = false;
 
 			this.Content = new ContentManager(this.Services);
 			this.Content.RootDirectory = "Content";
@@ -835,17 +835,17 @@ namespace Lemma
 				{
 					if (!Ovr.Hmd.Initialize())
 						throw new Exception("Failed to initialize Ovr.");
-					this.Hmd = Ovr.Hmd.Create(0);
-					if (this.Hmd == null)
+					this.VRHmd = Ovr.Hmd.Create(0);
+					if (this.VRHmd == null)
 						throw new Exception("Oculus not found.");
-					if (!this.Hmd.ConfigureTracking(
+					if (!this.VRHmd.ConfigureTracking(
 						(uint)Ovr.TrackingCaps.Orientation
 						| (uint)Ovr.TrackingCaps.MagYawCorrection
 						| (uint)Ovr.TrackingCaps.Position, 0))
 						throw new Exception("Failed to configure head tracking.");
-					Ovr.HmdDesc hmdDesc = this.Hmd.GetDesc();
-					this.vrLeftFov = hmdDesc.MaxEyeFov[0];
-					this.vrRightFov = hmdDesc.MaxEyeFov[1];
+					this.vrHmdDesc = this.VRHmd.GetDesc();
+					this.vrLeftFov = this.vrHmdDesc.MaxEyeFov[0];
+					this.vrRightFov = this.vrHmdDesc.MaxEyeFov[1];
 					Ovr.FovPort maxFov = new Ovr.FovPort();
 					maxFov.UpTan = Math.Max(this.vrLeftFov.UpTan, this.vrRightFov.UpTan);
 					maxFov.DownTan = Math.Max(this.vrLeftFov.DownTan, this.vrRightFov.DownTan);
@@ -853,8 +853,8 @@ namespace Lemma
 					maxFov.RightTan = Math.Max(this.vrLeftFov.RightTan, this.vrRightFov.RightTan);
 					float combinedTanHalfFovHorizontal = Math.Max(maxFov.LeftTan, maxFov.RightTan);
 					float combinedTanHalfFovVertical = Math.Max(maxFov.UpTan, maxFov.DownTan);
-					this.vrLeftEyeRenderDesc = this.Hmd.GetRenderDesc(Ovr.Eye.Left, this.vrLeftFov);
-					this.vrRightEyeRenderDesc = this.Hmd.GetRenderDesc(Ovr.Eye.Right, this.vrRightFov);
+					this.vrLeftEyeRenderDesc = this.VRHmd.GetRenderDesc(Ovr.Eye.Left, this.vrLeftFov);
+					this.vrRightEyeRenderDesc = this.VRHmd.GetRenderDesc(Ovr.Eye.Right, this.vrRightFov);
 
 					this.vrLeftMesh.Load(this, Ovr.Eye.Left, this.vrLeftFov);
 					this.vrRightMesh.Load(this, Ovr.Eye.Right, this.vrRightFov);
@@ -907,14 +907,8 @@ namespace Lemma
 				}
 
 #if VR
-				// Recenter VR pose
 				if (this.VR)
-				{
-					input.Bind(this.Settings.RecenterVRPose, PCInput.InputState.Down, delegate()
-					{
-						this.Hmd.RecenterPose();
-					});
-				}
+					input.Bind(this.Settings.RecenterVRPose, PCInput.InputState.Down, this.VRHmd.RecenterPose);
 #endif
 
 #if DEVELOPMENT
@@ -1449,6 +1443,42 @@ namespace Lemma
 			}
 		}
 
+#if VR
+		private void drawEye(Camera originalCamera, GameTime gameTime, Ovr.Posef pose, RenderTarget2D renderTarget, bool updateLights)
+		{
+			Quaternion quat = new Quaternion(pose.Orientation.x, pose.Orientation.y, pose.Orientation.z, pose.Orientation.w);
+			this.vrCamera.RotationMatrix.Value = Matrix.CreateFromQuaternion(quat) * originalCamera.RotationMatrix;
+			Vector3 viewAdjust = Vector3.TransformNormal(new Vector3(pose.Position.x, pose.Position.y, pose.Position.z), originalCamera.RotationMatrix);
+			this.vrCamera.Position.Value = originalCamera.Position.Value + viewAdjust * Main.VRUnitToWorldUnit;
+			Ovr.Matrix4f proj = Ovr.Hmd.GetProjection(this.vrLeftFov, originalCamera.NearPlaneDistance, originalCamera.FarPlaneDistance, true);
+			this.vrCamera.Projection.Value = Oculus.MatrixOvrToXna(proj);
+
+			foreach (IDrawablePreFrameComponent c in this.preframeDrawables)
+			{
+				if (this.componentEnabled(c))
+					c.DrawPreFrame(gameTime, this.renderParameters);
+			}
+
+			this.Renderer.SetRenderTargets(this.renderParameters);
+
+			this.DrawScene(this.renderParameters);
+
+			if (updateLights)
+			{
+				this.LightingManager.UpdateGlobalLights();
+				this.LightingManager.RenderShadowMaps(originalCamera);
+			}
+
+			this.Renderer.PostProcess(renderTarget, this.renderParameters);
+
+			foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
+			{
+				if (this.componentEnabled(c))
+					c.DrawNonPostProcessed(gameTime, this.renderParameters);
+			}
+		}
+#endif
+
 		protected override void Draw(GameTime gameTime)
 		{
 			if (this.GraphicsDevice == null || this.GraphicsDevice.IsDisposed || this.GraphicsDevice.GraphicsDeviceStatus != GraphicsDeviceStatus.Normal)
@@ -1463,71 +1493,25 @@ namespace Lemma
 			Ovr.FrameTiming frameTiming = new Ovr.FrameTiming();
 			if (this.VR)
 			{
-				frameTiming = this.Hmd.BeginFrameTiming(0);
+				frameTiming = this.VRHmd.BeginFrameTiming(0);
 
 				Camera originalCamera = this.renderParameters.Camera;
 				this.vrCamera.SetFromCamera(originalCamera);
 				this.vrCamera.ProjectionType.Value = Camera.ProjectionMode.Custom;
 				this.renderParameters.Camera = this.vrCamera;
 
-				Ovr.Posef[] eyePoses = this.Hmd.GetEyePoses(0);
+				Ovr.Posef[] eyes = this.VRHmd.GetEyePoses(0);
 
-				// Setup left eye view and projection
-				Quaternion quat = new Quaternion(eyePoses[0].Orientation.x, eyePoses[0].Orientation.y, eyePoses[0].Orientation.z, eyePoses[0].Orientation.w);
-				this.vrCamera.RotationMatrix.Value = Matrix.CreateFromQuaternion(quat) * originalCamera.RotationMatrix;
-				Vector3 viewAdjust = Vector3.TransformNormal(new Vector3(eyePoses[0].Position.x, eyePoses[0].Position.y, eyePoses[0].Position.z), originalCamera.RotationMatrix);
-				this.vrCamera.Position.Value = originalCamera.Position.Value + viewAdjust * Main.VRUnitToWorldUnit;
-				Ovr.Matrix4f proj = Ovr.Hmd.GetProjection(this.vrLeftFov, originalCamera.NearPlaneDistance, originalCamera.FarPlaneDistance, true);
-				this.vrCamera.Projection.Value = Oculus.MatrixOvrToXna(proj);
-
-				foreach (IDrawablePreFrameComponent c in this.preframeDrawables)
+				if (this.vrHmdDesc.EyeRenderOrder[0] == Ovr.Eye.Left)
 				{
-					if (this.componentEnabled(c))
-						c.DrawPreFrame(gameTime, this.renderParameters);
+					this.drawEye(originalCamera, gameTime, eyes[0], this.vrLeftEyeTarget, true);
+					this.drawEye(originalCamera, gameTime, eyes[1], this.vrRightEyeTarget, false);
 				}
-
-				this.Renderer.SetRenderTargets(this.renderParameters);
-
-				this.DrawScene(this.renderParameters);
-
-				this.LightingManager.UpdateGlobalLights();
-				this.LightingManager.RenderShadowMaps(originalCamera);
-
-				this.Renderer.PostProcess(this.vrLeftEyeTarget, this.renderParameters);
-
-				foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
+				else
 				{
-					if (this.componentEnabled(c))
-						c.DrawNonPostProcessed(gameTime, this.renderParameters);
+					this.drawEye(originalCamera, gameTime, eyes[1], this.vrRightEyeTarget, true);
+					this.drawEye(originalCamera, gameTime, eyes[0], this.vrLeftEyeTarget, false);
 				}
-
-				// Setup right eye view and projection
-				quat = new Quaternion(eyePoses[1].Orientation.x, eyePoses[1].Orientation.y, eyePoses[1].Orientation.z, eyePoses[1].Orientation.w);
-				this.vrCamera.RotationMatrix.Value = Matrix.CreateFromQuaternion(quat) * originalCamera.RotationMatrix;
-				viewAdjust = Vector3.TransformNormal(new Vector3(eyePoses[1].Position.x, eyePoses[1].Position.y, eyePoses[1].Position.z), originalCamera.RotationMatrix);
-				this.vrCamera.Position.Value = originalCamera.Position.Value + viewAdjust * Main.VRUnitToWorldUnit;
-				proj = Ovr.Hmd.GetProjection(this.vrRightFov, originalCamera.NearPlaneDistance, originalCamera.FarPlaneDistance, true);
-				this.vrCamera.Projection.Value = Oculus.MatrixOvrToXna(proj);
-
-				foreach (IDrawablePreFrameComponent c in this.preframeDrawables)
-				{
-					if (this.componentEnabled(c))
-						c.DrawPreFrame(gameTime, this.renderParameters);
-				}
-
-				this.Renderer.SetRenderTargets(this.renderParameters);
-
-				this.DrawScene(this.renderParameters);
-
-				this.Renderer.PostProcess(this.vrRightEyeTarget, this.renderParameters);
-
-				foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
-				{
-					if (this.componentEnabled(c))
-						c.DrawNonPostProcessed(gameTime, this.renderParameters);
-				}
-
-				// Render left and right frame buffers to the screen
 
 				this.GraphicsDevice.SetRenderTarget(this.RenderTarget);
 				this.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Black);
@@ -1538,20 +1522,12 @@ namespace Lemma
 				this.spriteBatch.Draw(this.vrRightEyeTarget, new Vector2(this.vrLeftEyeTarget.Width, 0), Color.White);
 				this.spriteBatch.End();
 				*/
+				Ovr.Hmd.WaitTillTime(frameTiming.TimewarpPointSeconds);
 
-				eyePoses = this.Hmd.GetEyePoses(0);
-
-				this.vrLeftMesh.Render(this.vrLeftEyeTarget, eyePoses[0], this.vrEffect);
-
-				this.vrRightMesh.Render(this.vrRightEyeTarget, eyePoses[1], this.vrEffect);
+				this.vrLeftMesh.Render(this.vrLeftEyeTarget, eyes[0], this.vrEffect);
+				this.vrRightMesh.Render(this.vrRightEyeTarget, eyes[1], this.vrEffect);
 
 				// Update view projection matrix
-				quat = new Quaternion(eyePoses[1].Orientation.x, eyePoses[1].Orientation.y, eyePoses[1].Orientation.z, eyePoses[1].Orientation.w);
-				this.vrCamera.RotationMatrix.Value = Matrix.CreateFromQuaternion(quat) * originalCamera.RotationMatrix;
-				viewAdjust = Vector3.TransformNormal(new Vector3(eyePoses[1].Position.x, eyePoses[1].Position.y, eyePoses[1].Position.z), originalCamera.RotationMatrix);
-				this.vrCamera.Position.Value = originalCamera.Position.Value + viewAdjust * Main.VRUnitToWorldUnit;
-				proj = Ovr.Hmd.GetProjection(this.vrRightFov, originalCamera.NearPlaneDistance, originalCamera.FarPlaneDistance, true);
-				this.vrCamera.Projection.Value = Oculus.MatrixOvrToXna(proj);
 				this.VRLastViewProjection.Value = this.vrCamera.ViewProjection;
 
 				this.renderParameters.Camera = originalCamera;
@@ -1598,11 +1574,6 @@ namespace Lemma
 				}
 				this.RenderTarget = null;
 			}
-
-#if VR
-			if (this.VR)
-				Ovr.Hmd.WaitTillTime(frameTiming.TimewarpPointSeconds);
-#endif
 		}
 
 		protected override void EndDraw()
@@ -1610,7 +1581,7 @@ namespace Lemma
 			base.EndDraw();
 #if VR
 			if (this.VR)
-				this.Hmd.EndFrameTiming();
+				this.VRHmd.EndFrameTiming();
 #endif
 		}
 
@@ -1671,9 +1642,9 @@ namespace Lemma
 				this.vrRightEyeTarget.Dispose();
 			}
 
-			if (this.Hmd != null)
+			if (this.VRHmd != null)
 			{
-				Ovr.Sizei size = this.Hmd.GetFovTextureSize(Ovr.Eye.Left, this.vrLeftFov);
+				Ovr.Sizei size = this.VRHmd.GetFovTextureSize(Ovr.Eye.Left, this.vrLeftFov);
 				Point renderTargetSize = new Point(size.w, size.h);
 
 				this.vrLeftEyeTarget = new RenderTarget2D(this.GraphicsDevice, renderTargetSize.X, renderTargetSize.Y, false, SurfaceFormat.Color, DepthFormat.None);

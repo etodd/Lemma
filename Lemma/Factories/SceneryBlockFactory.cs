@@ -38,6 +38,7 @@ namespace Lemma.Factories
 
 			this.SetMain(entity, main);
 
+			entity.Add("IsAffectedByGravity", physics.IsAffectedByGravity);
 			sceneryBlock.EditorProperties();
 		}
 

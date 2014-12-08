@@ -4609,11 +4609,14 @@ namespace Lemma.Components
 						intersections[0] = tmp;
 					}
 
-					RaycastResult result = this.raycastChunk(intersections[0], intersections[1], c, filter);
-					if (result.Coordinate != null)
+					if (c.Data != null)
 					{
-						result.Distance = (result.Position - absoluteStart).Length();
-						return result;
+						RaycastResult result = this.raycastChunk(intersections[0], intersections[1], c, filter);
+						if (result.Coordinate != null)
+						{
+							result.Distance = (result.Position - absoluteStart).Length();
+							return result;
+						}
 					}
 				}
 			}

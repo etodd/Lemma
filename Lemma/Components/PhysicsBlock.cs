@@ -21,6 +21,7 @@ namespace Lemma.Components
 		public Property<Vector3> Size = new Property<Vector3> { Value = new Vector3(0.5f) };
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
 		public Property<Vector3> AngularVelocity = new Property<Vector3>();
+		public Property<bool> IsAffectedByGravity = new Property<bool> { Value = true };
 
 		[XmlIgnore]
 		public Command<Collidable, ContactCollection> Collided = new Command<Collidable, ContactCollection>();
@@ -48,6 +49,11 @@ namespace Lemma.Components
 			this.Add(new SetBinding<float>(this.Mass, delegate(float m)
 			{
 				this.Box.Mass = m;
+			}));
+
+			this.Add(new SetBinding<bool>(this.IsAffectedByGravity, delegate(bool g)
+			{
+				this.Box.IsAffectedByGravity = g;
 			}));
 
 			this.Add(new SetBinding<Vector3>(this.LinearVelocity, delegate(Vector3 value)

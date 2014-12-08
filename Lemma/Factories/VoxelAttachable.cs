@@ -75,57 +75,71 @@ namespace Lemma.Factories
 			this.Add(new NotifyBinding(delegate()
 			{
 				if (attachmentBinding != null)
-				{
 					this.Remove(attachmentBinding);
+
+				if (cellEmptiedBinding != null)
+				{
 					this.Remove(cellEmptiedBinding);
+					cellEmptiedBinding = null;
 				}
 
 				if (this.AttachedVoxel.Value.Target != null)
 				{
 					Voxel m = this.AttachedVoxel.Value.Target.Get<Voxel>();
-					SliderCommon s = m.Entity.Get<SliderCommon>();
-					Vector3 pos = Vector3.Transform(new Vector3(0, 0, this.Offset), this.Transform);
-					Matrix voxelTransform;
-					if (this.isInitialAttachment)
+					if (m == null)
 					{
-						voxelTransform = m.Transform;
-						this.isInitialAttachment = false;
+						// We're attached to a scenery block
+						Property<Matrix> other = this.AttachedVoxel.Value.Target.Get<Transform>().Matrix;
+						Matrix offset = this.Transform * Matrix.Invert(other);
+						attachmentBinding = new Binding<Matrix>(this.Transform, x => offset * x, other);
+						this.Add(attachmentBinding);
 					}
 					else
 					{
-						voxelTransform = s != null ? s.OriginalTransform : m.Transform;
-						Vector3 relativePos = Vector3.Transform(pos, Matrix.Invert(voxelTransform)) + m.Offset;
-						this.Coord.Value = m.GetCoordinateFromRelative(relativePos);
-					}
-
-					Matrix offset = this.Transform * Matrix.Invert(Matrix.CreateTranslation(m.Offset) * voxelTransform);
-
-					attachmentBinding = new Binding<Matrix>(this.Transform, () => offset * Matrix.CreateTranslation(m.Offset) * m.Transform, m.Transform, m.Offset);
-					this.Add(attachmentBinding);
-
-					cellEmptiedBinding = new CommandBinding<IEnumerable<Voxel.Coord>, Voxel>(m.CellsEmptied, delegate(IEnumerable<Voxel.Coord> coords, Voxel newMap)
-					{
-						foreach (Voxel.Coord c in coords)
+						SliderCommon s = m.Entity.Get<SliderCommon>();
+						Vector3 pos = Vector3.Transform(new Vector3(0, 0, this.Offset), this.Transform);
+						Matrix voxelTransform;
+						if (this.isInitialAttachment)
 						{
-							if (c.Equivalent(this.Coord))
-							{
-								if (newMap == null)
-								{
-									if (this.detachIfRemoved)
-										this.Detach.Execute();
-								}
-								else
-								{
-									if (this.detachIfMoved)
-										this.Detach.Execute();
-									else
-										this.AttachedVoxel.Value = newMap.Entity;
-								}
-								break;
-							}
+							voxelTransform = m.Transform;
+							this.isInitialAttachment = false;
 						}
-					});
-					this.Add(cellEmptiedBinding);
+						else
+						{
+							voxelTransform = s != null ? s.OriginalTransform : m.Transform;
+							Vector3 relativePos = Vector3.Transform(pos, Matrix.Invert(voxelTransform)) + m.Offset;
+							this.Coord.Value = m.GetCoordinateFromRelative(relativePos);
+						}
+
+						Matrix offset = this.Transform * Matrix.Invert(Matrix.CreateTranslation(m.Offset) * voxelTransform);
+
+						attachmentBinding = new Binding<Matrix>(this.Transform, () => offset * Matrix.CreateTranslation(m.Offset) * m.Transform, m.Transform, m.Offset);
+						this.Add(attachmentBinding);
+
+						cellEmptiedBinding = new CommandBinding<IEnumerable<Voxel.Coord>, Voxel>(m.CellsEmptied, delegate(IEnumerable<Voxel.Coord> coords, Voxel newMap)
+						{
+							foreach (Voxel.Coord c in coords)
+							{
+								if (c.Equivalent(this.Coord))
+								{
+									if (newMap == null)
+									{
+										if (this.detachIfRemoved)
+											this.Detach.Execute();
+									}
+									else
+									{
+										if (this.detachIfMoved)
+											this.Detach.Execute();
+										else
+											this.AttachedVoxel.Value = newMap.Entity;
+									}
+									break;
+								}
+							}
+						});
+						this.Add(cellEmptiedBinding);
+					}
 				}
 			}, this.AttachedVoxel));
 		}
@@ -136,10 +150,23 @@ namespace Lemma.Factories
 			{
 				if (this.AttachedVoxel.Value.Target == null)
 				{
-					Voxel closestMap = null;
-					int closestDistance = 3;
-					float closestFloatDistance = 3.0f;
 					Vector3 target = Vector3.Transform(new Vector3(0, 0, this.Offset), this.Transform);
+
+					Entity closestMap = null;
+					float closestFloatDistance = 3.0f;
+
+					foreach (SceneryBlock block in SceneryBlock.All)
+					{
+						Vector3 pos = block.Entity.Get<Transform>().Position;
+						float distance = (pos - target).Length();
+						if (distance < closestFloatDistance)
+						{
+							closestFloatDistance = distance;
+							closestMap = block.Entity;
+						}
+					}
+
+					int closestDistance = (int)Math.Floor(closestFloatDistance);
 					foreach (Voxel m in Voxel.Voxels)
 					{
 						SliderCommon s = m.Entity.Get<SliderCommon>();
@@ -153,14 +180,14 @@ namespace Lemma.Factories
 							{
 								closestFloatDistance = distance;
 								closestDistance = (int)Math.Floor(distance);
-								closestMap = m;
+								closestMap = m.Entity;
 							}
 						}
 					}
 					if (closestMap == null)
 						this.Detach.Execute();
 					else
-						this.AttachedVoxel.Value = closestMap.Entity;
+						this.AttachedVoxel.Value = closestMap;
 				}
 				else
 					this.AttachedVoxel.Reset();

@@ -1639,10 +1639,7 @@ namespace Lemma.Components
 			// Recenter VR pose button
 			if (this.main.VR)
 			{
-				Container recenterVrPose = this.main.UIFactory.CreateButton("\\recenter pose button", delegate()
-				{
-					this.main.Hmd.RecenterPose();
-				});
+				Container recenterVrPose = this.main.UIFactory.CreateButton("\\recenter pose button", this.main.VRHmd.RecenterPose);
 				this.resizeToMenu(recenterVrPose);
 				pauseMenu.Children.Add(recenterVrPose);
 			}

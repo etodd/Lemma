@@ -33,6 +33,7 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
+			entity.CannotSuspendByDistance = true;
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			Transform mapTransform = entity.GetOrCreate<Transform>("MapTransform");
 			mapTransform.Selectable.Value = false;
@@ -58,6 +59,7 @@ namespace Lemma.Factories
 			entity.Add("Speed", slider.Speed);
 			entity.Add("Goal", slider.Goal);
 			entity.Add("StartAtMinimum", slider.StartAtMinimum);
+			entity.Add("EnablePhysics", voxel.EnablePhysics);
 
 			entity.Add("UVRotation", voxel.UVRotation);
 			entity.Add("UVOffset", voxel.UVOffset);

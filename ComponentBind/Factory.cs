@@ -133,7 +133,22 @@ namespace ComponentBind
 					foreach (PropertyInfo prop in srcComponent.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
 					{
 						if (prop.GetSetMethod() != null && prop.GetCustomAttributes(true).FirstOrDefault(x => typeof(XmlIgnoreAttribute).IsAssignableFrom(x.GetType())) == null)
-							prop.SetValue(destComponent, prop.GetValue(srcComponent, null), null);
+						{
+							if (typeof(IProperty).IsAssignableFrom(prop.PropertyType))
+							{
+								IProperty destProperty = (IProperty)prop.GetValue(destComponent, null);
+								IProperty srcProperty = (IProperty)prop.GetValue(srcComponent, null);
+								if (typeof(IListProperty).IsAssignableFrom(destProperty.GetType()))
+									((IListProperty)srcProperty).CopyTo((IListProperty)destProperty);
+								else
+								{
+									PropertyInfo prop2 = destProperty.GetType().GetProperty("Value");
+									prop2.SetValue(destProperty, prop2.GetValue(srcProperty, null), null);
+								}
+							}
+							else
+								prop.SetValue(destComponent, prop.GetValue(srcComponent, null), null);
+						}
 					}
 				}
 			}

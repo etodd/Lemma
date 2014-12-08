@@ -9,6 +9,8 @@ namespace Lemma.Components
 {
 	public class SceneryBlock : Component<Main>
 	{
+		public static List<SceneryBlock> All = new List<SceneryBlock>();
+
 		[XmlIgnore]
 		public Property<bool> Valid = new Property<bool>();
 
@@ -33,6 +35,14 @@ namespace Lemma.Components
 					this.Valid.Value = true;
 				}
 			}));
+
+			SceneryBlock.All.Add(this);
+		}
+
+		public override void delete()
+		{
+			SceneryBlock.All.Remove(this);
+			base.delete();
 		}
 	}
 }
