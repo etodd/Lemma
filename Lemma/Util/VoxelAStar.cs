@@ -31,7 +31,7 @@ namespace Lemma.Util
 		private static PriorityQueue<BroadphaseEntry> broadphaseQueue = new PriorityQueue<BroadphaseEntry>(new LambdaComparer<BroadphaseEntry>((x, y) => x.F.CompareTo(y.F)));
 		private static Dictionary<Voxel.Box, BroadphaseEntry> broadphaseQueueLookup = new Dictionary<Voxel.Box, BroadphaseEntry>();
 
-		public static void Broadphase(Voxel m, Voxel.Box start, Voxel.Coord target, Func<Voxel.State, bool> filter, Stack<Voxel.Box> result)
+		public static bool Broadphase(Voxel m, Voxel.Box start, Voxel.Coord target, Func<Voxel.State, bool> filter, Stack<Voxel.Box> result)
 		{
 			Voxel.Box targetBox = m.GetBox(target);
 			Vector3 targetPos = m.GetRelativePosition(target);
@@ -50,6 +50,7 @@ namespace Lemma.Util
 			float closestHeuristic = float.MaxValue;
 
 			int iterations = 0;
+			bool found = false;
 			while (broadphaseQueue.Count > 0 && iterations < 50)
 			{
 				iterations++;
@@ -59,6 +60,7 @@ namespace Lemma.Util
 				if (entry.Box == targetBox)
 				{
 					closestEntry = entry;
+					found = true;
 					break;
 				}
 
@@ -116,6 +118,7 @@ namespace Lemma.Util
 			broadphaseQueueLookup.Clear();
 			if (closestEntry != null)
 				VoxelAStar.reconstructBroadphasePath(closestEntry, result);
+			return found;
 		}
 
 		private class NarrowphaseEntry

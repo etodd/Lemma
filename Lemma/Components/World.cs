@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using ComponentBind;
+using Lemma.Factories;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
 
@@ -23,6 +24,7 @@ namespace Lemma.Components
 		public Property<float> FarPlaneDistance = new Property<float> { Value = 100.0f };
 		public Property<Vector3> Gravity = new Property<Vector3> { Value = new Vector3(0.0f, -18.0f, -0.0f) };
 		public Property<string> UUID = new Property<string>();
+		public Property<Entity.Handle> ThumbnailCamera = new Property<Entity.Handle>();
 
 		private Vector3 lastUpdatedCameraPosition = new Vector3(float.MinValue);
 		private bool lastFrameUpdated = false;
@@ -47,14 +49,20 @@ namespace Lemma.Components
 
 			this.Add(new SetBinding<Vector3>(this.Gravity, delegate(Vector3 value)
 			{
-				main.Space.ForceUpdater.Gravity = value;
+				this.main.Space.ForceUpdater.Gravity = value;
 			}));
 
 			this.Add(new CommandBinding<Entity>(this.main.EntityAdded, delegate(Entity e)
 			{
 				if (!e.CannotSuspend)
-					processEntity(e, this.CurrentZone, getActiveBoundingBoxes(main.Camera, this.CurrentZone), main.Camera.Position, main.Camera.FarPlaneDistance);
+					processEntity(e, this.CurrentZone, getActiveBoundingBoxes(this.main.Camera, this.CurrentZone), this.main.Camera.Position, this.main.Camera.FarPlaneDistance);
 			}));
+		}
+
+		public override void Start()
+		{
+			if (PlayerDataFactory.Instance == null)
+				this.main.Add(Factory.Get<PlayerDataFactory>().CreateAndBind(main));
 		}
 
 		private static bool boxesContain(IEnumerable<NonAxisAlignedBoundingBox> boxes, Vector3 position)

@@ -40,11 +40,17 @@ namespace Lemma.Factories
 					Action = delegate()
 					{
 						main.Spawner.StartSpawnPointGUID.Value = entity.GUID;
+						Action go = delegate()
+						{
+							main.EditorEnabled.Value = false;
+							IO.MapLoader.Load(main, main.MapFile);
+						};
+
 						Editor editor = main.Get("Editor").First().Get<Editor>();
 						if (editor.NeedsSave)
-							editor.Save.Execute();
-						main.EditorEnabled.Value = false;
-						IO.MapLoader.Load(main, main.MapFile);
+							editor.SaveWithCallback(go);
+						else
+							go();
 					},
 				}, Command.Perms.Executable);
 			}

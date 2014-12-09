@@ -101,6 +101,7 @@ namespace Lemma.Components
 		public Command Save = new Command();
 		public Command Duplicate = new Command();
 		public Command DeleteSelected = new Command();
+		public Command FocusView = new Command();
 
 		public enum TransformModes { None, Translate, Rotate };
 		public Property<TransformModes> TransformMode = new Property<TransformModes> { Value = TransformModes.None };
@@ -142,6 +143,61 @@ namespace Lemma.Components
 		private Voxel.Coord coord;
 		private ProceduralGenerator generator;
 		private float movementInterval;
+		
+		public void SaveWithCallback(Action callback = null)
+		{
+			if (!this.EnableCommands())
+				return;
+
+			if (this.main.IsChallengeMap(this.main.MapFile))
+			{
+				bool editorUIVisible = Editor.EditorModelsVisible;
+				float motionBlurAmount = this.main.Renderer.MotionBlurAmount;
+				this.main.Renderer.MotionBlurAmount.Value = 0;
+				Editor.EditorModelsVisible.Value = false;
+				Entity thumbnailCamera = WorldFactory.Instance.Get<World>().ThumbnailCamera.Value.Target;
+				Vector3 cameraPos = this.main.Camera.Position;
+				Matrix cameraRotation = this.main.Camera.RotationMatrix;
+				if (thumbnailCamera != null)
+				{
+					Transform thumbnailTransform = thumbnailCamera.Get<Transform>();
+					this.main.Camera.Position.Value = thumbnailTransform.Position;
+					this.main.Camera.RotationMatrix.Value = Matrix.CreateFromQuaternion(thumbnailTransform.Quaternion);
+				}
+
+				Point size;
+#if VR
+				if (this.main.VR)
+					size = this.main.VRActualScreenSize;
+				else
+#endif
+					size = this.main.ScreenSize;
+				this.main.Screenshot.Take(size, delegate()
+				{
+					IO.MapLoader.Save(this.main, null, this.main.MapFile);
+					string screenshotPath = string.Format("{0}.jpg", this.main.MapFile.Value.Substring(0, this.main.MapFile.Value.LastIndexOf('.')));
+					using (System.IO.Stream stream = System.IO.File.OpenWrite(screenshotPath))
+						this.main.Screenshot.Buffer.SaveAsJpeg(stream, size.X, size.Y);
+					this.NeedsSave.Value = false;
+					if (thumbnailCamera != null)
+					{
+						this.main.Camera.Position.Value = cameraPos;
+						this.main.Camera.RotationMatrix.Value = cameraRotation;
+					}
+					this.main.Renderer.MotionBlurAmount.Value = motionBlurAmount;
+					Editor.EditorModelsVisible.Value = true;
+					if (callback != null)
+						callback();
+				});
+			}
+			else
+			{
+				IO.MapLoader.Save(this.main, null, this.main.MapFile);
+				this.NeedsSave.Value = false;
+				if (callback != null)
+					callback();
+			}
+		}
 
 		public Property<Voxel.Coord> Coordinate = new Property<Voxel.Coord>(); // Readonly, for displaying to the UI
 		public Property<Voxel.Coord> VoxelSelectionSize = new Property<Voxel.Coord>(); // Readonly, for displaying to the UI
@@ -251,10 +307,7 @@ namespace Lemma.Components
 
 			this.Save.Action = delegate()
 			{
-				if (!this.EnableCommands())
-					return;
-				IO.MapLoader.Save(this.main, null, this.main.MapFile);
-				this.NeedsSave.Value = false;
+				this.SaveWithCallback(null);
 			};
 
 			this.Duplicate.Action = delegate()
@@ -361,6 +414,17 @@ namespace Lemma.Components
 					Voxel.Coord offset = this.originalSelectionStart.Minus(newSelectionStart);
 					this.restoreVoxel(newSelectionStart, this.VoxelSelectionEnd, false, offset.X, offset.Y, offset.Z);
 				}
+			};
+
+			this.FocusView.Action = delegate()
+			{
+				if (!this.EnableCommands())
+					return;
+				Vector3 pos = Vector3.Zero;
+				foreach (Entity e in this.SelectedEntities)
+					pos += e.Get<Transform>("Transform").Position;
+				pos /= this.SelectedEntities.Count;
+				this.Position.Value = pos;
 			};
 
 			this.StartVoxelTranslation.Action = delegate()
@@ -643,7 +707,16 @@ namespace Lemma.Components
 
 				Voxel.State material = selectedBox.Type;
 
-				m.Empty(m.Chunks.SelectMany(x => x.Boxes).Where(x => x.Type == material).SelectMany(x => x.GetCoords()).ToList(), true);
+				IEnumerable<Voxel.Box> boxes = m.Chunks.SelectMany(x => x.Boxes).Where(x => x.Type == material);
+				if (this.VoxelSelectionActive)
+					boxes = boxes.Where(x => x.Between(this.VoxelSelectionStart, this.VoxelSelectionEnd));
+
+				IEnumerable<Voxel.Coord> coords = boxes.SelectMany(x => x.GetCoords());
+
+				if (this.VoxelSelectionActive)
+					coords = coords.Where(x => x.Between(this.VoxelSelectionStart, this.VoxelSelectionEnd));
+
+				m.Empty(coords.ToList(), true);
 				m.Regenerate();
 				this.NeedsSave.Value = true;
 			};

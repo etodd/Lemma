@@ -37,7 +37,7 @@ namespace Lemma.Factories
 			return new Vector4(color, 1.0f);
 		}
 
-		public static void Bind(Entity entity, Main main)
+		public static void Bind(Entity entity, Main main, ListContainer commandQueueContainer)
 		{
 			PCInput input = entity.Get<PCInput>();
 			Editor editor = entity.Get<Editor>();
@@ -100,7 +100,7 @@ namespace Lemma.Factories
 
 			EditorFactory.AddCommand
 			(
-				entity, main, "Load analytics data", new PCInput.Chord(),
+				entity, main, commandQueueContainer, "Load analytics data", new PCInput.Chord(),
 				new Command
 				{
 					Action = delegate()
@@ -699,7 +699,7 @@ namespace Lemma.Factories
 
 			EditorFactory.AddCommand
 			(
-				entity, main, "Toggle analytics playback", new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.A },  new Command
+				entity, main, commandQueueContainer, "Toggle analytics playback", new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.A },  new Command
 				{
 					Action = delegate()
 					{
@@ -713,7 +713,7 @@ namespace Lemma.Factories
 
 			EditorFactory.AddCommand
 			(
-				entity, main, "Stop analytics playback", new PCInput.Chord { Key = Keys.Escape }, new Command
+				entity, main, commandQueueContainer, "Stop analytics playback", new PCInput.Chord { Key = Keys.Escape }, new Command
 				{
 					Action = delegate()
 					{

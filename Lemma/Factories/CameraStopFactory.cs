@@ -38,26 +38,33 @@ namespace Lemma.Factories
 					Action = delegate()
 					{
 						ulong id = entity.GUID;
+
+						Action go = delegate()
+						{
+							main.EditorEnabled.Value = false;
+							IO.MapLoader.Load(main, main.MapFile);
+
+							main.Spawner.CanSpawn = false;
+							main.Renderer.Brightness.Value = 0.0f;
+							main.Renderer.InternalGamma.Value = 0.0f;
+							main.UI.IsMouseVisible.Value = false;
+							
+							main.AddComponent(new PostInitialization
+							{
+								delegate()
+								{
+									// We have to squirrel away the ID and get a new entity
+									// becuase OUR entity got wiped out by the MapLoader.
+									main.GetByGUID(id).Get<CameraStop>().Go.Execute();
+								}
+							});
+						};
+
 						Editor editor = main.Get("Editor").First().Get<Editor>();
 						if (editor.NeedsSave)
-							editor.Save.Execute();
-						main.EditorEnabled.Value = false;
-						IO.MapLoader.Load(main, main.MapFile);
-
-						main.Spawner.CanSpawn = false;
-						main.Renderer.Brightness.Value = 0.0f;
-						main.Renderer.InternalGamma.Value = 0.0f;
-						main.UI.IsMouseVisible.Value = false;
-						
-						main.AddComponent(new PostInitialization
-						{
-							delegate()
-							{
-								// We have to squirrel away the ID and get a new entity
-								// becuase OUR entity got wiped out by the MapLoader.
-								main.GetByGUID(id).Get<CameraStop>().Go.Execute();
-							}
-						});
+							editor.SaveWithCallback(go);
+						else
+							go();
 					},
 				}, Command.Perms.Executable);
 			}

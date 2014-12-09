@@ -103,7 +103,7 @@ namespace Lemma.Components
 			{
 				this.Visible.Value = (bool)Console.Console.GetConVar("editor_ui").GetCastedValue();
 			}, "true") { TypeConstraint = typeof(bool) });
-			this.Add(new Binding<bool>(Editor.EditorModelsVisible, this.Visible));
+			this.Add(new TwoWayBinding<bool>(Editor.EditorModelsVisible, this.Visible));
 
 			this.RootEditorView = new View(this.main.GeeUI, this.main.GeeUI.RootView);
 			this.Add(new Binding<bool>(this.RootEditorView.Active, () => this.Visible && !ConsoleUI.Showing, this.Visible, ConsoleUI.Showing));
@@ -318,7 +318,7 @@ namespace Lemma.Components
 			this.SelectedEntities.ItemChanged += (index, old, newValue) => this.refresh();
 			this.SelectedEntities.Cleared += this.refresh;
 
-			this.Add(new Binding<bool>(this.PropertiesView.Active, () => this.SelectedEntities.Length > 0 && !this.VoxelEditMode, this.VoxelEditMode, this.SelectedEntities.Length));
+			this.Add(new Binding<bool>(this.PropertiesView.Active, () => this.SelectedEntities.Length > 0 && !this.VoxelEditMode && this.Visible, this.VoxelEditMode, this.SelectedEntities.Length, this.Visible));
 
 			this.Add(new ListBinding<View, EditorCommand>(this.EntityPanelView.Children, this.EntityCommands, this.buildCommandButton));
 			this.Add(new ListBinding<View, EditorCommand>(this.MapPanelView.Children, this.MapCommands, this.buildCommandButton));

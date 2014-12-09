@@ -48,15 +48,6 @@ namespace Lemma.Factories
 
 			World world = entity.GetOrCreate<World>("World");
 
-			entity.Add(new PostInitialization
-			{
-				delegate()
-				{
-					if (PlayerDataFactory.Instance == null)
-						main.Add(Factory.Get<PlayerDataFactory>().CreateAndBind(main));
-				}
-			});
-
 			// Zone management
 			entity.GetOrCreate<Propagator>("Propagator");
 
@@ -76,6 +67,7 @@ namespace Lemma.Factories
 			entity.Add("BackgroundColor", world.BackgroundColor);
 			entity.Add("FarPlaneDistance", world.FarPlaneDistance);
 			entity.Add("Gravity", world.Gravity);
+			entity.Add("ThumbnailCamera", world.ThumbnailCamera);
 		}
 	}
 }

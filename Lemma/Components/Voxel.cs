@@ -1731,6 +1731,13 @@ namespace Lemma.Components
 					&& coord.Z >= this.Z && coord.Z < this.Z + this.Depth;
 			}
 
+			public bool Between(Coord a, Coord b)
+			{
+				return (a.X < this.X + this.Width || b.X >= this.X)
+					&& (a.Y < this.Y + this.Height || b.Y >= this.Y)
+					&& (a.Z < this.Z + this.Depth || b.Z >= this.Z);
+			}
+
 			public CompoundShapeEntry GetCompoundShapeEntry()
 			{
 				return new CompoundShapeEntry(new BoxShape(this.Width, this.Height, this.Depth), new Vector3(this.X + (this.Width * 0.5f), this.Y + (this.Height * 0.5f), this.Z + (this.Depth * 0.5f)), this.Type.Density * this.Width * this.Height * this.Depth);
@@ -3703,140 +3710,6 @@ namespace Lemma.Components
 			|| this[coord.Move(-1, 0, 1)].ID != 0
 			|| this[coord.Move(-1, -1, 0)].ID != 0
 			|| this[coord.Move(-1, -1, -1)].ID != 0;
-		}
-
-		public Coord? FindClosestAStarCell(Coord coord, int maxDistance = 20)
-		{
-			State s = this[coord];
-			if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
-				return coord;
-
-			Vector3 pos = this.GetRelativePosition(coord);
-
-			Coord? closestCoord = null;
-
-			for (int radius = 1; radius < maxDistance; radius++)
-			{
-				float closestDistance = float.MaxValue;
-
-				// Left
-				for (int y = -radius; y <= radius; y++)
-				{
-					for (int z = -radius; z <= radius; z++)
-					{
-						Coord c = coord.Move(-radius, y, z);
-						s = this[c];
-						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
-						{
-							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
-							if (distance < closestDistance)
-							{
-								closestDistance = distance;
-								closestCoord = c;
-							}
-						}
-					}
-				}
-
-				// Right
-				for (int y = -radius; y <= radius; y++)
-				{
-					for (int z = -radius; z <= radius; z++)
-					{
-						Coord c = coord.Move(radius, y, z);
-						s = this[c];
-						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
-						{
-							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
-							if (distance < closestDistance)
-							{
-								closestDistance = distance;
-								closestCoord = c;
-							}
-						}
-					}
-				}
-
-				// Bottom
-				for (int x = -radius + 1; x < radius; x++)
-				{
-					for (int z = -radius + 1; z < radius; z++)
-					{
-						Coord c = coord.Move(x, -radius, z);
-						s = this[c];
-						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
-						{
-							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
-							if (distance < closestDistance)
-							{
-								closestDistance = distance;
-								closestCoord = c;
-							}
-						}
-					}
-				}
-
-				// Top
-				for (int x = -radius + 1; x < radius; x++)
-				{
-					for (int z = -radius + 1; z < radius; z++)
-					{
-						Coord c = coord.Move(x, radius, z);
-						s = this[c];
-						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
-						{
-							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
-							if (distance < closestDistance)
-							{
-								closestDistance = distance;
-								closestCoord = c;
-							}
-						}
-					}
-				}
-
-				// Backward
-				for (int x = -radius + 1; x < radius; x++)
-				{
-					for (int y = -radius; y <= radius; y++)
-					{
-						Coord c = coord.Move(x, y, -radius);
-						s = this[c];
-						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
-						{
-							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
-							if (distance < closestDistance)
-							{
-								closestDistance = distance;
-								closestCoord = c;
-							}
-						}
-					}
-				}
-
-				// Forward
-				for (int x = -radius + 1; x < radius; x++)
-				{
-					for (int y = -radius; y <= radius; y++)
-					{
-						Coord c = coord.Move(x, y, radius);
-						s = this[c];
-						if ((s.ID != 0 || this.adjacentToFilledCell(coord)) && !s.Permanent)
-						{
-							float distance = (this.GetRelativePosition(c) - pos).LengthSquared();
-							if (distance < closestDistance)
-							{
-								closestDistance = distance;
-								closestCoord = c;
-							}
-						}
-					}
-				}
-
-				if (closestCoord.HasValue)
-					break;
-			}
-			return closestCoord;
 		}
 
 		public Coord? FindClosestFilledCell(Coord coord, int maxDistance = 20)

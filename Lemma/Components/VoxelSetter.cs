@@ -20,6 +20,15 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command Set = new Command();
 
+		public Voxel.State GetState()
+		{
+			Voxel map = this.AttachedVoxel.Value.Target.Get<Voxel>();
+			if (map == null)
+				return Voxel.States.Empty;
+			else
+				return map[this.Coord];
+		}
+
 		public override void Awake()
 		{
 			base.Awake();

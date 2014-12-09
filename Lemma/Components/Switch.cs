@@ -29,6 +29,11 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Vector3> Position = new Property<Vector3>();
 
+		private static bool isPowered(Voxel.State state)
+		{
+			return state == Voxel.States.Powered || state == Voxel.States.PoweredSwitch || state == Voxel.States.HardPowered;
+		}
+
 		public override void Awake()
 		{
 			base.Awake();
@@ -53,12 +58,12 @@ namespace Lemma.Components
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SWITCH_ON, this.Entity);
 				Voxel map = this.AttachedVoxel.Value.Target.Get<Voxel>();
 				bool regenerate = false;
+				Stack<Voxel.Box> path = new Stack<Voxel.Box>();
 				foreach (Switch s in Switch.all)
 				{
-					if (s != this && s.On && s.AttachedVoxel.Value.Target == this.AttachedVoxel.Value.Target)
+					if (s.On && s != this && s.AttachedVoxel.Value.Target == this.AttachedVoxel.Value.Target
+						&& VoxelAStar.Broadphase(map, map.GetBox(this.Coord), s.Coord, isPowered, path))
 					{
-						// There can only be one active switch per map
-
 						Queue<Voxel.Coord> queue = new Queue<Voxel.Coord>();
 						Voxel.Coord start = s.Coord;
 						start.Data = map[start];
@@ -92,6 +97,7 @@ namespace Lemma.Components
 							}
 						}
 					}
+					path.Clear();
 				}
 				Voxel.CoordDictionaryCache.Clear();
 				if (regenerate)

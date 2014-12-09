@@ -162,15 +162,18 @@ namespace Lemma.Util
 
 		}
 
-		public static void UpdateWorkshopMap(PublishedFileId_t workshop, string pchFile, Action<bool> onDone)
+		public static void UpdateWorkshopMap(PublishedFileId_t workshop, string pchFile, string imageFile, string name, string description, Action<bool> onDone)
 		{
 			var updateHandle = SteamRemoteStorage.CreatePublishedFileUpdateRequest(workshop);
+			SteamRemoteStorage.UpdatePublishedFileTitle(updateHandle, name);
+			SteamRemoteStorage.UpdatePublishedFileDescription(updateHandle, description);
 			SteamRemoteStorage.UpdatePublishedFileFile(updateHandle, pchFile);
+			SteamRemoteStorage.UpdatePublishedFilePreviewFile(updateHandle, imageFile);
 			var call = SteamRemoteStorage.CommitPublishedFileUpdate(updateHandle);
 			new CallResult<RemoteStorageUpdatePublishedFileResult_t>((result, failure) =>
 			{
-				if (onDone == null) return;
-				onDone(result.m_eResult == EResult.k_EResultOK && !failure);
+				if (onDone != null)
+					onDone(result.m_eResult == EResult.k_EResultOK && !failure);
 			}, call);
 		}
 
@@ -182,16 +185,8 @@ namespace Lemma.Util
 
 			new CallResult<RemoteStoragePublishFileResult_t>((result, failure) =>
 			{
-				if (result.m_eResult == EResult.k_EResultOK)
-				{
-					onDone(true, result.m_bUserNeedsToAcceptWorkshopLegalAgreement, result.m_nPublishedFileId);
-				}
-				else
-				{
-					onDone(false, result.m_bUserNeedsToAcceptWorkshopLegalAgreement, result.m_nPublishedFileId);
-				}
+				onDone(result.m_eResult == EResult.k_EResultOK, result.m_bUserNeedsToAcceptWorkshopLegalAgreement, result.m_nPublishedFileId);
 			}, call);
-
 		}
 
 		[AutoConCommand("set_stat", "Set a Steam stat")]
