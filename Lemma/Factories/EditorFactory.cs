@@ -311,6 +311,7 @@ namespace Lemma.Factories
 
 			Property<bool> movementEnabled = new Property<bool>();
 			Property<bool> capslockKey = input.GetKey(Keys.CapsLock);
+			Property<bool> shiftKey = input.GetKey(Keys.LeftShift);
 			entity.Add(new Binding<bool>(movementEnabled, () => input.MiddleMouseButton || capslockKey, input.MiddleMouseButton, capslockKey));
 
 			editor.Add(new Binding<bool>(editor.MovementEnabled, () => movementEnabled || editor.VoxelEditMode, movementEnabled, editor.VoxelEditMode));
@@ -318,7 +319,7 @@ namespace Lemma.Factories
 			editor.Add(new Binding<Vector2>(editor.Movement, input.Movement));
 			editor.Add(new Binding<bool>(editor.Up, input.GetKey(Keys.Space)));
 			editor.Add(new Binding<bool>(editor.Down, input.GetKey(Keys.LeftControl)));
-			editor.Add(new Binding<bool>(editor.SpeedMode, input.GetKey(Keys.LeftShift)));
+			editor.Add(new Binding<bool>(editor.SpeedMode, shiftKey));
 			editor.Add(new Binding<bool>(editor.Extend, input.GetKey(Keys.F)));
 			editor.Add(new CommandBinding(input.LeftMouseButtonDown, editor.StartFill));
 			editor.Add(new CommandBinding(input.LeftMouseButtonUp, editor.StopFill));
@@ -580,7 +581,7 @@ namespace Lemma.Factories
 				editor.MovementEnabled, editor.SelectedEntities.Length
 			);
 
-			entity.Add(new CommandBinding<int>(input.MouseScrolled, () => editor.VoxelEditMode && !input.GetKey(Keys.LeftAlt) && !input.GetKey(Keys.LeftShift), delegate(int delta)
+			entity.Add(new CommandBinding<int>(input.MouseScrolled, () => editor.VoxelEditMode && !input.GetKey(Keys.LeftAlt) && !shiftKey, delegate(int delta)
 			{
 				editor.BrushSize.Value = Math.Max(1, editor.BrushSize.Value + delta);
 			}));
@@ -602,7 +603,7 @@ namespace Lemma.Factories
 					if (editor.TransformMode.Value != Editor.TransformModes.None)
 						return false;
 
-					if (input.GetKey(Keys.LeftShift) || input.GetKey(Keys.LeftControl))
+					if (shiftKey || input.GetKey(Keys.LeftControl))
 						return false;
 					
 					if (gui.PickNextEntity)
@@ -613,7 +614,7 @@ namespace Lemma.Factories
 					else
 						return editor.SelectedEntities.Length == 1 && editor.SelectedEntities[0].Get<Voxel>() != null;
 				},
-				editor.TransformMode, input.GetKey(Keys.LeftShift), input.GetKey(Keys.LeftControl), editor.VoxelEditMode, editor.SelectedEntities.Length, gui.PickNextEntity
+				editor.TransformMode, shiftKey, input.GetKey(Keys.LeftControl), editor.VoxelEditMode, editor.SelectedEntities.Length, gui.PickNextEntity
 			);
 
 			int brush = 0;
@@ -635,7 +636,7 @@ namespace Lemma.Factories
 				{
 					Action = delegate()
 					{
-						if (!input.GetKey(Keys.LeftShift))
+						if (!shiftKey)
 							changeBrush(-1);
 					}
 				},
@@ -651,7 +652,7 @@ namespace Lemma.Factories
 				{
 					Action = delegate()
 					{
-						if (!input.GetKey(Keys.LeftShift))
+						if (!shiftKey)
 							changeBrush(1);
 					}
 				}, gui.VoxelCommands,
@@ -713,7 +714,7 @@ namespace Lemma.Factories
 				editor.CameraDistance.Value = Math.Max(1, editor.CameraDistance.Value + delta * -2.0f);
 			}));
 
-			input.Add(new CommandBinding<int>(input.MouseScrolled, () => input.GetKey(Keys.LeftShift) && editor.EnableCameraDistanceScroll, delegate(int delta)
+			input.Add(new CommandBinding<int>(input.MouseScrolled, () => shiftKey && editor.EnableCameraDistanceScroll, delegate(int delta)
 			{
 				Voxel.Coord j = editor.Jitter;
 				j.X = Math.Max(j.X + delta, 0);
@@ -781,7 +782,7 @@ namespace Lemma.Factories
 				// We're not editing a voxel
 				// And we're not transforming entities
 				// So we must be selecting / deselecting entities
-				bool multiselect = input.GetKey(Keys.LeftShift);
+				bool multiselect = shiftKey;
 
 				Vector2 mouse = input.Mouse;
 				Vector3 rayStart;
@@ -870,6 +871,30 @@ namespace Lemma.Factories
 				gui.VoxelCommands,
 				() => editor.VoxelEditMode && editor.VoxelSelectionActive && editor.TransformMode.Value == Editor.TransformModes.None,
 				editor.VoxelEditMode, editor.VoxelSelectionActive, editor.TransformMode
+			);
+			AddCommand
+			(
+				entity,
+				main,
+				commandQueueContainer,
+				"Select contiguous",
+				new PCInput.Chord { Key = Keys.B },
+				editor.SelectContiguous,
+				gui.VoxelCommands,
+				() => editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None && !shiftKey,
+				editor.VoxelEditMode, editor.TransformMode, shiftKey
+			);
+			AddCommand
+			(
+				entity,
+				main,
+				commandQueueContainer,
+				"Select all contiguous",
+				new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.B },
+				editor.SelectAllContiguous,
+				gui.VoxelCommands,
+				() => editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None,
+				editor.VoxelEditMode, editor.TransformMode
 			);
 			AddCommand
 			(

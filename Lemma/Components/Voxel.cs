@@ -3578,6 +3578,11 @@ namespace Lemma.Components
 		public List<Box> GetContiguousByType(IEnumerable<Box> input)
 		{
 			State state = input.First().Type;
+			return this.GetContiguous(input, x => x.Type == state);
+		}
+
+		public List<Box> GetContiguous(IEnumerable<Box> input, Func<Box, bool> filter)
+		{
 			Queue<Box> boxes = new Queue<Box>();
 
 			foreach (Box box in input)
@@ -3590,7 +3595,7 @@ namespace Lemma.Components
 			{
 				Box b = boxes.Dequeue();
 
-				if (b.Type == state)
+				if (filter(b))
 				{
 					result.Add(b);
 					if (b.Adjacent != null)

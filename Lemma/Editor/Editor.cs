@@ -93,6 +93,8 @@ namespace Lemma.Components
 		public Command VoxelRotateX = new Command();
 		public Command VoxelRotateY = new Command();
 		public Command VoxelRotateZ = new Command();
+		public Command SelectContiguous = new Command();
+		public Command SelectAllContiguous = new Command();
 
 		public Property<bool> EnableCameraDistanceScroll = new Property<bool> { Value = true };
 		public Property<float> CameraDistance = new Property<float> { Value = 10.0f };
@@ -413,6 +415,56 @@ namespace Lemma.Components
 
 					Voxel.Coord offset = this.originalSelectionStart.Minus(newSelectionStart);
 					this.restoreVoxel(newSelectionStart, this.VoxelSelectionEnd, false, offset.X, offset.Y, offset.Z);
+				}
+			};
+
+			this.SelectContiguous.Action = delegate()
+			{
+				if (!this.EnableCommands())
+					return;
+
+				if (this.VoxelEditMode)
+				{
+					Voxel m = this.SelectedEntities[0].Get<Voxel>();
+					Voxel.Box selectedBox = m.GetBox(this.coord);
+					if (selectedBox != null)
+					{
+						Voxel.Coord a = this.coord.Clone();
+						Voxel.Coord b = this.coord.Clone();
+						foreach (Voxel.Box box in m.GetContiguousByType(new[] { m.GetBox(this.coord) }))
+						{
+							a = new Voxel.Coord { X = Math.Min(a.X, box.X), Y = Math.Min(a.Y, box.Y), Z = Math.Min(a.Z, box.Z) };
+							b = new Voxel.Coord { X = Math.Max(b.X, box.X + box.Width), Y = Math.Max(b.Y, box.Y + box.Height), Z = Math.Max(b.Z, box.Z + box.Depth) };
+						}
+						this.VoxelSelectionActive.Value = true;
+						this.VoxelSelectionStart.Value = a;
+						this.VoxelSelectionEnd.Value = b;
+					}
+				}
+			};
+
+			this.SelectAllContiguous.Action = delegate()
+			{
+				if (!this.EnableCommands())
+					return;
+
+				if (this.VoxelEditMode)
+				{
+					Voxel m = this.SelectedEntities[0].Get<Voxel>();
+					Voxel.Box selectedBox = m.GetBox(this.coord);
+					if (selectedBox != null)
+					{
+						Voxel.Coord a = this.coord.Clone();
+						Voxel.Coord b = this.coord.Clone();
+						foreach (Voxel.Box box in m.GetContiguous(new[] { selectedBox }, x => true))
+						{
+							a = new Voxel.Coord { X = Math.Min(a.X, box.X), Y = Math.Min(a.Y, box.Y), Z = Math.Min(a.Z, box.Z) };
+							b = new Voxel.Coord { X = Math.Max(b.X, box.X + box.Width), Y = Math.Max(b.Y, box.Y + box.Height), Z = Math.Max(b.Z, box.Z + box.Depth) };
+						}
+						this.VoxelSelectionActive.Value = true;
+						this.VoxelSelectionStart.Value = a;
+						this.VoxelSelectionEnd.Value = b;
+					}
 				}
 			};
 
