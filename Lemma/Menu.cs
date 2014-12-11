@@ -139,7 +139,7 @@ namespace Lemma.Components
 					entity,
 					delegate()
 					{
-						return string.Format(main.Strings.Get(text.Substring(1)), properties);
+						return string.Format(main.Strings.Get(text.Substring(1)) ?? text.Substring(1), properties);
 					},
 					this.main.Strings.Language
 				);
@@ -865,7 +865,7 @@ namespace Lemma.Components
 					downloadingLabel.Text,
 					delegate()
 					{
-						return string.Format(main.Strings.Get("downloading workshop maps"), SteamWorker.Downloading.Value);
+						return string.Format(main.Strings.Get("downloading workshop maps") ?? "downloading workshop maps", SteamWorker.Downloading.Value);
 					},
 					this.main.Strings.Language, SteamWorker.Downloading
 				));

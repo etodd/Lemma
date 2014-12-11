@@ -118,7 +118,7 @@ namespace Lemma.GameScripts
 
 				TextElement version = new TextElement();
 				version.FontFile.Value = main.MainFont;
-				version.Text.Value = "Build " + Main.Build.ToString();
+				version.Add(new Binding<string, Main.Config.Lang>(version.Text, x => string.Format(main.Strings.Get("build number") ?? "Build {0}", Main.Build.ToString()), main.Settings.Language));
 				corner.Children.Add(version);
 
 				TextElement webLink = main.UIFactory.CreateLink("et1337.com", "http://et1337.com");
