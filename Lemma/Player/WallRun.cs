@@ -34,6 +34,7 @@ namespace Lemma.Components
 		public Property<bool> HasTraction = new Property<bool>();
 		public Command StopKick = new Command();
 		public Command LockRotation = new Command();
+		public Command<float> UpdateLockedRotation = new Command<float>();
 		public Command Vault = new Command();
 		public Command<Voxel, Voxel.Coord, Direction> WalkedOn = new Command<Voxel, Voxel.Coord, Direction>();
 		public Property<State> CurrentState = new Property<State>();
@@ -185,7 +186,7 @@ namespace Lemma.Components
 			return false;
 		}
 
-		private void setup(Voxel voxel, Direction dir, State state, Vector3 forwardVector, bool addInitialVelocity)
+		private void setup(Voxel voxel, Direction dir, State state, Vector3 forwardVector, bool addInitialVelocity, bool rotationAlreadyLocked = false)
 		{
 			this.StopKick.Execute();
 			this.AllowUncrouch.Value = true;
@@ -225,8 +226,14 @@ namespace Lemma.Components
 				Vector3 wallVector = this.WallRunVoxel.Value.GetAbsoluteVector(this.WallDirection.Value.GetVector());
 
 				// Make sure we lock in the correct rotation value
-				this.Rotation.Value = (float)Math.Atan2(wallVector.X, wallVector.Z);
-				this.LockRotation.Execute();
+				float rotation = (float)Math.Atan2(wallVector.X, wallVector.Z);
+				if (rotationAlreadyLocked)
+					this.UpdateLockedRotation.Execute(rotation);
+				else
+				{
+					this.Rotation.Value = rotation;
+					this.LockRotation.Execute();
+				}
 			}
 			else
 			{
@@ -238,8 +245,15 @@ namespace Lemma.Components
 					velocity = -velocity;
 					this.WallRunDirection.Value = this.WallRunDirection.Value.GetReverse();
 				}
-				this.Rotation.Value = (float)Math.Atan2(velocity.X, velocity.Z);
-				this.LockRotation.Execute();
+
+				float rotation = (float)Math.Atan2(velocity.X, velocity.Z);
+				if (rotationAlreadyLocked)
+					this.UpdateLockedRotation.Execute(rotation);
+				else
+				{
+					this.Rotation.Value = rotation;
+					this.LockRotation.Execute();
+				}
 
 				if (addInitialVelocity)
 				{
@@ -328,7 +342,7 @@ namespace Lemma.Components
 							{
 								Matrix matrix = Matrix.CreateRotationY(this.Rotation);
 								Vector3 forwardVector = -matrix.Forward;
-								this.setup(result.Voxel, result.Normal.GetReverse(), wallRunState, forwardVector, false);
+								this.setup(result.Voxel, result.Normal.GetReverse(), wallRunState, forwardVector, false, true);
 							}
 						}
 					}

@@ -35,7 +35,6 @@ namespace Lemma.GInterfaces
 		public override void Awake()
 		{
 			// This is to make it so nothing else can be interacted with.
-			Editor.EditorModelsVisible.Value = false;
 			this.EncompassingView = new View(main.GeeUI, main.GeeUI.RootView);
 			this.MainView = new PanelView(main.GeeUI, EncompassingView, Vector2.Zero);
 			MainView.Resizeable = false;
@@ -225,7 +224,6 @@ namespace Lemma.GInterfaces
 		public override void delete()
 		{
 			EncompassingView.RemoveFromParent();
-			Editor.EditorModelsVisible.Value = true;
 			base.delete();
 		}
 

@@ -159,6 +159,7 @@
     <Compile Include="Components\VoxelFill.cs" />
     <Compile Include="Factories\ConsoleCommandFactory.cs" />
     <Compile Include="Factories\AnimatedPropFactory.cs" />
+    <Compile Include="Factories\SkyDecalFactory.cs" />
     <Compile Include="Factories\StaticSliderFactory.cs" />
     <Compile Include="Factories\VoxelSetterFactory.cs" />
     <Compile Include="OvrCapi.cs" />

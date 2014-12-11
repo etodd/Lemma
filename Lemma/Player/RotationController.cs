@@ -36,16 +36,26 @@ namespace Lemma.Components
 		float lockedRotationValue = 0.0f;
 		float rotationLockBlending = rotationLockBlendTime;
 
+		private bool updating;
 		public override void Awake()
 		{
 			this.Mouse.Value = new Vector2(this.Rotation, 0.0f);
 			this.Add(new ChangeBinding<float>(this.Rotation, delegate(float old, float value)
 			{
-				if (this.Locked)
+				if (this.Locked && !this.updating)
 					this.Mouse.Value += new Vector2(value - old, 0);
 			}));
 			this.Add(new NotifyBinding(this.Unlock, this.Locked, this.WallRunState, this.Kicking, this.Rolling, this.VaultState, this.Landing));
 			this.EnabledWhenPaused = false;
+		}
+
+		public void UpdateLockedRotation(float value)
+		{
+			this.updating = true;
+			this.Rotation.Value = value;
+			this.lockedRotationValue = value.ClosestAngle(this.Mouse.Value.X);
+			this.rotationLockBlending = 0;
+			this.updating = false;
 		}
 
 		public void Lock()
@@ -53,7 +63,7 @@ namespace Lemma.Components
 			if (!this.Locked)
 			{
 				this.lockedRotationValue = this.Rotation.Value.ClosestAngle(this.Mouse.Value.X);
-				this.rotationLockBlending = 0.0f;
+				this.rotationLockBlending = rotationLockBlendTime;
 				this.Locked.Value = true;
 			}
 		}
@@ -77,7 +87,7 @@ namespace Lemma.Components
 				if (this.rotationLockBlending < rotationLockBlendTime)
 				{
 					this.lockedRotationValue = this.lockedRotationValue.ClosestAngle(this.Mouse.Value.X);
-					this.Rotation.Value = this.lockedRotationValue + (this.Mouse.Value.X - lockedRotationValue) * (rotationLockBlending / rotationLockBlendTime);
+					this.Rotation.Value = this.lockedRotationValue + (this.Mouse.Value.X - this.lockedRotationValue) * (this.rotationLockBlending / rotationLockBlendTime);
 				}
 				else
 					this.Rotation.Value = this.Mouse.Value.X;

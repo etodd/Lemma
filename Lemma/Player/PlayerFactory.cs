@@ -124,6 +124,7 @@ namespace Lemma.Factories
 			wallRun.Add(new TwoWayBinding<Vector3>(transform.Position, wallRun.Position));
 			wallRun.Add(new TwoWayBinding<bool>(player.Character.IsSupported, wallRun.IsSupported));
 			wallRun.Add(new CommandBinding(wallRun.LockRotation, (Action)rotation.Lock));
+			wallRun.Add(new CommandBinding<float>(wallRun.UpdateLockedRotation, rotation.UpdateLockedRotation));
 			vault.Add(new CommandBinding(wallRun.Vault, delegate() { vault.Go(); }));
 			wallRun.Predictor = predictor;
 			wallRun.Add(new Binding<float>(wallRun.Height, player.Character.Height));

@@ -28,7 +28,7 @@ namespace Lemma.Factories
 
 			ModelAlpha clouds = entity.GetOrCreate<ModelAlpha>("Clouds");
 			clouds.Filename.Value = "AlphaModels\\clouds";
-			clouds.DrawOrder.Value = -9;
+			clouds.DrawOrder.Value = -8;
 			clouds.CullBoundingBox.Value = false;
 			clouds.DisableCulling.Value = true;
 

@@ -38,7 +38,7 @@ namespace Lemma.GInterfaces
 
 		public override void Awake()
 		{
-			//This is to make it so nothing else can be interacted with.
+			// This is to make it so nothing else can be interacted with.
 			this.EncompassingView = new View(this.main.GeeUI, this.main.GeeUI.RootView);
 			this.MainView = new PanelView(this.main.GeeUI, this.EncompassingView, Vector2.Zero);
 			MainView.Resizeable = false;
