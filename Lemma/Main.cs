@@ -101,17 +101,17 @@ namespace Lemma
 			public Property<Point> FullscreenResolution = new Property<Point>();
 			public Property<float> MotionBlurAmount = new Property<float>();
 			public Property<float> Gamma = new Property<float>();
-			public Property<bool> EnableReflections = new Property<bool>();
-			public Property<bool> EnableSSAO = new Property<bool>();
-			public Property<bool> EnableGodRays = new Property<bool>();
-			public Property<bool> EnableBloom = new Property<bool>();
+			public Property<bool> Reflections = new Property<bool>();
+			public Property<bool> SSAO = new Property<bool>();
+			public Property<bool> VolumetricLighting = new Property<bool>();
+			public Property<bool> Bloom = new Property<bool>();
 			public Property<LightingManager.DynamicShadowSetting> DynamicShadows = new Property<LightingManager.DynamicShadowSetting>();
 			public Property<bool> InvertMouseX = new Property<bool>();
 			public Property<bool> InvertMouseY = new Property<bool>();
 			public Property<bool> EnableReticle = new Property<bool>();
 			public Property<float> MouseSensitivity = new Property<float>();
 			public Property<float> FieldOfView = new Property<float>();
-			public Property<bool> EnableVsync = new Property<bool>();
+			public Property<bool> Vsync = new Property<bool>();
 			public Property<float> SoundEffectVolume = new Property<float> { Value = 1.0f };
 			public Property<float> MusicVolume = new Property<float> { Value = 1.0f };
 			public int Version;
@@ -175,13 +175,13 @@ namespace Lemma
 
 				this.MotionBlurAmount.Value = 0.5f;
 				this.Gamma.Value = 1.0f;
-				this.EnableReflections.Value = true;
-				this.EnableGodRays.Value = true;
-				this.EnableBloom.Value = true;
+				this.Reflections.Value = true;
+				this.VolumetricLighting.Value = true;
+				this.Bloom.Value = true;
 				this.DynamicShadows.Value = LightingManager.DynamicShadowSetting.High;
 				this.EnableReticle.Value = false;
 				this.FieldOfView.Value = MathHelper.ToRadians(80.0f);
-				this.EnableVsync.Value = false;
+				this.Vsync.Value = false;
 				this.SoundEffectVolume.Value = 1.0f;
 				this.MusicVolume.Value = 1.0f;
 
@@ -641,13 +641,13 @@ namespace Lemma
 			this.AddComponent(this.Screenshot);
 
 			// Restore window state
-			this.Graphics.SynchronizeWithVerticalRetrace = this.Settings.EnableVsync;
+			this.Graphics.SynchronizeWithVerticalRetrace = this.Settings.Vsync;
 			new NotifyBinding(delegate()
 			{
-				this.Graphics.SynchronizeWithVerticalRetrace = this.Settings.EnableVsync;
+				this.Graphics.SynchronizeWithVerticalRetrace = this.Settings.Vsync;
 				if (this.Settings.Fullscreen)
 					this.Graphics.ApplyChanges();
-			}, this.Settings.EnableVsync);
+			}, this.Settings.Vsync);
 
 			if (this.Settings.Fullscreen)
 				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true, this.Settings.Borderless);
@@ -1048,8 +1048,8 @@ namespace Lemma
 				new TwoWayBinding<LightingManager.DynamicShadowSetting>(this.Settings.DynamicShadows, this.LightingManager.DynamicShadows);
 				new TwoWayBinding<float>(this.Settings.MotionBlurAmount, this.Renderer.MotionBlurAmount);
 				new TwoWayBinding<float>(this.Settings.Gamma, this.Renderer.Gamma);
-				new TwoWayBinding<bool>(this.Settings.EnableBloom, this.Renderer.EnableBloom);
-				new TwoWayBinding<bool>(this.Settings.EnableSSAO, this.Renderer.EnableSSAO);
+				new TwoWayBinding<bool>(this.Settings.Bloom, this.Renderer.EnableBloom);
+				new TwoWayBinding<bool>(this.Settings.SSAO, this.Renderer.EnableSSAO);
 				new TwoWayBinding<float>(this.Settings.FieldOfView, this.Camera.FieldOfView);
 
 				foreach (string file in Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "Game"), "*.xlsx", SearchOption.TopDirectoryOnly))

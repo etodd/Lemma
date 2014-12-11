@@ -99,10 +99,11 @@ namespace Lemma.Factories
 				commandQueueContainer.Children.Add(container);
 				main.AddComponent(new Animation
 				(
+					new Animation.Delay(0.5f),
 					new Animation.Parallel
 					(
-						new Animation.FloatMoveTo(container.Opacity, 0.0f, 1.0f),
-						new Animation.FloatMoveTo(display.Opacity, 0.0f, 1.0f)
+						new Animation.FloatMoveTo(container.Opacity, 0.0f, 0.5f),
+						new Animation.FloatMoveTo(display.Opacity, 0.0f, 0.5f)
 					),
 					new Animation.Execute(container.Delete)
 				));
@@ -117,6 +118,7 @@ namespace Lemma.Factories
 			EditorGeeUI gui = entity.Create<EditorGeeUI>();
 
 			ListContainer commandQueueContainer = new ListContainer();
+			commandQueueContainer.Reversed.Value = true;
 			commandQueueContainer.AnchorPoint.Value = new Vector2(1.0f, 0.0f);
 			commandQueueContainer.Add(new Binding<bool>(commandQueueContainer.Visible, gui.Visible));
 			commandQueueContainer.Add(new Binding<Vector2, Point>(commandQueueContainer.Position, x => new Vector2(x.X - 10.0f, 10.0f), main.ScreenSize));
@@ -158,7 +160,7 @@ namespace Lemma.Factories
 				},
 			});
 
-			editor.EnableCommands = () => !gui.AnyTextFieldViewsSelected() && !ConsoleUI.Showing;
+			editor.EnableCommands = () => !gui.AnyTextFieldViewsSelected() && !ConsoleUI.Showing && gui.Visible;
 
 			ModelAlpha model = new ModelAlpha();
 			model.Filename.Value = "AlphaModels\\selector";
@@ -769,8 +771,8 @@ namespace Lemma.Factories
 					}
 				},
 				gui.EntityCommands,
-				() => !string.IsNullOrEmpty(main.MapFile),
-				main.MapFile
+				() => !string.IsNullOrEmpty(main.MapFile) && input.EnableLook,
+				main.MapFile, input.EnableLook
 			);
 
 

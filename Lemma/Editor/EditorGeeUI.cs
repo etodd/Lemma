@@ -145,21 +145,24 @@ namespace Lemma.Components
 
 			this.ShowContextMenu.Action = delegate()
 			{
-				if (this.TabViews.GetActiveTab() == "Voxel")
+				if (this.Visible)
 				{
-					if (this.voxelMaterialDropDown != null && this.voxelMaterialDropDown.Active && !this.voxelMaterialDropDown.DropDownShowing)
-						this.voxelMaterialDropDown.ShowDropDown();
-				}
-				else if (this.CreateDropDownView.Active && !this.CreateDropDownView.DropDownShowing)
-				{
-					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Entity"));
-					this.CreateDropDownView.ShowDropDown();
+					if (this.TabViews.GetActiveTab() == "Voxel")
+					{
+						if (this.voxelMaterialDropDown != null && this.voxelMaterialDropDown.Active && !this.voxelMaterialDropDown.DropDownShowing)
+							this.voxelMaterialDropDown.ShowDropDown();
+					}
+					else if (this.CreateDropDownView.Active && !this.CreateDropDownView.DropDownShowing)
+					{
+						this.TabViews.SetActiveTab(this.TabViews.TabIndex("Entity"));
+						this.CreateDropDownView.ShowDropDown();
+					}
 				}
 			};
 
 			this.ShowOpenMenu.Action = delegate()
 			{
-				if (!this.VoxelEditMode)
+				if (!this.VoxelEditMode && this.Visible)
 				{
 					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Map"));
 					this.OpenDropDownView.ShowDropDown();

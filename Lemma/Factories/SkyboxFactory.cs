@@ -57,11 +57,11 @@ namespace Lemma.Factories
 						else if (skybox.Vertical)
 							prefix += "Vertical";
 
-						if (main.LightingManager.HasGlobalShadowLight && skybox.GodRays > 0.0f && main.Settings.EnableGodRays)
+						if (main.LightingManager.HasGlobalShadowLight && skybox.GodRays > 0.0f && main.Settings.VolumetricLighting)
 							prefix += "GodRays";
 						return prefix;
 					},
-					skybox.Vertical, main.LightingManager.HasGlobalShadowLight, skybox.GodRays, main.Settings.EnableGodRays, Water.BigWaterShader
+					skybox.Vertical, main.LightingManager.HasGlobalShadowLight, skybox.GodRays, main.Settings.VolumetricLighting, Water.BigWaterShader
 				)
 			);
 			model.Add(new Binding<float>(model.GetFloatParameter("WaterHeight"), Water.BigWaterHeight));

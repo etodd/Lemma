@@ -50,7 +50,9 @@ namespace Lemma.Components
 		private const float idleRotationBlendTime = 0.3f;
 
 		private const float animationSpeedCoefficient = 1.0f / 4.5f;
-		private const float maxAnimationSpeed = 1.5f;
+		private const float animationSpeedCoefficientWallRun = 1.0f / 3.0f;
+		private const float maxAnimationSpeed = 1.45f;
+		private const float maxAnimationSpeedWallRun = 2.0f;
 		private const float animationSpeedCoefficientCrouched = 1.0f / 2.2f;
 
 		public override void Awake()
@@ -378,7 +380,7 @@ namespace Lemma.Components
 				{
 					Vector3 wallNormal = this.WallRunMap.Value.GetAbsoluteVector(this.WallDirection.Value.GetVector());
 					float animationSpeed = (relativeVelocity - wallNormal * Vector3.Dot(relativeVelocity, wallNormal)).Length();
-					this.model[wallRunAnimation].Speed = Math.Min(maxAnimationSpeed, animationSpeed * animationSpeedCoefficient);
+					this.model[wallRunAnimation].Speed = Math.Min(maxAnimationSpeedWallRun, animationSpeed * animationSpeedCoefficientWallRun);
 				}
 			}
 

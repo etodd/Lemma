@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using ComponentBind;
 using GeeUI.Views;
 using ICSharpCode.SharpZipLib.Tar;
+using Lemma.Components;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -27,13 +28,14 @@ namespace Lemma.GInterfaces
 		private SteamUGCDetails_t currentPublishedFile;
 
 		private ButtonView UploadButton;
-		private ButtonView CancelButton;
+		private ButtonView CloseButton;
 
 		private Property<string> StatusString = new Property<string>() { Value = "" };
 
 		public override void Awake()
 		{
-			//This is to make it so nothing else can be interacted with.
+			// This is to make it so nothing else can be interacted with.
+			Editor.EditorModelsVisible.Value = false;
 			this.EncompassingView = new View(main.GeeUI, main.GeeUI.RootView);
 			this.MainView = new PanelView(main.GeeUI, EncompassingView, Vector2.Zero);
 			MainView.Resizeable = false;
@@ -59,7 +61,7 @@ namespace Lemma.GInterfaces
 					this.currentPublishedFile = default(SteamUGCDetails_t);
 					this.UploadButton.Text = "Publish";
 					this.UploadButton.AllowMouseEvents.Value = true;
-					this.CancelButton.AllowMouseEvents.Value = true;
+					this.CloseButton.AllowMouseEvents.Value = true;
 				});
 				var listEntries = entries as List<SteamUGCDetails_t>;
 				if (listEntries == null)
@@ -77,7 +79,7 @@ namespace Lemma.GInterfaces
 						this.DescriptionView.Text = entry1.m_rgchDescription;
 						this.UploadButton.Text = "Update";
 						this.UploadButton.AllowMouseEvents.Value = true;
-						this.CancelButton.AllowMouseEvents.Value = true;
+						this.CloseButton.AllowMouseEvents.Value = true;
 					}, related:entry);
 				}
 			});
@@ -88,7 +90,7 @@ namespace Lemma.GInterfaces
 			this.DescriptionView = new TextFieldView(main.GeeUI, MainView, new Vector2(10, 135));
 
 			this.UploadButton = new ButtonView(main.GeeUI, MainView, "Publish", new Vector2(50, 360));
-			this.CancelButton = new ButtonView(main.GeeUI, MainView, "Cancel", new Vector2(300, 360));
+			this.CloseButton = new ButtonView(main.GeeUI, MainView, "Close", new Vector2(300, 360));
 
 			var statusString = new TextView(main.GeeUI, MainView, "Waiting", new Vector2(110, 365))
 			{
@@ -106,7 +108,7 @@ namespace Lemma.GInterfaces
 				DoUpload();
 			};
 
-			CancelButton.OnMouseClick += (sender, args) =>
+			CloseButton.OnMouseClick += (sender, args) =>
 			{
 				this.Delete.Execute();
 			};
@@ -121,7 +123,7 @@ namespace Lemma.GInterfaces
 			if (NameView.Text.Trim().Length == 0 || DescriptionView.Text.Trim().Length == 0)
 				return;
 
-			CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = false;
+			CloseButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = false;
 
 			string filePath = this.main.MapFile;
 			string imagePath = string.Format("{0}.jpg", filePath.Substring(0, filePath.LastIndexOf('.')));
@@ -138,13 +140,13 @@ namespace Lemma.GInterfaces
 				if (!SteamWorker.WriteFileUGC(imagePath, steamImagePath))
 				{
 					StatusString.Value = "Failed to store image.";
-					CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
+					CloseButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
 					return;
 				}
 			}
 			else
 			{
-				CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
+				CloseButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
 				StatusString.Value = "Failed to store map.";
 				return;
 			}
@@ -170,12 +172,12 @@ namespace Lemma.GInterfaces
 										StatusString.Value = "Entry created!";
 										DescriptionView.ClearText();
 										NameView.ClearText();
-										CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
+										CloseButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
 									}
 									else
 									{
 										StatusString.Value = "Publish failed.";
-										CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
+										CloseButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
 									}
 								});
 							}
@@ -187,13 +189,13 @@ namespace Lemma.GInterfaces
 									if (publishSuccess)
 									{
 										StatusString.Value = "Entry updated!";
-										CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
+										CloseButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
 										SteamRemoteStorage.FileDelete(this.currentPublishedFile.m_pchFileName);
 									}
 									else
 									{
 										StatusString.Value = "Update failed.";
-										CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
+										CloseButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
 									}
 								});
 							}
@@ -201,14 +203,14 @@ namespace Lemma.GInterfaces
 						else
 						{
 							StatusString.Value = "Failed to upload image.";
-							CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
+							CloseButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
 						}
 					});
 				}
 				else
 				{
 					StatusString.Value = "Failed to upload map.";
-					CancelButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
+					CloseButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
 				}
 			});
 		}
@@ -223,6 +225,7 @@ namespace Lemma.GInterfaces
 		public override void delete()
 		{
 			EncompassingView.RemoveFromParent();
+			Editor.EditorModelsVisible.Value = true;
 			base.delete();
 		}
 

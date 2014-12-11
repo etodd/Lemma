@@ -1093,9 +1093,9 @@ namespace Lemma.Components
 				settingsList.Children.Add(borderless);
 			}
 
-			Container vsyncEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\vsync", this.main.Settings.EnableVsync, boolDisplay, delegate(int delta)
+			Container vsyncEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\vsync", this.main.Settings.Vsync, boolDisplay, delegate(int delta)
 			{
-				this.main.Settings.EnableVsync.Value = !this.main.Settings.EnableVsync;
+				this.main.Settings.Vsync.Value = !this.main.Settings.Vsync;
 			});
 			this.resizeToMenu(vsyncEnabled);
 			settingsList.Children.Add(vsyncEnabled);
@@ -1145,26 +1145,26 @@ namespace Lemma.Components
 				settingsList.Children.Add(motionBlurAmount);
 			}
 
-			Container reflectionsEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\reflections", this.main.Settings.EnableReflections, boolDisplay, delegate(int delta)
+			Container reflectionsEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\reflections", this.main.Settings.Reflections, boolDisplay, delegate(int delta)
 			{
-				this.main.Settings.EnableReflections.Value = !this.main.Settings.EnableReflections;
+				this.main.Settings.Reflections.Value = !this.main.Settings.Reflections;
 			});
 			this.resizeToMenu(reflectionsEnabled);
 			settingsList.Children.Add(reflectionsEnabled);
 
-			Container ssaoEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\ambient occlusion", this.main.Settings.EnableSSAO, boolDisplay, delegate(int delta)
+			Container ssaoEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\ambient occlusion", this.main.Settings.SSAO, boolDisplay, delegate(int delta)
 			{
-				this.main.Settings.EnableSSAO.Value = !this.main.Settings.EnableSSAO;
+				this.main.Settings.SSAO.Value = !this.main.Settings.SSAO;
 			});
 			this.resizeToMenu(ssaoEnabled);
 			settingsList.Children.Add(ssaoEnabled);
 
-			Container godRaysEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\god rays", this.main.Settings.EnableGodRays, boolDisplay, delegate(int delta)
+			Container volumetricLightingEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\volumetric lighting", this.main.Settings.VolumetricLighting, boolDisplay, delegate(int delta)
 			{
-				this.main.Settings.EnableGodRays.Value = !this.main.Settings.EnableGodRays;
+				this.main.Settings.VolumetricLighting.Value = !this.main.Settings.VolumetricLighting;
 			});
-			this.resizeToMenu(godRaysEnabled);
-			settingsList.Children.Add(godRaysEnabled);
+			this.resizeToMenu(volumetricLightingEnabled);
+			settingsList.Children.Add(volumetricLightingEnabled);
 
 			Container bloomEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\bloom", this.main.Renderer.EnableBloom, boolDisplay, delegate(int delta)
 			{

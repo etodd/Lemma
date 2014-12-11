@@ -228,7 +228,7 @@ namespace Lemma.Components
 			}));
 
 			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.main.ScreenSize));
-			this.Add(new Binding<bool>(this.EnableReflection, this.main.Settings.EnableReflections));
+			this.Add(new Binding<bool>(this.EnableReflection, this.main.Settings.Reflections));
 
 			Action removeFluid = delegate()
 			{
