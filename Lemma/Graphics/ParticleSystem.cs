@@ -890,7 +890,7 @@ namespace Lemma.Components
 				if (parameters.Technique == Technique.Clip)
 					this.particleEffect.Parameters["ClipPlanes"].SetValue(parameters.ClipPlaneData);
 
-				techniqueName = parameters.Technique.ToString() + techniqueName;
+				techniqueName = parameters.TechniqueString + techniqueName;
 
 				EffectTechnique techniqueInstance = this.particleEffect.Techniques[techniqueName];
 				if (techniqueInstance == null)

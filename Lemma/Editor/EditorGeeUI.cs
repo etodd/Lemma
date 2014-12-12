@@ -316,10 +316,7 @@ namespace Lemma.Components
 			PropertiesView.Add(new Binding<Vector2>(PropertiesView.Position, () => new Vector2(0, RootEditorView.Height + RootEditorView.Position.Value.Y), RootEditorView.Height, RootEditorView.Position));
 			PropertiesView.Add(new Binding<int, Point>(PropertiesView.Height, point => point.Y - PropertiesView.AbsoluteBoundBox.Top - 15, main.ScreenSize));
 
-			this.SelectedEntities.ItemAdded += (index, item) => this.refresh();
-			this.SelectedEntities.ItemRemoved += (index, item) => this.refresh();
-			this.SelectedEntities.ItemChanged += (index, old, newValue) => this.refresh();
-			this.SelectedEntities.Cleared += this.refresh;
+			this.Add(new ListNotifyBinding<Entity>(this.refresh, this.SelectedEntities));
 
 			this.Add(new Binding<bool>(this.PropertiesView.Active, () => this.SelectedEntities.Length > 0 && !this.VoxelEditMode && this.Visible, this.VoxelEditMode, this.SelectedEntities.Length, this.Visible));
 

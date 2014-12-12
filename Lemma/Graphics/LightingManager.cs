@@ -319,7 +319,7 @@ namespace Lemma.Components
 			List<SpotLight> shadowedSpotLights = new List<SpotLight>();
 			foreach (SpotLight light in SpotLight.All)
 			{
-				if (light.Enabled && !light.Suspended && light.Shadowed && light.Attenuation > 0.0f && camera.BoundingFrustum.Value.Intersects(light.BoundingFrustum))
+				if (light.Enabled && !light.Suspended && light.Shadowed && light.Attenuation > 0.0f && camera.BoundingFrustum.Intersects(light.BoundingFrustum))
 					shadowedSpotLights.Add(light);
 			}
 			shadowedSpotLights = shadowedSpotLights.Select(x => new { Light = x, Score = (x.Position.Value - camera.Position.Value).LengthSquared() / x.Attenuation }).Where(x => x.Score < LightingManager.lightShadowThreshold).OrderBy(x => x.Score).Take(this.maxShadowedSpotLights).Select(x => x.Light).ToList();

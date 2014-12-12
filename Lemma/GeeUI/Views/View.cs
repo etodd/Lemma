@@ -229,8 +229,8 @@ namespace GeeUI.Views
 
 			this.Add(new SetBinding<bool>(this.Attached, delegate(bool value)
 			{
-				foreach (View v in this.Children)
-					v.Attached.Value = value;
+				for (int i = 0; i < this.Children.Count; i++)
+					this.Children[i].Attached.Value = value;
 			}));
 
 			this.Add(new SetBinding<View>(this.ParentView, delegate(View v)
@@ -270,8 +270,8 @@ namespace GeeUI.Views
 
 			this.Children.Clearing += delegate()
 			{
-				foreach (var child in this.Children)
-					child.ParentView.Value = null;
+				for (int i = 0; i < this.Children.Count; i++)
+					this.Children[i].ParentView.Value = null;
 				this.dirty = true;
 			};
 
@@ -294,8 +294,8 @@ namespace GeeUI.Views
 
 		public virtual void OrderChildren()
 		{
-			foreach (var layout in ChildrenLayouts)
-				layout.OrderChildren(this);
+			for (int i = 0; i < this.ChildrenLayouts.Count; i++)
+				this.ChildrenLayouts[i].OrderChildren(this);
 			this.dirty = false;
 		}
 		
@@ -307,8 +307,9 @@ namespace GeeUI.Views
 			if (!infinite) depth--;
 			if (depth >= 0 || infinite)
 			{
-				foreach (var c in Children)
+				for (int i = 0; i < this.Children.Count; i++)
 				{
+					View c = this.Children[i];
 					if (c.Name == name)
 						list.Add(c);
 					c.FindChildrenByName(name, infinite ? -1 : depth, list);
@@ -324,8 +325,9 @@ namespace GeeUI.Views
 
 			if (depth >= 0 || infinite)
 			{
-				foreach (var c in Children)
+				for (int i = 0; i < this.Children.Count; i++)
 				{
+					View c = this.Children[i];
 					if (c.Name == name)
 						return c;
 					foreach (var find in c.FindChildrenByName(name, infinite ? -1 : depth))
@@ -431,10 +433,45 @@ namespace GeeUI.Views
 
 		public virtual void OnDelete()
 		{
+			this.delete();
+		}
+
+		public override void delete()
+		{
+			base.delete();
 			Active.Value = false;
 			foreach (var child in Children)
 				child.OnDelete();
-			this.delete();
+			if (this.OnMouseClick != null)
+			{
+				foreach (Delegate d in this.OnMouseClick.GetInvocationList())
+					this.OnMouseClick -= (MouseClickEventHandler)d;
+			}
+			if (this.OnMouseClickAway != null)
+			{
+				foreach (Delegate d in this.OnMouseClickAway.GetInvocationList())
+					this.OnMouseClickAway -= (MouseClickEventHandler)d;
+			}
+			if (this.OnMouseOff != null)
+			{
+				foreach (Delegate d in this.OnMouseOff.GetInvocationList())
+					this.OnMouseOff -= (MouseOffEventHandler)d;
+			}
+			if (this.OnMouseOver != null)
+			{
+				foreach (Delegate d in this.OnMouseOver.GetInvocationList())
+					this.OnMouseOver -= (MouseOverEventHandler)d;
+			}
+			if (this.OnMouseRightClick != null)
+			{
+				foreach (Delegate d in this.OnMouseRightClick.GetInvocationList())
+					this.OnMouseRightClick -= (MouseClickEventHandler)d;
+			}
+			if (this.OnMouseScroll != null)
+			{
+				foreach (Delegate d in this.OnMouseScroll.GetInvocationList())
+					this.OnMouseScroll -= (MouseScrollEventHandler)d;
+			}
 		}
 
 		public virtual void OnMScroll(Vector2 position, int scrollDelta, bool fromChild)

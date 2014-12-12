@@ -30,7 +30,20 @@ namespace Lemma.Components
 			}
 		}
 		public Vector4[] ClipPlaneData;
-		public Technique Technique;
+		private Technique technique;
+		public Technique Technique
+		{
+			get
+			{
+				return this.technique;
+			}
+			set
+			{
+				this.technique = value;
+				this.TechniqueString = value.ToString();
+			}
+		}
+		public string TechniqueString;
 		public bool ReverseCullOrder;
 		public RenderTarget2D DepthBuffer;
 		public RenderTarget2D FrameBuffer;
@@ -179,11 +192,28 @@ namespace Lemma.Components
 			this.spriteBatch.End();
 		}
 
+		private const string paramLightSampler = "Ramp" + Model.SamplerPostfix;
 		private void loadLightRampTexture(string file)
 		{
 			this.lightRampTexture = file == null ? (Texture2D)null : this.main.Content.Load<Texture2D>(file);
-			this.bloomEffect.Parameters["Ramp" + Model.SamplerPostfix].SetValue(this.lightRampTexture);
+			this.bloomEffect.Parameters[paramLightSampler].SetValue(this.lightRampTexture);
 		}
+
+		private const string paramCloudSampler = "Cloud" + Model.SamplerPostfix;
+		private static string[] paramSourceSamplers = new[]
+		{
+			string.Format("Source{0}0", Model.SamplerPostfix),
+			string.Format("Source{0}1", Model.SamplerPostfix),
+			string.Format("Source{0}2", Model.SamplerPostfix),
+			string.Format("Source{0}3", Model.SamplerPostfix),
+		};
+		private static string[] paramSourceDimensions = new[]
+		{
+			"SourceDimensions0",
+			"SourceDimensions1",
+			"SourceDimensions2",
+			"SourceDimensions3",
+		};
 
 		private static void reload(Main m)
 		{
@@ -205,7 +235,7 @@ namespace Lemma.Components
 			Renderer.globalLightEffect = m.Content.Load<Effect>("Effects\\PostProcess\\GlobalLight").Clone();
 			Renderer.pointLightEffect = m.Content.Load<Effect>("Effects\\PostProcess\\PointLight").Clone();
 			Renderer.spotLightEffect = m.Content.Load<Effect>("Effects\\PostProcess\\SpotLight").Clone();
-			Renderer.globalLightEffect.Parameters["Cloud" + Model.SamplerPostfix].SetValue(m.Content.Load<Texture2D>("AlphaModels\\cloud_texture"));
+			Renderer.globalLightEffect.Parameters[paramCloudSampler].SetValue(m.Content.Load<Texture2D>("AlphaModels\\cloud_texture"));
 		}
 
 		public void LoadContent(bool reload)
@@ -239,12 +269,9 @@ namespace Lemma.Components
 			}
 		}
 
+		private const string paramRandomSampler = "Random" + Model.SamplerPostfix;
 		public void ReallocateBuffers(Point size)
 		{
-			if (Renderer.globalLightEffect == null || Renderer.globalLightEffect.IsDisposed)
-			{
-			}
-
 			this.compositeEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Composite").Clone();
 			this.compositeEffect.CurrentTechnique = this.compositeEffect.Techniques["Composite"];
 			this.blurEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Blur").Clone();
@@ -252,7 +279,7 @@ namespace Lemma.Components
 			this.downsampleEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Downsample").Clone();
 			this.ssaoEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\SSAO").Clone();
 			this.ssaoRandomTexture = this.main.Content.Load<Texture2D>("Textures\\random");
-			this.ssaoEffect.Parameters["Random" + Model.SamplerPostfix].SetValue(this.ssaoRandomTexture);
+			this.ssaoEffect.Parameters[paramRandomSampler].SetValue(this.ssaoRandomTexture);
 
 			this.bloomEffect = this.main.Content.Load<Effect>("Effects\\PostProcess\\Bloom").Clone();
 
@@ -643,7 +670,7 @@ namespace Lemma.Components
 			RenderTarget2D colorTemp = null;
 
 			// Compositing
-			this.compositeEffect.CurrentTechnique = this.compositeEffect.Techniques["Composite" + (enableSSAO ? "SSAO" : "")];
+			this.compositeEffect.CurrentTechnique = this.compositeEffect.Techniques[enableSSAO ? "CompositeSSAO" : "Composite"];
 			this.lightingManager.SetCompositeParameters(this.compositeEffect);
 			parameters.Camera.SetParameters(this.compositeEffect);
 			this.lightingManager.SetMaterialParameters(this.compositeEffect);
@@ -875,11 +902,11 @@ namespace Lemma.Components
 			EffectParameter param;
 			for (int i = 0; i < sources.Length; i++)
 			{
-				param = effect.Parameters["Source" + Model.SamplerPostfix + i.ToString()];
+				param = effect.Parameters[paramSourceSamplers[i]];
 				if (param == null)
 					break;
 				param.SetValue(sources[i]);
-				param = effect.Parameters["SourceDimensions" + i.ToString()];
+				param = effect.Parameters[paramSourceDimensions[i]];
 				if (param != null)
 					param.SetValue(new Vector2(sources[i].Width, sources[i].Height));
 			}

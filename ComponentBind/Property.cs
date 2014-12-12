@@ -106,20 +106,14 @@ namespace ComponentBind
 			this._value = t;
 		}
 
-		private bool setting;
 		public void InternalSet(Type obj, IPropertyBinding binding)
 		{
 			this._value = obj;
-			if (!this.setting)
+			for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
 			{
-				this.setting = true;
-				for (int j = this.bindings.Count - 1; j >= 0; j = Math.Min(this.bindings.Count - 1, j - 1))
-				{
-					IPropertyBinding b = this.bindings[j];
-					if (b != binding)
-						b.OnChanged(this);
-				}
-				this.setting = false;
+				IPropertyBinding b = this.bindings[j];
+				if (b != binding)
+					b.OnChanged(this);
 			}
 		}
 
@@ -145,45 +139,6 @@ namespace ComponentBind
 		public delegate void ItemRemovedEventHandler(int index, Type t);
 		public delegate void ItemChangedEventHandler(int index, Type old, Type newValue);
 		public delegate void ClearEventHandler();
-		protected bool editable = false;
-		[XmlAttribute]
-		[DefaultValue(true)]
-		public bool Editable
-		{
-			get
-			{
-				return this.editable;
-			}
-			set
-			{
-				this.editable = value;
-			}
-		}
-
-		protected string description = "";
-		[XmlIgnore]
-		[JsonIgnore]
-		[DefaultValue("")]
-		public string Description
-		{
-			get { return description; }
-			set { description = value; }
-		}
-
-		protected bool serialize = true;
-		[XmlIgnore]
-		[JsonIgnore]
-		public bool Serialize
-		{
-			get
-			{
-				return this.serialize;
-			}
-			set
-			{
-				this.serialize = value;
-			}
-		}
 
 		public int Count
 		{

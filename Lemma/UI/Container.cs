@@ -51,8 +51,9 @@ namespace Lemma.Components
 			}
 
 			Vector2 size = new Vector2(this.PaddingLeft, this.PaddingTop);
-			foreach (UIComponent child in this.Children)
+			for (int i = 0; i < this.Children.Count; i++)
 			{
+				UIComponent child = this.Children[i];
 				Vector2 childPos = child.Position;
 				Vector2 min = childPos - (child.AnchorPoint.Value * child.Size.Value);
 				childPos.X += Math.Max(0, this.PaddingLeft - min.X);

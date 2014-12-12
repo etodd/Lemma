@@ -13,13 +13,20 @@ namespace GeeUI.Views
 		{
 			get
 			{
-				return Children.Where(child => child is TabView).Cast<TabView>().FirstOrDefault(v => v.Selected);
+				for (int i = 0; i < this.Children.Count; i++)
+				{
+					TabView child = (TabView)this.Children[i];
+					if (child.Selected)
+						return child;
+				}
+				return null;
 			}
 		}
 
 		public int AllTabsWidth
 		{
-			get {
+			get
+			{
 				if (Children.Length == 0) return 0;
 				View last = Children[Children.Length - 1];
 				return (int)last.Position.Value.X + last.BoundBox.Width;

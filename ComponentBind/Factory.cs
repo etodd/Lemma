@@ -51,7 +51,7 @@ namespace ComponentBind
 				if (!type.ContainsGenericParameters)
 				{
 					Factory factory = (Factory)type.GetConstructor(new Type[] { }).Invoke(new object[] { });
-					Factory.factories.Add(type.Name.Replace("Factory", ""), factory);
+					Factory.factories.Add(type.Name.Substring(0, type.Name.Length - "Factory".Length), factory);
 					Factory.factoriesByType.Add(type, factory);
 				}
 			}

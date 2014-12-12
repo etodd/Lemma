@@ -2010,7 +2010,7 @@ namespace Lemma.Components
 		public Command CompletelyEmptied = new Command();
 
 		[XmlIgnore]
-		public ListProperty<Chunk> Chunks = new ListProperty<Chunk> { Editable = false };
+		public ListProperty<Chunk> Chunks = new ListProperty<Chunk>();
 
 		private Chunk[, ,] chunks;
 

@@ -371,7 +371,7 @@ namespace Lemma.Components
 			if (!underwater && cameraPos.Y < this.Position.Value.Y)
 				return false;
 			
-			if (!c.BoundingFrustum.Value.Intersects(this.Fluid.BoundingBox))
+			if (!c.BoundingFrustum.Intersects(this.Fluid.BoundingBox))
 				return false;
 			
 			return true;

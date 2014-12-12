@@ -54,8 +54,9 @@ namespace Lemma.Components
 			Vector2 maxSize = Vector2.Zero;
 			if (this.ResizePerpendicular)
 			{
-				foreach (UIComponent child in this.Children)
+				for (int i = 0; i < this.Children.Count; i++)
 				{
+					UIComponent child = this.Children[i];
 					if (child.Visible)
 					{
 						Vector2 size = child.ScaledSize;

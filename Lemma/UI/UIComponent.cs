@@ -24,8 +24,8 @@ namespace Lemma.Components
 			set
 			{
 				this._renderer = value;
-				foreach (UIComponent child in this.Children)
-					child.renderer = value;
+				for (int i = 0; i < this.Children.Count; i++)
+					this.Children[i].renderer = value;
 			}
 		}
 
@@ -88,8 +88,8 @@ namespace Lemma.Components
 		{
 			if (reload)
 			{
-				foreach (UIComponent child in this.Children)
-					child.LoadContent(true);
+				for (int i = 0; i < this.Children.Count; i++)
+					this.Children[i].LoadContent(true);
 			}
 		}
 
@@ -103,15 +103,15 @@ namespace Lemma.Components
 		private void deleteWithoutRemovingFromParent()
 		{
 			this.Parent.Value = null;
-			foreach (UIComponent child in this.Children)
-				child.deleteWithoutRemovingFromParent();
+			for (int i = 0; i < this.Children.Count; i++)
+				this.Children[i].deleteWithoutRemovingFromParent();
 			this.Delete.Execute();
 		}
 
 		public void CheckLayout()
 		{
-			foreach (UIComponent child in this.Children)
-				child.CheckLayout();
+			for (int i = 0; i < this.Children.Count; i++)
+				this.Children[i].CheckLayout();
 			if (this.layoutDirty)
 			{
 				this.updateLayout();
@@ -121,8 +121,9 @@ namespace Lemma.Components
 
 		public UIComponent GetChildByName(string name)
 		{
-			foreach (UIComponent child in this.Children)
+			for (int i = 0; i < this.Children.Count; i++)
 			{
+				UIComponent child = this.Children[i];
 				if (child.Name.Value == name)
 					return child;
 				UIComponent result = child.GetChildByName(name);
@@ -169,8 +170,8 @@ namespace Lemma.Components
 			});
 			this.Children.Clearing += new ListProperty<UIComponent>.ClearEventHandler(delegate()
 			{
-				foreach (UIComponent c in this.Children)
-					c.deleteWithoutRemovingFromParent();
+				for (int i = 0; i < this.Children.Count; i++)
+					this.Children[i].deleteWithoutRemovingFromParent();
 			});
 		}
 
@@ -194,8 +195,9 @@ namespace Lemma.Components
 					* Matrix.CreateTranslation(new Vector3(this.Position.Value, 0.0f));
 			}, this.Position, this.Size, this.Scale, this.Rotation, this.AnchorPoint));
 
-			foreach (UIComponent child in this.Children)
+			for (int i = 0; i < this.Children.Count; i++)
 			{
+				UIComponent child = this.Children[i];
 				if (child.main == null)
 					this.main.AddComponent(child);
 			}
@@ -295,8 +297,9 @@ namespace Lemma.Components
 				}
 
 				this.draw(time, parent, transform);
-				foreach (UIComponent child in this.Children)
+				for (int i = 0; i < this.Children.Count; i++)
 				{
+					UIComponent child = this.Children[i];
 					if (child.Visible)
 					{
 						if (this.main.GraphicsDevice.ScissorRectangle != newScissor || child.requiresNewBatch)

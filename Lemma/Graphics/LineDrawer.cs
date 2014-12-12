@@ -77,7 +77,7 @@ namespace Lemma.Components
 			// Draw lines
 			try
 			{
-				this.effect.CurrentTechnique = this.effect.Techniques[p.Technique.ToString()];
+				this.effect.CurrentTechnique = this.effect.Techniques[p.TechniqueString];
 			}
 			catch (Exception)
 			{

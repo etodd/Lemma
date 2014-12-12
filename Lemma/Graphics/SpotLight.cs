@@ -19,8 +19,16 @@ namespace Lemma.Components
 		public Property<float> FieldOfView = new Property<float> { Value = (float)Math.PI * 0.25f };
 		public Property<float> Attenuation = new Property<float> { Value = 10.0f };
 
+		private BoundingFrustum frustum = new BoundingFrustum(Matrix.Identity);
 		[XmlIgnore]
-		public Property<BoundingFrustum> BoundingFrustum = new Property<BoundingFrustum>();
+		public BoundingFrustum BoundingFrustum
+		{
+			get
+			{
+				this.frustum.Matrix = this.ViewProjection;
+				return this.frustum;
+			}
+		}
 
 		[XmlIgnore]
 		public Property<Matrix> ViewProjection = new Property<Matrix>();
@@ -73,8 +81,6 @@ namespace Lemma.Components
 						return null;
 					}
 				}, this.CookieTextureFile));
-
-			this.Add(new Binding<BoundingFrustum, Matrix>(this.BoundingFrustum, x => new BoundingFrustum(x), this.ViewProjection));
 
 			SpotLight.All.Add(this);
 		}

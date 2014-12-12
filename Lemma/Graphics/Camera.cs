@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Audio;
 using Lemma.Util;
+using System.Xml.Serialization;
 
 namespace Lemma.Components
 {
@@ -80,8 +81,6 @@ namespace Lemma.Components
 
 		public Property<Matrix> RotationMatrix = new Property<Matrix> { Value = Matrix.Identity };
 
-		public Property<BoundingFrustum> BoundingFrustum = new Property<BoundingFrustum> { Value = new BoundingFrustum(Matrix.Identity) };
-
 		public Property<Vector2> OrthographicSize = new Property<Vector2> { Value = new Vector2(70.0f, 70.0f) };
 
 		public enum ProjectionMode { Perspective, Orthographic, Custom }
@@ -91,6 +90,17 @@ namespace Lemma.Components
 		/// Gets or sets camera's target.
 		/// </summary>
 		public Property<Vector3> Target = new Property<Vector3>();
+
+		private BoundingFrustum frustum = new BoundingFrustum(Matrix.Identity);
+		[XmlIgnore]
+		public BoundingFrustum BoundingFrustum
+		{
+			get
+			{
+				this.frustum.Matrix = this.ViewProjection;
+				return this.frustum;
+			}
+		}
 
 		public override void Awake()
 		{
@@ -115,7 +125,6 @@ namespace Lemma.Components
 			this.Add(new Binding<Matrix, Matrix>(this.InverseProjection, x => Matrix.Invert(x), this.Projection));
 			this.Add(new Binding<Matrix>(this.ViewProjection, () => this.View.Value * this.Projection, this.View, this.Projection));
 			this.Add(new Binding<Matrix, Matrix>(this.InverseViewProjection, x => Matrix.Invert(x), this.ViewProjection));
-			this.Add(new Binding<BoundingFrustum, Matrix>(this.BoundingFrustum, x => new BoundingFrustum(x), this.ViewProjection));
 			this.Add(new TwoWayBinding<Vector3, Matrix>(
 				this.Angles,
 				delegate(Matrix matrix)

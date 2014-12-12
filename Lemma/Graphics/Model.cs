@@ -737,7 +737,7 @@ namespace Lemma.Components
 			if (this.effect == null || this.UnsupportedTechniques.Contains(parameters.Technique))
 				return false;
 
-			EffectTechnique technique = this.effect.Techniques[parameters.Technique.ToString() + this.TechniquePostfix];
+			EffectTechnique technique = this.effect.Techniques[parameters.TechniqueString + this.TechniquePostfix];
 			if (technique == null)
 			{
 				this.UnsupportedTechniques.Add(parameters.Technique);

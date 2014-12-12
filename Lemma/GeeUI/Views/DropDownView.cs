@@ -329,11 +329,11 @@ namespace GeeUI.Views
 			FilterView.Active.Value = FilterView.Selected.Value = AllowFilterText && FilterThreshhold.Value <= DropDownOptions.Count;
 		}
 
-		public override void OnDelete()
+		public override void delete()
 		{
 			ParentGeeUI.OnKeyPressedHandler -= this.keyPressedHandler;
 			this.DropDownPanelView.RemoveFromParent();
-			base.OnDelete();
+			base.delete();
 		}
 	}
 }
