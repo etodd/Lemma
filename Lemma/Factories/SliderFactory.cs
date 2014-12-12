@@ -35,6 +35,7 @@ namespace Lemma.Factories
 			slider.Add(new Binding<Direction>(slider.Direction, joint.Direction));
 
 			DynamicVoxel voxel = entity.Get<DynamicVoxel>();
+			voxel.KineticFriction.Value = voxel.StaticFriction.Value = 0;
 
 			if (main.EditorEnabled)
 				entity.Add(new Binding<Matrix>(entity.GetOrCreate<SliderCommon>("SliderCommon").OriginalTransform, voxel.Transform));

@@ -35,6 +35,8 @@ namespace Lemma.Factories
 			spinner.Add(new Binding<Direction>(spinner.Direction, joint.Direction));
 
 			JointFactory.Bind(entity, main, spinner.CreateJoint, true, creating);
+			DynamicVoxel voxel = entity.Get<DynamicVoxel>();
+			voxel.KineticFriction.Value = voxel.StaticFriction.Value = 0;
 
 			entity.Add("On", spinner.On);
 			entity.Add("Off", spinner.Off);

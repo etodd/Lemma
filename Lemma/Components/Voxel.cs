@@ -785,6 +785,8 @@ namespace Lemma.Components
 						SpecularIntensity = 0.4f,
 					}
 				},
+				KineticFriction = 0,
+				StaticFriction = 0,
 				Tiling = 2.0f,
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 			};
@@ -806,6 +808,8 @@ namespace Lemma.Components
 						SpecularIntensity = 0.4f,
 					},
 				},
+				KineticFriction = 0,
+				StaticFriction = 0,
 				Tiling = 2.0f,
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 			};
@@ -4774,9 +4778,9 @@ namespace Lemma.Components
 
 		public Property<bool> IsAlwaysActive = new Property<bool> { Value = false };
 
-		public Property<float> KineticFriction = new Property<float> { Value = 0.0f };
+		public Property<float> KineticFriction = new Property<float> { Value = MaterialManager.DefaultKineticFriction };
 
-		public Property<float> StaticFriction = new Property<float> { Value = 0.0f };
+		public Property<float> StaticFriction = new Property<float> { Value = MaterialManager.DefaultStaticFriction };
 
 		public Property<bool> CannotSuspendByDistance = new Property<bool>();
 
