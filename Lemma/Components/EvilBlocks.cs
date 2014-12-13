@@ -54,6 +54,7 @@ namespace Lemma.Components
 			}
 		}
 
+		private const float forceMultiplier = 1.0f;
 		public void Update(float dt)
 		{
 			if (this.blocks.Count < this.Blocks.Length)
@@ -83,9 +84,9 @@ namespace Lemma.Components
 				if (!block.Suspended)
 				{
 					Vector3 toCenter = this.Position - block.Box.Position;
-					if (toCenter.Length() > 10.0f)
-						block.Box.Position = this.Position + Vector3.Normalize(toCenter) * -10.0f;
-					Vector3 force = toCenter * main.ElapsedTime * 4.0f;
+					if (toCenter.Length() > 20.0f)
+						block.Box.Position = this.Position + Vector3.Normalize(toCenter) * -20.0f;
+					Vector3 force = toCenter * main.ElapsedTime * forceMultiplier;
 					block.Box.ApplyLinearImpulse(ref force);
 				}
 			}

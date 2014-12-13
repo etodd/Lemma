@@ -77,11 +77,11 @@ namespace Lemma.Factories
 			if (chord.Modifier != Keys.None)
 				input.Add(new CommandBinding(input.GetChord(chord), enabled, action));
 			else if (chord.Mouse == PCInput.MouseButton.LeftMouseButton)
-				input.Add(new CommandBinding(input.LeftMouseButtonDown, enabled, action));
+				input.Add(new CommandBinding(input.LeftMouseButtonUp, enabled, action));
 			else if (chord.Mouse == PCInput.MouseButton.RightMouseButton)
-				input.Add(new CommandBinding(input.RightMouseButtonDown, enabled, action));
+				input.Add(new CommandBinding(input.RightMouseButtonUp, enabled, action));
 			else if (chord.Mouse == PCInput.MouseButton.MiddleMouseButton)
-				input.Add(new CommandBinding(input.MiddleMouseButtonDown, enabled, action));
+				input.Add(new CommandBinding(input.MiddleMouseButtonUp, enabled, action));
 			else
 				input.Add(new CommandBinding(input.GetKeyDown(chord.Key), enabled, action));
 

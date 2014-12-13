@@ -17,6 +17,8 @@ namespace Lemma.Components
 {
 	public class SignalTower : Component<Main>
 	{
+		public static List<SignalTower> All = new List<SignalTower>();
+
 		public Property<string> Initial = new Property<string>();
 		public Property<Entity.Handle> Player = new Property<Entity.Handle>();
 
@@ -75,10 +77,13 @@ namespace Lemma.Components
 
 			if (!this.main.EditorEnabled)
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SIGNAL_TOWER_LOOP, this.Entity);
+
+			SignalTower.All.Add(this);
 		}
 
 		public override void delete()
 		{
+			SignalTower.All.Remove(this);
 			AkSoundEngine.PostEvent(AK.EVENTS.STOP_SIGNAL_TOWER_LOOP, this.Entity);
 			Entity player = this.Player.Value.Target;
 			if (player != null && player.Active)

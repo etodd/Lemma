@@ -111,6 +111,18 @@ namespace Lemma.Components
 						}
 					}
 
+					if (!skip)
+					{
+						foreach (SignalTower t in SignalTower.All)
+						{
+							if ((t.Entity.Get<Transform>().Position - hit.Position).Length() < 20.0f)
+							{
+								skip = true;
+								break;
+							}
+						}
+					}
+
 					if (skip)
 						break;
 
