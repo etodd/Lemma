@@ -148,6 +148,9 @@ namespace Lemma.Util
 			CollisionRules.CollisionGroupRules.Add(new CollisionGroupPair(Character.NoCollideGroup, Character.CharacterGroup), CollisionRule.NoBroadPhase);
 		}
 
+		private float edgeTimer;
+		private const float edgeTime = 0.3f; // For a split second after walking off an edge, pretend like we're still supported
+
 		private Main main;
 
 		/// <summary>
@@ -289,14 +292,19 @@ namespace Lemma.Util
 			}
 			else
 			{
-				this.SupportEntity.Value = null;
-				this.IsSupported.Value = false;
-				this.HasTraction.Value = false;
-
 				if (this.lastSupported)
 				{
 					this.LastSupportedSpeed.Value = new Vector2(this.Body.LinearVelocity.X, this.Body.LinearVelocity.Z).Length();
 					this.lastSupported = false;
+					this.edgeTimer = 0;
+				}
+
+				this.edgeTimer += dt;
+				if (this.edgeTimer > edgeTime)
+				{
+					this.SupportEntity.Value = null;
+					this.IsSupported.Value = false;
+					this.HasTraction.Value = false;
 				}
 
 				if (this.EnableWalking)

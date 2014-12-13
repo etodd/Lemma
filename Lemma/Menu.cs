@@ -58,6 +58,8 @@ namespace Lemma.Components
 
 		Property<UIComponent> currentMenu = new Property<UIComponent> { Value = null };
 
+		public Property<bool> CanPause = new Property<bool> { Value = true };
+
 		// Settings to be restored when unpausing
 		private float originalBlurAmount = 0.0f;
 		private bool originalMouseVisible = false;
@@ -786,7 +788,7 @@ namespace Lemma.Components
 							Container button = this.main.UIFactory.CreateButton(metadata.Title, delegate()
 							{
 								hideWorkshopMenu(false);
-								hidePauseMenu();
+								this.hidePauseMenu();
 								this.restorePausedSettings();
 								this.main.CurrentSave.Value = null;
 								this.main.AddComponent(new Animation
@@ -1819,6 +1821,9 @@ namespace Lemma.Components
 			// Otherwise we could save the current map without the player. And that would be awkward.
 			Func<bool> canPause = delegate()
 			{
+				if (!this.CanPause)
+					return false;
+
 				if (this.main.Paused)
 					return this.main.MapFile.Value != Main.MenuMap; // Only allow pausing on the menu map, don't allow unpausing
 
@@ -1889,9 +1894,12 @@ namespace Lemma.Components
 
 			this.input.Bind(this.main.Settings.ToggleConsole, PCInput.InputState.Down, delegate()
 			{
-				if (canPause() && ConsoleUI.Showing.Value == main.Paused.Value)
-					togglePause();
-				ConsoleUI.Showing.Value = !ConsoleUI.Showing.Value;
+				if (this.main.Paused || this.CanPause)
+				{
+					if (canPause() && ConsoleUI.Showing.Value == this.main.Paused.Value)
+						togglePause();
+					ConsoleUI.Showing.Value = !ConsoleUI.Showing.Value;
+				}
 			});
 
 			this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), () => canPause() || this.dialog != null, togglePause));

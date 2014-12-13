@@ -54,7 +54,7 @@ namespace Lemma.Components
 			}
 		}
 
-		private const float forceMultiplier = 1.0f;
+		private const float forceMultiplier = 0.2f;
 		public void Update(float dt)
 		{
 			if (this.blocks.Count < this.Blocks.Length)

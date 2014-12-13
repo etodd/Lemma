@@ -21,6 +21,8 @@ namespace Lemma.Components
 
 		private const float damageTime = 1.0f; // How long the player can stand in a rift before they die
 		private const float interval = 0.015f; // A coordinate is emptied every x seconds
+		private const int batch = 8; // Empty coordinates in batches
+		private const float batchInterval = interval * batch;
 		private const float particleInterval = 0.015f; // A particle is emitted every x seconds
 		private const float soundInterval = 0.25f; // A sound is played every x seconds
 		public Property<int> Radius = new Property<int> { Value = 10 };
@@ -84,6 +86,7 @@ namespace Lemma.Components
 
 		private ImplodeBlockFactory blockFactory = Factory.Get<ImplodeBlockFactory>();
 
+		private List<Voxel.Coord> removals = new List<Voxel.Coord>();
 		public void Update(float dt)
 		{
 			if (this.CurrentIndex < this.Coords.Length)
@@ -116,25 +119,36 @@ namespace Lemma.Components
 					}
 
 					bool regenerate = false;
-					while (this.intervalTimer > interval && this.CurrentIndex < this.Coords.Length)
+					if (this.intervalTimer > batchInterval)
 					{
-						Voxel.Coord c = this.Coords[this.CurrentIndex];
-						Voxel.State state;
-						if ((state = this.voxel[c]) != Components.Voxel.States.Empty)
+						for (int i = 0; i < batch && this.CurrentIndex < this.Coords.Length; i++)
 						{
-							this.voxel.Empty(c, true, true);
-							regenerate = true;
-							if (this.Type == Style.In)
-								this.blockFactory.Implode(main, this.voxel, c, state, this.Position);
-							else
-								this.blockFactory.BlowAway(main, this.voxel, c, state);
+							Voxel.Coord c = this.Coords[this.CurrentIndex];
+							if ((c.Data = this.voxel[c]) != Components.Voxel.States.Empty)
+							{
+								regenerate = true;
+								this.removals.Add(c);
+							}
+							this.CurrentIndex.Value++;
 						}
-						this.CurrentIndex.Value++;
-						this.intervalTimer -= interval;
 					}
-					this.CurrentRadius.Value = (this.voxel.GetRelativePosition(this.Coords[Math.Max(0, this.CurrentIndex - 1)]) - this.voxel.GetRelativePosition(this.Coordinate)).Length();
+
 					if (regenerate)
+					{
+						this.intervalTimer -= batchInterval;
+						this.voxel.Empty(this.removals, true, true);
+						foreach (Voxel.Coord c in this.removals)
+						{
+							if (this.Type == Style.In)
+								this.blockFactory.Implode(main, this.voxel, c, c.Data, this.Position);
+							else
+								this.blockFactory.BlowAway(main, this.voxel, c, c.Data);
+						}
+						this.removals.Clear();
 						this.voxel.Regenerate();
+					}
+
+					this.CurrentRadius.Value = (this.voxel.GetRelativePosition(this.Coords[Math.Max(0, this.CurrentIndex - 1)]) - this.voxel.GetRelativePosition(this.Coordinate)).Length();
 				}
 				else
 					this.Entity.Delete.Execute();

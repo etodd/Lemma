@@ -749,7 +749,7 @@ namespace Lemma.Components
 				Supported = true,
 				Hard = true,
 				ShadowCast = true,
-				Density = 0.5f,
+				Density = 0.1f,
 				DiffuseMap = "Textures\\white",
 				NormalMap = "Textures\\plain-normal",
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,

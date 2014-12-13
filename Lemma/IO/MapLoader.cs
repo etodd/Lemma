@@ -257,6 +257,7 @@ namespace Lemma.IO
 
 			Animation anim = new Animation
 			(
+				new Animation.Set<bool>(main.Menu.CanPause, false),
 				main.Spawner.FlashAnimation(),
 				new Animation.Execute(delegate()
 				{
@@ -301,6 +302,7 @@ namespace Lemma.IO
 					}
 					stream.Dispose();
 				}),
+				new Animation.Set<bool>(main.Menu.CanPause, true),
 				new Animation.Delay(1.5f),
 				new Animation.Execute(delegate()
 				{

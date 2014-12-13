@@ -97,10 +97,10 @@ namespace GeeUI.Views
 			DropDownListView = new ListView(theGeeUI, DropDownPanelView);
 			DropDownListView.ChildrenLayouts.Add(new VerticalViewLayout(1, false));
 			DropDownListView.ScrollMultiplier = 20;
-			DropDownListView.Add(new Binding<int, Rectangle>(DropDownListView.Width, x => x.Width, DropDownListView.ChildrenBoundBox));
+			DropDownListView.Add(new Binding<int, Rectangle>(DropDownListView.Width, x => Math.Max(200, x.Width), DropDownListView.ChildrenBoundBox));
 			DropDownListView.Add(new Binding<int, Rectangle>(DropDownListView.Height, x => x.Height, DropDownListView.ChildrenBoundBox));
 
-			DropDownPanelView.Add(new Binding<int>(DropDownPanelView.Width, x => Math.Max(200, x), DropDownListView.Width));
+			DropDownPanelView.Add(new Binding<int>(DropDownPanelView.Width, DropDownListView.Width));
 
 			DropDownListView.Name = "DropList";
 			DropDownPanelView.Add(new Binding<int>(DropDownPanelView.Height, (i1) => i1 + 2 + ((AllowFilterText && FilterView.Active) ? FilterView.BoundBox.Height : 0), DropDownListView.Height));
@@ -289,7 +289,7 @@ namespace GeeUI.Views
 				}
 				else
 				{
-					Vector2 target = new Vector2(AbsoluteX, this.AbsoluteBoundBox.Bottom);
+					Vector2 target = new Vector2(AbsoluteX - 1, this.AbsoluteBoundBox.Bottom);
 					if (DropDownPanelView.Position != target)
 						DropDownPanelView.Position.Value = target;
 					if (DropDownListView.AbsoluteBoundBox.Bottom > ParentGeeUI.RootView.Height)
