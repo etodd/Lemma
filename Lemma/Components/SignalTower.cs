@@ -69,7 +69,8 @@ namespace Lemma.Components
 			{
 				Phone phone = PlayerDataFactory.Instance.Get<Phone>();
 
-				phone.ActiveAnswers.Clear();
+				if (!string.IsNullOrEmpty(this.Initial)) // The player did not interact.
+					phone.ActiveAnswers.Clear();
 
 				if (PlayerFactory.Instance != null)
 					PlayerFactory.Instance.Get<Player>().SignalTower.Value = null;

@@ -121,8 +121,8 @@ namespace Lemma.Components
 			noService.Text.Value = "\\no service";
 			phoneTopBar.Children.Add(noService);
 
-			signalIcon.Add(new Binding<bool, Entity.Handle>(signalIcon.Visible, x => x.Target != null && x.Target.Active, player.SignalTower));
-			noService.Add(new Binding<bool, Entity.Handle>(noService.Visible, x => x.Target == null || !x.Target.Active, player.SignalTower));
+			signalIcon.Add(new Binding<bool>(signalIcon.Visible, () => player.SignalTower.Value.Target != null || phone.ActiveAnswers.Length > 0 || phone.Schedules.Length > 0, player.SignalTower, phone.ActiveAnswers.Length, phone.Schedules.Length));
+			noService.Add(new Binding<bool>(noService.Visible, x => !x, signalIcon.Visible));
 
 			ListContainer phoneLayout = new ListContainer();
 			phoneLayout.Spacing.Value = padding;
