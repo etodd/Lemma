@@ -33,9 +33,12 @@ namespace Lemma.Factories
 
 			AI ai = entity.GetOrCreate<AI>("AI");
 
-			if (!main.EditorEnabled && ai.CurrentState == "Chase")
+			if (!main.EditorEnabled)
+			{
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_EVIL_CUBES, entity);
-			SoundKiller.Add(entity, AK.EVENTS.STOP_EVIL_CUBES);
+				AkSoundEngine.PostEvent(ai.CurrentState == "Chase" ? AK.EVENTS.EVIL_CUBES_CHASE : AK.EVENTS.EVIL_CUBES_IDLE, entity);
+				SoundKiller.Add(entity, AK.EVENTS.STOP_EVIL_CUBES);
+			}
 
 			Agent agent = entity.GetOrCreate<Agent>();
 			agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
@@ -162,14 +165,13 @@ namespace Lemma.Factories
 				Name = "Chase",
 				Enter = delegate(AI.AIState previous)
 				{
-					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_EVIL_CUBES, entity);
 					AkSoundEngine.PostEvent(AK.EVENTS.EVIL_CUBES_CHASE, entity);
 					raycastAI.BlendTime.Value = 0.5f;
 				},
 				Exit = delegate(AI.AIState next)
 				{
 					raycastAI.BlendTime.Value = 1.0f;
-					AkSoundEngine.PostEvent(AK.EVENTS.STOP_EVIL_CUBES, entity);
+					AkSoundEngine.PostEvent(AK.EVENTS.EVIL_CUBES_IDLE, entity);
 				},
 				Tasks = new[]
 				{

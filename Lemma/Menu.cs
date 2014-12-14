@@ -62,7 +62,8 @@ namespace Lemma.Components
 
 		// Settings to be restored when unpausing
 		private float originalBlurAmount = 0.0f;
-		private bool originalMouseVisible = false;
+		private bool originalMouseVisible;
+		private bool originalUIMouseVisible;
 		private Point originalMousePosition = new Point();
 
 		public void ClearMessages()
@@ -308,7 +309,8 @@ namespace Lemma.Components
 				size = this.main.ScreenSize;
 			this.main.Screenshot.Take(size);
 
-			this.originalMouseVisible = this.main.UI.IsMouseVisible;
+			this.originalMouseVisible = this.main.IsMouseVisible;
+			this.originalUIMouseVisible = this.main.UI.IsMouseVisible;
 			this.main.UI.IsMouseVisible.Value = true;
 			this.originalBlurAmount = this.main.Renderer.BlurAmount;
 
@@ -365,16 +367,17 @@ namespace Lemma.Components
 				this.pauseAnimation.Delete.Execute();
 
 			// Restore mouse
-			if (!originalMouseVisible)
+			if (!this.originalMouseVisible)
 			{
 				// Only restore mouse position if the cursor was not visible
 				// i.e., we're in first-person camera mode
-				Microsoft.Xna.Framework.Input.Mouse.SetPosition(originalMousePosition.X, originalMousePosition.Y);
-				MouseState m = new MouseState(originalMousePosition.X, originalMousePosition.Y, this.main.MouseState.Value.ScrollWheelValue, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+				Microsoft.Xna.Framework.Input.Mouse.SetPosition(this.originalMousePosition.X, this.originalMousePosition.Y);
+				MouseState m = new MouseState(this.originalMousePosition.X, this.originalMousePosition.Y, this.main.MouseState.Value.ScrollWheelValue, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
 				this.main.LastMouseState.Value = m;
 				this.main.MouseState.Value = m;
 			}
-			this.main.UI.IsMouseVisible.Value = originalMouseVisible;
+			this.main.UI.IsMouseVisible.Value = this.originalUIMouseVisible;
+			this.main.IsMouseVisible = this.originalMouseVisible;
 
 			this.main.SaveSettings();
 

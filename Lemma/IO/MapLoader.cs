@@ -297,6 +297,7 @@ namespace Lemma.IO
 					foreach (Entity e in entities)
 					{
 						Factory<Main> factory = Factory<Main>.Get(e.Type);
+						e.GUID = 0;
 						factory.Bind(e, main);
 						main.Add(e);
 					}
