@@ -2,6 +2,8 @@ public class AK
 {
     public class EVENTS
     {
+        public static uint EVIL_CUBES_CHASE = 654471079U;
+        public static uint EVIL_CUBES_IDLE = 1697385721U;
         public static uint FOOTSTEP_PLAY = 1531891632U;
         public static uint PLAY_BIG_WIND = 217752029U;
         public static uint PLAY_BLOCK_APPEAR = 2520143079U;
@@ -75,6 +77,7 @@ public class AK
         public static uint STOP_MUSIC_AMBIENT_02 = 28192961U;
         public static uint STOP_MUSIC_THEME = 2480681107U;
         public static uint STOP_OBELISK_RISE = 2606723065U;
+        public static uint STOP_PLAYER_BREATHING_HARD = 3180565756U;
         public static uint STOP_PLAYER_BREATHING_SOFT = 1454416799U;
         public static uint STOP_PLAYER_FALL = 3680109729U;
         public static uint STOP_PLAYER_SLIDE_LOOP = 651971942U;

@@ -35,9 +35,15 @@ namespace Lemma.Factories
 
 			if (!main.EditorEnabled)
 			{
-				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_EVIL_CUBES, entity);
-				// TODO: Chase/idle state
-				//AkSoundEngine.PostEvent(ai.CurrentState == "Chase" ? AK.EVENTS.EVIL_CUBES_CHASE : AK.EVENTS.EVIL_CUBES_IDLE, entity);
+				entity.Add(new PostInitialization
+				{
+					delegate()
+					{
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_EVIL_CUBES, entity);
+						AkSoundEngine.PostEvent(ai.CurrentState == "Chase" ? AK.EVENTS.EVIL_CUBES_CHASE : AK.EVENTS.EVIL_CUBES_IDLE, entity);
+					}
+				});
+
 				SoundKiller.Add(entity, AK.EVENTS.STOP_EVIL_CUBES);
 			}
 
@@ -166,15 +172,13 @@ namespace Lemma.Factories
 				Name = "Chase",
 				Enter = delegate(AI.AIState previous)
 				{
-					// TODO: Chase/idle state
-					//AkSoundEngine.PostEvent(AK.EVENTS.EVIL_CUBES_CHASE, entity);
+					AkSoundEngine.PostEvent(AK.EVENTS.EVIL_CUBES_CHASE, entity);
 					raycastAI.BlendTime.Value = 0.5f;
 				},
 				Exit = delegate(AI.AIState next)
 				{
 					raycastAI.BlendTime.Value = 1.0f;
-					// TODO: Chase/idle state
-					//AkSoundEngine.PostEvent(AK.EVENTS.EVIL_CUBES_IDLE, entity);
+					AkSoundEngine.PostEvent(AK.EVENTS.EVIL_CUBES_IDLE, entity);
 				},
 				Tasks = new[]
 				{
