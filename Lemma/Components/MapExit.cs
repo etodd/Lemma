@@ -12,9 +12,23 @@ namespace Lemma.Components
 		public Property<string> NextMap = new Property<string>();
 		public Property<string> StartSpawnPoint = new Property<string>();
 
+		public static List<MapExit> All = new List<MapExit>();
+
 		public void Go()
 		{
 			MapLoader.Transition(main, this.NextMap, this.StartSpawnPoint);
+		}
+
+		public override void Awake()
+		{
+			base.Awake();
+			MapExit.All.Add(this);
+		}
+
+		public override void delete()
+		{
+			MapExit.All.Remove(this);
+			base.delete();
 		}
 	}
 }

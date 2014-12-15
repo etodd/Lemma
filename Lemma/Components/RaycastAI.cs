@@ -111,15 +111,27 @@ namespace Lemma.Components
 						}
 					}
 
-					if (!skip)
+					if (skip)
+						break;
+
+					foreach (SignalTower t in SignalTower.All)
 					{
-						foreach (SignalTower t in SignalTower.All)
+						if ((t.Entity.Get<Transform>().Position - hit.Position).Length() < 20.0f)
 						{
-							if ((t.Entity.Get<Transform>().Position - hit.Position).Length() < 20.0f)
-							{
-								skip = true;
-								break;
-							}
+							skip = true;
+							break;
+						}
+					}
+
+					if (skip)
+						break;
+
+					foreach (MapExit e in MapExit.All)
+					{
+						if ((e.Entity.Get<Transform>().Position - hit.Position).Length() < 20.0f)
+						{
+							skip = true;
+							break;
 						}
 					}
 
