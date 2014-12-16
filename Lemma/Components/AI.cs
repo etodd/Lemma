@@ -64,6 +64,8 @@ namespace Lemma.Components
 
 		public Property<string> CurrentState = new Property<string>();
 
+		public Property<Entity.Handle> TargetAgent = new Property<Entity.Handle>();
+
 		public Property<float> TimeInCurrentState = new Property<float>();
 
 		private Dictionary<string, AIState> states = new Dictionary<string, AIState>();

@@ -188,7 +188,7 @@ namespace Lemma.Factories
 								Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
 								if (a != null)
 								{
-									turret.TargetAgent.Value = a.Entity;
+									ai.TargetAgent.Value = a.Entity;
 									ai.CurrentState.Value = "Aggressive";
 								}
 							}
@@ -201,10 +201,10 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					Entity target = turret.TargetAgent.Value.Target;
+					Entity target = ai.TargetAgent.Value.Target;
 					if (target == null || !target.Active)
 					{
-						turret.TargetAgent.Value = null;
+						ai.TargetAgent.Value = null;
 						ai.CurrentState.Value = "Idle";
 					}
 				},
@@ -223,7 +223,7 @@ namespace Lemma.Factories
 					{
 						Action = delegate()
 						{
-							Entity target = turret.TargetAgent.Value.Target;
+							Entity target = ai.TargetAgent.Value.Target;
 							turret.Reticle.Value += (target.Get<Transform>().Position - turret.Reticle.Value) * Math.Min(2.0f * main.ElapsedTime, 1.0f);
 						}
 					},
@@ -232,7 +232,7 @@ namespace Lemma.Factories
 						Interval = 0.1f,
 						Action = delegate()
 						{
-							if (Agent.Query(transform.Position, sightDistance, hearingDistance, turret.TargetAgent.Value.Target.Get<Agent>()))
+							if (Agent.Query(transform.Position, sightDistance, hearingDistance, ai.TargetAgent.Value.Target.Get<Agent>()))
 								lastSpotted = main.TotalTime;
 
 							if (ai.TimeInCurrentState.Value > 2.0f)
@@ -241,7 +241,7 @@ namespace Lemma.Factories
 									ai.CurrentState.Value = "Alert";
 								else
 								{
-									Vector3 targetPos = turret.TargetAgent.Value.Target.Get<Transform>().Position.Value;
+									Vector3 targetPos = ai.TargetAgent.Value.Target.Get<Transform>().Position.Value;
 									Vector3 toTarget = Vector3.Normalize(targetPos - transform.Position.Value);
 									if (Vector3.Dot(toReticle, toTarget) > 0.95f)
 										ai.CurrentState.Value = "Firing";
@@ -268,7 +268,7 @@ namespace Lemma.Factories
 
 					bool hitVoxel = true;
 
-					Entity target = turret.TargetAgent.Value.Target;
+					Entity target = ai.TargetAgent.Value.Target;
 					if (target != null && target.Active)
 					{
 						Vector3 targetPos = target.Get<Transform>().Position;

@@ -187,7 +187,7 @@ namespace Lemma.Factories
 								Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
 								if (a != null)
 								{
-									movement.TargetAgent.Value = a.Entity;
+									ai.TargetAgent.Value = a.Entity;
 									ai.CurrentState.Value = "Chase";
 								}
 							}
@@ -200,10 +200,10 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					Entity target = movement.TargetAgent.Value.Target;
+					Entity target = ai.TargetAgent.Value.Target;
 					if (target == null || !target.Active)
 					{
-						movement.TargetAgent.Value = null;
+						ai.TargetAgent.Value = null;
 						ai.CurrentState.Value = "Idle";
 					}
 				},
@@ -229,14 +229,14 @@ namespace Lemma.Factories
 						Interval = 0.35f,
 						Action = delegate()
 						{
-							raycastAI.Move(movement.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
+							raycastAI.Move(ai.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
 						}
 					},
 					new AI.Task
 					{
 						Action = delegate()
 						{
-							if ((movement.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position).Length() < 10.0f)
+							if ((ai.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position).Length() < 10.0f)
 								ai.CurrentState.Value = "Explode";
 						}
 					},

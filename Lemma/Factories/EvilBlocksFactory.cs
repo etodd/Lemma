@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework;
 using Lemma.Components;
 using Lemma.Util;
 using Microsoft.Xna.Framework.Audio;
+using BEPUphysics.BroadPhaseEntries;
+using BEPUphysics.NarrowPhaseSystems.Pairs;
 
 namespace Lemma.Factories
 {
@@ -25,7 +27,19 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			EvilBlocks evilBlocks = entity.GetOrCreate<EvilBlocks>("EvilBlocks");
+			BlockCloud blockCloud = entity.GetOrCreate<BlockCloud>("BlockCloud");
+			blockCloud.Add(new CommandBinding(blockCloud.Delete, entity.Delete));
+			blockCloud.Add(new CommandBinding<Collidable, ContactCollection>(blockCloud.Collided, delegate(Collidable other, ContactCollection contacts)
+			{
+				if (other.Tag != null && other.Tag.GetType() == typeof(Character))
+				{
+					// Damage the player
+					Entity p = PlayerFactory.Instance;
+					if (p != null && p.Active)
+						p.Get<Player>().Health.Value -= 0.1f;
+				}
+			}));
+			blockCloud.Type.Value = Voxel.t.Black;
 
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
@@ -55,14 +69,15 @@ namespace Lemma.Factories
 			raycastAI.Add(new TwoWayBinding<Vector3>(transform.Position, raycastAI.Position));
 			raycastAI.Add(new Binding<Quaternion>(transform.Quaternion, raycastAI.Orientation));
 
-			evilBlocks.Add(new Binding<Vector3>(evilBlocks.Position, transform.Position));
+			blockCloud.Add(new Binding<Vector3>(blockCloud.Position, transform.Position));
 
+			const float operationalRadius = 100.0f;
 			AI.Task checkOperationalRadius = new AI.Task
 			{
 				Interval = 2.0f,
 				Action = delegate()
 				{
-					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < evilBlocks.OperationalRadius;
+					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < operationalRadius;
 					if (shouldBeActive && ai.CurrentState == "Suspended")
 						ai.CurrentState.Value = "Idle";
 					else if (!shouldBeActive && ai.CurrentState != "Suspended")
@@ -78,17 +93,10 @@ namespace Lemma.Factories
 				},
 			};
 
-			AI.Task dragBlocks = new AI.Task
-			{
-				Action = delegate()
-				{
-				}
-			};
-
 			ai.Add(new AI.AIState
 			{
 				Name = "Suspended",
-				Tasks = new[] { checkOperationalRadius, dragBlocks, },
+				Tasks = new[] { checkOperationalRadius, },
 			});
 
 			const float sightDistance = 30.0f;
@@ -101,7 +109,6 @@ namespace Lemma.Factories
 				{ 
 					checkOperationalRadius,
 					updatePosition,
-					dragBlocks,
 					new AI.Task
 					{
 						Interval = 1.0f,
@@ -130,7 +137,6 @@ namespace Lemma.Factories
 				{ 
 					checkOperationalRadius,
 					updatePosition,
-					dragBlocks,
 					new AI.Task
 					{
 						Interval = 1.0f,
@@ -143,7 +149,7 @@ namespace Lemma.Factories
 								Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
 								if (a != null)
 								{
-									evilBlocks.TargetAgent.Value = a.Entity;
+									ai.TargetAgent.Value = a.Entity;
 									ai.CurrentState.Value = "Chase";
 								}
 							}
@@ -156,10 +162,10 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					Entity target = evilBlocks.TargetAgent.Value.Target;
+					Entity target = ai.TargetAgent.Value.Target;
 					if (target == null || !target.Active)
 					{
-						evilBlocks.TargetAgent.Value = null;
+						ai.TargetAgent.Value = null;
 						ai.CurrentState.Value = "Idle";
 					}
 				},
@@ -189,11 +195,10 @@ namespace Lemma.Factories
 						Interval = 0.5f,
 						Action = delegate()
 						{
-							raycastAI.Move(evilBlocks.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
+							raycastAI.Move(ai.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
 						}
 					},
 					updatePosition,
-					dragBlocks,
 				},
 			});
 

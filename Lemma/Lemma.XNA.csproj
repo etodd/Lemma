@@ -110,6 +110,7 @@
     <Compile Include="ComponentInterfaces.cs" />
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
+    <Compile Include="Components\PowerBlockSocket.cs" />
     <Compile Include="Components\AnimatedProp.cs" />
     <Compile Include="Components\Data.cs" />
     <Compile Include="Components\SliderCommon.cs" />
@@ -129,7 +130,7 @@
     <Compile Include="Components\CameraStop.cs" />
     <Compile Include="Components\DialogueFile.cs" />
     <Compile Include="Components\EffectBlock.cs" />
-    <Compile Include="Components\EvilBlocks.cs" />
+    <Compile Include="Components\BlockCloud.cs" />
     <Compile Include="Components\FallingTower.cs" />
     <Compile Include="Components\ImplodeBlock.cs" />
     <Compile Include="Components\Joint.cs" />
@@ -159,6 +160,7 @@
     <Compile Include="Components\VoxelFill.cs" />
     <Compile Include="Factories\ConsoleCommandFactory.cs" />
     <Compile Include="Factories\AnimatedPropFactory.cs" />
+    <Compile Include="Factories\PowerBlockSocketFactory.cs" />
     <Compile Include="Factories\SkyDecalFactory.cs" />
     <Compile Include="Factories\StaticSliderFactory.cs" />
     <Compile Include="Factories\VoxelSetterFactory.cs" />
@@ -259,7 +261,7 @@
     <Compile Include="Components\RaycastAI.cs" />
     <Compile Include="Components\Trigger.cs" />
     <Compile Include="Components\PID.cs" />
-    <Compile Include="Components\ProceduralGenerator.cs" />
+    <Compile Include="Util\Noise3D.cs" />
     <Compile Include="Components\EnemyBase.cs" />
     <Compile Include="Components\PhysicsSphere.cs" />
     <Compile Include="Components\PlayerCylinderTrigger.cs" />

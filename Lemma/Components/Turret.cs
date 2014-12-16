@@ -11,7 +11,6 @@ namespace Lemma.Components
 	public class Turret : Component<Main>
 	{
 		public Property<Vector3> Reticle = new Property<Vector3>();
-		public Property<Entity.Handle> TargetAgent = new Property<Entity.Handle>();
 		public Property<bool> On = new Property<bool> { Value = true };
 		[XmlIgnore]
 		public Command PowerOn = new Command();

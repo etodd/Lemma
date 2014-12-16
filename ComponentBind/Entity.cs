@@ -182,15 +182,18 @@ namespace ComponentBind
 				this.components.Clear();
 				for (int i = 0; i < value.Length; i++)
 				{
-					IComponent c = (IComponent)value[i].Value;
-					this.components.Add((string)value[i].Key, c);
-					Type t = c.GetType();
-					do
+					IComponent c = value[i].Value as IComponent;
+					if (c != null)
 					{
-						this.componentsByType[t] = c;
-						t = t.BaseType;
+						this.components.Add((string)value[i].Key, c);
+						Type t = c.GetType();
+						do
+						{
+							this.componentsByType[t] = c;
+							t = t.BaseType;
+						}
+						while (t.Assembly != Entity.componentBindAssembly);
 					}
-					while (t.Assembly != Entity.componentBindAssembly);
 				}
 			}
 		}

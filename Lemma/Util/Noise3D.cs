@@ -6,10 +6,11 @@ using System.Xml.Serialization;
 using Microsoft.Xna.Framework;
 using Lemma.Factories;
 using ComponentBind;
+using Lemma.Components;
 
-namespace Lemma.Components
+namespace Lemma.Util
 {
-	public class ProceduralGenerator : Component<Main>
+	public class Noise3D
 	{
 		// =========================
 		// Classic 2D and 3D perlin noise implementation
@@ -40,16 +41,17 @@ namespace Lemma.Components
 		// This way I could set a seed if I wanted to re-generate the same map later.
 		private int[] permutations = new int[512];
 
-		public ProceduralGenerator()
+		private static Random random = new Random();
+
+		public Noise3D()
 		{
 			this.reseed();
 		}
 
 		private void reseed()
 		{
-			Random random = new Random();
 			for (int i = 0; i < 512; i++)
-				this.permutations[i] = random.Next(256);
+				this.permutations[i] = Noise3D.random.Next(256);
 		}
 
 		public Command Reseed = new Command();
@@ -163,12 +165,6 @@ namespace Lemma.Components
 			return value;
 		}
 
-		public Property<int> Ceiling = new Property<int> { Value = 80 };
-
-		public Property<int> Floor = new Property<int> { Value = 0 };
-
-		public Property<int> FloorDepth = new Property<int> { Value = 10 };
-
 		public Property<float> PrimaryOctave1 = new Property<float> { Value = 50.0f };
 
 		public Property<float> PrimaryOctave2 = new Property<float> { Value = 20.0f };
@@ -178,16 +174,6 @@ namespace Lemma.Components
 		public Property<float> SecondaryOctave = new Property<float> { Value = 30.0f };
 
 		public Property<float> HeightOctave = new Property<float> { Value = 20.0f };
-
-		private Voxel.State primaryFillValue;
-		public Property<Voxel.t> PrimaryFillValue = new Property<Voxel.t> { Value = Voxel.t.Rock };
-
-		private Voxel.State secondaryFillValue;
-		public Property<Voxel.t> SecondaryFillValue = new Property<Voxel.t> { Value = Voxel.t.Rock };
-
-		public Property<float> PrimaryFillThreshold = new Property<float> { Value = 0.0f };
-
-		public Property<float> SecondaryFillThreshold = new Property<float> { Value = 0.2f };
 
 		public float Sample(Vector3 vector)
 		{
@@ -200,48 +186,6 @@ namespace Lemma.Components
 			coord.Y -= voxel.MinY;
 			coord.Z -= voxel.MinZ;
 			return this.noise3d(new Vector3(coord.X / octave, coord.Y / octave, coord.Z / octave));
-		}
-
-		public Voxel.State GetValue(Voxel voxel, Voxel.Coord coord)
-		{
-			coord.X -= voxel.MinX;
-			coord.Y -= voxel.MinY;
-			coord.Z -= voxel.MinZ;
-			float value = this.density(coord);
-
-			if (value > this.PrimaryFillThreshold)
-			{
-				// We are filling in material in this cell
-
-				// Determine whether to fill in with primary or secondary material
-				Voxel.State state;
-				if (this.density(coord.Move(0, 2, 0)) < this.PrimaryFillThreshold // We're on the top of a ground formation
-					&& this.noise3d(new Vector3(coord.X, coord.Y, coord.Z) / this.SecondaryOctave) > this.SecondaryFillThreshold) // Modulate by another noise function
-					state = this.secondaryFillValue;
-				else
-					state = this.primaryFillValue;
-
-				return state;
-			}
-			return new Voxel.State();
-		}
-
-		public override void Awake()
-		{
-			base.Awake();
-			this.EnabledInEditMode = true;
-
-			this.Reseed.Action = this.reseed;
-
-			this.Add(new SetBinding<Voxel.t>(this.PrimaryFillValue, delegate(Voxel.t value)
-			{
-				this.primaryFillValue = Voxel.States.All[value];
-			}));
-
-			this.Add(new SetBinding<Voxel.t>(this.SecondaryFillValue, delegate(Voxel.t value)
-			{
-				this.secondaryFillValue = Voxel.States.All[value];
-			}));
 		}
 	}
 }

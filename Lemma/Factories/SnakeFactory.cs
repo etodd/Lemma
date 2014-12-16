@@ -134,10 +134,10 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					Entity target = snake.TargetAgent.Value.Target;
+					Entity target = ai.TargetAgent.Value.Target;
 					if (target == null || !target.Active)
 					{
-						snake.TargetAgent.Value = null;
+						ai.TargetAgent.Value = null;
 						ai.CurrentState.Value = "Idle";
 					}
 				},
@@ -276,7 +276,7 @@ namespace Lemma.Factories
 									Agent a = Agent.Query(transform.Position, 50.0f, 30.0f, x => x.Entity.Type == "Player");
 									if (a != null)
 									{
-										snake.TargetAgent.Value = a.Entity;
+										ai.TargetAgent.Value = a.Entity;
 										ai.CurrentState.Value = "Chase";
 									}
 								}
@@ -307,7 +307,7 @@ namespace Lemma.Factories
 							Interval = 0.07f,
 							Action = delegate()
 							{
-								Vector3 targetPosition = snake.TargetAgent.Value.Target.Get<Agent>().Position;
+								Vector3 targetPosition = ai.TargetAgent.Value.Target.Get<Agent>().Position;
 
 								float targetDistance = (targetPosition - transform.Position).Length();
 
@@ -329,7 +329,7 @@ namespace Lemma.Factories
 					Enter = delegate(AI.AIState lastState)
 					{
 						// Set up cage
-						Voxel.Coord center = chase.Voxel.Value.Target.Get<Voxel>().GetCoordinate(snake.TargetAgent.Value.Target.Get<Agent>().Position);
+						Voxel.Coord center = chase.Voxel.Value.Target.Get<Voxel>().GetCoordinate(ai.TargetAgent.Value.Target.Get<Agent>().Position);
 
 						int radius = 1;
 
@@ -389,7 +389,7 @@ namespace Lemma.Factories
 							Interval = 0.01f,
 							Action = delegate()
 							{
-								Agent a = snake.TargetAgent.Value.Target.Get<Agent>();
+								Agent a = ai.TargetAgent.Value.Target.Get<Agent>();
 								a.Health.Value -= 0.01f / 1.5f; // seconds to kill
 								if (!a.Active)
 									ai.CurrentState.Value = "Alert";

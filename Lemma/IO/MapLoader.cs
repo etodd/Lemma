@@ -91,7 +91,7 @@ namespace Lemma.IO
 			typeof(Cloud),
 			typeof(DialogueFile),
 			typeof(EffectBlock),
-			typeof(EvilBlocks),
+			typeof(BlockCloud),
 			typeof(SceneryBlock),
 			typeof(FallingTower),
 			typeof(Joint),
@@ -123,6 +123,7 @@ namespace Lemma.IO
 			typeof(SliderCommon),
 			typeof(StaticSlider),
 			typeof(AnimatedProp),
+			typeof(PowerBlockSocket),
 		};
 
 		public static XmlSerializer Serializer;

@@ -143,7 +143,7 @@ namespace Lemma.Components
 		private Voxel.Coord selectionStart;
 		private Voxel.Coord lastCoord;
 		private Voxel.Coord coord;
-		private ProceduralGenerator generator;
+		private Noise3D generator;
 		private float movementInterval;
 		
 		public void SaveWithCallback(Action callback = null)
@@ -290,7 +290,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			this.generator = this.Entity.GetOrCreate<ProceduralGenerator>();
+			this.generator = new Noise3D();
 
 			this.Spawn.Action = delegate(string type)
 			{

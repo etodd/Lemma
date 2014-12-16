@@ -83,6 +83,8 @@ namespace Lemma.Components
 			Neutral = 18,
 			RockChunky = 23,
 			RockRed = 24,
+			GlowYellow = 25,
+			GlowBlue = 26,
 			White = 30,
 			Metal = 31,
 			MetalSwirl = 32,
@@ -502,7 +504,41 @@ namespace Lemma.Components
 					}
 				},
 			};
-			public static readonly State White = new State
+			public static readonly State GlowYellow = new State
+			{
+				ID = t.GlowYellow,
+				Permanent = true,
+				Supported = true,
+				Hard = true,
+				ShadowCast = false,
+				Density = 0.5f,
+				DiffuseMap = "Textures\\white",
+				NormalMap = "Textures\\plain-normal",
+				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
+				Materials = new[]
+				{
+					Model.Material.Unlit,
+				},
+				Tint = new Vector3(1.2f, 1.2f, 0.8f),
+			};
+			public static readonly State GlowBlue = new State
+			{
+				ID = t.GlowBlue,
+				Permanent = true,
+				Supported = true,
+				Hard = true,
+				ShadowCast = false,
+				Density = 0.5f,
+				DiffuseMap = "Textures\\white",
+				NormalMap = "Textures\\plain-normal",
+				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
+				Materials = new[]
+				{
+					Model.Material.Unlit,
+				},
+				Tint = new Vector3(0.8f, 0.9f, 1.2f),
+			};
+			public static readonly State Glow = new State
 			{
 				ID = t.White,
 				Permanent = false,

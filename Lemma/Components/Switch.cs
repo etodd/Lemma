@@ -17,7 +17,10 @@ namespace Lemma.Components
 		public Property<bool> On = new Property<bool>();
 
 		// Input properties
+		[XmlIgnore]
 		public Property<Entity.Handle> AttachedVoxel = new Property<Entity.Handle>();
+
+		[XmlIgnore]
 		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
 
 		[XmlIgnore]

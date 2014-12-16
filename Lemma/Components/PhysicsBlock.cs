@@ -40,6 +40,7 @@ namespace Lemma.Components
 				this.Box = new Box(Vector3.Zero, this.Size.Value.X, this.Size.Value.Y, this.Size.Value.Z);
 			else
 				this.Box = new Box(Vector3.Zero, this.Size.Value.X, this.Size.Value.Y, this.Size.Value.Z, this.Mass);
+			this.Box.Tag = this;
 			this.Box.CollisionInformation.Events.ContactCreated += new BEPUphysics.BroadPhaseEntries.Events.ContactCreatedEventHandler<EntityCollidable>(Events_ContactCreated);
 			this.Add(new SetBinding<Matrix>(this.Transform, delegate(Matrix matrix)
 			{

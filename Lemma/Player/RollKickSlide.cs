@@ -87,7 +87,7 @@ namespace Lemma.Components
 		public void Bind(AnimatedModel model)
 		{
 			this.model = model;
-			model["Slide"].Speed = 1.5f;
+			model["Slide"].Speed = 1.4f;
 			model["Roll"].Speed = 1.75f;
 		}
 

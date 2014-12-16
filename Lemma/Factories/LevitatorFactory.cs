@@ -175,7 +175,7 @@ namespace Lemma.Factories
 								Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
 								if (a != null)
 								{
-									movement.TargetAgent.Value = a.Entity;
+									ai.TargetAgent.Value = a.Entity;
 									ai.CurrentState.Value = "Chase";
 								}
 							}
@@ -188,10 +188,10 @@ namespace Lemma.Factories
 			{
 				Action = delegate()
 				{
-					Entity target = movement.TargetAgent.Value.Target;
+					Entity target = ai.TargetAgent.Value.Target;
 					if (target == null || !target.Active)
 					{
-						movement.TargetAgent.Value = null;
+						ai.TargetAgent.Value = null;
 						ai.CurrentState.Value = "Idle";
 					}
 				},
@@ -252,7 +252,7 @@ namespace Lemma.Factories
 						Interval = 0.35f,
 						Action = delegate()
 						{
-							raycastAI.Move(movement.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
+							raycastAI.Move(ai.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
 						}
 					},
 					updatePosition,
@@ -261,7 +261,7 @@ namespace Lemma.Factories
 						Interval = 0.1f,
 						Action = delegate()
 						{
-							Entity target = movement.TargetAgent.Value.Target;
+							Entity target = ai.TargetAgent.Value.Target;
 							Vector3 targetPosition = target.Get<Transform>().Position;
 							Entity levitatingMapEntity = levitator.LevitatingVoxel.Value.Target;
 							if ((targetPosition - transform.Position).Length() < 10.0f && (levitatingMapEntity == null || !levitatingMapEntity.Active))
@@ -277,7 +277,7 @@ namespace Lemma.Factories
 			Action findNextPosition = delegate()
 			{
 				movement.LastPosition.Value = transform.Position.Value;
-				movement.NextPosition.Value = movement.TargetAgent.Value.Target.Get<Transform>().Position + new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble(), (float)this.random.NextDouble() - 0.5f) * 5.0f;
+				movement.NextPosition.Value = ai.TargetAgent.Value.Target.Get<Transform>().Position + new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble(), (float)this.random.NextDouble() - 0.5f) * 5.0f;
 				movement.PositionBlend.Value = 0.0f;
 			};
 

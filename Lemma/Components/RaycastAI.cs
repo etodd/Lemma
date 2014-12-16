@@ -6,6 +6,7 @@ using Lemma.Util;
 using Microsoft.Xna.Framework;
 using Lemma.Factories;
 using ComponentBind;
+using System.Xml.Serialization;
 
 namespace Lemma.Components
 {
@@ -21,6 +22,60 @@ namespace Lemma.Components
 		public Property<float> MovementDistance = new Property<float> { Value = 15.0f };
 		public Property<Vector3> Position = new Property<Vector3>();
 		public Property<Quaternion> Orientation = new Property<Quaternion>();
+
+		[XmlIgnore]
+		public Func<Voxel.t, bool> VoxelFilter;
+
+		[XmlIgnore]
+		public Func<Vector3, bool> PositionFilter;
+
+		public RaycastAI()
+		{
+			this.VoxelFilter = RaycastAI.DefaultVoxelFilter;
+			this.PositionFilter = RaycastAI.DefaultPositionFilter;
+		}
+
+		public static bool DefaultVoxelFilter(Voxel.t x)
+		{
+			return x != Components.Voxel.t.AvoidAI;
+		}
+
+		public static bool WaterFilter(Vector3 pos)
+		{
+			foreach (Water w in Water.ActiveInstances)
+			{
+				if (w.Fluid.BoundingBox.Contains(pos) != ContainmentType.Disjoint)
+					return false;
+			}
+			return true;
+		}
+
+		public static bool SignalTowerFilter(Vector3 pos)
+		{
+			foreach (SignalTower t in SignalTower.All)
+			{
+				if ((t.Entity.Get<Transform>().Position - pos).Length() < 20.0f)
+					return false;
+			}
+			return true;
+		}
+
+		public static bool MapExitFilter(Vector3 pos)
+		{
+			foreach (MapExit e in MapExit.All)
+			{
+				if ((e.Entity.Get<Transform>().Position - pos).Length() < 20.0f)
+					return false;
+			}
+			return true;
+		}
+
+		public static bool DefaultPositionFilter(Vector3 pos)
+		{
+			return RaycastAI.WaterFilter(pos)
+				&& RaycastAI.SignalTowerFilter(pos)
+				&& RaycastAI.MapExitFilter(pos);
+		}
 
 		private Random random = new Random();
 
@@ -99,45 +154,8 @@ namespace Lemma.Components
 				float y = (((float)this.random.NextDouble() * 2.0f) - 1.0f) * radius;
 				Vector3 ray = new Vector3((float)Math.Cos(x) * (float)Math.Cos(y), (float)Math.Sin(y), (float)Math.Sin(x) * (float)Math.Cos(y));
 				Voxel.GlobalRaycastResult hit = Lemma.Components.Voxel.GlobalRaycast(pos, Vector3.TransformNormal(ray, mat), this.MovementDistance);
-				if (hit.Voxel != null && hit.Distance > 2.0f && hit.Coordinate.Value.Data.ID != Components.Voxel.t.AvoidAI)
+				if (hit.Voxel != null && hit.Distance > 2.0f && this.VoxelFilter(hit.Coordinate.Value.Data.ID) && this.PositionFilter(hit.Position))
 				{
-					bool skip = false;
-					foreach (Water w in Water.ActiveInstances)
-					{
-						if (w.Fluid.BoundingBox.Contains(hit.Position) != ContainmentType.Disjoint)
-						{
-							skip = true;
-							break;
-						}
-					}
-
-					if (skip)
-						break;
-
-					foreach (SignalTower t in SignalTower.All)
-					{
-						if ((t.Entity.Get<Transform>().Position - hit.Position).Length() < 20.0f)
-						{
-							skip = true;
-							break;
-						}
-					}
-
-					if (skip)
-						break;
-
-					foreach (MapExit e in MapExit.All)
-					{
-						if ((e.Entity.Get<Transform>().Position - hit.Position).Length() < 20.0f)
-						{
-							skip = true;
-							break;
-						}
-					}
-
-					if (skip)
-						break;
-
 					Voxel.Coord newCoord = hit.Coordinate.Value.Move(hit.Normal);
 					if (hit.Voxel[newCoord].ID == 0)
 					{

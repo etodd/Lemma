@@ -11,7 +11,7 @@ namespace Lemma.Components
 {
 	public class CameraController : Component<Main>, IUpdateableComponent
 	{
-		private ProceduralGenerator noise;
+		private Noise3D noise;
 
 		private float shakeTime = 0.0f;
 		private const float totalShakeTime = 0.5f;
@@ -52,7 +52,7 @@ namespace Lemma.Components
 			base.Awake();
 			this.EnabledWhenPaused = false;
 			this.Serialize = false;
-			this.noise = this.Entity.GetOrCreate<ProceduralGenerator>();
+			this.noise = new Noise3D();
 			this.Add(new CommandBinding(this.Disable, delegate()
 			{
 				this.main.Renderer.SpeedBlurAmount.Value = 0;

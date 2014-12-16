@@ -26,6 +26,7 @@ namespace Lemma.Components
 		public Property<bool> NoteActive = new Property<bool>();
 		public Property<float> CameraShakeAmount = new Property<float>();
 		public Property<int> Collectibles = new Property<int>();
+		public Property<Voxel.t> CloudType = new Property<Voxel.t>();
 
 		public override void Awake()
 		{
