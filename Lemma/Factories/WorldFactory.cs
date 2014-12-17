@@ -55,6 +55,11 @@ namespace Lemma.Factories
 			WorldFactory.instance = entity;
 			AkSoundEngine.DefaultGameObject = entity;
 
+			entity.Add("OverlayTexture", world.OverlayTexture, new PropertyEntry.EditorData
+			{
+				Options = FileFilter.Get(main, main.Content.RootDirectory, new[] { "Textures" }),
+			});
+			entity.Add("OverlayTiling", world.OverlayTiling);
 			entity.Add("LightRampTexture", world.LightRampTexture, new PropertyEntry.EditorData
 			{
 				Options = FileFilter.Get(main, main.Content.RootDirectory, new[] { "LightRamps" }),

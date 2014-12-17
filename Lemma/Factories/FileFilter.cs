@@ -22,14 +22,14 @@ namespace Lemma.Factories
 
 		public static ListProperty<string> Get(Main main, string root, string[] directories, string extension = null, Func<IEnumerable<string>> extras = null)
 		{
-			if (!setupBinding)
-			{
-				new CommandBinding(main.MapLoaded, (Action)cache.Clear);
-				setupBinding = true;
-			}
-
 			if (main.EditorEnabled)
 			{
+				if (!setupBinding)
+				{
+					new CommandBinding(main.MapLoaded, (Action)cache.Clear);
+					setupBinding = true;
+				}
+
 				Entry entry = new Entry { Root = root, Directories = directories, Extension = extension };
 				ListProperty<string> result;
 				if (!cache.TryGetValue(entry, out result))
@@ -63,8 +63,7 @@ namespace Lemma.Factories
 				}
 				return result;
 			}
-			else
-				return null;
+			return null;
 		}
 	}
 }

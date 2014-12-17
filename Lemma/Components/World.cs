@@ -7,6 +7,7 @@ using ComponentBind;
 using Lemma.Factories;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma.Components
 {
@@ -25,6 +26,11 @@ namespace Lemma.Components
 		public Property<Vector3> Gravity = new Property<Vector3> { Value = new Vector3(0.0f, -18.0f, -0.0f) };
 		public Property<string> UUID = new Property<string>();
 		public Property<Entity.Handle> ThumbnailCamera = new Property<Entity.Handle>();
+		public Property<string> OverlayTexture = new Property<string>();
+		public Property<float> OverlayTiling = new Property<float> { Value = 1.0f };
+
+		[XmlIgnore]
+		public Property<Texture2D> OverlayTextureHandle = new Property<Texture2D>();
 
 		private Vector3 lastUpdatedCameraPosition = new Vector3(float.MinValue);
 		private bool lastFrameUpdated = false;
@@ -41,6 +47,7 @@ namespace Lemma.Components
 			if (this.UUID.Value == null)
 				this.UUID.Value = Guid.NewGuid().ToString().Replace("-", string.Empty);
 
+			this.Add(new Binding<Texture2D, string>(this.OverlayTextureHandle, file => file == null ? (Texture2D)null : this.main.Content.Load<Texture2D>(file), this.OverlayTexture));
 			this.Add(new Binding<string>(this.main.Renderer.LightRampTexture, this.LightRampTexture));
 			this.Add(new Binding<string>(this.main.LightingManager.EnvironmentMap, this.EnvironmentMap));
 			this.Add(new Binding<Vector3>(this.main.LightingManager.EnvironmentColor, this.EnvironmentColor));

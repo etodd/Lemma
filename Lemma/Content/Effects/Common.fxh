@@ -119,3 +119,8 @@ struct MotionBlurPSInput
 	float4 previousPosition : TEXCOORD7;
 	float4 currentPosition : TEXCOORD8;
 };
+
+struct OverlayPSInput
+{
+	float2 uvCoordinates : TEXCOORD9;
+};

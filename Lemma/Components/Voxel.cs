@@ -523,6 +523,7 @@ namespace Lemma.Components
 					Model.Material.Unlit,
 				},
 				Tint = new Vector3(1.2f, 1.2f, 0.8f),
+				AllowOverlay = false,
 			};
 			public static readonly State GlowBlue = new State
 			{
@@ -540,6 +541,7 @@ namespace Lemma.Components
 					Model.Material.Unlit,
 				},
 				Tint = new Vector3(0.8f, 0.9f, 1.2f),
+				AllowOverlay = false,
 			};
 			public static readonly State SocketWhite = new State
 			{
@@ -616,6 +618,7 @@ namespace Lemma.Components
 				{
 					Model.Material.Unlit,
 				},
+				AllowOverlay = false,
 			};
 			public static readonly State Metal = new State
 			{
@@ -697,6 +700,7 @@ namespace Lemma.Components
 				DiffuseMap = "Textures\\white",
 				NormalMap = "Textures\\plain-normal",
 				Tint = new Vector3(0.5f),
+				AllowOverlay = false,
 			};
 			public static readonly State WhitePermanent = new State
 			{
@@ -713,6 +717,7 @@ namespace Lemma.Components
 				{
 					Model.Material.Unlit,
 				},
+				AllowOverlay = false,
 			};
 			public static readonly State Switch = new State
 			{
@@ -861,6 +866,7 @@ namespace Lemma.Components
 					},
 				},
 				Tint = Vector3.Zero,
+				AllowOverlay = false,
 			};
 			public static readonly State Slider = new State
 			{
@@ -926,16 +932,17 @@ namespace Lemma.Components
 				{
 					new Model.Material
 					{
-						SpecularPower = 10.0f,
-						SpecularIntensity = 0.3f,
+						SpecularPower = 1.0f,
+						SpecularIntensity = 0.0f,
 					},
 					new Model.Material
 					{
 						SpecularPower = 50.0f,
-						SpecularIntensity = 0.6f,
+						SpecularIntensity = 0.4f,
 					},
 				},
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.GRAVEL,
+				AllowOverlay = false,
 			};
 			public static readonly State Ice = new State
 			{
@@ -951,16 +958,18 @@ namespace Lemma.Components
 				{
 					new Model.Material
 					{
-						SpecularPower = 100.0f,
-						SpecularIntensity = 0.5f,
-					},
-					new Model.Material
-					{
 						SpecularPower = 200.0f,
 						SpecularIntensity = 0.8f,
 					},
+					new Model.Material
+					{
+						SpecularPower = 1.0f,
+						SpecularIntensity = 0.0f,
+					},
 				},
+				Tint = new Vector3(0.5f, 0.6f, 0.8f),
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
+				AllowOverlay = false,
 			};
 
 			public static void Init()
@@ -1073,6 +1082,8 @@ namespace Lemma.Components
 			public bool Permanent;
 			public bool Supported;
 			public bool Hard;
+			[DefaultValue(true)]
+			public bool AllowOverlay = true;
 			public string DiffuseMap;
 			public string NormalMap;
 			public uint FootstepSwitch;
@@ -1104,8 +1115,19 @@ namespace Lemma.Components
 				model.Materials = this.Materials;
 				model.DisableCulling.Value = this.AllowAlpha;
 				model.Color.Value = this.Tint;
-				model.GetFloatParameter("Tiling").Value = this.Tiling;
-				model.TechniquePostfix.Value = this.AllowAlpha ? "Alpha" : "";
+				if (this.AllowOverlay)
+				{
+					World world = WorldFactory.Instance.Get<World>();
+					model.Add(new Binding<string>(model.TechniquePostfix, delegate(string overlay)
+					{
+						if (string.IsNullOrEmpty(overlay))
+							return this.AllowAlpha ? "Alpha" : "";
+						else
+							return this.AllowAlpha ? "OverlayAlpha" : "Overlay";
+					}, world.OverlayTexture));
+					model.Add(new Binding<Texture2D>(model.GetTexture2DParameter("Overlay" + Model.SamplerPostfix), world.OverlayTextureHandle));
+					model.Add(new Binding<float>(model.GetFloatParameter("OverlayTiling"), x => 0.075f * x, world.OverlayTiling));
+				}
 			}
 
 			public void ApplyToBlock(ComponentBind.Entity block)
@@ -1121,6 +1143,7 @@ namespace Lemma.Components
 				{
 					Model model = modelInstance.Model;
 					this.ApplyTo(model);
+					model.GetMatrixParameter("UVScaleRotation").Value = Matrix.CreateScale(0.075f * this.Tiling);
 				}
 			}
 

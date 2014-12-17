@@ -57,8 +57,8 @@ namespace Lemma.Factories
 					MaxStartSize = 0.15f,
 					MinEndSize = 0.05f,
 					MaxEndSize = 0.15f,
-					MinColor = new Vector4(0.9f, 0.9f, 0.9f, 1.0f),
-					MaxColor = new Vector4(0.9f, 0.9f, 0.9f, 1.0f),
+					MinColor = new Vector4(0.7f, 0.7f, 0.7f, 1.0f),
+					MaxColor = new Vector4(0.7f, 0.7f, 0.7f, 1.0f),
 					EmitterVelocitySensitivity = 1.0f,
 					BlendState = BlendState.Opaque,
 					Material = new Components.Model.Material { SpecularIntensity = 0.0f, SpecularPower = 1.0f },
@@ -103,8 +103,8 @@ namespace Lemma.Factories
 			transform.Add(new Binding<Vector3, Quaternion>(dir, x => Vector3.Transform(Vector3.Down, x), transform.Quaternion));
 			wind.Add(new Binding<Quaternion>(wind.Orientation, transform.Quaternion));
 
-			emitter.Position.Value = new Vector3(0, ParticleWind.StartHeight, 0);
-			windEmitter.Position.Value = new Vector3(0, ParticleWind.StartHeight * 2, 0);
+			emitter.Add(new Binding<Vector3, float>(emitter.Position, x => new Vector3(0, x * ParticleWind.StartHeightMultiplier, 0), wind.Speed));
+			windEmitter.Add(new Binding<Vector3, float>(windEmitter.Position, x => new Vector3(0, x * ParticleWind.StartHeightMultiplier * 2, 0), wind.Speed));
 
 			emitter.AddParticle = delegate(Vector3 position, Vector3 velocity, float prime)
 			{
@@ -124,7 +124,7 @@ namespace Lemma.Factories
 				float distance = wind.RaycastDistances[Math.Max(0, Math.Min(ParticleWind.KernelSize - 1, (int)kernelCoord.X)), Math.Max(0, Math.Min(ParticleWind.KernelSize - 1, (int)kernelCoord.Z))];
 				if (distance > 0)
 				{
-					float lifetime = Math.Min((distance + ParticleWind.StartHeight) / wind.Speed, SnowFactory.MaxWindLifetime);
+					float lifetime = Math.Min((distance + ParticleWind.StartHeightMultiplier) / wind.Speed, SnowFactory.MaxWindLifetime);
 					if (lifetime > prime)
 						windEmitter.ParticleSystem.AddParticle(main.Camera.Position + Vector3.Transform(position, transform.Quaternion), dir.Value * wind.Speed.Value, lifetime, -1.0f, prime);
 				}

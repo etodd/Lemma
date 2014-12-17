@@ -181,6 +181,29 @@ void RenderTextureNormalMapPS(	in RenderPSInput input,
 	output.normal.zw = ProcessMotionBlur(motionBlurInput);
 }
 
+void RenderTextureNormalMapOverlayPS(	in RenderPSInput input,
+								in TexturePSInput tex,
+								in NormalMapPSInput normalMap,
+								out RenderPSOutput output,
+								in MotionBlurPSInput motionBlurInput,
+								in OverlayPSInput overlay,
+								uniform sampler2D overlaySampler,
+								uniform bool clipAlpha)
+{
+	float4 color = tex2D(DiffuseSampler, tex.uvCoordinates);
+	if (clipAlpha)
+		clip(color.a - 0.5f);
+	float3 normal = mul(DecodeNormalMap(tex2D(NormalMapSampler, tex.uvCoordinates).xyz), normalMap.tangentToWorld);
+	float4 overlayColor = tex2D(overlaySampler, overlay.uvCoordinates);
+	output.color.rgb = lerp(DiffuseColor.rgb * color.rgb, overlayColor.rgb, overlayColor.a);
+	output.color.a = EncodeMaterial(Materials[(int)(color.a < MaterialAlphaThreshold)]);
+	output.depth.x = length(input.viewSpacePosition);
+	output.normal.xy = EncodeNormal(normal.xy);
+	output.depth.y = normal.z;
+	output.depth.zw = (float2)0;
+	output.normal.zw = ProcessMotionBlur(motionBlurInput);
+}
+
 void RenderTextureNormalMapPlainPS(	in RenderPSInput input,
 								in TexturePSInput tex,
 								in NormalMapPSInput normalMap,
@@ -209,6 +232,20 @@ void ClipTextureNormalMapPS(	in RenderPSInput input,
 {
 	HandleClipPlanes(clipData.clipPlaneDistances);
 	RenderTextureNormalMapPS(input, tex, normalMap, output, motionBlurInput, clipAlpha);
+}
+
+void ClipTextureNormalMapOverlayPS(	in RenderPSInput input,
+								in TexturePSInput tex,
+								in NormalMapPSInput normalMap,
+								in ClipPSInput clipData,
+								out RenderPSOutput output,
+								in MotionBlurPSInput motionBlurInput,
+								in OverlayPSInput overlay,
+								uniform sampler2D overlaySampler,
+								uniform bool clipAlpha)
+{
+	HandleClipPlanes(clipData.clipPlaneDistances);
+	RenderTextureNormalMapOverlayPS(input, tex, normalMap, output, motionBlurInput, overlay, overlaySampler, clipAlpha);
 }
 
 void ClipTextureNormalMapPlainPS(	in RenderPSInput input,
