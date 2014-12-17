@@ -17,6 +17,8 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Vector3> Position = new Property<Vector3>();
 
+		public Property<Vector3> AveragePosition = new Property<Vector3>();
+
 		public Property<Voxel.t> Type = new Property<Voxel.t>();
 
 		private List<PhysicsBlock> blocks = new List<PhysicsBlock>();
@@ -112,6 +114,7 @@ namespace Lemma.Components
 				}
 			}
 
+			Vector3 avg = Vector3.Zero;
 			for (int i = 0; i < this.blocks.Count; i++)
 			{
 				PhysicsBlock block = this.blocks[i];
@@ -127,6 +130,8 @@ namespace Lemma.Components
 						Vector3 force = toCenter + new Vector3(this.noise.Sample(new Vector3(offset)), this.noise.Sample(new Vector3(offset + 64)), noise.Sample(new Vector3(offset + 128))) * 5.0f;
 						force *= main.ElapsedTime * forceMultiplier;
 						block.Box.ApplyLinearImpulse(ref force);
+
+						avg += block.Box.Position;
 					}
 				}
 				else
@@ -135,6 +140,8 @@ namespace Lemma.Components
 					i--;
 				}
 			}
+			avg /= this.blocks.Count;
+			this.AveragePosition.Value = avg;
 		}
 	}
 }

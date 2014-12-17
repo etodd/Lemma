@@ -218,7 +218,7 @@ namespace Lemma.Factories
 			VoxelAttachable attachable = entity.GetOrCreate<VoxelAttachable>("VoxelAttachable");
 
 			Model editorModel = entity.Get<Model>("EditorModel");
-			model.Add(new Binding<bool>(model.Enabled, () => Editor.EditorModelsVisible && (entity.EditorSelected && attachable.Offset > 0), entity.EditorSelected, attachable.Offset, Editor.EditorModelsVisible));
+			model.Add(new Binding<bool>(model.Enabled, () => Editor.EditorModelsVisible && (entity.EditorSelected && attachable.Offset != 0), entity.EditorSelected, attachable.Offset, Editor.EditorModelsVisible));
 			model.Add(new Binding<Vector3, float>(model.Scale, x => new Vector3(1.0f, 1.0f, x), attachable.Offset));
 			model.Serialize = false;
 			entity.Add("EditorModel2", model);

@@ -75,7 +75,7 @@ namespace Lemma.Components
 			foreach (Voxel map in Voxel.ActivePhysicsVoxels.ToList())
 			{
 				List<Voxel.Coord> removals = new List<Voxel.Coord>();
-				Quaternion mapQuaternion = map.Entity.Get<Transform>().Quaternion;
+				Quaternion mapQuaternion = Quaternion.CreateFromRotationMatrix(map.Transform);
 				Voxel.Coord top = map.GetCoordinate(basePos + new Vector3(0, this.Height + this.SupportHeight + 0.5f, 0));
 				Direction upDir = map.GetRelativeDirection(Vector3.Up);
 				Direction rightDir = map.GetRelativeDirection(right);

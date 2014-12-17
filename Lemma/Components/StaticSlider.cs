@@ -76,6 +76,15 @@ namespace Lemma.Components
 						this.Coord.Value = parent.Get<Voxel>().GetCoordinate(this.EditorTransform.Value.Translation);
 				}, this.EditorTransform));
 			}
+		}
+
+		public override void Start()
+		{
+			if (!this.main.EditorEnabled && this.StartAtMinimum)
+			{
+				this.StartAtMinimum.Value = false;
+				this.Position.Value = this.Minimum;
+			}
 
 			Binding<Matrix> attachmentBinding = null;
 			this.Add(new ChangeBinding<Entity.Handle>(this.Parent, delegate(Entity.Handle old, Entity.Handle value)
@@ -102,22 +111,13 @@ namespace Lemma.Components
 			}));
 		}
 
-		public override void Start()
-		{
-			if (!this.main.EditorEnabled && this.StartAtMinimum)
-			{
-				this.StartAtMinimum.Value = false;
-				this.Position.Value = this.Minimum;
-			}
-		}
-
 		public void Update(float dt)
 		{
 			float pos = this.Position;
 			if (pos < this.Goal)
 				pos = Math.Min(pos + this.Speed * dt, this.Goal);
 			else if (this.Position > this.Goal)
-				pos = Math.Min(pos + this.Speed * dt, this.Goal);
+				pos = Math.Max(pos - this.Speed * dt, this.Goal);
 			pos = MathHelper.Clamp(pos, this.Minimum, this.Maximum);
 
 			this.Position.Value = pos;

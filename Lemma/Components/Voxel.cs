@@ -85,6 +85,9 @@ namespace Lemma.Components
 			RockRed = 24,
 			GlowYellow = 25,
 			GlowBlue = 26,
+			SocketWhite = 27,
+			SocketYellow = 28,
+			SocketBlue = 29,
 			White = 30,
 			Metal = 31,
 			MetalSwirl = 32,
@@ -538,7 +541,67 @@ namespace Lemma.Components
 				},
 				Tint = new Vector3(0.8f, 0.9f, 1.2f),
 			};
-			public static readonly State Glow = new State
+			public static readonly State SocketWhite = new State
+			{
+				ID = t.SocketWhite,
+				Permanent = true,
+				Supported = true,
+				Hard = true,
+				Density = 0.5f,
+				DiffuseMap = "Textures\\rectangles",
+				NormalMap = "Textures\\rectangles-normal",
+				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
+				Materials = new[]
+				{
+					new Model.Material
+					{
+						SpecularPower = 200.0f,
+						SpecularIntensity = 0.4f,
+					},
+				},
+				Tint = new Vector3(0.4f, 0.4f, 0.4f),
+			};
+			public static readonly State SocketYellow = new State
+			{
+				ID = t.SocketYellow,
+				Permanent = true,
+				Supported = true,
+				Hard = true,
+				Density = 0.5f,
+				DiffuseMap = "Textures\\rectangles",
+				NormalMap = "Textures\\rectangles-normal",
+				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
+				Materials = new[]
+				{
+					new Model.Material
+					{
+						SpecularPower = 200.0f,
+						SpecularIntensity = 0.4f,
+					},
+				},
+				Tint = new Vector3(0.5f, 0.5f, 0.1f),
+			};
+			public static readonly State SocketBlue = new State
+			{
+				ID = t.SocketBlue,
+				Permanent = true,
+				Supported = true,
+				Hard = true,
+				Density = 0.5f,
+				DiffuseMap = "Textures\\rectangles",
+				NormalMap = "Textures\\rectangles-normal",
+				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
+				Materials = new[]
+				{
+					new Model.Material
+					{
+						SpecularPower = 200.0f,
+						SpecularIntensity = 0.4f,
+					},
+				},
+				Tint = new Vector3(0.1f, 0.3f, 0.5f),
+			};
+			public static readonly State White = new State
 			{
 				ID = t.White,
 				Permanent = false,

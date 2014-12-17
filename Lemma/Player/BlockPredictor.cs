@@ -251,7 +251,10 @@ namespace Lemma.Components
 				&& s != Voxel.States.Infected
 				&& s != Voxel.States.HardInfected
 				&& s != Voxel.States.SliderPowered
-				&& s != Voxel.States.Slider;
+				&& s != Voxel.States.Slider
+				&& s != Voxel.States.SocketBlue
+				&& s != Voxel.States.SocketWhite
+				&& s != Voxel.States.SocketYellow;
 		}
 
 		// Function for finding a wall to build for the player

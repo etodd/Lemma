@@ -35,88 +35,9 @@ namespace Lemma.Factories
 			socket.Add(new Binding<Entity.Handle>(socket.AttachedVoxel, attachable.AttachedVoxel));
 			socket.Add(new Binding<Vector3>(socket.Position, transform.Position));
 
-			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
-			trigger.Radius.Value = 10;
-			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
-			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
-			{
-				BlockCloud cloud = PlayerFactory.Instance.Get<BlockCloud>();
-
-				Voxel sockVoxel = attachable.AttachedVoxel.Value.Target.Get<Voxel>();
-				if (!socket.Powered && cloud.Type.Value == socket.Type.Value)
-				{
-					// Plug in to the socket
-					List<Voxel.Coord> coords = new List<Voxel.Coord>();
-					Queue<Voxel.Coord> queue = new Queue<Voxel.Coord>();
-					queue.Enqueue(sockVoxel.GetCoordinate(transform.Position));
-					while (queue.Count > 0)
-					{
-						Voxel.Coord c = queue.Dequeue();
-						coords.Add(c);
-						if (coords.Count >= cloud.Blocks.Length)
-							break;
-
-						Voxel.CoordDictionaryCache[c] = true;
-						foreach (Direction adjacentDirection in DirectionExtensions.Directions)
-						{
-							Voxel.Coord adjacentCoord = c.Move(adjacentDirection);
-							if (!Voxel.CoordDictionaryCache.ContainsKey(adjacentCoord))
-							{
-								Voxel.t adjacentID = sockVoxel[adjacentCoord].ID;
-								if (adjacentID == Voxel.t.Empty)
-									queue.Enqueue(adjacentCoord);
-							}
-						}
-					}
-					Voxel.CoordDictionaryCache.Clear();
-
-					EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
-					int i = 0;
-					foreach (Entity block in cloud.Blocks)
-					{
-						Entity effectBlockEntity = factory.CreateAndBind(main);
-						Voxel.States.All[cloud.Type].ApplyToEffectBlock(effectBlockEntity.Get<ModelInstance>());
-						EffectBlock effectBlock = effectBlockEntity.Get<EffectBlock>();
-						effectBlock.DoScale.Value = false;
-						Transform blockTransform = block.Get<Transform>();
-						effectBlock.StartPosition.Value = blockTransform.Position;
-						effectBlock.StartOrientation.Value = blockTransform.Quaternion;
-						effectBlock.TotalLifetime.Value = (i + 1) * 0.04f;
-						effectBlock.Setup(sockVoxel.Entity, coords[i], cloud.Type);
-						main.Add(effectBlockEntity);
-						block.Delete.Execute();
-						i++;
-					}
-					cloud.Blocks.Clear();
-					cloud.Type.Value = Voxel.t.Empty;
-					socket.Powered.Value = true;
-				}
-				else if (socket.Powered && cloud.Type.Value == Voxel.t.Empty)
-				{
-					SceneryBlockFactory factory = Factory.Get<SceneryBlockFactory>();
-					Quaternion quat = Quaternion.CreateFromRotationMatrix(sockVoxel.Transform);
-					cloud.Type.Value = socket.Type;
-					List<Voxel.Coord> coords = sockVoxel.GetContiguousByType(new[] { sockVoxel.GetBox(transform.Position) }).SelectMany(x => x.GetCoords()).ToList();
-					sockVoxel.Empty(coords, true);
-					sockVoxel.Regenerate();
-					Vector3 scale = new Vector3(0.6f);
-					foreach (Voxel.Coord c in coords)
-					{
-						Entity block = factory.CreateAndBind(main);
-						Transform blockTransform = block.Get<Transform>();
-						blockTransform.Position.Value = sockVoxel.GetAbsolutePosition(c);
-						blockTransform.Quaternion.Value = quat;
-						block.Get<PhysicsBlock>().Size.Value = scale;
-						block.Get<ModelInstance>().Scale.Value = scale;
-						block.Get<SceneryBlock>().Type.Value = socket.Type;
-						cloud.Blocks.Add(block);
-						main.Add(block);
-					}
-					socket.Powered.Value = false;
-				}
-			}));
-
+			const float maxLightAttenuation = 15.0f;
 			PointLight light = entity.Create<PointLight>();
+			light.Attenuation.Value = maxLightAttenuation;
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 			light.Add(new Binding<Vector3, Voxel.t>(light.Color, delegate(Voxel.t t)
 			{
@@ -132,10 +53,126 @@ namespace Lemma.Factories
 			}, socket.Type));
 			light.Add(new Binding<bool>(light.Enabled, socket.Powered));
 
+			PointLight animationLight = entity.Create<PointLight>();
+			animationLight.Add(new Binding<Vector3>(animationLight.Position, light.Position));
+			animationLight.Add(new Binding<Vector3>(animationLight.Color, light.Color));
+			animationLight.Enabled.Value = false;
+
+			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
+			trigger.Radius.Value = 6;
+			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
+			const float minimumChangeTime = 1.5f;
+			float lastChange = -minimumChangeTime;
+			trigger.Add(new CommandBinding(trigger.PlayerEntered, delegate()
+			{
+				if (main.TotalTime - lastChange > minimumChangeTime)
+				{
+					BlockCloud cloud = PlayerFactory.Instance.Get<BlockCloud>();
+
+					bool changed = false;
+					Voxel sockVoxel = attachable.AttachedVoxel.Value.Target.Get<Voxel>();
+					if (!socket.Powered && cloud.Type.Value == socket.Type.Value)
+					{
+						// Plug in to the socket
+						List<Voxel.Coord> coords = new List<Voxel.Coord>();
+						Queue<Voxel.Coord> queue = new Queue<Voxel.Coord>();
+						queue.Enqueue(sockVoxel.GetCoordinate(transform.Position));
+						while (queue.Count > 0)
+						{
+							Voxel.Coord c = queue.Dequeue();
+							coords.Add(c);
+							if (coords.Count >= cloud.Blocks.Length)
+								break;
+
+							Voxel.CoordDictionaryCache[c] = true;
+							foreach (Direction adjacentDirection in DirectionExtensions.Directions)
+							{
+								Voxel.Coord adjacentCoord = c.Move(adjacentDirection);
+								if (!Voxel.CoordDictionaryCache.ContainsKey(adjacentCoord))
+								{
+									Voxel.t adjacentID = sockVoxel[adjacentCoord].ID;
+									if (adjacentID == Voxel.t.Empty)
+										queue.Enqueue(adjacentCoord);
+								}
+							}
+						}
+						Voxel.CoordDictionaryCache.Clear();
+
+						EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
+						int i = 0;
+						foreach (Entity block in cloud.Blocks)
+						{
+							Entity effectBlockEntity = factory.CreateAndBind(main);
+							Voxel.States.All[cloud.Type].ApplyToEffectBlock(effectBlockEntity.Get<ModelInstance>());
+							EffectBlock effectBlock = effectBlockEntity.Get<EffectBlock>();
+							effectBlock.DoScale.Value = false;
+							Transform blockTransform = block.Get<Transform>();
+							effectBlock.StartPosition.Value = blockTransform.Position;
+							effectBlock.StartOrientation.Value = blockTransform.Quaternion;
+							effectBlock.TotalLifetime.Value = (i + 1) * 0.04f;
+							effectBlock.Setup(sockVoxel.Entity, coords[i], cloud.Type);
+							main.Add(effectBlockEntity);
+							block.Delete.Execute();
+							i++;
+						}
+						cloud.Blocks.Clear();
+						cloud.Type.Value = Voxel.t.Empty;
+						socket.Powered.Value = true;
+						changed = true;
+					}
+					else if (socket.Powered && cloud.Type.Value == Voxel.t.Empty)
+					{
+						// Pull blocks out of the socket
+						SceneryBlockFactory factory = Factory.Get<SceneryBlockFactory>();
+						Quaternion quat = Quaternion.CreateFromRotationMatrix(sockVoxel.Transform);
+						cloud.Type.Value = socket.Type;
+						List<Voxel.Coord> coords = sockVoxel.GetContiguousByType(new[] { sockVoxel.GetBox(transform.Position) }).SelectMany(x => x.GetCoords()).ToList();
+						sockVoxel.Empty(coords, true);
+						sockVoxel.Regenerate();
+						Vector3 scale = new Vector3(0.6f);
+						ParticleSystem particles = ParticleSystem.Get(main, "WhiteShatter");
+						foreach (Voxel.Coord c in coords)
+						{
+							Vector3 pos = sockVoxel.GetAbsolutePosition(c);
+							for (int j = 0; j < 20; j++)
+							{
+								Vector3 offset = new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble() - 0.5f);
+								particles.AddParticle(pos + offset, offset);
+							}
+							Entity block = factory.CreateAndBind(main);
+							Transform blockTransform = block.Get<Transform>();
+							blockTransform.Position.Value = pos;
+							blockTransform.Quaternion.Value = quat;
+							block.Get<PhysicsBlock>().Size.Value = scale;
+							block.Get<ModelInstance>().Scale.Value = scale;
+							block.Get<SceneryBlock>().Type.Value = socket.Type;
+							cloud.Blocks.Add(block);
+							main.Add(block);
+						}
+						socket.Powered.Value = false;
+						changed = true;
+					}
+
+					if (changed)
+					{
+						lastChange = main.TotalTime;
+						animationLight.Enabled.Value = true;
+						animationLight.Attenuation.Value = 0.0f;
+						entity.Add(new Animation
+						(
+							new Animation.FloatMoveTo(animationLight.Attenuation, maxLightAttenuation, 0.25f),
+							new Animation.FloatMoveTo(animationLight.Attenuation, 0.0f, 2.0f),
+							new Animation.Set<bool>(animationLight.Enabled, false)
+						));
+					}
+				}
+			}));
+
 			entity.Add("Type", socket.Type);
 			entity.Add("AttachOffset", attachable.Offset);
 			entity.Add("Powered", socket.Powered, new PropertyEntry.EditorData { Readonly = true });
-			entity.Add("OnPowered", socket.OnPowerOn);
+			entity.Add("OnPowerOn", socket.OnPowerOn);
+			entity.Add("OnPowerOff", socket.OnPowerOff);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

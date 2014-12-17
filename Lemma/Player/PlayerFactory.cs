@@ -476,6 +476,23 @@ namespace Lemma.Factories
 				}
 			};
 
+			PointLight blockLight = entity.Create<PointLight>();
+			blockLight.Add(new Binding<Vector3>(blockLight.Position, blockCloud.AveragePosition));
+			blockLight.Add(new Binding<bool, int>(blockLight.Enabled, x => x > 0, blockCloud.Blocks.Length));
+			blockLight.Attenuation.Value = 20.0f;
+			blockLight.Add(new Binding<Vector3, Voxel.t>(blockLight.Color, delegate(Voxel.t t)
+			{
+				switch (t)
+				{
+					case Voxel.t.GlowBlue:
+						return new Vector3(0.8f, 0.9f, 1.2f);
+					case Voxel.t.GlowYellow:
+						return new Vector3(1.2f, 1.2f, 0.8f);
+					default:
+						return Vector3.One;
+				}
+			}, blockCloud.Type));
+
 			// Swim up
 			input.Bind(player.Character.SwimUp, settings.Jump);
 
