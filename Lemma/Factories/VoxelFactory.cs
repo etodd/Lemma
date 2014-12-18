@@ -102,6 +102,9 @@ namespace Lemma.Factories
 					model.Lock = new object();
 					state.ApplyTo(model);
 
+					if (state.Invisible)
+						model.Add(new Binding<bool>(model.Enabled, Editor.EditorModelsVisible));
+
 					/*
 					ModelAlpha debug = new ModelAlpha { Serialize = false };
 					debug.Alpha.Value = 0.01f;

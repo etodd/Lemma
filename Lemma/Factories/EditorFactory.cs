@@ -170,6 +170,8 @@ namespace Lemma.Factories
 
 			FPSInput input = entity.Create<FPSInput>();
 			input.EnabledWhenPaused = true;
+			Property<bool> capslockKey = input.GetKey(Keys.CapsLock);
+			Property<bool> shiftKey = input.GetKey(Keys.LeftShift);
 
 			ModelAlpha brushVisual = new ModelAlpha();
 			brushVisual.Add(new Binding<string, Editor.BrushShapes>(brushVisual.Filename, x => x == Editor.BrushShapes.Cube ? "AlphaModels\\box" : "AlphaModels\\sphere", editor.BrushShape));
@@ -279,7 +281,8 @@ namespace Lemma.Factories
 				}
 			}
 
-			input.Add(new CommandBinding(input.GetKeyUp(Keys.Space), () => !editor.MovementEnabled && !gui.AnyTextFieldViewsSelected() && editor.TransformMode == Editor.TransformModes.None, gui.ShowContextMenu));
+			input.Add(new CommandBinding(input.GetKeyUp(Keys.Space), () => !editor.MovementEnabled && !gui.AnyTextFieldViewsSelected() && editor.TransformMode == Editor.TransformModes.None && !shiftKey, gui.ShowContextMenu));
+			input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.Space }), () => !editor.MovementEnabled && !gui.AnyTextFieldViewsSelected() && editor.TransformMode == Editor.TransformModes.None, gui.ShowSelectMenu));
 			editor.Add(new Binding<bool>(main.GeeUI.KeyboardEnabled, () => !editor.VoxelEditMode && !editor.MovementEnabled, editor.VoxelEditMode, editor.MovementEnabled));
 
 			model.Add(new Binding<bool>(model.Enabled, editor.VoxelEditMode));
@@ -310,8 +313,6 @@ namespace Lemma.Factories
 			gui.Add(new Binding<bool>(gui.VoxelSelectionActive, editor.VoxelSelectionActive));
 
 			Property<bool> movementEnabled = new Property<bool>();
-			Property<bool> capslockKey = input.GetKey(Keys.CapsLock);
-			Property<bool> shiftKey = input.GetKey(Keys.LeftShift);
 			entity.Add(new Binding<bool>(movementEnabled, () => input.MiddleMouseButton || capslockKey, input.MiddleMouseButton, capslockKey));
 
 			editor.Add(new Binding<bool>(editor.MovementEnabled, () => movementEnabled || editor.VoxelEditMode, movementEnabled, editor.VoxelEditMode));

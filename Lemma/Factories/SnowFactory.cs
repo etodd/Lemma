@@ -108,7 +108,7 @@ namespace Lemma.Factories
 
 			emitter.AddParticle = delegate(Vector3 position, Vector3 velocity, float prime)
 			{
-				Vector3 kernelCoord = (position + wind.Jitter) / ParticleWind.KernelSpacing;
+				Vector3 kernelCoord = (position + wind.Jitter) / wind.KernelSpacing;
 				float distance = wind.RaycastDistances[Math.Max(0, Math.Min(ParticleWind.KernelSize - 1, (int)kernelCoord.X)), Math.Max(0, Math.Min(ParticleWind.KernelSize - 1, (int)kernelCoord.Z))];
 				if (distance > 0)
 				{
@@ -120,7 +120,7 @@ namespace Lemma.Factories
 			
 			windEmitter.AddParticle = delegate(Vector3 position, Vector3 velocity, float prime)
 			{
-				Vector3 kernelCoord = (position + wind.Jitter) / ParticleWind.KernelSpacing;
+				Vector3 kernelCoord = (position + wind.Jitter) / wind.KernelSpacing;
 				float distance = wind.RaycastDistances[Math.Max(0, Math.Min(ParticleWind.KernelSize - 1, (int)kernelCoord.X)), Math.Max(0, Math.Min(ParticleWind.KernelSize - 1, (int)kernelCoord.Z))];
 				if (distance > 0)
 				{
@@ -134,6 +134,7 @@ namespace Lemma.Factories
 			emitter.ParticleType.Value = "Snow";
 			windEmitter.ParticleType.Value = "Wind";
 
+			entity.Add("KernelSpacing", wind.KernelSpacing);
 			entity.Add("ParticlesPerSecond", emitter.ParticlesPerSecond);
 			entity.Add("WindParticlesPerSecond", windEmitter.ParticlesPerSecond);
 			entity.Add("Wind", wind.Speed);

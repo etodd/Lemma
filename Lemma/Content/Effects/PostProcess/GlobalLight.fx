@@ -113,7 +113,7 @@ void GlobalLightPS(	in PostProcessPSInput input,
 			float t = -worldPosWithCamera.y / DirectionalLightDirections[0].y;
 			float2 p = worldPosWithCamera.xz + t * DirectionalLightDirections[0].xz;
 
-			shadowValue -= tex2D(CloudSampler, p * CloudUVMultiplier + CloudOffset).a * CloudShadow;
+			shadowValue = max(0, shadowValue - tex2D(CloudSampler, p * CloudUVMultiplier + CloudOffset).a * CloudShadow);
 		}
 
 		output.lighting += shadowLight.lighting * shadowValue;

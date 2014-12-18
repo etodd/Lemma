@@ -581,6 +581,10 @@ namespace Lemma.Components
 				if (selectedBox == null)
 					return;
 
+				Voxel.Coord startSelection = this.VoxelSelectionStart;
+				Voxel.Coord endSelection = this.VoxelSelectionEnd;
+				bool selectionActive = this.VoxelSelectionActive;
+
 				Voxel.State oldMaterial = selectedBox.Type;
 
 				Voxel.State material = this.getBrush();
@@ -588,7 +592,11 @@ namespace Lemma.Components
 				{
 					if (material == oldMaterial)
 						return;
-					List<Voxel.Coord> coords = m.Chunks.SelectMany(x => x.Boxes).Where(x => x.Type == oldMaterial).SelectMany(x => x.GetCoords()).ToList();
+					IEnumerable<Voxel.Coord> coordsEnumerable = m.Chunks.SelectMany(x => x.Boxes).Where(x => x.Type == oldMaterial).SelectMany(x => x.GetCoords());
+					if (selectionActive)
+						coordsEnumerable = coordsEnumerable.Where(x => x.Between(startSelection, endSelection));
+					List<Voxel.Coord> coords = coordsEnumerable.ToList();
+
 					m.Empty(coords, true);
 					foreach (Voxel.Coord c in coords)
 						m.Fill(c, material);

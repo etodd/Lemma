@@ -271,7 +271,7 @@ namespace Lemma.Components
 				this.shadowCamera.SetOrthographicProjection(new Point((int)size, (int)size), 1.0f, size * 2.5f);
 
 				this.main.GraphicsDevice.SetRenderTarget(this.GlobalShadowMap);
-				this.main.GraphicsDevice.Clear(new Color(size * 2.5f, size * 2.5f, size * 2.5f));
+				this.main.GraphicsDevice.Clear(Color.Black);
 				this.main.DrawScene(new RenderParameters { Camera = this.shadowCamera, Technique = Technique.Shadow });
 
 				this.GlobalShadowViewProjection.Value = this.shadowCamera.ViewProjection;
@@ -290,7 +290,7 @@ namespace Lemma.Components
 				this.shadowCamera.SetOrthographicProjection(new Point((int)detailSize, (int)detailSize), 1.0f, size * 2.0f);
 
 				this.main.GraphicsDevice.SetRenderTarget(this.DetailGlobalShadowMap);
-				this.main.GraphicsDevice.Clear(new Color(size * 2.0f, size * 2.0f, size * 2.0f));
+				this.main.GraphicsDevice.Clear(Color.Black);
 				this.main.DrawScene(new RenderParameters { Camera = this.shadowCamera, Technique = Technique.Shadow });
 
 				this.DetailGlobalShadowViewProjection.Value = this.shadowCamera.ViewProjection;

@@ -11,11 +11,11 @@ namespace Lemma.Components
 {
 	public class ParticleWind : Component<Main>, IUpdateableComponent
 	{
-		public const float KernelSpacing = 8.0f;
+		public Property<float> KernelSpacing = new Property<float> { Value = 8.0f };
 		public const int KernelSize = 10;
 		public const float RaycastHeight = 30.0f;
 		public const float RaycastInterval = 0.25f;
-		public const float StartHeightMultiplier = 3.0f;
+		public const float StartHeightMultiplier = 2.5f;
 
 		[XmlIgnore]
 		public float[,] RaycastDistances = new float[KernelSize, KernelSize];
@@ -38,7 +38,7 @@ namespace Lemma.Components
 			this.EnabledInEditMode = true;
 			this.EnabledWhenPaused = false;
 
-			this.Jitter.Value = new Vector3(KernelSpacing * KernelSize * 0.5f, KernelSpacing * KernelSize * 0.1f, KernelSpacing * KernelSize * 0.5f);
+			this.Add(new Binding<Vector3, float>(this.Jitter, x => new Vector3(x * KernelSize * 0.5f, x * KernelSize * 0.1f, x * KernelSize * 0.5f), this.KernelSpacing));
 		}
 
 		public void Update(float dt)

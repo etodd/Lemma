@@ -83,6 +83,8 @@ namespace Lemma.Components
 
 		public Command ShowOpenMenu = new Command();
 
+		public Command ShowSelectMenu = new Command();
+
 		public Property<bool> PickNextEntity = new Property<bool>();
 
 		public Property<bool> MovementEnabled = new Property<bool>();
@@ -133,7 +135,7 @@ namespace Lemma.Components
 			this.CreateDropDownView.AllowRightClickExecute.Value = true;
 			this.SelectDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero);
 			this.SelectDropDownView.FilterThreshhold.Value = 0;
-			this.SelectDropDownView.Label.Value = "Select";
+			this.SelectDropDownView.Label.Value = "Select [Shift+Space]";
 
 			this.OpenDropDownView = new DropDownView(main.GeeUI, null, Vector2.Zero);
 			this.OpenDropDownView.FilterThreshhold.Value = 0;
@@ -166,6 +168,15 @@ namespace Lemma.Components
 				{
 					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Map"));
 					this.OpenDropDownView.ShowDropDown();
+				}
+			};
+
+			this.ShowSelectMenu.Action = delegate()
+			{
+				if (!this.VoxelEditMode && this.Visible)
+				{
+					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Entity"));
+					this.SelectDropDownView.ShowDropDown();
 				}
 			};
 
