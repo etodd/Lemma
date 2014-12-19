@@ -22,7 +22,11 @@ namespace Lemma.Components
 
 		public Voxel.State GetState()
 		{
-			Voxel map = this.AttachedVoxel.Value.Target.Get<Voxel>();
+			Entity voxelEntity = this.AttachedVoxel.Value.Target;
+			if (voxelEntity == null)
+				return Voxel.States.Empty;
+
+			Voxel map = voxelEntity.Get<Voxel>();
 			if (map == null)
 				return Voxel.States.Empty;
 			else
@@ -35,7 +39,11 @@ namespace Lemma.Components
 
 			this.Add(new CommandBinding(this.Set, delegate()
 			{
-				Voxel map = this.AttachedVoxel.Value.Target.Get<Voxel>();
+				Entity voxelEntity = this.AttachedVoxel.Value.Target;
+				if (voxelEntity == null)
+					return;
+
+				Voxel map = voxelEntity.Get<Voxel>();
 				Voxel.State state = Voxel.States.All[this.State];
 				if (this.Contiguous)
 				{

@@ -101,7 +101,7 @@ namespace Lemma.Components
 		{
 			base.Update(elapsedTime); // Calls handleMouse()
 
-			if (!main.IsActive || !this.Enabled)
+			if (!this.main.IsActive || !this.Enabled)
 				return;
 
 			if (this.EnableMovement)

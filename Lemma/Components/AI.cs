@@ -157,6 +157,8 @@ namespace Lemma.Components
 		public void Update(float elapsedTime)
 		{
 			AIState originalState = this.currentState;
+			if (originalState == null)
+				return;
 			this.TimeInCurrentState.Value += elapsedTime;
 			foreach (Task t in this.currentState.Tasks)
 			{

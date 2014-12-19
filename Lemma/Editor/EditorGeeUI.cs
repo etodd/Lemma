@@ -329,7 +329,7 @@ namespace Lemma.Components
 
 			this.Add(new ListNotifyBinding<Entity>(this.refresh, this.SelectedEntities));
 
-			this.Add(new Binding<bool>(this.PropertiesView.Active, () => this.SelectedEntities.Length > 0 && !this.VoxelEditMode && this.Visible, this.VoxelEditMode, this.SelectedEntities.Length, this.Visible));
+			this.Add(new Binding<bool>(this.PropertiesView.Active, () => this.SelectedEntities.Length > 0 && !this.VoxelEditMode && this.Visible && !ConsoleUI.Showing, this.VoxelEditMode, this.SelectedEntities.Length, this.Visible, ConsoleUI.Showing));
 
 			this.Add(new ListBinding<View, EditorCommand>(this.EntityPanelView.Children, this.EntityCommands, this.buildCommandButton));
 			this.Add(new ListBinding<View, EditorCommand>(this.MapPanelView.Children, this.MapCommands, this.buildCommandButton));

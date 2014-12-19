@@ -191,7 +191,7 @@ namespace Lemma.Factories
 				else
 					brushVisual.Scale.Value = new Vector3(s * (editor.BrushSize - 0.4f) * 2.0f);
 			}, editor.BrushSize, editor.BrushShape, editor.VoxelEditMode));
-			brushVisual.Add(new Binding<bool>(brushVisual.Enabled, () => editor.BrushSize > 1 && editor.VoxelEditMode, editor.BrushSize, editor.VoxelEditMode));
+			brushVisual.Add(new Binding<bool>(brushVisual.Enabled, () => editor.BrushSize > 1 && editor.VoxelEditMode && Editor.EditorModelsVisible, editor.BrushSize, editor.VoxelEditMode, Editor.EditorModelsVisible));
 			brushVisual.CullBoundingBox.Value = false;
 
 			ModelAlpha selection = new ModelAlpha();
@@ -202,7 +202,7 @@ namespace Lemma.Factories
 			selection.DrawOrder.Value = 12; // In front of water and radius visualizer
 			selection.DisableCulling.Value = true;
 			entity.Add(selection);
-			selection.Add(new Binding<bool>(selection.Enabled, editor.VoxelSelectionActive));
+			selection.Add(new Binding<bool>(selection.Enabled, () => editor.VoxelSelectionActive && Editor.EditorModelsVisible, editor.VoxelSelectionActive, Editor.EditorModelsVisible));
 			selection.Add(new NotifyBinding(delegate()
 			{
 				const float padding = 0.1f;
@@ -285,7 +285,7 @@ namespace Lemma.Factories
 			input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.Space }), () => !editor.MovementEnabled && !gui.AnyTextFieldViewsSelected() && editor.TransformMode == Editor.TransformModes.None, gui.ShowSelectMenu));
 			editor.Add(new Binding<bool>(main.GeeUI.KeyboardEnabled, () => !editor.VoxelEditMode && !editor.MovementEnabled, editor.VoxelEditMode, editor.MovementEnabled));
 
-			model.Add(new Binding<bool>(model.Enabled, editor.VoxelEditMode));
+			model.Add(new Binding<bool>(model.Enabled, () => editor.VoxelEditMode && Editor.EditorModelsVisible, editor.VoxelEditMode, Editor.EditorModelsVisible));
 			model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateFromQuaternion(editor.Orientation) * Matrix.CreateTranslation(editor.Position), editor.Position, editor.Orientation));
 			brushVisual.Add(new Binding<Matrix>(brushVisual.Transform, model.Transform));
 

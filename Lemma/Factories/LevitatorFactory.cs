@@ -34,7 +34,7 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
-			AI ai = entity.GetOrCreate<AI>();
+			AI ai = entity.GetOrCreate<AI>("AI");
 
 			ModelAlpha model = entity.GetOrCreate<ModelAlpha>();
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
@@ -263,8 +263,7 @@ namespace Lemma.Factories
 						{
 							Entity target = ai.TargetAgent.Value.Target;
 							Vector3 targetPosition = target.Get<Transform>().Position;
-							Entity levitatingMapEntity = levitator.LevitatingVoxel.Value.Target;
-							if ((targetPosition - transform.Position).Length() < 10.0f && (levitatingMapEntity == null || !levitatingMapEntity.Active))
+							if ((targetPosition - transform.Position).Length() < 15.0f)
 							{
 								if (tryLevitate())
 									ai.CurrentState.Value = "Levitating";
@@ -308,8 +307,9 @@ namespace Lemma.Factories
 							Entity levitatingMapEntity = levitator.LevitatingVoxel.Value.Target;
 							if (levitatingMapEntity == null || !levitatingMapEntity.Active || ai.TimeInCurrentState.Value > 8.0f)
 							{
-								Voxel map = raycastAI.Voxel.Value.Target.Get<Voxel>();
-								raycastAI.Coord.Value = raycastAI.LastCoord.Value = map.GetCoordinate(transform.Position);
+								Entity voxel = raycastAI.Voxel.Value.Target;
+								if (voxel != null && voxel.Active)
+									raycastAI.Coord.Value = raycastAI.LastCoord.Value = voxel.Get<Voxel>().GetCoordinate(transform.Position);
 								raycastAI.Move(new Vector3(((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f));
 								ai.CurrentState.Value = "Alert";
 								return;

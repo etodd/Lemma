@@ -512,7 +512,7 @@ namespace Lemma.Components
 
 		public virtual void Update(float elapsedTime)
 		{
-			if (!main.IsActive)
+			if (!this.main.IsActive)
 				return;
 
 			KeyboardState keyboard = this.main.KeyboardState;

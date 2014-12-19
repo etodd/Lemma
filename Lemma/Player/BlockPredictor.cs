@@ -37,9 +37,9 @@ namespace Lemma.Components
 		private const float blockPossibilityFadeInTime = 0.075f;
 		private const float blockPossibilityTotalLifetime = 2.0f;
 		private const float blockPossibilityInitialAlpha = 0.5f;
-		private const int searchDistance = 15;
+		private const int searchDistance = 12;
 		private const int platformSize = 3;
-		private const int additionalWallDistance = 6;
+		private const int additionalWallDistance = 5;
 
 		private float blockPossibilityLifetime = 0.0f;
 
