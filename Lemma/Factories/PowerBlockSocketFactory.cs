@@ -29,6 +29,7 @@ namespace Lemma.Factories
 			this.SetMain(entity, main);
 
 			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main, true, false);
+			attachable.Offset.Value = 1;
 			attachable.Enabled.Value = true;
 
 			PowerBlockSocket socket = entity.GetOrCreate<PowerBlockSocket>("PowerBlockSocket");
@@ -120,7 +121,7 @@ namespace Lemma.Factories
 						socket.Powered.Value = true;
 						changed = true;
 					}
-					else if (socket.Powered && cloud.Type.Value == Voxel.t.Empty)
+					else if (socket.Powered && cloud.Type.Value == Voxel.t.Empty && !socket.PowerOnOnly)
 					{
 						// Pull blocks out of the socket
 						SceneryBlockFactory factory = Factory.Get<SceneryBlockFactory>();
@@ -169,8 +170,8 @@ namespace Lemma.Factories
 			}));
 
 			entity.Add("Type", socket.Type);
-			entity.Add("AttachOffset", attachable.Offset);
 			entity.Add("Powered", socket.Powered, new PropertyEntry.EditorData { Readonly = true });
+			entity.Add("PowerOnOnly", socket.PowerOnOnly);
 			entity.Add("OnPowerOn", socket.OnPowerOn);
 			entity.Add("OnPowerOff", socket.OnPowerOff);
 		}

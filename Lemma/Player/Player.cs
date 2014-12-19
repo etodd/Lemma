@@ -15,7 +15,7 @@ using ComponentBind;
 
 namespace Lemma.Components
 {
-	public class Player : Component<Main>, IUpdateableComponent
+	public class Player : Component<Main>, IUpdateableComponent, IEarlyUpdateableComponent
 	{
 		[XmlIgnore]
 		public Character Character;
@@ -45,14 +45,23 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command<float> Rumble = new Command<float>();
 
+		[XmlIgnore]
+		public Property<int> UpdateOrder { get; set; }
+
 		private const float healthRegenerateDelay = 4.0f;
 		private const float healthRegenerateRate = 0.1f;
+
+		public Player()
+		{
+			this.UpdateOrder = new Property<int> { Value = 0 };
+		}
 
 		public override void Awake()
 		{
 			base.Awake();
 			this.EnabledWhenPaused = false;
 			this.Character = new Character(this.main, this, Vector3.Zero);
+			this.Add(new NotifyBinding(this.main.EarlyUpdateablesModified, this.UpdateOrder));
 			this.Character.Body.Tag = this;
 			this.main.Space.Add(this.Character);
 
@@ -80,7 +89,13 @@ namespace Lemma.Components
 			this.main.Space.Remove(this.Character);
 		}
 
-		public void Update(float dt)
+		void IEarlyUpdateableComponent.Update(float dt)
+		{
+			this.Character.Transform.Value = this.Character.Body.WorldTransform;
+			this.Character.LinearVelocity.Value = this.Character.Body.LinearVelocity;
+		}
+
+		void IUpdateableComponent.Update(float dt)
 		{
 			this.damageTimer += dt;
 			if (this.Health < 1.0f)
@@ -101,9 +116,6 @@ namespace Lemma.Components
 				}
 			}
 			this.Character.IsSwimming.Value = swimming;
-
-			this.Character.Transform.Value = this.Character.Body.WorldTransform;
-			this.Character.LinearVelocity.Value = this.Character.Body.LinearVelocity;
 		}
 	}
 }

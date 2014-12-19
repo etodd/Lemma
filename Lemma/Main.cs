@@ -258,6 +258,7 @@ namespace Lemma
 
 		private List<IGraphicsComponent> graphicsComponents = new List<IGraphicsComponent>();
 		private List<IDrawableComponent> drawables = new List<IDrawableComponent>();
+		private List<IEarlyUpdateableComponent> earlyUpdateables = new List<IEarlyUpdateableComponent>();
 		private List<IUpdateableComponent> updateables = new List<IUpdateableComponent>();
 		private List<IDrawablePreFrameComponent> preframeDrawables = new List<IDrawablePreFrameComponent>();
 		private List<INonPostProcessedDrawableComponent> nonPostProcessedDrawables = new List<INonPostProcessedDrawableComponent>();
@@ -293,6 +294,7 @@ namespace Lemma
 		public Command MapLoaded = new Command();
 
 		protected bool drawablesModified;
+		protected bool earlyUpdateablesModified;
 		protected bool alphaDrawablesModified;
 		protected bool postAlphaDrawablesModified;
 		protected bool nonPostProcessedDrawablesModified;
@@ -348,6 +350,11 @@ namespace Lemma
 					this.drawables.Add((IDrawableComponent)c);
 					this.drawablesModified = true;
 				}
+				if (typeof(IEarlyUpdateableComponent).IsAssignableFrom(t))
+				{
+					this.earlyUpdateables.Add((IEarlyUpdateableComponent)c);
+					this.earlyUpdateablesModified = true;
+				}
 				if (typeof(IUpdateableComponent).IsAssignableFrom(t))
 					this.updateables.Add((IUpdateableComponent)c);
 				if (typeof(IDrawablePreFrameComponent).IsAssignableFrom(t))
@@ -376,6 +383,8 @@ namespace Lemma
 				Type t = c.GetType();
 				if (typeof(IGraphicsComponent).IsAssignableFrom(t))
 					this.graphicsComponents.Remove((IGraphicsComponent)c);
+				if (typeof(IEarlyUpdateableComponent).IsAssignableFrom(t))
+					this.earlyUpdateables.Remove((IEarlyUpdateableComponent)c);
 				if (typeof(IUpdateableComponent).IsAssignableFrom(t))
 					this.updateables.Remove((IUpdateableComponent)c);
 				if (typeof(IDrawableComponent).IsAssignableFrom(t))
@@ -430,6 +439,8 @@ namespace Lemma
 		public Command ReloadedContent = new Command();
 
 		public ContentManager MapContent;
+
+		const float physicsTimeStep = 1.0f / 75.0f;
 		
 #if VR
 		public Main(bool vr)
@@ -448,6 +459,7 @@ namespace Lemma
 #endif
 
 			this.Space = new Space();
+			this.Space.TimeStepSettings.TimeStepDuration = physicsTimeStep;
 			this.ScreenSize.Value = new Point(this.Window.ClientBounds.Width, this.Window.ClientBounds.Height);
 
 			// Give the space some threads to work with.
@@ -484,6 +496,7 @@ namespace Lemma
 				delegate()
 				{
 					float value = this.TimeMultiplier * this.BaseTimeMultiplier;
+					this.Space.TimeStepSettings.TimeStepDuration = physicsTimeStep * value;
 					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SLOWMOTION, Math.Min(1.0f, (1.0f - value) / 0.6f));
 				},
 				this.BaseTimeMultiplier, this.TimeMultiplier
@@ -495,6 +508,34 @@ namespace Lemma
 				if (float.TryParse(s, out result))
 					this.BaseTimeMultiplier.Value = result / 100.0f;
 			}, "100") { TypeConstraint = typeof(int), Validate = o => (int)o > 0 && (int)o <= 400 });
+
+#if DEVELOPMENT
+			Lemma.Console.Console.AddConVar(new ConVar("blocks", "Player block cheat (white, yellow, blue)", s =>
+			{
+				Entity player = PlayerFactory.Instance;
+				if (player != null && player.Active)
+				{
+					Voxel.t result = Voxel.t.Empty;
+					switch (s.ToLower())
+					{
+						case "white":
+							result = Voxel.t.WhitePermanent;
+							break;
+						case "yellow":
+							result = Voxel.t.GlowYellow;
+							break;
+						case "blue":
+							result = Voxel.t.GlowBlue;
+							break;
+						default:
+							break;
+					}
+					BlockCloud cloud = player.Get<BlockCloud>();
+					cloud.Blocks.Clear();
+					cloud.Type.Value = result;
+				}
+			}, "none"));
+#endif
 
 			Lemma.Console.Console.AddConCommand(new ConCommand("moves", "Enable all parkour moves.", delegate(ConCommand.ArgCollection args)
 			{
@@ -1303,6 +1344,11 @@ namespace Lemma
 			this.drawablesModified = true;
 		}
 
+		public void EarlyUpdateablesModified()
+		{
+			this.earlyUpdateablesModified = true;
+		}
+
 		public void AlphaDrawablesModified()
 		{
 			this.alphaDrawablesModified = true;
@@ -1323,9 +1369,9 @@ namespace Lemma
 			if (gameTime.ElapsedGameTime.TotalSeconds > 0.1f)
 				gameTime = new GameTime(gameTime.TotalGameTime, new TimeSpan((long)(0.1f * (float)TimeSpan.TicksPerSecond)), true);
 			this.GameTime = gameTime;
-			this.ElapsedTime.Value = (float)gameTime.ElapsedGameTime.TotalSeconds * this.TimeMultiplier * this.BaseTimeMultiplier;
+			float dt = this.ElapsedTime.Value = (float)gameTime.ElapsedGameTime.TotalSeconds * this.TimeMultiplier * this.BaseTimeMultiplier;
 			if (!this.Paused)
-				this.TotalTime.Value += this.ElapsedTime;
+				this.TotalTime.Value += dt;
 
 			if (!this.EditorEnabled && this.mapLoaded)
 			{
@@ -1354,13 +1400,29 @@ namespace Lemma
 
 			Stopwatch timer = new Stopwatch();
 			timer.Start();
+			for (int i = 0; i < this.earlyUpdateables.Count; i++)
+			{
+				IEarlyUpdateableComponent c = this.earlyUpdateables[i];
+				if (this.componentEnabled(c))
+					c.Update(dt);
+			}
+
 			for (int i = 0; i < this.updateables.Count; i++)
 			{
 				IUpdateableComponent c = this.updateables[i];
 				if (this.componentEnabled(c))
-					c.Update(this.ElapsedTime);
+					c.Update(dt);
 			}
 			this.FlushComponents();
+
+			if (this.earlyUpdateablesModified)
+			{
+				this.earlyUpdateables.InsertionSort(delegate(IEarlyUpdateableComponent a, IEarlyUpdateableComponent b)
+				{
+					return a.UpdateOrder.Value.CompareTo(b.UpdateOrder.Value);
+				});
+				this.earlyUpdateablesModified = false;
+			}
 
 			if (this.drawablesModified)
 			{
@@ -1403,7 +1465,7 @@ namespace Lemma
 
 			timer.Restart();
 			if (!this.Paused && !this.EditorEnabled)
-				this.Space.Update(this.ElapsedTime);
+				this.Space.Update(dt);
 			timer.Stop();
 			this.physicsSum = Math.Max(this.physicsSum, timer.Elapsed.TotalSeconds);
 
@@ -1430,10 +1492,10 @@ namespace Lemma
 
 			AkSoundEngine.RenderAudio();
 
-			TotalGameTime.Value += this.ElapsedTime.Value;
+			TotalGameTime.Value += dt;
 #if STEAMWORKS
 			SteamWorker.SetStat("stat_time_played", (int)TotalGameTime.Value);
-			SteamWorker.Update(this.ElapsedTime);
+			SteamWorker.Update(dt);
 #endif
 
 			if (this.resize != null && this.resize.Value.X > 0 && this.resize.Value.Y > 0)

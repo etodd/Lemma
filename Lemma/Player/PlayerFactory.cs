@@ -99,6 +99,7 @@ namespace Lemma.Factories
 			jump.Add(new TwoWayBinding<bool>(player.Character.HasTraction, jump.HasTraction));
 			jump.Add(new TwoWayBinding<Vector3>(player.Character.LinearVelocity, jump.LinearVelocity));
 			jump.Add(new TwoWayBinding<BEPUphysics.Entities.Entity>(jump.SupportEntity, player.Character.SupportEntity));
+			jump.Add(new TwoWayBinding<Vector3>(jump.SupportVelocity, player.Character.SupportVelocity));
 			jump.Add(new Binding<Vector2>(jump.AbsoluteMovementDirection, player.Character.MovementDirection));
 			jump.Add(new Binding<WallRun.State>(jump.WallRunState, wallRun.CurrentState));
 			jump.Add(new Binding<float>(jump.Rotation, rotation.Rotation));
@@ -534,7 +535,7 @@ namespace Lemma.Factories
 									didSomething = wallRun.Activate(WallRun.State.Right);
 					}
 
-					if (!didSomething && player.EnableSlowMotion)
+					if (!didSomething && player.EnableSlowMotion && blockCloud.Blocks.Length > 0)
 					{
 						player.SlowMotion.Value = true;
 						predictor.ClearPossibilities();
@@ -547,7 +548,7 @@ namespace Lemma.Factories
 			input.Bind(settings.Parkour, PCInput.InputState.Up, delegate()
 			{
 				wallRun.Deactivate();
-				if (player.EnableSlowMotion)
+				if (player.EnableSlowMotion && blockCloud.Blocks.Length > 0)
 					player.SlowMotion.Value = false;
 			});
 

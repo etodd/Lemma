@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using BEPUphysics;
 using BEPUphysics.Constraints.SolverGroups;
 using BEPUphysics.Constraints.TwoEntity.Motors;
+using BEPUphysics.UpdateableSystems;
 using ComponentBind;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
@@ -22,6 +23,20 @@ namespace Lemma.Components
 		public Property<int> Goal = new Property<int>();
 		public Property<bool> StartAtMinimum = new Property<bool>();
 		public Property<Entity.Handle> Parent = new Property<Entity.Handle>();
+
+		private class Updater : Updateable, IBeforeNarrowPhaseUpdateable
+		{
+			private StaticSlider slider;
+
+			public Updater(StaticSlider s)
+			{
+				this.slider = s;
+			}
+
+			void IBeforeNarrowPhaseUpdateable.Update(float dt)
+			{
+			}
+		}
 
 		// Internal properties
 		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
@@ -56,9 +71,13 @@ namespace Lemma.Components
 			this.Goal.Value = value;
 		}
 
+		private Updater updater;
+
 		public override void Awake()
 		{
 			base.Awake();
+			this.updater = new Updater(this);
+			this.main.Space.Add(this.updater);
 			this.EnabledWhenPaused = false;
 			this.EnabledInEditMode = false;
 
@@ -76,6 +95,12 @@ namespace Lemma.Components
 						this.Coord.Value = parent.Get<Voxel>().GetCoordinate(this.EditorTransform.Value.Translation);
 				}, this.EditorTransform));
 			}
+		}
+
+		public override void delete()
+		{
+			this.main.Space.Remove(this.updater);
+			base.delete();
 		}
 
 		public override void Start()
@@ -122,17 +147,17 @@ namespace Lemma.Components
 
 			this.Position.Value = pos;
 
+			Vector3 translation = this.Transform.Value.Translation;
+			this.LinearVelocity.Value = (translation - this.lastTranslation) / dt;
+			this.lastTranslation = this.Transform.Value.Translation;
+
 			if (this.Position == this.Maximum && this.lastPosition != this.Maximum)
 				this.OnHitMax.Execute();
 			
 			if (this.Position == this.Minimum && this.lastPosition != this.Minimum)
 				this.OnHitMin.Execute();
 
-			this.lastPosition = pos;
-
-			Vector3 translation = this.Transform.Value.Translation;
-			this.LinearVelocity.Value = (translation - this.lastTranslation) / dt;
-			this.lastTranslation = translation;
+			this.lastPosition = this.Position;
 		}
 	}
 }

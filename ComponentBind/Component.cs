@@ -40,6 +40,12 @@ namespace ComponentBind
 		void Update(float dt);
 	}
 
+	public interface IEarlyUpdateableComponent : IComponent
+	{
+		void Update(float dt);
+		Property<int> UpdateOrder { get; }
+	}
+
 	public class Bindable : IBindable
 	{
 		private List<IBinding> bindings = new List<IBinding>();

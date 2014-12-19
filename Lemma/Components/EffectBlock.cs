@@ -111,10 +111,10 @@ namespace Lemma.Components
 				{
 					Voxel.Coord c = this.Coord;
 
+					bool blue = this.StateId == Voxel.t.Blue;
 					bool foundAdjacentCell = false;
 					if (this.CheckAdjacent)
 					{
-						bool blue = this.StateId == Voxel.t.Blue;
 						foreach (Direction dir in DirectionExtensions.Directions)
 						{
 							Voxel.Coord adjacent = c.Move(dir);
@@ -143,7 +143,7 @@ namespace Lemma.Components
 						Vector3 absolutePos = m.GetAbsolutePosition(c);
 
 						bool foundConflict = false;
-						if (!Zone.CanBuild(absolutePos))
+						if (blue && !Zone.CanBuild(absolutePos))
 							foundConflict = true;
 
 						if (!foundConflict)

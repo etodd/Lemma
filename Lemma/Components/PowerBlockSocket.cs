@@ -25,6 +25,8 @@ namespace Lemma.Components
 
 		public Property<Voxel.t> Type = new Property<Voxel.t>();
 
+		public Property<bool> PowerOnOnly = new Property<bool>();
+
 		public override void Awake()
 		{
 			base.Awake();

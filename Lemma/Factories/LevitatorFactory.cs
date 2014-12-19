@@ -293,11 +293,6 @@ namespace Lemma.Factories
 					delevitateMap();
 					levitator.LevitatingVoxel.Value = null;
 
-					Voxel map = raycastAI.Voxel.Value.Target.Get<Voxel>();
-					Voxel.Coord currentCoord = map.GetCoordinate(transform.Position);
-					Voxel.Coord? closest = map.FindClosestFilledCell(currentCoord, 10);
-					if (closest.HasValue)
-						raycastAI.MoveTo(closest.Value);
 					//volume.Value = defaultVolume;
 					//pitch.Value = 0.0f;
 				},
@@ -313,6 +308,9 @@ namespace Lemma.Factories
 							Entity levitatingMapEntity = levitator.LevitatingVoxel.Value.Target;
 							if (levitatingMapEntity == null || !levitatingMapEntity.Active || ai.TimeInCurrentState.Value > 8.0f)
 							{
+								Voxel map = raycastAI.Voxel.Value.Target.Get<Voxel>();
+								raycastAI.Coord.Value = raycastAI.LastCoord.Value = map.GetCoordinate(transform.Position);
+								raycastAI.Move(new Vector3(((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f));
 								ai.CurrentState.Value = "Alert";
 								return;
 							}

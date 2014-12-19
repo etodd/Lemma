@@ -270,10 +270,21 @@ namespace Lemma.Util
 			// linear velocity of point on body relative to center
 			Vector3 supportLocationVelocity;
 			if (supportEntity != null)
-				supportLocationVelocity = supportEntity.LinearVelocity + //linear component
-											Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
+			{
+				supportLocationVelocity = supportEntity.LinearVelocity // linear component
+					+ Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
+			}
 			else
-				supportLocationVelocity = new Vector3();
+			{
+				Voxel supportVoxel = supportEntityTag as Voxel;
+				if (supportVoxel == null)
+					supportLocationVelocity = Vector3.Zero;
+				else
+				{
+					supportLocationVelocity = supportVoxel.LinearVelocity // linear component
+						+ Vector3.Cross(supportVoxel.AngularVelocity, supportLocation - supportVoxel.Transform.Value.Translation);
+				}
+			}
 			
 			this.SupportVelocity.Value = supportLocationVelocity;
 

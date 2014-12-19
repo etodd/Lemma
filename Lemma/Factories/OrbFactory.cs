@@ -385,24 +385,8 @@ namespace Lemma.Factories
 
 							if (timeInCurrentState > 2.0f)
 							{
-								Entity mapEntity = raycastAI.Voxel.Value.Target;
-								if (mapEntity != null && mapEntity.Active)
-								{
-									Voxel m = raycastAI.Voxel.Value.Target.Get<Voxel>();
-									Voxel.Coord? closestCell = m.FindClosestFilledCell(raycastAI.Coord, radius + 1);
-									if (closestCell.HasValue)
-									{
-										raycastAI.Move(m.GetAbsolutePosition(closestCell.Value) - transform.Position);
-										ai.CurrentState.Value = "Alert";
-									}
-									else
-										entity.Delete.Execute();
-								}
-								else // Our map got deleted. Hope we find a new one.
-								{
-									raycastAI.Move(new Vector3(((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f));
-									ai.CurrentState.Value = "Alert";
-								}
+								raycastAI.Move(new Vector3(((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f));
+								ai.CurrentState.Value = "Alert";
 							}
 						},
 					},

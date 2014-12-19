@@ -16,6 +16,7 @@ namespace Lemma.Components
 		public Property<bool> IsSupported = new Property<bool>();
 		public Property<bool> HasTraction = new Property<bool>();
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
+		public Property<Vector3> SupportVelocity = new Property<Vector3>();
 		public Property<BEPUphysics.Entities.Entity> SupportEntity = new Property<BEPUphysics.Entities.Entity>();
 
 		// Input properties
@@ -276,17 +277,7 @@ namespace Lemma.Components
 					{
 						// Regular jump
 						// Take base velocity into account
-
-						BEPUphysics.Entities.Entity supportEntity = this.SupportEntity;
-						if (supportEntity != null)
-						{
-							Vector3 supportLocation = this.FloorPosition;
-							Voxel v = supportEntity.Tag as Voxel;
-							if (v != null)
-								baseVelocity += v.LinearVelocity + Vector3.Cross(v.AngularVelocity, supportLocation - v.Transform.Value.Translation);
-							else
-								baseVelocity += supportEntity.LinearVelocity + Vector3.Cross(supportEntity.AngularVelocity, supportLocation - supportEntity.Position);
-						}
+						baseVelocity += this.SupportVelocity;
 					}
 					else
 					{

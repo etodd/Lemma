@@ -153,7 +153,7 @@ namespace Lemma.Components
 				float x = ((float)Math.PI * 0.5f) + (((float)this.random.NextDouble() * 2.0f) - 1.0f) * radius;
 				float y = (((float)this.random.NextDouble() * 2.0f) - 1.0f) * radius;
 				Vector3 ray = new Vector3((float)Math.Cos(x) * (float)Math.Cos(y), (float)Math.Sin(y), (float)Math.Sin(x) * (float)Math.Cos(y));
-				Voxel.GlobalRaycastResult hit = Lemma.Components.Voxel.GlobalRaycast(pos, Vector3.TransformNormal(ray, mat), this.MovementDistance);
+				Voxel.GlobalRaycastResult hit = Lemma.Components.Voxel.GlobalRaycast(pos, Vector3.TransformNormal(ray, mat), this.MovementDistance, (distance, block) => distance > 1);
 				if (hit.Voxel != null && hit.Distance > 2.0f && this.VoxelFilter(hit.Coordinate.Value.Data.ID) && this.PositionFilter(hit.Position))
 				{
 					Voxel.Coord newCoord = hit.Coordinate.Value.Move(hit.Normal);
