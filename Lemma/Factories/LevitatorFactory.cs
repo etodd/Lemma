@@ -203,7 +203,11 @@ namespace Lemma.Factories
 
 			Func<bool> tryLevitate = delegate()
 			{
-				Voxel map = raycastAI.Voxel.Value.Target.Get<Voxel>();
+				Entity voxelEntity = raycastAI.Voxel.Value.Target;
+				if (voxelEntity == null)
+					return false;
+
+				Voxel map = voxelEntity.Get<Voxel>();
 				Voxel.Coord? candidate = map.FindClosestFilledCell(raycastAI.Coord, 3);
 
 				if (!candidate.HasValue)

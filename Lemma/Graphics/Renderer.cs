@@ -841,10 +841,12 @@ namespace Lemma.Components
 
 		private void drawModel(Microsoft.Xna.Framework.Graphics.Model model)
 		{
-			foreach (ModelMesh mesh in model.Meshes)
+			for (int i = 0; i < model.Meshes.Count; i++)
 			{
-				foreach (ModelMeshPart part in mesh.MeshParts)
+				ModelMesh mesh = model.Meshes[i];
+				for (int j = 0; j < mesh.MeshParts.Count; j++)
 				{
+					ModelMeshPart part = mesh.MeshParts[j];
 					if (part.NumVertices > 0)
 					{
 						this.main.GraphicsDevice.SetVertexBuffer(part.VertexBuffer);
@@ -874,11 +876,8 @@ namespace Lemma.Components
 			}
 			else if (results.Length == 2)
 			{
-				foreach (RenderTarget2D target in results)
-				{
-					if (target.IsDisposed)
-						return false;
-				}
+				if (results[0].IsDisposed || results[1].IsDisposed)
+					return false;
 				this.bindingsCache[0] = results[0];
 				this.bindingsCache[1] = results[1];
 				this.main.GraphicsDevice.SetRenderTargets(this.bindingsCache);

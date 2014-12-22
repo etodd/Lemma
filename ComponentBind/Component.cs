@@ -63,15 +63,15 @@ namespace ComponentBind
 
 		public void RemoveAllBindings()
 		{
-			foreach (IBinding binding in this.bindings)
-				binding.Delete();
+			for (int i = 0; i < this.bindings.Count; i++)
+				this.bindings[i].Delete();
 			this.bindings.Clear();
 		}
 
 		public virtual void delete()
 		{
-			foreach (IBinding binding in this.bindings)
-				binding.Delete();
+			for (int i = 0; i < this.bindings.Count; i++)
+				this.bindings[i].Delete();
 			this.bindings.Clear();
 		}
 	}

@@ -66,9 +66,9 @@ namespace ComponentBind
 		{
 			if (this.Enabled && this.enabled())
 			{
-				foreach (Command cmd in this.destinations)
+				for (int i = 0; i < this.destinations.Length; i++)
 				{
-					cmd.Execute();
+					this.destinations[i].Execute();
 					if (this.destinations == null)
 						break;
 				}
@@ -105,9 +105,9 @@ namespace ComponentBind
 		{
 			if (this.Enabled && this.enabled())
 			{
-				foreach (Command<Type> cmd in this.destinations)
+				for (int i = 0; i < this.destinations.Length; i++)
 				{
-					cmd.Execute(parameter1);
+					this.destinations[i].Execute(parameter1);
 					if (this.destinations == null)
 						break;
 				}
@@ -144,9 +144,9 @@ namespace ComponentBind
 		{
 			if (this.Enabled && this.enabled())
 			{
-				foreach (Command<Type, Type2> cmd in this.destinations)
+				for (int i = 0; i < this.destinations.Length; i++)
 				{
-					cmd.Execute(parameter1, parameter2);
+					this.destinations[i].Execute(parameter1, parameter2);
 					if (this.destinations == null)
 						break;
 				}
@@ -183,9 +183,9 @@ namespace ComponentBind
 		{
 			if (this.Enabled && this.enabled())
 			{
-				foreach (Command<Type, Type2, Type3> cmd in this.destinations)
+				for (int i = 0; i < this.destinations.Length; i++)
 				{
-					cmd.Execute(parameter1, parameter2, parameter3);
+					this.destinations[i].Execute(parameter1, parameter2, parameter3);
 					if (this.destinations == null)
 						break;
 				}
@@ -222,9 +222,9 @@ namespace ComponentBind
 		{
 			if (this.Enabled && this.enabled())
 			{
-				foreach (Command<Type, Type2, Type3, Type4> cmd in this.destinations)
+				for (int i = 0; i < this.destinations.Length; i++)
 				{
-					cmd.Execute(parameter1, parameter2, parameter3, parameter4);
+					this.destinations[i].Execute(parameter1, parameter2, parameter3, parameter4);
 					if (this.destinations == null)
 						break;
 				}

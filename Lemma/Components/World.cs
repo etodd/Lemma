@@ -84,8 +84,9 @@ namespace Lemma.Components
 
 		private static void processMap(Voxel map, IEnumerable<NonAxisAlignedBoundingBox> boxes)
 		{
-			foreach (Voxel.Chunk chunk in map.Chunks)
+			for (int i = 0; i < map.Chunks.Count; i++)
 			{
+				Voxel.Chunk chunk = map.Chunks[i];
 				BoundingBox absoluteChunkBoundingBox = chunk.RelativeBoundingBox.Transform(map.Transform);
 				bool active = false;
 				foreach (NonAxisAlignedBoundingBox box in boxes)
@@ -144,8 +145,9 @@ namespace Lemma.Components
 							suspended = true;
 						else
 						{
-							foreach (Zone z in Zone.Zones)
+							for (int i = 0; i < Zone.Zones.Count; i++)
 							{
+								Zone z = Zone.Zones[i];
 								if (z != currentZone && z.Exclusive && z.BoundingBox.Value.Contains(Vector3.Transform(pos, Matrix.Invert(z.Transform))) != ContainmentType.Disjoint)
 								{
 									suspended = true;
@@ -187,20 +189,21 @@ namespace Lemma.Components
 			this.CurrentZone.Value = newZone;
 
 			if (newZone == null)
-				main.LightingManager.EnableDetailGlobalShadowMap.Value = true;
+				this.main.LightingManager.EnableDetailGlobalShadowMap.Value = true;
 			else
-				main.LightingManager.EnableDetailGlobalShadowMap.Value = newZone.DetailedShadows;
+				this.main.LightingManager.EnableDetailGlobalShadowMap.Value = newZone.DetailedShadows;
 
-			IEnumerable<NonAxisAlignedBoundingBox> boxes = getActiveBoundingBoxes(main.Camera, newZone);
-			Vector3 cameraPosition = main.Camera.Position;
-			float suspendDistance = main.Camera.FarPlaneDistance;
-			foreach (Entity e in main.Entities)
+			IEnumerable<NonAxisAlignedBoundingBox> boxes = getActiveBoundingBoxes(this.main.Camera, newZone);
+			Vector3 cameraPosition = this.main.Camera.Position;
+			float suspendDistance = this.main.Camera.FarPlaneDistance;
+			for (int i = 0; i < this.main.Entities.Count; i++)
 			{
+				Entity e = this.main.Entities[i];
 				if (!e.CannotSuspend)
 					processEntity(e, newZone, boxes, cameraPosition, suspendDistance);
 			}
 
-			this.lastUpdatedCameraPosition = main.Camera.Position;
+			this.lastUpdatedCameraPosition = this.main.Camera.Position;
 		}
 
 		public void UpdateZones()

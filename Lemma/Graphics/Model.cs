@@ -220,15 +220,17 @@ namespace Lemma.Components
 						Vector3 modelMax = new Vector3(float.MinValue, float.MinValue, float.MinValue);
 						Vector3 modelMin = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
 
-						foreach (ModelMesh mesh in this.model.Meshes)
+						for (int i = 0; i < this.model.Meshes.Count; i++)
 						{
+							ModelMesh mesh = this.model.Meshes[i];
 							//Create variables to hold min and max xyz values for the mesh. Initialise them to extremes
 							Vector3 meshMax = new Vector3(float.MinValue, float.MinValue, float.MinValue);
 							Vector3 meshMin = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
 
 							// There may be multiple parts in a mesh (different materials etc.) so loop through each
-							foreach (ModelMeshPart part in mesh.MeshParts)
+							for (int j = 0; j < mesh.MeshParts.Count; j++)
 							{
+								ModelMeshPart part = mesh.MeshParts[j];
 								// The stride is how big, in bytes, one vertex is in the vertex buffer
 								// We have to use this as we do not know the make up of the vertex
 								int stride = part.VertexBuffer.VertexDeclaration.VertexStride;
@@ -804,10 +806,12 @@ namespace Lemma.Components
 						this.main.GraphicsDevice.RasterizerState = noCullState;
 					}
 
-					foreach (ModelMesh mesh in this.model.Meshes)
+					for (int i = 0; i < this.model.Meshes.Count; i++)
 					{
-						foreach (ModelMeshPart part in mesh.MeshParts)
+						ModelMesh mesh = this.model.Meshes[i];
+						for (int j = 0; j < mesh.MeshParts.Count; j++)
 						{
+							ModelMeshPart part = mesh.MeshParts[j];
 							if (part.NumVertices > 0)
 							{
 								// Draw all the instance copies in a single call.
@@ -901,10 +905,12 @@ namespace Lemma.Components
 					this.main.GraphicsDevice.RasterizerState = noCullState;
 				}
 
-				foreach (ModelMesh mesh in this.model.Meshes)
+				for (int i = 0; i < this.model.Meshes.Count; i++)
 				{
-					foreach (ModelMeshPart meshPart in mesh.MeshParts)
+					ModelMesh mesh = this.model.Meshes[i];
+					for (int j = 0; j < mesh.MeshParts.Count; j++)
 					{
+						ModelMeshPart meshPart = mesh.MeshParts[j];
 						// Tell the GPU to read from both the model vertex buffer plus our instanceVertexBuffer.
 
 						// TODO: Monogame support for GraphicsDevice.SetVertexBuffers()

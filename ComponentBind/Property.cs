@@ -233,8 +233,8 @@ namespace ComponentBind
 		{
 			ListProperty<Type> list = (ListProperty<Type>)dest;
 			list.Clear();
-			foreach (Type t in this)
-				list.Add(t);
+			for (int i = 0; i < this.list.Count; i++)
+				list.Add(this.list[i]);
 		}
 
 		public void Add(Type t)

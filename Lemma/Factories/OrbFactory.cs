@@ -320,7 +320,7 @@ namespace Lemma.Factories
 								if (mapEntity != null && mapEntity.Active)
 								{
 									EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
-									Voxel m = raycastAI.Voxel.Value.Target.Get<Voxel>();
+									Voxel m = mapEntity.Get<Voxel>();
 
 									effectBlock.Offset.Value = m.GetRelativePosition(raycastAI.Coord);
 
@@ -378,7 +378,7 @@ namespace Lemma.Factories
 							{
 								Entity mapEntity = raycastAI.Voxel.Value.Target;
 								if (mapEntity != null && mapEntity.Active)
-									Explosion.Explode(main, raycastAI.Voxel.Value.Target.Get<Voxel>(), raycastAI.Coord, radius, 18.0f);
+									Explosion.Explode(main, mapEntity.Get<Voxel>(), raycastAI.Coord, radius, 18.0f);
 
 								orb.Exploded.Value = true;
 							}

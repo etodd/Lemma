@@ -61,12 +61,11 @@ namespace Lemma.Components
 				this.vertexBuffer = new DynamicVertexBuffer(this.main.GraphicsDevice, VertexPositionColor.VertexDeclaration, (this.Lines.Length * 2) + 8, BufferUsage.WriteOnly);
 
 				VertexPositionColor[] data = new VertexPositionColor[this.vertexBuffer.VertexCount];
-				int i = 0;
-				foreach (Line line in this.Lines)
+				for (int i = 0; i < this.Lines.Count; i++)
 				{
-					data[i] = line.A;
-					data[i + 1] = line.B;
-					i += 2;
+					Line line = this.Lines[i];
+					data[i * 2] = line.A;
+					data[i * 2 + 1] = line.B;
 				}
 				this.vertexBuffer.SetData<VertexPositionColor>(data, 0, this.Lines.Length * 2, SetDataOptions.Discard);
 			}

@@ -41,8 +41,9 @@ namespace Lemma.Components
 		{
 			if (clipNames.Length == 0)
 				return this.CurrentClips.Count > 0;
-			foreach (string clipName in clipNames)
+			for (int i = 0; i < clipNames.Length; i++)
 			{
+				string clipName = clipNames[i];
 				SkinnedModel.Clip clip;
 				if (this.skinningData.Clips.TryGetValue(clipName, out clip))
 				{
@@ -88,8 +89,9 @@ namespace Lemma.Components
 		{
 			if (clips.Length == 0)
 			{
-				foreach (SkinnedModel.Clip clip in this.CurrentClips)
+				for (int i = 0; i < this.CurrentClips.Count; i++)
 				{
+					SkinnedModel.Clip clip = this.CurrentClips[i];
 					if (!clip.Stopping)
 					{
 						clip.Stopping = true;
@@ -99,8 +101,9 @@ namespace Lemma.Components
 			}
 			else
 			{
-				foreach (string clipName in clips)
+				for (int i = 0; i < clips.Length; i++)
 				{
+					string clipName = clips[i];
 					SkinnedModel.Clip clip;
 					if (this.skinningData.Clips.TryGetValue(clipName, out clip))
 					{
@@ -143,14 +146,10 @@ namespace Lemma.Components
 		/// </summary>
 		public void UpdateBoneTransforms(TimeSpan elapsedTime)
 		{
-			int i = 0;
-			foreach (Matrix bone in this.skinningData.BindPose)
-			{
-				this.boneTransforms[i] = bone;
-				i++;
-			}
+			for (int i = 0; i < this.skinningData.BindPose.Count; i++)
+				this.boneTransforms[i] = this.skinningData.BindPose[i];
 
-			for (i = 0; i < this.CurrentClips.Count; i++)
+			for (int i = 0; i < this.CurrentClips.Count; i++)
 			{
 				SkinnedModel.Clip clip = this.CurrentClips[i];
 				TimeSpan newTime = clip.CurrentTime + new TimeSpan((long)((float)elapsedTime.Ticks * clip.Speed));
@@ -160,8 +159,9 @@ namespace Lemma.Components
 				{
 					float currentSeconds = (float)clip.CurrentTime.TotalSeconds;
 					float newSeconds = (float)newTime.TotalSeconds;
-					foreach (Callback c in callbacks)
+					for (int j = 0; j < callbacks.Count; j++)
 					{
+						Callback c = callbacks[j];
 						if (currentSeconds < c.Offset && newSeconds > c.Offset)
 							c.Command.Execute();
 					}
@@ -207,8 +207,9 @@ namespace Lemma.Components
 				{
 					if (blend < 1.0f)
 					{
-						foreach (SkinnedModel.Channel channel in clip.Channels)
+						for (int j = 0; j < clip.Channels.Count; j++)
 						{
+							SkinnedModel.Channel channel = clip.Channels[j];
 							Matrix bone1 = this.boneTransforms[channel.BoneIndex];
 							Vector3 scale1;
 							Quaternion quat1;
@@ -226,8 +227,11 @@ namespace Lemma.Components
 					}
 					else
 					{
-						foreach (SkinnedModel.Channel channel in clip.Channels)
+						for (int j = 0; j < clip.Channels.Count; j++)
+						{
+							SkinnedModel.Channel channel = clip.Channels[j];
 							this.boneTransforms[channel.BoneIndex] = channel.CurrentMatrix;
+						}
 					}
 				}
 			}

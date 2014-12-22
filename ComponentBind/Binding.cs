@@ -42,8 +42,8 @@ namespace ComponentBind
 
 		public virtual void Delete()
 		{
-			foreach (IProperty property in this.sources)
-				property.RemoveBinding(this);
+			for (int i = 0; i < this.sources.Length; i++)
+				this.sources[i].RemoveBinding(this);
 			this.sources = null;
 			this.get = null;
 			this.destination = null;
@@ -156,8 +156,8 @@ namespace ComponentBind
 			this.notify = _notify;
 			this.enabled = enabled;
 			this.sources = _sources;
-			foreach (IProperty property in this.sources)
-				property.AddBinding(this);
+			for (int i = 0; i < this.sources.Length; i++)
+				this.sources[i].AddBinding(this);
 		}
 
 		public void OnChanged(IProperty changed)
@@ -168,8 +168,8 @@ namespace ComponentBind
 
 		public void Delete()
 		{
-			foreach (IProperty property in this.sources)
-				property.RemoveBinding(this);
+			for (int i = 0; i < this.sources.Length; i++)
+				this.sources[i].RemoveBinding(this);
 			this.notify = null;
 			this.sources = null;
 			this.enabled = null;
@@ -199,8 +199,8 @@ namespace ComponentBind
 			this.destination = _destination;
 			this.get = _get;
 			this.sources = _sources;
-			foreach (IProperty property in this.sources)
-				property.AddBinding(this);
+			for (int i = 0; i < this.sources.Length; i++)
+				this.sources[i].AddBinding(this);
 			this.OnChanged(_sources.FirstOrDefault());
 		}
 	}
@@ -249,10 +249,10 @@ namespace ComponentBind
 			this.property2Sources = _property2Sources.Union(new IProperty[] { this.property1 }).ToArray();
 			this.transform1 = _transform1;
 			this.transform2 = _transform2;
-			foreach (IProperty property in this.property1Sources)
-				property.AddBinding(this);
-			foreach (IProperty property in this.property2Sources)
-				property.AddBinding(this);
+			for (int i = 0; i < this.property1Sources.Length; i++)
+				this.property1Sources[i].AddBinding(this);
+			for (int i = 0; i < this.property2Sources.Length; i++)
+				this.property2Sources[i].AddBinding(this);
 			this.OnChanged(this.property1);
 		}
 
@@ -283,10 +283,10 @@ namespace ComponentBind
 
 		public override void Delete()
 		{
-			foreach (IProperty property in this.property1Sources)
-				property.RemoveBinding(this);
-			foreach (IProperty property in this.property2Sources)
-				property.RemoveBinding(this);
+			for (int i = 0; i < this.property1Sources.Length; i++)
+				this.property1Sources[i].RemoveBinding(this);
+			for (int i = 0; i < this.property2Sources.Length; i++)
+				this.property2Sources[i].RemoveBinding(this);
 			this.property1 = null;
 			this.property1Sources = null;
 			this.property2 = null;
@@ -360,8 +360,9 @@ namespace ComponentBind
 			if (this.Enabled)
 			{
 				this.Clear(property);
-				foreach (Type2 x in (ListProperty<Type2>)this.sources[0])
-					this.Add(x, property);
+				ListProperty<Type2> source = (ListProperty<Type2>)this.sources[0];
+				for (int i = 0; i < source.Count; i++)
+					this.Add(source[i], property);
 			}
 		}
 
@@ -439,8 +440,8 @@ namespace ComponentBind
 
 		public void Delete()
 		{
-			foreach (IProperty source in this.sources)
-				source.RemoveBinding(this);
+			for (int i = 0; i < this.sources.Length; i++)
+				this.sources[i].RemoveBinding(this);
 			this.sources = null;
 			this.destination = null;
 			this.transform = null;
@@ -501,8 +502,8 @@ namespace ComponentBind
 
 		public void Delete()
 		{
-			foreach (IProperty source in this.sources)
-				source.RemoveBinding(this);
+			for (int i = 0; i < this.sources.Length; i++)
+				this.sources[i].RemoveBinding(this);
 			this.sources = null;
 		}
 	}

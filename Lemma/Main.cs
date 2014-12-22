@@ -1515,8 +1515,9 @@ namespace Lemma
 			Ovr.Matrix4f proj = Ovr.Hmd.GetProjection(this.vrLeftFov, originalCamera.NearPlaneDistance, originalCamera.FarPlaneDistance, true);
 			this.vrCamera.Projection.Value = Oculus.MatrixOvrToXna(proj);
 
-			foreach (IDrawablePreFrameComponent c in this.preframeDrawables)
+			for (int i = 0; i < this.preframeDrawables.Count; i++)
 			{
+				IDrawablePreFrameComponent c = this.preframeDrawables[i];
 				if (this.componentEnabled(c))
 					c.DrawPreFrame(gameTime, this.renderParameters);
 			}
@@ -1533,8 +1534,9 @@ namespace Lemma
 
 			this.Renderer.PostProcess(renderTarget, this.renderParameters);
 
-			foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
+			for (int i = 0; i < this.nonPostProcessedDrawables.Count; i++)
 			{
+				INonPostProcessedDrawableComponent c = this.nonPostProcessedDrawables[i];
 				if (this.componentEnabled(c))
 					c.DrawNonPostProcessed(gameTime, this.renderParameters);
 			}
@@ -1597,8 +1599,9 @@ namespace Lemma
 			else
 #endif
 			{
-				foreach (IDrawablePreFrameComponent c in this.preframeDrawables)
+				for (int i = 0; i < this.preframeDrawables.Count; i++)
 				{
+					IDrawablePreFrameComponent c = this.preframeDrawables[i];
 					if (this.componentEnabled(c))
 						c.DrawPreFrame(gameTime, this.renderParameters);
 				}
@@ -1612,8 +1615,9 @@ namespace Lemma
 
 				this.Renderer.PostProcess(this.RenderTarget, this.renderParameters);
 
-				foreach (INonPostProcessedDrawableComponent c in this.nonPostProcessedDrawables)
+				for (int i = 0; i < this.nonPostProcessedDrawables.Count; i++)
 				{
+					INonPostProcessedDrawableComponent c = this.nonPostProcessedDrawables[i];
 					if (this.componentEnabled(c))
 						c.DrawNonPostProcessed(gameTime, this.renderParameters);
 				}
@@ -1664,8 +1668,9 @@ namespace Lemma
 			Vector3 cameraPos = parameters.Camera.Position;
 			BoundingFrustum frustum = parameters.Camera.BoundingFrustum;
 
-			foreach (IDrawableComponent c in this.drawables)
+			for (int i = 0; i < this.drawables.Count; i++)
 			{
+				IDrawableComponent c = this.drawables[i];
 				if (this.componentEnabled(c) && c.IsVisible(frustum))
 					c.Draw(this.GameTime, parameters);
 			}
@@ -1679,8 +1684,9 @@ namespace Lemma
 
 		public void DrawAlphaComponents(RenderParameters parameters)
 		{
-			foreach (IDrawableAlphaComponent c in this.alphaDrawables)
+			for (int i = 0; i < this.alphaDrawables.Count; i++)
 			{
+				IDrawableAlphaComponent c = this.alphaDrawables[i];
 				if (this.componentEnabled(c))
 					c.DrawAlpha(this.GameTime, parameters);
 			}
@@ -1688,8 +1694,9 @@ namespace Lemma
 
 		public void DrawPostAlphaComponents(RenderParameters parameters)
 		{
-			foreach (IDrawablePostAlphaComponent c in this.postAlphaDrawables)
+			for (int i = 0; i < this.postAlphaDrawables.Count; i++)
 			{
+				IDrawablePostAlphaComponent c = this.postAlphaDrawables[i];
 				if (this.componentEnabled(c))
 					c.DrawPostAlpha(this.GameTime, parameters);
 			}

@@ -162,8 +162,9 @@ namespace Lemma.Components
 							else if (generation < maxGenerations)
 							{
 								Direction down = map.GetRelativeDirection(Direction.NegativeY);
-								foreach (Direction dir in DirectionExtensions.Directions)
+								for (int i = 0; i < 6; i++)
 								{
+									Direction dir = DirectionExtensions.Directions[i];
 									Voxel.Coord adjacent = coord.Move(dir);
 									if (!coords.Contains(adjacent))
 									{
@@ -210,8 +211,9 @@ namespace Lemma.Components
 						if (poweredCoords.Count > 0)
 						{
 							map.Empty(poweredCoords, true, true, map, false);
-							foreach (Voxel.Coord coord in poweredCoords)
+							for (int i = 0; i < poweredCoords.Count; i++)
 							{
+								Voxel.Coord coord = poweredCoords[i];
 								if (coord.Data.ID == Voxel.t.HardPowered)
 									map.Fill(coord, Voxel.States.Hard);
 								else
@@ -226,8 +228,9 @@ namespace Lemma.Components
 
 		private bool isInQueue(Entity m, Voxel.Coord c, bool removing)
 		{
-			foreach (ScheduledBlock b in this.BlockQueue)
+			for (int i = 0; i < this.BlockQueue.Count; i++)
 			{
+				ScheduledBlock b = this.BlockQueue[i];
 				if (b.Removing == removing && m == b.Voxel.Target && b.Coordinate.Equivalent(c))
 					return true;
 			}
@@ -278,8 +281,9 @@ namespace Lemma.Components
 							if (entry.Generation == 0 && id == 0)
 							{
 								Direction down = map.GetRelativeDirection(Direction.NegativeY);
-								foreach (Direction dir in DirectionExtensions.Directions)
+								for (int j = 0; j < 6; j++)
 								{
+									Direction dir = DirectionExtensions.Directions[j];
 									Voxel.Coord adjacent = c.Move(dir);
 									Voxel.t adjacentID = map[adjacent].ID;
 									bool adjacentIsFloater = adjacentID == Voxel.t.Floater;
@@ -312,8 +316,9 @@ namespace Lemma.Components
 						}
 						else if (id == Voxel.t.Blue)
 						{
-							foreach (Direction dir in DirectionExtensions.Directions)
+							for (int j = 0; j < 6; j++)
 							{
+								Direction dir = DirectionExtensions.Directions[j];
 								Voxel.Coord adjacent = c.Move(dir);
 								Voxel.t adjacentID = map[adjacent].ID;
 
@@ -336,8 +341,9 @@ namespace Lemma.Components
 						}
 						else if (id == Voxel.t.Neutral || id == Voxel.t.Hard)
 						{
-							foreach (Direction dir in DirectionExtensions.Directions)
+							for (int j = 0; j < 6; j++)
 							{
+								Direction dir = DirectionExtensions.Directions[j];
 								Voxel.Coord adjacent = c.Move(dir);
 								Voxel.t adjacentID = map[adjacent].ID;
 								if (adjacentID == Voxel.t.Infected || adjacentID == Voxel.t.Blue || adjacentID == Voxel.t.Powered)
@@ -358,8 +364,9 @@ namespace Lemma.Components
 						}
 						else if (id == Voxel.t.Powered || id == Voxel.t.PermanentPowered || id == Voxel.t.HardPowered || id == Voxel.t.PoweredSwitch)
 						{
-							foreach (Direction dir in DirectionExtensions.Directions)
+							for (int j = 0; j < 6; j++)
 							{
+								Direction dir = DirectionExtensions.Directions[j];
 								Voxel.Coord adjacent = c.Move(dir);
 								Voxel.t adjacentID = map[adjacent].ID;
 
@@ -393,8 +400,9 @@ namespace Lemma.Components
 						}
 						else if (id == Voxel.t.Infected || id == Voxel.t.HardInfected)
 						{
-							foreach (Direction dir in DirectionExtensions.Directions)
+							for (int j = 0; j < 6; j++)
 							{
+								Direction dir = DirectionExtensions.Directions[j];
 								Voxel.Coord adjacent = c.Move(dir);
 								Voxel.t adjacentID = map[adjacent].ID;
 								if (adjacentID == Voxel.t.Neutral && entry.Generation < maxGenerations)
@@ -426,8 +434,8 @@ namespace Lemma.Components
 					}
 				}
 			}
-			foreach (Voxel v in this.toRegenerate)
-				v.Regenerate();
+			for (int i = 0; i < this.toRegenerate.Count; i++)
+				this.toRegenerate[i].Regenerate();
 			this.toRegenerate.Clear();
 		}
 

@@ -1036,8 +1036,9 @@ namespace Lemma.Components
 
 			public void Free()
 			{
-				foreach (Box[, ,] d in this.data)
+				for (int i = 0; i < this.data.Count; i++)
 				{
+					Box[,,] d = this.data[i];
 					for (int u = 0; u < this.map.chunkSize; u++)
 					{
 						for (int v = 0; v < this.map.chunkSize; v++)
@@ -1058,9 +1059,9 @@ namespace Lemma.Components
 					int indexX = (coord.X - this.map.minX) / this.map.chunkSize;
 					int indexY = (coord.Y - this.map.minY) / this.map.chunkSize;
 					int indexZ = (coord.Z - this.map.minZ) / this.map.chunkSize;
-					int i = 0;
-					foreach (Chunk c in this.chunks)
+					for (int i = 0; i < this.chunks.Count; i++)
 					{
+						Chunk c = this.chunks[i];
 						if (c.IndexX == indexX && c.IndexY == indexY && c.IndexZ == indexZ)
 						{
 							Box box = this.data[i][coord.X - c.X, coord.Y - c.Y, coord.Z - c.Z];
@@ -1069,7 +1070,6 @@ namespace Lemma.Components
 							else
 								return box.Type;
 						}
-						i++;
 					}
 					return null;
 				}
@@ -1454,13 +1454,14 @@ namespace Lemma.Components
 
 			public void Instantiate()
 			{
-				foreach (Box b in this.DataBoxes)
-					this.Voxel.addBoxWithoutAdjacency(b);
+				for (int i = 0; i < this.DataBoxes.Count; i++)
+					this.Voxel.addBoxWithoutAdjacency(this.DataBoxes[i]);
 
-				foreach (Box box in this.DataBoxes)
+				for (int i = 0; i < this.DataBoxes.Count; i++)
 				{
-					for (int i = 0; i < 6; i++)
-						box.Surfaces[i].RefreshTransform(box, (Direction)i);
+					Box box = this.DataBoxes[i];
+					for (int j = 0; j < 6; j++)
+						box.Surfaces[j].RefreshTransform(box, (Direction)j);
 					this.Boxes.Add(box);
 				}
 
@@ -1470,8 +1471,9 @@ namespace Lemma.Components
 				if (!this.Voxel.main.EditorEnabled && !this.Voxel.Mutable)
 				{
 					this.freeData();
-					foreach (Box box in this.Boxes)
+					for (int i = 0; i < this.Boxes.Count; i++)
 					{
+						Box box = this.Boxes[i];
 						box.Adjacent.Clear();
 						box.Adjacent = null;
 					}
@@ -1483,8 +1485,8 @@ namespace Lemma.Components
 			public void RebuildAdjacency()
 			{
 				this.Voxel.calculateAdjacency(this.Boxes);
-				foreach (Box b in this.Boxes)
-					this.Voxel.regenerateSurfaces(b);
+				for (int i = 0; i < this.Boxes.Count; i++)
+					this.Voxel.regenerateSurfaces(this.Boxes[i]);
 				this.RefreshImmediately();
 			}
 
@@ -1557,8 +1559,9 @@ namespace Lemma.Components
 				this.Active = false;
 				this.freeData();
 				this.meshes.Clear();
-				foreach (Box box in this.Boxes)
+				for (int i = 0; i < this.Boxes.Count; i++)
 				{
+					Box box = this.Boxes[i];
 					if (box.Adjacent != null)
 					{
 						box.Adjacent.Clear();
@@ -1973,9 +1976,9 @@ namespace Lemma.Components
 
 					Dictionary<Box, int> indexLookup = new Dictionary<Box, int>();
 
-					int index = 0;
-					foreach (Box box in Voxel.boxCache)
+					for (int i = 0; i < Voxel.boxCache.Count; i++)
 					{
+						Box box = Voxel.boxCache[i];
 						result.Add(box.X);
 						result.Add(box.Y);
 						result.Add(box.Z);
@@ -2015,14 +2018,13 @@ namespace Lemma.Components
 						Voxel.surfaceCache[22] = box.Surfaces[5].MaxU;
 						Voxel.surfaceCache[23] = box.Surfaces[5].MaxV;
 						BitWorker.PackInts(result, 11, Voxel.surfaceCache);
-						indexLookup.Add(box, index);
-						index++;
+						indexLookup.Add(box, i);
 					}
 
-					index = 0;
 					List<int> indexData = new List<int>();
-					foreach (Box box in Voxel.boxCache)
+					for (int i = 0; i < Voxel.boxCache.Count; i++)
 					{
+						Box box = Voxel.boxCache[i];
 						if (box.Adjacent != null)
 						{
 							lock (box.Adjacent)
@@ -2034,12 +2036,11 @@ namespace Lemma.Components
 									if (!this.relationshipCache.ContainsKey(relationship1) && !this.relationshipCache.ContainsKey(relationship2))
 									{
 										this.relationshipCache[relationship1] = true;
-										indexData.Add(index);
+										indexData.Add(i);
 										indexData.Add(indexLookup[adjacent]);
 									}
 								}
 							}
-							index++;
 						}
 					}
 					this.relationshipCache.Clear();
@@ -2224,8 +2225,8 @@ namespace Lemma.Components
 			{
 				this.Add(new ChangeBinding<Matrix>(this.Transform, delegate(Matrix old, Matrix value)
 				{
-					foreach (Chunk c in this.Chunks)
-						c.UpdateTransform();
+					for (int i = 0; i < this.Chunks.Count; i++)
+						this.Chunks[i].UpdateTransform();
 				}));
 			}
 		}
@@ -2261,8 +2262,9 @@ namespace Lemma.Components
 						foreach (SpawnGroup spawn in spawns)
 						{
 							List<DynamicVoxel> spawnedMaps = new List<DynamicVoxel>();
-							foreach (List<Box> island in spawn.Islands)
+							for (int i = 0; i < spawn.Islands.Count; i++)
 							{
+								List<Box> island = spawn.Islands[i];
 								Box firstBox = island.First();
 								if (island.Count == 1 && firstBox.Width * firstBox.Height * firstBox.Depth == 1)
 								{
@@ -2454,8 +2456,8 @@ namespace Lemma.Components
 
 		protected virtual void postDeserialization()
 		{
-			foreach (Chunk c in this.Chunks)
-				c.Instantiate();
+			for (int i = 0; i < this.Chunks.Count; i++)
+				this.Chunks[i].Instantiate();
 			this.updatePhysics();
 		}
 
@@ -2519,8 +2521,8 @@ namespace Lemma.Components
 			base.delete();
 			lock (this.MutationLock)
 			{
-				foreach (Chunk chunk in this.Chunks)
-					chunk.Delete();
+				for (int i = 0; i < this.Chunks.Count; i++)
+					this.Chunks[i].Delete();
 				this.Chunks.Clear();
 
 				for (int i = 0; i < this.maxChunks; i++)
@@ -2716,8 +2718,9 @@ namespace Lemma.Components
 					completelyEmptied = false;
 				else
 				{
-					foreach (Chunk chunk in this.Chunks)
+					for (int i = 0; i < this.Chunks.Count; i++)
 					{
+						Chunk chunk = this.Chunks[i];
 						foreach (Box box in chunk.Boxes)
 						{
 							if (box.Active)
@@ -3187,8 +3190,8 @@ namespace Lemma.Components
 
 		public void RebuildAdjacency()
 		{
-			foreach (Chunk c in this.Chunks)
-				c.RebuildAdjacency();
+			for (int i = 0; i < this.Chunks.Count; i++)
+				this.Chunks[i].RebuildAdjacency();
 		}
 
 		private Dictionary<BoxRelationship, bool> relationshipCache = new Dictionary<BoxRelationship, bool>();
@@ -3365,19 +3368,15 @@ namespace Lemma.Components
 			Surface surface;
 			State type = box.Type;
 
-			foreach (Direction face in new[] { Direction.PositiveX, Direction.NegativeX })
 			{
-				surface = box.Surfaces[(int)face];
+				surface = box.Surfaces[(int)Direction.PositiveX];
 
 				surface.MinV = box.Z + box.Depth;
 				surface.MaxV = box.Z;
 				surface.MinU = box.Y + box.Height;
 				surface.MaxU = box.Y;
 
-				if (face == Direction.PositiveX)
-					x = box.X + box.Width;
-				else
-					x = box.X - 1;
+				x = box.X + box.Width;
 
 				for (y = box.Y; y < box.Y + box.Height; y++)
 				{
@@ -3396,21 +3395,47 @@ namespace Lemma.Components
 							z = adjacent.Z + adjacent.Depth;
 					}
 				}
-				surface.RefreshTransform(box, face);
+				surface.RefreshTransform(box, Direction.PositiveX);
 			}
 
-			foreach (Direction face in new[] { Direction.PositiveY, Direction.NegativeY })
 			{
-				surface = box.Surfaces[(int)face];
+				surface = box.Surfaces[(int)Direction.NegativeX];
+
+				surface.MinV = box.Z + box.Depth;
+				surface.MaxV = box.Z;
+				surface.MinU = box.Y + box.Height;
+				surface.MaxU = box.Y;
+
+				x = box.X - 1;
+
+				for (y = box.Y; y < box.Y + box.Height; y++)
+				{
+					for (z = box.Z; z < box.Z + box.Depth; )
+					{
+						Box adjacent = this.GetBox(x, y, z);
+						if (adjacent == null || adjacent.Type != type)
+						{
+							surface.MinV = Math.Min(surface.MinV, z);
+							surface.MaxV = Math.Max(surface.MaxV, z + 1);
+							surface.MinU = Math.Min(surface.MinU, y);
+							surface.MaxU = Math.Max(surface.MaxU, y + 1);
+							z++;
+						}
+						else
+							z = adjacent.Z + adjacent.Depth;
+					}
+				}
+				surface.RefreshTransform(box, Direction.NegativeX);
+			}
+
+			{
+				surface = box.Surfaces[(int)Direction.PositiveY];
 				surface.MinU = box.X + box.Width;
 				surface.MaxU = box.X;
 				surface.MinV = box.Z + box.Depth;
 				surface.MaxV = box.Z;
 
-				if (face == Direction.PositiveY)
-					y = box.Y + box.Height;
-				else
-					y = box.Y - 1;
+				y = box.Y + box.Height;
 
 				for (x = box.X; x < box.X + box.Width; x++)
 				{
@@ -3429,21 +3454,46 @@ namespace Lemma.Components
 							z = adjacent.Z + adjacent.Depth;
 					}
 				}
-				surface.RefreshTransform(box, face);
+				surface.RefreshTransform(box, Direction.PositiveY);
 			}
 
-			foreach (Direction face in new[] { Direction.PositiveZ, Direction.NegativeZ })
 			{
-				surface = box.Surfaces[(int)face];
+				surface = box.Surfaces[(int)Direction.NegativeY];
+				surface.MinU = box.X + box.Width;
+				surface.MaxU = box.X;
+				surface.MinV = box.Z + box.Depth;
+				surface.MaxV = box.Z;
+
+				y = box.Y - 1;
+
+				for (x = box.X; x < box.X + box.Width; x++)
+				{
+					for (z = box.Z; z < box.Z + box.Depth; )
+					{
+						Box adjacent = this.GetBox(x, y, z);
+						if (adjacent == null || adjacent.Type != type)
+						{
+							surface.MinV = Math.Min(surface.MinV, z);
+							surface.MaxV = Math.Max(surface.MaxV, z + 1);
+							surface.MinU = Math.Min(surface.MinU, x);
+							surface.MaxU = Math.Max(surface.MaxU, x + 1);
+							z++;
+						}
+						else
+							z = adjacent.Z + adjacent.Depth;
+					}
+				}
+				surface.RefreshTransform(box, Direction.NegativeY);
+			}
+
+			{
+				surface = box.Surfaces[(int)Direction.PositiveZ];
 				surface.MinU = box.X + box.Width;
 				surface.MaxU = box.X;
 				surface.MinV = box.Y + box.Height;
 				surface.MaxV = box.Y;
 
-				if (face == Direction.PositiveZ)
-					z = box.Z + box.Depth;
-				else
-					z = box.Z - 1;
+				z = box.Z + box.Depth;
 
 				for (y = box.Y; y < box.Y + box.Height; y++)
 				{
@@ -3462,7 +3512,36 @@ namespace Lemma.Components
 							x = adjacent.X + adjacent.Width;
 					}
 				}
-				surface.RefreshTransform(box, face);
+				surface.RefreshTransform(box, Direction.PositiveZ);
+			}
+
+			{
+				surface = box.Surfaces[(int)Direction.NegativeZ];
+				surface.MinU = box.X + box.Width;
+				surface.MaxU = box.X;
+				surface.MinV = box.Y + box.Height;
+				surface.MaxV = box.Y;
+
+				z = box.Z - 1;
+
+				for (y = box.Y; y < box.Y + box.Height; y++)
+				{
+					for (x = box.X; x < box.X + box.Width; )
+					{
+						Box adjacent = this.GetBox(x, y, z);
+						if (adjacent == null || adjacent.Type != type)
+						{
+							surface.MinU = Math.Min(surface.MinU, x);
+							surface.MaxU = Math.Max(surface.MaxU, x + 1);
+							surface.MinV = Math.Min(surface.MinV, y);
+							surface.MaxV = Math.Max(surface.MaxV, y + 1);
+							x++;
+						}
+						else
+							x = adjacent.X + adjacent.Width;
+					}
+				}
+				surface.RefreshTransform(box, Direction.NegativeZ);
 			}
 
 			if (box.Added)
@@ -3496,8 +3575,9 @@ namespace Lemma.Components
 		{
 			lock (box.Adjacent)
 			{
-				foreach (Box box2 in box.Adjacent)
+				for (int i = 0; i < box.Adjacent.Count; i++)
 				{
+					Box box2 = box.Adjacent[i];
 					lock (box2.Adjacent)
 						box2.Adjacent.Remove(box);
 				}
@@ -3584,17 +3664,20 @@ namespace Lemma.Components
 
 				// Update graphics
 
-				foreach (Box box in this.removals)
+				for (int i = 0; i < this.removals.Count; i++)
 				{
-					foreach (Box adjacent in box.Adjacent)
+					Box box = this.removals[i];
+					for (int j = 0; j < box.Adjacent.Count; j++)
 					{
+						Box adjacent = box.Adjacent[j];
 						if (adjacent.Active && adjacent.Type == box.Type && !this.regeneratedCache.ContainsKey(adjacent))
 							this.regeneratedCache[adjacent] = this.regenerateSurfaces(adjacent);
 					}
 				}
 
-				foreach (Box box in this.additions)
+				for (int i = 0; i < this.additions.Count; i++)
 				{
+					Box box = this.additions[i];
 					if (box.Active)
 					{
 						if (!this.regeneratedCache.ContainsKey(box))
@@ -3629,15 +3712,16 @@ namespace Lemma.Components
 
 		private void applyChanges(List<Box> boxes, bool[] modifications)
 		{
-			foreach (Box box in this.removals)
+			for (int i = 0; i < this.removals.Count; i++)
 			{
+				Box box = this.removals[i];
 				if (box.Added)
 					box.Chunk.Boxes.RemoveAt(box.ChunkIndex);
 			}
 
-			int i = 0;
-			foreach (Box box in boxes)
+			for (int i = 0; i < boxes.Count; i++)
 			{
+				Box box = boxes[i];
 				if (box.Added)
 				{
 					if (box.Active)
@@ -3648,11 +3732,11 @@ namespace Lemma.Components
 					else
 						box.Chunk.Boxes.RemoveAt(box.ChunkIndex);
 				}
-				i++;
 			}
 
-			foreach (Box box in this.additions)
+			for (int i = 0; i < this.additions.Count; i++)
 			{
+				Box box = this.additions[i];
 				if (box.Active && !box.Added)
 					box.Chunk.Boxes.Add(box);
 			}
@@ -3728,8 +3812,9 @@ namespace Lemma.Components
 					{
 						lock (b.Adjacent)
 						{
-							foreach (Box adjacent in b.Adjacent)
+							for (int i = 0; i < b.Adjacent.Count; i++)
 							{
+								Box adjacent = b.Adjacent[i];
 								if (!alreadyVisited.ContainsKey(adjacent))
 								{
 									boxes.Enqueue(adjacent);
@@ -3754,15 +3839,16 @@ namespace Lemma.Components
 				if (this[removal].ID != 0) // A new block was subsequently filled in after removal. Forget about it.
 					continue;
 
-				foreach (Direction dir in DirectionExtensions.Directions)
+				for (int i = 0; i < 6; i++)
 				{
-					Coord adjacentCoord = removal.Move(dir);
+					Coord adjacentCoord = removal.Move(DirectionExtensions.Directions[i]);
 					Box box = this.GetBox(adjacentCoord);
 					if (box == null)
 						continue;
 					bool alreadyFound = false;
-					foreach (Dictionary<Box, bool> list in lists)
+					for (int j = 0; j < lists.Count; j++)
 					{
+						Dictionary<Box, bool> list = lists[j];
 						if (list.ContainsKey(box))
 						{
 							alreadyFound = true;
@@ -3794,15 +3880,16 @@ namespace Lemma.Components
 				if (this[removal].ID != 0) // A new block was subsequently filled in after removal. Forget about it.
 					continue;
 
-				foreach (Direction dir in DirectionExtensions.Directions)
+				for (int i = 0; i < 6; i++)
 				{
-					Coord adjacentCoord = removal.Move(dir);
+					Coord adjacentCoord = removal.Move(DirectionExtensions.Directions[i]);
 					Box box = this.GetBox(adjacentCoord);
 					if (box == null || (!filter(box.Type) && !search(box.Type)))
 						continue;
 					bool alreadyFound = false;
-					foreach (Dictionary<Box, bool> list in lists)
+					for (int j = 0; j < lists.Count; j++)
 					{
+						Dictionary<Box, bool> list = lists[j];
 						if (list.ContainsKey(box))
 						{
 							alreadyFound = true;
@@ -3995,8 +4082,9 @@ namespace Lemma.Components
 				{
 					lock (b.Adjacent)
 					{
-						foreach (Box adjacent in b.Adjacent)
+						for (int i = 0; i < b.Adjacent.Count; i++)
 						{
+							Box adjacent = b.Adjacent[i];
 							if (!list.ContainsKey(adjacent))
 							{
 								if (search(adjacent.Type))
@@ -4040,8 +4128,9 @@ namespace Lemma.Components
 				{
 					lock (b.Adjacent)
 					{
-						foreach (Box adjacent in b.Adjacent)
+						for (int i = 0; i < b.Adjacent.Count; i++)
 						{
+							Box adjacent = b.Adjacent[i];
 							if (!list.ContainsKey(adjacent))
 							{
 								boxAdjacencyCache.Enqueue(adjacent);
@@ -4061,14 +4150,12 @@ namespace Lemma.Components
 				modified = new bool[list.Count];
 
 			// Z
-			int i = 0;
-			foreach (Box baseBox in list)
+			for (int i = 0; i < list.Count; i++)
 			{
+				Box baseBox = list[i];
 				if (!baseBox.Active)
-				{
-					i++;
 					continue;
-				}
+
 				Chunk chunk = baseBox.Chunk;
 				for (int z2 = baseBox.Z + baseBox.Depth - chunk.Z; z2 < this.chunkSize; )
 				{
@@ -4138,18 +4225,15 @@ namespace Lemma.Components
 					else
 						break;
 				}
-				i++;
 			}
 
 			// X
-			i = 0;
-			foreach (Box baseBox in list)
+			for (int i = 0; i < list.Count; i++)
 			{
+				Box baseBox = list[i];
 				if (!baseBox.Active)
-				{
-					i++;
 					continue;
-				}
+
 				Chunk chunk = baseBox.Chunk;
 				for (int x2 = baseBox.X + baseBox.Width - chunk.X; x2 < this.chunkSize; )
 				{
@@ -4219,17 +4303,15 @@ namespace Lemma.Components
 					else
 						break;
 				}
-				i++;
 			}
+
 			// Y
-			i = 0;
-			foreach (Box baseBox in list)
+			for (int i = 0; i < list.Count; i++)
 			{
+				Box baseBox = list[i];
 				if (!baseBox.Active)
-				{
-					i++;
 					continue;
-				}
+
 				Chunk chunk = baseBox.Chunk;
 				for (int y2 = baseBox.Y + baseBox.Height - chunk.Y; y2 < this.chunkSize; )
 				{
@@ -4299,8 +4381,6 @@ namespace Lemma.Components
 					else
 						break;
 				}
-
-				i++;
 			}
 
 			return modified;
@@ -4996,8 +5076,8 @@ namespace Lemma.Components
 					this.main.Space.SpaceObjectBuffer.Remove(this.PhysicsEntity);
 					this.addedToSpace = false;
 				}
-				foreach (Chunk chunk in this.Chunks)
-					chunk.Deactivate();
+				for (int i = 0; i < this.Chunks.Count; i++)
+					this.Chunks[i].Deactivate();
 			}));
 
 			this.Add(new CommandBinding(this.OnResumed, delegate()
@@ -5008,8 +5088,8 @@ namespace Lemma.Components
 					this.main.Space.SpaceObjectBuffer.Add(this.PhysicsEntity);
 					this.addedToSpace = true;
 				}
-				foreach (Chunk chunk in this.Chunks)
-					chunk.Activate();
+				for (int i = 0; i < this.Chunks.Count; i++)
+					this.Chunks[i].Activate();
 				this.PhysicsEntity.ActivityInformation.Activate();
 			}));
 
@@ -5042,20 +5122,25 @@ namespace Lemma.Components
 
 		private void updatePhysicsImmediately()
 		{
-			foreach (Chunk chunk in this.Chunks)
-				chunk.Activate();
+			for (int i = 0; i < this.Chunks.Count; i++)
+				this.Chunks[i].Activate();
 
 			bool hasVolume = false;
 			List<CompoundShapeEntry> bodies = new List<CompoundShapeEntry>();
 			float mass = 0.0f;
 			lock (this.MutationLock)
 			{
-				foreach (Box box in this.Chunks.SelectMany(x => x.Boxes))
+				for (int i = 0; i < this.Chunks.Count; i++)
 				{
-					if (!box.Type.Fake)
+					Chunk c = this.Chunks[i];
+					for (int j = 0; j < c.Boxes.Count; j++)
 					{
-						bodies.Add(box.GetCompoundShapeEntry());
-						mass += box.Width * box.Height * box.Depth * box.Type.Density;
+						Box box = c.Boxes[j];
+						if (!box.Type.Fake)
+						{
+							bodies.Add(box.GetCompoundShapeEntry());
+							mass += box.Width * box.Height * box.Depth * box.Type.Density;
+						}
 					}
 				}
 			}
