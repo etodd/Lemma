@@ -47,7 +47,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\x86\Debug</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS;DEVELOPMENT;CHEAT;STEAMWORKS;VR</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS;DEVELOPMENT;CHEAT;VR</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -82,6 +82,9 @@
     <XnaCompressContent>True</XnaCompressContent>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
@@ -486,6 +489,7 @@
     <Content Include="attribution.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="app.manifest" />
     <None Include="GeeUI\Resources\btn_clicked.9.png" />
     <None Include="GeeUI\Resources\btn_default.9.png" />
     <None Include="GeeUI\Resources\btn_hover.9.png" />
