@@ -212,7 +212,7 @@ namespace Lemma.Components
 						if (state == Voxel.States.Empty)
 							continue;
 
-						if (this.canBuild(state) && Zone.CanBuild(map.GetAbsolutePosition(coord)))
+						if (this.canBuild(state) && this.canBuild(map.GetAbsolutePosition(coord)))
 						{
 							shortestDistance = i;
 							relativeShortestDirection = relativeDir;
@@ -257,6 +257,11 @@ namespace Lemma.Components
 				&& s != Voxel.States.SocketYellow;
 		}
 
+		private bool canBuild(Vector3 pos)
+		{
+			return Zone.CanBuild(pos) && !Water.IsSubmerged(pos);
+		}
+
 		// Function for finding a wall to build for the player
 		public Possibility FindWall(Vector3 position, Vector2 direction)
 		{
@@ -287,7 +292,7 @@ namespace Lemma.Components
 								if (state == Voxel.States.Empty)
 									continue;
 
-								if (this.canBuild(state) && Zone.CanBuild(map.GetAbsolutePosition(c)))
+								if (this.canBuild(state) && this.canBuild(map.GetAbsolutePosition(c)))
 								{
 									shortestMap = map;
 									shortestBuildDirection = dir;

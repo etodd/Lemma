@@ -535,7 +535,7 @@ namespace Lemma.Factories
 									didSomething = wallRun.Activate(WallRun.State.Right);
 					}
 
-					if (!didSomething && player.EnableSlowMotion && blockCloud.Blocks.Length > 0)
+					if (!didSomething && blockCloud.Blocks.Length > 0)
 					{
 						player.SlowMotion.Value = true;
 						predictor.ClearPossibilities();
@@ -548,7 +548,7 @@ namespace Lemma.Factories
 			input.Bind(settings.Parkour, PCInput.InputState.Up, delegate()
 			{
 				wallRun.Deactivate();
-				if (player.EnableSlowMotion && blockCloud.Blocks.Length > 0)
+				if (blockCloud.Blocks.Length > 0)
 					player.SlowMotion.Value = false;
 			});
 
@@ -605,7 +605,6 @@ namespace Lemma.Factories
 					entity.Add(new TwoWayBinding<bool>(playerData.EnableWallRun, wallRun.EnableWallRun));
 					entity.Add(new TwoWayBinding<bool>(playerData.EnableWallRunHorizontal, wallRun.EnableWallRunHorizontal));
 					entity.Add(new TwoWayBinding<bool>(playerData.EnableEnhancedWallRun, wallRun.EnableEnhancedWallRun));
-					entity.Add(new TwoWayBinding<bool>(playerData.EnableSlowMotion, player.EnableSlowMotion));
 					entity.Add(new TwoWayBinding<bool>(playerData.EnableMoves, player.EnableMoves));
 					entity.Add(new TwoWayBinding<float>(playerData.MaxSpeed, player.Character.MaxSpeed));
 					entity.Add(new TwoWayBinding<Voxel.t>(playerData.CloudType, blockCloud.Type));

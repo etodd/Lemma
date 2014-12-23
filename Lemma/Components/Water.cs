@@ -89,9 +89,9 @@ namespace Lemma.Components
 
 		public static bool IsSubmerged(Vector3 pos)
 		{
-			foreach (Water w in Water.instances)
+			for (int i = 0; i < Water.instances.Count; i++)
 			{
-				if (w.Fluid.BoundingBox.Contains(pos) != ContainmentType.Disjoint)
+				if (Water.instances[i].Fluid.BoundingBox.Contains(pos) != ContainmentType.Disjoint)
 					return true;
 			}
 			return false;

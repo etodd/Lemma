@@ -16,7 +16,6 @@ namespace Lemma.Components
 		public Property<bool> EnableWallRun = new Property<bool> { Value = enabled };
 		public Property<bool> EnableWallRunHorizontal = new Property<bool> { Value = enabled };
 		public Property<bool> EnableEnhancedWallRun = new Property<bool> { Value = enabled };
-		public Property<bool> EnableSlowMotion = new Property<bool> { Value = enabled };
 		public Property<bool> EnableMoves = new Property<bool> { Value = true };
 		public Property<bool> EnablePhone = new Property<bool> { Value = enabled };
 		public Property<float> MaxSpeed = new Property<float> { Value = Character.DefaultMaxSpeed };

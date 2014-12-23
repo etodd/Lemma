@@ -836,13 +836,14 @@ namespace Lemma.Components
 			this.input = new PCInput();
 			this.main.AddComponent(this.input);
 
-#if DEBUG
 			Log.Handler = delegate(string log)
 			{
+#if DEBUG
 				this.HideMessage(null, this.ShowMessage(null, log), 2.0f);
 				this.main.ConsoleUI.LogText(log);
-			};
 #endif
+				Session.Recorder.Event(main, "Log", log);
+			};
 
 			// Message list
 			{

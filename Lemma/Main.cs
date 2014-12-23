@@ -571,7 +571,6 @@ namespace Lemma
 				if (PlayerDataFactory.Instance != null)
 				{
 					PlayerData playerData = PlayerDataFactory.Instance.Get<PlayerData>();
-					playerData.EnableSlowMotion.Value = true;
 					playerData.EnableEnhancedWallRun.Value = true;
 				}
 			}));

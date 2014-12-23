@@ -148,9 +148,11 @@ namespace Lemma.Components
 
 						if (!foundConflict)
 						{
+							bool isDynamic = m.GetType() == typeof(DynamicVoxel);
 							foreach (Voxel m2 in Voxel.ActivePhysicsVoxels)
 							{
-								if (m2 != m && m2[absolutePos].ID != 0)
+								bool atLeastOneDynamic = isDynamic || m2.GetType() == typeof(DynamicVoxel);
+								if (m2 != m && atLeastOneDynamic && m2[absolutePos].ID != 0)
 								{
 									foundConflict = true;
 									break;
