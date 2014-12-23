@@ -145,6 +145,7 @@ namespace Lemma.Components
 		private Voxel.Coord coord;
 		private Noise3D generator;
 		private float movementInterval;
+		private int movementStreak;
 		
 		public void SaveWithCallback(Action callback = null)
 		{
@@ -916,6 +917,8 @@ namespace Lemma.Components
 		public void Update(float elapsedTime)
 		{
 			Vector3 movementDir = new Vector3();
+			this.movementInterval += elapsedTime;
+
 			if (this.MovementEnabled)
 			{
 				Vector2 controller = this.main.Camera.GetWorldSpaceControllerCoordinates(this.Movement);
@@ -927,20 +930,23 @@ namespace Lemma.Components
 					
 				if (this.VoxelEditMode)
 				{
-					bool moving = movementDir.LengthSquared() > 0.0f;
+					Voxel map = this.SelectedEntities[0].Get<Voxel>();
 
 					// When the user lets go of the key, reset the timer
 					// That way they can hit the key faster than the 0.1 sec interval
-					if (!moving)
-						this.movementInterval = 100.0f;
-
-					Voxel map = this.SelectedEntities[0].Get<Voxel>();
-					if (this.movementInterval > (this.SpeedMode ? 0.5f : 1.0f) * Math.Min(0.15f, map.Scale / this.CameraDistance))
+					if (movementDir.LengthSquared() > 0.0f)
 					{
-						if (moving)
-							this.movementInterval = 0.0f;
-						if (movementDir.LengthSquared() > 0.0f)
+						float movementIntervalThreshold;
+						if (this.movementStreak == 0)
+							movementIntervalThreshold = 0;
+						else if (this.movementStreak == 1)
+							movementIntervalThreshold = 0.15f;
+						else
+							movementIntervalThreshold = (this.SpeedMode ? 0.35f : 0.75f) * Math.Min(0.15f, map.Scale / this.CameraDistance);
+						if (this.movementInterval >  movementIntervalThreshold)
 						{
+							this.movementStreak++;
+							this.movementInterval = 0.0f;
 							Direction relativeDir = map.GetRelativeDirection(movementDir);
 							this.coord = this.coord.Move(relativeDir);
 							this.Coordinate.Value = this.coord;
@@ -976,7 +982,9 @@ namespace Lemma.Components
 							}
 						}
 					}
-					this.movementInterval += elapsedTime;
+					else
+						this.movementStreak = 0;
+
 					this.Position.Value = map.GetAbsolutePosition(this.coord);
 				}
 				else

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using ComponentBind;
+using Lemma.Util;
 using Microsoft.Xna.Framework;
 
 namespace Lemma.Components
@@ -21,7 +22,7 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Entity.Handle> AttachedVoxel = new Property<Entity.Handle>();
 		[XmlIgnore]
-		public Property<Vector3> Position = new Property<Vector3>();
+		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
 
 		public Property<Voxel.t> Type = new Property<Voxel.t>();
 
@@ -38,12 +39,29 @@ namespace Lemma.Components
 				else if (!value && old)
 					this.OnPowerOff.Execute();
 			}));
+
+			this.Add(new NotifyBinding(this.updatePower, this.Coord));
 		}
 
-		public override void Start()
+		private void updatePower()
 		{
 			Entity v = this.AttachedVoxel.Value.Target;
-			this.Powered.Value = v != null ? v.Get<Voxel>()[this.Position].ID == this.Type : false;
+			bool powered = false;
+			if (v != null)
+			{
+				Voxel voxel = v.Get<Voxel>();
+				Voxel.Coord coord = this.Coord;
+				for (int i = 0; i < 6; i++)
+				{
+					Direction dir = DirectionExtensions.Directions[i];
+					if (voxel[coord.Move(dir)].ID == this.Type)
+					{
+						powered = true;
+						break;
+					}
+				}
+			}
+			this.Powered.Value = powered;
 		}
 	}
 }

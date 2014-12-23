@@ -33,8 +33,8 @@ namespace Lemma.Factories
 			attachable.Enabled.Value = true;
 
 			PowerBlockSocket socket = entity.GetOrCreate<PowerBlockSocket>("PowerBlockSocket");
+			socket.Add(new Binding<Voxel.Coord>(socket.Coord, attachable.Coord));
 			socket.Add(new Binding<Entity.Handle>(socket.AttachedVoxel, attachable.AttachedVoxel));
-			socket.Add(new Binding<Vector3>(socket.Position, transform.Position));
 
 			const float maxLightAttenuation = 15.0f;
 			PointLight light = entity.Create<PointLight>();
@@ -60,7 +60,7 @@ namespace Lemma.Factories
 			animationLight.Enabled.Value = false;
 
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("PlayerTrigger");
-			trigger.Radius.Value = 6;
+			trigger.Radius.Value = 7;
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
 			const float minimumChangeTime = 1.5f;
 			float lastChange = -minimumChangeTime;

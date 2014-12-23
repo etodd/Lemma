@@ -104,12 +104,13 @@ namespace Lemma.Factories
 							voxelTransform = m.Transform;
 							this.isInitialAttachment = false;
 						}
+						else if (s == null)
+							voxelTransform = m.Transform;
 						else
-						{
-							voxelTransform = s != null ? s.OriginalTransform : m.Transform;
-							Vector3 relativePos = Vector3.Transform(pos, Matrix.Invert(voxelTransform)) + m.Offset;
-							this.Coord.Value = m.GetCoordinateFromRelative(relativePos);
-						}
+							voxelTransform = s.OriginalTransform;
+
+						Vector3 relativePos = Vector3.Transform(pos, Matrix.Invert(voxelTransform)) + m.Offset;
+						this.Coord.Value = m.GetCoordinateFromRelative(relativePos);
 
 						Matrix offset = this.Transform * Matrix.Invert(Matrix.CreateTranslation(m.Offset) * voxelTransform);
 
