@@ -940,7 +940,7 @@ namespace Lemma.Components
 						if (this.movementStreak == 0)
 							movementIntervalThreshold = 0;
 						else if (this.movementStreak == 1)
-							movementIntervalThreshold = 0.15f;
+							movementIntervalThreshold = this.SpeedMode ? 0.1f : 0.15f;
 						else
 							movementIntervalThreshold = (this.SpeedMode ? 0.35f : 0.75f) * Math.Min(0.15f, map.Scale / this.CameraDistance);
 						if (this.movementInterval >  movementIntervalThreshold)

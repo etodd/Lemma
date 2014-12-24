@@ -41,8 +41,7 @@ namespace Lemma
 			};
 		}
 
-		public const string DemoMap = "smallrain";
-		public const string InitialMap = "start";
+		public const string InitialMap = "rain";
 
 		public string MainFont
 		{

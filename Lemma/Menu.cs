@@ -26,7 +26,6 @@ namespace Lemma.Components
 			{ "test", "Test Level" },
 #endif
 			{ "sandbox", "Sandbox" },
-			{ "start", "\\map apartment" },
 			{ "rain", "\\map rain" },
 			{ "dawn", "\\map dawn" },
 			{ "forest", "\\map forest" },
@@ -1354,30 +1353,6 @@ namespace Lemma.Components
 			{
 				addInputSetting(this.main.Settings.ToggleFullscreen, "\\toggle fullscreen", true, false);
 			}
-
-			// Demo button
-#if DEMO
-			Container demo = this.main.UIFactory.CreateButton("\\demo", delegate()
-			{
-				this.ShowDialog("\\alpha disclaimer", "\\play", delegate()
-				{
-					this.restorePausedSettings();
-					this.main.CurrentSave.Value = null;
-					this.main.AddComponent(new Animation
-					(
-						new Animation.Delay(0.2f),
-						new Animation.Execute(delegate()
-						{
-							this.main.Settings.DefaultControls();
-							IO.MapLoader.Load(this.main, Main.DemoMap);
-						})
-					));
-				});
-			});
-			this.resizeToMenu(demo);
-			this.pauseMenu.Children.Add(demo);
-			demo.Add(new Binding<bool, string>(demo.Visible, x => x == Main.MenuMap, this.main.MapFile));
-#endif
 
 			// Start new button
 			Container startNew = this.main.UIFactory.CreateButton("\\new game", delegate()

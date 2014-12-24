@@ -50,7 +50,7 @@ float3 toneMap(float3 color)
 	color.x = tex1D(RampSampler, color.x).x;
 	color.y = tex1D(RampSampler, color.y).y;
 	color.z = tex1D(RampSampler, color.z).z;
-	return Brightness + color * Tint * Gamma;
+	return Brightness + color * Tint;
 }
 
 const float GaussianKernel[16] = { 0.003829872f, 0.0088129551f, 0.0181463396f, 0.03343381f, 0.0551230286f, 0.0813255467f, 0.1073650667f, 0.1268369298f, 0.1340827751f, 0.1268369298f, 0.1073650667f, 0.0813255467f, 0.0551230286f, 0.03343381f, 0.0181463396f, 0.0088129551 };
@@ -102,14 +102,14 @@ void BlurVerticalPS(	in PostProcessPSInput input,
 void CompositePS(	in PostProcessPSInput input,
 					out float4 out_Color		: COLOR0)
 {
-	out_Color.rgb = toneMap(tex2D(SourceSampler0, input.texCoord).rgb) + tex2D(SourceSampler1, input.texCoord).rgb / (1.0f - BloomThreshold);
+	out_Color.rgb = (toneMap(tex2D(SourceSampler0, input.texCoord).rgb) + tex2D(SourceSampler1, input.texCoord).rgb / (1.0f - BloomThreshold)) * Gamma;
 	out_Color.a = 1.0f;
 }
 
 void ToneMapPS(	in PostProcessPSInput input,
 					out float4 out_Color		: COLOR0)
 {
-	out_Color.rgb = toneMap(tex2D(SourceSampler0, input.texCoord).rgb);
+	out_Color.rgb = toneMap(tex2D(SourceSampler0, input.texCoord).rgb) * Gamma;
 	out_Color.a = 1.0f;
 }
 
