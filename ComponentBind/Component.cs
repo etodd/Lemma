@@ -134,7 +134,6 @@ namespace ComponentBind
 		public Component()
 		{
 			this.Serialize = true;
-			this.Active = true;
 			this.Enabled = new Property<bool> { Value = true };
 			this.Suspended = new Property<bool> { Value = false };
 			this.EnabledInEditMode = true;
@@ -189,6 +188,7 @@ namespace ComponentBind
 
 		public void SetMain(BaseMain _main)
 		{
+			this.Active = true;
 			this.main = (MainClass)_main;
 		}
 
