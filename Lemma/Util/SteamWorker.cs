@@ -84,6 +84,7 @@ namespace Lemma.Util
 			}
 			catch (DllNotFoundException)
 			{
+				Log.d("Steam DLL not found.");
 				//Required DLLs ain't there
 				SteamInitialized = false;
 				return false;

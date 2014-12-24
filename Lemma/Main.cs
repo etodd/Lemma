@@ -79,8 +79,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 9;
-		public const int MapVersion = 889;
-		public const int Build = 889;
+		public const int MapVersion = 895;
+		public const int Build = 895;
 
 #if DEVELOPMENT
 		public static bool AllowEditingGameMaps = true;
@@ -240,6 +240,10 @@ namespace Lemma
 		private int drawCallCounter;
 		private Property<int> triangles = new Property<int>();
 		private int triangleCounter;
+
+		private Animation scheduledSave;
+		private Container saveNotification = new Container();
+		private TextElement saveNotificationText = new TextElement();
 
 		public Property<Point> ScreenSize = new Property<Point>();
 
@@ -454,7 +458,8 @@ namespace Lemma
 			Editor.SetupDefaultEditorComponents();
 
 #if STEAMWORKS
-			SteamWorker.Init();
+			if (!SteamWorker.Init())
+				Log.d("Failed to initialize Steamworks.");
 #endif
 
 			this.Space = new Space();
@@ -1150,6 +1155,10 @@ namespace Lemma
 					editorLastEnabled = this.EditorEnabled;
 				});
 #endif
+				new CommandBinding<string>(this.LoadingMap, delegate(string newMap)
+				{
+					this.CancelScheduledSave();
+				});
 
 #if !DEVELOPMENT
 				IO.MapLoader.Load(this, MenuMap);
@@ -1221,12 +1230,14 @@ namespace Lemma
 			scriptEntity.Delete.Execute();
 		}
 
-		private void createNewSave()
+		private void createNewSave(string oldSave = null)
 		{
+			if (oldSave == null)
+				oldSave = this.CurrentSave;
 			string newSave = DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss");
-			if (newSave != this.CurrentSave)
+			if (newSave != oldSave)
 			{
-				this.copySave(this.CurrentSave.Value == null ? this.MapDirectory : Path.Combine(this.SaveDirectory, this.CurrentSave), Path.Combine(this.SaveDirectory, newSave));
+				this.copySave(oldSave == null ? this.MapDirectory : Path.Combine(this.SaveDirectory, oldSave), Path.Combine(this.SaveDirectory, newSave));
 				this.CurrentSave.Value = newSave;
 			}
 		}
@@ -1281,6 +1292,73 @@ namespace Lemma
 			}
 			else
 				doSave();
+		}
+
+		public void ScheduleSave()
+		{
+			if (this.scheduledSave == null || !this.scheduledSave.Active)
+			{
+				this.Menu.CanPause.Value = false;
+				this.saveNotification = new Container();
+				this.saveNotificationText = new TextElement();
+				this.scheduledSave = new Animation
+				(
+					new Animation.Delay(0.6f),
+					new Animation.Execute(delegate()
+					{
+						Point size;
+#if VR
+						if (this.VR)
+							size = this.VRActualScreenSize;
+						else
+#endif
+							size = this.ScreenSize;
+
+						this.Screenshot.Take(size);
+					}),
+					new Animation.Delay(0.01f),
+					new Animation.Execute(delegate()
+					{
+						this.saveNotification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+						this.saveNotification.Opacity.Value = 0.5f;
+						this.saveNotificationText.Name.Value = "Text";
+						this.saveNotificationText.FontFile.Value = this.MainFont;
+						this.saveNotificationText.Text.Value = "Saving...";
+						this.saveNotification.Children.Add(this.saveNotificationText);
+						this.UI.Root.GetChildByName("Notifications").Children.Add(this.saveNotification);
+					}),
+					new Animation.Delay(0.01f),
+					new Animation.Execute(delegate()
+					{
+						this.SaveOverwrite();
+					}),
+					new Animation.Delay(0.01f),
+					new Animation.Set<string>(this.saveNotificationText.Text, "Saved"),
+					new Animation.Parallel
+					(
+						new Animation.FloatMoveTo(this.saveNotification.Opacity, 0.0f, 1.0f),
+						new Animation.FloatMoveTo(this.saveNotificationText.Opacity, 0.0f, 1.0f)
+					),
+					new Animation.Execute(this.saveNotification.Delete)
+				);
+				this.scheduledSave.Add(new CommandBinding(this.scheduledSave.Delete, delegate()
+				{
+					this.Screenshot.Clear();
+					if (this.saveNotification != null && this.saveNotification.Active)
+						this.saveNotification.Delete.Execute();
+					this.saveNotification = null;
+					this.saveNotificationText = null;
+					this.Menu.CanPause.Value = true;
+					this.scheduledSave = null;
+				}));
+				WorldFactory.Instance.Add(this.scheduledSave);
+			}
+		}
+
+		public void CancelScheduledSave()
+		{
+			if (this.scheduledSave != null && this.scheduledSave.Active)
+				this.scheduledSave.Delete.Execute();
 		}
 
 		public void SaveCurrentMap(RenderTarget2D screenshot = null, Point screenshotSize = default(Point))

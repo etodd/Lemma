@@ -24,7 +24,7 @@ namespace Lemma.GameScripts
 			script.Add(new TwoWayBinding<bool>(property<bool>(script, "WallRunHorizontal"), playerData.EnableWallRunHorizontal));
 			script.Add(new TwoWayBinding<bool>(property<bool>(script, "EnhancedWallRun"), playerData.EnableEnhancedWallRun));
 			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Moves"), playerData.EnableMoves));
-			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Phone"), playerData.EnablePhone));
+			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Phone"), PlayerDataFactory.Instance.Get<Phone>().Enabled));
 		}
 
 		public static IEnumerable<string> EditorProperties(Entity script)

@@ -19,11 +19,6 @@ namespace Lemma.GameScripts
 
 			main.Spawner.CanSpawn = false;
 
-			script.Add(new Animation
-			(
-				new Animation.Vector3MoveTo(main.Renderer.Tint, new Vector3(1.0f), 0.2f)
-			));
-
 			if (main.Spawner.StartSpawnPoint.Value == "end")
 			{
 				// End game
@@ -182,6 +177,10 @@ namespace Lemma.GameScripts
 			main.Renderer.InternalGamma.Value = 0.0f;
 			main.Renderer.Brightness.Value = 0.0f;
 			main.Renderer.Tint.Value = new Vector3(0.0f);
+			script.Add(new Animation
+			(
+				new Animation.Vector3MoveTo(main.Renderer.Tint, new Vector3(1.0f), 0.3f)
+			));
 		}
 	}
 }

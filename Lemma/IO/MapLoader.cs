@@ -251,26 +251,12 @@ namespace Lemma.IO
 
 		public static void Transition(Main main, string nextMap, string spawn = null)
 		{
-			Container notification = new Container();
-			TextElement notificationText = new TextElement();
-
 			Stream stream = new MemoryStream();
 
 			Animation anim = new Animation
 			(
 				new Animation.Set<bool>(main.Menu.CanPause, false),
 				main.Spawner.FlashAnimation(),
-				new Animation.Execute(delegate()
-				{
-					notification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-					notification.Opacity.Value = 0.5f;
-					notificationText.Name.Value = "Text";
-					notificationText.FontFile.Value = main.MainFont;
-					notificationText.Text.Value = "Loading...";
-					notification.Children.Add(notificationText);
-					main.UI.Root.GetChildByName("Notifications").Children.Add(notification);
-				}),
-				new Animation.Delay(0.01f),
 				new Animation.Execute(delegate()
 				{
 					// We are exiting the map; just save the state of the map without the player.
@@ -292,7 +278,6 @@ namespace Lemma.IO
 					main.SaveCurrentMap();
 					MapLoader.Load(main, nextMap);
 
-					notification.Visible.Value = false;
 					stream.Seek(0, SeekOrigin.Begin);
 					List<Entity> entities = (List<Entity>)IO.MapLoader.Serializer.Deserialize(stream);
 					foreach (Entity e in entities)
@@ -304,35 +289,7 @@ namespace Lemma.IO
 					}
 					stream.Dispose();
 				}),
-				new Animation.Set<bool>(main.Menu.CanPause, true),
-				new Animation.Delay(1.5f),
-				new Animation.Execute(delegate()
-				{
-					Point size;
-#if VR
-					if (main.VR)
-						size = main.VRActualScreenSize;
-					else
-#endif
-						size = main.ScreenSize;
-
-					main.Screenshot.Take(size);
-				}),
-				new Animation.Delay(0.01f),
-				new Animation.Set<string>(notificationText.Text, "Saving..."),
-				new Animation.Set<bool>(notification.Visible, true),
-				new Animation.Delay(0.01f),
-				new Animation.Execute(delegate()
-				{
-					main.SaveOverwrite();
-				}),
-				new Animation.Set<string>(notificationText.Text, "Saved"),
-				new Animation.Parallel
-				(
-					new Animation.FloatMoveTo(notification.Opacity, 0.0f, 1.0f),
-					new Animation.FloatMoveTo(notificationText.Opacity, 0.0f, 1.0f)
-				),
-				new Animation.Execute(notification.Delete)
+				new Animation.Execute(main.ScheduleSave)
 			);
 			anim.EnabledWhenPaused = false;
 			main.AddComponent(anim);

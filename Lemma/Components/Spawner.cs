@@ -67,6 +67,9 @@ namespace Lemma.Components
 					this.main.Renderer.Brightness.Value = 1.0f;
 				}
 
+				if (PlayerFactory.Instance == null)
+					this.RespawnInterval = 0.0f;
+
 				if (this.main.MapFile != lastMap)
 				{
 					this.lastEditorPosition = Vector3.Zero;
@@ -157,10 +160,6 @@ namespace Lemma.Components
 
 					if (this.respawnTimer > this.RespawnInterval)
 					{
-						if (createPlayer)
-						{
-						}
-
 						bool spawnFound = false;
 
 						RespawnLocation foundSpawnLocation = default(RespawnLocation);

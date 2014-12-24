@@ -16,7 +16,8 @@ namespace Lemma.Components
 
 		public void Go()
 		{
-			MapLoader.Transition(main, this.NextMap, this.StartSpawnPoint);
+			if (!string.IsNullOrEmpty(this.NextMap))
+				MapLoader.Transition(main, this.NextMap, this.StartSpawnPoint);
 		}
 
 		public override void Awake()

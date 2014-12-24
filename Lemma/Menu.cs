@@ -1363,7 +1363,7 @@ namespace Lemma.Components
 					this.main.CurrentSave.Value = null;
 					this.main.AddComponent(new Animation
 					(
-						new Animation.Delay(0.2f),
+						this.main.Spawner.FlashAnimation(),
 						new Animation.Execute(delegate()
 						{
 							IO.MapLoader.Load(this.main, Main.InitialMap);
@@ -1761,7 +1761,7 @@ namespace Lemma.Components
 			bool saving = false;
 			this.input.Bind(this.main.Settings.QuickSave, PCInput.InputState.Down, delegate()
 			{
-				if (!saving && !this.main.Paused && this.main.MapFile != Main.MenuMap && !this.main.IsChallengeMap(this.main.MapFile) && PlayerFactory.Instance != null)
+				if (!saving && !this.main.Paused && this.CanPause && this.main.MapFile != Main.MenuMap && !this.main.IsChallengeMap(this.main.MapFile) && PlayerFactory.Instance != null)
 				{
 					saving = true;
 					Container notification = new Container();
