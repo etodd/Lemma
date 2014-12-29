@@ -91,22 +91,79 @@ namespace Lemma.Components
 			model["Roll"].Speed = 1.75f;
 		}
 
-		private const float rollCoolDown = 0.8f;
+		private const float coolDown = 0.35f;
+
+		private bool determineShouldBuildFloor(Voxel.State floorState)
+		{
+			bool result = false;
+			if (floorState == Voxel.States.Blue || floorState == Voxel.States.Powered)
+			{
+				// If we're standing on blue or powered, we need to check if we're close to a non-blue block before we can build a floor
+				// This prevents the player from building a floor infinitely
+				Queue<Voxel.Box> queue = new Queue<Voxel.Box>();
+				Dictionary<Voxel.Box, int> visited = new Dictionary<Voxel.Box, int>();
+				Voxel.Box floorBox = this.floorMap.GetBox(this.floorCoordinate);
+				queue.Enqueue(floorBox);
+				visited[floorBox] = 0;
+				const int radius = 8;
+				const int maxSearch = radius * radius * radius;
+				int searchIndex = 0;
+				while (queue.Count > 0 && searchIndex < maxSearch)
+				{
+					searchIndex++;
+					Voxel.Box b = queue.Dequeue();
+					lock (b.Adjacent)
+					{
+						int parentGScore = visited[b];
+						for (int i = 0; i < b.Adjacent.Count; i++)
+						{
+							Voxel.Box adjacent = b.Adjacent[i];
+							int tentativeGScore = parentGScore + adjacent.Width * adjacent.Height * adjacent.Depth;
+							int previousGScore;
+							if (!visited.TryGetValue(adjacent, out previousGScore) || tentativeGScore < previousGScore)
+							{
+								visited[adjacent] = tentativeGScore;
+
+								if (parentGScore < radius * radius
+									&& this.floorCoordinate.X >= adjacent.X - radius && this.floorCoordinate.X < adjacent.X + adjacent.Width + radius
+									&& this.floorCoordinate.Y >= adjacent.Y - radius && this.floorCoordinate.Y < adjacent.Y + adjacent.Height + radius
+									&& this.floorCoordinate.Z >= adjacent.Z - radius && this.floorCoordinate.Z < adjacent.Z + adjacent.Depth + radius)
+								{
+									if (adjacent.Type != Voxel.States.Blue && adjacent.Type != Voxel.States.Powered)
+									{
+										// Non-blue block. It's close enough, we can build a floor
+										result = true;
+										break;
+									}
+									else
+										queue.Enqueue(adjacent);
+								}
+							}
+						}
+					}
+					if (result)
+						break;
+				}
+			}
+			else
+				result = true;
+			return result;
+		}
 
 		public void Go()
 		{
-			if (this.Rolling || this.Kicking)
+			if (this.Rolling || this.Kicking || main.TotalTime - this.LastRollKickEnded < coolDown)
 				return;
 
 			Matrix rotationMatrix = Matrix.CreateRotationY(this.Rotation);
 			this.forward = -rotationMatrix.Forward;
 			this.right = rotationMatrix.Right;
+			this.shouldBuildFloor = false;
 
 			bool instantiatedBlockPossibility = false;
 
 			if (this.EnableCrouch && this.EnableRoll && !this.IsSwimming
-				&& (!this.EnableKick || !this.IsSupported || this.LinearVelocity.Value.Length() < 4.0f)
-				&& this.main.TotalTime - this.LastRollStarted > rollCoolDown)
+				&& (!this.EnableKick || !this.IsSupported || this.LinearVelocity.Value.Length() < 4.0f))
 			{
 				// Try to roll
 				Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
@@ -169,9 +226,8 @@ namespace Lemma.Components
 					this.model.StartClip("Roll", 5, false, AnimatedModel.DefaultBlendTime);
 
 					Voxel.State floorState = floorRaycast.Voxel == null ? Voxel.States.Empty : floorRaycast.Coordinate.Value.Data;
-					this.shouldBuildFloor = false;
-					if (this.EnableEnhancedRollSlide && (instantiatedBlockPossibility || (floorState.ID != 0 && floorState != Voxel.States.Blue && floorState != Voxel.States.Powered && floorState != Voxel.States.Slider && floorState != Voxel.States.SliderPowered)))
-						this.shouldBuildFloor = true;
+					if (this.EnableEnhancedRollSlide && (instantiatedBlockPossibility || (this.IsSupported && floorState != Voxel.States.Slider && floorState != Voxel.States.SliderPowered)))
+						this.shouldBuildFloor |= this.determineShouldBuildFloor(floorState);
 					
 					// If the player is not yet supported, that means they're just about to land.
 					// So give them a little speed boost for having such good timing.
@@ -209,10 +265,9 @@ namespace Lemma.Components
 
 				Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
 
-				this.shouldBuildFloor = false;
 				this.sliding = false;
 
-				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height);
+				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height + 1);
 				this.floorMap = floorRaycast.Voxel;
 
 				if (instantiatedBlockPossibility)
@@ -222,6 +277,7 @@ namespace Lemma.Components
 				}
 				else if (this.floorMap == null)
 				{
+					this.shouldBuildFloor = false;
 					this.sliding = false;
 					this.floorCoordinate = new Voxel.Coord();
 				}
@@ -229,11 +285,7 @@ namespace Lemma.Components
 				{
 					this.floorCoordinate = floorRaycast.Coordinate.Value;
 					if (this.EnableEnhancedRollSlide)
-					{
-						Voxel.t floorType = floorRaycast.Coordinate.Value.Data.ID;
-						if (floorType != Voxel.t.Blue && floorType != Voxel.t.Powered && floorType != Voxel.t.Slider && floorType != Voxel.t.SliderPowered)
-							this.shouldBuildFloor = true;
-					}
+						this.shouldBuildFloor |= this.determineShouldBuildFloor(floorRaycast.Coordinate.Value.Data);
 					this.sliding = true;
 				}
 
@@ -276,7 +328,7 @@ namespace Lemma.Components
 		{
 			if (this.EnableEnhancedRollSlide)
 			{
-				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(this.Position, Vector3.Down, this.Height);
+				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(this.Position, Vector3.Down, this.Height + 1);
 				if (floorRaycast.Voxel != null)
 				{
 					Voxel.t t = floorRaycast.Voxel[floorRaycast.Coordinate.Value].ID;
@@ -352,7 +404,7 @@ namespace Lemma.Components
 						// We weren't supported when we started kicking. We're flying.
 						// Roll if we hit the ground while kicking mid-air
 						Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
-						Voxel.GlobalRaycastResult r = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height);
+						Voxel.GlobalRaycastResult r = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height + 1);
 						if (r.Voxel != null)
 						{
 							this.StopKick();

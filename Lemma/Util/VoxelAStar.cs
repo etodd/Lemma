@@ -69,8 +69,9 @@ namespace Lemma.Util
 				broadphaseClosed[entry.Box] = entry.G;
 				lock (entry.Box.Adjacent)
 				{
-					foreach (Voxel.Box adjacent in entry.Box.Adjacent)
+					for (int i = 0; i < entry.Box.Adjacent.Count; i++)
 					{
+						Voxel.Box adjacent = entry.Box.Adjacent[i];
 						if (adjacent == null || !filter(adjacent.Type))
 							continue;
 
@@ -175,9 +176,9 @@ namespace Lemma.Util
 				narrowphaseQueueLookup.Remove(entry.Coord);
 
 				narrowphaseClosed[entry.Coord] = entry.G;
-				foreach (Direction dir in DirectionExtensions.Directions)
+				for (int i = 0; i < 6; i++)
 				{
-					Voxel.Coord adjacent = entry.Coord.Move(dir);
+					Voxel.Coord adjacent = entry.Coord.Move(DirectionExtensions.Directions[i]);
 					if (!currentBox.Contains(adjacent) && !target.Contains(adjacent))
 						continue;
 

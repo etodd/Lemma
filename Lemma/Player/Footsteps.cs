@@ -104,9 +104,9 @@ namespace Lemma.Components
 				{
 					map.Empty(coord, false, true, map);
 					bool isPowered = false;
-					foreach (Direction adjacentDirection in DirectionExtensions.Directions)
+					for (int i = 0; i < 6; i++)
 					{
-						Voxel.Coord adjacentCoord = coord.Move(adjacentDirection);
+						Voxel.Coord adjacentCoord = coord.Move(DirectionExtensions.Directions[i]);
 						Voxel.t adjacentId = map[coord].ID;
 						if (adjacentId == Voxel.t.Powered || adjacentId == Voxel.t.PermanentPowered || adjacentId == Voxel.t.PoweredSwitch || adjacentId == Voxel.t.HardPowered)
 						{
@@ -124,15 +124,16 @@ namespace Lemma.Components
 
 					Queue<Voxel.Coord> queue = new Queue<Voxel.Coord>();
 					queue.Enqueue(coord);
+					Voxel.CoordDictionaryCache[coord] = true;
 					while (queue.Count > 0)
 					{
 						Voxel.Coord c = queue.Dequeue();
-						Voxel.CoordDictionaryCache[c] = true;
-						foreach (Direction adjacentDirection in DirectionExtensions.Directions)
+						for (int i = 0; i < 6; i++)
 						{
-							Voxel.Coord adjacentCoord = c.Move(adjacentDirection);
+							Voxel.Coord adjacentCoord = c.Move(DirectionExtensions.Directions[i]);
 							if (!Voxel.CoordDictionaryCache.ContainsKey(adjacentCoord))
 							{
+								Voxel.CoordDictionaryCache[adjacentCoord] = true;
 								Voxel.t adjacentID = map[adjacentCoord].ID;
 								if (adjacentID == Voxel.t.Reset)
 									queue.Enqueue(adjacentCoord);
