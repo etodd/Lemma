@@ -12,6 +12,8 @@ namespace Lemma.Components
 {
 	public class CameraStop : Component<Main>
 	{
+		public static Property<bool> CinematicActive = new Property<bool>();
+
 		public Property<float> Offset = new Property<float>();
 
 		public Property<Entity.Handle> Next = new Property<Entity.Handle>();
@@ -36,7 +38,7 @@ namespace Lemma.Components
 		{
 			Animation.Sequence sequence = new Animation.Sequence();
 
-			bool originalCanSpawn = main.Spawner.CanSpawn;
+			bool originalCanPause = false;
 			sequence.Add(new Animation.Execute(delegate()
 			{
 				Entity p = PlayerFactory.Instance;
@@ -49,7 +51,9 @@ namespace Lemma.Components
 					p.Get<UIRenderer>().Enabled.Value = false;
 					AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_BREATHING_SOFT, p);
 				}
-				main.Spawner.CanSpawn = false;
+				CameraStop.CinematicActive.Value = true;
+				originalCanPause = this.main.Menu.CanPause;
+				this.main.Menu.CanPause.Value = false;
 			}));
 
 			sequence.Add(new Animation.Set<Matrix>(this.main.Camera.RotationMatrix, Matrix.CreateFromQuaternion(this.Entity.Get<Transform>().Quaternion)));
@@ -137,7 +141,8 @@ namespace Lemma.Components
 					p.Get<FPSInput>().Enabled.Value = true;
 					p.Get<UIRenderer>().Enabled.Value = true;
 				}
-				main.Spawner.CanSpawn = originalCanSpawn;
+				CameraStop.CinematicActive.Value = false;
+				this.main.Menu.CanPause.Value = originalCanPause;
 			};
 
 			Animation anim;

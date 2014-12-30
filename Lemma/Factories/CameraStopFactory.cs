@@ -54,7 +54,7 @@ namespace Lemma.Factories
 								delegate()
 								{
 									// We have to squirrel away the ID and get a new entity
-									// becuase OUR entity got wiped out by the MapLoader.
+									// because OUR entity got wiped out by the MapLoader.
 									main.GetByGUID(id).Get<CameraStop>().Go.Execute();
 								}
 							});

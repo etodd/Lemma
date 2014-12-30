@@ -22,6 +22,7 @@ namespace Lemma.Components
 			public override void Awake()
 			{
 				base.Awake();
+				this.Serialize = false;
 				this.CullBoundingBox.Value = false;
 				this.IsInstanced.Value = true;
 				this.instanceBinding = new ListBinding<Matrix, ModelInstance>(this.Instances, this.instances, x => x.transform);
@@ -220,7 +221,7 @@ namespace Lemma.Components
 		{
 			if (!string.IsNullOrEmpty(this.Filename))
 			{
-				string key = "InstanceSystem" + (this.EnableAlpha ? "Alpha" : "") + ":" + this.Filename.Value + "+" + this.InstanceKey.Value.ToString();
+				string key = string.Format("InstanceSystem{0}:{1}+{2}", (this.EnableAlpha ? "Alpha" : ""), this.Filename.Value, this.InstanceKey.Value);
 
 				Entity world = Lemma.Factories.WorldFactory.Instance;
 				

@@ -135,7 +135,7 @@ namespace Lemma.Components
 			}
 			else
 			{
-				if (this.main.MapFile.Value == null || !this.CanSpawn)
+				if (this.main.MapFile.Value == null || !this.CanSpawn || CameraStop.CinematicActive)
 					return;
 
 				this.editor = null;

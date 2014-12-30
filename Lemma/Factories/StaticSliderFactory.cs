@@ -60,6 +60,7 @@ namespace Lemma.Factories
 			entity.Add("Goal", slider.Goal);
 			entity.Add("StartAtMinimum", slider.StartAtMinimum);
 			entity.Add("EnablePhysics", voxel.EnablePhysics);
+			entity.Add("Position", slider.Position, new PropertyEntry.EditorData { Readonly = true });
 
 			entity.Add("UVRotation", voxel.UVRotation);
 			entity.Add("UVOffset", voxel.UVOffset);

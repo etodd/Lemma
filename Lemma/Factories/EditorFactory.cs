@@ -773,8 +773,8 @@ namespace Lemma.Factories
 					}
 				},
 				gui.EntityCommands,
-				() => !string.IsNullOrEmpty(main.MapFile) && input.EnableLook,
-				main.MapFile, input.EnableLook
+				() => !string.IsNullOrEmpty(main.MapFile),
+				main.MapFile
 			);
 
 

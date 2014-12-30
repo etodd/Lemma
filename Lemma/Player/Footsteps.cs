@@ -180,44 +180,6 @@ namespace Lemma.Components
 						})
 					));
 				}
-				else if (id == Voxel.t.Expander)
-				{
-					// Expander. Expand the block after a delay.
-					const int expandLength = 6;
-					const int expandWidth = 1;
-					Vector3 pos = map.GetAbsolutePosition(coord);
-					ParticleEmitter.Emit(main, "Smoke", pos, 1.0f, 10);
-					AkSoundEngine.PostEvent("Play_FragileDirt_Crumble", pos);
-					WorldFactory.Instance.Add(new Animation
-					(
-						new Animation.Delay(1.5f),
-						new Animation.Execute(delegate()
-						{
-							if (map[coord].ID == Voxel.t.Expander)
-							{
-								Direction normal = dir.GetReverse();
-								Direction right = normal == Direction.PositiveY ? Direction.PositiveX : normal.Cross(Direction.PositiveY);
-								Direction ortho = normal.Cross(right);
-								pos = map.GetAbsolutePosition(coord);
-								WorldFactory.Instance.Get<Propagator>().Sparks(map.GetAbsolutePosition(coord), Propagator.Spark.Expander);
-								List<EffectBlockFactory.BlockBuildOrder> buildCoords = new List<EffectBlockFactory.BlockBuildOrder>();
-								foreach (Voxel.Coord c in coord.Move(right, -expandWidth).Move(ortho, -expandWidth).CoordinatesBetween(coord.Move(right, expandWidth).Move(ortho, expandWidth).Move(normal, expandLength).Move(1, 1, 1)))
-								{
-									if (map[c].ID == 0)
-									{
-										buildCoords.Add(new EffectBlockFactory.BlockBuildOrder
-										{
-											Voxel = map,
-											Coordinate = c,
-											State = Voxel.States.Expander,
-										});
-									}
-								}
-								Factory.Get<EffectBlockFactory>().Build(main, buildCoords, pos, 0.15f);
-							}
-						})
-					));
-				}
 
 				this.infectedDamage = isInfected;
 			}));

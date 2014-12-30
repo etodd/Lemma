@@ -970,7 +970,7 @@ namespace Lemma
 						int i = 0;
 						do
 						{
-							path = Path.Combine(desktop, "lemma-screen" + i.ToString() + ".png");
+							path = Path.Combine(desktop, string.Format("lemma-screen{0}.png", i));
 							i++;
 						}
 						while (File.Exists(path));
@@ -1303,6 +1303,7 @@ namespace Lemma
 		{
 			if (this.scheduledSave == null || !this.scheduledSave.Active)
 			{
+				bool originalCanPause = this.Menu.CanPause;
 				this.Menu.CanPause.Value = false;
 				this.saveNotification = new Container();
 				this.saveNotificationText = new TextElement();
@@ -1353,7 +1354,7 @@ namespace Lemma
 						this.saveNotification.Delete.Execute();
 					this.saveNotification = null;
 					this.saveNotificationText = null;
-					this.Menu.CanPause.Value = true;
+					this.Menu.CanPause.Value = originalCanPause;
 					this.scheduledSave = null;
 				}));
 				WorldFactory.Instance.Add(this.scheduledSave);

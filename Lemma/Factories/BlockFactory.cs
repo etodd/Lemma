@@ -44,7 +44,7 @@ namespace Lemma.Factories
 			(
 				new Animation.Delay(5.0f),
 				new Animation.Vector3MoveTo(scale, Vector3.Zero, 1.0f),
-				new Animation.Execute(delegate() { entity.Delete.Execute(); })
+				new Animation.Execute(entity.Delete)
 			));
 
 			this.SetMain(entity, main);

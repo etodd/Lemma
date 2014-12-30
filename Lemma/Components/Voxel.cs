@@ -72,7 +72,6 @@ namespace Lemma.Components
 			Foliage = 7,
 			Hard = 8,
 			Floater = 9,
-			Expander = 10,
 			Wood = 11,
 			Snow = 12,
 			HardPowered = 13,
@@ -326,26 +325,6 @@ namespace Lemma.Components
 					},
 				},
 				Tint = new Vector3(0.9f, 0.3f, 0.0f),
-			};
-			public static readonly State Expander = new State
-			{
-				ID = t.Expander,
-				Permanent = false,
-				Supported = false,
-				Hard = true,
-				Density = 0.5f,
-				DiffuseMap = "Textures\\dirty",
-				NormalMap = "Textures\\metal-swirl-normal",
-				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
-				Materials = new[]
-				{
-					new Model.Material
-					{
-						SpecularPower = 1.0f,
-						SpecularIntensity = 0.1f,
-					},
-				},
-				Tint = new Vector3(0.8f, 0.5f, 0.9f),
 			};
 			public static readonly State Wood = new State
 			{

@@ -25,7 +25,6 @@ namespace Lemma.Components
 #if DEBUG
 			{ "test", "Test Level" },
 #endif
-			{ "sandbox", "Sandbox" },
 			{ "rain", "\\map rain" },
 			{ "dawn", "\\map dawn" },
 			{ "forest", "\\map forest" },
