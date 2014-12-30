@@ -959,6 +959,8 @@ namespace Lemma
 				input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.S }), delegate()
 				{
 					// High-resolution screenshot
+					bool originalModelsVisible = Editor.EditorModelsVisible;
+					Editor.EditorModelsVisible.Value = false;
 					Screenshot s = new Screenshot();
 					this.AddComponent(s);
 					s.Take(new Point(4096, 2304), delegate()
@@ -975,6 +977,9 @@ namespace Lemma
 
 						using (Stream stream = File.OpenWrite(path))
 							s.Buffer.SaveAsPng(stream, s.Size.X, s.Size.Y);
+
+						Editor.EditorModelsVisible.Value = originalModelsVisible;
+
 						s.Delete.Execute();
 					});
 				}));
