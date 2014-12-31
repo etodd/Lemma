@@ -43,7 +43,7 @@ namespace Lemma.Components
 		public ListProperty<RespawnLocation> RespawnLocations = new ListProperty<RespawnLocation>();
 
 		// Input/output properties
-		public Property<float> Health = new Property<float>();
+		public Command<float> Damage = new Command<float>();
 
 		private Voxel.GlobalRaycastResult groundRaycast;
 		private bool lastSupported;
@@ -160,7 +160,7 @@ namespace Lemma.Components
 				// Lava. Damage the player character if it steps on lava.
 				bool isInfected = id == Voxel.t.Infected || id == Voxel.t.HardInfected;
 				if (isInfected)
-					this.Health.Value -= 0.2f;
+					this.Damage.Execute(0.2f);
 				else if (id == Voxel.t.Floater)
 				{
 					// Floater. Delete the block after a delay.
@@ -208,8 +208,8 @@ namespace Lemma.Components
 			if (this.IsSupported && !this.lastSupported)
 				this.Footstep.Execute();
 
-			if (this.infectedDamage && this.IsSupported)
-				this.Health.Value -= 0.6f * dt;
+			if (this.infectedDamage && (this.IsSupported || this.WallRunState != WallRun.State.None))
+				this.Damage.Execute(0.6f * dt);
 
 			this.lastSupported = this.IsSupported;
 		}

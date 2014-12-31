@@ -53,14 +53,17 @@ namespace Lemma.Components
 			return null;
 		}
 
-		[XmlIgnore]
-		public Command Die = new Command();
-
 		public Property<Vector3> Position = new Property<Vector3>();
 
 		public Property<float> Health = new Property<float> { Value = 1.0f };
 
+		[XmlIgnore]
+		public Command<float> Damage = new Command<float>();
+
 		public Property<bool> Loud = new Property<bool> { Value = true };
+
+		[XmlIgnore]
+		public Property<bool> Killed = new Property<bool>();
 
 		public override void Awake()
 		{
@@ -70,11 +73,14 @@ namespace Lemma.Components
 			{
 				Agent.agents.Remove(this);
 			}));
-			this.Add(new NotifyBinding(delegate()
+
+			this.Damage.Action = delegate(float value)
 			{
-				if (this.Health <= 0.0f)
-					this.Die.Execute();
-			}, this.Health));
+				float health = Math.Max(this.Health - value, 0);
+				if (health == 0.0f)
+					this.Killed.Value = true;
+				this.Health.Value = health;
+			};
 		}
 	}
 }

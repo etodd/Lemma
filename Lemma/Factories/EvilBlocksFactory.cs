@@ -36,7 +36,7 @@ namespace Lemma.Factories
 					// Damage the player
 					Entity p = PlayerFactory.Instance;
 					if (p != null && p.Active)
-						p.Get<Player>().Health.Value -= 0.1f;
+						p.Get<Agent>().Damage.Execute(0.1f);
 				}
 			}));
 			blockCloud.Type.Value = Voxel.t.Black;

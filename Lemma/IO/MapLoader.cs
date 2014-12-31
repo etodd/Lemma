@@ -99,7 +99,7 @@ namespace Lemma.IO
 			typeof(Spinner),
 			typeof(Levitator),
 			typeof(RaycastAIMovement),
-			typeof(Orb),
+			typeof(Exploder),
 			typeof(MapExit),
 			typeof(ImplodeBlock),
 			typeof(TimeTrial),

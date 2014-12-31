@@ -15,7 +15,7 @@ namespace Lemma.Components
 		public const int KernelSize = 10;
 		public const float RaycastHeight = 30.0f;
 		public const float RaycastInterval = 0.25f;
-		public const float StartHeightMultiplier = 2.5f;
+		public const float StartHeightMultiplier = 2.0f;
 
 		[XmlIgnore]
 		public float[,] RaycastDistances = new float[KernelSize, KernelSize];

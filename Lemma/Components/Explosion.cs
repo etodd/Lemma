@@ -152,7 +152,7 @@ namespace Lemma.Components
 						});
 						attenuation = Math.Max(0, attenuation);
 					}
-					player.Get<Player>().Health.Value -= attenuation * (minPlayerDamage + (1.0f - (d / physicsRadius)) * playerDamageMultiplier);
+					player.Get<Agent>().Damage.Execute(attenuation * (minPlayerDamage + (1.0f - (d / physicsRadius)) * playerDamageMultiplier));
 				}
 			}
 		

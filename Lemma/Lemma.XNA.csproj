@@ -139,7 +139,7 @@
     <Compile Include="Components\ImplodeBlock.cs" />
     <Compile Include="Components\Joint.cs" />
     <Compile Include="Components\MapExit.cs" />
-    <Compile Include="Components\Orb.cs" />
+    <Compile Include="Components\Exploder.cs" />
     <Compile Include="Components\Rain.cs" />
     <Compile Include="Components\RaycastAIMovement.cs" />
     <Compile Include="Components\Levitator.cs" />
@@ -290,7 +290,7 @@
     <Compile Include="Factories\SmokeFactory.cs" />
     <Compile Include="Factories\LevitatorFactory.cs" />
     <Compile Include="Components\Explosion.cs" />
-    <Compile Include="Factories\OrbFactory.cs" />
+    <Compile Include="Factories\ExploderFactory.cs" />
     <Compile Include="Factories\SpinnerFactory.cs" />
     <Compile Include="Factories\JointFactory.cs" />
     <Compile Include="Factories\SceneryBlockFactory.cs" />

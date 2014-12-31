@@ -390,7 +390,7 @@ namespace Lemma.Factories
 							Action = delegate()
 							{
 								Agent a = ai.TargetAgent.Value.Target.Get<Agent>();
-								a.Health.Value -= 0.01f / 1.5f; // seconds to kill
+								a.Damage.Execute(0.01f / 1.5f); // seconds to kill
 								if (!a.Active)
 									ai.CurrentState.Value = "Alert";
 								else

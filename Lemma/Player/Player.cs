@@ -31,9 +31,6 @@ namespace Lemma.Components
 		public Property<ComponentBind.Entity.Handle> SignalTower = new Property<ComponentBind.Entity.Handle>();
 
 		[XmlIgnore]
-		public Command HealthDepleted = new Command();
-
-		[XmlIgnore]
 		public Command Die = new Command();
 
 		private const float damageSoundInterval = 0.4f;
@@ -63,8 +60,6 @@ namespace Lemma.Components
 			this.Character.Body.Tag = this;
 			this.main.Space.Add(this.Character);
 
-			this.Add(new CommandBinding(this.HealthDepleted, this.Die));
-
 			this.Add(new ChangeBinding<float>(this.Health, delegate(float old, float value)
 			{
 				if (value < old && this.damageTimer > damageSoundInterval)
@@ -74,7 +69,7 @@ namespace Lemma.Components
 					this.Rumble.Execute(Math.Min(0.3f, (old - value) * 2.0f));
 				}
 				if (old > 0.0f && value <= 0.0f)
-					this.HealthDepleted.Execute();
+					this.Die.Execute();
 			}));
 
 			this.Add(new Binding<float>(this.main.TimeMultiplier, () => this.SlowMotion && !this.main.Paused ? 0.4f : 1.0f, this.SlowMotion, this.main.Paused));

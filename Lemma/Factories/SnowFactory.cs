@@ -32,8 +32,8 @@ namespace Lemma.Factories
 			return entity;
 		}
 
-		public const float MaxLifetime = 5.0f;
-		public const float MaxWindLifetime = 8.0f;
+		public const float MaxLifetime = 6.0f;
+		public const float MaxWindLifetime = 9.0f;
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
@@ -57,8 +57,8 @@ namespace Lemma.Factories
 					MaxStartSize = 0.15f,
 					MinEndSize = 0.05f,
 					MaxEndSize = 0.15f,
-					MinColor = new Vector4(0.7f, 0.7f, 0.7f, 1.0f),
-					MaxColor = new Vector4(0.7f, 0.7f, 0.7f, 1.0f),
+					MinColor = new Vector4(0.5f, 0.5f, 0.5f, 1.0f),
+					MaxColor = new Vector4(0.5f, 0.5f, 0.5f, 1.0f),
 					EmitterVelocitySensitivity = 1.0f,
 					BlendState = BlendState.Opaque,
 					Material = new Components.Model.Material { SpecularIntensity = 0.0f, SpecularPower = 1.0f },

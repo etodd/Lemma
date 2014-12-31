@@ -351,19 +351,13 @@ namespace Lemma.Factories
 			agent.Add(new Binding<Vector3>(agent.Position, () => transform.Position.Value + new Vector3(0, player.Character.Height * -0.5f, 0), transform.Position, player.Character.Height));
 			agent.Add(new Binding<bool>(agent.Loud, () => player.Character.MovementDirection.Value.LengthSquared() > 0 && !player.Character.Crouched, player.Character.Crouched));
 
-			entity.Add(new CommandBinding(player.HealthDepleted, delegate()
-			{
-				Session.Recorder.Event(main, "DieFromHealth");
-				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_DEATH, entity);
-				main.Spawner.RespawnDistance = Spawner.KilledRespawnDistance;
-				main.Spawner.RespawnInterval = Spawner.KilledRespawnInterval;
-			}));
-
 			entity.Add(new CommandBinding(player.Die, delegate()
 			{
 				Session.Recorder.Event(main, "Die");
-				if (Agent.Query(transform.Position, 0.0f, 10.0f, x => x != agent) != null)
+				if (agent.Killed || Agent.Query(transform.Position, 0.0f, 10.0f, x => x != agent) != null)
 				{
+					Session.Recorder.Event(main, "Killed");
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_DEATH, entity);
 					main.Spawner.RespawnDistance = Spawner.KilledRespawnDistance;
 					main.Spawner.RespawnInterval = Spawner.KilledRespawnInterval;
 				}
@@ -413,7 +407,7 @@ namespace Lemma.Factories
 			footsteps.Add(new Binding<float>(footsteps.SupportHeight, player.Character.SupportHeight));
 			footsteps.Add(new Binding<bool>(footsteps.IsSupported, player.Character.IsSupported));
 			footsteps.Add(new Binding<bool>(footsteps.IsSwimming, player.Character.IsSwimming));
-			footsteps.Add(new TwoWayBinding<float>(player.Health, footsteps.Health));
+			footsteps.Add(new CommandBinding<float>(footsteps.Damage, agent.Damage));
 			footsteps.Add(new CommandBinding<Voxel, Voxel.Coord, Direction>(wallRun.WalkedOn, footsteps.WalkedOn));
 			model.Trigger("Run", 0.16f, footsteps.Footstep);
 			model.Trigger("Run", 0.58f, footsteps.Footstep);
@@ -463,6 +457,7 @@ namespace Lemma.Factories
 			fallDamage.Add(new TwoWayBinding<bool>(player.EnableMoves, fallDamage.EnableMoves));
 			fallDamage.Add(new TwoWayBinding<bool>(fallDamage.Landing, rotation.Landing));
 			fallDamage.Add(new CommandBinding(fallDamage.LockRotation, (Action)rotation.Lock));
+			fallDamage.Add(new CommandBinding<float>(fallDamage.PhysicsDamage, agent.Damage));
 			fallDamage.Bind(model);
 
 			BlockCloud blockCloud = entity.GetOrCreate<BlockCloud>("BlockCloud");

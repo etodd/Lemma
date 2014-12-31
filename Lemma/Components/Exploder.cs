@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace Lemma.Components
 {
-	public class Orb : Component<Main>
+	public class Exploder : Component<Main>
 	{
 		public ListProperty<Voxel.Coord> CoordQueue = new ListProperty<Voxel.Coord>();
 

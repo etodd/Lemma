@@ -55,6 +55,7 @@ namespace Lemma.Components
 		public Property<float> Health = new Property<float>();
 		public Property<bool> EnableWalking = new Property<bool>();
 		public Property<bool> EnableMoves = new Property<bool>();
+		public Command<float> PhysicsDamage = new Command<float>(); // Damage incurred from physics stuff smashing us
 
 		private bool walkingDisabled;
 
@@ -81,7 +82,7 @@ namespace Lemma.Components
 					float threshold = map.Entity.Type == "FallingTower" ? 14.0f : 24.0f;
 					float playerLastSpeed = Vector3.Dot(this.lastLinearVelocity, Vector3.Normalize(-contacts[contacts.Count - 1].Contact.Normal)) * 2.5f;
 					if (force > threshold + playerLastSpeed + 4.0f)
-						this.Health.Value -= (force - threshold - playerLastSpeed) * 0.04f;
+						this.PhysicsDamage.Execute((force - threshold - playerLastSpeed) * 0.04f);
 				}
 			};
 		}

@@ -38,14 +38,19 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Zone> CurrentZone = new Property<Zone>();
 
+		public void NewUUID()
+		{
+			this.UUID.Value = Guid.NewGuid().ToString().Replace("-", string.Empty);
+		}
+
 		public override void Awake()
 		{
 			base.Awake();
 			this.EnabledInEditMode = true;
 			this.EnabledWhenPaused = false;
 
-			if (this.UUID.Value == null)
-				this.UUID.Value = Guid.NewGuid().ToString().Replace("-", string.Empty);
+			if (string.IsNullOrEmpty(this.UUID))
+				this.NewUUID();
 
 			this.Add(new Binding<Texture2D, string>(this.OverlayTextureHandle, file => file == null ? (Texture2D)null : this.main.Content.Load<Texture2D>(file), this.OverlayTexture));
 			this.Add(new Binding<string>(this.main.Renderer.LightRampTexture, this.LightRampTexture));

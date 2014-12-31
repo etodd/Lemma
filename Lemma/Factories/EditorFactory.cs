@@ -224,6 +224,23 @@ namespace Lemma.Factories
 
 			input.Add(new CommandBinding(input.GetChord(new PCInput.Chord(Keys.O, Keys.LeftControl)), gui.ShowOpenMenu));
 
+#if DEVELOPMENT
+			AddCommand
+			(
+				entity, main, commandQueueContainer, "Generate new UUID", new PCInput.Chord(),
+				new Command
+				{
+					Action = () =>
+					{
+						WorldFactory.Instance.Get<World>().NewUUID();
+					}
+				},
+				gui.MapCommands,
+				() => !string.IsNullOrEmpty(main.MapFile) && !input.EnableLook && !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None,
+				input.EnableLook, editor.VoxelEditMode, editor.TransformMode, main.MapFile
+			);
+#endif
+
 			AddCommand
 			(
 				entity, main, commandQueueContainer, "New", new PCInput.Chord(Keys.N, Keys.LeftControl),
@@ -773,8 +790,8 @@ namespace Lemma.Factories
 					}
 				},
 				gui.EntityCommands,
-				() => !string.IsNullOrEmpty(main.MapFile),
-				main.MapFile
+				() => !string.IsNullOrEmpty(main.MapFile) && !editor.VoxelEditMode && !input.EnableLook && editor.TransformMode.Value == Editor.TransformModes.None && !main.GeeUI.LastClickCaptured,
+				main.MapFile, editor.VoxelEditMode, input.EnableLook, editor.TransformMode, main.GeeUI.LastClickCaptured
 			);
 
 

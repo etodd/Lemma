@@ -9,18 +9,18 @@ using Microsoft.Xna.Framework.Audio;
 
 namespace Lemma.Factories
 {
-	public class OrbFactory : Factory<Main>
+	public class ExploderFactory : Factory<Main>
 	{
 		private Random random = new Random();
 
-		public OrbFactory()
+		public ExploderFactory()
 		{
 			this.Color = new Vector3(1.0f, 1.0f, 0.7f);
 		}
 
 		public override Entity Create(Main main)
 		{
-			return new Entity(main, "Orb");
+			return new Entity(main, "Exploder");
 		}
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
@@ -92,7 +92,7 @@ namespace Lemma.Factories
 			agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
 
 			RaycastAIMovement movement = entity.GetOrCreate<RaycastAIMovement>("Movement");
-			Orb orb = entity.GetOrCreate<Orb>("Orb");
+			Exploder exploder = entity.GetOrCreate<Exploder>("Exploder");
 
 			AI.Task checkOperationalRadius = new AI.Task
 			{
@@ -251,7 +251,7 @@ namespace Lemma.Factories
 				Name = "Explode",
 				Enter = delegate(AI.AIState previous)
 				{
-					orb.CoordQueue.Clear();
+					exploder.CoordQueue.Clear();
 					
 					Entity voxelEntity = raycastAI.Voxel.Value.Target;
 					if (voxelEntity == null || !voxelEntity.Active)
@@ -277,7 +277,7 @@ namespace Lemma.Factories
 
 					Direction up = toSupport.GetReverse();
 
-					orb.ExplosionOriginalCoord.Value = raycastAI.Coord;
+					exploder.ExplosionOriginalCoord.Value = raycastAI.Coord;
 
 					Direction right;
 					if (up.IsParallel(Direction.PositiveX))
@@ -291,13 +291,13 @@ namespace Lemma.Factories
 						for (Voxel.Coord x = y.Clone(); x.GetComponent(right) < c.GetComponent(right) + 2; x = x.Move(right))
 						{
 							for (Voxel.Coord z = x.Clone(); z.GetComponent(forward) < c.GetComponent(forward) + 2; z = z.Move(forward))
-								orb.CoordQueue.Add(z);
+								exploder.CoordQueue.Add(z);
 						}
 					}
 				},
 				Exit = delegate(AI.AIState next)
 				{
-					orb.CoordQueue.Clear();
+					exploder.CoordQueue.Clear();
 				},
 				Tasks = new[]
 				{ 
@@ -307,11 +307,11 @@ namespace Lemma.Factories
 						Interval = 0.2f,
 						Action = delegate()
 						{
-							if (orb.CoordQueue.Length > 0)
+							if (exploder.CoordQueue.Length > 0)
 							{
-								raycastAI.MoveTo(orb.CoordQueue[0]);
+								raycastAI.MoveTo(exploder.CoordQueue[0]);
 
-								orb.CoordQueue.RemoveAt(0);
+								exploder.CoordQueue.RemoveAt(0);
 
 								Entity blockEntity = factory.CreateAndBind(main);
 								Voxel.States.Infected.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
@@ -340,7 +340,7 @@ namespace Lemma.Factories
 						Action = delegate()
 						{
 							AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_GLOWSQUARE_PITCH, MathHelper.Lerp(0.0f, 1.0f, ai.TimeInCurrentState.Value / 2.0f), entity);
-							if (orb.CoordQueue.Length == 0)
+							if (exploder.CoordQueue.Length == 0)
 							{
 								// Explode
 								ai.CurrentState.Value = "Exploding";
@@ -356,12 +356,12 @@ namespace Lemma.Factories
 				Name = "Exploding",
 				Enter = delegate(AI.AIState previous)
 				{
-					orb.Exploded.Value = false;
+					exploder.Exploded.Value = false;
 					AkSoundEngine.PostEvent(AK.EVENTS.STOP_GLOWSQUARE, entity);
 				},
 				Exit = delegate(AI.AIState next)
 				{
-					orb.Exploded.Value = false;
+					exploder.Exploded.Value = false;
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_GLOWSQUARE, entity);
 				},
 				Tasks = new[]
@@ -374,13 +374,13 @@ namespace Lemma.Factories
 							const int radius = 9;
 
 							float timeInCurrentState = ai.TimeInCurrentState;
-							if (timeInCurrentState > 1.0f && !orb.Exploded)
+							if (timeInCurrentState > 1.0f && !exploder.Exploded)
 							{
 								Entity mapEntity = raycastAI.Voxel.Value.Target;
 								if (mapEntity != null && mapEntity.Active)
 									Explosion.Explode(main, mapEntity.Get<Voxel>(), raycastAI.Coord, radius, 18.0f);
 
-								orb.Exploded.Value = true;
+								exploder.Exploded.Value = true;
 							}
 
 							if (timeInCurrentState > 2.0f)

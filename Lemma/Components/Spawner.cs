@@ -26,8 +26,8 @@ namespace Lemma.Components
 		public const int RespawnMemoryLength = 200;
 		public const float DefaultRespawnDistance = 0.0f;
 		public const float DefaultRespawnInterval = 0.5f;
-		public const float KilledRespawnDistance = 40.0f;
-		public const float KilledRespawnInterval = 3.0f;
+		public const float KilledRespawnDistance = 60.0f;
+		public const float KilledRespawnInterval = 4.0f;
 
 		public float RespawnDistance = DefaultRespawnDistance;
 		public float RespawnInterval = DefaultRespawnInterval;
