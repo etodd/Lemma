@@ -500,13 +500,14 @@ namespace Lemma.Components
 				}
 			));
 
-			Action<Container> animateMessage = delegate(Container msg)
+			Action<float, Container> animateMessage = delegate(float delay, Container msg)
 			{
 				msg.CheckLayout();
 				Vector2 originalSize = msg.Size;
 				msg.Size.Value = new Vector2(0, originalSize.Y);
 				entity.Add(new Animation
 				(
+					new Animation.Delay(delay),
 					new Animation.Ease(new Animation.Vector2MoveTo(msg.Size, originalSize, 0.5f), Animation.Ease.EaseType.OutExponential)
 				));
 			};
@@ -517,7 +518,7 @@ namespace Lemma.Components
 			{
 				typingIndicator = makeAlign(makeButton(incomingColor, "\\...", messageWidth - padding * 2.0f), false);
 				msgList.Children.Add(typingIndicator);
-				animateMessage(typingIndicator);
+				animateMessage(0.2f, typingIndicator);
 			};
 
 			if (phone.Schedules.Length > 0)
@@ -574,16 +575,23 @@ namespace Lemma.Components
 					typingIndicator = null;
 				}
 				
-				// Animate the new message
-				animateMessage((Container)msgList.Children[msgList.Children.Length - 1].Children[0]);
-
 				if (phone.Schedules.Length > 0)
 					showTypingIndicator();
 
+				float delay;
 				if (phoneActive)
+				{
 					scrollToBottom();
+					delay = 0;
+				}
 				else
+				{
 					showPhone(true);
+					delay = 0.5f;
+				}
+
+				// Animate the new message
+				animateMessage(delay, (Container)msgList.Children[msgList.Children.Length - 1].Children[0]);
 
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PHONE_VIBRATE, entity);
 				if (togglePhoneMessage == null && phone.Schedules.Length == 0 && phone.ActiveAnswers.Length == 0) // No more messages incoming, and no more answers to give

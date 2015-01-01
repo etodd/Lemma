@@ -67,6 +67,10 @@ namespace Lemma.Factories
 			const float defaultModelScale = 0.75f;
 			model.Scale.Value = new Vector3(defaultModelScale);
 
+			const float sightDistance = 80.0f;
+			const float hearingDistance = 20.0f;
+			const int operationalRadius = 100;
+
 			model.Add(new Binding<Vector3, string>(model.Color, delegate(string state)
 			{
 				switch (state)
@@ -90,8 +94,6 @@ namespace Lemma.Factories
 
 			Voxel.GlobalRaycastResult rayHit = new Voxel.GlobalRaycastResult();
 			Vector3 toReticle = Vector3.Zero;
-			const int operationalRadius = 80;
-
 			AI.Task checkOperationalRadius = new AI.Task
 			{
 				Interval = 2.0f,
@@ -124,7 +126,7 @@ namespace Lemma.Factories
 				Action = delegate()
 				{
 					toReticle = Vector3.Normalize(turret.Reticle.Value - transform.Position.Value);
-					rayHit = Voxel.GlobalRaycast(transform.Position, toReticle, 300.0f);
+					rayHit = Voxel.GlobalRaycast(transform.Position, toReticle, operationalRadius);
 					laser.Lines.Clear();
 
 					Microsoft.Xna.Framework.Color color = new Microsoft.Xna.Framework.Color(model.Color);
@@ -135,9 +137,6 @@ namespace Lemma.Factories
 					});
 				}
 			};
-
-			const float sightDistance = 100.0f;
-			const float hearingDistance = 20.0f;
 
 			ai.Add(new AI.AIState
 			{
@@ -263,7 +262,8 @@ namespace Lemma.Factories
 				},
 				Exit = delegate(AI.AIState next)
 				{
-					if (rayHit.Voxel != null && (rayHit.Position - transform.Position).Length() < 8.0f)
+					Voxel.State attachedState = attachable.AttachedVoxel.Value.Target.Get<Voxel>()[attachable.Coord];
+					if (!attachedState.Permanent && rayHit.Voxel != null && (rayHit.Position - transform.Position).Length() < 8.0f)
 						return; // Danger close, cease fire!
 
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_FIRE, entity);
