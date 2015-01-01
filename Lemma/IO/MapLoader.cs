@@ -290,6 +290,7 @@ namespace Lemma.IO
 					stream.Dispose();
 				}),
 				new Animation.Delay(0.01f),
+				new Animation.Set<bool>(main.Menu.CanPause, true),
 				new Animation.Execute(main.ScheduleSave)
 			);
 			anim.EnabledWhenPaused = false;

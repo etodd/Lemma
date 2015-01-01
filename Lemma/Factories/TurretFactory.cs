@@ -47,7 +47,9 @@ namespace Lemma.Factories
 					entity.Delete.Execute();
 				}
 			};
-			VoxelAttachable.MakeAttachable(entity, main, true, true, die).Enabled.Value = true;
+			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main, true, true, die);
+			attachable.Enabled.Value = true;
+			attachable.Offset.Value = 2;
 
 			PointLight pointLight = entity.GetOrCreate<PointLight>();
 			pointLight.Serialize = false;
@@ -88,7 +90,7 @@ namespace Lemma.Factories
 
 			Voxel.GlobalRaycastResult rayHit = new Voxel.GlobalRaycastResult();
 			Vector3 toReticle = Vector3.Zero;
-			const int operationalRadius = 100;
+			const int operationalRadius = 80;
 
 			AI.Task checkOperationalRadius = new AI.Task
 			{
@@ -224,7 +226,7 @@ namespace Lemma.Factories
 						Action = delegate()
 						{
 							Entity target = ai.TargetAgent.Value.Target;
-							turret.Reticle.Value += (target.Get<Transform>().Position - turret.Reticle.Value) * Math.Min(2.0f * main.ElapsedTime, 1.0f);
+							turret.Reticle.Value += (target.Get<Transform>().Position - turret.Reticle.Value) * Math.Min(3.0f * main.ElapsedTime, 1.0f);
 						}
 					},
 					new AI.Task
@@ -235,7 +237,7 @@ namespace Lemma.Factories
 							if (Agent.Query(transform.Position, sightDistance, hearingDistance, ai.TargetAgent.Value.Target.Get<Agent>()))
 								lastSpotted = main.TotalTime;
 
-							if (ai.TimeInCurrentState.Value > 2.0f)
+							if (ai.TimeInCurrentState.Value > 1.5f)
 							{
 								if (lastSpotted < main.TotalTime - 2.0f)
 									ai.CurrentState.Value = "Alert";

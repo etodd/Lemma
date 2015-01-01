@@ -184,21 +184,24 @@ namespace Lemma.Components
 										Vector3 absolutePos = respawnMap.GetAbsolutePosition(respawnLocation.Coordinate);
 										if (respawnMap.Active
 											&& absolutePos.Y > lowerLimit
-											&& respawnMap[respawnLocation.Coordinate] != Voxel.States.Empty
 											&& respawnMap.GetAbsoluteVector(respawnMap.GetRelativeDirection(Direction.PositiveY).GetVector()).Y > 0.5f
 											&& Agent.Query(absolutePos, 0.0f, 20.0f) == null)
 										{
-											supportedLocations++;
-											DynamicVoxel dynamicMap = respawnMap as DynamicVoxel;
-											if (dynamicMap == null || absolutePos.Y > respawnLocation.OriginalPosition.Y - 1.0f)
+											Voxel.State state = respawnMap[respawnLocation.Coordinate];
+											if (state != Voxel.States.Empty && state != Voxel.States.Infected && state != Voxel.States.HardInfected && state != Voxel.States.Floater)
 											{
-												Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Up, 2);
-												if (hit.Voxel == null)
+												supportedLocations++;
+												DynamicVoxel dynamicMap = respawnMap as DynamicVoxel;
+												if (dynamicMap == null || absolutePos.Y > respawnLocation.OriginalPosition.Y - 1.0f)
 												{
-													// We can spawn here
-													spawnFound = true;
-													foundSpawnLocation = respawnLocation;
-													foundSpawnAbsolutePosition = absolutePos;
+													Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(absolutePos + new Vector3(0, 1, 0), Vector3.Up, 2);
+													if (hit.Voxel == null)
+													{
+														// We can spawn here
+														spawnFound = true;
+														foundSpawnLocation = respawnLocation;
+														foundSpawnAbsolutePosition = absolutePos;
+													}
 												}
 											}
 										}

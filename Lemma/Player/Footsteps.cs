@@ -169,7 +169,7 @@ namespace Lemma.Components
 					AkSoundEngine.PostEvent("Play_FragileDirt_Crumble", pos);
 					WorldFactory.Instance.Add(new Animation
 					(
-						new Animation.Delay(1.0f),
+						new Animation.Delay(0.6f),
 						new Animation.Execute(delegate()
 						{
 							if (map[coord].ID == Voxel.t.Floater)
