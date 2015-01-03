@@ -113,25 +113,31 @@ namespace Lemma.Components
 
 					bool blue = this.StateId == Voxel.t.Blue;
 					bool foundAdjacentCell = false;
+					bool foundConflict = false;
 					if (this.CheckAdjacent)
 					{
 						foreach (Direction dir in DirectionExtensions.Directions)
 						{
 							Voxel.Coord adjacent = c.Move(dir);
 							Voxel.t adjacentID = m[adjacent].ID;
-							if (adjacentID != Voxel.t.Empty && (!blue || (adjacentID != Voxel.t.Infected && adjacentID != Voxel.t.HardInfected && adjacentID != Voxel.t.Slider && adjacentID != Voxel.t.SliderPowered && adjacentID != Voxel.t.SocketWhite && adjacentID != Voxel.t.SocketBlue && adjacentID != Voxel.t.SocketYellow)))
+							if (adjacentID != Voxel.t.Empty)
 							{
-								foundAdjacentCell = true;
-								if (blue)
-								{
-									if (adjacentID == Voxel.t.Reset)
-									{
-										this.StateId.Value = Voxel.t.Neutral;
-										break;
-									}
-								}
+								if (blue && (adjacentID == Voxel.t.Infected || adjacentID == Voxel.t.HardInfected || adjacentID == Voxel.t.Slider || adjacentID == Voxel.t.SliderPowered || adjacentID == Voxel.t.SocketWhite || adjacentID == Voxel.t.SocketBlue || adjacentID == Voxel.t.SocketYellow))
+									foundConflict = true;
 								else
-									break;
+								{
+									foundAdjacentCell = true;
+									if (blue)
+									{
+										if (adjacentID == Voxel.t.Reset)
+										{
+											this.StateId.Value = Voxel.t.Neutral;
+											break;
+										}
+									}
+									else
+										break;
+								}
 							}
 						}
 					}
@@ -142,7 +148,6 @@ namespace Lemma.Components
 					{
 						Vector3 absolutePos = m.GetAbsolutePosition(c);
 
-						bool foundConflict = false;
 						if (blue && !Zone.CanBuild(absolutePos))
 							foundConflict = true;
 

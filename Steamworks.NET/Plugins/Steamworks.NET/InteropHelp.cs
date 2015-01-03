@@ -123,7 +123,7 @@ namespace Steamworks {
 
 			string str = managedObj as string;
 			if (str == null) {
-				throw new MarshalDirectiveException("UTF8Marshaler must be used on a string.");
+				throw new Exception("UTF8Marshaler must be used on a string.");
 			}
 
 			byte[] strbuf = new byte[Encoding.UTF8.GetByteCount(str) + 1];
@@ -169,6 +169,90 @@ namespace Steamworks {
 				default:
 					return static_instance_free;
 			}
+		}
+	}
+
+	// MatchMaking Key-Value Pair Marshaller
+	public class MMKVPMarshaller {
+		private IntPtr[] m_AllocatedMemory;
+		private IntPtr m_NativeArray;
+
+		public MMKVPMarshaller(MatchMakingKeyValuePair_t[] filters) {
+			if (filters == null) {
+				return;
+			}
+			
+			m_AllocatedMemory = new IntPtr[filters.Length];
+
+			int intPtrSize = Marshal.SizeOf(typeof(IntPtr));
+			m_NativeArray = Marshal.AllocHGlobal(intPtrSize * filters.Length);
+			for (int i = 0; i < filters.Length; i++) {
+				m_AllocatedMemory[i] = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(MatchMakingKeyValuePair_t)));
+				Marshal.StructureToPtr(filters[i], m_AllocatedMemory[i], false);
+
+				Marshal.WriteIntPtr(m_NativeArray, i * intPtrSize, m_AllocatedMemory[i]);
+			}
+		}
+
+		~MMKVPMarshaller() {
+			if (m_NativeArray != IntPtr.Zero) {
+				Marshal.FreeHGlobal(m_NativeArray);
+
+				foreach (IntPtr ptr in m_AllocatedMemory) {
+					if (ptr != IntPtr.Zero) {
+						Marshal.FreeHGlobal(ptr);
+					}
+				}
+			}
+
+		}
+
+		public static implicit operator IntPtr(MMKVPMarshaller that) {
+			return that.m_NativeArray;
+		}
+	}
+
+	public class DllCheck {
+		/// <summary>
+		/// This is an optional runtime check to ensure that the dlls are the correct version. Returns false only if the steam_api.dll is found and it's the wrong size or version number.
+		/// </summary>
+		public static bool Test() {
+			bool ret = true;
+
+#if STEAMWORKS_WIN || UNITY_EDITOR_WIN || (!UNITY_EDITOR && UNITY_STANDALONE_WIN)
+			ret = CheckSteamAPIDLL();
+#endif
+
+			return ret;
+		}
+
+		private static bool CheckSteamAPIDLL() {
+			string strCWD = System.IO.Directory.GetCurrentDirectory();
+
+			string file;
+			int fileBytes;
+			if (IntPtr.Size == 4) {
+				file = System.IO.Path.Combine(strCWD, "steam_api.dll");
+				fileBytes = Version.SteamAPIDLLSize;
+			}
+			else {
+				file = System.IO.Path.Combine(strCWD, "steam_api64.dll");
+				fileBytes = Version.SteamAPI64DLLSize;
+			}
+
+			// If we can not find the file we'll just skip it and let the DllNotFoundException take care of it.
+			if (System.IO.File.Exists(file)) {
+				System.IO.FileInfo fInfo2 = new System.IO.FileInfo(file);
+				if (fInfo2.Length != fileBytes) {
+					return false;
+				}
+
+				if (System.Diagnostics.FileVersionInfo.GetVersionInfo(file).FileVersion != Version.SteamAPIDLLVersion) {
+					return false;
+				}
+			}
+
+			return true;
 		}
 	}
 }

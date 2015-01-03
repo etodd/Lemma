@@ -339,6 +339,26 @@ namespace Lemma
 			}
 		}
 
+		public string GetFullMapPath()
+		{
+			// Don't try to load the menu from a save game
+			string filename = this.MapFile;
+			if (filename == null)
+				return null;
+
+			string directory;
+			if (this.CurrentSave.Value == null || filename == Main.MenuMap)
+				directory = this.MapDirectory;
+			else
+				directory = Path.Combine(this.SaveDirectory, this.CurrentSave);
+
+			string filenameWithExtension = filename;
+			if (!filenameWithExtension.EndsWith(IO.MapLoader.MapExtension))
+				filenameWithExtension += IO.MapLoader.MapExtension;
+
+			return Path.IsPathRooted(filenameWithExtension) ? filenameWithExtension : Path.Combine(directory, filenameWithExtension);
+		}
+
 		public void FlushComponents()
 		{
 			for (int i = 0; i < this.componentsToAdd.Count; i++)
@@ -460,6 +480,10 @@ namespace Lemma
 #if STEAMWORKS
 			if (!SteamWorker.Init())
 				Log.d("Failed to initialize Steamworks.");
+#if VR
+			if (Steamworks.SteamUtils.IsSteamRunningInVR())
+				this.VR = vr = true;
+#endif
 #endif
 
 			this.Space = new Space();
@@ -616,7 +640,7 @@ namespace Lemma
 				Directory.CreateDirectory(this.CustomMapDirectory);
 			this.MapDirectory = Path.Combine(this.Content.RootDirectory, IO.MapLoader.MapDirectory);
 
-			this.timesFile = Path.Combine(Main.DataDirectory, "times.json");
+			this.timesFile = Path.Combine(Main.DataDirectory, "times.dat");
 			try
 			{
 				using (Stream fs = new FileStream(this.timesFile, FileMode.Open, FileAccess.Read, FileShare.None))
@@ -749,9 +773,6 @@ namespace Lemma
 				if (whitelistExtensions.Contains(Path.GetExtension(filename)))
 					File.Copy(path, Path.Combine(dst, filename));
 			}
-
-			foreach (string path in Directory.GetDirectories(src))
-				this.copySave(path, Path.Combine(dst, Path.GetFileName(path)));
 		}
 
 #if ANALYTICS
@@ -1242,7 +1263,9 @@ namespace Lemma
 			string newSave = DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss");
 			if (newSave != oldSave)
 			{
-				this.copySave(oldSave == null ? this.MapDirectory : Path.Combine(this.SaveDirectory, oldSave), Path.Combine(this.SaveDirectory, newSave));
+				Directory.CreateDirectory(Path.Combine(this.SaveDirectory, newSave));
+				if (oldSave != null)
+					this.copySave(Path.Combine(this.SaveDirectory, oldSave), Path.Combine(this.SaveDirectory, newSave));
 				this.CurrentSave.Value = newSave;
 			}
 		}
@@ -1384,7 +1407,10 @@ namespace Lemma
 
 			try
 			{
-				File.WriteAllText(Path.Combine(currentSaveDirectory, "save.json"), JsonConvert.SerializeObject(new Main.SaveInfo { MapFile = Path.GetFileNameWithoutExtension(this.MapFile), Version = Main.MapVersion }));
+				using (Stream fs = new FileStream(Path.Combine(currentSaveDirectory, "save.dat"), FileMode.Create, FileAccess.Write, FileShare.None))
+				using (Stream stream = new GZipOutputStream(fs))
+				using (StreamWriter writer = new StreamWriter(stream))
+					writer.Write(JsonConvert.SerializeObject(new Main.SaveInfo { MapFile = Path.GetFileNameWithoutExtension(this.MapFile), Version = Main.MapVersion }));
 			}
 			catch (InvalidOperationException e)
 			{

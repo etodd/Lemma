@@ -15,6 +15,7 @@ using Lemma.Util;
 using Lemma.GInterfaces;
 using Lemma.Factories;
 using Newtonsoft.Json;
+using ICSharpCode.SharpZipLib.GZip;
 
 namespace Lemma.Components
 {
@@ -185,7 +186,11 @@ namespace Lemma.Components
 			string thumbnailPath = null;
 			try
 			{
-				info = JsonConvert.DeserializeObject<Main.SaveInfo>(File.ReadAllText(Path.Combine(this.main.SaveDirectory, timestamp, "save.json")));
+				using (Stream fs = new FileStream(Path.Combine(this.main.SaveDirectory, timestamp, "save.dat"), FileMode.Open, FileAccess.Read, FileShare.None))
+				using (Stream stream = new GZipInputStream(fs))
+				using (StreamReader reader = new StreamReader(stream))
+					info = JsonConvert.DeserializeObject<Main.SaveInfo>(reader.ReadToEnd());
+
 				if (info.Version != Main.MapVersion)
 					throw new Exception();
 				thumbnailPath = Path.Combine(this.main.SaveDirectory, timestamp, "thumbnail.jpg");

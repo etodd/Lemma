@@ -45,7 +45,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'OSX-Linux|x86'">
     <OutputPath>bin\x86\OSX-Linux\</OutputPath>
-    <DefineConstants>TRACE;STEAMWORKS_/w</DefineConstants>
+    <DefineConstants>TRACE;STEAMWORKS_LIN_OSX</DefineConstants>
     <Optimize>true</Optimize>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>pdbonly</DebugType>
@@ -113,6 +113,9 @@
     <Compile Include="..\Plugins\Steamworks.NET\autogen\isteamgameserverutils.cs">
       <Link>Steamworks.NET\autogen\isteamgameserverutils.cs</Link>
     </Compile>
+    <Compile Include="..\Plugins\Steamworks.NET\autogen\isteamhtmlsurface.cs">
+      <Link>Steamworks.NET\autogen\isteamhtmlsurface.cs</Link>
+    </Compile>
     <Compile Include="..\Plugins\Steamworks.NET\autogen\isteamhttp.cs">
       <Link>Steamworks.NET\autogen\isteamhttp.cs</Link>
     </Compile>
@@ -121,6 +124,9 @@
     </Compile>
     <Compile Include="..\Plugins\Steamworks.NET\autogen\isteammusic.cs">
       <Link>Steamworks.NET\autogen\isteammusic.cs</Link>
+    </Compile>
+    <Compile Include="..\Plugins\Steamworks.NET\autogen\isteammusicremote.cs">
+      <Link>Steamworks.NET\autogen\isteammusicremote.cs</Link>
     </Compile>
     <Compile Include="..\Plugins\Steamworks.NET\autogen\isteamnetworking.cs">
       <Link>Steamworks.NET\autogen\isteamnetworking.cs</Link>
@@ -170,11 +176,20 @@
     <Compile Include="..\Plugins\Steamworks.NET\InteropHelp.cs">
       <Link>Steamworks.NET\InteropHelp.cs</Link>
     </Compile>
+    <Compile Include="..\Plugins\Steamworks.NET\ISteamMatchmakingResponses.cs">
+      <Link>Steamworks.NET\ISteamMatchmakingResponses.cs</Link>
+    </Compile>
     <Compile Include="..\Plugins\Steamworks.NET\Packsize.cs">
       <Link>Steamworks.NET\Packsize.cs</Link>
     </Compile>
     <Compile Include="..\Plugins\Steamworks.NET\Steam.cs">
       <Link>Steamworks.NET\Steam.cs</Link>
+    </Compile>
+    <Compile Include="..\Plugins\Steamworks.NET\types\MatchmakingTypes\gameserveritem_t.cs">
+      <Link>Steamworks.NET\types\MatchmakingTypes\gameserveritem_t.cs</Link>
+    </Compile>
+    <Compile Include="..\Plugins\Steamworks.NET\types\MatchmakingTypes\servernetadr_t.cs">
+      <Link>Steamworks.NET\types\MatchmakingTypes\servernetadr_t.cs</Link>
     </Compile>
     <Compile Include="..\Plugins\Steamworks.NET\types\SteamClientPublic\CGameID.cs">
       <Link>Steamworks.NET\types\SteamClientPublic\CGameID.cs</Link>
@@ -193,6 +208,15 @@
     </Compile>
     <Compile Include="..\Plugins\Steamworks.NET\types\SteamClient\SteamAPIWarningMessageHook_t.cs">
       <Link>Steamworks.NET\types\SteamClient\SteamAPIWarningMessageHook_t.cs</Link>
+    </Compile>
+    <Compile Include="..\Plugins\Steamworks.NET\types\SteamClient\SteamAPI_CheckCallbackRegistered_t.cs">
+      <Link>Steamworks.NET\types\SteamClient\SteamAPI_CheckCallbackRegistered_t.cs</Link>
+    </Compile>
+    <Compile Include="..\Plugins\Steamworks.NET\types\SteamClient\SteamAPI_PostAPIResultInProcess_t.cs">
+      <Link>Steamworks.NET\types\SteamClient\SteamAPI_PostAPIResultInProcess_t.cs</Link>
+    </Compile>
+    <Compile Include="..\Plugins\Steamworks.NET\types\SteamHTMLSurface\HHTMLBrowser.cs">
+      <Link>Steamworks.NET\types\SteamHTMLSurface\HHTMLBrowser.cs</Link>
     </Compile>
     <Compile Include="..\Plugins\Steamworks.NET\types\SteamHTTP\HTTPRequestHandle.cs">
       <Link>Steamworks.NET\types\SteamHTTP\HTTPRequestHandle.cs</Link>
@@ -232,6 +256,9 @@
     </Compile>
     <Compile Include="..\Plugins\Steamworks.NET\types\SteamTypes\DepotId_t.cs">
       <Link>Steamworks.NET\types\SteamTypes\DepotId_t.cs</Link>
+    </Compile>
+    <Compile Include="..\Plugins\Steamworks.NET\types\SteamTypes\ManifestId_t.cs">
+      <Link>Steamworks.NET\types\SteamTypes\ManifestId_t.cs</Link>
     </Compile>
     <Compile Include="..\Plugins\Steamworks.NET\types\SteamTypes\SteamAPICall_t.cs">
       <Link>Steamworks.NET\types\SteamTypes\SteamAPICall_t.cs</Link>

@@ -473,6 +473,343 @@ namespace Steamworks {
 	}
 
 	// callbacks
+	//-----------------------------------------------------------------------------
+	// Purpose: The browser is ready for use
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 1)]
+	public struct HTML_BrowserReady_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 1;
+		public HHTMLBrowser unBrowserHandle; // this browser is now fully created and ready to navigate to pages
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: the browser has a pending paint
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 2)]
+	public struct HTML_NeedsPaint_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 2;
+		public HHTMLBrowser unBrowserHandle; // the browser that needs the paint
+		public string pBGRA; // a pointer to the B8G8R8A8 data for this surface, valid until SteamAPI_RunCallbacks is next called
+		public uint unWide; // the total width of the pBGRA texture
+		public uint unTall; // the total height of the pBGRA texture
+		public uint unUpdateX; // the offset in X for the damage rect for this update
+		public uint unUpdateY; // the offset in Y for the damage rect for this update
+		public uint unUpdateWide; // the width of the damage rect for this update
+		public uint unUpdateTall; // the height of the damage rect for this update
+		public uint unScrollX; // the page scroll the browser was at when this texture was rendered
+		public uint unScrollY; // the page scroll the browser was at when this texture was rendered
+		public float flPageScale; // the page scale factor on this page when rendered
+		public uint unPageSerial; // incremented on each new page load, you can use this to reject draws while navigating to new pages
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: The browser wanted to navigate to a new page
+	//   NOTE - you MUST call AllowStartRequest in response to this callback
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 3)]
+	public struct HTML_StartRequest_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 3;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface navigating
+		public string pchURL; // the url they wish to navigate to
+		public string pchTarget; // the html link target type  (i.e _blank, _self, _parent, _top )
+		public string pchPostData; // any posted data for the request
+		[MarshalAs(UnmanagedType.I1)]
+		public bool bIsRedirect; // true if this was a http/html redirect from the last load request
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: The browser has been requested to close due to user interaction (usually from a javascript window.close() call)
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 4)]
+	public struct HTML_CloseBrowser_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 4;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: the browser is navigating to a new url
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 5)]
+	public struct HTML_URLChanged_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 5;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface navigating
+		public string pchURL; // the url they wish to navigate to
+		public string pchPostData; // any posted data for the request
+		[MarshalAs(UnmanagedType.I1)]
+		public bool bIsRedirect; // true if this was a http/html redirect from the last load request
+		public string pchPageTitle; // the title of the page
+		[MarshalAs(UnmanagedType.I1)]
+		public bool bNewNavigation; // true if this was from a fresh tab and not a click on an existing page
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: A page is finished loading
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 6)]
+	public struct HTML_FinishedRequest_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 6;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public string pchURL; //
+		public string pchPageTitle; //
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: a request to load this url in a new tab
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 7)]
+	public struct HTML_OpenLinkInNewTab_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 7;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public string pchURL; //
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: the page has a new title now
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 8)]
+	public struct HTML_ChangedTitle_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 8;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public string pchTitle; //
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: results from a search
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 9)]
+	public struct HTML_SearchResults_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 9;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public uint unResults; //
+		public uint unCurrentMatch; //
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: page history status changed on the ability to go backwards and forward
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 10)]
+	public struct HTML_CanGoBackAndForward_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 10;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		[MarshalAs(UnmanagedType.I1)]
+		public bool bCanGoBack; //
+		[MarshalAs(UnmanagedType.I1)]
+		public bool bCanGoForward; //
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: details on the visibility and size of the horizontal scrollbar
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 11)]
+	public struct HTML_HorizontalScroll_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 11;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public uint unScrollMax; //
+		public uint unScrollCurrent; //
+		public float flPageScale; //
+		[MarshalAs(UnmanagedType.I1)]
+		public bool bVisible; //
+		public uint unPageSize; //
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: details on the visibility and size of the vertical scrollbar
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 12)]
+	public struct HTML_VerticalScroll_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 12;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public uint unScrollMax; //
+		public uint unScrollCurrent; //
+		public float flPageScale; //
+		[MarshalAs(UnmanagedType.I1)]
+		public bool bVisible; //
+		public uint unPageSize; //
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: response to GetLinkAtPosition call
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 13)]
+	public struct HTML_LinkAtPosition_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 13;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public uint x; //
+		public uint y; //
+		public string pchURL; //
+		[MarshalAs(UnmanagedType.I1)]
+		public bool bInput; //
+		[MarshalAs(UnmanagedType.I1)]
+		public bool bLiveLink; //
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: show a Javascript alert dialog, call JSDialogResponse
+	//   when the user dismisses this dialog (or right away to ignore it)
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 14)]
+	public struct HTML_JSAlert_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 14;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public string pchMessage; //
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: show a Javascript confirmation dialog, call JSDialogResponse
+	//   when the user dismisses this dialog (or right away to ignore it)
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 15)]
+	public struct HTML_JSConfirm_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 15;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public string pchMessage; //
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: show a Javascript confirmation dialog, call JSDialogResponse
+	//   when the user dismisses this dialog (or right away to ignore it)
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 16)]
+	public struct HTML_FileOpenDialog_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 16;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public string pchTitle; //
+		public string pchInitialFile; //
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: a popup item (i.e combo box) on the page needs rendering
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 17)]
+	public struct HTML_ComboNeedsPaint_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 17;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public string pBGRA; // a pointer to the B8G8R8A8 data for this surface, valid until SteamAPI_RunCallbacks is next called
+		public uint unWide; // the total width of the pBGRA texture
+		public uint unTall; // the total height of the pBGRA texture
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: a popup (i.e combo box) wants to display
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 18)]
+	public struct HTML_ShowPopup_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 18;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: a popup (i.e combo box) wants to hide
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 19)]
+	public struct HTML_HidePopup_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 19;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: a popup (i.e combo box) wants to hide
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 20)]
+	public struct HTML_SizePopup_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 20;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public uint unX; // the x pos into the page to display the popup
+		public uint unY; // the y pos into the page to display the popup
+		public uint unWide; // the total width of the pBGRA texture
+		public uint unTall; // the total height of the pBGRA texture
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: a new html window has been created
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 21)]
+	public struct HTML_NewWindow_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 21;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public string pchURL; // the page to load
+		public uint unX; // the x pos into the page to display the popup
+		public uint unY; // the y pos into the page to display the popup
+		public uint unWide; // the total width of the pBGRA texture
+		public uint unTall; // the total height of the pBGRA texture
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: change the cursor to display
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 22)]
+	public struct HTML_SetCursor_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 22;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public uint eMouseCursor; // the EMouseCursor to display
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: informational message from the browser
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 23)]
+	public struct HTML_StatusText_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 23;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public string pchMsg; // the EMouseCursor to display
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: show a tooltip
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 24)]
+	public struct HTML_ShowToolTip_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 24;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public string pchMsg; // the EMouseCursor to display
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: update the text of an existing tooltip
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 25)]
+	public struct HTML_UpdateToolTip_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 25;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+		public string pchMsg; // the EMouseCursor to display
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: hide the tooltip you are showing
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 26)]
+	public struct HTML_HideToolTip_t {
+		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 26;
+		public HHTMLBrowser unBrowserHandle; // the handle of the surface
+	}
+
+	// callbacks
 	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
 	[CallbackIdentity(Constants.k_iClientHTTPCallbacks + 1)]
 	public struct HTTPRequestCompleted_t {
@@ -716,6 +1053,84 @@ namespace Steamworks {
 	public struct VolumeHasChanged_t {
 		public const int k_iCallback = Constants.k_iSteamMusicCallbacks + 2;
 		public float m_flNewVolume;
+	}
+
+	// callbacks
+	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 1)]
+	public struct MusicPlayerRemoteWillActivate_t {
+		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 1;
+	}
+
+	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 2)]
+	public struct MusicPlayerRemoteWillDeactivate_t {
+		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 2;
+	}
+
+	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 3)]
+	public struct MusicPlayerRemoteToFront_t {
+		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 3;
+	}
+
+	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 4)]
+	public struct MusicPlayerWillQuit_t {
+		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 4;
+	}
+
+	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 5)]
+	public struct MusicPlayerWantsPlay_t {
+		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 5;
+	}
+
+	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 6)]
+	public struct MusicPlayerWantsPause_t {
+		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 6;
+	}
+
+	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 7)]
+	public struct MusicPlayerWantsPlayPrevious_t {
+		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 7;
+	}
+
+	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 8)]
+	public struct MusicPlayerWantsPlayNext_t {
+		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 8;
+	}
+
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 9)]
+	public struct MusicPlayerWantsShuffled_t {
+		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 9;
+		[MarshalAs(UnmanagedType.I1)]
+		public bool m_bShuffled;
+	}
+
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 10)]
+	public struct MusicPlayerWantsLooped_t {
+		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 10;
+		[MarshalAs(UnmanagedType.I1)]
+		public bool m_bLooped;
+	}
+
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamMusicCallbacks + 11)]
+	public struct MusicPlayerWantsVolume_t {
+		public const int k_iCallback = Constants.k_iSteamMusicCallbacks + 11;
+		public float m_flNewVolume;
+	}
+
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamMusicCallbacks + 12)]
+	public struct MusicPlayerSelectsQueueEntry_t {
+		public const int k_iCallback = Constants.k_iSteamMusicCallbacks + 12;
+		public int nID;
+	}
+
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamMusicCallbacks + 13)]
+	public struct MusicPlayerSelectsPlaylistEntry_t {
+		public const int k_iCallback = Constants.k_iSteamMusicCallbacks + 13;
+		public int nID;
 	}
 
 	// callbacks
@@ -1171,6 +1586,42 @@ namespace Steamworks {
 		public SteamUGCDetails_t m_details;
 		[MarshalAs(UnmanagedType.I1)]
 		public bool m_bCachedData; // indicates whether this data was retrieved from the local on-disk cache
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: result for ISteamUGC::CreateItem()
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iClientUGCCallbacks + 3)]
+	public struct CreateItemResult_t {
+		public const int k_iCallback = Constants.k_iClientUGCCallbacks + 3;
+		public EResult m_eResult;
+		public PublishedFileId_t m_nPublishedFileId; // new item got this UGC PublishFileID
+		[MarshalAs(UnmanagedType.I1)]
+		public bool m_bUserNeedsToAcceptWorkshopLegalAgreement;
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: result for ISteamUGC::SubmitItemUpdate()
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iClientUGCCallbacks + 4)]
+	public struct SubmitItemUpdateResult_t {
+		public const int k_iCallback = Constants.k_iClientUGCCallbacks + 4;
+		public EResult m_eResult;
+		[MarshalAs(UnmanagedType.I1)]
+		public bool m_bUserNeedsToAcceptWorkshopLegalAgreement;
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: a new Workshop item has been installed
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iClientUGCCallbacks + 5)]
+	public struct ItemInstalled_t {
+		public const int k_iCallback = Constants.k_iClientUGCCallbacks + 5;
+		public AppId_t m_unAppID;
+		public PublishedFileId_t m_nPublishedFileId;
 	}
 
 	// callbacks

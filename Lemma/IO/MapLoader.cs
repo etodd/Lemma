@@ -135,25 +135,31 @@ namespace Lemma.IO
 
 		public static void Load(Main main, string filename, bool deleteEditor = true)
 		{
-			// Don't try to load the menu from a save game
-			string directory = main.CurrentSave.Value == null || filename == Main.MenuMap ? null : Path.Combine(main.SaveDirectory, main.CurrentSave);
-			main.LoadingMap.Execute(filename);
-
-			main.MapFile.Value = filename;
-
 			if (filename == null)
 				MapLoader.Load(main, (Stream)null, deleteEditor);
 			else
 			{
-				if (directory == null)
-					filename = Path.Combine(main.MapDirectory, filename);
+				// Don't try to load the menu from a save game
+				string directory;
+				if (main.CurrentSave.Value == null || filename == Main.MenuMap)
+					directory = main.MapDirectory;
 				else
-					filename = Path.Combine(directory, filename);
+					directory = Path.Combine(main.SaveDirectory, main.CurrentSave);
 
-				if (!filename.EndsWith(MapLoader.MapExtension))
-					filename += MapLoader.MapExtension;
+				string filenameWithExtension = filename;
+				if (!filenameWithExtension.EndsWith(MapLoader.MapExtension))
+					filenameWithExtension += MapLoader.MapExtension;
 
-				using (Stream fs = File.OpenRead(filename))
+				string fullFilename = Path.IsPathRooted(filenameWithExtension) ? filenameWithExtension : Path.Combine(directory, filenameWithExtension);
+
+				if (main.CurrentSave.Value != null && !File.Exists(fullFilename))
+					File.Copy(Path.Combine(main.MapDirectory, filenameWithExtension), fullFilename);
+
+				main.LoadingMap.Execute(filename);
+
+				main.MapFile.Value = filename;
+
+				using (Stream fs = File.OpenRead(fullFilename))
 				{
 					using (Stream stream = new GZipInputStream(fs))
 						MapLoader.Load(main, stream, deleteEditor);

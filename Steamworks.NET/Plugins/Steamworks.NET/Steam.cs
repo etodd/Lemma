@@ -4,14 +4,19 @@
 
 // Changes to this file will be reverted when you update Steamworks.NET
 
-// Steamworks.NET Version: 3.0.0
-// Steamworks SDK Version: 1.28
-
 #define VERSION_SAFE_STEAM_API_INTERFACES
 
 using System.Runtime.InteropServices;
 
 namespace Steamworks {
+	public static class Version {
+		public const string SteamworksNETVersion = "5.0.0";
+		public const string SteamworksSDKVersion = "1.31";
+		public const string SteamAPIDLLVersion = "02.37.91.26";
+		public const int SteamAPIDLLSize = 145600;
+		public const int SteamAPI64DLLSize = 169152;
+	}
+
 	public static class SteamAPI {
 		//----------------------------------------------------------------------------------------------------------------------------------------------------------//
 		//	Steam API setup & shutdown
@@ -70,7 +75,7 @@ namespace Steamworks {
 		//----------------------------------------------------------------------------------------------------------------------------------------------------------//
 		public static void RunCallbacks() {
 			InteropHelp.TestIfPlatformSupported();
-			CallbackDispatcher.RunCallbacks();
+			NativeMethods.SteamAPI_RunCallbacks();
 		}
 
 		// checks if a local Steam client is running
@@ -131,6 +136,11 @@ namespace Steamworks {
 		public static void Shutdown() {
 			InteropHelp.TestIfPlatformSupported();
 			NativeMethods.SteamGameServer_Shutdown();
+		}
+
+		public static void RunCallbacks() {
+			InteropHelp.TestIfPlatformSupported();
+			NativeMethods.SteamGameServer_RunCallbacks();
 		}
 
 		public static bool BSecure() {

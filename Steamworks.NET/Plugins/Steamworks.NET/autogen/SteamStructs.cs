@@ -88,6 +88,7 @@ namespace Steamworks {
 		public uint m_unVotesUp;												// number of votes up
 		public uint m_unVotesDown;											// number of votes down
 		public float m_flScore;												// calculated score
+		public uint m_unNumChildren;											// if m_eFileType == k_EWorkshopFileTypeCollection, then this number will be the number of children contained within the collection
 	}
 
 	// structure that contains client callback data
@@ -116,6 +117,10 @@ namespace Steamworks {
 	/// understood as "filter operation code" and the "value" is the operand to this
 	/// filter operation.  The meaning of the operand depends upon the filter.
 	public struct MatchMakingKeyValuePair_t {
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+		public string m_szKey;
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+		public string m_szValue;
 	}
 
 	// Only add fields to the end of this struct, or if you need to change it in a larger

@@ -32,6 +32,11 @@ namespace Lemma.GInterfaces
 
 		private Property<string> StatusString = new Property<string>() { Value = "" };
 
+		private CallResult<RemoteStorageFileShareResult_t> fileShareResult;
+		private CallResult<RemoteStoragePublishFileResult_t> filePublishResult;
+		private CallResult<RemoteStorageUpdatePublishedFileResult_t> fileUpdateResult;
+		private CallResult<SteamUGCQueryCompleted_t> queryResult;
+
 		public override void Awake()
 		{
 			// This is to make it so nothing else can be interacted with.
@@ -52,7 +57,7 @@ namespace Lemma.GInterfaces
 			SelectFile.AddOption("[Fetching...]", null);
 			this.SelectFile.Position.Value = new Vector2(10, 30);
 
-			SteamWorker.GetCreatedWorkShopEntries((entries) =>
+			this.queryResult = SteamWorker.GetCreatedWorkShopEntries((entries) =>
 			{
 				SelectFile.RemoveAllOptions();
 				SelectFile.AddOption("[new]", delegate()
@@ -124,7 +129,7 @@ namespace Lemma.GInterfaces
 
 			CloseButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = false;
 
-			string filePath = this.main.MapFile;
+			string filePath = this.main.GetFullMapPath();
 			string imagePath = string.Format("{0}.jpg", filePath.Substring(0, filePath.LastIndexOf('.')));
 			string description = DescriptionView.Text;
 			string name = NameView.Text;
@@ -151,12 +156,12 @@ namespace Lemma.GInterfaces
 			}
 
 			StatusString.Value = "Uploading map...";
-			SteamWorker.ShareFileUGC(steamFilePath, (b, t) =>
+			this.fileShareResult = SteamWorker.ShareFileUGC(steamFilePath, (b, t) =>
 			{
 				if (b)
 				{
 					StatusString.Value = "Uploading image...";
-					SteamWorker.ShareFileUGC(steamImagePath, (b1, handleT) =>
+					this.fileShareResult = SteamWorker.ShareFileUGC(steamImagePath, (b1, handleT) =>
 					{
 						if (b1)
 						{
@@ -164,7 +169,7 @@ namespace Lemma.GInterfaces
 							if (string.IsNullOrEmpty(this.currentPublishedFile.m_pchFileName))
 							{
 								// Upload new
-								SteamWorker.UploadWorkShop(steamFilePath, steamImagePath, name, description, (publishSuccess, needsAcceptEULA, publishedFile) =>
+								this.filePublishResult = SteamWorker.UploadWorkShop(steamFilePath, steamImagePath, name, description, (publishSuccess, needsAcceptEULA, publishedFile) =>
 								{
 									if (publishSuccess)
 									{
@@ -183,7 +188,7 @@ namespace Lemma.GInterfaces
 							else
 							{
 								// Update existing
-								SteamWorker.UpdateWorkshopMap(currentPublishedFile.m_nPublishedFileId, steamFilePath, steamImagePath, name, description, publishSuccess =>
+								this.fileUpdateResult = SteamWorker.UpdateWorkshopMap(currentPublishedFile.m_nPublishedFileId, steamFilePath, steamImagePath, name, description, publishSuccess =>
 								{
 									if (publishSuccess)
 									{
