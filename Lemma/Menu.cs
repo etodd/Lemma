@@ -1762,42 +1762,7 @@ namespace Lemma.Components
 			this.resizeToMenu(exit);
 			this.pauseMenu.Children.Add(exit);
 
-			bool saving = false;
-			this.input.Bind(this.main.Settings.QuickSave, PCInput.InputState.Down, delegate()
-			{
-				if (!saving && !this.main.Paused && this.CanPause && this.main.MapFile != Main.MenuMap && !this.main.IsChallengeMap(this.main.MapFile) && PlayerFactory.Instance != null)
-				{
-					saving = true;
-					Container notification = new Container();
-					notification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-					notification.Opacity.Value = 0.5f;
-					TextElement notificationText = new TextElement();
-					notificationText.Name.Value = "Text";
-					notificationText.FontFile.Value = this.main.MainFont;
-					notificationText.Text.Value = "\\saving";
-					notification.Children.Add(notificationText);
-					this.main.UI.Root.GetChildByName("Notifications").Children.Add(notification);
-					this.main.AddComponent(new Animation
-					(
-						new Animation.Delay(0.01f),
-						new Animation.Execute(delegate()
-						{
-							this.main.SaveOverwrite();
-						}),
-						new Animation.Set<string>(notificationText.Text, "\\saved"),
-						new Animation.Parallel
-						(
-							new Animation.FloatMoveTo(notification.Opacity, 0.0f, 1.0f),
-							new Animation.FloatMoveTo(notificationText.Opacity, 0.0f, 1.0f)
-						),
-						new Animation.Execute(notification.Delete),
-						new Animation.Execute(delegate()
-						{
-							saving = false;
-						})
-					));
-				}
-			});
+			this.input.Bind(this.main.Settings.QuickSave, PCInput.InputState.Down, this.main.SaveOverwriteWithNotification);
 
 			// Escape key
 			// Make sure we can only pause when there is a player currently spawned
@@ -1889,17 +1854,6 @@ namespace Lemma.Components
 			this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.Start), canPause, togglePause));
 			this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.B), () => this.currentMenu.Value != null || this.dialog != null, togglePause));
 
-#if !DEVELOPMENT
-			// Pause on window lost focus
-			this.main.Deactivated += delegate(object sender, EventArgs e)
-			{
-				if (!this.main.Paused && this.main.MapFile.Value != Main.MenuMap && !this.main.EditorEnabled)
-				{
-					this.main.Paused.Value = true;
-					this.savePausedSettings();
-				}
-			};
-#endif
 			// Gamepad menu code
 
 			int selected = 0;

@@ -85,6 +85,7 @@ namespace Lemma.IO
 			typeof(Ticker),
 			typeof(RandomTicker),
 			typeof(Setter),
+			typeof(AnimatedSetter),
 			typeof(World),
 			typeof(Note),
 			typeof(VoxelAttachable),
@@ -252,7 +253,8 @@ namespace Lemma.IO
 
 		public static void Save(Main main, Stream stream)
 		{
-			MapLoader.Serializer.Serialize(stream, main.Entities.Where(x => x.Serialize && x.Active).ToList());
+			List<Entity> entities = main.Entities.Where(x => x.Serialize && x.Active).ToList();
+			MapLoader.Serializer.Serialize(stream, entities);
 		}
 
 		public static void Transition(Main main, string nextMap, string spawn = null)

@@ -35,6 +35,22 @@ namespace Lemma.Factories
 
 			emitter.Add(new Binding<Vector3>(emitter.Position, transform.Position));
 			emitter.EditorProperties();
+
+			entity.Add("Enabled", emitter.Enabled);
+			entity.Add("Enable", emitter.Enable);
+			entity.Add("Disable", emitter.Disable);
+			entity.Add("Burst", new Command
+			{
+				Action = delegate()
+				{
+					entity.Add(new Animation
+					(
+						new Animation.Execute(emitter.Enable),
+						new Animation.Delay(0.3f),
+						new Animation.Execute(emitter.Disable)
+					));
+				}
+			});
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

@@ -538,6 +538,15 @@ namespace Lemma
 			}, "100") { TypeConstraint = typeof(int), Validate = o => (int)o > 0 && (int)o <= 400 });
 
 #if DEVELOPMENT
+			Lemma.Console.Console.AddConCommand(new ConCommand
+			(
+				"load", "Load a map.", collection =>
+				{
+					IO.MapLoader.Transition(this, collection.ParsedArgs[0].StrValue);
+				},
+				new ConCommand.CommandArgument { Name = "map", CommandType = typeof(string), Optional = false }
+			));
+
 			Lemma.Console.Console.AddConVar(new ConVar("blocks", "Player block cheat (white, yellow, blue)", s =>
 			{
 				Entity player = PlayerFactory.Instance;
@@ -1275,6 +1284,43 @@ namespace Lemma
 			this.save(null); // null means don't delete any old saves
 		}
 
+		private bool saving;
+		public void SaveOverwriteWithNotification()
+		{
+			if (!this.saving && !this.Paused && this.Menu.CanPause && this.MapFile != Main.MenuMap && !this.IsChallengeMap(this.MapFile) && PlayerFactory.Instance != null)
+			{
+				this.saving = true;
+				Container notification = new Container();
+				notification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+				notification.Opacity.Value = 0.5f;
+				TextElement notificationText = new TextElement();
+				notificationText.Name.Value = "Text";
+				notificationText.FontFile.Value = this.MainFont;
+				notificationText.Text.Value = "\\saving";
+				notification.Children.Add(notificationText);
+				this.UI.Root.GetChildByName("Notifications").Children.Add(notification);
+				this.AddComponent(new Animation
+				(
+					new Animation.Delay(0.01f),
+					new Animation.Execute(delegate()
+					{
+						this.SaveOverwrite();
+					}),
+					new Animation.Set<string>(notificationText.Text, "\\saved"),
+					new Animation.Parallel
+					(
+						new Animation.FloatMoveTo(notification.Opacity, 0.0f, 1.0f),
+						new Animation.FloatMoveTo(notificationText.Opacity, 0.0f, 1.0f)
+					),
+					new Animation.Execute(notification.Delete),
+					new Animation.Execute(delegate()
+					{
+						this.saving = false;
+					})
+				));
+			}
+		}
+
 		public void SaveOverwrite(string oldSave = null)
 		{
 			if (oldSave == null)
@@ -1474,6 +1520,9 @@ namespace Lemma
 
 		protected override void Update(GameTime gameTime)
 		{
+			if (!this.IsActive)
+				return;
+
 			if (gameTime.ElapsedGameTime.TotalSeconds > 0.1f)
 				gameTime = new GameTime(gameTime.TotalGameTime, new TimeSpan((long)(0.1f * (float)TimeSpan.TicksPerSecond)), true);
 			this.GameTime = gameTime;

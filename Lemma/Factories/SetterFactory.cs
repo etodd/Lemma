@@ -122,4 +122,17 @@ namespace Lemma.Factories
 			}
 		}
 	}
+	
+	public class AnimatedSetterFactory : SetterFactory
+	{
+		public override void Bind(Entity entity, Main main, bool creating = false)
+		{
+			AnimatedSetter setter = entity.GetOrCreate<AnimatedSetter>("Setter");
+			base.Bind(entity, main, creating);
+			entity.Type = "AnimatedSetter";
+			entity.Add("Blend", setter.Blend);
+			entity.Add("Duration", setter.Duration);
+			entity.Add("OnDone", setter.OnDone);
+		}
+	}
 }

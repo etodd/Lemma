@@ -148,7 +148,7 @@ namespace Lemma.Components
 			};
 
 			Animation anim;
-			if (totalDuration > 0.0f) // Fade in and out
+			if (PlayerFactory.Instance != null && totalDuration > 0.0f) // Fade in and out
 			{
 				anim = new Animation
 				(

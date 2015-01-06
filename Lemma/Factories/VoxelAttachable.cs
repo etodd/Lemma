@@ -83,7 +83,8 @@ namespace Lemma.Factories
 					cellEmptiedBinding = null;
 				}
 
-				if (this.AttachedVoxel.Value.Target != null)
+				Entity attachedVoxel = this.AttachedVoxel.Value.Target;
+				if (attachedVoxel != null && attachedVoxel.Active)
 				{
 					Voxel m = this.AttachedVoxel.Value.Target.Get<Voxel>();
 					if (m == null)

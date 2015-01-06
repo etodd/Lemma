@@ -117,6 +117,7 @@
     <Compile Include="Components\PowerBlockSocket.cs" />
     <Compile Include="Components\AnimatedProp.cs" />
     <Compile Include="Components\Data.cs" />
+    <Compile Include="Components\Scriptlike\AnimatedSetter.cs" />
     <Compile Include="Components\SliderCommon.cs" />
     <Compile Include="Components\Scriptlike\ConsoleCommand.cs" />
     <Compile Include="Components\ParticleWind.cs" />

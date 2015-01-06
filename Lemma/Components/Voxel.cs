@@ -2526,6 +2526,8 @@ namespace Lemma.Components
 
 		public Chunk GetChunk(int x, int y, int z, bool createIfNonExistent = true)
 		{
+			if (this.chunks == null)
+				return null;
 			while (x < this.minX || x >= this.maxX || y < this.minY || y >= this.maxY || z < this.minZ || z >= this.maxZ)
 			{
 				if (createIfNonExistent)
@@ -3003,17 +3005,20 @@ namespace Lemma.Components
 		protected void addBoxWithoutAdjacency(Box box)
 		{
 			Chunk chunk = this.GetChunk(box.X, box.Y, box.Z);
-			chunk.MarkDirty(box);
-
-			box.Chunk = chunk;
-
-			for (int x = box.X - chunk.X; x < box.X + box.Width - chunk.X; x++)
+			if (chunk != null)
 			{
-				for (int y = box.Y - chunk.Y; y < box.Y + box.Height - chunk.Y; y++)
+				chunk.MarkDirty(box);
+
+				box.Chunk = chunk;
+
+				for (int x = box.X - chunk.X; x < box.X + box.Width - chunk.X; x++)
 				{
-					for (int z = box.Z - chunk.Z; z < box.Z + box.Depth - chunk.Z; z++)
+					for (int y = box.Y - chunk.Y; y < box.Y + box.Height - chunk.Y; y++)
 					{
-						chunk.Data[x, y, z] = box;
+						for (int z = box.Z - chunk.Z; z < box.Z + box.Depth - chunk.Z; z++)
+						{
+							chunk.Data[x, y, z] = box;
+						}
 					}
 				}
 			}
@@ -4417,7 +4422,12 @@ namespace Lemma.Components
 				if (coord.X >= 0 && coord.X < this.maxChunks
 					&& coord.Y >= 0 && coord.Y < this.maxChunks
 					&& coord.Z >= 0 && coord.Z < this.maxChunks)
-					yield return this.chunks[coord.X, coord.Y, coord.Z];
+				{
+					if (this.chunks == null)
+						break;
+					else
+						yield return this.chunks[coord.X, coord.Y, coord.Z];
+				}
 
 				if (tx <= ty && tx <= tz)
 				{

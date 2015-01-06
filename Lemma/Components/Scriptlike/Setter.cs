@@ -44,50 +44,52 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command Set = new Command();
 
-		private IProperty targetProperty;
+		protected IProperty targetProperty;
 
 		public override void Awake()
 		{
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
-			this.Set.Action = () =>
-			{
-				this.FindProperties();
-				if (this.targetProperty != null)
-				{
-					switch (this.PropertyType.Value)
-					{
-						case PropType.Bool:
-							((Property<bool>)this.targetProperty).Value = this.Bool;
-							break;
-						case PropType.Int:
-							((Property<int>)this.targetProperty).Value = this.Int;
-							break;
-						case PropType.Float:
-							((Property<float>)this.targetProperty).Value = this.Float;
-							break;
-						case PropType.Vector2:
-							((Property<Vector2>)this.targetProperty).Value = this.Vector2;
-							break;
-						case PropType.Vector3:
-							((Property<Vector3>)this.targetProperty).Value = this.Vector3;
-							break;
-						case PropType.Vector4:
-							((Property<Vector4>)this.targetProperty).Value = this.Vector4;
-							break;
-						case PropType.Coord:
-							((Property<Voxel.Coord>)this.targetProperty).Value = this.Coord;
-							break;
-						case PropType.Direction:
-							((Property<Direction>)this.targetProperty).Value = this.Direction;
-							break;
-						case PropType.String:
-							((Property<string>)this.targetProperty).Value = this.String;
-							break;
-					}
-				}
-			};
+			this.Set.Action = this.set;
 			base.Awake();
+		}
+
+		private void set()
+		{
+			this.FindProperties();
+			if (this.targetProperty != null)
+			{
+				switch (this.PropertyType.Value)
+				{
+					case PropType.Bool:
+						((Property<bool>)this.targetProperty).Value = this.Bool;
+						break;
+					case PropType.Int:
+						((Property<int>)this.targetProperty).Value = this.Int;
+						break;
+					case PropType.Float:
+						((Property<float>)this.targetProperty).Value = this.Float;
+						break;
+					case PropType.Vector2:
+						((Property<Vector2>)this.targetProperty).Value = this.Vector2;
+						break;
+					case PropType.Vector3:
+						((Property<Vector3>)this.targetProperty).Value = this.Vector3;
+						break;
+					case PropType.Vector4:
+						((Property<Vector4>)this.targetProperty).Value = this.Vector4;
+						break;
+					case PropType.Coord:
+						((Property<Voxel.Coord>)this.targetProperty).Value = this.Coord;
+						break;
+					case PropType.Direction:
+						((Property<Direction>)this.targetProperty).Value = this.Direction;
+						break;
+					case PropType.String:
+						((Property<string>)this.targetProperty).Value = this.String;
+						break;
+				}
+			}
 		}
 
 		public override void Start()

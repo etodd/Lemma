@@ -19,6 +19,20 @@ namespace Lemma.Components
 
 			this.model = this.Entity.Get<AnimatedModel>();
 
+			this.Add(new ChangeBinding<string>(this.Clip, delegate(string old, string value)
+			{
+				if (old != value)
+				{
+					if (!string.IsNullOrEmpty(old))
+						this.model.Stop(old);
+					this.play();
+				}
+			}));
+			this.Add(new ChangeBinding<bool>(this.Loop, delegate(bool old, bool value)
+			{
+				if (!string.IsNullOrEmpty(this.Clip))
+					this.model[this.Clip].Loop = value;
+			}));
 			this.Add(new CommandBinding(this.Enable, (Action)this.play));
 			this.Add(new CommandBinding(this.Disable, (Action)this.stop));
 		}
@@ -31,7 +45,7 @@ namespace Lemma.Components
 
 		private void play()
 		{
-			if (!string.IsNullOrEmpty(this.Clip) && this.Enabled)
+			if (!string.IsNullOrEmpty(this.Clip) && this.Enabled && !this.model.IsPlaying(this.Clip))
 				this.model.StartClip(this.Clip, 0, this.Loop);
 		}
 
