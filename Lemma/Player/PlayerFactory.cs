@@ -606,7 +606,7 @@ namespace Lemma.Factories
 
 					Phone phone = dataEntity.GetOrCreate<Phone>("Phone");
 
-					phone.Add
+					entity.Add
 					(
 						new Binding<bool>
 						(

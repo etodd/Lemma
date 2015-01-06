@@ -17,7 +17,7 @@ namespace Lemma.Components
 	[XmlInclude(typeof(ListProperty<Phone.Schedule>))]
 	[XmlInclude(typeof(Phone.Ans))]
 	[XmlInclude(typeof(ListProperty<Phone.Ans>))]
-	public class Phone : ComponentBind.Component<Main>, IUpdateableComponent, DialogueForest.IListener
+	public class Phone : ComponentBind.Component<Main>, IUpdateableComponent, DialogueForest.IClient
 	{
 		public class Message
 		{
@@ -145,12 +145,13 @@ namespace Lemma.Components
 			if (this.Messages.Length >= 256)
 				this.Messages.RemoveAt(0);
 			this.Messages.Add(msg);
-			this.MessageReceived.Execute();
 
-			Action callback;
+			Command callback;
 			this.messageCallbacks.TryGetValue(msg.Name, out callback);
 			if (callback != null)
-				callback();
+				callback.Execute();
+
+			this.MessageReceived.Execute();
 		}
 
 		public void ArchivedMsg(string name, string text = null)
@@ -163,8 +164,9 @@ namespace Lemma.Components
 			this.Messages.Add(new Message { Incoming = false, Name = name, });
 		}
 
-		private Dictionary<string, Action> messageCallbacks = new Dictionary<string, Action>();
-		private Dictionary<string, Action<string>> answerCallbacks = new Dictionary<string, Action<string>>();
+		private Dictionary<string, Command> messageCallbacks = new Dictionary<string, Command>();
+		private Dictionary<string, Command> visitCallbacks = new Dictionary<string, Command>();
+		private Dictionary<string, Command<string>> answerCallbacks = new Dictionary<string, Command<string>>();
 
 		public string LastMessageID()
 		{
@@ -195,17 +197,17 @@ namespace Lemma.Components
 
 			if (messageID != null)
 			{
-				Action<string> callback;
+				Command<string> callback;
 				this.answerCallbacks.TryGetValue(messageID, out callback);
 				if (callback != null)
-					callback(answer.Name);
+					callback.Execute(answer.Name);
 
 				DialogueForest.Node selectedChoice = this.forest[answer.ID];
 				if (selectedChoice != null)
 				{
 					DialogueForest.Node next = selectedChoice.next != null ? forest[selectedChoice.next] : null;
 					if (next != null)
-						this.Execute(next);
+						this.execute(next);
 				}
 			}
 		}
@@ -218,14 +220,31 @@ namespace Lemma.Components
 			this.WaitForAnswer.Value = true;
 		}
 
-		public void OnMessage(string text, Action callback)
+		public Command OnMessage(string text)
 		{
-			this.messageCallbacks[text] = callback;
+			Command cmd;
+			this.messageCallbacks.TryGetValue(text, out cmd);
+			if (cmd == null)
+				this.messageCallbacks[text] = cmd = new Command();
+			return cmd;
 		}
 
-		public void OnAnswer(string text, Action<string> callback)
+		public Command OnVisit(string text)
 		{
-			this.answerCallbacks[text] = callback;
+			Command cmd;
+			this.visitCallbacks.TryGetValue(text, out cmd);
+			if (cmd == null)
+				this.visitCallbacks[text] = cmd = new Command();
+			return cmd;
+		}
+
+		public Command<string> OnAnswer(string text)
+		{
+			Command<string> cmd;
+			this.answerCallbacks.TryGetValue(text, out cmd);
+			if (cmd == null)
+				this.answerCallbacks[text] = cmd = new Command<string>();
+			return cmd;
 		}
 
 		public string this[string variable]
@@ -250,28 +269,51 @@ namespace Lemma.Components
 
 		public void Execute(DialogueForest.Node node)
 		{
+			this.execute(node);
+			if (this.Schedules.Length == 0)
+			{
+				// If there are choices available, they will initiate a conversation.
+				// The player should be able to pull up the phone, see the choices, and walk away without picking any of them.
+				// Normally, you can't put the phone down until you've picked an answer.
+				this.WaitForAnswer.Value = false;
+			}
+		}
+
+		private void execute(DialogueForest.Node node)
+		{
 			this.forest.Execute(node, this);
 		}
 
-		void DialogueForest.IListener.Text(DialogueForest.Node node, int level)
+		void DialogueForest.IClient.Visit(DialogueForest.Node node)
+		{
+			if (!string.IsNullOrEmpty(node.name))
+			{
+				Command cmd;
+				this.visitCallbacks.TryGetValue(node.name, out cmd);
+				if (cmd != null)
+					cmd.Execute();
+			}
+		}
+
+		void DialogueForest.IClient.Text(DialogueForest.Node node, int level)
 		{
 			this.Delay(messageDelay * level, node.name, node.id);
 		}
 
 		private const float messageDelay = 2.0f; // 2 seconds in between each message
-		void DialogueForest.IListener.Choice(DialogueForest.Node node, IEnumerable<DialogueForest.Node> choices)
+		void DialogueForest.IClient.Choice(DialogueForest.Node node, IEnumerable<DialogueForest.Node> choices)
 		{
 			this.ActiveAnswers.Clear();
 			this.ActiveAnswers.AddAll(choices.Select(x => new Ans { ParentID = node.id, ID = x.id, Name = x.name }));
 			this.WaitForAnswer.Value = true;
 		}
 
-		void DialogueForest.IListener.Set(string key, string value)
+		void DialogueForest.IClient.Set(string key, string value)
 		{
 			this[key] = value;
 		}
 
-		string DialogueForest.IListener.Get(string key)
+		string DialogueForest.IClient.Get(string key)
 		{
 			return this[key];
 		}

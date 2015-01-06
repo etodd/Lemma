@@ -10,8 +10,9 @@ namespace Lemma.Util
 {
 	public class DialogueForest
 	{
-		public interface IListener
+		public interface IClient
 		{
+			void Visit(Node node);
 			void Text(Node node, int level);
 			void Choice(Node node, IEnumerable<Node> choices);
 			void Set(string key, string value);
@@ -86,29 +87,33 @@ namespace Lemma.Util
 #endif
 		}
 
-		public void Execute(Node node, IListener listener, int textLevel = 1)
+		public void Execute(Node node, IClient client, int textLevel = 1)
 		{
+#if DEBUG
+			Log.d(string.IsNullOrEmpty(node.name) ? node.id : node.name);
+#endif
+			client.Visit(node);
 			string next = null;
 			switch (node.type)
 			{
 				case Node.Type.Node:
 					if (node.choices != null && node.choices.Count > 0)
-						listener.Choice(node, node.choices.Select(x => this[x]));
+						client.Choice(node, node.choices.Select(x => this[x]));
 					next = node.next;
 					break;
 				case Node.Type.Text:
-					listener.Text(node, textLevel);
+					client.Text(node, textLevel);
 					if (node.choices != null && node.choices.Count > 0)
-						listener.Choice(node, node.choices.Select(x => this[x]));
+						client.Choice(node, node.choices.Select(x => this[x]));
 					next = node.next;
 					textLevel++;
 					break;
 				case Node.Type.Set:
-					listener.Set(node.variable, node.value);
+					client.Set(node.variable, node.value);
 					next = node.next;
 					break;
 				case Node.Type.Branch:
-					string key = listener.Get(node.variable);
+					string key = client.Get(node.variable);
 					if (key == null || !node.branches.TryGetValue(key, out next))
 						node.branches.TryGetValue("_default", out next);
 					break;
@@ -116,7 +121,7 @@ namespace Lemma.Util
 					break;
 			}
 			if (next != null)
-				this.Execute(this[next], listener, textLevel);
+				this.Execute(this[next], client, textLevel);
 		}
 	}
 }

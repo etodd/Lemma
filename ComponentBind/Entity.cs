@@ -330,13 +330,13 @@ namespace ComponentBind
 			if (this.main.EditorEnabled)
 				entry.Description = description;
 			this.commands.Add(name, entry);
-			foreach (var link in LinkedCommands)
+			for (int i = 0; i < this.LinkedCommands.Count; i++)
 			{
-				CommandLink link1 = link;
+				CommandLink link = this.LinkedCommands[i];
 				if (link.LinkedSourceCmd == null && name == link.SourceCommand)
 				{
 					link.LinkedSourceCmd = cmd;
-					this.Add(new CommandBinding(link.LinkedSourceCmd, () => LinkedCommandCall(link1)));
+					this.Add(new CommandBinding(link.LinkedSourceCmd, () => LinkedCommandCall(link)));
 				}
 			}
 		}
@@ -422,7 +422,7 @@ namespace ComponentBind
 
 			}
 
-			for (int i = this.LinkedCommands.Length - 1; i >= 0; i--)
+			for (int i = this.LinkedCommands.Count - 1; i >= 0; i--)
 			{
 				CommandLink link = this.LinkedCommands[i];
 				if (link.SourceCommand == name)

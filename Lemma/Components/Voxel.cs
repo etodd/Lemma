@@ -313,18 +313,18 @@ namespace Lemma.Components
 				Supported = true,
 				Hard = false,
 				Density = 0.5f,
-				DiffuseMap = "Textures\\dirty",
-				NormalMap = "Textures\\metal-channels-normal",
+				DiffuseMap = "Textures\\white",
+				NormalMap = "Textures\\temporary-normal",
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 				Materials = new[]
 				{
 					new Model.Material
 					{
-						SpecularPower = 1.0f,
-						SpecularIntensity = 0.0f,
-					},
+						SpecularPower = 200.0f,
+						SpecularIntensity = 0.4f,
+					}
 				},
-				Tint = new Vector3(0.9f, 0.3f, 0.0f),
+				Tint = new Vector3(1.0f, 0.8f, 0.0f),
 			};
 			public static readonly State Wood = new State
 			{

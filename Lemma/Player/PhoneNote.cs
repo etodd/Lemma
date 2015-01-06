@@ -533,12 +533,16 @@ namespace Lemma.Components
 					UIComponent button = makeButton(outgoingColor, "\\" + answer.Name, messageWidth - padding * 4.0f);
 					button.Add(new CommandBinding(button.MouseLeftUp, delegate()
 					{
+						if (!phone.WaitForAnswer) // If we're not waiting for an answer, the player must be initiating a conversation
+						{
+							// This is the start of a conversation
+							// Disable the signal tower if we're in range
+							Entity s = player.SignalTower.Value.Target;
+							if (s != null)
+								s.Get<SignalTower>().Initial.Value = null;
+						}
+
 						phone.Answer(answer);
-						
-						// Disable the signal tower
-						Entity s = player.SignalTower.Value.Target;
-						if (s != null)
-							s.Get<SignalTower>().Initial.Value = null;
 
 						scrollToBottom();
 						if (phone.Schedules.Length == 0) // No more messages incoming

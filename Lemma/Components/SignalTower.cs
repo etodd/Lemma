@@ -47,13 +47,6 @@ namespace Lemma.Components
 						if (n.type == DialogueForest.Node.Type.Choice)
 							throw new Exception("Cannot start dialogue tree with a choice");
 						phone.Execute(n);
-						if (phone.Schedules.Length == 0)
-						{
-							// If there are choices available, they will initiate a conversation.
-							// The player should be able to pull up the phone, see the choices, and walk away without picking any of them.
-							// Normally, you can't put the phone down until you've picked an answer.
-							phone.WaitForAnswer.Value = false;
-						}
 					}
 
 					if (phone.Schedules.Length > 0) // We sent a message. That means this signal tower cannot execute again.

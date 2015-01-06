@@ -154,23 +154,28 @@ namespace Lemma.Components
 				return GetInternalScriptMethods(main, name, scriptEntity, out errors);
 		}
 
+		private bool loadedPreviously;
 		private IEnumerable<string> editorProperties;
 		private IEnumerable<string> commands;
 
 		private void load(string name)
 		{
-			if (this.editorProperties != null)
+			if (this.loadedPreviously)
 			{
-				foreach (string prop in this.editorProperties)
-					this.Entity.RemoveProperty(prop);
-				this.editorProperties = null;
+				if (this.editorProperties != null)
+				{
+					foreach (string prop in this.editorProperties)
+						this.Entity.RemoveProperty(prop);
+					this.editorProperties = null;
+				}
+				if (this.commands != null)
+				{
+					foreach (string cmd in this.commands)
+						this.Entity.RemoveCommand(cmd);
+					this.commands = null;
+				}
 			}
-			if (this.commands != null)
-			{
-				foreach (string cmd in this.commands)
-					this.Entity.RemoveCommand(cmd);
-				this.commands = null;
-			}
+
 			this.methods = new ScriptMethods();
 			this.Errors.Value = null;
 			if (!string.IsNullOrEmpty(name))
@@ -190,6 +195,7 @@ namespace Lemma.Components
 						object result = this.methods.Commands.Invoke(null, this.parameters);
 						this.commands = result as IEnumerable<string>;
 					}
+					this.loadedPreviously = true;
 				}
 				catch (Exception e)
 				{
@@ -211,7 +217,6 @@ namespace Lemma.Components
 				if (value != old)
 					this.load(value);
 			}));
-			this.load(this.Name);
 
 			this.Execute.Action = delegate()
 			{

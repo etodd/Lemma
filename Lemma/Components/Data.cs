@@ -23,10 +23,9 @@ namespace Lemma.Components
 			}
 			set
 			{
+				this.properties.Clear();
 				for (int i = 0; i < value.Length; i++)
-				{
 					this.properties.Add((string)value[i].Key, (IProperty)value[i].Value);
-				}
 			}
 		}
 

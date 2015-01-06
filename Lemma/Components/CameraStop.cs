@@ -53,7 +53,9 @@ namespace Lemma.Components
 				}
 				CameraStop.CinematicActive.Value = true;
 				originalCanPause = this.main.Menu.CanPause;
+#if !DEVELOPMENT
 				this.main.Menu.CanPause.Value = false;
+#endif
 			}));
 
 			sequence.Add(new Animation.Set<Matrix>(this.main.Camera.RotationMatrix, Matrix.CreateFromQuaternion(this.Entity.Get<Transform>().Quaternion)));
