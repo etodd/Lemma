@@ -51,15 +51,15 @@ namespace Lemma.Components
 		public void Update()
 		{
 			this.raycastTimer = 0.0f;
-			this.KernelOffset.Value = main.Camera.Position + Vector3.Transform(new Vector3(KernelSize * KernelSpacing * -0.5f, RaycastHeight + this.Speed * StartHeightMultiplier, KernelSize * KernelSpacing * -0.5f), this.Orientation);
+			this.KernelOffset.Value = main.Camera.Position + Vector3.Transform(new Vector3(KernelSize * this.KernelSpacing * -0.5f, RaycastHeight + this.Speed * StartHeightMultiplier, KernelSize * this.KernelSpacing * -0.5f), this.Orientation);
 			Vector3 dir = Vector3.Transform(Vector3.Down, this.Orientation);
 			for (int x = 0; x < KernelSize; x++)
 			{
 				for (int y = 0; y < KernelSize; y++)
 				{
-					Vector3 pos = this.KernelOffset + Vector3.Transform(new Vector3(x * KernelSpacing, 0, y * KernelSpacing), this.Orientation);
+					Vector3 pos = this.KernelOffset + Vector3.Transform(new Vector3(x * this.KernelSpacing, 0, y * this.KernelSpacing), this.Orientation);
 					Voxel.GlobalRaycastResult raycast = Voxel.GlobalRaycast(pos, dir, (this.Speed * StartHeightMultiplier * 2.0f) + RaycastHeight, (index, type) => type != Voxel.t.Invisible);
-					this.RaycastDistances[x, y] = raycast.Voxel == null ? float.MaxValue : raycast.Distance - RaycastHeight;
+					this.RaycastDistances[x, y] = raycast.Voxel == null ? float.MaxValue : raycast.Distance - (RaycastHeight + this.KernelSpacing);
 				}
 			}
 		}

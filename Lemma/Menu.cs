@@ -235,7 +235,6 @@ namespace Lemma.Components
 			{
 				if (this.saveMode)
 				{
-					this.loadSaveMenu.EnableInput.Value = false;
 					this.ShowDialog("\\overwrite prompt", "\\overwrite", delegate()
 					{
 						container.Delete.Execute();
@@ -289,6 +288,11 @@ namespace Lemma.Components
 
 		private void showPauseMenu()
 		{
+			if (this.dialog != null)
+			{
+				this.dialog.Delete.Execute();
+				this.dialog = null;
+			}
 			this.pauseMenu.Visible.Value = true;
 			if (this.pauseAnimation != null)
 				this.pauseAnimation.Delete.Execute();
@@ -414,6 +418,8 @@ namespace Lemma.Components
 
 		public void ShowDialog(string question, string action, Action callback)
 		{
+			if (this.currentMenu.Value != null)
+				this.currentMenu.Value.EnableInput.Value = false;
 			if (this.dialog != null)
 				this.dialog.Delete.Execute();
 			this.dialog = new Container();
@@ -423,7 +429,8 @@ namespace Lemma.Components
 			this.dialog.Add(new Binding<Vector2, Point>(this.dialog.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.main.ScreenSize));
 			this.dialog.Add(new CommandBinding(this.dialog.Delete, delegate()
 			{
-				this.loadSaveMenu.EnableInput.Value = true;
+				if (this.currentMenu.Value != null)
+					this.currentMenu.Value.EnableInput.Value = true;
 			}));
 			this.main.UI.Root.Children.Add(this.dialog);
 
@@ -465,12 +472,6 @@ namespace Lemma.Components
 		private void hideLoadSave()
 		{
 			this.showPauseMenu();
-
-			if (this.dialog != null)
-			{
-				this.dialog.Delete.Execute();
-				this.dialog = null;
-			}
 
 			this.loadSaveShown = false;
 

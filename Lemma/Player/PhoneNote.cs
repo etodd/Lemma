@@ -177,6 +177,10 @@ namespace Lemma.Components
 				}
 			}));
 
+			msgList.Add(new Binding<bool>(msgList.EnableInput, () => !main.Paused && !answerContainer.Visible, answerContainer.Visible, main.Paused));
+			answerContainer.Add(new Binding<bool>(answerContainer.EnableInput, x => !x, main.Paused));
+			composeButton.Add(new Binding<bool>(composeButton.EnableInput, x => !x, main.Paused));
+
 			Action scrollToBottom = delegate()
 			{
 				// HACK

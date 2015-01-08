@@ -397,7 +397,7 @@ namespace Lemma.Components
 				Vector3 normal = this.WallRunVoxel.Value.GetAbsoluteVector(this.WallDirection.Value.GetVector());
 				// Equation of a plane
 				// normal (dot) point = d
-				float d = Vector3.Dot(normal, coordPos);
+				float d = Vector3.Dot(normal, coordPos) + (wallRunState == State.Down ? 0.3f : 0.4f);
 
 				// Distance along the normal to keep the player glued to the wall
 				float snapDistance = d - Vector3.Dot(pos, normal);
