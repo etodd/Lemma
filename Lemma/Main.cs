@@ -966,25 +966,6 @@ namespace Lemma
 				Lemma.Console.Console.BindType(null, Renderer);
 				Lemma.Console.Console.BindType(null, LightingManager);
 
-				// Toggle fullscreen
-#if VR
-				if (!this.VR)
-#endif
-				{
-					input.Bind(this.Settings.ToggleFullscreen, PCInput.InputState.Down, delegate()
-					{
-						if (this.Settings.Fullscreen) // Already fullscreen. Go to windowed mode.
-							this.ExitFullscreen();
-						else // In windowed mode. Go to fullscreen.
-							this.EnterFullscreen();
-					});
-				}
-
-#if VR
-				if (this.VR)
-					input.Bind(this.Settings.RecenterVRPose, PCInput.InputState.Down, this.VRHmd.RecenterPose);
-#endif
-
 #if DEVELOPMENT
 				input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.S }), delegate()
 				{
@@ -1199,6 +1180,42 @@ namespace Lemma
 				IO.MapLoader.Load(this, MenuMap);
 				this.Menu.Show();
 #endif
+
+#if VR
+				if (this.VR)
+				{
+					this.Menu.EnableInput(false);
+					Container vrMsg = this.Menu.BuildMessage("\\vr message", 300.0f);
+					vrMsg.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
+					vrMsg.Add(new Binding<Vector2, Point>(vrMsg.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.ScreenSize));
+					this.UI.Root.Children.Add(vrMsg);
+					input.Bind(this.Settings.RecenterVRPose, PCInput.InputState.Down, this.VRHmd.RecenterPose);
+					input.Bind(this.Settings.RecenterVRPose, PCInput.InputState.Down, delegate()
+					{
+						if (vrMsg != null)
+						{
+							vrMsg.Delete.Execute();
+							vrMsg = null;
+						}
+						this.Menu.EnableInput(true);
+					});
+				}
+				else
+#endif
+				{
+					input.Bind(this.Settings.ToggleFullscreen, PCInput.InputState.Down, delegate()
+					{
+						if (this.Settings.Fullscreen) // Already fullscreen. Go to windowed mode.
+							this.ExitFullscreen();
+						else // In windowed mode. Go to fullscreen.
+							this.EnterFullscreen();
+					});
+				}
+
+				input.Bind(this.Settings.QuickSave, PCInput.InputState.Down, delegate()
+				{
+					this.SaveWithNotification(true);
+				});
 			}
 			else
 			{
@@ -1213,6 +1230,7 @@ namespace Lemma
 			if (this.spriteBatch != null)
 				this.spriteBatch.Dispose();
 			this.spriteBatch = new SpriteBatch(this.GraphicsDevice);
+
 		}
 
 		public void DefaultLighting()
@@ -1285,7 +1303,7 @@ namespace Lemma
 		}
 
 		private bool saving;
-		public void SaveOverwriteWithNotification()
+		public void SaveWithNotification(bool overwrite)
 		{
 			if (!this.saving && !this.Paused && this.Menu.CanPause && this.MapFile != Main.MenuMap && !this.IsChallengeMap(this.MapFile) && PlayerFactory.Instance != null)
 			{
@@ -1304,7 +1322,10 @@ namespace Lemma
 					new Animation.Delay(0.01f),
 					new Animation.Execute(delegate()
 					{
-						this.SaveOverwrite();
+						if (overwrite)
+							this.SaveOverwrite();
+						else
+							this.SaveNew();
 					}),
 					new Animation.Set<string>(notificationText.Text, "\\saved"),
 					new Animation.Parallel

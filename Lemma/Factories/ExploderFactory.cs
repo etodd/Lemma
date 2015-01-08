@@ -216,10 +216,6 @@ namespace Lemma.Factories
 				{
 					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_GLOWSQUARE_PITCH, 0.0f, entity);
 				},
-				Exit = delegate(AI.AIState next)
-				{
-
-				},
 				Tasks = new[]
 				{
 					checkOperationalRadius,

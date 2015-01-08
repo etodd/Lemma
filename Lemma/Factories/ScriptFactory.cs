@@ -44,7 +44,13 @@ namespace Lemma.Factories
 					foreach (Type type in assembly.GetTypes())
 					{
 						if (type.Namespace == Script.ScriptNamespace && type.IsClass && type.BaseType == typeof(GameScripts.ScriptBase))
-							scripts.Add(type.Name);
+						{
+#if !DEVELOPMENT
+							FieldInfo prop = type.GetField("AvailableInReleaseEditor", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+							if ((bool)prop.GetValue(type) == true)
+#endif
+								scripts.Add(type.Name);
+						}
 					}
 					return scripts;
 				}),

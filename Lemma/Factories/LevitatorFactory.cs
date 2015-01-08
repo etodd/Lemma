@@ -34,6 +34,20 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
 
+			if (!main.EditorEnabled)
+			{
+				AkGameObjectTracker.Attach(entity);
+				SoundKiller.Add(entity, AK.EVENTS.STOP_GLOWSQUARE);
+				entity.Add(new PostInitialization
+				{
+					delegate()
+					{
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_GLOWSQUARE, entity);
+						AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_GLOWSQUARE_PITCH, -1.0f, entity);
+					}
+				});
+			}
+
 			AI ai = entity.GetOrCreate<AI>("AI");
 
 			ModelAlpha model = entity.GetOrCreate<ModelAlpha>();
@@ -117,11 +131,7 @@ namespace Lemma.Factories
 				Name = "Idle",
 				Enter = delegate(AI.AIState previous)
 				{
-					//pitch.Value = -0.5f;
-				},
-				Exit = delegate(AI.AIState next)
-				{
-					//pitch.Value = 0.0f;
+					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_GLOWSQUARE_PITCH, -1.0f, entity);
 				},
 				Tasks = new[]
 				{ 
@@ -153,11 +163,11 @@ namespace Lemma.Factories
 				Name = "Alert",
 				Enter = delegate(AI.AIState previous)
 				{
-					//volume.Value = 0.0f;
+					AkSoundEngine.PostEvent(AK.EVENTS.STOP_GLOWSQUARE, entity);
 				},
 				Exit = delegate(AI.AIState next)
 				{
-					//volume.Value = defaultVolume;
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_GLOWSQUARE, entity);
 				},
 				Tasks = new[]
 				{ 
@@ -247,6 +257,10 @@ namespace Lemma.Factories
 			ai.Add(new AI.AIState
 			{
 				Name = "Chase",
+				Enter = delegate(AI.AIState previous)
+				{
+					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_GLOWSQUARE_PITCH, 0.0f, entity);
+				},
 				Tasks = new[]
 				{
 					checkOperationalRadius,

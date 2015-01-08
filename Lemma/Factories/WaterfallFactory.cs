@@ -46,18 +46,18 @@ namespace Lemma.Factories
 			AkGameObjectTracker.Attach(entity, soundPosition);
 
 			if (!main.EditorEnabled && !model.Suspended)
-				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_LOOP, entity);
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATERFALL_LOOP, entity);
 
 			Action stopSound = delegate()
 			{
-				AkSoundEngine.PostEvent(AK.EVENTS.STOP_WATER_LOOP, entity);
+				AkSoundEngine.PostEvent(AK.EVENTS.STOP_WATERFALL_LOOP, entity);
 			};
 			model.Add(new CommandBinding(model.OnSuspended, stopSound));
 			model.Add(new CommandBinding(model.Delete, stopSound));
 			model.Add(new CommandBinding(model.OnResumed, delegate()
 			{
 				if (!main.EditorEnabled)
-					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_LOOP, entity);
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATERFALL_LOOP, entity);
 			}));
 			
 			Property<Vector2> offset = model.GetVector2Parameter("Offset");

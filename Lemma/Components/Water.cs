@@ -454,7 +454,6 @@ namespace Lemma.Components
 				this.camera.Position.Value = Vector3.Transform(p.Camera.Position, reflect);
 				this.camera.View.Value = reflect * p.Camera.View;
 				this.camera.SetProjectionFromCamera(p.Camera);
-				//this.camera.SetPerspectiveProjection(p.Camera.FieldOfView, new Point(this.buffer.Width, this.buffer.Height), p.Camera.NearPlaneDistance, p.Camera.FarPlaneDistance);
 				this.renderer.SetRenderTargets(this.parameters);
 
 				this.main.DrawScene(this.parameters);
@@ -463,7 +462,9 @@ namespace Lemma.Components
 			}
 		}
 
-		private Dictionary<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable, int> submerged = new Dictionary<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable, int>();
+		private Dictionary<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable, float> submerged = new Dictionary<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable, float>();
+
+		private const float speedMassVolumeCoefficient = 1.0f / 50.0f;
 
 		void IUpdateableComponent.Update(float dt)
 		{
@@ -483,8 +484,7 @@ namespace Lemma.Components
 
 			float waterHeight = this.Position.Value.Y;
 
-			foreach (BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable c in this.submerged.Keys.ToList())
-				this.submerged[c]--;
+			float time = this.main.TotalTime;
 
 			lock (this.Fluid.NotifyEntries)
 			{
@@ -497,13 +497,16 @@ namespace Lemma.Components
 
 					if (speed > 9.0f)
 					{
-						float volume = Math.Min(speed * collidable.Entity.Mass / 50.0f, 1.0f);
-						if (volume > 0.25f && !this.submerged.ContainsKey(collidable))
+						float volume = Math.Min(speed * collidable.Entity.Mass * speedMassVolumeCoefficient, 1.0f);
+						if (volume > 0.1f && !this.submerged.ContainsKey(collidable))
 						{
+							uint temp = AkSoundEngine.RegisterTemp(collidable.Entity.Position);
 							if (collidable.Entity.Mass > 40.0f)
-								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH_HEAVY, collidable.Entity.Position);
+								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH_HEAVY, temp);
 							else
-								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH, collidable.Entity.Position);
+								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH, temp);
+							AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_WATER_SPLASH_VOLUME, volume, temp);
+							AkSoundEngine.UnregisterTemp(temp);
 						}
 					}
 
@@ -533,17 +536,30 @@ namespace Lemma.Components
 						ParticleEmitter.Emit(this.main, "BigSplash", particlePositions.Take(particleIndex / 5));
 					}
 
-					this.submerged[collidable] = 8;
+					this.submerged[collidable] = time;
 				}
 				this.Fluid.NotifyEntries.Clear();
 			}
 
-			foreach (KeyValuePair<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable, int> p in this.submerged.ToList())
+			foreach (KeyValuePair<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable, float> p in this.submerged.ToList())
 			{
-				if (p.Value <= 0)
+				if (time - p.Value > 0.1f)
 				{
-					if (p.Key.Entity != null && p.Key.Entity.LinearVelocity.Y > 2.0f)
-						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH_OUT, p.Key.Entity.Position);
+					if (p.Key.Entity != null)
+					{
+						float speed = p.Key.Entity.LinearVelocity.Y;
+						if (speed > 2.0f)
+						{
+							float volume = Math.Min(speed * p.Key.Entity.Mass * speedMassVolumeCoefficient, 1.0f);
+							if (volume > 0.1f)
+							{
+								uint temp = AkSoundEngine.RegisterTemp(p.Key.Entity.Position);
+								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH_OUT, temp);
+								AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_WATER_SPLASH_VOLUME, volume, temp);
+								AkSoundEngine.UnregisterTemp(temp);
+							}
+						}
+					}
 					this.submerged.Remove(p.Key);
 				}
 			}

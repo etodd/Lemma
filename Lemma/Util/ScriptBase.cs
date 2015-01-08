@@ -13,6 +13,7 @@ namespace Lemma.GameScripts
 	{
 		public static Main main;
 		public static Renderer renderer;
+		public static bool AvailableInReleaseEditor = true;
 
 		protected static Entity get(string id)
 		{

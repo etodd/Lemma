@@ -210,6 +210,8 @@ namespace Lemma.Components
 			if (!this.Active) // We died from fall damage
 				return;
 
+			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_VAULT, this.Entity);
+
 			this.DeactivateWallRun.Execute();
 			this.CurrentState.Value = State.Straight;
 

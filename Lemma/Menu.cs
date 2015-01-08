@@ -70,22 +70,24 @@ namespace Lemma.Components
 			this.messages.Children.Clear();
 		}
 
-		private Container buildMessage()
+		public Container BuildMessage(string text = null, float width = 250.0f)
 		{
 			Container msgBackground = new Container();
 
 			msgBackground.Tint.Value = Color.Black;
 			msgBackground.Opacity.Value = messageBackgroundOpacity;
 			TextElement msg = new TextElement();
+			if (!string.IsNullOrEmpty(text))
+				msg.Text.Value = text;
 			msg.FontFile.Value = this.main.MainFont;
-			msg.WrapWidth.Value = 250.0f;
+			msg.WrapWidth.Value = width;
 			msgBackground.Children.Add(msg);
 			return msgBackground;
 		}
 
 		public Container ShowMessage(Entity entity, Func<string> text, params IProperty[] properties)
 		{
-			Container container = this.buildMessage();
+			Container container = this.BuildMessage();
 			TextElement textElement = (TextElement)container.Children[0];
 			textElement.Add(new Binding<string>(textElement.Text, text, properties));
 
@@ -121,9 +123,7 @@ namespace Lemma.Components
 
 		public Container ShowMessage(Entity entity, string text)
 		{
-			Container container = this.buildMessage();
-			TextElement textElement = (TextElement)container.Children[0];
-			textElement.Text.Value = text;
+			Container container = this.BuildMessage(text);
 
 			this.messages.Children.Add(container);
 
@@ -416,12 +416,17 @@ namespace Lemma.Components
 			c.PaddingLeft.Value = Menu.menuButtonLeftPadding;
 		}
 
-		public void ShowDialog(string question, string action, Action callback)
+		public void EnableInput(bool enable)
 		{
 			if (this.currentMenu.Value != null)
-				this.currentMenu.Value.EnableInput.Value = false;
+				this.currentMenu.Value.EnableInput.Value = enable;
+		}
+
+		public void ShowDialog(string question, string action, Action callback)
+		{
 			if (this.dialog != null)
 				this.dialog.Delete.Execute();
+			this.EnableInput(false);
 			this.dialog = new Container();
 			this.dialog.Tint.Value = Color.Black;
 			this.dialog.Opacity.Value = 0.5f;
@@ -429,8 +434,7 @@ namespace Lemma.Components
 			this.dialog.Add(new Binding<Vector2, Point>(this.dialog.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.main.ScreenSize));
 			this.dialog.Add(new CommandBinding(this.dialog.Delete, delegate()
 			{
-				if (this.currentMenu.Value != null)
-					this.currentMenu.Value.EnableInput.Value = true;
+				this.EnableInput(true);
 			}));
 			this.main.UI.Root.Children.Add(this.dialog);
 
@@ -865,7 +869,7 @@ namespace Lemma.Components
 			}
 
 			{
-				Container downloading = this.buildMessage();
+				Container downloading = this.BuildMessage();
 				downloading.AnchorPoint.Value = new Vector2(1.0f, 0.0f);
 				downloading.Add(new Binding<Vector2, Point>(downloading.Position, x => new Vector2(x.X * 0.9f, x.Y * 0.1f), this.main.ScreenSize));
 				TextElement downloadingLabel = (TextElement)downloading.Children[0];
@@ -888,33 +892,6 @@ namespace Lemma.Components
 			this.notifications.Name.Value = "Notifications";
 			this.notifications.Add(new Binding<Vector2, Point>(this.notifications.Position, x => new Vector2(x.X * 0.9f, x.Y * 0.1f), this.main.ScreenSize));
 			this.main.UI.Root.Children.Add(this.notifications);
-
-			// Fullscreen message
-#if VR
-			if (!this.main.VR)
-#endif
-			{
-				Container msgBackground = new Container();
-				this.main.UI.Root.Children.Add(msgBackground);
-				msgBackground.Tint.Value = Color.Black;
-				msgBackground.Opacity.Value = 0.2f;
-				msgBackground.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
-				msgBackground.Add(new Binding<Vector2, Point>(msgBackground.Position, x => new Vector2(x.X * 0.5f, x.Y - 30.0f), this.main.ScreenSize));
-				TextElement msg = new TextElement();
-				msg.FontFile.Value = this.main.MainFont;
-				msg.Text.Value = "\\toggle fullscreen tooltip";
-				msgBackground.Children.Add(msg);
-				this.main.AddComponent(new Animation
-				(
-					new Animation.Delay(4.0f),
-					new Animation.Parallel
-					(
-						new Animation.FloatMoveTo(msgBackground.Opacity, 0.0f, 2.0f),
-						new Animation.FloatMoveTo(msg.Opacity, 0.0f, 2.0f)
-					),
-					new Animation.Execute(msgBackground.Delete)
-				));
-			}
 
 			// Pause menu
 			this.pauseMenu = new ListContainer();
@@ -1762,8 +1739,6 @@ namespace Lemma.Components
 			});
 			this.resizeToMenu(exit);
 			this.pauseMenu.Children.Add(exit);
-
-			this.input.Bind(this.main.Settings.QuickSave, PCInput.InputState.Down, this.main.SaveOverwriteWithNotification);
 
 			// Escape key
 			// Make sure we can only pause when there is a player currently spawned

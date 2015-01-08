@@ -13,6 +13,7 @@ namespace Lemma.GameScripts
 {
 	public class MainMenu : ScriptBase
 	{
+		public static new bool AvailableInReleaseEditor = false;
 		public static void Run(Entity script)
 		{
 			const float fadeTime = 1.0f;
@@ -43,7 +44,7 @@ namespace Lemma.GameScripts
 				(
 					new Animation.FloatMoveTo(logo.Opacity, 1.0f, fadeTime)
 				));
-				list.Children.Add(logo);
+				list.Children.Insert(0, logo);
 
 				Action<string> addText = delegate(string text)
 				{
@@ -101,7 +102,7 @@ namespace Lemma.GameScripts
 				logo.Image.Value = "Images\\logo";
 				logo.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
 				logo.Add(new Binding<Vector2, Point>(logo.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
-				main.UI.Root.Children.Add(logo);
+				main.UI.Root.Children.Insert(0, logo);
 
 				ListContainer corner = new ListContainer();
 				corner.AnchorPoint.Value = new Vector2(1, 1);

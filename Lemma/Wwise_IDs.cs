@@ -66,6 +66,7 @@ public class AK
         public static uint PLAY_WATER_SPLASH = 1591852251U;
         public static uint PLAY_WATER_SPLASH_HEAVY = 1166068147U;
         public static uint PLAY_WATER_SPLASH_OUT = 332641338U;
+        public static uint PLAY_WATERFALL_LOOP = 2021604517U;
         public static uint PLAY_WHITE_LIGHT = 3583610488U;
         public static uint PLAY_WHITE_SHATTER = 2667853543U;
         public static uint STOP_ALL = 452547817U;
@@ -84,6 +85,7 @@ public class AK
         public static uint STOP_RAIN = 3206237490U;
         public static uint STOP_SIGNAL_TOWER_LOOP = 2826848843U;
         public static uint STOP_WATER_LOOP = 105164338U;
+        public static uint STOP_WATERFALL_LOOP = 552611043U;
         public static uint STOP_WHITE_LIGHT = 2253775078U;
     } // public class EVENTS
 
@@ -128,6 +130,7 @@ public class AK
         public static uint SFX_GLOWSQUARE_PITCH = 3613648624U;
         public static uint SFX_PLAYER_FALL = 1894448894U;
         public static uint SFX_PLAYER_SLIDE = 4199053580U;
+        public static uint SFX_WATER_SPLASH_VOLUME = 4073721865U;
         public static uint SLOWMOTION = 340593036U;
         public static uint VOLUME_MUSIC = 3891337659U;
         public static uint VOLUME_SFX = 3673881719U;
