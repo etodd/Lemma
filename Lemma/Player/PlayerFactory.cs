@@ -461,6 +461,7 @@ namespace Lemma.Factories
 			fallDamage.Bind(model);
 
 			BlockCloud blockCloud = entity.GetOrCreate<BlockCloud>("BlockCloud");
+			blockCloud.Scale.Value = 0.5f;
 			blockCloud.Add(new Binding<Vector3>(blockCloud.Position, () => transform.Position.Value + new Vector3(0, player.Character.Height + player.Character.LinearVelocity.Value.Y, 0), transform.Position, player.Character.Height, player.Character.LinearVelocity));
 			blockCloud.Blocks.ItemAdded += delegate(int index, Entity.Handle block)
 			{

@@ -69,7 +69,7 @@ namespace Lemma.Factories
 
 			const float sightDistance = 80.0f;
 			const float hearingDistance = 20.0f;
-			const int operationalRadius = 100;
+			const float operationalRadius = 100.0f;
 
 			model.Add(new Binding<Vector3, string>(model.Color, delegate(string state)
 			{
@@ -82,7 +82,7 @@ namespace Lemma.Factories
 					case "Firing":
 						return new Vector3(2.0f, 0.0f, 0.0f);
 					case "Disabled":
-						return new Vector3(0.0f, 2.0f, 0.0f);
+						return new Vector3(0.0f, 0.0f, 0.0f);
 					default:
 						return new Vector3(1.0f, 1.0f, 1.0f);
 				}

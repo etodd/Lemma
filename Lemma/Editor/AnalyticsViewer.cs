@@ -405,7 +405,6 @@ namespace Lemma.Factories
 								i.Setup("InstancedModels\\position-model", hash);
 								if (i.IsFirstInstance)
 									i.Model.Color.Value = new Vector3(color.X, color.Y, color.Z);
-								i.Scale.Value = new Vector3(0.25f);
 								i.Transform.Value = Matrix.CreateTranslation(positionProperty.GetLastRecordedPosition(e.Time));
 								models.Add(i);
 								entity.Add(i);
@@ -578,7 +577,6 @@ namespace Lemma.Factories
 							i.Setup("InstancedModels\\position-model", hash);
 							if (i.IsFirstInstance)
 								i.Model.Color.Value = new Vector3(color.X, color.Y, color.Z);
-							i.Scale.Value = new Vector3(0.25f);
 							i.Transform.Value = Matrix.CreateTranslation(positionProperty.GetLastRecordedPosition(e.Time));
 							entity.Add(i);
 							models.Add(i);
@@ -590,7 +588,6 @@ namespace Lemma.Factories
 				ModelInstance instance = new ModelInstance();
 				instance.Setup("InstancedModels\\position-model", 0);
 				instance.Serialize = false;
-				instance.Scale.Value = new Vector3(0.25f);
 				entity.Add(instance);
 				sessionPositionModels.Add(s.Session, instance);
 				s.Active.Value = true;

@@ -25,7 +25,7 @@ namespace Lemma.Components
 				this.Serialize = false;
 				this.CullBoundingBox.Value = false;
 				this.IsInstanced.Value = true;
-				this.instanceBinding = new ListBinding<Matrix, ModelInstance>(this.Instances, this.instances, x => x.transform);
+				this.instanceBinding = new ListBinding<Matrix, ModelInstance>(this.Instances, this.instances, x => x.Transform);
 				this.Add(this.instanceBinding);
 			}
 
@@ -181,10 +181,6 @@ namespace Lemma.Components
 
 		public Property<bool> EnableAlpha = new Property<bool> { Value = false };
 
-		public Property<Vector3> Scale = new Property<Vector3> { Value = Vector3.One };
-
-		protected Property<Matrix> transform = new Property<Matrix>();
-
 		public Property<int> InstanceKey = new Property<int>();
 
 		[XmlIgnore]
@@ -283,8 +279,6 @@ namespace Lemma.Components
 			{
 				this.refreshModel();
 			}));
-
-			this.Add(new Binding<Matrix>(this.transform, () => Matrix.CreateScale(this.Scale) * this.Transform, this.Scale, this.Transform));
 
 			if (this.deserializedParameters != null)
 			{

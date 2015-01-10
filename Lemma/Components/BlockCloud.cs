@@ -23,6 +23,8 @@ namespace Lemma.Components
 
 		private List<PhysicsBlock> blocks = new List<PhysicsBlock>();
 
+		public Property<float> Scale = new Property<float> { Value = 1.0f };
+
 		private const int totalBlocks = 30;
 
 		private static Random random = new Random();
@@ -100,15 +102,14 @@ namespace Lemma.Components
 			if (this.Type.Value != Voxel.t.Empty && this.Blocks.Length == 0)
 			{
 				SceneryBlockFactory factory = Factory.Get<SceneryBlockFactory>();
-				Vector3 scale = new Vector3(0.6f);
 				Vector3 blockSpawnPoint = this.Position;
 				for (int i = 0; i < totalBlocks; i++)
 				{
 					Entity block = factory.CreateAndBind(main);
 					block.Get<Transform>().Position.Value = blockSpawnPoint + new Vector3(((float)BlockCloud.random.NextDouble() - 0.5f) * 2.0f, ((float)BlockCloud.random.NextDouble() - 0.5f) * 2.0f, ((float)BlockCloud.random.NextDouble() - 0.5f) * 2.0f);
-					block.Get<PhysicsBlock>().Size.Value = scale;
-					block.Get<ModelInstance>().Scale.Value = scale;
-					block.Get<SceneryBlock>().Type.Value = this.Type;
+					SceneryBlock sceneryBlock = block.Get<SceneryBlock>();
+					sceneryBlock.Type.Value = this.Type;
+					sceneryBlock.Scale.Value = this.Scale;
 					this.Blocks.Add(block);
 					main.Add(block);
 				}

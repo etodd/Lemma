@@ -86,7 +86,7 @@ namespace Lemma.Components
 			model.Alpha.Value = 0.15f;
 			model.Color.Value = color;
 			model.DisableCulling.Value = true;
-			model.Add(new Binding<Vector3>(model.Scale, () => new Vector3(trigger.Radius, trigger.Top - trigger.Bottom, trigger.Radius), trigger.Top, trigger.Bottom, trigger.Radius));
+			model.Add(new Binding<Vector3>(model.Scale, () => new Vector3(trigger.Radius * 2.0f, trigger.Top - trigger.Bottom, trigger.Radius * 2.0f), trigger.Top, trigger.Bottom, trigger.Radius));
 			model.Serialize = false;
 			model.Add(new Binding<bool>(model.Enabled, entity.EditorSelected));
 

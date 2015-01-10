@@ -252,6 +252,7 @@ namespace Lemma.Components
 					this.main.CurrentSave.Value = timestamp;
 					IO.MapLoader.Load(this.main, info.MapFile);
 				}
+				container.SwallowCurrentMouseEvent();
 			}));
 
 			this.loadSaveList.Children.Add(container);

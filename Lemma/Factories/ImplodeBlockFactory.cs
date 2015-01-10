@@ -29,15 +29,10 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			entity.CannotSuspend = true;
-			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			ModelInstance model = entity.GetOrCreate<ModelInstance>("Model");
 			ImplodeBlock implodeBlock = entity.GetOrCreate<ImplodeBlock>("ImplodeBlock");
 
-			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
-			model.Scale.Value = Vector3.Zero;
-			model.Add(new Binding<Vector3>(model.Scale, implodeBlock.Scale));
-			model.Add(new Binding<Vector3>(transform.Position, implodeBlock.Position));
-			model.Add(new Binding<Quaternion>(transform.Quaternion, implodeBlock.Orientation));
+			model.Add(new Binding<Matrix>(model.Transform, implodeBlock.Transform));
 
 			implodeBlock.Add(new CommandBinding(implodeBlock.Delete, entity.Delete));
 
@@ -51,6 +46,8 @@ namespace Lemma.Factories
 				offsetBinding = new Binding<Vector3>(model.GetVector3Parameter("Offset"), implodeBlock.Offset);
 				model.Add(offsetBinding);
 			}, model.FullInstanceKey));
+			if (implodeBlock.StateId != Voxel.t.Empty)
+				Voxel.States.All[implodeBlock.StateId].ApplyToEffectBlock(model);
 		}
 
 		public void Implode(Main main, Voxel v, Voxel.Coord coord, Voxel.State state, Vector3 target)
@@ -60,13 +57,12 @@ namespace Lemma.Factories
 			state.ApplyToEffectBlock(block.Get<ModelInstance>());
 			implodeBlock.Offset.Value = v.GetRelativePosition(coord);
 
-			implodeBlock.StartPosition.Value = v.GetAbsolutePosition(coord);
-			Matrix orientation = v.Transform;
-			orientation.Translation = Vector3.Zero;
-			implodeBlock.Type.Value = Rift.Style.In;
-			implodeBlock.StartOrientation.Value = orientation;
-			implodeBlock.EndOrientation.Value = Matrix.CreateRotationX((float)this.random.NextDouble() * (float)Math.PI * 2.0f) * Matrix.CreateRotationY((float)this.random.NextDouble() * (float)Math.PI * 2.0f);
-			implodeBlock.EndPosition.Value = target;
+			implodeBlock.StateId = state.ID;
+			implodeBlock.StartPosition = v.GetAbsolutePosition(coord);
+			implodeBlock.Type = Rift.Style.In;
+			implodeBlock.StartOrientation = Quaternion.CreateFromRotationMatrix(v.Transform);
+			implodeBlock.EndOrientation = Quaternion.CreateFromYawPitchRoll((float)this.random.NextDouble() * (float)Math.PI * 2.0f, (float)this.random.NextDouble() * (float)Math.PI * 2.0f, 0.0f);
+			implodeBlock.EndPosition = target;
 			main.Add(block);
 		}
 
@@ -78,13 +74,12 @@ namespace Lemma.Factories
 			implodeBlock.Offset.Value = v.GetRelativePosition(coord);
 
 			Vector3 start = v.GetAbsolutePosition(coord);
-			implodeBlock.StartPosition.Value = start;
-			Matrix orientation = v.Transform;
-			orientation.Translation = Vector3.Zero;
-			implodeBlock.Type.Value = Rift.Style.Up;
-			implodeBlock.StartOrientation.Value = orientation;
-			implodeBlock.EndOrientation.Value = Matrix.CreateRotationX((float)this.random.NextDouble() * (float)Math.PI * 2.0f) * Matrix.CreateRotationY((float)this.random.NextDouble() * (float)Math.PI * 2.0f);
-			implodeBlock.EndPosition.Value = start + new Vector3(10, 20, 10);
+			implodeBlock.StateId = state.ID;
+			implodeBlock.StartPosition = start;
+			implodeBlock.Type = Rift.Style.Up;
+			implodeBlock.StartOrientation = Quaternion.CreateFromRotationMatrix(v.Transform);
+			implodeBlock.EndOrientation = Quaternion.CreateFromYawPitchRoll((float)this.random.NextDouble() * (float)Math.PI * 2.0f, (float)this.random.NextDouble() * (float)Math.PI * 2.0f, 0.0f);
+			implodeBlock.EndPosition = start + new Vector3(10, 20, 10);
 			main.Add(block);
 		}
 	}

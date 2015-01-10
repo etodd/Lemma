@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 using ComponentBind;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
@@ -23,87 +24,83 @@ namespace Lemma.Components
 			return EffectBlock.animatingBlocks.ContainsKey(block);
 		}
 
-		public Property<bool> DoScale = new Property<bool> { Value = true };
-		public Property<Vector3> StartPosition = new Property<Vector3>();
-		public Property<Quaternion> StartOrientation = new Property<Quaternion>();
-		public Property<Entity.Handle> TargetVoxel = new Property<Entity.Handle>();
-		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
-		public Property<Voxel.t> StateId = new Property<Voxel.t>();
-		public Property<float> Delay = new Property<float>();
+		public bool DoScale = true;
+		public Vector3 StartPosition;
+		public Quaternion StartOrientation = Quaternion.Identity;
+		public Entity.Handle TargetVoxel;
+		public Voxel.Coord Coord;
+		public Voxel.t StateId;
+		public float Delay;
 
+		// IO properties
 		public Property<Vector3> Offset = new Property<Vector3>();
-		public Property<Vector3> Scale = new Property<Vector3>();
-		public Property<Quaternion> Orientation = new Property<Quaternion>();
-		public Property<Vector3> Position = new Property<Vector3>();
+		[XmlIgnore]
+		public Property<Matrix> Transform = new Property<Matrix>();
 
-		public Property<float> TotalLifetime = new Property<float>();
-		public Property<float> Lifetime = new Property<float>();
+		public float TotalLifetime;
+		public float Lifetime;
 
-		public Property<bool> CheckAdjacent = new Property<bool>();
+		public bool CheckAdjacent;
 
-		private Quaternion startQuat = Quaternion.Identity;
-
+		private Entry entry = new Entry();
 		public override void Awake()
 		{
 			base.Awake();
 			this.EnabledWhenPaused = false;
-			this.Add(new SetBinding<Quaternion>(this.StartOrientation, delegate(Quaternion value)
-			{
-				this.startQuat = value;
-			}));
 
-			Entry entry = new Entry();
-			this.Add(new NotifyBinding(delegate()
-			{
-				if (entry.Voxel != null)
-					EffectBlock.animatingBlocks.Remove(entry);
-
-				Entity m = this.TargetVoxel.Value.Target;
-				entry.Voxel = m != null ? m.Get<Voxel>() : null;
-				
-				if (entry.Voxel != null)
-				{
-					entry.Coordinate = this.Coord;
-					EffectBlock.animatingBlocks[entry] = true;
-				}
-			}, this.TargetVoxel, this.Coord, this.StateId));
-
+			this.addEntry();
 			this.Add(new CommandBinding(this.Delete, delegate()
 			{
-				if (entry.Voxel != null)
-					EffectBlock.animatingBlocks.Remove(entry);
-				entry.Voxel = null;
+				if (this.entry.Voxel != null)
+					EffectBlock.animatingBlocks.Remove(this.entry);
+				this.entry.Voxel = null;
 			}));
+		}
+
+		private void addEntry()
+		{
+			Entity m = this.TargetVoxel.Target;
+			this.entry.Voxel = m != null ? m.Get<Voxel>() : null;
+			
+			if (this.entry.Voxel != null)
+			{
+				this.entry.Coordinate = this.Coord;
+				EffectBlock.animatingBlocks[this.entry] = true;
+			}
 		}
 
 		public void Setup(Entity map, Voxel.Coord c, Voxel.t s)
 		{
-			this.TargetVoxel.SetStealthy(map);
-			this.Coord.SetStealthy(c);
-			this.StateId.Value = s;
+			this.TargetVoxel = map;
+			this.Coord = c;
+			this.StateId = s;
+			this.addEntry();
 		}
 
 		private static Random random = new Random();
 
 		public void Update(float dt)
 		{
-			if (this.TargetVoxel.Value.Target == null || !this.TargetVoxel.Value.Target.Active)
+			if (this.TargetVoxel.Target == null || !this.TargetVoxel.Target.Active)
 			{
 				this.Delete.Execute();
 				return;
 			}
 
-			this.Lifetime.Value += dt;
+			this.Lifetime += dt;
 
 			if (this.Lifetime < this.Delay)
-			{
-				this.Scale.Value = Vector3.Zero;
 				return;
-			}
 
 			float blend = (this.Lifetime - this.Delay) / this.TotalLifetime;
 
-			Voxel m = this.TargetVoxel.Value.Target.Get<Voxel>();
+			Voxel m = this.TargetVoxel.Target.Get<Voxel>();
+
+			Matrix finalOrientation = m.Transform;
+			finalOrientation.Translation = Vector3.Zero;
+			Quaternion finalQuat = Quaternion.CreateFromRotationMatrix(finalOrientation);
+
+			Vector3 finalPosition = m.GetAbsolutePosition(this.Coord);
 
 			if (blend > 1.0f)
 			{
@@ -131,7 +128,7 @@ namespace Lemma.Components
 									{
 										if (adjacentID == Voxel.t.Reset)
 										{
-											this.StateId.Value = Voxel.t.Neutral;
+											this.StateId = Voxel.t.Neutral;
 											break;
 										}
 									}
@@ -186,7 +183,7 @@ namespace Lemma.Components
 
 					// For one reason or another, we can't fill the cell
 					// Animate nicely into oblivion
-					this.StateId.Value = Voxel.t.Empty;
+					this.StateId = Voxel.t.Empty;
 				}
 				else
 				{
@@ -195,25 +192,33 @@ namespace Lemma.Components
 					if (blend > 2.0f)
 						this.Delete.Execute();
 					else
-						this.Scale.Value = new Vector3(2.0f - blend);
+					{
+						Matrix result = Matrix.CreateFromQuaternion(finalQuat);
+						float scale = 2.0f - blend;
+						result.Right *= scale;
+						result.Up *= scale;
+						result.Forward *= scale;
+						result.Translation = finalPosition;
+						this.Transform.Value = result;
+					}
 				}
 			}
 			else
 			{
+				float scale;
 				if (this.DoScale)
-					this.Scale.Value = new Vector3(blend);
+					scale = blend;
 				else
-					this.Scale.Value = new Vector3(1.0f);
-				Matrix finalOrientation = m.Transform;
-				finalOrientation.Translation = Vector3.Zero;
-				Quaternion finalQuat = Quaternion.CreateFromRotationMatrix(finalOrientation);
-				finalQuat = Quaternion.Lerp(this.startQuat, finalQuat, blend);
-				this.Orientation.Value = finalQuat;
+					scale = 1.0f;
 
-				Vector3 finalPosition = m.GetAbsolutePosition(this.Coord);
 				float distance = (finalPosition - this.StartPosition).Length() * 0.1f * Math.Max(0.0f, 0.5f - Math.Abs(blend - 0.5f));
 
-				this.Position.Value = Vector3.Lerp(this.StartPosition, finalPosition, blend) + new Vector3((float)Math.Sin(blend * Math.PI) * distance);
+				Matrix result = Matrix.CreateFromQuaternion(Quaternion.Lerp(this.StartOrientation, finalQuat, blend));
+				result.Right *= scale;
+				result.Up *= scale;
+				result.Forward *= scale;
+				result.Translation = Vector3.Lerp(this.StartPosition, finalPosition, blend) + new Vector3((float)Math.Sin(blend * Math.PI) * distance);
+				this.Transform.Value = result;
 			}
 		}
 	}

@@ -322,9 +322,9 @@ namespace Lemma.Factories
 
 									Vector3 absolutePos = m.GetAbsolutePosition(raycastAI.Coord);
 
-									effectBlock.StartPosition.Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f);
-									effectBlock.StartOrientation.Value = Quaternion.CreateFromYawPitchRoll(0.15f, 0.15f, 0);
-									effectBlock.TotalLifetime.Value = 0.05f;
+									effectBlock.StartPosition = absolutePos + new Vector3(0.05f, 0.1f, 0.05f);
+									effectBlock.StartOrientation = Quaternion.CreateFromYawPitchRoll(0.15f, 0.15f, 0);
+									effectBlock.TotalLifetime = 0.05f;
 									effectBlock.Setup(raycastAI.Voxel.Value.Target, raycastAI.Coord, Voxel.t.Infected);
 									main.Add(blockEntity);
 								}

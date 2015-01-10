@@ -215,6 +215,12 @@ namespace Lemma.Components
 			return result;
 		}
 
+		private bool swallowCurrentMouseEvent;
+		public void SwallowCurrentMouseEvent()
+		{
+			this.swallowCurrentMouseEvent = true;
+		}
+
 		public bool HandleMouse(MouseState mouse, MouseState lastMouse, Matrix parent, bool mouseContainedInParent)
 		{
 			if (!this.Visible || !this.EnableInput || main.GeeUI.LastClickCaptured)
@@ -276,6 +282,11 @@ namespace Lemma.Components
 
 				if (mouse.ScrollWheelValue != lastMouse.ScrollWheelValue)
 					this.MouseScrolled.Execute(mouse.ScrollWheelValue > lastMouse.ScrollWheelValue ? 1 : -1);
+			}
+			if (this.swallowCurrentMouseEvent)
+			{
+				this.swallowCurrentMouseEvent = false;
+				return true;
 			}
 			return newHighlighted && (this.SwallowMouseEvents || this.MouseLocked); // Swallow the mouse events so no one else handles them
 		}

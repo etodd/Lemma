@@ -120,14 +120,14 @@ namespace Lemma.Components
 					Entity blockEntity = factory.CreateAndBind(main);
 					EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
 					entry.Coord.Data.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
-					effectBlock.CheckAdjacent.Value = false;
+					effectBlock.CheckAdjacent = false;
 					effectBlock.Offset.Value = m.GetRelativePosition(entry.Coord);
-					effectBlock.DoScale.Value = true;
+					effectBlock.DoScale = true;
 
-					effectBlock.StartPosition.Value = entry.Position + new Vector3(8.0f, 20.0f, 8.0f) * this.BlockLifetime.Value;
-					effectBlock.StartOrientation.Value = Quaternion.CreateFromYawPitchRoll(0.15f * this.Index, 0.15f * this.Index, 0);
+					effectBlock.StartPosition = entry.Position + new Vector3(8.0f, 20.0f, 8.0f) * this.BlockLifetime.Value;
+					effectBlock.StartOrientation = Quaternion.CreateFromYawPitchRoll(0.15f * this.Index, 0.15f * this.Index, 0);
 
-					effectBlock.TotalLifetime.Value = this.BlockLifetime;
+					effectBlock.TotalLifetime = this.BlockLifetime;
 					effectBlock.Setup(targetEntity, entry.Coord, entry.Coord.Data.ID);
 					main.Add(blockEntity);
 

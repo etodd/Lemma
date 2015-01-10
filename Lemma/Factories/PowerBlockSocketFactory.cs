@@ -106,11 +106,11 @@ namespace Lemma.Factories
 							Entity effectBlockEntity = factory.CreateAndBind(main);
 							Voxel.States.All[cloud.Type].ApplyToEffectBlock(effectBlockEntity.Get<ModelInstance>());
 							EffectBlock effectBlock = effectBlockEntity.Get<EffectBlock>();
-							effectBlock.DoScale.Value = false;
+							effectBlock.DoScale = false;
 							Transform blockTransform = block.Get<Transform>();
-							effectBlock.StartPosition.Value = blockTransform.Position;
-							effectBlock.StartOrientation.Value = blockTransform.Quaternion;
-							effectBlock.TotalLifetime.Value = (i + 1) * 0.04f;
+							effectBlock.StartPosition = blockTransform.Position;
+							effectBlock.StartOrientation = blockTransform.Quaternion;
+							effectBlock.TotalLifetime = (i + 1) * 0.04f;
 							effectBlock.Setup(sockVoxel.Entity, coords[i], cloud.Type);
 							main.Add(effectBlockEntity);
 							block.Delete.Execute();
@@ -130,7 +130,6 @@ namespace Lemma.Factories
 						List<Voxel.Coord> coords = sockVoxel.GetContiguousByType(new[] { sockVoxel.GetBox(transform.Position) }).SelectMany(x => x.GetCoords()).ToList();
 						sockVoxel.Empty(coords, true);
 						sockVoxel.Regenerate();
-						Vector3 scale = new Vector3(0.6f);
 						ParticleSystem particles = ParticleSystem.Get(main, "WhiteShatter");
 						foreach (Voxel.Coord c in coords)
 						{
@@ -144,9 +143,9 @@ namespace Lemma.Factories
 							Transform blockTransform = block.Get<Transform>();
 							blockTransform.Position.Value = pos;
 							blockTransform.Quaternion.Value = quat;
-							block.Get<PhysicsBlock>().Size.Value = scale;
-							block.Get<ModelInstance>().Scale.Value = scale;
-							block.Get<SceneryBlock>().Type.Value = socket.Type;
+							SceneryBlock sceneryBlock = block.Get<SceneryBlock>();
+							sceneryBlock.Type.Value = socket.Type;
+							sceneryBlock.Scale.Value = 0.5f;
 							cloud.Blocks.Add(block);
 							main.Add(block);
 						}

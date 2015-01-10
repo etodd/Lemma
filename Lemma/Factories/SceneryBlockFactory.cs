@@ -27,14 +27,13 @@ namespace Lemma.Factories
 		{
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			PhysicsBlock physics = entity.GetOrCreate<PhysicsBlock>("Physics");
-			physics.Size.Value = Vector3.One;
 			ModelInstance model = entity.GetOrCreate<ModelInstance>("Model");
 
 			physics.Add(new TwoWayBinding<Matrix>(transform.Matrix, physics.Transform));
 
-			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
-
 			SceneryBlock sceneryBlock = entity.GetOrCreate<SceneryBlock>("SceneryBlock");
+			physics.Add(new Binding<Vector3, float>(physics.Size, x => new Vector3(x), sceneryBlock.Scale));
+			model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateScale(sceneryBlock.Scale) * transform.Matrix, transform.Matrix, sceneryBlock.Scale));
 
 			this.SetMain(entity, main);
 

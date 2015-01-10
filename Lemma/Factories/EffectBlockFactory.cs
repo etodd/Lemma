@@ -36,28 +36,13 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			entity.CannotSuspend = true;
-			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			ModelInstance model = entity.GetOrCreate<ModelInstance>("Model");
 
 			EffectBlock effectBlock = entity.GetOrCreate<EffectBlock>("EffectBlock");
 
-			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
-			model.Scale.Value = Vector3.Zero;
+			model.Add(new Binding<Matrix>(model.Transform, effectBlock.Transform));
 
-			entity.Add(new NotifyBinding(delegate()
-			{
-				transform.Position.Value = effectBlock.StartPosition;
-			}, effectBlock.StartPosition));
 			entity.Add(new CommandBinding(effectBlock.Delete, entity.Delete));
-
-			entity.Add(new NotifyBinding(delegate()
-			{
-				transform.Quaternion.Value = effectBlock.StartOrientation;
-			}, effectBlock.StartOrientation));
-
-			model.Add(new Binding<Vector3>(model.Scale, effectBlock.Scale));
-			transform.Add(new Binding<Vector3>(transform.Position, effectBlock.Position));
-			transform.Add(new Binding<Quaternion>(transform.Quaternion, effectBlock.Orientation));
 
 			this.SetMain(entity, main);
 			IBinding offsetBinding = null;
@@ -68,6 +53,8 @@ namespace Lemma.Factories
 				offsetBinding = new Binding<Vector3>(model.GetVector3Parameter("Offset"), effectBlock.Offset);
 				model.Add(offsetBinding);
 			}, model.FullInstanceKey));
+			if (effectBlock.StateId != Voxel.t.Empty)
+				Voxel.States.All[effectBlock.StateId].ApplyToEffectBlock(model);
 		}
 
 		public void Build(Main main, IEnumerable<BlockBuildOrder> blocks, Vector3 center, float delayMultiplier = 0.05f)
@@ -87,10 +74,10 @@ namespace Lemma.Factories
 				Vector3 absolutePos = entry.Voxel.GetAbsolutePosition(entry.Coordinate);
 
 				float distance = (absolutePos - center).Length();
-				effectBlock.StartPosition.Value = absolutePos + new Vector3(0.05f, 0.1f, 0.05f) * distance;
-				effectBlock.StartOrientation.Value = Quaternion.CreateFromYawPitchRoll(0.15f * (distance + index), 0.15f * (distance + index), 0);
-				effectBlock.TotalLifetime.Value = Math.Max(delayMultiplier, distance * delayMultiplier);
-				effectBlock.CheckAdjacent.Value = true;
+				effectBlock.StartPosition = absolutePos + new Vector3(0.05f, 0.1f, 0.05f) * distance;
+				effectBlock.StartOrientation = Quaternion.CreateFromYawPitchRoll(0.15f * (distance + index), 0.15f * (distance + index), 0);
+				effectBlock.TotalLifetime = Math.Max(delayMultiplier, distance * delayMultiplier);
+				effectBlock.CheckAdjacent = true;
 				effectBlock.Setup(entry.Voxel.Entity, entry.Coordinate, entry.State.ID);
 				main.Add(entity);
 				index++;

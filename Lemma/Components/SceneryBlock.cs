@@ -16,6 +16,8 @@ namespace Lemma.Components
 
 		public Property<Voxel.t> Type = new Property<Voxel.t>();
 
+		public Property<float> Scale = new Property<float> { Value = 1.0f };
+
 		public void EditorProperties()
 		{
 			this.Entity.Add("Type", this.Type);

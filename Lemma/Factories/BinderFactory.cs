@@ -44,7 +44,6 @@ namespace Lemma.Factories
 			entity.Add("Unbind", binder.UnBind, description: "Unlink values");
 			entity.Add("Set", binder.Set, description: "Transfer value without binding");
 			entity.Add("Two-way", binder.TwoWay, "Out property will also affect in property.");
-			entity.Add("Set On Bind", binder.SetOnBind, "Value will be immediately transferred upon binding");
 			entity.Add("Type", binder.PropertyType);
 
 			if (main.EditorEnabled)

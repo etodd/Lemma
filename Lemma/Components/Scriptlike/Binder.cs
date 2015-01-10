@@ -22,7 +22,6 @@ namespace Lemma.Components
 		public Property<string> TargetOutProperty = new Property<string>();
 
 		public Property<bool> TwoWay = new Property<bool>();
-		public Property<bool> SetOnBind = new Property<bool>();
 		public Property<bool> BindImmediately = new Property<bool> { Value = true };
 
 		[XmlIgnore]
@@ -52,7 +51,8 @@ namespace Lemma.Components
 					if (this._inChanged == null)
 						_inChanged = new NotifyBinding(InChanged, this.Enabled, targetInProperty);
 					this.Add(_inChanged);
-					if (SetOnBind) InChanged();
+					if (this.Enabled)
+						InChanged();
 				}
 
 				if (this.targetOutProperty != null && this.TwoWay)

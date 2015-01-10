@@ -59,22 +59,25 @@ namespace Lemma.Components
 
 		private void updateMaterial()
 		{
-			DynamicVoxel map = this.Entity.Get<DynamicVoxel>();
-			if (map != null)
+			if (!this.main.EditorEnabled)
 			{
-				bool active = this.Locked && (!this.Servo || (this.Servo && this.Goal.Value != this.Minimum.Value));
-
-				Voxel.State desired = active ? Voxel.States.SliderPowered : Voxel.States.Slider;
-				Voxel.t currentID = map[0, 0, 0].ID;
-				if (currentID != desired.ID & (currentID == Voxel.t.Slider || currentID == Voxel.t.SliderPowered))
+				DynamicVoxel map = this.Entity.Get<DynamicVoxel>();
+				if (map != null)
 				{
-					List<Voxel.Coord> coords = map.GetContiguousByType(new[] { map.GetBox(0, 0, 0) }).SelectMany(x => x.GetCoords()).ToList();
-					map.Empty(coords, true, true, null, false);
-					foreach (Voxel.Coord c in coords)
-						map.Fill(c, desired);
-					map.Regenerate();
+					bool active = this.Locked && (!this.Servo || (this.Servo && this.Goal.Value != this.Minimum.Value));
+
+					Voxel.State desired = active ? Voxel.States.SliderPowered : Voxel.States.Slider;
+					Voxel.t currentID = map[0, 0, 0].ID;
+					if (currentID != desired.ID & (currentID == Voxel.t.Slider || currentID == Voxel.t.SliderPowered))
+					{
+						List<Voxel.Coord> coords = map.GetContiguousByType(new[] { map.GetBox(0, 0, 0) }).SelectMany(x => x.GetCoords()).ToList();
+						map.Empty(coords, true, true, null, false);
+						foreach (Voxel.Coord c in coords)
+							map.Fill(c, desired);
+						map.Regenerate();
+					}
+					map.PhysicsEntity.ActivityInformation.Activate();
 				}
-				map.PhysicsEntity.ActivityInformation.Activate();
 			}
 		}
 

@@ -214,10 +214,10 @@ namespace Lemma.Util
 						c.Data.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
 						EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
 						effectBlock.Offset.Value = targetVoxel.GetRelativePosition(targetCoord2);
-						effectBlock.DoScale.Value = false;
-						effectBlock.StartPosition.Value = voxel.GetAbsolutePosition(c);
-						effectBlock.StartOrientation.Value = orientation;
-						effectBlock.TotalLifetime.Value = (0.05f + (index * 0.0075f)) * interval;
+						effectBlock.DoScale = false;
+						effectBlock.StartPosition = voxel.GetAbsolutePosition(c);
+						effectBlock.StartOrientation = orientation;
+						effectBlock.TotalLifetime = (0.05f + (index * 0.0075f)) * interval;
 						effectBlock.Setup(targetVoxel.Entity, targetCoord2, c.Data.ID);
 						main.Add(blockEntity);
 						index++;

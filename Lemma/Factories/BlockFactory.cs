@@ -32,11 +32,10 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			PhysicsBlock physics = entity.GetOrCreate<PhysicsBlock>("Physics");
 			ModelInstance model = entity.GetOrCreate<ModelInstance>("Model");
-			model.Scale.Value = new Vector3(0.5f);
 
 			physics.Add(new TwoWayBinding<Matrix>(transform.Matrix, physics.Transform));
 
-			Property<Vector3> scale = new Property<Vector3> { Value = Vector3.One };
+			Property<Vector3> scale = new Property<Vector3> { Value = new Vector3(0.5f) };
 
 			model.Add(new Binding<Matrix>(model.Transform, () => Matrix.CreateScale(scale) * transform.Matrix, scale, transform.Matrix));
 
