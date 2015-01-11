@@ -515,6 +515,9 @@
     <None Include="GeeUI\Resources\window_unselected.9.png" />
     <None Include="GeeUI\Resources\dropdown.png" />
     <Content Include="icon.ico" />
+    <Content Include="Lemma VR.lnk">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="OculusPlugin.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

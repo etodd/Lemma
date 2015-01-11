@@ -5,6 +5,7 @@ using System.Text;
 using Lemma.Components;
 using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
+using Lemma.Util;
 
 namespace Lemma.Factories
 {
@@ -13,6 +14,7 @@ namespace Lemma.Factories
 		public Property<float> Offset = new Property<float>();
 		public Property<Entity.Handle> AttachedVoxel = new Property<Entity.Handle>();
 		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
+		public Property<Direction> Vector = new Property<Direction> { Value = Direction.PositiveZ };
 
 		[XmlIgnore]
 		public Property<Matrix> Transform = new Property<Matrix>();
@@ -60,6 +62,7 @@ namespace Lemma.Factories
 		{
 			this.Entity.Add("AttachOffset", this.Offset);
 			this.Entity.Add("Attach", this.Enabled);
+			this.Entity.Add("AttachVector", this.Vector);
 		}
 
 		private bool isInitialAttachment;
@@ -98,7 +101,7 @@ namespace Lemma.Factories
 					else
 					{
 						SliderCommon s = m.Entity.Get<SliderCommon>();
-						Vector3 pos = Vector3.Transform(new Vector3(0, 0, this.Offset), this.Transform);
+						Vector3 pos = Vector3.Transform(this.Vector.Value.GetVector() * this.Offset, this.Transform);
 						Matrix voxelTransform;
 						if (this.isInitialAttachment)
 						{
@@ -225,7 +228,30 @@ namespace Lemma.Factories
 			model.Serialize = false;
 			entity.Add("EditorModel2", model);
 
-			model.Add(new Binding<Matrix>(model.Transform, entity.Get<Transform>().Matrix));
+			Property<Matrix> transform = entity.Get<Transform>().Matrix;
+
+			model.Add(new Binding<Matrix>(model.Transform, delegate()
+			{
+				Direction dir = attachable.Vector;
+				Matrix m = Matrix.Identity;
+				m.Translation = transform.Value.Translation;
+				if (dir == Direction.None)
+					m.Forward = m.Right = m.Up = Vector3.Zero;
+				else
+				{
+					Vector3 normal = Vector3.TransformNormal(dir.GetVector(), transform);
+
+					m.Forward = -normal;
+					if (normal.Equals(Vector3.Up))
+						m.Right = Vector3.Left;
+					else if (normal.Equals(Vector3.Down))
+						m.Right = Vector3.Right;
+					else
+						m.Right = Vector3.Normalize(Vector3.Cross(normal, Vector3.Down));
+					m.Up = Vector3.Cross(normal, m.Left);
+				}
+				return m;
+			}, transform, attachable.Vector));
 		}
 	}
 }

@@ -25,7 +25,7 @@ sampler2D DetailShadowMapSampler = sampler_state
 };
 float DetailShadowMapSize;
 
-const float NormalShadowBias = 0.15f;
+const float NormalShadowBias = 0.2f;
 const float NormalDetailShadowBias = 0.03f;
 
 // Shadow map sampling with simple filtering

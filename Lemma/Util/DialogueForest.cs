@@ -89,9 +89,6 @@ namespace Lemma.Util
 
 		public void Execute(Node node, IClient client, int textLevel = 1)
 		{
-#if DEBUG
-			Log.d(string.IsNullOrEmpty(node.name) ? node.id : node.name);
-#endif
 			client.Visit(node);
 			string next = null;
 			switch (node.type)

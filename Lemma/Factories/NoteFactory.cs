@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Lemma.Components;
 using System.IO;
 using Lemma.IO;
+using Lemma.Util;
 
 namespace Lemma.Factories
 {
@@ -18,7 +19,10 @@ namespace Lemma.Factories
 
 		public override Entity Create(Main main)
 		{
-			return new Entity(main, "Note");
+			Entity entity = new Entity(main, "Note");
+			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);
+			attachable.Vector.Value = Direction.NegativeY;
+			return entity;
 		}
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
@@ -27,7 +31,7 @@ namespace Lemma.Factories
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>();
 			Model model = entity.GetOrCreate<Model>("Model");
 
-			VoxelAttachable.MakeAttachable(entity, main);
+			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);
 
 			this.SetMain(entity, main);
 			model.Serialize = false;
@@ -57,6 +61,7 @@ namespace Lemma.Factories
 			{
 				Options = FileFilter.Get(main, main.Content.RootDirectory, new[] { "Images", Path.Combine(MapLoader.MapDirectory, "Images") }),
 			});
+			attachable.EditorProperties();
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
