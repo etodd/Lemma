@@ -79,10 +79,10 @@ void SkyboxPS(in RenderPSInput input,
 			depth = min(depth, waterDepth);
 	}
 
-	float blend = clamp(lerp(0, 1, (depth - StartDistance) / (FarPlaneDistance - StartDistance)), 0, 1);
+	float blend = max(0, (depth - StartDistance) / (FarPlaneDistance - StartDistance));
 
 	if (vertical)
-		blend = min(1.0f, blend + max(0, 1.0f - ((CameraPosition + viewRay * depth).y - VerticalCenter) / VerticalSize));
+		blend += max(0, 1.0f - ((CameraPosition + viewRay * depth).y - VerticalCenter) / VerticalSize);
 
 	float4 color = tex2D(SkyboxSampler, tex.uvCoordinates);
 
@@ -113,7 +113,7 @@ void SkyboxPS(in RenderPSInput input,
 	else
 		output.rgb = DiffuseColor.rgb * color.rgb;
 
-	output.a = blend;
+	output.a = min(blend, 1);
 }
 
 void SkyboxNormalPS(in RenderPSInput input,

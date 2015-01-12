@@ -191,7 +191,7 @@ namespace Lemma.Components
 								}
 							}
 						}
-						else if (id == Voxel.t.White || id == Voxel.t.WhitePermanent) // White. Shatter effects.
+						else if (id == Voxel.t.White || id == Voxel.t.Glass) // Shatter effects.
 						{
 							ParticleSystem shatter = ParticleSystem.Get(main, "WhiteShatter");
 							Vector3 pos = map.GetAbsolutePosition(coord);

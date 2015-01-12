@@ -72,6 +72,7 @@ namespace Lemma.Components
 			Foliage = 7,
 			Hard = 8,
 			Floater = 9,
+			Glass = 10,
 			Wood = 11,
 			Snow = 12,
 			HardPowered = 13,
@@ -325,6 +326,31 @@ namespace Lemma.Components
 					}
 				},
 				Tint = new Vector3(1.0f, 0.8f, 0.0f),
+			};
+			public static readonly State Glass = new State
+			{
+				ID = t.Glass,
+				Permanent = false,
+				Supported = false,
+				Hard = false,
+				Density = 0.5f,
+				DiffuseMap = "Textures\\glass",
+				NormalMap = "Textures\\glass-normal",
+				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
+				Materials = new[]
+				{
+					new Model.Material
+					{
+						SpecularPower = 200.0f,
+						SpecularIntensity = 0.2f,
+					},
+					new Model.Material
+					{
+						SpecularPower = 200.0f,
+						SpecularIntensity = 1.5f,
+					},
+				},
+				Tiling = 4.0f,
 			};
 			public static readonly State Wood = new State
 			{
