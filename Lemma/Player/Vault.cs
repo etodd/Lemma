@@ -114,6 +114,7 @@ namespace Lemma.Components
 				Direction up = map.GetRelativeDirection(Direction.PositiveY);
 				Direction backward = map.GetRelativeDirection(rotationMatrix.Forward);
 				Direction right = up.Cross(backward);
+				Direction left = right.GetReverse();
 				Vector3 pos = this.Position + rotationMatrix.Forward * -(this.Radius + 0.4f);
 				for (int j = 0; j < searchForwardDistance; j++)
 				{
@@ -131,7 +132,13 @@ namespace Lemma.Components
 									|| map[coord.Move(up, 3)] != Voxel.States.Empty
 									|| map[coord.Move(up).Move(backward)] != Voxel.States.Empty
 									|| map[coord.Move(up, 2).Move(backward)] != Voxel.States.Empty
-									|| map[coord.Move(up, 3).Move(backward)] != Voxel.States.Empty)
+									|| map[coord.Move(up, 3).Move(backward)] != Voxel.States.Empty
+									|| map[coord.Move(left).Move(up)] != Voxel.States.Empty
+									|| map[coord.Move(left).Move(up, 2)] != Voxel.States.Empty
+									|| map[coord.Move(left).Move(up, 3)] != Voxel.States.Empty
+									|| map[coord.Move(right).Move(up)] != Voxel.States.Empty
+									|| map[coord.Move(right).Move(up, 2)] != Voxel.States.Empty
+									|| map[coord.Move(right).Move(up, 3)] != Voxel.States.Empty)
 									break; // Conflict
 								
 								bool conflict = false;
@@ -143,6 +150,7 @@ namespace Lemma.Components
 										Direction up2 = v.GetRelativeDirection(Direction.PositiveY);
 										Direction backward2 = v.GetRelativeDirection(rotationMatrix.Forward);
 										Direction right2 = up2.Cross(backward2);
+										Direction left2 = right2.GetReverse();
 
 										Voxel.Coord coord2 = v.GetCoordinate(map.GetAbsolutePosition(coord));
 										if (v[coord2.Move(backward2)] != Voxel.States.Empty
@@ -151,7 +159,13 @@ namespace Lemma.Components
 											|| v[coord2.Move(up2, 3)] != Voxel.States.Empty
 											|| v[coord2.Move(up2).Move(backward2)] != Voxel.States.Empty
 											|| v[coord2.Move(up2, 2).Move(backward2)] != Voxel.States.Empty
-											|| v[coord2.Move(up2, 3).Move(backward2)] != Voxel.States.Empty)
+											|| v[coord2.Move(up2, 3).Move(backward2)] != Voxel.States.Empty
+											|| v[coord2.Move(left2).Move(up2)] != Voxel.States.Empty
+											|| v[coord2.Move(left2).Move(up2, 2)] != Voxel.States.Empty
+											|| v[coord2.Move(left2).Move(up2, 3)] != Voxel.States.Empty
+											|| v[coord2.Move(right2).Move(up2)] != Voxel.States.Empty
+											|| v[coord2.Move(right2).Move(up2, 2)] != Voxel.States.Empty
+											|| v[coord2.Move(right2).Move(up2, 3)] != Voxel.States.Empty)
 										{
 											conflict = true;
 											break;
@@ -312,7 +326,7 @@ namespace Lemma.Components
 				{
 					if (this.vaultOver && this.vaultTime - this.moveForwardStartTime > 0.25f)
 						delete = true; // Done moving forward
-					else if (this.isTopOut && !this.model.IsPlaying("TopOut"))
+					else if (this.isTopOut && this.vaultTime - this.moveForwardStartTime > 0.25f)
 						delete = true;
 					else
 					{

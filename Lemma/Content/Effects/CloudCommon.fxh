@@ -54,13 +54,13 @@ void CloudPS(in RenderPSInput input,
 	float4 texColor = tex2D(DiffuseSampler, tex.uvCoordinates + Velocity * Time);
 	output.rgb = DiffuseColor.rgb * texColor.rgb;
 
-	float blend;
+	float blend = (depth - StartDistance) / (FarPlaneDistance - StartDistance);
 	if (infinite)
-		blend = clamp((depth - StartDistance) / (FarPlaneDistance - StartDistance), 0, 1);
+		blend *= max(1.0f - 2.0f * length(tex.uvCoordinates - float2(0.5f, 0.5f)), 0);
 	else
-		blend = clamp((depth - length(input.position.xyz)) / 10.0f, 0, 1);
+		blend *= max(1.0f - (length(input.position.xyz) - StartDistance) / (FarPlaneDistance - StartDistance), 0);
 
-	output.a = Alpha * texColor.a * blend * (infinite ? clamp(1.0f - 2.0f * length(tex.uvCoordinates - float2(0.5f, 0.5f)), 0, 1) : 1.0f);
+	output.a = Alpha * texColor.a * clamp(blend, 0, 1);
 }
 
 void ClipCloudPS(in RenderPSInput input,

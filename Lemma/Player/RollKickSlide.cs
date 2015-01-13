@@ -399,7 +399,7 @@ namespace Lemma.Components
 						// We started out on the ground, but we kicked off an edge.
 						AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
 					}
-					else
+					else if (this.rollKickTime > 0.35f)
 					{
 						// We weren't supported when we started kicking. We're flying.
 						// Roll if we hit the ground while kicking mid-air
@@ -416,7 +416,7 @@ namespace Lemma.Components
 
 				if (this.rollKickTime > 1.0f
 					|| (this.rollKickTime > 0.7f && !this.RollKickButton)
-					|| (this.rollKickTime > 0.25f && Vector3.Dot(originalVelocity, this.forward) < 0.1f))
+					|| (this.rollKickTime > 0.35f && Vector3.Dot(originalVelocity, this.forward) < 0.1f))
 				{
 					this.StopKick();
 					return;
