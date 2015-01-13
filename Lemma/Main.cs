@@ -82,11 +82,7 @@ namespace Lemma
 		public const int MapVersion = 911;
 		public const int Build = 911;
 
-#if DEVELOPMENT
-		public static bool AllowEditingGameMaps = true;
-#else
-		public static bool AllowEditingGameMaps = false;
-#endif
+		public static bool AllowEditingGameMaps;
 
 		public static Config.Lang[] Languages = new[] { Config.Lang.en, Config.Lang.ru };
 
@@ -966,7 +962,6 @@ namespace Lemma
 				Lemma.Console.Console.BindType(null, Renderer);
 				Lemma.Console.Console.BindType(null, LightingManager);
 
-#if DEVELOPMENT
 				input.Add(new CommandBinding(input.GetChord(new PCInput.Chord { Modifier = Keys.LeftAlt, Key = Keys.S }), delegate()
 				{
 					// High-resolution screenshot
@@ -994,7 +989,6 @@ namespace Lemma
 						s.Delete.Execute();
 					});
 				}));
-#endif
 
 				this.performanceMonitor = new ListContainer();
 				this.performanceMonitor.Add(new Binding<Vector2, Point>(performanceMonitor.Position, x => new Vector2(x.X, 0), this.ScreenSize));

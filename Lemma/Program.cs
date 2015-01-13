@@ -18,6 +18,12 @@ namespace Lemma
 	    [STAThread]
 		public static void Main(string[] args)
 		{
+#if DEVELOPMENT
+			Lemma.Main.AllowEditingGameMaps = true;
+#else
+			Lemma.Main.AllowEditingGameMaps = args.Contains("-dev");
+#endif
+
 #if VR
 			bool vr = args.Contains("-vr");
 #endif

@@ -170,6 +170,7 @@
     <Compile Include="Factories\StaticSliderFactory.cs" />
     <Compile Include="Factories\VoxelSetterFactory.cs" />
     <Compile Include="OvrCapi.cs" />
+    <Compile Include="Player\FPSCamera.cs" />
     <Compile Include="Scripts\DialogueLink.cs" />
     <Compile Include="Scripts\DialogueTrigger.cs" />
     <Compile Include="Util\VoxelRip.cs" />

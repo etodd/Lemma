@@ -9,6 +9,7 @@ using BEPUphysics;
 using Lemma.Util;
 using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
+using Lemma.Console;
 
 namespace Lemma.Factories
 {
@@ -82,6 +83,8 @@ namespace Lemma.Factories
 			Footsteps footsteps = entity.GetOrCreate<Footsteps>("Footsteps");
 			FallDamage fallDamage = entity.GetOrCreate<FallDamage>("FallDamage");
 			CameraController cameraControl = entity.GetOrCreate<CameraController>("CameraControl");
+			FPSCamera fpsCamera = entity.GetOrCreate<FPSCamera>("FPSCamera");
+			fpsCamera.Enabled.Value = false;
 			Rumble rumble = entity.GetOrCreate<Rumble>("Rumble");
 
 			Property<Vector3> floor = new Property<Vector3>();
@@ -624,6 +627,32 @@ namespace Lemma.Factories
 					PlayerUI.Attach(main, entity, ui, player.Health, rotation.Rotation, playerData.NoteActive, playerData.PhoneActive);
 				}
 			});
+
+			fpsCamera.Add(new Binding<Vector2>(fpsCamera.Mouse, input.Mouse));
+			fpsCamera.Add(new Binding<Vector2>(fpsCamera.Movement, input.Movement));
+			input.Bind(fpsCamera.SpeedMode, settings.Parkour);
+			input.Bind(fpsCamera.Up, settings.Jump);
+			fpsCamera.Add(new Binding<bool>(fpsCamera.Down, input.GetKey(Keys.LeftControl)));
+			Lemma.Console.Console.AddConCommand(new ConCommand("noclip", "Toggle free camera mode", delegate(ConCommand.ArgCollection args)
+			{
+				bool freeCameraMode = !fpsCamera.Enabled;
+				fpsCamera.Enabled.Value = freeCameraMode;
+				cameraControl.Enabled.Value = !freeCameraMode;
+				firstPersonModel.Enabled.Value = !freeCameraMode;
+				model.Enabled.Value = !freeCameraMode;
+				ui.Enabled.Value = !freeCameraMode;
+				player.Character.EnableWalking.Value = !freeCameraMode;
+				player.EnableMoves.Value = !freeCameraMode;
+				if (freeCameraMode)
+					AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_BREATHING_SOFT, entity);
+				else
+					transform.Position.Value = main.Camera.Position;
+			}));
+
+			entity.Add(new CommandBinding(entity.Delete, delegate()
+			{
+				Lemma.Console.Console.RemoveConCommand("noclip");
+			}));
 		}
 	}
 }
