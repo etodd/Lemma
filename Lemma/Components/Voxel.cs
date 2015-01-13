@@ -81,6 +81,8 @@ namespace Lemma.Components
 			Brick = 16,
 			Lattice = 17,
 			Neutral = 18,
+			Concrete = 19,
+			Gravel = 20,
 			RockChunky = 23,
 			RockRed = 24,
 			GlowYellow = 25,
@@ -411,6 +413,44 @@ namespace Lemma.Components
 					},
 				},
 				Tint = new Vector3(0.7f),
+			};
+			public static readonly State Concrete = new State
+			{
+				ID = t.Concrete,
+				Permanent = true,
+				Supported = true,
+				Hard = true,
+				Density = 2,
+				DiffuseMap = "Textures\\concrete",
+				NormalMap = "Textures\\concrete-normal",
+				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
+				Materials = new[]
+				{
+					new Model.Material
+					{
+						SpecularPower = 1.0f,
+						SpecularIntensity = 0.0f,
+					},
+				},
+			};
+			public static readonly State Gravel = new State
+			{
+				ID = t.Gravel,
+				Permanent = false,
+				Supported = false,
+				Hard = true,
+				Density = 1,
+				DiffuseMap = "Textures\\gravel",
+				NormalMap = "Textures\\gravel-normal",
+				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.GRAVEL,
+				Materials = new[]
+				{
+					new Model.Material
+					{
+						SpecularPower = 1.0f,
+						SpecularIntensity = 0.0f,
+					},
+				},
 			};
 			public static readonly State RockGrassy = new State
 			{

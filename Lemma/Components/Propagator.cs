@@ -46,6 +46,8 @@ namespace Lemma.Components
 		private Dictionary<EffectBlock.Entry, int> generations = new Dictionary<EffectBlock.Entry, int>();
 		private EffectBlockFactory blockFactory;
 
+		private float lastShatterSound;
+
 		public override void Awake()
 		{
 			base.Awake();
@@ -195,11 +197,16 @@ namespace Lemma.Components
 						{
 							ParticleSystem shatter = ParticleSystem.Get(main, "WhiteShatter");
 							Vector3 pos = map.GetAbsolutePosition(coord);
-							AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WHITE_SHATTER, pos);
 							for (int i = 0; i < 50; i++)
 							{
 								Vector3 offset = new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble() - 0.5f);
 								shatter.AddParticle(pos + offset, offset);
+							}
+							float time = this.main.TotalTime;
+							if (time - this.lastShatterSound > 0.3f)
+							{
+								this.lastShatterSound = time;
+								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WHITE_SHATTER, pos);
 							}
 						}
 					}
