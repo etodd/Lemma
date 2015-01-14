@@ -339,6 +339,7 @@ namespace Lemma.Components
 				DiffuseMap = "Textures\\glass",
 				NormalMap = "Textures\\glass-normal",
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
+				ShadowCast = false,
 				Materials = new[]
 				{
 					new Model.Material

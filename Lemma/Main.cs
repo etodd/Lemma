@@ -477,7 +477,7 @@ namespace Lemma
 			if (!SteamWorker.Init())
 				Log.d("Failed to initialize Steamworks.");
 #if VR
-			if (Steamworks.SteamUtils.IsSteamRunningInVR())
+			if (SteamWorker.Initialized && Steamworks.SteamUtils.IsSteamRunningInVR())
 				this.VR = vr = true;
 #endif
 #endif
