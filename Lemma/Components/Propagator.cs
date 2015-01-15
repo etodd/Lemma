@@ -346,7 +346,7 @@ namespace Lemma.Components
 								}
 							}
 						}
-						else if (id == Voxel.t.Neutral || id == Voxel.t.Hard)
+						else if (id == Voxel.t.Neutral)
 						{
 							for (int j = 0; j < 6; j++)
 							{
@@ -360,7 +360,7 @@ namespace Lemma.Components
 									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
-								else if (adjacentID == Voxel.t.HardInfected || adjacentID == Voxel.t.HardPowered)
+								else if (adjacentID == Voxel.t.HardInfected)
 								{
 									map.Empty(adjacent, false, true, map);
 									map.Fill(adjacent, Voxel.States.Hard);
@@ -369,7 +369,38 @@ namespace Lemma.Components
 								}
 							}
 						}
-						else if (id == Voxel.t.Powered || id == Voxel.t.PermanentPowered || id == Voxel.t.HardPowered || id == Voxel.t.PoweredSwitch)
+						else if (id == Voxel.t.Powered)
+						{
+							for (int j = 0; j < 6; j++)
+							{
+								Direction dir = DirectionExtensions.Directions[j];
+								Voxel.Coord adjacent = c.Move(dir);
+								Voxel.t adjacentID = map[adjacent].ID;
+								if (adjacentID == Voxel.t.Neutral && entry.Generation < maxGenerations)
+								{
+									map.Empty(adjacent, false, true, map);
+									this.generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
+									map.Fill(adjacent, Voxel.States.Powered);
+									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									regenerate = true;
+								}
+								else if (adjacentID == Voxel.t.Blue)
+								{
+									map.Empty(adjacent, false, true, map);
+									map.Fill(adjacent, Voxel.States.Powered);
+									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									regenerate = true;
+								}
+								else if (adjacentID == Voxel.t.Hard)
+								{
+									map.Empty(adjacent, true, true, map);
+									map.Fill(adjacent, Voxel.States.HardPowered);
+									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									regenerate = true;
+								}
+							}
+						}
+						else if (id == Voxel.t.PermanentPowered || id == Voxel.t.HardPowered || id == Voxel.t.PoweredSwitch)
 						{
 							for (int j = 0; j < 6; j++)
 							{
@@ -383,17 +414,6 @@ namespace Lemma.Components
 									map.Fill(adjacent, Voxel.States.Powered);
 									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
-								}
-								else if (adjacentID == Voxel.t.Neutral)
-								{
-									if (entry.Generation < maxGenerations)
-									{
-										map.Empty(adjacent, false, true, map);
-										this.generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
-										map.Fill(adjacent, Voxel.States.Powered);
-										this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
-										regenerate = true;
-									}
 								}
 								else if (adjacentID == Voxel.t.Switch)
 								{
