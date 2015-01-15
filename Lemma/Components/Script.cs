@@ -210,6 +210,11 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
+			if (Lemma.GameScripts.ScriptBase.main == null)
+			{
+				Lemma.GameScripts.ScriptBase.main = main;
+				Lemma.GameScripts.ScriptBase.renderer = main.Renderer;
+			}
 			this.parameters = new object[] { this.Entity };
 			this.Errors.Value = null;
 			this.Add(new ChangeBinding<string>(this.Name, delegate(string old, string value)
@@ -220,12 +225,6 @@ namespace Lemma.Components
 
 			this.Execute.Action = delegate()
 			{
-				if (Lemma.GameScripts.ScriptBase.main == null)
-				{
-					Lemma.GameScripts.ScriptBase.main = main;
-					Lemma.GameScripts.ScriptBase.renderer = main.Renderer;
-				}
-
 				if (this.methods.Run != null)
 					this.methods.Run.Invoke(null, this.parameters);
 

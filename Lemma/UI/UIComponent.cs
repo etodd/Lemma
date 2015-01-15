@@ -215,6 +215,18 @@ namespace Lemma.Components
 			return result;
 		}
 
+		public Vector2 GetAbsolutePosition()
+		{
+			UIComponent x = this;
+			Vector2 result = x.Position;
+			while (x.Parent.Value != null)
+			{
+				x = x.Parent;
+				result += x.Position;
+			}
+			return result;
+		}
+
 		private bool swallowCurrentMouseEvent;
 		public void SwallowCurrentMouseEvent()
 		{

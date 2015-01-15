@@ -68,13 +68,12 @@ namespace Lemma.Components
 			const float padding = 8.0f;
 			const float messageWidth = phoneWidth - padding * 2.0f;
 
-			Func<Color, string, float, Container> makeButton = delegate(Color color, string text, float width)
+			Func<Property<Color>, string, float, Container> makeButton = delegate(Property<Color> color, string text, float width)
 			{
 				Container bg = new Container();
 				bg.Tint.Value = color;
 				bg.PaddingBottom.Value = bg.PaddingLeft.Value = bg.PaddingRight.Value = bg.PaddingTop.Value = padding * 0.5f;
-				Color highlightColor = new Color(color.ToVector4() + new Vector4(0.2f, 0.2f, 0.2f, 0.0f));
-				bg.Add(new Binding<Color, bool>(bg.Tint, x => x ? highlightColor : color, bg.Highlighted));
+				bg.Add(new Binding<Color>(bg.Tint, () => bg.Highlighted ? new Color(color.Value.ToVector4() + new Vector4(0.2f, 0.2f, 0.2f, 0.0f)) : color, bg.Highlighted, color));
 
 				TextElement msg = new TextElement();
 				msg.Name.Value = "Text";
@@ -83,6 +82,16 @@ namespace Lemma.Components
 				msg.WrapWidth.Value = width;
 				bg.Children.Add(msg);
 				return bg;
+			};
+
+			Action<Container, float> centerButton = delegate(Container button, float width)
+			{
+				TextElement text = (TextElement)button.Children[0];
+				text.AnchorPoint.Value = new Vector2(0.5f, 0);
+				text.Add(new Binding<Vector2>(text.Position, x => new Vector2(x.X * 0.5f, padding), button.Size));
+				button.ResizeHorizontal.Value = false;
+				button.ResizeVertical.Value = false;
+				button.Size.Value = new Vector2(width, 36.0f * main.MainFontMultiplier);
 			};
 
 			Func<UIComponent, bool, Container> makeAlign = delegate(UIComponent component, bool right)
@@ -98,13 +107,15 @@ namespace Lemma.Components
 				return container;
 			};
 
-			Color incomingColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
-			Color outgoingColor = new Color(0.0f, 0.175f, 0.35f, 1.0f);
+			Property<Color> incomingColor = new Property<Color> { Value = new Color(0.0f, 0.0f, 0.0f, 1.0f) };
+			Property<Color> outgoingColor = new Property<Color> { Value = new Color(0.0f, 0.175f, 0.35f, 1.0f) };
+			Property<Color> composeColor = new Property<Color> { Value = new Color(0.5f, 0.0f, 0.0f, 1.0f) };
+			Property<Color> topBarColor = new Property<Color> { Value = new Color(0.15f, 0.15f, 0.15f, 1.0f) };
 
 			Container topBarContainer = new Container();
 			topBarContainer.ResizeHorizontal.Value = false;
 			topBarContainer.Size.Value = new Vector2(phoneUi.RenderTargetSize.Value.X, 0.0f);
-			topBarContainer.Tint.Value = new Color(0.15f, 0.15f, 0.15f, 1.0f);
+			topBarContainer.Tint.Value = topBarColor;
 			phoneUi.Root.Children.Add(topBarContainer);
 
 			ListContainer phoneTopBar = new ListContainer();
@@ -124,24 +135,66 @@ namespace Lemma.Components
 			signalIcon.Add(new Binding<bool>(signalIcon.Visible, () => player.SignalTower.Value.Target != null || phone.ActiveAnswers.Length > 0 || phone.Schedules.Length > 0, player.SignalTower, phone.ActiveAnswers.Length, phone.Schedules.Length));
 			noService.Add(new Binding<bool>(noService.Visible, x => !x, signalIcon.Visible));
 
-			ListContainer phoneLayout = new ListContainer();
-			phoneLayout.Spacing.Value = padding;
-			phoneLayout.Orientation.Value = ListContainer.ListOrientation.Vertical;
-			phoneLayout.Add(new Binding<Vector2>(phoneLayout.Position, x => new Vector2(padding, x.Y), topBarContainer.Size));
-			phoneLayout.Add(new Binding<Vector2>(phoneLayout.Size, () => new Vector2(phoneUi.RenderTargetSize.Value.X - padding * 2.0f, phoneUi.RenderTargetSize.Value.Y - padding - topBarContainer.Size.Value.Y), phoneUi.RenderTargetSize, topBarContainer.Size));
-			phoneUi.Root.Children.Add(phoneLayout);
+			ListContainer tabs = new ListContainer();
+			tabs.Orientation.Value = ListContainer.ListOrientation.Horizontal;
+			tabs.Spacing.Value = 0;
+			phoneUi.Root.Children.Add(tabs);
 
-			Container composeButton = makeButton(new Color(0.5f, 0.0f, 0.0f, 1.0f), "\\compose", messageWidth - padding * 2.0f);
+			Property<Color> messageTabColor = new Property<Color> { Value = outgoingColor };
+			phoneUi.Add(new Binding<Color, Phone.Mode>(messageTabColor, x => x == Phone.Mode.Messages ? outgoingColor : topBarColor, phone.CurrentMode));
+			Container messageTab = makeButton(messageTabColor, "\\messages", phoneUi.RenderTargetSize.Value.X * 0.5f - padding);
+			centerButton(messageTab, phoneUi.RenderTargetSize.Value.X * 0.5f);
+			tabs.Children.Add(messageTab);
+			messageTab.Add(new CommandBinding(messageTab.MouseLeftUp, delegate()
+			{
+				phone.CurrentMode.Value = Phone.Mode.Messages;
+			}));
+
+			Property<Color> photoTabColor = new Property<Color> { Value = topBarColor };
+			phoneUi.Add(new Binding<Color, Phone.Mode>(photoTabColor, x => x == Phone.Mode.Photos ? outgoingColor : topBarColor, phone.CurrentMode));
+			Container photoTab = makeButton(photoTabColor, "\\photos", phoneUi.RenderTargetSize.Value.X * 0.5f - padding);
+			centerButton(photoTab, phoneUi.RenderTargetSize.Value.X * 0.5f);
+			tabs.Children.Add(photoTab);
+			photoTab.Add(new CommandBinding(photoTab.MouseLeftUp, delegate()
+			{
+				phone.CurrentMode.Value = Phone.Mode.Photos;
+			}));
+
+			tabs.Add(new Binding<Vector2>(tabs.Position, x => new Vector2(0, x.Y), topBarContainer.Size));
+
+			ListContainer messageLayout = new ListContainer();
+			messageLayout.Spacing.Value = padding;
+			messageLayout.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			messageLayout.Add(new Binding<Vector2>(messageLayout.Position, () => new Vector2(padding, topBarContainer.Size.Value.Y + tabs.Size.Value.Y), topBarContainer.Size, tabs.Size));
+			messageLayout.Add(new Binding<Vector2>(messageLayout.Size, () => new Vector2(phoneUi.RenderTargetSize.Value.X - padding * 2.0f, phoneUi.RenderTargetSize.Value.Y - padding - topBarContainer.Size.Value.Y - tabs.Size.Value.Y), phoneUi.RenderTargetSize, topBarContainer.Size, tabs.Size));
+			messageLayout.Add(new Binding<bool, Phone.Mode>(messageLayout.Visible, x => x == Phone.Mode.Messages, phone.CurrentMode));
+			phoneUi.Root.Children.Add(messageLayout);
+
+			Container photoLayout = new Container();
+			photoLayout.Opacity.Value = 0;
+			photoLayout.PaddingLeft.Value = photoLayout.PaddingRight.Value = photoLayout.PaddingTop.Value = photoLayout.PaddingBottom.Value = 0;
+			photoLayout.Add(new Binding<Vector2>(photoLayout.Position, () => new Vector2(0, topBarContainer.Size.Value.Y + tabs.Size.Value.Y), topBarContainer.Size, tabs.Size));
+			photoLayout.Add(new Binding<Vector2>(photoLayout.Size, () => new Vector2(phoneUi.RenderTargetSize.Value.X, phoneUi.RenderTargetSize.Value.Y - topBarContainer.Size.Value.Y - tabs.Size.Value.Y), phoneUi.RenderTargetSize, topBarContainer.Size, tabs.Size));
+			photoLayout.Add(new Binding<bool>(photoLayout.Visible, x => !x, messageLayout.Visible));
+			phoneUi.Root.Children.Add(photoLayout);
+
+			Sprite photoImage = new Sprite();
+			photoImage.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
+			photoImage.Add(new Binding<string>(photoImage.Image, phone.Photo));
+			photoImage.Add(new Binding<Vector2>(photoImage.Position, x => x * 0.5f, photoLayout.Size));
+			photoLayout.Children.Add(photoImage);
+
+			Container composeButton = makeButton(composeColor, "\\compose", messageWidth - padding * 2.0f);
 			TextElement composeText = (TextElement)composeButton.GetChildByName("Text");
 			composeText.Add(new Binding<string, bool>(composeText.Text, x => x ? "\\compose gamepad" : "\\compose", main.GamePadConnected));
 			UIComponent composeAlign = makeAlign(composeButton, true);
 
 			Scroller phoneScroll = new Scroller();
 			phoneScroll.ResizeVertical.Value = false;
-			phoneScroll.Add(new Binding<Vector2>(phoneScroll.Size, () => new Vector2(phoneLayout.Size.Value.X, phoneLayout.Size.Value.Y - phoneLayout.Spacing.Value - composeAlign.ScaledSize.Value.Y), phoneLayout.Size, phoneLayout.Spacing, composeAlign.ScaledSize));
+			phoneScroll.Add(new Binding<Vector2>(phoneScroll.Size, () => new Vector2(messageLayout.Size.Value.X, messageLayout.Size.Value.Y - messageLayout.Spacing.Value - composeAlign.ScaledSize.Value.Y), messageLayout.Size, messageLayout.Spacing, composeAlign.ScaledSize));
 
-			phoneLayout.Children.Add(phoneScroll);
-			phoneLayout.Children.Add(composeAlign);
+			messageLayout.Children.Add(phoneScroll);
+			messageLayout.Children.Add(composeAlign);
 
 			ListContainer msgList = new ListContainer();
 			msgList.Spacing.Value = padding * 0.5f;
@@ -154,7 +207,7 @@ namespace Lemma.Components
 			answerContainer.PaddingBottom.Value = answerContainer.PaddingLeft.Value = answerContainer.PaddingRight.Value = answerContainer.PaddingTop.Value = padding;
 			answerContainer.Tint.Value = incomingColor;
 			answerContainer.AnchorPoint.Value = new Vector2(1.0f, 1.0f);
-			answerContainer.Add(new Binding<Vector2>(answerContainer.Position, () => composeAlign.Position.Value + new Vector2(composeAlign.ScaledSize.Value.X + padding, padding * 3.0f), composeAlign.Position, composeAlign.ScaledSize));
+			answerContainer.Add(new Binding<Vector2>(answerContainer.Position, () => composeAlign.GetAbsolutePosition() + new Vector2(composeAlign.ScaledSize.Value.X, 0), composeAlign.Position, composeAlign.ScaledSize));
 			phoneUi.Root.Children.Add(answerContainer);
 			answerContainer.Visible.Value = false;
 
@@ -177,6 +230,7 @@ namespace Lemma.Components
 				}
 			}));
 
+			tabs.Add(new Binding<bool>(tabs.EnableInput, () => !main.Paused && !answerContainer.Visible, answerContainer.Visible, main.Paused));
 			msgList.Add(new Binding<bool>(msgList.EnableInput, () => !main.Paused && !answerContainer.Visible, answerContainer.Visible, main.Paused));
 			answerContainer.Add(new Binding<bool>(answerContainer.EnableInput, x => !x, main.Paused));
 			composeButton.Add(new Binding<bool>(composeButton.EnableInput, x => !x, main.Paused));
@@ -216,8 +270,11 @@ namespace Lemma.Components
 
 			entity.Add(new NotifyBinding(delegate()
 			{
-				bool hasNoteOrSignalTower = (player.Note.Value.Target != null && player.Note.Value.Target.Active)
-					|| (player.SignalTower.Value.Target != null && player.SignalTower.Value.Target.Active && !string.IsNullOrEmpty(player.SignalTower.Value.Target.Get<SignalTower>().Initial));
+				bool hasSignalTower = (player.SignalTower.Value.Target != null && player.SignalTower.Value.Target.Active && !string.IsNullOrEmpty(player.SignalTower.Value.Target.Get<SignalTower>().Initial));
+				if (hasSignalTower)
+					phone.Enabled.Value = true;
+
+				bool hasNoteOrSignalTower = (player.Note.Value.Target != null && player.Note.Value.Target.Active) || hasSignalTower;
 
 				if (togglePhoneMessage == null && hasNoteOrSignalTower)
 					togglePhoneMessage = main.Menu.ShowMessage(entity, "[{{TogglePhone}}]");
@@ -431,6 +488,7 @@ namespace Lemma.Components
 
 			input.Bind(main.Settings.TogglePhone, PCInput.InputState.Down, delegate()
 			{
+				// Special hack to prevent phone toggling when you're trying to open the Steam overlay
 				if (main.Settings.TogglePhone.Value.Key == Keys.Tab && input.GetKey(Keys.LeftShift))
 					return;
 
@@ -442,6 +500,13 @@ namespace Lemma.Components
 						showPhone(!phoneActive);
 				}
 			});
+
+			phone.Add(new CommandBinding(phone.Show, delegate()
+			{
+				phone.Enabled.Value = true;
+				if (!phoneActive)
+					showPhone(true);
+			}));
 
 			// Gamepad code for the phone
 
@@ -473,6 +538,16 @@ namespace Lemma.Components
 				else
 					phoneScroll.MouseScrolled.Execute(delta * -4);
 			};
+
+			Action switchMode = delegate()
+			{
+				Phone.Mode current = phone.CurrentMode;
+				phone.CurrentMode.Value = current == Phone.Mode.Messages ? Phone.Mode.Photos : Phone.Mode.Messages;
+			};
+			input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickLeft), () => phoneActive && !answerContainer.Visible, switchMode));
+			input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickRight), () => phoneActive && !answerContainer.Visible, switchMode));
+			input.Add(new CommandBinding(input.GetButtonDown(Buttons.DPadLeft), () => phoneActive && !answerContainer.Visible, switchMode));
+			input.Add(new CommandBinding(input.GetButtonDown(Buttons.DPadRight), () => phoneActive && !answerContainer.Visible, switchMode));
 
 			input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickUp), () => phoneActive, delegate()
 			{

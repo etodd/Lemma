@@ -384,6 +384,17 @@ namespace Lemma.Components
 									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
 									regenerate = true;
 								}
+								else if (adjacentID == Voxel.t.Neutral)
+								{
+									if (entry.Generation < maxGenerations)
+									{
+										map.Empty(adjacent, false, true, map);
+										this.generations[new EffectBlock.Entry { Voxel = map, Coordinate = adjacent }] = entry.Generation + 1;
+										map.Fill(adjacent, Voxel.States.Powered);
+										this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+										regenerate = true;
+									}
+								}
 								else if (adjacentID == Voxel.t.Switch)
 								{
 									map.Empty(adjacent, true, true, map);

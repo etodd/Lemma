@@ -49,7 +49,7 @@ namespace Lemma.Factories
 			entity.Add("Color", model.Color, new PropertyEntry.EditorData { FChangeBy = 0.1f });
 			entity.Add("Image", model.DiffuseTexture, new PropertyEntry.EditorData
 			{
-				Options = FileFilter.Get(main, main.Content.RootDirectory, new[] { "Images" }),
+				Options = FileFilter.Get(main, main.Content.RootDirectory, new[] { "Images", "Game\\Images" }),
 			});
 		}
 	}

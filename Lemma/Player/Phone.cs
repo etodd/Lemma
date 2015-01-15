@@ -101,9 +101,18 @@ namespace Lemma.Components
 
 		public ListProperty<Ans> ActiveAnswers = new ListProperty<Ans>();
 
+		public Property<string> Photo = new Property<string>();
+
+		public enum Mode { Messages, Photos }
+
+		public Property<Mode> CurrentMode = new Property<Mode>();
+
 		public Property<bool> CanReceiveMessages = new Property<bool>();
 
 		public Property<bool> WaitForAnswer = new Property<bool>();
+
+		[XmlIgnore]
+		public Command Show = new Command();
 
 		[XmlIgnore]
 		public Command MessageReceived = new Command();

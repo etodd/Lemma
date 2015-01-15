@@ -25,7 +25,6 @@ namespace Lemma.GameScripts
 			script.Add(new TwoWayBinding<bool>(property<bool>(script, "EnhancedWallRun"), playerData.EnableEnhancedWallRun));
 			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Moves"), playerData.EnableMoves));
 			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Phone"), PlayerDataFactory.Instance.Get<Phone>().Enabled));
-			playerData.MaxSpeed.Value = Character.DefaultMaxSpeed;
 		}
 
 		public static IEnumerable<string> EditorProperties(Entity script)
