@@ -212,12 +212,18 @@ namespace Lemma.Components
 			return false;
 		}
 
+		private Vector3 getSupportVelocity(Voxel voxel)
+		{
+			if (voxel == null)
+				return Vector3.Zero;
+			else
+				return voxel.LinearVelocity + Vector3.Cross(voxel.AngularVelocity, this.FloorPosition - voxel.Transform.Value.Translation);
+		}
+
 		private void vault(Voxel map, Voxel.Coord coord)
 		{
-			Vector3 supportVelocity = Vector3.Zero;
-
 			Vector3 supportLocation = this.FloorPosition;
-			supportVelocity = map.LinearVelocity + Vector3.Cross(map.AngularVelocity, supportLocation - map.Transform.Value.Translation);
+			Vector3 supportVelocity = this.getSupportVelocity(map);
 
 			float verticalVelocityChange = this.LinearVelocity.Value.Y - supportVelocity.Y;
 			this.FallDamage.Execute(verticalVelocityChange);
@@ -320,14 +326,14 @@ namespace Lemma.Components
 			{
 				this.vaultTime += dt;
 
-				bool delete = false;
+				bool done = false;
 
 				if (this.movingForward)
 				{
 					if (this.vaultOver && this.vaultTime - this.moveForwardStartTime > 0.25f)
-						delete = true; // Done moving forward
-					else if (this.isTopOut && this.vaultTime - this.moveForwardStartTime > 0.25f)
-						delete = true;
+						done = true; // Done moving forward
+					else if (this.isTopOut && !this.model.IsPlaying("TopOut"))
+						done = true;
 					else
 					{
 						// Still moving forward
@@ -338,10 +344,10 @@ namespace Lemma.Components
 				else
 				{
 					// We're still going up.
-					if (this.LinearVelocity.Value.Y < 0.0f)
+					if (this.LinearVelocity.Value.Y - this.getSupportVelocity(this.map).Y < 0.0f)
 					{
 						// We hit something above us.
-						delete = true;
+						done = true;
 						this.model.Stop("Vault", "TopOut", "Mantle");
 						this.map = null;
 					}
@@ -363,14 +369,14 @@ namespace Lemma.Components
 							// It's just a mantle, we're done
 							this.LinearVelocity.Value = this.forward * this.MaxSpeed;
 							this.LastSupportedSpeed.Value = this.MaxSpeed;
-							delete = true;
+							done = true;
 						}
 					}
 					else // We're still going up.
 						this.LinearVelocity.Value = vaultVelocity;
 				}
 
-				if (delete)
+				if (done)
 				{
 					this.CurrentState.Value = State.None;
 					this.EnableWalking.Value = true;

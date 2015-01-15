@@ -353,7 +353,7 @@ namespace Lemma.Components
 				Voxel.State wallType = this.WallRunVoxel.Value[wallCoord];
 				this.WalkedOn.Execute(this.WallRunVoxel, wallCoord, this.WallDirection);
 
-				if (this.EnableEnhancedWallRun && (wallRunState == State.Left || wallRunState == State.Right))
+				if (this.EnableEnhancedWallRun && (wallRunState == State.Left || wallRunState == State.Right) && Zone.CanBuild(this.Position))
 				{
 					Direction up = this.WallRunVoxel.Value.GetRelativeDirection(Direction.PositiveY);
 					Direction right = this.WallDirection.Value.Cross(up);

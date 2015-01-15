@@ -105,7 +105,7 @@ namespace Lemma.Components
 				Voxel.Box floorBox = this.floorMap.GetBox(this.floorCoordinate);
 				queue.Enqueue(floorBox);
 				visited[floorBox] = 0;
-				const int radius = 8;
+				const int radius = 6;
 				const int maxSearch = radius * radius * radius;
 				int searchIndex = 0;
 				while (queue.Count > 0 && searchIndex < maxSearch)
@@ -163,7 +163,7 @@ namespace Lemma.Components
 			bool instantiatedBlockPossibility = false;
 
 			if (this.EnableCrouch && this.EnableRoll && !this.IsSwimming
-				&& (!this.EnableKick || !this.IsSupported || this.LinearVelocity.Value.Length() < 4.0f))
+				&& (!this.EnableKick || !this.IsSupported || (this.LinearVelocity.Value - this.SupportVelocity.Value).Length() < 4.0f))
 			{
 				// Try to roll
 				Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
@@ -281,7 +281,7 @@ namespace Lemma.Components
 					this.sliding = false;
 					this.floorCoordinate = new Voxel.Coord();
 				}
-				else
+				else if (this.LinearVelocity.Value.Y - this.SupportVelocity.Value.Y < 1.0f)
 				{
 					this.floorCoordinate = floorRaycast.Coordinate.Value;
 					if (this.EnableEnhancedRollSlide)

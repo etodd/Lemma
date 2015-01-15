@@ -652,6 +652,11 @@ namespace Lemma.Factories
 			entity.Add(new CommandBinding(entity.Delete, delegate()
 			{
 				Lemma.Console.Console.RemoveConCommand("noclip");
+				if (fpsCamera.Enabled) // Movement is disabled. Re-enable it.
+				{
+					player.Character.EnableWalking.Value = true;
+					player.EnableMoves.Value = true;
+				}
 			}));
 		}
 	}
