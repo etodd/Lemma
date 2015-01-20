@@ -34,29 +34,33 @@ namespace Lemma.Components
 			base.Awake();
 			Collectible.collectibles.Add(this);
 
-			PlayerTouched.Action = delegate
+			this.PlayerTouched.Action = delegate
 			{
-				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_COLLECTIBLE, this.Entity);
-				float originalGamma = main.Renderer.InternalGamma.Value;
-				float originalBrightness = main.Renderer.Brightness.Value;
-				this.Entity.Add
-				(
-					new Animation
+				if (!this.PickedUp)
+				{
+					this.PickedUp.Value = true;
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_COLLECTIBLE, this.Entity);
+					float originalGamma = main.Renderer.InternalGamma.Value;
+					float originalBrightness = main.Renderer.Brightness.Value;
+					this.Entity.Add
 					(
-						new Animation.FloatMoveTo(main.Renderer.InternalGamma, 10.0f, 0.2f),
-						new Animation.FloatMoveTo(main.Renderer.InternalGamma, originalGamma, 0.4f),
-						new Animation.Execute(this.Entity.Delete)
-					)
-				);
+						new Animation
+						(
+							new Animation.FloatMoveTo(main.Renderer.InternalGamma, 10.0f, 0.2f),
+							new Animation.FloatMoveTo(main.Renderer.InternalGamma, originalGamma, 0.4f),
+							new Animation.Execute(this.Entity.Delete)
+						)
+					);
 
-				int collectibles = ++PlayerDataFactory.Instance.Get<PlayerData>().Collectibles.Value;
+					int collectibles = ++PlayerDataFactory.Instance.Get<PlayerData>().Collectibles.Value;
 
-				this.main.Menu.HideMessage
-				(
-					WorldFactory.Instance,
-					this.main.Menu.ShowMessageFormat(WorldFactory.Instance, collectibles == 1 ? "\\one orb collected" : "\\orbs collected", collectibles),
-					4.0f
-				);
+					this.main.Menu.HideMessage
+					(
+						WorldFactory.Instance,
+						this.main.Menu.ShowMessageFormat(WorldFactory.Instance, collectibles == 1 ? "\\one orb collected" : "\\orbs collected", collectibles),
+						4.0f
+					);
+				}
 			};
 		}
 
