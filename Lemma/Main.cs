@@ -1851,7 +1851,7 @@ namespace Lemma
 				this.GraphicsDevice.RasterizerState = originalState;
 
 			if (parameters.Technique != Technique.Shadow)
-				this.LightingManager.SetMaterials();
+				this.LightingManager.SetMaterials(parameters);
 		}
 
 		public void DrawAlphaComponents(RenderParameters parameters)

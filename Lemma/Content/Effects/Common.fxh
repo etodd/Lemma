@@ -51,7 +51,7 @@ float EncodeMaterial(int id)
 
 int DecodeMaterial(float x)
 {
-	return (int)(x * 255.0f);
+	return (int)ceil(x * 255.0f);
 }
 
 // Input and output structures

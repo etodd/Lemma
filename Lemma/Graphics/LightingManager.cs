@@ -13,7 +13,7 @@ namespace Lemma.Components
 		public enum DynamicShadowSetting { Off, Low, Medium, High, Ultra };
 		private const int maxDirectionalLights = 3;
 
-		private const int maxMaterials = 16;
+		public const int MaxMaterials = 16;
 
 		private int globalShadowMapSize;
 		private int detailGlobalShadowMapSize;
@@ -30,6 +30,8 @@ namespace Lemma.Components
 		private Vector2 directionalLightCloudVelocity;
 
 		private Vector3 ambientLightColor = Vector3.Zero;
+
+		private RenderParameters shadowRenderParameters;
 
 		public Property<Microsoft.Xna.Framework.Graphics.RenderTarget2D> GlobalShadowMap = new Property<Microsoft.Xna.Framework.Graphics.RenderTarget2D>();
 		public Property<Microsoft.Xna.Framework.Graphics.RenderTarget2D> DetailGlobalShadowMap = new Property<Microsoft.Xna.Framework.Graphics.RenderTarget2D>();
@@ -166,6 +168,8 @@ namespace Lemma.Components
 				this.DynamicShadows.Reset();
 				this.loadEnvironmentMap(this.EnvironmentMap);
 			}));
+
+			this.shadowRenderParameters = new RenderParameters { Camera = this.shadowCamera, Technique = Technique.Shadow };
 		}
 
 		public void LoadContent(bool reload)
@@ -173,18 +177,17 @@ namespace Lemma.Components
 		}
 
 		private Dictionary<Model.Material, int> materials = new Dictionary<Model.Material, int>();
-		private Vector2[] materialData = new Vector2[LightingManager.maxMaterials];
 
 		public void ClearMaterials()
 		{
 			this.materials.Clear();
-			this.materials[new Model.Material()] = 0; // Material with no lighting
+			this.materials[Model.Material.Unlit] = 0; // Material with no lighting
 		}
 
-		public void SetMaterials()
+		public void SetMaterials(RenderParameters p)
 		{
 			foreach (KeyValuePair<Model.Material, int> pair in this.materials)
-				this.materialData[pair.Value] = new Vector2(pair.Key.SpecularPower, pair.Key.SpecularIntensity);
+				p.MaterialData[pair.Value] = new Vector2(pair.Key.SpecularPower, pair.Key.SpecularIntensity);
 		}
 
 		public void UpdateGlobalLights()
@@ -239,8 +242,8 @@ namespace Lemma.Components
 			int id;
 			if (!this.materials.TryGetValue(key, out id))
 			{
-				if (this.materials.Count == LightingManager.maxMaterials)
-					id = LightingManager.maxMaterials - 1;
+				if (this.materials.Count == LightingManager.MaxMaterials)
+					id = LightingManager.MaxMaterials - 1;
 				else
 					id = this.materials[key] = this.materials.Count;
 			}
@@ -272,7 +275,7 @@ namespace Lemma.Components
 
 				this.main.GraphicsDevice.SetRenderTarget(this.GlobalShadowMap);
 				this.main.GraphicsDevice.Clear(Color.Black);
-				this.main.DrawScene(new RenderParameters { Camera = this.shadowCamera, Technique = Technique.Shadow });
+				this.main.DrawScene(this.shadowRenderParameters);
 
 				this.GlobalShadowViewProjection.Value = this.shadowCamera.ViewProjection;
 				this.globalShadowMapRenderedLastFrame = true;
@@ -291,7 +294,7 @@ namespace Lemma.Components
 
 				this.main.GraphicsDevice.SetRenderTarget(this.DetailGlobalShadowMap);
 				this.main.GraphicsDevice.Clear(Color.Black);
-				this.main.DrawScene(new RenderParameters { Camera = this.shadowCamera, Technique = Technique.Shadow });
+				this.main.DrawScene(this.shadowRenderParameters);
 
 				this.DetailGlobalShadowViewProjection.Value = this.shadowCamera.ViewProjection;
 			}
@@ -303,7 +306,7 @@ namespace Lemma.Components
 			this.shadowCamera.SetPerspectiveProjection(light.FieldOfView, new Point(this.spotShadowMapSize, this.spotShadowMapSize), 1.0f, Math.Max(2.0f, light.Attenuation));
 			this.main.GraphicsDevice.SetRenderTarget(this.spotShadowMaps[index]);
 			this.main.GraphicsDevice.Clear(new Color(0, 255, 255));
-			this.main.DrawScene(new RenderParameters { Camera = this.shadowCamera, Technique = Technique.Shadow });
+			this.main.DrawScene(this.shadowRenderParameters);
 		}
 
 		public void RenderShadowMaps(Camera camera)
@@ -368,11 +371,6 @@ namespace Lemma.Components
 		public void SetCompositeParameters(Microsoft.Xna.Framework.Graphics.Effect effect)
 		{
 			effect.Parameters["AmbientLightColor"].SetValue(this.ambientLightColor);
-		}
-
-		public void SetMaterialParameters(Microsoft.Xna.Framework.Graphics.Effect effect)
-		{
-			effect.Parameters["Materials"].SetValue(this.materialData);
 		}
 
 		public void SetSpotLightParameters(SpotLight light, Microsoft.Xna.Framework.Graphics.Effect effect, Vector3 cameraPos)

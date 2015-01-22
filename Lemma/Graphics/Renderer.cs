@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework;
 
 namespace Lemma.Components
 {
-	public enum Technique { Render, Shadow, NonPostProcessed, Clip };
+	public enum Technique { Render, Shadow, Clip };
 
 	public class RenderParameters
 	{
@@ -49,6 +49,7 @@ namespace Lemma.Components
 		public RenderTarget2D FrameBuffer;
 		public bool IsMainRender;
 		public static readonly RenderParameters Default = new RenderParameters();
+		public Vector2[] MaterialData = new Vector2[LightingManager.MaxMaterials];
 		public RenderParameters Clone()
 		{
 			return new RenderParameters
@@ -61,6 +62,7 @@ namespace Lemma.Components
 				DepthBuffer = this.DepthBuffer,
 				FrameBuffer = this.FrameBuffer,
 				IsMainRender = this.IsMainRender,
+				MaterialData = this.MaterialData.ToArray(),
 			};
 		}
 	}
@@ -613,7 +615,7 @@ namespace Lemma.Components
 			Renderer.globalLightEffect.CurrentTechnique = Renderer.globalLightEffect.Techniques[globalLightTechnique];
 			parameters.Camera.SetParameters(Renderer.globalLightEffect);
 			this.lightingManager.SetGlobalLightParameters(Renderer.globalLightEffect, parameters.Camera, originalCameraPosition);
-			this.lightingManager.SetMaterialParameters(Renderer.globalLightEffect);
+			Renderer.globalLightEffect.Parameters["Materials"].SetValue(parameters.MaterialData);
 			this.sources3[0] = this.depthBuffer;
 			this.sources3[1] = this.normalBuffer;
 			this.sources3[2] = this.colorBuffer1;
@@ -636,7 +638,7 @@ namespace Lemma.Components
 			parameters.Camera.FarPlaneDistance.Value = originalFarPlane;
 
 			// Spot lights
-			this.lightingManager.SetMaterialParameters(Renderer.spotLightEffect);
+			Renderer.spotLightEffect.Parameters["Materials"].SetValue(parameters.MaterialData);
 			this.setTargetParameters(this.sources3, this.destinations2, Renderer.spotLightEffect);
 			for (int i = 0; i < SpotLight.All.Count; i++)
 			{
@@ -650,7 +652,7 @@ namespace Lemma.Components
 			}
 
 			// Point lights
-			this.lightingManager.SetMaterialParameters(Renderer.pointLightEffect);
+			Renderer.pointLightEffect.Parameters["Materials"].SetValue(parameters.MaterialData);
 			this.setTargetParameters(this.sources3, this.destinations2, Renderer.pointLightEffect);
 			for (int i = 0; i < PointLight.All.Count; i++)
 			{
@@ -673,7 +675,7 @@ namespace Lemma.Components
 			this.compositeEffect.CurrentTechnique = this.compositeEffect.Techniques[enableSSAO ? "CompositeSSAO" : "Composite"];
 			this.lightingManager.SetCompositeParameters(this.compositeEffect);
 			parameters.Camera.SetParameters(this.compositeEffect);
-			this.lightingManager.SetMaterialParameters(this.compositeEffect);
+			this.compositeEffect.Parameters["Materials"].SetValue(parameters.MaterialData);
 			RenderTarget2D[] compositeSources;
 			if (enableSSAO)
 			{
