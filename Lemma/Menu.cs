@@ -1849,7 +1849,7 @@ namespace Lemma.Components
 
 			Func<UIComponent, bool> isButton = delegate(UIComponent item)
 			{
-				return item.Visible && item.GetType() == typeof(Container) && item.MouseLeftUp.HasBindings;
+				return item.Visible && item.GetType() == typeof(Container) && item.MouseLeftUp.Bindings.Count > 0;
 			};
 
 			Func<UIComponent, bool> isScrollButton = delegate(UIComponent item)

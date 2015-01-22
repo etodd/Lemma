@@ -118,6 +118,7 @@
     <Compile Include="Components\AnimatedProp.cs" />
     <Compile Include="Components\Data.cs" />
     <Compile Include="Components\Scriptlike\AnimatedSetter.cs" />
+    <Compile Include="Components\Scriptlike\Sequence.cs" />
     <Compile Include="Components\SliderCommon.cs" />
     <Compile Include="Components\Scriptlike\ConsoleCommand.cs" />
     <Compile Include="Components\ParticleWind.cs" />
@@ -168,6 +169,7 @@
     <Compile Include="Factories\PowerBlockSocketFactory.cs" />
     <Compile Include="Factories\SkyDecalFactory.cs" />
     <Compile Include="Factories\StaticSliderFactory.cs" />
+    <Compile Include="Factories\SequenceFactory.cs" />
     <Compile Include="Factories\VoxelSetterFactory.cs" />
     <Compile Include="OvrCapi.cs" />
     <Compile Include="Player\FPSCamera.cs" />

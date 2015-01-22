@@ -32,6 +32,8 @@ namespace Lemma.Components
 		public Property<Voxel> WallRunMap = new Property<Voxel>();
 		public Property<Direction> WallDirection = new Property<Direction>();
 
+		private Random random = new Random();
+
 		// Output
 		public Property<float> Lean = new Property<float>();
 		private AnimatedModel model;
@@ -287,10 +289,14 @@ namespace Lemma.Components
 					{
 						foreach (string anim in this.Crouched ? movementAnimations.Keys : crouchMovementAnimations.Keys)
 							this.model.Stop(anim);
-						foreach (KeyValuePair<string, AnimationInfo> animation in this.Crouched ? crouchMovementAnimations : movementAnimations)
+						Dictionary<string, AnimationInfo> animations = this.Crouched ? crouchMovementAnimations : movementAnimations;
+						TimeSpan currentTime = TimeSpan.FromSeconds(this.random.NextDouble() * this.model[animations.Keys.First()].Duration.TotalSeconds);
+						foreach (KeyValuePair<string, AnimationInfo> animation in animations)
 						{
 							this.model.StartClip(animation.Key, animation.Value.Priority, true, AnimatedModel.DefaultBlendTime);
-							this.model[animation.Key].Strength = animation.Value.DefaultStrength;
+							SkinnedModel.Clip clip = this.model[animation.Key];
+							clip.CurrentTime = currentTime;
+							clip.Strength = animation.Value.DefaultStrength;
 						}
 					}
 				}
@@ -309,20 +315,31 @@ namespace Lemma.Components
 						{
 							this.model.Stop("Swim");
 							if (!this.model.IsPlaying("SwimForward"))
+							{
 								this.model.StartClip("SwimForward", 0, true, AnimatedModel.DefaultBlendTime);
+								SkinnedModel.Clip clip = this.model["SwimForward"];
+								clip.CurrentTime = TimeSpan.FromSeconds(this.random.NextDouble() * clip.Duration.TotalSeconds);
+							}
 						}
 						else
 						{
 							this.model.Stop("SwimForward");
 							if (!this.model.IsPlaying("Swim"))
+							{
 								this.model.StartClip("Swim", 0, true, AnimatedModel.DefaultBlendTime);
+								SkinnedModel.Clip clip = this.model["Swim"];
+								clip.CurrentTime = TimeSpan.FromSeconds(this.random.NextDouble() * clip.Duration.TotalSeconds);
+							}
 						}
 					}
 					else
 					{
 						this.model.Stop("SwimForward");
 						if (!this.model.IsPlaying("Fall"))
+						{
 							this.model.StartClip("Fall", 0, true, AnimatedModel.DefaultBlendTime);
+							this.fallAnimation.CurrentTime = TimeSpan.FromSeconds(random.NextDouble() * this.fallAnimation.Duration.TotalSeconds);
+						}
 					}
 
 					this.fallAnimation.Speed = MathHelper.Clamp(this.LinearVelocity.Value.Length() * (1.0f / 20.0f), 0, 2);

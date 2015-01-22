@@ -125,6 +125,7 @@ namespace Lemma.IO
 			typeof(StaticSlider),
 			typeof(AnimatedProp),
 			typeof(PowerBlockSocket),
+			typeof(Sequence),
 		};
 
 		public static XmlSerializer Serializer;

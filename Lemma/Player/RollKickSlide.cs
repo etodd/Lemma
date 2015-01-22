@@ -415,8 +415,7 @@ namespace Lemma.Components
 				}
 
 				if (this.rollKickTime > 1.0f
-					|| (this.rollKickTime > 0.7f && !this.RollKickButton)
-					|| (this.rollKickTime > 0.35f && Vector3.Dot(originalVelocity, this.forward) < 0.1f))
+					|| (this.rollKickTime > 0.7f && (!this.RollKickButton || Vector3.Dot(originalVelocity, this.forward) < 0.1f)))
 				{
 					this.StopKick();
 					return;
@@ -426,13 +425,6 @@ namespace Lemma.Components
 				{
 					if (this.firstTimeBreak)
 					{
-						if (this.floorMap != null)
-						{
-							// If we break through a wall, the player can't know what's on the other side.
-							// So cut them some slack and build a floor beneath them, even if we normally wouldn't.
-							if (this.EnableEnhancedRollSlide)
-								this.shouldBuildFloor = true;
-						}
 						this.Rumble.Execute(0.5f);
 						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WALL_BREAK_01, this.Entity);
 					}
