@@ -1510,14 +1510,6 @@ namespace Lemma.Components
 				cheatList.Children.Add(button);
 			}
 #if STEAMWORKS && DEVELOPMENT
-			Container cheatIncrementTimePlayed = this.main.UIFactory.CreateButton("+60s", delegate()
-			{
-				SteamWorker.IncrementStat("stat_time_played", 60);
-				SteamWorker.UploadStats();
-			});
-			this.resizeToMenu(cheatIncrementTimePlayed);
-			cheatList.Children.Add(cheatIncrementTimePlayed);
-
 			Container cheatUploadStats = this.main.UIFactory.CreateButton("Upload Stats", delegate()
 			{
 				SteamWorker.UploadStats();

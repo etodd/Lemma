@@ -480,10 +480,21 @@ namespace Lemma.Util
 			if (pCallback.m_nGameID != Main.SteamAppID || pCallback.m_eResult != EResult.k_EResultOK) return;
 
 			//I'm sorry, Evan. We'll need to find somewhere nice to put this part.
-			string[] cheevoNames = new string[] { "perverse", "win_the_game", "100_blocks", "250_blocks",
-				"500_blocks", "1000_blocks", "10000_blocks", "cheating_jerk", "5_minutes_played", 
-				"30_minutes_played", "120_minutes_played", "300_minutes_played", "600_minutes_played", "pillar_crushed" };
-			string[] statNames = new string[] { "time_played", "blocks_created", "distance_traveled", "times_died", "time_perverse", "orbs_collected" };
+			string[] cheevoNames = new string[]
+			{
+				"ending_a",
+				"ending_b",
+				"ending_c",
+				"ending_d",
+				"ending_e",
+				"cheating_jerk",
+				"pillar_crushed",
+				"orbs",
+			};
+			string[] statNames = new string[]
+			{
+				"orbs_collected"
+			};
 
 			foreach (var cheevo in cheevoNames)
 			{
@@ -498,13 +509,7 @@ namespace Lemma.Util
 				int value;
 				bool success = SteamUserStats.GetStat("stat_" + stat, out value);
 				if (success)
-				{
 					_statDictionary.Add("stat_" + stat, value);
-					if (stat == "time_played")
-					{
-						Main.TotalGameTime.Value = value;
-					}
-				}
 			}
 			StatsInitialized = true;
 		}

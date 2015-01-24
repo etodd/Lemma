@@ -200,11 +200,12 @@ namespace Lemma.GInterfaces
 			AnimateOut();
 			StopTicking();
 
-			this.bestTime.Value = this.main.SaveMapTime(WorldFactory.Instance.Get<World>().UUID, this.ElapsedTime);
+			string uuid = WorldFactory.Instance.Get<World>().UUID;
+			this.bestTime.Value = this.main.SaveMapTime(uuid, this.ElapsedTime);
 
 			EndTimeTextView.Text.Value = "Time: " + SecondsToTimeString(ElapsedTime);
 			EndTimeBestView.Text.Value = "Best: " + SecondsToTimeString(this.bestTime);
-			if (this.bestTime == ElapsedTime)
+			if (this.bestTime.Value == ElapsedTime.Value)
 				EndTimeBestView.Text.Value += " Record!";
 		}
 

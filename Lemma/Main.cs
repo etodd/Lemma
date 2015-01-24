@@ -1666,7 +1666,6 @@ namespace Lemma
 
 			TotalGameTime.Value += dt;
 #if STEAMWORKS
-			SteamWorker.SetStat("stat_time_played", (int)TotalGameTime.Value);
 			SteamWorker.Update(dt);
 #endif
 

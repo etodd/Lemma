@@ -60,7 +60,6 @@ namespace Lemma.Factories
 		public void Build(Main main, IEnumerable<BlockBuildOrder> blocks, Vector3 center, float delayMultiplier = 0.05f)
 		{
 			int index = 0;
-			int playerCreatedBlocks = 0;
 			foreach (BlockBuildOrder entry in blocks)
 			{
 				if (EffectBlock.IsAnimating(new EffectBlock.Entry { Voxel = entry.Voxel, Coordinate = entry.Coordinate }))
@@ -81,10 +80,7 @@ namespace Lemma.Factories
 				effectBlock.Setup(entry.Voxel.Entity, entry.Coordinate, entry.State.ID);
 				main.Add(entity);
 				index++;
-				if (entry.State.ID == Voxel.t.Blue)
-					playerCreatedBlocks++;
 			}
-			SteamWorker.IncrementStat("stat_blocks_created", playerCreatedBlocks);
 		}
 	}
 }

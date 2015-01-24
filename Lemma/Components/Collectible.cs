@@ -54,6 +54,8 @@ namespace Lemma.Components
 
 					int collectibles = ++PlayerDataFactory.Instance.Get<PlayerData>().Collectibles.Value;
 
+					SteamWorker.IncrementStat("orbs_collected", 1);
+
 					this.main.Menu.HideMessage
 					(
 						WorldFactory.Instance,
