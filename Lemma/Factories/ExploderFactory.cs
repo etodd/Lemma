@@ -300,7 +300,7 @@ namespace Lemma.Factories
 					checkOperationalRadius,
 					new AI.Task
 					{
-						Interval = 0.2f,
+						Interval = 0.15f,
 						Action = delegate()
 						{
 							if (exploder.CoordQueue.Length > 0)

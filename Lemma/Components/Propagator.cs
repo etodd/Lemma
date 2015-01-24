@@ -369,6 +369,22 @@ namespace Lemma.Components
 								}
 							}
 						}
+						else if (id == Voxel.t.Hard)
+						{
+							for (int j = 0; j < 6; j++)
+							{
+								Direction dir = DirectionExtensions.Directions[j];
+								Voxel.Coord adjacent = c.Move(dir);
+								Voxel.t adjacentID = map[adjacent].ID;
+								if (adjacentID == Voxel.t.HardInfected)
+								{
+									map.Empty(adjacent, false, true, map);
+									map.Fill(adjacent, Voxel.States.Hard);
+									this.SparksLowPriority(map.GetAbsolutePosition(adjacent), Spark.Normal);
+									regenerate = true;
+								}
+							}
+						}
 						else if (id == Voxel.t.Powered || id == Voxel.t.PermanentPowered || id == Voxel.t.HardPowered || id == Voxel.t.PoweredSwitch)
 						{
 							for (int j = 0; j < 6; j++)

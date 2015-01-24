@@ -257,10 +257,10 @@ namespace Lemma.Components
 		public void RenderGlobalShadowMap(Camera camera)
 		{
 			Vector3 focus;
-			Vector3 shadowCameraOffset;
-			float size = camera.FarPlaneDistance * 1.75f;
-
 			Vector3 globalShadowLightForward = Vector3.Transform(Vector3.Forward, this.globalShadowLight.Quaternion);
+			float size = camera.FarPlaneDistance * 1.75f;
+			Vector3 shadowCameraOffset = globalShadowLightForward * size * 1.25f;
+			float farPlane = size * 2.5f;
 
 			if (this.globalShadowMapRenderedLastFrame)
 				this.globalShadowMapRenderedLastFrame = false;
@@ -268,10 +268,9 @@ namespace Lemma.Components
 			{
 				focus = camera.Position;
 				focus = new Vector3((float)Math.Round(focus.X / LightingManager.globalShadowFocusInterval), (float)Math.Round(focus.Y / LightingManager.globalShadowFocusInterval), (float)Math.Round(focus.Z / LightingManager.globalShadowFocusInterval)) * LightingManager.globalShadowFocusInterval;
-				shadowCameraOffset = globalShadowLightForward * size * 1.25f;
 				this.shadowCamera.View.Value = Matrix.CreateLookAt(focus + shadowCameraOffset, focus, Vector3.Up);
 
-				this.shadowCamera.SetOrthographicProjection(new Point((int)size, (int)size), 1.0f, size * 2.5f);
+				this.shadowCamera.SetOrthographicProjection(new Point((int)size, (int)size), 1.0f, farPlane);
 
 				this.main.GraphicsDevice.SetRenderTarget(this.GlobalShadowMap);
 				this.main.GraphicsDevice.Clear(Color.Black);
@@ -286,11 +285,10 @@ namespace Lemma.Components
 			{
 				focus = camera.Position;
 				focus = new Vector3((float)Math.Round(focus.X / LightingManager.detailGlobalShadowFocusInterval), (float)Math.Round(focus.Y / LightingManager.detailGlobalShadowFocusInterval), (float)Math.Round(focus.Z / LightingManager.detailGlobalShadowFocusInterval)) * LightingManager.detailGlobalShadowFocusInterval;
-				shadowCameraOffset = globalShadowLightForward * camera.FarPlaneDistance;
 				this.shadowCamera.View.Value = Matrix.CreateLookAt(focus + shadowCameraOffset, focus, Vector3.Up);
 
 				float detailSize = size * LightingManager.detailGlobalShadowSizeRatio;
-				this.shadowCamera.SetOrthographicProjection(new Point((int)detailSize, (int)detailSize), 1.0f, size * 2.0f);
+				this.shadowCamera.SetOrthographicProjection(new Point((int)detailSize, (int)detailSize), 1.0f, farPlane);
 
 				this.main.GraphicsDevice.SetRenderTarget(this.DetailGlobalShadowMap);
 				this.main.GraphicsDevice.Clear(Color.Black);
