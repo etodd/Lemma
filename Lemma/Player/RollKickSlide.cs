@@ -369,10 +369,6 @@ namespace Lemma.Components
 					{
 						if (this.firstTimeBreak)
 						{
-							// If we break through a wall, the player can't know what's on the other side.
-							// So cut them some slack and build a floor beneath them.
-							if (this.EnableEnhancedRollSlide)
-								this.shouldBuildFloor = true; 
 							this.Rumble.Execute(0.5f);
 							AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WALL_BREAK_01, this.Entity);
 						}

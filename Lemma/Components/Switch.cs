@@ -90,10 +90,12 @@ namespace Lemma.Components
 									adjacentCoord.Data = map[adjacentCoord];
 									if (adjacentCoord.Data == Voxel.States.PoweredSwitch)
 										queue.Enqueue(adjacentCoord);
-									else if (adjacentCoord.Data == Voxel.States.Blue || adjacentCoord.Data == Voxel.States.Powered || adjacentCoord.Data == Voxel.States.HardPowered)
+									else if (adjacentCoord.Data == Voxel.States.Blue
+										|| adjacentCoord.Data == Voxel.States.Powered
+										|| adjacentCoord.Data == Voxel.States.Infected)
 									{
 										map.Empty(adjacentCoord, true, true, map);
-										map.Fill(adjacentCoord, adjacentCoord.Data == Voxel.States.HardPowered ? Voxel.States.Hard : Voxel.States.Neutral);
+										map.Fill(adjacentCoord, Voxel.States.Neutral);
 										regenerate = true;
 									}
 								}

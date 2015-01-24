@@ -19,8 +19,6 @@ namespace Lemma.Components
 		public const float MaxLifetime = 1.0f;
 		public const float StartHeight = 25.0f;
 
-		private Vector3 originalLightningColor;
-
 		private float[,] audioKernel = new float[KernelSize, KernelSize];
 
 		[XmlIgnore]
@@ -30,8 +28,7 @@ namespace Lemma.Components
 
 		private float thunderTimer;
 
-		private ModelAlpha skybox = null;
-		private Vector3 originalSkyboxColor = Vector3.Zero;
+		private ModelAlpha skybox;
 
 		private static Random random = new Random();
 
@@ -39,11 +36,17 @@ namespace Lemma.Components
 		public Property<float> ThunderIntervalMin = new Property<float> { Value = 12.0f };
 		public Property<float> ThunderIntervalMax = new Property<float> { Value = 36.0f };
 		public Property<float> ThunderMaxDelay = new Property<float> { Value = 5.0f };
+		public Property<Vector3> LightningColor = new Property<Vector3>();
+		public Property<Vector3> SkyboxColor = new Property<Vector3>();
 
 		// Output properties
+		[XmlIgnore]
 		public Property<Vector3> Jitter = new Property<Vector3>();
+		[XmlIgnore]
 		public Property<Vector3> KernelOffset = new Property<Vector3>();
-		public Property<Vector3> LightningColor = new Property<Vector3>();
+		[XmlIgnore]
+		public Property<Vector3> CurrentLightningColor = new Property<Vector3>();
+		[XmlIgnore]
 		public Property<bool> LightningEnabled = new Property<bool>();
 
 		public override void Awake()
@@ -98,22 +101,28 @@ namespace Lemma.Components
 				});
 			}
 
+			if (this.main.EditorEnabled)
+				this.Add(new Binding<Vector3>(this.CurrentLightningColor, this.LightningColor));
+
 			this.thunderTimer = this.ThunderIntervalMin + ((float)random.NextDouble() * (this.ThunderIntervalMax - this.ThunderIntervalMin));
 		}
 
 		public override void Start()
 		{
-			if (!main.EditorEnabled)
+			if (!this.main.EditorEnabled)
+			{
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_RAIN, this.Entity);
 
-			Entity skyboxEntity = main.Get("Skybox").FirstOrDefault();
-			if (skyboxEntity != null)
-			{
-				skybox = skyboxEntity.Get<ModelAlpha>();
-				originalSkyboxColor = skybox.Color;
+				Entity skyboxEntity = main.Get("Skybox").FirstOrDefault();
+				if (skyboxEntity != null)
+				{
+					this.skybox = skyboxEntity.Get<ModelAlpha>();
+					if (this.SkyboxColor.Value.LengthSquared() == 0.0f)
+						this.SkyboxColor.Value = this.skybox.Color;
+					else
+						this.skybox.Color.Value = this.SkyboxColor;
+				}
 			}
-
-			this.originalLightningColor = this.LightningColor;
 		}
 
 		public void Update()
@@ -148,25 +157,25 @@ namespace Lemma.Components
 				if (this.thunderTimer < 0)
 				{
 					float volume = 0.6f + ((float)random.NextDouble() * 0.4f);
-					this.LightningColor.Value = Vector3.Zero;
+					this.CurrentLightningColor.Value = Vector3.Zero;
 					Property<Vector3> skyboxColor;
-					if (skybox == null)
+					if (this.skybox == null)
 						skyboxColor = new Property<Vector3>(); // Dummy property
 					else
-						skyboxColor = skybox.Color;
+						skyboxColor = this.skybox.Color;
 
 					this.Entity.Add(new Animation
 					(
 						new Animation.Set<bool>(this.LightningEnabled, true),
 						new Animation.Parallel
 						(
-							new Animation.Vector3MoveTo(this.LightningColor, this.originalLightningColor * volume, 0.2f),
-							new Animation.Vector3MoveTo(skyboxColor, this.originalSkyboxColor * (1.0f + volume), 0.2f)
+							new Animation.Vector3MoveTo(this.CurrentLightningColor, this.LightningColor.Value * volume, 0.2f),
+							new Animation.Vector3MoveTo(skyboxColor, this.SkyboxColor.Value * (1.0f + volume), 0.2f)
 						),
 						new Animation.Parallel
 						(
-							new Animation.Vector3MoveTo(this.LightningColor, Vector3.Zero, 0.5f),
-							new Animation.Vector3MoveTo(skyboxColor, this.originalSkyboxColor, 0.5f)
+							new Animation.Vector3MoveTo(this.CurrentLightningColor, Vector3.Zero, 0.5f),
+							new Animation.Vector3MoveTo(skyboxColor, this.SkyboxColor, 0.5f)
 						),
 						new Animation.Set<bool>(this.LightningEnabled, false),
 						new Animation.Delay((1.0f - volume) * this.ThunderMaxDelay),

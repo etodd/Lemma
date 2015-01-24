@@ -23,6 +23,11 @@ http://vimeo.com/ayaba
 
 ==========================================
 
+Sam Gebhardt -- Promotional artwork
+http://samgebhardt.com/
+
+==========================================
+
 Human model, texture, and rig adapted from MakeHuman
 http://makehuman.org/
 

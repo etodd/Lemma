@@ -40,10 +40,11 @@ namespace Lemma.Factories
 			emitter.Add(new Binding<Vector3>(emitter.Jitter, rain.Jitter));
 
 			Components.DirectionalLight lightning = entity.GetOrCreate<Components.DirectionalLight>("Lightning");
+			lightning.Serialize = false;
 			lightning.Add(new Binding<Quaternion>(lightning.Quaternion, transform.Quaternion));
 			lightning.Enabled.Value = false;
 
-			lightning.Add(new TwoWayBinding<Vector3>(lightning.Color, rain.LightningColor));
+			lightning.Add(new TwoWayBinding<Vector3>(rain.CurrentLightningColor, lightning.Color));
 
 			if (!main.EditorEnabled)
 				lightning.Add(new Binding<bool>(lightning.Enabled, rain.LightningEnabled));
@@ -66,7 +67,7 @@ namespace Lemma.Factories
 			entity.Add("ThunderMaxDelay", rain.ThunderMaxDelay);
 			entity.Add("ParticlesPerSecond", emitter.ParticlesPerSecond);
 			entity.Add("LightningShadowed", lightning.Shadowed);
-			entity.Add("LightningColor", lightning.Color);
+			entity.Add("LightningColor", rain.LightningColor);
 
 			entity.Add(new PostInitialization
 			{
@@ -80,7 +81,16 @@ namespace Lemma.Factories
 
 		public override void AttachEditorComponents(Entity entity, Main main)
 		{
-			base.AttachEditorComponents(entity, main);
+			ModelAlpha model = new ModelAlpha();
+			model.Filename.Value = "AlphaModels\\light";
+			model.Color.Value = this.Color;
+			model.Serialize = false;
+
+			entity.Add("EditorModel", model);
+
+			model.Add(new Binding<Matrix>(model.Transform, entity.Get<Transform>().Matrix));
+			model.Add(new Binding<bool>(model.Enabled, Editor.EditorModelsVisible));
+
 			Components.DirectionalLight lightning = entity.Get<Components.DirectionalLight>();
 			lightning.Add(new Binding<bool>(lightning.Enabled, entity.EditorSelected));
 		}

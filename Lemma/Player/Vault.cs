@@ -226,6 +226,9 @@ namespace Lemma.Components
 			Vector3 supportVelocity = this.getSupportVelocity(map);
 
 			float verticalVelocityChange = this.LinearVelocity.Value.Y - supportVelocity.Y;
+			if (verticalVelocityChange < Components.FallDamage.DeathVelocity)
+				return; // Don't even try to grab
+
 			this.FallDamage.Execute(verticalVelocityChange);
 			if (!this.Active) // We died from fall damage
 				return;

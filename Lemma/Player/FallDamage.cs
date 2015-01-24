@@ -13,6 +13,8 @@ namespace Lemma.Components
 		public const float DamageVelocity = -20.0f; // Vertical velocity below which damage occurs
 		public const float RollingDamageVelocity = -28.0f; // Damage velocity when rolling
 		public const float GruntVelocity = -13.0f; // Vertical velocity below which grunting occurs
+		public const float DamageMultiplier = 0.2f;
+		public const float DeathVelocity = DamageVelocity - (1.0f / DamageMultiplier);
 
 		// Input commands
 		public Command<float> Apply = new Command<float>();
@@ -93,7 +95,7 @@ namespace Lemma.Components
 			float v = rolling ? RollingDamageVelocity : DamageVelocity;
 			if (verticalAcceleration < v)
 			{
-				float damage = (verticalAcceleration - v) * 0.2f;
+				float damage = (verticalAcceleration - v) * DamageMultiplier;
 				this.Health.Value += damage;
 				// Health component will take care of rumble
 				if (this.Health.Value <= 0.0f)

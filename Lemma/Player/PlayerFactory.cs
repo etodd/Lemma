@@ -644,6 +644,10 @@ namespace Lemma.Factories
 				player.Character.EnableWalking.Value = !freeCameraMode;
 				player.EnableMoves.Value = !freeCameraMode;
 				if (freeCameraMode)
+					player.Character.Body.BecomeKinematic();
+				else
+					player.Character.Body.BecomeDynamic(player.Character.Mass);
+				if (freeCameraMode)
 					AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_BREATHING_SOFT, entity);
 				else
 					transform.Position.Value = main.Camera.Position;
