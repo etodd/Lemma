@@ -78,14 +78,14 @@ namespace Lemma.Factories
 			}, ai.CurrentState));
 
 			entity.Add(new Updater
-			{
+			(
 				delegate(float dt)
 				{
 					float source = 1.0f + ((float)this.random.NextDouble() - 0.5f) * 2.0f * 0.05f;
 					model.Scale.Value = new Vector3(defaultModelScale * source);
 					light.Attenuation.Value = defaultLightAttenuation * source;
 				}
-			});
+			));
 
 			light.Add(new Binding<Vector3>(light.Color, model.Color));
 

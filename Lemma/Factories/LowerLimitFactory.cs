@@ -51,7 +51,7 @@ namespace Lemma.Factories
 			attachable.EditorProperties();
 
 			entity.Add(new Updater
-			{
+			(
 				delegate(float dt)
 				{
 					Entity player = PlayerFactory.Instance;
@@ -66,7 +66,7 @@ namespace Lemma.Factories
 					else
 						player = null;
 				}
-			});
+			));
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

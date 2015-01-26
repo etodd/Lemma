@@ -126,6 +126,7 @@ namespace Lemma.IO
 			typeof(AnimatedProp),
 			typeof(PowerBlockSocket),
 			typeof(Sequence),
+			typeof(Updater),
 		};
 
 		public static XmlSerializer Serializer;
@@ -256,6 +257,25 @@ namespace Lemma.IO
 		{
 			List<Entity> entities = main.Entities.Where(x => x.Serialize && x.Active).ToList();
 			MapLoader.Serializer.Serialize(stream, entities);
+		}
+
+		public static void LoadWithEntities(Main main, string nextMap, List<Entity> persistentEntities)
+		{
+			Stream stream = new MemoryStream();
+			IO.MapLoader.Serializer.Serialize(stream, persistentEntities);
+
+			MapLoader.Load(main, nextMap);
+
+			stream.Seek(0, SeekOrigin.Begin);
+			List<Entity> entities = (List<Entity>)IO.MapLoader.Serializer.Deserialize(stream);
+			foreach (Entity e in entities)
+			{
+				Factory<Main> factory = Factory<Main>.Get(e.Type);
+				e.GUID = 0;
+				factory.Bind(e, main);
+				main.Add(e);
+			}
+			stream.Dispose();
 		}
 
 		public static void Transition(Main main, string nextMap, string spawn = null)

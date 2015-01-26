@@ -32,6 +32,7 @@ namespace Lemma.Factories
 			entity.Add("Priority", zone.Priority);
 			entity.Add("Build", zone.Build);
 			entity.Add("DetailedShadows", zone.DetailedShadows);
+			entity.Add("RiftProof", zone.RiftProof);
 		}
 
 		private Transform addCornerModel(Entity entity, Property<bool> selected)

@@ -40,12 +40,12 @@ namespace Lemma.Factories
 			Property<float> lightBaseRadius = new Property<float> { Value = 10.0f };
 
 			Updater updater = new Updater
-			{
+			(
 				delegate(float dt)
 				{
 					light.Attenuation.Value = lightBaseRadius.Value * (1.0f + (((float)this.random.NextDouble() - 0.5f) * 0.1f));
 				}
-			};
+			);
 			updater.EnabledInEditMode = true;
 			entity.Add(updater);
 

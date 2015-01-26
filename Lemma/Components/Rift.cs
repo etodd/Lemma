@@ -19,7 +19,7 @@ namespace Lemma.Components
 			In, Up
 		}
 
-		private const float damageTime = 1.0f; // How long the player can stand in a rift before they die
+		private const float damageTime = 2.0f; // How long the player can stand in a rift before they die
 		private const float interval = 0.015f; // A coordinate is emptied every x seconds
 		private const int batch = 8; // Empty coordinates in batches
 		private const float batchInterval = interval * batch;
@@ -41,6 +41,7 @@ namespace Lemma.Components
 		private ParticleSystem particles;
 
 		private static List<VoxelFill.CoordinateEntry> coordSortCache = new List<VoxelFill.CoordinateEntry>();
+		private static List<Rift> rifts = new List<Rift>();
 
 		public override void Awake()
 		{
@@ -82,6 +83,24 @@ namespace Lemma.Components
 					}
 				}
 			}));
+			rifts.Add(this);
+		}
+
+		public override void delete()
+		{
+			base.delete();
+			rifts.Remove(this);
+		}
+
+		public static Rift Query(Vector3 pos)
+		{
+			for (int i = 0; i < rifts.Count; i++)
+			{
+				Rift r = rifts[i];
+				if ((pos - r.Position).Length() < r.CurrentRadius)
+					return r;
+			}
+			return null;
 		}
 
 		private ImplodeBlockFactory blockFactory = Factory.Get<ImplodeBlockFactory>();
@@ -157,7 +176,7 @@ namespace Lemma.Components
 				this.Entity.Delete.Execute();
 
 			Entity player = PlayerFactory.Instance;
-			if (player != null && (player.Get<Transform>().Position.Value - this.Position.Value).Length() <= this.CurrentRadius)
+			if (player != null && (player.Get<Transform>().Position.Value - this.Position.Value).Length() < this.CurrentRadius)
 				player.Get<Agent>().Damage.Execute(dt * damageTime);
 		}
 

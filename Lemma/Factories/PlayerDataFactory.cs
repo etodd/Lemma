@@ -31,7 +31,15 @@ namespace Lemma.Factories
 			entity.GetOrCreate<PlayerData>("Data");
 			entity.GetOrCreate<Data>("OpaqueData");
 			entity.GetOrCreate<Phone>("Phone");
+
+			if (PlayerDataFactory.instance != null)
+				PlayerDataFactory.instance.Delete.Execute();
+
 			PlayerDataFactory.instance = entity;
+			entity.Add(new CommandBinding(entity.Delete, delegate()
+			{
+				PlayerDataFactory.instance = null;
+			}));
 
 			entity.CannotSuspend = true;
 		}

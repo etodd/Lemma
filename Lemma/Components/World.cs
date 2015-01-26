@@ -28,6 +28,7 @@ namespace Lemma.Components
 		public Property<Entity.Handle> ThumbnailCamera = new Property<Entity.Handle>();
 		public Property<string> OverlayTexture = new Property<string>();
 		public Property<float> OverlayTiling = new Property<float> { Value = 1.0f };
+		public Property<float> CameraShakeAmount = new Property<float>();
 
 		[XmlIgnore]
 		public Property<Texture2D> OverlayTextureHandle = new Property<Texture2D>();

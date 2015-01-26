@@ -21,7 +21,7 @@ namespace Lemma.Factories
 			Entity entity = new Entity(main, "SkyDecal");
 
 			ModelAlpha skybox = new ModelAlpha();
-			skybox.DiffuseTexture.Value = "Images\\moon";
+			skybox.DiffuseTexture.Value = "Images\\circle";
 			entity.Add("Model", skybox);
 
 			return entity;
@@ -46,6 +46,7 @@ namespace Lemma.Factories
 			model.Add(new Binding<Vector3>(model.GetVector3Parameter("CameraPosition"), main.Camera.Position));
 
 			entity.Add("Scale", model.Scale);
+			entity.Add("Alpha", model.Alpha);
 			entity.Add("Color", model.Color, new PropertyEntry.EditorData { FChangeBy = 0.1f });
 			entity.Add("Image", model.DiffuseTexture, new PropertyEntry.EditorData
 			{

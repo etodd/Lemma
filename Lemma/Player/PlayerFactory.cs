@@ -597,7 +597,7 @@ namespace Lemma.Factories
 					footsteps.RespawnLocations = playerData.RespawnLocations;
 					
 					// Bind player data properties
-					entity.Add(new TwoWayBinding<float>(playerData.CameraShakeAmount, cameraControl.CameraShakeAmount));
+					entity.Add(new TwoWayBinding<float>(WorldFactory.Instance.Get<World>().CameraShakeAmount, cameraControl.CameraShakeAmount));
 					entity.Add(new TwoWayBinding<bool>(playerData.EnableRoll, rollKickSlide.EnableRoll));
 					entity.Add(new TwoWayBinding<bool>(playerData.EnableCrouch, player.EnableCrouch));
 					entity.Add(new TwoWayBinding<bool>(playerData.EnableKick, rollKickSlide.EnableKick));

@@ -2294,7 +2294,7 @@ namespace Lemma.Components
 				};
 				Main m = this.main;
 				Voxel.spawner = new Updater
-				{
+				(
 					delegate(float dt)
 					{
 						DynamicVoxelFactory factory = Factory.Get<DynamicVoxelFactory>();
@@ -2343,7 +2343,7 @@ namespace Lemma.Components
 								spawn.Callback(spawnedMaps);
 						}
 					}
-				};
+				);
 				Voxel.spawner.EnabledInEditMode = true;
 				Voxel.spawner.EnabledWhenPaused = true;
 				this.main.AddComponent(Voxel.spawner);

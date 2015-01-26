@@ -175,6 +175,7 @@
     <Compile Include="Player\FPSCamera.cs" />
     <Compile Include="Scripts\DialogueLink.cs" />
     <Compile Include="Scripts\DialogueTrigger.cs" />
+    <Compile Include="Scripts\RiftSpawner.cs" />
     <Compile Include="Scripts\SetPhoto.cs" />
     <Compile Include="Util\VoxelRip.cs" />
     <Compile Include="Components\World.cs" />

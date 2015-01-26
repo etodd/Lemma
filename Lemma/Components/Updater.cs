@@ -4,16 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Collections;
 using ComponentBind;
+using System.Xml.Serialization;
 
 namespace Lemma.Components
 {
-	public class Updater : Component<Main>, IEnumerable<Action<float>>, IUpdateableComponent
+	public class Updater : Component<Main>, IUpdateableComponent
 	{
-		protected List<Action<float>> actions = new List<Action<float>>();
+		[XmlIgnore]
+		public Action<float> Action;
 
 		public Updater()
 		{
 			this.EnabledInEditMode = false;
+		}
+
+		public Updater(Action<float> action = null)
+		{
+			this.Action = action;
 		}
 
 		public override void Awake()
@@ -35,29 +42,9 @@ namespace Lemma.Components
 			}
 		}
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return this.actions.GetEnumerator();
-		}
-
-		IEnumerator<Action<float>> IEnumerable<Action<float>>.GetEnumerator()
-		{
-			return this.actions.GetEnumerator();
-		}
-
-		public void Add(Action<float> action)
-		{
-			this.actions.Add(action);
-		}
-
 		public void Update(float elapsedTime)
 		{
-			for (int i = 0; i < this.actions.Count; i++)
-			{
-				this.actions[i](elapsedTime);
-				if (!this.Active)
-					break;
-			}
+			this.Action(elapsedTime);
 		}
 	}
 }

@@ -739,7 +739,7 @@ namespace Lemma.Factories
 			Container descriptionContainer = null;
 
 			Updater timelineUpdate = new Updater
-			{
+			(
 				delegate(float dt)
 				{
 					bool setTimelinePosition = false;
@@ -817,7 +817,7 @@ namespace Lemma.Factories
 							playbackLocation.Value += dt * playbackSpeed;
 					}
 				}
-			};
+			);
 			timelineUpdate.EnabledInEditMode = true;
 			entity.Add(timelineUpdate);
 

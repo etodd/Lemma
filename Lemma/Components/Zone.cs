@@ -28,6 +28,8 @@ namespace Lemma.Components
 
 		public Property<BuildMode> Build = new Property<BuildMode> { Value = BuildMode.CanBuild };
 
+		public Property<bool> RiftProof = new Property<bool>();
+
 		public Property<bool> DetailedShadows = new Property<bool> { Value = true };
 
 		public static IEnumerable<Zone> GetConnectedZones(Zone zone)
@@ -69,6 +71,7 @@ namespace Lemma.Components
 							new TwoWayBinding<bool>(z.Exclusive, this.Exclusive),
 							new TwoWayBinding<bool>(z.DetailedShadows, this.DetailedShadows),
 							new TwoWayBinding<BuildMode>(z.Build, this.Build),
+							new TwoWayBinding<bool>(z.RiftProof, this.RiftProof),
 						};
 						foreach (IBinding binding in parentBindings)
 							this.Add(binding);
@@ -81,13 +84,7 @@ namespace Lemma.Components
 				Lemma.Factories.WorldFactory.Instance.Get<World>().UpdateZones();
 			}, this.Parent, this.Exclusive, this.BoundingBox, this.Transform));
 
-			this.main.AddComponent(new PostInitialization
-			{
-				delegate()
-				{
-					this.Parent.Reset();
-				}
-			});
+			this.main.AddComponent(new PostInitialization { this.Parent.Reset });
 		}
 
 		public bool Contains(Vector3 x)
@@ -133,6 +130,16 @@ namespace Lemma.Components
 					defaultValue = false;
 			}
 			return defaultValue;
+		}
+		
+		public static bool CanSpawnRift(Vector3 pos)
+		{
+			foreach (Zone z in Zone.Zones)
+			{
+				if (z.Contains(pos) && z.RiftProof)
+					return false;
+			}
+			return true;
 		}
 	}
 }

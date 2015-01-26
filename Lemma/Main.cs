@@ -109,6 +109,7 @@ namespace Lemma
 			public Property<bool> Vsync = new Property<bool>();
 			public Property<float> SoundEffectVolume = new Property<float> { Value = 1.0f };
 			public Property<float> MusicVolume = new Property<float> { Value = 1.0f };
+			public Property<int> FPSLimit = new Property<int>();
 			public int Version;
 			public string UUID;
 			public Property<PCInput.PCInputBinding> Forward = new Property<PCInput.PCInputBinding>();
@@ -118,7 +119,6 @@ namespace Lemma
 			public Property<PCInput.PCInputBinding> Jump = new Property<PCInput.PCInputBinding>();
 			public Property<PCInput.PCInputBinding> Parkour = new Property<PCInput.PCInputBinding>();
 			public Property<PCInput.PCInputBinding> RollKick = new Property<PCInput.PCInputBinding>();
-			public Property<PCInput.PCInputBinding> SpecialAbility = new Property<PCInput.PCInputBinding>();
 			public Property<PCInput.PCInputBinding> TogglePhone = new Property<PCInput.PCInputBinding>();
 			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding>();
 			public Property<PCInput.PCInputBinding> ToggleFullscreen = new Property<PCInput.PCInputBinding>();
@@ -139,7 +139,6 @@ namespace Lemma
 				this.Jump.Value = new PCInput.PCInputBinding { Key = Keys.Space, GamePadButton = Buttons.RightTrigger };
 				this.Parkour.Value = new PCInput.PCInputBinding { Key = Keys.LeftShift, GamePadButton = Buttons.LeftTrigger };
 				this.RollKick.Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.LeftMouseButton, GamePadButton = Buttons.LeftStick };
-				this.SpecialAbility.Value = new PCInput.PCInputBinding { MouseButton = PCInput.MouseButton.RightMouseButton, GamePadButton = Buttons.RightStick };
 				this.TogglePhone.Value = new PCInput.PCInputBinding { Key = Keys.Tab, GamePadButton = Buttons.Y };
 				this.QuickSave.Value = new PCInput.PCInputBinding { Key = Keys.F5 };
 				this.ToggleFullscreen.Value = new PCInput.PCInputBinding { Key = Keys.F11 };
@@ -150,7 +149,7 @@ namespace Lemma
 				this.MouseSensitivity.Value = 1.0f;
 			}
 
-			public void FactoryDefaults()
+			public void DefaultOptions()
 			{
 				this.Version = Main.ConfigVersion;
 				this.Language.Value = default(Lang);
@@ -179,7 +178,12 @@ namespace Lemma
 				this.Vsync.Value = false;
 				this.SoundEffectVolume.Value = 1.0f;
 				this.MusicVolume.Value = 1.0f;
+				this.FPSLimit.Value = 120;
+			}
 
+			public void FactoryDefaults()
+			{
+				this.DefaultOptions();
 				this.DefaultControls();
 			}
 		}
@@ -254,6 +258,8 @@ namespace Lemma
 		private bool mapLoaded;
 
 		public Space Space;
+
+		private TimeSpan targetElapsedTime;
 
 		private List<IGraphicsComponent> graphicsComponents = new List<IGraphicsComponent>();
 		private List<IDrawableComponent> drawables = new List<IDrawableComponent>();
@@ -459,7 +465,7 @@ namespace Lemma
 
 		public ContentManager MapContent;
 
-		const float physicsTimeStep = 1.0f / 75.0f;
+		const int maxPhysicsFramerate = 75;
 		
 #if VR
 		public Main(bool vr)
@@ -483,7 +489,7 @@ namespace Lemma
 #endif
 
 			this.Space = new Space();
-			this.Space.TimeStepSettings.TimeStepDuration = physicsTimeStep;
+			this.Space.TimeStepSettings.TimeStepDuration = 1.0f / (float)maxPhysicsFramerate;
 			this.ScreenSize.Value = new Point(this.Window.ClientBounds.Width, this.Window.ClientBounds.Height);
 
 			// Give the space some threads to work with.
@@ -514,17 +520,6 @@ namespace Lemma
 
 			this.Camera = new Camera();
 			this.AddComponent(this.Camera);
-
-			new NotifyBinding
-			(
-				delegate()
-				{
-					float value = this.TimeMultiplier * this.BaseTimeMultiplier;
-					this.Space.TimeStepSettings.TimeStepDuration = physicsTimeStep * value;
-					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SLOWMOTION, Math.Min(1.0f, (1.0f - value) / 0.6f));
-				},
-				this.BaseTimeMultiplier, this.TimeMultiplier
-			);
 
 			Lemma.Console.Console.AddConVar(new ConVar("time_scale", "Time scale (percentage).", s =>
 			{
@@ -688,6 +683,13 @@ namespace Lemma
 			TextElement.BindableProperties.Add("ToggleFullscreen", this.Settings.ToggleFullscreen);
 			TextElement.BindableProperties.Add("RecenterVRPose", this.Settings.RecenterVRPose);
 
+			new NotifyBinding
+			(
+				this.updateTimesteps,
+				this.BaseTimeMultiplier, this.TimeMultiplier, this.Settings.FPSLimit
+			);
+			this.updateTimesteps();
+
 			if (this.Settings.FullscreenResolution.Value.X == 0)
 			{
 				Microsoft.Xna.Framework.Graphics.DisplayMode display = Microsoft.Xna.Framework.Graphics.GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
@@ -726,6 +728,14 @@ namespace Lemma
 				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true, this.Settings.Borderless);
 			else
 				this.ResizeViewport(this.Settings.Size.Value.X, this.Settings.Size.Value.Y, false, this.Settings.Borderless, false);
+		}
+
+		private void updateTimesteps()
+		{
+			float value = this.TimeMultiplier * this.BaseTimeMultiplier;
+			this.targetElapsedTime = TimeSpan.FromSeconds(1.0f / (float)this.Settings.FPSLimit);
+			this.Space.TimeStepSettings.TimeStepDuration = (1.0f / (float)Math.Min(maxPhysicsFramerate, this.Settings.FPSLimit)) * value;
+			AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SLOWMOTION, Math.Min(1.0f, (1.0f - value) / 0.6f));
 		}
 
 		private void saveTimes()
@@ -1538,8 +1548,14 @@ namespace Lemma
 			if (!this.IsActive)
 				return;
 
+			if (this.targetElapsedTime > gameTime.ElapsedGameTime)
+			{
+				TimeSpan diff = this.targetElapsedTime - gameTime.ElapsedGameTime;
+				Thread.Sleep(diff);
+			}
+
 			if (gameTime.ElapsedGameTime.TotalSeconds > 0.1f)
-				gameTime = new GameTime(gameTime.TotalGameTime, new TimeSpan((long)(0.1f * (float)TimeSpan.TicksPerSecond)), true);
+				gameTime = new GameTime(gameTime.TotalGameTime, TimeSpan.FromSeconds(0.1f), false);
 			this.GameTime = gameTime;
 			float dt = this.ElapsedTime.Value = (float)gameTime.ElapsedGameTime.TotalSeconds * this.TimeMultiplier * this.BaseTimeMultiplier;
 			if (!this.Paused)

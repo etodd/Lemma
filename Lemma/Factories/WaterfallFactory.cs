@@ -62,7 +62,7 @@ namespace Lemma.Factories
 			
 			Property<Vector2> offset = model.GetVector2Parameter("Offset");
 			Updater updater = new Updater
-			{
+			(
 				delegate(float dt)
 				{
 					offset.Value = new Vector2(0, main.TotalTime * -0.6f);
@@ -73,7 +73,7 @@ namespace Lemma.Factories
 					relativeCamera.Z = MathHelper.Clamp(relativeCamera.Z, -bounds.Z, bounds.Z);
 					soundPosition.Value = Vector3.Transform(relativeCamera, transform.Matrix);
 				}
-			};
+			);
 			updater.EnabledInEditMode = true;
 			entity.Add(updater);
 		}

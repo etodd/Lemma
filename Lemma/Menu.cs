@@ -1102,6 +1102,13 @@ namespace Lemma.Components
 			this.resizeToMenu(applyResolution);
 			settingsList.Children.Add(applyResolution);
 
+			Container fpsLimit = this.main.UIFactory.CreateScrollButton<int>("\\fps limit", this.main.Settings.FPSLimit, delegate(int delta)
+			{
+				this.main.Settings.FPSLimit.Value = Math.Max(30, this.main.Settings.FPSLimit + delta * 5);
+			});
+			this.resizeToMenu(fpsLimit);
+			settingsList.Children.Add(fpsLimit);
+
 			Container gamma = this.main.UIFactory.CreateScrollButton<float>("\\gamma", this.main.Renderer.Gamma, x => ((int)Math.Round(x * 100.0f)).ToString() + "%", delegate(int delta)
 			{
 				this.main.Renderer.Gamma.Value = Math.Max(0, Math.Min(2, this.main.Renderer.Gamma + (delta * 0.1f)));
@@ -1176,7 +1183,7 @@ namespace Lemma.Components
 			{
 				this.ShowDialog("\\reset options?", "\\reset", delegate()
 				{
-					this.main.Settings.FactoryDefaults();
+					this.main.Settings.DefaultOptions();
 					this.main.SaveSettings();
 				});
 			});
@@ -1319,7 +1326,6 @@ namespace Lemma.Components
 			addInputSetting(this.main.Settings.Jump, "\\jump", true, true);
 			addInputSetting(this.main.Settings.Parkour, "\\parkour", true, true);
 			addInputSetting(this.main.Settings.RollKick, "\\roll / kick", true, true);
-			addInputSetting(this.main.Settings.SpecialAbility, "\\special ability", true, true);
 			addInputSetting(this.main.Settings.TogglePhone, "\\toggle phone", true, true);
 			addInputSetting(this.main.Settings.QuickSave, "\\quicksave", true, true);
 			addInputSetting(this.main.Settings.ToggleConsole, "\\toggle console", true, true);
@@ -1328,14 +1334,25 @@ namespace Lemma.Components
 				addInputSetting(this.main.Settings.RecenterVRPose, "\\recenter pose", true, true);
 #endif
 
-			// Mapping LMB to toggle fullscreen makes it impossible to change any other settings.
-			// So don't allow it.
 #if VR
 			if (!this.main.VR)
 #endif
 			{
+				// Mapping LMB to toggle fullscreen makes it impossible to change any other settings.
+				// So don't allow it.
 				addInputSetting(this.main.Settings.ToggleFullscreen, "\\toggle fullscreen", true, false);
 			}
+
+			Container controlsReset = this.main.UIFactory.CreateButton("\\reset options", delegate()
+			{
+				this.ShowDialog("\\reset options?", "\\reset", delegate()
+				{
+					this.main.Settings.DefaultControls();
+					this.main.SaveSettings();
+				});
+			});
+			this.resizeToMenu(controlsReset);
+			controlsList.Children.Add(controlsReset);
 
 			// Start new button
 			Container startNew = this.main.UIFactory.CreateButton("\\new game", delegate()

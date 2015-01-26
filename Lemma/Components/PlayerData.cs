@@ -22,7 +22,6 @@ namespace Lemma.Components
 		public ListProperty<RespawnLocation> RespawnLocations = new ListProperty<RespawnLocation>();
 		public Property<bool> PhoneActive = new Property<bool>();
 		public Property<bool> NoteActive = new Property<bool>();
-		public Property<float> CameraShakeAmount = new Property<float>();
 		public Property<int> Collectibles = new Property<int>();
 		public Property<Voxel.t> CloudType = new Property<Voxel.t>();
 		public Property<int> CollapseLevel = new Property<int>();
