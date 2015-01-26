@@ -46,6 +46,8 @@ namespace Lemma.Components
 		private Dictionary<EffectBlock.Entry, int> generations = new Dictionary<EffectBlock.Entry, int>();
 		private EffectBlockFactory blockFactory;
 
+		private List<Voxel.Coord> removedPoweredCoords = new List<Voxel.Coord>();
+
 		private float lastShatterSound;
 
 		public override void Awake()
@@ -102,15 +104,13 @@ namespace Lemma.Components
 
 				this.Add(new CommandBinding<Voxel, IEnumerable<Voxel.Coord>, Voxel>(Voxel.GlobalCellsEmptied, delegate(Voxel map, IEnumerable<Voxel.Coord> coords, Voxel transferringToNewMap)
 				{
-					if (transferringToNewMap != null)
-						return;
-					
-					bool handlePowered = false;
 					foreach (Voxel.Coord coord in coords)
 					{
 						Voxel.t id = coord.Data.ID;
-						if (id == Voxel.t.Powered || id == Voxel.t.PoweredSwitch || id == Voxel.t.HardPowered)
-							handlePowered = true;
+						if (id == Voxel.t.Powered || id == Voxel.t.PoweredSwitch || id == Voxel.t.HardPowered || id == Voxel.t.PermanentPowered)
+							this.removedPoweredCoords.Add(coord);
+						if (transferringToNewMap != null)
+							continue;
 
 						if (id == Voxel.t.Critical) // Critical. Explodes when destroyed.
 							Explosion.Explode(main, map, coord);
@@ -211,9 +211,9 @@ namespace Lemma.Components
 						}
 					}
 
-					if (handlePowered)
+					if (this.removedPoweredCoords.Count > 0)
 					{
-						IEnumerable<IEnumerable<Voxel.Box>> poweredIslands = map.GetAdjacentIslands(coords.Where(x => x.Data.ID == Voxel.t.Powered), x => x.ID == Voxel.t.Powered || x.ID == Voxel.t.HardPowered, x => x == Voxel.States.PermanentPowered || x == Voxel.States.PoweredSwitch);
+						IEnumerable<IEnumerable<Voxel.Box>> poweredIslands = map.GetAdjacentIslands(this.removedPoweredCoords, x => x.ID == Voxel.t.Powered || x.ID == Voxel.t.HardPowered, x => x == Voxel.States.PermanentPowered || x == Voxel.States.PoweredSwitch);
 						List<Voxel.Coord> poweredCoords = poweredIslands.SelectMany(x => x).SelectMany(x => x.GetCoords()).ToList();
 						if (poweredCoords.Count > 0)
 						{
@@ -222,12 +222,13 @@ namespace Lemma.Components
 							{
 								Voxel.Coord coord = poweredCoords[i];
 								if (coord.Data.ID == Voxel.t.HardPowered)
-									map.Fill(coord, Voxel.States.Hard);
+									map.Fill(coord, Voxel.States.Hard, false);
 								else
-									map.Fill(coord, Voxel.States.Blue);
+									map.Fill(coord, Voxel.States.Blue, false);
 							}
 							map.Regenerate();
 						}
+						this.removedPoweredCoords.Clear();
 					}
 				}));
 			}

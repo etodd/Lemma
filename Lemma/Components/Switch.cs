@@ -32,9 +32,11 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Vector3> Position = new Property<Vector3>();
 
-		private static bool isPowered(Voxel.State state)
+		private static bool canConnect(Voxel.State state)
 		{
-			return state == Voxel.States.Powered || state == Voxel.States.PoweredSwitch || state == Voxel.States.HardPowered;
+			return state == Voxel.States.Powered
+				|| state == Voxel.States.HardPowered
+				|| state == Voxel.States.PoweredSwitch;
 		}
 
 		public override void Awake()
@@ -60,53 +62,59 @@ namespace Lemma.Components
 			{
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SWITCH_ON, this.Entity);
 				Voxel map = this.AttachedVoxel.Value.Target.Get<Voxel>();
-				bool regenerate = false;
+				List<Voxel.Coord> changes = new List<Voxel.Coord>();
 				Stack<Voxel.Box> path = new Stack<Voxel.Box>();
+				Queue<Voxel.Coord> queue = new Queue<Voxel.Coord>();
 				foreach (Switch s in Switch.all)
 				{
 					if (s.On && s != this && s.AttachedVoxel.Value.Target == this.AttachedVoxel.Value.Target
-						&& VoxelAStar.Broadphase(map, map.GetBox(this.Coord), s.Coord, isPowered, path))
+						&& VoxelAStar.Broadphase(map, map.GetBox(this.Coord), s.Coord, canConnect, path))
 					{
-						Queue<Voxel.Coord> queue = new Queue<Voxel.Coord>();
 						Voxel.Coord start = s.Coord;
 						start.Data = map[start];
 						queue.Enqueue(start);
 						while (queue.Count > 0)
 						{
 							Voxel.Coord c = queue.Dequeue();
-							map.Empty(c, true, true, map);
-							if (c.Data == Voxel.States.PoweredSwitch)
-								map.Fill(c, Voxel.States.Switch);
-							else
-								map.Fill(c, Voxel.States.Hard);
-							regenerate = true;
+
 							c.Data = null; // Ensure the visited dictionary works correctly
 							Voxel.CoordDictionaryCache[c] = true;
+
+							Voxel.Coord change = c.Clone();
+							change.Data = Voxel.States.Switch;
+							changes.Add(change);
+
 							foreach (Direction adjacentDirection in DirectionExtensions.Directions)
 							{
 								Voxel.Coord adjacentCoord = c.Move(adjacentDirection);
 								if (!Voxel.CoordDictionaryCache.ContainsKey(adjacentCoord))
 								{
-									adjacentCoord.Data = map[adjacentCoord];
-									if (adjacentCoord.Data == Voxel.States.PoweredSwitch)
+									Voxel.State adjacentState = map[adjacentCoord];
+									if (adjacentState == Voxel.States.PoweredSwitch)
 										queue.Enqueue(adjacentCoord);
-									else if (adjacentCoord.Data == Voxel.States.Blue
-										|| adjacentCoord.Data == Voxel.States.Powered
-										|| adjacentCoord.Data == Voxel.States.Infected)
+									else if ((adjacentState == Voxel.States.Blue || adjacentState == Voxel.States.Powered)
+										&& path.Contains(map.GetBox(adjacentCoord)))
 									{
-										map.Empty(adjacentCoord, true, true, map);
-										map.Fill(adjacentCoord, Voxel.States.Neutral);
-										regenerate = true;
+										adjacentCoord.Data = Voxel.States.Neutral;
+										changes.Add(adjacentCoord);
 									}
 								}
 							}
 						}
 					}
 					path.Clear();
+					queue.Clear();
 				}
 				Voxel.CoordDictionaryCache.Clear();
-				if (regenerate)
+				if (changes.Count > 0)
+				{
+					lock (map.MutationLock)
+					{
+						map.Empty(changes, true, true, map);
+						map.Fill(changes);
+					}
 					map.Regenerate();
+				}
 			}));
 		}
 

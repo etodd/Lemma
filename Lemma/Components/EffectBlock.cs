@@ -131,6 +131,11 @@ namespace Lemma.Components
 											this.StateId = Voxel.t.Neutral;
 											break;
 										}
+										else if (adjacentID == Voxel.t.Powered || adjacentID == Voxel.t.PermanentPowered || adjacentID == Voxel.t.PoweredSwitch || adjacentID == Voxel.t.HardPowered)
+										{
+											this.StateId = Voxel.t.Powered;
+											break;
+										}
 									}
 									else
 										break;
@@ -165,7 +170,7 @@ namespace Lemma.Components
 						if (!foundConflict)
 						{
 							Voxel.State state = m[this.Coord];
-							if (state.Permanent)
+							if (state.Permanent || state.Hard || state.ID == this.StateId || (blue && state == Voxel.States.Powered))
 								foundConflict = true;
 							else
 							{

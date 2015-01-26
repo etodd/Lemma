@@ -339,7 +339,8 @@ namespace Lemma.Components
 				DiffuseMap = "Textures\\glass",
 				NormalMap = "Textures\\glass-normal",
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
-				ShadowCast = false,
+				ShadowCast = true,
+				AlphaShadowMask = true,
 				Materials = new[]
 				{
 					new Model.Material
@@ -1139,6 +1140,8 @@ namespace Lemma.Components
 			public float Density;
 			[DefaultValue(false)]
 			public bool AllowAlpha;
+			[DefaultValue(false)]
+			public bool AlphaShadowMask;
 			[DefaultValue(true)]
 			public bool ShadowCast = true;
 			[DefaultValue(false)]
@@ -1167,9 +1170,9 @@ namespace Lemma.Components
 					model.Add(new Binding<string>(model.TechniquePostfix, delegate(string overlay)
 					{
 						if (string.IsNullOrEmpty(overlay))
-							return this.AllowAlpha ? "Alpha" : "";
+							return this.AllowAlpha ? "Alpha" : (this.AlphaShadowMask ? "ShadowMask" : "");
 						else
-							return this.AllowAlpha ? "OverlayAlpha" : "Overlay";
+							return this.AllowAlpha ? "OverlayAlpha" : (this.AlphaShadowMask ? "OverlayShadowMask" : "Overlay");
 					}, world.OverlayTexture));
 					model.Add(new Binding<Texture2D>(model.GetTexture2DParameter("Overlay" + Model.SamplerPostfix), world.OverlayTextureHandle));
 					model.Add(new Binding<float>(model.GetFloatParameter("OverlayTiling"), x => 0.075f * x, world.OverlayTiling));
@@ -1625,6 +1628,17 @@ namespace Lemma.Components
 			public int Y;
 			public int Z;
 			public State Data;
+
+			public Coord WithData(State state)
+			{
+				return new Coord
+				{
+					X = this.X,
+					Y = this.Y,
+					Z = this.Z,
+					Data = state,
+				};
+			}
 
 			public static readonly int SizeInBytes = 3 * sizeof(int) + IntPtr.Size;
 
@@ -2746,6 +2760,35 @@ namespace Lemma.Components
 			if (filled && notify)
 				this.notifyFilled(new Coord[] { new Coord { X = x, Y = y, Z = z, Data = state } }, null);
 			return filled;
+		}
+
+		public void Fill(IEnumerable<Coord> coords, bool notify = true)
+		{
+			if (!this.main.EditorEnabled && !this.Mutable)
+				return;
+
+			List<Coord> notifyList = null;
+			if (notify)
+				notifyList = new List<Coord>();
+			lock (this.MutationLock)
+			{
+				foreach (Voxel.Coord c in coords)
+				{
+					int x = c.X, y = c.Y, z = c.Z;
+					Chunk chunk = this.GetChunk(x, y, z);
+					if (chunk != null)
+					{
+						if (chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z] == null)
+						{
+							this.addBox(new Box { Type = c.Data, X = x, Y = y, Z = z, Depth = 1, Height = 1, Width = 1 });
+							notifyList.Add(c);
+						}
+					}
+				}
+			}
+			if (notify)
+				this.notifyFilled(notifyList, null);
+			return;
 		}
 
 		private void notifyFilled(IEnumerable<Coord> coords, Voxel transferredFromMap)
@@ -3887,7 +3930,7 @@ namespace Lemma.Components
 			// Build adjacency lists
 			foreach (Coord removal in removals)
 			{
-				if (this[removal].ID != 0) // A new block was subsequently filled in after removal. Forget about it.
+				if (this[removal] != Voxel.States.Empty) // A new block was subsequently filled in after removal. Forget about it.
 					continue;
 
 				for (int i = 0; i < 6; i++)
@@ -3923,14 +3966,9 @@ namespace Lemma.Components
 		{
 			List<Dictionary<Box, bool>> lists = new List<Dictionary<Box, bool>>();
 
-			bool foundSearchBlock = false;
-
 			// Build adjacency lists
 			foreach (Coord removal in removals)
 			{
-				if (this[removal].ID != 0) // A new block was subsequently filled in after removal. Forget about it.
-					continue;
-
 				for (int i = 0; i < 6; i++)
 				{
 					Coord adjacentCoord = removal.Move(DirectionExtensions.Directions[i]);
@@ -3951,16 +3989,12 @@ namespace Lemma.Components
 						continue;
 					Dictionary<Box, bool> newList = new Dictionary<Box, bool>();
 					bool found = this.buildAdjacency(box, this.externalBoxAdjacencyCache, newList, filter, search);
-					foundSearchBlock |= found;
 					if (!found && newList.Count > 0)
 						lists.Add(newList);
 				}
 			}
 
-			if (foundSearchBlock)
-				return lists.Select(x => x.Keys);
-			else
-				return new Box[][] { };
+			return lists.Select(x => x.Keys);
 		}
 
 		private bool adjacentToFilledCell(Coord coord)

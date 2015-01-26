@@ -50,10 +50,12 @@ namespace Lemma.Components
 					Voxel.Box b = map.GetBox(this.Coord);
 					if (b != null && b.Type != state)
 					{
-						List<Voxel.Box> boxes = map.GetContiguousByType(new[] { b }).ToList();
-						map.Empty(boxes.SelectMany(x => x.GetCoords()), true, true, map);
-						foreach (Voxel.Coord c in boxes.SelectMany(x => x.GetCoords()))
-							map.Fill(c, state);
+						List<Voxel.Coord> coords = map.GetContiguousByType(new[] { b }).SelectMany(x => x.GetCoords()).Select(x => x.WithData(state)).ToList();
+						lock (map.MutationLock)
+						{
+							map.Empty(coords, true, true);
+							map.Fill(coords);
+						}
 						map.Regenerate();
 					}
 				}
@@ -61,8 +63,11 @@ namespace Lemma.Components
 				{
 					if (map[this.Coord] != state)
 					{
-						map.Empty(this.Coord, true, true, map);
-						map.Fill(this.Coord, state);
+						lock (map.MutationLock)
+						{
+							map.Empty(this.Coord, true, true);
+							map.Fill(this.Coord, state);
+						}
 						map.Regenerate();
 					}
 				}

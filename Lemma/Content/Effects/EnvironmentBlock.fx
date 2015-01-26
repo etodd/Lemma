@@ -144,7 +144,33 @@ technique Shadow
 	}
 }
 
+technique ShadowShadowMask
+{
+	pass p0
+	{
+		ZEnable = true;
+		ZWriteEnable = true;
+		AlphaBlendEnable = false;
+	
+		VertexShader = compile vs_3_0 ShadowVS();
+		PixelShader = compile ps_3_0 ShadowPS();
+	}
+}
+
 technique ShadowOverlay
+{
+	pass p0
+	{
+		ZEnable = true;
+		ZWriteEnable = true;
+		AlphaBlendEnable = false;
+	
+		VertexShader = compile vs_3_0 ShadowVS();
+		PixelShader = compile ps_3_0 ShadowPS();
+	}
+}
+
+technique ShadowOverlayShadowMask
 {
 	pass p0
 	{
@@ -170,7 +196,33 @@ technique Render
 	}
 }
 
+technique RenderShadowMask
+{
+	pass p0
+	{
+		ZEnable = true;
+		ZWriteEnable = true;
+		AlphaBlendEnable = false;
+	
+		VertexShader = compile vs_3_0 RenderVS();
+		PixelShader = compile ps_3_0 RenderTextureNormalMapPlainPS();
+	}
+}
+
 technique RenderOverlay
+{
+	pass p0
+	{
+		ZEnable = true;
+		ZWriteEnable = true;
+		AlphaBlendEnable = false;
+	
+		VertexShader = compile vs_3_0 RenderOverlayVS();
+		PixelShader = compile ps_3_0 RenderTextureNormalMapPlainOverlayPS();
+	}
+}
+
+technique RenderOverlayShadowMask
 {
 	pass p0
 	{
@@ -196,7 +248,33 @@ technique Clip
 	}
 }
 
+technique ClipShadowMask
+{
+	pass p0
+	{
+		ZEnable = true;
+		ZWriteEnable = true;
+		AlphaBlendEnable = false;
+
+		VertexShader = compile vs_3_0 ClipVS();
+		PixelShader = compile ps_3_0 ClipTextureNormalMapPlainPS();
+	}
+}
+
 technique ClipOverlay
+{
+	pass p0
+	{
+		ZEnable = true;
+		ZWriteEnable = true;
+		AlphaBlendEnable = false;
+
+		VertexShader = compile vs_3_0 ClipOverlayVS();
+		PixelShader = compile ps_3_0 ClipTextureNormalMapPlainOverlayPS();
+	}
+}
+
+technique ClipOverlayShadowMask
 {
 	pass p0
 	{
