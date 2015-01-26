@@ -1104,7 +1104,7 @@ namespace Lemma.Components
 
 			Container fpsLimit = this.main.UIFactory.CreateScrollButton<int>("\\fps limit", this.main.Settings.FPSLimit, delegate(int delta)
 			{
-				this.main.Settings.FPSLimit.Value = Math.Max(30, this.main.Settings.FPSLimit + delta * 5);
+				this.main.Settings.FPSLimit.Value = Math.Max(20, this.main.Settings.FPSLimit + delta * 5);
 			});
 			this.resizeToMenu(fpsLimit);
 			settingsList.Children.Add(fpsLimit);

@@ -48,7 +48,7 @@ namespace Lemma.Factories
 					MaxEndSize = 0.0f,
 					MinColor = new Vector4(1.0f, 1.0f, 1.0f, 1.0f),
 					MaxColor = new Vector4(1.0f, 1.0f, 1.0f, 1.0f),
-					EmitterVelocitySensitivity = 0.0f,
+					EmitterVelocitySensitivity = 1.0f,
 					BlendState = BlendState.Opaque,
 					Material = new Components.Model.Material { SpecularIntensity = 0.0f, SpecularPower = 1.0f },
 				});
@@ -61,10 +61,13 @@ namespace Lemma.Factories
 
 			this.SetMain(entity, main);
 
+			emitter.CalculateVelocity = false;
 			emitter.ParticleType.Value = "Dust";
 			emitter.Jitter.Value = new Vector3(10, 10, 10);
 			emitter.ParticlesPerSecond.Value = 300;
 			emitter.Add(new Binding<Vector3>(emitter.Position, main.Camera.Position));
+
+			entity.Add("Velocity", emitter.VelocityOffset);
 
 			entity.Add(new PostInitialization
 			{

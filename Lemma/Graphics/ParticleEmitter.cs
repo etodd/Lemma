@@ -30,6 +30,9 @@ namespace Lemma.Components
 		}
 		public Property<string> ParticleType = new Property<string>();
 		public Property<Vector3> Position = new Property<Vector3>();
+		public Property<Vector3> VelocityOffset = new Property<Vector3>();
+		[XmlIgnore]
+		public bool CalculateVelocity = true;
 		public Property<Vector3> Jitter = new Property<Vector3>();
 		protected bool lastPositionSet = false;
 		protected Vector3 lastPosition;
@@ -117,9 +120,9 @@ namespace Lemma.Components
 		/// Updates the emitter, creating the appropriate number of particles
 		/// in the appropriate positions.
 		/// </summary>
-		public void Update(float elapsedTime)
+		public void Update(float dt)
 		{
-			if (elapsedTime == 0 || this.particleSystem == null || this.timeBetweenParticles == 0)
+			if (dt == 0 || this.particleSystem == null || this.timeBetweenParticles == 0)
 				return;
 
 			// Set the initial "last position" so we don't add particles between (0, 0, 0) and our initial location
@@ -130,11 +133,11 @@ namespace Lemma.Components
 			}
 
 			// Work out how fast we are moving.
-			Vector3 velocity = (this.Position.Value - this.lastPosition) / elapsedTime;
+			Vector3 velocity = this.CalculateVelocity ? this.VelocityOffset + (this.Position.Value - this.lastPosition) / dt : this.VelocityOffset;
 
 			// If we had any time left over that we didn't use during the
 			// previous update, add that to the current elapsed time.
-			float timeToSpend = this.timeLeftOver + elapsedTime;
+			float timeToSpend = this.timeLeftOver + dt;
 				
 			// Counter for looping over the time interval.
 			float currentTime = -this.timeLeftOver;
@@ -150,7 +153,7 @@ namespace Lemma.Components
 				// Work out the optimal position for this particle. This will produce
 				// evenly spaced particles regardless of the object speed, particle
 				// creation frequency, or game update rate.
-				float mu = currentTime / elapsedTime;
+				float mu = currentTime / dt;
 
 				Vector3 position = Vector3.Lerp(this.lastPosition, this.Position, mu);
 				position += new Vector3(2.0f * ((float)random.NextDouble() - 0.5f) * jitter.X, 2.0f * ((float)random.NextDouble() - 0.5f) * jitter.Y, 2.0f * ((float)random.NextDouble() - 0.5f) * jitter.Z);
