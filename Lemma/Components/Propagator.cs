@@ -217,16 +217,19 @@ namespace Lemma.Components
 						List<Voxel.Coord> poweredCoords = poweredIslands.SelectMany(x => x).SelectMany(x => x.GetCoords()).ToList();
 						if (poweredCoords.Count > 0)
 						{
-							map.Empty(poweredCoords, true, true, map, false);
-							for (int i = 0; i < poweredCoords.Count; i++)
+							lock (map.MutationLock)
 							{
-								Voxel.Coord coord = poweredCoords[i];
-								if (coord.Data.ID == Voxel.t.HardPowered)
-									map.Fill(coord, Voxel.States.Hard, false);
-								else
-									map.Fill(coord, Voxel.States.Blue, false);
+								map.Empty(poweredCoords, true, true, map, false);
+								for (int i = 0; i < poweredCoords.Count; i++)
+								{
+									Voxel.Coord coord = poweredCoords[i];
+									if (coord.Data.ID == Voxel.t.HardPowered)
+										map.Fill(coord, Voxel.States.Hard, false);
+									else
+										map.Fill(coord, Voxel.States.Blue, false);
+								}
 							}
-							map.Regenerate();
+							this.toRegenerate.Add(map);
 						}
 						this.removedPoweredCoords.Clear();
 					}

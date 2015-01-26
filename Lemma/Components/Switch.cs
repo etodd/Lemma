@@ -68,7 +68,7 @@ namespace Lemma.Components
 				foreach (Switch s in Switch.all)
 				{
 					if (s.On && s != this && s.AttachedVoxel.Value.Target == this.AttachedVoxel.Value.Target
-						&& VoxelAStar.Broadphase(map, map.GetBox(this.Coord), s.Coord, canConnect, path))
+						&& VoxelAStar.Broadphase(map, map.GetBox(this.Coord), s.Coord, canConnect, path, 2000))
 					{
 						Voxel.Coord start = s.Coord;
 						start.Data = map[start];

@@ -31,84 +31,86 @@ namespace Lemma.Util
 		private static PriorityQueue<BroadphaseEntry> broadphaseQueue = new PriorityQueue<BroadphaseEntry>(new LambdaComparer<BroadphaseEntry>((x, y) => x.F.CompareTo(y.F)));
 		private static Dictionary<Voxel.Box, BroadphaseEntry> broadphaseQueueLookup = new Dictionary<Voxel.Box, BroadphaseEntry>();
 
-		public static bool Broadphase(Voxel m, Voxel.Box start, Voxel.Coord target, Func<Voxel.State, bool> filter, Stack<Voxel.Box> result)
+		public static bool Broadphase(Voxel m, Voxel.Box start, Voxel.Coord target, Func<Voxel.State, bool> filter, Stack<Voxel.Box> result, int maxIterations = 50)
 		{
-			Voxel.Box targetBox = m.GetBox(target);
-			Vector3 targetPos = m.GetRelativePosition(target);
-			BroadphaseEntry startEntry = new BroadphaseEntry
-			{
-				Parent = null,
-				Box = start,
-				G = 0,
-				F = (targetPos - start.GetCenter()).Length(),
-				BoxSize = Math.Max(start.Width, Math.Max(start.Height, start.Depth)),
-			};
-			broadphaseQueue.Push(startEntry);
-			broadphaseQueueLookup[start] = startEntry;
-
 			BroadphaseEntry closestEntry = null;
-			float closestHeuristic = float.MaxValue;
-
-			int iterations = 0;
 			bool found = false;
-			while (broadphaseQueue.Count > 0 && iterations < 50)
+			lock (m.MutationLock)
 			{
-				iterations++;
-
-				BroadphaseEntry entry = broadphaseQueue.Pop();
-
-				if (entry.Box == targetBox)
+				Vector3 targetPos = m.GetRelativePosition(target);
+				BroadphaseEntry startEntry = new BroadphaseEntry
 				{
-					closestEntry = entry;
-					found = true;
-					break;
-				}
+					Parent = null,
+					Box = start,
+					G = 0,
+					F = (targetPos - start.GetCenter()).Length(),
+					BoxSize = Math.Max(start.Width, Math.Max(start.Height, start.Depth)),
+				};
+				broadphaseQueue.Push(startEntry);
+				broadphaseQueueLookup[start] = startEntry;
 
-				broadphaseQueueLookup.Remove(entry.Box);
+				float closestHeuristic = float.MaxValue;
 
-				broadphaseClosed[entry.Box] = entry.G;
-				lock (entry.Box.Adjacent)
+				int iterations = 0;
+				while (broadphaseQueue.Count > 0 && iterations < maxIterations)
 				{
-					for (int i = 0; i < entry.Box.Adjacent.Count; i++)
+					iterations++;
+
+					BroadphaseEntry entry = broadphaseQueue.Pop();
+
+					if (entry.Box.Contains(target))
 					{
-						Voxel.Box adjacent = entry.Box.Adjacent[i];
-						if (adjacent == null || !filter(adjacent.Type))
-							continue;
+						closestEntry = entry;
+						found = true;
+						break;
+					}
 
-						int boxSize = (int)((adjacent.Width + adjacent.Height + adjacent.Depth) / 3.0f);
+					broadphaseQueueLookup.Remove(entry.Box);
 
-						int tentativeGScore = entry.G + boxSize;
-
-						int previousGScore;
-						bool hasPreviousGScore = broadphaseClosed.TryGetValue(adjacent, out previousGScore);
-
-						if (hasPreviousGScore && tentativeGScore > previousGScore)
-							continue;
-
-						BroadphaseEntry alreadyInQueue;
-						broadphaseQueueLookup.TryGetValue(adjacent, out alreadyInQueue);
-
-						if (alreadyInQueue == null || tentativeGScore < previousGScore)
+					broadphaseClosed[entry.Box] = entry.G;
+					lock (entry.Box.Adjacent)
+					{
+						for (int i = 0; i < entry.Box.Adjacent.Count; i++)
 						{
-							BroadphaseEntry newEntry = alreadyInQueue != null ? alreadyInQueue : new BroadphaseEntry();
+							Voxel.Box adjacent = entry.Box.Adjacent[i];
+							if (adjacent == null || !filter(adjacent.Type))
+								continue;
 
-							newEntry.Parent = entry;
-							newEntry.G = tentativeGScore;
-							float heuristic = (targetPos - adjacent.GetCenter()).Length();
-							newEntry.F = tentativeGScore + heuristic;
+							int boxSize = (int)((adjacent.Width + adjacent.Height + adjacent.Depth) / 3.0f);
 
-							if (heuristic < closestHeuristic)
+							int tentativeGScore = entry.G + boxSize;
+
+							int previousGScore;
+							bool hasPreviousGScore = broadphaseClosed.TryGetValue(adjacent, out previousGScore);
+
+							if (hasPreviousGScore && tentativeGScore > previousGScore)
+								continue;
+
+							BroadphaseEntry alreadyInQueue;
+							broadphaseQueueLookup.TryGetValue(adjacent, out alreadyInQueue);
+
+							if (alreadyInQueue == null || tentativeGScore < previousGScore)
 							{
-								closestEntry = newEntry;
-								closestHeuristic = heuristic;
-							}
+								BroadphaseEntry newEntry = alreadyInQueue != null ? alreadyInQueue : new BroadphaseEntry();
 
-							if (alreadyInQueue == null)
-							{
-								newEntry.Box = adjacent;
-								newEntry.BoxSize = boxSize;
-								broadphaseQueue.Push(newEntry);
-								broadphaseQueueLookup[adjacent] = newEntry;
+								newEntry.Parent = entry;
+								newEntry.G = tentativeGScore;
+								float heuristic = (targetPos - adjacent.GetCenter()).Length();
+								newEntry.F = tentativeGScore + heuristic;
+
+								if (heuristic < closestHeuristic)
+								{
+									closestEntry = newEntry;
+									closestHeuristic = heuristic;
+								}
+
+								if (alreadyInQueue == null)
+								{
+									newEntry.Box = adjacent;
+									newEntry.BoxSize = boxSize;
+									broadphaseQueue.Push(newEntry);
+									broadphaseQueueLookup[adjacent] = newEntry;
+								}
 							}
 						}
 					}
