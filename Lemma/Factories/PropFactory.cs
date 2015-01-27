@@ -26,7 +26,6 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			Model model = entity.GetOrCreate<Model>("Model");
-			model.MapContent.Value = true;
 
 			this.SetMain(entity, main);
 

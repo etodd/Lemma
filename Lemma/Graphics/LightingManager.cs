@@ -60,7 +60,7 @@ namespace Lemma.Components
 
 		private void loadEnvironmentMap(string file)
 		{
-			this.environmentMap = file == null ? (TextureCube)null : this.main.Content.Load<TextureCube>(file);
+			this.environmentMap = file == null ? (TextureCube)null : this.main.MapContent.Load<TextureCube>(file);
 		}
 
 		public override void Awake()

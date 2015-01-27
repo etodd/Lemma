@@ -52,7 +52,6 @@ namespace Lemma.Factories
 			distortionEmitter.Jitter.Value = new Vector3(0.5f);
 
 			Model model = entity.GetOrCreate<Model>("Model");
-			model.MapContent.Value = true;
 			model.Filename.Value = "Models\\sphere";
 			model.Serialize = false;
 			model.Scale.Value = new Vector3(0.5f);

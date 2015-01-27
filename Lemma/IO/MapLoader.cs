@@ -127,6 +127,7 @@ namespace Lemma.IO
 			typeof(PowerBlockSocket),
 			typeof(Sequence),
 			typeof(Updater),
+			typeof(LogicGate),
 		};
 
 		public static XmlSerializer Serializer;

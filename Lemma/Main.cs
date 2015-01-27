@@ -430,6 +430,7 @@ namespace Lemma
 			if (this.MapContent != null)
 				this.MapContent.Unload();
 			ParticleSystem.Reset();
+			this.LightingManager.EnvironmentMap.Value = null;
 			this.MapContent = new ContentManager(this.Services);
 			this.MapContent.RootDirectory = this.Content.RootDirectory;
 
@@ -882,6 +883,9 @@ namespace Lemma
 
 			if (this.firstLoadContentCall)
 			{
+				this.MapContent = new ContentManager(this.Services);
+				this.MapContent.RootDirectory = this.Content.RootDirectory;
+
 				this.GraphicsDevice.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
 				this.GeeUI = new GeeUIMain();
 				this.AddComponent(GeeUI);

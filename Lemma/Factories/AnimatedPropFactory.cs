@@ -26,7 +26,6 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			AnimatedModel model = entity.GetOrCreate<AnimatedModel>("Model");
-			model.MapContent.Value = true;
 
 			AnimatedProp prop = entity.GetOrCreate<AnimatedProp>("AnimatedProp");
 

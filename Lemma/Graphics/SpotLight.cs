@@ -74,7 +74,7 @@ namespace Lemma.Components
 				{
 					try
 					{
-						return this.main.Content.Load<Texture2D>(value);
+						return this.main.MapContent.Load<Texture2D>(value);
 					}
 					catch
 					{
@@ -97,7 +97,7 @@ namespace Lemma.Components
 			{
 				try
 				{
-					this.CookieTexture.Value = this.main.Content.Load<Texture2D>(this.CookieTextureFile);
+					this.CookieTexture.Value = this.main.MapContent.Load<Texture2D>(this.CookieTextureFile);
 				}
 				catch (Exception)
 				{

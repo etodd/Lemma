@@ -33,6 +33,7 @@ namespace Lemma.Factories
 			entity.Add("Advance", sequence.Advance);
 			entity.Add("Done", sequence.Done);
 			entity.Add("Index", sequence.Index);
+			entity.Add("Reset", sequence.Reset);
 			entity.Add("Disable", ticker.Disable);
 			entity.Add("Enable", ticker.Enable);
 			entity.Add("Enabled", ticker.Enabled);

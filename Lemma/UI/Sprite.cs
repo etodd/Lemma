@@ -26,6 +26,13 @@ namespace Lemma.Components
 			}));
 		}
 
+		public override void delete()
+		{
+			if (this.IsStandardImage)
+				this.texture.Dispose();
+			base.delete();
+		}
+
 		public override void LoadContent(bool reload)
 		{
 			base.LoadContent(reload);
@@ -48,7 +55,7 @@ namespace Lemma.Components
 						this.texture = Texture2D.FromStream(this.main.GraphicsDevice, stream);
 				}
 				else
-					this.texture = this.main.Content.Load<Texture2D>(file);
+					this.texture = this.main.MapContent.Load<Texture2D>(file);
 				this.Size.Value = new Vector2(this.texture.Width, this.texture.Height);
 			}
 		}

@@ -17,6 +17,9 @@ namespace Lemma.Components
 		public Command Advance = new Command();
 
 		[XmlIgnore]
+		public Command Reset = new Command();
+
+		[XmlIgnore]
 		public Command Done = new Command();
 
 		public Property<int> Index = new Property<int>();
@@ -26,6 +29,12 @@ namespace Lemma.Components
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
 			this.Advance.Action = this.advance;
+			this.Reset.Action = this.reset;
+		}
+
+		private void reset()
+		{
+			this.Index.Value = 0;
 		}
 		
 		private void advance()

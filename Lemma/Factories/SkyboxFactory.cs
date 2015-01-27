@@ -35,7 +35,6 @@ namespace Lemma.Factories
 
 			ModelAlpha model = entity.Get<ModelAlpha>("Skybox");
 			model.Filename.Value = "InternalModels\\skybox";
-			model.MapContent.Value = true;
 			base.Bind(entity, main, creating);
 			entity.CannotSuspendByDistance = true;
 

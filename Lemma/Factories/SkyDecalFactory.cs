@@ -32,7 +32,6 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			ModelAlpha model = entity.Get<ModelAlpha>("Model");
-			model.MapContent.Value = true;
 			model.Filename.Value = "Models\\plane";
 			model.EffectFile.Value = "Effects\\SkyDecal";
 			base.Bind(entity, main, creating);
