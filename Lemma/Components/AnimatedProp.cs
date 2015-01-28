@@ -30,7 +30,7 @@ namespace Lemma.Components
 			}));
 			this.Add(new ChangeBinding<bool>(this.Loop, delegate(bool old, bool value)
 			{
-				if (!string.IsNullOrEmpty(this.Clip))
+				if (!string.IsNullOrEmpty(this.Clip) && this.model.Clips.ContainsKey(this.Clip))
 					this.model[this.Clip].Loop = value;
 			}));
 			this.Add(new CommandBinding(this.Enable, (Action)this.play));
@@ -45,7 +45,7 @@ namespace Lemma.Components
 
 		private void play()
 		{
-			if (!string.IsNullOrEmpty(this.Clip) && this.Enabled && !this.model.IsPlaying(this.Clip))
+			if (!string.IsNullOrEmpty(this.Clip) && this.Enabled && !this.model.IsPlaying(this.Clip) && this.model.Clips.ContainsKey(this.Clip))
 				this.model.StartClip(this.Clip, 0, this.Loop);
 		}
 

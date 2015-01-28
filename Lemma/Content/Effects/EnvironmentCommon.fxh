@@ -15,7 +15,7 @@ void CalculateOverlayUVs(float3 pos, float3 normal, out TexturePSInput tex, out 
 {
 	float diff = length(pos * normal) * 2;
 	float2 uv = float2(diff + pos.x + (pos.z * normal.x), diff - pos.y + (pos.z * normal.y));
-	overlay.uvCoordinates = uv * OverlayTiling;
+	overlay.uvCoordinates = uv * OverlayTiling + UVOffset;
 	tex.uvCoordinates = mul(uv, UVScaleRotation) + UVOffset;
 }
 

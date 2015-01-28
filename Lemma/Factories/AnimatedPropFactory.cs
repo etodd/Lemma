@@ -44,11 +44,9 @@ namespace Lemma.Factories
 				clips = new ListProperty<string>();
 				model.Add(new ChangeBinding<string>(model.Filename, delegate(string old, string value)
 				{
+					clips.Clear();
 					if (model.IsValid)
-					{
-						clips.Clear();
 						clips.AddAll(model.Clips.Keys);
-					}
 				}));
 			}
 			entity.Add("Clip", prop.Clip, new PropertyEntry.EditorData { Options = clips, });

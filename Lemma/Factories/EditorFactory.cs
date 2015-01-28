@@ -163,6 +163,7 @@ namespace Lemma.Factories
 			editor.EnableCommands = () => !gui.AnyTextFieldViewsSelected() && !ConsoleUI.Showing;
 
 			ModelAlpha model = new ModelAlpha();
+			model.MapContent = false;
 			model.Filename.Value = "AlphaModels\\selector";
 			model.Scale.Value = new Vector3(0.5f);
 			model.Serialize = false;
@@ -174,6 +175,7 @@ namespace Lemma.Factories
 			Property<bool> shiftKey = input.GetKey(Keys.LeftShift);
 
 			ModelAlpha brushVisual = new ModelAlpha();
+			brushVisual.MapContent = false;
 			brushVisual.Add(new Binding<string, Editor.BrushShapes>(brushVisual.Filename, x => x == Editor.BrushShapes.Cube ? "AlphaModels\\box" : "AlphaModels\\sphere", editor.BrushShape));
 			brushVisual.Color.Value = new Vector3(1.0f);
 			brushVisual.Alpha.Value = 0.1f;
@@ -195,6 +197,7 @@ namespace Lemma.Factories
 			brushVisual.CullBoundingBox.Value = false;
 
 			ModelAlpha selection = new ModelAlpha();
+			selection.MapContent = false;
 			selection.Filename.Value = "AlphaModels\\box";
 			selection.Color.Value = new Vector3(1.0f, 0.7f, 0.4f);
 			selection.Alpha.Value = 0.25f;

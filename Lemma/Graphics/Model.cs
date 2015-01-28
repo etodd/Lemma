@@ -115,6 +115,9 @@ namespace Lemma.Components
 		private bool instancesChanged = true;
 		private bool lastInstancesChanged;
 
+		[XmlIgnore]
+		public bool MapContent = true;
+
 		protected InstanceVertex[] instanceVertexData;
 		protected DynamicVertexBuffer instanceVertexBuffer;
 		[XmlIgnore]
@@ -161,7 +164,7 @@ namespace Lemma.Components
 			// Make sure all the parameters come before the model and effect
 			this.Add(new SetBinding<string>(this.NormalMap, delegate(string value)
 			{
-				this.normalMap = string.IsNullOrEmpty(value) ? null : this.main.MapContent.Load<Texture2D>(value);
+				this.normalMap = string.IsNullOrEmpty(value) ? null : (this.MapContent ? this.main.MapContent : this.main.Content).Load<Texture2D>(value);
 				if (this.effect != null && this.normalMap != null)
 				{
 					EffectParameter param = this.effect.Parameters["NormalMap" + Model.SamplerPostfix];
@@ -173,7 +176,7 @@ namespace Lemma.Components
 			{
 				try
 				{
-					this.diffuseTexture = string.IsNullOrEmpty(value) ? null : this.main.MapContent.Load<Texture2D>(value);
+					this.diffuseTexture = string.IsNullOrEmpty(value) ? null : (this.MapContent ? this.main.MapContent : this.main.Content).Load<Texture2D>(value);
 				}
 				catch (ContentLoadException)
 				{
@@ -338,7 +341,7 @@ namespace Lemma.Components
 				}
 			}
 			else
-				this.effect = this.main.MapContent.Load<Effect>(file).Clone();
+				this.effect = (this.MapContent ? this.main.MapContent : this.main.Content).Load<Effect>(file).Clone();
 
 			if (this.effect != null)
 			{
@@ -371,8 +374,7 @@ namespace Lemma.Components
 			{
 				try
 				{
-					ContentManager content = this.main.MapContent;
-					this.model = content.Load<Microsoft.Xna.Framework.Graphics.Model>(file);
+					this.model = (this.MapContent ? this.main.MapContent : this.main.Content).Load<Microsoft.Xna.Framework.Graphics.Model>(file);
 					if (this.EffectFile.Value == null)
 						this.loadEffect(null);
 					this.IsValid.Value = true;

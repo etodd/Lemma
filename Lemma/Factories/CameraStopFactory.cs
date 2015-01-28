@@ -95,12 +95,11 @@ namespace Lemma.Factories
 
 			CameraStop cameraStop = entity.Get<CameraStop>();
 
-			offsetModel.Add(new Binding<bool>(offsetModel.Enabled, () => entity.EditorSelected && cameraStop.Offset != 0, entity.EditorSelected, cameraStop.Offset));
+			offsetModel.Add(new Binding<bool>(offsetModel.Enabled, () => entity.EditorSelected && cameraStop.Offset != 0 && Editor.EditorModelsVisible, entity.EditorSelected, cameraStop.Offset, Editor.EditorModelsVisible));
 			offsetModel.Add(new Binding<Vector3, float>(offsetModel.Scale, x => new Vector3(1, 1, x), cameraStop.Offset));
 			offsetModel.Add(new Binding<Matrix>(offsetModel.Transform, model.Transform));
 			offsetModel.Serialize = false;
 			entity.Add("EditorModel3", offsetModel);
-			offsetModel.Add(new Binding<bool>(offsetModel.Enabled, Editor.EditorModelsVisible));
 
 			EntityConnectable.AttachEditorComponents(entity, "Next", cameraStop.Next);
 		}
