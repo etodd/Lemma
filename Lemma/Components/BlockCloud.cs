@@ -25,7 +25,7 @@ namespace Lemma.Components
 
 		public Property<float> Scale = new Property<float> { Value = 1.0f };
 
-		private const int totalBlocks = 30;
+		public const int TotalBlocks = 30;
 
 		private static Random random = new Random();
 
@@ -103,7 +103,7 @@ namespace Lemma.Components
 			{
 				SceneryBlockFactory factory = Factory.Get<SceneryBlockFactory>();
 				Vector3 blockSpawnPoint = this.Position;
-				for (int i = 0; i < totalBlocks; i++)
+				for (int i = 0; i < TotalBlocks; i++)
 				{
 					Entity block = factory.CreateAndBind(main);
 					block.Get<Transform>().Position.Value = blockSpawnPoint + new Vector3(((float)BlockCloud.random.NextDouble() - 0.5f) * 2.0f, ((float)BlockCloud.random.NextDouble() - 0.5f) * 2.0f, ((float)BlockCloud.random.NextDouble() - 0.5f) * 2.0f);

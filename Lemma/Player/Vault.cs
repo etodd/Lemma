@@ -103,21 +103,27 @@ namespace Lemma.Components
 			this.EnabledWhenPaused = false;
 		}
 
-		private static bool checkAdjacent(Voxel v, Voxel.Coord coord, Direction up, Direction backward, Direction right)
+		private enum CandidateStatus { Good, Uneven, Bad }
+
+		private static CandidateStatus checkAdjacent(Voxel v, Voxel.Coord coord, Direction up, Direction backward, Direction right)
 		{
-			return v[coord.Move(backward)] != Voxel.States.Empty
-				|| v[coord.Move(up)] != Voxel.States.Empty
-				|| v[coord.Move(up, 2)] != Voxel.States.Empty
-				|| v[coord.Move(up, 3)] != Voxel.States.Empty
+			if (v[coord.Move(backward)] != Voxel.States.Empty
 				|| v[coord.Move(up).Move(backward)] != Voxel.States.Empty
 				|| v[coord.Move(up, 2).Move(backward)] != Voxel.States.Empty
 				|| v[coord.Move(up, 3).Move(backward)] != Voxel.States.Empty
-				|| v[coord.Move(right, -1).Move(up)] != Voxel.States.Empty
+				|| v[coord.Move(up)] != Voxel.States.Empty
+				|| v[coord.Move(up, 2)] != Voxel.States.Empty
+				|| v[coord.Move(up, 3)] != Voxel.States.Empty)
+				return CandidateStatus.Bad;
+			else if (v[coord.Move(right, -1).Move(up)] != Voxel.States.Empty
 				|| v[coord.Move(right, -1).Move(up, 2)] != Voxel.States.Empty
 				|| v[coord.Move(right, -1).Move(up, 3)] != Voxel.States.Empty
 				|| v[coord.Move(right).Move(up)] != Voxel.States.Empty
 				|| v[coord.Move(right).Move(up, 2)] != Voxel.States.Empty
-				|| v[coord.Move(right).Move(up, 3)] != Voxel.States.Empty;
+				|| v[coord.Move(right).Move(up, 3)] != Voxel.States.Empty)
+				return CandidateStatus.Uneven;
+			else
+				return CandidateStatus.Good;
 		}
 
 		public bool Go()
@@ -132,6 +138,8 @@ namespace Lemma.Components
 				Direction backward = map.GetRelativeDirection(rotationMatrix.Forward);
 				Direction right = up.Cross(backward);
 				Vector3 pos = this.Position + rotationMatrix.Forward * -(this.Radius + 1.0f);
+				Voxel.Coord resortCoord = default(Voxel.Coord);
+				bool resort = false;
 				for (int j = 0; j < searchForwardDistance; j++)
 				{
 					Voxel.Coord baseCoord = map.GetCoordinate(pos + (rotationMatrix.Forward * -j)).Move(up, searchUpDistance);
@@ -142,8 +150,14 @@ namespace Lemma.Components
 						{
 							if (map[coord] != Voxel.States.Empty)
 							{
-								if (checkAdjacent(map, coord, up, backward, right))
+								CandidateStatus status = checkAdjacent(map, coord, up, backward, right);
+								if (status == CandidateStatus.Bad)
 									break; // Conflict
+								else if (status == CandidateStatus.Uneven && !resort)
+								{
+									resortCoord = coord;
+									resort = true;
+								}
 								
 								bool conflict = false;
 								// Check other voxels for conflicts
@@ -157,7 +171,7 @@ namespace Lemma.Components
 
 										Voxel.Coord coord2 = v.GetCoordinate(map.GetAbsolutePosition(coord));
 										if (v[coord2] != Voxel.States.Empty
-											|| checkAdjacent(v, coord2, up2, backward2, right2))
+											|| checkAdjacent(v, coord2, up2, backward2, right2) != CandidateStatus.Good)
 										{
 											conflict = true;
 											break;
@@ -174,6 +188,11 @@ namespace Lemma.Components
 							coord = coord.Move(up.GetReverse());
 						}
 					}
+				}
+				if (resort)
+				{
+					this.vault(map, resortCoord.Move(up));
+					return true;
 				}
 			}
 

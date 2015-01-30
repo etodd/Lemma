@@ -131,6 +131,7 @@ namespace Lemma.Factories
 						sockVoxel.Empty(coords, true);
 						sockVoxel.Regenerate();
 						ParticleSystem particles = ParticleSystem.Get(main, "WhiteShatter");
+						int count = 0;
 						foreach (Voxel.Coord c in coords)
 						{
 							Vector3 pos = sockVoxel.GetAbsolutePosition(c);
@@ -139,15 +140,19 @@ namespace Lemma.Factories
 								Vector3 offset = new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble() - 0.5f);
 								particles.AddParticle(pos + offset, offset);
 							}
-							Entity block = factory.CreateAndBind(main);
-							Transform blockTransform = block.Get<Transform>();
-							blockTransform.Position.Value = pos;
-							blockTransform.Quaternion.Value = quat;
-							SceneryBlock sceneryBlock = block.Get<SceneryBlock>();
-							sceneryBlock.Type.Value = socket.Type;
-							sceneryBlock.Scale.Value = 0.5f;
-							cloud.Blocks.Add(block);
-							main.Add(block);
+							if (count < BlockCloud.TotalBlocks)
+							{
+								Entity block = factory.CreateAndBind(main);
+								Transform blockTransform = block.Get<Transform>();
+								blockTransform.Position.Value = pos;
+								blockTransform.Quaternion.Value = quat;
+								SceneryBlock sceneryBlock = block.Get<SceneryBlock>();
+								sceneryBlock.Type.Value = socket.Type;
+								sceneryBlock.Scale.Value = 0.5f;
+								cloud.Blocks.Add(block);
+								main.Add(block);
+							}
+							count++;
 						}
 						socket.Powered.Value = false;
 						changed = true;
