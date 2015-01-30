@@ -28,7 +28,6 @@ namespace Lemma.Factories
 
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
-			light.Add(new Binding<Quaternion>(light.Orientation, transform.Quaternion));
 
 			Turret turret = entity.GetOrCreate<Turret>("Turret");
 
@@ -76,11 +75,11 @@ namespace Lemma.Factories
 				switch (state)
 				{
 					case "Alert":
-						return new Vector3(1.5f, 1.5f, 0.5f);
+						return new Vector3(1.0f, 1.0f, 0.25f);
 					case "Aggressive":
-						return new Vector3(1.5f, 0.8f, 0.5f);
+						return new Vector3(1.0f, 0.5f, 0.25f);
 					case "Firing":
-						return new Vector3(2.0f, 0.0f, 0.0f);
+						return new Vector3(1.0f, 0.0f, 0.0f);
 					case "Disabled":
 						return new Vector3(0.0f, 0.0f, 0.0f);
 					default:
@@ -120,6 +119,11 @@ namespace Lemma.Factories
 			{
 				ai.CurrentState.Value = "Disabled";
 			}));
+
+			light.Add(new Binding<Quaternion>(light.Orientation, delegate()
+			{
+				return Quaternion.CreateFromYawPitchRoll(-(float)Math.Atan2(toReticle.Z, toReticle.X) - (float)Math.PI * 0.5f, (float)Math.Asin(toReticle.Y), 0);
+			}, transform.Position, turret.Reticle));
 
 			AI.Task updateRay = new AI.Task
 			{

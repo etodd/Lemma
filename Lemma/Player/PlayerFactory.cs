@@ -245,19 +245,19 @@ namespace Lemma.Factories
 
 			firstPersonModel.Add(new Binding<bool>(firstPersonModel.Enabled, x => !x, cameraControl.ThirdPerson));
 
-			model.Add(new NotifyBinding(delegate()
+			model.Add(new ChangeBinding<bool>(cameraControl.ThirdPerson, delegate(bool old, bool value)
 			{
-				if (cameraControl.ThirdPerson)
+				if (value && !old)
 				{
 					model.UnsupportedTechniques.Remove(Technique.Clip);
 					model.UnsupportedTechniques.Remove(Technique.Render);
 				}
-				else
+				else if (old && !value)
 				{
 					model.UnsupportedTechniques.Add(Technique.Clip);
 					model.UnsupportedTechniques.Add(Technique.Render);
 				}
-			}, cameraControl.ThirdPerson));
+			}));
 
 			Lemma.Console.Console.AddConCommand(new Console.ConCommand("third_person", "Toggle third-person view (WARNING: EXPERIMENTAL)", delegate(Console.ConCommand.ArgCollection args)
 			{
@@ -607,6 +607,7 @@ namespace Lemma.Factories
 					entity.Add(new TwoWayBinding<bool>(playerData.EnableMoves, player.EnableMoves));
 					entity.Add(new TwoWayBinding<float>(playerData.MaxSpeed, player.Character.MaxSpeed));
 					entity.Add(new TwoWayBinding<Voxel.t>(playerData.CloudType, blockCloud.Type));
+					entity.Add(new TwoWayBinding<bool>(playerData.ThirdPerson, cameraControl.ThirdPerson));
 
 					Phone phone = dataEntity.GetOrCreate<Phone>("Phone");
 

@@ -38,7 +38,12 @@ namespace Lemma.Factories
 					Voxel staticMap = parent.Get<Voxel>();
 					jointData.Coord.Value = staticMap.GetCoordinate(transform.Matrix.Value.Translation);
 					mapTransform.Position.Value = staticMap.GetAbsolutePosition(staticMap.GetRelativePosition(jointData.Coord) - new Vector3(0.5f) + staticMap.Offset + map.Offset.Value);
-					if (!allowRotation)
+					if (allowRotation)
+					{
+						if (main.EditorEnabled)
+							mapTransform.Quaternion.Value = transform.Quaternion;
+					}
+					else
 					{
 						Matrix parentOrientation = staticMap.Transform;
 						parentOrientation.Translation = Vector3.Zero;
@@ -50,7 +55,7 @@ namespace Lemma.Factories
 			};
 
 			if (main.EditorEnabled)
-				entity.Add(new NotifyBinding(refreshMapTransform, transform.Matrix, map.Offset, jointData.Parent));
+				entity.Add(new NotifyBinding(refreshMapTransform, transform.Matrix, transform.Quaternion, map.Offset, jointData.Parent));
 
 			ISpaceObject joint = null;
 			CommandBinding jointDeleteBinding = null, parentPhysicsUpdateBinding = null;

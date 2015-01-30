@@ -1145,6 +1145,7 @@ namespace Lemma
 					this.UI.Add(new Binding<Point>(this.UI.RenderTargetSize, this.ScreenSize));
 
 					this.VRUI = new Lemma.Components.ModelNonPostProcessed();
+					this.VRUI.MapContent = false;
 					this.VRUI.DrawOrder.Value = 100000; // On top of everything
 					this.VRUI.Filename.Value = "Models\\plane";
 					this.VRUI.EffectFile.Value = "Effects\\VirtualUI";

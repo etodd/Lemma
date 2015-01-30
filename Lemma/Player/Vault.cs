@@ -103,6 +103,23 @@ namespace Lemma.Components
 			this.EnabledWhenPaused = false;
 		}
 
+		private static bool checkAdjacent(Voxel v, Voxel.Coord coord, Direction up, Direction backward, Direction right)
+		{
+			return v[coord.Move(backward)] != Voxel.States.Empty
+				|| v[coord.Move(up)] != Voxel.States.Empty
+				|| v[coord.Move(up, 2)] != Voxel.States.Empty
+				|| v[coord.Move(up, 3)] != Voxel.States.Empty
+				|| v[coord.Move(up).Move(backward)] != Voxel.States.Empty
+				|| v[coord.Move(up, 2).Move(backward)] != Voxel.States.Empty
+				|| v[coord.Move(up, 3).Move(backward)] != Voxel.States.Empty
+				|| v[coord.Move(right, -1).Move(up)] != Voxel.States.Empty
+				|| v[coord.Move(right, -1).Move(up, 2)] != Voxel.States.Empty
+				|| v[coord.Move(right, -1).Move(up, 3)] != Voxel.States.Empty
+				|| v[coord.Move(right).Move(up)] != Voxel.States.Empty
+				|| v[coord.Move(right).Move(up, 2)] != Voxel.States.Empty
+				|| v[coord.Move(right).Move(up, 3)] != Voxel.States.Empty;
+		}
+
 		public bool Go()
 		{
 			if (this.main.TotalTime - this.LastVaultStarted < vaultCoolDown)
@@ -114,8 +131,7 @@ namespace Lemma.Components
 				Direction up = map.GetRelativeDirection(Direction.PositiveY);
 				Direction backward = map.GetRelativeDirection(rotationMatrix.Forward);
 				Direction right = up.Cross(backward);
-				Direction left = right.GetReverse();
-				Vector3 pos = this.Position + rotationMatrix.Forward * -(this.Radius + 0.4f);
+				Vector3 pos = this.Position + rotationMatrix.Forward * -(this.Radius + 1.0f);
 				for (int j = 0; j < searchForwardDistance; j++)
 				{
 					Voxel.Coord baseCoord = map.GetCoordinate(pos + (rotationMatrix.Forward * -j)).Move(up, searchUpDistance);
@@ -126,19 +142,7 @@ namespace Lemma.Components
 						{
 							if (map[coord] != Voxel.States.Empty)
 							{
-								if (map[coord.Move(backward)] != Voxel.States.Empty
-									|| map[coord.Move(up)] != Voxel.States.Empty
-									|| map[coord.Move(up, 2)] != Voxel.States.Empty
-									|| map[coord.Move(up, 3)] != Voxel.States.Empty
-									|| map[coord.Move(up).Move(backward)] != Voxel.States.Empty
-									|| map[coord.Move(up, 2).Move(backward)] != Voxel.States.Empty
-									|| map[coord.Move(up, 3).Move(backward)] != Voxel.States.Empty
-									|| map[coord.Move(left).Move(up)] != Voxel.States.Empty
-									|| map[coord.Move(left).Move(up, 2)] != Voxel.States.Empty
-									|| map[coord.Move(left).Move(up, 3)] != Voxel.States.Empty
-									|| map[coord.Move(right).Move(up)] != Voxel.States.Empty
-									|| map[coord.Move(right).Move(up, 2)] != Voxel.States.Empty
-									|| map[coord.Move(right).Move(up, 3)] != Voxel.States.Empty)
+								if (checkAdjacent(map, coord, up, backward, right))
 									break; // Conflict
 								
 								bool conflict = false;
@@ -150,22 +154,10 @@ namespace Lemma.Components
 										Direction up2 = v.GetRelativeDirection(Direction.PositiveY);
 										Direction backward2 = v.GetRelativeDirection(rotationMatrix.Forward);
 										Direction right2 = up2.Cross(backward2);
-										Direction left2 = right2.GetReverse();
 
 										Voxel.Coord coord2 = v.GetCoordinate(map.GetAbsolutePosition(coord));
-										if (v[coord2.Move(backward2)] != Voxel.States.Empty
-											|| v[coord2.Move(up2)] != Voxel.States.Empty
-											|| v[coord2.Move(up2, 2)] != Voxel.States.Empty
-											|| v[coord2.Move(up2, 3)] != Voxel.States.Empty
-											|| v[coord2.Move(up2).Move(backward2)] != Voxel.States.Empty
-											|| v[coord2.Move(up2, 2).Move(backward2)] != Voxel.States.Empty
-											|| v[coord2.Move(up2, 3).Move(backward2)] != Voxel.States.Empty
-											|| v[coord2.Move(left2).Move(up2)] != Voxel.States.Empty
-											|| v[coord2.Move(left2).Move(up2, 2)] != Voxel.States.Empty
-											|| v[coord2.Move(left2).Move(up2, 3)] != Voxel.States.Empty
-											|| v[coord2.Move(right2).Move(up2)] != Voxel.States.Empty
-											|| v[coord2.Move(right2).Move(up2, 2)] != Voxel.States.Empty
-											|| v[coord2.Move(right2).Move(up2, 3)] != Voxel.States.Empty)
+										if (v[coord2] != Voxel.States.Empty
+											|| checkAdjacent(v, coord2, up2, backward2, right2))
 										{
 											conflict = true;
 											break;

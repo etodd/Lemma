@@ -419,7 +419,7 @@ namespace Lemma.Components
 			public static readonly State Concrete = new State
 			{
 				ID = t.Concrete,
-				Permanent = true,
+				Permanent = false,
 				Supported = true,
 				Hard = true,
 				Density = 2,
