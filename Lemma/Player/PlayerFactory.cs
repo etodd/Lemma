@@ -534,12 +534,17 @@ namespace Lemma.Factories
 									didSomething = wallRun.Activate(WallRun.State.Right);
 					}
 
-					if (!didSomething && blockCloud.Blocks.Length > 0)
+					if (!didSomething)
 					{
-						player.SlowMotion.Value = true;
-						predictor.ClearPossibilities();
-						predictor.PredictPlatforms();
-						predictor.PredictWalls();
+						if (blockCloud.Blocks.Length > 0)
+						{
+							player.SlowMotion.Value = true;
+							predictor.ClearPossibilities();
+							predictor.PredictPlatforms();
+							predictor.PredictWalls();
+						}
+						else if (player.EnableSlowMotion)
+							player.SlowMotion.Value = true;
 					}
 				}
 			});
@@ -547,7 +552,7 @@ namespace Lemma.Factories
 			input.Bind(settings.Parkour, PCInput.InputState.Up, delegate()
 			{
 				wallRun.Deactivate();
-				if (blockCloud.Blocks.Length > 0)
+				if (player.SlowMotion)
 					player.SlowMotion.Value = false;
 			});
 
@@ -608,6 +613,7 @@ namespace Lemma.Factories
 					entity.Add(new TwoWayBinding<float>(playerData.MaxSpeed, player.Character.MaxSpeed));
 					entity.Add(new TwoWayBinding<Voxel.t>(playerData.CloudType, blockCloud.Type));
 					entity.Add(new TwoWayBinding<bool>(playerData.ThirdPerson, cameraControl.ThirdPerson));
+					entity.Add(new TwoWayBinding<bool>(playerData.EnableSlowMotion, player.EnableSlowMotion));
 
 					Phone phone = dataEntity.GetOrCreate<Phone>("Phone");
 

@@ -26,6 +26,8 @@ namespace Lemma.Components
 		public Property<bool> EnableMoves = new Property<bool> { Value = true };
 		[XmlIgnore]
 		public Property<bool> SlowMotion = new Property<bool>();
+		[XmlIgnore]
+		public Property<bool> EnableSlowMotion = new Property<bool>();
 
 		public Property<ComponentBind.Entity.Handle> Note = new Property<ComponentBind.Entity.Handle>();
 		public Property<ComponentBind.Entity.Handle> SignalTower = new Property<ComponentBind.Entity.Handle>();
@@ -35,6 +37,7 @@ namespace Lemma.Components
 
 		private const float damageSoundInterval = 0.4f;
 		private float damageTimer = damageSoundInterval + 1.0f;
+		private float slowmoTimer;
 		public Property<float> Health = new Property<float> { Value = 1.0f };
 
 		[XmlIgnore]
@@ -73,6 +76,13 @@ namespace Lemma.Components
 			}));
 
 			this.Add(new Binding<float>(this.main.TimeMultiplier, () => this.SlowMotion && !this.main.Paused ? 0.4f : 1.0f, this.SlowMotion, this.main.Paused));
+			this.Add(new ChangeBinding<bool>(this.SlowMotion, delegate(bool old, bool value)
+			{
+				if (!old && value)
+				{
+					this.slowmoTimer = 0;
+				}
+			}));
 		}
 
 		public override void delete()
@@ -90,6 +100,13 @@ namespace Lemma.Components
 
 		void IUpdateableComponent.Update(float dt)
 		{
+			if (this.SlowMotion)
+			{
+				this.slowmoTimer += dt;
+				if (this.slowmoTimer > 1.5f)
+					this.SlowMotion.Value = false;
+			}
+
 			this.damageTimer += dt;
 			if (this.Health < 1.0f)
 			{
