@@ -796,9 +796,7 @@ namespace Lemma
 
 		public void SaveAnalytics()
 		{
-			string map = this.MapFile;
-			string filename = Build + "-" + (string.IsNullOrEmpty(map) ? "null" : Path.GetFileNameWithoutExtension(map)) + "-" + Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32) + ".xml";
-			this.SessionRecorder.Save(Path.Combine(this.analyticsDirectory, filename), map, this.TotalTime);
+			this.SessionRecorder.Save(this.analyticsDirectory, Main.Build, this.MapFile, this.TotalTime);
 		}
 
 		public string[] AnalyticsSessionFiles

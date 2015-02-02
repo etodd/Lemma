@@ -298,6 +298,10 @@ namespace Lemma.Components
 
 		public int Memory;
 
+		public string ID;
+
+		public string LastSession;
+
 		public class Recorder : Component<Main>, IUpdateableComponent
 		{
 			public static void Event(Main main, string name, string data = null)
@@ -349,8 +353,9 @@ namespace Lemma.Components
 				this.EnabledInEditMode = true;
 			}
 
-			public void Save(string path, string map, float totalTime)
+			public void Save(string path, string build, string map, float totalTime)
 			{
+				string filename = string.Format("{0}-{1}-{2}.xml", build, (string.IsNullOrEmpty(map) ? "null" : Path.GetFileNameWithoutExtension(map)), this.data.ID);
 				this.data.TotalTime = totalTime;
 				this.data.Map = map;
 				this.data.UUID = this.main.Settings.UUID;
@@ -365,7 +370,7 @@ namespace Lemma.Components
 
 				this.data.ScreenSize = screenSize;
 				this.data.IsFullscreen = this.main.Settings.Fullscreen;
-				using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+				using (Stream stream = new FileStream(Path.Combine(path, filename), FileMode.Create, FileAccess.Write, FileShare.None))
 					new XmlSerializer(typeof(Session)).Serialize(stream, this.data);
 			}
 
@@ -373,6 +378,8 @@ namespace Lemma.Components
 			{
 				foreach (ContinuousProperty prop in this.data.continuousProperties.Values)
 					prop.Clear();
+				this.data.LastSession = this.data.ID;
+				this.data.ID = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32);
 				this.data.events.Clear();
 				this.data.Date = DateTime.Now;
 			}

@@ -351,7 +351,8 @@ namespace Lemma.Components
 					else
 					{
 						// Still moving forward
-						this.LinearVelocity.Value = this.forward * (this.isTopOut ? this.MaxSpeed * 0.5f : this.MaxSpeed);
+						Vector3 supportVelocity = this.getSupportVelocity(this.map);
+						this.LinearVelocity.Value = supportVelocity + this.forward * (this.isTopOut ? this.MaxSpeed * 0.5f : this.MaxSpeed);
 						this.LastSupportedSpeed.Value = this.MaxSpeed;
 					}
 				}
@@ -381,13 +382,13 @@ namespace Lemma.Components
 						else
 						{
 							// It's just a mantle, we're done
-							this.LinearVelocity.Value = this.forward * this.MaxSpeed;
+							this.LinearVelocity.Value = this.getSupportVelocity(this.map) + this.forward * this.MaxSpeed;
 							this.LastSupportedSpeed.Value = this.MaxSpeed;
 							done = true;
 						}
 					}
 					else // We're still going up.
-						this.LinearVelocity.Value = vaultVelocity;
+						this.LinearVelocity.Value = this.vaultVelocity;
 				}
 
 				if (done)
