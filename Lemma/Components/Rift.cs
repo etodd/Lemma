@@ -50,40 +50,47 @@ namespace Lemma.Components
 			this.particles = ParticleSystem.Get(this.main, "Rift");
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;
-			this.Add(new CommandBinding(this.Enable, delegate()
+			this.Add(new CommandBinding(this.Enable, (Action)this.go));
+			rifts.Add(this);
+		}
+
+		private void go()
+		{
+			if (this.Coords.Length == 0)
 			{
-				if (this.Coords.Length == 0)
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_RIFT_OPEN, this.Entity);
+				if (PlayerFactory.Instance != null)
+					PlayerFactory.Instance.Get<CameraController>().Shake.Execute(this.Position, 30.0f);
+				Entity voxelEntity = this.Voxel.Value.Target;
+				if (voxelEntity != null && voxelEntity.Active)
 				{
-					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_RIFT_OPEN, this.Entity);
-					if (PlayerFactory.Instance != null)
-						PlayerFactory.Instance.Get<CameraController>().Shake.Execute(this.Position, 30.0f);
-					Entity voxelEntity = this.Voxel.Value.Target;
-					if (voxelEntity != null && voxelEntity.Active)
+					Voxel v = voxelEntity.Get<Voxel>();
+					Voxel.Coord center = this.Coordinate;
+					Vector3 pos = v.GetRelativePosition(center);
+					int radius = this.Radius;
+					List<VoxelFill.CoordinateEntry> coords = Rift.coordSortCache;
+					for (Voxel.Coord x = center.Move(Direction.NegativeX, radius); x.X < center.X + radius; x.X++)
 					{
-						Voxel v = voxelEntity.Get<Voxel>();
-						Voxel.Coord center = this.Coordinate;
-						Vector3 pos = v.GetRelativePosition(center);
-						int radius = this.Radius;
-						List<VoxelFill.CoordinateEntry> coords = Rift.coordSortCache;
-						for (Voxel.Coord x = center.Move(Direction.NegativeX, radius); x.X < center.X + radius; x.X++)
+						for (Voxel.Coord y = x.Move(Direction.NegativeY, radius); y.Y < center.Y + radius; y.Y++)
 						{
-							for (Voxel.Coord y = x.Move(Direction.NegativeY, radius); y.Y < center.Y + radius; y.Y++)
+							for (Voxel.Coord z = y.Move(Direction.NegativeZ, radius); z.Z < center.Z + radius; z.Z++)
 							{
-								for (Voxel.Coord z = y.Move(Direction.NegativeZ, radius); z.Z < center.Z + radius; z.Z++)
-								{
-									float distance = (pos - v.GetRelativePosition(z)).Length();
-									if (distance <= radius && v[z] != Components.Voxel.States.Empty)
-										coords.Add(new VoxelFill.CoordinateEntry { Coord = z.Clone(), Distance = distance });
-								}
+								float distance = (pos - v.GetRelativePosition(z)).Length();
+								if (distance <= radius && v[z] != Components.Voxel.States.Empty)
+									coords.Add(new VoxelFill.CoordinateEntry { Coord = z.Clone(), Distance = distance });
 							}
 						}
+					}
+					if (coords.Count == 0)
+						this.Entity.Delete.Execute();
+					else
+					{
 						coords.Sort(new LambdaComparer<VoxelFill.CoordinateEntry>((x, y) => x.Distance.CompareTo(y.Distance)));
 						this.Coords.AddAll(coords.Select(x => x.Coord));
 						coords.Clear();
 					}
 				}
-			}));
-			rifts.Add(this);
+			}
 		}
 
 		public override void delete()
@@ -108,7 +115,9 @@ namespace Lemma.Components
 		private List<Voxel.Coord> removals = new List<Voxel.Coord>();
 		public void Update(float dt)
 		{
-			if (this.CurrentIndex < this.Coords.Length)
+			if (this.Coords.Length == 0)
+				this.go();
+			else if (this.CurrentIndex < this.Coords.Length)
 			{
 				if (this.voxel == null)
 				{
@@ -175,9 +184,12 @@ namespace Lemma.Components
 			else
 				this.Entity.Delete.Execute();
 
-			Entity player = PlayerFactory.Instance;
-			if (player != null && (player.Get<Transform>().Position.Value - this.Position.Value).Length() < this.CurrentRadius)
-				player.Get<Agent>().Damage.Execute(dt * damageTime);
+			if (this.Type.Value == Style.In)
+			{
+				Entity player = PlayerFactory.Instance;
+				if (player != null && (player.Get<Transform>().Position.Value - this.Position.Value).Length() < this.CurrentRadius)
+					player.Get<Agent>().Damage.Execute(dt * damageTime);
+			}
 		}
 
 		public static void AttachEditorComponents(Entity entity, Main main, Vector3 color)

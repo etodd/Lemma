@@ -485,11 +485,11 @@ namespace Lemma.Factories
 				switch (t)
 				{
 					case Voxel.t.GlowBlue:
-						return new Vector3(0.8f, 0.9f, 1.2f);
+						return new Vector3(0.7f, 0.7f, 0.9f);
 					case Voxel.t.GlowYellow:
-						return new Vector3(1.2f, 1.2f, 0.8f);
+						return new Vector3(0.9f, 0.9f, 0.7f);
 					default:
-						return Vector3.One;
+						return new Vector3(0.8f, 0.8f, 0.8f);
 				}
 			}, blockCloud.Type));
 

@@ -569,7 +569,7 @@ namespace Lemma.Components
 				{
 					Model.Material.Unlit,
 				},
-				Tint = new Vector3(1.4f, 1.4f, 0.9f),
+				Tint = new Vector3(1.4f, 1.4f, 0.7f),
 				AllowOverlay = false,
 			};
 			public static readonly State GlowBlue = new State
@@ -587,7 +587,7 @@ namespace Lemma.Components
 				{
 					Model.Material.Unlit,
 				},
-				Tint = new Vector3(0.85f, 0.95f, 1.4f),
+				Tint = new Vector3(0.7f, 0.8f, 1.4f),
 				AllowOverlay = false,
 			};
 			public static readonly State SocketWhite = new State
