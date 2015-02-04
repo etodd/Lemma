@@ -662,7 +662,7 @@ namespace Lemma.Util
 			}
 
 			if (swimUp)
-				velocityAdjustment += new Vector3(0, 5.0f * dt, 0);
+				velocityAdjustment += new Vector3(0, 7.0f * dt, 0);
 
 			this.VelocityAdjustments.Value = velocityAdjustment;
 			this.Body.LinearVelocity += velocityAdjustment;

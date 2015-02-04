@@ -17,7 +17,7 @@ namespace Lemma.Factories
 {
 	public class JointFactory
 	{
-		public static void Bind(Entity entity, Main main, Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint, bool allowRotation, bool creating = false)
+		public static void Bind(Entity entity, Main main, Func<BEPUphysics.Entities.Entity, BEPUphysics.Entities.Entity, Vector3, Vector3, Vector3, ISpaceObject> createJoint, bool allowRotation, bool creating = false, bool directional = true)
 		{
 			Transform mapTransform = entity.GetOrCreate<Transform>("MapTransform");
 			mapTransform.Selectable.Value = false;
@@ -148,44 +148,48 @@ namespace Lemma.Factories
 			entity.Add(new PostInitialization { rebuildJoint });
 
 			if (main.EditorEnabled)
-				JointFactory.attachEditorComponents(entity, main);
+				JointFactory.attachEditorComponents(entity, main, directional);
 		}
 
-		private static void attachEditorComponents(Entity entity, Main main)
+		private static void attachEditorComponents(Entity entity, Main main, bool directional)
 		{
 			Transform transform = entity.Get<Transform>();
 
 			Components.Joint joint = entity.Get<Components.Joint>();
 			EntityConnectable.AttachEditorComponents(entity, "Parent", joint.Parent);
-			ModelAlpha model = new ModelAlpha();
-			model.Filename.Value = "AlphaModels\\cone";
-			model.Serialize = false;
-			model.Add(new Binding<bool>(model.Enabled, Editor.EditorModelsVisible));
-			entity.Add("DirectionModel", model);
 
-			Transform mapTransform = entity.Get<Transform>("MapTransform");
-			model.Add(new Binding<Matrix>(model.Transform, delegate()
+			if (directional)
 			{
-				Matrix m = Matrix.Identity;
-				m.Translation = transform.Position;
+				ModelAlpha model = new ModelAlpha();
+				model.Filename.Value = "AlphaModels\\cone";
+				model.Serialize = false;
+				model.Add(new Binding<bool>(model.Enabled, Editor.EditorModelsVisible));
+				entity.Add("DirectionModel", model);
 
-				if (joint.Direction == Direction.None)
-					m.Forward = m.Right = m.Up = Vector3.Zero;
-				else
+				Transform mapTransform = entity.Get<Transform>("MapTransform");
+				model.Add(new Binding<Matrix>(model.Transform, delegate()
 				{
-					Vector3 normal = Vector3.TransformNormal(joint.Direction.Value.GetVector(), mapTransform.Matrix);
+					Matrix m = Matrix.Identity;
+					m.Translation = transform.Position;
 
-					m.Forward = -normal;
-					if (normal.Equals(Vector3.Up))
-						m.Right = Vector3.Left;
-					else if (normal.Equals(Vector3.Down))
-						m.Right = Vector3.Right;
+					if (joint.Direction == Direction.None)
+						m.Forward = m.Right = m.Up = Vector3.Zero;
 					else
-						m.Right = Vector3.Normalize(Vector3.Cross(normal, Vector3.Down));
-					m.Up = -Vector3.Cross(normal, m.Left);
-				}
-				return m;
-			}, transform.Matrix, mapTransform.Matrix, joint.Direction));
+					{
+						Vector3 normal = Vector3.TransformNormal(joint.Direction.Value.GetVector(), mapTransform.Matrix);
+
+						m.Forward = -normal;
+						if (normal.Equals(Vector3.Up))
+							m.Right = Vector3.Left;
+						else if (normal.Equals(Vector3.Down))
+							m.Right = Vector3.Right;
+						else
+							m.Right = Vector3.Normalize(Vector3.Cross(normal, Vector3.Down));
+						m.Up = -Vector3.Cross(normal, m.Left);
+					}
+					return m;
+				}, transform.Matrix, mapTransform.Matrix, joint.Direction));
+			}
 		}
 	}
 }

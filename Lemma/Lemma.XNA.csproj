@@ -114,6 +114,7 @@
     <Compile Include="ComponentInterfaces.cs" />
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
+    <Compile Include="Components\Bouncer.cs" />
     <Compile Include="Components\PowerBlockSocket.cs" />
     <Compile Include="Components\AnimatedProp.cs" />
     <Compile Include="Components\Data.cs" />
@@ -165,6 +166,7 @@
     <Compile Include="Components\TimeTrial.cs" />
     <Compile Include="Components\Turret.cs" />
     <Compile Include="Components\VoxelFill.cs" />
+    <Compile Include="Factories\BouncerFactory.cs" />
     <Compile Include="Factories\ConsoleCommandFactory.cs" />
     <Compile Include="Factories\AnimatedPropFactory.cs" />
     <Compile Include="Factories\PowerBlockSocketFactory.cs" />

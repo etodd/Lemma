@@ -128,6 +128,7 @@ namespace Lemma.IO
 			typeof(Sequence),
 			typeof(Updater),
 			typeof(LogicGate),
+			typeof(Bouncer),
 		};
 
 		public static XmlSerializer Serializer;

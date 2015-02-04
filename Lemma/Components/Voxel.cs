@@ -362,7 +362,7 @@ namespace Lemma.Components
 				Permanent = false,
 				Supported = false,
 				Hard = true,
-				Density = 0.5f,
+				Density = 0.25f,
 				DiffuseMap = "Textures\\wood",
 				NormalMap = "Textures\\wood-normal",
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
