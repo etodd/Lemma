@@ -124,6 +124,7 @@ namespace Lemma.Factories
 			jump.Add(new TwoWayBinding<bool>(rollKickSlide.CanKick, jump.CanKick));
 			jump.Add(new TwoWayBinding<float>(player.Character.LastSupportedSpeed, jump.LastSupportedSpeed));
 
+			wallRun.Add(new Binding<bool>(wallRun.IsSwimming, player.Character.IsSwimming));
 			wallRun.Add(new TwoWayBinding<Vector3>(player.Character.LinearVelocity, wallRun.LinearVelocity));
 			wallRun.Add(new TwoWayBinding<Vector3>(transform.Position, wallRun.Position));
 			wallRun.Add(new TwoWayBinding<bool>(player.Character.IsSupported, wallRun.IsSupported));

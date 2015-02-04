@@ -21,6 +21,7 @@ namespace Lemma.Components
 		public BlockPredictor Predictor;
 
 		// Input properties
+		public Property<bool> IsSwimming = new Property<bool>();
 		public Property<float> Height = new Property<float>();
 		public Property<float> JumpSpeed = new Property<float>();
 		public Property<float> MaxSpeed = new Property<float>();
@@ -76,6 +77,12 @@ namespace Lemma.Components
 			Vector3 playerVelocity = this.LinearVelocity;
 			if (playerVelocity.Y < FallDamage.RollingDamageVelocity)
 				return false;
+
+			if (this.IsSwimming)
+			{
+				if (state == State.Left || state == State.Right)
+					return false;
+			}
 
 			wallInstantiationTimer = 0.0f;
 
@@ -179,6 +186,8 @@ namespace Lemma.Components
 
 			if (closestVoxel != null)
 			{
+				if (!addInitialVelocity && Vector3.Dot(forwardVector, playerVelocity) < minWallRunSpeed)
+					return false;
 				this.Position.Value = closestVoxel.GetAbsolutePosition(closestCoord.Move(closestDir, closestDistance - 2)) + new Vector3(0, this.Height * 0.5f, 0);
 				this.setup(closestVoxel, closestDir, state, forwardVector, addInitialVelocity);
 				return true;
@@ -269,7 +278,7 @@ namespace Lemma.Components
 						velocity *= Math.Min(this.MaxSpeed * 2.0f, Math.Max(horizontalSpeed * 1.25f, 6.0f));
 
 						if (Vector3.Dot(velocity, forwardVector) < minWallRunSpeed + 1.0f)
-							velocity += forwardVector * ((minWallRunSpeed + 1.0f) - Vector3.Dot(velocity, forwardVector));
+							velocity += forwardVector * ((minWallRunSpeed + 2.0f) - Vector3.Dot(velocity, forwardVector));
 
 						float currentVerticalSpeed = this.LinearVelocity.Value.Y;
 						velocity.Y = (currentVerticalSpeed > -10.0f ? Math.Max(currentVerticalSpeed * 0.5f, 0.0f) + velocity.Length() * 0.6f : currentVerticalSpeed * 0.5f + 3.0f);
