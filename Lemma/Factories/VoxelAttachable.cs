@@ -248,7 +248,7 @@ namespace Lemma.Factories
 						m.Right = Vector3.Right;
 					else
 						m.Right = Vector3.Normalize(Vector3.Cross(normal, Vector3.Down));
-					m.Up = Vector3.Cross(normal, m.Left);
+					m.Up = -Vector3.Cross(normal, m.Left);
 				}
 				return m;
 			}, transform, attachable.Vector));

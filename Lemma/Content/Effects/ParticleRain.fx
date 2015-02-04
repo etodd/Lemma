@@ -11,15 +11,3 @@ technique RenderOpaqueParticles
 		ZWriteEnable = true;
 	}
 }
-
-technique ClipOpaqueParticles
-{
-	pass P0
-	{
-		VertexShader = compile vs_3_0 ClipOpaqueVS(true, 0.01f);
-		PixelShader = compile ps_3_0 ClipOpaquePS();
-		AlphaBlendEnable = false;
-		ZEnable = true;
-		ZWriteEnable = true;
-	}
-}

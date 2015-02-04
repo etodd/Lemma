@@ -5089,7 +5089,7 @@ namespace Lemma.Components
 		}
 
 		public DynamicVoxel(int offsetX, int offsetY, int offsetZ)
-			: base(2, 10)
+			: base(3, 20)
 		{
 			this.OffsetX = offsetX;
 			this.OffsetY = offsetY;
