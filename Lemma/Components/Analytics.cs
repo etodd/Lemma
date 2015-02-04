@@ -353,7 +353,7 @@ namespace Lemma.Components
 				this.EnabledInEditMode = true;
 			}
 
-			public void Save(string path, string build, string map, float totalTime)
+			public void Save(string path, int build, string map, float totalTime)
 			{
 				string filename = string.Format("{0}-{1}-{2}.xml", build, (string.IsNullOrEmpty(map) ? "null" : Path.GetFileNameWithoutExtension(map)), this.data.ID);
 				this.data.TotalTime = totalTime;

@@ -864,7 +864,7 @@ namespace Lemma.Components
 				this.messages = new ListContainer();
 				this.messages.Alignment.Value = ListContainer.ListAlignment.Min;
 				this.messages.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
-				Vector2 messagePlacement = new Vector2(0.5f, vrMessagePlacement ? 0.6f : 0.9f);
+				Vector2 messagePlacement = new Vector2(0.5f, vrMessagePlacement ? 0.6f : 0.85f);
 				this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * messagePlacement.X, x.Y * messagePlacement.Y), this.main.ScreenSize));
 				this.main.UI.Root.Children.Add(this.messages);
 			}

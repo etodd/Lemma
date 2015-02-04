@@ -27,7 +27,7 @@
     <OutputPath>bin\x86\Release\</OutputPath>
     <DefineConstants>
     </DefineConstants>
-    <DebugType>full</DebugType>
+    <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>

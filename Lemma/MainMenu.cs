@@ -109,7 +109,12 @@ namespace Lemma.GameScripts
 				corner.Orientation.Value = ListContainer.ListOrientation.Vertical;
 				corner.Reversed.Value = true;
 				corner.Alignment.Value = ListContainer.ListAlignment.Max;
-				corner.Add(new Binding<Vector2, Point>(corner.Position, x => new Vector2(x.X - 10.0f, x.Y - 10.0f), main.ScreenSize));
+				#if VR
+				if (main.VR)
+					corner.Add(new Binding<Vector2, Point>(corner.Position, x => new Vector2(x.X * 0.75f, x.Y * 0.75f), main.ScreenSize));
+				else
+				#endif
+					corner.Add(new Binding<Vector2, Point>(corner.Position, x => new Vector2(x.X - 10.0f, x.Y - 10.0f), main.ScreenSize));
 				main.UI.Root.Children.Add(corner);
 
 				TextElement version = new TextElement();

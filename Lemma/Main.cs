@@ -84,11 +84,19 @@ namespace Lemma
 
 		public static bool AllowEditingGameMaps;
 
-		public static Config.Lang[] Languages = new[] { Config.Lang.en, Config.Lang.ru };
+		public static Config.Lang[] Languages = new[]
+		{
+			Config.Lang.en,
+			//Config.Lang.ru,
+		};
 
 		public class Config
 		{
-			public enum Lang { en, ru }
+			public enum Lang
+			{
+				en,
+				//ru,
+			}
 			public Property<Lang> Language = new Property<Lang>();
 			public Property<bool> Fullscreen = new Property<bool>();
 			public Property<Point> Size = new Property<Point>();
@@ -1755,6 +1763,28 @@ namespace Lemma
 				this.renderParameters.Camera = this.vrCamera;
 
 				Ovr.Posef[] eyes = this.VRHmd.GetEyePoses(0);
+
+				// Position limitation
+				{
+					Vector3 left = new Vector3(eyes[0].Position.x, eyes[0].Position.y, eyes[0].Position.z);
+					Vector3 right = new Vector3(eyes[1].Position.x, eyes[1].Position.y, eyes[1].Position.z);
+					Vector3 target = new Vector3(0, 0.0f / VRUnitToWorldUnit, -0.25f / VRUnitToWorldUnit);
+					Vector3 targetToEyes = ((left + right) * 0.5f) - target;
+					float distance = targetToEyes.Length();
+					const float limit = 0.5f / VRUnitToWorldUnit;
+					if (distance > limit)
+					{
+						Vector3 correction = targetToEyes * ((limit / distance) - 1.0f);
+						left += correction;
+						right += correction;
+						eyes[0].Position.x = left.X;
+						eyes[0].Position.y = left.Y;
+						eyes[0].Position.z = left.Z;
+						eyes[1].Position.x = right.X;
+						eyes[1].Position.y = right.Y;
+						eyes[1].Position.z = right.Z;
+					}
+				}
 
 				if (this.vrHmdDesc.EyeRenderOrder[0] == Ovr.Eye.Left)
 				{

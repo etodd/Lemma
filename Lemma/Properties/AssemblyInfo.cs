@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyCompany("")]
 
-[assembly: AssemblyCopyright("Copyright © Evan Todd 2010")]
+[assembly: AssemblyCopyright("Copyright © Evan Todd 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -30,4 +30,4 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("0.1.0.0")]
+[assembly: AssemblyVersion("1.0.0.0")]
