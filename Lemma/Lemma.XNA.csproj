@@ -249,7 +249,7 @@
     <Compile Include="GeeUI\Views\View.cs" />
     <Compile Include="GeeUI\Views\WindowView.cs" />
     <Compile Include="GInterfaces\ConsoleUI.cs" />
-    <Compile Include="GInterfaces\TimeTrialUI.cs" />
+    <Compile Include="Components\TimeTrialUI.cs" />
     <Compile Include="GInterfaces\TextPrompt.cs" />
     <Compile Include="GInterfaces\WorkShopInterface.cs" />
     <Compile Include="Graphics\Cloud.cs" />

@@ -885,13 +885,13 @@ namespace Lemma
 
 		protected override void LoadContent()
 		{
+			this.MapContent = new ContentManager(this.Services);
+			this.MapContent.RootDirectory = this.Content.RootDirectory;
+
 			GeeUIMain.Font = this.Content.Load<SpriteFont>(this.MainFont);
 
 			if (this.firstLoadContentCall)
 			{
-				this.MapContent = new ContentManager(this.Services);
-				this.MapContent.RootDirectory = this.Content.RootDirectory;
-
 				this.GraphicsDevice.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
 				this.GeeUI = new GeeUIMain();
 				this.AddComponent(GeeUI);

@@ -10,62 +10,35 @@ using Lemma.GInterfaces;
 
 namespace Lemma.Components
 {
-	public class TimeTrial : Component<Main>
+	public class TimeTrial : Component<Main>, IUpdateableComponent
 	{
-		private TimeTrialUI theUI = null;
-
-		[XmlIgnore]
-		public Command StartTimeTrial = new Command();
-
-		[XmlIgnore]
-		public Command EndTimeTrial = new Command();
-
-		[XmlIgnore]
-		public Command PauseTimer = new Command();
-
-		[XmlIgnore]
-		public Command ResumeTimer = new Command();
-
-		public Property<float> ParTime = new Property<float>();
-
-		//Gold medal time
-		public Property<float> KourTime = new Property<float>();
-
 		public Property<string> NextMap = new Property<string>();
+
+		[XmlIgnore]
+		public Property<float> ElapsedTime = new Property<float>();
+
+		[XmlIgnore]
+		public Command Retry = new Command();
 
 		public override void Awake()
 		{
-			this.theUI = new TimeTrialUI(this);
-			main.AddComponent(theUI);
-			this.Add(new CommandBinding(StartTimeTrial, () =>
-			{
-				theUI.ElapsedTime.Value = 0f;
-				theUI.AnimateIn();
-			}));
-			this.Add(new CommandBinding(EndTimeTrial, () =>
-			{
-				theUI.AnimateOut(false);
-				theUI.ShowEndPanel();
-				this.main.TimeMultiplier.Value = 0.0f;
-			}));
-			this.Add(new CommandBinding(PauseTimer, () =>
-			{
-				theUI.TimeTrialTicking.Value = false;
-			}));
-
-			this.Add(new CommandBinding(ResumeTimer, () =>
-			{
-				theUI.TimeTrialTicking.Value = true;
-			}));
 			base.Awake();
+
+			this.Retry.Action = this.retry;
+
+			this.Add(new CommandBinding(this.Disable, delegate()
+			{
+				this.main.BaseTimeMultiplier.Value = 0.0f;
+				this.main.Menu.CanPause.Value = false;
+			}));
 
 			this.Add(new CommandBinding(this.main.Spawner.PlayerSpawned, delegate()
 			{
-				PlayerFactory.Instance.Add(new CommandBinding(PlayerFactory.Instance.Get<Player>().Die, (Action)this.retry));
+				PlayerFactory.Instance.Add(new CommandBinding(PlayerFactory.Instance.Get<Player>().Die, (Action)this.retryDeath));
 			}));
 		}
 
-		private void retry()
+		private void retryDeath()
 		{
 			this.main.Spawner.CanSpawn = false;
 			this.Entity.Add(new Animation
@@ -80,10 +53,24 @@ namespace Lemma.Components
 			));
 		}
 
+		private void retry()
+		{
+			this.main.Spawner.CanSpawn = false;
+			this.main.CurrentSave.Value = null;
+			this.main.EditorEnabled.Value = false;
+			IO.MapLoader.Load(this.main, this.main.MapFile);
+		}
+
+		public void Update(float dt)
+		{
+			this.ElapsedTime.Value += dt;
+		}
+
 		public override void delete()
 		{
-			main.RemoveComponent(theUI);
 			base.delete();
+			this.main.BaseTimeMultiplier.Value = 1.0f;
+			this.main.Menu.CanPause.Value = true;
 		}
 	}
 }

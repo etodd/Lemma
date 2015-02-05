@@ -8,17 +8,17 @@ using System.Text;
 using GeeUI;
 using GeeUI.ViewLayouts;
 using GeeUI.Views;
-using Lemma.Components;
 using Lemma.Console;
 using Lemma.Factories;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.IO;
+using System.Xml.Serialization;
 
-namespace Lemma.GInterfaces
+namespace Lemma.Components
 {
-	public class TimeTrialUI : Component<Main>, IUpdateableComponent
+	public class TimeTrialUI : Component<Main>
 	{
 		public PanelView RootTimePanelView;
 		private TextView TimeTrialCurTimeView;
@@ -29,15 +29,21 @@ namespace Lemma.GInterfaces
 		private TextView EndTimeBestView;
 		private TextView EndTimeTitleView;
 
+		// Input properties
 		public Property<float> ElapsedTime = new Property<float>();
-		public Property<bool> TimeTrialTicking = new Property<bool>() { Value = true };
+		public Property<string> NextMap = new Property<string>();
 
-		private TimeTrial theTimeTrial;
+		[XmlIgnore]
+		public Command Retry = new Command();
 
-		public TimeTrialUI(TimeTrial tT)
-		{
-			this.theTimeTrial = tT;
-		}
+		[XmlIgnore]
+		public Command MainMenu = new Command();
+
+		[XmlIgnore]
+		public Command Edit = new Command();
+
+		[XmlIgnore]
+		public Command LoadNextMap = new Command();
 
 		public override void delete()
 		{
@@ -84,34 +90,27 @@ namespace Lemma.GInterfaces
 			ButtonView MainMenuButton = new ButtonView(main.GeeUI, RootTimeEndView, "Back", new Vector2(20, 250));
 			MainMenuButton.OnMouseClick += delegate(object sender, EventArgs e)
 			{
-				this.main.CurrentSave.Value = null;
-				this.main.EditorEnabled.Value = false;
-				IO.MapLoader.Load(this.main, Main.MenuMap);
-				this.main.Menu.Show();
+				this.MainMenu.Execute();
 			};
 
 			ButtonView RetryMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Retry", new Vector2(70, 250));
 			RetryMapButton.OnMouseClick += delegate(object sender, EventArgs e)
 			{
-				this.retry();
+				this.Retry.Execute();
 			};
 
 			ButtonView EditButton = new ButtonView(main.GeeUI, RootTimeEndView, "Edit", new Vector2(130, 250));
 			EditButton.OnMouseClick += delegate(object sender, EventArgs e)
 			{
-				this.main.CurrentSave.Value = null;
-				this.main.EditorEnabled.Value = true;
-				IO.MapLoader.Load(this.main, this.main.MapFile);
+				this.Edit.Execute();
 			};
 			EditButton.Active.Value = Main.AllowEditingGameMaps || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory;
 
 			ButtonView NextMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Next map", new Vector2(180, 250));
-			NextMapButton.Active.Value = !string.IsNullOrEmpty(this.theTimeTrial.NextMap.Value);
+			this.Add(new Binding<bool, string>(NextMapButton.Active, x => !string.IsNullOrEmpty(x), this.NextMap));
 			NextMapButton.OnMouseClick += delegate(object sender, EventArgs e)
 			{
-				this.main.CurrentSave.Value = null;
-				this.main.EditorEnabled.Value = false;
-				IO.MapLoader.Load(this.main, this.theTimeTrial.NextMap);
+				this.LoadNextMap.Execute();
 			};
 
 			RootTimePanelView.UnselectedNinepatch = RootTimePanelView.SelectedNinepatch = GeeUIMain.NinePatchBtnDefault;
@@ -122,7 +121,7 @@ namespace Lemma.GInterfaces
 			RootTimePanelView.Active.Value = false;
 			RootTimeEndView.Active.Value = false;
 
-			this.TimeTrialCurTimeView.Add(new Binding<string, float>(TimeTrialCurTimeView.Text, x => "Time: " + SecondsToTimeString(x), this.ElapsedTime));
+			this.TimeTrialCurTimeView.Add(new Binding<string, float>(TimeTrialCurTimeView.Text, this.SecondsToTimeString, this.ElapsedTime));
 
 			this.AnimateOut();
 
@@ -133,19 +132,12 @@ namespace Lemma.GInterfaces
 				if (this.bestTime == 0) 
 					return "Best: n/a";
 				else
-					return string.Format("Best: {0}", SecondsToTimeString(this.bestTime - this.ElapsedTime));
+					return string.Format("Best: {0}", this.SecondsToTimeString(this.bestTime - this.ElapsedTime));
 			}, this.ElapsedTime, this.bestTime));
 
 			EndTimeTitleView.Text.Value = Path.GetFileNameWithoutExtension(main.MapFile);
 
 			base.Awake();
-		}
-
-		private void retry()
-		{
-			this.main.CurrentSave.Value = null;
-			this.main.EditorEnabled.Value = false;
-			IO.MapLoader.Load(this.main, this.main.MapFile);
 		}
 
 		public void AnimateIn()
@@ -171,34 +163,24 @@ namespace Lemma.GInterfaces
 					new Animation.Set<bool>(RootTimePanelView.Active, false),
 					new Animation.Execute(() =>
 					{
-						if (!remove) return;
-						if (RootTimePanelView != null)
-							RootTimePanelView.RemoveFromParent();
-
-						if (RootTimeEndView != null)
-							RootTimeEndView.RemoveFromParent();
+						if (remove)
+						{
+							if (this.RootTimePanelView != null)
+								this.RootTimePanelView.RemoveFromParent();
+							if (this.RootTimeEndView != null)
+								this.RootTimeEndView.RemoveFromParent();
+						}
 					})
 				)
 			);
 		}
 
-		public void StartTicking()
-		{
-			TimeTrialTicking.Value = true;
-		}
-
-		public void StopTicking()
-		{
-			TimeTrialTicking.Value = false;
-		}
-
 		public void ShowEndPanel()
 		{
 			PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = false;
-			main.UI.IsMouseVisible.Value = true;
-			RootTimeEndView.Active.Value = true;
-			AnimateOut();
-			StopTicking();
+			this.main.UI.IsMouseVisible.Value = true;
+			this.RootTimeEndView.Active.Value = true;
+			this.AnimateOut();
 
 			string uuid = WorldFactory.Instance.Get<World>().UUID;
 			this.bestTime.Value = this.main.SaveMapTime(uuid, this.ElapsedTime);
@@ -224,12 +206,6 @@ namespace Lemma.GInterfaces
 			if (sSeconds.Length == 1) sSeconds = "0" + sSeconds;
 			if (sMs.Length == 1) sMs = "0" + sMs;
 			return (negative ? "-" : "") + sMinutes + ":" + sSeconds + "." + sMs;
-		}
-
-		public void Update(float dt)
-		{
-			if (TimeTrialTicking.Value)
-				this.ElapsedTime.Value += dt;
 		}
 	}
 }

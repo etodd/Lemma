@@ -301,10 +301,6 @@ namespace Lemma.Components
 			};
 			this.Add(new CommandBinding(this.main.ReloadingContent, delegate()
 			{
-				if (this.effect != null)
-					this.effect.Dispose();
-				this.effect = null;
-
 				if (this.instanceVertexBuffer != null)
 					this.instanceVertexBuffer.Dispose();
 				this.instanceVertexBuffer = null;
@@ -334,11 +330,7 @@ namespace Lemma.Components
 			if (file == null)
 			{
 				if (this.model != null)
-				{
 					this.effect = this.model.Meshes.FirstOrDefault().Effects.FirstOrDefault().Clone();
-					if (this.effect.IsDisposed)
-						this.effect = null;
-				}
 			}
 			else
 				this.effect = (this.MapContent ? this.main.MapContent : this.main.Content).Load<Effect>(file).Clone();
@@ -387,13 +379,6 @@ namespace Lemma.Components
 					this.IsValid.Value = false;
 				}
 			}
-		}
-
-		public override void delete()
-		{
-			base.delete();
-			if (this.effect != null)
-				this.effect.Dispose();
 		}
 
 		private Dictionary<string, IProperty> properties = new Dictionary<string, IProperty>();
