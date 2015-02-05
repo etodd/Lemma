@@ -170,7 +170,7 @@ namespace Lemma.Components
 				Permanent = false,
 				Supported = false,
 				Hard = false,
-				Density = 2,
+				Density = 0.25f,
 				DiffuseMap = "Textures\\white",
 				NormalMap = "Textures\\temporary-normal",
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,

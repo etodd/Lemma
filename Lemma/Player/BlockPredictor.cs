@@ -183,6 +183,8 @@ namespace Lemma.Components
 			}
 		}
 
+		private static string[] ignoreTypes = new[] { "Bouncer", "Slider", "Spinner", };
+
 		// Function for finding a platform to build for the player
 		public Possibility FindPlatform(Vector3 position)
 		{
@@ -194,33 +196,36 @@ namespace Lemma.Components
 			EffectBlockFactory blockFactory = Factory.Get<EffectBlockFactory>();
 			foreach (Voxel map in Voxel.ActivePhysicsVoxels)
 			{
-				List<Matrix> results = new List<Matrix>();
-				Voxel.Coord absolutePlayerCoord = map.GetCoordinate(position);
-				bool inMap = map.GetChunk(absolutePlayerCoord, false) != null;
-				foreach (Direction absoluteDir in platformBuildableDirections)
+				if (!ignoreTypes.Contains(map.Entity.Type))
 				{
-					Voxel.Coord playerCoord = absoluteDir == Direction.NegativeY ? absolutePlayerCoord : map.GetCoordinate(position + new Vector3(0, platformSize / -2.0f, 0));
-					Direction relativeDir = map.GetRelativeDirection(absoluteDir);
-					if (!inMap && map.GetChunk(playerCoord.Move(relativeDir, searchDistance), false) == null)
-						continue;
-
-					for (int i = 1; i < shortestDistance; i++)
+					List<Matrix> results = new List<Matrix>();
+					Voxel.Coord absolutePlayerCoord = map.GetCoordinate(position);
+					bool inMap = map.GetChunk(absolutePlayerCoord, false) != null;
+					foreach (Direction absoluteDir in platformBuildableDirections)
 					{
-						Voxel.Coord coord = playerCoord.Move(relativeDir, i);
-						Voxel.State state = map[coord];
-
-						if (state == Voxel.States.Empty)
+						Voxel.Coord playerCoord = absoluteDir == Direction.NegativeY ? absolutePlayerCoord : map.GetCoordinate(position + new Vector3(0, platformSize / -2.0f, 0));
+						Direction relativeDir = map.GetRelativeDirection(absoluteDir);
+						if (!inMap && map.GetChunk(playerCoord.Move(relativeDir, searchDistance), false) == null)
 							continue;
 
-						if (this.canBuild(state) && this.canBuild(map.GetAbsolutePosition(coord)))
+						for (int i = 1; i < shortestDistance; i++)
 						{
-							shortestDistance = i;
-							relativeShortestDirection = relativeDir;
-							absoluteShortestDirection = absoluteDir;
-							shortestCoordinate = playerCoord;
-							shortestMap = map;
+							Voxel.Coord coord = playerCoord.Move(relativeDir, i);
+							Voxel.State state = map[coord];
+
+							if (state == Voxel.States.Empty)
+								continue;
+
+							if (this.canBuild(state) && this.canBuild(map.GetAbsolutePosition(coord)))
+							{
+								shortestDistance = i;
+								relativeShortestDirection = relativeDir;
+								absoluteShortestDirection = absoluteDir;
+								shortestCoordinate = playerCoord;
+								shortestMap = map;
+							}
+							break;
 						}
-						break;
 					}
 				}
 			}
@@ -274,33 +279,36 @@ namespace Lemma.Components
 			EffectBlockFactory blockFactory = Factory.Get<EffectBlockFactory>();
 			foreach (Voxel map in Voxel.ActivePhysicsVoxels)
 			{
-				foreach (Direction absoluteWallDir in DirectionExtensions.HorizontalDirections)
+				if (!ignoreTypes.Contains(map.Entity.Type))
 				{
-					Direction relativeWallDir = map.GetRelativeDirection(absoluteWallDir);
-					Vector3 wallVector = map.GetAbsoluteVector(relativeWallDir.GetVector());
-					float dot = Vector2.Dot(direction, Vector2.Normalize(new Vector2(wallVector.X, wallVector.Z)));
-					if (dot > -0.25f && dot < 0.8f)
+					foreach (Direction absoluteWallDir in DirectionExtensions.HorizontalDirections)
 					{
-						Voxel.Coord coord = map.GetCoordinate(position).Move(relativeWallDir, 2);
-						foreach (Direction dir in DirectionExtensions.Directions.Where(x => x.IsPerpendicular(relativeWallDir)))
+						Direction relativeWallDir = map.GetRelativeDirection(absoluteWallDir);
+						Vector3 wallVector = map.GetAbsoluteVector(relativeWallDir.GetVector());
+						float dot = Vector2.Dot(direction, Vector2.Normalize(new Vector2(wallVector.X, wallVector.Z)));
+						if (dot > -0.25f && dot < 0.8f)
 						{
-							for (int i = 0; i < shortestDistance; i++)
+							Voxel.Coord coord = map.GetCoordinate(position).Move(relativeWallDir, 2);
+							foreach (Direction dir in DirectionExtensions.Directions.Where(x => x.IsPerpendicular(relativeWallDir)))
 							{
-								Voxel.Coord c = coord.Move(dir, i);
-								Voxel.State state = map[c];
-
-								if (state == Voxel.States.Empty)
-									continue;
-
-								if (this.canBuild(state) && this.canBuild(map.GetAbsolutePosition(c)))
+								for (int i = 0; i < shortestDistance; i++)
 								{
-									shortestMap = map;
-									shortestBuildDirection = dir;
-									shortestWallDirection = relativeWallDir;
-									shortestDistance = i;
-									shortestPlayerCoord = coord;
+									Voxel.Coord c = coord.Move(dir, i);
+									Voxel.State state = map[c];
+
+									if (state == Voxel.States.Empty)
+										continue;
+
+									if (this.canBuild(state) && this.canBuild(map.GetAbsolutePosition(c)))
+									{
+										shortestMap = map;
+										shortestBuildDirection = dir;
+										shortestWallDirection = relativeWallDir;
+										shortestDistance = i;
+										shortestPlayerCoord = coord;
+									}
+									break;
 								}
-								break;
 							}
 						}
 					}
