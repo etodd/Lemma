@@ -307,6 +307,16 @@ namespace Lemma.Components
 			this.main.DrawScene(this.shadowRenderParameters);
 		}
 
+		private struct LightEntry<LightType>
+		{
+			public LightType Light;
+			public float Score;
+		}
+		private List<LightEntry<SpotLight>> spotLightEntries = new List<LightEntry<SpotLight>>();
+		private Util.LambdaComparer<LightEntry<SpotLight>> spotLightComparer = new Util.LambdaComparer<LightEntry<SpotLight>>(delegate(LightEntry<SpotLight> a, LightEntry<SpotLight> b)
+		{
+			return a.Score.CompareTo(b.Score);
+		});
 		public void RenderShadowMaps(Camera camera)
 		{
 			Microsoft.Xna.Framework.Graphics.RasterizerState originalState = this.main.GraphicsDevice.RasterizerState;
@@ -317,22 +327,27 @@ namespace Lemma.Components
 			this.shadowMapIndices.Clear();
 
 			// Collect spot lights
-			List<SpotLight> shadowedSpotLights = new List<SpotLight>();
 			foreach (SpotLight light in SpotLight.All)
 			{
 				if (light.Enabled && !light.Suspended && light.Shadowed && light.Attenuation > 0.0f && camera.BoundingFrustum.Intersects(light.BoundingFrustum))
-					shadowedSpotLights.Add(light);
+				{
+					float score = (light.Position.Value - camera.Position.Value).LengthSquared() / light.Attenuation;
+					if (score < LightingManager.lightShadowThreshold)
+						this.spotLightEntries.Add(new LightEntry<SpotLight> { Light = light, Score = score });
+				}
 			}
-			shadowedSpotLights = shadowedSpotLights.Select(x => new { Light = x, Score = (x.Position.Value - camera.Position.Value).LengthSquared() / x.Attenuation }).Where(x => x.Score < LightingManager.lightShadowThreshold).OrderBy(x => x.Score).Take(this.maxShadowedSpotLights).Select(x => x.Light).ToList();
+			this.spotLightEntries.Sort(this.spotLightComparer);
 
 			// Render spot shadow maps
-			int index = 0;
-			foreach (SpotLight light in shadowedSpotLights)
+			for (int i = 0; i < this.spotLightEntries.Count; i++)
 			{
-				this.shadowMapIndices[light] = index;
-				this.RenderSpotShadowMap(light, index);
-				index++;
+				LightEntry<SpotLight> entry = this.spotLightEntries[i];
+				this.shadowMapIndices[entry.Light] = i;
+				this.RenderSpotShadowMap(entry.Light, i);
+				if (i >= this.maxShadowedSpotLights - 1)
+					break;
 			}
+			this.spotLightEntries.Clear();
 
 			this.main.GraphicsDevice.RasterizerState = originalState;
 

@@ -1202,18 +1202,6 @@ namespace Lemma.Components
 			}
 		}
 
-		public class Surface
-		{
-			public int MinU, MaxU;
-			public int MinV, MaxV;
-			public bool HasArea;
-
-			public void RefreshTransform(Box box, Direction normal)
-			{
-				this.HasArea = this.MaxU > this.MinU && this.MaxV > this.MinV;
-			}
-		}
-
 		public class Chunk
 		{
 			protected class MeshEntry
@@ -1313,8 +1301,20 @@ namespace Lemma.Components
 						MeshEntry entry = pair.Value;
 						entry.Dirty = false;
 
-						IEnumerable<Box> boxes = this.Boxes.Where(x => x.Type.ID == pair.Key);
-						int surfaces = boxes.SelectMany(x => x.Surfaces).Count(x => x.HasArea);
+						int surfaces = 0;
+						for (int i = 0; i < this.Boxes.Count; i++)
+						{
+							Box b = this.Boxes[i];
+							if (b.Type.ID == pair.Key)
+							{
+								surfaces += (b.Surfaces[0] ? 1 : 0)
+								+ (b.Surfaces[1] ? 1 : 0)
+								+ (b.Surfaces[2] ? 1 : 0)
+								+ (b.Surfaces[3] ? 1 : 0)
+								+ (b.Surfaces[4] ? 1 : 0)
+								+ (b.Surfaces[5] ? 1 : 0);
+							}
+						}
 
 						State type = Voxel.States.All[pair.Key];
 
@@ -1326,130 +1326,134 @@ namespace Lemma.Components
 						if (surfaces > 0)
 						{
 							if (model != null)
-								vertices = Voxel.vertexHeap.Get((int)Math.Pow(LargeObjectHeap<Vertex>.GrowthFactor, Math.Ceiling(Math.Log(surfaces * 4, LargeObjectHeap<Vertex>.GrowthFactor))));
+								vertices = Voxel.vertexHeap.Get((int)Math.Pow(LargeObjectHeap<Vertex[]>.GrowthFactor, Math.Ceiling(Math.Log(surfaces * 4, LargeObjectHeap<Vertex[]>.GrowthFactor))));
 
 							if (this.EnablePhysics && !type.Fake)
-								physicsVertices = Voxel.physicsVertexHeap.Get((int)Math.Pow(LargeObjectHeap<Vertex>.GrowthFactor, Math.Ceiling(Math.Log(surfaces * 4, LargeObjectHeap<Vertex>.GrowthFactor))));
+								physicsVertices = Voxel.physicsVertexHeap.Get((int)Math.Pow(LargeObjectHeap<Vector3[]>.GrowthFactor, Math.Ceiling(Math.Log(surfaces * 4, LargeObjectHeap<Vector3[]>.GrowthFactor))));
 
 							uint vertexIndex = 0;
-							foreach (Box box in boxes)
+							for (int i = 0; i < this.Boxes.Count; i++)
 							{
-								Vector3 a = new Vector3(box.X, box.Y, box.Z);
-								Vector3 b = new Vector3(box.X, box.Y, box.Z + box.Depth);
-								Vector3 c = new Vector3(box.X, box.Y + box.Height, box.Z);
-								Vector3 d = new Vector3(box.X, box.Y + box.Height, box.Z + box.Depth);
-								Vector3 e = new Vector3(box.X + box.Width, box.Y, box.Z);
-								Vector3 f = new Vector3(box.X + box.Width, box.Y, box.Z + box.Depth);
-								Vector3 g = new Vector3(box.X + box.Width, box.Y + box.Height, box.Z);
-								Vector3 h = new Vector3(box.X + box.Width, box.Y + box.Height, box.Z + box.Depth);
+								Box box = this.Boxes[i];
+								if (box.Type.ID == pair.Key)
+								{
+									Vector3 a = new Vector3(box.X, box.Y, box.Z);
+									Vector3 b = new Vector3(box.X, box.Y, box.Z + box.Depth);
+									Vector3 c = new Vector3(box.X, box.Y + box.Height, box.Z);
+									Vector3 d = new Vector3(box.X, box.Y + box.Height, box.Z + box.Depth);
+									Vector3 e = new Vector3(box.X + box.Width, box.Y, box.Z);
+									Vector3 f = new Vector3(box.X + box.Width, box.Y, box.Z + box.Depth);
+									Vector3 g = new Vector3(box.X + box.Width, box.Y + box.Height, box.Z);
+									Vector3 h = new Vector3(box.X + box.Width, box.Y + box.Height, box.Z + box.Depth);
 
-								if (box.Surfaces[(int)Direction.NegativeX].HasArea)
-								{
-									if (vertices != null)
+									if (box.Surfaces[(int)Direction.NegativeX])
 									{
-										Chunk.negativeX.Position = a; vertices[vertexIndex + 0] = Chunk.negativeX;
-										Chunk.negativeX.Position = b; vertices[vertexIndex + 1] = Chunk.negativeX;
-										Chunk.negativeX.Position = c; vertices[vertexIndex + 2] = Chunk.negativeX;
-										Chunk.negativeX.Position = d; vertices[vertexIndex + 3] = Chunk.negativeX;
+										if (vertices != null)
+										{
+											Chunk.negativeX.Position = a; vertices[vertexIndex + 0] = Chunk.negativeX;
+											Chunk.negativeX.Position = b; vertices[vertexIndex + 1] = Chunk.negativeX;
+											Chunk.negativeX.Position = c; vertices[vertexIndex + 2] = Chunk.negativeX;
+											Chunk.negativeX.Position = d; vertices[vertexIndex + 3] = Chunk.negativeX;
+										}
+										if (physicsVertices != null)
+										{
+											physicsVertices[vertexIndex + 0] = a;
+											physicsVertices[vertexIndex + 1] = b;
+											physicsVertices[vertexIndex + 2] = c;
+											physicsVertices[vertexIndex + 3] = d;
+										}
+										vertexIndex += 4;
 									}
-									if (physicsVertices != null)
+									if (box.Surfaces[(int)Direction.PositiveX])
 									{
-										physicsVertices[vertexIndex + 0] = a;
-										physicsVertices[vertexIndex + 1] = b;
-										physicsVertices[vertexIndex + 2] = c;
-										physicsVertices[vertexIndex + 3] = d;
+										if (vertices != null)
+										{
+											Chunk.positiveX.Position = e; vertices[vertexIndex + 0] = Chunk.positiveX;
+											Chunk.positiveX.Position = g; vertices[vertexIndex + 1] = Chunk.positiveX;
+											Chunk.positiveX.Position = f; vertices[vertexIndex + 2] = Chunk.positiveX;
+											Chunk.positiveX.Position = h; vertices[vertexIndex + 3] = Chunk.positiveX;
+										}
+										if (physicsVertices != null)
+										{
+											physicsVertices[vertexIndex + 0] = e;
+											physicsVertices[vertexIndex + 1] = g;
+											physicsVertices[vertexIndex + 2] = f;
+											physicsVertices[vertexIndex + 3] = h;
+										}
+										vertexIndex += 4;
 									}
-									vertexIndex += 4;
-								}
-								if (box.Surfaces[(int)Direction.PositiveX].HasArea)
-								{
-									if (vertices != null)
+									if (box.Surfaces[(int)Direction.NegativeY])
 									{
-										Chunk.positiveX.Position = e; vertices[vertexIndex + 0] = Chunk.positiveX;
-										Chunk.positiveX.Position = g; vertices[vertexIndex + 1] = Chunk.positiveX;
-										Chunk.positiveX.Position = f; vertices[vertexIndex + 2] = Chunk.positiveX;
-										Chunk.positiveX.Position = h; vertices[vertexIndex + 3] = Chunk.positiveX;
+										if (vertices != null)
+										{
+											Chunk.negativeY.Position = a; vertices[vertexIndex + 0] = Chunk.negativeY;
+											Chunk.negativeY.Position = e; vertices[vertexIndex + 1] = Chunk.negativeY;
+											Chunk.negativeY.Position = b; vertices[vertexIndex + 2] = Chunk.negativeY;
+											Chunk.negativeY.Position = f; vertices[vertexIndex + 3] = Chunk.negativeY;
+										}
+										if (physicsVertices != null)
+										{
+											physicsVertices[vertexIndex + 0] = a;
+											physicsVertices[vertexIndex + 1] = e;
+											physicsVertices[vertexIndex + 2] = b;
+											physicsVertices[vertexIndex + 3] = f;
+										}
+										vertexIndex += 4;
 									}
-									if (physicsVertices != null)
+									if (box.Surfaces[(int)Direction.PositiveY])
 									{
-										physicsVertices[vertexIndex + 0] = e;
-										physicsVertices[vertexIndex + 1] = g;
-										physicsVertices[vertexIndex + 2] = f;
-										physicsVertices[vertexIndex + 3] = h;
+										if (vertices != null)
+										{
+											Chunk.positiveY.Position = c; vertices[vertexIndex + 0] = Chunk.positiveY;
+											Chunk.positiveY.Position = d; vertices[vertexIndex + 1] = Chunk.positiveY;
+											Chunk.positiveY.Position = g; vertices[vertexIndex + 2] = Chunk.positiveY;
+											Chunk.positiveY.Position = h; vertices[vertexIndex + 3] = Chunk.positiveY;
+										}
+										if (physicsVertices != null)
+										{
+											physicsVertices[vertexIndex + 0] = c;
+											physicsVertices[vertexIndex + 1] = d;
+											physicsVertices[vertexIndex + 2] = g;
+											physicsVertices[vertexIndex + 3] = h;
+										}
+										vertexIndex += 4;
 									}
-									vertexIndex += 4;
-								}
-								if (box.Surfaces[(int)Direction.NegativeY].HasArea)
-								{
-									if (vertices != null)
+									if (box.Surfaces[(int)Direction.NegativeZ])
 									{
-										Chunk.negativeY.Position = a; vertices[vertexIndex + 0] = Chunk.negativeY;
-										Chunk.negativeY.Position = e; vertices[vertexIndex + 1] = Chunk.negativeY;
-										Chunk.negativeY.Position = b; vertices[vertexIndex + 2] = Chunk.negativeY;
-										Chunk.negativeY.Position = f; vertices[vertexIndex + 3] = Chunk.negativeY;
+										if (vertices != null)
+										{
+											Chunk.negativeZ.Position = a; vertices[vertexIndex + 0] = Chunk.negativeZ;
+											Chunk.negativeZ.Position = c; vertices[vertexIndex + 1] = Chunk.negativeZ;
+											Chunk.negativeZ.Position = e; vertices[vertexIndex + 2] = Chunk.negativeZ;
+											Chunk.negativeZ.Position = g; vertices[vertexIndex + 3] = Chunk.negativeZ;
+										}
+										if (physicsVertices != null)
+										{
+											physicsVertices[vertexIndex + 0] = a;
+											physicsVertices[vertexIndex + 1] = c;
+											physicsVertices[vertexIndex + 2] = e;
+											physicsVertices[vertexIndex + 3] = g;
+										}
+										vertexIndex += 4;
 									}
-									if (physicsVertices != null)
+									if (box.Surfaces[(int)Direction.PositiveZ])
 									{
-										physicsVertices[vertexIndex + 0] = a;
-										physicsVertices[vertexIndex + 1] = e;
-										physicsVertices[vertexIndex + 2] = b;
-										physicsVertices[vertexIndex + 3] = f;
+										if (vertices != null)
+										{
+											Chunk.positiveZ.Position = b; vertices[vertexIndex + 0] = Chunk.positiveZ;
+											Chunk.positiveZ.Position = f; vertices[vertexIndex + 1] = Chunk.positiveZ;
+											Chunk.positiveZ.Position = d; vertices[vertexIndex + 2] = Chunk.positiveZ;
+											Chunk.positiveZ.Position = h; vertices[vertexIndex + 3] = Chunk.positiveZ;
+										}
+										if (physicsVertices != null)
+										{
+											physicsVertices[vertexIndex + 0] = b;
+											physicsVertices[vertexIndex + 1] = f;
+											physicsVertices[vertexIndex + 2] = d;
+											physicsVertices[vertexIndex + 3] = h;
+										}
+										vertexIndex += 4;
 									}
-									vertexIndex += 4;
-								}
-								if (box.Surfaces[(int)Direction.PositiveY].HasArea)
-								{
-									if (vertices != null)
-									{
-										Chunk.positiveY.Position = c; vertices[vertexIndex + 0] = Chunk.positiveY;
-										Chunk.positiveY.Position = d; vertices[vertexIndex + 1] = Chunk.positiveY;
-										Chunk.positiveY.Position = g; vertices[vertexIndex + 2] = Chunk.positiveY;
-										Chunk.positiveY.Position = h; vertices[vertexIndex + 3] = Chunk.positiveY;
-									}
-									if (physicsVertices != null)
-									{
-										physicsVertices[vertexIndex + 0] = c;
-										physicsVertices[vertexIndex + 1] = d;
-										physicsVertices[vertexIndex + 2] = g;
-										physicsVertices[vertexIndex + 3] = h;
-									}
-									vertexIndex += 4;
-								}
-								if (box.Surfaces[(int)Direction.NegativeZ].HasArea)
-								{
-									if (vertices != null)
-									{
-										Chunk.negativeZ.Position = a; vertices[vertexIndex + 0] = Chunk.negativeZ;
-										Chunk.negativeZ.Position = c; vertices[vertexIndex + 1] = Chunk.negativeZ;
-										Chunk.negativeZ.Position = e; vertices[vertexIndex + 2] = Chunk.negativeZ;
-										Chunk.negativeZ.Position = g; vertices[vertexIndex + 3] = Chunk.negativeZ;
-									}
-									if (physicsVertices != null)
-									{
-										physicsVertices[vertexIndex + 0] = a;
-										physicsVertices[vertexIndex + 1] = c;
-										physicsVertices[vertexIndex + 2] = e;
-										physicsVertices[vertexIndex + 3] = g;
-									}
-									vertexIndex += 4;
-								}
-								if (box.Surfaces[(int)Direction.PositiveZ].HasArea)
-								{
-									if (vertices != null)
-									{
-										Chunk.positiveZ.Position = b; vertices[vertexIndex + 0] = Chunk.positiveZ;
-										Chunk.positiveZ.Position = f; vertices[vertexIndex + 1] = Chunk.positiveZ;
-										Chunk.positiveZ.Position = d; vertices[vertexIndex + 2] = Chunk.positiveZ;
-										Chunk.positiveZ.Position = h; vertices[vertexIndex + 3] = Chunk.positiveZ;
-									}
-									if (physicsVertices != null)
-									{
-										physicsVertices[vertexIndex + 0] = b;
-										physicsVertices[vertexIndex + 1] = f;
-										physicsVertices[vertexIndex + 2] = d;
-										physicsVertices[vertexIndex + 3] = h;
-									}
-									vertexIndex += 4;
 								}
 							}
 						}
@@ -1506,14 +1510,7 @@ namespace Lemma.Components
 				for (int i = 0; i < this.DataBoxes.Count; i++)
 					this.Voxel.addBoxWithoutAdjacency(this.DataBoxes[i]);
 
-				for (int i = 0; i < this.DataBoxes.Count; i++)
-				{
-					Box box = this.DataBoxes[i];
-					for (int j = 0; j < 6; j++)
-						box.Surfaces[j].RefreshTransform(box, (Direction)j);
-					this.Boxes.Add(box);
-				}
-
+				this.Boxes.AddAll(this.DataBoxes);
 				this.DataBoxes.Clear();
 				this.DataBoxes = null;
 
@@ -1845,14 +1842,14 @@ namespace Lemma.Components
 			[XmlIgnore]
 			public List<Box> Adjacent = new List<Box>();
 			[XmlIgnore]
-			public Surface[] Surfaces = new[]
+			public bool[] Surfaces = new[]
 			{
-				new Surface(), // PositiveX
-				new Surface(), // NegativeX
-				new Surface(), // PositiveY
-				new Surface(), // NegativeY
-				new Surface(), // PositiveZ
-				new Surface(), // NegativeZ
+				false, // PositiveX
+				false, // NegativeX
+				false, // PositiveY
+				false, // NegativeY
+				false, // PositiveZ
+				false, // NegativeZ
 			};
 
 			public int GetComponent(Direction dir)
@@ -2013,7 +2010,6 @@ namespace Lemma.Components
 		}
 
 		private static List<Box> boxCache = new List<Box>();
-		private static int[] surfaceCache = new int[4 * 6];
 
 		private int[] serializedVoxelData;
 		public SerializedVoxelData Data
@@ -2053,31 +2049,15 @@ namespace Lemma.Components
 
 						//We need to use 11 bits to store each value.
 						//So pack it all up nice and tidy. This will store them in 9 ints, as opposed to 24. Nice.
-						Voxel.surfaceCache[0] = box.Surfaces[0].MinU;
-						Voxel.surfaceCache[1] = box.Surfaces[0].MinV;
-						Voxel.surfaceCache[2] = box.Surfaces[0].MaxU;
-						Voxel.surfaceCache[3] = box.Surfaces[0].MaxV;
-						Voxel.surfaceCache[4] = box.Surfaces[1].MinU;
-						Voxel.surfaceCache[5] = box.Surfaces[1].MinV;
-						Voxel.surfaceCache[6] = box.Surfaces[1].MaxU;
-						Voxel.surfaceCache[7] = box.Surfaces[1].MaxV;
-						Voxel.surfaceCache[8] = box.Surfaces[2].MinU;
-						Voxel.surfaceCache[9] = box.Surfaces[2].MinV;
-						Voxel.surfaceCache[10] = box.Surfaces[2].MaxU;
-						Voxel.surfaceCache[11] = box.Surfaces[2].MaxV;
-						Voxel.surfaceCache[12] = box.Surfaces[3].MinU;
-						Voxel.surfaceCache[13] = box.Surfaces[3].MinV;
-						Voxel.surfaceCache[14] = box.Surfaces[3].MaxU;
-						Voxel.surfaceCache[15] = box.Surfaces[3].MaxV;
-						Voxel.surfaceCache[16] = box.Surfaces[4].MinU;
-						Voxel.surfaceCache[17] = box.Surfaces[4].MinV;
-						Voxel.surfaceCache[18] = box.Surfaces[4].MaxU;
-						Voxel.surfaceCache[19] = box.Surfaces[4].MaxV;
-						Voxel.surfaceCache[20] = box.Surfaces[5].MinU;
-						Voxel.surfaceCache[21] = box.Surfaces[5].MinV;
-						Voxel.surfaceCache[22] = box.Surfaces[5].MaxU;
-						Voxel.surfaceCache[23] = box.Surfaces[5].MaxV;
-						BitWorker.PackInts(result, 11, Voxel.surfaceCache);
+						result.Add
+						(
+							(box.Surfaces[0] ? 1 : 0) << 0
+							| (box.Surfaces[1] ? 1 : 0) << 1
+							| (box.Surfaces[2] ? 1 : 0) << 2
+							| (box.Surfaces[3] ? 1 : 0) << 3
+							| (box.Surfaces[4] ? 1 : 0) << 4
+							| (box.Surfaces[5] ? 1 : 0) << 5
+						);
 						indexLookup.Add(box, i);
 					}
 
@@ -2379,6 +2359,8 @@ namespace Lemma.Components
 		{
 			int boxCount = data[0];
 
+			bool rebuildAdjacency = false;
+#if false
 			const int boxDataSize = 13;
 
 			for (int i = 0; i < boxCount; i++)
@@ -2398,7 +2380,8 @@ namespace Lemma.Components
 				{
 					State state = Voxel.States.All[(t)v];
 					int chunkX = this.minX + ((x - this.minX) / this.chunkSize) * this.chunkSize, chunkY = this.minY + ((y - this.minY) / this.chunkSize) * this.chunkSize, chunkZ = this.minZ + ((z - this.minZ) / this.chunkSize) * this.chunkSize;
-					int nextChunkX = this.minX + ((x + w - this.minX) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ) / this.chunkSize) * this.chunkSize;
+					int nextChunkX = this.minX + ((x + w - this.minX - 1) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY - 1) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ - 1) / this.chunkSize) * this.chunkSize;
+					rebuildAdjacency |= chunkX != nextChunkX || chunkY != nextChunkY || chunkZ != nextChunkZ;
 					for (int ix = chunkX; ix <= nextChunkX; ix += this.chunkSize)
 					{
 						for (int iy = chunkY; iy <= nextChunkY; iy += this.chunkSize)
@@ -2411,28 +2394,21 @@ namespace Lemma.Components
 									X = bx,
 									Y = by,
 									Z = bz,
-									Width = Math.Min(x + w, ix + this.chunkSize) - bx,
-									Height = Math.Min(y + h, iy + this.chunkSize) - by,
-									Depth = Math.Min(z + d, iz + this.chunkSize) - bz,
+									Width = Math.Min(bx + w, ix + this.chunkSize) - bx,
+									Height = Math.Min(by + h, iy + this.chunkSize) - by,
+									Depth = Math.Min(bz + d, iz + this.chunkSize) - bz,
 									Type = state,
 									Active = true,
 								};
+
 								if (box.Width > 0 && box.Height > 0 && box.Depth > 0)
 								{
-									Voxel.boxCache.Add(box);
 									Chunk chunk = this.GetChunk(bx, by, bz);
+									Voxel.boxCache.Add(box);
 									if (chunk.DataBoxes == null)
 										chunk.DataBoxes = new List<Box>();
 									chunk.DataBoxes.Add(box);
 									box.Chunk = chunk;
-									for (int x1 = box.X - chunk.X; x1 < box.X + box.Width - chunk.X; x1++)
-									{
-										for (int y1 = box.Y - chunk.Y; y1 < box.Y + box.Height - chunk.Y; y1++)
-										{
-											for (int z1 = box.Z - chunk.Z; z1 < box.Z + box.Depth - chunk.Z; z1++)
-												chunk.Data[x1, y1, z1] = box;
-										}
-									}
 									int[] packed = new int[9];
 
 									for (int j = index + 4; j < index + 4 + 9; j++)
@@ -2442,11 +2418,11 @@ namespace Lemma.Components
 									for (int j = 0; j < 6; j++)
 									{
 										int baseIndex = j * 4;
-										Surface surface = box.Surfaces[j];
-										surface.MinU = unPacked[baseIndex + 0];
-										surface.MinV = unPacked[baseIndex + 1];
-										surface.MaxU = unPacked[baseIndex + 2];
-										surface.MaxV = unPacked[baseIndex + 3];
+										int minU = unPacked[baseIndex + 0];
+										int minV = unPacked[baseIndex + 1];
+										int maxU = unPacked[baseIndex + 2];
+										int maxV = unPacked[baseIndex + 3];
+										box.Surfaces[j] = minU < maxU && minV < maxV;
 									}
 								}
 							}
@@ -2454,6 +2430,65 @@ namespace Lemma.Components
 					}
 				}
 			}
+#else
+			const int boxDataSize = 5;
+
+			for (int i = 0; i < boxCount; i++)
+			{
+				// Format:
+				// x
+				// y
+				// z
+				// width-height-depth-type, packed in one int
+				// one bool for each of six surfaces, packed in one int
+				int index = 1 + (i * boxDataSize);
+				int packedData = data[index + 3];
+				int v = packedData.ExtractBits(24, 8);
+				if (v != 0)
+				{
+					int x = data[index], y = data[index + 1], z = data[index + 2];
+					int w = packedData.ExtractBits(0, 8), h = packedData.ExtractBits(8, 8), d = packedData.ExtractBits(16, 8);
+					int surfaces = data[index + 4];
+					State state = Voxel.States.All[(t)v];
+					int chunkX = this.minX + ((x - this.minX) / this.chunkSize) * this.chunkSize, chunkY = this.minY + ((y - this.minY) / this.chunkSize) * this.chunkSize, chunkZ = this.minZ + ((z - this.minZ) / this.chunkSize) * this.chunkSize;
+					int nextChunkX = this.minX + ((x + w - this.minX - 1) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY - 1) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ - 1) / this.chunkSize) * this.chunkSize;
+					rebuildAdjacency |= chunkX != nextChunkX || chunkY != nextChunkY || chunkZ != nextChunkZ;
+					for (int ix = chunkX; ix <= nextChunkX; ix += this.chunkSize)
+					{
+						for (int iy = chunkY; iy <= nextChunkY; iy += this.chunkSize)
+						{
+							for (int iz = chunkZ; iz <= nextChunkZ; iz += this.chunkSize)
+							{
+								int bx = Math.Max(ix, x), by = Math.Max(iy, y), bz = Math.Max(iz, z);
+								Box box = new Box
+								{
+									X = bx,
+									Y = by,
+									Z = bz,
+									Width = Math.Min(bx + w, ix + this.chunkSize) - bx,
+									Height = Math.Min(by + h, iy + this.chunkSize) - by,
+									Depth = Math.Min(bz + d, iz + this.chunkSize) - bz,
+									Type = state,
+									Active = true,
+								};
+
+								if (box.Width > 0 && box.Height > 0 && box.Depth > 0)
+								{
+									Chunk chunk = this.GetChunk(bx, by, bz);
+									Voxel.boxCache.Add(box);
+									if (chunk.DataBoxes == null)
+										chunk.DataBoxes = new List<Box>();
+									chunk.DataBoxes.Add(box);
+									box.Chunk = chunk;
+									for (int j = 0; j < 6; j++)
+										box.Surfaces[j] = (surfaces & 1 << j) != 0;
+								}
+							}
+						}
+					}
+				}
+			}
+#endif
 
 			int packedBoxesStart = 1 + boxCount * boxDataSize;
 			int[] packedBoxes = new int[data.Length - packedBoxesStart];
@@ -2464,13 +2499,18 @@ namespace Lemma.Components
 
 			try
 			{
-				for (int i = 0; i < unPackedBoxes.Length- 1; i += 2)
+				if (rebuildAdjacency)
+					throw new Exception();
+				else
 				{
-					Box box1 = Voxel.boxCache[unPackedBoxes[i]], box2 = Voxel.boxCache[unPackedBoxes[i + 1]];
-					if (box1 != null && box2 != null)
+					for (int i = 0; i < unPackedBoxes.Length- 1; i += 2)
 					{
-						box1.Adjacent.Add(box2);
-						box2.Adjacent.Add(box1);
+						Box box1 = Voxel.boxCache[unPackedBoxes[i]], box2 = Voxel.boxCache[unPackedBoxes[i + 1]];
+						if (box1 != null && box2 != null)
+						{
+							box1.Adjacent.Add(box2);
+							box2.Adjacent.Add(box1);
+						}
 					}
 				}
 				Voxel.boxCache.Clear();
@@ -3459,183 +3499,126 @@ namespace Lemma.Components
 		protected bool regenerateSurfaces(Box box)
 		{
 			int x, y, z;
-			Surface surface;
 			State type = box.Type;
+			bool stop;
+			Box adjacent;
 
+			box.Surfaces[(int)Direction.PositiveX] = false;
+			x = box.X + box.Width;
+			stop = false;
+
+			for (y = box.Y; y < box.Y + box.Height; y++)
 			{
-				surface = box.Surfaces[(int)Direction.PositiveX];
-
-				surface.MinV = box.Z + box.Depth;
-				surface.MaxV = box.Z;
-				surface.MinU = box.Y + box.Height;
-				surface.MaxU = box.Y;
-
-				x = box.X + box.Width;
-
-				for (y = box.Y; y < box.Y + box.Height; y++)
+				for (z = box.Z; z < box.Z + box.Depth; z++)
 				{
-					for (z = box.Z; z < box.Z + box.Depth; )
+					adjacent = this.GetBox(x, y, z);
+					if (adjacent == null || adjacent.Type != type)
 					{
-						Box adjacent = this.GetBox(x, y, z);
-						if (adjacent == null || adjacent.Type != type)
-						{
-							surface.MinV = Math.Min(surface.MinV, z);
-							surface.MaxV = Math.Max(surface.MaxV, z + 1);
-							surface.MinU = Math.Min(surface.MinU, y);
-							surface.MaxU = Math.Max(surface.MaxU, y + 1);
-							z++;
-						}
-						else
-							z = adjacent.Z + adjacent.Depth;
+						box.Surfaces[(int)Direction.PositiveX] = true;
+						stop = true;
+						break;
 					}
 				}
-				surface.RefreshTransform(box, Direction.PositiveX);
+				if (stop)
+					break;
 			}
 
+			box.Surfaces[(int)Direction.NegativeX] = false;
+			x = box.X - 1;
+			stop = false;
+
+			for (y = box.Y; y < box.Y + box.Height; y++)
 			{
-				surface = box.Surfaces[(int)Direction.NegativeX];
-
-				surface.MinV = box.Z + box.Depth;
-				surface.MaxV = box.Z;
-				surface.MinU = box.Y + box.Height;
-				surface.MaxU = box.Y;
-
-				x = box.X - 1;
-
-				for (y = box.Y; y < box.Y + box.Height; y++)
+				for (z = box.Z; z < box.Z + box.Depth; z++)
 				{
-					for (z = box.Z; z < box.Z + box.Depth; )
+					adjacent = this.GetBox(x, y, z);
+					if (adjacent == null || adjacent.Type != type)
 					{
-						Box adjacent = this.GetBox(x, y, z);
-						if (adjacent == null || adjacent.Type != type)
-						{
-							surface.MinV = Math.Min(surface.MinV, z);
-							surface.MaxV = Math.Max(surface.MaxV, z + 1);
-							surface.MinU = Math.Min(surface.MinU, y);
-							surface.MaxU = Math.Max(surface.MaxU, y + 1);
-							z++;
-						}
-						else
-							z = adjacent.Z + adjacent.Depth;
+						box.Surfaces[(int)Direction.NegativeX] = true;
+						stop = true;
+						break;
 					}
 				}
-				surface.RefreshTransform(box, Direction.NegativeX);
+				if (stop)
+					break;
 			}
 
+			box.Surfaces[(int)Direction.PositiveY] = false;
+			y = box.Y + box.Height;
+			stop = false;
+
+			for (x = box.X; x < box.X + box.Width; x++)
 			{
-				surface = box.Surfaces[(int)Direction.PositiveY];
-				surface.MinU = box.X + box.Width;
-				surface.MaxU = box.X;
-				surface.MinV = box.Z + box.Depth;
-				surface.MaxV = box.Z;
+				for (z = box.Z; z < box.Z + box.Depth; z++)
+				{
+					adjacent = this.GetBox(x, y, z);
+					if (adjacent == null || adjacent.Type != type)
+					{
+						box.Surfaces[(int)Direction.PositiveY] = true;
+						stop = true;
+						break;
+					}
+				}
+				if (stop)
+					break;
+			}
 
-				y = box.Y + box.Height;
+			box.Surfaces[(int)Direction.NegativeY] = false;
+			y = box.Y - 1;
+			stop = false;
 
+			for (x = box.X; x < box.X + box.Width; x++)
+			{
+				for (z = box.Z; z < box.Z + box.Depth; z++)
+				{
+					adjacent = this.GetBox(x, y, z);
+					if (adjacent == null || adjacent.Type != type)
+					{
+						box.Surfaces[(int)Direction.NegativeY] = true;
+						stop = true;
+						break;
+					}
+				}
+				if (stop)
+					break;
+			}
+
+			box.Surfaces[(int)Direction.PositiveZ] = false;
+			z = box.Z + box.Depth;
+			stop = false;
+
+			for (y = box.Y; y < box.Y + box.Height; y++)
+			{
 				for (x = box.X; x < box.X + box.Width; x++)
 				{
-					for (z = box.Z; z < box.Z + box.Depth; )
+					adjacent = this.GetBox(x, y, z);
+					if (adjacent == null || adjacent.Type != type)
 					{
-						Box adjacent = this.GetBox(x, y, z);
-						if (adjacent == null || adjacent.Type != type)
-						{
-							surface.MinV = Math.Min(surface.MinV, z);
-							surface.MaxV = Math.Max(surface.MaxV, z + 1);
-							surface.MinU = Math.Min(surface.MinU, x);
-							surface.MaxU = Math.Max(surface.MaxU, x + 1);
-							z++;
-						}
-						else
-							z = adjacent.Z + adjacent.Depth;
+						box.Surfaces[(int)Direction.PositiveZ] = true;
+						stop = true;
+						break;
 					}
 				}
-				surface.RefreshTransform(box, Direction.PositiveY);
 			}
 
+			box.Surfaces[(int)Direction.NegativeZ] = false;
+			z = box.Z - 1;
+			stop = false;
+
+			for (y = box.Y; y < box.Y + box.Height; y++)
 			{
-				surface = box.Surfaces[(int)Direction.NegativeY];
-				surface.MinU = box.X + box.Width;
-				surface.MaxU = box.X;
-				surface.MinV = box.Z + box.Depth;
-				surface.MaxV = box.Z;
-
-				y = box.Y - 1;
-
 				for (x = box.X; x < box.X + box.Width; x++)
 				{
-					for (z = box.Z; z < box.Z + box.Depth; )
+					adjacent = this.GetBox(x, y, z);
+					if (adjacent == null || adjacent.Type != type)
 					{
-						Box adjacent = this.GetBox(x, y, z);
-						if (adjacent == null || adjacent.Type != type)
-						{
-							surface.MinV = Math.Min(surface.MinV, z);
-							surface.MaxV = Math.Max(surface.MaxV, z + 1);
-							surface.MinU = Math.Min(surface.MinU, x);
-							surface.MaxU = Math.Max(surface.MaxU, x + 1);
-							z++;
-						}
-						else
-							z = adjacent.Z + adjacent.Depth;
+						box.Surfaces[(int)Direction.NegativeZ] = true;
+						stop = true;
+						break;
 					}
 				}
-				surface.RefreshTransform(box, Direction.NegativeY);
-			}
-
-			{
-				surface = box.Surfaces[(int)Direction.PositiveZ];
-				surface.MinU = box.X + box.Width;
-				surface.MaxU = box.X;
-				surface.MinV = box.Y + box.Height;
-				surface.MaxV = box.Y;
-
-				z = box.Z + box.Depth;
-
-				for (y = box.Y; y < box.Y + box.Height; y++)
-				{
-					for (x = box.X; x < box.X + box.Width; )
-					{
-						Box adjacent = this.GetBox(x, y, z);
-						if (adjacent == null || adjacent.Type != type)
-						{
-							surface.MinU = Math.Min(surface.MinU, x);
-							surface.MaxU = Math.Max(surface.MaxU, x + 1);
-							surface.MinV = Math.Min(surface.MinV, y);
-							surface.MaxV = Math.Max(surface.MaxV, y + 1);
-							x++;
-						}
-						else
-							x = adjacent.X + adjacent.Width;
-					}
-				}
-				surface.RefreshTransform(box, Direction.PositiveZ);
-			}
-
-			{
-				surface = box.Surfaces[(int)Direction.NegativeZ];
-				surface.MinU = box.X + box.Width;
-				surface.MaxU = box.X;
-				surface.MinV = box.Y + box.Height;
-				surface.MaxV = box.Y;
-
-				z = box.Z - 1;
-
-				for (y = box.Y; y < box.Y + box.Height; y++)
-				{
-					for (x = box.X; x < box.X + box.Width; )
-					{
-						Box adjacent = this.GetBox(x, y, z);
-						if (adjacent == null || adjacent.Type != type)
-						{
-							surface.MinU = Math.Min(surface.MinU, x);
-							surface.MaxU = Math.Max(surface.MaxU, x + 1);
-							surface.MinV = Math.Min(surface.MinV, y);
-							surface.MaxV = Math.Max(surface.MaxV, y + 1);
-							x++;
-						}
-						else
-							x = adjacent.X + adjacent.Width;
-					}
-				}
-				surface.RefreshTransform(box, Direction.NegativeZ);
+				if (stop)
+					break;
 			}
 
 			if (box.Added)
@@ -4262,40 +4245,11 @@ namespace Lemma.Components
 						baseBox.Depth += box.Depth;
 						box.Chunk.MarkDirty(box);
 
-						Surface baseSurface = baseBox.Surfaces[(int)Direction.PositiveZ], newSurface = box.Surfaces[(int)Direction.PositiveZ];
-						baseSurface.MinU = newSurface.MinU;
-						baseSurface.MaxU = newSurface.MaxU;
-						baseSurface.MinV = newSurface.MinV;
-						baseSurface.MaxV = newSurface.MaxV;
-						baseSurface.RefreshTransform(baseBox, Direction.PositiveZ);
-
-						baseSurface = baseBox.Surfaces[(int)Direction.NegativeX];
-						newSurface = box.Surfaces[(int)Direction.NegativeX];
-						baseSurface.MaxV = newSurface.MaxV;
-						baseSurface.MaxU = Math.Max(baseSurface.MaxU, newSurface.MaxU);
-						baseSurface.MinU = Math.Min(baseSurface.MinU, newSurface.MinU);
-						baseSurface.RefreshTransform(baseBox, Direction.NegativeX);
-
-						baseSurface = baseBox.Surfaces[(int)Direction.PositiveX];
-						newSurface = box.Surfaces[(int)Direction.PositiveX];
-						baseSurface.MaxV = newSurface.MaxV;
-						baseSurface.MaxU = Math.Max(baseSurface.MaxU, newSurface.MaxU);
-						baseSurface.MinU = Math.Min(baseSurface.MinU, newSurface.MinU);
-						baseSurface.RefreshTransform(baseBox, Direction.PositiveX);
-
-						baseSurface = baseBox.Surfaces[(int)Direction.NegativeY];
-						newSurface = box.Surfaces[(int)Direction.NegativeY];
-						baseSurface.MaxV = newSurface.MaxV;
-						baseSurface.MaxU = Math.Max(baseSurface.MaxU, newSurface.MaxU);
-						baseSurface.MinU = Math.Min(baseSurface.MinU, newSurface.MinU);
-						baseSurface.RefreshTransform(baseBox, Direction.NegativeY);
-
-						baseSurface = baseBox.Surfaces[(int)Direction.PositiveY];
-						newSurface = box.Surfaces[(int)Direction.PositiveY];
-						baseSurface.MaxV = newSurface.MaxV;
-						baseSurface.MaxU = Math.Max(baseSurface.MaxU, newSurface.MaxU);
-						baseSurface.MinU = Math.Min(baseSurface.MinU, newSurface.MinU);
-						baseSurface.RefreshTransform(baseBox, Direction.PositiveY);
+						baseBox.Surfaces[(int)Direction.PositiveZ] |= box.Surfaces[(int)Direction.PositiveZ];
+						baseBox.Surfaces[(int)Direction.NegativeX] |= box.Surfaces[(int)Direction.NegativeX];
+						baseBox.Surfaces[(int)Direction.PositiveX] |= box.Surfaces[(int)Direction.PositiveX];
+						baseBox.Surfaces[(int)Direction.NegativeY] |= box.Surfaces[(int)Direction.NegativeY];
+						baseBox.Surfaces[(int)Direction.PositiveY] |= box.Surfaces[(int)Direction.PositiveY];
 
 						for (int x = box.X - chunk.X; x < box.X + box.Width - chunk.X; x++)
 						{
@@ -4340,40 +4294,11 @@ namespace Lemma.Components
 						baseBox.Width += box.Width;
 						box.Chunk.MarkDirty(box);
 
-						Surface baseSurface = baseBox.Surfaces[(int)Direction.PositiveX], newSurface = box.Surfaces[(int)Direction.PositiveX];
-						baseSurface.MinV = newSurface.MinV;
-						baseSurface.MaxV = newSurface.MaxV;
-						baseSurface.MinU = newSurface.MinU;
-						baseSurface.MaxU = newSurface.MaxU;
-						baseSurface.RefreshTransform(baseBox, Direction.PositiveX);
-
-						baseSurface = baseBox.Surfaces[(int)Direction.NegativeZ];
-						newSurface = box.Surfaces[(int)Direction.NegativeZ];
-						baseSurface.MaxU = newSurface.MaxU;
-						baseSurface.MaxV = Math.Max(baseSurface.MaxV, newSurface.MaxV);
-						baseSurface.MinV = Math.Min(baseSurface.MinV, newSurface.MinV);
-						baseSurface.RefreshTransform(baseBox, Direction.NegativeZ);
-
-						baseSurface = baseBox.Surfaces[(int)Direction.PositiveZ];
-						newSurface = box.Surfaces[(int)Direction.PositiveZ];
-						baseSurface.MaxU = newSurface.MaxU;
-						baseSurface.MaxV = Math.Max(baseSurface.MaxV, newSurface.MaxV);
-						baseSurface.MinV = Math.Min(baseSurface.MinV, newSurface.MinV);
-						baseSurface.RefreshTransform(baseBox, Direction.PositiveZ);
-
-						baseSurface = baseBox.Surfaces[(int)Direction.NegativeY];
-						newSurface = box.Surfaces[(int)Direction.NegativeY];
-						baseSurface.MaxU = newSurface.MaxU;
-						baseSurface.MaxV = Math.Max(baseSurface.MaxV, newSurface.MaxV);
-						baseSurface.MinV = Math.Min(baseSurface.MinV, newSurface.MinV);
-						baseSurface.RefreshTransform(baseBox, Direction.NegativeY);
-
-						baseSurface = baseBox.Surfaces[(int)Direction.PositiveY];
-						newSurface = box.Surfaces[(int)Direction.PositiveY];
-						baseSurface.MaxU = newSurface.MaxU;
-						baseSurface.MaxV = Math.Max(baseSurface.MaxV, newSurface.MaxV);
-						baseSurface.MinV = Math.Min(baseSurface.MinV, newSurface.MinV);
-						baseSurface.RefreshTransform(baseBox, Direction.PositiveY);
+						baseBox.Surfaces[(int)Direction.PositiveX] |= box.Surfaces[(int)Direction.PositiveX];
+						baseBox.Surfaces[(int)Direction.NegativeY] |= box.Surfaces[(int)Direction.NegativeY];
+						baseBox.Surfaces[(int)Direction.PositiveY] |= box.Surfaces[(int)Direction.PositiveY];
+						baseBox.Surfaces[(int)Direction.NegativeZ] |= box.Surfaces[(int)Direction.NegativeZ];
+						baseBox.Surfaces[(int)Direction.PositiveZ] |= box.Surfaces[(int)Direction.PositiveZ];
 
 						for (x2 = box.X - chunk.X; x2 < box.X + box.Width - chunk.X; x2++)
 						{
@@ -4418,40 +4343,11 @@ namespace Lemma.Components
 						baseBox.Height += box.Height;
 						box.Chunk.MarkDirty(box);
 
-						Surface baseSurface = baseBox.Surfaces[(int)Direction.PositiveY], newSurface = box.Surfaces[(int)Direction.PositiveY];
-						baseSurface.MinV = newSurface.MinV;
-						baseSurface.MaxV = newSurface.MaxV;
-						baseSurface.MinU = newSurface.MinU;
-						baseSurface.MaxU = newSurface.MaxU;
-						baseSurface.RefreshTransform(baseBox, Direction.PositiveY);
-
-						baseSurface = baseBox.Surfaces[(int)Direction.NegativeZ];
-						newSurface = box.Surfaces[(int)Direction.NegativeZ];
-						baseSurface.MaxV = newSurface.MaxV;
-						baseSurface.MaxU = Math.Max(baseSurface.MaxU, newSurface.MaxU);
-						baseSurface.MinU = Math.Min(baseSurface.MinU, newSurface.MinU);
-						baseSurface.RefreshTransform(baseBox, Direction.NegativeZ);
-
-						baseSurface = baseBox.Surfaces[(int)Direction.PositiveZ];
-						newSurface = box.Surfaces[(int)Direction.PositiveZ];
-						baseSurface.MaxV = newSurface.MaxV;
-						baseSurface.MaxU = Math.Max(baseSurface.MaxU, newSurface.MaxU);
-						baseSurface.MinU = Math.Min(baseSurface.MinU, newSurface.MinU);
-						baseSurface.RefreshTransform(baseBox, Direction.PositiveZ);
-
-						baseSurface = baseBox.Surfaces[(int)Direction.NegativeX];
-						newSurface = box.Surfaces[(int)Direction.NegativeX];
-						baseSurface.MaxU = newSurface.MaxU;
-						baseSurface.MaxV = Math.Max(baseSurface.MaxV, newSurface.MaxV);
-						baseSurface.MinV = Math.Min(baseSurface.MinV, newSurface.MinV);
-						baseSurface.RefreshTransform(baseBox, Direction.NegativeX);
-
-						baseSurface = baseBox.Surfaces[(int)Direction.PositiveX];
-						newSurface = box.Surfaces[(int)Direction.PositiveX];
-						baseSurface.MaxU = newSurface.MaxU;
-						baseSurface.MaxV = Math.Max(baseSurface.MaxV, newSurface.MaxV);
-						baseSurface.MinV = Math.Min(baseSurface.MinV, newSurface.MinV);
-						baseSurface.RefreshTransform(baseBox, Direction.PositiveX);
+						baseBox.Surfaces[(int)Direction.PositiveY] |= box.Surfaces[(int)Direction.PositiveY];
+						baseBox.Surfaces[(int)Direction.NegativeX] |= box.Surfaces[(int)Direction.NegativeX];
+						baseBox.Surfaces[(int)Direction.PositiveX] |= box.Surfaces[(int)Direction.PositiveX];
+						baseBox.Surfaces[(int)Direction.NegativeY] |= box.Surfaces[(int)Direction.NegativeY];
+						baseBox.Surfaces[(int)Direction.PositiveY] |= box.Surfaces[(int)Direction.PositiveY];
 
 						for (int x = box.X - chunk.X; x < box.X + box.Width - chunk.X; x++)
 						{
@@ -5089,7 +4985,7 @@ namespace Lemma.Components
 		}
 
 		public DynamicVoxel(int offsetX, int offsetY, int offsetZ)
-			: base(3, 20)
+			: base(4, 20)
 		{
 			this.OffsetX = offsetX;
 			this.OffsetY = offsetY;

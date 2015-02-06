@@ -23,6 +23,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
+			this.EnabledWhenPaused = false;
 
 			this.Retry.Action = this.retry;
 

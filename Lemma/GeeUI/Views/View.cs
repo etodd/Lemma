@@ -421,12 +421,12 @@ namespace GeeUI.Views
 
 		public void ResetOnMouseClick()
 		{
-			OnMouseClick = null;
+			this.OnMouseClick = null;
 		}
 
 		public void ResetOnMouseScroll()
 		{
-			OnMouseScroll = null;
+			this.OnMouseScroll = null;
 		}
 
 		#region Virtual methods/events
@@ -442,36 +442,12 @@ namespace GeeUI.Views
 			Active.Value = false;
 			foreach (var child in Children)
 				child.OnDelete();
-			if (this.OnMouseClick != null)
-			{
-				foreach (Delegate d in this.OnMouseClick.GetInvocationList())
-					this.OnMouseClick -= (MouseClickEventHandler)d;
-			}
-			if (this.OnMouseClickAway != null)
-			{
-				foreach (Delegate d in this.OnMouseClickAway.GetInvocationList())
-					this.OnMouseClickAway -= (MouseClickEventHandler)d;
-			}
-			if (this.OnMouseOff != null)
-			{
-				foreach (Delegate d in this.OnMouseOff.GetInvocationList())
-					this.OnMouseOff -= (MouseOffEventHandler)d;
-			}
-			if (this.OnMouseOver != null)
-			{
-				foreach (Delegate d in this.OnMouseOver.GetInvocationList())
-					this.OnMouseOver -= (MouseOverEventHandler)d;
-			}
-			if (this.OnMouseRightClick != null)
-			{
-				foreach (Delegate d in this.OnMouseRightClick.GetInvocationList())
-					this.OnMouseRightClick -= (MouseClickEventHandler)d;
-			}
-			if (this.OnMouseScroll != null)
-			{
-				foreach (Delegate d in this.OnMouseScroll.GetInvocationList())
-					this.OnMouseScroll -= (MouseScrollEventHandler)d;
-			}
+			this.OnMouseClick = null;
+			this.OnMouseClickAway = null;
+			this.OnMouseOff = null;
+			this.OnMouseOver = null;
+			this.OnMouseRightClick = null;
+			this.OnMouseScroll = null;
 		}
 
 		public virtual void OnMScroll(Vector2 position, int scrollDelta, bool fromChild)
