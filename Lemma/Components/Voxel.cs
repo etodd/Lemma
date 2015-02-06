@@ -45,6 +45,7 @@ namespace Lemma.Components
 	{
 		public static Dictionary<Voxel.Coord, bool> CoordDictionaryCache = new Dictionary<Voxel.Coord, bool>();
 
+		private static LargeObjectHeap<Box[, ,][, ,]> subchunkHeap = LargeObjectHeap<Box[, ,][, ,]>.Get(x => new Box[x, x, x][,,], y => y * y * y * IntPtr.Size >= 85000);
 		private static LargeObjectHeap<Box[, ,]> boxHeap = LargeObjectHeap<Box[, ,]>.Get(x => new Box[x, x, x], y => y * y * y * IntPtr.Size >= 85000);
 		private static LargeObjectHeap<Chunk[, ,]> chunkHeap = LargeObjectHeap<Chunk[, ,]>.Get(x => new Chunk[x, x, x], y => y * y * y * IntPtr.Size >= 85000);
 		private static LargeObjectHeap<Vertex[]> vertexHeap = LargeObjectHeap<Vertex[]>.Get(x => new Vertex[x], y => y * Vertex.SizeInBytes >= 85000);
@@ -1049,8 +1050,7 @@ namespace Lemma.Components
 
 		public class Snapshot
 		{
-			private List<Chunk> chunks = new List<Chunk>();
-			private List<Box[, ,]> data = new List<Box[, ,]>();
+			private Dictionary<Coord, ChunkData> chunks = new Dictionary<Coord, ChunkData>();
 			private Voxel map;
 
 			public Snapshot(Voxel m, Coord start, Coord end)
@@ -1063,40 +1063,32 @@ namespace Lemma.Components
 			{
 				foreach (Chunk chunk in this.map.GetChunksBetween(start, end))
 				{
-					if (!this.chunks.Contains(chunk))
+					Coord chunkKey = new Coord { X = chunk.IndexX, Y = chunk.IndexY, Z = chunk.IndexZ };
+					ChunkData data;
+					if (!this.chunks.TryGetValue(chunkKey, out data))
 					{
-						this.chunks.Add(chunk);
-
-						Box[, ,] d = Voxel.boxHeap.Get(this.map.chunkSize);
+						this.chunks[chunkKey] = data = new ChunkData(this.map.chunkSize);
+						data.X = chunk.X;
+						data.Y = chunk.Y;
+						data.Z = chunk.Z;
+						data.IndexX = chunk.IndexX;
+						data.IndexY = chunk.IndexY;
+						data.IndexZ = chunk.IndexZ;
 						for (int u = 0; u < this.map.chunkSize; u++)
 						{
 							for (int v = 0; v < this.map.chunkSize; v++)
 							{
 								for (int w = 0; w < this.map.chunkSize; w++)
-									d[u, v, w] = chunk.Data[u, v, w];
+									data[u, v, w] = chunk[u, v, w];
 							}
 						}
-						this.data.Add(d);
 					}
 				}
 			}
 
 			public void Free()
 			{
-				for (int i = 0; i < this.data.Count; i++)
-				{
-					Box[,,] d = this.data[i];
-					for (int u = 0; u < this.map.chunkSize; u++)
-					{
-						for (int v = 0; v < this.map.chunkSize; v++)
-						{
-							for (int w = 0; w < this.map.chunkSize; w++)
-								d[u, v, w] = null;
-						}
-					}
-					Voxel.boxHeap.Free(this.map.chunkSize, d);
-				}
-				this.data.Clear();
+				this.chunks.Clear();
 			}
 
 			public State this[Coord coord]
@@ -1106,19 +1098,14 @@ namespace Lemma.Components
 					int indexX = (coord.X - this.map.minX) / this.map.chunkSize;
 					int indexY = (coord.Y - this.map.minY) / this.map.chunkSize;
 					int indexZ = (coord.Z - this.map.minZ) / this.map.chunkSize;
-					for (int i = 0; i < this.chunks.Count; i++)
+					ChunkData data;
+					if (this.chunks.TryGetValue(new Coord { X = indexX, Y = indexY, Z = indexZ }, out data))
 					{
-						Chunk c = this.chunks[i];
-						if (c.IndexX == indexX && c.IndexY == indexY && c.IndexZ == indexZ)
-						{
-							Box box = this.data[i][coord.X - c.X, coord.Y - c.Y, coord.Z - c.Z];
-							if (box == null)
-								return Voxel.States.Empty;
-							else
-								return box.Type;
-						}
+						Box box = data[coord.X - data.X, coord.Y - data.Y, coord.Z - data.Z];
+						if (box != null)
+							return box.Type;
 					}
-					return null;
+					return Voxel.States.Empty;
 				}
 			}
 		}
@@ -1202,7 +1189,64 @@ namespace Lemma.Components
 			}
 		}
 
-		public class Chunk
+		public class ChunkData
+		{
+			public int IndexX, IndexY, IndexZ;
+			public int X, Y, Z;
+			private Box[, ,][, ,] data;
+			private int size;
+			private int subchunkSize;
+			private const int subchunks = 10;
+
+			public ChunkData(int size)
+			{
+				if (size % subchunks != 0)
+					throw new Exception(string.Format("Chunk size must be a multiple of {0}.", subchunks));
+				this.size = size;
+				this.subchunkSize = size / subchunks;
+				this.data = Voxel.subchunkHeap.Get(subchunks);
+			}
+
+			public Box this[int x, int y, int z]
+			{
+				get
+				{
+					int ix = x / this.subchunkSize, iy = y / this.subchunkSize, iz = z / this.subchunkSize;
+					Box[, ,] subchunk = this.data[ix, iy, iz];
+					if (subchunk == null)
+						return null;
+					return subchunk[x - (ix * this.subchunkSize), y - (iy * this.subchunkSize), z - (iz * this.subchunkSize)];
+				}
+				set
+				{
+					int ix = x / this.subchunkSize, iy = y / this.subchunkSize, iz = z / this.subchunkSize;
+					Box[, ,] subchunk = this.data[ix, iy, iz];
+					if (subchunk == null)
+						this.data[ix, iy, iz] = subchunk = Voxel.boxHeap.Get(this.subchunkSize);
+					subchunk[x - (ix * this.subchunkSize), y - (iy * this.subchunkSize), z - (iz * this.subchunkSize)] = value;
+				}
+			}
+
+			public void Free()
+			{
+				for (int x = 0; x < subchunks; x++)
+				{
+					for (int y = 0; y < subchunks; y++)
+					{
+						for (int z = 0; z < subchunks; z++)
+						{
+							this.data[x, y, z] = null;
+							Box[,,] subchunk = this.data[x, y, z];
+							if (subchunk != null)
+								Voxel.boxHeap.Free(this.subchunkSize, subchunk);
+						}
+					}
+				}
+				Voxel.subchunkHeap.Free(subchunks, this.data);
+			}
+		}
+
+		public class Chunk : ChunkData
 		{
 			protected class MeshEntry
 			{
@@ -1215,11 +1259,8 @@ namespace Lemma.Components
 			public bool Active = false;
 			public bool EnablePhysics;
 			public Voxel Voxel;
-			public Box[, ,] Data;
-			public int X, Y, Z;
 			public ListProperty<Box> Boxes = new ListProperty<Box>();
 			public BoundingBox RelativeBoundingBox;
-			public int IndexX, IndexY, IndexZ;
 
 			public List<Box> DataBoxes;
 
@@ -1258,7 +1299,8 @@ namespace Lemma.Components
 				entry.Dirty = true;
 			}
 
-			public Chunk()
+			public Chunk(int size)
+				: base(size)
 			{
 				this.Boxes.ItemAdded += delegate(int index, Box t)
 				{
@@ -1307,12 +1349,14 @@ namespace Lemma.Components
 							Box b = this.Boxes[i];
 							if (b.Type.ID == pair.Key)
 							{
-								surfaces += (b.Surfaces[0] ? 1 : 0)
-								+ (b.Surfaces[1] ? 1 : 0)
-								+ (b.Surfaces[2] ? 1 : 0)
-								+ (b.Surfaces[3] ? 1 : 0)
-								+ (b.Surfaces[4] ? 1 : 0)
-								+ (b.Surfaces[5] ? 1 : 0);
+								// Count number of set bits
+								surfaces +=
+									((b.Surfaces & (1 << 0)) != 0 ? 1 : 0)
+									+ ((b.Surfaces & (1 << 1)) != 0 ? 1 : 0)
+									+ ((b.Surfaces & (1 << 2)) != 0 ? 1 : 0)
+									+ ((b.Surfaces & (1 << 3)) != 0 ? 1 : 0)
+									+ ((b.Surfaces & (1 << 4)) != 0 ? 1 : 0)
+									+ ((b.Surfaces & (1 << 5)) != 0 ? 1 : 0);
 							}
 						}
 
@@ -1346,7 +1390,7 @@ namespace Lemma.Components
 									Vector3 g = new Vector3(box.X + box.Width, box.Y + box.Height, box.Z);
 									Vector3 h = new Vector3(box.X + box.Width, box.Y + box.Height, box.Z + box.Depth);
 
-									if (box.Surfaces[(int)Direction.NegativeX])
+									if ((box.Surfaces & (1 << (int)Direction.NegativeX)) != 0)
 									{
 										if (vertices != null)
 										{
@@ -1364,7 +1408,7 @@ namespace Lemma.Components
 										}
 										vertexIndex += 4;
 									}
-									if (box.Surfaces[(int)Direction.PositiveX])
+									if ((box.Surfaces & (1 << (int)Direction.PositiveX)) != 0)
 									{
 										if (vertices != null)
 										{
@@ -1382,7 +1426,7 @@ namespace Lemma.Components
 										}
 										vertexIndex += 4;
 									}
-									if (box.Surfaces[(int)Direction.NegativeY])
+									if ((box.Surfaces & (1 << (int)Direction.NegativeY)) != 0)
 									{
 										if (vertices != null)
 										{
@@ -1400,7 +1444,7 @@ namespace Lemma.Components
 										}
 										vertexIndex += 4;
 									}
-									if (box.Surfaces[(int)Direction.PositiveY])
+									if ((box.Surfaces & (1 << (int)Direction.PositiveY)) != 0)
 									{
 										if (vertices != null)
 										{
@@ -1418,7 +1462,7 @@ namespace Lemma.Components
 										}
 										vertexIndex += 4;
 									}
-									if (box.Surfaces[(int)Direction.NegativeZ])
+									if ((box.Surfaces & (1 << (int)Direction.NegativeZ)) != 0)
 									{
 										if (vertices != null)
 										{
@@ -1436,7 +1480,7 @@ namespace Lemma.Components
 										}
 										vertexIndex += 4;
 									}
-									if (box.Surfaces[(int)Direction.PositiveZ])
+									if ((box.Surfaces & (1 << (int)Direction.PositiveZ)) != 0)
 									{
 										if (vertices != null)
 										{
@@ -1516,7 +1560,7 @@ namespace Lemma.Components
 
 				if (!this.Voxel.main.EditorEnabled && !this.Voxel.Mutable)
 				{
-					this.freeData();
+					this.Free();
 					for (int i = 0; i < this.Boxes.Count; i++)
 					{
 						Box box = this.Boxes[i];
@@ -1570,23 +1614,6 @@ namespace Lemma.Components
 				this.Active = false;
 			}
 
-			private void freeData()
-			{
-				if (this.Data == null)
-					return; // Already freed
-
-				for (int u = 0; u < this.Voxel.chunkSize; u++)
-				{
-					for (int v = 0; v < this.Voxel.chunkSize; v++)
-					{
-						for (int w = 0; w < this.Voxel.chunkSize; w++)
-							this.Data[u, v, w] = null;
-					}
-				}
-				Voxel.boxHeap.Free(this.Voxel.chunkSize, this.Data);
-				this.Data = null;
-			}
-
 			public virtual void Delete()
 			{
 				if (this.Active && this.EnablePhysics)
@@ -1603,7 +1630,7 @@ namespace Lemma.Components
 				}
 
 				this.Active = false;
-				this.freeData();
+				this.Free();
 				this.meshes.Clear();
 				for (int i = 0; i < this.Boxes.Count; i++)
 				{
@@ -1842,15 +1869,7 @@ namespace Lemma.Components
 			[XmlIgnore]
 			public List<Box> Adjacent = new List<Box>();
 			[XmlIgnore]
-			public bool[] Surfaces = new[]
-			{
-				false, // PositiveX
-				false, // NegativeX
-				false, // PositiveY
-				false, // NegativeY
-				false, // PositiveZ
-				false, // NegativeZ
-			};
+			public int Surfaces;
 
 			public int GetComponent(Direction dir)
 			{
@@ -2019,7 +2038,7 @@ namespace Lemma.Components
 				List<int> result = new List<int>();
 				lock (this.MutationLock)
 				{
-					Voxel.boxCache.AddRange(this.Chunks.Where(x => x.Data != null).SelectMany(x => x.Boxes));
+					Voxel.boxCache.AddRange(this.Chunks.SelectMany(x => x.Boxes));
 					bool[] modifications = this.simplify(Voxel.boxCache);
 					this.simplify(Voxel.boxCache, modifications);
 					this.applyChanges(Voxel.boxCache, modifications);
@@ -2049,15 +2068,7 @@ namespace Lemma.Components
 
 						//We need to use 11 bits to store each value.
 						//So pack it all up nice and tidy. This will store them in 9 ints, as opposed to 24. Nice.
-						result.Add
-						(
-							(box.Surfaces[0] ? 1 : 0) << 0
-							| (box.Surfaces[1] ? 1 : 0) << 1
-							| (box.Surfaces[2] ? 1 : 0) << 2
-							| (box.Surfaces[3] ? 1 : 0) << 3
-							| (box.Surfaces[4] ? 1 : 0) << 4
-							| (box.Surfaces[5] ? 1 : 0) << 5
-						);
+						result.Add(box.Surfaces);
 						indexLookup.Add(box, i);
 					}
 
@@ -2225,7 +2236,7 @@ namespace Lemma.Components
 			this.chunkHalfSize = chunkHalfSize;
 			this.chunkSize = chunkHalfSize * 2;
 			this.maxChunks = maxChunks;
-			this.chunks = new Chunk[maxChunks, maxChunks, maxChunks];
+			this.chunks = Voxel.chunkHeap.Get(maxChunks);
 		}
 
 		public virtual void updatePhysics()
@@ -2360,77 +2371,6 @@ namespace Lemma.Components
 			int boxCount = data[0];
 
 			bool rebuildAdjacency = false;
-#if false
-			const int boxDataSize = 13;
-
-			for (int i = 0; i < boxCount; i++)
-			{
-				// Format:
-				// x
-				// y
-				// z
-				// width-height-depth-type IN ONE INT
-				// MinU, MinV, MaxU, MaxV for each of six surfaces, PACKED.
-				int index = 1 + (i * boxDataSize);
-				int x = data[index], y = data[index + 1], z = data[index + 2];
-					int packedData = data[index + 3];
-					int w = packedData.ExtractBits(0, 8), h = packedData.ExtractBits(8, 8), d = packedData.ExtractBits(16, 8);
-					int v = packedData.ExtractBits(24, 8);
-				if (v != 0)
-				{
-					State state = Voxel.States.All[(t)v];
-					int chunkX = this.minX + ((x - this.minX) / this.chunkSize) * this.chunkSize, chunkY = this.minY + ((y - this.minY) / this.chunkSize) * this.chunkSize, chunkZ = this.minZ + ((z - this.minZ) / this.chunkSize) * this.chunkSize;
-					int nextChunkX = this.minX + ((x + w - this.minX - 1) / this.chunkSize) * this.chunkSize, nextChunkY = this.minY + ((y + h - this.minY - 1) / this.chunkSize) * this.chunkSize, nextChunkZ = this.minZ + ((z + d - this.minZ - 1) / this.chunkSize) * this.chunkSize;
-					rebuildAdjacency |= chunkX != nextChunkX || chunkY != nextChunkY || chunkZ != nextChunkZ;
-					for (int ix = chunkX; ix <= nextChunkX; ix += this.chunkSize)
-					{
-						for (int iy = chunkY; iy <= nextChunkY; iy += this.chunkSize)
-						{
-							for (int iz = chunkZ; iz <= nextChunkZ; iz += this.chunkSize)
-							{
-								int bx = Math.Max(ix, x), by = Math.Max(iy, y), bz = Math.Max(iz, z);
-								Box box = new Box
-								{
-									X = bx,
-									Y = by,
-									Z = bz,
-									Width = Math.Min(bx + w, ix + this.chunkSize) - bx,
-									Height = Math.Min(by + h, iy + this.chunkSize) - by,
-									Depth = Math.Min(bz + d, iz + this.chunkSize) - bz,
-									Type = state,
-									Active = true,
-								};
-
-								if (box.Width > 0 && box.Height > 0 && box.Depth > 0)
-								{
-									Chunk chunk = this.GetChunk(bx, by, bz);
-									Voxel.boxCache.Add(box);
-									if (chunk.DataBoxes == null)
-										chunk.DataBoxes = new List<Box>();
-									chunk.DataBoxes.Add(box);
-									box.Chunk = chunk;
-									int[] packed = new int[9];
-
-									for (int j = index + 4; j < index + 4 + 9; j++)
-										packed[j - (index + 4)] = data[j];
-
-									int[] unPacked = BitWorker.UnPackInts(11, -1, packed);
-									for (int j = 0; j < 6; j++)
-									{
-										int baseIndex = j * 4;
-										int minU = unPacked[baseIndex + 0];
-										int minV = unPacked[baseIndex + 1];
-										int maxU = unPacked[baseIndex + 2];
-										int maxV = unPacked[baseIndex + 3];
-										box.Surfaces[j] = minU < maxU && minV < maxV;
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-#else
 			const int boxDataSize = 5;
 
 			for (int i = 0; i < boxCount; i++)
@@ -2480,15 +2420,13 @@ namespace Lemma.Components
 										chunk.DataBoxes = new List<Box>();
 									chunk.DataBoxes.Add(box);
 									box.Chunk = chunk;
-									for (int j = 0; j < 6; j++)
-										box.Surfaces[j] = (surfaces & 1 << j) != 0;
+									box.Surfaces = surfaces;
 								}
 							}
 						}
 					}
 				}
 			}
-#endif
 
 			int packedBoxesStart = 1 + boxCount * boxDataSize;
 			int[] packedBoxes = new int[data.Length - packedBoxesStart];
@@ -2633,8 +2571,6 @@ namespace Lemma.Components
 							this.chunks[i, j, k] = null;
 					}
 				}
-
-				Voxel.chunkHeap.Free(this.maxChunks, this.chunks);
 				this.chunks = null;
 			}
 			Voxel.Voxels.Remove(this);
@@ -2691,7 +2627,6 @@ namespace Lemma.Components
 				chunk.X = this.minX + (ix * this.chunkSize);
 				chunk.Y = this.minY + (iy * this.chunkSize);
 				chunk.Z = this.minZ + (iz * this.chunkSize);
-				chunk.Data = Voxel.boxHeap.Get(this.chunkSize);
 				chunk.IndexX = ix;
 				chunk.IndexY = iy;
 				chunk.IndexZ = iz;
@@ -2704,7 +2639,7 @@ namespace Lemma.Components
 
 		protected virtual Chunk newChunk()
 		{
-			Chunk chunk = new Chunk { EnablePhysics = !this.main.EditorEnabled && this.EnablePhysics };
+			Chunk chunk = new Chunk(this.chunkSize) { EnablePhysics = !this.main.EditorEnabled && this.EnablePhysics };
 			chunk.Voxel = this;
 			return chunk;
 		}
@@ -2790,7 +2725,7 @@ namespace Lemma.Components
 				Chunk chunk = this.GetChunk(x, y, z);
 				if (chunk != null)
 				{
-					if (chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z] == null)
+					if (chunk[x - chunk.X, y - chunk.Y, z - chunk.Z] == null)
 					{
 						this.addBox(new Box { Type = state, X = x, Y = y, Z = z, Depth = 1, Height = 1, Width = 1 });
 						filled = true;
@@ -2818,7 +2753,7 @@ namespace Lemma.Components
 					Chunk chunk = this.GetChunk(x, y, z);
 					if (chunk != null)
 					{
-						if (chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z] == null)
+						if (chunk[x - chunk.X, y - chunk.Y, z - chunk.Z] == null)
 						{
 							this.addBox(new Box { Type = c.Data, X = x, Y = y, Z = z, Depth = 1, Height = 1, Width = 1 });
 							notifyList.Add(c);
@@ -2887,7 +2822,7 @@ namespace Lemma.Components
 					if (chunk == null)
 						continue;
 
-					Box box = chunk.Data[coord.X - chunk.X, coord.Y - chunk.Y, coord.Z - chunk.Z];
+					Box box = chunk[coord.X - chunk.X, coord.Y - chunk.Y, coord.Z - chunk.Z];
 					if (box != null && (force || !box.Type.Permanent) && (forceHard || !box.Type.Hard))
 					{
 						this.removalCoords.Add(coord);
@@ -3032,7 +2967,7 @@ namespace Lemma.Components
 				if (chunk == null)
 					return false;
 
-				Box box = chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];
+				Box box = chunk[x - chunk.X, y - chunk.Y, z - chunk.Z];
 				if (box != null && (force || !box.Type.Permanent) && (forceHard || !box.Type.Hard))
 				{
 					List<Box> boxAdditions = new List<Box>();
@@ -3167,7 +3102,7 @@ namespace Lemma.Components
 					{
 						for (int z = box.Z - chunk.Z; z < box.Z + box.Depth - chunk.Z; z++)
 						{
-							chunk.Data[x, y, z] = box;
+							chunk[x, y, z] = box;
 						}
 					}
 				}
@@ -3503,7 +3438,7 @@ namespace Lemma.Components
 			bool stop;
 			Box adjacent;
 
-			box.Surfaces[(int)Direction.PositiveX] = false;
+			box.Surfaces = 0;
 			x = box.X + box.Width;
 			stop = false;
 
@@ -3514,7 +3449,7 @@ namespace Lemma.Components
 					adjacent = this.GetBox(x, y, z);
 					if (adjacent == null || adjacent.Type != type)
 					{
-						box.Surfaces[(int)Direction.PositiveX] = true;
+						box.Surfaces |= 1 << (int)Direction.PositiveX;
 						stop = true;
 						break;
 					}
@@ -3523,7 +3458,6 @@ namespace Lemma.Components
 					break;
 			}
 
-			box.Surfaces[(int)Direction.NegativeX] = false;
 			x = box.X - 1;
 			stop = false;
 
@@ -3534,7 +3468,7 @@ namespace Lemma.Components
 					adjacent = this.GetBox(x, y, z);
 					if (adjacent == null || adjacent.Type != type)
 					{
-						box.Surfaces[(int)Direction.NegativeX] = true;
+						box.Surfaces |= 1 << (int)Direction.NegativeX;
 						stop = true;
 						break;
 					}
@@ -3543,7 +3477,6 @@ namespace Lemma.Components
 					break;
 			}
 
-			box.Surfaces[(int)Direction.PositiveY] = false;
 			y = box.Y + box.Height;
 			stop = false;
 
@@ -3554,7 +3487,7 @@ namespace Lemma.Components
 					adjacent = this.GetBox(x, y, z);
 					if (adjacent == null || adjacent.Type != type)
 					{
-						box.Surfaces[(int)Direction.PositiveY] = true;
+						box.Surfaces |= 1 << (int)Direction.PositiveY;
 						stop = true;
 						break;
 					}
@@ -3563,7 +3496,6 @@ namespace Lemma.Components
 					break;
 			}
 
-			box.Surfaces[(int)Direction.NegativeY] = false;
 			y = box.Y - 1;
 			stop = false;
 
@@ -3574,7 +3506,7 @@ namespace Lemma.Components
 					adjacent = this.GetBox(x, y, z);
 					if (adjacent == null || adjacent.Type != type)
 					{
-						box.Surfaces[(int)Direction.NegativeY] = true;
+						box.Surfaces |= 1 << (int)Direction.NegativeY;
 						stop = true;
 						break;
 					}
@@ -3583,7 +3515,6 @@ namespace Lemma.Components
 					break;
 			}
 
-			box.Surfaces[(int)Direction.PositiveZ] = false;
 			z = box.Z + box.Depth;
 			stop = false;
 
@@ -3594,14 +3525,13 @@ namespace Lemma.Components
 					adjacent = this.GetBox(x, y, z);
 					if (adjacent == null || adjacent.Type != type)
 					{
-						box.Surfaces[(int)Direction.PositiveZ] = true;
+						box.Surfaces |= 1 << (int)Direction.PositiveZ;
 						stop = true;
 						break;
 					}
 				}
 			}
 
-			box.Surfaces[(int)Direction.NegativeZ] = false;
 			z = box.Z - 1;
 			stop = false;
 
@@ -3612,7 +3542,7 @@ namespace Lemma.Components
 					adjacent = this.GetBox(x, y, z);
 					if (adjacent == null || adjacent.Type != type)
 					{
-						box.Surfaces[(int)Direction.NegativeZ] = true;
+						box.Surfaces |= 1 << (int)Direction.NegativeZ;
 						stop = true;
 						break;
 					}
@@ -3638,7 +3568,7 @@ namespace Lemma.Components
 				{
 					for (int z = box.Z - chunk.Z; z < box.Z + box.Depth - chunk.Z; z++)
 					{
-						chunk.Data[x, y, z] = null;
+						chunk[x, y, z] = null;
 					}
 				}
 			}
@@ -4227,7 +4157,7 @@ namespace Lemma.Components
 				Chunk chunk = baseBox.Chunk;
 				for (int z2 = baseBox.Z + baseBox.Depth - chunk.Z; z2 < this.chunkSize; )
 				{
-					Box box = chunk.Data[baseBox.X - chunk.X, baseBox.Y - chunk.Y, z2];
+					Box box = chunk[baseBox.X - chunk.X, baseBox.Y - chunk.Y, z2];
 					if (box != null && box.X == baseBox.X && box.Y == baseBox.Y && box.Z == z2 + chunk.Z && box.Type == baseBox.Type && box.Width == baseBox.Width && box.Height == baseBox.Height)
 					{
 						box.Active = false;
@@ -4245,18 +4175,16 @@ namespace Lemma.Components
 						baseBox.Depth += box.Depth;
 						box.Chunk.MarkDirty(box);
 
-						baseBox.Surfaces[(int)Direction.PositiveZ] |= box.Surfaces[(int)Direction.PositiveZ];
-						baseBox.Surfaces[(int)Direction.NegativeX] |= box.Surfaces[(int)Direction.NegativeX];
-						baseBox.Surfaces[(int)Direction.PositiveX] |= box.Surfaces[(int)Direction.PositiveX];
-						baseBox.Surfaces[(int)Direction.NegativeY] |= box.Surfaces[(int)Direction.NegativeY];
-						baseBox.Surfaces[(int)Direction.PositiveY] |= box.Surfaces[(int)Direction.PositiveY];
+						bool negativeZ = (baseBox.Surfaces & (1 << (int)Direction.NegativeZ)) != 0;
+						baseBox.Surfaces |= box.Surfaces;
+						baseBox.Surfaces = baseBox.Surfaces.SetBit((int)Direction.NegativeZ, negativeZ);
 
 						for (int x = box.X - chunk.X; x < box.X + box.Width - chunk.X; x++)
 						{
 							for (int y = box.Y - chunk.Y; y < box.Y + box.Height - chunk.Y; y++)
 							{
 								for (z2 = box.Z - chunk.Z; z2 < box.Z + box.Depth - chunk.Z; z2++)
-									chunk.Data[x, y, z2] = baseBox;
+									chunk[x, y, z2] = baseBox;
 							}
 						}
 						modified[i] = true;
@@ -4276,7 +4204,7 @@ namespace Lemma.Components
 				Chunk chunk = baseBox.Chunk;
 				for (int x2 = baseBox.X + baseBox.Width - chunk.X; x2 < this.chunkSize; )
 				{
-					Box box = chunk.Data[x2, baseBox.Y - chunk.Y, baseBox.Z - chunk.Z];
+					Box box = chunk[x2, baseBox.Y - chunk.Y, baseBox.Z - chunk.Z];
 					if (box != null && box.X == x2 + chunk.X && box.Y == baseBox.Y && box.Z == baseBox.Z && box.Type == baseBox.Type && box.Depth == baseBox.Depth && box.Height == baseBox.Height)
 					{
 						box.Active = false;
@@ -4294,18 +4222,16 @@ namespace Lemma.Components
 						baseBox.Width += box.Width;
 						box.Chunk.MarkDirty(box);
 
-						baseBox.Surfaces[(int)Direction.PositiveX] |= box.Surfaces[(int)Direction.PositiveX];
-						baseBox.Surfaces[(int)Direction.NegativeY] |= box.Surfaces[(int)Direction.NegativeY];
-						baseBox.Surfaces[(int)Direction.PositiveY] |= box.Surfaces[(int)Direction.PositiveY];
-						baseBox.Surfaces[(int)Direction.NegativeZ] |= box.Surfaces[(int)Direction.NegativeZ];
-						baseBox.Surfaces[(int)Direction.PositiveZ] |= box.Surfaces[(int)Direction.PositiveZ];
+						bool negativeX = (baseBox.Surfaces & (1 << (int)Direction.NegativeX)) != 0;
+						baseBox.Surfaces |= box.Surfaces;
+						baseBox.Surfaces = baseBox.Surfaces.SetBit((int)Direction.NegativeX, negativeX);
 
 						for (x2 = box.X - chunk.X; x2 < box.X + box.Width - chunk.X; x2++)
 						{
 							for (int y = box.Y - chunk.Y; y < box.Y + box.Height - chunk.Y; y++)
 							{
 								for (int z = box.Z - chunk.Z; z < box.Z + box.Depth - chunk.Z; z++)
-									chunk.Data[x2, y, z] = baseBox;
+									chunk[x2, y, z] = baseBox;
 							}
 						}
 						modified[i] = true;
@@ -4325,7 +4251,7 @@ namespace Lemma.Components
 				Chunk chunk = baseBox.Chunk;
 				for (int y2 = baseBox.Y + baseBox.Height - chunk.Y; y2 < this.chunkSize; )
 				{
-					Box box = chunk.Data[baseBox.X - chunk.X, y2, baseBox.Z - chunk.Z];
+					Box box = chunk[baseBox.X - chunk.X, y2, baseBox.Z - chunk.Z];
 					if (box != null && box.X == baseBox.X && box.Y == y2 + chunk.Y && box.Z == baseBox.Z && box.Type == baseBox.Type && box.Depth == baseBox.Depth && box.Width == baseBox.Width)
 					{
 						box.Active = false;
@@ -4343,18 +4269,16 @@ namespace Lemma.Components
 						baseBox.Height += box.Height;
 						box.Chunk.MarkDirty(box);
 
-						baseBox.Surfaces[(int)Direction.PositiveY] |= box.Surfaces[(int)Direction.PositiveY];
-						baseBox.Surfaces[(int)Direction.NegativeX] |= box.Surfaces[(int)Direction.NegativeX];
-						baseBox.Surfaces[(int)Direction.PositiveX] |= box.Surfaces[(int)Direction.PositiveX];
-						baseBox.Surfaces[(int)Direction.NegativeY] |= box.Surfaces[(int)Direction.NegativeY];
-						baseBox.Surfaces[(int)Direction.PositiveY] |= box.Surfaces[(int)Direction.PositiveY];
+						bool negativeY = (baseBox.Surfaces & (1 << (int)Direction.NegativeY)) != 0;
+						baseBox.Surfaces |= box.Surfaces;
+						baseBox.Surfaces = baseBox.Surfaces.SetBit((int)Direction.NegativeY, negativeY);
 
 						for (int x = box.X - chunk.X; x < box.X + box.Width - chunk.X; x++)
 						{
 							for (y2 = box.Y - chunk.Y; y2 < box.Y + box.Height - chunk.Y; y2++)
 							{
 								for (int z = box.Z - chunk.Z; z < box.Z + box.Depth - chunk.Z; z++)
-									chunk.Data[x, y2, z] = baseBox;
+									chunk[x, y2, z] = baseBox;
 							}
 						}
 						modified[i] = true;
@@ -4679,14 +4603,11 @@ namespace Lemma.Components
 						intersections[0] = tmp;
 					}
 
-					if (c.Data != null)
+					RaycastResult result = this.raycastChunk(intersections[0], intersections[1], c, filter);
+					if (result.Coordinate != null)
 					{
-						RaycastResult result = this.raycastChunk(intersections[0], intersections[1], c, filter);
-						if (result.Coordinate != null)
-						{
-							result.Distance = (result.Position - absoluteStart).Length();
-							return result;
-						}
+						result.Distance = (result.Position - absoluteStart).Length();
+						return result;
 					}
 				}
 			}
@@ -4738,7 +4659,7 @@ namespace Lemma.Components
 					&& coord.Y >= 0 && coord.Y < this.chunkSize
 					&& coord.Z >= 0 && coord.Z < this.chunkSize)
 				{
-					Box box = c.Data[coord.X, coord.Y, coord.Z];
+					Box box = c[coord.X, coord.Y, coord.Z];
 					if (box != null && filter(i, box.Type.ID))
 					{
 						Coord actualCoord = coord.Move(c.X, c.Y, c.Z);
@@ -4808,16 +4729,14 @@ namespace Lemma.Components
 				Chunk chunk = this.GetChunk(x, y, z, false);
 				if (chunk == null)
 					return Voxel.States.Empty;
-				else if (chunk.Data != null)
+				else
 				{
-					Box box = chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];
+					Box box = chunk[x - chunk.X, y - chunk.Y, z - chunk.Z];
 					if (box == null)
 						return Voxel.States.Empty;
 					else
 						return box.Type;
 				}
-				else
-					return Voxel.States.Empty;
 			}
 		}
 
@@ -4939,10 +4858,10 @@ namespace Lemma.Components
 		public Box GetBox(int x, int y, int z)
 		{
 			Chunk chunk = this.GetChunk(x, y, z, false);
-			if (chunk == null || chunk.Data == null)
+			if (chunk == null)
 				return null;
 			else
-				return chunk.Data[x - chunk.X, y - chunk.Y, z - chunk.Z];
+				return chunk[x - chunk.X, y - chunk.Y, z - chunk.Z];
 		}
 	}
 
@@ -4994,7 +4913,7 @@ namespace Lemma.Components
 
 		protected override Chunk newChunk()
 		{
-			Chunk chunk = new Chunk();
+			Chunk chunk = new Chunk(this.chunkSize);
 			chunk.Voxel = this;
 			return chunk;
 		}
