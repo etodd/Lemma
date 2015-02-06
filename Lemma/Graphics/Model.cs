@@ -150,7 +150,7 @@ namespace Lemma.Components
 		);
 
 #if !MONOGAME
-		static Dictionary<Microsoft.Xna.Framework.Graphics.Model, BoundingBox> boundingBoxCache = new Dictionary<Microsoft.Xna.Framework.Graphics.Model, BoundingBox>();
+		static Dictionary<string, BoundingBox> boundingBoxCache = new Dictionary<string, BoundingBox>();
 #endif
 
 		public Model()
@@ -215,7 +215,7 @@ namespace Lemma.Components
 				{
 					// TODO: Fix bounding box calculation
 					BoundingBox boundingBox = new BoundingBox();
-					if (!Model.boundingBoxCache.TryGetValue(this.model, out boundingBox))
+					if (!Model.boundingBoxCache.TryGetValue(value, out boundingBox))
 					{
 						// Create variables to hold min and max xyz values for the model. Initialise them to extremes
 						Vector3 modelMax = new Vector3(float.MinValue, float.MinValue, float.MinValue);
@@ -259,7 +259,7 @@ namespace Lemma.Components
 							modelMax = Vector3.Max(modelMax, meshMax);
 						}
 						boundingBox = new BoundingBox(modelMin, modelMax);
-						Model.boundingBoxCache[this.model] = boundingBox;
+						Model.boundingBoxCache[value] = boundingBox;
 					}
 					this.BoundingBox.Value = boundingBox;
 				}

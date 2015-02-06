@@ -97,7 +97,7 @@ namespace Lemma.Factories
 				container.Children.Add(display);
 
 				commandQueueContainer.Children.Add(container);
-				main.AddComponent(new Animation
+				Animation anim = new Animation
 				(
 					new Animation.Delay(0.5f),
 					new Animation.Parallel
@@ -106,7 +106,9 @@ namespace Lemma.Factories
 						new Animation.FloatMoveTo(display.Opacity, 0.0f, 0.5f)
 					),
 					new Animation.Execute(container.Delete)
-				));
+				);
+				anim.EnabledWhenPaused = false;
+				entity.Add(anim);
 			}));
 		}
 

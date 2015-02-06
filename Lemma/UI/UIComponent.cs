@@ -98,6 +98,8 @@ namespace Lemma.Components
 			base.delete();
 			if (this.Parent.Value != null)
 				this.Parent.Value.Children.Remove(this);
+			else
+				this.deleteWithoutRemovingFromParent();
 		}
 
 		private void deleteWithoutRemovingFromParent()

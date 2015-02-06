@@ -2572,6 +2572,7 @@ namespace Lemma.Components
 					}
 				}
 				this.chunks = null;
+				this.CreateModel = null;
 			}
 			Voxel.Voxels.Remove(this);
 		}

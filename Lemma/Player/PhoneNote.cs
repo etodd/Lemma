@@ -238,14 +238,15 @@ namespace Lemma.Components
 			Action scrollToBottom = delegate()
 			{
 				// HACK
-				main.AddComponent(new Animation
+				Animation scroll = new Animation
 				(
 					new Animation.Delay(0.01f),
 					new Animation.Execute(delegate()
 					{
 						phoneScroll.ScrollToBottom();
 					})
-				));
+				);
+				entity.Add(scroll);
 			};
 
 			// Note

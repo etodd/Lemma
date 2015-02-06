@@ -47,7 +47,10 @@ namespace Lemma.Components
 
 		public override void delete()
 		{
-			this.AnimateOut(true);
+			if (this.RootTimePanelView != null)
+				this.RootTimePanelView.RemoveFromParent();
+			if (this.RootTimeEndView != null)
+				this.RootTimeEndView.RemoveFromParent();
 			base.delete();
 		}
 
@@ -142,7 +145,7 @@ namespace Lemma.Components
 
 		public void AnimateIn()
 		{
-			this.main.AddComponent
+			this.Entity.Add
 			(
 				new Animation
 				(
@@ -153,24 +156,14 @@ namespace Lemma.Components
 			this.ElapsedTime.Value = 0f;
 		}
 
-		public void AnimateOut(bool remove = false)
+		public void AnimateOut()
 		{
-			this.main.AddComponent
+			this.Entity.Add
 			(
 				new Animation
 				(
 					new Animation.Vector2MoveTo(RootTimePanelView.Position, new Vector2(main.ScreenSize.Value.X + RootTimePanelView.Width, 30), 0.2f),
-					new Animation.Set<bool>(RootTimePanelView.Active, false),
-					new Animation.Execute(() =>
-					{
-						if (remove)
-						{
-							if (this.RootTimePanelView != null)
-								this.RootTimePanelView.RemoveFromParent();
-							if (this.RootTimeEndView != null)
-								this.RootTimeEndView.RemoveFromParent();
-						}
-					})
+					new Animation.Set<bool>(RootTimePanelView.Active, false)
 				)
 			);
 		}

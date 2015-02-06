@@ -669,6 +669,7 @@ namespace Lemma.Factories
 					player.Character.EnableWalking.Value = true;
 					player.EnableMoves.Value = true;
 				}
+				PlayerFactory.Instance = null;
 			}));
 		}
 	}
