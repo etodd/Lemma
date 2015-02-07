@@ -39,14 +39,12 @@ namespace ComponentBind
 		{
 			if (this.EditorEnabled || component.Entity == null || component.Entity.CannotSuspend)
 				component.Suspended.Value = false;
-			if (component.NeedsAdded)
-			{
-				component.SetMain(this);
-				if (typeof(IGraphicsComponent).IsAssignableFrom(component.GetType()))
-					((IGraphicsComponent)component).LoadContent(false);
-				component.Awake();
-				this.componentsToAdd.Add(component);
-			}
+
+			component.SetMain(this);
+			if (typeof(IGraphicsComponent).IsAssignableFrom(component.GetType()))
+				((IGraphicsComponent)component).LoadContent(false);
+			component.Awake();
+			this.componentsToAdd.Add(component);
 		}
 
 		public void RemoveComponent(IComponent component)

@@ -74,7 +74,7 @@ namespace Lemma.Components
 
 		public override void Start()
 		{
-			if (PlayerDataFactory.Instance == null)
+			if (PlayerDataFactory.Instance == null && !this.main.EditorEnabled)
 				this.main.Add(Factory.Get<PlayerDataFactory>().CreateAndBind(main));
 		}
 

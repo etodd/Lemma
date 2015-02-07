@@ -16,7 +16,6 @@ namespace ComponentBind
 	public interface IComponent : IBindable
 	{
 		Entity Entity { get; set; }
-		bool NeedsAdded { get; }
 		bool Active { get; }
 		bool Serialize { get; set; }
 		void SetMain(BaseMain main);
@@ -86,15 +85,6 @@ namespace ComponentBind
 
 		[XmlIgnore]
 		public Property<bool> Suspended { get; set; }
-
-		[XmlIgnore]
-		public bool NeedsAdded
-		{
-			get
-			{
-				return this.main == null;
-			}
-		}
 
 		[XmlIgnore]
 		public Command Enable = new Command();
