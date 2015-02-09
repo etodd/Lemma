@@ -1505,12 +1505,6 @@ namespace Lemma
 			File.WriteAllText(this.settingsFile, JsonConvert.SerializeObject(this.Settings, Formatting.Indented));
 		}
 
-		[AutoConCommand("load_map", "Loads the specific map")]
-		public void LoadMap(string name)
-		{
-			IO.MapLoader.Load(this, name, false);
-		}
-
 		public void EnterFullscreen()
 		{
 			if (!this.Settings.Fullscreen)

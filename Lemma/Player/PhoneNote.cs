@@ -110,6 +110,7 @@ namespace Lemma.Components
 			Property<Color> incomingColor = new Property<Color> { Value = new Color(0.0f, 0.0f, 0.0f, 1.0f) };
 			Property<Color> outgoingColor = new Property<Color> { Value = new Color(0.0f, 0.175f, 0.35f, 1.0f) };
 			Property<Color> composeColor = new Property<Color> { Value = new Color(0.5f, 0.0f, 0.0f, 1.0f) };
+			Property<Color> disabledColor = new Property<Color> { Value = new Color(0.35f, 0.35f, 0.35f, 1.0f) };
 			Property<Color> topBarColor = new Property<Color> { Value = new Color(0.15f, 0.15f, 0.15f, 1.0f) };
 
 			Container topBarContainer = new Container();
@@ -151,13 +152,22 @@ namespace Lemma.Components
 			}));
 
 			Property<Color> photoTabColor = new Property<Color> { Value = topBarColor };
-			phoneUi.Add(new Binding<Color, Phone.Mode>(photoTabColor, x => x == Phone.Mode.Photos ? outgoingColor : topBarColor, phone.CurrentMode));
+			phoneUi.Add(new Binding<Color>(photoTabColor, delegate()
+			{
+				if (phone.CurrentMode == Phone.Mode.Photos)
+					return outgoingColor;
+				else if (string.IsNullOrEmpty(phone.Photo))
+					return disabledColor;
+				else
+					return topBarColor;
+			}, phone.CurrentMode, phone.Photo));
 			Container photoTab = makeButton(photoTabColor, "\\photos", phoneUi.RenderTargetSize.Value.X * 0.5f - padding);
 			centerButton(photoTab, phoneUi.RenderTargetSize.Value.X * 0.5f);
 			tabs.Children.Add(photoTab);
 			photoTab.Add(new CommandBinding(photoTab.MouseLeftUp, delegate()
 			{
-				phone.CurrentMode.Value = Phone.Mode.Photos;
+				if (!string.IsNullOrEmpty(phone.Photo))
+					phone.CurrentMode.Value = Phone.Mode.Photos;
 			}));
 
 			tabs.Add(new Binding<Vector2>(tabs.Position, x => new Vector2(0, x.Y), topBarContainer.Size));
@@ -511,7 +521,7 @@ namespace Lemma.Components
 
 			// Gamepad code for the phone
 
-			input.Add(new CommandBinding(input.GetButtonUp(Buttons.A), () => phoneActive && composeButton.Visible, delegate()
+			input.Add(new CommandBinding(input.GetButtonUp(Buttons.A), () => phoneActive && composeButton.Visible && phone.CurrentMode.Value == Phone.Mode.Messages, delegate()
 			{
 				if (answerContainer.Visible)
 					answerList.Children[selectedAnswer].MouseLeftUp.Execute();
@@ -524,26 +534,43 @@ namespace Lemma.Components
 				answerContainer.Visible.Value = false;
 			}));
 
+			const float moveInterval = 0.1f;
+			const float switchInterval = 0.2f;
+			float lastScroll = 0;
+			float lastModeSwitch = 0;
 			Action<int> scrollPhone = delegate(int delta)
 			{
-				if (answerContainer.Visible)
+				if (main.TotalTime - lastScroll > moveInterval
+					&& main.TotalTime - lastModeSwitch > switchInterval)
 				{
-					answerList.Children[selectedAnswer].Highlighted.Value = false;
-					selectedAnswer += delta;
-					while (selectedAnswer < 0)
-						selectedAnswer += answerList.Children.Length;
-					while (selectedAnswer > answerList.Children.Length - 1)
-						selectedAnswer -= answerList.Children.Length;
-					answerList.Children[selectedAnswer].Highlighted.Value = true;
+					if (answerContainer.Visible)
+					{
+						answerList.Children[selectedAnswer].Highlighted.Value = false;
+						selectedAnswer += delta;
+						while (selectedAnswer < 0)
+							selectedAnswer += answerList.Children.Length;
+						while (selectedAnswer > answerList.Children.Length - 1)
+							selectedAnswer -= answerList.Children.Length;
+						answerList.Children[selectedAnswer].Highlighted.Value = true;
+					}
+					else
+						phoneScroll.MouseScrolled.Execute(delta * -4);
+					lastScroll = main.TotalTime;
 				}
-				else
-					phoneScroll.MouseScrolled.Execute(delta * -4);
 			};
 
 			Action switchMode = delegate()
 			{
-				Phone.Mode current = phone.CurrentMode;
-				phone.CurrentMode.Value = current == Phone.Mode.Messages ? Phone.Mode.Photos : Phone.Mode.Messages;
+				if (main.TotalTime - lastScroll > switchInterval
+					&& main.TotalTime - lastModeSwitch > moveInterval)
+				{
+					Phone.Mode current = phone.CurrentMode;
+					Phone.Mode nextMode = current == Phone.Mode.Messages ? Phone.Mode.Photos : Phone.Mode.Messages;
+					if (nextMode == Phone.Mode.Photos && string.IsNullOrEmpty(phone.Photo))
+						nextMode = Phone.Mode.Messages;
+					phone.CurrentMode.Value = nextMode;
+					lastModeSwitch = main.TotalTime;
+				}
 			};
 			input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickLeft), () => phoneActive && !answerContainer.Visible, switchMode));
 			input.Add(new CommandBinding(input.GetButtonDown(Buttons.LeftThumbstickRight), () => phoneActive && !answerContainer.Visible, switchMode));

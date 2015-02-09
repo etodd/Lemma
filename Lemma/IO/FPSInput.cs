@@ -23,7 +23,7 @@ namespace Lemma.Components
 		public Property<float> MaxY = new Property<float> { Value = (float)Math.PI * 0.5f };
 
 		const float sensitivityMultiplier = 0.002f;
-		const float gamePadSensitivityMultiplier = -5.0f;
+		const float gamePadSensitivityMultiplier = -3.0f;
 		public Property<bool> EnableLook = new Property<bool> { Value = true };
 		public Property<bool> EnableMovement = new Property<bool> { Value = true };
 

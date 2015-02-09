@@ -64,6 +64,8 @@ namespace Lemma.Components
 		private bool originalMouseVisible;
 		private bool originalUIMouseVisible;
 		private Point originalMousePosition = new Point();
+		private float lastGamepadMove;
+		private float lastGamepadScroll;
 
 		public void ClearMessages()
 		{
@@ -1888,47 +1890,54 @@ namespace Lemma.Components
 				}
 			}, this.currentMenu));
 
+			const float gamepadMoveInterval = 0.1f;
+			const float gamepadScrollMoveInterval = 0.2f;
 			Action<int> moveSelection = delegate(int delta)
 			{
-				UIComponent menu = this.currentMenu;
-				if (menu != null && this.dialog == null)
+				if (this.main.GameTime.TotalGameTime.TotalSeconds - this.lastGamepadMove > gamepadMoveInterval
+					&& this.main.GameTime.TotalGameTime.TotalSeconds - this.lastGamepadScroll > gamepadScrollMoveInterval)
 				{
-					if (menu == this.loadSaveList)
-						delta = -delta;
-					else if (menu == creditsDisplay)
+					UIComponent menu = this.currentMenu;
+					if (menu != null && this.dialog == null)
 					{
-						Scroller scroll = (Scroller)menu.Parent;
-						scroll.MouseScrolled.Execute(delta * -4);
-						return;
-					}
-
-					Container button;
-					if (selected < menu.Children.Length)
-					{
-						button = (Container)menu.Children[selected];
-						button.Highlighted.Value = false;
-					}
-
-					int i = nextMenuItem(menu, selected, delta);
-					while (true)
-					{
-						UIComponent item = menu.Children[i];
-						if (isButton(item) || isScrollButton(item))
+						if (menu == this.loadSaveList)
+							delta = -delta;
+						else if (menu == creditsDisplay)
 						{
-							selected = i;
-							break;
+							Scroller scroll = (Scroller)menu.Parent;
+							scroll.MouseScrolled.Execute(delta * -4);
+							return;
 						}
 
-						i = nextMenuItem(menu, i, delta);
-					}
+						Container button;
+						if (selected < menu.Children.Length)
+						{
+							button = (Container)menu.Children[selected];
+							button.Highlighted.Value = false;
+						}
 
-					button = (Container)menu.Children[selected];
-					button.Highlighted.Value = true;
+						int i = nextMenuItem(menu, selected, delta);
+						while (true)
+						{
+							UIComponent item = menu.Children[i];
+							if (isButton(item) || isScrollButton(item))
+							{
+								selected = i;
+								break;
+							}
 
-					if (menu.Parent.Value.GetType() == typeof(Scroller))
-					{
-						Scroller scroll = (Scroller)menu.Parent;
-						scroll.ScrollTo(button);
+							i = nextMenuItem(menu, i, delta);
+						}
+
+						button = (Container)menu.Children[selected];
+						button.Highlighted.Value = true;
+						this.lastGamepadMove = (float)this.main.GameTime.TotalGameTime.TotalSeconds;
+
+						if (menu.Parent.Value.GetType() == typeof(Scroller))
+						{
+							Scroller scroll = (Scroller)menu.Parent;
+							scroll.ScrollTo(button);
+						}
 					}
 				}
 			};
@@ -1978,12 +1987,19 @@ namespace Lemma.Components
 
 			Action<int> scrollButton = delegate(int delta)
 			{
-				UIComponent menu = this.currentMenu;
-				if (menu != null && menu != creditsDisplay && this.dialog == null)
+				if (this.main.GameTime.TotalGameTime.TotalSeconds - this.lastGamepadMove > gamepadScrollMoveInterval
+					&& this.main.GameTime.TotalGameTime.TotalSeconds - this.lastGamepadScroll > gamepadMoveInterval)
 				{
-					UIComponent selectedItem = menu.Children[selected];
-					if (isScrollButton(selectedItem) && selectedItem.Highlighted)
-						selectedItem.GetChildByName(delta > 0 ? ">" : "<").MouseLeftUp.Execute();
+					UIComponent menu = this.currentMenu;
+					if (menu != null && menu != creditsDisplay && this.dialog == null)
+					{
+						UIComponent selectedItem = menu.Children[selected];
+						if (isScrollButton(selectedItem) && selectedItem.Highlighted)
+						{
+							selectedItem.GetChildByName(delta > 0 ? ">" : "<").MouseLeftUp.Execute();
+							this.lastGamepadScroll = (float)this.main.GameTime.TotalGameTime.TotalSeconds;
+						}
+					}
 				}
 			};
 

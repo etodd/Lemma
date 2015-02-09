@@ -294,7 +294,17 @@ namespace Lemma.Factories
 			Action findNextPosition = delegate()
 			{
 				movement.LastPosition.Value = transform.Position.Value;
-				movement.NextPosition.Value = ai.TargetAgent.Value.Target.Get<Transform>().Position + new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble(), (float)this.random.NextDouble() - 0.5f) * 5.0f;
+				float radius = 5.0f;
+				Vector3 center = ai.TargetAgent.Value.Target.Get<Transform>().Position;
+				Vector3 candidate;
+				do
+				{
+					candidate = center + new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble(), (float)this.random.NextDouble() - 0.5f) * radius;
+					radius += 1.0f;
+				}
+				while (!RaycastAI.DefaultPositionFilter(candidate));
+
+				movement.NextPosition.Value = candidate;
 				movement.PositionBlend.Value = 0.0f;
 			};
 
