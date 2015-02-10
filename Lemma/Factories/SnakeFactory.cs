@@ -45,6 +45,48 @@ namespace Lemma.Factories
 					MinColor = new Vector4(2.0f, 2.0f, 2.0f, 1.0f),
 					MaxColor = new Vector4(2.0f, 2.0f, 2.0f, 1.0f),
 				});
+				ParticleSystem.Add(main, "SnakeSparksRed",
+				new ParticleSystem.ParticleSettings
+				{
+					TextureName = "Particles\\splash",
+					MaxParticles = 1000,
+					Duration = TimeSpan.FromSeconds(1.0f),
+					MinHorizontalVelocity = -7.0f,
+					MaxHorizontalVelocity = 7.0f,
+					MinVerticalVelocity = 0.0f,
+					MaxVerticalVelocity = 7.0f,
+					Gravity = new Vector3(0.0f, -10.0f, 0.0f),
+					MinRotateSpeed = -2.0f,
+					MaxRotateSpeed = 2.0f,
+					MinStartSize = 0.3f,
+					MaxStartSize = 0.7f,
+					MinEndSize = 0.0f,
+					MaxEndSize = 0.0f,
+					BlendState = Microsoft.Xna.Framework.Graphics.BlendState.AlphaBlend,
+					MinColor = new Vector4(1.4f, 0.8f, 0.7f, 1.0f),
+					MaxColor = new Vector4(1.4f, 0.8f, 0.7f, 1.0f),
+				});
+				ParticleSystem.Add(main, "SnakeSparksYellow",
+				new ParticleSystem.ParticleSettings
+				{
+					TextureName = "Particles\\splash",
+					MaxParticles = 1000,
+					Duration = TimeSpan.FromSeconds(1.0f),
+					MinHorizontalVelocity = -7.0f,
+					MaxHorizontalVelocity = 7.0f,
+					MinVerticalVelocity = 0.0f,
+					MaxVerticalVelocity = 7.0f,
+					Gravity = new Vector3(0.0f, -10.0f, 0.0f),
+					MinRotateSpeed = -2.0f,
+					MaxRotateSpeed = 2.0f,
+					MinStartSize = 0.3f,
+					MaxStartSize = 0.7f,
+					MinEndSize = 0.0f,
+					MaxEndSize = 0.0f,
+					BlendState = Microsoft.Xna.Framework.Graphics.BlendState.AlphaBlend,
+					MinColor = new Vector4(1.4f, 1.4f, 0.7f, 1.0f),
+					MaxColor = new Vector4(1.4f, 1.4f, 0.7f, 1.0f),
+				});
 			}
 
 			Snake snake = entity.GetOrCreate<Snake>("Snake");
@@ -98,7 +140,19 @@ namespace Lemma.Factories
 				ParticleEmitter emitter = entity.GetOrCreate<ParticleEmitter>("Particles");
 				emitter.Serialize = false;
 				emitter.ParticlesPerSecond.Value = 100;
-				emitter.ParticleType.Value = "SnakeSparks";
+				emitter.Add(new Binding<string>(emitter.ParticleType, delegate(string state)
+				{
+					switch (state)
+					{
+						case "Chase":
+						case "Crush":
+							return "SnakeSparksRed";
+						case "Alert":
+							return "SnakeSparksYellow";
+						default:
+							return "SnakeSparks";
+					}
+				}, ai.CurrentState));
 				emitter.Add(new Binding<Vector3>(emitter.Position, transform.Position));
 				emitter.Add(new Binding<bool, string>(emitter.Enabled, x => x != "Suspended", ai.CurrentState));
 
@@ -175,26 +229,23 @@ namespace Lemma.Factories
 				if (chase.Active)
 				{
 					string currentState = ai.CurrentState.Value;
-					if ((currentState == "Chase" || currentState == "Crush"))
+					Voxel.t id = m[c].ID;
+					if (id == Voxel.t.Hard)
 					{
-						Voxel.t id = m[c].ID;
-						if (id == Voxel.t.Hard)
-						{
-							m.Empty(c);
-							m.Fill(c, Voxel.States.HardInfected);
-							m.Regenerate();
-						}
-						else if (id == Voxel.t.Neutral)
-						{
-							m.Empty(c);
-							m.Fill(c, Voxel.States.Infected);
-							m.Regenerate();
-						}
-						else if (id == Voxel.t.Empty)
-						{
-							m.Fill(c, Voxel.States.Infected);
-							m.Regenerate();
-						}
+						m.Empty(c);
+						m.Fill(c, Voxel.States.HardInfected);
+						m.Regenerate();
+					}
+					else if (id == Voxel.t.Neutral)
+					{
+						m.Empty(c);
+						m.Fill(c, Voxel.States.Infected);
+						m.Regenerate();
+					}
+					else if (id == Voxel.t.Empty)
+					{
+						m.Fill(c, Voxel.States.Infected);
+						m.Regenerate();
 					}
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SNAKE_MOVE, entity);
 
@@ -316,7 +367,12 @@ namespace Lemma.Factories
 								if (targetDistance > 50.0f || ai.TimeInCurrentState > 30.0f) // He got away
 									ai.CurrentState.Value = "Alert";
 								else if (targetDistance < 5.0f) // We got 'im
-									ai.CurrentState.Value = "Crush";
+								{
+									// First, make sure we're not near a reset block
+									Voxel v = chase.Voxel.Value.Target.Get<Voxel>();
+									if (VoxelAStar.BroadphaseSearch(v, chase.Coord, 6, x => x.Type == Lemma.Components.Voxel.States.Reset) == null)
+										ai.CurrentState.Value = "Crush";
+								}
 								else
 									chase.Target.Value = targetPosition;
 							},

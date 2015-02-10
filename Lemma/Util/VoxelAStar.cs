@@ -225,5 +225,48 @@ namespace Lemma.Util
 			if (closestEntry != null)
 				VoxelAStar.reconstructNarrowphasePath(closestEntry, result);
 		}
+
+		// Search for nearby boxes that meet a filter criteria within a vaguely defined radius
+		public static Voxel.Box BroadphaseSearch(Voxel v, Voxel.Coord coord, int radius, Func<Voxel.Box, bool> filter)
+		{
+			Queue<Voxel.Box> queue = new Queue<Voxel.Box>();
+			Dictionary<Voxel.Box, int> visited = new Dictionary<Voxel.Box, int>();
+			Voxel.Box startBox = v.GetBox(coord);
+			queue.Enqueue(startBox);
+			visited[startBox] = 0;
+			int maxSearch = radius * radius * radius;
+			int searchIndex = 0;
+			while (queue.Count > 0 && searchIndex < maxSearch)
+			{
+				searchIndex++;
+				Voxel.Box b = queue.Dequeue();
+				lock (b.Adjacent)
+				{
+					int parentGScore = visited[b];
+					for (int i = 0; i < b.Adjacent.Count; i++)
+					{
+						Voxel.Box adjacent = b.Adjacent[i];
+						int tentativeGScore = parentGScore + adjacent.Width * adjacent.Height * adjacent.Depth;
+						int previousGScore;
+						if (!visited.TryGetValue(adjacent, out previousGScore) || tentativeGScore < previousGScore)
+						{
+							visited[adjacent] = tentativeGScore;
+
+							if (parentGScore < radius * radius
+								&& coord.X >= adjacent.X - radius && coord.X < adjacent.X + adjacent.Width + radius
+								&& coord.Y >= adjacent.Y - radius && coord.Y < adjacent.Y + adjacent.Height + radius
+								&& coord.Z >= adjacent.Z - radius && coord.Z < adjacent.Z + adjacent.Depth + radius)
+							{
+								if (filter(adjacent))
+									return adjacent;
+								else
+									queue.Enqueue(adjacent);
+							}
+						}
+					}
+				}
+			}
+			return null;
+		}
 	}
 }

@@ -98,6 +98,7 @@ namespace Lemma.Factories
 			predictor.Add(new Binding<float>(predictor.JumpSpeed, player.Character.JumpSpeed));
 			predictor.Add(new Binding<bool>(predictor.IsSupported, player.Character.IsSupported));
 
+			jump.Add(new Binding<bool>(jump.Crouched, player.Character.Crouched));
 			jump.Add(new TwoWayBinding<bool>(player.Character.IsSupported, jump.IsSupported));
 			jump.Add(new TwoWayBinding<bool>(player.Character.HasTraction, jump.HasTraction));
 			jump.Add(new TwoWayBinding<Vector3>(player.Character.LinearVelocity, jump.LinearVelocity));
@@ -651,10 +652,7 @@ namespace Lemma.Factories
 				ui.Enabled.Value = !freeCameraMode;
 				player.Character.EnableWalking.Value = !freeCameraMode;
 				player.EnableMoves.Value = !freeCameraMode;
-				if (freeCameraMode)
-					player.Character.Body.BecomeKinematic();
-				else
-					player.Character.Body.BecomeDynamic(player.Character.Mass);
+				player.Character.Body.IsAffectedByGravity = !freeCameraMode;
 				if (freeCameraMode)
 					AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_BREATHING_SOFT, entity);
 				else

@@ -31,6 +31,7 @@ namespace Lemma.Components
 		public Property<float> LastRollKickEnded = new Property<float>();
 		public Property<Voxel> WallRunMap = new Property<Voxel>();
 		public Property<Direction> WallDirection = new Property<Direction>();
+		public Property<bool> Crouched = new Property<bool>();
 
 		// Output
 		public Command<Voxel, Voxel.Coord, Direction> WalkedOn = new Command<Voxel, Voxel.Coord, Direction>();
@@ -81,28 +82,40 @@ namespace Lemma.Components
 
 		private const float jumpCoolDown = 0.3f;
 
+		private string lastJumpAnimation;
 		private string randomJumpAnimation()
 		{
-			switch (this.random.Next(3))
+			string anim;
+			do
 			{
-				case 1:
-					return "Jump02";
-				case 2:
-					return "Jump03";
+				switch (this.random.Next(3))
+				{
+					case 1:
+						anim = "Jump02";
+						break;
+					case 2:
+						anim = "Jump03";
+						break;
+					default:
+						anim = "Jump";
+						break;
+				}
 			}
-			return "Jump";
+			while (this.lastJumpAnimation == anim);
+
+			this.lastJumpAnimation = anim;
+			return anim;
 		}
 
 		public bool Go()
 		{
-			if (this.main.TotalTime - this.LastJump < jumpCoolDown)
+			if (this.main.TotalTime - this.LastJump < jumpCoolDown || this.Crouched)
 				return false;
 
 			bool supported = this.IsSupported;
 
 			WallRun.State wallRunState = this.WallRunState;
 
-			// Check if we're vaulting
 			Matrix rotationMatrix = Matrix.CreateRotationY(this.Rotation);
 
 			Vector2 jumpDirection = this.AbsoluteMovementDirection;
@@ -163,24 +176,23 @@ namespace Lemma.Components
 				// We're not doing our normal jump, and not wall-runnign
 				// See if we can wall-jump
 				Vector3 playerPos = this.Position;
-				Voxel.GlobalRaycastResult? wallRaycastHit = null;
-				Vector3 wallRaycastDirection = Vector3.Zero;
+				Voxel.GlobalRaycastResult? closestWallRaycastHit = null;
+				Vector3 closestWallRaycastDirection = Vector3.Zero;
 
 				foreach (Vector3 dir in new[] { rotationMatrix.Left, rotationMatrix.Right, rotationMatrix.Backward, rotationMatrix.Forward })
 				{
 					Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(playerPos, dir, wallJumpDistance);
-					if (hit.Voxel != null)
+					if (hit.Voxel != null && (!closestWallRaycastHit.HasValue || hit.Distance < closestWallRaycastHit.Value.Distance))
 					{
-						wallRaycastDirection = dir;
-						wallRaycastHit = hit;
-						break;
+						closestWallRaycastDirection = dir;
+						closestWallRaycastHit = hit;
 					}
 				}
 
-				if (wallRaycastHit != null)
+				if (closestWallRaycastHit != null)
 				{
-					Voxel m = wallRaycastHit.Value.Voxel;
-					wallJump(m, wallRaycastHit.Value.Normal, wallRaycastHit.Value.Coordinate.Value);
+					Voxel m = closestWallRaycastHit.Value.Voxel;
+					wallJump(m, closestWallRaycastHit.Value.Normal, closestWallRaycastHit.Value.Coordinate.Value);
 				}
 			}
 

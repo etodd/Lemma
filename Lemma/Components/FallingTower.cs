@@ -11,13 +11,19 @@ namespace Lemma.Components
 {
 	public class FallingTower : Component<Main>, IUpdateableComponent
 	{
-		public ListProperty<Entity.Handle> DynamicVoxels = new ListProperty<Entity.Handle>();
-		public Property<float> TimeUntilRebuild = new Property<float>();
-		public Property<float> TimeUntilRebuildComplete = new Property<float>();
-		private const float RebuildDelay = 2.5f;
-		private const float RebuildTime = 1.0f;
+		// Input properties
 		public Property<bool> IsTriggered = new Property<bool>();
 
+		// Settings
+		public Property<float> TimeUntilRebuild = new Property<float>();
+		public Property<float> TimeUntilRebuildComplete = new Property<float>();
+
+		public ListProperty<Entity.Handle> DynamicVoxels = new ListProperty<Entity.Handle>();
+
+		private const float RebuildDelay = 2.5f;
+		private const float RebuildTime = 1.0f;
+
+		[XmlIgnore]
 		public EnemyBase Base;
 
 		[XmlIgnore]
@@ -119,31 +125,10 @@ namespace Lemma.Components
 
 					Voxel m = targetMap.Get<Voxel>();
 
-					int index = 0;
-
-					Vector3 baseCenter = Vector3.Zero;
-
 					EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
 
-					foreach (Voxel.Coord c in this.Base.BaseBoxes.SelectMany(x => x.GetCoords()))
-					{
-						if (m[c].ID == 0)
-						{
-							Entity blockEntity = factory.CreateAndBind(main);
-							EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
-							c.Data.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
-							effectBlock.Offset.Value = m.GetRelativePosition(c);
-							effectBlock.StartPosition = m.GetAbsolutePosition(c) + new Vector3(0.25f, 0.5f, 0.25f) * index;
-							effectBlock.StartOrientation = Quaternion.CreateFromYawPitchRoll(0.15f * index, 0.15f * index, 0);
-							effectBlock.TotalLifetime = 0.05f + (index * rebuildTimeMultiplier * RebuildTime);
-							effectBlock.Setup(targetMap, c, c.Data.ID);
-							main.Add(blockEntity);
-							index++;
-							baseCenter += new Vector3(c.X, c.Y, c.Z);
-						}
-					}
-
-					baseCenter /= index; // Get the average position of the base cells
+					int startIndex = this.Base.BaseBoxes.Sum(x => x.Volume);
+					int index = startIndex;
 
 					foreach (Entity.Handle e in this.DynamicVoxels)
 					{
@@ -163,7 +148,7 @@ namespace Lemma.Components
 								coords.Add(c);
 						}
 
-						foreach (Voxel.Coord c in coords.OrderBy(x => (new Vector3(x.X, x.Y, x.Z) - baseCenter).LengthSquared()))
+						foreach (Voxel.Coord c in coords.OrderBy(x => (new Vector3(x.X, x.Y, x.Z) - this.Base.Position).LengthSquared()))
 						{
 							Entity blockEntity = factory.CreateAndBind(main);
 							c.Data.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
@@ -187,8 +172,31 @@ namespace Lemma.Components
 						}
 						dynamicMap.Delete.Execute();
 					}
-					this.TimeUntilRebuildComplete.Value = 0.05f + (index * rebuildTimeMultiplier * RebuildTime);
 					this.DynamicVoxels.Clear();
+
+					if (index > startIndex) // We built some stuff. Build the base.
+					{
+						int baseIndex = 0;
+						foreach (Voxel.Coord c in this.Base.BaseBoxes.SelectMany(x => x.GetCoords()))
+						{
+							if (m[c].ID == 0)
+							{
+								Entity blockEntity = factory.CreateAndBind(main);
+								EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
+								c.Data.ApplyToEffectBlock(blockEntity.Get<ModelInstance>());
+								effectBlock.Offset.Value = m.GetRelativePosition(c);
+								effectBlock.StartPosition = m.GetAbsolutePosition(c) + new Vector3(0.25f, 0.5f, 0.25f) * baseIndex;
+								effectBlock.StartOrientation = Quaternion.CreateFromYawPitchRoll(0.15f * baseIndex, 0.15f * baseIndex, 0);
+								effectBlock.TotalLifetime = 0.05f + (baseIndex * rebuildTimeMultiplier * RebuildTime);
+								effectBlock.Setup(targetMap, c, c.Data.ID);
+								main.Add(blockEntity);
+								baseIndex++;
+							}
+						}
+						this.TimeUntilRebuildComplete.Value = 0.05f + (index * rebuildTimeMultiplier * RebuildTime);
+					}
+					else // We didn't build anything. Delete ourselves.
+						this.Delete.Execute();
 				}
 			}
 			else if (this.TimeUntilRebuildComplete > 0)

@@ -89,6 +89,11 @@ namespace Lemma.Components
 			this.model = model;
 			model["Slide"].Speed = 1.4f;
 			model["Roll"].Speed = 1.75f;
+			this.model["Kick"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
+			{
+				m.Translation += new Vector3(0.0f, 0.0f, -1.25f);
+				return m;
+			};
 		}
 
 		private const float coolDown = 0.35f;
@@ -100,59 +105,17 @@ namespace Lemma.Components
 			{
 				// If we're standing on blue or powered, we need to check if we're close to a non-blue block before we can build a floor
 				// This prevents the player from building a floor infinitely
-				Queue<Voxel.Box> queue = new Queue<Voxel.Box>();
-				Dictionary<Voxel.Box, int> visited = new Dictionary<Voxel.Box, int>();
-				Voxel.Box floorBox = this.floorMap.GetBox(this.floorCoordinate);
-				queue.Enqueue(floorBox);
-				visited[floorBox] = 0;
-				const int radius = 6;
-				const int maxSearch = radius * radius * radius;
-				int searchIndex = 0;
-				while (queue.Count > 0 && searchIndex < maxSearch)
-				{
-					searchIndex++;
-					Voxel.Box b = queue.Dequeue();
-					lock (b.Adjacent)
-					{
-						int parentGScore = visited[b];
-						for (int i = 0; i < b.Adjacent.Count; i++)
-						{
-							Voxel.Box adjacent = b.Adjacent[i];
-							int tentativeGScore = parentGScore + adjacent.Width * adjacent.Height * adjacent.Depth;
-							int previousGScore;
-							if (!visited.TryGetValue(adjacent, out previousGScore) || tentativeGScore < previousGScore)
-							{
-								visited[adjacent] = tentativeGScore;
-
-								if (parentGScore < radius * radius
-									&& this.floorCoordinate.X >= adjacent.X - radius && this.floorCoordinate.X < adjacent.X + adjacent.Width + radius
-									&& this.floorCoordinate.Y >= adjacent.Y - radius && this.floorCoordinate.Y < adjacent.Y + adjacent.Height + radius
-									&& this.floorCoordinate.Z >= adjacent.Z - radius && this.floorCoordinate.Z < adjacent.Z + adjacent.Depth + radius)
-								{
-									if (adjacent.Type != Voxel.States.Blue && adjacent.Type != Voxel.States.Powered)
-									{
-										// Non-blue block. It's close enough, we can build a floor
-										result = true;
-										break;
-									}
-									else
-										queue.Enqueue(adjacent);
-								}
-							}
-						}
-					}
-					if (result)
-						break;
-				}
+				if (VoxelAStar.BroadphaseSearch(this.floorMap, this.floorCoordinate, 6, x => x.Type != Voxel.States.Blue && x.Type != Voxel.States.Powered) != null)
+					result = true;
 			}
 			else
 				result = true;
 			return result;
 		}
 
-		public void Go()
+		public void Go(bool overrideCooldown = false)
 		{
-			if (this.Rolling || this.Kicking || main.TotalTime - this.LastRollKickEnded < coolDown)
+			if (this.Rolling || this.Kicking || (main.TotalTime - this.LastRollKickEnded < coolDown && !overrideCooldown))
 				return;
 
 			Matrix rotationMatrix = Matrix.CreateRotationY(this.Rotation);
@@ -395,7 +358,7 @@ namespace Lemma.Components
 						// We started out on the ground, but we kicked off an edge.
 						AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
 					}
-					else if (this.rollKickTime > 0.35f)
+					else if (this.LinearVelocity.Value.Y - this.SupportVelocity.Value.Y < FallDamage.DamageVelocity)
 					{
 						// We weren't supported when we started kicking. We're flying.
 						// Roll if we hit the ground while kicking mid-air
@@ -404,7 +367,7 @@ namespace Lemma.Components
 						if (r.Voxel != null)
 						{
 							this.StopKick();
-							this.Go();
+							this.Go(true);
 							return;
 						}
 					}

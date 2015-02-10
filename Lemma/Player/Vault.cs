@@ -76,15 +76,17 @@ namespace Lemma.Components
 			// Filters are in Blender's Z-up coordinate system
 
 			this.model["Mantle"].Speed = 1.3f;
-			this.model["Mantle"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
+			SkinnedModel.Clip mantle = this.model["Mantle"];
+			mantle.GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
-				m.Translation = new Vector3(0.0f, 0.0f, 2.0f);
+				float blend = (float)mantle.CurrentTime.TotalSeconds / (float)mantle.Duration.TotalSeconds;
+				m.Translation = new Vector3(0.0f, -(1.0f - blend), 2.0f - (MathHelper.Clamp(blend, 0, 1.5f)));
 				return m;
 			};
 			this.model["TopOut"].Speed = 1.8f;
 			this.model["TopOut"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
-				Vector3 diff = Vector3.Transform(this.relativeVaultStartPosition, this.map.Transform) + new Vector3(0, 0.535f, 0) - this.Position;
+				Vector3 diff = Vector3.Transform(this.relativeVaultStartPosition, this.map.Transform) + new Vector3(0, 0.535f + (this.Crouched ? 0.0f : Character.DefaultTotalHeight - Character.DefaultCrouchedTotalHeight), 0) - this.Position;
 				m.Translation += Vector3.Transform(diff, Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f));
 				return m;
 			};
@@ -137,7 +139,7 @@ namespace Lemma.Components
 				Direction up = map.GetRelativeDirection(Direction.PositiveY);
 				Direction backward = map.GetRelativeDirection(rotationMatrix.Forward);
 				Direction right = up.Cross(backward);
-				Vector3 pos = this.Position + rotationMatrix.Forward * -(this.Radius + 1.0f);
+				Vector3 pos = this.Position + rotationMatrix.Forward * -(this.Radius + 0.95f);
 				Voxel.Coord resortCoord = default(Voxel.Coord);
 				bool resort = false;
 				for (int j = 0; j < searchForwardDistance; j++)
@@ -153,11 +155,6 @@ namespace Lemma.Components
 								CandidateStatus status = checkAdjacent(map, coord, up, backward, right);
 								if (status == CandidateStatus.Bad)
 									break; // Conflict
-								else if (status == CandidateStatus.Uneven && !resort)
-								{
-									resortCoord = coord;
-									resort = true;
-								}
 								
 								bool conflict = false;
 								// Check other voxels for conflicts
@@ -181,8 +178,15 @@ namespace Lemma.Components
 								if (conflict)
 									break;
 
+								if (status == CandidateStatus.Uneven && !resort)
+								{
+									resortCoord = coord;
+									resort = true;
+									break;
+								}
+
 								// Vault
-								this.vault(map, coord.Move(up));
+								this.vault(map, coord.Move(up), false);
 								return true;
 							}
 							coord = coord.Move(up.GetReverse());
@@ -191,7 +195,7 @@ namespace Lemma.Components
 				}
 				if (resort)
 				{
-					this.vault(map, resortCoord.Move(up));
+					this.vault(map, resortCoord.Move(up), true);
 					return true;
 				}
 			}
@@ -212,7 +216,7 @@ namespace Lemma.Components
 						if (!coord.Between(possibility.StartCoord, possibility.EndCoord) && downCoord.Between(possibility.StartCoord, possibility.EndCoord))
 						{
 							this.Predictor.InstantiatePossibility(possibility);
-							this.vault(possibility.Map, coord);
+							this.vault(possibility.Map, coord, false);
 							return true;
 						}
 						coord = coord.Move(up.GetReverse());
@@ -231,7 +235,8 @@ namespace Lemma.Components
 				return voxel.LinearVelocity + Vector3.Cross(voxel.AngularVelocity, this.FloorPosition - voxel.Transform.Value.Translation);
 		}
 
-		private void vault(Voxel map, Voxel.Coord coord)
+		private bool uncrouchEarly;
+		private void vault(Voxel map, Voxel.Coord coord, bool uneven)
 		{
 			Vector3 supportLocation = this.FloorPosition;
 			Vector3 supportVelocity = this.getSupportVelocity(map);
@@ -270,7 +275,8 @@ namespace Lemma.Components
 
 			// If there's nothing on the other side of the wall (it's a one-block-wide wall)
 			// then vault over it rather than standing on top of it
-			this.vaultOver = this.initialVerticalDifference > 1.0f
+			this.vaultOver = this.initialVerticalDifference > 0.0f
+				&& map[coordPosition + this.forward].ID == Voxel.t.Empty
 				&& map[coordPosition + this.forward + new Vector3(0, -1, 0)].ID == Voxel.t.Empty
 				&& map[coordPosition + this.forward + new Vector3(0, -2, 0)].ID == Voxel.t.Empty;
 
@@ -320,14 +326,24 @@ namespace Lemma.Components
 			this.movingForward = false;
 			this.originalPosition = this.Position;
 
+			Direction up = map.GetRelativeDirection(Direction.PositiveY);
+
 			// If this is a top-out, we have to make sure the animation lines up perfectly
 			if (this.isTopOut)
-			{
-				Direction up = map.GetRelativeDirection(Direction.PositiveY);
 				this.relativeVaultStartPosition = map.GetRelativePosition(coord.Move(relativeDir, -2)) + up.GetVector() * -3.7f;
-			}
 			else
 				this.relativeVaultStartPosition = Vector3.Transform(this.originalPosition, Matrix.Invert(this.map.Transform));
+
+			if (uneven)
+			{
+				// We're climbing an uneven surface, we need to uncrouch early if possible
+				Direction right = relativeDir.Cross(up);
+				this.uncrouchEarly = map[coord.Move(up, 3).Move(right, -1)] == Voxel.States.Empty
+					&& map[coord.Move(up, 3)] == Voxel.States.Empty
+					&& map[coord.Move(up, 3).Move(right, 1)] == Voxel.States.Empty;
+			}
+			else
+				this.uncrouchEarly = false;
 			
 			this.LastVaultStarted.Value = this.main.TotalTime;
 		}
@@ -344,6 +360,8 @@ namespace Lemma.Components
 
 				if (this.movingForward)
 				{
+					if (this.uncrouchEarly)
+						this.AllowUncrouch.Value = true;
 					if (this.vaultOver && this.vaultTime - this.moveForwardStartTime > 0.25f)
 						done = true; // Done moving forward
 					else if (this.isTopOut && !this.model.IsPlaying("TopOut"))
@@ -395,11 +413,14 @@ namespace Lemma.Components
 				{
 					this.CurrentState.Value = State.None;
 					this.EnableWalking.Value = true;
-					this.Entity.Add(new Animation
-					(
-						new Animation.Delay(0.1f),
-						new Animation.Set<bool>(this.AllowUncrouch, true)
-					));
+					if (!this.uncrouchEarly)
+					{
+						this.Entity.Add(new Animation
+						(
+							new Animation.Delay(0.1f),
+							new Animation.Set<bool>(this.AllowUncrouch, true)
+						));
+					}
 				}
 			}
 			else if (this.map != null && !this.model.IsPlaying("Vault", "TopOut", "Mantle"))

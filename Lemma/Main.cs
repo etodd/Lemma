@@ -585,6 +585,7 @@ namespace Lemma
 					playerData.EnableWallRunHorizontal.Value = true;
 					playerData.EnableMoves.Value = true;
 					playerData.EnableCrouch.Value = true;
+					playerData.EnableSlowMotion.Value = true;
 				}
 			}));
 

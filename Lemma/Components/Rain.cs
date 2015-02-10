@@ -95,8 +95,8 @@ namespace Lemma.Components
 					MinEndSize = 0.3f,
 					MaxEndSize = 0.3f,
 					BlendState = BlendState.Opaque,
-					MinColor = new Vector4(0.5f, 0.6f, 0.7f, 1.0f),
-					MaxColor = new Vector4(0.5f, 0.6f, 0.7f, 1.0f),
+					MinColor = new Vector4(0.6f, 0.6f, 0.6f, 1.0f),
+					MaxColor = new Vector4(0.6f, 0.6f, 0.6f, 1.0f),
 					Material = new Components.Model.Material { SpecularIntensity = 0.0f, SpecularPower = 1.0f },
 				});
 			}
@@ -136,7 +136,7 @@ namespace Lemma.Components
 				for (int y = 0; y < KernelSize; y++)
 				{
 					Vector3 pos = KernelOffset + new Vector3(x * KernelSpacing, 0, y * KernelSpacing);
-					Voxel.GlobalRaycastResult raycast = Voxel.GlobalRaycast(pos, Vector3.Down, StartHeight + RaycastHeight + (VerticalSpeed * MaxLifetime), (index, type) => type != Voxel.t.Invisible);
+					Voxel.GlobalRaycastResult raycast = Voxel.GlobalRaycast(pos, Vector3.Down, StartHeight + RaycastHeight + (VerticalSpeed * MaxLifetime));
 					float height = raycast.Voxel == null ? float.MinValue : raycast.Position.Y;
 					this.RaycastHeights[x, y] = height;
 					averageHeight += Math.Max(cameraPos.Y, Math.Min(height, cameraPos.Y + StartHeight)) * audioKernel[x, y];

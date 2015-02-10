@@ -1871,6 +1871,15 @@ namespace Lemma.Components
 			[XmlIgnore]
 			public int Surfaces;
 
+			[XmlIgnore]
+			public int Volume
+			{
+				get
+				{
+					return this.Width * this.Height * this.Depth;
+				}
+			}
+
 			public int GetComponent(Direction dir)
 			{
 				switch (dir)
@@ -3640,29 +3649,30 @@ namespace Lemma.Components
 					// Spawn new maps for portions that have been cut off
 
 					IEnumerable<IEnumerable<Box>> islands;
-					this.getAdjacentIslands(this.removalCoords, out islands);
-
-					List<List<Box>> finalIslands = new List<List<Box>>();
-
-					foreach (IEnumerable<Box> island in islands)
+					if (this.getAdjacentIslands(this.removalCoords, out islands))
 					{
-						finalIslands.Add(island.ToList());
+						List<List<Box>> finalIslands = new List<List<Box>>();
 
-						// Remove these boxes from the map
-						foreach (Box adjacent in island)
-							this.removeBox(adjacent);
-					}
-
-					if (finalIslands.Count > 0)
-					{
-						lock (Voxel.spawns)
+						foreach (IEnumerable<Box> island in islands)
 						{
-							Voxel.spawns.Add(new SpawnGroup
+							finalIslands.Add(island.ToList());
+
+							// Remove these boxes from the map
+							foreach (Box adjacent in island)
+								this.removeBox(adjacent);
+						}
+
+						if (finalIslands.Count > 0)
+						{
+							lock (Voxel.spawns)
 							{
-								Source = this,
-								Callback = callback,
-								Islands = finalIslands
-							});
+								Voxel.spawns.Add(new SpawnGroup
+								{
+									Source = this,
+									Callback = callback,
+									Islands = finalIslands
+								});
+							}
 						}
 					}
 				}
@@ -3837,10 +3847,11 @@ namespace Lemma.Components
 			return result;
 		}
 
-		private void getAdjacentIslands(IEnumerable<Coord> removals, out IEnumerable<IEnumerable<Box>> islands)
+		private bool getAdjacentIslands(IEnumerable<Coord> removals, out IEnumerable<IEnumerable<Box>> islands)
 		{
 			List<Dictionary<Box, bool>> lists = new List<Dictionary<Box, bool>>();
 
+			int allLists = 0;
 			// Build adjacency lists
 			foreach (Coord removal in removals)
 			{
@@ -3867,13 +3878,18 @@ namespace Lemma.Components
 						continue;
 					Dictionary<Box, bool> newList = new Dictionary<Box, bool>();
 					bool supported = this.buildAdjacency(box, this.internalBoxAdjacencyCache, newList);
-					if (!supported && newList.Count > 0)
-						lists.Add(newList);
+					if (newList.Count > 0)
+					{
+						allLists++;
+						if (!supported)
+							lists.Add(newList);
+					}
 				}
 			}
 
 			// Spawn the dynamic maps
 			islands = lists.Select(x => x.Keys);
+			return allLists > 1;
 		}
 
 		public IEnumerable<IEnumerable<Box>> GetAdjacentIslands(IEnumerable<Coord> removals, Func<State, bool> filter, Func<State, bool> search)
@@ -3909,24 +3925,6 @@ namespace Lemma.Components
 			}
 
 			return lists.Select(x => x.Keys);
-		}
-
-		private bool adjacentToFilledCell(Coord coord)
-		{
-			return this[coord.Move(0, 0, 1)].ID != 0
-			|| this[coord.Move(0, 1, 0)].ID != 0
-			|| this[coord.Move(0, 1, 1)].ID != 0
-			|| this[coord.Move(1, 0, 0)].ID != 0
-			|| this[coord.Move(1, 0, 1)].ID != 0
-			|| this[coord.Move(1, 1, 0)].ID != 0
-			|| this[coord.Move(1, 1, 1)].ID != 0
-			|| this[coord.Move(0, 0, -1)].ID != 0
-			|| this[coord.Move(0, -1, 0)].ID != 0
-			|| this[coord.Move(0, -1, -1)].ID != 0
-			|| this[coord.Move(-1, 0, 0)].ID != 0
-			|| this[coord.Move(-1, 0, 1)].ID != 0
-			|| this[coord.Move(-1, -1, 0)].ID != 0
-			|| this[coord.Move(-1, -1, -1)].ID != 0;
 		}
 
 		public Coord? FindClosestFilledCell(Coord coord, int maxDistance = 20)

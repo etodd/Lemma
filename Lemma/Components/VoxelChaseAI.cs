@@ -107,13 +107,17 @@ namespace Lemma.Factories
 							Voxel.Coord? targetCoord = m.FindClosestFilledCell(m.GetCoordinate(this.Target));
 							if (targetCoord.HasValue)
 							{
-								this.narrowphasePath.Clear();
-								this.broadphasePath.Clear();
-								Voxel.Box box = m.GetBox(c);
-								VoxelAStar.Broadphase(m, box, targetCoord.Value, this.Filter, this.broadphasePath);
-								if (this.broadphasePath.Count > 0)
-									this.broadphasePath.Pop(); // First box is the current one
-								//this.debugBroadphase(m, this.broadphasePath);
+								if (VoxelAStar.BroadphaseSearch(m, targetCoord.Value, 6, x => x.Type == Lemma.Components.Voxel.States.Reset) == null)
+								{
+									// Target is not near a reset block
+									this.narrowphasePath.Clear();
+									this.broadphasePath.Clear();
+									Voxel.Box box = m.GetBox(c);
+									VoxelAStar.Broadphase(m, box, targetCoord.Value, this.Filter, this.broadphasePath);
+									if (this.broadphasePath.Count > 0)
+										this.broadphasePath.Pop(); // First box is the current one
+									//this.debugBroadphase(m, this.broadphasePath);
+								}
 							}
 						}
 

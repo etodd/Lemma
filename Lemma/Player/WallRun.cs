@@ -134,12 +134,17 @@ namespace Lemma.Components
 				Voxel.Coord coord = voxel.GetCoordinate(pos);
 				Direction dir = voxel.GetRelativeDirection(wallVector);
 				Direction up = voxel.GetRelativeDirection(Direction.PositiveY);
+				Direction forwardDir = voxel.GetRelativeDirection(forwardVector);
 				for (int i = 1; i < maxWallDistance; i++)
 				{
 					Voxel.Coord wallCoord = coord.Move(dir, i);
-					if (voxel[coord.Move(dir, i - 1)].ID != 0
-						|| voxel[coord.Move(dir, i - 1).Move(up, 1)].ID != 0
-						|| voxel[coord.Move(dir, i - 1).Move(up, 2)].ID != 0)
+					if (voxel[coord.Move(dir, i - 1)] != Voxel.States.Empty
+						|| voxel[coord.Move(dir, i - 1).Move(up, 1)] != Voxel.States.Empty
+						|| voxel[coord.Move(dir, i - 1).Move(up, 2)] != Voxel.States.Empty
+						|| ((state == State.Left || state == State.Right)
+							&& (voxel[coord.Move(forwardDir).Move(dir, i - 1)] != Voxel.States.Empty
+							|| voxel[coord.Move(forwardDir).Move(dir, i - 1).Move(up, 1)] != Voxel.States.Empty
+							|| voxel[coord.Move(forwardDir).Move(dir, i - 1).Move(up, 2)] != Voxel.States.Empty)))
 					{
 						// Blocked
 						break;

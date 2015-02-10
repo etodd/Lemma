@@ -26,6 +26,8 @@ namespace Lemma.Util
 		public const float DefaultCrouchedHeight = 1.7f;
 		public const float DefaultSupportHeight = 1.25f;
 		public const float DefaultCrouchedSupportHeight = 0.5f;
+		public const float DefaultTotalHeight = DefaultHeight + DefaultSupportHeight;
+		public const float DefaultCrouchedTotalHeight = DefaultCrouchedHeight + DefaultCrouchedSupportHeight;
 		public const float DefaultMass = 4.0f;
 
 		public const float InitialAccelerationSpeedThreshold = 4.0f;
