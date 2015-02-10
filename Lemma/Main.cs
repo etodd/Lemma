@@ -243,6 +243,8 @@ namespace Lemma
 		private Property<double> physicsTime = new Property<double>();
 		private double updateSum;
 		private Property<double> updateTime = new Property<double>();
+		private double renderSum;
+		private Property<double> renderTime = new Property<double>();
 		private Property<int> drawCalls = new Property<int>();
 		private Property<int> workingSet = new Property<int>();
 		private int drawCallCounter;
@@ -1041,6 +1043,7 @@ namespace Lemma
 
 				addTimer("Physics", this.physicsTime);
 				addTimer("Update", this.updateTime);
+				addTimer("Render", this.renderTime);
 				addCounter("Draw calls", this.drawCalls);
 				addCounter("Triangles", this.triangles);
 				addCounter("Working set", this.workingSet);
@@ -1549,16 +1552,23 @@ namespace Lemma
 			this.nonPostProcessedDrawablesModified = true;
 		}
 
+		private Stopwatch timer = new Stopwatch();
+		private Stopwatch frameTimer = new Stopwatch();
+
+		private TimeSpan lastFrameTime;
+
 		protected override void Update(GameTime gameTime)
 		{
 			if (!this.IsActive)
 				return;
 
-			if (this.targetElapsedTime > gameTime.ElapsedGameTime)
+			if (this.targetElapsedTime > this.lastFrameTime)
 			{
-				TimeSpan diff = this.targetElapsedTime - gameTime.ElapsedGameTime;
+				TimeSpan diff = this.targetElapsedTime - this.lastFrameTime;
 				Thread.Sleep(diff);
 			}
+
+			this.frameTimer.Restart();
 
 			if (gameTime.ElapsedGameTime.TotalSeconds > 0.1f)
 				gameTime = new GameTime(gameTime.TotalGameTime, TimeSpan.FromSeconds(0.1f), false);
@@ -1592,8 +1602,7 @@ namespace Lemma
 			if (this.GamePadState.Value.IsConnected != this.GamePadConnected)
 				this.GamePadConnected.Value = this.GamePadState.Value.IsConnected;
 
-			Stopwatch timer = new Stopwatch();
-			timer.Start();
+			this.timer.Restart();
 			for (int i = 0; i < this.earlyUpdateables.Count; i++)
 			{
 				IEarlyUpdateableComponent c = this.earlyUpdateables[i];
@@ -1654,14 +1663,14 @@ namespace Lemma
 				this.nonPostProcessedDrawablesModified = false;
 			}
 
-			timer.Stop();
-			this.updateSum = Math.Max(this.updateSum, timer.Elapsed.TotalSeconds);
+			this.timer.Stop();
+			this.updateSum = Math.Max(this.updateSum, this.timer.Elapsed.TotalSeconds);
 
-			timer.Restart();
+			this.timer.Restart();
 			if (!this.Paused && !this.EditorEnabled)
 				this.Space.Update(dt);
-			timer.Stop();
-			this.physicsSum = Math.Max(this.physicsSum, timer.Elapsed.TotalSeconds);
+			this.timer.Stop();
+			this.physicsSum = Math.Max(this.physicsSum, this.timer.Elapsed.TotalSeconds);
 
 			this.frameSum++;
 			this.performanceInterval += (float)this.GameTime.ElapsedGameTime.TotalSeconds;
@@ -1674,13 +1683,15 @@ namespace Lemma
 					this.updateTime.Value = this.updateSum;
 					this.drawCalls.Value = this.drawCallCounter;
 					this.triangles.Value = this.triangleCounter;
+					this.renderTime.Value = this.renderSum;
 					this.drawCallCounter = 0;
 					this.triangleCounter = 0;
 				}
+				this.renderSum = 0;
 				this.physicsSum = 0;
 				this.updateSum = 0;
 				this.frameSum = 0;
-				this.performanceInterval = 0;
+				this.performanceInterval -= Main.performanceUpdateTime;
 				this.workingSet.Value = (int)(Environment.WorkingSet / (long)1048576);
 			}
 
@@ -1745,6 +1756,8 @@ namespace Lemma
 			Lemma.Components.Model.TriangleCounter = 0;
 
 			this.renderParameters.Technique = Technique.Render;
+
+			this.timer.Restart();
 
 #if VR
 			Ovr.FrameTiming frameTiming = new Ovr.FrameTiming();
@@ -1864,6 +1877,11 @@ namespace Lemma
 			if (this.VR)
 				this.VRHmd.EndFrameTiming();
 #endif
+
+			this.timer.Stop();
+			this.frameTimer.Stop();
+			this.renderSum = Math.Max(this.renderSum, this.timer.Elapsed.TotalSeconds);
+			this.lastFrameTime = this.frameTimer.Elapsed;
 		}
 
 		public void DrawScene(RenderParameters parameters)

@@ -2006,7 +2006,7 @@ namespace Lemma.Components
 				maps = maps.Where(x => !x.Suspended);
 
 			if (!includeScenery)
-				maps = maps.Where(x => x.EnablePhysics && x.Scale == 1.0f);
+				maps = maps.Where(x => x.EnablePhysics);
 
 			foreach (Voxel map in maps)
 			{

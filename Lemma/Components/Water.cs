@@ -397,6 +397,7 @@ namespace Lemma.Components
 			this.effect.Parameters["Time"].SetValue(this.main.TotalTime);
 			this.effect.Parameters["Depth" + Model.SamplerPostfix].SetValue(p.DepthBuffer);
 			this.effect.Parameters["Frame" + Model.SamplerPostfix].SetValue(p.FrameBuffer);
+			this.effect.Parameters["CameraPosition"].SetValue(cameraPos);
 
 			// Draw surface
 			this.effect.Parameters["Clearness"].SetValue(this.underwater ? 1.0f : this.Clearness);
@@ -425,7 +426,6 @@ namespace Lemma.Components
 				p.Camera.Position.Value = Vector3.Zero;
 				p.Camera.SetParameters(this.effect);
 				p.Camera.Position.Value = cameraPos;
-				this.effect.Parameters["CameraPosition"].SetValue(cameraPos);
 
 				this.effect.CurrentTechnique.Passes[0].Apply();
 

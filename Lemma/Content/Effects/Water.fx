@@ -134,7 +134,7 @@ void SurfacePS(	in SurfacePSInput input,
 	float3 normal = flat.normal;
 	normal.xz += distortion;
 	normal = normalize(normal);
-	float fresnel = abs(dot(normalize(input.worldPosition), normal));
+	float fresnel = abs(dot(normalize(input.worldPosition - CameraPosition), normal));
 
 	float3 refraction = lerp(tex2D(FrameSampler, uv).xyz * Color + Brightness, UnderwaterColor, depthBlend);
 

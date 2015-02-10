@@ -130,6 +130,12 @@ namespace Lemma.Components
 			this.raycastTimer = 0.0f;
 			Vector3 cameraPos = main.Camera.Position;
 			float averageHeight = 0.0f;
+			float min = float.MinValue;
+			foreach (Water w in Water.ActiveInstances)
+			{
+				if (w.CannotSuspendByDistance) // It's big
+					min = Math.Max(min, w.Position.Value.Y);
+			}
 			this.KernelOffset.Value = main.Camera.Position + new Vector3(KernelSize * KernelSpacing * -0.5f, RaycastHeight + StartHeight, KernelSize * KernelSpacing * -0.5f);
 			for (int x = 0; x < KernelSize; x++)
 			{
@@ -137,7 +143,7 @@ namespace Lemma.Components
 				{
 					Vector3 pos = KernelOffset + new Vector3(x * KernelSpacing, 0, y * KernelSpacing);
 					Voxel.GlobalRaycastResult raycast = Voxel.GlobalRaycast(pos, Vector3.Down, StartHeight + RaycastHeight + (VerticalSpeed * MaxLifetime));
-					float height = raycast.Voxel == null ? float.MinValue : raycast.Position.Y;
+					float height = raycast.Voxel == null ? min : raycast.Position.Y;
 					this.RaycastHeights[x, y] = height;
 					averageHeight += Math.Max(cameraPos.Y, Math.Min(height, cameraPos.Y + StartHeight)) * audioKernel[x, y];
 				}
@@ -170,7 +176,7 @@ namespace Lemma.Components
 						new Animation.Parallel
 						(
 							new Animation.Vector3MoveTo(this.CurrentLightningColor, this.LightningColor.Value * volume, 0.2f),
-							new Animation.Vector3MoveTo(skyboxColor, this.SkyboxColor.Value * (1.0f + volume), 0.2f)
+							new Animation.Vector3MoveTo(skyboxColor, this.SkyboxColor.Value + this.LightningColor.Value * volume, 0.2f)
 						),
 						new Animation.Parallel
 						(
