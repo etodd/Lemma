@@ -46,7 +46,7 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<int> UpdateOrder { get; set; }
 
-		private const float healthRegenerateDelay = 4.0f;
+		private const float healthRegenerateDelay = 3.0f;
 		private const float healthRegenerateRate = 0.1f;
 
 		public Player()

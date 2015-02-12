@@ -252,8 +252,6 @@ namespace Lemma
 		private int triangleCounter;
 
 		private Animation scheduledSave;
-		private Container saveNotification = new Container();
-		private TextElement saveNotificationText = new TextElement();
 
 		public Property<Point> ScreenSize = new Property<Point>();
 
@@ -1327,15 +1325,15 @@ namespace Lemma
 			if (!this.saving && !this.Paused && this.Menu.CanPause && this.MapFile != Main.MenuMap && !this.IsChallengeMap(this.MapFile) && PlayerFactory.Instance != null)
 			{
 				this.saving = true;
-				Container notification = new Container();
-				notification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-				notification.Opacity.Value = 0.5f;
-				TextElement notificationText = new TextElement();
-				notificationText.Name.Value = "Text";
-				notificationText.FontFile.Value = this.MainFont;
-				notificationText.Text.Value = "\\saving";
-				notification.Children.Add(notificationText);
-				this.UI.Root.GetChildByName("Notifications").Children.Add(notification);
+				Container saveNotification = new Container();
+				saveNotification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+				saveNotification.Opacity.Value = 0.5f;
+				TextElement saveNotificationText = new TextElement();
+				saveNotificationText.Name.Value = "Text";
+				saveNotificationText.FontFile.Value = this.MainFont;
+				saveNotificationText.Text.Value = "\\saving";
+				saveNotification.Children.Add(saveNotificationText);
+				this.UI.Root.GetChildByName("Notifications").Children.Add(saveNotification);
 				this.AddComponent(new Animation
 				(
 					new Animation.Delay(0.01f),
@@ -1346,13 +1344,13 @@ namespace Lemma
 						else
 							this.SaveNew();
 					}),
-					new Animation.Set<string>(notificationText.Text, "\\saved"),
+					new Animation.Set<string>(saveNotificationText.Text, "\\saved"),
 					new Animation.Parallel
 					(
-						new Animation.FloatMoveTo(notification.Opacity, 0.0f, 1.0f),
-						new Animation.FloatMoveTo(notificationText.Opacity, 0.0f, 1.0f)
+						new Animation.FloatMoveTo(saveNotification.Opacity, 0.0f, 1.0f),
+						new Animation.FloatMoveTo(saveNotificationText.Opacity, 0.0f, 1.0f)
 					),
-					new Animation.Execute(notification.Delete),
+					new Animation.Execute(saveNotification.Delete),
 					new Animation.Execute(delegate()
 					{
 						this.saving = false;
@@ -1414,8 +1412,8 @@ namespace Lemma
 			{
 				bool originalCanPause = this.Menu.CanPause;
 				this.Menu.CanPause.Value = false;
-				this.saveNotification = new Container();
-				this.saveNotificationText = new TextElement();
+				Container saveNotification = new Container();
+				TextElement saveNotificationText = new TextElement();
 				this.scheduledSave = new Animation
 				(
 					new Animation.Delay(0.6f),
@@ -1434,13 +1432,13 @@ namespace Lemma
 					new Animation.Delay(0.01f),
 					new Animation.Execute(delegate()
 					{
-						this.saveNotification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-						this.saveNotification.Opacity.Value = 0.5f;
-						this.saveNotificationText.Name.Value = "Text";
-						this.saveNotificationText.FontFile.Value = this.MainFont;
-						this.saveNotificationText.Text.Value = "Saving...";
-						this.saveNotification.Children.Add(this.saveNotificationText);
-						this.UI.Root.GetChildByName("Notifications").Children.Add(this.saveNotification);
+						saveNotification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+						saveNotification.Opacity.Value = 0.5f;
+						saveNotificationText.Name.Value = "Text";
+						saveNotificationText.FontFile.Value = this.MainFont;
+						saveNotificationText.Text.Value = "Saving...";
+						saveNotification.Children.Add(saveNotificationText);
+						this.UI.Root.GetChildByName("Notifications").Children.Add(saveNotification);
 					}),
 					new Animation.Delay(0.01f),
 					new Animation.Execute(delegate()
@@ -1448,21 +1446,18 @@ namespace Lemma
 						this.SaveOverwrite();
 					}),
 					new Animation.Delay(0.01f),
-					new Animation.Set<string>(this.saveNotificationText.Text, "Saved"),
+					new Animation.Set<string>(saveNotificationText.Text, "Saved"),
 					new Animation.Parallel
 					(
-						new Animation.FloatMoveTo(this.saveNotification.Opacity, 0.0f, 1.0f),
-						new Animation.FloatMoveTo(this.saveNotificationText.Opacity, 0.0f, 1.0f)
+						new Animation.FloatMoveTo(saveNotification.Opacity, 0.0f, 1.0f),
+						new Animation.FloatMoveTo(saveNotificationText.Opacity, 0.0f, 1.0f)
 					),
-					new Animation.Execute(this.saveNotification.Delete)
+					new Animation.Execute(saveNotification.Delete)
 				);
 				this.scheduledSave.Add(new CommandBinding(this.scheduledSave.Delete, delegate()
 				{
 					this.Screenshot.Clear();
-					if (this.saveNotification != null && this.saveNotification.Active)
-						this.saveNotification.Delete.Execute();
-					this.saveNotification = null;
-					this.saveNotificationText = null;
+					this.UI.Root.GetChildByName("Notifications").Children.Clear();
 					this.Menu.CanPause.Value = originalCanPause;
 					this.scheduledSave = null;
 				}));

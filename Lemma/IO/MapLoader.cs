@@ -284,10 +284,24 @@ namespace Lemma.IO
 		{
 			Stream stream = new MemoryStream();
 
+			Container loadingNotification = new Container();
+			loadingNotification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
+			loadingNotification.Opacity.Value = 0.5f;
+			TextElement loadingNotificationText = new TextElement();
+			loadingNotificationText.Name.Value = "Text";
+			loadingNotificationText.FontFile.Value = main.MainFont;
+			loadingNotificationText.Text.Value = "\\loading";
+			loadingNotification.Children.Add(loadingNotificationText);
+
 			Animation anim = new Animation
 			(
 				new Animation.Set<bool>(main.Menu.CanPause, false),
 				main.Spawner.FlashAnimation(),
+				new Animation.Execute(delegate()
+				{
+					main.UI.Root.GetChildByName("Notifications").Children.Add(loadingNotification);
+				}),
+				new Animation.Delay(0.01f),
 				new Animation.Execute(delegate()
 				{
 					// We are exiting the map; just save the state of the map without the player.
@@ -321,6 +335,7 @@ namespace Lemma.IO
 					stream.Dispose();
 				}),
 				new Animation.Delay(0.01f),
+				new Animation.Execute(loadingNotification.Delete),
 				new Animation.Set<bool>(main.Menu.CanPause, true),
 				new Animation.Execute(main.ScheduleSave)
 			);
