@@ -37,6 +37,7 @@ namespace Lemma.Components
 		public Property<float> ThunderIntervalMax = new Property<float> { Value = 36.0f };
 		public Property<float> ThunderMaxDelay = new Property<float> { Value = 5.0f };
 		public Property<Vector3> LightningColor = new Property<Vector3>();
+		public Property<bool> LightningShadowed = new Property<bool>();
 		public Property<Vector3> SkyboxColor = new Property<Vector3>();
 
 		// Output properties

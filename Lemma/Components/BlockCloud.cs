@@ -32,13 +32,30 @@ namespace Lemma.Components
 		private Noise3D noise = new Noise3D();
 
 		[XmlIgnore]
+		public Command Clear = new Command();
+
+		[XmlIgnore]
 		public Command<BEPUphysics.BroadPhaseEntries.Collidable, BEPUphysics.NarrowPhaseSystems.Pairs.ContactCollection> Collided = new Command<BEPUphysics.BroadPhaseEntries.Collidable, BEPUphysics.NarrowPhaseSystems.Pairs.ContactCollection>();
 
 		public override void Awake()
 		{
 			base.Awake();
+			this.Clear.Action = this.clear;
 			this.EnabledWhenPaused = false;
 			this.EnabledInEditMode = false;
+		}
+
+		private bool active = true;
+		private void clear()
+		{
+			for (int i = 0; i < this.Blocks.Count; i++)
+			{
+				Entity e = this.Blocks[i];
+				if (e != null)
+					e.Delete.Execute();
+			}
+			this.Blocks.Clear();
+			this.active = false;
 		}
 
 		void Blocks_Cleared()
@@ -96,53 +113,56 @@ namespace Lemma.Components
 			}
 		}
 
-		private const float forceMultiplier = 0.2f;
+		private const float forceMultiplier = 0.3f;
 		public void Update(float dt)
 		{
-			if (this.Type.Value != Voxel.t.Empty && this.Blocks.Length == 0)
+			if (this.active)
 			{
-				SceneryBlockFactory factory = Factory.Get<SceneryBlockFactory>();
-				Vector3 blockSpawnPoint = this.Position;
-				for (int i = 0; i < TotalBlocks; i++)
+				if (this.Type.Value != Voxel.t.Empty && this.Blocks.Length == 0)
 				{
-					Entity block = factory.CreateAndBind(main);
-					block.Get<Transform>().Position.Value = blockSpawnPoint + new Vector3(((float)BlockCloud.random.NextDouble() - 0.5f) * 2.0f, ((float)BlockCloud.random.NextDouble() - 0.5f) * 2.0f, ((float)BlockCloud.random.NextDouble() - 0.5f) * 2.0f);
-					SceneryBlock sceneryBlock = block.Get<SceneryBlock>();
-					sceneryBlock.Type.Value = this.Type;
-					sceneryBlock.Scale.Value = this.Scale;
-					this.Blocks.Add(block);
-					main.Add(block);
-				}
-			}
-
-			Vector3 avg = Vector3.Zero;
-			for (int i = 0; i < this.blocks.Count; i++)
-			{
-				PhysicsBlock block = this.blocks[i];
-				if (block.Active)
-				{
-					if (!block.Suspended)
+					SceneryBlockFactory factory = Factory.Get<SceneryBlockFactory>();
+					Vector3 blockSpawnPoint = this.Position;
+					for (int i = 0; i < TotalBlocks; i++)
 					{
-						Vector3 toCenter = this.Position - block.Box.Position;
-						if (toCenter.Length() > 20.0f)
-							block.Box.Position = this.Position + Vector3.Normalize(toCenter) * -20.0f;
-
-						float offset = i + this.main.TotalTime;
-						Vector3 force = toCenter + new Vector3(this.noise.Sample(new Vector3(offset)), this.noise.Sample(new Vector3(offset + 64)), noise.Sample(new Vector3(offset + 128))) * 5.0f;
-						force *= main.ElapsedTime * forceMultiplier;
-						block.Box.ApplyLinearImpulse(ref force);
-
-						avg += block.Box.Position;
+						Entity block = factory.CreateAndBind(main);
+						block.Get<Transform>().Position.Value = blockSpawnPoint + new Vector3(((float)BlockCloud.random.NextDouble() - 0.5f) * 2.0f, ((float)BlockCloud.random.NextDouble() - 0.5f) * 2.0f, ((float)BlockCloud.random.NextDouble() - 0.5f) * 2.0f);
+						SceneryBlock sceneryBlock = block.Get<SceneryBlock>();
+						sceneryBlock.Type.Value = this.Type;
+						sceneryBlock.Scale.Value = this.Scale;
+						this.Blocks.Add(block);
+						main.Add(block);
 					}
 				}
-				else
+
+				Vector3 avg = Vector3.Zero;
+				for (int i = 0; i < this.blocks.Count; i++)
 				{
-					this.Blocks.RemoveAt(i);
-					i--;
+					PhysicsBlock block = this.blocks[i];
+					if (block.Active)
+					{
+						if (!block.Suspended)
+						{
+							Vector3 toCenter = this.Position - block.Box.Position;
+							if (toCenter.Length() > 20.0f)
+								block.Box.Position = this.Position + Vector3.Normalize(toCenter) * -20.0f;
+
+							float offset = i + this.main.TotalTime;
+							Vector3 force = toCenter + new Vector3(this.noise.Sample(new Vector3(offset)), this.noise.Sample(new Vector3(offset + 64)), noise.Sample(new Vector3(offset + 128))) * 3.0f;
+							force *= main.ElapsedTime * forceMultiplier;
+							block.Box.ApplyLinearImpulse(ref force);
+
+							avg += block.Box.Position;
+						}
+					}
+					else
+					{
+						this.Blocks.RemoveAt(i);
+						i--;
+					}
 				}
+				avg /= this.blocks.Count;
+				this.AveragePosition.Value = avg;
 			}
-			avg /= this.blocks.Count;
-			this.AveragePosition.Value = avg;
 		}
 	}
 }

@@ -71,7 +71,7 @@ namespace GeeUI.Views
 
 		internal View TabViewToView(TabView v)
 		{
-			int index = TabContainerView.Children.ToList().IndexOf(v) + 1;
+			int index = TabContainerView.Children.IndexOf(v) + 1;
 			return index >= Children.Length ? null : Children[index];
 		}
 

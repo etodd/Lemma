@@ -442,13 +442,17 @@ namespace Lemma
 			this.MapContent = new ContentManager(this.Services);
 			this.MapContent.RootDirectory = this.Content.RootDirectory;
 
-			while (this.Entities.Length > (deleteEditor ? 0 : 1))
+			int index = 0;
+			int targetCount = deleteEditor ? 0 : 1;
+			while (this.Entities.Length > targetCount)
 			{
-				foreach (Entity entity in this.Entities.ToList())
-				{
-					if (deleteEditor || entity.Type != "Editor")
-						this.Remove(entity);
-				}
+				Entity entity = this.Entities[index];
+				if (deleteEditor)
+					this.Remove(entity);
+				else if (entity.Type == "Editor")
+					index++;
+				else
+					this.Remove(entity);
 			}
 			this.FlushComponents();
 			Factory<Main>.Initialize(); // Clear factories to clear out any relationships that might confuse the garbage collector

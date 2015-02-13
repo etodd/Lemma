@@ -466,6 +466,7 @@ namespace Lemma.Components
 
 		private const float speedMassVolumeCoefficient = 1.0f / 50.0f;
 
+		private List<KeyValuePair<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable, float>> submergedCache = new List<KeyValuePair<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable, float>>();
 		void IUpdateableComponent.Update(float dt)
 		{
 			if (this.main.Paused)
@@ -541,8 +542,10 @@ namespace Lemma.Components
 				this.Fluid.NotifyEntries.Clear();
 			}
 
-			foreach (KeyValuePair<BEPUphysics.BroadPhaseEntries.MobileCollidables.EntityCollidable, float> p in this.submerged.ToList())
+			this.submergedCache.AddRange(this.submerged);
+			for (int i = 0; i < this.submergedCache.Count; i++)
 			{
+				var p = this.submergedCache[i];
 				if (time - p.Value > 0.1f)
 				{
 					if (p.Key.Entity != null)
@@ -563,6 +566,7 @@ namespace Lemma.Components
 					this.submerged.Remove(p.Key);
 				}
 			}
+			this.submergedCache.Clear();
 		}
 
 		public override void delete()

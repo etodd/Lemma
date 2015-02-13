@@ -2313,18 +2313,19 @@ namespace Lemma.Components
 					{
 						DynamicVoxelFactory factory = Factory.Get<DynamicVoxelFactory>();
 						BlockFactory blockFactory = Factory.Get<BlockFactory>();
-						List<SpawnGroup> spawns = null;
+						List<SpawnGroup> spawns = new List<SpawnGroup>();
 						lock (Voxel.spawns)
 						{
-							spawns = Voxel.spawns.ToList();
+							spawns.AddRange(Voxel.spawns);
 							Voxel.spawns.Clear();
 						}
-						foreach (SpawnGroup spawn in spawns)
+						for (int i = 0; i < spawns.Count; i++)
 						{
+							SpawnGroup spawn = spawns[i];
 							List<DynamicVoxel> spawnedMaps = new List<DynamicVoxel>();
-							for (int i = 0; i < spawn.Islands.Count; i++)
+							for (int j = 0; j < spawn.Islands.Count; j++)
 							{
-								List<Box> island = spawn.Islands[i];
+								List<Box> island = spawn.Islands[j];
 								Box firstBox = island.First();
 								if (island.Count == 1 && firstBox.Width * firstBox.Height * firstBox.Depth == 1)
 								{
@@ -2356,6 +2357,7 @@ namespace Lemma.Components
 							if (spawn.Callback != null)
 								spawn.Callback(spawnedMaps);
 						}
+						spawns.Clear();
 					}
 				);
 				Voxel.spawner.EnabledInEditMode = true;

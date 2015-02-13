@@ -782,7 +782,7 @@ namespace Lemma.Factories
 				{
 					Action = delegate()
 					{
-						Entity cameraStop = Factory.Get<CameraStopFactory>().CreateAndBind(main);
+						Entity cameraStop = Factory<Main>.Get<CameraStopFactory>().CreateAndBind(main);
 						Transform position = cameraStop.Get<Transform>("Transform");
 						position.Position.Value = main.Camera.Position.Value;
 						position.Quaternion.Value = Quaternion.CreateFromRotationMatrix(main.Camera.RotationMatrix);
@@ -1105,7 +1105,7 @@ namespace Lemma.Factories
 							yankBuffer = null;
 						}
 						yankBuffer = new MemoryStream();
-						IO.MapLoader.Serializer.Serialize(yankBuffer, editor.SelectedEntities.ToList());
+						IO.MapLoader.Serializer.Serialize(yankBuffer, editor.SelectedEntities.Where(x => Factory<Main>.Get(x.Type).EditorCanSpawn).ToList());
 					}
 				},
 				gui.EntityCommands,

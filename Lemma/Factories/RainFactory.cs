@@ -42,6 +42,7 @@ namespace Lemma.Factories
 			Components.DirectionalLight lightning = entity.GetOrCreate<Components.DirectionalLight>("Lightning");
 			lightning.Serialize = false;
 			lightning.Add(new Binding<Quaternion>(lightning.Quaternion, transform.Quaternion));
+			lightning.Add(new Binding<bool>(lightning.Shadowed, rain.LightningShadowed));
 			lightning.Enabled.Value = false;
 
 			lightning.Add(new TwoWayBinding<Vector3>(rain.CurrentLightningColor, lightning.Color));
@@ -66,7 +67,7 @@ namespace Lemma.Factories
 			entity.Add("ThunderIntervalMax", rain.ThunderIntervalMax);
 			entity.Add("ThunderMaxDelay", rain.ThunderMaxDelay);
 			entity.Add("ParticlesPerSecond", emitter.ParticlesPerSecond);
-			entity.Add("LightningShadowed", lightning.Shadowed);
+			entity.Add("LightningShadowed", rain.LightningShadowed);
 			entity.Add("LightningColor", rain.LightningColor);
 
 			entity.Add(new PostInitialization

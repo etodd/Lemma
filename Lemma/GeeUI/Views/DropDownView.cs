@@ -165,14 +165,13 @@ namespace GeeUI.Views
 		{
 			this._arrowKeysIndex = 0;
 			string text = FilterView.Text;
-			DropDownOption[] goodOptions = (from op in DropDownOptions
+			DisplayingOptions = (from op in DropDownOptions
 											where op.Text.ToLower().Contains(text.ToLower()) || text == ""
-											select op).ToArray();
-			DisplayingOptions = goodOptions.ToList();
+											select op).ToList();
 
 			DropDownListView.Children.Clear();
 			FilterView.SubmitOnClickAway = false;
-			if (goodOptions.Length > 0)
+			if (DisplayingOptions.Count > 0)
 			{
 				FilterView.OnTextSubmitted = () =>
 				{
@@ -181,7 +180,7 @@ namespace GeeUI.Views
 				};
 			}
 
-			foreach (var option in goodOptions)
+			foreach (var option in DisplayingOptions)
 			{
 				var dropButton = new ButtonView(this.ParentGeeUI, DropDownListView, option.Text, Vector2.Zero);
 				dropButton.OnMouseClick += (sender, args) =>

@@ -356,6 +356,39 @@ namespace Lemma.Factories
 			agent.Add(new Binding<Vector3>(agent.Position, () => transform.Position.Value + new Vector3(0, player.Character.Height * -0.5f, 0), transform.Position, player.Character.Height));
 			agent.Add(new Binding<bool>(agent.Loud, () => player.Character.MovementDirection.Value.LengthSquared() > 0 && !player.Character.Crouched, player.Character.Crouched));
 
+			// Blocks
+			BlockCloud blockCloud = entity.GetOrCreate<BlockCloud>("BlockCloud");
+			blockCloud.Scale.Value = 0.5f;
+			blockCloud.Add(new Binding<Vector3>(blockCloud.Position, () => transform.Position.Value + new Vector3(0, player.Character.Height + player.Character.LinearVelocity.Value.Y, 0), transform.Position, player.Character.Height, player.Character.LinearVelocity));
+			blockCloud.Blocks.ItemAdded += delegate(int index, Entity.Handle block)
+			{
+				Entity e = block.Target;
+				if (e != null)
+				{
+					e.Serialize = false;
+					PhysicsBlock.CancelPlayerCollisions(e.Get<PhysicsBlock>());
+				}
+			};
+
+			PointLight blockLight = entity.Create<PointLight>();
+			blockLight.Add(new Binding<Vector3>(blockLight.Position, blockCloud.AveragePosition));
+			blockLight.Add(new Binding<bool, int>(blockLight.Enabled, x => x > 0, blockCloud.Blocks.Length));
+			blockLight.Attenuation.Value = 20.0f;
+			blockLight.Add(new Binding<Vector3, Voxel.t>(blockLight.Color, delegate(Voxel.t t)
+			{
+				switch (t)
+				{
+					case Voxel.t.GlowBlue:
+						return new Vector3(0.7f, 0.7f, 0.9f);
+					case Voxel.t.GlowYellow:
+						return new Vector3(0.9f, 0.9f, 0.7f);
+					default:
+						return new Vector3(0.8f, 0.8f, 0.8f);
+				}
+			}, blockCloud.Type));
+
+			// Death
+			entity.Add(new CommandBinding(player.Die, blockCloud.Clear));
 			entity.Add(new CommandBinding(player.Die, delegate()
 			{
 				Session.Recorder.Event(main, "Die");
@@ -464,36 +497,6 @@ namespace Lemma.Factories
 			fallDamage.Add(new CommandBinding(fallDamage.LockRotation, (Action)rotation.Lock));
 			fallDamage.Add(new CommandBinding<float>(fallDamage.PhysicsDamage, agent.Damage));
 			fallDamage.Bind(model);
-
-			BlockCloud blockCloud = entity.GetOrCreate<BlockCloud>("BlockCloud");
-			blockCloud.Scale.Value = 0.5f;
-			blockCloud.Add(new Binding<Vector3>(blockCloud.Position, () => transform.Position.Value + new Vector3(0, player.Character.Height + player.Character.LinearVelocity.Value.Y, 0), transform.Position, player.Character.Height, player.Character.LinearVelocity));
-			blockCloud.Blocks.ItemAdded += delegate(int index, Entity.Handle block)
-			{
-				Entity e = block.Target;
-				if (e != null)
-				{
-					e.Serialize = false;
-					PhysicsBlock.CancelPlayerCollisions(e.Get<PhysicsBlock>());
-				}
-			};
-
-			PointLight blockLight = entity.Create<PointLight>();
-			blockLight.Add(new Binding<Vector3>(blockLight.Position, blockCloud.AveragePosition));
-			blockLight.Add(new Binding<bool, int>(blockLight.Enabled, x => x > 0, blockCloud.Blocks.Length));
-			blockLight.Attenuation.Value = 20.0f;
-			blockLight.Add(new Binding<Vector3, Voxel.t>(blockLight.Color, delegate(Voxel.t t)
-			{
-				switch (t)
-				{
-					case Voxel.t.GlowBlue:
-						return new Vector3(0.7f, 0.7f, 0.9f);
-					case Voxel.t.GlowYellow:
-						return new Vector3(0.9f, 0.9f, 0.7f);
-					default:
-						return new Vector3(0.8f, 0.8f, 0.8f);
-				}
-			}, blockCloud.Type));
 
 			// Swim up
 			input.Bind(player.Character.SwimUp, settings.Jump);

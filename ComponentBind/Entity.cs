@@ -89,6 +89,8 @@ namespace ComponentBind
 		private static Dictionary<ulong, Entity> guidTable = new Dictionary<ulong, Entity>();
 		private static Dictionary<string, Entity> idTable = new Dictionary<string, Entity>();
 
+		private static List<IComponent> componentCache = new List<IComponent>();
+
 		public static Entity GetByID(string id)
 		{
 			Entity result;
@@ -293,20 +295,26 @@ namespace ComponentBind
 				}, this.ID));
 			}
 
-			foreach (IComponent c in this.components.Values.ToList())
+			Entity.componentCache.AddRange(this.components.Values);
+			for (int i = 0; i < Entity.componentCache.Count; i++)
 			{
+				IComponent c = Entity.componentCache[i];
 				c.Entity = this;
 				this.main.AddComponent(c);
 			}
+			Entity.componentCache.Clear();
 		}
 
 		public void SetSuspended(bool suspended)
 		{
-			foreach (IComponent c in this.components.Values.ToList())
+			Entity.componentCache.AddRange(this.components.Values);
+			for (int i = 0; i < Entity.componentCache.Count; i++)
 			{
+				IComponent c = Entity.componentCache[i];
 				if (c.Suspended.Value != suspended)
 					c.Suspended.Value = suspended;
 			}
+			Entity.componentCache.Clear();
 		}
 
 		public void LinkedCommandCall(CommandLink link)
@@ -613,13 +621,14 @@ namespace ComponentBind
 			if (this.Active)
 			{
 				this.Active = false;
-				IEnumerable<IComponent> components = this.components.Values.ToList();
+				Entity.componentCache.AddRange(this.components.Values);
 				this.components.Clear();
 				this.componentsByType.Clear();
-				foreach (IComponent c in components)
-					c.Delete.Execute();
-				foreach (IBinding b in this.bindings)
-					b.Delete();
+				for (int i = 0; i < Entity.componentCache.Count; i++)
+					Entity.componentCache[i].Delete.Execute();
+				Entity.componentCache.Clear();
+				for (int i = 0; i < this.bindings.Count; i++)
+					this.bindings[i].Delete();
 				this.bindings.Clear();
 				this.commands.Clear();
 				this.main.Remove(this);
