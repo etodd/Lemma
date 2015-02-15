@@ -79,8 +79,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 9;
-		public const int MapVersion = 952;
-		public const int Build = 952;
+		public const int MapVersion = 959;
+		public const int Build = 959;
 
 		public static bool AllowEditingGameMaps;
 
