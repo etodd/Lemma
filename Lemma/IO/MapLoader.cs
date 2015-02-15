@@ -129,6 +129,7 @@ namespace Lemma.IO
 			typeof(Updater),
 			typeof(LogicGate),
 			typeof(Bouncer),
+			typeof(VoxelTrigger),
 		};
 
 		public static XmlSerializer Serializer;

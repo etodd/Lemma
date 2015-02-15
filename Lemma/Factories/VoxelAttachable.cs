@@ -132,11 +132,11 @@ namespace Lemma.Factories
 										if (this.detachIfRemoved)
 											this.Detach.Execute();
 									}
-									else
+									else if (newMap != m)
 									{
 										if (this.detachIfMoved)
 											this.Detach.Execute();
-										else if (newMap != m)
+										else
 											this.AttachedVoxel.Value = newMap.Entity;
 									}
 									break;

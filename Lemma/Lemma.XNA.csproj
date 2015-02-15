@@ -118,6 +118,7 @@
     <Compile Include="Components\PowerBlockSocket.cs" />
     <Compile Include="Components\AnimatedProp.cs" />
     <Compile Include="Components\Data.cs" />
+    <Compile Include="Components\VoxelTrigger.cs" />
     <Compile Include="Components\Scriptlike\AnimatedSetter.cs" />
     <Compile Include="Components\Scriptlike\LogicGate.cs" />
     <Compile Include="Components\Scriptlike\Sequence.cs" />
@@ -169,6 +170,7 @@
     <Compile Include="Factories\BouncerFactory.cs" />
     <Compile Include="Factories\ConsoleCommandFactory.cs" />
     <Compile Include="Factories\AnimatedPropFactory.cs" />
+    <Compile Include="Factories\VoxelTriggerFactory.cs" />
     <Compile Include="Factories\PowerBlockSocketFactory.cs" />
     <Compile Include="Factories\LogicGateFactory.cs" />
     <Compile Include="Factories\SkyDecalFactory.cs" />

@@ -53,8 +53,8 @@ namespace Lemma.Components
 						List<Voxel.Coord> coords = map.GetContiguousByType(new[] { b }).SelectMany(x => x.GetCoords()).Select(x => x.WithData(state)).ToList();
 						lock (map.MutationLock)
 						{
-							map.Empty(coords, true, true);
-							map.Fill(coords);
+							map.Empty(coords, true, true, map);
+							map.Fill(coords, true, map);
 						}
 						map.Regenerate();
 					}
@@ -65,8 +65,8 @@ namespace Lemma.Components
 					{
 						lock (map.MutationLock)
 						{
-							map.Empty(this.Coord, true, true);
-							map.Fill(this.Coord, state);
+							map.Empty(this.Coord, true, true, map);
+							map.Fill(this.Coord, state, true, map);
 						}
 						map.Regenerate();
 					}

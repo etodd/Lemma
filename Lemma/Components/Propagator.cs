@@ -80,7 +80,8 @@ namespace Lemma.Components
 					foreach (Voxel.Coord c in coords)
 					{
 						Voxel.t id = c.Data.ID;
-						if (id == Voxel.t.Blue || id == Voxel.t.Powered || id == Voxel.t.PoweredSwitch || id == Voxel.t.Infected || id == Voxel.t.Neutral || id == Voxel.t.HardPowered || id == Voxel.t.Hard || id == Voxel.t.HardInfected)
+						if (id == Voxel.t.Powered || id == Voxel.t.PoweredSwitch || id == Voxel.t.HardPowered || id == Voxel.t.Infected || id == Voxel.t.HardInfected
+							|| (transferredFromMap == null && (id == Voxel.t.Blue || id == Voxel.t.Neutral || id == Voxel.t.Hard)))
 						{
 							Voxel.Coord newCoord = c;
 							newCoord.Data = Voxel.States.Empty;
@@ -224,9 +225,9 @@ namespace Lemma.Components
 								{
 									Voxel.Coord coord = poweredCoords[i];
 									if (coord.Data.ID == Voxel.t.HardPowered)
-										map.Fill(coord, Voxel.States.Hard, false);
+										map.Fill(coord, Voxel.States.Hard, true, map);
 									else
-										map.Fill(coord, Voxel.States.Blue, false);
+										map.Fill(coord, Voxel.States.Blue, true, map);
 								}
 							}
 							this.toRegenerate.Add(map);

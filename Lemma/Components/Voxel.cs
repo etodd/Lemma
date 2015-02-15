@@ -2684,9 +2684,9 @@ namespace Lemma.Components
 			return changed;
 		}
 
-		public bool Fill(Coord coord, State state, bool notify = true)
+		public bool Fill(Coord coord, State state, bool notify = true, Voxel transferredFromMap = null)
 		{
-			return this.Fill(coord.X, coord.Y, coord.Z, state, notify);
+			return this.Fill(coord.X, coord.Y, coord.Z, state, notify, transferredFromMap);
 		}
 
 		public bool Empty(Vector3 pos, bool force = false, bool forceHard = true, Voxel transferringToNewMap = null, bool notify = true)
@@ -2726,7 +2726,7 @@ namespace Lemma.Components
 		/// <param name="x"></param>
 		/// <param name="y"></param>
 		/// <param name="z"></param>
-		public bool Fill(int x, int y, int z, State state, bool notify = true)
+		public bool Fill(int x, int y, int z, State state, bool notify = true, Voxel transferredFromMap = null)
 		{
 			if (state == Voxel.States.Empty || (!this.main.EditorEnabled && !this.Mutable))
 				return false;
@@ -2745,11 +2745,11 @@ namespace Lemma.Components
 				}
 			}
 			if (filled && notify)
-				this.notifyFilled(new Coord[] { new Coord { X = x, Y = y, Z = z, Data = state } }, null);
+				this.notifyFilled(new Coord[] { new Coord { X = x, Y = y, Z = z, Data = state } }, transferredFromMap);
 			return filled;
 		}
 
-		public void Fill(IEnumerable<Coord> coords, bool notify = true)
+		public void Fill(IEnumerable<Coord> coords, bool notify = true, Voxel transferredFromMap = null)
 		{
 			if (!this.main.EditorEnabled && !this.Mutable)
 				return;
@@ -2774,7 +2774,7 @@ namespace Lemma.Components
 				}
 			}
 			if (notify)
-				this.notifyFilled(notifyList, null);
+				this.notifyFilled(notifyList, transferredFromMap);
 			return;
 		}
 

@@ -413,14 +413,11 @@ namespace Lemma.Components
 				{
 					this.CurrentState.Value = State.None;
 					this.EnableWalking.Value = true;
-					if (!this.uncrouchEarly)
-					{
-						this.Entity.Add(new Animation
-						(
-							new Animation.Delay(0.1f),
-							new Animation.Set<bool>(this.AllowUncrouch, true)
-						));
-					}
+					this.Entity.Add(new Animation
+					(
+						new Animation.Delay(0.1f),
+						new Animation.Set<bool>(this.AllowUncrouch, true)
+					));
 				}
 			}
 			else if (this.map != null && !this.model.IsPlaying("Vault", "TopOut", "Mantle"))
