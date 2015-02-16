@@ -370,30 +370,38 @@ namespace Lemma.Components
 				if (this.EnableEnhancedWallRun && (wallRunState == State.Left || wallRunState == State.Right) && Zone.CanBuild(this.Position))
 				{
 					Direction up = this.WallRunVoxel.Value.GetRelativeDirection(Direction.PositiveY);
-					Direction right = this.WallDirection.Value.Cross(up);
-
-					List<EffectBlockFactory.BlockBuildOrder> buildCoords = new List<EffectBlockFactory.BlockBuildOrder>();
-
-					const int radius = 5;
-					int upwardRadius = wallRunState == State.Down ? 0 : radius;
-					for (Voxel.Coord x = wallCoord.Move(right, -radius); x.GetComponent(right) < wallCoord.GetComponent(right) + radius; x = x.Move(right))
+					if (up.IsPerpendicular(this.WallDirection))
 					{
-						int dx = x.GetComponent(right) - wallCoord.GetComponent(right);
-						for (Voxel.Coord y = x.Move(up, -radius); y.GetComponent(up) < wallCoord.GetComponent(up) + upwardRadius; y = y.Move(up))
+						Direction right = this.WallDirection.Value.Cross(up);
+
+						List<EffectBlockFactory.BlockBuildOrder> buildCoords = new List<EffectBlockFactory.BlockBuildOrder>();
+
+						const int radius = 5;
+						int upwardRadius = wallRunState == State.Down ? 0 : radius;
+						for (Voxel.Coord x = wallCoord.Move(right, -radius); x.GetComponent(right) < wallCoord.GetComponent(right) + radius; x = x.Move(right))
 						{
-							int dy = y.GetComponent(up) - wallCoord.GetComponent(up);
-							if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && this.WallRunVoxel.Value[y].ID == 0)
+							int dx = x.GetComponent(right) - wallCoord.GetComponent(right);
+							for (Voxel.Coord y = x.Move(up, -radius); y.GetComponent(up) < wallCoord.GetComponent(up) + upwardRadius; y = y.Move(up))
 							{
-								buildCoords.Add(new EffectBlockFactory.BlockBuildOrder
+								int dy = y.GetComponent(up) - wallCoord.GetComponent(up);
+								if ((float)Math.Sqrt(dx * dx + dy * dy) < radius && this.WallRunVoxel.Value[y].ID == 0)
 								{
-									Voxel = this.WallRunVoxel,
-									Coordinate = y,
-									State = Voxel.States.Blue,
-								});
+									buildCoords.Add(new EffectBlockFactory.BlockBuildOrder
+									{
+										Voxel = this.WallRunVoxel,
+										Coordinate = y,
+										State = Voxel.States.Blue,
+									});
+								}
 							}
 						}
+						Factory.Get<EffectBlockFactory>().Build(main, buildCoords, this.Position);
 					}
-					Factory.Get<EffectBlockFactory>().Build(main, buildCoords, this.Position);
+					else
+					{
+						this.Deactivate();
+						return;
+					}
 				}
 				else if (wallType.ID == 0 && wallInstantiationTimer == 0.0f) // We ran out of wall to walk on
 				{

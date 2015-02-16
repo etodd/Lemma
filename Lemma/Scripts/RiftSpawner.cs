@@ -44,8 +44,8 @@ namespace Lemma.GameScripts
 			}));
 
 			RiftFactory riftFactory = Factory.Get<RiftFactory>();
-			const float minInterval = 2.0f;
-			const float maxInterval = 4.0f;
+			const float minInterval = 3.0f;
+			const float maxInterval = 6.0f;
 			float interval = minInterval + (float)random.NextDouble() * (maxInterval - minInterval);
 			updater.Action = delegate(float dt)
 			{
@@ -66,7 +66,7 @@ namespace Lemma.GameScripts
 							hit = Voxel.GlobalRaycast(pos, dir, 50.0f);
 
 							if (hit.Voxel != null
-								&& hit.Distance > radius * 0.5f
+								&& hit.Distance > radius
 								&& Rift.Query(hit.Position) == null
 								&& Zone.CanSpawnRift(hit.Position))
 							{
