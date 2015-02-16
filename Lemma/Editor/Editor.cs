@@ -326,15 +326,36 @@ namespace Lemma.Components
 
 				IEnumerable<Entity> entities = this.SelectedEntities.ToList();
 				this.SelectedEntities.Clear();
+				Dictionary<ulong, ulong> mapping = new Dictionary<ulong, ulong>();
 				foreach (Entity entity in entities)
 				{
 					if (Factory<Main>.Get(entity.Type).EditorCanSpawn)
 					{
 						Entity copy = Factory<Main>.Duplicate(this.main, entity);
 						this.main.Add(copy);
-						this.SelectedEntities.Add(copy);
+						mapping.Add(entity.GUID, copy.GUID);
 					}
 				}
+
+				foreach (Entity e in entities)
+				{
+					Entity copy = this.main.GetByGUID(mapping[e.GUID]);
+					foreach (Entity.CommandLink link in e.LinkedCommands)
+					{
+						ulong guid;
+						if (mapping.TryGetValue(link.TargetEntity.GUID, out guid))
+						{
+							copy.LinkedCommands.Add(new Entity.CommandLink
+							{
+								SourceCommand = link.SourceCommand,
+								TargetEntity = new Entity.Handle { GUID = guid },
+								TargetCommand = link.TargetCommand,
+							});
+						}
+					}
+					this.SelectedEntities.Add(copy);
+				}
+
 				this.StartTranslation.Execute();
 			};
 

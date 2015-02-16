@@ -113,7 +113,7 @@ namespace Lemma.Components
 			}
 		}
 
-		private const float forceMultiplier = 0.3f;
+		private const float forceMultiplier = 0.15f;
 		public void Update(float dt)
 		{
 			if (this.active)
@@ -147,8 +147,8 @@ namespace Lemma.Components
 								block.Box.Position = this.Position + Vector3.Normalize(toCenter) * -20.0f;
 
 							float offset = i + this.main.TotalTime;
-							Vector3 force = toCenter + new Vector3(this.noise.Sample(new Vector3(offset)), this.noise.Sample(new Vector3(offset + 64)), noise.Sample(new Vector3(offset + 128))) * 3.0f;
-							force *= main.ElapsedTime * forceMultiplier;
+							Vector3 force = toCenter + new Vector3(this.noise.Sample(new Vector3(offset)), this.noise.Sample(new Vector3(offset + 64)), noise.Sample(new Vector3(offset + 128))) * 10.0f * this.Scale;
+							force *= main.ElapsedTime * forceMultiplier / this.Scale;
 							block.Box.ApplyLinearImpulse(ref force);
 
 							avg += block.Box.Position;

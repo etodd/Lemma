@@ -366,7 +366,6 @@ namespace Lemma.Factories
 				},
 			});
 
-
 			this.SetMain(entity, main);
 		}
 	}

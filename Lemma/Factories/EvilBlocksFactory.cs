@@ -69,15 +69,16 @@ namespace Lemma.Factories
 			raycastAI.Add(new TwoWayBinding<Vector3>(transform.Position, raycastAI.Position));
 			raycastAI.Add(new Binding<Quaternion>(transform.Quaternion, raycastAI.Orientation));
 
+			RaycastAIMovement movement = entity.GetOrCreate<RaycastAIMovement>("Movement");
+
 			blockCloud.Add(new Binding<Vector3>(blockCloud.Position, transform.Position));
 
-			const float operationalRadius = 100.0f;
 			AI.Task checkOperationalRadius = new AI.Task
 			{
 				Interval = 2.0f,
 				Action = delegate()
 				{
-					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < operationalRadius;
+					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < movement.OperationalRadius;
 					if (shouldBeActive && ai.CurrentState == "Suspended")
 						ai.CurrentState.Value = "Idle";
 					else if (!shouldBeActive && ai.CurrentState != "Suspended")
@@ -163,12 +164,35 @@ namespace Lemma.Factories
 				Action = delegate()
 				{
 					Entity target = ai.TargetAgent.Value.Target;
-					if (target == null || !target.Active)
+					if (target == null || !target.Active || (target.Get<Transform>().Position.Value - transform.Position.Value).Length() > sightDistance * 1.25f)
 					{
 						ai.TargetAgent.Value = null;
-						ai.CurrentState.Value = "Idle";
+						ai.CurrentState.Value = "Alert";
 					}
 				},
+			};
+
+			Action findNextPosition = delegate()
+			{
+				movement.LastPosition.Value = transform.Position.Value;
+				float radius = 5.0f;
+				Vector3 center = ai.TargetAgent.Value.Target.Get<Transform>().Position;
+				Vector3 candidate;
+				do
+				{
+					candidate = center + new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble(), (float)this.random.NextDouble() - 0.5f) * radius;
+					radius += 1.0f;
+				}
+				while (!RaycastAI.DefaultPositionFilter(candidate));
+
+				Vector3 toCandidate = candidate - movement.LastPosition;
+				float distance = toCandidate.Length();
+				const float maxMovementDistance = 9.0f;
+				if (distance > maxMovementDistance)
+					toCandidate *= maxMovementDistance / distance;
+
+				movement.NextPosition.Value = movement.LastPosition.Value + toCandidate;
+				movement.PositionBlend.Value = 0.0f;
 			};
 
 			// Chase AI state
@@ -179,11 +203,10 @@ namespace Lemma.Factories
 				Enter = delegate(AI.AIState previous)
 				{
 					AkSoundEngine.PostEvent(AK.EVENTS.EVIL_CUBES_CHASE, entity);
-					raycastAI.BlendTime.Value = 0.5f;
+					findNextPosition();
 				},
 				Exit = delegate(AI.AIState next)
 				{
-					raycastAI.BlendTime.Value = 1.0f;
 					AkSoundEngine.PostEvent(AK.EVENTS.EVIL_CUBES_IDLE, entity);
 				},
 				Tasks = new[]
@@ -192,13 +215,25 @@ namespace Lemma.Factories
 					checkTargetAgent,
 					new AI.Task
 					{
-						Interval = 0.5f,
 						Action = delegate()
 						{
-							raycastAI.Move(ai.TargetAgent.Value.Target.Get<Transform>().Position.Value - transform.Position);
+							if (ai.TimeInCurrentState.Value > 20.0f)
+							{
+								Entity voxel = raycastAI.Voxel.Value.Target;
+								if (voxel != null && voxel.Active)
+									raycastAI.Coord.Value = raycastAI.LastCoord.Value = voxel.Get<Voxel>().GetCoordinate(transform.Position);
+								raycastAI.Move(new Vector3(((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f));
+								ai.CurrentState.Value = "Alert";
+							}
+							else
+							{
+								movement.PositionBlend.Value += (main.ElapsedTime.Value / 1.0f);
+								if (movement.PositionBlend > 1.0f)
+									findNextPosition();
+								transform.Position.Value = Vector3.Lerp(movement.LastPosition, movement.NextPosition, movement.PositionBlend);
+							}
 						}
 					},
-					updatePosition,
 				},
 			});
 

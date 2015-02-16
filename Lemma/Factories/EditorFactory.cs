@@ -1128,11 +1128,13 @@ namespace Lemma.Factories
 						{
 							yankBuffer.Seek(0, SeekOrigin.Begin);
 							List<Entity> entities = (List<Entity>)IO.MapLoader.Serializer.Deserialize(yankBuffer);
+							Dictionary<ulong, ulong> mapping = new Dictionary<ulong, ulong>();
 
 							Vector3 center = Vector3.Zero;
 							int entitiesWithTransforms = 0;
 							foreach (Entity e in entities)
 							{
+								ulong originalGUID = e.GUID;
 								e.GUID = 0;
 								e.ID.Value = "";
 								Factory<Main> factory = Factory<Main>.Get(e.Type);
@@ -1144,16 +1146,29 @@ namespace Lemma.Factories
 									entitiesWithTransforms++;
 								}
 								main.Add(e);
+								mapping.Add(originalGUID, e.GUID);
 							}
 
 							center /= entitiesWithTransforms;
 
-							// Recenter entities around the editor
+							// Recenter entities around the editor and fix command links
 							foreach (Entity e in entities)
 							{
 								Transform t = e.Get<Transform>();
 								if (t != null)
 									t.Position.Value += editor.Position - center;
+								for (int i = 0; i < e.LinkedCommands.Count; i++)
+								{
+									Entity.CommandLink link = e.LinkedCommands[i];
+									ulong guid;
+									if (mapping.TryGetValue(link.TargetEntity.GUID, out guid))
+										link.TargetEntity.GUID = guid;
+									else if (link.TargetEntity.Target == null)
+									{
+										e.LinkedCommands.RemoveAt(i);
+										i--;
+									}
+								}
 							}
 
 							editor.SelectedEntities.Clear();
