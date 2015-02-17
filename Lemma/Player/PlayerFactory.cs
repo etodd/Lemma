@@ -501,6 +501,8 @@ namespace Lemma.Factories
 			// Swim up
 			input.Bind(player.Character.SwimUp, settings.Jump);
 
+			Updater parkour = null;
+
 			// Jumping
 			input.Bind(settings.Jump, PCInput.InputState.Down, delegate()
 			{
@@ -509,16 +511,21 @@ namespace Lemma.Factories
 					&& !rollKickSlide.Rolling && !rollKickSlide.Kicking)
 				{
 					jump.Go();
+					parkour.Enabled.Value = false;
 				}
 			});
 
 			// Wall-run, vault, predictive
-			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
+			bool parkourStartedThisFrame = false;
+			parkour = new Updater(delegate(float dt)
 			{
 				if (player.EnableMoves
 					&& player.Character.EnableWalking
 					&& !(player.Character.Crouched && player.Character.IsSupported)
-					&& vault.CurrentState.Value == Vault.State.None)
+					&& vault.CurrentState.Value == Vault.State.None
+					&& !rollKickSlide.Kicking
+					&& !rollKickSlide.Rolling
+					&& wallRun.CurrentState.Value == WallRun.State.None)
 				{
 					bool didSomething = false;
 
@@ -539,7 +546,12 @@ namespace Lemma.Factories
 									didSomething = wallRun.Activate(WallRun.State.Right);
 					}
 
-					if (!didSomething)
+					if (didSomething)
+					{
+						player.SlowMotion.Value = false;
+						parkour.Enabled.Value = false;
+					}
+					else if (parkourStartedThisFrame)
 					{
 						if (blockCloud.Blocks.Length > 0)
 						{
@@ -552,10 +564,25 @@ namespace Lemma.Factories
 							player.SlowMotion.Value = true;
 					}
 				}
+				else
+					parkour.Enabled.Value = false;
+				parkourStartedThisFrame = false;
+			});
+			parkour.Add(new CommandBinding(parkour.Enable, delegate()
+			{
+				parkourStartedThisFrame = true;
+			}));
+			entity.Add(parkour);
+			parkour.Enabled.Value = false;
+
+			input.Bind(settings.Parkour, PCInput.InputState.Down, delegate()
+			{
+				parkour.Enabled.Value = true;
 			});
 
 			input.Bind(settings.Parkour, PCInput.InputState.Up, delegate()
 			{
+				parkour.Enabled.Value = false;
 				wallRun.Deactivate();
 				if (player.SlowMotion)
 					player.SlowMotion.Value = false;
@@ -564,7 +591,10 @@ namespace Lemma.Factories
 			input.Bind(settings.RollKick, PCInput.InputState.Down, delegate()
 			{
 				if (player.EnableMoves && player.Character.EnableWalking)
+				{
 					rollKickSlide.Go();
+					parkour.Enabled.Value = false;
+				}
 			});
 
 			input.Bind(settings.RollKick, PCInput.InputState.Up, delegate()
