@@ -53,7 +53,7 @@ namespace Lemma.Util
 		/// The character's physical representation that handles iteractions with the environment.
 		/// </summary>
 		[XmlIgnore]
-		public Cylinder Body;
+		public Capsule Body;
 
 		/// <summary>
 		/// Whether or not the character is currently standing on anything that can be walked upon.
@@ -168,7 +168,7 @@ namespace Lemma.Util
 			this.main = main;
 			this.Radius.Value = radius;
 			this.Mass.Value = mass;
-			this.Body = new Cylinder(position, height, radius, mass);
+			this.Body = new Capsule(position, height, radius, mass);
 			this.Body.Tag = this;
 			this.Body.CollisionInformation.Tag = this;
 			this.Body.IgnoreShapeChanges = true;
@@ -194,12 +194,14 @@ namespace Lemma.Util
 				if (value && !old)
 				{
 					this.Body.Position += new Vector3(0, (this.CrouchedSupportHeight - this.NormalSupportHeight) + 0.5f * (this.CrouchedHeight - this.NormalHeight), 0);
-					this.Body.Height = this.Height.Value = this.CrouchedHeight;
+					this.Height.Value = this.CrouchedHeight;
+					this.Body.Length = this.Height.Value - this.Radius * 2;
 					this.SupportHeight.Value = this.CrouchedSupportHeight;
 				}
 				else if (!value && old)
 				{
-					this.Body.Height = this.Height.Value = this.NormalHeight;
+					this.Height.Value = this.NormalHeight;
+					this.Body.Length = this.Height.Value - this.Radius * 2;
 					this.Body.Position += new Vector3(0, (this.NormalSupportHeight - this.CrouchedSupportHeight) + 0.5f * (this.NormalHeight - this.CrouchedHeight), 0);
 					this.SupportHeight.Value = this.NormalSupportHeight;
 				}
@@ -334,7 +336,7 @@ namespace Lemma.Util
 				// Try to uncrouch
 
 				Vector3 rayOrigin = this.Body.Position;
-				rayOrigin.Y += 0.01f + this.Body.Height * 0.5f;
+				rayOrigin.Y += 0.01f + this.Height * 0.5f;
 
 				bool foundCeiling = false;
 
@@ -342,7 +344,7 @@ namespace Lemma.Util
 				{
 					RayCastResult rayHit;
 					//Fire a ray at the candidate and determine some details! 
-					if (this.main.Space.RayCast(new Ray(rayStart, Vector3.Up), (this.NormalHeight - this.Body.Height) + (this.NormalSupportHeight - this.SupportHeight), out rayHit))
+					if (this.main.Space.RayCast(new Ray(rayStart, Vector3.Up), (this.NormalHeight - this.Height) + (this.NormalSupportHeight - this.SupportHeight), out rayHit))
 					{
 						foundCeiling = true;
 						break;
@@ -361,7 +363,7 @@ namespace Lemma.Util
 				{
 					RayCastResult rayHit;
 					Vector3 rayStart = supportLocation;
-					rayStart.Y = pos.Y + (this.Body.Height * 0.5f) - 1.0f;
+					rayStart.Y = pos.Y + (this.Height * 0.5f) - 1.0f;
 					if (this.main.Space.RayCast(new Ray(rayStart, Vector3.Up), 1.0f, Character.raycastFilter, out rayHit))
 					{
 						offset.Normalize();
@@ -377,7 +379,7 @@ namespace Lemma.Util
 			}
 
 			this.collisionPairCollector.LinearVelocity = this.Body.LinearVelocity;
-			this.collisionPairCollector.Position = this.Body.Position + new Vector3(0, (this.Body.Height * -0.5f) - this.SupportHeight, 0);
+			this.collisionPairCollector.Position = this.Body.Position + new Vector3(0, (this.Height * -0.5f) - this.SupportHeight, 0);
 		}
 
 		/// <summary>
@@ -398,7 +400,7 @@ namespace Lemma.Util
 
 			const float fudgeFactor = 0.1f;
 			Vector3 rayOrigin = this.Body.Position;
-			rayOrigin.Y += fudgeFactor + this.Body.Height * -0.5f;
+			rayOrigin.Y += fudgeFactor + this.Height * -0.5f;
 
 			for (int i = 0; i < this.collisionPairCollector.CollisionInformation.Pairs.Count; i++)
 			{

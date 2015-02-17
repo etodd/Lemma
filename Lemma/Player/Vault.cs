@@ -30,7 +30,6 @@ namespace Lemma.Components
 		public Command LockRotation = new Command();
 		public Property<float> LastSupportedSpeed = new Property<float>();
 		public Command DeactivateWallRun = new Command();
-		public Command<WallRun.State> ActivateWallRun = new Command<WallRun.State>();
 		public Command<float> FallDamage = new Command<float>();
 		private AnimatedModel model;
 		public Property<float> LastVaultStarted = new Property<float> { Value = -1.0f };
@@ -128,7 +127,7 @@ namespace Lemma.Components
 				return CandidateStatus.Good;
 		}
 
-		public bool Go()
+		public bool Go(bool checkPossibilities)
 		{
 			if (this.main.TotalTime - this.LastVaultStarted < vaultCoolDown)
 				return false;
@@ -200,26 +199,29 @@ namespace Lemma.Components
 				}
 			}
 
-			// Check block possibilities for vaulting
-			foreach (BlockPredictor.Possibility possibility in this.Predictor.AllPossibilities)
+			if (checkPossibilities)
 			{
-				Direction up = possibility.Map.GetRelativeDirection(Direction.PositiveY);
-				Direction right = possibility.Map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
-				Vector3 pos = this.Position + rotationMatrix.Forward * (this.WallRunState == WallRun.State.Straight ? -1.75f : -1.25f);
-				Voxel.Coord baseCoord = possibility.Map.GetCoordinate(pos).Move(up, searchUpDistance);
-				foreach (int x in new[] { 0, -1, 1 })
+				// Check block possibilities for vaulting
+				foreach (BlockPredictor.Possibility possibility in this.Predictor.AllPossibilities)
 				{
-					Voxel.Coord coord = baseCoord.Move(right, x);
-					for (int i = 0; i < searchDownDistance; i++)
+					Direction up = possibility.Map.GetRelativeDirection(Direction.PositiveY);
+					Direction right = possibility.Map.GetRelativeDirection(Vector3.Cross(Vector3.Up, -rotationMatrix.Forward));
+					Vector3 pos = this.Position + rotationMatrix.Forward * (this.WallRunState == WallRun.State.Straight ? -1.75f : -1.25f);
+					Voxel.Coord baseCoord = possibility.Map.GetCoordinate(pos).Move(up, searchUpDistance);
+					foreach (int x in new[] { 0, -1, 1 })
 					{
-						Voxel.Coord downCoord = coord.Move(up.GetReverse());
-						if (!coord.Between(possibility.StartCoord, possibility.EndCoord) && downCoord.Between(possibility.StartCoord, possibility.EndCoord))
+						Voxel.Coord coord = baseCoord.Move(right, x);
+						for (int i = 0; i < searchDownDistance; i++)
 						{
-							this.Predictor.InstantiatePossibility(possibility);
-							this.vault(possibility.Map, coord, false);
-							return true;
+							Voxel.Coord downCoord = coord.Move(up.GetReverse());
+							if (!coord.Between(possibility.StartCoord, possibility.EndCoord) && downCoord.Between(possibility.StartCoord, possibility.EndCoord))
+							{
+								this.Predictor.InstantiatePossibility(possibility);
+								this.vault(possibility.Map, coord, false);
+								return true;
+							}
+							coord = coord.Move(up.GetReverse());
 						}
-						coord = coord.Move(up.GetReverse());
 					}
 				}
 			}

@@ -131,7 +131,7 @@ namespace Lemma.Factories
 			wallRun.Add(new TwoWayBinding<bool>(player.Character.IsSupported, wallRun.IsSupported));
 			wallRun.Add(new CommandBinding(wallRun.LockRotation, (Action)rotation.Lock));
 			wallRun.Add(new CommandBinding<float>(wallRun.UpdateLockedRotation, rotation.UpdateLockedRotation));
-			vault.Add(new CommandBinding(wallRun.Vault, delegate() { vault.Go(); }));
+			vault.Add(new CommandBinding(wallRun.Vault, delegate() { vault.Go(true); }));
 			wallRun.Predictor = predictor;
 			wallRun.Add(new Binding<float>(wallRun.Height, player.Character.Height));
 			wallRun.Add(new Binding<float>(wallRun.JumpSpeed, player.Character.JumpSpeed));
@@ -172,7 +172,6 @@ namespace Lemma.Factories
 			vault.Add(new Binding<WallRun.State>(vault.WallRunState, wallRun.CurrentState));
 			vault.Add(new CommandBinding(vault.LockRotation, (Action)rotation.Lock));
 			vault.Add(new CommandBinding(vault.DeactivateWallRun, (Action)wallRun.Deactivate));
-			vault.Add(new CommandBinding<WallRun.State>(vault.ActivateWallRun, delegate(WallRun.State state) { wallRun.Activate(state); }));
 			vault.Add(new TwoWayBinding<float>(player.Character.LastSupportedSpeed, vault.LastSupportedSpeed));
 			vault.Add(new CommandBinding<float>(vault.FallDamage, fallDamage.Apply));
 			vault.Bind(model);
@@ -552,21 +551,22 @@ namespace Lemma.Factories
 				{
 					bool didSomething = false;
 
+					bool parkourBeganThisFrame = parkourTime == 0;
 					if (predictor.PossibilityCount > 0)
 					{
 						// In slow motion, prefer left and right wall-running
-						if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
-							if (!(didSomething = wallRun.Activate(WallRun.State.Right)))
-								if (!(didSomething = vault.Go()))
-									didSomething = wallRun.Activate(WallRun.State.Straight);
+						if (!(didSomething = wallRun.Activate(WallRun.State.Left, parkourBeganThisFrame)))
+							if (!(didSomething = wallRun.Activate(WallRun.State.Right, parkourBeganThisFrame)))
+								if (!(didSomething = vault.Go(parkourBeganThisFrame)))
+									didSomething = wallRun.Activate(WallRun.State.Straight, parkourBeganThisFrame);
 					}
 					else
 					{
 						// In normal mode, prefer straight wall-running
-						if (!(didSomething = vault.Go()))
-							if (!(didSomething = wallRun.Activate(WallRun.State.Straight)))
-								if (!(didSomething = wallRun.Activate(WallRun.State.Left)))
-									didSomething = wallRun.Activate(WallRun.State.Right);
+						if (!(didSomething = vault.Go(parkourBeganThisFrame)))
+							if (!(didSomething = wallRun.Activate(WallRun.State.Straight, parkourBeganThisFrame)))
+								if (!(didSomething = wallRun.Activate(WallRun.State.Left, parkourBeganThisFrame)))
+									didSomething = wallRun.Activate(WallRun.State.Right, parkourBeganThisFrame);
 					}
 
 					if (didSomething)
@@ -575,7 +575,7 @@ namespace Lemma.Factories
 						player.SlowMotion.Value = false;
 						parkour.Enabled.Value = false;
 					}
-					else if (parkourTime == 0)
+					else if (parkourBeganThisFrame)
 					{
 						if (blockCloud.Blocks.Length > 0)
 						{

@@ -360,7 +360,7 @@ namespace Lemma.Components
 				pos + new Vector3(width / 2, 0, length / 2)
 			});
 
-			this.Fluid = new Util.CustomFluidVolume(Vector3.Up, this.main.Space.ForceUpdater.Gravity.Y, tris, this.Depth, 0.7f, 0.997f, 0.2f, this.main.Space.BroadPhase.QueryAccelerator, this.main.Space.ThreadManager);
+			this.Fluid = new Util.CustomFluidVolume(Vector3.Up, this.main.Space.ForceUpdater.Gravity.Y, tris, this.Depth, 0.8f, 0.997f, 0.2f, this.main.Space.BroadPhase.QueryAccelerator, this.main.Space.ThreadManager);
 			this.main.Space.Add(this.Fluid);
 		}
 

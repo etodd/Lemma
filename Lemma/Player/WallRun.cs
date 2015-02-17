@@ -69,7 +69,7 @@ namespace Lemma.Components
 			AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
 		}
 
-		public bool Activate(State state)
+		public bool Activate(State state, bool checkPossibilities)
 		{
 			if (!this.EnableWallRun)
 				return false;
@@ -163,7 +163,7 @@ namespace Lemma.Components
 							addInitialVelocity = differentWall || wallRunDelayPassed;
 						}
 					}
-					else
+					else if (checkPossibilities)
 					{
 						// Check block possibilities
 						List<BlockPredictor.Possibility> mapBlockPossibilities = this.Predictor.GetPossibilities(voxel);
