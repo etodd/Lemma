@@ -502,21 +502,43 @@ namespace Lemma.Factories
 			input.Bind(player.Character.SwimUp, settings.Jump);
 
 			Updater parkour = null;
+			Updater jumper = null;
+			float parkourTime = 0;
+			float jumpTime = 0;
+			const float gracePeriod = 1.0f;
+			jumper = new Updater(delegate(float dt)
+			{
+				if (player.EnableMoves && player.Character.EnableWalking
+					&& vault.CurrentState.Value == Vault.State.None
+					&& !rollKickSlide.Rolling && !rollKickSlide.Kicking
+					&& jumpTime < gracePeriod)
+				{
+					if (jump.Go())
+					{
+						parkour.Enabled.Value = false;
+						jumper.Enabled.Value = false;
+					}
+					jumpTime += dt;
+				}
+				else
+					jumper.Enabled.Value = false;
+			});
+			jumper.Add(new CommandBinding(jumper.Enable, delegate() { jumpTime = 0; }));
+			jumper.Enabled.Value = false;
+			entity.Add(jumper);
 
 			// Jumping
 			input.Bind(settings.Jump, PCInput.InputState.Down, delegate()
 			{
-				if (player.EnableMoves && player.Character.EnableWalking
-					&& vault.CurrentState.Value == Vault.State.None
-					&& !rollKickSlide.Rolling && !rollKickSlide.Kicking)
-				{
-					jump.Go();
-					parkour.Enabled.Value = false;
-				}
+				jumper.Enabled.Value = true;
+			});
+
+			input.Bind(settings.Jump, PCInput.InputState.Up, delegate()
+			{
+				jumper.Enabled.Value = false;
 			});
 
 			// Wall-run, vault, predictive
-			bool parkourStartedThisFrame = false;
 			parkour = new Updater(delegate(float dt)
 			{
 				if (player.EnableMoves
@@ -525,7 +547,8 @@ namespace Lemma.Factories
 					&& vault.CurrentState.Value == Vault.State.None
 					&& !rollKickSlide.Kicking
 					&& !rollKickSlide.Rolling
-					&& wallRun.CurrentState.Value == WallRun.State.None)
+					&& wallRun.CurrentState.Value == WallRun.State.None
+					&& parkourTime < gracePeriod)
 				{
 					bool didSomething = false;
 
@@ -548,10 +571,11 @@ namespace Lemma.Factories
 
 					if (didSomething)
 					{
+						jumper.Enabled.Value = false;
 						player.SlowMotion.Value = false;
 						parkour.Enabled.Value = false;
 					}
-					else if (parkourStartedThisFrame)
+					else if (parkourTime == 0)
 					{
 						if (blockCloud.Blocks.Length > 0)
 						{
@@ -563,14 +587,15 @@ namespace Lemma.Factories
 						else if (player.EnableSlowMotion)
 							player.SlowMotion.Value = true;
 					}
+
+					parkourTime += dt;
 				}
 				else
 					parkour.Enabled.Value = false;
-				parkourStartedThisFrame = false;
 			});
 			parkour.Add(new CommandBinding(parkour.Enable, delegate()
 			{
-				parkourStartedThisFrame = true;
+				parkourTime = 0;
 			}));
 			entity.Add(parkour);
 			parkour.Enabled.Value = false;
@@ -594,6 +619,7 @@ namespace Lemma.Factories
 				{
 					rollKickSlide.Go();
 					parkour.Enabled.Value = false;
+					jumper.Enabled.Value = false;
 				}
 			});
 
