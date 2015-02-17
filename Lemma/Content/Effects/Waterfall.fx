@@ -67,7 +67,7 @@ void DistortionPS(
 	float2 distortion = ((t.xy * 2.0f) - 1.0f) * t.a * 0.1f * (1.0f - (depth / FarPlaneDistance));
 
 	float3 color = tex2D(FrameSampler, uv + distortion).rgb * DiffuseColor.rgb;
-	output = float4(lerp(color, DiffuseColor.rgb, t.x * 0.25f), saturate((1.0f - tex.uvCoordinates.y * 0.5f) * Alpha));
+	output = float4(color, saturate((1.0f - tex.uvCoordinates.y * 0.5f) * Alpha));
 }
 
 void ClipDistortionPS(in RenderPSInput input,

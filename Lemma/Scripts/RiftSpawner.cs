@@ -45,7 +45,7 @@ namespace Lemma.GameScripts
 
 			RiftFactory riftFactory = Factory.Get<RiftFactory>();
 			const float minInterval = 3.0f;
-			const float maxInterval = 6.0f;
+			const float maxInterval = 8.0f;
 			float interval = minInterval + (float)random.NextDouble() * (maxInterval - minInterval);
 			updater.Action = delegate(float dt)
 			{

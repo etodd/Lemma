@@ -59,18 +59,22 @@ namespace Lemma.Factories
 			input.EnabledWhenPaused = false;
 			entity.Add("Input", input);
 
+			Updater parkour = entity.Create<Updater>();
+			Updater jumper = entity.Create<Updater>();
+
 			Player player = entity.GetOrCreate<Player>("Player");
 
 			AnimatedModel firstPersonModel = entity.GetOrCreate<AnimatedModel>("FirstPersonModel");
+			firstPersonModel.MapContent = false;
 			firstPersonModel.Serialize = false;
-			AnimatedModel model = entity.GetOrCreate<AnimatedModel>("Model");
-			model.Serialize = false;
-
-			model.Filename.Value = "Models\\joan";
-			model.CullBoundingBox.Value = false;
-
 			firstPersonModel.Filename.Value = "Models\\joan-firstperson";
 			firstPersonModel.CullBoundingBox.Value = false;
+
+			AnimatedModel model = entity.GetOrCreate<AnimatedModel>("Model");
+			model.MapContent = false;
+			model.Serialize = false;
+			model.Filename.Value = "Models\\joan";
+			model.CullBoundingBox.Value = false;
 
 			AnimationController anim = entity.GetOrCreate<AnimationController>("AnimationController");
 			RotationController rotation = entity.GetOrCreate<RotationController>("Rotation");
@@ -372,7 +376,7 @@ namespace Lemma.Factories
 			PointLight blockLight = entity.Create<PointLight>();
 			blockLight.Add(new Binding<Vector3>(blockLight.Position, blockCloud.AveragePosition));
 			blockLight.Add(new Binding<bool, int>(blockLight.Enabled, x => x > 0, blockCloud.Blocks.Length));
-			blockLight.Attenuation.Value = 20.0f;
+			blockLight.Attenuation.Value = 30.0f;
 			blockLight.Add(new Binding<Vector3, Voxel.t>(blockLight.Color, delegate(Voxel.t t)
 			{
 				switch (t)
@@ -500,12 +504,10 @@ namespace Lemma.Factories
 			// Swim up
 			input.Bind(player.Character.SwimUp, settings.Jump);
 
-			Updater parkour = null;
-			Updater jumper = null;
 			float parkourTime = 0;
 			float jumpTime = 0;
 			const float gracePeriod = 1.0f;
-			jumper = new Updater(delegate(float dt)
+			jumper.Action = delegate(float dt)
 			{
 				if (player.EnableMoves && player.Character.EnableWalking
 					&& vault.CurrentState.Value == Vault.State.None
@@ -521,7 +523,7 @@ namespace Lemma.Factories
 				}
 				else
 					jumper.Enabled.Value = false;
-			});
+			};
 			jumper.Add(new CommandBinding(jumper.Enable, delegate() { jumpTime = 0; }));
 			jumper.Enabled.Value = false;
 			entity.Add(jumper);
@@ -538,7 +540,7 @@ namespace Lemma.Factories
 			});
 
 			// Wall-run, vault, predictive
-			parkour = new Updater(delegate(float dt)
+			parkour.Action = delegate(float dt)
 			{
 				if (player.EnableMoves
 					&& player.Character.EnableWalking
@@ -592,7 +594,7 @@ namespace Lemma.Factories
 				}
 				else
 					parkour.Enabled.Value = false;
-			});
+			};
 			parkour.Add(new CommandBinding(parkour.Enable, delegate()
 			{
 				parkourTime = 0;

@@ -92,7 +92,7 @@ namespace Lemma.Components
 
 		private void apply(float verticalAcceleration, bool jumping)
 		{
-			bool rolling = this.model.IsPlaying("Roll");
+			bool rolling = this.model.IsPlaying("Roll") || this.model.IsPlaying("Kick");
 			float v = rolling ? RollingDamageVelocity : DamageVelocity;
 			if (verticalAcceleration < v)
 			{
