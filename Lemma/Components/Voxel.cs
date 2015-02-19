@@ -1869,7 +1869,7 @@ namespace Lemma.Components
 			[XmlIgnore]
 			public List<Box> Adjacent = new List<Box>();
 			[XmlIgnore]
-			public int Surfaces;
+			public byte Surfaces;
 
 			[XmlIgnore]
 			public int Volume
@@ -2431,7 +2431,7 @@ namespace Lemma.Components
 										chunk.DataBoxes = new List<Box>();
 									chunk.DataBoxes.Add(box);
 									box.Chunk = chunk;
-									box.Surfaces = surfaces;
+									box.Surfaces = (byte)surfaces;
 								}
 							}
 						}
