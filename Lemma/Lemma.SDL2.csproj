@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{22829EED-0D3F-4FCE-A32C-8B1B7092E3FC}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Lemma.SDL2</RootNamespace>
+    <AssemblyName>Lemma</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;SDL2;WINDOWS;DEVELOPMENT;CHEAT;VR</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>SDL2;WINDOWS;ANALYTICS;CHEAT;STEAMWORKS;VR</DefineConstants>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Compile Include="AnalyticsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AnalyticsForm.designer.cs">
+      <DependentUpon>AnalyticsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ComponentInterfaces.cs" />
+    <Compile Include="Components\AI.cs" />
+    <Compile Include="Components\Agent.cs" />
+    <Compile Include="Components\Bouncer.cs" />
+    <Compile Include="Components\PowerBlockSocket.cs" />
+    <Compile Include="Components\AnimatedProp.cs" />
+    <Compile Include="Components\Data.cs" />
+    <Compile Include="Components\VoxelTrigger.cs" />
+    <Compile Include="Components\Scriptlike\AnimatedSetter.cs" />
+    <Compile Include="Components\Scriptlike\LogicGate.cs" />
+    <Compile Include="Components\Scriptlike\Sequence.cs" />
+    <Compile Include="Components\SliderCommon.cs" />
+    <Compile Include="Components\Scriptlike\ConsoleCommand.cs" />
+    <Compile Include="Components\ParticleWind.cs" />
+    <Compile Include="Components\Rotator.cs" />
+    <Compile Include="Components\Scriptlike\Binder.cs" />
+    <Compile Include="Components\Scriptlike\Constant.cs" />
+    <Compile Include="Components\Scriptlike\MessageDisplayer.cs" />
+    <Compile Include="Components\Skybox.cs" />
+    <Compile Include="Components\StaticSlider.cs" />
+    <Compile Include="Components\Smoke.cs" />
+    <Compile Include="Components\Snake.cs" />
+    <Compile Include="Components\Sound.cs" />
+    <Compile Include="Components\AmbientSound.cs" />
+    <Compile Include="Components\Analytics.cs" />
+    <Compile Include="Components\CameraStop.cs" />
+    <Compile Include="Components\DialogueFile.cs" />
+    <Compile Include="Components\EffectBlock.cs" />
+    <Compile Include="Components\BlockCloud.cs" />
+    <Compile Include="Components\FallingTower.cs" />
+    <Compile Include="Components\ImplodeBlock.cs" />
+    <Compile Include="Components\Joint.cs" />
+    <Compile Include="Components\MapExit.cs" />
+    <Compile Include="Components\Exploder.cs" />
+    <Compile Include="Components\Rain.cs" />
+    <Compile Include="Components\RaycastAIMovement.cs" />
+    <Compile Include="Components\Levitator.cs" />
+    <Compile Include="Components\Note.cs" />
+    <Compile Include="Components\PlayerData.cs" />
+    <Compile Include="Components\Collectible.cs" />
+    <Compile Include="Components\Rift.cs" />
+    <Compile Include="Components\SceneryBlock.cs" />
+    <Compile Include="Components\Scriptlike\Scriptlike.cs" />
+    <Compile Include="Components\Scriptlike\Counter.cs" />
+    <Compile Include="Components\Scriptlike\Setter.cs" />
+    <Compile Include="Components\Scriptlike\RandomTicker.cs" />
+    <Compile Include="Components\Scriptlike\Ticker.cs" />
+    <Compile Include="Components\Spinner.cs" />
+    <Compile Include="Components\Slider.cs" />
+    <Compile Include="Components\Spawner.cs" />
+    <Compile Include="Components\Starter.cs" />
+    <Compile Include="Components\VoxelSetter.cs" />
+    <Compile Include="Components\Switch.cs" />
+    <Compile Include="Components\TimeTrial.cs" />
+    <Compile Include="Components\Turret.cs" />
+    <Compile Include="Components\VoxelFill.cs" />
+    <Compile Include="Factories\BouncerFactory.cs" />
+    <Compile Include="Factories\ConsoleCommandFactory.cs" />
+    <Compile Include="Factories\AnimatedPropFactory.cs" />
+    <Compile Include="Factories\VoxelTriggerFactory.cs" />
+    <Compile Include="Factories\PowerBlockSocketFactory.cs" />
+    <Compile Include="Factories\LogicGateFactory.cs" />
+    <Compile Include="Factories\SkyDecalFactory.cs" />
+    <Compile Include="Factories\StaticSliderFactory.cs" />
+    <Compile Include="Factories\SequenceFactory.cs" />
+    <Compile Include="Factories\VoxelSetterFactory.cs" />
+    <Compile Include="OvrCapi.cs" />
+    <Compile Include="Player\FPSCamera.cs" />
+    <Compile Include="Scripts\DialogueLink.cs" />
+    <Compile Include="Scripts\DialogueTrigger.cs" />
+    <Compile Include="Scripts\RiftSpawner.cs" />
+    <Compile Include="Scripts\SetPhoto.cs" />
+    <Compile Include="Util\VoxelRip.cs" />
+    <Compile Include="Components\World.cs" />
+    <Compile Include="Console\AutoConCommand.cs" />
+    <Compile Include="Console\AutoConVar.cs" />
+    <Compile Include="Console\Console.cs" />
+    <Compile Include="Console\ConsoleParser.cs" />
+    <Compile Include="Console\ConVar.cs" />
+    <Compile Include="Console\ConCommand.cs" />
+    <Compile Include="Components\Propagator.cs" />
+    <Compile Include="Editor\AnalyticsViewer.cs" />
+    <Compile Include="Editor\EditorGeeUI.cs" />
+    <Compile Include="Factories\MessageDisplayerFactory.cs" />
+    <Compile Include="Factories\ConstantFactory.cs" />
+    <Compile Include="Factories\ExplosionFactory.cs" />
+    <Compile Include="Factories\FileFilter.cs" />
+    <Compile Include="Factories\BinderFactory.cs" />
+    <Compile Include="Factories\DustFactory.cs" />
+    <Compile Include="Factories\WaterfallFactory.cs" />
+    <Compile Include="Factories\SnowFactory.cs" />
+    <Compile Include="Factories\StarterFactory.cs" />
+    <Compile Include="Factories\CameraStopFactory.cs" />
+    <Compile Include="Factories\RandomTickerFactory.cs" />
+    <Compile Include="Factories\TimeTrialFactory.cs" />
+    <Compile Include="Factories\PowerSoundFactory.cs" />
+    <Compile Include="Factories\RotatorFactory.cs" />
+    <Compile Include="Factories\ImplodeBlockFactory.cs" />
+    <Compile Include="Factories\RiftFactory.cs" />
+    <Compile Include="Factories\CollectibleFactory.cs" />
+    <Compile Include="Factories\CounterFactory.cs" />
+    <Compile Include="Factories\SetterFactory.cs" />
+    <Compile Include="Factories\TickerFactory.cs" />
+    <Compile Include="GeeUI\Composites\ToolTip.cs" />
+    <Compile Include="GeeUI\GeeUIMain.cs" />
+    <Compile Include="GeeUI\Managers\ConversionManager.cs" />
+    <Compile Include="GeeUI\Managers\DrawManager.cs" />
+    <Compile Include="GeeUI\Managers\InputManager.cs" />
+    <Compile Include="GeeUI\Resource1.Designer.cs">
+      <DependentUpon>Resource1.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="GeeUI\Structs\BoundKey.cs" />
+    <Compile Include="GeeUI\Structs\BoundMouse.cs" />
+    <Compile Include="GeeUI\Structs\DropDownItem.cs" />
+    <Compile Include="GeeUI\Structs\NinePatch.cs" />
+    <Compile Include="GeeUI\Structs\RadioButtonGroup.cs" />
+    <Compile Include="GeeUI\ViewLayouts\BorderViewLayout.cs" />
+    <Compile Include="GeeUI\ViewLayouts\ExpandToFitLayout.cs" />
+    <Compile Include="GeeUI\ViewLayouts\HorizontalViewLayout.cs" />
+    <Compile Include="GeeUI\ViewLayouts\SpinViewLayout.cs" />
+    <Compile Include="GeeUI\ViewLayouts\VerticalViewLayout.cs" />
+    <Compile Include="GeeUI\ViewLayouts\ViewLayout.cs" />
+    <Compile Include="GeeUI\Views\DropDownView.cs" />
+    <Compile Include="GeeUI\Views\ListView.cs" />
+    <Compile Include="GeeUI\Views\EmptyView.cs" />
+    <Compile Include="GeeUI\Views\ButtonView.cs" />
+    <Compile Include="GeeUI\Views\CheckBoxView.cs" />
+    <Compile Include="GeeUI\Views\ImageView.cs" />
+    <Compile Include="GeeUI\Views\PanelView.cs" />
+    <Compile Include="GeeUI\Views\SliderView.cs" />
+    <Compile Include="GeeUI\Views\TabContainer.cs" />
+    <Compile Include="GeeUI\Views\TabHost.cs" />
+    <Compile Include="GeeUI\Views\TabView.cs" />
+    <Compile Include="GeeUI\Views\TextFieldView.cs" />
+    <Compile Include="GeeUI\Views\TextView.cs" />
+    <Compile Include="GeeUI\Views\View.cs" />
+    <Compile Include="GeeUI\Views\WindowView.cs" />
+    <Compile Include="GInterfaces\ConsoleUI.cs" />
+    <Compile Include="Components\TimeTrialUI.cs" />
+    <Compile Include="GInterfaces\TextPrompt.cs" />
+    <Compile Include="GInterfaces\WorkShopInterface.cs" />
+    <Compile Include="Graphics\Cloud.cs" />
+    <Compile Include="MainMenu.cs" />
+    <Compile Include="Oculus.cs" />
+    <Compile Include="Player\BlockPredictor.cs" />
+    <Compile Include="Player\Jump.cs" />
+    <Compile Include="Player\PhoneNote.cs" />
+    <Compile Include="Player\RollKickSlide.cs" />
+    <Compile Include="Player\RotationController.cs" />
+    <Compile Include="Player\Rumble.cs" />
+    <Compile Include="Player\TargetUI.cs" />
+    <Compile Include="Player\Vault.cs" />
+    <Compile Include="Player\VirtualReticle.cs" />
+    <Compile Include="Player\VoxelTools.cs" />
+    <Compile Include="Player\WallRun.cs" />
+    <Compile Include="Scripts\Abilities.cs" />
+    <Compile Include="UI\UIFactory.cs" />
+    <Compile Include="Util\BitWorker.cs" />
+    <Compile Include="Util\BSpline.cs" />
+    <Compile Include="Util\DialogueForest.cs" />
+    <Compile Include="Components\SoundKiller.cs" />
+    <Compile Include="Components\SignalTower.cs" />
+    <Compile Include="Player\Phone.cs" />
+    <Compile Include="Components\RaycastAI.cs" />
+    <Compile Include="Components\Trigger.cs" />
+    <Compile Include="Components\PID.cs" />
+    <Compile Include="Util\Noise3D.cs" />
+    <Compile Include="Components\EnemyBase.cs" />
+    <Compile Include="Components\PhysicsSphere.cs" />
+    <Compile Include="Components\PlayerCylinderTrigger.cs" />
+    <Compile Include="Components\PostInitialization.cs" />
+    <Compile Include="Components\Zone.cs" />
+    <Compile Include="ErrorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Factories\CloudFactory.cs" />
+    <Compile Include="Factories\LowerLimitFactory.cs" />
+    <Compile Include="Factories\DialogueFileFactory.cs" />
+    <Compile Include="Factories\SignalTowerFactory.cs" />
+    <Compile Include="Factories\EvilBlocksFactory.cs" />
+    <Compile Include="Factories\SwitchFactory.cs" />
+    <Compile Include="Factories\NoteFactory.cs" />
+    <Compile Include="Factories\EntityConnectable.cs" />
+    <Compile Include="Factories\VoxelFillFactory.cs" />
+    <Compile Include="Factories\TriggerFactory.cs" />
+    <Compile Include="Factories\SmokeFactory.cs" />
+    <Compile Include="Factories\LevitatorFactory.cs" />
+    <Compile Include="Components\Explosion.cs" />
+    <Compile Include="Factories\ExploderFactory.cs" />
+    <Compile Include="Factories\SpinnerFactory.cs" />
+    <Compile Include="Factories\JointFactory.cs" />
+    <Compile Include="Factories\SceneryBlockFactory.cs" />
+    <Compile Include="Factories\SkyboxFactory.cs" />
+    <Compile Include="Factories\VoxelAttachable.cs" />
+    <Compile Include="Factories\RainFactory.cs" />
+    <Compile Include="Factories\SliderFactory.cs" />
+    <Compile Include="Factories\TargetFactory.cs" />
+    <Compile Include="Factories\SnakeFactory.cs" />
+    <Compile Include="Factories\ParticleEmitterFactory.cs" />
+    <Compile Include="Factories\PlayerDataFactory.cs" />
+    <Compile Include="Factories\EffectBlockFactory.cs" />
+    <Compile Include="Factories\FallingTowerFactory.cs" />
+    <Compile Include="Factories\MapExitFactory.cs" />
+    <Compile Include="Factories\PropFactory.cs" />
+    <Compile Include="Factories\SoundFactory.cs" />
+    <Compile Include="Components\VoxelChaseAI.cs" />
+    <Compile Include="Graphics\DynamicModel.cs" />
+    <Compile Include="Graphics\LineDrawer.cs" />
+    <Compile Include="Factories\ZoneFactory.cs" />
+    <Compile Include="Factories\EmptyFactory.cs" />
+    <Compile Include="Graphics\AmbientLight.cs" />
+    <Compile Include="Components\Animation.cs" />
+    <Compile Include="Graphics\SpotLight.cs" />
+    <Compile Include="Graphics\DirectionalLight.cs" />
+    <Compile Include="Player\AnimationController.cs" />
+    <Compile Include="Player\CameraController.cs" />
+    <Compile Include="Player\FallDamage.cs" />
+    <Compile Include="Player\Footsteps.cs" />
+    <Compile Include="Player\Player.cs" />
+    <Compile Include="Components\PhysicsBlock.cs" />
+    <Compile Include="Graphics\PointLight.cs" />
+    <Compile Include="Components\Script.cs" />
+    <Compile Include="Components\Updater.cs" />
+    <Compile Include="Editor\Editor.cs" />
+    <Compile Include="Factories\AmbientLightFactory.cs" />
+    <Compile Include="Factories\AmbientSoundFactory.cs" />
+    <Compile Include="Factories\BlockFactory.cs" />
+    <Compile Include="Factories\WaterFactory.cs" />
+    <Compile Include="Factories\SpotLightFactory.cs" />
+    <Compile Include="Factories\PlayerTriggerFactory.cs" />
+    <Compile Include="Factories\ScriptFactory.cs" />
+    <Compile Include="Player\PlayerFactory.cs" />
+    <Compile Include="Factories\EditorFactory.cs" />
+    <Compile Include="Factories\PointLightFactory.cs" />
+    <Compile Include="Factories\TurretFactory.cs" />
+    <Compile Include="Factories\WorldFactory.cs" />
+    <Compile Include="Components\Water.cs" />
+    <Compile Include="Menu.cs" />
+    <Compile Include="Player\PlayerUI.cs" />
+    <Compile Include="Screenshot.cs" />
+    <Compile Include="Strings.cs" />
+    <Compile Include="UI\Container.cs" />
+    <Compile Include="UI\LineDrawer2D.cs" />
+    <Compile Include="UI\ListContainer.cs" />
+    <Compile Include="UI\Scroller.cs" />
+    <Compile Include="UI\Sprite.cs" />
+    <Compile Include="Graphics\ModelInstance.cs" />
+    <Compile Include="Graphics\ParticleEmitter.cs" />
+    <Compile Include="Graphics\ParticleSystem.cs" />
+    <Compile Include="UI\TextElement.cs" />
+    <Compile Include="Factories\DirectionalLightFactory.cs" />
+    <Compile Include="Factories\PlayerSpawnFactory.cs" />
+    <Compile Include="Factories\VoxelFactory.cs" />
+    <Compile Include="Components\Timer.cs" />
+    <Compile Include="IO\FPSInput.cs" />
+    <Compile Include="UI\UIComponent.cs" />
+    <Compile Include="UI\UIRenderer.cs" />
+    <Compile Include="Util\AngleTools.cs" />
+    <Compile Include="Util\BlockingQueue.cs" />
+    <Compile Include="Util\BoundingBoxExtensions.cs" />
+    <Compile Include="Player\Character.cs" />
+    <Compile Include="Util\Algorithms.cs" />
+    <Compile Include="Util\CustomFluidVolume.cs" />
+    <Compile Include="Util\LargeObjectHeap.cs" />
+    <Compile Include="Util\PriorityQueue.cs" />
+    <Compile Include="Util\ScriptBase.cs" />
+    <Compile Include="Util\SteamWorker.cs" />
+    <Compile Include="Util\VectorExtensions.cs" />
+    <Compile Include="Graphics\AnimatedModel.cs" />
+    <Compile Include="Graphics\FullscreenQuad.cs" />
+    <Compile Include="Graphics\LightingManager.cs" />
+    <Compile Include="Graphics\Renderer.cs" />
+    <Compile Include="Graphics\Model.cs" />
+    <Compile Include="IO\PCInput.cs" />
+    <Compile Include="IO\MapLoader.cs" />
+    <Compile Include="Graphics\Camera.cs" />
+    <Compile Include="Components\PlayerTrigger.cs" />
+    <Compile Include="Util\Direction.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="Components\Voxel.cs" />
+    <Compile Include="Components\PlayerSpawn.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util\LambdaComparer.cs" />
+    <Compile Include="Util\RectangleExtensions.cs" />
+    <Compile Include="Util\VoxelAStar.cs" />
+    <Compile Include="Wwise_IDs.cs" />
+    <Compile Include="ErrorForm.Designer.cs">
+      <DependentUpon>ErrorForm.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Management" />
+    <Reference Include="Steamworks.NET">
+      <HintPath>..\Steamworks.NET.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FNA\FNA.csproj">
+      <Project>{35253CE1-C864-4CD3-8249-4D1319748E8F}</Project>
+      <Name>FNA</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ComponentBind\ComponentBind.SDL2.csproj">
+      <Project>{2FB48991-FCC9-4D08-A9FE-8C25C0173CCB}</Project>
+      <Name>ComponentBind.SDL2</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SharpZipLib\src\ICSharpCode.SharpZLib.csproj">
+      <Project>{0E7413FF-EB9E-4714-ACF2-BE3A6A7B2FFD}</Project>
+      <Name>ICSharpCode.SharpZLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Newtonsoft.Json\Newtonsoft.Json.Net40.csproj">
+      <Project>{A9AE40FF-1A21-414A-9FE7-3BE13644CC6D}</Project>
+      <Name>Newtonsoft.Json.Net40</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SkinnedModel\SkinnedModel.SDL2.csproj">
+      <Project>{59852C46-A48A-433C-8C05-30C08BD36F39}</Project>
+      <Name>SkinnedModel.SDL2</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BEPUphysics\BEPUphysics.SDL2.csproj">
+      <Project>{A2220272-500E-4B1C-B873-3F5C9C19739B}</Project>
+      <Name>BEPUphysics.SDL2</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Excel\Excel.csproj">
+      <Project>{4CB0690E-3E7A-497C-9116-D52024F63195}</Project>
+      <Name>Excel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wwise\Wwise.SDL2.csproj">
+      <Project>{C25A2B65-7D60-4837-BEE0-51BA8CFDD9C6}</Project>
+      <Name>Wwise.SDL2</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BEPUutilities\BEPUutilities.SDL2.csproj">
+      <Project>{4AAFB9CD-AE48-4546-860F-18A8FBDBBE76}</Project>
+      <Name>BEPUutilities.SDL2</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
