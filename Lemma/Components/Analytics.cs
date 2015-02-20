@@ -9,6 +9,7 @@ using System.Collections.Specialized;
 using System.Net;
 using ComponentBind;
 using System.Management;
+using ICSharpCode.SharpZipLib.GZip;
 
 namespace Lemma.Components
 {
@@ -259,8 +260,25 @@ namespace Lemma.Components
 		public static Session Load(string path)
 		{
 			Session s;
-			using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None))
-				s = (Session)new XmlSerializer(typeof(Session)).Deserialize(stream);
+			using (Stream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None))
+			{
+				Stream stream = null;
+				try
+				{
+					stream = new GZipInputStream(fs);
+					s = (Session)new XmlSerializer(typeof(Session)).Deserialize(stream);
+				}
+				catch (GZipException)
+				{
+					fs.Seek(0, SeekOrigin.Begin);
+					s = (Session)new XmlSerializer(typeof(Session)).Deserialize(fs);
+				}
+				finally
+				{
+					if (stream != null)
+						stream.Dispose();
+				}
+			}
 			foreach (ContinuousProperty prop in s.continuousProperties.Values)
 				prop.Initialize(s);
 			foreach (PositionProperty prop in s.positionProperties.Values)
@@ -355,7 +373,7 @@ namespace Lemma.Components
 
 			public void Save(string path, int build, string map, float totalTime)
 			{
-				string filename = string.Format("{0}-{1}-{2}.xml", build, (string.IsNullOrEmpty(map) ? "null" : Path.GetFileNameWithoutExtension(map)), this.data.ID);
+				this.data.Map = string.IsNullOrEmpty(map) ? null : Path.GetFileNameWithoutExtension(map);
 				this.data.TotalTime = totalTime;
 				this.data.Map = map;
 				this.data.UUID = this.main.Settings.UUID;
@@ -370,7 +388,10 @@ namespace Lemma.Components
 
 				this.data.ScreenSize = screenSize;
 				this.data.IsFullscreen = this.main.Settings.Fullscreen;
-				using (Stream stream = new FileStream(Path.Combine(path, filename), FileMode.Create, FileAccess.Write, FileShare.None))
+
+				string filename = string.Format("{0}-{1}-{2}.xml.gz", build, this.data.Map == null ? "null" : this.data.Map, this.data.ID);
+				using (Stream fs = new FileStream(Path.Combine(path, filename), FileMode.Create, FileAccess.Write, FileShare.None))
+				using (Stream stream = new GZipOutputStream(fs))
 					new XmlSerializer(typeof(Session)).Serialize(stream, this.data);
 			}
 

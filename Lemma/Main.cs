@@ -809,7 +809,7 @@ namespace Lemma
 
 		public void SaveAnalytics()
 		{
-			this.SessionRecorder.Save(this.analyticsDirectory, Main.Build, this.MapFile, this.TotalTime);
+			this.SessionRecorder.Save(this.analyticsDirectory, Main.Build, Path.GetFileNameWithoutExtension(this.MapFile), this.TotalTime);
 		}
 
 		public string[] AnalyticsSessionFiles
