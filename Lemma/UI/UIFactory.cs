@@ -143,9 +143,13 @@ namespace Lemma.Components
 				if (result.Highlighted)
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_MOUSEOVER);
 			}, result.Highlighted));
+			result.Add(new CommandBinding(result.MouseLeftDown, delegate()
+			{
+				result.Tint.Value = Color.Black;
+			}));
 			result.Add(new CommandBinding(result.MouseLeftUp, delegate()
 			{
-				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_CLICK);
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_MOUSEOVER);
 				if (action != null)
 					action();
 			}));

@@ -27,6 +27,14 @@ namespace Steamworks {
 		public byte m_uiPublishedToFriendsSessionInstance;
 	}
 
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	public struct SteamItemDetails_t {
+		public SteamItemInstanceID_t m_itemId;
+		public SteamItemDef_t m_iDefinition;
+		public ushort m_unQuantity;
+		public ushort m_unFlags; // see ESteamItemFlags
+	}
+
 	// connection state to a specified user, returned by GetP2PSessionState()
 	// this is under-the-hood info about what's going on with a SendP2PPacket(), shouldn't be needed except for debuggin
 	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
@@ -116,7 +124,12 @@ namespace Steamworks {
 	/// Actually, the name Key/Value is a bit misleading.  The "key" is better
 	/// understood as "filter operation code" and the "value" is the operand to this
 	/// filter operation.  The meaning of the operand depends upon the filter.
+	[StructLayout(LayoutKind.Sequential)]
 	public struct MatchMakingKeyValuePair_t {
+		MatchMakingKeyValuePair_t(string strKey, string strValue) {
+			m_szKey = strKey;
+			m_szValue = strValue;
+		}
 		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
 		public string m_szKey;
 		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]

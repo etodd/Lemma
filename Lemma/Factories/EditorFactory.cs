@@ -285,7 +285,7 @@ namespace Lemma.Factories
 				},
 				gui.MapCommands,
 				() => !input.EnableLook && !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None && !string.IsNullOrEmpty(main.MapFile) && main.IsChallengeMap(main.MapFile) && Lemma.Util.SteamWorker.SteamInitialized,
-				input.EnableLook, editor.VoxelEditMode, editor.TransformMode, main.MapFile
+				input.EnableLook, editor.VoxelEditMode, editor.TransformMode, main.MapFile, Lemma.Util.SteamWorker.SteamInitialized
 			);
 
 			foreach (string key in Factory.factories.Keys)

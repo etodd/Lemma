@@ -228,7 +228,6 @@ namespace Lemma.Components
 			}));
 
 			this.Add(new NotifyBinding(delegate() { this.needResize = true; }, this.main.ScreenSize));
-			this.Add(new Binding<bool>(this.EnableReflection, this.main.Settings.Reflections));
 
 			Action removeFluid = delegate()
 			{
@@ -399,9 +398,11 @@ namespace Lemma.Components
 			this.effect.Parameters["Frame" + Model.SamplerPostfix].SetValue(p.FrameBuffer);
 			this.effect.Parameters["CameraPosition"].SetValue(cameraPos);
 
+			bool reflection = this.EnableReflection && this.main.Settings.Reflections;
+
 			// Draw surface
 			this.effect.Parameters["Clearness"].SetValue(this.underwater ? 1.0f : this.Clearness);
-			this.effect.CurrentTechnique = this.effect.Techniques[this.underwater || !this.EnableReflection ? "Surface" : "SurfaceReflection"];
+			this.effect.CurrentTechnique = this.effect.Techniques[this.underwater || !reflection ? "Surface" : "SurfaceReflection"];
 			this.effect.CurrentTechnique.Passes[0].Apply();
 
 			if (this.surfaceVertexBuffer.IsDisposed)
@@ -440,7 +441,9 @@ namespace Lemma.Components
 
 		void IDrawablePreFrameComponent.DrawPreFrame(GameTime time, RenderParameters p)
 		{
-			if (!this.EnableReflection || !this.isVisible(p.Camera))
+			bool reflection = this.EnableReflection && this.main.Settings.Reflections;
+
+			if (!reflection || !this.isVisible(p.Camera))
 				return;
 
 			if (this.needResize)

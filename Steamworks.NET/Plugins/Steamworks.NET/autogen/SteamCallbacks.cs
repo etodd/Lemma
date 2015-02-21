@@ -491,7 +491,7 @@ namespace Steamworks {
 	public struct HTML_NeedsPaint_t {
 		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 2;
 		public HHTMLBrowser unBrowserHandle; // the browser that needs the paint
-		public string pBGRA; // a pointer to the B8G8R8A8 data for this surface, valid until SteamAPI_RunCallbacks is next called
+		public IntPtr pBGRA; // a pointer to the B8G8R8A8 data for this surface, valid until SteamAPI_RunCallbacks is next called
 		public uint unWide; // the total width of the pBGRA texture
 		public uint unTall; // the total height of the pBGRA texture
 		public uint unUpdateX; // the offset in X for the damage rect for this update
@@ -647,8 +647,8 @@ namespace Steamworks {
 	public struct HTML_LinkAtPosition_t {
 		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 13;
 		public HHTMLBrowser unBrowserHandle; // the handle of the surface
-		public uint x; //
-		public uint y; //
+		public uint x; // NOTE - Not currently set
+		public uint y; // NOTE - Not currently set
 		public string pchURL; //
 		[MarshalAs(UnmanagedType.I1)]
 		public bool bInput; //
@@ -681,8 +681,8 @@ namespace Steamworks {
 	}
 
 	//-----------------------------------------------------------------------------
-	// Purpose: show a Javascript confirmation dialog, call JSDialogResponse
-	//   when the user dismisses this dialog (or right away to ignore it)
+	// Purpose: when received show a file open dialog
+	//   then call FileLoadDialogResponse with the file(s) the user selected.
 	//-----------------------------------------------------------------------------
 	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
 	[CallbackIdentity(Constants.k_iSteamHTMLSurfaceCallbacks + 16)]
@@ -701,7 +701,7 @@ namespace Steamworks {
 	public struct HTML_ComboNeedsPaint_t {
 		public const int k_iCallback = Constants.k_iSteamHTMLSurfaceCallbacks + 17;
 		public HHTMLBrowser unBrowserHandle; // the handle of the surface
-		public string pBGRA; // a pointer to the B8G8R8A8 data for this surface, valid until SteamAPI_RunCallbacks is next called
+		public IntPtr pBGRA; // a pointer to the B8G8R8A8 data for this surface, valid until SteamAPI_RunCallbacks is next called
 		public uint unWide; // the total width of the pBGRA texture
 		public uint unTall; // the total height of the pBGRA texture
 	}
@@ -863,6 +863,41 @@ namespace Steamworks {
 		
 		// Size to provide to GetHTTPStreamingResponseBodyData to get this chunk of data
 		public uint m_cBytesReceived;
+	}
+
+	// SteamInventoryResultReady_t callbacks are fired whenever asynchronous
+	// results transition from "Pending" to "OK" or an error state. There will
+	// always be exactly one callback per handle.
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iClientInventoryCallbacks + 0)]
+	public struct SteamInventoryResultReady_t {
+		public const int k_iCallback = Constants.k_iClientInventoryCallbacks + 0;
+		public SteamInventoryResult_t m_handle;
+		public EResult m_result;
+	}
+
+	// SteamInventoryFullUpdate_t callbacks are triggered when GetAllItems
+	// successfully returns a result which is newer / fresher than the last
+	// known result. (It will not trigger if the inventory hasn't changed,
+	// or if results from two overlapping calls are reversed in flight and
+	// the earlier result is already known to be stale/out-of-date.)
+	// The normal ResultReady callback will still be triggered immediately
+	// afterwards; this is an additional notification for your convenience.
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iClientInventoryCallbacks + 1)]
+	public struct SteamInventoryFullUpdate_t {
+		public const int k_iCallback = Constants.k_iClientInventoryCallbacks + 1;
+		public SteamInventoryResult_t m_handle;
+	}
+
+	// A SteamInventoryDefinitionUpdate_t callback is triggered whenever
+	// item definitions have been updated, which could be in response to
+	// LoadItemDefinitions() or any other async request which required
+	// a definition update in order to process results from the server.
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value, Size = 1)]
+	[CallbackIdentity(Constants.k_iClientInventoryCallbacks + 2)]
+	public struct SteamInventoryDefinitionUpdate_t {
+		public const int k_iCallback = Constants.k_iClientInventoryCallbacks + 2;
 	}
 
 	//-----------------------------------------------------------------------------
@@ -1043,6 +1078,7 @@ namespace Steamworks {
 	}
 
 	// callbacks
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value, Size = 1)]
 	[CallbackIdentity(Constants.k_iSteamMusicCallbacks + 1)]
 	public struct PlaybackStatusHasChanged_t {
 		public const int k_iCallback = Constants.k_iSteamMusicCallbacks + 1;
@@ -1056,41 +1092,49 @@ namespace Steamworks {
 	}
 
 	// callbacks
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value, Size = 1)]
 	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 1)]
 	public struct MusicPlayerRemoteWillActivate_t {
 		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 1;
 	}
 
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value, Size = 1)]
 	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 2)]
 	public struct MusicPlayerRemoteWillDeactivate_t {
 		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 2;
 	}
 
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value, Size = 1)]
 	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 3)]
 	public struct MusicPlayerRemoteToFront_t {
 		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 3;
 	}
 
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value, Size = 1)]
 	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 4)]
 	public struct MusicPlayerWillQuit_t {
 		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 4;
 	}
 
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value, Size = 1)]
 	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 5)]
 	public struct MusicPlayerWantsPlay_t {
 		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 5;
 	}
 
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value, Size = 1)]
 	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 6)]
 	public struct MusicPlayerWantsPause_t {
 		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 6;
 	}
 
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value, Size = 1)]
 	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 7)]
 	public struct MusicPlayerWantsPlayPrevious_t {
 		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 7;
 	}
 
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value, Size = 1)]
 	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 8)]
 	public struct MusicPlayerWantsPlayNext_t {
 		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 8;
@@ -1131,6 +1175,13 @@ namespace Steamworks {
 	public struct MusicPlayerSelectsPlaylistEntry_t {
 		public const int k_iCallback = Constants.k_iSteamMusicCallbacks + 13;
 		public int nID;
+	}
+
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamMusicRemoteCallbacks + 14)]
+	public struct MusicPlayerWantsPlayingRepeatStatus_t {
+		public const int k_iCallback = Constants.k_iSteamMusicRemoteCallbacks + 14;
+		public int m_nPlayingRepeatStatus;
 	}
 
 	// callbacks
@@ -1707,6 +1758,15 @@ namespace Steamworks {
 	}
 
 	//-----------------------------------------------------------------------------
+	// Purpose: Signaled whenever licenses change
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value, Size = 1)]
+	[CallbackIdentity(Constants.k_iSteamUserCallbacks + 25)]
+	public struct LicensesUpdated_t {
+		public const int k_iCallback = Constants.k_iSteamUserCallbacks + 25;
+	}
+
+	//-----------------------------------------------------------------------------
 	// callback for BeginAuthSession
 	//-----------------------------------------------------------------------------
 	[StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -1761,6 +1821,17 @@ namespace Steamworks {
 	public struct GameWebCallback_t {
 		public const int k_iCallback = Constants.k_iSteamUserCallbacks + 64;
 		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+		public string m_szURL;
+	}
+
+	//-----------------------------------------------------------------------------
+	// Purpose: sent to your game in response to ISteamUser::RequestStoreAuthURL
+	//-----------------------------------------------------------------------------
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iSteamUserCallbacks + 65)]
+	public struct StoreAuthURLResponse_t {
+		public const int k_iCallback = Constants.k_iSteamUserCallbacks + 65;
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 512)]
 		public string m_szURL;
 	}
 
@@ -1982,6 +2053,16 @@ namespace Steamworks {
 		[MarshalAs(UnmanagedType.I1)]
 		public bool m_bSubmitted;										// true if user entered & accepted text (Call ISteamUtils::GetEnteredGamepadTextInput() for text), false if canceled input
 		public uint m_unSubmittedText;
+	}
+
+	[StructLayout(LayoutKind.Sequential, Pack = Packsize.value)]
+	[CallbackIdentity(Constants.k_iClientVideoCallbacks + 11)]
+	public struct GetVideoURLResult_t {
+		public const int k_iCallback = Constants.k_iClientVideoCallbacks + 11;
+		public EResult m_eResult;
+		public AppId_t m_unVideoAppID;
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+		public string m_rgchURL;
 	}
 
 }

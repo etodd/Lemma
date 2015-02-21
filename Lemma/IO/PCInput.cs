@@ -550,54 +550,55 @@ namespace Lemma.Components
 			{
 				if (this.nextInputListeners.Count > 0)
 				{
+					GamePadState lastGamePad = this.main.LastGamePadState;
 					List<Buttons> buttons = new List<Buttons>();
-					if (gamePad.IsButtonDown(Buttons.A))
+					if (gamePad.IsButtonDown(Buttons.A) && !lastGamePad.IsButtonDown(Buttons.A))
 						buttons.Add(Buttons.A);
-					if (gamePad.IsButtonDown(Buttons.B))
+					if (gamePad.IsButtonDown(Buttons.B) && !lastGamePad.IsButtonDown(Buttons.B))
 						buttons.Add(Buttons.B);
-					if (gamePad.IsButtonDown(Buttons.Back))
+					if (gamePad.IsButtonDown(Buttons.Back) && !lastGamePad.IsButtonDown(Buttons.Back))
 						buttons.Add(Buttons.Back);
-					if (gamePad.IsButtonDown(Buttons.DPadDown))
+					if (gamePad.IsButtonDown(Buttons.DPadDown) && !lastGamePad.IsButtonDown(Buttons.DPadDown))
 						buttons.Add(Buttons.DPadDown);
-					if (gamePad.IsButtonDown(Buttons.DPadLeft))
+					if (gamePad.IsButtonDown(Buttons.DPadLeft) && !lastGamePad.IsButtonDown(Buttons.DPadLeft))
 						buttons.Add(Buttons.DPadLeft);
-					if (gamePad.IsButtonDown(Buttons.DPadRight))
+					if (gamePad.IsButtonDown(Buttons.DPadRight) && !lastGamePad.IsButtonDown(Buttons.DPadRight))
 						buttons.Add(Buttons.DPadRight);
-					if (gamePad.IsButtonDown(Buttons.DPadUp))
+					if (gamePad.IsButtonDown(Buttons.DPadUp) && !lastGamePad.IsButtonDown(Buttons.DPadUp))
 						buttons.Add(Buttons.DPadUp);
-					if (gamePad.IsButtonDown(Buttons.LeftShoulder))
+					if (gamePad.IsButtonDown(Buttons.LeftShoulder) && !lastGamePad.IsButtonDown(Buttons.LeftShoulder))
 						buttons.Add(Buttons.LeftShoulder);
-					if (gamePad.IsButtonDown(Buttons.RightShoulder))
+					if (gamePad.IsButtonDown(Buttons.RightShoulder) && !lastGamePad.IsButtonDown(Buttons.RightShoulder))
 						buttons.Add(Buttons.RightShoulder);
-					if (gamePad.IsButtonDown(Buttons.LeftStick))
+					if (gamePad.IsButtonDown(Buttons.LeftStick) && !lastGamePad.IsButtonDown(Buttons.LeftStick))
 						buttons.Add(Buttons.LeftStick);
-					if (gamePad.IsButtonDown(Buttons.RightStick))
+					if (gamePad.IsButtonDown(Buttons.RightStick) && !lastGamePad.IsButtonDown(Buttons.RightStick))
 						buttons.Add(Buttons.RightStick);
-					if (gamePad.IsButtonDown(Buttons.LeftThumbstickDown))
+					if (gamePad.IsButtonDown(Buttons.LeftThumbstickDown) && !lastGamePad.IsButtonDown(Buttons.LeftThumbstickDown))
 						buttons.Add(Buttons.LeftThumbstickDown);
-					if (gamePad.IsButtonDown(Buttons.LeftThumbstickRight))
+					if (gamePad.IsButtonDown(Buttons.LeftThumbstickRight) && !lastGamePad.IsButtonDown(Buttons.LeftThumbstickRight))
 						buttons.Add(Buttons.LeftThumbstickRight);
-					if (gamePad.IsButtonDown(Buttons.LeftThumbstickLeft))
+					if (gamePad.IsButtonDown(Buttons.LeftThumbstickLeft) && !lastGamePad.IsButtonDown(Buttons.LeftThumbstickLeft))
 						buttons.Add(Buttons.LeftThumbstickLeft);
-					if (gamePad.IsButtonDown(Buttons.LeftThumbstickUp))
+					if (gamePad.IsButtonDown(Buttons.LeftThumbstickUp) && !lastGamePad.IsButtonDown(Buttons.LeftThumbstickUp))
 						buttons.Add(Buttons.LeftThumbstickUp);
-					if (gamePad.IsButtonDown(Buttons.RightThumbstickDown))
+					if (gamePad.IsButtonDown(Buttons.RightThumbstickDown) && !lastGamePad.IsButtonDown(Buttons.RightThumbstickDown))
 						buttons.Add(Buttons.RightThumbstickDown);
-					if (gamePad.IsButtonDown(Buttons.RightThumbstickRight))
+					if (gamePad.IsButtonDown(Buttons.RightThumbstickRight) && !lastGamePad.IsButtonDown(Buttons.RightThumbstickRight))
 						buttons.Add(Buttons.RightThumbstickRight);
-					if (gamePad.IsButtonDown(Buttons.RightThumbstickLeft))
+					if (gamePad.IsButtonDown(Buttons.RightThumbstickLeft) && !lastGamePad.IsButtonDown(Buttons.RightThumbstickLeft))
 						buttons.Add(Buttons.RightThumbstickLeft);
-					if (gamePad.IsButtonDown(Buttons.RightThumbstickUp))
+					if (gamePad.IsButtonDown(Buttons.RightThumbstickUp) && !lastGamePad.IsButtonDown(Buttons.RightThumbstickUp))
 						buttons.Add(Buttons.RightThumbstickUp);
-					if (gamePad.IsButtonDown(Buttons.LeftTrigger))
+					if (gamePad.IsButtonDown(Buttons.LeftTrigger) && !lastGamePad.IsButtonDown(Buttons.LeftTrigger))
 						buttons.Add(Buttons.LeftTrigger);
-					if (gamePad.IsButtonDown(Buttons.RightTrigger))
+					if (gamePad.IsButtonDown(Buttons.RightTrigger) && !lastGamePad.IsButtonDown(Buttons.RightTrigger))
 						buttons.Add(Buttons.RightTrigger);
-					if (gamePad.IsButtonDown(Buttons.X))
+					if (gamePad.IsButtonDown(Buttons.X) && !lastGamePad.IsButtonDown(Buttons.X))
 						buttons.Add(Buttons.X);
-					if (gamePad.IsButtonDown(Buttons.Y))
+					if (gamePad.IsButtonDown(Buttons.Y) && !lastGamePad.IsButtonDown(Buttons.Y))
 						buttons.Add(Buttons.Y);
-					if (gamePad.IsButtonDown(Buttons.Start))
+					if (gamePad.IsButtonDown(Buttons.Start) && !lastGamePad.IsButtonDown(Buttons.Start))
 						buttons.Add(Buttons.Start);
 
 					if (buttons.Count > 0)

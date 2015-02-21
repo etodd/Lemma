@@ -34,7 +34,7 @@
 #endif
 
 // Unity 32bit Mono on Windows crashes with ThisCall for some reason, StdCall without the 'this' ptr is the only thing that works..? 
-#if UNITY_BUILD && WINDOWS_BUILD && (UNITY_EDITOR || !UNITY_64)
+#if UNITY_BUILD && WINDOWS_BUILD && !UNITY_EDITOR_64 && (UNITY_EDITOR || !UNITY_64)
 	#define NOTHISPTR
 #endif
 
@@ -42,6 +42,19 @@ using System;
 using System.Runtime.InteropServices;
 
 namespace Steamworks {
+	public static class CallbackDispatcher {
+		// We catch exceptions inside callbacks and reroute them here.
+		// For some reason throwing an exception causes RunCallbacks() to break otherwise.
+		// If you have a custom ExceptionHandler in your engine you can register it here manually until we get something more elegant hooked up.
+		public static void ExceptionHandler(Exception e) {
+#if UNITY_BUILD
+			UnityEngine.Debug.LogException(e);
+#else
+			Console.WriteLine(e.Message);
+#endif
+		}
+	}
+
 	public sealed class Callback<T> {
 		private CCallbackBaseVTable VTable;
 		private IntPtr m_pVTable = IntPtr.Zero;
@@ -54,38 +67,18 @@ namespace Steamworks {
 		private bool m_bGameServer;
 		private readonly int m_size = Marshal.SizeOf(typeof(T));
 
-		// Temporary Hack
-		static System.Collections.Generic.List<Callback<T>> GCKeepAlive = new System.Collections.Generic.List<Callback<T>>();
-		static bool bWarnedOnce = false;
-
 		public static Callback<T> Create(DispatchDelegate func) {
-			return new Callback<T>(func, bGameServer: false, bKeepAlive: false);
+			return new Callback<T>(func, bGameServer: false);
 		}
 
 		public static Callback<T> CreateGameServer(DispatchDelegate func) {
-			return new Callback<T>(func, bGameServer: true, bKeepAlive: false);
+			return new Callback<T>(func, bGameServer: true);
 		}
 
-		public Callback(DispatchDelegate func, bool bGameServer = false, bool bKeepAlive = true) {
+		public Callback(DispatchDelegate func, bool bGameServer = false) {
 			m_bGameServer = bGameServer;
 			BuildCCallbackBase();
 			Register(func);
-
-			// This is a temporary hack to preserve backwards compatability with the old CallbackDispatcher.
-			// If this is still here in 5.0.0 yell at me.
-			if (bKeepAlive) {
-				if (!bWarnedOnce) {
-					bWarnedOnce = true;
-					const string deprecatedMsg = "Please use the new (as of 3.0.0) api for creating Callbacks. Callback<Type>.Create(func). You must now maintain a handle to the callback so that the GC does not clean it up prematurely.";
-#if UNITY_BUILD
-					UnityEngine.Debug.LogWarning(deprecatedMsg);
-#else
-					throw new System.InvalidOperationException(deprecatedMsg);
-#endif
-				}
-
-				GCKeepAlive.Add(this);
-			}
 		}
 
 		~Callback() {
@@ -132,7 +125,12 @@ namespace Steamworks {
 			IntPtr thisptr,
 #endif
 			IntPtr pvParam) {
-			m_Func((T)Marshal.PtrToStructure(pvParam, typeof(T)));
+			try {
+				m_Func((T)Marshal.PtrToStructure(pvParam, typeof(T)));
+			}
+			catch (Exception e) {
+				CallbackDispatcher.ExceptionHandler(e);
+			}
 		}
 
 		// Shouldn't get ever get called here, but this is what C++ Steamworks does!
@@ -141,7 +139,12 @@ namespace Steamworks {
 			IntPtr thisptr,
 #endif
 			IntPtr pvParam, bool bFailed, ulong hSteamAPICall) {
-			m_Func((T)Marshal.PtrToStructure(pvParam, typeof(T)));
+			try { 
+				m_Func((T)Marshal.PtrToStructure(pvParam, typeof(T)));
+			}
+			catch (Exception e) {
+				CallbackDispatcher.ExceptionHandler(e);
+			}
 		}
 
 		private int OnGetCallbackSizeBytes(
@@ -181,6 +184,8 @@ namespace Steamworks {
 		private event APIDispatchDelegate m_Func;
 
 		private SteamAPICall_t m_hAPICall = SteamAPICall_t.Invalid;
+		public SteamAPICall_t Handle { get { return m_hAPICall; } }
+
 		private readonly int m_size = Marshal.SizeOf(typeof(T));
 
 		public static CallResult<T> Create(APIDispatchDelegate func = null) {
@@ -246,7 +251,12 @@ namespace Steamworks {
 #endif
 			IntPtr pvParam) {
 			m_hAPICall = SteamAPICall_t.Invalid; // Caller unregisters for us
-			m_Func((T)Marshal.PtrToStructure(pvParam, typeof(T)), false);
+			try {
+				m_Func((T)Marshal.PtrToStructure(pvParam, typeof(T)), false);
+			}
+			catch (Exception e) {
+				CallbackDispatcher.ExceptionHandler(e);
+			}
 		}
 
 
@@ -255,9 +265,18 @@ namespace Steamworks {
 			IntPtr thisptr,
 #endif
 			IntPtr pvParam, bool bFailed, ulong hSteamAPICall) {
-			if ((SteamAPICall_t)hSteamAPICall == m_hAPICall) {
-				m_hAPICall = SteamAPICall_t.Invalid; // Caller unregisters for us
-				m_Func((T)Marshal.PtrToStructure(pvParam, typeof(T)), bFailed);
+			SteamAPICall_t hAPICall = (SteamAPICall_t)hSteamAPICall;
+			if (hAPICall == m_hAPICall) {
+				try {
+					m_Func((T)Marshal.PtrToStructure(pvParam, typeof(T)), bFailed);
+				}
+				catch (Exception e) {
+					CallbackDispatcher.ExceptionHandler(e);
+				}
+
+				if (hAPICall == m_hAPICall) { // Ensure that m_hAPICall has not been changed in m_Func
+					m_hAPICall = SteamAPICall_t.Invalid; // Caller unregisters for us
+				}
 			}
 		}
 		
@@ -288,7 +307,6 @@ namespace Steamworks {
 		}
 	}
 
-	//
 	[StructLayout(LayoutKind.Sequential)]
 	public class CCallbackBase {
 		public const byte k_ECallbackFlagsRegistered = 0x01;
@@ -308,11 +326,11 @@ namespace Steamworks {
 		[UnmanagedFunctionPointer(CallingConvention.StdCall)]
 		public delegate int GetCallbackSizeBytesDel();
 #else
-		[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate void RunCBDel(IntPtr thisptr, IntPtr pvParam);
-		[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate void RunCRDel(IntPtr thisptr, IntPtr pvParam, [MarshalAs(UnmanagedType.I1)] bool bIOFailure, ulong hSteamAPICall);
-		[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate int GetCallbackSizeBytesDel(IntPtr thisptr);
 #endif
 

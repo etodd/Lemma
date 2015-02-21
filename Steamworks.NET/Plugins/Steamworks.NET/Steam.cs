@@ -10,14 +10,16 @@ using System.Runtime.InteropServices;
 
 namespace Steamworks {
 	public static class Version {
-		public const string SteamworksNETVersion = "5.0.0";
-		public const string SteamworksSDKVersion = "1.31";
-		public const string SteamAPIDLLVersion = "02.37.91.26";
-		public const int SteamAPIDLLSize = 145600;
-		public const int SteamAPI64DLLSize = 169152;
+		public const string SteamworksNETVersion = "6.0.0";
+		public const string SteamworksSDKVersion = "1.32";
+		public const string SteamAPIDLLVersion = "02.59.51.43";
+		public const int SteamAPIDLLSize = 187584;
+		public const int SteamAPI64DLLSize = 208296;
 	}
 
 	public static class SteamAPI {
+		private static bool _initialized = false;
+
 		//----------------------------------------------------------------------------------------------------------------------------------------------------------//
 		//	Steam API setup & shutdown
 		//
@@ -43,19 +45,28 @@ namespace Steamworks {
 
 #if VERSION_SAFE_STEAM_API_INTERFACES
 		public static bool InitSafe() {
-			InteropHelp.TestIfPlatformSupported();
-			return NativeMethods.SteamAPI_InitSafe();
+			return Init();
 		}
 
 		// [Steamworks.NET] This is for Ease of use, since we don't need to care about the differences between them in C#.
 		public static bool Init() {
+			if (_initialized) {
+				throw new System.Exception("Tried to Initialize Steamworks twice in one session!");
+			}
+
 			InteropHelp.TestIfPlatformSupported();
-			return NativeMethods.SteamAPI_InitSafe();
+			_initialized = NativeMethods.SteamAPI_InitSafe();
+			return _initialized;
 		}
 #else
 		public static bool Init() {
+			if (_initialized) {
+				throw new System.Exception("Tried to Initialize Steamworks twice in one session!");
+			}
+
 			InteropHelp.TestIfPlatformSupported();
-			return NativeMethods.SteamAPI_Init();
+			_initialized = NativeMethods.SteamAPI_Init();
+			return _initialized;
 		}
 #endif
 
@@ -165,9 +176,9 @@ namespace Steamworks {
 	}
 
 	public static class SteamEncryptedAppTicket {
-		public static bool BDecryptTicket(byte[] rgubTicketEncrypted, uint cubTicketEncrypted, byte[] rgubTicketDecrypted, out uint pcubTicketDecrypted, byte[] rgubKey, int cubKey) {
+		public static bool BDecryptTicket(byte[] rgubTicketEncrypted, uint cubTicketEncrypted, byte[] rgubTicketDecrypted, ref uint pcubTicketDecrypted, byte[] rgubKey, int cubKey) {
 			InteropHelp.TestIfPlatformSupported();
-			return NativeMethods.BDecryptTicket(rgubTicketEncrypted, cubTicketEncrypted, rgubTicketDecrypted, out pcubTicketDecrypted, rgubKey, cubKey);
+			return NativeMethods.BDecryptTicket(rgubTicketEncrypted, cubTicketEncrypted, rgubTicketDecrypted, ref pcubTicketDecrypted, rgubKey, cubKey);
 		}
 
 		public static bool BIsTicketForApp(byte[] rgubTicketDecrypted, uint cubTicketDecrypted, AppId_t nAppID) {

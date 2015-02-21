@@ -278,6 +278,7 @@ namespace Lemma.Components
 
 		private void hidePauseMenu()
 		{
+			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_SWOOSH);
 			if (this.pauseAnimation != null)
 				this.pauseAnimation.Delete.Execute();
 			this.pauseAnimation = new Animation
@@ -291,6 +292,7 @@ namespace Lemma.Components
 
 		private void showPauseMenu()
 		{
+			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_SWOOSH);
 			if (this.dialog != null)
 			{
 				this.dialog.Delete.Execute();
@@ -307,6 +309,7 @@ namespace Lemma.Components
 		// Pause
 		private void savePausedSettings()
 		{
+			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_SWOOSH);
 			Session.Recorder.Event(main, "Pause");
 
 			// Take screenshot
@@ -372,6 +375,7 @@ namespace Lemma.Components
 		// Unpause
 		private void restorePausedSettings()
 		{
+			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_SWOOSH);
 			Session.Recorder.Event(main, "Unpause");
 			if (this.pauseAnimation != null && this.pauseAnimation.Active)
 				this.pauseAnimation.Delete.Execute();

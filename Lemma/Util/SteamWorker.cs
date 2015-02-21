@@ -34,11 +34,11 @@ namespace Lemma.Util
 
 		private static bool _anythingChanged = false;
 
-		public static bool SteamInitialized { get; private set; }
+		public static Property<bool> SteamInitialized = new Property<bool>();
 
-		public static bool StatsInitialized { get; private set; }
+		public static Property<bool> StatsInitialized = new Property<bool>();
 
-		public static Property<bool> OverlayActive = new Property<bool>() { Value = false };
+		public static Property<bool> OverlayActive = new Property<bool>();
 
 		public static bool OverlaySafelyGone
 		{
@@ -81,16 +81,16 @@ namespace Lemma.Util
 			try
 			{
 #if STEAMWORKS
-				return SteamInitialized = (SteamAPI.Init() && Init_SteamGame());
+				return SteamInitialized.Value = (SteamAPI.Init() && Init_SteamGame());
 #else
-				return (SteamInitialized = false) && false;
+				return SteamInitialized.Value = false;
 #endif
 			}
 			catch (DllNotFoundException)
 			{
 				Log.d("Steam DLL not found.");
 				//Required DLLs ain't there
-				SteamInitialized = false;
+				SteamInitialized.Value = false;
 				return false;
 			}
 		}
@@ -266,7 +266,7 @@ namespace Lemma.Util
 
 			_achievementDictionary = new Dictionary<string, bool>();
 			_statDictionary = new Dictionary<string, int>();
-			StatsInitialized = false;
+			StatsInitialized.Value = false;
 		}
 
 		public class WorkshopMapMetadata
@@ -511,7 +511,7 @@ namespace Lemma.Util
 				if (success)
 					_statDictionary.Add("stat_" + stat, value);
 			}
-			StatsInitialized = true;
+			StatsInitialized.Value = true;
 		}
 		#endregion
 
