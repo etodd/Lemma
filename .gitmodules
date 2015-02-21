@@ -7,3 +7,6 @@
 [submodule "SharpZipLib"]
 	path = SharpZipLib
 	url = git@github.com:et1337/SharpZipLib.git
+[submodule "Steamworks.NET"]
+	path = Steamworks.NET
+	url = git@github.com:et1337/Steamworks.NET.git

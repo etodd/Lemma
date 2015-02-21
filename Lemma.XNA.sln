@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lemma.XNA", "Lemma\Lemma.XNA.csproj", "{3D2D163E-393B-4AFD-997B-143E909AC653}"
 EndProject
@@ -870,8 +870,8 @@ Global
 		{A9AE40FF-1A21-414A-9FE7-3BE13644CC6D}.Windows|Xbox 360.ActiveCfg = Release|Any CPU
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Debug|Any CPU.ActiveCfg = OSX-Linux|Any CPU
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Debug|Any CPU.Build.0 = OSX-Linux|Any CPU
-		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Debug|Mixed Platforms.ActiveCfg = Windows|Any CPU
-		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Debug|Mixed Platforms.Build.0 = Windows|Any CPU
+		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Debug|Mixed Platforms.ActiveCfg = OSX-Linux|x86
+		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Debug|Mixed Platforms.Build.0 = OSX-Linux|x86
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Debug|Win32.ActiveCfg = OSX-Linux|x86
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Debug|Win32.Build.0 = OSX-Linux|x86
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Debug|x64.ActiveCfg = OSX-Linux|x64
@@ -936,14 +936,14 @@ Global
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.OSX-Linux|Xbox 360.ActiveCfg = OSX-Linux|Any CPU
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|Any CPU.ActiveCfg = OSX-Linux|Any CPU
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|Any CPU.Build.0 = OSX-Linux|Any CPU
-		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|Mixed Platforms.ActiveCfg = Windows|Any CPU
-		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|Mixed Platforms.Build.0 = Windows|Any CPU
+		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|Mixed Platforms.ActiveCfg = OSX-Linux|x86
+		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|Mixed Platforms.Build.0 = OSX-Linux|x86
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|Win32.ActiveCfg = OSX-Linux|x86
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|Win32.Build.0 = OSX-Linux|x86
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|x64.ActiveCfg = OSX-Linux|x64
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|x64.Build.0 = OSX-Linux|x64
-		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|x86.ActiveCfg = Windows|x86
-		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|x86.Build.0 = Windows|x86
+		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|x86.ActiveCfg = OSX-Linux|x86
+		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|x86.Build.0 = OSX-Linux|x86
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Release|Xbox 360.ActiveCfg = OSX-Linux|Any CPU
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Windows|Any CPU.ActiveCfg = Windows|Any CPU
 		{B3543600-587C-4FDC-994A-CB0BDC629A7E}.Windows|Any CPU.Build.0 = Windows|Any CPU
