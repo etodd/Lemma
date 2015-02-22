@@ -45,6 +45,11 @@ namespace Lemma.Components
 
 		private bool mapJustLoaded = false;
 
+		public void ResetTimer()
+		{
+			this.respawnTimer = 0.01f; // To avoid spawning duplicate flash animations
+		}
+
 		public override void Awake()
 		{
 			this.EnabledInEditMode = true;

@@ -217,6 +217,18 @@ namespace GeeUI.Views
 			return -1;
 		}
 
+		public int GetOptionIndexByRelated(object related)
+		{
+			int i = 0;
+			foreach (var dropdown in DropDownOptions)
+			{
+				if (dropdown.Related.Equals(related))
+					return i;
+				i++;
+			}
+			return -1;
+		}
+
 		public DropDownOption GetSelectedOption()
 		{
 			if (LastItemSelected.Value == -1 || LastItemSelected.Value > DropDownOptions.Count - 1)
@@ -227,6 +239,13 @@ namespace GeeUI.Views
 		public void SetSelectedOption(string optionName, bool callOnSelected = true)
 		{
 			int optionIndex = GetOptionIndex(optionName);
+			if (optionIndex != -1)
+				OnOptionSelected(DropDownOptions[optionIndex], callOnSelected);
+		}
+
+		public void SetSelectedOptionByRelated(object related, bool callOnSelected = true)
+		{
+			int optionIndex = GetOptionIndexByRelated(related);
 			if (optionIndex != -1)
 				OnOptionSelected(DropDownOptions[optionIndex], callOnSelected);
 		}

@@ -131,7 +131,7 @@ namespace Lemma.Components
 				// Try to roll
 				Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
 
-				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height + MathHelper.Clamp(this.LinearVelocity.Value.Y * -0.2f, 0.0f, 4.0f));
+				Voxel.GlobalRaycastResult floorRaycast = this.raycastFloor();
 
 				bool nearGround = this.LinearVelocity.Value.Y < this.SupportVelocity.Value.Y + 0.1f && floorRaycast.Voxel != null;
 
@@ -230,7 +230,7 @@ namespace Lemma.Components
 
 				this.sliding = false;
 
-				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height + 1);
+				Voxel.GlobalRaycastResult floorRaycast = this.raycastFloor();
 				this.floorMap = floorRaycast.Voxel;
 
 				if (instantiatedBlockPossibility)
@@ -287,11 +287,18 @@ namespace Lemma.Components
 			}
 		}
 
+		private Voxel.GlobalRaycastResult raycastFloor()
+		{
+			Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
+
+			return Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height + MathHelper.Clamp(this.LinearVelocity.Value.Y * -0.3f, 0.0f, 5.0f));
+		}
+
 		private void checkShouldBuildFloor()
 		{
 			if (this.EnableEnhancedRollSlide)
 			{
-				Voxel.GlobalRaycastResult floorRaycast = Voxel.GlobalRaycast(this.Position, Vector3.Down, this.Height + 1);
+				Voxel.GlobalRaycastResult floorRaycast = this.raycastFloor();
 				if (floorRaycast.Voxel != null)
 				{
 					Voxel.t t = floorRaycast.Voxel[floorRaycast.Coordinate.Value].ID;
@@ -363,7 +370,7 @@ namespace Lemma.Components
 						// We weren't supported when we started kicking. We're flying.
 						// Roll if we hit the ground while kicking mid-air
 						Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
-						Voxel.GlobalRaycastResult r = Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height + 1);
+						Voxel.GlobalRaycastResult r = this.raycastFloor();
 						if (r.Voxel != null)
 						{
 							this.StopKick();

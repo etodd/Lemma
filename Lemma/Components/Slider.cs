@@ -17,6 +17,8 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Direction> Direction = new Property<Direction>();
 
+		public Property<uint> MovementLoop = new Property<uint> { Value = AK.EVENTS.SLIDER2_LOOP };
+		public Property<uint> MovementStop = new Property<uint> { Value = AK.EVENTS.SLIDER2_STOP };
 		public Property<int> Minimum = new Property<int>();
 		public Property<int> Maximum = new Property<int>();
 		public Property<bool> Locked = new Property<bool>();
@@ -143,6 +145,8 @@ namespace Lemma.Components
 			this.setMaxForce();
 			this.joint.Motor.Settings.Servo.SpringSettings.StiffnessConstant = 0.03f;
 			this.joint.Limit.Update(0.0f);
+			Vector3 separation = this.joint.Limit.AnchorB - this.joint.Limit.AnchorA;
+			this.lastX = Vector3.Dot(separation, this.joint.Limit.Axis);
 			return this.joint;
 		}
 
@@ -163,13 +167,33 @@ namespace Lemma.Components
 
 		public override void Start()
 		{
-			if (!this.main.EditorEnabled && this.StartAtMinimum)
+			if (!this.main.EditorEnabled)
 			{
-				this.StartAtMinimum.Value = false;
-				Transform transform = this.Entity.GetOrCreate<Transform>("MapTransform");
-				transform.Selectable.Value = false;
-				DynamicVoxel map = this.Entity.Get<DynamicVoxel>();
-				transform.Position.Value = map.GetAbsolutePosition(new Voxel.Coord().Move(this.Direction, this.Minimum));
+				if (this.StartAtMinimum)
+				{
+					this.StartAtMinimum.Value = false;
+					Transform transform = this.Entity.GetOrCreate<Transform>("MapTransform");
+					transform.Selectable.Value = false;
+					DynamicVoxel map = this.Entity.Get<DynamicVoxel>();
+					transform.Position.Value = map.GetAbsolutePosition(new Voxel.Coord().Move(this.Direction, this.Minimum));
+				}
+
+				this.Add(new SetBinding<int>(this.Goal, delegate(int value)
+				{
+					if (this.joint != null)
+					{
+						Vector3 separation = this.joint.Limit.AnchorB - this.joint.Limit.AnchorA;
+						float x = Vector3.Dot(separation, this.joint.Limit.Axis);
+						if (Math.Abs(x - this.Goal) > 0.1f)
+							AkSoundEngine.PostEvent(this.MovementLoop, this.Entity);
+					}
+				}));
+				Action stopMovement = delegate()
+				{
+					AkSoundEngine.PostEvent(this.MovementStop, this.Entity);
+				};
+				this.Add(new CommandBinding(this.OnHitMax, stopMovement));
+				this.Add(new CommandBinding(this.OnHitMin, stopMovement));
 			}
 		}
 

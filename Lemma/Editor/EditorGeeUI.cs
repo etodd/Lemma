@@ -1165,13 +1165,41 @@ namespace Lemma.Components
 							drop.AddOption(o ?? "[null]", onClick, o);
 						}
 						drop.SetSelectedOption((string)propertyInfo.GetValue(property, null), false);
-						if (drop.DropDownOptions.Count > 0)
-							propertyInfo.SetValue(property, drop.GetSelectedOption().Related, null);
-						else
+						if (drop.DropDownOptions.Count == 0)
 							propertyInfo.SetValue(property, null, null);
+						else
+							propertyInfo.SetValue(property, drop.GetSelectedOption().Related, null);
 					};
 					populate();
 					drop.Add(new ListNotifyBinding<string>(populate, options));
+				}
+				else if (entry.Data.Options != null && propertyInfo.PropertyType.Equals(typeof(uint)))
+				{
+					// Wwise sound picker
+					ListProperty<KeyValuePair<uint, string>> options = (ListProperty<KeyValuePair<uint, string>>)entry.Data.Options;
+					var drop = new DropDownView(main.GeeUI, ret, Vector2.Zero) { Name = "Dropdown" };
+					Action populate = delegate()
+					{
+						drop.RemoveAllOptions();
+						foreach (KeyValuePair<uint, string> o in options)
+						{
+							Action onClick = () =>
+							{
+								propertyInfo.SetValue(property, o.Key, null);
+								this.NeedsSave.Value = true;
+								if (entry.Data.RefreshOnChange)
+									this.show(this.SelectedEntities);
+							};
+							drop.AddOption(o.Value, onClick, o.Key);
+						}
+						drop.SetSelectedOptionByRelated(propertyInfo.GetValue(property, null), false);
+						if (drop.DropDownOptions.Count == 0)
+							propertyInfo.SetValue(property, 0, null);
+						else
+							propertyInfo.SetValue(property, drop.GetSelectedOption().Related, null);
+					};
+					populate();
+					drop.Add(new ListNotifyBinding<KeyValuePair<uint, string>>(populate, options));
 				}
 				else
 				{

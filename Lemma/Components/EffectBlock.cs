@@ -179,7 +179,7 @@ namespace Lemma.Components
 								m.Fill(this.Coord, Voxel.States.All[this.StateId]);
 								m.Regenerate();
 								if (EffectBlock.random.Next(0, 4) == 0)
-									AkSoundEngine.PostEvent(AK.EVENTS.PLAY_BLOCK_BUILD, this.Entity);
+									AkSoundEngine.PostEvent(AK.EVENTS.PLAY_BLOCK_BUILD, absolutePos);
 								this.Entity.Delete.Execute();
 								return;
 							}

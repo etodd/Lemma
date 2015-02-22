@@ -28,8 +28,6 @@ public class AK
         public static uint PLAY_MUSIC_THEME_LOOP = 4120562202U;
         public static uint PLAY_NOTE_DROP = 4017882330U;
         public static uint PLAY_NOTE_PICKUP = 2403250269U;
-        public static uint PLAY_OBELISK_LOCK = 3936891061U;
-        public static uint PLAY_OBELISK_RISE = 2959923063U;
         public static uint PLAY_ORANGE_BURN = 1341922784U;
         public static uint PLAY_PHONE_PICKUP = 2791348401U;
         public static uint PLAY_PHONE_VIBRATE = 1246969326U;
@@ -70,7 +68,13 @@ public class AK
         public static uint PLAY_WATERFALL_LOOP = 2021604517U;
         public static uint PLAY_WHITE_LIGHT = 3583610488U;
         public static uint PLAY_WHITE_SHATTER = 2667853543U;
+        public static uint SLIDER1_LOOP = 654783868U;
+        public static uint SLIDER1_STOP = 2742134786U;
+        public static uint SLIDER2_LOOP = 2295651613U;
+        public static uint SLIDER2_STOP = 1466206051U;
+        public static uint SLIDER3_LOOP = 2278489546U;
         public static uint STOP_ALL = 452547817U;
+        public static uint STOP_ALL_OBJECT = 2638811145U;
         public static uint STOP_DAWN_AMBIENT = 672119035U;
         public static uint STOP_EVIL_CUBES = 3034540413U;
         public static uint STOP_EXTERIOR_WIND = 4269705691U;
@@ -78,7 +82,6 @@ public class AK
         public static uint STOP_MUSIC_AMBIENT = 3815910684U;
         public static uint STOP_MUSIC_AMBIENT_02 = 28192961U;
         public static uint STOP_MUSIC_THEME = 2480681107U;
-        public static uint STOP_OBELISK_RISE = 2606723065U;
         public static uint STOP_PLAYER_BREATHING_HARD = 3180565756U;
         public static uint STOP_PLAYER_BREATHING_SOFT = 1454416799U;
         public static uint STOP_PLAYER_FALL = 3680109729U;

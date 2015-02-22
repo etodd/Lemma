@@ -31,8 +31,8 @@ namespace Lemma.Factories
 			VoxelAttachable.MakeAttachable(entity, main).EditorProperties();
 			VoxelAttachable.BindTarget(entity, ambientSound.Position);
 
-			entity.Add("PlayCue", ambientSound.PlayCue);
-			entity.Add("StopCue", ambientSound.StopCue);
+			entity.Add("PlayCue", ambientSound.PlayCue, new PropertyEntry.EditorData { Options = WwisePicker.Get(main) });
+			entity.Add("StopCue", ambientSound.StopCue, new PropertyEntry.EditorData { Options = WwisePicker.Get(main) });
 
 			entity.Add("Play", ambientSound.Enable);
 			entity.Add("Stop", ambientSound.Disable);

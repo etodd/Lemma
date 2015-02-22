@@ -36,6 +36,8 @@ namespace Lemma.Factories
 
 			DynamicVoxel voxel = entity.Get<DynamicVoxel>();
 			voxel.KineticFriction.Value = voxel.StaticFriction.Value = 0;
+			AkGameObjectTracker.Attach(entity, voxel.Transform);
+			SoundKiller.Add(entity, AK.EVENTS.STOP_ALL_OBJECT);
 
 			if (main.EditorEnabled)
 				entity.Add(new Binding<Matrix>(entity.GetOrCreate<SliderCommon>("SliderCommon").OriginalTransform, voxel.Transform));
@@ -45,6 +47,8 @@ namespace Lemma.Factories
 			entity.Add("OnHitMax", slider.OnHitMax);
 			entity.Add("OnHitMin", slider.OnHitMin);
 
+			entity.Add("MovementLoop", slider.MovementLoop, new PropertyEntry.EditorData { Options = WwisePicker.Get(main) });
+			entity.Add("MovementStop", slider.MovementStop, new PropertyEntry.EditorData { Options = WwisePicker.Get(main) });
 			entity.Add("Direction", joint.Direction);
 			entity.Add("Minimum", slider.Minimum);
 			entity.Add("Maximum", slider.Maximum);

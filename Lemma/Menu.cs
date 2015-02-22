@@ -375,7 +375,6 @@ namespace Lemma.Components
 		// Unpause
 		private void restorePausedSettings()
 		{
-			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_SWOOSH);
 			Session.Recorder.Event(main, "Unpause");
 			if (this.pauseAnimation != null && this.pauseAnimation.Active)
 				this.pauseAnimation.Delete.Execute();

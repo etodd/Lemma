@@ -21,22 +21,10 @@ namespace Lemma.Components
 		public Property<int> Maximum = new Property<int>();
 		public Property<float> Speed = new Property<float>();
 		public Property<int> Goal = new Property<int>();
+		public Property<uint> MovementLoop = new Property<uint> { Value = AK.EVENTS.SLIDER1_LOOP };
+		public Property<uint> MovementStop = new Property<uint> { Value = AK.EVENTS.SLIDER1_STOP };
 		public Property<bool> StartAtMinimum = new Property<bool>();
 		public Property<Entity.Handle> Parent = new Property<Entity.Handle>();
-
-		private class Updater : Updateable, IBeforeNarrowPhaseUpdateable
-		{
-			private StaticSlider slider;
-
-			public Updater(StaticSlider s)
-			{
-				this.slider = s;
-			}
-
-			void IBeforeNarrowPhaseUpdateable.Update(float dt)
-			{
-			}
-		}
 
 		// Internal properties
 		public Property<Voxel.Coord> Coord = new Property<Voxel.Coord>();
@@ -71,13 +59,9 @@ namespace Lemma.Components
 			this.Goal.Value = value;
 		}
 
-		private Updater updater;
-
 		public override void Awake()
 		{
 			base.Awake();
-			this.updater = new Updater(this);
-			this.main.Space.Add(this.updater);
 			this.EnabledWhenPaused = false;
 			this.EnabledInEditMode = false;
 
@@ -95,12 +79,20 @@ namespace Lemma.Components
 						this.Coord.Value = parent.Get<Voxel>().GetCoordinate(this.EditorTransform.Value.Translation);
 				}, this.EditorTransform));
 			}
-		}
-
-		public override void delete()
-		{
-			this.main.Space.Remove(this.updater);
-			base.delete();
+			else
+			{
+				this.Add(new SetBinding<int>(this.Goal, delegate(int value)
+				{
+					if (Math.Abs(this.Position - this.Goal) > 0.1f)
+						AkSoundEngine.PostEvent(this.MovementLoop, this.Entity);
+				}));
+				Action stopMovement = delegate()
+				{
+					AkSoundEngine.PostEvent(this.MovementStop, this.Entity);
+				};
+				this.Add(new CommandBinding(this.OnHitMax, stopMovement));
+				this.Add(new CommandBinding(this.OnHitMin, stopMovement));
+			}
 		}
 
 		public override void Start()

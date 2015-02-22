@@ -47,7 +47,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\x86\Debug</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS;DEVELOPMENT;CHEAT;VR;STEAMWORKS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS;DEVELOPMENT;CHEAT;VR</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -402,6 +402,7 @@
     <Compile Include="Util\LambdaComparer.cs" />
     <Compile Include="Util\RectangleExtensions.cs" />
     <Compile Include="Util\VoxelAStar.cs" />
+    <Compile Include="Util\WwisePicker.cs" />
     <Compile Include="Wwise_IDs.cs" />
   </ItemGroup>
   <ItemGroup>
