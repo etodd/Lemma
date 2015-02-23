@@ -107,7 +107,7 @@ namespace Lemma.Components
 			{
 				this.Edit.Execute();
 			};
-			EditButton.Active.Value = Main.AllowEditingGameMaps || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory;
+			EditButton.Active.Value = this.main.Settings.GodMode || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory;
 
 			ButtonView NextMapButton = new ButtonView(main.GeeUI, RootTimeEndView, "Next map", new Vector2(180, 250));
 			this.Add(new Binding<bool, string>(NextMapButton.Active, x => !string.IsNullOrEmpty(x), this.NextMap));

@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System.ComponentModel;
+using Newtonsoft.Json;
 
 namespace Lemma.Components
 {
@@ -14,12 +15,14 @@ namespace Lemma.Components
 
 		public enum InputState { Down, Up }
 
-		public class PCInputBinding
+		public struct PCInputBinding
 		{
+			[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
 			public Keys Key;
+			[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
 			public MouseButton MouseButton;
-			[DefaultValue(Buttons.BigButton)]
-			public Buttons GamePadButton = Buttons.BigButton;
+			[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+			public Buttons GamePadButton;
 
 			public override string ToString()
 			{
@@ -29,7 +32,7 @@ namespace Lemma.Components
 				else if (this.MouseButton != PCInput.MouseButton.None)
 					value = "\\" + this.MouseButton.ToString();
 
-				if (GamePad.GetState(PlayerIndex.One).IsConnected && this.GamePadButton != Buttons.BigButton)
+				if (GamePad.GetState(PlayerIndex.One).IsConnected && this.GamePadButton != 0)
 					return "\\" + this.GamePadButton.ToString();
 				else if (value != null)
 					return value;
@@ -51,6 +54,8 @@ namespace Lemma.Components
 		public Command MiddleMouseButtonUp = new Command();
 		public Command RightMouseButtonUp = new Command();
 		public Command<int> MouseScrolled = new Command<int>();
+
+		public Command<PCInputBinding> AnyInputDown = new Command<PCInputBinding>();
 
 		public Property<bool> EnableMouse = new Property<bool> { Value = true };
 
@@ -75,7 +80,7 @@ namespace Lemma.Components
 					this.Add(commandBinding);
 				}
 
-				if (ib.GamePadButton == Buttons.BigButton)
+				if (ib.GamePadButton == 0)
 					buttonBinding = null;
 				else
 				{
@@ -122,7 +127,7 @@ namespace Lemma.Components
 					this.Add(binding);
 				}
 
-				if (ib.GamePadButton == Buttons.BigButton)
+				if (ib.GamePadButton == 0)
 					buttonBinding = null;
 				else
 				{
@@ -521,6 +526,16 @@ namespace Lemma.Components
 			if (keys.Length > 0 && this.nextInputListeners.Count > 0)
 				this.notifyNextInputListeners(new PCInputBinding { Key = keys[0] });
 
+			if (this.AnyInputDown.Bindings.Count > 0)
+			{
+				Keys[] lastKeys = this.main.LastKeyboardState.Value.GetPressedKeys();
+				for (int i = 0; i < keys.Length; i++)
+				{
+					if (!lastKeys.Contains(keys[i]))
+						this.AnyInputDown.Execute(new PCInputBinding { Key = keys[i] });
+				}
+			}
+
 			foreach (KeyValuePair<Keys, Property<bool>> pair in this.keyProperties)
 			{
 				bool newValue = keyboard.IsKeyDown(pair.Key);
@@ -548,7 +563,7 @@ namespace Lemma.Components
 			GamePadState gamePad = this.main.GamePadState;
 			if (gamePad.IsConnected)
 			{
-				if (this.nextInputListeners.Count > 0)
+				if (this.nextInputListeners.Count > 0 || this.AnyInputDown.Bindings.Count > 0)
 				{
 					GamePadState lastGamePad = this.main.LastGamePadState;
 					List<Buttons> buttons = new List<Buttons>();
@@ -602,7 +617,15 @@ namespace Lemma.Components
 						buttons.Add(Buttons.Start);
 
 					if (buttons.Count > 0)
-						this.notifyNextInputListeners(new PCInputBinding { GamePadButton = buttons[0] });
+					{
+						if (this.AnyInputDown.Bindings.Count > 0)
+						{
+							for (int i = 0; i < buttons.Count; i++)
+								this.AnyInputDown.Execute(new PCInputBinding { GamePadButton = buttons[i] });
+						}
+						if (this.nextInputListeners.Count > 0)
+							this.notifyNextInputListeners(new PCInputBinding { GamePadButton = buttons[0] });
+					}
 				}
 
 				foreach (KeyValuePair<Buttons, Property<bool>> pair in this.buttonProperties)
@@ -698,6 +721,7 @@ namespace Lemma.Components
 							if (this.nextInputListeners.Count > 0)
 								this.notifyNextInputListeners(new PCInputBinding { MouseButton = MouseButton.LeftMouseButton });
 							this.LeftMouseButtonDown.Execute();
+							this.AnyInputDown.Execute(new PCInputBinding { MouseButton = MouseButton.LeftMouseButton });
 						}
 						else
 							this.LeftMouseButtonUp.Execute();
@@ -715,6 +739,7 @@ namespace Lemma.Components
 							if (this.nextInputListeners.Count > 0)
 								this.notifyNextInputListeners(new PCInputBinding { MouseButton = MouseButton.MiddleMouseButton });
 							this.MiddleMouseButtonDown.Execute();
+							this.AnyInputDown.Execute(new PCInputBinding { MouseButton = MouseButton.MiddleMouseButton });
 						}
 						else
 							this.MiddleMouseButtonUp.Execute();
@@ -732,6 +757,7 @@ namespace Lemma.Components
 							if (this.nextInputListeners.Count > 0)
 								this.notifyNextInputListeners(new PCInputBinding { MouseButton = MouseButton.RightMouseButton });
 							this.RightMouseButtonDown.Execute();
+							this.AnyInputDown.Execute(new PCInputBinding { MouseButton = MouseButton.RightMouseButton });
 						}
 						else
 							this.RightMouseButtonUp.Execute();

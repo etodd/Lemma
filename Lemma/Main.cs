@@ -82,8 +82,6 @@ namespace Lemma
 		public const int MapVersion = 972;
 		public const int Build = 972;
 
-		public static bool AllowEditingGameMaps;
-
 		public static Config.Lang[] Languages = new[]
 		{
 			Config.Lang.en,
@@ -118,6 +116,8 @@ namespace Lemma
 			public Property<float> SoundEffectVolume = new Property<float> { Value = 1.0f };
 			public Property<float> MusicVolume = new Property<float> { Value = 1.0f };
 			public Property<int> FPSLimit = new Property<int>();
+			[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+			public bool GodMode;
 			public int Version;
 			public string UUID;
 			public Property<PCInput.PCInputBinding> Forward = new Property<PCInput.PCInputBinding>();
@@ -130,7 +130,6 @@ namespace Lemma
 			public Property<PCInput.PCInputBinding> TogglePhone = new Property<PCInput.PCInputBinding>();
 			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding>();
 			public Property<PCInput.PCInputBinding> ToggleFullscreen = new Property<PCInput.PCInputBinding>();
-			public Property<PCInput.PCInputBinding> ToggleConsole = new Property<PCInput.PCInputBinding>();
 			public Property<PCInput.PCInputBinding> RecenterVRPose = new Property<PCInput.PCInputBinding>();
 
 			public Config()
@@ -150,7 +149,6 @@ namespace Lemma
 				this.TogglePhone.Value = new PCInput.PCInputBinding { Key = Keys.Tab, GamePadButton = Buttons.Y };
 				this.QuickSave.Value = new PCInput.PCInputBinding { Key = Keys.F5 };
 				this.ToggleFullscreen.Value = new PCInput.PCInputBinding { Key = Keys.F11 };
-				this.ToggleConsole.Value = new PCInput.PCInputBinding { Key = Keys.OemTilde };
 				this.RecenterVRPose.Value = new PCInput.PCInputBinding { Key = Keys.F2, GamePadButton = Buttons.Back };
 				this.InvertMouseX.Value = false;
 				this.InvertMouseY.Value = false;
@@ -693,7 +691,6 @@ namespace Lemma
 			TextElement.BindableProperties.Add("RollKick", this.Settings.RollKick);
 			TextElement.BindableProperties.Add("TogglePhone", this.Settings.TogglePhone);
 			TextElement.BindableProperties.Add("QuickSave", this.Settings.QuickSave);
-			TextElement.BindableProperties.Add("ToggleConsole", this.Settings.ToggleConsole);
 			TextElement.BindableProperties.Add("ToggleFullscreen", this.Settings.ToggleFullscreen);
 			TextElement.BindableProperties.Add("RecenterVRPose", this.Settings.RecenterVRPose);
 

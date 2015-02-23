@@ -433,7 +433,7 @@ namespace Lemma.Components
 		{
 			this.OpenDropDownView.RemoveAllOptions();
 			IEnumerable<string> maps;
-			if (Main.AllowEditingGameMaps)
+			if (this.main.Settings.GodMode)
 			{
 				maps = Directory.GetFiles(this.main.MapDirectory, "*" + IO.MapLoader.MapExtension)
 					.Concat(Directory.GetFiles(Path.Combine(this.main.MapDirectory, "Challenge"), "*" + IO.MapLoader.MapExtension))

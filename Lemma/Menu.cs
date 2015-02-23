@@ -1010,6 +1010,7 @@ namespace Lemma.Components
 
 			Action hideSettings = delegate()
 			{
+				this.main.SaveSettings();
 				this.showPauseMenu();
 
 				settingsShown = false;
@@ -1230,6 +1231,7 @@ namespace Lemma.Components
 			Action hideControls = delegate()
 			{
 				controlsShown = false;
+				this.main.SaveSettings();
 
 				this.showPauseMenu();
 
@@ -1310,11 +1312,11 @@ namespace Lemma.Components
 
 							if (allowGamepad)
 							{
-								if (binding.GamePadButton != Buttons.BigButton)
+								if (binding.GamePadButton != 0)
 									newValue.GamePadButton = binding.GamePadButton;
 							}
 							else
-								newValue.GamePadButton = Buttons.BigButton;
+								newValue.GamePadButton = 0;
 
 							setting.Value = newValue;
 						}
@@ -1333,7 +1335,6 @@ namespace Lemma.Components
 			addInputSetting(this.main.Settings.RollKick, "\\roll / kick", true, true);
 			addInputSetting(this.main.Settings.TogglePhone, "\\toggle phone", true, true);
 			addInputSetting(this.main.Settings.QuickSave, "\\quicksave", true, true);
-			addInputSetting(this.main.Settings.ToggleConsole, "\\toggle console", true, true);
 #if VR
 			if (this.main.VR)
 				addInputSetting(this.main.Settings.RecenterVRPose, "\\recenter pose", true, true);
@@ -1625,7 +1626,7 @@ namespace Lemma.Components
 
 			// Edit mode toggle button
 			Container switchToEditMode = this.main.UIFactory.CreateButton("\\edit mode", this.editMode);
-			switchToEditMode.Add(new Binding<bool>(switchToEditMode.Visible, () => !this.main.EditorEnabled && (Main.AllowEditingGameMaps || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory), this.main.EditorEnabled, this.main.MapFile));
+			switchToEditMode.Add(new Binding<bool>(switchToEditMode.Visible, () => !this.main.EditorEnabled && (this.main.Settings.GodMode || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory), this.main.EditorEnabled, this.main.MapFile));
 			this.resizeToMenu(switchToEditMode);
 			this.pauseMenu.Children.Add(switchToEditMode);
 
@@ -1831,15 +1832,15 @@ namespace Lemma.Components
 				}
 			};
 
-			this.input.Bind(this.main.Settings.ToggleConsole, PCInput.InputState.Down, delegate()
+			this.input.Add(new CommandBinding(this.input.GetKeyDown(Keys.OemTilde), delegate()
 			{
-				if (this.main.Paused || this.CanPause)
+				if (this.main.Settings.GodMode && (this.main.Paused || this.CanPause))
 				{
 					if (canPause() && ConsoleUI.Showing.Value == this.main.Paused.Value)
 						togglePause();
 					ConsoleUI.Showing.Value = !ConsoleUI.Showing.Value;
 				}
-			});
+			}));
 
 			this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), () => canPause() || this.dialog != null, togglePause));
 			this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.Start), canPause, togglePause));
@@ -2052,7 +2053,7 @@ namespace Lemma.Components
 			this.main.EditorEnabled.Value = true;
 			this.main.CurrentSave.Value = null;
 
-			if (Main.AllowEditingGameMaps || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory)
+			if (this.main.Settings.GodMode || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory)
 				IO.MapLoader.Load(this.main, this.main.MapFile);
 			else
 				IO.MapLoader.Load(this.main, null);

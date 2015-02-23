@@ -8,12 +8,28 @@ using System.Text;
 using Lemma.Util;
 using Lemma.Components;
 using Lemma.Factories;
+using Microsoft.Xna.Framework.Input;
 
 namespace Lemma.GameScripts
 {
 	public class MainMenu : ScriptBase
 	{
 		public static new bool AvailableInReleaseEditor = false;
+
+		private static PCInput.PCInputBinding[] konamiCode = new[]
+		{
+			new PCInput.PCInputBinding { Key = Keys.Up, GamePadButton = Buttons.DPadUp },
+			new PCInput.PCInputBinding { Key = Keys.Up, GamePadButton = Buttons.DPadUp },
+			new PCInput.PCInputBinding { Key = Keys.Down, GamePadButton = Buttons.DPadDown },
+			new PCInput.PCInputBinding { Key = Keys.Down, GamePadButton = Buttons.DPadDown },
+			new PCInput.PCInputBinding { Key = Keys.Left, GamePadButton = Buttons.DPadLeft },
+			new PCInput.PCInputBinding { Key = Keys.Right, GamePadButton = Buttons.DPadRight },
+			new PCInput.PCInputBinding { Key = Keys.Left, GamePadButton = Buttons.DPadLeft },
+			new PCInput.PCInputBinding { Key = Keys.Right, GamePadButton = Buttons.DPadRight },
+			new PCInput.PCInputBinding { Key = Keys.B, GamePadButton = Buttons.B },
+			new PCInput.PCInputBinding { Key = Keys.A, GamePadButton = Buttons.A },
+		};
+
 		public static void Run(Entity script)
 		{
 			const float fadeTime = 1.0f;
@@ -187,6 +203,35 @@ namespace Lemma.GameScripts
 			(
 				new Animation.Vector3MoveTo(main.Renderer.Tint, new Vector3(1.0f), 0.3f)
 			));
+
+			if (!main.Settings.GodMode)
+			{
+				int konamiIndex = 0;
+				PCInput input = script.Create<PCInput>();
+				input.Add(new CommandBinding<PCInput.PCInputBinding>(input.AnyInputDown, delegate(PCInput.PCInputBinding button)
+				{
+					if (!main.Settings.GodMode)
+					{
+						if (button.Key == konamiCode[konamiIndex].Key || button.GamePadButton == konamiCode[konamiIndex].GamePadButton)
+						{
+							if (konamiIndex == konamiCode.Length - 1)
+							{
+								main.Settings.GodMode = true;
+								main.SaveSettings();
+								main.Menu.HideMessage(script, main.Menu.ShowMessage(script, "\\god mode"), 5.0f);
+							}
+							else
+								konamiIndex++;
+						}
+						else
+						{
+							konamiIndex = 0;
+							if (button.Key == konamiCode[konamiIndex].Key || button.GamePadButton == konamiCode[konamiIndex].GamePadButton)
+								konamiIndex++;
+						}
+					}
+				}));
+			}
 		}
 	}
 }
