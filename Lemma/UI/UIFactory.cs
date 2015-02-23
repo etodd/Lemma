@@ -149,7 +149,7 @@ namespace Lemma.Components
 			}));
 			result.Add(new CommandBinding(result.MouseLeftUp, delegate()
 			{
-				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_MOUSEOVER);
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_CLICK);
 				if (action != null)
 					action();
 			}));

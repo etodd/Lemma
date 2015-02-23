@@ -39,6 +39,8 @@ namespace Lemma.Components
 		public Property<Vector3> LightningColor = new Property<Vector3>();
 		public Property<bool> LightningShadowed = new Property<bool>();
 		public Property<Vector3> SkyboxColor = new Property<Vector3>();
+		[XmlIgnore]
+		public Property<int> ParticlesPerSecond = new Property<int>();
 
 		// Output properties
 		[XmlIgnore]
@@ -128,28 +130,33 @@ namespace Lemma.Components
 
 		public void Update()
 		{
-			this.raycastTimer = 0.0f;
-			Vector3 cameraPos = main.Camera.Position;
-			float averageHeight = 0.0f;
-			float min = float.MinValue;
-			foreach (Water w in Water.ActiveInstances)
+			if (this.ParticlesPerSecond > 0)
 			{
-				if (w.CannotSuspendByDistance) // It's big
-					min = Math.Max(min, w.Position.Value.Y);
-			}
-			this.KernelOffset.Value = main.Camera.Position + new Vector3(KernelSize * KernelSpacing * -0.5f, RaycastHeight + StartHeight, KernelSize * KernelSpacing * -0.5f);
-			for (int x = 0; x < KernelSize; x++)
-			{
-				for (int y = 0; y < KernelSize; y++)
+				this.raycastTimer = 0.0f;
+				Vector3 cameraPos = main.Camera.Position;
+				float averageHeight = 0.0f;
+				float min = float.MinValue;
+				foreach (Water w in Water.ActiveInstances)
 				{
-					Vector3 pos = KernelOffset + new Vector3(x * KernelSpacing, 0, y * KernelSpacing);
-					Voxel.GlobalRaycastResult raycast = Voxel.GlobalRaycast(pos, Vector3.Down, StartHeight + RaycastHeight + (VerticalSpeed * MaxLifetime));
-					float height = raycast.Voxel == null ? min : raycast.Position.Y;
-					this.RaycastHeights[x, y] = height;
-					averageHeight += Math.Max(cameraPos.Y, Math.Min(height, cameraPos.Y + StartHeight)) * audioKernel[x, y];
+					if (w.CannotSuspendByDistance) // It's big
+						min = Math.Max(min, w.Position.Value.Y);
 				}
+				this.KernelOffset.Value = main.Camera.Position + new Vector3(KernelSize * KernelSpacing * -0.5f, RaycastHeight + StartHeight, KernelSize * KernelSpacing * -0.5f);
+				for (int x = 0; x < KernelSize; x++)
+				{
+					for (int y = 0; y < KernelSize; y++)
+					{
+						Vector3 pos = KernelOffset + new Vector3(x * KernelSpacing, 0, y * KernelSpacing);
+						Voxel.GlobalRaycastResult raycast = Voxel.GlobalRaycast(pos, Vector3.Down, StartHeight + RaycastHeight + (VerticalSpeed * MaxLifetime));
+						float height = raycast.Voxel == null ? min : raycast.Position.Y;
+						this.RaycastHeights[x, y] = height;
+						averageHeight += Math.Max(cameraPos.Y, Math.Min(height, cameraPos.Y + StartHeight)) * audioKernel[x, y];
+					}
+				}
+				AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.RAIN_VOLUME, (float)Math.Min((float)this.ParticlesPerSecond.Value / 2000.0f, 1.0f) * (1.0f - ((averageHeight - cameraPos.Y) / StartHeight)));
 			}
-			AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.RAIN_VOLUME, 1.0f - ((averageHeight - cameraPos.Y) / StartHeight));
+			else
+				AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.RAIN_VOLUME, 0.0f);
 		}
 
 		public void Update(float dt)

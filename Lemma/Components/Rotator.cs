@@ -24,6 +24,7 @@ namespace Lemma.Components
 		}
 
 		private List<Transform> transforms = new List<Transform>();
+		private List<Voxel> voxels = new List<Voxel>();
 		public override void Start()
 		{
 			if (!this.main.EditorEnabled)
@@ -32,7 +33,12 @@ namespace Lemma.Components
 				{
 					Entity e = handle.Target;
 					if (e != null && e.Active)
+					{
 						this.transforms.Add(e.Get<Transform>());
+						Voxel v = e.Get<Voxel>();
+						if (v != null)
+							this.voxels.Add(v);
+					}
 				}
 			}
 		}
@@ -44,7 +50,7 @@ namespace Lemma.Components
 			else
 			{
 				Vector3 v = this.Velocity.Value * dt;
-				Quaternion diff = Microsoft.Xna.Framework.Quaternion.CreateFromYawPitchRoll(v.X, v.Y, v.Z);
+				Quaternion diff = Microsoft.Xna.Framework.Quaternion.CreateFromYawPitchRoll(v.Y, v.X, v.Z);
 				for (int i = 0; i < this.transforms.Count; i++)
 				{
 					Transform t = this.transforms[i];
@@ -53,6 +59,19 @@ namespace Lemma.Components
 					else
 					{
 						this.transforms.RemoveAt(i);
+						i--;
+					}
+				}
+
+				v = this.Velocity;
+				for (int i = 0; i < this.voxels.Count; i++)
+				{
+					Voxel voxel = this.voxels[i];
+					if (voxel.Active)
+						voxel.AngularVelocity.Value = v;
+					else
+					{
+						this.voxels.RemoveAt(i);
 						i--;
 					}
 				}

@@ -58,6 +58,7 @@ public class AK
         public static uint PLAY_TURRET_DEATH = 3291199175U;
         public static uint PLAY_TURRET_FIRE = 3057469883U;
         public static uint PLAY_TURRET_MISS = 187900779U;
+        public static uint PLAY_UI_CLICK = 1749424733U;
         public static uint PLAY_UI_MOUSEOVER = 808445146U;
         public static uint PLAY_UI_SWOOSH = 935590362U;
         public static uint PLAY_WALL_BREAK_01 = 2635525752U;
