@@ -101,7 +101,6 @@ namespace Lemma.Components
 
 		public Command<string> Spawn = new Command<string>();
 		public Command Save = new Command();
-		public Command Duplicate = new Command();
 		public Command DeleteSelected = new Command();
 		public Command FocusView = new Command();
 
@@ -312,51 +311,6 @@ namespace Lemma.Components
 			this.Save.Action = delegate()
 			{
 				this.SaveWithCallback(null);
-			};
-
-			this.Duplicate.Action = delegate()
-			{
-				if (!this.EnableCommands())
-					return;
-
-				this.NeedsSave.Value = true;
-
-				if (this.TransformMode.Value != TransformModes.None)
-					this.CommitTransform.Execute();
-
-				IEnumerable<Entity> entities = this.SelectedEntities.ToList();
-				this.SelectedEntities.Clear();
-				Dictionary<ulong, ulong> mapping = new Dictionary<ulong, ulong>();
-				foreach (Entity entity in entities)
-				{
-					if (Factory<Main>.Get(entity.Type).EditorCanSpawn)
-					{
-						Entity copy = Factory<Main>.Duplicate(this.main, entity);
-						this.main.Add(copy);
-						mapping.Add(entity.GUID, copy.GUID);
-					}
-				}
-
-				foreach (Entity e in entities)
-				{
-					Entity copy = this.main.GetByGUID(mapping[e.GUID]);
-					foreach (Entity.CommandLink link in e.LinkedCommands)
-					{
-						ulong guid;
-						if (mapping.TryGetValue(link.TargetEntity.GUID, out guid))
-						{
-							copy.LinkedCommands.Add(new Entity.CommandLink
-							{
-								SourceCommand = link.SourceCommand,
-								TargetEntity = new Entity.Handle { GUID = guid },
-								TargetCommand = link.TargetCommand,
-							});
-						}
-					}
-					this.SelectedEntities.Add(copy);
-				}
-
-				this.StartTranslation.Execute();
 			};
 
 			this.Add(new ChangeBinding<bool>(this.VoxelEditMode, delegate(bool old, bool value)

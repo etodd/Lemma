@@ -356,12 +356,6 @@ namespace Lemma.Factories
 				() => !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None && editor.SelectedEntities.Length > 0 && !editor.MovementEnabled,
 				editor.VoxelEditMode, editor.TransformMode, editor.SelectedEntities.Length, editor.MovementEnabled
 			);
-			AddCommand
-			(
-				entity, main, commandQueueContainer, "Duplicate", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.D }, editor.Duplicate, gui.EntityCommands,
-				() => !editor.MovementEnabled && editor.SelectedEntities.Length > 0 && editor.TransformMode.Value == Editor.TransformModes.None,
-				editor.MovementEnabled, editor.SelectedEntities.Length, editor.TransformMode
-			);
 
 			// Start playing
 			AddCommand
@@ -1088,6 +1082,12 @@ namespace Lemma.Factories
 			);
 
 			MemoryStream yankBuffer = null;
+			Func<MemoryStream> copy = delegate()
+			{
+				MemoryStream stream = new MemoryStream();
+				IO.MapLoader.Serializer.Serialize(stream, editor.SelectedEntities.Where(x => Factory<Main>.Get(x.Type).EditorCanSpawn).ToList());
+				return stream;
+			};
 			AddCommand
 			(
 				entity,
@@ -1104,14 +1104,99 @@ namespace Lemma.Factories
 							yankBuffer.Dispose();
 							yankBuffer = null;
 						}
-						yankBuffer = new MemoryStream();
-						IO.MapLoader.Serializer.Serialize(yankBuffer, editor.SelectedEntities.Where(x => Factory<Main>.Get(x.Type).EditorCanSpawn).ToList());
+						yankBuffer = copy();
 					}
 				},
 				gui.EntityCommands,
 				() => !editor.VoxelEditMode && !input.EnableLook && editor.SelectedEntities.Length > 0 && editor.TransformMode.Value == Editor.TransformModes.None,
 				editor.VoxelEditMode, input.EnableLook, editor.SelectedEntities.Length, editor.TransformMode
 			);
+
+			Action<MemoryStream, bool> paste = delegate(MemoryStream buffer, bool recenter)
+			{
+				buffer.Seek(0, SeekOrigin.Begin);
+				List<Entity> entities = (List<Entity>)IO.MapLoader.Serializer.Deserialize(buffer);
+				Dictionary<ulong, ulong> mapping = new Dictionary<ulong, ulong>();
+
+				Vector3 center = Vector3.Zero;
+				int entitiesWithTransforms = 0;
+				foreach (Entity e in entities)
+				{
+					ulong originalGUID = e.GUID;
+					e.GUID = 0;
+					e.ID.Value = "";
+					Factory<Main> factory = Factory<Main>.Get(e.Type);
+					factory.Bind(e, main);
+					Transform t = e.Get<Transform>();
+					if (t != null)
+					{
+						center += t.Position;
+						entitiesWithTransforms++;
+					}
+					main.Add(e);
+					mapping.Add(originalGUID, e.GUID);
+				}
+				center /= entitiesWithTransforms;
+
+				// Recenter entities around the editor and fix entity links
+				foreach (Entity e in entities)
+				{
+					if (recenter)
+					{
+						Transform t = e.Get<Transform>();
+						if (t != null)
+							t.Position.Value += editor.Position - center;
+					}
+					foreach (KeyValuePair<string, PropertyEntry> p in e.Properties)
+					{
+						Property<Entity.Handle> entityProp = p.Value.Property as Property<Entity.Handle>;
+						if (entityProp != null)
+						{
+							ulong guid;
+							if (mapping.TryGetValue(entityProp.Value.GUID, out guid))
+								entityProp.Value = new Entity.Handle { GUID = guid };
+							else if (entityProp.Value.Target == null)
+								entityProp.Value = null;
+						}
+						else
+						{
+							ListProperty<Entity.Handle> listEntityProp = p.Value.Property as ListProperty<Entity.Handle>;
+							if (listEntityProp != null)
+							{
+								for (int i = 0; i < listEntityProp.Count; i++)
+								{
+									ulong guid;
+									Entity.Handle handle = listEntityProp[i];
+									if (mapping.TryGetValue(handle.GUID, out guid))
+										listEntityProp[i] = new Entity.Handle { GUID = guid };
+									else if (handle.Target == null)
+									{
+										listEntityProp.RemoveAt(i);
+										i--;
+									}
+								}
+							}
+						}
+					}
+					for (int i = 0; i < e.LinkedCommands.Count; i++)
+					{
+						Entity.CommandLink link = e.LinkedCommands[i];
+						ulong guid;
+						if (mapping.TryGetValue(link.TargetEntity.GUID, out guid))
+							link.TargetEntity.GUID = guid;
+						else if (link.TargetEntity.Target == null)
+						{
+							e.LinkedCommands.RemoveAt(i);
+							i--;
+						}
+					}
+				}
+
+				editor.NeedsSave.Value = true;
+				editor.SelectedEntities.Clear();
+				editor.SelectedEntities.AddAll(entities);
+				editor.StartTranslation.Execute();
+			};
 
 			AddCommand
 			(
@@ -1125,61 +1210,26 @@ namespace Lemma.Factories
 					Action = delegate()
 					{
 						if (yankBuffer != null)
-						{
-							yankBuffer.Seek(0, SeekOrigin.Begin);
-							List<Entity> entities = (List<Entity>)IO.MapLoader.Serializer.Deserialize(yankBuffer);
-							Dictionary<ulong, ulong> mapping = new Dictionary<ulong, ulong>();
-
-							Vector3 center = Vector3.Zero;
-							int entitiesWithTransforms = 0;
-							foreach (Entity e in entities)
-							{
-								ulong originalGUID = e.GUID;
-								e.GUID = 0;
-								e.ID.Value = "";
-								Factory<Main> factory = Factory<Main>.Get(e.Type);
-								factory.Bind(e, main);
-								Transform t = e.Get<Transform>();
-								if (t != null)
-								{
-									center += t.Position;
-									entitiesWithTransforms++;
-								}
-								main.Add(e);
-								mapping.Add(originalGUID, e.GUID);
-							}
-
-							center /= entitiesWithTransforms;
-
-							// Recenter entities around the editor and fix command links
-							foreach (Entity e in entities)
-							{
-								Transform t = e.Get<Transform>();
-								if (t != null)
-									t.Position.Value += editor.Position - center;
-								for (int i = 0; i < e.LinkedCommands.Count; i++)
-								{
-									Entity.CommandLink link = e.LinkedCommands[i];
-									ulong guid;
-									if (mapping.TryGetValue(link.TargetEntity.GUID, out guid))
-										link.TargetEntity.GUID = guid;
-									else if (link.TargetEntity.Target == null)
-									{
-										e.LinkedCommands.RemoveAt(i);
-										i--;
-									}
-								}
-							}
-
-							editor.SelectedEntities.Clear();
-							editor.SelectedEntities.AddAll(entities);
-							editor.StartTranslation.Execute();
-						}
+							paste(yankBuffer, true);
 					}
 				},
 				gui.EntityCommands,
 				() => !editor.VoxelEditMode && !input.EnableLook && editor.TransformMode == Editor.TransformModes.None && !string.IsNullOrEmpty(main.MapFile),
 				editor.VoxelEditMode, input.EnableLook, editor.TransformMode, main.MapFile
+			);
+
+			AddCommand
+			(
+				entity, main, commandQueueContainer, "Duplicate", new PCInput.Chord { Modifier = Keys.LeftShift, Key = Keys.D }, new Command
+				{
+					Action = delegate()
+					{
+						using (MemoryStream buffer = copy())
+							paste(buffer, false);
+					}
+				}, gui.EntityCommands,
+				() => !editor.MovementEnabled && editor.SelectedEntities.Length > 0 && editor.TransformMode.Value == Editor.TransformModes.None,
+				editor.MovementEnabled, editor.SelectedEntities.Length, editor.TransformMode
 			);
 
 			AddCommand

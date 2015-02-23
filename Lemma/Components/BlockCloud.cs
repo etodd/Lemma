@@ -129,6 +129,7 @@ namespace Lemma.Components
 						SceneryBlock sceneryBlock = block.Get<SceneryBlock>();
 						sceneryBlock.Type.Value = this.Type;
 						sceneryBlock.Scale.Value = this.Scale;
+						block.Get<PhysicsBlock>().Box.LinearDamping = 0.75f;
 						this.Blocks.Add(block);
 						main.Add(block);
 					}

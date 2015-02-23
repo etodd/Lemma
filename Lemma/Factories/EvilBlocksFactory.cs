@@ -100,7 +100,7 @@ namespace Lemma.Factories
 				Tasks = new[] { checkOperationalRadius, },
 			});
 
-			const float sightDistance = 30.0f;
+			const float sightDistance = 25.0f;
 			const float hearingDistance = 15.0f;
 
 			ai.Add(new AI.AIState
@@ -217,13 +217,13 @@ namespace Lemma.Factories
 					{
 						Action = delegate()
 						{
-							if (ai.TimeInCurrentState.Value > 20.0f)
+							if (ai.TimeInCurrentState.Value > 15.0f)
 							{
 								Entity voxel = raycastAI.Voxel.Value.Target;
 								if (voxel != null && voxel.Active)
 									raycastAI.Coord.Value = raycastAI.LastCoord.Value = voxel.Get<Voxel>().GetCoordinate(transform.Position);
 								raycastAI.Move(new Vector3(((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f, ((float)this.random.NextDouble() * 2.0f) - 1.0f));
-								ai.CurrentState.Value = "Alert";
+								ai.CurrentState.Value = "Idle";
 							}
 							else
 							{
