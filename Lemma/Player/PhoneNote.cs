@@ -649,6 +649,7 @@ namespace Lemma.Components
 								s.Get<SignalTower>().Initial.Value = null;
 						}
 
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PHONE_SEND, entity);
 						phone.Answer(answer);
 
 						scrollToBottom();

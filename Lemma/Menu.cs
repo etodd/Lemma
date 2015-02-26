@@ -57,6 +57,8 @@ namespace Lemma.Components
 
 		Property<UIComponent> currentMenu = new Property<UIComponent> { Value = null };
 
+		public Property<bool> Showing = new Property<bool>();
+
 		public Property<bool> CanPause = new Property<bool> { Value = true };
 
 		// Settings to be restored when unpausing
@@ -849,6 +851,8 @@ namespace Lemma.Components
 
 			this.input = new PCInput();
 			this.main.AddComponent(this.input);
+
+			this.Add(new Binding<bool, UIComponent>(this.Showing, x => x != null, this.currentMenu));
 
 			Log.Handler = delegate(string log)
 			{
@@ -2057,14 +2061,6 @@ namespace Lemma.Components
 				IO.MapLoader.Load(this.main, this.main.MapFile);
 			else
 				IO.MapLoader.Load(this.main, null);
-		}
-
-		public bool Showing
-		{
-			get
-			{
-				return this.currentMenu.Value != null;
-			}
 		}
 
 		public void Show()

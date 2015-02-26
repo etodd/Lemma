@@ -69,6 +69,7 @@ namespace Lemma.Components
 					playerPos += PlayerFactory.Instance.Get<Player>().Character.LinearVelocity.Value * 0.65f;
 					foreach (DynamicVoxel newMap in spawnedMaps)
 					{
+						newMap.Dangerous.Value = true;
 						Vector3 toPlayer = playerPos - newMap.PhysicsEntity.Position;
 						toPlayer.Normalize();
 						if (Math.Abs(toPlayer.Y) < 0.9f)

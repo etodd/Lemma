@@ -1266,15 +1266,14 @@ namespace Lemma.Components
 
 			protected Dictionary<t, MeshEntry> meshes = new Dictionary<t, MeshEntry>();
 
-			public void UpdateTransform()
+			public void UpdateTransform(BEPUutilities.AffineTransform t)
 			{
-				Matrix transform = this.Voxel.Transform;
 				lock (this.meshes)
 				{
 					foreach (KeyValuePair<t, MeshEntry> pair in this.meshes)
 					{
 						if (pair.Value.Mesh != null)
-							pair.Value.Mesh.WorldTransform = new BEPUutilities.AffineTransform(BEPUutilities.Matrix3x3.CreateFromMatrix(transform), transform.Translation);
+							pair.Value.Mesh.WorldTransform = t;
 					}
 				}
 			}
@@ -2285,8 +2284,9 @@ namespace Lemma.Components
 			{
 				this.Add(new ChangeBinding<Matrix>(this.Transform, delegate(Matrix old, Matrix value)
 				{
+					BEPUutilities.AffineTransform t = new BEPUutilities.AffineTransform(BEPUutilities.Matrix3x3.CreateFromMatrix(value), value.Translation);
 					for (int i = 0; i < this.Chunks.Count; i++)
-						this.Chunks[i].UpdateTransform();
+						this.Chunks[i].UpdateTransform(t);
 				}));
 			}
 		}
@@ -3621,7 +3621,7 @@ namespace Lemma.Components
 			while (true)
 			{
 				WorkItem item = Voxel.workQueue.Dequeue();
-				item.Voxel.RegenerateImmediately(item.Callback);
+					item.Voxel.RegenerateImmediately(item.Callback);
 			}
 		}
 
@@ -4891,6 +4891,8 @@ namespace Lemma.Components
 		public Property<float> StaticFriction = new Property<float> { Value = MaterialManager.DefaultStaticFriction };
 
 		public Property<bool> CannotSuspendByDistance = new Property<bool>();
+
+		public Property<bool> Dangerous = new Property<bool>();
 
 		private bool firstPhysicsUpdate = true;
 		private bool physicsDirty;

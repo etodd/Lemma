@@ -86,10 +86,10 @@ namespace Lemma.Factories
 			VoxelTools voxelTools = entity.GetOrCreate<VoxelTools>("VoxelTools");
 			Footsteps footsteps = entity.GetOrCreate<Footsteps>("Footsteps");
 			FallDamage fallDamage = entity.GetOrCreate<FallDamage>("FallDamage");
-			CameraController cameraControl = entity.GetOrCreate<CameraController>("CameraControl");
 			FPSCamera fpsCamera = entity.GetOrCreate<FPSCamera>("FPSCamera");
 			fpsCamera.Enabled.Value = false;
 			Rumble rumble = entity.GetOrCreate<Rumble>("Rumble");
+			CameraController cameraControl = entity.GetOrCreate<CameraController>("CameraControl");
 
 			Property<Vector3> floor = new Property<Vector3>();
 			transform.Add(new Binding<Vector3>(floor, () => transform.Position + new Vector3(0, player.Character.Height * -0.5f, 0), transform.Position, player.Character.Height));
@@ -407,22 +407,6 @@ namespace Lemma.Factories
 
 			player.EnabledInEditMode = false;
 
-			Action updateFallSound = delegate()
-			{
-				float speed = player.Character.LinearVelocity.Value.Length();
-				float maxSpeed = player.Character.MaxSpeed * 1.25f;
-				float value;
-				if (speed > maxSpeed)
-					value = (speed - maxSpeed) / (maxSpeed * 2.0f);
-				else
-					value = 0.0f;
-				AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_PLAYER_FALL, value);
-			};
-			updateFallSound();
-			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_FALL, entity);
-			player.Add(new NotifyBinding(updateFallSound, player.Character.LinearVelocity));
-			SoundKiller.Add(entity, AK.EVENTS.STOP_PLAYER_FALL);
-
 			player.Add(new TwoWayBinding<Matrix>(transform.Matrix, player.Character.Transform));
 
 			model.Add(new Binding<Matrix>(model.Transform, delegate()
@@ -506,13 +490,12 @@ namespace Lemma.Factories
 
 			float parkourTime = 0;
 			float jumpTime = 0;
-			const float gracePeriod = 1.0f;
 			jumper.Action = delegate(float dt)
 			{
 				if (player.EnableMoves && player.Character.EnableWalking
 					&& vault.CurrentState.Value == Vault.State.None
 					&& !rollKickSlide.Rolling && !rollKickSlide.Kicking
-					&& jumpTime < gracePeriod)
+					&& jumpTime < Player.SlowmoTime)
 				{
 					if (jump.Go())
 					{
@@ -549,7 +532,7 @@ namespace Lemma.Factories
 					&& !rollKickSlide.Kicking
 					&& !rollKickSlide.Rolling
 					&& wallRun.CurrentState.Value == WallRun.State.None
-					&& parkourTime < gracePeriod)
+					&& parkourTime < Player.SlowmoTime)
 				{
 					bool didSomething = false;
 

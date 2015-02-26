@@ -305,7 +305,7 @@ namespace Lemma.Components
 					}
 				}
 
-				Vector3 velocity = this.LinearVelocity;
+				Vector3 velocity = this.LinearVelocity - baseVelocity;
 				float currentVerticalSpeed = velocity.Y;
 				velocity.Y = 0.0f;
 				float jumpSpeed = jumpDirection.Length();

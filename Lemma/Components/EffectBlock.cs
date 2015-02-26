@@ -42,6 +42,9 @@ namespace Lemma.Components
 
 		public bool CheckAdjacent;
 
+		private static float lastSound;
+		private static bool soundTimerSetup;
+
 		private Entry entry = new Entry();
 		public override void Awake()
 		{
@@ -55,6 +58,20 @@ namespace Lemma.Components
 					EffectBlock.animatingBlocks.Remove(this.entry);
 				this.entry.Voxel = null;
 			}));
+			
+			EffectBlock.setupSoundTimer(main);
+		}
+
+		private static void setupSoundTimer(Main main)
+		{
+			if (!EffectBlock.soundTimerSetup)
+			{
+				EffectBlock.soundTimerSetup = true;
+				new CommandBinding<string>(main.LoadingMap, delegate(string map)
+				{
+					EffectBlock.lastSound = 0;
+				});
+			}
 		}
 
 		private void addEntry()
@@ -76,8 +93,6 @@ namespace Lemma.Components
 			this.StateId = s;
 			this.addEntry();
 		}
-
-		private static Random random = new Random();
 
 		public void Update(float dt)
 		{
@@ -178,8 +193,11 @@ namespace Lemma.Components
 									m.Empty(this.Coord);
 								m.Fill(this.Coord, Voxel.States.All[this.StateId]);
 								m.Regenerate();
-								if (EffectBlock.random.Next(0, 4) == 0)
+								if (this.main.TotalTime - EffectBlock.lastSound > 0.15f)
+								{
+									EffectBlock.lastSound = this.main.TotalTime;
 									AkSoundEngine.PostEvent(AK.EVENTS.PLAY_BLOCK_BUILD, absolutePos);
+								}
 								this.Entity.Delete.Execute();
 								return;
 							}

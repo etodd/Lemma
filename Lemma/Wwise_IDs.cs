@@ -12,6 +12,7 @@ public class AK
         public static uint PLAY_CAMERA_SHUTTER = 1401567661U;
         public static uint PLAY_COLLECTIBLE = 661747096U;
         public static uint PLAY_DAWN_AMBIENT = 1175888809U;
+        public static uint PLAY_DOOR_AMBIENCE = 48136393U;
         public static uint PLAY_DOOR_OPEN = 1660008929U;
         public static uint PLAY_EVIL_CUBES = 1708164667U;
         public static uint PLAY_EXPLOSION = 4030404899U;
@@ -30,6 +31,7 @@ public class AK
         public static uint PLAY_NOTE_PICKUP = 2403250269U;
         public static uint PLAY_ORANGE_BURN = 1341922784U;
         public static uint PLAY_PHONE_PICKUP = 2791348401U;
+        public static uint PLAY_PHONE_SEND = 1672978639U;
         public static uint PLAY_PHONE_VIBRATE = 1246969326U;
         public static uint PLAY_PLAYER_BREATHING_HARD = 3584441250U;
         public static uint PLAY_PLAYER_BREATHING_SOFT = 4243459973U;
@@ -77,6 +79,7 @@ public class AK
         public static uint STOP_ALL = 452547817U;
         public static uint STOP_ALL_OBJECT = 2638811145U;
         public static uint STOP_DAWN_AMBIENT = 672119035U;
+        public static uint STOP_DOOR_AMBIENCE = 2699574911U;
         public static uint STOP_EVIL_CUBES = 3034540413U;
         public static uint STOP_EXTERIOR_WIND = 4269705691U;
         public static uint STOP_GLOWSQUARE = 1198720254U;

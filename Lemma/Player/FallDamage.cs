@@ -82,7 +82,7 @@ namespace Lemma.Components
 				if (map != null)
 				{
 					float force = contacts[contacts.Count - 1].NormalImpulse;
-					float threshold = map.Entity.Type == "FallingTower" ? 14.0f : 28.0f;
+					float threshold = map.Dangerous ? 20.0f : 50.0f;
 					float playerLastSpeed = Vector3.Dot(this.lastLinearVelocity, Vector3.Normalize(-contacts[contacts.Count - 1].Contact.Normal)) * 2.5f;
 					if (force > threshold + playerLastSpeed + 4.0f)
 						this.PhysicsDamage.Execute((force - threshold - playerLastSpeed) * 0.04f);

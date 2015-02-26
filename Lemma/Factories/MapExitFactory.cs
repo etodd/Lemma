@@ -32,6 +32,12 @@ namespace Lemma.Factories
 
 			MapExit mapExit = entity.GetOrCreate<MapExit>("MapExit");
 
+			AmbientSound sound = entity.GetOrCreate<AmbientSound>();
+			sound.Add(new Binding<Vector3>(sound.Position, transform.Position));
+			sound.PlayCue.Value = AK.EVENTS.PLAY_DOOR_AMBIENCE;
+			sound.StopCue.Value = AK.EVENTS.STOP_DOOR_AMBIENCE;
+			sound.Add(new Binding<bool>(sound.Enabled, trigger.Enabled));
+
 			trigger.Add(new TwoWayBinding<Vector3>(transform.Position, trigger.Position));
 			trigger.Add(new CommandBinding(trigger.PlayerEntered, (Action)mapExit.Go));
 

@@ -17,6 +17,7 @@ namespace Lemma.Components
 {
 	public class Player : Component<Main>, IUpdateableComponent, IEarlyUpdateableComponent
 	{
+		public const float SlowmoTime = 1.5f;
 		[XmlIgnore]
 		public Character Character;
 
@@ -40,6 +41,8 @@ namespace Lemma.Components
 		private float slowmoTimer;
 		public Property<float> Health = new Property<float> { Value = 1.0f };
 
+		private float lastSpeed = 0.0f;
+
 		[XmlIgnore]
 		public Command<float> Rumble = new Command<float>();
 
@@ -62,6 +65,10 @@ namespace Lemma.Components
 			this.Add(new NotifyBinding(this.main.EarlyUpdateablesModified, this.UpdateOrder));
 			this.Character.Body.Tag = this;
 			this.main.Space.Add(this.Character);
+
+			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_FALL, this.Entity);
+			AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_PLAYER_FALL, 0.0f);
+			SoundKiller.Add(this.Entity, AK.EVENTS.STOP_PLAYER_FALL);
 
 			this.Add(new ChangeBinding<float>(this.Health, delegate(float old, float value)
 			{
@@ -103,7 +110,7 @@ namespace Lemma.Components
 			if (this.SlowMotion)
 			{
 				this.slowmoTimer += dt;
-				if (this.slowmoTimer > 1.5f)
+				if (this.slowmoTimer > Player.SlowmoTime)
 					this.SlowMotion.Value = false;
 			}
 
@@ -113,6 +120,20 @@ namespace Lemma.Components
 				if (this.damageTimer > Player.healthRegenerateDelay)
 					this.Health.Value += Player.healthRegenerateRate * dt;
 			}
+
+			float speed = this.Character.LinearVelocity.Value.Length();
+			if (speed < this.lastSpeed)
+				speed = Math.Max(speed, this.lastSpeed - 40.0f * dt);
+			else if (speed > this.lastSpeed)
+				speed = Math.Min(speed, this.lastSpeed + 10.0f * dt);
+			this.lastSpeed = speed;
+			float maxSpeed = this.Character.MaxSpeed * 1.3f;
+			float volume;
+			if (speed > maxSpeed)
+				volume = (speed - maxSpeed) / (maxSpeed * 2.0f);
+			else
+				volume = 0.0f;
+			AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_PLAYER_FALL, volume);
 
 			// Determine if the player is swimming
 			bool swimming = false;

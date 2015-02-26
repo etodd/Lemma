@@ -75,32 +75,26 @@ namespace Lemma.Components
 
 			m["Idle"].GetChannel(m.GetBoneIndex("ORG-spine")).Filter = delegate(Matrix spine)
 			{
-				if (this.idling)
-				{
-					float x;
-					if (this.idleRotationBlend < 1.0f)
-						x = (this.Rotation - this.idleRotation.ClosestAngle(this.Rotation)) * Math.Max(0.0f, 1.0f - this.idleRotationBlend);
-					else
-						x = this.Rotation - this.idleRotation.ClosestAngle(this.Rotation);
-					return spine * Matrix.CreateRotationY(x);
-				}
+				float x;
+				if (this.idleRotationBlend < 1.0f)
+					x = (this.Rotation - this.idleRotation.ClosestAngle(this.Rotation)) * Math.Max(0.0f, 1.0f - this.idleRotationBlend);
+				else if (this.idling)
+					x = this.Rotation - this.idleRotation.ClosestAngle(this.Rotation);
 				else
-					return spine;
+					x = 0.0f;
+				return spine * Matrix.CreateRotationY(x);
 			};
 
 			m["Idle"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix hips)
 			{
-				if (this.idling)
-				{
-					float x;
-					if (this.idleRotationBlend < 1.0f)
-						x = (this.idleRotation.ClosestAngle(this.Rotation) - this.Rotation) * Math.Max(0.0f, 1.0f - this.idleRotationBlend);
-					else
-						x = this.idleRotation.ClosestAngle(this.Rotation) - this.Rotation;
-					return hips * Matrix.CreateRotationZ(x);
-				}
+				float x;
+				if (this.idleRotationBlend < 1.0f)
+					x = (this.idleRotation.ClosestAngle(this.Rotation) - this.Rotation) * Math.Max(0.0f, 1.0f - this.idleRotationBlend);
+				else if (this.idling)
+					x = this.idleRotation.ClosestAngle(this.Rotation) - this.Rotation;
 				else
-					return hips;
+					x = 0.0f;
+				return hips * Matrix.CreateRotationZ(x);
 			};
 
 			this.relativeHeadBone = m.GetRelativeBoneTransform("ORG-head");
@@ -166,6 +160,8 @@ namespace Lemma.Components
 		const float sprintRange = 1.0f;
 		const float sprintThreshold = Character.DefaultMaxSpeed - sprintRange;
 
+		private float lastHorizontalSpeed;
+
 		public void Update(float dt)
 		{
 			Vector2 mouse = this.Mouse;
@@ -174,6 +170,11 @@ namespace Lemma.Components
 			Vector3 horizontalRelativeVelocity = relativeVelocity;
 			horizontalRelativeVelocity.Y = 0;
 			float horizontalSpeed = horizontalRelativeVelocity.Length();
+			if (horizontalSpeed < this.lastHorizontalSpeed)
+				horizontalSpeed = Math.Max(horizontalSpeed, this.lastHorizontalSpeed - 40.0f * dt);
+			else if (horizontalSpeed > this.lastHorizontalSpeed)
+				horizontalSpeed = Math.Min(horizontalSpeed, this.lastHorizontalSpeed + 10.0f * dt);
+			this.lastHorizontalSpeed = horizontalSpeed;
 
 			if (this.WallRunState == WallRun.State.None)
 			{
@@ -281,6 +282,12 @@ namespace Lemma.Components
 						{
 							if (this.idleRotationBlend > 1.0f)
 								this.idleRotationBlend = 0.0f;
+						}
+						if (this.idleRotationBlend < 1.0f)
+						{
+							this.idleRotationBlend += dt / idleRotationBlendTime;
+							if (this.idleRotationBlend >= 1.0f)
+								this.idleRotation = this.Rotation; // We're done blending
 						}
 					}
 					this.idling = nowIdling;

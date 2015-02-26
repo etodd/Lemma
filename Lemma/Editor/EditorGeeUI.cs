@@ -108,7 +108,16 @@ namespace Lemma.Components
 			this.Add(new TwoWayBinding<bool>(Editor.EditorModelsVisible, this.Visible));
 
 			this.RootEditorView = new View(this.main.GeeUI, this.main.GeeUI.RootView);
-			this.Add(new Binding<bool>(this.RootEditorView.Active, () => this.Visible && !ConsoleUI.Showing, this.Visible, ConsoleUI.Showing));
+			this.Add(new Binding<bool>(this.RootEditorView.Active, () => this.Visible && !ConsoleUI.Showing && !this.main.Menu.Showing, this.Visible, ConsoleUI.Showing, this.main.Menu.Showing));
+			this.Add(new NotifyBinding(delegate()
+			{
+				if (!this.RootEditorView.Active)
+				{
+					this.PropertiesView.Active.Value = false;
+					this.EntityListView.Active.Value = false;
+					this.LinkerView.Active.Value = false;
+				}
+			}, this.RootEditorView.Active));
 
 			this.selectPrompt = new TextView(this.main.GeeUI, this.main.GeeUI.RootView, "Select an entity", Vector2.Zero);
 			this.selectPrompt.Add(new Binding<Vector2, MouseState>(this.selectPrompt.Position, x => new Vector2(x.X + 16, x.Y + 16), this.main.MouseState));

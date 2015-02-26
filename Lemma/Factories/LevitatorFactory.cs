@@ -229,6 +229,7 @@ namespace Lemma.Factories
 					{
 						if (spawnedMap[candidate.Value] != Voxel.States.Empty)
 						{
+							spawnedMap.Dangerous.Value = true;
 							levitator.LevitatingVoxel.Value = spawnedMap.Entity;
 							break;
 						}

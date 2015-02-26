@@ -194,7 +194,7 @@ namespace Lemma.Components
 					
 					// If the player is not yet supported, that means they're just about to land.
 					// So give them a little speed boost for having such good timing.
-					this.velocity = this.forward * this.MaxSpeed * (this.IsSupported ? 0.75f : 1.25f);
+					this.velocity = this.SupportVelocity + this.forward * this.MaxSpeed * (this.IsSupported ? 0.75f : 1.25f);
 					this.LinearVelocity.Value = new Vector3(this.velocity.X, instantiatedBlockPossibility ? 0.0f : this.LinearVelocity.Value.Y, this.velocity.Z);
 
 					// Crouch
@@ -210,7 +210,7 @@ namespace Lemma.Components
 				}
 			}
 
-			if (!this.Rolling && this.EnableCrouch && this.EnableKick && this.CanKick && !this.Kicking && !this.IsSwimming && Vector3.Dot(this.LinearVelocity, this.forward) > 0.05f)
+			if (!this.Rolling && this.EnableCrouch && this.EnableKick && this.CanKick && !this.Kicking && !this.IsSwimming && Vector3.Dot(this.LinearVelocity.Value - this.SupportVelocity, this.forward) > 0.05f)
 			{
 				// Kick
 				this.Kicking.Value = true;
@@ -252,7 +252,7 @@ namespace Lemma.Components
 					this.sliding = true;
 				}
 
-				float forwardSpeed = Vector3.Dot(this.forward, this.LinearVelocity);
+				float forwardSpeed = Vector3.Dot(this.forward, this.LinearVelocity.Value - this.SupportVelocity);
 				if (forwardSpeed < this.MaxSpeed * 1.1f)
 				{
 					if (this.sliding)
@@ -291,7 +291,7 @@ namespace Lemma.Components
 		{
 			Vector3 playerPos = this.FloorPosition + new Vector3(0, 0.5f, 0);
 
-			return Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height + MathHelper.Clamp(this.LinearVelocity.Value.Y * -0.3f, 0.0f, 5.0f));
+			return Voxel.GlobalRaycast(playerPos, Vector3.Down, this.Height + MathHelper.Clamp((this.LinearVelocity.Value.Y - this.SupportVelocity.Value.Y) * -0.3f, 0.0f, 5.0f));
 		}
 
 		private void checkShouldBuildFloor()
@@ -323,9 +323,9 @@ namespace Lemma.Components
 				this.rollKickTime += dt;
 
 				Vector3 originalVelocity = this.LinearVelocity;
-				this.LinearVelocity.Value = new Vector3(this.velocity.X, this.LinearVelocity.Value.Y, this.velocity.Z);
+				this.LinearVelocity.Value = new Vector3(this.velocity.X, originalVelocity.Y, this.velocity.Z);
 
-				if (this.rollKickTime > 0.1f && (this.rollKickTime > 1.0f || Vector3.Dot(originalVelocity, this.forward) < 0.1f))
+				if (this.rollKickTime > 0.1f && (this.rollKickTime > 1.0f || Vector3.Dot(originalVelocity - this.SupportVelocity, this.forward) < 0.1f))
 				{
 					this.Rolling.Value = false;
 					this.EnableWalking.Value = true;
@@ -356,7 +356,7 @@ namespace Lemma.Components
 				this.rollKickTime += dt;
 
 				Vector3 originalVelocity = this.LinearVelocity;
-				this.LinearVelocity.Value = new Vector3(this.velocity.X, this.LinearVelocity.Value.Y, this.velocity.Z);
+				this.LinearVelocity.Value = new Vector3(this.velocity.X, originalVelocity.Y, this.velocity.Z);
 
 				if (!this.IsSupported) 
 				{
@@ -365,7 +365,7 @@ namespace Lemma.Components
 						// We started out on the ground, but we kicked off an edge.
 						AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_SLIDE_LOOP, this.Entity);
 					}
-					else if (this.LinearVelocity.Value.Y - this.SupportVelocity.Value.Y < FallDamage.DamageVelocity)
+					else if (originalVelocity.Y - this.SupportVelocity.Value.Y < FallDamage.DamageVelocity)
 					{
 						// We weren't supported when we started kicking. We're flying.
 						// Roll if we hit the ground while kicking mid-air
@@ -381,7 +381,7 @@ namespace Lemma.Components
 				}
 
 				if (this.rollKickTime > 1.0f
-					|| (this.rollKickTime > 0.7f && (!this.RollKickButton || Vector3.Dot(originalVelocity, this.forward) < 0.1f)))
+					|| (this.rollKickTime > 0.7f && (!this.RollKickButton || Vector3.Dot(originalVelocity - this.SupportVelocity, this.forward) < 0.1f)))
 				{
 					this.StopKick();
 					return;

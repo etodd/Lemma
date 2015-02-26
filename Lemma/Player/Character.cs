@@ -290,7 +290,6 @@ namespace Lemma.Util
 				}
 			}
 			
-			this.SupportVelocity.Value = supportLocationVelocity;
 
 			if (supportLocationVelocity.Y < this.Body.LinearVelocity.Y - 4.0f)
 				foundSupport = false;
@@ -299,6 +298,7 @@ namespace Lemma.Util
 			{
 				this.SupportEntity.Value = supportEntity;
 				this.SupportLocation.Value = supportLocation;
+				this.SupportVelocity.Value = supportLocationVelocity;
 				this.IsSupported.Value = true;
 				this.lastSupported = true;
 				this.support(supportLocationVelocity, supportNormal, supportDistance, dt);
@@ -318,6 +318,7 @@ namespace Lemma.Util
 				if (this.edgeTimer > edgeTime)
 				{
 					this.SupportEntity.Value = null;
+					this.SupportVelocity.Value = Vector3.Zero;
 					this.IsSupported.Value = false;
 					this.HasTraction.Value = false;
 				}
