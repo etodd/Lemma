@@ -20,7 +20,8 @@ namespace Lemma.GameScripts
 			Command trigger = command(script, "Trigger");
 
 			Phone phone = PlayerDataFactory.Instance.Get<Phone>();
-			script.Add(new CommandBinding(phone.OnVisit(node), trigger));
+			if (!string.IsNullOrEmpty(node))
+				script.Add(new CommandBinding(phone.OnVisit(node), trigger));
 		}
 
 		public static IEnumerable<string> EditorProperties(Entity script)

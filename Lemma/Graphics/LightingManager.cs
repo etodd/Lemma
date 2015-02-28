@@ -326,28 +326,31 @@ namespace Lemma.Components
 
 			this.shadowMapIndices.Clear();
 
-			// Collect spot lights
-			foreach (SpotLight light in SpotLight.All)
+			if (this.maxShadowedSpotLights > 0)
 			{
-				if (light.Enabled && !light.Suspended && light.Shadowed && light.Attenuation > 0.0f && camera.BoundingFrustum.Intersects(light.BoundingFrustum))
+				// Collect spot lights
+				foreach (SpotLight light in SpotLight.All)
 				{
-					float score = (light.Position.Value - camera.Position.Value).LengthSquared() / light.Attenuation;
-					if (score < LightingManager.lightShadowThreshold)
-						this.spotLightEntries.Add(new LightEntry<SpotLight> { Light = light, Score = score });
+					if (light.Enabled && !light.Suspended && light.Shadowed && light.Attenuation > 0.0f && camera.BoundingFrustum.Intersects(light.BoundingFrustum))
+					{
+						float score = (light.Position.Value - camera.Position.Value).LengthSquared() / light.Attenuation;
+						if (score < LightingManager.lightShadowThreshold)
+							this.spotLightEntries.Add(new LightEntry<SpotLight> { Light = light, Score = score });
+					}
 				}
-			}
-			this.spotLightEntries.Sort(this.spotLightComparer);
+				this.spotLightEntries.Sort(this.spotLightComparer);
 
-			// Render spot shadow maps
-			for (int i = 0; i < this.spotLightEntries.Count; i++)
-			{
-				LightEntry<SpotLight> entry = this.spotLightEntries[i];
-				this.shadowMapIndices[entry.Light] = i;
-				this.RenderSpotShadowMap(entry.Light, i);
-				if (i >= this.maxShadowedSpotLights - 1)
-					break;
+				// Render spot shadow maps
+				for (int i = 0; i < this.spotLightEntries.Count; i++)
+				{
+					LightEntry<SpotLight> entry = this.spotLightEntries[i];
+					this.shadowMapIndices[entry.Light] = i;
+					this.RenderSpotShadowMap(entry.Light, i);
+					if (i >= this.maxShadowedSpotLights - 1)
+						break;
+				}
+				this.spotLightEntries.Clear();
 			}
-			this.spotLightEntries.Clear();
 
 			this.main.GraphicsDevice.RasterizerState = originalState;
 

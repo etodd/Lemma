@@ -114,7 +114,7 @@ float GetShadowValueDetail(float4 detailPosition, float4 position)
 		ShadowTexClipPosition = (0.5f * detailPosition.xy) + float2(0.5f, 0.5f);
 		ShadowTexClipPosition.y = 1.0f - ShadowTexClipPosition.y;
 
-		float depth = 1.0f - detailPosition.z;
+		float depth = 1.0004f - detailPosition.z;
 
 		return GetShadowValueFromClipDetail(ShadowTexClipPosition, depth);
 	}
@@ -122,7 +122,7 @@ float GetShadowValueDetail(float4 detailPosition, float4 position)
 	{
 		position.xyz /= position.w;
 
-		float depth = 1.0f - position.z;
+		float depth = 1.0004f - position.z;
 
 		float2 ShadowTexClipPosition = (0.5f * position.xy) + float2(0.5f, 0.5f);
 
@@ -132,5 +132,4 @@ float GetShadowValueDetail(float4 detailPosition, float4 position)
 
 		return GetShadowValueFromClip(ShadowTexClipPosition, depth);
 	}
-
 }
