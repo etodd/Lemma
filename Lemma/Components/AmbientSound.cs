@@ -32,7 +32,10 @@ namespace Lemma.Components
 			this.Add(new CommandBinding(this.OnResumed, (Action)this.play));
 			this.Add(new CommandBinding(this.Disable, (Action)this.stop));
 			this.Add(new CommandBinding(this.OnSuspended, (Action)this.stop));
+		}
 
+		public override void Start()
+		{
 			this.play();
 		}
 

@@ -42,6 +42,7 @@ namespace Lemma.Components
 
 		private PrismaticJoint joint = null;
 		private float lastX;
+		private bool soundPlaying;
 
 		private void setLimits()
 		{
@@ -129,10 +130,12 @@ namespace Lemma.Components
 				this.Goal.Value = value;
 		}
 
+		private BEPUphysics.Entities.Entity physicsEntity;
 		public ISpaceObject CreateJoint(BEPUphysics.Entities.Entity entity1, BEPUphysics.Entities.Entity entity2, Vector3 pos, Vector3 direction, Vector3 anchor)
 		{
 			// entity1 is us
 			// entity2 is the main map we are attaching to
+			this.physicsEntity = entity1;
 			Vector3 originalPos = entity1.Position;
 			entity1.Position = pos;
 			this.joint = new PrismaticJoint(entity2, entity1, pos, direction, pos);
@@ -185,12 +188,16 @@ namespace Lemma.Components
 						Vector3 separation = this.joint.Limit.AnchorB - this.joint.Limit.AnchorA;
 						float x = Vector3.Dot(separation, this.joint.Limit.Axis);
 						if (Math.Abs(x - this.Goal) > 0.1f)
+						{
 							AkSoundEngine.PostEvent(this.MovementLoop, this.Entity);
+							this.soundPlaying = true;
+						}
 					}
 				}));
 				Action stopMovement = delegate()
 				{
 					AkSoundEngine.PostEvent(this.MovementStop, this.Entity);
+					this.soundPlaying = false;
 				};
 				this.Add(new CommandBinding(this.OnHitMax, stopMovement));
 				this.Add(new CommandBinding(this.OnHitMin, stopMovement));
@@ -205,19 +212,38 @@ namespace Lemma.Components
 
 				float x = Vector3.Dot(separation, this.joint.Limit.Axis);
 
+				bool nearEdge = false;
 				if (x > this.Maximum - 0.5f)
 				{
 					if (this.lastX <= this.Maximum - 0.5f)
 						this.OnHitMax.Execute();
+					nearEdge = true;
 				}
 				
 				if (x < this.Minimum + 0.5f)
 				{
 					if (this.lastX >= this.Minimum + 0.5f)
 						this.OnHitMin.Execute();
+					nearEdge = true;
 				}
 
 				this.lastX = x;
+
+				if (!nearEdge)
+				{
+					float speed = Vector3.Dot(this.physicsEntity.LinearVelocity, this.joint.Limit.Axis);
+					bool moving = speed > 0.1f;
+					if (this.soundPlaying && !moving)
+					{
+						AkSoundEngine.PostEvent(AK.EVENTS.STOP_ALL_OBJECT, this.Entity);
+						this.soundPlaying = false;
+					}
+					else if (!this.soundPlaying && moving)
+					{
+						AkSoundEngine.PostEvent(this.MovementLoop, this.Entity);
+						this.soundPlaying = true;
+					}
+				}
 			}
 		}
 	}

@@ -55,12 +55,14 @@ namespace Lemma.Components
 
 			this.Add(new CommandBinding(this.OnPowerOff, delegate()
 			{
-				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SWITCH_OFF, this.Entity);
+				if (this.main.TotalTime > 0.1f)
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SWITCH_OFF, this.Entity);
 			}));
 
 			this.Add(new CommandBinding(this.OnPowerOn, delegate()
 			{
-				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SWITCH_ON, this.Entity);
+				if (this.main.TotalTime > 0.1f)
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SWITCH_ON, this.Entity);
 				Voxel map = this.AttachedVoxel.Value.Target.Get<Voxel>();
 				List<Voxel.Coord> changes = new List<Voxel.Coord>();
 				Stack<Voxel.Box> path = new Stack<Voxel.Box>();
