@@ -68,13 +68,18 @@ namespace Lemma.Components
 				if (targetEntity != null && targetEntity.Active)
 				{
 					Voxel m = targetEntity.Get<Voxel>();
-					foreach (CoordinateEntry e in map.Chunks.SelectMany(c => c.Boxes.SelectMany(x => x.GetCoords())).Select(delegate(Voxel.Coord y)
+					lock (map.MutationLock)
 					{
-						Voxel.Coord z = m.GetCoordinate(map.GetAbsolutePosition(y));
-						z.Data = y.Data;
-						return new CoordinateEntry { Coord = z, };
-					}))
-					this.Coords.Add(e);
+						foreach (CoordinateEntry e in map.Chunks.SelectMany(c => c.Boxes.SelectMany(x => x.GetCoords())).Select(delegate(Voxel.Coord y)
+						{
+							Voxel.Coord z = m.GetCoordinate(map.GetAbsolutePosition(y));
+							z.Data = y.Data;
+							return new CoordinateEntry { Coord = z, };
+						}))
+						{
+							this.Coords.Add(e);
+						}
+					}
 				}
 			}
 		}

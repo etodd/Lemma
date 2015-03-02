@@ -85,6 +85,7 @@ namespace Lemma.Components
 			Concrete = 19,
 			Gravel = 20,
 			GlowGreen = 21,
+			GlowRed = 22,
 			RockChunky = 23,
 			RockRed = 24,
 			GlowYellow = 25,
@@ -608,6 +609,24 @@ namespace Lemma.Components
 					Model.Material.Unlit,
 				},
 				Tint = new Vector3(0.7f, 1.4f, 0.7f),
+				AllowOverlay = false,
+			};
+			public static readonly State GlowRed = new State
+			{
+				ID = t.GlowRed,
+				Permanent = true,
+				Supported = true,
+				Hard = true,
+				ShadowCast = false,
+				Density = 0.5f,
+				DiffuseMap = "Textures\\white",
+				NormalMap = "Textures\\plain-normal",
+				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
+				Materials = new[]
+				{
+					Model.Material.Unlit,
+				},
+				Tint = new Vector3(1.4f, 0.7f, 0.7f),
 				AllowOverlay = false,
 			};
 			public static readonly State SocketWhite = new State
@@ -3640,7 +3659,7 @@ namespace Lemma.Components
 			while (true)
 			{
 				WorkItem item = Voxel.workQueue.Dequeue();
-					item.Voxel.RegenerateImmediately(item.Callback);
+				item.Voxel.RegenerateImmediately(item.Callback);
 			}
 		}
 

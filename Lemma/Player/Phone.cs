@@ -160,6 +160,11 @@ namespace Lemma.Components
 			if (callback != null)
 				callback.Execute();
 
+			Command cmd;
+			this.visitCallbacks.TryGetValue(msg.Name, out cmd);
+			if (cmd != null)
+				cmd.Execute();
+
 			this.MessageReceived.Execute();
 		}
 
@@ -295,7 +300,7 @@ namespace Lemma.Components
 
 		void DialogueForest.IClient.Visit(DialogueForest.Node node)
 		{
-			if (!string.IsNullOrEmpty(node.name))
+			if (!string.IsNullOrEmpty(node.name) && node.type != DialogueForest.Node.Type.Text)
 			{
 				Command cmd;
 				this.visitCallbacks.TryGetValue(node.name, out cmd);
@@ -309,7 +314,7 @@ namespace Lemma.Components
 			this.Delay(messageDelay * level, node.name, node.id);
 		}
 
-		private const float messageDelay = 2.0f; // 2 seconds in between each message
+		private const float messageDelay = 3.0f; // seconds in between each message
 		void DialogueForest.IClient.Choice(DialogueForest.Node node, IEnumerable<DialogueForest.Node> choices)
 		{
 			this.ActiveAnswers.Clear();

@@ -181,13 +181,16 @@ namespace Lemma.Util
 				Voxel.Coord offset = new Voxel.Coord();
 				float closestCoordDistance = float.MaxValue;
 				Vector3 closestCoordPosition = targetVoxel.GetAbsolutePosition(targetCoord);
-				foreach (Voxel.Coord c in voxel.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()))
+				lock (voxel.MutationLock)
 				{
-					float distance = (voxel.GetAbsolutePosition(c) - closestCoordPosition).LengthSquared();
-					if (distance < closestCoordDistance)
+					foreach (Voxel.Coord c in voxel.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()))
 					{
-						closestCoordDistance = distance;
-						offset = c;
+						float distance = (voxel.GetAbsolutePosition(c) - closestCoordPosition).LengthSquared();
+						if (distance < closestCoordDistance)
+						{
+							closestCoordDistance = distance;
+							offset = c;
+						}
 					}
 				}
 				Vector3 toLevitatingMap = voxel.Transform.Value.Translation - targetVoxel.GetAbsolutePosition(targetCoord);
@@ -198,7 +201,9 @@ namespace Lemma.Util
 				EffectBlockFactory blockFactory = Factory.Get<EffectBlockFactory>();
 
 				int index = 0;
-				List<Voxel.Coord> coords = voxel.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()).ToList();
+				List<Voxel.Coord> coords;
+				lock (voxel.MutationLock)
+					coords = voxel.Chunks.SelectMany(c => c.Boxes).SelectMany(b => b.GetCoords()).ToList();
 				Voxel.Coord camera = voxel.GetCoordinate(main.Camera.Position);
 				foreach (Voxel.Coord c in coords.OrderBy(c2 => new Vector3(c2.X - camera.X, c2.Y - camera.Y, c2.Z - camera.Z).LengthSquared()))
 				{
