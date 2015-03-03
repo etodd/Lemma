@@ -165,7 +165,6 @@ namespace Lemma.Components
 				Entity entity = this.Input1Target.Value.Target;
 				if (entity != null && entity.Active)
 					entity.Remove(this.input1Binding);
-				this.input1Binding.Delete();
 				this.input1Binding = null;
 			}
 			if (this.input2Binding != null)
@@ -173,7 +172,6 @@ namespace Lemma.Components
 				Entity entity = this.Input2Target.Value.Target;
 				if (entity != null && entity.Active)
 					entity.Remove(this.input2Binding);
-				this.input2Binding.Delete();
 				this.input2Binding = null;
 			}
 			base.delete();

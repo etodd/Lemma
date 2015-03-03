@@ -306,7 +306,7 @@ namespace Lemma.Components
 									if (notes > 0)
 										this.main.Menu.HideMessage(WorldFactory.Instance, this.main.Menu.ShowMessageFormat(WorldFactory.Instance, notes == 1 ? "\\one note" : "\\note count", notes), 3.0f);
 
-									int orbs = Collectible.Count;
+									int orbs = Collectible.ActiveCount;
 									if (orbs > 0)
 										this.main.Menu.HideMessage(WorldFactory.Instance, this.main.Menu.ShowMessageFormat(WorldFactory.Instance, orbs == 1 ? "\\one orb" : "\\orb count", orbs), 3.0f);
 								})

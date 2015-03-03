@@ -21,11 +21,11 @@ namespace Lemma.Components
 
 		public Property<bool> PickedUp = new Property<bool>(); 
 
-		public static int Count
+		public static int ActiveCount
 		{
 			get
 			{
-				return Collectible.collectibles.Count;
+				return Collectible.collectibles.Count(x => !x.PickedUp);
 			}
 		}
 
@@ -47,19 +47,21 @@ namespace Lemma.Components
 						new Animation
 						(
 							new Animation.FloatMoveTo(main.Renderer.InternalGamma, 10.0f, 0.2f),
-							new Animation.FloatMoveTo(main.Renderer.InternalGamma, originalGamma, 0.4f),
-							new Animation.Execute(this.Entity.Delete)
+							new Animation.FloatMoveTo(main.Renderer.InternalGamma, originalGamma, 0.4f)
 						)
 					);
 
-					int collectibles = ++PlayerDataFactory.Instance.Get<PlayerData>().Collectibles.Value;
+					PlayerDataFactory.Instance.Get<PlayerData>().Collectibles.Value++;
+
+					int collected = Collectible.collectibles.Count(x => x.PickedUp);
+					int total = Collectible.collectibles.Count;
 
 					SteamWorker.IncrementStat("orbs_collected", 1);
 
 					this.main.Menu.HideMessage
 					(
 						WorldFactory.Instance,
-						this.main.Menu.ShowMessageFormat(WorldFactory.Instance, collectibles == 1 ? "\\one orb collected" : "\\orbs collected", collectibles),
+						this.main.Menu.ShowMessageFormat(WorldFactory.Instance, "\\orbs collected", collected, total),
 						4.0f
 					);
 				}

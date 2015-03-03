@@ -28,11 +28,11 @@ namespace Lemma.Factories
 			trigger.Serialize = false;
 
 			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);
+			Collectible collectible = entity.GetOrCreate<Collectible>("Collectible");
 			
 			trigger.Radius.Value = 3;
 			trigger.Add(new Binding<Vector3>(trigger.Position, transform.Position));
-
-			Collectible collectible = entity.GetOrCreate<Collectible>("Collectible");
+			trigger.Add(new Binding<bool>(trigger.Enabled, x => !x, collectible.PickedUp));
 
 			collectible.Add(new CommandBinding(trigger.PlayerEntered, collectible.PlayerTouched));
 
@@ -43,6 +43,7 @@ namespace Lemma.Factories
 			light.Attenuation.Value = 10.0f;
 			light.Color.Value = new Vector3(1.25f, 1.75f, 2.0f);
 			light.Add(new Binding<Vector3>(light.Position, transform.Position));
+			light.Add(new Binding<bool>(light.Enabled, x => !x, collectible.PickedUp));
 
 			ParticleEmitter distortionEmitter = entity.GetOrCreate<ParticleEmitter>("DistortionEmitter");
 			distortionEmitter.Serialize = false;
@@ -50,12 +51,14 @@ namespace Lemma.Factories
 			distortionEmitter.ParticleType.Value = "Distortion";
 			distortionEmitter.ParticlesPerSecond.Value = 4;
 			distortionEmitter.Jitter.Value = new Vector3(0.5f);
+			distortionEmitter.Add(new Binding<bool>(distortionEmitter.Enabled, x => !x, collectible.PickedUp));
 
 			Model model = entity.GetOrCreate<Model>("Model");
 			model.Filename.Value = "Models\\sphere";
 			model.Serialize = false;
 			model.Scale.Value = new Vector3(0.5f);
 			model.Add(new Binding<Matrix>(model.Transform, transform.Matrix));
+			model.Add(new Binding<bool>(model.Enabled, x => !x, collectible.PickedUp));
 
 			this.SetMain(entity, main);
 
