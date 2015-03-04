@@ -43,7 +43,7 @@ namespace Lemma.Components
 	[XmlInclude(typeof(ListProperty<t>))]
 	public class Voxel : ComponentBind.Component<Main>
 	{
-		public static Dictionary<Voxel.Coord, bool> CoordDictionaryCache = new Dictionary<Voxel.Coord, bool>();
+		public static HashSet<Voxel.Coord> CoordSetCache = new HashSet<Voxel.Coord>();
 
 		private static LargeObjectHeap<Box[, ,][, ,]> subchunkHeap = LargeObjectHeap<Box[, ,][, ,]>.Get(x => new Box[x, x, x][,,], y => y * y * y * IntPtr.Size >= 85000);
 		private static LargeObjectHeap<Box[, ,]> boxHeap = LargeObjectHeap<Box[, ,]>.Get(x => new Box[x, x, x], y => y * y * y * IntPtr.Size >= 85000);

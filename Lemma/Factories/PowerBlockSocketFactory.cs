@@ -85,11 +85,11 @@ namespace Lemma.Factories
 							if (coords.Count >= cloud.Blocks.Length)
 								break;
 
-							Voxel.CoordDictionaryCache[c] = true;
+							Voxel.CoordSetCache.Add(c);
 							foreach (Direction adjacentDirection in DirectionExtensions.Directions)
 							{
 								Voxel.Coord adjacentCoord = c.Move(adjacentDirection);
-								if (!Voxel.CoordDictionaryCache.ContainsKey(adjacentCoord))
+								if (!Voxel.CoordSetCache.Contains(adjacentCoord))
 								{
 									Voxel.t adjacentID = sockVoxel[adjacentCoord].ID;
 									if (adjacentID == Voxel.t.Empty)
@@ -97,7 +97,7 @@ namespace Lemma.Factories
 								}
 							}
 						}
-						Voxel.CoordDictionaryCache.Clear();
+						Voxel.CoordSetCache.Clear();
 
 						EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
 						int i = 0;

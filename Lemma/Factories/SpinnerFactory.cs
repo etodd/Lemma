@@ -38,12 +38,12 @@ namespace Lemma.Factories
 			DynamicVoxel voxel = entity.Get<DynamicVoxel>();
 			voxel.KineticFriction.Value = voxel.StaticFriction.Value = 0;
 
-			entity.Add("On", spinner.On);
-			entity.Add("Off", spinner.Off);
 			entity.Add("Forward", spinner.Forward);
 			entity.Add("Backward", spinner.Backward);
 			entity.Add("HitMax", spinner.HitMax);
 			entity.Add("HitMin", spinner.HitMin);
+			entity.Add("MovementLoop", spinner.MovementLoop, new PropertyEntry.EditorData { Options = WwisePicker.Get(main) });
+			entity.Add("MovementStop", spinner.MovementStop, new PropertyEntry.EditorData { Options = WwisePicker.Get(main) });
 
 			entity.Add("Direction", joint.Direction);
 			entity.Add("Minimum", spinner.Minimum);

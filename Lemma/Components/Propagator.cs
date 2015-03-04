@@ -115,17 +115,6 @@ namespace Lemma.Components
 
 						if (id == Voxel.t.Critical) // Critical. Explodes when destroyed.
 							Explosion.Explode(main, map, coord);
-						else if (id == Voxel.t.HardInfected) // Infected. Shatter effects.
-						{
-							ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
-							Vector3 pos = map.GetAbsolutePosition(coord);
-							AkSoundEngine.PostEvent(AK.EVENTS.PLAY_INFECTED_CRITICAL_SHATTER, pos);
-							for (int i = 0; i < 50; i++)
-							{
-								Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
-								shatter.AddParticle(pos + offset, offset);
-							}
-						}
 						else if (id == Voxel.t.Powered || id == Voxel.t.Blue || id == Voxel.t.Neutral || id == Voxel.t.Infected || id == Voxel.t.Floater)
 						{
 							int generation;

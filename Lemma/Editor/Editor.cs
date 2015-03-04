@@ -661,11 +661,11 @@ namespace Lemma.Components
 
 				Voxel map = this.SelectedEntities[0].Get<Voxel>();
 				foreach (Voxel.Coord c in oldSelectionStart.CoordinatesBetween(oldSelectionEnd))
-					Voxel.CoordDictionaryCache[c] = true;
+					Voxel.CoordSetCache.Add(c);
 				foreach (Voxel.Coord c in this.VoxelSelectionStart.Value.CoordinatesBetween(this.VoxelSelectionEnd))
-					Voxel.CoordDictionaryCache[c] = true;
-				map.Empty(Voxel.CoordDictionaryCache.Keys, true);
-				Voxel.CoordDictionaryCache.Clear();
+					Voxel.CoordSetCache.Add(c);
+				map.Empty(Voxel.CoordSetCache, true);
+				Voxel.CoordSetCache.Clear();
 
 				this.restoreVoxel(oldSelectionStart, oldSelectionEnd, x, y, z);
 				this.NeedsSave.Value = true;

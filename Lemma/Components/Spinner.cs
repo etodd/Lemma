@@ -23,12 +23,8 @@ namespace Lemma.Components
 		public Property<float> Speed = new Property<float>();
 		public Property<float> Goal = new Property<float>();
 		public Property<bool> Servo = new Property<bool>();
-
-		[XmlIgnore]
-		public Command On = new Command();
-
-		[XmlIgnore]
-		public Command Off = new Command();
+		public Property<uint> MovementLoop = new Property<uint> { Value = AK.EVENTS.SLIDER2_LOOP };
+		public Property<uint> MovementStop = new Property<uint> { Value = AK.EVENTS.SLIDER2_STOP };
 
 		[XmlIgnore]
 		public Command Forward = new Command();
@@ -41,33 +37,6 @@ namespace Lemma.Components
 
 		[XmlIgnore]
 		public Command HitMax = new Command();
-
-		private void on()
-		{
-			if (this.joint != null && this.Locked)
-				this.Servo.Value = false;
-		}
-
-		private void off()
-		{
-			if (joint != null && this.Locked)
-			{
-				BEPUphysics.Constraints.JointBasis2D basis = joint.Motor.Basis;
-				basis.RotationMatrix = joint.Motor.ConnectionA.OrientationMatrix;
-
-				Vector3 localTestAxis = joint.Motor.LocalTestAxis;
-				Vector3 worldTestAxis;
-				BEPUutilities.Matrix3x3 orientationMatrix = joint.Motor.ConnectionB.OrientationMatrix;
-				BEPUutilities.Matrix3x3.Transform(ref localTestAxis, ref orientationMatrix, out worldTestAxis);
-
-				float y, x;
-				Vector3 yAxis = Vector3.Cross(basis.PrimaryAxis, basis.XAxis);
-				Vector3.Dot(ref worldTestAxis, ref yAxis, out y);
-				x = Vector3.Dot(worldTestAxis, basis.XAxis);
-				this.Goal.Value = (float)Math.Atan2(y, x);
-				this.Servo.Value = true;
-			}
-		}
 
 		private void forward()
 		{
@@ -82,8 +51,6 @@ namespace Lemma.Components
 		}
 
 		private RevoluteJoint joint = null;
-		private float lastX;
-
 		private void setLimits()
 		{
 			if (this.joint != null)
@@ -133,11 +100,18 @@ namespace Lemma.Components
 				this.Goal.Value = value;
 		}
 
+		private bool soundPlaying;
+		private BEPUphysics.Entities.Entity physicsEntity;
+
 		public ISpaceObject CreateJoint(BEPUphysics.Entities.Entity entity1, BEPUphysics.Entities.Entity entity2, Vector3 pos, Vector3 direction, Vector3 anchor)
 		{
 			// entity1 is us
 			// entity2 is the main map we are attaching to
+			this.physicsEntity = entity1;
+			Vector3 originalPos = entity1.Position;
+			entity1.Position = pos;
 			this.joint = new RevoluteJoint(entity1, entity2, anchor, direction);
+			entity1.Position = originalPos;
 			float multiplier = Math.Max(1.0f, entity1.Mass);
 			this.joint.AngularJoint.SpringSettings.StiffnessConstant *= multiplier;
 			this.joint.Limit.SpringSettings.StiffnessConstant *= multiplier;
@@ -162,10 +136,14 @@ namespace Lemma.Components
 
 			this.Forward.Action = (Action)this.forward;
 			this.Backward.Action = (Action)this.backward;
-			this.On.Action = (Action)this.on;
-			this.Off.Action = (Action)this.off;
-
-			this.lastX = this.Minimum + (this.Maximum - this.Minimum) * 0.5f;
+			Action movementStop = delegate()
+			{
+				if (this.MovementStop.Value != 0)
+					AkSoundEngine.PostEvent(this.MovementStop, this.Entity);
+				this.soundPlaying = false;
+			};
+			this.Add(new CommandBinding(this.HitMax, movementStop));
+			this.Add(new CommandBinding(this.HitMin, movementStop));
 		}
 
 		private bool lastLimitExceeded;
@@ -180,6 +158,18 @@ namespace Lemma.Components
 						this.HitMin.Execute();
 					else
 						this.HitMax.Execute();
+				}
+				else
+				{
+					bool moving = this.Locked && Math.Abs(Vector3.Dot(this.physicsEntity.AngularVelocity, this.joint.AngularJoint.WorldFreeAxisA)) > 0.1f;
+					if (this.soundPlaying && !moving)
+						AkSoundEngine.PostEvent(AK.EVENTS.STOP_ALL_OBJECT, this.Entity);
+					else if (!this.soundPlaying && moving)
+					{
+						if (this.MovementLoop.Value != 0)
+							AkSoundEngine.PostEvent(this.MovementLoop, this.Entity);
+					}
+					this.soundPlaying = moving;
 				}
 				this.lastLimitExceeded = limitExceeded;
 			}

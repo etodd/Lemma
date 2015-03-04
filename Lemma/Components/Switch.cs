@@ -64,58 +64,81 @@ namespace Lemma.Components
 				if (this.main.TotalTime > 0.1f)
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SWITCH_ON, this.Entity);
 				Voxel map = this.AttachedVoxel.Value.Target.Get<Voxel>();
-				List<Voxel.Coord> changes = new List<Voxel.Coord>();
-				Stack<Voxel.Box> path = new Stack<Voxel.Box>();
-				Queue<Voxel.Coord> queue = new Queue<Voxel.Coord>();
+
+				Switch closestConnectedSwitch = null;
+				Stack<Voxel.Box> closestConnectedPath = null;
+
 				foreach (Switch s in Switch.all)
 				{
+					Stack<Voxel.Box> path = new Stack<Voxel.Box>();
 					if (s.On && s != this && s.AttachedVoxel.Value.Target == this.AttachedVoxel.Value.Target
 						&& VoxelAStar.Broadphase(map, map.GetBox(this.Coord), s.Coord, canConnect, path, 2000))
 					{
-						Voxel.Coord start = s.Coord;
-						start.Data = map[start];
-						queue.Enqueue(start);
-						while (queue.Count > 0)
+						if (closestConnectedPath == null || path.Count < closestConnectedPath.Count)
 						{
-							Voxel.Coord c = queue.Dequeue();
+							closestConnectedSwitch = s;
+							closestConnectedPath = path;
+						}
+					}
+				}
+				if (closestConnectedSwitch != null)
+				{
+					List<Voxel.Coord> changes = new List<Voxel.Coord>();
+					Queue<Voxel.Coord> queue = new Queue<Voxel.Coord>();
+					Voxel.Coord start = closestConnectedSwitch.Coord;
+					start.Data = null;
+					queue.Enqueue(start);
+					Voxel.CoordSetCache.Add(start);
 
-							c.Data = null; // Ensure the visited dictionary works correctly
-							Voxel.CoordDictionaryCache[c] = true;
+					start.Data = Voxel.States.Switch;
+					changes.Add(start);
+					while (queue.Count > 0)
+					{
+						Voxel.Coord c = queue.Dequeue();
 
-							Voxel.Coord change = c.Clone();
-							change.Data = Voxel.States.Switch;
-							changes.Add(change);
-
-							foreach (Direction adjacentDirection in DirectionExtensions.Directions)
+						foreach (Direction adjacentDirection in DirectionExtensions.Directions)
+						{
+							Voxel.Coord adjacentCoord = c.Move(adjacentDirection);
+							if (!Voxel.CoordSetCache.Contains(adjacentCoord))
 							{
-								Voxel.Coord adjacentCoord = c.Move(adjacentDirection);
-								if (!Voxel.CoordDictionaryCache.ContainsKey(adjacentCoord))
+								Voxel.CoordSetCache.Add(adjacentCoord);
+								Voxel.State adjacentState = map[adjacentCoord];
+								if (adjacentState == Voxel.States.PoweredSwitch)
 								{
-									Voxel.State adjacentState = map[adjacentCoord];
-									if (adjacentState == Voxel.States.PoweredSwitch)
-										queue.Enqueue(adjacentCoord);
-									else if ((adjacentState == Voxel.States.Blue || adjacentState == Voxel.States.Powered)
-										&& path.Contains(map.GetBox(adjacentCoord)))
-									{
-										adjacentCoord.Data = Voxel.States.Neutral;
-										changes.Add(adjacentCoord);
-									}
+									queue.Enqueue(adjacentCoord);
+
+									adjacentCoord.Data = Voxel.States.Switch;
+									changes.Add(adjacentCoord);
+								}
+								else if (adjacentState == Voxel.States.Hard)
+									queue.Enqueue(adjacentCoord);
+								else if (adjacentState == Voxel.States.HardPowered)
+								{
+									queue.Enqueue(adjacentCoord);
+
+									adjacentCoord.Data = Voxel.States.Hard;
+									changes.Add(adjacentCoord);
+								}
+								else if ((adjacentState == Voxel.States.Blue || adjacentState == Voxel.States.Powered)
+									&& closestConnectedPath.Contains(map.GetBox(adjacentCoord)))
+								{
+									adjacentCoord.Data = Voxel.States.Neutral;
+									changes.Add(adjacentCoord);
+									adjacentCoord.Data = null;
 								}
 							}
 						}
 					}
-					path.Clear();
-					queue.Clear();
-				}
-				Voxel.CoordDictionaryCache.Clear();
-				if (changes.Count > 0)
-				{
-					lock (map.MutationLock)
+					Voxel.CoordSetCache.Clear();
+					if (changes.Count > 0)
 					{
-						map.Empty(changes, true, true, map);
-						map.Fill(changes);
+						lock (map.MutationLock)
+						{
+							map.Empty(changes, true, true, map);
+							map.Fill(changes);
+						}
+						map.Regenerate();
 					}
-					map.Regenerate();
 				}
 			}));
 		}

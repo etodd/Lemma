@@ -17,6 +17,7 @@ public class AK
         public static uint PLAY_EVIL_CUBES = 1708164667U;
         public static uint PLAY_EXPLOSION = 4030404899U;
         public static uint PLAY_EXTERIOR_WIND = 2186390081U;
+        public static uint PLAY_FOREST_VALLEY_AMBIENT = 954121400U;
         public static uint PLAY_GLOWSQUARE = 2925563572U;
         public static uint PLAY_INFECTED_CRITICAL_SHATTER = 3904887748U;
         public static uint PLAY_MONOLITH_FALL = 868874094U;
@@ -63,7 +64,7 @@ public class AK
         public static uint PLAY_UI_CLICK = 1749424733U;
         public static uint PLAY_UI_MOUSEOVER = 808445146U;
         public static uint PLAY_UI_SWOOSH = 935590362U;
-        public static uint PLAY_WALL_BREAK_01 = 2635525752U;
+        public static uint PLAY_WALL_BREAK = 4127016698U;
         public static uint PLAY_WATER_LOOP = 1564978696U;
         public static uint PLAY_WATER_SPLASH = 1591852251U;
         public static uint PLAY_WATER_SPLASH_HEAVY = 1166068147U;

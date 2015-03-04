@@ -273,7 +273,8 @@ namespace Lemma.Components
 			{
 				TextureName = "Particles\\debug",
 				MaxParticles = 10000,
-				Duration = TimeSpan.FromSeconds(10.0f),
+				Duration = TimeSpan.FromSeconds(1.0f),
+				EmitterVelocitySensitivity = 0.0f,
 				MinHorizontalVelocity = 0.0f,
 				MaxHorizontalVelocity = 0.0f,
 				MinVerticalVelocity = 0.0f,

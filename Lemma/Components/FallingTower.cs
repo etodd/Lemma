@@ -31,6 +31,8 @@ namespace Lemma.Components
 
 		const float rebuildTimeMultiplier = 0.03f;
 
+		private static Random random = new Random();
+
 		[XmlIgnore]
 		public Command Fall = new Command();
 
@@ -58,6 +60,22 @@ namespace Lemma.Components
 			Voxel m = targetVoxel.Get<Voxel>();
 
 			m.Empty(this.Base.BaseBoxes.SelectMany(x => x.GetCoords()));
+			Vector3 basePosition = Vector3.Zero;
+			int baseSize = 0;
+			foreach (Voxel.Coord c in this.Base.BaseBoxes.SelectMany(x => x.GetCoords()))
+			{
+				ParticleSystem shatter = ParticleSystem.Get(main, "InfectedShatter");
+				Vector3 pos = m.GetAbsolutePosition(c);
+				for (int i = 0; i < 50; i++)
+				{
+					Vector3 offset = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
+					shatter.AddParticle(pos + offset, offset);
+				}
+				basePosition += pos;
+				baseSize++;
+			}
+			basePosition /= (float)baseSize;
+			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_INFECTED_CRITICAL_SHATTER, basePosition);
 
 			m.Regenerate(delegate(List<DynamicVoxel> spawnedMaps)
 			{

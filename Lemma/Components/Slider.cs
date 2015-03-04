@@ -189,14 +189,16 @@ namespace Lemma.Components
 						float x = Vector3.Dot(separation, this.joint.Limit.Axis);
 						if (Math.Abs(x - this.Goal) > 0.1f)
 						{
-							AkSoundEngine.PostEvent(this.MovementLoop, this.Entity);
+							if (this.MovementLoop.Value != 0)
+								AkSoundEngine.PostEvent(this.MovementLoop, this.Entity);
 							this.soundPlaying = true;
 						}
 					}
 				}));
 				Action stopMovement = delegate()
 				{
-					AkSoundEngine.PostEvent(this.MovementStop, this.Entity);
+					if (this.MovementStop.Value != 0)
+						AkSoundEngine.PostEvent(this.MovementStop, this.Entity);
 					this.soundPlaying = false;
 				};
 				this.Add(new CommandBinding(this.OnHitMax, stopMovement));
@@ -240,7 +242,8 @@ namespace Lemma.Components
 					}
 					else if (!this.soundPlaying && moving)
 					{
-						AkSoundEngine.PostEvent(this.MovementLoop, this.Entity);
+						if (this.MovementLoop.Value != 0)
+							AkSoundEngine.PostEvent(this.MovementLoop, this.Entity);
 						this.soundPlaying = true;
 					}
 				}
