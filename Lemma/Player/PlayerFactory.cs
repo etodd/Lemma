@@ -390,6 +390,16 @@ namespace Lemma.Factories
 				}
 			}, blockCloud.Type));
 
+			blockLight.Add(new ChangeBinding<bool>(blockLight.Enabled, delegate(bool old, bool value)
+			{
+				if (!old && value)
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_MAGIC_CUBE_LOOP, entity);
+				else if (old && !value)
+					AkSoundEngine.PostEvent(AK.EVENTS.STOP_MAGIC_CUBE_LOOP, entity);
+			}));
+			if (blockLight.Enabled)
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_MAGIC_CUBE_LOOP, entity);
+
 			// Death
 			entity.Add(new CommandBinding(player.Die, blockCloud.Clear));
 			entity.Add(new CommandBinding(player.Die, delegate()

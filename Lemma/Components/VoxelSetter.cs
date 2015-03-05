@@ -40,6 +40,9 @@ namespace Lemma.Components
 				return;
 
 			Voxel map = voxelEntity.Get<Voxel>();
+			if (map == null)
+				return;
+
 			Voxel.State state = Voxel.States.All[this.State];
 			if (this.Contiguous)
 			{

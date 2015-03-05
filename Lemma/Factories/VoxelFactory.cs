@@ -190,22 +190,27 @@ namespace Lemma.Factories
 			entity.Add("IsAlwaysActive", map.IsAlwaysActive);
 			entity.Add("CannotSuspendByDistance", map.CannotSuspendByDistance);
 
-			const float volumeMultiplier = 0.005f;
+			const float volumeMultiplier = 0.05f;
 
 			float lastCollision = 0.0f;
 			map.Add(new CommandBinding<Collidable, ContactCollection>(map.Collided, delegate(Collidable collidable, ContactCollection contacts)
 			{
-				ContactInformation contact = contacts[contacts.Count - 1];
-				float volume = contact.NormalImpulse * volumeMultiplier;
-				float now = main.TotalTime;
-				if (volume > 0.1f && now > lastCollision + 0.3f)
+				if (map.PhysicsEntity.LinearVelocity.Length() > 3.0f
+					|| map.PhysicsEntity.AngularVelocity.Length() > 1.0f)
 				{
-					// TODO: figure out Wwise volume parameter
-					uint cue = map[contact.Contact.Position - (contact.Contact.Normal * 0.25f)].RubbleEvent;
-					AkSoundEngine.PostEvent(cue, entity);
-					lastCollision = now;
-					if (PlayerFactory.Instance != null)
-						PlayerFactory.Instance.Get<CameraController>().Shake.Execute(contact.Contact.Position, volume);
+					ContactInformation contact = contacts[contacts.Count - 1];
+					float volume = contact.RelativeVelocity.Length() * volumeMultiplier;
+					float now = main.TotalTime;
+					if (volume > 0.2f && now > lastCollision + 0.1f)
+					{
+						uint id = AkSoundEngine.RegisterTemp(contact.Contact.Position);
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PHYSICS_SLAM, id);
+						AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.PHYSICS_SLAM_SIZE, Math.Min(volume * 100.0f, 100.0f), id);
+						AkSoundEngine.UnregisterTemp(id);
+						lastCollision = now;
+						if (PlayerFactory.Instance != null)
+							PlayerFactory.Instance.Get<CameraController>().Shake.Execute(contact.Contact.Position, volume);
+					}
 				}
 			}));
 		}

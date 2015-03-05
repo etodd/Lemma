@@ -281,7 +281,7 @@ namespace Lemma.IO
 			stream.Dispose();
 		}
 
-		public static void Transition(Main main, string nextMap, string spawn = null)
+		public static void Transition(Main main, string nextMap, string spawn = null, bool saveInfo = true)
 		{
 			Stream stream = new MemoryStream();
 
@@ -321,7 +321,7 @@ namespace Lemma.IO
 					if (PlayerFactory.Instance != null)
 						PlayerFactory.Instance.Delete.Execute();
 
-					main.SaveCurrentMap();
+					main.SaveCurrentMap(null, default(Point), saveInfo);
 					MapLoader.Load(main, nextMap);
 
 					stream.Seek(0, SeekOrigin.Begin);

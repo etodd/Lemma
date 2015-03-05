@@ -20,11 +20,12 @@ public class AK
         public static uint PLAY_FOREST_VALLEY_AMBIENT = 954121400U;
         public static uint PLAY_GLOWSQUARE = 2925563572U;
         public static uint PLAY_INFECTED_CRITICAL_SHATTER = 3904887748U;
-        public static uint PLAY_MONOLITH_FALL = 868874094U;
+        public static uint PLAY_MAGIC_CUBE_LOOP = 3187778582U;
         public static uint PLAY_MONOLITH_LOOP = 1920428907U;
         public static uint PLAY_MONOLITH_POWERUP = 1490340003U;
         public static uint PLAY_MUSIC_AMBIENT = 2712742350U;
         public static uint PLAY_MUSIC_AMBIENT_02 = 62078239U;
+        public static uint PLAY_MUSIC_OVERVIEW = 2507565207U;
         public static uint PLAY_MUSIC_STINGER = 1904807532U;
         public static uint PLAY_MUSIC_THEME = 4046097845U;
         public static uint PLAY_MUSIC_THEME_LOOP = 4120562202U;
@@ -34,6 +35,8 @@ public class AK
         public static uint PLAY_PHONE_PICKUP = 2791348401U;
         public static uint PLAY_PHONE_SEND = 1672978639U;
         public static uint PLAY_PHONE_VIBRATE = 1246969326U;
+        public static uint PLAY_PHYSICS_SLAM = 4268997543U;
+        public static uint PLAY_PHYSICS_SLAM_LARGE = 340000179U;
         public static uint PLAY_PLAYER_BREATHING_HARD = 3584441250U;
         public static uint PLAY_PLAYER_BREATHING_SOFT = 4243459973U;
         public static uint PLAY_PLAYER_DEATH = 1835085974U;
@@ -77,6 +80,7 @@ public class AK
         public static uint SLIDER2_LOOP = 2295651613U;
         public static uint SLIDER2_STOP = 1466206051U;
         public static uint SLIDER3_LOOP = 2278489546U;
+        public static uint SLIDER3_STOP = 1648258440U;
         public static uint STOP_ALL = 452547817U;
         public static uint STOP_ALL_OBJECT = 2638811145U;
         public static uint STOP_DAWN_AMBIENT = 672119035U;
@@ -84,6 +88,7 @@ public class AK
         public static uint STOP_EVIL_CUBES = 3034540413U;
         public static uint STOP_EXTERIOR_WIND = 4269705691U;
         public static uint STOP_GLOWSQUARE = 1198720254U;
+        public static uint STOP_MAGIC_CUBE_LOOP = 2741847256U;
         public static uint STOP_MUSIC_AMBIENT = 3815910684U;
         public static uint STOP_MUSIC_AMBIENT_02 = 28192961U;
         public static uint STOP_MUSIC_THEME = 2480681107U;
@@ -135,6 +140,7 @@ public class AK
     {
         public static uint MUSIC_AMBIENT_PROGRESS = 2736694343U;
         public static uint PAUSE_PARAMETER = 2977051669U;
+        public static uint PHYSICS_SLAM_SIZE = 2607872900U;
         public static uint RAIN_VOLUME = 2458116344U;
         public static uint SFX_GLOWSQUARE_PITCH = 3613648624U;
         public static uint SFX_PLAYER_FALL = 1894448894U;

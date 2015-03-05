@@ -357,6 +357,9 @@ namespace Lemma.Components
 
 		public Property<bool> GetButton(Buttons button)
 		{
+			if (button == 0)
+				return new Property<bool>();
+
 			if (this.buttonProperties.ContainsKey(button))
 				return this.buttonProperties[button];
 			else
@@ -446,7 +449,8 @@ namespace Lemma.Components
 					break;
 			}
 
-			result |= this.GetButton(binding.GamePadButton);
+			if (binding.GamePadButton != 0)
+				result |= this.GetButton(binding.GamePadButton);
 
 			return result;
 		}

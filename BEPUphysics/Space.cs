@@ -364,13 +364,8 @@ namespace BEPUphysics
         ///<param name="spaceObject">Space object to remove.</param>
         public void Remove(ISpaceObject spaceObject)
         {
-#if DEBUG
-            if (spaceObject.Space != this)
-                throw new ArgumentException("The object does not belong to this space; cannot remove it.");
-#else
             if (spaceObject.Space != this) // HACK
                 return;
-#endif
 
             SimulationIslandMember simulationIslandMember = spaceObject as SimulationIslandMember;
             if (simulationIslandMember != null)

@@ -298,7 +298,7 @@ namespace Lemma.Components
 				Permanent = false,
 				Supported = false,
 				Hard = true,
-				Density = 0.5f,
+				Density = 2.0f,
 				DiffuseMap = "Textures\\dirty",
 				NormalMap = "Textures\\metal-channels-normal",
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.WOOD,
@@ -898,7 +898,7 @@ namespace Lemma.Components
 				Permanent = false,
 				Supported = false,
 				Hard = true,
-				Density = 0.5f,
+				Density = 2.0f,
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.STONE,
 				DiffuseMap = "Textures\\infected-hard",
 				NormalMap = "Textures\\temporary-normal",
@@ -1621,13 +1621,16 @@ namespace Lemma.Components
 			{
 				if (!this.Active && this.EnablePhysics)
 				{
-					foreach (MeshEntry entry in this.meshes.Values)
+					lock (this.meshes)
 					{
-						if (!entry.Added)
+						foreach (MeshEntry entry in this.meshes.Values)
 						{
-							entry.Added = true;
-							if (entry.Mesh != null)
-								this.Voxel.main.Space.SpaceObjectBuffer.Add(entry.Mesh);
+							if (!entry.Added)
+							{
+								entry.Added = true;
+								if (entry.Mesh != null)
+									this.Voxel.main.Space.SpaceObjectBuffer.Add(entry.Mesh);
+							}
 						}
 					}
 				}
@@ -1638,13 +1641,16 @@ namespace Lemma.Components
 			{
 				if (this.Active && this.EnablePhysics)
 				{
-					foreach (MeshEntry entry in this.meshes.Values)
+					lock (this.meshes)
 					{
-						if (entry.Added)
+						foreach (MeshEntry entry in this.meshes.Values)
 						{
-							entry.Added = false;
-							if (entry.Mesh != null)
-								this.Voxel.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
+							if (entry.Added)
+							{
+								entry.Added = false;
+								if (entry.Mesh != null)
+									this.Voxel.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
+							}
 						}
 					}
 				}
@@ -1655,20 +1661,24 @@ namespace Lemma.Components
 			{
 				if (this.Active && this.EnablePhysics)
 				{
-					foreach (MeshEntry entry in this.meshes.Values)
+					lock (this.meshes)
 					{
-						if (entry.Added)
+						foreach (MeshEntry entry in this.meshes.Values)
 						{
-							entry.Added = false;
-							if (entry.Mesh != null)
-								this.Voxel.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
+							if (entry.Added)
+							{
+								entry.Added = false;
+								if (entry.Mesh != null)
+									this.Voxel.main.Space.SpaceObjectBuffer.Remove(entry.Mesh);
+							}
 						}
 					}
 				}
 
 				this.Active = false;
 				this.Free();
-				this.meshes.Clear();
+				lock (this.meshes)
+					this.meshes.Clear();
 				for (int i = 0; i < this.Boxes.Count; i++)
 				{
 					Box box = this.Boxes[i];

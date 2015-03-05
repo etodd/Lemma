@@ -79,8 +79,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 9;
-		public const int MapVersion = 979;
-		public const int Build = 979;
+		public const int MapVersion = 984;
+		public const int Build = 984;
 
 		public static Config.Lang[] Languages = new[]
 		{
@@ -1472,7 +1472,7 @@ namespace Lemma
 				this.scheduledSave.Delete.Execute();
 		}
 
-		public void SaveCurrentMap(RenderTarget2D screenshot = null, Point screenshotSize = default(Point))
+		public void SaveCurrentMap(RenderTarget2D screenshot = null, Point screenshotSize = default(Point), bool saveInfo = true)
 		{
 			if (this.CurrentSave.Value == null)
 				this.createNewSave();
@@ -1487,16 +1487,19 @@ namespace Lemma
 
 			IO.MapLoader.Save(this, currentSaveDirectory, this.MapFile);
 
-			try
+			if (saveInfo)
 			{
-				using (Stream fs = new FileStream(Path.Combine(currentSaveDirectory, "save.dat"), FileMode.Create, FileAccess.Write, FileShare.None))
-				using (Stream stream = new GZipOutputStream(fs))
-				using (StreamWriter writer = new StreamWriter(stream))
-					writer.Write(JsonConvert.SerializeObject(new Main.SaveInfo { MapFile = Path.GetFileNameWithoutExtension(this.MapFile), Version = Main.MapVersion }));
-			}
-			catch (InvalidOperationException e)
-			{
-				throw new Exception("Failed to save game.", e);
+				try
+				{
+					using (Stream fs = new FileStream(Path.Combine(currentSaveDirectory, "save.dat"), FileMode.Create, FileAccess.Write, FileShare.None))
+					using (Stream stream = new GZipOutputStream(fs))
+					using (StreamWriter writer = new StreamWriter(stream))
+						writer.Write(JsonConvert.SerializeObject(new Main.SaveInfo { MapFile = Path.GetFileNameWithoutExtension(this.MapFile), Version = Main.MapVersion }));
+				}
+				catch (InvalidOperationException e)
+				{
+					throw new Exception("Failed to save game.", e);
+				}
 			}
 		}
 
