@@ -66,7 +66,8 @@ namespace Lemma
 					main.SessionRecorder.RecordEvent("Exit");
 				else
 					main.SessionRecorder.RecordEvent("Crash", error);
-				main.SaveAnalytics();
+				if (!(error == null && main.IsChallengeMap(main.MapFile)))
+					main.SaveAnalytics();
 			}
 
 			System.Windows.Forms.Application.EnableVisualStyles();

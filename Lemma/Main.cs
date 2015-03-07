@@ -1183,7 +1183,8 @@ namespace Lemma
 					if (this.MapFile.Value != null && !editorLastEnabled)
 					{
 						this.SessionRecorder.RecordEvent("ChangedMap", newMap);
-						this.SaveAnalytics();
+						if (!this.IsChallengeMap(this.MapFile))
+							this.SaveAnalytics();
 					}
 					this.SessionRecorder.Reset();
 					editorLastEnabled = this.EditorEnabled;
