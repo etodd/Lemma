@@ -864,29 +864,36 @@ namespace Lemma.Components
 		private RenderTargetBinding[] bindingsCache = new RenderTargetBinding[2];
 		private bool setTargets(RenderTarget2D[] results)
 		{
-			if (results == null)
+			try
 			{
-				this.main.GraphicsDevice.SetRenderTarget(null);
-				return true;
+				if (results == null)
+				{
+					this.main.GraphicsDevice.SetRenderTarget(null);
+					return true;
+				}
+				else if (results.Length == 1)
+				{
+					if (results[0] != null && results[0].IsDisposed)
+						return false;
+					this.main.GraphicsDevice.SetRenderTarget(results[0]);
+					return true;
+				}
+				else if (results.Length == 2)
+				{
+					if (results[0].IsDisposed || results[1].IsDisposed)
+						return false;
+					this.bindingsCache[0] = results[0];
+					this.bindingsCache[1] = results[1];
+					this.main.GraphicsDevice.SetRenderTargets(this.bindingsCache);
+					return true;
+				}
+				else
+					throw new Exception("Divide by cucumber error. Please reboot universe.");
 			}
-			else if (results.Length == 1)
+			catch (ObjectDisposedException)
 			{
-				if (results[0] != null && results[0].IsDisposed)
-					return false;
-				this.main.GraphicsDevice.SetRenderTarget(results[0]);
-				return true;
+				return false;
 			}
-			else if (results.Length == 2)
-			{
-				if (results[0].IsDisposed || results[1].IsDisposed)
-					return false;
-				this.bindingsCache[0] = results[0];
-				this.bindingsCache[1] = results[1];
-				this.main.GraphicsDevice.SetRenderTargets(this.bindingsCache);
-				return true;
-			}
-			else
-				throw new Exception("Divide by cucumber error. Please reboot universe.");
 		}
 
 		private bool preparePostProcess(RenderTarget2D[] sources, RenderTarget2D[] results, Effect effect)

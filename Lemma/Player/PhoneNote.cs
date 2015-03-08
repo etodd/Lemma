@@ -288,7 +288,7 @@ namespace Lemma.Components
 				bool hasNoteOrSignalTower = (player.Note.Value.Target != null && player.Note.Value.Target.Active) || hasSignalTower;
 
 				if (togglePhoneMessage == null && hasNoteOrSignalTower)
-					togglePhoneMessage = main.Menu.ShowMessage(entity, "[{{TogglePhone}}]");
+					togglePhoneMessage = main.Menu.ShowMessage(entity, hasSignalTower ? "\\signal tower prompt" : "\\note prompt");
 				else if (togglePhoneMessage != null && !hasNoteOrSignalTower && !phoneActive && !noteActive)
 				{
 					main.Menu.HideMessage(entity, togglePhoneMessage);
@@ -656,7 +656,7 @@ namespace Lemma.Components
 						if (phone.Schedules.Length == 0) // No more messages incoming
 						{
 							if (togglePhoneMessage == null)
-								togglePhoneMessage = main.Menu.ShowMessage(entity, "[{{TogglePhone}}]");
+								togglePhoneMessage = main.Menu.ShowMessage(entity, "\\phone done prompt");
 						}
 						else
 						{

@@ -116,6 +116,8 @@ namespace Lemma.Components
 				new Animation.Set<bool>(container.ResizeVertical, true)
 			);
 
+			container.UserData.Value = anim;
+
 			if (entity == null)
 			{
 				anim.EnabledWhenPaused = false;
@@ -159,9 +161,17 @@ namespace Lemma.Components
 			if (container != null && container.Active)
 			{
 				container.CheckLayout();
-				Animation anim = new Animation
+				Animation anim = null;
+				anim = new Animation
 				(
 					new Animation.Delay(delay),
+					new Animation.Execute(delegate()
+					{
+						Animation existingAnimation = container.UserData.Value as Animation;
+						if (existingAnimation != null && existingAnimation.Active)
+							existingAnimation.Delete.Execute();
+						container.UserData.Value = anim;
+					}),
 					new Animation.Set<bool>(container.ResizeVertical, false),
 					new Animation.Ease(new Animation.Vector2MoveTo(container.Size, new Vector2(container.Size.Value.X, 0), messageFadeTime), Animation.Ease.EaseType.OutExponential),
 					new Animation.Execute(container.Delete)
@@ -1856,7 +1866,7 @@ namespace Lemma.Components
 
 			Func<UIComponent, int, int, int> nextMenuItem = delegate(UIComponent menu, int current, int delta)
 			{
-				int end = menu.Children.Length;
+				int end = menu.Children.Count;
 				int newValue = current + delta;
 				if (newValue < 0)
 					return end - 1;
@@ -1924,27 +1934,30 @@ namespace Lemma.Components
 							button.Highlighted.Value = false;
 						}
 
-						int i = nextMenuItem(menu, selected, delta);
-						while (true)
+						if (menu.Children.Count > 0)
 						{
-							UIComponent item = menu.Children[i];
-							if (isButton(item) || isScrollButton(item))
+							int i = nextMenuItem(menu, selected, delta);
+							while (true)
 							{
-								selected = i;
-								break;
+								UIComponent item = menu.Children[i];
+								if (isButton(item) || isScrollButton(item))
+								{
+									selected = i;
+									break;
+								}
+
+								i = nextMenuItem(menu, i, delta);
 							}
 
-							i = nextMenuItem(menu, i, delta);
-						}
+							button = (Container)menu.Children[selected];
+							button.Highlighted.Value = true;
+							this.lastGamepadMove = (float)this.main.GameTime.TotalGameTime.TotalSeconds;
 
-						button = (Container)menu.Children[selected];
-						button.Highlighted.Value = true;
-						this.lastGamepadMove = (float)this.main.GameTime.TotalGameTime.TotalSeconds;
-
-						if (menu.Parent.Value.GetType() == typeof(Scroller))
-						{
-							Scroller scroll = (Scroller)menu.Parent;
-							scroll.ScrollTo(button);
+							if (menu.Parent.Value.GetType() == typeof(Scroller))
+							{
+								Scroller scroll = (Scroller)menu.Parent;
+								scroll.ScrollTo(button);
+							}
 						}
 					}
 				}
