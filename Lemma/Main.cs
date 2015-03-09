@@ -341,6 +341,7 @@ namespace Lemma
 		private Camera vrCamera;
 		public Lemma.Components.ModelNonPostProcessed VRUI;
 		public Property<Matrix> VRLastViewProjection = new Property<Matrix>();
+		private bool oculusNotFound;
 #endif
 
 		public bool IsChallengeMap(string map)
@@ -504,6 +505,21 @@ namespace Lemma
 			if (SteamWorker.Initialized && Steamworks.SteamUtils.IsSteamRunningInVR())
 				this.VR = vr = true;
 #endif
+#endif
+
+#if VR
+			if (this.VR)
+			{
+				if (!Ovr.Hmd.Initialize())
+					throw new Exception("Failed to initialize Oculus runtime.");
+				this.VRHmd = Ovr.Hmd.Create(0);
+				if (this.VRHmd == null)
+				{
+					Log.d("Error: no Oculus found.");
+					this.VR = false;
+					this.oculusNotFound = true;
+				}
+			}
 #endif
 
 			this.Space = new Space();
@@ -902,42 +918,9 @@ namespace Lemma
 
 			if (this.firstLoadContentCall)
 			{
-				this.GraphicsDevice.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
-				this.GeeUI = new GeeUIMain();
-				this.AddComponent(GeeUI);
-
-				this.ConsoleUI = new ConsoleUI();
-				this.AddComponent(ConsoleUI);
-
-				this.Console = new Console.Console();
-				this.AddComponent(Console);
-
-				Lemma.Console.Console.BindType(null, this);
-				Lemma.Console.Console.BindType(null, Console);
-
-				// Initialize Wwise
-				AkGlobalSoundEngineInitializer initializer = new AkGlobalSoundEngineInitializer(Path.Combine(this.Content.RootDirectory, "Wwise"));
-				this.AddComponent(initializer);
-
-				this.Listener = new AkListener();
-				this.Listener.Add(new Binding<Vector3>(this.Listener.Position, this.Camera.Position));
-				this.Listener.Add(new Binding<Vector3>(this.Listener.Forward, this.Camera.Forward));
-				this.Listener.Add(new Binding<Vector3>(this.Listener.Up, this.Camera.Up));
-				this.AddComponent(this.Listener);
-
-				// Create the renderer.
-				this.LightingManager = new LightingManager();
-				this.AddComponent(this.LightingManager);
-				this.Renderer = new Renderer(this, true, true, true, true, true);
-
 #if VR
 				if (this.VR)
 				{
-					if (!Ovr.Hmd.Initialize())
-						throw new Exception("Failed to initialize Ovr.");
-					this.VRHmd = Ovr.Hmd.Create(0);
-					if (this.VRHmd == null)
-						throw new Exception("Oculus not found.");
 					if (!this.VRHmd.ConfigureTracking(
 						(uint)Ovr.TrackingCaps.Orientation
 						| (uint)Ovr.TrackingCaps.MagYawCorrection
@@ -966,6 +949,34 @@ namespace Lemma
 					this.AddComponent(this.vrCamera);
 				}
 #endif
+
+				this.GraphicsDevice.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
+				this.GeeUI = new GeeUIMain();
+				this.AddComponent(GeeUI);
+
+				this.ConsoleUI = new ConsoleUI();
+				this.AddComponent(ConsoleUI);
+
+				this.Console = new Console.Console();
+				this.AddComponent(Console);
+
+				Lemma.Console.Console.BindType(null, this);
+				Lemma.Console.Console.BindType(null, Console);
+
+				// Initialize Wwise
+				AkGlobalSoundEngineInitializer initializer = new AkGlobalSoundEngineInitializer(Path.Combine(this.Content.RootDirectory, "Wwise"));
+				this.AddComponent(initializer);
+
+				this.Listener = new AkListener();
+				this.Listener.Add(new Binding<Vector3>(this.Listener.Position, this.Camera.Position));
+				this.Listener.Add(new Binding<Vector3>(this.Listener.Forward, this.Camera.Forward));
+				this.Listener.Add(new Binding<Vector3>(this.Listener.Up, this.Camera.Up));
+				this.AddComponent(this.Listener);
+
+				// Create the renderer.
+				this.LightingManager = new LightingManager();
+				this.AddComponent(this.LightingManager);
+				this.Renderer = new Renderer(this, true, true, true, true, true);
 
 				this.AddComponent(this.Renderer);
 				this.Renderer.ReallocateBuffers(this.ScreenSize);
@@ -1224,6 +1235,9 @@ namespace Lemma
 #endif
 
 #if VR
+				if (this.oculusNotFound)
+					this.Menu.HideMessage(null, this.Menu.ShowMessage(null, "Error: no Oculus found."), 6.0f);
+
 				if (this.VR)
 				{
 					this.Menu.EnableInput(false);

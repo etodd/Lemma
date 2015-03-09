@@ -65,7 +65,7 @@ namespace Lemma
 						main.SaveAnalytics();
 					}
 #endif
-					throw e;
+					throw;
 				}
 				finally
 				{
