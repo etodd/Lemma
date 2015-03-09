@@ -10,3 +10,4 @@
 [submodule "Steamworks.NET"]
 	path = Steamworks.NET
 	url = git@github.com:et1337/Steamworks.NET.git
+	ignore = dirty

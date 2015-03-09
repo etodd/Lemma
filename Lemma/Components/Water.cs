@@ -148,6 +148,7 @@ namespace Lemma.Components
 			this.effect.Parameters["NormalMap" + Model.SamplerPostfix].SetValue(this.main.Content.Load<Texture2D>("Textures\\water-normal"));
 
 			this.Color.Reset();
+			this.Scale.Reset();
 			this.Fresnel.Reset();
 			this.Speed.Reset();
 			this.RippleDensity.Reset();
@@ -155,6 +156,10 @@ namespace Lemma.Components
 			this.Brightness.Reset();
 			this.Refraction.Reset();
 			this.UnderwaterColor.Reset();
+			
+			// Can't just call this.Position.Reset() because it will try to write to the Water.BigWaterHeight property
+			// which sets a skybox effect parameter. The skybox effect might not have been loaded yet.
+			this.effect.Parameters["Position"].SetValue(this.Position);
 
 			// Surface
 			this.surfaceVertexBuffer = new VertexBuffer(this.main.GraphicsDevice, typeof(QuadVertex), Water.VertexDeclaration.VertexStride * 4, BufferUsage.None);
