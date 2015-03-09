@@ -570,7 +570,7 @@ namespace Lemma.Factories
 						player.SlowMotion.Value = false;
 						parkour.Enabled.Value = false;
 					}
-					else if (parkourBeganThisFrame)
+					else if (parkourBeganThisFrame && player.Character.LinearVelocity.Value.Y > FallDamage.RollingDeathVelocity)
 					{
 						if (blockCloud.Blocks.Length > 0)
 						{
@@ -667,7 +667,12 @@ namespace Lemma.Factories
 					entity.Add(new TwoWayBinding<bool>(playerData.EnableEnhancedWallRun, wallRun.EnableEnhancedWallRun));
 					entity.Add(new TwoWayBinding<bool>(playerData.EnableMoves, player.EnableMoves));
 					entity.Add(new TwoWayBinding<float>(playerData.MaxSpeed, player.Character.MaxSpeed));
-					entity.Add(new TwoWayBinding<Voxel.t>(playerData.CloudType, blockCloud.Type));
+
+					if (playerData.CloudType.Value == Voxel.t.Empty) // This makes everything work if we spawn next to a power block socket
+						entity.Add(new TwoWayBinding<Voxel.t>(blockCloud.Type, playerData.CloudType));
+					else
+						entity.Add(new TwoWayBinding<Voxel.t>(playerData.CloudType, blockCloud.Type));
+
 					entity.Add(new TwoWayBinding<bool>(playerData.ThirdPerson, cameraControl.ThirdPerson));
 					entity.Add(new TwoWayBinding<bool>(playerData.EnableSlowMotion, player.EnableSlowMotion));
 

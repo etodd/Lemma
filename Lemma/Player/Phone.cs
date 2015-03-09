@@ -322,12 +322,12 @@ namespace Lemma.Components
 			this.WaitForAnswer.Value = true;
 		}
 
-		void DialogueForest.IClient.Set(string key, string value)
+		public void Set(string key, string value)
 		{
 			this[key] = value;
 		}
 
-		string DialogueForest.IClient.Get(string key)
+		public string Get(string key)
 		{
 			return this[key];
 		}

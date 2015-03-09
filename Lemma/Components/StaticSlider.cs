@@ -53,6 +53,7 @@ namespace Lemma.Components
 
 		private float lastPosition;
 		private Vector3 lastTranslation;
+		private bool playingSound;
 
 		public void Move(int value)
 		{
@@ -83,12 +84,17 @@ namespace Lemma.Components
 			{
 				this.Add(new SetBinding<int>(this.Goal, delegate(int value)
 				{
-					if (Math.Abs(this.Position - this.Goal) > 0.1f)
+					if (!this.playingSound && this.MovementLoop.Value != 0 && Math.Abs(this.Position - this.Goal) > 0.1f)
+					{
+						this.playingSound = true;
 						AkSoundEngine.PostEvent(this.MovementLoop, this.Entity);
+					}
 				}));
 				Action stopMovement = delegate()
 				{
-					AkSoundEngine.PostEvent(this.MovementStop, this.Entity);
+					if (this.main.TotalTime > 0.1f && this.MovementStop.Value != 0)
+						AkSoundEngine.PostEvent(this.MovementStop, this.Entity);
+					this.playingSound = false;
 				};
 				this.Add(new CommandBinding(this.OnHitMax, stopMovement));
 				this.Add(new CommandBinding(this.OnHitMin, stopMovement));

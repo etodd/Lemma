@@ -38,6 +38,9 @@ namespace Lemma.Factories
 			DynamicVoxel voxel = entity.Get<DynamicVoxel>();
 			voxel.KineticFriction.Value = voxel.StaticFriction.Value = 0;
 
+			if (main.EditorEnabled)
+				spinner.Add(new Binding<Quaternion, Matrix>(spinner.OriginalRotation, x => Quaternion.CreateFromRotationMatrix(x), voxel.Transform));
+
 			entity.Add("Forward", spinner.Forward);
 			entity.Add("Backward", spinner.Backward);
 			entity.Add("HitMax", spinner.HitMax);

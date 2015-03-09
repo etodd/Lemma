@@ -337,15 +337,13 @@ namespace Lemma.Util
 				// Try to uncrouch
 
 				Vector3 rayOrigin = this.Body.Position;
-				rayOrigin.Y += 0.01f + this.Height * 0.5f;
 
 				bool foundCeiling = false;
 
 				foreach (Vector3 rayStart in this.rayOffsets.Select(x => x + rayOrigin))
 				{
 					RayCastResult rayHit;
-					//Fire a ray at the candidate and determine some details! 
-					if (this.main.Space.RayCast(new Ray(rayStart, Vector3.Up), (this.NormalHeight - this.Height) + (this.NormalSupportHeight - this.SupportHeight), out rayHit))
+					if (this.main.Space.RayCast(new Ray(rayStart, Vector3.Up), (this.NormalHeight * 0.5f) + (this.NormalSupportHeight - this.SupportHeight), x => x != this.Body.CollisionInformation, out rayHit))
 					{
 						foundCeiling = true;
 						break;

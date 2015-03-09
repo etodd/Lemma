@@ -20,6 +20,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command Set = new Command();
 
+		[XmlIgnore]
+		public Command OnSet = new Command();
+
 		public Voxel.State GetState()
 		{
 			Entity voxelEntity = this.AttachedVoxel.Value.Target;
@@ -70,6 +73,7 @@ namespace Lemma.Components
 					}
 				}
 			}
+			this.OnSet.Execute();
 		}
 
 		public override void Awake()

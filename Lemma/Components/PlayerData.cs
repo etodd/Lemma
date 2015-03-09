@@ -26,6 +26,7 @@ namespace Lemma.Components
 		public Property<int> Collectibles = new Property<int>();
 		public Property<Voxel.t> CloudType = new Property<Voxel.t>();
 		public Property<int> CollapseLevel = new Property<int>();
+		public Property<int> VictimsHandled = new Property<int>();
 		public Property<bool> ThirdPerson = new Property<bool>();
 
 		public override void Awake()

@@ -121,7 +121,11 @@ namespace Lemma.Components
 					this.Health.Value += Player.healthRegenerateRate * dt;
 			}
 
-			float speed = this.Character.LinearVelocity.Value.Length();
+			Vector3 velocity = this.Character.LinearVelocity.Value;
+			if (this.SlowMotion && velocity.Y < FallDamage.RollingDeathVelocity)
+				this.SlowMotion.Value = false;
+
+			float speed = velocity.Length();
 			if (speed < this.lastSpeed)
 				speed = Math.Max(speed, this.lastSpeed - 40.0f * dt);
 			else if (speed > this.lastSpeed)

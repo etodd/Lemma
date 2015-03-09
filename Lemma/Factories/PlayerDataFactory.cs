@@ -28,9 +28,17 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			base.Bind(entity, main, creating);
-			entity.GetOrCreate<PlayerData>("Data");
+			PlayerData playerData = entity.GetOrCreate<PlayerData>("Data");
 			entity.GetOrCreate<Data>("OpaqueData");
-			entity.GetOrCreate<Phone>("Phone");
+			Phone phone = entity.GetOrCreate<Phone>("Phone");
+			playerData.Add(new SetBinding<int>(playerData.CollapseLevel, delegate(int value)
+			{
+				phone.Set("collapse level", value.ToString());
+			}));
+			playerData.Add(new SetBinding<int>(playerData.VictimsHandled, delegate(int value)
+			{
+				phone.Set("victims handled", value.ToString());
+			}));
 
 			if (PlayerDataFactory.instance != null)
 				PlayerDataFactory.instance.Delete.Execute();

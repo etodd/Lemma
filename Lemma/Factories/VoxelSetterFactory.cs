@@ -40,6 +40,7 @@ namespace Lemma.Factories
 			entity.Add("State", voxelSetter.State);
 			entity.Add("Contiguous", voxelSetter.Contiguous);
 			entity.Add("Set", voxelSetter.Set);
+			entity.Add("OnSet", voxelSetter.OnSet);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

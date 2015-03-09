@@ -28,6 +28,7 @@ namespace Lemma.Factories
 
 			this.SetMain(entity, main);
 
+			AkGameObjectTracker.Attach(entity);
 			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main, true, false);
 			attachable.Offset.Value = 1;
 			attachable.Enabled.Value = true;
@@ -124,6 +125,7 @@ namespace Lemma.Factories
 					else if (socket.Powered && cloud.Type.Value == Voxel.t.Empty && !socket.PowerOnOnly)
 					{
 						// Pull blocks out of the socket
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WHITE_SHATTER, entity);
 						SceneryBlockFactory factory = Factory.Get<SceneryBlockFactory>();
 						Quaternion quat = Quaternion.CreateFromRotationMatrix(sockVoxel.Transform);
 						cloud.Type.Value = socket.Type;

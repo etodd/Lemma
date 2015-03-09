@@ -183,7 +183,7 @@ namespace Lemma.Components
 			}
 		}
 
-		private static string[] ignoreTypes = new[] { "Bouncer", "Slider", "Spinner", };
+		private static string[] ignoreTypes = new[] { "Bouncer", "Spinner", };
 
 		// Function for finding a platform to build for the player
 		public Possibility FindPlatform(Vector3 position)

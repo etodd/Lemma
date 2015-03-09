@@ -88,6 +88,7 @@ public class AK
         public static uint STOP_DOOR_AMBIENCE = 2699574911U;
         public static uint STOP_EVIL_CUBES = 3034540413U;
         public static uint STOP_EXTERIOR_WIND = 4269705691U;
+        public static uint STOP_FOREST_VALLEY_AMBIENT = 2984996438U;
         public static uint STOP_GLOWSQUARE = 1198720254U;
         public static uint STOP_MAGIC_CUBE_LOOP = 2741847256U;
         public static uint STOP_MUSIC_AMBIENT = 3815910684U;

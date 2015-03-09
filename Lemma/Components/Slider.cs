@@ -197,7 +197,7 @@ namespace Lemma.Components
 				}));
 				Action stopMovement = delegate()
 				{
-					if (this.MovementStop.Value != 0)
+					if (this.main.TotalTime > 0.1f && this.MovementStop.Value != 0)
 						AkSoundEngine.PostEvent(this.MovementStop, this.Entity);
 					this.soundPlaying = false;
 				};

@@ -15,6 +15,7 @@ namespace Lemma.Components
 		public const float GruntVelocity = -13.0f; // Vertical velocity below which grunting occurs
 		public const float DamageMultiplier = 0.2f;
 		public const float DeathVelocity = DamageVelocity - (1.0f / DamageMultiplier);
+		public const float RollingDeathVelocity = RollingDamageVelocity - (1.0f / DamageMultiplier);
 
 		// Input commands
 		public Command<float> Apply = new Command<float>();

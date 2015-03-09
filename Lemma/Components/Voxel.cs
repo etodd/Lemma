@@ -480,7 +480,7 @@ namespace Lemma.Components
 			public static readonly State Brick = new State
 			{
 				ID = t.Brick,
-				Permanent = true,
+				Permanent = false,
 				Supported = true,
 				Hard = true,
 				Density = 2,

@@ -364,11 +364,19 @@ namespace Lemma.Components
 				{
 					if (this.uncrouchEarly)
 						this.AllowUncrouch.Value = true;
-					if (this.vaultOver && this.vaultTime - this.moveForwardStartTime > 0.25f)
-						done = true; // Done moving forward
-					else if (this.isTopOut && !this.model.IsPlaying("TopOut"))
-						done = true;
+
+					if (this.isTopOut)
+					{
+						if (!this.model.IsPlaying("TopOut"))
+							done = true;
+					}
 					else
+					{
+						if (this.vaultTime - this.moveForwardStartTime > 0.25f)
+							done = true; // Done moving forward
+					}
+
+					if (!done)
 					{
 						// Still moving forward
 						Vector3 supportVelocity = this.getSupportVelocity(this.map);

@@ -526,7 +526,7 @@ namespace Lemma.Components
 				if (answerContainer.Visible)
 					answerList.Children[selectedAnswer].MouseLeftUp.Execute();
 				else
-					answerContainer.Visible.Value = true;
+					composeButton.MouseLeftUp.Execute();
 			}));
 
 			input.Add(new CommandBinding(input.GetButtonUp(Buttons.B), () => phoneActive && answerContainer.Visible, delegate()

@@ -26,6 +26,8 @@ namespace Lemma.Components
 		public Property<uint> MovementLoop = new Property<uint> { Value = AK.EVENTS.SLIDER2_LOOP };
 		public Property<uint> MovementStop = new Property<uint> { Value = AK.EVENTS.SLIDER2_STOP };
 
+		public Property<Quaternion> OriginalRotation = new Property<Quaternion>();
+
 		[XmlIgnore]
 		public Command Forward = new Command();
 
@@ -109,9 +111,12 @@ namespace Lemma.Components
 			// entity2 is the main map we are attaching to
 			this.physicsEntity = entity1;
 			Vector3 originalPos = entity1.Position;
+			Quaternion originalRotation = entity1.Orientation;
 			entity1.Position = pos;
+			entity1.Orientation = this.OriginalRotation;
 			this.joint = new RevoluteJoint(entity1, entity2, anchor, direction);
 			entity1.Position = originalPos;
+			entity1.Orientation = originalRotation;
 			float multiplier = Math.Max(1.0f, entity1.Mass);
 			this.joint.AngularJoint.SpringSettings.StiffnessConstant *= multiplier;
 			this.joint.Limit.SpringSettings.StiffnessConstant *= multiplier;
