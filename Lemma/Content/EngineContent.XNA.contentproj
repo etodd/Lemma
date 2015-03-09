@@ -316,11 +316,6 @@
       <Importer>FontDescriptionImporter</Importer>
       <Processor>FontDescriptionProcessor</Processor>
     </Compile>
-    <Compile Include="TimeFont.spritefont">
-      <Name>TimeFont</Name>
-      <Importer>FontDescriptionImporter</Importer>
-      <Processor>FontDescriptionProcessor</Processor>
-    </Compile>
     <Compile Include="InstancedModels\block.fbx">
       <Name>block</Name>
       <Importer>FbxImporter</Importer>
@@ -353,6 +348,16 @@
     </Compile>
     <Compile Include="FontVR.spritefont">
       <Name>FontVR</Name>
+      <Importer>FontDescriptionImporter</Importer>
+      <Processor>FontDescriptionProcessor</Processor>
+    </Compile>
+    <Compile Include="FontLarge.spritefont">
+      <Name>FontLarge</Name>
+      <Importer>FontDescriptionImporter</Importer>
+      <Processor>FontDescriptionProcessor</Processor>
+    </Compile>
+    <Compile Include="FontLargeVR.spritefont">
+      <Name>FontLargeVR</Name>
       <Importer>FontDescriptionImporter</Importer>
       <Processor>FontDescriptionProcessor</Processor>
     </Compile>
@@ -412,16 +417,6 @@
       <Name>template</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Compile Include="TimeYourTimeFont.spritefont">
-      <Name>TimeYourTimeFont</Name>
-      <Importer>FontDescriptionImporter</Importer>
-      <Processor>FontDescriptionProcessor</Processor>
-    </Compile>
-    <Compile Include="TimeBestTimeFont.spritefont">
-      <Name>TimeBestTimeFont</Name>
-      <Importer>FontDescriptionImporter</Importer>
-      <Processor>FontDescriptionProcessor</Processor>
-    </Compile>
     <None Include="Wwise\**\*.bnk">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

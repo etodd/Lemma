@@ -83,7 +83,7 @@ namespace Lemma.Components
 			TextElement msg = new TextElement();
 			if (!string.IsNullOrEmpty(text))
 				msg.Text.Value = text;
-			msg.FontFile.Value = this.main.MainFont;
+			msg.FontFile.Value = this.main.Font;
 			msg.WrapWidth.Value = width;
 			msgBackground.Children.Add(msg);
 			return msgBackground;
@@ -241,7 +241,7 @@ namespace Lemma.Components
 			layout.Children.Add(sprite);
 
 			TextElement label = new TextElement();
-			label.FontFile.Value = this.main.MainFont;
+			label.FontFile.Value = this.main.Font;
 			label.Text.Value = timestamp;
 			layout.Children.Add(label);
 
@@ -430,7 +430,7 @@ namespace Lemma.Components
 		private void resizeToMenu(Container c)
 		{
 			c.ResizeHorizontal.Value = false;
-			c.Size.Value = new Vector2(Menu.menuButtonWidth * this.main.MainFontMultiplier + Menu.menuButtonLeftPadding + 4.0f, 0.0f);
+			c.Size.Value = new Vector2(Menu.menuButtonWidth * this.main.FontMultiplier + Menu.menuButtonLeftPadding + 4.0f, 0.0f);
 			c.PaddingLeft.Value = Menu.menuButtonLeftPadding;
 		}
 
@@ -462,7 +462,7 @@ namespace Lemma.Components
 			this.dialog.Children.Add(dialogLayout);
 
 			TextElement prompt = new TextElement();
-			prompt.FontFile.Value = this.main.MainFont;
+			prompt.FontFile.Value = this.main.Font;
 			prompt.Text.Value = question;
 			dialogLayout.Children.Add(prompt);
 
@@ -539,13 +539,13 @@ namespace Lemma.Components
 			labelPadding.Children.Add(challengeLabelContainer);
 
 			TextElement challengeLabel = new TextElement();
-			challengeLabel.FontFile.Value = this.main.MainFont;
+			challengeLabel.FontFile.Value = this.main.Font;
 			challengeLabel.Text.Value = "\\challenge title";
 			challengeLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			challengeLabelContainer.Children.Add(challengeLabel);
 
 			TextElement challengeWarning = new TextElement();
-			challengeWarning.FontFile.Value = this.main.MainFont;
+			challengeWarning.FontFile.Value = this.main.Font;
 			challengeWarning.Text.Value = "\\challenge warning";
 			challengeWarning.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			challengeLabelContainer.Children.Add(challengeWarning);
@@ -622,13 +622,13 @@ namespace Lemma.Components
 			officialLabelPadding.Children.Add(officialLabelContainer);
 
 			TextElement officialLabel = new TextElement();
-			officialLabel.FontFile.Value = this.main.MainFont;
+			officialLabel.FontFile.Value = this.main.Font;
 			officialLabel.Text.Value = "\\challenge title";
 			officialLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			officialLabelContainer.Children.Add(officialLabel);
 
 			TextElement officialScrollLabel = new TextElement();
-			officialScrollLabel.FontFile.Value = this.main.MainFont;
+			officialScrollLabel.FontFile.Value = this.main.Font;
 			officialScrollLabel.Text.Value = "\\scroll for more";
 			officialScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			officialLabelContainer.Children.Add(officialScrollLabel);
@@ -733,13 +733,13 @@ namespace Lemma.Components
 			workshopLabelPadding.Children.Add(workshopLabelContainer);
 
 			TextElement workshopLabel = new TextElement();
-			workshopLabel.FontFile.Value = this.main.MainFont;
+			workshopLabel.FontFile.Value = this.main.Font;
 			workshopLabel.Text.Value = "\\challenge title";
 			workshopLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			workshopLabelContainer.Children.Add(workshopLabel);
 
 			TextElement workshopScrollLabel = new TextElement();
-			workshopScrollLabel.FontFile.Value = this.main.MainFont;
+			workshopScrollLabel.FontFile.Value = this.main.Font;
 			workshopScrollLabel.Text.Value = "\\scroll for more";
 			workshopScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			workshopLabelContainer.Children.Add(workshopScrollLabel);
@@ -941,19 +941,19 @@ namespace Lemma.Components
 			loadSavePadding.Children.Add(loadSaveLabelContainer);
 
 			TextElement loadSaveLabel = new TextElement();
-			loadSaveLabel.FontFile.Value = this.main.MainFont;
+			loadSaveLabel.FontFile.Value = this.main.Font;
 			loadSaveLabel.Add(new Binding<string, bool>(loadSaveLabel.Text, x => x ? "\\save title" : "\\load title", this.saveMode));
 			loadSaveLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			loadSaveLabelContainer.Children.Add(loadSaveLabel);
 
 			TextElement loadSaveScrollLabel = new TextElement();
-			loadSaveScrollLabel.FontFile.Value = this.main.MainFont;
+			loadSaveScrollLabel.FontFile.Value = this.main.Font;
 			loadSaveScrollLabel.Text.Value = "\\scroll for more";
 			loadSaveScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			loadSaveLabelContainer.Children.Add(loadSaveScrollLabel);
 
 			TextElement quickSaveLabel = new TextElement();
-			quickSaveLabel.FontFile.Value = this.main.MainFont;
+			quickSaveLabel.FontFile.Value = this.main.Font;
 			quickSaveLabel.Add(new Binding<bool>(quickSaveLabel.Visible, this.saveMode));
 			quickSaveLabel.Text.Value = "\\quicksave instructions";
 			quickSaveLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
@@ -975,7 +975,7 @@ namespace Lemma.Components
 			this.loadSaveMenu.Children.Add(saveNewButton);
 
 			this.loadSaveScroll = new Scroller();
-			this.loadSaveScroll.Add(new Binding<Vector2, Point>(this.loadSaveScroll.Size, x => new Vector2(Menu.menuButtonWidth * this.main.MainFontMultiplier + Menu.menuButtonLeftPadding + 4.0f, x.Y * 0.5f), this.main.ScreenSize));
+			this.loadSaveScroll.Add(new Binding<Vector2, Point>(this.loadSaveScroll.Size, x => new Vector2(Menu.menuButtonWidth * this.main.FontMultiplier + Menu.menuButtonLeftPadding + 4.0f, x.Y * 0.5f), this.main.ScreenSize));
 			this.loadSaveMenu.Children.Add(this.loadSaveScroll);
 
 			this.loadSaveList = new ListContainer();
@@ -1008,13 +1008,13 @@ namespace Lemma.Components
 			settingsLabelPadding.Children.Add(settingsLabelContainer);
 
 			TextElement settingsLabel = new TextElement();
-			settingsLabel.FontFile.Value = this.main.MainFont;
+			settingsLabel.FontFile.Value = this.main.Font;
 			settingsLabel.Text.Value = "\\options title";
 			settingsLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			settingsLabelContainer.Children.Add(settingsLabel);
 
 			TextElement settingsScrollLabel = new TextElement();
-			settingsScrollLabel.FontFile.Value = this.main.MainFont;
+			settingsScrollLabel.FontFile.Value = this.main.Font;
 			settingsScrollLabel.Add(new Binding<string>(settingsScrollLabel.Text, delegate()
 			{
 				if (this.main.GamePadConnected)
@@ -1242,13 +1242,13 @@ namespace Lemma.Components
 			controlsLabelPadding.Children.Add(controlsLabelContainer);
 
 			TextElement controlsLabel = new TextElement();
-			controlsLabel.FontFile.Value = this.main.MainFont;
+			controlsLabel.FontFile.Value = this.main.Font;
 			controlsLabel.Text.Value = "\\controls title";
 			controlsLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			controlsLabelContainer.Children.Add(controlsLabel);
 
 			TextElement controlsScrollLabel = new TextElement();
-			controlsScrollLabel.FontFile.Value = this.main.MainFont;
+			controlsScrollLabel.FontFile.Value = this.main.Font;
 			controlsScrollLabel.Text.Value = "\\scroll for more";
 			controlsScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			controlsLabelContainer.Children.Add(controlsScrollLabel);
@@ -1505,13 +1505,13 @@ namespace Lemma.Components
 			cheatLabelPadding.Children.Add(cheatLabelContainer);
 
 			TextElement cheatLabel = new TextElement();
-			cheatLabel.FontFile.Value = this.main.MainFont;
+			cheatLabel.FontFile.Value = this.main.Font;
 			cheatLabel.Text.Value = "\\cheat title";
 			cheatLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			cheatLabelContainer.Children.Add(cheatLabel);
 
 			TextElement cheatScrollLabel = new TextElement();
-			cheatScrollLabel.FontFile.Value = this.main.MainFont;
+			cheatScrollLabel.FontFile.Value = this.main.Font;
 			cheatScrollLabel.Text.Value = "\\scroll for more";
 			cheatScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			cheatLabelContainer.Children.Add(cheatScrollLabel);
@@ -1677,13 +1677,13 @@ namespace Lemma.Components
 			creditsLabelPadding.Children.Add(creditsLabelContainer);
 
 			TextElement creditsLabel = new TextElement();
-			creditsLabel.FontFile.Value = this.main.MainFont;
+			creditsLabel.FontFile.Value = this.main.Font;
 			creditsLabel.Text.Value = "\\credits title";
 			creditsLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			creditsLabelContainer.Children.Add(creditsLabel);
 
 			TextElement creditsScrollLabel = new TextElement();
-			creditsScrollLabel.FontFile.Value = this.main.MainFont;
+			creditsScrollLabel.FontFile.Value = this.main.Font;
 			creditsScrollLabel.Text.Value = "\\scroll for more";
 			creditsScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			creditsLabelContainer.Children.Add(creditsScrollLabel);
@@ -1716,7 +1716,7 @@ namespace Lemma.Components
 			creditsDisplay.Opacity.Value = 0;
 
 			TextElement creditsText = new TextElement();
-			creditsText.FontFile.Value = this.main.MainFont;
+			creditsText.FontFile.Value = this.main.Font;
 			creditsText.Text.Value = this.Credits = File.ReadAllText("attribution.txt");
 			creditsDisplay.Children.Add(creditsText);
 
@@ -1929,7 +1929,7 @@ namespace Lemma.Components
 					&& this.main.GameTime.TotalGameTime.TotalSeconds - this.lastGamepadScroll > gamepadScrollMoveInterval)
 				{
 					UIComponent menu = this.currentMenu;
-					if (menu != null && this.dialog == null)
+					if (menu != null && menu.EnableInput && this.dialog == null)
 					{
 						if (menu == this.loadSaveList)
 							delta = -delta;
@@ -1976,32 +1976,27 @@ namespace Lemma.Components
 				}
 			};
 
-			Func<bool> enableGamepad = delegate()
-			{
-				return this.currentMenu.Value != null;
-			};
-
-			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickUp), enableGamepad, delegate()
+			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickUp), delegate()
 			{
 				moveSelection(-1);
 			}));
 
-			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadUp), enableGamepad, delegate()
+			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadUp), delegate()
 			{
 				moveSelection(-1);
 			}));
 
-			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickDown), enableGamepad, delegate()
+			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickDown), delegate()
 			{
 				moveSelection(1);
 			}));
 
-			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadDown), enableGamepad, delegate()
+			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadDown), delegate()
 			{
 				moveSelection(1);
 			}));
 
-			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.A), enableGamepad, delegate()
+			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.A), delegate()
 			{
 				if (this.dialog != null)
 					this.dialog.GetChildByName("Okay").MouseLeftUp.Execute();
@@ -2037,22 +2032,22 @@ namespace Lemma.Components
 				}
 			};
 
-			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickLeft), enableGamepad, delegate()
+			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickLeft), delegate()
 			{
 				scrollButton(-1);
 			}));
 
-			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadLeft), enableGamepad, delegate()
+			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadLeft), delegate()
 			{
 				scrollButton(-1);
 			}));
 
-			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickRight), enableGamepad, delegate()
+			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickRight), delegate()
 			{
 				scrollButton(1);
 			}));
 
-			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadRight), enableGamepad, delegate()
+			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadRight), delegate()
 			{
 				scrollButton(1);
 			}));

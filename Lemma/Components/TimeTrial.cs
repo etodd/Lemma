@@ -20,6 +20,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command Retry = new Command();
 
+		[XmlIgnore]
+		public Property<float> BestTime = new Property<float>();
+
 		public override void Awake()
 		{
 			base.Awake();
@@ -36,6 +39,16 @@ namespace Lemma.Components
 			this.Add(new CommandBinding(this.main.Spawner.PlayerSpawned, delegate()
 			{
 				PlayerFactory.Instance.Add(new CommandBinding(PlayerFactory.Instance.Get<Player>().Die, (Action)this.retryDeath));
+			}));
+
+			this.BestTime.Value = this.main.GetMapTime(WorldFactory.Instance.Get<World>().UUID);
+
+			this.Add(new CommandBinding(this.Disable, delegate()
+			{
+				AkSoundEngine.PostEvent(AK.EVENTS.STOP_ALL, this.Entity);
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_MUSIC_STINGER, this.Entity);
+				this.BestTime.Value = this.main.SaveMapTime(WorldFactory.Instance.Get<World>().UUID, this.ElapsedTime);
+				PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = false;
 			}));
 		}
 

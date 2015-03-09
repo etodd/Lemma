@@ -25,13 +25,14 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			TimeTrial trial = entity.GetOrCreate<TimeTrial>("TimeTrial");
 			TimeTrialUI ui = entity.GetOrCreate<TimeTrialUI>("UI");
-			SetMain(entity, main);
+			this.SetMain(entity, main);
 			entity.Add("EndTimeTrial", trial.Disable);
 			entity.Add("StartTimeTrial", trial.Enable);
 			ui.Add(new Binding<float>(ui.ElapsedTime, trial.ElapsedTime));
+			ui.Add(new Binding<float>(ui.BestTime, trial.BestTime));
 			ui.Add(new Binding<string>(ui.NextMap, trial.NextMap));
-			ui.Add(new CommandBinding(trial.Enable, (Action)ui.AnimateIn));
-			ui.Add(new CommandBinding(trial.Disable, (Action)ui.ShowEndPanel));
+			ui.Add(new CommandBinding(trial.Enable, ui.Show));
+			ui.Add(new CommandBinding(trial.Disable, ui.ShowEnd));
 			ui.Add(new CommandBinding(ui.Retry, trial.Retry));
 			ui.Add(new CommandBinding(ui.MainMenu, delegate()
 			{

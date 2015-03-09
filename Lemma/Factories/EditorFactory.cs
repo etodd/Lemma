@@ -92,7 +92,7 @@ namespace Lemma.Factories
 				container.Opacity.Value = 0.2f;
 				container.Add(new Binding<Vector2, Point>(container.Position, x => new Vector2(x.X - 10.0f, 10.0f), main.ScreenSize));
 				TextElement display = new TextElement();
-				display.FontFile.Value = main.MainFont;
+				display.FontFile.Value = main.Font;
 				display.Text.Value = description;
 				container.Children.Add(display);
 

@@ -77,7 +77,7 @@ namespace Lemma.Components
 
 				TextElement msg = new TextElement();
 				msg.Name.Value = "Text";
-				msg.FontFile.Value = main.MainFont;
+				msg.FontFile.Value = main.Font;
 				msg.Text.Value = text;
 				msg.WrapWidth.Value = width;
 				bg.Children.Add(msg);
@@ -91,7 +91,7 @@ namespace Lemma.Components
 				text.Add(new Binding<Vector2>(text.Position, x => new Vector2(x.X * 0.5f, padding), button.Size));
 				button.ResizeHorizontal.Value = false;
 				button.ResizeVertical.Value = false;
-				button.Size.Value = new Vector2(width, 36.0f * main.MainFontMultiplier);
+				button.Size.Value = new Vector2(width, 36.0f * main.FontMultiplier);
 			};
 
 			Func<UIComponent, bool, Container> makeAlign = delegate(UIComponent component, bool right)
@@ -129,7 +129,7 @@ namespace Lemma.Components
 			phoneTopBar.Children.Add(signalIcon);
 
 			TextElement noService = new TextElement();
-			noService.FontFile.Value = main.MainFont;
+			noService.FontFile.Value = main.Font;
 			noService.Text.Value = "\\no service";
 			phoneTopBar.Children.Add(noService);
 
@@ -317,7 +317,7 @@ namespace Lemma.Components
 			noteLayout.Children.Add(noteUiImage);
 
 			TextElement noteUiText = new TextElement();
-			noteUiText.FontFile.Value = main.MainFont;
+			noteUiText.FontFile.Value = main.Font;
 			noteUiText.Tint.Value = new Microsoft.Xna.Framework.Color(0.1f, 0.1f, 0.1f);
 			noteUiText.Add(new Binding<float, Vector2>(noteUiText.WrapWidth, x => x.X, noteLayout.Size));
 			noteLayout.Children.Add(noteUiText);

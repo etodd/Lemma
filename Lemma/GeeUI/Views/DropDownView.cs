@@ -82,7 +82,7 @@ namespace GeeUI.Views
 			FilterView = new TextFieldView(theGeeUI, DropDownPanelView, Vector2.Zero);
 
 			// HACK
-			FilterView.Height.Value = (int)(20 * theGeeUI.Main.MainFontMultiplier);
+			FilterView.Height.Value = (int)(20 * theGeeUI.Main.FontMultiplier);
 
 			FilterView.MultiLine = false;
 			FilterView.Add(new Binding<int>(FilterView.Width, x => x - 8, DropDownPanelView.Width));

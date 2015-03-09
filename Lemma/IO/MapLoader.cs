@@ -290,7 +290,7 @@ namespace Lemma.IO
 			loadingNotification.Opacity.Value = 0.5f;
 			TextElement loadingNotificationText = new TextElement();
 			loadingNotificationText.Name.Value = "Text";
-			loadingNotificationText.FontFile.Value = main.MainFont;
+			loadingNotificationText.FontFile.Value = main.Font;
 			loadingNotificationText.Text.Value = "\\loading";
 			loadingNotification.Children.Add(loadingNotificationText);
 

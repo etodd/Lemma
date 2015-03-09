@@ -23,7 +23,7 @@ namespace Lemma.Components
 			System.Windows.Forms.Form winForm = (System.Windows.Forms.Form)System.Windows.Forms.Form.FromHandle(this.main.Window.Handle);
 
 			TextElement element = new TextElement();
-			element.FontFile.Value = this.main.MainFont;
+			element.FontFile.Value = this.main.Font;
 			element.Text.Value = text;
 			element.Add(new Binding<Color, bool>(element.Tint, x => x ? new Color(1.0f, 1.0f, 1.0f) : new Color(1.0f, 0.0f, 0.0f), element.Highlighted));
 			element.Add(new CommandBinding(element.MouseLeftUp, delegate()
@@ -50,7 +50,7 @@ namespace Lemma.Components
 		public TextElement CreateLabel(string label = null)
 		{
 			TextElement text = new TextElement();
-			text.FontFile.Value = this.main.MainFont;
+			text.FontFile.Value = this.main.Font;
 			if (label != null)
 				text.Text.Value = label;
 			return text;
@@ -97,7 +97,7 @@ namespace Lemma.Components
 			Container valueContainer = new Container();
 			valueContainer.Opacity.Value = 0.0f;
 			valueContainer.ResizeHorizontal.Value = false;
-			valueContainer.Size.Value = new Vector2(80.0f * this.main.MainFontMultiplier, 0.0f);
+			valueContainer.Size.Value = new Vector2(80.0f * this.main.FontMultiplier, 0.0f);
 			valueList.Children.Add(valueContainer);
 
 			TextElement value = this.CreateLabel();
@@ -160,7 +160,7 @@ namespace Lemma.Components
 		{
 			Container result = this.CreateButton(action);
 			TextElement text = new TextElement();
-			text.FontFile.Value = this.main.MainFont;
+			text.FontFile.Value = this.main.Font;
 			text.Name.Value = "Text";
 			text.Text.Value = label;
 			result.Children.Add(text);

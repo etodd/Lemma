@@ -43,7 +43,7 @@ namespace Lemma
 
 		public const string InitialMap = "rain";
 
-		public string MainFont
+		public string Font
 		{
 			get
 			{
@@ -56,7 +56,7 @@ namespace Lemma
 			}
 		}
 
-		public float MainFontMultiplier
+		public float FontMultiplier
 		{
 			get
 			{
@@ -66,6 +66,19 @@ namespace Lemma
 				else
 #endif
 					return 1.0f;
+			}
+		}
+
+		public string FontLarge
+		{
+			get
+			{
+#if VR
+				if (this.VR)
+					return "FontLargeVR";
+				else
+#endif
+					return "FontLarge";
 			}
 		}
 
@@ -323,7 +336,7 @@ namespace Lemma
 		private SpriteBatch spriteBatch;
 
 #if VR
-		public bool VR { get; private set; }
+		public bool VR;
 		public const float VRUnitToWorldUnit = 3.0f;
 		public Ovr.Hmd VRHmd;
 		private Ovr.HmdDesc vrHmdDesc;
@@ -782,7 +795,7 @@ namespace Lemma
 
 		public float GetMapTime(string uuid)
 		{
-			float existingTime = 0.0f;
+			float existingTime;
 			this.times.TryGetValue(uuid, out existingTime);
 			return existingTime;
 		}
@@ -914,7 +927,7 @@ namespace Lemma
 			this.MapContent = new ContentManager(this.Services);
 			this.MapContent.RootDirectory = this.Content.RootDirectory;
 
-			GeeUIMain.Font = this.Content.Load<SpriteFont>(this.MainFont);
+			GeeUIMain.Font = this.Content.Load<SpriteFont>(this.Font);
 
 			if (this.firstLoadContentCall)
 			{
@@ -1041,7 +1054,7 @@ namespace Lemma
 				Action<string, Property<double>> addTimer = delegate(string label, Property<double> property)
 				{
 					TextElement text = new TextElement();
-					text.FontFile.Value = this.MainFont;
+					text.FontFile.Value = this.Font;
 					text.Add(new Binding<string, double>(text.Text, x => label + ": " + (x * 1000.0).ToString("F") + "ms", property));
 					this.performanceMonitor.Children.Add(text);
 				};
@@ -1049,13 +1062,13 @@ namespace Lemma
 				Action<string, Property<int>> addCounter = delegate(string label, Property<int> property)
 				{
 					TextElement text = new TextElement();
-					text.FontFile.Value = this.MainFont;
+					text.FontFile.Value = this.Font;
 					text.Add(new Binding<string, int>(text.Text, x => label + ": " + x.ToString(), property));
 					this.performanceMonitor.Children.Add(text);
 				};
 
 				TextElement frameRateText = new TextElement();
-				frameRateText.FontFile.Value = this.MainFont;
+				frameRateText.FontFile.Value = this.Font;
 				frameRateText.Add(new Binding<string, float>(frameRateText.Text, x => "FPS: " + x.ToString("0"), this.frameRate));
 				this.performanceMonitor.Children.Add(frameRateText);
 
@@ -1369,7 +1382,7 @@ namespace Lemma
 				saveNotification.Opacity.Value = 0.5f;
 				TextElement saveNotificationText = new TextElement();
 				saveNotificationText.Name.Value = "Text";
-				saveNotificationText.FontFile.Value = this.MainFont;
+				saveNotificationText.FontFile.Value = this.Font;
 				saveNotificationText.Text.Value = "\\saving";
 				saveNotification.Children.Add(saveNotificationText);
 				this.UI.Root.GetChildByName("Notifications").Children.Add(saveNotification);
@@ -1474,7 +1487,7 @@ namespace Lemma
 						saveNotification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
 						saveNotification.Opacity.Value = 0.5f;
 						saveNotificationText.Name.Value = "Text";
-						saveNotificationText.FontFile.Value = this.MainFont;
+						saveNotificationText.FontFile.Value = this.Font;
 						saveNotificationText.Text.Value = "Saving...";
 						saveNotification.Children.Add(saveNotificationText);
 						this.UI.Root.GetChildByName("Notifications").Children.Add(saveNotification);

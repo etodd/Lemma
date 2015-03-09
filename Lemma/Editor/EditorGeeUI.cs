@@ -851,7 +851,7 @@ namespace Lemma.Components
 		public void BuildValueFieldView(View parent, Type type, IProperty property, VectorElement element, PropertyEntry entry, int width = 30)
 		{
 			TextFieldView textField = new TextFieldView(main.GeeUI, parent, Vector2.Zero);
-			textField.Height.Value = (int)(TextFieldHeight * main.MainFontMultiplier);
+			textField.Height.Value = (int)(TextFieldHeight * main.FontMultiplier);
 			textField.Width.Value = width;
 			textField.MultiLine = false;
 
@@ -1214,7 +1214,7 @@ namespace Lemma.Components
 				{
 					TextFieldView view = new TextFieldView(main.GeeUI, ret, Vector2.Zero);
 					view.Width.Value = 130;
-					view.Height.Value = (int)(TextFieldHeight * main.MainFontMultiplier);
+					view.Height.Value = (int)(TextFieldHeight * main.FontMultiplier);
 					view.Name = "TextField";
 					view.MultiLine = false;
 

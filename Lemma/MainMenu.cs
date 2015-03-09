@@ -65,7 +65,7 @@ namespace Lemma.GameScripts
 				Action<string> addText = delegate(string text)
 				{
 					TextElement element = new TextElement();
-					element.FontFile.Value = main.MainFont;
+					element.FontFile.Value = main.Font;
 					element.Text.Value = text;
 					element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X, logo.ScaledSize));
 					element.Opacity.Value = 0.0f;
@@ -99,7 +99,7 @@ namespace Lemma.GameScripts
 				list.Children.Add(creditsScroll);
 
 				TextElement credits = new TextElement();
-				credits.FontFile.Value = main.MainFont;
+				credits.FontFile.Value = main.Font;
 				credits.Text.Value = main.Menu.Credits;
 				credits.Add(new Binding<float, Vector2>(credits.WrapWidth, x => x.X, creditsScroll.Size));
 				credits.Position.Value = new Vector2(0, creditsScroll.ScaledSize.Value.Y * 1.5f);
@@ -134,7 +134,7 @@ namespace Lemma.GameScripts
 				main.UI.Root.Children.Add(corner);
 
 				TextElement version = new TextElement();
-				version.FontFile.Value = main.MainFont;
+				version.FontFile.Value = main.Font;
 				version.Add(new Binding<string, Main.Config.Lang>(version.Text, x => string.Format(main.Strings.Get("build number") ?? "Build {0}", Main.Build.ToString()), main.Settings.Language));
 				corner.Children.Add(version);
 

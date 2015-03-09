@@ -62,7 +62,7 @@ namespace GeeUI.Views
 			NinePatchSelected = GeeUIMain.NinePatchTabSelected;
 
 			// HACK
-			this.Height.Value = (int)(25.0f * GeeUI.Main.MainFontMultiplier);
+			this.Height.Value = (int)(25.0f * GeeUI.Main.FontMultiplier);
 
 			new TextView(GeeUI, this, "", Vector2.Zero) {  };
 		}
