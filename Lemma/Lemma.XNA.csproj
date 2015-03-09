@@ -105,12 +105,6 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnalyticsForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="AnalyticsForm.designer.cs">
-      <DependentUpon>AnalyticsForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="ComponentInterfaces.cs" />
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
@@ -285,12 +279,6 @@
     <Compile Include="Components\PlayerCylinderTrigger.cs" />
     <Compile Include="Components\PostInitialization.cs" />
     <Compile Include="Components\Zone.cs" />
-    <Compile Include="ErrorForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ErrorForm.designer.cs">
-      <DependentUpon>ErrorForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Factories\CloudFactory.cs" />
     <Compile Include="Factories\LowerLimitFactory.cs" />
     <Compile Include="Factories\DialogueFileFactory.cs" />
@@ -547,12 +535,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="AnalyticsForm.resx">
-      <DependentUpon>AnalyticsForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ErrorForm.resx">
-      <DependentUpon>ErrorForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="GeeUI\Resource1.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resource11.Designer.cs</LastGenOutput>

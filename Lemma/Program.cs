@@ -21,7 +21,6 @@ namespace Lemma
 #if VR
 			bool vr = args.Contains("-vr");
 #endif
-			string error = null;
 			Main main = null;
 			if (Debugger.IsAttached)
 			{
@@ -49,41 +48,31 @@ namespace Lemma
 #endif
 					main.Run();
 				}
+				catch (Main.ExitException)
+				{
+#if ANALYTICS
+					main.SessionRecorder.RecordEvent("Exit");
+					if (!main.IsChallengeMap(main.MapFile))
+						main.SaveAnalytics();
+#endif
+				}
 				catch (Exception e)
 				{
-					if (!(e is Main.ExitException))
-						error = e.ToString();
+#if ANALYTICS
+					if (main != null)
+					{
+						main.SessionRecorder.RecordEvent("Crash", e.ToString());
+						main.SaveAnalytics();
+					}
+#endif
+					throw e;
+				}
+				finally
+				{
+					if (main != null)
+						main.Cleanup();
 				}
 			}
-
-			if (main != null)
-				main.Cleanup();
-
-#if ANALYTICS
-			if (main != null)
-			{
-				if (error == null)
-					main.SessionRecorder.RecordEvent("Exit");
-				else
-					main.SessionRecorder.RecordEvent("Crash", error);
-				if (!(error == null && main.IsChallengeMap(main.MapFile)))
-					main.SaveAnalytics();
-			}
-
-			System.Windows.Forms.Application.EnableVisualStyles();
-			string anonymousId = "";
-			if (main != null && main.Settings != null)
-				anonymousId = main.Settings.UUID;
-			AnalyticsForm analyticsForm = new AnalyticsForm(main, anonymousId, error);
-			System.Windows.Forms.Application.Run(analyticsForm);
-#else
-			if (error != null)
-			{
-				System.Windows.Forms.Application.EnableVisualStyles();
-				ErrorForm errorForm = new ErrorForm(error);
-				System.Windows.Forms.Application.Run(errorForm);
-			}
-#endif
 		}
 	}
 }

@@ -19,7 +19,7 @@ namespace Lemma.Util
 		}
 
 		private readonly int maxSize;
-		public BlockingQueue(int maxSize)
+		public BlockingQueue(int maxSize = 0)
 		{
 			this.maxSize = maxSize;
 		}
@@ -28,7 +28,7 @@ namespace Lemma.Util
 		{
 			lock (this.queue)
 			{
-				while (this.queue.Count >= this.maxSize)
+				while (this.maxSize > 0 && this.queue.Count >= this.maxSize)
 					Monitor.Wait(this.queue);
 				if (!this.queue.Contains(item))
 				{
@@ -42,6 +42,19 @@ namespace Lemma.Util
 			}
 		}
 
+		public void Clear()
+		{
+			lock (this.queue)
+			{
+				this.queue.Clear();
+				if (this.maxSize > 0)
+				{
+					// wake up any blocked enqueue
+					Monitor.PulseAll(this.queue);
+				}
+			}
+		}
+
 		public T Dequeue()
 		{
 			lock (this.queue)
@@ -49,7 +62,7 @@ namespace Lemma.Util
 				while (this.queue.Count == 0)
 					Monitor.Wait(this.queue);
 				T item = this.queue.Dequeue();
-				if (this.queue.Count == maxSize - 1)
+				if (this.maxSize > 0 && this.queue.Count == this.maxSize - 1)
 				{
 					// wake up any blocked enqueue
 					Monitor.PulseAll(this.queue);

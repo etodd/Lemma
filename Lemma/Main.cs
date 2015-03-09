@@ -79,8 +79,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 9;
-		public const int MapVersion = 984;
-		public const int Build = 984;
+		public const int MapVersion = 988;
+		public const int Build = 988;
 
 		public static Config.Lang[] Languages = new[]
 		{
@@ -94,6 +94,12 @@ namespace Lemma
 			{
 				en,
 				//ru,
+			}
+			public enum RecordAnalytics
+			{
+				Ask,
+				On,
+				Off,
 			}
 			public Property<Lang> Language = new Property<Lang>();
 			public Property<bool> Fullscreen = new Property<bool>();
@@ -116,6 +122,7 @@ namespace Lemma
 			public Property<float> SoundEffectVolume = new Property<float> { Value = 1.0f };
 			public Property<float> MusicVolume = new Property<float> { Value = 1.0f };
 			public Property<int> FPSLimit = new Property<int>();
+			public Property<RecordAnalytics> Analytics = new Property<RecordAnalytics>();
 			[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
 			public bool GodMode;
 			public int Version;
@@ -806,7 +813,8 @@ namespace Lemma
 
 		public void SaveAnalytics()
 		{
-			this.SessionRecorder.Save(this.analyticsDirectory, Main.Build, Path.GetFileNameWithoutExtension(this.MapFile), this.TotalTime);
+			if (this.Settings.Analytics.Value == Config.RecordAnalytics.On)
+				this.SessionRecorder.Save(this.analyticsDirectory, Main.Build, Path.GetFileNameWithoutExtension(this.MapFile), this.TotalTime);
 		}
 
 		public string[] AnalyticsSessionFiles
@@ -1078,8 +1086,7 @@ namespace Lemma
 				AkBankLoader.LoadBank("Music.bnk");
 
 #if ANALYTICS
-				this.SessionRecorder = new Session.Recorder();
-				this.AddComponent(this.SessionRecorder);
+				this.SessionRecorder = new Session.Recorder(this);
 
 				this.SessionRecorder.Add("Position", delegate()
 				{
@@ -1108,6 +1115,8 @@ namespace Lemma
 				{
 					return this.workingSet;
 				});
+				this.AddComponent(this.SessionRecorder);
+				this.SessionRecorder.Add(new Binding<bool, Config.RecordAnalytics>(this.SessionRecorder.EnableUpload, x => x == Config.RecordAnalytics.On, this.Settings.Analytics));
 #endif
 
 				this.DefaultLighting();
@@ -1198,6 +1207,20 @@ namespace Lemma
 #if !DEVELOPMENT
 				IO.MapLoader.Load(this, MenuMap);
 				this.Menu.Show();
+#endif
+
+#if ANALYTICS
+				if (this.Settings.Analytics.Value == Config.RecordAnalytics.Ask)
+				{
+					this.Menu.ShowDialog("\\analytics prompt", "\\enable analytics", delegate()
+					{
+						this.Settings.Analytics.Value = Config.RecordAnalytics.On;
+					},
+					"\\disable analytics", delegate()
+					{
+						this.Settings.Analytics.Value = Config.RecordAnalytics.Off;
+					});
+				}
 #endif
 
 #if VR
@@ -1700,6 +1723,10 @@ namespace Lemma
 			TotalGameTime.Value += dt;
 #if STEAMWORKS
 			SteamWorker.Update(dt);
+#endif
+
+#if ANALYTICS
+			this.SessionRecorder.Update(dt);
 #endif
 
 			if (this.resize != null && this.resize.Value.X > 0 && this.resize.Value.Y > 0)

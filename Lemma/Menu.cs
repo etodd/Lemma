@@ -436,11 +436,11 @@ namespace Lemma.Components
 
 		public void EnableInput(bool enable)
 		{
-			if (this.currentMenu.Value != null)
+			if (this.currentMenu.Value != null && this.dialog == null)
 				this.currentMenu.Value.EnableInput.Value = enable;
 		}
 
-		public void ShowDialog(string question, string action, Action callback)
+		public void ShowDialog(string question, string action, Action callback, string alternate = "\\cancel", Action alternateCallback = null)
 		{
 			if (this.dialog != null)
 				this.dialog.Delete.Execute();
@@ -452,6 +452,7 @@ namespace Lemma.Components
 			this.dialog.Add(new Binding<Vector2, Point>(this.dialog.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.main.ScreenSize));
 			this.dialog.Add(new CommandBinding(this.dialog.Delete, delegate()
 			{
+				this.dialog = null;
 				this.EnableInput(true);
 			}));
 			this.main.UI.Root.Children.Add(this.dialog);
@@ -472,23 +473,25 @@ namespace Lemma.Components
 			UIComponent okay = this.main.UIFactory.CreateButton("", delegate()
 			{
 				this.dialog.Delete.Execute();
-				this.dialog = null;
 				callback();
 			});
 			TextElement okayText = (TextElement)okay.GetChildByName("Text");
-			okayText.Add(new Binding<string, bool>(okayText.Text, x => action + (x ? " gamepad" : ""), this.main.GamePadConnected));
+			string actionGamepad = string.Format("{0} gamepad", action);
+			okayText.Add(new Binding<string, bool>(okayText.Text, x => x ? actionGamepad : action, this.main.GamePadConnected));
 			okay.Name.Value = "Okay";
 			dialogButtons.Children.Add(okay);
 
-			UIComponent cancel = this.main.UIFactory.CreateButton("\\cancel", delegate()
+			UIComponent cancel = this.main.UIFactory.CreateButton(alternate, delegate()
 			{
 				this.dialog.Delete.Execute();
-				this.dialog = null;
+				if (alternateCallback != null)
+					alternateCallback();
 			});
 			dialogButtons.Children.Add(cancel);
 
 			TextElement cancelText = (TextElement)cancel.GetChildByName("Text");
-			cancelText.Add(new Binding<string, bool>(cancelText.Text, x => x ? "\\cancel gamepad" : "\\cancel", this.main.GamePadConnected));
+			string alternateGamepad = string.Format("{0} gamepad", alternate);
+			cancelText.Add(new Binding<string, bool>(cancelText.Text, x => x ? alternateGamepad : alternate, this.main.GamePadConnected));
 		}
 
 		private void hideLoadSave()
@@ -1198,6 +1201,16 @@ namespace Lemma.Components
 			});
 			this.resizeToMenu(dynamicShadows);
 			settingsList.Children.Add(dynamicShadows);
+
+#if ANALYTICS
+			Container analyticsEnabled = this.main.UIFactory.CreateScrollButton<Main.Config.RecordAnalytics>("\\analytics", this.main.Settings.Analytics, delegate(int delta)
+			{
+				Main.Config.RecordAnalytics current = this.main.Settings.Analytics;
+				this.main.Settings.Analytics.Value = current == Main.Config.RecordAnalytics.On ? Main.Config.RecordAnalytics.Off : Main.Config.RecordAnalytics.On;
+			});
+			this.resizeToMenu(analyticsEnabled);
+			settingsList.Children.Add(analyticsEnabled);
+#endif
 
 			Container settingsReset = this.main.UIFactory.CreateButton("\\reset options", delegate()
 			{

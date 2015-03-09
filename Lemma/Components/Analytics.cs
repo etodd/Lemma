@@ -10,6 +10,8 @@ using System.Net;
 using ComponentBind;
 using System.Management;
 using ICSharpCode.SharpZipLib.GZip;
+using System.Threading;
+using Lemma.Util;
 
 namespace Lemma.Components
 {
@@ -320,7 +322,7 @@ namespace Lemma.Components
 
 		public string LastSession;
 
-		public class Recorder : Component<Main>, IUpdateableComponent
+		public class Recorder: Component<Main>
 		{
 			public static void Event(Main main, string name, string data = null)
 			{
@@ -342,13 +344,55 @@ namespace Lemma.Components
 
 			private Session data = new Session();
 
-			public Recorder()
+			private Main main;
+
+			private Thread workThread;
+			private BlockingQueue<string> workQueue = new BlockingQueue<string>();
+			private void worker()
 			{
+				while (true)
+				{
+					string filename = this.workQueue.Dequeue();
+					try
+					{
+						Recorder.UploadSession(filename);
+					}
+					catch (Exception e)
+					{
+						Log.d(string.Format("Failed to upload analytics session.\n{0}", e.ToString()));
+					}
+				}
+			}
+			
+			public Property<bool> EnableUpload = new Property<bool>();
+
+			public Recorder(Main main)
+			{
+				this.main = main;
 				this.data.Date = DateTime.Now;
 				this.data.Interval = Interval;
 				this.data.Build = Main.Build;
 				this.data.OS = Environment.OSVersion.VersionString;
 				this.data.Is64BitOS = Environment.Is64BitOperatingSystem;
+				this.Add(new ChangeBinding<bool>(this.EnableUpload, delegate(bool old, bool value)
+				{
+					if (value)
+					{
+#if ANALYTICS
+						foreach (string file in this.main.AnalyticsSessionFiles)
+							this.workQueue.Enqueue(file);
+#endif
+					}
+					else
+						this.workQueue.Clear();
+				}));
+
+				this.workThread = new Thread(new ThreadStart(this.worker));
+				this.workThread.Start();
+				main.Exiting += delegate(object a, EventArgs b)
+				{
+					this.workThread.Abort();
+				};
 
 #if WINDOWS
 				this.data.Memory = (int)(new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory / (ulong)1048576);
@@ -367,8 +411,6 @@ namespace Lemma.Components
 					}
 				}
 #endif
-				this.EnabledWhenPaused = true;
-				this.EnabledInEditMode = true;
 			}
 
 			public void Save(string path, int build, string map, float totalTime)
@@ -389,10 +431,13 @@ namespace Lemma.Components
 				this.data.ScreenSize = screenSize;
 				this.data.IsFullscreen = this.main.Settings.Fullscreen;
 
-				string filename = string.Format("{0}-{1}-{2}.xml.gz", build, this.data.Map == null ? "null" : this.data.Map, this.data.ID);
-				using (Stream fs = new FileStream(Path.Combine(path, filename), FileMode.Create, FileAccess.Write, FileShare.None))
+				string filename = Path.Combine(path, string.Format("{0}-{1}-{2}.xml.gz", build, this.data.Map == null ? "null" : this.data.Map, this.data.ID));
+				using (Stream fs = new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.None))
 				using (Stream stream = new GZipOutputStream(fs))
 					new XmlSerializer(typeof(Session)).Serialize(stream, this.data);
+
+				if (this.EnableUpload)
+					this.workQueue.Enqueue(filename);
 			}
 
 			public void Reset()
