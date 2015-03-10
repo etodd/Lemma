@@ -12,6 +12,7 @@ using System.Xml.Serialization;
 using System.IO;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
 using GeeUI.Managers;
+using System.Text.RegularExpressions;
 
 namespace Lemma.Factories
 {
@@ -258,16 +259,18 @@ namespace Lemma.Factories
 				input.EnableLook, editor.VoxelEditMode, editor.TransformMode, main.MapFile, gui.PickNextEntity
 			);
 #endif
+			Regex pathRegex = new Regex(string.Format("[{0}]", Regex.Escape(string.Format("{0}{1}", Path.GetInvalidFileNameChars(), Path.GetInvalidPathChars()))));
 
 			AddCommand
 			(
-				entity, main, commandQueueContainer, "New", new PCInput.Chord(Keys.N, Keys.LeftControl),
+				entity, main, commandQueueContainer, "New map", new PCInput.Chord(Keys.N, Keys.LeftControl),
 				new Command
 				{
 					Action = () =>
 					{
 						main.AddComponent(new TextPrompt(delegate(string name)
 						{
+							name = pathRegex.Replace(name, "");
 							IO.MapLoader.New(main, Path.Combine(main.CustomMapDirectory, name), Path.Combine(main.MapDirectory, Main.TemplateMap));
 							editor.NeedsSave.Value = true;
 						}, "", "Map name:", "New map"));
@@ -276,6 +279,26 @@ namespace Lemma.Factories
 				gui.MapCommands,
 				() => !input.EnableLook && !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None && !gui.PickNextEntity,
 				input.EnableLook, editor.VoxelEditMode, editor.TransformMode, gui.PickNextEntity
+			);
+
+			AddCommand
+			(
+				entity, main, commandQueueContainer, "Clone map", new PCInput.Chord(Keys.D, Keys.LeftControl),
+				new Command
+				{
+					Action = () =>
+					{
+						main.AddComponent(new TextPrompt(delegate(string name)
+						{
+							name = pathRegex.Replace(name, "");
+							IO.MapLoader.New(main, Path.Combine(main.CustomMapDirectory, name), Path.Combine(main.MapDirectory, main.MapFile));
+							editor.NeedsSave.Value = true;
+						}, "", "Map name:", "Clone map"));
+					}
+				},
+				gui.MapCommands,
+				() => !string.IsNullOrEmpty(main.MapFile) && !input.EnableLook && !editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None && !gui.PickNextEntity,
+				input.EnableLook, editor.VoxelEditMode, editor.TransformMode, gui.PickNextEntity, main.MapFile
 			);
 
 			AddCommand
