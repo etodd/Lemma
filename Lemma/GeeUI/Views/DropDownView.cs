@@ -59,6 +59,7 @@ namespace GeeUI.Views
 			button.OnMouseClick += delegate(object sender, EventArgs e)
 			{
 				ToggleDropDown();
+				button.TemporarilyIgnoreMouseClickAway = true;
 				this.FilterView.TemporarilyIgnoreMouseClickAway = true;
 			};
 

@@ -343,7 +343,7 @@ namespace Lemma.Util
 				foreach (Vector3 rayStart in this.rayOffsets.Select(x => x + rayOrigin))
 				{
 					RayCastResult rayHit;
-					if (this.main.Space.RayCast(new Ray(rayStart, Vector3.Up), (this.NormalHeight * 0.5f) + (this.NormalSupportHeight - this.SupportHeight), x => x != this.Body.CollisionInformation, out rayHit))
+					if (this.main.Space.RayCast(new Ray(rayStart, Vector3.Up), (this.NormalHeight * 0.5f) + (this.NormalSupportHeight - this.SupportHeight), Character.raycastFilter, out rayHit))
 					{
 						foundCeiling = true;
 						break;

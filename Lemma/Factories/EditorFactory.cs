@@ -162,7 +162,23 @@ namespace Lemma.Factories
 				},
 			});
 
-			editor.EnableCommands = () => !gui.AnyTextFieldViewsSelected() && !ConsoleUI.Showing && !gui.PickNextEntity;
+			FPSInput input = entity.Create<FPSInput>();
+			input.EnabledWhenPaused = true;
+			Property<bool> capslockKey = input.GetKey(Keys.CapsLock);
+			Property<bool> shiftKey = input.GetKey(Keys.LeftShift);
+
+			bool disableEditorMouseCommands = false;
+			input.Add(new CommandBinding(input.LeftMouseButtonDown, delegate()
+			{
+				if (main.GeeUI.LastClickCaptured)
+					disableEditorMouseCommands = true;
+			}));
+			input.Add(new CommandBinding(input.LeftMouseButtonUp, delegate()
+			{
+				disableEditorMouseCommands = false;
+			}));
+
+			editor.EnableCommands = () => !gui.AnyTextFieldViewsSelected() && !ConsoleUI.Showing && !gui.PickNextEntity && !main.GeeUI.LastClickCaptured && !disableEditorMouseCommands;
 
 			ModelAlpha model = new ModelAlpha();
 			model.MapContent = false;
@@ -170,11 +186,6 @@ namespace Lemma.Factories
 			model.Scale.Value = new Vector3(0.5f);
 			model.Serialize = false;
 			entity.Add(model);
-
-			FPSInput input = entity.Create<FPSInput>();
-			input.EnabledWhenPaused = true;
-			Property<bool> capslockKey = input.GetKey(Keys.CapsLock);
-			Property<bool> shiftKey = input.GetKey(Keys.LeftShift);
 
 			ModelAlpha brushVisual = new ModelAlpha();
 			brushVisual.MapContent = false;
@@ -789,8 +800,8 @@ namespace Lemma.Factories
 					}
 				},
 				gui.EntityCommands,
-				() => !string.IsNullOrEmpty(main.MapFile) && !editor.VoxelEditMode && !input.EnableLook && editor.TransformMode.Value == Editor.TransformModes.None && !main.GeeUI.LastClickCaptured && !gui.PickNextEntity,
-				main.MapFile, editor.VoxelEditMode, input.EnableLook, editor.TransformMode, main.GeeUI.LastClickCaptured, gui.PickNextEntity
+				() => !string.IsNullOrEmpty(main.MapFile) && !editor.VoxelEditMode && !input.EnableLook && editor.TransformMode.Value == Editor.TransformModes.None && !gui.PickNextEntity,
+				main.MapFile, editor.VoxelEditMode, input.EnableLook, editor.TransformMode, gui.PickNextEntity
 			);
 
 
@@ -1240,8 +1251,8 @@ namespace Lemma.Factories
 				new PCInput.Chord { Mouse = PCInput.MouseButton.LeftMouseButton },
 				editor.CommitTransform,
 				gui.EntityCommands,
-				() => editor.TransformMode.Value != Editor.TransformModes.None && !main.GeeUI.LastClickCaptured,
-				editor.TransformMode, main.GeeUI.LastClickCaptured
+				() => editor.TransformMode.Value != Editor.TransformModes.None,
+				editor.TransformMode
 			);
 
 			AddCommand

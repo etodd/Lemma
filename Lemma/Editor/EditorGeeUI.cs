@@ -249,9 +249,9 @@ namespace Lemma.Components
 				container.Add(new Binding<int>(container.Width, (i) => i - 10, LinkerView.Width));
 				list.Add(new Binding<int>(list.Width, container.Width));
 
-				container.Position.Value = new Vector2(5, 110);
+				container.Position.Value = new Vector2(5, 120);
 
-				container.Height.Value = list.Height.Value = (LinkerView.Height.Value - container.Y) - 5;
+				container.Height.Value = list.Height.Value = (LinkerView.Height.Value - container.Y) - 15;
 				DestLayout.Position.Value = new Vector2(10, 10);
 
 				var addButton = new ButtonView(main.GeeUI, LinkerView, "Link", Vector2.Zero) { Name = "AddButton" };
