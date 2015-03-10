@@ -86,6 +86,7 @@ namespace GeeUI.Views
 			FilterView.Height.Value = (int)(20 * theGeeUI.Main.FontMultiplier);
 
 			FilterView.MultiLine = false;
+			FilterView.AllowTab = false;
 			FilterView.Add(new Binding<int>(FilterView.Width, x => x - 8, DropDownPanelView.Width));
 			FilterView.OnTextChanged = () =>
 			{
@@ -114,6 +115,18 @@ namespace GeeUI.Views
 			}));
 		}
 
+		private bool justReceivedFocus;
+		public override void Focus()
+		{
+			this.ShowDropDown();
+			this.justReceivedFocus = true;
+		}
+
+		public override void Blur()
+		{
+			this.HideDropDown();
+		}
+
 		private void keyPressedHandler(string keyPressed, Keys key)
 		{
 			if (this.DropDownShowing)
@@ -129,6 +142,13 @@ namespace GeeUI.Views
 				{
 					this._arrowKeysIndex--;
 					this.ArrowKeysHandle();
+				}
+				else if (key == Keys.Tab)
+				{
+					if (InputManager.IsKeyPressed(Keys.LeftControl))
+						this.Blur();
+					else if (!this.justReceivedFocus)
+						this.FocusNextInputView(reverse: InputManager.IsKeyPressed(Keys.LeftShift));
 				}
 				else if (key == Keys.Enter)
 				{
@@ -300,6 +320,7 @@ namespace GeeUI.Views
 		{
 			if (this.DropDownShowing)
 			{
+				this.justReceivedFocus = false;
 				if (this.mouse != InputManager.GetMousePos()
 					&& !DropDownPanelView.AbsoluteBoundBox.Contains(InputManager.GetMousePos())
 					&& !Children[0].AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
@@ -331,9 +352,12 @@ namespace GeeUI.Views
 			if (DropDownShowing)
 			{
 				DropDownPanelView.Active.Value = false;
-				FilterView.Selected.Value = FilterView.Active.Value = false;
-				FilterView.ClearText();
-				Refilter();
+				if (FilterView.Active)
+				{
+					FilterView.Selected.Value = FilterView.Active.Value = false;
+					FilterView.ClearText();
+					Refilter();
+				}
 			}
 		}
 

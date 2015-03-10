@@ -39,6 +39,8 @@ namespace GeeUI.Views
 		public NinePatch NinePatchRegexGood;
 		public NinePatch NinePatchRegexBad;
 
+		public bool AllowTab = true;
+
 		public Color TextColor;
 
 		public bool MultiLine = true;
@@ -189,6 +191,13 @@ namespace GeeUI.Views
 			_buttonHeldString = "";
 		}
 
+		private bool justReceivedFocus;
+		public override void Focus()
+		{
+			base.Focus();
+			this.justReceivedFocus = true;
+		}
+
 		void keyPressedHandler(string keyPressed, Keys key)
 		{
 			if (!Selected || !Editable) return;
@@ -260,6 +269,13 @@ namespace GeeUI.Views
 						break;
 					case Keys.Space:
 						AppendTextCursor(" ");
+						break;
+					case Keys.Tab:
+						if (InputManager.IsKeyPressed(Keys.LeftControl))
+							this.Blur();
+
+						if (this.AllowTab && !this.justReceivedFocus)
+							this.FocusNextInputView(reverse: InputManager.IsKeyPressed(Keys.LeftShift));
 						break;
 					default:
 						AppendTextCursor(keyPressed);
@@ -678,52 +694,56 @@ namespace GeeUI.Views
 		public override void Update(float dt)
 		{
 			Vector2 pos = InputManager.GetMousePosV();
-			if (Selected && InputManager.IsMousePressed(MouseButton.Left))
+			if (Selected)
 			{
-				if (!AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
+				if (InputManager.IsMousePressed(MouseButton.Left))
 				{
-					_dragOffTimer += dt;
-					if (_dragOffTimer >= _dragOffInterval)
+					if (!AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
 					{
-						_dragOffTimer -= _dragOffInterval;
-						if (pos.X > AbsoluteBoundBox.Right)
+						_dragOffTimer += dt;
+						if (_dragOffTimer >= _dragOffInterval)
 						{
-							MoveOffsetX(1, true);
+							_dragOffTimer -= _dragOffInterval;
+							if (pos.X > AbsoluteBoundBox.Right)
+							{
+								MoveOffsetX(1, true);
+							}
+							else if (pos.X < AbsoluteBoundBox.Left)
+							{
+								MoveOffsetX(-1, true);
+							}
 						}
-						else if (pos.X < AbsoluteBoundBox.Left)
-						{
-							MoveOffsetX(-1, true);
-						}
+						
 					}
-					
+
+					var clickPos = GetMouseTextPos(InputManager.GetMousePosV());
+					_selectionEnd = clickPos;
+					_cursorX = (int)clickPos.X;
+					_cursorY = (int)clickPos.Y;
 				}
 
-				var clickPos = GetMouseTextPos(InputManager.GetMousePosV());
-				_selectionEnd = clickPos;
-				_cursorX = (int)clickPos.X;
-				_cursorY = (int)clickPos.Y;
-			}
-
-			if (InputManager.IsKeyPressed(_buttonHeld))
-			{
-				_buttonHeldTimePreRepeat += dt;
-				_buttonHeldTime += dt;
-				if (_buttonHeldTimePreRepeat >= 0.35 && _buttonHeldTime >= 0.03)
+				if (InputManager.IsKeyPressed(_buttonHeld))
 				{
-					_buttonHeldTime = 0;
-					keyPressedHandler(_buttonHeldString, _buttonHeld);
+					_buttonHeldTimePreRepeat += dt;
+					_buttonHeldTime += dt;
+					if (_buttonHeldTimePreRepeat >= 0.35 && _buttonHeldTime >= 0.03)
+					{
+						_buttonHeldTime = 0;
+						keyPressedHandler(_buttonHeldString, _buttonHeld);
+					}
 				}
-			}
-			else
-			{
-				keyReleasedHandler("", _buttonHeld);
-			}
+				else
+				{
+					keyReleasedHandler("", _buttonHeld);
+				}
 
-			_delimiterTime += dt;
-			if (_delimiterTime >= DelimiterLimit)
-			{
-				_doingDelimiter = !_doingDelimiter;
-				_delimiterTime = 0;
+				_delimiterTime += dt;
+				if (_delimiterTime >= DelimiterLimit)
+				{
+					_doingDelimiter = !_doingDelimiter;
+					_delimiterTime = 0;
+				}
+				this.justReceivedFocus = false;
 			}
 
 			base.Update(dt);

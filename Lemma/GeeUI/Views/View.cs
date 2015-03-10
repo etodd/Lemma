@@ -223,6 +223,71 @@ namespace GeeUI.Views
 
 		public ListProperty<View> Children = new ListProperty<View>();
 
+		public virtual void Focus()
+		{
+			this.OnMClick(this.AbsolutePosition, false);
+		}
+
+		public virtual void Blur()
+		{
+			this.OnMClickAway();
+		}
+
+		private View findInputView(bool reverse = false)
+		{
+			if (!this.Active)
+				return null;
+
+			if (this is TextFieldView || this is DropDownView)
+				return this;
+
+			for (int i = reverse ? this.Children.Count - 1 : 0; reverse ? (i >= 0) : (i < this.Children.Count); i += reverse ? -1 : 1)
+			{
+				View inputView = this.Children[i].findInputView(reverse);
+				if (inputView != null)
+					return inputView;
+			}
+			return null;
+		}
+
+		public void FocusNextInputView(bool reverse = false)
+		{
+			View parent = this.ParentView;
+			View child = this;
+			while (parent != null)
+			{
+				// Find the current element in the parent's list of children
+				bool found = false;
+				bool foundChild = false;
+				for (int i = reverse ? parent.Children.Count - 1 : 0; reverse ? (i >= 0) : (i < parent.Children.Count); i += reverse ? -1 : 1)
+				{
+					View v = parent.Children[i];
+					if (foundChild)
+					{
+						// We found the current element; now search our siblings for input views
+						View inputView = v.findInputView(reverse);
+						if (inputView != null)
+						{
+							inputView.Focus();
+							this.Blur();
+							found = true;
+							break;
+						}
+					}
+					else if (v == child)
+						foundChild = true;
+				}
+
+				if (found)
+					break;
+				else
+				{
+					child = parent;
+					parent = parent.ParentView;
+				}
+			}
+		}
+
 		internal View(GeeUIMain theGeeUI)
 		{
 			ParentGeeUI = theGeeUI;
