@@ -181,24 +181,12 @@ namespace Lemma.Components
 					transform.Position.Value = map.GetAbsolutePosition(new Voxel.Coord().Move(this.Direction, this.Minimum));
 				}
 
-				this.Add(new SetBinding<int>(this.Goal, delegate(int value)
-				{
-					if (this.joint != null)
-					{
-						Vector3 separation = this.joint.Limit.AnchorB - this.joint.Limit.AnchorA;
-						float x = Vector3.Dot(separation, this.joint.Limit.Axis);
-						if (Math.Abs(x - this.Goal) > 0.1f)
-						{
-							if (this.MovementLoop.Value != 0)
-								AkSoundEngine.PostEvent(this.MovementLoop, this.Entity);
-							this.soundPlaying = true;
-						}
-					}
-				}));
 				Action stopMovement = delegate()
 				{
 					if (this.main.TotalTime > 0.1f && this.MovementStop.Value != 0)
 						AkSoundEngine.PostEvent(this.MovementStop, this.Entity);
+					else
+						AkSoundEngine.PostEvent(AK.EVENTS.STOP_ALL_OBJECT, this.Entity);
 					this.soundPlaying = false;
 				};
 				this.Add(new CommandBinding(this.OnHitMax, stopMovement));
@@ -234,7 +222,7 @@ namespace Lemma.Components
 				if (!nearEdge)
 				{
 					float speed = Vector3.Dot(this.physicsEntity.LinearVelocity, this.joint.Limit.Axis);
-					bool moving = speed > 0.1f;
+					bool moving = speed > 0.5f;
 					if (this.soundPlaying && !moving)
 					{
 						AkSoundEngine.PostEvent(AK.EVENTS.STOP_ALL_OBJECT, this.Entity);

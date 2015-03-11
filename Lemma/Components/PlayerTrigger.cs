@@ -58,7 +58,7 @@ namespace Lemma.Components
 		{
 			bool playerFound = false;
 			Entity player = PlayerFactory.Instance;
-			if (player != null && (player.Get<Transform>().Position.Value - this.Position.Value).Length() <= this.Radius)
+			if (player != null && (player.Get<Transform>().Position.Value - this.Position.Value).Length() < this.Radius)
 			{
 				playerFound = true;
 				if (!this.IsTriggered)

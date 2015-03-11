@@ -17,7 +17,7 @@ namespace Lemma.GameScripts
 		{
 			PlayerData playerData = PlayerDataFactory.Instance.Get<PlayerData>();
 
-			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Roll"), playerData.EnableCrouch));
+			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Roll"), playerData.EnableRoll));
 			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Crouch"), playerData.EnableCrouch));
 			script.Add(new TwoWayBinding<bool>(property<bool>(script, "Kick"), playerData.EnableKick));
 			script.Add(new TwoWayBinding<bool>(property<bool>(script, "WallRun"), playerData.EnableWallRun));

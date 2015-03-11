@@ -283,7 +283,7 @@ namespace Lemma.Factories
 
 			AddCommand
 			(
-				entity, main, commandQueueContainer, "Clone map", new PCInput.Chord(Keys.D, Keys.LeftControl),
+				entity, main, commandQueueContainer, "Clone map", new PCInput.Chord(),
 				new Command
 				{
 					Action = () =>

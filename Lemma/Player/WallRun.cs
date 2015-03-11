@@ -42,6 +42,7 @@ namespace Lemma.Components
 		public Property<Voxel> WallRunVoxel = new Property<Voxel>();
 		public Property<Direction> WallDirection = new Property<Direction>();
 		public Property<Direction> WallRunDirection = new Property<Direction>();
+		public Property<float> LastSupportedSpeed = new Property<float>();
 
 		private const float minWallRunSpeed = 4.0f;
 
@@ -293,6 +294,7 @@ namespace Lemma.Components
 						velocity.Y = (currentVerticalSpeed > -10.0f ? Math.Max(currentVerticalSpeed * 0.5f, 0.0f) + velocity.Length() * 0.6f : currentVerticalSpeed * 0.5f + 3.0f);
 
 						this.LinearVelocity.Value = velocity;
+						this.LastSupportedSpeed.Value = velocity.Length();
 					}
 				}
 			}

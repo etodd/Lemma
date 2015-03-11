@@ -27,7 +27,7 @@ namespace Lemma.Factories
 
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");
 
-			VoxelAttachable.MakeAttachable(entity, main);
+			VoxelAttachable attachable = VoxelAttachable.MakeAttachable(entity, main);
 
 			base.Bind(entity, main, creating);
 
@@ -45,6 +45,7 @@ namespace Lemma.Factories
 			}));
 			trigger.Add(new Binding<bool>(trigger.Enabled, transform.Enabled));
 			trigger.EditorProperties();
+			attachable.EditorProperties();
 
 			entity.Add("Reached", trigger.PlayerEntered);
 			entity.Add("Enabled", transform.Enabled);

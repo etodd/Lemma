@@ -144,6 +144,7 @@ namespace Lemma.Factories
 			wallRun.Add(new TwoWayBinding<bool>(player.Character.AllowUncrouch, wallRun.AllowUncrouch));
 			wallRun.Add(new TwoWayBinding<bool>(player.Character.HasTraction, wallRun.HasTraction));
 			wallRun.Add(new Binding<float>(wallRun.LastWallJump, jump.LastWallJump));
+			wallRun.Add(new Binding<float>(player.Character.LastSupportedSpeed, wallRun.LastSupportedSpeed));
 			player.Add(new Binding<WallRun.State>(player.Character.WallRunState, wallRun.CurrentState));
 
 			input.Bind(rollKickSlide.RollKickButton, settings.RollKick);

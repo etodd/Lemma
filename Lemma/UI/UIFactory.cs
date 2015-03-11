@@ -12,10 +12,15 @@ namespace Lemma.Components
 		public static void OpenURL(string url)
 		{
 #if STEAMWORKS
+			if (SteamWorker.Initialized)
+			{
 				Steamworks.SteamFriends.ActivateGameOverlayToWebPage(url);
-#else
-				System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url));
+			}
+			else
 #endif
+			{
+				System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url));
+			}
 		}
 
 		public TextElement CreateLink(string text, string url)

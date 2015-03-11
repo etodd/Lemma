@@ -84,16 +84,19 @@ namespace Lemma.Components
 			{
 				this.Add(new SetBinding<int>(this.Goal, delegate(int value)
 				{
-					if (!this.playingSound && this.MovementLoop.Value != 0 && Math.Abs(this.Position - this.Goal) > 0.1f)
+					if (!this.playingSound && Math.Abs(this.Position - this.Goal) > 0.5f)
 					{
 						this.playingSound = true;
-						AkSoundEngine.PostEvent(this.MovementLoop, this.Entity);
+						if (this.MovementLoop.Value != 0)
+							AkSoundEngine.PostEvent(this.MovementLoop, this.Entity);
 					}
 				}));
 				Action stopMovement = delegate()
 				{
 					if (this.main.TotalTime > 0.1f && this.MovementStop.Value != 0)
 						AkSoundEngine.PostEvent(this.MovementStop, this.Entity);
+					else
+						AkSoundEngine.PostEvent(AK.EVENTS.STOP_ALL_OBJECT, this.Entity);
 					this.playingSound = false;
 				};
 				this.Add(new CommandBinding(this.OnHitMax, stopMovement));
