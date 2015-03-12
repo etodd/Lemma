@@ -136,62 +136,65 @@ namespace Lemma.Components
 		{
 			if (this.EnableLook)
 			{
-				MouseState mouse = this.main.MouseState;
-
-				Vector2 mouseMovement = new Vector2(FPSInput.MouseCenter.X - mouse.X, mouse.Y - FPSInput.MouseCenter.Y) * this.MouseSensitivity * FPSInput.sensitivityMultiplier;
-
-				GamePadState gamePad = this.main.GamePadState;
-				if (gamePad.IsConnected)
-					mouseMovement += gamePad.ThumbSticks.Right * this.MouseSensitivity * FPSInput.gamePadSensitivityMultiplier * this.main.ElapsedTime;
-
-				if (this.InvertMouseX)
-					mouseMovement.X *= -1;
-				if (this.InvertMouseY)
-					mouseMovement.Y *= -1;
-
-				if (mouseMovement.LengthSquared() > 0.0f)
+				if (this.main.IsActive && this.main.LastActive)
 				{
-					Vector2 newValue = this.Mouse.Value + mouseMovement;
+					MouseState mouse = this.main.MouseState;
 
-					newValue.X = newValue.X.ToAngleRange();
-					newValue.Y = newValue.Y.ToAngleRange();
+					Vector2 mouseMovement = new Vector2(FPSInput.MouseCenter.X - mouse.X, mouse.Y - FPSInput.MouseCenter.Y) * this.MouseSensitivity * FPSInput.sensitivityMultiplier;
 
-					float minX = this.MinX, maxX = this.MaxX, minY = this.MinY, maxY = this.MaxY;
-					
-					const float pi = (float)Math.PI;
+					GamePadState gamePad = this.main.GamePadState;
+					if (gamePad.IsConnected)
+						mouseMovement += gamePad.ThumbSticks.Right * this.MouseSensitivity * FPSInput.gamePadSensitivityMultiplier * this.main.ElapsedTime;
 
-					if (!(minX == 0 && maxX == 0))
+					if (this.InvertMouseX)
+						mouseMovement.X *= -1;
+					if (this.InvertMouseY)
+						mouseMovement.Y *= -1;
+
+					if (mouseMovement.LengthSquared() > 0.0f)
 					{
-						float tempX = minX;
-						minX = Math.Min(minX, maxX);
-						maxX = Math.Max(tempX, maxX);
+						Vector2 newValue = this.Mouse.Value + mouseMovement;
 
-						if (Math.Abs(minX + pi) + Math.Abs(maxX - pi) < Math.Abs(minX) + Math.Abs(maxX))
+						newValue.X = newValue.X.ToAngleRange();
+						newValue.Y = newValue.Y.ToAngleRange();
+
+						float minX = this.MinX, maxX = this.MaxX, minY = this.MinY, maxY = this.MaxY;
+
+						const float pi = (float)Math.PI;
+
+						if (!(minX == 0 && maxX == 0))
 						{
-							if (newValue.X < 0 && newValue.X > minX)
-								newValue.X = minX;
-							if (newValue.X > 0 && newValue.X < maxX)
-								newValue.X = maxX;
+							float tempX = minX;
+							minX = Math.Min(minX, maxX);
+							maxX = Math.Max(tempX, maxX);
+
+							if (Math.Abs(minX + pi) + Math.Abs(maxX - pi) < Math.Abs(minX) + Math.Abs(maxX))
+							{
+								if (newValue.X < 0 && newValue.X > minX)
+									newValue.X = minX;
+								if (newValue.X > 0 && newValue.X < maxX)
+									newValue.X = maxX;
+							}
+							else
+								newValue.X = Math.Min(maxX, Math.Max(minX, newValue.X));
+						}
+
+						float tempY = minY;
+						minY = Math.Min(minY, maxY);
+						maxY = Math.Max(tempY, maxY);
+
+						if (minY < 0 && maxY > 0 && Math.Abs(minY + pi) + Math.Abs(maxY - pi) < Math.Abs(minY) + Math.Abs(maxY))
+						{
+							if (newValue.Y < 0 && newValue.Y > minY)
+								newValue.Y = minY;
+							if (newValue.Y > 0 && newValue.Y < maxY)
+								newValue.Y = maxY;
 						}
 						else
-							newValue.X = Math.Min(maxX, Math.Max(minX, newValue.X));
+							newValue.Y = Math.Min(maxY, Math.Max(minY, newValue.Y));
+
+						this.Mouse.Value = newValue;
 					}
-
-					float tempY = minY;
-					minY = Math.Min(minY, maxY);
-					maxY = Math.Max(tempY, maxY);
-
-					if (minY < 0 && maxY > 0 && Math.Abs(minY + pi) + Math.Abs(maxY - pi) < Math.Abs(minY) + Math.Abs(maxY))
-					{
-						if (newValue.Y < 0 && newValue.Y > minY)
-							newValue.Y = minY;
-						if (newValue.Y > 0 && newValue.Y < maxY)
-							newValue.Y = maxY;
-					}
-					else
-						newValue.Y = Math.Min(maxY, Math.Max(minY, newValue.Y));
-
-					this.Mouse.Value = newValue;
 				}
 				FPSInput.RecenterMouse();
 			}

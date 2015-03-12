@@ -75,7 +75,7 @@ namespace Lemma.Components
 				baseSize++;
 			}
 			basePosition /= (float)baseSize;
-			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_INFECTED_CRITICAL_SHATTER, basePosition);
+			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TOWER_FALL, basePosition);
 
 			m.Regenerate(delegate(List<DynamicVoxel> spawnedMaps)
 			{

@@ -1610,10 +1610,11 @@ namespace Lemma
 				AkSoundEngine.RenderAudio();
 			}
 
-			this.LastActive = this.IsActive;
-
 			if (!this.IsActive)
+			{
+				this.LastActive = this.IsActive;
 				return;
+			}
 
 			if (this.targetElapsedTime > this.lastFrameTime)
 			{
@@ -1764,6 +1765,8 @@ namespace Lemma
 				this.ResizeViewport(this.resize.Value.X, this.resize.Value.Y, false, false);
 				this.resize = null;
 			}
+
+			this.LastActive = this.IsActive;
 		}
 
 #if VR

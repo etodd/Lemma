@@ -79,7 +79,7 @@ namespace Lemma.Components
 			mantle.GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
 				float blend = (float)mantle.CurrentTime.TotalSeconds / (float)mantle.Duration.TotalSeconds;
-				m.Translation = new Vector3(0.0f, -(1.0f - blend), 2.0f - (MathHelper.Clamp(blend, 0, 1.5f)));
+				m.Translation = new Vector3(0.0f, blend, 2.0f - (MathHelper.Clamp(blend, 0, 1.5f)));
 				return m;
 			};
 			this.model["TopOut"].Speed = 1.8f;

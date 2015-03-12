@@ -117,6 +117,7 @@ namespace Lemma.Components
 			WallRun.State wallRunState = this.WallRunState;
 
 			Matrix rotationMatrix = Matrix.CreateRotationY(this.Rotation);
+			Vector3 forward = -rotationMatrix.Forward;
 
 			Vector2 jumpDirection = this.AbsoluteMovementDirection;
 
@@ -151,7 +152,7 @@ namespace Lemma.Components
 				if (wallRunningStraight)
 					jumpDirection = new Vector2(main.Camera.Forward.Value.X, main.Camera.Forward.Value.Z);
 				else
-					jumpDirection = new Vector2(-rotationMatrix.Forward.X, -rotationMatrix.Forward.Z);
+					jumpDirection = new Vector2(forward.X, forward.Z);
 
 				jumpDirection.Normalize();
 
@@ -310,7 +311,7 @@ namespace Lemma.Components
 				velocity.Y = 0.0f;
 				float jumpSpeed = jumpDirection.Length();
 				if (jumpSpeed > 0)
-					jumpDirection *= (wallJumping ? this.MaxSpeed : velocity.Length()) / jumpSpeed;
+					jumpDirection *= (wallJumping ? Math.Max(this.MaxSpeed, Vector3.Dot(forward, velocity)) : velocity.Length()) / jumpSpeed;
 
 				if (main.TotalTime - this.LastRollKickEnded < 0.3f)
 					totalMultiplier *= 1.2f;

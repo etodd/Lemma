@@ -20,7 +20,6 @@ public class AK
         public static uint PLAY_EXTERIOR_WIND = 2186390081U;
         public static uint PLAY_FOREST_VALLEY_AMBIENT = 954121400U;
         public static uint PLAY_GLOWSQUARE = 2925563572U;
-        public static uint PLAY_INFECTED_CRITICAL_SHATTER = 3904887748U;
         public static uint PLAY_MAGIC_CUBE_LOOP = 3187778582U;
         public static uint PLAY_MONOLITH_LOOP = 1920428907U;
         public static uint PLAY_MONOLITH_POWERUP = 1490340003U;
@@ -62,6 +61,7 @@ public class AK
         public static uint PLAY_SWITCH_OFF = 1895765680U;
         public static uint PLAY_SWITCH_ON = 1693166490U;
         public static uint PLAY_THUNDER = 3870462868U;
+        public static uint PLAY_TOWER_FALL = 2207156983U;
         public static uint PLAY_TURRET_CHARGE = 3393910755U;
         public static uint PLAY_TURRET_DEATH = 3291199175U;
         public static uint PLAY_TURRET_FIRE = 3057469883U;
@@ -164,10 +164,12 @@ public class AK
 
     public class BUSSES
     {
+        public static uint BUS_ALL_SFX = 463913585U;
         public static uint BUS_MUSIC = 1162281553U;
         public static uint BUS_SFX = 3895923845U;
         public static uint BUS_SFX_BREATHDUCK = 3381165833U;
         public static uint BUS_SFX_BREATHINGINPUT = 3302530918U;
+        public static uint BUS_SFX_EXPLOSION = 975872589U;
         public static uint BUS_UI = 1746463750U;
         public static uint MASTER_AUDIO_BUS = 3803692087U;
         public static uint MASTER_SECONDARY_BUS = 805203703U;

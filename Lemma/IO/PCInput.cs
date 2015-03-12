@@ -519,10 +519,18 @@ namespace Lemma.Components
 			this.preventKeyDownEvents = true;
 		}
 
+		private bool temporarilyIgnoreLMB;
+
 		public virtual void Update(float elapsedTime)
 		{
 			if (!this.main.IsActive)
 				return;
+
+			if (!this.main.LastActive)
+			{
+				if (this.main.MouseState.Value.LeftButton == ButtonState.Pressed)
+					this.temporarilyIgnoreLMB = true;
+			}
 
 			KeyboardState keyboard = this.main.KeyboardState;
 
@@ -722,13 +730,21 @@ namespace Lemma.Components
 					{
 						if (newLeftMouseButton)
 						{
-							if (this.nextInputListeners.Count > 0)
-								this.notifyNextInputListeners(new PCInputBinding { MouseButton = MouseButton.LeftMouseButton });
-							this.LeftMouseButtonDown.Execute();
-							this.AnyInputDown.Execute(new PCInputBinding { MouseButton = MouseButton.LeftMouseButton });
+							if (!this.temporarilyIgnoreLMB)
+							{
+								if (this.nextInputListeners.Count > 0)
+									this.notifyNextInputListeners(new PCInputBinding { MouseButton = MouseButton.LeftMouseButton });
+								this.LeftMouseButtonDown.Execute();
+								this.AnyInputDown.Execute(new PCInputBinding { MouseButton = MouseButton.LeftMouseButton });
+							}
 						}
 						else
-							this.LeftMouseButtonUp.Execute();
+						{
+							if (this.temporarilyIgnoreLMB)
+								this.temporarilyIgnoreLMB = false;
+							else
+								this.LeftMouseButtonUp.Execute();
+						}
 					}
 				}
 

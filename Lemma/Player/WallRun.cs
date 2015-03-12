@@ -284,17 +284,17 @@ namespace Lemma.Components
 						float currentVerticalSpeed = currentHorizontalVelocity.Y;
 						currentHorizontalVelocity.Y = 0.0f;
 						float horizontalSpeed = currentHorizontalVelocity.Length();
-						velocity *= Math.Min(this.MaxSpeed * 2.0f, Math.Max(horizontalSpeed * 1.25f, 6.0f));
+						velocity *= Math.Min(this.MaxSpeed * 1.4f, Math.Max(horizontalSpeed * 1.1f, 6.0f));
 
-						if (Vector3.Dot(velocity, forwardVector) < minWallRunSpeed + 1.0f)
-							velocity += forwardVector * ((minWallRunSpeed + 2.0f) - Vector3.Dot(velocity, forwardVector));
+						if (Vector3.Dot(velocity - baseVelocity, forwardVector) < minWallRunSpeed + 1.0f)
+							velocity += forwardVector * ((minWallRunSpeed + 2.0f) - Vector3.Dot(velocity - baseVelocity, forwardVector));
 
 						velocity += baseVelocity;
 
 						velocity.Y = (currentVerticalSpeed > -10.0f ? Math.Max(currentVerticalSpeed * 0.5f, 0.0f) + velocity.Length() * 0.6f : currentVerticalSpeed * 0.5f + 3.0f);
 
 						this.LinearVelocity.Value = velocity;
-						this.LastSupportedSpeed.Value = velocity.Length();
+						this.LastSupportedSpeed.Value = Vector3.Dot(velocity, forwardVector);
 					}
 				}
 			}

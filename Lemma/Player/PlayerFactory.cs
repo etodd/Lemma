@@ -274,20 +274,6 @@ namespace Lemma.Factories
 				Lemma.Console.Console.RemoveConCommand("third_person");
 			}));
 
-#if DEVELOPMENT
-			ModelAlpha debugCylinder = new ModelAlpha();
-			debugCylinder.Filename.Value = "AlphaModels\\cylinder";
-			debugCylinder.Add(new Binding<Matrix>(debugCylinder.Transform, transform.Matrix));
-			debugCylinder.Serialize = false;
-			debugCylinder.Alpha.Value = 0.25f;
-			debugCylinder.Add(new Binding<bool>(debugCylinder.Enabled, cameraControl.ThirdPerson));
-			debugCylinder.Add(new Binding<Vector3>(debugCylinder.Scale, delegate()
-			{
-				return new Vector3(player.Character.Radius * 2.0f, player.Character.Height, player.Character.Radius * 2.0f);
-			}, player.Character.Height, player.Character.Radius));
-			entity.Add(debugCylinder);
-#endif
-
 			// When rotation is locked, we want to make sure the player can't turn their head
 			// 180 degrees from the direction they're facing
 
