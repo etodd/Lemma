@@ -925,6 +925,14 @@ namespace Lemma
 
 			if (this.firstLoadContentCall)
 			{
+				this.firstLoadContentCall = false;
+
+				if (!Directory.Exists(this.MapDirectory))
+					Directory.CreateDirectory(this.MapDirectory);
+				string challengeDirectory = Path.Combine(this.MapDirectory, "Challenge");
+				if (!Directory.Exists(challengeDirectory))
+					Directory.CreateDirectory(challengeDirectory);
+
 #if VR
 				if (this.VR)
 				{
@@ -993,7 +1001,6 @@ namespace Lemma
 					Camera = this.Camera,
 					IsMainRender = true
 				};
-				this.firstLoadContentCall = false;
 
 				// Load strings
 				this.Strings.Load(Path.Combine(this.Content.RootDirectory, "Strings.xlsx"));
@@ -1155,7 +1162,7 @@ namespace Lemma
 				new TwoWayBinding<bool>(this.Settings.SSAO, this.Renderer.EnableSSAO);
 				new TwoWayBinding<float>(this.Settings.FieldOfView, this.Camera.FieldOfView);
 
-				foreach (string file in Directory.GetFiles(Path.Combine(this.Content.RootDirectory, "Game"), "*.xlsx", SearchOption.TopDirectoryOnly))
+				foreach (string file in Directory.GetFiles(this.MapDirectory, "*.xlsx", SearchOption.TopDirectoryOnly))
 					this.Strings.Load(file);
 
 				new Binding<string, Config.Lang>(this.Strings.Language, x => x.ToString(), this.Settings.Language);
