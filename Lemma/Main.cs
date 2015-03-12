@@ -847,6 +847,14 @@ namespace Lemma
 				return Directory.GetFiles(this.analyticsDirectory, "*", SearchOption.TopDirectoryOnly);
 			}
 		}
+
+		protected override void OnExiting(object sender, EventArgs args)
+		{
+			base.OnExiting(sender, args);
+			this.SessionRecorder.RecordEvent("Exit");
+			if (!this.IsChallengeMap(this.MapFile))
+				this.SaveAnalytics();
+		}
 #endif
 
 		public List<Session> LoadAnalytics(string map)
