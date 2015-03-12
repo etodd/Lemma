@@ -18,6 +18,12 @@ namespace Lemma.Components
 			this.EnabledInEditMode = false;
 		}
 
+		public override void delete()
+		{
+			base.delete();
+			this.Action = null;
+		}
+
 		public Updater(Action<float> action = null)
 		{
 			this.Action = action;

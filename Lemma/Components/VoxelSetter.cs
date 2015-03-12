@@ -80,15 +80,15 @@ namespace Lemma.Components
 		{
 			base.Awake();
 
-			this.Add(new CommandBinding(this.Set, delegate()
+			this.Set.Action = delegate()
 			{
 				// HACK
-				main.AddComponent(new Animation
+				this.Entity.Add(new Animation
 				(
 					new Animation.Delay(0.01f),
 					new Animation.Execute(this.set)
 				));
-			}));
+			};
 		}
 	}
 }

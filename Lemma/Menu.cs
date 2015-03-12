@@ -207,9 +207,7 @@ namespace Lemma.Components
 
 				if (info.Version != Main.MapVersion)
 					throw new Exception();
-				thumbnailPath = Path.Combine(this.main.SaveDirectory, timestamp, "thumbnail.jpg");
-				if (!File.Exists(thumbnailPath))
-					throw new Exception();
+				thumbnailPath = Path.Combine(this.main.SaveDirectory, timestamp, "thumbnail.png");
 			}
 			catch (Exception) // Old version. Delete it.
 			{
@@ -235,10 +233,13 @@ namespace Lemma.Components
 			layout.Orientation.Value = ListContainer.ListOrientation.Vertical;
 			container.Children.Add(layout);
 
-			Sprite sprite = new Sprite();
-			sprite.IsStandardImage.Value = true;
-			sprite.Image.Value = thumbnailPath;
-			layout.Children.Add(sprite);
+			if (File.Exists(thumbnailPath))
+			{
+				Sprite sprite = new Sprite();
+				sprite.IsStandardImage.Value = true;
+				sprite.Image.Value = thumbnailPath;
+				layout.Children.Add(sprite);
+			}
 
 			TextElement label = new TextElement();
 			label.FontFile.Value = this.main.Font;

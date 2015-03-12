@@ -355,6 +355,7 @@ namespace Lemma.Factories
 				if (editor.VoxelEditMode)
 					editor.VoxelEditMode.Value = false;
 				editor.TransformMode.Value = Editor.TransformModes.None;
+				input.ResetLook();
 				entity.ClearGUID();
 			}));
 			entity.Add(new CommandBinding(main.MapLoaded, (Action)entity.NewGUID));

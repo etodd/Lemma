@@ -130,12 +130,12 @@ namespace Lemma.GInterfaces
 			CloseButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = false;
 
 			string filePath = this.main.GetFullMapPath();
-			string imagePath = string.Format("{0}.jpg", filePath.Substring(0, filePath.LastIndexOf('.')));
+			string imagePath = string.Format("{0}.png", filePath.Substring(0, filePath.LastIndexOf('.')));
 			string description = DescriptionView.Text;
 			string name = NameView.Text;
 
 			string steamFilePath = string.Format("workshop/maps/{0}.map", MD5(filePath));
-			string steamImagePath = string.Format("workshop/maps/{0}.jpg", MD5(imagePath));
+			string steamImagePath = string.Format("workshop/maps/{0}.png", MD5(imagePath));
 
 			StatusString.Value = "Storing map...";
 			if (SteamWorker.WriteFileUGC(filePath, steamFilePath))

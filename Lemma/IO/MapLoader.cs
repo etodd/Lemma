@@ -254,6 +254,7 @@ namespace Lemma.IO
 			{
 				throw new Exception("Failed to save map.", e);
 			}
+			GC.Collect();
 		}
 
 		public static void Save(Main main, Stream stream)

@@ -5,6 +5,7 @@ public class AK
         public static uint EVIL_CUBES_CHASE = 654471079U;
         public static uint EVIL_CUBES_IDLE = 1697385721U;
         public static uint FOOTSTEP_PLAY = 1531891632U;
+        public static uint PAUSE_ALL = 3864097025U;
         public static uint PLAY_BIG_WIND = 217752029U;
         public static uint PLAY_BLOCK_APPEAR = 2520143079U;
         public static uint PLAY_BLOCK_BUILD = 1262469596U;
@@ -76,6 +77,7 @@ public class AK
         public static uint PLAY_WATERFALL_LOOP = 2021604517U;
         public static uint PLAY_WHITE_LIGHT = 3583610488U;
         public static uint PLAY_WHITE_SHATTER = 2667853543U;
+        public static uint RESUME_ALL = 3679762312U;
         public static uint SLIDER1_LOOP = 654783868U;
         public static uint SLIDER1_STOP = 2742134786U;
         public static uint SLIDER2_LOOP = 2295651613U;

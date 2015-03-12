@@ -178,9 +178,8 @@ namespace Lemma.Components
 				{
 					IO.MapLoader.Save(this.main, null, this.main.MapFile);
 					string mapDirectory = System.IO.Path.GetDirectoryName(this.main.GetFullMapPath());
-					string screenshotPath = System.IO.Path.Combine(mapDirectory, string.Format("{0}.jpg", System.IO.Path.GetFileNameWithoutExtension(this.main.MapFile)));
-					using (System.IO.Stream stream = System.IO.File.OpenWrite(screenshotPath))
-						this.main.Screenshot.Buffer.SaveAsJpeg(stream, size.X, size.Y);
+					string screenshotPath = System.IO.Path.Combine(mapDirectory, string.Format("{0}.png", System.IO.Path.GetFileNameWithoutExtension(this.main.MapFile)));
+					Screenshot.SavePng(this.main.Screenshot.Buffer, screenshotPath, size.X, size.Y);
 					this.NeedsSave.Value = false;
 					if (thumbnailCamera != null)
 					{

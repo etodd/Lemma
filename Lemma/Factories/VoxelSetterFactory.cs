@@ -22,7 +22,7 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			entity.CannotSuspendByDistance = true;
+			entity.CannotSuspend = true;
 
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 

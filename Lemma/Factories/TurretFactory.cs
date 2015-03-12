@@ -56,6 +56,7 @@ namespace Lemma.Factories
 
 			LineDrawer laser = new LineDrawer { Serialize = false };
 			entity.Add(laser);
+			laser.DrawOrder.Value = 0;
 
 			AI ai = entity.GetOrCreate<AI>("AI");
 

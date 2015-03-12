@@ -8,13 +8,21 @@ namespace Lemma.Util
 {
 	public static class BoundingBoxExtensions
 	{
+		private static Vector3[] cornerCache = new Vector3[8];
 		public static BoundingBox Transform(this BoundingBox box, Matrix matrix)
 		{
-			Vector3[] corners = box.GetCorners();
-			Vector3.Transform(corners, ref matrix, corners);
+			cornerCache[0] = new Vector3(box.Min.X, box.Min.Y, box.Min.Z);
+			cornerCache[1] = new Vector3(box.Min.X, box.Min.Y, box.Max.Z);
+			cornerCache[2] = new Vector3(box.Min.X, box.Max.Y, box.Min.Z);
+			cornerCache[3] = new Vector3(box.Min.X, box.Max.Y, box.Max.Z);
+			cornerCache[4] = new Vector3(box.Max.X, box.Min.Y, box.Min.Z);
+			cornerCache[5] = new Vector3(box.Max.X, box.Min.Y, box.Max.Z);
+			cornerCache[6] = new Vector3(box.Max.X, box.Max.Y, box.Min.Z);
+			cornerCache[7] = new Vector3(box.Max.X, box.Max.Y, box.Max.Z);
+			Vector3.Transform(cornerCache, ref matrix, cornerCache);
 			box.Min = new Vector3(float.MaxValue);
 			box.Max = new Vector3(float.MinValue);
-			foreach (Vector3 corner in corners)
+			foreach (Vector3 corner in cornerCache)
 			{
 				box.Min.X = Math.Min(box.Min.X, corner.X);
 				box.Min.Y = Math.Min(box.Min.Y, corner.Y);

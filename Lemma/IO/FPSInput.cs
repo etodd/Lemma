@@ -38,6 +38,11 @@ namespace Lemma.Components
 			Microsoft.Xna.Framework.Input.Mouse.SetPosition(FPSInput.MouseCenter.X, FPSInput.MouseCenter.Y);
 		}
 
+		public void ResetLook()
+		{
+			this.lastMouseLook = Vector2.Zero;
+		}
+
 		protected Vector2 lastMouseLook, lastMouseNonLook;
 		public override void Awake()
 		{

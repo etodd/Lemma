@@ -1035,8 +1035,7 @@ namespace Lemma
 						}
 						while (File.Exists(path));
 
-						using (Stream stream = File.OpenWrite(path))
-							s.Buffer.SaveAsPng(stream, s.Size.X, s.Size.Y);
+						Screenshot.SavePng(s.Buffer, path);
 
 						Editor.EditorModelsVisible.Value = originalModelsVisible;
 
@@ -1396,6 +1395,7 @@ namespace Lemma
 						else
 							this.SaveNew();
 					}),
+					new Animation.Delay(0.01f),
 					new Animation.Set<string>(saveNotificationText.Text, "\\saved"),
 					new Animation.Parallel
 					(
@@ -1451,7 +1451,6 @@ namespace Lemma
 				else
 #endif
 					size = this.ScreenSize;
-
 				this.Screenshot.Take(size, doSave);
 			}
 			else
@@ -1478,7 +1477,6 @@ namespace Lemma
 						else
 #endif
 							size = this.ScreenSize;
-
 						this.Screenshot.Take(size);
 					}),
 					new Animation.Delay(0.01f),
@@ -1531,9 +1529,8 @@ namespace Lemma
 			string currentSaveDirectory = Path.Combine(this.SaveDirectory, this.CurrentSave);
 			if (screenshot != null)
 			{
-				string screenshotPath = Path.Combine(currentSaveDirectory, "thumbnail.jpg");
-				using (Stream stream = File.OpenWrite(screenshotPath))
-					screenshot.SaveAsJpeg(stream, 256, (int)(screenshotSize.Y * (256.0f / screenshotSize.X)));
+				string screenshotPath = Path.Combine(currentSaveDirectory, "thumbnail.png");
+				Screenshot.SavePng(screenshot, screenshotPath, 256, (int)(screenshotSize.Y * (256.0f / screenshotSize.X)));
 			}
 
 			IO.MapLoader.Save(this, currentSaveDirectory, this.MapFile);
@@ -1607,8 +1604,20 @@ namespace Lemma
 
 		private TimeSpan lastFrameTime;
 
+		public bool LastActive = true;
+
 		protected override void Update(GameTime gameTime)
 		{
+			if (this.IsActive && !this.LastActive)
+				AkSoundEngine.PostEvent(AK.EVENTS.RESUME_ALL);
+			else if (!this.IsActive && this.LastActive)
+			{
+				AkSoundEngine.PostEvent(AK.EVENTS.PAUSE_ALL);
+				AkSoundEngine.RenderAudio();
+			}
+
+			this.LastActive = this.IsActive;
+
 			if (!this.IsActive)
 				return;
 

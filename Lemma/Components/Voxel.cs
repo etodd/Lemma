@@ -2094,13 +2094,16 @@ namespace Lemma.Components
 				List<int> result = new List<int>();
 				lock (this.MutationLock)
 				{
-					Voxel.boxCache.AddRange(this.Chunks.SelectMany(x => x.Boxes));
-					bool[] modifications = this.simplify(Voxel.boxCache);
-					this.simplify(Voxel.boxCache, modifications);
-					this.applyChanges(Voxel.boxCache, modifications);
-					this.updateGraphics(this.Chunks);
+					if (main.EditorEnabled)
+					{
+						Voxel.boxCache.AddRange(this.Chunks.SelectMany(x => x.Boxes));
+						bool[] modifications = this.simplify(Voxel.boxCache);
+						this.simplify(Voxel.boxCache, modifications);
+						this.applyChanges(Voxel.boxCache, modifications);
+						this.updateGraphics(this.Chunks);
+						Voxel.boxCache.Clear();
+					}
 
-					Voxel.boxCache.Clear();
 					Voxel.boxCache.AddRange(this.Chunks.SelectMany(x => x.Boxes));
 
 					result.Add(Voxel.boxCache.Count);

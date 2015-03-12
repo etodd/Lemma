@@ -269,6 +269,15 @@ namespace Lemma.Components
 			this.EnabledWhenPaused = true;
 		}
 
+		public override void delete()
+		{
+			base.delete();
+			this.callbacks.Clear();
+			this.boneTransformProperties.Clear();
+			this.absoluteBoneTransformProperties.Clear();
+			this.relativeBoneTransformProperties.Clear();
+		}
+
 		public Property<Matrix> GetRelativeBoneTransform(string bone)
 		{
 			Property<Matrix> property = null;
