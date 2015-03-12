@@ -163,7 +163,7 @@ namespace Lemma.GameScripts
 				languages.Spacing.Value = 0.0f;
 				languageMenu.Children.Add(languages);
 				
-				foreach (Main.Config.Lang language in Main.Languages)
+				foreach (Main.Config.Lang language in Enum.GetValues(typeof(Main.Config.Lang)))
 				{
 					UIComponent button = main.UIFactory.CreateButton(delegate()
 					{

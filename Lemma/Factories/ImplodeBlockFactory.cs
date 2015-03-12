@@ -43,7 +43,7 @@ namespace Lemma.Factories
 			{
 				if (offsetBinding != null)
 					model.Remove(offsetBinding);
-				offsetBinding = new Binding<Vector3>(model.GetVector3Parameter("Offset"), implodeBlock.Offset);
+				offsetBinding = new Binding<Vector3>(model.Param, implodeBlock.Offset);
 				model.Add(offsetBinding);
 			}, model.FullInstanceKey));
 			if (implodeBlock.StateId != Voxel.t.Empty)

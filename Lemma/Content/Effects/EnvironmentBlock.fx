@@ -1,14 +1,12 @@
 #include "EnvironmentCommon.fxh"
 
-float3 Offset[200];
-
 struct RenderVSInput
 {
 	float4 position : POSITION0;
 	float3 normal : NORMAL0;
 	float3 binormal : BINORMAL0;
 	float3 tangent : TANGENT0;
-	int index : BLENDINDICES0;
+	float3 offset : BLENDWEIGHT8;
 	float4x4 instanceTransform : BLENDWEIGHT0;
 };
 
@@ -32,7 +30,7 @@ void RenderVS(	in RenderVSInput input,
 	normalMap.tangentToWorld[1] = normalize(mul(input.binormal, world));
 	normalMap.tangentToWorld[2] = normalize(mul(input.normal, world));
 
-	float3 pos = input.position + Offset[input.index];
+	float3 pos = input.position + input.offset;
 
 	tex.uvCoordinates = CalculateUVs(pos, input.normal);
 	
@@ -63,7 +61,7 @@ void RenderOverlayVS(	in RenderVSInput input,
 	normalMap.tangentToWorld[1] = normalize(mul(input.binormal, world));
 	normalMap.tangentToWorld[2] = normalize(mul(input.normal, world));
 
-	float3 pos = input.position + Offset[input.index];
+	float3 pos = input.position + input.offset;
 
 	CalculateOverlayUVs(pos, input.normal, tex, overlay);
 	
@@ -104,7 +102,6 @@ void ClipOverlayVS(	in RenderVSInput input,
 void ShadowVS (	in float4 in_Position			: POSITION0,
 				in float3 in_Normal				: NORMAL0,
 				in float4x4 instanceTransform	: BLENDWEIGHT0,
-				in int in_Index					: BLENDINDICES0,
 				out ShadowVSOutput vs,
 				out ShadowPSInput output)
 {
@@ -119,14 +116,12 @@ void ShadowVS (	in float4 in_Position			: POSITION0,
 void ShadowAlphaVS(	in float4 in_Position			: POSITION0,
 				in float3 in_Normal				: NORMAL0,
 				in float4x4 instanceTransform	: BLENDWEIGHT0,
-				in int in_Index					: BLENDINDICES0,
 				out ShadowVSOutput vs,
 				out ShadowPSInput output,
 				out TexturePSInput tex)
 {
-	ShadowVS(in_Position, in_Normal, instanceTransform, in_Index, vs, output);
-	float3 pos = in_Position + Offset[in_Index];
-	tex.uvCoordinates = CalculateUVs(pos, in_Normal);
+	ShadowVS(in_Position, in_Normal, instanceTransform, vs, output);
+	tex.uvCoordinates = CalculateUVs(in_Position, in_Normal);
 }
 
 // Regular techniques

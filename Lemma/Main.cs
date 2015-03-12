@@ -95,12 +95,6 @@ namespace Lemma
 		public const int MapVersion = 988;
 		public const int Build = 988;
 
-		public static Config.Lang[] Languages = new[]
-		{
-			Config.Lang.en,
-			//Config.Lang.ru,
-		};
-
 		public class Config
 		{
 			public enum Lang

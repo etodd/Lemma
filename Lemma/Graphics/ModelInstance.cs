@@ -16,8 +16,6 @@ namespace Lemma.Components
 			public string Key;
 			protected ListProperty<ModelInstance> instances = new ListProperty<ModelInstance>();
 			protected IListBinding<ModelInstance> instanceBinding;
-			protected Dictionary<string, IPropertyBinding> parameters = new Dictionary<string, IPropertyBinding>();
-			protected List<IPropertyBinding> modifiedParameters = new List<IPropertyBinding>();
 
 			public override void Awake()
 			{
@@ -25,100 +23,24 @@ namespace Lemma.Components
 				this.Serialize = false;
 				this.CullBoundingBox.Value = false;
 				this.IsInstanced.Value = true;
-				this.instanceBinding = new ListBinding<Matrix, ModelInstance>(this.Instances, this.instances, x => x.Transform);
+				this.instanceBinding = new ListBinding<Model.Instance, ModelInstance>(this.Instances, this.instances, x => new Model.Instance { Param = x.Param, Transform = x.Transform });
 				this.Add(this.instanceBinding);
-			}
-
-			public IPropertyBinding AddInstanceBoolParameter(string name)
-			{
-				IPropertyBinding binding = null;
-				if (this.parameters.TryGetValue(name, out binding))
-					return binding;
-				
-				binding = new Binding<bool[]>(this.GetBoolArrayParameter(name), () => this.instances.Select(x => x.getParameterValue<bool>(name)).ToArray());
-				this.parameters.Add(name, binding);
-				this.Add(binding);
-				return binding;
-			}
-
-			public IPropertyBinding AddInstanceIntParameter(string name)
-			{
-				IPropertyBinding binding = null;
-				if (this.parameters.TryGetValue(name, out binding))
-					return binding;
-
-				binding = new Binding<int[]>(this.GetIntArrayParameter(name), () => this.instances.Select(x => x.getParameterValue<int>(name)).ToArray());
-				this.parameters.Add(name, binding);
-				this.Add(binding);
-				return binding;
-			}
-
-			public IPropertyBinding AddInstanceFloatParameter(string name)
-			{
-				IPropertyBinding binding = null;
-				if (this.parameters.TryGetValue(name, out binding))
-					return binding;
-
-				binding = new Binding<float[]>(this.GetFloatArrayParameter(name), () => this.instances.Select(x => x.getParameterValue<float>(name)).ToArray());
-				this.parameters.Add(name, binding);
-				this.Add(binding);
-				return binding;
-			}
-
-			public IPropertyBinding AddInstanceVector3Parameter(string name)
-			{
-				IPropertyBinding binding = null;
-				if (this.parameters.TryGetValue(name, out binding))
-					return binding;
-
-				binding = new Binding<Vector3[]>(this.GetVector3ArrayParameter(name), () => this.instances.Select(x => x.getParameterValue<Vector3>(name)).ToArray());
-				this.parameters.Add(name, binding);
-				this.Add(binding);
-				return binding;
-			}
-
-			public IPropertyBinding AddInstanceMatrixParameter(string name)
-			{
-				IPropertyBinding binding = null;
-				if (this.parameters.TryGetValue(name, out binding))
-					return binding;
-
-				binding = new Binding<Matrix[]>(this.GetMatrixArrayParameter(name), () => this.instances.Select(x => x.getParameterValue<Matrix>(name)).ToArray());
-				this.parameters.Add(name, binding);
-				this.Add(binding);
-				return binding;
 			}
 
 			public void Add(ModelInstance instance)
 			{
 				this.instances.Add(instance);
-				foreach (IPropertyBinding parameter in this.parameters.Values)
-					this.ParameterChanged(parameter);
 			}
 
 			public void Remove(ModelInstance instance)
 			{
 				this.instances.Remove(instance);
-				if (this.instances.Length > 0)
-				{
-					foreach (IPropertyBinding parameter in this.parameters.Values)
-						this.ParameterChanged(parameter);
-				}
-			}
-
-			public void ParameterChanged(IPropertyBinding parameter)
-			{
-				if (!this.modifiedParameters.Contains(parameter))
-					this.modifiedParameters.Add(parameter);
 			}
 
 			protected override void drawInstances(RenderParameters parameters, Matrix transform)
 			{
 				if (parameters.IsMainRender)
 				{
-					foreach (IPropertyBinding binding in this.modifiedParameters)
-						binding.OnChanged(null);
-					this.modifiedParameters.Clear();
 					for (int i = 0; i < this.instances.Length; i++)
 						this.instances.Changed(i, this.instances[i]);
 				}
@@ -128,7 +50,6 @@ namespace Lemma.Components
 			public override void delete()
 			{
 				base.delete();
-				this.modifiedParameters.Clear();
 				this.instanceBinding = null;
 			}
 		}
@@ -173,8 +94,6 @@ namespace Lemma.Components
 
 		protected ModelInstanceSystem model;
 
-		protected Dictionary<string, IProperty> parameters = new Dictionary<string, IProperty>();
-
 		public Property<string> Filename = new Property<string>();
 		
 		public Property<Matrix> Transform = new Property<Matrix> { Value = Matrix.Identity };
@@ -183,23 +102,10 @@ namespace Lemma.Components
 
 		public Property<int> InstanceKey = new Property<int>();
 
+		public Property<Vector3> Param = new Property<Vector3>();
+
 		[XmlIgnore]
 		public Property<string> FullInstanceKey = new Property<string>();
-
-		[XmlArray("Parameters")]
-		[XmlArrayItem("Parameter", Type = typeof(DictionaryEntry))]
-		private DictionaryEntry[] deserializedParameters;
-		public DictionaryEntry[] Parameters
-		{
-			get
-			{
-				return this.parameters.Select(x => new DictionaryEntry(x.Key, x.Value)).ToArray();
-			}
-			set
-			{
-				this.deserializedParameters = value;
-			}
-		}
 
 		[XmlIgnore]
 		public bool IsFirstInstance;
@@ -217,7 +123,7 @@ namespace Lemma.Components
 		{
 			if (!string.IsNullOrEmpty(this.Filename))
 			{
-				string key = string.Format("InstanceSystem{0}:{1}+{2}", (this.EnableAlpha ? "Alpha" : ""), this.Filename.Value, this.InstanceKey.Value);
+				string key = string.Format("_{0}:{1}+{2}", (this.EnableAlpha ? "Alpha" : ""), this.Filename.Value, this.InstanceKey.Value);
 
 				Entity world = Lemma.Factories.WorldFactory.Instance;
 				
@@ -240,7 +146,6 @@ namespace Lemma.Components
 					if (this.model != null)
 						this.model.Remove(this);
 					this.model = newModel;
-					this.parameters.Clear();
 				}
 
 				this.FullInstanceKey.Value = key;
@@ -279,116 +184,7 @@ namespace Lemma.Components
 			{
 				this.refreshModel();
 			}));
-
-			if (this.deserializedParameters != null)
-			{
-				for (int i = 0; i < this.deserializedParameters.Length; i++)
-				{
-					IProperty property = (IProperty)this.deserializedParameters[i].Value;
-					PropertyInfo prop = property.GetType().GetProperty("Value");
-					string name = (string)this.deserializedParameters[i].Key;
-
-					if (prop.PropertyType.IsAssignableFrom(typeof(bool)))
-						this.GetBoolParameter(name).Value = (bool)prop.GetValue(property, null);
-					else if (prop.PropertyType.IsAssignableFrom(typeof(int)))
-						this.GetIntParameter(name).Value = (int)prop.GetValue(property, null);
-					else if (prop.PropertyType.IsAssignableFrom(typeof(float)))
-						this.GetFloatParameter(name).Value = (float)prop.GetValue(property, null);
-					else if (prop.PropertyType.IsAssignableFrom(typeof(Vector3)))
-						this.GetVector3Parameter(name).Value = (Vector3)prop.GetValue(property, null);
-					else if (prop.PropertyType.IsAssignableFrom(typeof(Matrix)))
-						this.GetMatrixParameter(name).Value = (Matrix)prop.GetValue(property, null);
-				}
-
-				this.deserializedParameters = null;
-			}
 		}
-
-		public Property<bool> GetBoolParameter(string name)
-		{
-			IProperty test = null;
-			if (this.parameters.TryGetValue(name, out test))
-				return (Property<bool>)test;
-
-			Property<bool> result = new Property<bool>();
-			this.parameters.Add(name, result);
-
-			IPropertyBinding parameter = this.model.AddInstanceBoolParameter(name);
-			this.Add(new SetBinding<bool>(result, delegate(bool value)
-			{
-				this.model.ParameterChanged(parameter);
-			}));
-			return result;
-		}
-
-		public Property<int> GetIntParameter(string name)
-		{
-			IProperty test = null;
-			if (this.parameters.TryGetValue(name, out test))
-				return (Property<int>)test;
-
-			Property<int> result = new Property<int>();
-			this.parameters.Add(name, result);
-
-			IPropertyBinding parameter = this.model.AddInstanceIntParameter(name);
-			this.Add(new SetBinding<int>(result, delegate(int value)
-			{
-				this.model.ParameterChanged(parameter);
-			}));
-			return result;
-		}
-
-		public Property<float> GetFloatParameter(string name)
-		{
-			IProperty test = null;
-			if (this.parameters.TryGetValue(name, out test))
-				return (Property<float>)test;
-
-			Property<float> result = new Property<float>();
-			this.parameters.Add(name, result);
-
-			IPropertyBinding parameter = this.model.AddInstanceFloatParameter(name);
-			this.Add(new SetBinding<float>(result, delegate(float value)
-			{
-				this.model.ParameterChanged(parameter);
-			}));
-			return result;
-		}
-
-		public Property<Vector3> GetVector3Parameter(string name)
-		{
-			IProperty test = null;
-			if (this.parameters.TryGetValue(name, out test))
-				return (Property<Vector3>)test;
-
-			Property<Vector3> result = new Property<Vector3>();
-			this.parameters.Add(name, result);
-
-			IPropertyBinding parameter = this.model.AddInstanceVector3Parameter(name);
-			this.Add(new SetBinding<Vector3>(result, delegate(Vector3 value)
-			{
-				this.model.ParameterChanged(parameter);
-			}));
-			return result;
-		}
-
-		public Property<Matrix> GetMatrixParameter(string name)
-		{
-			IProperty test = null;
-			if (this.parameters.TryGetValue(name, out test))
-				return (Property<Matrix>)test;
-
-			Property<Matrix> result = new Property<Matrix>();
-			this.parameters.Add(name, result);
-
-			IPropertyBinding parameter = this.model.AddInstanceMatrixParameter(name);
-			this.Add(new SetBinding<Matrix>(result, delegate(Matrix value)
-			{
-				this.model.ParameterChanged(parameter);
-			}));
-			return result;
-		}
-
 		public override void delete()
 		{
 			base.delete();
@@ -397,14 +193,6 @@ namespace Lemma.Components
 				this.model.Remove(this);
 				this.model = null;
 			}
-		}
-
-		protected T getParameterValue<T>(string name)
-		{
-			IProperty test = null;
-			if (this.parameters.TryGetValue(name, out test))
-				return ((Property<T>)test).Value;
-			return default(T);
 		}
 	}
 }

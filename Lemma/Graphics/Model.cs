@@ -31,7 +31,7 @@ namespace Lemma.Components
 		{
 			public Matrix Transform;
 			public Matrix LastTransform;
-			public int InstanceIndex;
+			public Vector3 Param;
 		}
 
 		public float GetDistance(Vector3 camera)
@@ -109,8 +109,14 @@ namespace Lemma.Components
 		protected Texture2D diffuseTexture;
 		public Property<string> DiffuseTexture = new Property<string>();
 
+		public struct Instance
+		{
+			public Vector3 Param;
+			public Matrix Transform;
+		}
+
 		[XmlIgnore]
-		public ListProperty<Matrix> Instances = new ListProperty<Matrix>();
+		public ListProperty<Instance> Instances = new ListProperty<Instance>();
 
 		private bool instancesChanged = true;
 		private bool lastInstancesChanged;
@@ -125,15 +131,6 @@ namespace Lemma.Components
 
 		protected Effect effect;
 
-		[XmlIgnore]
-		public Effect InternalEffect
-		{
-			get
-			{
-				return this.effect;
-			}
-		}
-
 		// To store instance transform matrices in a vertex buffer, we use this custom
 		// vertex type which encodes 4x4 matrices as a set of four Vector4 values.
 		protected static VertexDeclaration instanceVertexDeclaration = new VertexDeclaration
@@ -146,7 +143,7 @@ namespace Lemma.Components
 			new VertexElement(80, VertexElementFormat.Vector4, VertexElementUsage.BlendWeight, 5),
 			new VertexElement(96, VertexElementFormat.Vector4, VertexElementUsage.BlendWeight, 6),
 			new VertexElement(112, VertexElementFormat.Vector4, VertexElementUsage.BlendWeight, 7),
-			new VertexElement(128, VertexElementFormat.Byte4, VertexElementUsage.BlendIndices, 0)
+			new VertexElement(128, VertexElementFormat.Vector3, VertexElementUsage.BlendWeight, 8)
 		);
 
 #if !MONOGAME
@@ -273,7 +270,7 @@ namespace Lemma.Components
 				this.loadEffect(value);
 			}));
 
-			this.Instances.ItemRemoved += delegate(int index, Matrix matrix)
+			this.Instances.ItemRemoved += delegate(int index, Instance instance)
 			{
 				if (this.instanceVertexData != null)
 				{
@@ -282,16 +279,16 @@ namespace Lemma.Components
 				}
 				this.instancesChanged = true;
 			};
-			this.Instances.ItemAdded += delegate(int index, Matrix matrix)
+			this.Instances.ItemAdded += delegate(int index, Instance instance)
 			{
 				if (this.instanceVertexData != null && index < this.instanceVertexData.Length)
 				{
-					this.instanceVertexData[index].LastTransform = matrix;
-					this.instanceVertexData[index].Transform = matrix;
+					this.instanceVertexData[index].LastTransform = instance.Transform;
+					this.instanceVertexData[index].Transform = instance.Transform;
 				}
 				this.instancesChanged = true;
 			};
-			this.Instances.ItemChanged += delegate(int index, Matrix old, Matrix newValue)
+			this.Instances.ItemChanged += delegate(int index, Instance old, Instance newValue)
 			{
 				this.instancesChanged = true;
 			};
@@ -857,7 +854,7 @@ namespace Lemma.Components
 					{
 						Array.Copy(this.instanceVertexData, newData, Math.Min(bufferSize, this.instanceVertexData.Length));
 						for (int i = this.instanceVertexData.Length; i < this.Instances.Length; i++)
-							newData[i].LastTransform = this.Instances[i];
+							newData[i].LastTransform = this.Instances[i].Transform;
 					}
 					this.instanceVertexData = newData;
 				}
@@ -865,8 +862,9 @@ namespace Lemma.Components
 				for (int i = 0; i < this.Instances.Length; i++)
 				{
 					this.instanceVertexData[i].LastTransform = this.instanceVertexData[i].Transform;
-					this.instanceVertexData[i].Transform = this.Instances[i];
-					this.instanceVertexData[i].InstanceIndex = i;
+					Instance instance = this.Instances[i];
+					this.instanceVertexData[i].Transform = instance.Transform;
+					this.instanceVertexData[i].Param = instance.Param;
 				}
 
 				// Transfer the latest instance transform matrices into the instanceVertexBuffer.

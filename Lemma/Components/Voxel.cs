@@ -2386,7 +2386,7 @@ namespace Lemma.Components
 									block.Get<Transform>().Matrix.Value = this.Transform;
 									block.Get<Transform>().Position.Value = this.GetAbsolutePosition(coord);
 									firstBox.Type.ApplyToBlock(block);
-									block.Get<ModelInstance>().GetVector3Parameter("Offset").Value = this.GetRelativePosition(coord);
+									block.Get<ModelInstance>().Param.Value = this.GetRelativePosition(coord);
 									main.Add(block);
 								}
 								else

@@ -49,7 +49,6 @@ namespace Lemma.IO
 			typeof(SpotLight),
 			typeof(Script),
 			typeof(ModelInstance),
-			typeof(ModelInstance.ModelInstanceSystem),
 			typeof(Zone),
 			typeof(PhysicsBlock),
 			typeof(Player),

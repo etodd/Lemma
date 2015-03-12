@@ -50,7 +50,7 @@ namespace Lemma.Factories
 			{
 				if (offsetBinding != null)
 					model.Remove(offsetBinding);
-				offsetBinding = new Binding<Vector3>(model.GetVector3Parameter("Offset"), effectBlock.Offset);
+				offsetBinding = new Binding<Vector3>(model.Param, effectBlock.Offset);
 				model.Add(offsetBinding);
 			}, model.FullInstanceKey));
 			if (effectBlock.StateId != Voxel.t.Empty)
