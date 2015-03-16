@@ -21,9 +21,9 @@ namespace Lemma.Components
 	{
 		public class Message
 		{
-			public bool Incoming;
 			public string ID;
 			public string Name;
+			public Sender Sender;
 		}
 
 		public class Schedule
@@ -105,6 +105,10 @@ namespace Lemma.Components
 
 		public enum Mode { Messages, Photos }
 
+		public enum Sender { Player, A, B }
+
+		public Property<Sender> CurrentPartner = new Property<Sender> { Value = Sender.A };
+
 		public Property<Mode> CurrentMode = new Property<Mode>();
 
 		public Property<bool> CanReceiveMessages = new Property<bool>();
@@ -134,7 +138,7 @@ namespace Lemma.Components
 				this.Msg(s.Message);
 		}
 
-		public void Delay(float delay, string name, string id = null)
+		public void Delay(float delay, Sender sender, string name, string id = null)
 		{
 			Schedule s = new Schedule
 			{
@@ -143,7 +147,7 @@ namespace Lemma.Components
 				{
 					Name = name,
 					ID = id,
-					Incoming = true,
+					Sender = sender,
 				},
 			};
 			this.Schedules.Add(s);
@@ -170,12 +174,12 @@ namespace Lemma.Components
 
 		public void ArchivedMsg(string name, string text = null)
 		{
-			this.Messages.Add(new Message { Incoming = true, Name = name, });
+			this.Messages.Add(new Message { Sender = Sender.Player, Name = name, });
 		}
 
 		public void ArchivedAns(string name)
 		{
-			this.Messages.Add(new Message { Incoming = false, Name = name, });
+			this.Messages.Add(new Message { Sender = Sender.A, Name = name, });
 		}
 
 		private Dictionary<string, Command> messageCallbacks = new Dictionary<string, Command>();
@@ -201,7 +205,7 @@ namespace Lemma.Components
 			else
 				messageID = answer.ParentID;
 
-			this.Messages.Add(new Message { Incoming = false, Name = answer.Name, });
+			this.Messages.Add(new Message { Sender = Sender.Player, Name = answer.Name, });
 			if (answer.Exclusive)
 				this.ActiveAnswers.Clear();
 			else
@@ -311,7 +315,7 @@ namespace Lemma.Components
 
 		void DialogueForest.IClient.Text(DialogueForest.Node node, int level)
 		{
-			this.Delay(messageDelay * level, node.name, node.id);
+			this.Delay(messageDelay * level, this.CurrentPartner, node.name, node.id);
 		}
 
 		private const float messageDelay = 3.0f; // seconds in between each message

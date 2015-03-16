@@ -1309,7 +1309,6 @@ namespace Lemma
 			if (this.spriteBatch != null)
 				this.spriteBatch.Dispose();
 			this.spriteBatch = new SpriteBatch(this.GraphicsDevice);
-
 		}
 
 		public void DefaultLighting()

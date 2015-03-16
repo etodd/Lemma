@@ -344,15 +344,16 @@ namespace Lemma.Components
 
 			private Session data = new Session();
 
-			private Main main;
-
 			private Thread workThread;
 			private BlockingQueue<string> workQueue = new BlockingQueue<string>();
+			private bool inProgress = false;
 			private void worker()
 			{
 				while (true)
 				{
 					string filename = this.workQueue.Dequeue();
+					lock (this)
+						this.inProgress = true;
 					try
 					{
 						Recorder.UploadSession(filename);
@@ -361,10 +362,21 @@ namespace Lemma.Components
 					{
 						Log.d(string.Format("Failed to upload analytics session.\n{0}", e.ToString()));
 					}
+					lock (this)
+						this.inProgress = false;
 				}
 			}
 			
 			public Property<bool> EnableUpload = new Property<bool>();
+			
+			public bool Uploading
+			{
+				get
+				{
+					lock (this)
+						return this.workQueue.Count > 0 || this.inProgress;
+				}
+			}
 
 			public Recorder(Main main)
 			{
@@ -388,11 +400,8 @@ namespace Lemma.Components
 				}));
 
 				this.workThread = new Thread(new ThreadStart(this.worker));
+				this.workThread.IsBackground = true;
 				this.workThread.Start();
-				main.Exiting += delegate(object a, EventArgs b)
-				{
-					this.workThread.Abort();
-				};
 
 #if WINDOWS
 				this.data.Memory = (int)(new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory / (ulong)1048576);

@@ -56,17 +56,22 @@ namespace Lemma
 						main.SaveAnalytics();
 #endif
 				}
+#if !DEBUG
 				catch (Exception e)
 				{
+					System.Windows.Forms.Application.EnableVisualStyles();
+					ErrorForm errorForm = new ErrorForm(e.ToString(), main != null ? (main.Settings != null ? main.Settings.UUID : null) : null);
 #if ANALYTICS
 					if (main != null)
 					{
 						main.SessionRecorder.RecordEvent("Crash", e.ToString());
 						main.SaveAnalytics();
+						errorForm.Session = main.SessionRecorder;
 					}
 #endif
-					throw;
+					System.Windows.Forms.Application.Run(errorForm);
 				}
+#endif
 				finally
 				{
 					if (main != null)

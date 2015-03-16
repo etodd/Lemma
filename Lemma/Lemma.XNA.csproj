@@ -161,6 +161,12 @@
     <Compile Include="Components\TimeTrial.cs" />
     <Compile Include="Components\Turret.cs" />
     <Compile Include="Components\VoxelFill.cs" />
+    <Compile Include="ErrorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ErrorForm.Designer.cs">
+      <DependentUpon>ErrorForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Factories\BouncerFactory.cs" />
     <Compile Include="Factories\ConsoleCommandFactory.cs" />
     <Compile Include="Factories\AnimatedPropFactory.cs" />
@@ -535,6 +541,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="ErrorForm.resx">
+      <DependentUpon>ErrorForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GeeUI\Resource1.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resource11.Designer.cs</LastGenOutput>

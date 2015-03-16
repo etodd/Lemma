@@ -2352,11 +2352,8 @@ namespace Lemma.Components
 			if (Voxel.workThread == null)
 			{
 				Voxel.workThread = new Thread(new ThreadStart(Voxel.worker));
+				Voxel.workThread.IsBackground = true;
 				Voxel.workThread.Start();
-				this.main.Exiting += delegate(object a, EventArgs b)
-				{
-					Voxel.workThread.Abort();
-				};
 				Main m = this.main;
 				Voxel.spawner = new Updater
 				(

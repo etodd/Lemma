@@ -109,6 +109,7 @@ namespace Lemma.Components
 
 			Property<Color> incomingColor = new Property<Color> { Value = new Color(0.0f, 0.0f, 0.0f, 1.0f) };
 			Property<Color> outgoingColor = new Property<Color> { Value = new Color(0.0f, 0.175f, 0.35f, 1.0f) };
+			Property<Color> alternateSenderColor = new Property<Color> { Value = new Color(0.25f, 0.0f, 0.25f, 1.0f) };
 			Property<Color> composeColor = new Property<Color> { Value = new Color(0.5f, 0.0f, 0.0f, 1.0f) };
 			Property<Color> disabledColor = new Property<Color> { Value = new Color(0.35f, 0.35f, 0.35f, 1.0f) };
 			Property<Color> topBarColor = new Property<Color> { Value = new Color(0.15f, 0.15f, 0.15f, 1.0f) };
@@ -597,13 +598,26 @@ namespace Lemma.Components
 				scrollPhone(1);
 			}));
 
+			Func<Phone.Sender, Property<Color>> messageColor = delegate(Phone.Sender sender)
+			{
+				switch (sender)
+				{
+					case Phone.Sender.Player:
+						return outgoingColor;
+					case Phone.Sender.A:
+						return incomingColor;
+					default:
+						return alternateSenderColor;
+				}
+			};
+
 			msgList.Add(new ListBinding<UIComponent, Phone.Message>
 			(
 				msgList.Children,
 				phone.Messages,
 				delegate(Phone.Message msg)
 				{
-					return makeAlign(makeButton(msg.Incoming ? incomingColor : outgoingColor, "\\" + msg.Name, messageWidth - padding * 2.0f), !msg.Incoming);
+					return makeAlign(makeButton(messageColor(msg.Sender), "\\" + msg.Name, messageWidth - padding * 2.0f), msg.Sender == Phone.Sender.Player);
 				}
 			));
 
