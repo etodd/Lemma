@@ -1,46 +1,28 @@
 Created, coded, and designed by Evan Todd
 http://et1337.com
 
-==========================================
-
-Josh Coffey -- Programming
-http://geel.io
-
-==========================================
-
-Jack Menhorn -- Music and sound
-http://jackmenhorn.com
-
-==========================================
+Antonio Yáñez -- Animation
+http://www.ayaba.graphics
 
 Ashton Morris -- Music and sound
 http://ashtonmorris.com
 
-==========================================
+Josh Coffey -- Programming
+http://geel.io
+
+Jack Menhorn -- Music and sound
+http://jackmenhorn.com
 
 Naila Burney -- Sound and voice acting
 https://www.behance.net/nailaburney
 
-==========================================
-
-Antonio Yáñez -- Animation
-http://www.ayaba.graphics
-
-==========================================
-
 Sam Gebhardt -- Promotional artwork
 http://samgebhardt.com/
-
-==========================================
 
 Human model, texture, and rig adapted from MakeHuman
 http://makehuman.org/
 
-==========================================
-
-INTERNET CREDITS
-
-==========================================
+------------------------------------------
 
 CGTEXTURES SOURCE MATERIAL
 
@@ -53,7 +35,7 @@ Lemma/Content/Textures/hex-normal.png
 Lemma/Content/Textures/lattice.png
 Lemma/Content/Textures/lattice-normal.png
 
-==========================================
+------------------------------------------
 
 SKYBOXES
 
@@ -66,7 +48,7 @@ http://www.3delyvisions.com
 'The Mighty Pete'
 http://www.petesoasis.com
 
-==========================================
+------------------------------------------
 
 IMAGES / PHOTOS
 
@@ -77,7 +59,7 @@ http://www.flickr.com/photos/fotosdoacre/3793140793/in/set-72157621833492035.
 Licensed under Creative Commons Attribution 2.0 via Wikimedia Commons
 http://commons.wikimedia.org/wiki/File:%C3%8Dndios_isolados_no_Acre_3.jpg
 
-==========================================
+------------------------------------------
 
 FREESOUND AUDIO SOURCE MATERIAL
 

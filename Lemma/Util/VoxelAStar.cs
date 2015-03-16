@@ -148,6 +148,8 @@ namespace Lemma.Util
 		public static void Narrowphase(Voxel m, Voxel.Coord start, Voxel.Box target, Stack<Voxel.Coord> result)
 		{
 			Voxel.Box currentBox = m.GetBox(start);
+			if (currentBox == null)
+				return;
 			Vector3 targetPos = target.GetCenter();
 			NarrowphaseEntry startEntry = new NarrowphaseEntry
 			{
@@ -232,6 +234,8 @@ namespace Lemma.Util
 			Queue<Voxel.Box> queue = new Queue<Voxel.Box>();
 			Dictionary<Voxel.Box, int> visited = new Dictionary<Voxel.Box, int>();
 			Voxel.Box startBox = v.GetBox(coord);
+			if (startBox == null)
+				return null;
 			queue.Enqueue(startBox);
 			visited[startBox] = 0;
 			int maxSearch = radius * radius * radius;

@@ -526,6 +526,26 @@ namespace Lemma
 					this.VR = false;
 					this.oculusNotFound = true;
 				}
+				else
+				{
+					if (!this.VRHmd.ConfigureTracking(
+						(uint)Ovr.TrackingCaps.Orientation
+						| (uint)Ovr.TrackingCaps.MagYawCorrection
+						| (uint)Ovr.TrackingCaps.Position, 0))
+						throw new Exception("Failed to configure head tracking.");
+					this.vrHmdDesc = this.VRHmd.GetDesc();
+					this.vrLeftFov = this.vrHmdDesc.MaxEyeFov[0];
+					this.vrRightFov = this.vrHmdDesc.MaxEyeFov[1];
+					Ovr.FovPort maxFov = new Ovr.FovPort();
+					maxFov.UpTan = Math.Max(this.vrLeftFov.UpTan, this.vrRightFov.UpTan);
+					maxFov.DownTan = Math.Max(this.vrLeftFov.DownTan, this.vrRightFov.DownTan);
+					maxFov.LeftTan = Math.Max(this.vrLeftFov.LeftTan, this.vrRightFov.LeftTan);
+					maxFov.RightTan = Math.Max(this.vrLeftFov.RightTan, this.vrRightFov.RightTan);
+					float combinedTanHalfFovHorizontal = Math.Max(maxFov.LeftTan, maxFov.RightTan);
+					float combinedTanHalfFovVertical = Math.Max(maxFov.UpTan, maxFov.DownTan);
+					this.vrLeftEyeRenderDesc = this.VRHmd.GetRenderDesc(Ovr.Eye.Left, this.vrLeftFov);
+					this.vrRightEyeRenderDesc = this.VRHmd.GetRenderDesc(Ovr.Eye.Right, this.vrRightFov);
+				}
 			}
 #endif
 
@@ -944,24 +964,6 @@ namespace Lemma
 #if VR
 				if (this.VR)
 				{
-					if (!this.VRHmd.ConfigureTracking(
-						(uint)Ovr.TrackingCaps.Orientation
-						| (uint)Ovr.TrackingCaps.MagYawCorrection
-						| (uint)Ovr.TrackingCaps.Position, 0))
-						throw new Exception("Failed to configure head tracking.");
-					this.vrHmdDesc = this.VRHmd.GetDesc();
-					this.vrLeftFov = this.vrHmdDesc.MaxEyeFov[0];
-					this.vrRightFov = this.vrHmdDesc.MaxEyeFov[1];
-					Ovr.FovPort maxFov = new Ovr.FovPort();
-					maxFov.UpTan = Math.Max(this.vrLeftFov.UpTan, this.vrRightFov.UpTan);
-					maxFov.DownTan = Math.Max(this.vrLeftFov.DownTan, this.vrRightFov.DownTan);
-					maxFov.LeftTan = Math.Max(this.vrLeftFov.LeftTan, this.vrRightFov.LeftTan);
-					maxFov.RightTan = Math.Max(this.vrLeftFov.RightTan, this.vrRightFov.RightTan);
-					float combinedTanHalfFovHorizontal = Math.Max(maxFov.LeftTan, maxFov.RightTan);
-					float combinedTanHalfFovVertical = Math.Max(maxFov.UpTan, maxFov.DownTan);
-					this.vrLeftEyeRenderDesc = this.VRHmd.GetRenderDesc(Ovr.Eye.Left, this.vrLeftFov);
-					this.vrRightEyeRenderDesc = this.VRHmd.GetRenderDesc(Ovr.Eye.Right, this.vrRightFov);
-
 					this.vrLeftMesh.Load(this, Ovr.Eye.Left, this.vrLeftFov);
 					this.vrRightMesh.Load(this, Ovr.Eye.Right, this.vrRightFov);
 					new CommandBinding(this.ReloadedContent, (Action)this.vrLeftMesh.Reload);

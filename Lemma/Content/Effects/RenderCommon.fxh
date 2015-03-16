@@ -80,7 +80,9 @@ void RenderTextureFlatPS(in RenderPSInput input,
 	float3 normal = normalize(flat.normal);
 	
 	output.color.rgb = DiffuseColor.rgb * color.rgb;
-	if (multipleMaterials)
+	if (clipAlpha)
+		output.color.a = EncodeMaterial(Materials[0]);
+	else if (multipleMaterials)
 		output.color.a = EncodeMaterial(Materials[(int)(color.a < MaterialAlphaThreshold)]);
 	else
 		output.color.a = EncodeMaterial(Materials[0]);
@@ -173,7 +175,10 @@ void RenderTextureNormalMapPS(	in RenderPSInput input,
 		clip(color.a - 0.5f);
 	float3 normal = mul(DecodeNormalMap(tex2D(NormalMapSampler, tex.uvCoordinates).xyz), normalMap.tangentToWorld);
 	output.color.rgb = DiffuseColor.rgb * color.rgb;
-	output.color.a = EncodeMaterial(Materials[(int)(color.a < MaterialAlphaThreshold)]);
+	if (clipAlpha)
+		output.color.a = EncodeMaterial(Materials[0]);
+	else
+		output.color.a = EncodeMaterial(Materials[(int)(color.a < MaterialAlphaThreshold)]);
 	output.depth.x = length(input.viewSpacePosition);
 	output.normal.xy = EncodeNormal(normal.xy);
 	output.depth.y = normal.z;
@@ -196,7 +201,10 @@ void RenderTextureNormalMapOverlayPS(	in RenderPSInput input,
 	float3 normal = mul(DecodeNormalMap(tex2D(NormalMapSampler, tex.uvCoordinates).xyz), normalMap.tangentToWorld);
 	float4 overlayColor = tex2D(overlaySampler, overlay.uvCoordinates);
 	output.color.rgb = lerp(DiffuseColor.rgb * color.rgb, overlayColor.rgb, overlayColor.a);
-	output.color.a = EncodeMaterial(Materials[(int)(color.a < MaterialAlphaThreshold)]);
+	if (clipAlpha)
+		output.color.a = EncodeMaterial(Materials[0]);
+	else
+		output.color.a = EncodeMaterial(Materials[(int)(color.a < MaterialAlphaThreshold)]);
 	output.depth.x = length(input.viewSpacePosition);
 	output.normal.xy = EncodeNormal(normal.xy);
 	output.depth.y = normal.z;

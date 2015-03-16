@@ -27,14 +27,18 @@ namespace Lemma.Factories
 					Entity targetEntity = target.Value.Target;
 					if (targetEntity != null)
 					{
-						connectionLines.Lines.Add
-						(
-							new LineDrawer.Line
-							{
-								A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, connectionLineColor),
-								B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(targetEntity.Get<Transform>("Transform").Position, connectionLineColor)
-							}
-						);
+						Transform targetTransform = targetEntity.Get<Transform>("Transform");
+						if (targetTransform != null)
+						{
+							connectionLines.Lines.Add
+							(
+								new LineDrawer.Line
+								{
+									A = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(transform.Position, connectionLineColor),
+									B = new Microsoft.Xna.Framework.Graphics.VertexPositionColor(targetTransform.Position, connectionLineColor)
+								}
+							);
+						}
 					}
 				}, transform.Position, target, entity.EditorSelected));
 
