@@ -42,10 +42,12 @@ namespace Lemma.Factories
 			trigger.Add(new CommandBinding(trigger.PlayerEntered, (Action)mapExit.Go));
 
 			trigger.EditorProperties();
-			entity.Add("OnEnter", trigger.PlayerEntered);
+
 			entity.Add("Enable", trigger.Enable);
-			entity.Add("Enabled", trigger.Enabled);
 			entity.Add("Disable", trigger.Disable);
+			entity.Add("OnEnter", trigger.PlayerEntered);
+
+			entity.Add("Enabled", trigger.Enabled);
 			entity.Add("NextMap", mapExit.NextMap, new PropertyEntry.EditorData
 			{
 				Options = FileFilter.Get(main, main.MapDirectory, null, MapLoader.MapExtension, delegate()

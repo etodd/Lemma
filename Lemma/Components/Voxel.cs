@@ -2145,9 +2145,13 @@ namespace Lemma.Components
 									BoxRelationship relationship2 = new BoxRelationship { A = adjacent, B = box };
 									if (!this.relationshipCache.ContainsKey(relationship1) && !this.relationshipCache.ContainsKey(relationship2))
 									{
-										this.relationshipCache[relationship1] = true;
-										indexData.Add(i);
-										indexData.Add(indexLookup[adjacent]);
+										int adjacentIndex;
+										if (indexLookup.TryGetValue(adjacent, out adjacentIndex))
+										{
+											this.relationshipCache[relationship1] = true;
+											indexData.Add(i);
+											indexData.Add(adjacentIndex);
+										}
 									}
 								}
 							}

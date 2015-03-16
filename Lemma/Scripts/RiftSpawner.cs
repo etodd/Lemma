@@ -68,7 +68,8 @@ namespace Lemma.GameScripts
 							if (hit.Voxel != null
 								&& hit.Distance > radius
 								&& Rift.Query(hit.Position) == null
-								&& Zone.CanSpawnRift(hit.Position))
+								&& Zone.CanSpawnRift(hit.Position)
+								&& MapExit.Query(hit.Position, 5 + radius) == null)
 							{
 								success = true;
 								break;

@@ -47,11 +47,11 @@ namespace Lemma.Factories
 			trigger.EditorProperties();
 			attachable.EditorProperties();
 
-			entity.Add("Reached", trigger.PlayerEntered);
 			entity.Add("Enabled", transform.Enabled);
 
 			entity.Add("Enable", transform.Enable);
 			entity.Add("Disable", transform.Disable);
+			entity.Add("Reached", trigger.PlayerEntered);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

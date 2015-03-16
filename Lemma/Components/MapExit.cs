@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using ComponentBind;
 using Lemma.IO;
+using Microsoft.Xna.Framework;
 
 namespace Lemma.Components
 {
@@ -13,6 +14,16 @@ namespace Lemma.Components
 		public Property<string> StartSpawnPoint = new Property<string>();
 
 		public static List<MapExit> All = new List<MapExit>();
+
+		public static MapExit Query(Vector3 pos, float radius)
+		{
+			foreach (MapExit e in MapExit.All)
+			{
+				if ((e.Entity.Get<Transform>().Position - pos).Length() < radius)
+					return e;
+			}
+			return null;
+		}
 
 		public void Go()
 		{
