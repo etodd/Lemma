@@ -132,6 +132,12 @@ namespace Lemma
 			public Property<RecordAnalytics> Analytics = new Property<RecordAnalytics>();
 			[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
 			public bool GodMode;
+			[JsonIgnore]
+			public Property<bool> GodModeProperty = new Property<bool>();
+			[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+			public int LevelIndex;
+			[JsonIgnore]
+			public Property<int> LevelIndexProperty = new Property<int>();
 			public int Version;
 			public string UUID;
 			public Property<PCInput.PCInputBinding> Forward = new Property<PCInput.PCInputBinding>();
@@ -731,6 +737,10 @@ namespace Lemma
 
 			if (string.IsNullOrEmpty(this.Settings.UUID))
 				this.Settings.UUID = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32);
+			this.Settings.GodModeProperty.Value = this.Settings.GodMode;
+			this.Settings.LevelIndexProperty.Value = this.Settings.LevelIndex;
+			new NotifyBinding(delegate() { this.Settings.GodMode = this.Settings.GodModeProperty; }, this.Settings.GodModeProperty);
+			new NotifyBinding(delegate() { this.Settings.LevelIndex = this.Settings.LevelIndexProperty; }, this.Settings.LevelIndexProperty);
 			
 			TextElement.BindableProperties.Add("Forward", this.Settings.Forward);
 			TextElement.BindableProperties.Add("Left", this.Settings.Left);

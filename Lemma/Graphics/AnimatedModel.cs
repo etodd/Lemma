@@ -340,7 +340,7 @@ namespace Lemma.Components
 		protected override void loadModel(string file, bool reload)
 		{
 			base.loadModel(file, reload);
-			if (this.model != null && (file != this.Filename.Value || this.skinningData == null))
+			if (this.model != null)
 			{
 				// Look up our custom skinning information.
 				this.skinningData = this.model.Tag as SkinnedModel.SkinningData;
@@ -348,10 +348,14 @@ namespace Lemma.Components
 				if (this.skinningData == null)
 					throw new InvalidOperationException("This model does not contain a SkinningData tag.");
 
-				this.boneTransforms = new Matrix[this.skinningData.BindPose.Count];
+				if (this.boneTransforms == null || this.boneTransformProperties.Count != this.skinningData.BindPose.Count)
+				{
+					this.boneTransforms = new Matrix[this.skinningData.BindPose.Count];
+					this.worldTransforms = new Matrix[this.skinningData.BindPose.Count];
+					this.skinTransforms = new Matrix[this.skinningData.BindPose.Count];
+				}
+
 				this.skinningData.BindPose.CopyTo(this.boneTransforms, 0);
-				this.worldTransforms = new Matrix[this.skinningData.BindPose.Count];
-				this.skinTransforms = new Matrix[this.skinningData.BindPose.Count];
 			}
 		}
 

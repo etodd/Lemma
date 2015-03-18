@@ -110,7 +110,7 @@ namespace Lemma.Components
 				this.resizeButton(retry);
 				list.Children.Add(retry);
 
-				if (this.main.Settings.GodMode || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory)
+				if (this.main.Settings.GodModeProperty || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory)
 				{
 					Container edit = this.main.UIFactory.CreateButton("\\edit mode", delegate()
 					{

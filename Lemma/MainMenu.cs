@@ -204,19 +204,19 @@ namespace Lemma.GameScripts
 				new Animation.Vector3MoveTo(main.Renderer.Tint, new Vector3(1.0f), 0.3f)
 			));
 
-			if (!main.Settings.GodMode)
+			if (!main.Settings.GodModeProperty)
 			{
 				int konamiIndex = 0;
 				PCInput input = script.Create<PCInput>();
 				input.Add(new CommandBinding<PCInput.PCInputBinding>(input.AnyInputDown, delegate(PCInput.PCInputBinding button)
 				{
-					if (!main.Settings.GodMode)
+					if (!main.Settings.GodModeProperty)
 					{
 						if (button.Key == konamiCode[konamiIndex].Key || button.GamePadButton == konamiCode[konamiIndex].GamePadButton)
 						{
 							if (konamiIndex == konamiCode.Length - 1)
 							{
-								main.Settings.GodMode = true;
+								main.Settings.GodModeProperty.Value = true;
 								main.SaveSettings();
 								main.Menu.HideMessage(script, main.Menu.ShowMessage(script, "\\god mode"), 5.0f);
 							}

@@ -25,7 +25,10 @@ namespace Lemma.Components
 				{
 					if (!string.IsNullOrEmpty(old))
 						this.model.Stop(old);
-					this.play();
+					if (!string.IsNullOrEmpty(this.Clip) && this.model.Clips.ContainsKey(this.Clip))
+						this.model[value].Loop = this.Loop;
+					if (this.Enabled)
+						this.play();
 				}
 			}));
 			this.Add(new ChangeBinding<bool>(this.Loop, delegate(bool old, bool value)

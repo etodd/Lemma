@@ -23,15 +23,12 @@ namespace Lemma.Components
 	{
 		private static Dictionary<string, string> maps = new Dictionary<string, string>
 		{
-#if DEBUG
-			{ "test", "Test Level" },
-#endif
 			{ "rain", "\\map rain" },
 			{ "dawn", "\\map dawn" },
 			{ "forest", "\\map forest" },
 			{ "monolith", "\\map monolith" },
 			{ "fracture1", "\\map fracture" },
-			{ "valley", "\\map valley" },
+			{ "fortress", "\\map fortress" },
 			{ "end", "\\map mark" },
 		};
 
@@ -885,7 +882,7 @@ namespace Lemma.Components
 					vrMessagePlacement = true;
 #endif
 				this.messages = new ListContainer();
-				this.messages.Alignment.Value = ListContainer.ListAlignment.Min;
+				this.messages.Alignment.Value = ListContainer.ListAlignment.Middle;
 				this.messages.AnchorPoint.Value = new Vector2(0.5f, 1.0f);
 				Vector2 messagePlacement = new Vector2(0.5f, vrMessagePlacement ? 0.6f : 0.85f);
 				this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * messagePlacement.X, x.Y * messagePlacement.Y), this.main.ScreenSize));
@@ -903,7 +900,7 @@ namespace Lemma.Components
 					downloadingLabel.Text,
 					delegate()
 					{
-						return string.Format(main.Strings.Get("downloading workshop maps") ?? "downloading workshop maps", SteamWorker.Downloading.Value);
+						return string.Format(main.Strings.Get("downloading workshop maps") ?? "downloading {0} workshop maps", SteamWorker.Downloading.Value);
 					},
 					this.main.Strings.Language, SteamWorker.Downloading
 				));
@@ -1388,26 +1385,91 @@ namespace Lemma.Components
 			this.resizeToMenu(controlsReset);
 			controlsList.Children.Add(controlsReset);
 
-			// Start new button
-			Container startNew = this.main.UIFactory.CreateButton("\\new game", delegate()
+			// Start menu
+			Animation startAnimation = null;
+			bool startShown = false;
+
+			ListContainer startMenu = new ListContainer();
+			startMenu.Visible.Value = false;
+			startMenu.Add(new Binding<Vector2, Point>(startMenu.Position, x => new Vector2(0, x.Y * 0.5f), this.main.ScreenSize));
+			startMenu.AnchorPoint.Value = new Vector2(1, 0.5f);
+			this.main.UI.Root.Children.Add(startMenu);
+			startMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+			Container startLabelPadding = this.main.UIFactory.CreateContainer();
+			this.resizeToMenu(startLabelPadding);
+			startMenu.Children.Add(startLabelPadding);
+
+			ListContainer startLabelContainer = new ListContainer();
+			startLabelContainer.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			startLabelPadding.Children.Add(startLabelContainer);
+
+			TextElement startLabel = new TextElement();
+			startLabel.FontFile.Value = this.main.Font;
+			startLabel.Text.Value = "\\start title";
+			startLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
+			startLabelContainer.Children.Add(startLabel);
+
+			TextElement startScrollLabel = new TextElement();
+			startScrollLabel.FontFile.Value = this.main.Font;
+			startScrollLabel.Text.Value = "\\scroll for more";
+			startScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
+			startLabelContainer.Children.Add(startScrollLabel);
+
+			Action hideStart = delegate()
 			{
-				this.ShowDialog("\\alpha disclaimer", "\\play", delegate()
+				startShown = false;
+
+				this.showPauseMenu();
+
+				if (startAnimation != null)
+					startAnimation.Delete.Execute();
+				startAnimation = new Animation
+				(
+					new Animation.Vector2MoveToSpeed(startMenu.AnchorPoint, new Vector2(1, 0.5f), Menu.hideAnimationSpeed),
+					new Animation.Set<bool>(startMenu.Visible, false)
+				);
+				this.main.AddComponent(startAnimation);
+			};
+
+			Container startBack = this.main.UIFactory.CreateButton("\\back", hideStart);
+			this.resizeToMenu(startBack);
+			startMenu.Children.Add(startBack);
+
+			ListContainer startList = new ListContainer();
+			startList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+			{
+				int i = 0;
+				foreach (KeyValuePair<string, string> item in Menu.maps)
 				{
-					this.restorePausedSettings();
-					this.main.CurrentSave.Value = null;
-					this.main.AddComponent(new Animation
-					(
-						this.main.Spawner.FlashAnimation(),
-						new Animation.Execute(delegate()
-						{
-							IO.MapLoader.Load(this.main, Main.InitialMap);
-						})
-					));
-				});
-			});
-			this.resizeToMenu(startNew);
-			this.pauseMenu.Children.Add(startNew);
-			startNew.Add(new Binding<bool, string>(startNew.Visible, x => x == Main.MenuMap, this.main.MapFile));
+					int index = i;
+					string m = item.Key;
+					Container button = this.main.UIFactory.CreateButton(item.Value, delegate()
+					{
+						hideStart();
+						this.restorePausedSettings();
+						this.main.CurrentSave.Value = null;
+						this.main.AddComponent(new Animation
+						(
+							new Animation.Delay(0.2f),
+							new Animation.Execute(delegate()
+							{
+								IO.MapLoader.Load(this.main, m);
+							})
+						));
+					});
+					button.Add(new Binding<bool>(button.Visible, () => this.main.Settings.GodModeProperty || this.main.Settings.LevelIndexProperty >= index, this.main.Settings.GodModeProperty, this.main.Settings.LevelIndexProperty));
+					this.resizeToMenu(button);
+					startList.Children.Add(button);
+					i++;
+				}
+			}
+
+			Scroller startScroller = new Scroller();
+			startScroller.Children.Add(startList);
+			startScroller.Add(new Binding<Vector2>(startScroller.Size, () => new Vector2(startList.Size.Value.X, this.main.ScreenSize.Value.Y * 0.5f), startList.Size, this.main.ScreenSize));
+			startMenu.Children.Add(startScroller);
 
 			// Resume button
 			Container resume = this.main.UIFactory.CreateButton("\\resume", delegate()
@@ -1419,6 +1481,24 @@ namespace Lemma.Components
 			resume.Visible.Value = false;
 			this.pauseMenu.Children.Add(resume);
 			resume.Add(new Binding<bool, string>(resume.Visible, x => x != Main.MenuMap, this.main.MapFile));
+
+			// Start button
+			Container start = this.main.UIFactory.CreateButton("\\new game", delegate()
+			{
+				this.hidePauseMenu();
+
+				startMenu.Visible.Value = true;
+				if (startAnimation != null)
+					startAnimation.Delete.Execute();
+				startAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(startMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.EaseType.OutExponential));
+				this.main.AddComponent(startAnimation);
+
+				startShown = true;
+				this.currentMenu.Value = startList;
+			});
+			this.resizeToMenu(start);
+			start.Add(new Binding<bool, string>(start.Visible, x => x == Main.MenuMap, this.main.MapFile));
+			this.pauseMenu.Children.Add(start);
 
 			// Save button
 			Container saveButton = this.main.UIFactory.CreateButton("\\save", delegate()
@@ -1485,128 +1565,6 @@ namespace Lemma.Components
 
 			ConstructChallengeMenu();
 
-			// Cheat menu
-#if CHEAT
-			Animation cheatAnimation = null;
-			bool cheatShown = false;
-
-			ListContainer cheatMenu = new ListContainer();
-			cheatMenu.Visible.Value = false;
-			cheatMenu.Add(new Binding<Vector2, Point>(cheatMenu.Position, x => new Vector2(0, x.Y * 0.5f), this.main.ScreenSize));
-			cheatMenu.AnchorPoint.Value = new Vector2(1, 0.5f);
-			this.main.UI.Root.Children.Add(cheatMenu);
-			cheatMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
-
-			Container cheatLabelPadding = this.main.UIFactory.CreateContainer();
-			this.resizeToMenu(cheatLabelPadding);
-			cheatMenu.Children.Add(cheatLabelPadding);
-
-			ListContainer cheatLabelContainer = new ListContainer();
-			cheatLabelContainer.Orientation.Value = ListContainer.ListOrientation.Vertical;
-			cheatLabelPadding.Children.Add(cheatLabelContainer);
-
-			TextElement cheatLabel = new TextElement();
-			cheatLabel.FontFile.Value = this.main.Font;
-			cheatLabel.Text.Value = "\\cheat title";
-			cheatLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
-			cheatLabelContainer.Children.Add(cheatLabel);
-
-			TextElement cheatScrollLabel = new TextElement();
-			cheatScrollLabel.FontFile.Value = this.main.Font;
-			cheatScrollLabel.Text.Value = "\\scroll for more";
-			cheatScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
-			cheatLabelContainer.Children.Add(cheatScrollLabel);
-
-			Action hideCheat = delegate()
-			{
-				cheatShown = false;
-
-				this.showPauseMenu();
-
-				if (cheatAnimation != null)
-					cheatAnimation.Delete.Execute();
-				cheatAnimation = new Animation
-				(
-					new Animation.Vector2MoveToSpeed(cheatMenu.AnchorPoint, new Vector2(1, 0.5f), Menu.hideAnimationSpeed),
-					new Animation.Set<bool>(cheatMenu.Visible, false)
-				);
-				this.main.AddComponent(cheatAnimation);
-			};
-
-			Container cheatBack = this.main.UIFactory.CreateButton("\\back", hideCheat);
-			this.resizeToMenu(cheatBack);
-			cheatMenu.Children.Add(cheatBack);
-
-			ListContainer cheatList = new ListContainer();
-			cheatList.Orientation.Value = ListContainer.ListOrientation.Vertical;
-
-			foreach (KeyValuePair<string, string> item in Menu.maps)
-			{
-				string m = item.Key;
-				Container button = this.main.UIFactory.CreateButton(item.Value, delegate()
-				{
-					hideCheat();
-					this.restorePausedSettings();
-					this.main.CurrentSave.Value = null;
-					this.main.AddComponent(new Animation
-					(
-						new Animation.Delay(0.2f),
-						new Animation.Execute(delegate()
-						{
-							IO.MapLoader.Load(this.main, m);
-						})
-					));
-				});
-				this.resizeToMenu(button);
-				cheatList.Children.Add(button);
-			}
-#if STEAMWORKS && DEVELOPMENT
-			Container cheatUploadStats = this.main.UIFactory.CreateButton("Upload Stats", delegate()
-			{
-				SteamWorker.UploadStats();
-			});
-			this.resizeToMenu(cheatUploadStats);
-			cheatList.Children.Add(cheatUploadStats);
-
-			Container cheatResetStats = this.main.UIFactory.CreateButton("Reset Stats", delegate()
-			{
-				SteamWorker.ResetAllStats(false);
-			});
-			this.resizeToMenu(cheatResetStats);
-			cheatList.Children.Add(cheatResetStats);
-
-			Container cheatResetCheevos = this.main.UIFactory.CreateButton("Reset Stats and Achievements", delegate()
-			{
-				SteamWorker.ResetAllStats(true);
-			});
-			this.resizeToMenu(cheatResetCheevos);
-			cheatList.Children.Add(cheatResetCheevos);
-#endif
-
-			Scroller cheatScroller = new Scroller();
-			cheatScroller.Children.Add(cheatList);
-			cheatScroller.Add(new Binding<Vector2>(cheatScroller.Size, () => new Vector2(cheatList.Size.Value.X, this.main.ScreenSize.Value.Y * 0.5f), cheatList.Size, this.main.ScreenSize));
-			cheatMenu.Children.Add(cheatScroller);
-
-			// Cheat button
-			Container cheat = this.main.UIFactory.CreateButton("\\cheat", delegate()
-			{
-				this.hidePauseMenu();
-
-				cheatMenu.Visible.Value = true;
-				if (cheatAnimation != null)
-					cheatAnimation.Delete.Execute();
-				cheatAnimation = new Animation(new Animation.Ease(new Animation.Vector2MoveToSpeed(cheatMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed), Animation.Ease.EaseType.OutExponential));
-				this.main.AddComponent(cheatAnimation);
-
-				cheatShown = true;
-				this.currentMenu.Value = cheatList;
-			});
-			this.resizeToMenu(cheat);
-			cheat.Add(new Binding<bool, string>(cheat.Visible, x => x == Main.MenuMap, this.main.MapFile));
-			this.pauseMenu.Children.Add(cheat);
-#endif
-
 			// Controls button
 			Container controlsButton = this.main.UIFactory.CreateButton("\\controls", delegate()
 			{
@@ -1654,7 +1612,7 @@ namespace Lemma.Components
 
 			// Edit mode toggle button
 			Container switchToEditMode = this.main.UIFactory.CreateButton("\\edit mode", this.editMode);
-			switchToEditMode.Add(new Binding<bool>(switchToEditMode.Visible, () => !this.main.EditorEnabled && (this.main.Settings.GodMode || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory), this.main.EditorEnabled, this.main.MapFile));
+			switchToEditMode.Add(new Binding<bool>(switchToEditMode.Visible, () => !this.main.EditorEnabled && (this.main.Settings.GodModeProperty || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory), this.main.EditorEnabled, this.main.MapFile, this.main.Settings.GodModeProperty));
 			this.resizeToMenu(switchToEditMode);
 			this.pauseMenu.Children.Add(switchToEditMode);
 
@@ -1832,13 +1790,11 @@ namespace Lemma.Components
 					this.hideLoadSave();
 					return;
 				}
-#if CHEAT
-				else if (cheatShown)
+				else if (startShown)
 				{
-					hideCheat();
+					hideStart();
 					return;
 				}
-#endif
 				else if (this.challengeMenuShown)
 				{
 					this.hideChallenge(true);
@@ -1862,7 +1818,7 @@ namespace Lemma.Components
 
 			this.input.Add(new CommandBinding(this.input.GetKeyDown(Keys.OemTilde), delegate()
 			{
-				if (this.main.Settings.GodMode && (this.main.Paused || this.CanPause))
+				if (this.main.Settings.GodModeProperty && (this.main.Paused || this.CanPause))
 				{
 					if (canPause() && ConsoleUI.Showing.Value == this.main.Paused.Value)
 						togglePause();
@@ -2079,7 +2035,7 @@ namespace Lemma.Components
 			this.main.EditorEnabled.Value = true;
 			this.main.CurrentSave.Value = null;
 
-			if (this.main.Settings.GodMode || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory)
+			if (this.main.Settings.GodModeProperty || Path.GetDirectoryName(this.main.MapFile) == this.main.CustomMapDirectory)
 				IO.MapLoader.Load(this.main, this.main.MapFile);
 			else
 				IO.MapLoader.Load(this.main, null);

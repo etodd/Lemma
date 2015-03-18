@@ -59,6 +59,7 @@ namespace Lemma.Components
 			string lastMap = this.main.MapFile;
 			this.Add(new CommandBinding(this.main.MapLoaded, delegate()
 			{
+				CameraStop.CinematicActive.Value = false;
 				if (this.main.MapFile.Value == Main.MenuMap)
 				{
 					this.CanSpawn = false;

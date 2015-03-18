@@ -7,7 +7,6 @@ public class AK
         public static uint FOOTSTEP_PLAY = 1531891632U;
         public static uint PAUSE_ALL = 3864097025U;
         public static uint PLAY_BIG_WIND = 217752029U;
-        public static uint PLAY_BLOCK_APPEAR = 2520143079U;
         public static uint PLAY_BLOCK_BUILD = 1262469596U;
         public static uint PLAY_BLUE_BURN = 216387374U;
         public static uint PLAY_CAMERA_SHUTTER = 1401567661U;
@@ -21,6 +20,7 @@ public class AK
         public static uint PLAY_FOREST_VALLEY_AMBIENT = 954121400U;
         public static uint PLAY_GLOWSQUARE = 2925563572U;
         public static uint PLAY_MAGIC_CUBE_LOOP = 3187778582U;
+        public static uint PLAY_MAGIC_CUBE_STINGER = 2253299882U;
         public static uint PLAY_MONOLITH_LOOP = 1920428907U;
         public static uint PLAY_MONOLITH_POWERUP = 1490340003U;
         public static uint PLAY_MUSIC_AMBIENT = 2712742350U;

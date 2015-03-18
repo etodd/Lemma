@@ -179,7 +179,7 @@ namespace Lemma.Components
 					}
 				}
 
-				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_BLOCK_APPEAR, 0.5f * (block.Map.GetAbsolutePosition(block.StartCoord) + block.Map.GetAbsolutePosition(block.EndCoord)));
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_MAGIC_CUBE_STINGER, this.Entity);
 			}
 		}
 
