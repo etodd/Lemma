@@ -7,6 +7,8 @@ using System.Xml.Serialization;
 using ComponentBind;
 using Lemma.Factories;
 using Lemma.GInterfaces;
+using Lemma.Util;
+using Steamworks;
 
 namespace Lemma.Components
 {
@@ -23,9 +25,29 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<float> BestTime = new Property<float>();
 
+#if STEAMWORKS
+		[XmlIgnore]
+		public Command LeaderboardSync = new Command();
+
+		[XmlIgnore]
+		public Command<LeaderboardScoresDownloaded_t> OnLeaderboardSync = new Command<LeaderboardScoresDownloaded_t>();
+
+		[XmlIgnore]
+		public Command OnLeaderboardError = new Command();
+
+		private CallResult<LeaderboardFindResult_t> leaderboardFindCall;
+		private CallResult<LeaderboardScoreUploaded_t> leaderboardUploadCall;
+		private CallResult<LeaderboardScoresDownloaded_t> leaderboardDownloadCall;
+#endif
+
 		public override void Awake()
 		{
 			base.Awake();
+
+#if STEAMWORKS
+			this.LeaderboardSync.Action = this.syncLeaderboard;
+#endif
+
 			this.EnabledWhenPaused = false;
 
 			this.Retry.Action = this.retry;
@@ -51,6 +73,65 @@ namespace Lemma.Components
 				PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = false;
 			}));
 		}
+
+#if STEAMWORKS
+		private void cancelCallbacks()
+		{
+			if (this.leaderboardFindCall != null)
+				this.leaderboardFindCall.Cancel();
+			this.leaderboardFindCall = null;
+			if (this.leaderboardUploadCall != null)
+				this.leaderboardUploadCall.Cancel();
+			this.leaderboardUploadCall = null;
+			if (this.leaderboardDownloadCall != null)
+				this.leaderboardDownloadCall.Cancel();
+			this.leaderboardDownloadCall = null;
+		}
+
+		private void syncLeaderboard()
+		{
+			this.cancelCallbacks();
+
+			if (!SteamWorker.SteamInitialized)
+			{
+				this.OnLeaderboardError.Execute();
+				return;
+			}
+
+			string uuid = WorldFactory.Instance.Get<World>().UUID;
+			int score = (int)(this.BestTime.Value * 1000.0f);
+
+			this.leaderboardFindCall = new CallResult<LeaderboardFindResult_t>((found, foundFailure) =>
+			{
+				this.leaderboardFindCall = null;
+				if (foundFailure)
+					this.OnLeaderboardError.Execute();
+				else
+				{
+					this.leaderboardUploadCall = new CallResult<LeaderboardScoreUploaded_t>(delegate(LeaderboardScoreUploaded_t uploaded, bool uploadedFailure)
+					{
+						this.leaderboardUploadCall = null;
+						if (uploadedFailure)
+							this.OnLeaderboardError.Execute();
+						else
+						{
+							this.leaderboardDownloadCall = new CallResult<LeaderboardScoresDownloaded_t>((downloaded, downloadedFailure) =>
+							{
+								this.leaderboardDownloadCall = null;
+								if (downloadedFailure)
+									this.OnLeaderboardError.Execute();
+								else
+									this.OnLeaderboardSync.Execute(downloaded);
+							});
+							this.leaderboardDownloadCall.Set(SteamUserStats.DownloadLeaderboardEntries(found.m_hSteamLeaderboard, ELeaderboardDataRequest.k_ELeaderboardDataRequestGlobalAroundUser, -5, 5));
+						}
+					});
+					this.leaderboardUploadCall.Set(SteamUserStats.UploadLeaderboardScore(found.m_hSteamLeaderboard, ELeaderboardUploadScoreMethod.k_ELeaderboardUploadScoreMethodKeepBest, score, new int[] {}, 0));
+				}
+			});
+			this.leaderboardFindCall.Set(SteamUserStats.FindOrCreateLeaderboard(uuid, ELeaderboardSortMethod.k_ELeaderboardSortMethodAscending, ELeaderboardDisplayType.k_ELeaderboardDisplayTypeTimeMilliSeconds));
+		}
+#endif
 
 		private void retryDeath()
 		{
@@ -82,6 +163,9 @@ namespace Lemma.Components
 
 		public override void delete()
 		{
+#if STEAMWORKS
+			this.cancelCallbacks();
+#endif
 			base.delete();
 			this.main.BaseTimeMultiplier.Value = 1.0f;
 			this.main.Menu.CanPause.Value = true;

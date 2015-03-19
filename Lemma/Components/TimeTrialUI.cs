@@ -16,6 +16,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.IO;
 using System.Xml.Serialization;
 using Microsoft.Xna.Framework.Input;
+using Steamworks;
 
 namespace Lemma.Components
 {
@@ -24,7 +25,10 @@ namespace Lemma.Components
 		// Input properties
 		public Property<float> ElapsedTime = new Property<float>();
 		public Property<string> NextMap = new Property<string>();
+		[XmlIgnore]
+		public Property<float> BestTime = new Property<float>();
 
+		// Output commands
 		[XmlIgnore]
 		public Command Retry = new Command();
 
@@ -37,8 +41,12 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command LoadNextMap = new Command();
 
+#if STEAMWORKS
 		[XmlIgnore]
-		public Property<float> BestTime = new Property<float>();
+		public Command LeaderboardSync = new Command();
+#endif
+
+		// Input commands
 
 		[XmlIgnore]
 		public Command Show = new Command();
@@ -46,10 +54,43 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command ShowEnd = new Command();
 
+#if STEAMWORKS
+		[XmlIgnore]
+		public Command OnLeaderboardError = new Command();
+
+		[XmlIgnore]
+		public Command<LeaderboardScoresDownloaded_t> OnLeaderboardSync = new Command<LeaderboardScoresDownloaded_t>();
+
+		private Callback<PersonaStateChange_t> personaCallback;
+		private Property<bool> personaNotification = new Property<bool>();
+#endif
+
+		private bool shown;
+
+		private float width
+		{
+			get
+			{
+				return 400.0f * this.main.FontMultiplier;
+			}
+		}
+
+		private float spacing
+		{
+			get
+			{
+				return 8.0f * this.main.FontMultiplier;
+			}
+		}
+
 		public override void Awake()
 		{
 			this.Serialize = false;
 			this.EnabledWhenPaused = false;
+
+#if STEAMWORKS
+			this.personaCallback = Callback<PersonaStateChange_t>.Create(this.onPersonaStateChange);
+#endif
 
 			{
 				Container container = this.main.UIFactory.CreateContainer();
@@ -80,6 +121,10 @@ namespace Lemma.Components
 
 			this.ShowEnd.Action = delegate()
 			{
+				if (this.shown)
+					return;
+				this.shown = true;
+
 				Container container = this.main.UIFactory.CreateContainer();
 				container.Opacity.Value = 0.5f;
 				container.PaddingBottom.Value = container.PaddingLeft.Value = container.PaddingRight.Value = container.PaddingTop.Value = 16.0f * this.main.FontMultiplier;
@@ -91,7 +136,7 @@ namespace Lemma.Components
 				ListContainer list = new ListContainer();
 				list.Orientation.Value = ListContainer.ListOrientation.Vertical;
 				list.Alignment.Value = ListContainer.ListAlignment.Middle;
-				list.Spacing.Value = 8.0f * this.main.FontMultiplier;
+				list.Spacing.Value = this.spacing;
 				container.Children.Add(list);
 
 				TextElement elapsedTime = new TextElement();
@@ -102,6 +147,57 @@ namespace Lemma.Components
 				TextElement bestTime = this.main.UIFactory.CreateLabel();
 				bestTime.Add(new Binding<string>(bestTime.Text, () => string.Format(main.Strings.Get("best time"), SecondsToTimeString(this.BestTime)), this.BestTime, main.Strings.Language));
 				list.Children.Add(bestTime);
+
+#if STEAMWORKS
+				Container leaderboard = this.main.UIFactory.CreateContainer();
+				this.resizeContainer(leaderboard);
+				list.Children.Add(leaderboard);
+
+				ListContainer leaderboardList = new ListContainer();
+				leaderboardList.ResizePerpendicular.Value = false;
+				leaderboardList.Size.Value = new Vector2(this.width - 8.0f, 0);
+				leaderboardList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+				leaderboardList.Alignment.Value = ListContainer.ListAlignment.Middle;
+				leaderboardList.Spacing.Value = this.spacing;
+				leaderboard.Children.Add(leaderboardList);
+
+				this.LeaderboardSync.Action = delegate()
+				{
+					leaderboardList.Children.Clear();
+					TextElement leaderboardLabel = this.main.UIFactory.CreateLabel();
+					leaderboardLabel.Text.Value = "\\leaderboard";
+					leaderboardList.Children.Add(leaderboardLabel);
+					TextElement loading = this.main.UIFactory.CreateLabel();
+					loading.Text.Value = "\\loading";
+					leaderboardList.Children.Add(loading);
+				};
+
+				this.OnLeaderboardSync.Action = delegate(LeaderboardScoresDownloaded_t scores)
+				{
+					leaderboardList.Children.Clear();
+					TextElement leaderboardLabel = this.main.UIFactory.CreateLabel();
+					leaderboardLabel.Text.Value = "\\leaderboard";
+					leaderboardList.Children.Add(leaderboardLabel);
+
+					int[] details = new int[] {};
+					for (int i = 0; i < scores.m_cEntryCount; i++)
+					{
+						LeaderboardEntry_t entry;
+						SteamUserStats.GetDownloadedLeaderboardEntry(scores.m_hSteamLeaderboardEntries, i, out entry, details, 0);
+						leaderboardList.Children.Add(this.leaderboardEntry(entry));
+					}
+				};
+				
+				this.OnLeaderboardError.Action = delegate()
+				{
+					leaderboardList.Children.Clear();
+					TextElement error = this.main.UIFactory.CreateLabel();
+					error.Text.Value = "\\leaderboard error";
+					leaderboardList.Children.Add(error);
+				};
+
+				this.LeaderboardSync.Execute();
+#endif
 
 				Container retry = this.main.UIFactory.CreateButton("\\retry", delegate()
 				{
@@ -213,13 +309,69 @@ namespace Lemma.Components
 			};
 		}
 
-		private void resizeButton(Container button)
+#if STEAMWORKS
+		public override void delete()
 		{
-			button.ResizeHorizontal.Value = false;
-			float width = 200.0f * this.main.FontMultiplier;
-			button.Size.Value = new Vector2(width, 0.0f);
+			if (this.personaCallback != null)
+			{
+				this.personaCallback.Unregister();
+				this.personaCallback = null;
+			}
+			base.delete();
+		}
+
+		private Container leaderboardEntry(LeaderboardEntry_t entry)
+		{
+			Container container = this.main.UIFactory.CreateButton(delegate()
+			{
+				if (SteamWorker.SteamInitialized)
+					SteamFriends.ActivateGameOverlayToUser("steamid", entry.m_steamIDUser);
+			});
+			this.resizeContainer(container, 4.0f);
+
+			TextElement rank = this.main.UIFactory.CreateLabel(entry.m_nGlobalRank.ToString());
+			rank.AnchorPoint.Value = new Vector2(1, 0);
+			rank.Position.Value = new Vector2(this.width * 0.15f, 0);
+			container.Children.Add(rank);
+
+			TextElement name = this.main.UIFactory.CreateLabel();
+			if (SteamFriends.RequestUserInformation(entry.m_steamIDUser, true))
+			{
+				// Need to wait for a callback before we know their username
+				name.Add(new Binding<string>(name.Text, () => SteamFriends.GetFriendPersonaName(entry.m_steamIDUser), this.personaNotification));
+			}
+			else
+			{
+				// We already know the username
+				name.Text.Value = SteamFriends.GetFriendPersonaName(entry.m_steamIDUser);
+			}
+			name.Position.Value = new Vector2(this.width * 0.15f + this.spacing, 0);
+			container.Children.Add(name);
+
+			TextElement score = this.main.UIFactory.CreateLabel(SecondsToTimeString((float)entry.m_nScore / 1000.0f));
+			score.AnchorPoint.Value = new Vector2(1, 0);
+			score.Position.Value = new Vector2(this.width - 4.0f - this.spacing, 0);
+			container.Children.Add(score);
+			return container;
+		}
+
+		private void onPersonaStateChange(PersonaStateChange_t persona)
+		{
+			this.personaNotification.Changed();
+		}
+#endif
+
+		private void resizeContainer(Container container, float padding = 0.0f)
+		{
+			container.ResizeHorizontal.Value = false;
+			container.Size.Value = new Vector2(this.width - padding * 2.0f, 0.0f);
+		}
+
+		private void resizeButton(Container button, float padding = 0.0f)
+		{
+			this.resizeContainer(button, padding);
 			TextElement label = (TextElement)button.Children[0];
-			label.WrapWidth.Value = width;
+			label.WrapWidth.Value = this.width - padding * 2.0f;
 			label.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
 			label.Add(new Binding<Vector2>(label.Position, x => x * new Vector2(0.5f, 0.5f), button.Size));
 		}

@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Lemma.Components;
 using System.IO;
+using Steamworks;
 
 namespace Lemma.Factories
 {
@@ -33,7 +34,15 @@ namespace Lemma.Factories
 			ui.Add(new Binding<string>(ui.NextMap, trial.NextMap));
 			ui.Add(new CommandBinding(trial.Enable, ui.Show));
 			ui.Add(new CommandBinding(trial.Disable, ui.ShowEnd));
+
+#if STEAMWORKS
+			ui.Add(new CommandBinding(trial.OnLeaderboardError, ui.OnLeaderboardError));
+			ui.Add(new CommandBinding<LeaderboardScoresDownloaded_t>(trial.OnLeaderboardSync, ui.OnLeaderboardSync));
+			ui.Add(new CommandBinding(ui.LeaderboardSync, trial.LeaderboardSync));
+#endif
+
 			ui.Add(new CommandBinding(ui.Retry, trial.Retry));
+
 			ui.Add(new CommandBinding(ui.MainMenu, delegate()
 			{
 				main.CurrentSave.Value = null;
