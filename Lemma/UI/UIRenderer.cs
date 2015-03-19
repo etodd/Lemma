@@ -97,6 +97,7 @@ namespace Lemma.Components
 		public Property<bool> IsMouseVisible = new Property<bool> { };
 
 		private MouseState lastMouseState;
+		private MouseState lastRealMouseState;
 
 		private void resize()
 		{
@@ -244,14 +245,15 @@ namespace Lemma.Components
 					|| current.RightButton != last.RightButton
 					|| current.MiddleButton != last.MiddleButton
 					|| current.ScrollWheelValue != last.ScrollWheelValue
-					|| current.X != last.X
-					|| current.Y != last.Y
+					|| realMouseState.X != this.lastRealMouseState.X
+					|| realMouseState.Y != this.lastRealMouseState.Y
 					|| current.XButton1 != last.XButton1
 					|| current.XButton2 != last.XButton2)
 				{
 					if (this.Root.HandleMouse(current, last, Matrix.Identity, true))
 						this.SwallowMouseEvents.Execute();
 					this.lastMouseState = current;
+					this.lastRealMouseState = realMouseState;
 				}
 			}
 		}

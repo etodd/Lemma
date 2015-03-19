@@ -204,7 +204,9 @@ namespace Lemma.GameScripts
 				new Animation.Vector3MoveTo(main.Renderer.Tint, new Vector3(1.0f), 0.3f)
 			));
 
-			if (!main.Settings.GodModeProperty)
+			if (main.Settings.GodModeProperty)
+				SteamWorker.SetAchievement("cheevo_god_mode");
+			else
 			{
 				int konamiIndex = 0;
 				PCInput input = script.Create<PCInput>();
@@ -218,6 +220,7 @@ namespace Lemma.GameScripts
 							{
 								main.Settings.GodModeProperty.Value = true;
 								main.SaveSettings();
+								SteamWorker.SetAchievement("cheevo_god_mode");
 								main.Menu.HideMessage(script, main.Menu.ShowMessage(script, "\\god mode"), 5.0f);
 							}
 							else

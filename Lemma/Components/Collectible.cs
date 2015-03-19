@@ -16,6 +16,8 @@ namespace Lemma.Components
 	{
 		private static List<Collectible> collectibles = new List<Collectible>();
 
+		const int totalCollectibles = 48;
+
 		[XmlIgnore]
 		public Command PlayerTouched = new Command();
 
@@ -51,7 +53,10 @@ namespace Lemma.Components
 						)
 					);
 
-					PlayerDataFactory.Instance.Get<PlayerData>().Collectibles.Value++;
+					PlayerData playerData = PlayerDataFactory.Instance.Get<PlayerData>();
+					playerData.Collectibles.Value++;
+					if (playerData.Collectibles >= totalCollectibles)
+						SteamWorker.SetAchievement("cheevo_notes");
 
 					int collected = Collectible.collectibles.Count(x => x.PickedUp);
 					int total = Collectible.collectibles.Count;

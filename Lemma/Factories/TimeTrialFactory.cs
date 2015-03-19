@@ -23,6 +23,8 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
+			entity.CannotSuspend = true;
+
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			TimeTrial trial = entity.GetOrCreate<TimeTrial>("TimeTrial");
 			TimeTrialUI ui = entity.GetOrCreate<TimeTrialUI>("UI");

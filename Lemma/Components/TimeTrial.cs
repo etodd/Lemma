@@ -71,6 +71,7 @@ namespace Lemma.Components
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_MUSIC_STINGER, this.Entity);
 				this.BestTime.Value = this.main.SaveMapTime(WorldFactory.Instance.Get<World>().UUID, this.ElapsedTime);
 				PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = false;
+				SteamWorker.IncrementStat("stat_challenge_levels_played", 1);
 			}));
 		}
 

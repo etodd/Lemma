@@ -486,14 +486,20 @@ namespace Lemma.Util
 				"ending_b",
 				"ending_c",
 				"ending_d",
-				"ending_e",
 				"cheating_jerk",
 				"pillar_crushed",
 				"orbs",
+				"notes",
+				"flashback",
+				"god_mode",
+				"first_orb",
+				"first_note",
 			};
 			string[] statNames = new string[]
 			{
-				"orbs_collected"
+				"orbs_collected",
+				"notes_read",
+				"challenge_levels_played",
 			};
 
 			foreach (var cheevo in cheevoNames)

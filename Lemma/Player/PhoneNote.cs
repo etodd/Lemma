@@ -14,6 +14,7 @@ namespace Lemma.Components
 		public static void Attach(Main main, Entity entity, Player player, AnimatedModel model, FPSInput input, Phone phone, Property<bool> enableWalking, Property<bool> phoneActive, Property<bool> noteActive)
 		{
 			UIRenderer phoneUi = entity.GetOrCreate<UIRenderer>("PhoneUI");
+			model["Phone"].Speed = model["VRPhone"].Speed = model["Note"].Speed = model["VRNote"].Speed = 0.25f;
 
 			const float phoneWidth = 200.0f;
 

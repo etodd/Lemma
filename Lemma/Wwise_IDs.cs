@@ -26,6 +26,7 @@ public class AK
         public static uint PLAY_MUSIC_AMBIENT = 2712742350U;
         public static uint PLAY_MUSIC_AMBIENT_02 = 62078239U;
         public static uint PLAY_MUSIC_AQUA = 3353261050U;
+        public static uint PLAY_MUSIC_FROST = 3147354588U;
         public static uint PLAY_MUSIC_OVERVIEW = 2507565207U;
         public static uint PLAY_MUSIC_STINGER = 1904807532U;
         public static uint PLAY_MUSIC_THEME = 4046097845U;

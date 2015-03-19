@@ -24,6 +24,7 @@ namespace Lemma.Components
 		public Property<bool> PhoneActive = new Property<bool>();
 		public Property<bool> NoteActive = new Property<bool>();
 		public Property<int> Collectibles = new Property<int>();
+		public Property<int> Notes = new Property<int>();
 		public Property<Voxel.t> CloudType = new Property<Voxel.t>();
 		public Property<int> CollapseLevel = new Property<int>();
 		public Property<int> VictimsHandled = new Property<int>();
