@@ -45,10 +45,16 @@ namespace Lemma.Factories
 					{
 						if (type.Namespace == Script.ScriptNamespace && type.IsClass && type.BaseType == typeof(GameScripts.ScriptBase))
 						{
-#if !DEVELOPMENT
-							FieldInfo prop = type.GetField("AvailableInReleaseEditor", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);
-							if ((bool)prop.GetValue(type) == true)
-#endif
+							bool available = false;
+							if (main.Settings.GodModeProperty)
+								available = true;
+							else
+							{
+								FieldInfo prop = type.GetField("AvailableInReleaseEditor", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+								if ((bool)prop.GetValue(type) == true)
+									available = true;
+							}
+							if (available)
 								scripts.Add(type.Name);
 						}
 					}
