@@ -335,6 +335,7 @@ namespace Lemma.Components
 			container.Children.Add(rank);
 
 			TextElement name = this.main.UIFactory.CreateLabel();
+			name.FilterUnicode.Value = true;
 			if (SteamFriends.RequestUserInformation(entry.m_steamIDUser, true))
 			{
 				// Need to wait for a callback before we know their username

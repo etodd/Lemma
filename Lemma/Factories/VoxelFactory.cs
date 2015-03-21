@@ -98,6 +98,7 @@ namespace Lemma.Factories
 						return null;
 
 					DynamicModel<Voxel.Vertex> model = new DynamicModel<Voxel.Vertex>(Voxel.Vertex.VertexDeclaration);
+					model.MapContent = true;
 					model.EffectFile.Value = "Effects\\Environment";
 					model.Lock = new object();
 					state.ApplyTo(model);

@@ -68,7 +68,7 @@ namespace Lemma.Factories
 			model.Scale.Value = new Vector3(defaultModelScale);
 
 			const float sightDistance = 80.0f;
-			const float hearingDistance = 20.0f;
+			const float hearingDistance = 0.0f;
 			const float operationalRadius = 100.0f;
 
 			model.Add(new Binding<Vector3, string>(model.Color, delegate(string state)

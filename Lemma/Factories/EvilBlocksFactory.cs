@@ -101,7 +101,7 @@ namespace Lemma.Factories
 			});
 
 			const float sightDistance = 25.0f;
-			const float hearingDistance = 15.0f;
+			const float hearingDistance = 0.0f;
 
 			ai.Add(new AI.AIState
 			{

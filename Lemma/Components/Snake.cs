@@ -13,7 +13,5 @@ namespace Lemma.Components
 		public ListProperty<Voxel.Coord> Path = new ListProperty<Voxel.Coord>();
 
 		public Property<Voxel.Coord> CrushCoordinate = new Property<Voxel.Coord>();
-
-		public Property<bool> EnableHearing = new Property<bool> { Value = true };
 	}
 }

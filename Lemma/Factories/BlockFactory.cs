@@ -32,6 +32,7 @@ namespace Lemma.Factories
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 			PhysicsBlock physics = entity.GetOrCreate<PhysicsBlock>("Physics");
 			ModelInstance model = entity.GetOrCreate<ModelInstance>("Model");
+			Block block = entity.GetOrCreate<Block>("Block");
 
 			physics.Add(new TwoWayBinding<Matrix>(transform.Matrix, physics.Transform));
 
@@ -48,6 +49,8 @@ namespace Lemma.Factories
 
 			this.SetMain(entity, main);
 			PhysicsBlock.CancelPlayerCollisions(physics);
+			if (block.StateId != Voxel.t.Empty)
+				Voxel.States.All[block.StateId].ApplyToBlock(entity);
 		}
 	}
 }

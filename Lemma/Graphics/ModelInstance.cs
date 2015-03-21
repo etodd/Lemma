@@ -134,6 +134,7 @@ namespace Lemma.Components
 				if (!foundExistingModel)
 				{
 					newModel = this.EnableAlpha ? new ModelInstanceSystemAlpha() : new ModelInstanceSystem();
+					newModel.MapContent = true;
 					newModel.Filename.Value = this.Filename;
 					newModel.Key = key;
 					world.Add(key, newModel);

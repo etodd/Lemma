@@ -268,12 +268,10 @@ namespace Lemma.Components
 
 			float horizontalDistanceToCoord = this.forward.Length();
 			this.forward /= horizontalDistanceToCoord;
-			if (horizontalDistanceToCoord < Character.DefaultRadius + 1.0f)
-			{
-				Vector3 pos = coordPosition + this.forward * (Character.DefaultRadius + 1.0f);
-				pos.Y = this.Position.Value.Y;
-				this.Position.Value = pos;
-			}
+
+			Vector3 pos = coordPosition + this.forward * (Character.DefaultRadius + 1.0f);
+			pos.Y = this.Position.Value.Y;
+			this.Position.Value = pos;
 
 			// If there's nothing on the other side of the wall (it's a one-block-wide wall)
 			// then vault over it rather than standing on top of it
@@ -372,8 +370,17 @@ namespace Lemma.Components
 					}
 					else
 					{
-						if (this.vaultTime - this.moveForwardStartTime > 0.25f)
-							done = true; // Done moving forward
+						float moveForwardTime = this.vaultTime - this.moveForwardStartTime;
+						if (this.vaultOver)
+						{
+							if (moveForwardTime > 0.5f)
+								done = true;
+						}
+						else
+						{
+							if (moveForwardTime > 0.25f)
+								done = true; // Done moving forward
+						}
 					}
 
 					if (!done)
@@ -381,7 +388,7 @@ namespace Lemma.Components
 						// Still moving forward
 						Vector3 supportVelocity = this.getSupportVelocity(this.map);
 						this.LinearVelocity.Value = supportVelocity + this.forward * (this.isTopOut ? this.MaxSpeed * 0.5f : this.MaxSpeed);
-						this.LastSupportedSpeed.Value = this.MaxSpeed;
+						this.LastSupportedSpeed.Value = this.LinearVelocity.Value.Length();
 					}
 				}
 				else
@@ -411,7 +418,7 @@ namespace Lemma.Components
 						{
 							// It's just a mantle, we're done
 							this.LinearVelocity.Value = this.getSupportVelocity(this.map) + this.forward * this.MaxSpeed;
-							this.LastSupportedSpeed.Value = this.MaxSpeed;
+							this.LastSupportedSpeed.Value = this.LinearVelocity.Value.Length();
 							done = true;
 						}
 					}

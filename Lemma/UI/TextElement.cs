@@ -16,6 +16,7 @@ namespace Lemma.Components
 		public Property<float> Opacity = new Property<float> { Value = 1.0f };
 		public Property<float> WrapWidth = new Property<float> { Value = 0.0f };
 		public Property<bool> Interpolation = new Property<bool> { Value = true };
+		public Property<bool> FilterUnicode = new Property<bool>();
 		private SpriteFont font;
 
 		private Property<string> internalText = new Property<string> { Value = "" };
@@ -60,10 +61,15 @@ namespace Lemma.Components
 			float wrapWidth = this.WrapWidth;
 			if (text == null)
 				this.wrappedText = null;
-			else if (wrapWidth > 0.0f)
-				this.wrappedText = this.wrapText(text, wrapWidth);
 			else
-				this.wrappedText = text;
+			{
+				if (this.FilterUnicode)
+					text = new string(text.Select(x => this.font.Characters.Contains(x) ? x : ' ').ToArray());
+				if (wrapWidth > 0.0f)
+					this.wrappedText = this.wrapText(text, wrapWidth);
+				else
+					this.wrappedText = text;
+			}
 			this.Size.Value = this.font.MeasureString(this.wrappedText ?? "");
 		}
 
@@ -83,6 +89,11 @@ namespace Lemma.Components
 			}));
 
 			this.Add(new SetBinding<float>(this.WrapWidth, delegate(float value)
+			{
+				this.updateText();
+			}));
+
+			this.Add(new SetBinding<bool>(this.FilterUnicode, delegate(bool value)
 			{
 				this.updateText();
 			}));
@@ -202,15 +213,8 @@ namespace Lemma.Components
 
 		protected void loadFont()
 		{
-			try
-			{
-				this.font = this.main.Content.Load<SpriteFont>(this.FontFile);
-				this.Size.Value = this.font.MeasureString(this.Text.Value ?? "");
-			}
-			catch (Exception)
-			{
-				this.font = null;
-			}
+			this.font = this.main.Content.Load<SpriteFont>(this.FontFile);
+			this.updateText();
 		}
 
 		protected override void draw(GameTime time, Matrix parent, Matrix transform)

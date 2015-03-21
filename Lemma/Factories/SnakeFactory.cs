@@ -262,6 +262,9 @@ namespace Lemma.Factories
 					}
 				}
 			}));
+			
+			const float sightDistance = 50.0f;
+			const float hearingDistance = 0.0f;
 
 			ai.Setup
 			(
@@ -293,7 +296,7 @@ namespace Lemma.Factories
 							Interval = 1.0f,
 							Action = delegate()
 							{
-								Agent a = Agent.Query(transform.Position, 50.0f, snake.EnableHearing ? 20.0f : 0.0f, x => x.Entity.Type == "Player");
+								Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
 								if (a != null)
 									ai.CurrentState.Value = "Alert";
 							},
@@ -324,7 +327,7 @@ namespace Lemma.Factories
 									ai.CurrentState.Value = "Idle";
 								else
 								{
-									Agent a = Agent.Query(transform.Position, 50.0f, 30.0f, x => x.Entity.Type == "Player");
+									Agent a = Agent.Query(transform.Position, sightDistance, hearingDistance, x => x.Entity.Type == "Player");
 									if (a != null)
 									{
 										ai.TargetAgent.Value = a.Entity;
@@ -463,7 +466,6 @@ namespace Lemma.Factories
 			this.SetMain(entity, main);
 
 			entity.Add("OperationalRadius", snake.OperationalRadius);
-			entity.Add("EnableHearing", snake.EnableHearing);
 		}
 	}
 }

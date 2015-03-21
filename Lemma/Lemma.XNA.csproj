@@ -112,6 +112,7 @@
     <Compile Include="Components\PowerBlockSocket.cs" />
     <Compile Include="Components\AnimatedProp.cs" />
     <Compile Include="Components\Data.cs" />
+    <Compile Include="Components\Block.cs" />
     <Compile Include="Components\VoxelTrigger.cs" />
     <Compile Include="Components\Scriptlike\AnimatedSetter.cs" />
     <Compile Include="Components\Scriptlike\LogicGate.cs" />
