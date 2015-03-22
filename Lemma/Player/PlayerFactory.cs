@@ -539,8 +539,7 @@ namespace Lemma.Factories
 						// In slow motion, prefer left and right wall-running
 						if (!(didSomething = wallRun.Activate(WallRun.State.Left, parkourBeganThisFrame)))
 							if (!(didSomething = wallRun.Activate(WallRun.State.Right, parkourBeganThisFrame)))
-								if (!(didSomething = vault.Go(parkourBeganThisFrame)))
-									didSomething = wallRun.Activate(WallRun.State.Straight, parkourBeganThisFrame);
+								didSomething = vault.Go(parkourBeganThisFrame);
 					}
 					else
 					{

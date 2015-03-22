@@ -234,7 +234,7 @@ namespace Lemma.Components
 			{
 				// Check block possibilities for wall jumping
 				Vector3 playerPos = this.Position;
-				Vector3[] wallJumpDirections = new[] { rotationMatrix.Left, rotationMatrix.Right, rotationMatrix.Backward, rotationMatrix.Forward };
+				Vector3[] wallJumpDirections = new[] { rotationMatrix.Left, rotationMatrix.Right, rotationMatrix.Forward };
 				foreach (BlockPredictor.Possibility possibility in this.Predictor.AllPossibilities)
 				{
 					foreach (Vector3 dir in wallJumpDirections)
