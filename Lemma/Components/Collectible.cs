@@ -16,7 +16,7 @@ namespace Lemma.Components
 	{
 		private static List<Collectible> collectibles = new List<Collectible>();
 
-		const int totalCollectibles = 48;
+		const int totalCollectibles = 49;
 
 		[XmlIgnore]
 		public Command PlayerTouched = new Command();
@@ -56,7 +56,7 @@ namespace Lemma.Components
 					PlayerData playerData = PlayerDataFactory.Instance.Get<PlayerData>();
 					playerData.Collectibles.Value++;
 					if (playerData.Collectibles >= totalCollectibles)
-						SteamWorker.SetAchievement("cheevo_notes");
+						SteamWorker.SetAchievement("cheevo_orbs");
 
 					int collected = Collectible.collectibles.Count(x => x.PickedUp);
 					int total = Collectible.collectibles.Count;

@@ -381,7 +381,10 @@ namespace Lemma.Components
 				Voxel.State wallType = voxel[wallCoord];
 				this.WalkedOn.Execute(voxel, wallCoord, this.WallDirection);
 
-				if (this.EnableEnhancedWallRun && (wallRunState == State.Left || wallRunState == State.Right) && Zone.CanBuild(this.Position))
+				if (this.EnableEnhancedWallRun
+					&& (wallRunState == State.Left || wallRunState == State.Right)
+					&& Zone.CanBuild(this.Position)
+					&& voxel.Entity.Type != "Bouncer")
 				{
 					Direction up = voxel.GetRelativeDirection(Direction.PositiveY);
 					if (up.IsPerpendicular(this.WallDirection))

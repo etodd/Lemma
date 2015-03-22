@@ -39,7 +39,7 @@ namespace Lemma.Factories
 			mapTransform.Selectable.Value = false;
 			StaticSlider slider = entity.GetOrCreate<StaticSlider>("StaticSlider");
 			Factory.Get<VoxelFactory>().InternalBind(entity, main, creating, mapTransform);
-			slider.Add(new TwoWayBinding<Matrix>(slider.Transform, mapTransform.Matrix));
+			slider.Add(new TwoWayBinding<Matrix>(mapTransform.Matrix, slider.Transform));
 			slider.Add(new Binding<Matrix>(slider.EditorTransform, transform.Matrix));
 
 			Voxel voxel = entity.Get<Voxel>();

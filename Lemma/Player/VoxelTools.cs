@@ -117,7 +117,7 @@ namespace Lemma.Components
 									toCell.Normalize();
 									PhysicsBlock physicsBlock = block.Get<PhysicsBlock>();
 									physicsBlock.LinearVelocity.Value = toCell * 15.0f;
-									physicsBlock.AngularVelocity.Value = new Vector3(((float)this.random.NextDouble() - 0.5f) * 2.0f, ((float)this.random.NextDouble() - 0.5f) * 2.0f, ((float)this.random.NextDouble() - 0.5f) * 2.0f);
+									physicsBlock.AngularVelocity.Value = new Vector3(((float)this.random.NextDouble() - 0.5f) * 2.0f * (float)Math.PI, ((float)this.random.NextDouble() - 0.5f) * 2.0f * (float)Math.PI, ((float)this.random.NextDouble() - 0.5f) * 2.0f * (float)Math.PI);
 									main.Add(block);
 								}
 							}

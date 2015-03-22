@@ -98,7 +98,7 @@ namespace Lemma.Components
 
 		private const float coolDown = 0.35f;
 
-		private bool determineShouldBuildFloor(Voxel.State floorState)
+		private bool determineShouldBuildFloor(Voxel v, Voxel.State floorState)
 		{
 			bool result = false;
 			if (floorState == Voxel.States.Blue || floorState == Voxel.States.Powered)
@@ -108,7 +108,7 @@ namespace Lemma.Components
 				if (VoxelAStar.BroadphaseSearch(this.floorMap, this.floorCoordinate, 6, x => x.Type != Voxel.States.Blue && x.Type != Voxel.States.Powered) != null)
 					result = true;
 			}
-			else
+			else if (v == null || v.Entity.Type != "Bouncer")
 				result = true;
 			return result;
 		}
@@ -190,7 +190,7 @@ namespace Lemma.Components
 
 					Voxel.State floorState = floorRaycast.Voxel == null ? Voxel.States.Empty : floorRaycast.Coordinate.Value.Data;
 					if (this.EnableEnhancedRollSlide && (instantiatedBlockPossibility || (this.IsSupported && floorState != Voxel.States.Slider && floorState != Voxel.States.SliderPowered)))
-						this.shouldBuildFloor |= this.determineShouldBuildFloor(floorState);
+						this.shouldBuildFloor |= this.determineShouldBuildFloor(floorRaycast.Voxel, floorState);
 					
 					// If the player is not yet supported, that means they're just about to land.
 					// So give them a little speed boost for having such good timing.
@@ -248,7 +248,7 @@ namespace Lemma.Components
 				{
 					this.floorCoordinate = floorRaycast.Coordinate.Value;
 					if (this.EnableEnhancedRollSlide)
-						this.shouldBuildFloor |= this.determineShouldBuildFloor(floorRaycast.Coordinate.Value.Data);
+						this.shouldBuildFloor |= this.determineShouldBuildFloor(floorRaycast.Voxel, floorRaycast.Coordinate.Value.Data);
 					this.sliding = true;
 				}
 
@@ -299,7 +299,7 @@ namespace Lemma.Components
 			if (this.EnableEnhancedRollSlide)
 			{
 				Voxel.GlobalRaycastResult floorRaycast = this.raycastFloor();
-				if (floorRaycast.Voxel != null)
+				if (floorRaycast.Voxel != null && floorRaycast.Voxel.Entity.Type != "Bouncer")
 				{
 					Voxel.t t = floorRaycast.Voxel[floorRaycast.Coordinate.Value].ID;
 					if (t != Voxel.t.Blue && t != Voxel.t.Powered && t != Voxel.t.Slider && t != Voxel.t.SliderPowered)

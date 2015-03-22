@@ -192,6 +192,7 @@ namespace Lemma.IO
 				using (Stream stream = new GZipInputStream(fs))
 					MapLoader.Load(main, stream, false);
 			}
+			WorldFactory.Instance.Get<World>().NewUUID();
 		}
 
 		private static void Load(Main main, Stream stream, bool deleteEditor = true)

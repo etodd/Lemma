@@ -111,7 +111,7 @@ namespace Lemma.Components
 									Entity block = blockFactory.CreateAndBind(main);
 									Transform blockTransform = block.Get<Transform>();
 									blockTransform.Position.Value = m.GetAbsolutePosition(cellPos);
-									blockTransform.Quaternion.Value = quat;
+									blockTransform.Quaternion.Value = Quaternion.CreateFromYawPitchRoll(((float)random.NextDouble() - 0.5f) * 2.0f * (float)Math.PI, ((float)random.NextDouble() - 0.5f) * 2.0f * (float)Math.PI, ((float)random.NextDouble() - 0.5f) * 2.0f * (float)Math.PI);
 									s.ApplyToBlock(block);
 									main.Add(block);
 								}
