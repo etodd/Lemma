@@ -204,7 +204,7 @@ namespace Lemma.Factories
 					float now = main.TotalTime;
 					if (volume > 0.2f && now > lastCollision + 0.1f)
 					{
-						uint id = AkSoundEngine.RegisterTemp(contact.Contact.Position);
+						uint id = Sound.RegisterTemp(contact.Contact.Position);
 						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PHYSICS_SLAM, id);
 						AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.PHYSICS_SLAM_SIZE, Math.Min(volume * 100.0f, 100.0f), id);
 						AkSoundEngine.UnregisterTemp(id);

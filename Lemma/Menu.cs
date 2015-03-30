@@ -317,9 +317,10 @@ namespace Lemma.Components
 		}
 
 		// Pause
-		private void savePausedSettings()
+		private void savePausedSettings(bool initial = false)
 		{
-			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_SWOOSH);
+			if (!initial)
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_SWOOSH);
 			Session.Recorder.Event(main, "Pause");
 
 			// Take screenshot
@@ -2041,10 +2042,10 @@ namespace Lemma.Components
 				IO.MapLoader.Load(this.main, null);
 		}
 
-		public void Show()
+		public void Show(bool initial = false)
 		{
 			if (!this.Showing)
-				this.savePausedSettings();
+				this.savePausedSettings(initial);
 		}
 
 		public void Toggle()

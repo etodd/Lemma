@@ -32,6 +32,10 @@ namespace Lemma.Components
 
 		public ListProperty<CoordinateEntry> Coords = new ListProperty<CoordinateEntry>();
 
+		// Output properties
+		[XmlIgnore]
+		public Property<Vector3> RumblePosition = new Property<Vector3>();
+
 		private float intervalTimer;
 
 		public override void Awake()
@@ -51,6 +55,13 @@ namespace Lemma.Components
 				this.populateCoords();
 				this.sortCoords();
 			}));
+		}
+
+		public override void delete()
+		{
+			base.delete();
+			if (this.rumbling)
+				AkSoundEngine.PostEvent(AK.EVENTS.STOP_BLOCK_RUMBLE, this.Entity);
 		}
 
 		public override void Start()
@@ -109,18 +120,22 @@ namespace Lemma.Components
 			}
 		}
 
+		private bool rumbling;
+		private Vector3 rumbleSum;
+		private const int rumbleCount = 50; // Average the last X block positions to get the position of the rumble
 		public void Update(float dt)
 		{
 			intervalTimer += dt;
 			Entity targetEntity = this.Target.Value.Target;
 			if (targetEntity != null && targetEntity.Active && this.Index < this.Coords.Length)
 			{
+				EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
+				Voxel m = targetEntity.Get<Voxel>();
+
 				float interval = 0.03f * this.IntervalMultiplier;
+
 				while (intervalTimer > interval && this.Index < this.Coords.Length)
 				{
-					EffectBlockFactory factory = Factory.Get<EffectBlockFactory>();
-					Voxel m = targetEntity.Get<Voxel>();
-					
 					CoordinateEntry entry = this.Coords[this.Index];
 					Entity blockEntity = factory.CreateAndBind(main);
 					EffectBlock effectBlock = blockEntity.Get<EffectBlock>();
@@ -136,8 +151,22 @@ namespace Lemma.Components
 					effectBlock.Setup(targetEntity, entry.Coord, entry.Coord.Data.ID);
 					main.Add(blockEntity);
 
+					this.rumbleSum += entry.Position;
+					int lastIndex = this.Index - rumbleCount;
+					if (lastIndex >= 0)
+						this.rumbleSum -= this.Coords[lastIndex].Position;
+
 					this.Index.Value++;
 					intervalTimer -= interval;
+				}
+				if (this.Coords.Count > 200)
+				{
+					this.RumblePosition.Value = this.rumbleSum / Math.Min(this.Index + 1, rumbleCount);
+					if (!this.rumbling)
+					{
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_BLOCK_RUMBLE, this.Entity);
+						this.rumbling = true;
+					}
 				}
 			}
 			else

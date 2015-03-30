@@ -24,11 +24,6 @@ namespace Lemma.Components
 			}));
 		}
 
-		public static void Add(Entity entity, params string[] events)
-		{
-			SoundKiller.Add(entity, events.Select(x => AkSoundEngine.GetIDFromString(x)).ToArray());
-		}
-
 		public static void Add(Entity entity, params uint[] events)
 		{
 			SoundKiller killer = entity.GetOrCreate<SoundKiller>();

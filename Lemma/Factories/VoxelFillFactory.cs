@@ -32,6 +32,8 @@ namespace Lemma.Factories
 			VoxelFill voxelFill = entity.GetOrCreate<VoxelFill>("VoxelFill");
 			voxelFill.Add(new CommandBinding(voxelFill.Delete, entity.Delete));
 
+			Sound.AttachTracker(entity, voxelFill.RumblePosition);
+
 			this.InternalBind(entity, main, creating, mapTransform, true);
 
 			if (main.EditorEnabled)

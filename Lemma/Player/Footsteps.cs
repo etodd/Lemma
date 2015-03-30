@@ -166,7 +166,7 @@ namespace Lemma.Components
 					// Floater. Delete the block after a delay.
 					Vector3 pos = map.GetAbsolutePosition(coord);
 					ParticleEmitter.Emit(main, "Smoke", pos, 1.0f, 10);
-					AkSoundEngine.PostEvent("Play_FragileDirt_Crumble", pos);
+					Sound.PostEvent(AK.EVENTS.PLAY_CRUMBLE, pos);
 					WorldFactory.Instance.Add(new Animation
 					(
 						new Animation.Delay(0.5f),

@@ -159,7 +159,7 @@ namespace Lemma.Factories
 				positionLight.Add(new Binding<Vector3>(positionLight.Position, transform.Position));
 				emitter.Add(new Binding<Vector3>(emitter.Position, transform.Position));
 				agent.Add(new Binding<Vector3>(agent.Position, transform.Position));
-				AkGameObjectTracker.Attach(entity);
+				Sound.AttachTracker(entity);
 			}
 
 			AI.Task checkMap = new AI.Task

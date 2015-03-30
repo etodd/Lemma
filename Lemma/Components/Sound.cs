@@ -19,11 +19,53 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command Play = new Command();
 
+		public static void AttachTracker(Entity entity, Property<Matrix> property = null)
+		{
+			AkGameObjectTracker tracker = entity.Get<AkGameObjectTracker>();
+			if (tracker == null)
+			{
+				tracker = new AkGameObjectTracker();
+				entity.Add(tracker);
+				if (property == null)
+					property = entity.Get<Transform>().Matrix;
+				tracker.Add(new Binding<Matrix>(tracker.Matrix, property));
+				AkAuxSendArray aux = new AkAuxSendArray(Zone.MaxAuxSend);
+				tracker.Add(new NotifyBinding(delegate() { tracker.AuxSend(aux, Zone.AuxSend(property.Value.Translation, aux)); }, property));
+			}
+		}
+
+		public static void AttachTracker(Entity entity, Property<Vector3> property)
+		{
+			AkGameObjectTracker tracker = entity.Get<AkGameObjectTracker>();
+			if (tracker == null)
+			{
+				tracker = new AkGameObjectTracker();
+				entity.Add(tracker);
+				tracker.Add(new Binding<Matrix, Vector3>(tracker.Matrix, x => Microsoft.Xna.Framework.Matrix.CreateTranslation(x), property));
+				AkAuxSendArray aux = new AkAuxSendArray(Zone.MaxAuxSend);
+				tracker.Add(new NotifyBinding(delegate() { tracker.AuxSend(aux, Zone.AuxSend(property, aux)); }, property));
+			}
+		}
+
+		public static uint RegisterTemp(Vector3 pos)
+		{
+			AkAuxSendArray array = new AkAuxSendArray(Zone.MaxAuxSend);
+			Zone.AuxSend(pos, array);
+			return AkSoundEngine.RegisterTemp(pos, array);
+		}
+
+		public static void PostEvent(uint e, Vector3 pos)
+		{
+			AkAuxSendArray array = new AkAuxSendArray(Zone.MaxAuxSend);
+			Zone.AuxSend(pos, array);
+			AkSoundEngine.PostEvent(e, pos, array);
+		}
+
 		public override void Awake()
 		{
 			base.Awake();
 
-			AkGameObjectTracker.Attach(this.Entity, this.Position);
+			Sound.AttachTracker(this.Entity, this.Position);
 
 			this.Entity.CannotSuspendByDistance = !this.Is3D;
 			this.Entity.Add(new NotifyBinding(delegate()

@@ -196,7 +196,7 @@ namespace Lemma.Components
 								if (this.main.TotalTime - EffectBlock.lastSound > 0.15f)
 								{
 									EffectBlock.lastSound = this.main.TotalTime;
-									AkSoundEngine.PostEvent(AK.EVENTS.PLAY_BLOCK_BUILD, absolutePos);
+									Sound.PostEvent(AK.EVENTS.PLAY_BLOCK_BUILD, absolutePos);
 								}
 								this.Entity.Delete.Execute();
 								return;

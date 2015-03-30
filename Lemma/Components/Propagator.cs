@@ -196,7 +196,7 @@ namespace Lemma.Components
 							if (time - this.lastShatterSound > 0.3f)
 							{
 								this.lastShatterSound = time;
-								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WHITE_SHATTER, pos);
+								Sound.PostEvent(AK.EVENTS.PLAY_WHITE_SHATTER, pos);
 							}
 						}
 					}
@@ -517,7 +517,7 @@ namespace Lemma.Components
 							sound = AK.EVENTS.PLAY_BLUE_BURN;
 							break;
 					}
-					AkSoundEngine.PostEvent(sound, pos);
+					Sound.PostEvent(sound, pos);
 				}
 			}
 		}

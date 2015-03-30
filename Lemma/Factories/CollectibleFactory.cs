@@ -36,7 +36,7 @@ namespace Lemma.Factories
 
 			collectible.Add(new CommandBinding(trigger.PlayerEntered, collectible.PlayerTouched));
 
-			AkGameObjectTracker.Attach(entity, trigger.Position);
+			Sound.AttachTracker(entity, trigger.Position);
 
 			PointLight light = entity.Create<PointLight>();
 			light.Serialize = false;

@@ -45,7 +45,7 @@ namespace Lemma.Factories
 			Voxel voxel = entity.Get<Voxel>();
 			slider.Add(new Binding<Vector3>(voxel.LinearVelocity, slider.LinearVelocity));
 
-			AkGameObjectTracker.Attach(entity, voxel.Transform);
+			Sound.AttachTracker(entity, voxel.Transform);
 			SoundKiller.Add(entity, AK.EVENTS.STOP_ALL_OBJECT);
 
 			if (main.EditorEnabled)

@@ -33,6 +33,7 @@ namespace Lemma.Components
 		public Property<float> MaxSpeed = new Property<float>();
 		public Property<float> JumpSpeed = new Property<float>();
 		public Property<bool> IsSupported = new Property<bool>();
+		public Property<Voxel.t> BlockType = new Property<Voxel.t>();
 
 		private const float blockPossibilityFadeInTime = 0.075f;
 		private const float blockPossibilityTotalLifetime = 2.0f;
@@ -86,13 +87,24 @@ namespace Lemma.Components
 			{
 				Vector3 start = block.Map.GetRelativePosition(block.StartCoord), end = block.Map.GetRelativePosition(block.EndCoord);
 
-				Vector3 scale = new Vector3(Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y), Math.Abs(end.Z - start.Z));
+				Vector3 scale = new Vector3(Math.Abs(end.X - start.X) + 0.1f, Math.Abs(end.Y - start.Y) + 0.1f, Math.Abs(end.Z - start.Z) + 0.1f);
 				Matrix matrix = Matrix.CreateScale(scale) * Matrix.CreateTranslation(new Vector3(-0.5f) + (start + end) * 0.5f);
 
 				ModelAlpha box = new ModelAlpha();
 				box.Filename.Value = "AlphaModels\\distortion-box";
 				box.Distortion.Value = true;
-				box.Color.Value = new Vector3(2.8f, 3.0f, 3.2f);
+				switch (this.BlockType.Value)
+				{
+					case Voxel.t.GlowBlue:
+						box.Color.Value = new Vector3(2.0f, 2.0f, 3.0f);
+						break;
+					case Voxel.t.GlowYellow:
+						box.Color.Value = new Vector3(3.0f, 3.0f, 2.0f);
+						break;
+					default:
+						box.Color.Value = new Vector3(2.5f, 2.5f, 2.5f);
+						break;
+				}
 				box.Alpha.Value = blockPossibilityInitialAlpha;
 				box.Serialize = false;
 				box.DrawOrder.Value = 11; // In front of water

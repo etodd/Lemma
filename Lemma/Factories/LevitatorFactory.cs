@@ -36,7 +36,7 @@ namespace Lemma.Factories
 
 			if (!main.EditorEnabled)
 			{
-				AkGameObjectTracker.Attach(entity);
+				Sound.AttachTracker(entity);
 				SoundKiller.Add(entity, AK.EVENTS.STOP_GLOWSQUARE);
 				entity.Add(new PostInitialization
 				{

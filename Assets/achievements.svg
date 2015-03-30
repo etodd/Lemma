@@ -108,6 +108,19 @@
          id="rect4880"
          style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4507">
+      <rect
+         style="opacity:1;fill:#ff0c0c;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect4509"
+         width="64"
+         height="64"
+         x="464.8718"
+         y="293.0256"
+         inkscape:export-xdpi="180"
+         inkscape:export-ydpi="180" />
+    </clipPath>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -116,15 +129,15 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.9930265"
-     inkscape:cx="372.04724"
-     inkscape:cy="897.27238"
+     inkscape:zoom="2.8185651"
+     inkscape:cx="627.60765"
+     inkscape:cy="750.25173"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="1057"
-     inkscape:window-x="-8"
+     inkscape:window-x="1912"
      inkscape:window-y="-8"
      inkscape:window-maximized="1" />
   <metadata
@@ -135,7 +148,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -2376,6 +2389,56 @@
          d="m 599.1218,211.65576 0,-3.7253"
          style="fill:none;fill-rule:evenodd;stroke:#464646;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          inkscape:transform-center-y="-12.96507" />
+    </g>
+    <g
+       id="g4542"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         y="293.0256"
+         x="566.39209"
+         height="64"
+         width="64"
+         id="rect4461"
+         style="opacity:1;fill:#464646;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         inkscape:export-xdpi="180"
+         inkscape:export-ydpi="180" />
+      <path
+         transform="translate(101.51708,0)"
+         style="fill:#808080;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 518.14938,303.28085 -30.78215,8.54256 0,15.05177 -1.73692,1.73692 -4.50036,0.0514 -23.3616,31.05898 3.93689,3.93689 31.05896,-23.36162 0.0514,-4.50034 1.73692,-1.73692 15.05177,0 8.54501,-30.7797 z m -9.73317,9.73318 -12.21489,13.60637 -3.02797,1.6365 1.63648,-3.02801 13.60638,-12.21486 z"
+         id="path4535"
+         inkscape:connector-curvature="0"
+         clip-path="url(#clipPath4507)" />
+    </g>
+    <g
+       id="g4537"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect4442"
+         width="64"
+         height="64"
+         x="464.8718"
+         y="293.0256"
+         inkscape:export-xdpi="180"
+         inkscape:export-ydpi="180" />
+      <path
+         clip-path="url(#clipPath4507)"
+         inkscape:connector-curvature="0"
+         id="path4492"
+         d="m 518.14938,303.28085 -30.78215,8.54256 0,15.05177 -1.73692,1.73692 -4.50036,0.0514 -23.3616,31.05898 3.93689,3.93689 31.05896,-23.36162 0.0514,-4.50034 1.73692,-1.73692 15.05177,0 8.54501,-30.7797 z m -9.73317,9.73318 -12.21489,13.60637 -3.02797,1.6365 1.63648,-3.02801 13.60638,-12.21486 z"
+         style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:" />
+      <rect
+         style="opacity:1;fill:none;fill-opacity:1;stroke:#5bafcd;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect4444"
+         width="58.25"
+         height="58.25"
+         x="467.7468"
+         y="295.9006"
+         inkscape:export-xdpi="180"
+         inkscape:export-ydpi="180" />
     </g>
   </g>
 </svg>

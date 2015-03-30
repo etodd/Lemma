@@ -6,11 +6,14 @@ public class AK
         public static uint EVIL_CUBES_IDLE = 1697385721U;
         public static uint FOOTSTEP_PLAY = 1531891632U;
         public static uint PAUSE_ALL = 3864097025U;
+        public static uint PAUSE_DISTRACTING_SOUNDS = 1662086833U;
         public static uint PLAY_BIG_WIND = 217752029U;
         public static uint PLAY_BLOCK_BUILD = 1262469596U;
+        public static uint PLAY_BLOCK_RUMBLE = 2442588307U;
         public static uint PLAY_BLUE_BURN = 216387374U;
         public static uint PLAY_CAMERA_SHUTTER = 1401567661U;
         public static uint PLAY_COLLECTIBLE = 661747096U;
+        public static uint PLAY_CRUMBLE = 4130713930U;
         public static uint PLAY_DAWN_AMBIENT = 1175888809U;
         public static uint PLAY_DOOR_AMBIENCE = 48136393U;
         public static uint PLAY_DOOR_OPEN = 1660008929U;
@@ -21,6 +24,7 @@ public class AK
         public static uint PLAY_GLOWSQUARE = 2925563572U;
         public static uint PLAY_MAGIC_CUBE_LOOP = 3187778582U;
         public static uint PLAY_MAGIC_CUBE_STINGER = 2253299882U;
+        public static uint PLAY_MAGIC_CUBES = 4209015896U;
         public static uint PLAY_MONOLITH_LOOP = 1920428907U;
         public static uint PLAY_MONOLITH_POWERUP = 1490340003U;
         public static uint PLAY_MUSIC_AMBIENT = 2712742350U;
@@ -77,6 +81,7 @@ public class AK
         public static uint PLAY_WATER_SPLASH_OUT = 332641338U;
         public static uint PLAY_WATERFALL_LOOP = 2021604517U;
         public static uint PLAY_WHITE_LIGHT = 3583610488U;
+        public static uint PLAY_WHITE_LIGHT_HIT = 1136344990U;
         public static uint PLAY_WHITE_SHATTER = 2667853543U;
         public static uint RESUME_ALL = 3679762312U;
         public static uint SLIDER1_LOOP = 654783868U;
@@ -87,6 +92,7 @@ public class AK
         public static uint SLIDER3_STOP = 1648258440U;
         public static uint STOP_ALL = 452547817U;
         public static uint STOP_ALL_OBJECT = 2638811145U;
+        public static uint STOP_BLOCK_RUMBLE = 1611896069U;
         public static uint STOP_DAWN_AMBIENT = 672119035U;
         public static uint STOP_DOOR_AMBIENCE = 2699574911U;
         public static uint STOP_EVIL_CUBES = 3034540413U;
@@ -175,6 +181,12 @@ public class AK
         public static uint MASTER_AUDIO_BUS = 3803692087U;
         public static uint MASTER_SECONDARY_BUS = 805203703U;
     } // public class BUSSES
+
+    public class AUX_BUSSES
+    {
+        public static uint REVERB = 348963605U;
+        public static uint REVERB_SUBTLE = 1938853151U;
+    } // public class AUX_BUSSES
 
 }// public class AK
 

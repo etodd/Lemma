@@ -195,7 +195,7 @@ namespace Lemma.Components
 						new Animation.Delay((1.0f - volume) * this.ThunderMaxDelay),
 						new Animation.Execute(delegate()
 						{
-							AkSoundEngine.PostEvent(AK.EVENTS.PLAY_THUNDER, main.Camera.Position + Vector3.Normalize(new Vector3(2.0f * ((float)random.NextDouble() - 0.5f), 1.0f, 2.0f * ((float)random.NextDouble() - 0.5f))) * 1000.0f);
+							Sound.PostEvent(AK.EVENTS.PLAY_THUNDER, main.Camera.Position + Vector3.Normalize(new Vector3(2.0f * ((float)random.NextDouble() - 0.5f), 1.0f, 2.0f * ((float)random.NextDouble() - 0.5f))) * 1000.0f);
 						})
 					));
 					this.thunderTimer = this.ThunderIntervalMin + ((float)random.NextDouble() * (this.ThunderIntervalMax - this.ThunderIntervalMin));

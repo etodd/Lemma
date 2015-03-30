@@ -25,34 +25,15 @@ public class AkGameObjectTracker : AkGameObject
 
 	public Property<Matrix> Matrix = new Property<Matrix>();
 
-	public static void Attach(Entity entity, Property<Matrix> property = null)
-	{
-		AkGameObjectTracker tracker = entity.Get<AkGameObjectTracker>();
-		if (tracker == null)
-		{
-			tracker = new AkGameObjectTracker();
-			entity.Add(tracker);
-			if (property == null)
-				property = entity.Get<Transform>().Matrix;
-			tracker.Add(new Binding<Matrix>(tracker.Matrix, property));
-		}
-	}
-
-	public static void Attach(Entity entity, Property<Vector3> property)
-	{
-		AkGameObjectTracker tracker = entity.Get<AkGameObjectTracker>();
-		if (tracker == null)
-		{
-			tracker = new AkGameObjectTracker();
-			entity.Add(tracker);
-			tracker.Add(new Binding<Matrix, Vector3>(tracker.Matrix, x => Microsoft.Xna.Framework.Matrix.CreateTranslation(x), property));
-		}
-	}
-
 	public override void Awake()
 	{
 		base.Awake();
 		this.Add(new NotifyBinding(this.Update, this.Matrix));
+	}
+
+	public void AuxSend(AkAuxSendArray aux, uint count)
+	{
+		AkSoundEngine.SetGameObjectAuxSendValues(this.Entity, aux, count);
 	}
 
 	public override void Update()

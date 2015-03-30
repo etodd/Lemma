@@ -93,7 +93,7 @@ namespace Lemma.Factories
 
 			Property<Vector3> floor = new Property<Vector3>();
 			transform.Add(new Binding<Vector3>(floor, () => transform.Position + new Vector3(0, player.Character.Height * -0.5f, 0), transform.Position, player.Character.Height));
-			AkGameObjectTracker.Attach(entity, floor);
+			Sound.AttachTracker(entity, floor);
 
 			predictor.Add(new Binding<Vector3>(predictor.FootPosition, floor));
 			predictor.Add(new Binding<Vector3>(predictor.LinearVelocity, player.Character.LinearVelocity));
@@ -359,6 +359,7 @@ namespace Lemma.Factories
 					PhysicsBlock.CancelPlayerCollisions(e.Get<PhysicsBlock>());
 				}
 			};
+			predictor.Add(new Binding<Voxel.t>(predictor.BlockType, blockCloud.Type));
 
 			PointLight blockLight = entity.Create<PointLight>();
 			blockLight.Add(new Binding<Vector3>(blockLight.Position, blockCloud.AveragePosition));

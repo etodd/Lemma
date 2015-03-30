@@ -47,7 +47,7 @@ namespace Lemma.Components
 		private static void explode(Main main, Voxel map, Voxel.Coord coord, Vector3 pos, int radius, float physicsRadius)
 		{
 			// Kaboom
-			AkSoundEngine.PostEvent(AK.EVENTS.PLAY_EXPLOSION, pos);
+			Sound.PostEvent(AK.EVENTS.PLAY_EXPLOSION, pos);
 
 			Entity lightEntity = Factory.Get<PointLightFactory>().CreateAndBind(main);
 			lightEntity.Serialize = false;

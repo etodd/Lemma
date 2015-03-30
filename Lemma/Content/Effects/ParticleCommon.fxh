@@ -38,18 +38,6 @@ sampler2D Sampler = sampler_state
 	AddressV = Clamp;
 };
 
-// Depth texture sampler
-texture2D DepthTexture;
-sampler2D DepthSampler = sampler_state
-{
-	Texture = <DepthTexture>;
-	MinFilter = point;
-	MagFilter = point;
-	MipFilter = point;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-};
-
 // Vertex shader input structure describes the start position and
 // velocity of the particle, and the time at which it was created,
 // along with some random values that affect its size and rotation.

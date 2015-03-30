@@ -69,7 +69,7 @@ namespace Lemma.Factories
 			tower.Add(new CommandBinding(trigger.PlayerExited, tower.PlayerExitedRange));
 			tower.Add(new Binding<Entity.Handle>(tower.Player, trigger.Player));
 
-			AkGameObjectTracker.Attach(entity, trigger.Position);
+			Sound.AttachTracker(entity, trigger.Position);
 
 			ParticleEmitter distortionEmitter = entity.GetOrCreate<ParticleEmitter>("DistortionEmitter");
 			distortionEmitter.Serialize = false;

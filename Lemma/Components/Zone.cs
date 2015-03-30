@@ -11,6 +11,9 @@ namespace Lemma.Components
 	public class Zone : Component<Main>
 	{
 		public enum BuildMode { CanBuild, NoBuild, ExclusiveBuild };
+		public enum ReverbMode { None, Room, Subtle }
+
+		public Property<ReverbMode> Reverb = new Property<ReverbMode>();
 
 		public static List<Zone> Zones = new List<Zone>();
 
@@ -111,6 +114,34 @@ namespace Lemma.Components
 				}
 			}
 			return result;
+		}
+
+		public static uint MaxAuxSend = 1;
+		public static uint AuxSend(Vector3 pos, AkAuxSendArray array)
+		{
+			array.Reset();
+			Zone z = Zone.Get(pos);
+			if (z == null)
+				return 0;
+			else
+			{
+				uint count;
+				switch (z.Reverb.Value)
+				{
+					case ReverbMode.Room:
+						array.Add(AK.AUX_BUSSES.REVERB, 1.0f);
+						count = 1;
+						break;
+					case ReverbMode.Subtle:
+						array.Add(AK.AUX_BUSSES.REVERB_SUBTLE, 1.0f);
+						count = 1;
+						break;
+					default:
+						count = 0;
+						break;
+				}
+				return count;
+			}
 		}
 
 		public static bool CanBuild(Vector3 pos)

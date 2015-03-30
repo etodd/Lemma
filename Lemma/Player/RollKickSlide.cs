@@ -340,7 +340,7 @@ namespace Lemma.Components
 						if (this.firstTimeBreak)
 						{
 							this.Rumble.Execute(0.5f);
-							AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WALL_BREAK, this.FloorPosition + this.forward * 2.0f);
+							Sound.PostEvent(AK.EVENTS.PLAY_WALL_BREAK, this.FloorPosition + this.forward * 2.0f);
 						}
 						this.firstTimeBreak = false;
 					}
@@ -392,7 +392,7 @@ namespace Lemma.Components
 					if (this.firstTimeBreak)
 					{
 						this.Rumble.Execute(0.5f);
-						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WALL_BREAK, this.FloorPosition + this.forward * 2.0f);
+						Sound.PostEvent(AK.EVENTS.PLAY_WALL_BREAK, this.FloorPosition + this.forward * 2.0f);
 					}
 					this.firstTimeBreak = false;
 				}

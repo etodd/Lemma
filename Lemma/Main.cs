@@ -92,8 +92,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 9;
-		public const int MapVersion = 1010;
-		public const int Build = 1010;
+		public const int MapVersion = 1015;
+		public const int Build = 1015;
 
 		public class Config
 		{
@@ -490,6 +490,7 @@ namespace Lemma
 
 			AkSoundEngine.PostEvent(AK.EVENTS.STOP_ALL);
 			AkSoundEngine.SetState(AK.STATES.WATER.GROUP, AK.STATES.WATER.STATE.NORMAL);
+			AkSoundEngine.RenderAudio();
 		}
 
 		public Command ReloadingContent = new Command();
@@ -1250,7 +1251,7 @@ namespace Lemma
 
 #if !DEVELOPMENT
 				IO.MapLoader.Load(this, MenuMap);
-				this.Menu.Show();
+				this.Menu.Show(initial: true);
 #endif
 
 #if ANALYTICS

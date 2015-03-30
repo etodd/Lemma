@@ -20,7 +20,7 @@ namespace Lemma.Components
 		{
 			base.Awake();
 
-			AkGameObjectTracker.Attach(this.Entity, this.Position);
+			Sound.AttachTracker(this.Entity, this.Position);
 
 			this.Entity.CannotSuspendByDistance = !this.Is3D;
 			this.Entity.Add(new NotifyBinding(delegate()

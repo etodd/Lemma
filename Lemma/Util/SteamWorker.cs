@@ -494,6 +494,7 @@ namespace Lemma.Util
 				"god_mode",
 				"first_orb",
 				"first_note",
+				"level_editor",
 			};
 			string[] statNames = new string[]
 			{

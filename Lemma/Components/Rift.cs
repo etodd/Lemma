@@ -46,7 +46,7 @@ namespace Lemma.Components
 		public override void Awake()
 		{
 			base.Awake();
-			AkGameObjectTracker.Attach(this.Entity, this.Position);
+			Sound.AttachTracker(this.Entity, this.Position);
 			this.particles = ParticleSystem.Get(this.main, "Rift");
 			this.EnabledInEditMode = false;
 			this.EnabledWhenPaused = false;

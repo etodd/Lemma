@@ -43,7 +43,7 @@ namespace Lemma.Factories
 			model.Add(new Binding<Vector2, Vector3>(uvScale, x => new Vector2(x.X, x.Y), model.Scale));
 
 			Property<Vector3> soundPosition = new Property<Vector3>();
-			AkGameObjectTracker.Attach(entity, soundPosition);
+			Sound.AttachTracker(entity, soundPosition);
 
 			if (!main.EditorEnabled && !model.Suspended)
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATERFALL_LOOP, entity);

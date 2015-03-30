@@ -2866,33 +2866,18 @@ public class AkSoundEngine {
 		return ret;
 	}
 
-	public static uint PostEvent(string e)
-	{
-		return AkSoundEngine.PostEvent(e, AkSoundEngine.DefaultGameObject);
-	}
-
 	public static uint PostEvent(uint e)
 	{
 		return AkSoundEngine.PostEvent(e, AkSoundEngine.DefaultGameObject);
 	}
 
-	public static uint PostEvent(string e, Vector3 pos)
+	public static uint RegisterTemp(Vector3 pos, AkAuxSendArray aux)
 	{
 		uint id = (uint)(ComponentBind.Entity.CurrentGUID & 0xffffffff);
 		ComponentBind.Entity.CurrentGUID++;
 		AkSoundEnginePINVOKE.CSharp_RegisterGameObj__SWIG_1(id);
 		AkSoundEnginePINVOKE.CSharp_SetObjectPosition(id, pos.X, pos.Y, pos.Z, 0.0f, 0.0f, 1.0f);
-		uint result = AkSoundEnginePINVOKE.CSharp_PostEvent__SWIG_11(e, id);
-		AkSoundEnginePINVOKE.CSharp_UnregisterGameObj(id);
-		return result;
-	}
-
-	public static uint RegisterTemp(Vector3 pos)
-	{
-		uint id = (uint)(ComponentBind.Entity.CurrentGUID & 0xffffffff);
-		ComponentBind.Entity.CurrentGUID++;
-		AkSoundEnginePINVOKE.CSharp_RegisterGameObj__SWIG_1(id);
-		AkSoundEnginePINVOKE.CSharp_SetObjectPosition(id, pos.X, pos.Y, pos.Z, 0.0f, 0.0f, 1.0f);
+		AkSoundEnginePINVOKE.CSharp_SetGameObjectAuxSendValues(id, aux.m_Buffer, aux.m_Count);
 		return id;
 	}
 
@@ -2901,12 +2886,13 @@ public class AkSoundEngine {
 		AkSoundEnginePINVOKE.CSharp_UnregisterGameObj(id);
 	}
 
-	public static uint PostEvent(uint e, Vector3 pos)
+	public static uint PostEvent(uint e, Vector3 pos, AkAuxSendArray aux)
 	{
 		uint id = (uint)(ComponentBind.Entity.CurrentGUID & 0xffffffff);
 		ComponentBind.Entity.CurrentGUID++;
 		AkSoundEnginePINVOKE.CSharp_RegisterGameObj__SWIG_1(id);
 		AkSoundEnginePINVOKE.CSharp_SetObjectPosition(id, pos.X, pos.Y, pos.Z, 0.0f, 0.0f, 1.0f);
+		AkSoundEnginePINVOKE.CSharp_SetGameObjectAuxSendValues(id, aux.m_Buffer, aux.m_Count);
 		uint result = AkSoundEnginePINVOKE.CSharp_PostEvent__SWIG_5(e, id);
 		AkSoundEnginePINVOKE.CSharp_UnregisterGameObj(id);
 		return result;

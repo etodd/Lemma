@@ -57,6 +57,8 @@ namespace Lemma.Components
 		public Property<Voxel> LastWallRunMap = new Property<Voxel>();
 		public Property<Direction> LastWallDirection = new Property<Direction>();
 
+		private Voxel.Coord lastWallRunCoord;
+
 		public override void Awake()
 		{
 			base.Awake();
@@ -209,6 +211,7 @@ namespace Lemma.Components
 
 			this.WallRunVoxel.Value = this.LastWallRunMap.Value = voxel;
 			this.WallDirection.Value = this.LastWallDirection.Value = dir;
+			this.lastWallRunCoord = new Voxel.Coord { X = int.MinValue, Y = int.MinValue, Z = int.MinValue };
 
 			Vector3 baseVelocity = voxel.LinearVelocity + Vector3.Cross(voxel.AngularVelocity, this.Position - voxel.Transform.Value.Translation);
 			if (state == State.Straight)
@@ -379,7 +382,12 @@ namespace Lemma.Components
 				Voxel.Coord coord = voxel.GetCoordinate(pos);
 				Voxel.Coord wallCoord = coord.Move(this.WallDirection, 2);
 				Voxel.State wallType = voxel[wallCoord];
-				this.WalkedOn.Execute(voxel, wallCoord, this.WallDirection);
+
+				if (!wallCoord.Equivalent(this.lastWallRunCoord))
+				{
+					this.lastWallRunCoord = wallCoord;
+					this.WalkedOn.Execute(voxel, wallCoord, this.WallDirection);
+				}
 
 				if (this.EnableEnhancedWallRun
 					&& (wallRunState == State.Left || wallRunState == State.Right)

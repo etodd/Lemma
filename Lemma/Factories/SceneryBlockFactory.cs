@@ -39,6 +39,20 @@ namespace Lemma.Factories
 
 			entity.Add("IsAffectedByGravity", physics.IsAffectedByGravity);
 			sceneryBlock.EditorProperties();
+
+			if (!main.EditorEnabled && !physics.IsAffectedByGravity
+				&& (sceneryBlock.Type.Value == Voxel.t.WhitePermanent || sceneryBlock.Type.Value == Voxel.t.White))
+			{
+				Sound.AttachTracker(entity);
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WHITE_LIGHT, entity);
+				SoundKiller.Add(entity, AK.EVENTS.STOP_WHITE_LIGHT);
+				physics.Add(new CommandBinding<Collidable, ContactCollection>(physics.Collided, delegate(Collidable other, ContactCollection contacts)
+				{
+					float impulse = contacts.Max(x => x.NormalImpulse);
+					if (impulse > 0.2f)
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WHITE_LIGHT_HIT, entity);
+				}));
+			}
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

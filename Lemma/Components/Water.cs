@@ -335,7 +335,7 @@ namespace Lemma.Components
 				pos.Z = Math.Max(box.Min.Z, Math.Min(pos.Z, box.Max.Z));
 				return pos;
 			}, this.main.Camera.Position));
-			AkGameObjectTracker.Attach(this.Entity, this.soundPosition);
+			Sound.AttachTracker(this.Entity, this.soundPosition);
 
 			if (!this.main.EditorEnabled && this.Enabled && !this.Suspended)
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_LOOP, this.Entity);
@@ -509,7 +509,7 @@ namespace Lemma.Components
 						float volume = Math.Min(speed * collidable.Entity.Mass * speedMassVolumeCoefficient, 1.0f);
 						if (volume > 0.1f && !this.submerged.ContainsKey(collidable))
 						{
-							uint temp = AkSoundEngine.RegisterTemp(collidable.Entity.Position);
+							uint temp = Sound.RegisterTemp(collidable.Entity.Position);
 							if (collidable.Entity.Mass > 40.0f)
 								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH_HEAVY, temp);
 							else
@@ -564,7 +564,7 @@ namespace Lemma.Components
 							float volume = Math.Min(speed * p.Key.Entity.Mass * speedMassVolumeCoefficient, 1.0f);
 							if (volume > 0.1f)
 							{
-								uint temp = AkSoundEngine.RegisterTemp(p.Key.Entity.Position);
+								uint temp = Sound.RegisterTemp(p.Key.Entity.Position);
 								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH_OUT, temp);
 								AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_WATER_SPLASH_VOLUME, volume, temp);
 								AkSoundEngine.UnregisterTemp(temp);

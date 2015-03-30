@@ -35,7 +35,7 @@ namespace Lemma.Factories
 			{
 				Property<Vector3> soundPosition = new Property<Vector3>();
 				VoxelAttachable.BindTarget(entity, soundPosition);
-				AkGameObjectTracker.Attach(entity, soundPosition);
+				Sound.AttachTracker(entity, soundPosition);
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WHITE_LIGHT, entity);
 				SoundKiller.Add(entity, AK.EVENTS.STOP_WHITE_LIGHT);
 			}

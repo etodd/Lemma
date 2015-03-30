@@ -36,7 +36,7 @@ namespace Lemma.Factories
 
 			DynamicVoxel voxel = entity.Get<DynamicVoxel>();
 			voxel.KineticFriction.Value = voxel.StaticFriction.Value = 0;
-			AkGameObjectTracker.Attach(entity, voxel.Transform);
+			Sound.AttachTracker(entity, voxel.Transform);
 			SoundKiller.Add(entity, AK.EVENTS.STOP_ALL_OBJECT);
 
 			if (main.EditorEnabled)

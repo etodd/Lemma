@@ -43,7 +43,7 @@ namespace Lemma.Factories
 
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
-			AkGameObjectTracker.Attach(entity);
+			Sound.AttachTracker(entity);
 
 			AI ai = entity.GetOrCreate<AI>("AI");
 

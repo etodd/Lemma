@@ -1,5 +1,17 @@
 #include "ParticleCommon.fxh"
 
+// Depth texture sampler
+texture2D DepthTexture;
+sampler2D DepthSampler = sampler_state
+{
+	Texture = <DepthTexture>;
+	MinFilter = point;
+	MagFilter = point;
+	MipFilter = point;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
 // Frame buffer sampler
 texture2D FrameTexture;
 sampler2D FrameSampler = sampler_state

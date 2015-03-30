@@ -284,7 +284,7 @@ namespace Lemma.Factories
 						{
 							float distance = toTarget.Length();
 							if (distance < rayHit.Distance)
-								AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_MISS, transform.Position + toReticle * distance);
+								Sound.PostEvent(AK.EVENTS.PLAY_TURRET_MISS, transform.Position + toReticle * distance);
 						}
 
 						BEPUutilities.RayHit physicsHit;

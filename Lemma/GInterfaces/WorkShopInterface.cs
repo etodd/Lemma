@@ -177,6 +177,7 @@ namespace Lemma.GInterfaces
 										DescriptionView.ClearText();
 										NameView.ClearText();
 										CloseButton.AllowMouseEvents.Value = UploadButton.AllowMouseEvents.Value = true;
+										SteamWorker.SetAchievement("level_editor");
 									}
 									else
 									{

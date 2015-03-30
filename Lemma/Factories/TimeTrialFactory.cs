@@ -39,7 +39,7 @@ namespace Lemma.Factories
 
 #if STEAMWORKS
 			ui.Add(new CommandBinding(trial.OnLeaderboardError, ui.OnLeaderboardError));
-			ui.Add(new CommandBinding<LeaderboardScoresDownloaded_t>(trial.OnLeaderboardSync, ui.OnLeaderboardSync));
+			ui.Add(new CommandBinding<LeaderboardScoresDownloaded_t, LeaderboardScoresDownloaded_t>(trial.OnLeaderboardSync, ui.OnLeaderboardSync));
 			ui.Add(new CommandBinding(ui.LeaderboardSync, trial.LeaderboardSync));
 #endif
 

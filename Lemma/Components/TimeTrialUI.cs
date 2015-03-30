@@ -59,7 +59,7 @@ namespace Lemma.Components
 		public Command OnLeaderboardError = new Command();
 
 		[XmlIgnore]
-		public Command<LeaderboardScoresDownloaded_t> OnLeaderboardSync = new Command<LeaderboardScoresDownloaded_t>();
+		public Command<LeaderboardScoresDownloaded_t, LeaderboardScoresDownloaded_t> OnLeaderboardSync = new Command<LeaderboardScoresDownloaded_t, LeaderboardScoresDownloaded_t>();
 
 		private Callback<PersonaStateChange_t> personaCallback;
 		private Property<bool> personaNotification = new Property<bool>();
@@ -172,7 +172,7 @@ namespace Lemma.Components
 					leaderboardList.Children.Add(loading);
 				};
 
-				this.OnLeaderboardSync.Action = delegate(LeaderboardScoresDownloaded_t scores)
+				this.OnLeaderboardSync.Action = delegate(LeaderboardScoresDownloaded_t globalScores, LeaderboardScoresDownloaded_t friendScores)
 				{
 					leaderboardList.Children.Clear();
 					TextElement leaderboardLabel = this.main.UIFactory.CreateLabel();
@@ -180,11 +180,26 @@ namespace Lemma.Components
 					leaderboardList.Children.Add(leaderboardLabel);
 
 					int[] details = new int[] {};
-					for (int i = 0; i < scores.m_cEntryCount; i++)
+					for (int i = 0; i < globalScores.m_cEntryCount; i++)
 					{
 						LeaderboardEntry_t entry;
-						SteamUserStats.GetDownloadedLeaderboardEntry(scores.m_hSteamLeaderboardEntries, i, out entry, details, 0);
+						SteamUserStats.GetDownloadedLeaderboardEntry(globalScores.m_hSteamLeaderboardEntries, i, out entry, details, 0);
 						leaderboardList.Children.Add(this.leaderboardEntry(entry));
+					}
+
+					if (friendScores.m_cEntryCount > 1)
+					{
+						TextElement friendsLabel = this.main.UIFactory.CreateLabel();
+						friendsLabel.Text.Value = "\\friends";
+						leaderboardList.Children.Add(friendsLabel);
+
+						for (int i = 0; i < friendScores.m_cEntryCount; i++)
+						{
+							LeaderboardEntry_t entry;
+							SteamUserStats.GetDownloadedLeaderboardEntry(friendScores.m_hSteamLeaderboardEntries, i, out entry, details, 0);
+							if (entry.m_steamIDUser != SteamUser.GetSteamID())
+								leaderboardList.Children.Add(this.leaderboardEntry(entry));
+						}
 					}
 				};
 				
