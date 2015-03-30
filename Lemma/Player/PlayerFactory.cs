@@ -634,55 +634,52 @@ namespace Lemma.Factories
 
 			// Player data bindings
 
-			entity.Add(new PostInitialization
+			entity.Add(new PostInitialization(delegate()
 			{
-				delegate()
-				{
-					Entity dataEntity = PlayerDataFactory.Instance;
-					PlayerData playerData = dataEntity.Get<PlayerData>();
+				Entity dataEntity = PlayerDataFactory.Instance;
+				PlayerData playerData = dataEntity.Get<PlayerData>();
 
-					// HACK. Overwriting the property rather than binding the two together. Oh well.
-					// This is because I haven't written a two-way list binding.
-					footsteps.RespawnLocations = playerData.RespawnLocations;
-					
-					// Bind player data properties
-					entity.Add(new TwoWayBinding<float>(WorldFactory.Instance.Get<World>().CameraShakeAmount, cameraControl.CameraShakeAmount));
-					entity.Add(new TwoWayBinding<bool>(playerData.EnableRoll, rollKickSlide.EnableRoll));
-					entity.Add(new TwoWayBinding<bool>(playerData.EnableCrouch, player.EnableCrouch));
-					entity.Add(new TwoWayBinding<bool>(playerData.EnableKick, rollKickSlide.EnableKick));
-					entity.Add(new TwoWayBinding<bool>(playerData.EnableWallRun, wallRun.EnableWallRun));
-					entity.Add(new TwoWayBinding<bool>(playerData.EnableWallRunHorizontal, wallRun.EnableWallRunHorizontal));
-					entity.Add(new TwoWayBinding<bool>(playerData.EnableEnhancedWallRun, wallRun.EnableEnhancedWallRun));
-					entity.Add(new TwoWayBinding<bool>(playerData.EnableMoves, player.EnableMoves));
-					entity.Add(new TwoWayBinding<float>(playerData.MaxSpeed, player.Character.MaxSpeed));
+				// HACK. Overwriting the property rather than binding the two together. Oh well.
+				// This is because I haven't written a two-way list binding.
+				footsteps.RespawnLocations = playerData.RespawnLocations;
+				
+				// Bind player data properties
+				entity.Add(new TwoWayBinding<float>(WorldFactory.Instance.Get<World>().CameraShakeAmount, cameraControl.CameraShakeAmount));
+				entity.Add(new TwoWayBinding<bool>(playerData.EnableRoll, rollKickSlide.EnableRoll));
+				entity.Add(new TwoWayBinding<bool>(playerData.EnableCrouch, player.EnableCrouch));
+				entity.Add(new TwoWayBinding<bool>(playerData.EnableKick, rollKickSlide.EnableKick));
+				entity.Add(new TwoWayBinding<bool>(playerData.EnableWallRun, wallRun.EnableWallRun));
+				entity.Add(new TwoWayBinding<bool>(playerData.EnableWallRunHorizontal, wallRun.EnableWallRunHorizontal));
+				entity.Add(new TwoWayBinding<bool>(playerData.EnableEnhancedWallRun, wallRun.EnableEnhancedWallRun));
+				entity.Add(new TwoWayBinding<bool>(playerData.EnableMoves, player.EnableMoves));
+				entity.Add(new TwoWayBinding<float>(playerData.MaxSpeed, player.Character.MaxSpeed));
 
-					if (playerData.CloudType.Value == Voxel.t.Empty) // This makes everything work if we spawn next to a power block socket
-						entity.Add(new TwoWayBinding<Voxel.t>(blockCloud.Type, playerData.CloudType));
-					else
-						entity.Add(new TwoWayBinding<Voxel.t>(playerData.CloudType, blockCloud.Type));
+				if (playerData.CloudType.Value == Voxel.t.Empty) // This makes everything work if we spawn next to a power block socket
+					entity.Add(new TwoWayBinding<Voxel.t>(blockCloud.Type, playerData.CloudType));
+				else
+					entity.Add(new TwoWayBinding<Voxel.t>(playerData.CloudType, blockCloud.Type));
 
-					entity.Add(new TwoWayBinding<bool>(playerData.ThirdPerson, cameraControl.ThirdPerson));
-					entity.Add(new TwoWayBinding<bool>(playerData.EnableSlowMotion, player.EnableSlowMotion));
+				entity.Add(new TwoWayBinding<bool>(playerData.ThirdPerson, cameraControl.ThirdPerson));
+				entity.Add(new TwoWayBinding<bool>(playerData.EnableSlowMotion, player.EnableSlowMotion));
 
-					Phone phone = dataEntity.GetOrCreate<Phone>("Phone");
+				Phone phone = dataEntity.GetOrCreate<Phone>("Phone");
 
-					entity.Add
+				entity.Add
+				(
+					new Binding<bool>
 					(
-						new Binding<bool>
-						(
-							phone.CanReceiveMessages,
-							() => player.Character.IsSupported && !player.Character.IsSwimming && !player.Character.Crouched,
-							player.Character.IsSupported,
-							player.Character.IsSwimming,
-							player.Character.Crouched
-						)
-					);
+						phone.CanReceiveMessages,
+						() => player.Character.IsSupported && !player.Character.IsSwimming && !player.Character.Crouched,
+						player.Character.IsSupported,
+						player.Character.IsSwimming,
+						player.Character.Crouched
+					)
+				);
 
-					PhoneNote.Attach(main, entity, player, model, input, phone, player.Character.EnableWalking, playerData.PhoneActive, playerData.NoteActive);
+				PhoneNote.Attach(main, entity, player, model, input, phone, player.Character.EnableWalking, playerData.PhoneActive, playerData.NoteActive);
 
-					PlayerUI.Attach(main, entity, ui, player.Health, rotation.Rotation, playerData.NoteActive, playerData.PhoneActive);
-				}
-			});
+				PlayerUI.Attach(main, entity, ui, player.Health, rotation.Rotation, playerData.NoteActive, playerData.PhoneActive);
+			}));
 
 			fpsCamera.Add(new Binding<Vector2>(fpsCamera.Mouse, input.Mouse));
 			fpsCamera.Add(new Binding<Vector2>(fpsCamera.Movement, input.Movement));

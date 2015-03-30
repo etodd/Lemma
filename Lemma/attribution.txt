@@ -67,27 +67,19 @@ http://freesound.org
 
 lucid drone.wav by decembered -- License: Attribution
 http://www.freesound.org/people/decembered/sounds/42761/ 
-2_takes_bats.aif by thanvannispen -- License: Attribution
-http://www.freesound.org/people/thanvannispen/sounds/29845/ 
 coldwater_waves.wav by Corsica_S -- License: Attribution
 http://www.freesound.org/people/Corsica_S/sounds/92822/ 
 Water_Splash_Objects_falling.aif by Dynamicell -- License: Attribution
 http://www.freesound.org/people/Dynamicell/sounds/17832/ 
 SS BOOM 01.wav by sandyrb -- License: Attribution
 http://www.freesound.org/people/sandyrb/sounds/84346/ 
-rbh rain 01.wav by RHumphries -- License: Attribution
+rbh rain 01-04.wav by RHumphries -- License: Attribution
 http://www.freesound.org/people/RHumphries/sounds/2519/ 
-rbh rain 04.wav by RHumphries -- License: Attribution
-http://www.freesound.org/people/RHumphries/sounds/2522/ 
 mega-thunder.wav by Erdie -- License: Attribution
 http://www.freesound.org/people/Erdie/sounds/24003/ 
 rbh thunder storm.wav by RHumphries -- License: Attribution
 http://www.freesound.org/people/RHumphries/sounds/2523/ 
-salt 3.wav by melack -- License: Attribution
-http://www.freesound.org/people/melack/sounds/9193/ 
-salt 2.wav by melack -- License: Attribution/
-http://www.freesound.org/people/melack/sounds/9192 
-salt 1.wav by melack -- License: Attribution/
+salt 1-3.wav by melack -- License: Attribution/
 http://www.freesound.org/people/melack/sounds/9191 
 Splash.wav by daveincamas -- License: Attribution
 http://www.freesound.org/people/daveincamas/sounds/59104/ 
@@ -99,19 +91,5 @@ Splash 1.wav by FreqMan -- License: Attribution
 http://www.freesound.org/people/FreqMan/sounds/25819/ 
 Page_Turn_29.wav by Koops -- License: Attribution
 http://www.freesound.org/people/Koops/sounds/20263/ 
-Rubble 003.wav by DJ Chronos -- License: Attribution
-http://www.freesound.org/people/DJ%20Chronos/sounds/123540/ 
-Rubble 007.wav by DJ Chronos -- License: Attribution
-http://www.freesound.org/people/DJ%20Chronos/sounds/123544/ 
-Rubble 002.wav by DJ Chronos -- License: Attribution
-http://www.freesound.org/people/DJ%20Chronos/sounds/123539/ 
-Rubble 010.wav by DJ Chronos -- License: Attribution
-http://www.freesound.org/people/DJ%20Chronos/sounds/123547/ 
-Rubble 005.wav by DJ Chronos -- License: Attribution
-http://www.freesound.org/people/DJ%20Chronos/sounds/123542/ 
-Rubble 019.wav by DJ Chronos -- License: Attribution
-http://www.freesound.org/people/DJ%20Chronos/sounds/123556/ 
-Rubble 014.wav by DJ Chronos -- License: Attribution
-http://www.freesound.org/people/DJ%20Chronos/sounds/123551/ 
-Rubble 017.wav by DJ Chronos -- License: Attribution
-http://www.freesound.org/people/DJ%20Chronos/sounds/123554/ 
+Rubble Pack by DJ Chronos -- License: Attribution
+http://www.freesound.org/people/DJ%20Chronos/packs/7736/

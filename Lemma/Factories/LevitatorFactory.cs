@@ -38,14 +38,11 @@ namespace Lemma.Factories
 			{
 				Sound.AttachTracker(entity);
 				SoundKiller.Add(entity, AK.EVENTS.STOP_GLOWSQUARE);
-				entity.Add(new PostInitialization
+				entity.Add(new PostInitialization(delegate()
 				{
-					delegate()
-					{
-						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_GLOWSQUARE, entity);
-						AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_GLOWSQUARE_PITCH, -1.0f, entity);
-					}
-				});
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_GLOWSQUARE, entity);
+					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_GLOWSQUARE_PITCH, -1.0f, entity);
+				}));
 			}
 
 			AI ai = entity.GetOrCreate<AI>("AI");

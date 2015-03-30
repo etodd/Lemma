@@ -328,7 +328,7 @@ namespace Lemma.Factories
 			{
 				string entityType = key;
 				Factory factory = Factory.Get(entityType);
-				if (factory.EditorCanSpawn)
+				if (factory.EditorCanSpawn && (factory.AvailableInRelease || main.Settings.GodModeProperty))
 				{
 					gui.AddEntityCommands.Add(new EditorGeeUI.EditorCommand
 					{

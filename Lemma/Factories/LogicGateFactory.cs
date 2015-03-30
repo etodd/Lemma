@@ -89,14 +89,11 @@ namespace Lemma.Factories
 				}, gate.Input2Target));
 
 
-				entity.Add(new PostInitialization
+				entity.Add(new PostInitialization(delegate()
 				{
-					delegate()
-					{
-						populateOptions(input1Options, gate.Input1Target);
-						populateOptions(input2Options, gate.Input2Target);
-					}
-				});
+					populateOptions(input1Options, gate.Input1Target);
+					populateOptions(input2Options, gate.Input2Target);
+				}));
 			}
 			else
 			{

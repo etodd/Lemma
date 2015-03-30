@@ -20,6 +20,7 @@ public class AK
         public static uint PLAY_EVIL_CUBES = 1708164667U;
         public static uint PLAY_EXPLOSION = 4030404899U;
         public static uint PLAY_EXTERIOR_WIND = 2186390081U;
+        public static uint PLAY_FLOATER_BUILD = 1370228436U;
         public static uint PLAY_FOREST_VALLEY_AMBIENT = 954121400U;
         public static uint PLAY_GLOWSQUARE = 2925563572U;
         public static uint PLAY_MAGIC_CUBE_LOOP = 3187778582U;
@@ -59,6 +60,7 @@ public class AK
         public static uint PLAY_RAIN = 2838936948U;
         public static uint PLAY_RED_BURN = 472607653U;
         public static uint PLAY_RIFT = 2887989871U;
+        public static uint PLAY_RIFT_BLOCK = 2879928657U;
         public static uint PLAY_RIFT_OPEN = 2529943266U;
         public static uint PLAY_SIGNAL_TOWER_ACTIVATE = 2645903392U;
         public static uint PLAY_SIGNAL_TOWER_LOOP = 1879386073U;
@@ -79,6 +81,7 @@ public class AK
         public static uint PLAY_WATER_SPLASH = 1591852251U;
         public static uint PLAY_WATER_SPLASH_HEAVY = 1166068147U;
         public static uint PLAY_WATER_SPLASH_OUT = 332641338U;
+        public static uint PLAY_WATER_SPLASH_OUT_BIG = 571717257U;
         public static uint PLAY_WATERFALL_LOOP = 2021604517U;
         public static uint PLAY_WHITE_LIGHT = 3583610488U;
         public static uint PLAY_WHITE_LIGHT_HIT = 1136344990U;

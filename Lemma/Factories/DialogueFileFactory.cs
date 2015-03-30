@@ -14,6 +14,7 @@ namespace Lemma.Factories
 		public DialogueFileFactory()
 		{
 			this.Color = new Vector3(0.4f, 0.4f, 0.4f);
+			this.AvailableInRelease = false;
 		}
 
 		public override Entity Create(Main main)

@@ -15,6 +15,7 @@ namespace Lemma.Factories
 		public ConsoleCommandFactory()
 		{
 			this.Color = new Vector3(0.0f, 1f, 0.0f);
+			this.AvailableInRelease = false;
 		}
 
 		public override Entity Create(Main main)

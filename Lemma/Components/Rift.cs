@@ -24,7 +24,7 @@ namespace Lemma.Components
 		private const int batch = 8; // Empty coordinates in batches
 		private const float batchInterval = interval * batch;
 		private const float particleInterval = 0.015f; // A particle is emitted every x seconds
-		private const float soundInterval = 0.25f; // A sound is played every x seconds
+		private const float inSoundInterval = 0.25f; // A sound is played every x seconds (In style)
 		public Property<int> Radius = new Property<int> { Value = 10 };
 		public Property<float> CurrentRadius = new Property<float>();
 		public Property<int> CurrentIndex = new Property<int>();
@@ -113,6 +113,7 @@ namespace Lemma.Components
 		private ImplodeBlockFactory blockFactory = Factory.Get<ImplodeBlockFactory>();
 
 		private List<Voxel.Coord> removals = new List<Voxel.Coord>();
+		private Random random = new Random();
 		public void Update(float dt)
 		{
 			if (this.Coords.Length == 0)
@@ -137,13 +138,14 @@ namespace Lemma.Components
 							this.particleIntervalTimer -= particleInterval;
 							this.particles.AddParticle(this.Position, Vector3.Zero, -1.0f, this.CurrentRadius * 2.0f);
 						}
+					}
 
-						this.soundIntervalTimer += dt;
-						while (this.soundIntervalTimer > soundInterval)
-						{
-							this.soundIntervalTimer -= soundInterval;
-							AkSoundEngine.PostEvent(AK.EVENTS.PLAY_RIFT, this.Entity);
-						}
+					this.soundIntervalTimer += dt;
+					float soundInterval = this.Type == Style.In ? inSoundInterval : 0.35f + (float)random.NextDouble() * 0.35f;
+					while (this.soundIntervalTimer > soundInterval)
+					{
+						this.soundIntervalTimer -= soundInterval;
+						AkSoundEngine.PostEvent(this.Type == Style.In ? AK.EVENTS.PLAY_RIFT : AK.EVENTS.PLAY_RIFT_BLOCK, this.Entity);
 					}
 
 					bool regenerate = false;

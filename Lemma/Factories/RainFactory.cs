@@ -71,14 +71,11 @@ namespace Lemma.Factories
 			entity.Add("LightningShadowed", rain.LightningShadowed);
 			entity.Add("LightningColor", rain.LightningColor);
 
-			entity.Add(new PostInitialization
+			entity.Add(new PostInitialization(delegate()
 			{
-				delegate()
-				{
-					rain.Update();
-					emitter.Prime(Vector3.Zero);
-				}
-			});
+				rain.Update();
+				emitter.Prime(Vector3.Zero);
+			}));
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

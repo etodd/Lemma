@@ -87,7 +87,7 @@ namespace Lemma.Components
 				Lemma.Factories.WorldFactory.Instance.Get<World>().UpdateZones();
 			}, this.Parent, this.Exclusive, this.BoundingBox, this.Transform));
 
-			this.main.AddComponent(new PostInitialization { this.Parent.Reset });
+			this.main.AddComponent(new PostInitialization(this.Parent.Reset));
 		}
 
 		public bool Contains(Vector3 x)

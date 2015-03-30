@@ -30,7 +30,7 @@ namespace Lemma.Components
 		protected Matrix[] worldTransforms;
 		protected Matrix[] skinTransforms;
 
-		public bool bound = false;
+		public bool bound;
 
 		public const float DefaultBlendTime = 0.25f;
 
@@ -348,14 +348,13 @@ namespace Lemma.Components
 				if (this.skinningData == null)
 					throw new InvalidOperationException("This model does not contain a SkinningData tag.");
 
-				if (this.boneTransforms == null || this.boneTransformProperties.Count != this.skinningData.BindPose.Count)
+				if (!this.bound && (this.boneTransforms == null || this.boneTransforms.Length != this.skinningData.BindPose.Count))
 				{
 					this.boneTransforms = new Matrix[this.skinningData.BindPose.Count];
 					this.worldTransforms = new Matrix[this.skinningData.BindPose.Count];
 					this.skinTransforms = new Matrix[this.skinningData.BindPose.Count];
+					this.skinningData.BindPose.CopyTo(this.boneTransforms, 0);
 				}
-
-				this.skinningData.BindPose.CopyTo(this.boneTransforms, 0);
 			}
 		}
 

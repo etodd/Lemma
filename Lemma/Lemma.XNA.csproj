@@ -171,6 +171,7 @@
     <Compile Include="Factories\BouncerFactory.cs" />
     <Compile Include="Factories\ConsoleCommandFactory.cs" />
     <Compile Include="Factories\AnimatedPropFactory.cs" />
+    <Compile Include="Factories\SplashOutTriggerFactory.cs" />
     <Compile Include="Factories\VoxelTriggerFactory.cs" />
     <Compile Include="Factories\PowerBlockSocketFactory.cs" />
     <Compile Include="Factories\LogicGateFactory.cs" />

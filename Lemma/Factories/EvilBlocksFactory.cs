@@ -49,14 +49,11 @@ namespace Lemma.Factories
 
 			if (!main.EditorEnabled)
 			{
-				entity.Add(new PostInitialization
+				entity.Add(new PostInitialization(delegate()
 				{
-					delegate()
-					{
-						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_EVIL_CUBES, entity);
-						AkSoundEngine.PostEvent(ai.CurrentState == "Chase" ? AK.EVENTS.EVIL_CUBES_CHASE : AK.EVENTS.EVIL_CUBES_IDLE, entity);
-					}
-				});
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_EVIL_CUBES, entity);
+					AkSoundEngine.PostEvent(ai.CurrentState == "Chase" ? AK.EVENTS.EVIL_CUBES_CHASE : AK.EVENTS.EVIL_CUBES_IDLE, entity);
+				}));
 
 				SoundKiller.Add(entity, AK.EVENTS.STOP_EVIL_CUBES);
 			}

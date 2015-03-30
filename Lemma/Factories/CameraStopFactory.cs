@@ -49,15 +49,12 @@ namespace Lemma.Factories
 							main.Renderer.InternalGamma.Value = 0.0f;
 							main.UI.IsMouseVisible.Value = false;
 							
-							main.AddComponent(new PostInitialization
+							main.AddComponent(new PostInitialization(delegate()
 							{
-								delegate()
-								{
-									// We have to squirrel away the ID and get a new entity
-									// because OUR entity got wiped out by the MapLoader.
-									main.GetByGUID(id).Get<CameraStop>().Go.Execute();
-								}
-							});
+								// We have to squirrel away the ID and get a new entity
+								// because OUR entity got wiped out by the MapLoader.
+								main.GetByGUID(id).Get<CameraStop>().Go.Execute();
+							}));
 						};
 
 						Editor editor = main.Get("Editor").First().Get<Editor>();

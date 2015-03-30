@@ -13,18 +13,18 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Action<float> Action;
 
-		public Updater()
-		{
-			this.EnabledInEditMode = false;
-		}
-
 		public override void delete()
 		{
 			base.delete();
 			this.Action = null;
 		}
 
-		public Updater(Action<float> action = null)
+		public Updater()
+		{
+
+		}
+
+		public Updater(Action<float> action)
 		{
 			this.Action = action;
 		}
@@ -33,6 +33,7 @@ namespace Lemma.Components
 		{
 			base.Awake();
 			this.Serialize = false;
+			this.EnabledInEditMode = false;
 		}
 
 		public override Entity Entity

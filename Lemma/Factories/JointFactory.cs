@@ -145,7 +145,7 @@ namespace Lemma.Factories
 					main.Space.Add(joint);
 			}));
 			
-			entity.Add(new PostInitialization { rebuildJoint });
+			entity.Add(new PostInitialization(rebuildJoint));
 
 			if (main.EditorEnabled)
 				JointFactory.attachEditorComponents(entity, main, directional);

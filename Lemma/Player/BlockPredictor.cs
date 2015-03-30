@@ -276,7 +276,7 @@ namespace Lemma.Components
 
 		private bool canBuild(Vector3 pos)
 		{
-			return Zone.CanBuild(pos) && !Water.IsSubmerged(pos);
+			return Zone.CanBuild(pos) && Water.Get(pos) == null;
 		}
 
 		// Function for finding a wall to build for the player

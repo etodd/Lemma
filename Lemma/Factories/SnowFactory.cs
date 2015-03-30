@@ -139,15 +139,12 @@ namespace Lemma.Factories
 			entity.Add("WindParticlesPerSecond", windEmitter.ParticlesPerSecond);
 			entity.Add("Wind", wind.Speed);
 
-			entity.Add(new PostInitialization
+			entity.Add(new PostInitialization(delegate()
 			{
-				delegate()
-				{
-					wind.Update();
-					emitter.Prime(Vector3.Zero);
-					windEmitter.Prime(Vector3.Zero);
-				}
-			});
+				wind.Update();
+				emitter.Prime(Vector3.Zero);
+				windEmitter.Prime(Vector3.Zero);
+			}));
 		}
 	}
 }

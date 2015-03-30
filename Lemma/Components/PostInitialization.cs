@@ -4,12 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Collections;
 using ComponentBind;
+using System.Xml.Serialization;
 
 namespace Lemma.Components
 {
-	public class PostInitialization : Component<Main>, IEnumerable<Action>
+	public class PostInitialization : Component<Main>
 	{
-		protected List<Action> actions = new List<Action>();
+		public PostInitialization()
+		{
+			
+		}
+
+		public PostInitialization(Action a)
+		{
+			this.Action = a;
+		}
+
+		[XmlIgnore]
+		public Action Action;
 
 		public override void Awake()
 		{
@@ -17,25 +29,9 @@ namespace Lemma.Components
 			this.Serialize = false;
 		}
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return this.actions.GetEnumerator();
-		}
-
-		IEnumerator<Action> IEnumerable<Action>.GetEnumerator()
-		{
-			return this.actions.GetEnumerator();
-		}
-
-		public void Add(Action action)
-		{
-			this.actions.Add(action);
-		}
-
 		public override void Start()
 		{
-			foreach (Action action in this.actions)
-				action();
+			this.Action();
 			this.Delete.Execute();
 		}
 	}

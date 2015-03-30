@@ -315,10 +315,7 @@ namespace Lemma.Components
 		public virtual void LoadContent(bool reload)
 		{
 			if (reload)
-			{
 				this.loadModel(this.Filename, true);
-				this.loadEffect(this.EffectFile);
-			}
 		}
 
 		protected virtual void loadEffect(string file)
@@ -364,8 +361,7 @@ namespace Lemma.Components
 				try
 				{
 					this.model = (this.MapContent ? this.main.MapContent : this.main.Content).Load<Microsoft.Xna.Framework.Graphics.Model>(file);
-					if (this.EffectFile.Value == null)
-						this.loadEffect(null);
+					this.loadEffect(this.EffectFile);
 					this.IsValid.Value = true;
 				}
 				catch (Exception e)

@@ -31,6 +31,7 @@ namespace ComponentBind
 		public Vector3 Color = Vector3.One;
 
 		public bool EditorCanSpawn = true;
+		public bool AvailableInRelease = true;
 	}
 
 	public class Factory<MainClass> : Factory

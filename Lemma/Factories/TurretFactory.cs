@@ -99,7 +99,7 @@ namespace Lemma.Factories
 				Interval = 2.0f,
 				Action = delegate()
 				{
-					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < operationalRadius && !Water.IsSubmerged(transform.Position);
+					bool shouldBeActive = (transform.Position.Value - main.Camera.Position).Length() < operationalRadius && Water.Get(transform.Position) == null;
 					if (shouldBeActive && ai.CurrentState == "Suspended")
 						ai.CurrentState.Value = "Idle";
 					else if (!shouldBeActive && ai.CurrentState != "Suspended")

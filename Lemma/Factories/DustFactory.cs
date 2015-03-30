@@ -69,13 +69,10 @@ namespace Lemma.Factories
 
 			entity.Add("Velocity", emitter.VelocityOffset);
 
-			entity.Add(new PostInitialization
+			entity.Add(new PostInitialization(delegate()
 			{
-				delegate()
-				{
-					emitter.Prime(Vector3.Zero);
-				}
-			});
+				emitter.Prime(Vector3.Zero);
+			}));
 		}
 	}
 }

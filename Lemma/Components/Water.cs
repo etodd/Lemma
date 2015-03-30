@@ -87,14 +87,15 @@ namespace Lemma.Components
 		public Property<Vector2> Scale = new Property<Vector2> { Value = new Vector2(100.0f, 100.0f) };
 		public Property<bool> CannotSuspendByDistance = new Property<bool>();
 
-		public static bool IsSubmerged(Vector3 pos)
+		public static Water Get(Vector3 pos)
 		{
 			for (int i = 0; i < Water.instances.Count; i++)
 			{
-				if (Water.instances[i].Fluid.BoundingBox.Contains(pos) != ContainmentType.Disjoint)
-					return true;
+				Water water = Water.instances[i];
+				if (water.Fluid.BoundingBox.Contains(pos) != ContainmentType.Disjoint)
+					return water;
 			}
-			return false;
+			return null;
 		}
 
 		private Renderer renderer;
@@ -110,7 +111,7 @@ namespace Lemma.Components
 
 		private bool needResize = false;
 
-		private Random random = new Random();
+		private static Random random = new Random();
 
 		public Water()
 		{
@@ -522,27 +523,7 @@ namespace Lemma.Components
 					if (speed > 5.0f)
 					{
 						collidable.UpdateBoundingBox();
-						BoundingBox boundingBox = collidable.BoundingBox;
-						Vector3 diff = boundingBox.Max - boundingBox.Min;
-						Vector3[] particlePositions = new Vector3[5 * (int)(diff.X * diff.Z)];
-
-						Voxel v = collidable.Tag as Voxel;
-						int particleIndex = 0;
-						for (int i = 0; i < particlePositions.Length; i++)
-						{
-							Vector3 pos = particlePositions[particleIndex] = new Vector3
-							(
-								boundingBox.Min.X + ((float)this.random.NextDouble() * diff.X),
-								waterHeight,
-								boundingBox.Min.Z + ((float)this.random.NextDouble() * diff.Z)
-							);
-							if (v == null || v[pos] != Voxel.States.Empty)
-								particleIndex++;
-						}
-
-						ParticleEmitter.Emit(this.main, "Splash", particlePositions.Take(particleIndex));
-
-						ParticleEmitter.Emit(this.main, "BigSplash", particlePositions.Take(particleIndex / 5));
+						Water.SplashParticles(this.main, collidable.BoundingBox, collidable.Tag as Voxel, waterHeight);
 					}
 
 					this.submerged[collidable] = time;
@@ -575,6 +556,29 @@ namespace Lemma.Components
 				}
 			}
 			this.submergedCache.Clear();
+		}
+
+		public static void SplashParticles(Main main, BoundingBox boundingBox, Voxel v, float waterHeight)
+		{
+			Vector3 diff = boundingBox.Max - boundingBox.Min;
+			Vector3[] particlePositions = new Vector3[5 * (int)(diff.X * diff.Z)];
+
+			int particleIndex = 0;
+			for (int i = 0; i < particlePositions.Length; i++)
+			{
+				Vector3 pos = particlePositions[particleIndex] = new Vector3
+				(
+					boundingBox.Min.X + ((float)random.NextDouble() * diff.X),
+					waterHeight,
+					boundingBox.Min.Z + ((float)random.NextDouble() * diff.Z)
+				);
+				if (v == null || v[pos] != Voxel.States.Empty)
+					particleIndex++;
+			}
+
+			ParticleEmitter.Emit(main, "Splash", particlePositions.Take(particleIndex));
+
+			ParticleEmitter.Emit(main, "BigSplash", particlePositions.Take(particleIndex / 5));
 		}
 
 		public override void delete()

@@ -94,7 +94,7 @@ namespace Lemma.Factories
 				};
 
 				entity.Add(new NotifyBinding(populateOptions, binder.InTarget, binder.OutTarget, binder.PropertyType));
-				entity.Add(new PostInitialization { populateOptions });
+				entity.Add(new PostInitialization(populateOptions));
 				entity.Add("TargetInProperty", binder.TargetInProperty, new PropertyEntry.EditorData
 				{
 					Options = inTargetOptions,

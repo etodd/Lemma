@@ -196,7 +196,7 @@ namespace Lemma.Components
 								if (this.main.TotalTime - EffectBlock.lastSound > 0.15f)
 								{
 									EffectBlock.lastSound = this.main.TotalTime;
-									Sound.PostEvent(AK.EVENTS.PLAY_BLOCK_BUILD, absolutePos);
+									Sound.PostEvent(this.StateId == Voxel.t.Floater ? AK.EVENTS.PLAY_FLOATER_BUILD : AK.EVENTS.PLAY_BLOCK_BUILD, absolutePos);
 								}
 								this.Entity.Delete.Execute();
 								return;
