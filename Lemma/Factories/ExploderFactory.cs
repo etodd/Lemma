@@ -268,6 +268,12 @@ namespace Lemma.Factories
 						}
 					}
 
+					if (toSupport == Direction.None)
+					{
+						ai.CurrentState.Value = "Alert";
+						return;
+					}
+
 					Direction up = toSupport.GetReverse();
 
 					exploder.ExplosionOriginalCoord.Value = raycastAI.Coord;

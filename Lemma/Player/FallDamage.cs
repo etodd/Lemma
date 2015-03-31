@@ -29,6 +29,7 @@ namespace Lemma.Components
 
 		// Input properties
 		public Property<bool> IsSupported = new Property<bool>();
+		public Property<bool> PhoneOrNoteActive = new Property<bool>();
 
 		private bool lastSupported;
 
@@ -59,9 +60,6 @@ namespace Lemma.Components
 		public Property<bool> EnableWalking = new Property<bool>();
 		public Property<bool> EnableMoves = new Property<bool>();
 		public Command<float> PhysicsDamage = new Command<float>(); // Damage incurred from physics stuff smashing us
-
-		private bool reenableWalking;
-		private bool reenableMoves;
 
 		// Input/output properties
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
@@ -114,8 +112,6 @@ namespace Lemma.Components
 						this.LockRotation.Execute();
 						this.landingTimer = 0;
 						this.model.StartClip("LandHard", 0, false, 0.1f);
-						this.reenableWalking = this.EnableWalking;
-						this.reenableMoves = this.EnableMoves;
 						this.EnableWalking.Value = false;
 						this.EnableMoves.Value = false;
 					}
@@ -146,16 +142,15 @@ namespace Lemma.Components
 				this.Apply.Execute(accel);
 			}
 
-			if ((this.reenableWalking || this.reenableMoves) && (!this.landAnimation.Active || this.landAnimation.CurrentTime.TotalSeconds > 1.0f))
+			if (!this.landAnimation.Active || this.landAnimation.CurrentTime.TotalSeconds > 1.0f)
 			{
 				// We disabled walking while the land animation was playing.
 				// Now re-enable it
-				if (this.reenableWalking)
+				if (!this.PhoneOrNoteActive)
+				{
 					this.EnableWalking.Value = true;
-				if (this.reenableMoves)
 					this.EnableMoves.Value = true;
-				this.reenableWalking = false;
-				this.reenableMoves = false;
+				}
 			}
 
 			this.lastSupported = this.IsSupported;
@@ -165,10 +160,11 @@ namespace Lemma.Components
 		public override void delete()
 		{
 			base.delete();
-			if (this.reenableWalking)
+			if (!this.PhoneOrNoteActive)
+			{
 				this.EnableWalking.Value = true;
-			if (this.reenableMoves)
 				this.EnableMoves.Value = true;
+			}
 		}
 	}
 }

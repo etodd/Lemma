@@ -653,6 +653,7 @@ namespace Lemma.Factories
 				entity.Add(new TwoWayBinding<bool>(playerData.EnableEnhancedWallRun, wallRun.EnableEnhancedWallRun));
 				entity.Add(new TwoWayBinding<bool>(playerData.EnableMoves, player.EnableMoves));
 				entity.Add(new TwoWayBinding<float>(playerData.MaxSpeed, player.Character.MaxSpeed));
+				entity.Add(new Binding<bool>(fallDamage.PhoneOrNoteActive, () => playerData.PhoneActive || playerData.NoteActive, playerData.PhoneActive, playerData.NoteActive));
 
 				if (playerData.CloudType.Value == Voxel.t.Empty) // This makes everything work if we spawn next to a power block socket
 					entity.Add(new TwoWayBinding<Voxel.t>(blockCloud.Type, playerData.CloudType));
