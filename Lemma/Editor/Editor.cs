@@ -321,7 +321,11 @@ namespace Lemma.Components
 					this.Coordinate.Value = this.coord;
 				}
 				else if (!value && old)
+				{
 					this.Orientation.Value = Quaternion.Identity;
+					this.StopFill.Execute();
+					this.StopEmpty.Execute();
+				}
 			}));
 
 			this.SelectedEntities.ItemAdded += delegate(int index, Entity t)

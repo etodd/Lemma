@@ -818,9 +818,8 @@ namespace Lemma.Factories
 					}
 				}
 			);
-			timelineUpdate.EnabledInEditMode = true;
 			entity.Add(timelineUpdate);
-
+			timelineUpdate.EnabledInEditMode = true;
 		}
 	}
 }

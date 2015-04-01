@@ -369,7 +369,7 @@ namespace Lemma.Factories
 
 								if (targetDistance > 50.0f || ai.TimeInCurrentState > 30.0f) // He got away
 									ai.CurrentState.Value = "Alert";
-								else if (targetDistance < 5.0f) // We got 'im
+								else if (targetDistance < 4.0f) // We got 'im
 								{
 									// First, make sure we're not near a reset block
 									Voxel v = chase.Voxel.Value.Target.Get<Voxel>();

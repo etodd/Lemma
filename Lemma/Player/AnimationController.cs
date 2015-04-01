@@ -273,8 +273,11 @@ namespace Lemma.Components
 								}
 							}
 						}
-						else // We just started idling. Save the current rotation.
-							this.idleRotation = this.Rotation;
+						else // We just started idling.
+						{
+							if (this.idleRotationBlend >= 1.0f) // Save the current rotation.
+								this.idleRotation = this.Rotation;
+						}
 					}
 					else
 					{
