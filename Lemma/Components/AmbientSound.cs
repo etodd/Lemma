@@ -16,6 +16,8 @@ namespace Lemma.Components
 		public Property<bool> Is3D = new Property<bool>();
 		public Property<Vector3> Position = new Property<Vector3>();
 
+		private bool playing;
+
 		public override void Awake()
 		{
 			base.Awake();
@@ -41,14 +43,18 @@ namespace Lemma.Components
 
 		private void play()
 		{
-			if (this.PlayCue != 0 && this.Enabled && !this.Suspended && !this.main.EditorEnabled)
+			if (this.PlayCue != 0 && this.Enabled && !this.Suspended && !this.main.EditorEnabled && !this.playing)
+			{
 				AkSoundEngine.PostEvent(this.PlayCue, this.Entity);
+				this.playing = true;
+			}
 		}
 
 		private void stop()
 		{
 			if (this.StopCue != 0)
 				AkSoundEngine.PostEvent(this.StopCue, this.Entity);
+			this.playing = false;
 		}
 
 		public override void delete()

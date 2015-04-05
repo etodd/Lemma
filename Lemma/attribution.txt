@@ -1,5 +1,9 @@
-Created, coded, and designed by Evan Todd
+Created by Evan Todd
 http://et1337.com
+
+------------------------------------------
+
+Collaborators
 
 Antonio Yáñez -- Animation
 http://www.ayaba.graphics
@@ -19,12 +23,9 @@ https://www.behance.net/nailaburney
 Sam Gebhardt -- Promotional artwork
 http://samgebhardt.com/
 
-Human model, texture, and rig adapted from MakeHuman
-http://makehuman.org/
-
 ------------------------------------------
 
-CGTEXTURES SOURCE MATERIAL
+CGTextures source material
 
 Lemma/Content/Textures/red-rock.png
 Lemma/Content/Textures/red-rock-normal.png
@@ -37,7 +38,7 @@ Lemma/Content/Textures/lattice-normal.png
 
 ------------------------------------------
 
-SKYBOXES
+Skyboxes
 
 Tim Heldna
 http://www.garagegames.com/community/blogs/view/12655
@@ -50,7 +51,7 @@ http://www.petesoasis.com
 
 ------------------------------------------
 
-IMAGES / PHOTOS
+Images / photos
 
 foliage.png based on Leaves-4145.jpg by David R. Tribble
 http://commons.wikimedia.org/wiki/File:Leaves-4146.jpg
@@ -61,7 +62,7 @@ http://commons.wikimedia.org/wiki/File:%C3%8Dndios_isolados_no_Acre_3.jpg
 
 ------------------------------------------
 
-FREESOUND AUDIO SOURCE MATERIAL
+Freesound audio source material
 
 http://freesound.org
 
@@ -93,3 +94,22 @@ Page_Turn_29.wav by Koops -- License: Attribution
 http://www.freesound.org/people/Koops/sounds/20263/ 
 Rubble Pack by DJ Chronos -- License: Attribution
 http://www.freesound.org/people/DJ%20Chronos/packs/7736/
+
+------------------------------------------
+
+Player model adapted from MakeHuman
+http://makehuman.org/
+
+Moral support and maintenance of sanity thanks to The Central Ohio Gamedev Group
+http://www.meetup.com/The-Cogg/
+
+------------------------------------------
+
+Special thanks to
+
+My parents
+
+------------------------------------------
+
+He was pierced for our transgressions;
+He was crushed for our iniquities.

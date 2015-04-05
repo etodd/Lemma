@@ -92,8 +92,8 @@ namespace Lemma
 		}
 
 		public const int ConfigVersion = 9;
-		public const int MapVersion = 1015;
-		public const int Build = 1015;
+		public const int MapVersion = 1021;
+		public const int Build = 1021;
 
 		public class Config
 		{
@@ -1625,23 +1625,24 @@ namespace Lemma
 
 		private TimeSpan lastFrameTime;
 
-		public bool LastActive = true;
+		public bool LastActive { get {  return this.lastLastActive; } }
+		private bool lastLastActive;
+		private bool lastActive;
 
 		protected override void Update(GameTime gameTime)
 		{
-			if (this.IsActive && !this.LastActive)
+			this.lastLastActive = this.lastActive;
+			if (this.IsActive && !this.lastActive)
 				AkSoundEngine.PostEvent(AK.EVENTS.RESUME_ALL);
-			else if (!this.IsActive && this.LastActive)
+			else if (!this.IsActive && this.lastActive)
 			{
 				AkSoundEngine.PostEvent(AK.EVENTS.PAUSE_ALL);
 				AkSoundEngine.RenderAudio();
 			}
+			this.lastActive = this.IsActive;
 
-			if (!this.IsActive)
-			{
-				this.LastActive = this.IsActive;
+			if (!this.lastActive)
 				return;
-			}
 
 			if (this.targetElapsedTime > this.lastFrameTime)
 			{
@@ -1792,8 +1793,6 @@ namespace Lemma
 				this.ResizeViewport(this.resize.Value.X, this.resize.Value.Y, false, false);
 				this.resize = null;
 			}
-
-			this.LastActive = this.IsActive;
 		}
 
 #if VR

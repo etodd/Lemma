@@ -32,6 +32,8 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<Vector3> Position = new Property<Vector3>();
 
+		public Property<uint> PowerOnCue = new Property<uint> { Value = AK.EVENTS.PLAY_SWITCH_ON };
+
 		private static bool canConnect(Voxel.State state)
 		{
 			return state == Voxel.States.Powered
@@ -61,8 +63,8 @@ namespace Lemma.Components
 
 			this.Add(new CommandBinding(this.OnPowerOn, delegate()
 			{
-				if (this.main.TotalTime > 0.1f)
-					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SWITCH_ON, this.Entity);
+				if (this.main.TotalTime > 0.1f && this.PowerOnCue != 0)
+					AkSoundEngine.PostEvent(this.PowerOnCue, this.Entity);
 				Voxel map = this.AttachedVoxel.Value.Target.Get<Voxel>();
 
 				Switch closestConnectedSwitch = null;

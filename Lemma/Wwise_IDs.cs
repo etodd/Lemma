@@ -31,9 +31,12 @@ public class AK
         public static uint PLAY_MUSIC_AMBIENT = 2712742350U;
         public static uint PLAY_MUSIC_AMBIENT_02 = 62078239U;
         public static uint PLAY_MUSIC_AQUA = 3353261050U;
+        public static uint PLAY_MUSIC_DARK = 2649426350U;
         public static uint PLAY_MUSIC_FROST = 3147354588U;
+        public static uint PLAY_MUSIC_NOSTALGIC = 1765947264U;
         public static uint PLAY_MUSIC_OVERVIEW = 2507565207U;
         public static uint PLAY_MUSIC_STINGER = 1904807532U;
+        public static uint PLAY_MUSIC_STINGER_02 = 1344053969U;
         public static uint PLAY_MUSIC_THEME = 4046097845U;
         public static uint PLAY_MUSIC_THEME_LOOP = 4120562202U;
         public static uint PLAY_NOTE_DROP = 4017882330U;
@@ -65,6 +68,10 @@ public class AK
         public static uint PLAY_SIGNAL_TOWER_ACTIVATE = 2645903392U;
         public static uint PLAY_SIGNAL_TOWER_LOOP = 1879386073U;
         public static uint PLAY_SNAKE_MOVE = 3676437670U;
+        public static uint PLAY_SWITCH_MUSIC1 = 1893257791U;
+        public static uint PLAY_SWITCH_MUSIC2 = 1893257788U;
+        public static uint PLAY_SWITCH_MUSIC3 = 1893257789U;
+        public static uint PLAY_SWITCH_MUSIC4 = 1893257786U;
         public static uint PLAY_SWITCH_OFF = 1895765680U;
         public static uint PLAY_SWITCH_ON = 1693166490U;
         public static uint PLAY_THUNDER = 3870462868U;
@@ -103,6 +110,7 @@ public class AK
         public static uint STOP_FOREST_VALLEY_AMBIENT = 2984996438U;
         public static uint STOP_GLOWSQUARE = 1198720254U;
         public static uint STOP_MAGIC_CUBE_LOOP = 2741847256U;
+        public static uint STOP_MUSIC = 2837384057U;
         public static uint STOP_MUSIC_AMBIENT = 3815910684U;
         public static uint STOP_MUSIC_AMBIENT_02 = 28192961U;
         public static uint STOP_MUSIC_THEME = 2480681107U;

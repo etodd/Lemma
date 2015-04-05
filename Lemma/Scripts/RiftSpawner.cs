@@ -33,6 +33,11 @@ namespace Lemma.GameScripts
 				enabled.Value = false;
 			}));
 
+			AmbientSound sound = script.Create<AmbientSound>();
+			sound.PlayCue.Value = AK.EVENTS.PLAY_MONOLITH_LOOP;
+			sound.StopCue.Value = AK.EVENTS.STOP_ALL_OBJECT;
+			sound.Add(new Binding<bool>(sound.Enabled, enabled));
+
 			script.Add(new Binding<float, bool>(WorldFactory.Instance.Get<World>().CameraShakeAmount, x => x ? 0.02f : 0.0f, enabled));
 
 			script.Add(new ChangeBinding<bool>(enabled, delegate(bool old, bool value)

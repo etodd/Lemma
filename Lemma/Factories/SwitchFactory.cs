@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Lemma.Components;
+using Lemma.Util;
 
 namespace Lemma.Factories
 {
@@ -73,6 +74,7 @@ namespace Lemma.Factories
 			entity.Add("OnPowerOn", sw.OnPowerOn);
 			entity.Add("OnPowerOff", sw.OnPowerOff);
 			entity.Add("On", sw.On, null, true);
+			entity.Add("PowerOnCue", sw.PowerOnCue, new PropertyEntry.EditorData { Options = WwisePicker.Get(main) });
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)

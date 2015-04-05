@@ -466,7 +466,7 @@ namespace Lemma.Components
 
 		public void SparksLowPriority(Vector3 pos, Spark type)
 		{
-			this.sparks(pos, type, this.random.Next(0, 2) == 0, this.random.Next(0, 2) == 0);
+			this.sparks(pos, type, this.random.Next(0, 2) == 0, this.random.Next(0, 4) == 0);
 		}
 
 		public void Sparks(Vector3 pos, Spark type)
