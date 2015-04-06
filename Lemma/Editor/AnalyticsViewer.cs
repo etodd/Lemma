@@ -193,7 +193,7 @@ namespace Lemma.Factories
 
 			sessionList.Add(new ListBinding<UIComponent, SessionEntry>(sessionList.Children, analyticsSessions, delegate(SessionEntry entry)
 			{
-				ListContainer item = createCheckboxListItem(entry.Session.Date.ToShortDateString() + " (" + new TimeSpan(0, 0, (int)entry.Session.TotalTime).ToString() + ")");
+				ListContainer item = createCheckboxListItem(string.Format("{0} {1:d} ({2})", entry.Session.UUID.Substring(0, 8), entry.Session.Date, new TimeSpan(0, 0, (int)entry.Session.TotalTime)));
 
 				Container checkbox = (Container)item.GetChildByName("Checkbox");
 				checkbox.Add(new Binding<Microsoft.Xna.Framework.Color, bool>(checkbox.Tint, x => x ? Microsoft.Xna.Framework.Color.White : Microsoft.Xna.Framework.Color.Black, entry.Active));
@@ -732,7 +732,7 @@ namespace Lemma.Factories
 			playbackLabel.FontFile.Value = main.Font;
 			playbackLabel.Add(new Binding<string>(playbackLabel.Text, delegate()
 			{
-				return playbackLocation.Value.ToString("F") + " " + (analyticsPlaying ? "Playing" : "Stopped") + " " + playbackSpeed.Value.ToString("F") + "x";
+				return string.Format("{0} {1} {2:F}x", TimeTrialUI.SecondsToTimeString(playbackLocation), (analyticsPlaying ? "Playing" : "Stopped"), playbackSpeed);
 			}, playbackLocation, playbackSpeed, analyticsPlaying));
 			playbackContainer.Children.Add(playbackLabel);
 
