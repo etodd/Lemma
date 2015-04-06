@@ -36,7 +36,7 @@ namespace Lemma.Factories
 				{
 					result = cache[entry] = new ListProperty<string>();
 					result.Add(null);
-					int contentRootDirectoryIndex = root.Length + 1;
+					int contentRootDirectoryIndex = root.Length + (root[root.Length - 1] == Path.DirectorySeparatorChar ? 0 : 1);
 					if (directories == null)
 						directories = new[] { "" };
 					foreach (string dir in directories)

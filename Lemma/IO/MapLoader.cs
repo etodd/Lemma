@@ -130,6 +130,7 @@ namespace Lemma.IO
 			typeof(Bouncer),
 			typeof(VoxelTrigger),
 			typeof(Block),
+			typeof(SoundBank),
 		};
 
 		public static XmlSerializer Serializer;

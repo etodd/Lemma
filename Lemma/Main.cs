@@ -1125,10 +1125,9 @@ namespace Lemma
 
 				this.UI.IsMouseVisible.Value = true;
 
-				if (AkBankLoader.LoadBank("SFX_Bank_01.bnk") != AKRESULT.AK_Success)
-					Log.d("Failed to load sound bank");
-
-				AkBankLoader.LoadBank("Music.bnk");
+				AKRESULT akresult = AkBankLoader.LoadBank("SFX_Bank_01.bnk");
+				if (akresult != AKRESULT.AK_Success)
+					Log.d(string.Format("Failed to load main sound bank: {0}", akresult));
 
 #if ANALYTICS
 				this.SessionRecorder = new Session.Recorder(this);

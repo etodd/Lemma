@@ -108,6 +108,7 @@
     <Compile Include="ComponentInterfaces.cs" />
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
+    <Compile Include="Components\SoundBank.cs" />
     <Compile Include="Components\Bouncer.cs" />
     <Compile Include="Components\PowerBlockSocket.cs" />
     <Compile Include="Components\AnimatedProp.cs" />
@@ -171,6 +172,7 @@
     <Compile Include="Factories\BouncerFactory.cs" />
     <Compile Include="Factories\ConsoleCommandFactory.cs" />
     <Compile Include="Factories\AnimatedPropFactory.cs" />
+    <Compile Include="Factories\SoundBankFactory.cs" />
     <Compile Include="Factories\SplashOutTriggerFactory.cs" />
     <Compile Include="Factories\VoxelTriggerFactory.cs" />
     <Compile Include="Factories\PowerBlockSocketFactory.cs" />

@@ -28,16 +28,16 @@ public class AK
         public static uint PLAY_MAGIC_CUBES = 4209015896U;
         public static uint PLAY_MONOLITH_LOOP = 1920428907U;
         public static uint PLAY_MONOLITH_POWERUP = 1490340003U;
-        public static uint PLAY_MUSIC_AMBIENT = 2712742350U;
-        public static uint PLAY_MUSIC_AMBIENT_02 = 62078239U;
         public static uint PLAY_MUSIC_AQUA = 3353261050U;
         public static uint PLAY_MUSIC_DARK = 2649426350U;
+        public static uint PLAY_MUSIC_DARK2 = 1191197912U;
+        public static uint PLAY_MUSIC_FOREST = 1820169829U;
         public static uint PLAY_MUSIC_FROST = 3147354588U;
         public static uint PLAY_MUSIC_NOSTALGIC = 1765947264U;
         public static uint PLAY_MUSIC_OVERVIEW = 2507565207U;
+        public static uint PLAY_MUSIC_RAIN = 3259798356U;
         public static uint PLAY_MUSIC_STINGER = 1904807532U;
         public static uint PLAY_MUSIC_STINGER_02 = 1344053969U;
-        public static uint PLAY_MUSIC_THEME = 4046097845U;
         public static uint PLAY_MUSIC_THEME_LOOP = 4120562202U;
         public static uint PLAY_NOTE_DROP = 4017882330U;
         public static uint PLAY_NOTE_PICKUP = 2403250269U;
@@ -111,8 +111,8 @@ public class AK
         public static uint STOP_GLOWSQUARE = 1198720254U;
         public static uint STOP_MAGIC_CUBE_LOOP = 2741847256U;
         public static uint STOP_MUSIC = 2837384057U;
-        public static uint STOP_MUSIC_AMBIENT = 3815910684U;
-        public static uint STOP_MUSIC_AMBIENT_02 = 28192961U;
+        public static uint STOP_MUSIC_FOREST = 2506571047U;
+        public static uint STOP_MUSIC_RAIN = 1457395542U;
         public static uint STOP_MUSIC_THEME = 2480681107U;
         public static uint STOP_PLAYER_BREATHING_HARD = 3180565756U;
         public static uint STOP_PLAYER_BREATHING_SOFT = 1454416799U;
@@ -176,7 +176,14 @@ public class AK
     public class BANKS
     {
         public static uint INIT = 1355168291U;
-        public static uint MUSIC = 3991942870U;
+        public static uint AQUA = 3149800173U;
+        public static uint DARK2 = 2462366677U;
+        public static uint DAWN = 2009803003U;
+        public static uint FOREST = 491961918U;
+        public static uint FROST = 1747045785U;
+        public static uint MONOLITH = 346542641U;
+        public static uint NOSTALGIC = 1863221701U;
+        public static uint RAIN = 2043403999U;
         public static uint SFX_BANK_01 = 1878155811U;
     } // public class BANKS
 
