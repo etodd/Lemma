@@ -46,8 +46,9 @@ namespace Lemma.Components
 
 		private static void explode(Main main, Voxel map, Voxel.Coord coord, Vector3 pos, int radius, float physicsRadius)
 		{
+			float distanceToCamera = (main.Camera.Position.Value - pos).Length();
 			// Kaboom
-			Sound.PostEvent(AK.EVENTS.PLAY_EXPLOSION, pos);
+			Sound.PostEvent(distanceToCamera < physicsRadius * 1.5f ? AK.EVENTS.PLAY_EXPLOSION_CLOSE : AK.EVENTS.PLAY_EXPLOSION, pos);
 
 			Entity lightEntity = Factory.Get<PointLightFactory>().CreateAndBind(main);
 			lightEntity.Serialize = false;

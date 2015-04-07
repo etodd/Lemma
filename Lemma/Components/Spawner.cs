@@ -192,7 +192,8 @@ namespace Lemma.Components
 											&& absolutePos.Y > lowerLimit
 											&& respawnMap.GetAbsoluteVector(respawnMap.GetRelativeDirection(Direction.PositiveY).GetVector()).Y > 0.5f
 											&& Agent.Query(absolutePos, 0.0f, 20.0f) == null
-											&& Rift.Query(absolutePos) == null)
+											&& Rift.Query(absolutePos) == null
+											&& Zone.CanSpawnAt(absolutePos))
 										{
 											Voxel.State state = respawnMap[respawnLocation.Coordinate];
 											if (state != Voxel.States.Empty && state != Voxel.States.Infected && state != Voxel.States.HardInfected && state != Voxel.States.Floater)

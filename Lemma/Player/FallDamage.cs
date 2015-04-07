@@ -65,6 +65,7 @@ namespace Lemma.Components
 		public Property<Vector3> LinearVelocity = new Property<Vector3>();
 
 		private Vector3 lastLinearVelocity;
+		private bool disabledMoves;
 
 		public override void Awake()
 		{
@@ -114,6 +115,7 @@ namespace Lemma.Components
 						this.model.StartClip("LandHard", 0, false, 0.1f);
 						this.EnableWalking.Value = false;
 						this.EnableMoves.Value = false;
+						this.disabledMoves = true;
 					}
 				}
 			}
@@ -142,7 +144,7 @@ namespace Lemma.Components
 				this.Apply.Execute(accel);
 			}
 
-			if (!this.landAnimation.Active || this.landAnimation.CurrentTime.TotalSeconds > 1.0f)
+			if (this.disabledMoves && (!this.landAnimation.Active || this.landAnimation.CurrentTime.TotalSeconds > 1.0f))
 			{
 				// We disabled walking while the land animation was playing.
 				// Now re-enable it
@@ -151,6 +153,7 @@ namespace Lemma.Components
 					this.EnableWalking.Value = true;
 					this.EnableMoves.Value = true;
 				}
+				this.disabledMoves = false;
 			}
 
 			this.lastSupported = this.IsSupported;

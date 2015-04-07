@@ -11,7 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma.Components
 {
-	public class World : Component<Main>, IUpdateableComponent
+	public class World : Component<Main>, IUpdateableComponent, IGraphicsComponent
 	{
 		public static readonly Color DefaultBackgroundColor = new Color(16.0f / 255.0f, 26.0f / 255.0f, 38.0f / 255.0f, 1.0f);
 
@@ -44,6 +44,12 @@ namespace Lemma.Components
 			this.UUID.Value = Guid.NewGuid().ToString().Replace("-", string.Empty);
 		}
 
+		public void LoadContent(bool reload)
+		{
+			if (reload)
+				this.OverlayTexture.Changed();
+		}
+
 		public override void Awake()
 		{
 			base.Awake();
@@ -53,7 +59,7 @@ namespace Lemma.Components
 			if (string.IsNullOrEmpty(this.UUID))
 				this.NewUUID();
 
-			this.Add(new Binding<Texture2D, string>(this.OverlayTextureHandle, file => file == null ? (Texture2D)null : this.main.Content.Load<Texture2D>(file), this.OverlayTexture));
+			this.Add(new Binding<Texture2D, string>(this.OverlayTextureHandle, file => file == null ? (Texture2D)null : this.main.MapContent.Load<Texture2D>(file), this.OverlayTexture));
 			this.Add(new Binding<string>(this.main.Renderer.LightRampTexture, this.LightRampTexture));
 			this.Add(new Binding<string>(this.main.LightingManager.EnvironmentMap, this.EnvironmentMap));
 			this.Add(new Binding<Vector3>(this.main.LightingManager.EnvironmentColor, this.EnvironmentColor));

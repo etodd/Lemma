@@ -34,6 +34,7 @@ namespace Lemma.Factories
 			entity.Add("DetailedShadows", zone.DetailedShadows);
 			entity.Add("RiftProof", zone.RiftProof);
 			entity.Add("Reverb", zone.Reverb);
+			entity.Add("CanSpawn", zone.CanSpawn);
 		}
 
 		private Transform addCornerModel(Entity entity, Property<bool> selected)

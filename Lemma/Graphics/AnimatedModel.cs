@@ -340,7 +340,7 @@ namespace Lemma.Components
 		protected override void loadModel(string file, bool reload)
 		{
 			base.loadModel(file, reload);
-			if (this.model != null)
+			if (this.model != null && !reload)
 			{
 				// Look up our custom skinning information.
 				this.skinningData = this.model.Tag as SkinnedModel.SkinningData;

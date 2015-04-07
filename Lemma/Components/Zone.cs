@@ -15,6 +15,8 @@ namespace Lemma.Components
 
 		public Property<ReverbMode> Reverb = new Property<ReverbMode>();
 
+		public Property<bool> CanSpawn = new Property<bool> { Value = true };
+
 		public static List<Zone> Zones = new List<Zone>();
 
 		public ListProperty<Entity.Handle> ConnectedEntities = new ListProperty<Entity.Handle>();
@@ -114,6 +116,12 @@ namespace Lemma.Components
 				}
 			}
 			return result;
+		}
+
+		public static bool CanSpawnAt(Vector3 x)
+		{
+			Zone z = Zone.Get(x);
+			return z == null || z.CanSpawn.Value;
 		}
 
 		public static uint MaxAuxSend = 1;

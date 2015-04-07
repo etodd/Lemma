@@ -19,6 +19,7 @@ public class AK
         public static uint PLAY_DOOR_OPEN = 1660008929U;
         public static uint PLAY_EVIL_CUBES = 1708164667U;
         public static uint PLAY_EXPLOSION = 4030404899U;
+        public static uint PLAY_EXPLOSION_CLOSE = 2460394138U;
         public static uint PLAY_EXTERIOR_WIND = 2186390081U;
         public static uint PLAY_FLOATER_BUILD = 1370228436U;
         public static uint PLAY_FOREST_VALLEY_AMBIENT = 954121400U;
