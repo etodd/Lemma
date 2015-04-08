@@ -297,6 +297,14 @@ namespace Lemma.Factories
 
 					if (hitVoxel && rayHit.Voxel != null)
 						Explosion.Explode(main, rayHit.Position + rayHit.Voxel.GetAbsoluteVector(rayHit.Normal.GetVector()) * 0.5f, 6, 8.0f);
+
+					Vector3 splashPos;
+					Water w = Water.Raycast(transform.Position, toReticle, rayHit.Distance, out splashPos);
+					if (w != null)
+					{
+						Sound.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH, splashPos);
+						Water.SplashParticles(main, splashPos, 3.0f);
+					}
 				},
 				Tasks = new[]
 				{

@@ -98,6 +98,31 @@ namespace Lemma.Components
 			return null;
 		}
 
+		public static Water Raycast(Vector3 pos, Vector3 ray, float radius, out Vector3 hit)
+		{
+			hit = Vector3.Zero;
+			if (ray.Y == 0)
+				return null;
+			for (int i = 0; i < Water.instances.Count; i++)
+			{
+				Water water = Water.instances[i];
+				float height = water.Position.Value.Y;
+				float distance = (height - pos.Y) / ray.Y;
+				if (distance > 0 && distance < radius)
+				{
+					Vector3 p = pos + (ray * distance);
+					BoundingBox b = water.Fluid.BoundingBox;
+					if (p.X > b.Min.X && p.Z > b.Min.Z
+						&& p.Z < b.Max.X && p.Z < b.Max.Z)
+					{
+						hit = p;
+						return water;
+					}
+				}
+			}
+			return null;
+		}
+
 		private Renderer renderer;
 		private RenderTarget2D buffer;
 		private Effect effect;
@@ -556,6 +581,31 @@ namespace Lemma.Components
 				}
 			}
 			this.submergedCache.Clear();
+		}
+
+		public static void SplashParticles(Main main, Vector3 pos, float radius)
+		{
+			float radius_squared = radius * radius;
+			Vector3[] particlePositions = new Vector3[5 * (int)radius_squared];
+
+			Vector3 min = pos + new Vector3(-radius, 0, -radius);
+
+			int particleIndex = 0;
+			for (int i = 0; i < particlePositions.Length; i++)
+			{
+				Vector3 particle = particlePositions[particleIndex] = new Vector3
+				(
+					min.X + ((float)random.NextDouble() * 2.0f * radius),
+					pos.Y,
+					min.Z + ((float)random.NextDouble() * 2.0f * radius)
+				);
+				if ((particle - pos).LengthSquared() < radius_squared)
+					particleIndex++;
+			}
+
+			ParticleEmitter.Emit(main, "Splash", particlePositions.Take(particleIndex));
+
+			ParticleEmitter.Emit(main, "BigSplash", particlePositions.Take(particleIndex / 5));
 		}
 
 		public static void SplashParticles(Main main, BoundingBox boundingBox, Voxel v, float waterHeight)

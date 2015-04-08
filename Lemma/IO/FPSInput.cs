@@ -38,9 +38,18 @@ namespace Lemma.Components
 			Microsoft.Xna.Framework.Input.Mouse.SetPosition(FPSInput.MouseCenter.X, FPSInput.MouseCenter.Y);
 		}
 
-		public void ResetLook()
+		public void ResetLook(Vector2 value)
 		{
-			this.lastMouseLook = Vector2.Zero;
+			this.lastMouseLook = value;
+		}
+
+		private void enableLook()
+		{
+			this.Mouse.Value = this.lastMouseLook;
+			FPSInput.RecenterMouse();
+			MouseState oldState = this.main.MouseState;
+			this.lastMouseNonLook = new Vector2(oldState.X, oldState.Y);
+			this.main.MouseState.Value = new MouseState(FPSInput.MouseCenter.X, FPSInput.MouseCenter.Y, oldState.ScrollWheelValue, oldState.LeftButton, oldState.MiddleButton, oldState.RightButton, oldState.XButton1, oldState.XButton2);
 		}
 
 		protected Vector2 lastMouseLook, lastMouseNonLook;
@@ -49,23 +58,20 @@ namespace Lemma.Components
 			base.Awake();
 			this.Add(new CommandBinding(this.Enable, delegate()
 			{
-				FPSInput.RecenterMouse();
+				if (this.EnableLook)
+					this.enableLook();
 			}));
 			this.Add(new CommandBinding(this.Disable, delegate()
 			{
+				if (this.EnableLook)
+					this.lastMouseLook = this.Mouse;
 				if (!this.Movement.Value.Equals(Vector2.Zero))
 					this.Movement.Value = Vector2.Zero;
 			}));
 			this.Add(new ChangeBinding<bool>(this.EnableLook, delegate(bool old, bool value)
 			{
 				if (value && !old)
-				{
-					this.Mouse.Value = this.lastMouseLook;
-					FPSInput.RecenterMouse();
-					MouseState oldState = this.main.MouseState;
-					this.lastMouseNonLook = new Vector2(oldState.X, oldState.Y);
-					this.main.MouseState.Value = new MouseState(FPSInput.MouseCenter.X, FPSInput.MouseCenter.Y, oldState.ScrollWheelValue, oldState.LeftButton, oldState.MiddleButton, oldState.RightButton, oldState.XButton1, oldState.XButton2);
-				}
+					this.enableLook();
 				else if (!value && old)
 				{
 					this.lastMouseLook = this.Mouse;
