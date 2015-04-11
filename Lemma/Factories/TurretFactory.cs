@@ -31,6 +31,12 @@ namespace Lemma.Factories
 
 			Turret turret = entity.GetOrCreate<Turret>("Turret");
 
+			if (!main.EditorEnabled)
+			{
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_LOOP, entity);
+				SoundKiller.Add(entity, AK.EVENTS.STOP_TURRET_LOOP);
+			}
+
 			Command die = new Command
 			{
 				Action = delegate()
@@ -178,6 +184,14 @@ namespace Lemma.Factories
 			ai.Add(new AI.AIState
 			{
 				Name = "Alert",
+				Enter = delegate(AI.AIState previous)
+				{
+					AkSoundEngine.PostEvent(AK.EVENTS.STOP_TURRET_LOOP, entity);
+				},
+				Exit = delegate(AI.AIState next)
+				{
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_LOOP, entity);
+				},
 				Tasks = new[]
 				{ 
 					checkOperationalRadius,
@@ -221,6 +235,10 @@ namespace Lemma.Factories
 			ai.Add(new AI.AIState
 			{
 				Name = "Aggressive",
+				Exit = delegate(AI.AIState next)
+				{
+					AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_TURRET_PITCH, 0.0f, entity);
+				},
 				Tasks = new[]
 				{
 					checkTargetAgent,
@@ -231,6 +249,12 @@ namespace Lemma.Factories
 						{
 							Entity target = ai.TargetAgent.Value.Target;
 							turret.Reticle.Value += (target.Get<Transform>().Position - turret.Reticle.Value) * Math.Min(3.0f * main.ElapsedTime, 1.0f);
+
+							Vector3 targetPos = ai.TargetAgent.Value.Target.Get<Transform>().Position.Value;
+							Vector3 toTarget = Vector3.Normalize(targetPos - transform.Position.Value);
+
+							float angle = (float)Math.Acos(Vector3.Dot(toReticle, toTarget));
+							AkSoundEngine.SetRTPCValue(AK.GAME_PARAMETERS.SFX_TURRET_PITCH, ((1.0f - (angle / ((float)Math.PI * 0.5f))) - 0.8f) * (1.0f / 0.2f), entity);
 						}
 					},
 					new AI.Task
@@ -263,10 +287,13 @@ namespace Lemma.Factories
 				Name = "Firing",
 				Enter = delegate(AI.AIState last)
 				{
+					AkSoundEngine.PostEvent(AK.EVENTS.STOP_TURRET_LOOP, entity);
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_CHARGE, entity);
 				},
 				Exit = delegate(AI.AIState next)
 				{
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_LOOP, entity);
+
 					Voxel.State attachedState = attachable.AttachedVoxel.Value.Target.Get<Voxel>()[attachable.Coord];
 					if (!attachedState.Permanent && rayHit.Voxel != null && (rayHit.Position - transform.Position).Length() < 8.0f)
 						return; // Danger close, cease fire!
@@ -274,6 +301,14 @@ namespace Lemma.Factories
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_TURRET_FIRE, entity);
 
 					bool hitVoxel = true;
+
+					Vector3 splashPos;
+					Water w = Water.Raycast(transform.Position, toReticle, rayHit.Distance, out splashPos);
+					if (w != null)
+					{
+						Sound.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH, splashPos);
+						Water.SplashParticles(main, splashPos, 3.0f);
+					}
 
 					Entity target = ai.TargetAgent.Value.Target;
 					if (target != null && target.Active)
@@ -290,20 +325,16 @@ namespace Lemma.Factories
 						BEPUutilities.RayHit physicsHit;
 						if (target.Get<Player>().Character.Body.CollisionInformation.RayCast(new Ray(transform.Position, toReticle), rayHit.Voxel == null ? float.MaxValue : rayHit.Distance, out physicsHit))
 						{
-							Explosion.Explode(main, targetPos, 6, 8.0f);
+							if (w == null || (physicsHit.Location - splashPos).Length() < 8.0f) // Disable explosion if it's in deep water
+								Explosion.Explode(main, targetPos, 6, 8.0f);
 							hitVoxel = false;
 						}
 					}
 
 					if (hitVoxel && rayHit.Voxel != null)
-						Explosion.Explode(main, rayHit.Position + rayHit.Voxel.GetAbsoluteVector(rayHit.Normal.GetVector()) * 0.5f, 6, 8.0f);
-
-					Vector3 splashPos;
-					Water w = Water.Raycast(transform.Position, toReticle, rayHit.Distance, out splashPos);
-					if (w != null)
 					{
-						Sound.PostEvent(AK.EVENTS.PLAY_WATER_SPLASH, splashPos);
-						Water.SplashParticles(main, splashPos, 3.0f);
+						if (w == null || (rayHit.Position - splashPos).Length() < 8.0f) // Disable explosion if it's in deep water
+							Explosion.Explode(main, rayHit.Position + rayHit.Voxel.GetAbsoluteVector(rayHit.Normal.GetVector()) * 0.5f, 6, 8.0f);
 					}
 				},
 				Tasks = new[]

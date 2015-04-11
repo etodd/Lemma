@@ -80,6 +80,7 @@ public class AK
         public static uint PLAY_TURRET_CHARGE = 3393910755U;
         public static uint PLAY_TURRET_DEATH = 3291199175U;
         public static uint PLAY_TURRET_FIRE = 3057469883U;
+        public static uint PLAY_TURRET_LOOP = 1669082849U;
         public static uint PLAY_TURRET_MISS = 187900779U;
         public static uint PLAY_UI_CLICK = 1749424733U;
         public static uint PLAY_UI_MOUSEOVER = 808445146U;
@@ -121,6 +122,7 @@ public class AK
         public static uint STOP_PLAYER_SLIDE_LOOP = 651971942U;
         public static uint STOP_RAIN = 3206237490U;
         public static uint STOP_SIGNAL_TOWER_LOOP = 2826848843U;
+        public static uint STOP_TURRET_LOOP = 328308863U;
         public static uint STOP_WATER_LOOP = 105164338U;
         public static uint STOP_WATERFALL_LOOP = 552611043U;
         public static uint STOP_WHITE_LIGHT = 2253775078U;
@@ -168,6 +170,7 @@ public class AK
         public static uint SFX_GLOWSQUARE_PITCH = 3613648624U;
         public static uint SFX_PLAYER_FALL = 1894448894U;
         public static uint SFX_PLAYER_SLIDE = 4199053580U;
+        public static uint SFX_TURRET_PITCH = 905427040U;
         public static uint SFX_WATER_SPLASH_VOLUME = 4073721865U;
         public static uint SLOWMOTION = 340593036U;
         public static uint VOLUME_MUSIC = 3891337659U;

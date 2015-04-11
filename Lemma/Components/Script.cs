@@ -75,85 +75,6 @@ namespace Lemma.Components
 			return new ScriptMethods();
 		}
 
-		private static ScriptMethods GetScriptMethods(Main main, string name, Entity scriptEntity, out string errors)
-		{
-			Assembly assembly = null;
-
-			errors = null;
-
-			string scriptPath = Path.Combine(main.MapDirectory, name + "." + Script.ScriptExtension);
-			string binaryPath = Path.Combine(main.MapDirectory, name + "." + Script.BinaryExtension);
-
-			bool preferLocalScripts = (bool)Console.Console.GetConVar("prefer_local_scripts").GetCastedValue();
-
-			DateTime scriptTime = File.GetLastWriteTime(scriptPath);
-			DateTime binaryTime = File.GetLastWriteTime(binaryPath);
-
-			bool loadOnlyLocal = preferLocalScripts && (File.Exists(scriptPath) || File.Exists(binaryPath));
-			bool loadAssemblyVsScript = !(!File.Exists(binaryPath) || scriptTime > binaryTime) && File.Exists(scriptPath);
-
-			if (loadOnlyLocal && !loadAssemblyVsScript)
-			{
-				// Recompile the script
-				using (Stream stream = TitleContainer.OpenStream(scriptPath))
-				using (TextReader reader = new StreamReader(stream))
-				{
-					CodeDomProvider provider = CodeDomProvider.CreateProvider("CSharp");
-
-					CompilerParameters cp = new CompilerParameters
-					{
-						GenerateExecutable = false,
-						GenerateInMemory = false,
-						TreatWarningsAsErrors = false,
-					};
-
-					// Add references to all the assemblies we might need.
-					Assembly executingAssembly = Assembly.GetExecutingAssembly();
-					cp.ReferencedAssemblies.Add(executingAssembly.Location);
-					foreach (AssemblyName assemblyName in executingAssembly.GetReferencedAssemblies())
-						cp.ReferencedAssemblies.Add(Assembly.Load(assemblyName).Location);
-
-					// Invoke compilation of the source file.
-					CompilerResults cr = provider.CompileAssemblyFromSource(cp, reader.ReadToEnd());
-
-					if (cr.Errors.Count > 0)
-					{
-						// Display compilation errors.
-						StringBuilder builder = new StringBuilder();
-						foreach (CompilerError ce in cr.Errors)
-						{
-							builder.Append("Line ");
-							builder.Append(ce.Line.ToString());
-							builder.Append(": ");
-							builder.Append(ce.ErrorNumber);
-							builder.Append(": ");
-							builder.Append(ce.ErrorText);
-							builder.Append("\n");
-						}
-						errors = builder.ToString();
-					}
-					else
-						assembly = cr.CompiledAssembly;
-				}
-			}
-			else if (loadOnlyLocal && File.Exists(binaryPath)) // Load the precompiled script binary
-				assembly = Assembly.LoadFrom(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), binaryPath));
-
-			if (assembly != null)
-			{
-				Type t = assembly.GetType("Lemma.GameScripts.Script");
-				t.GetField("script", BindingFlags.Static | BindingFlags.Public).SetValue(null, scriptEntity);
-				return new ScriptMethods
-				{
-					Run = t.GetMethod("Run", BindingFlags.Static | BindingFlags.Public),
-					EditorProperties = t.GetMethod("EditorProperties", BindingFlags.Static | BindingFlags.Public),
-					Commands = t.GetMethod("Commands", BindingFlags.Static | BindingFlags.Public),
-				};
-			}
-			else
-				return GetInternalScriptMethods(main, name, scriptEntity, out errors);
-		}
-
 		private bool loadedPreviously;
 		private IEnumerable<string> editorProperties;
 		private IEnumerable<string> commands;
@@ -183,7 +104,7 @@ namespace Lemma.Components
 				try
 				{
 					string errors;
-					this.methods = GetScriptMethods(this.main, name, this.Entity, out errors);
+					this.methods = GetInternalScriptMethods(this.main, name, this.Entity, out errors);
 					this.Errors.Value = errors;
 					if (this.methods.EditorProperties != null)
 					{
