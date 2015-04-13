@@ -182,8 +182,8 @@ namespace Lemma.Components
 				if (distance > 0.0f && distance < physicsRadius)
 				{
 					float blend = 1.0f - (distance / physicsRadius);
-					block.LinearVelocity.Value += fromExplosion * blend * 10.0f / distance;
-					block.AngularVelocity.Value += new Vector3(((float)random.NextDouble() - 0.5f) * 2.0f, ((float)random.NextDouble() - 0.5f) * 2.0f, ((float)random.NextDouble() - 0.5f) * 2.0f) * blend;
+					block.Box.LinearVelocity += fromExplosion * blend * 10.0f / distance;
+					block.Box.AngularVelocity += new Vector3(((float)random.NextDouble() - 0.5f) * 2.0f, ((float)random.NextDouble() - 0.5f) * 2.0f, ((float)random.NextDouble() - 0.5f) * 2.0f) * blend;
 				}
 			}
 		}

@@ -163,8 +163,8 @@ namespace Lemma.Components
 				if (thumbnailCamera != null)
 				{
 					Transform thumbnailTransform = thumbnailCamera.Get<Transform>();
-					this.main.Camera.Position.Value = thumbnailTransform.Position;
 					this.main.Camera.RotationMatrix.Value = Matrix.CreateFromQuaternion(thumbnailTransform.Quaternion);
+					this.main.Camera.Position.Value = thumbnailTransform.Position;
 				}
 
 				Point size;
@@ -183,8 +183,8 @@ namespace Lemma.Components
 					this.NeedsSave.Value = false;
 					if (thumbnailCamera != null)
 					{
-						this.main.Camera.Position.Value = cameraPos;
 						this.main.Camera.RotationMatrix.Value = cameraRotation;
+						this.main.Camera.Position.Value = cameraPos;
 					}
 					this.main.Renderer.MotionBlurAmount.Value = motionBlurAmount;
 					Editor.EditorModelsVisible.Value = true;

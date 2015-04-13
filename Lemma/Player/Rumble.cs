@@ -30,9 +30,9 @@ namespace Lemma.Components
 			this.EnabledWhenPaused = false;
 			this.Add(new NotifyBinding(delegate()
 			{
-				float a = main.Paused ? 0.0f : MathHelper.Clamp(this.BaseAmount + this.CameraShake + this.internalAmount, 0.0f, 1.0f);
+				float a = (main.Paused || !main.Settings.ControllerVibration) ? 0.0f : MathHelper.Clamp(this.BaseAmount + this.CameraShake + this.internalAmount, 0.0f, 1.0f);
 				GamePad.SetVibration(PlayerIndex.One, a, a);
-			}, this.BaseAmount, this.CameraShake, this.internalAmount, main.Paused));
+			}, this.BaseAmount, this.CameraShake, this.internalAmount, main.Paused, main.Settings.ControllerVibration));
 		}
 
 		public override void delete()

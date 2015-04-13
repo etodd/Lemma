@@ -122,6 +122,7 @@ namespace Lemma
 			public Property<LightingManager.DynamicShadowSetting> DynamicShadows = new Property<LightingManager.DynamicShadowSetting>();
 			public Property<bool> InvertMouseX = new Property<bool>();
 			public Property<bool> InvertMouseY = new Property<bool>();
+			public Property<bool> ControllerVibration = new Property<bool>();
 			public Property<bool> EnableReticle = new Property<bool>();
 			public Property<float> MouseSensitivity = new Property<float>();
 			public Property<float> FieldOfView = new Property<float>();
@@ -172,6 +173,7 @@ namespace Lemma
 				this.RecenterVRPose.Value = new PCInput.PCInputBinding { Key = Keys.F2, GamePadButton = Buttons.Back };
 				this.InvertMouseX.Value = false;
 				this.InvertMouseY.Value = false;
+				this.ControllerVibration.Value = true;
 				this.MouseSensitivity.Value = 1.0f;
 			}
 
@@ -1748,7 +1750,7 @@ namespace Lemma
 			this.updateSum = Math.Max(this.updateSum, this.timer.Elapsed.TotalSeconds);
 
 			this.timer.Restart();
-			if (!this.Paused && !this.EditorEnabled)
+			if (!this.Paused && !this.EditorEnabled && this.Space.TimeStepSettings.TimeStepDuration > 0.0f)
 				this.Space.Update(dt);
 			this.timer.Stop();
 			this.physicsSum = Math.Max(this.physicsSum, this.timer.Elapsed.TotalSeconds);

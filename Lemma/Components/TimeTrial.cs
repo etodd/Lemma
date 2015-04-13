@@ -57,12 +57,6 @@ namespace Lemma.Components
 
 			this.Retry.Action = this.retry;
 
-			this.Add(new CommandBinding(this.Disable, delegate()
-			{
-				this.main.BaseTimeMultiplier.Value = 0.0f;
-				this.main.Menu.CanPause.Value = false;
-			}));
-
 			this.Add(new CommandBinding(this.main.Spawner.PlayerSpawned, delegate()
 			{
 				PlayerFactory.Instance.Add(new CommandBinding(PlayerFactory.Instance.Get<Player>().Die, (Action)this.retryDeath));
@@ -72,6 +66,8 @@ namespace Lemma.Components
 
 			this.Add(new CommandBinding(this.Disable, delegate()
 			{
+				this.main.BaseTimeMultiplier.Value = 0.0f;
+				this.main.Menu.CanPause.Value = false;
 				AkSoundEngine.PostEvent(AK.EVENTS.STOP_ALL, this.Entity);
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_MUSIC_STINGER, this.Entity);
 				this.BestTime.Value = this.main.SaveMapTime(WorldFactory.Instance.Get<World>().UUID, this.ElapsedTime);

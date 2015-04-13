@@ -121,7 +121,7 @@ namespace Lemma.Factories
 			jump.Add(new Binding<Direction>(jump.WallDirection, wallRun.WallDirection));
 			jump.Add(new CommandBinding<Voxel, Voxel.Coord, Direction>(jump.WalkedOn, footsteps.WalkedOn));
 			jump.Add(new CommandBinding(jump.DeactivateWallRun, (Action)wallRun.Deactivate));
-			jump.Add(new CommandBinding<float>(jump.FallDamage, fallDamage.ApplyJump));
+			jump.Add(new CommandBinding(jump.FallDamage, fallDamage.ApplyJump));
 			jump.Predictor = predictor;
 			jump.Bind(model);
 			jump.Add(new TwoWayBinding<Voxel>(wallRun.LastWallRunMap, jump.LastWallRunMap));

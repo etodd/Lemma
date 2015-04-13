@@ -1304,6 +1304,13 @@ namespace Lemma.Components
 			this.resizeToMenu(mouseSensitivity);
 			controlsList.Children.Add(mouseSensitivity);
 
+			Container controllerVibration = this.main.UIFactory.CreateScrollButton<bool>("\\controller vibration", this.main.Settings.ControllerVibration, boolDisplay, delegate(int delta)
+			{
+				this.main.Settings.ControllerVibration.Value = !this.main.Settings.ControllerVibration;
+			});
+			this.resizeToMenu(controllerVibration);
+			controlsList.Children.Add(controllerVibration);
+
 			Action<Property<PCInput.PCInputBinding>, string, bool, bool> addInputSetting = delegate(Property<PCInput.PCInputBinding> setting, string display, bool allowGamepad, bool allowMouse)
 			{
 				this.inputBindings.Add(setting);

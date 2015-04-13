@@ -38,12 +38,13 @@ namespace Lemma.Components
 
 		public override void Start()
 		{
-			this.play();
+			if (this.Enabled)
+				this.play();
 		}
 
 		private void play()
 		{
-			if (this.PlayCue != 0 && this.Enabled && !this.Suspended && !this.main.EditorEnabled && !this.playing)
+			if (this.PlayCue != 0 && !this.Suspended && !this.main.EditorEnabled && !this.playing)
 			{
 				AkSoundEngine.PostEvent(this.PlayCue, this.Entity);
 				this.playing = true;

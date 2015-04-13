@@ -325,7 +325,10 @@ namespace GeeUI.Views
 					&& !DropDownPanelView.AbsoluteBoundBox.Contains(InputManager.GetMousePos())
 					&& !Children[0].AbsoluteBoundBox.Contains(InputManager.GetMousePos()))
 				{
-					this.HideDropDown();
+					if (InputManager.IsMousePressed(MouseButton.Left)
+						|| InputManager.IsMousePressed(MouseButton.Right)
+						|| InputManager.IsMousePressed(MouseButton.Middle))
+						this.HideDropDown();
 				}
 				else
 				{

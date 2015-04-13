@@ -14,7 +14,6 @@ public class AK
         public static uint PLAY_CAMERA_SHUTTER = 1401567661U;
         public static uint PLAY_COLLECTIBLE = 661747096U;
         public static uint PLAY_CRUMBLE = 4130713930U;
-        public static uint PLAY_DAWN_AMBIENT = 1175888809U;
         public static uint PLAY_DOOR_AMBIENCE = 48136393U;
         public static uint PLAY_DOOR_OPEN = 1660008929U;
         public static uint PLAY_EVIL_CUBES = 1708164667U;
@@ -32,6 +31,8 @@ public class AK
         public static uint PLAY_MUSIC_AQUA = 3353261050U;
         public static uint PLAY_MUSIC_DARK = 2649426350U;
         public static uint PLAY_MUSIC_DARK2 = 1191197912U;
+        public static uint PLAY_MUSIC_DAWN = 2565538184U;
+        public static uint PLAY_MUSIC_DAWN_RANDOM = 3887439446U;
         public static uint PLAY_MUSIC_FOREST = 1820169829U;
         public static uint PLAY_MUSIC_FROST = 3147354588U;
         public static uint PLAY_MUSIC_NOSTALGIC = 1765947264U;
@@ -105,7 +106,6 @@ public class AK
         public static uint STOP_ALL = 452547817U;
         public static uint STOP_ALL_OBJECT = 2638811145U;
         public static uint STOP_BLOCK_RUMBLE = 1611896069U;
-        public static uint STOP_DAWN_AMBIENT = 672119035U;
         public static uint STOP_DOOR_AMBIENCE = 2699574911U;
         public static uint STOP_EVIL_CUBES = 3034540413U;
         public static uint STOP_EXTERIOR_WIND = 4269705691U;

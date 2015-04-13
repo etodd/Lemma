@@ -161,12 +161,21 @@ namespace Lemma.Components
 					if (this.TabViews.GetActiveTab() == "Voxel")
 					{
 						if (this.voxelMaterialDropDown != null && this.voxelMaterialDropDown.Active && !this.voxelMaterialDropDown.DropDownShowing)
+						{
+							this.OpenDropDownView.HideDropDown();
+							this.SelectDropDownView.HideDropDown();
+							this.CreateDropDownView.HideDropDown();
 							this.voxelMaterialDropDown.ShowDropDown();
+						}
 					}
 					else if (this.CreateDropDownView.Active && !this.CreateDropDownView.DropDownShowing)
 					{
 						this.TabViews.SetActiveTab(this.TabViews.TabIndex("Entity"));
+						this.OpenDropDownView.HideDropDown();
+						this.SelectDropDownView.HideDropDown();
 						this.CreateDropDownView.ShowDropDown();
+						if (this.voxelMaterialDropDown != null)
+							this.voxelMaterialDropDown.HideDropDown();
 					}
 				}
 			};
@@ -177,6 +186,10 @@ namespace Lemma.Components
 				{
 					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Map"));
 					this.OpenDropDownView.ShowDropDown();
+					this.SelectDropDownView.HideDropDown();
+					this.CreateDropDownView.HideDropDown();
+					if (this.voxelMaterialDropDown != null)
+						this.voxelMaterialDropDown.HideDropDown();
 				}
 			};
 
@@ -185,7 +198,11 @@ namespace Lemma.Components
 				if (!this.VoxelEditMode && this.Visible)
 				{
 					this.TabViews.SetActiveTab(this.TabViews.TabIndex("Entity"));
+					this.OpenDropDownView.HideDropDown();
 					this.SelectDropDownView.ShowDropDown();
+					this.CreateDropDownView.HideDropDown();
+					if (this.voxelMaterialDropDown != null)
+						this.voxelMaterialDropDown.HideDropDown();
 				}
 			};
 

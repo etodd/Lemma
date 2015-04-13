@@ -36,7 +36,7 @@ namespace Lemma.Components
 		// Output
 		public Command<Voxel, Voxel.Coord, Direction> WalkedOn = new Command<Voxel, Voxel.Coord, Direction>();
 		public Command DeactivateWallRun = new Command();
-		public Command<float> FallDamage = new Command<float>();
+		public Command FallDamage = new Command();
 		public BlockPredictor Predictor;
 
 		public Property<Voxel> LastWallRunMap = new Property<Voxel>();
@@ -286,24 +286,17 @@ namespace Lemma.Components
 				}
 				else
 				{
-					if (supported)
-					{
-						// Regular jump
-						// Take base velocity into account
-						baseVelocity += this.SupportVelocity;
-					}
-					else
-					{
-						// We haven't hit the ground, so fall damage will not be handled by the physics system.
-						// Need to do it manually here.
-						this.FallDamage.Execute(this.LinearVelocity.Value.Y);
-						if (instantiatedBlockPossibility != null)
-							this.WalkedOn.Execute(instantiatedBlockPossibility.Map, instantiatedBlockPossibilityCoord, instantiatedBlockPossibility.Map.GetRelativeDirection(Direction.NegativeY));
+					// Regular jump
+					// Take base velocity into account
+					baseVelocity += this.SupportVelocity;
 
-						// Also manually reset our ability to kick and wall-jump
-						this.CanKick.Value = true;
-						this.wallJumpCount = 0;
-					}
+					this.FallDamage.Execute();
+					if (instantiatedBlockPossibility != null)
+						this.WalkedOn.Execute(instantiatedBlockPossibility.Map, instantiatedBlockPossibilityCoord, instantiatedBlockPossibility.Map.GetRelativeDirection(Direction.NegativeY));
+
+					// Also manually reset our ability to kick and wall-jump
+					this.CanKick.Value = true;
+					this.wallJumpCount = 0;
 				}
 
 				Vector3 velocity = this.LinearVelocity - baseVelocity;

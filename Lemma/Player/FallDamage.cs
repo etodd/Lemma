@@ -19,7 +19,7 @@ namespace Lemma.Components
 
 		// Input commands
 		public Command<float> Apply = new Command<float>();
-		public Command<float> ApplyJump = new Command<float>();
+		public Command ApplyJump = new Command();
 		public Command<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection> Collided = new Command<BEPUphysics.BroadPhaseEntries.Collidable,ContactCollection>();
 
 		// Output commands
@@ -72,7 +72,7 @@ namespace Lemma.Components
 			base.Awake();
 			this.Serialize = false;
 			this.EnabledWhenPaused = false;
-			this.ApplyJump.Action = delegate(float verticalAcceleration) { this.apply(verticalAcceleration, true); };
+			this.ApplyJump.Action = delegate() { this.apply(this.lastLinearVelocity.Y - this.LinearVelocity.Value.Y, true); };
 			this.Apply.Action = delegate(float verticalAcceleration) { this.apply(verticalAcceleration, false); };
 
 			// Damage the player if they hit something too hard

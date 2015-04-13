@@ -77,7 +77,6 @@ namespace Lemma.Components
 			Wood = 11,
 			Snow = 12,
 			HardPowered = 13,
-			Ice = 14,
 			RockGrassy = 15,
 			Brick = 16,
 			Lattice = 17,
@@ -1028,33 +1027,6 @@ namespace Lemma.Components
 					},
 				},
 				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.GRAVEL,
-				AllowOverlay = false,
-			};
-			public static readonly State Ice = new State
-			{
-				ID = t.Ice,
-				Permanent = false,
-				Supported = false,
-				Hard = true,
-				Density = 0.5f,
-				Tiling = 0.5f,
-				DiffuseMap = "Textures\\ice",
-				NormalMap = "Textures\\ice-normal",
-				Materials = new[]
-				{
-					new Model.Material
-					{
-						SpecularPower = 200.0f,
-						SpecularIntensity = 0.8f,
-					},
-					new Model.Material
-					{
-						SpecularPower = 1.0f,
-						SpecularIntensity = 0.0f,
-					},
-				},
-				Tint = new Vector3(0.5f, 0.6f, 0.8f),
-				FootstepSwitch = AK.SWITCHES.FOOTSTEP_MATERIAL.SWITCH.METAL,
 				AllowOverlay = false,
 			};
 

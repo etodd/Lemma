@@ -19,8 +19,6 @@ namespace Lemma.Components
 		public Property<Matrix> Transform = new Property<Matrix>();
 		public Property<float> Mass = new Property<float> { Value = 0.25f };
 		public Property<Vector3> Size = new Property<Vector3> { Value = new Vector3(0.5f) };
-		public Property<Vector3> LinearVelocity = new Property<Vector3>();
-		public Property<Vector3> AngularVelocity = new Property<Vector3>();
 		public Property<bool> IsAffectedByGravity = new Property<bool> { Value = true };
 
 		[XmlIgnore]
@@ -55,16 +53,6 @@ namespace Lemma.Components
 			this.Add(new SetBinding<bool>(this.IsAffectedByGravity, delegate(bool g)
 			{
 				this.Box.IsAffectedByGravity = g;
-			}));
-
-			this.Add(new SetBinding<Vector3>(this.LinearVelocity, delegate(Vector3 value)
-			{
-				this.Box.LinearVelocity = value;
-			}));
-
-			this.Add(new SetBinding<Vector3>(this.AngularVelocity, delegate(Vector3 value)
-			{
-				this.Box.AngularVelocity = value;
 			}));
 
 			this.Add(new SetBinding<Vector3>(this.Size, delegate(Vector3 s)
@@ -105,8 +93,6 @@ namespace Lemma.Components
 		void IUpdateableComponent.Update(float dt)
 		{
 			this.Transform.Value = this.Box.WorldTransform;
-			this.LinearVelocity.Value = this.Box.LinearVelocity;
-			this.AngularVelocity.Value = this.Box.AngularVelocity;
 		}
 
 		public override void delete()
