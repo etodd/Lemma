@@ -180,6 +180,7 @@ public class AK
     public class BANKS
     {
         public static uint INIT = 1355168291U;
+        public static uint APARTMENT = 4154495109U;
         public static uint AQUA = 3149800173U;
         public static uint DARK2 = 2462366677U;
         public static uint DAWN = 2009803003U;

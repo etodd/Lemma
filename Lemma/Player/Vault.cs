@@ -48,6 +48,7 @@ namespace Lemma.Components
 
 		private bool vaultOver;
 		private bool isTopOut;
+		private bool shallowMantle;
 		
 		private float moveForwardStartTime;
 		private bool movingForward;
@@ -79,7 +80,7 @@ namespace Lemma.Components
 			mantle.GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
 				float blend = (float)mantle.CurrentTime.TotalSeconds / (float)mantle.Duration.TotalSeconds;
-				m.Translation = new Vector3(0.0f, blend, 2.0f - (MathHelper.Clamp(blend, 0, 1.5f)));
+				m.Translation = new Vector3(0.0f, this.shallowMantle ? blend : -(1.0f - blend), 2.0f - (MathHelper.Clamp(blend, 0, 1.5f)));
 				return m;
 			};
 			this.model["TopOut"].Speed = 1.8f;
@@ -320,6 +321,14 @@ namespace Lemma.Components
 				"JumpBackward"
 			);
 			this.model.StartClip(this.vaultOver ? "Vault" : (this.isTopOut ? "TopOut" : "Mantle"), 4, false, AnimatedModel.DefaultBlendTime);
+
+			if (!this.vaultOver && !this.isTopOut)
+			{
+				// We're mantling
+				// Determine if this is a shallow mantle or not
+				this.shallowMantle = map[coordPosition + this.forward * 1.5f + new Vector3(0, 1, 0)].ID != Voxel.t.Empty
+					|| map[coordPosition + this.forward * 1.5f + new Vector3(0, 2, 0)].ID != Voxel.t.Empty;
+			}
 
 			this.vaultTime = 0.0f;
 			this.moveForwardStartTime = 0.0f;

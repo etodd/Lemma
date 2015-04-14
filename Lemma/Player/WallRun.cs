@@ -374,6 +374,7 @@ namespace Lemma.Components
 								Matrix matrix = Matrix.CreateRotationY(this.Rotation);
 								Vector3 forwardVector = -matrix.Forward;
 								this.setup(result.Voxel, result.Normal.GetReverse(), wallRunState, forwardVector, false, true);
+								return;
 							}
 						}
 					}
