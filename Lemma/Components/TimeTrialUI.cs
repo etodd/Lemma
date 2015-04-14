@@ -241,6 +241,17 @@ namespace Lemma.Components
 					list.Children.Add(next);
 				}
 
+#if STEAMWORKS
+				{
+					Container getMore = this.main.UIFactory.CreateButton("\\get more", delegate()
+					{
+						UIFactory.OpenURL(string.Format("http://steamcommunity.com/workshop/browse?appid={0}", Main.SteamAppID));
+					});
+					this.resizeButton(getMore);
+					list.Children.Add(getMore);
+				}
+#endif
+
 				Container mainMenu = this.main.UIFactory.CreateButton("\\main menu", delegate()
 				{
 					this.MainMenu.Execute();

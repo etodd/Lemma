@@ -777,8 +777,10 @@ namespace Lemma.Components
 				this.main.AddComponent(officialAnimation);
 				this.currentMenu.Value = workshopMapsMenu;
 			};
-			Container workshopGetMore = this.main.UIFactory.CreateButton("Get More",
-				() => UIFactory.OpenURL(string.Format("http://steamcommunity.com/workshop/browse?appid={0}", Main.SteamAppID)));
+			Container workshopGetMore = this.main.UIFactory.CreateButton("\\get more", delegate()
+			{
+				UIFactory.OpenURL(string.Format("http://steamcommunity.com/workshop/browse?appid={0}", Main.SteamAppID));
+			});
 			this.resizeToMenu(workshopGetMore);
 			workshopMapsMenu.Children.Add(workshopGetMore);
 

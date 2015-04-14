@@ -23,21 +23,25 @@ namespace Lemma
 
 		private Action callback;
 		private bool take;
+		private Point originalScreenSize;
 
 		public void Take(Point size, Action callback = null)
 		{
 			if (size.X > 0 && size.Y > 0)
 			{
 				this.Size = size;
-				Point screenSize = this.main.ScreenSize;
+				this.originalScreenSize = this.main.ScreenSize;
 
 				if (
 #if VR
 				!this.main.VR &&
 #endif
-				(this.Size.X > screenSize.X || this.Size.Y > screenSize.Y))
+				(this.Size.X > this.originalScreenSize.X || this.Size.Y > this.originalScreenSize.Y))
+				{
 					this.main.Renderer.ReallocateBuffers(size);
-				this.Buffer = new RenderTarget2D(this.main.GraphicsDevice, this.Size.X, this.Size.Y, false, SurfaceFormat.Color, DepthFormat.Depth16);
+					this.main.ScreenSize.Value = size;
+				}
+				this.Buffer = new RenderTarget2D(this.main.GraphicsDevice, size.X, size.Y, false, SurfaceFormat.Color, DepthFormat.Depth16);
 				this.main.RenderTarget = this.Buffer;
 				this.take = true;
 				this.callback = callback;
@@ -51,14 +55,16 @@ namespace Lemma
 			if (this.take)
 			{
 				this.main.RenderTarget = null;
-				Point screenSize = this.main.ScreenSize;
 
 				if (
 #if VR
 				!this.main.VR &&
 #endif
-				(this.Size.X > screenSize.X || this.Size.Y > screenSize.Y))
-					this.main.Renderer.ReallocateBuffers(screenSize);
+				(this.Size.X > this.originalScreenSize.X || this.Size.Y > this.originalScreenSize.Y))
+				{
+					this.main.Renderer.ReallocateBuffers(this.originalScreenSize);
+					this.main.ScreenSize.Value = this.originalScreenSize;
+				}
 
 				if (this.callback != null)
 					this.callback();
