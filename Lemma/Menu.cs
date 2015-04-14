@@ -1906,7 +1906,7 @@ namespace Lemma.Components
 						}
 
 						Container button;
-						if (selected < menu.Children.Length)
+						if (selected >= 0 && selected < menu.Children.Length)
 						{
 							button = (Container)menu.Children[selected];
 							button.Highlighted.Value = false;
@@ -1927,14 +1927,18 @@ namespace Lemma.Components
 								i = nextMenuItem(menu, i, delta);
 							}
 
-							button = (Container)menu.Children[selected];
-							button.Highlighted.Value = true;
 							this.lastGamepadMove = (float)this.main.GameTime.TotalGameTime.TotalSeconds;
 
-							if (menu.Parent.Value.GetType() == typeof(Scroller))
+							if (selected >= 0 && selected < menu.Children.Count)
 							{
-								Scroller scroll = (Scroller)menu.Parent;
-								scroll.ScrollTo(button);
+								button = (Container)menu.Children[selected];
+								button.Highlighted.Value = true;
+
+								if (menu.Parent.Value.GetType() == typeof(Scroller))
+								{
+									Scroller scroll = (Scroller)menu.Parent;
+									scroll.ScrollTo(button);
+								}
 							}
 						}
 					}
@@ -1970,11 +1974,14 @@ namespace Lemma.Components
 					UIComponent menu = this.currentMenu;
 					if (menu != null && menu != creditsDisplay)
 					{
-						UIComponent selectedItem = menu.Children[selected];
-						if (isScrollButton(selectedItem) && selectedItem.Highlighted)
-							selectedItem.GetChildByName(">").MouseLeftUp.Execute();
-						else if (isButton(selectedItem) && selectedItem.Highlighted)
-							selectedItem.MouseLeftUp.Execute();
+						if (selected >= 0 && selected < menu.Children.Count)
+						{
+							UIComponent selectedItem = menu.Children[selected];
+							if (isScrollButton(selectedItem) && selectedItem.Highlighted)
+								selectedItem.GetChildByName(">").MouseLeftUp.Execute();
+							else if (isButton(selectedItem) && selectedItem.Highlighted)
+								selectedItem.MouseLeftUp.Execute();
+						}
 					}
 				}
 			}));
@@ -1987,11 +1994,14 @@ namespace Lemma.Components
 					UIComponent menu = this.currentMenu;
 					if (menu != null && menu != creditsDisplay && this.dialog == null)
 					{
-						UIComponent selectedItem = menu.Children[selected];
-						if (isScrollButton(selectedItem) && selectedItem.Highlighted)
+						if (selected >= 0 && selected < menu.Children.Count)
 						{
-							selectedItem.GetChildByName(delta > 0 ? ">" : "<").MouseLeftUp.Execute();
-							this.lastGamepadScroll = (float)this.main.GameTime.TotalGameTime.TotalSeconds;
+							UIComponent selectedItem = menu.Children[selected];
+							if (isScrollButton(selectedItem) && selectedItem.Highlighted)
+							{
+								selectedItem.GetChildByName(delta > 0 ? ">" : "<").MouseLeftUp.Execute();
+								this.lastGamepadScroll = (float)this.main.GameTime.TotalGameTime.TotalSeconds;
+							}
 						}
 					}
 				}

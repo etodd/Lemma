@@ -346,7 +346,13 @@ namespace Lemma.Components
 				this.skinningData = this.model.Tag as SkinnedModel.SkinningData;
 
 				if (this.skinningData == null)
-					throw new InvalidOperationException("This model does not contain a SkinningData tag.");
+				{
+					this.model = null;
+					this.effect = null;
+					this.IsValid.Value = false;
+					Log.d(string.Format("Model has no skinning data: {0}", file));
+					return;
+				}
 
 				if (!this.bound && (this.boneTransforms == null || this.boneTransforms.Length != this.skinningData.BindPose.Count))
 				{
