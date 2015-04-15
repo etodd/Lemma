@@ -164,10 +164,5 @@ namespace Lemma.Components
 			if (!this.main.EditorEnabled && this.ExecuteOnLoad)
 				this.Execute.Execute();
 		}
-
-		public static void ConsoleInit()
-		{
-			Lemma.Console.Console.AddConVar(new ConVar("prefer_local_scripts", "If true, local scripts will be loaded instead of internal ones.", "true") { TypeConstraint = typeof(bool) });
-		}
 	}
 }

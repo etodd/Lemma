@@ -385,7 +385,7 @@ namespace Lemma.Factories
 			editor.Add(new CommandBinding(input.LeftMouseButtonUp, editor.StopFill));
 			editor.Add(new CommandBinding(input.RightMouseButtonDown, () => editor.VoxelEditMode, editor.StartEmpty));
 			editor.Add(new CommandBinding(input.RightMouseButtonUp, editor.StopEmpty));
-			editor.Add(new Binding<bool>(editor.EditSelection, () => movementEnabled && editor.VoxelEditMode, movementEnabled, editor.VoxelEditMode));
+			editor.Add(new Binding<bool>(editor.EditSelection, () => movementEnabled && editor.VoxelEditMode && editor.TransformMode.Value == Editor.TransformModes.None, movementEnabled, editor.VoxelEditMode, editor.TransformMode));
 
 			AddCommand
 			(

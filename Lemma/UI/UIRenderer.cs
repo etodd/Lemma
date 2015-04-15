@@ -78,7 +78,6 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command SwallowMouseEvents = new Command();
 
-		[AutoConVar("ui_mouse_enabled", "If true, mouse is enabled")]
 		public Property<bool> EnableMouse = new Property<bool> { Value = true };
 
 		public Property<Point> RenderTargetSize = new Property<Point>();

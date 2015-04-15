@@ -121,7 +121,7 @@ namespace Lemma.Factories
 			jump.Add(new Binding<Direction>(jump.WallDirection, wallRun.WallDirection));
 			jump.Add(new CommandBinding<Voxel, Voxel.Coord, Direction>(jump.WalkedOn, footsteps.WalkedOn));
 			jump.Add(new CommandBinding(jump.DeactivateWallRun, (Action)wallRun.Deactivate));
-			jump.Add(new CommandBinding(jump.FallDamage, fallDamage.ApplyJump));
+			jump.FallDamage = fallDamage;
 			jump.Predictor = predictor;
 			jump.Bind(model);
 			jump.Add(new TwoWayBinding<Voxel>(wallRun.LastWallRunMap, jump.LastWallRunMap));
@@ -265,7 +265,7 @@ namespace Lemma.Factories
 				}
 			}));
 
-			Lemma.Console.Console.AddConCommand(new Console.ConCommand("third_person", "Toggle third-person view (WARNING: EXPERIMENTAL)", delegate(Console.ConCommand.ArgCollection args)
+			Lemma.Console.Console.AddConCommand(new Console.ConCommand("third_person", "Toggle third-person view (warning: janky)", delegate(Console.ConCommand.ArgCollection args)
 			{
 				cameraControl.ThirdPerson.Value = !cameraControl.ThirdPerson;
 			}));
@@ -399,6 +399,11 @@ namespace Lemma.Factories
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_DEATH, entity);
 					main.Spawner.RespawnDistance = Spawner.KilledRespawnDistance;
 					main.Spawner.RespawnInterval = Spawner.KilledRespawnInterval;
+				}
+				else
+				{
+					main.Spawner.RespawnDistance = Spawner.DefaultRespawnDistance;
+					main.Spawner.RespawnInterval = Spawner.DefaultRespawnInterval;
 				}
 				entity.Add(new Animation(new Animation.Execute(entity.Delete)));
 			}));

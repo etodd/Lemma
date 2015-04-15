@@ -62,7 +62,7 @@ namespace Lemma.Factories
 				sprite.Image.Value = "Images\\target";
 				sprite.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
 				sprite.UserData.Value = target;
-				sprite.Add(new Binding<bool>(sprite.Visible, target.Enabled));
+				sprite.Add(new Binding<bool>(sprite.Visible, () => target.Enabled && main.Settings.EnableWaypoints, target.Enabled, main.Settings.EnableWaypoints));
 				return sprite;
 			}));
 		}

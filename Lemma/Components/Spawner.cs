@@ -156,8 +156,8 @@ namespace Lemma.Components
 						this.main.Renderer.InternalGamma.Value = 0.0f;
 						this.main.Renderer.Brightness.Value = 0.0f;
 						this.PlayerSpawned.Execute();
-						this.respawnTimer = 0;
 					}
+					this.respawnTimer = 0;
 				}
 				else if (createPlayer)
 				{

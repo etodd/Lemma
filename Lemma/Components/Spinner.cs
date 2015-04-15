@@ -159,9 +159,9 @@ namespace Lemma.Components
 				bool limitExceeded = this.joint.Limit.IsLimitExceeded;
 				if (limitExceeded && !this.lastLimitExceeded)
 				{
-					if (joint.Limit.Error.X > 0)
+					if (Math.Abs(joint.Limit.Error.X) > 0.0001f)
 						this.HitMin.Execute();
-					else
+					else if (Math.Abs(joint.Limit.Error.Y) > 0.0001f)
 						this.HitMax.Execute();
 				}
 				else

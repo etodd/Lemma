@@ -93,7 +93,7 @@ namespace Lemma
 
 		public const int ConfigVersion = 9;
 		public const int MapVersion = 1027;
-		public const int Build = 1027;
+		public const int Build = 1032;
 
 		public class Config
 		{
@@ -124,6 +124,7 @@ namespace Lemma
 			public Property<bool> InvertMouseY = new Property<bool>();
 			public Property<bool> ControllerVibration = new Property<bool>();
 			public Property<bool> EnableReticle = new Property<bool>();
+			public Property<bool> EnableWaypoints = new Property<bool>();
 			public Property<float> MouseSensitivity = new Property<float>();
 			public Property<float> FieldOfView = new Property<float>();
 			public Property<bool> Vsync = new Property<bool>();
@@ -202,6 +203,7 @@ namespace Lemma
 				this.Bloom.Value = true;
 				this.DynamicShadows.Value = LightingManager.DynamicShadowSetting.High;
 				this.EnableReticle.Value = false;
+				this.EnableWaypoints.Value = true;
 				this.FieldOfView.Value = MathHelper.ToRadians(80.0f);
 				this.Vsync.Value = false;
 				this.SoundEffectVolume.Value = 1.0f;
@@ -591,6 +593,24 @@ namespace Lemma
 			this.Camera = new Camera();
 			this.AddComponent(this.Camera);
 
+			Lemma.Console.Console.AddConVar(new ConVar("player_speed", "Player speed.", s =>
+			{
+				Entity playerData = PlayerDataFactory.Instance;
+				if (playerData != null)
+					playerData.Get<PlayerData>().MaxSpeed.Value = (float)Lemma.Console.Console.GetConVar("player_speed").GetCastedValue();
+			}, "10") { TypeConstraint = typeof(float), Validate = o => (float)o > 0 && (float)o < 200 });
+
+			Lemma.Console.Console.AddConCommand(new ConCommand("help", "List all commands or get info about a specific command.",
+			delegate(ConCommand.ArgCollection args)
+			{
+				string cmd = (string)args.Get("command");
+				if (string.IsNullOrEmpty(cmd))
+					Lemma.Console.Console.Instance.ListAllConsoleStuff();
+				else
+					Lemma.Console.Console.Instance.PrintConCommandDescription(cmd);
+			},
+			new ConCommand.CommandArgument() { Name = "command", Optional = true }));
+
 			Lemma.Console.Console.AddConVar(new ConVar("time_scale", "Time scale (percentage).", s =>
 			{
 				float result;
@@ -598,7 +618,6 @@ namespace Lemma
 					this.BaseTimeMultiplier.Value = result / 100.0f;
 			}, "100") { TypeConstraint = typeof(int), Validate = o => (int)o > 0 && (int)o <= 400 });
 
-#if DEVELOPMENT
 			Lemma.Console.Console.AddConCommand(new ConCommand
 			(
 				"load", "Load a map.", collection =>
@@ -633,7 +652,6 @@ namespace Lemma
 					cloud.Type.Value = result;
 				}
 			}, "none"));
-#endif
 
 			Lemma.Console.Console.AddConCommand(new ConCommand("moves", "Enable all parkour moves.", delegate(ConCommand.ArgCollection args)
 			{
@@ -650,6 +668,7 @@ namespace Lemma
 				}
 			}));
 
+#if DEVELOPMENT
 			Lemma.Console.Console.AddConCommand(new ConCommand("diavar", "Set a dialogue variable.", delegate(ConCommand.ArgCollection args)
 			{
 				if (args.ParsedArgs.Length == 2)
@@ -664,6 +683,7 @@ namespace Lemma
 			new ConCommand.CommandArgument { Name = "variable", CommandType = typeof(string), Optional = false, },
 			new ConCommand.CommandArgument { Name = "value", CommandType = typeof(string), Optional = false }
 			));
+#endif
 
 			Lemma.Console.Console.AddConCommand(new ConCommand("specials", "Enable all special abilities.", delegate(ConCommand.ArgCollection args)
 			{

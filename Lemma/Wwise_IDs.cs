@@ -40,6 +40,7 @@ public class AK
         public static uint PLAY_MUSIC_RAIN = 3259798356U;
         public static uint PLAY_MUSIC_STINGER = 1904807532U;
         public static uint PLAY_MUSIC_STINGER_02 = 1344053969U;
+        public static uint PLAY_MUSIC_STINGER_03 = 1344053968U;
         public static uint PLAY_MUSIC_THEME_LOOP = 4120562202U;
         public static uint PLAY_NOTE_DROP = 4017882330U;
         public static uint PLAY_NOTE_PICKUP = 2403250269U;
@@ -51,6 +52,7 @@ public class AK
         public static uint PLAY_PHYSICS_SLAM_LARGE = 340000179U;
         public static uint PLAY_PLAYER_BREATHING_HARD = 3584441250U;
         public static uint PLAY_PLAYER_BREATHING_SOFT = 4243459973U;
+        public static uint PLAY_PLAYER_CLOTHING = 1403802228U;
         public static uint PLAY_PLAYER_DEATH = 1835085974U;
         public static uint PLAY_PLAYER_FALL = 1306343379U;
         public static uint PLAY_PLAYER_GASP = 3609231453U;

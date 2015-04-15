@@ -23,7 +23,6 @@ namespace Lemma.GInterfaces
 		public TextFieldView ConsoleLogView;
 		public TextFieldView ConsoleInputView;
 
-		[AutoConVar("console_showing", "If true, the console is showing")]
 		public static Property<bool> Showing = new Property<bool>();
 
 		private Property<bool> _animating = new Property<bool>() { Value = false };
@@ -168,27 +167,6 @@ namespace Lemma.GInterfaces
 
 			int newY = ConsoleLogView.TextLines.Length - 1;
 			ConsoleLogView.SetCursorPos(0, newY);
-		}
-
-		public static void ConsoleInit()
-		{
-			Console.Console.AddConVar(new ConVar("player_speed", "Player speed.", s =>
-			{
-				Entity playerData = PlayerDataFactory.Instance;
-				if (playerData != null)
-					playerData.Get<PlayerData>().MaxSpeed.Value = (float)Console.Console.GetConVar("player_speed").GetCastedValue();
-			}, "10") { TypeConstraint = typeof(float), Validate = o => (float)o > 0 && (float)o < 200 });
-
-			Console.Console.AddConCommand(new ConCommand("help", "List all commands or get info about a specific command.",
-			delegate(ConCommand.ArgCollection args)
-			{
-				string cmd = (string)args.Get("command");
-				if (string.IsNullOrEmpty(cmd))
-					Console.Console.Instance.ListAllConsoleStuff();
-				else
-					Console.Console.Instance.PrintConCommandDescription(cmd);
-			},
-			new ConCommand.CommandArgument() { Name = "command", Optional = true }));
 		}
 	}
 }

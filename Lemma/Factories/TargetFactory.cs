@@ -23,6 +23,8 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
+			entity.CannotSuspend = true;
+
 			Transform transform = entity.GetOrCreate<Transform>("Transform");
 
 			PlayerTrigger trigger = entity.GetOrCreate<PlayerTrigger>("Trigger");

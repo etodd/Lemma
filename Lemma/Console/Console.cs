@@ -85,53 +85,6 @@ namespace Lemma.Console
 			Console.Instance.main.ConsoleUI.LogText(input);
 		}
 
-		[AutoConCommand("find", "Finds console commands and variables")]
-		public void FindConsoleStuff(string name, bool startsWith = false, bool endsWith = false)
-		{
-			foreach (var command in Commands)
-			{
-				bool print = false;
-				if (startsWith)
-				{
-					print = command.Name.Value.StartsWith(name);
-				}
-				else if (endsWith)
-				{
-					print = command.Name.Value.EndsWith(name);
-				}
-				else
-				{
-					print = command.Name.Value.Contains(name);
-				}
-				if (print)
-				{
-					PrintConCommandDescription(command);
-				}
-			}
-
-			foreach (var convar in ConVars)
-			{
-				bool print = false;
-				if (startsWith)
-				{
-					print = convar.Name.Value.StartsWith(name);
-				}
-				else if (endsWith)
-				{
-					print = convar.Name.Value.EndsWith(name);
-				}
-				else
-				{
-					print = convar.Name.Value.Contains(name);
-				}
-				if (print)
-				{
-					Log(convar.Name + ": " + convar.Description + " (Value: " + convar.GetCastedValue() + " " +
-						convar.OutCastConstraint.ToString().Replace("System.", "") + ")");
-				}
-			}
-		}
-
 		public void ListAllConsoleStuff()
 		{
 			foreach (var command in Commands)
@@ -444,17 +397,9 @@ namespace Lemma.Console
 		{
 			base.Awake();
 
-			//Get all classes, and execute "ConsoleInit" if any class has it.
 			Assembly a = Assembly.GetExecutingAssembly();
 			foreach (Type t in a.GetTypes())
-			{
-				MethodInfo info = t.GetMethod("ConsoleInit");
-				if (info != null)
-					info.Invoke(t, new object[0]);
 				BindType(t);
-			}
-
-
 
 			Console.Instance = this;
 		}

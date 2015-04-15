@@ -267,7 +267,7 @@ namespace Lemma.Components
 				container.SwallowCurrentMouseEvent();
 			}));
 
-			this.loadSaveList.Children.Add(container);
+			this.loadSaveList.Children.Insert(0, container);
 			this.loadSaveScroll.ScrollToTop();
 		}
 
@@ -387,6 +387,7 @@ namespace Lemma.Components
 		private void restorePausedSettings()
 		{
 			Session.Recorder.Event(main, "Unpause");
+
 			if (this.pauseAnimation != null && this.pauseAnimation.Active)
 				this.pauseAnimation.Delete.Execute();
 
@@ -981,7 +982,6 @@ namespace Lemma.Components
 
 			this.loadSaveList = new ListContainer();
 			this.loadSaveList.Orientation.Value = ListContainer.ListOrientation.Vertical;
-			this.loadSaveList.Reversed.Value = true;
 			this.loadSaveScroll.Children.Add(this.loadSaveList);
 
 			foreach (string saveFile in Directory.GetDirectories(this.main.SaveDirectory, "*", SearchOption.TopDirectoryOnly).Select(x => Path.GetFileName(x)).OrderBy(x => x))
@@ -1079,6 +1079,15 @@ namespace Lemma.Components
 				});
 				this.resizeToMenu(reticleEnabled);
 				settingsList.Children.Add(reticleEnabled);
+			}
+
+			{
+				Container waypointsEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\waypoints", this.main.Settings.EnableWaypoints, boolDisplay, delegate(int delta)
+				{
+					this.main.Settings.EnableWaypoints.Value = !this.main.Settings.EnableWaypoints;
+				});
+				this.resizeToMenu(waypointsEnabled);
+				settingsList.Children.Add(waypointsEnabled);
 			}
 
 			Container fullscreenResolution = this.main.UIFactory.CreateScrollButton<Point>("\\fullscreen resolution", this.main.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString(), delegate(int delta)
@@ -1766,9 +1775,6 @@ namespace Lemma.Components
 				if (SteamWorker.OverlayActive || !SteamWorker.OverlaySafelyGone)
 					return false;
 
-				if (this.main.EditorEnabled)
-					return this.currentMenu.Value != null;
-
 				return true;
 			};
 
@@ -1820,6 +1826,8 @@ namespace Lemma.Components
 				{
 					if (this.currentMenu.Value == null)
 						this.savePausedSettings();
+					else if (ConsoleUI.Showing)
+						ConsoleUI.Showing.Value = false;
 					else
 						this.restorePausedSettings();
 					this.main.Paused.Value = this.currentMenu.Value != null;
@@ -1830,13 +1838,26 @@ namespace Lemma.Components
 			{
 				if (this.main.Settings.GodModeProperty && (this.main.Paused || this.CanPause))
 				{
-					if (canPause() && ConsoleUI.Showing.Value == this.main.Paused.Value)
-						togglePause();
-					ConsoleUI.Showing.Value = !ConsoleUI.Showing.Value;
+					if (this.currentMenu.Value == null && !ConsoleUI.Showing)
+					{
+						if (canPause())
+						{
+							togglePause();
+							ConsoleUI.Showing.Value = true;
+						}
+					}
+					else
+						ConsoleUI.Showing.Value = !ConsoleUI.Showing.Value;
 				}
 			}));
 
-			this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), () => canPause() || this.dialog != null, togglePause));
+			this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), delegate()
+			{
+				if (this.main.EditorEnabled)
+					return canPause() && (this.currentMenu.Value != null || this.dialog != null);
+				else
+					return canPause() || this.dialog != null;
+			}, togglePause));
 			this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.Start), canPause, togglePause));
 			this.input.Add(new CommandBinding(input.GetButtonDown(Buttons.B), () => this.currentMenu.Value != null || this.dialog != null, togglePause));
 
@@ -1869,17 +1890,22 @@ namespace Lemma.Components
 			this.input.Add(new NotifyBinding(delegate()
 			{
 				UIComponent menu = this.currentMenu;
-				if (menu != null && menu != creditsDisplay && this.main.GamePadConnected)
+				if (menu != null && menu != creditsDisplay)
 				{
-					foreach (UIComponent item in menu.Children)
-						item.Highlighted.Value = false;
+					bool highlight = this.main.GamePadConnected;
+					if (highlight)
+					{
+						foreach (UIComponent item in menu.Children)
+							item.Highlighted.Value = false;
+					}
 
 					int i = 0;
 					foreach (UIComponent item in menu.Children)
 					{
 						if (isButton(item) || isScrollButton(item))
 						{
-							item.Highlighted.Value = true;
+							if (highlight)
+								item.Highlighted.Value = true;
 							selected = i;
 							break;
 						}
@@ -1898,9 +1924,7 @@ namespace Lemma.Components
 					UIComponent menu = this.currentMenu;
 					if (menu != null && menu.EnableInput && this.dialog == null)
 					{
-						if (menu == this.loadSaveList)
-							delta = -delta;
-						else if (menu == creditsDisplay)
+						if (menu == creditsDisplay)
 						{
 							Scroller scroll = (Scroller)menu.Parent;
 							scroll.MouseScrolled.Execute(delta * -4);

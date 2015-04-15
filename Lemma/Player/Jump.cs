@@ -36,7 +36,7 @@ namespace Lemma.Components
 		// Output
 		public Command<Voxel, Voxel.Coord, Direction> WalkedOn = new Command<Voxel, Voxel.Coord, Direction>();
 		public Command DeactivateWallRun = new Command();
-		public Command FallDamage = new Command();
+		public FallDamage FallDamage;
 		public BlockPredictor Predictor;
 
 		public Property<Voxel> LastWallRunMap = new Property<Voxel>();
@@ -264,6 +264,8 @@ namespace Lemma.Components
 			{
 				float totalMultiplier = 1.0f;
 
+				bool grunted = false;
+
 				if (wallJumping)
 				{
 					if (this.wallJumpCount == 0)
@@ -290,7 +292,9 @@ namespace Lemma.Components
 					// Take base velocity into account
 					baseVelocity += this.SupportVelocity;
 
-					this.FallDamage.Execute();
+					grunted = this.FallDamage.ApplyJump();
+					if (!this.Active) // We got killed by fall damage
+						return false;
 					if (instantiatedBlockPossibility != null)
 						this.WalkedOn.Execute(instantiatedBlockPossibility.Map, instantiatedBlockPossibilityCoord, instantiatedBlockPossibility.Map.GetRelativeDirection(Direction.NegativeY));
 
@@ -335,6 +339,8 @@ namespace Lemma.Components
 				this.HasTraction.Value = false;
 
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_JUMP, this.Entity);
+				if (!grunted && (float)this.random.NextDouble() < 0.15f)
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_LAND, this.Entity); // Grunt
 
 				this.model.Stop
 				(

@@ -12,14 +12,12 @@ namespace Lemma.Components
 	{
 		public const float DamageVelocity = -20.0f; // Vertical velocity below which damage occurs
 		public const float RollingDamageVelocity = -28.0f; // Damage velocity when rolling
-		public const float GruntVelocity = -13.0f; // Vertical velocity below which grunting occurs
 		public const float DamageMultiplier = 0.2f;
 		public const float DeathVelocity = DamageVelocity - (1.0f / DamageMultiplier);
 		public const float RollingDeathVelocity = RollingDamageVelocity - (1.0f / DamageMultiplier);
 
 		// Input commands
 		public Command<float> Apply = new Command<float>();
-		public Command ApplyJump = new Command();
 		public Command<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection> Collided = new Command<BEPUphysics.BroadPhaseEntries.Collidable,ContactCollection>();
 
 		// Output commands
@@ -72,7 +70,6 @@ namespace Lemma.Components
 			base.Awake();
 			this.Serialize = false;
 			this.EnabledWhenPaused = false;
-			this.ApplyJump.Action = delegate() { this.apply(this.lastLinearVelocity.Y - this.LinearVelocity.Value.Y, true); };
 			this.Apply.Action = delegate(float verticalAcceleration) { this.apply(verticalAcceleration, false); };
 
 			// Damage the player if they hit something too hard
@@ -90,13 +87,20 @@ namespace Lemma.Components
 			};
 		}
 
-		private void apply(float verticalAcceleration, bool jumping)
+		public bool ApplyJump()
+		{
+			return this.apply(this.lastLinearVelocity.Y - this.LinearVelocity.Value.Y, true);
+		}
+
+		private bool apply(float verticalAcceleration, bool jumping)
 		{
 			bool rolling = this.model.IsPlaying("Roll") || this.model.IsPlaying("Kick");
 			float v = rolling ? RollingDamageVelocity : DamageVelocity;
+			bool grunted = false;
 			if (verticalAcceleration < v)
 			{
 				float damage = (verticalAcceleration - v) * DamageMultiplier;
+				grunted = damage < 0.0f;
 				this.Health.Value += damage;
 				// Health component will take care of rumble
 				if (this.Health.Value <= 0.0f)
@@ -119,13 +123,23 @@ namespace Lemma.Components
 					}
 				}
 			}
-			else if (verticalAcceleration < GruntVelocity)
+			else if (verticalAcceleration < -5.0f)
 			{
-				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_LAND, this.Entity);
-				if (!rolling)
-					this.model.StartClip("Land", 4);
-				this.Rumble.Execute(0.2f);
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_CLOTHING, this.Entity);
+				if (verticalAcceleration < -13.0f)
+				{
+					if (!rolling)
+						this.model.StartClip("Land", 4);
+					this.Rumble.Execute(0.2f);
+
+					if (verticalAcceleration < -16.0f)
+					{
+						AkSoundEngine.PostEvent(AK.EVENTS.PLAY_PLAYER_LAND, this.Entity);
+						grunted = true;
+					}
+				}
 			}
+			return grunted;
 		}
 
 		public void Update(float dt)

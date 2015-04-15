@@ -64,6 +64,7 @@ namespace Lemma.Factories
 				refreshMapTransform();
 			}
 
+			entity.Add("Enabled", voxelFill.Enabled);
 			entity.Add("Enable", voxelFill.Enable);
 			entity.Add("Disable", voxelFill.Disable);
 			entity.Add("IntervalMultiplier", voxelFill.IntervalMultiplier);
