@@ -43,6 +43,7 @@ namespace Lemma.GInterfaces
 
 				ConsoleLogView.Editable = false;
 				ConsoleInputView.OnTextSubmitted = OnTextSubmitted;
+				ConsoleInputView.SubmitOnClickAway = false;
 				ConsoleInputView.MultiLine = false;
 
 				RootConsoleView.ChildrenLayouts.Add(new VerticalViewLayout(0, false));
