@@ -341,7 +341,7 @@ namespace Lemma
 
 #if VR
 		public bool VR;
-		public const float VRUnitToWorldUnit = 3.0f;
+		public const float VRUnitToWorldUnit = 1.5f;
 		public Ovr.Hmd VRHmd;
 		private Ovr.HmdDesc vrHmdDesc;
 
@@ -530,7 +530,7 @@ namespace Lemma
 			{
 				if (!Ovr.Hmd.Initialize())
 					throw new Exception("Failed to initialize Oculus runtime.");
-				this.VRHmd = Ovr.Hmd.Create(0);
+				this.VRHmd = new Ovr.Hmd(0);
 				if (this.VRHmd == null)
 				{
 					Log.d("Error: no Oculus found.");
@@ -818,7 +818,11 @@ namespace Lemma
 					this.Graphics.ApplyChanges();
 			}, this.Settings.Vsync);
 
-			if (this.Settings.Fullscreen)
+			bool forceFullscreen = false;
+#if VR
+				forceFullscreen = true;
+#endif
+			if (forceFullscreen || this.Settings.Fullscreen)
 				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true, this.Settings.Borderless);
 			else
 				this.ResizeViewport(this.Settings.Size.Value.X, this.Settings.Size.Value.Y, false, this.Settings.Borderless, false);
@@ -968,11 +972,6 @@ namespace Lemma
 			}
 
 			Rumble.Reset();
-
-#if VR
-			if (this.VR)
-				Ovr.Hmd.Shutdown();
-#endif
 		}
 
 		protected bool firstLoadContentCall = true;
@@ -1823,7 +1822,7 @@ namespace Lemma
 			this.vrCamera.RotationMatrix.Value = Matrix.CreateFromQuaternion(quat) * originalCamera.RotationMatrix;
 			Vector3 viewAdjust = Vector3.TransformNormal(new Vector3(pose.Position.x, pose.Position.y, pose.Position.z), originalCamera.RotationMatrix);
 			this.vrCamera.Position.Value = originalCamera.Position.Value + viewAdjust * Main.VRUnitToWorldUnit;
-			Ovr.Matrix4f proj = Ovr.Hmd.GetProjection(this.vrLeftFov, originalCamera.NearPlaneDistance, originalCamera.FarPlaneDistance, true);
+			Ovr.Matrix4f proj = Ovr.Hmd.GetProjection(this.vrLeftFov, originalCamera.NearPlaneDistance, originalCamera.FarPlaneDistance, (uint)Ovr.Hmd.ProjectionModifier.RightHanded);
 			this.vrCamera.Projection.Value = Oculus.MatrixOvrToXna(proj);
 
 			for (int i = 0; i < this.preframeDrawables.Count; i++)

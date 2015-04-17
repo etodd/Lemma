@@ -50,7 +50,6 @@ public class AK
         public static uint PLAY_PHONE_VIBRATE = 1246969326U;
         public static uint PLAY_PHYSICS_SLAM = 4268997543U;
         public static uint PLAY_PHYSICS_SLAM_LARGE = 340000179U;
-        public static uint PLAY_PLAYER_BREATHING_HARD = 3584441250U;
         public static uint PLAY_PLAYER_BREATHING_SOFT = 4243459973U;
         public static uint PLAY_PLAYER_CLOTHING = 1403802228U;
         public static uint PLAY_PLAYER_DEATH = 1835085974U;
@@ -118,7 +117,6 @@ public class AK
         public static uint STOP_MUSIC_FOREST = 2506571047U;
         public static uint STOP_MUSIC_RAIN = 1457395542U;
         public static uint STOP_MUSIC_THEME = 2480681107U;
-        public static uint STOP_PLAYER_BREATHING_HARD = 3180565756U;
         public static uint STOP_PLAYER_BREATHING_SOFT = 1454416799U;
         public static uint STOP_PLAYER_FALL = 3680109729U;
         public static uint STOP_PLAYER_SLIDE_LOOP = 651971942U;

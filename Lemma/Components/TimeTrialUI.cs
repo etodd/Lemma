@@ -97,7 +97,11 @@ namespace Lemma.Components
 				container.Opacity.Value = 0.5f;
 				container.PaddingBottom.Value = container.PaddingLeft.Value = container.PaddingRight.Value = container.PaddingTop.Value = 16.0f * this.main.FontMultiplier;
 				container.AnchorPoint.Value = new Vector2(1.0f, 0.0f);
-				container.Add(new Binding<Vector2, Point>(container.Position, x => new Vector2(x.X * 0.9f, x.Y * 0.1f), this.main.ScreenSize));
+				bool vr = false;
+#if VR
+				vr = this.main.VR;
+#endif
+				container.Add(new Binding<Vector2, Point>(container.Position, x => new Vector2(x.X * 0.9f, x.Y * (vr ? 0.3f : 0.1f)), this.main.ScreenSize));
 				container.Visible.Value = false;
 				this.main.UI.Root.Children.Add(container);
 				container.Add(new CommandBinding(this.Delete, container.Delete));

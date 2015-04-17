@@ -650,6 +650,9 @@ namespace Lemma.Components
 				this.hideChallenge = hideChallengeMenu;
 			};
 
+			ListContainer officialMapsList = new ListContainer();
+			officialMapsList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
 			Action showOfficialMenu = delegate()
 			{
 				this.hidePauseMenu();
@@ -665,15 +668,12 @@ namespace Lemma.Components
 							new Animation.Vector2MoveToSpeed(officialMapsMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
 							Animation.Ease.EaseType.OutExponential));
 				this.main.AddComponent(officialAnimation);
-				this.currentMenu.Value = officialMapsMenu;
+				this.currentMenu.Value = officialMapsList;
 			};
 
 			Container officialBack = this.main.UIFactory.CreateButton("\\back", () => hideOfficialMenu(true));
 			this.resizeToMenu(officialBack);
 			officialMapsMenu.Children.Add(officialBack);
-
-			ListContainer officialMapsList = new ListContainer();
-			officialMapsList.Orientation.Value = ListContainer.ListOrientation.Vertical;
 
 			Scroller officialMapScroller = new Scroller();
 			officialMapScroller.Children.Add(officialMapsList);
@@ -761,6 +761,9 @@ namespace Lemma.Components
 				this.hideChallenge = hideChallengeMenu;
 			};
 
+			ListContainer workshopMapsList = new ListContainer();
+			workshopMapsList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
 			Action showWorkshopMenu = delegate()
 			{
 				this.hidePauseMenu();
@@ -776,22 +779,18 @@ namespace Lemma.Components
 							new Animation.Vector2MoveToSpeed(workshopMapsMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
 							Animation.Ease.EaseType.OutExponential));
 				this.main.AddComponent(officialAnimation);
-				this.currentMenu.Value = workshopMapsMenu;
+				this.currentMenu.Value = workshopMapsList;
 			};
 			Container workshopGetMore = this.main.UIFactory.CreateButton("\\get more", delegate()
 			{
 				UIFactory.OpenURL(string.Format("http://steamcommunity.com/workshop/browse?appid={0}", Main.SteamAppID));
 			});
 			this.resizeToMenu(workshopGetMore);
-			workshopMapsMenu.Children.Add(workshopGetMore);
+			workshopMapsList.Children.Add(workshopGetMore);
 
 			Container workshopBack = this.main.UIFactory.CreateButton("\\back", () => hideWorkshopMenu(true));
 			this.resizeToMenu(workshopBack);
 			workshopMapsMenu.Children.Add(workshopBack);
-
-
-			ListContainer workshopMapsList = new ListContainer();
-			workshopMapsList.Orientation.Value = ListContainer.ListOrientation.Vertical;
 
 			Scroller workshopMapsScroller = new Scroller();
 			workshopMapsScroller.Children.Add(workshopMapsList);
@@ -800,7 +799,8 @@ namespace Lemma.Components
 
 			Action reloadMaps = delegate()
 			{
-				workshopMapsList.Children.Clear();
+				while (workshopMapsList.Children.Count > 1)
+					workshopMapsList.Children.RemoveAt(workshopMapsList.Children.Count - 1);
 				DirectoryInfo workshopDir = SteamWorker.DownloadedMaps;
 				if (workshopDir.Exists)
 				{

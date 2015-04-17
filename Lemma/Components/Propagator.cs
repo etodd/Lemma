@@ -17,7 +17,7 @@ namespace Lemma.Components
 	{
 		public enum Spark
 		{
-			Normal, Dangerous, Burn, Expander
+			Normal, Dangerous, Burn, Expander, Count
 		}
 
 		public class ScheduledBlock
@@ -464,61 +464,61 @@ namespace Lemma.Components
 			this.toRegenerate.Clear();
 		}
 
+		private float[] lastSound = new float[(int)Spark.Count];
+		private float soundRadiusSquared = 30.0f * 30.0f;
 		public void SparksLowPriority(Vector3 pos, Spark type)
 		{
-			this.sparks(pos, type, this.random.Next(0, 2) == 0, this.random.Next(0, 3) == 0);
+			if (this.random.Next(0, 2) == 0)
+			{
+				bool sound = this.main.TotalTime - this.lastSound[(int)type] > 0.15f
+					&& (this.main.Camera.Position - pos).LengthSquared() < soundRadiusSquared;
+				this.Sparks(pos, type, sound);
+			}
 		}
 
-		public void Sparks(Vector3 pos, Spark type)
+		public void Sparks(Vector3 pos, Spark type, bool playSound = true)
 		{
-			this.sparks(pos, type, true, true);
-		}
-
-		private void sparks(Vector3 pos, Spark type, bool showLight, bool playSound)
-		{
-			for (int j = 0; j < 40; j++)
+			for (int j = 0; j < 20; j++)
 			{
 				Vector3 offset = new Vector3((float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble() - 0.5f, (float)this.random.NextDouble() - 0.5f);
 				this.particles.AddParticle(pos + offset, offset);
 			}
 
-			if (showLight)
+			PointLight light;
+			if (this.activeSparkLights < Propagator.maxSparkLights)
 			{
-				PointLight light;
-				if (this.activeSparkLights < Propagator.maxSparkLights)
-				{
-					light = this.sparkLights[this.activeSparkLights];
-					light.Enabled.Value = true;
-					this.activeSparkLights++;
-				}
-				else
-				{
-					light = this.sparkLights[this.oldestSparkLight % this.activeSparkLights];
-					this.oldestSparkLight = (this.oldestSparkLight + 1) % Propagator.maxSparkLights;
-				}
+				light = this.sparkLights[this.activeSparkLights];
+				light.Enabled.Value = true;
+				this.activeSparkLights++;
+			}
+			else
+			{
+				light = this.sparkLights[this.oldestSparkLight % this.activeSparkLights];
+				this.oldestSparkLight = (this.oldestSparkLight + 1) % Propagator.maxSparkLights;
+			}
 
-				light.Color.Value = Vector3.One;
-				light.Position.Value = pos;
+			light.Color.Value = Vector3.One;
+			light.Position.Value = pos;
 
-				light.Attenuation.Value = type == Spark.Expander ? 10.0f : 5.0f;
+			light.Attenuation.Value = type == Spark.Expander ? 10.0f : 5.0f;
 
-				if (playSound)
+			if (playSound)
+			{
+				this.lastSound[(int)type] = this.main.TotalTime;
+				uint sound;
+				switch (type)
 				{
-					uint sound;
-					switch (type)
-					{
-						case Spark.Dangerous:
-							sound = AK.EVENTS.PLAY_RED_BURN;
-							break;
-						case Spark.Burn:
-							sound = AK.EVENTS.PLAY_ORANGE_BURN;
-							break;
-						default:
-							sound = AK.EVENTS.PLAY_BLUE_BURN;
-							break;
-					}
-					Sound.PostEvent(sound, pos);
+					case Spark.Dangerous:
+						sound = AK.EVENTS.PLAY_RED_BURN;
+						break;
+					case Spark.Burn:
+						sound = AK.EVENTS.PLAY_ORANGE_BURN;
+						break;
+					default:
+						sound = AK.EVENTS.PLAY_BLUE_BURN;
+						break;
 				}
+				Sound.PostEvent(sound, pos);
 			}
 		}
 	}
