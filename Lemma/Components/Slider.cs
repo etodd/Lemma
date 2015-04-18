@@ -203,16 +203,17 @@ namespace Lemma.Components
 				float x = Vector3.Dot(separation, this.joint.Limit.Axis);
 
 				bool nearEdge = false;
-				if (x > this.Maximum - 0.5f)
+				const float threshold = 0.1f;
+				if (x > this.Maximum - threshold)
 				{
-					if (this.lastX <= this.Maximum - 0.5f)
+					if (this.lastX <= this.Maximum - threshold)
 						this.OnHitMax.Execute();
 					nearEdge = true;
 				}
 				
-				if (x < this.Minimum + 0.5f)
+				if (x < this.Minimum + threshold)
 				{
-					if (this.lastX >= this.Minimum + 0.5f)
+					if (this.lastX >= this.Minimum + threshold)
 						this.OnHitMin.Execute();
 					nearEdge = true;
 				}

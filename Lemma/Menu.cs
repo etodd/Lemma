@@ -267,7 +267,7 @@ namespace Lemma.Components
 				container.SwallowCurrentMouseEvent();
 			}));
 
-			this.loadSaveList.Children.Insert(0, container);
+			this.loadSaveList.Children.Insert(1, container);
 			this.loadSaveScroll.ScrollToTop();
 		}
 
@@ -965,6 +965,14 @@ namespace Lemma.Components
 			this.resizeToMenu(loadSaveBack);
 			this.loadSaveMenu.Children.Add(loadSaveBack);
 
+			this.loadSaveScroll = new Scroller();
+			this.loadSaveScroll.Add(new Binding<Vector2, Point>(this.loadSaveScroll.Size, x => new Vector2(Menu.menuButtonWidth * this.main.FontMultiplier + Menu.menuButtonLeftPadding + 4.0f, x.Y * 0.5f), this.main.ScreenSize));
+			this.loadSaveMenu.Children.Add(this.loadSaveScroll);
+
+			this.loadSaveList = new ListContainer();
+			this.loadSaveList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			this.loadSaveScroll.Children.Add(this.loadSaveList);
+
 			Container saveNewButton = this.main.UIFactory.CreateButton("\\save new", delegate()
 			{
 				this.main.SaveOverwrite();
@@ -974,15 +982,7 @@ namespace Lemma.Components
 			});
 			this.resizeToMenu(saveNewButton);
 			saveNewButton.Add(new Binding<bool>(saveNewButton.Visible, this.saveMode));
-			this.loadSaveMenu.Children.Add(saveNewButton);
-
-			this.loadSaveScroll = new Scroller();
-			this.loadSaveScroll.Add(new Binding<Vector2, Point>(this.loadSaveScroll.Size, x => new Vector2(Menu.menuButtonWidth * this.main.FontMultiplier + Menu.menuButtonLeftPadding + 4.0f, x.Y * 0.5f), this.main.ScreenSize));
-			this.loadSaveMenu.Children.Add(this.loadSaveScroll);
-
-			this.loadSaveList = new ListContainer();
-			this.loadSaveList.Orientation.Value = ListContainer.ListOrientation.Vertical;
-			this.loadSaveScroll.Children.Add(this.loadSaveList);
+			this.loadSaveList.Children.Add(saveNewButton);
 
 			foreach (string saveFile in Directory.GetDirectories(this.main.SaveDirectory, "*", SearchOption.TopDirectoryOnly).Select(x => Path.GetFileName(x)).OrderBy(x => x))
 				this.AddSaveGame(saveFile);

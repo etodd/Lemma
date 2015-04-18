@@ -820,7 +820,7 @@ namespace Lemma
 
 			bool forceFullscreen = false;
 #if VR
-				forceFullscreen = true;
+			forceFullscreen = this.VR;
 #endif
 			if (forceFullscreen || this.Settings.Fullscreen)
 				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true, this.Settings.Borderless);
