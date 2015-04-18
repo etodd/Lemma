@@ -90,7 +90,7 @@ namespace Lemma.Components
 				m.Translation += Vector3.Transform(diff, Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f));
 				return m;
 			};
-			this.model["Vault"].Speed = 1.3f;
+			this.model["Vault"].Speed = 1.5f;
 			this.model["Vault"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
 			{
 				m.Translation += (Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f) * Matrix.CreateTranslation(0, -1.0f + this.vaultTime * 1.0f, this.initialVerticalDifference - 2.0f - this.vaultTime * 3.0f)).Translation;
@@ -282,7 +282,10 @@ namespace Lemma.Components
 				&& map[coordPosition + this.forward + new Vector3(0, -2, 0)].ID == Voxel.t.Empty;
 
 			if (this.vaultOver)
+			{
 				this.isTopOut = false; // Don't do a top out animation if we're going to vault over it
+				this.shallowMantle = true;
+			}
 
 			// Grunt if we're going up
 			// If we're falling down, don't grunt because we might already be grunting from the fall damage
@@ -320,7 +323,7 @@ namespace Lemma.Components
 				"JumpRight",
 				"JumpBackward"
 			);
-			this.model.StartClip(this.vaultOver ? "Vault" : (this.isTopOut ? "TopOut" : "Mantle"), 4, false, AnimatedModel.DefaultBlendTime);
+			this.model.StartClip(this.isTopOut ? "TopOut" : "Mantle", 4, false, AnimatedModel.DefaultBlendTime);
 
 			if (!this.vaultOver && !this.isTopOut)
 			{
@@ -403,6 +406,12 @@ namespace Lemma.Components
 				else
 				{
 					// We're still going up.
+					if (this.vaultOver && this.vaultTime > 0.3f && this.model.IsPlaying("Mantle"))
+					{
+						this.model.Stop("Mantle");
+						this.model.StartClip("Vault", 4, false, AnimatedModel.DefaultBlendTime);
+					}
+
 					if (this.LinearVelocity.Value.Y - this.getSupportVelocity(this.map).Y < 0.0f)
 					{
 						// We hit something above us.
