@@ -22,6 +22,8 @@ namespace Lemma.Components
 
 		public Property<float> Duration = new Property<float>();
 
+		public Property<float> FOVMultiplier = new Property<float> { Value = 1.0f };
+
 		[XmlIgnore]
 		public Command OnDone = new Command();
 
@@ -76,7 +78,7 @@ namespace Lemma.Components
 				if (!lastEase.BlendsInto(currentStop.Blend) || next == null)
 				{
 					if (spline != null)
-						spline.Add(currentTransform.Position, currentTransform.Quaternion, currentStop.Offset);
+						spline.Add(currentTransform.Position, currentTransform.Quaternion, currentStop.Offset, currentStop.FOVMultiplier);
 					spline = new BSpline();
 				}
 
@@ -87,7 +89,7 @@ namespace Lemma.Components
 				if (currentStop.Blend != Animation.Ease.EaseType.None && next != null)
 				{
 					BSpline currentSpline = spline;
-					currentSpline.Add(currentTransform.Position, currentTransform.Quaternion, currentStop.Offset);
+					currentSpline.Add(currentTransform.Position, currentTransform.Quaternion, currentStop.Offset, currentStop.FOVMultiplier);
 					Transform nextTransform = next.Get<Transform>();
 					sequence.Add
 					(
@@ -100,6 +102,7 @@ namespace Lemma.Components
 									float lerpValue = (currentTime + x * currentStop.Duration) / currentSpline.Duration;
 									BSpline.ControlPoint point = currentSpline.Evaluate(lerpValue);
 									Matrix rotationMatrix = Matrix.CreateFromQuaternion(point.Orientation);
+									this.main.Camera.FieldOfView.Value = MathHelper.Clamp(this.main.Settings.FieldOfView * point.FOVMultiplier, 0.01f, (float)Math.PI * 0.99f);
 									this.main.Camera.RotationMatrix.Value = rotationMatrix;
 									Matrix m = rotationMatrix * Matrix.CreateTranslation(point.Position);
 									this.main.Camera.Position.Value = Vector3.Transform(new Vector3(0, 0, point.Offset), m);
@@ -143,6 +146,7 @@ namespace Lemma.Components
 					p.Get<FPSInput>().Enabled.Value = true;
 					p.Get<UIRenderer>().Enabled.Value = true;
 				}
+				this.main.Camera.FieldOfView.Value = this.main.Settings.FieldOfView;
 				CameraStop.CinematicActive.Value = false;
 				this.main.Menu.CanPause.Value = originalCanPause;
 			};

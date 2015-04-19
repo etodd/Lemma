@@ -490,6 +490,7 @@ namespace Lemma
 			this.BaseTimeMultiplier.Value = 1.0f;
 			this.PauseAudioEffect.Value = 0.0f;
 			this.Camera.Angles.Value = Vector3.Zero;
+			this.Camera.FieldOfView.Value = this.Settings.FieldOfView;
 			this.Menu.ClearMessages();
 
 			AkSoundEngine.PostEvent(AK.EVENTS.STOP_ALL);
@@ -1201,7 +1202,7 @@ namespace Lemma
 				new TwoWayBinding<float>(this.Settings.Gamma, this.Renderer.Gamma);
 				new TwoWayBinding<bool>(this.Settings.Bloom, this.Renderer.EnableBloom);
 				new TwoWayBinding<bool>(this.Settings.SSAO, this.Renderer.EnableSSAO);
-				new TwoWayBinding<float>(this.Settings.FieldOfView, this.Camera.FieldOfView);
+				new Binding<float>(this.Camera.FieldOfView, this.Settings.FieldOfView);
 
 				foreach (string file in Directory.GetFiles(this.MapDirectory, "*.xlsx", SearchOption.TopDirectoryOnly))
 					this.Strings.Load(file);
