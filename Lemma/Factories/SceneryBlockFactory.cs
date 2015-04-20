@@ -40,8 +40,7 @@ namespace Lemma.Factories
 			entity.Add("IsAffectedByGravity", physics.IsAffectedByGravity);
 			sceneryBlock.EditorProperties();
 
-			if (!main.EditorEnabled && !physics.IsAffectedByGravity
-				&& (sceneryBlock.Type.Value == Voxel.t.WhitePermanent || sceneryBlock.Type.Value == Voxel.t.White))
+			if (!main.EditorEnabled && !physics.IsAffectedByGravity && sceneryBlock.Type.Value == Voxel.t.WhitePermanent)
 			{
 				Sound.AttachTracker(entity);
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WHITE_LIGHT, entity);

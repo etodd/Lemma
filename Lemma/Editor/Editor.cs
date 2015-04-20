@@ -1077,6 +1077,7 @@ namespace Lemma.Components
 				float rayLength = (this.transformCenter - this.main.Camera.Position.Value).Length();
 				Vector2 mouseOffset = this.Mouse - this.originalTransformMouse;
 				Vector3 offset = ((this.main.Camera.Right.Value * mouseOffset.X * rayLength) + (this.main.Camera.Up.Value * -mouseOffset.Y * rayLength)) * 0.0025f;
+				Matrix localRotation = this.offsetTransforms.Count == 1 ? this.offsetTransforms[0] : Matrix.Identity;
 				switch (this.TransformAxis.Value)
 				{
 					case TransformAxes.X:
@@ -1087,6 +1088,15 @@ namespace Lemma.Components
 						break;
 					case TransformAxes.Z:
 						offset.X = offset.Y = 0.0f;
+						break;
+					case TransformAxes.LocalX:
+						offset = localRotation.Right * Vector3.Dot(offset, localRotation.Right);
+						break;
+					case TransformAxes.LocalY:
+						offset = localRotation.Up * Vector3.Dot(offset, localRotation.Up);
+						break;
+					case TransformAxes.LocalZ:
+						offset = localRotation.Forward * Vector3.Dot(offset, localRotation.Forward);
 						break;
 				}
 				if (this.SelectedTransform.Value != null)

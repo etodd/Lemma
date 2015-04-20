@@ -13,7 +13,7 @@ namespace Lemma.Util
 			public Vector3 Position;
 			public Quaternion Orientation;
 			public float Offset;
-			public float FOVMultiplier;
+			public float FieldOfView;
 
 			public static ControlPoint Lerp(ControlPoint a, ControlPoint b, float x)
 			{
@@ -21,7 +21,7 @@ namespace Lemma.Util
 				result.Position = Vector3.Lerp(a.Position, b.Position, x);
 				result.Orientation = Quaternion.Lerp(a.Orientation, b.Orientation, x);
 				result.Offset = MathHelper.Lerp(a.Offset, b.Offset, x);
-				result.FOVMultiplier = MathHelper.Lerp(a.FOVMultiplier, b.FOVMultiplier, x);
+				result.FieldOfView = MathHelper.Lerp(a.FieldOfView, b.FieldOfView, x);
 				return result;
 			}
 		}
@@ -49,9 +49,9 @@ namespace Lemma.Util
 			}
 		}
 
-		public void Add(Vector3 pos, Quaternion q = default(Quaternion), float offset = 0.0f, float fovmultiplier = 1.0f)
+		public void Add(Vector3 pos, Quaternion q = default(Quaternion), float offset = 0.0f, float fov = 80.0f)
 		{
-			this.points.Add(new ControlPoint { Position = pos, Orientation = q, Offset = offset, FOVMultiplier = fovmultiplier });
+			this.points.Add(new ControlPoint { Position = pos, Orientation = q, Offset = offset, FieldOfView = MathHelper.ToRadians(fov) });
 		}
 
 		public ControlPoint Evaluate(float x)

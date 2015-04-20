@@ -59,12 +59,15 @@ namespace Lemma.Components
 			{
 				if (this.main.TotalTime > 0.1f)
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SWITCH_OFF, this.Entity);
+				AkSoundEngine.PostEvent(AK.EVENTS.STOP_WHITE_LIGHT, this.Entity);
 			}));
 
 			this.Add(new CommandBinding(this.OnPowerOn, delegate()
 			{
 				if (this.main.TotalTime > 0.1f && this.PowerOnCue != 0)
 					AkSoundEngine.PostEvent(this.PowerOnCue, this.Entity);
+				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_WHITE_LIGHT, this.Entity);
+
 				Voxel map = this.AttachedVoxel.Value.Target.Get<Voxel>();
 
 				Switch closestConnectedSwitch = null;
@@ -149,6 +152,7 @@ namespace Lemma.Components
 		{
 			base.delete();
 			Switch.all.Remove(this);
+			AkSoundEngine.PostEvent(AK.EVENTS.STOP_WHITE_LIGHT, this.Entity);
 		}
 	}
 }

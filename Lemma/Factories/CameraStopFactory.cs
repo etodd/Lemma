@@ -71,7 +71,7 @@ namespace Lemma.Factories
 			entity.Add("Offset", cameraStop.Offset);
 			entity.Add("Blend", cameraStop.Blend);
 			entity.Add("Duration", cameraStop.Duration);
-			entity.Add("FOVMultiplier", cameraStop.FOVMultiplier);
+			entity.Add("FieldOfView", cameraStop.FieldOfView);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
