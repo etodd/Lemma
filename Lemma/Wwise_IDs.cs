@@ -115,7 +115,6 @@ public class AK
         public static uint STOP_MAGIC_CUBE_LOOP = 2741847256U;
         public static uint STOP_MUSIC = 2837384057U;
         public static uint STOP_MUSIC_FOREST = 2506571047U;
-        public static uint STOP_MUSIC_RAIN = 1457395542U;
         public static uint STOP_MUSIC_THEME = 2480681107U;
         public static uint STOP_PLAYER_BREATHING_SOFT = 1454416799U;
         public static uint STOP_PLAYER_FALL = 3680109729U;
@@ -189,6 +188,7 @@ public class AK
         public static uint MONOLITH = 346542641U;
         public static uint NOSTALGIC = 1863221701U;
         public static uint RAIN = 2043403999U;
+        public static uint RAIN2 = 2599409983U;
         public static uint SFX_BANK_01 = 1878155811U;
     } // public class BANKS
 

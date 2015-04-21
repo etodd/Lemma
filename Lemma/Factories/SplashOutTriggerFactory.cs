@@ -48,11 +48,14 @@ namespace Lemma.Factories
 						{
 							Voxel v = ve.Get<Voxel>();
 							Voxel.Box b = v.GetBox(attachable.Coord);
-							BoundingBox box = new BoundingBox(v.GetRelativePosition(b.X, b.Y, b.Z), v.GetRelativePosition(b.X + b.Width, b.Y + b.Height, b.Z + b.Depth));
-							if (submergedWater != null && main.TotalTime - lastEmit > 0.1f)
+							if (b != null)
 							{
-								Water.SplashParticles(main, box.Transform(v.Transform), v, submergedWater.Position.Value.Y);
-								lastEmit = main.TotalTime;
+								BoundingBox box = new BoundingBox(v.GetRelativePosition(b.X, b.Y, b.Z), v.GetRelativePosition(b.X + b.Width, b.Y + b.Height, b.Z + b.Depth));
+								if (submergedWater != null && main.TotalTime - lastEmit > 0.1f)
+								{
+									Water.SplashParticles(main, box.Transform(v.Transform), v, submergedWater.Position.Value.Y);
+									lastEmit = main.TotalTime;
+								}
 							}
 						}
 					}
