@@ -206,20 +206,8 @@ namespace Lemma.Components
 					throw new Exception();
 				thumbnailPath = Path.Combine(this.main.SaveDirectory, timestamp, "thumbnail.png");
 			}
-			catch (Exception) // Old version. Delete it.
+			catch (Exception) // Incompatible version. Ignore.
 			{
-				string savePath = Path.Combine(this.main.SaveDirectory, timestamp);
-				if (Directory.Exists(savePath))
-				{
-					try
-					{
-						Directory.Delete(savePath, true);
-					}
-					catch (Exception)
-					{
-						// Whatever. We can't delete it, tough beans.
-					}
-				}
 				return;
 			}
 
