@@ -188,7 +188,6 @@ public class AK
         public static uint MONOLITH = 346542641U;
         public static uint NOSTALGIC = 1863221701U;
         public static uint RAIN = 2043403999U;
-        public static uint RAIN2 = 2599409983U;
         public static uint SFX_BANK_01 = 1878155811U;
     } // public class BANKS
 
