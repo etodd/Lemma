@@ -1014,6 +1014,12 @@ namespace Lemma.Components
 			settingsScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			settingsLabelContainer.Children.Add(settingsScrollLabel);
 
+			TextElement settingsScrollLabel2 = new TextElement();
+			settingsScrollLabel2.FontFile.Value = this.main.Font;
+			settingsScrollLabel2.Text.Value = "\\scroll for more";
+			settingsScrollLabel2.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
+			settingsLabelContainer.Children.Add(settingsScrollLabel2);
+
 			Action hideSettings = delegate()
 			{
 				this.main.SaveSettings();
