@@ -60,7 +60,9 @@ namespace Lemma
 				catch (Exception e)
 				{
 					System.Windows.Forms.Application.EnableVisualStyles();
-					ErrorForm errorForm = new ErrorForm(e.ToString(), main != null ? (main.Settings != null ? main.Settings.UUID : null) : null);
+					string uuid = main != null ? (main.Settings != null ? main.Settings.UUID : null) : null;
+					Lemma.Main.Config.RecordAnalytics analytics = main != null ? (main.Settings != null ? main.Settings.Analytics : Lemma.Main.Config.RecordAnalytics.Off) : Lemma.Main.Config.RecordAnalytics.Off;
+					ErrorForm errorForm = new ErrorForm(e.ToString(), uuid, analytics == Lemma.Main.Config.RecordAnalytics.On);
 #if ANALYTICS
 					if (main != null)
 					{

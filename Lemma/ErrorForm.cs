@@ -18,11 +18,13 @@ namespace Lemma
 
 #if ANALYTICS
 		public Session.Recorder Session;
+		private bool enableUpload;
 #endif
-		public ErrorForm(string error, string anonymousId)
+		public ErrorForm(string error, string anonymousId, bool upload)
 		{
 			this.error = error;
 			this.anonymousId = anonymousId;
+			this.enableUpload = upload;
 			InitializeComponent();
 		}
 
@@ -43,8 +45,10 @@ namespace Lemma
 #if ANALYTICS
 			if (this.Session.Uploading)
 				this.label1.Text = "Uploading crash report... please wait.";
-			else
+			else if (this.enableUpload)
 				this.label1.Text = "Crash report uploaded. Thank you!";
+			else
+				this.label1.Text = "Error trace:";
 #endif
 		}
 
