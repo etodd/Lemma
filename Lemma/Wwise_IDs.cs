@@ -70,7 +70,7 @@ public class AK
         public static uint PLAY_RIFT_OPEN = 2529943266U;
         public static uint PLAY_SIGNAL_TOWER_ACTIVATE = 2645903392U;
         public static uint PLAY_SIGNAL_TOWER_LOOP = 1879386073U;
-        public static uint PLAY_SNAKE_MOVE = 3676437670U;
+        public static uint PLAY_SNAKE = 324904978U;
         public static uint PLAY_SWITCH_MUSIC1 = 1893257791U;
         public static uint PLAY_SWITCH_MUSIC2 = 1893257788U;
         public static uint PLAY_SWITCH_MUSIC3 = 1893257789U;
@@ -121,6 +121,7 @@ public class AK
         public static uint STOP_PLAYER_SLIDE_LOOP = 651971942U;
         public static uint STOP_RAIN = 3206237490U;
         public static uint STOP_SIGNAL_TOWER_LOOP = 2826848843U;
+        public static uint STOP_SNAKE = 380055560U;
         public static uint STOP_TURRET_LOOP = 328308863U;
         public static uint STOP_WATER_LOOP = 105164338U;
         public static uint STOP_WATERFALL_LOOP = 552611043U;

@@ -247,7 +247,6 @@ namespace Lemma.Factories
 						m.Fill(c, Voxel.States.Infected);
 						m.Regenerate();
 					}
-					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SNAKE_MOVE, entity);
 
 					if (currentState == "Idle")
 					{
@@ -261,6 +260,16 @@ namespace Lemma.Factories
 						snake.Path.RemoveAt(0);
 					}
 				}
+			}));
+
+			Sound.AttachTracker(entity);
+			SoundKiller.Add(entity, AK.EVENTS.STOP_SNAKE);
+			ai.Add(new ChangeBinding<string>(ai.CurrentState, delegate(string old, string value)
+			{
+				if (value == "Suspended" || value == "Alert")
+					AkSoundEngine.PostEvent(AK.EVENTS.STOP_SNAKE, entity);
+				else if (old != "Idle" && old != "Chase" && old != "Crush")
+					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_SNAKE, entity);
 			}));
 			
 			const float sightDistance = 50.0f;
