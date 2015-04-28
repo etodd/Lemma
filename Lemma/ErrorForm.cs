@@ -24,7 +24,9 @@ namespace Lemma
 		{
 			this.error = error;
 			this.anonymousId = anonymousId;
+#if ANALYTICS
 			this.enableUpload = upload;
+#endif
 			InitializeComponent();
 		}
 
