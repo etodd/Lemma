@@ -73,7 +73,7 @@ namespace Lemma.Factories
 
 					bool changed = false;
 					Voxel sockVoxel = attachable.AttachedVoxel.Value.Target.Get<Voxel>();
-					if (!socket.Powered && cloud.Type.Value == socket.Type.Value)
+					if (!socket.Powered && cloud.Type.Value == socket.Type.Value && !socket.PowerOffOnly)
 					{
 						// Plug in to the socket
 						List<Voxel.Coord> coords = new List<Voxel.Coord>();
@@ -178,6 +178,7 @@ namespace Lemma.Factories
 			entity.Add("Type", socket.Type);
 			entity.Add("Powered", socket.Powered, new PropertyEntry.EditorData { Readonly = true });
 			entity.Add("PowerOnOnly", socket.PowerOnOnly);
+			entity.Add("PowerOffOnly", socket.PowerOffOnly);
 			entity.Add("OnPowerOn", socket.OnPowerOn);
 			entity.Add("OnPowerOff", socket.OnPowerOff);
 			entity.Add("Enabled", trigger.Enabled);
