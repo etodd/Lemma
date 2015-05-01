@@ -140,11 +140,13 @@ namespace Lemma.Components
 		}
 
 		protected Dictionary<Keys, Property<bool>> keyProperties = new Dictionary<Keys, Property<bool>>();
+		protected List<Keys> keys = new List<Keys>();
 
 		protected Dictionary<Keys, Command> keyUpCommands = new Dictionary<Keys, Command>();
 		protected Dictionary<Keys, Command> keyDownCommands = new Dictionary<Keys, Command>();
 
 		protected Dictionary<Buttons, Property<bool>> buttonProperties = new Dictionary<Buttons, Property<bool>>();
+		protected List<Buttons> buttons = new List<Buttons>();
 
 		protected Dictionary<Buttons, Command> buttonUpCommands = new Dictionary<Buttons, Command>();
 		protected Dictionary<Buttons, Command> buttonDownCommands = new Dictionary<Buttons, Command>();
@@ -303,14 +305,30 @@ namespace Lemma.Components
 			this.Add(new CommandBinding(this.Disable, delegate()
 			{
 				// Release all the keys
-				foreach (KeyValuePair<Keys, Property<bool>> pair in this.keyProperties)
+				for (int i = 0; i < this.keys.Count; i++)
 				{
-					if (pair.Value.Value)
+					Keys key = this.keys[i];
+					Property<bool> prop = this.keyProperties[key];
+					if (prop)
 					{
 						Command command;
-						if (keyUpCommands.TryGetValue(pair.Key, out command))
+						if (this.keyUpCommands.TryGetValue(key, out command))
 							command.Execute();
-						pair.Value.Value = false;
+						prop.Value = false;
+					}
+				}
+
+				// Release all the buttons
+				for (int i = 0; i < this.buttons.Count; i++)
+				{
+					Buttons button = this.buttons[i];
+					Property<bool> prop = this.buttonProperties[button];
+					if (prop)
+					{
+						Command command;
+						if (this.buttonUpCommands.TryGetValue(button, out command))
+							command.Execute();
+						prop.Value = false;
 					}
 				}
 
@@ -345,14 +363,14 @@ namespace Lemma.Components
 
 		public Property<bool> GetKey(Keys key)
 		{
-			if (this.keyProperties.ContainsKey(key))
-				return this.keyProperties[key];
-			else
+			Property<bool> result;
+			if (!this.keyProperties.TryGetValue(key, out result))
 			{
-				Property<bool> newProperty = new Property<bool> { };
-				this.keyProperties.Add(key, newProperty);
-				return newProperty;
+				result = new Property<bool>();
+				this.keyProperties.Add(key, result);
+				this.keys.Add(key);
 			}
+			return result;
 		}
 
 		public Property<bool> GetButton(Buttons button)
@@ -360,66 +378,62 @@ namespace Lemma.Components
 			if (button == 0)
 				return new Property<bool>();
 
-			if (this.buttonProperties.ContainsKey(button))
-				return this.buttonProperties[button];
-			else
+			Property<bool> result;
+			if (!this.buttonProperties.TryGetValue(button, out result))
 			{
-				Property<bool> newProperty = new Property<bool> { };
-				this.buttonProperties.Add(button, newProperty);
-				return newProperty;
+				result = new Property<bool>();
+				this.buttonProperties.Add(button, result);
+				this.buttons.Add(button);
 			}
+			return result;
 		}
 
 		public Command GetKeyDown(Keys key)
 		{
-			if (this.keyDownCommands.ContainsKey(key))
-				return this.keyDownCommands[key];
-			else
+			Command result;
+			if (!this.keyDownCommands.TryGetValue(key, out result))
 			{
 				this.GetKey(key);
-				Command command = new Command();
-				this.keyDownCommands.Add(key, command);
-				return command;
+				result = new Command();
+				this.keyDownCommands.Add(key, result);
 			}
+			return result;
 		}
 
 		public Command GetKeyUp(Keys key)
 		{
-			if (this.keyUpCommands.ContainsKey(key))
-				return this.keyUpCommands[key];
-			else
+			Command result;
+			if (!this.keyUpCommands.TryGetValue(key, out result))
 			{
 				this.GetKey(key);
-				Command command = new Command();
-				this.keyUpCommands.Add(key, command);
-				return command;
+				result = new Command();
+				this.keyUpCommands.Add(key, result);
 			}
+			return result;
 		}
 
 		public Command GetButtonDown(Buttons button)
 		{
-			if (this.buttonDownCommands.ContainsKey(button))
-				return this.buttonDownCommands[button];
-			else
+			Command result;
+			if (!this.buttonDownCommands.TryGetValue(button, out result))
 			{
 				this.GetButton(button);
-				Command command = new Command();
-				this.buttonDownCommands.Add(button, command);
-				return command;
+				result = new Command();
+				this.buttonDownCommands.Add(button, result);
 			}
+			return result;
 		}
 
 		public Command GetButtonUp(Buttons button)
 		{
-			if (this.buttonUpCommands.ContainsKey(button))
-				return this.buttonUpCommands[button];
-			else
+			Command result;
+			if (!this.buttonUpCommands.TryGetValue(button, out result))
 			{
 				this.GetButton(button);
-				Command command = new Command();
-				this.buttonUpCommands.Add(button, command);
-				return command;
+				result = new Command();
+				this.buttonUpCommands.Add(button, result);
 			}
+			return result;
 		}
 
 		public void GetNextInput(Action<PCInput.PCInputBinding> listener)
@@ -513,8 +527,8 @@ namespace Lemma.Components
 
 		private void notifyNextInputListeners(PCInput.PCInputBinding input)
 		{
-			foreach (Action<PCInput.PCInputBinding> listener in this.nextInputListeners)
-				listener(input);
+			for (int i = 0; i < this.nextInputListeners.Count; i++)
+				this.nextInputListeners[i](input);
 			this.nextInputListeners.Clear();
 			this.preventKeyDownEvents = true;
 		}
@@ -548,24 +562,26 @@ namespace Lemma.Components
 				}
 			}
 
-			foreach (KeyValuePair<Keys, Property<bool>> pair in this.keyProperties)
+			for (int i = 0; i < this.keys.Count; i++)
 			{
-				bool newValue = keyboard.IsKeyDown(pair.Key);
-				if (newValue != pair.Value.Value)
+				Keys key = this.keys[i];
+				Property<bool> prop = this.keyProperties[key];
+				bool newValue = keyboard.IsKeyDown(key);
+				if (prop != newValue)
 				{
-					pair.Value.Value = newValue;
+					prop.Value = newValue;
 					if (!this.preventKeyDownEvents)
 					{
 						if (newValue)
 						{
 							Command command;
-							if (this.keyDownCommands.TryGetValue(pair.Key, out command))
+							if (this.keyDownCommands.TryGetValue(key, out command))
 								command.Execute();
 						}
 						else
 						{
 							Command command;
-							if (this.keyUpCommands.TryGetValue(pair.Key, out command))
+							if (this.keyUpCommands.TryGetValue(key, out command))
 								command.Execute();
 						}
 					}
@@ -640,50 +656,28 @@ namespace Lemma.Components
 					}
 				}
 
-				foreach (KeyValuePair<Buttons, Property<bool>> pair in this.buttonProperties)
+				for (int i = 0; i < this.buttons.Count; i++)
 				{
-					bool newValue = gamePad.IsButtonDown(pair.Key);
-					if (newValue != pair.Value.Value)
+					Buttons button = this.buttons[i];
+					bool newValue = gamePad.IsButtonDown(button);
+					Property<bool> prop = this.buttonProperties[button];
+					if (prop != newValue)
 					{
-						pair.Value.Value = newValue;
+						prop.Value = newValue;
 						if (!this.preventKeyDownEvents)
 						{
 							if (newValue)
 							{
 								Command command;
-								if (buttonDownCommands.TryGetValue(pair.Key, out command))
+								if (buttonDownCommands.TryGetValue(button, out command))
 									command.Execute();
 							}
 							else
 							{
 								Command command;
-								if (buttonUpCommands.TryGetValue(pair.Key, out command))
+								if (buttonUpCommands.TryGetValue(button, out command))
 									command.Execute();
 							}
-						}
-					}
-				}
-			}
-
-			foreach (KeyValuePair<Keys, Property<bool>> pair in this.keyProperties)
-			{
-				bool newValue = keyboard.IsKeyDown(pair.Key);
-				if (newValue != pair.Value.Value)
-				{
-					pair.Value.Value = newValue;
-					if (!this.preventKeyDownEvents)
-					{
-						if (newValue)
-						{
-							Command command;
-							if (this.keyDownCommands.TryGetValue(pair.Key, out command))
-								command.Execute();
-						}
-						else
-						{
-							Command command;
-							if (keyUpCommands.TryGetValue(pair.Key, out command))
-								command.Execute();
 						}
 					}
 				}
