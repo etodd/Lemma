@@ -1315,8 +1315,9 @@ namespace Lemma.Components
 			});
 			this.resizeToMenu(controllerVibration);
 			controlsList.Children.Add(controllerVibration);
+			controllerVibration.Add(new Binding<bool>(controllerVibration.Visible, this.main.GamePadConnected));
 
-			Action<Property<PCInput.PCInputBinding>, string, bool, bool> addInputSetting = delegate(Property<PCInput.PCInputBinding> setting, string display, bool allowGamepad, bool allowMouse)
+			Func<Property<PCInput.PCInputBinding>, string, bool, bool, Container> addInputSetting = delegate(Property<PCInput.PCInputBinding> setting, string display, bool allowGamepad, bool allowMouse)
 			{
 				this.inputBindings.Add(setting);
 				Container button = this.main.UIFactory.CreatePropertyButton<PCInput.PCInputBinding>(display, setting);
@@ -1362,12 +1363,18 @@ namespace Lemma.Components
 					});
 				}));
 				controlsList.Children.Add(button);
+				return button;
 			};
 
-			addInputSetting(this.main.Settings.Forward, "\\move forward", false, true);
-			addInputSetting(this.main.Settings.Left, "\\move left", false, true);
-			addInputSetting(this.main.Settings.Backward, "\\move backward", false, true);
-			addInputSetting(this.main.Settings.Right, "\\move right", false, true);
+			Action<Container> hideForGamepad = delegate(Container c)
+			{
+				c.Add(new Binding<bool>(c.Visible, x => !x, this.main.GamePadConnected));
+			};
+
+			hideForGamepad(addInputSetting(this.main.Settings.Forward, "\\move forward", false, true));
+			hideForGamepad(addInputSetting(this.main.Settings.Left, "\\move left", false, true));
+			hideForGamepad(addInputSetting(this.main.Settings.Backward, "\\move backward", false, true));
+			hideForGamepad(addInputSetting(this.main.Settings.Right, "\\move right", false, true));
 			addInputSetting(this.main.Settings.Jump, "\\jump", true, true);
 			addInputSetting(this.main.Settings.Parkour, "\\parkour", true, true);
 			addInputSetting(this.main.Settings.RollKick, "\\roll / kick", true, true);

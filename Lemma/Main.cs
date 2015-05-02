@@ -93,7 +93,7 @@ namespace Lemma
 
 		public const int ConfigVersion = 9;
 		public const int MapVersion = 1027;
-		public const int Build = 1048;
+		public const int Build = 1052;
 
 		public class Config
 		{
@@ -623,6 +623,8 @@ namespace Lemma
 			(
 				"load", "Load a map.", collection =>
 				{
+					ConsoleUI.Showing.Value = false;
+					this.Menu.Toggle();
 					IO.MapLoader.Transition(this, collection.ParsedArgs[0].StrValue);
 				},
 				new ConCommand.CommandArgument { Name = "map", CommandType = typeof(string), Optional = false }

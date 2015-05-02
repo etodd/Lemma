@@ -48,7 +48,7 @@ namespace Lemma.Components
 
 		private float idleRotation;
 		private bool idling;
-		private float idleRotationBlend = 1.0f;
+		private float idleRotationBlend;
 		private const float idleRotationBlendTime = 0.3f;
 
 		private const float animationSpeedCoefficient = 1.0f / 4.5f;
