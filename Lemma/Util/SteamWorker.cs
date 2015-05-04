@@ -206,13 +206,21 @@ namespace Lemma.Util
 			if (!_statDictionary.ContainsKey(name)) return;
 
 			var curVal = _statDictionary[name];
-			if (curVal == newVal) return;
+			if (newVal <= curVal)
+				return;
+
 			_statDictionary[name] = newVal;
 			SteamUserStats.SetStat(name, newVal);
 			_anythingChanged = true;
 
 			if ((DateTime.Now - _statsLastUploaded).TotalSeconds >= 5)
 				UploadStats();
+		}
+
+		public static void IndicateAchievementProgress(string name, uint value, uint max)
+		{
+			if (Initialized && _achievementDictionary.ContainsKey(name))
+				Steamworks.SteamUserStats.IndicateAchievementProgress(name, value, max);
 		}
 
 		public static void IncrementStat(string name, int increment)
@@ -486,7 +494,6 @@ namespace Lemma.Util
 				"ending_b",
 				"ending_c",
 				"ending_d",
-				"cheating_jerk",
 				"pillar_crushed",
 				"orbs",
 				"notes",
@@ -494,6 +501,7 @@ namespace Lemma.Util
 				"god_mode",
 				"first_orb",
 				"first_note",
+				"first_challenge_level",
 				"level_editor",
 			};
 			string[] statNames = new string[]

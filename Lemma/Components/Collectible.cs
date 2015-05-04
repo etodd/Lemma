@@ -55,13 +55,12 @@ namespace Lemma.Components
 
 					PlayerData playerData = PlayerDataFactory.Instance.Get<PlayerData>();
 					playerData.Collectibles.Value++;
-					if (playerData.Collectibles >= totalCollectibles)
-						SteamWorker.SetAchievement("cheevo_orbs");
+					SteamWorker.SetStat("stat_orbs_collected", playerData.Collectibles);
+					if (SteamWorker.GetStat("stat_orbs_collected") == playerData.Collectibles)
+						SteamWorker.IndicateAchievementProgress("cheevo_orbs", (uint)playerData.Collectibles.Value, (uint)totalCollectibles);
 
 					int collected = Collectible.collectibles.Count(x => x.PickedUp);
 					int total = Collectible.collectibles.Count;
-
-					SteamWorker.IncrementStat("orbs_collected", 1);
 
 					this.main.Menu.HideMessage
 					(

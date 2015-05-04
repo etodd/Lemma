@@ -52,7 +52,7 @@ namespace Lemma
 				{
 #if ANALYTICS
 					main.SessionRecorder.RecordEvent("Exit");
-					if (!main.IsChallengeMap(main.MapFile))
+					if (!main.IsChallengeMap(main.MapFile) && main.MapFile.Value != Lemma.Main.MenuMap)
 						main.SaveAnalytics();
 #endif
 				}

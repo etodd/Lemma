@@ -51,9 +51,9 @@ namespace Lemma.Components
 					this.Collected.Execute();
 					PlayerData playerData = PlayerDataFactory.Instance.Get<PlayerData>();
 					playerData.Notes.Value++;
-					if (playerData.Notes >= totalNotes)
-						SteamWorker.SetAchievement("cheevo_notes");
-					SteamWorker.IncrementStat("notes_read", 1);
+					SteamWorker.SetStat("stat_notes_read", playerData.Notes);
+					if (SteamWorker.GetStat("stat_notes_read") == playerData.Notes)
+						SteamWorker.IndicateAchievementProgress("cheevo_notes", (uint)playerData.Notes.Value, (uint)totalNotes);
 				}
 			}, this.IsCollected));
 		}

@@ -912,7 +912,7 @@ namespace Lemma
 		{
 			base.OnExiting(sender, args);
 			this.SessionRecorder.RecordEvent("Exit");
-			if (!this.IsChallengeMap(this.MapFile))
+			if (!this.IsChallengeMap(this.MapFile) && this.MapFile.Value != Main.MenuMap)
 				this.SaveAnalytics();
 		}
 #endif
@@ -1260,7 +1260,7 @@ namespace Lemma
 					if (this.MapFile.Value != null && !editorLastEnabled)
 					{
 						this.SessionRecorder.RecordEvent("ChangedMap", newMap);
-						if (!this.IsChallengeMap(this.MapFile))
+						if (!this.IsChallengeMap(this.MapFile) && this.MapFile.Value != Main.MenuMap)
 							this.SaveAnalytics();
 					}
 					this.SessionRecorder.Reset();
