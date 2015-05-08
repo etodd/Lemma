@@ -17,7 +17,7 @@ namespace Lemma.Components
 
 		const int totalNotes = 36;
 
-		private static List<Note> notes = new List<Note>();
+		public static List<Note> Notes = new List<Note>();
 
 		[XmlIgnore]
 		public Command Collected = new Command();
@@ -26,20 +26,20 @@ namespace Lemma.Components
 		{
 			get
 			{
-				return Note.notes.Where(x => !x.IsCollected).Count();
+				return Note.Notes.Where(x => !x.IsCollected).Count();
 			}
 		}
 
 		public override void Awake()
 		{
 			base.Awake();
-			Note.notes.Add(this);
+			Note.Notes.Add(this);
 			this.Add(new NotifyBinding(delegate()
 			{
 				if (this.IsCollected)
 				{
-					int notesCollected = Note.notes.Where(x => x.IsCollected).Count();
-					int total = Note.notes.Count;
+					int notesCollected = Note.Notes.Where(x => x.IsCollected).Count();
+					int total = Note.Notes.Count;
 
 					Container msg = this.main.Menu.ShowMessageFormat
 					(
@@ -61,7 +61,7 @@ namespace Lemma.Components
 		public override void delete()
 		{
 			base.delete();
-			Note.notes.Remove(this);
+			Note.Notes.Remove(this);
 		}
 	}
 }

@@ -43,6 +43,7 @@ namespace Lemma.Components
 		private List<Property<PCInput.PCInputBinding>> inputBindings = new List<Property<PCInput.PCInputBinding>>();
 
 		private ListContainer messages;
+		private ListContainer collectibleCounters;
 
 		private PCInput input;
 
@@ -69,6 +70,7 @@ namespace Lemma.Components
 		public void ClearMessages()
 		{
 			this.messages.Children.Clear();
+			this.collectibleCounters.Children.Clear();
 		}
 
 		public Container BuildMessage(string text = null, float width = 250.0f)
@@ -99,7 +101,7 @@ namespace Lemma.Components
 			return container;
 		}
 
-		private void animateMessage(Entity entity, Container container)
+		private void animateMessage(Entity entity, Container container, bool enabledWhenPaused = false)
 		{
 			container.CheckLayout();
 			Vector2 originalSize = container.Size;
@@ -115,11 +117,9 @@ namespace Lemma.Components
 
 			container.UserData.Value = anim;
 
+			anim.EnabledWhenPaused = enabledWhenPaused;
 			if (entity == null)
-			{
-				anim.EnabledWhenPaused = false;
 				this.main.AddComponent(anim);
-			}
 			else
 				entity.Add(anim);
 		}
@@ -368,6 +368,50 @@ namespace Lemma.Components
 			);
 			this.main.AddComponent(this.pauseAnimation);
 
+			int orbs_collected = Collectible.Collectibles.Count(x => x.PickedUp);
+			int orbs_total = Collectible.Collectibles.Count;
+
+			int notes_collected = Note.Notes.Where(x => x.IsCollected).Count();
+			int notes_total = Note.Notes.Count;
+
+			if (orbs_collected < orbs_total)
+			{
+				Container container = this.BuildMessage();
+				TextElement textElement = (TextElement)container.Children[0];
+
+				textElement.Add(new Binding<string>
+				(
+					textElement.Text,
+					delegate()
+					{
+						return string.Format(main.Strings.Get("orbs collected") ?? "{0} / {1} orbs collected", orbs_collected, orbs_total);
+					},
+					this.main.Strings.Language
+				));
+					
+				this.collectibleCounters.Children.Add(container);
+				this.animateMessage(null, container, enabledWhenPaused: true);
+			}
+
+			if (notes_collected < notes_total)
+			{
+				Container container = this.BuildMessage();
+				TextElement textElement = (TextElement)container.Children[0];
+
+				textElement.Add(new Binding<string>
+				(
+					textElement.Text,
+					delegate()
+					{
+						return string.Format(main.Strings.Get("notes read") ?? "{0} / {1} notes read", notes_collected, notes_total);
+					},
+					this.main.Strings.Language
+				));
+					
+				this.collectibleCounters.Children.Add(container);
+				this.animateMessage(null, container, enabledWhenPaused: true);
+			}
+
 			this.currentMenu.Value = this.pauseMenu;
 		}
 
@@ -413,6 +457,8 @@ namespace Lemma.Components
 			this.main.Screenshot.Clear();
 
 			this.currentMenu.Value = null;
+
+			this.collectibleCounters.Children.Clear();
 		}
 
 		private void resizeToMenu(Container c)
@@ -879,6 +925,22 @@ namespace Lemma.Components
 				Vector2 messagePlacement = new Vector2(0.5f, vrMessagePlacement ? 0.6f : 0.85f);
 				this.messages.Add(new Binding<Vector2, Point>(this.messages.Position, x => new Vector2(x.X * messagePlacement.X, x.Y * messagePlacement.Y), this.main.ScreenSize));
 				this.main.UI.Root.Children.Add(this.messages);
+			}
+
+			// Collectible counters
+			{
+				bool vrCounterPlacement = false;
+#if VR
+				if (this.main.VR)
+					vrCounterPlacement = true;
+#endif
+				this.collectibleCounters = new ListContainer();
+				this.collectibleCounters.Reversed.Value = true;
+				this.collectibleCounters.Alignment.Value = ListContainer.ListAlignment.Middle;
+				this.collectibleCounters.AnchorPoint.Value = new Vector2(0.5f, 0.0f);
+				Vector2 counterPlacement = new Vector2(0.5f, vrCounterPlacement ? 0.4f : 0.15f);
+				this.collectibleCounters.Add(new Binding<Vector2, Point>(this.collectibleCounters.Position, x => new Vector2(x.X * counterPlacement.X, x.Y * counterPlacement.Y), this.main.ScreenSize));
+				this.main.UI.Root.Children.Add(this.collectibleCounters);
 			}
 
 			{

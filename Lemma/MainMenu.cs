@@ -43,14 +43,14 @@ namespace Lemma.GameScripts
 			main.UI.Root.Children.Insert(0, logo);
 
 			Container cornerContainer = main.UIFactory.CreateContainer();
-			cornerContainer.AnchorPoint.Value = new Vector2(1, 1);
+			cornerContainer.AnchorPoint.Value = new Vector2(1, 0);
 			cornerContainer.PaddingLeft.Value = cornerContainer.PaddingRight.Value = 12.0f;
 			#if VR
 			if (main.VR)
-				cornerContainer.Add(new Binding<Vector2, Point>(cornerContainer.Position, x => new Vector2(x.X * 0.75f, x.Y * 0.75f), main.ScreenSize));
+				cornerContainer.Add(new Binding<Vector2, Point>(cornerContainer.Position, x => new Vector2(x.X * 0.75f, x.Y * 0.25f), main.ScreenSize));
 			else
 			#endif
-				cornerContainer.Add(new Binding<Vector2, Point>(cornerContainer.Position, x => new Vector2(x.X - 10.0f, x.Y - 10.0f), main.ScreenSize));
+				cornerContainer.Add(new Binding<Vector2, Point>(cornerContainer.Position, x => new Vector2(x.X - 10.0f, 10.0f), main.ScreenSize));
 			main.UI.Root.Children.Add(cornerContainer);
 
 			ListContainer corner = new ListContainer();
@@ -81,9 +81,9 @@ namespace Lemma.GameScripts
 
 			languageMenu.Tint.Value = Microsoft.Xna.Framework.Color.Black;
 			languageMenu.Visible.Value = false;
-			languageMenu.AnchorPoint.Value = new Vector2(1, 1);
+			languageMenu.AnchorPoint.Value = new Vector2(1, 0);
 			cornerContainer.CheckLayout();
-			languageMenu.Add(new Binding<Vector2>(languageMenu.Position, () => languageButton.GetAbsolutePosition() + new Vector2(languageButton.ScaledSize.Value.X, 0), languageButton.Position, cornerContainer.Position));
+			languageMenu.Add(new Binding<Vector2>(languageMenu.Position, () => languageButton.GetAbsolutePosition() + new Vector2(languageButton.ScaledSize.Value.X, languageButton.ScaledSize.Value.Y), languageButton.Position, languageButton.ScaledSize, cornerContainer.Position));
 			main.UI.Root.Children.Add(languageMenu);
 			
 			ListContainer languages = new ListContainer();

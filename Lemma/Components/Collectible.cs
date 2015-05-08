@@ -14,7 +14,7 @@ namespace Lemma.Components
 {
 	public class Collectible : Component<Main>
 	{
-		private static List<Collectible> collectibles = new List<Collectible>();
+		public static List<Collectible> Collectibles = new List<Collectible>();
 
 		const int totalCollectibles = 49;
 
@@ -27,14 +27,14 @@ namespace Lemma.Components
 		{
 			get
 			{
-				return Collectible.collectibles.Count(x => !x.PickedUp);
+				return Collectible.Collectibles.Count(x => !x.PickedUp);
 			}
 		}
 
 		public override void Awake()
 		{
 			base.Awake();
-			Collectible.collectibles.Add(this);
+			Collectible.Collectibles.Add(this);
 
 			this.PlayerTouched.Action = delegate
 			{
@@ -59,8 +59,8 @@ namespace Lemma.Components
 					if (SteamWorker.GetStat("stat_orbs_collected") == playerData.Collectibles)
 						SteamWorker.IndicateAchievementProgress("cheevo_orbs", (uint)playerData.Collectibles.Value, (uint)totalCollectibles);
 
-					int collected = Collectible.collectibles.Count(x => x.PickedUp);
-					int total = Collectible.collectibles.Count;
+					int collected = Collectible.Collectibles.Count(x => x.PickedUp);
+					int total = Collectible.Collectibles.Count;
 
 					this.main.Menu.HideMessage
 					(
@@ -75,7 +75,7 @@ namespace Lemma.Components
 		public override void delete()
 		{
 			base.delete();
-			Collectible.collectibles.Remove(this);
+			Collectible.Collectibles.Remove(this);
 		}
 	}
 }

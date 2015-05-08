@@ -90,12 +90,6 @@ namespace Lemma.Components
 				m.Translation += Vector3.Transform(diff, Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f));
 				return m;
 			};
-			this.model["Vault"].Speed = 1.5f;
-			this.model["Vault"].GetChannel(this.model.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix m)
-			{
-				m.Translation += (Matrix.CreateRotationY(-this.Rotation) * Matrix.CreateRotationX((float)Math.PI * 0.5f) * Matrix.CreateTranslation(0, -1.0f + this.vaultTime * 1.0f, this.initialVerticalDifference - 2.0f - this.vaultTime * 3.0f)).Translation;
-				return m;
-			};
 		}
 
 		public override void Awake()
@@ -281,12 +275,6 @@ namespace Lemma.Components
 				&& map[coordPosition + this.forward + new Vector3(0, -1, 0)].ID == Voxel.t.Empty
 				&& map[coordPosition + this.forward + new Vector3(0, -2, 0)].ID == Voxel.t.Empty;
 
-			if (this.vaultOver)
-			{
-				this.isTopOut = false; // Don't do a top out animation if we're going to vault over it
-				this.shallowMantle = true;
-			}
-
 			// Grunt if we're going up
 			// If we're falling down, don't grunt because we might already be grunting from the fall damage
 			// That would just be awkward
@@ -313,7 +301,6 @@ namespace Lemma.Components
 			Session.Recorder.Event(main, "Vault");
 			this.model.Stop
 			(
-				"Vault",
 				"Mantle",
 				"TopOut",
 				"Jump",
@@ -325,7 +312,9 @@ namespace Lemma.Components
 			);
 			this.model.StartClip(this.isTopOut ? "TopOut" : "Mantle", 4, false, AnimatedModel.DefaultBlendTime);
 
-			if (!this.vaultOver && !this.isTopOut)
+			if (this.vaultOver)
+				this.shallowMantle = false;
+			else if (!this.isTopOut)
 			{
 				// We're mantling
 				// Determine if this is a shallow mantle or not
@@ -385,8 +374,8 @@ namespace Lemma.Components
 						float moveForwardTime = this.vaultTime - this.moveForwardStartTime;
 						if (this.vaultOver)
 						{
-							if (moveForwardTime > 0.5f)
-								done = true;
+							if (moveForwardTime > 0.15f)
+								done = true; // Done moving forward
 						}
 						else
 						{
@@ -406,21 +395,16 @@ namespace Lemma.Components
 				else
 				{
 					// We're still going up.
-					if (this.vaultOver && this.vaultTime > 0.3f && this.model.IsPlaying("Mantle"))
-					{
-						this.model.Stop("Mantle");
-						this.model.StartClip("Vault", 4, false, AnimatedModel.DefaultBlendTime);
-					}
 
 					if (this.LinearVelocity.Value.Y - this.getSupportVelocity(this.map).Y < 0.0f)
 					{
 						// We hit something above us.
 						done = true;
-						this.model.Stop("Vault", "TopOut", "Mantle");
+						this.model.Stop("TopOut", "Mantle");
 						this.map = null;
 					}
 					else if (this.IsSupported || this.vaultTime > (this.isTopOut ? maxTopoutTime : maxVaultTime)
-						|| (this.FloorPosition.Value.Y > this.map.GetAbsolutePosition(this.coord).Y + (this.vaultOver ? 0.2f : 0.1f))) // Move forward
+						|| (this.FloorPosition.Value.Y > this.map.GetAbsolutePosition(this.coord).Y + 0.1f)) // Move forward
 					{
 						// We've reached the top of the vault. Start moving forward.
 						// Max vault time ensures we never get stuck
@@ -455,7 +439,7 @@ namespace Lemma.Components
 					));
 				}
 			}
-			else if (this.map != null && !this.model.IsPlaying("Vault", "TopOut", "Mantle"))
+			else if (this.map != null && !this.model.IsPlaying("TopOut", "Mantle"))
 				this.map = null;
 		}
 	}

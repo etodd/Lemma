@@ -162,7 +162,7 @@ namespace Lemma.Components
 				leaderboardList.Size.Value = new Vector2(this.width - 8.0f, 0);
 				leaderboardList.Orientation.Value = ListContainer.ListOrientation.Vertical;
 				leaderboardList.Alignment.Value = ListContainer.ListAlignment.Middle;
-				leaderboardList.Spacing.Value = this.spacing;
+				leaderboardList.Spacing.Value = 0;
 				leaderboard.Children.Add(leaderboardList);
 
 				this.LeaderboardSync.Action = delegate()
@@ -179,9 +179,13 @@ namespace Lemma.Components
 				this.OnLeaderboardSync.Action = delegate(LeaderboardScoresDownloaded_t globalScores, LeaderboardScoresDownloaded_t friendScores)
 				{
 					leaderboardList.Children.Clear();
-					TextElement leaderboardLabel = this.main.UIFactory.CreateLabel();
-					leaderboardLabel.Text.Value = "\\leaderboard";
-					leaderboardList.Children.Add(leaderboardLabel);
+
+					{
+						TextElement leaderboardLabel = this.main.UIFactory.CreateLabel("\\leaderboard");
+						Container labelContainer = this.main.UIFactory.CreateContainer();
+						leaderboardList.Children.Add(labelContainer);
+						labelContainer.Children.Add(leaderboardLabel);
+					}
 
 					int[] details = new int[] {};
 					for (int i = 0; i < globalScores.m_cEntryCount; i++)
@@ -193,9 +197,12 @@ namespace Lemma.Components
 
 					if (friendScores.m_cEntryCount > 1)
 					{
-						TextElement friendsLabel = this.main.UIFactory.CreateLabel();
-						friendsLabel.Text.Value = "\\friends";
-						leaderboardList.Children.Add(friendsLabel);
+						{
+							TextElement friendsLabel = this.main.UIFactory.CreateLabel("\\friends");
+							Container labelContainer = this.main.UIFactory.CreateContainer();
+							leaderboardList.Children.Add(labelContainer);
+							labelContainer.Children.Add(friendsLabel);
+						}
 
 						for (int i = 0; i < friendScores.m_cEntryCount; i++)
 						{
