@@ -33,10 +33,10 @@ namespace Lemma.Components
 		};
 
 		private const float messageFadeTime = 0.75f;
-		private const float messageBackgroundOpacity = 0.75f;
+		private const float messageBackgroundOpacity = UIFactory.Opacity;
 
-		private const float menuButtonWidth = 256.0f;
-		private const float menuButtonLeftPadding = 40.0f;
+		private const float menuButtonWidth = 310.0f;
+		private const float menuButtonLeftPadding = 30.0f;
 		private const float animationSpeed = 2.5f;
 		private const float hideAnimationSpeed = 5.0f;
 
@@ -435,7 +435,7 @@ namespace Lemma.Components
 			this.EnableInput(false);
 			this.dialog = new Container();
 			this.dialog.Tint.Value = Color.Black;
-			this.dialog.Opacity.Value = 0.5f;
+			this.dialog.Opacity.Value = UIFactory.Opacity;
 			this.dialog.AnchorPoint.Value = new Vector2(0.5f);
 			this.dialog.Add(new Binding<Vector2, Point>(this.dialog.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.main.ScreenSize));
 			this.dialog.Add(new CommandBinding(this.dialog.Delete, delegate()

@@ -10,6 +10,8 @@ namespace Lemma.Components
 {
 	public class UIFactory : Component<Main>
 	{
+		public const float Opacity = 0.65f;
+
 		public static void OpenURL(string url)
 		{
 #if STEAMWORKS
@@ -31,7 +33,7 @@ namespace Lemma.Components
 			TextElement element = new TextElement();
 			element.FontFile.Value = this.main.Font;
 			element.Text.Value = text;
-			element.Add(new Binding<Color, bool>(element.Tint, x => x ? new Color(1.0f, 1.0f, 1.0f) : new Color(1.0f, 0.0f, 0.0f), element.Highlighted));
+			element.Add(new Binding<Color, bool>(element.Tint, x => x ? new Color(1.0f, 0.7f, 0.8f) : new Color(0.0f, 0.8f, 1.0f), element.Highlighted));
 			element.Add(new CommandBinding(element.MouseLeftUp, delegate()
 			{
 				UIFactory.OpenURL(url);
@@ -43,6 +45,11 @@ namespace Lemma.Components
 			element.Add(new CommandBinding(element.MouseOut, delegate()
 			{
 				winForm.Cursor = System.Windows.Forms.Cursors.Default;
+			}));
+			element.Add(new CommandBinding(element.Delete, delegate()
+			{
+				if (element.Highlighted)
+					winForm.Cursor = System.Windows.Forms.Cursors.Default;
 			}));
 
 			return element;
@@ -143,12 +150,13 @@ namespace Lemma.Components
 			Container result = this.CreateContainer();
 
 			result.Add(new Binding<Color, bool>(result.Tint, x => x ? UIFactory.highlightColor : new Color(0.0f, 0.0f, 0.0f), result.Highlighted));
-			result.Add(new Binding<float, bool>(result.Opacity, x => x ? 1.0f : 0.5f, result.Highlighted));
+			result.Add(new Binding<float, bool>(result.Opacity, x => x ? 1.0f : Opacity, result.Highlighted));
 			result.Add(new NotifyBinding(delegate()
 			{
 				if (result.Highlighted)
 					AkSoundEngine.PostEvent(AK.EVENTS.PLAY_UI_MOUSEOVER);
 			}, result.Highlighted));
+
 			result.Add(new CommandBinding(result.MouseLeftDown, delegate()
 			{
 				result.Tint.Value = Color.Black;

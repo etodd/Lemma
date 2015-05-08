@@ -94,7 +94,7 @@ namespace Lemma.Components
 
 			{
 				Container container = this.main.UIFactory.CreateContainer();
-				container.Opacity.Value = 0.5f;
+				container.Opacity.Value = UIFactory.Opacity;
 				container.PaddingBottom.Value = container.PaddingLeft.Value = container.PaddingRight.Value = container.PaddingTop.Value = 16.0f * this.main.FontMultiplier;
 				container.AnchorPoint.Value = new Vector2(1.0f, 0.0f);
 				bool vr = false;
@@ -130,7 +130,7 @@ namespace Lemma.Components
 				this.shown = true;
 
 				Container container = this.main.UIFactory.CreateContainer();
-				container.Opacity.Value = 0.5f;
+				container.Opacity.Value = UIFactory.Opacity;
 				container.PaddingBottom.Value = container.PaddingLeft.Value = container.PaddingRight.Value = container.PaddingTop.Value = 16.0f * this.main.FontMultiplier;
 				container.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
 				container.Add(new Binding<Vector2, Point>(container.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), this.main.ScreenSize));

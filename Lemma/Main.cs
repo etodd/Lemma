@@ -93,13 +93,14 @@ namespace Lemma
 
 		public const int ConfigVersion = 9;
 		public const int MapVersion = 1027;
-		public const int Build = 1052;
+		public const int Build = 1055;
 
 		public class Config
 		{
 			public enum Lang
 			{
 				en,
+				pl,
 				//ru,
 			}
 			public enum RecordAnalytics
@@ -1422,7 +1423,7 @@ namespace Lemma
 				this.saving = true;
 				Container saveNotification = new Container();
 				saveNotification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-				saveNotification.Opacity.Value = 0.5f;
+				saveNotification.Opacity.Value = UIFactory.Opacity;
 				TextElement saveNotificationText = new TextElement();
 				saveNotificationText.Name.Value = "Text";
 				saveNotificationText.FontFile.Value = this.Font;
@@ -1527,7 +1528,7 @@ namespace Lemma
 					new Animation.Execute(delegate()
 					{
 						saveNotification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-						saveNotification.Opacity.Value = 0.5f;
+						saveNotification.Opacity.Value = UIFactory.Opacity;
 						saveNotificationText.Name.Value = "Text";
 						saveNotificationText.FontFile.Value = this.Font;
 						saveNotificationText.Text.Value = "Saving...";

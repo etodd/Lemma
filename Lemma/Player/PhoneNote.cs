@@ -219,7 +219,8 @@ namespace Lemma.Components
 			answerContainer.PaddingBottom.Value = answerContainer.PaddingLeft.Value = answerContainer.PaddingRight.Value = answerContainer.PaddingTop.Value = padding;
 			answerContainer.Tint.Value = incomingColor;
 			answerContainer.AnchorPoint.Value = new Vector2(1.0f, 1.0f);
-			answerContainer.Add(new Binding<Vector2>(answerContainer.Position, () => composeAlign.GetAbsolutePosition() + new Vector2(composeAlign.ScaledSize.Value.X, 0), composeAlign.Position, composeAlign.ScaledSize));
+			phoneUi.Root.CheckLayout();
+			answerContainer.Position.Value = composeAlign.GetAbsolutePosition() + new Vector2(composeAlign.ScaledSize.Value.X, 0);
 			phoneUi.Root.Children.Add(answerContainer);
 			answerContainer.Visible.Value = false;
 

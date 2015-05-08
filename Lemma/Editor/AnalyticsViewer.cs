@@ -174,7 +174,7 @@ namespace Lemma.Factories
 
 			Container sessionsContainer = new Container();
 			sessionsContainer.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-			sessionsContainer.Opacity.Value = 0.5f;
+			sessionsContainer.Opacity.Value = UIFactory.Opacity;
 			sessionsContainer.AnchorPoint.Value = new Vector2(1, 1);
 			sessionsSidebar.Children.Add(sessionsContainer);
 
@@ -238,7 +238,7 @@ namespace Lemma.Factories
 
 			Container eventsContainer = new Container();
 			eventsContainer.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-			eventsContainer.Opacity.Value = 0.5f;
+			eventsContainer.Opacity.Value = UIFactory.Opacity;
 			eventsContainer.AnchorPoint.Value = new Vector2(1, 1);
 			sessionsSidebar.Children.Add(eventsContainer);
 
@@ -304,7 +304,7 @@ namespace Lemma.Factories
 
 			Container propertiesContainer = new Container();
 			propertiesContainer.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-			propertiesContainer.Opacity.Value = 0.5f;
+			propertiesContainer.Opacity.Value = UIFactory.Opacity;
 			propertiesContainer.AnchorPoint.Value = new Vector2(1, 1);
 			sessionsSidebar.Children.Add(propertiesContainer);
 
@@ -537,7 +537,7 @@ namespace Lemma.Factories
 				Container propertyTimeline = new Container();
 				propertyTimeline.Add(new Binding<Vector2>(propertyTimeline.Size, timeline.Size));
 				propertyTimeline.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-				propertyTimeline.Opacity.Value = 0.5f;
+				propertyTimeline.Opacity.Value = UIFactory.Opacity;
 				propertyTimeline.ResizeHorizontal.Value = false;
 				propertyTimeline.ResizeVertical.Value = false;
 
@@ -721,7 +721,7 @@ namespace Lemma.Factories
 
 			Container playbackContainer = new Container();
 			playbackContainer.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-			playbackContainer.Opacity.Value = 0.5f;
+			playbackContainer.Opacity.Value = UIFactory.Opacity;
 			sessionsSidebar.Children.Add(playbackContainer);
 			playbackContainer.Add(new CommandBinding<int>(playbackContainer.MouseScrolled, delegate(int delta)
 			{

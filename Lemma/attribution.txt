@@ -99,6 +99,8 @@ http://makehuman.org/
 Moral support and maintenance of sanity thanks to The Central Ohio Gamedev Group
 http://www.meetup.com/The-Cogg/
 
+Polish translation by Łukasz Zając & Bartosz Michalik
+
 ------------------------------------------
 
 Special thanks to

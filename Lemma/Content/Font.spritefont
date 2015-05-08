@@ -103,6 +103,36 @@ with.
         <End>&#7544;</End>
       </CharacterRegion>
 
+      <!-- Polish -->
+      <CharacterRegion>
+        <Start>&#260;</Start>
+        <End>&#263;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#280;</Start>
+        <End>&#281;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#321;</Start>
+        <End>&#324;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#211;</Start>
+        <End>&#211;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#243;</Start>
+        <End>&#243;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#346;</Start>
+        <End>&#347;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#377;</Start>
+        <End>&#380;</End>
+      </CharacterRegion>
+
     </CharacterRegions>
   </Asset>
 </XnaContent>

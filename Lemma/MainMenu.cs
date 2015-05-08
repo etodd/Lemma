@@ -42,22 +42,26 @@ namespace Lemma.GameScripts
 			logo.Add(new Binding<Vector2, Point>(logo.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
 			main.UI.Root.Children.Insert(0, logo);
 
-			ListContainer corner = new ListContainer();
-			corner.AnchorPoint.Value = new Vector2(1, 1);
-			corner.Orientation.Value = ListContainer.ListOrientation.Vertical;
-			corner.Reversed.Value = true;
-			corner.Alignment.Value = ListContainer.ListAlignment.Max;
+			Container cornerContainer = main.UIFactory.CreateContainer();
+			cornerContainer.AnchorPoint.Value = new Vector2(1, 1);
+			cornerContainer.PaddingLeft.Value = cornerContainer.PaddingRight.Value = 12.0f;
 			#if VR
 			if (main.VR)
-				corner.Add(new Binding<Vector2, Point>(corner.Position, x => new Vector2(x.X * 0.75f, x.Y * 0.75f), main.ScreenSize));
+				cornerContainer.Add(new Binding<Vector2, Point>(cornerContainer.Position, x => new Vector2(x.X * 0.75f, x.Y * 0.75f), main.ScreenSize));
 			else
 			#endif
-				corner.Add(new Binding<Vector2, Point>(corner.Position, x => new Vector2(x.X - 10.0f, x.Y - 10.0f), main.ScreenSize));
-			main.UI.Root.Children.Add(corner);
+				cornerContainer.Add(new Binding<Vector2, Point>(cornerContainer.Position, x => new Vector2(x.X - 10.0f, x.Y - 10.0f), main.ScreenSize));
+			main.UI.Root.Children.Add(cornerContainer);
+
+			ListContainer corner = new ListContainer();
+			corner.Orientation.Value = ListContainer.ListOrientation.Horizontal;
+			corner.Alignment.Value = ListContainer.ListAlignment.Middle;
+			corner.Spacing.Value = 12.0f;
+			cornerContainer.Children.Add(corner);
 
 			TextElement version = new TextElement();
 			version.FontFile.Value = main.Font;
-			version.Add(new Binding<string, Main.Config.Lang>(version.Text, x => string.Format(main.Strings.Get("build number") ?? "Build {0}", Main.Build.ToString()), main.Settings.Language));
+			version.Add(new Binding<string>(version.Text, x => string.Format(main.Strings.Get("build number") ?? "Build {0}", Main.Build.ToString()), main.Strings.Language));
 			corner.Children.Add(version);
 
 			TextElement webLink = main.UIFactory.CreateLink("et1337.com", "http://et1337.com");
@@ -65,7 +69,7 @@ namespace Lemma.GameScripts
 
 			Container languageMenu = new Container();
 
-			UIComponent languageButton = main.UIFactory.CreateButton(delegate()
+			Container languageButton = main.UIFactory.CreateButton(delegate()
 			{
 				languageMenu.Visible.Value = !languageMenu.Visible;
 			});
@@ -77,7 +81,10 @@ namespace Lemma.GameScripts
 
 			languageMenu.Tint.Value = Microsoft.Xna.Framework.Color.Black;
 			languageMenu.Visible.Value = false;
-			corner.Children.Add(languageMenu);
+			languageMenu.AnchorPoint.Value = new Vector2(1, 1);
+			cornerContainer.CheckLayout();
+			languageMenu.Add(new Binding<Vector2>(languageMenu.Position, () => languageButton.GetAbsolutePosition() + new Vector2(languageButton.ScaledSize.Value.X, 0), languageButton.Position, cornerContainer.Position));
+			main.UI.Root.Children.Add(languageMenu);
 			
 			ListContainer languages = new ListContainer();
 			languages.Orientation.Value = ListContainer.ListOrientation.Vertical;
@@ -102,7 +109,10 @@ namespace Lemma.GameScripts
 
 			logo.Opacity.Value = 0.0f;
 			version.Opacity.Value = 0.0f;
+			cornerContainer.Opacity.Value = 0.0f;
 			webLink.Opacity.Value = 0.0f;
+			languageButton.Opacity.Value = 0.0f;
+			currentLanguageIcon.Opacity.Value = 0.0f;
 
 			script.Add(new Animation
 			(
@@ -111,11 +121,14 @@ namespace Lemma.GameScripts
 				(
 					new Animation.FloatMoveTo(logo.Opacity, 1.0f, fadeTime),
 					new Animation.FloatMoveTo(version.Opacity, 1.0f, fadeTime),
-					new Animation.FloatMoveTo(webLink.Opacity, 1.0f, fadeTime)
+					new Animation.FloatMoveTo(cornerContainer.Opacity, UIFactory.Opacity, fadeTime),
+					new Animation.FloatMoveTo(webLink.Opacity, 1.0f, fadeTime),
+					new Animation.FloatMoveTo(languageButton.Opacity, UIFactory.Opacity, fadeTime),
+					new Animation.FloatMoveTo(currentLanguageIcon.Opacity, 1.0f, fadeTime)
 				)
 			));
 
-			script.Add(new CommandBinding(script.Delete, logo.Delete, corner.Delete));
+			script.Add(new CommandBinding(script.Delete, logo.Delete, cornerContainer.Delete, languageMenu.Delete));
 
 			main.Renderer.InternalGamma.Value = 0.0f;
 			main.Renderer.Brightness.Value = 0.0f;

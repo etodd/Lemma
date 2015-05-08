@@ -290,7 +290,7 @@ namespace Lemma.IO
 
 			Container loadingNotification = new Container();
 			loadingNotification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
-			loadingNotification.Opacity.Value = 0.5f;
+			loadingNotification.Opacity.Value = UIFactory.Opacity;
 			TextElement loadingNotificationText = new TextElement();
 			loadingNotificationText.Name.Value = "Text";
 			loadingNotificationText.FontFile.Value = main.Font;

@@ -191,10 +191,11 @@ namespace Lemma.Components
 			this.Add(new Binding<Rectangle, Vector2>(this.ScaledRectangle, x => new Rectangle(0, 0, (int)Math.Round(x.X), (int)Math.Round(x.Y)), this.ScaledSize));
 			this.Add(new Binding<Matrix>(this.Transform, delegate()
 			{
-				return Matrix.CreateTranslation(new Vector3(-(this.Size.Value * this.AnchorPoint), 0.0f))
+				Matrix mat = Matrix.CreateTranslation(new Vector3(-(this.Size.Value * this.AnchorPoint), 0.0f))
 					* Matrix.CreateRotationZ(this.Rotation)
-					* Matrix.CreateScale(new Vector3(this.Scale, 1.0f))
-					* Matrix.CreateTranslation(new Vector3(this.Position.Value, 0.0f));
+					* Matrix.CreateScale(new Vector3(this.Scale, 1.0f));
+				mat.Translation += new Vector3(this.Position.Value, 0.0f);
+				return mat;
 			}, this.Position, this.Size, this.Scale, this.Rotation, this.AnchorPoint));
 
 			for (int i = 0; i < this.Children.Count; i++)
@@ -219,14 +220,8 @@ namespace Lemma.Components
 
 		public Vector2 GetAbsolutePosition()
 		{
-			UIComponent x = this;
-			Vector2 result = x.Position;
-			while (x.Parent.Value != null)
-			{
-				x = x.Parent;
-				result += x.Position;
-			}
-			return result;
+			Matrix mat = this.GetAbsoluteTransform();
+			return new Vector2(mat.Translation.X, mat.Translation.Y);
 		}
 
 		private bool swallowCurrentMouseEvent;
