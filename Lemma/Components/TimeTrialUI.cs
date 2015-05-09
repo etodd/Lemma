@@ -41,11 +41,6 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command LoadNextMap = new Command();
 
-#if STEAMWORKS
-		[XmlIgnore]
-		public Command LeaderboardSync = new Command();
-#endif
-
 		// Input commands
 
 		[XmlIgnore]
@@ -165,16 +160,14 @@ namespace Lemma.Components
 				leaderboardList.Spacing.Value = 0;
 				leaderboard.Children.Add(leaderboardList);
 
-				this.LeaderboardSync.Action = delegate()
 				{
-					leaderboardList.Children.Clear();
 					TextElement leaderboardLabel = this.main.UIFactory.CreateLabel();
 					leaderboardLabel.Text.Value = "\\leaderboard";
 					leaderboardList.Children.Add(leaderboardLabel);
 					TextElement loading = this.main.UIFactory.CreateLabel();
 					loading.Text.Value = "\\loading";
 					leaderboardList.Children.Add(loading);
-				};
+				}
 
 				this.OnLeaderboardSync.Action = delegate(LeaderboardScoresDownloaded_t globalScores, LeaderboardScoresDownloaded_t friendScores)
 				{
@@ -221,8 +214,6 @@ namespace Lemma.Components
 					error.Text.Value = "\\leaderboard error";
 					leaderboardList.Children.Add(error);
 				};
-
-				this.LeaderboardSync.Execute();
 #endif
 
 				Container retry = this.main.UIFactory.CreateButton("\\retry", delegate()

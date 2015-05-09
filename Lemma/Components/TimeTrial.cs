@@ -25,10 +25,10 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<float> BestTime = new Property<float>();
 
-#if STEAMWORKS
 		[XmlIgnore]
-		public Command LeaderboardSync = new Command();
+		public Command ShowUI = new Command();
 
+#if STEAMWORKS
 		[XmlIgnore]
 		public Command<LeaderboardScoresDownloaded_t, LeaderboardScoresDownloaded_t> OnLeaderboardSync = new Command<LeaderboardScoresDownloaded_t, LeaderboardScoresDownloaded_t>();
 
@@ -49,10 +49,6 @@ namespace Lemma.Components
 		{
 			base.Awake();
 
-#if STEAMWORKS
-			this.LeaderboardSync.Action = this.syncLeaderboard;
-#endif
-
 			this.EnabledWhenPaused = false;
 
 			this.Retry.Action = this.retry;
@@ -72,7 +68,11 @@ namespace Lemma.Components
 				AkSoundEngine.PostEvent(AK.EVENTS.PLAY_MUSIC_STINGER, this.Entity);
 				this.BestTime.Value = this.main.SaveMapTime(WorldFactory.Instance.Get<World>().UUID, this.ElapsedTime);
 				PlayerFactory.Instance.Get<FPSInput>().Enabled.Value = false;
+#if STEAMWORKS
 				SteamWorker.IncrementStat("stat_challenge_levels_played", 1);
+				this.ShowUI.Execute();
+				this.syncLeaderboard();
+#endif
 			}));
 		}
 

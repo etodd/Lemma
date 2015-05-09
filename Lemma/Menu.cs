@@ -1209,9 +1209,9 @@ namespace Lemma.Components
 			if (!this.main.VR)
 #endif
 			{
-				Container fieldOfView = this.main.UIFactory.CreateScrollButton<float>("\\field of view", this.main.Camera.FieldOfView, x => ((int)Math.Round(MathHelper.ToDegrees(this.main.Camera.FieldOfView))).ToString() + "°", delegate(int delta)
+				Container fieldOfView = this.main.UIFactory.CreateScrollButton<float>("\\field of view", this.main.Settings.FieldOfView, x => ((int)Math.Round(MathHelper.ToDegrees(this.main.Settings.FieldOfView))).ToString() + "°", delegate(int delta)
 				{
-					this.main.Camera.FieldOfView.Value = Math.Max(MathHelper.ToRadians(60.0f), Math.Min(MathHelper.ToRadians(120.0f), this.main.Camera.FieldOfView + MathHelper.ToRadians(delta)));
+					this.main.Settings.FieldOfView.Value = Math.Max(MathHelper.ToRadians(60.0f), Math.Min(MathHelper.ToRadians(120.0f), this.main.Settings.FieldOfView + MathHelper.ToRadians(delta)));
 				});
 				this.resizeToMenu(fieldOfView);
 				settingsList.Children.Add(fieldOfView);

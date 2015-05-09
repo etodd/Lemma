@@ -294,14 +294,21 @@ namespace Lemma.Components
 					togglePhoneMessage = main.Menu.ShowMessage(entity, hasSignalTower ? "\\signal tower prompt" : "\\note prompt");
 				else if (togglePhoneMessage != null && !hasNoteOrSignalTower && !phoneActive && !noteActive)
 				{
-					main.Menu.HideMessage(entity, togglePhoneMessage);
+					main.Menu.HideMessage(null, togglePhoneMessage);
 					togglePhoneMessage = null;
 				}
 			}, player.Note, player.SignalTower));
 
 			entity.Add(new CommandBinding(entity.Delete, delegate()
 			{
-				main.Menu.HideMessage(null, togglePhoneMessage);
+				if (togglePhoneMessage != null && togglePhoneMessage.Active)
+					togglePhoneMessage.Delete.Execute();
+				if (noteActive)
+				{
+					noteActive.Value = false;
+					player.Note.Value = null;
+					enableWalking.Value = true;
+				}
 			}));
 
 			// Note UI
@@ -416,7 +423,7 @@ namespace Lemma.Components
 			{
 				if (togglePhoneMessage != null)
 				{
-					main.Menu.HideMessage(entity, togglePhoneMessage);
+					main.Menu.HideMessage(null, togglePhoneMessage);
 					togglePhoneMessage = null;
 				}
 

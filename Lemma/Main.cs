@@ -860,7 +860,7 @@ namespace Lemma
 			float existingTime;
 			if (this.times.TryGetValue(uuid, out existingTime))
 			{
-				if (time < existingTime)
+				if (existingTime <= 0.0f || time < existingTime)
 				{
 					this.times[uuid] = time;
 					this.saveTimes();

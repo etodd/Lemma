@@ -35,12 +35,11 @@ namespace Lemma.Factories
 			ui.Add(new Binding<float>(ui.BestTime, trial.BestTime));
 			ui.Add(new Binding<string>(ui.NextMap, trial.NextMap));
 			ui.Add(new CommandBinding(trial.Enable, ui.Show));
-			ui.Add(new CommandBinding(trial.Disable, ui.ShowEnd));
+			ui.Add(new CommandBinding(trial.ShowUI, ui.ShowEnd));
 
 #if STEAMWORKS
 			ui.Add(new CommandBinding(trial.OnLeaderboardError, ui.OnLeaderboardError));
 			ui.Add(new CommandBinding<LeaderboardScoresDownloaded_t, LeaderboardScoresDownloaded_t>(trial.OnLeaderboardSync, ui.OnLeaderboardSync));
-			ui.Add(new CommandBinding(ui.LeaderboardSync, trial.LeaderboardSync));
 #endif
 
 			ui.Add(new CommandBinding(ui.Retry, trial.Retry));
