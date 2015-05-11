@@ -93,7 +93,7 @@ namespace Lemma
 
 		public const int ConfigVersion = 9;
 		public const int MapVersion = 1027;
-		public const int Build = 1055;
+		public const int Build = 1058;
 
 		public class Config
 		{
@@ -1504,7 +1504,7 @@ namespace Lemma
 
 		public void ScheduleSave()
 		{
-			if (this.scheduledSave == null || !this.scheduledSave.Active)
+			if (this.MapFile.Value != Main.MenuMap && (this.scheduledSave == null || !this.scheduledSave.Active))
 			{
 				bool originalCanPause = this.Menu.CanPause;
 				this.Menu.CanPause.Value = false;

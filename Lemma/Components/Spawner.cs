@@ -318,7 +318,8 @@ namespace Lemma.Components
 						WorldFactory.Instance.Add(new Animation(this.EndFlashAnimation()));
 						this.respawnTimer = 0;
 
-						this.PlayerSpawned.Execute();
+						if (PlayerFactory.Instance != null)
+							this.PlayerSpawned.Execute();
 
 						this.RespawnInterval = Spawner.DefaultRespawnInterval;
 						this.RespawnDistance = Spawner.DefaultRespawnDistance;

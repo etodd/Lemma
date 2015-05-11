@@ -286,8 +286,6 @@ namespace Lemma.IO
 
 		public static void Transition(Main main, string nextMap, string spawn = null, bool saveInfo = true)
 		{
-			Stream stream = new MemoryStream();
-
 			Container loadingNotification = new Container();
 			loadingNotification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
 			loadingNotification.Opacity.Value = UIFactory.Opacity;
@@ -308,35 +306,46 @@ namespace Lemma.IO
 				new Animation.Delay(0.01f),
 				new Animation.Execute(delegate()
 				{
-					// We are exiting the map; just save the state of the map without the player.
-					ListProperty<RespawnLocation> respawnLocations = PlayerDataFactory.Instance.Get<PlayerData>().RespawnLocations;
-					respawnLocations.Clear();
-
-					List<Entity> persistentEntities = main.Entities.Where((Func<Entity, bool>)MapLoader.entityIsPersistent).ToList();
-
-					IO.MapLoader.Serializer.Serialize(stream, persistentEntities);
-
-					foreach (Entity e in persistentEntities)
-						e.Delete.Execute();
-
-					main.Spawner.StartSpawnPoint.Value = spawn;
-
-					if (PlayerFactory.Instance != null)
-						PlayerFactory.Instance.Delete.Execute();
-
-					main.SaveCurrentMap(null, default(Point), saveInfo);
-					MapLoader.Load(main, nextMap);
-
-					stream.Seek(0, SeekOrigin.Begin);
-					List<Entity> entities = (List<Entity>)IO.MapLoader.Serializer.Deserialize(stream);
-					foreach (Entity e in entities)
+#if DEMO
+					if (nextMap == "forest")
 					{
-						Factory<Main> factory = Factory<Main>.Get(e.Type);
-						e.GUID = 0;
-						factory.Bind(e, main);
-						main.Add(e);
+						main.Spawner.StartSpawnPoint.Value = "demo";
+						MapLoader.Load(main, Main.MenuMap);
 					}
-					stream.Dispose();
+					else
+#endif
+					{
+						// We are exiting the map; just save the state of the map without the player.
+						ListProperty<RespawnLocation> respawnLocations = PlayerDataFactory.Instance.Get<PlayerData>().RespawnLocations;
+						respawnLocations.Clear();
+
+						List<Entity> persistentEntities = main.Entities.Where((Func<Entity, bool>)MapLoader.entityIsPersistent).ToList();
+
+						Stream stream = new MemoryStream();
+						IO.MapLoader.Serializer.Serialize(stream, persistentEntities);
+
+						foreach (Entity e in persistentEntities)
+							e.Delete.Execute();
+
+						main.Spawner.StartSpawnPoint.Value = spawn;
+
+						if (PlayerFactory.Instance != null)
+							PlayerFactory.Instance.Delete.Execute();
+
+						main.SaveCurrentMap(null, default(Point), saveInfo);
+						MapLoader.Load(main, nextMap);
+
+						stream.Seek(0, SeekOrigin.Begin);
+						List<Entity> entities = (List<Entity>)IO.MapLoader.Serializer.Deserialize(stream);
+						foreach (Entity e in entities)
+						{
+							Factory<Main> factory = Factory<Main>.Get(e.Type);
+							e.GUID = 0;
+							factory.Bind(e, main);
+							main.Add(e);
+						}
+						stream.Dispose();
+					}
 				}),
 				new Animation.Delay(0.01f),
 				new Animation.Execute(loadingNotification.Delete),

@@ -39,8 +39,69 @@ namespace Lemma.GameScripts
 			Sprite logo = new Sprite();
 			logo.Image.Value = "Images\\logo";
 			logo.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
-			logo.Add(new Binding<Vector2, Point>(logo.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
 			main.UI.Root.Children.Insert(0, logo);
+
+			if (main.Spawner.StartSpawnPoint.Value == "demo")
+			{
+				main.UI.IsMouseVisible.Value = true;
+				logo.Add(new Binding<Vector2, Point>(logo.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.4f), main.ScreenSize));
+				
+				Container listContainer = main.UIFactory.CreateContainer();
+				listContainer.Opacity.Value = 0.5f;
+				listContainer.PaddingLeft.Value = listContainer.PaddingRight.Value = listContainer.PaddingBottom.Value = listContainer.PaddingTop.Value = 8.0f * main.FontMultiplier;
+				listContainer.Add(new Binding<Vector2, Point>(listContainer.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.65f), main.ScreenSize));
+				listContainer.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
+				listContainer.Opacity.Value = 0.0f;
+				script.Add(new Animation
+				(
+					new Animation.Delay(1.0f),
+					new Animation.FloatMoveTo(listContainer.Opacity, 1.0f, fadeTime)
+				));
+
+				ListContainer list = new ListContainer();
+				list.Spacing.Value = 8.0f * main.FontMultiplier;
+				list.Alignment.Value = ListContainer.ListAlignment.Middle;
+				listContainer.Children.Add(list);
+				main.UI.Root.Children.Insert(1, listContainer);
+
+				script.Add(new CommandBinding(script.Delete, listContainer.Delete));
+
+				Action<string> addText = delegate(string text)
+				{
+					TextElement element = new TextElement();
+					element.FontFile.Value = main.Font;
+					element.Text.Value = text;
+					element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X, logo.ScaledSize));
+					element.Opacity.Value = 0.0f;
+					script.Add(new Animation
+					(
+						new Animation.Delay(1.0f),
+						new Animation.FloatMoveTo(element.Opacity, 1.0f, fadeTime)
+					));
+					list.Children.Add(element);
+				};
+
+				Action<string, string> addLink = delegate(string text, string url)
+				{
+					TextElement element = main.UIFactory.CreateLink(text, url);
+					element.Add(new Binding<float, Vector2>(element.WrapWidth, x => x.X, logo.ScaledSize));
+					element.Opacity.Value = 0.0f;
+					script.Add(new Animation
+					(
+						new Animation.Delay(1.0f),
+						new Animation.FloatMoveTo(element.Opacity, 1.0f, fadeTime)
+					));
+					list.Children.Add(element);
+				};
+
+				addText("Thanks for trying the demo!");
+				addText("If you enjoyed it, please consider buying a Steam key from one of these venues:");
+
+				addLink("itch.io (best dev cut)", "http://et1337.itch.io/lemma");
+				addLink("Steam (direct)", "http://store.steampowered.com/app/300340");
+			}
+			else
+				logo.Add(new Binding<Vector2, Point>(logo.Position, x => new Vector2(x.X * 0.5f, x.Y * 0.5f), main.ScreenSize));
 
 			Container cornerContainer = main.UIFactory.CreateContainer();
 			cornerContainer.AnchorPoint.Value = new Vector2(1, 0);

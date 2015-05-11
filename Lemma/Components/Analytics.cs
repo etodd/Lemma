@@ -322,6 +322,8 @@ namespace Lemma.Components
 
 		public string LastSession;
 
+		public bool Demo;
+
 		public class Recorder: Component<Main>
 		{
 			public static void Event(Main main, string name, string data = null)
@@ -428,6 +430,10 @@ namespace Lemma.Components
 				this.data.TotalTime = totalTime;
 				this.data.Map = map;
 				this.data.UUID = this.main.Settings.UUID;
+#if DEMO
+				this.data.Demo = true;
+#endif
+
 				Point screenSize;
 #if VR
 				this.data.VR = this.main.VR;

@@ -220,6 +220,11 @@ namespace Lemma.Components
 				if (callback != null)
 					callback.Execute(answer.Name);
 
+				Command cmd;
+				this.visitCallbacks.TryGetValue(answer.Name, out cmd);
+				if (cmd != null)
+					cmd.Execute();
+
 				DialogueForest.Node selectedChoice = this.forest[answer.ID];
 				if (selectedChoice != null)
 				{

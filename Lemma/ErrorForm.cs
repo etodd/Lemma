@@ -35,7 +35,7 @@ namespace Lemma
 			this.textBox1.Text = this.error;
 			this.anonymousIdLabel.Text = this.anonymousId;
 #if ANALYTICS
-			if (this.Session.Uploading)
+			if (this.Session != null && this.Session.Uploading)
 				this.timer1.Start();
 #endif
 			this.updateUploadStatus();
@@ -45,9 +45,9 @@ namespace Lemma
 		private void updateUploadStatus()
 		{
 #if ANALYTICS
-			if (this.Session.Uploading)
+			if (this.Session != null && this.Session.Uploading)
 				this.label1.Text = "Uploading crash report... please wait.";
-			else if (this.enableUpload)
+			else if (this.enableUpload && this.Session != null)
 				this.label1.Text = "Crash report uploaded. Thank you!";
 			else
 				this.label1.Text = "Error trace:";

@@ -882,6 +882,7 @@ namespace Lemma.Components
 				reloadMaps();
 			}));
 
+#if STEAMWORKS
 			Container workshopMaps = this.main.UIFactory.CreateButton("\\workshop levels", delegate()
 			{
 				reloadMaps();
@@ -891,6 +892,7 @@ namespace Lemma.Components
 			});
 			this.resizeToMenu(workshopMaps);
 			this.challengeMenu.Children.Add(workshopMaps);
+#endif
 			#endregion
 		}
 
@@ -1552,6 +1554,21 @@ namespace Lemma.Components
 			startScroller.Children.Add(startList);
 			startScroller.Add(new Binding<Vector2>(startScroller.Size, () => new Vector2(startList.Size.Value.X, this.main.ScreenSize.Value.Y * 0.5f), startList.Size, this.main.ScreenSize));
 			startMenu.Children.Add(startScroller);
+
+#if DEMO
+			{
+				Container labelPadding = this.main.UIFactory.CreateContainer();
+				labelPadding.Opacity.Value = 0.0f;
+				this.resizeToMenu(labelPadding);
+				this.pauseMenu.Children.Add(labelPadding);
+
+				TextElement label = new TextElement();
+				label.FontFile.Value = this.main.Font;
+				label.Text.Value = "\\demo";
+				label.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
+				labelPadding.Children.Add(label);
+			}
+#endif
 
 			// Resume button
 			Container resume = this.main.UIFactory.CreateButton("\\resume", delegate()

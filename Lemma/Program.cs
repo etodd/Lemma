@@ -19,7 +19,7 @@ namespace Lemma
 		public static void Main(string[] args)
 		{
 #if VR
-			bool vr = args.Contains("-vr");
+			bool vr = args.Select(x => x.ToLower()).Contains("-vr");
 #endif
 			Main main = null;
 			if (Debugger.IsAttached)
@@ -36,6 +36,7 @@ namespace Lemma
 				catch (Main.ExitException)
 				{
 				}
+				main.Cleanup();
 			}
 			else
 			{

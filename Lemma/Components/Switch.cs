@@ -38,7 +38,11 @@ namespace Lemma.Components
 		{
 			return state == Voxel.States.Powered
 				|| state == Voxel.States.HardPowered
-				|| state == Voxel.States.PoweredSwitch;
+				|| state == Voxel.States.PoweredSwitch
+				|| state == Voxel.States.Blue
+				|| state == Voxel.States.Neutral
+				|| state == Voxel.States.Switch
+				|| state == Voxel.States.Hard;
 		}
 
 		public override void Awake()

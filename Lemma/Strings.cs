@@ -41,15 +41,18 @@ namespace Lemma
 				while (reader.Read())
 				{
 					string key = reader.GetString(0);
-					for (int i = 0; i < Math.Min(languageList.Count, reader.FieldCount); i++)
+					if (!string.IsNullOrEmpty(key))
 					{
-						try
+						for (int i = 0; i < Math.Min(languageList.Count, reader.FieldCount); i++)
 						{
-							languageList[i].Add(key, reader.GetString(i + 1));
-						}
-						catch (ArgumentException e)
-						{
-							throw new Exception("Duplicate localization key: \"" + key + "\"", e);
+							try
+							{
+								languageList[i].Add(key, reader.GetString(i + 1));
+							}
+							catch (ArgumentException e)
+							{
+								throw new Exception(string.Format("Duplicate localization key: \"{0}\"", key), e);
+							}
 						}
 					}
 				}

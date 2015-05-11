@@ -59,6 +59,7 @@ namespace Lemma.Factories
 
 			ISpaceObject joint = null;
 			CommandBinding jointDeleteBinding = null, parentPhysicsUpdateBinding = null;
+			NotifyBinding parentStaticMoveBinding = null;
 
 			Action updateJoint = null;
 
@@ -83,6 +84,11 @@ namespace Lemma.Factories
 					if (joint.Space != null)
 						main.Space.Remove(joint);
 					joint = null;
+				}
+				if (parentStaticMoveBinding != null)
+				{
+					entity.Remove(parentStaticMoveBinding);
+					parentStaticMoveBinding = null;
 				}
 
 				Entity parent = jointData.Parent.Value.Target;
@@ -110,6 +116,19 @@ namespace Lemma.Factories
 						{
 							parentPhysicsUpdateBinding = new CommandBinding(parentDynamicMap.PhysicsUpdated, updateJoint);
 							entity.Add(parentPhysicsUpdateBinding);
+						}
+
+						if (parentDynamicMap == null && joint is PrismaticJoint)
+						{
+							parentStaticMoveBinding = new NotifyBinding(delegate()
+							{
+								PrismaticJoint prismaticJoint = (PrismaticJoint)joint;
+								Vector3 a = parentStaticMap.GetAbsolutePosition(relativeLineAnchor);
+								prismaticJoint.PointOnLineJoint.LineAnchor = a;
+								prismaticJoint.Limit.OffsetA = a;
+								prismaticJoint.Motor.OffsetA = a;
+							}, parentStaticMap.Transform);
+							entity.Add(parentStaticMoveBinding);
 						}
 
 						if (jointDeleteBinding == null)
