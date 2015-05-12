@@ -24,7 +24,9 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Property<bool> EnableCrouch = new Property<bool>();
 		[XmlIgnore]
-		public Property<bool> EnableMoves = new Property<bool> { Value = true };
+		public Property<bool> PermanentEnableMoves = new Property<bool> { Value = true };
+		[XmlIgnore]
+		public Property<bool> TemporaryEnableMoves = new Property<bool> { Value = true };
 		[XmlIgnore]
 		public Property<bool> SlowMotion = new Property<bool>();
 		[XmlIgnore]

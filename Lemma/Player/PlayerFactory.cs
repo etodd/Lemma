@@ -482,7 +482,7 @@ namespace Lemma.Factories
 			fallDamage.Add(new TwoWayBinding<float>(player.Health, fallDamage.Health));
 			fallDamage.Add(new CommandBinding<BEPUphysics.BroadPhaseEntries.Collidable, ContactCollection>(player.Character.Collided, fallDamage.Collided));
 			fallDamage.Add(new TwoWayBinding<bool>(player.Character.EnableWalking, fallDamage.EnableWalking));
-			fallDamage.Add(new TwoWayBinding<bool>(player.EnableMoves, fallDamage.EnableMoves));
+			fallDamage.Add(new TwoWayBinding<bool>(player.TemporaryEnableMoves, fallDamage.EnableMoves));
 			fallDamage.Add(new TwoWayBinding<bool>(fallDamage.Landing, rotation.Landing));
 			fallDamage.Add(new CommandBinding(fallDamage.LockRotation, (Action)rotation.Lock));
 			fallDamage.Add(new CommandBinding<float>(fallDamage.PhysicsDamage, agent.Damage));
@@ -495,7 +495,9 @@ namespace Lemma.Factories
 			float jumpTime = 0;
 			jumper.Action = delegate(float dt)
 			{
-				if (player.EnableMoves && player.Character.EnableWalking
+				if (player.PermanentEnableMoves
+					&& player.TemporaryEnableMoves
+					&& player.Character.EnableWalking
 					&& vault.CurrentState.Value == Vault.State.None
 					&& !rollKickSlide.Rolling && !rollKickSlide.Kicking
 					&& jumpTime < Player.SlowmoTime)
@@ -528,7 +530,8 @@ namespace Lemma.Factories
 			// Wall-run, vault, predictive
 			parkour.Action = delegate(float dt)
 			{
-				if (player.EnableMoves
+				if (player.PermanentEnableMoves
+					&& player.TemporaryEnableMoves
 					&& player.Character.EnableWalking
 					&& !(player.Character.Crouched && player.Character.IsSupported)
 					&& vault.CurrentState.Value == Vault.State.None
@@ -603,7 +606,9 @@ namespace Lemma.Factories
 
 			input.Bind(settings.RollKick, PCInput.InputState.Down, delegate()
 			{
-				if (player.EnableMoves && player.Character.EnableWalking)
+				if (player.PermanentEnableMoves
+					&& player.TemporaryEnableMoves
+					&& player.Character.EnableWalking)
 				{
 					rollKickSlide.Go();
 					parkour.Enabled.Value = false;
@@ -616,26 +621,6 @@ namespace Lemma.Factories
 				if (!rollKickSlide.Rolling && !rollKickSlide.Kicking)
 					player.Character.AllowUncrouch.Value = true;
 			});
-
-			// Special ability
-			/*
-			input.Bind(settings.SpecialAbility, PCInput.InputState.Down, delegate()
-			{
-				Voxel.GlobalRaycastResult hit = Voxel.GlobalRaycast(main.Camera.Position, main.Camera.Forward, main.Camera.FarPlaneDistance, null);
-				if (hit.Voxel != null && hit.Voxel.GetType() != typeof(DynamicVoxel))
-				{
-					VoxelRip.Go(hit.Voxel, hit.Coordinate.Value, 7, delegate(List<DynamicVoxel> results)
-					{
-						foreach (DynamicVoxel v in results)
-						{
-							v.IsAffectedByGravity.Value = false;
-							v.LinearVelocity.Value = hit.Voxel.GetAbsoluteVector(hit.Normal.GetVector()) * 7.0f
-								+ new Vector3((float)this.random.NextDouble() * 2.0f - 1.0f, (float)this.random.NextDouble() * 2.0f - 1.0f, (float)this.random.NextDouble() * 2.0f - 1.0f);
-						}
-					});
-				}
-			});
-			*/
 
 			// Player data bindings
 
@@ -656,7 +641,7 @@ namespace Lemma.Factories
 				entity.Add(new TwoWayBinding<bool>(playerData.EnableWallRun, wallRun.EnableWallRun));
 				entity.Add(new TwoWayBinding<bool>(playerData.EnableWallRunHorizontal, wallRun.EnableWallRunHorizontal));
 				entity.Add(new TwoWayBinding<bool>(playerData.EnableEnhancedWallRun, wallRun.EnableEnhancedWallRun));
-				entity.Add(new TwoWayBinding<bool>(playerData.EnableMoves, player.EnableMoves));
+				entity.Add(new TwoWayBinding<bool>(playerData.EnableMoves, player.PermanentEnableMoves));
 				entity.Add(new TwoWayBinding<float>(playerData.MaxSpeed, player.Character.MaxSpeed));
 				entity.Add(new Binding<bool>(fallDamage.PhoneOrNoteActive, () => playerData.PhoneActive || playerData.NoteActive, playerData.PhoneActive, playerData.NoteActive));
 
@@ -701,7 +686,7 @@ namespace Lemma.Factories
 				model.Enabled.Value = !freeCameraMode;
 				ui.Enabled.Value = !freeCameraMode;
 				player.Character.EnableWalking.Value = !freeCameraMode;
-				player.EnableMoves.Value = !freeCameraMode;
+				player.TemporaryEnableMoves.Value = !freeCameraMode;
 				player.Character.Body.IsAffectedByGravity = !freeCameraMode;
 				if (freeCameraMode)
 					AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_BREATHING_SOFT, entity);
@@ -715,7 +700,7 @@ namespace Lemma.Factories
 				if (fpsCamera.Enabled) // Movement is disabled. Re-enable it.
 				{
 					player.Character.EnableWalking.Value = true;
-					player.EnableMoves.Value = true;
+					player.TemporaryEnableMoves.Value = true;
 				}
 				PlayerFactory.Instance = null;
 			}));
