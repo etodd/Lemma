@@ -33,7 +33,7 @@ namespace Lemma.Factories
 				reticle.EffectFile.Value = "Effects\\VirtualUI";
 				reticle.DiffuseTexture.Value = "Images\\reticle";
 				reticle.Add(new Binding<Matrix>(reticle.Transform, reticleController.Transform));
-				reticle.Add(new Binding<bool>(reticle.Enabled, () => !main.Paused && !phoneActive && !noteActive, main.Paused, phoneActive, noteActive));
+				reticle.Add(new Binding<bool>(reticle.Enabled, () => !main.Paused && !phoneActive && !noteActive && main.Settings.EnableReticleVR, main.Paused, phoneActive, noteActive, main.Settings.EnableReticleVR));
 			}
 			else
 #endif

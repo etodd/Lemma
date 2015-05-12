@@ -1128,7 +1128,16 @@ namespace Lemma.Components
 			settingsList.Children.Add(musicVolume);
 
 #if VR
-			if (!this.main.VR)
+			if (this.main.VR)
+			{
+				Container reticleEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\reticle", this.main.Settings.EnableReticleVR, boolDisplay, delegate(int delta)
+				{
+					this.main.Settings.EnableReticleVR.Value = !this.main.Settings.EnableReticleVR;
+				});
+				this.resizeToMenu(reticleEnabled);
+				settingsList.Children.Add(reticleEnabled);
+			}
+			else
 #endif
 			{
 				Container reticleEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\reticle", this.main.Settings.EnableReticle, boolDisplay, delegate(int delta)

@@ -125,6 +125,7 @@ namespace Lemma
 			public Property<bool> InvertMouseY = new Property<bool>();
 			public Property<bool> ControllerVibration = new Property<bool>();
 			public Property<bool> EnableReticle = new Property<bool>();
+			public Property<bool> EnableReticleVR = new Property<bool>();
 			public Property<bool> EnableWaypoints = new Property<bool>();
 			public Property<float> MouseSensitivity = new Property<float>();
 			public Property<float> FieldOfView = new Property<float>();
@@ -204,6 +205,7 @@ namespace Lemma
 				this.Bloom.Value = true;
 				this.DynamicShadows.Value = LightingManager.DynamicShadowSetting.High;
 				this.EnableReticle.Value = false;
+				this.EnableReticleVR.Value = true;
 				this.EnableWaypoints.Value = true;
 				this.FieldOfView.Value = MathHelper.ToRadians(80.0f);
 				this.Vsync.Value = false;
