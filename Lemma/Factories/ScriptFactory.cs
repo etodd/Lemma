@@ -62,7 +62,6 @@ namespace Lemma.Factories
 				}),
 				RefreshOnChange = true,
 			});
-			entity.Add("Errors", script.Errors, null, true);
 		}
 
 		public override void AttachEditorComponents(Entity entity, Main main)
@@ -70,7 +69,7 @@ namespace Lemma.Factories
 			base.AttachEditorComponents(entity, main);
 
 			Model model = entity.Get<Model>("EditorModel");
-			model.Add(new Binding<Vector3, string>(model.Color, x => string.IsNullOrEmpty(x) ? Vector3.One : new Vector3(1.0f, 0.0f, 0.0f), entity.Get<Script>().Errors));
+			model.Color.Value = Vector3.One;
 		}
 	}
 }

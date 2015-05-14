@@ -38,8 +38,8 @@ namespace Lemma.Factories
 			ui.Add(new CommandBinding(trial.ShowUI, ui.ShowEnd));
 
 #if STEAMWORKS
-			ui.Add(new CommandBinding(trial.OnLeaderboardError, ui.OnLeaderboardError));
-			ui.Add(new CommandBinding<LeaderboardScoresDownloaded_t, LeaderboardScoresDownloaded_t>(trial.OnLeaderboardSync, ui.OnLeaderboardSync));
+			ui.Add(new CommandBinding(trial.Proxy.OnLeaderboardError, ui.OnLeaderboardError));
+			ui.Add(new CommandBinding<LeaderboardScoresDownloaded_t, LeaderboardScoresDownloaded_t>(trial.Proxy.OnLeaderboardSync, ui.OnLeaderboardSync));
 #endif
 
 			ui.Add(new CommandBinding(ui.Retry, trial.Retry));
@@ -70,6 +70,7 @@ namespace Lemma.Factories
 			{
 				Options = FileFilter.Get(main, main.MapDirectory, new string[] { "", "Challenge" }, IO.MapLoader.MapExtension),
 			});
+			entity.Add("AllowRespawn", trial.AllowRespawn);
 		}
 	}
 }

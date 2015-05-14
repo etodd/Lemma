@@ -21,7 +21,7 @@ namespace Lemma.Factories
 
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
-			
+			entity.CannotSuspend = true;
 			entity.GetOrCreate<Transform>("Transform");
 			Counter c = entity.GetOrCreate<Counter>("Counter");
 			base.Bind(entity, main, creating);

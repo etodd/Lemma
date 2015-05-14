@@ -59,6 +59,8 @@ namespace Lemma.Components
 
 		private Voxel.Coord lastWallRunCoord;
 
+		private Vector3 lastWallRunStart;
+
 		public override void Awake()
 		{
 			base.Awake();
@@ -87,10 +89,9 @@ namespace Lemma.Components
 					return false;
 			}
 
-			wallInstantiationTimer = 0.0f;
+			this.wallInstantiationTimer = 0.0f;
 
 			// Prevent the player from repeatedly wall-running and wall-jumping ad infinitum.
-			bool wallRunDelayPassed = main.TotalTime - this.lastWallRunEnded > wallRunDelay;
 			bool wallRunJumpDelayPassed = main.TotalTime - this.LastWallJump > wallRunDelay;
 
 			Matrix matrix = Matrix.CreateRotationY(this.Rotation);
@@ -164,7 +165,9 @@ namespace Lemma.Components
 							closestDistance = i;
 							closestCoord = coord;
 							closestDir = dir;
-							addInitialVelocity = differentWall || wallRunDelayPassed;
+							Vector3 wallRunStartDiff = this.lastWallRunStart - this.Position;
+							wallRunStartDiff.Y = 0.0f;
+							addInitialVelocity = this.IsSupported || (wallRunStartDiff.Length() > 2.0f && (differentWall || main.TotalTime - this.lastWallRunEnded > wallRunDelay));
 						}
 					}
 					else if (checkPossibilities)
@@ -184,7 +187,7 @@ namespace Lemma.Components
 									closestCoord = coord;
 									closestDir = dir;
 									addInitialVelocity = true;
-									wallInstantiationTimer = 0.25f;
+									this.wallInstantiationTimer = 0.25f;
 									break;
 								}
 							}
@@ -195,7 +198,7 @@ namespace Lemma.Components
 
 			if (closestVoxel != null)
 			{
-				if (!addInitialVelocity && Vector3.Dot(forwardVector, playerVelocity) < minWallRunSpeed)
+				if ((state == State.Left || state == State.Right) && !addInitialVelocity && Vector3.Dot(forwardVector, playerVelocity) < minWallRunSpeed)
 					return false;
 				this.Position.Value = closestVoxel.GetAbsolutePosition(closestCoord.Move(closestDir, closestDistance - 2)) + new Vector3(0, this.Height * 0.5f, 0);
 				this.setup(closestVoxel, closestDir, state, forwardVector, addInitialVelocity);
@@ -212,12 +215,14 @@ namespace Lemma.Components
 			this.WallRunVoxel.Value = this.LastWallRunMap.Value = voxel;
 			this.WallDirection.Value = this.LastWallDirection.Value = dir;
 			this.lastWallRunCoord = new Voxel.Coord { X = int.MinValue, Y = int.MinValue, Z = int.MinValue };
+			this.lastWallRunStart = this.Position;
 
 			Vector3 baseVelocity = voxel.LinearVelocity + Vector3.Cross(voxel.AngularVelocity, this.Position - voxel.Transform.Value.Translation);
 			if (state == State.Straight)
 			{
 				// Determine if we're actually going down
-				if (!this.IsSupported && this.LinearVelocity.Value.Y - baseVelocity.Y < -0.5f)
+				float threshold = addInitialVelocity ? -0.5f : 0.0f;
+				if (!this.IsSupported && this.LinearVelocity.Value.Y - baseVelocity.Y < threshold)
 					state = State.Down;
 			}
 
@@ -429,13 +434,13 @@ namespace Lemma.Components
 						return;
 					}
 				}
-				else if (wallType.ID == 0 && wallInstantiationTimer == 0.0f) // We ran out of wall to walk on
+				else if (wallType.ID == 0 && this.wallInstantiationTimer == 0.0f) // We ran out of wall to walk on
 				{
 					this.Deactivate();
 					return;
 				}
 
-				wallInstantiationTimer = Math.Max(0.0f, wallInstantiationTimer - dt);
+				this.wallInstantiationTimer = Math.Max(0.0f, this.wallInstantiationTimer - dt);
 
 				Vector3 coordPos = voxel.GetAbsolutePosition(coord);
 

@@ -19,9 +19,6 @@ namespace Lemma.Components
 		public const string BinaryExtension = "dll";
 		public const string ScriptNamespace = "Lemma.GameScripts";
 
-		[XmlIgnore]
-		public Property<string> Errors = new Property<string>();
-
 		public Property<string> Name = new Property<string>();
 
 		[XmlIgnore]
@@ -98,14 +95,12 @@ namespace Lemma.Components
 			}
 
 			this.methods = new ScriptMethods();
-			this.Errors.Value = null;
 			if (!string.IsNullOrEmpty(name))
 			{
 				try
 				{
 					string errors;
 					this.methods = GetInternalScriptMethods(this.main, name, this.Entity, out errors);
-					this.Errors.Value = errors;
 					if (this.methods.EditorProperties != null)
 					{
 						object result = this.methods.EditorProperties.Invoke(null, this.parameters);
@@ -120,8 +115,7 @@ namespace Lemma.Components
 				}
 				catch (Exception e)
 				{
-					this.Errors.Value = e.ToString();
-					Log.d(this.Errors);
+					Log.d(e.ToString());
 				}
 			}
 		}
@@ -137,7 +131,6 @@ namespace Lemma.Components
 				Lemma.GameScripts.ScriptBase.renderer = main.Renderer;
 			}
 			this.parameters = new object[] { this.Entity };
-			this.Errors.Value = null;
 			this.Add(new ChangeBinding<string>(this.Name, delegate(string old, string value)
 			{
 				if (value != old)

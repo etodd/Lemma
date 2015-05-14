@@ -65,7 +65,7 @@ namespace Lemma.Factories
 			timelineScroller.ResizeVertical.Value = true;
 			timelineScroller.Add(new Binding<Vector2, Point>(timelineScroller.Position, x => new Vector2(0, x.Y), main.ScreenSize));
 			timelineScroller.Add(new Binding<Vector2, Point>(timelineScroller.Size, x => new Vector2(x.X, timelineHeight), main.ScreenSize));
-			timelineScroller.Add(new Binding<bool>(timelineScroller.Visible, analyticsEnable));
+			timelineScroller.Add(new Binding<bool>(timelineScroller.Visible, () => analyticsEnable && Editor.EditorModelsVisible, analyticsEnable, Editor.EditorModelsVisible));
 			timelineScroller.Add(new Binding<bool>(timelineScroller.EnableScroll, x => !x, input.GetKey(Keys.LeftAlt)));
 			entity.Add(new CommandBinding(entity.Delete, timelineScroller.Delete));
 			main.UI.Root.Children.Add(timelineScroller);
@@ -143,7 +143,7 @@ namespace Lemma.Factories
 			ListContainer sessionsSidebar = new ListContainer();
 			sessionsSidebar.AnchorPoint.Value = new Vector2(1, 1);
 			sessionsSidebar.Add(new Binding<Vector2>(sessionsSidebar.Position, () => new Vector2(main.ScreenSize.Value.X - 10, main.ScreenSize.Value.Y - timelineScroller.ScaledSize.Value.Y - 10), main.ScreenSize, timelineScroller.ScaledSize));
-			sessionsSidebar.Add(new Binding<bool>(sessionsSidebar.Visible, analyticsEnable));
+			sessionsSidebar.Add(new Binding<bool>(sessionsSidebar.Visible, () => analyticsEnable && Editor.EditorModelsVisible, analyticsEnable, Editor.EditorModelsVisible));
 			sessionsSidebar.Alignment.Value = ListContainer.ListAlignment.Max;
 			sessionsSidebar.Reversed.Value = true;
 			main.UI.Root.Children.Add(sessionsSidebar);

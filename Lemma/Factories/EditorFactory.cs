@@ -164,6 +164,10 @@ namespace Lemma.Factories
 			});
 
 			FPSInput input = entity.Create<FPSInput>();
+			input.Add(new Binding<PCInput.PCInputBinding>(input.LeftKey, main.Settings.Left));
+			input.Add(new Binding<PCInput.PCInputBinding>(input.RightKey, main.Settings.Right));
+			input.Add(new Binding<PCInput.PCInputBinding>(input.ForwardKey, main.Settings.Forward));
+			input.Add(new Binding<PCInput.PCInputBinding>(input.BackwardKey, main.Settings.Backward));
 			input.EnabledWhenPaused = true;
 			Property<bool> capslockKey = input.GetKey(Keys.CapsLock);
 			Property<bool> shiftKey = input.GetKey(Keys.LeftShift);

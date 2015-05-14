@@ -1376,10 +1376,7 @@ namespace Lemma
 				scriptEntity.Get<Script>().ExecuteOnLoad.Value = false;
 				Script script = scriptEntity.Get<Script>();
 				script.Name.Value = scriptName;
-				if (!string.IsNullOrEmpty(script.Errors))
-					throw new Exception(script.Errors);
-				else
-					script.Execute.Execute();
+				script.Execute.Execute();
 			}
 		}
 
@@ -1391,10 +1388,7 @@ namespace Lemma
 			scriptEntity.Get<Script>().ExecuteOnLoad.Value = false;
 			Script script = scriptEntity.Get<Script>();
 			script.Name.Value = scriptName;
-			if (!string.IsNullOrEmpty(script.Errors))
-				throw new Exception(script.Errors);
-			else
-				script.Execute.Execute();
+			script.Execute.Execute();
 			scriptEntity.Delete.Execute();
 		}
 

@@ -260,6 +260,7 @@ namespace Lemma.Components
 		}
 
 		private ListContainer challengeMenu;
+		private ListContainer leaderboardMenu;
 
 		private ListContainer pauseMenu;
 		private ListContainer notifications;
@@ -368,48 +369,51 @@ namespace Lemma.Components
 			);
 			this.main.AddComponent(this.pauseAnimation);
 
-			int orbs_collected = Collectible.Collectibles.Count(x => x.PickedUp);
-			int orbs_total = Collectible.Collectibles.Count;
-
-			int notes_collected = Note.Notes.Where(x => x.IsCollected).Count();
-			int notes_total = Note.Notes.Count;
-
-			if (orbs_collected < orbs_total)
+			if (!this.main.EditorEnabled)
 			{
-				Container container = this.BuildMessage();
-				TextElement textElement = (TextElement)container.Children[0];
+				int orbs_collected = Collectible.Collectibles.Count(x => x.PickedUp);
+				int orbs_total = Collectible.Collectibles.Count;
 
-				textElement.Add(new Binding<string>
-				(
-					textElement.Text,
-					delegate()
-					{
-						return string.Format(main.Strings.Get("orbs collected") ?? "{0} / {1} orbs collected", orbs_collected, orbs_total);
-					},
-					this.main.Strings.Language
-				));
-					
-				this.collectibleCounters.Children.Add(container);
-				this.animateMessage(null, container, enabledWhenPaused: true);
-			}
+				int notes_collected = Note.Notes.Where(x => x.IsCollected).Count();
+				int notes_total = Note.Notes.Count;
 
-			if (notes_collected < notes_total)
-			{
-				Container container = this.BuildMessage();
-				TextElement textElement = (TextElement)container.Children[0];
+				if (orbs_collected < orbs_total)
+				{
+					Container container = this.BuildMessage();
+					TextElement textElement = (TextElement)container.Children[0];
 
-				textElement.Add(new Binding<string>
-				(
-					textElement.Text,
-					delegate()
-					{
-						return string.Format(main.Strings.Get("notes read") ?? "{0} / {1} notes read", notes_collected, notes_total);
-					},
-					this.main.Strings.Language
-				));
-					
-				this.collectibleCounters.Children.Add(container);
-				this.animateMessage(null, container, enabledWhenPaused: true);
+					textElement.Add(new Binding<string>
+					(
+						textElement.Text,
+						delegate()
+						{
+							return string.Format(main.Strings.Get("orbs collected") ?? "{0} / {1} orbs collected", orbs_collected, orbs_total);
+						},
+						this.main.Strings.Language
+					));
+						
+					this.collectibleCounters.Children.Add(container);
+					this.animateMessage(null, container, enabledWhenPaused: true);
+				}
+
+				if (notes_collected < notes_total)
+				{
+					Container container = this.BuildMessage();
+					TextElement textElement = (TextElement)container.Children[0];
+
+					textElement.Add(new Binding<string>
+					(
+						textElement.Text,
+						delegate()
+						{
+							return string.Format(main.Strings.Get("notes read") ?? "{0} / {1} notes read", notes_collected, notes_total);
+						},
+						this.main.Strings.Language
+					));
+						
+					this.collectibleCounters.Children.Add(container);
+					this.animateMessage(null, container, enabledWhenPaused: true);
+				}
 			}
 
 			this.currentMenu.Value = this.pauseMenu;
@@ -551,9 +555,12 @@ namespace Lemma.Components
 		}
 
 		private Animation challengeAnimation = null;
+		private Animation leaderboardAnimation = null;
 		private Animation officialAnimation = null;
 		private bool challengeMenuShown = false;
 		private Action<bool> hideChallenge = null;
+		private Property<bool> leaderboardActive = new Property<bool>();
+		private LeaderboardProxy leaderboardProxy = new LeaderboardProxy();
 		public void ConstructChallengeMenu()
 		{
 			#region Root Challenge Menu
@@ -598,6 +605,7 @@ namespace Lemma.Components
 				);
 				this.main.AddComponent(challengeAnimation);
 				this.challengeMenuShown = false;
+				this.hideChallenge = null;
 			};
 
 			this.hideChallenge = hideChallengeMenu;
@@ -606,18 +614,22 @@ namespace Lemma.Components
 			{
 				this.hidePauseMenu();
 
-				challengeMenuShown = true;
+				this.challengeMenuShown = true;
 
 				this.challengeMenu.Visible.Value = true;
 				if (challengeAnimation != null)
 					challengeAnimation.Delete.Execute();
-				challengeAnimation =
-					new Animation(
-						new Animation.Ease(
-							new Animation.Vector2MoveToSpeed(this.challengeMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
-							Animation.Ease.EaseType.OutExponential));
+				challengeAnimation = new Animation
+				(
+					new Animation.Ease
+					(
+						new Animation.Vector2MoveToSpeed(this.challengeMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
+						Animation.Ease.EaseType.OutExponential
+					)
+				);
 				this.main.AddComponent(challengeAnimation);
 				this.currentMenu.Value = this.challengeMenu;
+				this.hideChallenge = hideChallengeMenu;
 			};
 
 			Container challengeButton = this.main.UIFactory.CreateButton("\\challenge levels", showChallengeMenu);
@@ -639,6 +651,78 @@ namespace Lemma.Components
 
 			#endregion
 
+#if STEAMWORKS
+			#region Leaderboard menu
+			this.leaderboardMenu = new ListContainer();
+			this.leaderboardMenu.Visible.Value = false;
+			this.leaderboardMenu.Add(new Binding<Vector2, Point>(this.leaderboardMenu.Position, x => new Vector2(0, x.Y * 0.5f), this.main.ScreenSize));
+			this.leaderboardMenu.AnchorPoint.Value = new Vector2(1, 0.5f);
+			this.main.UI.Root.Children.Add(this.leaderboardMenu);
+			this.leaderboardMenu.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+			Container leaderboardLabelPadding = this.main.UIFactory.CreateContainer();
+			this.resizeToMenu(leaderboardLabelPadding);
+			this.leaderboardMenu.Children.Add(leaderboardLabelPadding);
+
+			ListContainer leaderboardLabelContainer = new ListContainer();
+			leaderboardLabelContainer.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			leaderboardLabelPadding.Children.Add(leaderboardLabelContainer);
+
+			TextElement leaderboardLabel = new TextElement();
+			leaderboardLabel.FontFile.Value = this.main.Font;
+			leaderboardLabel.Text.Value = "\\leaderboard title";
+			leaderboardLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
+			leaderboardLabelContainer.Children.Add(leaderboardLabel);
+
+			Action<bool> hideLeaderboardMenu = delegate(bool showPrev)
+			{
+				if (this.leaderboardAnimation != null)
+					this.leaderboardAnimation.Delete.Execute();
+				this.leaderboardAnimation = new Animation
+				(
+					new Animation.Vector2MoveToSpeed(this.leaderboardMenu.AnchorPoint, new Vector2(1, 0.5f), Menu.hideAnimationSpeed),
+					new Animation.Set<bool>(this.leaderboardMenu.Visible, false)
+				);
+				this.main.AddComponent(this.leaderboardAnimation);
+
+				this.challengeMenuShown = showPrev;
+				if (showPrev)
+					showChallengeMenu();
+			};
+
+			Action showLeaderboardMenu = delegate()
+			{
+				hideChallengeMenu(false);
+				this.hidePauseMenu();
+
+				this.challengeMenuShown = true;
+
+				this.leaderboardMenu.Visible.Value = true;
+				if (this.leaderboardAnimation != null)
+					this.leaderboardAnimation.Delete.Execute();
+				this.leaderboardAnimation = new Animation
+				(
+					new Animation.Ease
+					(
+						new Animation.Vector2MoveToSpeed(this.leaderboardMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
+						Animation.Ease.EaseType.OutExponential
+					)
+				);
+				this.main.AddComponent(this.leaderboardAnimation);
+				this.currentMenu.Value = this.leaderboardMenu;
+				this.hideChallenge = hideLeaderboardMenu;
+			};
+
+			Container leaderboardButton = this.main.UIFactory.CreateButton("\\leaderboard", showLeaderboardMenu);
+			this.resizeToMenu(leaderboardButton);
+			this.challengeMenu.Children.Add(leaderboardButton);
+
+			Container leaderboardBack = this.main.UIFactory.CreateButton("\\back", () => hideLeaderboardMenu(true));
+			this.resizeToMenu(leaderboardBack);
+			this.leaderboardMenu.Children.Add(leaderboardBack);
+			#endregion
+#endif
+
 			#region Official Maps
 			ListContainer officialMapsMenu = new ListContainer();
 			officialMapsMenu.Visible.Value = false;
@@ -657,9 +741,15 @@ namespace Lemma.Components
 
 			TextElement officialLabel = new TextElement();
 			officialLabel.FontFile.Value = this.main.Font;
-			officialLabel.Text.Value = "\\challenge title";
+			officialLabel.Add(new Binding<string, bool>(officialLabel.Text, x => x ? "\\leaderboard title" : "\\challenge title", this.leaderboardActive));
 			officialLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			officialLabelContainer.Children.Add(officialLabel);
+
+			TextElement officialLabel2 = new TextElement();
+			officialLabel2.FontFile.Value = this.main.Font;
+			officialLabel2.Text.Value = "\\official levels";
+			officialLabel2.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
+			officialLabelContainer.Children.Add(officialLabel2);
 
 			TextElement officialScrollLabel = new TextElement();
 			officialScrollLabel.FontFile.Value = this.main.Font;
@@ -669,9 +759,6 @@ namespace Lemma.Components
 
 			Action<bool> hideOfficialMenu = delegate(bool showPrev)
 			{
-				if (showPrev)
-					this.showPauseMenu();
-
 				if (officialAnimation != null)
 					officialAnimation.Delete.Execute();
 				officialAnimation = new Animation
@@ -680,8 +767,15 @@ namespace Lemma.Components
 					new Animation.Set<bool>(officialMapsMenu.Visible, false)
 				);
 				this.main.AddComponent(officialAnimation);
+
 				this.challengeMenuShown = showPrev;
-				this.hideChallenge = hideChallengeMenu;
+				if (showPrev)
+				{
+					if (this.leaderboardActive)
+						showLeaderboardMenu();
+					else
+						showChallengeMenu();
+				}
 			};
 
 			ListContainer officialMapsList = new ListContainer();
@@ -692,18 +786,33 @@ namespace Lemma.Components
 				this.hidePauseMenu();
 
 				challengeMenuShown = true;
+				this.hideChallenge = hideOfficialMenu;
 
 				officialMapsMenu.Visible.Value = true;
 				if (officialAnimation != null)
 					officialAnimation.Delete.Execute();
-				officialAnimation =
-					new Animation(
-						new Animation.Ease(
-							new Animation.Vector2MoveToSpeed(officialMapsMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
-							Animation.Ease.EaseType.OutExponential));
+				officialAnimation = new Animation
+				(
+					new Animation.Ease
+					(
+						new Animation.Vector2MoveToSpeed(officialMapsMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
+						Animation.Ease.EaseType.OutExponential
+					)
+				);
 				this.main.AddComponent(officialAnimation);
 				this.currentMenu.Value = officialMapsList;
 			};
+
+#if STEAMWORKS
+			Container officialLeaderboard = this.main.UIFactory.CreateButton("\\official levels", delegate()
+			{
+				hideLeaderboardMenu(false);
+				this.leaderboardActive.Value = true;
+				showOfficialMenu();
+			});
+			this.resizeToMenu(officialLeaderboard);
+			this.leaderboardMenu.Children.Add(officialLeaderboard);
+#endif
 
 			Container officialBack = this.main.UIFactory.CreateButton("\\back", () => hideOfficialMenu(true));
 			this.resizeToMenu(officialBack);
@@ -742,8 +851,8 @@ namespace Lemma.Components
 			Container officialMaps = this.main.UIFactory.CreateButton("\\official levels", delegate()
 			{
 				hideChallengeMenu(false);
+				this.leaderboardActive.Value = false;
 				showOfficialMenu();
-				this.hideChallenge = hideOfficialMenu;
 			});
 			this.resizeToMenu(officialMaps);
 			this.challengeMenu.Children.Add(officialMaps);
@@ -768,9 +877,15 @@ namespace Lemma.Components
 
 			TextElement workshopLabel = new TextElement();
 			workshopLabel.FontFile.Value = this.main.Font;
-			workshopLabel.Text.Value = "\\challenge title";
+			workshopLabel.Add(new Binding<string, bool>(workshopLabel.Text, x => x ? "\\leaderboard title" : "\\challenge title", this.leaderboardActive));
 			workshopLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			workshopLabelContainer.Children.Add(workshopLabel);
+
+			TextElement workshopLabel2 = new TextElement();
+			workshopLabel2.FontFile.Value = this.main.Font;
+			workshopLabel2.Text.Value = "\\workshop levels";
+			workshopLabel2.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
+			workshopLabelContainer.Children.Add(workshopLabel2);
 
 			TextElement workshopScrollLabel = new TextElement();
 			workshopScrollLabel.FontFile.Value = this.main.Font;
@@ -780,9 +895,6 @@ namespace Lemma.Components
 
 			Action<bool> hideWorkshopMenu = delegate(bool showPrev)
 			{
-				if (showPrev)
-					this.showPauseMenu();
-
 				if (officialAnimation != null)
 					officialAnimation.Delete.Execute();
 				officialAnimation = new Animation
@@ -792,7 +904,13 @@ namespace Lemma.Components
 				);
 				this.main.AddComponent(officialAnimation);
 				this.challengeMenuShown = showPrev;
-				this.hideChallenge = hideChallengeMenu;
+				if (showPrev)
+				{
+					if (this.leaderboardActive)
+						showLeaderboardMenu();
+					else
+						showChallengeMenu();
+				}
 			};
 
 			ListContainer workshopMapsList = new ListContainer();
@@ -803,6 +921,7 @@ namespace Lemma.Components
 				this.hidePauseMenu();
 
 				challengeMenuShown = true;
+				this.hideChallenge = hideWorkshopMenu;
 
 				workshopMapsMenu.Visible.Value = true;
 				if (officialAnimation != null)
@@ -883,12 +1002,22 @@ namespace Lemma.Components
 			}));
 
 #if STEAMWORKS
+			Container workshopLeaderboard = this.main.UIFactory.CreateButton("\\workshop levels", delegate()
+			{
+				reloadMaps();
+				hideLeaderboardMenu(false);
+				this.leaderboardActive.Value = true;
+				showWorkshopMenu();
+			});
+			this.resizeToMenu(workshopLeaderboard);
+			this.leaderboardMenu.Children.Add(workshopLeaderboard);
+
 			Container workshopMaps = this.main.UIFactory.CreateButton("\\workshop levels", delegate()
 			{
 				reloadMaps();
 				hideChallengeMenu(false);
+				this.leaderboardActive.Value = false;
 				showWorkshopMenu();
-				this.hideChallenge = hideWorkshopMenu;
 			});
 			this.resizeToMenu(workshopMaps);
 			this.challengeMenu.Children.Add(workshopMaps);
@@ -940,6 +1069,7 @@ namespace Lemma.Components
 				this.collectibleCounters.Reversed.Value = true;
 				this.collectibleCounters.Alignment.Value = ListContainer.ListAlignment.Middle;
 				this.collectibleCounters.AnchorPoint.Value = new Vector2(0.5f, 0.0f);
+				this.collectibleCounters.Add(new Binding<bool>(this.collectibleCounters.Visible, x => !x, ConsoleUI.Showing));
 				Vector2 counterPlacement = new Vector2(0.5f, vrCounterPlacement ? 0.4f : 0.15f);
 				this.collectibleCounters.Add(new Binding<Vector2, Point>(this.collectibleCounters.Position, x => new Vector2(x.X * counterPlacement.X, x.Y * counterPlacement.Y), this.main.ScreenSize));
 				this.main.UI.Root.Children.Add(this.collectibleCounters);
