@@ -47,7 +47,7 @@ namespace Lemma.Components
 		private const float minWallRunSpeed = 4.0f;
 
 		private float lastWallRunEnded = -1.0f;
-		private const float wallRunDelay = 0.5f;
+		private const float wallRunDelay = 0.75f;
 
 		// Since block possibilities are instantiated on another thread,
 		// we have to give that thread some time to do it before checking if there is actually a wall to run on.
@@ -167,7 +167,7 @@ namespace Lemma.Components
 							closestDir = dir;
 							Vector3 wallRunStartDiff = this.lastWallRunStart - this.Position;
 							wallRunStartDiff.Y = 0.0f;
-							addInitialVelocity = this.IsSupported || (wallRunStartDiff.Length() > 2.0f && (differentWall || main.TotalTime - this.lastWallRunEnded > wallRunDelay));
+							addInitialVelocity = this.IsSupported || wallRunStartDiff.Length() > 2.0f || differentWall || main.TotalTime - this.lastWallRunEnded > wallRunDelay;
 						}
 					}
 					else if (checkPossibilities)
@@ -324,6 +324,8 @@ namespace Lemma.Components
 
 		public void Update(float dt)
 		{
+			if (this.IsSupported)
+				this.lastWallRunEnded = -1000.0f;
 			State wallRunState = this.CurrentState;
 			if (wallRunState != State.None)
 			{

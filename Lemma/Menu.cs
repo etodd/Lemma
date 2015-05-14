@@ -16,6 +16,7 @@ using Lemma.GInterfaces;
 using Lemma.Factories;
 using Newtonsoft.Json;
 using ICSharpCode.SharpZipLib.GZip;
+using Steamworks;
 
 namespace Lemma.Components
 {
@@ -261,6 +262,7 @@ namespace Lemma.Components
 
 		private ListContainer challengeMenu;
 		private ListContainer leaderboardMenu;
+		private ListContainer leaderboardView;
 
 		private ListContainer pauseMenu;
 		private ListContainer notifications;
@@ -465,10 +467,26 @@ namespace Lemma.Components
 			this.collectibleCounters.Children.Clear();
 		}
 
+		private float width
+		{
+			get
+			{
+				return Menu.menuButtonWidth * this.main.FontMultiplier + Menu.menuButtonLeftPadding + 4.0f;
+			}
+		}
+
+		private float spacing
+		{
+			get
+			{
+				return 8.0f * this.main.FontMultiplier;
+			}
+		}
+
 		private void resizeToMenu(Container c)
 		{
 			c.ResizeHorizontal.Value = false;
-			c.Size.Value = new Vector2(Menu.menuButtonWidth * this.main.FontMultiplier + Menu.menuButtonLeftPadding + 4.0f, 0.0f);
+			c.Size.Value = new Vector2(this.width, 0.0f);
 			c.PaddingLeft.Value = Menu.menuButtonLeftPadding;
 		}
 
@@ -556,11 +574,14 @@ namespace Lemma.Components
 
 		private Animation challengeAnimation = null;
 		private Animation leaderboardAnimation = null;
+		private Animation leaderboardViewAnimation = null;
 		private Animation officialAnimation = null;
 		private bool challengeMenuShown = false;
 		private Action<bool> hideChallenge = null;
+		private Action<bool> hideChallengeMenu = null;
 		private Property<bool> leaderboardActive = new Property<bool>();
 		private LeaderboardProxy leaderboardProxy = new LeaderboardProxy();
+		private bool leaderboardOfficialMaps;
 		public void ConstructChallengeMenu()
 		{
 			#region Root Challenge Menu
@@ -591,7 +612,7 @@ namespace Lemma.Components
 			challengeWarning.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
 			challengeLabelContainer.Children.Add(challengeWarning);
 
-			Action<bool> hideChallengeMenu = delegate(bool showPrev)
+			this.hideChallengeMenu = delegate(bool showPrev)
 			{
 				if (showPrev)
 					this.showPauseMenu();
@@ -610,48 +631,16 @@ namespace Lemma.Components
 
 			this.hideChallenge = hideChallengeMenu;
 
-			Action showChallengeMenu = delegate()
-			{
-				this.hidePauseMenu();
-
-				this.challengeMenuShown = true;
-
-				this.challengeMenu.Visible.Value = true;
-				if (challengeAnimation != null)
-					challengeAnimation.Delete.Execute();
-				challengeAnimation = new Animation
-				(
-					new Animation.Ease
-					(
-						new Animation.Vector2MoveToSpeed(this.challengeMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
-						Animation.Ease.EaseType.OutExponential
-					)
-				);
-				this.main.AddComponent(challengeAnimation);
-				this.currentMenu.Value = this.challengeMenu;
-				this.hideChallenge = hideChallengeMenu;
-			};
-
-			Container challengeButton = this.main.UIFactory.CreateButton("\\challenge levels", showChallengeMenu);
+			Container challengeButton = this.main.UIFactory.CreateButton("\\challenge levels", ShowChallengeMenu);
 			this.resizeToMenu(challengeButton);
-			challengeButton.Add(new Binding<bool, string>(challengeButton.Visible, x => x == Main.MenuMap, this.main.MapFile));
+			challengeButton.Add(new Binding<bool, string>(challengeButton.Visible, x => x == Main.MenuMap || this.main.IsChallengeMap(x), this.main.MapFile));
 			this.pauseMenu.Children.Add(challengeButton);
 
 			Container challengeBack = this.main.UIFactory.CreateButton("\\back", () => hideChallengeMenu(true));
 			this.resizeToMenu(challengeBack);
 			this.challengeMenu.Children.Add(challengeBack);
-
-			Container levelEditor = this.main.UIFactory.CreateButton("\\level editor", delegate()
-			{
-				hideChallengeMenu(false);
-				this.editMode();
-			});
-			this.resizeToMenu(levelEditor);
-			this.challengeMenu.Children.Add(levelEditor);
-
 			#endregion
 
-#if STEAMWORKS
 			#region Leaderboard menu
 			this.leaderboardMenu = new ListContainer();
 			this.leaderboardMenu.Visible.Value = false;
@@ -687,7 +676,7 @@ namespace Lemma.Components
 
 				this.challengeMenuShown = showPrev;
 				if (showPrev)
-					showChallengeMenu();
+					ShowChallengeMenu();
 			};
 
 			Action showLeaderboardMenu = delegate()
@@ -713,15 +702,159 @@ namespace Lemma.Components
 				this.hideChallenge = hideLeaderboardMenu;
 			};
 
-			Container leaderboardButton = this.main.UIFactory.CreateButton("\\leaderboard", showLeaderboardMenu);
-			this.resizeToMenu(leaderboardButton);
-			this.challengeMenu.Children.Add(leaderboardButton);
-
 			Container leaderboardBack = this.main.UIFactory.CreateButton("\\back", () => hideLeaderboardMenu(true));
 			this.resizeToMenu(leaderboardBack);
 			this.leaderboardMenu.Children.Add(leaderboardBack);
 			#endregion
-#endif
+
+			#region Leaderboard display
+			this.leaderboardView = new ListContainer();
+			this.leaderboardView.Visible.Value = false;
+			this.leaderboardView.Add(new Binding<Vector2, Point>(this.leaderboardView.Position, x => new Vector2(0, x.Y * 0.5f), this.main.ScreenSize));
+			this.leaderboardView.AnchorPoint.Value = new Vector2(1, 0.5f);
+			this.main.UI.Root.Children.Add(this.leaderboardView);
+			this.leaderboardView.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+			Container leaderboardViewLabelPadding = this.main.UIFactory.CreateContainer();
+			this.resizeToMenu(leaderboardViewLabelPadding);
+			this.leaderboardView.Children.Add(leaderboardViewLabelPadding);
+
+			ListContainer leaderboardViewLabelContainer = new ListContainer();
+			leaderboardViewLabelContainer.Orientation.Value = ListContainer.ListOrientation.Vertical;
+			leaderboardViewLabelPadding.Children.Add(leaderboardViewLabelContainer);
+
+			TextElement leaderboardViewLabel = new TextElement();
+			leaderboardViewLabel.FontFile.Value = this.main.Font;
+			leaderboardViewLabel.Text.Value = "\\leaderboard title";
+			leaderboardViewLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
+			leaderboardViewLabelContainer.Children.Add(leaderboardViewLabel);
+
+			TextElement leaderboardViewMapTitle = new TextElement();
+			leaderboardViewMapTitle.FontFile.Value = this.main.Font;
+			leaderboardViewMapTitle.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
+			leaderboardViewLabelContainer.Children.Add(leaderboardViewMapTitle);
+
+			TextElement leaderboardViewScrollLabel = new TextElement();
+			leaderboardViewScrollLabel.FontFile.Value = this.main.Font;
+			leaderboardViewScrollLabel.Text.Value = "\\scroll for more";
+			leaderboardViewScrollLabel.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
+			leaderboardViewLabelContainer.Children.Add(leaderboardViewScrollLabel);
+
+			Action<bool> hideLeaderboardView = null;
+			Action showOfficialMenu = null, showWorkshopMenu = null;
+
+			Container leaderboardViewBack = this.main.UIFactory.CreateButton("\\back", () => hideLeaderboardView(true));
+			this.resizeToMenu(leaderboardViewBack);
+			this.leaderboardView.Children.Add(leaderboardViewBack);
+
+			ListContainer leaderboardViewList = new ListContainer();
+			leaderboardViewList.Orientation.Value = ListContainer.ListOrientation.Vertical;
+
+			Scroller leaderboardViewScroller = new Scroller();
+			leaderboardViewScroller.Children.Add(leaderboardViewList);
+			leaderboardViewScroller.Add(new Binding<Vector2>(leaderboardViewScroller.Size, () => new Vector2(leaderboardViewList.Size.Value.X, this.main.ScreenSize.Value.Y * 0.5f), leaderboardViewList.Size, this.main.ScreenSize));
+			this.leaderboardView.Children.Add(leaderboardViewScroller);
+
+			hideLeaderboardView = delegate(bool showPrev)
+			{
+				this.leaderboardProxy.CancelCallbacks();
+				if (this.leaderboardViewAnimation != null)
+					this.leaderboardViewAnimation.Delete.Execute();
+				this.leaderboardViewAnimation = new Animation
+				(
+					new Animation.Vector2MoveToSpeed(this.leaderboardView.AnchorPoint, new Vector2(1, 0.5f), Menu.hideAnimationSpeed),
+					new Animation.Set<bool>(this.leaderboardView.Visible, false)
+				);
+				this.main.AddComponent(this.leaderboardViewAnimation);
+
+				this.challengeMenuShown = showPrev;
+				if (showPrev)
+				{
+					if (this.leaderboardOfficialMaps)
+						showOfficialMenu();
+					else
+						showWorkshopMenu();
+				}
+			};
+
+			this.Add(new CommandBinding(this.leaderboardProxy.OnLeaderboardError, delegate()
+			{
+				leaderboardViewList.Children.Clear();
+				TextElement error = this.main.UIFactory.CreateLabel();
+				error.Text.Value = "\\leaderboard error";
+				leaderboardViewList.Children.Add(error);;
+			}));
+
+			this.Add(new CommandBinding<LeaderboardScoresDownloaded_t, LeaderboardScoresDownloaded_t>(this.leaderboardProxy.OnLeaderboardSync, delegate(LeaderboardScoresDownloaded_t globalScores, LeaderboardScoresDownloaded_t friendScores)
+			{
+				leaderboardViewList.Children.Clear();
+
+				int[] details = new int[] {};
+				for (int i = 0; i < globalScores.m_cEntryCount; i++)
+				{
+					LeaderboardEntry_t entry;
+					SteamUserStats.GetDownloadedLeaderboardEntry(globalScores.m_hSteamLeaderboardEntries, i, out entry, details, 0);
+					leaderboardViewList.Children.Add(this.leaderboardEntry(entry));
+				}
+
+				if (friendScores.m_cEntryCount > 1)
+				{
+					{
+						TextElement friendsLabel = this.main.UIFactory.CreateLabel("\\friends");
+						Container labelContainer = this.main.UIFactory.CreateContainer();
+						this.resizeToMenu(labelContainer);
+						friendsLabel.Position.Value = new Vector2(labelContainer.Size.Value.X * 0.5f, 0.0f);
+						friendsLabel.AnchorPoint.Value = new Vector2(0.5f, 0.0f);
+						leaderboardViewList.Children.Add(labelContainer);
+						labelContainer.Children.Add(friendsLabel);
+					}
+
+					for (int i = 0; i < friendScores.m_cEntryCount; i++)
+					{
+						LeaderboardEntry_t entry;
+						SteamUserStats.GetDownloadedLeaderboardEntry(friendScores.m_hSteamLeaderboardEntries, i, out entry, details, 0);
+						leaderboardViewList.Children.Add(this.leaderboardEntry(entry));
+					}
+				}
+			}));
+
+			Action<string, string> showLeaderboardView = delegate(string name, string uuid)
+			{
+				hideLeaderboardMenu(false);
+				leaderboardViewMapTitle.Text.Value = name;
+
+				leaderboardViewList.Children.Clear();
+
+				TextElement loading = this.main.UIFactory.CreateLabel();
+				loading.Text.Value = "\\loading";
+
+				Container loadingContainer = this.main.UIFactory.CreateContainer();
+				this.resizeToMenu(loadingContainer);
+				loadingContainer.Children.Add(loading);
+				loading.Position.Value = new Vector2(menuButtonLeftPadding, 0);
+				loading.WrapWidth.Value = menuButtonWidth - menuButtonLeftPadding;
+				leaderboardViewList.Children.Add(loadingContainer);
+
+				this.leaderboardProxy.Sync(uuid);
+
+				this.challengeMenuShown = true;
+
+				this.leaderboardView.Visible.Value = true;
+				if (this.leaderboardViewAnimation != null)
+					this.leaderboardViewAnimation.Delete.Execute();
+				this.leaderboardViewAnimation = new Animation
+				(
+					new Animation.Ease
+					(
+						new Animation.Vector2MoveToSpeed(this.leaderboardView.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
+						Animation.Ease.EaseType.OutExponential
+					)
+				);
+				this.main.AddComponent(this.leaderboardViewAnimation);
+				this.currentMenu.Value = leaderboardViewList;
+				this.hideChallenge = hideLeaderboardView;
+			};
+			#endregion
 
 			#region Official Maps
 			ListContainer officialMapsMenu = new ListContainer();
@@ -774,14 +907,14 @@ namespace Lemma.Components
 					if (this.leaderboardActive)
 						showLeaderboardMenu();
 					else
-						showChallengeMenu();
+						ShowChallengeMenu();
 				}
 			};
 
 			ListContainer officialMapsList = new ListContainer();
 			officialMapsList.Orientation.Value = ListContainer.ListOrientation.Vertical;
 
-			Action showOfficialMenu = delegate()
+			showOfficialMenu = delegate()
 			{
 				this.hidePauseMenu();
 
@@ -808,6 +941,7 @@ namespace Lemma.Components
 			{
 				hideLeaderboardMenu(false);
 				this.leaderboardActive.Value = true;
+				this.leaderboardOfficialMaps = true;
 				showOfficialMenu();
 			});
 			this.resizeToMenu(officialLeaderboard);
@@ -828,20 +962,36 @@ namespace Lemma.Components
 			{
 				foreach (var file in dir.GetFiles("*.map"))
 				{
-					Container button = this.main.UIFactory.CreateButton(Path.GetFileNameWithoutExtension(file.Name), delegate()
+					string display = Path.GetFileNameWithoutExtension(file.Name);
+					Container button = this.main.UIFactory.CreateButton(display, delegate()
 					{
 						hideOfficialMenu(false);
-						hidePauseMenu();
-						this.restorePausedSettings();
-						this.main.CurrentSave.Value = null;
-						this.main.AddComponent(new Animation
-						(
-							new Animation.Delay(0.2f),
-							new Animation.Execute(delegate()
+						if (this.leaderboardActive)
+						{
+							string uuid;
+							using (Stream fs = File.OpenRead(file.FullName))
 							{
-								IO.MapLoader.Load(this.main, file.FullName);
-							})
-						));
+								using (Stream stream = new GZipInputStream(fs))
+								{
+									uuid = ((List<Entity>)IO.MapLoader.Serializer.Deserialize(stream))[0].Get<World>().UUID;
+								}
+							}
+							showLeaderboardView(display, uuid);
+						}
+						else
+						{
+							hidePauseMenu();
+							this.restorePausedSettings();
+							this.main.CurrentSave.Value = null;
+							this.main.AddComponent(new Animation
+							(
+								new Animation.Delay(0.2f),
+								new Animation.Execute(delegate()
+								{
+									IO.MapLoader.Load(this.main, file.FullName);
+								})
+							));
+						}
 					});
 					this.resizeToMenu(button);
 					officialMapsList.Children.Add(button);
@@ -909,14 +1059,14 @@ namespace Lemma.Components
 					if (this.leaderboardActive)
 						showLeaderboardMenu();
 					else
-						showChallengeMenu();
+						ShowChallengeMenu();
 				}
 			};
 
 			ListContainer workshopMapsList = new ListContainer();
 			workshopMapsList.Orientation.Value = ListContainer.ListOrientation.Vertical;
 
-			Action showWorkshopMenu = delegate()
+			showWorkshopMenu = delegate()
 			{
 				this.hidePauseMenu();
 
@@ -926,11 +1076,14 @@ namespace Lemma.Components
 				workshopMapsMenu.Visible.Value = true;
 				if (officialAnimation != null)
 					officialAnimation.Delete.Execute();
-				officialAnimation =
-					new Animation(
-						new Animation.Ease(
-							new Animation.Vector2MoveToSpeed(workshopMapsMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
-							Animation.Ease.EaseType.OutExponential));
+				officialAnimation = new Animation
+				(
+					new Animation.Ease
+					(
+						new Animation.Vector2MoveToSpeed(workshopMapsMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
+						Animation.Ease.EaseType.OutExponential
+					)
+				);
 				this.main.AddComponent(officialAnimation);
 				this.currentMenu.Value = workshopMapsList;
 			};
@@ -938,6 +1091,7 @@ namespace Lemma.Components
 			{
 				UIFactory.OpenURL(string.Format("http://steamcommunity.com/workshop/browse?appid={0}", Main.SteamAppID));
 			});
+			workshopGetMore.Add(new Binding<bool>(workshopGetMore.Visible, x => !x, this.leaderboardActive));
 			this.resizeToMenu(workshopGetMore);
 			workshopMapsList.Children.Add(workshopGetMore);
 
@@ -975,17 +1129,32 @@ namespace Lemma.Components
 							Container button = this.main.UIFactory.CreateButton(metadata.Title, delegate()
 							{
 								hideWorkshopMenu(false);
-								this.hidePauseMenu();
-								this.restorePausedSettings();
-								this.main.CurrentSave.Value = null;
-								this.main.AddComponent(new Animation
-								(
-									new Animation.Delay(0.2f),
-									new Animation.Execute(delegate()
+								if (this.leaderboardActive)
+								{
+									string uuid;
+									using (Stream fs = File.OpenRead(mapPath))
 									{
-										IO.MapLoader.Load(this.main, mapPath);
-									})
-								));
+										using (Stream stream = new GZipInputStream(fs))
+										{
+											uuid = ((List<Entity>)IO.MapLoader.Serializer.Deserialize(stream))[0].Get<World>().UUID;
+										}
+									}
+									showLeaderboardView(metadata.Title, uuid);
+								}
+								else
+								{
+									this.hidePauseMenu();
+									this.restorePausedSettings();
+									this.main.CurrentSave.Value = null;
+									this.main.AddComponent(new Animation
+									(
+										new Animation.Delay(0.2f),
+										new Animation.Execute(delegate()
+										{
+											IO.MapLoader.Load(this.main, mapPath);
+										})
+									));
+								}
 							});
 							this.resizeToMenu(button);
 							workshopMapsList.Children.Add(button);
@@ -1007,6 +1176,7 @@ namespace Lemma.Components
 				reloadMaps();
 				hideLeaderboardMenu(false);
 				this.leaderboardActive.Value = true;
+				this.leaderboardOfficialMaps = false;
 				showWorkshopMenu();
 			});
 			this.resizeToMenu(workshopLeaderboard);
@@ -1021,8 +1191,80 @@ namespace Lemma.Components
 			});
 			this.resizeToMenu(workshopMaps);
 			this.challengeMenu.Children.Add(workshopMaps);
+
+			Container leaderboardButton = this.main.UIFactory.CreateButton("\\leaderboard", showLeaderboardMenu);
+			this.resizeToMenu(leaderboardButton);
+			this.challengeMenu.Children.Add(leaderboardButton);
+
 #endif
+
+			Container levelEditor = this.main.UIFactory.CreateButton("\\level editor", delegate()
+			{
+				hideChallengeMenu(false);
+				this.editMode();
+			});
+			this.resizeToMenu(levelEditor);
+			this.challengeMenu.Children.Add(levelEditor);
+
 			#endregion
+		}
+
+		public void ShowChallengeMenu()
+		{
+			this.hidePauseMenu();
+
+			this.challengeMenuShown = true;
+
+			this.challengeMenu.Visible.Value = true;
+			if (challengeAnimation != null)
+				challengeAnimation.Delete.Execute();
+			challengeAnimation = new Animation
+			(
+				new Animation.Ease
+				(
+					new Animation.Vector2MoveToSpeed(this.challengeMenu.AnchorPoint, new Vector2(0, 0.5f), Menu.animationSpeed),
+					Animation.Ease.EaseType.OutExponential
+				)
+			);
+			this.main.AddComponent(challengeAnimation);
+			this.currentMenu.Value = this.challengeMenu;
+			this.hideChallenge = this.hideChallengeMenu;
+		}
+
+		private Container leaderboardEntry(LeaderboardEntry_t entry)
+		{
+			Container container = this.main.UIFactory.CreateButton(delegate()
+			{
+				if (SteamWorker.SteamInitialized)
+					SteamFriends.ActivateGameOverlayToUser("steamid", entry.m_steamIDUser);
+			});
+			this.resizeToMenu(container);
+
+			TextElement rank = this.main.UIFactory.CreateLabel(entry.m_nGlobalRank.ToString());
+			rank.AnchorPoint.Value = new Vector2(1, 0);
+			rank.Position.Value = new Vector2(this.width * 0.15f, 0);
+			container.Children.Add(rank);
+
+			TextElement name = this.main.UIFactory.CreateLabel();
+			name.FilterUnicode.Value = true;
+			if (SteamFriends.RequestUserInformation(entry.m_steamIDUser, true))
+			{
+				// Need to wait for a callback before we know their username
+				name.Add(new Binding<string>(name.Text, () => SteamFriends.GetFriendPersonaName(entry.m_steamIDUser), this.leaderboardProxy.PersonaNotification));
+			}
+			else
+			{
+				// We already know the username
+				name.Text.Value = SteamFriends.GetFriendPersonaName(entry.m_steamIDUser);
+			}
+			name.Position.Value = new Vector2(this.width * 0.15f + this.spacing, 0);
+			container.Children.Add(name);
+
+			TextElement score = this.main.UIFactory.CreateLabel(TimeTrialUI.SecondsToTimeString((float)entry.m_nScore / 1000.0f));
+			score.AnchorPoint.Value = new Vector2(1, 0);
+			score.Position.Value = new Vector2(this.width - 4.0f - this.spacing, 0);
+			container.Children.Add(score);
+			return container;
 		}
 
 		public override void Awake()
@@ -1157,7 +1399,7 @@ namespace Lemma.Components
 
 			Container saveNewButton = this.main.UIFactory.CreateButton("\\save new", delegate()
 			{
-				this.main.SaveOverwrite();
+				this.main.SaveNew();
 				this.hideLoadSave();
 				this.main.Paused.Value = false;
 				this.restorePausedSettings();

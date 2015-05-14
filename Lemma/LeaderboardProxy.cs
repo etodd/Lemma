@@ -14,6 +14,7 @@ namespace Lemma
 
 		public Command OnLeaderboardError = new Command();
 
+		private Callback<PersonaStateChange_t> personaCallback;
 		private CallResult<LeaderboardFindResult_t> leaderboardFindCall;
 		private CallResult<LeaderboardScoreUploaded_t> leaderboardUploadCall;
 		private CallResult<LeaderboardScoresDownloaded_t> globalLeaderboardDownloadCall;
@@ -22,6 +23,29 @@ namespace Lemma
 		private CallResult<LeaderboardScoresDownloaded_t> friendLeaderboardDownloadCall;
 		private bool friendScoresDownloaded;
 		private LeaderboardScoresDownloaded_t friendScores;
+
+		public Property<bool> PersonaNotification = new Property<bool>();
+
+		private int before, after, friendsBefore, friendsAfter;
+
+		public LeaderboardProxy(int before = 5, int after = 5, int friendsBefore = 5, int friendsAfter = 5)
+		{
+			this.personaCallback = Callback<PersonaStateChange_t>.Create(this.onPersonaStateChange);
+			this.before = before;
+			this.after = after;
+			this.friendsBefore = friendsBefore;
+			this.friendsAfter = friendsAfter;
+		}
+
+		public void Unregister()
+		{
+			this.CancelCallbacks();
+			if (this.personaCallback != null)
+			{
+				this.personaCallback.Unregister();
+				this.personaCallback = null;
+			}
+		}
 
 		public void CancelCallbacks()
 		{
@@ -38,7 +62,14 @@ namespace Lemma
 			if (this.friendLeaderboardDownloadCall != null)
 				this.friendLeaderboardDownloadCall.Cancel();
 			this.friendLeaderboardDownloadCall = null;
+			this.friendScoresDownloaded = false;
+			this.globalScoresDownloaded = false;
 #endif
+		}
+
+		private void onPersonaStateChange(PersonaStateChange_t persona)
+		{
+			this.PersonaNotification.Changed();
 		}
 
 		private void checkLeaderboardsDownloaded()
@@ -64,45 +95,73 @@ namespace Lemma
 					this.OnLeaderboardError.Execute();
 				else
 				{
-					this.leaderboardUploadCall = new CallResult<LeaderboardScoreUploaded_t>(delegate(LeaderboardScoreUploaded_t uploaded, bool uploadedFailure)
+					if (score > 0)
 					{
-						this.leaderboardUploadCall = null;
-						if (uploadedFailure)
-							this.OnLeaderboardError.Execute();
-						else
+						this.leaderboardUploadCall = new CallResult<LeaderboardScoreUploaded_t>(delegate(LeaderboardScoreUploaded_t uploaded, bool uploadedFailure)
 						{
-							this.globalLeaderboardDownloadCall = new CallResult<LeaderboardScoresDownloaded_t>((downloaded, downloadedFailure) =>
-							{
-								this.globalLeaderboardDownloadCall = null;
-								if (downloadedFailure)
-									this.OnLeaderboardError.Execute();
-								else
-								{
-									this.globalScoresDownloaded = true;
-									this.globalScores = downloaded;
-									this.checkLeaderboardsDownloaded();
-								}
-							});
-							this.globalLeaderboardDownloadCall.Set(SteamUserStats.DownloadLeaderboardEntries(found.m_hSteamLeaderboard, ELeaderboardDataRequest.k_ELeaderboardDataRequestGlobalAroundUser, -5, 5));
-							this.friendLeaderboardDownloadCall = new CallResult<LeaderboardScoresDownloaded_t>((downloaded, downloadedFailure) =>
-							{
-								this.friendLeaderboardDownloadCall = null;
-								if (downloadedFailure)
-									this.OnLeaderboardError.Execute();
-								else
-								{
-									this.friendScoresDownloaded = true;
-									this.friendScores = downloaded;
-									this.checkLeaderboardsDownloaded();
-								}
-							});
-							this.friendLeaderboardDownloadCall.Set(SteamUserStats.DownloadLeaderboardEntries(found.m_hSteamLeaderboard, ELeaderboardDataRequest.k_ELeaderboardDataRequestFriends, -5, 5));
-						}
-					});
-					this.leaderboardUploadCall.Set(SteamUserStats.UploadLeaderboardScore(found.m_hSteamLeaderboard, ELeaderboardUploadScoreMethod.k_ELeaderboardUploadScoreMethodKeepBest, score, new int[] {}, 0));
+							this.leaderboardUploadCall = null;
+							if (uploadedFailure)
+								this.OnLeaderboardError.Execute();
+							else
+								this.download(found.m_hSteamLeaderboard);
+						});
+						this.leaderboardUploadCall.Set(SteamUserStats.UploadLeaderboardScore(found.m_hSteamLeaderboard, ELeaderboardUploadScoreMethod.k_ELeaderboardUploadScoreMethodKeepBest, score, new int[] {}, 0));
+					}
+					else
+						this.download(found.m_hSteamLeaderboard);
 				}
 			});
 			this.leaderboardFindCall.Set(SteamUserStats.FindOrCreateLeaderboard(uuid, ELeaderboardSortMethod.k_ELeaderboardSortMethodAscending, ELeaderboardDisplayType.k_ELeaderboardDisplayTypeTimeMilliSeconds));
+		}
+
+		private void download(SteamLeaderboard_t leaderboard)
+		{
+			this.globalLeaderboardDownloadCall = new CallResult<LeaderboardScoresDownloaded_t>((downloaded, downloadedFailure) =>
+			{
+				this.globalLeaderboardDownloadCall = null;
+				if (downloadedFailure)
+					this.OnLeaderboardError.Execute();
+				else
+				{
+					if (downloaded.m_cEntryCount == 0)
+					{
+						// We're not ranked
+						// Get the top global list
+						this.globalLeaderboardDownloadCall = new CallResult<LeaderboardScoresDownloaded_t>((downloaded2, downloadedFailure2) =>
+						{
+							if (downloadedFailure2)
+								this.OnLeaderboardError.Execute();
+							else
+							{
+								this.globalScoresDownloaded = true;
+								this.globalScores = downloaded2;
+								this.checkLeaderboardsDownloaded();
+							}
+						});
+						this.globalLeaderboardDownloadCall.Set(SteamUserStats.DownloadLeaderboardEntries(leaderboard, ELeaderboardDataRequest.k_ELeaderboardDataRequestGlobal, 0, this.before + this.after));
+					}
+					else
+					{
+						this.globalScoresDownloaded = true;
+						this.globalScores = downloaded;
+						this.checkLeaderboardsDownloaded();
+					}
+				}
+			});
+			this.globalLeaderboardDownloadCall.Set(SteamUserStats.DownloadLeaderboardEntries(leaderboard, ELeaderboardDataRequest.k_ELeaderboardDataRequestGlobalAroundUser, -this.before, this.after));
+			this.friendLeaderboardDownloadCall = new CallResult<LeaderboardScoresDownloaded_t>((downloaded, downloadedFailure) =>
+			{
+				this.friendLeaderboardDownloadCall = null;
+				if (downloadedFailure)
+					this.OnLeaderboardError.Execute();
+				else
+				{
+					this.friendScoresDownloaded = true;
+					this.friendScores = downloaded;
+					this.checkLeaderboardsDownloaded();
+				}
+			});
+			this.friendLeaderboardDownloadCall.Set(SteamUserStats.DownloadLeaderboardEntries(leaderboard, ELeaderboardDataRequest.k_ELeaderboardDataRequestFriends, -this.friendsBefore, this.friendsAfter));
 		}
 	}
 }

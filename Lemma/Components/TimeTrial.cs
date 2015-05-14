@@ -99,7 +99,7 @@ namespace Lemma.Components
 
 		public override void delete()
 		{
-			this.Proxy.CancelCallbacks();
+			this.Proxy.Unregister();
 			base.delete();
 			this.main.BaseTimeMultiplier.Value = 1.0f;
 			this.main.Menu.CanPause.Value = true;

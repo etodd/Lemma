@@ -181,6 +181,7 @@
     <Compile Include="Factories\StaticSliderFactory.cs" />
     <Compile Include="Factories\SequenceFactory.cs" />
     <Compile Include="Factories\VoxelSetterFactory.cs" />
+    <Compile Include="LeaderboardProxy.cs" />
     <Compile Include="OvrCapi.cs" />
     <Compile Include="Player\FPSCamera.cs" />
     <Compile Include="Scripts\DialogueLink.cs" />

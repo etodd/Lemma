@@ -49,16 +49,12 @@ namespace Lemma.Components
 		[XmlIgnore]
 		public Command ShowEnd = new Command();
 
-#if STEAMWORKS
 		[XmlIgnore]
 		public Command OnLeaderboardError = new Command();
 
 		[XmlIgnore]
 		public Command<LeaderboardScoresDownloaded_t, LeaderboardScoresDownloaded_t> OnLeaderboardSync = new Command<LeaderboardScoresDownloaded_t, LeaderboardScoresDownloaded_t>();
-
-		private Callback<PersonaStateChange_t> personaCallback;
-		private Property<bool> personaNotification = new Property<bool>();
-#endif
+		public Property<bool> PersonaNotification = new Property<bool>();
 
 		private bool shown;
 
@@ -82,10 +78,6 @@ namespace Lemma.Components
 		{
 			this.Serialize = false;
 			this.EnabledWhenPaused = false;
-
-#if STEAMWORKS
-			this.personaCallback = Callback<PersonaStateChange_t>.Create(this.onPersonaStateChange);
-#endif
 
 			{
 				Container container = this.main.UIFactory.CreateContainer();
@@ -158,7 +150,11 @@ namespace Lemma.Components
 				leaderboardList.Orientation.Value = ListContainer.ListOrientation.Vertical;
 				leaderboardList.Alignment.Value = ListContainer.ListAlignment.Middle;
 				leaderboardList.Spacing.Value = 0;
-				leaderboard.Children.Add(leaderboardList);
+
+				Scroller scroller = new Scroller();
+				scroller.Children.Add(leaderboardList);
+				scroller.Add(new Binding<Vector2>(scroller.Size, () => new Vector2(leaderboardList.Size.Value.X, this.main.ScreenSize.Value.Y * 0.5f), leaderboardList.Size, this.main.ScreenSize));
+				leaderboard.Children.Add(scroller);
 
 				{
 					TextElement leaderboardLabel = this.main.UIFactory.CreateLabel();
@@ -201,8 +197,7 @@ namespace Lemma.Components
 						{
 							LeaderboardEntry_t entry;
 							SteamUserStats.GetDownloadedLeaderboardEntry(friendScores.m_hSteamLeaderboardEntries, i, out entry, details, 0);
-							if (entry.m_steamIDUser != SteamUser.GetSteamID())
-								leaderboardList.Children.Add(this.leaderboardEntry(entry));
+							leaderboardList.Children.Add(this.leaderboardEntry(entry));
 						}
 					}
 				};
@@ -243,16 +238,15 @@ namespace Lemma.Components
 					list.Children.Add(next);
 				}
 
-#if STEAMWORKS
 				{
-					Container getMore = this.main.UIFactory.CreateButton("\\get more", delegate()
+					Container challenge = this.main.UIFactory.CreateButton("\\challenge levels", delegate()
 					{
-						UIFactory.OpenURL(string.Format("http://steamcommunity.com/workshop/browse?appid={0}", Main.SteamAppID));
+						this.MainMenu.Execute();
+						this.main.Menu.ShowChallengeMenu();
 					});
-					this.resizeButton(getMore);
-					list.Children.Add(getMore);
+					this.resizeButton(challenge);
+					list.Children.Add(challenge);
 				}
-#endif
 
 				Container mainMenu = this.main.UIFactory.CreateButton("\\main menu", delegate()
 				{
@@ -338,16 +332,6 @@ namespace Lemma.Components
 		}
 
 #if STEAMWORKS
-		public override void delete()
-		{
-			if (this.personaCallback != null)
-			{
-				this.personaCallback.Unregister();
-				this.personaCallback = null;
-			}
-			base.delete();
-		}
-
 		private Container leaderboardEntry(LeaderboardEntry_t entry)
 		{
 			Container container = this.main.UIFactory.CreateButton(delegate()
@@ -367,7 +351,7 @@ namespace Lemma.Components
 			if (SteamFriends.RequestUserInformation(entry.m_steamIDUser, true))
 			{
 				// Need to wait for a callback before we know their username
-				name.Add(new Binding<string>(name.Text, () => SteamFriends.GetFriendPersonaName(entry.m_steamIDUser), this.personaNotification));
+				name.Add(new Binding<string>(name.Text, () => SteamFriends.GetFriendPersonaName(entry.m_steamIDUser), this.PersonaNotification));
 			}
 			else
 			{
@@ -382,11 +366,6 @@ namespace Lemma.Components
 			score.Position.Value = new Vector2(this.width - 4.0f - this.spacing, 0);
 			container.Children.Add(score);
 			return container;
-		}
-
-		private void onPersonaStateChange(PersonaStateChange_t persona)
-		{
-			this.personaNotification.Changed();
 		}
 #endif
 

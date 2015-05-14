@@ -50,7 +50,7 @@ namespace Lemma.Components
 					p.Get<Model>("Model").Enabled.Value = false;
 					p.Get<CameraController>().Enabled.Value = false;
 					p.Get<FPSInput>().Enabled.Value = false;
-					p.Get<UIRenderer>().Enabled.Value = false;
+					p.Get<UIRenderer>("UI").Enabled.Value = false;
 					AkSoundEngine.PostEvent(AK.EVENTS.STOP_PLAYER_BREATHING_SOFT, p);
 				}
 				CameraStop.CinematicActive.Value = true;
@@ -145,7 +145,7 @@ namespace Lemma.Components
 					p.Get<Model>("Model").Enabled.Value = true;
 					p.Get<CameraController>().Enabled.Value = true;
 					p.Get<FPSInput>().Enabled.Value = true;
-					p.Get<UIRenderer>().Enabled.Value = true;
+					p.Get<UIRenderer>("UI").Enabled.Value = true;
 				}
 				this.main.Camera.FieldOfView.Value = this.main.Settings.FieldOfView;
 				CameraStop.CinematicActive.Value = false;
