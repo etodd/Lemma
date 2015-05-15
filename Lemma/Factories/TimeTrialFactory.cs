@@ -59,7 +59,7 @@ namespace Lemma.Factories
 				if (!filenameWithExtension.EndsWith(IO.MapLoader.MapExtension))
 					filenameWithExtension += IO.MapLoader.MapExtension;
 
-				string fullFilename = Path.IsPathRooted(filenameWithExtension) ? filenameWithExtension : Path.Combine(main.MapDirectory, filenameWithExtension);
+				string fullFilename = Path.IsPathRooted(filenameWithExtension) ? filenameWithExtension : Path.GetFullPath(Path.Combine(main.MapDirectory, filenameWithExtension));
 
 				main.CurrentSave.Value = null;
 				main.EditorEnabled.Value = false;
