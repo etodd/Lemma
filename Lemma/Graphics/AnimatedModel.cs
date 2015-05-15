@@ -23,6 +23,7 @@ namespace Lemma.Components
 			}
 		}
 
+		[XmlIgnore]
 		public List<Matrix> BindPose
 		{
 			get
@@ -31,6 +32,7 @@ namespace Lemma.Components
 			}
 		}
 
+		[XmlIgnore]
 		public List<int> SkeletonHierarchy
 		{
 			get
