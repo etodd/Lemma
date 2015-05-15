@@ -156,6 +156,7 @@ namespace Lemma
 			public Property<PCInput.PCInputBinding> TogglePhone = new Property<PCInput.PCInputBinding>();
 			public Property<PCInput.PCInputBinding> QuickSave = new Property<PCInput.PCInputBinding>();
 			public Property<PCInput.PCInputBinding> ToggleFullscreen = new Property<PCInput.PCInputBinding>();
+			public Property<PCInput.PCInputBinding> ToggleConsole = new Property<PCInput.PCInputBinding>();
 			public Property<PCInput.PCInputBinding> RecenterVRPose = new Property<PCInput.PCInputBinding>();
 
 			public Config()
@@ -175,6 +176,7 @@ namespace Lemma
 				this.TogglePhone.Value = new PCInput.PCInputBinding { Key = Keys.Tab, GamePadButton = Buttons.Y };
 				this.QuickSave.Value = new PCInput.PCInputBinding { Key = Keys.F5 };
 				this.ToggleFullscreen.Value = new PCInput.PCInputBinding { Key = Keys.F11 };
+				this.ToggleConsole.Value = new PCInput.PCInputBinding { Key = Keys.OemTilde };
 				this.RecenterVRPose.Value = new PCInput.PCInputBinding { Key = Keys.F2, GamePadButton = Buttons.Back };
 				this.InvertMouseX.Value = false;
 				this.InvertMouseY.Value = false;
@@ -788,6 +790,7 @@ namespace Lemma
 			TextElement.BindableProperties.Add("QuickSave", this.Settings.QuickSave);
 			TextElement.BindableProperties.Add("ToggleFullscreen", this.Settings.ToggleFullscreen);
 			TextElement.BindableProperties.Add("RecenterVRPose", this.Settings.RecenterVRPose);
+			TextElement.BindableProperties.Add("ToggleConsole", this.Settings.ToggleConsole);
 
 			new NotifyBinding
 			(

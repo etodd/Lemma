@@ -987,6 +987,7 @@ namespace Lemma.Components
 						else
 						{
 							hidePauseMenu();
+							this.main.Paused.Value = false;
 							this.restorePausedSettings();
 							this.main.CurrentSave.Value = null;
 							this.main.AddComponent(new Animation
@@ -1150,6 +1151,7 @@ namespace Lemma.Components
 								else
 								{
 									this.hidePauseMenu();
+									this.main.Paused.Value = false;
 									this.restorePausedSettings();
 									this.main.CurrentSave.Value = null;
 									this.main.AddComponent(new Animation
@@ -1844,6 +1846,8 @@ namespace Lemma.Components
 			if (this.main.VR)
 				addInputSetting(this.main.Settings.RecenterVRPose, "\\recenter pose", true, true);
 #endif
+			Container consoleSetting = addInputSetting(this.main.Settings.ToggleConsole, "\\toggle console", true, true);
+			consoleSetting.Add(new Binding<bool>(consoleSetting.Visible, this.main.Settings.GodModeProperty));
 
 #if VR
 			if (!this.main.VR)
@@ -2310,7 +2314,7 @@ namespace Lemma.Components
 				}
 			};
 
-			this.input.Add(new CommandBinding(this.input.GetKeyDown(Keys.OemTilde), delegate()
+			this.input.Bind(this.main.Settings.ToggleConsole, PCInput.InputState.Up, delegate()
 			{
 				if (this.main.Settings.GodModeProperty && (this.main.Paused || this.CanPause))
 				{
@@ -2325,7 +2329,7 @@ namespace Lemma.Components
 					else
 						ConsoleUI.Showing.Value = !ConsoleUI.Showing.Value;
 				}
-			}));
+			});
 
 			this.input.Add(new CommandBinding(input.GetKeyDown(Keys.Escape), delegate()
 			{

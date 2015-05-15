@@ -167,7 +167,7 @@ namespace Lemma.Components
 							closestDir = dir;
 							Vector3 wallRunStartDiff = this.lastWallRunStart - this.Position;
 							wallRunStartDiff.Y = 0.0f;
-							addInitialVelocity = this.IsSupported || wallRunStartDiff.Length() > 2.0f || differentWall || main.TotalTime - this.lastWallRunEnded > wallRunDelay;
+							addInitialVelocity = this.IsSupported || (differentWall && (wallRunStartDiff.Length() > 2.0f || main.TotalTime - this.lastWallRunEnded > wallRunDelay));
 						}
 					}
 					else if (checkPossibilities)
@@ -325,7 +325,10 @@ namespace Lemma.Components
 		public void Update(float dt)
 		{
 			if (this.IsSupported)
+			{
 				this.lastWallRunEnded = -1000.0f;
+				this.LastWallRunMap.Value = null;
+			}
 			State wallRunState = this.CurrentState;
 			if (wallRunState != State.None)
 			{
