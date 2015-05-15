@@ -93,7 +93,7 @@ namespace Lemma
 
 		public const int ConfigVersion = 9;
 		public const int MapVersion = 1027;
-		public const int Build = 1058;
+		public const int Build = 1064;
 
 		public class Config
 		{
@@ -134,6 +134,8 @@ namespace Lemma
 			public Property<float> MusicVolume = new Property<float> { Value = 1.0f };
 			public Property<int> FPSLimit = new Property<int>();
 			public Property<RecordAnalytics> Analytics = new Property<RecordAnalytics>();
+			public Property<bool> MinimizeCameraMovement = new Property<bool>();
+			public Property<bool> MinimizeCameraMovementVR = new Property<bool>();
 			[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
 			public bool GodMode;
 			[JsonIgnore]
@@ -279,6 +281,8 @@ namespace Lemma
 		private Animation scheduledSave;
 
 		public Property<Point> ScreenSize = new Property<Point>();
+
+		public Property<bool> MinimizeCameraMovement;
 
 		public LightingManager LightingManager;
 
@@ -766,6 +770,8 @@ namespace Lemma
 
 			if (string.IsNullOrEmpty(this.Settings.UUID))
 				this.Settings.UUID = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 32);
+			this.Settings.MinimizeCameraMovementVR.Value |= this.Settings.MinimizeCameraMovement;
+			this.MinimizeCameraMovement = this.VR ? this.Settings.MinimizeCameraMovementVR : this.Settings.MinimizeCameraMovement;
 			this.Settings.GodModeProperty.Value = this.Settings.GodMode;
 			this.Settings.LevelIndexProperty.Value = this.Settings.LevelIndex;
 			new NotifyBinding(delegate() { this.Settings.GodMode = this.Settings.GodModeProperty; }, this.Settings.GodModeProperty);

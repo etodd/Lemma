@@ -14,6 +14,7 @@ namespace Lemma
 
 		public Command OnLeaderboardError = new Command();
 
+#if STEAMWORKS
 		private Callback<PersonaStateChange_t> personaCallback;
 		private CallResult<LeaderboardFindResult_t> leaderboardFindCall;
 		private CallResult<LeaderboardScoreUploaded_t> leaderboardUploadCall;
@@ -23,6 +24,7 @@ namespace Lemma
 		private CallResult<LeaderboardScoresDownloaded_t> friendLeaderboardDownloadCall;
 		private bool friendScoresDownloaded;
 		private LeaderboardScoresDownloaded_t friendScores;
+#endif
 
 		public Property<bool> PersonaNotification = new Property<bool>();
 
@@ -30,7 +32,9 @@ namespace Lemma
 
 		public LeaderboardProxy(int before = 5, int after = 5, int friendsBefore = 5, int friendsAfter = 5)
 		{
+#if STEAMWORKS
 			this.personaCallback = Callback<PersonaStateChange_t>.Create(this.onPersonaStateChange);
+#endif
 			this.before = before;
 			this.after = after;
 			this.friendsBefore = friendsBefore;
@@ -40,11 +44,13 @@ namespace Lemma
 		public void Unregister()
 		{
 			this.CancelCallbacks();
+#if STEAMWORKS
 			if (this.personaCallback != null)
 			{
 				this.personaCallback.Unregister();
 				this.personaCallback = null;
 			}
+#endif
 		}
 
 		public void CancelCallbacks()
@@ -74,12 +80,15 @@ namespace Lemma
 
 		private void checkLeaderboardsDownloaded()
 		{
+#if STEAMWORKS
 			if (this.globalScoresDownloaded && this.friendScoresDownloaded)
 				this.OnLeaderboardSync.Execute(this.globalScores, this.friendScores);
+#endif
 		}
 
 		public void Sync(string uuid, int score = 0)
 		{
+#if STEAMWORKS
 			this.CancelCallbacks();
 
 			if (!SteamWorker.SteamInitialized)
@@ -112,10 +121,12 @@ namespace Lemma
 				}
 			});
 			this.leaderboardFindCall.Set(SteamUserStats.FindOrCreateLeaderboard(uuid, ELeaderboardSortMethod.k_ELeaderboardSortMethodAscending, ELeaderboardDisplayType.k_ELeaderboardDisplayTypeTimeMilliSeconds));
+#endif
 		}
 
 		private void download(SteamLeaderboard_t leaderboard)
 		{
+#if STEAMWORKS
 			this.globalLeaderboardDownloadCall = new CallResult<LeaderboardScoresDownloaded_t>((downloaded, downloadedFailure) =>
 			{
 				this.globalLeaderboardDownloadCall = null;
@@ -162,6 +173,7 @@ namespace Lemma
 				}
 			});
 			this.friendLeaderboardDownloadCall.Set(SteamUserStats.DownloadLeaderboardEntries(leaderboard, ELeaderboardDataRequest.k_ELeaderboardDataRequestFriends, -this.friendsBefore, this.friendsAfter));
+#endif
 		}
 	}
 }

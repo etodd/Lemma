@@ -20,13 +20,16 @@ using Steamworks;
 
 namespace Lemma.Components
 {
-	public class TimeTrialUI : Component<Main>
+	public class TimeTrialUI : Component<Main>, IUpdateableComponent
 	{
 		// Input properties
 		public Property<float> ElapsedTime = new Property<float>();
 		public Property<string> NextMap = new Property<string>();
 		[XmlIgnore]
 		public Property<float> BestTime = new Property<float>();
+
+		private Property<float> verticalSpeed = new Property<float>();
+		private Property<float> horizontalSpeed = new Property<float>();
 
 		// Output commands
 		[XmlIgnore]
@@ -104,6 +107,14 @@ namespace Lemma.Components
 				elapsedTime.FontFile.Value = this.main.FontLarge;
 				elapsedTime.Add(new Binding<string, float>(elapsedTime.Text, SecondsToTimeString, this.ElapsedTime));
 				list.Children.Add(elapsedTime);
+
+				TextElement vertSpeed = this.main.UIFactory.CreateLabel();
+				vertSpeed.Add(new Binding<string, float>(vertSpeed.Text, x => x.ToString("00.00"), this.verticalSpeed));
+				list.Children.Add(vertSpeed);
+
+				TextElement horizontalSpeed = main.UIFactory.CreateLabel();
+				horizontalSpeed.Add(new Binding<string, float>(horizontalSpeed.Text, x => x.ToString("00.00"), this.horizontalSpeed));
+				list.Children.Add(horizontalSpeed);
 
 				TextElement bestTime = this.main.UIFactory.CreateLabel();
 				bestTime.Add(new Binding<string, float>(bestTime.Text, SecondsToTimeString, this.BestTime));
@@ -329,6 +340,18 @@ namespace Lemma.Components
 					}
 				}));
 			};
+		}
+
+		void IUpdateableComponent.Update(float dt)
+		{
+			Entity player = PlayerFactory.Instance;
+			if (player != null)
+			{
+				Vector3 v = player.Get<Player>().Character.LinearVelocity.Value;
+				this.verticalSpeed.Value = Math.Abs(v.Y);
+				v.Y = 0.0f;
+				this.horizontalSpeed.Value = v.Length();
+			}
 		}
 
 #if STEAMWORKS

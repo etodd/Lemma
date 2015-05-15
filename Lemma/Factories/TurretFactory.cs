@@ -325,7 +325,12 @@ namespace Lemma.Factories
 						BEPUutilities.RayHit physicsHit;
 						if (target.Get<Player>().Character.Body.CollisionInformation.RayCast(new Ray(transform.Position, toReticle), rayHit.Voxel == null ? float.MaxValue : rayHit.Distance, out physicsHit))
 						{
-							if (w == null || (physicsHit.Location - splashPos).Length() < 8.0f) // Disable explosion if it's in deep water
+							if ((physicsHit.Location - transform.Position).Length() < 8.0f)
+							{
+								// Danger close! Kill the player but don't spawn an explosion
+								target.Get<Agent>().Damage.Execute(2.0f);
+							}
+							else if (w == null || (physicsHit.Location - splashPos).Length() < 8.0f) // Disable explosion if it's in deep water
 								Explosion.Explode(main, targetPos, 6, 8.0f);
 							hitVoxel = false;
 						}

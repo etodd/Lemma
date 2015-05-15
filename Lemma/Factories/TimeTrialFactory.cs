@@ -55,9 +55,24 @@ namespace Lemma.Factories
 
 			ui.Add(new CommandBinding(ui.LoadNextMap, delegate()
 			{
+				string filenameWithExtension = trial.NextMap;
+				if (!filenameWithExtension.EndsWith(IO.MapLoader.MapExtension))
+					filenameWithExtension += IO.MapLoader.MapExtension;
+
+				string fullFilename = Path.IsPathRooted(filenameWithExtension) ? filenameWithExtension : Path.Combine(main.MapDirectory, filenameWithExtension);
+
 				main.CurrentSave.Value = null;
 				main.EditorEnabled.Value = false;
-				IO.MapLoader.Load(main, trial.NextMap);
+				if (File.Exists(fullFilename))
+					IO.MapLoader.Load(main, fullFilename);
+				else
+				{
+#if DEMO
+					main.Spawner.StartSpawnPoint.Value = "demo";
+#endif
+					IO.MapLoader.Load(main, Main.MenuMap);
+					main.Menu.Show();
+				}
 			}));
 
 			ui.Add(new CommandBinding(ui.Edit, delegate()

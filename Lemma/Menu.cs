@@ -33,6 +33,12 @@ namespace Lemma.Components
 			{ "end", "\\map mark" },
 		};
 
+#if DEMO
+		public const int MaxLevelIndex = 1;
+#else
+		public const int MaxLevelIndex = int.MaxValue;
+#endif
+
 		private const float messageFadeTime = 0.75f;
 		private const float messageBackgroundOpacity = UIFactory.Opacity;
 
@@ -1521,6 +1527,15 @@ namespace Lemma.Components
 			}
 
 			{
+				Container minimizeHeadBob = this.main.UIFactory.CreateScrollButton<bool>("\\minimize head bob", this.main.MinimizeCameraMovement, boolDisplay, delegate(int delta)
+				{
+					this.main.MinimizeCameraMovement.Value = !this.main.MinimizeCameraMovement;
+				});
+				this.resizeToMenu(minimizeHeadBob);
+				settingsList.Children.Add(minimizeHeadBob);
+			}
+
+			{
 				Container waypointsEnabled = this.main.UIFactory.CreateScrollButton<bool>("\\waypoints", this.main.Settings.EnableWaypoints, boolDisplay, delegate(int delta)
 				{
 					this.main.Settings.EnableWaypoints.Value = !this.main.Settings.EnableWaypoints;
@@ -1924,7 +1939,7 @@ namespace Lemma.Components
 							})
 						));
 					});
-					button.Add(new Binding<bool>(button.Visible, () => this.main.Settings.GodModeProperty || this.main.Settings.LevelIndexProperty >= index, this.main.Settings.GodModeProperty, this.main.Settings.LevelIndexProperty));
+					button.Add(new Binding<bool>(button.Visible, () => index <= MaxLevelIndex && (this.main.Settings.GodModeProperty || this.main.Settings.LevelIndexProperty >= index), this.main.Settings.GodModeProperty, this.main.Settings.LevelIndexProperty));
 					this.resizeToMenu(button);
 					startList.Children.Add(button);
 					i++;

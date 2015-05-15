@@ -54,7 +54,7 @@ namespace Lemma.Components
 						};
 					}, x => x.TargetEntity.Target != null && x.TargetEntity.Target.Active);
 					entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, entity.EditorSelected));
-					entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, () => entity.EditorSelected, transform.Position));
+					entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, transform.Position));
 					connectionLines.Add(connectionBinding);
 					entity.Add(connectionLines);
 				}

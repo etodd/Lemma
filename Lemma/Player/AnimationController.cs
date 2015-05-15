@@ -85,6 +85,96 @@ namespace Lemma.Components
 				return spine * Matrix.CreateRotationY(x);
 			};
 
+			int headIndex = m.GetBoneIndex("ORG-head");
+			Matrix headBindPose = m.GetWorldBindTransform(headIndex) * Matrix.CreateTranslation(0, 0.1f, 0.25f);
+			Func<SkinnedModel.Clip, Func<Matrix, Matrix>> cancelHeadBob = delegate(SkinnedModel.Clip clip)
+			{
+				int bone = headIndex;
+				List<SkinnedModel.Channel> channels = new List<SkinnedModel.Channel>();
+				channels.Add(new SkinnedModel.Channel { BoneIndex = bone });
+				while (true)
+				{
+					int parent = m.SkeletonHierarchy[bone];
+					if (parent == -1)
+						break;
+					else
+						channels.Add(clip.GetChannel(parent) ?? new SkinnedModel.Channel { BoneIndex = bone });
+					bone = parent;
+				}
+				return delegate(Matrix x)
+				{
+					if (main.MinimizeCameraMovement)
+					{
+						Matrix world = Matrix.Identity;
+						for (int i = 0; i < channels.Count; i++)
+						{
+							SkinnedModel.Channel channel = channels[i];
+							if (channel.Count == 0)
+								world = world * m.BindPose[channel.BoneIndex];
+							else
+								world = world * channel.CurrentMatrix;
+						}
+						return headBindPose * Matrix.Invert(world);
+					}
+					else
+						return x;
+				};
+			};
+
+			int cameraIndex = m.GetBoneIndex("Camera");
+			Func<SkinnedModel.Clip, Func<Matrix, Matrix>> cancelRotation = delegate(SkinnedModel.Clip clip)
+			{
+				int bone = cameraIndex;
+				List<SkinnedModel.Channel> channels = new List<SkinnedModel.Channel>();
+				channels.Add(new SkinnedModel.Channel { BoneIndex = bone });
+				while (true)
+				{
+					int parent = m.SkeletonHierarchy[bone];
+					if (parent == -1)
+						break;
+					else
+						channels.Add(clip.GetChannel(parent) ?? new SkinnedModel.Channel { BoneIndex = bone });
+					bone = parent;
+				}
+				return delegate(Matrix x)
+				{
+					if (
+#if VR
+						this.main.VR ||
+#endif
+						this.main.MinimizeCameraMovement)
+					{
+						Matrix world = Matrix.Identity;
+						for (int i = 0; i < channels.Count; i++)
+						{
+							SkinnedModel.Channel channel = channels[i];
+							if (channel.Count == 0)
+								world = world * m.BindPose[channel.BoneIndex];
+							else
+								world = world * channel.CurrentMatrix;
+						}
+						Matrix rot = Matrix.Invert(world) * Matrix.CreateRotationX((float)Math.PI * 0.5f);
+						rot.Translation = x.Translation;
+						return rot;
+					}
+					else
+						return x;
+				};
+			};
+
+			m["Run"].GetChannel(headIndex).Filter = cancelHeadBob(m["Run"]);
+			m["RunLeft"].GetChannel(headIndex).Filter = cancelHeadBob(m["RunLeft"]);
+			m["RunRight"].GetChannel(headIndex).Filter = cancelHeadBob(m["RunRight"]);
+			m["RunLeftForward"].GetChannel(headIndex).Filter = cancelHeadBob(m["RunLeftForward"]);
+			m["RunRightForward"].GetChannel(headIndex).Filter = cancelHeadBob(m["RunRightForward"]);
+			m["Sprint"].GetChannel(headIndex).Filter = cancelHeadBob(m["Sprint"]);
+			m["Slide"].GetChannel(cameraIndex).Filter = cancelRotation(m["Slide"]);
+			m["WallRunLeft"].GetChannel(cameraIndex).Filter = cancelRotation(m["WallRunLeft"]);
+			m["WallRunRight"].GetChannel(cameraIndex).Filter = cancelRotation(m["WallRunRight"]);
+			m["TopOut"].GetChannel(cameraIndex).Filter = cancelRotation(m["TopOut"]);
+			m["Land"].GetChannel(cameraIndex).Filter = cancelRotation(m["Land"]);
+			m["LandHard"].GetChannel(cameraIndex).Filter = cancelRotation(m["LandHard"]);
+
 			m["Idle"].GetChannel(m.GetBoneIndex("ORG-hips")).Filter = delegate(Matrix hips)
 			{
 				float x;

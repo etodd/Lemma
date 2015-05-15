@@ -65,7 +65,7 @@ namespace Lemma.Factories
 					};
 				}, x => x.Target != null && x.Target.Active);
 				entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, entity.EditorSelected));
-				entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, () => entity.EditorSelected, transform.Position));
+				entity.Add(new NotifyBinding(delegate() { connectionBinding.OnChanged(null); }, transform.Position));
 				connectionLines.Add(connectionBinding);
 				entity.Add(connectionLines);
 			}

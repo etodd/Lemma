@@ -23,6 +23,22 @@ namespace Lemma.Components
 			}
 		}
 
+		public List<Matrix> BindPose
+		{
+			get
+			{
+				return this.skinningData.BindPose;
+			}
+		}
+
+		public List<int> SkeletonHierarchy
+		{
+			get
+			{
+				return this.skinningData.SkeletonHierarchy;
+			}
+		}
+
 		// Animation blending data
 
 		// Current animation transform matrices.
@@ -258,6 +274,34 @@ namespace Lemma.Components
 
 			foreach (KeyValuePair<int, Property<Matrix>> pair in this.boneTransformProperties)
 				pair.Value.Value = this.worldTransforms[pair.Key];
+		}
+
+		public Matrix GetWorldTransform(int bone)
+		{
+			Matrix result = this.boneTransforms[bone];
+			while (true)
+			{
+				int parent = this.skinningData.SkeletonHierarchy[bone];
+				if (parent == -1)
+					return result;
+				else
+					result = result * this.boneTransforms[parent];
+				bone = parent;
+			}
+		}
+
+		public Matrix GetWorldBindTransform(int bone)
+		{
+			Matrix result = this.skinningData.BindPose[bone];
+			while (true)
+			{
+				int parent = this.skinningData.SkeletonHierarchy[bone];
+				if (parent == -1)
+					return result;
+				else
+					result = result * this.skinningData.BindPose[parent];
+				bone = parent;
+			}
 		}
 
 		private Dictionary<int, Property<Matrix>> boneTransformProperties = new Dictionary<int, Property<Matrix>>();

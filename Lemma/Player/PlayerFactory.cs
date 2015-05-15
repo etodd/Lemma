@@ -269,9 +269,15 @@ namespace Lemma.Factories
 			{
 				cameraControl.ThirdPerson.Value = !cameraControl.ThirdPerson;
 			}));
+			Lemma.Console.Console.AddConCommand(new Console.ConCommand("velocity", "Toggle debug velocity display", delegate(Console.ConCommand.ArgCollection args)
+			{
+				PlayerData data = PlayerDataFactory.Instance.Get<PlayerData>();
+				data.DebugVelocity.Value = !data.DebugVelocity.Value;
+			}));
 			entity.Add(new CommandBinding(entity.Delete, delegate()
 			{
 				Lemma.Console.Console.RemoveConCommand("third_person");
+				Lemma.Console.Console.RemoveConCommand("velocity");
 			}));
 
 			// When rotation is locked, we want to make sure the player can't turn their head
@@ -669,7 +675,7 @@ namespace Lemma.Factories
 
 				PhoneNote.Attach(main, entity, player, model, input, phone, player.Character.EnableWalking, playerData.PhoneActive, playerData.NoteActive);
 
-				PlayerUI.Attach(main, entity, ui, player.Health, rotation.Rotation, playerData.NoteActive, playerData.PhoneActive);
+				PlayerUI.Attach(main, entity, ui, player.Health, rotation.Rotation, playerData.NoteActive, playerData.PhoneActive, player.Character.LinearVelocity, playerData.DebugVelocity);
 			}));
 
 			fpsCamera.Add(new Binding<Vector2>(fpsCamera.Mouse, input.Mouse));

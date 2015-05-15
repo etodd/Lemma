@@ -29,6 +29,7 @@ namespace Lemma.Components
 		public Property<int> CollapseLevel = new Property<int>();
 		public Property<int> VictimsHandled = new Property<int>();
 		public Property<bool> ThirdPerson = new Property<bool>();
+		public Property<bool> DebugVelocity = new Property<bool>();
 
 		public override void Awake()
 		{

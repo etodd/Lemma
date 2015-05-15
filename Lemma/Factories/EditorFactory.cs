@@ -226,11 +226,14 @@ namespace Lemma.Factories
 			selection.Add(new Binding<bool>(selection.Enabled, () => editor.VoxelSelectionActive, editor.VoxelSelectionActive));
 			selection.Add(new NotifyBinding(delegate()
 			{
-				const float padding = 0.1f;
-				Voxel map = editor.SelectedEntities[0].Get<Voxel>();
-				Vector3 start = map.GetRelativePosition(editor.VoxelSelectionStart) - new Vector3(0.5f), end = map.GetRelativePosition(editor.VoxelSelectionEnd) - new Vector3(0.5f);
-				selection.Transform.Value = Matrix.CreateScale((end - start) + new Vector3(padding)) * Matrix.CreateTranslation((start + end) * 0.5f) * map.Transform;
-			}, () => editor.VoxelSelectionActive, editor.VoxelSelectionActive, editor.VoxelSelectionStart, editor.VoxelSelectionEnd));
+				if (editor.VoxelSelectionActive)
+				{
+					const float padding = 0.1f;
+					Voxel map = editor.SelectedEntities[0].Get<Voxel>();
+					Vector3 start = map.GetRelativePosition(editor.VoxelSelectionStart) - new Vector3(0.5f), end = map.GetRelativePosition(editor.VoxelSelectionEnd) - new Vector3(0.5f);
+					selection.Transform.Value = Matrix.CreateScale((end - start) + new Vector3(padding)) * Matrix.CreateTranslation((start + end) * 0.5f) * map.Transform;
+				}
+			}, editor.VoxelSelectionActive, editor.VoxelSelectionStart, editor.VoxelSelectionEnd));
 			selection.CullBoundingBox.Value = false;
 
 			AddCommand
@@ -783,9 +786,12 @@ namespace Lemma.Factories
 
 			input.Add(new NotifyBinding(delegate()
 			{
-				Vector2 x = input.Mouse;
-				camera.Angles.Value = new Vector3(-x.Y, x.X, 0.0f);
-			}, () => input.EnableLook, input.Mouse));
+				if (input.EnableLook)
+				{
+					Vector2 x = input.Mouse;
+					camera.Angles.Value = new Vector3(-x.Y, x.X, 0.0f);
+				}
+			}, input.Mouse));
 
 			input.Add(new Binding<bool>(main.UI.IsMouseVisible, x => !x, input.EnableLook));
 			Property<Vector3> cameraPosition = new Property<Vector3>();

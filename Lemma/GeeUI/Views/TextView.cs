@@ -52,16 +52,19 @@ namespace GeeUI.Views
 			Position.Value = position;
 			TextColor = GeeUI.TextColorDefault;
 
-			Text.AddBinding(new NotifyBinding(HandleResize, () => AutoSize.Value, Text));
+			Text.AddBinding(new NotifyBinding(HandleResize, Text));
 			if(AutoSize.Value) HandleResize();
 		}
 
 		private void HandleResize()
 		{
-			var width = (int)(GeeUIMain.Font.MeasureString(Text).X * TextScale.Value);
-			var height = (int)(GeeUIMain.Font.MeasureString(Text).Y * TextScale.Value);
-			this.Width.Value = width;
-			this.Height.Value = height;
+			if (this.AutoSize)
+			{
+				var width = (int)(GeeUIMain.Font.MeasureString(Text).X * TextScale.Value);
+				var height = (int)(GeeUIMain.Font.MeasureString(Text).Y * TextScale.Value);
+				this.Width.Value = width;
+				this.Height.Value = height;
+			}
 		}
 
 		internal static string TruncateString(string input, int widthAllowed, string ellipsis = "...")

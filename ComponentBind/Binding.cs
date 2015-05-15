@@ -122,24 +122,7 @@ namespace ComponentBind
 	public class NotifyBinding : IPropertyBinding
 	{
 		protected Action notify;
-		protected Func<bool> enabled;
 		protected IProperty[] sources;
-
-		private bool _enabled = true;
-		public bool Enabled
-		{
-			get
-			{
-				return this._enabled;
-			}
-			set
-			{
-				bool oldValue = this._enabled;
-				this._enabled = value;
-				if (value && !oldValue)
-					this.OnChanged(null);
-			}
-		}
 
 		protected NotifyBinding()
 		{
@@ -147,14 +130,8 @@ namespace ComponentBind
 		}
 
 		public NotifyBinding(Action _notify, params IProperty[] _sources)
-			: this(_notify, () => true, _sources)
-		{
-		}
-
-		public NotifyBinding(Action _notify, Func<bool> enabled, params IProperty[] _sources)
 		{
 			this.notify = _notify;
-			this.enabled = enabled;
 			this.sources = _sources;
 			for (int i = 0; i < this.sources.Length; i++)
 				this.sources[i].AddBinding(this);
@@ -162,8 +139,7 @@ namespace ComponentBind
 
 		public void OnChanged(IProperty changed)
 		{
-			if (this.Enabled && this.enabled())
-				this.notify();
+			this.notify();
 		}
 
 		public void Delete()
@@ -172,7 +148,6 @@ namespace ComponentBind
 				this.sources[i].RemoveBinding(this);
 			this.notify = null;
 			this.sources = null;
-			this.enabled = null;
 		}
 	}
 
