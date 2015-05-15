@@ -38,6 +38,7 @@ namespace Lemma.Components
 			base.Awake();
 
 			this.EnabledWhenPaused = false;
+			this.Enabled.Value = false;
 
 			this.Retry.Action = this.retry;
 

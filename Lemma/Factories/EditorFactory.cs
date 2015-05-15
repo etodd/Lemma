@@ -316,14 +316,7 @@ namespace Lemma.Factories
 				{
 					Action = delegate()
 					{
-						Action go = delegate()
-						{
-							main.AddComponent(new WorkShopInterface());
-						};
-						if (editor.NeedsSave)
-							editor.SaveWithCallback(go);
-						else
-							go();
+						main.AddComponent(new WorkShopInterface(editor));
 					}
 				},
 				gui.MapCommands,

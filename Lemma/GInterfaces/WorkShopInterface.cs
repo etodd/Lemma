@@ -7,6 +7,7 @@ using ComponentBind;
 using GeeUI.Views;
 using ICSharpCode.SharpZipLib.Tar;
 using Lemma.Components;
+using Lemma.Factories;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -37,15 +38,22 @@ namespace Lemma.GInterfaces
 		private CallResult<RemoteStorageUpdatePublishedFileResult_t> fileUpdateResult;
 		private CallResult<SteamUGCQueryCompleted_t> queryResult;
 
+		private Editor editor;
+		public WorkShopInterface(Editor e)
+		{
+			this.editor = e;
+		}
+
 		public override void Awake()
 		{
 			// This is to make it so nothing else can be interacted with.
 			this.EncompassingView = new View(main.GeeUI, main.GeeUI.RootView);
 			this.MainView = new PanelView(main.GeeUI, EncompassingView, Vector2.Zero);
-			MainView.Resizeable = false;
-			MainView.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
-			MainView.Width.Value = 400;
-			MainView.Height.Value = 400;
+			this.MainView.Resizeable = false;
+			this.MainView.AnchorPoint.Value = new Vector2(0.5f, 0.5f);
+			this.MainView.Width.Value = 400;
+			this.MainView.Height.Value = 400;
+			this.MainView.Add(new Binding<bool>(this.MainView.Active, Editor.EditorModelsVisible));
 
 			this.EncompassingView.Add(new Binding<int, Point>(EncompassingView.Height, (p) => p.Y, main.ScreenSize));
 			this.EncompassingView.Add(new Binding<int, Point>(EncompassingView.Width, (p) => p.X, main.ScreenSize));
@@ -96,7 +104,7 @@ namespace Lemma.GInterfaces
 			this.UploadButton = new ButtonView(main.GeeUI, MainView, "Publish", new Vector2(50, 360));
 			this.CloseButton = new ButtonView(main.GeeUI, MainView, "Close", new Vector2(300, 360));
 
-			var statusString = new TextView(main.GeeUI, MainView, "Waiting", new Vector2(110, 365))
+			var statusString = new TextView(main.GeeUI, MainView, "Waiting", new Vector2(110, 345))
 			{
 				TextJustification = TextJustification.Center,
 			};
@@ -109,7 +117,9 @@ namespace Lemma.GInterfaces
 
 			UploadButton.OnMouseClick += (sender, args) =>
 			{
-				DoUpload();
+				Log.d("ok");
+				WorldFactory.Instance.Get<World>().NewUUID();
+				this.editor.SaveWithCallback(this.upload);
 			};
 
 			CloseButton.OnMouseClick += (sender, args) =>
@@ -122,7 +132,7 @@ namespace Lemma.GInterfaces
 			base.Awake();
 		}
 
-		public void DoUpload()
+		private void upload()
 		{
 			if (NameView.Text.Trim().Length == 0 || DescriptionView.Text.Trim().Length == 0)
 				return;
@@ -224,7 +234,7 @@ namespace Lemma.GInterfaces
 		{
 			bool multiLine = view.MultiLine;
 			view.Width.Value = multiLine ? 380 : 340;
-			view.Height.Value = multiLine ? 200 : 20;
+			view.Height.Value = multiLine ? 180 : 20;
 		}
 
 		public override void delete()

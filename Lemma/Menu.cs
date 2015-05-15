@@ -2316,7 +2316,7 @@ namespace Lemma.Components
 
 			this.input.Bind(this.main.Settings.ToggleConsole, PCInput.InputState.Up, delegate()
 			{
-				if (this.main.Settings.GodModeProperty && (this.main.Paused || this.CanPause))
+				if (this.main.Settings.GodModeProperty && (this.main.Paused || this.CanPause) && !this.main.IsChallengeMap(this.main.MapFile))
 				{
 					if (this.currentMenu.Value == null && !ConsoleUI.Showing)
 					{

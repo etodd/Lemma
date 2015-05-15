@@ -377,7 +377,7 @@ namespace Lemma
 			else
 			{
 				string directory = Path.GetDirectoryName(Path.IsPathRooted(map) ? map : Path.GetFullPath(Path.Combine(this.MapDirectory, map)));
-				return directory == this.CustomMapDirectory || directory == Path.GetFullPath(Path.Combine(this.MapDirectory, "Challenge"));
+				return directory == this.CustomMapDirectory || directory == Path.GetFullPath(Path.Combine(this.MapDirectory, "Challenge")) || Path.GetDirectoryName(directory) == SteamWorker.DownloadedMaps.FullName;
 			}
 		}
 
@@ -473,6 +473,9 @@ namespace Lemma
 			this.LightingManager.EnvironmentMap.Value = null;
 			this.MapContent = new ContentManager(this.Services);
 			this.MapContent.RootDirectory = this.Content.RootDirectory;
+
+			if (ConsoleUI.Showing)
+				ConsoleUI.Showing.Value = false;
 
 			int index = 0;
 			int targetCount = deleteEditor ? 0 : 1;
