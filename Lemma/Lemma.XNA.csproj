@@ -105,6 +105,12 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdapterSelectorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdapterSelectorForm.Designer.cs">
+      <DependentUpon>AdapterSelectorForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ComponentInterfaces.cs" />
     <Compile Include="Components\AI.cs" />
     <Compile Include="Components\Agent.cs" />
@@ -546,6 +552,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="AdapterSelectorForm.resx">
+      <DependentUpon>AdapterSelectorForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ErrorForm.resx">
       <DependentUpon>ErrorForm.cs</DependentUpon>
     </EmbeddedResource>

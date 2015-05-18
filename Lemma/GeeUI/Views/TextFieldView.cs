@@ -227,7 +227,7 @@ namespace GeeUI.Views
 
 					case Keys.V:
 						string text = Clipboard.GetText();
-						if(!String.IsNullOrEmpty(text))
+						if (!String.IsNullOrEmpty(text))
 							AppendTextCursor(text);
 						break;
 
@@ -278,7 +278,8 @@ namespace GeeUI.Views
 							this.FocusNextInputView(reverse: InputManager.IsKeyPressed(Keys.LeftShift));
 						break;
 					default:
-						AppendTextCursor(keyPressed);
+						if (this.Filter(key))
+							AppendTextCursor(keyPressed);
 						break;
 				}
 			}
@@ -478,6 +479,8 @@ namespace GeeUI.Views
 				_offsetX += xDiff - maxCharX;
 			if (maxCharY < yDiff) _offsetY++;
 		}
+
+		public Func<Keys, bool> Filter = x => true;
 
 		private void AppendTextCursor(string text)
 		{

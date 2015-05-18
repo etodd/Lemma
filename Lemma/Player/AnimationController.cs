@@ -506,10 +506,19 @@ namespace Lemma.Components
 			this.model.UpdateWorldTransforms();
 
 			float l = 0.0f;
-			if (this.EnableLean)
+			if (this.EnableLean
+				&& !this.main.MinimizeCameraMovement
+#if VR
+				&& !this.main.VR
+#endif
+				)
+			{
 				l = horizontalSpeed * (this.lastRotation.ClosestAngle(this.Rotation) - this.Rotation) * (1.0f / 60.0f) / dt;
-			this.lastRotation = this.Rotation;
+			}
+
 			this.Lean.Value += (l - this.Lean) * 20.0f * dt;
+
+			this.lastRotation = this.Rotation;
 
 			const float timeScale = 5.0f;
 			const float softBreathingThresholdPercentage = 0.75f;

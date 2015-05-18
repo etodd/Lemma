@@ -29,6 +29,7 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ErrorForm));
 			this.label1 = new System.Windows.Forms.Label();
 			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.button1 = new System.Windows.Forms.Button();
@@ -153,9 +154,13 @@
 			this.Controls.Add(this.textBox1);
 			this.Controls.Add(this.label1);
 			this.Cursor = System.Windows.Forms.Cursors.Arrow;
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MaximizeBox = false;
+			this.MaximumSize = new System.Drawing.Size(300, 327);
 			this.MinimizeBox = false;
+			this.MinimumSize = new System.Drawing.Size(300, 327);
 			this.Name = "ErrorForm";
+			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
 			this.Text = "Lemma - Error";
 			this.Load += new System.EventHandler(this.ErrorForm_Load);
 			this.ResumeLayout(false);

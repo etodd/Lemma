@@ -185,13 +185,6 @@ namespace Lemma.Components
 			}
 			else
 				this.Entity.Delete.Execute();
-
-			if (this.Type.Value == Style.In)
-			{
-				Entity player = PlayerFactory.Instance;
-				if (player != null && (player.Get<Transform>().Position.Value - this.Position.Value).Length() < this.CurrentRadius)
-					player.Get<Agent>().Damage.Execute(dt * damageTime);
-			}
 		}
 
 		public static void AttachEditorComponents(Entity entity, Main main, Vector3 color)

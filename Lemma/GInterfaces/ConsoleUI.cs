@@ -40,6 +40,7 @@ namespace Lemma.GInterfaces
 						.SetHeight(175);
 				ConsoleInputView =
 					(TextFieldView)new TextFieldView(main.GeeUI, RootConsoleView, new Vector2(0, 0)).SetWidth(textBoxWidth).SetHeight((int)(20.0f * this.main.FontMultiplier));
+				ConsoleInputView.Filter = x => x != main.Settings.ToggleConsole.Value.Key;
 
 				ConsoleLogView.Editable = false;
 				ConsoleInputView.OnTextSubmitted = OnTextSubmitted;

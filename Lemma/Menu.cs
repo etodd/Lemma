@@ -1939,6 +1939,7 @@ namespace Lemma.Components
 							new Animation.Delay(0.2f),
 							new Animation.Execute(delegate()
 							{
+								this.main.Spawner.StartSpawnPoint.Value = "_main_menu";
 								IO.MapLoader.Load(this.main, m);
 							})
 						));

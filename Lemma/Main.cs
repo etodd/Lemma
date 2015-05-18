@@ -101,6 +101,7 @@ namespace Lemma
 			{
 				en,
 				pl,
+				es,
 				//ru,
 			}
 			public enum RecordAnalytics
@@ -191,17 +192,7 @@ namespace Lemma
 				this.Fullscreen.Value = true;
 				this.Size.Value = new Point(1280, 720);
 				this.Borderless.Value = true;
-
-				try
-				{
-					Microsoft.Xna.Framework.Graphics.DisplayMode display = Microsoft.Xna.Framework.Graphics.GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
-					this.FullscreenResolution.Value = new Point(display.Width, display.Height);
-				}
-				catch (Exception)
-				{
-					this.FullscreenResolution.Value = Point.Zero;
-				}
-
+				this.FullscreenResolution.Value = Point.Zero;
 				this.MotionBlurAmount.Value = 0.5f;
 				this.Gamma.Value = 1.0f;
 				this.Reflections.Value = true;
@@ -518,11 +509,11 @@ namespace Lemma
 		const int maxPhysicsFramerate = 75;
 		
 #if VR
-		public Main(bool vr)
+		public Main(int monitor, bool vr)
 		{
 			this.VR = vr;
 #else
-		public Main()
+		public Main(int monitor)
 		{
 #endif
 			Factory<Main>.Initialize();
@@ -719,13 +710,6 @@ namespace Lemma
 				this.mapLoaded = true;
 			});
 
-			Action updateLanguage = delegate()
-			{
-				Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture(this.Strings.Language.Value.ToString());
-			};
-			new NotifyBinding(updateLanguage, this.Strings.Language);
-			updateLanguage();
-
 #if DEVELOPMENT
 			this.EditorEnabled.Value = true;
 #else
@@ -804,7 +788,7 @@ namespace Lemma
 
 			if (this.Settings.FullscreenResolution.Value.X == 0)
 			{
-				Microsoft.Xna.Framework.Graphics.DisplayMode display = Microsoft.Xna.Framework.Graphics.GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
+				Microsoft.Xna.Framework.Graphics.DisplayMode display = GraphicsAdapter.Adapters[monitor].CurrentDisplayMode;
 				this.Settings.FullscreenResolution.Value = new Point(display.Width, display.Height);
 			}
 
@@ -813,6 +797,8 @@ namespace Lemma
 			this.Menu = new Menu();
 			this.Graphics.PreparingDeviceSettings += delegate(object sender, PreparingDeviceSettingsEventArgs args)
 			{
+				args.GraphicsDeviceInformation.Adapter = GraphicsAdapter.Adapters[monitor];
+
 				DisplayModeCollection supportedDisplayModes = args.GraphicsDeviceInformation.Adapter.SupportedDisplayModes;
 				int displayModeIndex = 0;
 				foreach (DisplayMode mode in supportedDisplayModes)
@@ -1539,7 +1525,7 @@ namespace Lemma
 						saveNotification.Opacity.Value = UIFactory.Opacity;
 						saveNotificationText.Name.Value = "Text";
 						saveNotificationText.FontFile.Value = this.Font;
-						saveNotificationText.Text.Value = "Saving...";
+						saveNotificationText.Text.Value = "\\saving";
 						saveNotification.Children.Add(saveNotificationText);
 						this.UI.Root.GetChildByName("Notifications").Children.Add(saveNotification);
 					}),
@@ -1549,7 +1535,7 @@ namespace Lemma
 						this.SaveOverwrite();
 					}),
 					new Animation.Delay(0.01f),
-					new Animation.Set<string>(saveNotificationText.Text, "Saved"),
+					new Animation.Set<string>(saveNotificationText.Text, "\\saved"),
 					new Animation.Parallel
 					(
 						new Animation.FloatMoveTo(saveNotification.Opacity, 0.0f, 1.0f),
@@ -2072,7 +2058,8 @@ namespace Lemma
 
 				this.ScreenSize.Value = renderTargetSize;
 
-				this.VRActualScreenSize.Value = new Point(this.Graphics.PreferredBackBufferWidth, this.Graphics.PreferredBackBufferHeight);
+				PresentationParameters presentation = this.GraphicsDevice.PresentationParameters;
+				this.VRActualScreenSize.Value = new Point(presentation.BackBufferWidth, presentation.BackBufferHeight);
 
 				if (this.Settings.Fullscreen)
 					this.Settings.FullscreenResolution.Value = this.VRActualScreenSize;
@@ -2137,6 +2124,9 @@ namespace Lemma
 			else
 #endif
 			{
+				PresentationParameters presentation = this.GraphicsDevice.PresentationParameters;
+				width = presentation.BackBufferWidth;
+				height = presentation.BackBufferHeight;
 				this.ScreenSize.Value = new Point(width, height);
 				if (fullscreen)
 					this.Settings.FullscreenResolution.Value = new Point(width, height);

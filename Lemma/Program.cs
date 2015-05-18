@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using System.IO;
 using System.Reflection;
 using System.Diagnostics;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Lemma
 {
@@ -18,16 +19,30 @@ namespace Lemma
 	    [STAThread]
 		public static void Main(string[] args)
 		{
+			System.Windows.Forms.Application.EnableVisualStyles();
 #if VR
 			bool vr = args.Select(x => x.ToLower()).Contains("-vr");
 #endif
+
+			int monitor = 0;
+			if (GraphicsAdapter.Adapters.Count > 1)
+			{
+				AdapterSelectorForm selectorForm = new AdapterSelectorForm(vr);
+				System.Windows.Forms.Application.Run(selectorForm);
+				if (!selectorForm.Go)
+					return;
+
+				vr = selectorForm.VR;
+				monitor = selectorForm.Monitor;
+			}
+
 			Main main = null;
 			if (Debugger.IsAttached)
 			{
 #if VR
-				main = new Main(vr);
+				main = new Main(monitor, vr);
 #else
-				main = new Main();
+				main = new Main(monitor);
 #endif
 				try
 				{
@@ -43,9 +58,9 @@ namespace Lemma
 				try
 				{
 #if VR
-					main = new Main(vr);
+					main = new Main(monitor, vr);
 #else
-					main = new Main();
+					main = new Main(monitor);
 #endif
 					main.Run();
 				}
@@ -60,7 +75,6 @@ namespace Lemma
 #if !DEBUG
 				catch (Exception e)
 				{
-					System.Windows.Forms.Application.EnableVisualStyles();
 					string uuid = main != null ? (main.Settings != null ? main.Settings.UUID : null) : null;
 					Lemma.Main.Config.RecordAnalytics analytics = main != null ? (main.Settings != null ? main.Settings.Analytics : Lemma.Main.Config.RecordAnalytics.Off) : Lemma.Main.Config.RecordAnalytics.Off;
 					ErrorForm errorForm = new ErrorForm(e.ToString(), uuid, analytics == Lemma.Main.Config.RecordAnalytics.On);
