@@ -799,6 +799,8 @@ namespace Lemma
 			{
 				args.GraphicsDeviceInformation.Adapter = GraphicsAdapter.Adapters[monitor];
 
+				args.GraphicsDeviceInformation.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
+
 				DisplayModeCollection supportedDisplayModes = args.GraphicsDeviceInformation.Adapter.SupportedDisplayModes;
 				int displayModeIndex = 0;
 				foreach (DisplayMode mode in supportedDisplayModes)
@@ -2058,8 +2060,13 @@ namespace Lemma
 
 				this.ScreenSize.Value = renderTargetSize;
 
-				PresentationParameters presentation = this.GraphicsDevice.PresentationParameters;
-				this.VRActualScreenSize.Value = new Point(presentation.BackBufferWidth, presentation.BackBufferHeight);
+				if (this.GraphicsDevice != null)
+				{
+					PresentationParameters presentation = this.GraphicsDevice.PresentationParameters;
+					this.VRActualScreenSize.Value = new Point(presentation.BackBufferWidth, presentation.BackBufferHeight);
+				}
+				else
+					this.VRActualScreenSize.Value = new Point(this.Graphics.PreferredBackBufferWidth, this.Graphics.PreferredBackBufferHeight);
 
 				if (this.Settings.Fullscreen)
 					this.Settings.FullscreenResolution.Value = this.VRActualScreenSize;
@@ -2100,9 +2107,6 @@ namespace Lemma
 				needApply = true;
 			}
 
-			if (this.GraphicsDevice != null)
-				this.GraphicsDevice.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
-
 			this.Settings.Fullscreen.Value = fullscreen;
 #if VR
 			if (!this.VR)
@@ -2112,26 +2116,29 @@ namespace Lemma
 			if (applyChanges && needApply)
 				this.Graphics.ApplyChanges();
 
-			if (this.GeeUI != null)
-			{
-				this.GeeUI.RootView.Width.Value = width;
-				this.GeeUI.RootView.Height.Value = height;
-			}
-
 #if VR
 			if (this.VR)
 				this.reallocateVrTargets();
 			else
 #endif
 			{
-				PresentationParameters presentation = this.GraphicsDevice.PresentationParameters;
-				width = presentation.BackBufferWidth;
-				height = presentation.BackBufferHeight;
+				if (this.GraphicsDevice != null)
+				{
+					PresentationParameters presentation = this.GraphicsDevice.PresentationParameters;
+					width = presentation.BackBufferWidth;
+					height = presentation.BackBufferHeight;
+				}
 				this.ScreenSize.Value = new Point(width, height);
 				if (fullscreen)
 					this.Settings.FullscreenResolution.Value = new Point(width, height);
 				else
 					this.Settings.Size.Value = new Point(width, height);
+			}
+
+			if (this.GeeUI != null)
+			{
+				this.GeeUI.RootView.Width.Value = width;
+				this.GeeUI.RootView.Height.Value = height;
 			}
 
 			if (this.Renderer != null)
