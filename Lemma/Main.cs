@@ -829,7 +829,7 @@ namespace Lemma
 			forceFullscreen = this.VR;
 #endif
 			if (forceFullscreen || this.Settings.Fullscreen)
-				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true, this.Settings.Borderless);
+				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true, this.Settings.Borderless, false);
 			else
 				this.ResizeViewport(this.Settings.Size.Value.X, this.Settings.Size.Value.Y, false, this.Settings.Borderless, false);
 		}
