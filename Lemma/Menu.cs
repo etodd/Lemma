@@ -58,7 +58,7 @@ namespace Lemma.Components
 
 		private int displayModeIndex;
 
-		public DisplayModeCollection SupportedDisplayModes;
+		public List<DisplayMode> SupportedDisplayModes;
 
 		Property<UIComponent> currentMenu = new Property<UIComponent> { Value = null };
 
@@ -572,7 +572,7 @@ namespace Lemma.Components
 			this.main.AddComponent(this.loadSaveAnimation);
 		}
 
-		public void SetupDisplayModes(DisplayModeCollection supportedDisplayModes, int displayModeIndex)
+		public void SetupDisplayModes(List<DisplayMode> supportedDisplayModes, int displayModeIndex)
 		{
 			this.SupportedDisplayModes = supportedDisplayModes;
 			this.displayModeIndex = displayModeIndex;
@@ -1546,16 +1546,21 @@ namespace Lemma.Components
 				settingsList.Children.Add(waypointsEnabled);
 			}
 
-			Container fullscreenResolution = this.main.UIFactory.CreateScrollButton<Point>("\\fullscreen resolution", this.main.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString(), delegate(int delta)
+#if VR
+			if (!this.main.VR)
+#endif
 			{
-				displayModeIndex = (displayModeIndex + delta) % this.SupportedDisplayModes.Count();
-				while (displayModeIndex < 0)
-					displayModeIndex += this.SupportedDisplayModes.Count();
-				DisplayMode mode = this.SupportedDisplayModes.ElementAt(displayModeIndex);
-				this.main.Settings.FullscreenResolution.Value = new Point(mode.Width, mode.Height);
-			});
-			this.resizeToMenu(fullscreenResolution);
-			settingsList.Children.Add(fullscreenResolution);
+				Container fullscreenResolution = this.main.UIFactory.CreateScrollButton<Point>("\\fullscreen resolution", this.main.Settings.FullscreenResolution, x => x.X.ToString() + "x" + x.Y.ToString(), delegate(int delta)
+				{
+					displayModeIndex = (displayModeIndex + delta) % this.SupportedDisplayModes.Count();
+					while (displayModeIndex < 0)
+						displayModeIndex += this.SupportedDisplayModes.Count();
+					DisplayMode mode = this.SupportedDisplayModes.ElementAt(displayModeIndex);
+					this.main.Settings.FullscreenResolution.Value = new Point(mode.Width, mode.Height);
+				});
+				this.resizeToMenu(fullscreenResolution);
+				settingsList.Children.Add(fullscreenResolution);
+			}
 
 #if VR
 			if (!this.main.VR)
@@ -1563,8 +1568,7 @@ namespace Lemma.Components
 			{
 				Container borderless = this.main.UIFactory.CreateScrollButton<bool>("\\borderless", this.main.Settings.Borderless, boolDisplay, delegate(int delta)
 				{
-					Point res = this.main.ScreenSize;
-					this.main.ResizeViewport(res.X, res.Y, this.main.Settings.Fullscreen, !this.main.Settings.Borderless);
+					this.main.Settings.Borderless.Value = !this.main.Settings.Borderless;
 				});
 				this.resizeToMenu(borderless);
 				settingsList.Children.Add(borderless);
@@ -1577,19 +1581,24 @@ namespace Lemma.Components
 			this.resizeToMenu(vsyncEnabled);
 			settingsList.Children.Add(vsyncEnabled);
 
-			Container applyResolution = this.main.UIFactory.CreateButton(null, delegate()
+#if VR
+			if (!this.main.VR)
+#endif
 			{
-				if (this.main.Settings.Fullscreen)
+				Container applyResolution = this.main.UIFactory.CreateButton(null, delegate()
 				{
-					Point res = this.main.Settings.FullscreenResolution;
-					this.main.ResizeViewport(res.X, res.Y, true, this.main.Settings.Borderless);
-				}
-				else
-					this.main.EnterFullscreen();
-			});
-			applyResolution.Add(new Binding<string, bool>(((TextElement)applyResolution.GetChildByName("Text")).Text, x => x ? "\\apply resolution" : "\\enter fullscreen", this.main.Settings.Fullscreen));
-			this.resizeToMenu(applyResolution);
-			settingsList.Children.Add(applyResolution);
+					if (this.main.Settings.Fullscreen)
+					{
+						Point res = this.main.Settings.FullscreenResolution;
+						this.main.ResizeViewport(res.X, res.Y, true, this.main.Settings.Borderless);
+					}
+					else
+						this.main.EnterFullscreen();
+				});
+				applyResolution.Add(new Binding<string, bool>(((TextElement)applyResolution.GetChildByName("Text")).Text, x => x ? "\\apply resolution" : "\\enter fullscreen", this.main.Settings.Fullscreen));
+				this.resizeToMenu(applyResolution);
+				settingsList.Children.Add(applyResolution);
+			}
 
 			Container fpsLimit = this.main.UIFactory.CreateScrollButton<int>("\\fps limit", this.main.Settings.FPSLimit, delegate(int delta)
 			{

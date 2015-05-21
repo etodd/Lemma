@@ -508,10 +508,14 @@ namespace Lemma
 
 		const int maxPhysicsFramerate = 75;
 		
+		private int monitor;
+		private DisplayMode nativeDisplayMode;
 #if VR
 		public Main(int monitor, bool vr)
 		{
+			this.monitor = monitor;
 			this.VR = vr;
+			this.nativeDisplayMode = GraphicsAdapter.Adapters[this.monitor].CurrentDisplayMode;
 #else
 		public Main(int monitor)
 		{
@@ -787,21 +791,18 @@ namespace Lemma
 			this.updateTimesteps();
 
 			if (this.Settings.FullscreenResolution.Value.X == 0)
-			{
-				Microsoft.Xna.Framework.Graphics.DisplayMode display = GraphicsAdapter.Adapters[monitor].CurrentDisplayMode;
-				this.Settings.FullscreenResolution.Value = new Point(display.Width, display.Height);
-			}
+				this.Settings.FullscreenResolution.Value = new Point(this.nativeDisplayMode.Width, this.nativeDisplayMode.Height);
 
 			// Have to create the menu here so it can catch the PreparingDeviceSettings event
 			// We call AddComponent(this.Menu) later on in LoadContent.
 			this.Menu = new Menu();
 			this.Graphics.PreparingDeviceSettings += delegate(object sender, PreparingDeviceSettingsEventArgs args)
 			{
-				args.GraphicsDeviceInformation.Adapter = GraphicsAdapter.Adapters[monitor];
+				args.GraphicsDeviceInformation.Adapter = GraphicsAdapter.Adapters[this.monitor];
 
 				args.GraphicsDeviceInformation.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
 
-				DisplayModeCollection supportedDisplayModes = args.GraphicsDeviceInformation.Adapter.SupportedDisplayModes;
+				List<DisplayMode> supportedDisplayModes = args.GraphicsDeviceInformation.Adapter.SupportedDisplayModes.Where(x => x.Width <= 4096 && x.Height <= 4096).ToList();
 				int displayModeIndex = 0;
 				foreach (DisplayMode mode in supportedDisplayModes)
 				{
@@ -815,7 +816,6 @@ namespace Lemma
 			this.Screenshot = new Screenshot();
 			this.AddComponent(this.Screenshot);
 
-			// Restore window state
 			this.Graphics.SynchronizeWithVerticalRetrace = this.Settings.Vsync;
 			new NotifyBinding(delegate()
 			{
@@ -824,11 +824,12 @@ namespace Lemma
 					this.Graphics.ApplyChanges();
 			}, this.Settings.Vsync);
 
-			bool forceFullscreen = false;
 #if VR
-			forceFullscreen = this.VR;
+			if (this.VR)
+				this.ResizeViewport(this.nativeDisplayMode.Width, this.nativeDisplayMode.Height, true, false, false);
+			else
 #endif
-			if (forceFullscreen || this.Settings.Fullscreen)
+			if (this.Settings.Fullscreen)
 				this.ResizeViewport(this.Settings.FullscreenResolution.Value.X, this.Settings.FullscreenResolution.Value.Y, true, this.Settings.Borderless, false);
 			else
 				this.ResizeViewport(this.Settings.Size.Value.X, this.Settings.Size.Value.Y, false, this.Settings.Borderless, false);
@@ -1608,7 +1609,7 @@ namespace Lemma
 
 		public void ExitFullscreen()
 		{
-			if (this.Settings.Fullscreen)
+			if (this.Settings.Fullscreen && !this.VR)
 			{
 				Point res = this.Settings.Size;
 				this.ResizeViewport(res.X, res.Y, false, this.Settings.Borderless);
@@ -2055,30 +2056,25 @@ namespace Lemma
 				Ovr.Sizei size = this.VRHmd.GetFovTextureSize(Ovr.Eye.Left, this.vrLeftFov);
 				Point renderTargetSize = new Point(size.w, size.h);
 
-				this.vrLeftEyeTarget = new RenderTarget2D(this.GraphicsDevice, renderTargetSize.X, renderTargetSize.Y, false, SurfaceFormat.Color, DepthFormat.None);
-				this.vrRightEyeTarget = new RenderTarget2D(this.GraphicsDevice, renderTargetSize.X, renderTargetSize.Y, false, SurfaceFormat.Color, DepthFormat.None);
-
 				this.ScreenSize.Value = renderTargetSize;
 
 				if (this.GraphicsDevice != null)
 				{
+					this.vrLeftEyeTarget = new RenderTarget2D(this.GraphicsDevice, renderTargetSize.X, renderTargetSize.Y, false, SurfaceFormat.Color, DepthFormat.None);
+					this.vrRightEyeTarget = new RenderTarget2D(this.GraphicsDevice, renderTargetSize.X, renderTargetSize.Y, false, SurfaceFormat.Color, DepthFormat.None);
+
 					PresentationParameters presentation = this.GraphicsDevice.PresentationParameters;
 					this.VRActualScreenSize.Value = new Point(presentation.BackBufferWidth, presentation.BackBufferHeight);
 				}
 				else
 					this.VRActualScreenSize.Value = new Point(this.Graphics.PreferredBackBufferWidth, this.Graphics.PreferredBackBufferHeight);
-
-				if (this.Settings.Fullscreen)
-					this.Settings.FullscreenResolution.Value = this.VRActualScreenSize;
-				else
-					this.Settings.Size.Value = this.VRActualScreenSize;
 			}
 		}
 #endif
 
 		public void ResizeViewport(int width, int height, bool fullscreen, bool borderless, bool applyChanges = true)
 		{
-			bool currentlyBorderless = this.Settings.Borderless;
+			bool currentlyBorderless = !this.Graphics.IsFullScreen;
 
 #if VR
 			if (this.VR)
@@ -2092,6 +2088,9 @@ namespace Lemma
 			bool needApply = false;
 			if (this.Settings.Fullscreen != fullscreen)
 				needApply = true;
+
+			if (fullscreen && (width != this.nativeDisplayMode.Width || height != this.nativeDisplayMode.Height))
+				borderless = this.Settings.Borderless.Value = false;
 
 			if (fullscreen && currentlyBorderless != borderless)
 				needApply = true;
