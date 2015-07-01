@@ -859,12 +859,6 @@
       <Processor>TextureProcessor</Processor>
       <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
     </Compile>
-    <Compile Include="Images\ru.png">
-      <Name>ru</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-      <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Textures\rock.png">
@@ -1433,6 +1427,14 @@
   <ItemGroup>
     <Compile Include="Images\es.png">
       <Name>es</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Images\hu.png">
+      <Name>hu</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <ProcessorParameters_ColorKeyEnabled>False</ProcessorParameters_ColorKeyEnabled>

@@ -102,7 +102,7 @@ namespace Lemma
 				en,
 				pl,
 				es,
-				//ru,
+				hu,
 			}
 			public enum RecordAnalytics
 			{

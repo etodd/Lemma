@@ -132,7 +132,72 @@ with.
         <Start>&#377;</Start>
         <End>&#380;</End>
       </CharacterRegion>
-      
+
+      <!-- Hungarian -->
+      <CharacterRegion>
+        <Start>&#193;</Start>
+        <End>&#193;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#225;</Start>
+        <End>&#225;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#201;</Start>
+        <End>&#201;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#233;</Start>
+        <End>&#233;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#205;</Start>
+        <End>&#205;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#237;</Start>
+        <End>&#237;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#211;</Start>
+        <End>&#211;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#243;</Start>
+        <End>&#243;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#218;</Start>
+        <End>&#218;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#250;</Start>
+        <End>&#250;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#214;</Start>
+        <End>&#214;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#246;</Start>
+        <End>&#246;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#220;</Start>
+        <End>&#220;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#252;</Start>
+        <End>&#252;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#336;</Start>
+        <End>&#337;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#368;</Start>
+        <End>&#369;</End>
+      </CharacterRegion>
     </CharacterRegions>
   </Asset>
 </XnaContent>
