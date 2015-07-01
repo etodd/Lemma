@@ -28,6 +28,9 @@ namespace Lemma.Factories
 		public override void Bind(Entity entity, Main main, bool creating = false)
 		{
 			base.Bind(entity, main, creating);
+
+			entity.Serialize = false; // PlayerData serialization is handled by new SaveInfo system
+
 			PlayerData playerData = entity.GetOrCreate<PlayerData>("Data");
 			entity.GetOrCreate<Data>("OpaqueData");
 			Phone phone = entity.GetOrCreate<Phone>("Phone");

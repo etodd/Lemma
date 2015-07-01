@@ -5,6 +5,7 @@ using System.Xml.Serialization;
 using System.Collections;
 using System.ComponentModel;
 using System.Reflection;
+using Newtonsoft.Json;
 
 namespace ComponentBind
 {
@@ -28,9 +29,11 @@ namespace ComponentBind
 			public string SourceCommand;
 
 			[XmlIgnore]
+			[JsonIgnore]
 			public Command LinkedTargetCmd;
 
 			[XmlIgnore]
+			[JsonIgnore]
 			public Command LinkedSourceCmd;
 		}
 
@@ -45,6 +48,7 @@ namespace ComponentBind
 			private Entity target;
 
 			[XmlIgnore]
+			[JsonIgnore]
 			public Entity Target
 			{
 				get
@@ -106,12 +110,14 @@ namespace ComponentBind
 		}
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public bool Active = true;
 
 		[XmlAttribute]
 		public string Type;
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public bool EditorCanDelete = true;
 
 		public Property<string> ID = new Property<string>();
@@ -122,15 +128,19 @@ namespace ComponentBind
 		}
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public bool Serialize = true;
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public bool CannotSuspend;
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public bool CannotSuspendByDistance;
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public bool Added;
 
 		private BaseMain main;
@@ -148,14 +158,17 @@ namespace ComponentBind
 		private readonly Dictionary<string, PropertyEntry> properties = new Dictionary<string, PropertyEntry>();
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public Command Delete = new Command();
 
 		[XmlArray("LinkedCommands")]
 		[XmlArrayItem("CommandLink", typeof(CommandLink))]
+		[JsonProperty]
 		public ListProperty<CommandLink> LinkedCommands = new ListProperty<CommandLink>();
 
 		[XmlArray("Components")]
 		[XmlArrayItem("Component", Type = typeof(DictionaryEntry))]
+		[JsonProperty]
 		public DictionaryEntry[] Components
 		{
 			get
@@ -201,6 +214,7 @@ namespace ComponentBind
 		}
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public Dictionary<string, IComponent> ComponentDictionary
 		{
 			get
@@ -210,6 +224,7 @@ namespace ComponentBind
 		}
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public IEnumerable<KeyValuePair<string, Command.Entry>> Commands
 		{
 			get
@@ -219,6 +234,7 @@ namespace ComponentBind
 		}
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public IEnumerable<KeyValuePair<string, PropertyEntry>> Properties
 		{
 			get
@@ -234,9 +250,11 @@ namespace ComponentBind
 		}
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public Command OnSave;
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public Property<bool> EditorSelected;
 
 		private static Assembly componentBindAssembly;

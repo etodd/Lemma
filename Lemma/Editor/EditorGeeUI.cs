@@ -473,7 +473,7 @@ namespace Lemma.Components
 			{
 				this.OpenDropDownView.AddOption(Path.GetFileNameWithoutExtension(m), () =>
 				{
-					IO.MapLoader.Load(this.main, Path.GetFullPath(m), false);
+					IO.MapLoader.LoadKeepEditor(this.main, Path.GetFullPath(m));
 				});
 			}
 		}

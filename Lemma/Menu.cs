@@ -207,7 +207,17 @@ namespace Lemma.Components
 				using (Stream fs = new FileStream(Path.Combine(this.main.SaveDirectory, timestamp, "save.dat"), FileMode.Open, FileAccess.Read, FileShare.None))
 				using (Stream stream = new GZipInputStream(fs))
 				using (StreamReader reader = new StreamReader(stream))
-					info = JsonConvert.DeserializeObject<Main.SaveInfo>(reader.ReadToEnd());
+				{
+					string data = reader.ReadToEnd();
+					try
+					{
+						info = JsonConvert.DeserializeObject<Main.SaveInfo>(data);
+					}
+					catch (Exception)
+					{
+						info = (Main.SaveInfo)Main.SaveInfo.Serializer.Deserialize(new StringReader(data));
+					}
+				}
 
 				if (info.Version != Main.MapVersion)
 					throw new Exception();
@@ -257,7 +267,7 @@ namespace Lemma.Components
 					this.main.Paused.Value = false;
 					this.restorePausedSettings();
 					this.main.CurrentSave.Value = timestamp;
-					IO.MapLoader.Load(this.main, info.MapFile);
+					IO.MapLoader.Load(this.main, info.MapFile, info.PlayerData);
 				}
 				container.SwallowCurrentMouseEvent();
 			}));

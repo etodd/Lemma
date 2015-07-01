@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using System.Xml.Serialization;
 using System.ComponentModel;
+using Newtonsoft.Json;
 
 namespace ComponentBind
 {
@@ -79,27 +80,34 @@ namespace ComponentBind
 		where MainClass : BaseMain
 	{
 		[XmlIgnore]
+		[JsonIgnore]
 		public bool Serialize { get; set; }
 
 		public Property<bool> Enabled { get; set; }
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public Property<bool> Suspended { get; set; }
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public Command Enable = new Command();
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public Command Disable = new Command();
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public Command OnSuspended = new Command();
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public Command OnResumed = new Command();
 
 		private Command del = new Command();
 		[XmlIgnore]
+		[JsonIgnore]
 		public Command Delete
 		{
 			get
@@ -109,16 +117,20 @@ namespace ComponentBind
 		}
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public bool EnabledInEditMode { get; set; }
 		[XmlIgnore]
+		[JsonIgnore]
 		public bool EnabledWhenPaused { get; set; }
 
 		protected MainClass main;
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public virtual Entity Entity { get; set; }
 
 		[XmlIgnore]
+		[JsonIgnore]
 		public bool Active { get; private set; }
 
 		public Component()

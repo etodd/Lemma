@@ -26,6 +26,7 @@ using GeeUI;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using ICSharpCode.SharpZipLib.GZip;
+using System.Xml.Serialization;
 
 namespace Lemma
 {
@@ -218,8 +219,10 @@ namespace Lemma
 
 		public class SaveInfo
 		{
+			public static XmlSerializer Serializer = new XmlSerializer(typeof(SaveInfo), IO.MapLoader.IncludedTypes);
 			public string MapFile;
 			public int Version;
+			public Entity PlayerData;
 		}
 
 		public Config Settings;
@@ -1563,7 +1566,7 @@ namespace Lemma
 				this.scheduledSave.Delete.Execute();
 		}
 
-		public void SaveCurrentMap(RenderTarget2D screenshot = null, Point screenshotSize = default(Point), bool saveInfo = true)
+		public void SaveCurrentMap(RenderTarget2D screenshot = null, Point screenshotSize = default(Point))
 		{
 			if (this.CurrentSave.Value == null)
 				this.createNewSave();
@@ -1577,19 +1580,16 @@ namespace Lemma
 
 			IO.MapLoader.Save(this, currentSaveDirectory, this.MapFile);
 
-			if (saveInfo)
+			try
 			{
-				try
-				{
-					using (Stream fs = new FileStream(Path.Combine(currentSaveDirectory, "save.dat"), FileMode.Create, FileAccess.Write, FileShare.None))
-					using (Stream stream = new GZipOutputStream(fs))
-					using (StreamWriter writer = new StreamWriter(stream))
-						writer.Write(JsonConvert.SerializeObject(new Main.SaveInfo { MapFile = Path.GetFileNameWithoutExtension(this.MapFile), Version = Main.MapVersion }));
-				}
-				catch (InvalidOperationException e)
-				{
-					throw new Exception("Failed to save game.", e);
-				}
+				using (Stream fs = new FileStream(Path.Combine(currentSaveDirectory, "save.dat"), FileMode.Create, FileAccess.Write, FileShare.None))
+				using (Stream stream = new GZipOutputStream(fs))
+				using (StreamWriter writer = new StreamWriter(stream))
+					Main.SaveInfo.Serializer.Serialize(writer, new Main.SaveInfo { MapFile = Path.GetFileNameWithoutExtension(this.MapFile), Version = Main.MapVersion, PlayerData = PlayerDataFactory.Instance });
+			}
+			catch (InvalidOperationException e)
+			{
+				throw new Exception("Failed to save game.", e);
 			}
 		}
 

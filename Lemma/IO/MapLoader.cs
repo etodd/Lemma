@@ -140,10 +140,25 @@ namespace Lemma.IO
 			MapLoader.Serializer = new XmlSerializer(typeof(List<Entity>), MapLoader.IncludedTypes);
 		}
 
-		public static void Load(Main main, string filename, bool deleteEditor = true)
+		public static void LoadKeepEditor(Main main, string filename)
+		{
+			MapLoader.load(main, filename, false, null);
+		}
+
+		public static void Load(Main main, string filename)
+		{
+			MapLoader.load(main, filename, true, null);
+		}
+
+		public static void Load(Main main, string filename, Entity playerData)
+		{
+			MapLoader.load(main, filename, true, playerData);
+		}
+
+		private static void load(Main main, string filename, bool deleteEditor, Entity playerData)
 		{
 			if (filename == null)
-				MapLoader.Load(main, (Stream)null, deleteEditor);
+				MapLoader.load(main, (Stream)null, deleteEditor, playerData);
 			else
 			{
 				// Don't try to load the menu from a save game
@@ -169,7 +184,7 @@ namespace Lemma.IO
 				using (Stream fs = File.OpenRead(fullFilename))
 				{
 					using (Stream stream = new GZipInputStream(fs))
-						MapLoader.Load(main, stream, deleteEditor);
+						MapLoader.load(main, stream, deleteEditor, playerData);
 				}
 			}
 		}
@@ -191,12 +206,12 @@ namespace Lemma.IO
 			using (Stream fs = File.OpenRead(templateMap))
 			{
 				using (Stream stream = new GZipInputStream(fs))
-					MapLoader.Load(main, stream, false);
+					MapLoader.load(main, stream, false, null);
 			}
 			WorldFactory.Instance.Get<World>().NewUUID();
 		}
 
-		private static void Load(Main main, Stream stream, bool deleteEditor = true)
+		private static void load(Main main, Stream stream, bool deleteEditor, Entity playerData)
 		{
 			main.Camera.Position.Value = new Vector3(0, -1000, 0);
 			main.IsLoadingMap = true;
@@ -215,6 +230,9 @@ namespace Lemma.IO
 				{
 					throw new Exception("Failed to deserialize file stream.", e);
 				}
+
+				if (playerData != null)
+					entities.Add(playerData);
 
 				foreach (Entity entity in entities)
 				{
@@ -284,7 +302,7 @@ namespace Lemma.IO
 			stream.Dispose();
 		}
 
-		public static void Transition(Main main, string nextMap, string spawn = null, bool saveInfo = true)
+		public static void Transition(Main main, string nextMap, string spawn = null)
 		{
 			Container loadingNotification = new Container();
 			loadingNotification.Tint.Value = Microsoft.Xna.Framework.Color.Black;
@@ -332,7 +350,7 @@ namespace Lemma.IO
 						if (PlayerFactory.Instance != null)
 							PlayerFactory.Instance.Delete.Execute();
 
-						main.SaveCurrentMap(null, default(Point), saveInfo);
+						main.SaveCurrentMap(null, default(Point));
 						MapLoader.Load(main, nextMap);
 
 						stream.Seek(0, SeekOrigin.Begin);
