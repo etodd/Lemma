@@ -539,7 +539,7 @@ namespace Lemma
 #if VR
 			if (this.VR)
 			{
-				if (!Ovr.Hmd.Initialize())
+				if (!Ovr.Hmd.Initialize(new Ovr.InitParams()))
 					throw new Exception("Failed to initialize Oculus runtime.");
 				this.VRHmd = new Ovr.Hmd(0);
 				if (this.VRHmd == null)
@@ -2053,7 +2053,7 @@ namespace Lemma
 
 			if (this.VRHmd != null)
 			{
-				Ovr.Sizei size = this.VRHmd.GetFovTextureSize(Ovr.Eye.Left, this.vrLeftFov);
+				Ovr.Sizei size = this.VRHmd.GetFovTextureSize(Ovr.Eye.Left, this.vrLeftFov, 1.0f);
 				Point renderTargetSize = new Point(size.w, size.h);
 
 				this.ScreenSize.Value = renderTargetSize;

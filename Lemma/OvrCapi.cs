@@ -1446,7 +1446,7 @@ namespace Ovr
 
         // Used to return color result to avoid per-frame allocation.
         private byte[] LatencyTestRgb = new byte[3];
-
+        
         // -----------------------------------------------------------------------------------
         // Static Methods
 
@@ -1482,7 +1482,7 @@ namespace Ovr
         /// Initializes all Oculus functionality.
         /// A second call to Initialize after successful second call returns true.
         /// </summary>
-        public static bool Initialize(InitParams Params = null)
+        public static bool Initialize(InitParams Params)
         {
             return ovr_Initialize(Params) != 0;
         }
@@ -1597,7 +1597,7 @@ namespace Ovr
 
         // -----------------------------------------------------------------------------------
         // **** Constructor
-
+        
         /// <summary>
         /// Creates an HMD and the underlying native ovrHmd pointer at the given index.
         /// Index can [0 .. ovrHmd_Detect()-1]. Index mappings can cange after each ovrHmd_Detect call.
@@ -1617,7 +1617,7 @@ namespace Ovr
             this.HmdPtr = hmdPtr;
             IsUserAllocated = true;
         }
-
+        
         /// <summary>
         /// Creates a 'fake' HMD used for debugging only. This is not tied to specific hardware,
         /// but may be used to debug some of the related rendering.
@@ -1663,7 +1663,7 @@ namespace Ovr
         }
 
         /// <summary>
-        /// Platform specific function to specify the application window whose output will be
+        /// Platform specific function to specify the application window whose output will be 
         /// displayed on the HMD. Only used if the ovrHmdCap_ExtendDesktop flag is false.
         ///   Windows: SwapChain associated with this window will be displayed on the HMD.
         ///            Specify 'destMirrorRect' in window coordinates to indicate an area
@@ -1671,7 +1671,7 @@ namespace Ovr
         ///            Null pointers mean "full size".
         /// @note Source and dest mirror rects are not yet implemented.
         /// </summary>
-        public bool AttachToWindow(Recti destMirrorRect, Recti sourceRenderTargetRect, IntPtr WindowPtr = default(IntPtr))
+        public bool AttachToWindow(Recti destMirrorRect, Recti sourceRenderTargetRect, IntPtr WindowPtr)
         {
             return ovrHmd_AttachToWindow(HmdPtr, WindowPtr, destMirrorRect, sourceRenderTargetRect) != 0;
         }
@@ -1685,7 +1685,7 @@ namespace Ovr
         {
             return ovrHmd_GetEnabledCaps(HmdPtr);
         }
-
+        
         /// <summary>
         /// Modifies capability bits described by ovrHmdCaps that can be modified,
         /// such as ovrHmdCap_LowPersistance.
@@ -1714,7 +1714,7 @@ namespace Ovr
 
         //-------------------------------------------------------------------------------------
         // ***** Tracking Interface
-
+        
         /// <summary>
         /// All tracking interface functions are thread-safe, allowing tracking state to be sampled
         /// from different threads.
@@ -1751,7 +1751,7 @@ namespace Ovr
         /// ovrHmd_GetEyePoses relies on this function internally.
         /// This may also be used for more refined timing of FrontBuffer rendering logic, etc.
         /// </summary>
-        public TrackingState GetTrackingState(double absTime = 0.0d)
+        public TrackingState GetTrackingState(double absTime)
         {
             return ovrHmd_GetTrackingState(HmdPtr, absTime);
         }
@@ -1766,7 +1766,7 @@ namespace Ovr
 
         //-------------------------------------------------------------------------------------
         // ***** Graphics Setup
-
+        
         /// <summary>
         /// Calculates the recommended texture size for rendering a given eye within the HMD
         /// with a given FOV cone. Higher FOV will generally require larger textures to
@@ -1775,7 +1775,7 @@ namespace Ovr
         ///    to display pixels at the center of distortion. 1.0 is the default value. Lower
         ///    values can improve performance.
         /// </summary>
-        public Sizei GetFovTextureSize(Eye eye, FovPort fov, float pixelsPerDisplayPixel = 1.0f)
+        public Sizei GetFovTextureSize(Eye eye, FovPort fov, float pixelsPerDisplayPixel)
         {
             return ovrHmd_GetFovTextureSize(HmdPtr, eye, fov, pixelsPerDisplayPixel);
         }
@@ -1827,7 +1827,7 @@ namespace Ovr
         /// This should be called at the beginning of the game rendering loop (on the render thread).
         /// Pass 0 for the frame index if not using ovrHmd_GetFrameTiming.
         /// </summary>
-        public FrameTiming BeginFrame(uint frameIndex = 0)
+        public FrameTiming BeginFrame(uint frameIndex)
         {
             FrameTiming_Raw raw = ovrHmd_BeginFrame(HmdPtr, frameIndex);
             return new FrameTiming(raw);
@@ -1851,7 +1851,7 @@ namespace Ovr
             {
                 raw[i] = eyeTexture[i].ToRaw();
             }
-
+            
             ovrHmd_EndFrame(HmdPtr, renderPose, raw);
         }
 
@@ -2148,7 +2148,7 @@ namespace Ovr
         /// Get boolean property. Returns first element if property is a boolean array.
         /// Returns defaultValue if property doesn't exist.
         /// </summary>
-        public bool GetBool(string propertyName, bool defaultVal = false)
+        public bool GetBool(string propertyName, bool defaultVal)
         {
             return ovrHmd_GetBool(HmdPtr, propertyName, Convert.ToSByte(defaultVal)) != 0;
         }
@@ -2165,7 +2165,7 @@ namespace Ovr
         /// Get integer property. Returns first element if property is an integer array.
         /// Returns defaultValue if property doesn't exist.
         /// </summary>
-        public int GetInt(string propertyName, int defaultVal = 0)
+        public int GetInt(string propertyName, int defaultVal)
         {
             return ovrHmd_GetInt(HmdPtr, propertyName, defaultVal);
         }
@@ -2182,7 +2182,7 @@ namespace Ovr
         /// Get float property. Returns first element if property is a float array.
         /// Returns defaultValue if property doesn't exist.
         /// </summary>
-        public float GetFloat(string propertyName, float defaultVal = 0.0f)
+        public float GetFloat(string propertyName, float defaultVal)
         {
             return ovrHmd_GetFloat(HmdPtr, propertyName, defaultVal);
         }
@@ -2224,7 +2224,7 @@ namespace Ovr
         /// Returns defaultValue if property doesn't exist.
         /// String memory is guaranteed to exist until next call to GetString or GetStringArray, or HMD is destroyed.
         /// </summary>
-        public string GetString(string propertyName, string defaultVal = null)
+        public string GetString(string propertyName, string defaultVal)
         {
             IntPtr p = ovrHmd_GetString(HmdPtr, propertyName, null);
             if (p == IntPtr.Zero)
@@ -2445,7 +2445,7 @@ namespace Ovr
                    [Out] out HSWDisplayState hasWarningState);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
         private static extern sbyte ovrHmd_DismissHSWDisplay(IntPtr hmd);
-
+        
         // -----------------------------------------------------------------------------------
         // ***** Property Access
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
