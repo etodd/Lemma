@@ -14,17 +14,11 @@ Minimum Requirements
 VR Instructions
 ===============
 
-- If you are a Steam user, do one of the following:
+Lemma only supports Oculus Rift in Extended Mode.
 
-	- Open Steam in VR mode and run the game from there
-	- Or, right-click the game in your library, hit "Properties",
-	  then hit "Set launch options" and enter "-vr"
-
-- For non-Steam users, run the "Lemma VR" shortcut. This just passes
-  the "-vr" argument to the game for you.
-
-- If the game boots up on the wrong screen, use
-  Windows + Shift + Left/right arrow key to move it to the Oculus.
+If you have a Rift plugged in and set to Extended Mode, or if you have multiple
+monitors, Lemma will show a launcher that allows you to choose which display to
+use. From there you can check the "VR" checkbox to enable VR mode.
 
 Problems?
 =========
