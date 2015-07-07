@@ -84,6 +84,7 @@ namespace Lemma.Components
 							if (this.walkedOnCount >= 2)
 							{
 								// Every few tiles, save off the location for the auto-respawn system
+								coord.Data = null;
 								this.RespawnLocations.Add(new RespawnLocation
 								{
 									Coordinate = coord,

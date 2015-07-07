@@ -35,6 +35,8 @@ namespace Lemma.Components
 		{
 			this.EnabledWhenPaused = false;
 			base.Awake();
+			foreach (RespawnLocation l in this.RespawnLocations)
+				l.Coordinate.Data = null;
 		}
 
 		public void Update(float dt)
