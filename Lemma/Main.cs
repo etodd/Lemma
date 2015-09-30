@@ -541,14 +541,18 @@ namespace Lemma
 			{
 				if (!Ovr.Hmd.Initialize(new Ovr.InitParams()))
 					throw new Exception("Failed to initialize Oculus runtime.");
-				this.VRHmd = new Ovr.Hmd(0);
-				if (this.VRHmd == null)
+				try
+				{
+					this.VRHmd = new Ovr.Hmd();
+				}
+				catch (Exception e)
 				{
 					Log.d("Error: no Oculus found.");
 					this.VR = false;
 					this.oculusNotFound = true;
 				}
-				else
+
+				if (this.VR)
 				{
 					if (!this.VRHmd.ConfigureTracking(
 						(uint)Ovr.TrackingCaps.Orientation
@@ -594,7 +598,12 @@ namespace Lemma
 				}
 			});
 
-			this.Graphics = new GraphicsDeviceManager(this);
+#if VR
+			if (this.VR)
+				this.Graphics = new OculusGraphicsDeviceManager(this, this.VRHmd.LUID);
+			else
+#endif
+				this.Graphics = new GraphicsDeviceManager(this);
 
 			this.Content = new ContentManager(this.Services);
 			this.Content.RootDirectory = "Content";
@@ -1901,16 +1910,8 @@ namespace Lemma
 					}
 				}
 
-				if (this.vrHmdDesc.EyeRenderOrder[0] == Ovr.Eye.Left)
-				{
-					this.drawEye(originalCamera, gameTime, eyes[0], this.vrLeftEyeTarget, true);
-					this.drawEye(originalCamera, gameTime, eyes[1], this.vrRightEyeTarget, false);
-				}
-				else
-				{
-					this.drawEye(originalCamera, gameTime, eyes[1], this.vrRightEyeTarget, true);
-					this.drawEye(originalCamera, gameTime, eyes[0], this.vrLeftEyeTarget, false);
-				}
+				this.drawEye(originalCamera, gameTime, eyes[0], this.vrLeftEyeTarget, true);
+				this.drawEye(originalCamera, gameTime, eyes[1], this.vrRightEyeTarget, false);
 
 				this.GraphicsDevice.SetRenderTarget(this.RenderTarget);
 				this.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Black);
@@ -1921,7 +1922,6 @@ namespace Lemma
 				this.spriteBatch.Draw(this.vrRightEyeTarget, new Vector2(this.vrLeftEyeTarget.Width, 0), Color.White);
 				this.spriteBatch.End();
 				*/
-				Ovr.Hmd.WaitTillTime(frameTiming.TimewarpPointSeconds);
 
 				this.vrLeftMesh.Render(this.vrLeftEyeTarget, eyes[0], this.vrEffect);
 				this.vrRightMesh.Render(this.vrRightEyeTarget, eyes[1], this.vrEffect);

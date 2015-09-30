@@ -188,6 +188,7 @@
     <Compile Include="Factories\SequenceFactory.cs" />
     <Compile Include="Factories\VoxelSetterFactory.cs" />
     <Compile Include="LeaderboardProxy.cs" />
+    <Compile Include="OculusGraphicsDeviceManager.cs" />
     <Compile Include="OvrCapi.cs" />
     <Compile Include="Player\FPSCamera.cs" />
     <Compile Include="Scripts\DialogueLink.cs" />
@@ -538,7 +539,10 @@
     <Content Include="Lemma VR.lnk">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="OculusPlugin.dll">
+    <Content Include="LibOVR.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="LibOVR.pdb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="README.txt">

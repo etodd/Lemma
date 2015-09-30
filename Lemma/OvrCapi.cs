@@ -277,6 +277,8 @@ namespace Ovr
         /// </summary>
         public CAPICallback LogCallback;         // Function pointer or 0
 
+		public UIntPtr UserData;
+
         /// <summary>
         /// Number of milliseconds to wait for a connection to the server.
         /// Pass 0 for the default timeout.
@@ -357,7 +359,7 @@ namespace Ovr
         /// </summary>
         DebugDevice       = 0x0010,
 
-        // Modifiable flags (through ovrHmd_SetEnabledCaps).
+        // Modifiable flags (through ovr_SetEnabledCaps).
 
         /// <summary>
         /// Disables mirroring of HMD output to the window. This may improve
@@ -382,7 +384,7 @@ namespace Ovr
         NoVSync           = 0x1000,
 
         /// <summary>
-        /// These bits can be modified by ovrHmd_SetEnabledCaps.
+        /// These bits can be modified by ovr_SetEnabledCaps.
         /// </summary>
         WritableMask      = NoMirrorToWindow
                             | DisplayOff
@@ -401,7 +403,7 @@ namespace Ovr
 
     /// <summary>
     /// Tracking capability bits reported by the device.
-    /// Used with ovrHmd_ConfigureTracking.
+    /// Used with ovr_ConfigureTracking.
     /// </summary>
     public enum TrackingCaps
     {
@@ -420,14 +422,14 @@ namespace Ovr
         /// <summary>
         /// Overrides the other flags. Indicates that the application
         /// doesn't care about tracking settings. This is the internal
-        /// default before ovrHmd_ConfigureTracking is called.
+        /// default before ovr_ConfigureTracking is called.
         /// </summary>
         Idle              = 0x0100,
     };
 
     /// <summary>
     /// Distortion capability bits reported by device.
-    /// Used with ovrHmd_ConfigureRendering and ovrHmd_CreateDistortionMesh.
+    /// Used with ovr_ConfigureRendering and ovr_CreateDistortionMesh.
     /// </summary>
     public enum DistortionCaps
     {
@@ -499,11 +501,6 @@ namespace Ovr
     public struct HmdDesc
     {
         /// <summary>
-        /// Internal handle of this HMD.
-        /// </summary>
-        public IntPtr Handle;
-
-        /// <summary>
         /// This HMD's type.
         /// </summary>
         public HmdType Type;
@@ -536,18 +533,10 @@ namespace Ovr
         public float CameraFrustumNearZInMeters;
         public float CameraFrustumFarZInMeters;
 
-        /// <summary>
-        /// Capability bits described by ovrHmdCaps.
-        /// </summary>
-        public uint HmdCaps;
-        /// <summary>
-        /// Capability bits described by ovrTrackingCaps.
-        /// </summary>
-        public uint TrackingCaps;
-        /// <summary>
-        /// Capability bits described by ovrDistortionCaps.
-        /// </summary>
-        public uint DistortionCaps;
+        public uint AvailableHmdCaps;
+        public uint DefaultHmdCaps;
+        public uint AvailableTrackingCaps;
+        public uint DefaultTrackingCaps;
 
         /// <summary>
         /// Defines the recommended optical FOV for the HMD.
@@ -559,37 +548,14 @@ namespace Ovr
         public FovPort[] MaxEyeFov;
 
         /// <summary>
-        /// Preferred eye rendering order for best performance.
-        /// Can help reduce latency on sideways-scanned screens.
-        /// </summary>
-        public Eye[] EyeRenderOrder;
-
-        /// <summary>
         /// Resolution of the full HMD screen (both eyes) in pixels.
         /// </summary>
         public Sizei Resolution;
-        /// <summary>
-        /// Location of the application window on the desktop (or 0,0).
-        /// </summary>
-        public Vector2i WindowsPos;
 
-        /// <summary>
-        /// Display that the HMD should present on.
-        /// TBD: It may be good to remove this information relying on WindowPos instead.
-        /// Ultimately, we may need to come up with a more convenient alternative,
-        /// such as API-specific functions that return adapter, or something that will
-        /// work with our monitor driver.
-        /// Windows: (e.g. "\\\\.\\DISPLAY3", can be used in EnumDisplaySettings/CreateDC).
-        /// </summary>
-        public string DisplayDeviceName;
-        /// <summary>
-        /// MacOS:
-        /// </summary>
-        public int DisplayId;
+		public float DisplayRefreshRate;
 
         internal HmdDesc(HmdDesc_Raw32 raw)
         {
-            this.Handle                     = raw.Handle;
             this.Type                       = (HmdType)raw.Type;
             this.ProductName                = Marshal.PtrToStringAnsi(raw.ProductName);
             this.Manufacturer               = Marshal.PtrToStringAnsi(raw.Manufacturer);
@@ -602,20 +568,17 @@ namespace Ovr
             this.CameraFrustumVFovInRadians = raw.CameraFrustumVFovInRadians;
             this.CameraFrustumNearZInMeters = raw.CameraFrustumNearZInMeters;
             this.CameraFrustumFarZInMeters  = raw.CameraFrustumFarZInMeters;
-            this.HmdCaps                    = raw.HmdCaps;
-            this.TrackingCaps               = raw.TrackingCaps;
-            this.DistortionCaps             = raw.DistortionCaps;
+            this.AvailableHmdCaps           = raw.AvailableHmdCaps;
+            this.DefaultHmdCaps             = raw.DefaultHmdCaps;
+            this.AvailableTrackingCaps      = raw.AvailableTrackingCaps;
+            this.DefaultTrackingCaps        = raw.DefaultTrackingCaps;
             this.Resolution                 = raw.Resolution;
-            this.WindowsPos                 = raw.WindowsPos;
+			this.DisplayRefreshRate         = raw.DisplayRefreshRate;
             this.DefaultEyeFov              = new FovPort[2] { raw.DefaultEyeFov_0, raw.DefaultEyeFov_1 };
             this.MaxEyeFov                  = new FovPort[2] { raw.MaxEyeFov_0, raw.MaxEyeFov_1 };
-            this.EyeRenderOrder             = new Eye[2] { Eye.Left, Eye.Right };
-            this.DisplayDeviceName          = Marshal.PtrToStringAnsi(raw.DisplayDeviceName);
-            this.DisplayId                  = raw.DisplayId;
         }
         internal HmdDesc(HmdDesc_Raw64 raw)
         {
-            this.Handle                     = raw.Handle;
             this.Type                       = (HmdType)raw.Type;
             this.ProductName                = Marshal.PtrToStringAnsi(raw.ProductName);
             this.Manufacturer               = Marshal.PtrToStringAnsi(raw.Manufacturer);
@@ -628,16 +591,14 @@ namespace Ovr
             this.CameraFrustumVFovInRadians = raw.CameraFrustumVFovInRadians;
             this.CameraFrustumNearZInMeters = raw.CameraFrustumNearZInMeters;
             this.CameraFrustumFarZInMeters  = raw.CameraFrustumFarZInMeters;
-            this.HmdCaps                    = raw.HmdCaps;
-            this.TrackingCaps               = raw.TrackingCaps;
-            this.DistortionCaps             = raw.DistortionCaps;
+            this.AvailableHmdCaps           = raw.AvailableHmdCaps;
+            this.DefaultHmdCaps             = raw.DefaultHmdCaps;
+            this.AvailableTrackingCaps      = raw.AvailableTrackingCaps;
+            this.DefaultTrackingCaps        = raw.DefaultTrackingCaps;
             this.Resolution                 = raw.Resolution;
-            this.WindowsPos                 = raw.WindowsPos;
+			this.DisplayRefreshRate         = raw.DisplayRefreshRate;
             this.DefaultEyeFov              = new FovPort[2] { raw.DefaultEyeFov_0, raw.DefaultEyeFov_1 };
             this.MaxEyeFov                  = new FovPort[2] { raw.MaxEyeFov_0, raw.MaxEyeFov_1 };
-            this.EyeRenderOrder             = new Eye[2] { Eye.Left, Eye.Right };
-            this.DisplayDeviceName          = Marshal.PtrToStringAnsi(raw.DisplayDeviceName);
-            this.DisplayId                  = raw.DisplayId;
         }
     };
 
@@ -645,46 +606,6 @@ namespace Ovr
     [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
     internal struct HmdDesc_Raw32
     {
-        public IntPtr Handle;
-        public UInt32 Type;
-        // Use IntPtr so that CLR doesn't try to deallocate string.
-        public IntPtr ProductName;
-        public IntPtr Manufacturer;
-        // HID Vendor and ProductId of the device.
-        public UInt16 VendorId;
-        public UInt16 ProductId;
-        // Sensor (and display) serial number.
-        [MarshalAsAttribute(UnmanagedType.ByValTStr, SizeConst = 24)]
-        public string SerialNumber;
-        // Sensor firmware
-        public UInt16 FirmwareMajor;
-        public UInt16 FirmwareMinor;
-        // Fixed camera frustum dimensions, if present
-        public float CameraFrustumHFovInRadians;
-        public float CameraFrustumVFovInRadians;
-        public float CameraFrustumNearZInMeters;
-        public float CameraFrustumFarZInMeters;
-        public UInt32 HmdCaps;
-        public UInt32 TrackingCaps;
-        public UInt32 DistortionCaps;
-        // C# arrays are dynamic and thus not supported as return values, so just expand the struct.
-        public FovPort DefaultEyeFov_0;
-        public FovPort DefaultEyeFov_1;
-        public FovPort MaxEyeFov_0;
-        public FovPort MaxEyeFov_1;
-        public UInt32 EyeRenderOrder_0;
-        public UInt32 EyeRenderOrder_1;
-        public Sizei Resolution;
-        public Vector2i WindowsPos;
-        public IntPtr DisplayDeviceName;
-        public Int32 DisplayId;
-    };
-
-    // Internal description for HMD; must match C 'ovrHmdDesc' layout.
-    [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
-    internal struct HmdDesc_Raw64
-    {
-        public IntPtr Handle;
         public UInt32 Type;
         private UInt32 pad0;
         // Use IntPtr so that CLR doesn't try to deallocate string.
@@ -704,22 +625,55 @@ namespace Ovr
         public float CameraFrustumVFovInRadians;
         public float CameraFrustumNearZInMeters;
         public float CameraFrustumFarZInMeters;
-        public UInt32 HmdCaps;
-        public UInt32 TrackingCaps;
-        public UInt32 DistortionCaps;
+        public UInt32 AvailableHmdCaps;
+		public UInt32 DefaultHmdCaps;
+        public UInt32 AvailableTrackingCaps;
+        public UInt32 DefaultTrackingCaps;
         // C# arrays are dynamic and thus not supported as return values, so just expand the struct.
         public FovPort DefaultEyeFov_0;
         public FovPort DefaultEyeFov_1;
         public FovPort MaxEyeFov_0;
         public FovPort MaxEyeFov_1;
-        public UInt32 EyeRenderOrder_0;
-        public UInt32 EyeRenderOrder_1;
         public Sizei Resolution;
-        public Vector2i WindowsPos;
+        public float DisplayRefreshRate;
         private UInt32 pad1;
-        public IntPtr DisplayDeviceName;
-        public Int32 DisplayId;
-        private UInt32 pad2;
+    };
+
+    // Internal description for HMD; must match C 'ovrHmdDesc' layout.
+    [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
+    internal struct HmdDesc_Raw64
+    {
+        public UInt32 Type;
+        private UInt32 pad0;
+        // Use IntPtr so that CLR doesn't try to deallocate string.
+        public IntPtr ProductName;
+        public IntPtr Manufacturer;
+        // HID Vendor and ProductId of the device.
+        public UInt16 VendorId;
+        public UInt16 ProductId;
+        // Sensor (and display) serial number.
+        [MarshalAsAttribute(UnmanagedType.ByValTStr, SizeConst = 24)]
+        public string SerialNumber;
+        // Sensor firmware
+        public UInt16 FirmwareMajor;
+        public UInt16 FirmwareMinor;
+        // Fixed camera frustum dimensions, if present
+        public float CameraFrustumHFovInRadians;
+        public float CameraFrustumVFovInRadians;
+        public float CameraFrustumNearZInMeters;
+        public float CameraFrustumFarZInMeters;
+        public UInt32 AvailableHmdCaps;
+		public UInt32 DefaultHmdCaps;
+        public UInt32 AvailableTrackingCaps;
+        public UInt32 DefaultTrackingCaps;
+        // C# arrays are dynamic and thus not supported as return values, so just expand the struct.
+        public FovPort DefaultEyeFov_0;
+        public FovPort DefaultEyeFov_1;
+        public FovPort MaxEyeFov_0;
+        public FovPort MaxEyeFov_1;
+        public Sizei Resolution;
+        public float DisplayRefreshRate;
+        private UInt32 pad1;
     };
 
     /// <summary>
@@ -779,7 +733,7 @@ namespace Ovr
 
     /// <summary>
     /// Tracking state at a given absolute time (describes predicted HMD pose etc).
-    /// Returned by ovrHmd_GetTrackingState.
+    /// Returned by ovr_GetTrackingState.
     /// </summary>
     [StructLayout(LayoutKind.Explicit)]
     public struct TrackingState
@@ -823,7 +777,7 @@ namespace Ovr
     };
 
     /// <summary>
-    /// Frame timing data reported by ovrHmd_BeginFrameTiming() or ovrHmd_BeginFrame().
+    /// Frame timing data reported by ovr_BeginFrameTiming() or ovr_BeginFrame().
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct FrameTiming
@@ -857,7 +811,7 @@ namespace Ovr
 
         /// <summary>
         /// Time when half of the screen will be scanned out. Can be passed as an absolute time
-        /// to ovrHmd_GetTrackingState() to get the predicted general orientation.
+        /// to ovr_GetTrackingState() to get the predicted general orientation.
         /// </summary>
         public double ScanoutMidpointSeconds;
         /// <summary>
@@ -892,10 +846,10 @@ namespace Ovr
     };
 
     /// <summary>
-    /// Rendering information for each eye. Computed by either ovrHmd_ConfigureRendering()
-    /// or ovrHmd_GetRenderDesc() based on the specified FOV. Note that the rendering viewport
+    /// Rendering information for each eye. Computed by either ovr_ConfigureRendering()
+    /// or ovr_GetRenderDesc() based on the specified FOV. Note that the rendering viewport
     /// is not included here as it can be specified separately and modified per frame through:
-    ///    (a) ovrHmd_GetRenderScaleAndOffset in the case of client rendered distortion,
+    ///    (a) ovr_GetRenderScaleAndOffset in the case of client rendered distortion,
     /// or (b) passing different values via ovrTexture in the case of SDK rendered distortion.
     /// </summary>
     [StructLayout(LayoutKind.Explicit)]
@@ -949,7 +903,7 @@ namespace Ovr
 
     /// <summary>
     /// Platform-independent part of rendering API-configuration data.
-    /// It is a part of ovrRenderAPIConfig, passed to ovrHmd_Configure.
+    /// It is a part of ovrRenderAPIConfig, passed to ovr_Configure.
     /// </summary>
     [StructLayout(LayoutKind.Explicit)]
     public struct RenderAPIConfigHeader
@@ -1124,7 +1078,7 @@ namespace Ovr
 
     /// <summary>
     /// Platform-independent part of the eye texture descriptor.
-    /// It is a part of ovrTexture, passed to ovrHmd_EndFrame.
+    /// It is a part of ovrTexture, passed to ovr_EndFrame.
     /// If RenderViewport is all zeros then the full texture will be used.
     /// </summary>
     [StructLayout(LayoutKind.Explicit)]
@@ -1300,8 +1254,8 @@ namespace Ovr
     };
 
     /// <summary>
-    /// Describes a full set of distortion mesh data, filled in by ovrHmd_CreateDistortionMesh.
-    /// Contents of this data structure, if not null, should be freed by ovrHmd_DestroyDistortionMesh.
+    /// Describes a full set of distortion mesh data, filled in by ovr_CreateDistortionMesh.
+    /// Contents of this data structure, if not null, should be freed by ovr_DestroyDistortionMesh.
     /// </summary>
     public struct DistortionMesh
     {
@@ -1393,17 +1347,17 @@ namespace Ovr
     /// Setup:
     ///   - Initialize() to initialize the OVR SDK.
     ///   - Construct Hmd to create an ovrHmd.
-    ///   - Use hmd members and ovrHmd_GetFovTextureSize() to determine graphics configuration.
+    ///   - Use hmd members and ovr_GetFovTextureSize() to determine graphics configuration.
     ///   - ConfigureTracking() to configure and initialize tracking.
     ///   - ConfigureRendering() to setup graphics for SDK rendering, which is the preferred approach.
     ///   - Please refer to "Client Distortion Rendering" below if you prefer to do that instead.
-    ///   - If ovrHmdCap_ExtendDesktop is not set, use ovrHmd_AttachToWindow to associate the window with an Hmd.
+    ///   - If ovrHmdCap_ExtendDesktop is not set, use ovr_AttachToWindow to associate the window with an Hmd.
     ///   - Allocate render textures as needed.
     ///
     /// Game Loop:
-    ///   - Call ovrHmd_BeginFrame() to get frame timing and orientation information.
-    ///   - Render each eye in between, using ovrHmd_GetEyePoses or ovrHmd_GetHmdPosePerEye to get the predicted hmd pose and each eye pose.
-    ///   - Call ovrHmd_EndFrame() to render distorted textures to the back buffer
+    ///   - Call ovr_BeginFrame() to get frame timing and orientation information.
+    ///   - Render each eye in between, using ovr_GetEyePoses or ovr_GetHmdPosePerEye to get the predicted hmd pose and each eye pose.
+    ///   - Call ovr_EndFrame() to render distorted textures to the back buffer
     ///     and present them on the Hmd.
     ///
     /// Shutdown:
@@ -1450,30 +1404,6 @@ namespace Ovr
         // -----------------------------------------------------------------------------------
         // Static Methods
 
-        /// <summary>
-        /// ovr_InitializeRenderingShim initializes the rendering shim apart from everything
-        /// else in LibOVR. This may be helpful if the application prefers to avoid
-        /// creating any OVR resources (allocations, service connections, etc) at this point.
-        /// ovr_InitializeRenderingShim does not bring up anything within LibOVR except the
-        /// necessary hooks to enable the Direct-to-Rift functionality.
-        ///
-        /// Either ovr_InitializeRenderingShim() or ovr_Initialize() must be called before any
-        /// Direct3D or OpenGL initialization is done by application (creation of devices, etc).
-        /// ovr_Initialize() must still be called after to use the rest of LibOVR APIs.
-        ///
-        /// Same as ovr_InitializeRenderingShim except it requests to support at least the
-        /// given minor LibOVR library version.
-        /// </summary>
-        public static bool InitializeRenderingShim(int requestedMinorVersion)
-        {
-            return ovr_InitializeRenderingShim(requestedMinorVersion) != 0;
-        }
-
-        public static bool InitializeRenderingShim()
-        {
-            return ovr_InitializeRenderingShim() != 0;
-        }
-
         /// Library init/shutdown, must be called around all other OVR code.
         /// No other functions calls besides ovr_InitializeRenderingShim are allowed
         /// before ovr_Initialize succeeds or after ovr_Shutdown.
@@ -1484,7 +1414,7 @@ namespace Ovr
         /// </summary>
         public static bool Initialize(InitParams Params)
         {
-            return ovr_Initialize(Params) != 0;
+            return ovr_Initialize(Params) >= 0;
         }
 
         /// <summary>
@@ -1505,12 +1435,12 @@ namespace Ovr
 
         /// <summary>
         /// Detects or re-detects HMDs and reports the total number detected.
-        /// Users can get information about each HMD by calling ovrHmd_Create with an index.
+        /// Users can get information about each HMD by calling ovr_Create with an index.
         /// Returns -1 when the service is unreachable.
         /// </summary>
         public static int Detect()
         {
-            return ovrHmd_Detect();
+            return ovr_Detect();
         }
 
         /// <summary>
@@ -1600,13 +1530,12 @@ namespace Ovr
         
         /// <summary>
         /// Creates an HMD and the underlying native ovrHmd pointer at the given index.
-        /// Index can [0 .. ovrHmd_Detect()-1]. Index mappings can cange after each ovrHmd_Detect call.
         /// </summary>
-        public Hmd(int index)
+		public ulong LUID;
+        public Hmd()
         {
-            this.HmdPtr = ovrHmd_Create(index);
-            if (this.HmdPtr == IntPtr.Zero)
-                throw new ArgumentException("Failed to create HMD at index " + index);
+            if (ovr_Create(out this.HmdPtr, out this.LUID) < 0)
+                throw new ArgumentException("Failed to create HMD.");
         }
 
         /// <summary>
@@ -1624,7 +1553,7 @@ namespace Ovr
         /// </summary>
         public Hmd(HmdType type)
         {
-            this.HmdPtr = ovrHmd_CreateDebug(type);
+            this.HmdPtr = ovr_CreateDebug(type);
             if (this.HmdPtr == IntPtr.Zero)
                 throw new ArgumentException("Failed to create debug HMD of type " + type);
         }
@@ -1646,7 +1575,7 @@ namespace Ovr
         {
             if (!IsUserAllocated && this.HmdPtr != IntPtr.Zero)
             {
-                ovrHmd_Destroy(this.HmdPtr);
+                ovr_Destroy(this.HmdPtr);
                 this.HmdPtr = IntPtr.Zero;
             }
 
@@ -1659,7 +1588,7 @@ namespace Ovr
         /// </summary>
         public string GetLastError()
         {
-            return ovrHmd_GetLastError(HmdPtr);
+            return ovr_GetLastError(HmdPtr);
         }
 
         /// <summary>
@@ -1673,7 +1602,7 @@ namespace Ovr
         /// </summary>
         public bool AttachToWindow(Recti destMirrorRect, Recti sourceRenderTargetRect, IntPtr WindowPtr)
         {
-            return ovrHmd_AttachToWindow(HmdPtr, WindowPtr, destMirrorRect, sourceRenderTargetRect) != 0;
+            return ovr_AttachToWindow(HmdPtr, WindowPtr, destMirrorRect, sourceRenderTargetRect) >= 0;
         }
 
         /// <summary>
@@ -1683,7 +1612,7 @@ namespace Ovr
         /// </summary>
         public uint GetEnabledCaps()
         {
-            return ovrHmd_GetEnabledCaps(HmdPtr);
+            return ovr_GetEnabledCaps(HmdPtr);
         }
         
         /// <summary>
@@ -1692,7 +1621,7 @@ namespace Ovr
         /// </summary>
         public void SetEnabledCaps(uint capsBits)
         {
-            ovrHmd_SetEnabledCaps(HmdPtr, capsBits);
+            ovr_SetEnabledCaps(HmdPtr, capsBits);
         }
 
         /// <summary>
@@ -1731,7 +1660,7 @@ namespace Ovr
         /// </summary>
         public bool ConfigureTracking(uint supportedTrackingCaps, uint requiredTrackingCaps)
         {
-            return ovrHmd_ConfigureTracking(HmdPtr, supportedTrackingCaps, requiredTrackingCaps) != 0;
+            return ovr_ConfigureTracking(HmdPtr, supportedTrackingCaps, requiredTrackingCaps) >= 0;
         }
 
         /// <summary>
@@ -1741,19 +1670,19 @@ namespace Ovr
         /// </summary>
         public void RecenterPose()
         {
-            ovrHmd_RecenterPose(HmdPtr);
+            ovr_RecenterPose(HmdPtr);
         }
 
         /// <summary>
         /// Returns tracking state reading based on the specified absolute system time.
         /// Pass an absTime value of 0.0 to request the most recent sensor reading. In this case
         /// both PredictedPose and SamplePose will have the same value.
-        /// ovrHmd_GetEyePoses relies on this function internally.
+        /// ovr_GetEyePoses relies on this function internally.
         /// This may also be used for more refined timing of FrontBuffer rendering logic, etc.
         /// </summary>
         public TrackingState GetTrackingState(double absTime)
         {
-            return ovrHmd_GetTrackingState(HmdPtr, absTime);
+            return ovr_GetTrackingState(HmdPtr, absTime);
         }
 
         /// <summary>
@@ -1761,7 +1690,7 @@ namespace Ovr
         /// </summary>
         public void ResetOnlyBackOfHeadTrackingForConnectConf()
         {
-            ovrHmd_ResetOnlyBackOfHeadTrackingForConnectConf(HmdPtr);
+            ovr_ResetOnlyBackOfHeadTrackingForConnectConf(HmdPtr);
         }
 
         //-------------------------------------------------------------------------------------
@@ -1777,7 +1706,7 @@ namespace Ovr
         /// </summary>
         public Sizei GetFovTextureSize(Eye eye, FovPort fov, float pixelsPerDisplayPixel)
         {
-            return ovrHmd_GetFovTextureSize(HmdPtr, eye, fov, pixelsPerDisplayPixel);
+            return ovr_GetFovTextureSize(HmdPtr, eye, fov, pixelsPerDisplayPixel);
         }
 
         //-------------------------------------------------------------------------------------
@@ -1789,10 +1718,10 @@ namespace Ovr
         //  functions that depend on configured state are not reentrant.
         //
         //  As an extra requirement, any of the following calls must be done on
-        //  the render thread, which is the same thread that calls ovrHmd_BeginFrame
-        //  or ovrHmd_BeginFrameTiming.
-        //    - ovrHmd_EndFrame
-        //    - ovrHmd_GetEyeTimewarpMatrices
+        //  the render thread, which is the same thread that calls ovr_BeginFrame
+        //  or ovr_BeginFrameTiming.
+        //    - ovr_EndFrame
+        //    - ovr_GetEyeTimewarpMatrices
 
         //-------------------------------------------------------------------------------------
         // *****  SDK Distortion Rendering Functions
@@ -1816,7 +1745,7 @@ namespace Ovr
             EyeRenderDesc[] eyeRenderDesc = new EyeRenderDesc[] { new EyeRenderDesc(), new EyeRenderDesc() };
             RenderAPIConfig_Raw rawConfig = renderAPIConfig.ToRaw();
 
-            bool result = ovrHmd_ConfigureRendering(HmdPtr, ref rawConfig, distortionCaps, eyeFovIn, eyeRenderDesc) != 0;
+            bool result = ovr_ConfigureRendering(HmdPtr, ref rawConfig, distortionCaps, eyeFovIn, eyeRenderDesc) >= 0;
             if (result)
                 return eyeRenderDesc;
             return null;
@@ -1825,19 +1754,19 @@ namespace Ovr
         /// <summary>
         /// Begins a frame, returning timing information.
         /// This should be called at the beginning of the game rendering loop (on the render thread).
-        /// Pass 0 for the frame index if not using ovrHmd_GetFrameTiming.
+        /// Pass 0 for the frame index if not using ovr_GetFrameTiming.
         /// </summary>
         public FrameTiming BeginFrame(uint frameIndex)
         {
-            FrameTiming_Raw raw = ovrHmd_BeginFrame(HmdPtr, frameIndex);
+            FrameTiming_Raw raw = ovr_BeginFrame(HmdPtr, frameIndex);
             return new FrameTiming(raw);
         }
 
         /// <summary>
         /// Ends a frame, submitting the rendered textures to the frame buffer.
         /// - RenderViewport within each eyeTexture can change per frame if necessary.
-        /// - 'renderPose' will typically be the value returned from ovrHmd_GetEyePoses,
-        ///   ovrHmd_GetHmdPosePerEye but can be different if a different head pose was
+        /// - 'renderPose' will typically be the value returned from ovr_GetEyePoses,
+        ///   ovr_GetHmdPosePerEye but can be different if a different head pose was
            ///   used for rendering.
         /// - This may perform distortion and scaling internally, assuming is it not
         ///   delegated to another thread.
@@ -1852,7 +1781,7 @@ namespace Ovr
                 raw[i] = eyeTexture[i].ToRaw();
             }
             
-            ovrHmd_EndFrame(HmdPtr, renderPose, raw);
+            ovr_EndFrame(HmdPtr, renderPose, raw);
         }
 
         /// <summary>
@@ -1862,10 +1791,10 @@ namespace Ovr
         /// - Thread-safe function where caller should increment frameIndex with every frame
         ///   and pass the index where applicable to functions called on the  rendering thread.
         /// - hmdToEyeViewOffset[2] can be EyeRenderDesc.HmdToEyeViewOffset returned from
-        ///   ovrHmd_ConfigureRendering or ovrHmd_GetRenderDesc. For monoscopic rendering,
+        ///   ovr_ConfigureRendering or ovr_GetRenderDesc. For monoscopic rendering,
         ///   use a vector that is the average of the two vectors for both eyes.
         /// - If frameIndex is not being utilized, pass in 0.
-        /// - Assuming outEyePoses are used for rendering, it should be passed into ovrHmd_EndFrame.
+        /// - Assuming outEyePoses are used for rendering, it should be passed into ovr_EndFrame.
         /// - If caller doesn't need outHmdTrackingState, it can be passed in as NULL
         /// </summary>
         public Posef[] GetEyePoses(uint frameIndex)
@@ -1880,22 +1809,22 @@ namespace Ovr
             Vector3f[] eyeOffsets = { leftDesc.HmdToEyeViewOffset, rightDesc.HmdToEyeViewOffset };
             Posef[] eyePoses = { new Posef(), new Posef() };
 
-            ovrHmd_GetEyePoses(HmdPtr, frameIndex, eyeOffsets, eyePoses, ref trackingState);
+            ovr_GetEyePoses(HmdPtr, frameIndex, eyeOffsets, eyePoses, ref trackingState);
 
             return eyePoses;
         }
 
         /// <summary>
-        /// Function was previously called ovrHmd_GetEyePose
+        /// Function was previously called ovr_GetEyePose
         /// Returns the predicted head pose to use when rendering the specified eye.
         /// - Important: Caller must apply HmdToEyeViewOffset before using ovrPosef for rendering
-        /// - Must be called between ovrHmd_BeginFrameTiming and ovrHmd_EndFrameTiming.
-        /// - If returned pose is used for rendering the eye, it should be passed to ovrHmd_EndFrame.
+        /// - Must be called between ovr_BeginFrameTiming and ovr_EndFrameTiming.
+        /// - If returned pose is used for rendering the eye, it should be passed to ovr_EndFrame.
         /// - Parameter 'eye' is used internally for prediction timing only
         /// </summary>
         public Posef GetHmdPosePerEye(Eye eye)
         {
-            return ovrHmd_GetHmdPosePerEye(HmdPtr, eye);
+            return ovr_GetHmdPosePerEye(HmdPtr, eye);
         }
 
         //-------------------------------------------------------------------------------------
@@ -1905,25 +1834,25 @@ namespace Ovr
         // client rendering of distortion. Client-side rendering involves the following steps:
         //
         //  1. Setup ovrEyeDesc based on the desired texture size and FOV.
-        //     Call ovrHmd_GetRenderDesc to get the necessary rendering parameters for each eye.
+        //     Call ovr_GetRenderDesc to get the necessary rendering parameters for each eye.
         //
-        //  2. Use ovrHmd_CreateDistortionMesh to generate the distortion mesh.
+        //  2. Use ovr_CreateDistortionMesh to generate the distortion mesh.
         //
-        //  3. Use ovrHmd_BeginFrameTiming, ovrHmd_GetEyePoses, and ovrHmd_BeginFrameTiming in
+        //  3. Use ovr_BeginFrameTiming, ovr_GetEyePoses, and ovr_BeginFrameTiming in
         //     the rendering loop to obtain timing and predicted head orientation when rendering each eye.
         //      - When using timewarp, use ovr_WaitTillTime after the rendering and gpu flush, followed
-        //        by ovrHmd_GetEyeTimewarpMatrices to obtain the timewarp matrices used
+        //        by ovr_GetEyeTimewarpMatrices to obtain the timewarp matrices used
         //        by the distortion pixel shader. This will minimize latency.
         //
 
         /// <summary>
         /// Computes the distortion viewport, view adjust, and other rendering parameters for
-        /// the specified eye. This can be used instead of ovrHmd_ConfigureRendering to do
+        /// the specified eye. This can be used instead of ovr_ConfigureRendering to do
         /// setup for client rendered distortion.
         /// </summary>
         public EyeRenderDesc GetRenderDesc(Eye eyeType, FovPort fov)
         {
-            return ovrHmd_GetRenderDesc(HmdPtr, eyeType, fov);
+            return ovr_GetRenderDesc(HmdPtr, eyeType, fov);
         }
 
         /// <summary>
@@ -1931,8 +1860,8 @@ namespace Ovr
         /// Distortion capabilities will depend on 'distortionCaps' flags. Users should
         /// render using the appropriate shaders based on their settings.
         /// Distortion mesh data will be allocated and written into the ovrDistortionMesh data structure,
-        /// which should be explicitly freed with ovrHmd_DestroyDistortionMesh.
-        /// Users should call ovrHmd_GetRenderScaleAndOffset to get uvScale and Offset values for rendering.
+        /// which should be explicitly freed with ovr_DestroyDistortionMesh.
+        /// Users should call ovr_GetRenderScaleAndOffset to get uvScale and Offset values for rendering.
         /// The function shouldn't fail unless theres is a configuration or memory error, in which case
         /// ovrDistortionMesh values will be set to null.
         /// This is the only function in the SDK reliant on eye relief, currently imported from profiles,
@@ -1942,7 +1871,7 @@ namespace Ovr
         {
             DistortionMesh_Raw rawMesh = new DistortionMesh_Raw();
 
-            bool result = ovrHmd_CreateDistortionMesh(HmdPtr, eye, fov, distortionCaps, out rawMesh) != 0;
+            bool result = ovr_CreateDistortionMesh(HmdPtr, eye, fov, distortionCaps, out rawMesh) >= 0;
 
             if (!result)
             {
@@ -1950,7 +1879,7 @@ namespace Ovr
             }
 
             DistortionMesh mesh = new DistortionMesh(rawMesh);
-            ovrHmd_DestroyDistortionMesh(ref rawMesh);
+            ovr_DestroyDistortionMesh(ref rawMesh);
             return mesh;
         }
 
@@ -1958,13 +1887,13 @@ namespace Ovr
         {
             DistortionMesh_Raw rawMesh = new DistortionMesh_Raw();
 
-            bool result = ovrHmd_CreateDistortionMeshDebug(
+            bool result = ovr_CreateDistortionMeshDebug(
                 HmdPtr,
                 eye,
                 fov,
                 distortionCaps,
                 out rawMesh,
-                debugEyeReliefOverrideInMeters) != 0;
+                debugEyeReliefOverrideInMeters) >= 0;
 
             if (!result)
             {
@@ -1972,7 +1901,7 @@ namespace Ovr
             }
 
             DistortionMesh mesh = new DistortionMesh(rawMesh);
-            ovrHmd_DestroyDistortionMesh(ref rawMesh);
+            ovr_DestroyDistortionMesh(ref rawMesh);
             return mesh;
         }
 
@@ -1983,7 +1912,7 @@ namespace Ovr
         public Vector2f[] GetRenderScaleAndOffset(FovPort fov, Sizei textureSize, Recti renderViewport)
         {
             Vector2f[] uvScaleOffsetOut = new Vector2f[] { new Vector2f(), new Vector2f() };
-            ovrHmd_GetRenderScaleAndOffset(fov, textureSize, renderViewport, uvScaleOffsetOut);
+            ovr_GetRenderScaleAndOffset(fov, textureSize, renderViewport, uvScaleOffsetOut);
             return uvScaleOffsetOut;
         }
 
@@ -1994,18 +1923,18 @@ namespace Ovr
         /// </summary>
         public FrameTiming GetFrameTiming(uint frameIndex)
         {
-            FrameTiming_Raw raw = ovrHmd_GetFrameTiming(HmdPtr, frameIndex);
+            FrameTiming_Raw raw = ovr_GetFrameTiming(HmdPtr, frameIndex);
             return new FrameTiming(raw);
         }
 
         /// <summary>
         /// Called at the beginning of the frame on the rendering thread.
-        /// Pass frameIndex == 0 if ovrHmd_GetFrameTiming isn't being used. Otherwise,
+        /// Pass frameIndex == 0 if ovr_GetFrameTiming isn't being used. Otherwise,
         /// pass the same frame index as was used for GetFrameTiming on the main thread.
         /// </summary>
         public FrameTiming BeginFrameTiming(uint frameIndex)
         {
-            FrameTiming_Raw raw = ovrHmd_BeginFrameTiming(HmdPtr, frameIndex);
+            FrameTiming_Raw raw = ovr_BeginFrameTiming(HmdPtr, frameIndex);
             return new FrameTiming(raw);
         }
 
@@ -2016,7 +1945,7 @@ namespace Ovr
         /// </summary>
         public void EndFrameTiming()
         {
-            ovrHmd_EndFrameTiming(HmdPtr);
+            ovr_EndFrameTiming(HmdPtr);
         }
 
         /// <summary>
@@ -2026,20 +1955,20 @@ namespace Ovr
         /// </summary>
         public void ResetFrameTiming(uint frameIndex)
         {
-            ovrHmd_ResetFrameTiming(HmdPtr, frameIndex);
+            ovr_ResetFrameTiming(HmdPtr, frameIndex);
         }
 
         /// <summary>
         /// Computes timewarp matrices used by distortion mesh shader, these are used to adjust
-        /// for head orientation change since the last call to ovrHmd_GetEyePoses
+        /// for head orientation change since the last call to ovr_GetEyePoses
         /// when rendering this eye. The ovrDistortionVertex::TimeWarpFactor is used to blend between the
         /// matrices, usually representing two different sides of the screen.
-        /// Must be called on the same thread as ovrHmd_BeginFrameTiming.
+        /// Must be called on the same thread as ovr_BeginFrameTiming.
         /// </summary>
         public Matrix4f[] GetEyeTimewarpMatrices(Eye eye, Posef renderPose)
         {
             Matrix4f_Raw[] rawMats = {new Matrix4f_Raw(), new Matrix4f_Raw()};
-            ovrHmd_GetEyeTimewarpMatrices(HmdPtr, eye, renderPose, rawMats);
+            ovr_GetEyeTimewarpMatrices(HmdPtr, eye, renderPose, rawMats);
 
             Matrix4f[] mats = {new Matrix4f(rawMats[0]), new Matrix4f(rawMats[1])};
             return mats;
@@ -2048,7 +1977,7 @@ namespace Ovr
         public Matrix4f[] GetEyeTimewarpMatricesDebug(Eye eye, Posef renderPose, Quatf extraQuat, double debugTimingOffsetInSeconds)
         {
             Matrix4f_Raw[] rawMats = {new Matrix4f_Raw(), new Matrix4f_Raw()};
-            ovrHmd_GetEyeTimewarpMatricesDebug(HmdPtr, eye, renderPose, extraQuat, rawMats, debugTimingOffsetInSeconds);
+            ovr_GetEyeTimewarpMatricesDebug(HmdPtr, eye, renderPose, extraQuat, rawMats, debugTimingOffsetInSeconds);
 
             Matrix4f[] mats = {new Matrix4f(rawMats[0]), new Matrix4f(rawMats[1])};
             return mats;
@@ -2063,7 +1992,7 @@ namespace Ovr
         /// </summary>
         public byte[] ProcessLatencyTest()
         {
-            if (ovrHmd_ProcessLatencyTest(HmdPtr, LatencyTestRgb) != 0)
+            if (ovr_ProcessLatencyTest(HmdPtr, LatencyTestRgb) >= 0)
                 return LatencyTestRgb;
             return null;
         }
@@ -2074,7 +2003,7 @@ namespace Ovr
         /// </summary>
         public string GetLatencyTestResult()
         {
-            IntPtr p = ovrHmd_GetLatencyTestResult(HmdPtr);
+            IntPtr p = ovr_GetLatencyTestResult(HmdPtr);
             return (p == IntPtr.Zero) ? null : Marshal.PtrToStringAnsi(p);
         }
 
@@ -2084,7 +2013,7 @@ namespace Ovr
         /// </summary>
         public byte[] GetLatencyTest2DrawColor()
         {
-            if (ovrHmd_GetLatencyTest2DrawColor(HmdPtr, LatencyTestRgb) != 0)
+            if (ovr_GetLatencyTest2DrawColor(HmdPtr, LatencyTestRgb) >= 0)
                 return LatencyTestRgb;
             return null;
         }
@@ -2115,7 +2044,7 @@ namespace Ovr
         public HSWDisplayState GetHSWDisplayState()
         {
             HSWDisplayState hswDisplayState;
-            ovrHmd_GetHSWDisplayState(HmdPtr, out hswDisplayState);
+            ovr_GetHSWDisplayState(HmdPtr, out hswDisplayState);
             return hswDisplayState;
         }
 
@@ -2132,7 +2061,7 @@ namespace Ovr
         /// <summary>
         public bool DismissHSWDisplay()
         {
-            return ovrHmd_DismissHSWDisplay(HmdPtr) != 0;
+            return ovr_DismissHSWDisplay(HmdPtr) >= 0;
         }
 
         // -----------------------------------------------------------------------------------
@@ -2150,7 +2079,7 @@ namespace Ovr
         /// </summary>
         public bool GetBool(string propertyName, bool defaultVal)
         {
-            return ovrHmd_GetBool(HmdPtr, propertyName, Convert.ToSByte(defaultVal)) != 0;
+            return ovr_GetBool(HmdPtr, propertyName, Convert.ToSByte(defaultVal)) >= 0;
         }
 
         /// <summary>
@@ -2158,7 +2087,7 @@ namespace Ovr
         /// </summary>
         public bool SetBool(string propertyName, bool val)
         {
-            return ovrHmd_SetBool(HmdPtr, propertyName, Convert.ToSByte(val)) != 0;
+            return ovr_SetBool(HmdPtr, propertyName, Convert.ToSByte(val)) >= 0;
         }
 
         /// <summary>
@@ -2167,7 +2096,7 @@ namespace Ovr
         /// </summary>
         public int GetInt(string propertyName, int defaultVal)
         {
-            return ovrHmd_GetInt(HmdPtr, propertyName, defaultVal);
+            return ovr_GetInt(HmdPtr, propertyName, defaultVal);
         }
 
         /// <summary>
@@ -2175,7 +2104,7 @@ namespace Ovr
         /// </summary>
         public bool SetInt(string propertyName, int val)
         {
-            return ovrHmd_SetInt(HmdPtr, propertyName, val) != 0;
+            return ovr_SetInt(HmdPtr, propertyName, val) >= 0;
         }
 
         /// <summary>
@@ -2184,7 +2113,7 @@ namespace Ovr
         /// </summary>
         public float GetFloat(string propertyName, float defaultVal)
         {
-            return ovrHmd_GetFloat(HmdPtr, propertyName, defaultVal);
+            return ovr_GetFloat(HmdPtr, propertyName, defaultVal);
         }
 
         /// <summary>
@@ -2192,7 +2121,7 @@ namespace Ovr
         /// </summary>
         public bool SetFloat(string propertyName, float val)
         {
-            return ovrHmd_SetFloat(HmdPtr, propertyName, val) != 0;
+            return ovr_SetFloat(HmdPtr, propertyName, val) >= 0;
         }
 
         /// <summary>
@@ -2204,7 +2133,7 @@ namespace Ovr
             if (values == null)
                 return null;
 
-            ovrHmd_GetFloatArray(HmdPtr, propertyName, values, (uint)values.Length);
+            ovr_GetFloatArray(HmdPtr, propertyName, values, (uint)values.Length);
             return values;
         }
 
@@ -2216,7 +2145,7 @@ namespace Ovr
             if (values == null)
                 values = new float[0];
 
-            return ovrHmd_SetFloatArray(HmdPtr, propertyName, values, (uint)values.Length) != 0;
+            return ovr_SetFloatArray(HmdPtr, propertyName, values, (uint)values.Length) >= 0;
         }
 
         /// <summary>
@@ -2226,7 +2155,7 @@ namespace Ovr
         /// </summary>
         public string GetString(string propertyName, string defaultVal)
         {
-            IntPtr p = ovrHmd_GetString(HmdPtr, propertyName, null);
+            IntPtr p = ovr_GetString(HmdPtr, propertyName, null);
             if (p == IntPtr.Zero)
                 return defaultVal;
             return Marshal.PtrToStringAnsi(p);
@@ -2237,7 +2166,7 @@ namespace Ovr
         /// </summary>
         public bool SetString(string propertyName, string val)
         {
-            return ovrHmd_SetString(HmdPtr, propertyName, val) != 0;
+            return ovr_SetString(HmdPtr, propertyName, val) >= 0;
         }
 
         // -----------------------------------------------------------------------------------
@@ -2246,11 +2175,11 @@ namespace Ovr
         /// <summary>
         /// Start performance logging. guid is optional and if included is written with each file entry.
         /// If called while logging is already active with the same filename, only the guid will be updated
-        /// If called while logging is already active with a different filename, ovrHmd_StopPerfLog() will be called, followed by ovrHmd_StartPerfLog()
+        /// If called while logging is already active with a different filename, ovr_StopPerfLog() will be called, followed by ovr_StartPerfLog()
         /// </summary>
         public bool StartPerfLog(string fileName, string userData1)
         {
-            return ovrHmd_StartPerfLog(HmdPtr, fileName, userData1) != 0;
+            return ovr_StartPerfLog(HmdPtr, fileName, userData1) >= 0;
         }
 
         /// <summary>
@@ -2258,10 +2187,10 @@ namespace Ovr
         /// </summary>
         public bool StopPerfLog()
         {
-            return ovrHmd_StopPerfLog(HmdPtr) != 0;
+            return ovr_StopPerfLog(HmdPtr) >= 0;
         }
 
-        public const string LibFile = "OculusPlugin";
+        public const string LibFile = "LibOVR";
 
         // Imported functions from
         // OVRPlugin.dll    (PC)
@@ -2271,97 +2200,95 @@ namespace Ovr
         // -----------------------------------------------------------------------------------
         // ***** Private Interface to libOVR
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovr_InitializeRenderingShim(int requestedMinorVersion);
+        private static extern bool ovr_InitializeRenderingShimVersion(int requestedMinorVersion);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovr_InitializeRenderingShim();
+        private static extern int ovr_Initialize(InitParams Params);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovr_Initialize(InitParams Params);
-        [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ovr_Shutdown();
+        private static extern bool ovr_Shutdown();
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr ovr_GetVersionString();
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int ovrHmd_Detect();
+        private static extern int ovr_Detect();
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr ovrHmd_Create(int index);
+        private static extern int ovr_Create(out IntPtr hmd, out ulong luid);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ovrHmd_Destroy(IntPtr hmd);
+        private static extern void ovr_Destroy(IntPtr hmd);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr ovrHmd_CreateDebug(HmdType type);
+        private static extern IntPtr ovr_CreateDebug(HmdType type);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern string ovrHmd_GetLastError(IntPtr hmd);
+        private static extern string ovr_GetLastError(IntPtr hmd);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_AttachToWindow(
+        private static extern sbyte ovr_AttachToWindow(
                 IntPtr hmd,
                    IntPtr window,
                    Recti destMirrorRect,
                    Recti sourceRenderTargetRect);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern uint ovrHmd_GetEnabledCaps(IntPtr hmd);
+        private static extern uint ovr_GetEnabledCaps(IntPtr hmd);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ovrHmd_SetEnabledCaps(IntPtr hmd, uint capsBits);
+        private static extern void ovr_SetEnabledCaps(IntPtr hmd, uint capsBits);
 
         //-------------------------------------------------------------------------------------
         // ***** Sensor Interface
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_ConfigureTracking(
+        private static extern sbyte ovr_ConfigureTracking(
                 IntPtr hmd,
                    uint supportedTrackingCaps,
                    uint requiredTrackingCaps);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ovrHmd_RecenterPose(IntPtr hmd);
+        private static extern void ovr_RecenterPose(IntPtr hmd);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern TrackingState ovrHmd_GetTrackingState(IntPtr hmd, double absTime);
+        private static extern TrackingState ovr_GetTrackingState(IntPtr hmd, double absTime);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ovrHmd_ResetOnlyBackOfHeadTrackingForConnectConf(IntPtr hmd);
+        private static extern void ovr_ResetOnlyBackOfHeadTrackingForConnectConf(IntPtr hmd);
 
         //-------------------------------------------------------------------------------------
         // ***** Graphics Setup
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern Sizei ovrHmd_GetFovTextureSize(
+        private static extern Sizei ovr_GetFovTextureSize(
                 IntPtr hmd,
                 Eye eye,
                    FovPort fov,
                    float pixelsPerDisplayPixel);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_ConfigureRendering(
+        private static extern sbyte ovr_ConfigureRendering(
                 IntPtr hmd,
                 ref RenderAPIConfig_Raw apiConfig,
                 uint distortionCaps,
                 [In] FovPort[] eyeFovIn,
                 [In, Out] EyeRenderDesc[] eyeRenderDescOut);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern FrameTiming_Raw ovrHmd_BeginFrame(IntPtr hmd, uint frameIndex);
+        private static extern FrameTiming_Raw ovr_BeginFrame(IntPtr hmd, uint frameIndex);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ovrHmd_EndFrame(
+        private static extern void ovr_EndFrame(
                 IntPtr hmd,
                    [In] Posef[] renderPose,
                    [In] Texture_Raw[] eyeTexture);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ovrHmd_GetEyePoses(
+        private static extern void ovr_GetEyePoses(
                 IntPtr hmd,
                 uint frameIndex,
                 [In] Vector3f[] hmdToEyeViewOffset,
                 [In, Out] Posef[] eyePosesOut,
                 [In, Out] ref TrackingState hmdTrackingStateOut);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern Posef ovrHmd_GetHmdPosePerEye(
+        private static extern Posef ovr_GetHmdPosePerEye(
                 IntPtr hmd,
                 Eye eye);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern EyeRenderDesc ovrHmd_GetRenderDesc(IntPtr hmd, Eye eye, FovPort fov);
+        private static extern EyeRenderDesc ovr_GetRenderDesc(IntPtr hmd, Eye eye, FovPort fov);
 
         // -----------------------------------------------------------------------------------
         // **** Game-side rendering API
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_CreateDistortionMesh(
+        private static extern sbyte ovr_CreateDistortionMesh(
                 IntPtr hmd,
                 Eye eye,
                 FovPort fov,
                 uint distortionCaps,
                 [Out] out DistortionMesh_Raw meshData);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_CreateDistortionMeshDebug(
+        private static extern sbyte ovr_CreateDistortionMeshDebug(
                 IntPtr hmd,
                 Eye eye,
                 FovPort fov,
@@ -2369,31 +2296,31 @@ namespace Ovr
                 [Out] out DistortionMesh_Raw meshData,
                 float debugEyeReliefOverrideInMeters);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ovrHmd_DestroyDistortionMesh(ref DistortionMesh_Raw meshData);
+        private static extern void ovr_DestroyDistortionMesh(ref DistortionMesh_Raw meshData);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ovrHmd_GetRenderScaleAndOffset(
+        private static extern void ovr_GetRenderScaleAndOffset(
                 FovPort fov,
                 Sizei textureSize,
                 Recti renderViewport,
                 [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)]
                 [Out] Vector2f[] uvScaleOffsetOut);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern FrameTiming_Raw ovrHmd_GetFrameTiming(IntPtr hmd, uint frameIndex);
+        private static extern FrameTiming_Raw ovr_GetFrameTiming(IntPtr hmd, uint frameIndex);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern FrameTiming_Raw ovrHmd_BeginFrameTiming(IntPtr hmd, uint frameIndex);
+        private static extern FrameTiming_Raw ovr_BeginFrameTiming(IntPtr hmd, uint frameIndex);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ovrHmd_EndFrameTiming(IntPtr hmd);
+        private static extern void ovr_EndFrameTiming(IntPtr hmd);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ovrHmd_ResetFrameTiming(IntPtr hmd, uint frameIndex);
+        private static extern void ovr_ResetFrameTiming(IntPtr hmd, uint frameIndex);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ovrHmd_GetEyeTimewarpMatrices(
+        private static extern void ovr_GetEyeTimewarpMatrices(
                 IntPtr hmd,
                    Eye eye,
                    Posef renderPose,
                 [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)]
                 [Out] Matrix4f_Raw[] twnOut);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ovrHmd_GetEyeTimewarpMatricesDebug(
+        private static extern void ovr_GetEyeTimewarpMatricesDebug(
                 IntPtr hmd,
                    Eye eye,
                    Posef renderPose,
@@ -2424,15 +2351,15 @@ namespace Ovr
         // -----------------------------------------------------------------------------------
         // ***** Latency Test interface
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_ProcessLatencyTest(
+        private static extern sbyte ovr_ProcessLatencyTest(
                 IntPtr hmd,
                 [MarshalAs(UnmanagedType.LPArray, SizeConst = 3)]
                 [Out] byte[] rgbColorOut);
         // Returns IntPtr to avoid allocation.
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr ovrHmd_GetLatencyTestResult(IntPtr hmd);
+        private static extern IntPtr ovr_GetLatencyTestResult(IntPtr hmd);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_GetLatencyTest2DrawColor(
+        private static extern sbyte ovr_GetLatencyTest2DrawColor(
                 IntPtr hmd,
                 [MarshalAs(UnmanagedType.LPArray, SizeConst = 3)]
                 [Out] byte[] rgbColorOut);
@@ -2440,86 +2367,86 @@ namespace Ovr
         //-------------------------------------------------------------------------------------
         // ***** Health and Safety Warning Display interface
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ovrHmd_GetHSWDisplayState(
+        private static extern void ovr_GetHSWDisplayState(
                 IntPtr hmd,
                    [Out] out HSWDisplayState hasWarningState);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_DismissHSWDisplay(IntPtr hmd);
+        private static extern sbyte ovr_DismissHSWDisplay(IntPtr hmd);
         
         // -----------------------------------------------------------------------------------
         // ***** Property Access
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_GetBool(
+        private static extern sbyte ovr_GetBool(
                 IntPtr hmd,
                 [MarshalAs(UnmanagedType.LPStr)]
                 string propertyName,
                 sbyte defaultVal);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_SetBool(
+        private static extern sbyte ovr_SetBool(
                 IntPtr hmd,
                 [MarshalAs(UnmanagedType.LPStr)]
                 string propertyName,
                 sbyte val);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int ovrHmd_GetInt(
+        private static extern int ovr_GetInt(
                 IntPtr hmd,
                 [MarshalAs(UnmanagedType.LPStr)]
                 string propertyName,
                 int defaultVal);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_SetInt(
+        private static extern sbyte ovr_SetInt(
                 IntPtr hmd,
                 [MarshalAs(UnmanagedType.LPStr)]
                 string propertyName,
                 int val);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern float ovrHmd_GetFloat(
+        private static extern float ovr_GetFloat(
                 IntPtr hmd,
                 [MarshalAs(UnmanagedType.LPStr)]
                 string propertyName,
                 float defaultVal);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_SetFloat(
+        private static extern sbyte ovr_SetFloat(
                 IntPtr hmd,
                 [MarshalAs(UnmanagedType.LPStr)]
                 string propertyName,
                 float val);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern uint ovrHmd_GetFloatArray(
+        private static extern uint ovr_GetFloatArray(
                 IntPtr hmd,
                 [MarshalAs(UnmanagedType.LPStr)]
                 string propertyName,
                 float[] values, // TBD: Passing var size?
                 uint arraySize);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_SetFloatArray(
+        private static extern sbyte ovr_SetFloatArray(
                 IntPtr hmd,
                 [MarshalAs(UnmanagedType.LPStr)]
                 string propertyName,
                 float[] values, // TBD: Passing var size?
                 uint arraySize);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr ovrHmd_GetString(
+        private static extern IntPtr ovr_GetString(
                 IntPtr hmd,
                 [MarshalAs(UnmanagedType.LPStr)]
                 string propertyName,
                 [MarshalAs(UnmanagedType.LPStr)]
                 string defaultVal);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_SetString(
+        private static extern sbyte ovr_SetString(
                 IntPtr hmd,
                 [MarshalAs(UnmanagedType.LPStr)]
                 string propertyName,
                 [MarshalAs(UnmanagedType.LPStr)]
                 string val);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_StartPerfLog(
+        private static extern sbyte ovr_StartPerfLog(
                 IntPtr hmd,
                 [MarshalAs(UnmanagedType.LPStr)]
                 string fileName,
                 [MarshalAs(UnmanagedType.LPStr)]
                 string userData1);
         [DllImport(LibFile, CallingConvention = CallingConvention.Cdecl)]
-        private static extern sbyte ovrHmd_StopPerfLog(IntPtr hmd);
+        private static extern sbyte ovr_StopPerfLog(IntPtr hmd);
     }
 }
