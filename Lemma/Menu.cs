@@ -2392,19 +2392,15 @@ namespace Lemma.Components
 				UIComponent menu = this.currentMenu;
 				if (menu != null && menu != creditsDisplay)
 				{
-					bool highlight = this.main.GamePadConnected;
-					if (highlight)
-					{
-						foreach (UIComponent item in menu.Children)
-							item.Highlighted.Value = false;
-					}
+					foreach (UIComponent item in menu.Children)
+						item.Highlighted.Value = false;
 
 					int i = 0;
 					foreach (UIComponent item in menu.Children)
 					{
 						if (isButton(item) || isScrollButton(item))
 						{
-							if (highlight)
+							if (main.GamePadConnected)
 								item.Highlighted.Value = true;
 							selected = i;
 							break;
@@ -2481,6 +2477,11 @@ namespace Lemma.Components
 				moveSelection(-1);
 			}));
 
+			this.input.Add(new CommandBinding(this.input.GetKeyDown(Keys.Up), delegate()
+			{
+				moveSelection(-1);
+			}));
+
 			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickDown), delegate()
 			{
 				moveSelection(1);
@@ -2491,7 +2492,12 @@ namespace Lemma.Components
 				moveSelection(1);
 			}));
 
-			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.A), delegate()
+			this.input.Add(new CommandBinding(this.input.GetKeyDown(Keys.Down), delegate()
+			{
+				moveSelection(1);
+			}));
+
+			Action clickSelection = delegate()
 			{
 				if (this.dialog != null)
 					this.dialog.GetChildByName("Okay").MouseLeftUp.Execute();
@@ -2510,7 +2516,11 @@ namespace Lemma.Components
 						}
 					}
 				}
-			}));
+			};
+
+			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.A), clickSelection));
+
+			this.input.Add(new CommandBinding(this.input.GetKeyDown(Keys.Enter), clickSelection));
 
 			Action<int> scrollButton = delegate(int delta)
 			{
@@ -2543,12 +2553,22 @@ namespace Lemma.Components
 				scrollButton(-1);
 			}));
 
+			this.input.Add(new CommandBinding(this.input.GetKeyDown(Keys.Left), delegate()
+			{
+				scrollButton(-1);
+			}));
+
 			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickRight), delegate()
 			{
 				scrollButton(1);
 			}));
 
 			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.DPadRight), delegate()
+			{
+				scrollButton(1);
+			}));
+
+			this.input.Add(new CommandBinding(this.input.GetKeyDown(Keys.Right), delegate()
 			{
 				scrollButton(1);
 			}));
