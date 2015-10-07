@@ -27,6 +27,8 @@ namespace Lemma.Components
 	public class EditorGeeUI : Component<Main>
 	{
 		private const float TextFieldHeight = 19;
+		private const string decimalRegex = "^-?\\d+[,\\.]?\\d*$";
+		private const string integerRegex = "^-?\\d+$";
 		public struct EditorCommand
 		{
 			public string Description;
@@ -896,7 +898,7 @@ namespace Lemma.Components
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
 				};
-				textField.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
+				textField.ValidationRegex = decimalRegex;
 				textField.OnTextSubmitted = onChanged;
 				BindScrollWheel(socket, element, entry, textField);
 			}
@@ -924,7 +926,7 @@ namespace Lemma.Components
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
 				};
-				textField.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
+				textField.ValidationRegex = decimalRegex;
 				textField.OnTextSubmitted = onChanged;
 				BindScrollWheel(socket, element, entry, textField);
 			}
@@ -970,7 +972,7 @@ namespace Lemma.Components
 					textField.Text = socket.Value.GetComponent(dir).ToString();
 					textField.Selected.Value = false;
 				};
-				textField.ValidationRegex = "^-?\\d+$";
+				textField.ValidationRegex = integerRegex;
 				textField.OnTextSubmitted = onChanged;
 			}
 			else if (type.Equals(typeof(Vector4)))
@@ -995,7 +997,7 @@ namespace Lemma.Components
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
 				};
-				textField.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
+				textField.ValidationRegex = decimalRegex;
 				textField.OnTextSubmitted = onChanged;
 				BindScrollWheel(socket, element, entry, textField);
 			}
@@ -1021,7 +1023,7 @@ namespace Lemma.Components
 					textField.Text = socket.Value.GetElement(element).ToString("F");
 					textField.Selected.Value = false;
 				};
-				textField.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
+				textField.ValidationRegex = decimalRegex;
 				textField.OnTextSubmitted = onChanged;
 				BindScrollWheel(socket, element, entry, textField);
 			}
@@ -1049,7 +1051,7 @@ namespace Lemma.Components
 					textField.Text = socket.Value.GetElement(element).ToString();
 					textField.Selected.Value = false;
 				};
-				textField.ValidationRegex = "^?\\d+$";
+				textField.ValidationRegex = integerRegex;
 				textField.OnTextSubmitted = onChanged;
 				BindScrollWheel(socket, element, entry, textField);
 			}
@@ -1256,7 +1258,7 @@ namespace Lemma.Components
 							view.Text = socket.Value.ToString();
 							view.Selected.Value = false;
 						};
-						view.ValidationRegex = "^-?\\d+$";
+						view.ValidationRegex = integerRegex;
 						view.OnTextSubmitted = onChanged;
 						BindScrollWheel(socket, entry, view);
 					}
@@ -1281,7 +1283,7 @@ namespace Lemma.Components
 							view.Text = socket.Value.ToString("F");
 							view.Selected.Value = false;
 						};
-						view.ValidationRegex = "^-?\\d+(\\.\\d+)?$";
+						view.ValidationRegex = decimalRegex;
 						view.OnTextSubmitted = onChanged;
 						BindScrollWheel(socket, entry, view);
 					}
