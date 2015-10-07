@@ -198,6 +198,44 @@ with.
         <Start>&#368;</Start>
         <End>&#369;</End>
       </CharacterRegion>
+      
+      <!-- Turkish -->
+      <CharacterRegion>
+        <Start>&#286;</Start>
+        <End>&#287;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#350;</Start>
+        <End>&#351;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#231;</Start>
+        <End>&#231;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#199;</Start>
+        <End>&#199;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#304;</Start>
+        <End>&#305;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#252;</Start>
+        <End>&#252;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#220;</Start>
+        <End>&#220;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#246;</Start>
+        <End>&#246;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#214;</Start>
+        <End>&#214;</End>
+      </CharacterRegion>
     </CharacterRegions>
   </Asset>
 </XnaContent>

@@ -1,13 +1,13 @@
 [submodule "Game"]
 	path = Lemma/Game
-	url = git@bitbucket.org:et1337/lemma-game-assets.git
+	url = git@bitbucket.org:etodd/lemma-game-assets.git
 [submodule "LemmaAnalytics"]
 	path = LemmaAnalytics
-	url = git@bitbucket.org:et1337/lemmaanalytics.git
+	url = git@bitbucket.org:etodd/lemmaanalytics.git
 [submodule "SharpZipLib"]
 	path = SharpZipLib
-	url = git@github.com:et1337/SharpZipLib.git
+	url = git@github.com:etodd/SharpZipLib.git
 [submodule "Steamworks.NET"]
 	path = Steamworks.NET
-	url = git@github.com:et1337/Steamworks.NET.git
+	url = git@github.com:etodd/Steamworks.NET.git
 	ignore = dirty
