@@ -2479,7 +2479,8 @@ namespace Lemma.Components
 
 			this.input.Add(new CommandBinding(this.input.GetKeyDown(Keys.Up), delegate()
 			{
-				moveSelection(-1);
+				if (!ConsoleUI.Showing)
+					moveSelection(-1);
 			}));
 
 			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickDown), delegate()
@@ -2494,25 +2495,29 @@ namespace Lemma.Components
 
 			this.input.Add(new CommandBinding(this.input.GetKeyDown(Keys.Down), delegate()
 			{
-				moveSelection(1);
+				if (!ConsoleUI.Showing)
+					moveSelection(1);
 			}));
 
 			Action clickSelection = delegate()
 			{
-				if (this.dialog != null)
-					this.dialog.GetChildByName("Okay").MouseLeftUp.Execute();
-				else
+				if (!ConsoleUI.Showing)
 				{
-					UIComponent menu = this.currentMenu;
-					if (menu != null && menu != creditsDisplay)
+					if (this.dialog != null)
+						this.dialog.GetChildByName("Okay").MouseLeftUp.Execute();
+					else
 					{
-						if (selected >= 0 && selected < menu.Children.Count)
+						UIComponent menu = this.currentMenu;
+						if (menu != null && menu != creditsDisplay)
 						{
-							UIComponent selectedItem = menu.Children[selected];
-							if (isScrollButton(selectedItem) && selectedItem.Highlighted)
-								selectedItem.GetChildByName(">").MouseLeftUp.Execute();
-							else if (isButton(selectedItem) && selectedItem.Highlighted)
-								selectedItem.MouseLeftUp.Execute();
+							if (selected >= 0 && selected < menu.Children.Count)
+							{
+								UIComponent selectedItem = menu.Children[selected];
+								if (isScrollButton(selectedItem) && selectedItem.Highlighted)
+									selectedItem.GetChildByName(">").MouseLeftUp.Execute();
+								else if (isButton(selectedItem) && selectedItem.Highlighted)
+									selectedItem.MouseLeftUp.Execute();
+							}
 						}
 					}
 				}
@@ -2555,7 +2560,8 @@ namespace Lemma.Components
 
 			this.input.Add(new CommandBinding(this.input.GetKeyDown(Keys.Left), delegate()
 			{
-				scrollButton(-1);
+				if (!ConsoleUI.Showing)
+					scrollButton(-1);
 			}));
 
 			this.input.Add(new CommandBinding(this.input.GetButtonDown(Buttons.LeftThumbstickRight), delegate()
@@ -2570,7 +2576,8 @@ namespace Lemma.Components
 
 			this.input.Add(new CommandBinding(this.input.GetKeyDown(Keys.Right), delegate()
 			{
-				scrollButton(1);
+				if (!ConsoleUI.Showing)
+					scrollButton(1);
 			}));
 		}
 

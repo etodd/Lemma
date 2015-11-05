@@ -517,6 +517,8 @@ namespace Lemma.Util
 				bool success = SteamUserStats.GetAchievement("cheevo_" + cheevo, out value);
 				if (success)
 					_achievementDictionary.Add("cheevo_" + cheevo, value);
+				else
+					_achievementDictionary.Add("cheevo_" + cheevo, false);
 			}
 
 			foreach (var stat in statNames)
@@ -525,6 +527,8 @@ namespace Lemma.Util
 				bool success = SteamUserStats.GetStat("stat_" + stat, out value);
 				if (success)
 					_statDictionary.Add("stat_" + stat, value);
+				else
+					_statDictionary.Add("stat_" + stat, 0);
 			}
 			StatsInitialized.Value = true;
 		}

@@ -667,6 +667,22 @@ namespace Lemma
 				}
 			}, "none"));
 
+			Lemma.Console.Console.AddConCommand(new ConCommand("cheevos", "Unlock all achievements.", delegate(ConCommand.ArgCollection args)
+			{
+				SteamWorker.SetAchievement("ending_a");
+				SteamWorker.SetAchievement("ending_b");
+				SteamWorker.SetAchievement("ending_c");
+				SteamWorker.SetAchievement("ending_d");
+				SteamWorker.SetAchievement("pillar_crushed");
+				SteamWorker.SetAchievement("flashback");
+				SteamWorker.SetAchievement("god_mode");
+				SteamWorker.SetAchievement("level_editor");
+
+				SteamWorker.SetStat("orbs_collected", 49);
+				SteamWorker.SetStat("notes_read", 36);
+				SteamWorker.SetStat("challenge_levels_played", 1);
+			}));
+
 			Lemma.Console.Console.AddConCommand(new ConCommand("moves", "Enable all parkour moves.", delegate(ConCommand.ArgCollection args)
 			{
 				if (PlayerDataFactory.Instance != null)
