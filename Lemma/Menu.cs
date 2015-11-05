@@ -198,10 +198,9 @@ namespace Lemma.Components
 				container.Delete.Execute();
 		}
 
-		public void AddSaveGame(string timestamp)
+		private Main.SaveInfo loadSaveInfo(string timestamp)
 		{
-			Main.SaveInfo info = null;
-			string thumbnailPath = null;
+			Main.SaveInfo info;
 			try
 			{
 				using (Stream fs = new FileStream(Path.Combine(this.main.SaveDirectory, timestamp, "save.dat"), FileMode.Open, FileAccess.Read, FileShare.None))
@@ -221,13 +220,19 @@ namespace Lemma.Components
 
 				if (info.Version != Main.MapVersion)
 					throw new Exception();
-				thumbnailPath = Path.Combine(this.main.SaveDirectory, timestamp, "thumbnail.png");
 			}
 			catch (Exception) // Incompatible version. Ignore.
 			{
-				return;
+				return null;
 			}
+			return info;
+		}
 
+		public void AddSaveGame(string timestamp)
+		{
+			if (this.loadSaveInfo(timestamp) == null) // Incompatible version or error
+				return;
+			string thumbnailPath = thumbnailPath = Path.Combine(this.main.SaveDirectory, timestamp, "thumbnail.png");
 			UIComponent container = this.main.UIFactory.CreateButton();
 			container.UserData.Value = timestamp;
 
@@ -267,6 +272,7 @@ namespace Lemma.Components
 					this.main.Paused.Value = false;
 					this.restorePausedSettings();
 					this.main.CurrentSave.Value = timestamp;
+					Main.SaveInfo info = this.loadSaveInfo(timestamp);
 					IO.MapLoader.Load(this.main, info.MapFile, info.PlayerData);
 				}
 				container.SwallowCurrentMouseEvent();
