@@ -200,12 +200,12 @@ namespace Lemma.Util
 		}
 
 		[AutoConCommand("set_stat", "Set a Steam stat")]
-		public static void SetStat(string name, int newVal)
+		public static void SetStat(string name, int newVal, bool forceUpload = true)
 		{
 			if (!Initialized) return;
-			if (!_statDictionary.ContainsKey(name)) return;
 
-			var curVal = _statDictionary[name];
+			var curVal = 0;
+			_statDictionary.TryGetValue(name, out curVal);
 			if (newVal <= curVal)
 				return;
 
@@ -213,7 +213,7 @@ namespace Lemma.Util
 			SteamUserStats.SetStat(name, newVal);
 			_anythingChanged = true;
 
-			if ((DateTime.Now - _statsLastUploaded).TotalSeconds >= 5)
+			if (forceUpload)
 				UploadStats();
 		}
 
@@ -226,14 +226,7 @@ namespace Lemma.Util
 		public static void IncrementStat(string name, int increment)
 		{
 			if (!Initialized) return;
-			if (!_statDictionary.ContainsKey(name)) return;
 			SetStat(name, GetStat(name) + increment);
-		}
-
-		public static bool IsStat(string name)
-		{
-			if (!Initialized) return false;
-			return _statDictionary.ContainsKey(name);
 		}
 
 		public static int GetStat(string name)
@@ -246,8 +239,9 @@ namespace Lemma.Util
 		public static void SetAchievement(string name, bool forceUpload = true)
 		{
 			if (!Initialized) return;
-			if (!_achievementDictionary.ContainsKey(name)) return;
-			if (_achievementDictionary[name]) return; //No use setting an already-unlocked cheevo.
+			bool existing_value = false;
+			_achievementDictionary.TryGetValue(name, out existing_value);
+			if (existing_value) return; //No use setting an already-unlocked cheevo.
 			_achievementDictionary[name] = true;
 			SteamUserStats.SetAchievement(name);
 			_anythingChanged = true;

@@ -94,7 +94,7 @@ namespace Lemma
 
 		public const int ConfigVersion = 9;
 		public const int MapVersion = 1027;
-		public const int Build = 1078;
+		public const int Build = 1086;
 
 		public class Config
 		{
@@ -667,20 +667,25 @@ namespace Lemma
 				}
 			}, "none"));
 
+			Lemma.Console.Console.AddConCommand(new ConCommand("reset_cheevos", "Reset all achievements.", delegate(ConCommand.ArgCollection args)
+			{
+				SteamWorker.ResetAllStats(true);
+			}));
+
 			Lemma.Console.Console.AddConCommand(new ConCommand("cheevos", "Unlock all achievements.", delegate(ConCommand.ArgCollection args)
 			{
-				SteamWorker.SetAchievement("ending_a");
-				SteamWorker.SetAchievement("ending_b");
-				SteamWorker.SetAchievement("ending_c");
-				SteamWorker.SetAchievement("ending_d");
-				SteamWorker.SetAchievement("pillar_crushed");
-				SteamWorker.SetAchievement("flashback");
-				SteamWorker.SetAchievement("god_mode");
-				SteamWorker.SetAchievement("level_editor");
+				SteamWorker.SetAchievement("cheevo_ending_a");
+				SteamWorker.SetAchievement("cheevo_ending_b");
+				SteamWorker.SetAchievement("cheevo_ending_c");
+				SteamWorker.SetAchievement("cheevo_ending_d");
+				SteamWorker.SetAchievement("cheevo_pillar_crushed");
+				SteamWorker.SetAchievement("cheevo_flashback");
+				SteamWorker.SetAchievement("cheevo_god_mode");
+				SteamWorker.SetAchievement("cheevo_level_editor");
 
-				SteamWorker.SetStat("orbs_collected", 49);
-				SteamWorker.SetStat("notes_read", 36);
-				SteamWorker.SetStat("challenge_levels_played", 1);
+				SteamWorker.SetStat("stat_orbs_collected", 49);
+				SteamWorker.SetStat("stat_notes_read", 36);
+				SteamWorker.SetStat("stat_challenge_levels_played", 1);
 			}));
 
 			Lemma.Console.Console.AddConCommand(new ConCommand("moves", "Enable all parkour moves.", delegate(ConCommand.ArgCollection args)
