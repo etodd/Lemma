@@ -94,15 +94,16 @@ namespace Lemma
 
 		public const int ConfigVersion = 9;
 		public const int MapVersion = 1027;
-		public const int Build = 1086;
+		public const int Build = 1088;
 
 		public class Config
 		{
 			public enum Lang
 			{
 				en,
-				pl,
 				es,
+				fr,
+				pl,
 				hu,
 				tr,
 			}

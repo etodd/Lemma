@@ -103,6 +103,7 @@ Polish translation by Łukasz Zając & Bartosz Michalik
 Spanish translation by Antonio Baena
 Hungarian translation by Zsolt Brechler
 Turkish translation by Recep Samed Üçer & Umut Can Turan
+French translation by Le-Kinder
 
 ------------------------------------------
 
