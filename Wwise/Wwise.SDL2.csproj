@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{C25A2B65-7D60-4837-BEE0-51BA8CFDD9C6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Wwise.SDL2</RootNamespace>
+    <AssemblyName>Wwise</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;WINDOWS</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
+    <DefineConstants>WINDOWS</DefineConstants>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Compile Include="AkAuxSend.cs" />
+    <Compile Include="AkAuxSendAware.cs" />
+    <Compile Include="AkBankPath.cs" />
+    <Compile Include="AkGameObject.cs" />
+    <Compile Include="AkGameObjectTracker.cs" />
+    <Compile Include="AkGlobalSoundEngineInitializer.cs" />
+    <Compile Include="AkGlobalSoundEngineTerminator.cs" />
+    <Compile Include="AkInMemBankLoader.cs" />
+    <Compile Include="AkListener.cs" />
+    <Compile Include="Generated\Common\AkActionOnEventType.cs" />
+    <Compile Include="Generated\Common\AkArrayAllocatorAlignedSimd.cs" />
+    <Compile Include="Generated\Common\AkArrayAllocatorDefault.cs" />
+    <Compile Include="Generated\Common\AkAuxSendValue.cs" />
+    <Compile Include="Generated\Common\AkBankContent.cs" />
+    <Compile Include="Generated\Common\AkCallbackSerializer.cs" />
+    <Compile Include="Generated\Common\AkCallbackType.cs" />
+    <Compile Include="Generated\Common\AkChannelOrdering.cs" />
+    <Compile Include="Generated\Common\AkCurveInterpolation.cs" />
+    <Compile Include="Generated\Common\AkDeviceSettings.cs" />
+    <Compile Include="Generated\Common\AkExternalSourceInfo.cs" />
+    <Compile Include="Generated\Common\AkGroupType.cs" />
+    <Compile Include="Generated\Common\AkInitSettings.cs" />
+    <Compile Include="Generated\Common\AkListenerPosition.cs" />
+    <Compile Include="Generated\Common\AkMemSettings.cs" />
+    <Compile Include="Generated\Common\AkMusicPlaylistCallbackInfo.cs" />
+    <Compile Include="Generated\Common\AkMusicSettings.cs" />
+    <Compile Include="Generated\Common\AkNodeType.cs" />
+    <Compile Include="Generated\Common\AkObjectInfo.cs" />
+    <Compile Include="Generated\Common\AkOutputSettings.cs" />
+    <Compile Include="Generated\Common\AkPannerType.cs" />
+    <Compile Include="Generated\Common\AkPanningRule.cs" />
+    <Compile Include="Generated\Common\AkPlaylistArray.cs" />
+    <Compile Include="Generated\Common\AkPositioningInfo.cs" />
+    <Compile Include="Generated\Common\AkPositionSourceType.cs" />
+    <Compile Include="Generated\Common\AKRESULT.cs" />
+    <Compile Include="Generated\Common\AkSegmentInfo.cs" />
+    <Compile Include="Generated\Common\AkSoundPosition.cs" />
+    <Compile Include="Generated\Common\AkStreamMgrSettings.cs" />
+    <Compile Include="Generated\Common\AkVector.cs" />
+    <Compile Include="Generated\Common\AkVolumeOffset.cs" />
+    <Compile Include="Generated\Common\ArrayPoolDefault.cs" />
+    <Compile Include="Generated\Common\ArrayPoolLEngineDefault.cs" />
+    <Compile Include="Generated\Common\DynamicSequenceType.cs" />
+    <Compile Include="Generated\Common\EnvelopePoint.cs" />
+    <Compile Include="Generated\Common\ErrorCode.cs" />
+    <Compile Include="Generated\Common\ErrorLevel.cs" />
+    <Compile Include="Generated\Common\Iterator.cs" />
+    <Compile Include="Generated\Common\MultiPositionType.cs" />
+    <Compile Include="Generated\Common\Playlist.cs" />
+    <Compile Include="Generated\Common\PlaylistItem.cs" />
+    <Compile Include="Generated\Common\PreparationType.cs" />
+    <Compile Include="Generated\Common\RTPCValue_type.cs" />
+    <Compile Include="Generated\Common\WwiseObjectID.cs" />
+    <Compile Include="Generated\Common\WwiseObjectIDext.cs" />
+    <Compile Include="Generated\Windows\AkMemPoolAttributes_Windows.cs" />
+    <Compile Include="Generated\Windows\AkPlatformInitSettings_Windows.cs" />
+    <Compile Include="Generated\Windows\AkSinkType_Windows.cs" />
+    <Compile Include="Generated\Windows\AkSoundEnginePINVOKE_Windows.cs" />
+    <Compile Include="Generated\Windows\AkSoundEngine_Windows.cs" />
+    <Compile Include="Generated\Windows\AkSoundQuality_Windows.cs" />
+    <Compile Include="Generated\Windows\AkSpeakerVolumes_Windows.cs" />
+    <Compile Include="Generated\Windows\AkThreadProperties_Windows.cs" />
+    <Compile Include="Handwritten\AkAuxSendArray.cs" />
+    <Compile Include="Handwritten\AkCallbackManager.cs" />
+    <Compile Include="Handwritten\AkPositionArray.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ComponentBind\ComponentBind.SDL2.csproj">
+      <Project>{2FB48991-FCC9-4D08-A9FE-8C25C0173CCB}</Project>
+      <Name>ComponentBind.SDL2</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FNA\FNA.csproj">
+      <Project>{35253CE1-C864-4CD3-8249-4D1319748E8F}</Project>
+      <Name>FNA</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+</Project>
