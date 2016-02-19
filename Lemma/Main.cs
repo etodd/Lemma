@@ -2168,11 +2168,14 @@ namespace Lemma
 
 			if (!fullscreen || borderless)
 			{
+				// TODO: FNA borderless window
+				/*
 				System.Windows.Forms.Control control = System.Windows.Forms.Control.FromHandle(this.Window.Handle);
 				System.Windows.Forms.Form form = control.FindForm();
 				form.FormBorderStyle = fullscreen || borderless ? System.Windows.Forms.FormBorderStyle.None : System.Windows.Forms.FormBorderStyle.Sizable;
 				if (fullscreen && borderless)
 					form.Location = new System.Drawing.Point(0, 0);
+				*/
 				this.resize = null;
 			}
 

@@ -14,3 +14,4 @@ Steam/*.manifest.txt
 Steam/*.log
 Steam/*.csd
 Steam/*.csm
+*.cachefile

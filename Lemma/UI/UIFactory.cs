@@ -28,8 +28,6 @@ namespace Lemma.Components
 
 		public TextElement CreateLink(string text, string url)
 		{
-			System.Windows.Forms.Form winForm = (System.Windows.Forms.Form)System.Windows.Forms.Form.FromHandle(this.main.Window.Handle);
-
 			TextElement element = new TextElement();
 			element.FontFile.Value = this.main.Font;
 			element.Text.Value = text;
@@ -37,19 +35,6 @@ namespace Lemma.Components
 			element.Add(new CommandBinding(element.MouseLeftUp, delegate()
 			{
 				UIFactory.OpenURL(url);
-			}));
-			element.Add(new CommandBinding(element.MouseOver, delegate()
-			{
-				winForm.Cursor = System.Windows.Forms.Cursors.Hand;
-			}));
-			element.Add(new CommandBinding(element.MouseOut, delegate()
-			{
-				winForm.Cursor = System.Windows.Forms.Cursors.Default;
-			}));
-			element.Add(new CommandBinding(element.Delete, delegate()
-			{
-				if (element.Highlighted)
-					winForm.Cursor = System.Windows.Forms.Cursors.Default;
 			}));
 
 			return element;

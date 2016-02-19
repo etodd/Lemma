@@ -1,0 +1,570 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{3D2D163E-393B-4AFD-997B-143E909AC653}</ProjectGuid>
+    <ProjectTypeGuids>{6D335F3A-9D43-41b4-9D22-F6F17C4BE596};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Lemma</RootNamespace>
+    <AssemblyName>Lemma</AssemblyName>
+    <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
+    <XnaPlatform>Windows</XnaPlatform>
+    <XnaCrossPlatformGroupID>557ce702-14e8-4a52-b689-5977223a2d2b</XnaCrossPlatformGroupID>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <Thumbnail>
+    </Thumbnail>
+    <XnaUpgrade>
+    </XnaUpgrade>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <XnaOutputType>Game</XnaOutputType>
+    <XnaProfile>HiDef</XnaProfile>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>0.0.3.0</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\x86\Debug</OutputPath>
+    <DefineConstants>TRACE;DEBUG;WINDOWS;DEVELOPMENT;VR</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <PlatformTarget>x86</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\x86\Release</OutputPath>
+    <DefineConstants>WINDOWS;ANALYTICS;STEAMWORKS;VR</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <PlatformTarget>x86</PlatformTarget>
+    <XnaCompressContent>True</XnaCompressContent>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugSymbols>true</DebugSymbols>
+    <GenerateSerializationAssemblies>On</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Development|x86'">
+    <OutputPath>bin\x86\Development\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;WINDOWS;ANALYTICS;CHEAT;STEAMWORKS;DEVELOPMENT</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <NoStdLib>true</NoStdLib>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <XnaCompressContent>True</XnaCompressContent>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="mscorlib">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.XML" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AdapterSelectorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdapterSelectorForm.Designer.cs">
+      <DependentUpon>AdapterSelectorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ComponentInterfaces.cs" />
+    <Compile Include="Components\AI.cs" />
+    <Compile Include="Components\Agent.cs" />
+    <Compile Include="Components\SoundBank.cs" />
+    <Compile Include="Components\Bouncer.cs" />
+    <Compile Include="Components\PowerBlockSocket.cs" />
+    <Compile Include="Components\AnimatedProp.cs" />
+    <Compile Include="Components\Data.cs" />
+    <Compile Include="Components\Block.cs" />
+    <Compile Include="Components\VoxelTrigger.cs" />
+    <Compile Include="Components\Scriptlike\AnimatedSetter.cs" />
+    <Compile Include="Components\Scriptlike\LogicGate.cs" />
+    <Compile Include="Components\Scriptlike\Sequence.cs" />
+    <Compile Include="Components\SliderCommon.cs" />
+    <Compile Include="Components\Scriptlike\ConsoleCommand.cs" />
+    <Compile Include="Components\ParticleWind.cs" />
+    <Compile Include="Components\Rotator.cs" />
+    <Compile Include="Components\Scriptlike\Binder.cs" />
+    <Compile Include="Components\Scriptlike\Constant.cs" />
+    <Compile Include="Components\Scriptlike\MessageDisplayer.cs" />
+    <Compile Include="Components\Skybox.cs" />
+    <Compile Include="Components\StaticSlider.cs" />
+    <Compile Include="Components\Smoke.cs" />
+    <Compile Include="Components\Snake.cs" />
+    <Compile Include="Components\Sound.cs" />
+    <Compile Include="Components\AmbientSound.cs" />
+    <Compile Include="Components\Analytics.cs" />
+    <Compile Include="Components\CameraStop.cs" />
+    <Compile Include="Components\DialogueFile.cs" />
+    <Compile Include="Components\EffectBlock.cs" />
+    <Compile Include="Components\BlockCloud.cs" />
+    <Compile Include="Components\FallingTower.cs" />
+    <Compile Include="Components\ImplodeBlock.cs" />
+    <Compile Include="Components\Joint.cs" />
+    <Compile Include="Components\MapExit.cs" />
+    <Compile Include="Components\Exploder.cs" />
+    <Compile Include="Components\Rain.cs" />
+    <Compile Include="Components\RaycastAIMovement.cs" />
+    <Compile Include="Components\Levitator.cs" />
+    <Compile Include="Components\Note.cs" />
+    <Compile Include="Components\PlayerData.cs" />
+    <Compile Include="Components\Collectible.cs" />
+    <Compile Include="Components\Rift.cs" />
+    <Compile Include="Components\SceneryBlock.cs" />
+    <Compile Include="Components\Scriptlike\Scriptlike.cs" />
+    <Compile Include="Components\Scriptlike\Counter.cs" />
+    <Compile Include="Components\Scriptlike\Setter.cs" />
+    <Compile Include="Components\Scriptlike\RandomTicker.cs" />
+    <Compile Include="Components\Scriptlike\Ticker.cs" />
+    <Compile Include="Components\Spinner.cs" />
+    <Compile Include="Components\Slider.cs" />
+    <Compile Include="Components\Spawner.cs" />
+    <Compile Include="Components\Starter.cs" />
+    <Compile Include="Components\VoxelSetter.cs" />
+    <Compile Include="Components\Switch.cs" />
+    <Compile Include="Components\TimeTrial.cs" />
+    <Compile Include="Components\Turret.cs" />
+    <Compile Include="Components\VoxelFill.cs" />
+    <Compile Include="ErrorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ErrorForm.Designer.cs">
+      <DependentUpon>ErrorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Factories\BouncerFactory.cs" />
+    <Compile Include="Factories\ConsoleCommandFactory.cs" />
+    <Compile Include="Factories\AnimatedPropFactory.cs" />
+    <Compile Include="Factories\SoundBankFactory.cs" />
+    <Compile Include="Factories\SplashOutTriggerFactory.cs" />
+    <Compile Include="Factories\VoxelTriggerFactory.cs" />
+    <Compile Include="Factories\PowerBlockSocketFactory.cs" />
+    <Compile Include="Factories\LogicGateFactory.cs" />
+    <Compile Include="Factories\SkyDecalFactory.cs" />
+    <Compile Include="Factories\StaticSliderFactory.cs" />
+    <Compile Include="Factories\SequenceFactory.cs" />
+    <Compile Include="Factories\VoxelSetterFactory.cs" />
+    <Compile Include="LeaderboardProxy.cs" />
+    <Compile Include="OvrCapi.cs" />
+    <Compile Include="Player\FPSCamera.cs" />
+    <Compile Include="Scripts\DialogueLink.cs" />
+    <Compile Include="Scripts\DialogueTrigger.cs" />
+    <Compile Include="Scripts\RiftSpawner.cs" />
+    <Compile Include="Scripts\SetPhoto.cs" />
+    <Compile Include="Util\VoxelRip.cs" />
+    <Compile Include="Components\World.cs" />
+    <Compile Include="Console\AutoConCommand.cs" />
+    <Compile Include="Console\AutoConVar.cs" />
+    <Compile Include="Console\Console.cs" />
+    <Compile Include="Console\ConsoleParser.cs" />
+    <Compile Include="Console\ConVar.cs" />
+    <Compile Include="Console\ConCommand.cs" />
+    <Compile Include="Components\Propagator.cs" />
+    <Compile Include="Editor\AnalyticsViewer.cs" />
+    <Compile Include="Editor\EditorGeeUI.cs" />
+    <Compile Include="Factories\MessageDisplayerFactory.cs" />
+    <Compile Include="Factories\ConstantFactory.cs" />
+    <Compile Include="Factories\ExplosionFactory.cs" />
+    <Compile Include="Factories\FileFilter.cs" />
+    <Compile Include="Factories\BinderFactory.cs" />
+    <Compile Include="Factories\DustFactory.cs" />
+    <Compile Include="Factories\WaterfallFactory.cs" />
+    <Compile Include="Factories\SnowFactory.cs" />
+    <Compile Include="Factories\StarterFactory.cs" />
+    <Compile Include="Factories\CameraStopFactory.cs" />
+    <Compile Include="Factories\RandomTickerFactory.cs" />
+    <Compile Include="Factories\TimeTrialFactory.cs" />
+    <Compile Include="Factories\PowerSoundFactory.cs" />
+    <Compile Include="Factories\RotatorFactory.cs" />
+    <Compile Include="Factories\ImplodeBlockFactory.cs" />
+    <Compile Include="Factories\RiftFactory.cs" />
+    <Compile Include="Factories\CollectibleFactory.cs" />
+    <Compile Include="Factories\CounterFactory.cs" />
+    <Compile Include="Factories\SetterFactory.cs" />
+    <Compile Include="Factories\TickerFactory.cs" />
+    <Compile Include="GeeUI\Composites\ToolTip.cs" />
+    <Compile Include="GeeUI\GeeUIMain.cs" />
+    <Compile Include="GeeUI\Managers\ConversionManager.cs" />
+    <Compile Include="GeeUI\Managers\DrawManager.cs" />
+    <Compile Include="GeeUI\Managers\InputManager.cs" />
+    <Compile Include="GeeUI\Resource1.Designer.cs">
+      <DependentUpon>Resource1.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="GeeUI\Structs\BoundKey.cs" />
+    <Compile Include="GeeUI\Structs\BoundMouse.cs" />
+    <Compile Include="GeeUI\Structs\DropDownItem.cs" />
+    <Compile Include="GeeUI\Structs\NinePatch.cs" />
+    <Compile Include="GeeUI\Structs\RadioButtonGroup.cs" />
+    <Compile Include="GeeUI\ViewLayouts\BorderViewLayout.cs" />
+    <Compile Include="GeeUI\ViewLayouts\ExpandToFitLayout.cs" />
+    <Compile Include="GeeUI\ViewLayouts\HorizontalViewLayout.cs" />
+    <Compile Include="GeeUI\ViewLayouts\SpinViewLayout.cs" />
+    <Compile Include="GeeUI\ViewLayouts\VerticalViewLayout.cs" />
+    <Compile Include="GeeUI\ViewLayouts\ViewLayout.cs" />
+    <Compile Include="GeeUI\Views\DropDownView.cs" />
+    <Compile Include="GeeUI\Views\ListView.cs" />
+    <Compile Include="GeeUI\Views\EmptyView.cs" />
+    <Compile Include="GeeUI\Views\ButtonView.cs" />
+    <Compile Include="GeeUI\Views\CheckBoxView.cs" />
+    <Compile Include="GeeUI\Views\ImageView.cs" />
+    <Compile Include="GeeUI\Views\PanelView.cs" />
+    <Compile Include="GeeUI\Views\SliderView.cs" />
+    <Compile Include="GeeUI\Views\TabContainer.cs" />
+    <Compile Include="GeeUI\Views\TabHost.cs" />
+    <Compile Include="GeeUI\Views\TabView.cs" />
+    <Compile Include="GeeUI\Views\TextFieldView.cs" />
+    <Compile Include="GeeUI\Views\TextView.cs" />
+    <Compile Include="GeeUI\Views\View.cs" />
+    <Compile Include="GeeUI\Views\WindowView.cs" />
+    <Compile Include="GInterfaces\ConsoleUI.cs" />
+    <Compile Include="Components\TimeTrialUI.cs" />
+    <Compile Include="GInterfaces\TextPrompt.cs" />
+    <Compile Include="GInterfaces\WorkShopInterface.cs" />
+    <Compile Include="Graphics\Cloud.cs" />
+    <Compile Include="MainMenu.cs" />
+    <Compile Include="Oculus.cs" />
+    <Compile Include="Player\BlockPredictor.cs" />
+    <Compile Include="Player\Jump.cs" />
+    <Compile Include="Player\PhoneNote.cs" />
+    <Compile Include="Player\RollKickSlide.cs" />
+    <Compile Include="Player\RotationController.cs" />
+    <Compile Include="Player\Rumble.cs" />
+    <Compile Include="Player\TargetUI.cs" />
+    <Compile Include="Player\Vault.cs" />
+    <Compile Include="Player\VirtualReticle.cs" />
+    <Compile Include="Player\VoxelTools.cs" />
+    <Compile Include="Player\WallRun.cs" />
+    <Compile Include="Scripts\Abilities.cs" />
+    <Compile Include="UI\UIFactory.cs" />
+    <Compile Include="Util\BitWorker.cs" />
+    <Compile Include="Util\BSpline.cs" />
+    <Compile Include="Util\DialogueForest.cs" />
+    <Compile Include="Components\SoundKiller.cs" />
+    <Compile Include="Components\SignalTower.cs" />
+    <Compile Include="Player\Phone.cs" />
+    <Compile Include="Components\RaycastAI.cs" />
+    <Compile Include="Components\Trigger.cs" />
+    <Compile Include="Components\PID.cs" />
+    <Compile Include="Util\Noise3D.cs" />
+    <Compile Include="Components\EnemyBase.cs" />
+    <Compile Include="Components\PhysicsSphere.cs" />
+    <Compile Include="Components\PlayerCylinderTrigger.cs" />
+    <Compile Include="Components\PostInitialization.cs" />
+    <Compile Include="Components\Zone.cs" />
+    <Compile Include="Factories\CloudFactory.cs" />
+    <Compile Include="Factories\LowerLimitFactory.cs" />
+    <Compile Include="Factories\DialogueFileFactory.cs" />
+    <Compile Include="Factories\SignalTowerFactory.cs" />
+    <Compile Include="Factories\EvilBlocksFactory.cs" />
+    <Compile Include="Factories\SwitchFactory.cs" />
+    <Compile Include="Factories\NoteFactory.cs" />
+    <Compile Include="Factories\EntityConnectable.cs" />
+    <Compile Include="Factories\VoxelFillFactory.cs" />
+    <Compile Include="Factories\TriggerFactory.cs" />
+    <Compile Include="Factories\SmokeFactory.cs" />
+    <Compile Include="Factories\LevitatorFactory.cs" />
+    <Compile Include="Components\Explosion.cs" />
+    <Compile Include="Factories\ExploderFactory.cs" />
+    <Compile Include="Factories\SpinnerFactory.cs" />
+    <Compile Include="Factories\JointFactory.cs" />
+    <Compile Include="Factories\SceneryBlockFactory.cs" />
+    <Compile Include="Factories\SkyboxFactory.cs" />
+    <Compile Include="Factories\VoxelAttachable.cs" />
+    <Compile Include="Factories\RainFactory.cs" />
+    <Compile Include="Factories\SliderFactory.cs" />
+    <Compile Include="Factories\TargetFactory.cs" />
+    <Compile Include="Factories\SnakeFactory.cs" />
+    <Compile Include="Factories\ParticleEmitterFactory.cs" />
+    <Compile Include="Factories\PlayerDataFactory.cs" />
+    <Compile Include="Factories\EffectBlockFactory.cs" />
+    <Compile Include="Factories\FallingTowerFactory.cs" />
+    <Compile Include="Factories\MapExitFactory.cs" />
+    <Compile Include="Factories\PropFactory.cs" />
+    <Compile Include="Factories\SoundFactory.cs" />
+    <Compile Include="Components\VoxelChaseAI.cs" />
+    <Compile Include="Graphics\DynamicModel.cs" />
+    <Compile Include="Graphics\LineDrawer.cs" />
+    <Compile Include="Factories\ZoneFactory.cs" />
+    <Compile Include="Factories\EmptyFactory.cs" />
+    <Compile Include="Graphics\AmbientLight.cs" />
+    <Compile Include="Components\Animation.cs" />
+    <Compile Include="Graphics\SpotLight.cs" />
+    <Compile Include="Graphics\DirectionalLight.cs" />
+    <Compile Include="Player\AnimationController.cs" />
+    <Compile Include="Player\CameraController.cs" />
+    <Compile Include="Player\FallDamage.cs" />
+    <Compile Include="Player\Footsteps.cs" />
+    <Compile Include="Player\Player.cs" />
+    <Compile Include="Components\PhysicsBlock.cs" />
+    <Compile Include="Graphics\PointLight.cs" />
+    <Compile Include="Components\Script.cs" />
+    <Compile Include="Components\Updater.cs" />
+    <Compile Include="Editor\Editor.cs" />
+    <Compile Include="Factories\AmbientLightFactory.cs" />
+    <Compile Include="Factories\AmbientSoundFactory.cs" />
+    <Compile Include="Factories\BlockFactory.cs" />
+    <Compile Include="Factories\WaterFactory.cs" />
+    <Compile Include="Factories\SpotLightFactory.cs" />
+    <Compile Include="Factories\PlayerTriggerFactory.cs" />
+    <Compile Include="Factories\ScriptFactory.cs" />
+    <Compile Include="Player\PlayerFactory.cs" />
+    <Compile Include="Factories\EditorFactory.cs" />
+    <Compile Include="Factories\PointLightFactory.cs" />
+    <Compile Include="Factories\TurretFactory.cs" />
+    <Compile Include="Factories\WorldFactory.cs" />
+    <Compile Include="Components\Water.cs" />
+    <Compile Include="Menu.cs" />
+    <Compile Include="Player\PlayerUI.cs" />
+    <Compile Include="Screenshot.cs" />
+    <Compile Include="Strings.cs" />
+    <Compile Include="UI\Container.cs" />
+    <Compile Include="UI\LineDrawer2D.cs" />
+    <Compile Include="UI\ListContainer.cs" />
+    <Compile Include="UI\Scroller.cs" />
+    <Compile Include="UI\Sprite.cs" />
+    <Compile Include="Graphics\ModelInstance.cs" />
+    <Compile Include="Graphics\ParticleEmitter.cs" />
+    <Compile Include="Graphics\ParticleSystem.cs" />
+    <Compile Include="UI\TextElement.cs" />
+    <Compile Include="Factories\DirectionalLightFactory.cs" />
+    <Compile Include="Factories\PlayerSpawnFactory.cs" />
+    <Compile Include="Factories\VoxelFactory.cs" />
+    <Compile Include="Components\Timer.cs" />
+    <Compile Include="IO\FPSInput.cs" />
+    <Compile Include="UI\UIComponent.cs" />
+    <Compile Include="UI\UIRenderer.cs" />
+    <Compile Include="Util\AngleTools.cs" />
+    <Compile Include="Util\BlockingQueue.cs" />
+    <Compile Include="Util\BoundingBoxExtensions.cs" />
+    <Compile Include="Player\Character.cs" />
+    <Compile Include="Util\Algorithms.cs" />
+    <Compile Include="Util\CustomFluidVolume.cs" />
+    <Compile Include="Util\LargeObjectHeap.cs" />
+    <Compile Include="Util\PriorityQueue.cs" />
+    <Compile Include="Util\ScriptBase.cs" />
+    <Compile Include="Util\SteamWorker.cs" />
+    <Compile Include="Util\VectorExtensions.cs" />
+    <Compile Include="Graphics\AnimatedModel.cs" />
+    <Compile Include="Graphics\FullscreenQuad.cs" />
+    <Compile Include="Graphics\LightingManager.cs" />
+    <Compile Include="Graphics\Renderer.cs" />
+    <Compile Include="Graphics\Model.cs" />
+    <Compile Include="IO\PCInput.cs" />
+    <Compile Include="IO\MapLoader.cs" />
+    <Compile Include="Graphics\Camera.cs" />
+    <Compile Include="Components\PlayerTrigger.cs" />
+    <Compile Include="Util\Direction.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="Components\Voxel.cs" />
+    <Compile Include="Components\PlayerSpawn.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util\LambdaComparer.cs" />
+    <Compile Include="Util\RectangleExtensions.cs" />
+    <Compile Include="Util\VoxelAStar.cs" />
+    <Compile Include="Util\WwisePicker.cs" />
+    <Compile Include="Wwise_IDs.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <NestedContentProject Include="Content\Content.contentproj">
+      <Project>6d5dbc4b-1de9-47b2-92af-546c5d1e4268</Project>
+      <Visible>False</Visible>
+    </NestedContentProject>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BEPUphysics\BEPUphysics.FNA.csproj">
+      <Project>{2a9d2227-78d7-4804-b6d1-560bb43ae911}</Project>
+      <Name>BEPUphysics.FNA</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BEPUutilities\BEPUutilities.FNA.csproj">
+      <Project>{e3aaeb61-d7df-4e7e-a75b-b5282d2ff3f5}</Project>
+      <Name>BEPUutilities.FNA</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ComponentBind\ComponentBind.FNA.csproj">
+      <Project>{2d0637ab-a380-4c97-a329-bf7c40c99495}</Project>
+      <Name>ComponentBind.FNA</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Excel\Excel.csproj">
+      <Project>{4CB0690E-3E7A-497C-9116-D52024F63195}</Project>
+      <Name>Excel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FNA\FNA.csproj">
+      <Project>{35253ce1-c864-4cd3-8249-4d1319748e8f}</Project>
+      <Name>FNA</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Newtonsoft.Json\Newtonsoft.Json.Net40.csproj">
+      <Project>{A9AE40FF-1A21-414A-9FE7-3BE13644CC6D}</Project>
+      <Name>Newtonsoft.Json.Net40</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SharpZipLib\src\ICSharpCode.SharpZLib.csproj">
+      <Project>{0e7413ff-eb9e-4714-acf2-be3a6a7b2ffd}</Project>
+      <Name>ICSharpCode.SharpZLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SkinnedModel\SkinnedModel.FNA.csproj">
+      <Project>{7d386992-b626-46c6-a196-f4ce42f36190}</Project>
+      <Name>SkinnedModel.FNA</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Steamworks.NET\Standalone\Steamworks.NET.csproj">
+      <Project>{b3543600-587c-4fdc-994a-cb0bdc629a7e}</Project>
+      <Name>Steamworks.NET</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wwise\Wwise.FNA.csproj">
+      <Project>{b1452f01-704f-44cd-bab5-2a15f8e5c2f1}</Project>
+      <Name>Wwise.FNA</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Xna.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>Microsoft XNA Framework Redistributable 3.0</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Xna.Framework.4.0">
+      <Visible>False</Visible>
+      <ProductName>Microsoft XNA Framework Redistributable 4.0</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="attribution.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="app.manifest" />
+    <None Include="GeeUI\Resources\btn_clicked.9.png" />
+    <None Include="GeeUI\Resources\btn_default.9.png" />
+    <None Include="GeeUI\Resources\btn_hover.9.png" />
+    <Content Include="CSteamworks.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GeeUI\Resources\checkbox_checked.png" />
+    <Content Include="GeeUI\Resources\checkbox_checked_selected.png" />
+    <Content Include="GeeUI\Resources\checkbox_default.png" />
+    <Content Include="GeeUI\Resources\checkbox_default_selected.png" />
+    <None Include="GeeUI\Resources\panel_selected.png" />
+    <None Include="GeeUI\Resources\panel_unselected.png" />
+    <None Include="GeeUI\Resources\slider.png" />
+    <None Include="GeeUI\Resources\sliderRange.9.png" />
+    <None Include="GeeUI\Resources\sliderRange.png" />
+    <None Include="GeeUI\Resources\sliderSelected.png" />
+    <None Include="GeeUI\Resources\textfield_default.9.png" />
+    <None Include="GeeUI\Resources\textfield_selected.9 .png" />
+    <None Include="GeeUI\Resources\textfield_selected_right.9.png" />
+    <None Include="GeeUI\Resources\textfield_selected_wrong.9.png" />
+    <None Include="GeeUI\Resources\window_selected.9.png" />
+    <None Include="GeeUI\Resources\window_unselected.9.png" />
+    <None Include="GeeUI\Resources\dropdown.png" />
+    <Content Include="icon.ico" />
+    <Content Include="Lemma VR.lnk">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="OculusPlugin.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="README.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="steam_api.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="steam_appid.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AdapterSelectorForm.resx">
+      <DependentUpon>AdapterSelectorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ErrorForm.resx">
+      <DependentUpon>ErrorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GeeUI\Resource1.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource11.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Game\*.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" Condition="" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

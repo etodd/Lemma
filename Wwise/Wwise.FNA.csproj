@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{B1452F01-704F-44CD-BAB5-2A15F8E5C2F1}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Wwise</RootNamespace>
+    <AssemblyName>Wwise</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;WINDOWS</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;WINDOWS</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AkAuxSend.cs" />
+    <Compile Include="AkAuxSendAware.cs" />
+    <Compile Include="AkBankPath.cs" />
+    <Compile Include="AkGameObject.cs" />
+    <Compile Include="AkGameObjectTracker.cs" />
+    <Compile Include="AkGlobalSoundEngineInitializer.cs" />
+    <Compile Include="AkGlobalSoundEngineTerminator.cs" />
+    <Compile Include="AkInMemBankLoader.cs" />
+    <Compile Include="AkListener.cs" />
+    <Compile Include="Generated\Common\AkActionOnEventType.cs" />
+    <Compile Include="Generated\Common\AkArrayAllocatorAlignedSimd.cs" />
+    <Compile Include="Generated\Common\AkArrayAllocatorDefault.cs" />
+    <Compile Include="Generated\Common\AkAuxSendValue.cs" />
+    <Compile Include="Generated\Common\AkBankContent.cs" />
+    <Compile Include="Generated\Common\AkCallbackSerializer.cs" />
+    <Compile Include="Generated\Common\AkCallbackType.cs" />
+    <Compile Include="Generated\Common\AkChannelOrdering.cs" />
+    <Compile Include="Generated\Common\AkCurveInterpolation.cs" />
+    <Compile Include="Generated\Common\AkDeviceSettings.cs" />
+    <Compile Include="Generated\Common\AkExternalSourceInfo.cs" />
+    <Compile Include="Generated\Common\AkGroupType.cs" />
+    <Compile Include="Generated\Common\AkInitSettings.cs" />
+    <Compile Include="Generated\Common\AkListenerPosition.cs" />
+    <Compile Include="Generated\Common\AkMemSettings.cs" />
+    <Compile Include="Generated\Common\AkMusicPlaylistCallbackInfo.cs" />
+    <Compile Include="Generated\Common\AkMusicSettings.cs" />
+    <Compile Include="Generated\Common\AkNodeType.cs" />
+    <Compile Include="Generated\Common\AkObjectInfo.cs" />
+    <Compile Include="Generated\Common\AkOutputSettings.cs" />
+    <Compile Include="Generated\Common\AkPannerType.cs" />
+    <Compile Include="Generated\Common\AkPanningRule.cs" />
+    <Compile Include="Generated\Common\AkPlaylistArray.cs" />
+    <Compile Include="Generated\Common\AkPositioningInfo.cs" />
+    <Compile Include="Generated\Common\AkPositionSourceType.cs" />
+    <Compile Include="Generated\Common\AKRESULT.cs" />
+    <Compile Include="Generated\Common\AkSegmentInfo.cs" />
+    <Compile Include="Generated\Common\AkSoundPosition.cs" />
+    <Compile Include="Generated\Common\AkStreamMgrSettings.cs" />
+    <Compile Include="Generated\Common\AkVector.cs" />
+    <Compile Include="Generated\Common\AkVolumeOffset.cs" />
+    <Compile Include="Generated\Common\ArrayPoolDefault.cs" />
+    <Compile Include="Generated\Common\ArrayPoolLEngineDefault.cs" />
+    <Compile Include="Generated\Common\DynamicSequenceType.cs" />
+    <Compile Include="Generated\Common\EnvelopePoint.cs" />
+    <Compile Include="Generated\Common\ErrorCode.cs" />
+    <Compile Include="Generated\Common\ErrorLevel.cs" />
+    <Compile Include="Generated\Common\Iterator.cs" />
+    <Compile Include="Generated\Common\MultiPositionType.cs" />
+    <Compile Include="Generated\Common\Playlist.cs" />
+    <Compile Include="Generated\Common\PlaylistItem.cs" />
+    <Compile Include="Generated\Common\PreparationType.cs" />
+    <Compile Include="Generated\Common\RTPCValue_type.cs" />
+    <Compile Include="Generated\Common\WwiseObjectID.cs" />
+    <Compile Include="Generated\Common\WwiseObjectIDext.cs" />
+    <Compile Include="Generated\Windows\AkMemPoolAttributes_Windows.cs" />
+    <Compile Include="Generated\Windows\AkPlatformInitSettings_Windows.cs" />
+    <Compile Include="Generated\Windows\AkSinkType_Windows.cs" />
+    <Compile Include="Generated\Windows\AkSoundEnginePINVOKE_Windows.cs" />
+    <Compile Include="Generated\Windows\AkSoundEngine_Windows.cs" />
+    <Compile Include="Generated\Windows\AkSoundQuality_Windows.cs" />
+    <Compile Include="Generated\Windows\AkSpeakerVolumes_Windows.cs" />
+    <Compile Include="Generated\Windows\AkThreadProperties_Windows.cs" />
+    <Compile Include="Handwritten\AkAuxSendArray.cs" />
+    <Compile Include="Handwritten\AkCallbackManager.cs" />
+    <Compile Include="Handwritten\AkPositionArray.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Content Include="AkSoundEngine_Win32_Release.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <Content Include="AkSoundEngine_Win32_Profile.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ComponentBind\ComponentBind.FNA.csproj">
+      <Project>{2d0637ab-a380-4c97-a329-bf7c40c99495}</Project>
+      <Name>ComponentBind.FNA</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FNA\FNA.csproj">
+      <Project>{35253ce1-c864-4cd3-8249-4d1319748e8f}</Project>
+      <Name>FNA</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+    <Copy SourceFiles="@(Content)" DestinationFolder="$(OutputPath)" />
+  </Target>
+</Project>

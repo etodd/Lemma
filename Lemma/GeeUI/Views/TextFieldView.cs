@@ -1,10 +1,7 @@
 ﻿
 using System;
-using System.Reflection;
-using System.Runtime.Remoting.Messaging;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using ComponentBind;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using GeeUI.Structs;
@@ -226,6 +223,7 @@ namespace GeeUI.Views
 						break;
 
 					case Keys.V:
+						// TODO: FNA clipboard
 						string text = Clipboard.GetText();
 						if (!String.IsNullOrEmpty(text))
 							AppendTextCursor(text);

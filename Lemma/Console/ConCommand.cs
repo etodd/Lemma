@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Windows.Forms.VisualStyles;
 using ComponentBind;
 
 namespace Lemma.Console

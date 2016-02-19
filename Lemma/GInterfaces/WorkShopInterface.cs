@@ -2,15 +2,12 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Windows.Forms;
 using ComponentBind;
 using GeeUI.Views;
-using ICSharpCode.SharpZipLib.Tar;
 using Lemma.Components;
 using Lemma.Factories;
 using Lemma.Util;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Steamworks;
 using Point = Microsoft.Xna.Framework.Point;
 using View = GeeUI.Views.View;
