@@ -22,8 +22,8 @@ hairbrained ideas I had back then. Consider it an example of what *not* to do.
 Getting started
 ---------------
 
-1. Install [Microsoft Visual C# 2013](http://msdn.microsoft.com/en-us/library/dd831853.aspx)
-and [XNA Game Studio 4.0 Refresh](https://msxna.codeplex.com/releases/view/117230).
+1. Install [Microsoft Visual C# 2015](https://www.visualstudio.com/downloads/download-visual-studio-vs)
+and [XNA Game Studio 4.0 Refresh](https://mxa.codeplex.com/releases/view/618279).
 1. Clone the repository.
 1. Open `Lemma.sln`.
 1. [Set the active solution configuration](http://msdn.microsoft.com/en-us/library/wx0123s5(v=vs.100).aspx)
