@@ -11,9 +11,9 @@
 	path = Steamworks.NET
 	url = git@github.com:etodd/Steamworks.NET.git
 	ignore = dirty
-[submodule "FNA"]
-	path = FNA
-	url = git@github.com:etodd/FNA.git
 [submodule "dialogger"]
 	path = dialogger
 	url = git@github.com:etodd/dialogger.git
+[submodule "FNA"]
+	path = FNA
+	url = git@github.com:FNA-XNA/FNA.git
