@@ -795,7 +795,7 @@ namespace Lemma
 			this.Settings.LevelIndexProperty.Value = this.Settings.LevelIndex;
 			new NotifyBinding(delegate() { this.Settings.GodMode = this.Settings.GodModeProperty; }, this.Settings.GodModeProperty);
 			new NotifyBinding(delegate() { this.Settings.LevelIndex = this.Settings.LevelIndexProperty; }, this.Settings.LevelIndexProperty);
-			
+
 			TextElement.BindableProperties.Add("Forward", this.Settings.Forward);
 			TextElement.BindableProperties.Add("Left", this.Settings.Left);
 			TextElement.BindableProperties.Add("Backward", this.Settings.Backward);
@@ -849,6 +849,14 @@ namespace Lemma
 				if (this.Settings.Fullscreen)
 					this.Graphics.ApplyChanges();
 			}, this.Settings.Vsync);
+
+#if FNA
+			this.Window.IsBorderlessEXT = this.Settings.Borderless;
+			new NotifyBinding(delegate()
+			{
+				this.Window.IsBorderlessEXT = !this.Settings.Fullscreen && this.Settings.Borderless;
+			}, this.Settings.Borderless);
+#endif
 
 #if VR
 			if (this.VR)
@@ -2166,16 +2174,18 @@ namespace Lemma
 			if (this.Renderer != null)
 				this.Renderer.ReallocateBuffers(this.ScreenSize);
 
+#if FNA
+			this.Window.IsBorderlessEXT = !fullscreen && borderless;
+#endif
 			if (!fullscreen || borderless)
 			{
-				// TODO: FNA borderless window
-				/*
+#if !FNA
 				System.Windows.Forms.Control control = System.Windows.Forms.Control.FromHandle(this.Window.Handle);
 				System.Windows.Forms.Form form = control.FindForm();
 				form.FormBorderStyle = fullscreen || borderless ? System.Windows.Forms.FormBorderStyle.None : System.Windows.Forms.FormBorderStyle.Sizable;
 				if (fullscreen && borderless)
 					form.Location = new System.Drawing.Point(0, 0);
-				*/
+#endif
 				this.resize = null;
 			}
 

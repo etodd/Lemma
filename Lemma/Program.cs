@@ -15,12 +15,15 @@ namespace Lemma
 	    [STAThread]
 		public static void Main(string[] args)
 		{
+#if !FNA
 			System.Windows.Forms.Application.EnableVisualStyles();
+#endif
 #if VR
 			bool vr = args.Select(x => x.ToLower()).Contains("-vr");
 #endif
 
 			int monitor = 0;
+#if !FNA // TODO: Multiple monitors are supported, but we need something other than a Form :| -flibit
 			if (GraphicsAdapter.Adapters.Count > 1)
 			{
 				AdapterSelectorForm selectorForm = new AdapterSelectorForm(vr);
@@ -31,6 +34,7 @@ namespace Lemma
 				vr = selectorForm.VR;
 				monitor = selectorForm.Monitor;
 			}
+#endif
 
 			Main main = null;
 			if (Debugger.IsAttached)
@@ -73,6 +77,9 @@ namespace Lemma
 				{
 					string uuid = main != null ? (main.Settings != null ? main.Settings.UUID : null) : null;
 					Lemma.Main.Config.RecordAnalytics analytics = main != null ? (main.Settings != null ? main.Settings.Analytics : Lemma.Main.Config.RecordAnalytics.Off) : Lemma.Main.Config.RecordAnalytics.Off;
+#if FNA // TODO: Error reporting -flibit
+					SDL2.SDL.SDL_ShowSimpleMessageBox(SDL2.SDL.SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR, "CRASH", e.ToString(), IntPtr.Zero);
+#else
 					ErrorForm errorForm = new ErrorForm(e.ToString(), uuid, analytics == Lemma.Main.Config.RecordAnalytics.On);
 #if ANALYTICS
 					if (main != null)
@@ -83,6 +90,7 @@ namespace Lemma
 					}
 #endif
 					System.Windows.Forms.Application.Run(errorForm);
+#endif
 				}
 #endif
 				finally

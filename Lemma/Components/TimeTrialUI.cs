@@ -348,7 +348,7 @@ namespace Lemma.Components
 		{
 			Container container = this.main.UIFactory.CreateButton(delegate()
 			{
-				if (SteamWorker.SteamInitialized)
+				if (Util.SteamWorker.SteamInitialized)
 					SteamFriends.ActivateGameOverlayToUser("steamid", entry.m_steamIDUser);
 			});
 			this.resizeContainer(container, 4.0f);

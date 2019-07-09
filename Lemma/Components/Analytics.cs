@@ -406,7 +406,11 @@ namespace Lemma.Components
 				this.workThread.Start();
 
 #if WINDOWS
+#if FNA
+				this.data.Memory = SDL2.SDL.SDL_GetSystemRAM();
+#else
 				this.data.Memory = (int)(new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory / (ulong)1048576);
+#endif
 				ManagementObject cpu = new ManagementObjectSearcher("select * from Win32_Processor").Get().Cast<ManagementObject>().First();
 				this.data.CPU = string.Format("{0} {1}", cpu["Name"], cpu["Caption"]);
 				ManagementObjectSearcher searcher = new ManagementObjectSearcher("select * from Win32_DisplayConfiguration");
