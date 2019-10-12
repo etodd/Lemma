@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using GeeUI.Structs;
@@ -223,8 +222,11 @@ namespace GeeUI.Views
 						break;
 
 					case Keys.V:
-						// TODO: FNA clipboard
-						string text = Clipboard.GetText();
+#if FNA
+						string text = SDL2.SDL.SDL_GetClipboardText();
+#else
+						string text = System.Windows.Forms.Clipboard.GetText();
+#endif
 						if (!String.IsNullOrEmpty(text))
 							AppendTextCursor(text);
 						break;
