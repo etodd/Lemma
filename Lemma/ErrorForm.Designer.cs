@@ -102,7 +102,7 @@
 			this.linkLabel1.Size = new System.Drawing.Size(132, 13);
 			this.linkLabel1.TabIndex = 6;
 			this.linkLabel1.TabStop = true;
-			this.linkLabel1.Text = "support@lemmagame.com";
+			this.linkLabel1.Text = "evan@etodd.io";
 			this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
 			// 
 			// label4

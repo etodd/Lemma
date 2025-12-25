@@ -61,7 +61,7 @@ namespace Lemma
 
 		private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			ProcessStartInfo sInfo = new ProcessStartInfo("mailto:support@lemmagame.com");
+			ProcessStartInfo sInfo = new ProcessStartInfo("mailto:evan@etodd.io");
 			Process.Start(sInfo);
 		}
 
