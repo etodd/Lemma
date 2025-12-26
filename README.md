@@ -1,9 +1,9 @@
 Lemma
 =====
 
-[![Lemma](http://i.imgur.com/Nb6pffrl.png)](http://lemmagame.com)
+[![Lemma](http://i.imgur.com/Nb6pffrl.png)](https://helvetica-scenario.itch.io/lemma)
 
-[**Lemma**](http://lemmagame.com) is an **immersive first-person parkour** game.
+[**Lemma**](https://helvetica-scenario.itch.io/lemma) is an **immersive first-person parkour** game.
 Every parkour move has the potential to **modify the environment**.
 Surfaces pop in and out of existence at will.
 

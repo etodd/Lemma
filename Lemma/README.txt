@@ -1,6 +1,6 @@
 
 LEMMA
-http://lemmagame.com
+https://helvetica-scenario.itch.io/lemma
 
 Minimum Requirements
 ====================
@@ -25,4 +25,4 @@ Problems?
 
 - Check the forums: http://steamcommunity.com/app/300340/discussions/
 
-- Contact support@lemmagame.com
+- Contact evan@etodd.io
